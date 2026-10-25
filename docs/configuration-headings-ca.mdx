@@ -38,6 +38,12 @@ La propietat `headings` controla la tipografia de tots els nivells d'encapçalam
       <td>Família de fonts de tots els encapçalaments.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>les de la font</td>
+      <td>Les xifres de tots els nivells: <code>'lining'</code> al costat d'un text en xifres elzevirianes. Guanya el <code>figureStyle</code> propi d'un nivell. Vegeu [Estils de xifres](/ca/docs/configuration-fonts-colors-viewers#estils-de-xifres).</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -171,7 +177,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Quan la configuració ve de dades desades, el motor pot saber que és antiga i ho fa per tu: el Sandbox amb els llibres i les configuracions que va desar llavors (vegeu **Sandbox → Persistència**), i `openBundle` / `readBundle` amb un paquet `.postext` escrit per postext 1.4 o anterior (vegeu [Paquets escrits per postext 1.4 o anterior](/ca/docs/configuration-bundles#paquets-escrits-per-postext-14-o-anterior)). Una configuració que vas desar tu pot passar per `migrateConfig(config)` de `postext/bundle`, que escriu els salts tal com els componia la 1.4 (`pinLegacyHeadingBreaks`): `enabled: false` en un H1 que no tenia salt, i `parity: 'any'` al costat d'un `enabled: true` que no indicava paritat, a H1 i als estils d'encapçalament. També fixa la mida de les fórmules, l'espai al voltant de les figures en línia (també als requadres), les marques en línia dels encapçalaments, la mida de les caplletres, el lloc sota una línia de dos punts que introdueix una llista, les línies que deixa d'un paràgraf o d'un element de llista el tall d'una caixa, els talls de línia després d'un guió llarg, la composició línia a línia del text en bandera, la divisió d'un paràgraf sota un encapçalament, els talls de línia després del guionet d'un compost i l'espai sota els contenidors `:::paragraphs`, tal com els componia la 1.4. Si li passes el Markdown del llibre com a tercer argument, `{ content }`, omet la fixació de les fórmules quan el text no té cap `$`, les dels buits quan cap línia no insereix un recurs (la del buit als requadres quan cap no ho fa dins d'un requadre), la de les marques quan cap encapçalament no en porta cap, la dels dos punts quan cap llista no segueix una línia que acaba en dos punts, la del tall de les caixes quan el text no obre cap `:::callout`, la dels guions llargs quan cap guió llarg no va entre paraules sense espais, la de la divisió sota un encapçalament quan el text no té cap encapçalament, la dels contenidors quan el text no obre cap contenidor `:::paragraphs`, i la dels compostos quan cap guionet no va entre dues lletres; la del text en bandera només s'aplica a una configuració que posa en bandera algun text corregut, i la dels contenidors només a una que declara algun estil de paràgraf (vegeu [Paquets escrits per postext 1.4 o anterior](/ca/docs/configuration-bundles#paquets-escrits-per-postext-14-o-anterior)). Per fixar només els salts, crida `pinLegacyHeadingBreaks(config)`.
 
-Les configuracions per nivell admeten les mateixes propietats que els valors generals (`fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`) i, a més, aquests camps propis de cada nivell (un [estil d'encapçalament](/ca/docs/configuration-styles#estils-dencapçalament) també els admet):
+Les configuracions per nivell admeten les mateixes propietats que els valors generals (`fontSize`, `lineHeight`, `fontFamily`, `figureStyle`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`) i, a més, aquests camps propis de cada nivell (un [estil d'encapçalament](/ca/docs/configuration-styles#estils-dencapçalament) també els admet):
 
 <table>
   <thead>

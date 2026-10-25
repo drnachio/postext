@@ -46,6 +46,7 @@ export function exerciseStyleIds(style: Pick<ResolvedExerciseStyle, 'id'>) {
     answer: `${p}-answer`,
     mark: `${p}-mark`,
     markOn: `${p}-mark-on`,
+    markPlain: `${p}-mark-plain`,
   };
 }
 
@@ -154,6 +155,8 @@ export function exerciseChipStyles(style: ResolvedExerciseStyle): ChipStyleConfi
     { id: ids.answer, backgroundEnabled: false, borderWidth: PT(0), paddingX: EM(0), paddingY: EM(0), color: answer, ...(style.answers.fontFamily ? { fontFamily: style.answers.fontFamily } : {}), gap: EM(0.25) },
     // A word to mark: plain in the pupil's edition, ringed in the answers.
     { id: ids.mark, backgroundEnabled: false, borderWidth: EM(0), borderRadius: EM(0.6), paddingX: EM(0.08), paddingY: EM(0.08), gap: EM(0) },
+    // A word of the text not to mark: a slot on screen, set as plain text.
+    { id: ids.markPlain, backgroundEnabled: false, borderWidth: EM(0), paddingX: EM(0), paddingY: EM(0), gap: EM(0) },
     { id: ids.markOn, backgroundEnabled: false, borderColor: answer, borderWidth: EM(0.06), borderRadius: EM(0.6), paddingX: EM(0.02), paddingY: EM(0.02), gap: EM(0) },
     // The other ways a marked word shows (`mark=box|underline|highlight`).
     { id: `${ids.markOn}-box`, backgroundEnabled: false, borderColor: answer, borderWidth: EM(0.06), borderRadius: EM(0.08), paddingX: EM(0.02), paddingY: EM(0.02), gap: EM(0) },

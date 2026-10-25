@@ -219,7 +219,7 @@ Circle the verbs: The girl [[waters]] the plants and the Sun [[warms]] them.
 :::
 ```
 
-The text prints as it is; the words in `[[…]]` are the ones to mark. In the answers they are ringed, or boxed, underlined or highlighted with `mark=box|underline|highlight` on the fence, or one word at a time with `[[waters]]{mark=underline}`.
+The text prints as it is; the words in `[[…]]` are the ones to mark. In the answers they are ringed, or boxed, underlined or highlighted with `mark=box|underline|highlight` on the fence, or one word at a time with `[[waters]]{mark=underline}`. On screen every word of the text can be marked, and a word marked by mistake counts as a wrong answer.
 
 ### Open questions and writing areas
 
@@ -233,7 +233,7 @@ They use light to make their food.
 :::
 ```
 
-Ruled lines to write on follow the instruction: three by default, `lines=4` here. When the body is a list, each item gets its own lines. `area` changes the ruling: `lines`, `dots`, `grid` (squared paper), `seyes` (French school ruling), `tianzige` (田字格, the squares Chinese pupils write characters in), `box` (an empty frame, for a drawing) or `none`. The `:::solution` is the model answer, printed with the solutions and written on the lines in a teacher's edition.
+Ruled lines to write on follow the instruction: three by default, `lines=4` here. When the body is a list, each item gets its own lines. `area` changes the ruling: `lines`, `dots`, `grid` (squared paper), `seyes` (French school ruling), `tianzige` (田字格, the squares Chinese pupils write characters in), `box` (an empty frame, for a drawing) or `none`. The `:::solution` is the model answer, printed with the solutions and written on the lines in a teacher's edition. On screen, `area=none` on the fence leaves nothing to type in, for an exercise done aloud or with a classmate; a style whose `area.kind` is `none` only draws the area bare.
 
 `cells` sizes the squares (`grid` or `tianzige`, squared paper when the style rules lines) to so many cells: `cells=4`. Several numbers set groups side by side a square apart, one for each word, wrapping at the end of the line: `cells="2 2 3"`. A teacher's edition writes the model answer a character to a square, group after group.
 
@@ -356,7 +356,7 @@ The Sandbox's **Checks** panel and `collectContentWarnings` report what the engi
 
 ## Exercises in HTML and EPUB
 
-In the HTML viewer and in EPUB books the exercises can be answered. The reader types in the blanks and clicks options, statements, dots to join and the cells of a grid, then checks the answers, shows the solution or starts again. Right and wrong answers are shown with a colour and a mark (`digital.correctColor`, `digital.wrongColor`), and are announced to screen readers. The answers are kept in the browser, per book, so a reader finds them again on the next visit (`exercises.digital.persist`). `exercises.digital.check: 'instant'` checks each answer as it is given; `exercises.digital.interactive: false` leaves the pages as printed. The answer key is always in an EPUB, whatever the print placement, so a reading system that runs no scripts still has the answers. In a reflowable EPUB the grids and the writing areas grow with the reader's text, and on a right-to-left page the cells to answer follow the mirrored grid.
+In the HTML viewer and in EPUB books the exercises can be answered. The reader types in the blanks and clicks options, statements, dots to join and the cells of a grid, then checks the answers, shows the solution or starts again. Right and wrong answers are shown with a colour and a mark (`digital.correctColor`, `digital.wrongColor`), and are announced to screen readers. The answers are kept in the browser, per book, so a reader finds them again on the next visit (`exercises.digital.persist`). `exercises.digital.check: 'instant'` checks each answer as it is given; `exercises.digital.interactive: false` leaves the pages as printed. The answer key is always in an EPUB, whatever the print placement, so a reading system that runs no scripts still has the answers. In a reflowable EPUB the grids and the writing areas grow with the reader's text, and on a right-to-left page the cells to answer follow the mirrored grid. Pairs are joined by clicking one dot and then the other, or by dragging from one to the other, and the words of a sort exercise are dragged to their column or chosen from a menu. The bar has only the buttons that do something: no Check when nothing can be checked, no Show solution without a solution, and no bar at all when there is nothing to answer.
 
 The screen can give exercises a form of their own through `htmlViewer.overrides`, merged over the book's configuration before the HTML viewer lays out. Print keeps its own:
 

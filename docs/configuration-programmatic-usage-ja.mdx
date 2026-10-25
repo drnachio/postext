@@ -546,6 +546,8 @@ const same = await buildDocumentWithFonts(content, config, { resolve });
 - **`buildDocumentWithFonts(content, config, options)`**：フォントを準備し、`buildDocumentAsync`でビルドし、ページが実際にテキストを組んだフェイスを読み取り、フォントセットが用意できなかったものを読み込んで（ページを組んで初めてわかるウェイトは、ファミリーの別のウェイトで代用できる場合でも`resolve`に求めます）、もう一度ビルドします（追加のビルドは最大2回）。`withLoadedFonts(build, options)`は、任意のビルド関数のまわりで同じことを行います。章ごとにビルドする本や、複数の文書を返すバンドル（`buildBundle`）に使えます。`options.onFonts`は最終的なレポートを受け取ります。
 - **ビルドの後**、テキストを組んだフェイスのうちフォントセットが用意できなかったものは、すべて`doc.contentWarnings`に`fontFallback`として挙がります（[文書の中の警告](#文書の中の警告)を参照）。
 
+**数字のスタイル。** [`figureStyle`](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を持つスタイルは、機能付きファミリーでテキストを組みます。名前はベースファミリーの名前の後に`@`とOpenType機能を続けたもの（`EB Garamond@onum`）です。`prepareFonts`と`resolve`にはベースファミリーが求められ、エンジンは同じファイルから`featureSettings`記述子付きで機能付きファミリーのフェイスを宣言します。レイアウトワーカーの`FontPayload`は、そうしたフェイスのために省略可能な`featureSettings`を受け取ります。`family`は機能付きファミリー、バッファーはベースファミリーのファイルです。`configFeatureFamilies(config)`は、設定がテキストを組む機能付きファミリーを列挙します。ファイルを持たないフェイスでテキストを組むホストは、`setFigureStyleFamilies((family) => boolean)`で機能を受け取れるファミリーを指定します。それ以外のファミリーは本来の数字のままです。`baseFontFamily`と`featureFamilyParts`はその名前を分解し、`withFigureStyle(fontFamily, figureStyle)`は名前を組み立てます。`freezeFontFeatures(bytes, features)`は、機能を適用しないCanvas（NodeのSkia）のために、機能の単純置換が与えるグリフへ文字を対応させた`cmap`を持つTrueTypeまたはOpenTypeファイルの複製を返します。
+
 後から届いたフェイスは、エンジンが自分で拾います。エンジンはフォントセットごとに、前回確かめたときに各ファミリーのどのフェイスが読み込まれていたかを覚えています。ビルドは開始時にもう一度確かめ（フォントセットが増えたか減ったか、読み込み中か、フェイスの読み込みが終わったときだけ）、フェイスが変わったファミリーで計測した結果を捨てます。`watchFonts(fontSet)`はフェイスが読み込まれるたびに同じことを行い、一度に届くスライスがいくつあっても、アニメーションフレームあたり最大1回にとどめます。`onFontsChanged(listener)`は、どのファミリーが変わったかをホストに知らせるので、ホストはページをレイアウトし直せます。
 
 ```ts

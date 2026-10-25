@@ -38,6 +38,12 @@ A propriedade `headings` controla a tipografia de todos os níveis de título (H
       <td>Família tipográfica de todos os títulos.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>os da fonte</td>
+      <td>Os algarismos de todos os níveis: <code>'lining'</code> ao lado de um texto em algarismos de estilo antigo. O <code>figureStyle</code> próprio de um nível prevalece. Veja [Estilos de algarismos](/pt/docs/configuration-fonts-colors-viewers#estilos-de-algarismos).</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -173,7 +179,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Quando a configuração vem de um armazenamento, o motor reconhece que ela é antiga e faz isso por você: o Sandbox, nos livros e configurações que salvou na época (veja **Sandbox → Persistência**), e `openBundle` / `readBundle`, num pacote `.postext` gravado pelo postext 1.4 ou anterior (veja [Pacotes gravados pelo postext 1.4 ou anterior](/pt/docs/configuration-bundles#pacotes-gravados-pelo-postext-14-ou-anterior)). Uma configuração que você mesmo salvou pode passar por `migrateConfig(config)` de `postext/bundle`, que grava as quebras como a 1.4 as diagramava (`pinLegacyHeadingBreaks`): `enabled: false` num H1 que não tinha quebra, e `parity: 'any'` ao lado de um `enabled: true` que não indicava paridade, no H1 e nos estilos de título. Ele também fixa o tamanho das fórmulas, o espaço em volta das figuras na linha (também nos boxes), as marcas na linha dos títulos, o tamanho das capitulares, o espaço sob uma linha com dois-pontos que introduz uma lista, as linhas que o corte de um boxe deixa de um parágrafo ou de um item de lista, as quebras de linha em travessões, a quebra linha a linha do texto alinhado à esquerda, a divisão de um parágrafo sob um título, as quebras de linha no hífen de uma palavra composta e o espaço sob os contêineres `:::paragraphs`, como a 1.4 os compunha. Passe o Markdown do livro como terceiro argumento, `{ content }`, e ele deixa de fora a fixação das fórmulas quando o texto não tem nenhum `$`, as das lacunas quando nenhuma linha insere um recurso (a da lacuna nos boxes quando nenhuma o faz dentro de um boxe), a das marcas quando nenhum título tem marcas, a dos dois-pontos quando nenhuma lista vem depois de uma linha terminada em dois-pontos, a do corte de boxes quando o texto não abre nenhum `:::callout`, a dos travessões quando nenhum travessão está colado entre palavras, a da divisão sob título quando o texto não tem títulos, a dos contêineres quando o texto não abre nenhum contêiner `:::paragraphs`, e a das palavras compostas quando nenhum hífen está entre duas letras; a da quebra do texto alinhado à esquerda só vai para uma configuração que deixa algum texto corrido alinhado à esquerda, e a dos contêineres só para uma que declara um estilo de parágrafo (veja [Pacotes gravados pelo postext 1.4 ou anterior](/pt/docs/configuration-bundles#pacotes-gravados-pelo-postext-14-ou-anterior)). Para fixar só as quebras, chame `pinLegacyHeadingBreaks(config)`.
 
-Os valores por nível aceitam as mesmas propriedades que os padrões gerais (`fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`) e mais estes campos exclusivos de nível (um [estilo de título](/pt/docs/configuration-styles#estilos-de-título) também os aceita):
+Os valores por nível aceitam as mesmas propriedades que os padrões gerais (`fontSize`, `lineHeight`, `fontFamily`, `figureStyle`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`) e mais estes campos exclusivos de nível (um [estilo de título](/pt/docs/configuration-styles#estilos-de-título) também os aceita):
 
 <table>
   <thead>

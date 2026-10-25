@@ -1,11 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
+import { attachExercises } from 'postext';
 import { useSandboxLabels } from '../context/SandboxContext.js';
 import { useCompactLayout } from '../hooks/useCompactLayout.js';
 import { useUiRtl } from '../ui/direction.js';
 import { openViewerBook, type ViewerBook } from '../epub/viewerBook.js';
-import { createSwipeTracker, fillLabel, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf, type SwipePoint } from '../epub/viewer.js';
+import { createFrameExercises, createSwipeTracker, exerciseOwns, fillLabel, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, screenOf, type SwipePoint } from '../epub/viewer.js';
 
 /** What the toolbar shows of the reader: where it is and where it can go. */
 export interface EpubReaderPosition {
@@ -45,8 +46,9 @@ interface EpubReaderProps {
 }
 
 /** The reader of the EPUB tab: the generated file opened in memory, its
- *  content documents shown in sandboxed frames (no script runs in them;
- *  the reader follows their links itself). */
+ *  content documents shown in sandboxed frames (no script of the book runs
+ *  in them; the reader follows their links itself and makes their
+ *  exercises answerable). */
 export function EpubReader({ bytes, fontScale, reserve, handleRef, onPosition }: EpubReaderProps) {
   const [book, setBook] = useState<ViewerBook | null>(null);
   useEffect(() => {
@@ -140,21 +142,23 @@ function pageKey(e: KeyboardEvent | React.KeyboardEvent, rtl: boolean): 'previou
   }
 }
 
-/** Follow links inside a frame's document and pass page keys and swipes
- *  on. */
+/** Follow links inside a frame's document, pass page keys and swipes on
+ *  and make its exercises answerable. Returns what takes the exercises'
+ *  controls off again. */
 function wireFrame(
   frame: HTMLIFrameElement,
   docPath: string,
   onInternal: (path: string, fragment: string) => void,
   onKey: (e: KeyboardEvent) => void,
   swipe: SwipeHandlers,
-): void {
+): () => void {
   const doc = frame.contentDocument;
-  if (!doc) return;
+  if (!doc) return () => undefined;
   doc.documentElement?.style.setProperty('touch-action', SWIPE_TOUCH_ACTION);
   // A page a pixel larger than its frame scrolls without showing a bar.
   doc.documentElement?.style.setProperty('scrollbar-width', 'none');
-  doc.addEventListener('pointerdown', (e) => swipe.down(e, frame));
+  // A word dragged or two dots joined is no swipe.
+  doc.addEventListener('pointerdown', (e) => { if (!exerciseOwns(e.target)) swipe.down(e, frame); });
   doc.addEventListener('pointerup', (e) => swipe.up(e, frame));
   doc.addEventListener('pointercancel', (e) => swipe.cancel(e));
   doc.addEventListener('click', (e) => {
@@ -167,7 +171,22 @@ function wireFrame(
     if (link.kind === 'external') window.open(link.url, '_blank', 'noopener,noreferrer');
     else onInternal(link.path, link.fragment);
   });
-  doc.addEventListener('keydown', onKey);
+  // Space typed in a blank or pressed on an option is the exercise's.
+  doc.addEventListener('keydown', (e) => { if (!e.defaultPrevented && !exerciseOwns(e.target)) onKey(e); });
+  // The exercises answer as a reading system that runs the book's script
+  // has them answer (#1263), but the book's own script stays off: the
+  // engine's runtime is attached from this window to the frame's document,
+  // reading the records its page carries. The answers are kept under the
+  // book's key that the records name.
+  return doc.querySelector('script.pt-exercises') ? attachExercises(doc) : () => undefined;
+}
+
+/** What takes the frames' exercises off (see `createFrameExercises`),
+ *  cleared when the reader closes. */
+function useFrameExercises(): (frame: HTMLIFrameElement, detach: () => void) => void {
+  const [frames] = useState(() => createFrameExercises<HTMLIFrameElement>());
+  useEffect(() => () => frames.clear(), [frames]);
+  return frames.keep;
 }
 
 const SANDBOX = 'allow-same-origin';
@@ -248,6 +267,7 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
   const onKeyRef = useRef(onKey);
   onKeyRef.current = onKey;
   const swipe = useSwipePaging(rtl, (action) => (action === 'next' ? next() : previous()));
+  const keepExercises = useFrameExercises();
 
   const perRow = spreads ? 2 : 1;
   const scale = Math.max(0.05, Math.min(room.width / (viewport.width * perRow), room.height / viewport.height));
@@ -290,7 +310,7 @@ function FixedReader({ book, reserve, handleRef, onPosition }: { book: ViewerBoo
               src={book.documentUrl(epub.spine[i]!.path)}
               sandbox={SANDBOX}
               title={fillLabel(labels.epubPageFrame, '__page__', printedLabel.get(epub.spine[i]!.path) ?? String(i + 1))}
-              onLoad={(e) => wireFrame(e.currentTarget, epub.spine[i]!.path, (path) => goToPath(path), (ev) => onKeyRef.current(ev), swipe)}
+              onLoad={(e) => keepExercises(e.currentTarget, wireFrame(e.currentTarget, epub.spine[i]!.path, (path) => goToPath(path), (ev) => onKeyRef.current(ev), swipe))}
               style={{
                 width: viewport.width,
                 height: viewport.height,
@@ -488,10 +508,12 @@ function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { boo
   const goToRef = useRef(goTo);
   goToRef.current = goTo;
   const swipe = useSwipePaging(rtl, (action) => (action === 'next' ? next() : previous()));
+  const keepExercises = useFrameExercises();
 
   const onLoad = useCallback((e: React.SyntheticEvent<HTMLIFrameElement>) => {
     const frame = e.currentTarget;
-    wireFrame(frame, path, (p, fragment) => goToRef.current(fragment ? `${p}#${encodeURIComponent(fragment)}` : p), (ev) => onKeyRef.current(ev), swipe);
+    keepExercises(frame, wireFrame(frame, path, (p, fragment) => goToRef.current(fragment ? `${p}#${encodeURIComponent(fragment)}` : p), (ev) => onKeyRef.current(ev), swipe));
+    // (Laid out after the exercises' controls, which take room in the flow.)
     layOutRef.current();
     // Faces arrive after the load event: paginate again once they are in.
     const fonts = frame.contentDocument?.fonts;
@@ -499,7 +521,7 @@ function ReflowReader({ book, fontScale, reserve, handleRef, onPosition }: { boo
       void fonts.ready.then(() => layOutRef.current());
       fonts.addEventListener('loadingdone', () => layOutRef.current());
     }
-  }, [path, swipe]);
+  }, [path, swipe, keepExercises]);
 
   return (
     <div

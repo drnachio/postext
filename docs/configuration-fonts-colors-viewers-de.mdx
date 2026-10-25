@@ -150,6 +150,61 @@ Sobald ein Layout existiert, listet das Bedienfeld auch die Warnung **Ersatzschr
 
 Das Panel listet außerdem **Zeichen aus einer anderen Schrift** (`glyphFallback`): Zeichen, die der Text in einer Schrift ohne passende Glyphe setzt, einmal je Schrift, mit der generischen Familie, aus der sie stammen (`serif`, `sans-serif`, `monospace`), sofern die Prüfung das feststellen kann.
 
+## Ziffernarten
+
+`figureStyle` wählt für die Schrift eines Textstils eine bestimmte Ziffernart, über die OpenType-Features der Schrift: Mediävalziffern im Fließtext, Versalziffern als Tabellenziffern in den Tabellen. Das Feld gibt es in `bodyText`, `paragraphStyles[]`, `headings` und `headings.levels[]`, `headingStyles[]`, `tableStyle` und `tableStyles[]` (Kopf- und Körperzellen gleichermaßen), `captionStyle` (Bezeichnung und Beschreibung, auch im `captionStyle` eines Ressourcentyps) und in den Textelementen eines Designs (Kolumnentitel, Seitenzahlen, die Texte einer Kapitelauftaktseite oder einer Teilseite). In der Sandbox ist es das Feld **Ziffern** im Bedienfeld Gestaltung, neben der Schrift jedes dieser Stile (**Grundtext → Schrift** für den Grundtext).
+
+<table>
+  <thead>
+    <tr>
+      <th>Wert</th>
+      <th>OpenType-Features</th>
+      <th>Ziffern</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>keine</td><td>Die eigenen der Schrift. Hebt die Ziffern auf, die ein Stil erbt.</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>Mediävalziffern, mit Ober- und Unterlängen wie Kleinbuchstaben: Fließtext.</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>Versalziffern, in Versalhöhe: Überschriften, Text in Versalien.</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>Tabellenziffern: alle Ziffern gleich breit, damit die Stellen einer Spalte untereinanderstehen. Die Form bleibt die der Schrift.</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>Proportionalziffern: jede Ziffer in ihrer eigenen Breite. Die Form bleibt die der Schrift.</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>Mediävalziffern in einer Breite.</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>Mediävalziffern in eigenen Breiten.</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>Versalziffern in einer Breite: Tabellen, Fahrpläne, Preislisten.</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>Versalziffern in eigenen Breiten.</td></tr>
+  </tbody>
+</table>
+
+Ein Paar legt eine Form und eine Breite fest. Eine Schrift ohne das Feature behält ihre eigenen Ziffern; prüfen Sie also, ob die Schrift `onum` oder `lnum` hat, bevor Sie sich darauf verlassen. Eine Familie, von der der Host keine Datei hat, etwa eine nur auf dem System des Lesers installierte Schrift (die Sandbox lädt solche nicht), nimmt keine Ziffernart an: Ihr Text behält die eigenen Ziffern dieser Schrift, in der Schrift selbst. Ein Buch, das Dateien unter diesem Namen hochlädt, bekommt die Ziffern. Die Schnitte, die Google Fonts und Fontsource ausliefern, lassen `onum` und `lnum` oft weg (die latin-Datei von Source Serif 4 behält nur `pnum` und `tnum`); mit einer solchen Datei behält ein Stil, der sie verlangt, die eigenen Ziffern der Schrift. Die vollständigen Dateien der Schriftgießerei haben sie: Laden Sie diese hoch, um Mediäval- oder Versalziffern zu bekommen. Eine generische Familie (`serif`, `sans-serif`) nimmt keine Features an. Ein Wert, der nicht in der Liste steht, wird als unbekannter Einstellungswert gemeldet (`unknownConfigValue`, siehe [Konfigurationswarnungen](#konfigurationswarnungen)) und wie nicht gesetzt gelesen.
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+Der Fließtext setzt Jahreszahlen und Seitenzahlen in Mediävalziffern, ebenso die Legenden und die Listen, die die Familie des Grundtexts übernehmen. Die Zellen aller Tabellen und die Absätze im Format `timetable` stellen ihre Stellen in Versalziffern als Tabellenziffern untereinander. Alle Überschriftenebenen setzen Versalziffern in der Familie der Überschriften.
+
+### Welche Ziffern ein Stil bekommt
+
+- Ein Stil, der seine Familie von einem anderen übernimmt, übernimmt auch dessen Ziffern. Absatzformate, Tabellen, Legenden, Listen und der Inhalt von Kästen übernehmen die Familie des Grundtexts, wenn sie keine eigene nennen; `bodyText.figureStyle` reicht also bis zu ihnen allen.
+- Ein Stil, der eine eigene `fontFamily` nennt, setzt die Standardziffern dieser Schrift, sofern er nicht auch `figureStyle` setzt.
+- Eine Überschriftenebene ohne eigenes `figureStyle` übernimmt `headings.figureStyle`, auch in ihrer eigenen `fontFamily`, wenn sie eine nennt. Das `figureStyle` eines Überschriftenstils gilt für die Familie der Ebene, auf der der Stil verwendet wird.
+- Ein Textelement eines Designs nennt eine eigene Familie (`'EB Garamond'` als Standard), daher erreichen die Ziffern des Grundtexts eine Seitenzahl nicht: setzen Sie dort `figureStyle: 'oldstyle'`, damit sie zu einem Text in Mediävalziffern passt.
+- `'default'` setzt die eigenen Ziffern der Schrift und hebt geerbte auf: `paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]` nimmt diesem Format die Mediävalziffern des Grundtexts.
+
+### Ziffern in jeder Ausgabe
+
+Der Text wird mit den Features gemessen, sodass seine Zeilen in der Canvas-Vorschau, im HTML, im PDF und im EPUB, mit festem Layout wie umfließend, an denselben Breiten umbrechen.
+
+- **Canvas-Vorschau und Layout-Worker**: Der Browser deklariert die Dateien der Basisfamilie ein zweites Mal, unter dem Namen einer Feature-Familie, mit dem Deskriptor `featureSettings` von `FontFace`. Der Name besteht aus der Familie und ihren Features nach `@` (`EB Garamond@onum`, `EB Garamond@lnum+tnum`) und erscheint in Font-Strings und in manchen Warnungen.
+- **HTML und EPUB** (festes Layout und umfließend): die Basisfamilie, mit `font-variant-numeric` (`oldstyle-nums`, `lining-nums tabular-nums`).
+- **PDF**: bettet die Dateien der Basisfamilie ein und setzt den Text mit den Features.
+- **Kommandozeile**: Skia, die Canvas, mit der `postext` zeichnet, wendet keine Features an. Die Kommandozeile registriert eine Kopie der Schrift, deren `cmap` jedes Zeichen, das die Features ersetzen (die Ziffern), auf die Glyphe abbildet, die sie wählen. Übernommen werden nur einfache Ersetzungen; eine Schrift, die ihre Ziffern über kontextabhängige Ersetzungen erreicht, behält dort ihre eigenen.
+
 ## Farbpalette
 
 Mit der Eigenschaft `colorPalette` von `PostextConfig` legen Sie einen wiederverwendbaren Satz benannter Farben an und verweisen von jedem `ColorValue` der Konfiguration darauf. Sie ist die Postext-Entsprechung von CSS Custom Properties oder dem Farbfelder-Bedienfeld von InDesign: Ändern Sie den Paletteneintrag einmal, und jede Farbe, die auf ihn zeigt, ändert sich im ganzen Dokument.

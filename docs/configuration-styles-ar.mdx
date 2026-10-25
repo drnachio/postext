@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>عائلة الخط. أوزانها هي <code>fontWeight</code> / <code>boldFontWeight</code> أدناه (أوزان نص المتن حين لا تُحدَّد).</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>أرقام عائلته</td>
+      <td>أرقام النمط: <code>'lining-tabular'</code> لقائمة تواريخ أو أوقات. وإن لم يُضبط أخذ النمط أرقام المتن مع عائلته؛ والنمط الذي يسمّي <code>fontFamily</code> خاصًا به يصفّ أرقام ذلك الخط. انظر [أنماط الأرقام](/ar/docs/configuration-fonts-colors-viewers#أنماط-الأرقام).</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>حجم نص المتن</td>
@@ -1148,7 +1154,7 @@ const config: PostextConfig = {
       <td>حقول المستوى</td>
       <td>كما في <code>headings.levels[]</code></td>
       <td>قيم المستوى</td>
-      <td><code>fontFamily</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>marginTop</code>، <code>marginBottom</code>، <code>snapToGrid</code>، <code>numberSeparator</code>، <code>numberPosition</code>، <code>breakBefore</code>، <code>span</code>، <code>spanBreak</code>، <code>advancedDesign</code>، <code>textTransform</code>، <code>letterSpacing</code>، <code>lineSpan</code>، <code>indent</code>، <code>firstLineIndent</code>، <code>jidori</code>، <code>dropCap</code>، <code>hidden</code>: كلٌّ منها، إذا حُدِّد، يحلّ محلّ قيمة مستوى العنوان في عناوين هذا النمط (و<code>dropCap: false</code> يُسقط الحرف الاستهلالي الذي يضبطه المستوى). و<code>breakBefore</code> يُدمج حقلًا حقلًا فوق قيمة المستوى: النمط الذي لا يحدّد إلا <code>parity</code> يحتفظ بقيمة <code>enabled</code> الخاصة بالمستوى، والذي لا يحدّد إلا <code>enabled: true</code> يحتفظ بزوجية المستوى (حتى postext 1.4 كان الحقل الناقص يأتي بدلًا من ذلك من القيمة الافتراضية التي لا فاصل فيها).</td>
+      <td><code>fontFamily</code>، <code>figureStyle</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>marginTop</code>، <code>marginBottom</code>، <code>snapToGrid</code>، <code>numberSeparator</code>، <code>numberPosition</code>، <code>breakBefore</code>، <code>span</code>، <code>spanBreak</code>، <code>advancedDesign</code>، <code>textTransform</code>، <code>letterSpacing</code>، <code>lineSpan</code>، <code>indent</code>، <code>firstLineIndent</code>، <code>jidori</code>، <code>dropCap</code>، <code>hidden</code>: كلٌّ منها، إذا حُدِّد، يحلّ محلّ قيمة مستوى العنوان في عناوين هذا النمط (و<code>dropCap: false</code> يُسقط الحرف الاستهلالي الذي يضبطه المستوى). و<code>breakBefore</code> يُدمج حقلًا حقلًا فوق قيمة المستوى: النمط الذي لا يحدّد إلا <code>parity</code> يحتفظ بقيمة <code>enabled</code> الخاصة بالمستوى، والذي لا يحدّد إلا <code>enabled: true</code> يحتفظ بزوجية المستوى (حتى postext 1.4 كان الحقل الناقص يأتي بدلًا من ذلك من القيمة الافتراضية التي لا فاصل فيها). و<code>figureStyle</code> المضبوط هنا يُطبَّق على عائلة المستوى الذي يُستعمل عليه النمط (انظر [أنماط الأرقام](/ar/docs/configuration-fonts-colors-viewers#أنماط-الأرقام)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

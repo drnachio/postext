@@ -274,6 +274,12 @@ const config: PostextConfig = {
       <td>見出しのセルのフォントファミリー。</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>セルのファミリーの数字</td>
+      <td>見出しセルと本体セルを含む全セルの数字。<code>'lining-tabular'</code>で列の桁がそろいます。未設定なら本文のファミリーとともに本文の数字を受け継ぎます。名前付きの表スタイルは独自に指定できます。[数字のスタイル](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を参照。</td>
+    </tr>
+    <tr>
       <td><code>headerFontSize</code></td>
       <td><code>Dimension</code></td>
       <td>本文のサイズ</td>
@@ -616,6 +622,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td>本文のフォント</td>
       <td>キャプションのフォントファミリー（ラベルと説明）。</td>
+    </tr>
+    <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>ファミリーの数字</td>
+      <td>ラベルと説明文の数字。未設定なら、本文のファミリーで組むキャプションは本文の数字を受け継ぎます。リソースの種類の<code>captionStyle</code>で独自に指定できます。[数字のスタイル](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を参照。</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>

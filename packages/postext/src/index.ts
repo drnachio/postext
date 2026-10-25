@@ -147,6 +147,7 @@ export type {
   ExerciseStyleConfig,
   ExercisesConfig,
   ChipUnderline,
+  FigureStyle,
 } from './types.js';
 export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, stripPrintDefaults, profileInkLimit } from './defaults/index.js';
 export { DEFAULT_CHECKS_CONFIG, DEFAULT_CONTENT_IN_CONFIG_CHECK, resolveChecksConfig, resolveContentInConfigCheck, stripChecksDefaults } from './defaults/index.js';
@@ -812,6 +813,11 @@ export { exportStandInOf, fontFallbackOf, fontFallbackFamilies, hasOwnStyle } fr
 export { glyphFallbacks, documentFontTexts, registerFontCoverage, forgetFontCoverage, installGlyphProbe, GLYPH_PROBE_FAMILY, GLYPH_FALLBACK_LISTED } from './fonts/glyphFallback.js';
 export type { GlyphFallback, GlyphFallbackOptions } from './fonts/glyphFallback.js';
 export { sfntCodePointRanges } from './fonts/cmap.js';
+export { FIGURE_STYLES, isFigureStyle, figureFeatures, withFigureStyle, featureFamily, featureFamilyParts, isFeatureFamily, baseFontFamily, fontFeatureSettings, fontVariantNumeric, setFigureStyleFamilies } from './fonts/figureStyle.js';
+export type { FigureFeature, FeatureFamilyParts } from './fonts/figureStyle.js';
+export { freezeFontFeatures } from './fonts/freezeFeatures.js';
+export { addFeatureFaces, declareFeatureFaces, rememberFaceSource } from './fonts/featureFaces.js';
+export type { FaceSource } from './fonts/featureFaces.js';
 export type { CodePointRanges } from './fonts/cmap.js';
 export { evictFontFamilies } from './measure/font.js';
 export { measurementGeneration } from './measure/canvas.js';
@@ -847,5 +853,5 @@ export type {
   CitationProcessorOptions,
   CitationEngine,
 } from './citations/types.js';
-export { configFontFamilies, collectFontUsage, hasLatinEmphasis, STANDARD_FONT_VARIANTS } from './fonts/usage.js';
+export { configFontFamilies, configFeatureFamilies, collectFontUsage, hasLatinEmphasis, STANDARD_FONT_VARIANTS } from './fonts/usage.js';
 export type { FontContentText, FontUsageDocument, FontVariantUse } from './fonts/usage.js';

@@ -19,6 +19,7 @@ import {
   ToggleSwitch,
 } from '../../controls/index.js';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides.js';
+import { FigureStyleField } from '../settings/FigureStyleField.js';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em'];
 /** Between the label and the number: 图 1-1 or 图1-1. */
@@ -88,6 +89,12 @@ export function CaptionStyleFields({
         onChange={(v) => update({ fontFamily: v })}
         isDefault={unset('fontFamily')}
         onReset={() => resetField('fontFamily')}
+      />
+      <FigureStyleField
+        value={raw?.figureStyle}
+        inherits
+        onChange={(v) => update({ figureStyle: v })}
+        onReset={() => resetField('figureStyle')}
       />
       <DimensionInput
         label={labels.sizeLabel}

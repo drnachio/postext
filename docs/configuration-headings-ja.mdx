@@ -38,6 +38,12 @@ export const metadata = {
       <td>すべての見出しのフォントファミリー。</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>フォント本来の数字</td>
+      <td>全レベルの数字。オールドスタイル数字の本文と並べるなら<code>'lining'</code>。レベル独自の<code>figureStyle</code>が優先します。[数字のスタイル](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を参照。</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -172,7 +178,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 設定が保存されたものであれば、エンジンがそれを見分けて代わりに処理します。Sandboxは当時保存した本と設定について（**Sandbox › 作業内容の保存**を参照）、`openBundle` / `readBundle`はpostext 1.4以前で書き出された`.postext`バンドルについて（[postext 1.4以前で書き出したバンドル](/ja/docs/configuration-bundles#postext-14以前で書き出したバンドル)を参照）処理します。自分で保存した設定は、`postext/bundle`の`migrateConfig(config)`に通せます。これは1.4が組んだ改ページを明示的に書き出します（`pinLegacyHeadingBreaks`）。改ページのなかったH1には`enabled: false`を、H1と見出しスタイルで奇偶を指定していない`enabled: true`には`parity: 'any'`を添えます。さらに次の項目も1.4の設定どおりに固定します：数式のサイズ、インライン図の周りのアキ（囲みの中も）、見出しの文字書式、ドロップキャップのサイズ、リストを導くコロンの行の下の余地、囲みの切断が段落やリスト項目に残す行数、ダッシュでの改行、行末不ぞろいの本文の1行ずつの改行、見出しの下の段落の分割、複合語のハイフンでの改行、`:::paragraphs`コンテナーの下のアキ。第3引数として本のMarkdownを`{ content }`で渡すと、不要な固定を省きます。本文に`$`がなければ数式の固定を、リソースを埋め込む行がなければアキの固定を（囲みの中になければ囲み内のアキの固定を）、記号を含む見出しがなければ見出しの文字書式の固定を、コロンで終わる行の後にリストが続かなければコロン行の固定を、本文が`:::callout`を開かなければ囲みの切断の固定を、語の間に詰めて置かれたダッシュがなければダッシュの固定を、本文に見出しがなければ見出し下の分割の固定を、本文が`:::paragraphs`コンテナーを開かなければコンテナーの固定を、2つの文字の間にハイフンがなければ複合語の固定を省きます。行末不ぞろいの改行の固定は本文の一部を行末不ぞろいに組む設定にだけ、コンテナーの固定は段落スタイルを宣言する設定にだけ加えます（[postext 1.4以前で書き出したバンドル](/ja/docs/configuration-bundles#postext-14以前で書き出したバンドル)を参照）。改ページだけを固定するには`pinLegacyHeadingBreaks(config)`を呼び出します。
 
-レベルごとの上書きには、共通の既定値と同じプロパティ（`fontSize`、`lineHeight`、`fontFamily`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`）に加え、次のレベル専用のフィールドを使えます（[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)でも使えます）：
+レベルごとの上書きには、共通の既定値と同じプロパティ（`fontSize`、`lineHeight`、`fontFamily`、`figureStyle`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`）に加え、次のレベル専用のフィールドを使えます（[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)でも使えます）：
 
 <table>
   <thead>

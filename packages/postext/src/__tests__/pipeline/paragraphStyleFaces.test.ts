@@ -122,7 +122,7 @@ describe('unknown paragraph style keys (EF-173)', () => {
 
   it('every documented key is known', () => {
     const style: Required<ParagraphStyleConfig> = {
-      id: 's', name: 'S', fontFamily: 'Inter', fontSize: pt(9), lineHeight: pt(11), color: { hex: '#000000', model: 'hex' },
+      id: 's', name: 'S', fontFamily: 'Inter', figureStyle: 'lining-tabular', fontSize: pt(9), lineHeight: pt(11), color: { hex: '#000000', model: 'hex' },
       textAlign: 'left', boldColor: { hex: '#000000', model: 'hex' }, italicColor: { hex: '#000000', model: 'hex' },
       fontWeight: 400, boldFontWeight: 700, italic: false, smallCaps: false, hyphenation: false, indent: pt(0), endIndent: pt(9),
       firstLineIndent: pt(0), hangingIndent: pt(0), spaceBetween: pt(0), marginTop: pt(0), marginBottom: pt(0),

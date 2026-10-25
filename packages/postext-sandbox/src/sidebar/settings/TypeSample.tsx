@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, type CSSProperties } from 'react';
-import { chineseScriptOf, defaultCjkEmphasis, isJapaneseLanguage, resolveCjkConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
+import { chineseScriptOf, defaultCjkEmphasis, featureFamilyParts, fontVariantNumeric, isJapaneseLanguage, resolveCjkConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
 import type { ResolvedBodyTextConfig } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { loadFont } from '../../controls/fontLoader.js';
@@ -42,13 +42,17 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
   const vertical = resolveLayoutConfig(config.layout).writingMode === 'vertical-rl';
   // The cuts the sample is set in: the text weight, its bold and its
   // italic (a family is a file per weight and slant, #757).
+  // A family with the body's figures (`Lora@onum`, #1237) is the family's
+  // own files set with the features.
+  const { family, features } = featureFamilyParts(body.fontFamily);
+  const numeric = fontVariantNumeric(features);
   useEffect(() => {
-    loadFont(body.fontFamily, [
+    loadFont(family, [
       { weight: body.fontWeight, style: 'normal' },
       { weight: body.boldFontWeight, style: 'normal' },
       { weight: body.fontWeight, style: 'italic' },
     ]);
-  }, [body.fontFamily, body.fontWeight, body.boldFontWeight]);
+  }, [family, body.fontWeight, body.boldFontWeight]);
 
   const script = chineseScriptOf(lang);
   const japanese = isJapaneseLanguage(lang);
@@ -88,7 +92,8 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
         style={{
           backgroundColor: paper,
           color: ink,
-          fontFamily: `"${body.fontFamily}", serif`,
+          fontFamily: `"${family}", serif`,
+          ...(numeric ? { fontVariantNumeric: numeric } : {}),
           fontWeight: body.fontWeight,
           fontSize: `${sizePx}px`,
           lineHeight: sizePt > 0 ? leadPt / sizePt : 1.3,

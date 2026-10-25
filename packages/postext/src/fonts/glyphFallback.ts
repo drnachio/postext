@@ -30,6 +30,7 @@ import { parseUnicodeRange } from '../svg/fontRegistry.js';
 import { defaultFontSet, isGenericFamily, faceRequestKey, GLYPH_PROBE_FAMILY, type FontFaceLike, type FontFaceSetLike } from './faces.js';
 import { intersectRanges, rangesHave, sfntCodePointRanges, unionRanges, type CodePointRanges } from './cmap.js';
 import { minimalFont } from './minimalFont.js';
+import { baseFontFamily, isFeatureFamily } from './figureStyle.js';
 
 /** Characters of one face that another face drew. */
 export interface GlyphFallback extends FontFaceRequest {
@@ -143,7 +144,8 @@ export function registerFontCoverage(
   if (!read) return false;
   const slice = parseUnicodeRange(unicodeRange);
   const ranges = slice ? intersectRanges(read, slice) : read;
-  coverage.push({ family: family.toLowerCase(), weight: weightRange(weight), style: /italic|oblique/i.test(style) ? 'italic' : 'normal', ranges });
+  // A feature family (#1237) covers what its base family's files cover.
+  coverage.push({ family: baseFontFamily(family).toLowerCase(), weight: weightRange(weight), style: /italic|oblique/i.test(style) ? 'italic' : 'normal', ranges });
   return true;
 }
 
@@ -153,7 +155,8 @@ export function forgetFontCoverage(families?: Iterable<string>): void {
     coverage.length = 0;
     return;
   }
-  const drop = new Set([...families].map((f) => f.toLowerCase()));
+  // A feature family's files are its base family's, forgotten with it.
+  const drop = new Set([...families].filter((f) => !isFeatureFamily(f)).map((f) => f.toLowerCase()));
   for (let i = coverage.length - 1; i >= 0; i--) if (drop.has(coverage[i]!.family)) coverage.splice(i, 1);
 }
 
@@ -161,7 +164,7 @@ export function forgetFontCoverage(families?: Iterable<string>): void {
  *  face cover: its slant first, the nearest weight. Undefined when no file
  *  of the family is registered. */
 function registeredCoverage(family: string, weight: number, style: 'normal' | 'italic'): CodePointRanges | undefined {
-  const lower = family.toLowerCase();
+  const lower = baseFontFamily(family).toLowerCase();
   const own = coverage.filter((e) => e.family === lower);
   if (own.length === 0) return undefined;
   const sameStyle = own.filter((e) => e.style === style);

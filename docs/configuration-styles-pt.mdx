@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Família tipográfica. Os pesos dela são <code>fontWeight</code> / <code>boldFontWeight</code>, abaixo (os do texto do corpo quando não definidos).</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>os da sua família</td>
+      <td>Os algarismos do estilo: <code>'lining-tabular'</code> para uma lista de datas ou horários. Sem definir, o estilo recebe os algarismos do corpo do texto junto com a família; um estilo que nomeia a própria <code>fontFamily</code> compõe os dessa fonte. Veja [Estilos de algarismos](/pt/docs/configuration-fonts-colors-viewers#estilos-de-algarismos).</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>tamanho do texto do corpo</td>
@@ -1148,7 +1154,7 @@ const config: PostextConfig = {
       <td>campos do nível</td>
       <td>como em <code>headings.levels[]</code></td>
       <td>os valores do nível</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada um que for definido substitui o valor do nível do título para os títulos deste estilo (<code>dropCap: false</code> tira a capitular do nível). <code>breakBefore</code> é mesclado campo a campo sobre o do nível: um estilo que só define <code>parity</code> mantém o <code>enabled</code> do nível, e um que só define <code>enabled: true</code> mantém a paridade do nível (até o postext 1.4, o campo ausente vinha do padrão sem quebra).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada um que for definido substitui o valor do nível do título para os títulos deste estilo (<code>dropCap: false</code> tira a capitular do nível). <code>breakBefore</code> é mesclado campo a campo sobre o do nível: um estilo que só define <code>parity</code> mantém o <code>enabled</code> do nível, e um que só define <code>enabled: true</code> mantém a paridade do nível (até o postext 1.4, o campo ausente vinha do padrão sem quebra). Um <code>figureStyle</code> definido aqui vale para a família do nível em que o estilo é usado (veja [Estilos de algarismos](/pt/docs/configuration-fonts-colors-viewers#estilos-de-algarismos)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

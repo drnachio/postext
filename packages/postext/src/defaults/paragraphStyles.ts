@@ -7,6 +7,7 @@ import type {
 } from '../types.js';
 import { dimensionsEqual, startEndAsLeftRight } from './shared.js';
 import { isDropCap } from './dropCap.js';
+import { withFigureStyle } from '../fonts/figureStyle.js';
 
 /** No paragraph styles ship by default — a document declares its own. */
 export const DEFAULT_PARAGRAPH_STYLES: ParagraphStyleConfig[] = [];
@@ -26,7 +27,7 @@ function resolveParagraphStyleConfig(
   return {
     id: partial.id,
     name: partial.name ?? partial.id,
-    fontFamily: partial.fontFamily ?? bodyText.fontFamily,
+    fontFamily: withFigureStyle(partial.fontFamily ?? bodyText.fontFamily, partial.figureStyle),
     fontSize: partial.fontSize ?? bodyText.fontSize,
     lineHeight: partial.lineHeight ?? bodyText.lineHeight,
     color: partial.color ?? bodyText.color,
@@ -95,6 +96,7 @@ export function stripParagraphStylesDefaults(
     const r: ParagraphStyleConfig = { id: s.id };
     if (s.name !== undefined && s.name !== s.id) r.name = s.name;
     if (s.fontFamily !== undefined) r.fontFamily = s.fontFamily;
+    if (s.figureStyle !== undefined) r.figureStyle = s.figureStyle;
     if (s.fontSize !== undefined) r.fontSize = s.fontSize;
     if (s.lineHeight !== undefined) r.lineHeight = s.lineHeight;
     if (s.color !== undefined) r.color = s.color;

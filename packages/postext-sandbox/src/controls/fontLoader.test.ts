@@ -11,6 +11,8 @@ import {
   hasLatinEmphasis,
   isRemovedCustomFontFamily,
   missingUsedVariants,
+  asFeaturePayloads,
+  configFontUses,
 } from './fontLoader.js';
 
 const family = (name: string, variants: Array<[number, 'normal' | 'italic', string]>): CustomFontFamily => ({
@@ -317,5 +319,46 @@ describe('collectFontUsage / missingUsedVariants', () => {
       { weight: 300, style: 'normal' },
     ]));
     expect(usage.get('Plain')).toEqual([{ weight: 300, style: 'normal' }]);
+  });
+});
+
+describe('feature families (a style\'s figures, #1237)', () => {
+  const config = { bodyText: { fontFamily: 'Lora', figureStyle: 'oldstyle' as const }, tableStyle: { figureStyle: 'lining-tabular' as const } };
+
+  it('are loaded as their base family: the families listed are the files to fetch', () => {
+    const families = getConfigFontFamilies(config);
+    expect(families).toContain('Lora');
+    expect(families.filter((f) => f.includes('@'))).toEqual([]);
+  });
+
+  it('keep their faces in the uses, in the weights and slants of the base family', () => {
+    const uses = configFontUses(config);
+    expect(uses.get('Lora@onum')).toEqual(uses.get('Lora'));
+    expect(uses.has('Lora@lnum+tnum')).toBe(true);
+  });
+
+  it('take the base family\'s files as payloads under their name, with their features', () => {
+    const buffer = new ArrayBuffer(4);
+    const payloads = [{ family: 'Lora', weight: '400', style: 'normal', unicodeRange: 'U+0-FF', buffer }];
+    expect(asFeaturePayloads('Lora@lnum+tnum', payloads)).toEqual([
+      { family: 'Lora@lnum+tnum', weight: '400', style: 'normal', unicodeRange: 'U+0-FF', featureSettings: '"lnum" 1, "tnum" 1', buffer },
+    ]);
+    expect(asFeaturePayloads('Lora', payloads)).toBe(payloads);
+  });
+});
+
+describe('figures of a face only the system has (#1237)', () => {
+  it('leave it as it is, unless the book carries files under that name', async () => {
+    const { takesFigureFeatures } = await import('./systemFonts.js');
+    expect(takesFigureFeatures('Lora')).toBe(true);
+    expect(takesFigureFeatures('Palatino')).toBe(false);
+    expect(takesFigureFeatures('Palatino', [{ family: '"Palatino"' }])).toBe(true);
+    expect(takesFigureFeatures('Palatino', [{ family: 'Lora' }])).toBe(false);
+  });
+
+  it('resolve such a style to the family itself on the page', () => {
+    const config = { bodyText: { fontFamily: 'Palatino', figureStyle: 'oldstyle' as const } };
+    expect(configFontUses(config).has('Palatino@onum')).toBe(false);
+    expect([...configFontUses(config).keys()]).toContain('Palatino');
   });
 });

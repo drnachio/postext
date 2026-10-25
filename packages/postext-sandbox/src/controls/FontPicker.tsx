@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useId, useSyncExternalStore, type RefObject } from 'react';
-import { chineseScriptOf, cjkRegionOf, isJapaneseLanguage, localeScript } from 'postext';
+import { baseFontFamily, chineseScriptOf, cjkRegionOf, isJapaneseLanguage, localeScript } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
 import { Popover, type PopoverCloseReason } from '../ui/index.js';
 import { FieldRow } from './FieldRow.js';
@@ -234,7 +234,7 @@ function GroupHeader({ children }: { children: string }) {
 
 export function FontPicker({
   label,
-  value,
+  value: shownValue,
   onChange,
   tooltip,
   isDefault,
@@ -245,6 +245,9 @@ export function FontPicker({
   googleGroupLabel,
 }: FontPickerProps) {
   const labels = useSandboxLabels();
+  // A resolved family carries the style's figures (`Lora@onum`, #1237):
+  // the picker shows and picks the family itself.
+  const value = typeof shownValue === 'string' ? baseFontFamily(shownValue) : shownValue;
   const muted = isDefault ?? false;
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');

@@ -2,8 +2,9 @@
 
 import { useMemo } from 'react';
 import { useSandboxSelector, type useSandboxLabels } from '../../../context/SandboxContext.js';
-import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual, resolveBodyTextConfig, resolveDesignSlot } from 'postext';
+import { DEFAULT_HEADINGS_CONFIG, baseFontFamily, dimensionsEqual, colorsEqual, resolveBodyTextConfig, resolveDesignSlot } from 'postext';
 import { DropCapFields } from '../../settings/DropCapFields.js';
+import { FigureStyleField } from '../../settings/FigureStyleField.js';
 import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, HeadingSpan, HeadingTextTransform, HeadingAdvancedDesignConfig, ResolvedHeadingLevelConfig, ColorValue, Dimension, DimensionUnit, DesignSlot, ResolvedDesignSlot } from 'postext';
 import { SlotEditor } from '../HeaderFooterSection/SlotEditor.js';
 import { breakParityOptions } from './breakParityOptions.js';
@@ -70,7 +71,8 @@ export function HeadingLevelSection({
 
   const isSizeDefault = dimensionsEqual(resolved.fontSize, defLevel.fontSize);
   const isLhDefault = dimensionsEqual(resolved.lineHeight, generalLineHeight);
-  const isFontDefault = resolved.fontFamily === generalFont;
+  // Both families carry their figures (#1237): compare the families.
+  const isFontDefault = baseFontFamily(resolved.fontFamily) === baseFontFamily(generalFont);
   const isColorDefault = colorsEqual(resolved.color, generalColor);
   const isFontWeightDefault = resolved.fontWeight === generalFontWeight;
   const isMarginTopDefault = dimensionsEqual(resolved.marginTop, generalMarginTop);
@@ -138,6 +140,12 @@ export function HeadingLevelSection({
         onReset={() => onReset(level, 'fontFamily')}
         searchPlaceholder={labels.headingFontSearch}
         noResultsLabel={labels.headingFontNoResults}
+      />
+      <FigureStyleField
+        value={raw?.figureStyle}
+        inherits
+        onChange={(v) => onUpdate(level, { figureStyle: v })}
+        onReset={() => onReset(level, 'figureStyle')}
       />
       <NumberInput
         label={labels.headingFontWeight}

@@ -3,7 +3,7 @@
 // pictures and a cover. Gathered in the browser from the Sandbox's own
 // stores.
 
-import { documentFontFaces, exportStandInOf, type PostextConfig, type VDTDocument } from 'postext';
+import { baseFontFamily, documentFontFaces, exportStandInOf, type PostextConfig, type VDTDocument } from 'postext';
 import type { EpubCover, EpubFontFile, EpubResourceBytes, EpubSvgFontOptions } from 'postext-epub';
 import { collectFontPayloadsForFaces, configFontUses, getConfigFontFamilies, getCustomFontFamily, listCustomFontFamilies } from '../controls/fontLoader.js';
 import { sandboxSvgFontProvider, withholdNonRedistributable } from '../controls/svgFontProvider.js';
@@ -36,10 +36,12 @@ export async function collectEpubFonts(
   const families = getConfigFontFamilies(config, markdown);
   const notHanded = families.filter((f) => getCustomFontFamily(f)?.redistributable === false);
   const codePoints = documentCodePoints(docs);
+  // A feature family (a style's figures, #1237) is set in the EPUB as its
+  // base family with `font-variant-numeric`: its base family's files.
   const uses = [
     ...[...configFontUses(config, markdown)].flatMap(([family, list]) => list.map((use) => ({ family, ...use }))),
     ...docs.flatMap((doc) => documentFontFaces(doc)),
-  ];
+  ].map((face) => ({ ...face, family: baseFontFamily(face.family) }));
   const asked = uses.filter((face) => !notHanded.includes(face.family));
   // The faces of the families left out, asked of their stand-ins.
   const standOf = new Map(notHanded.flatMap((family): [string, string][] => {

@@ -6,6 +6,6 @@ export { documentFontFaces, documentFontFamilies, unavailableFontFamilies } from
 
 /** The `FontFace` descriptors of a payload; a numeric weight (`700`) is
  *  accepted as well as the CSS string (`'700'`, `'bold'`). */
-export function fontFaceDescriptors(face: Pick<FontPayload, 'style' | 'unicodeRange'> & { weight: string | number }): FontFaceDescriptors {
-  return { weight: String(face.weight), style: face.style, unicodeRange: face.unicodeRange };
+export function fontFaceDescriptors(face: Pick<FontPayload, 'style' | 'unicodeRange' | 'featureSettings'> & { weight: string | number }): FontFaceDescriptors {
+  return { weight: String(face.weight), style: face.style, unicodeRange: face.unicodeRange, ...(face.featureSettings ? { featureSettings: face.featureSettings } : {}) };
 }

@@ -8,6 +8,7 @@ import type {
 } from '../types.js';
 import { dimensionsEqual, colorsEqual } from './shared.js';
 import { presentTag, stringsFor } from '../locale.js';
+import { withFigureStyle } from '../fonts/figureStyle.js';
 
 /** Default header fill — a neutral light grey. */
 const DEFAULT_HEADER_BACKGROUND: ColorValue = { hex: '#f0f0f0', model: 'hex' };
@@ -97,10 +98,11 @@ export function resolveTableStyleConfig(
   // the app language when unset).
   const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.tag ?? bodyText.hyphenation.locale);
   return {
-    bodyFontFamily: p.bodyFontFamily ?? bodyText.fontFamily,
+    // The figures (#1237) of every cell, in the family each takes.
+    bodyFontFamily: withFigureStyle(p.bodyFontFamily ?? bodyText.fontFamily, p.figureStyle),
     bodyFontSize: p.bodyFontSize ?? bodyText.fontSize,
     bodyColor: p.bodyColor ?? bodyText.color,
-    headerFontFamily: p.headerFontFamily ?? bodyText.fontFamily,
+    headerFontFamily: withFigureStyle(p.headerFontFamily ?? bodyText.fontFamily, p.figureStyle),
     headerFontSize: p.headerFontSize ?? bodyText.fontSize,
     headerColor: p.headerColor ?? bodyText.color,
     headerBold: p.headerBold ?? STATIC_DEFAULTS.headerBold,
@@ -153,6 +155,7 @@ export function stripTableStyleDefaults(
 
   // Inherited (body-text) fields: keep when present.
   keep('bodyFontFamily');
+  keep('figureStyle');
   keep('bodyColor');
   keep('headerFontFamily');
   keep('headerColor');

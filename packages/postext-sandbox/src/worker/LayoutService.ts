@@ -1,6 +1,6 @@
 import { createLayoutWorker } from 'postext/worker';
 import type { BuildProgress, BuildStats, LayoutWorkerHandle } from 'postext/worker';
-import { documentFontFaces, fontSampleText } from 'postext';
+import { baseFontFamily, documentFontFaces, fontSampleText } from 'postext';
 import type { FontVariantUse, PostextConfig, PostextContent, VDTDocument } from 'postext';
 import {
   collectFontPayloadsForFamilies,
@@ -15,6 +15,7 @@ import {
   loadFont,
   onCustomFontsChanged,
   fontRequestsUnanswered,
+  asFeaturePayloads,
 } from '../controls/fontLoader.js';
 import { resourcesKeyOf } from '../book/layoutKeys.js';
 import { markBuiltWithoutFaces } from '../book/withoutFaces.js';
@@ -300,7 +301,10 @@ export function createLayoutService(options?: {
     setTimeout(() => { if (!disposed) countUnsettled(-1); }, LATE_RELAYOUT_GRACE_MS);
     for (const listener of [...lateFontsListeners]) listener([...families]);
   };
-  const unsubscribeFonts = onCustomFontsChanged((families) => {
+  const unsubscribeFonts = onCustomFontsChanged((changed) => {
+    // A feature family (#1237) of a changed family was made from its files.
+    const bases = new Set(changed.map((f) => f.toLowerCase()));
+    const families = [...new Set([...changed, ...[...registeredFamilies, ...sentFaces.keys()].filter((f) => bases.has(baseFontFamily(f).toLowerCase()))])];
     const toUnregister = families.filter((f) => registeredFamilies.has(f) || sentFaces.has(f));
     for (const f of families) {
       registeredFamilies.delete(f);
@@ -331,7 +335,7 @@ export function createLayoutService(options?: {
         known.set(key, { weight: use.weight, style: use.style });
         fresh.push({ weight: use.weight, style: use.style });
       }
-      if (fresh.length > 0 && !getCustomFontFamily(family)) void loadFont(family, fresh).catch(() => {});
+      if (fresh.length > 0 && !getCustomFontFamily(baseFontFamily(family))) void loadFont(family, fresh).catch(() => {});
     }
   };
 
@@ -342,14 +346,18 @@ export function createLayoutService(options?: {
   const lackingFaces = async (family: string) => {
     const uses = [...(familyUses.get(family)?.values() ?? [])];
     const had = sentFaces.get(family);
-    return (await familyCutFaces(family, uses, { standard: true })).filter((face) => !had?.has(fontPayloadKey(face)));
+    // A feature family (#1237) is sent as its base family's files, under
+    // its name.
+    return (await familyCutFaces(baseFontFamily(family), uses, { standard: true }))
+      .map((face) => ({ ...face, family }))
+      .filter((face) => !had?.has(fontPayloadKey(face)));
   };
 
   /** Send the worker the faces of `families` it lacks; true when it got
    *  any. */
   const sendFamilies = async (families: readonly string[]): Promise<boolean> => {
     let sent = false;
-    const custom = families.filter((f) => getCustomFontFamily(f) && !registeredFamilies.has(f));
+    const custom = families.filter((f) => getCustomFontFamily(baseFontFamily(f)) && !registeredFamilies.has(f));
     if (custom.length > 0) {
       for (const f of custom) registeredFamilies.add(f);
       try {
@@ -368,14 +376,15 @@ export function createLayoutService(options?: {
     }
     // One message for every family: their files are fetched side by side.
     try {
-      const catalogue = families.filter((f) => !getCustomFontFamily(f));
+      const catalogue = families.filter((f) => !getCustomFontFamily(baseFontFamily(f)));
       fontsAt(`the faces of ${catalogue.join(', ')}`);
       const perFamily = await Promise.all(catalogue.map(lackingFaces));
       const lacking = perFamily.flat();
       fontsAt(`${lacking.length} files of ${catalogue.join(', ')}`);
       // A file that cannot be had is left out, and asked for again: by a
-      // later build, and by the service itself a while later.
-      const payloads = lacking.length > 0 ? await fetchFacePayloads(lacking) : [];
+      // later build, and by the service itself a while later. A feature
+      // family's files take its features.
+      const payloads = lacking.length > 0 ? (await fetchFacePayloads(lacking)).flatMap((p) => asFeaturePayloads(p.family, [p])) : [];
       const got = new Set(payloads.map(fontPayloadKey));
       // Short of files: the network did not answer for one of them, or
       // for the family's record or style sheet. A file the server has not
@@ -383,7 +392,7 @@ export function createLayoutService(options?: {
       const wasShort = new Set(shortFamilies);
       catalogue.forEach((family, i) => {
         const faces = perFamily[i]!;
-        const short = fontRequestsUnanswered(family, faces.filter((face) => !got.has(fontPayloadKey(face))).map((face) => face.url));
+        const short = fontRequestsUnanswered(baseFontFamily(family), faces.filter((face) => !got.has(fontPayloadKey(face))).map((face) => face.url));
         if (short) shortFamilies.add(family);
         else {
           shortFamilies.delete(family);

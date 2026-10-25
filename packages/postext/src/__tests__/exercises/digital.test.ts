@@ -6,7 +6,7 @@ import type { VDTDocument } from '../../vdt.js';
 import type { PostextConfig } from '../../types.js';
 import type { ExerciseData } from '../../exercises/digital.js';
 import type { ExerciseSlot } from '../../exercises/record.js';
-import { attachExercises, checkExerciseSlot, exerciseSolutionValue, EXERCISE_SCRIPT, isGradedSlot, normalizeAnswer } from '../../exercises/runtime.js';
+import { attachExercises, checkExerciseSlot, exerciseActions, exerciseSolutionValue, EXERCISE_SCRIPT, isGradedSlot, normalizeAnswer } from '../../exercises/runtime.js';
 
 /** `html` with every `<tag …>…</tag>` element taken out (any letter case). */
 function withoutElements(html: string, tag: string): string {
@@ -195,5 +195,45 @@ describe('the exercise script (#1230)', () => {
     expect(shadow.appended).toHaveLength(1);
     expect(head.appended).toHaveLength(0);
     detach();
+  });
+});
+
+describe('the digital exercises on a screen (#1256, #1257, #1259)', () => {
+  it('makes every word of a mark exercise\'s text markable, not its instruction', () => {
+    const doc = build(':::exercise{type=mark}\nCircle the verbs.\n\nThe girl [[waters]] the plants.\n:::\n');
+    const rec = doc.exercises![0]!;
+    const right = rec.slots.filter((s) => s.correct?.includes(1));
+    const others = rec.slots.filter((s) => !s.correct?.includes(1));
+    expect(rec.slots.every((s) => s.kind === 'mark')).toBe(true);
+    expect(right).toHaveLength(1);
+    // The, girl, the, plants: words to leave unmarked.
+    expect(others).toHaveLength(4);
+    expect(checkExerciseSlot(others[0]!, true, rec)).toBe(false);
+    expect(checkExerciseSlot(others[0]!, null, rec)).toBeNull();
+    expect(exerciseSolutionValue(others[0]!, rec)).toBe(false);
+    const html = renderToHtml(doc);
+    expect(html.match(/data-pt-slot="x\d+"/g)).toHaveLength(4);
+  });
+
+  it('offers only the buttons that do something', () => {
+    const doc = build([
+      ':::exercise', 'Complete.', '', 'The roots take in [[water]].', ':::', '',
+      ':::exercise{type=open}', 'Why do plants need light?', '', ':::solution', 'To make their food.', ':::', ':::', '',
+      ':::exercise{type=open}', 'Why do plants need light?', ':::', '',
+      ':::exercise{type="open" area="none"}', 'Talk with a classmate about your favourite plant.', ':::', '',
+    ].join('\n'));
+    const [gaps, solved, open, talk] = doc.exercises!;
+    expect(exerciseActions(gaps!)).toEqual({ check: true, solution: true, reset: true });
+    expect(exerciseActions(solved!)).toEqual({ check: false, solution: true, reset: true });
+    expect(exerciseActions(open!)).toEqual({ check: false, solution: false, reset: true });
+    // Nothing drawn to write on: room on the printed page only.
+    expect(talk!.slots.every((s) => s.bare)).toBe(true);
+    expect(exerciseActions(talk!)).toEqual({ check: false, solution: false, reset: false });
+  });
+
+  it('gives the script the colour of the text and of the matching lines', () => {
+    const data = dataOf(renderToHtml(build(':::exercise\nMatch.\n\n- sun -> day\n- moon -> night\n:::\n')));
+    expect(data.text).toMatch(/^#/);
+    expect(data.styles[data.exercises[0]!.style]!.ink).toMatch(/^#/);
   });
 });

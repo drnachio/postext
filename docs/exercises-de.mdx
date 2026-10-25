@@ -219,7 +219,7 @@ Kreise die Verben ein: Das Mädchen [[gießt]] die Pflanzen, und die Sonne [[wä
 :::
 ```
 
-Der Text wird gedruckt, wie er ist; die Wörter in `[[…]]` sind die zu markierenden. In der Lösung werden sie eingekreist, oder mit `mark=box|underline|highlight` am Block umrahmt, unterstrichen oder hervorgehoben, oder einzeln mit `[[gießt]]{mark=underline}`.
+Der Text wird gedruckt, wie er ist; die Wörter in `[[…]]` sind die zu markierenden. In der Lösung werden sie eingekreist, oder mit `mark=box|underline|highlight` am Block umrahmt, unterstrichen oder hervorgehoben, oder einzeln mit `[[gießt]]{mark=underline}`. Am Bildschirm lässt sich jedes Wort des Textes markieren, und ein versehentlich markiertes Wort zählt als falsche Antwort.
 
 ### Offene Fragen und Schreibflächen
 
@@ -233,7 +233,7 @@ Mit dem Licht stellen sie ihre Nahrung her.
 :::
 ```
 
-Auf die Arbeitsanweisung folgen Schreiblinien: standardmäßig drei, hier mit `lines=4` vier. Ist der Hauptteil eine Liste, erhält jeder Eintrag eigene Linien. `area` ändert die Lineatur: `lines`, `dots`, `grid` (kariert), `seyes` (die französische Schullineatur), `tianzige` (田字格, die Kästchen, in die chinesische Kinder Schriftzeichen schreiben), `box` (ein leerer Rahmen für eine Zeichnung) oder `none`. Die `:::solution` ist die Musterlösung; sie steht bei den Lösungen und in einer Lehrerausgabe auf den Linien.
+Auf die Arbeitsanweisung folgen Schreiblinien: standardmäßig drei, hier mit `lines=4` vier. Ist der Hauptteil eine Liste, erhält jeder Eintrag eigene Linien. `area` ändert die Lineatur: `lines`, `dots`, `grid` (kariert), `seyes` (die französische Schullineatur), `tianzige` (田字格, die Kästchen, in die chinesische Kinder Schriftzeichen schreiben), `box` (ein leerer Rahmen für eine Zeichnung) oder `none`. Die `:::solution` ist die Musterlösung; sie steht bei den Lösungen und in einer Lehrerausgabe auf den Linien. Am Bildschirm bietet `area=none` am Block nichts zum Hineinschreiben: für eine Übung, die mündlich oder mit einem Partner gemacht wird. Ein Stil mit `area.kind` `none` zeichnet den Bereich nur ohne Lineatur.
 
 `cells` gibt den Kästchen (`grid` oder `tianzige`, Kästchenpapier, wenn der Stil Linien zieht) so viele Felder: `cells=4`. Mehrere Zahlen setzen Gruppen nebeneinander, ein Kästchen Abstand, eine je Wort, die am Zeilenende umbrechen: `cells="2 2 3"`. Die Lehrerausgabe schreibt die Musterlösung ein Zeichen je Kästchen, Gruppe für Gruppe.
 
@@ -356,7 +356,7 @@ Das Bedienfeld **Prüfungen** der Sandbox und `collectContentWarnings` melden, w
 
 ## Übungen in HTML und EPUB
 
-Im HTML-Betrachter und in EPUB-Büchern lassen sich die Übungen lösen. Man tippt in die Lücken und klickt auf Antworten, Aussagen, Verbindungspunkte und Gitterfelder, prüft dann die Antworten, lässt sich die Lösung zeigen oder beginnt neu. Richtige und falsche Antworten werden mit einer Farbe und einem Zeichen angezeigt (`digital.correctColor`, `digital.wrongColor`) und Bildschirmlesern angesagt. Die Antworten bleiben im Browser gespeichert, je Buch, und sind beim nächsten Besuch wieder da (`exercises.digital.persist`). Mit `exercises.digital.check: 'instant'` wird jede Antwort geprüft, sobald sie gegeben ist; `exercises.digital.interactive: false` zeigt die Seiten wie gedruckt. Der Lösungsschlüssel ist in einem EPUB immer enthalten, unabhängig von der Platzierung im Druck, sodass auch ein Lesesystem ohne Skripte die Lösungen hat. In einem umfließenden EPUB wachsen Raster und Schreibflächen mit der Schrift des Lesers, und auf einer Seite von rechts nach links folgen die Felder zum Ausfüllen dem gespiegelten Raster.
+Im HTML-Betrachter und in EPUB-Büchern lassen sich die Übungen lösen. Man tippt in die Lücken und klickt auf Antworten, Aussagen, Verbindungspunkte und Gitterfelder, prüft dann die Antworten, lässt sich die Lösung zeigen oder beginnt neu. Richtige und falsche Antworten werden mit einer Farbe und einem Zeichen angezeigt (`digital.correctColor`, `digital.wrongColor`) und Bildschirmlesern angesagt. Die Antworten bleiben im Browser gespeichert, je Buch, und sind beim nächsten Besuch wieder da (`exercises.digital.persist`). Mit `exercises.digital.check: 'instant'` wird jede Antwort geprüft, sobald sie gegeben ist; `exercises.digital.interactive: false` zeigt die Seiten wie gedruckt. Der Lösungsschlüssel ist in einem EPUB immer enthalten, unabhängig von der Platzierung im Druck, sodass auch ein Lesesystem ohne Skripte die Lösungen hat. In einem umfließenden EPUB wachsen Raster und Schreibflächen mit der Schrift des Lesers, und auf einer Seite von rechts nach links folgen die Felder zum Ausfüllen dem gespiegelten Raster. Paare verbindet man, indem man einen Punkt und dann den anderen anklickt oder von einem zum anderen zieht; die Wörter einer Sortierübung zieht man in ihre Spalte oder wählt sie aus einem Menü. Die Leiste zeigt nur die Schaltflächen, die etwas bewirken: kein „Prüfen“, wenn es nichts zu prüfen gibt, kein „Lösung zeigen“ ohne Lösung und gar keine Leiste, wenn nichts zu beantworten ist.
 
 Der Bildschirm kann den Übungen über `htmlViewer.overrides` eine eigene Form geben; diese Einstellungen werden über die Konfiguration des Buchs gelegt, bevor der HTML-Betrachter setzt. Der Druck behält seine:
 

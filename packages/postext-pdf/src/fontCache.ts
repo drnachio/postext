@@ -1,4 +1,4 @@
-import { cssWeightOrder } from 'postext';
+import { cssWeightOrder, featureFamilyParts } from 'postext';
 import { padTrueTypeGlyphs } from './trueTypePadding.js';
 import { PDFDict, PDFName, PDFRef, PDFStream, type PDFDocument, type PDFFont } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString.js';
@@ -402,7 +402,7 @@ export class FontCache {
   /** Embeds by the byte length of their file: a provider that answers
    *  several faces with one file (a stand-in for a cut the family lacks)
    *  gets it embedded once, whatever the faces. */
-  private byLength = new Map<number, Array<{ bytes: Uint8Array; font: Promise<PDFFont> }>>();
+  private byLength = new Map<number, Array<{ bytes: Uint8Array; features: string; font: Promise<PDFFont> }>>();
   /** Every font this cache embedded. */
   private embedded = new Set<PDFFont>();
   private onFallback?: (fallback: FontFallback) => void;
@@ -420,11 +420,16 @@ export class FontCache {
     this.cffWarnBytes = opts.cffWarnBytes ?? CFF_WHOLE_WARN_BYTES;
   }
 
-  /** Embed a font file, once per distinct content. `spec` is the face it
-   *  was first given for (named in a CFF size report). */
+  /** Embed a font file, once per distinct content and features. `spec` is
+   *  the face it was first given for (named in a CFF size report); a
+   *  feature family's (#1237) file is embedded with its features, which
+   *  fontkit and HarfBuzz apply to every run set in it, as the browser
+   *  measured it. */
   private embedBytes(bytes: Uint8Array, spec?: FaceSpec): Promise<PDFFont> {
+    const features = spec ? featureFamilyParts(spec.family).features : [];
+    const featureKey = features.join('+');
     const same = this.byLength.get(bytes.length) ?? [];
-    const known = same.find((entry) => sameBytes(entry.bytes, bytes));
+    const known = same.find((entry) => entry.features === featureKey && sameBytes(entry.bytes, bytes));
     if (known) return known.font;
     const font = (async (): Promise<PDFFont> => {
       // pdf-lib's CFF subsetter emits a font stream some viewers cannot
@@ -436,7 +441,9 @@ export class FontCache {
       // glyph records are not 4-byte aligned (instanced variable fonts,
       // typically): pad them first so every glyph survives the subset.
       const embeddable = subset ? padTrueTypeGlyphs(bytes) : bytes;
-      const embedded = await this.pdfDoc.embedFont(embeddable, { subset });
+      // Given as a list: fontkit records the features it applied in the
+      // object it is handed, which pdf-lib hands it again for every run.
+      const embedded = await this.pdfDoc.embedFont(embeddable, { subset, ...(features.length > 0 ? { features: [...features] as unknown as Record<string, boolean> } : {}) });
       if (!subset) {
         coverAllGlyphWidths(embedded);
         coverAllGlyphUnicode(embedded);
@@ -451,7 +458,7 @@ export class FontCache {
       this.embedded.add(embedded);
       return embedded;
     })();
-    same.push({ bytes, font });
+    same.push({ bytes, features: featureKey, font });
     this.byLength.set(bytes.length, same);
     return font;
   }
@@ -488,7 +495,7 @@ export class FontCache {
       try {
         const prefetched = this.prefetched.get(key);
         this.prefetched.delete(key);
-        const answer = await (prefetched ?? this.provider(spec.family, spec.weight, spec.style, { codePoints }));
+        const answer = await (prefetched ?? this.provider(fileFamily(spec.family), spec.weight, spec.style, { codePoints }));
         const { fonts, declarations } = await this.embedAnswer(answer, spec);
         if (fonts.length === 0) throw new Error('the font provider returned no file');
         for (const font of fonts) registerFontFamily(font, spec.family);
@@ -538,7 +545,7 @@ export class FontCache {
     const { family, weight, style } = face.spec;
     face.growing = face.growing.then(async () => {
       try {
-        const answer = await this.provider(family, weight, style, { codePoints: wanted });
+        const answer = await this.provider(fileFamily(family), weight, style, { codePoints: wanted });
         const { fonts, declarations } = await this.embedAnswer(answer, face.spec);
         for (const font of fonts) {
           registerFontFamily(font, face.spec.family);
@@ -592,7 +599,7 @@ export class FontCache {
     // run (#1217).
     for (const [key, { spec, codePoints }] of jobs) {
       if (this.map.has(key) || this.loads.has(key) || this.prefetched.has(key)) continue;
-      const answer = (async () => this.provider(spec.family, spec.weight, spec.style, { codePoints }))();
+      const answer = (async () => this.provider(fileFamily(spec.family), spec.weight, spec.style, { codePoints }))();
       // A rejection is met when the face takes its turn.
       answer.catch(() => {});
       this.prefetched.set(key, answer);
@@ -696,6 +703,12 @@ export class FontCache {
       if (this.embedded.has(font) && !used.has(font.ref.toString()) && !(twin !== undefined && used.has(twin))) fonts.splice(i, 1);
     }
   }
+}
+
+/** The family whose files a face is set from: a feature family's (#1237)
+ *  base family, whose files it embeds with its features. */
+function fileFamily(family: string): string {
+  return featureFamilyParts(family).family;
 }
 
 /** Whether two files hold the same bytes. */

@@ -24,6 +24,7 @@ import type {
 } from '../types.js';
 import { DEFAULT_MAIN_COLOR } from './shared.js';
 import { dimensionToPx } from '../units.js';
+import { withFigureStyle } from '../fonts/figureStyle.js';
 
 export type HeaderFooterSlotKind = 'header' | 'footer';
 
@@ -400,7 +401,8 @@ function resolveTextElement(el: DesignTextElement, idx: number, kind: DesignSlot
       size: el.placement.size ?? { width: 'auto', height: 'auto' },
     },
     content: el.content,
-    fontFamily: el.fontFamily ?? DEFAULT_TEXT_ELEMENT.fontFamily,
+    // The element's figures (#1237) name its family.
+    fontFamily: withFigureStyle(el.fontFamily ?? DEFAULT_TEXT_ELEMENT.fontFamily, el.figureStyle),
     // Typed as required, but a JSON config may leave it out: the documented
     // 8 pt, not a zero-size (invisible) text.
     fontSize: el.fontSize ?? DEFAULT_TEXT_ELEMENT.fontSize,

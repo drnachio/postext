@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
-import { resolveHeadingsConfig, balancingOnByDefault, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
+import { resolveHeadingsConfig, baseFontFamily, balancingOnByDefault, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
 import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit, ClosingBoxLever, ColumnHeadSpace, GridLinesLever, KeepWithNextSplit, StretchAfterWideFloats, TrailingStep } from 'postext';
 import {
   CollapsibleSection,
@@ -16,6 +16,7 @@ import {
 } from '../../../controls/index.js';
 import { HeadingLevelSection } from './HeadingLevelSection.js';
 import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides.js';
+import { FigureStyleField } from '../../settings/FigureStyleField.js';
 
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -128,7 +129,8 @@ export const HeadingsSection = memo(function HeadingsSection() {
   };
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
-  const isFontDefault = headings.fontFamily === D.fontFamily;
+  // The resolved family carries the figures (#1237): compare the family.
+  const isFontDefault = baseFontFamily(headings.fontFamily) === D.fontFamily;
   const isLhDefault = dimensionsEqual(headings.lineHeight, D.lineHeight);
   const isColorDefault = colorsEqual(headings.color, D.color);
   const isFontWeightDefault = headings.fontWeight === D.fontWeight;
@@ -207,6 +209,11 @@ export const HeadingsSection = memo(function HeadingsSection() {
         onReset={() => resetField('fontFamily')}
         searchPlaceholder={labels.headingsFontSearch}
         noResultsLabel={labels.headingsFontNoResults}
+      />
+      <FigureStyleField
+        value={raw?.figureStyle}
+        onChange={(v) => updateHeadings({ figureStyle: v })}
+        onReset={() => resetField('figureStyle')}
       />
 
       <DimensionInput

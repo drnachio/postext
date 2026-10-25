@@ -38,6 +38,12 @@ Die Eigenschaft `headings` steuert die Typografie aller Überschriftenebenen (H1
       <td>Schriftfamilie aller Überschriften.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>die der Schrift</td>
+      <td>Die Ziffern aller Ebenen: <code>'lining'</code> neben einem Text in Mediävalziffern. Das eigene <code>figureStyle</code> einer Ebene hat Vorrang. Siehe [Ziffernarten](/de/docs/configuration-fonts-colors-viewers#ziffernarten).</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -172,7 +178,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Kommt die Konfiguration aus einem Speicher, erkennt die Engine, dass sie alt ist, und erledigt das für Sie: die Sandbox für die Bücher und Konfigurationen, die sie damals gespeichert hat (siehe **Sandbox → Speichern**), und `openBundle` / `readBundle` für ein `.postext`-Paket, das postext 1.4 oder älter geschrieben hat (siehe [Pakete, die postext 1.4 oder früher geschrieben hat](/de/docs/configuration-bundles#pakete-die-postext-14-oder-früher-geschrieben-hat)). Eine Konfiguration, die Sie selbst gespeichert haben, können Sie an `migrateConfig(config)` aus `postext/bundle` übergeben; es schreibt die Umbrüche aus, die 1.4 gesetzt hat (`pinLegacyHeadingBreaks`): `enabled: false` auf einer H1, die keinen Umbruch hatte, und `parity: 'any'` neben einem `enabled: true` ohne Parität, auf der H1 und auf Überschriftenstilen. Es fixiert außerdem, wie 1.4 sie setzte, die Größe der Mathematik, den Abstand um Inline-Abbildungen (auch in Kästen), die Inline-Auszeichnungen der Überschriften, die Größen der Initialen, den Platz unter einer Zeile mit Doppelpunkt, die eine Liste einleitet, die Zeilen eines Absatzes oder Listenpunkts, die ein Schnitt in einem Kasten übrig lässt, die Zeilenumbrüche an Gedankenstrichen, den zeilenweisen Umbruch von Flattersatz, die Teilung eines Absatzes unter einer Überschrift, die Zeilenumbrüche am Bindestrich eines Kompositums und den Abstand unter Containern `:::paragraphs`. Übergeben Sie das Markdown des Buchs als drittes Argument, `{ content }`, dann lässt es die Mathematik-Fixierung weg, wenn der Text kein `$` enthält, die Abstandsfixierungen, wenn keine Zeile eine Ressource einbettet (die Fixierung des Kastenabstands, wenn keine es in einem Kasten tut), die Fixierung der Überschriftenauszeichnungen, wenn keine Überschrift eine Auszeichnung enthält, die Fixierung der Doppelpunktzeile, wenn keine Liste auf eine Zeile mit Doppelpunkt am Ende folgt, die Fixierung des Kastenschnitts, wenn der Text kein `:::callout` öffnet, die Strich-Fixierung, wenn kein Strich ohne Abstand zwischen Wörtern steht, die Fixierung der Teilung unter Überschriften, wenn der Text keine Überschrift hat, die Container-Fixierung, wenn der Text keinen Container `:::paragraphs` öffnet, und die Kompositum-Fixierung, wenn kein Bindestrich zwischen zwei Buchstaben steht; die Fixierung des Flattersatzumbruchs erhält nur eine Konfiguration, die laufenden Text im Flattersatz setzt, und die Container-Fixierung nur eine, die ein Absatzformat deklariert (siehe [Pakete, die postext 1.4 oder früher geschrieben hat](/de/docs/configuration-bundles#pakete-die-postext-14-oder-früher-geschrieben-hat)). Nur für die Umbrüche rufen Sie `pinLegacyHeadingBreaks(config)` auf.
 
-Überschreibungen pro Ebene unterstützen dieselben Eigenschaften wie die allgemeinen Standardwerte – `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` – sowie diese nur für Ebenen vorhandenen Felder (ein [Überschriftenstil](/de/docs/configuration-styles#überschriftenstile) nimmt sie ebenfalls an):
+Überschreibungen pro Ebene unterstützen dieselben Eigenschaften wie die allgemeinen Standardwerte – `fontSize`, `lineHeight`, `fontFamily`, `figureStyle`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` – sowie diese nur für Ebenen vorhandenen Felder (ein [Überschriftenstil](/de/docs/configuration-styles#überschriftenstile) nimmt sie ebenfalls an):
 
 <table>
   <thead>

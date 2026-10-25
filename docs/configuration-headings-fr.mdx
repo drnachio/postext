@@ -38,6 +38,12 @@ La propriété `headings` règle la typographie de tous les niveaux de titre (H1
       <td>Famille de police de tous les titres.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>ceux de la police</td>
+      <td>Les chiffres de tous les niveaux : <code>'lining'</code> à côté d’un texte en chiffres elzéviriens. Le <code>figureStyle</code> propre d’un niveau l’emporte. Voir [Styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres).</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -172,7 +178,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Là où la configuration a été enregistrée, le moteur le détecte et s’en charge pour vous : le Sandbox pour les livres et les configurations qu’il a enregistrés à cette époque (voir **Sandbox → Persistance**), et `openBundle` / `readBundle` pour un paquet `.postext` écrit par postext 1.4 ou antérieur (voir [Paquets écrits par postext 1.4 ou antérieur](/fr/docs/configuration-bundles#paquets-écrits-par-postext-14-ou-antérieur)). Une configuration que vous avez enregistrée vous-même peut passer par `migrateConfig(config)` de `postext/bundle`, qui écrit explicitement les sauts que posait la 1.4 (`pinLegacyHeadingBreaks`) : `enabled: false` sur un H1 qui n’avait pas de saut, et `parity: 'any'` à côté d’un `enabled: true` qui n’indiquait aucune parité, sur le H1 et sur les styles de titre. Elle fige aussi la taille des formules, l’espace autour des figures en ligne (dans les encadrés aussi), les marques en ligne des titres, la taille des lettrines, la place sous une ligne terminée par un deux-points qui introduit une liste, les lignes qu’une coupe d’encadré laisse d’un paragraphe ou d’un élément de liste, les sauts de ligne aux tirets, la coupure ligne par ligne du texte en drapeau, la division d’un paragraphe sous un titre, les sauts de ligne au trait d’union d’un mot composé et l’espace sous les conteneurs `:::paragraphs`, tels que la 1.4 les composait. Passez le Markdown du livre en troisième argument, `{ content }`, et elle omet le figeage des mathématiques quand le texte n’a pas de `$`, les figeages d’espacement quand aucune ligne n’insère de ressource (celui des encadrés quand aucune n’en insère dans un encadré), le figeage des marques de titre quand aucun titre ne contient de marque, celui des lignes à deux-points quand aucune liste ne suit une ligne terminée par un deux-points, celui des coupes d’encadré quand le texte n’ouvre aucun `:::callout`, celui des tirets quand aucun tiret n’est composé collé entre deux mots, celui de la division sous un titre quand le texte n’a pas de titre, celui des conteneurs quand le texte n’ouvre aucun conteneur `:::paragraphs`, et celui des mots composés quand aucun trait d’union ne se trouve entre deux lettres ; le figeage de la coupure en drapeau ne va qu’à une configuration qui compose du texte courant en drapeau, et celui des conteneurs qu’à une configuration qui déclare un style de paragraphe (voir [Paquets écrits par postext 1.4 ou antérieur](/fr/docs/configuration-bundles#paquets-écrits-par-postext-14-ou-antérieur)). Pour les sauts seuls, appelez `pinLegacyHeadingBreaks(config)`.
 
-Les réglages par niveau acceptent les mêmes propriétés que les valeurs générales (`fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`), plus ces champs propres aux niveaux (un [style de titre](/fr/docs/configuration-styles#styles-de-titre) les accepte aussi) :
+Les réglages par niveau acceptent les mêmes propriétés que les valeurs générales (`fontSize`, `lineHeight`, `fontFamily`, `figureStyle`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`), plus ces champs propres aux niveaux (un [style de titre](/fr/docs/configuration-styles#styles-de-titre) les accepte aussi) :
 
 <table>
   <thead>

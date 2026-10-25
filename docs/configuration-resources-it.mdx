@@ -274,6 +274,12 @@ const config: PostextConfig = {
       <td>Famiglia di caratteri delle celle d’intestazione.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>quelle della famiglia delle celle</td>
+      <td>Le cifre di tutte le celle, di intestazione e di corpo: <code>'lining-tabular'</code> mette in colonna le cifre. Se non impostato, le celle prendono le cifre del corpo del testo insieme alla sua famiglia. Uno stile di tabella con nome può impostare le proprie. Vedi [Stili delle cifre](/it/docs/configuration-fonts-colors-viewers#stili-delle-cifre).</td>
+    </tr>
+    <tr>
       <td><code>headerFontSize</code></td>
       <td><code>Dimension</code></td>
       <td>corpo del testo corrente</td>
@@ -616,6 +622,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td>font del testo corrente</td>
       <td>Famiglia di caratteri della didascalia (etichetta e descrizione).</td>
+    </tr>
+    <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>quelle della sua famiglia</td>
+      <td>Le cifre dell’etichetta e della descrizione. Se non impostato, una didascalia nella famiglia del corpo del testo ne prende le cifre. Il <code>captionStyle</code> di un tipo di risorsa può impostare le proprie. Vedi [Stili delle cifre](/it/docs/configuration-fonts-colors-viewers#stili-delle-cifre).</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>

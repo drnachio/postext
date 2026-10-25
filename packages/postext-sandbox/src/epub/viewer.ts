@@ -187,6 +187,44 @@ export function keepReaderFocus(target: Node | null, area: Pick<HTMLElement, 'ow
   if (area && target && target.ownerDocument !== area.ownerDocument) area.focus({ preventScroll: true });
 }
 
+/** Whether a key or a pointer pressed in a content document belongs to
+ *  one of its exercises (#1263): typing in a blank, Space on an option,
+ *  dragging a word or joining two dots. The reader then leaves it to the
+ *  exercise instead of turning the page. `target` may come from the
+ *  frame's document, whose elements are not this window's. */
+export function exerciseOwns(target: EventTarget | null): boolean {
+  const el = target as { closest?: (selector: string) => unknown; isContentEditable?: boolean } | null;
+  if (!el || typeof el.closest !== 'function') return false;
+  return el.isContentEditable === true || el.closest('.pt-ex-ui, input, textarea, select, button') != null;
+}
+
+/** What takes the exercises of the reader's page frames off again
+ *  (#1263): kept per frame, and run when the frame gets another document
+ *  or is gone (a page turned, another build), or when the reader closes. */
+export interface FrameExercises<F extends { isConnected: boolean }> {
+  keep(frame: F, detach: () => void): void;
+  clear(): void;
+}
+
+export function createFrameExercises<F extends { isConnected: boolean }>(): FrameExercises<F> {
+  const frames = new Map<F, () => void>();
+  return {
+    keep(frame, detach) {
+      frames.get(frame)?.();
+      for (const [f, d] of frames) {
+        if (f.isConnected) continue;
+        d();
+        frames.delete(f);
+      }
+      frames.set(frame, detach);
+    },
+    clear() {
+      for (const detach of frames.values()) detach();
+      frames.clear();
+    },
+  };
+}
+
 /** Room kept under the reader for the toolbar docked along the bottom of
  *  the phone layout: its measured height, the 8 px it floats above the
  *  edge and a gap. Before it is measured, room for one row of buttons, or

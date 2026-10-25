@@ -150,6 +150,61 @@ Once a layout exists, the panel also lists the engine's **Font fallback in the l
 
 The panel also lists **Characters drawn from another face** (`glyphFallback`): characters the text sets in a face that has no glyph for them, once per face, with the generic family that drew them (`serif`, `sans-serif`, `monospace`) when the check can tell.
 
+## Figure styles
+
+`figureStyle` asks a text style's font for one kind of figures, through the font's OpenType features: old-style figures in the running text, lining tabular figures in the tables. The field is on `bodyText`, `paragraphStyles[]`, `headings` and `headings.levels[]`, `headingStyles[]`, `tableStyle` and `tableStyles[]` (header and body cells alike), `captionStyle` (label and description, and the `captionStyle` of a resource type) and the text elements of a design (running heads, folios, the texts of an opener or a part page). In the Sandbox it is the **Figures** field of the Design panel, next to the typeface of each of those styles (**Body text → Typeface** for the body).
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>OpenType features</th>
+      <th>Figures</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>none</td><td>The font's own. Takes off the figures a style inherits.</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>Old-style figures, with ascenders and descenders like lower-case letters: running text.</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>Lining figures, at cap height: headings, text in capitals.</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>Every figure on the same width, so the digits of a column line up. The form stays the font's.</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>Each figure on its own width. The form stays the font's.</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>Old-style figures on one width.</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>Old-style figures on their own widths.</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>Lining figures on one width: tables, timetables, price lists.</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>Lining figures on their own widths.</td></tr>
+  </tbody>
+</table>
+
+A pair sets a form and a width. A font without the feature keeps its own figures, so check that the face has `onum` or `lnum` before relying on it. A family the host has no file of, such as a face only installed on the reader's system (the Sandbox does not fetch those), takes no figure style: its text keeps that font's own figures, in the font itself. A book that uploads files under that name gets the figures. The cuts Google Fonts and Fontsource serve often leave `onum` and `lnum` out (the latin file of Source Serif 4 keeps only `pnum` and `tnum`); with such a file, a style that asks for them keeps the font's own figures. The foundry's full files have them: upload those to get old-style or lining figures. A generic family (`serif`, `sans-serif`) takes no features. A value outside the list is reported as an unknown setting value (`unknownConfigValue`, see [Configuration warnings](#configuration-warnings)) and read as unset.
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+The prose sets its years and page numbers in old-style figures, and so do the captions and the lists, which take the body's family. The cells of every table and the paragraphs of the `timetable` style line their digits up in lining tabular figures. Every heading level sets lining figures in the headings' family.
+
+### Which figures a style takes
+
+- A style that takes its family from another takes its figures too. Paragraph styles, tables, captions, lists and the bodies of boxes take the body's family when they name none, so `bodyText.figureStyle` reaches all of them.
+- A style that names its own `fontFamily` sets that font's default figures, unless it also sets `figureStyle`.
+- A heading level without a `figureStyle` of its own takes `headings.figureStyle`, in its own `fontFamily` too when it names one. A heading style's `figureStyle` applies to the family of the level the style is set on.
+- A design text element names its own family (`'EB Garamond'` by default), so the body's figures do not reach a folio: set `figureStyle: 'oldstyle'` on it to match old-style text.
+- `'default'` sets the font's own figures and undoes inherited ones: `paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]` drops the body's old-style figures in that style.
+
+### Figures in each output
+
+The text is measured with the features, so its lines break on the same widths in the canvas preview, the HTML, the PDF and both EPUB layouts.
+
+- **Canvas preview and layout worker**: the browser declares the base family's files a second time, under a feature family name, with the `featureSettings` descriptor of `FontFace`. The name is the family and its features after `@` (`EB Garamond@onum`, `EB Garamond@lnum+tnum`), and it shows in font strings and in some warnings.
+- **HTML and EPUB** (fixed and reflowable): the base family, with `font-variant-numeric` (`oldstyle-nums`, `lining-nums tabular-nums`).
+- **PDF**: the base family's files are embedded and the text is laid out with the features.
+- **Command line**: Skia, the canvas `postext` draws with, sets no features. The command line registers a copy of the font whose `cmap` maps each character the features substitute, the digits, to the glyph they choose. Only single substitutions are taken; a font that reaches its figures through contextual lookups keeps its own figures there.
+
 ## Color Palette
 
 The `colorPalette` property on `PostextConfig` lets you define a reusable set of named colors and reference them from any `ColorValue` in the configuration. It is the Postext equivalent of CSS custom properties or an InDesign swatches panel: change the palette entry once, and every color that points to it updates across the document.

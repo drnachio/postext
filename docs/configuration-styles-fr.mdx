@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Famille de caractères. Ses graisses sont <code>fontWeight</code> / <code>boldFontWeight</code> plus bas (celles du texte courant si elles ne sont pas définies).</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>ceux de sa famille</td>
+      <td>Les chiffres du style : <code>'lining-tabular'</code> pour une liste de dates ou d’heures. Non défini, le style prend les chiffres du corps du texte avec sa famille ; un style qui nomme sa propre <code>fontFamily</code> compose ceux de cette police. Voir [Styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres).</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>corps du texte courant</td>
@@ -1147,7 +1153,7 @@ const config: PostextConfig = {
       <td>champs de niveau</td>
       <td>comme dans <code>headings.levels[]</code></td>
       <td>les valeurs du niveau</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code> : chacun, une fois défini, remplace la valeur du niveau de titre pour les titres de ce style (<code>dropCap: false</code> retire la lettrine du niveau). <code>breakBefore</code> se fusionne champ par champ avec celui du niveau : un style qui ne fixe que <code>parity</code> garde le <code>enabled</code> du niveau, et un style qui ne fixe que <code>enabled: true</code> garde sa parité (jusqu’à postext 1.4, le champ manquant venait plutôt de la valeur par défaut sans saut).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code> : chacun, une fois défini, remplace la valeur du niveau de titre pour les titres de ce style (<code>dropCap: false</code> retire la lettrine du niveau). <code>breakBefore</code> se fusionne champ par champ avec celui du niveau : un style qui ne fixe que <code>parity</code> garde le <code>enabled</code> du niveau, et un style qui ne fixe que <code>enabled: true</code> garde sa parité (jusqu’à postext 1.4, le champ manquant venait plutôt de la valeur par défaut sans saut). Un <code>figureStyle</code> fixé ici s’applique à la famille du niveau sur lequel le style est employé (voir [Styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

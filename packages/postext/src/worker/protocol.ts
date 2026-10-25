@@ -21,6 +21,10 @@ export interface FontPayload {
   weight: string;
   style: string;
   unicodeRange?: string;
+  /** The `featureSettings` descriptor of a feature family's face (#1237,
+   *  `fontFeatureSettings`): `family` is the feature family, the file its
+   *  base family's. */
+  featureSettings?: string;
   /** Transferred to the worker. Becomes detached on the sender side. */
   buffer: ArrayBuffer;
 }

@@ -25,6 +25,7 @@ import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides.js';
 import { defaultDocumentLocale } from '../../controls/hyphenation.js';
 import { TabStopsField } from '../settings/TabStopsField.js';
 import { DropCapFields } from '../settings/DropCapFields.js';
+import { FigureStyleField } from '../settings/FigureStyleField.js';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -203,6 +204,12 @@ function ParagraphStyleCard({
         onReset={() => onResetField('fontFamily')}
         searchPlaceholder={labels.bodyFontSearch}
         noResultsLabel={labels.bodyFontNoResults}
+      />
+      <FigureStyleField
+        value={style.figureStyle}
+        inherits
+        onChange={(v) => onChange({ figureStyle: v })}
+        onReset={() => onResetField('figureStyle')}
       />
       <DimensionInput
         label={labels.sizeLabel}

@@ -150,6 +150,61 @@ Quando esiste un’impaginazione, il pannello elenca anche il **Font di ripiego 
 
 Il pannello elenca anche i **Caratteri presi da un altro font** (`glyphFallback`): caratteri che il testo compone in un font privo di glifi per loro, una volta per font, con la famiglia generica che li ha disegnati (`serif`, `sans-serif`, `monospace`) quando il controllo può dirlo.
 
+## Stili delle cifre
+
+`figureStyle` chiede al font di uno stile di testo un certo tipo di cifre, attraverso le funzionalità OpenType del font: cifre elzeviriane nel testo corrente, cifre allineate tabulari nelle tabelle. Il campo si trova in `bodyText`, `paragraphStyles[]`, `headings` e `headings.levels[]`, `headingStyles[]`, `tableStyle` e `tableStyles[]` (celle di intestazione e di corpo allo stesso modo), `captionStyle` (etichetta e descrizione, e il `captionStyle` di un tipo di risorsa) e negli elementi di testo di un design (testatine, numeri di pagina, i testi di una pagina d’apertura o di una pagina di parte). Nella Sandbox è il campo **Cifre** del pannello Grafica, accanto al carattere di ciascuno di questi stili (**Testo corrente → Carattere** per il corpo del testo).
+
+<table>
+  <thead>
+    <tr>
+      <th>Valore</th>
+      <th>Funzionalità OpenType</th>
+      <th>Cifre</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>nessuna</td><td>Quelle del font. Toglie le cifre che uno stile eredita.</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>Cifre elzeviriane (minuscole), con ascendenti e discendenti come le lettere minuscole: testo corrente.</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>Cifre allineate (maiuscole), all’altezza delle maiuscole: titoli, testo in maiuscolo.</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>Cifre tabulari: tutte della stessa larghezza, perché le cifre di una colonna stiano in fila. La forma resta quella del font.</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>Cifre proporzionali: ciascuna con la propria larghezza. La forma resta quella del font.</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>Cifre elzeviriane con una sola larghezza.</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>Cifre elzeviriane con larghezze proprie.</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>Cifre allineate con una sola larghezza: tabelle, orari, listini prezzi.</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>Cifre allineate con larghezze proprie.</td></tr>
+  </tbody>
+</table>
+
+Una coppia fissa una forma e una larghezza. Un font senza la funzionalità mantiene le proprie cifre: controlla che il font abbia `onum` o `lnum` prima di contarci. Una famiglia di cui l’host non ha alcun file, come un font installato solo sul sistema del lettore (la Sandbox non li scarica), non prende alcuno stile delle cifre: il suo testo mantiene le cifre di quel font, nel font stesso. Un libro che carica file con quel nome ottiene le cifre. I tagli serviti da Google Fonts e Fontsource spesso lasciano fuori `onum` e `lnum` (il file latin di Source Serif 4 conserva solo `pnum` e `tnum`); con un file del genere, uno stile che li chiede mantiene le cifre del font. I file completi della fonderia li hanno: caricali per avere cifre elzeviriane o allineate. Una famiglia generica (`serif`, `sans-serif`) non prende funzionalità. Un valore fuori dalla lista viene segnalato come valore di impostazione sconosciuto (`unknownConfigValue`, vedi [Avvisi di configurazione](#avvisi-di-configurazione)) e letto come non impostato.
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+Il testo compone anni e numeri di pagina con cifre elzeviriane, e così fanno le didascalie e gli elenchi, che prendono la famiglia del corpo del testo. Le celle di tutte le tabelle e i paragrafi dello stile `timetable` mettono in colonna le cifre con cifre allineate tabulari. Tutti i livelli di titolo compongono cifre allineate nella famiglia dei titoli.
+
+### Quali cifre prende uno stile
+
+- Uno stile che prende la famiglia da un altro ne prende anche le cifre. Gli stili di paragrafo, le tabelle, le didascalie, gli elenchi e il contenuto dei riquadri prendono la famiglia del corpo del testo quando non ne nominano un’altra, quindi `bodyText.figureStyle` arriva a tutti.
+- Uno stile che nomina un proprio `fontFamily` compone le cifre predefinite di quel font, a meno che non imposti anche `figureStyle`.
+- Un livello di titolo senza un proprio `figureStyle` prende `headings.figureStyle`, anche nel proprio `fontFamily` quando ne nomina uno. Il `figureStyle` di uno stile di titolo si applica alla famiglia del livello su cui lo stile è usato.
+- Un elemento di testo di un design nomina una propria famiglia (`'EB Garamond'` come predefinita), quindi le cifre del corpo del testo non arrivano a un numero di pagina: imposta lì `figureStyle: 'oldstyle'` per accordarlo a un testo in cifre elzeviriane.
+- `'default'` compone le cifre del font e annulla quelle ereditate: `paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]` toglie a quello stile le cifre elzeviriane del corpo del testo.
+
+### Le cifre in ogni uscita
+
+Il testo viene misurato con le funzionalità, così le righe vanno a capo alle stesse larghezze nell’anteprima Canvas, nell’HTML, nel PDF e nell’EPUB, a layout fisso come fluido.
+
+- **Anteprima Canvas e worker di impaginazione**: il browser dichiara una seconda volta i file della famiglia di base con un nome di famiglia con funzionalità e il descrittore `featureSettings` di `FontFace`. Il nome è la famiglia seguita dalle sue funzionalità dopo `@` (`EB Garamond@onum`, `EB Garamond@lnum+tnum`) e compare nelle stringhe di font e in alcuni avvisi.
+- **HTML ed EPUB** (layout fisso e fluido): la famiglia di base, con `font-variant-numeric` (`oldstyle-nums`, `lining-nums tabular-nums`).
+- **PDF**: incorpora i file della famiglia di base e compone il testo con le funzionalità.
+- **Riga di comando**: Skia, il canvas con cui disegna `postext`, non applica funzionalità. La riga di comando registra una copia del font la cui `cmap` porta ogni carattere che le funzionalità sostituiscono, le cifre, al glifo che scelgono. Si prendono solo le sostituzioni semplici; un font che arriva alle proprie cifre con sostituzioni contestuali lì mantiene le sue.
+
 ## Tavolozza dei colori
 
 La proprietà `colorPalette` di `PostextConfig` ti permette di definire un insieme riutilizzabile di colori con nome e di richiamarli da qualsiasi `ColorValue` della configurazione. È l’equivalente in Postext delle proprietà personalizzate CSS o del pannello Campioni di InDesign: modifichi una volta la voce della tavolozza, e ogni colore che vi punta si aggiorna in tutto il documento.

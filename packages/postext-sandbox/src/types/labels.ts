@@ -1131,6 +1131,18 @@ export interface SandboxLabels {
   bodyEmphasisBold: string;
   bodyEmphasisColor: string;
   bodyEmphasisOverline: string;
+  figureStyle: string;
+  figureStyleTooltip: string;
+  figureStyleFontDefault: string;
+  figureStyleInherited: string;
+  figureStyleOldstyle: string;
+  figureStyleLining: string;
+  figureStyleTabular: string;
+  figureStyleProportional: string;
+  figureStyleOldstyleTabular: string;
+  figureStyleOldstyleProportional: string;
+  figureStyleLiningTabular: string;
+  figureStyleLiningProportional: string;
   bodyTashkil: string;
   bodyTashkilTooltip: string;
   bodyTashkilKeep: string;

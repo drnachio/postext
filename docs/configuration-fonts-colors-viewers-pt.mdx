@@ -150,6 +150,61 @@ Quando já existe uma diagramação, o painel também lista o aviso do motor **F
 
 O painel também lista **Caracteres tirados de outra fonte** (`glyphFallback`): caracteres que o texto põe numa fonte que não tem glifo para eles, uma vez por fonte, com a família genérica que os desenhou (`serif`, `sans-serif`, `monospace`) quando a verificação consegue saber.
 
+## Estilos de algarismos
+
+`figureStyle` pede à fonte de um estilo de texto um tipo de algarismos, por meio dos recursos OpenType da fonte: algarismos de estilo antigo no texto corrido, algarismos alinhados tabulares nas tabelas. O campo existe em `bodyText`, `paragraphStyles[]`, `headings` e `headings.levels[]`, `headingStyles[]`, `tableStyle` e `tableStyles[]` (células de cabeçalho e de corpo do mesmo jeito), `captionStyle` (rótulo e descrição, e o `captionStyle` de um tipo de recurso) e nos elementos de texto de um design (cabeços, fólios, os textos de uma página de abertura ou de uma página de parte). No Sandbox é o campo **Algarismos** do painel Design, ao lado do tipo de cada um desses estilos (**Texto do corpo → Tipo** para o corpo do texto).
+
+<table>
+  <thead>
+    <tr>
+      <th>Valor</th>
+      <th>Recursos OpenType</th>
+      <th>Algarismos</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>nenhum</td><td>Os da própria fonte. Tira os algarismos que um estilo herda.</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>Algarismos de estilo antigo, com ascendentes e descendentes como as minúsculas: texto corrido.</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>Algarismos alinhados, na altura das maiúsculas: títulos, texto em caixa-alta.</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>Algarismos tabulares: todos com a mesma largura, para que os dígitos de uma coluna fiquem alinhados. A forma continua a da fonte.</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>Algarismos proporcionais: cada um com a sua largura. A forma continua a da fonte.</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>Algarismos de estilo antigo com uma só largura.</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>Algarismos de estilo antigo com larguras próprias.</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>Algarismos alinhados com uma só largura: tabelas, horários, listas de preços.</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>Algarismos alinhados com larguras próprias.</td></tr>
+  </tbody>
+</table>
+
+Um par define uma forma e uma largura. Uma fonte sem o recurso mantém os próprios algarismos, então confira se a fonte tem `onum` ou `lnum` antes de contar com eles. Uma família da qual o host não tem arquivo, como uma fonte instalada só no sistema do leitor (o Sandbox não as baixa), não recebe nenhum estilo de algarismos: o texto mantém os algarismos dessa fonte, na própria fonte. Um livro que envia arquivos com esse nome recebe os algarismos. Os cortes que o Google Fonts e o Fontsource servem costumam deixar `onum` e `lnum` de fora (o arquivo latin da Source Serif 4 só mantém `pnum` e `tnum`); com um arquivo assim, um estilo que os pede mantém os algarismos da própria fonte. Os arquivos completos da fundição têm esses recursos: envie-os para ter algarismos de estilo antigo ou alinhados. Uma família genérica (`serif`, `sans-serif`) não recebe recursos. Um valor fora da lista é informado como valor de configuração desconhecido (`unknownConfigValue`, veja [Avisos de configuração](#avisos-de-configuração)) e lido como não definido.
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+O texto compõe anos e números de página em algarismos de estilo antigo, e o mesmo fazem as legendas e as listas, que recebem a família do corpo do texto. As células de todas as tabelas e os parágrafos do estilo `timetable` alinham os dígitos em algarismos alinhados tabulares. Todos os níveis de título compõem algarismos alinhados na família dos títulos.
+
+### Que algarismos cada estilo recebe
+
+- Um estilo que recebe a família de outro recebe também os algarismos dele. Os estilos de parágrafo, as tabelas, as legendas, as listas e o conteúdo dos boxes recebem a família do corpo do texto quando não nomeiam outra, então `bodyText.figureStyle` chega a todos eles.
+- Um estilo que nomeia a própria `fontFamily` compõe os algarismos padrão dessa fonte, a menos que também defina `figureStyle`.
+- Um nível de título sem `figureStyle` próprio recebe `headings.figureStyle`, também na própria `fontFamily` quando nomeia uma. O `figureStyle` de um estilo de título vale para a família do nível em que o estilo é usado.
+- Um elemento de texto de um design nomeia a própria família (`'EB Garamond'` por padrão), então os algarismos do corpo do texto não chegam a um fólio: defina nele `figureStyle: 'oldstyle'` para combinar com um texto em algarismos de estilo antigo.
+- `'default'` compõe os algarismos da própria fonte e anula os herdados: `paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]` tira desse estilo os algarismos de estilo antigo do corpo do texto.
+
+### Os algarismos em cada saída
+
+O texto é medido com os recursos, então as linhas quebram nas mesmas larguras na visualização do Canvas, no HTML, no PDF e no EPUB, em layout fixo e refluível.
+
+- **Visualização do Canvas e worker de layout**: o navegador declara de novo os arquivos da família base com um nome de família com recursos e o descritor `featureSettings` de `FontFace`. O nome é a família seguida dos recursos depois de `@` (`EB Garamond@onum`, `EB Garamond@lnum+tnum`) e aparece nas strings de fonte e em alguns avisos.
+- **HTML e EPUB** (layout fixo e refluível): a família base, com `font-variant-numeric` (`oldstyle-nums`, `lining-nums tabular-nums`).
+- **PDF**: incorpora os arquivos da família base e compõe o texto com os recursos.
+- **Linha de comando**: o Skia, o canvas com que o `postext` desenha, não aplica recursos. A linha de comando registra uma cópia da fonte cujo `cmap` leva cada caractere que os recursos substituem, os dígitos, ao glifo que eles escolhem. Só as substituições simples são consideradas; uma fonte que chega aos algarismos por substituições contextuais mantém ali os próprios algarismos.
+
 ## Paleta de cores
 
 A propriedade `colorPalette` de `PostextConfig` permite definir um conjunto reutilizável de cores com nome e referenciá-las a partir de qualquer `ColorValue` da configuração. É o equivalente, no Postext, às propriedades personalizadas do CSS ou ao painel de amostras do InDesign: você muda a entrada da paleta uma vez, e todas as cores que apontam para ela se atualizam no documento inteiro.

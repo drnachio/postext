@@ -274,6 +274,12 @@ const config: PostextConfig = {
       <td>表头单元格的字体。</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>单元格字体族的数字</td>
+      <td>所有单元格（表头和表体）的数字：<code>'lining-tabular'</code>让一栏的各位对齐。未设置时，单元格随正文字体族一起取用正文的数字。具名表格样式可以设置自己的。见[数字样式](/zh/docs/configuration-fonts-colors-viewers#数字样式)。</td>
+    </tr>
+    <tr>
       <td><code>headerFontSize</code></td>
       <td><code>Dimension</code></td>
       <td>正文字号</td>
@@ -616,6 +622,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td>正文字体</td>
       <td>题注字体（标签和描述）。</td>
+    </tr>
+    <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>其字体族的数字</td>
+      <td>标签和说明文字的数字。未设置时，使用正文字体族的题注取用正文的数字。资源类型的<code>captionStyle</code>可以设置自己的。见[数字样式](/zh/docs/configuration-fonts-colors-viewers#数字样式)。</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>

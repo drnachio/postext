@@ -27,7 +27,7 @@ const COMMON = { kind: true, id: true, parity: true, pages: true, when: true, un
 const PLACED = { ...COMMON, reserve: true, placement: true } as const;
 
 export const DESIGN_TEXT_KEYS = {
-  ...PLACED, content: true, fontFamily: true, fontSize: true, fontWeight: true, italic: true, color: true, align: true,
+  ...PLACED, content: true, fontFamily: true, figureStyle: true, fontSize: true, fontWeight: true, italic: true, color: true, align: true,
   direction: true, verticalAlign: true, lineHeight: true, letterSpacing: true, overflow: true, hyphenate: true,
   textTransform: true, box: true, dropCap: true, paragraphIndent: true, inlineMarks: true, stroke: true, dotted: true,
   repeat: true, writingMode: true, over: true,

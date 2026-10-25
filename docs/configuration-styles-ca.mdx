@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Família tipogràfica. Els pesos es fixen amb <code>fontWeight</code> / <code>boldFontWeight</code>, més avall (si no s'indiquen, són els del text de cos).</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>les de la seva família</td>
+      <td>Les xifres de l'estil: <code>'lining-tabular'</code> per a una llista de dates o d'hores. Sense fixar, l'estil pren les xifres del cos amb la seva família; un estil que nomena el seu <code>fontFamily</code> posa les d'aquesta font. Vegeu [Estils de xifres](/ca/docs/configuration-fonts-colors-viewers#estils-de-xifres).</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>mida del text de cos</td>
@@ -1146,7 +1152,7 @@ const config: PostextConfig = {
       <td>camps de nivell</td>
       <td>com a <code>headings.levels[]</code></td>
       <td>els valors del nivell</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada camp que es fixa substitueix el valor del nivell per als encapçalaments d'aquest estil (<code>dropCap: false</code> treu la caplletra del nivell). <code>breakBefore</code> es combina camp per camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la paritat del nivell (fins a postext 1.4, en canvi, el camp que faltava s'omplia amb el valor sense salt).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada camp que es fixa substitueix el valor del nivell per als encapçalaments d'aquest estil (<code>dropCap: false</code> treu la caplletra del nivell). <code>breakBefore</code> es combina camp per camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la paritat del nivell (fins a postext 1.4, en canvi, el camp que faltava s'omplia amb el valor sense salt). Un <code>figureStyle</code> fixat aquí s'aplica a la família del nivell on es fa servir l'estil (vegeu [Estils de xifres](/ca/docs/configuration-fonts-colors-viewers#estils-de-xifres)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

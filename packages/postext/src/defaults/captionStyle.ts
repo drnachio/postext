@@ -9,6 +9,7 @@ import type {
 } from '../types.js';
 import { DEFAULT_MAIN_COLOR, colorsEqual, dimensionsEqual, resolveColor, startEndAsLeftRight } from './shared.js';
 import { isJapaneseLanguage } from '../locale.js';
+import { withFigureStyle } from '../fonts/figureStyle.js';
 
 /** Ratio of the note size to the caption size when `note.fontSize` is unset. */
 const NOTE_SIZE_RATIO = 0.85;
@@ -83,7 +84,7 @@ export function resolveCaptionStyleConfig(
   const color = p.color ?? bodyText.color;
   const fontSize = p.fontSize ?? bodyText.fontSize;
   return {
-    fontFamily: p.fontFamily ?? bodyText.fontFamily,
+    fontFamily: withFigureStyle(p.fontFamily ?? bodyText.fontFamily, p.figureStyle),
     fontSize,
     color,
     align: startEndAsLeftRight(p.align ?? STATIC_DEFAULTS.align),
@@ -126,7 +127,7 @@ export function mergeCaptionStyle(
   const noteSizeFollows = dimensionsEqual(base.note.fontSize, defaultNoteFontSize(base.fontSize));
   const n = o.note ?? {};
   return {
-    fontFamily: o.fontFamily ?? base.fontFamily,
+    fontFamily: withFigureStyle(o.fontFamily ?? base.fontFamily, o.figureStyle),
     fontSize,
     color,
     align: startEndAsLeftRight(o.align ?? base.align),
@@ -180,6 +181,7 @@ export function stripCaptionStyleDefaults(
   let has = false;
 
   if (captionStyle.fontFamily !== undefined) { r.fontFamily = captionStyle.fontFamily; has = true; }
+  if (captionStyle.figureStyle !== undefined) { r.figureStyle = captionStyle.figureStyle; has = true; }
   if (captionStyle.fontSize !== undefined) { r.fontSize = captionStyle.fontSize; has = true; }
   if (captionStyle.color !== undefined) { r.color = captionStyle.color; has = true; }
   if (captionStyle.labelColor !== undefined) { r.labelColor = captionStyle.labelColor; has = true; }

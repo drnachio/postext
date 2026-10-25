@@ -3,7 +3,7 @@ import { buildDocument, buildDocumentPass } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, VDTDocument, VDTPage } from '../../index.js';
 import { parseMarkdown } from '../../parse/index.js';
-import { resolveTrailingCaps, type BandCap, type BandPassReport } from '../../pipeline/bandCaps.js';
+import { MAX_BAND_PASSES, MAX_TRAILING_CAP_PASSES, resolveTrailingCaps, type BandCap, type BandPassReport } from '../../pipeline/bandCaps.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -210,6 +210,43 @@ describe('trailing band balance', () => {
     expect([...out.caps.keys()]).toEqual([300]);
     expect(out.result.ranWith).toEqual([300]);
     expect(out.result.spanPlacedInBand.has(300)).toBe(true);
+  });
+
+  // Driver-level (#1253): a long flow of span headings opening mid-page.
+  // Each boundary's cap lands only once the caps before it have: until
+  // then its band opens elsewhere (not applied) and the pass proposes it
+  // afresh. Out of its first MAX_BAND_PASSES the driver gave up with most
+  // of the caps undelivered; it now goes on while the first failing
+  // boundary moves on, and stops once it stays put.
+  it('follows caps that land one after another down a long flow', () => {
+    const boundaries = Array.from({ length: 12 }, (_, i) => (i + 1) * 10);
+    const cap = (k: number): BandCap => ({ kind: 'trailing', startContentIndex: k - 1, startPart: 0, lines: 6, retries: 0 });
+    const report = (placed: number[], applied: number[], proposals: number[]): BandPassReport => ({
+      bandCapProposals: new Map(proposals.map((k) => [k, cap(k)])),
+      spanPlacedInBand: new Set(placed),
+      bandCapsApplied: new Set(applied),
+    });
+    let passes = 0;
+    const out = resolveTrailingCaps(report([], [], boundaries), new Map(), () => {
+      passes++;
+      const placed = boundaries.slice(0, passes);
+      const pending = boundaries.slice(passes);
+      return report(placed, placed, pending);
+    });
+    expect(passes).toBeGreaterThan(MAX_BAND_PASSES);
+    expect(passes).toBeLessThanOrEqual(MAX_TRAILING_CAP_PASSES);
+    expect([...out.caps.keys()].sort((a, b) => a - b)).toEqual(boundaries);
+    expect(out.result.spanPlacedInBand.size).toBe(boundaries.length);
+
+    // A front that stops moving ends the passes: boundary 30 never lands.
+    let stuck = 0;
+    const stalled = resolveTrailingCaps(report([], [], boundaries), new Map(), () => {
+      stuck++;
+      const placed = boundaries.slice(0, Math.min(stuck, 2));
+      return report(placed, placed, boundaries.slice(placed.length));
+    });
+    expect(stuck).toBeLessThan(2 + 2 * MAX_BAND_PASSES + boundaries.length);
+    expect([...stalled.caps.keys()].sort((a, b) => a - b)).toEqual([10, 20]);
   });
 
   // Driver-level: a cap that runs out of retries in the last round is

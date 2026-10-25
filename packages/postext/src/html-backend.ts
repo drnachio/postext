@@ -1,3 +1,4 @@
+import { featureFontCss } from './fonts/figureStyle.js';
 import { footnoteRuleSegments } from './columnRule.js';
 import type {
   VDTDocument,
@@ -4134,15 +4135,17 @@ export function renderToHtmlIndexed(
       : { ...options, ...(svgUrl ? { svgUrl } : {}), linkTargets, ...anchorPaint };
     const gridCells = doc.config.cjk?.grid?.show && !p.comic ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
     const detail = renderPageDetailed(p, p.background ?? background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
-    pageHtmlParts.push(detail.outerHtml);
+    // A style's figures (#1237): its feature family is set as the base
+    // family with `font-variant-numeric`.
+    pageHtmlParts.push(featureFontCss(detail.outerHtml));
     indexedPages.push({
       index: p.index,
       width: p.width,
       height: p.height,
-      innerHtml: detail.innerHtml,
-      blocks: detail.blocks,
-      decorationHtml: detail.decorationHtml,
-      ...(detail.comicHtml ? { comicHtml: detail.comicHtml } : {}),
+      innerHtml: featureFontCss(detail.innerHtml),
+      blocks: detail.blocks.map((b) => ({ ...b, html: featureFontCss(b.html) })),
+      decorationHtml: featureFontCss(detail.decorationHtml),
+      ...(detail.comicHtml ? { comicHtml: featureFontCss(detail.comicHtml) } : {}),
     });
   }
   shapedText = null;

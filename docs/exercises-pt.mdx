@@ -219,7 +219,7 @@ Circule os verbos: A menina [[rega]] as plantas e o Sol as [[aquece]].
 :::
 ```
 
-O texto sai como está; as palavras entre `[[…]]` são as que devem ser marcadas. Nas respostas elas aparecem circuladas, ou então dentro de um quadro, sublinhadas ou destacadas com `mark=box|underline|highlight` no delimitador, ou palavra por palavra com `[[rega]]{mark=underline}`.
+O texto sai como está; as palavras entre `[[…]]` são as que devem ser marcadas. Nas respostas elas aparecem circuladas, ou então dentro de um quadro, sublinhadas ou destacadas com `mark=box|underline|highlight` no delimitador, ou palavra por palavra com `[[rega]]{mark=underline}`. Na tela, qualquer palavra do texto pode ser marcada, e uma palavra marcada por engano conta como resposta errada.
 
 ### Perguntas abertas e áreas de escrita
 
@@ -233,7 +233,7 @@ Elas usam a luz para produzir o próprio alimento.
 :::
 ```
 
-Linhas pautadas para escrever vêm depois do enunciado: três por padrão, quatro aqui com `lines=4`. Quando o corpo é uma lista, cada item ganha suas próprias linhas. `area` muda o pautado: `lines`, `dots`, `grid` (papel quadriculado), `seyes` (o pautado escolar francês), `tianzige` (田字格, os quadrados em que os alunos chineses escrevem os caracteres), `box` (uma moldura vazia, para um desenho) ou `none`. O `:::solution` é a resposta-modelo, impressa com as soluções e escrita sobre as linhas numa edição do professor.
+Linhas pautadas para escrever vêm depois do enunciado: três por padrão, quatro aqui com `lines=4`. Quando o corpo é uma lista, cada item ganha suas próprias linhas. `area` muda o pautado: `lines`, `dots`, `grid` (papel quadriculado), `seyes` (o pautado escolar francês), `tianzige` (田字格, os quadrados em que os alunos chineses escrevem os caracteres), `box` (uma moldura vazia, para um desenho) ou `none`. O `:::solution` é a resposta-modelo, impressa com as soluções e escrita sobre as linhas numa edição do professor. Na tela, `area=none` no delimitador não deixa onde escrever: serve para um exercício feito em voz alta ou com um colega. Um estilo com `area.kind` em `none` só desenha a área sem pauta.
 
 `cells` dá aos quadradinhos (`grid` ou `tianzige`, papel quadriculado quando o estilo pauta linhas) esse número de casas: `cells=4`. Vários números põem grupos lado a lado, a um quadradinho de distância, um por palavra, que passam para a linha seguinte no fim da linha: `cells="2 2 3"`. A edição do professor escreve a resposta modelo um caractere por quadradinho, grupo após grupo.
 
@@ -356,7 +356,7 @@ O painel **Verificações** do Sandbox e `collectContentWarnings` informam o que
 
 ## Exercícios em HTML e EPUB
 
-No visualizador HTML e nos livros EPUB, os exercícios podem ser respondidos. O leitor digita nas lacunas e clica em alternativas, afirmações, pontos para ligar e casas de uma grade; depois confere as respostas, mostra a solução ou recomeça. As respostas certas e erradas aparecem com uma cor e uma marca (`digital.correctColor`, `digital.wrongColor`) e são anunciadas aos leitores de tela. As respostas ficam guardadas no navegador, por livro, e o leitor as encontra de novo na próxima visita (`exercises.digital.persist`). `exercises.digital.check: 'instant'` confere cada resposta assim que ela é dada; `exercises.digital.interactive: false` deixa as páginas como no impresso. O gabarito sempre vai no EPUB, seja qual for a posição escolhida para o impresso; assim, um sistema de leitura que não executa scripts também tem as respostas. No EPUB refluível, as grades e as áreas de escrita crescem com o texto do leitor, e numa página da direita para a esquerda as casas a responder seguem a grade espelhada.
+No visualizador HTML e nos livros EPUB, os exercícios podem ser respondidos. O leitor digita nas lacunas e clica em alternativas, afirmações, pontos para ligar e casas de uma grade; depois confere as respostas, mostra a solução ou recomeça. As respostas certas e erradas aparecem com uma cor e uma marca (`digital.correctColor`, `digital.wrongColor`) e são anunciadas aos leitores de tela. As respostas ficam guardadas no navegador, por livro, e o leitor as encontra de novo na próxima visita (`exercises.digital.persist`). `exercises.digital.check: 'instant'` confere cada resposta assim que ela é dada; `exercises.digital.interactive: false` deixa as páginas como no impresso. O gabarito sempre vai no EPUB, seja qual for a posição escolhida para o impresso; assim, um sistema de leitura que não executa scripts também tem as respostas. No EPUB refluível, as grades e as áreas de escrita crescem com o texto do leitor, e numa página da direita para a esquerda as casas a responder seguem a grade espelhada. Os pares se ligam clicando em um ponto e depois no outro, ou arrastando de um ao outro, e as palavras de um exercício de classificar são arrastadas para a sua coluna ou escolhidas em um menu. A barra tem só os botões que fazem alguma coisa: não aparece “Verificar” quando não há nada para verificar, nem “Ver a resposta” sem resposta, nem barra nenhuma quando não há nada a responder.
 
 A tela pode dar aos exercícios uma forma própria com `htmlViewer.overrides`, que é mesclado sobre a configuração do livro antes de o visualizador HTML diagramar. O impresso mantém a sua:
 

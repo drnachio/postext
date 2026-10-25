@@ -23,6 +23,8 @@ import {
 import { isFontSetTracked, syncFontSet, watchFonts } from './fontSet.js';
 import { registerFontBytes, registerFontUrl } from '../svg/fontRegistry.js';
 import { installGlyphProbe, registerFontCoverage } from './glyphFallback.js';
+import { declareFeatureFaces, rememberFaceSource } from './featureFaces.js';
+import { featureFamilyParts, fontFeatureSettings } from './figureStyle.js';
 
 /** A font file: its bytes, or the URL to fetch it from (a CSS `src`
  *  value — `url(…)`, `local(…)` — is taken as written). */
@@ -281,11 +283,18 @@ async function loadFaces(
   const touched = new Set<string>();
   const toAdd: FontFaceLike[][] = faces.map(() => []);
   await Promise.all(faces.map(async (f, i) => {
+    // A feature family (#1237): the files of its base family, declared
+    // with its features — from the faces of the base family the set holds,
+    // else from the resolver's files of the base family.
+    const parts = featureFamilyParts(f.family);
+    const feature = parts.features.length > 0;
+    const fileFamily = feature ? parts.family : f.family;
+    if (feature) declareFeatureFaces(fontSet, f.family, FontFaceCtor);
     let declared = declaredFaces(fontSet, f.family);
     if (!hasExactFace(declared, f) && options.resolve) {
       let files: FontFile[] = [];
       try {
-        files = normalizeAnswer(await until(Promise.resolve(options.resolve(f.family, f.weight, f.style, request)), deadline, null));
+        files = normalizeAnswer(await until(Promise.resolve(options.resolve(fileFamily, f.weight, f.style, request)), deadline, null));
       } catch {
         files = [];
       }
@@ -295,15 +304,19 @@ async function loadFaces(
             weight: String(file.weight ?? f.weight),
             style: file.style ?? f.style,
             ...(file.unicodeRange ? { unicodeRange: file.unicodeRange } : {}),
+            ...(feature ? { featureSettings: fontFeatureSettings(parts.features) } : {}),
           };
           const source = typeof file.source === 'string' ? cssSource(file.source) : file.source;
-          return { file, face: new FontFaceCtor(f.family, source, descriptors), descriptors };
+          const face = new FontFaceCtor(f.family, source, descriptors);
+          // The file a feature family of this family is declared from.
+          if (!feature) rememberFaceSource(face, source, descriptors);
+          return { file, face, descriptors };
         });
         const loaded = await Promise.all(made.map(async ({ face }) => (face.load ? until(face.load().then(() => true), deadline, false) : true)));
         made.forEach(({ file, face, descriptors }, k) => {
           if (!loaded[k]) return;
           toAdd[i]!.push(face);
-          if (options.register !== false) {
+          if (options.register !== false && !feature) {
             const style = String(descriptors.style);
             if (typeof file.source === 'string') {
               if (!/^\s*local\(/i.test(file.source)) registerFontUrl(f.family, String(descriptors.weight), style, file.source.replace(/^\s*url\(\s*["']?|["']?\s*\)\s*$/g, ''), { unicodeRange: file.unicodeRange });
@@ -321,7 +334,9 @@ async function loadFaces(
           return;
         }
       }
-      // The resolver may have declared the face itself.
+      // The resolver may have declared the face itself (the base
+      // family's, for a feature family).
+      if (feature) declareFeatureFaces(fontSet, f.family, FontFaceCtor);
       declared = declaredFaces(fontSet, f.family);
     }
     if (declared.length > 0) {

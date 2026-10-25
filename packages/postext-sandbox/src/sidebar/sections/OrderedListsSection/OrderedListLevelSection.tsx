@@ -1,7 +1,7 @@
 'use client';
 
 import type { useSandboxLabels } from '../../../context/SandboxContext.js';
-import { dimensionsEqual, colorsEqual } from 'postext';
+import { baseFontFamily, dimensionsEqual, colorsEqual } from 'postext';
 import type {
   OrderedListLevelConfig,
   ResolvedOrderedListLevelConfig,
@@ -60,7 +60,8 @@ export function OrderedListLevelSection({
   const isNumberFormatDefault = resolved.numberFormat === generalNumberFormat;
   const isSeparatorDefault = resolved.separator === generalSeparator;
   const isPrefixDefault = resolved.prefix === generalPrefix;
-  const isFontDefault = resolved.fontFamily === generalFont;
+  // Either family may carry the body's figures (#1237): compare the families.
+  const isFontDefault = baseFontFamily(resolved.fontFamily) === baseFontFamily(generalFont);
   const isFontSizeDefault = dimensionsEqual(resolved.fontSize, generalFontSize);
   const isColorDefault = colorsEqual(resolved.color, generalColor);
   const isFontWeightDefault = resolved.fontWeight === generalFontWeight;

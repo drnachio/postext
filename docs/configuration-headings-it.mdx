@@ -38,6 +38,12 @@ La proprietà `headings` controlla la tipografia di tutti i livelli di titolo (H
       <td>Famiglia di caratteri per tutti i titoli.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>quelle del font</td>
+      <td>Le cifre di tutti i livelli: <code>'lining'</code> accanto a un testo in cifre elzeviriane. Vince il <code>figureStyle</code> proprio di un livello. Vedi [Stili delle cifre](/it/docs/configuration-fonts-colors-viewers#stili-delle-cifre).</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -172,7 +178,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Quando la configurazione proviene da un salvataggio, il motore riconosce che è vecchia e lo fa per te: la Sandbox per i libri e le configurazioni che ha salvato allora (vedi **Sandbox → Persistenza**), e `openBundle` / `readBundle` per un pacchetto `.postext` scritto da postext 1.4 o precedenti (vedi [Pacchetti scritti da postext 1.4 o precedenti](/it/docs/configuration-bundles#pacchetti-scritti-da-postext-14-o-precedenti)). Una configurazione che hai salvato da te può passare per `migrateConfig(config)` di `postext/bundle`, che scrive esplicitamente le interruzioni che la 1.4 impaginava (`pinLegacyHeadingBreaks`): `enabled: false` su un H1 che non aveva interruzione, e `parity: 'any'` accanto a un `enabled: true` che non indicava alcuna parità, sull’H1 e sugli stili dei titoli. Fissa anche la dimensione delle formule, lo spazio attorno alle figure in linea (anche nei riquadri), i marcatori in linea dei titoli, le dimensioni dei capilettera, lo spazio sotto una riga con i due punti che introduce un elenco, le righe di un paragrafo o di una voce di elenco che restano prima del taglio di un riquadro, gli a capo alle lineette, la divisione riga per riga del testo in bandiera, la divisione di un paragrafo sotto un titolo, gli a capo al trattino di una parola composta e lo spazio sotto i contenitori `:::paragraphs`, come li componeva la 1.4. Se gli passi il Markdown del libro come terzo argomento, `{ content }`, esclude la fissazione delle formule quando il testo non ha `$`, quelle degli spazi attorno alle figure in linea quando nessuna riga inserisce una risorsa (quella dei riquadri quando nessuna lo fa in un riquadro), quella dei marcatori dei titoli quando nessun titolo contiene un marcatore, quella della riga con i due punti quando nessun elenco segue una riga che termina con i due punti, quella del taglio dei riquadri quando il testo non apre alcun `:::callout`, quella delle lineette quando nessuna lineetta è composta senza spazi tra due parole, quella della divisione sotto i titoli quando il testo non ha titoli, quella dei contenitori quando il testo non apre alcun contenitore `:::paragraphs`, e quella delle parole composte quando nessun trattino sta tra due lettere; la fissazione della divisione in bandiera va solo a una configurazione che compone in bandiera una parte del testo corrente, e quella dei contenitori solo a una che dichiara uno stile di paragrafo (vedi [Pacchetti scritti da postext 1.4 o precedenti](/it/docs/configuration-bundles#pacchetti-scritti-da-postext-14-o-precedenti)). Per le sole interruzioni, chiama `pinLegacyHeadingBreaks(config)`.
 
-Le sovrascritture per livello supportano le stesse proprietà dei valori predefiniti generali (`fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`) più questi campi propri dei livelli (che accetta anche uno [stile di titolo](/it/docs/configuration-styles#stili-dei-titoli)):
+Le sovrascritture per livello supportano le stesse proprietà dei valori predefiniti generali (`fontSize`, `lineHeight`, `fontFamily`, `figureStyle`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`) più questi campi propri dei livelli (che accetta anche uno [stile di titolo](/it/docs/configuration-styles#stili-dei-titoli)):
 
 <table>
   <thead>

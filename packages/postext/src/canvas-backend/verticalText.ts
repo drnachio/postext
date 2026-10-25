@@ -35,6 +35,7 @@ import { forcedVerticalRuns, verticalRuns, CORNER_OFFSET_EM, type ForcedOrientat
 import { graphemeCount, graphemesOf } from '../measure/graphemes.js';
 import { markPieces, type MarkCutRule } from '../measure/markCuts.js';
 import { measureRunWidth, withMeasureLanguage } from '../measure/canvas.js';
+import { baseFontFamily } from '../fonts/figureStyle.js';
 import { hasCJK } from '../measure/cjk.js';
 import { fillTrackedWord } from './trackedText.js';
 import { languageOf, letterSpacingOf, restoreContext, saveContext, setLetterSpacing } from './contextState.js';
@@ -141,7 +142,7 @@ export function unregisterVerticalAlternates(family?: string): void {
 
 /** The twin family registered for `family`, if any. */
 export function verticalAlternatesOf(family: string): string | undefined {
-  return twins.get(family);
+  return twins.get(family) ?? twins.get(baseFontFamily(family));
 }
 
 /** The family name a twin of `family` is registered under by
@@ -457,7 +458,9 @@ function paintVertical(
   const align = ctx.textAlign;
   if (middle) ctx.textBaseline = 'alphabetic';
   if (align !== 'left' && align !== 'start') ctx.textAlign = 'left';
-  const twin = twins.get(family);
+  // A feature family (a style's figures, #1237) paints its vertical forms
+  // with its base family's twin.
+  const twin = twins.get(family) ?? twins.get(baseFontFamily(family));
   const twinFont = twin ? `${prefix}${JSON.stringify(twin)}` : undefined;
   let cx = x;
   const graphemes = graphemesOf(text);

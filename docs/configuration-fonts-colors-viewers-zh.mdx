@@ -150,6 +150,61 @@ interface PostextConfig {
 
 面板还会列出**字符取自其他字体**（`glyphFallback`）：文本用某字体排、而该字体没有字形的字符，每个字体一条；检查能判断时，还会给出绘制它们的通用字体族（`serif`、`sans-serif`、`monospace`）。
 
+## 数字样式
+
+`figureStyle`通过字体的OpenType特性，让文本样式的字体使用某一种数字：正文用旧式数字，表格用等宽的等高数字。这个字段出现在`bodyText`、`paragraphStyles[]`、`headings`和`headings.levels[]`、`headingStyles[]`、`tableStyle`和`tableStyles[]`（表头单元格和表体单元格都适用）、`captionStyle`（标签和说明文字，也包括资源类型的`captionStyle`），以及设计中的文本元素（页眉、页码、章首页或篇页上的文字）。在沙盒中，它是版面设计面板里各个样式字体旁边的**数字样式**字段（正文为**正文 › 字体**）。
+
+<table>
+  <thead>
+    <tr>
+      <th>值</th>
+      <th>OpenType特性</th>
+      <th>数字</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>无</td><td>字体自身的数字。去掉样式继承来的数字。</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>旧式数字，像小写字母一样有上伸部和下伸部，用于正文。</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>等高数字，与大写字母同高，用于标题和全大写文字。</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>等宽数字：所有数字宽度相同，一栏中的各位上下对齐。字形保持字体原样。</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>比例数字：每个数字有自己的宽度。字形保持字体原样。</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>等宽的旧式数字。</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>比例宽度的旧式数字。</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>等宽的等高数字：表格、时刻表、价目表。</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>比例宽度的等高数字。</td></tr>
+  </tbody>
+</table>
+
+组合值同时决定字形和宽度。没有该特性的字体保留自身的数字，所以依赖它之前先确认字体有`onum`或`lnum`。宿主程序没有文件的字体族，例如只安装在读者系统上的字体（沙盒不会下载这类字体），不接受数字样式：其文字在该字体本身中保留字体自身的数字。用这个名称上传了文件的书则能得到这些数字。Google Fonts和Fontsource提供的切分文件常常去掉`onum`和`lnum`（Source Serif 4的latin文件只保留`pnum`和`tnum`）；用这样的文件时，要求这些特性的样式保留字体自身的数字。字体厂商发布的完整文件带有这些特性，上传它们即可得到旧式数字或等高数字。通用字体族（`serif`、`sans-serif`）不接受特性。列表之外的值会作为未知设置值报告（`unknownConfigValue`，见[配置警告](#配置警告)），并按未设置处理。
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+正文的年份和页码用旧式数字排出，沿用正文字体族的题注和列表也是如此。所有表格的单元格和`timetable`样式的段落用等宽的等高数字对齐各位。各级标题都在标题的字体族中使用等高数字。
+
+### 样式取用哪种数字
+
+- 从另一个样式取用字体族的样式，也取用它的数字。段落样式、表格、题注、列表和标注框的正文在没有指定其他字体族时使用正文字体族，所以`bodyText.figureStyle`会作用到它们全部。
+- 指定了自己的`fontFamily`的样式，使用该字体的默认数字，除非它也设置了`figureStyle`。
+- 没有自己`figureStyle`的标题级别取用`headings.figureStyle`；级别指定了自己的`fontFamily`时也一样。标题样式的`figureStyle`作用于使用该样式的级别的字体族。
+- 设计中的文本元素指定自己的字体族（默认为`'EB Garamond'`），所以正文的数字不会作用到页码：要与旧式数字的正文相配，就在元素上设置`figureStyle: 'oldstyle'`。
+- `'default'`使用字体自身的数字，取消继承来的数字：`paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]`为该样式去掉正文的旧式数字。
+
+### 各种输出中的数字
+
+文本按启用特性后的宽度测量，所以在Canvas预览、HTML、PDF和EPUB（固定版式与流式版式）中，各行在相同的宽度处断行。
+
+- **Canvas预览和布局worker**：浏览器以带特性的字体族名称再次声明基础字体族的文件，并加上`FontFace`的`featureSettings`描述符。名称是字体族加上`@`和特性（`EB Garamond@onum`、`EB Garamond@lnum+tnum`），会出现在字体字符串和部分警告中。
+- **HTML和EPUB**（固定版式与流式版式）：使用基础字体族，并加上`font-variant-numeric`（`oldstyle-nums`、`lining-nums tabular-nums`）。
+- **PDF**：嵌入基础字体族的文件，并启用特性排版文本。
+- **命令行**：`postext`绘制所用的Canvas，即Skia，不应用特性。因此命令行注册一份字体副本，其`cmap`把特性替换的每个字符（数字）映射到特性选择的字形。只采用单一替换；通过上下文替换得到数字的字体，在那里保留自身的数字。
+
 ## 调色板
 
 `PostextConfig`上的`colorPalette`属性让你定义一组可复用的命名颜色，并在配置中任何`ColorValue`里引用它们。它相当于Postext中的CSS自定义属性，或InDesign的色板面板：改一次调色板条目，所有指向它的颜色都会在整个文档中随之更新。

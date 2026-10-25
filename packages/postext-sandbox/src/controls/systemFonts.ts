@@ -71,3 +71,22 @@ export function isSystemFontFamily(family: string): boolean {
   const name = nameOf(family);
   return GENERIC_FONT_FAMILIES.has(name) || SYSTEM_FONT_FAMILIES.has(name);
 }
+
+/** Whether `fontSet` has a face of `family` (quotes and case aside). */
+function hasFaceOf(fontSet: Iterable<{ family: string }> | undefined, family: string): boolean {
+  if (!fontSet) return false;
+  const name = nameOf(family);
+  for (const face of fontSet) if (nameOf(face.family) === name) return true;
+  return false;
+}
+
+/**
+ * Whether a family can be declared with OpenType features (#1237, the
+ * engine's `setFigureStyleFamilies`): any family the Sandbox loads files
+ * of. A face only an operating system answers for has no file to declare
+ * again with them, so a style's figures leave it as it is, unless the book
+ * carries files under that name (faces of the family in `fontSet`).
+ */
+export function takesFigureFeatures(family: string, fontSet?: Iterable<{ family: string }>): boolean {
+  return !isSystemFontFamily(family) || hasFaceOf(fontSet, family);
+}

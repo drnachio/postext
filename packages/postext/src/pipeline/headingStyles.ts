@@ -15,6 +15,7 @@ import type { ResolvedHeadingLevelConfig, ResolvedHeadingStyleConfig, WritingMod
 import type { ResolvedConfig, VDTBlock } from '../vdt.js';
 import { buildHeadingLevelMap } from './config.js';
 import { resolveBreakBefore } from '../defaults/headings.js';
+import { withFigureStyle } from '../fonts/figureStyle.js';
 import type { ChapterTitlePageInfo } from './placeholders.js';
 import { derivePartResolvedConfig, derivePartMeasureContext } from './parts.js';
 import type { BlockMeasureContext } from './measureContentBlock.js';
@@ -158,6 +159,8 @@ export function createHeadingLevelResolver(resolved: ResolvedConfig): HeadingLev
       ...base,
       ...style.overrides,
       level: base.level,
+      // The style's figures (#1237), in the family it sets or its level's.
+      fontFamily: withFigureStyle(style.overrides.fontFamily ?? base.fontFamily, style.overrides.figureStyle),
       breakBefore: resolveBreakBefore(style.breakBefore, base.breakBefore),
     };
     cache.set(key, merged);

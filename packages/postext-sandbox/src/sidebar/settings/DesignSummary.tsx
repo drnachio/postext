@@ -2,7 +2,7 @@
 
 import { useMemo, type ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { isCjkLanguage, resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
+import { baseFontFamily, isCjkLanguage, resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
 import type { Dimension } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { formatNumber, toPt } from '../../controls/units.js';
@@ -48,7 +48,9 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
       : layout.layoutType === 'oneAndHalf' ? labels.settingsSummaryOneAndHalf
         : layout.layoutType === 'multiple' ? labels.settingsSummaryColumns.replace('__count__', n(columnCountUsed(layout.columnCount)))
           : labels.settingsSummaryOneColumn;
-  const type = `${body.fontFamily} · ${n(toPt(body.fontSize))}/${n(toPt(body.lineHeight))} pt`;
+  // The family without the figures it carries (`Lora@onum`, #1237).
+  const family = baseFontFamily(body.fontFamily);
+  const type = `${family} · ${n(toPt(body.fontSize))}/${n(toPt(body.lineHeight))} pt`;
   // Writing system: the language, with the direction and the binding when
   // they are a choice (Chinese text, vertical lines, right-to-left text, a
   // right binding).
@@ -88,7 +90,7 @@ export function DesignSummary({ onOpenGroup }: DesignSummaryProps) {
           <span lang={language} className="whitespace-nowrap">{documentLocaleLabel(language)}</span>
         </SummaryLine>
         <SummaryLine onClick={() => onOpenGroup('text')} group={labels.settingsGroupText}>
-          <span style={{ fontFamily: `"${body.fontFamily}", serif` }}>{type}</span>
+          <span style={{ fontFamily: `"${family}", serif` }}>{type}</span>
         </SummaryLine>
         {palette.length > 0 && (
           <SummaryLine onClick={() => onOpenGroup('colors')} group={labels.settingsGroupColors}>

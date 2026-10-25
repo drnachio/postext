@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Schriftfamilie. Ihre Schriftstärken sind <code>fontWeight</code> / <code>boldFontWeight</code> weiter unten (die des Fließtexts, wenn nicht gesetzt).</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>die ihrer Familie</td>
+      <td>Die Ziffern des Formats: <code>'lining-tabular'</code> für eine Liste von Daten oder Uhrzeiten. Ungesetzt übernimmt das Format mit der Familie des Grundtexts auch dessen Ziffern; ein Format, das eine eigene <code>fontFamily</code> nennt, setzt die Standardziffern dieser Schrift. Siehe [Ziffernarten](/de/docs/configuration-fonts-colors-viewers#ziffernarten).</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>Schriftgröße des Fließtexts</td>
@@ -1147,7 +1153,7 @@ const config: PostextConfig = {
       <td>Ebenenfelder</td>
       <td>wie in <code>headings.levels[]</code></td>
       <td>die Werte der Ebene</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: Jedes gesetzte Feld ersetzt für Überschriften dieses Stils den Wert der Überschriftenebene (<code>dropCap: false</code> entfernt die Initiale der Ebene). <code>breakBefore</code> wird Feld für Feld mit dem der Ebene zusammengeführt: Ein Stil, der nur <code>parity</code> setzt, behält das <code>enabled</code> der Ebene, und einer, der nur <code>enabled: true</code> setzt, behält ihre Parität (bis postext 1.4 kam das fehlende Feld stattdessen aus dem Standard ohne Umbruch).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: Jedes gesetzte Feld ersetzt für Überschriften dieses Stils den Wert der Überschriftenebene (<code>dropCap: false</code> entfernt die Initiale der Ebene). <code>breakBefore</code> wird Feld für Feld mit dem der Ebene zusammengeführt: Ein Stil, der nur <code>parity</code> setzt, behält das <code>enabled</code> der Ebene, und einer, der nur <code>enabled: true</code> setzt, behält ihre Parität (bis postext 1.4 kam das fehlende Feld stattdessen aus dem Standard ohne Umbruch). Ein hier gesetztes <code>figureStyle</code> gilt für die Familie der Ebene, auf der der Stil verwendet wird (siehe [Ziffernarten](/de/docs/configuration-fonts-colors-viewers#ziffernarten)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

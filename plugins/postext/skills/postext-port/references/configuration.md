@@ -278,6 +278,8 @@ Typography
 ```
 bodyText
 ├─ fontFamily        string          'EB Garamond'   a customFonts family, or one on Google Fonts / Fontsource
+├─ figureStyle       FigureStyle     unset (font's)  figures of the running text, e.g. 'oldstyle' (§20a); paragraph styles,
+│                                                   tables, captions, lists and box bodies that take the body family take them too
 ├─ fontSize          Dimension(abs)  8 pt
 ├─ lineHeight        Dimension       1.5 em          em = × fontSize; pt = absolute leading → BASELINE GRID PITCH
 ├─ fontWeight        number          400
@@ -537,6 +539,7 @@ General (apply to all levels unless the level overrides)
 ```
 headings
 ├─ fontFamily    'Open Sans'
+├─ figureStyle   unset             figures of every level (§20a), e.g. 'lining'; a level's own wins, in its own family too
 ├─ lineHeight    1.2 em            (em = the level's font size)
 ├─ color         main-color
 ├─ textAlign     'left'            (TextAlign; general only — no per-level align)
@@ -568,6 +571,7 @@ headings
 { level: 1..6,                         REQUIRED
   fontSize: Dimension (abs)            defaults H1 18pt, H2 15, H3 12, H4 10, H5 9, H6 8
   lineHeight, fontFamily, color, fontWeight, marginTop, marginBottom, snapToGrid   → inherit general
+  figureStyle: FigureStyle             → headings.figureStyle (§20a)
   italic: boolean                      false
   letterSpacing: Dimension             0 (tracking after every glyph, spaces and number prefix included;
                                        em = level fontSize; negative tightens; centre/right lines are placed
@@ -758,6 +762,7 @@ running heads, margins, layout, body typography, palette.
   // any HeadingLevelConfig field except level:
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
+  figureStyle (§20a; applied to the family of the level the style is used on),
   advancedDesign, spanBreak (≥ 1.19), hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
   firstLineIndent (≥ 1.24; 0 clears the level's),
   dropCap (≥ 1.23, §4b; false clears the level's: e.g. a preface style without the chapters' initial)
@@ -879,6 +884,8 @@ bottom folio only there). Parity/pages are ignored inside heading slots.
   fontSize: Dimension(abs)  REQUIRED,  overflow?: 'wrap'|'ellipsis-start'|'ellipsis-end'|'ellipsis-middle'|'clip'
     (≥ 1.24 unset = the slot's: 'wrap' in heading and part designs, 'ellipsis-end' in header/footer/toc rows)
   fontFamily='EB Garamond', fontWeight=400, italic=false, color=#000000,
+  figureStyle?: FigureStyle (§20a; the element names its own family, so the body's figures never reach a folio:
+    set 'oldstyle' on it beside old-style text),
   direction?: 'ltr'|'rtl'|'auto' (= the document's; auto = first strong letter), align='center'
     ('left'|'center'|'right'|'justify'|'start'|'end' — start/end follow `direction`; justify: word spaces stretched on every wrapped line
     but a paragraph's last; with hyphenate a word is also cut at a syllable to fill), verticalAlign='middle'
@@ -1141,6 +1148,7 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
 ```
 { id (REQUIRED), name?,
   fontFamily, fontSize, lineHeight (em = own size), color, textAlign, boldColor,
+  figureStyle                    (§20a; unset = the body's figures with the body's family; own fontFamily = that font's default)
   italicColor                    (→ bodyText.italicColor, NOT `color`: a coloured style sets both)
   hyphenation: boolean, firstLineIndent,
   fontWeight, boldFontWeight                   → inherit bodyText
@@ -1412,10 +1420,13 @@ ExercisesConfig (config.exercises) {
   digital: { interactive=true, persist=true (answers kept in the browser), check='button'|'instant' }
 }
 ```
-The HTML viewer and EPUB make exercises answerable (type, click, Check / Show solution / start again); the key is
-always in an EPUB. A screen-only form goes in `htmlViewer.overrides` (it takes `exercises` and `exerciseStyles`):
-`htmlViewer: { overrides: { exercises: { solutions: { placement: 'none' } }, exerciseStyles: [{ id: 'exercise',
-area: { kind: 'none' } }] } }` — print keeps its own.
+The HTML viewer and EPUB make exercises answerable (type, click or drag, Check / Show solution / start again; the
+bar shows only the buttons that apply, none for an exercise with nothing to answer); the key is always in an EPUB.
+Every word of a `mark` text is markable on screen (wrong ones count). A fence's `area=none` (a talking exercise)
+leaves nothing to type on screen; a style's `area.kind: 'none'` is an unruled area still typed in. A screen-only
+form goes in `htmlViewer.overrides` (it takes `exercises` and `exerciseStyles`): `htmlViewer: { overrides: {
+exercises: { solutions: { placement: 'none' } }, exerciseStyles: [{ id: 'exercise', area: { kind: 'none' } }] } }`
+— print keeps its own.
 
 Port rule: one exercise style per look of the source's exercises (numbered disc + sans instruction for activities,
 a plain bold number for review questions), never one per exercise kind or per page; the questions, options and
@@ -1547,6 +1558,7 @@ tableStyle; fonts/colours inherit bodyText:
 ```
 bodyFontFamily, bodyFontSize, bodyColor           → body text
 headerFontFamily, headerFontSize, headerColor     → body text
+figureStyle                                       every cell, header and body (§20a): 'lining-tabular' lines up columns; unset = body's
 headerBold = true, headerItalic = false
 headerLetterSpacing = 0pt (em = header size), headerTextTransform = 'none' | 'uppercase'
 headerBackgroundEnabled = true, headerBackground = #f0f0f0
@@ -1588,6 +1600,7 @@ heads: `rules: 'booktabs'` with `headerBackgroundEnabled: false` and black (ink)
 
 ```
 fontFamily, fontSize, color  → body text (label and description share family+size: engine limit)
+figureStyle                  label and description (§20a); unset = the body's figures when in the body family
 align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
 labelBold = true, labelItalic = false, labelColor = color
 labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
@@ -2438,6 +2451,45 @@ anything in config.customFonts is concatenated and would point at nothing), reso
 metadata (front matter of chapter 1), `view` (top-level of the manifest, not config).
 `debug` is harmless but pointless. `localized.<lang>.config.X` replaces the whole `X`
 (e.g. restate the complete `resourceTypes` or `colorPalette` array per locale).
+
+### 20a. Figure styles — `figureStyle` (released after 1.60, #1237)
+
+`FigureStyle = 'default' | 'oldstyle' | 'lining' | 'tabular' | 'proportional' | 'oldstyle-tabular' |
+'oldstyle-proportional' | 'lining-tabular' | 'lining-proportional'` → OpenType `onum` (old-style), `lnum`
+(lining), `tnum` (tabular, one width), `pnum` (proportional); a pair sets a form and a width; `'default'` = the
+font's own figures. On `bodyText`, `paragraphStyles[]`, `headings`, `headings.levels[]`, `headingStyles[]`,
+`tableStyle` / `tableStyles[]` (header and body cells), `captionStyle` (label + description, also
+`resourceTypes[].captionStyle`) and design text elements (header/footer, heading and part designs, toc rows).
+Sandbox: the **Figures** field next to each style's typeface in the Design panel.
+- Inheritance: a style that takes its family from another takes its figures too (paragraph styles, tables,
+  captions, lists and box bodies take the body's). A style that names its own `fontFamily` sets that font's
+  default figures unless it sets `figureStyle`. A level without one takes `headings.figureStyle`; a heading
+  style's applies over the family of the level it is used on. `'default'` undoes inherited figures. A design
+  text element has its own family ('EB Garamond' by default): the body's figures never reach it.
+- A font without the feature keeps its own figures; a generic family (`serif`)
+  takes none. A family the host has no file of (a face installed only on the reader's system, which the Sandbox
+  does not fetch) takes no figure style: its text keeps that font's own figures, in the font itself. Ship the
+  face in `fonts[]` under that name and it gets them. A host that sets text in faces it has no files of tells the
+  engine which families can take features with `setFigureStyleFamilies((family) => boolean)` (from `postext`;
+  the Sandbox registers it in the page and its layout worker). An unknown value is a `unknownConfigValue`
+  warning, read as unset.
+- Catalogue cuts often lack the features: the files Google Fonts and Fontsource serve often leave `onum` and `lnum`
+  out (Source Serif 4's latin file keeps `pnum` and `tnum` only), and a style that asks for them then keeps the
+  font's own figures. The foundry's full files have them: ship those in `fonts[]`.
+- Measured with the features: canvas, HTML, PDF and both EPUB layouts break lines alike. Font strings and some
+  warnings name a feature family `Base@onum`, `Base@lnum+tnum` (the base family's files with the features).
+  The CLI (Skia sets no features) registers a copy whose cmap maps the digits to the feature's glyphs (single
+  substitutions only: a font that reaches its figures through contextual lookups keeps its own there).
+- Porting: measure the source's figures. Old-style figures in the text and lining tabular ones in the tables
+  (the usual book setting) → `bodyText.figureStyle: 'oldstyle'`, `tableStyle.figureStyle: 'lining-tabular'`;
+  lining headings over old-style text → `headings.figureStyle: 'lining'`; old-style folios → `figureStyle:
+  'oldstyle'` on the folio text element. A timetable or price list set as paragraphs → a paragraph style with
+  `'lining-tabular'`. Check that the files you will ship have the features, and prefer the foundry's files
+  to catalogue cuts (fetch them, put them in `fonts/`, list them in `fonts[]`):
+  `python3 -c "from fontTools.ttLib import TTFont as T; import sys; f=T(sys.argv[1]); print(sorted({r.FeatureTag for r in f['GSUB'].table.FeatureList.FeatureRecord}))" fonts/X.woff2`
+  (`onum`, `lnum`, `tnum`, `pnum` as the config asks). A file without them sets its default figures whatever the
+  config says; when those are already old-style (some book faces), `'oldstyle'` changes nothing and the tables
+  need `'lining-tabular'` to get lining figures. Nothing reports a missing feature, so check the files.
 
 ---------------------------------------------------------------------------------
 

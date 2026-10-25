@@ -50,6 +50,7 @@ interface Runtime {
   isGraded(slot: ExerciseSlot, record: Pick<ExerciseRecord, 'kind'>): boolean;
   checkSlot(slot: ExerciseSlot, value: ExerciseValue, record: Pick<ExerciseRecord, 'kind'>, trueFalse?: [string, string]): boolean | null;
   solutionValue(slot: ExerciseSlot, record: Pick<ExerciseRecord, 'kind'>, trueFalse?: [string, string]): ExerciseValue;
+  actionsOf(record: Pick<ExerciseRecord, 'kind' | 'slots' | 'key' | 'solution'>): { check: boolean; solution: boolean; reset: boolean };
   attach(root: Element | ShadowRoot | Document, options?: AttachExercisesOptions): () => void;
 }
 
@@ -175,6 +176,28 @@ function exerciseRuntime(): Runtime {
     }
   }
 
+  /** The buttons an exercise's bar needs: a check where an answer is known
+   *  for a slot the reader fills, the solution where there is one to show,
+   *  a fresh start where there is anything to answer. */
+  function actionsOf(record: Pick<ExerciseRecord, 'kind' | 'slots' | 'key' | 'solution'>): { check: boolean; solution: boolean; reset: boolean } {
+    let anyMarkRight = false;
+    for (let i = 0; i < record.slots.length; i++) if (record.slots[i]!.kind === 'mark' && (record.slots[i]!.correct || []).indexOf(1) >= 0) anyMarkRight = true;
+    let check = false;
+    let solution = !!record.key || (!!record.solution && record.solution.length > 0);
+    let reset = false;
+    for (let i = 0; i < record.slots.length; i++) {
+      const slot = record.slots[i]!;
+      // Room on the printed page only.
+      if (slot.bare) continue;
+      reset = true;
+      const known = slot.kind === 'mark' ? anyMarkRight : (!!slot.correct && slot.correct.length > 0) || (!!slot.accept && slot.accept.length > 0);
+      if (!known) continue;
+      solution = true;
+      if (isGraded(slot, record)) check = true;
+    }
+    return { check, solution, reset };
+  }
+
   // --- Storage -----------------------------------------------------------------
 
   function load(key: string, persist: boolean): any {
@@ -205,28 +228,34 @@ function exerciseRuntime(): Runtime {
   const CSS =
     '.pt-ex-ui{pointer-events:auto;box-sizing:border-box;z-index:1;}' +
     '.pt-ex-field{position:absolute;display:block;}' +
-    '.pt-ex-input{position:absolute;left:0;top:0;width:100%;height:100%;margin:0;padding:0 .15em;border:0;border-radius:.15em;background:transparent;color:inherit;font:inherit;line-height:1;text-align:center;outline-offset:1px;box-sizing:border-box;}' +
-    '.pt-ex-input:focus{background:rgba(255,255,255,.9);outline:2px solid #1a5fb4;}' +
-    'textarea.pt-ex-input{text-align:start;resize:none;overflow:hidden;background:transparent;padding:0 .2em;}' +
+    '.pt-ex-input{position:absolute;left:0;top:0;width:100%;height:100%;margin:0;padding:0 .15em;border:0;border-radius:.15em;background:transparent;color:var(--pt-ex-text,#1d1d1f);font:inherit;line-height:1;text-align:center;box-sizing:border-box;}' +
+    // Focus rings, ticks and rings are drawn inside the slot: a page that
+    // clips at its edge (the Sandbox's HTML tab) cuts nothing.
+    '.pt-ex-input:focus{background:rgba(255,255,255,.9);outline:2px solid #1a5fb4;outline-offset:-2px;}' +
+    'textarea.pt-ex-input{text-align:start;resize:none;overflow:hidden;background:transparent;padding:0 .2em;color:var(--pt-ex-text,#1d1d1f);}' +
     'textarea.pt-ex-input:focus{background:rgba(255,255,255,.35);}' +
     '.pt-ex-cell{text-transform:uppercase;}' +
     '.pt-ex-toggle{cursor:pointer;pointer-events:auto;}' +
-    '.pt-ex-toggle:focus-visible{outline:2px solid #1a5fb4;outline-offset:2px;}' +
-    '.pt-ex-on.pt-ex-ring,.pt-ex-on.pt-ex-mk-circle{outline:.12em solid currentColor;outline-offset:.04em;border-radius:999px;}' +
-    '.pt-ex-on.pt-ex-mk-box{outline:.1em solid currentColor;}' +
-    '.pt-ex-on.pt-ex-mk-underline{border-bottom:.12em solid currentColor;}' +
+    '.pt-ex-toggle:focus-visible{outline:2px solid #1a5fb4;outline-offset:-2px;}' +
+    '.pt-ex-on.pt-ex-ring,.pt-ex-on.pt-ex-mk-circle{box-shadow:inset 0 0 0 .1em var(--pt-ex-ring,currentColor);border-radius:999px;}' +
+    '.pt-ex-on.pt-ex-mk-box{box-shadow:inset 0 0 0 .09em var(--pt-ex-ring,currentColor);}' +
+    '.pt-ex-on.pt-ex-mk-underline{box-shadow:inset 0 -.12em 0 var(--pt-ex-ring,currentColor);}' +
     '.pt-ex-on.pt-ex-mk-highlight{background:rgba(255,214,0,.45);}' +
     '.pt-ex-on.pt-ex-mk-strike{background:linear-gradient(transparent 46%,currentColor 46%,currentColor 56%,transparent 56%);}' +
     '.pt-ex-on.pt-ex-tick::after{content:"\\2713";position:absolute;left:0;right:0;top:50%;transform:translateY(-55%);text-align:center;line-height:1;font-weight:700;}' +
     '.pt-ex-revealed,.pt-ex-revealed .pt-ex-input{color:var(--pt-ex-answer,#d6246e);}' +
-    '.pt-ex-right{outline-color:var(--pt-ex-right,#1e8e3e)!important;}' +
-    '.pt-ex-wrong{outline-color:var(--pt-ex-wrong,#c5221f)!important;}' +
+    '.pt-ex-right{--pt-ex-ring:var(--pt-ex-right,#1e8e3e);outline-color:var(--pt-ex-right,#1e8e3e)!important;}' +
+    '.pt-ex-wrong{--pt-ex-ring:var(--pt-ex-wrong,#c5221f);outline-color:var(--pt-ex-wrong,#c5221f)!important;}' +
     '.pt-ex-field.pt-ex-right .pt-ex-input,textarea.pt-ex-right{box-shadow:inset 0 -.12em 0 var(--pt-ex-right,#1e8e3e);}' +
     '.pt-ex-field.pt-ex-wrong .pt-ex-input,textarea.pt-ex-wrong{box-shadow:inset 0 -.12em 0 var(--pt-ex-wrong,#c5221f);}' +
-    '.pt-ex-mark{position:absolute;right:-.55em;top:-.6em;font:700 .62em/1 system-ui,sans-serif;padding:.12em .2em;border-radius:999px;color:#fff;pointer-events:none;z-index:2;}' +
+    // A right or wrong mark stands on its slot's top corner, over the line
+    // gap rather than the next word, slid onto the page at its edge (see
+    // `placeMark`).
+    '.pt-ex-mark{position:absolute;left:100%;top:0;transform:translate(-55%,-60%);font:700 .62em/1 system-ui,sans-serif;padding:.12em .2em;border-radius:999px;color:#fff;pointer-events:none;z-index:2;white-space:nowrap;}' +
     '.pt-ex-mark.pt-ex-ok{background:var(--pt-ex-right,#1e8e3e);}' +
     '.pt-ex-mark.pt-ex-no{background:var(--pt-ex-wrong,#c5221f);}' +
     '.pt-ex-bar{position:absolute;right:0;top:100%;margin-top:.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:.35em;font:400 1em/1.2 system-ui,sans-serif;color:#1d1d1f;z-index:3;}' +
+    '.pt-ex-bar:not(.pt-ex-flow){padding:.15em;border-radius:999px;background:rgba(255,255,255,.85);}' +
     '.pt-ex-bar button{font:inherit;margin:0;padding:.18em .6em;border:1px solid rgba(0,0,0,.35);border-radius:999px;background:#fff;color:#1d1d1f;cursor:pointer;}' +
     '.pt-ex-bar button:hover{background:#f1f1f3;}' +
     '.pt-ex-bar button:focus-visible{outline:2px solid #1a5fb4;outline-offset:2px;}' +
@@ -238,15 +267,28 @@ function exerciseRuntime(): Runtime {
     '.pt-ex-menu{position:absolute;left:0;top:100%;margin-top:.2em;display:flex;flex-direction:column;min-width:8em;padding:.2em;background:#fff;border:1px solid rgba(0,0,0,.25);border-radius:.3em;box-shadow:0 .2em .6em rgba(0,0,0,.18);font:400 .8em/1.2 system-ui,sans-serif;z-index:5;}' +
     '.pt-ex-menu button{font:inherit;text-align:start;padding:.3em .5em;border:0;background:none;color:#1d1d1f;cursor:pointer;border-radius:.2em;}' +
     '.pt-ex-menu button:hover,.pt-ex-menu button:focus{background:#eef2fb;}' +
-    '.pt-ex-tag{position:absolute;left:50%;top:100%;transform:translate(-50%,.1em);font:600 .55em/1 system-ui,sans-serif;white-space:nowrap;padding:.1em .3em;border-radius:.3em;background:#eef2fb;color:#1d1d1f;pointer-events:none;}' +
+    // A sort exercise: a word sorted fades in the bank and stands in its
+    // column; words are dragged from the bank to a column and back.
+    '.pt-ex-drag{touch-action:none;user-select:none;-webkit-user-select:none;}' +
+    // The word is painted under its slot: a veil fades it.
+    '.pt-ex-sorted{background:rgba(255,255,255,.62);border-radius:.25em;}' +
+    // A chip set in a flow holds its own text, which a veil would not cover.
+    '.pt-ex-faded{opacity:.42;}' +
+    '.pt-ex-col{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box;padding:0 .2em;color:var(--pt-ex-text,#1d1d1f);border-radius:.2em;}' +
+    '.pt-ex-placed{display:table;cursor:grab;white-space:nowrap;}' +
+    '.pt-ex-placed.pt-ex-right{color:var(--pt-ex-right,#1e8e3e);}' +
+    '.pt-ex-placed.pt-ex-wrong{color:var(--pt-ex-wrong,#c5221f);}' +
+    '.pt-ex-col.pt-ex-revealed,.pt-ex-col.pt-ex-revealed .pt-ex-placed{color:var(--pt-ex-answer,#d6246e);cursor:default;}' +
+    '.pt-ex-drop{background:rgba(26,95,180,.08);box-shadow:inset 0 0 0 2px rgba(26,95,180,.55);}' +
     '.pt-ex-svg{position:absolute;left:0;top:0;overflow:visible;}' +
     '.pt-ex-layer{position:absolute;left:0;top:0;transform-origin:0 0;}' +
     // The controls of a mirrored flow (a right-to-left page of the HTML
     // viewer) turn back about their own centres, as its text does (#1244).
     '.pt-flow-mirrored .pt-ex-ui:not(svg){transform:scaleX(-1);}' +
-    '.pt-ex-dot{fill:transparent;stroke:transparent;cursor:pointer;pointer-events:all;}' +
-    '.pt-ex-dot.pt-ex-pending{stroke:#1a5fb4;stroke-width:2;}' +
-    '.pt-ex-dot:focus{outline:none;stroke:#1a5fb4;stroke-width:2;}' +
+    '.pt-ex-dot{fill:transparent;stroke:transparent;cursor:pointer;pointer-events:all;touch-action:none;user-select:none;-webkit-user-select:none;}' +
+    '.pt-ex-dot:hover{fill:rgba(26,95,180,.12);}' +
+    '.pt-ex-dot.pt-ex-pending{fill:rgba(26,95,180,.2);stroke:#1a5fb4;stroke-width:2.5;}' +
+    '.pt-ex-dot:focus{outline:none;stroke:#1a5fb4;stroke-width:2.5;}' +
     '.pt-ex-bar.pt-ex-flow{position:static;justify-content:flex-start;margin-top:.6em;font-size:.8em;}' +
     '.pt-ex-panel.pt-ex-flow{position:static;margin-top:.5em;box-shadow:none;font-size:.9em;}' +
     '.pt-ex-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}';
@@ -322,8 +364,11 @@ function exerciseRuntime(): Runtime {
     return text.length > 80 ? text.slice(0, 79) + '\u2026' : text;
   }
 
-  /** The text a chip shows: the runs right after its slot, inside its box. */
+  /** The text a chip shows: the runs right after its slot, inside its box;
+   *  in a flow (a reflowable book), the chip's own text (#1263). */
   function chipText(el: any): string {
+    const own = String(el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (own) return own;
     const right = parseFloat(el.style.left || '0') + parseFloat(el.style.width || '0');
     let text = '';
     let n = el.nextSibling;
@@ -357,7 +402,7 @@ function exerciseRuntime(): Runtime {
     const persist = opts.persist !== undefined ? opts.persist : data.persist !== false;
     const instant = (opts.check || data.check) === 'instant';
     const words: any = data.words || {};
-    const look = (data.styles && data.styles[rec.style]) || { correct: '#1e8e3e', wrong: '#c5221f', answer: '#d6246e', marker: 'none', trueFalse: words.trueFalse || ['T', 'F'] };
+    const look = (data.styles && data.styles[rec.style]) || { correct: '#1e8e3e', wrong: '#c5221f', answer: '#d6246e', ink: 'currentColor', marker: 'none', trueFalse: words.trueFalse || ['T', 'F'] };
     const tf: [string, string] = look.trueFalse;
     const exName = (words.exercise || 'Exercise') + ' ' + rec.number;
     const key = base + ':' + (rec.anchor || '#' + rec.ordinal + '.' + rec.id);
@@ -418,6 +463,7 @@ function exerciseRuntime(): Runtime {
       return e;
     }
     function colours(e: any): void {
+      if (data.text) e.style.setProperty('--pt-ex-text', data.text);
       e.style.setProperty('--pt-ex-right', look.correct);
       e.style.setProperty('--pt-ex-wrong', look.wrong);
       e.style.setProperty('--pt-ex-answer', look.answer);
@@ -446,6 +492,22 @@ function exerciseRuntime(): Runtime {
       const m = el('span', 'pt-ex-mark ' + (ok ? 'pt-ex-ok' : 'pt-ex-no'), holder);
       m.setAttribute('aria-hidden', 'true');
       m.textContent = ok ? '\u2713' : '\u2717';
+      placeMark(m, holder);
+    }
+
+    /** A mark slid onto the page where its corner place would cross the
+     *  page's edge (a page that clips, as the Sandbox's does). */
+    function placeMark(m: any, holder: any): void {
+      const page = typeof holder.closest === 'function' ? holder.closest('.pt-page') : null;
+      if (!page || typeof m.getBoundingClientRect !== 'function') return;
+      const pr = page.getBoundingClientRect();
+      const r = m.getBoundingClientRect();
+      if (r.width === 0) return;
+      // Screen pixels per CSS pixel of the page (a page shown scaled).
+      const k = m.offsetWidth > 0 ? r.width / m.offsetWidth : 1;
+      const dx = r.right > pr.right - 1 ? pr.right - 1 - r.right : r.left < pr.left + 1 ? pr.left + 1 - r.left : 0;
+      const dy = r.top < pr.top + 1 ? pr.top + 1 - r.top : 0;
+      if (dx !== 0 || dy !== 0) m.style.transform = 'translate(calc(-55% + ' + (dx / k).toFixed(1) + 'px),calc(-60% + ' + (dy / k).toFixed(1) + 'px))';
     }
 
     const widgets: any[] = [];
@@ -573,18 +635,127 @@ function exerciseRuntime(): Runtime {
     const columnWidgets: any[] = [];
     function refreshColumns(): void {
       if (columnWidgets.length === 0) return;
-      const lists: string[][] = categories.map(() => []);
+      const lists: any[][] = categories.map(() => []);
       for (let i = 0; i < widgets.length; i++) {
         const w = widgets[i];
         if (w.slot.kind !== 'category') continue;
         const v = state.revealed ? solutionValue(w.slot, rec) : state.v[w.slot.key];
         const at = typeof v === 'string' ? categories.indexOf(v) : -1;
-        if (at >= 0 && w.word) lists[at]!.push(w.word);
+        if (at >= 0 && w.word) lists[at]!.push(w);
       }
-      for (let i = 0; i < columnWidgets.length; i++) columnWidgets[i].show((lists[i] || []).join('\n'));
+      for (let i = 0; i < columnWidgets.length; i++) columnWidgets[i].show(lists[i] || []);
     }
 
-    /** A word of a sort exercise's bank: a chooser of the categories. */
+    /** The category of the column under a point of the screen: `undefined`
+     *  off every column. The words set above a column's area (its heading)
+     *  count as the column. */
+    function columnAt(x: number, y: number): number | undefined {
+      for (let i = 0; i < columnWidgets.length; i++) {
+        const r = columnWidgets[i].col.getBoundingClientRect();
+        const above = Math.min(r.height, body * 3 * (r.height / (columnWidgets[i].col.offsetHeight || r.height || 1)));
+        if (x >= r.left && x <= r.right && y >= r.top - above && y <= r.bottom) return i;
+      }
+      return undefined;
+    }
+
+    /** Dragging a word of a sort exercise (from the bank or from a column)
+     *  onto a column sorts it there; a word dragged out of its column goes
+     *  back to the bank. A press with no drag is left to the click. Returns
+     *  whether the click that follows a drag is to be ignored. */
+    function dragWord(t: any, slot: ExerciseSlot, word: string, fromColumn: boolean): () => boolean {
+      let start: [number, number] | null = null;
+      let ghost: any = null;
+      let over = -1;
+      let dragged = false;
+      // Where the ghost's left and top of 0 stand on the screen, and screen
+      // pixels per CSS pixel: the document may be zoomed.
+      let origin: [number, number] = [0, 0];
+      let scale = 1;
+      addClass(t, 'pt-ex-drag');
+      const highlight = (i: number): void => {
+        if (i === over) return;
+        if (over >= 0 && columnWidgets[over]) columnWidgets[over].col.classList.remove('pt-ex-drop');
+        over = i;
+        if (over >= 0 && columnWidgets[over]) columnWidgets[over].col.classList.add('pt-ex-drop');
+      };
+      const end = (): void => {
+        start = null;
+        if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+        ghost = null;
+        highlight(-1);
+      };
+      const down = (e: PointerEvent): void => {
+        if (state.revealed || e.button > 0) return;
+        start = [e.clientX, e.clientY];
+        dragged = false;
+        // The pointer's moves come here wherever it goes.
+        if (typeof t.setPointerCapture === 'function') { try { t.setPointerCapture(e.pointerId); } catch { /* a pointer gone */ } }
+      };
+      const move = (e: PointerEvent): void => {
+        if (!start) return;
+        if (!ghost) {
+          if (Math.abs(e.clientX - start[0]) + Math.abs(e.clientY - start[1]) < 6) return;
+          // The word follows the pointer, set at the size the page shows it
+          // (the page may be scaled, and the ghost lives outside it).
+          const r = t.getBoundingClientRect();
+          ghost = doc.createElement('span');
+          ghost.textContent = word;
+          ghost.setAttribute('aria-hidden', 'true');
+          const st = ghost.style;
+          st.position = 'fixed';
+          st.zIndex = '2147483647';
+          st.pointerEvents = 'none';
+          st.transform = 'translate(-50%,-50%)';
+          st.padding = '.1em .4em';
+          st.borderRadius = '.3em';
+          st.border = '1px solid rgba(0,0,0,.35)';
+          st.background = '#fff';
+          st.color = data.text || '#1d1d1f';
+          st.boxShadow = '0 .2em .6em rgba(0,0,0,.25)';
+          st.whiteSpace = 'nowrap';
+          st.fontFamily = textFont || 'system-ui,sans-serif';
+          st.left = '0';
+          st.top = '0';
+          (doc.body || doc.documentElement).appendChild(ghost);
+          const g0 = ghost.getBoundingClientRect();
+          st.left = '100px';
+          const g1 = ghost.getBoundingClientRect();
+          scale = (g1.left - g0.left) / 100 || 1;
+          origin = [g0.left + g0.width / 2, g0.top + g0.height / 2];
+          st.fontSize = px(Math.max(12, r.height * (fromColumn ? 0.75 : 0.62)) / scale);
+          dragged = true;
+        }
+        e.preventDefault();
+        ghost.style.left = px((e.clientX - origin[0]) / scale);
+        ghost.style.top = px((e.clientY - origin[1]) / scale);
+        const at = columnAt(e.clientX, e.clientY);
+        highlight(at === undefined ? -1 : at);
+      };
+      const up = (e: PointerEvent): void => {
+        if (!start) return;
+        const was = !!ghost;
+        const at = was ? columnAt(e.clientX, e.clientY) : undefined;
+        end();
+        if (!was) return;
+        if (at !== undefined) changed(slot, categories[at]!);
+        else if (fromColumn) changed(slot, null);
+      };
+      t.addEventListener('pointerdown', down);
+      t.addEventListener('pointermove', move);
+      t.addEventListener('pointerup', up);
+      t.addEventListener('pointercancel', end);
+      cleanups.push(() => {
+        end();
+        t.removeEventListener('pointerdown', down);
+        t.removeEventListener('pointermove', move);
+        t.removeEventListener('pointerup', up);
+        t.removeEventListener('pointercancel', end);
+      });
+      return () => { const d = dragged; dragged = false; return d; };
+    }
+
+    /** A word of a sort exercise's bank: dragged to a column, or a chooser
+     *  of the categories. */
     function chooser(slot: ExerciseSlot, t: any): void {
       const word = chipText(t);
       setAttr(t, 'role', 'button');
@@ -594,8 +765,7 @@ function exerciseRuntime(): Runtime {
       addClass(t, 'pt-ex-toggle');
       addClass(t, 'pt-ex-ui');
       colours(t);
-      const tag = own(el('span', 'pt-ex-tag', t));
-      tag.hidden = true;
+      const wasDrag = dragWord(t, slot, word, false);
       let menu: any = null;
       // A click anywhere else closes the menu.
       const outside = (e: Event): void => { if (menu && !t.contains(e.target)) close(); };
@@ -629,33 +799,73 @@ function exerciseRuntime(): Runtime {
         if (e.key === 'Escape') { close(); t.focus(); return; }
         if ((e.key === ' ' || e.key === 'Enter') && e.target === t) { e.preventDefault(); open(); }
       };
-      const onClick = (e: Event): void => { if (e.target === t || e.target === tag) open(); };
+      const onClick = (e: Event): void => {
+        if (wasDrag()) return;
+        if (!menu || !menu.contains(e.target)) open();
+      };
       t.addEventListener('click', onClick);
       t.addEventListener('keydown', onKey);
       cleanups.push(() => { close(); t.removeEventListener('click', onClick); t.removeEventListener('keydown', onKey); });
-      widgets.push({
+      const w: any = {
         slot,
         word,
+        ok: null as boolean | null,
         paint(v: ExerciseValue) {
           const at = typeof v === 'string' ? categories.indexOf(v) : -1;
-          tag.hidden = at < 0;
-          tag.textContent = at >= 0 ? categories[at] : '';
-          t.classList.toggle('pt-ex-on', at >= 0);
+          // Sorted: the word stands in its column, and fades in the bank.
+          t.classList.toggle(flow ? 'pt-ex-faded' : 'pt-ex-sorted', at >= 0 && columnWidgets.length > 0);
+          t.setAttribute('aria-label', (word || lineText(t)) + (at >= 0 ? ', ' + categories[at] : ''));
           refreshColumns();
         },
-        lock(on: boolean) { t.classList.toggle('pt-ex-revealed', on); tag.classList.toggle('pt-ex-revealed', on); },
-        mark(ok: boolean | null) { badge(t, ok); },
-      });
+        lock(on: boolean) { t.classList.toggle('pt-ex-revealed', on); },
+        mark(ok: boolean | null) { w.ok = ok; badge(t, ok); refreshColumns(); },
+      };
+      widgets.push(w);
+    }
+
+    /** A sort exercise's column over its writing area: the words sorted in
+     *  it, one a line, each dragged to another column or back to the bank
+     *  (or sent back with a click). */
+    function sortColumn(slot: ExerciseSlot, box: any): void {
+      const name = categories[columnWidgets.length];
+      const col = own(el('div', 'pt-ex-col pt-ex-ui', box));
+      col.setAttribute('role', 'list');
+      col.setAttribute('aria-label', (name !== undefined ? name + ', ' : '') + exName);
+      const line = (slot.linePt || 0) * ppt || body * 1.35;
+      col.style.fontSize = px(body);
+      col.style.lineHeight = px(line);
+      col.style.paddingTop = px(Math.max(0, line * 0.12));
+      if (textFont) col.style.fontFamily = textFont;
+      colours(col);
+      const w = {
+        slot,
+        col,
+        show(list: any[]) {
+          while (col.firstChild) col.removeChild(col.firstChild);
+          for (let i = 0; i < list.length; i++) {
+            const src = list[i];
+            const p = el('span', 'pt-ex-placed', col);
+            p.setAttribute('role', 'listitem');
+            p.textContent = src.word;
+            if (state.revealed) continue;
+            if (src.ok !== null && src.ok !== undefined) p.classList.add(src.ok ? 'pt-ex-right' : 'pt-ex-wrong');
+            const wasDrag = dragWord(p, src.slot, src.word, true);
+            p.addEventListener('click', () => { if (!wasDrag()) changed(src.slot, null); });
+          }
+        },
+        paint() { /* filled from the words sorted */ },
+        lock(on: boolean) { col.classList.toggle('pt-ex-revealed', on); },
+        mark() { /* the words say it */ },
+      };
+      columnWidgets.push(w);
+      widgets.push(w);
     }
 
     /** A text area on a writing area: an open answer, a sentence put in
-     *  order; a sort exercise's column, filled from the words sorted. */
+     *  order. */
     function area(slot: ExerciseSlot, box: any): void {
-      const sortColumn = rec.kind === 'sort';
       const ta = own(el('textarea', 'pt-ex-input pt-ex-ui', box));
-      // A sort exercise's column is named by its category.
-      const column = sortColumn ? categories[columnWidgets.length] : undefined;
-      ta.setAttribute('aria-label', column !== undefined ? column + ', ' + exName : (words.blank || 'blank') + ' ' + (++blankN) + ', ' + exName);
+      ta.setAttribute('aria-label', (words.blank || 'blank') + ' ' + (++blankN) + ', ' + exName);
       ta.setAttribute('spellcheck', 'false');
       const line = (slot.linePt || 0) * ppt || body * 1.35;
       ta.style.fontSize = px(body);
@@ -663,13 +873,11 @@ function exerciseRuntime(): Runtime {
       ta.style.paddingTop = px(Math.max(0, line * 0.12));
       if (textFont) ta.style.fontFamily = textFont;
       colours(ta);
-      if (sortColumn) { ta.readOnly = true; ta.setAttribute('tabindex', '-1'); ta.setAttribute('aria-live', 'polite'); }
-      else ta.addEventListener('input', () => changed(slot, ta.value));
+      ta.addEventListener('input', () => changed(slot, ta.value));
       const w = {
         slot,
-        show(text: string) { ta.value = text; },
-        paint(v: ExerciseValue) { if (!sortColumn) ta.value = typeof v === 'string' ? v : ''; },
-        lock(on: boolean) { if (!sortColumn) ta.readOnly = on; ta.classList.toggle('pt-ex-revealed', on); },
+        paint(v: ExerciseValue) { ta.value = typeof v === 'string' ? v : ''; },
+        lock(on: boolean) { ta.readOnly = on; ta.classList.toggle('pt-ex-revealed', on); },
         mark(ok: boolean | null) {
           ta.classList.remove('pt-ex-right', 'pt-ex-wrong');
           const old = box.querySelector(':scope > .pt-ex-mark');
@@ -681,9 +889,9 @@ function exerciseRuntime(): Runtime {
           m.textContent = ok ? '\u2713' : '\u2717';
           m.style.fontSize = px(body * 0.62);
           colours(m);
+          placeMark(m, box);
         },
       };
-      if (sortColumn) columnWidgets.push(w);
       widgets.push(w);
     }
 
@@ -732,13 +940,18 @@ function exerciseRuntime(): Runtime {
     }
 
     /** The dots of a match: a left dot then a right one (or the other way
-     *  round) join them with a line. */
+     *  round) join them with a line, clicked one after the other or dragged
+     *  from one to the other. */
     function matchDots(box: any, grid: any, slots: ExerciseSlot[]): void {
       const w = parseFloat(box.style.width) || 0;
       const h = parseFloat(box.style.height) || 0;
       const s = own(svg('svg', { class: 'pt-ex-svg pt-ex-ui', width: w, height: h, viewBox: '0 0 ' + w + ' ' + h }, box));
       const lines = svg('g', {}, s);
       const marks = svg('g', {}, s);
+      const ink = look.ink || 'currentColor';
+      const stroke = Math.max(2.5, body * 0.13);
+      // The line being drawn: from the dot picked to the pointer.
+      const rubber = svg('line', { stroke: ink, 'stroke-width': stroke, 'stroke-linecap': 'round', 'stroke-dasharray': stroke * 1.5 + ' ' + stroke * 1.5, 'pointer-events': 'none', visibility: 'hidden' }, s);
       // Mirrored on a right-to-left page: the left items stand on the right.
       const lx = grid.rtl ? w - grid.dotsPt[0] * ppt : grid.dotsPt[0] * ppt;
       const rx = grid.rtl ? w - grid.dotsPt[1] * ppt : grid.dotsPt[1] * ppt;
@@ -751,7 +964,43 @@ function exerciseRuntime(): Runtime {
       const refresh = (): void => {
         for (let i = 0; i < leftDots.length; i++) leftDots[i].classList.toggle('pt-ex-pending', i === pendingLeft);
         for (let i = 0; i < rightDots.length; i++) rightDots[i].classList.toggle('pt-ex-pending', i === pendingRight);
+        if (pendingLeft < 0 && pendingRight < 0) rubber.setAttribute('visibility', 'hidden');
       };
+      /** A point of the screen in the drawing's own units. */
+      const local = (x: number, y: number): [number, number] => {
+        const m = typeof s.getScreenCTM === 'function' ? s.getScreenCTM() : null;
+        if (!m) return [x, y];
+        const p = new DOMPoint(x, y).matrixTransform(m.inverse());
+        return [p.x, p.y];
+      };
+      const follow = (x: number, y: number): void => {
+        const from = pendingLeft >= 0 ? [lx, rows[pendingLeft]!] : pendingRight >= 0 ? [rx, rows[pendingRight]!] : null;
+        if (!from) return;
+        const to = local(x, y);
+        rubber.setAttribute('x1', String(from[0]));
+        rubber.setAttribute('y1', String(from[1]));
+        rubber.setAttribute('x2', String(to[0]));
+        rubber.setAttribute('y2', String(to[1]));
+        rubber.setAttribute('visibility', 'visible');
+      };
+      /** The dot of a side nearest a screen point, if the point is on it. */
+      const dotAt = (side: number, x: number, y: number): number => {
+        const p = local(x, y);
+        const dx = side === 0 ? lx : rx;
+        let best = -1;
+        let bestD = radius * 1.8;
+        const n = side === 0 ? leftDots.length : rightDots.length;
+        for (let i = 0; i < n; i++) {
+          const d = Math.hypot(p[0] - dx, p[1] - rows[i]!);
+          if (d < bestD) { best = i; bestD = d; }
+        }
+        return best;
+      };
+      const onMove = (e: PointerEvent): void => { if (!state.revealed) follow(e.clientX, e.clientY); };
+      s.addEventListener('pointermove', onMove);
+      let dragFrom: [number, number] | null = null;
+      let dragging = false;
+      let skipClick = false;
       const join = (li: number, ri: number): void => {
         pendingLeft = -1; pendingRight = -1;
         refresh();
@@ -769,11 +1018,43 @@ function exerciseRuntime(): Runtime {
             if (state.revealed) return;
             if (side === 0) {
               if (pendingRight >= 0) join(i, pendingRight);
-              else { pendingLeft = pendingLeft === i ? -1 : i; refresh(); }
+              else { pendingLeft = pendingLeft === i ? -1 : i; pendingRight = -1; refresh(); }
             } else if (pendingLeft >= 0) join(pendingLeft, i);
-            else { pendingRight = pendingRight === i ? -1 : i; refresh(); }
+            else { pendingRight = pendingRight === i ? -1 : i; pendingLeft = -1; refresh(); }
           };
-          dot.addEventListener('click', pick);
+          // A drag from a dot to one of the other side joins them; a press
+          // with no drag is a click.
+          dot.addEventListener('pointerdown', (e: PointerEvent) => {
+            if (state.revealed || e.button > 0) return;
+            dragFrom = [e.clientX, e.clientY];
+            dragging = false;
+            if (typeof dot.setPointerCapture === 'function') { try { dot.setPointerCapture(e.pointerId); } catch { /* a pointer gone */ } }
+          });
+          dot.addEventListener('pointermove', (e: PointerEvent) => {
+            if (!dragFrom) return;
+            if (!dragging) {
+              if (Math.abs(e.clientX - dragFrom[0]) + Math.abs(e.clientY - dragFrom[1]) < 6) return;
+              dragging = true;
+              pendingLeft = side === 0 ? i : -1;
+              pendingRight = side === 0 ? -1 : i;
+              refresh();
+            }
+            e.preventDefault();
+            follow(e.clientX, e.clientY);
+          });
+          const drop = (e: PointerEvent): void => {
+            if (!dragFrom) return;
+            dragFrom = null;
+            if (!dragging) return;
+            dragging = false;
+            skipClick = true;
+            const other = e.type === 'pointerup' ? dotAt(1 - side, e.clientX, e.clientY) : -1;
+            if (other >= 0) join(side === 0 ? i : other, side === 0 ? other : i);
+            else { pendingLeft = -1; pendingRight = -1; refresh(); }
+          };
+          dot.addEventListener('pointerup', drop);
+          dot.addEventListener('pointercancel', drop);
+          dot.addEventListener('click', () => { if (skipClick) { skipClick = false; return; } pick(); });
           dot.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pick(); } });
         }
       }
@@ -787,14 +1068,14 @@ function exerciseRuntime(): Runtime {
           paint(v: ExerciseValue) {
             if (line) { lines.removeChild(line); line = null; }
             if (typeof v === 'number' && rows[v - 1] !== undefined) {
-              line = svg('line', { x1: lx, y1: rows[li]!, x2: rx, y2: rows[v - 1]!, stroke: 'currentColor', 'stroke-width': Math.max(1.5, body * 0.09), 'stroke-linecap': 'round' }, lines);
+              line = svg('line', { x1: lx, y1: rows[li]!, x2: rx, y2: rows[v - 1]!, stroke: ink, 'stroke-width': stroke, 'stroke-linecap': 'round' }, lines);
               if (state.revealed) line.setAttribute('stroke', look.answer);
             }
           },
           lock() { /* repainted with the solution */ },
           mark(ok: boolean | null) {
             if (mark) { marks.removeChild(mark); mark = null; }
-            if (line) line.setAttribute('stroke', ok === null ? (state.revealed ? look.answer : 'currentColor') : ok ? look.correct : look.wrong);
+            if (line) line.setAttribute('stroke', ok === null ? (state.revealed ? look.answer : ink) : ok ? look.correct : look.wrong);
             if (ok === null) return;
             mark = svg('text', { x: lx + radius * (grid.rtl ? -2.2 : 2.2), y: rows[li]! - body * 0.25, 'font-size': body * 0.8, 'font-weight': 700, fill: ok ? look.correct : look.wrong, 'text-anchor': 'middle', 'aria-hidden': 'true' }, marks);
             mark.textContent = ok ? '\u2713' : '\u2717';
@@ -923,7 +1204,8 @@ function exerciseRuntime(): Runtime {
         wordSlots.push(slot);
       } else if (slot.kind === 'text') {
         const box = slot.box !== undefined ? boxEls[String(slot.box)] : null;
-        if (box) area(slot, box);
+        if (box && rec.kind === 'sort') sortColumn(slot, box);
+        else if (box && !slot.bare) area(slot, box);
       } else if (slot.kind === 'cell') {
         const box = slot.box !== undefined ? boxEls[String(slot.box)] : null;
         const grid = (rec.grids || []).filter((g) => g.box === slot.box)[0];
@@ -941,8 +1223,16 @@ function exerciseRuntime(): Runtime {
       if (g.kind === 'wordsearch' && wordSlots.length > 0) wordSearch(box, g, wordSlots);
     }
 
+    // An exercise with nothing to check, show or answer (a talk with a
+    // classmate) has no bar.
+    const actions = actionsOf(rec);
+    const checkable = actions.check;
+    const solvable = actions.solution;
+    const resettable = actions.reset && widgets.length > 0;
+    const hasHints = !!rec.hints && rec.hints.length > 0;
+
     // The bar: on the last part of the exercise's outer box.
-    const outer = outers.length > 0 ? outers[outers.length - 1] : null;
+    const outer = outers.length > 0 && (resettable || solvable || hasHints) ? outers[outers.length - 1] : null;
     let scoreEl: any = null;
     let panel: any = null;
     let solutionBtn: any = null;
@@ -963,15 +1253,38 @@ function exerciseRuntime(): Runtime {
       scoreEl = el('span', 'pt-ex-score', bar);
       scoreEl.setAttribute('aria-live', 'polite');
       scoreEl.setAttribute('role', 'status');
-      if (rec.hints && rec.hints.length > 0) hintBtn = button(words.hint || 'Hint', () => showPanel(panel && panel.getAttribute('data-show') === 'hint' ? null : 'hint'));
-      if (!instant) button(words.check || 'Check', () => { state.checked = true; persistNow(); feedback(); });
-      solutionBtn = button(words.showSolution || 'Show solution', () => reveal(!state.revealed));
-      button(words.reset || 'Try again', reset);
+      if (hasHints) hintBtn = button(words.hint || 'Hint', () => showPanel(panel && panel.getAttribute('data-show') === 'hint' ? null : 'hint'));
+      if (!instant && checkable) button(words.check || 'Check', () => { state.checked = true; persistNow(); feedback(); });
+      if (solvable) solutionBtn = button(words.showSolution || 'Show solution', () => reveal(!state.revealed));
+      if (resettable) button(words.reset || 'Try again', reset);
       panel = el('div', 'pt-ex-panel pt-ex-ui' + (flow ? ' pt-ex-flow' : ''), outer);
       own(panel);
       panel.hidden = true;
       if (!flow) panel.style.fontSize = px(Math.max(body * 0.72, 10));
       colours(panel);
+      if (!flow) {
+        liftOntoPage(bar);
+        const view: any = doc.defaultView;
+        // Again once the fonts have set the bar's size.
+        if (view && view.requestAnimationFrame) view.requestAnimationFrame(() => liftOntoPage(bar));
+      }
+    }
+
+    /** Lifts a control laid under the exercise back onto its page where it
+     *  would cross the page's foot (a page that clips, as the Sandbox's
+     *  short screen pages do). */
+    function liftOntoPage(e: any): void {
+      e.style.transform = '';
+      const page = typeof e.closest === 'function' ? e.closest('.pt-page') : null;
+      if (!page || typeof e.getBoundingClientRect !== 'function') return;
+      const pr = page.getBoundingClientRect();
+      const r = e.getBoundingClientRect();
+      if (r.height === 0) return;
+      const k = e.offsetHeight > 0 ? r.height / e.offsetHeight : 1;
+      let up = r.bottom - (pr.bottom - 2);
+      // Never above the page's head.
+      if (up > r.top - pr.top) up = r.top - pr.top;
+      if (up > 0) e.style.transform = 'translateY(' + (-up / k).toFixed(1) + 'px)';
     }
     void hintBtn;
 
@@ -988,6 +1301,9 @@ function exerciseRuntime(): Runtime {
         const sol = rec.solution || [];
         for (let i = 0; i < sol.length; i++) el('p', '', panel).textContent = sol[i];
       }
+      // A solution shown in its slots alone needs no panel.
+      if (!panel.firstChild) panel.hidden = true;
+      if (!panel.hidden && !flow) liftOntoPage(panel);
     }
 
     function valueOf(w: any): ExerciseValue {
@@ -1015,6 +1331,12 @@ function exerciseRuntime(): Runtime {
       for (let i = 0; i < rec.slots.length; i++) {
         const s = rec.slots[i]!;
         if (!isGraded(s, rec)) continue;
+        // A word of a mark exercise not to be marked counts only when it is
+        // marked: a wrong answer that keeps the score short of the total.
+        if (s.kind === 'mark' && (s.correct || []).indexOf(1) < 0) {
+          if (verdict(s) === false) total++;
+          continue;
+        }
         total++;
         if (verdict(s) === true) right++;
       }
@@ -1087,7 +1409,7 @@ function exerciseRuntime(): Runtime {
     return { record: rec, state, reveal, reset, feedback };
   }
 
-  return { normalizeAnswer, isGraded, checkSlot, solutionValue, attach };
+  return { normalizeAnswer, isGraded, checkSlot, solutionValue, actionsOf, attach };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -1103,6 +1425,9 @@ export const isGradedSlot: (slot: ExerciseSlot, record: Pick<ExerciseRecord, 'ki
  *  is no answer or not graded (`null`). `trueFalse` are the style's true
  *  and false labels, for a typed true/false. */
 export const checkExerciseSlot: (slot: ExerciseSlot, value: ExerciseValue, record: Pick<ExerciseRecord, 'kind'>, trueFalse?: [string, string]) => boolean | null = runtime.checkSlot;
+
+/** The buttons an exercise's bar offers: Check, Show solution, Try again. */
+export const exerciseActions: (record: Pick<ExerciseRecord, 'kind' | 'slots' | 'key' | 'solution'>) => { check: boolean; solution: boolean; reset: boolean } = runtime.actionsOf;
 
 /** What a slot shows when the solution is shown. */
 export const exerciseSolutionValue: (slot: ExerciseSlot, record: Pick<ExerciseRecord, 'kind'>, trueFalse?: [string, string]) => ExerciseValue = runtime.solutionValue;

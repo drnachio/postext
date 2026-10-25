@@ -1,7 +1,7 @@
 'use client';
 
 import { useSandboxLabels } from '../../../context/SandboxContext.js';
-import { dimensionsEqual, colorsEqual } from 'postext';
+import { baseFontFamily, dimensionsEqual, colorsEqual } from 'postext';
 import type {
   UnorderedListLevelConfig,
   ResolvedUnorderedListLevelConfig,
@@ -51,7 +51,8 @@ export function UnorderedListLevelSection({
   labels: ReturnType<typeof useSandboxLabels>;
 }) {
   const isBulletCharDefault = resolved.bulletChar === generalBulletChar;
-  const isFontDefault = resolved.fontFamily === generalFont;
+  // Either family may carry the body's figures (#1237): compare the families.
+  const isFontDefault = baseFontFamily(resolved.fontFamily) === baseFontFamily(generalFont);
   const isFontSizeDefault = dimensionsEqual(resolved.fontSize, generalFontSize);
   const isColorDefault = colorsEqual(resolved.color, generalColor);
   const isFontWeightDefault = resolved.fontWeight === generalFontWeight;

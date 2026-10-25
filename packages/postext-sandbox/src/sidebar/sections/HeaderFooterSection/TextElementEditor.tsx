@@ -4,7 +4,7 @@ import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from 'lucide-react';
 
 import { useState } from 'react';
 import { useSandboxLabels } from '../../../context/SandboxContext.js';
-import { DEFAULT_TEXT_ELEMENT, dimensionsEqual, colorsEqual, uniformRadius } from 'postext';
+import { DEFAULT_TEXT_ELEMENT, baseFontFamily, dimensionsEqual, colorsEqual, uniformRadius } from 'postext';
 import type {
   DesignTextElement,
   ResolvedDesignTextElement,
@@ -31,6 +31,7 @@ import { lineHeightFieldValue, lineHeightFromField } from './lineHeight.js';
 import { PlaceholderPicker } from './PlaceholderPicker.js';
 import { DropCapFields } from '../../settings/DropCapFields.js';
 import { TextDotsFields } from '../../settings/TextDotsFields.js';
+import { FigureStyleField } from '../../settings/FigureStyleField.js';
 import { useRightToLeftFlow } from '../../settings/flowSides.js';
 import { SizeToFields, defaultSizeTo, isSizeTo, type FrameTarget } from './sizeTo.js';
 import { PlacementFields, PagesSelect, type Sibling } from './PlacementFields.js';
@@ -124,7 +125,8 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], fram
   const defaultMarginFromBody = marginFromBody(DEFAULT_TEXT_ELEMENT.placement, slotKind);
   const defaultMarginFromEdge = marginFromEdge(DEFAULT_TEXT_ELEMENT.placement);
 
-  const isFontDefault = resolved.fontFamily === DEFAULT_TEXT_ELEMENT.fontFamily;
+  // The resolved family carries the figures (#1237): compare the family.
+  const isFontDefault = baseFontFamily(resolved.fontFamily ?? '') === DEFAULT_TEXT_ELEMENT.fontFamily;
   const isSizeDefault = dimensionsEqual(resolved.fontSize, DEFAULT_TEXT_ELEMENT.fontSize);
   const isWeightDefault = resolved.fontWeight === DEFAULT_TEXT_ELEMENT.fontWeight;
   const isItalicDefault = resolved.italic === DEFAULT_TEXT_ELEMENT.italic;
@@ -388,6 +390,15 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], fram
         searchPlaceholder={labels.bodyFontSearch}
         noResultsLabel={labels.bodyFontNoResults}
         tooltip={labels.headerFooterElementFontFamilyTooltip}
+      />
+      <FigureStyleField
+        value={raw.figureStyle}
+        onChange={(v) => update({ figureStyle: v })}
+        onReset={() => {
+          const next: DesignTextElement = { ...raw };
+          delete next.figureStyle;
+          onChange(next);
+        }}
       />
       <DimensionInput
         label={labels.headerFooterElementFontSize}

@@ -149,6 +149,61 @@ Quan ja hi ha una maquetació, el tauler també mostra l'avís del motor **Font 
 
 El quadre també mostra **Caràcters presos d'una altra font** (`glyphFallback`): caràcters que el text posa en una font que no té glif per a ells, un cop per font, amb la família genèrica que els ha dibuixat (`serif`, `sans-serif`, `monospace`) quan la comprovació ho pot saber.
 
+## Estils de xifres
+
+`figureStyle` demana a la font d'un estil de text un joc de xifres concret, amb les funcions OpenType de la font: xifres elzevirianes al text corrent, xifres alineades tabulars a les taules. El camp és a `bodyText`, `paragraphStyles[]`, `headings` i `headings.levels[]`, `headingStyles[]`, `tableStyle` i `tableStyles[]` (cel·les de capçalera i de cos per igual), `captionStyle` (etiqueta i descripció, i el `captionStyle` d'un tipus de recurs) i els elements de text d'un disseny (capçaleres, folis, els textos d'una portadella o d'una pàgina de part). Al Sandbox és el camp **Xifres** del tauler Disseny, al costat del tipus de lletra de cadascun d'aquests estils (**Text de cos → Tipus de lletra** per al cos).
+
+<table>
+  <thead>
+    <tr>
+      <th>Valor</th>
+      <th>Funcions OpenType</th>
+      <th>Xifres</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>cap</td><td>Les pròpies de la font. Treu les xifres que un estil hereta.</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>Xifres elzevirianes, amb ascendents i descendents com les minúscules: text corrent.</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>Xifres alineades, de l'alçada de les majúscules: encapçalaments, text en versals.</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>Totes les xifres amb la mateixa amplada, perquè els dígits d'una columna quedin en filera. La forma continua sent la de la font.</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>Cada xifra amb la seva amplada. La forma continua sent la de la font.</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>Xifres elzevirianes amb una sola amplada.</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>Xifres elzevirianes amb amplades pròpies.</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>Xifres alineades amb una sola amplada: taules, horaris, llistes de preus.</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>Xifres alineades amb amplades pròpies.</td></tr>
+  </tbody>
+</table>
+
+Un parell fixa una forma i una amplada. Una font que no té la funció conserva les seves xifres, així que comprova que la font té `onum` o `lnum` abans de comptar-hi. Una família de la qual l'amfitrió no té cap fitxer, com una font instal·lada només al sistema del lector (el Sandbox no les descarrega), no pren cap estil de xifres: el text conserva les xifres pròpies d'aquesta font, en la mateixa font. Un llibre que puja fitxers amb aquest nom sí que obté les xifres. Els talls que serveixen Google Fonts i Fontsource sovint deixen fora `onum` i `lnum` (el fitxer latin de Source Serif 4 només conserva `pnum` i `tnum`); amb un fitxer així, un estil que les demana conserva les xifres pròpies de la font. Els fitxers complets de la foneria les tenen: puja'ls per obtenir xifres elzevirianes o alineades. Una família genèrica (`serif`, `sans-serif`) no pren funcions. Un valor que no és a la llista es notifica com a valor de paràmetre desconegut (`unknownConfigValue`, vegeu [Avisos de configuració](#avisos-de-configuració)) i es llegeix com si no hi fos.
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+El text compon els anys i els números de pàgina amb xifres elzevirianes, i també els peus i les llistes, que prenen la família del cos. Les cel·les de totes les taules i els paràgrafs de l'estil `timetable` alineen els dígits amb xifres alineades tabulars. Tots els nivells d'encapçalament posen xifres alineades en la família dels encapçalaments.
+
+### Quines xifres pren cada estil
+
+- Un estil que pren la família d'un altre també en pren les xifres. Els estils de paràgraf, les taules, els peus, les llistes i el cos dels requadres prenen la família del cos quan no en nomenen cap altra, de manera que `bodyText.figureStyle` arriba a tots.
+- Un estil que nomena el seu `fontFamily` posa les xifres per defecte d'aquesta font, tret que també fixi `figureStyle`.
+- Un nivell d'encapçalament sense `figureStyle` propi pren `headings.figureStyle`, també en el seu `fontFamily` quan en nomena un. El `figureStyle` d'un estil d'encapçalament s'aplica a la família del nivell on es fa servir l'estil.
+- Un element de text d'un disseny nomena la seva família (`'EB Garamond'` per defecte), així que les xifres del cos no arriben a un foli: posa-hi `figureStyle: 'oldstyle'` perquè lligui amb un text en xifres elzevirianes.
+- `'default'` posa les xifres pròpies de la font i anul·la les heretades: `paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]` treu a aquest estil les xifres elzevirianes del cos.
+
+### Les xifres a cada sortida
+
+El text es mesura amb les funcions, de manera que les línies tallen a les mateixes amplades a la previsualització del Canvas, l'HTML, el PDF i l'EPUB, en maquetació fixa i en maquetació fluida.
+
+- **Previsualització del Canvas i worker de maquetació**: el navegador declara un altre cop els fitxers de la família base amb un nom de família amb funcions i el descriptor `featureSettings` de `FontFace`. El nom és la família seguida de les funcions després de `@` (`EB Garamond@onum`, `EB Garamond@lnum+tnum`), i apareix a les cadenes de font i en alguns avisos.
+- **HTML i EPUB** (maquetació fixa i fluida): la família base, amb `font-variant-numeric` (`oldstyle-nums`, `lining-nums tabular-nums`).
+- **PDF**: incrusta els fitxers de la família base i compon el text amb les funcions.
+- **Línia d'ordres**: Skia, el canvas amb què dibuixa `postext`, no aplica funcions. La línia d'ordres registra una còpia de la font el `cmap` de la qual porta cada caràcter que substitueixen les funcions, els dígits, al glif que trien. Només es prenen les substitucions simples; una font que arriba a les xifres amb substitucions contextuals hi conserva les seves.
+
 ## Paleta de colors
 
 La propietat `colorPalette` de `PostextConfig` permet definir un conjunt reutilitzable de colors amb nom i fer-hi referència des de qualsevol `ColorValue` de la configuració. És l'equivalent a Postext de les propietats personalitzades de CSS o del tauler de mostres d'InDesign: canvia l'entrada una sola vegada i tots els colors que hi apuntin s'actualitzen al document.

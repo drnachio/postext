@@ -1387,6 +1387,30 @@ export type TextAlign = 'left' | 'justify' | 'center' | 'right';
  */
 export type TextAlignKeyword = TextAlign | 'start' | 'end';
 
+/**
+ * The figures a text style sets (#1237), from its font's OpenType
+ * features: `'oldstyle'` (`onum`, the figures of running text, with
+ * ascenders and descenders) or `'lining'` (`lnum`, cap-height figures),
+ * `'tabular'` (`tnum`, one width, for columns of numbers) or
+ * `'proportional'` (`pnum`), or a form and a width together
+ * (`'lining-tabular'` for tables and timetables). `'default'` sets the
+ * font's own figures. A font without the feature sets its own figures.
+ * Measured with the features, so canvas, HTML and PDF set the same widths.
+ * A style that takes its family from another (a paragraph style, a table
+ * or a caption from the body) takes its figures too; one that names its own
+ * family sets that font's default unless it sets `figureStyle`.
+ */
+export type FigureStyle =
+  | 'default'
+  | 'oldstyle'
+  | 'lining'
+  | 'tabular'
+  | 'proportional'
+  | 'oldstyle-tabular'
+  | 'oldstyle-proportional'
+  | 'lining-tabular'
+  | 'lining-proportional';
+
 export type HyphenationLocale =
   | 'en-us'
   | 'es'
@@ -1515,6 +1539,10 @@ export interface BodyTextConfig {
    *  its first family (see `primaryFontFamily`) and reported by
    *  `collectConfigWarnings`. */
   fontFamily?: string;
+  /** The figures of the running text (see {@link FigureStyle}): `'oldstyle'`
+   *  for a book's prose. The styles that take the body's family take them
+   *  too. Default: the font's own. */
+  figureStyle?: FigureStyle;
   fontSize?: Dimension;
   lineHeight?: Dimension;
   /** The space between two paragraphs (#1115). `true` adds one
@@ -2512,6 +2540,10 @@ export interface ResolvedBodyTextConfig {
 export interface TableStyleConfig {
   /** Body-cell font family. Defaults to the body-text family. */
   bodyFontFamily?: string;
+  /** The figures of every cell, header and body (see {@link FigureStyle}):
+   *  `'lining-tabular'` lines the digits of a column up. Default: those of
+   *  the family the cells take (the body's, with its figures). */
+  figureStyle?: FigureStyle;
   /** Body-cell font size. Defaults to the body-text size. */
   bodyFontSize?: Dimension;
   /** Body-cell text colour. Defaults to the body-text colour. */
@@ -2744,6 +2776,10 @@ export interface ResolvedCaptionNoteStyleConfig {
 export interface CaptionStyleConfig {
   /** Caption font family (label + description). Defaults to the body family. */
   fontFamily?: string;
+  /** The figures of the caption, label and description (see
+   *  {@link FigureStyle}). Default: those of its family (the body's, with its
+   *  figures, when it takes the body's). */
+  figureStyle?: FigureStyle;
   /** Caption font size (label + description). Defaults to the body size. */
   fontSize?: Dimension;
   /** Description text colour. Defaults to the body-text colour. */
@@ -3097,6 +3133,10 @@ export interface ParagraphStyleConfig {
   name?: string;
   /** Defaults to the body font family. */
   fontFamily?: string;
+  /** The style's figures (see {@link FigureStyle}): `'lining-tabular'` for a
+   *  list of dates or times. Default: those of its family (the body's, with
+   *  its figures, when it takes the body's). */
+  figureStyle?: FigureStyle;
   /** Defaults to the body font size. */
   fontSize?: Dimension;
   /** Leading. `em`/`rem` are relative to the style's own font size.
@@ -4697,6 +4737,9 @@ export interface HeadingLevelConfig {
   fontSize?: Dimension;
   lineHeight?: Dimension;
   fontFamily?: string;
+  /** The level's figures (see {@link FigureStyle}). Default: the headings'
+   *  `figureStyle`, for the family they set. */
+  figureStyle?: FigureStyle;
   color?: ColorValue;
   fontWeight?: number;
   marginTop?: Dimension;
@@ -4829,7 +4872,13 @@ export interface ResolvedHeadingLevelConfig {
   level: number;
   fontSize: Dimension;
   lineHeight: Dimension;
+  /** The family with the level's figures (a feature family, see
+   *  `withFigureStyle`). */
   fontFamily: string;
+  /** A heading style's own `figureStyle`, applied to the family of the
+   *  level it is merged over (`createHeadingLevelResolver`). A level
+   *  carries its figures in `fontFamily` and leaves it unset. */
+  figureStyle?: FigureStyle;
   color: ColorValue;
   fontWeight: number;
   marginTop: Dimension;
@@ -4870,6 +4919,9 @@ export interface ResolvedHeadingLevelConfig {
 
 export interface HeadingsConfig {
   fontFamily?: string;
+  /** The figures of every level (see {@link FigureStyle}); a level's own
+   *  `figureStyle` wins. Default: the font's own. */
+  figureStyle?: FigureStyle;
   lineHeight?: Dimension;
   color?: ColorValue;
   textAlign?: TextAlignKeyword;
@@ -7260,6 +7312,9 @@ export interface DesignTextElement {
    *  a frontmatter value) is printed as written. */
   content: string;
   fontFamily?: string;
+  /** The element's figures (see {@link FigureStyle}): `'oldstyle'` folios
+   *  beside old-style text. Default: those of its family. */
+  figureStyle?: FigureStyle;
   fontSize: Dimension;
   fontWeight?: number;
   italic?: boolean;

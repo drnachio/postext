@@ -25,7 +25,7 @@ import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { extname, join } from 'node:path';
-import { collectFontUsage, configFontFamilies, cssWeightOrder, documentFontFaces, exportStandInOf, fontFallbackOf, parseFontString, registerFontCoverage, STANDARD_FONT_VARIANTS, type FontVariantUse, type VDTDocument } from 'postext';
+import { baseFontFamily, collectFontUsage, configFeatureFamilies, configFontFamilies, cssWeightOrder, documentFontFaces, exportStandInOf, featureFamilyParts, fontFallbackOf, freezeFontFeatures, parseFontString, registerFontCoverage, STANDARD_FONT_VARIANTS, type FontVariantUse, type VDTDocument } from 'postext';
 import { decompressWoff2 } from 'postext-pdf';
 import { EMBEDDED_FACES, FALLBACK_FAMILY, readEmbedded } from './assets';
 import type { Book } from './input';
@@ -282,6 +282,35 @@ export function restyleFace(bytes: Uint8Array, weight: number, style: 'normal' |
   return out;
 }
 
+/**
+ * Register with Skia the faces of a feature family (#1237, `Lora@onum`):
+ * a copy of each face of its base family whose `cmap` maps the characters
+ * to the glyphs its features give them (`freezeFontFeatures`), since Skia
+ * sets no features. The copies are Skia's alone: the PDF embeds the base
+ * family's files with the features, the EPUB sets them in CSS. Returns the
+ * copies, as faces of the feature family.
+ */
+function registerFeatureFamily(family: string, faces: readonly Face[]): Face[] {
+  const parts = featureFamilyParts(family);
+  const base = parts.family.toLowerCase();
+  const out: Face[] = [];
+  for (const face of faces) {
+    if (face.family.toLowerCase() !== base) continue;
+    const declared = declaredFace(face);
+    const frozen = freezeFontFeatures(declared, parts.features) ?? declared;
+    const copy: Face = { ...face, family, bytes: frozen };
+    out.push(copy);
+    const key = `${family}|${face.weight}|${face.style}|${face.source}|${face.bytes.byteLength}|figures`;
+    if (registered.has(key)) continue;
+    registered.add(key);
+    installSkiaShorthand();
+    noteSkiaFace(family, face.weight, face.style);
+    GlobalFonts.register(Buffer.from(frozen.buffer, frozen.byteOffset, frozen.byteLength), family);
+    registerFontCoverage(family, face.weight, face.style, frozen);
+  }
+  return out;
+}
+
 /** Register with Skia, for each variant `family` is asked for that it
  *  would draw heavier or slanted from another face, that face under the
  *  weight and slant asked. The copies are Skia's alone: the PDF and the
@@ -531,8 +560,11 @@ export function wantedVariants(book: Pick<Book, 'config' | 'chapters'>): Map<str
   const families = configFontFamilies(book.config, markdown);
   const usage = collectFontUsage(book.config, { markdown });
   const out = new Map<string, FontVariantUse[]>();
-  for (const family of families) {
-    const list = [...STANDARD_FONT_VARIANTS, ...(usage.get(family) ?? [])];
+  for (const name of families) {
+    // A feature family (#1237) is set from its base family's files: the
+    // base family is looked for with the faces both are asked for.
+    const family = baseFontFamily(name);
+    const list = [...(out.get(family) ?? []), ...STANDARD_FONT_VARIANTS, ...(usage.get(name) ?? [])];
     const seen = new Set<string>();
     out.set(family, list.filter((v) => {
       const k = `${v.weight}|${v.style}`;
@@ -673,6 +705,16 @@ export async function resolveFonts(book: Book, options: FontOptions, reporter: R
   for (const [family, variants] of wanted) {
     if (carried.has(family.toLowerCase())) continue;
     registerStandIns(family, faces.filter((f) => f.family.toLowerCase() === family.toLowerCase()), variants);
+  }
+  // The figures a style sets (#1237): its feature family, from the base
+  // family's faces (and their stand-ins).
+  for (const family of configFeatureFamilies(book.config)) {
+    const base = featureFamilyParts(family).family;
+    const copies = registerFeatureFamily(family, faces);
+    if (!carried.has(base.toLowerCase())) {
+      const variants = [...wanted].find(([name]) => name.toLowerCase() === base.toLowerCase())?.[1] ?? [];
+      registerStandIns(family, copies, variants);
+    }
   }
   // What a file that leaves the book is set in for a family it may not hand
   // on (#993), looked up when a writer asks.

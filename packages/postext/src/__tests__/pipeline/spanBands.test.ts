@@ -99,7 +99,8 @@ describe('page-span blocks mid-page (span blocks, stage 2 — band caps)', () =>
     expect(pass.bandCapsApplied.size).toBe(0);
     expect([...pass.bandCapProposals.keys()]).toEqual([SPAN_INDEX]);
     const cap = pass.bandCapProposals.get(SPAN_INDEX)!;
-    expect(cap).toEqual({ kind: 'span', startContentIndex: 0, startPart: 0, lines: 8, retries: 0 });
+    // `at`: the page and top of the band it was measured in (#1253).
+    expect(cap).toEqual({ kind: 'span', startContentIndex: 0, startPart: 0, lines: 8, retries: 0, at: `0:${Math.round(pass.doc.pages[0]!.contentArea.y)}` });
     const page0 = pass.doc.pages[0]!;
     const total = page0.columns.reduce((s, c) => s + usedLines(c), 0);
     expect(cap.lines).toBe(Math.ceil(total / 2));

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useReducer } from 'react';
-import { primaryFontFamily, resolveBodyTextConfig, resolveHeadingsConfig, type PostextConfig } from 'postext';
+import { baseFontFamily, primaryFontFamily, resolveBodyTextConfig, resolveHeadingsConfig, type PostextConfig } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
 import { fontFamilySource, getConfigFontFamilies, loadFont, onCustomFontsChanged, onFontSourceResolved, type FontFamilySource } from '../controls/fontLoader.js';
 import { RowTag } from '../ui/index.js';
@@ -20,9 +20,11 @@ export interface BookFontFamily {
 export function bookFontFamilies(config: PostextConfig, texts: readonly string[]): BookFontFamily[] {
   // Families as the engine sets them: a CSS font stack by its first family,
   // as `getConfigFontFamilies` lists it.
-  const body = primaryFontFamily(resolveBodyTextConfig(config.bodyText).fontFamily);
+  // A style's figures (#1237) name a feature family (`Lora@onum`): the
+  // family is its base family.
+  const body = baseFontFamily(primaryFontFamily(resolveBodyTextConfig(config.bodyText).fontFamily));
   const headings = resolveHeadingsConfig(config.headings);
-  const headingFamilies = new Set([headings.fontFamily, ...headings.levels.map((l) => l.fontFamily)].map(primaryFontFamily));
+  const headingFamilies = new Set([headings.fontFamily, ...headings.levels.map((l) => l.fontFamily)].map((f) => baseFontFamily(primaryFontFamily(f))));
   const families = getConfigFontFamilies(config, [...texts]);
   // Body first, then headings, then the rest alphabetically.
   const rank = (f: string) => (f === body ? 0 : headingFamilies.has(f) ? 1 : 2);

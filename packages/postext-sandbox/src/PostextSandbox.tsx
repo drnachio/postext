@@ -4,7 +4,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import type { PostextSandboxProps } from './types/index.js';
 import { SandboxProvider, useSandboxSelector, useSandboxDispatch, useSandboxProjects } from './context/SandboxContext.js';
 import { LayoutServiceProvider } from './worker/LayoutServiceContext.js';
-import { preloadConfigFonts, getConfigFontFamilies } from './controls/fontLoader.js';
+import { configFontFamilies } from 'postext';
+import { preloadConfigFonts } from './controls/fontLoader.js';
 import { ActivityBar, MobileNavBar } from './sidebar/ActivityBar.js';
 import { SidebarPanel } from './sidebar/SidebarPanel.js';
 import { ConfigPanel } from './sidebar/ConfigPanel.js';
@@ -103,9 +104,10 @@ function SandboxLayout({
   const configVersionRef = useRef(0);
 
   // Stable key derived from the config's font families to avoid
-  // resetting fontsReady when non-font config fields change
+  // resetting fontsReady when non-font config fields change; a style's
+  // figures (#1237) name a family of their own.
   const fontKey = useMemo(
-    () => getConfigFontFamilies(config).sort().join(','),
+    () => configFontFamilies(config).sort().join(','),
     [config],
   );
 

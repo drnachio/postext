@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>フォントファミリーです。ウェイトは下の<code>fontWeight</code> / <code>boldFontWeight</code>で指定します（未設定のときは本文の値）。</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>ファミリーの数字</td>
+      <td>スタイルの数字。日付や時刻の一覧には<code>'lining-tabular'</code>。未設定なら本文のファミリーとともに本文の数字を受け継ぎます。独自の<code>fontFamily</code>を指定したスタイルはそのフォントの既定の数字になります。[数字のスタイル](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を参照。</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>本文のサイズ</td>
@@ -1148,7 +1154,7 @@ const config: PostextConfig = {
       <td>レベルのフィールド</td>
       <td><code>headings.levels[]</code>と同じ</td>
       <td>そのレベルの値</td>
-      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>numberSeparator</code>、<code>numberPosition</code>、<code>breakBefore</code>、<code>span</code>、<code>spanBreak</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。</td>
+      <td><code>fontFamily</code>、<code>figureStyle</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>numberSeparator</code>、<code>numberPosition</code>、<code>breakBefore</code>、<code>span</code>、<code>spanBreak</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。ここで指定した<code>figureStyle</code>は、そのスタイルを使うレベルのファミリーにかかります（[数字のスタイル](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を参照）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

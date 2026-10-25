@@ -69,6 +69,12 @@ export interface BandCap {
    *  the cut is then taken from `headPx` lower, where it was measured, or
    *  it would come that much too high and the band never end level. */
   headPx?: number;
+  /** Where the proposing pass measured the band: its page index and top
+   *  (px), `page:top`. A cap that overflowed its band is remembered as
+   *  tried together with this place: the same cap proposed for its band
+   *  standing elsewhere (the caps before it moved the flow) is a new
+   *  attempt, not one already failed (#1253). */
+  at?: string;
 }
 
 export interface BandCapZone {
@@ -81,6 +87,12 @@ export interface BandCapZone {
 /** Maximum number of extra placement passes the band-cap driver may run on
  *  top of the initial pass (proposals + retries). */
 export const MAX_BAND_PASSES = 4;
+
+/** The most extra passes the trailing-cap driver may run on a document
+ *  whose caps keep settling (#1253): past its {@link MAX_BAND_PASSES}, a
+ *  pass is run while the first cap still failing moved on in one of the
+ *  last `MAX_BAND_PASSES`. */
+export const MAX_TRAILING_CAP_PASSES = 64;
 
 /** Maximum number of `lines + 1` retries for a cap whose band overflowed. */
 export const MAX_BAND_CAP_RETRIES = 3;
@@ -300,7 +312,7 @@ export function bandCapLinesAroundZone(
 }
 
 const capKey = (spanIndex: number, cap: BandCap): string =>
-  `${spanIndex}:${cap.startContentIndex}:${cap.startPart}:${cap.startVisit ?? 0}:${cap.lines}${cap.pitchPx !== undefined ? `@${cap.pitchPx.toFixed(2)}` : ''}`;
+  `${spanIndex}:${cap.startContentIndex}:${cap.startPart}:${cap.startVisit ?? 0}:${cap.lines}${cap.pitchPx !== undefined ? `@${cap.pitchPx.toFixed(2)}` : ''}${cap.at !== undefined ? `/${cap.at}` : ''}`;
 
 /**
  * Drive the band-cap passes. `initial` is the plain first pass; `runPass`
@@ -458,13 +470,29 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
   // and gets as many more passes as it gets retries (#711).
   const passBound = (): number =>
     MAX_BAND_PASSES + Math.max(0, ...[...caps.values()].map((c) => (c.retryLimit ?? MAX_BAND_CAP_RETRIES) - MAX_BAND_CAP_RETRIES));
-  for (let extra = 0; extra < passBound(); extra++) {
+  // Caps settle in the order of their bands: a cap measured on a layout
+  // the caps before it have since moved is proposed again on the moved one
+  // and only then lands, so a long document whose bands close before many
+  // span headings settles them a few at a time, page after page (#1253).
+  // Past its bound the driver goes on while that front moves: a pass is run
+  // while the first boundary whose cap still fails moved on in one of the
+  // last MAX_BAND_PASSES.
+  let front = -1;
+  let lastGain = 0;
+  const morePasses = (extra: number): boolean =>
+    extra < passBound() || (extra < MAX_TRAILING_CAP_PASSES && extra - lastGain < MAX_BAND_PASSES);
+  for (let extra = 0; morePasses(extra); extra++) {
     result = runPass(caps);
     ranWith = new Set(caps.keys());
     passCount++;
     yield;
     if ([...spanCaps.keys()].some((i) => !result.spanPlacedInBand.has(i))) return giveUp();
     const failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
+    const first = failing.length > 0 ? Math.min(...failing) : Infinity;
+    if (first > front) {
+      front = first;
+      lastGain = extra;
+    }
     for (const i of failing) {
       const cap = caps.get(i)!;
       const fresh = result.bandCapProposals.get(i);

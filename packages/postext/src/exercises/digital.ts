@@ -26,6 +26,8 @@ export interface ExerciseDigitalStyleInfo {
   marker: 'none' | 'box' | 'circle';
   /** The true and false labels (`trueFalse.labels`). */
   trueFalse: [string, string];
+  /** The matching dots' colour (`match.color`): the lines a reader draws. */
+  ink: string;
 }
 
 export interface ExerciseDigital {
@@ -49,6 +51,7 @@ export function exerciseDigitalOf(settings: ExerciseSettings): ExerciseDigital {
       answer: s.answers.color.hex,
       marker: s.options.marker === 'box' || s.options.marker === 'circle' ? s.options.marker : 'none',
       trueFalse: [s.trueFalse.labels[0], s.trueFalse.labels[1]],
+      ink: s.match.color.hex,
     };
   }
   return {
@@ -71,6 +74,8 @@ export interface ExerciseData extends ExerciseDigital {
   pxPerPt: number;
   /** The body text's size, page pixels: the size of the exercise bar. */
   bodyPx: number;
+  /** The body text's colour: what a reader types is set in it. */
+  text?: string;
   /** The boxes stand in the text's flow (a reflowable book) rather than
    *  on a positioned page: the bar and the solution follow the box, sized
    *  in ems of its text. */
@@ -84,13 +89,19 @@ export interface ExerciseData extends ExerciseDigital {
 export function exerciseDataOf(doc: {
   exercises?: ExerciseRecord[];
   exerciseDigital?: ExerciseDigital;
-  config: { page: { dpi: number }; bodyText: { fontSize: Dimension } };
+  config: { page: { dpi: number }; bodyText: { fontSize: Dimension; color?: { hex: string } } };
 }): ExerciseData | undefined {
   const records = doc.exercises;
   const digital = doc.exerciseDigital;
   if (!records || records.length === 0 || !digital || !digital.interactive) return undefined;
   const pxPerPt = doc.config.page.dpi / 72;
-  return { ...digital, pxPerPt, bodyPx: dimensionToPx(doc.config.bodyText.fontSize, doc.config.page.dpi), exercises: records };
+  return {
+    ...digital,
+    pxPerPt,
+    bodyPx: dimensionToPx(doc.config.bodyText.fontSize, doc.config.page.dpi),
+    ...(doc.config.bodyText.color ? { text: doc.config.bodyText.color.hex } : {}),
+    exercises: records,
+  };
 }
 
 /** `data` as the text of a `<script type="application/json">`, in HTML

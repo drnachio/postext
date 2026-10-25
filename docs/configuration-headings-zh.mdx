@@ -38,6 +38,12 @@ export const metadata = {
       <td>所有标题的字体。</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>字体自身的数字</td>
+      <td>所有级别的数字：与旧式数字的正文相配时用<code>'lining'</code>。级别自己的<code>figureStyle</code>优先。见[数字样式](/zh/docs/configuration-fonts-colors-viewers#数字样式)。</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -172,7 +178,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 如果配置是存储下来的，引擎能识别出来并替你处理：沙盒处理它当时保存的书和配置（见**沙盒 › 持久化**），`openBundle` / `readBundle`处理postext 1.4或更早版本写出的`.postext`文件包（见[postext 1.4及更早版本写出的文件包](/zh/docs/configuration-bundles#postext-14及更早版本写出的文件包)）。你自己存储的配置可以交给`postext/bundle`中的`migrateConfig(config)`处理，它会写出1.4当时的分页方式（`pinLegacyHeadingBreaks`）：在没有分页的H1上写`enabled: false`，在H1和标题样式中未指定奇偶的`enabled: true`旁写`parity: 'any'`。它还会按1.4的设定固定以下各项：数学公式的字号、行内图周围的间距（框内也一样）、标题的行内标记、首字下沉的尺寸、引出列表的冒号行下方的空间、框截断后段落或列表项留下的行数、破折号处的断行、齐左文字的逐行断行、标题下段落的拆分、复合词连字符处的断行，以及`:::paragraphs`容器下方的间距。把书的Markdown作为第三个参数`{ content }`传入时，它会省去用不到的固定项：文本中没有`$`时省去数学固定项；没有一行嵌入资源时省去间距固定项（框内没有时省去框内间距固定项）；没有标题带标记时省去标题标记固定项；没有列表跟在以冒号结尾的行之后时省去冒号行固定项；文本中没有`:::callout`时省去框截断固定项；词与词之间没有紧排的破折号时省去破折号固定项；文本中没有标题时省去标题拆分固定项；文本中没有`:::paragraphs`容器时省去容器固定项；两个字母之间没有连字符时省去复合词固定项。齐左断行固定项只加给将某些正文设为齐左的配置，容器固定项只加给声明了段落样式的配置（见[postext 1.4及更早版本写出的文件包](/zh/docs/configuration-bundles#postext-14及更早版本写出的文件包)）。如果只处理分页，调用`pinLegacyHeadingBreaks(config)`即可。
 
-按级别覆盖支持与通用默认值相同的属性，即`fontSize`、`lineHeight`、`fontFamily`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`，另外还有以下仅限级别的字段（[标题样式](/zh/docs/configuration-styles#标题样式)也可以使用它们）：
+按级别覆盖支持与通用默认值相同的属性，即`fontSize`、`lineHeight`、`fontFamily`、`figureStyle`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`，另外还有以下仅限级别的字段（[标题样式](/zh/docs/configuration-styles#标题样式)也可以使用它们）：
 
 <table>
   <thead>

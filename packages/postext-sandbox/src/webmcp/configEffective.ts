@@ -7,6 +7,8 @@ import {
   buildDocument,
   cloneDefaultColorPalette,
   effectiveResourceTypes,
+  FIGURE_STYLES,
+  isFigureStyle,
   resolveCodeStyleConfig,
   resolveComicsConfig,
   resolveChecksConfig,
@@ -125,6 +127,12 @@ const kindOf = (v: unknown): string => (v === null ? 'null' : Array.isArray(v) ?
  * value of another shape than the setting's, saying what it takes.
  */
 export function coerceSetting(path: string, value: unknown, current: unknown): unknown {
+  // A style's figures (#1237) live in the stored configuration only (the
+  // resolved one names them in its family), so no current value tells
+  // what the setting takes.
+  if (path.endsWith('.figureStyle') && !isFigureStyle(value)) {
+    throw new ToolError(`${path} takes one of ${FIGURE_STYLES.map((s) => `"${s}"`).join(', ')}; null leaves it unset, so the style takes the figures of the family it inherits.`);
+  }
   if (current === undefined || current === null) return value;
   if (SWITCH_LENGTHS.includes(path.slice(path.lastIndexOf('.') + 1))) {
     if (typeof value === 'boolean') return value;

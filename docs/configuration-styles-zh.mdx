@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>字体族。其字重由下面的<code>fontWeight</code> / <code>boldFontWeight</code>决定（未设置时取正文的字重）。</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>其字体族的数字</td>
+      <td>样式的数字：日期或时间列表用<code>'lining-tabular'</code>。未设置时，样式随正文字体族一起取用正文的数字；指定了自己<code>fontFamily</code>的样式使用该字体的默认数字。见[数字样式](/zh/docs/configuration-fonts-colors-viewers#数字样式)。</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>正文字号</td>
@@ -1147,7 +1153,7 @@ const config: PostextConfig = {
       <td>级别字段</td>
       <td>同<code>headings.levels[]</code></td>
       <td>该级别的值</td>
-      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>numberSeparator</code>、<code>numberPosition</code>、<code>breakBefore</code>、<code>span</code>、<code>spanBreak</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：设置了哪一项，这种样式的标题就用它替换标题级别的值（<code>dropCap: false</code>去掉级别的首字下沉）。<code>breakBefore</code>逐个字段合并到级别的设置上：只设<code>parity</code>的样式保留级别的<code>enabled</code>，只设<code>enabled: true</code>的样式保留级别的奇偶（postext 1.4及以前，缺少的字段取自不断页的默认值）。</td>
+      <td><code>fontFamily</code>、<code>figureStyle</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>numberSeparator</code>、<code>numberPosition</code>、<code>breakBefore</code>、<code>span</code>、<code>spanBreak</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：设置了哪一项，这种样式的标题就用它替换标题级别的值（<code>dropCap: false</code>去掉级别的首字下沉）。<code>breakBefore</code>逐个字段合并到级别的设置上：只设<code>parity</code>的样式保留级别的<code>enabled</code>，只设<code>enabled: true</code>的样式保留级别的奇偶（postext 1.4及以前，缺少的字段取自不断页的默认值）。在这里设置的<code>figureStyle</code>作用于使用该样式的级别的字体族（见[数字样式](/zh/docs/configuration-fonts-colors-viewers#数字样式)）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

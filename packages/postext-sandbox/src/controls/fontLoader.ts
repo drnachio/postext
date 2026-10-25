@@ -20,11 +20,16 @@ import {
   resolveHeadingsConfig,
   resolveOrderedListsConfig,
   resolveUnorderedListsConfig,
+  addFeatureFaces,
+  baseFontFamily,
+  featureFamilyParts,
+  fontFeatureSettings,
+  setFigureStyleFamilies,
 } from 'postext';
 import type { PostextContent } from 'postext';
 import { getFontFile } from '../storage/fontStorage.js';
 import { fontsourceCssUrl, fontsourceId, parseFontsourceCss, parseUnicodeRange, fontsourceUrlAt, fontsourceVersionOf } from '../viewport/fontsourceSlices.js';
-import { isGenericFontFamily, isSystemFontFamily } from './systemFonts.js';
+import { isGenericFontFamily, isSystemFontFamily, takesFigureFeatures } from './systemFonts.js';
 
 const FONT_LOAD_TIMEOUT_MS = 3000;
 
@@ -155,13 +160,30 @@ async function fetchWithin<T>(url: string, read: (res: Response) => Promise<T>, 
 import {
   collectFontUsage,
   hasLatinEmphasis,
-  configFontFamilies as getConfigFontFamilies,
+  configFontFamilies,
+  configFeatureFamilies,
   STANDARD_FONT_VARIANTS,
   type FontContentText,
   type FontUsageDocument,
   type FontVariantUse,
 } from 'postext';
-export { collectFontUsage, hasLatinEmphasis, getConfigFontFamilies, STANDARD_FONT_VARIANTS };
+export { collectFontUsage, hasLatinEmphasis, STANDARD_FONT_VARIANTS };
+
+// A style's figures (#1237) leave a face only the system has as it is: no
+// file declares it again with the features. The layout worker says the
+// same (`worker/layout.worker.ts`).
+setFigureStyleFamilies((family) => takesFigureFeatures(family, typeof document !== 'undefined' ? document.fonts : undefined));
+
+/**
+ * Every family a configuration sets text in whose files the Sandbox loads:
+ * the engine's `configFontFamilies`, a feature family (a style's figures,
+ * #1237, `Lora@onum`) as its base family. The feature families are kept in
+ * `configFontUses`, whose faces are declared from the base family's files
+ * ({@link loadFont}).
+ */
+export function getConfigFontFamilies(config: PostextConfig, markdown?: FontContentText): string[] {
+  return [...new Set(configFontFamilies(config, markdown).map(baseFontFamily))];
+}
 export type { FontContentText, FontUsageDocument, FontVariantUse };
 
 const loadedFonts = new Set<string>();
@@ -1007,6 +1029,65 @@ function loadUse(font: string, use: FontVariantUse): Promise<void> {
   return promise;
 }
 
+/** The feature families (#1237) declared on the page, by the family and
+ *  the faces asked of it, and the faces declared for each. */
+const featureLoads = new Map<string, Promise<void>>();
+const featureFaces = new Map<string, FontFace[]>();
+
+/**
+ * Declare on the page the faces of a feature family (a style's figures,
+ * #1237, `Lora@onum`) and load the ones that hold a space: its base
+ * family's files of the cuts `uses` asks for and their stand-ins (those
+ * of a custom family whole), declared again under its name with the
+ * features' `featureSettings`, the descriptor the canvas sets the figures
+ * with. The base family is loaded first, as any family is; each file is
+ * declared once (the engine's `addFeatureFaces`).
+ */
+function loadFeatureFamily(font: string, base: string, uses: readonly FontVariantUse[]): Promise<void> {
+  if (typeof document === 'undefined' || !document.fonts || isGenericFontFamily(base)) return Promise.resolve();
+  const asked = uses.length > 0 ? sortedUses(uses) : REGULAR_USE;
+  const key = `${font}|${asked.map((u) => `${u.weight}${u.style}`).join(',')}`;
+  const known = featureLoads.get(key);
+  if (known) return known;
+  const promise = (async () => {
+    await loadFont(base, asked);
+    const files = await verticalFacesOf(base, asked);
+    const added = addFeatureFaces(document.fonts, font, files.map((f) => ({
+      source: typeof f.source === 'string' ? `url(${JSON.stringify(f.source)})` : f.source,
+      descriptors: {
+        ...(f.weight ? { weight: f.weight } : {}),
+        ...(f.style ? { style: f.style } : {}),
+        ...(f.unicodeRange ? { unicodeRange: f.unicodeRange } : {}),
+      },
+    })));
+    const own = featureFaces.get(font);
+    if (own) own.push(...(added as FontFace[]));
+    else featureFaces.set(font, [...(added as FontFace[])]);
+    await loadFontSpecs(asked.map((use) => `${use.style === 'italic' ? 'italic ' : ''}${use.weight} 16px "${font}"`), ' ');
+  })().catch(() => {
+    featureLoads.delete(key);
+  });
+  featureLoads.set(key, promise);
+  return promise;
+}
+
+/** Take off the page the feature families of `families` (their faces were
+ *  made from files that changed), so the next load declares them anew. */
+function forgetFeatureFamilies(families: readonly string[]): void {
+  const bases = new Set(families.map((f) => f.toLowerCase()));
+  for (const [font, faces] of [...featureFaces]) {
+    if (!bases.has(baseFontFamily(font).toLowerCase())) continue;
+    if (typeof document !== 'undefined' && document.fonts) {
+      for (const ff of faces) {
+        try { document.fonts.delete(ff); } catch { /* ignore */ }
+      }
+    }
+    featureFaces.delete(font);
+    facePayloadCache.delete(font);
+    for (const key of [...featureLoads.keys()]) if (key.startsWith(`${font}|`)) featureLoads.delete(key);
+  }
+}
+
 /**
  * Declare a family's faces on the page and load them: the files of a
  * custom family, else Fontsource's static cuts of the weights and slants
@@ -1016,6 +1097,8 @@ function loadUse(font: string, use: FontVariantUse): Promise<void> {
  * faces asked have loaded or failed.
  */
 export function loadFont(font: string, uses: readonly FontVariantUse[] = REGULAR_USE): Promise<void> {
+  const parts = featureFamilyParts(font);
+  if (parts.features.length > 0) return loadFeatureFamily(font, parts.family, uses);
   const custom = getCustomFontFamily(font);
   if (custom) {
     // The faces it has no file of come from its fallback family (#978);
@@ -1058,9 +1141,15 @@ export function loadFont(font: string, uses: readonly FontVariantUse[] = REGULAR
 export async function loadFacesForText(uses: Iterable<readonly [string, readonly FontVariantUse[]]>, text: string): Promise<void> {
   if (typeof document === 'undefined' || !document.fonts) return;
   await Promise.all([...uses].map(async ([family, list]) => {
-    if (list.length === 0 || getCustomFontFamily(family) || isGenericFontFamily(family)) return;
+    // A feature family (#1237) is its base family's files.
+    const base = baseFontFamily(family);
+    if (list.length === 0 || isGenericFontFamily(base)) return;
+    if (getCustomFontFamily(base)) {
+      if (base !== family) await loadFont(family, list);
+      return;
+    }
     await loadFont(family, list);
-    const { cuts } = await familyFiles(family);
+    const { cuts } = await familyFiles(base);
     if (cuts) {
       let largest = 0;
       for (const cut of cuts.values()) largest = Math.max(largest, cut.length);
@@ -1336,10 +1425,12 @@ export async function fetchFacePayloads(faces: readonly FamilyFace[]): Promise<F
 
 /** The faces a family named alone is sent with: its regular, its bold and
  *  their italics. */
-async function fetchFamilyPayloads(family: string): Promise<FontPayload[]> {
+async function fetchFamilyPayloads(name: string): Promise<FontPayload[]> {
+  // A feature family (#1237): its base family's files, with its features.
+  const family = baseFontFamily(name);
   const custom = getCustomFontFamily(family);
-  if (custom) return fetchCustomFamilyPayloads(custom);
-  return fetchFacePayloads(await familyCutFaces(family, STANDARD_FONT_VARIANTS));
+  if (custom) return asFeaturePayloads(name, await fetchCustomFamilyPayloads(custom));
+  return asFeaturePayloads(name, await fetchFacePayloads(await familyCutFaces(family, STANDARD_FONT_VARIANTS)));
 }
 
 /**
@@ -1379,29 +1470,49 @@ export async function collectFontPayloadsForFaces(
     else uses.set(face.family, [{ weight: face.weight, style: face.style }]);
   }
   const cps = codePoints === undefined ? undefined : [...codePoints];
-  const byFamily = await Promise.all([...uses].map(async ([family, list]): Promise<FontPayload[]> => {
-    try {
-      const custom = getCustomFontFamily(family);
-      if (custom) return await fetchCustomFamilyPayloads(custom, list);
-      const files = await familyFiles(family);
-      if (!cps || !files.cuts) return await fetchFacePayloads(await familyCutFaces(family, list));
-      // Cut by cut: each has files of its own for the same characters.
-      const wanted: FamilyFace[] = [];
-      const seen = new Set<string>();
-      for (const use of sortedUses(list)) {
-        for (const face of facesForCodePoints(await facesForUse(family, files, use), cps)) {
-          const key = faceCacheKey(face);
-          if (seen.has(key)) continue;
-          seen.add(key);
-          wanted.push(face);
-        }
-      }
-      return await fetchFacePayloads(wanted);
-    } catch {
-      return [];
-    }
-  }));
+  // A feature family (#1237): its base family's files, under its name
+  // with its features.
+  const byFamily = await Promise.all([...uses].map(async ([family, list]) => asFeaturePayloads(family, await familyPayloads(baseFontFamily(family), list, cps))));
   return dedupePayloads(byFamily);
+}
+
+/** The payloads of a family's files for the cuts `list` asks for (every
+ *  file of a custom family); with `cps`, only the files that hold them.
+ *  None when the family cannot be fetched. */
+async function familyPayloads(family: string, list: readonly FontVariantUse[], cps: number[] | undefined): Promise<FontPayload[]> {
+  try {
+    const custom = getCustomFontFamily(family);
+    if (custom) return await fetchCustomFamilyPayloads(custom, list);
+    const files = await familyFiles(family);
+    if (!cps || !files.cuts) return await fetchFacePayloads(await familyCutFaces(family, list));
+    // Cut by cut: each has files of its own for the same characters.
+    const wanted: FamilyFace[] = [];
+    const seen = new Set<string>();
+    for (const use of sortedUses(list)) {
+      for (const face of facesForCodePoints(await facesForUse(family, files, use), cps)) {
+        const key = faceCacheKey(face);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        wanted.push(face);
+      }
+    }
+    return await fetchFacePayloads(wanted);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The payloads of a base family's files as the faces of `family` when it
+ * is a feature family (a style's figures, #1237, `Lora@onum`): under its
+ * name, with the `featureSettings` of its features, which the worker
+ * declares them with. Any other family's payloads as they are.
+ */
+export function asFeaturePayloads(family: string, payloads: FontPayload[]): FontPayload[] {
+  const parts = featureFamilyParts(family);
+  if (parts.features.length === 0) return payloads;
+  const featureSettings = fontFeatureSettings(parts.features);
+  return payloads.map((p) => ({ ...p, family, featureSettings }));
 }
 
 function dedupePayloads(groups: readonly FontPayload[][]): FontPayload[] {
@@ -1676,18 +1787,27 @@ export async function collectStandInPayloads(
   const markdown = content !== undefined && typeof content === 'object' && !Array.isArray(content) ? (content as PostextContent).markdown : content as FontContentText;
   const italics = askedItalics(config, markdown);
   let codePoints: Set<number> | undefined;
-  const wanted: FamilyFace[] = [];
+  // A feature family (a style's figures, #1237) takes its base family's
+  // stand-ins, under its name with its features.
+  const features = configFeatureFamilies(config);
+  const out: FontPayload[] = [];
   for (const family of getConfigFontFamilies(config, markdown)) {
-    const faces = (await familyStandIns(family, italics.get(family)).catch((): FamilyFace[] => []))
-      .filter((face) => !sent?.has(faceCacheKey(face)));
-    if (faces.length === 0) continue;
+    const all = await familyStandIns(family, italics.get(family)).catch((): FamilyFace[] => []);
+    if (all.length === 0) continue;
     if (!codePoints) {
       codePoints = new Set<number>();
       for (const ch of fontSampleText(content, config)) codePoints.add(ch.codePointAt(0)!);
     }
-    for (const face of faces) if (rangeHolds(face.unicodeRange, codePoints)) wanted.push(face);
+    const held = all.filter((face) => rangeHolds(face.unicodeRange, codePoints!));
+    const own = held.filter((face) => !sent?.has(faceCacheKey(face)));
+    if (own.length > 0) out.push(...await fetchFacePayloads(own));
+    for (const feature of features) {
+      if (baseFontFamily(feature).toLowerCase() !== family.toLowerCase()) continue;
+      const twins = held.filter((face) => !sent?.has(faceCacheKey({ ...face, family: feature })));
+      if (twins.length > 0) out.push(...asFeaturePayloads(feature, await fetchFacePayloads(twins)));
+    }
   }
-  return fetchFacePayloads(wanted);
+  return out;
 }
 
 /** The key of a payload's face: family, weight, style and range. */
@@ -1786,6 +1906,7 @@ export function setCustomFonts(list: CustomFontFamily[] | undefined, options: { 
 /** Drop what the loader holds of `families` (their loaded state, payloads,
  *  declared faces) and tell the listeners. */
 function forgetCustomFamilies(changed: readonly string[]): void {
+  forgetFeatureFamilies(changed);
   for (const family of changed) {
     loadedFonts.delete(family);
     loadingPromises.delete(family);

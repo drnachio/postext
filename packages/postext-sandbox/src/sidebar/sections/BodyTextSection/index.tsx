@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
-import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, avoidOrphansByDefault, avoidWidowsByDefault, dimensionsEqual, colorsEqual, isCjkLanguage } from 'postext';
+import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, baseFontFamily, avoidOrphansByDefault, avoidWidowsByDefault, dimensionsEqual, colorsEqual, isCjkLanguage } from 'postext';
 import type { BodyTextConfig, ColonListRoom, CompositionRule, EmphasisStyle, HyphenationConfig, TashkilMode } from 'postext';
 import { ChevronRight } from 'lucide-react';
 import {
@@ -31,6 +31,7 @@ import { isArabicScriptLanguage } from '../../../context/arabicDefaults.js';
 import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides.js';
 import { TabStopsField } from '../../settings/TabStopsField.js';
 import { ParagraphSpacingField } from '../../settings/ParagraphSpacingField.js';
+import { FigureStyleField } from '../../settings/FigureStyleField.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -114,7 +115,8 @@ export const BodyTextSection = memo(function BodyTextSection() {
   };
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
-  const isFontDefault = bodyText.fontFamily === D.fontFamily;
+  // The resolved family carries the figures (#1237): compare the family.
+  const isFontDefault = baseFontFamily(bodyText.fontFamily) === D.fontFamily;
   const isSizeDefault = dimensionsEqual(bodyText.fontSize, D.fontSize);
   const isLineHeightDefault = dimensionsEqual(bodyText.lineHeight, D.lineHeight);
   const isParagraphSpacingDefault = bodyText.paragraphSpacing === D.paragraphSpacing;
@@ -216,6 +218,11 @@ export const BodyTextSection = memo(function BodyTextSection() {
           onReset={() => resetField('fontFamily')}
           searchPlaceholder={labels.bodyFontSearch}
           noResultsLabel={labels.bodyFontNoResults}
+        />
+        <FigureStyleField
+          value={raw?.figureStyle}
+          onChange={(v) => updateBodyText({ figureStyle: v })}
+          onReset={() => resetField('figureStyle')}
         />
         <DimensionInput
           label={labels.bodyFontSize}

@@ -13,6 +13,7 @@ import {
   TextInput,
   ToggleSwitch,
 } from '../../controls/index.js';
+import { FigureStyleField } from '../settings/FigureStyleField.js';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em'];
 const BORDER_UNITS: DimensionUnit[] = ['pt', 'px'];
@@ -74,6 +75,12 @@ export function TableStyleFields({
           onChange={(v) => update({ bodyFontFamily: v })}
           isDefault={unset('bodyFontFamily')}
           onReset={() => resetField('bodyFontFamily')}
+        />
+        <FigureStyleField
+          value={raw?.figureStyle}
+          inherits
+          onChange={(v) => update({ figureStyle: v })}
+          onReset={() => resetField('figureStyle')}
         />
         <DimensionInput
           label={labels.sizeLabel}

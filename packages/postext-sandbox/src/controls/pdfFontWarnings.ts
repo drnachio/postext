@@ -2,7 +2,7 @@ import type { PdfFontWarning } from 'postext-pdf';
 
 /** The font warnings of the last PDF the PDF tab generated (issue #196):
  *  characters a face lacks, a variable font set at its default weight, a
- *  large CFF face embedded whole. The Checks panel lists them until the
+ *  large CFF face embedded whole, the figure features a face lacks (#1237). The Checks panel lists them until the
  *  next generation replaces them; once the book they came from is edited
  *  they are marked as from an earlier PDF, and another book drops them. A
  *  font fallback is left out: the provider's italic-to-upright stand-in is

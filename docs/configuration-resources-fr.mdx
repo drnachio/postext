@@ -274,6 +274,12 @@ const config: PostextConfig = {
       <td>Famille de caractères des cellules d’en-tête.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>ceux de la famille des cellules</td>
+      <td>Les chiffres de toutes les cellules, d’en-tête et de corps : <code>'lining-tabular'</code> aligne les chiffres d’une colonne. Non défini, les cellules prennent les chiffres du corps du texte avec sa famille. Un style de tableau nommé peut fixer les siens. Voir [Styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres).</td>
+    </tr>
+    <tr>
       <td><code>headerFontSize</code></td>
       <td><code>Dimension</code></td>
       <td>corps du texte courant</td>
@@ -616,6 +622,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td>police du texte courant</td>
       <td>Famille de caractères de la légende (libellé et description).</td>
+    </tr>
+    <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>ceux de sa famille</td>
+      <td>Les chiffres de l’étiquette et de la description. Non défini, une légende dans la famille du corps du texte prend ses chiffres. Le <code>captionStyle</code> d’un type de ressource peut fixer les siens. Voir [Styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres).</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>

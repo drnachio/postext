@@ -274,6 +274,12 @@ const config: PostextConfig = {
       <td>عائلة الخط لخلايا الرأس.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>أرقام عائلة الخلايا</td>
+      <td>أرقام كل الخلايا، في الرأس والمتن: <code>'lining-tabular'</code> يصفّ خانات العمود بعضها تحت بعض. وإن لم يُضبط أخذت الخلايا أرقام المتن مع عائلته. ويمكن لنمط جدول مسمّى أن يضبط أرقامه. انظر [أنماط الأرقام](/ar/docs/configuration-fonts-colors-viewers#أنماط-الأرقام).</td>
+    </tr>
+    <tr>
       <td><code>headerFontSize</code></td>
       <td><code>Dimension</code></td>
       <td>حجم نص المتن</td>
@@ -616,6 +622,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td>خط نص المتن</td>
       <td>عائلة خط التعليق (التسمية والوصف).</td>
+    </tr>
+    <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>أرقام عائلته</td>
+      <td>أرقام التسمية والوصف. وإن لم يُضبط أخذ التعليق المصفوف بعائلة المتن أرقامَ المتن. ويمكن لـ<code>captionStyle</code> نوع المورد أن يضبط أرقامه. انظر [أنماط الأرقام](/ar/docs/configuration-fonts-colors-viewers#أنماط-الأرقام).</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>

@@ -362,3 +362,56 @@ describe('a span: page heading that opens mid-page (#539)', () => {
     expect(third!.bbox.y).toBeGreaterThanOrEqual(Math.max(...ends) - 0.5);
   });
 });
+
+describe('many page-span headings opening mid-page in one flow (#1253)', () => {
+  // Articles of two to five paragraphs of varied length, each under a
+  // page-span heading that opens under the text before it: every band
+  // closing before a heading is cut level by a trailing cap, and in a
+  // flow this long the caps can only land one stretch of pages after
+  // another, each on the layout the caps before it have left.
+  const SENTENCES = [
+    'La linterna del faro debe permanecer encendida toda la noche para guiar a los barcos que cruzan la bahía.',
+    'El guardián subía cada tarde los ciento veinte peldaños con una lata de aceite y un trapo limpio.',
+    'Desde lo alto se veían las luces del puerto, las barcas de pesca y la línea oscura de la costa.',
+    'Nadie en el pueblo recordaba una noche en que el faro se hubiera quedado a oscuras.',
+  ];
+  const articles = (n: number): string => {
+    let seed = 7;
+    const next = (k: number): number => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % k; };
+    const out: string[] = [];
+    for (let a = 0; a < n; a++) {
+      out.push(`# Artículo ${a + 1} {style="article"}`, '');
+      for (let p = 0, k = 2 + next(4); p < k; p++) {
+        out.push(Array.from({ length: 2 + next(6) }, () => SENTENCES[next(4)]).join(' '), '');
+      }
+    }
+    return out.join('\n');
+  };
+
+  it('opens every heading under the text wherever a level cut leaves it room', () => {
+    const doc = buildDocument({ markdown: articles(40) }, config(article({ spanBreak: false })), createMeasurementCache());
+    const all = doc.blocks.filter((b) => b.type === 'heading');
+    const lineHeight = doc.blocks.find((b) => b.type === 'paragraph')!.lines[0]!.bbox.height;
+    const headingBand = Math.max(...all.filter((h) => !h.hidden).map((h) => h.bbox.height));
+    // What a heading opening under the text needs: its band and a few body
+    // lines under it (the widow minimum, with room to spare).
+    const need = headingBand + 4 * lineHeight;
+    const moved: string[] = [];
+    for (const h of all) {
+      const page = doc.pages[h.pageIndex]!;
+      if (h.pageIndex === 0 || (!h.hidden && h.bbox.y > page.contentArea.y + 1)) continue;
+      // A heading at the head of its page: the closing band of the page
+      // before must have been too short for it.
+      const prev = doc.pages[h.pageIndex - 1]!;
+      const before = textColumnsOf(prev);
+      const last = Math.max(...before.map((c) => c.band ?? 0));
+      const band = before.filter((c) => (c.band ?? 0) === last);
+      const textBottom = Math.max(...band.map((c) => c.bbox.y + c.bbox.height - c.availableHeight));
+      const room = prev.contentArea.y + prev.contentArea.height - textBottom;
+      if (room > need) moved.push(`page ${h.pageIndex}: ${Math.round(room)}px free before it`);
+    }
+    expect(moved).toEqual([]);
+    // The caps settled within the driver's bound.
+    expect(doc.iterationCount).toBeLessThan(40);
+  });
+});

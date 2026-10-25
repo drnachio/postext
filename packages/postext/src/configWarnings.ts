@@ -49,6 +49,7 @@ import { deriveSectionGeometryConfig } from './pipeline/headingStyles.js';
 import { cjkGridGeometry } from './pipeline/cjkGrid.js';
 import { isDigitSystem } from './locale.js';
 import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/bodyText.js';
+import { isFigureStyle } from './fonts/figureStyle.js';
 import { parseFootnoteNumberFormat } from './defaults/footnotes.js';
 import { COMIC_CHOICES, isComicChoice, resolveComicsConfig } from './defaults/comics.js';
 import { resolvePrintConfig } from './defaults/print.js';
@@ -534,6 +535,18 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   };
   rule('bodyText.shortListSplit', config.bodyText?.shortListSplit);
   rule('layout.openerFloats', config.layout?.openerFloats);
+  // The figures of a style (#1237): read as unset, the family's own.
+  const figures = (path: string, value: unknown) => {
+    if (value !== undefined && !isFigureStyle(value)) out.push({ kind: 'unknownConfigValue', path, value: String(value), used: 'default' });
+  };
+  figures('bodyText.figureStyle', config.bodyText?.figureStyle);
+  figures('headings.figureStyle', config.headings?.figureStyle);
+  config.headings?.levels?.forEach((l, i) => figures(`headings.levels[${i}].figureStyle`, l?.figureStyle));
+  config.headingStyles?.forEach((h, i) => figures(`headingStyles[${i}].figureStyle`, h?.figureStyle));
+  config.paragraphStyles?.forEach((p, i) => figures(`paragraphStyles[${i}].figureStyle`, p?.figureStyle));
+  figures('tableStyle.figureStyle', config.tableStyle?.figureStyle);
+  config.tableStyles?.forEach((t, i) => figures(`tableStyles[${i}].figureStyle`, t?.figureStyle));
+  figures('captionStyle.figureStyle', config.captionStyle?.figureStyle);
   // What heads a block of the contents (#850): read as `'part'`.
   const tocHead = config.toc?.groups?.head as unknown;
   if (tocHead !== undefined && parseTocGroupHead(tocHead) === undefined) {
@@ -853,7 +866,7 @@ function collectNumeralsWarnings(config: PostextConfig): ConfigWarning[] {
 // added to (or removed from) a type fails to compile until it is listed
 // here, so the check never flags a setting the engine reads.
 const HEADINGS_KEYS = {
-  fontFamily: true, lineHeight: true, color: true, textAlign: true, fontWeight: true,
+  fontFamily: true, figureStyle: true, lineHeight: true, color: true, textAlign: true, fontWeight: true,
   marginTop: true, marginBottom: true, keepWithNext: true, keepWithNextSpread: true, keepWithNextSplit: true, snapToGrid: true, columnHeadSpace: true, inlineMarks: true, balancing: true, levels: true,
 } satisfies Record<keyof HeadingsConfig, true>;
 const BALANCING_KEYS = {
@@ -862,7 +875,7 @@ const BALANCING_KEYS = {
   trackParagraphs: true, maxTracking: true, fillShortColumns: true, trailing: true, trailingStep: true, beforeSpan: true, closingBox: true, gridLines: true,
 } satisfies Record<keyof ColumnBalancingConfig, true>;
 const HEADING_LEVEL_KEYS = {
-  level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
+  level: true, fontSize: true, lineHeight: true, fontFamily: true, figureStyle: true, color: true, fontWeight: true,
   marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true,
   breakBefore: true, span: true, spanBreak: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
   lineSpan: true, indent: true, firstLineIndent: true, jidori: true, dropCap: true,
@@ -870,13 +883,13 @@ const HEADING_LEVEL_KEYS = {
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, sectionEnd: true, header: true, footer: true,
   margins: true, layout: true, bodyStyle: true, palette: true,
-  fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
+  fontSize: true, lineHeight: true, fontFamily: true, figureStyle: true, color: true, fontWeight: true, marginTop: true,
   marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true, spanBreak: true,
   advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, lineSpan: true, indent: true, firstLineIndent: true, jidori: true,
   dropCap: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {
-  id: true, name: true, fontFamily: true, fontSize: true, lineHeight: true, color: true, textAlign: true,
+  id: true, name: true, fontFamily: true, figureStyle: true, fontSize: true, lineHeight: true, color: true, textAlign: true,
   boldColor: true, italicColor: true, fontWeight: true, boldFontWeight: true, italic: true, smallCaps: true,
   hyphenation: true, indent: true, endIndent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
   marginTop: true, marginBottom: true, snapToGrid: true, containerSpacing: true, textTransform: true, letterSpacing: true, wordBreak: true, lineNumbers: true,

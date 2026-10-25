@@ -1934,11 +1934,13 @@ function placeDocumentPass(
     }
   };
   const floatHeadOf = (col: VDTColumn): number => reservedOf(col).top;
-  /** `BandCap.headPx` for a cap proposed on `cols`: how far the float bands
-   *  every column holds at its head put the band's top below its bare one. */
-  const capHeadPx = (cols: readonly VDTColumn[]): { headPx?: number } => {
+  /** Where a cap proposed on `cols` was measured: `BandCap.at` (the page
+   *  and the band's top) and `BandCap.headPx` (how far the float bands every
+   *  column holds at its head put the band's top below its bare one). */
+  const capOrigin = (cols: readonly VDTColumn[]): { at: string; headPx?: number } => {
     const head = bandTop(cols) - bareBandTop(cols, floatHeadOf);
-    return head > 0.5 ? { headPx: head } : {};
+    const at = `${cursor.pageIndex}:${Math.round(bandTop(cols))}`;
+    return head > 0.5 ? { at, headPx: head } : { at };
   };
   /** Content index of the block that first referenced the latest float
    *  reserved at the head of each column. */
@@ -4050,6 +4052,13 @@ function placeDocumentPass(
       // The cut is measured from under the float bands the proposing pass
       // had at the band's head, which may not have landed yet.
       const top = Math.max(bandTop(cols), bareBandTop(cols, floatHeadOf) + (cap.headPx ?? 0));
+      // A cut below the band's foot cuts nothing: the band opens lower on
+      // its page than where the cap was measured (the caps before it pulled
+      // the flow up), so its text runs into the page foot whatever the cap.
+      // Left unapplied, the driver takes the fresh proposal of the band the
+      // boundary is reached in instead of growing this one (#1253).
+      const foot = Math.min(...cols.map((c) => columnBottom(c, uncappedBottoms)));
+      if (cols.length > 0 && top + cap.lines * (cap.pitchPx ?? baselineGrid) > foot + 0.5) continue;
       // (A trailing cap counts the lines of its band's own leading, #711.)
       applyBandCap(cols, cap.lines * (cap.pitchPx ?? baselineGrid), uncappedBottoms, cap.zone, cap.kind === 'trailing', top);
       cappedBandColumns.set(spanIndex, cols);
@@ -4156,7 +4165,7 @@ function placeDocumentPass(
       ...(pitch !== baselineGrid ? { pitchPx: pitch, retryLimit: capRetryLimit(pitch, baselineGrid) } : {}),
       retries: 0,
       ...(aroundZone !== null ? { zone } : {}),
-      ...capHeadPx(cols),
+      ...capOrigin(cols),
     });
   };
 
@@ -4878,7 +4887,7 @@ function placeDocumentPass(
                   ...(bandStart.visit > 0 ? { startVisit: bandStart.visit } : {}),
                   lines,
                   retries: 0,
-                  ...capHeadPx(cols),
+                  ...capOrigin(cols),
                 });
               } else {
                 proposeTrailingCap(startIdx);
@@ -5045,7 +5054,7 @@ function placeDocumentPass(
               ...(bandStart.visit > 0 ? { startVisit: bandStart.visit } : {}),
               lines,
               retries: 0,
-              ...capHeadPx(cols),
+              ...capOrigin(cols),
             });
             proposedSpan = true;
           }

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { DocumentMetadata, PostextConfig, VDTDocument } from 'postext';
 import { documentCodePoints, facesForText, fontFormatOf, parseUnicodeRange } from './fontSubsets.js';
 import { bookLanguageOf, epubFileName, epubMetadataOf, isoDateOf, sandboxBookIdentifier } from './metadata.js';
-import { createSwipeTracker, dockedToolbarReserve, fillLabel, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf, SWIPE_MAX_DURATION, type SwipePoint } from './viewer.js';
+import { createFrameExercises, createSwipeTracker, dockedToolbarReserve, exerciseOwns, fillLabel, firstIndexOf, fixedScreens, flattenToc, keepReaderFocus, linkTarget, prefersSpreads, rewriteCssUrls, rewriteMarkupRefs, screenOf, SWIPE_MAX_DURATION, type SwipePoint } from './viewer.js';
 
 describe('font subsets', () => {
   it('reads unicode-range values, wildcards included', () => {
@@ -228,5 +228,45 @@ describe('swipe paging', () => {
     tracker.down(at(300, 400));
     tracker.cancel(1);
     expect(tracker.up(at(100, 400, 100), false)).toBeNull();
+  });
+});
+
+describe('exercises in the reader (#1263)', () => {
+  // An element of a frame's document, as far as the reader looks at it.
+  const element = (matches: string[], editable = false) => ({
+    isContentEditable: editable,
+    closest: (selector: string) => (selector.split(',').some((s) => matches.includes(s.trim())) ? {} : null),
+  });
+
+  it('leaves keys and pointers on an exercise to the exercise', () => {
+    expect(exerciseOwns(element(['.pt-ex-ui']) as unknown as EventTarget)).toBe(true);
+    expect(exerciseOwns(element(['input']) as unknown as EventTarget)).toBe(true);
+    expect(exerciseOwns(element(['textarea']) as unknown as EventTarget)).toBe(true);
+    expect(exerciseOwns(element([], true) as unknown as EventTarget)).toBe(true);
+    // The page's text, or a target with no elements above it: the reader's.
+    expect(exerciseOwns(element([]) as unknown as EventTarget)).toBe(false);
+    expect(exerciseOwns({} as EventTarget)).toBe(false);
+    expect(exerciseOwns(null)).toBe(false);
+  });
+
+  it('takes a frame\'s exercises off when it loads again, when it is gone and when the reader closes', () => {
+    const frames = createFrameExercises<{ isConnected: boolean }>();
+    const a = { isConnected: true };
+    const b = { isConnected: true };
+    const offA1 = vi.fn();
+    const offA2 = vi.fn();
+    const offB = vi.fn();
+    frames.keep(a, offA1);
+    // The same frame with another document (a new build of the page).
+    frames.keep(a, offA2);
+    expect(offA1).toHaveBeenCalledTimes(1);
+    // A page turned: frame a left the reader, frame b came.
+    a.isConnected = false;
+    frames.keep(b, offB);
+    expect(offA2).toHaveBeenCalledTimes(1);
+    expect(offB).not.toHaveBeenCalled();
+    frames.clear();
+    expect(offB).toHaveBeenCalledTimes(1);
+    expect(offA2).toHaveBeenCalledTimes(1);
   });
 });

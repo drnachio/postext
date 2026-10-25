@@ -150,6 +150,61 @@ Dès qu’une mise en page existe, le panneau liste aussi le **Remplacement de p
 
 Le panneau liste aussi les **Caractères pris dans une autre police** (`glyphFallback`) : des caractères que le texte compose dans une police qui n’a pas de glyphe pour eux, une fois par police, avec la famille générique qui les a dessinés (`serif`, `sans-serif`, `monospace`) quand la vérification peut le dire.
 
+## Styles de chiffres
+
+`figureStyle` demande à la police d’un style de texte un jeu de chiffres précis, par les fonctionnalités OpenType de la police : chiffres elzéviriens dans le texte courant, chiffres alignés tabulaires dans les tableaux. Le champ existe dans `bodyText`, `paragraphStyles[]`, `headings` et `headings.levels[]`, `headingStyles[]`, `tableStyle` et `tableStyles[]` (cellules d’en-tête et de corps de la même façon), `captionStyle` (étiquette et description, ainsi que le `captionStyle` d’un type de ressource) et les éléments de texte d’un design (titres courants, folios, textes d’une page d’ouverture ou d’une page de partie). Dans le Sandbox, c’est le champ **Chiffres** du panneau Maquette, à côté du caractère de chacun de ces styles (**Texte courant → Caractère** pour le corps du texte).
+
+<table>
+  <thead>
+    <tr>
+      <th>Valeur</th>
+      <th>Fonctionnalités OpenType</th>
+      <th>Chiffres</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>aucune</td><td>Ceux de la police. Retire les chiffres qu’un style hérite.</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>Chiffres elzéviriens, avec ascendantes et descendantes comme les bas-de-casse : texte courant.</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>Chiffres alignés, à la hauteur des capitales : titres, texte en capitales.</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>Chiffres tabulaires : tous de la même chasse, pour que les chiffres d’une colonne tombent les uns sous les autres. La forme reste celle de la police.</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>Chiffres proportionnels : chacun de sa propre chasse. La forme reste celle de la police.</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>Chiffres elzéviriens d’une seule chasse.</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>Chiffres elzéviriens de chasse propre.</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>Chiffres alignés d’une seule chasse : tableaux, horaires, listes de prix.</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>Chiffres alignés de chasse propre.</td></tr>
+  </tbody>
+</table>
+
+Une paire fixe une forme et une chasse. Une police sans la fonctionnalité garde ses propres chiffres : vérifiez que la police a `onum` ou `lnum` avant de compter dessus. Une famille dont l’hôte n’a aucun fichier, comme une police installée seulement sur le système du lecteur (le Sandbox ne les télécharge pas), ne prend aucun style de chiffres : son texte garde les chiffres de cette police, dans la police elle-même. Un livre qui téléverse des fichiers sous ce nom obtient les chiffres. Les coupes que servent Google Fonts et Fontsource laissent souvent `onum` et `lnum` de côté (le fichier latin de Source Serif 4 ne garde que `pnum` et `tnum`) ; avec un tel fichier, un style qui les demande garde les chiffres de la police. Les fichiers complets de la fonderie les ont : téléversez-les pour obtenir des chiffres elzéviriens ou alignés. Une famille générique (`serif`, `sans-serif`) ne prend aucune fonctionnalité. Une valeur hors de la liste est signalée comme valeur de réglage inconnue (`unknownConfigValue`, voir [Avertissements de configuration](#avertissements-de-configuration)) et lue comme non définie.
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+Le texte compose ses années et ses numéros de page en chiffres elzéviriens, de même que les légendes et les listes, qui prennent la famille du corps du texte. Les cellules de tous les tableaux et les paragraphes du style `timetable` alignent leurs chiffres en chiffres alignés tabulaires. Tous les niveaux de titre composent des chiffres alignés dans la famille des titres.
+
+### Quels chiffres prend un style
+
+- Un style qui prend la famille d’un autre prend aussi ses chiffres. Les styles de paragraphe, les tableaux, les légendes, les listes et le contenu des encadrés prennent la famille du corps du texte quand ils n’en nomment pas d’autre : `bodyText.figureStyle` les atteint tous.
+- Un style qui nomme sa propre `fontFamily` compose les chiffres par défaut de cette police, sauf s’il fixe aussi `figureStyle`.
+- Un niveau de titre sans `figureStyle` propre prend `headings.figureStyle`, y compris dans sa propre `fontFamily` quand il en nomme une. Le `figureStyle` d’un style de titre s’applique à la famille du niveau sur lequel le style est employé.
+- Un élément de texte d’un design nomme sa propre famille (`'EB Garamond'` par défaut) ; les chiffres du corps du texte n’atteignent donc pas un folio : donnez-lui `figureStyle: 'oldstyle'` pour l’accorder à un texte en chiffres elzéviriens.
+- `'default'` compose les chiffres de la police et annule ceux qui sont hérités : `paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]` retire à ce style les chiffres elzéviriens du corps du texte.
+
+### Les chiffres dans chaque sortie
+
+Le texte est mesuré avec les fonctionnalités : ses lignes se coupent aux mêmes largeurs dans l’aperçu Canvas, le HTML, le PDF et l’EPUB, en mise en page fixe comme recomposable.
+
+- **Aperçu Canvas et worker de mise en page** : le navigateur déclare une seconde fois les fichiers de la famille de base sous un nom de famille à fonctionnalités, avec le descripteur `featureSettings` de `FontFace`. Le nom est la famille suivie de ses fonctionnalités après `@` (`EB Garamond@onum`, `EB Garamond@lnum+tnum`) ; il apparaît dans les chaînes de police et dans certains avertissements.
+- **HTML et EPUB** (mise en page fixe et recomposable) : la famille de base, avec `font-variant-numeric` (`oldstyle-nums`, `lining-nums tabular-nums`).
+- **PDF** : incorpore les fichiers de la famille de base et compose le texte avec les fonctionnalités.
+- **Ligne de commande** : Skia, le canvas avec lequel dessine `postext`, n’applique aucune fonctionnalité. La ligne de commande enregistre une copie de la police dont la `cmap` envoie chaque caractère que les fonctionnalités remplacent, les chiffres, vers le glyphe qu’elles choisissent. Seules les substitutions simples sont prises ; une police qui atteint ses chiffres par des substitutions contextuelles y garde ses propres chiffres.
+
 ## Palette de couleurs
 
 La propriété `colorPalette` de `PostextConfig` vous permet de définir un jeu réutilisable de couleurs nommées et d’y faire référence depuis n’importe quelle `ColorValue` de la configuration. C’est l’équivalent dans Postext des propriétés personnalisées CSS ou du panneau Nuancier d’InDesign : modifiez une fois l’entrée de la palette, et chaque couleur qui y renvoie se met à jour dans tout le document.

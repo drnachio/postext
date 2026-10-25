@@ -240,3 +240,31 @@ describe('paragraph spacing as a length', () => {
     expect(moved(before, after).filter((p) => !p.startsWith(path) && !/\.body\.paragraphSpacing(\.value|\.unit)?$/.test(p))).toEqual([]);
   });
 });
+
+// #1237: a style's figures are stored only; the resolved configuration
+// names them in the style's family (`Lora@onum`).
+describe('a text style\'s figures', () => {
+  const styled = () => ({ ...book(), config: { paragraphStyles: [{ id: 'lead' }] } });
+  it.each([
+    ['bodyText.figureStyle', 'oldstyle', 'bodyText.fontFamily', '@onum'],
+    ['tableStyle.figureStyle', 'lining-tabular', 'tableStyle.bodyFontFamily', '@lnum+tnum'],
+    ['paragraphStyles[id=lead].figureStyle', 'tabular', 'paragraphStyles[id=lead].fontFamily', '@tnum'],
+  ])('writes %s and reads it back', async (path, value, family, tail) => {
+    const { call } = harness(styled() as never);
+    const done = await call('sandbox_set_config', { changes: [{ path, value }], wait: false });
+    expect(done.ok, text(done)).toBe(true);
+    const read = await call('sandbox_get_config', { path, effective: false });
+    expect(read.set).toBe(value);
+    const resolved = await call('sandbox_get_config', { path: family });
+    expect(String(resolved.effective).endsWith(tail), text(resolved)).toBe(true);
+    const cleared = await call('sandbox_set_config', { changes: [{ path, value: null }], wait: false });
+    expect(cleared.ok, text(cleared)).toBe(true);
+    expect((await call('sandbox_get_config', { path, effective: false })).set).toBe(null);
+  });
+  it('refuses a value that is not a figure style', async () => {
+    const { call } = harness(book());
+    const done = await call('sandbox_set_config', { changes: [{ path: 'bodyText.figureStyle', value: 'fancy' }], wait: false });
+    expect(done.ok).toBe(false);
+    expect(String(done.error)).toContain('"oldstyle"');
+  });
+});

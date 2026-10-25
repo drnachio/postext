@@ -7,6 +7,7 @@ import type { BuildStats, FontPayload, RequestMessage, ResponseMessage } from '.
 import { cdnWorkerEntryUrl } from './entryUrl.js';
 import { fontSampleText, prepareFonts, type FontReport, type PrepareFontsOptions } from '../fonts/prepare.js';
 import { registeredFontFiles } from '../svg/fontRegistry.js';
+import { featureFamilyParts, fontFeatureSettings } from '../fonts/figureStyle.js';
 
 export type { BuildStats, FontPayload } from './protocol.js';
 export type { BuildPassInfo } from '../pipeline/build.js';
@@ -217,8 +218,15 @@ export function createLayoutWorker(
       const report = await prepareFonts(content, config, options);
       const codePoints = new Set<number>();
       for (const ch of fontSampleText(content, config)) codePoints.add(ch.codePointAt(0)!);
-      const files = (await Promise.all([...report.loaded, ...report.synthesized].map((f) =>
-        registeredFontFiles(f.family, f.weight, f.style, { codePoints, styleSheets: true })))).flat();
+      // A feature family (#1237) is sent as its base family's files with
+      // its features.
+      const files = (await Promise.all([...report.loaded, ...report.synthesized].map(async (f) => {
+        const parts = featureFamilyParts(f.family);
+        const found = await registeredFontFiles(parts.family, f.weight, f.style, { codePoints, styleSheets: true });
+        if (parts.features.length === 0) return found;
+        const featureSettings = fontFeatureSettings(parts.features);
+        return found.map((file) => ({ ...file, family: f.family, featureSettings }));
+      }))).flat();
       const seen = new Set<string>();
       const payloads: FontPayloadInput[] = [];
       for (const f of files) {
@@ -226,7 +234,8 @@ export function createLayoutWorker(
         if (seen.has(key)) continue;
         seen.add(key);
         // A copy: the transfer detaches the buffer, the registry keeps its own.
-        payloads.push({ family: f.family, weight: f.weight, style: f.style, unicodeRange: f.unicodeRange, buffer: f.bytes.slice().buffer });
+        const featureSettings = (f as { featureSettings?: string }).featureSettings;
+        payloads.push({ family: f.family, weight: f.weight, style: f.style, unicodeRange: f.unicodeRange, ...(featureSettings ? { featureSettings } : {}), buffer: f.bytes.slice().buffer });
       }
       if (payloads.length > 0) await this.registerFonts(payloads);
       return report;

@@ -5,6 +5,7 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../
 import {
   resolveOrderedListsConfig,
   resolveBodyTextConfig,
+  baseFontFamily,
   DEFAULT_ORDERED_LISTS_STATIC,
   dimensionsEqual,
 } from 'postext';
@@ -135,7 +136,8 @@ export const OrderedListsSection = memo(function OrderedListsSection() {
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const hasSeparatorOverrides = raw !== undefined && SEPARATOR_FIELDS.some((f) => raw[f] !== undefined);
-  const isFontDefault = lists.fontFamily === bodyText.fontFamily;
+  // The body's family carries its figures (#1237): compare the families.
+  const isFontDefault = baseFontFamily(lists.fontFamily) === baseFontFamily(bodyText.fontFamily);
   const isColorDefault = raw?.color === undefined;
   const isFontWeightDefault = lists.fontWeight === D.fontWeight;
   const isItalicDefault = lists.italic === D.italic;

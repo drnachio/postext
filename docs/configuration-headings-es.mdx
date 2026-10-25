@@ -38,6 +38,12 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td>Familia tipográfica de todos los encabezados.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>las de la fuente</td>
+      <td>Las cifras de todos los niveles: <code>'lining'</code> junto a un texto en cifras elzevirianas. Gana el <code>figureStyle</code> propio de un nivel. Véase [Estilos de cifras](/es/docs/configuration-fonts-colors-viewers#estilos-de-cifras).</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -172,7 +178,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 Cuando la configuración viene de un almacenamiento, el motor sabe que es antigua y lo hace por ti: el Sandbox con los libros y las configuraciones que guardó entonces (véase **Sandbox → Persistencia**), y `openBundle` / `readBundle` con un paquete `.postext` escrito por postext 1.4 o anterior (véase [Paquetes escritos por postext 1.4 o anterior](/es/docs/configuration-bundles#paquetes-escritos-por-postext-14-o-anterior)). Una configuración que guardaste tú puede pasar por `migrateConfig(config)` de `postext/bundle`, que escribe los saltos tal como los componía la 1.4 (`pinLegacyHeadingBreaks`): `enabled: false` en un H1 que no tenía salto, y `parity: 'any'` junto a un `enabled: true` que no indicaba paridad, en H1 y en los estilos de encabezado. También fija el tamaño de las fórmulas, el espacio en torno a las figuras en línea (también en los recuadros), las marcas en línea de los encabezados, el tamaño de las capitulares, el espacio bajo una línea que termina en dos puntos e introduce una lista, las líneas de un párrafo o de un elemento de lista que deja un corte en un recuadro, los cortes de línea tras una raya, la composición línea a línea del texto en bandera, la división de un párrafo bajo un encabezado, los cortes de línea tras el guion de un compuesto y el espacio bajo los contenedores `:::paragraphs`, tal como los componía la 1.4. Si le pasas el Markdown del libro como tercer argumento, `{ content }`, omite la fijación de las fórmulas cuando el texto no tiene ningún `$`, las del espacio alrededor de las figuras en línea cuando ninguna línea inserta un recurso (la del espacio en los recuadros cuando ninguna lo hace dentro de un recuadro), la de las marcas cuando ningún encabezado lleva ninguna, la de los dos puntos cuando ninguna lista sigue a una línea que termina en dos puntos, la del corte de los recuadros cuando el texto no abre ningún `:::callout`, la de las rayas cuando ninguna raya va entre palabras sin espacios, la de la división bajo un encabezado cuando el texto no tiene ningún encabezado, la de los contenedores cuando el texto no abre ningún contenedor `:::paragraphs`, y la de los compuestos cuando ningún guion va entre dos letras; la del texto en bandera solo se aplica a una configuración que pone en bandera algún texto corrido, y la de los contenedores solo a una que declara algún estilo de párrafo (véase [Paquetes escritos por postext 1.4 o anterior](/es/docs/configuration-bundles#paquetes-escritos-por-postext-14-o-anterior)). Para fijar solo los saltos, llama a `pinLegacyHeadingBreaks(config)`.
 
-Los niveles admiten las mismas propiedades que los valores generales (`fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`), además de estos campos exclusivos de cada nivel (un [estilo de encabezado](/es/docs/configuration-styles#estilos-de-encabezado) también los admite):
+Los niveles admiten las mismas propiedades que los valores generales (`fontSize`, `lineHeight`, `fontFamily`, `figureStyle`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid`), además de estos campos exclusivos de cada nivel (un [estilo de encabezado](/es/docs/configuration-styles#estilos-de-encabezado) también los admite):
 
 <table>
   <thead>

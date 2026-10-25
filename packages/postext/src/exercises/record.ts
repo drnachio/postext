@@ -53,6 +53,10 @@ export interface ExerciseSlot {
   cell?: [number, number];
   /** A writing area's line spacing, points. */
   linePt?: number;
+  /** An exercise whose fence says `area=none`: nothing to write (a question
+   *  talked over), so no text area on a screen. A style's `area.kind:
+   *  'none'` is only an area drawn bare, still written on. */
+  bare?: true;
 }
 
 /** A grid's geometry, for the digital outputs to place its cells. */

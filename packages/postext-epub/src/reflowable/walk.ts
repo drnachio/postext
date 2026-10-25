@@ -18,7 +18,7 @@
 //     document of its own and the chapter goes on in a new one.
 
 import type { ExerciseData, ExerciseRecord, ResolvedConfig, VDTBlock, VDTComicPage, VDTDocument, VDTFrame, VDTLine, VDTLineSegment, VDTPage } from 'postext';
-import { exerciseDataOf, canonicalLocaleTag, comicBalloonKind, labelPlainText, comicBalloonText, comicSpeakerName, composedPaintOrder, composedReadingOrder, dimensionToPx, framePageRect, isComicSpreadPartner, joinComicSpread, pickTableStyle, primaryFontFamily } from 'postext';
+import { exerciseDataOf, canonicalLocaleTag, comicBalloonKind, labelPlainText, comicBalloonText, comicSpeakerName, composedPaintOrder, composedReadingOrder, dimensionToPx, framePageRect, isComicSpreadPartner, joinComicSpread, pickTableStyle, primaryFontFamily, featureFamilyParts, parseFontString } from 'postext';
 import type {
   CalloutNode,
   ComicNode,
@@ -901,7 +901,8 @@ class DocWalker {
       (this.book.dropCaps ??= new Set()).add(shape);
       const font = /^(?:(italic)\s+)?(?:(\d{3}|bold)\s+)?[\d.]+px\s+(\S.*)$/.exec(cap.fontString.trim());
       const decls = [
-        ...(font ? [`font-family:${font[3]!.replace(/"/g, "'")}`] : []),
+        // A feature family (#1237) is its base family's: a cap sets letters.
+        ...(font ? [`font-family:${capFamily(font[3]!)}`] : []),
         ...(font?.[2] && font[2] !== '400' ? [`font-weight:${font[2]}`] : []),
         ...(font?.[1] ? ['font-style:italic'] : []),
         `color:${cap.color}`,
@@ -1625,6 +1626,13 @@ function dropDirectives(text: string, labelled: boolean): string {
   return out + text.slice(last);
 }
 
+/** A drop cap's family as CSS names it: single-quoted, a feature family
+ *  as its base family. */
+function capFamily(family: string): string {
+  const parts = featureFamilyParts(family);
+  return (parts.features.length > 0 ? `'${parts.family}'` : family).replace(/"/g, "'");
+}
+
 /** The paragraph style a block of a `:::paragraphs` container was set in,
  *  told by its type (the block keeps no style id): a block set otherwise
  *  than the body text whose family, size, slant and alignment match one
@@ -1633,12 +1641,16 @@ function paragraphStyleOf(block: VDTBlock, config: ResolvedConfig, bodyPx: numbe
   const px = fontPx(block.fontString);
   const italic = /\bitalic\b/.test(block.fontString);
   const familyOf = (f: string) => primaryFontFamily(f).replace(/^['"]|['"]$/g, '');
+  // The family as a whole: a style's figures (#1237) name another family
+  // (`Lora@lnum+tnum`) that holds the body's (`Lora`).
+  const blockFamily = parseFontString(block.fontString)?.family;
+  const sameFamily = (f: string) => (blockFamily !== undefined ? blockFamily === familyOf(f) : block.fontString.includes(familyOf(f)));
   const body = config.bodyText;
-  const asBody = Math.abs(px - bodyPx) < 0.01 && !italic && block.textAlign === body.textAlign && block.fontString.includes(familyOf(body.fontFamily));
+  const asBody = Math.abs(px - bodyPx) < 0.01 && !italic && block.textAlign === body.textAlign && sameFamily(body.fontFamily);
   if (asBody) return undefined;
   const matches = config.paragraphStyles.filter((s) => {
     const size = dimensionToPx(s.fontSize, config.page.dpi, bodyPx);
-    return Math.abs(size - px) < 0.01 && s.italic === italic && s.textAlign === block.textAlign && block.fontString.includes(familyOf(s.fontFamily));
+    return Math.abs(size - px) < 0.01 && s.italic === italic && s.textAlign === block.textAlign && sameFamily(s.fontFamily);
   });
   return matches.length === 1 ? matches[0]!.id : undefined;
 }

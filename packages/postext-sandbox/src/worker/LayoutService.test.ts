@@ -55,6 +55,7 @@ vi.mock('../controls/fontLoader.js', () => {
     collectStandInPayloads: async (_config: unknown, _content: unknown, sent: ReadonlySet<string>) =>
       fontLoader.standIns.filter((p) => !sent.has(key(p))),
     fontPayloadKey: key,
+    asFeaturePayloads: (_family: string, payloads: unknown[]) => payloads,
     loadFont: async (family: string, uses: { weight: number; style: string }[]) => {
       fontLoader.pageLoads.push(...uses.map((u) => `${family} ${u.weight} ${u.style}`));
     },
@@ -281,6 +282,28 @@ describe('the static cuts a build is sent (#757)', () => {
       service.dispose();
     } finally {
       reset();
+    }
+  });
+
+  it('sends a feature family (a style\'s figures, #1237) as its base family\'s files, under its name', async () => {
+    const { handle, builds, registered } = recording();
+    fontLoader.uses = { 'Lora@onum': [{ weight: 400, style: 'normal' }] };
+    fontLoader.fileRequests = [];
+    try {
+      const service = createLayoutService({ handle });
+      const first = service.build({ clientId: 'canvas', priority: 'preview', content: content('One'), config: {} });
+      await tick();
+      // The files are the base family's; the faces are the feature family's.
+      expect(fontLoader.fileRequests).toEqual([['Lora-latin-400-normal', 'Lora-latin-400-italic', 'Lora-latin-700-normal', 'Lora-latin-700-italic']]);
+      expect(registered).toEqual([['Lora@onum 400 normal latin', 'Lora@onum 400 italic latin', 'Lora@onum 700 normal latin', 'Lora@onum 700 italic latin']]);
+      // The page declares the feature family's faces too.
+      expect(fontLoader.pageLoads).toEqual(['Lora@onum 400 normal']);
+      builds[0]!.finish(docSetIn('400 20px "Lora@onum"'));
+      await first;
+      service.dispose();
+    } finally {
+      reset();
+      fontLoader.fileRequests = [];
     }
   });
 

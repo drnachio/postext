@@ -274,6 +274,12 @@ const config: PostextConfig = {
       <td>Font family for header cells.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>those of the cells' family</td>
+      <td>The figures of every cell, header and body: <code>'lining-tabular'</code> lines the digits of a column up. Unset, the cells take the body's figures with the body's family. A named table style can set its own. See [Figure styles](/en/docs/configuration-fonts-colors-viewers#figure-styles).</td>
+    </tr>
+    <tr>
       <td><code>headerFontSize</code></td>
       <td><code>Dimension</code></td>
       <td>body text size</td>
@@ -616,6 +622,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td>body text font</td>
       <td>Caption font family (label and description).</td>
+    </tr>
+    <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>those of its family</td>
+      <td>The figures of the label and the description. Unset, a caption in the body's family takes the body's figures. A resource type's <code>captionStyle</code> can set its own. See [Figure styles](/en/docs/configuration-fonts-colors-viewers#figure-styles).</td>
     </tr>
     <tr>
       <td><code>fontSize</code></td>

@@ -288,6 +288,8 @@ class Emitter {
   /** The key, one run per item. */
   readonly key: Run[] = [];
   private bankWords: Run[] = [];
+  /** The words of a mark exercise's text that are not to be marked. */
+  private markWords = 0;
   /** The number, marks, icons and title, before the instruction. */
   private leadRun: Run | undefined;
   /** Whether the lead ends in a number whose suffix is a full-width mark
@@ -423,7 +425,7 @@ class Emitter {
     });
     const id = `${this.ids.frame}-area-${this.ex.ordinal}-${slot}`;
     const blocks = this.drawn(drawnBox(id, elements, heightPt));
-    this.slots.push({ key: slot, kind: 'text', accept: answers?.filter((s) => s !== '') ?? [], box: blocks[0]!.containerId!, linePt: spacing });
+    this.slots.push({ key: slot, kind: 'text', accept: answers?.filter((s) => s !== '') ?? [], box: blocks[0]!.containerId!, linePt: spacing, ...(kind === 'none' && this.ex.attrs.area?.trim() === 'none' ? { bare: true } : {}) });
     return blocks;
   }
 
@@ -674,8 +676,10 @@ class Emitter {
     // A question's stem ends in a bracket to write the letter in (Chinese
     // and Japanese tests), its answer written in a teacher's edition.
     const qi = this.style.options.bracket ? this.ex.questions.findIndex((q) => q.stem === k) : -1;
-    if (!b.spans.some((s) => s.chip?.gap) && qi < 0) return b;
-    let run = this.gapsOf(runOf(b));
+    const marks = this.ex.kind === 'mark' && (b.type === 'paragraph' || b.type === 'listItem' || b.type === 'blockquote');
+    if (!b.spans.some((s) => s.chip?.gap) && qi < 0 && !marks) return b;
+    // A mark exercise's text: each of its words is one to mark or not.
+    let run = marks ? this.markText(runOf(b)) : this.gapsOf(runOf(b));
     if (qi >= 0) {
       const at = b.sourceEnd;
       const answer = this.bracketAnswer(qi);
@@ -708,6 +712,7 @@ class Emitter {
    *  mark. */
   private gapsOf(run: Run): Run {
     if (!run.spans.some((s) => s.chip?.gap)) return run;
+    if (this.ex.kind === 'mark') return this.markText(run);
     const pieces: Run[] = [];
     let at = 0;
     for (const span of run.spans) {
@@ -719,7 +724,7 @@ class Emitter {
       if (!gap) { pieces.push(piece); continue; }
       const ref = this.ex.gaps.find((g) => g.gap === gap);
       const n = ref?.n ?? 0;
-      pieces.push(this.ex.kind === 'mark' ? this.markRun(gap, n, src) : gap.choice ? this.choiceRun(gap, n, src) : this.blankRun(gap, n, src, span.bold, span.italic));
+      pieces.push(gap.choice ? this.choiceRun(gap, n, src) : this.blankRun(gap, n, src, span.bold, span.italic));
     }
     return joinRuns(...pieces);
   }
@@ -763,6 +768,40 @@ class Emitter {
     parts.push(textRun(wide ? '\uFF09' : ')', at));
     this.slots.push({ key: `g${n}`, kind: 'choice', options: gap.options.length, correct: gap.correct.map((k) => k + 1), multiple: false });
     return joinRuns(...parts);
+  }
+
+  /** A mark exercise's text: every word is a slot the reader may mark, so
+   *  the words to mark are not the only ones that answer a click, and all
+   *  are set alike so the page gives none away. The `[[…]]` words are the
+   *  right ones; any other marked counts as wrong. */
+  private markText(run: Run): Run {
+    const out: Run[] = [];
+    let at = 0;
+    for (const span of run.spans) {
+      const len = span.text.length;
+      const piece = sliceRun(run, at, at + len);
+      const src = run.sourceMap[at] ?? this.at;
+      at += len;
+      const gap = span.chip?.gap;
+      if (gap) {
+        const n = this.ex.gaps.find((g) => g.gap === gap)?.n ?? 0;
+        out.push(this.markRun(gap, n, src));
+        continue;
+      }
+      // A chip, a formula, a reference, a note, a tab… stays as it is.
+      if (span.chip || span.math || span.ref || span.footnote || span.tab || span.swatch || span.citation) { out.push(piece); continue; }
+      let last = 0;
+      for (const [a, b] of wordRanges(span.text, this.ctx.locale)) {
+        if (a > last) out.push(sliceRun(piece, last, a));
+        const word = sliceRun(piece, a, b);
+        const slot = `x${++this.markWords}`;
+        this.slots.push({ key: slot, kind: 'mark', correct: [] });
+        out.push(chipRun(this.ids.markPlain, word, word.sourceMap[0] ?? src, { exercise: { ex: this.ex.id, slot } }));
+        last = b;
+      }
+      if (last < len) out.push(sliceRun(piece, last));
+    }
+    return joinRuns(...out);
   }
 
   private markRun(gap: ExerciseGap, n: number, at: number): Run {
@@ -1141,6 +1180,21 @@ class Emitter {
 /** `v` to three decimals: a stable cache key. */
 function round3(v: number): number {
   return Math.round(v * 1000) / 1000;
+}
+
+/** The words of `text` (start and end), as the language divides them:
+ *  `Intl.Segmenter` where the runtime has it (Chinese and Japanese words
+ *  too), else runs of letters and digits. */
+export function wordRanges(text: string, locale?: string): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  const Segmenter = (Intl as unknown as { Segmenter?: new (l?: string, o?: { granularity: 'word' }) => { segment(t: string): Iterable<{ index: number; segment: string; isWordLike?: boolean }> } }).Segmenter;
+  if (Segmenter) {
+    for (const s of new Segmenter(locale, { granularity: 'word' }).segment(text)) if (s.isWordLike) out.push([s.index, s.index + s.segment.length]);
+    return out;
+  }
+  const re = /[\p{L}\p{N}][\p{L}\p{N}\p{M}'\u2019-]*/gu;
+  for (let m = re.exec(text); m; m = re.exec(text)) out.push([m.index, m.index + m[0].length]);
+  return out;
 }
 
 /** A length in points, `em` read against `sizePt`. */

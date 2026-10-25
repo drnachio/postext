@@ -5,7 +5,7 @@
 // rule sets a width the screen would have to honour.
 
 import type { ColorValue, CornerRadius, Dimension, ResolvedConfig, ResolvedTableStyleConfig } from 'postext';
-import { dimensionToPx, isCornerRadii, primaryFontFamily, resolvedCodeStyle, uniformRadius } from 'postext';
+import { dimensionToPx, featureFamilyParts, fontVariantNumeric, isCornerRadii, primaryFontFamily, resolvedCodeStyle, uniformRadius } from 'postext';
 import { cssString } from '../shared/assets.js';
 import { idOf, round } from './inline.js';
 
@@ -80,9 +80,10 @@ function dotsRule(cls: string): CssRule | '' {
 const SANS = /\b(sans|grotesk|grotesque|gothic|helvetica|arial|inter|roboto|lato|montserrat|open sans|source sans|fira sans|heiti|hei\b|黑)/i;
 const MONO = /\b(mono|code|courier|consol)/i;
 
-/** A family as a CSS value: the family quoted, then a generic fallback. */
+/** A family as a CSS value: the family quoted, then a generic fallback. A
+ *  feature family (#1237, `Lora@onum`) is its base family's. */
 export function familyStack(family: string): string {
-  const name = primaryFontFamily(family).trim().replace(/^['"]|['"]$/g, '');
+  const name = familyName(family);
   const generic = MONO.test(name) ? 'monospace' : SANS.test(name) ? 'sans-serif' : 'serif';
   return `${cssString(name)}, ${generic}`;
 }
@@ -90,7 +91,13 @@ export function familyStack(family: string): string {
 /** The family names the stylesheet asks for (to warn about missing
  *  faces). */
 export function familyName(family: string): string {
-  return primaryFontFamily(family).trim().replace(/^['"]|['"]$/g, '');
+  return featureFamilyParts(primaryFontFamily(family).trim().replace(/^['"]|['"]$/g, '')).family;
+}
+
+/** Whether a configuration sets any style's figures (#1237): a family of
+ *  it is a feature family. */
+function setsFigures(config: ResolvedConfig): boolean {
+  return /"[^"]*@(?:onum|lnum|pnum|tnum)(?:\+(?:onum|lnum|pnum|tnum))*"/.test(JSON.stringify(config));
 }
 
 const ALIGN: Record<string, string> = { left: 'start', right: 'end', center: 'center', justify: 'justify' };
@@ -132,9 +139,13 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   const body = config.bodyText;
   const bodyPx = dimensionToPx(body.fontSize, dpi);
   const families = new Set<string>();
+  // A style's figures (#1237) go with its family: `font-variant-numeric`
+  // inherits, so where any style sets them every family states its own.
+  const figures = setsFigures(config);
   const fam = (f: string) => {
     families.add(familyName(f));
-    return `font-family: ${familyStack(f)}`;
+    const numeric = fontVariantNumeric(featureFamilyParts(primaryFontFamily(f)).features);
+    return `font-family: ${familyStack(f)}${figures ? `;\n  font-variant-numeric: ${numeric || 'normal'}` : ''}`;
   };
   /** A length in ems of `basePx` (the body size unless given). */
   const em = (d: Dimension, basePx = bodyPx) => `${round(dimensionToPx(d, dpi, basePx) / basePx)}em`;

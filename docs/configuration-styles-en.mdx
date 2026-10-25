@@ -75,6 +75,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Font family. Its weights are <code>fontWeight</code> / <code>boldFontWeight</code> below (the body text's when unset).</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>those of its family</td>
+      <td>The style's figures: <code>'lining-tabular'</code> for a list of dates or times. Unset, the style takes the body's figures with the body's family; a style that names its own <code>fontFamily</code> sets that font's default. See [Figure styles](/en/docs/configuration-fonts-colors-viewers#figure-styles).</td>
+    </tr>
+    <tr>
       <td><code>fontSize</code></td>
       <td><code>Dimension</code></td>
       <td>body text size</td>
@@ -1148,7 +1154,7 @@ const config: PostextConfig = {
       <td>level fields</td>
       <td>as in <code>headings.levels[]</code></td>
       <td>the level's values</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead). A <code>figureStyle</code> set here applies to the family of the level the style is used on (see [Figure styles](/en/docs/configuration-fonts-colors-viewers#figure-styles)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

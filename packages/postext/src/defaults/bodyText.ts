@@ -4,6 +4,7 @@ import { cjkRegionOfConfig } from './cjk.js';
 import { dimensionsEqual, colorsEqual, compositionRuleOf, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared.js';
 import { DEFAULT_VERSE_CONFIG, resolveVerseConfig, stripVerseDefaults } from './verse.js';
 import { normalizeHyphenationExceptions } from '../hyphenationExceptions.js';
+import { withFigureStyle } from '../fonts/figureStyle.js';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
   enabled: true,
@@ -313,7 +314,9 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
   const kashida = resolveKashida(partial, documentLocale);
 
   return {
-    fontFamily: partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily,
+    // The figures (#1237) name the family: every style that takes it
+    // takes them too.
+    fontFamily: withFigureStyle(partial.fontFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily, partial.figureStyle),
     fontSize: partial.fontSize ?? DEFAULT_BODY_TEXT_CONFIG.fontSize,
     lineHeight: partial.lineHeight ?? DEFAULT_BODY_TEXT_CONFIG.lineHeight,
     paragraphSpacing: partial.paragraphSpacing ?? DEFAULT_BODY_TEXT_CONFIG.paragraphSpacing,
@@ -422,6 +425,10 @@ export function stripBodyTextDefaults(
 
   if (bodyText.fontFamily !== undefined && bodyText.fontFamily !== DEFAULT_BODY_TEXT_CONFIG.fontFamily) {
     result.fontFamily = bodyText.fontFamily;
+    hasOverride = true;
+  }
+  if (bodyText.figureStyle !== undefined) {
+    result.figureStyle = bodyText.figureStyle;
     hasOverride = true;
   }
   if (bodyText.fontSize !== undefined && !dimensionsEqual(bodyText.fontSize, DEFAULT_BODY_TEXT_CONFIG.fontSize)) {

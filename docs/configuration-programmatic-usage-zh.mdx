@@ -546,6 +546,8 @@ const same = await buildDocumentWithFonts(content, config, { resolve });
 - **`buildDocumentWithFonts(content, config, options)`**：准备字体，用`buildDocumentAsync`构建，读出页面实际排字所用的字体，加载其中字体集给不出来的（排出页面后才知道要用的字重，即使族内另一个字重可以顶替，也会向`resolve`索要），再构建一次（最多多构建两次）。`withLoadedFonts(build, options)`对任意构建函数做同样的事，适用于逐章构建的书，或返回多个文档的文件包（`buildBundle`）。`options.onFonts`接收最终的报告。
 - **构建之后**，文字排版所用而字体集给不出来的每个字体，都在`doc.contentWarnings`中列为`fontFallback`（见[文档中的警告](#文档中的警告)）。
 
+**数字样式**。带有[`figureStyle`](/zh/docs/configuration-fonts-colors-viewers#数字样式)的样式用带特性的字体族排文本：名称是基础字体族名称加上`@`和OpenType特性（`EB Garamond@onum`）。`prepareFonts`和`resolve`收到的请求是基础字体族，引擎再用同样的文件加上`featureSettings`描述符声明带特性字体族的字体。布局worker的`FontPayload`为这种字体接受可选的`featureSettings`，`family`为带特性的字体族，缓冲区为基础字体族的文件。`configFeatureFamilies(config)`列出一份配置排文本所用的带特性字体族。在没有文件的字体中排文本的宿主程序，用`setFigureStyleFamilies((family) => boolean)`指明哪些字体族可以接受特性；其余字体族保留自身的数字。`baseFontFamily`和`featureFamilyParts`拆解这种名称，`withFigureStyle(fontFamily, figureStyle)`生成它，`freezeFontFeatures(bytes, features)`为不应用特性的Canvas（Node中的Skia）返回一份TrueType或OpenType文件副本，其`cmap`把字符映射到特性的单一替换给出的字形。
+
 之后才到达的字体，引擎会自己察觉。引擎为每个字体集记下它上次查看时每个字体族已加载了哪些字体；每次构建开始时再看一次（只在字体集变大、变小、正在加载或有字体加载完成时），并丢弃在字体有变化的字体族中测得的结果。`watchFonts(fontSet)`在字体加载的过程中做同样的事，无论一批加载带来多少个切片，每个动画帧最多处理一次；`onFontsChanged(listener)`告诉宿主哪些字体族变了，以便它重新排版页面：
 
 ```ts

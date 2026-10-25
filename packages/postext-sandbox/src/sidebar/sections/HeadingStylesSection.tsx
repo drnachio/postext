@@ -63,6 +63,7 @@ import { PartsOrderedListsOverrides, PartsUnorderedListsOverrides } from './Part
 import { breakParityOptions } from './HeadingsSection/breakParityOptions.js';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides.js';
 import { DropCapFields } from '../settings/DropCapFields.js';
+import { FigureStyleField } from '../settings/FigureStyleField.js';
 
 const TEXT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -183,7 +184,7 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
     set('advancedDesign', next);
   };
   const headingFields: (keyof HeadingStyleConfig)[] = [
-    'fontSize', 'lineHeight', 'fontFamily', 'fontWeight', 'color', 'italic', 'textTransform', 'letterSpacing',
+    'fontSize', 'lineHeight', 'fontFamily', 'figureStyle', 'fontWeight', 'color', 'italic', 'textTransform', 'letterSpacing',
     'marginTop', 'marginBottom', 'snapToGrid', 'lineSpan', 'indent', 'firstLineIndent', 'jidori', 'dropCap', 'breakBefore', 'span', 'hidden', 'advancedDesign',
   ];
   const hasHeadingOverrides = headingFields.some((f) => style[f] !== undefined);
@@ -467,6 +468,12 @@ function HeadingStyleCard({ style, otherIds, base, onChange, onRename, onRemove 
           onReset={() => set('fontFamily', undefined)}
           searchPlaceholder={labels.headingFontSearch}
           noResultsLabel={labels.headingFontNoResults}
+        />
+        <FigureStyleField
+          value={style.figureStyle}
+          inherits
+          onChange={(v) => set('figureStyle', v)}
+          onReset={() => set('figureStyle', undefined)}
         />
         <NumberInput
           label={labels.headingFontWeight}

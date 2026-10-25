@@ -2,6 +2,7 @@ import type { PostextConfig, HeadingsConfig, HeadingLevelConfig, HeadingBreakBef
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared.js';
 import { resolveDesignSlot } from './headerFooter.js';
 import { isDropCap } from './dropCap.js';
+import { withFigureStyle } from '../fonts/figureStyle.js';
 
 const DEFAULT_BREAK_BEFORE: ResolvedHeadingBreakBeforeConfig = { enabled: false, parity: 'any' };
 
@@ -120,7 +121,8 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
     };
   }
 
-  const generalFont = partial.fontFamily ?? DEFAULT_HEADINGS_CONFIG.fontFamily;
+  // The figures (#1237) name the family; a level's own win.
+  const generalFont = withFigureStyle(partial.fontFamily ?? DEFAULT_HEADINGS_CONFIG.fontFamily, partial.figureStyle);
   const generalLineHeight = partial.lineHeight ?? DEFAULT_HEADINGS_CONFIG.lineHeight;
   const generalColor = partial.color ?? DEFAULT_HEADINGS_CONFIG.color;
   const generalTextAlign = startEndAsLeftRight(partial.textAlign ?? DEFAULT_HEADINGS_CONFIG.textAlign);
@@ -190,7 +192,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       level: def.level,
       fontSize: override?.fontSize ?? def.fontSize,
       lineHeight: override?.lineHeight ?? generalLineHeight,
-      fontFamily: override?.fontFamily ?? generalFont,
+      fontFamily: withFigureStyle(override?.fontFamily ?? generalFont, override?.figureStyle ?? partial.figureStyle),
       color: override?.color ?? generalColor,
       fontWeight: override?.fontWeight ?? generalFontWeight,
       marginTop: override?.marginTop ?? generalMarginTop,
@@ -251,7 +253,8 @@ export function resolveHeadingLevelOverrides(
   const out: Partial<Omit<ResolvedHeadingLevelConfig, 'level' | 'numberingTemplate'>> = {};
   if (partial.fontSize !== undefined) out.fontSize = partial.fontSize;
   if (partial.lineHeight !== undefined) out.lineHeight = partial.lineHeight;
-  if (partial.fontFamily !== undefined) out.fontFamily = partial.fontFamily;
+  if (partial.fontFamily !== undefined) out.fontFamily = withFigureStyle(partial.fontFamily, partial.figureStyle);
+  if (partial.figureStyle !== undefined) out.figureStyle = partial.figureStyle;
   if (partial.color !== undefined) out.color = partial.color;
   if (partial.fontWeight !== undefined) out.fontWeight = partial.fontWeight;
   if (partial.marginTop !== undefined) out.marginTop = partial.marginTop;
@@ -295,6 +298,10 @@ export function stripHeadingsDefaults(
 
   if (headings.fontFamily !== undefined && headings.fontFamily !== DEFAULT_HEADINGS_CONFIG.fontFamily) {
     result.fontFamily = headings.fontFamily;
+    hasOverride = true;
+  }
+  if (headings.figureStyle !== undefined) {
+    result.figureStyle = headings.figureStyle;
     hasOverride = true;
   }
   if (headings.lineHeight !== undefined && !dimensionsEqual(headings.lineHeight, DEFAULT_HEADINGS_CONFIG.lineHeight)) {
@@ -510,6 +517,10 @@ export function stripHeadingsDefaults(
       }
       if (level.fontFamily !== undefined && !(level.fontFamily === def.fontFamily && level.fontFamily === generalFontFamily)) {
         entry.fontFamily = level.fontFamily;
+        levelHasOverride = true;
+      }
+      if (level.figureStyle !== undefined) {
+        entry.figureStyle = level.figureStyle;
         levelHasOverride = true;
       }
       if (level.color !== undefined && !(colorsEqual(level.color, def.color) && colorsEqual(level.color, generalColor))) {

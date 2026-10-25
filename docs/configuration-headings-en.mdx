@@ -38,6 +38,12 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td>Font family for all headings.</td>
     </tr>
     <tr>
+      <td><code>figureStyle</code></td>
+      <td><code>FigureStyle</code></td>
+      <td>the font's own</td>
+      <td>The figures of every level: <code>'lining'</code> beside old-style text. A level's own <code>figureStyle</code> wins. See [Figure styles](/en/docs/configuration-fonts-colors-viewers#figure-styles).</td>
+    </tr>
+    <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td><code>1.2 em</code></td>
@@ -172,7 +178,7 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
 
 When the configuration comes from storage, the engine can tell it is old and does this for you: the Sandbox for the books and configurations it saved then (see **Sandbox → Persistence**), and `openBundle` / `readBundle` for a `.postext` bundle written by postext 1.4 or earlier (see [Bundles written by postext 1.4 or earlier](/en/docs/configuration-bundles#bundles-written-by-postext-14-or-earlier)). A configuration you stored yourself can go through `migrateConfig(config)` from `postext/bundle`, which writes out the breaks 1.4 laid out (`pinLegacyHeadingBreaks`): `enabled: false` on an H1 that had no break, and `parity: 'any'` beside an `enabled: true` that named no parity, on H1 and on heading styles. It also pins the maths size, the space around inline figures (in boxes too), the headings' inline marks, the drop-cap sizes, the room under a line ending in a colon that introduces a list, the lines of a paragraph or list item that a cut in a box leaves, the line breaks at dashes, the line-by-line breaking of ragged text, the split of a paragraph under a heading, the line breaks at a compound's hyphen and the space under `:::paragraphs` containers, as 1.4 set them. Pass the book's markdown as a third argument, `{ content }`, and it leaves out the maths pin when the text has no `$`, the gap pins when no line embeds a resource (the box-gap pin when none does inside a box), the heading-marks pin when no heading carries a mark, the colon-line pin when no list follows a line ending in a colon, the box-cut pin when the text opens no `:::callout`, the dash pin when no dash is set closed up between words, the heading-split pin when the text has no heading, the container pin when the text opens no `:::paragraphs` container, and the compound pin when no hyphen stands between two letters; the ragged-breaking pin goes only to a configuration that sets some running text ragged, and the container pin only to one that declares a paragraph style (see [Bundles written by postext 1.4 or earlier](/en/docs/configuration-bundles#bundles-written-by-postext-14-or-earlier)). For the breaks alone, call `pinLegacyHeadingBreaks(config)`.
 
-Per-level overrides support the same properties as the general defaults — `fontSize`, `lineHeight`, `fontFamily`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — plus these level-only fields (a [heading style](/en/docs/configuration-styles#heading-styles) takes them too):
+Per-level overrides support the same properties as the general defaults — `fontSize`, `lineHeight`, `fontFamily`, `figureStyle`, `color`, `fontWeight`, `marginTop`, `marginBottom`, `snapToGrid` — plus these level-only fields (a [heading style](/en/docs/configuration-styles#heading-styles) takes them too):
 
 <table>
   <thead>

@@ -150,6 +150,61 @@ Sandboxの**検査**パネルは、カスタムフォントに固有の3種類�
 
 パネルには**別のフォントで描かれた文字**（`glyphFallback`）も並びます。テキストがグリフのないフェイスで組んだ文字をフェイスごとに1件にまとめ、検査で判別できるときは描いた総称ファミリー（`serif`、`sans-serif`、`monospace`）も示します。
 
+## 数字のスタイル
+
+`figureStyle`は、テキストスタイルのフォントに、そのフォントのOpenType機能で特定の数字を求めます。本文にはオールドスタイル数字、表には等幅のライニング数字、という使い分けです。このフィールドは`bodyText`、`paragraphStyles[]`、`headings`と`headings.levels[]`、`headingStyles[]`、`tableStyle`と`tableStyles[]`（見出しセルと本体セルの両方）、`captionStyle`（ラベルと説明文、リソースの種類の`captionStyle`も含む）、デザインのテキスト要素（柱、ノンブル、章扉や部扉のテキスト）にあります。Sandboxでは、デザインパネルでこれらの各スタイルの書体の隣にある**数字の字形**フィールドです（本文なら**本文 › 書体**）。
+
+<table>
+  <thead>
+    <tr>
+      <th>値</th>
+      <th>OpenType機能</th>
+      <th>数字</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'default'</code></td><td>なし</td><td>フォント本来の数字。スタイルが受け継いだ数字を外します。</td></tr>
+    <tr><td><code>'oldstyle'</code></td><td><code>onum</code></td><td>オールドスタイル数字。小文字のようにアセンダーとディセンダーがあり、本文向きです。</td></tr>
+    <tr><td><code>'lining'</code></td><td><code>lnum</code></td><td>ライニング数字。大文字の高さにそろい、見出しや大文字の組みに向きます。</td></tr>
+    <tr><td><code>'tabular'</code></td><td><code>tnum</code></td><td>等幅数字。すべての数字を同じ幅にして、列の桁をそろえます。形はフォント本来のままです。</td></tr>
+    <tr><td><code>'proportional'</code></td><td><code>pnum</code></td><td>プロポーショナル数字。数字ごとに固有の幅を持ちます。形はフォント本来のままです。</td></tr>
+    <tr><td><code>'oldstyle-tabular'</code></td><td><code>onum</code> + <code>tnum</code></td><td>等幅のオールドスタイル数字。</td></tr>
+    <tr><td><code>'oldstyle-proportional'</code></td><td><code>onum</code> + <code>pnum</code></td><td>プロポーショナルのオールドスタイル数字。</td></tr>
+    <tr><td><code>'lining-tabular'</code></td><td><code>lnum</code> + <code>tnum</code></td><td>等幅のライニング数字。表、時刻表、価格表に。</td></tr>
+    <tr><td><code>'lining-proportional'</code></td><td><code>lnum</code> + <code>pnum</code></td><td>プロポーショナルのライニング数字。</td></tr>
+  </tbody>
+</table>
+
+2語を組み合わせた値は、形と幅を同時に決めます。その機能を持たないフォントは本来の数字のままなので、使う前にフォントに`onum`や`lnum`があることを確かめてください。ホストがファイルを持たないファミリー、たとえば読者のシステムにだけインストールされたフォント（Sandboxはこれを取得しません）は、数字のスタイルを受け取りません。そのテキストは、そのフォント自身の本来の数字で組まれます。同じ名前でファイルをアップロードした本では数字のスタイルが効きます。Google FontsやFontsourceが配信するカットは`onum`と`lnum`を省いていることが多く（Source Serif 4のlatinファイルに残るのは`pnum`と`tnum`だけです）、そうしたファイルでは、これらを求めるスタイルもフォント本来の数字で組まれます。書体メーカーが配布する完全なファイルにはこれらの機能があるので、オールドスタイル数字やライニング数字を使うにはそれをアップロードします。総称ファミリー（`serif`、`sans-serif`）は機能を受け取りません。一覧にない値は不明な設定値（`unknownConfigValue`、[設定の警告](#設定の警告)を参照）として報告され、未設定として読まれます。
+
+```ts
+const config: PostextConfig = {
+  bodyText: { fontFamily: 'EB Garamond', figureStyle: 'oldstyle' },
+  tableStyle: { figureStyle: 'lining-tabular' },
+  paragraphStyles: [{ id: 'timetable', figureStyle: 'lining-tabular' }],
+  headings: { figureStyle: 'lining' },
+};
+```
+
+本文は年号やページ番号をオールドスタイル数字で組み、本文のファミリーを受け継ぐキャプションとリストも同じです。すべての表のセルと`timetable`スタイルの段落は、等幅のライニング数字で桁をそろえます。見出しはどのレベルも、見出しのファミリーでライニング数字を組みます。
+
+### スタイルが受け取る数字
+
+- 別のスタイルからファミリーを受け継ぐスタイルは、その数字も受け継ぎます。段落スタイル、表、キャプション、リスト、囲みの本文は、ほかのファミリーを指定しなければ本文のファミリーを使うので、`bodyText.figureStyle`はそのすべてに届きます。
+- 独自の`fontFamily`を指定したスタイルは、`figureStyle`も指定しない限り、そのフォントの既定の数字で組まれます。
+- 独自の`figureStyle`を持たない見出しレベルは`headings.figureStyle`を受け取ります。レベルが独自の`fontFamily`を指定している場合も同じです。見出しスタイルの`figureStyle`は、そのスタイルを使うレベルのファミリーにかかります。
+- デザインのテキスト要素は独自のファミリー（既定は`'EB Garamond'`）を指定するので、本文の数字はノンブルに届きません。オールドスタイル数字の本文に合わせるには、要素に`figureStyle: 'oldstyle'`を指定します。
+- `'default'`はフォント本来の数字で組み、受け継いだ数字を打ち消します。`paragraphStyles: [{ id: 'plain', figureStyle: 'default' }]`は、そのスタイルから本文のオールドスタイル数字を外します。
+
+### 出力ごとの数字
+
+テキストは機能を有効にした状態で計測されるので、CanvasのプレビューでもHTMLでもPDFでもEPUB（固定レイアウトとリフロー型）でも、行は同じ幅で折り返されます。
+
+- **Canvasのプレビューとレイアウトワーカー**：ブラウザーは、ベースファミリーのファイルを機能付きファミリーの名前でもう一度宣言し、`FontFace`の`featureSettings`記述子を付けます。名前はファミリー名の後に`@`と機能を続けたもの（`EB Garamond@onum`、`EB Garamond@lnum+tnum`）で、フォント文字列や一部の警告に現れます。
+- **HTMLとEPUB**（固定レイアウトとリフロー型）：ベースファミリーに`font-variant-numeric`（`oldstyle-nums`、`lining-nums tabular-nums`）を付けます。
+- **PDF**：ベースファミリーのファイルを埋め込み、機能を有効にしてテキストを組みます。
+- **コマンドライン**：`postext`が描画に使うCanvasであるSkiaは機能を適用しません。そこでコマンドラインは、機能が置き換える文字（数字）を機能が選ぶグリフに対応させた`cmap`を持つフォントの複製を登録します。使うのは単純置換だけで、文脈依存の置換で数字を切り替えるフォントは、そこでは本来の数字のままです。
+
 ## カラーパレット
 
 `PostextConfig`の`colorPalette`プロパティは、名前付きの色の再利用可能なセットを定義し、設定内の任意の`ColorValue`から参照できるようにします。CSSのカスタムプロパティやInDesignのスウォッチパネルに相当するもので、パレットの項目を1回変えれば、それを指すすべての色が文書全体で更新されます。

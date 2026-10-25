@@ -11,6 +11,8 @@ import { comicFontFamilies, comicFontUses } from '../comics/fonts.js';
 import { DEFAULT_CODE_STYLE } from '../defaults/codeStyle.js';
 import { codeFenceOpen } from '../parse/codeFence.js';
 import { parseDirectiveAttrs } from '../parse/attrs.js';
+import { resolveAllConfig } from '../pipeline/config.js';
+import { baseFontFamily, isFeatureFamily, isFigureStyle, withFigureStyle } from './figureStyle.js';
 
 /** The text of the document (one string, or the chapters of a book): the
  *  families a config names are not all the families a build uses — comic
@@ -126,9 +128,93 @@ export function configFontFamilies(config: PostextConfig, markdown?: FontContent
   for (const family of codeFontFamilies(config, markdown)) families.add(family);
   // The glyphs of inline symbols (#1058), in the faces the text names.
   for (const family of iconFontFamilies(markdown)) families.add(family);
+  // The families the styles' figures name (#1237): the base family's
+  // files, declared with the features.
+  for (const family of configFeatureFamilies(config)) families.add(family);
   // A CSS font stack sets its text in the first family (the engine's
   // `primaryFontFamily`): load that one.
   return [...new Set(Array.from(families, primaryFontFamily))];
+}
+
+/**
+ * The feature families a configuration sets text in (#1237,
+ * `withFigureStyle`): every family of the resolved configuration that
+ * carries features, the family of every node that writes a `figureStyle`
+ * beside its `fontFamily` (a design text, a caption override), and a
+ * heading style's figures over every level's family. Each is the base
+ * family's files declared with the features; a host loads the base family
+ * and declares them under this name.
+ */
+export function configFeatureFamilies(config: PostextConfig): string[] {
+  const out = new Set<string>();
+  const walk = (node: unknown, depth: number, raw: boolean): void => {
+    if (depth > 16 || !node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, depth + 1, raw);
+      return;
+    }
+    const rec = node as Record<string, unknown>;
+    if (raw && isFigureStyle(rec.figureStyle)) {
+      const family = typeof rec.fontFamily === 'string' && rec.fontFamily.trim()
+        ? rec.fontFamily
+        : rec.kind === 'text' ? DEFAULT_TEXT_ELEMENT.fontFamily : undefined;
+      if (family) {
+        const f = withFigureStyle(family, rec.figureStyle);
+        if (isFeatureFamily(f)) out.add(f);
+      }
+    }
+    for (const [key, value] of Object.entries(rec)) {
+      if (typeof value === 'string') {
+        if (!raw && FONT_FAMILY_KEY.test(key) && isFeatureFamily(value)) out.add(value);
+      } else {
+        walk(value, depth + 1, raw);
+      }
+    }
+  };
+  // Nothing to look for where no node sets figures; a partial config the
+  // resolver cannot read gives the families its nodes name.
+  if (!setsFigureStyle(config, 0)) return [];
+  walk(config, 0, true);
+  let resolved: ReturnType<typeof resolveAllConfig>;
+  try {
+    resolved = resolveAllConfig(config);
+  } catch {
+    return [...out];
+  }
+  walk(resolved, 0, false);
+  // A heading style's figures apply to the family of the level it is set
+  // on (`createHeadingLevelResolver`): any level.
+  for (const style of config.headingStyles ?? []) {
+    if (!isFigureStyle(style.figureStyle) || style.fontFamily) continue;
+    for (const level of resolved.headings.levels) {
+      const f = withFigureStyle(level.fontFamily, style.figureStyle);
+      if (isFeatureFamily(f)) out.add(f);
+    }
+  }
+  return [...out];
+}
+
+/** Whether any node of `node` writes a `figureStyle`. */
+function setsFigureStyle(node: unknown, depth: number): boolean {
+  if (depth > 16 || !node || typeof node !== 'object') return false;
+  if (Array.isArray(node)) return node.some((item) => setsFigureStyle(item, depth + 1));
+  const rec = node as Record<string, unknown>;
+  if (rec.figureStyle !== undefined) return true;
+  return Object.values(rec).some((value) => typeof value === 'object' && setsFigureStyle(value, depth + 1));
+}
+
+/** Each feature family the configuration sets text in asks for the
+ *  weights and slants its base family is asked for. */
+function addFeatureFamilyUses(config: PostextConfig, usage: Map<string, FontVariantUse[]>): void {
+  const byBase = new Map<string, FontVariantUse[]>();
+  for (const [family, uses] of usage) {
+    const key = baseFontFamily(family).toLowerCase();
+    byBase.set(key, [...(byBase.get(key) ?? []), ...uses]);
+  }
+  for (const family of configFeatureFamilies(config)) {
+    const uses = byBase.get(baseFontFamily(family).toLowerCase()) ?? [];
+    usage.set(family, [...(usage.get(family) ?? []), ...uses]);
+  }
 }
 
 /** The faces the glyphs of inline symbols are set in (#1058): every
@@ -329,6 +415,7 @@ export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument)
   for (const level of config.headings?.levels ?? []) capUse(level.dropCap, undefined, undefined);
   for (const style of config.headingStyles ?? []) capUse(style.dropCap, undefined, undefined);
   addBoldWeights(config, doc, add);
+  addFeatureFamilyUses(config, usage);
   return usage;
 }
 
