@@ -1,0 +1,59 @@
+{
+  "name": "postext-scorm",
+  "version": "0.1.0",
+  "description": "Browser-native SCORM 1.2 and 2004 package writer for Postext books: a book, or the chapters and sections picked from it, as fixed pages or reflowable text, with exercises that report their scores to the LMS.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://postext.dev/",
+  "keywords": [
+    "postext",
+    "scorm",
+    "scorm-1.2",
+    "scorm-2004",
+    "lms",
+    "e-learning",
+    "exercises",
+    "typesetting"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drnachio/postext.git",
+    "directory": "packages/postext-scorm"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "postext": "workspace:^",
+    "postext-epub": "workspace:^"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@postext/typescript-config": "workspace:*",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "postext": "workspace:*",
+    "postext-epub": "workspace:*",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
+  }
+}

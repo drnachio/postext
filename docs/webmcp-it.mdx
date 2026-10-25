@@ -511,12 +511,14 @@ Ciò che l’agente cambia, tu lo vedi. Per indicarti qualcosa:
 ```
 
 `sandbox_set_view` sceglie anche il visualizzatore (`canvas`, `pdf`, `folio`, `html`,
-`epub`), la modalità Contenuto o Grafica (`mode`), il pannello laterale, capitolo o libro intero, lo zoom, il corpo del testo
-per il lettore, l’anteprima di stampa e il gruppo del pannello Grafica. `sandbox_go_to_page` sfoglia
+`epub`, `scorm`), la modalità Contenuto o Grafica (`mode`), il pannello laterale, capitolo o libro intero, lo zoom, il corpo del testo
+per il lettore, l’anteprima di stampa e il gruppo del pannello Grafica, e nella scheda SCORM il
+contenuto (`scormLayout`), la versione (`scormVersion`) e i capitoli e le
+sezioni che il pacchetto prende (`scormPick`, id dai `contents` della scheda). `sandbox_go_to_page` sfoglia
 le pagine per `step`, `page`, `position`, un passo di `text`, un `anchor` o una
 voce dei `contents` di un EPUB. `sandbox_run_viewer` preme un pulsante della barra degli strumenti:
-`regenerate` scrive di nuovo il PDF o l’EPUB e lo aspetta, `print` apre la
-finestra di stampa perché tu la confermi, `download` salva il PDF o l’EPUB, e
+`regenerate` scrive di nuovo il PDF, l’EPUB o il pacchetto SCORM e lo aspetta, `print` apre la
+finestra di stampa perché tu la confermi, `download` salva il PDF, l’EPUB o un nuovo pacchetto SCORM, e
 `play_video` e `stop_video` avviano e fermano un video su una pagina.
 
 ### Tavole a fumetti

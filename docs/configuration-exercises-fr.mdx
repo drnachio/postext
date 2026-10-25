@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Réglages des exercices',
   description: 'Les styles d’exercice (exerciseStyles) et les réglages d’exercices du livre (exercises) : pastilles de numéro, caractère de la consigne, lettres et cases des propositions, trous, réponses vrai/faux, exercices à relier, banques de mots, zones d’écriture, grilles, division posée, marques de difficulté, icônes, couleur des réponses, emplacement des solutions, livre du professeur et éditions à l’écran',
   lang: 'fr',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '13 min',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ Une icône s’imprime comme un symbole en ligne après le numéro : l’image d
 
 ### Couleurs à l’écran
 
-`digital` règle l’affichage d’une réponse vérifiée dans la visionneuse HTML et les livres EPUB.
+`digital` règle l’affichage d’une réponse vérifiée dans la visionneuse HTML, les livres EPUB et les paquets SCORM, ainsi que les limites d’une tentative pour les exercices du style, par-dessus celles du livre (voir [Évaluation](#évaluation)).
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ Une icône s’imprime comme un symbole en ligne après le numéro : l’image d
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>un vert (<code>#1e8e3e</code>)</td><td>Une bonne réponse.</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>un rouge (<code>#c5221f</code>)</td><td>Une mauvaise réponse.</td></tr>
+    <tr><td><code>maxChecks</code>, <code>reset</code>, <code>maxResets</code>, <code>showSolution</code></td><td></td><td>ceux du livre</td><td>Les limites d’une tentative pour les exercices du style : un style pour un contrôle à côté des exercices d’entraînement du livre. Voir <a href="#évaluation">Évaluation</a>.</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### Éditions à l’écran
 
-`exercises.digital` règle le comportement des exercices dans la visionneuse HTML et dans les livres EPUB.
+`exercises.digital` règle le comportement des exercices dans la visionneuse HTML, dans les livres EPUB et dans les paquets SCORM.
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Des exercices auxquels le lecteur peut répondre. <code>false</code> les montre tels qu’imprimés.</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Conserver les réponses du lecteur dans le navigateur, livre par livre.</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code> : les réponses sont vérifiées quand le lecteur le demande. <code>'instant'</code> : chaque réponse est vérifiée dès qu’elle est donnée.</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>Le nombre de vérifications qu’autorise une tentative. <code>0</code> : sans limite. Voir <a href="#évaluation">Évaluation</a>.</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Proposer Recommencer, qui efface les réponses et ouvre une nouvelle tentative.</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>Le nombre d’utilisations de Recommencer. <code>0</code> : sans limite.</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>Quand la barre propose la solution.</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>Le pourcentage de réponses notées justes qui donne la réussite ; un paquet SCORM indique réussi ou échoué par rapport à ce seuil. <code>0</code> : aucun seuil.</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### Évaluation
+
+Par défaut, un exercice sert à s’entraîner : le lecteur vérifie autant de fois qu’il le veut, recommence et regarde la solution. Quatre réglages en font un contrôle, pour le livre dans `exercises.digital` et pour un style dans son `digital`, qui l’emporte pour les exercices de ce style :
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`** compte les appuis sur Vérifier pendant une tentative. Le bouton indique combien il en reste (« Vérifier (encore 2) ») ; une fois qu’ils sont épuisés, il affiche « Plus de vérifications », les réponses se verrouillent et le score reste sur la barre.
+- **`reset`** et **`maxResets`** : Recommencer efface les réponses et ouvre une nouvelle tentative, qui retrouve toutes ses vérifications. `maxResets: 1` permet de recommencer une fois, soit deux tentatives en tout, et le bouton indique combien il en reste ; `reset: false` retire le bouton.
+- **`showSolution`** : `'always'` ; `'afterCheck'`, une fois la tentative vérifiée ; `'noChecksLeft'`, une fois ses vérifications épuisées ou toutes ses réponses vérifiées justes ; `'never'`. Tant que les vérifications sont limitées, afficher la solution met fin à la tentative.
+- **`passingScore`** est le seuil par rapport auquel un paquet SCORM indique réussi ou échoué (voir [Paquets SCORM](/fr/docs/configuration-html-folio-epub#paquets-scorm-postext-scorm)).
+
+Les mots des boutons suivent la langue du document. Avec `check: 'instant'`, il n’y a pas de bouton Vérifier : `maxChecks` ne s’applique donc pas, mais les autres réglages s’appliquent. Les vérifications et les recommencements déjà utilisés sont conservés avec les réponses : dans un LMS, un paquet SCORM les garde dans le LMS, et ils valent sur n’importe quel appareil ; dans une page HTML ou un livre EPUB, ils restent dans le navigateur du lecteur, et un lecteur qui efface les données du navigateur repart de zéro.

@@ -148,7 +148,7 @@ Write clear, concise commit messages. Use the imperative mood in the subject lin
 Every issue carries labels from the catalogue in [`.github/labels.json`](.github/labels.json), in three dimensions:
 
 - **`type: …`**: exactly one. `bug`, `feature` (a new capability, setting, syntax or output), `improvement` (better behaviour, defaults or UX of something that exists), `performance`, `docs`, `content` (Cookbook recipes, showcase books, videos), `chore` (CI, release, build, dependencies), `security`, `tracker` (an umbrella issue over a programme of sub-issues) or `research`.
-- **`area: …`**: one or more, where the work lands. The packages (`engine`, `pdf`, `html`, `epub`, `folio`, `sandbox`, `cli`, `citeproc`, `bundle`) and the rest of the project (`website`, `cookbook`, `guide`, `showcase`, `skill`, `infra`).
+- **`area: …`**: one or more, where the work lands. The packages (`engine`, `pdf`, `html`, `epub`, `scorm`, `folio`, `sandbox`, `cli`, `citeproc`, `bundle`) and the rest of the project (`website`, `cookbook`, `guide`, `showcase`, `skill`, `infra`).
 - **`topic: …`**: any that apply. Writing systems (`chinese`, `japanese`, `arabic`), programmes (`comics`, `composed-pages`, `citations`, `print`, `video`) and subjects (`accessibility`, `i18n`, `fonts`, `typography`, `pagination`, `math`, `tables`, `figures`, `footnotes`, `index`, `design`).
 
 The issue templates add `status: triage`, which comes off once the issue has its type, areas and topics. `help wanted`, `good first issue`, `question`, `duplicate`, `invalid` and `wontfix` keep their GitHub meaning. On pull requests, `major` and `minor` choose the release bump when the PR merges into `main` (`patch` is the default).

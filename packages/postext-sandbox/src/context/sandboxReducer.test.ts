@@ -17,6 +17,8 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     pdfScope: 'chapter',
     canvasScope: 'chapter',
     epubLayout: 'reflowable',
+    scormLayout: 'fixed',
+    scormVersion: '1.2',
     chapterLayouts: {},
     hiddenPresetIds: [],
     config: {},

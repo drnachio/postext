@@ -55,6 +55,7 @@
     "postext-epub": "workspace:*",
     "postext-folio": "workspace:*",
     "postext-pdf": "workspace:*",
+    "postext-scorm": "workspace:*",
     "tailwind-merge": "^3.7.0",
     "three": "^0.186.1"
   },

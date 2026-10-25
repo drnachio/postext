@@ -66,3 +66,38 @@ describe('exercise settings for storage', () => {
     expect(stripConfigDefaults({ exercises: { edition: 'teacher' } }).exercises).toEqual({ edition: 'teacher' });
   });
 });
+
+describe('assessment settings (#1268)', () => {
+  it('resolves the limits, a style over the book', async () => {
+    const { resolveExercisesConfig, resolveExerciseStylesConfig, assessmentLimitsOf } = await import('../../defaults/exercises.js');
+    const book = resolveExercisesConfig({ digital: { maxChecks: 2.7, maxResets: -1, showSolution: 'afterCheck', passingScore: 140 } }, 'en');
+    expect(book.digital).toMatchObject({ maxChecks: 2, reset: true, maxResets: 0, showSolution: 'afterCheck', passingScore: 100 });
+    const [practice, test] = resolveExerciseStylesConfig([{ id: 'exercise' }, { id: 'test', digital: { maxChecks: 1, reset: false, showSolution: 'never' } }], 'en');
+    expect(assessmentLimitsOf(practice!, book)).toEqual({ maxChecks: 2, reset: true, maxResets: 0, showSolution: 'afterCheck' });
+    expect(assessmentLimitsOf(test!, book)).toEqual({ maxChecks: 1, reset: false, maxResets: 0, showSolution: 'never' });
+    expect(resolveExercisesConfig(undefined, 'es').words.checkLeft).toBe('Comprobar (quedan {n})');
+  });
+
+  it('gives the digital outputs the limits of the styles that have any, and the pass mark', async () => {
+    const { exerciseDigitalOf } = await import('../../exercises/digital.js');
+    const { exerciseSettingsOf } = await import('../../defaults/exercises.js');
+    const digital = exerciseDigitalOf(exerciseSettingsOf({
+      exercises: { digital: { passingScore: 60 } },
+      exerciseStyles: [{ id: 'exercise' }, { id: 'test', digital: { maxChecks: 1 } }],
+    }, 'en'));
+    expect(digital.passingScore).toBe(60);
+    expect(digital.styles.exercise!.limits).toBeUndefined();
+    expect(digital.styles.test!.limits).toEqual({ maxChecks: 1, reset: true, maxResets: 0, showSolution: 'always' });
+  });
+
+  it('checks the keys and words, and keeps only what differs from the defaults', () => {
+    expect(warnings({ exercises: { digital: { maxChecks: 1, reset: false, maxResets: 2, showSolution: 'afterCheck', passingScore: 50 } }, exerciseStyles: [{ id: 'x', digital: { maxChecks: 1, showSolution: 'noChecksLeft' } }] })).toEqual([]);
+    const found = warnings({ exercises: { digital: { showSolution: 'later' as never } }, exerciseStyles: [{ id: 'x', digital: { maxCheck: 1 } as never }] });
+    expect(found.map((w) => [w.kind, w.path])).toEqual([
+      ['unknownConfigKey', 'exerciseStyles[0].digital.maxCheck'],
+      ['unknownConfigValue', 'exercises.digital.showSolution'],
+    ]);
+    expect(stripExercisesDefaults({ digital: { maxChecks: 0, reset: true, maxResets: 0, showSolution: 'always', passingScore: 0 } })).toBeUndefined();
+    expect(stripExercisesDefaults({ digital: { maxChecks: 3, reset: false, passingScore: 70 } })).toEqual({ digital: { maxChecks: 3, reset: false, passingScore: 70 } });
+  });
+});

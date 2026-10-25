@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'إعدادات التمارين',
   description: 'أنماط التمارين (exerciseStyles) وإعدادات التمارين في الكتاب (exercises): شارات الأرقام، وخط التعليمة، وتسميات الخيارات وعلامات التأشير، والفراغات، وإجابات صح أو خطأ، والتوصيل، وبنوك الكلمات، ومساحات الكتابة، والشبكات، والقسمة المطوّلة، وعلامات الصعوبة، والأيقونات، ولون الإجابات، وموضع طباعة الحلول، وطبعة المعلم، وطبعات الشاشة',
   lang: 'ar',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '12 دقيقة',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ const config: PostextConfig = {
 
 ### ألوان الشاشة
 
-تضبط `digital` كيف يعرض عارض HTML وكتب EPUB الإجابة بعد فحصها.
+تضبط `digital` كيف يعرض عارض HTML وكتب EPUB وحزم SCORM الإجابة بعد فحصها، وحدود المحاولة لتمارين النمط، فوق إعدادات الكتاب (انظر [التقييم](#التقييم)).
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ const config: PostextConfig = {
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>أخضر (<code>#1e8e3e</code>)</td><td>الإجابة الصحيحة.</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>أحمر (<code>#c5221f</code>)</td><td>الإجابة الخاطئة.</td></tr>
+    <tr><td><code>maxChecks</code>، <code>reset</code>، <code>maxResets</code>، <code>showSolution</code></td><td></td><td>ما في الكتاب</td><td>حدود المحاولة لتمارين النمط: نمط لاختبار بجانب تمارين الكتاب التدريبية. انظر <a href="#التقييم">التقييم</a>.</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### الطبعات على الشاشة
 
-تضبط `exercises.digital` سلوك التمارين في عارض HTML وكتب EPUB.
+تضبط `exercises.digital` سلوك التمارين في عارض HTML وكتب EPUB وحزم SCORM.
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>تمارين يجيب عنها القارئ. و<code>false</code> تعرضها كما طُبعت.</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>تُحفظ إجابات القارئ في المتصفح، لكل كتاب على حدة.</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code>: تُفحص الإجابات حين يطلب القارئ ذلك. <code>'instant'</code>: تُفحص كل إجابة لحظة كتابتها.</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>مرات الضغط على «تحقّق» التي تسمح بها المحاولة. <code>0</code>: بلا حد. انظر <a href="#التقييم">التقييم</a>.</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يُعرض «أعد المحاولة»، الذي يمسح الإجابات ويبدأ محاولة جديدة.</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>عدد مرات «أعد المحاولة» المسموح بها. <code>0</code>: بلا حد.</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>متى يعرض الشريط الحل.</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>النسبة المئوية للإجابات المقيَّمة الصحيحة التي يتحقق بها النجاح؛ وبالقياس إليها تُبلغ حزمة SCORM عن النجاح أو الرسوب. <code>0</code>: لا شيء.</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### التقييم
+
+التمرين في الوضع الافتراضي تدريب: يتحقق القارئ من إجاباته متى شاء، ويبدأ من جديد، ويطّلع على الحل. وتجعله أربعة إعدادات اختبارًا، للكتاب في `exercises.digital`، وللنمط في `digital` الخاصة به، وهي التي تسري على تمارين ذلك النمط:
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`** تعدّ مرات الضغط على «تحقّق» في المحاولة. ويذكر الزر كم بقي منها («تحقّق (بقي 2)»)؛ وحين تنفد يصير «لم يبقَ تحقّق»، وتُقفل الإجابات، وتبقى الدرجة على الشريط.
+- **`reset`** و<strong>`maxResets`</strong>: يمسح «أعد المحاولة» الإجابات ويبدأ محاولة جديدة تعود معها مرات التحقق. و`maxResets: 1` تسمح ببداية جديدة واحدة، أي بمحاولتين في المجموع، ويذكر الزر كم بقي منها؛ و`reset: false` تزيل الزر.
+- **`showSolution`**: `'always'`؛ و`'afterCheck'`، بعد التحقق من المحاولة؛ و`'noChecksLeft'`، حين تنفد مرات التحقق أو تكون الإجابات كلها صحيحة؛ و`'never'`. وما دامت مرات التحقق محدودة فإن عرض الحل ينهي المحاولة.
+- **`passingScore`** هي ما تُبلغ حزمة SCORM عن النجاح أو الرسوب بالقياس إليه (انظر [حزم SCORM](/ar/docs/configuration-html-folio-epub#حزم-scorm-postext-scorm)).
+
+وتتبع كلمات الأزرار لغة المستند. ومع `check: 'instant'` لا يوجد زر «تحقّق»، فلا تنطبق `maxChecks`؛ أما الإعدادات الأخرى فتنطبق. وتُحفظ مرات التحقق والبدايات الجديدة المستعملة مع الإجابات: في نظام إدارة التعلم تحفظها حزمة SCORM فيه، فتسري على أي جهاز؛ وفي صفحة HTML أو كتاب EPUB تبقى في متصفح القارئ، ومن يمسح تخزين متصفحه يبدأ من جديد.

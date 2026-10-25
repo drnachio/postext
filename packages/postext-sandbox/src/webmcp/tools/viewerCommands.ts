@@ -16,7 +16,7 @@ type ViewerAction = (typeof ACTIONS)[number];
 /** The viewers that take each action; every viewer when not listed. */
 const ACTION_VIEWERS: Partial<Record<ViewerAction, readonly ViewportTab[]>> = {
   print: ['pdf'],
-  download: ['pdf', 'epub'],
+  download: ['pdf', 'epub', 'scorm'],
   play_video: ['folio', 'html'],
   stop_video: ['folio', 'html'],
 };
@@ -46,12 +46,12 @@ export function viewerCommandTools(host: SandboxToolHost): WebMcpTool[] {
   const runViewer: WebMcpTool = {
     name: 'sandbox_run_viewer',
     title: "Sandbox: run a viewer's command",
-    description: "Press a button of a viewer's toolbar, or play a video on its pages. regenerate lays the pages of the Canvas, Folio or HTML viewer out again, or writes the PDF or the EPUB again, and waits for it: the answer carries the viewer's status (pages, file size, an EPUB's warnings). print opens the browser's print dialog on the PDF on screen, for the reader to confirm. download saves the PDF or EPUB on screen through the browser, as it is, even when the book has changed since (sandbox_export writes a fresh file and can hand its bytes back). play_video plays a video of the pages in the Folio (on the open spread) or the HTML viewer, as a click on it does: the one of a resource, on a page or at a point, or the first one on show; stop_video stops them. A viewer other than the one on screen is switched to first. sandbox_set_view changes a viewer's settings; sandbox_go_to_page turns its pages.",
+    description: "Press a button of a viewer's toolbar, or play a video on its pages. regenerate lays the pages of the Canvas, Folio or HTML viewer out again, or writes the PDF, the EPUB or the SCORM package again, and waits for it: the answer carries the viewer's status (pages, file size, an EPUB's warnings). print opens the browser's print dialog on the PDF on screen, for the reader to confirm. download saves the PDF or EPUB on screen through the browser, as it is, even when the book has changed since (sandbox_export writes a fresh file and can hand its bytes back). On the SCORM tab, download writes the package of the chapters and sections ticked and saves it. play_video plays a video of the pages in the Folio (on the open spread) or the HTML viewer, as a click on it does: the one of a resource, on a page or at a point, or the first one on show; stop_video stops them. A viewer other than the one on screen is switched to first. sandbox_set_view changes a viewer's settings; sandbox_go_to_page turns its pages.",
     inputSchema: {
       type: 'object',
       properties: {
         viewer: { type: 'string', enum: VIEWPORT_TABS, description: 'The viewer tab to act in; the one on screen when left out. Another one is switched to.' },
-        action: { type: 'string', enum: ACTIONS, description: 'regenerate: every viewer. print: pdf. download: pdf, epub. play_video, stop_video: folio, html.' },
+        action: { type: 'string', enum: ACTIONS, description: 'regenerate: every viewer. print: pdf. download: pdf, epub, scorm. play_video, stop_video: folio, html.' },
         wait: { type: 'boolean', description: 'regenerate: wait until the pages are laid out or the file is written (default true; a PDF or an EPUB of a long book takes minutes). false answers at once, with the status as the work starts.' },
         resource: { type: 'string', description: 'play_video: the id of the video resource to play.' },
         page: { type: 'integer', description: 'play_video: the page the video is on, by the number printed on it.' },
@@ -66,7 +66,7 @@ export function viewerCommandTools(host: SandboxToolHost): WebMcpTool[] {
       const tab = (args.viewer as ViewportTab | undefined) ?? store.getSnapshot().activeViewport;
       const takes = ACTION_VIEWERS[action];
       if (takes && !takes.includes(tab)) {
-        throw new ToolError(`${action} is a command of the ${takes.join(' and ')} viewer${takes.length > 1 ? 's' : ''}, and the viewer is ${tab}. Set "viewer" to switch.`);
+        throw new ToolError(`${action} is a command of the ${takes.length > 1 ? `${takes.slice(0, -1).join(', ')} and ${takes[takes.length - 1]}` : takes[0]} viewer${takes.length > 1 ? 's' : ''}, and the viewer is ${tab}. Set "viewer" to switch.`);
       }
       if (action !== 'play_video') {
         const stray = VIDEO_PARAMS.filter((name) => args[name] !== undefined);
@@ -92,7 +92,7 @@ export function viewerCommandTools(host: SandboxToolHost): WebMcpTool[] {
           await sleep(80);
           return answer({ regenerating: true, ...(underWay ? { alreadyUnderWay: true } : {}) });
         }
-        const isFile = tab === 'pdf' || tab === 'epub';
+        const isFile = tab === 'pdf' || tab === 'epub' || tab === 'scorm';
         let status = underWay ? await whenViewerIdle(tab, controls, { signal }) : controls.status();
         // What was under way is the fresh file, unless the book changed
         // meanwhile or it failed.
@@ -118,6 +118,14 @@ export function viewerCommandTools(host: SandboxToolHost): WebMcpTool[] {
           printing: true,
           note: `The browser's print dialog opens on the PDF for the reader to confirm; nothing is printed from here.${stale ? ' The book changed since this PDF was written: regenerate first to print it as it is now.' : ''}`,
         });
+      }
+
+      if (action === 'download' && tab === 'scorm') {
+        // The SCORM tab writes its package on the click, of what is ticked.
+        if (!controls.download) throw new ToolError('The SCORM viewer cannot download from here.');
+        if (controls.status().generating) throw new ToolError('The SCORM package is being written: its button is off until it is.');
+        controls.download();
+        return answer({ downloading: true, note: 'The book is laid out and the package of what the tree ticks written, then saved by the reader\'s browser. sandbox_run_viewer with action regenerate writes it and waits.' });
       }
 
       if (action === 'download') {

@@ -50,6 +50,8 @@ const TEXT_RESET = HTML_TEXT_RESET.replace(/(?:^|;)direction:[^;]*;?/, ';').repl
 /** One printed page on its way to a content document. */
 interface PagePlan {
   doc: VDTDocument;
+  /** Its index in the input. */
+  docIndex: number;
   page: VDTPage;
   /** Physical page index in the book (0 = first page). */
   bookIndex: number;
@@ -228,7 +230,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
       const ex = pageExercises(html, rendered.exercises);
       html = ex.html;
       plans.push({
-        doc, page, bookIndex, file, html, ids, outline, lang,
+        doc, docIndex, page, bookIndex, file, html, ids, outline, lang,
         ...(comicHtml ? { comicHtml } : {}),
         ...(ex.data ? { exercises: { data: ex.data, storageKey: `${bookKey}:${docIndex}` } } : {}),
       });
@@ -314,7 +316,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     const right = progression === 'rtl' ? !recto : recto;
     // The two pages of a spread template (#861) are shown side by side
     // whatever the device's orientation (`rendition:spread-both`).
-    spine.push({ idref: id, properties: [right ? 'page-spread-right' : 'page-spread-left', ...(page.composed?.spread ? ['rendition:spread-both'] : [])] });
+    spine.push({ idref: id, doc: plan.docIndex, properties: [right ? 'page-spread-right' : 'page-spread-left', ...(page.composed?.spread ? ['rendition:spread-both'] : [])] });
     pageList.push({ label, href: `${PAGES_DIR}${file}` });
     onProgress?.({ phase: 'documents', done: n + 1, total: plans.length });
     if (n % 16 === 15) signal?.throwIfAborted();

@@ -1,18 +1,18 @@
 {/* docs/configuration-html-folio-epub-ja.mdx */}
 
 export const metadata = {
-  title: 'プログラムからの利用：HTML、Folio、EPUB',
-  sidebarTitle: 'HTML、Folio、EPUB',
-  description: '組み上がった本をWebページに入れる方法、postext-folioで3Dの本にする方法、postext-epubで固定レイアウトまたはリフロー型のEPUB 3にする方法',
+  title: 'プログラムからの利用：HTML、Folio、EPUB、SCORM',
+  sidebarTitle: 'HTML、Folio、EPUB、SCORM',
+  description: '組み上がった本をWebページに入れる方法、postext-folioで3Dの本にする方法、postext-epubで固定レイアウトまたはリフロー型のEPUB 3にする方法、postext-scormでLMS向けのSCORMパッケージにする方法',
   lang: 'ja',
-  lastUpdated: '2026-10-22',
+  lastUpdated: '2026-10-25',
   readingTime: '18分',
   order: 23,
   parent: 'configuration',
-  plainSummary: "このページは、プログラムを書いて本を画面に見せたい人向けです。最初の節では、ページをWebページの中に入れ、その表示がcanvasやPDFとどう違うかを説明します。次の節では、本を机の上に開いた3Dの姿で見せ、読者がページをめくれるようにします。最後の節では、ページが固定された電子書籍か、画面に合わせて文章が流れる電子書籍をEPUBで作り、そのファイルを検査します。",
+  plainSummary: "このページは、プログラムを書いて本を画面に見せたい人向けです。最初の節では、ページをWebページの中に入れ、その表示がcanvasやPDFとどう違うかを説明します。次の節では、本を机の上に開いた3Dの姿で見せ、読者がページをめくれるようにします。3つ目の節では、ページが固定された電子書籍か、画面に合わせて文章が流れる電子書籍をEPUBで作り、そのファイルを検査します。最後の節では、SCORMパッケージを作ります。学校や会社の学習プラットフォーム（MoodleのようなLMS）が講座としてインストールする種類のファイルで、中の練習問題は得点をプラットフォームに送ります。",
 };
 
-# プログラムからの利用：HTML、Folio、EPUB
+# プログラムからの利用：HTML、Folio、EPUB、SCORM
 
 
 ## HTMLビューアーの統合
@@ -445,3 +445,80 @@ const bytes = await renderToEpub(docs, {
 ### EPUBCheckでファイルを検査する
 
 [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/)はEPUBのリファレンスとなる検証ツールで、電子書籍ストアは受け取ったファイルをこれで検査します。インストールすると（`brew install epubcheck`、またはJava版のリリース）、`epubcheck book.epub`でエラー、警告、使用上の注意が一覧表示されます。Postextの出力に残る使用上の注意（`CSS-028`、`OBS-001`、`HTM_062`）は情報提供のためのものです。Postextのリポジトリーでは、`pnpm --filter postext-epub epubcheck`がテストスイートのサンプルの本を検査し、`node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both`は1つの`.postext`ファイルまたはプリセットのフォルダーをレイアウトして両方のレンディションを検査し、`pnpm --filter postext-epub validate`は本の組み合わせ全体（Postextガイド、ショーケースのプリセット、中国語、アラビア語、レシピ集の本）を検査します。どの本もエラーも警告もなく合格します。
+
+## SCORMパッケージ（`postext-scorm`）
+
+`postext-scorm`は、本全体、または本から選んだ章と節を、SCORMパッケージとして書き出します。SCORMパッケージは、学習管理システム（LMS。Moodle、Canvas、Blackboard、SCORM Cloudをはじめ、ほとんどのシステム）が講座として取り込むzipファイルです。中身はEPUBの書き出し機能が作るもの、つまり固定されたページかリフロー型のテキストで、HTML5のページになります。LMSが記録する各部分は小さなプレーヤーに包まれ、その中の練習問題は得点、完了、合否をLMSに送ります。Sandboxの**SCORM**タブで使われている書き出し機能です。
+
+```bash
+npm install postext postext-epub postext-scorm
+```
+
+`postext`と`postext-epub`はピア依存関係です。3つは一緒にアップグレードしてください。
+
+### パッケージを書き出す
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToScorm, scormTree, scormOrganization, treeLeaves } from 'postext-scorm';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle);
+
+// The book's spine: chapters and their headings down to the third level.
+const tree = scormTree(bundle.chapters.map((c) => ({ markdown: c.markdown, title: c.title })));
+// Chapter 1 whole, and two sections of chapter 2.
+const picked = new Set([tree[0]!, tree[1]!.children[0]!, tree[1]!.children[2]!].flatMap(treeLeaves).map((n) => n.id));
+
+const zip = await renderToScorm(docs, {
+  version: '1.2',
+  layout: 'fixed',
+  items: scormOrganization(tree, picked),
+  metadata: { title: 'Lantern', language: 'en' },
+  fonts, resourceBytes, // as for renderToEpub
+});
+```
+
+- **`renderToScorm(docs, options): Promise<Uint8Array>`**：zipを書き出します。`docs`は`renderToEpub`が受け取る章の文書です。`options`は`{ version, layout, items?, metadata, fonts?, svgFonts?, resourceBytes?, cover?, passingScore?, onProgress?, onWarning?, signal? }`で、`metadata`、`fonts`、`svgFonts`、`resourceBytes`、`cover`はEPUBの書き出し機能と同じです。
+- **`version`**：`'1.2'`または`'2004'`（SCORM 2004 第4版）。SCORM 1.2はどのLMSでも使えます。SCORM 2004は完了と合否を別々に記録し、正規化した得点を持ち、保存できる答えはSCORM 1.2の4,096文字に対して最大64,000文字です。LMSが対応していて、これらが重要なら選んでください。
+- **`layout`**：`'fixed'`（印刷されたページをすべてウィンドウに合わせる）または`'reflowable'`（テキストをウィンドウに合わせて組み直す）です。[固定レイアウトとリフロー型](#固定レイアウトとリフロー型)と同じです。
+- **`items`**：LMSが表示する構成で、`{ title, doc?, range?, children? }`のツリーです。`children`を持つ項目は、それをまとめるグループです。持たない項目はSCO、つまりLMSが個別に起動し、記録し、採点する部分で、章`doc`の全体か、その`range`（`{ start, end? }`。章のMarkdownを書かれたとおりに数えたオフセットで、フロントマターも含みます）です。`items`がなければ、各章が1つのSCOになります。
+- **`scormTree(chapters, config?)`**：章と、そのレベル1から3の見出しを、それぞれが表す範囲とともに一覧にします。範囲は、その行から、同じレベルかそれより上の次の見出しまでです。章や見出しの下の最初の見出しはその前の本文も含むので、章のタイトルと冒頭の段落は最初の節に入ります。<strong>`scormOrganization(tree, picked)`</strong>は、選んだ葉のIDの集合を`items`に変えます。まるごと選んだノードは1つのSCOになり、一部だけ選んだノードは子の項目をまとめます。`treeLeaves(node)`と`pickState(node, picked)`（`'all'`、`'some'`、`'none'`）は、チェックボックス付きのツリーを作るときに使います。
+- **`passingScore`**：合格になる正解率で、採点対象の答えのうち正解のパーセントです。文書の`exercises.digital.passingScore`より優先します。`0`または指定なし：合否を出しません。
+
+### パッケージの中身
+
+<table>
+  <thead>
+    <tr>
+      <th>パス</th>
+      <th>内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>imsmanifest.xml</code></td><td>マニフェストです。構成、SCOごとに1つのリソース、すべてのSCOが依存する1つの共有リソース（スタイル、フォント、画像、スクリプト）を収めます。</td></tr>
+    <tr><td><code>sco-1.html</code>、<code>sco-2.html</code>…</td><td>SCOごとの起動ページです。プレーヤーとLMSアダプター、そのSCOの文書の一覧が入ります。スクリプトがなければリンクの一覧になります。</td></tr>
+    <tr><td><code>content/</code></td><td>EPUBの書き出し機能が作るコンテンツ文書、スタイル、フォント、画像です。</td></tr>
+    <tr><td><code>player/</code></td><td>プレーヤーのスクリプトとスタイルシートです。</td></tr>
+    <tr><td><code>*.xsd</code></td><td>マニフェストが参照するIMSとADLのスキーマです。</td></tr>
+  </tbody>
+</table>
+
+固定レイアウトのSCOは、その部分がかかる印刷ページをすべて収めるので、2つの部分にまたがるページは両方に現れます。リフロー型のSCOは、その部分のテキストだけを見出しで切って収めます。あるSCOのページから別のSCOへのリンクは取り除かれます。LMSは、SCOが開いたものでそのSCOを記録するからです。プレーヤーは1度に1つの文書を表示し、←と→（固定ページではPage UpとPage Downも）で移動し、SCOの目次と現在の位置を示します。右綴じの本は左向きにページが進みます。
+
+### LMSに届くもの
+
+プレーヤーはSCORMが定めるとおりにLMSのAPIを探し（SCORM 1.2では`API`、SCORM 2004では`API_1484_11`。親ウィンドウを順にさかのぼり、次に開いた側のウィンドウを探します）、次のものを報告します。
+
+- **得点**：練習問題は最後の答え合わせで数えます。採点対象の欄のうち正解の数を採点対象の欄の数で割ったもので、バーに表示される得点と同じです。SCOの得点は、その練習問題の正解の欄の合計を採点対象の欄の合計で割ったものなので、20マスのクロスワードは正誤問題1つより重くなります。一度も答え合わせをしていない練習問題は、正解なしとして数えます。SCORM 1.2にはパーセント（`cmi.core.score.raw`、0から100）、SCORM 2004には割合（`cmi.score.scaled`）で送り、欄の数を`raw`と`max`にします。練習問題は、そのブロックがある部分に属します。そのページが隣のSCOにも表示される場合でも、数えるのはそのSCOだけです。
+- **完了**：SCOは、すべてのページまたは文書が表示され、数えるすべての練習問題の答え合わせが済む（または答え合わせが残っていない）と完了になります。それまでは未完了で、LMSは次の訪問のために読者の位置を保存します。
+- **合否**：合格点があれば、完了したSCOはそれに照らして合格か不合格になります。合格点はマニフェストに入り（SCORM 1.2では`adlcp:masteryscore`、SCORM 2004では`minNormalizedMeasure`を持つ主目標）、プレーヤーはLMSが返す値を使うので、LMSが独自に設定した値が優先されます。
+- **インタラクション**：答え合わせのたびに、練習問題をインタラクションとして書き込みます。アンカーまたは番号から作ったID、問題の種類から決まる型（`true-false`、`choice`、`fill-in`、`other`）、読者の答え、正しい答え、結果、採点対象の欄の数による重みです。SCORM 2004は説明を加え、練習問題ごとに1つのインタラクションを保ちます。SCORM 1.2は答え合わせのたびに1つ加えます。
+- **集計**：SCORM 2004では、マニフェストで各SCOの評価を採点対象の欄の数で重み付けするので、コースの得点はすべての正解の欄をすべての採点対象の欄で割ったものになります。SCORM 1.2には独自の集計がなく、LMSの評点の方法で決まります（Moodleでは、SCOの得点の最高、平均、合計から選べます）。
+- **答え**：答えは、使った答え合わせとやり直しの回数とともに`cmi.suspend_data`に入るので、1回の解答の制限（[評価](/ja/docs/configuration-exercises#評価)）は訪問や端末をまたいで有効です。SCORM 1.2の4,096文字を超えると、回数は引き続きLMSに送られ、答えは読者のブラウザーに残ります。
+
+LMSの外で開くと（起動ページだけを開いた場合や、パッケージをWebサーバーに置いた場合）、プレーヤーはAPIを見つけられません。本は同じように読め、練習問題の答えは、HTMLやEPUBの本と同じくブラウザーに保存されます。
+
+### パッケージを検査する
+
+テストスイートは、両方のバージョンのマニフェストを`xmllint`でIMSとADLのスキーマに照らして検証します。パッケージを試すには、zipをLMS（MoodleのSCORM活動は両方のバージョンに対応しています）か[SCORM Cloud](https://cloud.scorm.com/)に取り込みます。ローカルで代わりに使えるものもあります。[scorm-again](https://github.com/jcputney/scorm-again)は、起動ページをフレームに入れたページでSCORM 1.2と2004のAPIを提供し、データモデルが許さない値を拒否します。

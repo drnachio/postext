@@ -33,6 +33,7 @@ const VIEWER_SETTINGS: Record<keyof ViewerSettings, readonly ViewportTab[]> = {
   columns: ['html'],
   interaction: ['folio'],
   toolbarPinned: ['canvas', 'pdf', 'folio', 'html', 'epub'],
+  scormPick: ['scorm'],
 };
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -108,6 +109,8 @@ export function viewState(host: SandboxToolHost): Record<string, unknown> {
     sidebarWidth: s.sidebarPercent,
     scope: s.activeViewport === 'pdf' ? s.pdfScope : s.canvasScope,
     epubLayout: s.epubLayout,
+    scormLayout: s.scormLayout,
+    scormVersion: s.scormVersion,
     chapter: at.chapterIndex + 1,
     ...(at.page !== null ? { page: at.page } : {}),
     printPreview: printPreviewOn(),
@@ -141,7 +144,7 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
   const setView: WebMcpTool = {
     name: 'sandbox_set_view',
     title: 'Sandbox: change how the book is shown',
-    description: 'Change what the reader sees of the Sandbox, any number of settings at once: the viewer tab (canvas, pdf, folio, html, epub), the Content or Design mode, the side panel and the resource open in it, the Design panel\'s group, explanations and changed-only filter, whether a viewer shows the chapter or the whole book, the EPUB rendition, the Canvas magnification, fit and facing pages, the type size and columns of the HTML and EPUB readers, the Folio pointer mode, view and magnifying glass, the print preview, the fit marks drawn over composed pages, pinned toolbars, large touch targets, and the guides drawn on the pages (baseline grid, character grid, loose-line highlight, pages in negative). Answers with the view as it stands afterwards, the status of the viewer on screen included (its page, what it is writing, an EPUB\'s contents and warnings, the videos of its pages). sandbox_go_to_page turns the pages; sandbox_run_viewer presses a viewer\'s buttons (regenerate, print, download, play a video).',
+    description: 'Change what the reader sees of the Sandbox, any number of settings at once: the viewer tab (canvas, pdf, folio, html, epub, scorm), the Content or Design mode, the side panel and the resource open in it, the Design panel\'s group, explanations and changed-only filter, whether a viewer shows the chapter or the whole book, the EPUB rendition, the content, version and chapters and sections of the SCORM package, the Canvas magnification, fit and facing pages, the type size and columns of the HTML and EPUB readers, the Folio pointer mode, view and magnifying glass, the print preview, the fit marks drawn over composed pages, pinned toolbars, large touch targets, and the guides drawn on the pages (baseline grid, character grid, loose-line highlight, pages in negative). Answers with the view as it stands afterwards, the status of the viewer on screen included (its page, what it is writing, an EPUB\'s contents and warnings, the videos of its pages). sandbox_go_to_page turns the pages; sandbox_run_viewer presses a viewer\'s buttons (regenerate, print, download, play a video).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -155,6 +158,9 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
         resource: { type: ['string', 'null'], description: 'Open the Resources panel on the resource with this id; null closes the resource that is open and goes back to the list.' },
         scope: { type: 'string', enum: ['chapter', 'book'], description: 'What the viewer lays out: the chapter on screen or the whole book. Applies to the PDF when that is the viewer, to Canvas, Folio and HTML otherwise.' },
         epubLayout: { type: 'string', enum: ['reflowable', 'fixed'], description: 'The EPUB rendition: text that reflows, or the printed pages kept.' },
+        scormLayout: { type: 'string', enum: ['fixed', 'reflowable'], description: 'The SCORM package\'s content: the printed pages, or text that reflows.' },
+        scormVersion: { type: 'string', enum: ['1.2', '2004'], description: 'The SCORM data model of the package: 1.2 (every LMS) or 2004 4th edition.' },
+        scormPick: { type: 'array', items: { type: 'string' }, description: 'SCORM: the ids of the tree nodes (chapters and headings, the status\'s contents[].href) the package takes, each one whole; every other node is left out. A chapter or section ticked whole is one SCO.' },
         zoom: { type: 'number', minimum: 0.25, maximum: 4, description: 'Canvas: magnification (1 = 100%). Turns the fit off unless fit is given too.' },
         fit: { type: 'string', enum: ['width', 'height', 'none'], description: 'Canvas: fit the page to the width or height of the viewer.' },
         pages: { type: 'string', enum: ['single', 'spread'], description: 'Canvas: one page per row, or facing pages.' },
@@ -215,6 +221,8 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
         if ((viewer === 'pdf' ? s.pdfScope : s.canvasScope) !== scope) throw new ToolError(`The whole book cannot be shown as one document here (${s.chapters.length} chapters); the scope stays "${viewer === 'pdf' ? s.pdfScope : s.canvasScope}".`);
       }
       if (args.epubLayout !== undefined) s = await dispatchAndWait(host, { type: 'SET_EPUB_LAYOUT', payload: args.epubLayout as 'fixed' | 'reflowable' });
+      if (args.scormLayout !== undefined) s = await dispatchAndWait(host, { type: 'SET_SCORM_LAYOUT', payload: args.scormLayout as 'fixed' | 'reflowable' });
+      if (args.scormVersion !== undefined) s = await dispatchAndWait(host, { type: 'SET_SCORM_VERSION', payload: args.scormVersion as '1.2' | '2004' });
       if (args.sidebarWidth !== undefined) s = await dispatchAndWait(host, { type: 'SET_SIDEBAR_PERCENT', payload: args.sidebarWidth as number });
 
       if (args.settingsGroup !== undefined) {

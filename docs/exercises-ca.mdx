@@ -3,12 +3,12 @@
 export const metadata = {
   title: 'Exercicis',
   sidebarTitle: 'Exercicis',
-  description: "Com compon Postext els exercicis d'un llibre de text o d'un quadern d'activitats: el bloc :::exercise i els seus dotze tipus, de l'opció múltiple a la divisió, les respostes escrites al Markdown, la numeració, les solucions després de l'exercici, capgirades, al final del capítol o al final del llibre, l'edició del professorat, les comprovacions i els exercicis que es responen en pantalla en HTML i EPUB",
+  description: "Com compon Postext els exercicis d'un llibre de text o d'un quadern d'activitats: el bloc :::exercise i els seus dotze tipus, de l'opció múltiple a la divisió, les respostes escrites al Markdown, la numeració, les solucions després de l'exercici, capgirades, al final del capítol o al final del llibre, l'edició del professorat, les comprovacions, els exercicis que es responen en pantalla en HTML i EPUB, els límits per a un examen i els resultats que s'envien a un LMS en un paquet SCORM",
   lang: 'ca',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '16 min',
   order: 36,
-  plainSummary: "Aquesta pàgina explica com s'escriuen exercicis en un llibre de Postext: preguntes amb opcions per triar, afirmacions vertaderes o falses, frases amb buits, parelles per relacionar, paraules per trobar en una sopa de lletres, operacions per resoldre i més. Cada exercici i les seves respostes s'escriuen al text del capítol, i Postext l'imprimeix amb la forma que li toca: el número, les opcions, les línies per omplir. Les respostes es poden imprimir després de l'exercici, capgirades, al final del capítol o no imprimir-les gens, i el mateix text dona una edició del professorat amb totes les respostes posades. En pantalla, al visor HTML i als llibres EPUB, els lectors poden respondre els exercicis i comprovar-los.",
+  plainSummary: "Aquesta pàgina explica com s'escriuen exercicis en un llibre de Postext: preguntes amb opcions per triar, afirmacions vertaderes o falses, frases amb buits, parelles per relacionar, paraules per trobar en una sopa de lletres, operacions per resoldre i més. Cada exercici i les seves respostes s'escriuen al text del capítol, i Postext l'imprimeix amb la forma que li toca: el número, les opcions, les línies per omplir. Les respostes es poden imprimir després de l'exercici, capgirades, al final del capítol o no imprimir-les gens, i el mateix text dona una edició del professorat amb totes les respostes posades. En pantalla, al visor HTML i als llibres EPUB, els lectors poden respondre els exercicis i comprovar-los, i un paquet SCORM envia els resultats a la plataforma d'aprenentatge d'una escola o d'una empresa.",
 };
 
 # Exercicis
@@ -358,6 +358,8 @@ El tauler **Revisió** del Sandbox i `collectContentWarnings` informen del que e
 
 Al visor HTML i als llibres EPUB els exercicis es poden respondre. El lector escriu als buits i fa clic a les opcions, a les afirmacions, als punts per unir i a les caselles d'una graella; després pot comprovar les respostes, veure la solució o tornar a començar. Les respostes correctes i les incorrectes es mostren amb un color i una marca (`digital.correctColor`, `digital.wrongColor`) i s'anuncien als lectors de pantalla. Les respostes es desen al navegador, per a cada llibre, i el lector les retroba a la visita següent (`exercises.digital.persist`). Amb `exercises.digital.check: 'instant'` cada resposta es comprova tan bon punt s'escriu; amb `exercises.digital.interactive: false` les pàgines queden com les impreses. Un EPUB porta sempre la clau de respostes, sigui quina sigui la ubicació de les solucions a la impressió, perquè un sistema de lectura que no executa scripts també tingui les respostes. En un EPUB de maquetació fluida les quadrícules i les zones d'escriptura creixen amb el text del lector, i en una pàgina de dreta a esquerra les caselles que es responen segueixen la quadrícula reflectida. Les parelles s'uneixen fent clic en un punt i després en l'altre, o arrossegant de l'un a l'altre, i les paraules d'un exercici de classificar s'arrosseguen a la seva columna o es trien en un menú. La barra només porta els botons que fan alguna cosa: no surt «Comprova» si no hi ha res a comprovar, ni «Mostra la solució» si no hi ha solució, ni cap barra quan no hi ha res a respondre.
 
+Per a un examen, el llibre o un estil d'exercici poden limitar un intent: quantes vegades es comprova (`digital.maxChecks`), si es pot tornar a començar i quantes vegades (`digital.reset`, `digital.maxResets`) i quan apareix la solució (`digital.showSolution`). Els botons diuen quantes comprovacions i quants reinicis queden. Vegeu [Avaluació](/ca/docs/configuration-exercises#avaluació).
+
 La pantalla pot donar als exercicis una forma pròpia amb `htmlViewer.overrides`, que es fusiona amb la configuració del llibre abans que el visor HTML faci la maquetació. La impressió conserva la seva:
 
 ```ts
@@ -373,6 +375,10 @@ const config: PostextConfig = {
   },
 };
 ```
+
+## Exercicis en un paquet SCORM
+
+Un paquet SCORM (la pestanya **SCORM** del Sandbox, o `postext-scorm` des del codi) porta els exercicis com el visor HTML i n'envia els resultats al sistema de gestió de l'aprenentatge on s'executa. Cada part del llibre que segueix l'LMS informa d'una puntuació (les respostes qualificades correctes sobre el total, segons l'última comprovació de cada exercici), de si s'ha completat (totes les pàgines vistes i tots els exercicis comprovats) i, amb `exercises.digital.passingScore`, de si s'ha aprovat. Cada comprovació també s'escriu com una interacció, amb la resposta del lector i la correcta. Les respostes i les comprovacions gastades es desen a l'LMS, de manera que els límits d'un intent es mantenen d'una visita a l'altra i d'un dispositiu a l'altre. Vegeu [Paquets SCORM](/ca/docs/configuration-html-folio-epub#paquets-scorm-postext-scorm).
 
 ## Estils d'exercici
 

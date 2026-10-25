@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Sandbox: les previsualitzacions',
   sidebarTitle: 'Previsualitzacions',
-  description: "Les pestanyes Canvas, PDF, Folio, HTML i EPUB 3 de l'àrea de previsualització: què mostra cadascuna i què s'hi pot fer",
+  description: "Les pestanyes Canvas, PDF, Folio, HTML, EPUB 3 i SCORM de l'àrea de previsualització: què mostra cadascuna i què s'hi pot fer",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-25',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
-  plainSummary: "Aquesta pàgina explica la part dreta del Sandbox, on apareixen les pàgines acabades. Cinc pestanyes mostren el mateix llibre de cinc maneres: com a imatges de pàgina, com a fitxer PDF, com a llibre en 3D que pots fullejar, com a pàgina web i com a llibre electrònic EPUB. Quan canvies de pestanya, el llibre no es torna a compondre, així que totes mostren les mateixes pàgines. La pàgina explica què mostra cada pestanya i què hi pots fer.",
+  plainSummary: "Aquesta pàgina explica la part dreta del Sandbox, on apareixen les pàgines acabades. Cinc pestanyes mostren el mateix llibre de cinc maneres: com a imatges de pàgina, com a fitxer PDF, com a llibre en 3D que pots fullejar, com a pàgina web i com a llibre electrònic EPUB. Una sisena fa un paquet SCORM amb els capítols que triïs, per a la plataforma d'aprenentatge d'una escola o d'una empresa. Quan canvies de pestanya, el llibre no es torna a compondre, així que totes mostren les mateixes pàgines. La pàgina explica què mostra cada pestanya i què hi pots fer.",
 };
 
 # Sandbox: les previsualitzacions
@@ -17,7 +17,7 @@ export const metadata = {
 
 ## Àrea de previsualització
 
-El costat dret de la interfície mostra la sortida renderitzada. Hi ha cinc pestanyes, una per cada mode de renderització, en aquest ordre: **Canvas**, **PDF**, **Folio**, **HTML** i **EPUB 3**. Quan canvies de pestanya, la composició no es torna a executar: tots els backends parteixen del mateix VDT, de manera que el contingut que veus és coherent en tots els modes. La pestanya Folio només s'ofereix on el navegador té WebGL2 i la pantalla no és la d'un mòbil (consulta [Pestanya Folio](#pestanya-folio)).
+El costat dret de la interfície mostra la sortida renderitzada. Hi ha sis pestanyes, una per cada mode de renderització, en aquest ordre: **Canvas**, **PDF**, **Folio**, **HTML**, **EPUB 3** i **SCORM** (l'última escriu un paquet per a una plataforma d'aprenentatge a partir del contingut de l'EPUB). Quan canvies de pestanya, la composició no es torna a executar: tots els backends parteixen del mateix VDT, de manera que el contingut que veus és coherent en tots els modes. La pestanya Folio només s'ofereix on el navegador té WebGL2 i la pantalla no és la d'un mòbil (consulta [Pestanya Folio](#pestanya-folio)).
 
 Cada àrea de previsualització executa la composició dins d'un **Web Worker** propi (`postext/worker`). Un hook `useLayoutWorker` per àrea gestiona el worker, hi envia les fonts com a `ArrayBuffer` transferibles i llança les composicions amb **cancel·lació de l'última petició guanyadora** (*last-wins*): una pulsació de tecla o el moviment d'un control lliscant avorta l'`AbortSignal` de la composició anterior abans que comenci la següent, de manera que escriure de pressa no acumula mai feina obsoleta al fil principal. Quan es desmunta una àrea de previsualització, se n'allibera el worker i es rebutja qualsevol composició pendent. Consulta [Configuració → Executar la composició en un Web Worker](/ca/docs/configuration-programmatic-usage#executar-la-composició-en-un-web-worker) per al patró d'integració que s'usa aquí.
 
@@ -148,3 +148,15 @@ Mentre no se'n tria cap, la pestanya s'obre en maquetació fixa en una tauleta c
 - **Comprovar el fitxer.** Les dues maquetacions de la guia i dels llibres d'exemple passen [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 sense errors ni avisos. Per comprovar el teu llibre, baixa'l i executa `epubcheck llibre.epub`, o llegeix-lo a Apple Books, Thorium Reader o Calibre.
 
 Consulta [Llibres EPUB](/ca/docs/configuration-html-folio-epub#llibres-epub-postext-epub) per escriure els mateixos fitxers des del teu codi.
+
+### Pestanya SCORM
+
+Baixa un paquet SCORM de la part del llibre que triïs, escrit amb el paquet `postext-scorm`: el zip que un sistema de gestió de l'aprenentatge (Moodle, Canvas, Blackboard i la majoria dels altres) importa com un curs. Els exercicis que conté es poden respondre i envien a l'LMS la puntuació, si s'han completat i si s'han aprovat.
+
+- **L'arbre.** La pestanya enumera els capítols del llibre (els fitxers de capítol del tauler **Capítols**) i, dins de cadascun, els encapçalaments fins al tercer nivell, cadascun amb una casella. Si marques un capítol, se'n marquen totes les seccions; un capítol marcat en part mostra una casella mixta. **Tot** i **Res** ho marquen o ho desmarquen tot, i la fletxa al costat d'un capítol en plega les seccions. El que deixes fora es recorda per a cada llibre en aquest navegador (un capítol afegit més tard surt marcat). Un encapçalament representa el text des de la seva línia fins al següent encapçalament del seu nivell o superior; la primera secció d'un capítol s'emporta també el títol del capítol i els paràgrafs inicials.
+- **SCO.** Cada node marcat sencer es converteix en un SCO, una part que l'LMS obre, segueix i qualifica per separat: un capítol sencer o una secció. Un capítol marcat en part es converteix en un grup a l'índex de l'LMS, amb les seccions marcades a dins. La línia al costat del botó diu quants SCO conté el paquet.
+- **Contingut i versió.** A l'esquerra de la barra de pestanyes, com a la pestanya EPUB 3, **Maquetació fixa** conserva cada pàgina impresa, ajustada a la finestra, i **Maquetació fluida** torna a compondre el text per a la finestra, per a mòbils i pantalles estretes (l'elecció és pròpia d'aquesta pestanya, `postext-sandbox-scorm-layout`). A sobre de l'arbre, **SCORM 1.2** l'accepten tots els LMS; **SCORM 2004** (4a edició) separa la compleció de l'èxit, dona una puntuació escalada i desa respostes més llargues. Totes dues eleccions es recorden entre visites.
+- **Baixada.** **Baixa el paquet SCORM** maqueta el llibre sencer, com la pestanya PDF amb **Llibre complet** (la numeració i les referències continuen des dels capítols anteriors), i desa el zip, amb el títol del llibre i la versió com a nom. Una barra de progrés compta els capítols i els passos de l'escriptor; els lectors de pantalla anuncien quan el paquet és a punt o quan ha fallat. Les fonts i les imatges hi entren com a l'EPUB.
+- **A l'LMS.** Cada SCO s'obre en un petit reproductor: les pàgines o el text, un document cada vegada, l'índex de l'SCO, i ← i → per moure-s'hi. Els exercicis informen tal com descriu [Exercicis en un paquet SCORM](/ca/docs/exercises#exercicis-en-un-paquet-scorm), i els límits d'un intent fixats a **Disseny → Exercicis → Avaluació** s'hi apliquen. Obert fora d'un LMS, el paquet es continua llegint i desa les respostes al navegador.
+
+Consulta [Paquets SCORM](/ca/docs/configuration-html-folio-epub#paquets-scorm-postext-scorm) per escriure el mateix paquet des del teu codi.

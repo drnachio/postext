@@ -392,7 +392,7 @@ await browser.close();
 { "anchor": "harbour" }
 ```
 
-`sandbox_set_view`では、ほかに、ビューアー（`canvas`、`pdf`、`folio`、`html`、`epub`）、内容モードかデザインモードか（`mode`）、サイドパネル、章か本全体か、拡大率、読者側の文字サイズ、印刷プレビュー、**デザイン**パネルのグループも選べます。`sandbox_go_to_page`は、`step`、`page`、`position`、本文の一節`text`、`anchor`、EPUBの目次の項目`contents`でページを移します。`sandbox_run_viewer`はツールバーのボタンを押します。`regenerate`はPDFやEPUBを作り直してそれを待ち、`print`は印刷ダイアログを開いてあなたの確認を待ち、`download`はPDFかEPUBを保存し、`play_video`と`stop_video`はページ上の動画を再生・停止します。
+`sandbox_set_view`では、ほかに、ビューアー（`canvas`、`pdf`、`folio`、`html`、`epub`、`scorm`）、内容モードかデザインモードか（`mode`）、サイドパネル、章か本全体か、拡大率、読者側の文字サイズ、印刷プレビュー、**デザイン**パネルのグループも選べます。SCORMタブでは、コンテンツ（`scormLayout`）、バージョン（`scormVersion`）、パッケージに入れる章と節（`scormPick`。IDはタブの`contents`から取ります）も選べます。`sandbox_go_to_page`は、`step`、`page`、`position`、本文の一節`text`、`anchor`、EPUBの目次の項目`contents`でページを移します。`sandbox_run_viewer`はツールバーのボタンを押します。`regenerate`はPDF、EPUB、SCORMパッケージを作り直してそれを待ち、`print`は印刷ダイアログを開いてあなたの確認を待ち、`download`はPDFかEPUB、または新しく作ったSCORMパッケージを保存し、`play_video`と`stop_video`はページ上の動画を再生・停止します。
 
 ### 漫画のページの編集
 

@@ -1,18 +1,18 @@
 {/* docs/configuration-html-folio-epub-zh.mdx */}
 
 export const metadata = {
-  title: '以编程方式使用：HTML、3D书本与EPUB',
-  sidebarTitle: 'HTML、3D书本与EPUB',
-  description: '把排好的书放进网页，用postext-folio做成3D书本，用postext-epub做成固定版式或流式版式的EPUB 3',
+  title: '以编程方式使用：HTML、3D书本、EPUB与SCORM',
+  sidebarTitle: 'HTML、3D书本、EPUB、SCORM',
+  description: '把排好的书放进网页，用postext-folio做成3D书本，用postext-epub做成固定版式或流式版式的EPUB 3，用postext-scorm做成供LMS使用的SCORM包',
   lang: 'zh',
-  lastUpdated: '2026-10-22',
+  lastUpdated: '2026-10-25',
   readingTime: '12分钟',
   order: 23,
   parent: 'configuration',
-  plainSummary: "本页写给写代码、想在屏幕上展示一本书的人。第一节把页面放进网页，并说明这种视图和Canvas、PDF有什么不同。第二节把书以3D形式摊开在桌面上，读者可以翻页。最后一节制作EPUB电子书，页面可以固定，也可以让文字随屏幕重新排列，并检查这个文件。",
+  plainSummary: "本页写给写代码、想在屏幕上展示一本书的人。第一节把页面放进网页，并说明这种视图和Canvas、PDF有什么不同。第二节把书以3D形式摊开在桌面上，读者可以翻页。第三节制作EPUB电子书，页面可以固定，也可以让文字随屏幕重新排列，并检查这个文件。最后一节制作SCORM包：学校或公司的学习平台（如Moodle这样的LMS）作为课程安装的一种文件，其中的练习会把得分发送给平台。",
 };
 
-# 以编程方式使用：HTML、3D书本与EPUB
+# 以编程方式使用：HTML、3D书本、EPUB与SCORM
 
 
 ## 集成HTML阅读器
@@ -445,3 +445,80 @@ const bytes = await renderToEpub(docs, {
 ### 用EPUBCheck检查文件
 
 [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/)是EPUB的参考验证工具；电子书商店用它检查收到的文件。安装后（`brew install epubcheck`，或Java版本），`epubcheck book.epub`会列出错误、警告和用法提示；Postext输出留下的用法提示（`CSS-028`、`OBS-001`、`HTM_062`）仅供参考。在Postext仓库中，`pnpm --filter postext-epub epubcheck`检查测试套件的示例书，`node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both`对一个`.postext`文件或预设文件夹排版并检查两种版式，`pnpm --filter postext-epub validate`跑完整套书目（指南、示例预设，以及中文、阿拉伯文和排版食谱中的书），全部没有错误或警告。
+
+## SCORM包（`postext-scorm`）
+
+`postext-scorm`把一本书，或从书中挑选的章和节，写成SCORM包：学习管理系统（LMS，如Moodle、Canvas、Blackboard、SCORM Cloud和其他大多数系统）作为课程导入的zip文件。内容来自EPUB写出器，即固定页面或流式文字，做成HTML5页面；LMS跟踪的每个部分外面有一个小播放器，其中的练习把得分、完成情况和是否通过发送给LMS。沙盒的**SCORM**标签页用的就是它。
+
+```bash
+npm install postext postext-epub postext-scorm
+```
+
+`postext`和`postext-epub`是对等依赖：三者要一起升级。
+
+### 写出一个包
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToScorm, scormTree, scormOrganization, treeLeaves } from 'postext-scorm';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle);
+
+// 书的骨架：各章及其直到第三级的标题。
+const tree = scormTree(bundle.chapters.map((c) => ({ markdown: c.markdown, title: c.title })));
+// 第1章整章，以及第2章的两节。
+const picked = new Set([tree[0]!, tree[1]!.children[0]!, tree[1]!.children[2]!].flatMap(treeLeaves).map((n) => n.id));
+
+const zip = await renderToScorm(docs, {
+  version: '1.2',
+  layout: 'fixed',
+  items: scormOrganization(tree, picked),
+  metadata: { title: '灯笼', language: 'zh-Hans' },
+  fonts, resourceBytes, // 与renderToEpub相同
+});
+```
+
+- <strong>`renderToScorm(docs, options): Promise<Uint8Array>`</strong>写出zip文件。`docs`是`renderToEpub`接收的逐章文档。`options`为`{ version, layout, items?, metadata, fonts?, svgFonts?, resourceBytes?, cover?, passingScore?, onProgress?, onWarning?, signal? }`；其中`metadata`、`fonts`、`svgFonts`、`resourceBytes`和`cover`与EPUB写出器的相同。
+- **`version`**：`'1.2'`或`'2004'`（SCORM 2004第4版）。所有LMS都支持SCORM 1.2。SCORM 2004把完成状态与成绩状态分开，提供比例分数，保存的答案最多可达64,000个字符，而SCORM 1.2只能保存4,096个；如果LMS支持SCORM 2004，而这几点又很重要，就选它。
+- **`layout`**：`'fixed'`，每个印刷页缩放到窗口大小；或`'reflowable'`，文字按窗口重新排版，与[固定版式与流式版式](#固定版式与流式版式)中相同。
+- **`items`**：LMS显示的组织结构，是一棵由`{ title, doc?, range?, children? }`组成的树。带`children`的项把子项归为一组；不带的项是一个SCO，即由LMS单独启动、跟踪和评分的部分：整章`doc`，或其中的`range`（`{ start, end? }`，按章的Markdown原文计算的偏移量，包括前置元数据）。没有`items`时，每章是一个SCO。
+- <strong>`scormTree(chapters, config?)`</strong>列出各章及其第1到第3级的标题，每项带有它所代表的范围：从它所在的行到下一个同级或更高级的标题。一章或一个标题下的第一个标题还包括它前面的文字，所以一章的标题和开头的段落归入它的第一节。<strong>`scormOrganization(tree, picked)`</strong>把一组选中的叶节点id转换为`items`：整体选中的节点是一个SCO，部分选中的节点把其子节点的项归为一组。`treeLeaves(node)`和`pickState(node, picked)`（`'all'`、`'some'`、`'none'`）用于带复选框的树。
+- **`passingScore`**：及格所需的正确率，即答对的计分答案占全部计分答案的百分比，优先于文档的`exercises.digital.passingScore`。`0`或不设：不判定通过与否。
+
+### 包里有什么
+
+<table>
+  <thead>
+    <tr>
+      <th>路径</th>
+      <th>内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>imsmanifest.xml</code></td><td>清单：组织结构、每个SCO一个资源，以及所有SCO都依赖的一个共享资源（样式、字体、图片、脚本）。</td></tr>
+    <tr><td><code>sco-1.html</code>、<code>sco-2.html</code>…</td><td>每个SCO一个启动页面：播放器和LMS适配器，以及它的文档列表。没有脚本时，它是一个链接列表。</td></tr>
+    <tr><td><code>content/</code></td><td>EPUB写出器生成的内容文档、样式、字体和图片。</td></tr>
+    <tr><td><code>player/</code></td><td>播放器的脚本和样式表。</td></tr>
+    <tr><td><code>*.xsd</code></td><td>清单引用的IMS和ADL模式文件。</td></tr>
+  </tbody>
+</table>
+
+固定版式的SCO包含它的部分所涉及的每个印刷页，所以两个部分共用的一页在两个SCO中都会出现。流式版式的SCO只包含这个部分的文字，在标题处切开。从一个SCO的页面指向另一个SCO的链接会被去掉，因为LMS按SCO打开的内容来跟踪它。播放器一次显示一个文档，用←和→（固定页面还可以用Page Up和Page Down）移动，并显示这个SCO的目录和当前位置；右侧装订的书向左翻页。
+
+### 向LMS报告什么
+
+播放器按SCORM规定的方式查找LMS的API（SCORM 1.2为`API`，SCORM 2004为`API_1484_11`，先沿父窗口链向上找，再找打开它的窗口），然后报告：
+
+- **得分。** 一道练习按它最后一次检查计分：答对的计分项除以计分项总数，也就是它的按钮栏上显示的得分。一个SCO的得分是它的各道练习答对的计分项之和除以计分项之和，所以有二十个格子的填字游戏比一道判断题分量重；从未检查过的练习不计任何答对。SCORM 1.2以百分数接收得分（`cmi.core.score.raw`，从0到100）；SCORM 2004以小数接收（`cmi.score.scaled`），计分项分别作为`raw`和`max`。一道练习属于它的练习块所在的部分：只有那个SCO计算它，即使它所在的页面也出现在相邻的SCO中。
+- **完成。** 一个SCO的所有页面或文档都显示过，并且它计入的每道练习都检查过（或已没有检查次数）时，就算完成。在此之前它是未完成状态，LMS会记住读者的位置，供下次访问。
+- **通过与否。** 设了及格分数时，完成的SCO按它判定为通过或未通过。清单中带有这个分数（SCORM 1.2中为`adlcp:masteryscore`，SCORM 2004中为带`minNormalizedMeasure`的主要目标），播放器采用LMS返回的值，所以LMS自己设定的分数优先。
+- **交互。** 每次检查都把这道练习写成一条交互记录：取自锚点或题号的id、取自题型的类型（`true-false`、`choice`、`fill-in`、`other`）、读者的回答、正确答案、结果，以及按计分项数目计算的权重；SCORM 2004还加上描述，并且每道练习只保留一条交互记录，SCORM 1.2则每次检查增加一条。
+- **汇总。** SCORM 2004在清单中按各SCO的计分项数目为它的成绩加权，所以课程的得分是全部答对的计分项除以全部计分项。SCORM 1.2自身没有汇总：由LMS的评分方法决定（Moodle提供各SCO得分的最高值、平均值或总和）。
+- **答案。** 答案连同已用的检查次数和重做次数写入`cmi.suspend_data`，所以作答限制（[测评](/zh/docs/configuration-exercises#测评)）在多次访问和不同设备之间都有效。超过SCORM 1.2的4,096个字符时，次数仍然发送给LMS，答案则留在读者的浏览器中。
+
+在LMS之外打开（单独打开启动页面，或把包放在网页服务器上）时，播放器找不到API：书照样可以阅读，练习的答案保存在浏览器中，与HTML或EPUB书相同。
+
+### 检查包
+
+测试套件用`xmllint`按IMS和ADL模式验证两个版本的清单。要试用一个包，可以把zip导入LMS（Moodle的SCORM活动两个版本都支持）或[SCORM Cloud](https://cloud.scorm.com/)。也可以在本地模拟：[scorm-again](https://github.com/jcputney/scorm-again)在一个用框架嵌入启动页面的网页中提供SCORM 1.2和2004的API，并拒绝数据模型不允许的值。

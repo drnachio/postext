@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Sandbox: the previews',
   sidebarTitle: 'Previews',
-  description: 'The Canvas, PDF, Folio, HTML and EPUB 3 tabs of the main viewport: what each shows and what it can do',
+  description: 'The Canvas, PDF, Folio, HTML, EPUB 3 and SCORM tabs of the main viewport: what each shows and what it can do',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-25',
   readingTime: '14 min',
   order: 43,
   parent: 'sandbox',
-  plainSummary: "This page covers the right side of the Sandbox, where the finished pages appear. Five tabs show the same book in five ways: as page images, as a PDF file, as a 3D book you can leaf through, as a web page and as an EPUB e-book. Changing the tab does not lay the book out again, so every tab shows the same pages. The page explains what each tab shows and what you can do in it.",
+  plainSummary: "This page covers the right side of the Sandbox, where the finished pages appear. Five tabs show the same book in five ways: as page images, as a PDF file, as a 3D book you can leaf through, as a web page and as an EPUB e-book. A sixth makes a SCORM package of the chapters you pick, for a school's or a company's learning platform. Changing the tab does not lay the book out again, so every tab shows the same pages. The page explains what each tab shows and what you can do in it.",
 };
 
 # Sandbox: the previews
@@ -17,7 +17,7 @@ export const metadata = {
 
 ## Main viewport
 
-The right side of the interface displays the rendered output. Five tabs are available, one per rendering mode, in this order: **Canvas**, **PDF**, **Folio**, **HTML** and **EPUB 3**. Switching tabs does not re-run layout: the same VDT feeds every backend, so the content you see is consistent across modes. The Folio tab is offered only where the browser has WebGL2 and the screen is not a phone's (see [Folio tab](#folio-tab)).
+The right side of the interface displays the rendered output. Six tabs are available, one per rendering mode, in this order: **Canvas**, **PDF**, **Folio**, **HTML**, **EPUB 3** and **SCORM** (the last writes a package for a learning platform from the EPUB's content). Switching tabs does not re-run layout: the same VDT feeds every backend, so the content you see is consistent across modes. The Folio tab is offered only where the browser has WebGL2 and the screen is not a phone's (see [Folio tab](#folio-tab)).
 
 Each viewport runs the layout pipeline inside a dedicated **Web Worker** (`postext/worker`). A per-viewport `useLayoutWorker` hook owns the worker handle, ships fonts into it as transferable `ArrayBuffer`s, and drives builds with **last-wins cancellation** — a keystroke or slider drag aborts the previous build's `AbortSignal` before the next one starts, so fast typing never queues up stale work on the main thread. Unmounting a viewport disposes its worker and rejects any pending build. See [Configuration → Running layout in a Web Worker](/en/docs/configuration-programmatic-usage#running-layout-in-a-web-worker) for the integration pattern used here.
 
@@ -148,3 +148,15 @@ Until one is picked, the tab opens in the fixed layout on a tablet such as an iP
 - **Checking the file.** Both renditions of the guide and of the sample books pass [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 with no errors or warnings. To check your own book, download it and run `epubcheck book.epub`, or read it in Apple Books, Thorium Reader or Calibre.
 
 See [EPUB books](/en/docs/configuration-html-folio-epub#epub-books-postext-epub) for writing the same files from your own code.
+
+### SCORM tab
+
+Downloads a SCORM package of the part of the book you pick, written with the `postext-scorm` package: the zip a learning management system (Moodle, Canvas, Blackboard and most others) imports as a course. The exercises in it can be answered and send their score, completion and pass or fail to the LMS.
+
+- **The tree.** The tab lists the book's chapters (the chapter files of the **Chapters** panel) and, inside each, its headings down to the third level, each with a checkbox. Ticking a chapter ticks all its sections; a chapter ticked in part shows a mixed box. **All** and **None** tick or clear everything, and the arrow beside a chapter folds its sections away. What you leave out is remembered for each book in this browser (a chapter added later is ticked). A heading stands for the text from its line to the next heading of its level or above; the first section of a chapter also takes the chapter's title and opening paragraphs.
+- **SCOs.** Each node ticked whole becomes a SCO, a part the LMS launches, tracks and grades on its own: a whole chapter, or one section. A chapter ticked in part becomes a group in the LMS's contents with its ticked sections inside. The line beside the button says how many SCOs the package holds.
+- **Content and version.** At the left of the tab bar, as on the EPUB 3 tab, **Fixed layout** keeps every printed page, fitted to the window, and **Reflowable** sets the text again for the window, for phones and narrow screens (the tab's own choice, `postext-sandbox-scorm-layout`). Above the tree, **SCORM 1.2** is taken by every LMS; **SCORM 2004** (4th edition) keeps completion and success apart, gives a scaled score and keeps longer answers. Both are remembered between visits.
+- **Download.** **Download SCORM package** lays the whole book out, as the PDF tab does for **Whole book** (numbering and references run on from the chapters before), and saves the zip, named after the book's title and the version. A progress bar counts the chapters and the writer's steps; screen readers hear when the package is ready or failed. Fonts and pictures go in as they do in the EPUB.
+- **In the LMS.** Each SCO opens in a small player: the pages or the text one document at a time, the SCO's contents, ← and → to move. Its exercises report as [Exercises in a SCORM package](/en/docs/exercises#exercises-in-a-scorm-package) describes, and the limits of an attempt set in **Design → Exercises → Assessment** hold there. Opened outside an LMS, the package still reads and keeps the answers in the browser.
+
+See [SCORM packages](/en/docs/configuration-html-folio-epub#scorm-packages-postext-scorm) for writing the same package from your own code.

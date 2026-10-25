@@ -35,6 +35,8 @@ export function state(): SandboxState {
     pdfScope: 'chapter',
     canvasScope: 'chapter',
     epubLayout: 'reflowable',
+    scormLayout: 'fixed',
+    scormVersion: '1.2',
     chapterLayouts: {},
     hiddenPresetIds: [],
     config: { page: { width: { value: 120, unit: 'mm' }, height: { value: 180, unit: 'mm' } } },

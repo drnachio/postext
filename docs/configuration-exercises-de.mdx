@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Übungseinstellungen',
   description: 'Übungsstile (exerciseStyles) und die Übungseinstellungen des Buchs (exercises): Nummernmarken, Schrift der Arbeitsanweisung, Kennbuchstaben und Ankreuzfelder der Antworten, Lücken, Richtig-oder-falsch-Antworten, Zuordnungen, Wortspeicher, Schreibflächen, Gitter, schriftliche Division, Schwierigkeitszeichen, Symbole, die Farbe der Lösungen, wo die Lösungen stehen, die Lehrerausgabe und die Bildschirmausgaben',
   lang: 'de',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '12 min',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ Ein Symbol wird als Inline-Symbol nach der Nummer gedruckt: das Bild von `resour
 
 ### Bildschirmfarben
 
-`digital` legt fest, wie der HTML-Betrachter und EPUB-Bücher eine geprüfte Antwort zeigen.
+`digital` legt fest, wie der HTML-Betrachter, EPUB-Bücher und SCORM-Pakete eine geprüfte Antwort zeigen, und setzt für die Übungen des Stils die Grenzen eines Versuchs über die des Buchs (siehe [Bewertung](#bewertung)).
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ Ein Symbol wird als Inline-Symbol nach der Nummer gedruckt: das Bild von `resour
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>ein Grün (<code>#1e8e3e</code>)</td><td>Eine richtige Antwort.</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>ein Rot (<code>#c5221f</code>)</td><td>Eine falsche Antwort.</td></tr>
+    <tr><td><code>maxChecks</code>, <code>reset</code>, <code>maxResets</code>, <code>showSolution</code></td><td></td><td>die des Buchs</td><td>Die Grenzen eines Versuchs für die Übungen des Stils: ein Stil für einen Test neben den Übungsaufgaben des Buchs. Siehe <a href="#bewertung">Bewertung</a>.</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### Bildschirmausgaben
 
-`exercises.digital` legt fest, wie sich Übungen im HTML-Betrachter und in EPUB-Büchern verhalten.
+`exercises.digital` legt fest, wie sich Übungen im HTML-Betrachter, in EPUB-Büchern und in SCORM-Paketen verhalten.
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Übungen, die man am Bildschirm lösen kann. <code>false</code> zeigt sie wie gedruckt.</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Die Antworten im Browser speichern, je Buch.</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code>: Die Antworten werden auf Anfrage geprüft. <code>'instant'</code>: Jede Antwort wird geprüft, sobald sie gegeben ist.</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>Wie oft ein Versuch geprüft werden darf. <code>0</code>: ohne Grenze. Siehe <a href="#bewertung">Bewertung</a>.</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Neu beginnen anbieten: löscht die Antworten und beginnt einen neuen Versuch.</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>Wie oft Neu beginnen genutzt werden darf. <code>0</code>: ohne Grenze.</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>Wann die Leiste die Lösung anbietet.</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>Der Anteil richtiger bewerteter Antworten in Prozent, ab dem bestanden ist; ein SCORM-Paket meldet daran gemessen bestanden oder nicht bestanden. <code>0</code>: keine Grenze.</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### Bewertung
+
+Standardmäßig dient eine Übung zum Üben: Man prüft so oft man will, beginnt neu und sieht sich die Lösung an. Vier Einstellungen machen daraus einen Test, für das Buch in `exercises.digital` und für einen Stil in seinem `digital`, das für die Übungen dieses Stils Vorrang hat:
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`** zählt, wie oft in einem Versuch Prüfen gedrückt wird. Die Schaltfläche zeigt, wie viele Prüfungen bleiben („Prüfen (noch 2)“); sind sie aufgebraucht, steht dort „Keine Prüfung mehr“, die Antworten werden gesperrt und die Punktzahl bleibt auf der Leiste stehen.
+- **`reset`** und **`maxResets`**: Neu beginnen löscht die Antworten und beginnt einen neuen Versuch, der wieder alle Prüfungen hat. `maxResets: 1` erlaubt einen Neuanfang, also zwei Versuche insgesamt, und die Schaltfläche zeigt, wie viele bleiben; `reset: false` entfernt die Schaltfläche.
+- **`showSolution`**: `'always'`; `'afterCheck'`, sobald der Versuch geprüft wurde; `'noChecksLeft'`, sobald seine Prüfungen aufgebraucht sind oder alle seine Antworten als richtig geprüft wurden; `'never'`. Solange die Prüfungen begrenzt sind, beendet das Zeigen der Lösung den Versuch.
+- **`passingScore`** ist die Grenze, an der ein SCORM-Paket bestanden oder nicht bestanden misst (siehe [SCORM-Pakete](/de/docs/configuration-html-folio-epub#scorm-pakete-postext-scorm)).
+
+Die Wörter auf den Schaltflächen folgen der Sprache des Dokuments. Mit `check: 'instant'` gibt es keine Schaltfläche Prüfen, daher gilt `maxChecks` nicht; die übrigen Einstellungen gelten. Die verbrauchten Prüfungen und Neuanfänge werden mit den Antworten gespeichert: In einem LMS bewahrt ein SCORM-Paket sie im LMS auf, sodass sie auf jedem Gerät gelten; in einer HTML-Seite oder einem EPUB-Buch liegen sie im Browser des Lesers, und wer dessen Speicher löscht, fängt von vorn an.

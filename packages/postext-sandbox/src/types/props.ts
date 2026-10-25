@@ -5,12 +5,14 @@ import type { PresetSourceSpec } from '../presets/types.js';
 
 export type PanelId = 'projects' | 'chapters' | 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
 /** The preview tabs, in the order the bar shows them: Canvas, PDF, Folio,
- *  HTML and EPUB 3. */
-export type ViewportTab = 'canvas' | 'pdf' | 'folio' | 'html' | 'epub';
+ *  HTML, EPUB 3 and SCORM. */
+export type ViewportTab = 'canvas' | 'pdf' | 'folio' | 'html' | 'epub' | 'scorm';
 /** The two EPUB 3 renditions the EPUB tab builds (the `rendition:layout`
  *  values as `postext-epub` names them): the printed pages kept page for
  *  page, or the text reflowing to the reader's screen. */
 export type EpubLayout = 'fixed' | 'reflowable';
+/** The SCORM data model the SCORM tab's package speaks (#1266). */
+export type ScormVersion = '1.2' | '2004';
 
 /** Resolves a book a link names by a host key (`#recipe=ID&lang=L`) to the
  *  same-origin URL of its `.postext` bundle — or to several, tried in order

@@ -2,7 +2,7 @@ import type { PostextConfig } from 'postext';
 import { stripConfigDefaults } from 'postext';
 import type { AppliedPresetSnapshot } from '../presets/types.js';
 import type { BookContent } from '../book/types.js';
-import type { EpubLayout, PanelId } from '../types/props.js';
+import type { EpubLayout, PanelId, ScormVersion } from '../types/props.js';
 import { PROJECT_RECORD_VERSION, migrateConfig, normalizeBookContent, type MigrationDeps } from './projectMigration.js';
 
 const CONFIG_KEY = 'postext-sandbox-config';
@@ -30,6 +30,9 @@ const CANVAS_ZOOM_KEY = 'postext-sandbox-canvas-zoom';
 const HTML_FONT_SCALE_KEY = 'postext-sandbox-html-font-scale';
 const HTML_COLUMN_MODE_KEY = 'postext-sandbox-html-column-mode';
 const EPUB_LAYOUT_KEY = 'postext-sandbox-epub-layout';
+const SCORM_LAYOUT_KEY = 'postext-sandbox-scorm-layout';
+const SCORM_VERSION_KEY = 'postext-sandbox-scorm-version';
+const SCORM_PICK_PREFIX = 'postext-sandbox-scorm-pick:';
 const SETTINGS_GROUP_KEY = 'postext-sandbox-settings-group';
 const SETTINGS_HELP_MODE_KEY = 'postext-sandbox-settings-help';
 const HIDDEN_PRESETS_KEY = 'postext-sandbox-hidden-presets';
@@ -418,6 +421,47 @@ export function loadEpubLayout(): EpubLayout | null {
   return raw === 'fixed' || raw === 'reflowable' ? raw : null;
 }
 
+/** The SCORM tab's content form and data model (#1266). */
+export function saveScormLayout(layout: EpubLayout): void {
+  getStorage()?.setItem(SCORM_LAYOUT_KEY, layout);
+}
+
+export function loadScormLayout(): EpubLayout | null {
+  const raw = getStorage()?.getItem(SCORM_LAYOUT_KEY);
+  return raw === 'fixed' || raw === 'reflowable' ? raw : null;
+}
+
+export function saveScormVersion(version: ScormVersion): void {
+  getStorage()?.setItem(SCORM_VERSION_KEY, version);
+}
+
+export function loadScormVersion(): ScormVersion | null {
+  const raw = getStorage()?.getItem(SCORM_VERSION_KEY);
+  return raw === '1.2' || raw === '2004' ? raw : null;
+}
+
+/** The parts of a book the SCORM tab left out (#1266), by the book's key:
+ *  the ids of the tree's leaves not picked, so a chapter added later is
+ *  picked. */
+export function saveScormLeftOut(book: string, ids: readonly string[]): void {
+  const storage = getStorage();
+  if (!storage) return;
+  try {
+    if (ids.length === 0) storage.removeItem(SCORM_PICK_PREFIX + book);
+    else storage.setItem(SCORM_PICK_PREFIX + book, JSON.stringify(ids));
+  } catch { /* full or blocked: the pick lasts the visit */ }
+}
+
+export function loadScormLeftOut(book: string): string[] {
+  try {
+    const raw = getStorage()?.getItem(SCORM_PICK_PREFIX + book);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
 export function saveToolbarPinned(id: string, pinned: boolean): void {
   getStorage()?.setItem(TOOLBAR_PINNED_PREFIX + id, pinned ? 'true' : 'false');
 }
@@ -451,6 +495,8 @@ export function clearStorage(): void {
   storage?.removeItem(HTML_FONT_SCALE_KEY);
   storage?.removeItem(HTML_COLUMN_MODE_KEY);
   storage?.removeItem(EPUB_LAYOUT_KEY);
+  storage?.removeItem(SCORM_LAYOUT_KEY);
+  storage?.removeItem(SCORM_VERSION_KEY);
   storage?.removeItem(SETTINGS_GROUP_KEY);
   storage?.removeItem(SETTINGS_HELP_MODE_KEY);
   storage?.removeItem(HIDDEN_PRESETS_KEY);

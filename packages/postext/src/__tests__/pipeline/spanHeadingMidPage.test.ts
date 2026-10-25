@@ -259,6 +259,108 @@ describe('a span: page heading that opens mid-page (#539)', () => {
     expect(news!.pageIndex).toBe(0);
     expect([frame.pageIndex, frame.columnIndex]).toEqual([1, 0]);
   });
+
+  it('stays under the text before it when the cut that levels that text is dropped', () => {
+    // The band above the heading closes level in a capped pass; in the
+    // plain pass the heading moved on to the next page. A cap that was not
+    // delivered — a figure the columns do not split level around, a top
+    // float the level cut sets under its citing line — left the plain
+    // pass's layout: the heading opened the next page, and most of this
+    // one stayed empty.
+    const figure = (placement: Resource['placement']): Resource => ({
+      id: 'fig', typeId: 'figure', kind: 'bitmap', caption: 'A figure.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'fig.png', format: 'png', width: 1600, height: 900 }, placement,
+    });
+    const cases: Array<[string, PostextConfig['layout'], Resource['placement'], number, number]> = [
+      ['inline figure', { layoutType: 'double' }, { position: 'here' }, 6, 3],
+      ['column float', { layoutType: 'double' }, { position: 'top' }, 11, 1],
+      ['float across two of three columns', { layoutType: 'multiple', columnCount: 3 }, { position: 'top', span: 'column', columns: 2 }, 7, 1],
+    ];
+    const moved: string[] = [];
+    for (const [name, layout, placement, paragraphs, after] of cases) {
+      const body = Array.from({ length: paragraphs }, () => filler(3));
+      body.splice(paragraphs - after, 0, '::resource{id="fig"}');
+      const md = ['# The first article {style="article"}', '', body.join('\n\n'), '', '# The second article {style="article"}', '', filler(6)].join('\n');
+      const doc = buildDocument({ markdown: md, resources: [figure(placement)] }, { ...config(article({ spanBreak: false })), layout }, createMeasurementCache());
+      const [, second] = headings(doc);
+      const page = doc.pages[second!.pageIndex]!;
+      const fig = [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])].find((b) => b.resourceBlock)!;
+      // On the first page, under the first article and its figure.
+      if (second!.pageIndex !== 0 || (page.columns[second!.columnIndex]!.band ?? 0) === 0
+        || fig.pageIndex !== 0 || bottomOf(fig) > second!.bbox.y + 0.5) moved.push(name);
+    }
+    expect(moved).toEqual([]);
+  });
+
+  it('keeps no layout cut for a cap the driver dropped', () => {
+    // The cap levelling the band above the heading ran out of retries in
+    // the last round, while the document's closing cap was delivered: the
+    // layout that round placed was kept, cut for the dropped cap. Its
+    // figure was set twice, at the foot of the first page and alone on a
+    // second, and the heading opened a third.
+    const figure: Resource = {
+      id: 'fig', typeId: 'figure', kind: 'bitmap', caption: 'A figure.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'fig.png', format: 'png', width: 1600, height: 900 }, placement: { position: 'top' },
+    };
+    const body = Array.from({ length: 24 }, () => filler(3));
+    body.splice(23, 0, '::resource{id="fig"}');
+    const md = ['# The first article {style="article"}', '', body.join('\n\n'), '', '# The second article {style="article"}', '', filler(6)].join('\n');
+    const layout: PostextConfig['layout'] = { layoutType: 'multiple', columnCount: 3 };
+    const doc = buildDocument({ markdown: md, resources: [figure] }, { ...config(article({ spanBreak: false })), layout }, createMeasurementCache());
+    const [, second] = headings(doc);
+    expect(doc.pages.flatMap((p) => (p.floats ?? []).map(() => p.index))).toEqual([0]);
+    expect(doc.pages).toHaveLength(2);
+    expect(second!.pageIndex).toBe(1);
+  });
+
+  it('moves on while a float cited before it is still waiting', () => {
+    // The figure across both columns closes the first article; its band
+    // does not fit under the text. Opened under the uneven columns, the
+    // heading took the room and the figure went under it, inside the
+    // article it opens.
+    const figure: Resource = {
+      id: 'fig', typeId: 'figure', kind: 'bitmap', caption: 'A figure.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'fig.png', format: 'png', width: 1600, height: 900 }, placement: { position: 'top', span: 'column', columns: 2 },
+    };
+    const md = ['# The first article {style="article"}', '', filler(3), '', filler(3), '', '::resource{id="fig"}', '', '# The second article {style="article"}', '', filler(6)].join('\n');
+    const doc = buildDocument({ markdown: md, resources: [figure] }, config(article({ spanBreak: false })), createMeasurementCache());
+    const [, second] = headings(doc);
+    const fig = doc.pages.flatMap((p) => p.floats ?? [])[0]!;
+    expect(fig.pageIndex).toBe(0);
+    expect(second!.pageIndex).toBe(1);
+  });
+
+  it('levels the band before the next heading once the cut above it is delivered', () => {
+    // The cut levelling the first article failed in one pass and its
+    // figure, still waiting, went under the second heading. The third
+    // heading measured its cut in that band, figure included: too tall
+    // once the figure went back above, the cut held the band without
+    // levelling it, and the third article opened the next page.
+    const figure: Resource = {
+      id: 'fig', typeId: 'figure', kind: 'bitmap', caption: 'A figure.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'fig.png', format: 'png', width: 1600, height: 900 }, placement: { position: 'top', span: 'column', columns: 2 },
+    };
+    const body = Array.from({ length: 8 }, () => filler(3));
+    body.splice(5, 0, '::resource{id="fig"}');
+    const md = [
+      '# The first article {style="article"}', '', body.join('\n\n'), '',
+      '# The second article {style="article"}', '', filler(6), '', filler(6), '',
+      '# The third article {style="article"}', '', filler(9),
+    ].join('\n');
+    const layout: PostextConfig['layout'] = { layoutType: 'multiple', columnCount: 3 };
+    const doc = buildDocument({ markdown: md, resources: [figure] }, { ...config(article({ spanBreak: false })), layout }, createMeasurementCache());
+    const [, second, third] = headings(doc);
+    expect(doc.pages).toHaveLength(1);
+    expect([second!.pageIndex, third!.pageIndex]).toEqual([0, 0]);
+    // The band under the second heading ends level, within a line, and
+    // the third heading opens under it.
+    const page = doc.pages[0]!;
+    const band = page.columns[second!.columnIndex]!.band ?? 0;
+    const ends = textColumnsOf(page).filter((c) => (c.band ?? 0) === band).map((c) => c.bbox.y + c.bbox.height - c.availableHeight);
+    expect(ends).toHaveLength(3);
+    expect(Math.max(...ends) - Math.min(...ends)).toBeLessThan(60);
+    expect(third!.bbox.y).toBeGreaterThanOrEqual(Math.max(...ends) - 0.5);
+  });
 });
 
 describe('many page-span headings opening mid-page in one flow (#1253)', () => {

@@ -3,12 +3,12 @@
 export const metadata = {
   title: 'Ejercicios',
   sidebarTitle: 'Ejercicios',
-  description: 'Cómo compone Postext los ejercicios de un libro de texto o de un cuaderno: el contenedor :::exercise y sus doce tipos, de la opción múltiple a la división, las respuestas escritas en el Markdown, la numeración, las soluciones detrás del ejercicio, invertidas, al final del capítulo o del libro, la edición del profesor, los avisos y los ejercicios que se responden en pantalla en HTML y EPUB',
+  description: 'Cómo compone Postext los ejercicios de un libro de texto o de un cuaderno: el contenedor :::exercise y sus doce tipos, de la opción múltiple a la división, las respuestas escritas en el Markdown, la numeración, las soluciones detrás del ejercicio, invertidas, al final del capítulo o del libro, la edición del profesor, los avisos, los ejercicios que se responden en pantalla en HTML y EPUB, los límites para un examen y los resultados que se envían a un LMS en un paquete SCORM',
   lang: 'es',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '17 min',
   order: 36,
-  plainSummary: "Esta página explica cómo escribir ejercicios en un libro de Postext: preguntas con opciones para elegir, frases verdaderas o falsas, frases con huecos, parejas que unir, palabras que buscar en una sopa de letras, operaciones que resolver y otros más. Cada ejercicio y sus respuestas se escriben en el texto del capítulo, y Postext lo imprime en la forma que le corresponde, con su número, sus opciones y sus líneas para escribir. Las respuestas pueden imprimirse detrás del ejercicio, al revés, al final del capítulo o no imprimirse. Con el mismo texto sale también una edición del profesor con todas las respuestas escritas. En pantalla, en el visor HTML y en los libros EPUB, el lector puede responder los ejercicios y corregirlos.",
+  plainSummary: "Esta página explica cómo escribir ejercicios en un libro de Postext: preguntas con opciones para elegir, frases verdaderas o falsas, frases con huecos, parejas que unir, palabras que buscar en una sopa de letras, operaciones que resolver y otros más. Cada ejercicio y sus respuestas se escriben en el texto del capítulo, y Postext lo imprime en la forma que le corresponde, con su número, sus opciones y sus líneas para escribir. Las respuestas pueden imprimirse detrás del ejercicio, al revés, al final del capítulo o no imprimirse. Con el mismo texto sale también una edición del profesor con todas las respuestas escritas. En pantalla, en el visor HTML y en los libros EPUB, el lector puede responder los ejercicios y corregirlos, y un paquete SCORM envía los resultados a la plataforma de aprendizaje de un centro educativo o de una empresa.",
 };
 
 # Ejercicios
@@ -358,6 +358,8 @@ El panel **Revisión** del Sandbox y `collectContentWarnings` avisan de lo que e
 
 En el visor HTML y en los libros EPUB los ejercicios se pueden responder. El lector escribe en los huecos y pulsa opciones, afirmaciones, puntos que unir y casillas de una cuadrícula; después comprueba las respuestas, ve la solución o vuelve a empezar. Las respuestas correctas y las incorrectas se señalan con un color y una marca (`digital.correctColor`, `digital.wrongColor`) y se anuncian a los lectores de pantalla. Las respuestas se guardan en el navegador, por libro, y el lector las encuentra en su siguiente visita (`exercises.digital.persist`). Con `exercises.digital.check: 'instant'` cada respuesta se corrige en cuanto se da; con `exercises.digital.interactive: false` las páginas quedan como en papel. La clave de respuestas siempre va dentro del EPUB, sea cual sea la colocación en papel, para que un sistema de lectura que no ejecuta scripts tenga también las respuestas. En un EPUB de maquetación fluida las cuadrículas y las zonas de escritura crecen con el texto del lector, y en una página de derecha a izquierda las casillas que se responden siguen la cuadrícula reflejada. Las parejas se unen pulsando un punto y luego el otro, o arrastrando de uno a otro, y las palabras de un ejercicio de clasificar se arrastran a su columna o se eligen en un menú. La barra lleva solo los botones que hacen algo: no aparece «Comprobar» si no hay nada que comprobar, ni «Ver la solución» si no hay solución, ni barra alguna cuando no hay nada que responder.
 
+Para un examen, el libro o un estilo de ejercicio pueden limitar un intento: cuántas veces se comprueba (`digital.maxChecks`), si se puede volver a empezar y cuántas veces (`digital.reset`, `digital.maxResets`) y cuándo aparece la solución (`digital.showSolution`). Los botones dicen cuántas comprobaciones y cuántos reinicios quedan. Véase [Evaluación](/es/docs/configuration-exercises#evaluación).
+
 La pantalla puede dar a los ejercicios una forma propia mediante `htmlViewer.overrides`, que se combina con la configuración del libro antes de que el visor HTML maquete. El papel conserva la suya:
 
 ```ts
@@ -373,6 +375,10 @@ const config: PostextConfig = {
   },
 };
 ```
+
+## Ejercicios en un paquete SCORM
+
+Un paquete SCORM (la pestaña **SCORM** del Sandbox, o `postext-scorm` desde código) lleva los ejercicios igual que el visor HTML y envía sus resultados al sistema de gestión del aprendizaje en el que se ejecuta. Cada parte del libro que sigue el LMS informa de una puntuación (las respuestas calificadas correctas sobre el total, según la última comprobación de cada ejercicio), de si está completada (todas las páginas vistas y todos los ejercicios comprobados) y, con `exercises.digital.passingScore`, de si está aprobada. Cada comprobación se escribe también como una interacción, con la respuesta del lector y la correcta. Las respuestas y las comprobaciones gastadas se guardan en el LMS, así que los límites de un intento se mantienen de una visita a otra y de un dispositivo a otro. Véase [Paquetes SCORM](/es/docs/configuration-html-folio-epub#paquetes-scorm-postext-scorm).
 
 ## Estilos de ejercicio
 

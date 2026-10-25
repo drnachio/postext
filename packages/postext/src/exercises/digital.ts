@@ -6,14 +6,15 @@
  * writes for the exercise script (`attachExercises`, `EXERCISE_SCRIPT`).
  */
 
-import type { ExerciseSettings, ExerciseWords } from '../defaults/exercises.js';
+import { assessmentLimitsOf, type ExerciseSettings, type ExerciseWords } from '../defaults/exercises.js';
 import type { ExerciseRecord } from './record.js';
-import type { Dimension } from '../types.js';
+import type { Dimension, ExerciseAssessmentConfig } from '../types.js';
 import { dimensionToPx } from '../units.js';
 
 /** The words of the digital outputs, in the document language. */
 export type ExerciseDigitalWords = Pick<ExerciseWords,
-  'exercise' | 'trueFalse' | 'check' | 'showSolution' | 'hideSolution' | 'reset' | 'correct' | 'wrong' | 'hint' | 'blank' | 'score'>;
+  'exercise' | 'trueFalse' | 'check' | 'showSolution' | 'hideSolution' | 'reset' | 'correct' | 'wrong' | 'hint' | 'blank' | 'score'
+  | 'checkLeft' | 'noChecksLeft' | 'resetLeft'>;
 
 /** How one exercise style looks answered. */
 export interface ExerciseDigitalStyleInfo {
@@ -28,6 +29,9 @@ export interface ExerciseDigitalStyleInfo {
   trueFalse: [string, string];
   /** The matching dots' colour (`match.color`): the lines a reader draws. */
   ink: string;
+  /** The limits its exercises keep to (#1268), when any is set: the
+   *  style's over the book's. */
+  limits?: Required<ExerciseAssessmentConfig>;
 }
 
 export interface ExerciseDigital {
@@ -36,6 +40,8 @@ export interface ExerciseDigital {
   interactive: boolean;
   persist: boolean;
   check: 'button' | 'instant';
+  /** `exercises.digital.passingScore`, when set (#1268). */
+  passingScore?: number;
   styles: Record<string, ExerciseDigitalStyleInfo>;
 }
 
@@ -53,15 +59,19 @@ export function exerciseDigitalOf(settings: ExerciseSettings): ExerciseDigital {
       trueFalse: [s.trueFalse.labels[0], s.trueFalse.labels[1]],
       ink: s.match.color.hex,
     };
+    const limits = assessmentLimitsOf(s, settings.exercises);
+    if (limits.maxChecks > 0 || !limits.reset || limits.maxResets > 0 || limits.showSolution !== 'always') styles[s.id]!.limits = limits;
   }
   return {
     words: {
       exercise: w.exercise, trueFalse: w.trueFalse, check: w.check, showSolution: w.showSolution, hideSolution: w.hideSolution,
       reset: w.reset, correct: w.correct, wrong: w.wrong, hint: w.hint, blank: w.blank, score: w.score,
+      checkLeft: w.checkLeft, noChecksLeft: w.noChecksLeft, resetLeft: w.resetLeft,
     },
     interactive: settings.exercises.digital.interactive,
     persist: settings.exercises.digital.persist,
     check: settings.exercises.digital.check,
+    ...(settings.exercises.digital.passingScore > 0 ? { passingScore: settings.exercises.digital.passingScore } : {}),
     styles,
   };
 }

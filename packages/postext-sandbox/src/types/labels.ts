@@ -90,6 +90,48 @@ export interface SandboxLabels {
   epubProgressDocuments: string;
   epubProgressPackage: string;
   epubReady: string;
+  /** The SCORM tab. */
+  scorm: string;
+  /** What the SCORM abbreviation stands for. */
+  abbrScorm: string;
+  /** Accessible name of the SCORM tab’s content switch (fixed pages or reflowable text). */
+  scormLayout: string;
+  /** Tooltip of the fixed-layout choice on the SCORM tab. */
+  scormLayoutFixedHint: string;
+  /** Tooltip of the reflowable choice on the SCORM tab. */
+  scormLayoutReflowableHint: string;
+  /** Accessible name of the SCORM version switch. */
+  scormVersion: string;
+  /** What SCORM 1.2 gives. */
+  scormVersion12Hint: string;
+  /** What SCORM 2004 gives. */
+  scormVersion2004Hint: string;
+  /** Heading of the SCORM tab. */
+  scormHeading: string;
+  /** What the tree is for. */
+  scormIntro: string;
+  /** Title and accessible name of the chapter tree. */
+  scormTree: string;
+  /** Ticks every node. */
+  scormAll: string;
+  /** Unticks every node. */
+  scormNone: string;
+  /** Disclosure button of a chapter’s sections; __title__ is the chapter. */
+  scormSections: string;
+  /** The download button. */
+  scormDownload: string;
+  /** How many SCOs the package holds; __n__ is the count. */
+  scormSummary: string;
+  /** Nothing is ticked. */
+  scormNothing: string;
+  /** Accessible name of the progress bar. */
+  scormGenerating: string;
+  /** Announced once the package is written. */
+  scormReady: string;
+  /** The package could not be written. */
+  scormError: string;
+  /** Where the results go. */
+  scormLms: string;
   epubError: string;
   epubContents: string;
   epubWarnings: string;
@@ -3411,6 +3453,36 @@ export interface SandboxLabels {
   exercisesDigitalCheckButton: string;
   exercisesDigitalCheckInstant: string;
   exercisesDigitalCheckTooltip: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesAssessmentGroup: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesMaxChecks: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesMaxChecksTooltip: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesReset: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesResetTooltip: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesMaxResets: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesMaxResetsTooltip: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesShowSolution: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesShowSolutionTooltip: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesShowSolutionAlways: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesShowSolutionAfterCheck: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesShowSolutionNoChecksLeft: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesShowSolutionNever: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesPassingScore: string;
+  /** Exercise assessment setting (#1268). */
+  exercisesPassingScoreTooltip: string;
   chipStyleUnderline: string;
   chipStyleUnderlineNone: string;
   chipStyleUnderlineSolid: string;

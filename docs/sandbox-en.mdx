@@ -15,7 +15,7 @@ export const metadata = {
 
 **An interactive playground for the Postext layout engine.**
 
-The Sandbox gives you an editor-style interface where you write the text, manage resources and fonts, adjust the design, and see the result in real time in five synchronized views: **canvas**, **PDF**, **Folio** (the printed book in 3D), **HTML** and **EPUB 3**. It is built for experimenting. You can change the typography or the number of columns, try different figure placements, and watch how the engine responds. The panels use editorial words (books, figures, boxes, running heads) rather than engine terms, so people from publishing can find their way without knowing the configuration schema. Every control is keyboard- and screen-reader-accessible.
+The Sandbox gives you an editor-style interface where you write the text, manage resources and fonts, adjust the design, and see the result in real time in five synchronized views: **canvas**, **PDF**, **Folio** (the printed book in 3D), **HTML** and **EPUB 3**. A sixth tab, **SCORM**, packs the chapters and sections you pick for a learning management system. It is built for experimenting. You can change the typography or the number of columns, try different figure placements, and watch how the engine responds. The panels use editorial words (books, figures, boxes, running heads) rather than engine terms, so people from publishing can find their way without knowing the configuration schema. Every control is keyboard- and screen-reader-accessible.
 
 ## Interface layout
 
@@ -278,7 +278,7 @@ Shows the typefaces the book uses and manages your own font files alongside the 
 Below 768 px wide the Sandbox switches to a layout of its own:
 
 - **Panels.** The panel bar moves to the bottom of the window: a **Preview** button first, then the same buttons in the same order, in two rows of four below 352 px. An open panel covers the preview instead of sitting beside it; the preview stays where it was underneath, out of the tab order, so closing the panel finds it on the same page.
-- **Top bar.** The output tabs, the scope selector (the rendition choice on the EPUB tab) and the host's controls (large targets, theme, language) share the bar above the preview. Below 640 px it takes two rows: the logo, the scope and the controls above, the tabs below, sharing the full width; five tabs fit at 320 px.
+- **Top bar.** The output tabs, the scope selector (the rendition choice on the EPUB and SCORM tabs) and the host's controls (large targets, theme, language) share the bar above the preview. Below 640 px it takes two rows: the logo, the scope and the controls above, the tabs below, sharing the full width; five tabs fit at 320 px.
 - **Toolbars.** The floating toolbars of the previews dock along the bottom of the preview and wrap onto a second row when they do not fit. The editions rail of the Canvas is a row at the top of the preview.
 - **Folio.** The Folio tab is not offered on a phone's screen (see [Folio tab](/en/docs/sandbox-previews#folio-tab)).
 - **PDF.** Phones and touch-only tablets cannot show a PDF inside the page (Android has no inline viewer, and iOS draws only its first page), so the PDF tab shows a card with **Open PDF** instead, which opens the file in a new tab; the toolbar's **Download** still saves it.

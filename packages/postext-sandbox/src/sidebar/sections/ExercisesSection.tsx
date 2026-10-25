@@ -5,14 +5,14 @@ import type { ExercisesConfig, ExerciseSolutionsConfig } from 'postext';
 import { resolveExercisesConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../../controls/index.js';
-import { SolutionsFields, exerciseLocaleOf } from './exerciseFields.js';
+import { AssessmentFields, SolutionsFields, exerciseLocaleOf } from './exerciseFields.js';
 
 type Digital = NonNullable<ExercisesConfig['digital']>;
 
 /** Config-panel section for the book's exercise settings (#1226,
  *  `config.exercises`): the edition, where the solutions print, the seed
- *  the shuffles are drawn from and how the digital outputs let a reader
- *  answer. */
+ *  the shuffles are drawn from, how the digital outputs let a reader
+ *  answer and the limits of an attempt with the passing score (#1268). */
 export const ExercisesSection = memo(function ExercisesSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -111,6 +111,26 @@ export const ExercisesSection = memo(function ExercisesSection() {
           tooltip={labels.exercisesDigitalCheckTooltip}
           isDefault={raw?.digital?.check === undefined}
           onReset={() => resetDigital('check')}
+        />
+      </CollapsibleSection>
+      <CollapsibleSection title={labels.exercisesAssessmentGroup} sectionId="exercises.assessment" variant="subsection">
+        <AssessmentFields
+          shown={resolved.digital}
+          unset={(field) => raw?.digital?.[field] === undefined}
+          set={setDigital}
+          reset={resetDigital}
+        />
+        <NumberInput
+          label={labels.exercisesPassingScore}
+          value={resolved.digital.passingScore}
+          onChange={(v) => setDigital({ passingScore: Math.max(0, Math.min(100, v)) })}
+          min={0}
+          max={100}
+          step={5}
+          suffix="%"
+          tooltip={labels.exercisesPassingScoreTooltip}
+          isDefault={raw?.digital?.passingScore === undefined}
+          onReset={() => resetDigital('passingScore')}
         />
       </CollapsibleSection>
     </CollapsibleSection>

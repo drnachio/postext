@@ -520,13 +520,15 @@ O que o agente muda, você vê. Para chamar a sua atenção para algo:
 ```
 
 `sandbox_set_view` também escolhe o visualizador (`canvas`, `pdf`, `folio`,
-`html`, `epub`), o modo Conteúdo ou Design (`mode`), o painel lateral, capítulo ou livro inteiro, o zoom, o
-tamanho da letra do leitor, a simulação de impressão e o grupo do painel Design.
+`html`, `epub`, `scorm`), o modo Conteúdo ou Design (`mode`), o painel lateral, capítulo ou livro inteiro, o zoom, o
+tamanho da letra do leitor, a simulação de impressão e o grupo do painel Design, e na aba SCORM
+o conteúdo (`scormLayout`), a versão (`scormVersion`) e os capítulos e
+seções que o pacote leva (`scormPick`, ids da lista `contents` da aba).
 `sandbox_go_to_page` vira as páginas por `step`, `page`, `position`, um trecho
 em `text`, uma `anchor` ou uma entrada `contents` de um EPUB.
 `sandbox_run_viewer` aperta um botão da barra de ferramentas: `regenerate`
-gera de novo o PDF ou o EPUB e espera por ele, `print` abre a janela de
-impressão para você confirmar, `download` salva o PDF ou o EPUB, e
+gera de novo o PDF, o EPUB ou o pacote SCORM e espera por ele, `print` abre a janela de
+impressão para você confirmar, `download` salva o PDF, o EPUB ou um pacote SCORM recém-gerado, e
 `play_video` e `stop_video` reproduzem e param um vídeo de uma página.
 
 ### Páginas de quadrinhos

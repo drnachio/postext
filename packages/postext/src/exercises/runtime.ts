@@ -19,10 +19,67 @@
  * script (`EXERCISE_SCRIPT`, its source text). It keeps to syntax every
  * reading system and transpiler leaves as it is: no spread, no `for…of`,
  * no `async`.
+ *
+ * A host may keep the answers somewhere else than `localStorage` (`store`:
+ * a SCORM package keeps them in the LMS) and hear every check (`onResult`,
+ * #1267); a style's limits (#1268) bound the checks and fresh starts of an
+ * attempt and when its solution shows.
  */
 
 import type { ExerciseData } from './digital.js';
 import type { ExerciseRecord, ExerciseSlot } from './record.js';
+import type { ExerciseKind } from './types.js';
+
+/** Where a host keeps the answers instead of `localStorage`: the same
+ *  three calls, so `window.sessionStorage` would do. */
+export interface ExerciseStore {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+/** A graded slot as an exercise stands. */
+export interface ExerciseResultSlot {
+  key: string;
+  kind: ExerciseSlot['kind'];
+  /** What the reader answered. */
+  value: ExerciseValue;
+  /** `true` right, `false` wrong, `null` not answered. */
+  right: boolean | null;
+  /** What it holds when its solution is shown. */
+  solution: ExerciseValue;
+}
+
+/** What `onResult` hears (#1267): an exercise as it stands after
+ *  `event`. `'open'` is its state when the script sets it up (a returning
+ *  reader's answers), `'check'` a Check pressed (or, with instant checking,
+ *  an answer changed), `'reset'` Try again, `'solution'` its solution
+ *  shown. */
+export interface ExerciseResult {
+  event: 'open' | 'check' | 'reset' | 'solution';
+  /** What its answers are kept under. */
+  key: string;
+  id: number;
+  number: string;
+  kind: ExerciseKind;
+  style: string;
+  anchor?: string;
+  title?: string;
+  /** Graded slots right, and graded slots (a word of a mark exercise not to
+   *  be marked counts when it is marked), as the bar's score. */
+  right: number;
+  total: number;
+  /** Checks of the attempt, and Try again used. */
+  checks: number;
+  resets: number;
+  /** The answers stand checked (no change since the last check). */
+  checked: boolean;
+  /** The attempt takes no more answers: its checks spent, or its solution
+   *  shown under limited checks. */
+  locked: boolean;
+  /** The graded slots, for a host that records each answer. */
+  slots: ExerciseResultSlot[];
+}
 
 export interface AttachExercisesOptions {
   /** What the answers are kept under (with each exercise's anchor or id):
@@ -38,6 +95,12 @@ export interface AttachExercisesOptions {
    *  it itself (`HtmlRenderIndex.exercises`); otherwise read from the
    *  `script.pt-exercises` elements under the root. */
   data?: ExerciseData;
+  /** Where the answers are kept, in place of `localStorage` (#1267). With
+   *  a store the answers are kept unless `persist` is `false`. */
+  store?: ExerciseStore;
+  /** Called as each exercise is set up and after each check, fresh start
+   *  and solution shown (#1267). */
+  onResult?: (result: ExerciseResult) => void;
 }
 
 /** What a reader answered in a slot: text typed, the options ticked
@@ -51,6 +114,7 @@ interface Runtime {
   checkSlot(slot: ExerciseSlot, value: ExerciseValue, record: Pick<ExerciseRecord, 'kind'>, trueFalse?: [string, string]): boolean | null;
   solutionValue(slot: ExerciseSlot, record: Pick<ExerciseRecord, 'kind'>, trueFalse?: [string, string]): ExerciseValue;
   actionsOf(record: Pick<ExerciseRecord, 'kind' | 'slots' | 'key' | 'solution'>): { check: boolean; solution: boolean; reset: boolean };
+  pointsOf(record: Pick<ExerciseRecord, 'kind' | 'slots'>): number;
   attach(root: Element | ShadowRoot | Document, options?: AttachExercisesOptions): () => void;
 }
 
@@ -198,29 +262,48 @@ function exerciseRuntime(): Runtime {
     return { check, solution, reset };
   }
 
+  /** What an exercise's score counts out of with nothing answered: its
+   *  graded slots (a word of a mark exercise not to be marked counts only
+   *  once it is marked). */
+  function pointsOf(record: Pick<ExerciseRecord, 'kind' | 'slots'>): number {
+    let n = 0;
+    for (let i = 0; i < record.slots.length; i++) {
+      const s = record.slots[i]!;
+      if (!isGraded(s, record)) continue;
+      if (s.kind === 'mark' && (s.correct || []).indexOf(1) < 0) continue;
+      n++;
+    }
+    return n;
+  }
+
   // --- Storage -----------------------------------------------------------------
 
-  function load(key: string, persist: boolean): any {
+  function storeOf(store: ExerciseStore | undefined): ExerciseStore | null {
+    if (store) return store;
+    try { return window.localStorage; } catch (e) { void e; return null; }
+  }
+
+  function load(key: string, persist: boolean, store?: ExerciseStore): any {
     let text: string | null = null;
     if (persist) {
-      try { text = window.localStorage.getItem(key); } catch (e) { void e; text = null; }
+      try { const st = storeOf(store); text = st ? st.getItem(key) : null; } catch (e) { void e; text = null; }
     }
     if (text === null && Object.prototype.hasOwnProperty.call(memory, key)) text = memory[key]!;
     if (!text) return null;
     try { return JSON.parse(text); } catch (e) { void e; return null; }
   }
 
-  function save(key: string, persist: boolean, state: any): void {
+  function save(key: string, persist: boolean, state: any, store?: ExerciseStore): void {
     const text = JSON.stringify(state);
     memory[key] = text;
     if (!persist) return;
-    try { window.localStorage.setItem(key, text); } catch (e) { void e; }
+    try { const st = storeOf(store); if (st) st.setItem(key, text); } catch (e) { void e; }
   }
 
-  function forget(key: string, persist: boolean): void {
+  function forget(key: string, persist: boolean, store?: ExerciseStore): void {
     delete memory[key];
     if (!persist) return;
-    try { window.localStorage.removeItem(key); } catch (e) { void e; }
+    try { const st = storeOf(store); if (st) st.removeItem(key); } catch (e) { void e; }
   }
 
   // --- The page ----------------------------------------------------------------
@@ -399,15 +482,28 @@ function exerciseRuntime(): Runtime {
       if (!boxEls[b]) boxEls[b] = boxes[i];
     }
     if (outers.length === 0 && found.length === 0) return null;
-    const persist = opts.persist !== undefined ? opts.persist : data.persist !== false;
+    const persist = opts.persist !== undefined ? opts.persist : !!opts.store || data.persist !== false;
+    const store = opts.store;
     const instant = (opts.check || data.check) === 'instant';
     const words: any = data.words || {};
     const look = (data.styles && data.styles[rec.style]) || { correct: '#1e8e3e', wrong: '#c5221f', answer: '#d6246e', ink: 'currentColor', marker: 'none', trueFalse: words.trueFalse || ['T', 'F'] };
     const tf: [string, string] = look.trueFalse;
     const exName = (words.exercise || 'Exercise') + ' ' + rec.number;
     const key = base + ':' + (rec.anchor || '#' + rec.ordinal + '.' + rec.id);
-    const saved = load(key, persist) || {};
-    const state: any = { v: saved.v || {}, checked: !!saved.checked, revealed: false };
+    const saved = load(key, persist, store) || {};
+    // Checks of the attempt (`n`), Try again used (`r`), the last check all
+    // right (`all`), the attempt ended by its solution (`e`).
+    const state: any = { v: saved.v || {}, checked: !!saved.checked, revealed: false, n: saved.n || 0, r: saved.r || 0, all: !!saved.all, ended: !!saved.e };
+    // The style's limits (#1268); none with instant checking but the
+    // solution's.
+    const limits: any = look.limits || null;
+    const maxChecks = limits && !instant ? limits.maxChecks || 0 : 0;
+    const allowReset = limits ? limits.reset !== false : true;
+    const maxResets = limits ? limits.maxResets || 0 : 0;
+    const showWhen = limits ? limits.showSolution || 'always' : 'always';
+    /** The attempt takes no more answers. */
+    const locked = (): boolean => maxChecks > 0 && (state.n >= maxChecks || state.ended);
+    const fields: any[] = [];
     const ppt = data.pxPerPt || 1;
     const body = data.bodyPx || 16;
     const flow = data.flow === true;
@@ -525,6 +621,7 @@ function exerciseRuntime(): Runtime {
       const given = target.querySelector('input');
       const input = given || own(el('input', 'pt-ex-input pt-ex-ui', target));
       if (given) addClass(given, 'pt-ex-ui');
+      fields.push(input);
       input.setAttribute('type', 'text');
       input.setAttribute('autocomplete', 'off');
       input.setAttribute('spellcheck', 'false');
@@ -865,6 +962,7 @@ function exerciseRuntime(): Runtime {
      *  order. */
     function area(slot: ExerciseSlot, box: any): void {
       const ta = own(el('textarea', 'pt-ex-input pt-ex-ui', box));
+      fields.push(ta);
       ta.setAttribute('aria-label', (words.blank || 'blank') + ' ' + (++blankN) + ', ' + exName);
       ta.setAttribute('spellcheck', 'false');
       const line = (slot.linePt || 0) * ppt || body * 1.35;
@@ -913,6 +1011,7 @@ function exerciseRuntime(): Runtime {
       if (textFont) f.style.fontFamily = textFont;
       colours(f);
       const input = el('input', 'pt-ex-input' + (grid.kind === 'crossword' ? ' pt-ex-cell' : ''), f);
+      fields.push(input);
       input.setAttribute('type', 'text');
       input.setAttribute('autocomplete', 'off');
       input.setAttribute('spellcheck', 'false');
@@ -1237,6 +1336,8 @@ function exerciseRuntime(): Runtime {
     let panel: any = null;
     let solutionBtn: any = null;
     let hintBtn: any = null;
+    let checkBtn: any = null;
+    let resetBtn: any = null;
     if (outer) {
       const bar = own(el('div', 'pt-ex-bar pt-ex-ui' + (flow ? ' pt-ex-flow' : ''), outer));
       bar.setAttribute('role', 'group');
@@ -1254,9 +1355,9 @@ function exerciseRuntime(): Runtime {
       scoreEl.setAttribute('aria-live', 'polite');
       scoreEl.setAttribute('role', 'status');
       if (hasHints) hintBtn = button(words.hint || 'Hint', () => showPanel(panel && panel.getAttribute('data-show') === 'hint' ? null : 'hint'));
-      if (!instant && checkable) button(words.check || 'Check', () => { state.checked = true; persistNow(); feedback(); });
-      if (solvable) solutionBtn = button(words.showSolution || 'Show solution', () => reveal(!state.revealed));
-      if (resettable) button(words.reset || 'Try again', reset);
+      if (!instant && checkable) checkBtn = button(words.check || 'Check', check);
+      if (solvable && showWhen !== 'never') solutionBtn = button(words.showSolution || 'Show solution', () => reveal(!state.revealed));
+      if (resettable && allowReset) resetBtn = button(words.reset || 'Try again', reset);
       panel = el('div', 'pt-ex-panel pt-ex-ui' + (flow ? ' pt-ex-flow' : ''), outer);
       own(panel);
       panel.hidden = true;
@@ -1316,7 +1417,47 @@ function exerciseRuntime(): Runtime {
         widgets[i].paint(valueOf(widgets[i]));
         widgets[i].lock(state.revealed);
       }
+      // An attempt with no checks left keeps its answers as they are.
+      const frozen = state.revealed || locked();
+      for (let i = 0; i < fields.length; i++) fields[i].readOnly = frozen;
       refreshColumns();
+      refreshBar();
+    }
+
+    /** The bar's buttons as the limits stand: the checks left on Check, the
+     *  fresh starts left on Try again, the solution once it may show. */
+    function refreshBar(): void {
+      if (checkBtn) {
+        const spent = locked();
+        checkBtn.disabled = spent;
+        checkBtn.textContent = maxChecks > 0
+          ? (spent ? words.noChecksLeft || 'No checks left' : String(words.checkLeft || 'Check ({n} left)').replace('{n}', String(maxChecks - state.n)))
+          : words.check || 'Check';
+      }
+      if (resetBtn) {
+        const left = maxResets > 0 ? maxResets - state.r : -1;
+        resetBtn.hidden = left === 0;
+        resetBtn.textContent = left > 0 ? String(words.resetLeft || 'Try again ({n} left)').replace('{n}', String(left)) : words.reset || 'Try again';
+      }
+      if (solutionBtn) {
+        const may = showWhen === 'always' || state.revealed
+          || (showWhen === 'afterCheck' && (state.n > 0 || state.ended))
+          || (showWhen === 'noChecksLeft' && (locked() || state.all));
+        solutionBtn.hidden = !may;
+      }
+    }
+
+    /** The answers checked: one check of the attempt spent. */
+    function check(): void {
+      if (locked() || state.revealed) return;
+      state.n++;
+      state.checked = true;
+      const sc = feedback();
+      state.all = sc.total > 0 && sc.right === sc.total;
+      persistNow();
+      refreshBar();
+      if (locked()) paintAll();
+      report('check');
     }
 
     function verdict(slot: ExerciseSlot): boolean | null {
@@ -1325,7 +1466,18 @@ function exerciseRuntime(): Runtime {
     }
 
     /** Right and wrong on every slot, and the score. */
-    function feedback(): void {
+    function feedback(): { right: number; total: number } {
+      const sc = score();
+      for (let i = 0; i < widgets.length; i++) widgets[i].mark(state.revealed ? null : verdict(widgets[i].slot), !state.revealed);
+      if (scoreEl) {
+        const text = String(words.score || '{right} of {total} right').replace('{right}', String(sc.right)).replace('{total}', String(sc.total));
+        scoreEl.textContent = sc.total === 0 ? '' : (sc.right === sc.total ? (words.correct || '') + ' ' : '') + text;
+      }
+      return sc;
+    }
+
+    /** Graded slots right, and graded slots. */
+    function score(): { right: number; total: number } {
       let right = 0;
       let total = 0;
       for (let i = 0; i < rec.slots.length; i++) {
@@ -1340,11 +1492,27 @@ function exerciseRuntime(): Runtime {
         total++;
         if (verdict(s) === true) right++;
       }
-      for (let i = 0; i < widgets.length; i++) widgets[i].mark(state.revealed ? null : verdict(widgets[i].slot), !state.revealed);
-      if (scoreEl) {
-        const score = String(words.score || '{right} of {total} right').replace('{right}', String(right)).replace('{total}', String(total));
-        scoreEl.textContent = total === 0 ? '' : (right === total ? (words.correct || '') + ' ' : '') + score;
+      return { right, total };
+    }
+
+    /** The exercise as it stands, to the host (#1267). */
+    function report(event: ExerciseResult['event']): void {
+      if (!opts.onResult) return;
+      const sc = score();
+      const slots: ExerciseResultSlot[] = [];
+      for (let i = 0; i < rec.slots.length; i++) {
+        const sl = rec.slots[i]!;
+        if (!isGraded(sl, rec)) continue;
+        slots.push({ key: sl.key, kind: sl.kind, value: sl.kind === 'word' ? state.v._found : state.v[sl.key], right: verdict(sl), solution: solutionValue(sl, rec, tf) });
       }
+      const result: ExerciseResult = {
+        event, key, id: rec.id, number: rec.number, kind: rec.kind, style: rec.style,
+        right: sc.right, total: sc.total, checks: state.n, resets: state.r,
+        checked: state.checked || instant, locked: locked(), slots,
+      };
+      if (rec.anchor) result.anchor = rec.anchor;
+      if (rec.title) result.title = rec.title;
+      try { opts.onResult(result); } catch (e) { void e; }
     }
 
     function clearFeedback(): void {
@@ -1353,11 +1521,16 @@ function exerciseRuntime(): Runtime {
     }
 
     function persistNow(): void {
-      save(key, persist, { v: state.v, checked: state.checked });
+      const kept: any = { v: state.v, checked: state.checked };
+      if (state.n) kept.n = state.n;
+      if (state.r) kept.r = state.r;
+      if (state.all) kept.all = true;
+      if (state.ended) kept.e = true;
+      save(key, persist, kept, store);
     }
 
     function afterChange(slot: ExerciseSlot | null): void {
-      if (instant) { feedback(); return; }
+      if (instant) { feedback(); report('check'); return; }
       if (state.checked) {
         state.checked = false;
         persistNow();
@@ -1371,6 +1544,10 @@ function exerciseRuntime(): Runtime {
     /** A slot answered: kept, repainted, checked when checking is instant. */
     function changed(slot: ExerciseSlot, value: ExerciseValue): void {
       if (state.revealed) return;
+      if (locked()) {
+        for (let i = 0; i < widgets.length; i++) if (widgets[i].slot === slot) widgets[i].paint(valueOf(widgets[i]));
+        return;
+      }
       if (slot.kind !== 'word') {
         if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) delete state.v[slot.key];
         else state.v[slot.key] = value;
@@ -1383,6 +1560,11 @@ function exerciseRuntime(): Runtime {
 
     function reveal(on: boolean): void {
       state.revealed = on;
+      // With limited checks, the solution ends the attempt.
+      if (on && maxChecks > 0 && !state.ended) {
+        state.ended = true;
+        persistNow();
+      }
       if (solutionBtn) solutionBtn.textContent = on ? words.hideSolution || 'Hide solution' : words.showSolution || 'Show solution';
       if (solutionBtn) solutionBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
       paintAll();
@@ -1390,26 +1572,37 @@ function exerciseRuntime(): Runtime {
         showPanel(null);
         if (state.checked || instant) feedback();
       }
+      if (on) report('solution');
     }
 
     function reset(): void {
+      if (!allowReset || (maxResets > 0 && state.r >= maxResets)) return;
       state.v = {};
       state.checked = false;
-      forget(key, persist);
+      state.n = 0;
+      state.all = false;
+      state.ended = false;
+      // The fresh starts used are kept while they are limited.
+      if (limits) {
+        state.r++;
+        persistNow();
+      } else forget(key, persist, store);
       if (state.revealed) reveal(false);
       paintAll();
       clearFeedback();
       showPanel(null);
       if (instant) feedback();
+      report('reset');
     }
 
     paintAll();
     if (state.checked || instant) feedback();
     if (solutionBtn) solutionBtn.setAttribute('aria-expanded', 'false');
+    report('open');
     return { record: rec, state, reveal, reset, feedback };
   }
 
-  return { normalizeAnswer, isGraded, checkSlot, solutionValue, actionsOf, attach };
+  return { normalizeAnswer, isGraded, checkSlot, solutionValue, actionsOf, pointsOf, attach };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -1429,6 +1622,10 @@ export const checkExerciseSlot: (slot: ExerciseSlot, value: ExerciseValue, recor
 /** The buttons an exercise's bar offers: Check, Show solution, Try again. */
 export const exerciseActions: (record: Pick<ExerciseRecord, 'kind' | 'slots' | 'key' | 'solution'>) => { check: boolean; solution: boolean; reset: boolean } = runtime.actionsOf;
 
+/** What an exercise's score counts out of with nothing answered (#1267):
+ *  its graded slots. */
+export const exercisePoints: (record: Pick<ExerciseRecord, 'kind' | 'slots'>) => number = runtime.pointsOf;
+
 /** What a slot shows when the solution is shown. */
 export const exerciseSolutionValue: (slot: ExerciseSlot, record: Pick<ExerciseRecord, 'kind'>, trueFalse?: [string, string]) => ExerciseValue = runtime.solutionValue;
 
@@ -1440,6 +1637,12 @@ export const exerciseSolutionValue: (slot: ExerciseSlot, record: Pick<ExerciseRe
 export function attachExercises(root: Element | ShadowRoot | Document, options?: AttachExercisesOptions): () => void {
   return runtime.attach(root, options);
 }
+
+/** The runtime's source, a function expression that returns it: what a
+ *  host script calls to attach with options of its own (a SCORM package's
+ *  LMS store and results, #1267), as `var runtime = (${EXERCISE_RUNTIME})();`.
+ *  It closes over nothing. */
+export const EXERCISE_RUNTIME: string = exerciseRuntime.toString();
 
 /** The exercise script as a standalone script, for an output with no host
  *  page to call `attachExercises`: the HTML file of the command line, an

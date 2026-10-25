@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: "Paràmetres d'exercicis",
   description: "Els estils d'exercici (exerciseStyles) i els paràmetres d'exercicis del llibre (exercises): el número, la lletra de l'enunciat, les etiquetes i les caselles de les opcions, els buits, les respostes de vertader o fals, les parelles per relacionar, els bancs de paraules, els espais per escriure, les graelles, la divisió, les marques de dificultat, les icones, el color de les respostes, on s'imprimeixen les solucions, l'edició del professorat i les edicions en pantalla",
   lang: 'ca',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '12 min',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ Una icona s'imprimeix com un símbol en línia després del número: la imatge d
 
 ### Colors a la pantalla
 
-`digital` defineix com mostren una resposta comprovada el visor HTML i els llibres EPUB.
+`digital` defineix com mostren una resposta comprovada el visor HTML, els llibres EPUB i els paquets SCORM, i els límits d'un intent per als exercicis de l'estil, que passen per davant dels del llibre (vegeu [Avaluació](#avaluació)).
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ Una icona s'imprimeix com un símbol en línia després del número: la imatge d
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>un verd (<code>#1e8e3e</code>)</td><td>Una resposta correcta.</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>un vermell (<code>#c5221f</code>)</td><td>Una resposta incorrecta.</td></tr>
+    <tr><td><code>maxChecks</code>, <code>reset</code>, <code>maxResets</code>, <code>showSolution</code></td><td></td><td>els del llibre</td><td>Els límits d'un intent per als exercicis de l'estil: per exemple, un estil per a un examen al costat de la pràctica del llibre. Vegeu <a href="#avaluació">Avaluació</a>.</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### Edicions en pantalla
 
-`exercises.digital` defineix com es comporten els exercicis al visor HTML i als llibres EPUB.
+`exercises.digital` defineix com es comporten els exercicis al visor HTML, als llibres EPUB i als paquets SCORM.
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Exercicis que el lector pot respondre. Amb <code>false</code> es mostren com els impresos.</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Desa les respostes del lector al navegador, per a cada llibre.</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code>: les respostes es comproven quan el lector ho demana. <code>'instant'</code>: cada resposta es comprova en el moment d'escriure-la.</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>Vegades que es pot prémer Comprova en un intent. <code>0</code>: sense límit. Vegeu <a href="#avaluació">Avaluació</a>.</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Ofereix Torna a començar, que esborra les respostes i obre un intent nou.</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>Vegades que es pot fer servir Torna a començar. <code>0</code>: sense límit.</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>Quan la barra ofereix la solució.</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>El percentatge de respostes qualificades correctes amb què s'aprova; un paquet SCORM informa d'aprovat o suspès segons aquesta nota. <code>0</code>: cap.</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### Avaluació
+
+Per defecte, un exercici és de pràctica: el lector comprova tantes vegades com vol, torna a començar i mira la solució. Quatre paràmetres el converteixen en un examen, per al llibre a `exercises.digital` i per a un estil al seu `digital`, que mana sobre els exercicis d'aquest estil:
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`** compta les vegades que es prem Comprova en un intent. El botó diu quantes en queden («Comprova (en queden 2)»); quan s'acaben hi posa «Sense més comprovacions», les respostes queden bloquejades i la puntuació es manté a la barra.
+- **`reset`** i **`maxResets`**: Torna a començar esborra les respostes i obre un intent nou, amb les comprovacions disponibles de nou. `maxResets: 1` permet tornar a començar una vegada, dos intents en total, i el botó diu quantes vegades en queden; `reset: false` treu el botó.
+- **`showSolution`**: `'always'`, sempre; `'afterCheck'`, un cop comprovat l'intent; `'noChecksLeft'`, quan se n'han esgotat les comprovacions o totes les respostes són correctes; `'never'`, mai. Mentre les comprovacions són limitades, veure la solució tanca l'intent.
+- **`passingScore`** és la nota segons la qual un paquet SCORM informa d'aprovat o suspès (vegeu [Paquets SCORM](/ca/docs/configuration-html-folio-epub#paquets-scorm-postext-scorm)).
+
+Les paraules dels botons segueixen la llengua del document. Amb `check: 'instant'` no hi ha botó Comprova, de manera que `maxChecks` no s'aplica; els altres paràmetres, sí. Les comprovacions i els reinicis gastats es desen amb les respostes: en un LMS, un paquet SCORM els desa al mateix LMS, i per això valen en qualsevol dispositiu; en una pàgina HTML o en un llibre EPUB es queden al navegador del lector, i qui n'esborra les dades torna a començar de zero.

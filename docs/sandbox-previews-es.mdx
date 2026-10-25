@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Sandbox: las vistas previas',
   sidebarTitle: 'Vistas previas',
-  description: 'Las pestañas Canvas, PDF, Folio, HTML y EPUB 3 de la zona de vista previa: qué muestra cada una y qué se puede hacer en ella',
+  description: 'Las pestañas Canvas, PDF, Folio, HTML, EPUB 3 y SCORM de la zona de vista previa: qué muestra cada una y qué se puede hacer en ella',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-25',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
-  plainSummary: "Esta página explica la parte derecha del Sandbox, donde aparecen las páginas terminadas. Cinco pestañas muestran el mismo libro de cinco formas: como imágenes de página, como archivo PDF, como un libro en 3D que puedes hojear, como página web y como libro electrónico EPUB. Al cambiar de pestaña, el libro no se vuelve a maquetar, así que todas muestran las mismas páginas. La página explica qué muestra cada pestaña y qué puedes hacer en ella.",
+  plainSummary: "Esta página explica la parte derecha del Sandbox, donde aparecen las páginas terminadas. Cinco pestañas muestran el mismo libro de cinco formas: como imágenes de página, como archivo PDF, como un libro en 3D que puedes hojear, como página web y como libro electrónico EPUB. Una sexta crea un paquete SCORM con los capítulos que elijas, para la plataforma de aprendizaje de un centro educativo o de una empresa. Al cambiar de pestaña, el libro no se vuelve a maquetar, así que todas muestran las mismas páginas. La página explica qué muestra cada pestaña y qué puedes hacer en ella.",
 };
 
 # Sandbox: las vistas previas
@@ -17,7 +17,7 @@ export const metadata = {
 
 ## Zona de vista previa
 
-El lado derecho de la interfaz, la zona de vista previa, muestra el resultado. Hay cinco pestañas, una por cada forma de salida, en este orden: **Canvas**, **PDF**, **Folio**, **HTML** y **EPUB 3**. Al cambiar de pestaña no se vuelve a maquetar: el mismo VDT alimenta a todos los backends, de modo que el contenido que ves es el mismo en todas. La pestaña **Folio** solo aparece si el navegador tiene WebGL2 y la pantalla no es la de un móvil (consulta [Pestaña Folio](#pestaña-folio)).
+El lado derecho de la interfaz, la zona de vista previa, muestra el resultado. Hay seis pestañas, una por cada forma de salida, en este orden: **Canvas**, **PDF**, **Folio**, **HTML**, **EPUB 3** y **SCORM** (la última escribe un paquete para una plataforma de aprendizaje a partir del contenido del EPUB). Al cambiar de pestaña no se vuelve a maquetar: el mismo VDT alimenta a todos los backends, de modo que el contenido que ves es el mismo en todas. La pestaña **Folio** solo aparece si el navegador tiene WebGL2 y la pantalla no es la de un móvil (consulta [Pestaña Folio](#pestaña-folio)).
 
 Cada vista ejecuta el proceso de maquetación dentro de un **Web Worker** propio (`postext/worker`). Un hook `useLayoutWorker` por vista gestiona el worker, le envía las fuentes como `ArrayBuffer` transferibles y lanza las compilaciones con **cancelación last-wins** (gana la última): una pulsación de tecla o el arrastre de un deslizador aborta el `AbortSignal` de la compilación anterior antes de que empiece la siguiente, así que escribir deprisa nunca acumula trabajo obsoleto en el hilo principal. Al desmontar una vista, se libera su worker y se rechaza cualquier compilación pendiente. Consulta en [Configuración → Ejecutar la composición en un Web Worker](/es/docs/configuration-programmatic-usage#ejecutar-la-composición-en-un-web-worker) el patrón de integración que se usa aquí.
 
@@ -148,3 +148,15 @@ Mientras no se elige ninguna, la pestaña se abre en maquetación fija en una ta
 - **Comprobar el archivo.** Las dos maquetaciones de la guía y de los libros de ejemplo pasan [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 sin errores ni avisos. Para comprobar tu libro, descárgalo y ejecuta `epubcheck libro.epub`, o léelo en Apple Books, Thorium Reader o Calibre.
 
 Consulta [Libros EPUB](/es/docs/configuration-html-folio-epub#libros-epub-postext-epub) para escribir los mismos archivos desde tu propio código.
+
+### Pestaña SCORM
+
+Descarga un paquete SCORM de la parte del libro que elijas, escrito con el paquete `postext-scorm`: el zip que un sistema de gestión del aprendizaje (Moodle, Canvas, Blackboard y casi todos los demás) importa como un curso. Sus ejercicios se pueden responder y envían al LMS la puntuación, si se han completado y si se han aprobado.
+
+- **El árbol.** La pestaña enumera los capítulos del libro (los archivos de capítulo del panel **Capítulos**) y, dentro de cada uno, sus encabezados hasta el tercer nivel, cada uno con una casilla. Al marcar un capítulo se marcan todas sus secciones; un capítulo marcado en parte muestra una casilla mixta. **Todo** y **Nada** lo marcan o lo desmarcan todo, y la flecha junto a un capítulo pliega sus secciones. Lo que dejas fuera se recuerda para cada libro en este navegador (un capítulo añadido después aparece marcado). Un encabezado representa el texto desde su línea hasta el siguiente encabezado de su nivel o superior; la primera sección de un capítulo se lleva también el título del capítulo y sus párrafos iniciales.
+- **SCO.** Cada nodo marcado entero pasa a ser un SCO, una parte que el LMS abre, sigue y califica por separado: un capítulo entero o una sección. Un capítulo marcado en parte pasa a ser un grupo en el índice del LMS, con sus secciones marcadas dentro. La línea junto al botón dice cuántos SCO contiene el paquete.
+- **Contenido y versión.** A la izquierda de la barra de pestañas, como en la pestaña **EPUB 3**, **Maquetación fija** conserva cada página impresa, ajustada a la ventana, y **Maquetación fluida** recompone el texto para la ventana, para móviles y pantallas estrechas (la elección es propia de esta pestaña, `postext-sandbox-scorm-layout`). Encima del árbol, **SCORM 1.2** lo admiten todos los LMS; **SCORM 2004** (4.ª edición) separa la finalización del éxito, da una puntuación escalada y guarda respuestas más largas. Las dos elecciones se recuerdan entre visitas.
+- **Descarga.** **Descargar paquete SCORM** maqueta el libro entero, como la pestaña **PDF** con **Libro completo** (la numeración y las referencias continúan desde los capítulos anteriores), y guarda el zip, con el título del libro y la versión como nombre. Una barra de progreso cuenta los capítulos y los pasos del generador; los lectores de pantalla anuncian cuándo el paquete está listo o ha fallado. Las fuentes y las imágenes entran igual que en el EPUB.
+- **En el LMS.** Cada SCO se abre en un pequeño reproductor: las páginas o el texto, un documento cada vez, el índice del SCO, y ← y → para moverse. Sus ejercicios informan como se describe en [Ejercicios en un paquete SCORM](/es/docs/exercises#ejercicios-en-un-paquete-scorm), y los límites de un intento fijados en **Diseño → Ejercicios → Evaluación** se aplican allí. Abierto fuera de un LMS, el paquete se sigue leyendo y guarda las respuestas en el navegador.
+
+Consulta [Paquetes SCORM](/es/docs/configuration-html-folio-epub#paquetes-scorm-postext-scorm) para escribir el mismo paquete desde tu propio código.

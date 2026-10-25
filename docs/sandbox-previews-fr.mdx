@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Sandbox : les aperçus',
   sidebarTitle: 'Aperçus',
-  description: 'Les onglets Canvas, PDF, Folio, HTML et EPUB 3 de la zone d’aperçu principale : ce que chacun montre et ce qu’il permet de faire',
+  description: 'Les onglets Canvas, PDF, Folio, HTML, EPUB 3 et SCORM de la zone d’aperçu principale : ce que chacun montre et ce qu’il permet de faire',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-25',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
-  plainSummary: "Cette page présente la partie droite du Sandbox, où apparaissent les pages terminées. Cinq onglets montrent le même livre de cinq façons : en images de pages, en fichier PDF, en livre 3D que l’on feuillette, en page web et en livre numérique EPUB. Changer d’onglet ne refait pas la mise en page : chaque onglet montre les mêmes pages. La page explique ce que montre chaque onglet et ce que vous pouvez y faire.",
+  plainSummary: "Cette page présente la partie droite du Sandbox, où apparaissent les pages terminées. Cinq onglets montrent le même livre de cinq façons : en images de pages, en fichier PDF, en livre 3D que l’on feuillette, en page web et en livre numérique EPUB. Un sixième produit un paquet SCORM des chapitres que vous choisissez, pour la plateforme d’apprentissage d’une école ou d’une entreprise. Changer d’onglet ne refait pas la mise en page : chaque onglet montre les mêmes pages. La page explique ce que montre chaque onglet et ce que vous pouvez y faire.",
 };
 
 # Sandbox : les aperçus
@@ -17,7 +17,7 @@ export const metadata = {
 
 ## Zone d’aperçu principale
 
-La partie droite de l’interface affiche le rendu. Cinq onglets sont disponibles, un par mode de rendu, dans cet ordre : **Canvas**, **PDF**, **Folio**, **HTML** et **EPUB 3**. Changer d’onglet ne relance pas la mise en page : le même VDT alimente chaque moteur de rendu : le contenu affiché est donc cohérent d’un mode à l’autre. L’onglet Folio n’est proposé que là où le navigateur dispose de WebGL2 et où l’écran n’est pas celui d’un téléphone (voir [Onglet Folio](#onglet-folio)).
+La partie droite de l’interface affiche le rendu. Six onglets sont disponibles, un par mode de rendu, dans cet ordre : **Canvas**, **PDF**, **Folio**, **HTML**, **EPUB 3** et **SCORM** (le dernier écrit, à partir du contenu de l’EPUB, un paquet pour une plateforme d’apprentissage). Changer d’onglet ne relance pas la mise en page : le même VDT alimente chaque moteur de rendu : le contenu affiché est donc cohérent d’un mode à l’autre. L’onglet Folio n’est proposé que là où le navigateur dispose de WebGL2 et où l’écran n’est pas celui d’un téléphone (voir [Onglet Folio](#onglet-folio)).
 
 Chaque zone d’aperçu exécute la chaîne de mise en page dans un **Web Worker** dédié (`postext/worker`). Un hook `useLayoutWorker` propre à chaque zone d’aperçu détient la référence du worker, lui transmet les polices sous forme d’`ArrayBuffer` transférables, et pilote les constructions avec une **annulation où la dernière demande l’emporte** : une frappe ou le déplacement d’un curseur interrompt l’`AbortSignal` de la construction précédente avant que la suivante ne commence, de sorte qu’une frappe rapide n’accumule jamais de travail périmé sur le thread principal. Démonter une zone d’aperçu libère son worker et rejette toute construction en attente. Voir [Configuration → Exécuter la mise en page dans un Web Worker](/fr/docs/configuration-programmatic-usage#mise-en-page-dans-un-web-worker) pour le schéma d’intégration utilisé ici.
 
@@ -148,3 +148,15 @@ Tant qu’aucun n’a été choisi, l’onglet s’ouvre en mise en page fixe su
 - **Vérifier le fichier.** Les deux rendus du guide et des livres d’exemple passent [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 sans erreur ni avertissement. Pour vérifier votre propre livre, téléchargez-le et lancez `epubcheck book.epub`, ou lisez-le dans Apple Books, Thorium Reader ou Calibre.
 
 Voir [Livres EPUB](/fr/docs/configuration-html-folio-epub#livres-epub-postext-epub) pour écrire les mêmes fichiers depuis votre propre code.
+
+### Onglet SCORM
+
+Télécharge un paquet SCORM de la partie du livre que vous choisissez, écrit avec le paquet npm `postext-scorm` : le zip qu’un système de gestion de l’apprentissage (Moodle, Canvas, Blackboard et la plupart des autres) importe comme un cours. On peut répondre aux exercices qu’il contient, et ils envoient au LMS leur score, leur achèvement et leur réussite ou leur échec.
+
+- **L’arbre.** L’onglet liste les chapitres du livre (les fichiers de chapitre du panneau **Chapitres**) et, dans chacun, ses titres jusqu’au troisième niveau, chacun avec une case à cocher. Cocher un chapitre coche toutes ses sections ; un chapitre coché en partie montre une case mixte. **Tout** et **Rien** cochent ou décochent tout, et la flèche à côté d’un chapitre replie ses sections. Ce que vous laissez de côté est mémorisé pour chaque livre dans ce navigateur (un chapitre ajouté plus tard est coché). Un titre représente le texte qui va de sa ligne au titre suivant de même niveau ou de niveau supérieur ; la première section d’un chapitre prend aussi le titre du chapitre et ses paragraphes d’ouverture.
+- **SCO.** Chaque nœud coché en entier devient un SCO, une partie que le LMS lance, suit et note à part : un chapitre entier, ou une section. Un chapitre coché en partie devient un groupe dans le sommaire du LMS, avec ses sections cochées à l’intérieur. La ligne à côté du bouton indique combien de SCO contient le paquet.
+- **Contenu et version.** À gauche de la barre d’onglets, comme dans l’onglet EPUB 3, **Mise en page fixe** garde chaque page imprimée, ajustée à la fenêtre, et **Recomposable** recompose le texte pour la fenêtre, pour les téléphones et les écrans étroits (un choix propre à l’onglet, `postext-sandbox-scorm-layout`). Au-dessus de l’arbre, **SCORM 1.2** est accepté par tous les LMS ; **SCORM 2004** (4e édition) sépare l’achèvement et la réussite, donne un score normalisé et garde des réponses plus longues. Les deux choix sont mémorisés d’une visite à l’autre.
+- **Téléchargement.** **Télécharger le paquet SCORM** met en page le livre entier, comme l’onglet PDF pour **Livre entier** (la numérotation et les renvois continuent depuis les chapitres précédents), et enregistre le zip, nommé d’après le titre du livre et la version. Une barre de progression compte les chapitres et les étapes de l’écriture ; les lecteurs d’écran annoncent quand le paquet est prêt ou a échoué. Les polices et les images y entrent comme dans l’EPUB.
+- **Dans le LMS.** Chaque SCO s’ouvre dans une petite visionneuse : les pages ou le texte, un document à la fois, le sommaire du SCO, ← et → pour se déplacer. Ses exercices transmettent leurs résultats comme le décrit [Exercices dans un paquet SCORM](/fr/docs/exercises#exercices-dans-un-paquet-scorm), et les limites d’une tentative fixées dans **Maquette → Exercices → Évaluation** s’y appliquent. Ouvert hors d’un LMS, le paquet se lit quand même et garde les réponses dans le navigateur.
+
+Voir [Paquets SCORM](/fr/docs/configuration-html-folio-epub#paquets-scorm-postext-scorm) pour écrire le même paquet depuis votre propre code.

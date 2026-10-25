@@ -392,7 +392,7 @@ await browser.close();
 { "anchor": "harbour" }
 ```
 
-`sandbox_set_view`还能选择查看器（`canvas`、`pdf`、`folio`、`html`、`epub`，分别对应Canvas、PDF、书页、HTML和EPUB标签页）、内容模式或版面设计模式（`mode`）、侧面板、单章或整本书、缩放、阅读字号、印刷预览，以及版面设计面板中的组。`sandbox_go_to_page`按`step`、`page`、`position`、一段`text`、一个`anchor`或EPUB的`contents`条目翻页。`sandbox_run_viewer`按下工具栏上的按钮：`regenerate`重新生成PDF或EPUB并等它完成，`print`打开打印对话框，由你确认，`download`保存PDF或EPUB，`play_video`和`stop_video`播放和停止页面上的视频。
+`sandbox_set_view`还能选择查看器（`canvas`、`pdf`、`folio`、`html`、`epub`、`scorm`，分别对应Canvas、PDF、书页、HTML、EPUB和SCORM标签页）、内容模式或版面设计模式（`mode`）、侧面板、单章或整本书、缩放、阅读字号、印刷预览和版面设计面板中的组，在SCORM标签页上还能选择内容（`scormLayout`）、版本（`scormVersion`）以及包中收入的章和节（`scormPick`，用标签页`contents`中的id）。`sandbox_go_to_page`按`step`、`page`、`position`、一段`text`、一个`anchor`或EPUB的`contents`条目翻页。`sandbox_run_viewer`按下工具栏上的按钮：`regenerate`重新生成PDF、EPUB或SCORM包并等它完成，`print`打开打印对话框，由你确认，`download`保存PDF、EPUB或一个新生成的SCORM包，`play_video`和`stop_video`播放和停止页面上的视频。
 
 ### 漫画页
 
