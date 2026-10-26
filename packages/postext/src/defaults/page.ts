@@ -1,6 +1,6 @@
 import type { PageConfig, ResolvedPageConfig, ResolvedPageNumberingConfig, PageMargins, PageNumberingConfig, PageSizePreset, Dimension, CutLinesConfig, WritingMode } from '../types.js';
 import { dimensionsEqual, colorsEqual } from './shared.js';
-import { parseNumberFormat } from '../numbering.js';
+import { parseNumberFormat } from '../numerals/numbering.js';
 
 export const PAGE_SIZE_PRESETS: Record<
   Exclude<PageSizePreset, 'custom'>,

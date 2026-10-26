@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import { renderPageToCanvas } from '../../canvas-backend/index.js';
 import { composedPaintOrder, decorationOver, decorationUnder } from '../../composed/paint.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
-import { contrastPairs } from '../../contrast.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
+import { contrastPairs } from '../../checks/contrast.js';
 import { flowRectToPage } from '../../vdt.js';
 import type { PageTemplate } from '../../composed/types.js';
 import type { PostextConfig, VDTDesignTextBlock, VDTDocument, VDTPage } from '../../index.js';

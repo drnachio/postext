@@ -18,7 +18,7 @@ import { computeColumnBboxes, hasFloatSideColumn } from '../config.js';
 import { contentAreaForPage, flowPageMirrored, mirrorContentArea, pageMirrored, sheetRectToFlow, widthLessEndIndent, type PageMetrics } from './buildHelpers.js';
 import { dimensionToPx } from '../../units.js';
 import { measuringVertically } from '../../measure/vertical.js';
-import { shiftLineX } from '../../measure/bidiLines.js';
+import { shiftLineX } from '../../measure/rtl/bidiLines.js';
 
 export interface PlacementCursor {
   pageIndex: number;

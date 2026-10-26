@@ -10,16 +10,16 @@ import {
   sameContentLocale,
   stringsFor,
   stringsKeyOf,
-} from '../locale.js';
-import { defaultResourceTypes } from '../defaults/resourceTypes.js';
-import { defaultTableContinuationStrings } from '../defaults/tableStyle.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+} from '../hyphenation/locale.js';
+import { defaultResourceTypes } from '../defaults/resources/resourceTypes.js';
+import { defaultTableContinuationStrings } from '../defaults/resources/tableStyle.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { resolveAllConfig, resolvedLocale } from '../pipeline/config.js';
 import { expandIndexDirectives } from '../pipeline/contents/indexDirective.js';
 import { buildDocument } from '../pipeline/index.js';
 import { parseMarkdown } from '../parse/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import type { OutlineEntry, PostextConfig, Resource } from '../types.js';
 import type { VDTDesignTextBlock, VDTDocument } from '../vdt.js';
 

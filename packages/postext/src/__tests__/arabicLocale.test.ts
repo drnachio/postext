@@ -6,20 +6,20 @@ import {
   isUnhyphenatedLanguage,
   renderLangOf,
   stringsKeyOf,
-} from '../locale.js';
-import { defaultResourceTypes } from '../defaults/resourceTypes.js';
-import { defaultTableContinuationStrings } from '../defaults/tableStyle.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
-import { resolveIndexConfig, stripIndexDefaults } from '../defaults/indexConfig.js';
+} from '../hyphenation/locale.js';
+import { defaultResourceTypes } from '../defaults/resources/resourceTypes.js';
+import { defaultTableContinuationStrings } from '../defaults/resources/tableStyle.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
+import { resolveIndexConfig, stripIndexDefaults } from '../defaults/structure/indexConfig.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { defaultCrossRefStrings } from '../pipeline/references/crossRefs.js';
 import { citationLocale, defaultBibliographyTitle } from '../pipeline/references/citations.js';
 import { expandIndexDirectives } from '../pipeline/contents/indexDirective.js';
 import { arabicSortKey } from '../pipeline/contents/indexGroups.js';
-import { dateLocaleOf, metadataText, normalizeMetadata } from '../frontmatter.js';
+import { dateLocaleOf, metadataText, normalizeMetadata } from '../parse/frontmatter.js';
 import { buildDocument } from '../pipeline/index.js';
 import { parseMarkdown } from '../parse/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import type { ContentBlock } from '../parse/index.js';
 import type { DocumentMetadata, OutlineEntry, PostextConfig } from '../types.js';
 

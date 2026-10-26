@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { HTML_TEXT_RESET, renderToHtml, renderToHtmlIndexed } from '../html-backend.js';
+import { HTML_TEXT_RESET, renderToHtml, renderToHtmlIndexed } from '../html-backend/html-backend.js';
 import * as postext from '../index.js';
 
 // EF-96: the HTML output sets every line at the widths the engine measured,

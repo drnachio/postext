@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas, collectConfigWarnings, formatWarning } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { applyCjkGrid, cjkGridCells, cjkGridGeometry } from '../../pipeline/text/cjkGrid.js';
 import { computePageMetrics } from '../../pipeline/blocks/buildHelpers.js';

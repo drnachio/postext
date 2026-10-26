@@ -4,7 +4,7 @@ import { parseMarkdown } from '../../parse/blockParser.js';
 import { measureRichBlock, SMALL_CAPS_SIZE_RATIO } from '../../measure/rich.js';
 import { cachedMeasureRichBlock, createMeasurementCache } from '../../measure/index.js';
 import { buildDocument } from '../../pipeline/build.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { VDTBlock, VDTDocument, VDTLineSegment } from '../../vdt.js';
 import type { PostextConfig } from '../../types.js';
 

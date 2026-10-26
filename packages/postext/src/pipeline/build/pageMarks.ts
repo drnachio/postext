@@ -4,7 +4,7 @@
 import type { PostextContent } from '../../types.js';
 import { parseMarkdownMemo } from '../../parse/index.js';
 import type { VDTDocument, VDTComposedPage, VDTPage, VDTFrame, VDTDesignTextBlock, VDTAnchor } from '../../vdt.js';
-import { extractFrontmatter } from '../../frontmatter.js';
+import { extractFrontmatter } from '../../parse/frontmatter.js';
 import { measureRichBlock } from '../../measure/index.js';
 import { locateAnchors } from '../references/anchors.js';
 import { locateCarriedOutline } from '../references/carriedOutline.js';

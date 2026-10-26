@@ -6,8 +6,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { contrastDocument, type ContrastIssue } from '../contrast.js';
-import { resolveContrastAllow, resolveContrastConfig, stripContrastDefaults } from '../defaults/contrast.js';
+import { contrastDocument, type ContrastIssue } from '../checks/contrast.js';
+import { resolveContrastAllow, resolveContrastConfig, stripContrastDefaults } from '../defaults/output/contrast.js';
 import type { PostextConfig } from '../types.js';
 
 class StubCtx {

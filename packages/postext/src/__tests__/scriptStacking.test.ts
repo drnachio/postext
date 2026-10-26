@@ -9,13 +9,13 @@ import {
   SUPERSCRIPT_SHIFT_RATIO,
 } from '../measure/rich.js';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../design/layout.js';
-import { resolveDesignSlot } from '../defaults/headerFooter.js';
+import { resolveDesignSlot } from '../defaults/structure/headerFooter.js';
 import { buildDocument } from '../pipeline/index.js';
 import { raggedLooseLines } from '../pipeline/text/raggedLines.js';
 import { trackSegments } from '../knuthPlass/tracking.js';
 import { renderBlock } from '../canvas-backend/blockRender.js';
 import { renderHeaderFooterSlot } from '../canvas-backend/headerFooter.js';
-import { renderToHtmlIndexed } from '../html-backend.js';
+import { renderToHtmlIndexed } from '../html-backend/html-backend.js';
 import type { DesignPlaceholderContext } from '../design/placeholders.js';
 import type { DesignElement, PostextConfig } from '../types.js';
 import type { VDTBlock, VDTLine, VDTLineSegment, VDTPage } from '../vdt.js';

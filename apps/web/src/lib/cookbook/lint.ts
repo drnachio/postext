@@ -222,7 +222,7 @@ function mostlyArabic(text: string): boolean {
 }
 
 /** Scripts written right to left, as the engine's `directionOf` reads a
- *  locale (packages/postext/src/locale.ts; the historic ones left out). */
+ *  locale (packages/postext/src/hyphenation/locale.ts; the historic ones left out). */
 const RTL_SCRIPTS = new Set(["Arab", "Aran", "Hebr", "Syrc", "Thaa", "Nkoo", "Adlm", "Rohg", "Mand", "Samr"]);
 
 /** Scripts whose readers read comics right to left, as the engine's

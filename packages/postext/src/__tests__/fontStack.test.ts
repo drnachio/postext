@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { buildFontString, primaryFontFamily, isFontStack } from '../measure/font.js';
-import { collectConfigWarnings } from '../configWarnings.js';
-import { renderToHtml } from '../html-backend.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import type { PostextConfig } from '../types.js';
 
 // Deterministic text measurement stub (no DOM in the node test env) that

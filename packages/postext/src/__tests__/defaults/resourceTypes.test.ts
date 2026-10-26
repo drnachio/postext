@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import { parseMarkdown } from '../../parse/index.js';
 import {
   computeHeadingContext,

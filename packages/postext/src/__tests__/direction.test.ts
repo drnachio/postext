@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { directionOf } from '../locale.js';
+import { directionOf } from '../hyphenation/locale.js';
 import { resolveAllConfig, resolvedDirection } from '../pipeline/config.js';
 import { resolvePageBinding, resolvePageConfig } from '../defaults/page.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { parseMarkdown } from '../parse/index.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { createBundle, migrateConfig, openBundle } from '../bundle/index.js';

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/headings.js';
+import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/structure/headings.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { createBundle, openBundle } from '../bundle/index.js';
 import { computeOutlineFor } from '../pipeline/contents/outline.js';

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtml, renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtml, renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import type { VDTDocument } from '../../vdt.js';
 import type { PostextConfig } from '../../types.js';
 import type { ExerciseData } from '../../exercises/digital.js';

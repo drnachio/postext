@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseMarkdownWithIssues } from '../../parse/index.js';
-import { extractFrontmatter } from '../../frontmatter.js';
+import { extractFrontmatter } from '../../parse/frontmatter.js';
 
 describe('corpus (#854)', () => {
   const root = join(__dirname, '../../../../../cookbook');

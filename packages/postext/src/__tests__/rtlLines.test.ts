@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { measureBlock } from '../measure/plain.js';
 import { measureRichBlock } from '../measure/rich.js';
-import { getMeasureDirection } from '../measure/bidiLines.js';
+import { getMeasureDirection } from '../measure/rtl/bidiLines.js';
 import { buildDocument } from '../pipeline/index.js';
 import { renderBlock } from '../canvas-backend/blockRender.js';
 import type { InlineSpan } from '../parse/index.js';

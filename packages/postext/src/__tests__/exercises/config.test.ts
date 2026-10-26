@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
-import { stripExercisesDefaults } from '../../defaults/exercises.js';
+import { stripExercisesDefaults } from '../../defaults/boxes/exercises.js';
 import type { PostextConfig } from '../../types.js';
 
 const warnings = (config: PostextConfig) => collectConfigWarnings(config).filter((w) => w.path.startsWith('exercise'));
@@ -69,7 +69,7 @@ describe('exercise settings for storage', () => {
 
 describe('assessment settings (#1268)', () => {
   it('resolves the limits, a style over the book', async () => {
-    const { resolveExercisesConfig, resolveExerciseStylesConfig, assessmentLimitsOf } = await import('../../defaults/exercises.js');
+    const { resolveExercisesConfig, resolveExerciseStylesConfig, assessmentLimitsOf } = await import('../../defaults/boxes/exercises.js');
     const book = resolveExercisesConfig({ digital: { maxChecks: 2.7, maxResets: -1, showSolution: 'afterCheck', passingScore: 140 } }, 'en');
     expect(book.digital).toMatchObject({ maxChecks: 2, reset: true, maxResets: 0, showSolution: 'afterCheck', passingScore: 100 });
     const [practice, test] = resolveExerciseStylesConfig([{ id: 'exercise' }, { id: 'test', digital: { maxChecks: 1, reset: false, showSolution: 'never' } }], 'en');
@@ -80,7 +80,7 @@ describe('assessment settings (#1268)', () => {
 
   it('gives the digital outputs the limits of the styles that have any, and the pass mark', async () => {
     const { exerciseDigitalOf } = await import('../../exercises/digital.js');
-    const { exerciseSettingsOf } = await import('../../defaults/exercises.js');
+    const { exerciseSettingsOf } = await import('../../defaults/boxes/exercises.js');
     const digital = exerciseDigitalOf(exerciseSettingsOf({
       exercises: { digital: { passingScore: 60 } },
       exerciseStyles: [{ id: 'exercise' }, { id: 'test', digital: { maxChecks: 1 } }],

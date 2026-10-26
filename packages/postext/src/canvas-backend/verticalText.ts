@@ -31,12 +31,12 @@
 
 import type { CjkRegion } from '../types.js';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt.js';
-import { forcedVerticalRuns, verticalRuns, CORNER_OFFSET_EM, type ForcedOrientation, type VerticalGlyph } from '../writingMode.js';
+import { forcedVerticalRuns, verticalRuns, CORNER_OFFSET_EM, type ForcedOrientation, type VerticalGlyph } from '../writing/writingMode.js';
 import { graphemeCount, graphemesOf } from '../measure/graphemes.js';
-import { markPieces, type MarkCutRule } from '../measure/markCuts.js';
+import { markPieces, type MarkCutRule } from '../measure/cjk/markCuts.js';
 import { measureRunWidth, withMeasureLanguage } from '../measure/canvas.js';
 import { baseFontFamily } from '../fonts/figureStyle.js';
-import { hasCJK } from '../measure/cjk.js';
+import { hasCJK } from '../measure/cjk/cjk.js';
 import { fillTrackedWord } from './trackedText.js';
 import { languageOf, letterSpacingOf, restoreContext, saveContext, setLetterSpacing } from './contextState.js';
 import { contextTextWidth, fillContextText, measureContextText, strokeContextText } from './contextText.js';

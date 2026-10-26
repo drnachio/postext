@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { directChipRuns, directRuns, designBaseDirection, firstStrongDirection } from '../../design/bidiText.js';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../../design/layout.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
 import { layoutSlotToVdt } from '../../pipeline/pages/headerFooter.js';
 import { tocRowOrder } from '../../pipeline/contents/toc.js';
 import { buildDocument } from '../../pipeline/index.js';

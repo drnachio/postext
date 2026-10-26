@@ -7,7 +7,7 @@ import type { Resource, VideoOverlayPosition } from '../../types.js';
 import type { ResolvedConfig, VDTResourceVideo, VDTVideoPlayMark, VDTVideoQr } from '../../vdt.js';
 import { createBoundingBox } from '../../vdt.js';
 import { dimensionToPx } from '../../units.js';
-import { resolveVideoPlayerOptions } from '../../defaults/videoStyle.js';
+import { resolveVideoPlayerOptions } from '../../defaults/resources/videoStyle.js';
 import { encodeQr } from '../../video/qr.js';
 import { parseVideoUrl, resourceVideoFormat, resourceVideoLink, videoEmbedUrl, videoMimeType } from '../../video/url.js';
 

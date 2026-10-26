@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderPageToCanvas } from '../canvas-backend/index.js';
 import { fillCellRuns } from '../canvas-backend/cellText.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { buildDocument } from '../pipeline/index.js';
 import { clearMeasurementCache } from '../measure/index.js';
-import { cellsOf } from '../wordPieces.js';
+import { cellsOf } from '../paint/wordPieces.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../vdt.js';
 

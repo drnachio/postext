@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { renderPageToCanvas } from '../../index.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import { sourceAt } from '../../composed/sourceMap.js';
 import { frameMatrix } from '../../composed/paint.js';
 import { figureLabelBounds, figureLabelMatrix, labelPlace, pictureToBody, resolveLabelLook } from '../../composed/labels.js';

@@ -11,7 +11,7 @@ import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { BlockStyle } from '../../styles.js';
 import type { PlannedFloat } from '../../floats/floatPlacement.js';
-import type { CompositionRule } from '../../../types/bodyText.js';
+import type { CompositionRule } from '../../../types/text/bodyText.js';
 import type { FloatRotation, CaptionAside, BodyCap } from './types.js';
 import type { TableSliceSpec } from '../../resources/resourceLayout.js';
 import type { FloatMeasure } from '../../floats/floatSlots.js';

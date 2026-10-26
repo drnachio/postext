@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyMarkRadius } from '../../bundle/configVersion.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
-import { resolveMarkStylesConfig, stripMarkStylesDefaults } from '../../defaults/markStyles.js';
+import { resolveMarkStylesConfig, stripMarkStylesDefaults } from '../../defaults/text/markStyles.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { MarkStyleConfig, PostextConfig } from '../../types.js';
 

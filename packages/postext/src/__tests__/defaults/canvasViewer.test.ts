@@ -4,9 +4,9 @@ import {
   DEFAULT_CANVAS_VIEWER_CONFIG,
   resolveCanvasViewerConfig,
   stripCanvasViewerDefaults,
-} from '../../defaults/canvasViewer.js';
+} from '../../defaults/output/canvasViewer.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig } from '../../types.js';

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import type { PostextConfig, Resource, TableModel, VDTBlock } from '../../index.js';
 
 // #465: a list nested at the content column of a `1.` item (three spaces a

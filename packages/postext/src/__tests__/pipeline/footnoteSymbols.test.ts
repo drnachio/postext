@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { footnoteSymbol, formatFootnoteNumber } from '../../pipeline/references/footnotes.js';
-import { resolveFootnotesConfig, stripFootnotesDefaults } from '../../defaults/footnotes.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { resolveFootnotesConfig, stripFootnotesDefaults } from '../../defaults/structure/footnotes.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import type { PostextConfig, VDTDocument } from '../../index.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

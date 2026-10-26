@@ -4,7 +4,7 @@ import { breaksAfterDash } from '../../measure/breakRules.js';
 import { measureRichBlock } from '../../measure/rich.js';
 import { measureBlock } from '../../measure/plain.js';
 import { migrateConfig, pinLegacyDashBreaks, CONFIG_VERSION, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/bodyText.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTLine } from '../../vdt.js';
 

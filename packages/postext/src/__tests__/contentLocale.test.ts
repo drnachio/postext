@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalLocaleTag, matchContentLocale, sameContentLocale } from '../locale.js';
+import { canonicalLocaleTag, matchContentLocale, sameContentLocale } from '../hyphenation/locale.js';
 import { pickChapterSpecs, pickLocaleOverrides, readBundle, resolveBundleConfigLocale, resolveBundleLocale } from '../bundle/index.js';
 import type { BundleManifestV2 } from '../bundle/index.js';
 

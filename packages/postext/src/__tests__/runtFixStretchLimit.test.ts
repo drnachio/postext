@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureBlock } from '../measure/plain.js';
 import { measureRichBlock } from '../measure/rich.js';
-import { setHyphenationLocale } from '../hyphenate.js';
+import { setHyphenationLocale } from '../hyphenation/hyphenate.js';
 import { buildDocument } from '../pipeline/index.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTBlock, VDTLine } from '../vdt.js';

@@ -4,7 +4,7 @@ import { fillTrackedWord, setLetterTracking } from '../canvas-backend/trackedTex
 import { setSegmentLanguages } from '../canvas-backend/wordRuns.js';
 import { setLetterSpacing } from '../canvas-backend/contextState.js';
 import { setVerticalPaint } from '../canvas-backend/verticalText.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { buildDocument } from '../pipeline/index.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDesignTextBlock, VDTDocument } from '../vdt.js';

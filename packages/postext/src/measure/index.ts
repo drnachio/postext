@@ -14,9 +14,9 @@ export type { FontFaceRequest } from './fontString.js';
 export { measureGlyphWidth, measureTextWidth } from './canvas.js';
 export { measureBlock } from './plain.js';
 export { measureRichBlock } from './rich.js';
-export { setCjkLineBreak, getCjkLineBreak } from './cjkClasses.js';
-export { setCjkComposition, getCjkComposition, cjkCompositionOf, cjkCompositionKey, punctuationAdvance, punctuationSide, PLAIN_CJK_COMPOSITION } from './cjkPunctuation.js';
-export type { CjkComposition, PunctuationSide } from './cjkPunctuation.js';
+export { setCjkLineBreak, getCjkLineBreak } from './cjk/cjkClasses.js';
+export { setCjkComposition, getCjkComposition, cjkCompositionOf, cjkCompositionKey, punctuationAdvance, punctuationSide, PLAIN_CJK_COMPOSITION } from './cjk/cjkPunctuation.js';
+export type { CjkComposition, PunctuationSide } from './cjk/cjkPunctuation.js';
 
 /** The caches that hold measurements made with the line-breaking options
  *  added after postext 1.4 (`breakAfterDashes`, `optimalRagged`,

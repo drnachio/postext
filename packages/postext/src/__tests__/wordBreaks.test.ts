@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
-import { setHyphenationLocale } from '../hyphenate.js';
+import { setHyphenationLocale } from '../hyphenation/hyphenate.js';
 import type { InlineSpan } from '../parse/index.js';
 
 class StubCtx {

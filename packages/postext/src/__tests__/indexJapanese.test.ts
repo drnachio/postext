@@ -6,8 +6,8 @@ import { GOJUON, GOJUON_ROWS, compareJapanese, gojuonRow, japaneseLead, sameJapa
 import { computeOutline } from '../pipeline/contents/outline.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { resolveIndexConfig, stripIndexDefaults } from '../defaults/indexConfig.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { resolveIndexConfig, stripIndexDefaults } from '../defaults/structure/indexConfig.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import type { ContentBlock } from '../parse/index.js';
 import type { OutlineEntry, PostextConfig } from '../types.js';
 

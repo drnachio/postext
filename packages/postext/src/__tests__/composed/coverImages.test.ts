@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtml } from '../../html-backend.js';
-import { placedImageResolutions } from '../../preflight.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
+import { placedImageResolutions } from '../../checks/preflight.js';
 import type { PageTemplate } from '../../composed/types.js';
 import type { DesignElement, PostextConfig, Resource, VDTDesignImageBlock, VDTDocument, VDTPage } from '../../index.js';
 

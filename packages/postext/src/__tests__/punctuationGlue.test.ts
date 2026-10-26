@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
-import { setHyphenationLocale } from '../hyphenate.js';
+import { setHyphenationLocale } from '../hyphenation/hyphenate.js';
 import { buildDocument } from '../pipeline/index.js';
 import type { InlineSpan } from '../parse/index.js';
 import type { PostextConfig, Resource } from '../types.js';

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { columnClipRect } from '../../columnClip.js';
+import { columnClipRect } from '../../paint/columnClip.js';
 import type { PostextConfig, Resource, TableCell, VDTBlock, VDTColumn, VDTDocument } from '../../index.js';
 
 // #729: a resource set in the text (`position: 'here'`) with

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractFrontmatter } from '../frontmatter.js';
+import { extractFrontmatter } from '../parse/frontmatter.js';
 import { buildDocument } from '../pipeline/index.js';
 import { collectContentWarnings, formatWarning } from '../pipeline/contentWarnings.js';
 import { contentOutline, continuationAfter } from '../pipeline/continuation.js';

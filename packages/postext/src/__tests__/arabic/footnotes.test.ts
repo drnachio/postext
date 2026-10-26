@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { resolveFootnotesConfig, stripFootnotesDefaults } from '../../defaults/footnotes.js';
+import { resolveFootnotesConfig, stripFootnotesDefaults } from '../../defaults/structure/footnotes.js';
 import { formatFootnoteNumber, noteNumberPositionOf } from '../../pipeline/references/footnotes.js';
 import { flowRectToPage, type VDTDocument, type VDTLineSegment } from '../../vdt.js';
 import type { PostextConfig } from '../../types.js';

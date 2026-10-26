@@ -6,11 +6,11 @@
 // back as design-text markup the layout reads (`inlineMarks`).
 
 import type { InlineDirection, InlineSpan } from '../../parse/types.js';
-import { cjkJoinBreaks } from '../../measure/cjk.js';
-import type { CjkLineBreakLevel } from '../../measure/cjkClasses.js';
-import { hasJoiningScript } from '../../bidi.js';
+import { cjkJoinBreaks } from '../../measure/cjk/cjk.js';
+import type { CjkLineBreakLevel } from '../../measure/cjk/cjkClasses.js';
+import { hasJoiningScript } from '../../writing/bidi.js';
 import { isBreakingSpace } from '../../measure/spaces.js';
-import { languageOf } from '../../locale.js';
+import { languageOf } from '../../hyphenation/locale.js';
 import { buildFontString } from '../../measure/index.js';
 import { measureTextWidth } from '../../measure/canvas.js';
 import type { LetteringStyle, LetteringText } from './types.js';

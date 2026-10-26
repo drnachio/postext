@@ -1,5 +1,5 @@
 import type { VDTTextDots } from '../vdt.js';
-import { textDots } from '../textDots.js';
+import { textDots } from '../paint/textDots.js';
 import { counterFlipBox } from './mirrorFrame.js';
 import { languageOf, letterSpacingOf, restoreContext, saveContext } from './contextState.js';
 

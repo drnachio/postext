@@ -10,10 +10,10 @@
 import type { ChipBox, InlineSpan } from '../../parse/index.js';
 import type { ResolvedChipStyleConfig } from '../../types.js';
 import type { ResolvedConfig } from '../../vdt.js';
-import { pickChipStyle } from '../../defaults/chipStyles.js';
+import { pickChipStyle } from '../../defaults/text/chipStyles.js';
 import { dimensionToPx } from '../../units.js';
 import { INLINE_CODE_CHIP_STYLE } from '../code/codeInline.js';
-import { resolveTextDots } from '../../textDots.js';
+import { resolveTextDots } from '../../paint/textDots.js';
 
 /** What chip resolution needs from the resolved config. */
 export interface ChipContext {

@@ -3,7 +3,7 @@ import { renderBlock } from '../canvas-backend/blockRender.js';
 import { fillTrackedWord, setLetterTracking } from '../canvas-backend/trackedText.js';
 import { setSegmentLanguages } from '../canvas-backend/wordRuns.js';
 import { setLetterSpacing } from '../canvas-backend/contextState.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { buildDocument } from '../pipeline/index.js';
 import { setMeasureLanguage, measureSpacedWidth, measureTextWidth, clearTextWidthCache } from '../measure/canvas.js';
 import { trackedLigaturePieces } from '../measure/trackedLigatures.js';

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { measureRichBlock } from '../measure/index.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { collectContentWarnings } from '../pipeline/contentWarnings.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../defaults/bodyText.js';
-import { resolveParagraphStylesConfig, stripParagraphStylesDefaults } from '../defaults/paragraphStyles.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../defaults/text/bodyText.js';
+import { resolveParagraphStylesConfig, stripParagraphStylesDefaults } from '../defaults/text/paragraphStyles.js';
 import { defaultDecimalChar } from '../measure/tabs.js';
 import type { PostextConfig, TabStop } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../vdt.js';

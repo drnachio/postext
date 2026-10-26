@@ -3,14 +3,14 @@ import { buildDocument } from '../../pipeline/index.js';
 import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { resolveChipSpans, chipContextOf } from '../../pipeline/text/chips.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
-import { resolveChipStylesConfig, stripChipStylesDefaults, pickChipStyle } from '../../defaults/chipStyles.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
+import { resolveChipStylesConfig, stripChipStylesDefaults, pickChipStyle } from '../../defaults/text/chipStyles.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { parseMarkdownWithIssues } from '../../parse/index.js';
 import { parseInlineSnippetSpans } from '../../parse/inlineSnippet.js';
 import { CHIP_PLACEHOLDER } from '../../parse/inlineFormatting.js';
 import { measureRichBlock, cachedMeasureRichBlock, createMeasurementCache } from '../../measure/index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument, VDTLineSegment } from '../../index.js';
 
 // Deterministic measurement that scales with the font size: every glyph is

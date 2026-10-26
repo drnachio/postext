@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyColonListRoom } from '../../bundle/configVersion.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/bodyText.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
 import type { ColonListRoom, PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
 

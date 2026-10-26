@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../../design/layout.js';
-import { resolveDesignSlot, type DesignSlotKind } from '../../defaults/headerFooter.js';
-import { resolveCjkConfig } from '../../defaults/cjk.js';
-import { cjkCompositionOf, setCjkComposition } from '../../measure/cjkPunctuation.js';
-import { setCjkLineBreak } from '../../measure/cjkClasses.js';
+import { resolveDesignSlot, type DesignSlotKind } from '../../defaults/structure/headerFooter.js';
+import { resolveCjkConfig } from '../../defaults/text/cjk.js';
+import { cjkCompositionOf, setCjkComposition } from '../../measure/cjk/cjkPunctuation.js';
+import { setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';
 import type { CjkConfig, DesignElement, DesignTextElement } from '../../types.js';
 import type { VDTPage } from '../../vdt.js';

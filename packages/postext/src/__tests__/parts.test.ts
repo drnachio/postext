@@ -8,7 +8,7 @@ import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { dimensionToPx } from '../units.js';
 import { stripConfigDefaults } from '../defaults/index.js';
-import { resolvePartsConfig, stripPartsDefaults } from '../defaults/parts.js';
+import { resolvePartsConfig, stripPartsDefaults } from '../defaults/structure/parts.js';
 import type { DesignElement, PostextConfig } from '../types.js';
 import type { VDTDesignTextBlock, VDTPage } from '../vdt.js';
 

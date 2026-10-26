@@ -3,7 +3,7 @@ import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { contentHasMath, mapInlineSnippet, parseInlineSnippetSpans } from '../../parse/index.js';
 import { initMathEngine } from '../../math/index.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import type { PostextConfig, Resource, ResolvedResourceBlock, VDTDocument, VDTLine } from '../../index.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

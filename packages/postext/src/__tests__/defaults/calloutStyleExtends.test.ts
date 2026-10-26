@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { inheritCalloutStyles, resolveCalloutStylesConfig, stripCalloutStylesDefaults } from '../../defaults/calloutStyles.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
-import { resolveHeadingsConfig } from '../../defaults/headings.js';
-import { resolveUnorderedListsConfig } from '../../defaults/unorderedLists.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { inheritCalloutStyles, resolveCalloutStylesConfig, stripCalloutStylesDefaults } from '../../defaults/boxes/calloutStyles.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
+import { resolveHeadingsConfig } from '../../defaults/structure/headings.js';
+import { resolveUnorderedListsConfig } from '../../defaults/text/unorderedLists.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';

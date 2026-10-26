@@ -11,10 +11,10 @@ import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { resolveBodyStyle, paragraphSpacingPx } from '../../pipeline/styles.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { resolveHeadingsConfig } from '../../defaults/headings.js';
-import { resolveUnorderedListsConfig } from '../../defaults/unorderedLists.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/bodyText.js';
-import { resolveCalloutStylesConfig, stripCalloutStylesDefaults } from '../../defaults/calloutStyles.js';
+import { resolveHeadingsConfig } from '../../defaults/structure/headings.js';
+import { resolveUnorderedListsConfig } from '../../defaults/text/unorderedLists.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
+import { resolveCalloutStylesConfig, stripCalloutStylesDefaults } from '../../defaults/boxes/calloutStyles.js';
 import type { PageTemplate } from '../../composed/types.js';
 import type { Dimension, PostextConfig, VDTBlock, VDTDocument, VDTFrame, VDTPage } from '../../index.js';
 

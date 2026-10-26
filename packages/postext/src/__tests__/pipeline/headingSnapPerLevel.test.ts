@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/headings.js';
-import { resolveHeadingStylesConfig } from '../../defaults/headingStyles.js';
+import { resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/structure/headings.js';
+import { resolveHeadingStylesConfig } from '../../defaults/structure/headingStyles.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
 import type { HeadingsConfig, PostextConfig } from '../../types.js';

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/headings.js';
+import { resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/structure/headings.js';
 import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyHeadingSplit, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
 import type { BodyTextConfig, KeepWithNextSplit, PostextConfig, VDTBlock, VDTDocument } from '../../index.js';
 

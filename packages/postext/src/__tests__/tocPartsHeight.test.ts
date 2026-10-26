@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { resolveTocConfig } from '../defaults/toc.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { resolveTocConfig } from '../defaults/structure/toc.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import type { PostextConfig } from '../types.js';
 
 // EF-119 (decided: documented as it is): a contents part row is `2em` of the

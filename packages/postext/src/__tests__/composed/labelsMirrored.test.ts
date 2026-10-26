@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { renderPageToCanvas } from '../../index.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import { labelLayoutOnSheet } from '../../composed/labels.js';
 import type { PostextConfig, Resource, VDTDocument } from '../../index.js';
 

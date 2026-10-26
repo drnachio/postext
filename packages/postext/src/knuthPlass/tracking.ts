@@ -9,7 +9,7 @@ import type { VDTLineSegment } from '../vdt.js';
 import type { KPItem } from './types.js';
 import { adjustLine } from './breakpoints.js';
 import { graphemeCount } from '../measure/graphemes.js';
-import { joiningScriptIn } from '../measure/joining.js';
+import { joiningScriptIn } from '../measure/rtl/joining.js';
 
 /**
  * Tracking (px after every character; negative tightens) of the line made

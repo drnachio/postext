@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { HTML_TEXT_RESET, renderToHtml, renderToHtmlIndexed } from '../../html-backend.js';
+import { HTML_TEXT_RESET, renderToHtml, renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../vdt.js';
 

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/headings.js';
-import { resolveParagraphStylesConfig, stripParagraphStylesDefaults } from '../defaults/paragraphStyles.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/structure/headings.js';
+import { resolveParagraphStylesConfig, stripParagraphStylesDefaults } from '../defaults/text/paragraphStyles.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import type { HeadingLevelConfig, PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { installSizedStub } from './vertical/stub.js';
 
 // Japanese headings and blocks (#424): 行取り (`lineSpan`), 字下げ (a

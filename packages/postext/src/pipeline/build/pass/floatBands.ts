@@ -9,7 +9,7 @@ import { sideColumnOf, sideUsedBottom } from '../../blocks/placement.js';
 import { offsetCalloutToAbsolute, type CalloutLayoutResult, type PlannedCallout } from '../../callouts/calloutLayout.js';
 import { DEFAULT_FLOAT_MIN_SCALE } from '../../../defaults/layout.js';
 import type { FloatRotation, CaptionAside, BodyCap } from './types.js';
-import type { TableOverflow } from '../../../types/tableStyles.js';
+import type { TableOverflow } from '../../../types/resources/tableStyles.js';
 import type { PassState, PassLate } from './state.js';
 
 /** What createFloatBands takes from the pass. */

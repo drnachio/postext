@@ -10,7 +10,7 @@ import type { Resource } from '../../types.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import type { ResolvedScoreStyleConfig } from '../../types.js';
 import type { BlockStyle } from '../styles.js';
-import { pickScoreStyle } from '../../defaults/scoreStyle.js';
+import { pickScoreStyle } from '../../defaults/resources/scoreStyle.js';
 import { dimensionToPx } from '../../units.js';
 import { buildFontString } from '../../measure/font.js';
 import { computeBaselineGrid } from '../config.js';

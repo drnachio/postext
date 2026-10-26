@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { measureRichBlock, measureBlock } from '../measure/index.js';
 import { CONFIG_VERSION, migrateConfig, migrateBundleConfig, pinLegacyHardBreaks } from '../bundle/configVersion.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../defaults/bodyText.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../defaults/text/bodyText.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
 

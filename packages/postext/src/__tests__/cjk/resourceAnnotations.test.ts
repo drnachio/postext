@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { sesamePath } from '../../canvas-backend/annotations.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { ResolvedResourceBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';

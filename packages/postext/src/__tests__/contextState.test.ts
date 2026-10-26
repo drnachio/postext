@@ -69,7 +69,7 @@ describe('the paint code saves and spaces through contextState.ts', () => {
   });
 
   it('no painter reads or writes the letter-spacing of a context itself', () => {
-    const painters = sources().filter((file) => file.rel.startsWith('canvas-backend/') || file.rel === 'looseLines.ts');
+    const painters = sources().filter((file) => file.rel.startsWith('canvas-backend/') || file.rel === 'checks/looseLines.ts');
     const direct = offences(painters, /\b(ctx|context|c)\s*\.\s*(letterSpacing|wordSpacing)\b/);
     expect(direct, [
       'The letter-spacing of a painting context is set with setLetterSpacing(ctx, px) and asked with',

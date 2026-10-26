@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../index.js';
-import { columnRuleSegments } from '../columnRule.js';
+import { columnRuleSegments } from '../paint/columnRule.js';
 import { createMeasurementCache } from '../measure/index.js';
 import type { DesignElement, LayoutConfig, PostextConfig } from '../types.js';
 import type { VDTDocument, VDTPage } from '../vdt.js';

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { resolveCjkConfig, stripCjkDefaults } from '../../defaults/cjk.js';
-import { cjkRegionOf } from '../../locale.js';
+import { resolveCjkConfig, stripCjkDefaults } from '../../defaults/text/cjk.js';
+import { cjkRegionOf } from '../../hyphenation/locale.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 

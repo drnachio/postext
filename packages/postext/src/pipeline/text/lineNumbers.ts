@@ -41,8 +41,8 @@ import {
 import { buildFontString } from '../../measure/index.js';
 import { measureTextWidth } from '../../measure/canvas.js';
 import { dimensionToPx } from '../../units.js';
-import { formatNumeral, parseNumberFormat } from '../../numbering.js';
-import { isRtlScriptChar } from '../../bidi.js';
+import { formatNumeral, parseNumberFormat } from '../../numerals/numbering.js';
+import { isRtlScriptChar } from '../../writing/bidi.js';
 import { resolvedLocale } from '../config.js';
 
 /** What changes the count at a point of the content. */

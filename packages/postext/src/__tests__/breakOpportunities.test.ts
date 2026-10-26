@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
 import { measureBlock } from '../measure/plain.js';
-import { hyphenateText, setHyphenationLocale } from '../hyphenate.js';
+import { hyphenateText, setHyphenationLocale } from '../hyphenation/hyphenate.js';
 import { layoutSlotToVdt } from '../pipeline/pages/headerFooter.js';
-import { resolveDesignSlot } from '../defaults/headerFooter.js';
+import { resolveDesignSlot } from '../defaults/structure/headerFooter.js';
 import type { InlineSpan } from '../parse/index.js';
 import type { DesignElement } from '../types.js';
 import type { VDTDesignTextBlock, VDTPage } from '../vdt.js';

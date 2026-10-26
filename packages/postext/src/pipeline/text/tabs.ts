@@ -15,7 +15,7 @@ import type { ContentBlock, InlineSpan } from '../../parse/index.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import type { BlockStyle } from '../styles.js';
 import type { TabSettings } from '../../measure/tabs.js';
-import { resolveTabSettings, resolveTabStopPx } from '../../defaults/tabStops.js';
+import { resolveTabSettings, resolveTabStopPx } from '../../defaults/text/tabStops.js';
 import { resolvedLocale } from '../config.js';
 
 /** The keys a span set as plain text may carry and still merge with the

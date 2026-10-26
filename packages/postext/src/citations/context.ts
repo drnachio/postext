@@ -8,7 +8,7 @@
  */
 
 import type { ContentBlock } from '../parse/index.js';
-import { extractFrontmatter } from '../frontmatter.js';
+import { extractFrontmatter } from '../parse/frontmatter.js';
 import { parseMarkdownMemo } from '../parse/index.js';
 import type { CitationClusterInput, CslItem } from './types.js';
 import { documentReferences, type ReferenceIssue } from './data.js';

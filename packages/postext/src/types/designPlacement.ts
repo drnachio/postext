@@ -1,4 +1,4 @@
-import type { BorderSides, CornerRadius } from './calloutParts.js';
+import type { BorderSides, CornerRadius } from './boxes/calloutParts.js';
 import type { ColorValue, Dimension } from './page.js';
 
 export type PageParity = 'all' | 'odd' | 'even';

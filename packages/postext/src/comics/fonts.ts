@@ -8,7 +8,7 @@
  */
 
 import type { PostextConfig, ResolvedBalloonStyleConfig } from '../types.js';
-import { directionOf, isCjkLanguage, presentTag } from '../locale.js';
+import { directionOf, isCjkLanguage, presentTag } from '../hyphenation/locale.js';
 import { pickBalloonStyle, resolveComicsConfig } from '../defaults/comics.js';
 import { parseComicFence } from './page.js';
 import type { ComicScriptItem } from './types.js';

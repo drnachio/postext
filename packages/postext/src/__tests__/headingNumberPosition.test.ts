@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { computeOutlineFor } from '../pipeline/contents/outline.js';
 import { parseMarkdown } from '../parse/index.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTDocument } from '../vdt.js';

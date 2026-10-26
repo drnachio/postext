@@ -8,7 +8,7 @@
 
 import type { ContentBlock, InlineSpan, RefCase } from '../../parse/index.js';
 import type { OutlineEntry } from '../../types.js';
-import { stringsFor } from '../../locale.js';
+import { stringsFor } from '../../hyphenation/locale.js';
 
 const NBSP = ' ';
 

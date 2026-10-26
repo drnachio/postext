@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { arabicCardinal, arabicOrdinal } from '../arabicNumberWords.js';
-import { numberToWords } from '../numberWords.js';
-import { computeHeadingNumbers, formatCounter } from '../numbering.js';
+import { arabicCardinal, arabicOrdinal } from '../numerals/arabicNumberWords.js';
+import { numberToWords } from '../numerals/numberWords.js';
+import { computeHeadingNumbers, formatCounter } from '../numerals/numbering.js';
 import { parseMarkdown } from '../parse/index.js';
 
 // ---------------------------------------------------------------------------

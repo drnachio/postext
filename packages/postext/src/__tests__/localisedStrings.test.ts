@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { defaultResourceTypes } from '../defaults/resourceTypes.js';
-import { defaultTableContinuationStrings, resolveTableStyleConfig } from '../defaults/tableStyle.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { defaultResourceTypes } from '../defaults/resources/resourceTypes.js';
+import { defaultTableContinuationStrings, resolveTableStyleConfig } from '../defaults/resources/tableStyle.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import { buildDocument } from '../pipeline/index.js';
 import type { PostextConfig, Resource } from '../types.js';
 

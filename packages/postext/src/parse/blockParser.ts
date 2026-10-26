@@ -17,7 +17,7 @@ import { labelElementId } from '../composed/ids.js';
 import { extractInlineCitations, injectCitationSpans } from './citations.js';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks.js';
 import { joinEastAsianLines } from './softBreaks.js';
-import { asciiDigits } from '../arabicNumerals.js';
+import { asciiDigits } from '../numerals/arabicNumerals.js';
 import { indentColumn, listDepth, nestListItem } from './listNesting.js';
 import { parseComicFence } from '../comics/page.js';
 import { closesCodeFence, codeFenceOpen } from './codeFence.js';

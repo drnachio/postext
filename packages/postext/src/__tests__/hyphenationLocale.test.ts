@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { hyphenateText, setHyphenationLocale, getHyphenationLocale, matchHyphenationLocale, HYPHENATION_LOCALES } from '../hyphenate.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { hyphenateText, setHyphenationLocale, getHyphenationLocale, matchHyphenationLocale, HYPHENATION_LOCALES } from '../hyphenation/hyphenate.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import { buildDocument } from '../pipeline/index.js';
 import { createMeasurementCache, cachedMeasureRichBlock, initHyphenator } from '../measure/index.js';
 import type { PostextConfig, VDTDocument } from '../index.js';

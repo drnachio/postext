@@ -7,12 +7,12 @@
 
 import type { ContentBlock } from '../../parse/index.js';
 import type { ColorValue, Dimension, OrderedListsConfig } from '../../types.js';
-import { listNumberFormat } from '../../defaults/orderedLists.js';
+import { listNumberFormat } from '../../defaults/text/orderedLists.js';
 import { resolvedLocale } from '../config.js';
 import type { ResolvedConfig, VDTDocument } from '../../vdt.js';
 import { dimensionsEqual } from '../../defaults/shared.js';
-import { parseChineseNumeral } from '../../chineseNumerals.js';
-import { asciiDigits } from '../../arabicNumerals.js';
+import { parseChineseNumeral } from '../../numerals/chineseNumerals.js';
+import { asciiDigits } from '../../numerals/arabicNumerals.js';
 import { resolveBodyStyle, resolveBlockquoteStyle } from '../styles.js';
 import {
   computeLevelIndentsPx,

@@ -12,7 +12,7 @@ import { enumerateCurrentPageSlots, type ColumnCapKind, type FloatSlotPosition, 
 import type { PartPlan } from '../../sections/parts.js';
 import type { HeadingSectionPlan } from '../../sections/headingStyles.js';
 import type { PlannedFloat } from '../../floats/floatPlacement.js';
-import type { CompositionRule } from '../../../types/bodyText.js';
+import type { CompositionRule } from '../../../types/text/bodyText.js';
 import type { TableSliceSpec } from '../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside } from './types.js';
 import type { ResolvedHeadingStyleConfig } from '../../../types.js';

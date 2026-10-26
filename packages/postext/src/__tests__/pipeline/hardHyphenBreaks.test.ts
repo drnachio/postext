@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { computeChapterTitles } from '../../pipeline/pages/placeholders.js';
-import { setHyphenationLocale } from '../../hyphenate.js';
+import { setHyphenationLocale } from '../../hyphenation/hyphenate.js';
 import { uppercasePreservingLength } from '../../pipeline/blocks/buildBlockKind.js';
 import type { VDTBlock, VDTLine } from '../../vdt.js';
 

@@ -16,9 +16,9 @@
  */
 
 import type { CjkRegion, WritingMode } from '../types.js';
-import type { CjkClass } from './cjkClasses.js';
+import type { CjkClass } from './cjk/cjkClasses.js';
 import { measureTextWidth, measureInkBox, onTextWidthCacheClear, measureLanguageKey } from './canvas.js';
-import { isVerticalCell, verticalCellEms, verticalRuns, type UprightDigits } from '../writingMode.js';
+import { isVerticalCell, verticalCellEms, verticalRuns, type UprightDigits } from '../writing/writingMode.js';
 import { graphemesOf } from './graphemes.js';
 import { findPxSize } from './fontString.js';
 import { DEFAULT_CENTRAL_BASELINE } from '../vdt.js';

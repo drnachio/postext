@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { renderCutLines } from '../canvas-backend/decorations.js';
-import { cropMarkSegments } from '../cropMarks.js';
+import { cropMarkSegments } from '../paint/cropMarks.js';
 import { dimensionToPx } from '../units.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTDocument } from '../vdt.js';

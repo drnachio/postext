@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { layoutDesignSlot, pageMatchesRole, type DesignFrames } from '../../design/layout.js';
 import { measureHeadingAdvancedDesignHeight } from '../../pipeline/pages/headerFooter.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
-import { resolveHeadingsConfig } from '../../defaults/headings.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
+import { resolveHeadingsConfig } from '../../defaults/structure/headings.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';
 import type { DesignElement, ElementAnchor } from '../../types.js';
 import type { VDTPage } from '../../vdt.js';

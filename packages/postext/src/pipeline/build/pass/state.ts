@@ -1,7 +1,7 @@
 // The running state of a placement pass its modules share (#1276).
 import type { BoundingBox, ResolvedConfig, VDTColumn, VDTExclusion, VDTBlock, VDTPage, VDTComicPage } from '../../../vdt.js';
 import type { ResolvedHeadingStyleConfig, HeadingBreakParity, ResolvedCalloutStyleConfig } from '../../../types.js';
-import type { NumeralStyle } from '../../../numbering.js';
+import type { NumeralStyle } from '../../../numerals/numbering.js';
 import type { PlannedCallout } from '../../callouts/calloutLayout.js';
 import type { CalloutLayouter } from '../../callouts/frameLayout.js';
 import type { PlannedComposedPage } from '../../composedPages/composedLayout.js';

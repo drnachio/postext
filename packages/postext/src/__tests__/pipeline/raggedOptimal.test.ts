@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { measureBlock, measureRichBlock, type MeasureBlockOptions } from '../../measure/index.js';
 import { migrateConfig, migrateBundleConfig, pinLegacyRaggedBreaking, CONFIG_VERSION, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacyBoxParagraphStyles, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/bodyText.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTLine } from '../../vdt.js';
 

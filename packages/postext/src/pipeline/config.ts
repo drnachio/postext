@@ -1,5 +1,5 @@
 import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../types.js';
-import { resolveExerciseStylesConfig, resolveExercisesConfig } from '../defaults/exercises.js';
+import { resolveExerciseStylesConfig, resolveExercisesConfig } from '../defaults/boxes/exercises.js';
 import { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../defaults/layout.js';
 
 export { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN };
@@ -50,7 +50,7 @@ import {
 } from '../defaults/index.js';
 import { dimensionToPx } from '../units.js';
 import { applyCjkGrid } from './text/cjkGrid.js';
-import { directionOf, localeScript, presentTag, resolveNumerals } from '../locale.js';
+import { directionOf, localeScript, presentTag, resolveNumerals } from '../hyphenation/locale.js';
 import { configFingerprint } from '../util/stableHash.js';
 import { forgetFlowColorValues } from './sections/partPalette.js';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt.js';

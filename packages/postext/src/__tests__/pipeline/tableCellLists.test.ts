@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import type { Resource, TableModel } from '../../types.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

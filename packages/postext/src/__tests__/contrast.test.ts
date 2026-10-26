@@ -14,9 +14,9 @@ import {
   printLuminance,
   relativeLuminance,
   type ContrastIssue,
-} from '../contrast.js';
-import { resolveContrastConfig, stripContrastDefaults } from '../defaults/contrast.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+} from '../checks/contrast.js';
+import { resolveContrastConfig, stripContrastDefaults } from '../defaults/output/contrast.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { outputTransform, parseIccProfile } from '../color/index.js';
 import type { PostextConfig } from '../types.js';

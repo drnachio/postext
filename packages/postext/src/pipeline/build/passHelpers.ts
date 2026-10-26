@@ -10,8 +10,8 @@ import type { BlockStyle } from '../styles.js';
 import { measureContentBlock, type BlockMeasureContext, type MeasuredContentBlock, wordSpacingProfile } from '../blocks/measureContentBlock.js';
 import { offsetBlock } from '../callouts/calloutLayout.js';
 import { chapterNumberCounter } from '../pages/placeholders.js';
-import { mostlyJoiningScript } from '../../measure/joining.js';
-import { composesAsCjk } from '../../measure/cjkCompose.js';
+import { mostlyJoiningScript } from '../../measure/rtl/joining.js';
+import { composesAsCjk } from '../../measure/cjk/cjkCompose.js';
 
 /** The page each floated resource of `doc` lies on (its first slice's). */
 export function floatPagesOf(doc: VDTDocument): Map<string, number> {
@@ -121,7 +121,7 @@ export function measureLooseParagraph(
   const optimum = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride, looseness: 0 });
   const looseness = optimum ? target - optimum.measured.lines.length : extraLines;
   // A paragraph mostly in a joining script (Arabic…) is not tracked: its
-  // words take no letter-spacing (`measure/joining.ts`), so only the first
+  // words take no letter-spacing (`measure/rtl/joining.ts`), so only the first
   // rung, word spacing alone, can gain it the line.
   // On a character grid (#632) a paragraph the CJK composer sets keeps
   // every character in its one-em cell: no tracking is added to its

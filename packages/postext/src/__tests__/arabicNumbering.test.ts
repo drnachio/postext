@@ -8,9 +8,9 @@ import {
   formatNumeral,
   headingCounterStart,
   parseNumberFormat,
-} from '../numbering.js';
-import { abjadNumeral, arabicLettering, asciiDigits, withDigits, ABJAD_LETTERS, HIJAI_LETTERS } from '../arabicNumerals.js';
-import { defaultNumeralsFor, resolveNumerals } from '../locale.js';
+} from '../numerals/numbering.js';
+import { abjadNumeral, arabicLettering, asciiDigits, withDigits, ABJAD_LETTERS, HIJAI_LETTERS } from '../numerals/arabicNumerals.js';
+import { defaultNumeralsFor, resolveNumerals } from '../hyphenation/locale.js';
 import { formatListNumber } from '../pipeline/text/lists.js';
 import { parsePartNumber } from '../pipeline/sections/parts.js';
 import { continuationAfter } from '../pipeline/continuation.js';
@@ -18,7 +18,7 @@ import { resolveAllConfig } from '../pipeline/config.js';
 import { parseMarkdown, spaceDirectiveLines } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
 import { createMeasurementCache } from '../measure/index.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import type { NumeralsSetting, PostextConfig, Resource } from '../types.js';
 import type { VDTDocument } from '../vdt.js';

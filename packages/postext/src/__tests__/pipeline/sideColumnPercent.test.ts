@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { SIDE_COLUMN_MIN_SHARE } from '../../pipeline/config.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { resolveLayoutConfig, stripLayoutDefaults } from '../../defaults/layout.js';
 import type { VDTDocument, VDTPage } from '../../vdt.js';

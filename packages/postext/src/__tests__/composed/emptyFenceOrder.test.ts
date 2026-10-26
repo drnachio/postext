@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import { composedReadingOrder, composedPaintOrder } from '../../index.js';
 import type { FrameConfig, PageTemplate } from '../../composed/types.js';
 import type { PostextConfig, VDTDocument, VDTPage } from '../../index.js';

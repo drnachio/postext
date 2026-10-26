@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { columnClipRect, designOverlayOverhang, textInkOverhangAbove } from '../columnClip.js';
+import { columnClipRect, designOverlayOverhang, textInkOverhangAbove } from '../paint/columnClip.js';
 import type { VDTBlock, VDTColumn, VDTDesignBlock } from '../vdt.js';
 
 const DPI = 72; // 1pt = 1px: the 2pt glyph buffer reads as 2.

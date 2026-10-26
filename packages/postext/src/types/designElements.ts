@@ -1,5 +1,5 @@
 import type { DesignTextAlign, DesignTextRepeat, DesignTextStroke, ElementBoxStyle, ElementPlacement, PageParity, PageRoleFilter, SidePosition, TextDotsStyle, TextOverflow, VAlign } from './designPlacement.js';
-import type { FigureStyle } from './locale.js';
+import type { FigureStyle } from './text/locale.js';
 import type { ColorValue, Dimension } from './page.js';
 
 export interface DesignTextElement {

@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { parseMarkdown } from '../../parse/index.js';
 import { readExercises, readOperation } from '../../exercises/model.js';
 import { gridBox } from '../../exercises/grids.js';
-import { CENTRAL } from '../../measure/cjkAnnotate.js';
+import { CENTRAL } from '../../measure/cjk/cjkAnnotate.js';
 import { areaElements } from '../../exercises/designs.js';
-import { exerciseSettingsOf } from '../../defaults/exercises.js';
+import { exerciseSettingsOf } from '../../defaults/boxes/exercises.js';
 import { expandExercises } from '../../exercises/expand.js';
 import type { VDTBlock, VDTChip, VDTDocument } from '../../vdt.js';
 import type { DesignPathElement, DesignTextElement, PostextConfig } from '../../types.js';

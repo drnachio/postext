@@ -11,7 +11,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync as readFile } from 'node:fs';
 import { buildDocument } from '../../pipeline/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import type { PostextConfig, VDTBlock, VDTDesignBlock, VDTDesignBoxBlock, VDTDesignPathBlock } from '../../index.js';
 
 class StubCtx {

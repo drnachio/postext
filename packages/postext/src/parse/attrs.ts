@@ -1,5 +1,5 @@
 import type { DirectiveAttrs } from './types.js';
-import { asciiDigits } from '../arabicNumerals.js';
+import { asciiDigits } from '../numerals/arabicNumerals.js';
 
 /** An attribute key: ASCII, so ids stay portable. */
 const KEY = '[A-Za-z_][A-Za-z0-9_-]*';

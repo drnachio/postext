@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../index.js';
-import { renderToHtml, renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtml, renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineSegment, VDTRuby } from '../../vdt.js';
 import { installSizedStub } from '../vertical/stub.js';

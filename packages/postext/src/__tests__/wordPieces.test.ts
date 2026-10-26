@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderPageToCanvas } from '../canvas-backend/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { buildDocument } from '../pipeline/index.js';
 import { clearMeasurementCache } from '../measure/index.js';
-import { joinedWordPieces, lineWordSegments, lineWordSegmentsInOrder } from '../wordPieces.js';
+import { joinedWordPieces, lineWordSegments, lineWordSegmentsInOrder } from '../paint/wordPieces.js';
 import * as engine from '../index.js';
 import type { PostextConfig, Resource } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../vdt.js';

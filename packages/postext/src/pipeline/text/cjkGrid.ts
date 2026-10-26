@@ -26,7 +26,7 @@
 
 import type { PostextConfig, Dimension } from '../../types.js';
 import { resolvePageConfig } from '../../defaults/page.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
 import { columnCountUsed, DEFAULT_LAYOUT_CONFIG, layoutColumnCount, resolveLayoutConfig } from '../../defaults/layout.js';
 import { dimensionToPx } from '../../units.js';
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import Hypher from 'hypher';
 import es from 'hyphenation.es';
-import { hyphenateText } from '../hyphenate.js';
+import { hyphenateText } from '../hyphenation/hyphenate.js';
 
 describe('hyphenateText', () => {
   it('matches the dictionary applied to the whole text', () => {

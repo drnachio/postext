@@ -9,11 +9,11 @@
 import type { ContentBlock, InlineSpan } from '../../parse/index.js';
 import { CHIP_PLACEHOLDER, flattenTitleBreaks, withoutChips, flattenTitleBreakSpans, TITLE_BREAK_RE } from '../../parse/inlineFormatting.js';
 import { collapseTitleSpaces } from '../../measure/spaces.js';
-import { computeHeadingNumbering, type HeadingNumberingOptions, type HeadingTemplates } from '../../numbering.js';
+import { computeHeadingNumbering, type HeadingNumberingOptions, type HeadingTemplates } from '../../numerals/numbering.js';
 import type { HeadingCounters, OutlineEntry, PostextConfig } from '../../types.js';
 import type { ResolvedConfig, VDTDocument } from '../../vdt.js';
 import { documentNumerals, resolvedLocale, resolveAllConfig } from '../config.js';
-import { withDigits } from '../../arabicNumerals.js';
+import { withDigits } from '../../numerals/arabicNumerals.js';
 import { headingIsListed, headingIsNumbered, headingMarksFor, headingStyleOf, numberTitlesFor } from '../sections/headingStyles.js';
 import { tashkilFor } from '../text/tashkil.js';
 import { partMarkPages, planParts } from '../sections/parts.js';

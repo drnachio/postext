@@ -4,7 +4,7 @@ import { getSlashBreaks, setSlashBreaks, slashBreakIndices, withoutZeroWidthSpac
 import { initHyphenator } from '../measure/font.js';
 import { buildDocument } from '../pipeline/index.js';
 import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacySlashBreaks } from '../bundle/configVersion.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../defaults/bodyText.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../defaults/text/bodyText.js';
 import type { PostextConfig } from '../types.js';
 
 // #1164: the rich breaker ends a line after a slash between two words and

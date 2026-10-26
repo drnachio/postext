@@ -14,7 +14,7 @@ export interface KPBox {
    *  that holds one takes no tracking. */
   noTracking?: boolean;
   /** How much the box itself may widen (px), counted with its line's glue
-   *  stretch: an Arabic word's kashida capacity (`measure/kashida.ts`).
+   *  stretch: an Arabic word's kashida capacity (`measure/rtl/kashida.ts`).
    *  Absent: rigid. */
   stretch?: number;
 }

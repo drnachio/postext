@@ -8,7 +8,7 @@ import {
   stripPageTemplatesDefaults,
 } from '../composed/templates.js';
 import { validatePageTemplates } from '../composed/validate.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { formatWarning } from '../pipeline/contentWarnings.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';

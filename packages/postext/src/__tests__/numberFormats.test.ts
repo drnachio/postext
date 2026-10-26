@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { parseMarkdown } from '../parse/index.js';
 import { computeHeadingContext, computeResourceNumbering } from '../pipeline/resources/resourceNumbering.js';
-import { resolveOrderedListsConfig, stripOrderedListsDefaults } from '../defaults/orderedLists.js';
+import { resolveOrderedListsConfig, stripOrderedListsDefaults } from '../defaults/text/orderedLists.js';
 import { resolvePageConfig, stripPageDefaults } from '../defaults/page.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { formatNumeral, parseNumberFormat, parseTemplate, type NumeralStyle } from '../numbering.js';
+import { formatNumeral, parseNumberFormat, parseTemplate, type NumeralStyle } from '../numerals/numbering.js';
 import type { PostextConfig, Resource, ResourceType } from '../types.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

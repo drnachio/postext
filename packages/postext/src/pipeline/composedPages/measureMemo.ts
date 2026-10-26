@@ -13,7 +13,7 @@
 
 import type { ContentBlock } from '../../parse/index.js';
 import type { ResolvedCalloutStyleConfig } from '../../types.js';
-import { getMeasureArabicNumbers, getMeasureDirection } from '../../measure/bidiLines.js';
+import { getMeasureArabicNumbers, getMeasureDirection } from '../../measure/rtl/bidiLines.js';
 import { measureLanguageKey } from '../../measure/canvas.js';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode } from '../../measure/vertical.js';
 import { measureContentBlock, type BlockMeasureContext, type DropCapNote, type MeasureContentBlockOptions, type MeasuredContentBlock } from '../blocks/measureContentBlock.js';

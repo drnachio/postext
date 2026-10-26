@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { resolveLayoutConfig, stripLayoutDefaults } from '../../defaults/layout.js';
 import type { CompositionRule, PostextConfig, Resource, VDTDocument } from '../../index.js';
 

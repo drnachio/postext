@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas, renderToHtml } from '../index.js';
 import { createMeasurementCache } from '../measure/index.js';
 import { parseInlineFormatting, extractInlineSwatches, injectSwatchSpans, swatchShapeFromAttrs } from '../parse/inlineFormatting.js';
-import { swatchGeometry } from '../swatchShape.js';
+import { swatchGeometry } from '../paint/swatchShape.js';
 import type { PostextConfig, VDTDocument, VDTLineSegment } from '../index.js';
 
 // #1104: a legend's swatches set at a size of their own, with an outline

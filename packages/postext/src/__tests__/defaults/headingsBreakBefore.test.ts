@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/headings.js';
+import { resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/structure/headings.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { createHeadingLevelResolver } from '../../pipeline/sections/headingStyles.js';
 import { buildDocument } from '../../pipeline/index.js';

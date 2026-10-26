@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { renderPageToCanvas } from '../index.js';
 import { CONFIG_VERSION, migrateConfig, migrateBundleConfig, pinLegacyPairedIndents, pinLegacyVerseLayout, pinLegacyVerseTightening } from '../bundle/configVersion.js';
-import { resolveVerseConfig, stripVerseDefaults, DEFAULT_VERSE_CONFIG } from '../defaults/verse.js';
-import { stripBodyTextDefaults } from '../defaults/bodyText.js';
+import { resolveVerseConfig, stripVerseDefaults, DEFAULT_VERSE_CONFIG } from '../defaults/text/verse.js';
+import { stripBodyTextDefaults } from '../defaults/text/bodyText.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
 

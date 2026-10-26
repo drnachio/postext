@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseMarkdown } from '../../parse/index.js';
 import { readExercises, readOperation } from '../../exercises/model.js';
 import { gridBox } from '../../exercises/grids.js';
-import { resolveExerciseStylesConfig } from '../../defaults/exercises.js';
+import { resolveExerciseStylesConfig } from '../../defaults/boxes/exercises.js';
 import { collectContentWarnings } from '../../pipeline/contentWarnings.js';
 import { seededRandom, shuffledOrder } from '../../exercises/shuffle.js';
 

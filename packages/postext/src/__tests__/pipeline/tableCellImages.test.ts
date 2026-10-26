@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import type { TableSliceSpec } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import { setCellImage } from '../../table/model.js';
 import type { PostextConfig, Resource, TableCellVerticalAlign, TableModel } from '../../types.js';
 

@@ -10,7 +10,7 @@
 import { verticalFlowOf, type VDTBlock, type VDTDesignSlot, type VDTDocument, type VDTLine, type VDTPage } from '../../vdt.js';
 import { fontEm, fontFamilyOf, measureCentralBaseline } from '../../measure/vertical.js';
 import { measureTextWidth } from '../../measure/canvas.js';
-import { stretchedDashesOf } from '../../writingMode.js';
+import { stretchedDashesOf } from '../../writing/writingMode.js';
 
 /** What a vertical page's flow sets: the font strings of its text, and the
  *  stretched dashes set in each (by font string). */

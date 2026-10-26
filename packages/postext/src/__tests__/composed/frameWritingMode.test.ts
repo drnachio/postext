@@ -8,7 +8,7 @@ import { flowRectToPage } from '../../vdt.js';
 import { sourceAt } from '../../composed/sourceMap.js';
 import { installSizedStub, stubCharWidth } from '../vertical/stub.js';
 import { renderPageToCanvas } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 
 installSizedStub();
 

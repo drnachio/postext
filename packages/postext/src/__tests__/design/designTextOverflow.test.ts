@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { layoutDesignSlot, type LayoutIssue, type ResolvedTextPrimitive } from '../../design/layout.js';
-import { defaultTextOverflow, resolveDesignSlot, stripDesignSlotDefaults, type DesignSlotKind } from '../../defaults/headerFooter.js';
+import { defaultTextOverflow, resolveDesignSlot, stripDesignSlotDefaults, type DesignSlotKind } from '../../defaults/structure/headerFooter.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';
 import type { DesignElement, DesignTextElement, ResolvedDesignTextElement } from '../../types.js';

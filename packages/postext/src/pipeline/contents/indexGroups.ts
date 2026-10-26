@@ -26,7 +26,7 @@
  * Japanese (#425): see `indexJapanese.ts`.
  */
 
-import { chineseScriptOf, languageOf } from '../../locale.js';
+import { chineseScriptOf, languageOf } from '../../hyphenation/locale.js';
 
 /** How the entries of an index are grouped under heads (`index.groupBy`). */
 export type IndexGrouping = 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none';

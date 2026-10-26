@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { resolveCalloutStylesConfig } from '../../defaults/calloutStyles.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
-import { resolveHeadingsConfig } from '../../defaults/headings.js';
-import { resolveUnorderedListsConfig } from '../../defaults/unorderedLists.js';
+import { resolveCalloutStylesConfig } from '../../defaults/boxes/calloutStyles.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
+import { resolveHeadingsConfig } from '../../defaults/structure/headings.js';
+import { resolveUnorderedListsConfig } from '../../defaults/text/unorderedLists.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDesignBlock, VDTDesignImageBlock, VDTDesignTextBlock, VDTDocument } from '../../index.js';
 
 // #981: the picture of a label tab can stand inside the tab, before the words.

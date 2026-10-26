@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { computeHeadingNumbers, computeHeadingNumbering, parseTemplate } from '../numbering.js';
-import { numberToWords } from '../numberWords.js';
+import { computeHeadingNumbers, computeHeadingNumbering, parseTemplate } from '../numerals/numbering.js';
+import { numberToWords } from '../numerals/numberWords.js';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
 import { computeOutlineFor } from '../pipeline/contents/outline.js';

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { measureBlock, measureRichBlock, createMeasurementCache } from '../measure/index.js';
 import { cachedMeasureBlock } from '../measure/index.js';
-import { mirrorLineSpans } from '../measure/bidiLines.js';
+import { mirrorLineSpans } from '../measure/rtl/bidiLines.js';
 import { lineInsetsAt, lineWidthAt, uniformMeasureFrom, type LineInsetStep, type MeasureBlockOptions } from '../measure/types.js';
 import { lineTextAlign, type VDTLine } from '../vdt.js';
 

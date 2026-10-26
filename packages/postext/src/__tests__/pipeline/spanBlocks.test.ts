@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { collectColumnGaps } from '../../pipeline/columns/columnBalancing.js';
-import { columnRuleSegments } from '../../columnRule.js';
-import { renderToHtml } from '../../html-backend.js';
+import { columnRuleSegments } from '../../paint/columnRule.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import {
   createVDTPage,
   createVDTColumn,

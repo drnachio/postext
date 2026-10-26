@@ -6,11 +6,11 @@
 // preceding content produced and how its last page was numbered.
 
 import { hasAnchorRefs } from './references/crossRefs.js';
-import { extractFrontmatter } from '../frontmatter.js';
+import { extractFrontmatter } from '../parse/frontmatter.js';
 import { parseMarkdownMemo } from '../parse/index.js';
 import type { ContentBlock } from '../parse/index.js';
 import { effectiveResourceTypes } from '../defaults/index.js';
-import { documentLocale } from '../defaults/resourceTypes.js';
+import { documentLocale } from '../defaults/resources/resourceTypes.js';
 import type { HeadingCounters, LayoutContinuation, OutlineEntry, PartState, PostextConfig, PostextContent } from '../types.js';
 import { computeHeadingContext, computeResourceNumberingState } from './resources/resourceNumbering.js';
 import { planParts } from './sections/parts.js';

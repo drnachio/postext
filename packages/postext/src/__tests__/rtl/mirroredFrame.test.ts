@@ -16,7 +16,7 @@ import {
   type VDTPage,
 } from '../../vdt.js';
 import type { PostextConfig, Resource } from '../../types.js';
-import { resolveParagraph, visualOrder } from '../../bidi.js';
+import { resolveParagraph, visualOrder } from '../../writing/bidi.js';
 
 // Issue #370: a right-to-left document lays its flow out as a left-to-right
 // one and mirrors it onto the sheet (`VDTMirroredFlowFrame`).

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hyphenateText } from '../hyphenate.js';
+import { hyphenateText } from '../hyphenation/hyphenate.js';
 
 // #669: hypher counts an apostrophe as a character of the word, so the
 // English patterns' least of three after a break let `m's` and `n't` pass:

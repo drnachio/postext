@@ -11,7 +11,7 @@ import type { ContentBlock } from '../../../parse/index.js';
 import { type BlockMeasureContext, type MeasureContentBlockOptions, measureContentBlock } from '../../blocks/measureContentBlock.js';
 import type { InlineAside } from '../passTypes.js';
 import type { BlockStyle } from '../../styles.js';
-import { pickTableStyle } from '../../../defaults/tableStyle.js';
+import { pickTableStyle } from '../../../defaults/resources/tableStyle.js';
 import { type TableSliceSpec, type TableRowMetrics, MIN_TAIL_ROWS, chooseTableSlice } from '../../resources/resourceLayout.js';
 import type { SideObstacle } from '../../floats/floatSlots.js';
 import type { PassState } from './state.js';

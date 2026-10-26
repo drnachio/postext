@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { coordinateVideoPlayback, videosToPause, VIDEO_PLAYBACK_SCRIPT } from '../video/playback.js';
 import { videoElementAttributes } from '../video/url.js';
-import { resolveVideoPlayerOptions } from '../defaults/videoStyle.js';
+import { resolveVideoPlayerOptions } from '../defaults/resources/videoStyle.js';
 
 const v = (name: string, paused: boolean, alongside: boolean) => ({ name, paused, alongside });
 const pauseFor = (started: ReturnType<typeof v>, all: ReturnType<typeof v>[]) =>

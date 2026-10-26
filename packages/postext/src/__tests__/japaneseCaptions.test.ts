@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { stripConfigDefaults } from '../defaults/index.js';
-import { defaultCaptionLabels, resolveCaptionStyleConfig, stripCaptionStyleDefaults } from '../defaults/captionStyle.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
-import { defaultResourceTypes } from '../defaults/resourceTypes.js';
+import { defaultCaptionLabels, resolveCaptionStyleConfig, stripCaptionStyleDefaults } from '../defaults/resources/captionStyle.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
+import { defaultResourceTypes } from '../defaults/resources/resourceTypes.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import type { PostextConfig, Resource } from '../types.js';
 import type { VDTDocument } from '../vdt.js';

@@ -5,7 +5,7 @@ import { justifiedSpaceRatios } from '../measure/spaceRatios.js';
 import { raggedLooseLines } from '../pipeline/text/raggedLines.js';
 import { buildDocument } from '../pipeline/build.js';
 import { createMeasurementCache } from '../measure/index.js';
-import { findLooseLines, lineLooseness, lineWordSpacing } from '../looseLines.js';
+import { findLooseLines, lineLooseness, lineWordSpacing } from '../checks/looseLines.js';
 import type { InlineSpan } from '../parse/index.js';
 import type { PostextConfig, VDTDocument, VDTLine } from '../index.js';
 

@@ -27,7 +27,7 @@ import {
   type CounterStyle,
   type NumeralStyle,
   type RenderPiece,
-} from '../../numbering.js';
+} from '../../numerals/numbering.js';
 
 /** Heading counters (1-indexed by level) in effect at a given point in the
  *  document. `h1`..`h6` carry the running heading number for each level. */

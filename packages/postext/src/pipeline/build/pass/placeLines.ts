@@ -12,7 +12,7 @@ import { type PlacementCursor } from '../../blocks/placement.js';
 import { type BlockMeasureContext } from '../../blocks/measureContentBlock.js';
 import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
 import type { HeadingClaim } from '../passTypes.js';
-import type { CompositionRule } from '../../../types/bodyText.js';
+import type { CompositionRule } from '../../../types/text/bodyText.js';
 import type { LineIteration } from './lineIteration.js';
 import { createLineColumn } from './lineColumn.js';
 import { createLineRoom } from './lineRoom.js';

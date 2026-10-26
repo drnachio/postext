@@ -1,7 +1,7 @@
-import { bidiClassOf, needsBidi } from '../bidi.js';
+import { bidiClassOf, needsBidi } from '../writing/bidi.js';
 import { graphemesOf } from '../measure/graphemes.js';
-import { joiningScriptIn } from '../measure/joining.js';
-import { hasCJK } from '../measure/cjk.js';
+import { joiningScriptIn } from '../measure/rtl/joining.js';
+import { hasCJK } from '../measure/cjk/cjk.js';
 import { paintAsOneRun } from './mirrorFrame.js';
 import { letterSpacingOf, setLetterSpacing } from './contextState.js';
 import { contextTextWidth } from './contextText.js';

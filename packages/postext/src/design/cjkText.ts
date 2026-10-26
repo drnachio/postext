@@ -1,6 +1,6 @@
 // Design text in Chinese or Japanese (#637): a heading design or an opener,
 // a running head, a page design or a part page whose text composes as CJK
-// is broken and spaced by the body's composer (`measure/cjkCompose.ts`):
+// is broken and spaced by the body's composer (`measure/cjk/cjkCompose.ts`):
 // the line-start and line-end rules of `cjk.lineBreak`, the mark widths of
 // `cjk.punctuationWidth` and `compressAdjacent`, the Han–Latin space,
 // hanging punctuation and the book-title rule. Its lines come back as
@@ -12,8 +12,8 @@
 
 import type { InlineSpan } from '../parse/types.js';
 import type { VDTLine } from '../vdt.js';
-import { composeCjkParagraph, composesAsCjk } from '../measure/cjkCompose.js';
-import { getCjkComposition } from '../measure/cjkPunctuation.js';
+import { composeCjkParagraph, composesAsCjk } from '../measure/cjk/cjkCompose.js';
+import { getCjkComposition } from '../measure/cjk/cjkPunctuation.js';
 import type { DesignTextRun } from './richText.js';
 
 /** The fonts a CJK design text is set in: the element's, and the ones its

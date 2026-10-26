@@ -10,9 +10,9 @@
 import type { ContentBlock, DirectiveAttrs, ExerciseGap, InlineIcon, InlineSpan } from '../parse/index.js';
 import { CHIP_PLACEHOLDER, SWATCH_PLACEHOLDER } from '../parse/inlineFormatting.js';
 import type { CalloutStyleConfig, ChipStyleConfig, DigitSystem, HeadingCounters, OutlineEntry, ParagraphStyleConfig } from '../types.js';
-import type { ExerciseSettings, ResolvedExerciseStyle, ResolvedExercisesConfig } from '../defaults/exercises.js';
-import { pickExerciseStyle, solutionsOf } from '../defaults/exercises.js';
-import { counterStyleOf, formatCounter } from '../numbering.js';
+import type { ExerciseSettings, ResolvedExerciseStyle, ResolvedExercisesConfig } from '../defaults/boxes/exercises.js';
+import { pickExerciseStyle, solutionsOf } from '../defaults/boxes/exercises.js';
+import { counterStyleOf, formatCounter } from '../numerals/numbering.js';
 import { readExercises, containerEndOf } from './model.js';
 import type { ExerciseIssue, ExerciseModel } from './types.js';
 import { EMPTY_RUN, joinRuns, runOf, sliceRun, textRun, trimRun, blockOfRun, type Run } from './text.js';

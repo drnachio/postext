@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLine } from '../../vdt.js';
-import { cjkClassOf, isCjkGrapheme, isLabelEndProhibited, setCjkCircledNumbers } from '../../measure/cjkClasses.js';
+import { cjkClassOf, isCjkGrapheme, isLabelEndProhibited, setCjkCircledNumbers } from '../../measure/cjk/cjkClasses.js';
 import { installSizedStub } from '../vertical/stub.js';
 
 // Circled numbers set as Chinese characters (#637, `cjk.circledNumbers`).

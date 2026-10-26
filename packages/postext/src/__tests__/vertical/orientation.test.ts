@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell } from '../../writingMode.js';
-import { composeCjkParagraph } from '../../measure/cjkCompose.js';
+import { verticalOrientation, verticalRuns, uaxVerticalOrientation, isVerticalCell } from '../../writing/writingMode.js';
+import { composeCjkParagraph } from '../../measure/cjk/cjkCompose.js';
 import { cachedMeasureRichBlock, createMeasurementCache } from '../../measure/index.js';
 import { fontFamilyOf, measureCentralBaseline, withMeasureWritingMode } from '../../measure/vertical.js';
 import { graphemesOf } from '../../measure/graphemes.js';

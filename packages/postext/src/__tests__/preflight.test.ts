@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a Node built-in: the package compiles without @types/node.
 import { readFileSync as readFile } from 'node:fs';
 import { buildDocument } from '../pipeline/index.js';
-import { placedImageResolutions, preflightDocument, type PreflightIssue } from '../preflight.js';
-import { resolvePrintConfig } from '../defaults/print.js';
+import { placedImageResolutions, preflightDocument, type PreflightIssue } from '../checks/preflight.js';
+import { resolvePrintConfig } from '../defaults/output/print.js';
 import { outputTransform, parseIccProfile } from '../color/index.js';
 import type { PostextConfig, Resource } from '../types.js';
 

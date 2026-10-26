@@ -9,7 +9,7 @@
 
 import type { ContentBlock, InlineSpan } from '../../parse/index.js';
 import type { InlineDirection } from '../../parse/types.js';
-import { isRtlScriptChar } from '../../bidi.js';
+import { isRtlScriptChar } from '../../writing/bidi.js';
 import { resolvedDirection } from '../config.js';
 import { FOOTNOTE_PLACEHOLDER } from '../../parse/inlineFormatting.js';
 import type { Dimension } from '../../types.js';
@@ -20,7 +20,7 @@ import { citationEngine } from '../../citations/registry.js';
 import type { BibliographyEntryOutput, CitationClusterInput, CitationProcessor, CslItem, CslName } from '../../citations/types.js';
 import { isEtAlName } from '../../citations/bibtex.js';
 import { htmlToSpans, decodeEntities } from '../../citations/html.js';
-import { languageOf, stringsFor } from '../../locale.js';
+import { languageOf, stringsFor } from '../../hyphenation/locale.js';
 import { affixRichText, affixSpans } from '../../parse/citations.js';
 
 /** Id of the paragraph style the bibliography is set in. */

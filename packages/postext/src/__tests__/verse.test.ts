@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { joinsWithNext } from '../bidi.js';
+import { joinsWithNext } from '../writing/bidi.js';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
 import { collectContentWarnings } from '../pipeline/contentWarnings.js';
 import { verseSettings } from '../pipeline/text/verse.js';
-import { writtenText } from '../measure/kashida.js';
+import { writtenText } from '../measure/rtl/kashida.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../vdt.js';
 

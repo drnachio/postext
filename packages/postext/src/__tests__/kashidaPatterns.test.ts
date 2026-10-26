@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compileKashidaPatterns, findKashidaPoints, kashidaPatternSet, KashidaPatternError, type KashidaPatternSetName } from '../measure/kashidaPatterns.js';
+import { compileKashidaPatterns, findKashidaPoints, kashidaPatternSet, KashidaPatternError, type KashidaPatternSetName } from '../measure/rtl/kashidaPatterns.js';
 
 // #375: the port of raqim-kashida (aliftype, MIT). The vectors are raqim's
 // own (src/tests.rs at e217f98c): [grapheme index, priority] pairs.

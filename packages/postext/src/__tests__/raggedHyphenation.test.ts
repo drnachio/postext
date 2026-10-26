@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
 import { measureBlock } from '../measure/plain.js';
-import { setHyphenationLocale } from '../hyphenate.js';
+import { setHyphenationLocale } from '../hyphenation/hyphenate.js';
 import { buildDocument } from '../pipeline/index.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HYPHENATION_CONFIG } from '../defaults/bodyText.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults, hyphenationEqual, DEFAULT_HYPHENATION_CONFIG } from '../defaults/text/bodyText.js';
 import type { InlineSpan } from '../parse/index.js';
 import type { PostextConfig, VDTDocument } from '../index.js';
 

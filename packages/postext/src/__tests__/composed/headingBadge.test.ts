@@ -3,7 +3,7 @@ import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { sourceAt } from '../../composed/sourceMap.js';
 import { isAllowedPlaceholder, allowedPlaceholdersFor } from '../../design/placeholders.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import type { PageTemplate } from '../../composed/types.js';
 import type { PostextConfig, VDTDesignTextBlock, VDTDocument } from '../../index.js';
 

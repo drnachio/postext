@@ -1,6 +1,6 @@
-import type { CompositionRule } from './bodyText.js';
+import type { CompositionRule } from './text/bodyText.js';
 import type { ColorValue, ColumnRuleConfig, Dimension, LayoutType, SideColumnRole, SideColumnSide, WritingMode } from './page.js';
-import type { FloatShrinkMode, TextWrapConfig } from './resourceTypes.js';
+import type { FloatShrinkMode, TextWrapConfig } from './resources/resourceTypes.js';
 
 export interface LayoutConfig {
   layoutType?: LayoutType;

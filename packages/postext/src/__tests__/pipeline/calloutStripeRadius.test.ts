@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { renderHeaderFooterSlot } from '../../canvas-backend/headerFooter.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { CalloutStyleConfig, PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDesignBoxBlock, VDTDocument } from '../../vdt.js';
 

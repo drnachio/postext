@@ -6,7 +6,7 @@
 import type { ContentBlock } from '../../parse/index.js';
 import { spaceDirectiveLines } from '../../parse/attrs.js';
 import { dimensionToPx } from '../../units.js';
-import { writtenText } from '../../measure/kashida.js';
+import { writtenText } from '../../measure/rtl/kashida.js';
 import {
   createBoundingBox,
   pageIsMirrored,

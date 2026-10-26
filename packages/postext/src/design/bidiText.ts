@@ -22,7 +22,7 @@
  * pages.
  */
 
-import { bidiClassOf, lineLevels, needsBidi, resolveParagraph, visualOrder } from '../bidi.js';
+import { bidiClassOf, lineLevels, needsBidi, resolveParagraph, visualOrder } from '../writing/bidi.js';
 import { getMeasureLanguage } from '../measure/canvas.js';
 import { graphemeCount } from '../measure/graphemes.js';
 import { rtlTextWidth } from '../measure/script.js';

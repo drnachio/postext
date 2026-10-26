@@ -21,7 +21,7 @@
 import type { CaptionStyleConfig, ColorPaletteEntry, ColorValue, PostextConfig, ResourceType } from '../../types.js';
 import type { ResolvedConfig, VDTBlock, VDTDesignBlock, VDTDocument, VDTLine, VDTResourceTableCell, ResolvedResourceBlock } from '../../vdt.js';
 import { resolveAllConfig } from '../config.js';
-import { mergeCaptionStyle } from '../../defaults/captionStyle.js';
+import { mergeCaptionStyle } from '../../defaults/resources/captionStyle.js';
 import { CODE_BOX_STYLE_ID } from '../code/codeBlocks.js';
 import { recolorPathBlock } from '../../design/pathBlock.js';
 

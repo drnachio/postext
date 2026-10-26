@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderPageToCanvas } from '../canvas-backend/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { buildDocument } from '../pipeline/index.js';
 import { clearMeasurementCache } from '../measure/index.js';
 import { getMeasureLanguage, measureLanguageKey, measureTextWidth, setMeasureLanguage, withMeasureLanguage } from '../measure/canvas.js';
 import { pretextLanguageState } from '../measure/pretextLanguage.js';
-import { renderLangOf, shapingLanguageOf, shapingTagOf } from '../locale.js';
+import { renderLangOf, shapingLanguageOf, shapingTagOf } from '../hyphenation/locale.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLineSegment } from '../vdt.js';

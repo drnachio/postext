@@ -16,7 +16,7 @@ import {
   planCallouts,
   type CalloutLayoutResult,
 } from '../../pipeline/callouts/calloutLayout.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import { dimensionToPx } from '../../units.js';
 import type { CalloutStyleConfig, PostextConfig, Resource } from '../../types.js';
 import type { VDTDesignBoxBlock, VDTDesignImageBlock, VDTDesignRuleBlock, VDTDesignTextBlock } from '../../vdt.js';

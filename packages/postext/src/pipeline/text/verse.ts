@@ -42,7 +42,7 @@ import { pickSpanFont, textWidth } from '../../measure/rich.js';
 import { normalSpaceWidthFor } from '../../measure/canvas.js';
 import { lineBaselineOffset } from '../../measure/vertical.js';
 import { sliceSpan } from '../../parse/links.js';
-import { distributeKashida, writtenText, type KashidaOptions } from '../../measure/kashida.js';
+import { distributeKashida, writtenText, type KashidaOptions } from '../../measure/rtl/kashida.js';
 import { dimensionToPx } from '../../units.js';
 import type { DimensionUnit } from '../../types.js';
 import type { BlockStyle } from '../styles.js';

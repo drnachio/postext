@@ -7,10 +7,10 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { validatePageTemplates } from '../../composed/validate.js';
 import { figureLabelLeaderPath } from '../../composed/labels.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import { renderPageToCanvas } from '../../index.js';
 import { colorWithOpacity, markerSvgElement, pathHit, pathInkBox, pathMarkerOutline } from '../../design/pathBlock.js';
 import { flowRectToPage, type VDTDesignPathBlock, type VDTPathCommand, type VDTPathMarker } from '../../vdt.js';

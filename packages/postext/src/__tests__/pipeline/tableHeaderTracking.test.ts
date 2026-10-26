@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { buildDocument } from '../../pipeline/index.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
-import { renderToHtml } from '../../html-backend.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { renderPageToCanvas } from '../../canvas-backend/index.js';
-import { resolveTableStyleConfig, stripTableStyleDefaults } from '../../defaults/tableStyle.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
+import { resolveTableStyleConfig, stripTableStyleDefaults } from '../../defaults/resources/tableStyle.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
 import type { PostextConfig, Resource, TableCell, TableModel } from '../../types.js';
 
 // EF-174: header cells can be tracked (`headerLetterSpacing`) and set in

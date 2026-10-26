@@ -1,5 +1,5 @@
-import { cjkMarkPieces } from './cjkClasses.js';
-import { hasCJK } from './cjk.js';
+import { cjkMarkPieces } from './cjk/cjkClasses.js';
+import { hasCJK } from './cjk/cjk.js';
 import { fontStringFamily, fontStringWithFamily } from './fontString.js';
 
 type Context2D = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;

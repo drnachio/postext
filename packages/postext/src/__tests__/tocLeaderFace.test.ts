@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { findPxSize, parseFontString } from '../measure/fontString.js';
-import { resolveTocConfig, stripTocDefaults } from '../defaults/toc.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
-import { renderToHtml } from '../html-backend.js';
+import { resolveTocConfig, stripTocDefaults } from '../defaults/structure/toc.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import type { DesignSlot, PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDesignTextBlock, VDTDocument, VDTLineSegment } from '../vdt.js';
 

@@ -28,7 +28,7 @@ import type { LineInsetStep } from '../../measure/types.js';
 import { lineInsetsAt } from '../../measure/types.js';
 import { dimensionToPx } from '../../units.js';
 import { wrapWidthOf } from '../../defaults/layout.js';
-import { parseLengthText } from '../../defaults/tabStops.js';
+import { parseLengthText } from '../../defaults/text/tabStops.js';
 import { contourInsetSteps } from '../../contour/index.js';
 import { captionInsideShare } from '../resources/captionInside.js';
 

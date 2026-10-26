@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { directDesignTextBlock, directedTextWidth, measuresRunsAsPainted } from '../../design/bidiText.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
 import { layoutSlotToVdt } from '../../pipeline/pages/headerFooter.js';
 import { clearMeasurementCache } from '../../measure/index.js';
 import { setMeasureLanguage } from '../../measure/canvas.js';

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { stripCalloutStylesDefaults } from '../../defaults/calloutStyles.js';
+import { stripCalloutStylesDefaults } from '../../defaults/boxes/calloutStyles.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { CalloutSideAtColumnEnd, PostextConfig, VDTDocument } from '../../index.js';
 

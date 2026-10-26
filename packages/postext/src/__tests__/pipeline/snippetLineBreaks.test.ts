@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import { mapInlineSnippet } from '../../parse/inlineSnippet.js';
 import type { PostextConfig, Resource, TableModel } from '../../types.js';
 import type { VDTLine } from '../../vdt.js';

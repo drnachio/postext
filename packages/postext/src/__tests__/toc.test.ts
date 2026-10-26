@@ -5,7 +5,7 @@ import { computeOutline, hasTocDirective, outlineFromDoc, outlineKey, sameOutlin
 import { expandTocDirectives } from '../pipeline/contents/toc.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { resolveTocConfig, stripTocDefaults } from '../defaults/toc.js';
+import { resolveTocConfig, stripTocDefaults } from '../defaults/structure/toc.js';
 import { dimensionToPx } from '../units.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDesignTextBlock } from '../vdt.js';

@@ -16,7 +16,7 @@ import { cleanSoftHyphens } from './utils.js';
 import { lineTracking, trackSegments } from './tracking.js';
 import { breaksAfterDash, breaksAfterHardHyphen, isDash } from '../measure/breakRules.js';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate.js';
-import { joiningScriptIn } from '../measure/joining.js';
+import { joiningScriptIn } from '../measure/rtl/joining.js';
 
 /** The room the dot of an `l·l` takes at the end of `piece`: a width, or
  *  what the caller's measurer says for that piece. */
@@ -25,7 +25,7 @@ function dotRoomOf(room: number | ((piece: string) => number), piece: string): n
 }
 
 /** Characters tracking may spread over in a segment: none in a word of a
- *  joining script, whose letters connect (`measure/joining.ts`). */
+ *  joining script, whose letters connect (`measure/rtl/joining.ts`). */
 function trackedChars(seg: string): number {
   return joiningScriptIn(seg) ? 0 : graphemeCount(seg);
 }

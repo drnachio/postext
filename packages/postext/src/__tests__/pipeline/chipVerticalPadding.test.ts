@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { resolveChipStylesConfig, stripChipStylesDefaults } from '../../defaults/chipStyles.js';
+import { resolveChipStylesConfig, stripChipStylesDefaults } from '../../defaults/text/chipStyles.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { ChipStyleConfig, PostextConfig, VDTDocument, VDTLineSegment } from '../../index.js';
 
 // Deterministic measurement that scales with the font size: every glyph is

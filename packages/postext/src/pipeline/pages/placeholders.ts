@@ -2,8 +2,8 @@ import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, charBefore, withoutChips, charFrom
 import { collapseBreakingSpaces, collapseTitleSpaces } from '../../measure/spaces.js';
 import type { InlineSpan } from '../../parse/index.js';
 import type { DigitSystem, DocumentMetadata } from '../../types.js';
-import { metadataText } from '../../frontmatter.js';
-import { withDigits } from '../../arabicNumerals.js';
+import { metadataText } from '../../parse/frontmatter.js';
+import { withDigits } from '../../numerals/arabicNumerals.js';
 import type { VDTBlock, VDTLine, VDTPage } from '../../vdt.js';
 
 /** A minimal view of a page used by `computeChapterTitles` to detect

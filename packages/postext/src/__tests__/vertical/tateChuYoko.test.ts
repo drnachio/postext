@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas, renderToHtml } from '../../index.js';
 import { parseInlineFormatting, stripInlineFormatting } from '../../parse/inlineFormatting.js';
-import { verticalRuns, uprightDigitRuns, forcedVerticalRuns, segmentOrientation } from '../../writingMode.js';
+import { verticalRuns, uprightDigitRuns, forcedVerticalRuns, segmentOrientation } from '../../writing/writingMode.js';
 import { graphemesOf } from '../../measure/graphemes.js';
 import { atomicSpanToken } from '../../measure/rich.js';
 import { withMeasureWritingMode } from '../../measure/vertical.js';

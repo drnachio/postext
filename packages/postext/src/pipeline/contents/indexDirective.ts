@@ -21,7 +21,7 @@ import type { BlockMeasureContext, MeasuredContentBlock } from '../blocks/measur
 import { stampSourceRanges } from '../blocks/buildHelpers.js';
 import { bookTitlesAsConfigured } from '../text/annotations.js';
 import { resolvedLocale } from '../config.js';
-import { chineseScriptOf, languageOf, localeScript, stringsFor } from '../../locale.js';
+import { chineseScriptOf, languageOf, localeScript, stringsFor } from '../../hyphenation/locale.js';
 import type { IndexGrouping } from './indexGroups.js';
 import { arabicSortKey, canGroupBy, indexGrouping, pinyinInitial, sortLocaleFor, strokeGroup, strokeLabel } from './indexGroups.js';
 import { compareJapanese, gojuonRow, gojuonRowLabel, hasKanji, japaneseLead, kanaLabel } from './indexJapanese.js';

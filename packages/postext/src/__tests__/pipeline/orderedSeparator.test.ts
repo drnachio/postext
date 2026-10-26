@@ -10,8 +10,8 @@ import { resolveBodyStyle } from '../../pipeline/styles.js';
 import { parseMarkdown } from '../../parse/index.js';
 import { dimensionToPx } from '../../units.js';
 import { applyPaletteToConfig, stripConfigDefaults } from '../../defaults/index.js';
-import { resolveOrderedListsConfig, stripOrderedListsDefaults } from '../../defaults/orderedLists.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
+import { resolveOrderedListsConfig, stripOrderedListsDefaults } from '../../defaults/text/orderedLists.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
 import type { PostextConfig, VDTBlock } from '../../index.js';
 
 // Deterministic text measurement stub (no DOM in the node test env): every

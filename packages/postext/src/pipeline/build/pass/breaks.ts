@@ -5,7 +5,7 @@ import type { VDTColumn, VDTPage, VDTBlock, ResolvedConfig, VDTDocument, Resolve
 import { settleColumnWraps } from '../../floats/textWrap.js';
 import { currentColumn, sideColumns, bandColumns, currentBand, pageHasContent, advanceToNextColumn, advanceToNextPageBoundary, type PlacementCursor } from '../../blocks/placement.js';
 import type { PlannedFloat } from '../../floats/floatPlacement.js';
-import type { PageNumberSegment } from '../../../numbering.js';
+import type { PageNumberSegment } from '../../../numerals/numbering.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import { rollbackTrailingBlocks } from '../../blocks/buildHelpers.js';
 import type { PlannedCallout } from '../../callouts/calloutLayout.js';

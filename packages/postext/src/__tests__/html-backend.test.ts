@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtmlIndexed } from '../html-backend.js';
+import { renderToHtmlIndexed } from '../html-backend/html-backend.js';
 import type { PostextConfig } from '../types.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

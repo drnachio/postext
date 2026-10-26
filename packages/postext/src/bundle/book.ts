@@ -16,7 +16,7 @@ import type { StoryJump } from '../composed/carry.js';
 import type { BuildDocumentOptions } from '../pipeline/index.js';
 import { createMeasurementCache } from '../measure/index.js';
 import type { MeasurementCache } from '../measure/index.js';
-import { extractFrontmatter } from '../frontmatter.js';
+import { extractFrontmatter } from '../parse/frontmatter.js';
 import { configUsesPlaceholder } from '../design/placeholders.js';
 import { bundleStart } from './manifest.js';
 import type { BundleChapter, BundleStart } from './types.js';

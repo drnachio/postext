@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
-import { resolveCalloutStylesConfig } from '../../defaults/calloutStyles.js';
+import { resolveCalloutStylesConfig } from '../../defaults/boxes/calloutStyles.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
 import type { CalloutStyleConfig, PostextConfig } from '../../types.js';

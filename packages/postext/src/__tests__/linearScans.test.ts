@@ -3,7 +3,7 @@ import { findPxSize, splitAtFontSize, withPxSize, fontStringFamily } from '../me
 import { quoteFamily } from '../measure/font.js';
 import { directiveAttrRanges, replaceTitleBreaks } from '../parse/inlineFormatting.js';
 import { texLabelMatches } from '../parse/equationLabels.js';
-import { extractFrontmatter } from '../frontmatter.js';
+import { extractFrontmatter } from '../parse/frontmatter.js';
 import { parseComicFence } from '../comics/index.js';
 
 // The scans that replace regular expressions CodeQL found slow on long

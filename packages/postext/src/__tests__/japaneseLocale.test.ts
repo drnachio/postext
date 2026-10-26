@@ -6,7 +6,7 @@ import {
   renderLangOf,
   stringsFor,
   stringsKeyOf,
-} from '../locale.js';
+} from '../hyphenation/locale.js';
 import {
   defaultCjkBookTitleMark,
   defaultCjkCompression,
@@ -15,18 +15,18 @@ import {
   defaultCjkWarichuBrackets,
   resolveCjkConfig,
   stripCjkDefaults,
-} from '../defaults/cjk.js';
-import { defaultResourceTypes } from '../defaults/resourceTypes.js';
-import { defaultTableContinuationStrings } from '../defaults/tableStyle.js';
+} from '../defaults/text/cjk.js';
+import { defaultResourceTypes } from '../defaults/resources/resourceTypes.js';
+import { defaultTableContinuationStrings } from '../defaults/resources/tableStyle.js';
 import { defaultCrossRefStrings } from '../pipeline/references/crossRefs.js';
 import { defaultBibliographyTitle } from '../pipeline/references/citations.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { expandIndexDirectives } from '../pipeline/contents/indexDirective.js';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
-import { verticalCellEms, verticalOrientation } from '../writingMode.js';
-import { cjkClassOf } from '../measure/cjkClasses.js';
-import { mayHang, punctuationAdvance, punctuationSide, type CjkComposition } from '../measure/cjkPunctuation.js';
+import { verticalCellEms, verticalOrientation } from '../writing/writingMode.js';
+import { cjkClassOf } from '../measure/cjk/cjkClasses.js';
+import { mayHang, punctuationAdvance, punctuationSide, type CjkComposition } from '../measure/cjk/cjkPunctuation.js';
 import type { CjkRegion, OutlineEntry, PostextConfig } from '../types.js';
 import type { VDTDocument, VDTLine } from '../vdt.js';
 import { installSizedStub } from './vertical/stub.js';

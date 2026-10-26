@@ -3,7 +3,7 @@ import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { composedPaintOrder, composedReadingOrder } from '../../composed/paint.js';
 import { altWithLabels } from '../../composed/labelText.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../index.js';
 
 // #862: what the outputs that do not draw a composed page as print read

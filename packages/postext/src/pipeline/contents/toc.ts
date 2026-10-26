@@ -11,14 +11,14 @@
  */
 
 import { flowTextWidth, measuringVertically } from '../../measure/vertical.js';
-import { getMeasureArabicNumbers } from '../../measure/bidiLines.js';
+import { getMeasureArabicNumbers } from '../../measure/rtl/bidiLines.js';
 import { onTextWidthCacheClear, measureLanguageKey } from '../../measure/canvas.js';
 import { fitLeader } from '../../measure/leader.js';
 import { faceReadsScript, getMeasureScriptContext, isLetterless, scriptTextWidth, type ScriptContext } from '../../measure/script.js';
 import { measuresRunsAsPainted } from '../../design/bidiText.js';
 import type { ContentBlock, InlineSpan, TocBlockInfo, TocGroupInfo } from '../../parse/index.js';
 import { suffixJoiner } from '../../parse/inlineFormatting.js';
-import { parseTocGroupHead } from '../../defaults/toc.js';
+import { parseTocGroupHead } from '../../defaults/structure/toc.js';
 import type { OutlineEntry, ResolvedTocEntryStyleConfig, TocGroupHead } from '../../types.js';
 import type { VDTBlock, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { dimensionToPx } from '../../units.js';

@@ -1,20 +1,20 @@
 import { flowTextWidth, measuringVertically } from '../../measure/vertical.js';
-import { getMeasureArabicNumbers, getMeasureDirection } from '../../measure/bidiLines.js';
+import { getMeasureArabicNumbers, getMeasureDirection } from '../../measure/rtl/bidiLines.js';
 import { rtlTextWidth } from '../../measure/script.js';
-import { markerSetText } from '../../bidi.js';
+import { markerSetText } from '../../writing/bidi.js';
 import { measuresRunsAsPainted } from '../../design/bidiText.js';
 import type { ResolvedUnorderedListLevelConfig, ResolvedOrderedListLevelConfig, OrderedListNumberFormat, Dimension, DigitSystem } from '../../types.js';
 import type { ContentBlock, ListKind } from '../../parse/index.js';
 import { dimensionToPx } from '../../units.js';
 import type { ResolvedConfig, VDTBlock } from '../../vdt.js';
 import { buildFontString } from '../../measure/index.js';
-import { formatNumeral, parseNumberFormat } from '../../numbering.js';
-import { withDigits } from '../../arabicNumerals.js';
-import { defaultNumeralsFor, languageOf } from '../../locale.js';
+import { formatNumeral, parseNumberFormat } from '../../numerals/numbering.js';
+import { withDigits } from '../../numerals/arabicNumerals.js';
+import { defaultNumeralsFor, languageOf } from '../../hyphenation/locale.js';
 import { resolvedLocale } from '../config.js';
 import type { BlockStyle } from '../styles.js';
 import { resolveBodyStyle } from '../styles.js';
-import { isDrawnTaskBox, taskBoxSize } from '../../taskBox.js';
+import { isDrawnTaskBox, taskBoxSize } from '../../paint/taskBox.js';
 
 export interface ListBulletStyle {
   indentPx: number;

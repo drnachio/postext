@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { registerCitationEngine } from '../../citations/registry.js';
 import type { CitationEngine } from '../../citations/types.js';
 import type { PostextConfig } from '../../index.js';

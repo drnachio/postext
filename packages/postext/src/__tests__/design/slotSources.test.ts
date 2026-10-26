@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { layoutSlotToVdt } from '../../pipeline/pages/headerFooter.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';
 import type { DesignElement } from '../../types.js';
 import type { VDTDesignTextBlock, VDTPage } from '../../vdt.js';

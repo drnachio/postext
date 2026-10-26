@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { continuationAfter } from '../pipeline/continuation.js';
-import { renderToHtml } from '../html-backend.js';
-import { collectConfigWarnings } from '../configWarnings.js';
-import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from '../defaults/lineNumbers.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from '../defaults/text/lineNumbers.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { collectFontUsage, configFontFamilies } from '../fonts/usage.js';
 import { flowRectToPage, type VDTBlock, type VDTDocument, type VDTLine, type VDTPage } from '../vdt.js';

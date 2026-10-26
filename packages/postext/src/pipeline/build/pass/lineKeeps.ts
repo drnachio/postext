@@ -11,7 +11,7 @@ import { type PlacementCursor, FIT_EPS, resetLinePositions, placeBlockInColumn, 
 import type { Resource } from '../../../types.js';
 import type { BlockStyle } from '../../styles.js';
 import { type BlockMeasureContext, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { CompositionRule } from '../../../types/bodyText.js';
+import type { CompositionRule } from '../../../types/text/bodyText.js';
 import type { BlockIteration } from './blockIteration.js';
 import { defaultOpenerTitle, markedTitleFields, measureHeadingDesign, measureDefaultOpenerHeight } from '../../pages/headerFooter.js';
 import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';

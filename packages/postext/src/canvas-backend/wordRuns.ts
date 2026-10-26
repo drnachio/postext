@@ -1,6 +1,6 @@
-import { shapingTagOf } from '../locale.js';
+import { shapingTagOf } from '../hyphenation/locale.js';
 import type { VDTLineSegment } from '../vdt.js';
-import { joiningScriptIn } from '../measure/joining.js';
+import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { mirroredPaintActive } from './mirrorFrame.js';
 import { fillTrackedWord, setLetterTracking } from './trackedText.js';
 import { fillScriptWord } from './scriptText.js';
@@ -28,7 +28,7 @@ const MARK_RE = /\p{M}/u;
  * - no letter-spacing: the line's or the block's `tracking` (the context's
  *   `letterSpacing` on entry) is lifted while the word is painted, since
  *   spacing its letters apart breaks the joins (the measurer left such a
- *   word untracked, `measure/joining.ts`);
+ *   word untracked, `measure/rtl/joining.ts`);
  * - a word set in several styles (`runs`, `كتا**ب**`) is painted whole in
  *   the segment's style, then once more in each other run's style, clipped
  *   to that run's stretch of the word ({@link paintWordRuns}).

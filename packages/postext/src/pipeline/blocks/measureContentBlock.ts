@@ -23,10 +23,10 @@ import {
 import { resolveBlockKind, uppercasePreservingLength, type BlockKind, type BlockKindContext } from './buildBlockKind.js';
 import { runMeasurement } from './buildMeasurement.js';
 import { linkSegments } from '../../measure/links.js';
-import { kashidaMeasureOptions } from '../../measure/kashida.js';
+import { kashidaMeasureOptions } from '../../measure/rtl/kashida.js';
 import { measureVerse } from '../text/verse.js';
 import { measureVerseLines, verseLinesSettings, versesLineByLine } from '../text/verseLines.js';
-import { composesAsCjk } from '../../measure/cjkCompose.js';
+import { composesAsCjk } from '../../measure/cjk/cjkCompose.js';
 import { measuringVertically } from '../../measure/vertical.js';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext, type TableRowMetrics, type TableSliceSpec } from '../resources/resourceLayout.js';
 import { chipContextOf, resolveChipSpans } from '../text/chips.js';
@@ -38,8 +38,8 @@ import { measureIndexBlock } from '../contents/indexDirective.js';
 import { flushEndMark } from '../text/statementNumbering.js';
 import { LINE_MAX_SPACE_RATIO } from '../text/raggedLines.js';
 import { dimensionToPx } from '../../units.js';
-import { joiningScriptIn, mostlyJoiningScript } from '../../measure/joining.js';
-import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../../measure/bidiLines.js';
+import { joiningScriptIn, mostlyJoiningScript } from '../../measure/rtl/joining.js';
+import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../../measure/rtl/bidiLines.js';
 import { startEndAsLeftRight } from '../../defaults/shared.js';
 import { prepareTabs } from '../text/tabs.js';
 import { resolveResourceWrap } from '../floats/textWrap.js';
@@ -615,7 +615,7 @@ export function measureContentBlock(
     ? (style.letterSpacingPx ?? 0) + (opts?.trackingEm ? opts.trackingEm * style.fontSizePx : 0)
     : 0;
   // The words of a joining script take none of the style's tracking (the
-  // measurer leaves them untracked, `measure/joining.ts`): say so.
+  // measurer leaves them untracked, `measure/rtl/joining.ts`): say so.
   if (ctx.joiningLetterSpacing && hasRichFonts && (style.letterSpacingPx ?? 0) !== 0 && joiningScriptIn(contentBlock.text)) {
     ctx.joiningLetterSpacing.add(blockIdx);
   }

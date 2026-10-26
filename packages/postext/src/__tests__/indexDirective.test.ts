@@ -6,7 +6,7 @@ import { computeOutline, hasIndexDirective, indexOutline, outlineFromDoc, tocOut
 import { expandIndexDirectives, rangeEnd } from '../pipeline/contents/indexDirective.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { stripIndexDefaults } from '../defaults/indexConfig.js';
+import { stripIndexDefaults } from '../defaults/structure/indexConfig.js';
 import type { OutlineEntry, PostextConfig } from '../types.js';
 import type { ContentBlock } from '../parse/index.js';
 import type { VDTDocument } from '../vdt.js';

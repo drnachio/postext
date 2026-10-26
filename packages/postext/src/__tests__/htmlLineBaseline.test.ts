@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { clearTextWidthCache } from '../measure/canvas.js';
 import type { PostextConfig } from '../types.js';
 

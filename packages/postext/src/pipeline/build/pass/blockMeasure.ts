@@ -13,7 +13,7 @@ import type { PartPlan } from '../../sections/parts.js';
 import { type PlacementCursor, advanceToNextPageBoundary, enforcePageParity, currentColumn, advanceToNextColumn, FIT_EPS } from '../../blocks/placement.js';
 import type { FloatRotation } from './types.js';
 import { type BlockMeasureContext, type MeasureContentBlockOptions, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { ResolvedHeadingStyleConfig } from '../../../types/headingStyles.js';
+import type { ResolvedHeadingStyleConfig } from '../../../types/structure/headingStyles.js';
 import type { ResolvedHeadingLevelConfig, Resource, ResourceType } from '../../../types.js';
 import { type InlineAside, MIN_INLINE_FIGURE_SCALE } from '../passTypes.js';
 import { measureLooseParagraph, headingSetsOwnBand } from '../passHelpers.js';

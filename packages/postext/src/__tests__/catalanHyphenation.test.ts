@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
 import { measureBlock } from '../measure/plain.js';
-import { hyphenateText, setHyphenationLocale } from '../hyphenate.js';
+import { hyphenateText, setHyphenationLocale } from '../hyphenation/hyphenate.js';
 import type { InlineSpan } from '../parse/index.js';
 import type { VDTLine } from '../vdt.js';
 

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/headings.js';
-import { stripHeadingStylesDefaults } from '../defaults/headingStyles.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/structure/headings.js';
+import { stripHeadingStylesDefaults } from '../defaults/structure/headingStyles.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { formatWarning } from '../pipeline/contentWarnings.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import type { HeadingLevelConfig, PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDesignTextBlock, VDTDocument } from '../vdt.js';
 

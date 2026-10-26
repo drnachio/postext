@@ -1,5 +1,5 @@
-import type { ArabicNumeralStyle, EastAsianNumeralStyle } from '../numbering.js';
-import type { CmykPercent } from './print.js';
+import type { ArabicNumeralStyle, EastAsianNumeralStyle } from '../numerals/numbering.js';
+import type { CmykPercent } from './output/print.js';
 
 export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 

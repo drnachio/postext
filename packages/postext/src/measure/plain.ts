@@ -8,7 +8,7 @@ import {
 import type { VDTLine, VDTLineSegment } from '../vdt.js';
 import { createBoundingBox } from '../vdt.js';
 import type { TextAlign } from '../types.js';
-import { hyphenateText, hyphenateTextKeepingCompounds, withoutEdgeSoftHyphens } from '../hyphenate.js';
+import { hyphenateText, hyphenateTextKeepingCompounds, withoutEdgeSoftHyphens } from '../hyphenation/hyphenate.js';
 import {
   pretextSegmentsToItems,
   computeBreakpoints,
@@ -21,16 +21,16 @@ import { cleanSoftHyphens, getMeasureLanguage, measureTextWidth, normalSpaceWidt
 import { isRuntLastLine } from './runts.js';
 import { justifiedSpaceRatios } from './spaceRatios.js';
 import { measureRichBlock } from './rich.js';
-import { hasCJK, hasCJKRun } from './cjk.js';
-import { composesAsCjk, composesDashRow } from './cjkCompose.js';
-import { markCuts } from './markCuts.js';
+import { hasCJK, hasCJKRun } from './cjk/cjk.js';
+import { composesAsCjk, composesDashRow } from './cjk/cjkCompose.js';
+import { markCuts } from './cjk/markCuts.js';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, lineBaselineOffset, measuringVertically, withMeasureWritingMode } from './vertical.js';
-import { holdsVerticalCell } from '../writingMode.js';
+import { holdsVerticalCell } from '../writing/writingMode.js';
 import { WORDS_AND_SPACES_RE, isBreakingSpaceRun } from './spaces.js';
 import { breaksAfterHardHyphen, hasCompound, raggedStretchPx } from './breakRules.js';
-import { joiningScriptIn } from './joining.js';
-import { getMeasureDirection } from './bidiLines.js';
-import { needsBidi } from '../bidi.js';
+import { joiningScriptIn } from './rtl/joining.js';
+import { getMeasureDirection } from './rtl/bidiLines.js';
+import { needsBidi } from '../writing/bidi.js';
 import { faceReadsScript, getMeasureScriptContext, isLetterless, wordPieceScript } from './script.js';
 import { prepareInLanguage } from './pretextLanguage.js';
 
@@ -132,7 +132,7 @@ function hasOverwideGluedGroup(text: string, font: string, widthPx: number): boo
 /**
  * Whether `text` holds a word of a joining script (Arabic…) wider than
  * `widthPx`. Pretext would cut it between two letters; the word-by-word
- * breaker never cuts one (`measure/joining.ts`): it lets it run past the
+ * breaker never cuts one (`measure/rtl/joining.ts`): it lets it run past the
  * measure and flags the line (`VDTLine.wordOverflow`).
  */
 function hasOverwideJoiningWord(text: string, font: string, widthPx: number): boolean {
@@ -383,7 +383,7 @@ export function measureBlock(
   // changes (`ABC،`, `(API)` in Arabic), measuring each piece as it is
   // painted (pretext measures `(API)` whole, its brackets kerned to letters
   // they end up on the far side of), and gives its lines their order
-  // (`measure/bidiLines.ts`).
+  // (`measure/rtl/bidiLines.ts`).
   if ((options?.direction ?? getMeasureDirection()) === 'rtl' || needsBidi(text)) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }

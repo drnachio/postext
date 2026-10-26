@@ -7,16 +7,16 @@ import {
   hanInformalStyle,
   parseNumberFormat,
   EAST_ASIAN_NUMERAL_STYLES,
-} from '../numbering.js';
-import { HIRAGANA, HIRAGANA_IROHA, KATAKANA, KATAKANA_IROHA, japaneseNumeral } from '../japaneseNumerals.js';
-import { parseChineseNumeral } from '../chineseNumerals.js';
-import { numberToWords } from '../numberWords.js';
+} from '../numerals/numbering.js';
+import { HIRAGANA, HIRAGANA_IROHA, KATAKANA, KATAKANA_IROHA, japaneseNumeral } from '../numerals/japaneseNumerals.js';
+import { parseChineseNumeral } from '../numerals/chineseNumerals.js';
+import { numberToWords } from '../numerals/numberWords.js';
 import { parsePartNumber } from '../pipeline/sections/parts.js';
 import { formatListNumber } from '../pipeline/text/lists.js';
 import { computeHeadingContext, computeResourceNumbering } from '../pipeline/resources/resourceNumbering.js';
 import { formatFootnoteNumber } from '../pipeline/references/footnotes.js';
-import { resolveFootnotesConfig } from '../defaults/footnotes.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { resolveFootnotesConfig } from '../defaults/structure/footnotes.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
 import type { PostextConfig, Resource, ResourceType } from '../types.js';

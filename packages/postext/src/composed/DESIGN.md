@@ -892,7 +892,7 @@ Recorded where the implementation settles a point the sections above leave open,
   paragraph-group style, writing mode and language state), replays the drop cap note and the
   joining-script mark of the first measure, and never keeps a figure or table. Dropped with the
   run, since `leftFlow` and the numbers are fixed only for it.
-- **Box styles based on another (#905).** `CalloutStyleConfig.extends` (`defaults/calloutStyles.ts`:
+- **Box styles based on another (#905).** `CalloutStyleConfig.extends` (`defaults/boxes/calloutStyles.ts`:
   `inheritCalloutStyles` before resolving, objects merged key by key, colours and lengths whole,
   `id`/`name` never; `calloutStyleChain`; warnings `calloutStyleExtendsUnknown` /
   `calloutStyleExtendsCycle`, WARNING_SINCE 1.39.0). The frame-style library (§2.4) merging on the

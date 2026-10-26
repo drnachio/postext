@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { createMeasurementCache } from '../measure/index.js';
-import { collectConfigWarnings } from '../configWarnings.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
-import { resolveParagraphStylesConfig, stripParagraphStylesDefaults } from '../defaults/paragraphStyles.js';
-import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/headings.js';
-import { resolveHeadingStylesConfig } from '../defaults/headingStyles.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
+import { resolveParagraphStylesConfig, stripParagraphStylesDefaults } from '../defaults/text/paragraphStyles.js';
+import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/structure/headings.js';
+import { resolveHeadingStylesConfig } from '../defaults/structure/headingStyles.js';
 import { collectFontUsage } from '../fonts/usage.js';
 import { documentFontFamilies } from '../worker/fonts.js';
 import type { ParagraphDropCap, PostextConfig, Resource } from '../types.js';

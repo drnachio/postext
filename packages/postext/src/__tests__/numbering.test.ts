@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseTemplate, formatNumeral, computeHeadingNumbers } from '../numbering.js';
+import { parseTemplate, formatNumeral, computeHeadingNumbers } from '../numerals/numbering.js';
 import { parseMarkdown, type ContentBlock } from '../parse/index.js';
 import { resolveBlockKind, uppercasePreservingLength } from '../pipeline/blocks/buildBlockKind.js';
 import { resolveAllConfig } from '../pipeline/config.js';

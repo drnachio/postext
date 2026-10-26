@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { initMathEngine, renderMath, clearMathCache } from '../math/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import type { MathRender } from '../math/index.js';
 import type { VDTBlock, VDTDocument } from '../vdt.js';
 

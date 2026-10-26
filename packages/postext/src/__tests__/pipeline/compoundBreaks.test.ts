@@ -1,11 +1,11 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { computeChapterTitles } from '../../pipeline/pages/placeholders.js';
-import { renderToHtml } from '../../html-backend.js';
-import { setHyphenationLocale } from '../../hyphenate.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
+import { setHyphenationLocale } from '../../hyphenation/hyphenate.js';
 import { createMeasurementCache, measureBlock, measureRichBlock } from '../../measure/index.js';
 import { migrateConfig, migrateBundleConfig, pinLegacyHyphenBreaks, CONFIG_VERSION, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/bodyText.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTLine } from '../../vdt.js';
 

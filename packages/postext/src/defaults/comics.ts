@@ -14,7 +14,7 @@ import type {
   WritingMode,
 } from '../types.js';
 import type { ResolvedConfig } from '../vdt.js';
-import { chineseScriptOf, comicsLocaleDirection, isJapaneseLanguage, localeScript, presentTag } from '../locale.js';
+import { chineseScriptOf, comicsLocaleDirection, isJapaneseLanguage, localeScript, presentTag } from '../hyphenation/locale.js';
 import { colorsEqual, dimensionsEqual } from './shared.js';
 
 const HEX = (hex: string): ColorValue => ({ hex, model: 'hex' });

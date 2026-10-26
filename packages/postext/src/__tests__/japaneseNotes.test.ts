@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { createMeasurementCache } from '../measure/index.js';
 import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, stripConfigDefaults } from '../defaults/index.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import type { Dimension, PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../vdt.js';
 import { installSizedStub, stubCharWidth } from './vertical/stub.js';
 import { renderPageToCanvas } from '../index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 
 // CJK characters and full-width forms 1 em, anything else ½ em (stub.ts).
 installSizedStub();

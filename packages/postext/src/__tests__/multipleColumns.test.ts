@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../index.js';
 import { createMeasurementCache } from '../measure/index.js';
-import { collectConfigWarnings } from '../configWarnings.js';
-import { columnRuleSegments } from '../columnRule.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
+import { columnRuleSegments } from '../paint/columnRule.js';
 import type { PostextConfig, Resource } from '../types.js';
 import type { VDTDocument, VDTPage } from '../vdt.js';
 

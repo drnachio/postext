@@ -1,14 +1,14 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { parseMarkdown, parseMarkdownWithIssues } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtml } from '../html-backend.js';
+import { renderToHtml } from '../html-backend/html-backend.js';
 import { CONFIG_VERSION, migrateConfig, migrateBundleConfig, pinLegacyCodeBlocks } from '../bundle/configVersion.js';
-import { resolveCodeStyleConfig, stripCodeStyleDefaults, DEFAULT_CODE_STYLE } from '../defaults/codeStyle.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { resolveCodeStyleConfig, stripCodeStyleDefaults, DEFAULT_CODE_STYLE } from '../defaults/text/codeStyle.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { highlightCode, registerCodeHighlighter } from '../code/highlight.js';
 import { fencedCodeLines } from '../parse/codeFence.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { configFontFamilies, collectFontUsage } from '../fonts/usage.js';
 import { formatWarning } from '../pipeline/contentWarnings.js';
 import type { PostextConfig } from '../types.js';

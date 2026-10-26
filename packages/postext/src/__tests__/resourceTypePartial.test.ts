@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { completeResourceType, effectiveResourceTypes } from '../defaults/resourceTypes.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { completeResourceType, effectiveResourceTypes } from '../defaults/resources/resourceTypes.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import type { PostextConfig, Resource, ResourceType } from '../types.js';
 
 class StubCtx {

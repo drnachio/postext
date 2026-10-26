@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { measureBlock } from '../measure/plain.js';
 import { measureRichBlock, emergencySplit } from '../measure/rich.js';
-import { hyphenateText } from '../hyphenate.js';
-import { joinsWithNext } from '../bidi.js';
-import { insideJoiningWord, joiningScriptIn, mostlyJoiningScript, wordLetterSpacing } from '../measure/joining.js';
-import { resolveBodyTextConfig } from '../defaults/bodyText.js';
+import { hyphenateText } from '../hyphenation/hyphenate.js';
+import { joinsWithNext } from '../writing/bidi.js';
+import { insideJoiningWord, joiningScriptIn, mostlyJoiningScript, wordLetterSpacing } from '../measure/rtl/joining.js';
+import { resolveBodyTextConfig } from '../defaults/text/bodyText.js';
 import { buildDocument } from '../pipeline/index.js';
 import { formatWarning } from '../pipeline/contentWarnings.js';
 import { renderBlock } from '../canvas-backend/blockRender.js';

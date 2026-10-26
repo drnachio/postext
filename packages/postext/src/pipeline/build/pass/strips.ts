@@ -5,7 +5,7 @@ import type { ComicPageSource } from '../../../comics/types.js';
 import { comicStripPlacement, comicStripWidth, comicStripOffset, comicStripExtent, layoutComicStrip } from '../../../comics/strip.js';
 import { layoutCaptionText } from '../../resources/resourceLayout.js';
 import { type VDTBlock, pageIsVertical, createVDTBlock, createBoundingBox, flowRectToPage, type VDTLine, type ResolvedConfig, type VDTDocument } from '../../../vdt.js';
-import { shiftLineX } from '../../../measure/bidiLines.js';
+import { shiftLineX } from '../../../measure/rtl/bidiLines.js';
 import type { MeasurementCache } from '../../../measure/index.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { Resource, ResourceType, ResolvedCalloutStyleConfig } from '../../../types.js';

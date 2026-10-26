@@ -2,7 +2,7 @@
 // naming, and conversion of manifest entries into engine resources and
 // custom fonts. No DOM or storage access.
 
-import { canonicalLocaleTag, matchContentLocale, presentTag, sameContentLocale } from '../locale.js';
+import { canonicalLocaleTag, matchContentLocale, presentTag, sameContentLocale } from '../hyphenation/locale.js';
 import type { CustomFontFamily, CustomFontFormat, HeadingCounters, PartState, Resource } from '../types.js';
 import type {
   BundleChapterSpec,

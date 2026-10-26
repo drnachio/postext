@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../../measure/rich.js';
 import { measureBlock } from '../../measure/plain.js';
-import { cjkCompositionOf, setCjkComposition, type CjkComposition } from '../../measure/cjkPunctuation.js';
-import { resolveCjkConfig } from '../../defaults/cjk.js';
+import { cjkCompositionOf, setCjkComposition, type CjkComposition } from '../../measure/cjk/cjkPunctuation.js';
+import { resolveCjkConfig } from '../../defaults/text/cjk.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { Dimension, PostextConfig } from '../../types.js';
 import type { MeasureBlockOptions } from '../../measure/types.js';

@@ -1,6 +1,6 @@
 import type { StoryJump } from '../composed/carryTypes.js';
-import type { NumeralStyle } from '../numbering.js';
-import type { Resource } from './resources.js';
+import type { NumeralStyle } from '../numerals/numbering.js';
+import type { Resource } from './resources/resources.js';
 
 /** A footnote, endnote or margin note passed as data. The engine does not
  *  read `PostextContent.notes` (see there): notes are written in the

@@ -3,10 +3,10 @@ import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
 import { figureLabelBounds, overlappingLabels, polygonPenetration } from '../../composed/labels.js';
-import { contrastDocument, contrastPairs } from '../../contrast.js';
+import { contrastDocument, contrastPairs } from '../../checks/contrast.js';
 import { renderPageToCanvas } from '../../index.js';
-import { renderToHtmlIndexed } from '../../html-backend.js';
-import { preflightDocument } from '../../preflight.js';
+import { renderToHtmlIndexed } from '../../html-backend/html-backend.js';
+import { preflightDocument } from '../../checks/preflight.js';
 import type { ContentWarning, PostextConfig, Resource, VDTDocument } from '../../index.js';
 
 // #902: checks on the labels of a figure (overlap, overflow).

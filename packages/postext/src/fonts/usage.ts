@@ -8,7 +8,7 @@ import type { ContentBlock } from '../parse/index.js';
 import { DEFAULT_TEXT_ELEMENT, defaultCjkEmphasis, resolveBodyTextConfig, resolveHeaderFooterConfig, resolveHeadingsConfig, resolveOrderedListsConfig, resolveUnorderedListsConfig } from '../defaults/index.js';
 import { primaryFontFamily } from '../measure/font.js';
 import { comicFontFamilies, comicFontUses } from '../comics/fonts.js';
-import { DEFAULT_CODE_STYLE } from '../defaults/codeStyle.js';
+import { DEFAULT_CODE_STYLE } from '../defaults/text/codeStyle.js';
 import { codeFenceOpen } from '../parse/codeFence.js';
 import { parseDirectiveAttrs } from '../parse/attrs.js';
 import { resolveAllConfig } from '../pipeline/config.js';

@@ -25,7 +25,7 @@ import { measureTextWidth } from '../../measure/canvas.js';
 import { graphemesOf } from '../../measure/graphemes.js';
 import { lineBaselineOffset } from '../../measure/vertical.js';
 import { dimensionToPx } from '../../units.js';
-import { resolvedCodeStyle } from '../../defaults/codeStyle.js';
+import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import { highlightCode, type CodeToken } from '../../code/highlight.js';
 
 /** What a fence asks of its listing, over `codeStyle`. */

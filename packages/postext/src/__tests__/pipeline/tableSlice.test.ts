@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { layoutResourceBlock, planTableSlice, tableHeaderRowCount, tableSliceRows } from '../../pipeline/resources/resourceLayout.js';
 import type { TableRowMetrics, TableSliceSpec } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import type { PostextConfig, Resource, TableModel, TableCell } from '../../types.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

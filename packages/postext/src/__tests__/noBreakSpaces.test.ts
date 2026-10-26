@@ -1,11 +1,11 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
 import { measureBlock } from '../measure/plain.js';
-import { setHyphenationLocale } from '../hyphenate.js';
+import { setHyphenationLocale } from '../hyphenation/hyphenate.js';
 import { buildDocument } from '../pipeline/index.js';
 import { layoutSlotToVdt } from '../pipeline/pages/headerFooter.js';
 import { computeChapterTitles } from '../pipeline/pages/placeholders.js';
-import { resolveDesignSlot } from '../defaults/headerFooter.js';
+import { resolveDesignSlot } from '../defaults/structure/headerFooter.js';
 import type { InlineSpan } from '../parse/index.js';
 import type { DesignElement, PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDesignTextBlock, VDTLine, VDTPage } from '../vdt.js';

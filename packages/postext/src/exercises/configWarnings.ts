@@ -28,8 +28,8 @@ import type {
 } from '../types.js';
 import type { ConfigWarning } from '../vdt.js';
 import { closestKey } from '../util/closestKey.js';
-import { isCounterStyle } from '../numbering.js';
-import { isResourceCounterReset } from '../defaults/resourceTypes.js';
+import { isCounterStyle } from '../numerals/numbering.js';
+import { isResourceCounterReset } from '../defaults/resources/resourceTypes.js';
 
 // The keys of each part, checked against its type: a key added to a type
 // fails to compile until it is listed here.

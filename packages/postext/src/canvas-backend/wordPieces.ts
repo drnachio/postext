@@ -1,5 +1,5 @@
 import type { VDTLine, VDTLineSegment } from '../vdt.js';
-import { lineWordSegmentsInOrder, sameSetWidth, type SetLine } from '../wordPieces.js';
+import { lineWordSegmentsInOrder, sameSetWidth, type SetLine } from '../paint/wordPieces.js';
 import { graphemeCount } from '../measure/graphemes.js';
 import { measurementGeneration } from '../measure/canvas.js';
 import { languageOf, setLetterSpacing } from './contextState.js';

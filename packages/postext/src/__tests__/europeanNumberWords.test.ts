@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { caseWords, numberToWords } from '../numberWords.js';
-import { computeHeadingNumbering } from '../numbering.js';
+import { caseWords, numberToWords } from '../numerals/numberWords.js';
+import { computeHeadingNumbering } from '../numerals/numbering.js';
 import { parseMarkdown } from '../parse/index.js';
 
 /** `numberToWords` for 1…100 in `locale`, one entry per number. */

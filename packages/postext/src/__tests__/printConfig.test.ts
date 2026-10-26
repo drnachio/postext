@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { resolvePrintConfig, stripPrintDefaults, DEFAULT_PRINT_CONFIG } from '../defaults/print.js';
+import { resolvePrintConfig, stripPrintDefaults, DEFAULT_PRINT_CONFIG } from '../defaults/output/print.js';
 import { stripConfigDefaults } from '../defaults/index.js';
-import { collectConfigWarnings } from '../configWarnings.js';
+import { collectConfigWarnings } from '../checks/configWarnings.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 
 describe('print config', () => {

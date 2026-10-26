@@ -53,7 +53,7 @@ from pathlib import Path
 
 KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns", "paper"}
 # The page numbering styles `:::numbering{format=…}` takes (packages/postext
-# src/numbering.ts NumeralStyle): Latin, East Asian (Chinese, Japanese) and
+# src/numerals/numbering.ts NumeralStyle): Latin, East Asian (Chinese, Japanese) and
 # Arabic-script.
 NUMBERING_FORMATS = {
     "decimal", "decimal-02", "lower-roman", "upper-roman", "lower-alpha", "upper-alpha",
@@ -431,7 +431,7 @@ def _is_dimension(v) -> bool:
 
 
 def _tab_position_ok(v) -> bool:
-    """A stop position the engine reads (defaults/tabStops.ts): a Dimension,
+    """A stop position the engine reads (defaults/text/tabStops.ts): a Dimension,
     'end', a percentage or a length written as text."""
     if isinstance(v, dict):
         return _is_dimension(v)
@@ -1248,7 +1248,7 @@ COMIC_DIM_RE = re.compile(r"^\s*[0-9]*\.?[0-9]+\s*(mm|cm|in|pt|px)?\s*$")
 HEX_RE = re.compile(r"^#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?(?:[0-9a-fA-F]{2})?$")
 ARABIC_SCRIPT_LANGS = {"ar", "fa", "ur", "ps", "sd", "ckb", "ug"}
 
-# The `comics` config tables (packages/postext src/configWarnings.ts).
+# The `comics` config tables (packages/postext src/checks/configWarnings.ts).
 COMICS_KEYS = {"readingDirection", "artDirection", "mirrorArt", "frame", "gutter", "panel", "panelStyles",
                "lettering", "balloonStyles", "cast", "runningHeads"}
 COMICS_PANEL_KEYS = {"borderWidth", "borderColor", "borderRadius", "borderStyle", "background", "fit", "bleed"}

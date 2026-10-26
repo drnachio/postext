@@ -14,7 +14,7 @@ import type { ContentBlock, ParseOptions } from '../../parse/index.js';
 import type { CalloutStyleConfig, Dimension } from '../../types.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import { dimensionToPx } from '../../units.js';
-import { resolvedCodeStyle } from '../../defaults/codeStyle.js';
+import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import { computeBaselineGrid } from '../config.js';
 
 /** Style id of a listing's box. Not a user style: no configuration can

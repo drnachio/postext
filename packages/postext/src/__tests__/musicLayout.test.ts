@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { renderToHtmlIndexed } from '../html-backend.js';
+import { renderToHtmlIndexed } from '../html-backend/html-backend.js';
 import { initMusicEngine } from '../music/index.js';
 import { parseMarkdown } from '../parse/index.js';
 import type { PostextConfig, Resource } from '../types.js';

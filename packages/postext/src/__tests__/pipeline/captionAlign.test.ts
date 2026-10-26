@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { justifySnippetLine, layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import { buildDocument } from '../../pipeline/index.js';
 import { dimensionToPx } from '../../units.js';
 import { createBoundingBox } from '../../vdt.js';

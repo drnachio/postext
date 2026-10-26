@@ -14,7 +14,7 @@ import { withBookBrackets } from '../../parse/annotations.js';
 import type { ResolvedHeadingLevelConfig, ResolvedHeadingStyleConfig, WritingMode } from '../../types.js';
 import type { ResolvedConfig, VDTBlock } from '../../vdt.js';
 import { buildHeadingLevelMap } from '../config.js';
-import { resolveBreakBefore } from '../../defaults/headings.js';
+import { resolveBreakBefore } from '../../defaults/structure/headings.js';
 import { withFigureStyle } from '../../fonts/figureStyle.js';
 import type { ChapterTitlePageInfo } from '../pages/placeholders.js';
 import { derivePartResolvedConfig, derivePartMeasureContext } from './parts.js';

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtml } from '../../html-backend.js';
-import { resolveCrossRefsConfig, stripCrossRefsDefaults } from '../../defaults/crossRefs.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
+import { resolveCrossRefsConfig, stripCrossRefsDefaults } from '../../defaults/structure/crossRefs.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { anchorRefLabel, type AnchorTarget, type CrossRefStrings } from '../../pipeline/references/crossRefs.js';

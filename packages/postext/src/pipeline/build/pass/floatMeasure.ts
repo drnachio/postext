@@ -10,7 +10,7 @@ import { floatColumnCount, type PlannedFloat } from '../../floats/floatPlacement
 import { bandColumns, type PlacementCursor } from '../../blocks/placement.js';
 import { type TableSliceSpec, type TableRowMetrics, layoutResourceBlock } from '../../resources/resourceLayout.js';
 import { flexFloatKey } from '../../columns/columnBalancing.js';
-import { pickTableStyle } from '../../../defaults/tableStyle.js';
+import { pickTableStyle } from '../../../defaults/resources/tableStyle.js';
 import type { FloatMeasure, FloatSlotPosition, ColumnCapKind } from '../../floats/floatSlots.js';
 import { layOutFigureLabels } from '../../../composed/labels.js';
 import { flowPageMirrored } from '../../blocks/buildHelpers.js';

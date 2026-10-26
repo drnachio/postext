@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
-import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/bodyText.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
+import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
 import type { CompositionRule, PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
 

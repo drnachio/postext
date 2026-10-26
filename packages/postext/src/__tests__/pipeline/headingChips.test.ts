@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { parseMarkdown } from '../../parse/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { PostextConfig, VDTDocument } from '../../index.js';
 import { CHIP_PLACEHOLDER, withoutChips } from '../../parse/inlineFormatting.js';
 import { blockLinesText } from '../../pipeline/pages/placeholders.js';

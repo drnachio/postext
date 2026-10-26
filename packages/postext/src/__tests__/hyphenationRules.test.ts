@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, beforeAll, afterAll } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { createMeasurementCache } from '../measure/index.js';
 import { measureRichBlock } from '../measure/rich.js';
-import { getHyphenationRulesKey, hyphenateByDictionary, hyphenateText, normalizeHyphenationExceptions, setHyphenationLocale, setHyphenationRules, type HyphenationRules } from '../hyphenate.js';
+import { getHyphenationRulesKey, hyphenateByDictionary, hyphenateText, normalizeHyphenationExceptions, setHyphenationLocale, setHyphenationRules, type HyphenationRules } from '../hyphenation/hyphenate.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { citedNames } from '../citations/names.js';

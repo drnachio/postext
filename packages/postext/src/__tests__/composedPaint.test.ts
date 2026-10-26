@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../index.js';
-import { renderToHtmlIndexed } from '../html-backend.js';
+import { renderToHtmlIndexed } from '../html-backend/html-backend.js';
 import { frameMatrix } from '../composed/paint.js';
 import type { VDTDocument, VDTFrame, VDTPage } from '../vdt.js';
 

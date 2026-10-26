@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildBundle } from '../../bundle/index.js';
 import { buildDocument } from '../../pipeline/build.js';
 import { continuationAfter } from '../../pipeline/continuation.js';
-import { anchoredResourceIds, renderToHtml } from '../../html-backend.js';
+import { anchoredResourceIds, renderToHtml } from '../../html-backend/html-backend.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, Resource, VDTDocument } from '../../index.js';
 
