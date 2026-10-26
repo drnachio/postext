@@ -1,6 +1,6 @@
 {
   "name": "postext-scorm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser-native SCORM 1.2 and 2004 package writer for Postext books: a book, or the chapters and sections picked from it, as fixed pages or reflowable text, with exercises that report their scores to the LMS.",
   "type": "module",
   "license": "MIT",
