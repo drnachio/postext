@@ -9,7 +9,7 @@ import { resolveBodyTextConfig, stripBodyTextDefaults, stripConfigDefaults } fro
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig, VDTDocument } from '../../index.js';
 import type { VDTPage } from '../../vdt.js';
-import { columnClosesPage, flowColumnsAfter } from '../../pipeline/placement.js';
+import { columnClosesPage, flowColumnsAfter } from '../../pipeline/blocks/placement.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {

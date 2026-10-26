@@ -2146,7 +2146,7 @@ function repeatLine(m: TextMeasurement, room: number, gap: number, count: number
  * line's start, the text after it at its end, and between them the
  * contents' leader (`toc.leader`): its character repeated over the room
  * left, `gap` from either text, flush with the end so the leaders of the
- * rows line up, as an entry row's are (`pipeline/toc.ts`). The text before
+ * rows line up, as an entry row's are (`pipeline/contents/toc.ts`). The text before
  * the mark gives way when the line is short of room (cut by the element's
  * `overflow`, `'ellipsis-end'` for a wrapping one); fewer than three
  * repeats, or a leader turned off, leave the room blank. A `{leader}`

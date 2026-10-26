@@ -4,7 +4,7 @@ import {
   computeHeadingContext,
   computeResourceNumbering,
   computeResourceNumberingState,
-} from '../../pipeline/resourceNumbering.js';
+} from '../../pipeline/resources/resourceNumbering.js';
 import type { Resource, ResourceType, ResourceCounterFormat } from '../../types.js';
 
 const now = 0;

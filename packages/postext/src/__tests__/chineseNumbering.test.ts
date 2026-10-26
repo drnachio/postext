@@ -10,16 +10,16 @@ import {
 } from '../numbering.js';
 import { parseChineseNumeral } from '../chineseNumerals.js';
 import { numberToWords } from '../numberWords.js';
-import { parsePartNumber } from '../pipeline/parts.js';
-import { formatListNumber } from '../pipeline/lists.js';
+import { parsePartNumber } from '../pipeline/sections/parts.js';
+import { formatListNumber } from '../pipeline/text/lists.js';
 import { flattenTitleBreaks, plainTitleBreaks } from '../parse/inlineFormatting.js';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
-import { computeOutlineFor } from '../pipeline/outline.js';
+import { computeOutlineFor } from '../pipeline/contents/outline.js';
 import { collectConfigWarnings } from '../configWarnings.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { renderToHtml } from '../html-backend.js';
-import { blockLinesText, computeChapterTitles } from '../pipeline/placeholders.js';
+import { blockLinesText, computeChapterTitles } from '../pipeline/pages/placeholders.js';
 import type { OrderedListNumberFormat, PageNumberFormat, PostextConfig, Resource } from '../types.js';
 import type { VDTDesignTextBlock, VDTDocument } from '../vdt.js';
 

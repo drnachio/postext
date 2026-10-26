@@ -8,8 +8,8 @@ import {
   columnHasFloatBand,
   fitsStrict,
   type ColumnCapKind,
-} from '../../pipeline/floatSlots.js';
-import type { PlannedFloat } from '../../pipeline/floatPlacement.js';
+} from '../../pipeline/floats/floatSlots.js';
+import type { PlannedFloat } from '../../pipeline/floats/floatPlacement.js';
 
 const GRID = 12;
 const CONTENT = createBoundingBox(20, 20, 400, 600);

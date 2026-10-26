@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, balancingOnByDefault } from '../../index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { cjkGridGeometry } from '../../pipeline/cjkGrid.js';
+import { cjkGridGeometry } from '../../pipeline/text/cjkGrid.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';

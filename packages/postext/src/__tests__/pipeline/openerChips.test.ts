@@ -6,7 +6,7 @@ import { renderTextBlock } from '../../canvas-backend/headerFooter.js';
 import type { DesignElement, PostextConfig } from '../../types.js';
 import type { VDTChip, VDTDesignSlot, VDTDesignTextBlock, VDTDocument } from '../../vdt.js';
 import { CHIP_PLACEHOLDER } from '../../parse/inlineFormatting.js';
-import { defaultOpenerTitle } from '../../pipeline/headerFooter.js';
+import { defaultOpenerTitle } from '../../pipeline/pages/headerFooter.js';
 import { RichMeasurer, parseRichDesignText } from '../../design/richText.js';
 import { resolveChipStylesConfig } from '../../defaults/chipStyles.js';
 

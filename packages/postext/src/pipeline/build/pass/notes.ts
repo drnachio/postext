@@ -1,24 +1,24 @@
 // Footnotes and sidenotes: their measures, the room the flow reserves for
 // them, chapter-end notes and setting them in their columns.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type DropCapNote, type BlockMeasureContext, type MeasuredContentBlock, measureContentBlock } from '../../measureContentBlock.js';
+import { type DropCapNote, type BlockMeasureContext, type MeasuredContentBlock, measureContentBlock } from '../../blocks/measureContentBlock.js';
 import { resolveParagraphStyle, type BlockStyle } from '../../styles.js';
-import { footnoteParagraphStyle, noteContentBlock, noteNumberPositionOf, footnoteIdsOfLines, type FootnoteNumbering } from '../../footnotes.js';
+import { footnoteParagraphStyle, noteContentBlock, noteNumberPositionOf, footnoteIdsOfLines, type FootnoteNumbering } from '../../references/footnotes.js';
 import { dimensionToPx } from '../../../units.js';
 import { type VDTColumn, type VDTPage, type VDTLine, type VDTBlock, createBoundingBox, createVDTBlock, type ResolvedConfig, type VDTDocument } from '../../../vdt.js';
-import { createPageWithColumns, resetLinePositions, type PlacementCursor } from '../../placement.js';
-import { trueBottom } from '../../floatSlots.js';
-import { applyStyleAttrs } from '../../buildHelpers.js';
-import { raggedLooseLines } from '../../raggedLines.js';
+import { createPageWithColumns, resetLinePositions, type PlacementCursor } from '../../blocks/placement.js';
+import { trueBottom } from '../../floats/floatSlots.js';
+import { applyStyleAttrs } from '../../blocks/buildHelpers.js';
+import { raggedLooseLines } from '../../text/raggedLines.js';
 import { resolvedDirection } from '../../config.js';
 import type { MeasurementCache } from '../../../measure/index.js';
-import type { HeadingLevelResolver } from '../../headingStyles.js';
-import type { CaptionCitations } from '../../citations.js';
+import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
+import type { CaptionCitations } from '../../references/citations.js';
 import type { ContentBlock } from '../../../parse/index.js';
-import type { AnchorRefContext } from '../../resourceLayout.js';
+import type { AnchorRefContext } from '../../resources/resourceLayout.js';
 import type { Resource, ResourceType } from '../../../types.js';
-import type { ResourceNumberingMap } from '../../resourceNumbering.js';
-import type { OrderedListMetrics } from '../../lists.js';
+import type { ResourceNumberingMap } from '../../resources/resourceNumbering.js';
+import type { OrderedListMetrics } from '../../text/lists.js';
 import type { PassState } from './state.js';
 
 /** What createNotes takes from the pass. */

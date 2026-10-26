@@ -1,7 +1,7 @@
 // Types of the placement pass its modules share (#1276).
-import { layoutCaptionText } from '../../resourceLayout.js';
+import { layoutCaptionText } from '../../resources/resourceLayout.js';
 import type { ResourceRotation } from '../../../types.js';
-import type { PlannedFloat } from '../../floatPlacement.js';
+import type { PlannedFloat } from '../../floats/floatPlacement.js';
 
 /**
  * A strip's geometry in a measure `measure` px wide, at most `max` px

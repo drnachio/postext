@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../../design/layout.js';
 import { resolveDesignSlot } from '../../defaults/headerFooter.js';
 import { resolveHeadingsConfig } from '../../defaults/headings.js';
-import { measureHeadingAdvancedDesignHeight } from '../../pipeline/headerFooter.js';
+import { measureHeadingAdvancedDesignHeight } from '../../pipeline/pages/headerFooter.js';
 import { buildDocument } from '../../pipeline/index.js';
 import { CONFIG_VERSION, migrateConfig, pinLegacyDropCapSize } from '../../bundle/index.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';

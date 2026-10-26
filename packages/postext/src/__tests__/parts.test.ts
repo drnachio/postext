@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { buildBundle } from '../bundle/index.js';
-import { computePartValues } from '../pipeline/placeholders.js';
-import { derivePartResolvedConfig, parsePartNumber, parsePartPalette, planParts } from '../pipeline/parts.js';
+import { computePartValues } from '../pipeline/pages/placeholders.js';
+import { derivePartResolvedConfig, parsePartNumber, parsePartPalette, planParts } from '../pipeline/sections/parts.js';
 import { continuationAfter } from '../pipeline/continuation.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';

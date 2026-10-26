@@ -1,17 +1,17 @@
 // Fixed and side callout boxes, and the side boxes waiting for their band.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type PlannedCallout, type CalloutLayoutResult, offsetCalloutToAbsolute } from '../../calloutLayout.js';
+import { type PlannedCallout, type CalloutLayoutResult, offsetCalloutToAbsolute } from '../../callouts/calloutLayout.js';
 import type { ResolvedCalloutStyleConfig } from '../../../types.js';
 import { dimensionToPx } from '../../../units.js';
 import type { VDTPage, VDTColumn, BoundingBox, VDTBlock, VDTDocument } from '../../../vdt.js';
-import { currentBand, bandColumns, advanceToNextColumn, sideUsedBottom, sideColumnOf, currentColumn, sideColumns, type PlacementCursor } from '../../placement.js';
+import { currentBand, bandColumns, advanceToNextColumn, sideUsedBottom, sideColumnOf, currentColumn, sideColumns, type PlacementCursor } from '../../blocks/placement.js';
 import { anchorBox } from '../../../design/layout.js';
-import { trueBottom, clearSideObstacles, type SideObstacle } from '../../floatSlots.js';
-import { CUT_START, type CalloutLayouter } from '../../frameLayout.js';
+import { trueBottom, clearSideObstacles, type SideObstacle } from '../../floats/floatSlots.js';
+import { CUT_START, type CalloutLayouter } from '../../callouts/frameLayout.js';
 import { setAfterText } from '../warnings.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { BlockStyle } from '../../styles.js';
-import type { BandCapZone } from '../../bandCaps.js';
+import type { BandCapZone } from '../../columns/bandCaps.js';
 import type { PassState } from './state.js';
 
 /** What createCalloutSide takes from the pass. */

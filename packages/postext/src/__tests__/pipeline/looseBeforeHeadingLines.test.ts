@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
-import { collectColumnGaps } from '../../pipeline/columnBalancing.js';
+import { collectColumnGaps } from '../../pipeline/columns/columnBalancing.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, VDTBlock, VDTDocument } from '../../index.js';
 

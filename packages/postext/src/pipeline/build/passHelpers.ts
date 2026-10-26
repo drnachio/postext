@@ -4,12 +4,12 @@
 import type { ResolvedHeadingLevelConfig } from '../../types.js';
 import type { ContentBlock } from '../../parse/index.js';
 import type { VDTDocument, VDTPage, ResolvedConfig, VDTLine, VDTColumn, VDTBlock } from '../../vdt.js';
-import { versesLineByLine, verseLinesSettings } from '../verseLines.js';
-import { headingStyleOf } from '../headingStyles.js';
+import { versesLineByLine, verseLinesSettings } from '../text/verseLines.js';
+import { headingStyleOf } from '../sections/headingStyles.js';
 import type { BlockStyle } from '../styles.js';
-import { measureContentBlock, type BlockMeasureContext, type MeasuredContentBlock, wordSpacingProfile } from '../measureContentBlock.js';
-import { offsetBlock } from '../calloutLayout.js';
-import { chapterNumberCounter } from '../placeholders.js';
+import { measureContentBlock, type BlockMeasureContext, type MeasuredContentBlock, wordSpacingProfile } from '../blocks/measureContentBlock.js';
+import { offsetBlock } from '../callouts/calloutLayout.js';
+import { chapterNumberCounter } from '../pages/placeholders.js';
 import { mostlyJoiningScript } from '../../measure/joining.js';
 import { composesAsCjk } from '../../measure/cjkCompose.js';
 

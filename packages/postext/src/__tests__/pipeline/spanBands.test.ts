@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, buildDocumentPass } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { collectColumnGaps } from '../../pipeline/columnBalancing.js';
+import { collectColumnGaps } from '../../pipeline/columns/columnBalancing.js';
 import {
   resolveBandCaps,
   MAX_BAND_PASSES,
   MAX_BAND_CAP_RETRIES,
   type BandCap,
   type BandPassReport,
-} from '../../pipeline/bandCaps.js';
+} from '../../pipeline/columns/bandCaps.js';
 import type { VDTBlock, VDTColumn, VDTDocument, VDTPage } from '../../vdt.js';
 import type { PostextConfig } from '../../types.js';
 

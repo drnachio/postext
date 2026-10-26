@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { computeOutlineFor } from '../pipeline/outline.js';
+import { computeOutlineFor } from '../pipeline/contents/outline.js';
 import { parseMarkdown } from '../parse/index.js';
 import { collectConfigWarnings } from '../configWarnings.js';
 import { stripConfigDefaults } from '../defaults/index.js';

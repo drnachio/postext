@@ -21,7 +21,7 @@ import { composeCjkDesignParagraph, composesDesignAsCjk, type CjkDesignFonts } f
 import { cjkCompositionKey, getCjkComposition, setCjkComposition, type CjkComposition } from '../../measure/cjkPunctuation.js';
 import { layoutTextElementAt } from '../../design/layout.js';
 import { designBaseDirection, directedTextWidth, measuresRunsAsPainted } from '../../design/bidiText.js';
-import { primitiveToBlock } from '../../pipeline/headerFooter.js';
+import { primitiveToBlock } from '../../pipeline/pages/headerFooter.js';
 import { cjkRegionOf, directionOf, isJapaneseLanguage, languageOf } from '../../locale.js';
 import type { CjkLineBreakLevel } from '../../measure/cjkClasses.js';
 import type { CjkRegion, ResolvedDesignTextElement } from '../../types.js';

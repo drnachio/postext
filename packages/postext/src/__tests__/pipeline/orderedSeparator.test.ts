@@ -5,7 +5,7 @@ import {
   computeOrderedLevelIndentsPx,
   computeOrderedListRunMetrics,
   resolveOrderedListItemStyle,
-} from '../../pipeline/lists.js';
+} from '../../pipeline/text/lists.js';
 import { resolveBodyStyle } from '../../pipeline/styles.js';
 import { parseMarkdown } from '../../parse/index.js';
 import { dimensionToPx } from '../../units.js';

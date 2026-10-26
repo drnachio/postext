@@ -22,7 +22,7 @@
 import type { ContentBlock } from '../parse/types.js';
 import type { CarriedNumber, StoryJump, CarriedNote } from './carryTypes.js';
 export type { CarriedNumber, StoryJump, CarriedNote } from './carryTypes.js';
-import { planCallouts } from '../pipeline/calloutLayout.js';
+import { planCallouts } from '../pipeline/callouts/calloutLayout.js';
 import type { ComposedContinuation } from './continuation.js';
 import { CAP_HEADING_ATTR } from './wrap.js';
 

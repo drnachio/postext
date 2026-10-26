@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { defaultOpenerTitle, headingTitleText } from '../../pipeline/headerFooter.js';
+import { defaultOpenerTitle, headingTitleText } from '../../pipeline/pages/headerFooter.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDesignSlot, VDTDesignTextBlock, VDTDocument } from '../../vdt.js';
 

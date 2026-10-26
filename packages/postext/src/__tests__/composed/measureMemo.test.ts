@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { clearComposedPageMemo } from '../../composed/pageMemo.js';
-import * as measured from '../../pipeline/measureContentBlock.js';
+import * as measured from '../../pipeline/blocks/measureContentBlock.js';
 import { page8Fixture } from './fixtures/page8.js';
 import type { PageTemplate } from '../../composed/types.js';
 import type { ContentWarning } from '../../index.js';
 
-vi.mock('../../pipeline/measureContentBlock.js', async (original) => {
-  const real = await original<typeof import('../../pipeline/measureContentBlock.js')>();
+vi.mock('../../pipeline/blocks/measureContentBlock.js', async (original) => {
+  const real = await original<typeof import('../../pipeline/blocks/measureContentBlock.js')>();
   return { ...real, measureContentBlock: vi.fn(real.measureContentBlock) };
 });
 

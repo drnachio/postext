@@ -35,8 +35,8 @@ export type DirectiveAttrs = Record<string, string>;
 export interface VerseInfo {
   /** The fence's attributes as written (`gap`, `width`, `align`,
    *  `ornament`, `style`, `dir`, `layout`, `indentStep`, `turnover`,
-   *  `stanzaSpace`, `keepStanzas`, …); `pipeline/verse.ts` and
-   *  `pipeline/verseLines.ts` read them. */
+   *  `stanzaSpace`, `keepStanzas`, …); `pipeline/text/verse.ts` and
+   *  `pipeline/text/verseLines.ts` read them. */
   attrs: DirectiveAttrs;
   /** Set on the blocks of a poem in the line layout (#620): which stanza
    *  of which poem the block sets. Unset: the bayt layout, one block. */
@@ -393,7 +393,7 @@ export interface InlineSpan {
    *  text, and the spaces around the tab are taken into it. A literal tab
    *  stays a tab only in a paragraph whose style sets tab stops; elsewhere
    *  the pipeline sets it back as the word space it always was
-   *  (`pipeline/tabs.ts`). */
+   *  (`pipeline/text/tabs.ts`). */
   tab?: InlineTab;
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
@@ -1066,9 +1066,9 @@ export interface ContentBlock {
    *  block's `type` is `'paragraph'`; its text holds the hemistichs, a tab
    *  (`\t`) where a bayt's two hemistichs meet (the source's `||`) and a
    *  line feed (`\n`) between bayts, so the plain text and the source map
-   *  read the poem as written (see `pipeline/verse.ts`). A poem in the line
+   *  read the poem as written (see `pipeline/text/verse.ts`). A poem in the line
    *  layout (#620) is one such block per stanza, its lines joined by line
-   *  feeds (`VerseInfo.stanza`, `pipeline/verseLines.ts`). */
+   *  feeds (`VerseInfo.stanza`, `pipeline/text/verseLines.ts`). */
   verse?: VerseInfo;
   /** For a `:::page` block (a comic page, #555) or a `:::strip` block (a
    *  comic in the text flow, #566): its split, panels and script, read
@@ -1080,12 +1080,12 @@ export interface ContentBlock {
    *  Markdown. */
   rawBody?: string;
   /** Present on the blocks a `:::toc` directive expands into (see
-   *  `pipeline/toc.ts`): what the entry lists. The block's `type` is
+   *  `pipeline/contents/toc.ts`): what the entry lists. The block's `type` is
    *  `'paragraph'` and its text the entry title, so it flows and maps back
    *  to the directive line like ordinary content. */
   toc?: TocBlockInfo;
   /** Present on the blocks a `:::index` directive expands into (see
-   *  `pipeline/indexDirective.ts`). */
+   *  `pipeline/contents/indexDirective.ts`). */
   index?: IndexBlockInfo;
   /** The index marks set in this block's text, in source order. */
   indexMarks?: IndexMark[];

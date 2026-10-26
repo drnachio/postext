@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../../parse/index.js';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from '../../parse/attrs.js';
-import { duplicateAnchors } from '../../pipeline/anchors.js';
+import { duplicateAnchors } from '../../pipeline/references/anchors.js';
 
 const refsOf = (md: string) => parseMarkdown(md).flatMap((b) => b.spans.filter((s) => s.ref).map((s) => s.ref!));
 

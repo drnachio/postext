@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, buildDocumentPass } from '../../pipeline/build.js';
-import { bandCapLinesAroundZone, applyBandCap } from '../../pipeline/bandCaps.js';
+import { bandCapLinesAroundZone, applyBandCap } from '../../pipeline/columns/bandCaps.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, VDTColumn, VDTDocument, VDTPage } from '../../index.js';
 import { parseMarkdown } from '../../parse/index.js';

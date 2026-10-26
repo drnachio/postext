@@ -11,7 +11,7 @@ import {
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../design/layout.js';
 import { resolveDesignSlot } from '../defaults/headerFooter.js';
 import { buildDocument } from '../pipeline/index.js';
-import { raggedLooseLines } from '../pipeline/raggedLines.js';
+import { raggedLooseLines } from '../pipeline/text/raggedLines.js';
 import { trackSegments } from '../knuthPlass/tracking.js';
 import { renderBlock } from '../canvas-backend/blockRender.js';
 import { renderHeaderFooterSlot } from '../canvas-backend/headerFooter.js';

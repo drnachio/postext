@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { expandIndexDirectives } from '../pipeline/indexDirective.js';
-import { indexGrouping } from '../pipeline/indexGroups.js';
-import { GOJUON, GOJUON_ROWS, compareJapanese, gojuonRow, japaneseLead, sameJapaneseBase } from '../pipeline/indexJapanese.js';
-import { computeOutline } from '../pipeline/outline.js';
+import { expandIndexDirectives } from '../pipeline/contents/indexDirective.js';
+import { indexGrouping } from '../pipeline/contents/indexGroups.js';
+import { GOJUON, GOJUON_ROWS, compareJapanese, gojuonRow, japaneseLead, sameJapaneseBase } from '../pipeline/contents/indexJapanese.js';
+import { computeOutline } from '../pipeline/contents/outline.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { resolveIndexConfig, stripIndexDefaults } from '../defaults/indexConfig.js';

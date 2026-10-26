@@ -5,7 +5,7 @@ import { renderToHtml } from '../../html-backend.js';
 import { resolveCrossRefsConfig, stripCrossRefsDefaults } from '../../defaults/crossRefs.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { anchorRefLabel, type AnchorTarget, type CrossRefStrings } from '../../pipeline/crossRefs.js';
+import { anchorRefLabel, type AnchorTarget, type CrossRefStrings } from '../../pipeline/references/crossRefs.js';
 import { refLabelPieces } from '../../measure/spaces.js';
 import type { PostextConfig, Resource, VDTDocument, VDTLine, VDTLineSegment } from '../../index.js';
 import type { VDTBlock } from '../../vdt.js';

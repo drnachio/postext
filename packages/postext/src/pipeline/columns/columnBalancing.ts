@@ -1,0 +1,1056 @@
+/**
+ * Vertical column balancing — editorial bottom alignment.
+ *
+ * Publishers expect every column of a page to start at the top of the page
+ * and end flush with the bottom. The placement pass naturally leaves short
+ * columns: orphan/widow rules, keep-with-next headings, and unsplittable
+ * groups all push content to the next column before the current one is full,
+ * leaving one or more empty grid lines at its bottom.
+ *
+ * The fix mirrors what a human compositor does: add whole baseline-grid
+ * lines to the top margin of the headings inside the short column, pushing
+ * the content below them down until the column ends on the last grid slot.
+ * Because the column break is element-bound (the element that opens the next
+ * column did not fit in the gap, so it still won't fit in a smaller one),
+ * shifting a column's tail down by at most its gap never moves content into
+ * the next column or page — the adjustment is local and exact.
+ *
+ * When a column needs several lines and holds several headings, the extra
+ * lines are distributed round-robin in importance order (lowest heading
+ * level first), so the most important heading always receives the largest
+ * share — e.g. 3 lines over an h2 and an h3 become +2 above the h2 and +1
+ * above the h3. A heading takes at most `maxLinesBeforeLoose` lines (two)
+ * that way before the levers below are tried, and its further lines, up to
+ * `maxLinesPerHeading`, only when they have nothing left to give (#707).
+ *
+ * When the column's headings cannot absorb the whole gap, further levers
+ * apply in editorial priority order:
+ *  - a picture with a safe area (`Resource.safeArea`, #442) set inline in
+ *    the column, or floated at its head or foot over that column alone,
+ *    grows by whole grid lines, cropped within its safe area: a taller
+ *    picture leaves no hole anywhere, so it is tried right after the
+ *    closing box and before any space is added;
+ *  - first of all, a callout box closing the column takes the room under
+ *    its foot as space above it, so the foot lands on the last grid slot of
+ *    the page, level with the last line of the column beside it (with
+ *    `headings.balancing.closingBox: 'last'` it runs after the spacing
+ *    levers and takes only what they leave; with `'off'` never);
+ *  - extra grid lines where a list/enumeration ends (space after a list
+ *    reads naturally), capped per list end;
+ *  - one grid line under a display formula or a callout box (it reads as
+ *    the element's own margin), unless `stretchAfterDisplays` is off;
+ *  - extra grid lines between a top float band (a figure or table at the
+ *    head of the column) and the text under it, capped per band — a
+ *    little more air under a figure is invisible. Under a figure across
+ *    several columns that holds only while their heads stay level: the
+ *    columns under it move together, or one moves alone to end flush
+ *    (`stretchAfterWideFloats`, #708);
+ *  - as a last resort, up to `maxLooseParagraphs` paragraphs of the column
+ *    are each re-broken one line looser (TeX \looseness=+1) via the
+ *    Knuth-Plass `looseness` option — always within the configured
+ *    `maxWordSpacing`, so type colour never exceeds the user's limit. When
+ *    word spacing alone cannot gain the line, the placement pass also tries
+ *    a little positive tracking on that paragraph (the compositor's classic
+ *    fix), keeping the smallest value that works, never above `maxTracking`.
+ *
+ * On a character grid (`cjk.grid`, #632) every character stands in a cell
+ * one em wide and every line on the grid's line pitch, which is the
+ * baseline grid: the levers that move text by whole grid lines keep it on
+ * the grid, and `headings.balancing.gridLines: 'off'` keeps them out (a
+ * standard that counts lines has no empty row to give). The closing box
+ * and the pictures with a safe area are off the grid by design and work as
+ * anywhere. A loose paragraph is the exception: a CJK paragraph gains its
+ * line by breaking each line short and spreading the characters over the
+ * measure, which moves them off their cells; there it is accepted only
+ * when no gap between characters spreads past `maxTracking`, and no
+ * tracking is added to its letters (`measureLooseParagraph`). Balancing is
+ * off by default on a grid (`balancingOnByDefault`).
+ */
+
+import type { BalanceLever, VDTBlock, VDTColumn, VDTDocument, VDTPage } from '../../vdt.js';
+import type { ClosingBoxLever, StretchAfterWideFloats } from '../../types.js';
+
+/** Tolerance against FP drift when converting free space to grid lines. */
+const EPS = 0.01;
+
+/** Grid lines the after-display lever may add under one display formula or
+ *  callout box. It has a switch (`stretchAfterDisplays`, #710) and no cap
+ *  setting: nobody wants two lines of white under a formula. */
+const MAX_LINES_AFTER_DISPLAY = 1;
+
+/** Balancing attempts a segment of pages (see {@link pageSegments}) may
+ *  spend: passes in which it tried new levers. */
+export const MAX_BALANCING_PASSES = 10;
+
+/** Hard cap on the balancing passes of one document, whatever its segments
+ *  still want to try — every pass places the whole document. */
+export const MAX_BALANCING_PASSES_PER_DOCUMENT = MAX_BALANCING_PASSES * 3;
+
+/** Inclusive run of page indices. */
+export interface PageRange {
+  from: number;
+  to: number;
+}
+
+/**
+ * The runs of pages laid out independently of one another: every page in
+ * `forcedBreakPages` (a `:::pagebreak`, a heading `breakBefore`, a chapter
+ * opener) closes a segment and the next page opens another. Nothing flows
+ * across such a break, so a balancing lever inside one segment cannot
+ * move a line of any other — the convergence loop judges each on its own.
+ */
+export function pageSegments(pageCount: number, forcedBreakPages: ReadonlySet<number>): PageRange[] {
+  const out: PageRange[] = [];
+  let from = 0;
+  const breaks = [...forcedBreakPages].filter((p) => p >= 0 && p < pageCount - 1).sort((a, b) => a - b);
+  for (const p of breaks) {
+    if (p < from) continue;
+    out.push({ from, to: p });
+    from = p + 1;
+  }
+  out.push({ from, to: Math.max(from, pageCount - 1) });
+  return out;
+}
+
+/** Empty grid lines over the balanceable columns of the pages in `range`. */
+export function gapLinesIn(gaps: readonly ColumnGap[], range: PageRange): number {
+  let n = 0;
+  for (const g of gaps) if (g.pageIndex >= range.from && g.pageIndex <= range.to) n += g.gapLines;
+  return n;
+}
+
+/** Room (px) still open under the callout boxes that close a column of the
+ *  pages in `range` — the `trailingCallout` candidates' gaps. Often less
+ *  than a line, so {@link gapLinesIn} does not see it: the balancing loop
+ *  uses it to break a tie between two layouts with the same empty lines. */
+export function boxRoomIn(gaps: readonly ColumnGap[], range: PageRange): number {
+  let px = 0;
+  for (const g of gaps) {
+    if (g.pageIndex < range.from || g.pageIndex > range.to) continue;
+    for (const c of g.candidates) if (c.kind === 'trailingCallout') px += c.gapPx ?? 0;
+  }
+  return px;
+}
+
+/** Lever keys (see {@link balanceKey}) of the boxes closing a column — the
+ *  `trailingCallout` candidates of `gaps`. */
+export function boxLeverKeys(gaps: readonly ColumnGap[]): Set<number> {
+  const keys = new Set<number>();
+  for (const g of gaps) {
+    for (const c of g.candidates) if (c.kind === 'trailingCallout') keys.add(candidateKey(c));
+  }
+  return keys;
+}
+
+/** The kind of stretch point a candidate is: one of the balancing levers,
+ *  which the placement pass records on the block it applies to
+ *  (`VDTBlock.balancing`). */
+export type BalanceCandidateKind = BalanceLever;
+
+interface BalanceCandidate {
+  /** Stable content-block index keying the adjustment across passes. */
+  contentIndex: number;
+  kind: BalanceCandidateKind;
+  /** Heading level (1–6) for `kind: 'heading'`; 0 otherwise. */
+  level: number;
+  /** Reading-order tiebreak within the column. */
+  order: number;
+  /** Line count of the block — loose-paragraph preference (more lines =
+   *  more glue = least visible loosening). */
+  lineCount: number;
+  /** `trailingCallout` only: room (px) between the box's foot and the last
+   *  grid slot of the column — the exact space to add above the box. */
+  gapPx?: number;
+  /** The fragment of a split block the candidate is (0 = the block or its
+   *  head): the fragments of one split box — or of a paragraph continuing
+   *  under a float band — share a content index and are levered on their
+   *  own (see {@link balanceKey}). */
+  part?: number;
+  /** `flexFigure`: the lever's own key ({@link flexFigureKey} /
+   *  {@link flexFloatKey}), apart from the spacing keys of the blocks. */
+  key?: number;
+  /** `flexFigure`: whole grid lines the picture can still grow. */
+  maxLines?: number;
+  /** `afterFloat`, when the float the column starts under also stands over
+   *  another text column of its band (#708): a key the columns under that
+   *  float share, and how many text columns it stands over. */
+  wideFloat?: { key: string; under: number };
+}
+
+/** The key a candidate's adjustment is stored under. */
+export function candidateKey(c: { contentIndex: number; part?: number; key?: number }): number {
+  return c.key ?? balanceKey(c.contentIndex, c.part ?? 0);
+}
+
+/** Key of the `flexFigure` lever of an inline picture: its lines are body
+ *  growth, not space above (a part no split block reaches). */
+export function flexFigureKey(contentIndex: number): number {
+  return -(contentIndex * 1024 + 1023);
+}
+
+/** Key of the `flexFigure` lever of a floated picture, from its resource
+ *  id (floats carry no content index): below every block key. */
+export function flexFloatKey(resourceId: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < resourceId.length; i++) {
+    h ^= resourceId.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return -(2 ** 42 + h);
+}
+
+/** Key of a balancing adjustment: the content index of the block, or, for a
+ *  continuation fragment (of a split callout, or of a paragraph resuming
+ *  under a float band), a composite that keeps the fragments of one block
+ *  apart — they share its content index. */
+export function balanceKey(contentIndex: number, part: number): number {
+  return part > 0 ? -(contentIndex * 1024 + part) : contentIndex;
+}
+
+/** Whether a float band sits right above `col` (a figure at the head of the
+ *  column): the column's content then has something to be pushed down from. */
+function floatBandAbove(page: VDTPage, col: VDTColumn): boolean {
+  const left = col.bbox.x;
+  const right = col.bbox.x + col.bbox.width;
+  return (page.floats ?? []).some((f) =>
+    f.bbox.x < right - 0.5 && f.bbox.x + f.bbox.width > left + 0.5 && f.bbox.y + f.bbox.height <= col.bbox.y + EPS);
+}
+
+export interface ColumnGap {
+  pageIndex: number;
+  columnIndex: number;
+  /** Whole empty grid lines at the bottom of the column. */
+  gapLines: number;
+  /** Stretch points inside this column that can absorb extra lines. */
+  candidates: BalanceCandidate[];
+}
+
+function pageHasBodyContent(page: VDTPage): boolean {
+  return page.columns.some((c) => c.blocks.length > 0);
+}
+
+/** Which fragment of a split block this one is: a callout frame carries its
+ *  own index, a paragraph continuing into a new column carries it in its id
+ *  (`…-cont-2`). 0 for a block that starts here. */
+function fragmentOf(b: VDTBlock): number {
+  if (b.callout?.part !== undefined) return b.callout.part;
+  const m = /-cont-(\d+)$/.exec(b.id);
+  return m ? Number(m[1]) : 0;
+}
+
+/** Whether a float band sits right above the column (the column's top was
+ *  pushed down under it): a float on the page overlapping the column
+ *  horizontally whose box ends at or above the column's top. */
+function columnUnderTopFloat(page: VDTPage, col: VDTColumn): boolean {
+  const floats = page.floats ?? [];
+  const left = col.bbox.x;
+  const right = col.bbox.x + col.bbox.width;
+  return floats.some((f) =>
+    f.bbox.x < right - 0.5
+    && f.bbox.x + f.bbox.width > left + 0.5
+    && f.bbox.y + f.bbox.height <= col.bbox.y + 0.5
+    && f.bbox.y >= page.contentArea.y - 0.5,
+  );
+}
+
+/** Regular flow column with a usable height — never a page-span block's
+ *  full-width column, nor a band closed at its own top. */
+function isTextColumn(col: VDTColumn): boolean {
+  return col.kind !== 'span' && col.kind !== 'side' && col.bbox.height > 0.5;
+}
+
+/** The float band `col` starts under when that float also stands over
+ *  another text column of the same band (#708): a key shared by the
+ *  columns under it and how many they are. The lowest such float counts
+ *  when several are stacked. Null under a float of the column's own. */
+function wideFloatOver(page: VDTPage, col: VDTColumn): { key: string; under: number } | null {
+  const floats = page.floats ?? [];
+  const above = (f: VDTBlock, k: VDTColumn): boolean =>
+    f.bbox.x < k.bbox.x + k.bbox.width - 0.5
+    && f.bbox.x + f.bbox.width > k.bbox.x + 0.5
+    && f.bbox.y + f.bbox.height <= k.bbox.y + 0.5
+    && f.bbox.y >= page.contentArea.y - 0.5;
+  let best: { index: number; bottom: number; under: number } | null = null;
+  floats.forEach((f, index) => {
+    if (!above(f, col)) return;
+    const under = page.columns.filter((k) => isTextColumn(k) && (k.band ?? 0) === (col.band ?? 0) && above(f, k)).length;
+    const bottom = f.bbox.y + f.bbox.height;
+    if (under >= 2 && (!best || bottom > best.bottom)) best = { index, bottom, under };
+  });
+  const found = best as { index: number; bottom: number; under: number } | null;
+  return found ? { key: `${page.index}:${found.index}`, under: found.under } : null;
+}
+
+/**
+ * Collect the bottom gaps of every balanceable column.
+ *
+ * A column is balanceable when content flowed past it into a later column of
+ * the same page, or — for the page's last non-empty column — when the page
+ * flows naturally into a later content page (no `:::pagebreak`, heading
+ * `breakBefore`, or chapter opener forced the break, and it is not the last
+ * content page: a short final column at the end of a chapter is legitimate).
+ *
+ * Eligible headings are heading blocks that are neither the first block of
+ * their column (their top margin is suppressed there so the column keeps
+ * starting at the page top) nor the last (space above a trailing heading
+ * would strand it at the column bottom); a heading that opens a column
+ * under a float band is eligible too (it is a heading lever, not an
+ * after-float point). In a closing band (a page that does not flow on, a
+ * band cut level by a trailing cap) the heading at its column's head keeps
+ * its place, under a float band and under a page-span opener alike: the
+ * hidden block the opener leaves in its own column does not make the
+ * heading after it a mid-column one (#709). List-end points are the first
+ * non-list block after a run of list items — they may be last in column
+ * (pushing a trailing paragraph down by at most the gap is local: the
+ * element that opened the next column still does not fit). After-float
+ * points are the first block of a column that starts under a float band (a
+ * whole block, not a continuation, and not a callout). Loose-paragraph
+ * candidates are justified paragraphs wholly contained in the column (never
+ * split parts — loosening those would reshuffle lines across columns); with
+ * `headings.balancing.fillShortColumns` (#1236) ragged ones too, when
+ * Knuth–Plass breaks them (`bodyText.optimalRagged`).
+ */
+export function collectColumnGaps(
+  doc: VDTDocument,
+  forcedBreakPages: ReadonlySet<number>,
+): ColumnGap[] {
+  let lastContentPage = -1;
+  for (let i = 0; i < doc.pages.length; i++) {
+    if (pageHasBodyContent(doc.pages[i]!)) lastContentPage = i;
+  }
+
+  // Multiplicity of each content index across the whole document — a count
+  // above 1 means the block was split across columns/pages.
+  const partCount = new Map<number, number>();
+  for (const page of doc.pages) {
+    for (const col of page.columns) {
+      for (const b of col.blocks) {
+        if (b.contentIndex !== undefined) {
+          partCount.set(b.contentIndex, (partCount.get(b.contentIndex) ?? 0) + 1);
+        }
+      }
+    }
+  }
+
+  /** The trailing-callout candidate of a closing column whose last blocks
+   *  are one callout box: the room between the box's foot and the foot of
+   *  the lowest last line in the other text columns of its band. */
+  const closingBoxGap = (d: VDTDocument, page: VDTPage, col: VDTColumn): BalanceCandidate | null => {
+    const visible = col.blocks.filter((b) => !b.hidden);
+    const last = visible[visible.length - 1];
+    if (!last || last.containerId === undefined) return null;
+    const frameAt = visible.findIndex((b) => b.type === 'callout' && b.containerId === last.containerId);
+    const frame = frameAt >= 1 ? visible[frameAt]! : undefined;
+    if (!frame || frame.contentIndex === undefined || (frame.callout?.part ?? 0) > 0) return null;
+    if (!visible.slice(frameAt).every((b) => b.containerId === last.containerId)) return null;
+    let target = -Infinity;
+    for (const other of page.columns) {
+      if (other === col || !isTextColumn(other) || (other.band ?? 0) !== (col.band ?? 0)) continue;
+      const blocks = other.blocks.filter((b) => !b.hidden && b.lines.length > 0);
+      const tail = blocks[blocks.length - 1];
+      const line = tail?.lines[tail.lines.length - 1];
+      if (line) target = Math.max(target, line.bbox.y + line.bbox.height);
+    }
+    const foot = frame.bbox.y + frame.bbox.height;
+    const room = col.bbox.y + col.bbox.height - foot;
+    const gapPx = Math.min(target - foot, room);
+    // Only a small gap closes this way: a box pushed far down would open a
+    // hole between the text above it and itself (the trailing cap levels
+    // such a band instead).
+    if (!(gapPx > d.baselineGrid * 0.1) || gapPx > d.baselineGrid * 6 + EPS) return null;
+    return { contentIndex: frame.contentIndex, part: 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx };
+  };
+
+  // `headings.balancing.closingBox: 'off'` (EF-105): no box closing a
+  // column is ever moved down, so none is a candidate.
+  const boxLever = (doc.config?.headings?.balancing?.closingBox ?? 'first') !== 'off';
+  // `headings.balancing.fillShortColumns` (#1236): a ragged paragraph may
+  // run a line long too, when the breaker can set it so (Knuth–Plass on
+  // ragged text; line by line it would only come back as it was).
+  const raggedLoose = doc.config?.headings?.balancing?.fillShortColumns === true
+    && doc.config?.bodyText?.optimalRagged !== false;
+
+  const gaps: ColumnGap[] = [];
+  for (let p = 0; p <= lastContentPage; p++) {
+    const page = doc.pages[p]!;
+    if (page.blankForParity || page.blankForForce) continue;
+
+    // Only text columns balance. A page-span block's full-width column is
+    // exactly as tall as its content, and a band closed before any text
+    // landed in it is zero-height — neither has a gap to absorb. The "last
+    // column of the page" is likewise the last non-empty TEXT column: a
+    // trailing span column must not turn a chapter's real closing column
+    // into a balanceable one.
+    let lastNonEmpty = -1;
+    for (let c = 0; c < page.columns.length; c++) {
+      const col = page.columns[c]!;
+      if (isTextColumn(col) && col.blocks.length > 0) lastNonEmpty = c;
+    }
+    if (lastNonEmpty === -1) continue;
+
+    const pageFlowsOn = p < lastContentPage && !forcedBreakPages.has(p);
+
+    for (let c = 0; c <= lastNonEmpty; c++) {
+      const col = page.columns[c]!;
+      if (!isTextColumn(col) || col.blocks.length === 0) continue;
+      // The closing column of a page that does not flow on ends where its
+      // text ends — unless a trailing cap cut it level with the columns
+      // beside it: then it fills up to the cut like any other.
+      // One exception: a closing column that ends with a callout box moves
+      // the box down (the trailing-callout lever alone) so its foot ends
+      // level with the last line of the columns beside it.
+      if (c === lastNonEmpty && !pageFlowsOn && !col.trailingCap) {
+        const closing = boxLever ? closingBoxGap(doc, page, col) : null;
+        if (closing) gaps.push({ pageIndex: p, columnIndex: c, gapLines: 0, candidates: [closing] });
+        continue;
+      }
+      // A `:::columnbreak` ended this column on purpose — leave its gap.
+      if (col.forcedBreak) continue;
+      // Text wraps round a picture or a box in this column (#627): its
+      // lines are broken for where they stand, and a lever moving them
+      // would set them beside nothing. Left as it is.
+      if (col.exclusions && col.exclusions.length > 0) continue;
+
+      // A column closed by a list tail: the tail's box bakes the list's
+      // bottom margin and grid snap in (so the flow after it lands on the
+      // grid), which can hide a whole empty line under the last item — one
+      // a stretch point above could still use; the item would simply land
+      // with less margin below it. Measure the room below its last line.
+      let free = col.availableHeight;
+      for (let i = col.blocks.length - 1; i >= 0; i--) {
+        const b = col.blocks[i]!;
+        if (b.hidden) continue;
+        const lastLine = b.lines[b.lines.length - 1];
+        if (b.type === 'listItem' && lastLine) {
+          free = Math.max(free, col.bbox.y + col.bbox.height - (lastLine.bbox.y + lastLine.bbox.height));
+        }
+        break;
+      }
+      // A column of a closing band cut level by a trailing cap stretches up
+      // to the tallest column beside it, not to the cut itself: when that
+      // column could not fill its last line (a split kept clear of a widow)
+      // the band ends one line short of the cap, and this one must end with
+      // it rather than a line lower.
+      // The same holds for any band cut level (a band cap before a
+      // page-span box) and for the columns of a page that does not flow on:
+      // they end with the tallest column of their band.
+      if (col.trailingCap || col.bandCapped || !pageFlowsOn) {
+        const usedBottom = (k: VDTColumn): number => k.bbox.y + (k.bbox.height - k.availableHeight);
+        // A paragraph split at the cut that holds a line back (no widow
+        // over the column break) closes the column: its available height
+        // reads 0 though its text ends a line higher. The foot of the last
+        // block is where such a column really ends.
+        const textBottom = (k: VDTColumn): number => {
+          const blocks = k.blocks.filter((b) => !b.hidden);
+          const tail = blocks[blocks.length - 1];
+          if (k.availableHeight > EPS || !tail || tail.type !== 'paragraph' || tail.containerId !== undefined) return usedBottom(k);
+          return Math.min(usedBottom(k), tail.bbox.y + tail.bbox.height);
+        };
+        const level = Math.max(...page.columns
+          .filter((k) => k !== col && isTextColumn(k) && (k.band ?? 0) === (col.band ?? 0) && k.blocks.length > 0)
+          .map(textBottom), -Infinity);
+        if (Number.isFinite(level)) {
+          const mine = textBottom(col);
+          free = Math.max(free, col.bbox.y + col.bbox.height - mine);
+          // No column of such a band ends past the tallest other one: a
+          // closing page ends level, it does not grow one column away.
+          free = Math.min(free, Math.max(0, level - mine));
+        }
+      }
+      let gapLines = Math.floor((free + EPS) / doc.baselineGrid);
+
+      // A closing page — one that does not flow on (a chapter's last page,
+      // a page before an explicit break), or a closing band cut level by a
+      // trailing cap — ends short with its column heads level: the room
+      // under a float band there would only drop one column's first line
+      // below the others' to line the feet up (EF-70). The other levers
+      // work inside the column and keep its head.
+      const closingBand = col.trailingCap === true || !pageFlowsOn;
+
+      const candidates: BalanceCandidate[] = [];
+      // A callout box closing the column (its frame and children are the
+      // column's last blocks) takes the room under its foot, up to the
+      // column's last grid slot, as space above it — provided something
+      // sits above it to push down from: text blocks, or a float band at
+      // the column's head. A continuation fragment of a split box counts
+      // like a head: under a figure it lands level with the foot of the
+      // head in the column before, as any note closing a column. The box's
+      // tail bakes its bottom margin and a grid snap in, so that room is
+      // measured from the frame itself and taken exactly, not by the line.
+      // A box heading the column under a float band is the float's room in
+      // a closing band, like the after-float lever: it stays at the head.
+      const visible = col.blocks.filter((b) => !b.hidden);
+      const last = visible[visible.length - 1];
+      if (last && last.containerId !== undefined) {
+        const frameAt = visible.findIndex((b) => b.type === 'callout' && b.containerId === last.containerId);
+        const frame = frameAt >= 0 ? visible[frameAt]! : undefined;
+        if (
+          frame
+          && (frameAt >= 1 || (floatBandAbove(page, col) && !closingBand))
+          && frame.contentIndex !== undefined
+          && visible.slice(frameAt).every((b) => b.containerId === last.containerId)
+        ) {
+          const lastSlotBottom = col.bbox.y + Math.floor((col.bbox.height + EPS) / doc.baselineGrid) * doc.baselineGrid;
+          // A continuation lands level with the foot of the fragment before
+          // it when that one closes a column of the same page (the note's
+          // head at the band bottom of the column beside), else on the
+          // column's true foot — box interiors are off-grid anyway.
+          const part = frame.callout?.part ?? 0;
+          let target = lastSlotBottom;
+          if (part > 0) {
+            const trueBottom = col.bbox.y + col.bbox.height;
+            const before = doc.blocks.find((b) =>
+              b.type === 'callout' && b.containerId === frame.containerId && b.pageIndex === frame.pageIndex && b.callout?.part === part - 1);
+            const beforeFoot = before ? before.bbox.y + before.bbox.height : undefined;
+            target = beforeFoot !== undefined && beforeFoot <= trueBottom + EPS ? beforeFoot : trueBottom;
+          }
+          const gapPx = target - (frame.bbox.y + frame.bbox.height);
+          // A box ends level with the column beside it: in a band of one
+          // text column (a one-column page that ends early, its next block
+          // on the next page) there is none, and the box stays under the
+          // block above it rather than drop to the foot (#532).
+          const alone = !page.columns.some((k) => k !== col && isTextColumn(k) && (k.band ?? 0) === (col.band ?? 0));
+          if (gapPx > doc.baselineGrid * 0.1 && !alone) {
+            if (boxLever) {
+              candidates.push({ contentIndex: frame.contentIndex, part: frame.callout?.part ?? 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx });
+            }
+            // The box takes its room exactly; the whole-line levers above it
+            // may only take the whole lines of it (a line more overflows the
+            // column — or the cut of a capped band — and the pass is lost).
+            // With the box's own lever off they still may: the margin under
+            // a box that ends a column is no room anyone reads.
+            gapLines = Math.max(gapLines, Math.floor(gapPx / doc.baselineGrid + EPS));
+          }
+        }
+      }
+      if (gapLines < 1 && candidates.length === 0) continue;
+
+      // Pictures with a safe area floated over this column alone, at its
+      // head (not in a closing band, whose column heads stay level, as for
+      // the after-float lever) or at its foot: grown, they take the gap.
+      for (const f of page.floats ?? []) {
+        const rb = f.resourceBlock;
+        const grow = rb?.bodyFlex?.grow ?? 0;
+        if (!rb || grow < doc.baselineGrid - EPS) continue;
+        if (!(f.bbox.x >= col.bbox.x - 0.5 && f.bbox.x + f.bbox.width <= col.bbox.x + col.bbox.width + 0.5)) continue;
+        const atHead = f.bbox.y + f.bbox.height <= col.bbox.y + 0.5;
+        const atFoot = f.bbox.y >= col.bbox.y + col.bbox.height - 0.5;
+        if (!atFoot && !(atHead && !closingBand)) continue;
+        candidates.push({
+          contentIndex: -1,
+          key: flexFloatKey(rb.resource.id),
+          kind: 'flexFigure',
+          level: 0,
+          order: atHead ? -1 : col.blocks.length,
+          lineCount: 0,
+          maxLines: Math.floor(grow / doc.baselineGrid + EPS),
+        });
+      }
+
+      for (let i = 0; i < col.blocks.length; i++) {
+        const b = col.blocks[i]!;
+        if (b.hidden || b.contentIndex === undefined) continue;
+        // Callout frames and their children form one unbreakable unit whose
+        // interior is off-grid by design — never a stretch point.
+        if (b.containerId !== undefined) continue;
+
+        // An inline picture with a safe area grows into the gap.
+        const grow = b.type === 'resource' ? b.resourceBlock?.bodyFlex?.grow ?? 0 : 0;
+        if (grow >= doc.baselineGrid - EPS) {
+          candidates.push({
+            contentIndex: b.contentIndex,
+            key: flexFigureKey(b.contentIndex),
+            kind: 'flexFigure',
+            level: 0,
+            order: i,
+            lineCount: 0,
+            maxLines: Math.floor(grow / doc.baselineGrid + EPS),
+          });
+        }
+
+        // A heading opening a column under a float band is a heading lever
+        // (its cap and priority), not an after-float point: the room goes
+        // above a title, where the reader expects it. A paragraph resuming
+        // from the column before is a lever like any other — the room goes
+        // under the figure, where nobody reads a gap, and its lines land
+        // back on the grid of the column beside it.
+        // In a closing band that heading keeps its place, as any first block
+        // under the float does there (EF-79): room above it would only drop
+        // its column's head below the one beside it.
+        const underFloat = i === 0 && columnUnderTopFloat(page, col);
+        // So does the heading right under a page-span opener in the opener's
+        // own column (#709): the opener stays there as a hidden block, so
+        // the heading is the first thing its column shows, and the columns
+        // beside it start level with it (`openerHeadSpacing`). A line above
+        // it would lower this column's head alone.
+        const opensColumn = i >= 1 && col.blocks.slice(0, i).every((k) => k.hidden);
+        if (
+          b.type === 'heading'
+          && b.headingLevel !== undefined
+          && ((i >= 1 && !(opensColumn && closingBand)) || (underFloat && !closingBand))
+          && i < col.blocks.length - 1
+        ) {
+          candidates.push({
+            contentIndex: b.contentIndex,
+            kind: 'heading',
+            level: b.headingLevel,
+            order: i,
+            lineCount: b.lines.length,
+          });
+        } else if (underFloat && !closingBand) {
+          const wideFloat = wideFloatOver(page, col);
+          candidates.push({
+            contentIndex: b.contentIndex,
+            part: fragmentOf(b),
+            kind: 'afterFloat',
+            level: 0,
+            order: i,
+            lineCount: b.lines.length,
+            ...(wideFloat ? { wideFloat } : {}),
+          });
+        } else if (
+          i >= 1
+          && col.blocks[i - 1]!.type === 'listItem'
+          && col.blocks[i - 1]!.containerId === undefined
+          && b.type !== 'listItem'
+          && b.type !== 'heading' // a heading after a list is a heading candidate
+          && !b.id.includes('-cont-')
+          && !b.tocEntry && !b.tocPart // the contents keep their own rhythm
+        ) {
+          candidates.push({
+            contentIndex: b.contentIndex,
+            kind: 'listEnd',
+            level: 0,
+            order: i,
+            lineCount: b.lines.length,
+          });
+        } else if (
+          i >= 1
+          && (
+            ((col.blocks[i - 1]!.type === 'mathDisplay' || isLastSystem(col.blocks[i - 1]!)) && col.blocks[i - 1]!.containerId === undefined)
+            // …or the last block of a callout box (its children carry the
+            // box's container id; the block after it is back in the flow).
+            || col.blocks[i - 1]!.containerId !== undefined
+          )
+          && b.type !== 'heading'
+          && b.type !== 'mathDisplay'
+          && b.type !== 'score'
+          && !b.id.includes('-cont-')
+        ) {
+          // The space under a display formula or a box: a whole grid line
+          // more there reads as the element's own margin, not as a hole in
+          // the text.
+          candidates.push({
+            contentIndex: b.contentIndex,
+            kind: 'afterDisplay',
+            level: 0,
+            order: i,
+            lineCount: b.lines.length,
+          });
+        }
+
+        if (
+          b.type === 'paragraph'
+          && (b.textAlign === 'justify' || (raggedLoose && (b.textAlign === 'left' || b.textAlign === 'right')))
+          && b.lines.length >= 2
+          && partCount.get(b.contentIndex) === 1
+        ) {
+          candidates.push({
+            contentIndex: b.contentIndex,
+            kind: 'looseParagraph',
+            level: 0,
+            order: i,
+            lineCount: b.lines.length,
+          });
+        }
+      }
+      gaps.push({ pageIndex: p, columnIndex: c, gapLines, candidates });
+    }
+  }
+  return gaps;
+}
+
+/** Total empty grid lines across all balanceable columns — the quantity the
+ *  convergence loop minimises. */
+export function totalGapLines(
+  doc: VDTDocument,
+  forcedBreakPages: ReadonlySet<number>,
+): number {
+  return collectColumnGaps(doc, forcedBreakPages).reduce((sum, g) => sum + g.gapLines, 0);
+}
+
+/** Adjustments already applied in the layout being inspected. */
+export interface BalanceState {
+  /** Extra spacing grid lines per content index (headings + list ends). */
+  lines: ReadonlyMap<number, number>;
+  /** Loose paragraphs: contentIndex → extra lines (1, or -1 for a
+   *  paragraph `fillShortColumns` sets a line short). */
+  loose: ReadonlyMap<number, number>;
+}
+
+export interface BalanceProposalOptions {
+  maxLinesPerHeading: number;
+  /** `headings.balancing.maxLinesBeforeLoose` (#707): lines a heading may
+   *  take before the levers after it are tried. Omitted, the headings take
+   *  all their lines first. */
+  maxLinesBeforeLoose?: number;
+  stretchAfterLists: boolean;
+  maxLinesAfterList: number;
+  /** `headings.balancing.stretchAfterDisplays` (#710); on when omitted. */
+  stretchAfterDisplays?: boolean;
+  stretchAfterFloats: boolean;
+  maxLinesAfterFloat: number;
+  /** `headings.balancing.stretchAfterWideFloats` (#708): `'flush'` moves a
+   *  column down under a float over several columns only with the others
+   *  under it or to end it flush. Omitted, as `'always'`. */
+  stretchAfterWideFloats?: StretchAfterWideFloats;
+  looseParagraphs: boolean;
+  /** Loose paragraphs allowed per short column (one extra line each). */
+  maxLooseParagraphs: number;
+  /** `bodyText.optimalLineBreaking` — the loose lever needs the K-P path. */
+  optimalLineBreaking: boolean;
+  /** Loose candidates that failed to gain a line in a previous attempt. */
+  failedLoose: ReadonlySet<number>;
+  /** `headings.balancing.fillShortColumns` (#1236): when the column's loose
+   *  candidates have nothing left to give, offer one of them a line short
+   *  (looseness -1). Off when omitted. */
+  fillShortColumns?: boolean;
+  /** Candidates set a line short in a previous attempt that lost their
+   *  line, or did not shorten the column's gap. */
+  failedTight?: ReadonlySet<number>;
+  /** Spacing candidates (headings, list ends, after-float points) that may
+   *  not take more lines than already applied: a pass that gave them more
+   *  moved content across a column break (see {@link firstDivergentColumn})
+   *  and was discarded. */
+  failedLines?: ReadonlySet<number>;
+  /** Where the lever of a box closing a column runs
+   *  (`headings.balancing.closingBox`); the document's setting when
+   *  omitted. */
+  closingBox?: ClosingBoxLever;
+  /** Whether the levers that add whole grid lines (headings, list ends,
+   *  after a display, after a float band) run: false on a character grid
+   *  with `headings.balancing.gridLines: 'off'` (#632). Default true. */
+  gridLines?: boolean;
+}
+
+/** The levers that add whole grid lines to a column, which
+ *  `headings.balancing.gridLines: 'off'` keeps out of a character grid. */
+export const GRID_LINE_LEVERS: readonly BalanceCandidateKind[] = ['heading', 'listEnd', 'afterDisplay', 'afterFloat'];
+
+/** Position of a column in a document, in reading order. */
+export interface ColumnPosition {
+  pageIndex: number;
+  columnIndex: number;
+}
+
+/** Identity of a column's content: its blocks (content index plus the
+ *  continuation mark) and the floats reserved on it. */
+function columnKey(page: VDTPage, col: VDTColumn): string {
+  const blocks = col.blocks.map((b) => `${b.contentIndex ?? '?'}${b.id.includes('-cont-') ? 'c' : ''}`).join(',');
+  const floats = (page.floats ?? [])
+    .filter((f) => f.columnIndex === col.index)
+    .map((f) => f.resourceBlock?.resource.id ?? f.id)
+    .join(',');
+  return `${blocks}|${floats}`;
+}
+
+/**
+ * First column, in reading order, whose content differs between two
+ * layouts of the same document — where a balancing pass stopped being
+ * local. Null when every column of `a` has its counterpart in `b`. With
+ * `range`, only those pages of `a` are compared.
+ */
+export function firstDivergentColumn(a: VDTDocument, b: VDTDocument, range?: PageRange): ColumnPosition | null {
+  const from = range?.from ?? 0;
+  const to = Math.min(range?.to ?? a.pages.length - 1, a.pages.length - 1);
+  for (let p = from; p <= to; p++) {
+    const pa = a.pages[p]!;
+    const pb = b.pages[p];
+    for (let c = 0; c < pa.columns.length; c++) {
+      const ca = pa.columns[c]!;
+      const cb = pb?.columns[c];
+      if (!cb || columnKey(pa, ca) !== columnKey(pb, cb)) return { pageIndex: p, columnIndex: c };
+    }
+  }
+  return null;
+}
+
+/** Budget shared by the loose candidates of one column: the placement pass
+ *  tries them in order and stops loosening once `need` of them gained
+ *  their line, so offering every candidate at once costs no extra pass. */
+export interface LooseBudget {
+  /** Column identity (page × columns + column). */
+  group: number;
+  /** Lines the column still needs from loose paragraphs. */
+  need: number;
+}
+
+export interface BalanceProposal {
+  /** Extra spacing grid lines per content index (cumulative across passes). */
+  lines: Map<number, number>;
+  /** Loose paragraphs per content index (cumulative across passes): the
+   *  lines each runs long, -1 for one set a line short. */
+  loose: Map<number, number>;
+  /** Budget of the loose candidates newly offered by this proposal. */
+  looseBudget: Map<number, LooseBudget>;
+  /** Whether the proposal adds anything over `current`. */
+  changed: boolean;
+}
+
+/**
+ * Propose the next round of adjustments. Per column gap, levers apply in
+ * strict editorial priority order, on top of the already-applied `current`
+ * state:
+ *  0. a callout box closing the column — the exact room under its foot
+ *     goes above it, so the foot meets the last grid slot (`closingBox:
+ *     'last'` moves this step after step 3, where it takes the room the
+ *     whole lines before it left; `'off'` drops it);
+ *  1. headings — round-robin in importance order (level asc, then reading
+ *     order), capped at `maxLinesBeforeLoose` lines each at this point and
+ *     at `maxLinesPerHeading` in step 5;
+ *  2. list ends — round-robin in reading order, capped at
+ *     `maxLinesAfterList`;
+ *  2b. after-display points — the block after a display formula or a
+ *     callout box, one line each (`stretchAfterDisplays: false` skips the
+ *     step);
+ *  3. after-float points — the first block under a float band, capped at
+ *     `maxLinesAfterFloat`. Under a float over several text columns, with
+ *     `stretchAfterWideFloats: 'flush'` (#708), the columns under it take
+ *     the same number of lines together, and one takes lines alone only
+ *     when they close its gap;
+ *  4. loose paragraphs — every eligible candidate of the column is offered,
+ *     longest first (most glue = least visible loosening), with a shared
+ *     budget: the pass stops loosening once the column has gained what it
+ *     needs, capped at `maxLooseParagraphs` (cumulative across passes).
+ *     Candidates that already failed to gain a line are skipped. With
+ *     `fillShortColumns` (#1236), once no candidate is left to run long,
+ *     every candidate the column has not set short yet is offered a line
+ *     short instead (budget one): the split after it takes the line the
+ *     widow and orphan rules held back, plus the one it gave up;
+ *  5. headings again, up to `maxLinesPerHeading` (#707), only when a gap is
+ *     left and step 4 has nothing more to offer this column.
+ */
+export function proposeBalanceLines(
+  doc: VDTDocument,
+  forcedBreakPages: ReadonlySet<number>,
+  current: BalanceState,
+  options: BalanceProposalOptions,
+): BalanceProposal {
+  const lines = new Map(current.lines);
+  const loose = new Map(current.loose);
+  const looseBudget = new Map<number, LooseBudget>();
+  let changed = false;
+
+  /** Round-robin one extra line at a time over `cands` until the gap is
+   *  absorbed or every candidate hits `cap`. Returns the unabsorbed rest. */
+  const distribute = (cands: BalanceCandidate[], remaining: number, cap: number): number => {
+    let progress = true;
+    while (remaining > 0 && progress) {
+      progress = false;
+      for (const cand of cands) {
+        if (remaining <= 0) break;
+        const key = candidateKey(cand);
+        if (options.failedLines?.has(key)) continue;
+        const cur = lines.get(key) ?? 0;
+        if (cur >= cap) continue;
+        lines.set(key, cur + 1);
+        remaining--;
+        changed = true;
+        progress = true;
+      }
+    }
+    return remaining;
+  };
+
+  const boxOrder = options.closingBox ?? doc.config?.headings?.balancing?.closingBox ?? 'first';
+  // A box closing the column takes the exact room under its foot (a
+  // fraction of a line is fine — the box interior is off-grid anyway),
+  // which closes the column's gap outright. Taken after other levers
+  // (`closingBox: 'last'`), that room is what their `used` whole lines,
+  // which move the box down too, leave of it. Returns whether it took any.
+  const takeBoxRoom = (gap: ColumnGap, used: number): boolean => {
+    let took = false;
+    for (const cand of gap.candidates) {
+      if (cand.kind !== 'trailingCallout' || cand.gapPx === undefined) continue;
+      const key = candidateKey(cand);
+      if (options.failedLines?.has(key)) continue;
+      const px = cand.gapPx - used * doc.baselineGrid;
+      if (!(px > doc.baselineGrid * 0.1)) continue;
+      const cur = lines.get(key) ?? 0;
+      lines.set(key, cur + px / doc.baselineGrid);
+      changed = true;
+      took = true;
+    }
+    return took;
+  };
+
+  // On a character grid that counts its lines, no row is added (#632).
+  const rows = options.gridLines !== false;
+
+  /** A column gap on its way through the levers: what is left of it after
+   *  the ones run so far. */
+  interface GapRun { gap: ColumnGap; remaining: number; headings: BalanceCandidate[]; linesFirst: number }
+  const runs: GapRun[] = [];
+
+  // The levers before the after-float one, for every column: a float over
+  // several columns is decided for the columns under it together (#708),
+  // on what those levers left of each.
+  for (const gap of collectColumnGaps(doc, forcedBreakPages)) {
+    let remaining = gap.gapLines;
+    if (boxOrder === 'first' && takeBoxRoom(gap, 0)) remaining = 0;
+
+    // Pictures with a safe area grow first among the line levers, each by
+    // as many lines as its crop still allows (on top of what earlier passes
+    // gave it), in reading order.
+    for (const cand of gap.candidates) {
+      if (remaining <= 0) break;
+      if (cand.kind !== 'flexFigure' || !cand.maxLines) continue;
+      const key = candidateKey(cand);
+      if (options.failedLines?.has(key)) continue;
+      const take = Math.min(remaining, cand.maxLines);
+      lines.set(key, (lines.get(key) ?? 0) + take);
+      remaining -= take;
+      changed = true;
+    }
+
+    const headings = gap.candidates
+      .filter((c) => rows && c.kind === 'heading')
+      .sort((a, b) => a.level - b.level || a.order - b.order);
+    // A heading takes its first lines here and the rest only once the
+    // levers after it have nothing left to give (#707): four lines above
+    // the one heading of a page are a hole, while its paragraphs could run
+    // a line long.
+    const linesFirst = Math.min(options.maxLinesBeforeLoose ?? options.maxLinesPerHeading, options.maxLinesPerHeading);
+    remaining = distribute(headings, remaining, linesFirst);
+
+    if (remaining > 0 && rows && options.stretchAfterLists) {
+      const listEnds = gap.candidates
+        .filter((c) => c.kind === 'listEnd')
+        .sort((a, b) => a.order - b.order);
+      remaining = distribute(listEnds, remaining, options.maxLinesAfterList);
+    }
+
+    if (remaining > 0 && rows && options.stretchAfterDisplays !== false) {
+      const afterDisplay = gap.candidates
+        .filter((c) => c.kind === 'afterDisplay')
+        .sort((a, b) => a.order - b.order);
+      remaining = distribute(afterDisplay, remaining, MAX_LINES_AFTER_DISPLAY);
+    }
+    runs.push({ gap, remaining, headings, linesFirst });
+  }
+
+  // After-float points. Under a float over one column, and under any float
+  // with `stretchAfterWideFloats: 'always'`, a column takes what is left of
+  // its gap, up to the cap. Under a float that stands over several text
+  // columns (#708) a line that lowers one column's head alone is worth it
+  // only when it ends the column flush: otherwise the heads come apart and
+  // the feet stay apart too.
+  if (rows && options.stretchAfterFloats) {
+    const flush = options.stretchAfterWideFloats === 'flush';
+    const cap = options.maxLinesAfterFloat;
+    /** The columns under one wide float that offer an after-float point. */
+    const groups = new Map<string, { under: number; members: { run: GapRun; key: number }[] }>();
+    for (const run of runs) {
+      const afterFloats = run.gap.candidates
+        .filter((c) => c.kind === 'afterFloat')
+        .sort((a, b) => a.order - b.order);
+      const narrow = flush ? afterFloats.filter((c) => !c.wideFloat) : afterFloats;
+      if (run.remaining > 0) run.remaining = distribute(narrow, run.remaining, cap);
+      if (!flush) continue;
+      for (const cand of afterFloats) {
+        if (!cand.wideFloat) continue;
+        const group = groups.get(cand.wideFloat.key) ?? { under: cand.wideFloat.under, members: [] };
+        group.members.push({ run, key: candidateKey(cand) });
+        groups.set(cand.wideFloat.key, group);
+      }
+    }
+    for (const { under, members } of groups.values()) {
+      /** Lines the member's point may still take. */
+      const room = (m: { run: GapRun; key: number }): number =>
+        (options.failedLines?.has(m.key) ? 0 : Math.max(0, Math.min(m.run.remaining, cap - (lines.get(m.key) ?? 0))));
+      const take = (m: { run: GapRun; key: number }, n: number): void => {
+        lines.set(m.key, (lines.get(m.key) ?? 0) + n);
+        m.run.remaining -= n;
+        changed = true;
+      };
+      // Together: every text column under the float moves down by the same
+      // number of lines, the smallest any of them can take, so their heads
+      // stay level. A column under it with no gap, or opened by a heading
+      // or a box (no after-float point), takes none, and so does the group.
+      const together = members.length === under ? Math.min(...members.map(room)) : 0;
+      if (together > 0) for (const m of members) take(m, together);
+      // Alone: beyond that, only the lines that close the column's gap.
+      for (const m of members) {
+        if (m.run.remaining > 0 && m.run.remaining <= room(m)) take(m, m.run.remaining);
+      }
+    }
+  }
+
+  for (const run of runs) {
+    const { gap, headings, linesFirst } = run;
+    let remaining = run.remaining;
+    if (boxOrder === 'last' && takeBoxRoom(gap, gap.gapLines - remaining)) remaining = 0;
+
+    /** Whether this proposal offers the column a loose paragraph it has
+     *  not tried yet. */
+    let looseOffered = false;
+    if (
+      remaining > 0
+      && options.looseParagraphs
+      && options.optimalLineBreaking
+    ) {
+      const columnLoose = gap.candidates.filter((c) => c.kind === 'looseParagraph');
+      // Each loose paragraph gains one line. The gap already reflects the
+      // paragraphs loosened in earlier passes, so only the capacity left
+      // under `maxLooseParagraphs` — and only as many as the gap needs —
+      // are added now.
+      const alreadyLoose = columnLoose.filter((c) => loose.has(c.contentIndex)).length;
+      const need = Math.min(options.maxLooseParagraphs - alreadyLoose, remaining);
+      if (need > 0) {
+        const budget: LooseBudget = { group: gap.pageIndex * 1024 + gap.columnIndex, need };
+        const picks = columnLoose
+          .filter((c) => !loose.has(c.contentIndex) && !options.failedLoose.has(c.contentIndex))
+          .sort((a, b) => b.lineCount - a.lineCount || a.order - b.order);
+        for (const pick of picks) {
+          loose.set(pick.contentIndex, 1);
+          looseBudget.set(pick.contentIndex, budget);
+          changed = true;
+          looseOffered = true;
+        }
+      }
+      // Nothing left to run long (#1236): one paragraph a line short. It
+      // pulls the next block's lines up from the column after, which a
+      // split refused for the widow or orphan minimum may now take; the
+      // driver keeps it only when the pages it re-flows end fuller. One
+      // per column, and never a paragraph already run long or short.
+      if (!looseOffered && options.fillShortColumns && !columnLoose.some((c) => loose.get(c.contentIndex) === -1)) {
+        const budget: LooseBudget = { group: gap.pageIndex * 1024 + gap.columnIndex, need: 1 };
+        const picks = columnLoose
+          .filter((c) => !loose.has(c.contentIndex) && !options.failedTight?.has(c.contentIndex))
+          .sort((a, b) => b.lineCount - a.lineCount || a.order - b.order);
+        for (const pick of picks) {
+          loose.set(pick.contentIndex, -1);
+          looseBudget.set(pick.contentIndex, budget);
+          changed = true;
+          looseOffered = true;
+        }
+      }
+    }
+
+    // The headings' further lines, when the loose lever has nothing left
+    // for this column: it is off, the column holds its `maxLooseParagraphs`
+    // already, or every candidate is loose or has failed. Not in the
+    // proposal that offers a paragraph: the pass must show what the
+    // paragraphs gain first, and the next proposal sees the smaller gap.
+    if (remaining > 0 && !looseOffered && linesFirst < options.maxLinesPerHeading) {
+      remaining = distribute(headings, remaining, options.maxLinesPerHeading);
+    }
+  }
+  return { lines, loose, looseBudget, changed };
+}
+
+/** The last system of a score (#1172): like a display formula, the space
+ *  under it may take a balancing grid line. */
+function isLastSystem(b: VDTBlock): boolean {
+  return b.type === 'score' && b.score !== undefined && b.score.index === b.score.count - 1;
+}

@@ -2,9 +2,9 @@
 // pass and its drivers share (#1276: split out of build.ts).
 import type { VDTDocument, VDTColumn } from '../../vdt.js';
 import type { FontFaceSetLike } from '../../fonts/faces.js';
-import type { MeasuredContentBlock } from '../measureContentBlock.js';
-import type { LooseBudget } from '../columnBalancing.js';
-import type { BandCap, BandPassReport } from '../bandCaps.js';
+import type { MeasuredContentBlock } from '../blocks/measureContentBlock.js';
+import type { LooseBudget } from '../columns/columnBalancing.js';
+import type { BandCap, BandPassReport } from '../columns/bandCaps.js';
 
 /** Room (px) under closing boxes a balancing pass must close to be kept on
  *  that ground alone (see `boxRoomIn`). */

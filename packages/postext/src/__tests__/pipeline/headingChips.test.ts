@@ -5,8 +5,8 @@ import { createMeasurementCache } from '../../measure/index.js';
 import { renderToHtml } from '../../html-backend.js';
 import type { PostextConfig, VDTDocument } from '../../index.js';
 import { CHIP_PLACEHOLDER, withoutChips } from '../../parse/inlineFormatting.js';
-import { blockLinesText } from '../../pipeline/placeholders.js';
-import { defaultOpenerTitle } from '../../pipeline/headerFooter.js';
+import { blockLinesText } from '../../pipeline/pages/placeholders.js';
+import { defaultOpenerTitle } from '../../pipeline/pages/headerFooter.js';
 
 // #1100: `:chip[…]{style}` in a heading, as in a paragraph.
 

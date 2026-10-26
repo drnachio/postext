@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { buildDocument } from '../pipeline/build.js';
 import { createMeasurementCache, clearMeasurementCache, parseFontString } from '../measure/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { createHeadingLevelResolver } from '../pipeline/headingStyles.js';
+import { createHeadingLevelResolver } from '../pipeline/sections/headingStyles.js';
 import { renderToHtml } from '../html-backend.js';
 import { collectConfigWarnings } from '../configWarnings.js';
 import { configFeatureFamilies, configFontFamilies, collectFontUsage } from '../fonts/usage.js';

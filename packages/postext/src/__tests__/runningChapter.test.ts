@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { computeChapterNumbersAtTop, computeChapterTitles, computeChapterTitlesAtTop } from '../pipeline/placeholders.js';
+import { computeChapterNumbersAtTop, computeChapterTitles, computeChapterTitlesAtTop } from '../pipeline/pages/placeholders.js';
 import { resolveHeadingStylesConfig, stripHeadingStylesDefaults } from '../defaults/headingStyles.js';
 import { isAllowedPlaceholder } from '../design/placeholders.js';
 import { resolveAllConfig } from '../pipeline/config.js';

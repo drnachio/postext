@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { measureHeadingAdvancedDesignHeight } from '../../pipeline/headerFooter.js';
+import { measureHeadingAdvancedDesignHeight } from '../../pipeline/pages/headerFooter.js';
 import { resolveHeadingsConfig } from '../../defaults/headings.js';
 import { resolveDesignSlot } from '../../defaults/headerFooter.js';
 import { layoutDesignSlot } from '../../design/layout.js';

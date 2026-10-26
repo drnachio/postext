@@ -3,18 +3,18 @@
 // Part of the placement pass (pass.ts), split out of it in #1276.
 import type { ComicPageSource } from '../../../comics/types.js';
 import { comicStripPlacement, comicStripWidth, comicStripOffset, comicStripExtent, layoutComicStrip } from '../../../comics/strip.js';
-import { layoutCaptionText } from '../../resourceLayout.js';
+import { layoutCaptionText } from '../../resources/resourceLayout.js';
 import { type VDTBlock, pageIsVertical, createVDTBlock, createBoundingBox, flowRectToPage, type VDTLine, type ResolvedConfig, type VDTDocument } from '../../../vdt.js';
 import { shiftLineX } from '../../../measure/bidiLines.js';
 import type { MeasurementCache } from '../../../measure/index.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { Resource, ResourceType, ResolvedCalloutStyleConfig } from '../../../types.js';
-import type { ResourceNumberingMap } from '../../resourceNumbering.js';
+import type { ResourceNumberingMap } from '../../resources/resourceNumbering.js';
 import type { ResourceNumberEntry } from '../../../types/content.js';
 import type { BlockStyle } from '../../styles.js';
-import type { PlannedCallout } from '../../calloutLayout.js';
-import type { CalloutLayouter } from '../../frameLayout.js';
-import type { PlacementCursor } from '../../placement.js';
+import type { PlannedCallout } from '../../callouts/calloutLayout.js';
+import type { CalloutLayouter } from '../../callouts/frameLayout.js';
+import type { PlacementCursor } from '../../blocks/placement.js';
 import type { StripGeometry } from './types.js';
 
 /** What createStrips takes from the pass. */

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { parseMarkdown } from '../parse/index.js';
-import { computeHeadingContext, computeResourceNumbering } from '../pipeline/resourceNumbering.js';
+import { computeHeadingContext, computeResourceNumbering } from '../pipeline/resources/resourceNumbering.js';
 import { resolveOrderedListsConfig, stripOrderedListsDefaults } from '../defaults/orderedLists.js';
 import { resolvePageConfig, stripPageDefaults } from '../defaults/page.js';
 import { resolveBodyTextConfig } from '../defaults/bodyText.js';

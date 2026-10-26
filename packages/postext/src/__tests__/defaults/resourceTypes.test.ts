@@ -4,7 +4,7 @@ import { parseMarkdown } from '../../parse/index.js';
 import {
   computeHeadingContext,
   computeResourceNumbering,
-} from '../../pipeline/resourceNumbering.js';
+} from '../../pipeline/resources/resourceNumbering.js';
 import type { Resource } from '../../types.js';
 
 const VALID_FORMATS = new Set([

@@ -4,8 +4,8 @@ import { createMeasurementCache } from '../../measure/index.js';
 import { parseMarkdown } from '../../parse/index.js';
 import { initMathEngine } from '../../math/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { computeHeadingContext, computeResourceNumbering, renderTemplateNumber } from '../../pipeline/resourceNumbering.js';
-import { numberStatements } from '../../pipeline/statementNumbering.js';
+import { computeHeadingContext, computeResourceNumbering, renderTemplateNumber } from '../../pipeline/resources/resourceNumbering.js';
+import { numberStatements } from '../../pipeline/text/statementNumbering.js';
 import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
 import type { CalloutStyleConfig, PostextConfig, Resource, ResourceType, VDTDocument } from '../../index.js';
 

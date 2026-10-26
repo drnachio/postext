@@ -3,7 +3,7 @@ import { buildDocument, buildDocumentPass } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, VDTDocument, VDTPage } from '../../index.js';
 import { parseMarkdown } from '../../parse/index.js';
-import { MAX_BAND_PASSES, MAX_TRAILING_CAP_PASSES, resolveTrailingCaps, type BandCap, type BandPassReport } from '../../pipeline/bandCaps.js';
+import { MAX_BAND_PASSES, MAX_TRAILING_CAP_PASSES, resolveTrailingCaps, type BandCap, type BandPassReport } from '../../pipeline/columns/bandCaps.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {

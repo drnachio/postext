@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { justifySnippetLine, layoutResourceBlock } from '../../pipeline/resourceLayout.js';
+import { justifySnippetLine, layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
 import { buildDocument } from '../../pipeline/index.js';

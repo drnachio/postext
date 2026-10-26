@@ -6,11 +6,11 @@ import { parseMarkdownMemo } from '../../parse/index.js';
 import type { VDTDocument, VDTComposedPage, VDTPage, VDTFrame, VDTDesignTextBlock, VDTAnchor } from '../../vdt.js';
 import { extractFrontmatter } from '../../frontmatter.js';
 import { measureRichBlock } from '../../measure/index.js';
-import { locateAnchors } from '../anchors.js';
-import { locateCarriedOutline } from '../carriedOutline.js';
+import { locateAnchors } from '../references/anchors.js';
+import { locateCarriedOutline } from '../references/carriedOutline.js';
 import type { ImportedJumps } from '../../composed/carry.js';
-import { locateIndexMarks } from '../indexDirective.js';
-import { codeParseOptions } from '../codeBlocks.js';
+import { locateIndexMarks } from '../contents/indexDirective.js';
+import { codeParseOptions } from '../code/codeBlocks.js';
 
 /**
  * Mark the blocks laid from stories that came in from other chapters

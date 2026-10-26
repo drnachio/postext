@@ -49,10 +49,10 @@ import {
   avoidOrphansByDefault,
 } from '../defaults/index.js';
 import { dimensionToPx } from '../units.js';
-import { applyCjkGrid } from './cjkGrid.js';
+import { applyCjkGrid } from './text/cjkGrid.js';
 import { directionOf, localeScript, presentTag, resolveNumerals } from '../locale.js';
 import { configFingerprint } from '../util/stableHash.js';
-import { forgetFlowColorValues } from './partPalette.js';
+import { forgetFlowColorValues } from './sections/partPalette.js';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt.js';
 import { normalizeFrameLooks, resolveLabelStyles, stripPageTemplatesDefaults } from '../composed/templates.js';
 import type { FrameLookEntry } from '../composed/types.js';

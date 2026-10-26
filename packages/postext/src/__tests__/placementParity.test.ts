@@ -3,7 +3,7 @@ import {
   enforcePageParity,
   createPageWithColumns,
   type PlacementCursor,
-} from '../pipeline/placement.js';
+} from '../pipeline/blocks/placement.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { createVDTDocument, type VDTDocument, type ResolvedConfig } from '../vdt.js';
 

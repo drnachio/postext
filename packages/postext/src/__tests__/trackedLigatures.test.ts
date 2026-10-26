@@ -9,7 +9,7 @@ import { renderComicBalloon } from '../canvas-backend/comic.js';
 import { fillFlowText, setVerticalPaint } from '../canvas-backend/verticalText.js';
 import { renderToHtml } from '../html-backend.js';
 import { buildDocument } from '../pipeline/index.js';
-import { layoutSlotToVdt } from '../pipeline/headerFooter.js';
+import { layoutSlotToVdt } from '../pipeline/pages/headerFooter.js';
 import { resolveDesignSlot } from '../defaults/headerFooter.js';
 import type { DesignPlaceholderContext } from '../design/placeholders.js';
 import type { DesignElement, DesignTextElement, PostextConfig, Resource } from '../types.js';

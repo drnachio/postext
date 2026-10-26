@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { parseMarkdown } from '../parse/index.js';
-import { computeChapterTitles } from '../pipeline/placeholders.js';
+import { computeChapterTitles } from '../pipeline/pages/placeholders.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTDesignTextBlock } from '../vdt.js';
 

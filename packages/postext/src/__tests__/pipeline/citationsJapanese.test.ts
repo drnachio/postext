@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { renderToHtml } from '../../html-backend.js';
-import { citationLocale } from '../../pipeline/citations.js';
+import { citationLocale } from '../../pipeline/references/citations.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { registerCitationEngine } from '../../citations/registry.js';
 import { parseBibtex } from '../../citations/bibtex.js';

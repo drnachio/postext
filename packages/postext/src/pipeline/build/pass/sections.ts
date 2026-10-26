@@ -1,21 +1,21 @@
 // Styled sections and the cursor: measure contexts per section, block ids,
 // pending spacing and column-head keeps.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type BlockMeasureContext, measureContentBlock } from '../../measureContentBlock.js';
-import { derivePartMeasureContext, type PartPlan } from '../../parts.js';
+import { type BlockMeasureContext, measureContentBlock } from '../../blocks/measureContentBlock.js';
+import { derivePartMeasureContext, type PartPlan } from '../../sections/parts.js';
 import type { ResolvedHeadingStyleConfig } from '../../../types.js';
-import { deriveSectionMeasureContext, deriveSectionGeometryConfig, headingStyleOf, headingIsHidden, type HeadingLevelResolver } from '../../headingStyles.js';
-import { computePageMetrics, nextNonMarkerBlock, isMarkerBlock, type PageMetrics } from '../../buildHelpers.js';
+import { deriveSectionMeasureContext, deriveSectionGeometryConfig, headingStyleOf, headingIsHidden, type HeadingLevelResolver } from '../../sections/headingStyles.js';
+import { computePageMetrics, nextNonMarkerBlock, isMarkerBlock, type PageMetrics } from '../../blocks/buildHelpers.js';
 import { setMeasureWritingMode } from '../../../measure/vertical.js';
-import { pageHasContent, createPageWithColumns, FIT_EPS, type PlacementCursor } from '../../placement.js';
+import { pageHasContent, createPageWithColumns, FIT_EPS, type PlacementCursor } from '../../blocks/placement.js';
 import type { VDTBlock, VDTColumn, ResolvedConfig, VDTDocument } from '../../../vdt.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import { plainTitleBreaks } from '../../../parse/inlineFormatting.js';
-import { withBookTitleBrackets } from '../../annotations.js';
-import { scoreInfoOf } from '../../scoreBlocks.js';
-import { paragraphStyleIdOf, type ParagraphContainerPlan } from '../../paragraphContainers.js';
+import { withBookTitleBrackets } from '../../text/annotations.js';
+import { scoreInfoOf } from '../../resources/scoreBlocks.js';
+import { paragraphStyleIdOf, type ParagraphContainerPlan } from '../../callouts/paragraphContainers.js';
 import { resolvedDirection } from '../../config.js';
-import { tocBlockStamps } from '../../toc.js';
+import { tocBlockStamps } from '../../contents/toc.js';
 import type { PassState } from './state.js';
 
 /** What createSections takes from the pass. */

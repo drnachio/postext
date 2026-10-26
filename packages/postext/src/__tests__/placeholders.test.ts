@@ -9,7 +9,7 @@ import {
   leadingBoldText,
   markPlaceholder,
   type PlaceholderContext,
-} from '../pipeline/placeholders.js';
+} from '../pipeline/pages/placeholders.js';
 import { resolveDesignPlaceholders, isAllowedPlaceholder, configUsesPlaceholder, type DesignPlaceholderContext } from '../design/placeholders.js';
 import type { VDTDesignTextBlock } from '../vdt.js';
 import { buildDocument } from '../pipeline/index.js';

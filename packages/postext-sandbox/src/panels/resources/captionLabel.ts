@@ -7,7 +7,7 @@ const CAPTION_STOP_RE = /[.:!?…。．：！？]$/;
 /**
  * The label a caption of `type` opens with in the Resources panel's
  * preview, built as the engine builds it (`captionLabelText` in postext's
- * `pipeline/resourceLayout.ts`) with `#` standing for the number, which
+ * `pipeline/resources/resourceLayout.ts`) with `#` standing for the number, which
  * depends on the resource's place in the book: "Figure #. ". A type
  * numbered with an empty template prints no number, so its label is the
  * prefix and a stop, "Do. " (none added when the prefix ends in one, as

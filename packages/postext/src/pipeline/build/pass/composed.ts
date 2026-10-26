@@ -3,32 +3,32 @@
 // Part of the placement pass (pass.ts), split out of it in #1276.
 import { type ContentWarning, type VDTPage, type VDTComposedPage, type VDTBlock, createVDTColumn, pageIsVertical, pageIsMirrored, type ReflowEvent, type VDTComicPage, type ResolvedConfig, type VDTDocument, type BoundingBox } from '../../../vdt.js';
 import { type ComposedMemoContext, configKeyOf, layoutComposedPageMemo } from '../../../composed/pageMemo.js';
-import { type PlannedComposedPage, carriedPass, frameStyleOf, layoutComposedPage } from '../../composedLayout.js';
+import { type PlannedComposedPage, carriedPass, frameStyleOf, layoutComposedPage } from '../../composedPages/composedLayout.js';
 import { type ComposedContinuation, type ComposedContinuationInput, assignJumpReceivers, MAX_CONTINUATION_PAGES, continuationTarget, assignReceivers } from '../../../composed/continuation.js';
 import type { StoryJump, CarriedNumber, CarriedNote, ImportedJumps } from '../../../composed/carry.js';
 import { continueInPage, resolvePageTemplate, isModuleTemplate } from '../../../composed/templates.js';
-import { hasAnchorRefs } from '../../crossRefs.js';
+import { hasAnchorRefs } from '../../references/crossRefs.js';
 import type { ComposedPageFence, ContentBlock } from '../../../parse/index.js';
 import { FRAME_STYLE_ID } from '../../../composed/wrap.js';
-import { wrapGapPx } from '../../textWrap.js';
+import { wrapGapPx } from '../../floats/textWrap.js';
 import { resolvedLocale } from '../../config.js';
-import { advanceToNextColumn, type PlacementCursor } from '../../placement.js';
+import { advanceToNextColumn, type PlacementCursor } from '../../blocks/placement.js';
 import { layoutComposedSpread } from '../../../composed/spread.js';
 import type { ComposedModuleUse, PageTemplate } from '../../../composed/types.js';
 import { nextFrameOf } from '../../../composed/geometry.js';
 import { moduleUsesOf } from '../../../composed/modules.js';
 import { frameElementId } from '../../../composed/ids.js';
 import { type ComicTextFramesInput, type ComicTextFramesLayout, layoutComicTextFrames, layoutStripTextFrames } from '../../../comics/textPanels.js';
-import { isMarkerBlock } from '../../buildHelpers.js';
+import { isMarkerBlock } from '../../blocks/buildHelpers.js';
 import type { PostextContent, ResolvedCalloutStyleConfig, Resource, ResourceType } from '../../../types.js';
-import type { CaptionCitations } from '../../citations.js';
-import type { FootnoteNumbering } from '../../footnotes.js';
+import type { CaptionCitations } from '../../references/citations.js';
+import type { FootnoteNumbering } from '../../references/footnotes.js';
 import type { BlockStyle } from '../../styles.js';
-import type { ParagraphContainerPlan } from '../../paragraphContainers.js';
-import type { PartPlan } from '../../parts.js';
-import type { HeadingSectionPlan } from '../../headingStyles.js';
-import type { DropCapNote } from '../../measureContentBlock.js';
-import type { FrameLayoutPass } from '../../frameLayout.js';
+import type { ParagraphContainerPlan } from '../../callouts/paragraphContainers.js';
+import type { PartPlan } from '../../sections/parts.js';
+import type { HeadingSectionPlan } from '../../sections/headingStyles.js';
+import type { DropCapNote } from '../../blocks/measureContentBlock.js';
+import type { FrameLayoutPass } from '../../callouts/frameLayout.js';
 import type { PassState } from './state.js';
 
 /** What createComposed takes from the pass. */

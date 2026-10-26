@@ -1,9 +1,9 @@
 // Contents blocks: group rows, the room a group needs, continuation heads
 // and their warnings.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { isMarkerBlock } from '../../buildHelpers.js';
-import { measureContentBlock, type BlockMeasureContext } from '../../measureContentBlock.js';
-import { currentColumn, FIT_EPS, advanceToNextColumn, type PlacementCursor } from '../../placement.js';
+import { isMarkerBlock } from '../../blocks/buildHelpers.js';
+import { measureContentBlock, type BlockMeasureContext } from '../../blocks/measureContentBlock.js';
+import { currentColumn, FIT_EPS, advanceToNextColumn, type PlacementCursor } from '../../blocks/placement.js';
 import type { ContentWarning, VDTBlock, VDTColumn, VDTDocument, VDTPage } from '../../../vdt.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { BlockStyle } from '../../styles.js';

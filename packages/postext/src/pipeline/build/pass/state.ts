@@ -2,9 +2,9 @@
 import type { BoundingBox, ResolvedConfig, VDTColumn, VDTExclusion, VDTBlock, VDTPage, VDTComicPage } from '../../../vdt.js';
 import type { ResolvedHeadingStyleConfig, HeadingBreakParity, ResolvedCalloutStyleConfig } from '../../../types.js';
 import type { NumeralStyle } from '../../../numbering.js';
-import type { PlannedCallout } from '../../calloutLayout.js';
-import type { CalloutLayouter } from '../../frameLayout.js';
-import type { PlannedComposedPage } from '../../composedLayout.js';
+import type { PlannedCallout } from '../../callouts/calloutLayout.js';
+import type { CalloutLayouter } from '../../callouts/frameLayout.js';
+import type { PlannedComposedPage } from '../../composedPages/composedLayout.js';
 import type { ComicTextFramesInput, ComicTextFramesLayout } from '../../../comics/textPanels.js';
 
 /** The bindings a pass reassigns while it places blocks and that more than

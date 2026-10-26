@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeChapterTitles } from '../pipeline/placeholders.js';
+import { computeChapterTitles } from '../pipeline/pages/placeholders.js';
 import type { VDTBlock } from '../vdt.js';
 
 function h1(pageIndex: number, text: string): VDTBlock {

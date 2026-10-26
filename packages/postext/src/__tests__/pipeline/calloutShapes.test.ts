@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { collectConfigWarnings } from '../../configWarnings.js';
-import { styleWithLook } from '../../pipeline/composedLayout.js';
+import { styleWithLook } from '../../pipeline/composedPages/composedLayout.js';
 import { resolveCalloutStylesConfig } from '../../defaults/calloutStyles.js';
 import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
 import { resolveHeadingsConfig } from '../../defaults/headings.js';

@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { collectColumnGaps } from '../../pipeline/columnBalancing.js';
+import { collectColumnGaps } from '../../pipeline/columns/columnBalancing.js';
 import {
   normalizeSafeArea,
   safeAreaHeightRange,
   safeAreaSource,
   uncroppedPictureBox,
-} from '../../pipeline/safeArea.js';
+} from '../../pipeline/resources/safeArea.js';
 import { renderToHtml } from '../../index.js';
 import type { PostextConfig, Resource, ResourceSafeArea, VDTBlock, VDTDocument } from '../../index.js';
 

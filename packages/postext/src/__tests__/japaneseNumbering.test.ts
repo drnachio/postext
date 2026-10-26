@@ -11,10 +11,10 @@ import {
 import { HIRAGANA, HIRAGANA_IROHA, KATAKANA, KATAKANA_IROHA, japaneseNumeral } from '../japaneseNumerals.js';
 import { parseChineseNumeral } from '../chineseNumerals.js';
 import { numberToWords } from '../numberWords.js';
-import { parsePartNumber } from '../pipeline/parts.js';
-import { formatListNumber } from '../pipeline/lists.js';
-import { computeHeadingContext, computeResourceNumbering } from '../pipeline/resourceNumbering.js';
-import { formatFootnoteNumber } from '../pipeline/footnotes.js';
+import { parsePartNumber } from '../pipeline/sections/parts.js';
+import { formatListNumber } from '../pipeline/text/lists.js';
+import { computeHeadingContext, computeResourceNumbering } from '../pipeline/resources/resourceNumbering.js';
+import { formatFootnoteNumber } from '../pipeline/references/footnotes.js';
 import { resolveFootnotesConfig } from '../defaults/footnotes.js';
 import { collectConfigWarnings } from '../configWarnings.js';
 import { parseMarkdown } from '../parse/index.js';

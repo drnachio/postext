@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { stampSourceRanges } from '../../pipeline/buildHelpers.js';
+import { stampSourceRanges } from '../../pipeline/blocks/buildHelpers.js';
 import { computeSourceMap, parseMarkdown } from '../../parse/index.js';
 import { createBoundingBox } from '../../vdt.js';
 import type { VDTLine } from '../../vdt.js';

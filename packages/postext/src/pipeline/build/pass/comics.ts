@@ -1,17 +1,17 @@
 // Comic spreads and strips placed in the flow.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { advanceToNextColumn, currentColumn, FIT_EPS, placeAtomicBlock, type PlacementCursor } from '../../placement.js';
+import { advanceToNextColumn, currentColumn, FIT_EPS, placeAtomicBlock, type PlacementCursor } from '../../blocks/placement.js';
 import type { ComicPageSource } from '../../../comics/types.js';
-import type { PlannedComposedPage } from '../../composedLayout.js';
+import type { PlannedComposedPage } from '../../composedPages/composedLayout.js';
 import { createVDTColumn, type VDTPage, type VDTComicPage, pageIsVertical, type ResolvedConfig, type VDTDocument, type VDTBlock, type VDTColumn } from '../../../vdt.js';
-import { pageMirrored, type PageMetrics } from '../../buildHelpers.js';
+import { pageMirrored, type PageMetrics } from '../../blocks/buildHelpers.js';
 import { layoutComicSpread, comicSpreadGutter } from '../../../comics/spread.js';
 import { comicStripPlacement } from '../../../comics/strip.js';
-import type { BlockMeasureContext } from '../../measureContentBlock.js';
+import type { BlockMeasureContext } from '../../blocks/measureContentBlock.js';
 import type { Resource, ResolvedHeadingStyleConfig } from '../../../types.js';
-import type { PartPlan } from '../../parts.js';
-import type { HeadingSectionPlan } from '../../headingStyles.js';
-import type { PlannedFloat } from '../../floatPlacement.js';
+import type { PartPlan } from '../../sections/parts.js';
+import type { HeadingSectionPlan } from '../../sections/headingStyles.js';
+import type { PlannedFloat } from '../../floats/floatPlacement.js';
 import type { StripGeometry } from './types.js';
 import type { PassState, PassLate } from './state.js';
 

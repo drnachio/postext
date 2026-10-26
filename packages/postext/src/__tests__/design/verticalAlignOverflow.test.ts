@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { layoutSlotToVdt } from '../../pipeline/headerFooter.js';
+import { layoutSlotToVdt } from '../../pipeline/pages/headerFooter.js';
 import { resolveDesignSlot } from '../../defaults/headerFooter.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';
 import type { DesignElement, VAlign } from '../../types.js';

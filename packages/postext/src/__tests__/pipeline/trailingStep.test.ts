@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
-import { bandCapLines, bandLinePitch, capRetryLimit, resolveTrailingCaps, type BandCap, type BandPassReport } from '../../pipeline/bandCaps.js';
+import { bandCapLines, bandLinePitch, capRetryLimit, resolveTrailingCaps, type BandCap, type BandPassReport } from '../../pipeline/columns/bandCaps.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, VDTBlock, VDTColumn, VDTDocument, VDTLine } from '../../index.js';
 

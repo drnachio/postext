@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { metadataText, normalizeMetadata } from '../frontmatter.js';
-import { resolvePlaceholders, type PlaceholderContext } from '../pipeline/placeholders.js';
+import { resolvePlaceholders, type PlaceholderContext } from '../pipeline/pages/placeholders.js';
 import { resolveDesignPlaceholders } from '../design/placeholders.js';
 import type { VDTPage } from '../vdt.js';
 import type { DocumentMetadata, PostextConfig } from '../types.js';

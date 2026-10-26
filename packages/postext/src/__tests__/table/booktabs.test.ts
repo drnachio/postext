@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { layoutResourceBlock } from '../../pipeline/resourceLayout.js';
-import type { TableSliceSpec } from '../../pipeline/resourceLayout.js';
+import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
+import type { TableSliceSpec } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
 import { resolveTableStyleConfig, stripTableStyleDefaults } from '../../defaults/tableStyle.js';

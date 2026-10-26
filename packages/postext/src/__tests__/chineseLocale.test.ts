@@ -16,7 +16,7 @@ import { defaultTableContinuationStrings } from '../defaults/tableStyle.js';
 import { resolveBodyTextConfig } from '../defaults/bodyText.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { resolveAllConfig, resolvedLocale } from '../pipeline/config.js';
-import { expandIndexDirectives } from '../pipeline/indexDirective.js';
+import { expandIndexDirectives } from '../pipeline/contents/indexDirective.js';
 import { buildDocument } from '../pipeline/index.js';
 import { parseMarkdown } from '../parse/index.js';
 import { renderToHtml } from '../html-backend.js';

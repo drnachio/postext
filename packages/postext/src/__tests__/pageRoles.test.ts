@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { classifyPage } from '../pipeline/pageRoles.js';
+import { classifyPage } from '../pipeline/pages/pageRoles.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { createVDTPage } from '../vdt.js';
 import type { PostextConfig, DesignElement } from '../types.js';

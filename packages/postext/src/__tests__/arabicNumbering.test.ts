@@ -11,8 +11,8 @@ import {
 } from '../numbering.js';
 import { abjadNumeral, arabicLettering, asciiDigits, withDigits, ABJAD_LETTERS, HIJAI_LETTERS } from '../arabicNumerals.js';
 import { defaultNumeralsFor, resolveNumerals } from '../locale.js';
-import { formatListNumber } from '../pipeline/lists.js';
-import { parsePartNumber } from '../pipeline/parts.js';
+import { formatListNumber } from '../pipeline/text/lists.js';
+import { parsePartNumber } from '../pipeline/sections/parts.js';
 import { continuationAfter } from '../pipeline/continuation.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { parseMarkdown, spaceDirectiveLines } from '../parse/index.js';

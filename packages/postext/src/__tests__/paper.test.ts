@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { collectContentWarnings } from '../pipeline/contentWarnings.js';
-import { parsePaperAttrs } from '../pipeline/paper.js';
+import { parsePaperAttrs } from '../pipeline/pages/paper.js';
 import type { PostextConfig } from '../types.js';
 import type { VDTPage } from '../vdt.js';
 

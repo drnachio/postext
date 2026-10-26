@@ -8,7 +8,7 @@ import {
   balanceKey,
   type BalanceState,
   type BalanceProposalOptions,
-} from '../pipeline/columnBalancing.js';
+} from '../pipeline/columns/columnBalancing.js';
 import { createVDTPage, type VDTDocument, type VDTColumn, type VDTBlock, type VDTLine } from '../vdt.js';
 import type { PostextConfig } from '../types.js';
 

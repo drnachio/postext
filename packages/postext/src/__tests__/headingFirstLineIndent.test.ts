@@ -3,7 +3,7 @@ import { buildDocument } from '../pipeline/index.js';
 import { resolveHeadingsConfig, stripHeadingsDefaults } from '../defaults/headings.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { createBundle, openBundle } from '../bundle/index.js';
-import { computeOutlineFor } from '../pipeline/outline.js';
+import { computeOutlineFor } from '../pipeline/contents/outline.js';
 import { parseMarkdown } from '../parse/blockParser.js';
 import type { HeadingLevelConfig, PostextConfig } from '../types.js';
 import type { VDTBlock, VDTDocument } from '../vdt.js';

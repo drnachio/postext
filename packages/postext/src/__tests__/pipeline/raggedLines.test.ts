@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { raggedLooseLines } from '../../pipeline/raggedLines.js';
+import { raggedLooseLines } from '../../pipeline/text/raggedLines.js';
 import type { VDTLine } from '../../vdt.js';
 
 const line = (text: string, ratio?: number, isLastLine = false): VDTLine =>

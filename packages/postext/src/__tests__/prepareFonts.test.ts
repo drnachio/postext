@@ -7,7 +7,7 @@ import { buildDocumentWithFonts } from '../fonts/buildWithFonts.js';
 import { documentFontFaces, fontFallbacks, matchFace, type FontFaceLike, type FontFaceSetLike } from '../fonts/faces.js';
 import { onFontsChanged, syncFontSet, watchFonts } from '../fonts/fontSet.js';
 import { invalidateConfig, resolveAllConfig, validateConfigCache } from '../pipeline/config.js';
-import { flowColorValues } from '../pipeline/partPalette.js';
+import { flowColorValues } from '../pipeline/sections/partPalette.js';
 import { clearRegisteredFonts, registeredFontFiles } from '../svg/fontRegistry.js';
 import { stableStringify, hashString } from '../util/stableHash.js';
 import type { ContentWarning } from '../vdt.js';

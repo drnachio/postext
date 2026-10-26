@@ -10,7 +10,7 @@ import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { frameMatrix } from '../../composed/paint.js';
 import { sourceAt } from '../../composed/sourceMap.js';
-import { framesInFrame } from '../../pipeline/headerFooter.js';
+import { framesInFrame } from '../../pipeline/pages/headerFooter.js';
 import type { FrameConfig, PageTemplate } from '../../composed/types.js';
 import type { PostextConfig, VDTBlock, VDTDesignTextBlock, VDTDocument, VDTFrame, VDTPage } from '../../index.js';
 import { page8Fixture } from './fixtures/page8.js';

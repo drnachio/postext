@@ -3,7 +3,7 @@ import { buildDocument } from '../pipeline/index.js';
 import { continuationAfter } from '../pipeline/continuation.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { computeSectionStyles, planHeadingSections } from '../pipeline/headingStyles.js';
+import { computeSectionStyles, planHeadingSections } from '../pipeline/sections/headingStyles.js';
 import { resolveHeadingStylesConfig, stripHeadingStylesDefaults } from '../defaults/headingStyles.js';
 import { stripConfigDefaults } from '../defaults/index.js';
 import { dimensionToPx } from '../units.js';

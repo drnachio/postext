@@ -4,7 +4,7 @@ import { createMeasurementCache } from '../../measure/index.js';
 import { layoutDesignSlot, type ResolvedPathPrimitive } from '../../design/layout.js';
 import { resolveHeadingsConfig } from '../../defaults/index.js';
 import { resolveDesignSlot } from '../../defaults/headerFooter.js';
-import { measureHeadingAdvancedDesignHeight } from '../../pipeline/headerFooter.js';
+import { measureHeadingAdvancedDesignHeight } from '../../pipeline/pages/headerFooter.js';
 import { collectConfigWarnings } from '../../configWarnings.js';
 import { renderHeaderFooterSlot } from '../../canvas-backend/headerFooter.js';
 import { renderToHtmlIndexed } from '../../html-backend.js';

@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
 import { measureBlock } from '../measure/plain.js';
 import { hyphenateText, setHyphenationLocale } from '../hyphenate.js';
-import { layoutSlotToVdt } from '../pipeline/headerFooter.js';
+import { layoutSlotToVdt } from '../pipeline/pages/headerFooter.js';
 import { resolveDesignSlot } from '../defaults/headerFooter.js';
 import type { InlineSpan } from '../parse/index.js';
 import type { DesignElement } from '../types.js';

@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas, collectConfigWarnings, formatWarning } from '../../index.js';
 import { renderToHtml } from '../../html-backend.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { applyCjkGrid, cjkGridCells, cjkGridGeometry } from '../../pipeline/cjkGrid.js';
-import { computePageMetrics } from '../../pipeline/buildHelpers.js';
+import { applyCjkGrid, cjkGridCells, cjkGridGeometry } from '../../pipeline/text/cjkGrid.js';
+import { computePageMetrics } from '../../pipeline/blocks/buildHelpers.js';
 import { flowRectToPage, verticalFlowOf } from '../../index.js';
 import type { PostextConfig } from '../../types.js';
 

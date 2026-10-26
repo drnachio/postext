@@ -12,7 +12,7 @@ import { extractInlineChips, injectChipSpans, parseInlineFormatting } from '../p
 import type { InlineSpan } from '../parse/types.js';
 import { buildFontString } from '../measure/index.js';
 import { chipToken, scriptMetrics, stackedScriptPairs } from '../measure/rich.js';
-import { resolveChipSpans } from '../pipeline/chips.js';
+import { resolveChipSpans } from '../pipeline/text/chips.js';
 import type { VDTChip } from '../vdt.js';
 import type { ResolvedChipStyleConfig } from '../types.js';
 import { graphemeCount } from '../measure/graphemes.js';

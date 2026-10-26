@@ -323,7 +323,7 @@ interface Fonts {
 
 /** The marks a span sets on its characters (#193, #421), the defaults
  *  of what the span leaves unset filled in (`cjk.emphasisMark` has filled
- *  the region's in already, `pipeline/annotations.ts`): emphasis dots a
+ *  the region's in already, `pipeline/text/annotations.ts`): emphasis dots a
  *  filled dot (an open circle), a side line solid; both under the text,
  *  or right of it in vertical text. */
 export function spanMarks(span: InlineSpan, vertical: boolean): VDTSegmentMarks | undefined {

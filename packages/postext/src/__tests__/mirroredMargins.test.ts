@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
-import { computePageMetrics, contentAreaForPage, mirrorContentArea } from '../pipeline/buildHelpers.js';
+import { computePageMetrics, contentAreaForPage, mirrorContentArea } from '../pipeline/blocks/buildHelpers.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import type { PostextConfig, Resource } from '../types.js';
 

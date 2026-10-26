@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../../design/layout.js';
 import { resolveDesignSlot } from '../../defaults/headerFooter.js';
-import { layoutSlotToVdt } from '../../pipeline/headerFooter.js';
-import { resolveChipBox } from '../../pipeline/chips.js';
+import { layoutSlotToVdt } from '../../pipeline/pages/headerFooter.js';
+import { resolveChipBox } from '../../pipeline/text/chips.js';
 import { resolveChipStylesConfig, stripChipStylesDefaults } from '../../defaults/chipStyles.js';
 import { dotsOnRaster, resolveTextDots, textDots, traceContours } from '../../textDots.js';
 import { renderTextBlock } from '../../canvas-backend/headerFooter.js';

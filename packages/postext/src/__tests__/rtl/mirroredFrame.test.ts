@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { flowPageMirrored, pageMirrored } from '../../pipeline/buildHelpers.js';
-import { mirroredLineOrder } from '../../pipeline/mirrorFrame.js';
+import { flowPageMirrored, pageMirrored } from '../../pipeline/blocks/buildHelpers.js';
+import { mirroredLineOrder } from '../../pipeline/blocks/mirrorFrame.js';
 import {
   flowRectToPage,
   flowToPage,

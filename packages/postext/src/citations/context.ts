@@ -13,7 +13,7 @@ import { parseMarkdownMemo } from '../parse/index.js';
 import type { CitationClusterInput, CslItem } from './types.js';
 import { documentReferences, type ReferenceIssue } from './data.js';
 import { snippetCitations } from '../parse/inlineSnippet.js';
-import { resourceRefId } from '../pipeline/crossRefs.js';
+import { resourceRefId } from '../pipeline/references/crossRefs.js';
 import type { Resource } from '../types.js';
 
 /** A document's share of its book's citations. */

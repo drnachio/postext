@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { chooseTableSlice, MIN_TAIL_ROWS, type TableRowMetrics } from '../../pipeline/resourceLayout.js';
+import { chooseTableSlice, MIN_TAIL_ROWS, type TableRowMetrics } from '../../pipeline/resources/resourceLayout.js';
 import type { PostextConfig, Resource, TableCell, VDTDocument, VDTBlock } from '../../index.js';
 
 // Inline tables split across columns and pages (#634).

@@ -7,7 +7,7 @@ import { renderToHtml } from '../../html-backend.js';
 import type { ParagraphStyleConfig, PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
 import { parseMarkdownWithIssues } from '../../parse/index.js';
-import { resolveBlockKind, type BlockKindContext } from '../../pipeline/buildBlockKind.js';
+import { resolveBlockKind, type BlockKindContext } from '../../pipeline/blocks/buildBlockKind.js';
 import { resolveBodyStyle } from '../../pipeline/styles.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 

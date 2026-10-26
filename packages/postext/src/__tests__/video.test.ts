@@ -21,7 +21,7 @@ import {
   DEFAULT_VIDEO_PLAYER_OPTIONS,
 } from '../index.js';
 import { collectContentWarnings } from '../pipeline/contentWarnings.js';
-import { layoutResourceBlock } from '../pipeline/resourceLayout.js';
+import { layoutResourceBlock } from '../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../index.js';
 

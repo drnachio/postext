@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseTemplate, formatNumeral, computeHeadingNumbers } from '../numbering.js';
 import { parseMarkdown, type ContentBlock } from '../parse/index.js';
-import { resolveBlockKind, uppercasePreservingLength } from '../pipeline/buildBlockKind.js';
+import { resolveBlockKind, uppercasePreservingLength } from '../pipeline/blocks/buildBlockKind.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { resolveBodyStyle, resolveBlockquoteStyle } from '../pipeline/styles.js';
 

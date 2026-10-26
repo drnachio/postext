@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { computeFloatPlan, resolveResourcePlacement } from '../../pipeline/floatPlacement.js';
+import { computeFloatPlan, resolveResourcePlacement } from '../../pipeline/floats/floatPlacement.js';
 import { parseMarkdown } from '../../parse/index.js';
 import type { PostextContent, PostextConfig, Resource, ResourceType } from '../../types.js';
 

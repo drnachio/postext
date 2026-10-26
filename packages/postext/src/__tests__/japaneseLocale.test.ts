@@ -18,10 +18,10 @@ import {
 } from '../defaults/cjk.js';
 import { defaultResourceTypes } from '../defaults/resourceTypes.js';
 import { defaultTableContinuationStrings } from '../defaults/tableStyle.js';
-import { defaultCrossRefStrings } from '../pipeline/crossRefs.js';
-import { defaultBibliographyTitle } from '../pipeline/citations.js';
+import { defaultCrossRefStrings } from '../pipeline/references/crossRefs.js';
+import { defaultBibliographyTitle } from '../pipeline/references/citations.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { expandIndexDirectives } from '../pipeline/indexDirective.js';
+import { expandIndexDirectives } from '../pipeline/contents/indexDirective.js';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
 import { verticalCellEms, verticalOrientation } from '../writingMode.js';

@@ -2,16 +2,16 @@
 // numbering breaks, and the heading runs that may leave a column.
 // Part of the placement pass (pass.ts), split out of it in #1276.
 import type { VDTColumn, VDTPage, VDTBlock, ResolvedConfig, VDTDocument, ResolvedResourceBlock } from '../../../vdt.js';
-import { settleColumnWraps } from '../../textWrap.js';
-import { currentColumn, sideColumns, bandColumns, currentBand, pageHasContent, advanceToNextColumn, advanceToNextPageBoundary, type PlacementCursor } from '../../placement.js';
-import type { PlannedFloat } from '../../floatPlacement.js';
+import { settleColumnWraps } from '../../floats/textWrap.js';
+import { currentColumn, sideColumns, bandColumns, currentBand, pageHasContent, advanceToNextColumn, advanceToNextPageBoundary, type PlacementCursor } from '../../blocks/placement.js';
+import type { PlannedFloat } from '../../floats/floatPlacement.js';
 import type { PageNumberSegment } from '../../../numbering.js';
 import type { ContentBlock } from '../../../parse/index.js';
-import { rollbackTrailingBlocks } from '../../buildHelpers.js';
-import type { PlannedCallout } from '../../calloutLayout.js';
-import type { HeadingLevelResolver } from '../../headingStyles.js';
+import { rollbackTrailingBlocks } from '../../blocks/buildHelpers.js';
+import type { PlannedCallout } from '../../callouts/calloutLayout.js';
+import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
 import type { LayoutContinuation } from '../../../types/content.js';
-import type { BandCapZone } from '../../bandCaps.js';
+import type { BandCapZone } from '../../columns/bandCaps.js';
 import type { PassState, PassLate } from './state.js';
 
 /** What createBreaks takes from the pass. */
@@ -65,7 +65,7 @@ export function createBreaks(deps: BreaksDeps) {
    *  the line that cites them, in the new segment (EF-69). */
   /** Text wrap (#627): an inline figure that wraps, placed as a band, whose
    *  band the next block takes back to run beside it when it can (see
-   *  `pipeline/textWrap.ts`). */
+   *  `pipeline/floats/textWrap.ts`). */
   state.pendingWrap = null;
 
   const closeFlowSegment = (boundaryIndex: number): void => {

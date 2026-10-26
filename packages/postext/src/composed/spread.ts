@@ -37,8 +37,8 @@
  *   pages are.
  */
 import type { BoundingBox, ContentWarning, ReflowEvent, VDTBlock, VDTComposedPage, VDTDesignSlot, VDTFrame, VDTPage } from '../vdt.js';
-import { offsetBlock, offsetDesignBlock } from '../pipeline/calloutLayout.js';
-import { layoutComposedPage, lengthPx, type ComposedPageInput, type ComposedPageLayout } from '../pipeline/composedLayout.js';
+import { offsetBlock, offsetDesignBlock } from '../pipeline/callouts/calloutLayout.js';
+import { layoutComposedPage, lengthPx, type ComposedPageInput, type ComposedPageLayout } from '../pipeline/composedPages/composedLayout.js';
 import { frameBounds } from './paint.js';
 import { keepLabelsOffGutter, type SpineBand } from './labels.js';
 import type { FrameAreas, Rect } from './geometry.js';

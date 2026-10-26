@@ -1,0 +1,394 @@
+/**
+ * Resource numbering pipeline (issue #49 §3).
+ *
+ * Assigns a rendered number string (e.g. `"1.7"`) to every resource referenced
+ * in the document. Numbering follows **order of first reference** in reading
+ * order — a resource is numbered the first time it is encountered, whether via
+ * a `::resource{…}` block embed or an inline `:ref{…}`. Inserting a new
+ * reference earlier in the document therefore auto-renumbers the rest.
+ *
+ * The renderer is shared with heading numbering through
+ * {@link renderCounterTemplate}; only the template syntax differs. Resource
+ * templates use `{n}` for the per-type counter and `{h1}`..`{h6}` for the
+ * heading numbers in effect at the point of first reference. Each token
+ * takes the style suffix a heading template's does (`{h1:A}.{n}`, #730).
+ */
+
+import { resourceRefId } from '../references/crossRefs.js';
+import type { ContentBlock } from '../../parse/index.js';
+import type { DigitSystem, HeadingCounters, Resource, ResourceNumberEntry, ResourceType, ResourceCounterFormat } from '../../types.js';
+import {
+  counterStyleOf,
+  formatCounter,
+  formatNumeral,
+  nextHeadingCounter,
+  parseNumberFormat,
+  renderCounterTemplate,
+  type CounterStyle,
+  type NumeralStyle,
+  type RenderPiece,
+} from '../../numbering.js';
+
+/** Heading counters (1-indexed by level) in effect at a given point in the
+ *  document. `h1`..`h6` carry the running heading number for each level. */
+export type HeadingContext = HeadingCounters;
+
+export type { ResourceNumberEntry };
+
+/** Maps each referenced `Resource.id` to its computed numbering entry. */
+export type ResourceNumberingMap = Record<string, ResourceNumberEntry>;
+
+const EMPTY_HEADING: HeadingContext = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
+
+/** Translate a resource `counterFormat` to the shared `NumeralStyle` used by
+ *  {@link formatNumeral}. The resource model uses `'roman-lower'` style names
+ *  whereas the numeral formatter uses `'lower-roman'`; either spelling (and
+ *  the list's `arabic`) is read, and an unknown one counts in decimal. The
+ *  document language `locale` decides what the `一` token names (Japanese
+ *  counted numerals in a ja document). */
+function counterFormatToStyle(format: ResourceCounterFormat, locale?: string): NumeralStyle {
+  return parseNumberFormat(format, locale) ?? 'decimal';
+}
+
+/** Walk `blocks` and produce, for each block index, the heading counters in
+ *  effect at that block. A heading at index `i` is reflected in
+ *  `result[i]` (i.e. the heading counts itself). Mirrors the counter logic in
+ *  `computeHeadingNumbers` but exposes the raw per-level values rather than the
+ *  rendered prefix. */
+export function computeHeadingContext(
+  blocks: ContentBlock[],
+  start?: HeadingContext,
+  /** Whether a heading advances its counter (see `computeHeadingNumbers`). */
+  isNumbered: (block: ContentBlock) => boolean = () => true,
+): HeadingContext[] {
+  const counters = [0, 0, 0, 0, 0, 0, 0]; // index 1..6 used
+  if (start) for (let lvl = 1; lvl <= 6; lvl++) counters[lvl] = start[`h${lvl}` as keyof HeadingContext];
+  const out: HeadingContext[] = new Array(blocks.length);
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    if (b.type === 'heading' && b.level && b.level >= 1 && b.level <= 6 && isNumbered(b)) {
+      const lvl = b.level;
+      counters[lvl] = nextHeadingCounter(b, counters[lvl] ?? 0);
+      for (let k = lvl + 1; k <= 6; k++) counters[k] = 0;
+    }
+    out[i] = {
+      h1: counters[1] ?? 0,
+      h2: counters[2] ?? 0,
+      h3: counters[3] ?? 0,
+      h4: counters[4] ?? 0,
+      h5: counters[5] ?? 0,
+      h6: counters[6] ?? 0,
+    };
+  }
+  return out;
+}
+
+/** A `{n}` / `{h1}`..`{h6}` template token. `style` is the one the token
+ *  names after a colon (`{h1:A}`, `{n:i}`, #730); absent, the counter
+ *  follows the type's `counterFormat` and a heading number is decimal. */
+type ResourceToken =
+  | { kind: 'literal'; text: string }
+  | { kind: 'counter'; style?: CounterStyle } // the `{n}` per-type counter
+  | { kind: 'heading'; level: 1 | 2 | 3 | 4 | 5 | 6; style?: CounterStyle };
+
+/** Parse a resource numbering template into tokens. Recognizes `{n}` (the
+ *  per-type counter) and `{h1}`..`{h6}` (heading numbers), each with the
+ *  style suffix a heading template's token takes (`{h1:A}`, `{h2:i}`,
+ *  `{h1:一}`, `{h1:Words}`, `{n:i}`: `counterStyleOf`, so the two template
+ *  families read a style alike; an unknown one counts in decimal).
+ *  Backslash escapes a literal `{`, `}`, or `\`. Unknown `{…}` groups are
+ *  kept as literal text. `locale` (the document language) reads the `一`
+ *  and `壹` tokens. */
+function parseResourceTemplate(tpl: string, locale?: string): ResourceToken[] {
+  const tokens: ResourceToken[] = [];
+  let buf = '';
+  let i = 0;
+  const flush = () => {
+    if (buf.length > 0) {
+      tokens.push({ kind: 'literal', text: buf });
+      buf = '';
+    }
+  };
+  while (i < tpl.length) {
+    const ch = tpl[i]!;
+    if (ch === '\\' && i + 1 < tpl.length) {
+      const next = tpl[i + 1]!;
+      if (next === '{' || next === '}' || next === '\\') {
+        buf += next;
+        i += 2;
+        continue;
+      }
+    }
+    if (ch === '{') {
+      const end = tpl.indexOf('}', i + 1);
+      if (end !== -1) {
+        const body = tpl.slice(i + 1, end);
+        const colon = body.indexOf(':');
+        const name = (colon < 0 ? body : body.slice(0, colon)).trim();
+        const rawStyle = colon < 0 ? '' : body.slice(colon + 1).trim();
+        const style = rawStyle ? { style: counterStyleOf(rawStyle, locale) } : {};
+        if (name === 'n') {
+          flush();
+          tokens.push({ kind: 'counter', ...style });
+          i = end + 1;
+          continue;
+        }
+        const hMatch = /^h([1-6])$/.exec(name);
+        if (hMatch) {
+          flush();
+          tokens.push({ kind: 'heading', level: Number(hMatch[1]) as 1 | 2 | 3 | 4 | 5 | 6, ...style });
+          i = end + 1;
+          continue;
+        }
+      }
+    }
+    buf += ch;
+    i++;
+  }
+  flush();
+  return tokens;
+}
+
+/** Render a resource template against a per-type counter value and the heading
+ *  context in effect. Empty heading counters collapse their adjacent separators
+ *  via {@link renderCounterTemplate} (so `{h1}.{n}` with no h1 renders as the
+ *  bare counter). The heading numbers, and a decimal counter, are written in
+ *  the document's `digits`. A token that names a style is written in it
+ *  (`formatCounter`, with the document language for a spelled one); a
+ *  heading token with no value in scope prints nothing whatever its style
+ *  (the East Asian positional styles would print a zero). */
+function renderResourceNumber(
+  tokens: ResourceToken[],
+  counterValue: number,
+  style: NumeralStyle,
+  heading: HeadingContext,
+  digits?: DigitSystem,
+  locale?: string,
+): string {
+  const pieces: RenderPiece[] = tokens.map((t) => {
+    if (t.kind === 'literal') return { kind: 'literal', text: t.text };
+    if (t.kind === 'counter') {
+      return { kind: 'counter', text: t.style ? formatCounter(counterValue, t.style, locale, digits) : formatNumeral(counterValue, style, digits) };
+    }
+    const value = heading[`h${t.level}` as keyof HeadingContext];
+    if (!(value > 0)) return { kind: 'counter', text: '' };
+    return { kind: 'counter', text: t.style ? formatCounter(value, t.style, locale, digits) : formatNumeral(value, 'decimal', digits) };
+  });
+  return renderCounterTemplate(pieces);
+}
+
+/** Heading levels that {@link ResourceType.resetOn} may reference. */
+type ResetLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+/** The heading level a `resetOn` resets at, or null for `'never'`. A type
+ *  written without one (#916) resets on every `h1`, like the built-in
+ *  types; a word that names no level never resets. */
+function resetLevelOf(resetOn: ResourceType['resetOn'] | undefined): ResetLevel | null {
+  if (resetOn === undefined || resetOn === null) return 1;
+  if (typeof resetOn !== 'string' || !/^h[1-6]$/.test(resetOn)) return null;
+  return Number(resetOn.slice(1)) as ResetLevel;
+}
+
+/** Returns true when the heading context crossed a `resetOn` boundary relative
+ *  to the previous reference — i.e. the heading number at `resetOn`'s level (or
+ *  any ancestor level) changed. */
+function shouldResetCounter(
+  prev: HeadingContext | null,
+  cur: HeadingContext,
+  resetLevel: ResetLevel,
+): boolean {
+  if (!prev) return false;
+  // A reset at level L fires whenever the L-level heading number changed, which
+  // also covers ancestor changes (ancestors reset descendants' counters to 0,
+  // changing them too).
+  for (let lvl = 1 as ResetLevel; lvl <= resetLevel; lvl = (lvl + 1) as ResetLevel) {
+    const key = `h${lvl}` as keyof HeadingContext;
+    if (prev[key] !== cur[key]) return true;
+  }
+  return false;
+}
+
+/**
+ * Compute the numbering map for every resource referenced in `blocks`.
+ *
+ * @param blocks          parsed content blocks in reading order
+ * @param resourceTypes   user-defined resource types (drives template + reset)
+ * @param resources       known resources (maps `resourceId → typeId`)
+ * @param headingContext  per-block heading counters (see
+ *                        {@link computeHeadingContext}); must align with
+ *                        `blocks` by index
+ */
+/** Per-type counter state at the end of a document: the `{n}` counter and
+ *  the heading counters of the last numbered resource (what `resetOn`
+ *  compares against). */
+export type ResourceCounterState = Record<string, { counter: number; heading: HeadingContext }>;
+
+/** What precedes the document: resources already numbered (they keep the
+ *  number of their first mention) and the per-type counters to continue. */
+export interface ResourceNumberingStart {
+  counters?: ResourceCounterState;
+  numbered?: ResourceNumberingMap;
+}
+
+export interface ResourceNumberingResult {
+  /** Every referenced resource — including the inherited ones. */
+  map: ResourceNumberingMap;
+  /** Counter state at the end of the document, to continue from. */
+  counters: ResourceCounterState;
+  /** The numbers of the comic strips counted in a resource type's
+   *  sequence (`:::strip{type=figure caption=…}`, #590), by the content
+   *  index of their block. A strip with an `id` is in `map` under it too,
+   *  so a `:ref` names it. */
+  strips: Record<number, ResourceNumberEntry>;
+}
+
+/** The resource type a strip block is counted under: its `type` attribute,
+ *  when it names a type and the strip has a caption. */
+function stripTypeOf(b: ContentBlock, typeById: ReadonlyMap<string, ResourceType>): string | undefined {
+  if (b.type !== 'directive' || b.directiveName !== 'strip' || !b.comic) return undefined;
+  const type = b.comic.attrs.type?.trim();
+  if (!type || !typeById.has(type) || !b.comic.attrs.caption?.trim()) return undefined;
+  return type;
+}
+
+export function computeResourceNumbering(
+  blocks: ContentBlock[],
+  resourceTypes: ResourceType[],
+  resources: Resource[],
+  headingContext: HeadingContext[],
+  start?: ResourceNumberingStart,
+  /** The document's digit system (`documentNumerals`). */
+  digits?: DigitSystem,
+  /** The document language (`documentLocale`), for the `一` and `壹`
+   *  counter tokens. */
+  locale?: string,
+): ResourceNumberingMap {
+  return computeResourceNumberingState(blocks, resourceTypes, resources, headingContext, start, digits, locale).map;
+}
+
+/** {@link computeResourceNumbering} plus the counter state at the end of the
+ *  document. */
+export function computeResourceNumberingState(
+  blocks: ContentBlock[],
+  resourceTypes: ResourceType[],
+  resources: Resource[],
+  headingContext: HeadingContext[],
+  start?: ResourceNumberingStart,
+  digits?: DigitSystem,
+  locale?: string,
+): ResourceNumberingResult {
+  const typeById = new Map<string, ResourceType>();
+  for (const t of resourceTypes) typeById.set(t.id, t);
+  const resourceById = new Map<string, Resource>();
+  for (const r of resources) resourceById.set(r.id, r);
+
+  // First reference (in reading order) of every resourceId, paired with the
+  // heading context in effect at that point. Resources numbered by the
+  // preceding content keep their number and never re-enter the sequence.
+  interface Occurrence {
+    resourceId: string;
+    heading: HeadingContext;
+    /** A strip: the content index of its block and the type it counts in. */
+    strip?: { blockIdx: number; typeId: string };
+  }
+  const firstOccurrences: Occurrence[] = [];
+  const seen = new Set<string>(start?.numbered ? Object.keys(start.numbered) : []);
+  const inherited: ReadonlySet<string> = new Set(seen);
+  /** Ids of the strips counted so far: the first strip of an id wins. */
+  const stripIds = new Set<string>();
+
+  const record = (resourceId: string, blockIdx: number) => {
+    if (seen.has(resourceId)) return;
+    seen.add(resourceId);
+    firstOccurrences.push({
+      resourceId,
+      heading: headingContext[blockIdx] ?? EMPTY_HEADING,
+    });
+  };
+
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i]!;
+    if (b.type === 'resourceBlock' && b.resourceId) {
+      record(b.resourceId, i);
+    }
+    const stripType = stripTypeOf(b, typeById);
+    if (stripType !== undefined) {
+      const id = b.comic!.attrs.id?.trim();
+      // A strip is counted where it stands (a `:ref` to it earlier in the
+      // text does not number it: strips are read in place).
+      if (!(id && (inherited.has(id) || stripIds.has(id) || resourceById.has(id)))) {
+        if (id) stripIds.add(id);
+        firstOccurrences.push({ resourceId: id ?? '', heading: headingContext[i] ?? EMPTY_HEADING, strip: { blockIdx: i, typeId: stripType } });
+      }
+    }
+    for (const span of b.spans) {
+      if (span.ref?.resourceId) record(resourceRefId(span.ref.resourceId, (id) => resourceById.has(id)), i);
+    }
+  }
+
+  // Partition by typeId (resolved via the resource), preserving first-reference
+  // order. Resources with an unknown id or unknown type are skipped.
+  const byType = new Map<string, Occurrence[]>();
+  for (const occ of firstOccurrences) {
+    const typeId = occ.strip ? occ.strip.typeId : resourceById.get(occ.resourceId)?.typeId;
+    if (typeId === undefined) continue;
+    const type = typeById.get(typeId);
+    if (!type) continue;
+    const list = byType.get(type.id);
+    if (list) list.push(occ);
+    else byType.set(type.id, [occ]);
+  }
+
+  const map: ResourceNumberingMap = { ...(start?.numbered ?? {}) };
+  const counters: ResourceCounterState = { ...(start?.counters ?? {}) };
+  const strips: Record<number, ResourceNumberEntry> = {};
+  for (const [typeId, occurrences] of byType) {
+    const type = typeById.get(typeId)!;
+    const tokens = parseResourceTemplate(type.numberingTemplate, locale);
+    const style = counterFormatToStyle(type.counterFormat, locale);
+    const resetLevel = resetLevelOf(type.resetOn);
+
+    const inherited = start?.counters?.[typeId];
+    let counter = inherited?.counter ?? 0;
+    let prevHeading: HeadingContext | null = inherited?.heading ?? null;
+    for (const occ of occurrences) {
+      if (resetLevel !== null && shouldResetCounter(prevHeading, occ.heading, resetLevel)) {
+        counter = 0;
+      }
+      counter += 1;
+      prevHeading = occ.heading;
+      const entry: ResourceNumberEntry = {
+        number: renderResourceNumber(tokens, counter, style, occ.heading, digits, locale),
+        typeId,
+        heading: occ.heading,
+      };
+      if (occ.strip) strips[occ.strip.blockIdx] = entry;
+      if (occ.resourceId) map[occ.resourceId] = entry;
+    }
+    if (prevHeading) counters[typeId] = { counter, heading: prevHeading };
+  }
+
+  return { map, counters, strips };
+}
+
+/** A number written with a resource-style template (`{n}`, `{h1}`..`{h6}`,
+ *  each with an optional style: `{h1:A}.{n}`, #730): what labelled
+ *  equations and numbered statements print (#530), and the Sandbox's
+ *  preview of a resource type's number. */
+export function renderTemplateNumber(
+  template: string,
+  counter: number,
+  format: ResourceCounterFormat,
+  heading: HeadingContext,
+  digits?: DigitSystem,
+  locale?: string,
+): string {
+  return renderResourceNumber(parseResourceTemplate(template, locale), counter, counterFormatToStyle(format, locale), heading, digits, locale);
+}
+
+/** Whether a counter reset at `resetOn` starts again between its last
+ *  count (`prev`, none yet: `null`) and `cur` (#530). */
+export function counterResets(prev: HeadingContext | null, cur: HeadingContext, resetOn: ResourceType['resetOn']): boolean {
+  const level = resetLevelOf(resetOn);
+  return level !== null && shouldResetCounter(prev, cur, level);
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { captionInsideShare } from '../../pipeline/captionInside.js';
+import { captionInsideShare } from '../../pipeline/resources/captionInside.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../index.js';
 

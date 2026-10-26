@@ -3,20 +3,20 @@
 // Part of the placement pass (pass.ts), split out of it in #1276.
 import type { VDTColumn, VDTBlock, VDTPage, ResolvedConfig, VDTDocument, BoundingBox } from '../../../vdt.js';
 import type { ContentBlock } from '../../../parse/index.js';
-import { headingIsHidden, type HeadingLevelResolver, type HeadingSectionPlan } from '../../headingStyles.js';
-import { bandColumns, sideColumnOf, currentBand, currentColumn, closeBandAt, type PlacementCursor } from '../../placement.js';
-import { columnCursorY } from '../../textWrap.js';
+import { headingIsHidden, type HeadingLevelResolver, type HeadingSectionPlan } from '../../sections/headingStyles.js';
+import { bandColumns, sideColumnOf, currentBand, currentColumn, closeBandAt, type PlacementCursor } from '../../blocks/placement.js';
+import { columnCursorY } from '../../floats/textWrap.js';
 import type { HeadingClaim } from '../passTypes.js';
 import type { ResolvedHeadingLevelConfig, Resource, ResolvedHeadingStyleConfig } from '../../../types.js';
 import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
-import { headingDesignBoxes, defaultOpenerTitle, measureHeadingDesign, markedTitleFields } from '../../headerFooter.js';
-import type { SideObstacle } from '../../floatSlots.js';
-import { measureContentBlock, type BlockMeasureContext } from '../../measureContentBlock.js';
-import { columnBottom, uncapBand, type BandCap, bandTop, bareBandTop, applyBandCap, type BandCapZone, bandLinePitch, bandCapLinesAroundZone, bandCapLines, capRetryLimit } from '../../bandCaps.js';
-import { rollbackTrailingBlocks } from '../../buildHelpers.js';
+import { headingDesignBoxes, defaultOpenerTitle, measureHeadingDesign, markedTitleFields } from '../../pages/headerFooter.js';
+import type { SideObstacle } from '../../floats/floatSlots.js';
+import { measureContentBlock, type BlockMeasureContext } from '../../blocks/measureContentBlock.js';
+import { columnBottom, uncapBand, type BandCap, bandTop, bareBandTop, applyBandCap, type BandCapZone, bandLinePitch, bandCapLinesAroundZone, bandCapLines, capRetryLimit } from '../../columns/bandCaps.js';
+import { rollbackTrailingBlocks } from '../../blocks/buildHelpers.js';
 import type { BlockStyle } from '../../styles.js';
-import type { PartPlan } from '../../parts.js';
-import type { PlannedFloat } from '../../floatPlacement.js';
+import type { PartPlan } from '../../sections/parts.js';
+import type { PlannedFloat } from '../../floats/floatPlacement.js';
 import type { PassState, PassLate } from './state.js';
 
 /** What createBands takes from the pass. */

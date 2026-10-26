@@ -6,8 +6,8 @@ import {
   computeLevelIndentsPx,
   computeOrderedLevelIndentsPx,
   computeOrderedListRunMetrics,
-} from '../../pipeline/lists.js';
-import type { BlockMeasureContext } from '../../pipeline/measureContentBlock.js';
+} from '../../pipeline/text/lists.js';
+import type { BlockMeasureContext } from '../../pipeline/blocks/measureContentBlock.js';
 import {
   deriveCalloutResolvedConfig,
   layoutCallout,
@@ -15,7 +15,7 @@ import {
   pickCalloutStyle,
   planCallouts,
   type CalloutLayoutResult,
-} from '../../pipeline/calloutLayout.js';
+} from '../../pipeline/callouts/calloutLayout.js';
 import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
 import { dimensionToPx } from '../../units.js';
 import type { CalloutStyleConfig, PostextConfig, Resource } from '../../types.js';

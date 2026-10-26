@@ -4,7 +4,7 @@ import { createMeasurementCache } from '../../measure/index.js';
 import { parseMarkdown } from '../../parse/index.js';
 import { initMathEngine } from '../../math/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { applyStatementNumbering, numberStatements } from '../../pipeline/statementNumbering.js';
+import { applyStatementNumbering, numberStatements } from '../../pipeline/text/statementNumbering.js';
 import { continuationAfter, contentOutline } from '../../pipeline/continuation.js';
 import { resolveMathConfig, stripMathDefaults } from '../../defaults/index.js';
 import type { CalloutStyleConfig, PostextConfig, VDTBlock, VDTDocument } from '../../index.js';

@@ -1,20 +1,20 @@
 // Callout boxes that span the page (placeCalloutSpan).
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type PlannedCallout, type CalloutLayoutResult, pickCalloutStyle } from '../../calloutLayout.js';
+import { type PlannedCallout, type CalloutLayoutResult, pickCalloutStyle } from '../../callouts/calloutLayout.js';
 import type { ResolvedCalloutStyleConfig } from '../../../types.js';
-import { type CalloutLayouter, type CalloutCut, CUT_START, type CalloutFragment, fragmentRange } from '../../frameLayout.js';
+import { type CalloutLayouter, type CalloutCut, CUT_START, type CalloutFragment, fragmentRange } from '../../callouts/frameLayout.js';
 import { type VDTPage, type VDTColumn, pageIsVertical, type BoundingBox, type ResolvedConfig, type VDTDocument, type ResolvedResourceBlock, type VDTBlock } from '../../../vdt.js';
-import { isMarkerBlock } from '../../buildHelpers.js';
-import { isBandLevel, bandColumns, currentBand, closeBandAndInsertSpan, pageHasContent, advanceToNextColumn, pageIsOccupied, type PlacementCursor } from '../../placement.js';
-import { columnBottom, uncapBand, bandCapLines, bandTop, type BandCap, type BandCapZone } from '../../bandCaps.js';
-import type { HeadingLevelResolver } from '../../headingStyles.js';
+import { isMarkerBlock } from '../../blocks/buildHelpers.js';
+import { isBandLevel, bandColumns, currentBand, closeBandAndInsertSpan, pageHasContent, advanceToNextColumn, pageIsOccupied, type PlacementCursor } from '../../blocks/placement.js';
+import { columnBottom, uncapBand, bandCapLines, bandTop, type BandCap, type BandCapZone } from '../../columns/bandCaps.js';
+import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { BlockStyle } from '../../styles.js';
-import type { PlannedFloat } from '../../floatPlacement.js';
+import type { PlannedFloat } from '../../floats/floatPlacement.js';
 import type { CompositionRule } from '../../../types/bodyText.js';
 import type { FloatRotation, CaptionAside, BodyCap } from './types.js';
-import type { TableSliceSpec } from '../../resourceLayout.js';
-import type { FloatMeasure } from '../../floatSlots.js';
+import type { TableSliceSpec } from '../../resources/resourceLayout.js';
+import type { FloatMeasure } from '../../floats/floatSlots.js';
 import type { PassState } from './state.js';
 
 /** What createCalloutSpan takes from the pass. */

@@ -74,7 +74,7 @@ export const DEFAULT_COLUMN_BALANCING = {
  *   (GB/T 9704: 22 lines of 28 characters): a column that ends short is
  *   left short, and no row is added above a heading. A config that turns
  *   balancing on there gets the levers that keep every character in its
- *   cell (see `pipeline/columnBalancing.ts`).
+ *   cell (see `pipeline/columns/columnBalancing.ts`).
  */
 export function balancingOnByDefault(config: PostextConfig | undefined): boolean {
   if (config?.cjk?.grid?.enabled === true) return false;

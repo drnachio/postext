@@ -14,7 +14,7 @@ import type {
   PlacedDesignElement,
 } from '../types.js';
 import type { PageSide } from '../composed/types.js';
-import { stripPlaceholders } from '../pipeline/placeholders.js';
+import { stripPlaceholders } from '../pipeline/pages/placeholders.js';
 import { stableStringify } from '../util/stableHash.js';
 
 /** The look of a design text a paragraph style has to reproduce. */

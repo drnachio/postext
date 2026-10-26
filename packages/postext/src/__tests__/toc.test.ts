@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { contentOutline } from '../pipeline/continuation.js';
-import { computeOutline, hasTocDirective, outlineFromDoc, outlineKey, sameOutline } from '../pipeline/outline.js';
-import { expandTocDirectives } from '../pipeline/toc.js';
+import { computeOutline, hasTocDirective, outlineFromDoc, outlineKey, sameOutline } from '../pipeline/contents/outline.js';
+import { expandTocDirectives } from '../pipeline/contents/toc.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { resolveTocConfig, stripTocDefaults } from '../defaults/toc.js';

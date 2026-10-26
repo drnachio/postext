@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { resolveLayoutConfig, stripLayoutDefaults } from '../../defaults/layout.js';
-import { computeFloatPlan, resolveResourcePlacement } from '../../pipeline/floatPlacement.js';
-import { layoutResourceBlock } from '../../pipeline/resourceLayout.js';
+import { computeFloatPlan, resolveResourcePlacement } from '../../pipeline/floats/floatPlacement.js';
+import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { parseMarkdown } from '../../parse/index.js';
 import type { PostextConfig, Resource, ResourceType, VDTBlock, VDTDocument } from '../../index.js';

@@ -7,7 +7,7 @@ import {
   type BalanceProposalOptions,
   type BalanceState,
   type ColumnGap,
-} from '../../pipeline/columnBalancing.js';
+} from '../../pipeline/columns/columnBalancing.js';
 import { createVDTPage, type VDTBlock, type VDTColumn, type VDTDocument, type VDTLine } from '../../vdt.js';
 import type { PostextConfig, TextAlign } from '../../types.js';
 

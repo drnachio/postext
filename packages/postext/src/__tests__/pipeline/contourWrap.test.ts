@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { zlibSync } from 'fflate';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { exclusionInsets } from '../../pipeline/calloutLayout.js';
+import { exclusionInsets } from '../../pipeline/callouts/calloutLayout.js';
 import { lineInsetsAt } from '../../measure/types.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
 import {

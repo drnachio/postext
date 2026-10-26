@@ -4,8 +4,8 @@
 import type { PostextContent, PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTBlock, VDTGridBalancing, BalanceLever } from '../../vdt.js';
 import type { MeasurementCache } from '../../measure/index.js';
-import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES, GRID_LINE_LEVERS } from '../columnBalancing.js';
-import { resolveBandCapsGen, resolveTrailingCapsGen } from '../bandCaps.js';
+import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES, GRID_LINE_LEVERS } from '../columns/columnBalancing.js';
+import { resolveBandCapsGen, resolveTrailingCapsGen } from '../columns/bandCaps.js';
 import { type CitingPageState, now, MAX_CITING_PAGE_ROUNDS } from './drivers.js';
 import { buildDocumentPass } from './pass.js';
 import { floatPagesOf } from './passHelpers.js';

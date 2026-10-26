@@ -35,7 +35,7 @@ import { inlineSvgFontsDetailedSync, type SvgFontSyncProvider } from './svg/font
 import { registeredFontSyncProvider } from './svg/fontRegistry.js';
 import { svgPictureFontWarning } from './svg/image.js';
 import { lineInkExtent, lineTrailingTracking } from './lineInk.js';
-import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid.js';
+import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/text/cjkGrid.js';
 import { isJapaneseLanguage, renderLangOf, shapingLanguageOf, shapingTagOf } from './locale.js';
 import { hasCJK } from './measure/cjk.js';
 import { arabicMarkNeeded, needsBidi } from './bidi.js';
@@ -50,7 +50,7 @@ import { trackedLigaturePieces, type LigaturePiece } from './measure/trackedLiga
 import { cellsOf, lineWordSegmentsInOrder, sameSetWidth, type SetLine } from './wordPieces.js';
 import { fontFamilyOf } from './measure/vertical.js';
 import { chipReadingsHtml, lineHighlightsHtml, lineMarksHtml, rubyHtml, verticalLineMarksHtml, warichuHtml, sideMarkerHtml, RT_OPEN, RUBY_OPEN, rubyGroupOf, kuntenHtml, verticalKuntenTateHtml } from './htmlAnnotations.js';
-import { playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay.js';
+import { playMarkTriangle, qrModuleRuns } from './pipeline/resources/videoOverlay.js';
 import { isHlsMimeType, mediaFragment, videoElementAttributes, videoEmbedAllow } from './video/url.js';
 import type { VDTDesignTextRun, VDTInlineIcon, VDTResourceVideo, VDTSwatch, VDTTextDots } from './vdt.js';
 import { hasSwatchShape, swatchGeometry, type SwatchGeometry } from './swatchShape.js';

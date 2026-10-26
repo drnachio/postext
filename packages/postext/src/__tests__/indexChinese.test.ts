@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { expandIndexDirectives } from '../pipeline/indexDirective.js';
+import { expandIndexDirectives } from '../pipeline/contents/indexDirective.js';
 import {
   PINYIN_BOUNDARIES,
   PINYIN_INITIALS,
@@ -13,7 +13,7 @@ import {
   strokeGroup,
   strokeLabel,
   strokeMarker,
-} from '../pipeline/indexGroups.js';
+} from '../pipeline/contents/indexGroups.js';
 import { parseMarkdown } from '../parse/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
 import { resolveIndexConfig, stripIndexDefaults } from '../defaults/indexConfig.js';

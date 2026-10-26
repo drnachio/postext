@@ -4,7 +4,7 @@ import {
   DEFAULT_ORPHAN_PENALTY,
   DEFAULT_WIDOW_PENALTY,
   DEFAULT_SLACK_WEIGHT,
-} from '../pipeline/orphanWidow.js';
+} from '../pipeline/blocks/orphanWidow.js';
 
 const ON = {
   avoidOrphans: true,

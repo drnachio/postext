@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { measureRichBlock } from '../measure/rich.js';
 import { measureBlock } from '../measure/plain.js';
 import { justifiedSpaceRatios } from '../measure/spaceRatios.js';
-import { raggedLooseLines } from '../pipeline/raggedLines.js';
+import { raggedLooseLines } from '../pipeline/text/raggedLines.js';
 import { buildDocument } from '../pipeline/build.js';
 import { createMeasurementCache } from '../measure/index.js';
 import { findLooseLines, lineLooseness, lineWordSpacing } from '../looseLines.js';

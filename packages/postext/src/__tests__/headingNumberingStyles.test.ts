@@ -3,7 +3,7 @@ import { computeHeadingNumbers, computeHeadingNumbering, parseTemplate } from '.
 import { numberToWords } from '../numberWords.js';
 import { parseMarkdown } from '../parse/index.js';
 import { buildDocument } from '../pipeline/index.js';
-import { computeOutlineFor } from '../pipeline/outline.js';
+import { computeOutlineFor } from '../pipeline/contents/outline.js';
 import { continuationAfter } from '../pipeline/continuation.js';
 import type { PostextConfig } from '../types.js';
 

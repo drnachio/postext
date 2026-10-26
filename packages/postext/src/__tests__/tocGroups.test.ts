@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../pipeline/index.js';
 import { resolveAllConfig } from '../pipeline/config.js';
-import { parseTocLevelsAttr, tocKeepOf } from '../pipeline/toc.js';
+import { parseTocLevelsAttr, tocKeepOf } from '../pipeline/contents/toc.js';
 import { resolveTocConfig, stripTocDefaults } from '../defaults/toc.js';
 import { resolveBodyTextConfig } from '../defaults/bodyText.js';
 import { collectConfigWarnings } from '../configWarnings.js';

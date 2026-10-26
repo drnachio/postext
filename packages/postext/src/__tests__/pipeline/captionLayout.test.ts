@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeColumnEdges, layoutResourceBlock } from '../../pipeline/resourceLayout.js';
+import { computeColumnEdges, layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
 import { dimensionToPx } from '../../units.js';

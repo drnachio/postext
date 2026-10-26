@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { pageSegments } from '../../pipeline/columnBalancing.js';
+import { pageSegments } from '../../pipeline/columns/columnBalancing.js';
 import type { PostextConfig, VDTDocument } from '../../index.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

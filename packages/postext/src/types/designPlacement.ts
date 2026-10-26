@@ -5,7 +5,7 @@ export type PageParity = 'all' | 'odd' | 'even';
 export type HeaderFooterHAlign = 'left' | 'center' | 'right';
 
 /** Classification of a laid-out page, computed after placement
- *  (`pipeline/pageRoles.ts`):
+ *  (`pipeline/pages/pageRoles.ts`):
  *  - `'blank'` — parity / force-blank padding, or a page with no content;
  *  - `'part'` — a part-divider page (`partInfo` set);
  *  - `'opener'` — the first block in reading order is a heading whose level

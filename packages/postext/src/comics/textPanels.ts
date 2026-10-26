@@ -23,11 +23,11 @@ import { flowRectToPage, pageRectToFlow, pageToFlow, type BoundingBox, type VDTC
 import { FRAME_ATTR, FRAME_STYLE_ID } from '../composed/wrap.js';
 import { normalizeFrame } from '../composed/templates.js';
 import type { ResolvedFrame, ResolvedPageTemplate } from '../composed/types.js';
-import type { BoxExclusion, PlannedCallout } from '../pipeline/calloutLayout.js';
-import type { FrameLayoutPass } from '../pipeline/frameLayout.js';
-import { composedStories, layoutComposedPage, type ComposedStory, type PlannedComposedPage } from '../pipeline/composedLayout.js';
+import type { BoxExclusion, PlannedCallout } from '../pipeline/callouts/calloutLayout.js';
+import type { FrameLayoutPass } from '../pipeline/callouts/frameLayout.js';
+import { composedStories, layoutComposedPage, type ComposedStory, type PlannedComposedPage } from '../pipeline/composedPages/composedLayout.js';
 import { resolvedDirection } from '../pipeline/config.js';
-import { SPAN_EMBED_STYLE_ID } from '../pipeline/spanEmbeds.js';
+import { SPAN_EMBED_STYLE_ID } from '../pipeline/floats/spanEmbeds.js';
 import { dimensionToPx } from '../units.js';
 import { resolvedComics } from '../defaults/comics.js';
 import { comicBoxStyle, isComicTextPanel } from './frames.js';

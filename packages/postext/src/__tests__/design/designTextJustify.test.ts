@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../../design/layout.js';
 import { resolveDesignSlot } from '../../defaults/headerFooter.js';
-import { layoutSlotToVdt } from '../../pipeline/headerFooter.js';
+import { layoutSlotToVdt } from '../../pipeline/pages/headerFooter.js';
 import { renderHeaderFooterSlot } from '../../canvas-backend/headerFooter.js';
 import { renderToHtml } from '../../html-backend.js';
 import { buildDocument } from '../../pipeline/index.js';

@@ -4,7 +4,7 @@ import { dimensionToPx } from '../units.js';
 import { columnClipRect } from '../columnClip.js';
 import { pageColumnRule } from '../columnRule.js';
 import { renderBaselineGrid, renderCharacterGrid, renderColumnRule, renderCutLines, renderFootnoteRules, computeContentArea } from './decorations.js';
-import { cjkGridCells } from '../pipeline/cjkGrid.js';
+import { cjkGridCells } from '../pipeline/text/cjkGrid.js';
 import { renderBlock } from './blockRender.js';
 import { renderHeaderFooterSlot } from './headerFooter.js';
 import { documentInkHex } from '../svg/singleInk.js';

@@ -1,19 +1,19 @@
 // Short lists kept whole (composition rule shortListSplit) and the room a
 // cited footnote takes.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type BlockMeasureContext, measureContentBlock } from '../../measureContentBlock.js';
-import { isMarkerBlock, prevNonMarkerBlock } from '../../buildHelpers.js';
-import { FIT_EPS, type PlacementCursor } from '../../placement.js';
-import { chooseParagraphSplit } from '../../orphanWidow.js';
+import { type BlockMeasureContext, measureContentBlock } from '../../blocks/measureContentBlock.js';
+import { isMarkerBlock, prevNonMarkerBlock } from '../../blocks/buildHelpers.js';
+import { FIT_EPS, type PlacementCursor } from '../../blocks/placement.js';
+import { chooseParagraphSplit } from '../../blocks/orphanWidow.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { VDTLine, VDTColumn, ContentWarning, ResolvedConfig, VDTDocument, VDTPage } from '../../../vdt.js';
-import { listItemGapPx, listItemSpacingPx } from '../../lists.js';
-import { enumerateCurrentPageSlots, type ColumnCapKind, type FloatSlotPosition, type FloatMeasure } from '../../floatSlots.js';
-import type { PartPlan } from '../../parts.js';
-import type { HeadingSectionPlan } from '../../headingStyles.js';
-import type { PlannedFloat } from '../../floatPlacement.js';
+import { listItemGapPx, listItemSpacingPx } from '../../text/lists.js';
+import { enumerateCurrentPageSlots, type ColumnCapKind, type FloatSlotPosition, type FloatMeasure } from '../../floats/floatSlots.js';
+import type { PartPlan } from '../../sections/parts.js';
+import type { HeadingSectionPlan } from '../../sections/headingStyles.js';
+import type { PlannedFloat } from '../../floats/floatPlacement.js';
 import type { CompositionRule } from '../../../types/bodyText.js';
-import type { TableSliceSpec } from '../../resourceLayout.js';
+import type { TableSliceSpec } from '../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside } from './types.js';
 import type { ResolvedHeadingStyleConfig } from '../../../types.js';
 import type { PassState } from './state.js';

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { fillGalley, galleyBreaks, minFillHeight, type GalleyItem } from '../../pipeline/columnsGroup.js';
-import { wrapFlowColumns, FLOW_COLUMNS_STYLE_ID, FLOW_COLUMNS_PAGE_STYLE_ID } from '../../pipeline/flowColumns.js';
+import { fillGalley, galleyBreaks, minFillHeight, type GalleyItem } from '../../pipeline/columns/columnsGroup.js';
+import { wrapFlowColumns, FLOW_COLUMNS_STYLE_ID, FLOW_COLUMNS_PAGE_STYLE_ID } from '../../pipeline/columns/flowColumns.js';
 import { parseMarkdown } from '../../parse/index.js';
-import { computeOutlineFor, outlineFromDoc } from '../../pipeline/outline.js';
+import { computeOutlineFor, outlineFromDoc } from '../../pipeline/contents/outline.js';
 import type { PostextConfig, VDTBlock, VDTDocument } from '../../index.js';
 
 // `:::columns` in the running text, and groups that split (#634).
