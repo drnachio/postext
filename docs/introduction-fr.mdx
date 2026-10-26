@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introduction',
   description: 'Ce qu’est Postext, pourquoi il existe et le problème qu’il résout',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '8 min',
   order: 1,
   plainSummary: "Postext est un logiciel libre qui met en page des livres, des revues et des rapports sur le web. Depuis des siècles, les livres imprimés suivent des règles de mise en page précises, comme garder des colonnes de même hauteur et placer les images près du texte qui en parle. Les pages web n’ont jamais eu ces règles, et Postext les leur apporte. Vous écrivez le texte, et Postext place pour vous chaque ligne, chaque image et chaque note sur la page. Cette page explique pourquoi le projet existe et comment il est né.",
@@ -186,7 +186,9 @@ Le processus se déroule en trois étapes :
    **HTML** pour une typographie sélectionnable sur le web, qui suit le redimensionnement
    (`renderToHtml`, `renderToHtmlIndexed`), **PDF** pour une sortie prête pour l’impression
    avec polices incorporées (`renderToPdf`, du paquet `postext-pdf`), **EPUB 3** pour les liseuses
-   (`renderToEpub`, de `postext-epub`) et un **livre en 3D** dont on tourne les pages dans le
+   (`renderToEpub`, de `postext-epub`), des **paquets SCORM** dont les exercices transmettent leurs
+   résultats à une plateforme d’apprentissage (`renderToScorm`, de `postext-scorm`) et un
+   **livre en 3D** dont on tourne les pages dans le
    navigateur (`createFolioFromDocument`, de `postext-folio`). Toutes les sorties sont dessinées à
    partir de la même mise en page.
 
@@ -198,8 +200,8 @@ plusieurs passes et la boucle de convergence), consultez la page
 configuration, de la géométrie de la page au style des tableaux, des légendes et des diagrammes,
 voyez la page [Configuration](/fr/docs/configuration). Et pour tout essayer en direct (un éditeur
 de texte par chapitre, un panneau Ressources avec un éditeur de tableaux et l’import d’images et
-de SVG, un panneau Maquette qui présente chaque réglage en termes éditoriaux, et des aperçus canvas,
-PDF, Folio (3D), HTML et EPUB en direct), ouvrez le [Sandbox](/fr/docs/sandbox).
+de SVG, un panneau Maquette qui présente chaque réglage en termes éditoriaux, des aperçus canvas,
+PDF, Folio (3D), HTML et EPUB en direct et un export SCORM), ouvrez le [Sandbox](/fr/docs/sandbox).
 
 
 ## Remerciements

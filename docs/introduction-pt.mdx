@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introdução',
   description: 'O que é o Postext, por que ele existe e que problema resolve',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '7 min',
   order: 1,
   plainSummary: "O Postext é um software livre que diagrama as páginas de livros, revistas e relatórios na web. Há séculos os livros impressos seguem regras cuidadosas de diagramação, como manter as colunas da mesma altura e as imagens perto do texto que fala delas. As páginas da web nunca tiveram essas regras, e o Postext as traz. Você escreve o texto, e o Postext coloca cada linha, imagem e nota na página para você. Esta página conta por que o projeto existe e como ele começou.",
@@ -173,9 +173,10 @@ O processo tem três etapas:
    visualização em bitmap exata até o pixel (`renderToCanvas`, `renderPage`), **HTML** para tipografia
    selecionável e sensível ao redimensionamento na web (`renderToHtml`, `renderToHtmlIndexed`), **PDF**
    para uma saída pronta para impressão com fontes incorporadas (`renderToPdf`, do pacote `postext-pdf`),
-   **EPUB 3** para leitores de e-books (`renderToEpub`, de `postext-epub`) e um **livro em 3D** cujas
-   páginas se viram no navegador (`createFolioFromDocument`, de `postext-folio`). Todas as saídas são
-   desenhadas a partir da mesma diagramação.
+   **EPUB 3** para leitores de e-books (`renderToEpub`, de `postext-epub`), pacotes **SCORM** com
+   exercícios que enviam os resultados a uma plataforma de ensino (`renderToScorm`, de `postext-scorm`)
+   e um **livro em 3D** cujas páginas se viram no navegador (`createFolioFromDocument`, de
+   `postext-folio`). Todas as saídas são desenhadas a partir da mesma diagramação.
 
 <Illustration name="LayoutProcess" data='{"title": "Diagramação em três etapas", "desc": "O Markdown enriquecido e a configuração entram no motor, que diagrama em várias passadas, com a medição do Pretext embutida, e produz HTML ou PDF renderizado.", "caption": "Entra conteúdo, sai geometria, que depois é renderizada no formato de destino.", "inputTitle": "Markdown enriquecido", "inputSubtitle": "+ configuração", "parse": "análise", "engineTitle": "Motor do Postext", "engineSub1": "com a medição do Pretext", "engineSub2": "diagramação em várias passadas", "render": "renderização", "outputTitle": "HTML / PDF", "outputSubtitle": "saída renderizada"}' />
 
@@ -184,8 +185,9 @@ passadas e o laço de convergência), consulte o documento [Arquitetura](/pt/doc
 referência completa de todas as opções de configuração, da geometria da página ao estilo das tabelas,
 legendas e diagramas, consulte a página [Configuração](/pt/docs/configuration). E para experimentar tudo
 ao vivo (um editor de texto por capítulo, um painel Recursos com editor de tabelas e envio de imagens e
-SVG, um painel Design que percorre todas as configurações em termos editoriais e visualizações ao vivo
-em canvas, PDF, Folio (3D), HTML e EPUB), abra o [Sandbox](/pt/docs/sandbox).
+SVG, um painel Design que percorre todas as configurações em termos editoriais, visualizações ao vivo
+em canvas, PDF, Folio (3D), HTML e EPUB, e uma exportação para SCORM), abra o
+[Sandbox](/pt/docs/sandbox).
 
 
 ## Agradecimentos

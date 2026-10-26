@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architektur',
   description: 'Technische Architektur der Layout-Engine Postext: Grundbegriffe, Dokumentbaum, vertikaler Rhythmus, Backends und Leistung',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '26 min',
   order: 2,
   plainSummary: "Diese Seite erklärt, wie Postext im Inneren arbeitet, und richtet sich an Programmiererinnen und Programmierer. Zuerst misst Postext jedes Wort, ohne etwas auf dem Bildschirm zu zeichnen, und ist dadurch sehr schnell. Dann berechnet es, wohin jede Zeile, jedes Bild und jede Spalte gehört, und behält diesen Plan im Speicher. Zuletzt zeichnet es die fertigen Seiten als Webseite, als Canvas-Bild oder als PDF-Datei. Wenn Sie ein Wort ändern, setzt es die Seiten neu und verwendet die Messungen der Absätze wieder, die sich nicht geändert haben. Die nächste Seite erklärt Schritt für Schritt, wie Zeilen und Bilder platziert werden.",
@@ -451,6 +451,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (from 'postext-epub'), a book's chapters in order
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (from 'postext-scorm'), the EPUB writer's content as a package for an LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 Weil binäre Nutzlasten der Ressourcen außerhalb liegen, löst jedes Backend `fileId`s auf seine eigene Weise auf. Das Canvas-Backend führt ein Verzeichnis dekodierter `CanvasImageSource`s – die Host-Anwendung registriert jede Bitmap und jedes SVG einmal mit `registerResourceImage(fileId, image)`, und der Renderer schlägt sie beim Zeichnen nach. Das HTML-Backend nimmt in seinen Optionen einen Auflöser `resourceImageUrl(fileId)` an und gibt `<img>`-Tags aus, die auf die URLs zeigen, die der Host zurückgibt (Object-URLs, Data-URIs, CDN-Pfade). Das PDF-Backend erhält einen Anbieter `resourceBytes` und bettet die tatsächlichen Bytes ein; der EPUB-Schreiber nimmt ebenfalls einen an und speichert jedes Bild einmal als Datei des Buches. Eine Videoressource wird als ihr Vorschaubild gezeichnet, eine Bitmap wie jede andere; das HTML-Backend nimmt zusätzlich einen Auflöser `resourceVideoUrl(fileId)` für die Videodateien an, die es abspielt, und der EPUB-Schreiber legt diese Dateien unter `media/` ab. Das PDF-Backend zeichnet das Abspielsymbol und den QR-Code als Vektorpfade über das Vorschaubild und legt, wenn `video.linkPoster` aktiv ist, eine URI-Link-Annotation darüber, die `video.link` öffnet; in einem getaggten PDF schließt sich der Link der `Figure` des Vorschaubilds an, deren Alternativtext mit dem Namen des Typs beginnt (*Video: …*). Tabellenressourcen brauchen nichts davon – ihr Modell steht direkt in der Ressource, und jedes Backend zeichnet die Zellen aus der Tabellengeometrie des VDT.
@@ -494,6 +497,12 @@ Weil binäre Nutzlasten der Ressourcen außerhalb liegen, löst jedes Backend `f
       <td><strong>Verfügbar</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>Verarbeitet den bereits mit Pretext gemessenen VDT</td>
+      <td>Zip-Archiv nach SCORM 1.2 oder 2004 für ein Lernmanagementsystem: die Seiten oder der Text des EPUB-Schreibers als HTML5, ein Player je SCO und Übungen, die ihre Punktzahl, ihren Abschluss und ihr Bestehen oder Nichtbestehen melden (<code>renderToScorm</code> in <code>postext-scorm</code>)</td>
+      <td><strong>Verfügbar</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong> (3D-Betrachter)</td>
       <td>Verarbeitet den bereits mit Pretext gemessenen VDT</td>
       <td>Jede Seite vom Canvas-Backend gemalt (<code>renderPageToCanvas</code>) und als Textur eines three.js-Blatts gezeigt, nur rund um die aufgeschlagene Doppelseite (<code>createFolioFromDocument</code> in <code>postext-folio</code>)</td>
@@ -508,7 +517,7 @@ Weil binäre Nutzlasten der Ressourcen außerhalb liegen, löst jedes Backend `f
   </tbody>
 </table>
 
-Die vier Backends und der Folio-Betrachter verarbeiten dasselbe `VDTDocument`. Die Aufteilung zwischen `postext` (das die Canvas- und HTML-Backends exportiert) und `postext-pdf` (das das PDF-Backend exportiert) hat allein mit Abhängigkeiten zu tun: Der PDF-Weg zieht `pdf-lib` und `@pdf-lib/fontkit` nach sich, und die meisten Web-Integrationen brauchen sie nicht. Installieren Sie `postext-pdf` nur, wenn Sie tatsächlich PDF-Bytes erzeugen wollen. `postext-epub` ist aus demselben Grund ein eigenes Paket und wird nur für E-Books gebraucht. Die Kommandozeile ist kein fünftes Backend: `postext-cli` führt dieselben Schreiber dort aus, wo es keinen Browser gibt. Word-Dateien sind auch keines: `postextToDocx` (aus `postext/word`) schreibt die Markdown-Kapitel und ihre Stile in eine `.docx`, ohne Layout, und `readDocx` mit `wordToPostext` liest eine solche Datei wieder als Markdown ein.
+Die vier Backends und der Folio-Betrachter verarbeiten dasselbe `VDTDocument`. Die Aufteilung zwischen `postext` (das die Canvas- und HTML-Backends exportiert) und `postext-pdf` (das das PDF-Backend exportiert) hat allein mit Abhängigkeiten zu tun: Der PDF-Weg zieht `pdf-lib` und `@pdf-lib/fontkit` nach sich, und die meisten Web-Integrationen brauchen sie nicht. Installieren Sie `postext-pdf` nur, wenn Sie tatsächlich PDF-Bytes erzeugen wollen. `postext-epub` ist aus demselben Grund ein eigenes Paket und wird nur für E-Books gebraucht; `postext-scorm` baut darauf auf und verpackt den Inhalt des EPUB-Schreibers für Lernplattformen, ist also kein eigenes Backend. Die Kommandozeile ist kein fünftes Backend: `postext-cli` führt dieselben Schreiber dort aus, wo es keinen Browser gibt. Word-Dateien sind auch keines: `postextToDocx` (aus `postext/word`) schreibt die Markdown-Kapitel und ihre Stile in eine `.docx`, ohne Layout, und `readDocx` mit `wordToPostext` liest eine solche Datei wieder als Markdown ein.
 
 **Wo das Layout läuft:** Die Engine misst Text auf einem Canvas, läuft also überall, wo sie eines bekommt. Im Browser läuft die Pipeline entweder im Hauptthread (`buildDocument`) oder in einem eigenen Web Worker (`createLayoutWorker` aus `postext/worker`) – der Worker-Weg ist die empfohlene Integration für Anwendungen mit Benutzeroberfläche, weil er Messung und Platzierungsdurchläufe vom Hauptthread fernhält, Abbruch nach dem Prinzip „der letzte gewinnt“ über `AbortSignal` unterstützt und seinen eigenen Messcache und Raster-Cache für Formeln besitzt, sodass aufeinanderfolgende Neuaufbauten günstig bleiben. Das vollständige Integrationsmuster beschreibt [Konfiguration → Layout in einem Web Worker ausführen](/de/docs/configuration-programmatic-usage#layout-in-einem-web-worker-ausführen). Außerhalb des Browsers führt die [Kommandozeile](/de/docs/command-line) dieselbe Pipeline aus, wobei Skia das Canvas des Browsers ersetzt, sodass ein Buch in einem Terminal, einem Skript oder auf einem Build-Server in dieselben Seiten umbricht.
 

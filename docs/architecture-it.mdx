@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architettura',
   description: 'Architettura tecnica del motore di impaginazione Postext: i concetti, l’albero del documento, il ritmo verticale, i backend e le prestazioni',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '29 min',
   order: 2,
   plainSummary: "Questa pagina spiega come funziona Postext al suo interno ed è scritta per chi programma. Per prima cosa Postext misura ogni parola senza disegnare nulla sullo schermo, e per questo è molto veloce. Poi calcola dove va ogni riga, ogni immagine e ogni colonna, e tiene questo piano in memoria. Infine disegna le pagine finite come pagina web, come immagine su canvas o come file PDF. Quando cambi una parola, reimpagina le pagine e riusa le misure dei paragrafi che non sono cambiati. La pagina successiva spiega, passo per passo, come vengono collocate le righe e le immagini.",
@@ -451,6 +451,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (from 'postext-epub'), a book's chapters in order
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (from 'postext-scorm'), the EPUB writer's content as a package for an LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 Poiché i dati binari delle risorse viaggiano fuori banda, ogni backend risolve i `fileId` a modo suo. Il backend canvas tiene un registro di `CanvasImageSource` decodificate: l’applicazione ospite registra ogni bitmap o SVG una volta con `registerResourceImage(fileId, image)` e il renderer lo cerca al momento del disegno. Il backend HTML riceve nelle opzioni un resolver `resourceImageUrl(fileId)` ed emette tag `<img>` che puntano a qualunque URL (URL di oggetti, data URI, percorsi di CDN) l’applicazione ospite restituisca. Il backend PDF riceve un fornitore `resourceBytes` e incorpora i byte veri e propri; anche il generatore EPUB ne riceve uno e salva ogni immagine una sola volta come file del libro. Una risorsa video si disegna come il suo fotogramma di copertina, una bitmap come le altre; il backend HTML riceve anche un resolver `resourceVideoUrl(fileId)` per i file video che riproduce, e il generatore EPUB salva quei file sotto `media/`. Il backend PDF disegna il segno di riproduzione e il codice QR come tracciati vettoriali sopra il fotogramma di copertina e, quando `video.linkPoster` è attivo, vi mette sopra un’annotazione di collegamento URI che apre `video.link`; in un PDF con tag il collegamento si unisce alla `Figure` del fotogramma, il cui testo alternativo comincia con il nome del tipo (*Video: …*). Le risorse tabella non hanno bisogno di niente di tutto questo: il loro modello è in linea, e ogni backend disegna le celle dalla geometria della tabella nel VDT.
@@ -494,6 +497,12 @@ Poiché i dati binari delle risorse viaggiano fuori banda, ogni backend risolve 
       <td><strong>Disponibile</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>Consuma il VDT già misurato con Pretext</td>
+      <td>Archivio zip SCORM 1.2 o 2004 per un sistema di gestione dell’apprendimento: le pagine o il testo del generatore EPUB come HTML5, un player per ogni SCO ed esercizi che comunicano punteggio, completamento ed esito, superato o non superato (<code>renderToScorm</code> in <code>postext-scorm</code>)</td>
+      <td><strong>Disponibile</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong> (visualizzatore 3D)</td>
       <td>Consuma il VDT già misurato con Pretext</td>
       <td>Ogni pagina dipinta dal backend canvas (<code>renderPageToCanvas</code>) e mostrata come texture di un foglio three.js, solo attorno alla doppia pagina aperta (<code>createFolioFromDocument</code> in <code>postext-folio</code>)</td>
@@ -508,7 +517,7 @@ Poiché i dati binari delle risorse viaggiano fuori banda, ogni backend risolve 
   </tbody>
 </table>
 
-I quattro backend e il visualizzatore Folio consumano lo stesso `VDTDocument`. La separazione tra `postext` (che esporta i backend canvas e HTML) e `postext-pdf` (che esporta il backend PDF) riguarda solo le dipendenze: il percorso PDF si porta dietro `pdf-lib` e `@pdf-lib/fontkit`, e la maggior parte delle integrazioni web non ne ha bisogno. Installa `postext-pdf` solo quando vuoi davvero produrre byte PDF. `postext-epub` è un pacchetto a sé per lo stesso motivo, e serve solo per gli e-book. La riga di comando non è un quinto backend: `postext-cli` esegue questi stessi generatori dove non c’è un browser. Nemmeno i file Word lo sono: `postextToDocx` (da `postext/word`) scrive i capitoli Markdown e i loro stili in un `.docx`, senza impaginazione, e `readDocx` con `wordToPostext` lo rileggono come Markdown.
+I quattro backend e il visualizzatore Folio consumano lo stesso `VDTDocument`. La separazione tra `postext` (che esporta i backend canvas e HTML) e `postext-pdf` (che esporta il backend PDF) riguarda solo le dipendenze: il percorso PDF si porta dietro `pdf-lib` e `@pdf-lib/fontkit`, e la maggior parte delle integrazioni web non ne ha bisogno. Installa `postext-pdf` solo quando vuoi davvero produrre byte PDF. `postext-epub` è un pacchetto a sé per lo stesso motivo, e serve solo per gli e-book; `postext-scorm` si basa su di esso e impacchetta il contenuto del generatore EPUB per le piattaforme di apprendimento, quindi non è un backend a sé. La riga di comando non è un quinto backend: `postext-cli` esegue questi stessi generatori dove non c’è un browser. Nemmeno i file Word lo sono: `postextToDocx` (da `postext/word`) scrive i capitoli Markdown e i loro stili in un `.docx`, senza impaginazione, e `readDocx` con `wordToPostext` lo rileggono come Markdown.
 
 **Dove gira l’impaginazione:** il motore misura il testo su un canvas, quindi gira ovunque gliene si dia uno. In un browser la pipeline gira sul thread principale (`buildDocument`) oppure dentro un Web Worker dedicato (`createLayoutWorker` da `postext/worker`); il percorso del worker è l’integrazione consigliata per le applicazioni guidate dall’interfaccia, perché tiene la misurazione e le passate di posizionamento fuori dal thread principale, supporta l’annullamento a favore dell’ultima richiesta tramite `AbortSignal`, e possiede una propria cache di misurazione e una propria cache di rasterizzazione della matematica, così le ricomposizioni successive restano economiche. Vedi [Configurazione → Eseguire l’impaginazione in un Web Worker](/it/docs/configuration-programmatic-usage#eseguire-limpaginazione-in-un-web-worker) per lo schema di integrazione completo. Fuori da un browser, la [riga di comando](/it/docs/command-line) esegue la stessa pipeline con Skia al posto del canvas del browser, così un libro si divide nelle stesse pagine in un terminale, in uno script o su un server di build.
 

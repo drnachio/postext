@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'アーキテクチャー',
   description: 'Postext組版エンジンの技術的なアーキテクチャー：基本概念、文書ツリー、垂直リズム、バックエンド、パフォーマンス',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '30分',
   order: 2,
   plainSummary: "このページでは、Postextが内部でどう動いているかを、プログラマー向けに説明します。Postextはまず、画面に何も描かずにすべての単語の幅を測るので、とても速く動きます。次に、すべての行、図、段をどこに置くかを決め、その計画をメモリーに保存します。最後に、できあがったページをWebページ、canvasの画像、PDFファイルとして描きます。単語を1つ変えると、ページを組み直し、変わっていない段落の計測結果を再利用します。行と図を置いていく手順は、次のページで順を追って説明します。",
@@ -451,6 +451,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (from 'postext-epub'), a book's chapters in order
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (from 'postext-scorm'), the EPUB writer's content as a package for an LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 バイナリーのリソースデータは本体とは別に扱われるため、各バックエンドはそれぞれのやり方で`fileId`を解決します。canvasバックエンドはデコード済みの`CanvasImageSource`のレジストリーを持ちます。ホストアプリがビットマップやSVGを`registerResourceImage(fileId, image)`で一度ずつ登録し、レンダラーは描画時にそれを参照します。HTMLバックエンドはオプションで`resourceImageUrl(fileId)`リゾルバーを受け取り、ホストが返すURL（オブジェクトURL、データURI、CDNのパスなど）を指す`<img>`タグを出力します。PDFバックエンドは`resourceBytes`プロバイダーを受け取り、実際のバイト列を埋め込みます。EPUBの書き出し処理もこれを受け取り、各画像を本の中のファイルとして一度だけ格納します。動画リソースはポスター画像として、ほかのビットマップと同じように描画されます。HTMLバックエンドは再生する動画ファイル用に`resourceVideoUrl(fileId)`リゾルバーも受け取り、EPUBの書き出し処理はそれらのファイルを`media/`の下に格納します。PDFバックエンドは、再生マークとQRコードをポスター画像の上にベクターのパスとして描き、`video.linkPoster`がオンのときは、`video.link`を開くURIリンク注釈をポスター画像の上に置きます。タグ付きPDFでは、このリンクはポスター画像の`Figure`に加わり、その代替テキストは種類の名前で始まります（*Video: …*）。表リソースにはこうした仕組みはいりません。表のモデルはインラインで持たれ、どのバックエンドもVDTの表の幾何情報からセルを描画します。
@@ -494,6 +497,12 @@ renderToEpub(docs, options): Promise<Uint8Array>;
       <td><strong>提供中</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>Pretextで計測済みのVDTを受け取る</td>
+      <td>学習管理システム向けのSCORM 1.2または2004のzip。EPUBの書き出し機能が作るページまたはテキストをHTML5にし、SCOごとにプレーヤーを付ける。練習問題は得点、完了、合否を送る（<code>postext-scorm</code>の<code>renderToScorm</code>）</td>
+      <td><strong>提供中</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong>（3Dビューアー）</td>
       <td>Pretextで計測済みのVDTを受け取る</td>
       <td>各ページをcanvasバックエンドで描き（<code>renderPageToCanvas</code>）、three.jsの紙葉のテクスチャーとして表示する。描くのは開いている見開きの周辺だけ（<code>postext-folio</code>の<code>createFolioFromDocument</code>）</td>
@@ -508,7 +517,7 @@ renderToEpub(docs, options): Promise<Uint8Array>;
   </tbody>
 </table>
 
-4つのバックエンドとFolioビューアーは、すべて同じ`VDTDocument`を受け取ります。canvasとHTMLのバックエンドを公開する`postext`と、PDFバックエンドを公開する`postext-pdf`に分かれているのは、純粋に依存関係の都合です。PDFの経路は`pdf-lib`と`@pdf-lib/fontkit`を取り込みますが、Webへの組み込みの多くではこれらは必要ありません。`postext-pdf`は、実際にPDFのバイト列を出力したいときだけインストールしてください。`postext-epub`も同じ理由で独立したパッケージになっており、必要になるのは電子書籍を作るときだけです。コマンドラインは5つ目のバックエンドではありません。`postext-cli`は、ブラウザーのない環境でこれらと同じ書き出しを実行します。Wordファイルもバックエンドではありません。`postext/word`の`postextToDocx`は、Markdownの章とそのスタイルをレイアウトせずに`.docx`へ書き出し、`readDocx`と`wordToPostext`はそれをMarkdownとして読み戻します。
+4つのバックエンドとFolioビューアーは、すべて同じ`VDTDocument`を受け取ります。canvasとHTMLのバックエンドを公開する`postext`と、PDFバックエンドを公開する`postext-pdf`に分かれているのは、純粋に依存関係の都合です。PDFの経路は`pdf-lib`と`@pdf-lib/fontkit`を取り込みますが、Webへの組み込みの多くではこれらは必要ありません。`postext-pdf`は、実際にPDFのバイト列を出力したいときだけインストールしてください。`postext-epub`も同じ理由で独立したパッケージになっており、必要になるのは電子書籍を作るときだけです。`postext-scorm`は`postext-epub`の上に成り立ち、EPUBの書き出し機能が作る内容を学習プラットフォーム向けのパッケージにまとめます。そのため、独自のバックエンドではありません。コマンドラインは5つ目のバックエンドではありません。`postext-cli`は、ブラウザーのない環境でこれらと同じ書き出しを実行します。Wordファイルもバックエンドではありません。`postext/word`の`postextToDocx`は、Markdownの章とそのスタイルをレイアウトせずに`.docx`へ書き出し、`readDocx`と`wordToPostext`はそれをMarkdownとして読み戻します。
 
 **レイアウトを実行する場所**：エンジンはテキストをcanvasで計測するので、canvasが与えられる環境ならどこでも動きます。ブラウザーでは、パイプラインはメインスレッド上（`buildDocument`）でも、専用のWeb Worker内（`postext/worker`の`createLayoutWorker`）でも実行できます。UIを持つアプリにはワーカーでの実行を推奨します。計測と配置のパスをメインスレッドから外せること、`AbortSignal`による後勝ちのキャンセルに対応していること、独自の計測キャッシュと数式ラスターキャッシュを持つため再ビルドが続いても軽いままであることが理由です。組み込み方の全体は[設定 → Web Workerでレイアウトを実行する](/ja/docs/configuration-programmatic-usage#web-workerでレイアウトを実行する)を参照してください。ブラウザーの外では、[コマンドライン](/ja/docs/command-line)が、ブラウザーのcanvasの代わりにSkiaを使って同じパイプラインを実行します。そのため、ターミナルでも、スクリプトでも、ビルドサーバーでも、本は同じページに分かれます。
 

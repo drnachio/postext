@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitectura',
   description: "Com és per dins el motor de composició tipogràfica Postext: els conceptes bàsics, l'arbre del document, el ritme vertical, els backends i el rendiment",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '30 min',
   order: 2,
   plainSummary: "Aquesta pàgina explica com funciona Postext per dins, i està escrita per a programadors. Primer, Postext mesura cada paraula sense dibuixar res a la pantalla, i per això és molt ràpid. Després calcula on va cada línia, cada imatge i cada columna, i desa aquest pla a la memòria. Al final dibuixa les pàgines acabades en forma de pàgina web, d'imatge en un canvas o de fitxer PDF. Si canvies una paraula, torna a compondre les pàgines i aprofita les mesures dels paràgrafs que no han canviat. La pàgina següent explica, pas a pas, com es col·loquen les línies i les imatges.",
@@ -452,6 +452,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (des de 'postext-epub'), els capítols d'un llibre en ordre
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (des de 'postext-scorm'), el contingut de l'escriptor EPUB com a paquet per a un LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 Com que els continguts binaris dels recursos es desen a part, cada backend resol els `fileId` a la seva manera. El backend de canvas manté un registre de `CanvasImageSource` descodificats: l'aplicació amfitriona registra cada mapa de bits o SVG una sola vegada amb `registerResourceImage(fileId, image)`, i el renderitzador el consulta en dibuixar. El backend HTML accepta un resolutor `resourceImageUrl(fileId)` entre les opcions i genera etiquetes `<img>` que apunten a les URL (object URLs, data URIs, rutes de CDN) que retorni l'aplicació amfitriona. El backend PDF rep un proveïdor `resourceBytes` i incrusta els bytes reals; l'escriptor EPUB també en rep un i desa cada imatge una sola vegada com a fitxer del llibre. Un recurs de vídeo es dibuixa com la seva imatge de portada, que és un mapa de bits com qualsevol altre; el backend HTML també accepta un resolutor `resourceVideoUrl(fileId)` per als fitxers de vídeo que reprodueix, i l'escriptor EPUB desa aquests fitxers a `media/`. El backend PDF dibuixa la marca de reproducció i el codi QR com a traçats vectorials sobre la portada i, amb `video.linkPoster` activat, hi superposa una anotació d'enllaç URI que obre `video.link`; en un PDF etiquetat, l'enllaç s'associa a la `Figure` de la portada, amb un text alternatiu que comença pel nom del tipus (*Vídeo: …*). Els recursos de taula no necessiten res d'això: el seu model va dins del recurs, i tots els backends dibuixen les cel·les a partir de la geometria de taula del VDT.
@@ -495,6 +498,12 @@ Com que els continguts binaris dels recursos es desen a part, cada backend resol
       <td><strong>Disponible</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>Fa servir el VDT ja mesurat amb Pretext</td>
+      <td>Un zip SCORM 1.2 o 2004 per a un sistema de gestió de l'aprenentatge: les pàgines o el text de l'escriptor EPUB en HTML5, un reproductor per SCO i exercicis que envien la puntuació, si s'han completat i si s'han aprovat (<code>renderToScorm</code> a <code>postext-scorm</code>)</td>
+      <td><strong>Disponible</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong> (visor 3D)</td>
       <td>Fa servir el VDT ja mesurat amb Pretext</td>
       <td>Cada pàgina la pinta el backend de canvas (<code>renderPageToCanvas</code>) i es mostra com a textura d'una fulla de three.js, només al voltant del plec obert (<code>createFolioFromDocument</code> a <code>postext-folio</code>)</td>
@@ -509,7 +518,7 @@ Com que els continguts binaris dels recursos es desen a part, cada backend resol
   </tbody>
 </table>
 
-Els quatre backends i el visor Folio fan servir el mateix `VDTDocument`. La separació entre `postext` (que exporta els backends de canvas i HTML) i `postext-pdf` (que exporta el backend de PDF) és només una qüestió de dependències: el PDF necessita `pdf-lib` i `@pdf-lib/fontkit`, i la majoria d'integracions web no els fan servir. Instal·la `postext-pdf` només quan vulguis generar PDF. `postext-epub` és un paquet a part per la mateixa raó, i només cal per a llibres electrònics. La línia d'ordres no és un cinquè backend: `postext-cli` executa aquests mateixos generadors on no hi ha navegador. Els fitxers de Word tampoc no ho són: `postextToDocx` (de `postext/word`) escriu els capítols en Markdown i els seus estils en un `.docx`, sense composició, i `readDocx` amb `wordToPostext` el tornen a llegir com a Markdown.
+Els quatre backends i el visor Folio fan servir el mateix `VDTDocument`. La separació entre `postext` (que exporta els backends de canvas i HTML) i `postext-pdf` (que exporta el backend de PDF) és només una qüestió de dependències: el PDF necessita `pdf-lib` i `@pdf-lib/fontkit`, i la majoria d'integracions web no els fan servir. Instal·la `postext-pdf` només quan vulguis generar PDF. `postext-epub` és un paquet a part per la mateixa raó, i només cal per a llibres electrònics; `postext-scorm` s'hi basa i empaqueta el contingut de l'escriptor EPUB per a les plataformes d'aprenentatge, de manera que no compta com un backend propi. La línia d'ordres no és un cinquè backend: `postext-cli` executa aquests mateixos generadors on no hi ha navegador. Els fitxers de Word tampoc no ho són: `postextToDocx` (de `postext/word`) escriu els capítols en Markdown i els seus estils en un `.docx`, sense composició, i `readDocx` amb `wordToPostext` el tornen a llegir com a Markdown.
 
 **On s'executa la composició:** el motor mesura el text en un canvas, de manera que funciona allà on en tingui un. En un navegador, el pipeline es pot executar al fil principal (`buildDocument`) o dins d'un Web Worker propi (`createLayoutWorker`, de `postext/worker`). El worker és la integració recomanada per a aplicacions amb interfície d'usuari, perquè manté la mesura i les passades de col·locació fora del fil principal, admet la cancel·lació *last-wins* amb `AbortSignal` i té la seva pròpia memòria cau de mesura i de rasterització de fórmules, de manera que les recomposicions successives continuen sent barates. Consulta [Configuració → Executar la composició en un Web Worker](/ca/docs/configuration-programmatic-usage#executar-la-composició-en-un-web-worker) per al patró d'integració complet. Fora del navegador, la [línia d'ordres](/ca/docs/command-line) executa el mateix pipeline amb Skia en lloc del canvas del navegador, de manera que un llibre es reparteix en les mateixes pàgines en un terminal, en un script o en un servidor de compilació.
 

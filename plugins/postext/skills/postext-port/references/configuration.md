@@ -2460,7 +2460,7 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
 `debug` is harmless but pointless. `localized.<lang>.config.X` replaces the whole `X`
 (e.g. restate the complete `resourceTypes` or `colorPalette` array per locale).
 
-### 20a. Figure styles — `figureStyle` (released after 1.60, #1237)
+### 20a. Figure styles — `figureStyle` (≥ 1.61, #1237)
 
 `FigureStyle = 'default' | 'oldstyle' | 'lining' | 'tabular' | 'proportional' | 'oldstyle-tabular' |
 'oldstyle-proportional' | 'lining-tabular' | 'lining-proportional'` → OpenType `onum` (old-style), `lnum`
@@ -2646,6 +2646,12 @@ postext image my-book --page 12 --print-preview -o p12.png          # soft proof
   `svgFonts.standIn: (f) => exportStandInOf(config.customFonts, f)` gives SVG text the stand-in faces;
   `kindlePanelView: true` adds Kindle panel magnification to a fixed-layout comic (code only; the command line
   has no flag); pass `modified` for byte-identical output.
+- **SCORM** (≥ 1.63, `postext-scorm`, peer of `postext` and `postext-epub`): for a brief that wants the book,
+  or chapters and sections of it, in a learning management system (Moodle, Canvas, Blackboard). The
+  command line has no SCORM output: use the Sandbox's **SCORM** tab (pick the SCOs in the tree, fixed or
+  reflowable, SCORM 1.2 or 2004) or `renderToScorm(docs, { version: '1.2'|'2004', layout, items:
+  scormOrganization(scormTree(chapters), picked), metadata })`. The exercises report score, completion and
+  pass or fail; the source's quiz rules go in `exercises.digital` (§13c, `digital`).
 
 `folio` (the Folio 3D viewer, `postext-folio` and the Sandbox's Folio tab; layout, canvas, PDF and HTML ignore it, so it never changes a page or the layout hash):
 

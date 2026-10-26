@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '架构',
   description: 'Postext排版引擎的技术架构：核心概念、文档树、垂直韵律、后端与性能',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '20分钟',
   order: 2,
   plainSummary: "本页讲解Postext的内部工作原理，面向程序员。首先，Postext在不往屏幕上画任何东西的情况下测量每个词，所以速度很快。然后它算出每一行、每张图和每一栏的位置，并把这份排版方案保存在内存里。最后，它把排好的页面输出为网页、Canvas图像或PDF文件。你改动一个词时，它会把各页重新排一遍，并沿用未改动段落的测量结果。下一页一步步说明各行和各张图是怎样放上去的。",
@@ -451,6 +451,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB（来自'postext-epub'），按顺序传入一本书的各章
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM（来自'postext-scorm'），把EPUB写入器的内容打包给LMS使用
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 由于资源的二进制数据在带外传递，每个后端以自己的方式解析`fileId`。Canvas后端维护一个已解码`CanvasImageSource`的注册表：宿主应用用`registerResourceImage(fileId, image)`把每个位图或SVG注册一次，渲染器在绘制时查找。HTML后端在选项中接收一个`resourceImageUrl(fileId)`解析函数，生成指向宿主返回的URL（object URL、data URI、CDN路径）的`<img>`标签。PDF后端接收一个`resourceBytes`提供函数，嵌入实际的字节；EPUB写入器也接收这样一个函数，每张图片只作为书中的一个文件存一次。视频资源绘制为它的封面，和其他位图一样；HTML后端还接收一个`resourceVideoUrl(fileId)`解析函数，用于它要播放的视频文件，EPUB写入器则把这些文件存放在`media/`下。PDF后端把播放标记和二维码以矢量路径画在封面上；`video.linkPoster`开启时，还在封面上方加一个打开`video.link`的URI链接注释。在带标签的PDF中，这个链接归入封面的`Figure`，其替代文字以类型名称开头（*视频：…*）。表格资源不需要这些：它们的模型是内联的，每个后端都按VDT中的表格几何数据绘制单元格。
@@ -494,6 +497,12 @@ renderToEpub(docs, options): Promise<Uint8Array>;
       <td><strong>已发布</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>接收已由Pretext测量过的VDT</td>
+      <td>供学习管理系统使用的SCORM 1.2或2004 zip文件：EPUB写入器的页面或文字做成HTML5，每个SCO配一个播放器，练习报告得分、完成情况和是否通过（<code>postext-scorm</code>中的<code>renderToScorm</code>）</td>
+      <td><strong>已发布</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong>（3D查看器）</td>
       <td>接收已用Pretext测量好的VDT</td>
       <td>每一页由Canvas后端绘制（<code>renderPageToCanvas</code>），作为three.js书页的纹理显示，只绘制打开的跨页附近（<code>postext-folio</code>中的<code>createFolioFromDocument</code>）</td>
@@ -508,7 +517,7 @@ renderToEpub(docs, options): Promise<Uint8Array>;
   </tbody>
 </table>
 
-四个后端和Folio查看器都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。`postext-epub`出于同样的原因单独成包，只在制作电子书时需要。命令行不是第五个后端：`postext-cli`在没有浏览器的地方运行同样这些写入器。Word文件也不是：`postextToDocx`（来自`postext/word`）把Markdown各章及其样式写成`.docx`，不经过排版；`readDocx`配合`wordToPostext`再把它读回成Markdown。
+四个后端和Folio查看器都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。`postext-epub`出于同样的原因单独成包，只在制作电子书时需要；`postext-scorm`建立在它之上，把EPUB写入器的内容打包给学习平台，因此本身不算一个后端。命令行不是第五个后端：`postext-cli`在没有浏览器的地方运行同样这些写入器。Word文件也不是：`postextToDocx`（来自`postext/word`）把Markdown各章及其样式写成`.docx`，不经过排版；`readDocx`配合`wordToPostext`再把它读回成Markdown。
 
 **排版在哪里运行**：引擎在Canvas上测量文本，所以只要有Canvas就能运行。在浏览器中，流水线既可以在主线程上运行（`buildDocument`），也可以在专用的Web Worker中运行（`postext/worker`中的`createLayoutWorker`）。对于由UI驱动的应用，推荐使用工作线程方式：它让测量和放置遍远离主线程，可以用`AbortSignal`取消旧的构建、只保留最后一次，并拥有自己的测量缓存和数学公式光栅缓存，使连续的重新构建保持低开销。完整的集成模式参见[配置 › 在Web Worker中运行排版](/zh/docs/configuration-programmatic-usage#在web-worker中运行排版)。在浏览器之外，[命令行](/zh/docs/command-line)用Skia代替浏览器的Canvas运行同一条流水线，所以同一本书在终端、脚本或构建服务器上分出的页面完全相同。
 

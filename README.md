@@ -109,7 +109,7 @@ pretext gives you the measurements. postext gives you the layout.
 
 ## Features
 
-Everything below ships today in `postext` and its companion packages (`postext-pdf`, `postext-epub`, `postext-folio`, `postext-citeproc`) and in the `postext` command line. A fuller list, with a link to the page that explains each part, is on the wiki's [Features](https://github.com/drnachio/postext/wiki/Features) page.
+Everything below ships today in `postext` and its companion packages (`postext-pdf`, `postext-epub`, `postext-scorm`, `postext-folio`, `postext-citeproc`) and in the `postext` command line. A fuller list, with a link to the page that explains each part, is on the wiki's [Features](https://github.com/drnachio/postext/wiki/Features) page.
 
 ### Column-based layouts
 
@@ -150,6 +150,12 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 - `:::verse` blocks for poetry, including Arabic verse set as two hemistichs.
 - Inline chips, `:chip[text]{style="…"}`: boxed words (word banks, keys, tags) that wrap as one unit, painted as real text in every backend.
 
+### Exercises
+
+- `:::exercise` blocks hold the questions and their answers in the Markdown, in twelve kinds: choice, true or false, gaps and word banks, matching, sorting, ordering, scrambles, words to mark, open questions with ruled writing areas, word searches, crosswords, and operations in columns (long division set as each country's schools set it).
+- `exerciseStyles` decide how they print: the number badge, option labels, blanks, writing areas and activity icons. The solutions go after the exercise, upside down, at the end of the chapter or of the book, or nowhere, and the same text gives a teacher's edition with every answer filled in.
+- In the HTML viewer and in both EPUB renditions the exercises can be answered on screen (typing, ticking, dragging to join or sort, marking words) and checked. Limits for a test (`exercises.digital`: checks per attempt, resets, when the solution shows, the pass mark) hold in the HTML, the EPUB and a SCORM package. See [Exercises](https://postext.dev/en/docs/exercises).
+
 ### Composed pages
 
 - Fixed pages (a textbook spread, a workbook page, a magazine feature) set from page templates (`pageTemplates`): named frames, groups that share their space, a decoration and spreads, defined once in the configuration.
@@ -174,6 +180,7 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 ### Languages and scripts
 
 - A document language (`locale`) drives hyphenation, built-in strings, numerals, text direction and the language tagged in the PDF.
+- A book in several languages keeps **general settings** that every edition reads and, per language, an **override** with only the fields that language sets differently (the faces of its script, a label's wording), merged field by field (`configVersion` 21).
 - Chinese (Simplified, Traditional, Hong Kong), horizontal or vertical: line breaking, punctuation widths and hanging punctuation, Han–Latin spacing, the character grid, emphasis dots, proper-name and book-title marks, ruby (pinyin, zhuyin) and warichu. See [Chinese layout](https://postext.dev/en/docs/chinese-layout).
 - Arabic (Modern Standard and Classical): the bidirectional algorithm, right-bound books with right-to-left spreads, words shaped whole through HarfBuzz in the PDF, kashida justification instead of letter-spacing, vowel marks, Arabic-Indic digits and number words, and classical verse. See [Arabic layout](https://postext.dev/en/docs/arabic-layout).
 - Japanese, vertical or horizontal, by JLReq and JIS X 4051: kinsoku, yakumono spacing and paragraph-start brackets, vertical forms and tate-chū-yoko, furigana (jukugo ruby, 1:2:1), sesame emphasis marks and side lines, kanbun kunten, Japanese counters (第一章), 行取り headings and 字下げ blocks, notes, a gojūon index with readings, SIST 02 citations and Aozora Bunko sources. See [Japanese layout](https://postext.dev/en/docs/japanese-layout).
@@ -190,6 +197,7 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 - `tableStyle` / `tableStyles` — table typography independent of body text, named variants picked with `table.styleId`, and a rounded outer frame.
 - `captionStyle`, `chipStyles`, `calloutStyles`, `paragraphStyles`, `headingStyles` — every style is a named, reusable object.
 - Color palettes let a whole document re-ink from one place.
+- `figureStyle` sets the figures of each text style: old-style for running prose, lining for headings, tabular for table columns, proportional where they read best. The engine applies the font's OpenType features in the canvas, HTML, PDF, EPUB and command-line outputs; a face without them keeps its own figures.
 - Design text and chips can be set as dotted letters for a child to trace, and repeated along a line — the tracing copies of a handwriting workbook stay live text.
 
 ### Math
@@ -216,6 +224,7 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 - **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
 - **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, HarfBuzz shaping for Arabic, page labels, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF. `postext-pdf/worker` writes long books off the main thread.
 - **EPUB 3 writer** (`postext-epub`). The whole book as an EPUB 3.3 file, written in the browser or in Node: a **fixed layout** (`pre-paginated`) that keeps every printed page with real, selectable text, or a **reflowable** book in semantic XHTML (paragraphs rebuilt from the lines, notes, figures and tables in reading order, print page markers) styled from the same configuration. Fonts embedded, with navigation, print page numbers, right-to-left books and accessibility metadata; validated with W3C EPUBCheck.
+- **SCORM packages** (`postext-scorm`). A book, or the chapters and sections picked from it, as a SCORM 1.2 or SCORM 2004 package for a learning management system (Moodle, Canvas, Blackboard, …): fixed pages or reflowable text from the EPUB writer, a small player per SCO, and exercises that send their score, completion and pass or fail to the LMS (`renderToScorm`).
 - **Print production.** PDF/X-1a and PDF/X-4 files (`print.standard`) with an ICC output profile (FOGRA, GRACoL, SWOP and IFRA profiles are bundled, or your own), every colour and RGB picture separated through it, black overprint and rich black, an ink limit, and a preflight that reports low-resolution pictures, thin rules, small text in several inks and text near the trim before the file is written. The Sandbox shows a print preview of the separated pages.
 - **Word files** (`postext/word`). A `.docx` is read into chapters of Markdown, with its styles mapped to Postext styles and a quality report (`readDocx`, `analyzeDocx`, `wordToPostext`), and a book is written back as `.docx` with an embedded template (`postextToDocx`). The Sandbox and the command line both import and export Word.
 - **3D book viewer** (`postext-folio`). Spreads whose leaves curl in three.js, with real shadows, turned by hand or by key; a right-bound book lies mirrored. Pages are painted on demand, at the size they are shown, around the open spread only.
@@ -225,16 +234,16 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 
 ### Sandbox
 
-- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / PDF / Folio (3D) / HTML previews with source ↔ preview sync, an EPUB 3 tab that writes, shows and downloads the book as an e-book, Word import and export, editors for page templates and comic pages, a Checks panel, permalinks to any page, and a phone layout.
+- A hosted editor at [postext.dev](https://postext.dev/en/sandbox): books of chapters, a Design panel that browses every setting in editorial terms (accessible, keyboard-first), a Resources panel, live Canvas / PDF / Folio (3D) / HTML previews with source ↔ preview sync, an EPUB 3 tab that writes, shows and downloads the book as an e-book (with its exercises answerable in the reader), a SCORM tab that packages the chapters and sections you pick for a learning platform, Word import and export, editors for page templates and comic pages, a Checks panel, permalinks to any page, and a phone layout.
 - The Design panel edits every engine setting; `scripts/config-coverage.mjs --check` compares the configuration schema with the panel, the docs and the agent skill.
-- A book holds an edition per language, each with its own title and pagination: the editions rail switches between them, and the side-by-side view shows two editions of the whole book, kept on the same passage of text.
+- A book holds an edition per language, each with its own title and pagination: the editions rail switches between them, the Design panel edits either the general settings or one language's override (each field shows which layer sets it), and the side-by-side view shows two editions of the whole book, kept on the same passage of text.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
 - Showcase bundles — a magazine, literary editions (*Don Quijote*, an annotated *Paradise Lost*), an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual, the classic Chinese novel *Dream of the Red Chamber* (红楼梦), Natsume Sōseki's *Kokoro* (こころ) set vertically and *One Thousand and One Nights* in Arabic — plus a built-in guide to Postext, itself set as a book in every language of the site: Chinese and Japanese vertical, Arabic right to left.
 
 ### Cookbook
 
-- More than 160 complete, copy-ready examples at [postext.dev/en/cookbook](https://postext.dev/en/cookbook) (*Recetario* in Spanish): each recipe is a real publication set with Postext — an opener, a book page with running heads, a data table, a songbook page, a print-ready PDF — grouped in chapters and searchable by feature, genre, level and output.
+- More than 170 complete, copy-ready examples at [postext.dev/en/cookbook](https://postext.dev/en/cookbook) (*Recetario* in Spanish): each recipe is a real publication set with Postext — an opener, a book page with running heads, a data table, a songbook page, a print-ready PDF — grouped in chapters and searchable by feature, genre, level and output.
 - Every recipe page shows the captured pages and the whole pen, with Copy, Open in CodePen, an `.html` download and, where it applies, the PDF; a write-up explains the method step by step, with excerpts of the real code, and the pitfalls. The same content is available as Markdown for agents (`/en/cookbook/<slug>.md`, and in `llms.txt`).
 - Recipes live in [`cookbook/`](cookbook/README.md), one folder each (metadata, bilingual write-ups, the pen and its sample text); `pnpm cookbook new | dev | lint | capture` scaffolds, previews, checks and captures them against the released engine, and `pnpm cookbook sandbox` and `pnpm cookbook bench` check the captured books in the Sandbox's own layout and the composed pages under longer text.
 
@@ -271,6 +280,7 @@ postext/
 │   ├── postext-pdf/              # PDF rendering backend
 │   ├── postext-folio/            # 3D book viewer (three.js)
 │   ├── postext-epub/             # EPUB 3 writer (fixed layout and reflowable)
+│   ├── postext-scorm/            # SCORM 1.2 / 2004 packages for learning platforms
 │   ├── postext-citeproc/         # CSL citations and bibliographies (citeproc-js)
 │   ├── postext-cli/              # Command line: self-contained executables (Bun)
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
@@ -291,9 +301,10 @@ postext/
 | `packages/postext-pdf` | The PDF backend: renders the layout geometry to print-ready, tagged PDF (outlines, links, font embedding, color spaces). Published to npm as `postext-pdf`. |
 | `packages/postext-folio` | The 3D book viewer: a laid-out document (or any page images) as spreads whose leaves turn in three.js. Published to npm as `postext-folio`. |
 | `packages/postext-epub` | The EPUB 3 writer: a laid-out book as a fixed-layout or reflowable EPUB, plus `readEpub` for viewers. Published to npm as `postext-epub`. |
+| `packages/postext-scorm` | The SCORM writer: a book, or the chapters and sections picked from it, as a SCORM 1.2 or 2004 package whose exercises report to the LMS (`renderToScorm`). Published to npm as `postext-scorm`. |
 | `packages/postext-citeproc` | The citation engine: formats Pandoc-syntax citations with citeproc-js and builds the bibliography, with 20 bundled CSL styles and 14 CSL locales. Published to npm as `postext-citeproc`. |
 | `packages/postext-cli` | The command line: `postext pdf`, `html`, `epub`, `image(s)`, `docx`, `import-docx`, `pack`, `unpack`, `info`, `check` and `build --watch`, compiled with Bun into a self-contained executable for each system (`pnpm --filter postext-cli build:bin` writes them to `bin/`). Released as GitHub Release assets and on npm as `postext-cli`. |
-| `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports — embedded by the web app. |
+| `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports and the SCORM export — embedded by the web app. |
 | `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, hosted sandbox and cookbook at [postext.dev](https://postext.dev), in ten languages. |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |
 
@@ -428,7 +439,7 @@ see [Integrating the HTML viewer](https://postext.dev/en/docs/configuration-html
 
 ## Roadmap
 
-Every milestone of the original roadmap is closed. Postext now typesets full books — textbooks, magazines, literary editions and catalogues — end to end, from enriched markdown to accessible, print-ready PDF, EPUB 3 and a 3D book. Work continues in programmes tracked as GitHub issues; the wiki's [Roadmap](https://github.com/drnachio/postext/wiki/Roadmap) page follows them.
+Every milestone of the original roadmap is closed. Postext now typesets full books — textbooks, magazines, literary editions and catalogues — end to end, from enriched markdown to accessible, print-ready PDF, EPUB 3, SCORM packages and a 3D book. Work continues in programmes tracked as GitHub issues; the wiki's [Roadmap](https://github.com/drnachio/postext/wiki/Roadmap) page follows them.
 
 ### Phase 1: Foundation ✅
 
@@ -492,6 +503,9 @@ Every milestone of the original roadmap is closed. Postext now typesets full boo
 - [x] The `postext` command line ([#617](https://github.com/drnachio/postext/issues/617)) and WebMCP tools for agents in the browser
 - [x] The Rust line breaker in WebAssembly and a faster whole-book layout ([#779](https://github.com/drnachio/postext/issues/779))
 - [x] Music notation engraved by Verovio: scores in the text and numbered music examples ([#1178](https://github.com/drnachio/postext/issues/1178))
+- [x] General settings with per-language overrides for books in several languages ([#1209](https://github.com/drnachio/postext/issues/1209))
+- [x] Textbook and workbook exercises, printed and answerable on screen ([#1235](https://github.com/drnachio/postext/issues/1235)), and SCORM packages for learning platforms ([#1270](https://github.com/drnachio/postext/issues/1270))
+- [x] Figure styles per text style: old-style, lining, tabular, proportional ([#1237](https://github.com/drnachio/postext/issues/1237))
 
 What comes next is driven by the community: open an issue that describes the publication you are trying to set and where Postext falls short.
 

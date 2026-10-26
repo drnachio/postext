@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '简介',
   description: 'Postext是什么，为什么要做它，它解决什么问题',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '5分钟',
   order: 1,
   plainSummary: "Postext是一款免费软件，用来在网页上给书籍、杂志和报告排版。几百年来，印刷书籍一直遵循细致的排版规则，比如让各栏一样长，把图片放在提到它的文字附近。网页从来没有这些规则，Postext把它们补上了。你只管写文字，Postext会把每一行、每张图和每条注释放到页面上。本页讲述这个项目为什么存在，以及它是怎样开始的。",
@@ -111,11 +111,11 @@ Pretext给你测量结果，Postext给你版面。
 
 2. **引擎做出决策。** Postext解析内容，调用Pretext在不接触DOM的情况下做像素级精确的文字测量，然后运行多轮排版流水线：各栏齐底、为资源编号并浮动、防止段末孤行和段首孤行、对齐基线、细调间距。每项决策都由配置驱动：页面和版面几何、正文和标题，还有控制表格单元格文字的`tableStyle`、控制插图题注的`captionStyle`，以及带`singleInk`选项的`diagramStyle`，后者按亮度把SVG图示重新着色为同一种油墨的不同深浅，用于单专色印刷。规则由你掌控，引擎负责执行。
 
-3. **你得到完整的版面。** 每一页上每个元素的精确坐标和尺寸。渲染器把这些几何数据转换成目标格式：**Canvas**用于像素级精确的位图预览（`renderToCanvas`、`renderPage`），**HTML**用于Web上可选中、能随尺寸变化的文字（`renderToHtml`、`renderToHtmlIndexed`），**PDF**用于内嵌字体、可直接印刷的输出（`renderToPdf`，来自`postext-pdf`包），**EPUB 3**用于电子书阅读器（`renderToEpub`，来自`postext-epub`），还有在浏览器里翻页的**3D书**（`createFolioFromDocument`，来自`postext-folio`）。所有输出都由同一份版面绘制而成。
+3. **你得到完整的版面。** 每一页上每个元素的精确坐标和尺寸。渲染器把这些几何数据转换成目标格式：**Canvas**用于像素级精确的位图预览（`renderToCanvas`、`renderPage`），**HTML**用于Web上可选中、能随尺寸变化的文字（`renderToHtml`、`renderToHtmlIndexed`），**PDF**用于内嵌字体、可直接印刷的输出（`renderToPdf`，来自`postext-pdf`包），**EPUB 3**用于电子书阅读器（`renderToEpub`，来自`postext-epub`），**SCORM**包用于学习平台，包中的练习向平台报告结果（`renderToScorm`，来自`postext-scorm`），还有在浏览器里翻页的**3D书**（`createFolioFromDocument`，来自`postext-folio`）。所有输出都由同一份版面绘制而成。
 
 <Illustration name="LayoutProcess" data='{"title": "三阶段排版流程", "desc": "增强的Markdown加上配置进入引擎，引擎在内部借助Pretext测量，运行多轮排版流水线，输出渲染好的HTML或PDF。", "caption": "输入内容，输出几何数据，再渲染成目标格式。", "inputTitle": "增强的Markdown", "inputSubtitle": "+ 配置", "parse": "解析", "engineTitle": "Postext引擎", "engineSub1": "内部借助Pretext测量", "engineSub2": "多轮排版", "render": "渲染", "outputTitle": "HTML / PDF", "outputSubtitle": "渲染输出"}' />
 
-想详细了解引擎内部，包括虚拟文档树、多轮流水线和收敛循环，请看[架构](/zh/docs/architecture)文档。所有配置选项的完整参考，从页面几何到表格、题注和图示样式，见[配置](/zh/docs/configuration)页面。想亲手试一试，就打开[沙盒](/zh/docs/sandbox)：那里有章节文本编辑器，带表格编辑器和图片/SVG上传功能的“资源”面板，用书刊排版的说法列出全部设置的“版面设计”面板，以及实时的Canvas、PDF、Folio（3D）、HTML和EPUB预览。
+想详细了解引擎内部，包括虚拟文档树、多轮流水线和收敛循环，请看[架构](/zh/docs/architecture)文档。所有配置选项的完整参考，从页面几何到表格、题注和图示样式，见[配置](/zh/docs/configuration)页面。想亲手试一试，就打开[沙盒](/zh/docs/sandbox)：那里有章节文本编辑器，带表格编辑器和图片/SVG上传功能的“资源”面板，用书刊排版的说法列出全部设置的“版面设计”面板，实时的Canvas、PDF、Folio（3D）、HTML和EPUB预览，以及SCORM导出。
 
 
 ## 致谢

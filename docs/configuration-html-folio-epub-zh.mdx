@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'HTML、3D书本、EPUB、SCORM',
   description: '把排好的书放进网页，用postext-folio做成3D书本，用postext-epub做成固定版式或流式版式的EPUB 3，用postext-scorm做成供LMS使用的SCORM包',
   lang: 'zh',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-10-26',
   readingTime: '12分钟',
   order: 23,
   parent: 'configuration',
@@ -186,6 +186,7 @@ export function PostextHtmlViewer({
 - **增量修补**：`renderToHtmlIndexed`返回`pages[i].blocks`，每个块都有稳定的`id`和该块的外层HTML。两次渲染之间只有少数块不同时，可以原地替换这些块的包装元素，而不必重建`innerHTML`。
 - **叠加层**：在每个`.pt-page`上叠一个绝对定位的SVG，用来显示光标、选区或基线网格。
 - **链接**：Markdown链接中的词被包在`<a href="…" rel="noopener noreferrer">`里，沿用文字颜色，没有下划线；见[文档格式 › 链接](/zh/docs/document-format-inline#链接)。在类似编辑器的查看器中，拦截对不以`#`开头的`a[href]`的点击，在新标签页中打开（`:ref`锚点链接到文档内部）。
+- **可作答的练习**：含有`:::exercise`块的文档，其HTML把练习的记录放在`<script type="application/json" class="pt-exercises">`里，但不带作答用的代码：控件由显示它的页面加上。标记放好之后，对容纳它的元素（或shadow root）调用`postext`中的`attachExercises(root, options?)`，并在替换这些标记之前调用它返回的函数。`attachExercises`在页面上叠加输入框、可切换的选项，以及“检查”“查看答案”“重做”按钮栏，并加入自己的样式表。`storageKey`指定答案保存在哪本书、哪一章名下；`store`把答案存到`localStorage`以外的地方（任何带有`getItem`、`setItem`和`removeItem`的对象都可以）；每次检查、重做和显示答案时都会调用`onResult(result)`，传入得分（共`total`项，答对`right`项）和每个评过分的答案。从`renderToHtmlIndexed`修补块的宿主，把索引中的`exercises`作为`data`传入。`EXERCISE_SCRIPT`是同一段代码的独立脚本版本，用于没有宿主页面来调用它的HTML文件。见[HTML与EPUB中的练习](/zh/docs/exercises#html与epub中的练习)。
 - **单色图片**：打开`diagramStyle.singleInk`后，SVG的`<img>`会加上CSS滤镜；对于已经重新着色的URL，传入`singleInk: false`即可跳过；见[Canvas与HTML中的单色模式](/zh/docs/configuration-resources#canvas与html中的单色模式)。
 - **在印刷版面上排组版页和漫画页**：页面与屏幕同宽、与滚动同高时，固定在组版页（`::::page{template}`）页脚的框会落到滚动区域的底部。在排版所用的配置中传入`composedViewerLeaf: { width, height, margins? }`（印刷页的尺寸和页边距），每个组版页就按该尺寸、以印刷时的几何关系排版，再由你缩放到屏幕上（自postext 1.47起）；`comics.viewerLeaf`对漫画页做同样的事，缩放到`fitWidth`像素（参见[漫画](/zh/docs/configuration-comics)）。两者都供宿主使用：由Sandbox的HTML查看器设置，从不随文档保存。
 
