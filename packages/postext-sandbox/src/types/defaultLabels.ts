@@ -1611,6 +1611,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   balanceGridOffNote: 'The page is set on a character grid, where columns are not balanced unless you turn balancing on: a short column stays short.',
   balanceMaxTracking: 'Max tracking (‰ em)',
   balanceMaxTrackingTooltip: 'Upper limit for that tracking, in thousandths of an em per character (10 = 0.01 em, the usual editorial tolerance)',
+  balanceFillShortColumns: 'Fill short columns',
+  balanceFillShortColumnsTooltip: 'Fill a column the widow and orphan rules left a line short with its own paragraphs: one runs a line long without passing the word-spacing limit, or one is set a line shorter so the break after it takes the line. Kept only when the pages end with fewer short columns',
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
   fitWidth: 'Fit to page width',

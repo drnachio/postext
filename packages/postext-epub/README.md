@@ -167,6 +167,10 @@ Reads an EPUB back for a viewer, without `DOMParser`: the layout, the metadata, 
 - The stylesheet follows the first chapter's configuration. A chapter configured otherwise (its own heading styles, say), and every document of a part whose `palette` recolours the book, links a second stylesheet after it (`styles/book-2.css`…) with only the rules that change; documents that change the same share it.
 - A pull quote repeats words of the text, so it would be read twice. A box with no title (or a title of marks alone, such as a hanging quotation mark) whose words the chapter's text also has is kept on the page as `<aside epub:type="pullquote" role="doc-pullquote" aria-hidden="true">`: readers see it, assistive technology and read-aloud skip it, and the words are read once, in the text. A box whose style id names it a pull quote but whose words are its own is marked `epub:type="pullquote"` and read.
 
+### Exercises
+
+A book with `:::exercise` blocks carries the exercise script in both renditions, so a reading system that runs scripts lets the reader answer them, check them, show the solution and try again, with the limits of `exercises.digital` (checks per attempt, fresh starts, when the solution shows). The answers, checks and fresh starts used are kept in the reading system's storage. In the reflowable rendition the grids and writing areas grow with the reader's text. The answer key is always in the file, whatever the print placement, so a reading system without scripts still has the answers. [`postext-scorm`](https://www.npmjs.com/package/postext-scorm) packages the same content for a learning platform, with the results sent to it.
+
 Both renditions carry the EPUB Accessibility 1.1 metadata (access modes, features such as the table of contents and print page numbers, hazards and a summary), and neither claims WCAG conformance by default.
 
 ## Limitations

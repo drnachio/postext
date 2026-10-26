@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introduction',
   description: 'What Postext is, why it exists, and the problem it solves',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '6 min',
   order: 1,
   plainSummary: "Postext is free software that lays out the pages of books, magazines and reports on the web. Printed books have followed careful layout rules for centuries, such as keeping columns even and pictures close to the text that mentions them. Web pages never had these rules, and Postext adds them. You write the text, and Postext places every line, picture and note on the page for you. This page tells why the project exists and how it began.",
@@ -172,8 +172,10 @@ The process has three stages:
    bitmap preview (`renderToCanvas`, `renderPage`), **HTML** for selectable, resize-aware typography
    on the web (`renderToHtml`, `renderToHtmlIndexed`), **PDF** for print-ready output with
    embedded fonts (`renderToPdf`, from the `postext-pdf` package), **EPUB 3** for e-book readers
-   (`renderToEpub`, from `postext-epub`), and a **3D book** whose leaves turn in the browser
-   (`createFolioFromDocument`, from `postext-folio`). Every output is drawn from the same layout.
+   (`renderToEpub`, from `postext-epub`), **SCORM** packages whose exercises report to a learning
+   platform (`renderToScorm`, from `postext-scorm`), and a **3D book** whose leaves turn in the
+   browser (`createFolioFromDocument`, from `postext-folio`). Every output is drawn from the same
+   layout.
 
 <Illustration name="LayoutProcess" data='{"title": "Three-stage layout process", "desc": "Enriched markdown and its configuration go into the engine, which measures the text with Pretext, lays it out over several passes and outputs HTML or PDF.", "caption": "Content in, geometry out — then rendered to the target format.", "inputTitle": "Enriched Markdown", "inputSubtitle": "+ config", "parse": "parse", "engineTitle": "Postext engine", "engineSub1": "Pretext measurement inside", "engineSub2": "multi-pass layout", "render": "render", "outputTitle": "HTML / PDF", "outputSubtitle": "rendered output"}' />
 
@@ -182,7 +184,7 @@ and the convergence loop — see the [Architecture](/en/docs/architecture) docum
 reference of every configuration option — from page geometry to table, caption, and diagram
 styling — see the [Configuration](/en/docs/configuration) page. And to try everything live — a
 chapter text editor, a Resources panel with a table editor and image/SVG upload, a Design panel
-that browses every setting in editorial terms, and live canvas, PDF, Folio (3D), HTML and EPUB previews — open
+that browses every setting in editorial terms, live canvas, PDF, Folio (3D), HTML and EPUB previews, and a SCORM export — open
 the [Sandbox](/en/docs/sandbox).
 
 

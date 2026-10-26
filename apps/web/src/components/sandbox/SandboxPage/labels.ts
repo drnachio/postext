@@ -1597,6 +1597,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     balanceGridOffNote: t("balanceGridOffNote"),
     balanceMaxTracking: t("balanceMaxTracking"),
     balanceMaxTrackingTooltip: t("balanceMaxTrackingTooltip"),
+    balanceFillShortColumns: t("balanceFillShortColumns"),
+    balanceFillShortColumnsTooltip: t("balanceFillShortColumnsTooltip"),
     zoomIn: t("zoomIn"),
     zoomOut: t("zoomOut"),
     fitWidth: t("fitWidth"),

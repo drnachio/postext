@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Architecture technique du moteur de mise en page Postext : ses concepts, l’arbre de document, le rythme vertical, les moteurs de rendu et les performances',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '31 min',
   order: 2,
   plainSummary: "Cette page explique le fonctionnement interne de Postext ; elle s’adresse aux programmeurs. D’abord, Postext mesure chaque mot sans rien dessiner à l’écran, ce qui le rend très rapide. Ensuite, il calcule l’emplacement de chaque ligne, de chaque image et de chaque colonne, et garde ce plan en mémoire. Enfin, il dessine les pages terminées sous forme de page web, d’image canvas ou de fichier PDF. Quand vous modifiez un mot, il refait la mise en page et réutilise les mesures des paragraphes qui n’ont pas changé. La page suivante explique, étape par étape, comment les lignes et les images sont placées.",
@@ -451,6 +451,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (from 'postext-epub'), a book's chapters in order
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (from 'postext-scorm'), the EPUB writer's content as a package for an LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 Comme les données binaires des ressources circulent hors bande, chaque moteur de rendu résout les `fileId` à sa manière. Le moteur canvas tient un registre de `CanvasImageSource` décodées : l’application hôte enregistre chaque bitmap ou SVG une fois avec `registerResourceImage(fileId, image)`, et le moteur de rendu l’y retrouve au moment de dessiner. Le moteur HTML reçoit dans ses options un résolveur `resourceImageUrl(fileId)` et émet des balises `<img>` qui pointent vers les URL que renvoie l’hôte, quelles qu’elles soient (URL d’objet, URI de données, chemins de CDN). Le moteur PDF reçoit un fournisseur `resourceBytes` et incorpore les octets eux-mêmes ; le générateur EPUB en reçoit un aussi et range chaque image une seule fois comme fichier du livre. Une ressource vidéo est dessinée sous la forme de son affiche, un bitmap comme un autre ; le moteur HTML reçoit aussi un résolveur `resourceVideoUrl(fileId)` pour les fichiers vidéo qu’il lit, et le générateur EPUB range ces fichiers sous `media/`. Le moteur PDF dessine le symbole de lecture et le code QR sous forme de tracés vectoriels par-dessus l’affiche et, quand `video.linkPoster` est activé, y pose une annotation de lien URI qui ouvre `video.link` ; dans un PDF balisé, le lien rejoint la `Figure` de l’affiche, dont le texte de remplacement commence par le nom du type (*Vidéo : …*). Les ressources de type tableau n’ont besoin de rien de tout cela : leur modèle est en ligne, et chaque moteur de rendu dessine les cellules à partir de la géométrie de tableau du VDT.
@@ -494,6 +497,12 @@ Comme les données binaires des ressources circulent hors bande, chaque moteur d
       <td><strong>Disponible</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>Consomme le VDT déjà mesuré avec Pretext</td>
+      <td>Archive zip SCORM 1.2 ou 2004 pour un système de gestion de l’apprentissage : les pages ou le texte du générateur EPUB en HTML5, une visionneuse par SCO et des exercices qui transmettent leur score, leur achèvement et leur réussite ou leur échec (<code>renderToScorm</code> dans <code>postext-scorm</code>)</td>
+      <td><strong>Disponible</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong> (visionneuse 3D)</td>
       <td>Consomme le VDT déjà mesuré avec Pretext</td>
       <td>Chaque page peinte par le moteur canvas (<code>renderPageToCanvas</code>) et affichée comme texture d’un feuillet three.js, seulement autour de la double page ouverte (<code>createFolioFromDocument</code> dans <code>postext-folio</code>)</td>
@@ -508,7 +517,7 @@ Comme les données binaires des ressources circulent hors bande, chaque moteur d
   </tbody>
 </table>
 
-Les quatre moteurs de rendu et la visionneuse Folio consomment le même `VDTDocument`. La séparation entre `postext` (qui exporte les moteurs canvas et HTML) et `postext-pdf` (qui exporte le moteur PDF) ne tient qu’aux dépendances : la voie PDF tire `pdf-lib` et `@pdf-lib/fontkit`, dont la plupart des intégrations web n’ont pas besoin. N’installez `postext-pdf` que si vous voulez réellement produire des octets PDF. `postext-epub` est un paquet à part pour la même raison, et ne sert qu’aux livres numériques. La ligne de commande n’est pas un cinquième moteur de rendu : `postext-cli` exécute ces mêmes générateurs là où il n’y a pas de navigateur. Les fichiers Word n’en sont pas un non plus : `postextToDocx` (de `postext/word`) écrit les chapitres Markdown et leurs styles dans un `.docx`, sans mise en page, et `readDocx` avec `wordToPostext` le relisent en Markdown.
+Les quatre moteurs de rendu et la visionneuse Folio consomment le même `VDTDocument`. La séparation entre `postext` (qui exporte les moteurs canvas et HTML) et `postext-pdf` (qui exporte le moteur PDF) ne tient qu’aux dépendances : la voie PDF tire `pdf-lib` et `@pdf-lib/fontkit`, dont la plupart des intégrations web n’ont pas besoin. N’installez `postext-pdf` que si vous voulez réellement produire des octets PDF. `postext-epub` est un paquet à part pour la même raison, et ne sert qu’aux livres numériques ; `postext-scorm` s’appuie sur lui et conditionne le contenu du générateur EPUB pour les plateformes d’apprentissage : ce n’est donc pas un moteur de rendu à part entière. La ligne de commande n’est pas un cinquième moteur de rendu : `postext-cli` exécute ces mêmes générateurs là où il n’y a pas de navigateur. Les fichiers Word n’en sont pas un non plus : `postextToDocx` (de `postext/word`) écrit les chapitres Markdown et leurs styles dans un `.docx`, sans mise en page, et `readDocx` avec `wordToPostext` le relisent en Markdown.
 
 **Où s’exécute la mise en page :** le moteur mesure le texte sur un canvas, il s’exécute donc partout où on lui en fournit un. Dans un navigateur, la chaîne s’exécute soit sur le thread principal (`buildDocument`), soit dans un Web Worker dédié (`createLayoutWorker` de `postext/worker`). La voie du worker est l’intégration recommandée pour les applications pilotées par une interface, car elle tient la mesure et les passes de placement hors du thread principal, permet l’annulation où la dernière demande l’emporte via `AbortSignal`, et possède son propre cache de mesure et son propre cache de rastérisation des formules, pour que les reconstructions successives restent peu coûteuses. Voir [Configuration → Exécuter la mise en page dans un Web Worker](/fr/docs/configuration-programmatic-usage#mise-en-page-dans-un-web-worker) pour le schéma d’intégration complet. Hors du navigateur, la [ligne de commande](/fr/docs/command-line) exécute la même chaîne avec Skia à la place du canvas du navigateur : un livre se découpe donc en pages identiques dans un terminal, un script ou un serveur de build.
 

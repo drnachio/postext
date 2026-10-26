@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitetura',
   description: 'Arquitetura técnica do motor de diagramação do Postext: os conceitos, a árvore do documento, o ritmo vertical, os renderizadores e o desempenho',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '29 min',
   order: 2,
   plainSummary: "Esta página explica como o Postext funciona por dentro, e foi escrita para programadores. Primeiro, o Postext mede cada palavra sem desenhar nada na tela, e por isso é muito rápido. Depois ele calcula onde vai cada linha, cada imagem e cada coluna, e guarda esse plano na memória. Por fim, desenha as páginas prontas como página web, como imagem em um canvas ou como arquivo PDF. Quando você muda uma palavra, ele diagrama as páginas de novo e reaproveita as medidas dos parágrafos que não mudaram. A página seguinte explica, passo a passo, como as linhas e as imagens são posicionadas.",
@@ -452,6 +452,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (de 'postext-epub'), os capítulos de um livro em ordem
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (de 'postext-scorm'), o conteúdo do gerador de EPUB como pacote para um LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 Como os dados binários dos recursos ficam fora do VDT, cada renderizador resolve os `fileId`s à sua maneira. O renderizador de canvas mantém um registro de `CanvasImageSource`s decodificados: o aplicativo hospedeiro registra cada bitmap ou SVG uma vez com `registerResourceImage(fileId, image)` e o renderizador o consulta na hora de desenhar. O renderizador HTML recebe nas opções um resolvedor `resourceImageUrl(fileId)` e emite tags `<img>` apontando para as URLs (object URLs, data URIs, caminhos de CDN) que o hospedeiro devolver. O renderizador de PDF recebe um provedor `resourceBytes` e incorpora os bytes reais; o gerador de EPUB também recebe um e guarda cada imagem uma única vez como arquivo do livro. Um recurso de vídeo é desenhado como o pôster dele, um bitmap como qualquer outro; o renderizador HTML recebe também um resolvedor `resourceVideoUrl(fileId)` para os arquivos de vídeo que reproduz, e o gerador de EPUB guarda esses arquivos em `media/`. O renderizador de PDF desenha o símbolo de reprodução e o código QR como traçados vetoriais sobre o pôster e, quando `video.linkPoster` está ativado, coloca sobre ele uma anotação de link URI que abre `video.link`; em um PDF marcado, o link se junta à `Figure` do pôster, cujo texto alternativo começa com o nome do tipo (*Vídeo: …*). Os recursos de tabela não precisam de nada disso: o modelo deles vai em linha, e todos os renderizadores desenham as células a partir da geometria de tabela do VDT.
@@ -495,6 +498,12 @@ Como os dados binários dos recursos ficam fora do VDT, cada renderizador resolv
       <td><strong>Disponível</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>Consome o VDT já medido com o Pretext</td>
+      <td>Um zip SCORM 1.2 ou 2004 para um sistema de gestão de aprendizagem: as páginas ou o texto do gerador de EPUB em HTML5, um player por SCO e exercícios que enviam a nota, a conclusão e a aprovação ou reprovação (<code>renderToScorm</code> em <code>postext-scorm</code>)</td>
+      <td><strong>Disponível</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong> (visualizador 3D)</td>
       <td>Consome o VDT já medido com o Pretext</td>
       <td>Cada página pintada pelo renderizador de canvas (<code>renderPageToCanvas</code>) e mostrada como textura de uma folha do three.js, só em volta da página dupla aberta (<code>createFolioFromDocument</code> em <code>postext-folio</code>)</td>
@@ -509,7 +518,7 @@ Como os dados binários dos recursos ficam fora do VDT, cada renderizador resolv
   </tbody>
 </table>
 
-Os quatro renderizadores e o visualizador Folio consomem o mesmo `VDTDocument`. A divisão entre `postext` (que exporta os renderizadores de canvas e HTML) e `postext-pdf` (que exporta o renderizador de PDF) é puramente uma questão de dependências: o caminho do PDF traz `pdf-lib` e `@pdf-lib/fontkit`, e a maioria das integrações web não precisa deles. Instale `postext-pdf` só quando quiser de fato emitir bytes de PDF. `postext-epub` é um pacote à parte pelo mesmo motivo, e só é necessário para livros digitais. A linha de comando não é um quinto renderizador: `postext-cli` roda esses mesmos geradores onde não há navegador. Os arquivos do Word também não são um: `postextToDocx` (de `postext/word`) escreve os capítulos em Markdown e seus estilos em um `.docx`, sem diagramação, e `readDocx` com `wordToPostext` o leem de volta como Markdown.
+Os quatro renderizadores e o visualizador Folio consomem o mesmo `VDTDocument`. A divisão entre `postext` (que exporta os renderizadores de canvas e HTML) e `postext-pdf` (que exporta o renderizador de PDF) é puramente uma questão de dependências: o caminho do PDF traz `pdf-lib` e `@pdf-lib/fontkit`, e a maioria das integrações web não precisa deles. Instale `postext-pdf` só quando quiser de fato emitir bytes de PDF. `postext-epub` é um pacote à parte pelo mesmo motivo, e só é necessário para livros digitais; o `postext-scorm` se apoia nele e empacota o conteúdo do gerador de EPUB para plataformas de ensino, então não conta como um renderizador próprio. A linha de comando não é um quinto renderizador: `postext-cli` roda esses mesmos geradores onde não há navegador. Os arquivos do Word também não são um: `postextToDocx` (de `postext/word`) escreve os capítulos em Markdown e seus estilos em um `.docx`, sem diagramação, e `readDocx` com `wordToPostext` o leem de volta como Markdown.
 
 **Onde o layout roda:** o motor mede o texto em um canvas; por isso, roda onde quer que receba um. Em um navegador, o pipeline pode rodar na thread principal (`buildDocument`) ou dentro de um Web Worker dedicado (`createLayoutWorker` de `postext/worker`). O caminho do worker é a integração recomendada para aplicativos guiados pela interface, porque tira a medição e as passadas de posicionamento da thread principal, permite cancelamento em que a última chamada vence via `AbortSignal` e mantém o próprio cache de medição e o próprio cache de rasterização de fórmulas matemáticas, para que as reconstruções sucessivas continuem baratas. Veja [Configuração → Executar a diagramação em um Web Worker](/pt/docs/configuration-programmatic-usage#executar-a-diagramação-em-um-web-worker) para o padrão de integração completo. Fora do navegador, a [linha de comando](/pt/docs/command-line) roda o mesmo pipeline com o Skia no lugar do canvas do navegador, de modo que um livro se divide nas mesmas páginas em um terminal, em um script ou em um servidor de build.
 

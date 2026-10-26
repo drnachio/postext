@@ -2216,6 +2216,8 @@
     "balanceGridOffNote": "La pagina è composta su una griglia di caratteri, dove le colonne non si bilanciano a meno che tu non attivi il bilanciamento: una colonna corta resta corta.",
     "balanceMaxTracking": "Tracking max (‰ em)",
     "balanceMaxTrackingTooltip": "Limite superiore di quel tracking, in millesimi di em per carattere (10 = 0,01 em, la tolleranza editoriale consueta)",
+    "balanceFillShortColumns": "Riempi le colonne corte",
+    "balanceFillShortColumnsTooltip": "Riempie con i propri paragrafi una colonna che le regole su vedove e orfane hanno lasciato corta di una riga: un paragrafo si allunga di una riga senza superare la spaziatura massima tra le parole, oppure uno viene composto con una riga in meno perché l’interruzione successiva la riprenda. Si mantiene solo se le pagine finiscono con meno colonne corte",
     "zoomIn": "Ingrandisci",
     "zoomOut": "Riduci",
     "fitWidth": "Adatta alla larghezza della pagina",

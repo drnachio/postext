@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Einführung',
   description: 'Was Postext ist, warum es existiert und welches Problem es löst',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '6 min',
   order: 1,
   plainSummary: "Postext ist freie Software, die die Seiten von Büchern, Zeitschriften und Berichten im Web gestaltet. Gedruckte Bücher folgen seit Jahrhunderten sorgfältigen Satzregeln: Spalten sind gleich hoch, Bilder stehen nahe beim Text, der sie erwähnt. Webseiten kannten diese Regeln nie, und Postext bringt sie ins Web. Sie schreiben den Text, und Postext setzt jede Zeile, jedes Bild und jede Anmerkung für Sie auf die Seite. Diese Seite erklärt, warum es das Projekt gibt und wie es begann.",
@@ -177,7 +177,8 @@ Der Vorgang hat drei Stufen:
    Bitmap-Vorschau (`renderToCanvas`, `renderPage`), **HTML** für auswählbare Typografie im Web, die auf
    Größenänderungen reagiert (`renderToHtml`, `renderToHtmlIndexed`), **PDF** für eine druckfertige
    Ausgabe mit eingebetteten Schriften (`renderToPdf`, aus dem Paket `postext-pdf`), **EPUB 3** für
-   E-Book-Reader (`renderToEpub`, aus `postext-epub`) und ein **Buch in 3D**, dessen Seiten man im
+   E-Book-Reader (`renderToEpub`, aus `postext-epub`), **SCORM-Pakete**, deren Übungen ihre Ergebnisse
+   an eine Lernplattform melden (`renderToScorm`, aus `postext-scorm`), und ein **Buch in 3D**, dessen Seiten man im
    Browser umblättert (`createFolioFromDocument`, aus `postext-folio`). Alle Ausgaben werden aus
    demselben Layout gezeichnet.
 
@@ -189,8 +190,8 @@ vollständige Referenz aller Konfigurationsoptionen – von der Seitengeometrie 
 Tabellen, Legenden und Diagrammen – finden Sie auf der Seite
 [Konfiguration](/de/docs/configuration). Und um alles live auszuprobieren – einen Texteditor für
 Kapitel, ein Bedienfeld Ressourcen mit Tabelleneditor und Upload von Bildern und SVGs, ein Bedienfeld
-Gestaltung, das jede Einstellung in der Sprache des Verlagswesens zeigt, und Live-Vorschauen als Canvas,
-PDF, Folio (3D), HTML und EPUB –, öffnen Sie die [Sandbox](/de/docs/sandbox).
+Gestaltung, das jede Einstellung in der Sprache des Verlagswesens zeigt, Live-Vorschauen als Canvas,
+PDF, Folio (3D), HTML und EPUB sowie einen SCORM-Export –, öffnen Sie die [Sandbox](/de/docs/sandbox).
 
 
 ## Danksagung

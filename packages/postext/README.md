@@ -78,6 +78,9 @@ document.body.append(...doc.pages.map((page) => renderPage(page, doc)));
 | `registerResourceImage(fileId, image)` | Supplies the decoded image of a bitmap or SVG resource to the canvas renderer. |
 | `findLooseLines(doc)`, `drawLooseLines(ctx, page, doc)` | The loose justified lines, as data or painted over a page. |
 | `openBundle`, `createBundle`, `buildBundle` | Read, write and lay out `.postext` books. |
+| `mergeConfigLayers`, `leastConfigOverride`, `commonConfig` | A book in several languages: general settings plus a per-language override, merged field by field, and the override that keeps only what a language sets differently. |
+| `attachExercises(root, options?)`, `EXERCISE_SCRIPT` | Make the `:::exercise` blocks of `renderToHtml`'s output answerable (Check, Show solution, Try again, answers kept per book), with `store` and `onResult` for a host that records the results. `EXERCISE_SCRIPT` is the same code as a standalone script. |
+| `renderToScorm(docs, options)` | From `postext-scorm`: a SCORM 1.2 or 2004 package for a learning platform, its exercises reporting their scores. |
 | `createLayoutWorker()` (`postext/worker`) | Runs the layout in a Web Worker, with cancellation. Works from esm.sh too. |
 | `createLayout(content, config?)` (`postext/react`) | A React component that lays the content out and shows its pages. |
 | `readDocx`, `analyzeDocx`, `wordToPostext`, `postextToDocx`, `wordStyleTracking`, `applyStyleTracking` (`postext/word`) | Read a Word `.docx` and report its quality, turn it into Markdown chapters with its styles mapped, write chapters back as a `.docx`, and carry the character spacing of Word styles onto the book's styles. |
@@ -90,7 +93,7 @@ The resolvers (`resolve*Config`), strippers (`strip*Defaults`), `DEFAULT_*` cons
 
 | Field | Type | Description |
 |---|---|---|
-| `markdown` | `string` | Enriched markdown: headings, lists, code blocks, `[^id]` footnotes, `[@key]` citations, `:ref{id="…"}` references, `::resource{id="…"}` embeds, `:::callout`, `:::verse`, `:::part`, `:::toc`, `:::index`, `$…$` math, … |
+| `markdown` | `string` | Enriched markdown: headings, lists, code blocks, `[^id]` footnotes, `[@key]` citations, `:ref{id="…"}` references, `::resource{id="…"}` embeds, `:::callout`, `:::exercise`, `:::verse`, `:::part`, `:::toc`, `:::index`, `$…$` math, music fences, … |
 | `resources?` | `Resource[]` | Bitmaps, SVGs, tables and videos, referenced by `id` from the markdown. Binary payloads (pictures, a video's poster and own file) are referenced by `fileId`; tables carry their model inline. |
 | `metadata?` | `DocumentMetadata` | Title, author and dates (also read from the markdown's YAML frontmatter). |
 | `continuation?` | `LayoutContinuation` | Counters, page numbering and parity carried over from the chapters before, for a book laid out chapter by chapter. |

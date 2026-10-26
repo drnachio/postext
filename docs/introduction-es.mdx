@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introducción',
   description: 'Qué es Postext, por qué existe y el problema que resuelve',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '7 min',
   order: 1,
   plainSummary: "Postext es un programa libre y gratuito que compone las páginas de libros, revistas e informes en la web. Los libros impresos siguen desde hace siglos reglas de maquetación muy cuidadas, como igualar las columnas o poner cada imagen cerca del texto que la menciona. Las páginas web nunca han tenido esas reglas, y Postext las añade. Tú escribes el texto y Postext coloca en la página cada línea, imagen y nota. Esta página cuenta por qué existe el proyecto y cómo empezó.",
@@ -182,9 +182,10 @@ El proceso tiene tres etapas:
    una tipografía seleccionable en la web que responde a los cambios de tamaño (`renderToHtml`,
    `renderToHtmlIndexed`), **PDF** para una salida lista para imprenta, con las fuentes incrustadas
    (`renderToPdf`, del paquete `postext-pdf`), **EPUB 3** para los lectores de libros electrónicos
-   (`renderToEpub`, de `postext-epub`) y un **libro en 3D** cuyas hojas se pasan en el navegador
-   (`createFolioFromDocument`, de `postext-folio`). Todas las salidas se dibujan a partir de la misma
-   maquetación.
+   (`renderToEpub`, de `postext-epub`), paquetes **SCORM** con ejercicios que envían sus resultados a
+   una plataforma de aprendizaje (`renderToScorm`, de `postext-scorm`) y un **libro en 3D** cuyas
+   hojas se pasan en el navegador (`createFolioFromDocument`, de `postext-folio`). Todas las salidas
+   se dibujan a partir de la misma maquetación.
 
 <Illustration name="LayoutProcess" data='{"title": "Maquetación en tres etapas", "desc": "El Markdown enriquecido y la configuración entran en el motor, que maqueta en varias pasadas, con la medición de Pretext dentro, y genera el HTML o el PDF.", "caption": "Entra contenido y sale geometría, que después se convierte al formato de destino.", "inputTitle": "Markdown enriquecido", "inputSubtitle": "+ configuración", "parse": "analizar", "engineTitle": "Motor Postext", "engineSub1": "medición con Pretext", "engineSub2": "maquetación en varias pasadas", "render": "generar", "outputTitle": "HTML / PDF", "outputSubtitle": "salida generada"}' />
 
@@ -194,8 +195,9 @@ proceso en varias pasadas y el bucle de convergencia), consulta
 configuración, desde la geometría de la página hasta el estilo de tablas, pies de figura y
 diagramas, está en [Configuración](/es/docs/configuration). Y para probarlo todo en directo (un
 editor para el texto de cada capítulo, un panel **Recursos** con editor de tablas y subida de
-imágenes y SVG, un panel **Diseño** que recorre todos los ajustes en términos editoriales y vistas
-previas en vivo en canvas, PDF, Folio (3D), HTML y EPUB), abre el [Sandbox](/es/docs/sandbox).
+imágenes y SVG, un panel **Diseño** que recorre todos los ajustes en términos editoriales, vistas
+previas en vivo en canvas, PDF, Folio (3D), HTML y EPUB, y una exportación a SCORM), abre el
+[Sandbox](/es/docs/sandbox).
 
 
 ## Reconocimientos

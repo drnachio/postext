@@ -2216,6 +2216,8 @@
     "balanceGridOffNote": "Die Seite ist auf einem Zeichenraster gesetzt, auf dem Spalten nur ausgeglichen werden, wenn Sie den Ausgleich einschalten: Eine kurze Spalte bleibt kurz.",
     "balanceMaxTracking": "Max. Laufweite (‰ em)",
     "balanceMaxTrackingTooltip": "Obergrenze dieser Laufweite, in Tausendstel em je Zeichen (10 = 0,01 em, die übliche redaktionelle Toleranz)",
+    "balanceFillShortColumns": "Kurze Spalten füllen",
+    "balanceFillShortColumnsTooltip": "Füllt eine Spalte, die die Regeln gegen Hurenkinder und Schusterjungen eine Zeile zu kurz gelassen haben, mit ihren eigenen Absätzen: Ein Absatz läuft eine Zeile länger, ohne den größten Wortabstand zu überschreiten, oder einer wird eine Zeile kürzer gesetzt, damit der Umbruch danach sie aufnimmt. Bleibt nur, wenn die Seiten danach weniger kurze Spalten haben",
     "zoomIn": "Vergrößern",
     "zoomOut": "Verkleinern",
     "fitWidth": "An Seitenbreite anpassen",

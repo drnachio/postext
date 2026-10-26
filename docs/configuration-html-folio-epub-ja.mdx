@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'HTML、Folio、EPUB、SCORM',
   description: '組み上がった本をWebページに入れる方法、postext-folioで3Dの本にする方法、postext-epubで固定レイアウトまたはリフロー型のEPUB 3にする方法、postext-scormでLMS向けのSCORMパッケージにする方法',
   lang: 'ja',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-10-26',
   readingTime: '18分',
   order: 23,
   parent: 'configuration',
@@ -186,6 +186,7 @@ export function PostextHtmlViewer({
 - **差分の部分更新**：`renderToHtmlIndexed`は`pages[i].blocks`を返し、各ブロックには安定した`id`と、ブロックの外側のHTMLがあります。2回の描画の間で変わったブロックが少なければ、`innerHTML`を作り直さずに、そのブロックのラッパーだけをその場で置き換えられます。
 - **オーバーレイ**：各`.pt-page`の上に絶対配置のSVGを重ね、カーソル、選択範囲、ベースライングリッドを表示します。
 - **リンク**：Markdownのリンクの語は`<a href="…" rel="noopener noreferrer">`で包まれ、テキストの色を受け継ぎ、下線は付きません。[文書形式 › リンク](/ja/docs/document-format-inline#リンク)を参照してください。エディターのようなビューアーでは、`#`で始まらない`a[href]`のクリックを横取りし、新しいタブで開いてください（`:ref`のアンカーは文書内にリンクします）。
+- **答えられる練習問題**：`:::exercise`ブロックを含む文書のHTMLは、練習問題のデータを`<script type="application/json" class="pt-exercises">`に収めますが、答えるためのコードは含みません。操作部品を付けるのは、そのHTMLを表示するページです。マークアップを配置したら、それを含む要素（またはシャドウルート）に対して`postext`の`attachExercises(root, options?)`を呼び出し、マークアップを置き換える前に、その戻り値の関数を呼んでください。`attachExercises`は入力欄、切り替え、「答え合わせ」「解答を見る」「やり直す」のボタン列をページの上に重ね、専用のスタイルシートを追加します。`storageKey`は答えを保存するときの本と章の名前、`store`は答えを`localStorage`以外に保存する場所です（`getItem`、`setItem`、`removeItem`を持つものなら何でもかまいません）。`onResult(result)`は答え合わせ、やり直し、解答の表示のたびに呼ばれ、得点（`total`問中`right`問正解）と採点した各答えを受け取ります。`renderToHtmlIndexed`のブロックを差し替えるホストは、インデックスの`exercises`を`data`として渡します。`EXERCISE_SCRIPT`は同じコードを単体のスクリプトにしたもので、呼び出すホストページのないHTMLファイルに使います。[HTML と EPUB の練習問題](/ja/docs/exercises#html-と-epub-の練習問題)を参照してください。
 - **単色の図**：`diagramStyle.singleInk`を有効にすると、SVGの`<img>`にCSSフィルターが掛かります。すでに色を変えてあるURLには`singleInk: false`を渡してください。[CanvasとHTMLでの単色刷り](/ja/docs/configuration-resources#canvasとhtmlでの単色刷り)を参照してください。
 - **組版ページと漫画ページを印刷用の紙面で**：画面幅でスクロールの高さがあるページでは、組版ページ（`::::page{template}`）の地に固定したフレームがスクロールの最下部に来てしまいます。組むときの設定に`composedViewerLeaf: { width, height, margins? }`（印刷ページの寸法と余白）を渡すと、組版ページはその寸法のページに印刷どおりの配置で組まれ、それを画面に合わせて拡大縮小できます（postext 1.47以降）。`comics.viewerLeaf`は漫画ページに同じことを行い、`fitWidth` pxに縮尺します（[漫画](/ja/docs/configuration-comics)を参照）。どちらもホスト向けの設定で、SandboxのHTMLビューアーが設定し、文書と一緒に保存されることはありません。
 

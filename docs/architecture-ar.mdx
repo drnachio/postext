@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'البنية',
   description: 'البنية التقنية لمحرّك الإخراج في Postext: مفاهيمه، وشجرة المستند، والإيقاع العمودي، والمُخرِجات، والأداء',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '27 دقيقة',
   order: 2,
   plainSummary: "تشرح هذه الصفحة كيف يعمل Postext من الداخل، وهي مكتوبة للمبرمجين. أولًا يقيس Postext كل كلمة دون أن يرسم شيئًا على الشاشة، وهذا يجعله سريعًا جدًا. ثم يحسب موضع كل سطر وكل صورة وكل عمود، ويحفظ هذه الخطة في الذاكرة. وأخيرًا يرسم الصفحات الجاهزة صفحةَ ويب أو صورةً مرسومة في المتصفح أو ملف PDF. وحين تغيّر كلمة، يُخرج الصفحات من جديد ويعيد استعمال قياسات الفقرات التي لم تتغيّر. وتشرح الصفحة التالية خطوةً خطوة كيف توضع الأسطر والصور.",
@@ -451,6 +451,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (from 'postext-epub'), a book's chapters in order
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (from 'postext-scorm'), the EPUB writer's content as a package for an LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 ولأن البيانات الثنائية للموارد تُحفظ خارج الشجرة، يحلّ كل مُخرِج معرّفات `fileId` بطريقته. يحتفظ مُخرِج Canvas بسجلّ لكائنات `CanvasImageSource` المفكوكة: يسجّل التطبيق المضيف كل صورة نقطية أو SVG مرة واحدة باستدعاء `registerResourceImage(fileId, image)`، ويبحث عنها المُخرِج وقت الرسم. أما مُخرِج HTML فيتلقى في خياراته دالة الحلّ `resourceImageUrl(fileId)`، ويُصدر وسوم `<img>` تشير إلى أي عناوين URL يعيدها المضيف (عناوين كائنات، أو data URI، أو مسارات CDN). ويتلقى مُخرِج PDF مزوّدًا `resourceBytes` ويضمّن البايتات الفعلية؛ ويتلقى كاتب EPUB مزوّدًا مماثلًا ويخزّن كل صورة مرة واحدة ملفًّا من ملفات الكتاب. ويُرسم مورد الفيديو بصورة غلافه، وهي صورة نقطية كغيرها؛ ويتلقى مُخرِج HTML أيضًا دالة الحلّ `resourceVideoUrl(fileId)` لملفات الفيديو التي يشغّلها، ويخزّن كاتب EPUB هذه الملفات تحت `media/`. ويرسم مُخرِج PDF علامة التشغيل ورمز QR مسارات متجهية فوق الغلاف، وإذا كان `video.linkPoster` مفعّلًا وضع فوقه تعليق رابط URI يفتح `video.link`؛ وفي ملف PDF الموسوم ينضمّ الرابط إلى عنصر `Figure` الخاص بالغلاف، ويبدأ نصّه البديل باسم النوع (*فيديو: …*). ولا تحتاج موارد الجداول إلى شيء من هذا، فنموذجها مضمّن، وكل مُخرِج يرسم الخلايا من هندسة الجدول في VDT.
@@ -494,6 +497,12 @@ renderToEpub(docs, options): Promise<Uint8Array>;
       <td><strong>متاح</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>يستهلك VDT المقيسة سلفًا بواسطة Pretext</td>
+      <td>ملف zip بصيغة SCORM 1.2 أو 2004 لنظام إدارة التعلم: صفحات كاتب EPUB أو نصه في HTML5، ومشغّل لكل SCO، وتمارين ترسل درجتها وإكمالها ونجاحها أو رسوبها (<code>renderToScorm</code> في <code>postext-scorm</code>)</td>
+      <td><strong>متاح</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong> (عارض ثلاثي الأبعاد)</td>
       <td>يستهلك VDT المقيسة مسبقًا بـPretext</td>
       <td>يرسم مُخرِج Canvas كل صفحة (<code>renderPageToCanvas</code>) وتُعرض نسيجًا (texture) لورقة في three.js، حول الصفحتين المفتوحتين وحدهما (<code>createFolioFromDocument</code> في <code>postext-folio</code>)</td>
@@ -508,7 +517,7 @@ renderToEpub(docs, options): Promise<Uint8Array>;
   </tbody>
 </table>
 
-تستهلك المُخرِجات الأربعة وعارض Folio `VDTDocument` نفسها. والفصل بين `postext` (التي تصدّر مُخرِجَي Canvas وHTML) و`postext-pdf` (التي تصدّر مُخرِج PDF) سببه الاعتماديات وحدها: فمسار PDF يجلب `pdf-lib` و`@pdf-lib/fontkit`، ومعظم عمليات التكامل على الويب لا تحتاج إليهما. ثبّت `postext-pdf` فقط حين تريد فعلًا إصدار بايتات PDF. و`postext-epub` حزمة مستقلة للسبب نفسه، ولا حاجة إليها إلا في الكتب الإلكترونية. وسطر الأوامر ليس مُخرِجًا خامسًا: `postext-cli` يشغّل هذه الكاتبات نفسها حيث لا متصفح. ولا ملفات Word كذلك: تكتب `postextToDocx` (من `postext/word`) فصول Markdown وأنماطها في ملف `.docx` دون إخراج، وتقرؤه `readDocx` مع `wordToPostext` من جديد Markdown.
+تستهلك المُخرِجات الأربعة وعارض Folio `VDTDocument` نفسها. والفصل بين `postext` (التي تصدّر مُخرِجَي Canvas وHTML) و`postext-pdf` (التي تصدّر مُخرِج PDF) سببه الاعتماديات وحدها: فمسار PDF يجلب `pdf-lib` و`@pdf-lib/fontkit`، ومعظم عمليات التكامل على الويب لا تحتاج إليهما. ثبّت `postext-pdf` فقط حين تريد فعلًا إصدار بايتات PDF. و`postext-epub` حزمة مستقلة للسبب نفسه، ولا حاجة إليها إلا في الكتب الإلكترونية؛ و`postext-scorm` مبنية عليها، تحزم ما يكتبه كاتب EPUB لمنصات التعلم، فليست مُخرِجًا قائمًا بذاته. وسطر الأوامر ليس مُخرِجًا خامسًا: `postext-cli` يشغّل هذه الكاتبات نفسها حيث لا متصفح. ولا ملفات Word كذلك: تكتب `postextToDocx` (من `postext/word`) فصول Markdown وأنماطها في ملف `.docx` دون إخراج، وتقرؤه `readDocx` مع `wordToPostext` من جديد Markdown.
 
 **أين يعمل الإخراج:** يقيس المحرّك النص على Canvas، فيعمل حيثما وجد Canvas يقيس عليه. في المتصفح يمكن تشغيل خط المعالجة (pipeline) إما على الخيط الرئيسي (`buildDocument`) أو داخل Web Worker مخصّص (`createLayoutWorker` من `postext/worker`)، ومسار العامل هو طريقة التكامل الموصى بها للتطبيقات التي تقودها واجهة المستخدم، لأنه يُبعد القياس وتمريرات التوزيع عن الخيط الرئيسي، ويدعم الإلغاء الذي يُبقي أحدث طلب وحده (last-wins) عبر `AbortSignal`، ويملك ذاكرته المؤقتة الخاصة للقياس وذاكرة مؤقتة لصور المعادلات النقطية، فتبقى عمليات إعادة البناء المتتالية رخيصة. انظر [الإعدادات › تشغيل الإخراج في Web Worker](/ar/docs/configuration-programmatic-usage#تشغيل-الإخراج-في-web-worker) لنمط التكامل الكامل. وخارج المتصفح يشغّل [سطر الأوامر](/ar/docs/command-line) خط المعالجة نفسه، ويقوم فيه Skia مقام Canvas المتصفح، فيتوزّع الكتاب على الصفحات نفسها في الطرفية أو في برنامج نصي أو على خادم بناء.
 

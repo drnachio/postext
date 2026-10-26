@@ -1,6 +1,6 @@
 # postext-sandbox
 
-Interactive sandbox UI for experimenting with the [Postext](https://postext.dev/) layout engine: the [Sandbox](https://postext.dev/en/sandbox) of postext.dev, with its books and chapters, Markdown editor, Design, Resources, Fonts and Checks panels, and Canvas, PDF, Folio, HTML and EPUB 3 previews.
+Interactive sandbox UI for experimenting with the [Postext](https://postext.dev/) layout engine: the [Sandbox](https://postext.dev/en/sandbox) of postext.dev, with its books and chapters, Markdown editor, Design, Resources, Fonts and Checks panels, Canvas, PDF, Folio, HTML and EPUB 3 previews (with the book's exercises answerable in the HTML and EPUB tabs), and a SCORM tab that packages the chapters and sections you pick for a learning platform.
 
 ## Install
 

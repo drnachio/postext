@@ -3631,6 +3631,8 @@
     "balanceGridOffNote": "La página está compuesta sobre una retícula de caracteres, donde las columnas no se equilibran salvo que actives el equilibrado: una columna corta se queda corta.",
     "balanceMaxTracking": "Espaciado entre letras máx. (‰ em)",
     "balanceMaxTrackingTooltip": "Límite de ese espaciado entre letras, en milésimas de eme por carácter (10 = 0,01 em, la tolerancia editorial habitual)",
+    "balanceFillShortColumns": "Llenar columnas cortas",
+    "balanceFillShortColumnsTooltip": "Llena con sus propios párrafos una columna que las reglas de viudas y huérfanas dejaron una línea corta: un párrafo ocupa una línea más sin pasar del espacio máximo entre palabras, o uno se compone con una línea menos para que el corte siguiente la recoja. Solo se conserva si las páginas acaban con menos columnas cortas",
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
     "fitWidth": "Ajustar al ancho",

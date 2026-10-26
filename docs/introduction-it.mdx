@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Introduzione',
   description: 'Che cos’è Postext, perché esiste e quale problema risolve',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '7 min',
   order: 1,
   plainSummary: "Postext è un software libero che impagina libri, riviste e relazioni sul web. Da secoli i libri stampati seguono regole di impaginazione precise, come tenere le colonne della stessa altezza e mettere le immagini vicino al testo che ne parla. Le pagine web non hanno mai avuto queste regole, e Postext le aggiunge. Tu scrivi il testo e Postext colloca sulla pagina ogni riga, ogni immagine e ogni nota. Questa pagina spiega perché il progetto esiste e come è nato.",
@@ -172,7 +172,8 @@ Il processo ha tre fasi:
    precisa al pixel (`renderToCanvas`, `renderPage`), **HTML** per una tipografia selezionabile e sensibile al ridimensionamento
    sul web (`renderToHtml`, `renderToHtmlIndexed`), **PDF** per un output pronto per la stampa con i font
    incorporati (`renderToPdf`, dal pacchetto `postext-pdf`), **EPUB 3** per i lettori di ebook
-   (`renderToEpub`, da `postext-epub`) e un **libro in 3D** che si sfoglia nel browser
+   (`renderToEpub`, da `postext-epub`), **pacchetti SCORM** i cui esercizi inviano i risultati a una
+   piattaforma di apprendimento (`renderToScorm`, da `postext-scorm`) e un **libro in 3D** che si sfoglia nel browser
    (`createFolioFromDocument`, da `postext-folio`). Tutti gli output nascono dalla stessa impaginazione.
 
 <Illustration name="LayoutProcess" data='{"title": "Impaginazione in tre fasi", "desc": "Il Markdown arricchito e la configurazione entrano nel motore, che misura il testo con Pretext, lo impagina in più passate e produce HTML o PDF.", "caption": "Contenuto in ingresso, geometria in uscita, poi il rendering nel formato di destinazione.", "inputTitle": "Markdown arricchito", "inputSubtitle": "+ configurazione", "parse": "analisi", "engineTitle": "Motore Postext", "engineSub1": "misurazione Pretext all’interno", "engineSub2": "impaginazione in più passate", "render": "rendering", "outputTitle": "HTML / PDF", "outputSubtitle": "output finale"}' />
@@ -182,7 +183,7 @@ e il ciclo di convergenza) leggi il documento [Architettura](/it/docs/architectu
 completo di ogni opzione di configurazione, dalla geometria della pagina allo stile di tabelle, didascalie e
 diagrammi, vedi la pagina [Configurazione](/it/docs/configuration). E per provare tutto dal vivo (un
 editor di testo per capitolo, un pannello Risorse con un editor di tabelle e il caricamento di immagini e SVG, un pannello Grafica
-che presenta ogni impostazione in termini editoriali, e le anteprime in tempo reale in canvas, PDF, Folio (3D), HTML ed EPUB) apri
+che presenta ogni impostazione in termini editoriali, le anteprime in tempo reale in canvas, PDF, Folio (3D), HTML ed EPUB e un’esportazione SCORM) apri
 la [Sandbox](/it/docs/sandbox).
 
 

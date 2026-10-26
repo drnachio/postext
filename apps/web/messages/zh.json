@@ -2215,6 +2215,8 @@
     "balanceGridOffNote": "本页排在字格上：除非你开启各栏齐底，否则短栏保持原样。",
     "balanceMaxTracking": "最大字距（‰ em）",
     "balanceMaxTrackingTooltip": "该字距的上限，单位为每字符千分之一em（10＝0.01 em，书刊排版常用的容差）",
+    "balanceFillShortColumns": "填满短栏",
+    "balanceFillShortColumnsTooltip": "用本栏自己的段落填满被孤行、寡行规则留短一行的栏：让一段多排一行（字间距不超过上限），或把一段少排一行，让其后的断栏接住这一行。只有当页面的短栏因此变少时才保留",
     "zoomIn": "放大",
     "zoomOut": "缩小",
     "fitWidth": "适合页宽",

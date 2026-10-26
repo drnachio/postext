@@ -2212,6 +2212,8 @@
     "balanceGridOffNote": "A página está composta numa grade de caracteres, onde as colunas não são equilibradas a menos que você ative o equilíbrio: uma coluna curta fica curta.",
     "balanceMaxTracking": "Tracking máx. (‰ em)",
     "balanceMaxTrackingTooltip": "Limite superior desse tracking, em milésimos de em por caractere (10 = 0,01 em, a tolerância editorial usual)",
+    "balanceFillShortColumns": "Preencher colunas curtas",
+    "balanceFillShortColumnsTooltip": "Preenche com os próprios parágrafos uma coluna que as regras de viúvas e órfãs deixaram uma linha curta: um parágrafo ganha uma linha sem passar do espaçamento máximo entre palavras, ou um é composto com uma linha a menos para que a quebra seguinte a receba. Só é mantido se as páginas terminam com menos colunas curtas",
     "zoomIn": "Ampliar",
     "zoomOut": "Reduzir",
     "fitWidth": "Ajustar à largura da página",

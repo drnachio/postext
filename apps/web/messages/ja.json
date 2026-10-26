@@ -2215,6 +2215,8 @@
     "balanceGridOffNote": "このページは文字グリッドで組まれているため、段末そろえをオンにしないかぎり段はそろえません。短い段は短いままです。",
     "balanceMaxTracking": "トラッキングの上限（‰ em）",
     "balanceMaxTrackingTooltip": "このトラッキングの上限です。1文字あたりemの1000分の1単位で指定します（10 = 0.01 em、編集上の一般的な許容範囲）。",
+    "balanceFillShortColumns": "短い段を埋める",
+    "balanceFillShortColumnsTooltip": "ウィドウ・オーファンの規則で1行短く残った段を、その段自身の段落で埋めます。語間の上限を超えずに段落を1行長く組むか、1つを1行短く組んで次の段との分割にその行を引き受けさせます。短い段が減る場合にだけ採用されます。",
     "zoomIn": "拡大",
     "zoomOut": "縮小",
     "fitWidth": "ページ幅に合わせる",

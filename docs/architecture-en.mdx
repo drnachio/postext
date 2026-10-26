@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Technical architecture of the Postext layout engine: its concepts, the document tree, rhythm, backends and performance',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '26 min',
   order: 2,
   plainSummary: "This page explains how Postext works inside, and it is written for programmers. First, Postext measures every word without drawing anything on screen, which makes it very fast. Then it works out where every line, picture and column goes, and keeps that plan in memory. Last, it draws the finished pages as a web page, a canvas image or a PDF file. When you change a word, it lays the pages out again and reuses the measurements of the paragraphs that did not change. The next page explains, step by step, how the lines and pictures are placed.",
@@ -452,6 +452,9 @@ renderToPdf(doc, options): Promise<Uint8Array>;
 
 // EPUB (from 'postext-epub'), a book's chapters in order
 renderToEpub(docs, options): Promise<Uint8Array>;
+
+// SCORM (from 'postext-scorm'), the EPUB writer's content as a package for an LMS
+renderToScorm(docs, options): Promise<Uint8Array>;
 ```
 
 Because binary resource payloads live out-of-band, each backend resolves `fileId`s its own way. The canvas backend keeps a registry of decoded `CanvasImageSource`s — the host app registers each bitmap or SVG once with `registerResourceImage(fileId, image)` and the renderer looks it up at draw time. The HTML backend takes a `resourceImageUrl(fileId)` resolver in its options and emits `<img>` tags pointing at whatever URLs (object URLs, data URIs, CDN paths) the host returns. The PDF backend receives a `resourceBytes` provider and embeds the actual bytes; the EPUB writer takes one too and stores each picture once as a file of the book. A video resource is drawn as its poster, a bitmap like any other; the HTML backend also takes a `resourceVideoUrl(fileId)` resolver for the video files it plays, and the EPUB writer stores those files under `media/`. The PDF backend draws the play mark and the QR code as vector paths over the poster and, when `video.linkPoster` is on, puts a URI link annotation over it that opens `video.link`; in a tagged PDF the link joins the poster's `Figure`, whose alternate text starts with the type's name (*Video: …*). Table resources need none of this — their model is inline, and every backend draws the cells from the VDT's table geometry.
@@ -495,6 +498,12 @@ Because binary resource payloads live out-of-band, each backend resolves `fileId
       <td><strong>Shipping</strong></td>
     </tr>
     <tr>
+      <td><strong>SCORM</strong></td>
+      <td>Consumes the VDT already measured with Pretext</td>
+      <td>A SCORM 1.2 or 2004 zip for a learning management system: the EPUB writer's pages or text as HTML5, a player per SCO, and exercises that report their score, completion and pass or fail (<code>renderToScorm</code> in <code>postext-scorm</code>)</td>
+      <td><strong>Shipping</strong></td>
+    </tr>
+    <tr>
       <td><strong>Folio</strong> (3D viewer)</td>
       <td>Consumes the VDT already measured with Pretext</td>
       <td>Each page painted by the canvas backend (<code>renderPageToCanvas</code>) and shown as the texture of a three.js leaf, only around the open spread (<code>createFolioFromDocument</code> in <code>postext-folio</code>)</td>
@@ -509,7 +518,7 @@ Because binary resource payloads live out-of-band, each backend resolves `fileId
   </tbody>
 </table>
 
-The four backends and the Folio viewer consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes. `postext-epub` is a package of its own for the same reason, and is needed only for e-books. The command line is not a fifth backend: `postext-cli` runs these same writers where there is no browser. Word files are not one either: `postextToDocx` (from `postext/word`) writes the Markdown chapters and their styles to a `.docx`, with no layout, and `readDocx` with `wordToPostext` reads one back into Markdown.
+The four backends and the Folio viewer consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes. `postext-epub` is a package of its own for the same reason, and is needed only for e-books; `postext-scorm` builds on it, packaging the EPUB writer's content for learning platforms, so it is no backend of its own. The command line is not a fifth backend: `postext-cli` runs these same writers where there is no browser. Word files are not one either: `postextToDocx` (from `postext/word`) writes the Markdown chapters and their styles to a `.docx`, with no layout, and `readDocx` with `wordToPostext` reads one back into Markdown.
 
 **Where layout runs:** The engine measures text on a canvas, so it runs wherever it is given one. In a browser the pipeline runs either on the main thread (`buildDocument`) or inside a dedicated Web Worker (`createLayoutWorker` from `postext/worker`) — the worker path is the recommended integration for UI-driven apps because it keeps measurement and the placement passes off the main thread, supports last-wins cancellation via `AbortSignal`, and owns its own measurement cache and math raster cache so successive rebuilds stay cheap. See [Configuration → Running layout in a Web Worker](/en/docs/configuration-programmatic-usage#running-layout-in-a-web-worker) for the full integration pattern. Outside a browser, the [command line](/en/docs/command-line) runs the same pipeline with Skia standing in for the browser's canvas, so a book breaks into the same pages in a terminal, a script or a build server.
 

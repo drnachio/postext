@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'はじめに',
   description: 'Postextとは何か、なぜ作られたのか、どんな問題を解決するのか',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-26',
   readingTime: '8分',
   order: 1,
   plainSummary: "Postextは、本や雑誌、報告書のページをWebで組むための無料のソフトウェアです。印刷された本は何百年も前から、段の高さをそろえる、図をそれに言及した文章の近くに置く、といった細かな決まりに従って組まれてきました。Webページにはこうした決まりがなく、Postextがそれを加えます。文章を書けば、行も図も注も、Postextがページの上に置いてくれます。このページでは、このプロジェクトが生まれた理由といきさつを説明します。",
@@ -111,11 +111,11 @@ Pretextは寸法を与え、Postextはレイアウトを与えます。
 
 2. **エンジンが判断する**。Postextはコンテンツを解析し、Pretextを呼んでDOMに触れずにピクセル単位で正確にテキストを測り、そのうえで複数パスのレイアウト処理を実行します。段末そろえ、リソースの番号付けとフロート配置、ウィドウとオーファンの防止、ベースラインの整列、アキの調整です。すべての判断は設定によって決まります。ページとレイアウトの幾何、本文と見出し、そして表のセルの文字組みを決める`tableStyle`、図のキャプションを決める`captionStyle`、`diagramStyle`の`singleInk`です。これは特色1色の印刷に向けて、SVGの図を輝度に応じた1色のインクの濃淡に塗り替えます。規則を決めるのはあなたで、エンジンはそれを適用します。
 
-3. **完成したレイアウトを受け取る**。すべてのページのすべての要素について、正確な座標と寸法が得られます。レンダラーはこの幾何情報を目的の形式に変換します。ピクセル単位で正確なビットマップのプレビューには**canvas**（`renderToCanvas`、`renderPage`）、Webで選択でき、サイズ変更に追従する文字組みには**HTML**（`renderToHtml`、`renderToHtmlIndexed`）、フォントを埋め込んだ印刷用の出力には**PDF**（`postext-pdf`パッケージの`renderToPdf`）、電子書籍リーダー向けには**EPUB 3**（`postext-epub`の`renderToEpub`）、ブラウザーでページをめくる**3Dの本**には`postext-folio`の`createFolioFromDocument`を使います。どの出力も同じレイアウトから描画されます。
+3. **完成したレイアウトを受け取る**。すべてのページのすべての要素について、正確な座標と寸法が得られます。レンダラーはこの幾何情報を目的の形式に変換します。ピクセル単位で正確なビットマップのプレビューには**canvas**（`renderToCanvas`、`renderPage`）、Webで選択でき、サイズ変更に追従する文字組みには**HTML**（`renderToHtml`、`renderToHtmlIndexed`）、フォントを埋め込んだ印刷用の出力には**PDF**（`postext-pdf`パッケージの`renderToPdf`）、電子書籍リーダー向けには**EPUB 3**（`postext-epub`の`renderToEpub`）、学習プラットフォーム向けには、練習問題の結果を報告する**SCORM**パッケージ（`postext-scorm`の`renderToScorm`）、ブラウザーでページをめくる**3Dの本**には`postext-folio`の`createFolioFromDocument`を使います。どの出力も同じレイアウトから描画されます。
 
 <Illustration name="LayoutProcess" data='{"title": "レイアウト処理の3段階", "desc": "拡張Markdownとその設定がエンジンに入ります。エンジンはPretextでテキストを測り、複数のパスでレイアウトして、HTMLまたはPDFを出力します。", "caption": "コンテンツを入れると幾何情報が得られ、それを目的の形式に描画します。", "inputTitle": "拡張Markdown", "inputSubtitle": "+ 設定", "parse": "解析", "engineTitle": "Postextエンジン", "engineSub1": "内部でPretextが測定", "engineSub2": "複数パスのレイアウト", "render": "描画", "outputTitle": "HTML / PDF", "outputSubtitle": "描画結果"}' />
 
-エンジンの内部、つまり仮想文書ツリー（Virtual Document Tree）、複数パスの処理、収束ループについて詳しくは[アーキテクチャー](/ja/docs/architecture)を参照してください。ページの幾何から表、キャプション、図のスタイルまで、すべての設定項目のリファレンスは[設定](/ja/docs/configuration)のページにあります。すべてをその場で試すには[Sandbox](/ja/docs/sandbox)（ブラウザーで動く編集環境）を開いてください。章のテキストエディター、表エディターと画像やSVGのアップロードを備えた**リソース**パネル、すべての設定を編集の言葉で見て回れる**デザイン**パネル、そしてcanvas、PDF、Folio（3D）、HTML、EPUBのライブプレビューがあります。
+エンジンの内部、つまり仮想文書ツリー（Virtual Document Tree）、複数パスの処理、収束ループについて詳しくは[アーキテクチャー](/ja/docs/architecture)を参照してください。ページの幾何から表、キャプション、図のスタイルまで、すべての設定項目のリファレンスは[設定](/ja/docs/configuration)のページにあります。すべてをその場で試すには[Sandbox](/ja/docs/sandbox)（ブラウザーで動く編集環境）を開いてください。章のテキストエディター、表エディターと画像やSVGのアップロードを備えた**リソース**パネル、すべての設定を編集の言葉で見て回れる**デザイン**パネル、canvas、PDF、Folio（3D）、HTML、EPUBのライブプレビュー、そしてSCORMの書き出しがあります。
 
 
 ## 謝辞
