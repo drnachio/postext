@@ -32,7 +32,7 @@
     "react",
     "web-worker"
   ],
-  "version": "1.63.0",
+  "version": "1.63.1",
   "type": "module",
   "license": "MIT",
   "homepage": "https://postext.dev/",
