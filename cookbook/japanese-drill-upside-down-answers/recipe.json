@@ -50,8 +50,8 @@
     "ja-locale-tag"
   ],
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0"
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0"
   },
   "kit": [
     "core",
@@ -132,8 +132,5 @@
     "chinese-exercise-book",
     "puzzle-page-upside-down-answers",
     "jukugo-furigana-textbook"
-  ],
-  "gaps": [
-    "readings-over-blanks"
   ]
 }

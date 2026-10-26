@@ -16,7 +16,7 @@ Dos unidades de un 练习册 de segundo de primaria en formato 16开: una de len
 
 ### 1 · Un estilo para todos los apartados
 
-El código está en [la respuesta corta](#la-respuesta-corta). Los apartados se cuentan con numerales chinos seguidos de un 、 de ancho completo, así que tras el número no va ningún espacio; el enunciado va en la letra Hei sin negrita, para que los puntos entre paréntesis se lean como parte de él. `options.bracket` escribe el （　） tras cada enunciado, y en el libro del profesor la letra correcta entra dentro. Los dos estilos pequeños amplían el principal: `pinyin` dibuja cada hueco como una caja tan ancha como su palabra y `kuohao` no dibuja nada, porque el paréntesis de 在（　）里填 ya está en el texto.
+El código está en [la respuesta corta](#la-respuesta-corta). Los apartados se cuentan con numerales chinos seguidos de un 、 de ancho completo, así que tras el número no va ningún espacio; el enunciado va en la letra Hei sin negrita, para que los puntos entre paréntesis se lean como parte de él. `options.bracket` escribe el （　） tras cada enunciado, y en el libro del profesor la letra correcta entra dentro. Los dos estilos pequeños amplían el principal: `pinyin` dibuja cada hueco como una caja tan ancha como su palabra e imprime encima la lectura de `[[{春天|chūn tiān}]]`, también en el libro del alumno, y `kuohao` no dibuja nada, porque el paréntesis de 在（　）里填 ya está en el texto.
 
 ### 2 · El libro del alumno y el del profesor con un solo texto
 
@@ -47,11 +47,10 @@ Sin líneas `:::solutions`, `chapterEnd` reúne las soluciones de cada unidad an
 +  solutions: { placement: edition === 'teacher' ? 'none' : 'chapterEnd' } });
 ```
 
-### Pon el pinyin sobre los caracteres
+### Da a cada palabra su 田字格
 
-<RecipeLink slug="pinyin-primer">La cartilla de pinyin</RecipeLink> pone el pinyin sobre sus caracteres como ruby, algo que un hueco todavía no admite.
+Una pregunta abierta con `cells="2 2 2 2"` pone un grupo de casillas para cada palabra bajo una línea de pinyin, como termina <RecipeLink slug="school-traditions-worksheet">la edición china de la ficha en diez tradiciones</RecipeLink>.
 
 ## Errores frecuentes
 
-- Una lectura todavía no puede ir sobre un hueco: un ruby dentro de `[[…]]` forma parte de la respuesta oculta, y una zona de 田字格 ocupa toda la medida. El apartado 看拼音写词语 pone cada sílaba en su propia línea y la caja debajo, cuatro por fila en un grupo `:::columns`.
 - La letra Kai solo compone las respuestas, así que carga únicamente los caracteres de los huecos y de las respuestas modelo; si compone algún carácter más, hay que añadirlo a ese texto.

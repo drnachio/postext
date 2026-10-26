@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 171 · A Chinese exercise book, pupil's and teacher's ═══
 // https://postext.dev/en/cookbook/chinese-exercise-book
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.59.0
+// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.63.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

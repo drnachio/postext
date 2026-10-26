@@ -50,8 +50,8 @@
     "arabic-fonts-subset"
   ],
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0"
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0"
   },
   "kit": [
     "core",

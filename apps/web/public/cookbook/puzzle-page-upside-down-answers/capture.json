@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "puzzle-page-upside-down-answers",
-  "sourceHash": "d3b573b7b44c84e13d7d0d45aac3182fb6d9e02cd71b27277831c9866e1ab85b",
+  "sourceHash": "a9ea7f40f5042b1e32f35ac8a9ba66fa19c3b0065002ade2d5ce74615214d583",
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0",
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-24T15:50:15.386Z",
+  "capturedAt": "2026-10-26T01:08:22.036Z",
   "variants": {
     "en": {
       "hash8": "face85ae",
-      "vdtHash": "22aa169a15a6d5931adae9b098de77643fc8a297",
+      "vdtHash": "027cc2d9d246484ca38f8a13f021b43bb2352dc5",
       "timings": {
-        "importMs": 10446,
-        "fontsMs": 245,
-        "buildMs": 71,
-        "totalMs": 18903,
+        "importMs": 283,
+        "fontsMs": 62,
+        "buildMs": 60,
+        "totalMs": 1050,
         "builds": 1
       },
       "specimen": {
@@ -94,8 +94,8 @@
         "chapters": [
           {
             "pages": 2,
-            "hash": "e54ad79d12b09617",
-            "lines": "466bc8d2cc023f9c"
+            "hash": "ce640b19da904d39",
+            "lines": "151417f8d2c314ee"
           }
         ]
       },
@@ -349,6 +349,11 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 2 −5‰ “Whale – calf · Seal – pup · Turtle – hatchling ·…”"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -363,12 +368,12 @@
     },
     "es": {
       "hash8": "e721a2eb",
-      "vdtHash": "493cf14653c6b18fbcd9c2b1754696f787baced7",
+      "vdtHash": "6ceb0e9ed91c35eace6e9dd7422255a0afde691a",
       "timings": {
-        "importMs": 6894,
-        "fontsMs": 436,
-        "buildMs": 85,
-        "totalMs": 10311,
+        "importMs": 219,
+        "fontsMs": 55,
+        "buildMs": 59,
+        "totalMs": 969,
         "builds": 1
       },
       "specimen": {
@@ -403,7 +408,7 @@
           "file": "p01.webp",
           "strip": "p01.s.webp",
           "bytes": 149834,
-          "alt": "Página de apertura 1: Pasatiem pos del arrecife."
+          "alt": "Página de apertura 1: Pasatiempos del arrecife."
         },
         {
           "n": 2,
@@ -445,8 +450,8 @@
         "chapters": [
           {
             "pages": 2,
-            "hash": "6e05bcb69b381848",
-            "lines": "221bdb1e456f8b60"
+            "hash": "f971646c97f71ecc",
+            "lines": "9d95fd74ae2f22b2"
           }
         ]
       },
@@ -689,6 +694,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

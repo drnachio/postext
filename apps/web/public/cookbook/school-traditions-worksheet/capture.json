@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "school-traditions-worksheet",
-  "sourceHash": "8a6f1c7a6bbcd235a908ec1afae83029e6beb1d2061a2a67cfa6928c12298901",
+  "sourceHash": "14809354cdb77212227e23e19f311a3a6adcaccd4f54ea4de0ec49ec56085a4f",
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0",
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-24T15:50:13.717Z",
+  "capturedAt": "2026-10-26T01:08:21.969Z",
   "variants": {
     "en": {
-      "hash8": "89d140be",
+      "hash8": "b9f1e3d5",
       "vdtHash": "21de764d0ec1044cb64b569bfdf163efc8221542",
       "timings": {
-        "importMs": 26078,
-        "fontsMs": 2146,
-        "buildMs": 154,
-        "totalMs": 32990,
+        "importMs": 30099,
+        "fontsMs": 82,
+        "buildMs": 67,
+        "totalMs": 30917,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -93,7 +93,7 @@
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 28836,
+        "bytes": 28873,
         "chapters": [
           {
             "pages": 2,
@@ -304,7 +304,7 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the pen took 33.0 s to finish (warning at 30 s)"
+            "detail": "the pen took 30.9 s to finish (warning at 30 s)"
           },
           {
             "check": "C26",
@@ -325,13 +325,13 @@
       }
     },
     "es": {
-      "hash8": "7b9aac57",
-      "vdtHash": "647f826ed80b01b819ed53e6b21e93c1005ba5d4",
+      "hash8": "dc12459a",
+      "vdtHash": "373bd972ab1623846aef201cef2be7e959f901b5",
       "timings": {
-        "importMs": 11319,
-        "fontsMs": 5523,
-        "buildMs": 98,
-        "totalMs": 22475,
+        "importMs": 337,
+        "fontsMs": 81,
+        "buildMs": 74,
+        "totalMs": 1095,
         "builds": 1
       },
       "specimen": {
@@ -352,7 +352,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -374,7 +374,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 46414,
+          "bytes": 47028,
           "alt": "Página 2."
         }
       ],
@@ -402,16 +402,16 @@
       },
       "pdf": {
         "file": "school-traditions-worksheet.pdf",
-        "bytes": 29815,
+        "bytes": 29816,
         "pages": 2
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 29136,
+        "bytes": 29171,
         "chapters": [
           {
             "pages": 2,
-            "hash": "11c56c080101dd34",
+            "hash": "e3d6798b640a8d31",
             "lines": "9043da3bcb8592eb"
           }
         ]
@@ -630,6 +630,11 @@
             "detail": "the hero is 7.3 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ca, fr, de, it, pt, zh, ja, ar"
@@ -643,13 +648,13 @@
       }
     },
     "ca": {
-      "hash8": "33231c84",
-      "vdtHash": "1a8e40a56cbe3bbf9c80bad9280b4869ec5ac96b",
+      "hash8": "f35e8a85",
+      "vdtHash": "4cd05aab204dd667f1562640c022bc0cd61895d0",
       "timings": {
-        "importMs": 16285,
-        "fontsMs": 223,
-        "buildMs": 92,
-        "totalMs": 21147,
+        "importMs": 456,
+        "fontsMs": 59,
+        "buildMs": 67,
+        "totalMs": 1333,
         "builds": 1
       },
       "specimen": {
@@ -670,7 +675,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -692,7 +697,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 45492,
+          "bytes": 45980,
           "alt": "Pàgina 2."
         }
       ],
@@ -720,16 +725,16 @@
       },
       "pdf": {
         "file": "school-traditions-worksheet.pdf",
-        "bytes": 29786,
+        "bytes": 29787,
         "pages": 2
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 29017,
+        "bytes": 29051,
         "chapters": [
           {
             "pages": 2,
-            "hash": "f09c9a902cbd5062",
+            "hash": "56a1fc05f0a8bc03",
             "lines": "b5b53830cc59da08"
           }
         ]
@@ -938,6 +943,11 @@
             "detail": "the hero is 7.4 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ca, en, es, fr, de, it, pt, zh, ja, ar"
@@ -951,13 +961,13 @@
       }
     },
     "zh": {
-      "hash8": "8e853bba",
-      "vdtHash": "e7eeb832db7aaa5229ef4788c3cfb369906e6ce0",
+      "hash8": "80eb842c",
+      "vdtHash": "7ad114298884c041a3c02e2d65601c1797297237",
       "timings": {
-        "importMs": 6391,
-        "fontsMs": 8088,
-        "buildMs": 15,
-        "totalMs": 18882,
+        "importMs": 214,
+        "fontsMs": 180,
+        "buildMs": 14,
+        "totalMs": 1240,
         "builds": 2
       },
       "specimen": {
@@ -978,7 +988,7 @@
           "Noto Serif SC"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -1000,7 +1010,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 30050,
+          "bytes": 29146,
           "alt": "第 2 页。"
         }
       ],
@@ -1028,17 +1038,17 @@
       },
       "pdf": {
         "file": "school-traditions-worksheet.pdf",
-        "bytes": 80735,
+        "bytes": 80577,
         "pages": 2
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 30048,
+        "bytes": 30082,
         "chapters": [
           {
             "pages": 2,
-            "hash": "b2db4bb48c6d77a4",
-            "lines": "28fd5359282601db"
+            "hash": "63af419fc10befab",
+            "lines": "e6a74919a47fc22b"
           }
         ]
       },
@@ -1190,6 +1200,7 @@
         "designElements": 8,
         "directives": [
           ":::exercise",
+          ":::columns",
           ":::solution",
           ":::paragraphs"
         ],
@@ -1219,6 +1230,7 @@
           }
         ],
         "features": [
+          "callout-columns",
           "cjk-line-breaking",
           "exercise-arithmetic",
           "exercise-choice",
@@ -1254,6 +1266,11 @@
             "detail": "the hero is 6.7 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: zh, en, es, ca, fr, de, it, pt, ja, ar"
@@ -1267,13 +1284,13 @@
       }
     },
     "ar": {
-      "hash8": "e5a17811",
+      "hash8": "7b040bdd",
       "vdtHash": "97275d11f80066d2a6c266f14a047b1a62b55c21",
       "timings": {
-        "importMs": 6024,
-        "fontsMs": 2218,
-        "buildMs": 94,
-        "totalMs": 15800,
+        "importMs": 432,
+        "fontsMs": 97,
+        "buildMs": 71,
+        "totalMs": 1308,
         "builds": 1
       },
       "specimen": {
@@ -1294,7 +1311,7 @@
           "Noto Naskh Arabic"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -1350,7 +1367,7 @@
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 27519,
+        "bytes": 27559,
         "chapters": [
           {
             "pages": 2,
@@ -1581,13 +1598,13 @@
       }
     },
     "ja": {
-      "hash8": "1f58e2d6",
+      "hash8": "f58d46b2",
       "vdtHash": "78f5abd0d4a13ccebaed1725bdf53a2bdf681ad3",
       "timings": {
-        "importMs": 8717,
-        "fontsMs": 7446,
-        "buildMs": 16,
-        "totalMs": 19033,
+        "importMs": 303,
+        "fontsMs": 381,
+        "buildMs": 13,
+        "totalMs": 1456,
         "builds": 2
       },
       "specimen": {
@@ -1608,7 +1625,7 @@
           "Noto Sans JP"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -1663,7 +1680,7 @@
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 31933,
+        "bytes": 31965,
         "chapters": [
           {
             "pages": 2,
@@ -1899,13 +1916,13 @@
       }
     },
     "pt": {
-      "hash8": "99ddcc4e",
-      "vdtHash": "4cb857244acd62ebcc84cf4878728e4a905bc66e",
+      "hash8": "5e6e335a",
+      "vdtHash": "98590b223628fc4572b86cfcd52c9e2fa0f258ca",
       "timings": {
-        "importMs": 13012,
-        "fontsMs": 621,
-        "buildMs": 89,
-        "totalMs": 17408,
+        "importMs": 409,
+        "fontsMs": 75,
+        "buildMs": 72,
+        "totalMs": 1212,
         "builds": 1
       },
       "specimen": {
@@ -1926,7 +1943,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -1937,7 +1954,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 51770,
+          "bytes": 51758,
           "alt": "Página de abertura 1: A viagem da água."
         },
         {
@@ -1976,17 +1993,17 @@
       },
       "pdf": {
         "file": "school-traditions-worksheet.pdf",
-        "bytes": 27529,
+        "bytes": 27505,
         "pages": 2
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 28785,
+        "bytes": 28821,
         "chapters": [
           {
             "pages": 2,
-            "hash": "796fb6e8d01a914a",
-            "lines": "67f86bd4a7f5f3e0"
+            "hash": "83af4309717c245b",
+            "lines": "f81d40566fbe1aac"
           }
         ]
       },
@@ -2062,6 +2079,7 @@
           "exerciseStyles[].options.marker",
           "exerciseStyles[].trueFalse",
           "exerciseStyles[].trueFalse.look",
+          "exerciseStyles[].trueFalse.place",
           "footer",
           "footer.elements",
           "footer.elements[].align",
@@ -2128,7 +2146,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 192,
+        "configLeaves": 193,
         "designElements": 8,
         "directives": [
           ":::exercise",
@@ -2195,6 +2213,11 @@
             "detail": "the hero is 7.4 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, ca, fr, de, it, zh, ja, ar"
@@ -2208,13 +2231,13 @@
       }
     },
     "fr": {
-      "hash8": "2ae8e56d",
+      "hash8": "f6b71c16",
       "vdtHash": "484b7705c4cdf2e7f5b3f4a48deeacb2ff9aef5a",
       "timings": {
-        "importMs": 16473,
-        "fontsMs": 229,
-        "buildMs": 90,
-        "totalMs": 20777,
+        "importMs": 462,
+        "fontsMs": 56,
+        "buildMs": 66,
+        "totalMs": 1323,
         "builds": 1
       },
       "specimen": {
@@ -2235,7 +2258,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -2290,7 +2313,7 @@
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 29611,
+        "bytes": 29645,
         "chapters": [
           {
             "pages": 2,
@@ -2516,13 +2539,13 @@
       }
     },
     "de": {
-      "hash8": "bb9e3304",
+      "hash8": "8572bc36",
       "vdtHash": "01a4a180202fe32e0ee687695ad6e672b7bc40b4",
       "timings": {
-        "importMs": 10100,
-        "fontsMs": 3386,
-        "buildMs": 115,
-        "totalMs": 19664,
+        "importMs": 217,
+        "fontsMs": 101,
+        "buildMs": 69,
+        "totalMs": 1143,
         "builds": 1
       },
       "specimen": {
@@ -2543,7 +2566,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -2598,7 +2621,7 @@
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 30718,
+        "bytes": 30752,
         "chapters": [
           {
             "pages": 2,
@@ -2824,13 +2847,13 @@
       }
     },
     "it": {
-      "hash8": "60ce0ae6",
-      "vdtHash": "2291a918e36dc0a3478a90d4b36d7e90eafb1587",
+      "hash8": "c767a5e5",
+      "vdtHash": "68a75fb2469952d91e241539d4da2e94f016162c",
       "timings": {
-        "importMs": 11750,
-        "fontsMs": 1752,
-        "buildMs": 102,
-        "totalMs": 19579,
+        "importMs": 410,
+        "fontsMs": 69,
+        "buildMs": 72,
+        "totalMs": 1187,
         "builds": 1
       },
       "specimen": {
@@ -2851,7 +2874,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 154
+        "ownLines": 156
       },
       "pages": [
         {
@@ -2873,7 +2896,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 46156,
+          "bytes": 46630,
           "alt": "Pagina 2."
         }
       ],
@@ -2901,16 +2924,16 @@
       },
       "pdf": {
         "file": "school-traditions-worksheet.pdf",
-        "bytes": 29297,
+        "bytes": 29295,
         "pages": 2
       },
       "sandbox": {
         "file": "school-traditions-worksheet.postext",
-        "bytes": 29713,
+        "bytes": 29747,
         "chapters": [
           {
             "pages": 2,
-            "hash": "43e56fd483c56f10",
+            "hash": "7f17adc7850b8ffd",
             "lines": "4c661188722749b2"
           }
         ]
@@ -3127,6 +3150,11 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 7.6 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

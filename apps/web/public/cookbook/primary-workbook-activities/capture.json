@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "primary-workbook-activities",
-  "sourceHash": "7e9053e554cf8020bdec129b7afaf0ca488b72e6599b7b7b4bc18c59bb214e19",
+  "sourceHash": "7a560ae797cff7a7f4683a7a904c5270bfde5a77c99e41070a5b8077b13d406a",
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0",
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-24T15:50:07.829Z",
+  "capturedAt": "2026-10-26T01:08:21.785Z",
   "variants": {
     "en": {
-      "hash8": "33f170aa",
-      "vdtHash": "60821daa016df1bb23d9a48ddca644b89575d556",
+      "hash8": "1b2ed1ed",
+      "vdtHash": "41164ea23f926646711b494c677f6fb08c6f8267",
       "timings": {
-        "importMs": 26256,
-        "fontsMs": 308,
-        "buildMs": 16,
-        "totalMs": 32396,
+        "importMs": 30100,
+        "fontsMs": 54,
+        "buildMs": 12,
+        "totalMs": 30963,
         "builds": 1
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 117348,
+          "bytes": 117448,
           "alt": "Opening page 1: Animals with backbones."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 71006,
+          "bytes": 71260,
           "alt": "Page 2."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 52812,
+          "bytes": 52906,
           "alt": "Page 3."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 57970,
+          "bytes": 58484,
           "alt": "Page 4."
         }
       ],
@@ -114,17 +114,17 @@
       },
       "pdf": {
         "file": "primary-workbook-activities.pdf",
-        "bytes": 285778,
+        "bytes": 286133,
         "pages": 4
       },
       "sandbox": {
         "file": "primary-workbook-activities.postext",
-        "bytes": 252570,
+        "bytes": 252485,
         "chapters": [
           {
             "pages": 4,
-            "hash": "626676de4f6e5548",
-            "lines": "649b586330ada9bf"
+            "hash": "13285af804ead30c",
+            "lines": "8949a252859684e4"
           }
         ]
       },
@@ -340,7 +340,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 347,
+        "configLeaves": 344,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -424,7 +424,12 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the pen took 32.4 s to finish (warning at 30 s)"
+            "detail": "the pen took 31.0 s to finish (warning at 30 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -440,13 +445,13 @@
       }
     },
     "es": {
-      "hash8": "a57512a9",
-      "vdtHash": "78bce5a7852bd377b0b06f2132a3078b150efa0d",
+      "hash8": "ea751ffe",
+      "vdtHash": "43d9a1f257a6802936003731380e315c409b8741",
       "timings": {
-        "importMs": 26141,
-        "fontsMs": 302,
-        "buildMs": 18,
-        "totalMs": 32389,
+        "importMs": 30101,
+        "fontsMs": 65,
+        "buildMs": 11,
+        "totalMs": 30962,
         "builds": 1
       },
       "specimen": {
@@ -478,7 +483,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 119522,
+          "bytes": 119516,
           "alt": "Página de apertura 1: Los animales vertebrados."
         },
         {
@@ -489,7 +494,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 75530,
+          "bytes": 76030,
           "alt": "Página 2."
         },
         {
@@ -500,7 +505,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 55260,
+          "bytes": 55522,
           "alt": "Página 3."
         },
         {
@@ -511,7 +516,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 60210,
+          "bytes": 60544,
           "alt": "Página 4."
         }
       ],
@@ -543,17 +548,17 @@
       },
       "pdf": {
         "file": "primary-workbook-activities.pdf",
-        "bytes": 287200,
+        "bytes": 287566,
         "pages": 4
       },
       "sandbox": {
         "file": "primary-workbook-activities.postext",
-        "bytes": 252765,
+        "bytes": 252746,
         "chapters": [
           {
             "pages": 4,
-            "hash": "8d0ecc2eb2fb9b18",
-            "lines": "896d3a4cfcfe2114"
+            "hash": "f045a1d286d07b5e",
+            "lines": "c9ffda4b71f914c5"
           }
         ]
       },
@@ -769,7 +774,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 347,
+        "configLeaves": 344,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -853,7 +858,12 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the pen took 32.4 s to finish (warning at 30 s)"
+            "detail": "the pen took 31.0 s to finish (warning at 30 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

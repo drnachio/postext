@@ -61,10 +61,18 @@ subtitle: "练习单 7"
 - 216 × 4
 :::
 
-:::exercise{type="open" lines="1"}
+:::exercise{type="open" lines="1" cells="2 2 2 2"}
 看拼音，写词语。
 
-zhēng fā　　　yún duǒ　　　jiàng yǔ　　　hé liú
+:::columns{count=4}
+zhēng fā
+
+yún duǒ
+
+jiàng yǔ
+
+hé liú
+:::
 
 :::solution
 蒸发　云朵　降雨　河流

@@ -26,7 +26,7 @@ Schreibe untereinander und addiere.
 
 - 4567 + 2385
 - 3528 + 1764
-- 806 + 1497
+- 12,75 + 8,5
 :::
 
 :::exercise{type="arithmetic"}
@@ -34,7 +34,7 @@ Subtrahiere schriftlich und mache die Probe mit der Addition.
 
 - 7302 − 2865
 - 5040 − 1376
-- 913 − 458
+- 45,30 − 18,75
 :::
 
 :::exercise{type="arithmetic"}
@@ -42,7 +42,7 @@ Multipliziere schriftlich.
 
 - 437 · 6
 - 1209 · 8
-- 365 · 7
+- 365 · 24
 :::
 
 :::exercise{type="arithmetic"}

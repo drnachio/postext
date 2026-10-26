@@ -50,8 +50,8 @@
     "cjk-fonts-slices"
   ],
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0"
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0"
   },
   "kit": [
     "core",
@@ -137,8 +137,5 @@
     "pinyin-primer",
     "arabic-workbook-rtl",
     "japanese-drill-upside-down-answers"
-  ],
-  "gaps": [
-    "readings-over-blanks"
   ]
 }

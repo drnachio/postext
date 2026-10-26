@@ -26,7 +26,7 @@ Coloca las cifras en columna y suma.
 
 - 4567 + 2385
 - 3528 + 1764
-- 806 + 1497
+- 12,75 + 8,5
 :::
 
 :::exercise{type="arithmetic"}
@@ -34,7 +34,7 @@ Resta y comprueba con una suma.
 
 - 7302 − 2865
 - 5040 − 1376
-- 913 − 458
+- 45,30 − 18,75
 :::
 
 :::exercise{type="arithmetic"}
@@ -42,7 +42,7 @@ Multiplica.
 
 - 437 × 6
 - 1209 × 8
-- 365 × 7
+- 365 × 24
 :::
 
 :::exercise{type="arithmetic"}

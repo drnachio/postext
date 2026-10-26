@@ -28,7 +28,7 @@ A heading design on a vertical page is laid along its column: x runs down the pa
 
 <Excerpt region="two-books" />
 
-The configuration is a function, so each build gets its own object, and only `writingMode` changes between the two. Set vertically, the 国語 drill binds on the right by itself; `showBook` lays each drill out on its own side of the spine. The text is set in Klee One, a textbook face, and the labels in Zen Maru Gothic; both load their vertical punctuation for the brackets of the kanji page.
+The configuration is a function, so each build gets its own object, and only `writingMode` changes between the two. Set vertically, the 国語 drill binds on the right by itself; `showBook` lays each drill out on its own side of the spine. The text is set in Klee One, a textbook face, and the labels in Zen Maru Gothic; both load their vertical punctuation for the brackets of the kanji page. On the kanji page each `[[{春|はる}]]` prints its reading right of its box, where furigana stand beside a vertical line; the `kaki` style narrows the box to one kanji.
 
 ## Variations
 
@@ -47,5 +47,4 @@ A drill printed with a separate answer booklet keeps the key out of the pages: `
 
 ## Pitfalls
 
-- A reading cannot stand over a blank yet: a ruby inside `[[…]]` is part of the hidden answer. The 漢字の書き取り exercise sets each reading on its own line and the box after it, three to a row in a `:::columns` group; on the vertical page the reading stands beside the box, as furigana do.
 - Klee One ships 400 and 600 only: `boldFontWeight: 600` keeps every bold run in a cut that exists, the item numbers and the exercise numbers included.

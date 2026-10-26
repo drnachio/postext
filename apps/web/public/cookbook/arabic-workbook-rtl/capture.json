@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "arabic-workbook-rtl",
-  "sourceHash": "199b9182653e0b5481ed2e3c863b17cd1c5d7b692344ec6a493a9b7063fcafb5",
+  "sourceHash": "adab82af6fcf527561ae5652f977485925800163059cbaf25dfe3c0ecb957946",
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0",
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-24T15:50:14.815Z",
+  "capturedAt": "2026-10-26T01:08:22.020Z",
   "variants": {
     "ar": {
       "hash8": "cd08e1dc",
       "vdtHash": "b4ab12fd1b010cece6bfbcf30c9c72c9dde5e744",
       "timings": {
-        "importMs": 10469,
-        "fontsMs": 1198,
-        "buildMs": 126,
-        "totalMs": 21548,
+        "importMs": 408,
+        "fontsMs": 94,
+        "buildMs": 82,
+        "totalMs": 1171,
         "builds": 2
       },
       "specimen": {

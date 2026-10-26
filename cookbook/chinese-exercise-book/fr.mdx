@@ -16,7 +16,7 @@ Deux unités d’un 练习册 de CE1 au format 16开 : une unité de langue, �
 
 ### 1 · Un seul style pour toutes les sections
 
-Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Les sections sont numérotées en chiffres chinois suivis d’un 、 pleine chasse, donc aucune espace ne suit le numéro ; la consigne est composée dans la Hei, sans gras, pour que les points entre parenthèses se lisent comme une partie de la consigne. `options.bracket` écrit la （　） après chaque énoncé, et dans le livre du maître la bonne lettre vient s’y loger. Les deux petits styles prolongent le principal : `pinyin` dessine chaque blanc comme une case aussi large que son mot, `kuohao` ne dessine rien, puisque la parenthèse de 在（　）里填 est dans le texte.
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Les sections sont numérotées en chiffres chinois suivis d’un 、 pleine chasse, donc aucune espace ne suit le numéro ; la consigne est composée dans la Hei, sans gras, pour que les points entre parenthèses se lisent comme une partie de la consigne. `options.bracket` écrit la （　） après chaque énoncé, et dans le livre du maître la bonne lettre vient s’y loger. Les deux petits styles prolongent le principal : `pinyin` dessine chaque blanc comme une case aussi large que son mot et imprime au-dessus la lecture de `[[{春天|chūn tiān}]]`, dans le livre de l’élève aussi ; `kuohao` ne dessine rien, puisque la parenthèse de 在（　）里填 est dans le texte.
 
 ### 2 · Le cahier de l’élève et le livre du maître à partir d’un seul texte
 
@@ -47,11 +47,10 @@ Sans lignes `:::solutions`, `chapterEnd` rassemble le corrigé de chaque unité 
 +  solutions: { placement: edition === 'teacher' ? 'none' : 'chapterEnd' } });
 ```
 
-### Mettre les lectures à côté des blancs
+### Donner à chaque mot ses 田字格
 
-<RecipeLink slug="pinyin-primer">L’abécédaire en pinyin</RecipeLink> place le pinyin au-dessus de ses caractères en ruby, ce qu’un blanc ne peut pas encore porter.
+Une question ouverte avec `cells="2 2 2 2"` pose un groupe de cases par mot sous une ligne de pinyin, comme se termine <RecipeLink slug="school-traditions-worksheet">l’édition chinoise de la fiche en dix traditions</RecipeLink>.
 
 ## Erreurs fréquentes
 
-- Une lecture ne peut pas encore se placer au-dessus d’un blanc : un ruby dans `[[…]]` fait partie de la réponse cachée, et une zone de 田字格 prend toute la justification. La section 看拼音写词语 met chaque syllabe sur sa propre ligne avec la case dessous, quatre par rangée dans un groupe `:::columns`.
 - La police Kai ne compose que les réponses : elle ne charge donc que les caractères des blancs et des réponses modèles. Un caractère qu’elle compose ailleurs doit être ajouté à ce texte.

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 169 · One worksheet in ten school traditions ═════════
 // https://postext.dev/en/cookbook/school-traditions-worksheet
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Nunito, Baloo 2, Klee One, Noto Naskh Arabic and others (SIL OFL) · Needs postext ≥ 1.59.0
+// Fonts: Nunito, Baloo 2, Klee One, Noto Naskh Arabic and others (SIL OFL) · Needs postext ≥ 1.63.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas,
 } from 'https://esm.sh/postext';
@@ -49,7 +49,7 @@ const TRADITIONS = {
     blank: { look: 'line' }, area: { kind: 'lines' }, arithmetic: { division: 'inline' } },
   it: { number: { shape: 'rounded' }, options: { marker: 'box' }, trueFalse: { look: 'boxes' },
     blank: { look: 'dots' }, area: { kind: 'lines' }, arithmetic: { division: 'potence' } },
-  pt: { number: bare, options: { marker: 'none' }, trueFalse: { look: 'bracket' },
+  pt: { number: bare, options: { marker: 'none' }, trueFalse: { look: 'bracket', place: 'start' },
     blank: { look: 'line' }, area: { kind: 'lines' }, arithmetic: { division: 'potence' } },
   en: { number: bare, options: { marker: 'none' }, trueFalse: { look: 'boxes' },
     blank: { look: 'line' }, area: { kind: 'lines' }, arithmetic: { division: 'bracket' } },
@@ -57,7 +57,9 @@ const TRADITIONS = {
   zh: { number: { shape: 'none', format: 'simp-chinese-informal', suffix: '、' },
     options: { labels: 'alpha-upper', suffix: '.', layout: 'row', bracket: true },
     trueFalse: { look: 'bracket' }, blank: { look: 'line' },
-    area: { kind: 'tianzige', spacing: mm(13), lines: 1 }, arithmetic: { division: 'bracket' } },
+    // 15 mm squares: a word's two and the square after it span a quarter of the measure, so
+    // the pinyin in four columns stands over its 田字格 (cells="2 2 2 2").
+    area: { kind: 'tianzige', spacing: mm(15), lines: 1 }, arithmetic: { division: 'bracket' } },
   // ア イ ウ in a row with （　）, ○ × in a bracket, the number in a square.
   ja: { number: square, options: { labels: 'katakana', suffix: '', layout: 'row', bracket: true },
     trueFalse: { look: 'bracket' }, blank: { look: 'line' }, area: { kind: 'lines' },

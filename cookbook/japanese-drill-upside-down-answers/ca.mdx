@@ -28,7 +28,7 @@ Un disseny de títol en una pàgina vertical es col·loca al llarg de la seva co
 
 <Excerpt region="two-books" />
 
-La configuració és una funció, així que cada composició rep el seu propi objecte, i entre l’una i l’altra només canvia `writingMode`. En vertical, el quadern de 国語 s’enquaderna per la dreta tot sol; `showBook` posa cada quadern al seu costat del llom. El text va en Klee One, una lletra de llibre de text, i les etiquetes en Zen Maru Gothic; totes dues carreguen la seva puntuació vertical per als parèntesis de la pàgina de kanji.
+La configuració és una funció, així que cada composició rep el seu propi objecte, i entre l’una i l’altra només canvia `writingMode`. En vertical, el quadern de 国語 s’enquaderna per la dreta tot sol; `showBook` posa cada quadern al seu costat del llom. El text va en Klee One, una lletra de llibre de text, i les etiquetes en Zen Maru Gothic; totes dues carreguen la seva puntuació vertical per als parèntesis de la pàgina de kanji. A la pàgina de kanji cada `[[{春|はる}]]` imprimeix la lectura a la dreta de la seva caixa, on va el furigana al costat d’una línia vertical; l’estil `kaki` estreny la caixa a un sol kanji.
 
 ## Variants
 
@@ -47,5 +47,4 @@ Un quadern amb el solucionari a part deixa les solucions fora de les pàgines: `
 
 ## Errors freqüents
 
-- Una lectura encara no pot anar sobre un buit: un ruby dins de `[[…]]` forma part de la resposta amagada. L’exercici de 漢字の書き取り posa cada lectura en una línia pròpia i la casella darrere, tres per fila en un grup `:::columns`; a la pàgina vertical la lectura queda al costat de la casella, com el furigana.
 - Klee One només té els pesos 400 i 600: `boldFontWeight: 600` deixa totes les negretes en un tall que existeix, també els números dels apartats i dels exercicis.

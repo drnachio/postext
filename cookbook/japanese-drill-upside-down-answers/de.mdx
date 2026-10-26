@@ -28,7 +28,7 @@ Auf einer senkrechten Seite liegt die Gestaltung einer Überschrift entlang ihre
 
 <Excerpt region="two-books" />
 
-Die Konfiguration ist eine Funktion, also bekommt jeder Satzlauf sein eigenes Objekt, und zwischen beiden ändert sich nur `writingMode`. Senkrecht gesetzt, bindet das 国語-Heft von selbst rechts; `showBook` legt jedes Heft auf seine Seite des Rückens. Der Text steht in Klee One, einer Schulbuchschrift, die Etiketten in Zen Maru Gothic; beide laden ihre senkrechte Zeichensetzung für die Klammern der Kanji-Seite.
+Die Konfiguration ist eine Funktion, also bekommt jeder Satzlauf sein eigenes Objekt, und zwischen beiden ändert sich nur `writingMode`. Senkrecht gesetzt, bindet das 国語-Heft von selbst rechts; `showBook` legt jedes Heft auf seine Seite des Rückens. Der Text steht in Klee One, einer Schulbuchschrift, die Etiketten in Zen Maru Gothic; beide laden ihre senkrechte Zeichensetzung für die Klammern der Kanji-Seite. Auf der Kanji-Seite druckt jedes `[[{春|はる}]]` seine Lesung rechts neben sein Kästchen, wo Furigana an einer senkrechten Zeile stehen; der Stil `kaki` macht das Kästchen so schmal wie ein Kanji.
 
 ## Varianten
 
@@ -47,5 +47,4 @@ Ein Heft mit eigenem Lösungsheft hält die Lösungen aus den Seiten heraus: `ch
 
 ## Häufige Fehler
 
-- Eine Lesung kann noch nicht über einer Lücke stehen: Ein Ruby in `[[…]]` gehört zur versteckten Antwort. Die Aufgabe 漢字の書き取り setzt jede Lesung in eine eigene Zeile und das Kästchen dahinter, drei pro Reihe in einer `:::columns`-Gruppe; auf der senkrechten Seite steht die Lesung neben dem Kästchen, wie Furigana.
 - Klee One gibt es nur in 400 und 600: `boldFontWeight: 600` hält jeden fetten Abschnitt in einem Schnitt, den es gibt, auch die Nummern der Fragen und der Aufgaben.

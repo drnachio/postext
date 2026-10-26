@@ -28,7 +28,7 @@ Sur une page verticale, une maquette de titre se pose le long de sa colonne : x
 
 <Excerpt region="two-books" />
 
-La configuration est une fonction : chaque composition reçoit son propre objet, et seul `writingMode` change entre les deux. Composé à la verticale, le cahier de 国語 se relie à droite de lui-même ; `showBook` place chaque cahier de son côté du dos. Le texte est composé en Klee One, un caractère de manuel scolaire, et les étiquettes en Zen Maru Gothic ; les deux chargent leur ponctuation verticale pour les parenthèses de la page de kanji.
+La configuration est une fonction : chaque composition reçoit son propre objet, et seul `writingMode` change entre les deux. Composé à la verticale, le cahier de 国語 se relie à droite de lui-même ; `showBook` place chaque cahier de son côté du dos. Le texte est composé en Klee One, un caractère de manuel scolaire, et les étiquettes en Zen Maru Gothic ; les deux chargent leur ponctuation verticale pour les parenthèses de la page de kanji. Sur la page de kanji, chaque `[[{春|はる}]]` imprime sa lecture à droite de sa case, là où se placent les furigana d’une ligne verticale ; le style `kaki` réduit la case à un seul kanji.
 
 ## Variantes
 
@@ -47,5 +47,4 @@ Un cahier vendu avec un livret de corrigés garde les réponses hors des pages 
 
 ## Erreurs fréquentes
 
-- Une lecture ne peut pas encore se placer au-dessus d’un blanc : un ruby dans `[[…]]` fait partie de la réponse cachée. L’exercice 漢字の書き取り met chaque lecture sur sa propre ligne et la case juste après, trois par rangée dans un groupe `:::columns` ; sur la page verticale, la lecture se tient à côté de la case, comme des furigana.
 - Klee One n’existe qu’en 400 et 600 : `boldFontWeight: 600` garde chaque passage en gras dans une graisse qui existe, numéros des questions et des exercices compris.
