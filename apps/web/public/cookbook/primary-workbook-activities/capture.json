@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "primary-workbook-activities",
-  "sourceHash": "7e9053e554cf8020bdec129b7afaf0ca488b72e6599b7b7b4bc18c59bb214e19",
+  "sourceHash": "305f8feeb5b60f80e069da479ed3a8bed59330e43c4f38ecc6b5c73b097e8c2a",
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0",
+    "postext": "1.59.2",
+    "postextPdf": "1.59.2",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-24T15:50:07.829Z",
+  "capturedAt": "2026-10-26T00:56:51.863Z",
   "variants": {
     "en": {
-      "hash8": "33f170aa",
-      "vdtHash": "60821daa016df1bb23d9a48ddca644b89575d556",
+      "hash8": "e67e7ed6",
+      "vdtHash": "957c3713e69ca097285d6f8c2ddee0d0ee6c81d5",
       "timings": {
-        "importMs": 26256,
-        "fontsMs": 308,
-        "buildMs": 16,
-        "totalMs": 32396,
+        "importMs": 31905,
+        "fontsMs": 54,
+        "buildMs": 11,
+        "totalMs": 32724,
         "builds": 1
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 117348,
+          "bytes": 117448,
           "alt": "Opening page 1: Animals with backbones."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 71006,
+          "bytes": 71236,
           "alt": "Page 2."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 52812,
+          "bytes": 52906,
           "alt": "Page 3."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 57970,
+          "bytes": 58484,
           "alt": "Page 4."
         }
       ],
@@ -114,16 +114,16 @@
       },
       "pdf": {
         "file": "primary-workbook-activities.pdf",
-        "bytes": 285778,
+        "bytes": 285818,
         "pages": 4
       },
       "sandbox": {
         "file": "primary-workbook-activities.postext",
-        "bytes": 252570,
+        "bytes": 250063,
         "chapters": [
           {
             "pages": 4,
-            "hash": "626676de4f6e5548",
+            "hash": "13ded703e25dc4df",
             "lines": "649b586330ada9bf"
           }
         ]
@@ -340,7 +340,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 347,
+        "configLeaves": 344,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -424,29 +424,34 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the pen took 32.4 s to finish (warning at 30 s)"
+            "detail": "the pen took 32.7 s to finish (warning at 30 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: en, es"
+            "detail": "book in several languages: es left out (the resources differ when read back)"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: en, es"
+            "detail": "book in several languages: es left out (the resources differ when read back)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "a57512a9",
-      "vdtHash": "78bce5a7852bd377b0b06f2132a3078b150efa0d",
+      "hash8": "7ae2a3f7",
+      "vdtHash": "88fedd1950ed2b6e1539f9a82ffcdc56be13cf58",
       "timings": {
-        "importMs": 26141,
-        "fontsMs": 302,
-        "buildMs": 18,
-        "totalMs": 32389,
+        "importMs": 31907,
+        "fontsMs": 58,
+        "buildMs": 11,
+        "totalMs": 32720,
         "builds": 1
       },
       "specimen": {
@@ -478,7 +483,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 119522,
+          "bytes": 119516,
           "alt": "Página de apertura 1: Los animales vertebrados."
         },
         {
@@ -489,7 +494,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 75530,
+          "bytes": 76048,
           "alt": "Página 2."
         },
         {
@@ -500,7 +505,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 55260,
+          "bytes": 55522,
           "alt": "Página 3."
         },
         {
@@ -511,7 +516,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 60210,
+          "bytes": 60544,
           "alt": "Página 4."
         }
       ],
@@ -543,17 +548,17 @@
       },
       "pdf": {
         "file": "primary-workbook-activities.pdf",
-        "bytes": 287200,
+        "bytes": 287248,
         "pages": 4
       },
       "sandbox": {
         "file": "primary-workbook-activities.postext",
-        "bytes": 252765,
+        "bytes": 250436,
         "chapters": [
           {
             "pages": 4,
-            "hash": "8d0ecc2eb2fb9b18",
-            "lines": "896d3a4cfcfe2114"
+            "hash": "9e56fa112dcf9531",
+            "lines": "0593b7e8e23ab284"
           }
         ]
       },
@@ -769,7 +774,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 347,
+        "configLeaves": 344,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -853,17 +858,22 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the pen took 32.4 s to finish (warning at 30 s)"
+            "detail": "the pen took 32.7 s to finish (warning at 30 s)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: es, en"
+            "detail": "book in several languages: en left out (the resources differ when read back)"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: es, en"
+            "detail": "book in several languages: en left out (the resources differ when read back)"
           }
         ]
       }

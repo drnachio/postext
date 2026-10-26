@@ -46,8 +46,8 @@
   ],
   "gotchas": [],
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0"
+    "postext": "1.59.2",
+    "postextPdf": "1.59.2"
   },
   "kit": [
     "core",

@@ -35,7 +35,7 @@ const [TEXT, DISPLAY] = ['Atkinson Hyperlegible Next', 'Grandstander'];
 // this style says how a Spanish workbook prints it: the number in a disc of the unit
 // colour, the instruction in bold, blanks on a line, V/F boxes at the line's end, dots to
 // join, the bank in a tinted box, squared paper for writing and the activity icons.
-const icon = (id, alt) => ({ resourceId: `icon-${id}`, alt, size: 1.05 });
+const icon = (id, alt) => ({ resourceId: `icon-${id}`, alt });
 const actividad = {
   id: 'actividad',
   number: { shape: 'disc', background: col('unit'), color: col('paper'),
