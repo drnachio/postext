@@ -1707,6 +1707,8 @@ export interface SandboxLabels {
   balanceGridOffNote: string;
   balanceMaxTracking: string;
   balanceMaxTrackingTooltip: string;
+  balanceFillShortColumns: string;
+  balanceFillShortColumnsTooltip: string;
 
   // Canvas viewport toolbar
   zoomIn: string;

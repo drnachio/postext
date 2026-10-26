@@ -50,7 +50,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
 
   const resetBalancingField = (
     field: 'enabled' | 'maxLinesPerHeading' | 'maxLinesBeforeLoose' | 'stretchAfterLists' | 'maxLinesAfterList' | 'stretchAfterDisplays' | 'stretchAfterFloats'
-      | 'maxLinesAfterFloat' | 'stretchAfterWideFloats' | 'looseParagraphs' | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking'
+      | 'maxLinesAfterFloat' | 'stretchAfterWideFloats' | 'looseParagraphs' | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking' | 'fillShortColumns'
       | 'trailing' | 'trailingStep' | 'beforeSpan' | 'closingBox' | 'gridLines',
   ) => {
     if (!raw?.balancing) return;
@@ -158,6 +158,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isBalMaxLooseDefault = headings.balancing.maxLooseParagraphs === DEFAULT_COLUMN_BALANCING.maxLooseParagraphs;
   const isBalTrackDefault = headings.balancing.trackParagraphs === DEFAULT_COLUMN_BALANCING.trackParagraphs;
   const isBalMaxTrackingDefault = headings.balancing.maxTracking === DEFAULT_COLUMN_BALANCING.maxTracking;
+  const isBalFillShortDefault = headings.balancing.fillShortColumns === DEFAULT_COLUMN_BALANCING.fillShortColumns;
   const isBalTrailingDefault = headings.balancing.trailing === DEFAULT_COLUMN_BALANCING.trailing;
   const isBalBeforeSpanDefault = headings.balancing.beforeSpan === DEFAULT_COLUMN_BALANCING.beforeSpan;
   const isBalClosingBoxDefault = headings.balancing.closingBox === DEFAULT_COLUMN_BALANCING.closingBox;
@@ -544,6 +545,16 @@ export const HeadingsSection = memo(function HeadingsSection() {
                   onReset={() => resetBalancingField('maxTracking')}
                 />
               )}
+              <ToggleSwitch
+                label={labels.balanceFillShortColumns}
+                checked={headings.balancing.fillShortColumns}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, fillShortColumns: v } })
+                }
+                tooltip={labels.balanceFillShortColumnsTooltip}
+                isDefault={isBalFillShortDefault}
+                onReset={() => resetBalancingField('fillShortColumns')}
+              />
               <ToggleSwitch
                 label={labels.balanceTrailing}
                 checked={headings.balancing.trailing}

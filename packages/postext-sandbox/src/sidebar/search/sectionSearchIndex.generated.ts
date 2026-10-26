@@ -1724,6 +1724,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'balanceColumnsMaxLines',
       'balanceColumnsMaxLinesTooltip',
       'balanceColumnsTooltip',
+      'balanceFillShortColumns',
+      'balanceFillShortColumnsTooltip',
       'balanceGridLines',
       'balanceGridLinesAllow',
       'balanceGridLinesOff',

@@ -2215,6 +2215,8 @@
     "balanceGridOffNote": "La page est composée sur une grille de caractères, où les colonnes ne sont pas équilibrées tant que vous n’activez pas l’équilibrage : une colonne courte reste courte.",
     "balanceMaxTracking": "Approche max. (‰ em)",
     "balanceMaxTrackingTooltip": "Limite supérieure de cette approche, en millièmes d’em par caractère (10 = 0,01 em, la tolérance éditoriale habituelle)",
+    "balanceFillShortColumns": "Remplir les colonnes courtes",
+    "balanceFillShortColumnsTooltip": "Remplit avec ses propres paragraphes une colonne que les règles des veuves et des orphelines ont laissée courte d’une ligne : un paragraphe gagne une ligne sans dépasser l’espacement maximal entre mots, ou l’un d’eux est composé une ligne plus court pour que la coupure suivante la reprenne. Gardé seulement si les pages finissent avec moins de colonnes courtes",
     "zoomIn": "Zoom avant",
     "zoomOut": "Zoom arrière",
     "fitWidth": "Ajuster à la largeur de la page",

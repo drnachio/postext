@@ -2215,6 +2215,8 @@
     "balanceGridOffNote": "La pàgina està composta sobre una retícula de caràcters, on les columnes no s’equilibren tret que activis l’equilibratge: una columna curta es queda curta.",
     "balanceMaxTracking": "Tracking màx. (‰ em)",
     "balanceMaxTrackingTooltip": "Límit d'aquest tracking, en mil·lèsimes d'em per caràcter (10 = 0,01 em, la tolerància editorial habitual)",
+    "balanceFillShortColumns": "Omplir columnes curtes",
+    "balanceFillShortColumnsTooltip": "Omple amb els seus propis paràgrafs una columna que les regles de vídues i orfes han deixat una línia curta: un paràgraf ocupa una línia més sense passar de l'espai màxim entre paraules, o se'n compon un amb una línia menys perquè el tall següent la reculli. Només es conserva si les pàgines acaben amb menys columnes curtes",
     "zoomIn": "Apropar",
     "zoomOut": "Allunyar",
     "fitWidth": "Ajustar a l'amplada",
