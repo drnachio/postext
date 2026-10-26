@@ -7,8 +7,8 @@ import { pickState, renderToScorm, scormLeaves, scormOrganization, scormTree, tr
 import { useBookPlan, useSandboxDispatch, useSandboxSelector, useSandboxStateGetter } from '../context/SandboxContext.js';
 import { composeBookMemo } from '../book/compose.js';
 import { layOutBookPrint } from '../book/printChain.js';
-import { ensureConfigFontsLoaded } from '../controls/fontLoader.js';
-import { withHyphenationLocale } from '../controls/hyphenation.js';
+import { ensureConfigFontsLoaded } from '../controls/fonts/fontLoader.js';
+import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { collectEpubFonts, epubResourceBytes, epubSvgFonts } from '../epub/inputs.js';
 import { epubMetadataOf, type EpubBookIdentity } from '../epub/metadata.js';
 import { downloadBytes, loadScormLeftOut, saveScormLeftOut } from '../storage/persistence.js';
@@ -16,7 +16,7 @@ import type { ScormVersion } from '../types/index.js';
 import { useLayoutWorker } from '../worker/useLayoutWorker.js';
 import { announce } from '../ui/announcer.js';
 import { Button, SegmentedControl, cn } from '../ui/index.js';
-import { ProgressBar, progressText, type EpubGenerationProgress } from './EpubPreview.js';
+import { ProgressBar, progressText, type EpubGenerationProgress } from './epub/EpubPreview.js';
 import { useViewerControls } from './viewerControls.js';
 
 /** The file name of the download. */

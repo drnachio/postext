@@ -9,8 +9,8 @@ import { chapterPageLabels } from '../../book/pagination.js';
 import { chapterMenuEntries, partLabel } from '../../book/chapterMenu.js';
 import type { Chapter, ChapterPages } from '../../book/types.js';
 import { generateChapterId } from '../../storage/projects.js';
-import { defaultDocumentLocale } from '../../controls/hyphenation.js';
-import { formatNumber } from '../../controls/units.js';
+import { defaultDocumentLocale } from '../../controls/language/hyphenation.js';
+import { formatNumber } from '../../controls/inputs/units.js';
 import { ConfirmPopover, IconButton, ListRow, Menu, MenuItem, MenuSeparator, cn } from '../../ui/index.js';
 import { useRowDrag, type RowDragHandleProps } from './useRowDrag.js';
 

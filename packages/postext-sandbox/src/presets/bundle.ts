@@ -10,7 +10,7 @@ import { isBundleManifest, pickBundleMeta, pickBundleView, pickLocaleOverrides, 
 import type { BundleByteSources as CoreByteSources, BundleFileReader, BundleIdScheme, PlannedFile } from 'postext/bundle';
 import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys.js';
 import { createDefaultConfig } from '../context/defaultConfig.js';
-import { svgIntrinsicSize } from '../panels/resources/svgIntrinsic.js';
+import { svgIntrinsicSize } from '../panels/resources/svg/svgIntrinsic.js';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps.js';
 import type { BookStart, Chapter, ChapterLayout, LayoutScope } from '../book/types.js';
 import { presetChapterId, presetFileId, presetFontFileId } from './manifest.js';

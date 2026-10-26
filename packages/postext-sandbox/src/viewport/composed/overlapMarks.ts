@@ -16,7 +16,7 @@
  */
 
 import { dimensionToPx, type VDTDocument, type VDTFrame, type VDTPage } from 'postext';
-import { SVG_NS } from '../CanvasPreview/dom.js';
+import { SVG_NS } from '../canvas/CanvasPreview/dom.js';
 import { overlapFocusNow, type OverlapFocusOf } from '../../editions/overlapFocus.js';
 import { turnAbout } from './reflowMarks.js';
 

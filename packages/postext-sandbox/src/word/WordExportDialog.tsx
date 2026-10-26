@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
 import { downloadBytes } from '../storage/persistence.js';
 import { Button, IconButton, Select, announce, usePortalContainer, type SelectOption } from '../ui/index.js';
-import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/surface.js';
+import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import { loadLastTemplateId, useWordTemplates } from './sandboxImport.js';
 import { isolate } from './WordImportDialog.js';
 import { emptyTemplate, postextToDocx } from 'postext/word';

@@ -8,7 +8,7 @@
 
 import { useEffect, type MutableRefObject } from 'react';
 import { useSandboxCoverSaver, useSandboxStateGetter } from '../context/SandboxContext.js';
-import { missingConfigFontSpecs } from '../controls/fontLoader.js';
+import { missingConfigFontSpecs } from '../controls/fonts/fontLoader.js';
 import { coverTargetKey, coverToCapture, sessionCoverAttempts as attempted } from './autoCover.js';
 import { renderCoverImage, showFirstChapterDoc, type FirstChapterDoc } from './renderCover.js';
 

@@ -113,7 +113,7 @@ Ohne `onWarning` geht die Meldung an `console.warn`. Der Text behält seine Posi
 
 ### Font-Provider im Browser (Fontsource + WOFF2)
 
-Die Sandbox liefert `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`), das Sie in jede Browser-App übernehmen können. Das Wesentliche:
+Die Sandbox liefert `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdf/pdfFontProvider.ts`), das Sie in jede Browser-App übernehmen können. Das Wesentliche:
 
 ```ts
 import type { PdfFontProvider } from 'postext-pdf';
@@ -328,7 +328,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**Wichtig:** Rufen Sie `ensureConfigFontsLoaded(config)` (oder etwas Gleichwertiges) *vor* `buildDocument` auf, wenn Ihre Konfiguration Webschriften verwendet. Das Layout wird mit den Schriftmetriken gemessen, die der Browser gerade für diese Familie hat – ist die echte Schrift noch nicht eingetroffen, wird der VDT mit einer Ersatzschrift gemessen, und das PDF stimmt nicht mit der Ausgabe von Canvas oder HTML überein. Die Sandbox tut das vor jedem Rendering ausdrücklich (siehe `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+**Wichtig:** Rufen Sie `ensureConfigFontsLoaded(config)` (oder etwas Gleichwertiges) *vor* `buildDocument` auf, wenn Ihre Konfiguration Webschriften verwendet. Das Layout wird mit den Schriftmetriken gemessen, die der Browser gerade für diese Familie hat – ist die echte Schrift noch nicht eingetroffen, wird der VDT mit einer Ersatzschrift gemessen, und das PDF stimmt nicht mit der Ausgabe von Canvas oder HTML überein. Die Sandbox tut das vor jedem Rendering ausdrücklich (siehe `packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`).
 
 ### Live-Beispiel: ein PDF im Browser
 
@@ -384,4 +384,4 @@ Für produktive Druckabläufe stimmen Sie vor dem Rendern diese Konfigurationsop
 
 ### Referenzimplementierung
 
-Die Komponente `PdfViewport` der Sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) verbindet die Teile oben zu einer Live-Vorschau mit Schaltflächen zum Neuerzeugen, Herunterladen und Drucken und ist ein guter Ausgangspunkt für jede PDF-Integration im Browser. Sie setzt den VDT über den gemeinsamen Layout-Worker (siehe [Layout in einem Web Worker ausführen](/de/docs/configuration-programmatic-usage#layout-in-einem-web-worker-ausführen)), sodass ein Klick auf *Neu berechnen* die Oberfläche nicht einfriert, während die Pipeline läuft – der Haupt-Thread übernimmt nur `renderToPdf` (das schnell ist, sobald der VDT existiert).
+Die Komponente `PdfViewport` der Sandbox (`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`) verbindet die Teile oben zu einer Live-Vorschau mit Schaltflächen zum Neuerzeugen, Herunterladen und Drucken und ist ein guter Ausgangspunkt für jede PDF-Integration im Browser. Sie setzt den VDT über den gemeinsamen Layout-Worker (siehe [Layout in einem Web Worker ausführen](/de/docs/configuration-programmatic-usage#layout-in-einem-web-worker-ausführen)), sodass ein Klick auf *Neu berechnen* die Oberfläche nicht einfriert, während die Pipeline läuft – der Haupt-Thread übernimmt nur `renderToPdf` (das schnell ist, sobald der VDT existiert).

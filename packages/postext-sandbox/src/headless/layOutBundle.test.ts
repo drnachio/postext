@@ -11,8 +11,8 @@ import type { LayoutWorkerHandle } from 'postext/worker';
 
 const calls = vi.hoisted(() => [] as string[]);
 
-vi.mock('../controls/fontLoader.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../controls/fontLoader.js')>();
+vi.mock('../controls/fonts/fontLoader.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../controls/fonts/fontLoader.js')>();
   const note = (name: string) => async (config: PostextConfig) => {
     calls.push(`${name}${config.bodyText?.hyphenation?.locale ? ` (${config.bodyText.hyphenation.locale})` : ''}`);
     return false as never;

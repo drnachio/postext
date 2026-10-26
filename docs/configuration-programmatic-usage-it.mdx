@@ -815,7 +815,7 @@ I caratteri possono raggiungere il worker anche dopo una generazione: un peso di
 
 `registerFonts` accetta i byte grezzi dei font. Il thread principale è il posto giusto dove scaricarli, perché una cache centrale permette a più istanze di worker di condividere gli stessi byte.
 
-Il `collectFontPayloadsForFamilies` della Sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`) è un’implementazione di riferimento. Questa funzione:
+Il `collectFontPayloadsForFamilies` della Sandbox (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`) è un’implementazione di riferimento. Questa funzione:
 
 1. Interroga `https://api.fontsource.org/v1/fonts/{family-id}` per sapere quali pesi e stili ha la famiglia.
 2. Legge i sottoinsiemi della famiglia e il loro `unicode-range` dal suo pacchetto su jsDelivr (`@fontsource/{family-id}@5/400.css`), una volta per famiglia. I file vengono poi chiesti alla versione esatta da cui è stato servito quel foglio di stile (l’`x-jsd-version` di jsDelivr), così una famiglia non arriva mai da due versioni del suo pacchetto.

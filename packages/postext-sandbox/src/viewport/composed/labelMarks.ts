@@ -8,7 +8,7 @@
  * drags them on the first two and, since #970, on the Folio's too.
  */
 
-import { SVG_NS } from '../CanvasPreview/dom.js';
+import { SVG_NS } from '../canvas/CanvasPreview/dom.js';
 import { cornersBounds, isMovable, sheetToPicture, type PageLabel } from './labelAnchorGeometry.js';
 
 export const MARK_COLORS = {

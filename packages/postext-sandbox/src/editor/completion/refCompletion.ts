@@ -1,0 +1,473 @@
+import {
+  autocompletion,
+  closeCompletion,
+  CompletionContext,
+  completionStatus,
+  insertCompletionText,
+  type Completion,
+  type CompletionResult,
+} from '@codemirror/autocomplete';
+import { syntaxTree } from '@codemirror/language';
+import { EditorView, keymap } from '@codemirror/view';
+import { Prec, StateEffect, StateField, type EditorState, type Extension } from '@codemirror/state';
+import type { Resource, ResourceKind, ResourceType } from 'postext';
+import { bookCitationContexts, citationSourceOf, parseMarkdown } from 'postext';
+import { chipCompletionSource, type ChipStyleOption } from '../syntax/chipSyntax.js';
+import { markCompletionSource, type MarkStyleOption } from '../syntax/markSyntax.js';
+import { smallCapsCompletionSource } from '../syntax/smallCapsSyntax.js';
+import { annotationCompletionSource } from '../syntax/annotationSyntax.js';
+import { indexCompletionSource } from '../syntax/indexSyntax.js';
+import { directionCompletionSource } from '../syntax/directionSyntax.js';
+import { verseCompletionSource } from '../syntax/verseSyntax.js';
+import { tabCompletionSource } from '../syntax/tabSyntax.js';
+import { labelCompletionSource, type LabelCompletionContext, type LabelStyleOption } from './labelCompletion.js';
+
+/** What the `@` picker needs from the sandbox: the current resources and the
+ *  resource types that name them (figure/table/…) in the document locale.
+ *  Read lazily on every keystroke so the editor never has to be
+ *  reconfigured when a resource is added, renamed or deleted. */
+export interface RefCompletionContext {
+  resources: readonly Resource[];
+  types: readonly ResourceType[];
+  /** The chip styles offered inside `:chip[…]{style="…"}`. */
+  chipStyles?: readonly ChipStyleOption[];
+  /** The highlight styles offered inside `:mark[…]{style="…"}` (#888). */
+  markStyles?: readonly MarkStyleOption[];
+  /** The book's index terms, offered inside `:index{term="…"}`. */
+  indexTerms?: () => readonly string[];
+  /** The book's headings with an identifier and its anchors (#262),
+   *  offered after the resources. */
+  anchors?: () => readonly AnchorOption[];
+  /** The kind names shown beside an anchor option. */
+  anchorKinds?: { heading: string; anchor: string };
+  /** The book's references (#268), offered first: choosing one writes a
+   *  citation `[@key]`. */
+  references?: () => readonly ReferenceOption[];
+  /** The kind name shown beside a reference option. */
+  referenceKind?: string;
+  /** The label styles offered inside `::label[…]{style="…"}` (#866). */
+  labelStyles?: readonly LabelStyleOption[];
+  /** The words shown beside a figure's anchors in `at="…"`. */
+  labelWords?: LabelCompletionContext['words'];
+}
+
+/** A reference of the book, as the picker lists it. */
+export interface ReferenceOption {
+  id: string;
+  /** "García 2020 — Tipografía y lectura". */
+  title: string;
+}
+
+/** The references of a book's chapters (front matter `references` and
+ *  `:::references` blocks), first definition of a key kept. */
+export function referencesOf(markdowns: readonly string[]): ReferenceOption[] {
+  const sources = markdowns
+    .filter((md) => md.includes('references'))
+    .map((md) => {
+      try {
+        return citationSourceOf(md);
+      } catch {
+        return { blocks: [] };
+      }
+    });
+  if (sources.length === 0) return [];
+  const [ctx] = bookCitationContexts(sources);
+  return (ctx?.items ?? []).map((item) => {
+    const names = (item.author ?? item.editor ?? []) as { family?: string; literal?: string }[];
+    const who = names[0]?.family ?? names[0]?.literal ?? '';
+    const year = item.issued?.['date-parts']?.[0]?.[0] ?? '';
+    return { id: item.id, title: [`${who} ${year}`.trim(), typeof item.title === 'string' ? item.title : ''].filter(Boolean).join(' — ') };
+  });
+}
+
+/** A heading with an identifier (`{#id}`) or an anchor of the book. */
+export interface AnchorOption {
+  id: string;
+  kind: 'heading' | 'anchor';
+  /** The heading's title or the anchor's text. */
+  title: string;
+}
+
+/** Every heading identifier and anchor of a book's chapters, first
+ *  setting of each id kept. */
+export function anchorsOf(markdowns: readonly string[]): AnchorOption[] {
+  const out: AnchorOption[] = [];
+  const seen = new Set<string>();
+  const add = (id: string, kind: AnchorOption['kind'], title: string): void => {
+    if (seen.has(id)) return;
+    seen.add(id);
+    out.push({ id, kind, title });
+  };
+  for (const md of markdowns) {
+    if (!md.includes('{#') && !md.includes(':anchor') && !md.includes('id=')) continue;
+    for (const b of parseMarkdown(md)) {
+      for (const m of b.anchorMarks ?? []) if (m.sourceEnd <= b.sourceStart) add(m.anchorId, 'anchor', m.text ?? '');
+      if (b.type === 'heading' && b.attrs?.id) add(b.attrs.id, 'heading', b.text);
+      for (const m of b.anchorMarks ?? []) if (m.sourceEnd > b.sourceStart) add(m.anchorId, 'anchor', m.text ?? '');
+    }
+  }
+  return out;
+}
+
+/** `@` followed by an optional query, ending at the caret. Ids are slugs
+ *  (letters, digits, `-`, `_`) but the query also searches captions, so spaces
+ *  are allowed after the first character ("@measurement speed"). A bare `@`
+ *  followed by a space is a literal at-sign and does not match. */
+const TRIGGER_RE = /@[\p{L}\p{N}_-][\p{L}\p{N}_ -]*|@/u;
+
+/** Syntax nodes where an `@` is literal text and must never open the picker. */
+const CODE_NODES: ReadonlySet<string> = new Set([
+  'FencedCode',
+  'CodeBlock',
+  'CodeText',
+  'InlineCode',
+  'Frontmatter',
+  'HTMLBlock',
+]);
+
+/** Dismissed `@` positions: after Escape the picker stays closed for that
+ *  particular `@` so the author can keep a literal at-sign. Positions are
+ *  mapped through edits and forgotten once the `@` itself is edited away. */
+const dismissRef = StateEffect.define<number>();
+const dismissedRefs = StateField.define<readonly number[]>({
+  create: () => [],
+  update(value, tr) {
+    let next = value;
+    if (tr.docChanged) {
+      const kept: number[] = [];
+      for (const pos of value) {
+        let removed = false;
+        tr.changes.iterChangedRanges((fromA, toA) => {
+          if (fromA <= pos && toA >= pos + 1) removed = true;
+        });
+        if (!removed) kept.push(tr.changes.mapPos(pos, -1));
+      }
+      next = kept;
+    }
+    for (const e of tr.effects) {
+      if (e.is(dismissRef) && !next.includes(e.value)) next = [...next, e.value];
+    }
+    return next;
+  },
+});
+
+interface NodeLike {
+  name: string;
+  parent: NodeLike | null;
+}
+
+function isInsideCode(state: EditorState, pos: number): boolean {
+  let node: NodeLike | null = syntaxTree(state).resolveInner(pos, -1);
+  while (node) {
+    if (CODE_NODES.has(node.name)) return true;
+    node = node.parent;
+  }
+  return false;
+}
+
+/** Case- and accent-insensitive haystack normalisation. */
+function fold(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+}
+
+/** Captions may carry inline markdown; strip the marks for the one-line preview. */
+function plainCaption(caption: string | undefined): string {
+  if (!caption) return '';
+  return caption
+    .replace(/:ref\{[^}]*\}/g, '')
+    .replace(/[*_`]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/** Lucide outlines for the resource kinds (static markup, never user content). */
+const KIND_ICON: Record<ResourceKind, string> = {
+  bitmap:
+    '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+  svg: '<path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/>',
+  table:
+    '<path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/>',
+  video:
+    '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>',
+  // Lucide `music`.
+  score: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+};
+
+function kindIcon(kind: ResourceKind): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'cm-refOption-icon';
+  span.setAttribute('aria-hidden', 'true');
+  span.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${KIND_ICON[kind] ?? KIND_ICON.table}</svg>`;
+  return span;
+}
+
+interface RefOption extends Completion {
+  resource?: Resource;
+  /** Set for a reference of the book (a citation). */
+  reference?: ReferenceOption;
+  /** Set for a heading or an anchor (#262). */
+  anchor?: AnchorOption;
+  caption: string;
+}
+
+/** Lucide `hash`: the icon of a heading or an anchor option. */
+const ANCHOR_ICON = '<line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/>';
+
+/** Lucide `quote`: the icon of a reference option. */
+const QUOTE_ICON = '<path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/>';
+
+function quoteIcon(): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'cm-refOption-icon';
+  span.setAttribute('aria-hidden', 'true');
+  span.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${QUOTE_ICON}</svg>`;
+  return span;
+}
+
+function anchorIcon(): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'cm-refOption-icon';
+  span.setAttribute('aria-hidden', 'true');
+  span.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ANCHOR_ICON}</svg>`;
+  return span;
+}
+
+/** The inline reference microformat the engine resolves to a label. */
+export function refMicroformat(id: string): string {
+  return `:ref{id="${id}" style="full"}`;
+}
+
+/** Filter + rank the resources for a query: id prefix, then id substring,
+ *  then caption, then type name. Ties keep the Resources panel order. */
+export function buildRefOptions(ctx: RefCompletionContext, query: string): RefOption[] {
+  const q = fold(query);
+  const typeById = new Map(ctx.types.map((t) => [t.id, t] as const));
+  const scored: Array<{ option: RefOption; rank: number }> = [];
+  ctx.resources.forEach((resource, index) => {
+    const type = typeById.get(resource.typeId);
+    const caption = plainCaption(resource.caption);
+    const id = fold(resource.id);
+    let rank: number;
+    if (q.length === 0 || id.startsWith(q)) rank = 0;
+    else if (id.includes(q)) rank = 1;
+    else if (fold(caption).includes(q)) rank = 2;
+    else if (type && (fold(type.name).includes(q) || fold(type.shortLabel).includes(q))) rank = 3;
+    else return;
+    const option: RefOption = {
+      label: resource.id,
+      detail: type?.name,
+      resource,
+      caption,
+      apply: (view, _completion, from, to) => {
+        view.dispatch(insertCompletionText(view.state, refMicroformat(resource.id), from, to));
+      },
+    };
+    scored.push({ option, rank: rank * 10_000 + index });
+  });
+  // References first: typing `@` in running text most often cites a work.
+  const references = ctx.references?.() ?? [];
+  references.forEach((reference, index) => {
+    const id = fold(reference.id);
+    let rank: number;
+    if (q.length === 0 || id.startsWith(q)) rank = 0;
+    else if (id.includes(q)) rank = 1;
+    else if (fold(reference.title).includes(q)) rank = 2;
+    else return;
+    const option: RefOption = {
+      label: reference.id,
+      detail: ctx.referenceKind,
+      reference,
+      caption: reference.title,
+      apply: (view, _completion, from, to) => {
+        view.dispatch(insertCompletionText(view.state, `[@${reference.id}]`, from, to));
+      },
+    };
+    scored.push({ option, rank: rank * 10_000 - 5_000 + index });
+  });
+  // Headings and anchors come after the resources of the same rank.
+  const anchors = ctx.anchors?.() ?? [];
+  anchors.forEach((anchor, index) => {
+    const id = fold(anchor.id);
+    let rank: number;
+    if (q.length === 0 || id.startsWith(q)) rank = 0;
+    else if (id.includes(q)) rank = 1;
+    else if (fold(anchor.title).includes(q)) rank = 2;
+    else return;
+    const option: RefOption = {
+      label: anchor.id,
+      detail: anchor.kind === 'heading' ? ctx.anchorKinds?.heading : ctx.anchorKinds?.anchor,
+      anchor,
+      caption: anchor.title,
+      apply: (view, _completion, from, to) => {
+        view.dispatch(insertCompletionText(view.state, `:ref{id="${anchor.id}"}`, from, to));
+      },
+    };
+    scored.push({ option, rank: rank * 10_000 + 5_000 + index });
+  });
+  scored.sort((a, b) => a.rank - b.rank);
+  return scored.map((s) => s.option);
+}
+
+/** Whether an `@` after `before` (the character ahead of it, '' at the
+ *  start) opens the picker: not when glued to a word (an e-mail address,
+ *  a handle), unless the word is Chinese, Japanese or Korean, which runs on
+ *  into a citation with no space (`…开始流动@`). */
+export function atOpensPicker(before: string): boolean {
+  return before === '' || !/(?![\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Hangul}])[\p{L}\p{N}]/u.test(before);
+}
+
+function refSource(getContext: () => RefCompletionContext) {
+  return (cx: CompletionContext): CompletionResult | null => {
+    const match = cx.matchBefore(TRIGGER_RE);
+    if (!match) return null;
+    // Only a fresh `@` opens the picker (see `atOpensPicker`).
+    const before = match.from > 0 ? cx.state.sliceDoc(match.from - 1, match.from) : '';
+    if (!atOpensPicker(before)) return null;
+    if (cx.state.field(dismissedRefs).includes(match.from)) return null;
+    if (isInsideCode(cx.state, match.from)) return null;
+    const options = buildRefOptions(getContext(), match.text.slice(1));
+    if (options.length === 0) return null;
+    return { from: match.from, to: match.to, options, filter: false };
+  };
+}
+
+/** Escape while the picker is open: close it and remember this `@` so typing
+ *  on does not reopen the list. Falls through when no picker is open so the
+ *  default Escape behaviour still applies. */
+const dismissOnEscape = keymap.of([
+  {
+    key: 'Escape',
+    run: (view) => {
+      if (completionStatus(view.state) === null) return false;
+      const head = view.state.selection.main.head;
+      const match = new CompletionContext(view.state, head, false).matchBefore(TRIGGER_RE);
+      closeCompletion(view);
+      if (match) view.dispatch({ effects: dismissRef.of(match.from) });
+      return true;
+    },
+  },
+]);
+
+/** Dropdown styling on the sandbox palette. `EditorView.theme` (not
+ *  `baseTheme`) so these rules outrank the autocomplete package defaults. */
+const refPickerTheme = EditorView.theme({
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker': {
+    backgroundColor: 'var(--background)',
+    color: 'var(--foreground)',
+    border: '1px solid var(--rule)',
+    borderRadius: '6px',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
+    overflow: 'hidden',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker > ul': {
+    fontFamily: 'var(--font-sans, system-ui, sans-serif)',
+    maxHeight: '240px',
+    minWidth: '260px',
+    maxWidth: '440px',
+    padding: '4px',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker > ul > li': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '5px 8px',
+    borderRadius: '4px',
+    fontSize: '12.5px',
+    lineHeight: '1.3',
+    cursor: 'pointer',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker > ul > li[aria-selected]': {
+    backgroundColor: 'var(--surface)',
+    color: 'var(--foreground)',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker .cm-refOption-icon': {
+    display: 'inline-flex',
+    flexShrink: '0',
+    color: 'var(--slate)',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker > ul > li[aria-selected] .cm-refOption-icon': {
+    color: 'var(--brand)',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker .cm-completionLabel': {
+    fontFamily: 'var(--font-mono, monospace)',
+    fontSize: '12px',
+    flexShrink: '0',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker .cm-completionDetail': {
+    fontStyle: 'normal',
+    marginLeft: '0',
+    color: 'var(--brand)',
+    fontSize: '11px',
+    flexShrink: '0',
+  },
+  '.cm-tooltip.cm-tooltip-autocomplete.cm-refPicker .cm-refOption-caption': {
+    color: 'var(--slate)',
+    fontSize: '11.5px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    minWidth: '0',
+    flex: '1 1 auto',
+  },
+});
+
+/**
+ * `@`-mention style resource picker. Typing `@` (at a word boundary, outside
+ * code and frontmatter) opens a dropdown of the document's resources; typing
+ * on filters by id, caption or type name; Enter/Tab/click replaces the `@…`
+ * with the `:ref{id="…"}` microformat. Escape closes the list and keeps the
+ * literal `@`.
+ */
+export function refCompletion(getContext: () => RefCompletionContext): Extension {
+  return [
+    dismissedRefs,
+    Prec.highest(dismissOnEscape),
+    autocompletion({
+      // One completion config per editor: the chip directive and style ids
+      // and the small-caps directive share it with the `@` picker.
+      override: [
+        refSource(getContext),
+        chipCompletionSource(() => getContext().chipStyles ?? []),
+        markCompletionSource(() => getContext().markStyles ?? []),
+        smallCapsCompletionSource,
+        annotationCompletionSource,
+        indexCompletionSource(() => getContext().indexTerms?.() ?? []),
+        directionCompletionSource,
+        verseCompletionSource,
+        tabCompletionSource,
+        labelCompletionSource(() => {
+          const c = getContext();
+          return { resources: c.resources, labelStyles: c.labelStyles ?? [], ...(c.labelWords ? { words: c.labelWords } : {}) };
+        }),
+      ],
+      activateOnTyping: true,
+      icons: false,
+      tooltipClass: () => 'cm-refPicker',
+      addToOptions: [
+        {
+          position: 20,
+          render: (completion) => {
+            const { resource, anchor, reference } = completion as Partial<RefOption>;
+            return resource ? kindIcon(resource.kind) : anchor ? anchorIcon() : reference ? quoteIcon() : null;
+          },
+        },
+        {
+          position: 90,
+          render: (completion) => {
+            const { caption } = completion as Partial<RefOption>;
+            if (!caption) return null;
+            const span = document.createElement('span');
+            span.className = 'cm-refOption-caption';
+            span.textContent = caption;
+            span.title = caption;
+            return span;
+          },
+        },
+      ],
+    }),
+    refPickerTheme,
+  ];
+}

@@ -15,7 +15,7 @@ vi.mock('../storage/persistence.js', async (importOriginal) => ({
 }));
 
 const { applyPreset } = await import('./apply.js');
-const { isRemovedCustomFontFamily, setCustomFonts } = await import('../controls/fontLoader.js');
+const { isRemovedCustomFontFamily, setCustomFonts } = await import('../controls/fonts/fontLoader.js');
 const { computeWarnings } = await import('../warnings/compute.js');
 
 const bundled = (name: string): CustomFontFamily => ({ name, variants: [{ weight: 400, style: 'normal', fileId: `${name}-400`, format: 'ttf' }] });

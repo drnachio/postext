@@ -20,7 +20,7 @@
  */
 
 import type { FitMarksMode, VDTDocument, VDTFrame, VDTPage } from 'postext';
-import { SVG_NS } from '../CanvasPreview/dom.js';
+import { SVG_NS } from '../canvas/CanvasPreview/dom.js';
 import { markFontPx } from './frameOverlay.js';
 import { jumpFlashNow } from '../../editions/frameJump.js';
 import { drawOverlapMarks } from './overlapMarks.js';

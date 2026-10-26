@@ -8,7 +8,7 @@ import type { BookPlan, Chapter } from '../book/types.js';
 import { composeBookMemo } from '../book/compose.js';
 import { layoutCacheKey } from '../book/layoutKeys.js';
 import { chapterPageLabels } from '../book/pagination.js';
-import { withHyphenationLocale } from '../controls/hyphenation.js';
+import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import type { LayoutService } from '../worker/LayoutService.js';
 import { ToolError } from './modelContext.js';
 import { planContent } from '../book/jumps.js';

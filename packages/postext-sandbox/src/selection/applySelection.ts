@@ -14,7 +14,7 @@ import type { VDTDocument, VDTFrame } from 'postext';
 import type { SandboxAction } from '../context/SandboxContext.js';
 import type { Chapter, ComposedBook } from '../book/types.js';
 import type { PanelId } from '../types/index.js';
-import { toChapterFocus } from '../viewport/CanvasPreview/chapterFocus.js';
+import { toChapterFocus } from '../viewport/canvas/CanvasPreview/chapterFocus.js';
 import { editModeNow, selectFrame, type EditMode } from '../editing/editMode.js';
 import { requestSettingsSection, type SettingsFocus } from '../context/settingsNavigation.js';
 import { saveSectionState, saveSettingsGroup } from '../storage/persistence.js';

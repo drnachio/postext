@@ -10,7 +10,7 @@ import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../con
 import { ResourceList } from '../panels/resources/ResourceList.js';
 import { ResourceDetail } from '../panels/resources/ResourceDetail.js';
 import { newResource, renameResource, typesWithExample, typesWithVideo } from '../panels/resources/resourceEdits.js';
-import { uploadFiles } from '../panels/resources/uploadFiles.js';
+import { uploadFiles } from '../panels/resources/uploads/uploadFiles.js';
 
 /** Escape a string for safe inclusion in a RegExp. */
 function escapeRegExp(s: string): string {

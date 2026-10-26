@@ -1,6 +1,6 @@
 import { applyTextChanges, type TextChange } from '../../book/textChanges.js';
-import { setLabelLeader, iconDirective, type IconSpec, type LabelLeaderChoice } from '../../editor/labelAttrs.js';
-import { labelsInChapters, type MarkdownLabel } from '../../panels/resources/figureLabels.js';
+import { setLabelLeader, iconDirective, type IconSpec, type LabelLeaderChoice } from '../../editor/syntax/labelAttrs.js';
+import { labelsInChapters, type MarkdownLabel } from '../../panels/resources/marks/figureLabels.js';
 import { pointersOf, removePointer, setPointer } from '../../templates/pointerEdits.js';
 import { chapterText, editChapter } from '../chapterEdits.js';
 import type { SandboxToolHost } from '../host.js';

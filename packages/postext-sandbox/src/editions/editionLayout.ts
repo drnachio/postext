@@ -17,7 +17,7 @@ import { composeBookMemo } from '../book/compose.js';
 import { layoutCacheKey } from '../book/layoutKeys.js';
 import { chapterLayoutFromDoc, createBookPlanner } from '../book/pagination.js';
 import type { BookStart, Chapter, ChapterLayout, ComposedBook } from '../book/types.js';
-import { withHyphenationLocale } from '../controls/hyphenation.js';
+import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { computeComposedWarnings } from '../warnings/compute.js';
 import type { Warning } from '../warnings/types.js';
 import { planContent } from '../book/jumps.js';

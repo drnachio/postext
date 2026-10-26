@@ -7,7 +7,7 @@ import { countFields, mergeSuggestions, parseHex, styleDiff, styleFields, styles
 import { placesToKeep, planMerge, planMerges, planRename, rewrittenTexts } from './styleMerge.js';
 import { calloutStyleChain, inheritCalloutStyles } from 'postext';
 import { DEFAULT_LABELS } from '../types/defaultLabels.js';
-import { groupsText, suggestionText } from '../sidebar/sections/FrameStylesSection/text.js';
+import { groupsText, suggestionText } from '../sidebar/sections/callouts/FrameStylesSection/text.js';
 import { styleUsage } from './styleUsage.js';
 import { planExerciseStyleRename } from './exerciseRefs.js';
 import { frameDress, inheritedStyle, previewConfig, previewMarkdown } from './stylePreview.js';

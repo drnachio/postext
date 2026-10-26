@@ -12,7 +12,7 @@
  */
 
 import { resolvePageTemplate, type PageTemplateSource, type VDTDocument, type VDTFrame, type VDTPage } from 'postext';
-import { SVG_NS } from '../CanvasPreview/dom.js';
+import { SVG_NS } from '../canvas/CanvasPreview/dom.js';
 import { flowBoxOnSheet, frameIsEmpty } from './frameHit.js';
 import { chainHeadOf, frameAtCaret } from './frameLink.js';
 import type { EditMode } from '../../editing/editMode.js';

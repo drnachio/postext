@@ -8,7 +8,7 @@ import { WHOLE_BOOK_MAX_CHAPTERS, wholeBookAllowed } from '../book/scope.js';
 import type { EpubLayout, SandboxLabels, ViewportTab } from '../types/index.js';
 import { SegmentedControl, cn, useUiRtl } from '../ui/index.js';
 import { VIEWPORT_TABS as ALL_TABS } from '../storage/viewHash.js';
-import { folioSupported } from './folioSupport.js';
+import { folioSupported } from './folio/folioSupport.js';
 import { EditModeSwitch } from '../editing/EditModeSwitch.js';
 import { HistoryButtons } from '../history/HistoryButtons.js';
 

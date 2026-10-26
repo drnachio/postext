@@ -113,7 +113,7 @@ const bytes = await renderToPdf(doc, {
 
 ### مزوّد الخطوط في المتصفح (Fontsource + WOFF2)
 
-يأتي Sandbox مع `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`)، ويمكنك نسخها إلى أي تطبيق يعمل في المتصفح. هذه أساسياتها:
+يأتي Sandbox مع `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdf/pdfFontProvider.ts`)، ويمكنك نسخها إلى أي تطبيق يعمل في المتصفح. هذه أساسياتها:
 
 ```ts
 import type { PdfFontProvider } from 'postext-pdf';
@@ -328,7 +328,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**مهم:** استدعِ `ensureConfigFontsLoaded(config)` (أو ما يعادلها) *قبل* `buildDocument` حين تشير إعداداتك إلى خطوط ويب. يُقاس الإخراج بمقاييس الخط المتوفرة لدى المتصفح لتلك العائلة في تلك اللحظة؛ فإن لم يصل الخط الحقيقي بعد، قيست شجرة VDT بخط بديل ولن يطابق ملف PDF مخرجات Canvas أو HTML. يفعل Sandbox ذلك صراحةً قبل كل إنتاج (انظر `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+**مهم:** استدعِ `ensureConfigFontsLoaded(config)` (أو ما يعادلها) *قبل* `buildDocument` حين تشير إعداداتك إلى خطوط ويب. يُقاس الإخراج بمقاييس الخط المتوفرة لدى المتصفح لتلك العائلة في تلك اللحظة؛ فإن لم يصل الخط الحقيقي بعد، قيست شجرة VDT بخط بديل ولن يطابق ملف PDF مخرجات Canvas أو HTML. يفعل Sandbox ذلك صراحةً قبل كل إنتاج (انظر `packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`).
 
 ### مثال حي: ملف PDF في المتصفح
 
@@ -384,4 +384,4 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 
 ### التنفيذ المرجعي
 
-يربط مكوّن `PdfViewport` في Sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) القطع أعلاه في معاينة حية بأزرار لإعادة التوليد والتنزيل والطباعة، وهو نقطة انطلاق جيدة لأي دمج لـPDF داخل المتصفح. يبني شجرة VDT عبر عامل الإخراج المشترك (انظر [تشغيل الإخراج في عامل ويب](/ar/docs/configuration-programmatic-usage#تشغيل-الإخراج-في-web-worker))، فلا يجمّد النقر على *إعادة الحساب* الواجهةَ في أثناء عمل مسار الإخراج؛ ولا يتولى الخيط الرئيسي إلا `renderToPdf` (وهي سريعة أصلًا متى وُجدت شجرة VDT).
+يربط مكوّن `PdfViewport` في Sandbox (`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`) القطع أعلاه في معاينة حية بأزرار لإعادة التوليد والتنزيل والطباعة، وهو نقطة انطلاق جيدة لأي دمج لـPDF داخل المتصفح. يبني شجرة VDT عبر عامل الإخراج المشترك (انظر [تشغيل الإخراج في عامل ويب](/ar/docs/configuration-programmatic-usage#تشغيل-الإخراج-في-web-worker))، فلا يجمّد النقر على *إعادة الحساب* الواجهةَ في أثناء عمل مسار الإخراج؛ ولا يتولى الخيط الرئيسي إلا `renderToPdf` (وهي سريعة أصلًا متى وُجدت شجرة VDT).

@@ -12,7 +12,7 @@ import {
   type VideoSource,
 } from 'postext';
 import { getBlob } from '../storage/blobStore.js';
-import { resourceFromFile } from '../panels/resources/uploadFiles.js';
+import { resourceFromFile } from '../panels/resources/uploads/uploadFiles.js';
 import {
   VIDEO_PLAYER_SOURCES,
   addressEdit,
@@ -24,8 +24,8 @@ import {
   sourceSwitched,
   streamInfoEdit,
   videoFileEdit,
-} from '../panels/resources/videoEdits.js';
-import { addressMetadata, fetchStreamInfo, posterAt } from '../panels/resources/videoMedia.js';
+} from '../panels/resources/video/videoEdits.js';
+import { addressMetadata, fetchStreamInfo, posterAt } from '../panels/resources/video/videoMedia.js';
 import { FILE_PARAM, readFileInput, type FileInput } from './fileInput.js';
 import { ToolError, type JsonSchema } from './modelContext.js';
 

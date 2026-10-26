@@ -3,7 +3,7 @@
 import { useRef, type MutableRefObject } from 'react';
 import { useBookContent, useBookPages } from '../context/SandboxContext.js';
 import { readViewHash, viewHashFragment } from '../storage/viewHash.js';
-import type { PageNavigator } from './CanvasPreview/interaction.js';
+import type { PageNavigator } from './canvas/CanvasPreview/interaction.js';
 
 /**
  * Where a link to a book page (a row of the contents) takes the reader:

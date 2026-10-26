@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { fontsourceCssUrl } from '../viewport/fontsourceSlices.js';
+import { fontsourceCssUrl } from '../viewport/pdf/fontsourceSlices.js';
 
 // #993: a family the book may not hand on is not left to the reading system
 // when it names an open `fallback`: the EPUB carries the fallback's faces
@@ -36,13 +36,13 @@ function stubFetch(): void {
   });
 }
 
-let loader: typeof import('../controls/fontLoader.js');
+let loader: typeof import('../controls/fonts/fontLoader.js');
 let inputs: typeof import('./inputs.js');
 
 beforeEach(async () => {
   stubFetch();
   vi.resetModules();
-  loader = await import('../controls/fontLoader.js');
+  loader = await import('../controls/fonts/fontLoader.js');
   inputs = await import('./inputs.js');
 });
 

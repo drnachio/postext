@@ -22,8 +22,8 @@ import { withDefaultResourceTypes } from '../context/defaultConfig.js';
 import {
   declareStandIns, ensureConfigFontsLoaded, fontLoaderState, getConfigFontFamilies, loadVerticalTwins, preloadConfigFonts, setCustomFonts,
   unansweredFontRequests,
-} from '../controls/fontLoader.js';
-import { withHyphenationLocale } from '../controls/hyphenation.js';
+} from '../controls/fonts/fontLoader.js';
+import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { parseBundle } from '../presets/bundle.js';
 import { openBundleZip } from '../presets/zip.js';
 import { putFontFile } from '../storage/fontStorage.js';

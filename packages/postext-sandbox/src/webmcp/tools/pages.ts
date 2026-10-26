@@ -2,7 +2,7 @@
 
 import { composeBookMemo } from '../../book/compose.js';
 import type { SandboxAction } from '../../context/SandboxContext.js';
-import { toChapterFocus } from '../../viewport/CanvasPreview/chapterFocus.js';
+import { toChapterFocus } from '../../viewport/canvas/CanvasPreview/chapterFocus.js';
 import { chapterOf, dispatchAndWait, layOutChapter, layoutConfig, pageIndexOf, type SandboxToolHost } from '../host.js';
 import { ToolError, imageResult, type WebMcpTool } from '../modelContext.js';
 import { pageImage, preparePainting, printPreviewFor } from '../pageImage.js';

@@ -13,7 +13,7 @@
  */
 
 import type { VDTDocument, VDTFrame, VDTPage } from 'postext';
-import { SVG_NS } from '../CanvasPreview/dom.js';
+import { SVG_NS } from '../canvas/CanvasPreview/dom.js';
 import { markFontPx } from './frameOverlay.js';
 import { frameTurnMatrix } from './fitMarks.js';
 import { reflowEntries, reflowShort } from './reflowText.js';

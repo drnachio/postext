@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { buildDocument, createMeasurementCache, type DesignConnectorElement, type LabelStyle, type PostextConfig, type Resource, type VDTDocument } from 'postext';
 import { applyTextChanges } from '../book/textChanges.js';
-import { setLabelLeader } from '../editor/labelAttrs.js';
-import { labelsInChapters } from '../panels/resources/figureLabels.js';
-import { applyMarks, marksOf, withLabelAway, withLabelFields, withLeader, withPoint } from '../panels/resources/pictureMarks.js';
-import { withLeaderLook } from '../sidebar/sections/LabelStylesSection.js';
+import { setLabelLeader } from '../editor/syntax/labelAttrs.js';
+import { labelsInChapters } from '../panels/resources/marks/figureLabels.js';
+import { applyMarks, marksOf, withLabelAway, withLabelFields, withLeader, withPoint } from '../panels/resources/marks/pictureMarks.js';
+import { withLeaderLook } from '../sidebar/sections/figures/LabelStylesSection.js';
 import { frameAnchorsOnPage, labelsOnPage } from '../viewport/composed/labelAnchorGeometry.js';
 import { pointersOf, setPointer } from './pointerEdits.js';
 import { connectorHandles } from './connectorHandles.js';

@@ -5,7 +5,7 @@ import type { Dimension, DimensionUnit, TabStop, TabStopAlign, TabStopPosition }
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { DimensionInput, NumberInput, SelectInput, TextInput } from '../../controls/index.js';
 import { FieldRow } from '../../controls/FieldRow.js';
-import { defaultDocumentLocale } from '../../controls/hyphenation.js';
+import { defaultDocumentLocale } from '../../controls/language/hyphenation.js';
 import { Button, IconButton } from '../../ui/index.js';
 import { SearchScope } from '../search/SearchScope.js';
 

@@ -21,7 +21,7 @@ import {
   undoJapaneseDefaults,
   type JapaneseDefaultId,
 } from './japaneseDefaults.js';
-import { foreEdgeElements } from '../sidebar/sections/HeaderFooterSection/foreEdge.js';
+import { foreEdgeElements } from '../sidebar/sections/running/HeaderFooterSection/foreEdge.js';
 
 const ids = (r: ReturnType<typeof japaneseDefaults>) => r.changes.map((c) => c.id);
 const change = (r: ReturnType<typeof japaneseDefaults>, id: JapaneseDefaultId) => r.changes.find((c) => c.id === id);

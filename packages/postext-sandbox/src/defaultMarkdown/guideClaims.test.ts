@@ -13,7 +13,7 @@ import { GUIDE_FOLIO } from '../context/guideKit.js';
 import { SETTINGS_GROUPS, type SettingsGroupId } from '../sidebar/sections/registry.js';
 import { DEFAULT_LABELS } from '../types/defaultLabels.js';
 import { VIEWPORT_TABS } from '../storage/viewHash.js';
-import { buildHtmlConfigOverride } from '../viewport/HtmlPreview/configOverride.js';
+import { buildHtmlConfigOverride } from '../viewport/html/HtmlPreview/configOverride.js';
 
 const spanish = (await import(/* @vite-ignore */ new URL('../../../../apps/web/messages/es.json', import.meta.url).href)) as {
   default: { Sandbox: Record<string, string> };

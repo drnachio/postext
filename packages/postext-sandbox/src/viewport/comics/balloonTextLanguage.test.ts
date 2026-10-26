@@ -4,8 +4,8 @@
 
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig, VDTComicBalloon, VDTDesignTextBlock, VDTDocument } from 'postext';
-import { installLanguageCanvas, LanguageContext } from '../../controls/languageCanvasStub.js';
-import { documentShapingLanguage } from '../../controls/measureLanguage.js';
+import { installLanguageCanvas, LanguageContext } from '../../controls/language/languageCanvasStub.js';
+import { documentShapingLanguage } from '../../controls/language/measureLanguage.js';
 import { balloonTextAt, balloonTextNearest } from './balloonText.js';
 
 // The page that hosts the Sandbox is in English.

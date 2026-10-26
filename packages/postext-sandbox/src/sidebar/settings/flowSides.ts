@@ -13,7 +13,7 @@
 
 import { useSandboxSelector } from '../../context/SandboxContext.js';
 import { documentDirection, documentLanguage } from '../../context/documentDirection.js';
-import { defaultDocumentLocale } from '../../controls/hyphenation.js';
+import { defaultDocumentLocale } from '../../controls/language/hyphenation.js';
 
 /** Whether the book's body runs right to left in a mirrored frame: a
  *  right-to-left direction (set, or the language's) on horizontal pages.

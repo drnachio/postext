@@ -8,7 +8,7 @@ import {
   InlineMarkdownInput,
   type InlineFocusRequest,
   type InlineSelection,
-} from '../../../controls/InlineMarkdownInput.js';
+} from '../../../controls/inputs/InlineMarkdownInput.js';
 
 // ---------------------------------------------------------------------------
 // TableEditorCell — a single editable grid cell. It renders the Phase-6

@@ -1941,7 +1941,7 @@ Recorded where the implementation settles a point §12.9 leaves open, or departs
   then `stroke` with width, `setLineDash`, cap, join; markers filled on top). HTML: an inline
   `<svg aria-hidden="true">` placed on `bbox` with `overflow:visible` (a mitre past the box still
   shows), the path in the box's own coordinates; fixed-layout EPUB takes the same markup. PDF
-  (`pdf-backend/pathBlock.ts`): `m l c h`, a quadratic as its cubic, `f`/`f*`, `S`, `B`/`B*`, `w`, `J`,
+  (`pdf-backend/vector/pathBlock.ts`): `m l c h`, a quadratic as its cubic, `f`/`f*`, `S`, `B`/`B*`, `w`, `J`,
   `j`, `d` (scaled to points), alpha through the shared ExtGState; a dot is four cubics, an arrow a
   triangle. Tagged PDF: the slot's artifact like a rule (a Layout artifact on decoration).
 - **Other consumers.** `offsetDesignBlock` moves the outline and markers with the box (so spreads'

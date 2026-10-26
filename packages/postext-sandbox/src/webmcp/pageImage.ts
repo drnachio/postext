@@ -14,8 +14,8 @@ import {
   resolvePrintConfig,
 } from 'postext';
 import type { BoundingBox, PostextConfig, PrintPreview, Resource, VDTDocument, VDTPage } from 'postext';
-import { declareStandIns, ensureConfigFontsLoaded, loadVerticalTwins } from '../controls/fontLoader.js';
-import { ensureResourceImages } from '../controls/resourceImages.js';
+import { declareStandIns, ensureConfigFontsLoaded, loadVerticalTwins } from '../controls/fonts/fontLoader.js';
+import { ensureResourceImages } from '../controls/media/resourceImages.js';
 import { preflightInputs } from '../print/preflightInputs.js';
 import { loadPrintProfile, previewFor, printTransform } from '../print/printSetup.js';
 

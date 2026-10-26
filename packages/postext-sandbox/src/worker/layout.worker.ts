@@ -5,7 +5,7 @@
 // citations never fetches it.
 import { setCitationEngineLoader, setFigureStyleFamilies } from 'postext';
 import 'postext/worker/entry';
-import { takesFigureFeatures } from '../controls/systemFonts.js';
+import { takesFigureFeatures } from '../controls/fonts/systemFonts.js';
 
 setCitationEngineLoader(() => import('postext-citeproc/register'));
 // A style's figures (#1237) leave a face only the system has as it is, as

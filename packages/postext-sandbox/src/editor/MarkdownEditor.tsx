@@ -3,14 +3,14 @@
 import { useEffect, useId, useMemo, useRef } from 'react';
 import { DEFAULT_CHIP_STYLES, DEFAULT_MARK_STYLES, canonicalLocaleTag, defaultResourceTypes } from 'postext';
 import { documentLanguage } from '../context/documentDirection.js';
-import { defaultDocumentLocale } from '../controls/hyphenation.js';
+import { defaultDocumentLocale } from '../controls/language/hyphenation.js';
 import { useCodeMirror } from './useCodeMirror.js';
-import { EditorToolbar } from './EditorToolbar.js';
+import { EditorToolbar } from './toolbar/EditorToolbar.js';
 import { useUiRtl } from '../ui/direction.js';
 import { useSandbox, useSandboxEditorStateRef, useSandboxStore } from '../context/SandboxContext.js';
 import { runHistoryFromUi } from '../history/historyKeys.js';
-import { anchorsOf, referencesOf, type RefCompletionContext } from './refCompletion.js';
-import { indexTermsOf } from './indexSyntax.js';
+import { anchorsOf, referencesOf, type RefCompletionContext } from './completion/refCompletion.js';
+import { indexTermsOf } from './syntax/indexSyntax.js';
 import { useEditMode } from '../editing/editMode.js';
 import { Button } from '../ui/index.js';
 
