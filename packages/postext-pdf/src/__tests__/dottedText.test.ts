@@ -4,9 +4,9 @@ import { PDFDocument, type PDFPage } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import type { VDTChip, VDTDesignSlot, VDTDesignTextBlock, VDTDocument } from 'postext';
 import { FontCache } from '../fontCache.js';
-import { renderHeaderFooterSlot } from '../pdf-backend/headerFooter.js';
-import { paintChip } from '../pdf-backend/chip.js';
-import { collectFontStrings } from '../pdf-backend/fontHelpers.js';
+import { renderHeaderFooterSlot } from '../pdf-backend/page/headerFooter.js';
+import { paintChip } from '../pdf-backend/blocks/chip.js';
+import { collectFontStrings } from '../pdf-backend/text/fontHelpers.js';
 import { colorFromHex, makeScale, type PageCtx } from '../pdf-backend/primitives.js';
 
 // The dots the painters are given (no canvas in the node test env).

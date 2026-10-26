@@ -1,11 +1,11 @@
 import type { Color, PDFFont } from 'pdf-lib';
 import type { VDTChip, VDTChipRun } from 'postext';
-import { parseFontString } from '../fontString.js';
-import type { FontCache } from '../fontCache.js';
-import { type PageCtx, drawChipBoxPx, drawTextDotsPx, drawTextPx, invisibleText } from './primitives.js';
-import { tagArtifact, tagContent, type StructElem } from './tagging.js';
-import { drawRightToLeftRun } from './rtlRun.js';
-import { paintChipReadings } from './annotations.js';
+import { parseFontString } from '../../fontString.js';
+import type { FontCache } from '../../fontCache.js';
+import { type PageCtx, drawChipBoxPx, drawTextDotsPx, drawTextPx, invisibleText } from '../primitives.js';
+import { tagArtifact, tagContent, type StructElem } from '../structure/tagging.js';
+import { drawRightToLeftRun } from '../text/rtlRun.js';
+import { paintChipReadings } from '../text/annotations.js';
 
 /**
  * Inline chip (`:chip[…]`): the box, flagged as a layout artifact in a

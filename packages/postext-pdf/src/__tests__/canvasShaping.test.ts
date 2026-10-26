@@ -9,7 +9,7 @@ import { loadComplexShaper } from '../complexShaping.js';
 import { parseFontString } from '../fontString.js';
 import { shapeInCurrentLanguage, withDocumentLanguage } from '../shapingLanguage.js';
 import { cellPieces, drawTextPx, textAdvancePx, textShows, type PageCtx } from '../pdf-backend/primitives.js';
-import '../pdf-backend/shapedText.js';
+import '../pdf-backend/text/shapedText.js';
 import { paintedGlyphs, type PaintedGlyph } from './glyphPositions.js';
 
 // #770: a document shaped in its own language is shaped word by word, as

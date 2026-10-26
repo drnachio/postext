@@ -29,10 +29,10 @@ import {
   type PDFOperator,
 } from 'pdf-lib';
 import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from 'postext';
-import { parseFontString } from '../fontString.js';
-import type { FontCache } from '../fontCache.js';
-import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, drawTextPx, fillOutlinePx } from './primitives.js';
-import { tagArtifact, tagContent, type StructElem } from './tagging.js';
+import { parseFontString } from '../../fontString.js';
+import type { FontCache } from '../../fontCache.js';
+import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, drawTextPx, fillOutlinePx } from '../primitives.js';
+import { tagArtifact, tagContent, type StructElem } from '../structure/tagging.js';
 
 /** A sesame dot (﹅): a lens `size` long and 0.3 of it wide,
  *  leaning a third of a right angle (as the canvas draws it). Two

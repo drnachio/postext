@@ -36,7 +36,7 @@ import {
   PDFRef,
   PDFString,
 } from 'pdf-lib';
-import type { PageCtx } from './primitives.js';
+import type { PageCtx } from '../primitives.js';
 
 /** Standard structure types this backend emits (PDF 1.7 §14.8.4). */
 export type StructType =

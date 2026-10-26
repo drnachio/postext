@@ -72,10 +72,10 @@ import {
   withActualText,
   type PageCtx,
   type TextOutline,
-} from './primitives.js';
-import { fileRuns, inRun, noteMissingGlyphs, wordRuns } from '../faceFiles.js';
-import { fontFamilyOf } from '../fontFamilies.js';
-import { VERTICAL_ORIGIN, verticalTwinOf, type VerticalTwin } from '../verticalFonts.js';
+} from '../primitives.js';
+import { fileRuns, inRun, noteMissingGlyphs, wordRuns } from '../../faceFiles.js';
+import { fontFamilyOf } from '../../fontFamilies.js';
+import { VERTICAL_ORIGIN, verticalTwinOf, type VerticalTwin } from '../../verticalFonts.js';
 
 const twinKeys = new WeakMap<PDFPage, Map<PDFFont, PDFName>>();
 

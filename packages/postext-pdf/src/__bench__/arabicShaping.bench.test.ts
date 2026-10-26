@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { loadComplexShaper } from '../complexShaping.js';
-import { drawShapedTextPx } from '../pdf-backend/shapedText.js';
+import { drawShapedTextPx } from '../pdf-backend/text/shapedText.js';
 import { showTextShaped, type PageCtx } from '../pdf-backend/primitives.js';
 
 const AMIRI = new Uint8Array(fs.readFileSync(new URL('../__tests__/fixtures/arabic/amiri-subset.ttf', import.meta.url)));

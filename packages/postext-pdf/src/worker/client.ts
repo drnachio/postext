@@ -2,7 +2,7 @@ import type { VDTDocument } from 'postext';
 import { declarationOf, type PdfFontProvider } from '../fontCache.js';
 import type { RenderToPdfOptions } from '../pdf-backend/index.js';
 import { sourceBase } from '../harfbuzz.js';
-import { rasterizeSvgWithDom, type SvgRasterizer } from '../pdf-backend/renderResourceBlock.js';
+import { rasterizeSvgWithDom, type SvgRasterizer } from '../pdf-backend/blocks/renderResourceBlock.js';
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol.js';
 
 export type {

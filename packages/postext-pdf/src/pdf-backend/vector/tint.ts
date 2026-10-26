@@ -11,7 +11,7 @@
 //   the render paints (RGB, grayscale, CMYK, an ICC print mode).
 
 import type { PDFDocument, PDFImage } from 'pdf-lib';
-import { decodeRgba, imageOf } from '../print/images.js';
+import { decodeRgba, imageOf } from '../../print/images.js';
 import type { VectorDrawing, VectorItem } from './svgVector.js';
 
 /** A bitmap's alpha as a stencil: an `ImageMask` image XObject. */

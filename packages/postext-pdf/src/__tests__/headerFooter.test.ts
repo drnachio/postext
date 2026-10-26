@@ -4,8 +4,8 @@ import { PDFDict, PDFDocument, PDFName, PDFNumber, type PDFPage } from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit';
 import type { VDTDesignSlot, VDTDesignTextBlock, VDTDocument } from 'postext';
 import { FontCache } from '../fontCache.js';
-import { renderHeaderFooterSlot } from '../pdf-backend/headerFooter.js';
-import { collectFontStrings } from '../pdf-backend/fontHelpers.js';
+import { renderHeaderFooterSlot } from '../pdf-backend/page/headerFooter.js';
+import { collectFontStrings } from '../pdf-backend/text/fontHelpers.js';
 import { makeScale, type PageCtx } from '../pdf-backend/primitives.js';
 
 /** The page's content stream operators, before pdf-lib deflates them. */

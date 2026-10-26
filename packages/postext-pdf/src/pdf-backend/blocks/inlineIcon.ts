@@ -10,11 +10,11 @@
 import { LineCapStyle, type Color, type PDFFont } from 'pdf-lib';
 import type { VDTLineSegment } from 'postext';
 import { hasSwatchShape, iconLineDash, inlineIconBox, swatchGeometry } from 'postext';
-import { parseFontString } from '../fontString.js';
-import type { FontCache } from '../fontCache.js';
-import { type PageCtx, alphaOf, colorFromHex, counterFlipPx, drawShapedSwatchPx, drawSwatchPx, drawTextPx } from './primitives.js';
+import { parseFontString } from '../../fontString.js';
+import type { FontCache } from '../../fontCache.js';
+import { type PageCtx, alphaOf, colorFromHex, counterFlipPx, drawShapedSwatchPx, drawSwatchPx, drawTextPx } from '../primitives.js';
 import { drawEmbeddedResource } from './renderResourceBlock.js';
-import { tagArtifact, tagContent, type StructElem } from './tagging.js';
+import { tagArtifact, tagContent, type StructElem } from '../structure/tagging.js';
 
 /** A `'swatch'` segment at `x` on `baseline`: its inline symbol when it
  *  carries one, else the colour swatch (tagged in `elem`). `ink` is the

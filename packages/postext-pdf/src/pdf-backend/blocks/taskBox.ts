@@ -22,7 +22,7 @@ import {
 } from 'pdf-lib';
 import { taskBoxTick } from 'postext';
 import type { VDTBlock } from 'postext';
-import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, opt } from './primitives.js';
+import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, opt } from '../primitives.js';
 
 /** Draw the box of `block` from its `bulletOffsetX`, centred on its
  *  `bulletY`, the stroke inside the square. In the flow of a vertical or a

@@ -5,7 +5,7 @@ import fontkit from '@pdf-lib/fontkit';
 import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
-import { preloadResourceImages } from '../pdf-backend/renderResourceBlock.js';
+import { preloadResourceImages } from '../pdf-backend/blocks/renderResourceBlock.js';
 import { parseFontString } from '../fontString.js';
 
 // EF-06: a figure's vector print master (`svg.pdfFileId`) is what

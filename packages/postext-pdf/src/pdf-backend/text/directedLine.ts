@@ -7,7 +7,7 @@
  */
 import { bidiClassOf, localeScript, type VDTLineSegment } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
-import { colorFromHex, type PageCtx } from './primitives.js';
+import { colorFromHex, type PageCtx } from '../primitives.js';
 import type { StyledWordPart } from './shapedText.js';
 
 /** The styled runs of a word (`VDTLineSegment.runs`) as ranges of its text

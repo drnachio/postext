@@ -31,7 +31,7 @@
  */
 import type { PDFFont } from 'pdf-lib';
 import { mirroredCodePoint } from 'postext';
-import { isDefaultIgnorable, isFallbackHandled, substituteGlyph } from './pdf-backend/fallbackSpaces.js';
+import { isDefaultIgnorable, isFallbackHandled, substituteGlyph } from './pdf-backend/text/fallbackSpaces.js';
 import { besideLetterOf, shapesAsCanvas, shapingScript, shapingScriptLetter, withBesideLetter, withinWideText } from './shapingLanguage.js';
 import { canvasWords } from './canvasWords.js';
 import { parseUnicodeRange, rangesHold, type CodePointRanges } from './unicodeRange.js';

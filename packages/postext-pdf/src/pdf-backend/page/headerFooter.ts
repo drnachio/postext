@@ -7,12 +7,12 @@ import type {
   VDTDesignBoxStyle,
 } from 'postext';
 import { boxNeedsShape, boxStylePathBlocks, segmentOrientation } from 'postext';
-import { drawRightToLeftRun } from './rtlRun.js';
-import { inkScaleOperators } from './inkScale.js';
-import { paintChipRuns } from './chip.js';
-import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from './renderResourceBlock.js';
-import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from './tagging.js';
-import { renderPathBlock } from './pathBlock.js';
+import { drawRightToLeftRun } from '../text/rtlRun.js';
+import { inkScaleOperators } from '../text/inkScale.js';
+import { paintChipRuns } from '../blocks/chip.js';
+import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from '../blocks/renderResourceBlock.js';
+import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from '../structure/tagging.js';
+import { renderPathBlock } from '../vector/pathBlock.js';
 
 /** How an accessible render tags a design slot: its text goes to the
  *  element `text()` returns (created on first use), or counts as an
@@ -41,8 +41,8 @@ function tagSlotText(ctx: PageCtx, mark: SlotMark | undefined, block: VDTDesignT
   if (mark.text && !block.artifact) tagContent(ctx, mark.text());
   else tagArtifact(ctx, mark.artifact);
 }
-import { parseFontString } from '../fontString.js';
-import { FontCache } from '../fontCache.js';
+import { parseFontString } from '../../fontString.js';
+import { FontCache } from '../../fontCache.js';
 import {
   type PageCtx,
   alphaOf,
@@ -60,7 +60,7 @@ import {
   pushClipRect,
   popClip,
   type TextOutline,
-} from './primitives.js';
+} from '../primitives.js';
 
 /** pdf-lib drawing options for a translucent fill / stroke (none when opaque). */
 const opacity = (alpha: number) => (alpha < 1 ? { opacity: alpha } : {});

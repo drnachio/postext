@@ -15,7 +15,7 @@ import {
 import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTComicBalloon, VDTDesignTextBlock, VDTDocument, VDTPage } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
-import { comicBalloonGroups, comicBalloonText, rotationMatrix, sheetMatrixToPdf } from '../pdf-backend/comic.js';
+import { comicBalloonGroups, comicBalloonText, rotationMatrix, sheetMatrixToPdf } from '../pdf-backend/page/comic.js';
 import { comicBalloonMatrix } from 'postext';
 
 // Comic pages in the PDF (#564): panels clipped to their outline with the

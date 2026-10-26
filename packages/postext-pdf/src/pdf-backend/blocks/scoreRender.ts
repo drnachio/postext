@@ -3,11 +3,11 @@
 // drawn in place as a form XObject when its line is painted.
 
 import type { VDTDocument, VDTBlock, VDTLineSegment, ScoreSystem, ResolvedResourceBlock } from 'postext';
-import type { FontCache } from '../fontCache.js';
-import type { PageCtx } from './primitives.js';
-import { svgToVectorDrawing, drawVectorDrawing, type VectorDrawing } from './svgVector.js';
+import type { FontCache } from '../../fontCache.js';
+import type { PageCtx } from '../primitives.js';
+import { svgToVectorDrawing, drawVectorDrawing, type VectorDrawing } from '../vector/svgVector.js';
 import { collectSvgFontStrings, fontResolverFor, svgCodePoints } from './renderResourceBlock.js';
-import { counterFlipPx, fillRectPx, colorFromHex } from './primitives.js';
+import { counterFlipPx, fillRectPx, colorFromHex } from '../primitives.js';
 
 /** Drawings per system and ink: a score's systems are converted once. */
 const drawings = new WeakMap<ScoreSystem, Map<string, VectorDrawing | null>>();

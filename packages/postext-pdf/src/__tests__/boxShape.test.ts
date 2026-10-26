@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { PDFDocument, type PDFPage } from 'pdf-lib';
 import { boxOutline, shapePathBlocks, type VDTDesignBlock, type VDTDesignBoxStyle, type VDTDesignSlot } from 'postext';
 import { FontCache } from '../fontCache.js';
-import { renderHeaderFooterSlot } from '../pdf-backend/headerFooter.js';
+import { renderHeaderFooterSlot } from '../pdf-backend/page/headerFooter.js';
 import { makeScale, type PageCtx } from '../pdf-backend/primitives.js';
-import { PageTagger } from '../pdf-backend/tagging.js';
+import { PageTagger } from '../pdf-backend/structure/tagging.js';
 
 // #1059: box shapes in PDF — corners of their own, a border per side and a
 // card joined to its tab, as vector paths.

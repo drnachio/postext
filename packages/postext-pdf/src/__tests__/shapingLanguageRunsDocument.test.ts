@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { buildDocument, lineRuns, resolveParagraph } from 'postext';
 import type { PostextConfig, VDTBlock, VDTDocument, VDTLine, VDTPage } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
-import { browserSizePx } from '../pdf-backend/wordPieces.js';
+import { browserSizePx } from '../pdf-backend/text/wordPieces.js';
 import { parseFontString } from '../fontString.js';
 import { loadComplexShaper, shapeRun } from '../complexShaping.js';
 import { paintedGlyphs } from './glyphPositions.js';

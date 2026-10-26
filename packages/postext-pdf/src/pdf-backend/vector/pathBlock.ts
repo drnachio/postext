@@ -29,7 +29,7 @@ import {
   fillAndStroke,
 } from 'pdf-lib';
 import { pathMarkerOutline, quadToCubic, type VDTDesignPathBlock, type VDTPathCommand } from 'postext';
-import { alphaOf, alphaStateOp, colorFromHex, opt, type PageCtx } from './primitives.js';
+import { alphaOf, alphaStateOp, colorFromHex, opt, type PageCtx } from '../primitives.js';
 
 const CAPS: Record<NonNullable<NonNullable<VDTDesignPathBlock['stroke']>['cap']>, LineCapStyle> = {
   butt: LineCapStyle.Butt,

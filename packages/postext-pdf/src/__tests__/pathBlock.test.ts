@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { PDFDocument, type PDFPage } from 'pdf-lib';
 import type { VDTDesignPathBlock, VDTDesignSlot } from 'postext';
 import { FontCache } from '../fontCache.js';
-import { renderHeaderFooterSlot } from '../pdf-backend/headerFooter.js';
+import { renderHeaderFooterSlot } from '../pdf-backend/page/headerFooter.js';
 import { makeScale, type PageCtx } from '../pdf-backend/primitives.js';
-import { PageTagger } from '../pdf-backend/tagging.js';
+import { PageTagger } from '../pdf-backend/structure/tagging.js';
 
 /** The page's content stream operators, before pdf-lib deflates them. */
 function pageContent(page: PDFPage): string {

@@ -11,7 +11,7 @@ import { renderToPdf } from '../pdf-backend/index.js';
 import { FontCache } from '../fontCache.js';
 import { loadComplexShaper } from '../complexShaping.js';
 import { beginActualTextSpan, drawMeasuredTextPx, drawTextPx, endActualTextSpan, measuredTextShows, textShows, type PageCtx, type TextShow } from '../pdf-backend/primitives.js';
-import '../pdf-backend/shapedText.js';
+import '../pdf-backend/text/shapedText.js';
 
 // #755: a font's `/ToUnicode` map is one per font and a glyph keeps the
 // characters it was first given. A right-to-left run draws a bracket with

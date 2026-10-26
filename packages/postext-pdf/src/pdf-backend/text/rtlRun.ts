@@ -1,7 +1,7 @@
 import type { Color, PDFFont } from 'pdf-lib';
 import { mirroredChar } from 'postext';
-import { joinsLetters, needsComplexShaping } from '../complexShaping.js';
-import { type PageCtx, type TextOutline, drawTextPx, setTrackingPx } from './primitives.js';
+import { joinsLetters, needsComplexShaping } from '../../complexShaping.js';
+import { type PageCtx, type TextOutline, drawTextPx, setTrackingPx } from '../primitives.js';
 
 /**
  * A run of a design text or a chip flagged `rtl`: shaped right to left as

@@ -37,7 +37,7 @@
  */
 import { lineWordSegments } from 'postext';
 import type { VDTLine, VDTLineSegment } from 'postext';
-import { shapesSegmentLanguages } from '../shapingLanguage.js';
+import { shapesSegmentLanguages } from '../../shapingLanguage.js';
 
 /**
  * The size (px) Chrome sets a face at when asked for `sizePx`: cut to a

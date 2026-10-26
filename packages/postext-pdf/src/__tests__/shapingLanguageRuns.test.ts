@@ -6,7 +6,7 @@ import { loadComplexShaper, needsComplexShaping, shapeRun } from '../complexShap
 import { fileRuns, registerFaceFiles } from '../faceFiles.js';
 import { besideLetterOf, shapeInCurrentLanguage, shapingKey, shapingLanguage, shapingScriptOf, withBesideLetter, withDocumentLanguage, withShapingScript, withinRightToLeftText } from '../shapingLanguage.js';
 import { textAdvancePx } from '../pdf-backend/primitives.js';
-import { shapedSvgText } from '../pdf-backend/shapedText.js';
+import { shapedSvgText } from '../pdf-backend/text/shapedText.js';
 
 // #764, right-to-left runs and faces in several files. The widths below
 // are the ones Chrome 154 gives these very font files on a canvas, loaded
