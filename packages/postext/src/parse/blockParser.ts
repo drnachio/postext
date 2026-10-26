@@ -5,57 +5,59 @@
  * positions back into the original markdown.
  */
 
-import type { BlockSlot, CodeBlockInfo, ComposedModuleFence, ComposedPageFence, ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, FigureLabel, FigureWord, FigureWordKind, ListKind, ParseIssue, ParseOptions, VerseLineInfo, VerseStanza } from './types.js';
+import type { BlockSlot, CodeBlockInfo, ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ParseIssue, ParseOptions } from './types.js';
 import type { SourceRange } from '../composed/types.js';
 import { attachEquationAnchors } from './equationLabels.js';
 import { parseAttrBlobStrict, parseDirectiveAttrs, scanDirectiveAttrs } from './attrs.js';
-import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath.js';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, replaceBodyBreaks, BODY_BREAK_MARK, bodyBreakSpans, titleBreakIndices, trimSpans, extractInlineTabs, injectTabSpans } from './inlineFormatting.js';
+import { fixMathSourceMap } from './inlineMath.js';
 import { buildBlockMapping } from './sourceMapping.js';
-import { extractExerciseGaps, injectGapSpans, settleGapPlaceholders } from './exerciseGaps.js';
-import { labelElementId } from '../composed/ids.js';
-import { extractInlineCitations, injectCitationSpans } from './citations.js';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks.js';
 import { joinEastAsianLines } from './softBreaks.js';
-import { asciiDigits } from '../numerals/arabicNumerals.js';
-import { indentColumn, listDepth, nestListItem } from './listNesting.js';
-import { parseComicFence } from '../comics/page.js';
-import { closesCodeFence, codeFenceOpen } from './codeFence.js';
-import { SCORE_LANGUAGES } from '../music/types.js';
+import { codeFenceOpen } from './codeFence.js';
+import { createVerseParsing } from './blockParser/verse.js';
+import { createContainerParsing } from './blockParser/containers.js';
+import { createCodeParsing } from './blockParser/codeFences.js';
+import type { ParseState } from './blockParser/parseState.js';
+import type { LineScan } from './blockParser/lineScan.js';
+import { createDisplayBlocks } from './blockParser/displayBlocks.js';
+import { createFenceLines } from './blockParser/fenceLines.js';
+import { createHeadingLines } from './blockParser/headingLines.js';
+import { createListLines } from './blockParser/listLines.js';
+import { createParagraphLines } from './blockParser/paragraphLines.js';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs.js';
 export { codeFenceOpen } from './codeFence.js';
 
-const HEADING_RE = /^(#{1,6})\s+(.+)$/;
+export const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 /** `:::name` or `:::name{attrs}` on its own line. Shared by single-line
  *  directives and container opening fences. */
-const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\}\s*)?$/;
+export const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\}\s*)?$/;
 /** A bare `:::` line: closes the innermost open container. */
-const CONTAINER_CLOSE_RE = /^:::\s*$/;
+export const CONTAINER_CLOSE_RE = /^:::\s*$/;
 /** A composed page's opening fence (#854): four or more colons, `page`,
  *  its attributes (`::::page{template="…"}`). Three colons stay a comic
  *  page (`:::page{split}`). */
-const PAGE_FENCE_RE = /^(:{4,})\s*page(?:\s*\{([^}]*)\})?\s*$/;
+export const PAGE_FENCE_RE = /^(:{4,})\s*page(?:\s*\{([^}]*)\})?\s*$/;
 /** A bare fence of four or more colons: it closes the composed page opened
  *  with as many (#854). */
-const LONG_CLOSE_RE = /^(:{4,})\s*$/;
+export const LONG_CLOSE_RE = /^(:{4,})\s*$/;
 /** A `::label[TEXT]{…}` line of a `:::figure` (#854). */
-const LABEL_LINE_RE = /^::label\[/;
+export const LABEL_LINE_RE = /^::label\[/;
 /** A `:::label{…}` fence of a `:::figure` (#1058): a label over several lines. */
-const LABEL_CONTAINER_RE = /^:::label(?:\{([^}]*)\})?$/;
+export const LABEL_CONTAINER_RE = /^:::label(?:\{([^}]*)\})?$/;
 /** `::alt[…]`, `::caption[…]`, `::note[…]`: a figure's own words (#935). */
-const FIGURE_WORD_LINE_RE = /^::(alt|caption|note)\[/;
+export const FIGURE_WORD_LINE_RE = /^::(alt|caption|note)\[/;
 /** `at="62% 48%"`: a label's place in percents of the picture. */
-const LABEL_AT_PERCENT_RE = /^\s*(-?\d+(?:\.\d+)?)\s*%\s+(-?\d+(?:\.\d+)?)\s*%\s*$/;
+export const LABEL_AT_PERCENT_RE = /^\s*(-?\d+(?:\.\d+)?)\s*%\s+(-?\d+(?:\.\d+)?)\s*%\s*$/;
 /** A bayt's hemistichs cut at a `\\` with a space on each side (the
  *  Wikisource markup, #378). */
-const HEMISTICH_WIKI_RE = /\s\\\\\s/;
+export const HEMISTICH_WIKI_RE = /\s\\\\\s/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
 export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse', 'page', 'strip', 'figure', 'solutions']);
 /** The directives that are one line, with no body and no closing fence
  *  (a bare `:::` after one is a stray fence, #1125). */
-const ONE_LINE_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'solutions']);
+export const ONE_LINE_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'solutions']);
 /** Trailing `{key="value" …}` attribute block on a heading line, e.g.
  *  `# Title {author="I. Zango"}`. The braces must be balanced (no nested
  *  braces) and be the last thing on the line, after a space — or right
@@ -63,7 +65,7 @@ const ONE_LINE_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'n
  *  without one (`# 回目{style="x"}`, #181). The block is taken only when
  *  the attribute grammar reads all of it (see `headingAttrTokens`);
  *  anything else is left in the heading text verbatim. */
-const HEADING_ATTRS_RE = /(?:\s+|(?<=[\p{sc=Han}\p{sc=Hira}\p{sc=Kana}\u3000-\u303F\uFF00-\uFFEF]))\{([^{}]*)\}\s*$/u;
+export const HEADING_ATTRS_RE = /(?:\s+|(?<=[\p{sc=Han}\p{sc=Hira}\p{sc=Kana}\u3000-\u303F\uFF00-\uFFEF]))\{([^{}]*)\}\s*$/u;
 
 /** The attributes of a heading's trailing `{…}` block, or `undefined` when
  *  the braces stay in the title: the grammar must read the whole blob
@@ -72,7 +74,7 @@ const HEADING_ATTRS_RE = /(?:\s+|(?<=[\p{sc=Han}\p{sc=Hira}\p{sc=Kana}\u3000-\u3
  *  the title (`# 第一回{draft}` stays text). A key written outside ASCII
  *  (`作者=曹雪芹`) is read, so the block still leaves the title and its
  *  other keys apply, and then dropped (`attributeKeyInvalid`). */
-function headingAttrTokens(blob: string, spaced: boolean): ReturnType<typeof parseAttrBlobStrict> {
+export function headingAttrTokens(blob: string, spaced: boolean): ReturnType<typeof parseAttrBlobStrict> {
   const tokens = parseAttrBlobStrict(blob);
   if (!tokens || tokens.length === 0) return undefined;
   if (!spaced && tokens.every((t) => t.flag)) return undefined;
@@ -85,7 +87,7 @@ export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 
 /** Absolute source range of each attribute value of a blob that starts at
  *  `blobStart` (a flag: its key). A repeated key keeps the last, as
  *  `parseDirectiveAttrs` does. */
-function attrSourcesOf(raw: string, blobStart: number): Record<string, SourceRange> {
+export function attrSourcesOf(raw: string, blobStart: number): Record<string, SourceRange> {
   const out: Record<string, SourceRange> = {};
   for (const t of scanDirectiveAttrs(raw)) {
     out[t.key] = t.valueStart !== undefined && t.valueEnd !== undefined
@@ -97,11 +99,11 @@ function attrSourcesOf(raw: string, blobStart: number): Record<string, SourceRan
 
 /** A module's own name (#1062): no space, and none of `.`, `#`, `[`, `]`
  *  (the characters scoped and instance names are built with). */
-const MODULE_NAME_RE = /^[^\s.#[\]]+$/u;
+export const MODULE_NAME_RE = /^[^\s.#[\]]+$/u;
 
 /** The slot a blob's `slot="…"` names (#854), or undefined when it names
  *  none (or an empty one). */
-function slotOf(attrs: DirectiveAttrs, raw: string, blobStart: number): BlockSlot | undefined {
+export function slotOf(attrs: DirectiveAttrs, raw: string, blobStart: number): BlockSlot | undefined {
   const name = attrs.slot?.trim();
   if (!name) return undefined;
   const at = attrSourcesOf(raw, blobStart).slot!;
@@ -110,7 +112,7 @@ function slotOf(attrs: DirectiveAttrs, raw: string, blobStart: number): BlockSlo
 
 /** The offset just past the `]` closing the bracket opened right before
  *  `from` (nested brackets counted, a backslash escapes), or -1. */
-function closingBracket(text: string, from: number): number {
+export function closingBracket(text: string, from: number): number {
   let depth = 1;
   for (let k = from; k < text.length; k++) {
     const c = text[k];
@@ -123,32 +125,32 @@ function closingBracket(text: string, from: number): number {
 
 /** True for lines that end a paragraph run even without a blank line: any
  *  `:::name` directive/container fence and the bare `:::` closing fence. */
-function isFenceLine(trimmed: string): boolean {
+export function isFenceLine(trimmed: string): boolean {
   return DIRECTIVE_RE.test(trimmed) || CONTAINER_CLOSE_RE.test(trimmed);
 }
 /** A footnote definition: `[^id]:` opening a paragraph. */
-const FOOTNOTE_DEF_RE = /^\[\^([\p{L}\p{N}_.:-]+)\]:[ \t]*/u;
-const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
+export const FOOTNOTE_DEF_RE = /^\[\^([\p{L}\p{N}_.:-]+)\]:[ \t]*/u;
+export const TASK_ITEM_RE = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.*)$/;
 /** An exercise's word bank (#1225): `::bank`, `::bank[sun | rain]`, with
  *  optional attributes. Read only inside a `:::exercise`. */
-const BANK_LINE_RE = /^::bank(?:\[(.*)\])?(?:\{([^}]*)\})?\s*$/;
+export const BANK_LINE_RE = /^::bank(?:\[(.*)\])?(?:\{([^}]*)\})?\s*$/;
 /** An ordered list item: its number in European, Arabic-Indic (١.) or
  *  Persian (۱.) digits — what an Arabic or Persian keyboard types — then
  *  `.` or `)`. */
-const ORDERED_LIST_ITEM_RE = /^(\s*)([0-9]+|[\u0660-\u0669]+|[\u06f0-\u06f9]+)([.)])\s+(.*)$/;
-const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
+export const ORDERED_LIST_ITEM_RE = /^(\s*)([0-9]+|[\u0660-\u0669]+|[\u06f0-\u06f9]+)([.)])\s+(.*)$/;
+export const LIST_ITEM_RE = /^(\s*)([-*+])\s+(.*)$/;
 
 /** One-line `$$ ... $$` display math (the whole line is the formula). */
-const BLOCK_MATH_SINGLE_RE = /^\s*\$\$([\s\S]+?)\$\$\s*$/;
+export const BLOCK_MATH_SINGLE_RE = /^\s*\$\$([\s\S]+?)\$\$\s*$/;
 /** Standalone `$$` marker (opening or closing a multi-line display block). */
-const BLOCK_MATH_FENCE_RE = /^\s*\$\$\s*$/;
+export const BLOCK_MATH_FENCE_RE = /^\s*\$\$\s*$/;
 /** A one-line display that may interrupt a paragraph: one formula, with no
  *  `$$` inside it (`$$a$$ and $$b$$` is a line of text, not a display). */
-const INTERRUPTING_MATH_SINGLE_RE = /^\s*\$\$((?:(?!\$\$)[\s\S])+)\$\$\s*$/;
+export const INTERRUPTING_MATH_SINGLE_RE = /^\s*\$\$((?:(?!\$\$)[\s\S])+)\$\$\s*$/;
 
 /** `::resource{id="..."}` block embed on its own line. Malformed variants
  *  (missing/empty id, extra attrs) fall through to paragraph parsing. */
-const RESOURCE_DIRECTIVE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
+export const RESOURCE_DIRECTIVE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 
 /** A fence's info string read (#624): the first word is the language
  *  (lower-cased); a `{…}` block after it, or `key=value` pairs, are
@@ -178,7 +180,7 @@ export function readCodeInfo(info: string): Pick<CodeBlockInfo, 'lang' | 'attrs'
 /** How far a line of indented code is indented (#624): the length of the
  *  leading whitespace that reaches column 4 (a tab to the next multiple of
  *  4), or -1 when it does not reach it. */
-function indentedCodeCut(line: string): number {
+export function indentedCodeCut(line: string): number {
   let col = 0;
   for (let i = 0; i < line.length; i++) {
     const c = line[i];
@@ -377,7 +379,7 @@ function attachContainerAnchors<T extends { blocks: ContentBlock[] }>(result: T)
 /** Stamp every chip of a mapped run with where its words stand in the
  *  source (`chip.sourceOffsets`, #857): the chip's bracketed text mapped as
  *  a paragraph's is, counted from the chip's leading `:`. */
-function withChipSources<T extends { spans: ContentBlock['spans']; sourceMap: number[] }>(markdown: string, mapping: T): T {
+export function withChipSources<T extends { spans: ContentBlock['spans']; sourceMap: number[] }>(markdown: string, mapping: T): T {
   let at = 0;
   for (const span of mapping.spans) {
     const chip = span.chip;
@@ -398,7 +400,7 @@ function withChipSources<T extends { spans: ContentBlock['spans']; sourceMap: nu
 /** A multi-line block's mapping with its maths placeholders aligned and
  *  the spaces that joined two lines between East Asian characters taken
  *  out (CSS Text 3 §4.1.3, see `softBreaks.ts`). */
-function joinedLines(
+export function joinedLines(
   markdown: string,
   mapping: { text: string; spans: ContentBlock['spans']; sourceMap: number[] },
 ): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } {
@@ -413,13 +415,14 @@ function joinedLines(
  * lines in the body (`:::name`, `::::page`) are blanked too: a comic's body
  * ends at its first bare `:::`, so a container could never close in it.
  */
-function comicTextSource(markdown: string, start: number, end: number): string {
+export function comicTextSource(markdown: string, start: number, end: number): string {
   const blank = (t: string): string => t.replace(/[^\n]/g, ' ');
   const body = markdown.slice(start, end).split('\n').map((line) => (line.trimStart().startsWith(':::') ? blank(line) : line)).join('\n');
   return blank(markdown.slice(0, start)) + body;
 }
 
-function parseBlocks(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+export function parseBlocks(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const parse = {} as ParseState;
   const fences = options?.fences !== false;
   const indentedCode = options?.indentedCode === true;
   const scores = options?.scores !== false;
@@ -453,732 +456,52 @@ function parseBlocks(markdown: string, options?: ParseOptions): { blocks: Conten
     return false;
   };
 
-  /** The spans, plain text and source map of a run of inline Markdown
-   *  (`raw`, whose source runs from `srcStart` to `srcEnd`): chips,
-   *  footnote markers, references, citations, swatches, maths and the
-   *  inline formatting, as a paragraph's text is read. With `hardBreaks`
-   *  its forced line breaks (#620) become `BREAK_PLACEHOLDER` (see
-   *  `replaceBodyBreaks`; `raw` joins its lines with a line feed after a
-   *  line that ends in a backslash). Maths issues are reported once, by
-   *  the reading with `report`. With `icons` the inline symbols
-   *  (`:icon[…]{…}`, #1058) are read: a figure label's text. */
-  const inlineRun = (raw: string, srcStart: number, srcEnd: number, hardBreaks = false, report = true, icons = false): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } => {
-    // The answers of an exercise (`[[…]]`, #1225), read first so their
-    // words are shielded from the later passes.
-    const gapExtract = inExerciseText() ? extractExerciseGaps(protectCodeSpans(raw), srcStart) : undefined;
-    if (gapExtract) raw = gapExtract.cleaned;
-    const chipExtract = extractInlineChips(protectCodeSpans(raw), srcStart);
-    const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
-    const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
-    const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
-    const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart, { icons });
-    const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
-    if (report) issues.push(...mathExtract.issues);
-    // Tabs (#622): `:tab` and tab characters, outside code and maths.
-    const tabExtract = extractInlineTabs(mathExtract.cleaned);
-    const formatted = hardBreaks
-      ? bodyBreakSpans(parseInlineFormatting(replaceBodyBreaks(tabExtract.cleaned, BODY_BREAK_MARK)))
-      : parseInlineFormatting(tabExtract.cleaned);
-    const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-      injectMathSpans(injectTabSpans(formatted, tabExtract.tabs), mathExtract.maths), swExtract.swatches), citeExtract.citations),
-      refExtract.refs,
-    ), fnExtract.markers), chipExtract.chips);
-    const spans = gapExtract && gapExtract.gaps.length > 0 ? injectGapSpans(rawSpans, gapExtract.gaps) : rawSpans;
-    return settleGapPlaceholders(withChipSources(markdown, joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, spans))));
-  };
+  const {
+    inlineRun, breakingRun, parseVerse, containerStack
+  } = createVerseParsing({
+    markdown, issues, rawLines, lineOffsets, lineEndOffset, inExerciseText, parse
+  });
 
-  /**
-   * A block's lines (trimmed) read as one run of inline Markdown with its
-   * forced line breaks (#620): joined with a space, or with a line feed
-   * after a line that ends in a backslash, for `replaceBodyBreaks`. When
-   * the block has a break, `literalBreaks` is the reading postext 1.22
-   * made of it (every line joined with a space, the backslashes printed).
-   */
-  const breakingRun = (lines: readonly string[], srcStart: number, srcEnd: number): ReturnType<typeof inlineRun> & { literalBreaks?: ContentBlock['literalBreaks'] } => {
-    let raw = '';
-    lines.forEach((l, k) => {
-      if (k > 0) raw += lines[k - 1]!.endsWith('\\') ? '\n' : ' ';
-      raw += l;
-    });
-    if (!raw.includes('\\')) return inlineRun(raw, srcStart, srcEnd);
-    const mapping = inlineRun(raw, srcStart, srcEnd, true);
-    if (!mapping.text.includes(BREAK_PLACEHOLDER)) return mapping;
-    const literal = inlineRun(lines.join(' '), srcStart, srcEnd, false, false);
-    return { ...mapping, literalBreaks: { text: literal.text, spans: literal.spans, sourceMap: literal.sourceMap } };
-  };
+  const {
+    popContainer, oneLineDirectiveBefore, openPageAt, scopeSlot, openModule, isPageFenceLine,
+    parseFigure, hasClosingFence, displayInterrupts
+  } = createContainerParsing({
+    blocks, issues, rawLines, lineOffsets, lineEndOffset, inlineRun, containerStack, parse
+  });
 
-  /** Poems in the line layout read so far (`VerseStanza.poem`). */
-  let poemCount = 0;
+  const {
+    parseCodeFence, parseIndentedCode
+  } = createCodeParsing({
+    scores, blocks, issues, rawLines, lineOffsets, lineEndOffset, scopeSlot, parse
+  });
 
-  /**
-   * A `:::verse` poem whose fence is line `start` (#378, #620), up to the
-   * closing `:::` (an unclosed poem runs to the end of the text). The fence's
-   * `layout` picks how its lines are read: `bayt` (see {@link parseBayts}),
-   * `lines` (see {@link parseVerseLines}), or, unset or `auto`, `bayt` when
-   * any line carries a hemistich separator (`||`, a spaced `\\`) and
-   * `lines` otherwise.
-   */
-  const parseVerse = (start: number, attrsRaw: string): { blocks: ContentBlock[]; next: number } => {
-    const attrs = parseDirectiveAttrs(attrsRaw);
-    let end = start + 1;
-    while (end < rawLines.length && !CONTAINER_CLOSE_RE.test(rawLines[end]!.trim())) end++;
-    const layout = attrs.layout?.trim().toLowerCase();
-    const separated = rawLines.slice(start + 1, end).some((raw) => raw.includes('||') || HEMISTICH_WIKI_RE.test(raw));
-    if (layout === 'bayt' || (layout !== 'lines' && separated)) return parseBayts(start, end, attrs);
-    return parseVerseLines(start, end, attrs, layout !== 'lines');
-  };
+  const { parseDisplayBlock } = createDisplayBlocks({
+    parse, blocks, issues, rawLines, lineOffsets, lineEndOffset, scopeSlot, displayInterrupts
+  });
+  const { parseFenceLine } = createFenceLines({
+    markdown, options, parse, blocks, issues, rawLines, lineOffsets, lineEndOffset, inExerciseText,
+    containerStack, parseVerse, inlineRun, openPageAt, popContainer, oneLineDirectiveBefore,
+    openModule, scopeSlot, parseFigure
+  });
+  const { parseHeadingLine } = createHeadingLines({
+    markdown, parse, blocks, issues, lineOffsets, lineEndOffset, scopeSlot
+  });
+  const { parseListOrQuote } = createListLines({
+    parse, blocks, rawLines, lineOffsets, lineEndOffset, breakingRun
+  });
+  const { parseParagraph } = createParagraphLines({
+    parse, fences, blocks, rawLines, lineOffsets, lineEndOffset, breakingRun, isPageFenceLine,
+    hasClosingFence
+  });
 
-  /**
-   * A poem in the bayt layout (#378): every non-blank line is a bayt, its
-   * two hemistichs split at the first `||` (or a `\\` with a space on
-   * each side, the Wikisource markup); a line without one is a single
-   * hemistich. The poem is one paragraph block (`ContentBlock.verse`) whose
-   * text joins the hemistichs with a tab and the bayts with a line feed;
-   * each hemistich is read as inline Markdown on its own, and the tab maps
-   * to the separator in the source, the line feed to the line's end. A
-   * poem with no line is dropped.
-   */
-  const parseBayts = (start: number, end: number, attrs: DirectiveAttrs): { blocks: ContentBlock[]; next: number } => {
-    let text = '';
-    const spans: ContentBlock['spans'] = [];
-    const sourceMap: number[] = [];
-    const sep = (ch: string, at: number) => {
-      text += ch;
-      spans.push({ text: ch, bold: false, italic: false });
-      sourceMap.push(at);
-    };
-    const hemistich = (from: number, to: number) => {
-      const raw = markdown.slice(from, to);
-      const lead = raw.length - raw.trimStart().length;
-      const body = raw.trim();
-      if (body === '') return;
-      const run = inlineRun(body, from + lead, from + lead + body.length);
-      text += run.text;
-      spans.push(...run.spans);
-      sourceMap.push(...run.sourceMap);
-    };
-    let lastLine = start;
-    for (let k = start + 1; k < end; k++) {
-      const raw = rawLines[k]!;
-      if (raw.trim() === '') continue;
-      if (text !== '') sep('\n', lineOffsets[k]! - 1);
-      const lineStart = lineOffsets[k]!;
-      const bar = raw.indexOf('||');
-      const wiki = bar < 0 ? HEMISTICH_WIKI_RE.exec(raw) : null;
-      const cut = bar >= 0 ? bar : wiki ? wiki.index + 1 : -1;
-      if (cut >= 0) {
-        hemistich(lineStart, lineStart + cut);
-        sep('\t', lineStart + cut);
-        hemistich(lineStart + cut + 2, lineStart + raw.length);
-      } else {
-        hemistich(lineStart, lineStart + raw.length);
-      }
-      lastLine = k;
-    }
-    const closed = end < rawLines.length;
-    const next = closed ? end + 1 : end;
-    if (text === '') return { blocks: [], next };
-    return {
-      blocks: [{
-        type: 'paragraph',
-        text,
-        spans,
-        verse: { attrs },
-        sourceStart: lineOffsets[start]!,
-        sourceEnd: closed ? lineEndOffset(end) : lineEndOffset(lastLine),
-        sourceMap,
-      }],
-      next,
-    };
-  };
-
-  /**
-   * A poem in the line layout (#620): every non-blank line is a line of
-   * verse, read as inline Markdown on its own; a run of blank lines ends a
-   * stanza. Each stanza is a paragraph block (`VerseInfo.stanza`) whose text
-   * joins its lines with a line feed, mapped to the source's line end. A
-   * line's leading whitespace is its indent (`VerseLineInfo.indent`), kept
-   * out of the text; a line written `+ …` is a stepped line. With
-   * `keepSpaces` on the fence, a run of two or more spaces inside a line (a
-   * caesura) is kept as a fixed space of its width. The first stanza opens
-   * on the fence line, the last closes on the closing fence.
-   */
-  const parseVerseLines = (start: number, end: number, attrs: DirectiveAttrs, auto: boolean): { blocks: ContentBlock[]; next: number } => {
-    const closed = end < rawLines.length;
-    const next = closed ? end + 1 : end;
-    const keepSpaces = attrs.keepSpaces !== undefined && attrs.keepSpaces.trim().toLowerCase() !== 'false';
-    // The stanzas, as runs of source line indices.
-    const groups: number[][] = [];
-    let run: number[] = [];
-    for (let k = start + 1; k < end; k++) {
-      if (rawLines[k]!.trim() === '') {
-        if (run.length > 0) groups.push(run);
-        run = [];
-      } else {
-        run.push(k);
-      }
-    }
-    if (run.length > 0) groups.push(run);
-    interface Stanza { text: string; spans: ContentBlock['spans']; sourceMap: number[]; lines: VerseLineInfo[]; from: number; to: number }
-    const stanzas: Stanza[] = [];
-    for (const rows of groups) {
-      const st: Stanza = { text: '', spans: [], sourceMap: [], lines: [], from: rows[0]!, to: rows[0]! };
-      for (const k of rows) {
-        const raw = rawLines[k]!;
-        const lineStart = lineOffsets[k]!;
-        let p = 0;
-        let indent = 0;
-        for (; p < raw.length; p++) {
-          const c = raw[p];
-          if (c === ' ') indent += 1;
-          else if (c === '\t') indent += 4;
-          else if (c === '\u3000') indent += 2;
-          else break;
-        }
-        let stepped = false;
-        // `\+ …`: a line that opens with a plus sign, not a stepped one.
-        if (raw[p] === '\\' && raw[p + 1] === '+') p++;
-        else if (raw[p] === '+' && (raw[p + 1] === ' ' || raw[p + 1] === '\t')) {
-          stepped = true;
-          p++;
-          while (raw[p] === ' ' || raw[p] === '\t') p++;
-        }
-        const bodyEnd = raw.trimEnd().length;
-        // The line's pieces of text, and the caesura gaps between them.
-        const pieces: { from: number; to: number; gap: boolean }[] = [];
-        if (keepSpaces) {
-          const gapRe = / {2,}/g;
-          let at = p;
-          for (let m = gapRe.exec(raw); m && m.index < bodyEnd; m = gapRe.exec(raw)) {
-            if (m.index < p) continue;
-            if (m.index > at) pieces.push({ from: at, to: m.index, gap: false });
-            pieces.push({ from: m.index, to: m.index + m[0].length, gap: true });
-            at = m.index + m[0].length;
-          }
-          if (at < bodyEnd) pieces.push({ from: at, to: bodyEnd, gap: false });
-        } else if (p < bodyEnd) {
-          pieces.push({ from: p, to: bodyEnd, gap: false });
-        }
-        let text = '';
-        const spans: ContentBlock['spans'] = [];
-        const sourceMap: number[] = [];
-        for (const piece of pieces) {
-          if (piece.gap) {
-            if (text === '') continue;
-            const width = piece.to - piece.from;
-            text += ' '.repeat(width);
-            spans.push({ text: ' '.repeat(width), bold: false, italic: false, fixedSpace: true });
-            for (let c = piece.from; c < piece.to; c++) sourceMap.push(lineStart + c);
-            continue;
-          }
-          const r = inlineRun(raw.slice(piece.from, piece.to), lineStart + piece.from, lineStart + piece.to);
-          text += r.text;
-          spans.push(...r.spans);
-          sourceMap.push(...r.sourceMap);
-        }
-        if (text.trim() === '') continue;
-        if (st.text !== '') {
-          st.text += '\n';
-          st.spans.push({ text: '\n', bold: false, italic: false });
-          st.sourceMap.push(lineStart - 1);
-        }
-        st.text += text;
-        st.spans.push(...spans);
-        st.sourceMap.push(...sourceMap);
-        st.lines.push({ indent, ...(stepped ? { stepped: true as const } : {}) });
-        st.to = k;
-      }
-      if (st.lines.length > 0) stanzas.push(st);
-    }
-    if (stanzas.length === 0) return { blocks: [], next };
-    const poem = poemCount++;
-    let firstLine = 0;
-    const blocks = stanzas.map((st, index): ContentBlock => {
-      const last = index === stanzas.length - 1;
-      const stanza: VerseStanza = { poem, index, last, firstLine, lines: st.lines, ...(auto ? { auto: true as const } : {}) };
-      firstLine += st.lines.length;
-      return {
-        type: 'paragraph',
-        text: st.text,
-        spans: st.spans,
-        verse: { attrs, stanza },
-        sourceStart: index === 0 ? lineOffsets[start]! : lineOffsets[st.from]!,
-        sourceEnd: last && closed ? lineEndOffset(end) : lineEndOffset(st.to),
-        sourceMap: st.sourceMap,
-      };
-    });
-    return { blocks, next };
-  };
-
-  // Open fenced containers, innermost last. Each entry remembers what it
-  // needs to emit the matching `containerEnd` (or an `unclosedContainer`
-  // issue pointing at the opening line when EOF arrives first).
-  // A composed page's entry (#854) records how many colons opened it: only
-  // a bare fence of as many closes it, never a bare `:::`.
-  const containerStack: { id: number; name: ContainerName; sourceStart: number; sourceEnd: number; colons?: number; slot?: string; module?: string }[] = [];
-  /** The open composed page's fence, and what its modules (#1062) took:
-   *  the names, and how many of each template. */
-  let pageFence: ComposedPageFence | undefined;
-  let moduleNames = new Set<string>();
-  let moduleCounts = new Map<string, number>();
-  let nextContainerId = 1;
-  /** Composed page fences read so far (`ComposedPageFence.fenceIndex`). */
-  let pageFences = 0;
-  /** Comic fences read so far (`ComicPageSource.fenceIndex`, #885). */
-  let comicFences = 0;
-
-  /** Emit the `containerEnd` of the innermost open container (at
-   *  `srcStart`…`srcEnd`), reporting it as unclosed when `unclosed`. */
-  const popContainer = (srcStart: number, srcEnd: number, unclosed: boolean): void => {
-    const open = containerStack.pop()!;
-    blocks.push({
-      type: 'containerEnd',
-      text: '',
-      spans: [],
-      containerName: open.name,
-      containerId: open.id,
-      sourceStart: srcStart,
-      sourceEnd: srcEnd,
-      sourceMap: [],
-    });
-    if (unclosed) {
-      issues.push({
-        kind: 'unclosedContainer',
-        delimiter: ':::',
-        containerName: open.name,
-        containerId: open.id,
-        sourceStart: open.sourceStart,
-        sourceEnd: open.sourceEnd,
-      });
-    }
-  };
-  /** The one-line directive on the last non-blank line before line `at`,
-   *  if that line is one. */
-  const oneLineDirectiveBefore = (at: number): DirectiveName | undefined => {
-    let j = at - 1;
-    while (j >= 0 && rawLines[j]!.trim() === '') j--;
-    const m = j >= 0 ? rawLines[j]!.trim().match(DIRECTIVE_RE) : null;
-    return m && ONE_LINE_DIRECTIVES.has(m[1] as DirectiveName) ? m[1] as DirectiveName : undefined;
-  };
-  /** Index in `containerStack` of the open composed page, or -1. */
-  const openPageAt = (): number => {
-    for (let k = containerStack.length - 1; k >= 0; k--) if (containerStack[k]!.colons !== undefined) return k;
-    return -1;
-  };
-  /** `slot` as the module it is written in names it (#1062):
-   *  `<module>.<slot>` inside a `:::module` of the open page. */
-  const scopeSlot = (slot: BlockSlot | undefined): BlockSlot | undefined => {
-    if (!slot) return slot;
-    const pageAt = openPageAt();
-    if (pageAt < 0) return slot;
-    for (let k = containerStack.length - 1; k > pageAt; k--) {
-      const m = containerStack[k]!.module;
-      if (m !== undefined) return { ...slot, name: `${m}.${slot.name}` };
-    }
-    return slot;
-  };
-  /** The module a `:::module` of the open page opens (#1062), its name
-   *  taken: `name` as written when it is free and valid, else
-   *  `<template>[n]`. Recorded on the page's fence unless `nested`. */
-  const openModule = (attrs: DirectiveAttrs, attrSources: Record<string, SourceRange>, sourceStart: number, sourceEnd: number, nested: boolean): ComposedModuleFence => {
-    const template = attrs.template?.trim() ?? '';
-    if (nested) return { template, name: '', nested: true, attrs, attrSources, sourceStart, sourceEnd };
-    const n = (moduleCounts.get(template) ?? 0) + 1;
-    moduleCounts.set(template, n);
-    const asked = attrs.name?.trim();
-    let rejected: ComposedModuleFence['rejected'];
-    let name: string | undefined;
-    if (asked !== undefined && asked !== '') {
-      if (!MODULE_NAME_RE.test(asked)) rejected = { name: asked, reason: 'invalid' };
-      else if (moduleNames.has(asked)) rejected = { name: asked, reason: 'taken' };
-      else name = asked;
-    }
-    if (name === undefined) {
-      let k = n;
-      while (moduleNames.has(`${template}[${k}]`)) k++;
-      name = `${template}[${k}]`;
-    }
-    moduleNames.add(name);
-    const module: ComposedModuleFence = { template, name, ...(rejected ? { rejected } : {}), attrs, attrSources, sourceStart, sourceEnd };
-    if (pageFence) (pageFence.modules ??= []).push(module);
-    return module;
-  };
-  /** Whether line `k` (trimmed `pl`) is a composed page fence: an opening
-   *  one, or the bare fence that closes the open page. */
-  const isPageFenceLine = (pl: string): boolean => {
-    if (PAGE_FENCE_RE.test(pl)) return true;
-    const close = LONG_CLOSE_RE.exec(pl);
-    const at = close ? openPageAt() : -1;
-    return at >= 0 && containerStack[at]!.colons === close![1]!.length;
-  };
-
-  /**
-   * A `:::figure{resource="…" slot="…"}` whose fence is line `start`
-   * (#854): its `::label[…]{…}` lines up to the closing `:::`, as one
-   * `resourceBlock`. A line that is neither a label nor blank ends a figure
-   * left open (`unclosedContainer`), and is read as usual.
-   */
-  const parseFigure = (start: number, attrsRaw: string): number => {
-    const attrs = parseDirectiveAttrs(attrsRaw);
-    const fenceLine = rawLines[start]!;
-    const blobStart = lineOffsets[start]! + fenceLine.indexOf('{') + 1;
-    const attrSources = attrsRaw ? attrSourcesOf(attrsRaw, blobStart) : {};
-    const labels: FigureLabel[] = [];
-    const lineWords: Partial<Record<FigureWordKind, FigureWord>> = {};
-    let k = start + 1;
-    let last = start;
-    let closed = false;
-    while (k < rawLines.length) {
-      const t = rawLines[k]!.trim();
-      if (CONTAINER_CLOSE_RE.test(t)) {
-        closed = true;
-        break;
-      }
-      if (t === '') {
-        k++;
-        continue;
-      }
-      const word = FIGURE_WORD_LINE_RE.test(t) ? parseFigureWord(k) : undefined;
-      if (word) {
-        lineWords[word.kind] = word.word;
-        last = k;
-        k++;
-        continue;
-      }
-      // A label written over several lines (#1058): `:::label{at=…}` up to
-      // its own `:::`, each line a line of the label.
-      const multi = LABEL_CONTAINER_RE.test(t) ? parseLabelContainer(k) : undefined;
-      if (multi) {
-        labels.push(multi.label);
-        last = multi.close;
-        k = multi.close + 1;
-        continue;
-      }
-      const label = LABEL_LINE_RE.test(t) ? parseLabel(k) : undefined;
-      if (!label) break;
-      labels.push(label);
-      last = k;
-      k++;
-    }
-    // The figure's own words (#935): lines win over attributes.
-    const words: Partial<Record<FigureWordKind, FigureWord>> = {};
-    for (const kind of ['alt', 'caption', 'note'] as const) {
-      const fromLine = lineWords[kind];
-      const value = attrs[kind];
-      if (fromLine) words[kind] = fromLine;
-      else if (value !== undefined && attrSources[kind]) words[kind] = { text: value, sourceStart: attrSources[kind]!.sourceStart, sourceEnd: attrSources[kind]!.sourceEnd };
-    }
-    const slot = scopeSlot(attrsRaw ? slotOf(attrs, attrsRaw, blobStart) : undefined);
-    // Each label's anchor (`resourceId#anchorId`) and, on a composed page,
-    // its stable id (#857): the slot is the figure's own, else the frame's
-    // it stands in.
-    const resourceId = attrs.resource?.trim() ?? '';
-    const pageAt = openPageAt();
-    let slotName = slot?.name;
-    for (let k = containerStack.length - 1; slotName === undefined && k > pageAt && pageAt >= 0; k--) slotName = containerStack[k]!.slot;
-    labels.forEach((label, n) => {
-      const anchor = 'anchor' in label.at ? label.at.anchor : undefined;
-      if (anchor && resourceId) label.anchorRef = `${resourceId}#${anchor}`;
-      if (pageAt >= 0 && slotName !== undefined) label.id = labelElementId(pageFences - 1, slotName, anchor ?? `@${n}`);
-    });
-    blocks.push({
-      type: 'resourceBlock',
-      text: '',
-      spans: [],
-      resourceId,
-      figure: { attrs, attrSources, labels, ...(Object.keys(words).length > 0 ? { words } : {}) },
-      ...(slot ? { slot } : {}),
-      sourceStart: lineOffsets[start]!,
-      sourceEnd: closed ? lineEndOffset(k) : lineEndOffset(last),
-      sourceMap: [],
-    });
-    if (!closed) {
-      issues.push({
-        kind: 'unclosedContainer',
-        delimiter: ':::',
-        containerName: 'figure',
-        containerId: nextContainerId++,
-        sourceStart: lineOffsets[start]!,
-        sourceEnd: lineEndOffset(start),
-      });
-    }
-    return closed ? k + 1 : last + 1;
-  };
-
-  /** The `::alt[…]`, `::caption[…]` or `::note[…]` on line `k` (#935): the
-   *  text between the brackets, as written, or undefined when the line is
-   *  not one (text after the bracket, an unclosed bracket). */
-  const parseFigureWord = (k: number): { kind: FigureWordKind; word: FigureWord } | undefined => {
-    const raw = rawLines[k]!;
-    const lead = raw.length - raw.trimStart().length;
-    const body = raw.trimEnd();
-    const kind = FIGURE_WORD_LINE_RE.exec(body.slice(lead))![1] as FigureWordKind;
-    const open = lead + `::${kind}[`.length;
-    const close = closingBracket(body, open);
-    if (close < 0 || body.slice(close + 1).trim() !== '') return undefined;
-    const lineStart = lineOffsets[k]!;
-    return { kind, word: { text: body.slice(open, close), sourceStart: lineStart + open, sourceEnd: lineStart + close } };
-  };
-
-  /** The `::label[TEXT]{at=… style=…}` on line `k` (#854), or undefined
-   *  when the line is not one (text after the attributes, an unclosed
-   *  bracket). */
-  const parseLabel = (k: number): FigureLabel | undefined => {
-    const raw = rawLines[k]!;
-    const lead = raw.length - raw.trimStart().length;
-    const body = raw.trimEnd();
-    const open = lead + '::label['.length;
-    const close = closingBracket(body, open);
-    if (close < 0) return undefined;
-    const rest = body.slice(close + 1);
-    const attrsMatch = /^(?:\s*\{([^}]*)\})?\s*$/.exec(rest);
-    if (!attrsMatch) return undefined;
-    const lineStart = lineOffsets[k]!;
-    const blob = attrsMatch[1] ?? '';
-    const blobStart = lineStart + close + 1 + rest.indexOf('{') + 1;
-    const attrs = parseDirectiveAttrs(blob);
-    const attrSources = blob ? attrSourcesOf(blob, blobStart) : {};
-    const textStart = lineStart + open;
-    const textEnd = lineStart + close;
-    const run = inlineRun(raw.slice(open, close), textStart, textEnd, false, true, true);
-    return {
-      text: run.text,
-      spans: run.spans,
-      sourceMap: run.sourceMap,
-      ...labelAtStyle(attrs),
-      textStart,
-      textEnd,
-      attrSources,
-      sourceStart: lineStart + lead,
-      sourceEnd: lineStart + body.length,
-    };
-  };
-
-  /** Where a label stands and its style, from its attributes. */
-  const labelAtStyle = (attrs: DirectiveAttrs): Pick<FigureLabel, 'at' | 'style' | 'leader'> => {
-    const atRaw = attrs.at ?? '';
-    const pct = LABEL_AT_PERCENT_RE.exec(atRaw);
-    const at = pct ? { x: Number(pct[1]) / 100, y: Number(pct[2]) / 100 } : { anchor: atRaw.trim() };
-    const style = attrs.style?.trim();
-    // `leader` (#1057): a bare flag or any value turns the label's leader
-    // on, `none` (or `false`, `off`) off.
-    const leaderRaw = attrs.leader;
-    const leader = leaderRaw === undefined ? undefined : !['none', 'false', 'off'].includes(leaderRaw.trim().toLowerCase());
-    return { at, ...(style ? { style } : {}), ...(leader !== undefined ? { leader } : {}) };
-  };
-
-  /**
-   * The `:::label{at=… style=…}` whose fence is line `k` (#1058), up to the
-   * first `:::` after it: a label whose lines are kept as written, one line
-   * of the label per non-blank source line (a map's key, a name over two
-   * lines). A backslash or two spaces ending a line (Markdown's hard break)
-   * say the same and are dropped; `\\` still breaks inside a line. Each
-   * line is read as a one-line label's text is; the break between two is
-   * one `BREAK_PLACEHOLDER`, at the end of the earlier line in the source.
-   * Undefined when no `:::` closes it or it holds no text.
-   */
-  const parseLabelContainer = (k: number): { label: FigureLabel; close: number } | undefined => {
-    let close = k + 1;
-    while (close < rawLines.length && !CONTAINER_CLOSE_RE.test(rawLines[close]!.trim())) close++;
-    if (close >= rawLines.length) return undefined;
-    const fence = rawLines[k]!;
-    const blob = LABEL_CONTAINER_RE.exec(fence.trim())![1] ?? '';
-    const blobStart = lineOffsets[k]! + fence.indexOf('{') + 1;
-    const attrs = parseDirectiveAttrs(blob);
-    const attrSources = blob ? attrSourcesOf(blob, blobStart) : {};
-    let text = '';
-    const spans: ContentBlock['spans'] = [];
-    const sourceMap: number[] = [];
-    let textStart = -1;
-    let textEnd = -1;
-    for (let j = k + 1; j < close; j++) {
-      const raw = rawLines[j]!;
-      const lead = raw.length - raw.trimStart().length;
-      // A hard break's mark ends the line: dropped, the line is kept.
-      let body = raw.trimEnd();
-      if (body.endsWith('\\') && !body.endsWith('\\\\')) body = body.slice(0, -1).trimEnd();
-      if (body.length <= lead) continue;
-      const start = lineOffsets[j]! + lead;
-      const run = inlineRun(body.slice(lead), start, start + body.length - lead, false, true, true);
-      if (run.text.trim() === '') continue;
-      if (textStart >= 0) {
-        text += BREAK_PLACEHOLDER;
-        spans.push({ text: BREAK_PLACEHOLDER, bold: false, italic: false });
-        sourceMap.push(textEnd);
-      } else textStart = start;
-      text += run.text;
-      spans.push(...run.spans);
-      sourceMap.push(...run.sourceMap);
-      textEnd = start + body.length - lead;
-    }
-    if (textStart < 0) return undefined;
-    return {
-      label: {
-        text,
-        spans,
-        sourceMap,
-        ...labelAtStyle(attrs),
-        textStart,
-        textEnd,
-        attrSources,
-        sourceStart: lineOffsets[k]! + (fence.length - fence.trimStart().length),
-        sourceEnd: lineEndOffset(close),
-      },
-      close,
-    };
-  };
-
-  /** Index of the last source line of the latest display formula that
-   *  interrupted a paragraph: a paragraph that starts on the next line
-   *  continues the one the formula interrupted (see
-   *  `ContentBlock.continuesParagraph`). A display set off from the text
-   *  above it by a blank line (or following a list, a quotation, a heading)
-   *  interrupts nothing, and the text under it is a new paragraph, as it
-   *  was up to postext 1.4. */
-  let lastDisplayEnd = -2;
-  /** Index of the display line that ended the latest paragraph run. */
-  let interruptingDisplayAt = -1;
-  /** Whether a `$$` fence line at index `k` has a closing fence after it
-   *  before the next blank line, so it can open a display inside a
-   *  paragraph (a stray `$$` stays text, as it was up to postext 1.4). */
-  const hasClosingFence = (k: number): boolean => {
-    for (let j = k + 1; j < rawLines.length; j++) {
-      const l = rawLines[j]!;
-      if (l.trim() === '') return false;
-      if (BLOCK_MATH_FENCE_RE.test(l)) return true;
-    }
-    return false;
-  };
-  /** Whether the display starting at line `k` belongs to a paragraph: it
-   *  ended a paragraph run, or it follows such a display directly. */
-  const displayInterrupts = (k: number): boolean => k === interruptingDisplayAt || k === lastDisplayEnd + 1;
-
-  /** Marker columns of the list items open at the latest list item,
-   *  outermost first (see `listNesting.ts`). A list continues across blank
-   *  lines (the pipeline numbers adjacent items as one list); any other
-   *  block closes it. */
-  let openListItems: readonly number[] = [];
-
-  /**
-   * A code block (#624) of source lines `from` … `to - 1`, each cut at
-   * `cuts[k]` characters from its start (the fence's indentation, the four
-   * columns of indented code); the block's range runs from `srcStart` to
-   * `srcEnd`. The lines are kept as written (a carriage return before the
-   * line feed dropped), joined with a line feed mapped to the source's
-   * line end.
-   */
-  const codeBlock = (from: number, to: number, cuts: readonly number[], srcStart: number, srcEnd: number, info: Omit<CodeBlockInfo, 'lines' | 'lineStarts'>): ContentBlock => {
-    const lines: string[] = [];
-    const lineStarts: number[] = [];
-    let text = '';
-    const sourceMap: number[] = [];
-    for (let k = from; k < to; k++) {
-      const raw = rawLines[k]!;
-      const cut = Math.min(cuts[k - from] ?? 0, raw.length);
-      const body = raw.slice(cut).replace(/\r$/, '');
-      const at = lineOffsets[k]! + cut;
-      if (k > from) {
-        text += '\n';
-        sourceMap.push(lineEndOffset(k - 1));
-      }
-      lines.push(body);
-      lineStarts.push(at);
-      text += body;
-      for (let j = 0; j < body.length; j++) sourceMap.push(at + j);
-    }
-    return {
-      type: 'code',
-      text,
-      spans: text.length > 0 ? [{ text, bold: false, italic: false }] : [],
-      code: { ...info, lines, lineStarts },
-      sourceStart: srcStart,
-      sourceEnd: srcEnd,
-      sourceMap,
-    };
-  };
-
-  /** A fenced code block (#624) opening at line `start`, up to its closing
-   *  fence; a fence left open runs to the end of the text and is reported
-   *  (`unclosedCodeBlock`). */
-  const parseCodeFence = (start: number, open: { indent: number; marker: string; info: string }): number => {
-    let end = start + 1;
-    while (end < rawLines.length && !closesCodeFence(rawLines[end]!, open.marker)) end++;
-    const closed = end < rawLines.length;
-    const cuts: number[] = [];
-    for (let k = start + 1; k < end; k++) {
-      // The fence's indentation comes off each line, as far as it has
-      // leading spaces.
-      const lead = /^ */.exec(rawLines[k]!)![0].length;
-      cuts.push(Math.min(open.indent, lead));
-    }
-    const fence = open.marker[0] === '`' ? '```' as const : '~~~' as const;
-    const info = readCodeInfo(open.info);
-    const srcStart = lineOffsets[start]!;
-    const srcEnd = closed ? lineEndOffset(end) : lineEndOffset(rawLines.length - 1);
-    const code = codeBlock(start + 1, end, cuts, srcStart, srcEnd, { ...info, info: open.info, fence });
-    // A fence in a notation language is a music score (#1172), unless it
-    // asks to stay a listing.
-    const scoreFormat = scores && info.lang !== undefined && closed && info.attrs.listing === undefined
-      ? SCORE_LANGUAGES[info.lang]
-      : undefined;
-    if (scoreFormat) {
-      blocks.push({
-        type: 'score',
-        text: '',
-        spans: [],
-        score: { format: scoreFormat, source: code.code!.lines.join('\n'), attrs: info.attrs },
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      return end + 1;
-    }
-    // `slot="…"` among the fence's attributes (#854).
-    if (info.attrs.slot !== undefined) {
-      const infoAt = rawLines[start]!.indexOf(open.info, open.indent + open.marker.length);
-      const slot = scopeSlot(slotOf(info.attrs, open.info, srcStart + Math.max(0, infoAt)));
-      if (slot) code.slot = slot;
-    }
-    blocks.push(code);
-    if (!closed) {
-      issues.push({
-        kind: 'unclosedCodeBlock',
-        delimiter: fence,
-        ...(info.lang ? { lang: info.lang } : {}),
-        sourceStart: srcStart,
-        sourceEnd: lineEndOffset(start),
-      });
-    }
-    return closed ? end + 1 : end;
-  };
-
-  /** Indented code (#624, `codeStyle.indentedCode`): the run of lines from
-   *  `start` indented four columns or blank, its trailing blank lines left
-   *  out. */
-  const parseIndentedCode = (start: number): number => {
-    let end = start;
-    let last = start;
-    while (end < rawLines.length) {
-      const raw = rawLines[end]!;
-      if (raw.trim() === '') { end++; continue; }
-      if (indentedCodeCut(raw) < 0) break;
-      last = end;
-      end++;
-    }
-    const cuts: number[] = [];
-    for (let k = start; k <= last; k++) cuts.push(Math.max(0, indentedCodeCut(rawLines[k]!)));
-    blocks.push(codeBlock(start, last + 1, cuts, lineOffsets[start]!, lineEndOffset(last), { info: '', attrs: {}, fence: 'indent' }));
-    return last + 1;
-  };
-
-  let i = 0;
-  while (i < rawLines.length) {
-    const line = rawLines[i]!;
+  while (parse.i < rawLines.length) {
+    const lineScan = {} as LineScan;
+    const line = rawLines[parse.i]!;
     const trimmed = line.trim();
 
     // Skip blank lines
     if (trimmed === '') {
-      i++;
+      parse.i++;
       continue;
     }
 
@@ -1186,607 +509,32 @@ function parseBlocks(markdown: string, options?: ParseOptions): { blocks: Conten
     // closing fence kept as written.
     const fenceOpen = fences ? codeFenceOpen(line) : undefined;
     if (fenceOpen) {
-      i = parseCodeFence(i, fenceOpen);
+      parse.i = parseCodeFence(parse.i, fenceOpen);
       continue;
     }
     // Indented code, when the reading asks for it: four columns in, after
     // a blank line (or at the start), and not a list item under a list.
     if (
       indentedCode
-      && (i === 0 || rawLines[i - 1]!.trim() === '')
+      && (parse.i === 0 || rawLines[parse.i - 1]!.trim() === '')
       && indentedCodeCut(line) >= 0
       && !(blocks[blocks.length - 1]?.type === 'listItem' && (TASK_ITEM_RE.test(line) || ORDERED_LIST_ITEM_RE.test(line) || LIST_ITEM_RE.test(line)))
     ) {
-      i = parseIndentedCode(i);
+      parse.i = parseIndentedCode(parse.i);
       continue;
     }
 
-    // Display math — single-line `$$ ... $$`
-    const singleMath = line.match(BLOCK_MATH_SINGLE_RE);
-    if (singleMath) {
-      const srcStart = lineOffsets[i]!;
-      const srcEnd = lineEndOffset(i);
-      blocks.push({
-        type: 'mathDisplay',
-        text: '',
-        spans: [],
-        tex: singleMath[1]!,
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      if (displayInterrupts(i)) lastDisplayEnd = i;
-      i++;
-      continue;
-    }
+    lineScan.line = line;
+    lineScan.trimmed = trimmed;
+    if (parseDisplayBlock(lineScan) === 'continue') continue;
 
-    // Display math — multi-line `$$` ... `$$` (opening fence on its own line).
-    if (BLOCK_MATH_FENCE_RE.test(line)) {
-      const startIdx = i;
-      i++;
-      const texLines: string[] = [];
-      let closed = false;
-      while (i < rawLines.length) {
-        if (BLOCK_MATH_FENCE_RE.test(rawLines[i]!)) {
-          closed = true;
-          break;
-        }
-        texLines.push(rawLines[i]!);
-        i++;
-      }
-      const srcStart = lineOffsets[startIdx]!;
-      const srcEnd = closed ? lineEndOffset(i) : lineEndOffset(i - 1);
-      if (!closed) {
-        issues.push({
-          kind: 'unclosedMathBlock',
-          delimiter: '$$',
-          sourceStart: srcStart,
-          sourceEnd: srcEnd,
-          tex: texLines.join('\n'),
-        });
-      }
-      blocks.push({
-        type: 'mathDisplay',
-        text: '',
-        spans: [],
-        tex: texLines.join('\n'),
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      if (displayInterrupts(startIdx)) lastDisplayEnd = closed ? i : i - 1;
-      if (closed) i++; // consume the closing fence
-      continue;
-    }
+    if (parseFenceLine(lineScan) === 'continue') continue;
 
-    // Resource embed — `::resource{id="..."}` on its own line. Emits a block
-    // carrying only the resource id; rendering/numbering happen downstream.
-    // Malformed variants fall through to paragraph parsing.
-    const resourceMatch = trimmed.match(RESOURCE_DIRECTIVE_RE);
-    if (resourceMatch) {
-      const srcStart = lineOffsets[i]!;
-      const srcEnd = lineEndOffset(i);
-      blocks.push({
-        type: 'resourceBlock',
-        text: '',
-        spans: [],
-        resourceId: resourceMatch[1]!,
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      i++;
-      continue;
-    }
-    // `::resource{id="…" slot="…"}` (#854): the embed sent to a slot of a
-    // composed page. Only the two keys; anything else stays text as before.
-    if (trimmed.startsWith('::resource') && trimmed.includes('slot')) {
-      const m = /^::resource\s*\{([^}]*)\}\s*$/.exec(trimmed);
-      const tokens = m ? parseAttrBlobStrict(m[1]!) : undefined;
-      const id = tokens?.find((t) => t.key === 'id');
-      if (tokens && id && id.quoted && id.value !== '' && tokens.some((t) => t.key === 'slot') && tokens.every((t) => t.key === 'id' || t.key === 'slot')) {
-        const blobStart = lineOffsets[i]! + line.indexOf('{') + 1;
-        const slot = scopeSlot(slotOf(parseDirectiveAttrs(m![1]!), m![1]!, blobStart));
-        blocks.push({
-          type: 'resourceBlock',
-          text: '',
-          spans: [],
-          resourceId: id.value,
-          ...(slot ? { slot } : {}),
-          sourceStart: lineOffsets[i]!,
-          sourceEnd: lineEndOffset(i),
-          sourceMap: [],
-        });
-        i++;
-        continue;
-      }
-    }
+    if (parseHeadingLine(lineScan) === 'continue') continue;
 
-    // A composed page (#854): `::::page{template=…}` opens it, a bare fence
-    // of as many colons closes it. A page opened while one is open closes
-    // that one first (reported unclosed), and so does its closing fence any
-    // `:::` container still open inside it.
-    const pageOpen = PAGE_FENCE_RE.exec(trimmed);
-    if (pageOpen) {
-      const srcStart = lineOffsets[i]!;
-      const srcEnd = lineEndOffset(i);
-      const at = openPageAt();
-      if (at >= 0) while (containerStack.length > at) popContainer(srcStart, srcStart, true);
-      const attrsRaw = pageOpen[2] ?? '';
-      const attrs = parseDirectiveAttrs(attrsRaw);
-      const blobStart = srcStart + line.indexOf('{') + 1;
-      const attrSources = attrsRaw ? attrSourcesOf(attrsRaw, blobStart) : {};
-      const id = nextContainerId++;
-      const colons = pageOpen[1]!.length;
-      containerStack.push({ id, name: 'composedPage', sourceStart: srcStart, sourceEnd: srcEnd, colons });
-      const spread = attrs.spread !== undefined && attrs.spread.trim().toLowerCase() !== 'false';
-      pageFence = { template: attrs.template?.trim() ?? '', spread, attrs, attrSources, fenceIndex: pageFences++, colons };
-      moduleNames = new Set();
-      moduleCounts = new Map();
-      blocks.push({
-        type: 'containerStart',
-        text: '',
-        spans: [],
-        containerName: 'composedPage',
-        containerAttrs: attrs,
-        containerId: id,
-        composedPage: pageFence,
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      i++;
-      continue;
-    }
-    const longClose = LONG_CLOSE_RE.exec(trimmed);
-    if (longClose) {
-      const at = openPageAt();
-      if (at >= 0 && containerStack[at]!.colons === longClose[1]!.length) {
-        const srcStart = lineOffsets[i]!;
-        while (containerStack.length > at + 1) popContainer(srcStart, srcStart, true);
-        popContainer(srcStart, lineEndOffset(i), false);
-        i++;
-        continue;
-      }
-    }
+    if (parseListOrQuote(lineScan) === 'continue') continue;
 
-    // Container closing fence — a bare `:::` while a container is open pops
-    // it and emits the matching `containerEnd` marker. With nothing open the
-    // line is not special and falls through to paragraph parsing so the
-    // stray fence stays visible instead of vanishing silently.
-    // A bare `:::` never closes a composed page (#854): right inside one it
-    // is a stray fence, set as text.
-    if (containerStack.length > 0 && containerStack[containerStack.length - 1]!.colons === undefined && CONTAINER_CLOSE_RE.test(trimmed)) {
-      popContainer(lineOffsets[i]!, lineEndOffset(i), false);
-      i++;
-      continue;
-    }
-    // A bare `:::` with nothing to close right after a one-line directive
-    // (`:::toc` then `:::`, #1125): a closing fence written for a directive
-    // that takes none. Dropped and reported instead of printed.
-    if (CONTAINER_CLOSE_RE.test(trimmed)) {
-      const directive = oneLineDirectiveBefore(i);
-      if (directive) {
-        issues.push({ kind: 'strayFence', delimiter: ':::', directiveName: directive, sourceStart: lineOffsets[i]!, sourceEnd: lineEndOffset(i) });
-        i++;
-        continue;
-      }
-    }
-
-    // A comic page (#555) or strip (#566): `:::page{split=…}` … `:::`, its
-    // panels and script read whole (`parseComicFence`).
-    const comicMatch = trimmed.match(DIRECTIVE_RE);
-    if (comicMatch && (comicMatch[1] === 'page' || comicMatch[1] === 'strip')) {
-      const comic = parseComicFence(markdown, lineOffsets[i]!);
-      if (comic) {
-        comic.source.fenceIndex = comicFences++;
-        blocks.push({
-          type: 'directive',
-          text: '',
-          spans: [],
-          directiveName: comic.source.kind,
-          directiveAttrs: comic.source.attrs,
-          comic: comic.source,
-          sourceStart: comic.source.sourceStart,
-          sourceEnd: comic.source.sourceEnd,
-          sourceMap: [],
-        });
-        // The Markdown of its text panels (`::panel{text}`, #885), read as
-        // any text is and set after it: the layout pours it into the
-        // panels' frames (`wrapComicTextPanels`), or sets it in the flow
-        // where it cannot.
-        for (const panel of comic.source.panels) {
-          if (!panel.text || panel.text.end <= panel.text.start) continue;
-          const body = parseBlocks(comicTextSource(markdown, panel.text.start, panel.text.end), options);
-          blocks.push(...body.blocks);
-          issues.push(...body.issues);
-        }
-        // Past the closing fence line.
-        while (i < rawLines.length && lineOffsets[i]! <= comic.end) i++;
-        continue;
-      }
-    }
-
-    // Reference data (#268): `:::references{format=bibtex}` … `:::`. The
-    // body is kept as written (BibTeX braces, YAML indentation) and never
-    // set; an unclosed block runs to the end of the text.
-    const refsMatch = trimmed.match(DIRECTIVE_RE);
-    if (refsMatch && refsMatch[1] === 'references') {
-      const startIdx = i;
-      const body: string[] = [];
-      i++;
-      while (i < rawLines.length && !CONTAINER_CLOSE_RE.test(rawLines[i]!.trim())) body.push(rawLines[i++]!);
-      const closed = i < rawLines.length;
-      const srcEnd = closed ? lineEndOffset(i) : lineEndOffset(rawLines.length - 1);
-      blocks.push({
-        type: 'directive',
-        text: '',
-        spans: [],
-        directiveName: 'references',
-        directiveAttrs: parseDirectiveAttrs(refsMatch[2] ?? ''),
-        rawBody: body.join('\n'),
-        sourceStart: lineOffsets[startIdx]!,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      if (closed) i++;
-      continue;
-    }
-
-    // A poem (#378, #620): `:::verse{attrs}` … `:::`, a bayt or a line of
-    // verse a line.
-    if (refsMatch && refsMatch[1] === 'verse') {
-      const verse = parseVerse(i, refsMatch[2] ?? '');
-      blocks.push(...verse.blocks);
-      i = verse.next;
-      continue;
-    }
-
-    // A figure with labels (#854): `:::figure{resource=…}` … `:::`.
-    if (refsMatch && refsMatch[1] === 'figure') {
-      i = parseFigure(i, refsMatch[2] ?? '');
-      continue;
-    }
-
-    // An exercise's word bank (#1225): `::bank[sun | rain]{…}`.
-    const bankMatch = inExerciseText() ? trimmed.match(BANK_LINE_RE) : null;
-    if (bankMatch) {
-      const srcStart = lineOffsets[i]!;
-      const srcEnd = lineEndOffset(i);
-      const words = bankMatch[1] ?? '';
-      const wordsAt = srcStart + line.indexOf('::bank') + 7;
-      const run = words ? inlineRun(words, wordsAt, wordsAt + words.length, false, false) : { text: '', spans: [], sourceMap: [] };
-      blocks.push({
-        type: 'directive',
-        text: run.text,
-        spans: run.spans,
-        directiveName: 'bank',
-        directiveAttrs: parseDirectiveAttrs(bankMatch[2] ?? ''),
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: run.sourceMap,
-      });
-      i++;
-      continue;
-    }
-
-    // Container opening fence — `:::name` / `:::name{attrs}` whose name is a
-    // known container. Emits a `containerStart` marker; the blocks that
-    // follow are parsed as usual until the matching closing fence.
-    const directiveMatch = trimmed.match(DIRECTIVE_RE);
-    if (directiveMatch && KNOWN_CONTAINERS.has(directiveMatch[1] as ContainerName)) {
-      const name = directiveMatch[1] as ContainerName;
-      const attrsRaw = directiveMatch[2] ?? '';
-      const srcStart = lineOffsets[i]!;
-      const srcEnd = lineEndOffset(i);
-      const id = nextContainerId++;
-      const containerAttrs = parseDirectiveAttrs(attrsRaw);
-      // Where each attribute's value is written (#857): a frame's tab text
-      // (`label`) and title map back to it.
-      const containerAttrSources = attrsRaw ? attrSourcesOf(attrsRaw, srcStart + line.indexOf('{') + 1) : undefined;
-      // A module of the open composed page (#1062): its own name, the
-      // slots of its blocks scoped by it. (Outside a page it is a plain
-      // box of its content.)
-      const pageAt = name === 'module' ? openPageAt() : -1;
-      const module = pageAt >= 0 ? openModule(containerAttrs, containerAttrSources ?? {}, srcStart, srcEnd, containerStack.slice(pageAt + 1).some((e) => e.name === 'module')) : undefined;
-      // `:::frame{slot="…"}` (#854), or any container sent to a slot.
-      const slot = name === 'module' ? undefined : scopeSlot(containerAttrs.slot !== undefined ? slotOf(containerAttrs, attrsRaw, srcStart + line.indexOf('{') + 1) : undefined);
-      containerStack.push({ id, name, sourceStart: srcStart, sourceEnd: srcEnd, ...(slot ? { slot: slot.name } : {}), ...(module && !module.nested ? { module: module.name } : {}) });
-      blocks.push({
-        type: 'containerStart',
-        text: '',
-        spans: [],
-        containerName: name,
-        containerAttrs,
-        ...(containerAttrSources && Object.keys(containerAttrSources).length > 0 ? { containerAttrSources } : {}),
-        containerId: id,
-        ...(slot ? { slot } : {}),
-        ...(module ? { module } : {}),
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      i++;
-      continue;
-    }
-
-    // Directive — `:::name` or `:::name{attrs}` on its own line. Only known
-    // directive names are promoted to a `directive` block; unknown names
-    // fall through to paragraph parsing so they remain visible in the
-    // output (and downstream warnings surface the typo).
-    if (directiveMatch && KNOWN_DIRECTIVES.has(directiveMatch[1] as DirectiveName)) {
-      const name = directiveMatch[1] as DirectiveName;
-      const attrsRaw = directiveMatch[2] ?? '';
-      const srcStart = lineOffsets[i]!;
-      const srcEnd = lineEndOffset(i);
-      blocks.push({
-        type: 'directive',
-        text: '',
-        spans: [],
-        directiveName: name,
-        directiveAttrs: parseDirectiveAttrs(attrsRaw),
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: [],
-      });
-      i++;
-      continue;
-    }
-
-    // Heading
-    const headingMatch = trimmed.match(HEADING_RE);
-    if (headingMatch) {
-      let headingRawContent = headingMatch[2]!;
-      const srcStart = lineOffsets[i]!;
-      let srcEnd = lineEndOffset(i);
-      // Absolute offset of the first content char (after the `# `).
-      const prefixLen = line.indexOf(headingRawContent);
-      const contentAbsStart = srcStart + (prefixLen >= 0 ? prefixLen : 0);
-      // Trailing `{key="value" …}` heading attributes. Stripped from the
-      // heading text before inline processing, and the block's source range
-      // is shortened to the visible content so `sourceMap` stays aligned
-      // (the map is a greedy plain-char → source walk bounded by `srcEnd`).
-      let attrs: ReturnType<typeof parseDirectiveAttrs> | undefined;
-      let attrSources: Record<string, { start: number; end: number }> | undefined;
-      let headingSlot: BlockSlot | undefined;
-      const attrsMatch = headingRawContent.match(HEADING_ATTRS_RE);
-      const tokens = attrsMatch && attrsMatch.index !== undefined
-        ? headingAttrTokens(attrsMatch[1]!, attrsMatch[0][0] !== '{')
-        : undefined;
-      if (attrsMatch && attrsMatch.index !== undefined && tokens) {
-        const read = tokens.filter((t) => !t.invalidKey);
-        if (read.length > 0) attrs = Object.fromEntries(read.map((t) => [t.key, t.value]));
-        // Where each quoted value sits in the source (for `{attr.<key>}`).
-        const attrsAbsStart = contentAbsStart + attrsMatch.index + attrsMatch[0].indexOf('{') + 1;
-        for (const t of read) {
-          if (!t.quoted || t.valueStart === undefined || t.valueEnd === undefined) continue;
-          attrSources ??= {};
-          attrSources[t.key] = { start: attrsAbsStart + t.valueStart, end: attrsAbsStart + t.valueEnd };
-        }
-        // `# Title {slot="titulo"}` (#854).
-        const slotToken = read.filter((t) => t.key === 'slot').pop();
-        if (slotToken && slotToken.value.trim() !== '') {
-          headingSlot = scopeSlot({
-            name: slotToken.value.trim(),
-            sourceStart: attrsAbsStart + (slotToken.valueStart ?? slotToken.start),
-            sourceEnd: attrsAbsStart + (slotToken.valueEnd ?? slotToken.end),
-          });
-        }
-        headingRawContent = headingRawContent.slice(0, attrsMatch.index);
-        srcEnd = contentAbsStart + headingRawContent.length;
-      }
-      // `\\` marks a forced line break in the title (see BREAK_PLACEHOLDER).
-      headingRawContent = headingRawContent.replace(TITLE_BREAK_RE, BREAK_PLACEHOLDER);
-      // Inline pre-passes run refs -> math -> formatting so a ref's `text="…"`
-      // attribute is shielded from the later math/formatting scanners.
-      // Chips run first, as in a paragraph (#1100): their words are shielded
-      // from the later passes.
-      const chipExtract = extractInlineChips(protectCodeSpans(headingRawContent), contentAbsStart);
-      const refExtract = extractInlineRefs(chipExtract.cleaned, contentAbsStart);
-      const swExtract = extractInlineSwatches(refExtract.cleaned, contentAbsStart);
-      const { cleaned, maths, issues: mathIssues } = extractInlineMath(
-        swExtract.cleaned,
-        null,
-        contentAbsStart,
-        srcEnd,
-      );
-      issues.push(...mathIssues);
-      // Inline marks become runs, as in a paragraph (EF-122); the text is
-      // the title with its markers dropped, trimmed. A configuration with
-      // `headings.inlineMarks: false` sets them plain again
-      // (`plainHeadingBlocks`).
-      const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
-        injectMathSpans(trimSpans(parseInlineFormatting(cleaned)), maths), swExtract.swatches),
-        refExtract.refs,
-      ), chipExtract.chips);
-      const mapping = withChipSources(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
-      fixMathSourceMap(markdown, mapping.text, mapping.spans, mapping.sourceMap);
-      const titleBreaks = titleBreakIndices(mapping.text);
-      blocks.push({
-        type: 'heading',
-        text: mapping.text,
-        spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
-        level: headingMatch[1]!.length,
-        ...(attrs ? { attrs } : {}),
-        ...(attrSources ? { attrSources } : {}),
-        ...(titleBreaks.length > 0 ? { titleBreaks } : {}),
-        ...(headingSlot ? { slot: headingSlot } : {}),
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: mapping.sourceMap,
-      });
-      i++;
-      continue;
-    }
-
-    // List items — unordered (`-`, `*`, `+`), ordered (`1.`, `1)`) and
-    // GFM task (`- [ ]`, `- [x]`). Consume consecutive list lines of any kind
-    // (nesting and mixed kinds are allowed); the pipeline segments ordered
-    // runs by kind and depth for numbering.
-    const isListStart =
-      TASK_ITEM_RE.test(line) || ORDERED_LIST_ITEM_RE.test(line) || LIST_ITEM_RE.test(line);
-    if (isListStart) {
-      if (blocks[blocks.length - 1]?.type !== 'listItem') openListItems = [];
-      while (i < rawLines.length) {
-        const curRaw = rawLines[i]!;
-        const taskMatch = curRaw.match(TASK_ITEM_RE);
-        const orderedMatch = !taskMatch ? curRaw.match(ORDERED_LIST_ITEM_RE) : null;
-        const unorderedMatch = !taskMatch && !orderedMatch ? curRaw.match(LIST_ITEM_RE) : null;
-        const anyMatch = taskMatch ?? orderedMatch ?? unorderedMatch;
-        if (anyMatch) {
-          const leading = anyMatch[1]!.length;
-          // Depth from the items this one is indented past (#465), not
-          // from a count of spaces.
-          openListItems = nestListItem(openListItems, indentColumn(anyMatch[1]!));
-          const depth = listDepth(openListItems);
-          const srcStart = lineOffsets[i]!;
-          const srcEnd = lineEndOffset(i);
-
-          let listKind: ListKind;
-          let itemText: string;
-          let markerLength: number;
-          let startNumber: number | undefined;
-          let checked: boolean | undefined;
-
-          if (taskMatch) {
-            listKind = 'task';
-            checked = taskMatch[3] !== ' ';
-            itemText = taskMatch[4]!;
-            // leading spaces + bullet (1) + space (1) + `[x]` (3) + space (1)
-            markerLength = taskMatch[2]!.length + 1 + 3 + 1;
-          } else if (orderedMatch) {
-            listKind = 'ordered';
-            startNumber = parseInt(asciiDigits(orderedMatch[2]!), 10);
-            itemText = orderedMatch[4]!;
-            // number digits + separator (1) + space (1)
-            markerLength = orderedMatch[2]!.length + 1 + 1;
-          } else {
-            listKind = 'unordered';
-            itemText = unorderedMatch![3]!;
-            markerLength = unorderedMatch![2]!.length + 1;
-          }
-
-          const contentOffset = leading + markerLength;
-          const itemSrcStart = srcStart + contentOffset;
-          // A `\\` in the item is a forced line break (#620).
-          const mapping = breakingRun([itemText], itemSrcStart, srcEnd);
-          const block: ContentBlock = {
-            type: 'listItem',
-            text: mapping.text,
-            spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
-            ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
-            depth,
-            listKind,
-            sourceStart: srcStart,
-            sourceEnd: srcEnd,
-            sourceMap: mapping.sourceMap,
-          };
-          if (startNumber !== undefined) block.startNumber = startNumber;
-          if (checked !== undefined) block.checked = checked;
-          blocks.push(block);
-          i++;
-          continue;
-        }
-        // Blank line: allow a single blank followed by another list item.
-        if (
-          curRaw.trim() === '' &&
-          i + 1 < rawLines.length &&
-          (TASK_ITEM_RE.test(rawLines[i + 1]!) ||
-            ORDERED_LIST_ITEM_RE.test(rawLines[i + 1]!) ||
-            LIST_ITEM_RE.test(rawLines[i + 1]!))
-        ) {
-          i++;
-          continue;
-        }
-        break;
-      }
-      continue;
-    }
-
-    // Blockquote — collect consecutive > lines
-    if (trimmed.startsWith('>')) {
-      const quoteLines: string[] = [];
-      const startIdx = i;
-      let lastIdx = i;
-      while (i < rawLines.length) {
-        const ql = rawLines[i]!.trim();
-        if (!ql.startsWith('>')) break;
-        quoteLines.push(ql.replace(/^>\s?/, ''));
-        lastIdx = i;
-        i++;
-      }
-      const srcStart = lineOffsets[startIdx]!;
-      const srcEnd = lineEndOffset(lastIdx);
-      // Lines join with a space, except between Chinese or Japanese
-      // characters (#181) and at a forced line break (#620).
-      const mapping = breakingRun(quoteLines, srcStart, srcEnd);
-      blocks.push({
-        type: 'blockquote',
-        text: mapping.text,
-        spans: mapping.spans,
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: mapping.sourceMap,
-        ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
-      });
-      continue;
-    }
-
-    // Paragraph — collect consecutive non-blank, non-special lines. The first
-    // line is always taken (it may itself be an unknown `:::name` or a stray
-    // `:::` that fell through); after that, any fence line ends the run so a
-    // directive or container fence glued under a paragraph is not swallowed.
-    const paraLines: string[] = [];
-    const startIdx = i;
-    let lastIdx = i;
-    while (i < rawLines.length) {
-      const rawLine = rawLines[i]!;
-      const pl = rawLine.trim();
-      if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>') || rawLine.match(LIST_ITEM_RE)) break;
-      if (i > startIdx && (isFenceLine(pl) || isPageFenceLine(pl))) break;
-      // A code fence interrupts the paragraph (#624).
-      if (i > startIdx && fences && codeFenceOpen(rawLine)) break;
-      // A footnote definition opens a paragraph of its own.
-      if (i > startIdx && FOOTNOTE_DEF_RE.test(pl)) break;
-      // A display formula on its own line interrupts the paragraph, blank
-      // line or not: the text before it is a paragraph that leads into it,
-      // the text right after it continues that paragraph (EF-85). Only a
-      // whole display: one formula on the line, or a `$$` fence closed
-      // before the next blank line.
-      if (
-        i > startIdx
-        && (INTERRUPTING_MATH_SINGLE_RE.test(rawLine) || (BLOCK_MATH_FENCE_RE.test(rawLine) && hasClosingFence(i)))
-      ) {
-        interruptingDisplayAt = i;
-        break;
-      }
-      paraLines.push(pl);
-      lastIdx = i;
-      i++;
-    }
-    if (paraLines.length > 0) {
-      let srcStart = lineOffsets[startIdx]!;
-      // `[^id]: text`: the definition of a footnote. The marker is left out
-      // of the text, which starts past it.
-      const def = FOOTNOTE_DEF_RE.exec(paraLines[0]!);
-      if (def) {
-        paraLines[0] = paraLines[0]!.slice(def[0].length);
-        srcStart += rawLines[startIdx]!.indexOf(def[0]) + def[0].length;
-      }
-      const srcEnd = lineEndOffset(lastIdx);
-      const mapping = breakingRun(paraLines, srcStart, srcEnd);
-      blocks.push({
-        type: 'paragraph',
-        text: mapping.text,
-        spans: mapping.spans,
-        ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
-        ...(startIdx === lastDisplayEnd + 1 && !def ? { continuesParagraph: true } : {}),
-        ...(def ? { footnoteDef: def[1]! } : {}),
-        sourceStart: srcStart,
-        sourceEnd: srcEnd,
-        sourceMap: mapping.sourceMap,
-      });
-    }
+    parseParagraph();
   }
 
   // EOF with containers still open: auto-close innermost-first with
