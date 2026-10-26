@@ -208,7 +208,7 @@ def walk_values(node, path=""):
         yield path, node
 
 
-# PostextConfig's top-level keys, generated from the engine's types.ts by
+# PostextConfig's top-level keys, generated from the engine's types/config.ts by
 # `config_keys.py --write` (config_keys.json; tests/test_config_keys.py fails
 # while the engine has a key the list lacks). The engine drops an unknown one
 # in silence, so a typo (`bodyTex`, `pageTemplate`) changes nothing on the page.

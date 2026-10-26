@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """The top-level keys of a Postext config, read from the engine's types.
 
-    config_keys.py [--types packages/postext/src/types.ts] [--write]
+    config_keys.py [--types packages/postext/src/types/config.ts] [--write]
 
-Reads `export interface PostextConfig { … }` in the engine's `types.ts` and
+Reads `export interface PostextConfig { … }` in the engine's `types/config.ts` and
 prints its keys; `--write` stores them in `config_keys.json` beside this
 script, the list `lint_project.py` checks a config's keys against (the
 skill ships without the engine, so the list travels with it). Run it with
@@ -22,7 +22,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 KEYS_FILE = HERE / "config_keys.json"
 # scripts -> postext-port -> skills -> postext -> plugins -> repository
-DEFAULT_TYPES = HERE.parents[4] / "packages" / "postext" / "src" / "types.ts"
+DEFAULT_TYPES = HERE.parents[4] / "packages" / "postext" / "src" / "types" / "config.ts"
 _OPEN_RE = re.compile(r"^export interface PostextConfig\s*\{\s*$")
 _KEY_RE = re.compile(r"^  ([A-Za-z_][A-Za-z0-9_]*)\??\s*:")
 
@@ -50,12 +50,12 @@ def known_keys() -> set[str]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--types", type=Path, default=DEFAULT_TYPES, help="the engine's types.ts")
+    ap.add_argument("--types", type=Path, default=DEFAULT_TYPES, help="the engine's types/config.ts")
     ap.add_argument("--write", action="store_true", help=f"store the keys in {KEYS_FILE.name}")
     args = ap.parse_args()
     keys = engine_keys(args.types)
     if args.write:
-        KEYS_FILE.write_text(json.dumps({"source": "packages/postext/src/types.ts PostextConfig", "keys": keys},
+        KEYS_FILE.write_text(json.dumps({"source": "packages/postext/src/types/config.ts PostextConfig", "keys": keys},
                                         indent=1) + "\n", encoding="utf-8")
         print(f"wrote {KEYS_FILE.name}: {len(keys)} keys", file=sys.stderr)
     else:

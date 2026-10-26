@@ -1,5 +1,5 @@
 {
- "source": "packages/postext/src/types.ts PostextConfig",
+ "source": "packages/postext/src/types/config.ts PostextConfig",
  "keys": [
   "page",
   "layout",

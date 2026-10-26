@@ -41,7 +41,9 @@ function walk(dir, keep, out = []) {
 }
 
 function sourceFiles(rev) {
-  const first = (files) => [`${SRC}/types.ts`, ...files.filter((f) => f !== `${SRC}/types.ts`)];
+  // The config types (types.ts and, since #1276, the types/ modules behind it).
+  const isConfigTypes = (f) => f === `${SRC}/types.ts` || f.startsWith(`${SRC}/types/`);
+  const first = (files) => [...files.filter(isConfigTypes), ...files.filter((f) => !isConfigTypes(f))];
   if (!rev) return first(walk(SRC, (n) => n.endsWith('.ts') && !n.endsWith('.test.ts') && !n.endsWith('.d.ts')));
   return first(execFileSync('git', ['ls-tree', '-r', '--name-only', rev, SRC], { cwd: ROOT, encoding: 'utf8' })
     .split('\n')
