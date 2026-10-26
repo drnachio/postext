@@ -4,7 +4,7 @@ import {
   ogSize,
   ogContentType,
   ogTextLocale,
-} from "@/lib/og-image";
+} from "@/lib/og/og-image";
 
 export const alt = "Postext — Programmable Typesetter for the Web";
 export const size = ogSize;

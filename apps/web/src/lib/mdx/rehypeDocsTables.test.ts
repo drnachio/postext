@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { compileDocsMdx } from "@/lib/mdx";
+import { compileDocsMdx } from "@/lib/mdx/mdx";
 import { indentOf } from "./rehypeCodeIndent";
 
 async function html(source: string) {

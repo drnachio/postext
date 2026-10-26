@@ -3,7 +3,7 @@ import { Download } from "lucide-react";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH, guideBundleStats } from "@/lib/guideBundle";
-import { CodeBlock } from "./CodeBlock";
+import { CodeBlock } from "../CodeBlock";
 import { htmlLang } from "@/i18n/locales";
 
 /** What the `.postext` carries, in the order the figure lists it, with the

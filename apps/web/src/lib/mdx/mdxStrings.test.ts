@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { compileDocsMdx } from "@/lib/mdx";
+import { compileDocsMdx } from "@/lib/mdx/mdx";
 import { literalStringExpressions } from "./mdxStrings";
 
 async function html(source: string) {

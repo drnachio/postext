@@ -8,7 +8,7 @@ import {
   ResourcesGlyph,
   SingleInkGlyph,
   TablesGlyph,
-} from "./FeatureGlyphs";
+} from "../FeatureGlyphs";
 import { Link } from "@/i18n/navigation";
 import { featureDocPath } from "@/lib/featureDocs";
 

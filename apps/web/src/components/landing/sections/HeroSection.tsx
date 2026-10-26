@@ -3,9 +3,9 @@ import { abbreviate } from "@/components/brand/abbreviate";
 import { version } from "postext/package.json";
 import { Link } from "@/i18n/navigation";
 import { Kicker } from "@/components/brand/Kicker";
-import { HERO_SPREAD_BLEED } from "./HeroArt";
-import { HeroArtClient } from "./HeroArtClient";
-import { InstallChip } from "./InstallChip";
+import { HERO_SPREAD_BLEED } from "../HeroArt";
+import { HeroArtClient } from "../HeroArtClient";
+import { InstallChip } from "../InstallChip";
 
 /** The cover: night in the dark theme, like the guide's; a paper spread
  *  in the light one. */

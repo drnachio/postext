@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 import Image from "next/image";
 import { Kicker } from "@/components/brand/Kicker";
-import presetIndex from "../../../public/presets/index.json";
-import { GuideCover } from "./GuideCover";
+import presetIndex from "../../../../public/presets/index.json";
+import { GuideCover } from "../GuideCover";
 import { shelfOrder } from "@/lib/shelf";
 
 interface PresetEntry {

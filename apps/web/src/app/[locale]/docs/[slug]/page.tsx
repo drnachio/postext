@@ -20,8 +20,8 @@ import { PlainSummary } from "@/components/brand/PlainSummary";
 import { DocsPager, type PagerLink } from "@/components/docs/DocsPager";
 import { OldAnchorRedirect } from "@/components/docs/OldAnchorRedirect";
 import { AnchorOnLoad } from "@/components/docs/AnchorOnLoad";
-import { CONFIGURATION_SLUG } from "@/lib/configurationAnchors";
-import { movedAnchors } from "@/lib/movedAnchors";
+import { CONFIGURATION_SLUG } from "@/lib/anchors/configurationAnchors";
+import { movedAnchors } from "@/lib/anchors/movedAnchors";
 import { docNumbers } from "@/lib/docNumbers";
 import Link from "next/link";
 

@@ -2,7 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { abbreviate } from "@/components/brand/abbreviate";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
-import { CodeBlock } from "./CodeBlock";
+import { CodeBlock } from "../CodeBlock";
 
 const codeRaw = `import { buildDocument, renderPage } from "postext";
 import { renderToPdf } from "postext-pdf";

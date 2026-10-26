@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { mediaLang } from "@/i18n/locales";
-import { MEDIA_BASE, ShowreelVideo } from "./ShowreelVideo";
-import { VideoTranscript } from "./VideoTranscript";
+import { MEDIA_BASE, ShowreelVideo } from "../ShowreelVideo";
+import { VideoTranscript } from "../VideoTranscript";
 
 /** The showreel between the cover and chapter 1: two narrated minutes on
  *  the engine, one cut per language. Hidden until `NEXT_PUBLIC_MEDIA_BASE`

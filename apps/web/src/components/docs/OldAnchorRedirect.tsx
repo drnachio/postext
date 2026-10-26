@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { oldAnchorUrl, type OldAnchorTable } from "@/lib/oldAnchors";
+import { oldAnchorUrl, type OldAnchorTable } from "@/lib/anchors/oldAnchors";
 
 /** Sends an address of a page that was split (`/docs/configuration#table-style`)
  *  to the page that holds the heading now. A fragment never reaches the

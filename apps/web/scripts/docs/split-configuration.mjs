@@ -16,7 +16,7 @@
  * - moves the `docs: { slug: "configuration" }` entries of the Cookbook
  *   registries to the page of their heading;
  * - renumbers `order` in every docs page;
- * - writes `src/lib/configurationAnchors.json`: every heading id of the old
+ * - writes `src/lib/anchors/configurationAnchors.json`: every heading id of the old
  *   single page, per language, under the page that holds it now (the data of
  *   the entry page's redirect).
  *
@@ -507,7 +507,7 @@ for (const l of LOCALES) {
   }
   for (const slug of Object.keys(fixture[l])) fixture[l][slug] = fixture[l][slug].join(" ");
 }
-write(path.join(ROOT, "apps/web/src/lib/configurationAnchors.json"), `${JSON.stringify(fixture, null, 2)}\n`);
+write(path.join(ROOT, "apps/web/src/lib/anchors/configurationAnchors.json"), `${JSON.stringify(fixture, null, 2)}\n`);
 
 for (const line of report) console.log(line);
 console.log(`${written.length} files written`);

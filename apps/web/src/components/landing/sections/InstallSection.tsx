@@ -2,8 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Kicker } from "@/components/brand/Kicker";
 import { CropMarks } from "@/components/brand/CropMarks";
-import { CodeBlock } from "./CodeBlock";
-import { InstallChip } from "./InstallChip";
+import { CodeBlock } from "../CodeBlock";
+import { InstallChip } from "../InstallChip";
 import { NewTabNote } from "@/components/ui/NewTabNote";
 
 /** The back cover: night again, the install line set large between crop

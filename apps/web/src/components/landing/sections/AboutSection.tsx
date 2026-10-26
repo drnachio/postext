@@ -2,7 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { abbreviate } from "@/components/brand/abbreviate";
 import { ChapterOpener } from "@/components/brand/ChapterOpener";
 import { Kicker } from "@/components/brand/Kicker";
-import { PageMock } from "./PageMock";
+import { PageMock } from "../PageMock";
 import { siteLocale, type SiteLocale } from "@/i18n/locales";
 import { NewTabNote } from "@/components/ui/NewTabNote";
 

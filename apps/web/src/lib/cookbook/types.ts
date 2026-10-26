@@ -10,6 +10,24 @@
  */
 
 /** Site locales: the write-ups, the registries and the gallery. */
+import type { CaptureBuild, CaptureManifest } from './types/capture.ts';
+import type { FeatureGroup } from './types/registry.ts';
+
+export type { DocAnchor, Taxonomy, FeatureGroup, Feature, Question, Gap, WarningEntry, Gotcha, Collection, Registry } from './types/registry.ts';
+export type { ComposedPen, CapturePage, CaptureFinding, CaptureVariant, CaptureBuild, CaptureManifest } from './types/capture.ts';
+
+/**
+ * The Cookbook's data model: recipe metadata (`cookbook/<slug>/recipe.json`),
+ * write-up frontmatter, the bilingual registries (`cookbook/_registry/*.json`),
+ * the capture manifest the CLI writes (`public/cookbook/<slug>/capture.json`)
+ * and the per-locale catalogue the gallery searches.
+ *
+ * Isomorphic: imported by the site, the tests and the Node CLI
+ * (`scripts/cookbook`, run with Node's type stripping), so it holds only
+ * erasable TypeScript: no enums, namespaces or parameter properties.
+ */
+
+/** Site locales: the write-ups, the registries and the gallery. */
 export type Locale = "en" | "es" | "ca" | "zh" | "ar" | "ja" | "pt" | "fr" | "de" | "it";
 export const LOCALES: readonly Locale[] = ["en", "es", "ca", "zh", "ar", "ja", "pt", "fr", "de", "it"];
 export type Localized<T = string> = Record<Locale, T>;
@@ -360,110 +378,6 @@ export interface RecipeWriteup {
   sections: Partial<Record<SectionId, string>>;
 }
 
-// ─── Registries (cookbook/_registry/*.json) ─────────────────────────────────
-
-/** A docs section: resolved to `/{locale}/docs/<slug>#<id>` through the
- *  docs' own heading slugger; the tests fail when the heading is renamed. */
-export interface DocAnchor {
-  slug: string;
-  heading: Localized;
-}
-
-export interface Taxonomy {
-  parts: { id: PartId; number: "I" | "II" | "III"; color: PartColor; title: Localized }[];
-  chapters: { id: ChapterId; number: number; part: PartId; title: Localized; intro: Localized }[];
-  genres: { id: GenreId; title: Localized }[];
-  outputs: { id: OutputId; title: Localized }[];
-  levels: { id: Level; title: Localized; criteria: Localized }[];
-  /** Localised H2 headings of the write-up template. */
-  sections: Record<SectionId, Localized>;
-}
-
-export type FeatureGroup =
-  | "page" | "text" | "fonts" | "languages" | "headings" | "furniture" | "boxes" | "figures"
-  | "tables" | "math" | "structure" | "colour" | "pdf" | "html" | "integration" | "comics" | "exercises";
-
-export interface Feature {
-  label: Localized;
-  definition: Localized;
-  aliases?: Localized<string[]>;
-  group: FeatureGroup;
-  docs: DocAnchor;
-  since?: SemVer;
-  /** Research catalogue ids this feature covers (e.g. "LY-6"). */
-  research?: string[];
-  /** Optional detection rules, checked against the capture (WARN only). */
-  detect?: { config?: string[]; markdown?: string[]; api?: string[] };
-}
-
-export interface Question {
-  kind: "how" | "why";
-  text: Localized;
-  /** Back-of-book index form ("Footnotes, workarounds for"). */
-  index: Localized;
-  theme: string;
-  gap?: GapId;
-}
-
-export interface Gap {
-  label: Localized;
-  aliases: Localized<string[]>;
-  explanation: Localized;
-  docs?: DocAnchor;
-  /** The engine version that closed this gap. A fixed gap stays in the
-   *  registry so the questions and the older-pinned recipes that name it
-   *  still resolve, but it is no longer offered as a gap and gives no
-   *  Workaround badge; a recipe pinned at it or later drops the id
-   *  (`fixedGaps`). */
-  fixedIn?: SemVer;
-}
-
-export interface WarningEntry {
-  /** engine: doc.warnings · parse: parseMarkdownWithIssues · sandbox: Sandbox Checks only. */
-  source: "engine" | "parse" | "sandbox";
-  label: Localized;
-  cause: Localized;
-  fix: Localized;
-  docs?: DocAnchor;
-}
-
-export interface Gotcha {
-  title: Localized;
-  body: Localized;
-  feature?: FeatureId;
-  /** The engine follow-up whose fix would retire this pitfall ("EF-05"). */
-  followup?: string;
-  /** The engine version that made this pitfall obsolete. A recipe pinned
-   *  below it still lists the pitfall, as fixed; one pinned at it or later
-   *  no longer shows it (`shownGotchas`). */
-  fixedIn?: SemVer;
-}
-
-export interface Collection {
-  title: Localized;
-  summary: Localized;
-  recipes: Slug[];
-  /** "featured" only: the frontispiece per site language, a book
-   *  representative of that language; `recipes[0]` stands in for a
-   *  language it leaves out. */
-  frontispiece?: Partial<Record<Locale, Slug>>;
-}
-
-export interface Registry {
-  taxonomy: Taxonomy;
-  features: Record<FeatureId, Feature>;
-  /** Exported symbol → docs section. */
-  apis: Record<string, DocAnchor>;
-  /** Top-level config key → docs section ("Config at a glance"). */
-  config: Record<string, DocAnchor>;
-  questions: Record<QuestionId, Question>;
-  gaps: Record<GapId, Gap>;
-  warnings: Record<WarningKind, WarningEntry>;
-  gotchas: Record<GotchaId, Gotcha>;
-  /** "featured" is ordered: [0] is the frontispiece, [1..3] the editor's picks. */
-  collections: Record<CollectionId, Collection>;
-}
-
 // ─── Composition ────────────────────────────────────────────────────────────
 
 /** The raw files of a recipe folder. */
@@ -477,164 +391,6 @@ export interface RecipeSources {
   content: Record<string, string>;
   /** Paths (relative to the recipe folder) of everything under assets/. */
   assets: string[];
-}
-
-/** A pen ready to run: what CodePen, Copy, the .html download, the capture
- *  and the Markdown rendition all use. */
-export interface ComposedPen {
-  slug: Slug;
-  variant: SampleLocale;
-  js: string;
-  html: string;
-  css: string;
-  pen: PenJson;
-  ranges: {
-    /** 1-based inclusive line ranges of each content literal (folded in the code view). */
-    content: [number, number][];
-    /** Lines of the inlined kit, or null when the script has no kit marker. */
-    kit: [number, number] | null;
-    /** `// #region <id>` … `// #endregion`, contents only (markers excluded). */
-    regions: Record<string, { lines: [number, number]; title: string }>;
-  };
-  /** Non-blank lines outside content literals and the kit. */
-  ownLines: number;
-}
-
-// ─── capture.json (generated by `pnpm cookbook capture`) ───────────────────
-
-export interface CapturePage {
-  /** 1-based from the build's first page (a document continued at
-   *  pageIndexOffset 40 still has pages 1–4); the `#page-N` anchors and the
-   *  pNN files use it. Versos and rectos follow the book page number. */
-  n: number;
-  /** Printed folio ("iii", "7"), or "" when the page has none. */
-  label: string;
-  role: "body" | "opener" | "part" | "blank";
-  /** Pixel size of the 1000-wide image. */
-  w: number;
-  h: number;
-  /** Files relative to `public/cookbook/<slug>/<variant>/`. */
-  file: string;
-  strip: string;
-  bytes: number;
-  /** Generated from the VDT, in the sample's language. */
-  alt: string;
-}
-
-export interface CaptureFinding {
-  check: string;
-  severity: "warn" | "info";
-  detail: string;
-}
-
-export interface CaptureVariant {
-  /** Cache-buster for `?v=`. */
-  hash8: string;
-  /** sha1 of pages → blocks → lines (text + rounded bbox): OS-independent. */
-  vdtHash: string;
-  timings: { importMs: number; fontsMs: number; buildMs: number; totalMs: number; builds: number };
-  specimen: {
-    trimMm: [number, number];
-    dpi: number;
-    layoutType: string;
-    /** `multiple` layouts: the body's column count, as the engine cuts it. */
-    columnCount?: number;
-    gutterMm?: number;
-    mirror: boolean;
-    body: { family: string; sizePt: number; leadingPt: number };
-    families: string[];
-    pages: number;
-    ownLines: number;
-  };
-  pages: CapturePage[];
-  /** Indexes into `pages`: [verso, recto] (page 1 alone), in reading order
-   *  whichever edge the book is bound on. */
-  spreads: [number | null, number | null][];
-  /** `"right"` for a book bound on its right edge (the document's
-   *  `binding`: `page.binding` or vertical text): the light table, the
-   *  card and the contact sheet lay each pair out mirrored, the recto on
-   *  the left, and turn pages leftward. Absent for a left-bound book. */
-  binding?: "right";
-  card: { file: string; file480: string; w: number; h: number; mode: CardMode };
-  og: { file: string; w: number; h: number };
-  pdf?: { file: string; bytes: number; pages: number };
-  /** The document as a `.postext` bundle, which the Sandbox opens
-   *  (`/<locale>/sandbox#recipe=<slug>&lang=<variant>`). */
-  sandbox?: {
-    file: string;
-    bytes: number;
-    /** folioHash of recipe.json `folio` the bundle carries. */
-    folio?: string;
-    /** recipe.json `capture.sandbox` the bundle was made with. */
-    keep?: CaptureBuild;
-    /** The pages the bundle lays out to, when it holds only some of the
-     *  builds whose pages the capture counts. */
-    pages?: number;
-    /** Each chapter of the bundle as it reads back on the capture's
-     *  engine: its pages, its layout hash (lib/probe.js `layoutHash`:
-     *  every line with its box) and its lines hash (`linesHash`: the lines
-     *  and their order, no box; missing from a capture made before it was
-     *  recorded). What `pnpm cookbook sandbox` compares the Sandbox's
-     *  layout with: the lines, since the Sandbox measures with another
-     *  build of a family than the pen and the boxes differ by fractions
-     *  of a pixel. */
-    chapters?: { pages: number; hash: string; lines?: string }[];
-    /** The warnings of the pen's builds the bundle holds (kind and what
-     *  it names, positions aside): the Sandbox may raise these and no
-     *  others. Left out when there are none. */
-    warnings?: string[];
-  };
-  detected: {
-    apis: string[];
-    configKeys: string[];
-    configSections: string[];
-    configLeaves: number;
-    designElements: number;
-    directives: string[];
-    inline: string[];
-    resources: { svg: number; bitmap: number; table: number };
-    fonts: { family: string; weight: number; style: "normal" | "italic" }[];
-    features: FeatureId[];
-    suggestedLevel: Level;
-  };
-  diagnostics: {
-    converged: boolean;
-    iterationCount: number;
-    looseLines: { count: number; share: number; worst: number };
-    /** Justified Chinese, Japanese or Korean lines: `count` set short past
-     *  the tracking cap (`cjkLoose`), `worst` the widest space between
-     *  characters, in em. Absent when the pages have no such line. */
-    cjkLooseLines?: { count: number; share: number; worst: number };
-    /** Justified lines set ragged because their word spaces would have
-     *  stretched past 3× (C34). Absent on an engine without the warning. */
-    raggedLines?: { count: number };
-    /** Paragraphs set a line short to take up a runt (C35): how many, how
-     *  many of them with tracking, and the most tracking, in thousandths
-     *  of an em. Absent when there is none. */
-    runtFixes?: { count: number; tracked: number; worst: number };
-    findings: CaptureFinding[];
-  };
-}
-
-/** A recorded build of the pen (`capture.doc`): the first, the last, or
- *  its index in build order from 0. */
-export type CaptureBuild = "last" | "first" | number;
-
-export interface CaptureManifest {
-  schemaVersion: 1;
-  slug: Slug;
-  /** sha256 over the recipe's inputs; see lib/cookbook/hash.ts. */
-  sourceHash: string;
-  engine: { postext: SemVer; postextPdf?: SemVer; source: "npm" | "local" };
-  chrome: string;
-  capturedAt: string;
-  /** The newest release on which a capture run found the recipe unchanged
-   *  (pages within rendering noise, the PDF's bytes, the committed bundle
-   *  read back by that engine), the Chrome of that run and its time
-   *  (#735). `engine` and `capturedAt` stay the run that wrote the files;
-   *  a run that writes a file removes this. */
-  verified?: { postext: SemVer; postextPdf?: SemVer; chrome: string; at: string };
-  variants: Partial<Record<SampleLocale, CaptureVariant>>;
 }
 
 // ─── Loaded recipe (server) ─────────────────────────────────────────────────

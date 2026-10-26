@@ -1,10 +1,10 @@
 import { compileMDX, type MDXRemoteProps } from "next-mdx-remote/rsc";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
-import { CODE_THEME_DARK, CODE_THEME_LIGHT } from "@/lib/codeThemes";
+import { CODE_THEME_DARK, CODE_THEME_LIGHT } from "@/lib/mdx/codeThemes";
 import rehypeAbbr, { type RehypeAbbrOptions } from "@/lib/glossary/rehypeAbbr";
-import rehypeDocsTables from "@/lib/rehypeDocsTables";
-import rehypeCodeIndent from "@/lib/rehypeCodeIndent";
+import rehypeDocsTables from "@/lib/mdx/rehypeDocsTables";
+import rehypeCodeIndent from "@/lib/mdx/rehypeCodeIndent";
 
 export interface DocsMdxOptions {
   /** The text's language: known abbreviations get an `<abbr>` with their
