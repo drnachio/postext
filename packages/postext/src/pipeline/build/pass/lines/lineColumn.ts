@@ -2,14 +2,14 @@
 // re-break when it differs) and the spacing above them.
 // Part of placeLines (placeLines.ts), split out of its loop in #1276.
 import type { LineIteration } from './lineIteration.js';
-import type { VDTDocument, VDTLine, VDTColumn, VDTBlockType } from '../../../vdt.js';
-import { type PlacementCursor, currentColumn } from '../../blocks/placement.js';
-import type { BlockIteration } from './blockIteration.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import { type BlockMeasureContext, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { BlockStyle } from '../../styles.js';
-import { raggedLooseLines } from '../../text/raggedLines.js';
-import { insetsBefore } from '../../floats/textWrap.js';
+import type { VDTDocument, VDTLine, VDTColumn, VDTBlockType } from '../../../../vdt.js';
+import { type PlacementCursor, currentColumn } from '../../../blocks/placement.js';
+import type { BlockIteration } from '../blocks/blockIteration.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import { type BlockMeasureContext, measureContentBlock } from '../../../blocks/measureContentBlock.js';
+import type { BlockStyle } from '../../../styles.js';
+import { raggedLooseLines } from '../../../text/raggedLines.js';
+import { insetsBefore } from '../../../floats/textWrap.js';
 
 /** What createLineColumn takes from around the loop. */
 export interface LineColumnDeps {

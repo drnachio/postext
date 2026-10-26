@@ -1,10 +1,10 @@
 // What the steps of placeLines's loop share (#1276).
-import type { VDTColumn, VDTBalancing } from '../../../vdt.js';
-import type { ResolvedHeadingLevelConfig } from '../../../types.js';
-import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
-import type { HeadingClaim } from '../passTypes.js';
+import type { VDTColumn, VDTBalancing } from '../../../../vdt.js';
+import type { ResolvedHeadingLevelConfig } from '../../../../types.js';
+import type { HeadingPlaceholderInfo } from '../../../../design/placeholders.js';
+import type { HeadingClaim } from '../../passTypes.js';
 
-export type { StepJump } from './blockIteration.js';
+export type { StepJump } from '../blocks/blockIteration.js';
 
 /** One turn of the loop that places a block's lines, a column at a time:
  *  the bindings its steps share. */

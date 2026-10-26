@@ -1,21 +1,21 @@
 // Placing a float in the columns of a page (placeFloatInColumns).
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import type { VDTPage, VDTColumn, VDTExclusion, ResolvedConfig, VDTBlock, ContentWarning, ResolvedResourceBlock, BoundingBox, VDTExclusionContour } from '../../../vdt.js';
-import type { PlannedFloat } from '../../floats/floatPlacement.js';
-import { type FloatSlotPosition, type FloatMeasure, measureFloatBand, trueBottom, measureSideStack, columnHasFloatBand, floatGapAbove, fitsStrict, type SideObstacle } from '../../floats/floatSlots.js';
-import { columnCursorY, wrapGapPx, minTextWidthPx } from '../../floats/textWrap.js';
-import { sideUsedBottom, FIT_EPS } from '../../blocks/placement.js';
-import { setAfterText } from '../warnings.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { Resource, ResolvedCalloutStyleConfig } from '../../../types.js';
-import type { BlockStyle } from '../../styles.js';
-import type { CompositionRule } from '../../../types/text/bodyText.js';
-import type { PlannedCallout } from '../../callouts/calloutLayout.js';
-import type { CalloutLayouter } from '../../callouts/frameLayout.js';
-import type { TableOverflow } from '../../../types/resources/tableStyles.js';
-import type { TableSliceSpec } from '../../resources/resourceLayout.js';
-import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from './types.js';
-import type { PassState, PassLate } from './state.js';
+import type { VDTPage, VDTColumn, VDTExclusion, ResolvedConfig, VDTBlock, ContentWarning, ResolvedResourceBlock, BoundingBox, VDTExclusionContour } from '../../../../vdt.js';
+import type { PlannedFloat } from '../../../floats/floatPlacement.js';
+import { type FloatSlotPosition, type FloatMeasure, measureFloatBand, trueBottom, measureSideStack, columnHasFloatBand, floatGapAbove, fitsStrict, type SideObstacle } from '../../../floats/floatSlots.js';
+import { columnCursorY, wrapGapPx, minTextWidthPx } from '../../../floats/textWrap.js';
+import { sideUsedBottom, FIT_EPS } from '../../../blocks/placement.js';
+import { setAfterText } from '../../warnings.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
+import type { BlockStyle } from '../../../styles.js';
+import type { CompositionRule } from '../../../../types/text/bodyText.js';
+import type { PlannedCallout } from '../../../callouts/calloutLayout.js';
+import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
+import type { TableOverflow } from '../../../../types/resources/tableStyles.js';
+import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
+import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types.js';
+import type { PassState, PassLate } from '../state.js';
 
 /** What createFloatPlace takes from the pass. */
 export interface FloatPlaceDeps {

@@ -2,23 +2,23 @@
 // on when a short column or a score asks for it.
 // Part of placeLines (placeLines.ts), split out of its loop in #1276.
 import type { LineIteration, StepJump } from './lineIteration.js';
-import type { PassState } from './state.js';
-import { type ResolvedConfig, type VDTDocument, type VDTColumn, type VDTPage, type VDTBlock, type VDTBlockType, createVDTBlock } from '../../../vdt.js';
-import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import { type PlacementCursor, FIT_EPS, advanceToNextColumn, resetLinePositions, placeBlockInColumn } from '../../blocks/placement.js';
-import type { BlockStyle } from '../../styles.js';
-import type { ResolvedHeadingLevelConfig } from '../../../types.js';
-import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
-import type { HeadingClaim } from '../passTypes.js';
-import type { BlockIteration } from './blockIteration.js';
-import type { BlockMeasureContext } from '../../blocks/measureContentBlock.js';
-import type { MathRender } from '../../../math/types.js';
-import type { ListBulletStyle } from '../../text/lists.js';
-import { scoreKeepHeight } from '../../resources/scoreBlocks.js';
-import { dropCapSinkAfter } from '../../text/dropCap.js';
-import { spaceLinesAfter, applyStyleAttrs } from '../../blocks/buildHelpers.js';
-import { shiftLinesDown } from '../passHelpers.js';
+import type { PassState } from '../state.js';
+import { type ResolvedConfig, type VDTDocument, type VDTColumn, type VDTPage, type VDTBlock, type VDTBlockType, createVDTBlock } from '../../../../vdt.js';
+import type { HeadingLevelResolver } from '../../../sections/headingStyles.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import { type PlacementCursor, FIT_EPS, advanceToNextColumn, resetLinePositions, placeBlockInColumn } from '../../../blocks/placement.js';
+import type { BlockStyle } from '../../../styles.js';
+import type { ResolvedHeadingLevelConfig } from '../../../../types.js';
+import type { HeadingPlaceholderInfo } from '../../../../design/placeholders.js';
+import type { HeadingClaim } from '../../passTypes.js';
+import type { BlockIteration } from '../blocks/blockIteration.js';
+import type { BlockMeasureContext } from '../../../blocks/measureContentBlock.js';
+import type { MathRender } from '../../../../math/types.js';
+import type { ListBulletStyle } from '../../../text/lists.js';
+import { scoreKeepHeight } from '../../../resources/scoreBlocks.js';
+import { dropCapSinkAfter } from '../../../text/dropCap.js';
+import { spaceLinesAfter, applyStyleAttrs } from '../../../blocks/buildHelpers.js';
+import { shiftLinesDown } from '../../passHelpers.js';
 
 /** What createLineFit takes from around the loop. */
 export interface LineFitDeps {

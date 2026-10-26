@@ -1,20 +1,20 @@
 // Wrapped callout boxes, inline asides and inline table slices.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type PlannedCallout, offsetCalloutToAbsolute } from '../../callouts/calloutLayout.js';
-import type { ResolvedCalloutStyleConfig, Resource, ResourceType } from '../../../types.js';
-import { type CalloutLayouter, CUT_START } from '../../callouts/frameLayout.js';
-import { type ResolvedWrap, wrapGapPx, minTextWidthPx, columnCursorY, resolveResourceWrap } from '../../floats/textWrap.js';
-import { currentColumn, advanceToNextColumn, sideUsedBottom, sideColumnOf, FIT_EPS, placeBlockInColumn, type PlacementCursor } from '../../blocks/placement.js';
-import { type VDTPage, pageIsVertical, type VDTColumn, type VDTBlock, createVDTBlock, type ResolvedConfig, type VDTDocument, type ResolvedResourceBlock, type ContentWarning } from '../../../vdt.js';
-import { resolveResourcePlacement } from '../../floats/floatPlacement.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import { type BlockMeasureContext, type MeasureContentBlockOptions, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { InlineAside } from '../passTypes.js';
-import type { BlockStyle } from '../../styles.js';
-import { pickTableStyle } from '../../../defaults/resources/tableStyle.js';
-import { type TableSliceSpec, type TableRowMetrics, MIN_TAIL_ROWS, chooseTableSlice } from '../../resources/resourceLayout.js';
-import type { SideObstacle } from '../../floats/floatSlots.js';
-import type { PassState } from './state.js';
+import { type PlannedCallout, offsetCalloutToAbsolute } from '../../../callouts/calloutLayout.js';
+import type { ResolvedCalloutStyleConfig, Resource, ResourceType } from '../../../../types.js';
+import { type CalloutLayouter, CUT_START } from '../../../callouts/frameLayout.js';
+import { type ResolvedWrap, wrapGapPx, minTextWidthPx, columnCursorY, resolveResourceWrap } from '../../../floats/textWrap.js';
+import { currentColumn, advanceToNextColumn, sideUsedBottom, sideColumnOf, FIT_EPS, placeBlockInColumn, type PlacementCursor } from '../../../blocks/placement.js';
+import { type VDTPage, pageIsVertical, type VDTColumn, type VDTBlock, createVDTBlock, type ResolvedConfig, type VDTDocument, type ResolvedResourceBlock, type ContentWarning } from '../../../../vdt.js';
+import { resolveResourcePlacement } from '../../../floats/floatPlacement.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import { type BlockMeasureContext, type MeasureContentBlockOptions, measureContentBlock } from '../../../blocks/measureContentBlock.js';
+import type { InlineAside } from '../../passTypes.js';
+import type { BlockStyle } from '../../../styles.js';
+import { pickTableStyle } from '../../../../defaults/resources/tableStyle.js';
+import { type TableSliceSpec, type TableRowMetrics, MIN_TAIL_ROWS, chooseTableSlice } from '../../../resources/resourceLayout.js';
+import type { SideObstacle } from '../../../floats/floatSlots.js';
+import type { PassState } from '../state.js';
 
 /** What createCalloutWrapped takes from the pass. */
 export interface CalloutWrappedDeps {

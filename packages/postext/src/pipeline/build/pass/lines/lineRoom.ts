@@ -3,18 +3,18 @@
 // spans.
 // Part of placeLines (placeLines.ts), split out of its loop in #1276.
 import type { LineIteration, StepJump } from './lineIteration.js';
-import type { PassState } from './state.js';
-import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
-import type { ResolvedConfig, VDTLine, VDTColumn, VDTBlockType } from '../../../vdt.js';
-import type { ContentBlock, ListKind } from '../../../parse/index.js';
-import type { BlockIteration } from './blockIteration.js';
-import { type BlockMeasureContext, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { BlockStyle } from '../../styles.js';
-import { prevNonMarkerBlock } from '../../blocks/buildHelpers.js';
-import { balanceKey } from '../../columns/columnBalancing.js';
-import { columnCursorY, wrapInsetSteps, sameInsetsFrom, insetsBefore, settleColumnWraps } from '../../floats/textWrap.js';
-import { raggedLooseLines } from '../../text/raggedLines.js';
-import { headingLineSpanBand } from '../../text/lineSpan.js';
+import type { PassState } from '../state.js';
+import type { HeadingLevelResolver } from '../../../sections/headingStyles.js';
+import type { ResolvedConfig, VDTLine, VDTColumn, VDTBlockType } from '../../../../vdt.js';
+import type { ContentBlock, ListKind } from '../../../../parse/index.js';
+import type { BlockIteration } from '../blocks/blockIteration.js';
+import { type BlockMeasureContext, measureContentBlock } from '../../../blocks/measureContentBlock.js';
+import type { BlockStyle } from '../../../styles.js';
+import { prevNonMarkerBlock } from '../../../blocks/buildHelpers.js';
+import { balanceKey } from '../../../columns/columnBalancing.js';
+import { columnCursorY, wrapInsetSteps, sameInsetsFrom, insetsBefore, settleColumnWraps } from '../../../floats/textWrap.js';
+import { raggedLooseLines } from '../../../text/raggedLines.js';
+import { headingLineSpanBand } from '../../../text/lineSpan.js';
 
 /** What createLineRoom takes from around the loop. */
 export interface LineRoomDeps {

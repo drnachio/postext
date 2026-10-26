@@ -1,30 +1,30 @@
 // Measuring floats: rotation, side captions, table slices, the float's block
 // and the text wrap around it.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type VDTBlock, type VDTPage, type VDTColumn, type ResolvedResourceBlock, pageIsVertical, pageIsMirrored, createVDTBlock, createBoundingBox, type ContentWarning, type BoundingBox, type VDTExclusionContour, type VDTExclusion, type ResolvedConfig, type VDTDocument, type VDTFigureLabel } from '../../../vdt.js';
-import type { CalloutLayoutResult, PlannedCallout } from '../../callouts/calloutLayout.js';
-import type { ResolvedCalloutStyleConfig, CalloutSpan, ResourceRotation, Resource, ResourceType } from '../../../types.js';
-import { type CalloutLayouter, CUT_START } from '../../callouts/frameLayout.js';
-import { type ResolvedWrap, openColumnWrap, columnCursorY } from '../../floats/textWrap.js';
-import { floatColumnCount, type PlannedFloat } from '../../floats/floatPlacement.js';
-import { bandColumns, type PlacementCursor } from '../../blocks/placement.js';
-import { type TableSliceSpec, type TableRowMetrics, layoutResourceBlock } from '../../resources/resourceLayout.js';
-import { flexFloatKey } from '../../columns/columnBalancing.js';
-import { pickTableStyle } from '../../../defaults/resources/tableStyle.js';
-import type { FloatMeasure, FloatSlotPosition, ColumnCapKind } from '../../floats/floatSlots.js';
-import { layOutFigureLabels } from '../../../composed/labels.js';
-import { flowPageMirrored } from '../../blocks/buildHelpers.js';
-import { dimensionToPx } from '../../../units.js';
-import { contourOnPage } from '../../../contour/index.js';
-import { bandTop, bareBandTop, type BandCap } from '../../columns/bandCaps.js';
-import type { MeasurementCache } from '../../../measure/index.js';
-import type { CaptionCitations } from '../../references/citations.js';
-import type { ResourceNumberingMap } from '../../resources/resourceNumbering.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { BlockStyle } from '../../styles.js';
-import type { ComicPageSource } from '../../../comics/types.js';
-import type { StripGeometry, FloatRotation, CaptionAside, BodyCap } from './types.js';
-import type { PassState } from './state.js';
+import { type VDTBlock, type VDTPage, type VDTColumn, type ResolvedResourceBlock, pageIsVertical, pageIsMirrored, createVDTBlock, createBoundingBox, type ContentWarning, type BoundingBox, type VDTExclusionContour, type VDTExclusion, type ResolvedConfig, type VDTDocument, type VDTFigureLabel } from '../../../../vdt.js';
+import type { CalloutLayoutResult, PlannedCallout } from '../../../callouts/calloutLayout.js';
+import type { ResolvedCalloutStyleConfig, CalloutSpan, ResourceRotation, Resource, ResourceType } from '../../../../types.js';
+import { type CalloutLayouter, CUT_START } from '../../../callouts/frameLayout.js';
+import { type ResolvedWrap, openColumnWrap, columnCursorY } from '../../../floats/textWrap.js';
+import { floatColumnCount, type PlannedFloat } from '../../../floats/floatPlacement.js';
+import { bandColumns, type PlacementCursor } from '../../../blocks/placement.js';
+import { type TableSliceSpec, type TableRowMetrics, layoutResourceBlock } from '../../../resources/resourceLayout.js';
+import { flexFloatKey } from '../../../columns/columnBalancing.js';
+import { pickTableStyle } from '../../../../defaults/resources/tableStyle.js';
+import type { FloatMeasure, FloatSlotPosition, ColumnCapKind } from '../../../floats/floatSlots.js';
+import { layOutFigureLabels } from '../../../../composed/labels.js';
+import { flowPageMirrored } from '../../../blocks/buildHelpers.js';
+import { dimensionToPx } from '../../../../units.js';
+import { contourOnPage } from '../../../../contour/index.js';
+import { bandTop, bareBandTop, type BandCap } from '../../../columns/bandCaps.js';
+import type { MeasurementCache } from '../../../../measure/index.js';
+import type { CaptionCitations } from '../../../references/citations.js';
+import type { ResourceNumberingMap } from '../../../resources/resourceNumbering.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { BlockStyle } from '../../../styles.js';
+import type { ComicPageSource } from '../../../../comics/types.js';
+import type { StripGeometry, FloatRotation, CaptionAside, BodyCap } from '../types.js';
+import type { PassState } from '../state.js';
 
 /** What createFloatMeasure takes from the pass. */
 export interface FloatMeasureDeps {

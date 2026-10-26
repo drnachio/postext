@@ -1,18 +1,18 @@
 // Placing a text block's lines column by column: fit, split, keep rules,
 // widows and orphans, column ends and the moves that follow.
 // Part of the placement pass (pass.ts), split out of its loop in #1276.
-import type { BlockIteration } from './blockIteration.js';
-import type { PassState } from './state.js';
-import { type ResolvedConfig, type VDTDocument, type VDTPage, type BoundingBox, type VDTColumn, type VDTLine, type VDTBlock } from '../../../vdt.js';
-import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { Resource, ResolvedHeadingLevelConfig } from '../../../types.js';
-import type { BlockStyle } from '../../styles.js';
-import { type PlacementCursor } from '../../blocks/placement.js';
-import { type BlockMeasureContext } from '../../blocks/measureContentBlock.js';
-import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
-import type { HeadingClaim } from '../passTypes.js';
-import type { CompositionRule } from '../../../types/text/bodyText.js';
+import type { BlockIteration } from '../blocks/blockIteration.js';
+import type { PassState } from '../state.js';
+import { type ResolvedConfig, type VDTDocument, type VDTPage, type BoundingBox, type VDTColumn, type VDTLine, type VDTBlock } from '../../../../vdt.js';
+import type { HeadingLevelResolver } from '../../../sections/headingStyles.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { Resource, ResolvedHeadingLevelConfig } from '../../../../types.js';
+import type { BlockStyle } from '../../../styles.js';
+import { type PlacementCursor } from '../../../blocks/placement.js';
+import { type BlockMeasureContext } from '../../../blocks/measureContentBlock.js';
+import type { HeadingPlaceholderInfo } from '../../../../design/placeholders.js';
+import type { HeadingClaim } from '../../passTypes.js';
+import type { CompositionRule } from '../../../../types/text/bodyText.js';
 import type { LineIteration } from './lineIteration.js';
 import { createLineColumn } from './lineColumn.js';
 import { createLineRoom } from './lineRoom.js';

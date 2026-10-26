@@ -2,15 +2,15 @@
 // is written, moved on whole when it does not fit.
 // Part of the placement pass (pass.ts), split out of its loop in #1276.
 import type { BlockIteration, StepJump } from './blockIteration.js';
-import type { PassState } from './state.js';
-import { type ResolvedConfig, type VDTDocument, type ResolvedResourceBlock, type ContentWarning, type BoundingBox, type VDTPage, type VDTExclusionContour, type VDTBlock, type VDTColumn, createVDTBlock, pageIsVertical } from '../../../vdt.js';
-import type { BlockStyle } from '../../styles.js';
-import { type PlacementCursor, currentColumn, FIT_EPS, advanceToNextColumn, placeAtomicBlock } from '../../blocks/placement.js';
-import type { Resource } from '../../../types.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import { type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { InlineAside } from '../passTypes.js';
-import { resolveResourceWrap, wrapGapPx, minTextWidthPx, columnCursorY } from '../../floats/textWrap.js';
+import type { PassState } from '../state.js';
+import { type ResolvedConfig, type VDTDocument, type ResolvedResourceBlock, type ContentWarning, type BoundingBox, type VDTPage, type VDTExclusionContour, type VDTBlock, type VDTColumn, createVDTBlock, pageIsVertical } from '../../../../vdt.js';
+import type { BlockStyle } from '../../../styles.js';
+import { type PlacementCursor, currentColumn, FIT_EPS, advanceToNextColumn, placeAtomicBlock } from '../../../blocks/placement.js';
+import type { Resource } from '../../../../types.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import { type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock, measureContentBlock } from '../../../blocks/measureContentBlock.js';
+import type { InlineAside } from '../../passTypes.js';
+import { resolveResourceWrap, wrapGapPx, minTextWidthPx, columnCursorY } from '../../../floats/textWrap.js';
 
 /** What createResourceBlock takes from around the loop. */
 export interface ResourceBlockDeps {

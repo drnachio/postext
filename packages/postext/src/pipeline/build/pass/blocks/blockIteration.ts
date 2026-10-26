@@ -1,15 +1,15 @@
 // What the steps of a loop split into modules share (#1276).
-import type { ContentBlock, ListKind } from '../../../parse/types.js';
-import type { ParagraphContainer } from '../../callouts/paragraphContainers.js';
-import type { VDTColumn, VDTPage, VDTBlockType, VDTBlock, VDTLine } from '../../../vdt.js';
-import type { BlockMeasureContext, MeasuredContentBlock, MeasureContentBlockOptions } from '../../blocks/measureContentBlock.js';
-import type { BlockStyle } from '../../styles.js';
-import type { InlineAside } from '../passTypes.js';
-import type { BlockKind } from '../../blocks/buildBlockKind.js';
-import type { MeasuredBlock, BreakTrace, LineInsetStep } from '../../../measure/types.js';
-import type { MathRender } from '../../../math/types.js';
-import type { MeasuredDropCap } from '../../text/dropCap.js';
-import type { ListBulletStyle } from '../../text/lists.js';
+import type { ContentBlock, ListKind } from '../../../../parse/types.js';
+import type { ParagraphContainer } from '../../../callouts/paragraphContainers.js';
+import type { VDTColumn, VDTPage, VDTBlockType, VDTBlock, VDTLine } from '../../../../vdt.js';
+import type { BlockMeasureContext, MeasuredContentBlock, MeasureContentBlockOptions } from '../../../blocks/measureContentBlock.js';
+import type { BlockStyle } from '../../../styles.js';
+import type { InlineAside } from '../../passTypes.js';
+import type { BlockKind } from '../../../blocks/buildBlockKind.js';
+import type { MeasuredBlock, BreakTrace, LineInsetStep } from '../../../../measure/types.js';
+import type { MathRender } from '../../../../math/types.js';
+import type { MeasuredDropCap } from '../../../text/dropCap.js';
+import type { ListBulletStyle } from '../../../text/lists.js';
 
 /** How a step ends its turn of the loop: as `continue` or `break` would, or
  *  by falling through to the next step (undefined). */

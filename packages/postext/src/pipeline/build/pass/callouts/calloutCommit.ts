@@ -1,26 +1,26 @@
 // Committing callout boxes: their source, narrow groups, strip blocks,
 // frame layouters and splitting a box at a cut.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type ContentWarning, type VDTColumn, type VDTBlock, pageIsVertical, type VDTLine, type VDTPage, type ResolvedConfig, type VDTDocument } from '../../../vdt.js';
-import { type CalloutLayoutResult, type PlannedCallout, offsetCalloutToAbsolute } from '../../callouts/calloutLayout.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import { defaultOpenerTitle, markedTitleFields, measureHeadingDesign, measureBoxDesign, layoutBoxDesign } from '../../pages/headerFooter.js';
-import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
-import { resolvedLocale, arabicNumbersOf } from '../../config.js';
-import { type FrameLayoutPass, type CalloutLayouter, makeCalloutLayouter as makeCalloutLayouterIn, frameCutRules, type CalloutCut, type CalloutFragment, splitCalloutFragment as splitCalloutFragmentIn, tallerThanColumn as tallerThanColumnIn } from '../../callouts/frameLayout.js';
-import { isFlowColumnsStyle } from '../../columns/flowColumns.js';
-import { FRAME_STYLE_ID } from '../../../composed/wrap.js';
-import type { ResolvedCalloutStyleConfig, Resource, ResolvedHeadingStyleConfig } from '../../../types.js';
-import { flowPageMirrored } from '../../blocks/buildHelpers.js';
-import { CAPPED_OVERFLOW_PX } from '../passTypes.js';
-import { sideColumnOf, sideUsedBottom, bandUsedBottom, type PlacementCursor } from '../../blocks/placement.js';
-import type { HeadingLevelResolver, HeadingSectionPlan } from '../../sections/headingStyles.js';
-import type { ParagraphContainerPlan } from '../../callouts/paragraphContainers.js';
-import type { PartPlan } from '../../sections/parts.js';
-import type { ComicPageSource } from '../../../comics/types.js';
-import type { StripGeometry } from './types.js';
-import type { BlockMeasureContext } from '../../blocks/measureContentBlock.js';
-import type { PassState } from './state.js';
+import { type ContentWarning, type VDTColumn, type VDTBlock, pageIsVertical, type VDTLine, type VDTPage, type ResolvedConfig, type VDTDocument } from '../../../../vdt.js';
+import { type CalloutLayoutResult, type PlannedCallout, offsetCalloutToAbsolute } from '../../../callouts/calloutLayout.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import { defaultOpenerTitle, markedTitleFields, measureHeadingDesign, measureBoxDesign, layoutBoxDesign } from '../../../pages/headerFooter.js';
+import type { HeadingPlaceholderInfo } from '../../../../design/placeholders.js';
+import { resolvedLocale, arabicNumbersOf } from '../../../config.js';
+import { type FrameLayoutPass, type CalloutLayouter, makeCalloutLayouter as makeCalloutLayouterIn, frameCutRules, type CalloutCut, type CalloutFragment, splitCalloutFragment as splitCalloutFragmentIn, tallerThanColumn as tallerThanColumnIn } from '../../../callouts/frameLayout.js';
+import { isFlowColumnsStyle } from '../../../columns/flowColumns.js';
+import { FRAME_STYLE_ID } from '../../../../composed/wrap.js';
+import type { ResolvedCalloutStyleConfig, Resource, ResolvedHeadingStyleConfig } from '../../../../types.js';
+import { flowPageMirrored } from '../../../blocks/buildHelpers.js';
+import { CAPPED_OVERFLOW_PX } from '../../passTypes.js';
+import { sideColumnOf, sideUsedBottom, bandUsedBottom, type PlacementCursor } from '../../../blocks/placement.js';
+import type { HeadingLevelResolver, HeadingSectionPlan } from '../../../sections/headingStyles.js';
+import type { ParagraphContainerPlan } from '../../../callouts/paragraphContainers.js';
+import type { PartPlan } from '../../../sections/parts.js';
+import type { ComicPageSource } from '../../../../comics/types.js';
+import type { StripGeometry } from '../types.js';
+import type { BlockMeasureContext } from '../../../blocks/measureContentBlock.js';
+import type { PassState } from '../state.js';
 
 /** What createCalloutCommit takes from the pass. */
 export interface CalloutCommitDeps {

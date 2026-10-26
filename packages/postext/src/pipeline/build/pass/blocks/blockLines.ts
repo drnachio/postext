@@ -2,20 +2,20 @@
 // split rules and the widths the lines are broken for.
 // Part of the placement pass (pass.ts), split out of its loop in #1276.
 import type { BlockIteration } from './blockIteration.js';
-import type { ResolvedConfig, VDTLine, VDTBlock, VDTPage } from '../../../vdt.js';
-import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import { lineInsetsAt } from '../../../measure/types.js';
-import { resolvedDirection, arabicNumbersOf } from '../../config.js';
-import { mirrorListMarker, directListMarker, listBulletPosition, listItemGapPx, listItemSpacingPx } from '../../text/lists.js';
-import { measuringVertically } from '../../../measure/vertical.js';
-import { nextNonMarkerBlock } from '../../blocks/buildHelpers.js';
-import { verseSnaps } from '../passHelpers.js';
-import { versesLineByLine } from '../../text/verseLines.js';
-import { raggedLooseLines } from '../../text/raggedLines.js';
-import { flowColumnsAfter } from '../../blocks/placement.js';
-import { runsBesideWrap } from '../../floats/textWrap.js';
-import { type MeasureContentBlockOptions, measureContentBlock } from '../../blocks/measureContentBlock.js';
+import type { ResolvedConfig, VDTLine, VDTBlock, VDTPage } from '../../../../vdt.js';
+import type { HeadingLevelResolver } from '../../../sections/headingStyles.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import { lineInsetsAt } from '../../../../measure/types.js';
+import { resolvedDirection, arabicNumbersOf } from '../../../config.js';
+import { mirrorListMarker, directListMarker, listBulletPosition, listItemGapPx, listItemSpacingPx } from '../../../text/lists.js';
+import { measuringVertically } from '../../../../measure/vertical.js';
+import { nextNonMarkerBlock } from '../../../blocks/buildHelpers.js';
+import { verseSnaps } from '../../passHelpers.js';
+import { versesLineByLine } from '../../../text/verseLines.js';
+import { raggedLooseLines } from '../../../text/raggedLines.js';
+import { flowColumnsAfter } from '../../../blocks/placement.js';
+import { runsBesideWrap } from '../../../floats/textWrap.js';
+import { type MeasureContentBlockOptions, measureContentBlock } from '../../../blocks/measureContentBlock.js';
 
 /** What createBlockLines takes from around the loop. */
 export interface BlockLinesDeps {

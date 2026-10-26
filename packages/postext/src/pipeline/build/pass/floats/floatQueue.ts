@@ -2,15 +2,15 @@
 // boxes waiting for their band, and the gates that hold a float until the
 // line citing it is set.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import type { PlannedFloat } from '../../floats/floatPlacement.js';
-import type { PlannedCallout } from '../../callouts/calloutLayout.js';
-import type { ResolvedCalloutStyleConfig } from '../../../types.js';
-import type { VDTPage, ContentWarning, VDTColumn, VDTLine, VDTBlock, ResolvedConfig, VDTDocument } from '../../../vdt.js';
-import { currentBand, bandColumns, sideColumnOf, type PlacementCursor } from '../../blocks/placement.js';
-import { isMarkerBlock } from '../../blocks/buildHelpers.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { CalloutLayouter } from '../../callouts/frameLayout.js';
-import type { PassState, PassLate } from './state.js';
+import type { PlannedFloat } from '../../../floats/floatPlacement.js';
+import type { PlannedCallout } from '../../../callouts/calloutLayout.js';
+import type { ResolvedCalloutStyleConfig } from '../../../../types.js';
+import type { VDTPage, ContentWarning, VDTColumn, VDTLine, VDTBlock, ResolvedConfig, VDTDocument } from '../../../../vdt.js';
+import { currentBand, bandColumns, sideColumnOf, type PlacementCursor } from '../../../blocks/placement.js';
+import { isMarkerBlock } from '../../../blocks/buildHelpers.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
+import type { PassState, PassLate } from '../state.js';
 
 /** What createFloatQueue takes from the pass. */
 export interface FloatQueueDeps {

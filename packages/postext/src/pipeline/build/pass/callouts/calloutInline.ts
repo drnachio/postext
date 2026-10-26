@@ -1,16 +1,16 @@
 // Callout boxes set in the column (placeCalloutInline).
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import { type PlannedCallout, pickCalloutStyle, resolveCalloutAttrs, type CalloutLayoutResult } from '../../callouts/calloutLayout.js';
-import { CUT_START, type CalloutCut, type CalloutFragment, fragmentRange, type CalloutLayouter } from '../../callouts/frameLayout.js';
-import { currentColumn, bandColumns, currentBand, advanceToNextColumn, placeAtomicBlock, type PlacementCursor } from '../../blocks/placement.js';
-import { floatColumnCount } from '../../floats/floatPlacement.js';
-import { pageIsVertical, type ResolvedConfig, type VDTDocument, type VDTPage, type VDTColumn, type VDTBlock } from '../../../vdt.js';
-import { resolveCalloutWrap, type ResolvedWrap } from '../../floats/textWrap.js';
-import { balanceKey } from '../../columns/columnBalancing.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { ResolvedCalloutStyleConfig, CalloutSpan } from '../../../types.js';
-import type { BandCapZone } from '../../columns/bandCaps.js';
-import type { PassState } from './state.js';
+import { type PlannedCallout, pickCalloutStyle, resolveCalloutAttrs, type CalloutLayoutResult } from '../../../callouts/calloutLayout.js';
+import { CUT_START, type CalloutCut, type CalloutFragment, fragmentRange, type CalloutLayouter } from '../../../callouts/frameLayout.js';
+import { currentColumn, bandColumns, currentBand, advanceToNextColumn, placeAtomicBlock, type PlacementCursor } from '../../../blocks/placement.js';
+import { floatColumnCount } from '../../../floats/floatPlacement.js';
+import { pageIsVertical, type ResolvedConfig, type VDTDocument, type VDTPage, type VDTColumn, type VDTBlock } from '../../../../vdt.js';
+import { resolveCalloutWrap, type ResolvedWrap } from '../../../floats/textWrap.js';
+import { balanceKey } from '../../../columns/columnBalancing.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { ResolvedCalloutStyleConfig, CalloutSpan } from '../../../../types.js';
+import type { BandCapZone } from '../../../columns/bandCaps.js';
+import type { PassState } from '../state.js';
 
 /** What createCalloutInline takes from the pass. */
 export interface CalloutInlineDeps {

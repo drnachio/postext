@@ -3,20 +3,20 @@
 // to the page.
 // Part of the placement pass (pass.ts), split out of its loop in #1276.
 import type { BlockIteration, StepJump } from './blockIteration.js';
-import type { PassState } from './state.js';
-import { type LooseBudget, flexFigureKey } from '../../columns/columnBalancing.js';
-import { type ResolvedConfig, type VDTDocument, type VDTPage, type VDTColumn, pageIsVertical } from '../../../vdt.js';
-import { type HeadingLevelResolver, type HeadingSectionPlan, headingIsHidden } from '../../sections/headingStyles.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import { type ParagraphContainerPlan, containerStyle } from '../../callouts/paragraphContainers.js';
-import type { PartPlan } from '../../sections/parts.js';
-import { type PlacementCursor, advanceToNextPageBoundary, enforcePageParity, currentColumn, advanceToNextColumn, FIT_EPS } from '../../blocks/placement.js';
-import type { FloatRotation } from './types.js';
-import { type BlockMeasureContext, type MeasureContentBlockOptions, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { ResolvedHeadingStyleConfig } from '../../../types/structure/headingStyles.js';
-import type { ResolvedHeadingLevelConfig, Resource, ResourceType } from '../../../types.js';
-import { type InlineAside, MIN_INLINE_FIGURE_SCALE } from '../passTypes.js';
-import { measureLooseParagraph, headingSetsOwnBand } from '../passHelpers.js';
+import type { PassState } from '../state.js';
+import { type LooseBudget, flexFigureKey } from '../../../columns/columnBalancing.js';
+import { type ResolvedConfig, type VDTDocument, type VDTPage, type VDTColumn, pageIsVertical } from '../../../../vdt.js';
+import { type HeadingLevelResolver, type HeadingSectionPlan, headingIsHidden } from '../../../sections/headingStyles.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import { type ParagraphContainerPlan, containerStyle } from '../../../callouts/paragraphContainers.js';
+import type { PartPlan } from '../../../sections/parts.js';
+import { type PlacementCursor, advanceToNextPageBoundary, enforcePageParity, currentColumn, advanceToNextColumn, FIT_EPS } from '../../../blocks/placement.js';
+import type { FloatRotation } from '../types.js';
+import { type BlockMeasureContext, type MeasureContentBlockOptions, measureContentBlock } from '../../../blocks/measureContentBlock.js';
+import type { ResolvedHeadingStyleConfig } from '../../../../types/structure/headingStyles.js';
+import type { ResolvedHeadingLevelConfig, Resource, ResourceType } from '../../../../types.js';
+import { type InlineAside, MIN_INLINE_FIGURE_SCALE } from '../../passTypes.js';
+import { measureLooseParagraph, headingSetsOwnBand } from '../../passHelpers.js';
 
 /** What createBlockMeasure takes from around the loop. */
 export interface BlockMeasureDeps {

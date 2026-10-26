@@ -2,19 +2,19 @@
 // stamps and its place in the column.
 // Part of placeLines (placeLines.ts), split out of its loop in #1276.
 import type { LineIteration, StepJump } from './lineIteration.js';
-import { type VDTDocument, type VDTBlock, type VDTColumn, type VDTBlockType, createVDTBlock } from '../../../vdt.js';
-import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
-import type { PassState } from './state.js';
-import { type PlacementCursor, resetLinePositions, placeBlockInColumn } from '../../blocks/placement.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { ResolvedHeadingLevelConfig } from '../../../types.js';
-import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
-import type { HeadingClaim } from '../passTypes.js';
-import type { BlockIteration } from './blockIteration.js';
-import type { BlockStyle } from '../../styles.js';
-import type { ListBulletStyle } from '../../text/lists.js';
-import { applyStyleAttrs } from '../../blocks/buildHelpers.js';
-import { shiftLinesDown } from '../passHelpers.js';
+import { type VDTDocument, type VDTBlock, type VDTColumn, type VDTBlockType, createVDTBlock } from '../../../../vdt.js';
+import type { HeadingLevelResolver } from '../../../sections/headingStyles.js';
+import type { PassState } from '../state.js';
+import { type PlacementCursor, resetLinePositions, placeBlockInColumn } from '../../../blocks/placement.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { ResolvedHeadingLevelConfig } from '../../../../types.js';
+import type { HeadingPlaceholderInfo } from '../../../../design/placeholders.js';
+import type { HeadingClaim } from '../../passTypes.js';
+import type { BlockIteration } from '../blocks/blockIteration.js';
+import type { BlockStyle } from '../../../styles.js';
+import type { ListBulletStyle } from '../../../text/lists.js';
+import { applyStyleAttrs } from '../../../blocks/buildHelpers.js';
+import { shiftLinesDown } from '../../passHelpers.js';
 
 /** What createLineSet takes from around the loop. */
 export interface LineSetDeps {

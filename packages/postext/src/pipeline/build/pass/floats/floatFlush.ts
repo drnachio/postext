@@ -1,19 +1,19 @@
 // Flushing pending floats into a page, keep-together boxes, floats heading
 // their citing page, and what happens when a page opens.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import type { VDTPage, VDTColumn, ResolvedConfig, VDTDocument } from '../../../vdt.js';
-import type { PlannedFloat } from '../../floats/floatPlacement.js';
-import { sideColumns, sideColumnOf, currentBand, bandColumns, FIT_EPS, advanceToNextColumn, type PlacementCursor } from '../../blocks/placement.js';
-import { type FloatSlotPosition, type FloatSlot, enumerateCurrentPageSlots, type FloatMeasure, type ColumnCapKind } from '../../floats/floatSlots.js';
-import { pickCalloutStyle, resolveCalloutAttrs, type PlannedCallout } from '../../callouts/calloutLayout.js';
-import { CUT_START } from '../../callouts/frameLayout.js';
-import { opensAfterBreak, floatPagesOf } from '../passHelpers.js';
-import type { CitingPageSlot, CitingPageRefusal } from '../passTypes.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { Resource, ResolvedCalloutStyleConfig } from '../../../types.js';
-import type { TableSliceSpec } from '../../resources/resourceLayout.js';
-import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from './types.js';
-import type { PassState, PassLate } from './state.js';
+import type { VDTPage, VDTColumn, ResolvedConfig, VDTDocument } from '../../../../vdt.js';
+import type { PlannedFloat } from '../../../floats/floatPlacement.js';
+import { sideColumns, sideColumnOf, currentBand, bandColumns, FIT_EPS, advanceToNextColumn, type PlacementCursor } from '../../../blocks/placement.js';
+import { type FloatSlotPosition, type FloatSlot, enumerateCurrentPageSlots, type FloatMeasure, type ColumnCapKind } from '../../../floats/floatSlots.js';
+import { pickCalloutStyle, resolveCalloutAttrs, type PlannedCallout } from '../../../callouts/calloutLayout.js';
+import { CUT_START } from '../../../callouts/frameLayout.js';
+import { opensAfterBreak, floatPagesOf } from '../../passHelpers.js';
+import type { CitingPageSlot, CitingPageRefusal } from '../../passTypes.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
+import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
+import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types.js';
+import type { PassState, PassLate } from '../state.js';
 
 /** What createFloatFlush takes from the pass. */
 export interface FloatFlushDeps {

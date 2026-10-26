@@ -3,26 +3,26 @@
 // strips, callout and container fences.
 // Part of the placement pass (pass.ts), split out of its loop in #1276.
 import type { BlockIteration, StepJump } from './blockIteration.js';
-import type { PassState } from './state.js';
-import { type ResolvedConfig, type VDTDocument, type VDTPage, type VDTComicPage, createVDTColumn } from '../../../vdt.js';
-import { type PageMetrics, pageMirrored } from '../../blocks/buildHelpers.js';
-import { type ContentBlock, spaceDirectiveLines } from '../../../parse/index.js';
-import type { Resource, ResolvedCalloutStyleConfig } from '../../../types.js';
-import type { ParagraphContainerPlan } from '../../callouts/paragraphContainers.js';
-import { type PlannedCallout, pickCalloutStyle } from '../../callouts/calloutLayout.js';
-import type { PartPlan } from '../../sections/parts.js';
-import type { PlannedComposedPage } from '../../composedPages/composedLayout.js';
-import { type PlacementCursor, currentColumn, advanceToNextPageBoundary, enforcePageParity, advanceToNextColumn, createPartPage } from '../../blocks/placement.js';
-import type { ComicPageSource } from '../../../comics/types.js';
-import type { ComposedPageFence } from '../../../parse/types.js';
-import type { ComicTextFramesInput, ComicTextFramesLayout } from '../../../comics/textPanels.js';
-import { transparentToWrap, runsBesideWrap, columnCursorY, openColumnWrap, settleColumnWraps } from '../../floats/textWrap.js';
-import { type NumeralStyle, parseNumberFormat } from '../../../numerals/numbering.js';
-import { resolvedLocale } from '../../config.js';
-import { asciiDigits } from '../../../numerals/arabicNumerals.js';
-import { isComicSpread } from '../../../comics/spread.js';
-import { layoutComicPage } from '../../../comics/layoutPage.js';
-import { SPAN_EMBED_STYLE_ID, isPageSpanStrip } from '../../floats/spanEmbeds.js';
+import type { PassState } from '../state.js';
+import { type ResolvedConfig, type VDTDocument, type VDTPage, type VDTComicPage, createVDTColumn } from '../../../../vdt.js';
+import { type PageMetrics, pageMirrored } from '../../../blocks/buildHelpers.js';
+import { type ContentBlock, spaceDirectiveLines } from '../../../../parse/index.js';
+import type { Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
+import type { ParagraphContainerPlan } from '../../../callouts/paragraphContainers.js';
+import { type PlannedCallout, pickCalloutStyle } from '../../../callouts/calloutLayout.js';
+import type { PartPlan } from '../../../sections/parts.js';
+import type { PlannedComposedPage } from '../../../composedPages/composedLayout.js';
+import { type PlacementCursor, currentColumn, advanceToNextPageBoundary, enforcePageParity, advanceToNextColumn, createPartPage } from '../../../blocks/placement.js';
+import type { ComicPageSource } from '../../../../comics/types.js';
+import type { ComposedPageFence } from '../../../../parse/types.js';
+import type { ComicTextFramesInput, ComicTextFramesLayout } from '../../../../comics/textPanels.js';
+import { transparentToWrap, runsBesideWrap, columnCursorY, openColumnWrap, settleColumnWraps } from '../../../floats/textWrap.js';
+import { type NumeralStyle, parseNumberFormat } from '../../../../numerals/numbering.js';
+import { resolvedLocale } from '../../../config.js';
+import { asciiDigits } from '../../../../numerals/arabicNumerals.js';
+import { isComicSpread } from '../../../../comics/spread.js';
+import { layoutComicPage } from '../../../../comics/layoutPage.js';
+import { SPAN_EMBED_STYLE_ID, isPageSpanStrip } from '../../../floats/spanEmbeds.js';
 
 /** What createBlockDispatch takes from around the loop. */
 export interface BlockDispatchDeps {

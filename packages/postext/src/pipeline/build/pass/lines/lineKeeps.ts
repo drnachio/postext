@@ -3,24 +3,24 @@
 // short lists.
 // Part of placeLines (placeLines.ts), split out of its loop in #1276.
 import type { LineIteration, StepJump } from './lineIteration.js';
-import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
-import { type VDTDocument, type ResolvedConfig, type VDTPage, type BoundingBox, type VDTColumn, type VDTBlock, type VDTLine, type VDTBlockType, createVDTBlock } from '../../../vdt.js';
-import type { PassState } from './state.js';
-import type { ContentBlock, ListKind } from '../../../parse/index.js';
-import { type PlacementCursor, FIT_EPS, resetLinePositions, placeBlockInColumn, advanceToNextColumn } from '../../blocks/placement.js';
-import type { Resource } from '../../../types.js';
-import type { BlockStyle } from '../../styles.js';
-import { type BlockMeasureContext, measureContentBlock } from '../../blocks/measureContentBlock.js';
-import type { CompositionRule } from '../../../types/text/bodyText.js';
-import type { BlockIteration } from './blockIteration.js';
-import { defaultOpenerTitle, markedTitleFields, measureHeadingDesign, measureDefaultOpenerHeight } from '../../pages/headerFooter.js';
-import type { HeadingPlaceholderInfo } from '../../../design/placeholders.js';
-import { resolvedLocale } from '../../config.js';
-import type { HeadingClaim } from '../passTypes.js';
-import { headingSetsOwnBand } from '../passHelpers.js';
-import { dimensionToPx } from '../../../units.js';
-import { isMarkerBlock, applyStyleAttrs, prevNonMarkerBlock } from '../../blocks/buildHelpers.js';
-import { verseMarginTopPx } from '../../blocks/buildBlockKind.js';
+import type { HeadingLevelResolver } from '../../../sections/headingStyles.js';
+import { type VDTDocument, type ResolvedConfig, type VDTPage, type BoundingBox, type VDTColumn, type VDTBlock, type VDTLine, type VDTBlockType, createVDTBlock } from '../../../../vdt.js';
+import type { PassState } from '../state.js';
+import type { ContentBlock, ListKind } from '../../../../parse/index.js';
+import { type PlacementCursor, FIT_EPS, resetLinePositions, placeBlockInColumn, advanceToNextColumn } from '../../../blocks/placement.js';
+import type { Resource } from '../../../../types.js';
+import type { BlockStyle } from '../../../styles.js';
+import { type BlockMeasureContext, measureContentBlock } from '../../../blocks/measureContentBlock.js';
+import type { CompositionRule } from '../../../../types/text/bodyText.js';
+import type { BlockIteration } from '../blocks/blockIteration.js';
+import { defaultOpenerTitle, markedTitleFields, measureHeadingDesign, measureDefaultOpenerHeight } from '../../../pages/headerFooter.js';
+import type { HeadingPlaceholderInfo } from '../../../../design/placeholders.js';
+import { resolvedLocale } from '../../../config.js';
+import type { HeadingClaim } from '../../passTypes.js';
+import { headingSetsOwnBand } from '../../passHelpers.js';
+import { dimensionToPx } from '../../../../units.js';
+import { isMarkerBlock, applyStyleAttrs, prevNonMarkerBlock } from '../../../blocks/buildHelpers.js';
+import { verseMarginTopPx } from '../../../blocks/buildBlockKind.js';
 
 /** What createLineKeeps takes from around the loop. */
 export interface LineKeepsDeps {

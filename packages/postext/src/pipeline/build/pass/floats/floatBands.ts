@@ -1,16 +1,16 @@
 // Where a float fits: table floats split across pages, the probe of a band
 // for a float, committing the block and shrinking it to the room left.
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import type { PlannedFloat } from '../../floats/floatPlacement.js';
-import { type FloatSlotPosition, measureFloatBand, trueBottom, type SideObstacle, type FloatMeasure, measureSideStack, floatGapAbove, floatGapBelow } from '../../floats/floatSlots.js';
-import { type VDTColumn, type BoundingBox, type VDTBlock, type VDTPage, pageIsVertical, createBoundingBox, type VDTDocument, type ResolvedResourceBlock } from '../../../vdt.js';
-import { type TableSliceSpec, chooseTableSlice, type TableRowMetrics } from '../../resources/resourceLayout.js';
-import { sideColumnOf, sideUsedBottom } from '../../blocks/placement.js';
-import { offsetCalloutToAbsolute, type CalloutLayoutResult, type PlannedCallout } from '../../callouts/calloutLayout.js';
-import { DEFAULT_FLOAT_MIN_SCALE } from '../../../defaults/layout.js';
-import type { FloatRotation, CaptionAside, BodyCap } from './types.js';
-import type { TableOverflow } from '../../../types/resources/tableStyles.js';
-import type { PassState, PassLate } from './state.js';
+import type { PlannedFloat } from '../../../floats/floatPlacement.js';
+import { type FloatSlotPosition, measureFloatBand, trueBottom, type SideObstacle, type FloatMeasure, measureSideStack, floatGapAbove, floatGapBelow } from '../../../floats/floatSlots.js';
+import { type VDTColumn, type BoundingBox, type VDTBlock, type VDTPage, pageIsVertical, createBoundingBox, type VDTDocument, type ResolvedResourceBlock } from '../../../../vdt.js';
+import { type TableSliceSpec, chooseTableSlice, type TableRowMetrics } from '../../../resources/resourceLayout.js';
+import { sideColumnOf, sideUsedBottom } from '../../../blocks/placement.js';
+import { offsetCalloutToAbsolute, type CalloutLayoutResult, type PlannedCallout } from '../../../callouts/calloutLayout.js';
+import { DEFAULT_FLOAT_MIN_SCALE } from '../../../../defaults/layout.js';
+import type { FloatRotation, CaptionAside, BodyCap } from '../types.js';
+import type { TableOverflow } from '../../../../types/resources/tableStyles.js';
+import type { PassState, PassLate } from '../state.js';
 
 /** What createFloatBands takes from the pass. */
 export interface FloatBandsDeps {

@@ -2,17 +2,17 @@
 // orphan and widow rules, or move it on to the next column.
 // Part of placeLines (placeLines.ts), split out of its loop in #1276.
 import type { LineIteration, StepJump } from './lineIteration.js';
-import { type ResolvedConfig, type VDTDocument, type VDTColumn, type VDTLine, type VDTBlock, type VDTPage, type VDTBlockType, createVDTBlock } from '../../../vdt.js';
-import type { PassState } from './state.js';
-import { type PlacementCursor, columnClosesPage, resetLinePositions, placeBlockInColumn, advanceToNextColumn, bandColumns, currentBand } from '../../blocks/placement.js';
-import type { ContentBlock } from '../../../parse/index.js';
-import type { BlockIteration } from './blockIteration.js';
-import type { BlockMeasureContext, MeasureContentBlockOptions, MeasuredContentBlock } from '../../blocks/measureContentBlock.js';
-import type { BlockStyle } from '../../styles.js';
-import { chooseParagraphSplit } from '../../blocks/orphanWidow.js';
-import { raggedLooseLines } from '../../text/raggedLines.js';
-import { sameVerseLine, keepsStanzaWhole } from '../passHelpers.js';
-import { applyStyleAttrs } from '../../blocks/buildHelpers.js';
+import { type ResolvedConfig, type VDTDocument, type VDTColumn, type VDTLine, type VDTBlock, type VDTPage, type VDTBlockType, createVDTBlock } from '../../../../vdt.js';
+import type { PassState } from '../state.js';
+import { type PlacementCursor, columnClosesPage, resetLinePositions, placeBlockInColumn, advanceToNextColumn, bandColumns, currentBand } from '../../../blocks/placement.js';
+import type { ContentBlock } from '../../../../parse/index.js';
+import type { BlockIteration } from '../blocks/blockIteration.js';
+import type { BlockMeasureContext, MeasureContentBlockOptions, MeasuredContentBlock } from '../../../blocks/measureContentBlock.js';
+import type { BlockStyle } from '../../../styles.js';
+import { chooseParagraphSplit } from '../../../blocks/orphanWidow.js';
+import { raggedLooseLines } from '../../../text/raggedLines.js';
+import { sameVerseLine, keepsStanzaWhole } from '../../passHelpers.js';
+import { applyStyleAttrs } from '../../../blocks/buildHelpers.js';
 
 /** What createLineSplit takes from around the loop. */
 export interface LineSplitDeps {

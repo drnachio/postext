@@ -199,7 +199,8 @@ jobs:
 
       - run: pnpm turbo run check-types lint
 
-      # Oversized files and crowded directories (#1276), as warnings only.
+      # Oversized files and crowded directories (#1276): fails on a new one or
+      # one in scripts/source-size.baseline.json that grew.
       - name: Source size
         run: node scripts/source-size.mjs --check
 
