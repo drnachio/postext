@@ -199,6 +199,10 @@ jobs:
 
       - run: pnpm turbo run check-types lint
 
+      # Oversized files and crowded directories (#1276), as warnings only.
+      - name: Source size
+        run: node scripts/source-size.mjs --check
+
       # The command line as a self-contained executable: built for this
       # runner and run with nothing else (the release builds every platform).
       - name: CLI executable
