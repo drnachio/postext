@@ -16,7 +16,7 @@ Duas unidades de um 练习册 do segundo ano no formato 16开: uma de língua, �
 
 ### 1 · Um estilo para todas as seções
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. As seções são contadas com numerais chineses seguidos de um 、 de largura inteira, então nenhum espaço vem depois do número; o enunciado é composto na Hei, sem negrito, para que os pontos entre parênteses sejam lidos como parte dele. `options.bracket` escreve o （　） depois de cada enunciado, e no livro do professor a letra certa entra nele. Os dois estilos pequenos estendem o principal: `pinyin` desenha cada lacuna como um quadrinho da largura da palavra, `kuohao` não desenha nada, porque o parêntese de 在（　）里填 está no texto.
+O código é [a resposta curta](#a-resposta-curta) logo acima. As seções são contadas com numerais chineses seguidos de um 、 de largura inteira, então nenhum espaço vem depois do número; o enunciado é composto na Hei, sem negrito, para que os pontos entre parênteses sejam lidos como parte dele. `options.bracket` escreve o （　） depois de cada enunciado, e no livro do professor a letra certa entra nele. Os dois estilos pequenos estendem o principal: `pinyin` desenha cada lacuna como um quadrinho da largura da palavra e imprime em cima a leitura de `[[{春天|chūn tiān}]]`, também no livro do aluno; `kuohao` não desenha nada, porque o parêntese de 在（　）里填 está no texto.
 
 ### 2 · O livro do aluno e o do professor a partir de um texto
 
@@ -47,11 +47,10 @@ Sem linhas `:::solutions`, `chapterEnd` reúne o gabarito de cada unidade antes 
 +  solutions: { placement: edition === 'teacher' ? 'none' : 'chapterEnd' } });
 ```
 
-### Escreva as leituras ao lado das lacunas
+### Dê a cada palavra seus 田字格
 
-<RecipeLink slug="pinyin-primer">A cartilha com pinyin</RecipeLink> põe o pinyin sobre os caracteres como ruby, algo que uma lacuna ainda não comporta.
+Uma questão aberta com `cells="2 2 2 2"` põe um grupo de quadrinhos para cada palavra sob uma linha de pinyin, como termina <RecipeLink slug="school-traditions-worksheet">a edição chinesa da ficha em dez tradições</RecipeLink>.
 
 ## Erros comuns
 
-- Uma leitura ainda não pode ficar sobre uma lacuna: um ruby dentro de `[[…]]` faz parte da resposta oculta, e uma área de 田字格 ocupa toda a medida. A seção 看拼音写词语 põe cada sílaba numa linha própria e o quadrinho embaixo, quatro por fileira num grupo `:::columns`.
 - A fonte Kai compõe só as respostas, então carrega apenas os caracteres das lacunas e das respostas modelo; um caractere que ela componha em outro lugar precisa ser acrescentado a esse texto.

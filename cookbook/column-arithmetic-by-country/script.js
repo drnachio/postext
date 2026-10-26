@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 170 · Column arithmetic as each country writes it ═══════
 // https://postext.dev/en/cookbook/column-arithmetic-by-country
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Fira Sans, Lexend (SIL OFL 1.1) · Needs postext ≥ 1.59.0
+// Fonts: Fira Sans, Lexend (SIL OFL 1.1) · Needs postext ≥ 1.63.0
 import { buildDocumentWithFonts, buildDocument, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 

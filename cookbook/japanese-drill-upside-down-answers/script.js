@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 172 · A Japanese drill with the answers upside down ═══
 // https://postext.dev/en/cookbook/japanese-drill-upside-down-answers
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Klee One, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.59.0
+// Fonts: Klee One, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.63.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
   loadVerticalAlternates,
@@ -48,6 +48,8 @@ const drill = {
   solutions: { placement: 'inverted', box: 'kotae' },
   marginTop: em(1.1), marginBottom: em(0.4),
 };
+// 漢字の書き取り: a square □ for one kanji, its reading printed beside it.
+const kaki = { id: 'kaki', extends: 'drill', blank: { extra: em(0.6), minWidth: em(1.6) } };
 const kotae = { id: 'kotae', title: '', backgroundEnabled: false, border: { enabled: false },
   padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) },
   body: { fontFamily: ROUND, fontSize: pt(8), lineHeight: pt(12), color: col('muted'),
@@ -102,7 +104,7 @@ const config = () => ({
   { id: 'waku', backgroundEnabled: false, borderWidth: pt(1), borderColor: col('blue'),
     borderRadius: mm(1.5), minWidth: mm(16), paddingY: em(0.2) }],
   calloutStyles: [kotae],
-  exerciseStyles: [drill],
+  exerciseStyles: [drill, kaki],
   header: { elements: [] },
   footer: { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}', fontFamily: ROUND,
     fontSize: pt(9), fontWeight: 700, color: col('blue'), align: 'center',

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 168 · Primary workbook unit of activities ═══════════
 // https://postext.dev/en/cookbook/primary-workbook-activities
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Atkinson Hyperlegible Next, Grandstander (SIL OFL 1.1) · Needs postext ≥ 1.59.0
+// Fonts: Atkinson Hyperlegible Next, Grandstander (SIL OFL 1.1) · Needs postext ≥ 1.63.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

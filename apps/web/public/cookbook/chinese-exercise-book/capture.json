@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-exercise-book",
-  "sourceHash": "cc27f929c0a8998cb1211b94afde02623934b1fad1778930e702f0c1c1d94619",
+  "sourceHash": "41fb3f89c8ce701dd2450fe5237cc3a50de4f741024e43ddf8dc378631afc955",
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0",
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-24T15:50:14.744Z",
+  "capturedAt": "2026-10-26T01:08:22.011Z",
   "variants": {
     "zh": {
-      "hash8": "0914fd07",
-      "vdtHash": "ee7dd17807cab22a187c0437908dec493d2195f4",
+      "hash8": "3bf5ad0c",
+      "vdtHash": "08b7ab81a1374a62ea79e7ac9f6b54d2530695ec",
       "timings": {
-        "importMs": 8634,
-        "fontsMs": 9574,
-        "buildMs": 124,
-        "totalMs": 21805,
+        "importMs": 214,
+        "fontsMs": 290,
+        "buildMs": 93,
+        "totalMs": 1275,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 104412,
+          "bytes": 101708,
           "alt": "章首页，第 1 页：第一单元 春天来了。"
         },
         {
@@ -94,7 +94,7 @@
           "h": 1413,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 109512,
+          "bytes": 106496,
           "alt": "章首页，第 1 页：第一单元 春天来了。"
         },
         {
@@ -171,14 +171,14 @@
       },
       "sandbox": {
         "file": "chinese-exercise-book.postext",
-        "bytes": 324486,
+        "bytes": 324041,
         "keep": "first",
         "pages": 4,
         "chapters": [
           {
             "pages": 4,
-            "hash": "dfb562f2eb3ac992",
-            "lines": "d0071bfc292f8b44"
+            "hash": "7211391fb2f38019",
+            "lines": "550790ad1b229cd1"
           }
         ],
         "warnings": [
@@ -426,6 +426,7 @@
           "pdf-export",
           "pdf-fonts",
           "resources",
+          "ruby",
           "teacher-edition"
         ],
         "suggestedLevel": 3
@@ -447,6 +448,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

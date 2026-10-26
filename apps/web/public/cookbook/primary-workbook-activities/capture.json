@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "primary-workbook-activities",
-  "sourceHash": "305f8feeb5b60f80e069da479ed3a8bed59330e43c4f38ecc6b5c73b097e8c2a",
+  "sourceHash": "7a560ae797cff7a7f4683a7a904c5270bfde5a77c99e41070a5b8077b13d406a",
   "engine": {
-    "postext": "1.59.2",
-    "postextPdf": "1.59.2",
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-26T00:56:51.863Z",
+  "capturedAt": "2026-10-26T01:08:21.785Z",
   "variants": {
     "en": {
-      "hash8": "e67e7ed6",
-      "vdtHash": "957c3713e69ca097285d6f8c2ddee0d0ee6c81d5",
+      "hash8": "1b2ed1ed",
+      "vdtHash": "41164ea23f926646711b494c677f6fb08c6f8267",
       "timings": {
-        "importMs": 31905,
+        "importMs": 30100,
         "fontsMs": 54,
-        "buildMs": 11,
-        "totalMs": 32724,
+        "buildMs": 12,
+        "totalMs": 30963,
         "builds": 1
       },
       "specimen": {
@@ -60,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 71236,
+          "bytes": 71260,
           "alt": "Page 2."
         },
         {
@@ -114,17 +114,17 @@
       },
       "pdf": {
         "file": "primary-workbook-activities.pdf",
-        "bytes": 285818,
+        "bytes": 286133,
         "pages": 4
       },
       "sandbox": {
         "file": "primary-workbook-activities.postext",
-        "bytes": 250063,
+        "bytes": 252485,
         "chapters": [
           {
             "pages": 4,
-            "hash": "13ded703e25dc4df",
-            "lines": "649b586330ada9bf"
+            "hash": "13285af804ead30c",
+            "lines": "8949a252859684e4"
           }
         ]
       },
@@ -424,7 +424,7 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the pen took 32.7 s to finish (warning at 30 s)"
+            "detail": "the pen took 31.0 s to finish (warning at 30 s)"
           },
           {
             "check": "vdt",
@@ -434,24 +434,24 @@
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: es left out (the resources differ when read back)"
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: es left out (the resources differ when read back)"
+            "detail": "book in several languages: en, es"
           }
         ]
       }
     },
     "es": {
-      "hash8": "7ae2a3f7",
-      "vdtHash": "88fedd1950ed2b6e1539f9a82ffcdc56be13cf58",
+      "hash8": "ea751ffe",
+      "vdtHash": "43d9a1f257a6802936003731380e315c409b8741",
       "timings": {
-        "importMs": 31907,
-        "fontsMs": 58,
+        "importMs": 30101,
+        "fontsMs": 65,
         "buildMs": 11,
-        "totalMs": 32720,
+        "totalMs": 30962,
         "builds": 1
       },
       "specimen": {
@@ -494,7 +494,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 76048,
+          "bytes": 76030,
           "alt": "Página 2."
         },
         {
@@ -548,17 +548,17 @@
       },
       "pdf": {
         "file": "primary-workbook-activities.pdf",
-        "bytes": 287248,
+        "bytes": 287566,
         "pages": 4
       },
       "sandbox": {
         "file": "primary-workbook-activities.postext",
-        "bytes": 250436,
+        "bytes": 252746,
         "chapters": [
           {
             "pages": 4,
-            "hash": "9e56fa112dcf9531",
-            "lines": "0593b7e8e23ab284"
+            "hash": "f045a1d286d07b5e",
+            "lines": "c9ffda4b71f914c5"
           }
         ]
       },
@@ -858,7 +858,7 @@
           {
             "check": "C21",
             "severity": "warn",
-            "detail": "the pen took 32.7 s to finish (warning at 30 s)"
+            "detail": "the pen took 31.0 s to finish (warning at 30 s)"
           },
           {
             "check": "vdt",
@@ -868,12 +868,12 @@
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: en left out (the resources differ when read back)"
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "book in several languages: en left out (the resources differ when read back)"
+            "detail": "book in several languages: es, en"
           }
         ]
       }

@@ -16,7 +16,7 @@ Zwei Einheiten eines 练习册 für die zweite Klasse im Format 16开: eine Spra
 
 ### 1 · Ein Stil für alle Abschnitte
 
-Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Die Abschnitte werden mit chinesischen Zahlzeichen gezählt, gefolgt von einem 、 in voller Breite, also steht hinter der Zahl kein Wortzwischenraum. Die Arbeitsanweisung steht in der Hei, nicht fett, damit man die Punkte in Klammern als Teil von ihr liest. `options.bracket` schreibt die （　） hinter jeden Aufgabentext, und in der Lehrerausgabe kommt der richtige Buchstabe hinein. Die beiden kleinen Stile erweitern den Hauptstil: `pinyin` zeichnet jede Lücke als Kästchen, so breit wie ihr Wort, `kuohao` zeichnet nichts, weil die Klammer von 在（　）里填 im Text steht.
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Die Abschnitte werden mit chinesischen Zahlzeichen gezählt, gefolgt von einem 、 in voller Breite, also steht hinter der Zahl kein Wortzwischenraum. Die Arbeitsanweisung steht in der Hei, nicht fett, damit man die Punkte in Klammern als Teil von ihr liest. `options.bracket` schreibt die （　） hinter jeden Aufgabentext, und in der Lehrerausgabe kommt der richtige Buchstabe hinein. Die beiden kleinen Stile erweitern den Hauptstil: `pinyin` zeichnet jede Lücke als Kästchen, so breit wie ihr Wort, und druckt die Lesung von `[[{春天|chūn tiān}]]` darüber, auch im Schülerheft; `kuohao` zeichnet nichts, weil die Klammer von 在（　）里填 im Text steht.
 
 ### 2 · Schülerheft und Lehrerausgabe aus einem Text
 
@@ -47,11 +47,10 @@ Ohne `:::solutions`-Zeilen sammelt `chapterEnd` die Lösungen jeder Einheit vor 
 +  solutions: { placement: edition === 'teacher' ? 'none' : 'chapterEnd' } });
 ```
 
-### Die Lesungen neben die Lücken schreiben
+### Jedem Wort seine 田字格 geben
 
-<RecipeLink slug="pinyin-primer">Die Pinyin-Fibel</RecipeLink> setzt das Pinyin als Ruby über ihre Zeichen; eine Lücke kann das noch nicht tragen.
+Eine offene Frage mit `cells="2 2 2 2"` setzt für jedes Wort eine Gruppe Kästchen unter eine Zeile Pinyin; so endet <RecipeLink slug="school-traditions-worksheet">die chinesische Ausgabe des Arbeitsblatts in zehn Traditionen</RecipeLink>.
 
 ## Häufige Fehler
 
-- Eine Lesung kann noch nicht über einer Lücke stehen: Ein Ruby in `[[…]]` gehört zur verborgenen Antwort, und eine 田字格-Fläche nimmt die ganze Satzbreite ein. Der Abschnitt 看拼音写词语 setzt jede Silbe in eine eigene Zeile und das Kästchen darunter, vier pro Reihe in einer `:::columns`-Gruppe.
 - Die Kai setzt nur die Antworten und lädt deshalb nur die Zeichen der Lücken und der Musterantworten. Setzt sie anderswo ein weiteres Zeichen, muss es in diesen Text aufgenommen werden.

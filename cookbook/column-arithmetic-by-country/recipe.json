@@ -40,8 +40,8 @@
   ],
   "gotchas": [],
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0"
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0"
   },
   "kit": [
     "core",
@@ -100,8 +100,5 @@
   "updated": "2026-10-24",
   "downloads": {
     "pdf": true
-  },
-  "gaps": [
-    "decimal-column-arithmetic"
-  ]
+  }
 }

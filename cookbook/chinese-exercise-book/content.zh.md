@@ -12,37 +12,23 @@ title: "二年级下册　语文数学同步练习"
 看拼音，写词语。（每词1分，共8分）
 
 :::columns{count=4}
-chūn tiān
+[[{春天|chūn tiān}]]
 
-[[春天]]
+[[{柳树|liǔ shù}]]
 
-liǔ shù
+[[{小草|xiǎo cǎo}]]
 
-[[柳树]]
+[[{燕子|yàn zi}]]
+:::
 
-xiǎo cǎo
+:::columns{count=4 marginTop="0.8em"}
+[[{温暖|wēn nuǎn}]]
 
-[[小草]]
+[[{花朵|huā duǒ}]]
 
-yàn zi
+[[{种子|zhǒng zi}]]
 
-[[燕子]]
-
-wēn nuǎn
-
-[[温暖]]
-
-huā duǒ
-
-[[花朵]]
-
-zhǒng zi
-
-[[种子]]
-
-tián yě
-
-[[田野]]
+[[{田野|tián yě}]]
 :::
 :::
 

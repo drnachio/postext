@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "japanese-drill-upside-down-answers",
-  "sourceHash": "46ce6e36c0e19f2e5eac5a6c81c916fc6e1af95c0c722b270ea58aed4d7cdd9e",
+  "sourceHash": "995aff71e402aec5bdf1a106717f20eefeb42fb8f65fac418b14fbaa337633b6",
   "engine": {
-    "postext": "1.59.0",
-    "postextPdf": "1.59.0",
+    "postext": "1.63.0",
+    "postextPdf": "1.63.0",
     "source": "npm"
   },
   "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-24T15:50:14.770Z",
+  "capturedAt": "2026-10-26T01:08:22.016Z",
   "variants": {
     "ja": {
-      "hash8": "4fd772fe",
-      "vdtHash": "9ebf67dfa64f0e2cfa48e86a7fe229b05fc64e63",
+      "hash8": "82eb1a67",
+      "vdtHash": "8167a97c57d3b8e9e371252fde90ab3f06688bba",
       "timings": {
-        "importMs": 5891,
-        "fontsMs": 7075,
-        "buildMs": 105,
-        "totalMs": 20748,
+        "importMs": 409,
+        "fontsMs": 243,
+        "buildMs": 82,
+        "totalMs": 1378,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Zen Maru Gothic"
         ],
         "pages": 4,
-        "ownLines": 137
+        "ownLines": 139
       },
       "pages": [
         {
@@ -71,7 +71,7 @@
           "h": 1412,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 25262,
+          "bytes": 24224,
           "alt": "章扉、1ページ：春のことば。"
         },
         {
@@ -118,7 +118,7 @@
       },
       "sandbox": {
         "file": "japanese-drill-upside-down-answers.postext",
-        "bytes": 78511,
+        "bytes": 78553,
         "keep": "first",
         "pages": 2,
         "chapters": [
@@ -191,8 +191,11 @@
           "exerciseStyles[].area.kind",
           "exerciseStyles[].blank",
           "exerciseStyles[].blank.color",
+          "exerciseStyles[].blank.extra",
           "exerciseStyles[].blank.look",
+          "exerciseStyles[].blank.minWidth",
           "exerciseStyles[].blank.width",
+          "exerciseStyles[].extends",
           "exerciseStyles[].grid",
           "exerciseStyles[].grid.rule",
           "exerciseStyles[].id",
@@ -283,7 +286,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 186,
+        "configLeaves": 190,
         "designElements": 5,
         "directives": [
           ":::paragraphs",
@@ -361,6 +364,11 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 14.3 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

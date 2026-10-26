@@ -16,7 +16,7 @@ Due unità di un 练习册 di seconda elementare in formato 16开: un’unità d
 
 ### 1 · Un solo stile per tutte le sezioni
 
-Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. Le sezioni si contano con numerali cinesi seguiti da un 、 a larghezza piena, quindi dopo il numero non c’è spazio; la consegna è in Hei senza grassetto, così i punti tra parentesi si leggono come parte di essa. `options.bracket` scrive la （　） dopo ogni testo, e nel libro dell’insegnante la lettera giusta ci va dentro. I due stili piccoli estendono quello principale: `pinyin` disegna ogni spazio vuoto come una casella larga quanto la sua parola, `kuohao` non disegna nulla, perché la parentesi di 在（　）里填 è già nel testo.
+Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. Le sezioni si contano con numerali cinesi seguiti da un 、 a larghezza piena, quindi dopo il numero non c’è spazio; la consegna è in Hei senza grassetto, così i punti tra parentesi si leggono come parte di essa. `options.bracket` scrive la （　） dopo ogni testo, e nel libro dell’insegnante la lettera giusta ci va dentro. I due stili piccoli estendono quello principale: `pinyin` disegna ogni spazio vuoto come una casella larga quanto la sua parola e ci stampa sopra la lettura di `[[{春天|chūn tiān}]]`, anche nel libro dell’alunno; `kuohao` non disegna nulla, perché la parentesi di 在（　）里填 è già nel testo.
 
 ### 2 · Il libro dell’alunno e quello dell’insegnante da un solo testo
 
@@ -47,11 +47,10 @@ Senza righe `:::solutions`, `chapterEnd` raccoglie le soluzioni di ogni unità p
 +  solutions: { placement: edition === 'teacher' ? 'none' : 'chapterEnd' } });
 ```
 
-### Scrivi le letture accanto agli spazi vuoti
+### Dai a ogni parola i suoi 田字格
 
-<RecipeLink slug="pinyin-primer">L’abbecedario in pinyin</RecipeLink> mette il pinyin sopra i suoi caratteri come ruby, cosa che uno spazio vuoto non può ancora contenere.
+Una domanda aperta con `cells="2 2 2 2"` mette un gruppo di caselle per ogni parola sotto una riga di pinyin, come finisce <RecipeLink slug="school-traditions-worksheet">l’edizione cinese della scheda in dieci tradizioni</RecipeLink>.
 
 ## Errori frequenti
 
-- Una lettura non può ancora stare sopra uno spazio vuoto: un ruby dentro `[[…]]` fa parte della risposta nascosta, e un’area di 田字格 occupa tutta la giustezza. La sezione 看拼音写词语 mette ogni sillaba su una riga sua e la casella sotto, quattro per fila in un gruppo `:::columns`.
 - Il carattere Kai compone solo le risposte, quindi carica soltanto i caratteri degli spazi vuoti e delle risposte modello; se compone un carattere altrove, va aggiunto a quel testo.

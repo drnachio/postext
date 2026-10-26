@@ -16,7 +16,7 @@ Two units of a second-year 练习册 on a 16开 page: a language unit, 春天来
 
 ### 1 · One style for every section
 
-The code is [the short answer](#the-short-answer) above. Sections are counted in Chinese numerals with a full-width 、 after them, so no word space follows the number; the instruction is set in the Hei face, unbolded, so the points in brackets read as part of it. `options.bracket` writes the （　） after each stem, and the right letter goes into it in the teacher's book. The two small styles extend the main one: `pinyin` draws each blank as a box as wide as its word, `kuohao` draws nothing, because the bracket of 在（　）里填 is in the text.
+The code is [the short answer](#the-short-answer) above. Sections are counted in Chinese numerals with a full-width 、 after them, so no word space follows the number; the instruction is set in the Hei face, unbolded, so the points in brackets read as part of it. `options.bracket` writes the （　） after each stem, and the right letter goes into it in the teacher's book. The two small styles extend the main one: `pinyin` draws each blank as a box as wide as its word and prints the reading of `[[{春天|chūn tiān}]]` over it, in the pupil's book too; `kuohao` draws nothing, because the bracket of 在（　）里填 is in the text.
 
 ### 2 · The pupil's book and the teacher's from one text
 
@@ -47,11 +47,10 @@ Without `:::solutions` lines, `chapterEnd` collects each unit's key before the n
 +  solutions: { placement: edition === 'teacher' ? 'none' : 'chapterEnd' } });
 ```
 
-### Write the readings beside the blanks
+### Give each word its 田字格
 
-<RecipeLink slug="pinyin-primer">The pinyin primer</RecipeLink> sets pinyin over its characters as ruby, which a blank cannot hold yet.
+An open question with `cells="2 2 2 2"` sets a group of squares for each word under a line of pinyin, as <RecipeLink slug="school-traditions-worksheet">the Chinese edition of the ten-tradition worksheet</RecipeLink> ends.
 
 ## Pitfalls
 
-- A reading cannot stand over a blank yet: a ruby inside `[[…]]` is part of the hidden answer, and a 田字格 area takes the whole measure. The 看拼音写词语 section sets each syllable on its own line and the box under it, four to a row in a `:::columns` group.
 - The Kai face sets only the answers, so it loads the characters of the gaps and the model answers alone; a character it sets anywhere else must be added to that text.

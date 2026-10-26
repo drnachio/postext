@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 173 · An Arabic workbook, right to left ═══════════════
 // https://postext.dev/en/cookbook/arabic-workbook-rtl
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Noto Naskh Arabic, Baloo Bhaijaan 2 (SIL OFL 1.1) · Needs postext ≥ 1.59.0
+// Fonts: Noto Naskh Arabic, Baloo Bhaijaan 2 (SIL OFL 1.1) · Needs postext ≥ 1.63.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

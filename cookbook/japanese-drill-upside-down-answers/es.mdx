@@ -28,7 +28,7 @@ Un diseño de título en una página vertical se coloca a lo largo de su columna
 
 <Excerpt region="two-books" />
 
-La configuración es una función, así que cada composición recibe su propio objeto, y entre una y otra solo cambia `writingMode`. En vertical, el cuaderno de 国語 se encuaderna por la derecha él solo; `showBook` pone cada cuaderno a su lado del lomo. El texto va en Klee One, una letra de libro de texto, y las etiquetas en Zen Maru Gothic; las dos cargan su puntuación vertical para los paréntesis de la página de kanji.
+La configuración es una función, así que cada composición recibe su propio objeto, y entre una y otra solo cambia `writingMode`. En vertical, el cuaderno de 国語 se encuaderna por la derecha él solo; `showBook` pone cada cuaderno a su lado del lomo. El texto va en Klee One, una letra de libro de texto, y las etiquetas en Zen Maru Gothic; las dos cargan su puntuación vertical para los paréntesis de la página de kanji. En la página de kanji cada `[[{春|はる}]]` imprime su lectura a la derecha de su caja, donde va el furigana junto a una línea vertical; el estilo `kaki` estrecha la caja a un solo kanji.
 
 ## Variantes
 
@@ -47,5 +47,4 @@ Un cuaderno con solucionario aparte deja las soluciones fuera de las páginas: `
 
 ## Errores frecuentes
 
-- Una lectura todavía no puede ir sobre un hueco: un ruby dentro de `[[…]]` forma parte de la respuesta oculta. El ejercicio de 漢字の書き取り pone cada lectura en su propia línea y la casilla detrás, tres por fila en un grupo `:::columns`; en la página vertical la lectura queda al lado de la casilla, como el furigana.
 - Klee One solo tiene los pesos 400 y 600: `boldFontWeight: 600` deja todas las negritas en un corte que existe, también los números de los apartados y de los ejercicios.

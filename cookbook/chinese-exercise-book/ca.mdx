@@ -16,7 +16,7 @@ Dues unitats d’un 练习册 de segon de primària en format 16开: una de llen
 
 ### 1 · Un estil per a tots els apartats
 
-El codi és a [la resposta curta](#la-resposta-curta). Els apartats es compten amb numerals xinesos seguits d’un 、 d’amplada completa, així que després del número no hi va cap espai; l’enunciat va en lletra Hei sense negreta, perquè els punts entre parèntesis es llegeixin com a part seva. `options.bracket` escriu el （　） després de cada enunciat, i al llibre del mestre la lletra correcta hi va a dins. Els dos estils petits amplien el principal: `pinyin` dibuixa cada buit com una caixa tan ampla com la seva paraula i `kuohao` no dibuixa res, perquè el parèntesi de 在（　）里填 ja és al text.
+El codi és a [la resposta curta](#la-resposta-curta). Els apartats es compten amb numerals xinesos seguits d’un 、 d’amplada completa, així que després del número no hi va cap espai; l’enunciat va en lletra Hei sense negreta, perquè els punts entre parèntesis es llegeixin com a part seva. `options.bracket` escriu el （　） després de cada enunciat, i al llibre del mestre la lletra correcta hi va a dins. Els dos estils petits amplien el principal: `pinyin` dibuixa cada buit com una caixa tan ampla com la seva paraula i hi imprimeix a sobre la lectura de `[[{春天|chūn tiān}]]`, també al llibre de l’alumne, i `kuohao` no dibuixa res, perquè el parèntesi de 在（　）里填 ja és al text.
 
 ### 2 · El llibre de l’alumne i el del mestre amb un sol text
 
@@ -47,11 +47,10 @@ Sense línies `:::solutions`, `chapterEnd` reuneix les solucions de cada unitat 
 +  solutions: { placement: edition === 'teacher' ? 'none' : 'chapterEnd' } });
 ```
 
-### Posa el pinyin sobre els caràcters
+### Dona a cada paraula el seu 田字格
 
-<RecipeLink slug="pinyin-primer">La cartilla amb pinyin</RecipeLink> posa el pinyin sobre els seus caràcters com a ruby, cosa que un buit encara no admet.
+Una pregunta oberta amb `cells="2 2 2 2"` posa un grup de caselles per a cada paraula sota una línia de pinyin, com acaba <RecipeLink slug="school-traditions-worksheet">l’edició xinesa de la fitxa en deu tradicions</RecipeLink>.
 
 ## Errors freqüents
 
-- Una lectura encara no pot anar sobre un buit: un ruby dins de `[[…]]` forma part de la resposta oculta, i una zona de 田字格 ocupa tota l’amplada de la línia. L’apartat 看拼音写词语 posa cada síl·laba a la seva pròpia línia i la caixa a sota, quatre per fila en un grup `:::columns`.
 - La lletra Kai només compon les respostes, així que carrega únicament els caràcters dels buits i de les respostes model; si compon algun caràcter més, cal afegir-lo a aquest text.

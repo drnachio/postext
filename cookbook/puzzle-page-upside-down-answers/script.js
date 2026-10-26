@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 174 · A puzzle page with the answers upside down ═══════
 // https://postext.dev/en/cookbook/puzzle-page-upside-down-answers
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Baloo 2, Nunito, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.59.0
+// Fonts: Baloo 2, Nunito, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.63.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
