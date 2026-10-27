@@ -7,6 +7,7 @@ import { joinedWordPieces, lineWordSegments, lineWordSegmentsInOrder } from '../
 import * as engine from '../../index.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
+import { elementsOf, textOfHtml } from '../htmlText.js';
 
 // #770: the pieces of a word. A paragraph with a style in it is cut word
 // by word, and a piece of a word is as wide as the word grew by it; a
@@ -610,7 +611,30 @@ describe('the canvas paints the pieces of a word measured whole as one text', ()
 });
 
 describe('the HTML sets the pieces of a word measured whole in one box', () => {
-  const boxes = (html: string): string[] => [...html.matchAll(/<span[^>]*position:absolute[^>]*>(?:<span[^>]*>|<a[^>]*>)?([^<]+)</g)].map((m) => m[1]!);
+  /** The text of each positioned span (`<span…position:absolute…>`), past
+   *  one inner `<span…>` or `<a…>` tag when it opens with one. */
+  const boxes = (html: string): string[] => {
+    const texts: string[] = [];
+    let at = html.indexOf('<span');
+    while (at >= 0) {
+      let next = at + 1;
+      const gt = html.indexOf('>', at);
+      if (gt < 0) break;
+      if (html.slice(at, gt).includes('position:absolute')) {
+        const inner = html.startsWith('<span', gt + 1) || html.startsWith('<a', gt + 1) ? html.indexOf('>', gt + 1) : -1;
+        for (const from of inner >= 0 ? [inner + 1, gt + 1] : [gt + 1]) {
+          const lt = html.indexOf('<', from);
+          if (lt > from) {
+            texts.push(html.slice(from, lt));
+            next = lt + 1;
+            break;
+          }
+        }
+      }
+      at = html.indexOf('<span', next);
+    }
+    return texts;
+  };
 
   it('one positioned span for the word, at the place of its first piece', () => {
     const doc = build(STYLED, config('ca', 600, { bodyText: { ...OWN, ...CATALAN } }));
@@ -649,7 +673,7 @@ describe('the HTML sets the pieces of a word measured whole in one box', () => {
   it('a link holds its word whole: one anchor around one box', () => {
     const doc = build('Una **casa** i la [instal\u00B7laci\u00F3 del col\u00B7legi](https://example.org/) del sal\u00F3.', config('ca', 600, { bodyText: { ...OWN, ...CATALAN } }));
     const html = renderToHtml(doc);
-    const anchor = /<a href="https:\/\/example\.org\/"[^>]*>(.*?)<\/a>/.exec(html)?.[1] ?? '';
+    const anchor = elementsOf(html, '<a href="https://example.org/"', '</a>')[0]?.inner ?? '';
     expect(boxes(anchor).filter((t) => t.trim())).toEqual(['instal\u00B7laci\u00F3', 'del', 'col\u00B7legi']);
     // The link's segments are the line's own: its pieces keep their boxes
     // for whoever reads the layout.
@@ -783,14 +807,14 @@ describe('the HTML sets a text of several words as the canvas measured it', () =
     // Letters of 4 px and spaces of 2 px at 8 px.
     expect(html).toContain(`line-height:1;white-space:pre;width:50.000px;">${box(0, 'The')}${box(12, ' ')}${box(14, 'Art')}${box(26, ' ')}${box(28, 'of')}${box(36, ' ')}${box(38, 'War')}</span>`);
     // Read without its markup the head is its text.
-    expect(html.replace(/<[^>]+>/g, '')).toContain('The Art of War');
+    expect(textOfHtml(html)).toContain('The Art of War');
   });
 
   it('where the language of the page is not known: one box, each space in a box of its own', () => {
     const html = renderToHtml(build('Body.', config('en', 300, { header, bodyText: HOST })));
     const apart = '<span style="display:inline-block;"> </span>';
     expect(html).toContain(`line-height:1;white-space:pre;">The${apart}Art${apart}of${apart}War</span>`);
-    expect(html.replace(/<[^>]+>/g, '')).toContain('The Art of War');
+    expect(textOfHtml(html)).toContain('The Art of War');
   });
 
   it('a word of a line is written as it was: one box, its text alone', () => {

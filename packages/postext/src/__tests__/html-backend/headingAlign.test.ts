@@ -3,6 +3,7 @@ import { buildDocument, renderPageToCanvas } from '../../index.js';
 import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { PostextConfig, TextAlign } from '../../types.js';
 import type { VDTBlock, VDTDesignTextBlock, VDTDocument } from '../../vdt.js';
+import { leftBefore } from '../htmlText.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -52,9 +53,7 @@ function canvasOffset(doc: VDTDocument): number {
 }
 
 function htmlOffset(doc: VDTDocument): number {
-  const html = renderToHtml(doc);
-  const m = /left:([\d.]+)px;[^"]*">Title</.exec(html);
-  return Number(m?.[1]);
+  return Number(leftBefore(renderToHtml(doc), '">Title<'));
 }
 
 describe('headings.textAlign (EF-47)', () => {

@@ -8,6 +8,7 @@ import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../../vd
 import { installSizedStub, stubCharWidth } from '../../vertical/stub.js';
 import { renderPageToCanvas } from '../../../index.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
+import { elementsOf, pxOf, tagsAt } from '../../htmlText.js';
 
 // CJK characters and full-width forms 1 em, anything else ½ em (stub.ts).
 installSizedStub();
@@ -38,7 +39,7 @@ const noteOf = (doc: VDTDocument, id: string): VDTBlock => notes(doc).find((b) =
 const lines = (doc: VDTDocument): VDTLine[] => textBlocks(doc).flatMap((b) => b.lines);
 const markers = (doc: VDTDocument): VDTLineSegment[] => lines(doc).flatMap((l) => (l.segments ?? []).filter((s) => s.footnoteId !== undefined));
 const markerOf = (doc: VDTDocument, id: string): VDTLineSegment => markers(doc).find((s) => s.footnoteId === id)!;
-const sizeOf = (font: string): number => Number(/(\d*\.?\d+)px/.exec(font)![1]);
+const sizeOf = (font: string): number => Number(pxOf(font)!);
 
 describe('Japanese footnote defaults (JLReq §4.2)', () => {
   it('sets endnotes with right markers in a vertical book', () => {
@@ -307,7 +308,7 @@ function recordingCanvas(): { canvas: HTMLCanvasElement; calls: Call[] } {
       if (key === 'restore') return () => { Object.assign(t, stack.pop() ?? {}); };
       if (key === 'measureText') {
         return (str: string) => {
-          const em = Number(/(\d*\.?\d+)px/.exec(String(t.font))?.[1] ?? 10);
+          const em = Number(pxOf(String(t.font)) ?? 10);
           let w = 0;
           for (const ch of str) w += stubCharWidth(ch, em);
           return { width: w };
@@ -350,17 +351,22 @@ describe('markers in the renderers', () => {
     renderPageToCanvas(doc.pages[0]!, doc, canvas);
     // The marker at its size; the only other 1 is the note's own number.
     const painted = calls.filter((c) => c.op === 'fillText' && c.args[0] === '1');
-    expect(painted.map((c) => /(\d*\.?\d+)px/.exec(c.font)![1]).sort()).toEqual(['6', '8']);
+    expect(painted.map((c) => pxOf(c.font)!).sort()).toEqual(['6', '8']);
   });
 
   it('sets the marker as read text inside its link in HTML, horizontal and vertical', () => {
     for (const cfg of [base(), vertical()]) {
       const doc = build(md, { ...cfg, footnotes: { placement: 'column', markerPosition: 'side', markerTemplate: '{n}' } });
       const html = renderToHtml(doc);
-      const link = /<a [^>]*href="#[^"]*"[^>]*>([\s\S]*?)<\/a>/.exec(html.slice(html.indexOf('pt-line')));
-      expect(link).not.toBeNull();
-      expect(link![1]).toContain('>1<');
-      expect(link![1]).not.toMatch(/aria-hidden="true"[^>]*><span[^>]*>1</);
+      const link = elementsOf(html.slice(html.indexOf('pt-line')), '<a ', '</a>', 'href="#')[0]?.inner;
+      expect(link).toBeDefined();
+      expect(link).toContain('>1<');
+      // Not in a hidden box: no `aria-hidden="true"…><span…>1<`.
+      const hidden = tagsAt(link!, 'aria-hidden="true"', '<span').some((t) => {
+        const gt = link!.indexOf('>', t.end);
+        return gt >= 0 && link!.startsWith('1<', gt + 1);
+      });
+      expect(hidden).toBe(false);
     }
   });
 });

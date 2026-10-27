@@ -89,7 +89,7 @@ function inlineHtmlToMarkdown(html: string, pageUrl: string): string {
   // a pipe would otherwise eat the pipe's escape); a code span shows
   // backslashes as written, and the table extension only unescapes `\|`.
   return inlineMarkdown(flat, pageUrl, {
-    code: (s) => decodeEntities(s).replace(/\|/g, "\\|"),
+    code: (s) => decodeEntities(s).split("|").join("\\|"),
     text: (s) =>
       decodeEntities(s.replace(/<br\s*\/?>/g, " ").replace(/<\/?(?:span|bdi|p|div|small|sup|sub)\b[^>]*>/g, ""))
         .replace(/\\/g, "\\\\")

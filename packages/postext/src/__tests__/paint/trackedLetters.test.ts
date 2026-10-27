@@ -311,7 +311,31 @@ describe('other texts the HTML sets as they were measured (#770)', () => {
   it('a leader of dots takes its own direction in a document shaped in its own language', () => {
     // The opening tag of each leader box. Its direction is a `dir`: an
     // EPUB's pages may carry no `direction` declaration (EPUBCheck CSS-001).
-    const leader = (config: PostextConfig): string[] => [...renderToHtml(buildDocument({ markdown: TOC }, { ...config, page: { ...config.page, width: pt(300) } })).matchAll(/<span aria-hidden="true"[^>]*>(?:<span[^>]*>)?[. ]{4,}/g)].map((m) => m[0]!);
+    // With an inner `<span…>` tag when it opens with one, up to the end of
+    // the run of four or more dots and spaces.
+    const leader = (config: PostextConfig): string[] => {
+      const html = renderToHtml(buildDocument({ markdown: TOC }, { ...config, page: { ...config.page, width: pt(300) } }));
+      const OPEN = '<span aria-hidden="true"';
+      const runs: string[] = [];
+      let at = html.indexOf(OPEN);
+      while (at >= 0) {
+        let next = at + 1;
+        const gt = html.indexOf('>', at);
+        if (gt < 0) break;
+        const inner = html.startsWith('<span', gt + 1) ? html.indexOf('>', gt + 1) : -1;
+        for (const from of inner >= 0 ? [inner + 1, gt + 1] : [gt + 1]) {
+          let end = from;
+          while (html[end] === '.' || html[end] === ' ') end++;
+          if (end - from >= 4) {
+            runs.push(html.slice(at, end));
+            next = end;
+            break;
+          }
+        }
+        at = html.indexOf(OPEN, next);
+      }
+      return runs;
+    };
     const own = leader(OWN);
     expect(own.length).toBeGreaterThan(0);
     for (const tag of own) expect(tag).toMatch(/^<span aria-hidden="true" style="position:absolute;[^"]*" dir="ltr">/);

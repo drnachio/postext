@@ -9,6 +9,7 @@ import { anchorRefLabel, type AnchorTarget, type CrossRefStrings } from '../../.
 import { refLabelPieces } from '../../../measure/spaces.js';
 import type { PostextConfig, Resource, VDTDocument, VDTLine, VDTLineSegment } from '../../../index.js';
 import type { VDTBlock } from '../../../vdt.js';
+import { elementsOf, textOfHtml } from '../../htmlText.js';
 
 // Deterministic text measurement stub (no DOM in the node test env): every
 // character 7 px.
@@ -111,7 +112,7 @@ describe('a reference whose label is words breaks at its spaces (#702)', () => {
     // The HTML viewer sets them at that width too: the pieces of the label
     // stand where the justified spaces put them.
     const html = renderToHtml(doc);
-    const anchor = /<a href="#[^"]*step-close-lever[^"]*"[^>]*>(.*?)<\/a>/.exec(html)![1]!;
+    const anchor = elementsOf(html, '<a href="#', '</a>', 'step-close-lever')[0]!.inner;
     const lefts = [...anchor.matchAll(/left:([\d.]+)px/g)].map((m) => Number(m[1]));
     expect(lefts.length).toBeGreaterThan(3);
     const gap = (480 - words) / spaces.length;
@@ -314,7 +315,7 @@ describe('a reference whose label is words breaks at its spaces (#702)', () => {
   it('the pieces of a line share one anchor in the HTML viewer', () => {
     const doc = build(MD, 280);
     const html = renderToHtml(doc);
-    const anchors = [...html.matchAll(/<a href="#[^"]*step-close-lever[^"]*"[^>]*>(.*?)<\/a>/g)].map((m) => m[1]!.replace(/<[^>]+>/g, ''));
+    const anchors = elementsOf(html, '<a href="#', '</a>', 'step-close-lever').map((a) => textOfHtml(a.inner));
     // One per line the label stands on, each holding that line's words.
     expect(anchors.length).toBe(2);
     expect(anchors.join(' ').replace(/\s+/g, ' ')).toBe(LABEL);

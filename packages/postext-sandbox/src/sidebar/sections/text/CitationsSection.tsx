@@ -26,6 +26,20 @@ import { CollapsibleSection, DimensionInput, FieldGroup, NestedGroup, SelectInpu
 // time the section opens (the layout worker loads its own).
 setCitationEngineLoader(() => import('postext-citeproc/register'));
 
+/** A citeproc label as plain text: each `<` up to the next `>` goes in one
+ *  scan, so no tag can reassemble from what a removal leaves behind (#1283). */
+function labelText(html: string): string {
+  let out = '';
+  let at = 0;
+  for (;;) {
+    const open = html.indexOf('<', at);
+    const close = open < 0 ? -1 : html.indexOf('>', open + 1);
+    if (close < 0) return out + html.slice(at);
+    out += html.slice(at, open);
+    at = close + 1;
+  }
+}
+
 const D = DEFAULT_CITATIONS_CONFIG;
 const SIZE_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const SPACE_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
@@ -110,7 +124,7 @@ function CitationPreview({ raw, locale }: { raw: CitationsConfig | undefined; lo
             {preview.entries.map((e) => (
               <li key={e.id} className="ps-4 -indent-4">
                 {/* Our own sample data, formatted by citeproc. */}
-                {e.label ? <span>{e.label.replace(/<[^>]*>/g, '')} </span> : null}
+                {e.label ? <span>{labelText(e.label)} </span> : null}
                 <span dangerouslySetInnerHTML={{ __html: e.html }} />
               </li>
             ))}

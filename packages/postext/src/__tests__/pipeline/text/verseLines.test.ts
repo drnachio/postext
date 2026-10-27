@@ -8,6 +8,7 @@ import { resolveVerseConfig, stripVerseDefaults, DEFAULT_VERSE_CONFIG } from '..
 import { stripBodyTextDefaults } from '../../../defaults/text/bodyText.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../../vdt.js';
+import { textOfHtml } from '../../htmlText.js';
 
 // #620: verse line by line — kept line breaks, indents, stanzas and
 // hanging turnovers. The stub font: 7 px a character, a space 4 px.
@@ -163,7 +164,7 @@ describe(':::verse line by line: the layout', () => {
 
   it('copies line by line: a newline after a line, a blank line between stanzas', () => {
     const html = renderToHtml(doc);
-    const text = html.replace(/<[^>]+>/g, '').replace(/&#39;/g, "'");
+    const text = textOfHtml(html).replace(/&#39;/g, "'");
     expect(text).toContain('I think I know.\nHis house is in the village though;\n\nHe will not see me stopping here\nTo watch');
   });
 
@@ -214,7 +215,7 @@ describe(':::verse line by line: turnovers', () => {
       expect(l.bbox.x + l.bbox.width).toBeLessThanOrEqual(380 + 0.01);
     }
     // The line and its turnover read as one line when copied.
-    const html = renderToHtml(buildDocument({ markdown: md('') }, config())).replace(/<[^>]+>/g, '');
+    const html = textOfHtml(renderToHtml(buildDocument({ markdown: md('') }, config())));
     expect(html).toContain(`${LONG}\nShort again.`);
   });
 

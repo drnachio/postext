@@ -224,7 +224,7 @@ describe('saving onto the resource', () => {
     };
     const html = render({ ...picture, anchors: [{ id: 'ana', x: 0.5, y: 0.5 }], avoid: [{ x: 0, y: 0, width: 0.1, height: 0.1 }] });
     expect(html).toContain('Safe area &amp; lettering');
-    expect(html).toContain('Speakers & avoid zones'.replace('&', '&amp;'));
+    expect(html).toContain('Speakers &amp; avoid zones');
     expect(html).toContain('Speakers: 1 · Avoid zones: 1 · Bystander faces: 0');
     const crowd = render({ ...picture, faces: [{ x: 0.1, y: 0.1, width: 0.1, height: 0.2 }, { x: 0.6, y: 0.1, width: 0.1, height: 0.2 }] });
     expect(crowd).toContain('Speakers: 0 · Avoid zones: 0 · Bystander faces: 2');

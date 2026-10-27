@@ -8,6 +8,7 @@ import type { HeadingLevelConfig, PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../../vdt.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
 import { installSizedStub } from '../../vertical/stub.js';
+import { leftBefore } from '../../htmlText.js';
 
 // Japanese headings and blocks (#424): 行取り (`lineSpan`), 字下げ (a
 // heading's `indent` in body ems), 字取り (`jidori`), 地付き / 地からN字上げ
@@ -189,7 +190,7 @@ describe('字下げ: a heading indented in body ems (indent)', () => {
     expect(h.textAlign).toBe('center');
     expect(firstLine(h).bbox.x - h.bbox.x).toBeCloseTo(4 * BODY, 6);
     const html = renderToHtml(doc);
-    const left = Number(/left:([\d.]+)px;[^"]*">一</.exec(html)?.[1]);
+    const left = Number(leftBefore(html, '">一<'));
     expect(left).toBeCloseTo((h.bbox.width - 4 * BODY - 14) / 2, 2);
     // 14 characters of 14 px fit what is left of the 20-character measure.
     const long = buildDocument({ markdown: `## ${'見'.repeat(12)}\n\n${LINE}` }, config({}, [lvl]));

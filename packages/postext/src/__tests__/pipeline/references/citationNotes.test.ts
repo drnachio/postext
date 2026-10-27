@@ -4,6 +4,7 @@ import { renderToHtml } from '../../../html-backend/html-backend.js';
 import { registerCitationEngine } from '../../../citations/registry.js';
 import type { CitationEngine } from '../../../citations/types.js';
 import type { PostextConfig } from '../../../index.js';
+import { textOfHtml } from '../../htmlText.js';
 
 class StubCtx {
   font = '';
@@ -35,7 +36,7 @@ const config: PostextConfig = {
   citations: { bibliography: { auto: false } },
 };
 const front = '---\nreferences:\n  - {id: howse, title: Greenwich Time, author: [{family: Howse, given: Derek}]}\n---\n';
-const text = (markdown: string): string => renderToHtml(buildDocument({ markdown: front + markdown }, config)).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+const text = (markdown: string): string => textOfHtml(renderToHtml(buildDocument({ markdown: front + markdown }, config)), ' ').replace(/\s+/g, ' ');
 
 describe('note styles (cookbook findings)', () => {
   beforeAll(() => registerCitationEngine(notes));

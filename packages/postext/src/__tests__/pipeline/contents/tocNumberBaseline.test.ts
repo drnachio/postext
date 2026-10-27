@@ -4,6 +4,7 @@ import { renderBlock } from '../../../canvas-backend/blockRender.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock } from '../../../vdt.js';
+import { elementsOf } from '../../htmlText.js';
 
 // EF-58: the number of a contents entry is text set beside the title, so it
 // sits on the title's baseline — in any face and size. It was painted as a
@@ -95,7 +96,7 @@ describe('EF-58: contents numbers on the title baseline', () => {
     // The marker box takes the entry's own font (so its baseline is the
     // title's) and the number sits in an inner box of its own face with no
     // line height, which aligns it on that baseline.
-    const marker = html.match(/<div class="pt-bullet"[^>]*>(.*?)<\/div>/)![0];
+    const marker = elementsOf(html, '<div class="pt-bullet"', '</div>')[0]!.outer;
     expect(marker).toContain(`top:${b.lines[0]!.bbox.y}px`);
     expect(marker).toMatch(/<span style="font:[^;"]*Rozha One[^;"]*;line-height:0;">1<\/span>/);
   });

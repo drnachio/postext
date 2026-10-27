@@ -25,6 +25,7 @@ import {
   svgFontRequests,
 } from '../../index.js';
 import type { BundleFontFile, PostextConfig, RenderWarning, Resource, SvgFontWarning } from '../../index.js';
+import { startTags } from '../htmlText.js';
 
 // #630: SVG pictures set their text in the document's fonts on canvas, in
 // HTML and in EPUB — the faces their text names are inlined as
@@ -364,8 +365,10 @@ describe('renderToHtml inlineSvgFonts', () => {
   const dataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
 
   function srcOf(html: string): string {
-    const m = /<img[^>]*src="([^"]*)"/.exec(html);
-    return (m?.[1] ?? '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+    const tag = startTags(html, '<img').find((t) => t.includes('src="')) ?? '';
+    const src = tag.lastIndexOf('src="') + 'src="'.length;
+    const value = tag ? tag.slice(src, tag.indexOf('"', src)) : '';
+    return value.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
   }
 
   it('re-encodes SVG data URIs with the registered faces', () => {

@@ -104,6 +104,8 @@ let slow: Map<string, number>;
 /** The version jsDelivr says it answered a package's style sheets from, by Fontsource id (x-jsd-version). */
 let answeredFrom: Map<string, string>;
 
+/** The host a request went to ('' for one that is no absolute URL). */
+const hostOf = (url: string): string => (URL.canParse(url) ? new URL(url).hostname : '');
 const fontsource = (id: string) => `https://api.fontsource.org/v1/fonts/${id}`;
 const google = (family: string) => `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}`;
 const file = (id: string, subset: string, weight: number, style = 'normal') => `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-${subset}-${weight}-${style}.woff2`;
@@ -298,7 +300,7 @@ describe('the faces of a variable Google family Fontsource has as files (#757)',
     // The file with the Latin letters of each cut is loaded, the others when a text needs them.
     expect(fonts.loaded(SERIF)).toEqual(['source-serif-4-latin-400-normal.woff2', 'source-serif-4-latin-400-italic.woff2', 'source-serif-4-latin-700-normal.woff2']);
     expect(links).toEqual([]);
-    expect(requests.some((u) => u.includes('fonts.googleapis.com') || u.includes('gstatic'))).toBe(false);
+    expect(requests.some((u) => hostOf(u) === 'fonts.googleapis.com' || hostOf(u) === 'gstatic.com' || hostOf(u).endsWith('.gstatic.com'))).toBe(false);
   });
 
   it('take one request for the record and one for the package\'s style sheet, whatever weights follow', async () => {
@@ -455,7 +457,7 @@ describe('a family or a weight Fontsource has no file for (#757)', () => {
     }
     await loader.loadFont('Amiri', [upright(600)]);
     expect(new Set(fonts.declared('Amiri').map((f) => f.slice(0, 10)))).toEqual(new Set(['700 normal']));
-    expect(requests.some((u) => u.includes('fonts.googleapis.com'))).toBe(false);
+    expect(requests.some((u) => hostOf(u) === 'fonts.googleapis.com')).toBe(false);
     // Under 400 the lighter first, and there is none: the 400.
     expect(names((await loader.staticFaceFiles('Amiri', 300, 'italic'))!)[0]).toBe('amiri-latin-400-italic.woff2');
   });
@@ -724,7 +726,7 @@ describe('a family from one version of its package (#766)', () => {
         // The range, resolved for this URL: another URL of the family could be answered from 5.2.9.
         return { ok: true, json: async () => ({ version: '5.3.1' }) };
       }
-      if (url.includes('api.fontsource.org')) return { ok: true, json: async () => ({ weights: [400, 700], styles: ['normal', 'italic'], subsets: ['latin', 'latin-ext'] }) };
+      if (hostOf(url) === 'api.fontsource.org') return { ok: true, json: async () => ({ weights: [400, 700], styles: ['normal', 'italic'], subsets: ['latin', 'latin-ext'] }) };
       return { ok: true, arrayBuffer: async () => new ArrayBuffer(4) };
     });
     const load = () => new Function('kitStatus', 'decompressWoff2', `${KIT_FONTS}\n${KIT_PDF}\nreturn { fontsourceResolver, fontsourceProvider };`)(() => {}, async (bytes: Uint8Array) => bytes) as {

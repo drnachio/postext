@@ -13,6 +13,7 @@ import {
 } from '../../index.js';
 import { applySingleInkToPixels, singleInkColorMatrix } from '../../svg/singleInk.js';
 import type { PostextConfig, RenderPageOptions, Resource } from '../../index.js';
+import { startTags } from '../htmlText.js';
 
 // EF-17: `diagramStyle.singleInk` can recolour SVG pictures on canvas and in
 // HTML too, not only in the PDF: the canvas tints the pixels of a raw SVG
@@ -205,8 +206,9 @@ describe('HTML single ink (EF-17)', () => {
 
   it('filters a raw SVG image through a page-local feColorMatrix', () => {
     const out = html('svg', true);
-    const img = /<img [^>]*src="blob:fig-svg"[^>]*>/.exec(out)![0];
-    const id = /filter:url\(#([^)]+)\)/.exec(img)![1]!;
+    const img = startTags(out, '<img ').find((tag) => tag.includes('src="blob:fig-svg"'))!;
+    const filter = img.indexOf('filter:url(#') + 'filter:url(#'.length;
+    const id = img.slice(filter, img.indexOf(')', filter));
     expect(out).toContain(`<filter id="${id}"`);
     expect(out).toContain('color-interpolation-filters="sRGB"');
     expect(out).toContain(`values="${singleInkColorMatrix(INK)!.map((v) => +v.toFixed(6)).join(' ')}"`);

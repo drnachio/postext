@@ -115,6 +115,15 @@ export async function fetchStreamInfo(source: Exclude<VideoSource, 'file'>, url:
   return info;
 }
 
+/** `src` as a video element may load it: the object URL of a picked file
+ *  (`blob:`) or a `data:`, `http:` or `https:` address. Anything else, such
+ *  as a `javascript:` URL, is refused (#1284). */
+function videoSrc(src: string): string {
+  const url = new URL(src, document.baseURI);
+  if (url.protocol !== 'blob:' && url.protocol !== 'data:' && url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Unplayable video address');
+  return url.href;
+}
+
 /** Frame size and length of a video, read from its metadata. */
 export function readVideoMetadata(src: string): Promise<{ width: number; height: number; duration: number }> {
   return new Promise((resolve, reject) => {
@@ -123,7 +132,7 @@ export function readVideoMetadata(src: string): Promise<{ width: number; height:
     video.muted = true;
     video.onloadedmetadata = () => resolve({ width: video.videoWidth, height: video.videoHeight, duration: Number.isFinite(video.duration) ? video.duration : 0 });
     video.onerror = () => reject(new Error('Unreadable video'));
-    video.src = src;
+    video.src = videoSrc(src);
   });
 }
 
@@ -167,7 +176,7 @@ export async function defaultPoster(src: string): Promise<{ poster: ResourceVide
     await new Promise<void>((resolve, reject) => {
       video.onloadeddata = () => resolve();
       video.onerror = () => reject(new Error('Unreadable video'));
-      video.src = src;
+      video.src = videoSrc(src);
     });
     const time = Math.min(1, (Number.isFinite(video.duration) ? video.duration : 0) * 0.1);
     await seekVideo(video, time);
@@ -209,7 +218,7 @@ export async function withLoadedVideo<T>(
       video.onerror = () => reject(new Error('Unreadable video'));
       timer = setTimeout(() => reject(new Error('The video did not load in time')), VIDEO_LOAD_TIMEOUT_MS);
       if (!options.address) {
-        video.src = src;
+        video.src = videoSrc(src);
         return;
       }
       video.crossOrigin = 'anonymous';

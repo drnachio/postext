@@ -11,6 +11,7 @@ import { defaultDecimalChar } from '../../../measure/tabs.js';
 import type { PostextConfig, TabStop } from '../../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../../vdt.js';
 import { pageIsMirrored } from '../../../vdt.js';
+import { tagsAt } from '../../htmlText.js';
 
 // #622: tab stops and leaders in body text. A tab (`:tab`, or a tab
 // character in a paragraph whose style sets stops) sends the text after it
@@ -204,8 +205,9 @@ describe('leaders (#622)', () => {
     const html = renderToHtml(doc);
     const dots = leaderOf(line!)!.seg.text;
     expect(html).toContain(`aria-hidden="true" style="position:absolute;`);
-    const hidden = new RegExp(`<span aria-hidden="true"[^>]*user-select:none[^>]*>${dots.replace(/\./g, '\\.')}</span>`);
-    expect(html).toMatch(hidden);
+    // A hidden box that takes no selection holds the dots.
+    const hidden = tagsAt(html, '<span aria-hidden="true"', `${dots}</span>`).filter((t) => t.tag.includes('user-select:none'));
+    expect(hidden.length).toBeGreaterThan(0);
   });
 });
 
@@ -273,7 +275,7 @@ describe('stored documents (#622)', () => {
   it('a tab character in a paragraph without stops is the word space it was', () => {
     const md = 'lead\ttab inside a paragraph long enough to break over two lines or more at this measure';
     const tabbed = linesOf(md, config({ textAlign: 'justify' }));
-    const spaced = linesOf(md.replace('\t', ' '), config({ textAlign: 'justify' }));
+    const spaced = linesOf(md.replaceAll('\t', ' '), config({ textAlign: 'justify' }));
     expect(tabbed.map((l) => ({ text: l.text, segs: l.segments, bbox: l.bbox, ratio: l.justifiedSpaceRatio })))
       .toEqual(spaced.map((l) => ({ text: l.text, segs: l.segments, bbox: l.bbox, ratio: l.justifiedSpaceRatio })));
     const doc = buildDocument({ markdown: '**a**\t*b*\tc [link](http://x.y) d' }, config());

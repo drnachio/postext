@@ -8,6 +8,7 @@ import { renderToHtml } from '../../html-backend/html-backend.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDesignTextBlock, VDTDocument } from '../../vdt.js';
+import { textOfHtml } from '../htmlText.js';
 
 // #770: what a letter-spacing takes away besides ligatures. Chrome sets no
 // contextual alternate under a letter-spacing, and the canvas cannot ask
@@ -289,12 +290,12 @@ describe('a design line of several runs, in HTML (#770)', () => {
       x += run.width;
     }
     // The text reads as written.
-    expect(html.replace(/<[^>]+>/g, '')).toContain('Ada Lovelace1, Alan Turing2, Grace Hopper');
+    expect(textOfHtml(html)).toContain('Ada Lovelace1, Alan Turing2, Grace Hopper');
   });
   it('keeping its host\'s language: the runs inline, as they were', () => {
     const html = renderToHtml(buildDocument({ markdown: 'Text.' }, head(HOST, { content: CONTENT, inlineMarks: true })));
     expect(html).not.toContain('<span dir="ltr" style="position:absolute;left:');
-    expect(html.replace(/<[^>]+>/g, '')).toContain('Ada Lovelace1, Alan Turing2, Grace Hopper');
+    expect(textOfHtml(html)).toContain('Ada Lovelace1, Alan Turing2, Grace Hopper');
   });
 });
 
