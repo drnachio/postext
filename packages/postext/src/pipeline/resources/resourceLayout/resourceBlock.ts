@@ -4,29 +4,28 @@
 import { layoutScoreResource } from '../scoreBlocks.js';
 import { bitmapLayoutSize } from '../../../bitmapResolution.js';
 import { measuringVertically, withMeasureWritingMode } from '../../../measure/vertical.js';
-import type { InlineSpan } from '../../../parse/index.js';
 import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from '../safeArea.js';
 import { layoutVideo } from '../videoOverlay.js';
 import type { ResourceSafeArea } from '../../../types.js';
-import { type ResolvedResourceBlock, type VDTTableSlice, type VDTResourceTableLayout, type VDTLine, createBoundingBox } from '../../../vdt.js';
-import { buildFontString, measureRichBlock } from '../../../measure/index.js';
+import { type ResolvedResourceBlock, type VDTTableSlice, type VDTResourceTableLayout, createBoundingBox } from '../../../vdt.js';
+import { buildFontString } from '../../../measure/index.js';
 import { dimensionToPx } from '../../../units.js';
 import { type BooktabsRuleSpec, booktabsStrokes } from '../../../table/booktabs.js';
-import { parseInlineSnippetSpans } from '../../../parse/inlineSnippet.js';
-import { chipContextOf, resolveChipSpans } from '../../text/chips.js';
-import { withSnippetInlineCode } from '../../code/codeInline.js';
+import { chipContextOf } from '../../text/chips.js';
 import { pickTableStyle } from '../../../defaults/resources/tableStyle.js';
 import { startEndAsLeftRight } from '../../../defaults/shared.js';
 import { resolveBodyStyle } from '../../styles.js';
 import { FIT_EPS } from '../../blocks/placement.js';
 import { captionInsideShare } from '../captionInside.js';
-import { resolveCitationSpans } from '../../references/citations.js';
-import { layoutCaptionText } from './captions.js';
 import type { ResourceLayoutInput, TableRowMetrics } from './input.js';
-import { annotatedSpans, resolveSwatchSpans, resolveRefSpans } from './refSpans.js';
-import { withSnippetCache, fitWidth, snippetMathSpans, measureSnippetLines, alignFactor, shiftLines } from './snippets.js';
+import { withSnippetCache, fitWidth, alignFactor, shiftLines } from './snippets.js';
 import { type TableLayoutStyle, layoutTable } from './tableLayout.js';
 import { rulePx, MIN_BORDER_PX, tableSliceRows, tableHeaderRowCount } from './tableSlices.js';
+import { createCaptionNotes } from './resourceBlock/captionNotes.js';
+import type { ResourceBlockState } from './resourceBlock/state.js';
+import { layoutUprightResourceBlock } from './resourceBlock/upright.js';
+
+export { shiftResourceBlockX } from './resourceBlock/upright.js';
 
 export function layoutResourceBlock(input: ResourceLayoutInput): ResourceBlockLayout {
   return withSnippetCache(input.cache, () => layoutResourceBlockIn(input));
@@ -45,6 +44,7 @@ export interface ResourceBlockLayout {
 }
 
 function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout {
+  const state = {} as ResourceBlockState;
   // Captions, notes and table cells are set horizontally on every page: a
   // resource of a vertical flow stands upright, its text read as on a
   // horizontal page.
@@ -248,103 +248,16 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
     bodyHeight = height;
   }
 
-  // --- Caption -----------------------------------------------------------
-  // A continued table slice: "Table 6-4. Title (cont.)" — the suffix is
-  // set in italics after the description, glued to it by a plain space,
-  // or solid when it opens with a wide character (表1-1　标题（续）).
-  const suffix = slice?.continued ? tableStyle.continuedSuffix.trim() : '';
-  const caption = layoutCaptionText({
-    text: resource.caption ?? '',
-    resourceType,
-    number,
-    resolved,
-    width: input.captionAside?.width ?? inside?.captionWidth ?? input.captionWidth ?? columnWidth,
-    resourceNumbering,
-    resourceTypes,
-    resources,
-    ...(input.captionCitations?.get(resource.id)?.caption ? { citations: input.captionCitations.get(resource.id)!.caption } : {}),
-    ...(suffix.length > 0 ? { suffix } : {}),
+  const {
+    cs, captionGapPx, captionPaddingPx, captionFontString, captionBoldFontString,
+    captionItalicFontString, captionBoldItalicFontString, captionPrefix, linkColor, measuredCaption,
+    captionBandHeight, captionHeight, noteGapPx, noteFontString, noteBoldFontString,
+    noteItalicFontString, noteBoldItalicFontString, noteHeight, continuesHeight
+  } = createCaptionNotes({
+    input, resource, resourceType, number, resolved, resourceNumbering, resourceTypes, resources,
+    columnWidth, palette, slice, tableStyle, dpi, normalWeight, boldWeight, lineHeightRatio,
+    refStyle, inside, state
   });
-  const cs = caption.style;
-  const captionGapPx = caption.gapPx;
-  const captionPaddingPx = caption.paddingPx;
-  const { fontString: captionFontString, boldFontString: captionBoldFontString, italicFontString: captionItalicFontString, boldItalicFontString: captionBoldItalicFontString } = caption.fonts;
-  const captionPrefix = resourceType?.captionPrefix ?? '';
-  const linkColor = caption.linkColor;
-  const measuredCaption: VDTLine[] = caption.lines;
-  const captionBandHeight = caption.bandHeight;
-  const captionHeight = captionBandHeight > 0 ? captionBandHeight + captionGapPx : 0;
-
-  // --- Note --------------------------------------------------------------
-  const noteFontPx = dimensionToPx(cs.note.fontSize, dpi);
-  const noteLineHeightPx = noteFontPx * lineHeightRatio;
-  const noteGapPx = dimensionToPx(cs.note.gap, dpi, noteFontPx);
-  const noteFontString = buildFontString(cs.fontFamily, noteFontPx, normalWeight);
-  const noteBoldFontString = buildFontString(cs.fontFamily, noteFontPx, boldWeight);
-  const noteItalicFontString = buildFontString(cs.fontFamily, noteFontPx, normalWeight, 'italic');
-  const noteBoldItalicFontString = buildFontString(cs.fontFamily, noteFontPx, boldWeight, 'italic');
-  let measuredNote: VDTLine[] = [];
-  const noteText = resource.note ?? '';
-  // The note closes the table: a slice that continues holds it back for
-  // the last slice.
-  if (noteText.trim().length > 0 && !slice?.continues) {
-    const noteSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
-      snippetMathSpans(
-        resolveCitationSpans(
-          withSnippetInlineCode(parseInlineSnippetSpans(noteText, { citations: true }), noteText, resolved.codeStyle?.inline, dpi, noteFontPx),
-          input.captionCitations?.get(resource.id)?.note,
-        ),
-        noteFontPx,
-        noteLineHeightPx,
-        resolved.math,
-      ),
-      resourceNumbering,
-      resourceTypes,
-      resources,
-      refStyle,
-    ), palette, resources, { dpi, fontSizePx: noteFontPx }), chipContextOf(resolved), noteFontPx), { cjk: resolved.cjk, dpi }, noteFontString);
-    const slanted: InlineSpan[] = cs.note.italic
-      ? noteSpans.map((s) => ({ ...s, italic: s.italic || true }))
-      : noteSpans;
-    measuredNote = measureSnippetLines(
-      slanted,
-      [noteFontString, noteBoldFontString, noteItalicFontString, noteBoldItalicFontString],
-      Math.max(1, input.captionAside?.width ?? inside?.captionWidth ?? input.captionWidth ?? columnWidth),
-      noteLineHeightPx,
-      { textAlign: cs.note.align },
-    );
-  }
-  const noteHeight = measuredNote.length > 0
-    ? measuredNote.length * noteLineHeightPx + noteGapPx
-    : 0;
-
-  // --- Continues marker --------------------------------------------------
-  // "Continued" under a slice that goes on: the note's typeface and size,
-  // italic, flush right — where the note would sit.
-  let measuredContinues: VDTLine[] = [];
-  const ts = tableStyle;
-  const markerText = slice?.continues && ts.continuesMarkerEnabled ? ts.continuesMarker.trim() : '';
-  if (markerText.length > 0) {
-    const measured = measureRichBlock(
-      [{ text: markerText, bold: false, italic: true }],
-      noteFontString,
-      noteBoldFontString,
-      noteItalicFontString,
-      noteBoldItalicFontString,
-      Math.max(1, columnWidth),
-      noteLineHeightPx,
-      { textAlign: 'left' },
-    );
-    // Flush right: the measurer has no right alignment, so each line is
-    // pushed to the block's right edge by its own width.
-    measuredContinues = measured.lines.map((line) => ({
-      ...line,
-      bbox: createBoundingBox(columnWidth - line.bbox.width, line.bbox.y, line.bbox.width, line.bbox.height),
-    }));
-  }
-  const continuesHeight = measuredContinues.length > 0
-    ? measuredContinues.length * noteLineHeightPx + noteGapPx
-    : 0;
 
   // A rotated figure must also fit the band's width with its caption and
   // note: scale the image down when the stack would run past it (a table
@@ -511,9 +424,9 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
   const noteY = aside || inside
     ? captionBandY + captionBandHeight + noteGapPx
     : (captionAbove ? bodyY + bodyHeight : bodyHeight + captionHeight) + noteGapPx;
-  const noteLines = shiftLines(measuredNote, captionDx, noteY);
+  const noteLines = shiftLines(state.measuredNote, captionDx, noteY);
   // The marker takes the note's slot (a continuing slice has no note).
-  const continuesLines = shiftLines(measuredContinues, 0, aside ? bodyHeight + noteGapPx : noteY);
+  const continuesLines = shiftLines(state.measuredContinues, 0, aside ? bodyHeight + noteGapPx : noteY);
   const totalHeight = aside
     ? bodyHeight + continuesHeight
     : inside
@@ -574,84 +487,3 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
  *  (`placement.captionSide: 'inside'`), as a share of the slot: a
  *  narrower one goes back under the picture. */
 const CAPTION_INSIDE_MIN_SHARE = 0.2;
-
-/** The share of its first width an upright picture keeps when its frame
- *  narrows (see `layoutUprightResourceBlock`): it may give up a quarter,
- *  about two caption lines in a full tier. */
-const UPRIGHT_MIN_PICTURE_SHARE = 0.75;
-
-/**
- * A resource set upright on a vertical page (see `ResourceLayoutInput.
- * upright`): a counter-clockwise rotated block whose upright frame is as
- * wide as its picture. The frame is first tried `maxLength` wide, which
- * gives the picture its largest size (the caption on the fewest lines). A
- * picture the tier's height shrinks (or a bitmap narrower than that) gives
- * its width back, and the block is laid out again at the picture's width
- * so the caption wraps under it, a few rounds until the width holds. A
- * narrower frame is taken only while it fits the tier and the picture
- * keeps `UPRIGHT_MIN_PICTURE_SHARE` of its first width: a caption that
- * wraps onto more lines at each narrowing would otherwise squeeze the
- * picture to nothing and run the frame past the tier. When the rounds stop
- * short of a frame as wide as the picture, the frame narrows by bisection
- * to the least width at which the picture still keeps that share, and the
- * caption runs wider than the picture. The origin is block-relative
- * (`originX` 0, `originY` the block's height in the flow), as
- * `offsetResourceBlockToAbsolute` expects.
- */
-function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: number): ResourceBlockLayout {
-  const base: ResourceLayoutInput = { ...input, upright: undefined, rotate: 'ccw' };
-  const at = (length: number) => layoutResourceBlock({ ...base, rotatedLength: length });
-  let length = Math.max(1, maxLength);
-  let out = at(length);
-  if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg' || input.resource.kind === 'video') {
-    const floor = out.block.bodyRect.width * UPRIGHT_MIN_PICTURE_SHARE;
-    const holds = (o: ResourceBlockLayout) =>
-      o.block.rotation!.height <= input.columnWidth + 0.5 && o.block.bodyRect.width >= floor;
-    let settled = false;
-    for (let round = 0; round < 4; round++) {
-      const used = out.block.bodyRect.width;
-      if (!(used > 0) || used >= length - 0.5) {
-        settled = true;
-        break;
-      }
-      const next = at(Math.max(1, used));
-      if (!holds(next)) break;
-      length = Math.max(1, used);
-      out = next;
-    }
-    if (!settled) {
-      let lo = Math.max(1, floor);
-      let hi = length;
-      for (let step = 0; step < 12 && hi - lo > 0.5; step++) {
-        const mid = (lo + hi) / 2;
-        const o = at(mid);
-        if (holds(o)) {
-          hi = mid;
-          out = o;
-        } else {
-          lo = mid;
-        }
-      }
-    }
-  }
-  const rotation = out.block.rotation!;
-  rotation.originX = 0;
-  rotation.originY = out.totalHeight;
-  return out;
-}
-
-/** Shift a resolved resource block's geometry right by `dx` (an inline
- *  resource narrower than its column, set per `placement.align`). */
-export function shiftResourceBlockX(rb: ResolvedResourceBlock, dx: number): void {
-  if (!dx) return;
-  rb.bodyRect = createBoundingBox(rb.bodyRect.x + dx, rb.bodyRect.y, rb.bodyRect.width, rb.bodyRect.height);
-  for (const ln of [...rb.captionLines, ...rb.noteLines, ...rb.continuesLines]) ln.bbox.x += dx;
-  if (rb.captionBar) rb.captionBar.rect.x += dx;
-  if (rb.table) {
-    for (const cell of rb.table.cells) {
-      cell.rect.x += dx;
-      if (cell.image) cell.image.rect.x += dx;
-      for (const cl of cell.lines) cl.bbox.x += dx;
-    }
-  }
-}

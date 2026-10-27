@@ -9,7 +9,7 @@ import { suffixJoiner } from '../../../parse/inlineFormatting.js';
 import { spaceDirectiveLines } from '../../../parse/attrs.js';
 import type { Dimension } from '../../../types.js';
 import { dimensionToPx } from '../../../units.js';
-import { type ResolvedConfig, type VDTDesignTextBlock, type VDTDesignBlock, createBoundingBox, type VDTLine, type VDTBlock, createVDTBlock, type VDTDesignBoxBlock, pictureTraits, type VDTDesignSlot } from '../../../vdt.js';
+import { type ResolvedConfig, type VDTDesignTextBlock, type VDTDesignBlock, createBoundingBox, type VDTLine, type VDTBlock, createVDTBlock } from '../../../vdt.js';
 import { shiftContour } from '../../../contour/index.js';
 import { buildFontString, measureRichBlock, measureBlock } from '../../../measure/index.js';
 import { graphemeCount } from '../../../measure/graphemes.js';
@@ -20,18 +20,19 @@ import { directDesignTextBlock } from '../../../design/bidiText.js';
 import { arabicNumbersOf } from '../../config.js';
 import { restyleContainerFor } from '../paragraphContainers.js';
 import { joiningScriptIn } from '../../../measure/rtl/joining.js';
-import { resolvedCodeStyle } from '../../../defaults/text/codeStyle.js';
 import { isFlowColumnsStyle } from '../../columns/flowColumns.js';
-import { iconShapeBlock } from '../../../design/iconShape.js';
-import { isCornerRadii, cornerRadiiPx, type ShapeBorder, borderSidesPx, SHAPE_SIDES, normalizeBoxStyle, uniformRadius, boxOutline, type ShapeTab, shapePathBlocks, tabRegionOutline } from '../../../design/boxShape.js';
 import { logicalSides, type BoxExclusion, offsetBlock, offsetDesignBlock } from './geometry.js';
-import { iconPresent, iconFootprintWidth, buildIconBlock, tintHex } from './icons.js';
+import { iconPresent, iconFootprintWidth } from './icons.js';
 import { type CalloutLayoutInput, type CalloutLayoutResult, resolveCalloutAttrs, type BoxDesignInfo, boxTextOf, type CalloutUnit, type CalloutGroupLayout, columnsSpecOf, fenceMarginPx } from './inputs.js';
 import { deriveCalloutMeasureContext } from './plan.js';
 import { createChildMeasure } from './childMeasure.js';
 import { createChildPlace } from './childPlace.js';
 import { createChildGroups } from './childGroups.js';
 import type { Stack } from './layoutCalloutTypes.js';
+import { createBoxDecoration } from './boxDecoration.js';
+import { createLabelTab } from './labelTab.js';
+import { createMarkerColumn } from './markerColumn.js';
+import type { CalloutState } from './layoutCalloutState.js';
 
 /** The measures of `layoutCallout`'s first child across widths (see
  *  `CalloutLayoutInput.lineWidths`), per resolved configuration and
@@ -47,6 +48,7 @@ onTextWidthCacheClear(() => {
  * {@link offsetCalloutToAbsolute}.
  */
 export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
+  const boxState = {} as CalloutState;
   const { style, attrs, childStartIdx, ctx, containerId, frameId } = input;
   // A design that sets the box's content (#1014) prints it in its band:
   // the children are not laid out again.
@@ -511,343 +513,29 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   const boxHeight = contentBottom + padB;
   const innerRect = createBoundingBox(innerX, innerTop, innerWidth, Math.max(0, contentBottom - innerTop));
 
-  // --- Box decoration (paint order: background, stripe, icon, title) ---------
-  const borderOn = style.border.enabled;
-  // Corners of their own and a border per side (#1059); a style with one
-  // radius and one border paints as it always has.
-  const shaped = isCornerRadii(style.borderRadius) || style.border.sides !== undefined;
-  const radii = cornerRadiiPx(style.borderRadius, px);
-  const sides: ShapeBorder | undefined = style.border.sides
-    ? borderSidesPx({ enabled: borderOn, color: style.border.color, width: style.border.width }, style.border.sides, px)
-    : undefined;
-  const boxShapeAt = overlayBlocks.length;
-  if (style.backgroundEnabled || borderOn || (sides && SHAPE_SIDES.some((side) => sides[side]))) {
-    overlayBlocks.push({
-      kind: 'box',
-      bbox: createBoundingBox(0, 0, boxWidth, boxHeight),
-      box: shaped
-        ? normalizeBoxStyle({
-            backgroundColor: style.backgroundEnabled ? style.background.hex : undefined,
-            borderColor: borderOn ? style.border.color.hex : undefined,
-            borderWidthPx: borderOn ? px(style.border.width) : 0,
-            borderRadiusPx: 0,
-            borderRadiiPx: radii,
-            ...(sides ? { borderSides: sides } : {}),
-          })
-        : {
-            backgroundColor: style.backgroundEnabled ? style.background.hex : undefined,
-            borderColor: borderOn ? style.border.color.hex : undefined,
-            borderWidthPx: borderOn ? px(style.border.width) : 0,
-            borderRadiusPx: px(uniformRadius(style.borderRadius)!),
-          },
-    });
-  }
-  const boxPainted = overlayBlocks.length > boxShapeAt;
-  // The highlighted lines of a listing (#624): a band across the inner
-  // area and its padding, under the text.
-  if (highlights.length > 0) {
-    const tint = resolvedCodeStyle(input.resolved).highlightBackground.hex;
-    for (const h of highlights) {
-      overlayBlocks.push({
-        kind: 'box',
-        bbox: createBoundingBox(innerX - padL, h.y, innerWidth + padL + padR, h.height),
-        box: { backgroundColor: tint, borderWidthPx: 0, borderRadiusPx: 0 },
-      });
-    }
-  }
-  let stripeBlock: VDTDesignBoxBlock | undefined;
-  if (stripeOn) {
-    const stripeBox = topStripe
-      ? createBoundingBox(0, 0, boxWidth, stripeW)
-      : stripeLeft
-        ? createBoundingBox(0, 0, stripeW, boxHeight)
-        : createBoundingBox(boxWidth - stripeW, 0, stripeW, boxHeight);
-    // On a rounded frame the stripe follows the corners: it is clipped to
-    // the frame's rounded rectangle (the radius clamped as the frame's is),
-    // so its square ends never stick out past the background and border.
-    // Corners of their own (#1059) are clamped as the frame's outline
-    // clamps them; a joined tab sets the clip again below.
-    const clipRadii: [number, number, number, number] = shaped
-      ? boxOutline(createBoundingBox(0, 0, boxWidth, boxHeight), radii).vertices.map((v) => v.r) as [number, number, number, number]
-      : (() => {
-          const frameRadius = Math.max(0, Math.min(px(uniformRadius(style.borderRadius)!), boxWidth / 2, boxHeight / 2));
-          return [frameRadius, frameRadius, frameRadius, frameRadius];
-        })();
-    stripeBlock = {
-      kind: 'box',
-      bbox: stripeBox,
-      box: { backgroundColor: style.stripe.color.hex, borderWidthPx: 0, borderRadiusPx: 0 },
-      ...(clipRadii.some((r) => r > 0)
-        ? { clip: { x: 0, y: 0, width: boxWidth, height: boxHeight, radii: clipRadii } }
-        : {}),
-    };
-    overlayBlocks.push(stripeBlock);
-  }
-  let iconFileId: string | undefined;
-  let iconFormat: string | undefined;
-  if (hasIcon) {
-    // Over a side stripe the icon is centred on the stripe; otherwise it
-    // sits in its own column left of the content.
-    // A corner badge hangs on its corner half past the border, flush with
-    // the top edge.
-    const iconX = cornerIcon
-      ? (cornerRight ? boxWidth - cornerIconW / 2 : -cornerIconW / 2)
-      : sideStripe
-        ? (stripeLeft ? (stripeW - iconSize) / 2 : boxWidth - stripeW + (stripeW - iconSize) / 2)
-        : innerX - iconColumn;
-    const iconY = cornerIcon
-      ? 0
-      : style.icon.align === 'center'
-        ? innerTop + (contentBottom - innerTop - iconSize) / 2
-        : innerTop;
-    const built = buildIconBlock(style.icon, iconX, iconY, iconSize, ctx, iconBoxW, px);
-    if (built) {
-      overlayBlocks.push(built.block);
-      iconFileId = built.fileId;
-      iconFormat = built.format;
-    }
-  }
-  overlayBlocks.push(...groupRules);
+  const {
+    borderOn, radii, sides, boxShapeAt, boxPainted
+  } = createBoxDecoration({
+    input, style, ctx, px, padR, padL, stripeOn, stripeW, sideStripe, stripeLeft, topStripe, hasIcon,
+    iconSize, iconBoxW, cornerIcon, cornerRight, iconColumn, cornerIconW, innerX, innerTop, boxWidth,
+    innerWidth, overlayBlocks, groupRules, highlights, contentBottom, boxHeight, boxState
+  });
   overlayBlocks.push(...designBlocks);
   if (titleBlock) overlayBlocks.push(titleBlock);
   if (fromBlock) overlayBlocks.push(fromBlock);
   if (continuesBlock) overlayBlocks.push(continuesBlock);
 
-  // --- Label tab ---------------------------------------------------------------
-  // The fence's `label` on a tab hugging a top corner, rising `offset`
-  // above the box; an icon beside it and a rule along the top edge.
-  let labelRisePx = 0;
-  let labelDropPx = 0;
-  if (style.label && labelShown) {
-    const lb = style.label;
-    const lbFontPx = dimensionToPx(lb.fontSize, dpi, em);
-    const lbFont = buildFontString(lb.fontFamily, lbFontPx, lb.fontWeight.toString());
-    const padX = dimensionToPx(lb.paddingX, dpi, lbFontPx);
-    const tabH = dimensionToPx(lb.height, dpi, lbFontPx);
-    // A joined tab (#1059) stands on the edge: it is out of the box by its
-    // whole height, whatever `offset` says.
-    const rise = labelJoined ? tabH : px(lb.offset);
-    const inset = px(lb.inset);
-    const textW = flowTextWidth(labelText, lbFont);
-    // A picture inside the tab (#981) sits at its start, before the words:
-    // the tab is as wide as the picture, the gap, the words and the padding.
-    // A drawn ring or dot (#1120) stands where a glyph would, as large as
-    // one at `scale` of the words' size.
-    const shapeIcon = lb.icon.kind === 'shape';
-    const glyphIcon = shapeIcon || (lb.icon.kind === 'glyph' && lb.icon.glyph.length > 0);
-    const iconResource = !glyphIcon && lb.icon.resourceId ? ctx.resourceById.get(lb.icon.resourceId) : undefined;
-    const iconFileId = iconResource?.bitmap?.fileId ?? iconResource?.svg?.fileId;
-    // A glyph (#1054): a character of a font at `scale` of the words' size,
-    // as wide as its advance, centred on the tab's middle as the words are.
-    const glyphPx = glyphIcon ? lbFontPx * lb.icon.scale : 0;
-    const glyphFont = glyphIcon && !shapeIcon ? buildFontString(lb.icon.fontFamily, glyphPx, lb.icon.fontWeight.toString()) : '';
-    const glyphW = shapeIcon ? glyphPx : glyphIcon ? flowTextWidth(lb.icon.glyph, glyphFont) : 0;
-    const inside = lb.icon.placement === 'inside' && (!!iconFileId || glyphIcon);
-    let iconFit = { w: glyphW, h: 0 };
-    if (iconFileId) {
-      const dims = iconResource?.bitmap ?? iconResource?.svg;
-      const boxW = px(lb.icon.width);
-      iconFit = { w: boxW, h: tabH };
-      if (dims?.width && dims?.height) {
-        const k = Math.min(boxW / dims.width, tabH / dims.height);
-        iconFit = { w: dims.width * k, h: dims.height * k };
-      }
-    }
-    // The picture painted in the colour of the words (#995), or in a colour
-    // of its own (#1120): a print master (a PDF page) cannot be recoloured,
-    // so the PDF draws the SVG itself.
-    const tint = tintHex(lb.icon.tint, lb.color);
-    const tintOf = tint ? { tint } : {};
-    const traitsOf = (resource: Parameters<typeof pictureTraits>[0], fileId: string) => {
-      const traits = pictureTraits(resource, fileId);
-      if (tint) delete traits.pdfFileId;
-      return traits;
-    };
-    const iconRoom = inside ? iconFit.w + px(lb.icon.gap) : 0;
-    const tabW = textW + iconRoom + 2 * padX;
-    const corner = labelAtFoot ? lb.position.slice('bottom-'.length) : lb.position.startsWith('top-') ? lb.position.slice('top-'.length) : lb.position;
-    const tabSide = corner === 'start' ? boxSide('start')
-      : corner === 'end' ? boxSide('end')
-        : corner === 'right' ? 'right' : 'left';
-    const onRight = tabSide === 'right';
-    const tabX = onRight ? boxWidth - inset - tabW : inset;
-    // A tab at the foot (#1059) is the one at the head turned over: its
-    // foot `offset` below the box's.
-    const tabY = labelAtFoot ? boxHeight + rise - tabH : -rise;
-    if (labelAtFoot) labelDropPx = Math.max(0, rise);
-    else labelRisePx = Math.max(0, rise);
-    if (labelJoined) {
-      // One outline for the box and its tab: the box's fill and border,
-      // the tab's outer corners rounded as the box's corner it hugs and
-      // its sides meeting the box in fillets of that radius (or
-      // `fillet`). The stripe keeps to the box, square where a tab flush
-      // with the side goes on.
-      const cornerIndex = labelAtFoot ? (onRight ? 2 : 3) : (onRight ? 1 : 0);
-      const tabRadius = radii[cornerIndex]!;
-      // A radius of the tab's own (#1102) rounds its outer corners, the
-      // left one and the right one; the fillets keep the box's corner.
-      const own = lb.borderRadius !== undefined ? cornerRadiiPx(lb.borderRadius, px) : undefined;
-      const outer: number | [number, number] = own
-        ? (labelAtFoot ? [own[3], own[2]] : [own[0], own[1]])
-        : tabRadius;
-      const shapeTab: ShapeTab = {
-        edge: labelAtFoot ? 'bottom' : 'top',
-        x0: tabX,
-        x1: tabX + tabW,
-        height: tabH,
-        radius: outer,
-        fillet: lb.fillet ? Math.max(0, px(lb.fillet)) : tabRadius,
-      };
-      const boxRect = createBoundingBox(0, 0, boxWidth, boxHeight);
-      const outline = boxOutline(boxRect, radii, shapeTab);
-      const whole = borderOn && px(style.border.width) > 0 ? { color: style.border.color.hex, widthPx: px(style.border.width) } : null;
-      const border: ShapeBorder = sides ?? { top: whole, right: whole, bottom: whole, left: whole };
-      const shapes = shapePathBlocks(outline, style.backgroundEnabled ? style.background.hex : undefined, border);
-      // A tab in its own fill (#1102): the tab's part of the outline in the
-      // label's background, over the box's fill and under the border.
-      if (lb.ownBackground) {
-        const [tabFill] = shapePathBlocks(tabRegionOutline(boxRect, radii, shapeTab), lb.background.hex, undefined);
-        if (tabFill) {
-          const at = shapes.findIndex((b) => b.boxPart !== 'fill');
-          shapes.splice(at < 0 ? shapes.length : at, 0, tabFill);
-        }
-      }
-      overlayBlocks.splice(boxShapeAt, boxPainted ? 1 : 0, ...shapes);
-      if (stripeBlock) {
-        const at = (cx: number, cy: number) => outline.vertices.find((v) => v.x === cx && v.y === cy)?.r ?? 0;
-        const clipRadii: [number, number, number, number] = [at(0, 0), at(boxWidth, 0), at(boxWidth, boxHeight), at(0, boxHeight)];
-        if (clipRadii.some((r) => r > 0)) stripeBlock.clip = { x: 0, y: 0, width: boxWidth, height: boxHeight, radii: clipRadii };
-        else delete stripeBlock.clip;
-      }
-    } else {
-      // A tab apart from the box is square unless it sets corners of its
-      // own (#1102): a box style with radii, which every backend draws
-      // through `boxOutline` (one radius on every corner stays a plain
-      // rounded box).
-      const tabRadii = lb.borderRadius !== undefined ? cornerRadiiPx(lb.borderRadius, px) : undefined;
-      overlayBlocks.push({
-        kind: 'box',
-        bbox: createBoundingBox(tabX, tabY, tabW, tabH),
-        box: tabRadii && tabRadii.some((r) => r > 0)
-          ? normalizeBoxStyle({ backgroundColor: lb.background.hex, borderWidthPx: 0, borderRadiusPx: 0, borderRadiiPx: tabRadii })
-          : { backgroundColor: lb.background.hex, borderWidthPx: 0, borderRadiusPx: 0 },
-      });
-    }
-    // The words follow the picture: to its right in a left-to-right box,
-    // to its left in a right-to-left one (the box's start side).
-    const iconAtRight = inside && boxSide('start') === 'right';
-    overlayBlocks.push(directText({
-      kind: 'text',
-      bbox: createBoundingBox(tabX, tabY, tabW, tabH),
-      fontString: lbFont,
-      color: lb.color.hex,
-      lines: [{ text: labelText, xOffset: padX + (inside && !iconAtRight ? iconRoom : 0), baselineY: tabY + tabH / 2 + lbFontPx * 0.36, width: textW }],
-      clip: false,
-    }));
-    let edgeX = onRight ? tabX : tabX + tabW;
-    // The glyph block at `x`: pagination furniture to a reader (a tagged
-    // PDF's artifact, hidden in HTML), so the tab reads only its words.
-    const glyphBlock = (x: number): VDTDesignBlock => (shapeIcon
-      ? iconShapeBlock(lb.icon.shape ?? 'ring', x + glyphW / 2, tabY + tabH / 2, glyphW, (lb.icon.color ?? lb.color).hex,
-        lb.icon.strokeWidth ? Math.max(0, dimensionToPx(lb.icon.strokeWidth, dpi, lbFontPx)) : undefined)
-      : glyphTextBlock(x));
-    const glyphTextBlock = (x: number): VDTDesignTextBlock => ({
-      kind: 'text',
-      bbox: createBoundingBox(x, tabY, glyphW, tabH),
-      fontString: glyphFont,
-      color: (lb.icon.color ?? lb.color).hex,
-      lines: [{ text: lb.icon.glyph, xOffset: 0, baselineY: tabY + tabH / 2 + glyphPx * 0.36, width: glyphW }],
-      clip: false,
-      artifact: true,
-    });
-    if (glyphIcon) {
-      const gap = px(lb.icon.gap);
-      const gx = inside
-        ? (iconAtRight ? tabX + tabW - padX - glyphW : tabX + padX)
-        : (onRight ? tabX - gap - glyphW : tabX + tabW + gap);
-      overlayBlocks.push(glyphBlock(gx));
-      if (!inside) edgeX = onRight ? gx : gx + glyphW;
-    } else if (inside) {
-      const ix = iconAtRight ? tabX + tabW - padX - iconFit.w : tabX + padX;
-      overlayBlocks.push({ kind: 'image', bbox: createBoundingBox(ix, tabY + (tabH - iconFit.h) / 2, iconFit.w, iconFit.h), fileId: iconFileId!, ...traitsOf(iconResource, iconFileId!), ...tintOf });
-    } else if (iconFileId) {
-      const iconW = px(lb.icon.width);
-      const gap = px(lb.icon.gap);
-      const iconX = onRight ? tabX - gap - iconW : tabX + tabW + gap;
-      overlayBlocks.push({ kind: 'image', bbox: createBoundingBox(onRight ? iconX + iconW - iconFit.w : iconX, tabY + (tabH - iconFit.h) / 2, iconFit.w, iconFit.h), fileId: iconFileId, ...traitsOf(iconResource, iconFileId), ...tintOf });
-      edgeX = onRight ? iconX + iconW - iconFit.w : iconX + iconFit.w;
-    }
-    if (lb.rule.enabled) {
-      const ruleW = px(lb.rule.width);
-      const x0 = onRight ? 0 : edgeX;
-      const len = onRight ? edgeX : boxWidth - edgeX;
-      if (len > 0) {
-        overlayBlocks.push({
-          kind: 'rule',
-          bbox: createBoundingBox(x0, (labelAtFoot ? boxHeight : 0) - ruleW / 2, len, ruleW),
-          color: lb.rule.color.hex,
-          thicknessPx: ruleW,
-          direction: 'horizontal',
-        });
-      }
-    }
-  }
+  createLabelTab({
+    style, ctx, dpi, em, px, labelText, directText, boxSide, labelShown, labelAtFoot, labelJoined,
+    boxWidth, overlayBlocks, boxHeight, borderOn, radii, sides, boxShapeAt, boxPainted, boxState
+  });
 
-  // --- Marker column + frame -----------------------------------------------------
-  // The frame is as tall as the tallest of box, marker and rule; the three
-  // are centred on each other (`marker.align: 'center'`) or top-aligned.
-  const ruleLen = ruleOn ? Math.max(px(style.marker.rule.length), boxHeight) : 0;
-  const totalHeight = Math.max(boxHeight, markerSize, ruleLen);
-  const centerMarker = style.marker.align === 'center';
-  const boxDy = centerMarker ? (totalHeight - boxHeight) / 2 : 0;
-  const width = markerColumn + boxWidth;
-  if (markerColumn > 0 || boxDy > 0) {
-    for (const b of overlayBlocks) offsetDesignBlock(b, markerColumn, boxDy);
-    for (const blk of childBlocks) offsetBlock(blk, markerColumn, boxDy);
-    for (const g of groupLayouts) g.top += boxDy;
-    innerRect.x += markerColumn;
-    innerRect.y += boxDy;
-  }
-  // Paint order: marker, rule, then the box decoration (the marker lies
-  // outside the box, so the order only matters for readers of the overlay).
-  const markerBlocks: VDTDesignBlock[] = [];
-  let markerFileId: string | undefined;
-  let markerFormat: string | undefined;
-  if (hasMarker) {
-    const markerY = centerMarker ? (totalHeight - markerSize) / 2 : 0;
-    const built = buildIconBlock(style.marker, 0, markerY, markerSize, ctx, markerSize, px);
-    if (built) {
-      markerBlocks.push(built.block);
-      markerFileId = built.fileId;
-      markerFormat = built.format;
-    }
-    if (ruleOn) {
-      const ruleY = centerMarker ? (totalHeight - ruleLen) / 2 : 0;
-      markerBlocks.push({
-        kind: 'rule',
-        bbox: createBoundingBox(markerSize, ruleY, ruleW, ruleLen),
-        color: style.marker.rule.color.hex,
-        thicknessPx: ruleW,
-        direction: 'vertical',
-      });
-    }
-  }
-  // The label tab rises above the box inside the block: the box starts
-  // `labelRisePx` down, so the tab keeps its room at a column head too,
-  // where the top margin is dropped.
-  if (labelRisePx > 0) {
-    for (const b of overlayBlocks) offsetDesignBlock(b, 0, labelRisePx);
-    for (const b of markerBlocks) offsetDesignBlock(b, 0, labelRisePx);
-    for (const blk of childBlocks) offsetBlock(blk, 0, labelRisePx);
-    for (const g of groupLayouts) g.top += labelRisePx;
-    innerRect.y += labelRisePx;
-  }
-  // A tab at the foot (#1059) hangs below the box inside the block too.
-  const frameHeight = totalHeight + labelRisePx + labelDropPx;
-  const overlay: VDTDesignSlot = {
-    bbox: createBoundingBox(0, 0, width, frameHeight),
-    blocks: [...markerBlocks, ...overlayBlocks],
-  };
+  const {
+    width, frameHeight, overlay
+  } = createMarkerColumn({
+    style, ctx, px, hasMarker, markerSize, ruleOn, ruleW, markerColumn, boxWidth, overlayBlocks,
+    childBlocks, groupLayouts, boxHeight, innerRect, boxState
+  });
 
   // --- Frame block -------------------------------------------------------------
   const frame = createVDTBlock(frameId, 'callout', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
@@ -864,10 +552,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     placement,
     innerRect,
     childIds: childBlocks.map((b) => b.id),
-    iconFileId,
-    iconFormat,
-    markerFileId,
-    markerFormat,
+    iconFileId: boxState.iconFileId,
+    iconFormat: boxState.iconFormat,
+    markerFileId: boxState.markerFileId,
+    markerFormat: boxState.markerFormat,
     ...(attrs.turn === '180' ? { turned: true as const } : {}),
   };
 
