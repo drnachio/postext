@@ -1,19 +1,16 @@
 'use client';
 
-import { forwardRef, useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { createFolioFromDocument, pageVideoSpots, spotContains, type FolioDocumentViewer, type FolioInteraction, type FolioLabels, type PageVideoSpot } from 'postext-folio';
-import { resolveColorValue, resolveDebugConfig, resolveDiagramStyleConfig, watchFonts, onFontsChanged, type PostextConfig, type VDTDocument } from 'postext';
-import { useBookPlan, useSandboxChapterDocsRef, useSandboxDispatch, useSandboxDocRef, useSandboxDocSourceRef, useSandboxSelector, useLayoutSource } from '../../context/SandboxContext.js';
-import { composeBookMemo } from '../../book/compose.js';
-import type { BookPlan } from '../../book/types.js';
-import { buildBookChapters, type HeldChapterDoc } from '../../book/buildBook.js';
-import { layoutCacheKey } from '../../book/layoutKeys.js';
-import { chapterLayoutFromDoc, leadingBlankPageCount } from '../../book/pagination.js';
-import { stitchDocuments, type StitchedBook } from '../../book/stitch.js';
-import { createFontGate, declareStandIns, loadVerticalTwins, standInsSettled, verticalTwinsSettled } from '../../controls/fonts/fontLoader.js';
+import { forwardRef, useRef, useMemo, useState, useEffect, useDeferredValue, useImperativeHandle } from 'react';
+import { type FolioInteraction, type FolioDocumentViewer, type FolioLabels, createFolioFromDocument } from 'postext-folio';
+import { type PostextConfig, type VDTDocument, watchFonts, onFontsChanged, resolveDiagramStyleConfig, resolveColorValue, resolveDebugConfig } from 'postext';
+import { useSandboxDispatch, useSandboxSelector, useSandboxDocRef, useSandboxDocSourceRef, useSandboxChapterDocsRef, useLayoutSource, useBookPlan } from '../../context/SandboxContext.js';
+import { type HeldChapterDoc } from '../../book/buildBook.js';
+import { leadingBlankPageCount } from '../../book/pagination.js';
+import { type StitchedBook } from '../../book/stitch.js';
+import { createFontGate } from '../../controls/fonts/fontLoader.js';
 import { ensureResourceImages, ensureResourceVideoUrls, getResourceVideoUrl } from '../../controls/media/resourceImages.js';
 import { getBlob } from '../../storage/blobStore.js';
-import { previewFor, printsGrayscale, usePrintSetup } from '../../print/printSetup.js';
+import { usePrintSetup, printsGrayscale, previewFor } from '../../print/printSetup.js';
 import { usePrintPreview } from '../../print/printPreviewToggle.js';
 import { useLayoutWorker } from '../../worker/useLayoutWorker.js';
 import { onLateFonts } from '../../worker/LayoutService.js';
@@ -22,8 +19,9 @@ import { defaultDocumentLocale } from '../canvas/CanvasPreview/layoutUtils.js';
 import type { BookPageMap } from '../usePageHashSync.js';
 import { FolioLoading } from './FolioLoading.js';
 import { useFolioSelection } from './useFolioSelection.js';
-import { pickVideo, type PlayableVideo, type PreviewVideo, type PreviewVideoResult, type VideoPick } from '../viewerVideos.js';
-import { planContent } from '../../book/jumps.js';
+import { type PreviewVideo, type VideoPick, type PreviewVideoResult, pickVideo } from '../viewerVideos.js';
+import { type ShownDoc, playableVideos, videoKey, PROOF_PAPER, fill, FOLIO_TEXTURES, samePage } from './FolioPreview/pages.js';
+import { useFolioBuild } from './FolioPreview/useFolioBuild.js';
 
 interface FolioPreviewProps {
   /** What the left button does on the book. */
@@ -67,70 +65,6 @@ export interface FolioPreviewHandle {
   playVideo: (pick: VideoPick) => PreviewVideoResult;
   stopVideo: () => void;
 }
-
-/** The videos of a page that Folio plays itself (a file or its address;
- *  a YouTube or Vimeo poster turns the page as any other). */
-function playableVideos(doc: VDTDocument, pageIndex: number): PlayableVideo<PageVideoSpot>[] {
-  const page = doc.pages[pageIndex];
-  if (!page) return [];
-  return pageVideoSpots(page, doc)
-    .filter((spot) => spot.video.source === 'file')
-    .map((spot) => ({ resource: spot.resourceId, pageIndex, contains: (x, y) => spotContains(spot, x, y), item: spot }));
-}
-
-const videoKey = (pageIndex: number, resource: string): string => `${pageIndex}|${resource}`;
-
-/** A laid-out document with what tells its pages apart across layouts:
- *  the chapter (position in the book) of every page of a whole-book
- *  document, or the one chapter of a chapter's. */
-interface ShownDoc {
-  doc: VDTDocument;
-  pageChapters: readonly number[] | null;
-  chapter: number;
-  /** A chapter's document: the book's pages before and after it (its
-   *  first and last leaves are the covers only at the book's ends). */
-  extraPages?: { before: number; after: number };
-  /** The book it was laid out from (`bookVersion`). */
-  book: number;
-}
-
-/** The pages of the book round a chapter laid out on its own: those before
- *  it (its offset; at least one when a chapter before it is not paginated
- *  yet) and those of the chapters after it (their last layouts, one page
- *  for a chapter not laid out yet). Only the first chapter has none before
- *  it and only the last none after: a chapter from the middle of a book
- *  with its own covers turns paper leaves at both ends (#449). */
-function pagesAround(doc: VDTDocument, plan: BookPlan, chapterId: string): { before: number; after: number } {
-  const index = plan.chapters.findIndex((c) => c.chapterId === chapterId);
-  const offset = doc.pageIndexOffset ?? 0;
-  if (index < 0) return { before: offset, after: 0 };
-  const before = index > 0 ? Math.max(1, offset) : offset;
-  const after = plan.chapters.slice(index + 1).reduce((n, c) => n + Math.max(1, c.layout?.pageCount ?? 1), 0);
-  return { before, after };
-}
-
-/** Where page `index` of `from` lies in `to`: the page of the same chapter
- *  carrying the same number (indexes differ between a chapter's document
- *  and the whole book's, and shift with an edit); -1 when `to` has none. */
-function samePage(from: ShownDoc, index: number, to: ShownDoc): number {
-  const page = from.doc.pages[index];
-  if (!page) return -1;
-  const chapter = from.pageChapters?.[index] ?? from.chapter;
-  return to.doc.pages.findIndex((p, i) =>
-    (to.pageChapters?.[i] ?? to.chapter) === chapter
-    && p.pageNumberValue === page.pageNumberValue
-    && p.pageNumberFormat === page.pageNumberFormat);
-}
-
-/** The scanned desk textures the site serves (apps/web/public). */
-const FOLIO_TEXTURES = '/folio/textures';
-
-/** The book's paper while the print preview proofs the pages on the
- *  paper's own white (#799): neutral, so that white is the one shown. */
-const PROOF_PAPER = { hex: '#ffffff', model: 'hex' } as const;
-
-const fill = (template: string, values: Record<string, string | number>) =>
-  template.replace(/__(\w+)__/g, (m, key: string) => (key in values ? String(values[key]) : m));
 
 /**
  * The book in 3D (`postext-folio`): the print layout the canvas shows —
@@ -341,114 +275,12 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     };
   }, []);
 
-  // BUILD: the same documents the canvas lays out, under the same cache keys.
-  useEffect(() => {
-    let cancelled = false;
-    const { onGeneratingChange: generating, onPageCountChange: counted } = callbacksRef.current;
-    // The text decides some faces too (a comic page letters in its own).
-    const fontText = deferredBookSource ? deferredBookSource.chapters.map((c) => c.markdown) : deferredSource.book.markdown;
-    // Each missing face holds the build once, as in the canvas (#659).
-    if (typeof document !== 'undefined' && document.fonts) {
-      if (fontGate.pending(deferredConfig, fontText).length > 0) {
-        generating?.(true);
-        fontGate.wait(deferredConfig, fontText).then(() => {
-          if (!cancelled) setRebuildKey((k) => k + 1);
-        });
-        return () => {
-          cancelled = true;
-        };
-      }
-    }
-    if (!verticalTwinsSettled(deferredConfig, fontText)) {
-      loadVerticalTwins(deferredConfig, fontText).then((added) => {
-        if (added && !cancelled) setRebuildKey((k) => k + 1);
-      });
-    }
-    // Stand-in faces (#688), as in the canvas.
-    if (!standInsSettled(deferredConfig, fontText)) {
-      declareStandIns(deferredConfig, fontText).then((added) => {
-        if (added && !cancelled) setRebuildKey((k) => k + 1);
-      });
-    }
-    generating?.(true);
-
-    const run = async () => {
-      if (deferredBookSource) {
-        const snapshotChapters = deferredBookSource.chapters;
-        const result = await buildBookChapters({
-          chapters: snapshotChapters,
-          plan: planRef.current,
-          config: deferredConfig,
-          rawConfig: rawDeferredConfig,
-          resources: deferredResources,
-          held: heldDocsRef.current,
-          build: layoutWorker.build,
-          cancelled: () => cancelled,
-        });
-        if (!result) return;
-        heldDocsRef.current = result.held;
-        const stitched = stitchDocuments(result.built);
-        if (!stitched) return;
-        stitchedRef.current = stitched;
-        chapterDocsRef.current = new Map([...result.held].map(([id, h]) => [id, { doc: h.doc, source: h.source }]));
-        sharedDocRef.current = stitched.doc;
-        sharedDocSourceRef.current = composeBookMemo(snapshotChapters);
-        for (const layout of result.records) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
-        dispatch({ type: 'BUMP_DOC_VERSION' });
-        setDoc({ doc: stitched.doc, pageChapters: stitched.pageChapters, chapter: -1, book: deferredBookVersion });
-        counted?.(
-          stitched.doc.pages.length,
-          leadingBlankPageCount(stitched.doc),
-          stitched.doc.pages.map((p) => p.pageNumberValue),
-          { pageChapters: stitched.pageChapters, chapterFirstPages: stitched.chapterFirstPages },
-        );
-        return;
-      }
-      const source = deferredSource.book;
-      const built = await layoutWorker.build(
-        { markdown: source.markdown, metadata: source.metadata, resources: deferredResources, continuation: deferredSource.continuation, ...planContent(deferredSource.plan) },
-        deferredConfig,
-        {
-          cacheKey: layoutCacheKey({
-            markdown: source.markdown,
-            metadata: source.metadata,
-            config: deferredConfig,
-            resources: deferredResources,
-            continuation: deferredSource.continuation,
-            continuationKey: deferredSource.plan.continuationKey,
-            outlineKey: deferredSource.plan.outlineKey,
-          }),
-        },
-      );
-      if (cancelled) return;
-      stitchedRef.current = null;
-      chapterDocsRef.current = new Map();
-      sharedDocRef.current = built;
-      sharedDocSourceRef.current = source;
-      const layout = chapterLayoutFromDoc(built, deferredSource.plan, { markdown: deferredSource.chapterMarkdown, config: rawDeferredConfig, resources: deferredResources });
-      if (layout) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
-      dispatch({ type: 'BUMP_DOC_VERSION' });
-      setDoc({
-        doc: built,
-        pageChapters: null,
-        chapter: Math.max(0, chaptersRef.current.findIndex((c) => c.id === deferredSource.chapterId)),
-        extraPages: pagesAround(built, planRef.current, deferredSource.chapterId),
-        book: deferredBookVersion,
-      });
-      counted?.(built.pages.length, leadingBlankPageCount(built), built.pages.map((p) => p.pageNumberValue));
-    };
-    run()
-      .catch((err: unknown) => {
-        if ((err as { name?: string } | null)?.name === 'AbortError') return;
-        console.error('[FolioPreview] Layout error:', err);
-      })
-      .finally(() => {
-        if (!cancelled) generating?.(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [deferredSource, deferredBookSource, deferredResources, deferredConfig, rawDeferredConfig, deferredBookVersion, rebuildKey, fontGate, dispatch, sharedDocRef, sharedDocSourceRef, chapterDocsRef, layoutWorker]);
+  useFolioBuild({
+    dispatch, sharedDocRef, sharedDocSourceRef, chapterDocsRef, chaptersRef, deferredBookVersion,
+    planRef, deferredBookSource, deferredSource, deferredResources, rawDeferredConfig,
+    deferredConfig, layoutWorker, rebuildKey, setRebuildKey, fontGate, setDoc, heldDocsRef,
+    stitchedRef, callbacksRef
+  });
 
   // Resource images decoded after the pages were painted: paint them again.
   const diagramInkHex = useMemo((): string | null => {

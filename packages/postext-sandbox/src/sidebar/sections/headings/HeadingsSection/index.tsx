@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../../context/SandboxContext.js';
 import { resolveHeadingsConfig, baseFontFamily, balancingOnByDefault, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
-import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit, ClosingBoxLever, ColumnHeadSpace, GridLinesLever, KeepWithNextSplit, StretchAfterWideFloats, TrailingStep } from 'postext';
+import type { HeadingsConfig, DimensionUnit, ClosingBoxLever, ColumnHeadSpace, GridLinesLever, KeepWithNextSplit, StretchAfterWideFloats, TrailingStep } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -17,6 +17,7 @@ import {
 import { HeadingLevelSection } from './HeadingLevelSection.js';
 import { flowSideLabels, useRightToLeftFlow } from '../../../settings/flowSides.js';
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
+import { createHeadingsWriters } from './writers.js';
 
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -34,99 +35,11 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const onGrid = useSandboxSelector((s) => s.config.cjk?.grid?.enabled === true);
   const balancingOn = raw?.balancing?.enabled ?? balancingDefault;
 
-  const updateHeadings = (partial: Partial<HeadingsConfig>) => {
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { headings: { ...raw, ...partial } },
-    });
-  };
-
-  const resetHeadings = () => {
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { headings: undefined },
-    });
-  };
-
-  const resetBalancingField = (
-    field: 'enabled' | 'maxLinesPerHeading' | 'maxLinesBeforeLoose' | 'stretchAfterLists' | 'maxLinesAfterList' | 'stretchAfterDisplays' | 'stretchAfterFloats'
-      | 'maxLinesAfterFloat' | 'stretchAfterWideFloats' | 'looseParagraphs' | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking' | 'fillShortColumns'
-      | 'trailing' | 'trailingStep' | 'beforeSpan' | 'closingBox' | 'gridLines',
-  ) => {
-    if (!raw?.balancing) return;
-    const next = { ...raw.balancing };
-    delete next[field];
-    const hasKeys = Object.keys(next).length > 0;
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { headings: { ...raw, balancing: hasKeys ? next : undefined } },
-    });
-  };
-
-  const resetField = (field: keyof HeadingsConfig) => {
-    if (!raw) return;
-    const next = { ...raw };
-    delete next[field];
-    const hasKeys = Object.keys(next).length > 0;
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { headings: hasKeys ? next : undefined },
-    });
-  };
-
-  const updateLevel = (level: number, partial: Partial<HeadingLevelConfig>) => {
-    const currentLevels = raw?.levels ?? [];
-    const existing = currentLevels.find((l) => l.level === level);
-    const updated = existing
-      ? { ...existing, ...partial }
-      : { level, ...partial };
-    const newLevels = existing
-      ? currentLevels.map((l) => (l.level === level ? updated : l))
-      : [...currentLevels, updated];
-    updateHeadings({ levels: newLevels });
-  };
-
-  const resetLevelField = (level: number, field: keyof HeadingLevelConfig) => {
-    if (!raw?.levels) return;
-    if (field === 'fontSize') {
-      // When resetting via the section reset button, remove the entire level
-      const newLevels = raw.levels.filter((l) => l.level !== level);
-      if (newLevels.length > 0) {
-        updateHeadings({ levels: newLevels });
-      } else {
-        const next = { ...raw };
-        delete next.levels;
-        const hasKeys = Object.keys(next).length > 0;
-        dispatch({
-          type: 'UPDATE_CONFIG',
-          payload: { headings: hasKeys ? next : undefined },
-        });
-      }
-      return;
-    }
-    const existing = raw.levels.find((l) => l.level === level);
-    if (!existing) return;
-    const next = { ...existing };
-    delete next[field];
-    const hasFields = Object.keys(next).filter((k) => k !== 'level').length > 0;
-    if (hasFields) {
-      const newLevels = raw.levels.map((l) => (l.level === level ? next : l));
-      updateHeadings({ levels: newLevels });
-    } else {
-      const newLevels = raw.levels.filter((l) => l.level !== level);
-      if (newLevels.length > 0) {
-        updateHeadings({ levels: newLevels });
-      } else {
-        const r = { ...raw };
-        delete r.levels;
-        const hasKeys = Object.keys(r).length > 0;
-        dispatch({
-          type: 'UPDATE_CONFIG',
-          payload: { headings: hasKeys ? r : undefined },
-        });
-      }
-    }
-  };
+  const {
+    updateHeadings, resetHeadings, resetBalancingField, resetField, updateLevel, resetLevelField
+  } = createHeadingsWriters({
+    dispatch, raw
+  });
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   // The resolved family carries the figures (#1237): compare the family.
