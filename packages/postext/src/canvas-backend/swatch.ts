@@ -8,7 +8,7 @@
  */
 
 import type { VDTInlineIcon, VDTSwatch } from '../vdt.js';
-import { hasSwatchShape, swatchGeometry, type SwatchGeometry } from '../swatchShape.js';
+import { hasSwatchShape, swatchGeometry, type SwatchGeometry } from '../paint/swatchShape.js';
 import { iconLineDash, inlineIconBox } from '../measure/inlineIcon.js';
 import { drawResourceImage } from './renderResourceBlock.js';
 import { restoreContext, saveContext } from './contextState.js';

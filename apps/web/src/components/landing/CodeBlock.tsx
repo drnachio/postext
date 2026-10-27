@@ -3,8 +3,8 @@
 import { useState, useCallback, useId } from "react";
 import { useTranslations } from "next-intl";
 import { Check, Copy, SquareArrowOutUpRight } from "lucide-react";
-import { openCodePenWindow, submitToCodePen } from "@/lib/codepenClient";
-import { loadPenSources, penDefine, type PenRef } from "@/lib/codepenDefine";
+import { openCodePenWindow, submitToCodePen } from "@/lib/codepen/codepenClient";
+import { loadPenSources, penDefine, type PenRef } from "@/lib/codepen/codepenDefine";
 import { cn } from "@/lib/utils";
 
 interface CodeBlockProps {

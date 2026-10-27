@@ -1081,7 +1081,7 @@ def cmd_fonts(args) -> None:
 # ---------------------------------------------------------------------------
 
 # The engine's `contentInConfig` warning (#849, postext 1.34:
-# packages/postext/src/configWarnings.ts), counted the same way: per edition,
+# packages/postext/src/checks/configWarnings.ts), counted the same way: per edition,
 # one warning per owner (a heading style, a heading level, the page header, a
 # part design…) with the texts at fault (`count`) and their letters and digits
 # once the allowed phrases are taken out (`chars`). The defaults of

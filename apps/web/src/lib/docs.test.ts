@@ -1,9 +1,9 @@
 import GithubSlugger from "github-slugger";
 import { describe, expect, it } from "vitest";
-import { CONFIGURATION_SLUG, movedConfigurationAnchors, oldConfigurationAnchors } from "./configurationAnchors";
+import { CONFIGURATION_SLUG, movedConfigurationAnchors, oldConfigurationAnchors } from "./anchors/configurationAnchors";
 import { extractToc, getAllDocs, getDocSource } from "./docs";
 import { docPart } from "./docParts";
-import { fragmentId, oldAnchorUrl, resolveOldAnchor } from "./oldAnchors";
+import { fragmentId, oldAnchorUrl, resolveOldAnchor } from "./anchors/oldAnchors";
 
 const LOCALES = ["en", "es", "ca", "zh", "ja", "ar", "pt", "fr", "de", "it"] as const;
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { measureHeadingAdvancedDesignHeight } from '../../pipeline/headerFooter.js';
-import { resolveHeadingsConfig } from '../../defaults/headings.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
+import { measureHeadingAdvancedDesignHeight } from '../../pipeline/pages/headerFooter.js';
+import { resolveHeadingsConfig } from '../../defaults/structure/headings.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
 import { layoutDesignSlot } from '../../design/layout.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { DesignElement, Dimension, PostextConfig } from '../../types.js';

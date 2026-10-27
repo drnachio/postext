@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { fragmentId } from "@/lib/oldAnchors";
-import { anchorOffset, scrollToAnchor } from "@/lib/scrollToAnchor";
+import { fragmentId } from "@/lib/anchors/oldAnchors";
+import { anchorOffset, scrollToAnchor } from "@/lib/anchors/scrollToAnchor";
 
 /** How far from its place a heading may be and still count as shown. */
 const SLACK = 12;

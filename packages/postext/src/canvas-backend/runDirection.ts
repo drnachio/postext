@@ -1,4 +1,4 @@
-import { joiningScriptIn } from '../measure/joining.js';
+import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { letterSpacingOf, setLetterSpacing } from './contextState.js';
 
 /**
@@ -13,7 +13,7 @@ import { letterSpacingOf, setLetterSpacing } from './contextState.js';
  * so it lands in the box the layout measured. A run that holds a letter of
  * a joining script (`text`) is painted with no tracking: Arabic letters
  * are never spaced apart, and the measurer left such a text untracked
- * (`measure/joining.ts`). A Hebrew run keeps the tracking it was measured
+ * (`measure/rtl/joining.ts`). A Hebrew run keeps the tracking it was measured
  * with (#703; up to postext 1.27 every right-to-left run lost it). Inside
  * a mirrored flow the frame's `fillText` interception reads the same
  * direction and alignment, so the run is turned back about the same box.

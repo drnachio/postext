@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../../measure/rich.js';
 import { measureBlock } from '../../measure/plain.js';
-import { cjkCompositionKey, cjkCompositionOf, isJlreqSpacing, punctuationSide, setCjkComposition, type CjkComposition } from '../../measure/cjkPunctuation.js';
-import { resolveCjkConfig, stripCjkDefaults } from '../../defaults/cjk.js';
-import { cjkClassOf } from '../../measure/cjkClasses.js';
+import { cjkCompositionKey, cjkCompositionOf, isJlreqSpacing, punctuationSide, setCjkComposition, type CjkComposition } from '../../measure/cjk/cjkPunctuation.js';
+import { resolveCjkConfig, stripCjkDefaults } from '../../defaults/text/cjk.js';
+import { cjkClassOf } from '../../measure/cjk/cjkClasses.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { CjkConfig, PostextConfig } from '../../types.js';
 import type { MeasureBlockOptions } from '../../measure/types.js';

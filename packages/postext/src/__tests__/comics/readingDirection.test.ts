@@ -3,7 +3,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { comicReadingDirection, resolvedComics } from '../../defaults/comics.js';
 import { comicPageDirection } from '../../comics/layoutPage.js';
-import { comicsLocaleDirection } from '../../locale.js';
+import { comicsLocaleDirection } from '../../hyphenation/locale.js';
 import type { ComicsConfig, PostextConfig, Resource } from '../../types.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).

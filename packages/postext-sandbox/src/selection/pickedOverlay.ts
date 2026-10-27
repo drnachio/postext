@@ -6,7 +6,7 @@
  */
 
 import { resolvePageTemplate, type PageTemplateSource, type VDTDocument } from 'postext';
-import { SVG_NS } from '../viewport/CanvasPreview/dom.js';
+import { SVG_NS } from '../viewport/canvas/CanvasPreview/dom.js';
 import { idName, selectedElement, type PageSelection } from './pageSelection.js';
 import { frameDragNow, type FrameDrag } from './frameDrag.js';
 

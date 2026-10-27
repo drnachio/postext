@@ -7,20 +7,20 @@
 
 import { flowTextWidth, fontEm, measuringVertically } from '../measure/vertical.js';
 import { measureTextWidth } from '../measure/canvas.js';
-import type { ForcedOrientation } from '../writingMode.js';
+import type { ForcedOrientation } from '../writing/writingMode.js';
 import { extractInlineChips, injectChipSpans, parseInlineFormatting } from '../parse/inlineFormatting.js';
 import type { InlineSpan } from '../parse/types.js';
 import { buildFontString } from '../measure/index.js';
 import { chipToken, scriptMetrics, stackedScriptPairs } from '../measure/rich.js';
-import { resolveChipSpans } from '../pipeline/chips.js';
+import { resolveChipSpans } from '../pipeline/text/chips.js';
 import type { VDTChip } from '../vdt.js';
 import type { ResolvedChipStyleConfig } from '../types.js';
 import { graphemeCount } from '../measure/graphemes.js';
-import { getHyphenationRulesKey, hyphenateByDictionary, hyphenateText } from '../hyphenate.js';
+import { getHyphenationRulesKey, hyphenateByDictionary, hyphenateText } from '../hyphenation/hyphenate.js';
 import { endsInsideGeminate } from '../measure/geminate.js';
 import { NO_BREAK_SPACES, isBreakingSpace } from '../measure/spaces.js';
 import type { TextOverflow } from '../types.js';
-import { hasJoiningScript } from '../bidi.js';
+import { hasJoiningScript } from '../writing/bidi.js';
 
 /** One run of a design text line in its own font (see `VDTDesignTextRun`). */
 export interface DesignTextRun {

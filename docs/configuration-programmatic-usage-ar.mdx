@@ -815,7 +815,7 @@ const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garam
 
 تأخذ `registerFonts` بايتات الخطوط الخام. والخيط الرئيسي هو المكان المناسب لجلبها، لأن ذاكرة مؤقتة مركزية تتيح لعدة نُسخ من العامل أن تتشارك البايتات نفسها.
 
-ودالة `collectFontPayloadsForFamilies` في Sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`) تطبيق مرجعي. وهي:
+ودالة `collectFontPayloadsForFamilies` في Sandbox (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`) تطبيق مرجعي. وهي:
 
 1. تستعلم `https://api.fontsource.org/v1/fonts/{family-id}` لمعرفة الأوزان والأنماط التي تملكها العائلة.
 2. تقرأ المجموعات الفرعية للعائلة ونطاق `unicode-range` لكل منها من حزمتها على jsDelivr (`@fontsource/{family-id}@5/400.css`)، مرة لكل عائلة. ثم تُطلب الملفات من الإصدار المحدد الذي أُجيب منه عن ورقة الأنماط تلك (`x-jsd-version` من jsDelivr)، فلا تصل العائلة أبدًا من إصدارين من حزمتها.

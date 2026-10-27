@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { TocItem } from "@/lib/docs";
-import { scrollToAnchor, whenScrollSettles } from "@/lib/scrollToAnchor";
+import { scrollToAnchor, whenScrollSettles } from "@/lib/anchors/scrollToAnchor";
 
 interface DocsTocProps {
   items: TocItem[];

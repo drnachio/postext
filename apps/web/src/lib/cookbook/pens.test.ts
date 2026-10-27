@@ -811,7 +811,7 @@ describe("engine vocabularies", () => {
   const source = (file: string) => fs.readFileSync(path.join(REPO_DIR, "packages/postext/src", file), "utf-8");
 
   it("CONFIG_KEYS lists PostextConfig's keys", () => {
-    const body = /export interface PostextConfig \{([\s\S]*?)\n\}/.exec(source("types.ts"))?.[1] ?? "";
+    const body = /export interface PostextConfig \{([\s\S]*?)\n\}/.exec(source("types/config.ts"))?.[1] ?? "";
     const keys = [...body.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => m[1]);
     expect([...CONFIG_KEYS].sort()).toEqual(keys.sort());
   });

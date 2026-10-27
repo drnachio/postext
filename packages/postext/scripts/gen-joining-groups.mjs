@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Generate src/measure/joiningGroups.ts, the Arabic letters' Unicode
+// Generate src/measure/rtl/joiningGroups.ts, the Arabic letters' Unicode
 // Joining_Group (the skeleton family a letter belongs to: beh, hah, seen…),
-// which the kashida patterns (src/measure/kashidaPatterns.ts) match on:
+// which the kashida patterns (src/measure/rtl/kashidaPatterns.ts) match on:
 //
 //   node scripts/gen-joining-groups.mjs <ucd-dir>
 //
@@ -65,6 +65,6 @@ export const JOINING_GROUP_RANGES: readonly number[] = [
 ${rows.join('\n')}
 ];
 `;
-const target = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'measure', 'joiningGroups.ts');
+const target = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'measure', 'rtl', 'joiningGroups.ts');
 writeFileSync(target, out);
 console.log(`wrote ${target}: ${names.length} groups, ${ranges.length} ranges`);

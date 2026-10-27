@@ -9,7 +9,7 @@
 
 import { resolvePageTemplate, type PageTemplateSource, type VDTDocument, type VDTFrame, type VDTPage } from 'postext';
 import { dimensionToMm } from '../../templates/frameGeometry.js';
-import { SVG_NS } from '../CanvasPreview/dom.js';
+import { SVG_NS } from '../canvas/CanvasPreview/dom.js';
 import { fill } from '../../print/fillTokens.js';
 import { localNumber } from './reflowText.js';
 

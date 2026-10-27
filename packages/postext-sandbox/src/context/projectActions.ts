@@ -2,327 +2,36 @@
 // stays readable. Everything here runs against the live state through the
 // `deps` accessors; the provider owns the refs and hands them in.
 
-import type { Dispatch } from 'react';
-import { clearMeasurementCache } from 'postext';
-import type { PostextConfig, Resource } from 'postext';
+import { clearMeasurementCache, type PostextConfig } from 'postext';
 import { isBundleManifest, pickBundleMeta } from 'postext/bundle';
-import { setCustomFonts } from '../controls/fontLoader.js';
-import { invalidateResourceImage } from '../controls/resourceImages.js';
+import { setCustomFonts } from '../controls/fonts/fontLoader.js';
+import { invalidateResourceImage } from '../controls/media/resourceImages.js';
 import { slugify } from '../panels/resources/slugify.js';
 import type { BundleContent } from '../presets/bundle.js';
-import {
-  buildBundleFiles,
-  openBundleZip,
-  parseBundle,
-  zipBundle,
-  POSTEXT_EXTENSION,
-  POSTEXT_MIME,
-} from '../presets/index.js';
-import type { LoadedPreset, PresetApplyParts, PresetProvider, PresetSummary } from '../presets/index.js';
-import { extensionForImageMime, mimeForFile } from '../presets/manifest.js';
-import { getBlob, putBlobAt } from '../storage/blobStore.js';
-import { getFontFile, putFontFile } from '../storage/fontStorage.js';
-import {
-  clearPresetApplied,
-  downloadBytes,
-  readFileBytes,
-  saveBook,
-  saveConfig,
-  savePresetId,
-  saveProjectId,
-} from '../storage/persistence.js';
-import { cloneBook, singleChapterBook } from '../book/chapterOps.js';
-import type { BookContent, BookStart, Chapter } from '../book/types.js';
-import { createBookPlanner } from '../book/pagination.js';
-import { cloneContentForProject, cloneEditionsForProject, projectFileId, projectFontFileId, remapContentFileIds } from '../storage/projectFiles.js';
-import { editionTitlesOf, projectEditionFields, recordLocaleOf, withNewEdition } from '../storage/projectEditions.js';
+import { type PresetApplyParts, openBundleZip, type LoadedPreset, parseBundle, buildBundleFiles, zipBundle, POSTEXT_EXTENSION, POSTEXT_MIME } from '../presets/index.js';
+import { mimeForFile, extensionForImageMime } from '../presets/manifest.js';
+import { putBlobAt, getBlob } from '../storage/blobStore.js';
+import { putFontFile, getFontFile } from '../storage/fontStorage.js';
+import { saveProjectId, savePresetId, clearPresetApplied, saveBook, saveConfig, readFileBytes, downloadBytes } from '../storage/persistence.js';
+import { singleChapterBook, cloneBook } from '../book/chapterOps.js';
+import type { BookContent } from '../book/types.js';
+import { cloneEditionsForProject, cloneContentForProject, projectFileId, projectFontFileId } from '../storage/projectFiles.js';
+import { projectEditionFields, editionTitlesOf, withNewEdition, recordLocaleOf } from '../storage/projectEditions.js';
 import { localeDisplayName } from '../presets/localeNames.js';
-import { PROJECT_RECORD_VERSION } from '../storage/projectMigration.js';
-import {
-  allEditionChapters,
-  deleteProject,
-  editionTitleOf,
-  generateChapterId,
-  generateProjectId,
-  getProject,
-  putProject,
-  renameEditionPatch,
-  renamePatch,
-  toSummary,
-  updateProject,
-  withActiveEdition,
-  type ProjectContent,
-  type ProjectRecord,
-  type ProjectThumbnail,
-} from '../storage/projects.js';
+import { type ProjectRecord, getProject, putProject, toSummary, generateProjectId, type ProjectContent, generateChapterId, updateProject, renameEditionPatch, renamePatch, deleteProject, allEditionChapters, type ProjectThumbnail, withActiveEdition } from '../storage/projects.js';
 import { renameFrameInEdition } from '../templates/slotRename.js';
-import { createBlankBookConfig, withDefaultResourceTypes } from './defaultConfig.js';
-import type { SandboxAction, SandboxState } from './SandboxContext.js';
-import type { ChapterLayout } from '../book/types.js';
-import { deleteChapterLayouts, getChapterLayouts, putChapterLayouts } from '../storage/layouts.js';
+import { withDefaultResourceTypes, createBlankBookConfig } from './defaultConfig.js';
+import type { SandboxState } from './SandboxContext.js';
+import { deleteChapterLayouts, putChapterLayouts } from '../storage/layouts.js';
 import { bundleContentLocales, sameLocaleTag } from '../presets/locale.js';
 import { getPresetDraft } from '../storage/presetDrafts.js';
-import { getPresetCover } from '../storage/presetCovers.js';
-import { coverTargetKey, sessionCoverAttempts, thumbnailIfMissing } from '../covers/autoCover.js';
-import { initialSharedConfig, recordSharedConfig } from '../editions/configLayers.js';
+import { sessionCoverAttempts, coverTargetKey, thumbnailIfMissing } from '../covers/autoCover.js';
+import { recordSharedConfig, initialSharedConfig } from '../editions/configLayers.js';
 import { bundleCoverImage } from '../covers/renderCover.js';
+import { bookOfState, newRecord, ownEditions, copyThumbnail, adoptPresetThumbnail, withEditionsOf, ownContent, adoptLoadedPreset, storeThumbnail, bookFromLoaded, presetThumbnailBytes, PRESET_THUMBNAIL_ID, storedCurrentLayouts, localizedOf, BUNDLE_COVER_ID } from './projectActions/copies.js';
+import type { ProjectActionDeps, ProjectActions } from './projectActions/types.js';
 
-export interface ProjectActionDeps {
-  dispatch: Dispatch<SandboxAction>;
-  getState: () => SandboxState;
-  getProviders: () => PresetProvider[];
-  getBuiltin: () => PresetProvider;
-  /** Apply a preset into the working state (preset mode). */
-  runPreset: (provider: PresetProvider, parts: PresetApplyParts) => Promise<boolean>;
-  /** Open a preset as the book on screen: its draft when it has one. */
-  openPreset: (id: string) => Promise<boolean>;
-  /** Run a switch of the book on screen: the current one is saved first
-   *  and the viewport shows the loading state meanwhile. */
-  switchBook: <T>(fn: () => Promise<T>) => Promise<T>;
-  /** Invalidate any in-flight preset load so it never lands on a project. */
-  cancelPresetLoads: () => void;
-  /** Write the pending working-state save now (localStorage + active project). */
-  flushWorkingSave: () => Promise<void>;
-  /** The layout records that are current for the working book, by chapter
-   *  id (what an export carries so the book opens paginated). */
-  currentLayouts: () => Record<string, ChapterLayout>;
-  /** Drop a pending save without writing it (the target is going away). */
-  discardWorkingSave: () => void;
-  /** Run `fn` with garbage collection paused, then schedule a sweep. */
-  withGcSuspended: <T>(fn: () => Promise<T>) => Promise<T>;
-  labels: () => SandboxState['labels'];
-}
-
-export type DuplicateSource = {
-  kind: 'preset' | 'project';
-  id: string;
-  /** Presets only: the content locale to clone / export (a bilingual
-   *  bundle's second language); the viewer locale otherwise. */
-  locale?: string;
-  /** Presets only: copy this saved draft (the edited preset) rather than
-   *  the original. */
-  draftKey?: string;
-};
-
-export interface ProjectActions {
-  activate: (id: string) => Promise<void>;
-  create: (opts: { from: 'current' | 'blank'; name?: string }) => Promise<string>;
-  duplicate: (source: DuplicateSource) => Promise<string>;
-  /** Rename a project; `description` replaces its description when given
-   *  (blank clears it). On a book in several languages the title is the
-   *  book's in every one, unless `edition` limits it to the language on
-   *  screen (#999). */
-  rename: (id: string, name: string, description?: string, opts?: { edition?: boolean }) => Promise<void>;
-  /** Delete a project. `offScreen`: the caller has just opened another
-   *  book, so the screen is left alone even if the state read here still
-   *  names `id` as the active project (it lags a render). */
-  remove: (id: string, opts?: { offScreen?: boolean }) => Promise<void>;
-  importBundle: (file: File) => Promise<string>;
-  /** Import a bundle's bytes as a new project and open it. `origin` marks
-   *  a book opened from a host link (see `ProjectRecord.origin`); `locale`
-   *  picks the language of a bundle in several (the viewer's otherwise). */
-  importBundleBytes: (bytes: ArrayBuffer | Uint8Array, fileName: string, opts?: { origin?: string; locale?: string }) => Promise<string>;
-  /** Open another edition of a project that keeps several (#903), the one
-   *  on screen going aside. Opens the project too when it is not the one
-   *  on screen. */
-  switchEdition: (id: string, locale: string) => Promise<void>;
-  /** Add a language to a project (#989): a new edition made from the one
-   *  on screen (its chapters copied, its document language set to
-   *  `locale`), opened at once. Opens the project too when it is not the
-   *  one on screen. Resolves to false, changing nothing, when the project
-   *  already has that language. */
-  addEdition: (id: string, locale: string) => Promise<boolean>;
-  exportProject: (target?: DuplicateSource) => Promise<void>;
-  /** Replace a project's cover picture with `file`, or drop it with null. */
-  setThumbnail: (id: string, file: File | null) => Promise<void>;
-  /** Give a project without a cover the picture taken from its first page
-   *  (never replaces one; no busy state). Resolves to whether it was set. */
-  adoptGeneratedThumbnail: (id: string, bytes: ArrayBuffer, mime: string) => Promise<boolean>;
-  /** Rename a frame of a page template in the editions a local project
-   *  keeps aside (#979): the templates and the page fences of each one
-   *  that has the frame (the edition on screen is the caller's). Resolves
-   *  to the number of editions changed. */
-  renameFrameInEditions: (id: string, templateId: string, from: string, to: string) => Promise<number>;
-  /** Reset the active project (or parts of it) to the preset it came from. */
-  resetToSource: (parts: PresetApplyParts) => Promise<void>;
-}
-
-/** Write `bytes` as the project's cover picture and give back the record
- *  field. A fresh file id every time, so a replacement never has to wait for
- *  a cached preview and the sweep drops the bytes the project left behind.
- *  Null for a media type the sandbox does not take as an image. */
-async function storeThumbnail(projectId: string, bytes: ArrayBuffer, mime: string): Promise<ProjectThumbnail | null> {
-  const ext = extensionForImageMime(mime);
-  if (!ext) return null;
-  const fileId = projectFileId(projectId, `thumbnail-${Date.now().toString(36)}.${ext}`);
-  await putBlobAt(fileId, bytes, mime);
-  return { fileId, mime };
-}
-
-/** Copy another project's cover picture into `projectId` (each project owns
- *  its files). Undefined when there is none, or its bytes are gone. */
-async function copyThumbnail(from: ProjectThumbnail | undefined, projectId: string): Promise<ProjectThumbnail | undefined> {
-  if (!from) return undefined;
-  const rec = await getBlob(from.fileId).catch(() => null);
-  if (!rec) return undefined;
-  const stored = await storeThumbnail(projectId, rec.bytes, rec.contentType);
-  return stored ? { ...stored, ...(from.generated ? { generated: true } : {}) } : undefined;
-}
-
-/** A showcase preset's cover picture, fetched from its source and copied
- *  into the project cloned from it — or, for a preset that ships none, the
- *  cover taken from its first page in `locale` (see covers/autoCover.ts).
- *  A failure only costs the picture. */
-async function presetThumbnailBytes(summary: PresetSummary, locale?: string): Promise<{ bytes: ArrayBuffer; mime: string } | null> {
-  const url = summary.thumbnailUrl;
-  if (!url) return getPresetCover(summary.id, locale).catch(() => null);
-  if (typeof fetch === 'undefined') return null;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const bytes = await res.arrayBuffer();
-    const byName = mimeForFile(summary.thumbnail ?? url);
-    const mime = extensionForImageMime(byName) ? byName : (res.headers.get('content-type') ?? '').split(';')[0]!.trim();
-    return { bytes, mime };
-  } catch {
-    return null;
-  }
-}
-
-async function adoptPresetThumbnail(summary: PresetSummary, projectId: string, locale?: string): Promise<ProjectThumbnail | undefined> {
-  const fetched = await presetThumbnailBytes(summary, locale);
-  if (!fetched) return undefined;
-  const stored = await storeThumbnail(projectId, fetched.bytes, fetched.mime);
-  // A preset that ships no cover hands over the one taken from its page.
-  return stored ? { ...stored, ...(summary.thumbnailUrl ? {} : { generated: true }) } : undefined;
-}
-
-/** Take a preset's in-memory content and give the project its own copies of
- *  every file, under project ids. Bytes come from the loaded bundle when it
- *  carried them, else from IndexedDB (the built-in preset seeds its blobs
- *  directly). */
-function bookFromLoaded(loaded: LoadedPreset): BookContent {
-  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}), ...(loaded.start ? { start: loaded.start } : {}) };
-}
-
-async function adoptLoadedPreset(loaded: LoadedPreset, projectId: string): Promise<ProjectContent> {
-  // A preset's chapters carry ids derived from the preset (so re-applying
-  // it keeps them); a project gets its own, unique across projects.
-  const remapped = remapContentFileIds(
-    { ...cloneBook(bookFromLoaded(loaded), generateChapterId), config: loaded.config, resources: loaded.resources },
-    (_old, kind, hint) => (kind === 'blob' ? projectFileId(projectId, hint) : projectFontFileId(projectId, hint)),
-  );
-  const blobByOld = new Map(loaded.blobs.map((b) => [b.fileId, b]));
-  const fontByOld = new Map(loaded.fonts.map((f) => [f.fileId, f]));
-  await Promise.all([
-    ...remapped.blobPairs.map(async ([from, to]) => {
-      const inMemory = blobByOld.get(from);
-      if (inMemory) {
-        await putBlobAt(to, inMemory.bytes, inMemory.mime);
-      } else {
-        const rec = await getBlob(from).catch(() => null);
-        if (rec) await putBlobAt(to, rec.bytes, rec.contentType);
-      }
-      invalidateResourceImage(to);
-    }),
-    ...remapped.fontPairs.map(async ([from, to]) => {
-      const inMemory = fontByOld.get(from);
-      if (inMemory) {
-        await putFontFile({ fileId: to, fileName: inMemory.fileName, format: inMemory.format, buffer: inMemory.buffer });
-      } else {
-        const rec = await getFontFile(from).catch(() => null);
-        if (rec) await putFontFile({ ...rec, fileId: to });
-      }
-    }),
-  ]);
-  return remapped.content;
-}
-
-/** The stored layout records of `chapters` that still apply to `config`
- *  and `resources`, chained from the first chapter — the planner's call,
- *  as for the working book. A preset or a project that is not active keeps
- *  its pagination in the 'layouts' store only (written while it was the
- *  working book); `extra` adds records held in memory, which win. */
-async function storedCurrentLayouts(
-  chapters: readonly Chapter[],
-  config: PostextConfig,
-  resources: Resource[],
-  extra: Record<string, ChapterLayout> = {},
-  start?: BookStart,
-): Promise<Record<string, ChapterLayout>> {
-  const stored = await getChapterLayouts(chapters.map((c) => c.id)).catch(() => ({}));
-  const plan = createBookPlanner().plan(chapters, config, resources, { ...stored, ...extra }, start);
-  const out: Record<string, ChapterLayout> = {};
-  for (const c of plan.chapters) if (c.layout) out[c.chapterId] = c.layout;
-  return out;
-}
-
-function newRecord(
-  content: ProjectContent,
-  meta: Pick<ProjectRecord, 'name' | 'description' | 'locale' | 'bundleId' | 'sourcePresetId' | 'thumbnail' | 'origin'>,
-  id = generateProjectId(),
-): ProjectRecord {
-  const now = Date.now();
-  return { version: PROJECT_RECORD_VERSION, id, ...meta, ...content, createdAt: now, updatedAt: now };
-}
-
-function bookOfState(s: SandboxState): BookContent {
-  return { chapters: s.chapters, activeChapterId: s.activeChapterId, ...(s.canvasScope === 'book' ? { canvasScope: s.canvasScope } : {}), ...(s.bookStart ? { start: s.bookStart } : {}) };
-}
-
-/** The slices of a stored book a project owns, nothing else of the record
- *  or draft it came from (its id, name, draft key…), with chapters under
- *  new ids. */
-function ownContent(source: ProjectContent): ProjectContent {
-  return { ...cloneBook(source, generateChapterId), ...(source.canvasScope ? { canvasScope: source.canvasScope } : {}), config: source.config, resources: source.resources };
-}
-
-/** A copy of a project's other editions, chapters under new ids. */
-function ownEditions(editions: Record<string, ProjectContent> | undefined): Record<string, ProjectContent> | undefined {
-  return editions ? Object.fromEntries(Object.entries(editions).map(([locale, e]) => [locale, ownContent(e)])) : undefined;
-}
-
-/** `record` with the other editions of the project it is copied from. */
-function withEditionsOf(record: ProjectRecord, from: Pick<ProjectRecord, 'editionLocales' | 'editionTitles' | 'titleEdited'> | undefined, editions: Record<string, ProjectContent> | undefined): ProjectRecord {
-  if (!editions) return record;
-  return {
-    ...record,
-    editions,
-    ...(from?.editionLocales ? { editionLocales: from.editionLocales } : {}),
-    // The copy's own name ("… copy") is a name the reader chose for every
-    // edition (#968); the titles the bundle gave them stay for the export.
-    ...(from?.editionTitles ? { editionTitles: from.editionTitles, titleEdited: true } : from?.titleEdited ? { titleEdited: true } : {}),
-    editionsRev: Date.now(),
-  };
-}
-
-/** The other editions of a project as a bundle writes them (#903): their
- *  content, each with the title the bundle gave it unless the reader named
- *  the project (#968), and the pagination kept for its chapters, which the
- *  bundle then carries as `layouts.<locale>.json`. */
-async function localizedOf(record: ProjectRecord): Promise<BundleContent['localized'] | undefined> {
-  if (!record.locale || !record.editions) return undefined;
-  const out: NonNullable<BundleContent['localized']> = {};
-  for (const [locale, e] of Object.entries(record.editions)) {
-    const title = record.titleEdited ? undefined : editionTitleOf(record, locale);
-    const layouts = await getChapterLayouts(e.chapters.map((c) => c.id)).catch((): Record<string, ChapterLayout> => ({}));
-    out[locale] = {
-      chapters: e.chapters,
-      config: withDefaultResourceTypes(e.config, locale),
-      resources: e.resources,
-      ...(e.start ? { start: e.start } : {}),
-      ...(title ? { name: title.name, ...(title.description !== undefined ? { description: title.description } : {}) } : {}),
-      ...(Object.keys(layouts).length > 0 ? { layouts } : {}),
-    };
-  }
-  return Object.keys(out).length > 0 ? out : undefined;
-}
-
-/** File id a preset's cover picture is handed to the bundle builder under
- *  while an export is being assembled (never stored). */
-const PRESET_THUMBNAIL_ID = 'preset-thumbnail';
-/** Id the cover painted for an export goes to the bundle under. */
-const BUNDLE_COVER_ID = 'bundle-cover';
+export type { ProjectActionDeps, DuplicateSource, ProjectActions } from './projectActions/types.js';
 
 export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
   const { dispatch } = deps;

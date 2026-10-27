@@ -1,7 +1,7 @@
 /**
  * Leaders: a character (or a short text) repeated over a room, flush with
  * the room's end so the leaders of several lines line up. The contents'
- * rows (`pipeline/toc.ts`) and the tab stops of body text (#622,
+ * rows (`pipeline/contents/toc.ts`) and the tab stops of body text (#622,
  * `measure/tabs.ts`) both fit theirs here.
  */
 

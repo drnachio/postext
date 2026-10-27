@@ -23,7 +23,7 @@ import {
   unmergeCell,
 } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
-import type { InlineFocusRequest, InlineSelection } from '../../../controls/InlineMarkdownInput.js';
+import type { InlineFocusRequest, InlineSelection } from '../../../controls/inputs/InlineMarkdownInput.js';
 import { TableEditorCell, type CellNav } from './TableEditorCell.js';
 import { TableEditorToolbar, type TableEditorImageOption } from './TableEditorToolbar.js';
 import { ColumnWidthsEditor } from './ColumnWidthsEditor.js';

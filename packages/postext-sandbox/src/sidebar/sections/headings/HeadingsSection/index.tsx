@@ -1,0 +1,615 @@
+'use client';
+
+import { memo } from 'react';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../../context/SandboxContext.js';
+import { resolveHeadingsConfig, baseFontFamily, balancingOnByDefault, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
+import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit, ClosingBoxLever, ColumnHeadSpace, GridLinesLever, KeepWithNextSplit, StretchAfterWideFloats, TrailingStep } from 'postext';
+import {
+  CollapsibleSection,
+  ColorPicker,
+  DimensionInput,
+  FontPicker,
+  NestedGroup,
+  NumberInput,
+  SelectInput,
+  ToggleSwitch,
+} from '../../../../controls/index.js';
+import { HeadingLevelSection } from './HeadingLevelSection.js';
+import { flowSideLabels, useRightToLeftFlow } from '../../../settings/flowSides.js';
+import { FigureStyleField } from '../../../settings/FigureStyleField.js';
+
+const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+
+const D = DEFAULT_HEADINGS_CONFIG;
+
+export const HeadingsSection = memo(function HeadingsSection() {
+  const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
+  const raw = useSandboxSelector((s) => s.config.headings);
+  const headings = resolveHeadingsConfig(raw);
+  // Balancing is off by default in vertical text and on a character grid
+  // (#632): the toggle shows what the layout does.
+  const balancingDefault = useSandboxSelector((s) => balancingOnByDefault(s.config));
+  const onGrid = useSandboxSelector((s) => s.config.cjk?.grid?.enabled === true);
+  const balancingOn = raw?.balancing?.enabled ?? balancingDefault;
+
+  const updateHeadings = (partial: Partial<HeadingsConfig>) => {
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { headings: { ...raw, ...partial } },
+    });
+  };
+
+  const resetHeadings = () => {
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { headings: undefined },
+    });
+  };
+
+  const resetBalancingField = (
+    field: 'enabled' | 'maxLinesPerHeading' | 'maxLinesBeforeLoose' | 'stretchAfterLists' | 'maxLinesAfterList' | 'stretchAfterDisplays' | 'stretchAfterFloats'
+      | 'maxLinesAfterFloat' | 'stretchAfterWideFloats' | 'looseParagraphs' | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking' | 'fillShortColumns'
+      | 'trailing' | 'trailingStep' | 'beforeSpan' | 'closingBox' | 'gridLines',
+  ) => {
+    if (!raw?.balancing) return;
+    const next = { ...raw.balancing };
+    delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { headings: { ...raw, balancing: hasKeys ? next : undefined } },
+    });
+  };
+
+  const resetField = (field: keyof HeadingsConfig) => {
+    if (!raw) return;
+    const next = { ...raw };
+    delete next[field];
+    const hasKeys = Object.keys(next).length > 0;
+    dispatch({
+      type: 'UPDATE_CONFIG',
+      payload: { headings: hasKeys ? next : undefined },
+    });
+  };
+
+  const updateLevel = (level: number, partial: Partial<HeadingLevelConfig>) => {
+    const currentLevels = raw?.levels ?? [];
+    const existing = currentLevels.find((l) => l.level === level);
+    const updated = existing
+      ? { ...existing, ...partial }
+      : { level, ...partial };
+    const newLevels = existing
+      ? currentLevels.map((l) => (l.level === level ? updated : l))
+      : [...currentLevels, updated];
+    updateHeadings({ levels: newLevels });
+  };
+
+  const resetLevelField = (level: number, field: keyof HeadingLevelConfig) => {
+    if (!raw?.levels) return;
+    if (field === 'fontSize') {
+      // When resetting via the section reset button, remove the entire level
+      const newLevels = raw.levels.filter((l) => l.level !== level);
+      if (newLevels.length > 0) {
+        updateHeadings({ levels: newLevels });
+      } else {
+        const next = { ...raw };
+        delete next.levels;
+        const hasKeys = Object.keys(next).length > 0;
+        dispatch({
+          type: 'UPDATE_CONFIG',
+          payload: { headings: hasKeys ? next : undefined },
+        });
+      }
+      return;
+    }
+    const existing = raw.levels.find((l) => l.level === level);
+    if (!existing) return;
+    const next = { ...existing };
+    delete next[field];
+    const hasFields = Object.keys(next).filter((k) => k !== 'level').length > 0;
+    if (hasFields) {
+      const newLevels = raw.levels.map((l) => (l.level === level ? next : l));
+      updateHeadings({ levels: newLevels });
+    } else {
+      const newLevels = raw.levels.filter((l) => l.level !== level);
+      if (newLevels.length > 0) {
+        updateHeadings({ levels: newLevels });
+      } else {
+        const r = { ...raw };
+        delete r.levels;
+        const hasKeys = Object.keys(r).length > 0;
+        dispatch({
+          type: 'UPDATE_CONFIG',
+          payload: { headings: hasKeys ? r : undefined },
+        });
+      }
+    }
+  };
+
+  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+  // The resolved family carries the figures (#1237): compare the family.
+  const isFontDefault = baseFontFamily(headings.fontFamily) === D.fontFamily;
+  const isLhDefault = dimensionsEqual(headings.lineHeight, D.lineHeight);
+  const isColorDefault = colorsEqual(headings.color, D.color);
+  const isFontWeightDefault = headings.fontWeight === D.fontWeight;
+  const isMarginTopDefault = dimensionsEqual(headings.marginTop, D.marginTop);
+  const isMarginBottomDefault = dimensionsEqual(headings.marginBottom, D.marginBottom);
+  const isTextAlignDefault = headings.textAlign === D.textAlign;
+  const isKeepWithNextDefault = headings.keepWithNext === D.keepWithNext;
+  const isKeepWithNextSplitDefault = headings.keepWithNextSplit === D.keepWithNextSplit;
+  const isSnapToGridDefault = headings.snapToGrid === D.snapToGrid;
+  const isColumnHeadSpaceDefault = headings.columnHeadSpace === D.columnHeadSpace;
+  /** A heading of some level snaps to the grid (the levels inherit the
+   *  document's switch): only then does the column-head setting act. */
+  const someHeadingSnaps = headings.snapToGrid || headings.levels.some((l) => l.snapToGrid);
+  const isInlineMarksDefault = headings.inlineMarks === D.inlineMarks;
+  const isBalEnabledDefault = balancingOn === balancingDefault;
+  const isBalGridLinesDefault = (headings.balancing.gridLines ?? 'allow') === 'allow';
+  const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
+  const isBalBeforeLooseDefault = headings.balancing.maxLinesBeforeLoose === DEFAULT_COLUMN_BALANCING.maxLinesBeforeLoose;
+  const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
+  const isBalMaxAfterListDefault = headings.balancing.maxLinesAfterList === DEFAULT_COLUMN_BALANCING.maxLinesAfterList;
+  const isBalAfterDisplaysDefault = headings.balancing.stretchAfterDisplays === DEFAULT_COLUMN_BALANCING.stretchAfterDisplays;
+  const isBalAfterFloatsDefault = headings.balancing.stretchAfterFloats === DEFAULT_COLUMN_BALANCING.stretchAfterFloats;
+  const isBalMaxAfterFloatDefault = headings.balancing.maxLinesAfterFloat === DEFAULT_COLUMN_BALANCING.maxLinesAfterFloat;
+  const isBalLooseDefault = headings.balancing.looseParagraphs === DEFAULT_COLUMN_BALANCING.looseParagraphs;
+  const isBalMaxLooseDefault = headings.balancing.maxLooseParagraphs === DEFAULT_COLUMN_BALANCING.maxLooseParagraphs;
+  const isBalTrackDefault = headings.balancing.trackParagraphs === DEFAULT_COLUMN_BALANCING.trackParagraphs;
+  const isBalMaxTrackingDefault = headings.balancing.maxTracking === DEFAULT_COLUMN_BALANCING.maxTracking;
+  const isBalFillShortDefault = headings.balancing.fillShortColumns === DEFAULT_COLUMN_BALANCING.fillShortColumns;
+  const isBalTrailingDefault = headings.balancing.trailing === DEFAULT_COLUMN_BALANCING.trailing;
+  const isBalBeforeSpanDefault = headings.balancing.beforeSpan === DEFAULT_COLUMN_BALANCING.beforeSpan;
+  const isBalClosingBoxDefault = headings.balancing.closingBox === DEFAULT_COLUMN_BALANCING.closingBox;
+
+  const GRID_LINES_OPTIONS = [
+    { value: 'allow', label: labels.balanceGridLinesAllow },
+    { value: 'off', label: labels.balanceGridLinesOff },
+  ];
+
+  const isBalWideFloatsDefault = headings.balancing.stretchAfterWideFloats === DEFAULT_COLUMN_BALANCING.stretchAfterWideFloats;
+  const WIDE_FLOATS_OPTIONS = [
+    { value: 'flush', label: labels.balanceAfterWideFloatsFlush },
+    { value: 'always', label: labels.balanceAfterWideFloatsAlways },
+  ];
+  const isBalTrailingStepDefault = headings.balancing.trailingStep === DEFAULT_COLUMN_BALANCING.trailingStep;
+  const TRAILING_STEP_OPTIONS = [
+    { value: 'lines', label: labels.balanceTrailingStepLines },
+    { value: 'grid', label: labels.balanceTrailingStepGrid },
+  ];
+  const CLOSING_BOX_OPTIONS = [
+    { value: 'first', label: labels.balanceClosingBoxFirst },
+    { value: 'last', label: labels.balanceClosingBoxLast },
+    { value: 'off', label: labels.balanceClosingBoxOff },
+  ];
+
+  const textSide = flowSideLabels(useRightToLeftFlow(), labels.headingsTextAlignLeft, labels.headingsTextAlignRight);
+  const ALIGN_OPTIONS = [
+    { value: 'left', label: textSide.left },
+    { value: 'justify', label: labels.headingsTextAlignJustify },
+    { value: 'center', label: labels.headingsTextAlignCenter },
+    { value: 'right', label: textSide.right },
+  ];
+
+  return (
+    <CollapsibleSection
+      title={labels.headings}
+      sectionId="headings"
+      onReset={resetHeadings}
+      hasOverrides={hasOverrides}
+      resetLabel={labels.reset}
+      resetConfirmMessage={labels.resetSectionConfirm}
+    >
+      <FontPicker
+        label={labels.headingsFont}
+        value={headings.fontFamily}
+        onChange={(font) => updateHeadings({ fontFamily: font })}
+        tooltip={labels.headingsFontTooltip}
+        isDefault={isFontDefault}
+        onReset={() => resetField('fontFamily')}
+        searchPlaceholder={labels.headingsFontSearch}
+        noResultsLabel={labels.headingsFontNoResults}
+      />
+      <FigureStyleField
+        value={raw?.figureStyle}
+        onChange={(v) => updateHeadings({ figureStyle: v })}
+        onReset={() => resetField('figureStyle')}
+      />
+
+      <DimensionInput
+        label={labels.headingsLineHeight}
+        value={headings.lineHeight}
+        onChange={(dim) => updateHeadings({ lineHeight: dim })}
+        min={0.5}
+        max={5}
+        step={0.1}
+        tooltip={labels.headingsLineHeightTooltip}
+        isDefault={isLhDefault}
+        onReset={() => resetField('lineHeight')}
+        units={LINE_HEIGHT_UNITS}
+      />
+
+      <ColorPicker
+        label={labels.headingsColor}
+        value={headings.color}
+        onChange={(color) => updateHeadings({ color })}
+        tooltip={labels.headingsColorTooltip}
+        isDefault={isColorDefault}
+        onReset={() => resetField('color')}
+        fieldId="headings-color"
+      />
+
+      <NumberInput
+        label={labels.headingsFontWeight}
+        value={headings.fontWeight}
+        onChange={(w) => updateHeadings({ fontWeight: w })}
+        min={100}
+        max={900}
+        step={10}
+        tooltip={labels.headingsFontWeightTooltip}
+        isDefault={isFontWeightDefault}
+        onReset={() => resetField('fontWeight')}
+      />
+
+      <SelectInput
+        label={labels.headingsTextAlign}
+        value={headings.textAlign}
+        options={ALIGN_OPTIONS}
+        onChange={(value) => updateHeadings({ textAlign: value as HeadingsConfig['textAlign'] })}
+        tooltip={labels.headingsTextAlignTooltip}
+        isDefault={isTextAlignDefault}
+        onReset={() => resetField('textAlign')}
+      />
+
+      <DimensionInput
+        label={labels.headingsMarginTop}
+        value={headings.marginTop}
+        onChange={(dim) => updateHeadings({ marginTop: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.headingsMarginTopTooltip}
+        isDefault={isMarginTopDefault}
+        onReset={() => resetField('marginTop')}
+        units={MARGIN_UNITS}
+      />
+
+      <DimensionInput
+        label={labels.headingsMarginBottom}
+        value={headings.marginBottom}
+        onChange={(dim) => updateHeadings({ marginBottom: dim })}
+        min={0}
+        step={0.1}
+        tooltip={labels.headingsMarginBottomTooltip}
+        isDefault={isMarginBottomDefault}
+        onReset={() => resetField('marginBottom')}
+        units={MARGIN_UNITS}
+      />
+
+      <ToggleSwitch
+        label={labels.headingsKeepWithNext}
+        checked={headings.keepWithNext}
+        onChange={(v) => updateHeadings({ keepWithNext: v })}
+        tooltip={labels.headingsKeepWithNextTooltip}
+        isDefault={isKeepWithNextDefault}
+        onReset={() => resetField('keepWithNext')}
+      />
+
+      {headings.keepWithNext && (
+        <ToggleSwitch
+          label={labels.headingsKeepWithNextSpread}
+          checked={headings.keepWithNextSpread === true}
+          onChange={(v) => (v ? updateHeadings({ keepWithNextSpread: true }) : resetField('keepWithNextSpread'))}
+          tooltip={labels.headingsKeepWithNextSpreadTooltip}
+          isDefault={headings.keepWithNextSpread !== true}
+          onReset={() => resetField('keepWithNextSpread')}
+        />
+      )}
+
+      {headings.keepWithNext && (
+        <SelectInput
+          label={labels.headingsKeepWithNextSplit}
+          value={headings.keepWithNextSplit}
+          options={[
+            { value: 'rules', label: labels.headingsKeepWithNextSplitRules },
+            { value: 'fill', label: labels.headingsKeepWithNextSplitFill },
+          ]}
+          onChange={(value) => updateHeadings({ keepWithNextSplit: value as KeepWithNextSplit })}
+          tooltip={labels.headingsKeepWithNextSplitTooltip}
+          isDefault={isKeepWithNextSplitDefault}
+          onReset={() => resetField('keepWithNextSplit')}
+        />
+      )}
+
+      <ToggleSwitch
+        label={labels.headingsSnapToGrid}
+        checked={headings.snapToGrid}
+        onChange={(v) => updateHeadings({ snapToGrid: v })}
+        tooltip={labels.headingsSnapToGridTooltip}
+        isDefault={isSnapToGridDefault}
+        onReset={() => resetField('snapToGrid')}
+      />
+
+      {someHeadingSnaps && (
+        <SelectInput
+          label={labels.headingsColumnHeadSpace}
+          value={headings.columnHeadSpace}
+          options={[
+            { value: 'none', label: labels.headingsColumnHeadSpaceNone },
+            { value: 'remainder', label: labels.headingsColumnHeadSpaceRemainder },
+          ]}
+          onChange={(value) => updateHeadings({ columnHeadSpace: value as ColumnHeadSpace })}
+          tooltip={labels.headingsColumnHeadSpaceTooltip}
+          isDefault={isColumnHeadSpaceDefault}
+          onReset={() => resetField('columnHeadSpace')}
+        />
+      )}
+
+      <ToggleSwitch
+        label={labels.headingsInlineMarks}
+        checked={headings.inlineMarks}
+        onChange={(v) => updateHeadings({ inlineMarks: v })}
+        tooltip={labels.headingsInlineMarksTooltip}
+        isDefault={isInlineMarksDefault}
+        onReset={() => resetField('inlineMarks')}
+      />
+
+      <ToggleSwitch
+        label={labels.balanceColumns}
+        checked={balancingOn}
+        onChange={(v) =>
+          updateHeadings({ balancing: { ...raw?.balancing, enabled: v } })
+        }
+        tooltip={labels.balanceColumnsTooltip}
+        isDefault={isBalEnabledDefault}
+        onReset={() => resetBalancingField('enabled')}
+      />
+      {onGrid && (
+        <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }}>
+          {balancingOn ? labels.balanceGridNote : labels.balanceGridOffNote}
+        </p>
+      )}
+
+      {balancingOn && (
+        <NestedGroup>
+          {onGrid && (
+            <SelectInput
+              label={labels.balanceGridLines}
+              value={headings.balancing.gridLines ?? 'allow'}
+              options={GRID_LINES_OPTIONS}
+              onChange={(value) =>
+                updateHeadings({ balancing: { ...raw?.balancing, gridLines: value as GridLinesLever } })
+              }
+              tooltip={labels.balanceGridLinesTooltip}
+              isDefault={isBalGridLinesDefault}
+              onReset={() => resetBalancingField('gridLines')}
+            />
+          )}
+          <NumberInput
+            label={labels.balanceColumnsMaxLines}
+            value={headings.balancing.maxLinesPerHeading}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, maxLinesPerHeading: v } })
+            }
+            min={1}
+            max={8}
+            step={1}
+            tooltip={labels.balanceColumnsMaxLinesTooltip}
+            isDefault={isBalMaxLinesDefault}
+            onReset={() => resetBalancingField('maxLinesPerHeading')}
+          />
+          <NumberInput
+            label={labels.balanceMaxLinesBeforeLoose}
+            value={headings.balancing.maxLinesBeforeLoose}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, maxLinesBeforeLoose: v } })
+            }
+            min={0}
+            max={8}
+            step={1}
+            tooltip={labels.balanceMaxLinesBeforeLooseTooltip}
+            isDefault={isBalBeforeLooseDefault}
+            onReset={() => resetBalancingField('maxLinesBeforeLoose')}
+          />
+          <ToggleSwitch
+            label={labels.balanceAfterLists}
+            checked={headings.balancing.stretchAfterLists}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, stretchAfterLists: v } })
+            }
+            tooltip={labels.balanceAfterListsTooltip}
+            isDefault={isBalAfterListsDefault}
+            onReset={() => resetBalancingField('stretchAfterLists')}
+          />
+          {headings.balancing.stretchAfterLists && (
+            <NumberInput
+              label={labels.balanceMaxLinesAfterList}
+              value={headings.balancing.maxLinesAfterList}
+              onChange={(v) =>
+                updateHeadings({ balancing: { ...raw?.balancing, maxLinesAfterList: v } })
+              }
+              min={1}
+              max={8}
+              step={1}
+              tooltip={labels.balanceMaxLinesAfterListTooltip}
+              isDefault={isBalMaxAfterListDefault}
+              onReset={() => resetBalancingField('maxLinesAfterList')}
+            />
+          )}
+          <ToggleSwitch
+            label={labels.balanceAfterDisplays}
+            checked={headings.balancing.stretchAfterDisplays}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, stretchAfterDisplays: v } })
+            }
+            tooltip={labels.balanceAfterDisplaysTooltip}
+            isDefault={isBalAfterDisplaysDefault}
+            onReset={() => resetBalancingField('stretchAfterDisplays')}
+          />
+          <ToggleSwitch
+            label={labels.balanceAfterFloats}
+            checked={headings.balancing.stretchAfterFloats}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, stretchAfterFloats: v } })
+            }
+            tooltip={labels.balanceAfterFloatsTooltip}
+            isDefault={isBalAfterFloatsDefault}
+            onReset={() => resetBalancingField('stretchAfterFloats')}
+          />
+          {headings.balancing.stretchAfterFloats && (
+            <NumberInput
+              label={labels.balanceMaxLinesAfterFloat}
+              value={headings.balancing.maxLinesAfterFloat}
+              onChange={(v) =>
+                updateHeadings({ balancing: { ...raw?.balancing, maxLinesAfterFloat: v } })
+              }
+              min={1}
+              max={8}
+              step={1}
+              tooltip={labels.balanceMaxLinesAfterFloatTooltip}
+              isDefault={isBalMaxAfterFloatDefault}
+              onReset={() => resetBalancingField('maxLinesAfterFloat')}
+            />
+          )}
+          {headings.balancing.stretchAfterFloats && (
+            <SelectInput
+              label={labels.balanceAfterWideFloats}
+              value={headings.balancing.stretchAfterWideFloats}
+              options={WIDE_FLOATS_OPTIONS}
+              onChange={(value) =>
+                updateHeadings({ balancing: { ...raw?.balancing, stretchAfterWideFloats: value as StretchAfterWideFloats } })
+              }
+              tooltip={labels.balanceAfterWideFloatsTooltip}
+              isDefault={isBalWideFloatsDefault}
+              onReset={() => resetBalancingField('stretchAfterWideFloats')}
+            />
+          )}
+          <SelectInput
+            label={labels.balanceClosingBox}
+            value={headings.balancing.closingBox}
+            options={CLOSING_BOX_OPTIONS}
+            onChange={(value) =>
+              updateHeadings({ balancing: { ...raw?.balancing, closingBox: value as ClosingBoxLever } })
+            }
+            tooltip={labels.balanceClosingBoxTooltip}
+            isDefault={isBalClosingBoxDefault}
+            onReset={() => resetBalancingField('closingBox')}
+          />
+          <ToggleSwitch
+            label={labels.balanceLooseParagraphs}
+            checked={headings.balancing.looseParagraphs}
+            onChange={(v) =>
+              updateHeadings({ balancing: { ...raw?.balancing, looseParagraphs: v } })
+            }
+            tooltip={labels.balanceLooseParagraphsTooltip}
+            isDefault={isBalLooseDefault}
+            onReset={() => resetBalancingField('looseParagraphs')}
+          />
+          {headings.balancing.looseParagraphs && (
+            <>
+              <NumberInput
+                label={labels.balanceMaxLooseParagraphs}
+                value={headings.balancing.maxLooseParagraphs}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, maxLooseParagraphs: v } })
+                }
+                min={1}
+                max={6}
+                step={1}
+                tooltip={labels.balanceMaxLooseParagraphsTooltip}
+                isDefault={isBalMaxLooseDefault}
+                onReset={() => resetBalancingField('maxLooseParagraphs')}
+              />
+              <ToggleSwitch
+                label={labels.balanceTrackParagraphs}
+                checked={headings.balancing.trackParagraphs}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, trackParagraphs: v } })
+                }
+                tooltip={labels.balanceTrackParagraphsTooltip}
+                isDefault={isBalTrackDefault}
+                onReset={() => resetBalancingField('trackParagraphs')}
+              />
+              {headings.balancing.trackParagraphs && (
+                <NumberInput
+                  label={labels.balanceMaxTracking}
+                  value={headings.balancing.maxTracking}
+                  onChange={(v) =>
+                    updateHeadings({ balancing: { ...raw?.balancing, maxTracking: v } })
+                  }
+                  min={1}
+                  max={50}
+                  step={1}
+                  tooltip={labels.balanceMaxTrackingTooltip}
+                  isDefault={isBalMaxTrackingDefault}
+                  onReset={() => resetBalancingField('maxTracking')}
+                />
+              )}
+              <ToggleSwitch
+                label={labels.balanceFillShortColumns}
+                checked={headings.balancing.fillShortColumns}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, fillShortColumns: v } })
+                }
+                tooltip={labels.balanceFillShortColumnsTooltip}
+                isDefault={isBalFillShortDefault}
+                onReset={() => resetBalancingField('fillShortColumns')}
+              />
+              <ToggleSwitch
+                label={labels.balanceTrailing}
+                checked={headings.balancing.trailing}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, trailing: v } })
+                }
+                tooltip={labels.balanceTrailingTooltip}
+                isDefault={isBalTrailingDefault}
+                onReset={() => resetBalancingField('trailing')}
+              />
+              {headings.balancing.trailing && (
+                <SelectInput
+                  label={labels.balanceTrailingStep}
+                  value={headings.balancing.trailingStep}
+                  options={TRAILING_STEP_OPTIONS}
+                  onChange={(value) =>
+                    updateHeadings({ balancing: { ...raw?.balancing, trailingStep: value as TrailingStep } })
+                  }
+                  tooltip={labels.balanceTrailingStepTooltip}
+                  isDefault={isBalTrailingStepDefault}
+                  onReset={() => resetBalancingField('trailingStep')}
+                />
+              )}
+              <ToggleSwitch
+                label={labels.balanceBeforeSpan}
+                checked={headings.balancing.beforeSpan}
+                onChange={(v) =>
+                  updateHeadings({ balancing: { ...raw?.balancing, beforeSpan: v } })
+                }
+                tooltip={labels.balanceBeforeSpanTooltip}
+                isDefault={isBalBeforeSpanDefault}
+                onReset={() => resetBalancingField('beforeSpan')}
+              />
+            </>
+          )}
+        </NestedGroup>
+      )}
+
+      {headings.levels.map((resolved) => (
+        <HeadingLevelSection
+          key={resolved.level}
+          level={resolved.level}
+          resolved={resolved}
+          raw={raw?.levels?.find((l) => l.level === resolved.level)}
+          generalFont={headings.fontFamily}
+          generalLineHeight={headings.lineHeight}
+          generalColor={headings.color}
+          generalFontWeight={headings.fontWeight}
+          generalMarginTop={headings.marginTop}
+          generalMarginBottom={headings.marginBottom}
+          onUpdate={updateLevel}
+          onReset={resetLevelField}
+          labels={labels}
+        />
+      ))}
+    </CollapsibleSection>
+  );
+});

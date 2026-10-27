@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { compileDocsMdx } from "@/lib/mdx";
+import { compileDocsMdx } from "@/lib/mdx/mdx";
 import { ABBREVIATIONS, abbreviationPattern, abbreviationsFor } from "./abbreviations";
 import { wrapAbbreviations } from "./rehypeAbbr";
 

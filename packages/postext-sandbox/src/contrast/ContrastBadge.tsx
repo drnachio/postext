@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Check, TriangleAlert } from 'lucide-react';
 import type { SandboxLabels } from '../types/index.js';
 import { cn } from '../ui/cn.js';
-import { Tooltip } from '../ui/tooltip.js';
+import { Tooltip } from '../ui/overlays/tooltip.js';
 import { fill } from '../print/fillTokens.js';
 import { useContrastSnapshot } from './contrastStore.js';
 import { counterpartsFor, counterpartsOn, measureField, ratioText, type Counterpart, type FieldContrast, type FieldMeasure } from './fieldContrast.js';

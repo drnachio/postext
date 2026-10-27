@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { contrastDocument, contrastPairs } from '../../contrast.js';
+import { contrastDocument, contrastPairs } from '../../checks/contrast.js';
 import type { PostextConfig } from '../../types.js';
 import type { FrameConfig } from '../../composed/types.js';
 

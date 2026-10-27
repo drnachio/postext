@@ -1,5 +1,5 @@
 {
-  "$comment": "Every warning a Postext user can meet, keyed by kind. source: 'engine' = VDTDocument.warnings (doc.warnings), 'parse' = parseMarkdownWithIssues(md).issues, 'sandbox' = the Sandbox's Checks panel only (packages/postext-sandbox/src/warnings/types.ts; the Sandbox also shows the engine and parse kinds). The registry test fails when a Sandbox kind has no entry. Recipes list the kinds they explain in explainsWarnings; each gets a #warning-<kind> anchor in Pitfalls. Labels follow the Checks panel's own titles.",
+  "$comment": "Every warning a Postext user can meet, keyed by kind. source: 'engine' = VDTDocument.warnings (doc.warnings), 'parse' = parseMarkdownWithIssues(md).issues, 'sandbox' = the Sandbox's Checks panel only (packages/postext-sandbox/src/warnings/types/kind.ts; the Sandbox also shows the engine and parse kinds). The registry test fails when a Sandbox kind has no entry. Recipes list the kinds they explain in explainsWarnings; each gets a #warning-<kind> anchor in Pitfalls. Labels follow the Checks panel's own titles.",
   "missingFont": {
     "source": "sandbox",
     "label": {

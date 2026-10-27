@@ -14,8 +14,8 @@ vi.mock('../../measure/spaces.js', async (importOriginal) => {
     },
   };
 });
-vi.mock('../../measure/cjkClasses.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../measure/cjkClasses.js')>();
+vi.mock('../../measure/cjk/cjkClasses.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../measure/cjk/cjkClasses.js')>();
   return {
     ...actual,
     cjkMarkCuts: (text: string, shared: boolean) => {
@@ -25,9 +25,9 @@ vi.mock('../../measure/cjkClasses.js', async (importOriginal) => {
   };
 });
 
-import { markCuts, markPieces } from '../../measure/markCuts.js';
-import { isTrimmableMark } from '../../measure/cjkClasses.js';
-import { hasCJK } from '../../measure/cjk.js';
+import { markCuts, markPieces } from '../../measure/cjk/markCuts.js';
+import { isTrimmableMark } from '../../measure/cjk/cjkClasses.js';
+import { hasCJK } from '../../measure/cjk/cjk.js';
 
 const LATIN = [
   'En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo',

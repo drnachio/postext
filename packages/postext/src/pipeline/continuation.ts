@@ -5,23 +5,23 @@
 // `pageNumbering`) is left to the caller, which knows how many pages the
 // preceding content produced and how its last page was numbered.
 
-import { hasAnchorRefs } from './crossRefs.js';
-import { extractFrontmatter } from '../frontmatter.js';
+import { hasAnchorRefs } from './references/crossRefs.js';
+import { extractFrontmatter } from '../parse/frontmatter.js';
 import { parseMarkdownMemo } from '../parse/index.js';
 import type { ContentBlock } from '../parse/index.js';
 import { effectiveResourceTypes } from '../defaults/index.js';
-import { documentLocale } from '../defaults/resourceTypes.js';
+import { documentLocale } from '../defaults/resources/resourceTypes.js';
 import type { HeadingCounters, LayoutContinuation, OutlineEntry, PartState, PostextConfig, PostextContent } from '../types.js';
-import { computeHeadingContext, computeResourceNumberingState } from './resourceNumbering.js';
-import { planParts } from './parts.js';
+import { computeHeadingContext, computeResourceNumberingState } from './resources/resourceNumbering.js';
+import { planParts } from './sections/parts.js';
 import { resolveAllConfig } from './config.js';
 import { exerciseCounterEntries, exerciseCountersAfter, exerciseOutline, hasBookSolutions, nameExerciseAnchors } from '../exercises/build.js';
-import { codeParseOptions } from './codeBlocks.js';
-import { headingIsNumbered } from './headingStyles.js';
-import { computeOutline, hasIndexDirective, hasTocDirective } from './outline.js';
-import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './footnotes.js';
-import { numberStatements } from './statementNumbering.js';
-import { lastVerseLineNumber } from './lineNumbers.js';
+import { codeParseOptions } from './code/codeBlocks.js';
+import { headingIsNumbered } from './sections/headingStyles.js';
+import { computeOutline, hasIndexDirective, hasTocDirective } from './contents/outline.js';
+import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './references/footnotes.js';
+import { numberStatements } from './text/statementNumbering.js';
+import { lastVerseLineNumber } from './text/lineNumbers.js';
 import { composedPages } from '../composed/document.js';
 import { isModuleTemplate, resolvePageTemplate } from '../composed/templates.js';
 

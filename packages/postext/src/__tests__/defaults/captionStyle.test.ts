@@ -3,8 +3,8 @@ import {
   mergeCaptionStyle,
   resolveCaptionStyleConfig,
   stripCaptionStyleDefaults,
-} from '../../defaults/captionStyle.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
+} from '../../defaults/resources/captionStyle.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
 import { DEFAULT_MAIN_COLOR_HEX, DEFAULT_MAIN_COLOR_ID } from '../../defaults/shared.js';
 import type { CaptionStyleConfig, ColorPaletteEntry } from '../../types.js';
 

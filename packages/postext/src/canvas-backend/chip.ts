@@ -1,5 +1,5 @@
 import type { VDTChip, VDTChipRun } from '../vdt.js';
-import { joiningScriptIn } from '../measure/joining.js';
+import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { paintRunInDirection, runPaintOrder } from './runDirection.js';
 import { letterSpacingOf, restoreContext, saveContext, setLetterSpacing } from './contextState.js';
 import { fillContextText } from './contextText.js';
@@ -83,7 +83,7 @@ export function paintChip(
   ctx.textBaseline = 'alphabetic';
   let tx = bx + chip.borderWidth + chip.paddingX;
   // The block's tracking, which a run of a joining script (measured
-  // untracked, `measure/joining.ts`) is painted without. It is asked of
+  // untracked, `measure/rtl/joining.ts`) is painted without. It is asked of
   // the backend, not of the context: read here, inside the state just
   // saved, `ctx.letterSpacing` is `""` (see `contextState.ts`).
   const spacing = letterSpacingOf(ctx);

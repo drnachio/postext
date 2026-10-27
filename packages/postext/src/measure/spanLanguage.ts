@@ -1,5 +1,5 @@
 import type { InlineSpan } from '../parse/index.js';
-import { shapingTagOf } from '../locale.js';
+import { shapingTagOf } from '../hyphenation/locale.js';
 import { getMeasureLanguage } from './canvas.js';
 
 /**

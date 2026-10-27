@@ -7,10 +7,10 @@ import { renderPageToCanvas, type PostextConfig, type Resource, type TextMigrati
 import { useBookPlan, useSandboxDispatch, useSandboxLabels, useSandboxSelector, useSandboxStateGetter, useSandboxStore } from '../context/SandboxContext.js';
 import { composeBookMemo } from '../book/compose.js';
 import type { Chapter } from '../book/types.js';
-import { withHyphenationLocale } from '../controls/hyphenation.js';
+import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { useLayoutService } from '../worker/LayoutServiceContext.js';
 import { Button, IconButton, Switch, announce, usePortalContainer } from '../ui/index.js';
-import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/surface.js';
+import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import type { SandboxLabels } from '../types/index.js';
 import { closeTextMigration, useTextMigrationRequest, type TextMigrationReason } from './migrationRequest.js';
 import {

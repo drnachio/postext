@@ -16,8 +16,8 @@
 import { loadPresetGeneral } from '../storage/persistence.js';
 import { presetSharedConfig, rebaseEdition } from './configLayers.js';
 import type { LayoutService } from '../worker/LayoutService.js';
-import { declareEditionFonts, ensureConfigFontsLoaded } from '../controls/fontLoader.js';
-import { ensureResourceImages } from '../controls/resourceImages.js';
+import { declareEditionFonts, ensureConfigFontsLoaded } from '../controls/fonts/fontLoader.js';
+import { ensureResourceImages } from '../controls/media/resourceImages.js';
 import { getBlob, putBlobsAt } from '../storage/blobStore.js';
 import { getPresetDraft, type PresetDraftSummary } from '../storage/presetDrafts.js';
 import { getChapterLayouts } from '../storage/layouts.js';

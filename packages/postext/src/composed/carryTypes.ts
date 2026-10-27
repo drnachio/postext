@@ -3,7 +3,7 @@
  * plain types: `LayoutContinuation.jumps` names them.
  */
 import type { ContentBlock } from '../parse/types.js';
-import type { CalloutCut } from '../pipeline/cutTypes.js';
+import type { CalloutCut } from '../pipeline/columns/cutTypes.js';
 
 /** The number a block of the carried story prints, as the sender gave it. */
 export interface CarriedNumber {

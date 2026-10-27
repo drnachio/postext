@@ -5,7 +5,7 @@ import { useBookPlan, useSandboxDispatch, useSandboxSelector } from '../context/
 import { composeBookMemo } from '../book/compose.js';
 import { chapterLayoutFromDoc } from '../book/pagination.js';
 import { layoutCacheKey } from '../book/layoutKeys.js';
-import { withHyphenationLocale } from '../controls/hyphenation.js';
+import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useLayoutWorker } from '../worker/useLayoutWorker.js';
 import { fontsPending, onFontsPending, onLateFonts } from '../worker/LayoutService.js';

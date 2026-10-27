@@ -20,8 +20,8 @@
  *
  * Pure helpers: `build.ts` adds the pages, `composedLayout.ts` lays them.
  */
-import type { CalloutCut } from '../pipeline/frameLayout.js';
-import type { PlannedCallout } from '../pipeline/calloutLayout.js';
+import type { CalloutCut } from '../pipeline/callouts/frameLayout.js';
+import type { PlannedCallout } from '../pipeline/callouts/calloutLayout.js';
 import { nextFrameOf } from './geometry.js';
 import { continueInPage, continueInTemplate, repeatInstance } from './templates.js';
 import type { ComposedModuleUse, ResolvedFrame, ResolvedPageTemplate } from './types.js';

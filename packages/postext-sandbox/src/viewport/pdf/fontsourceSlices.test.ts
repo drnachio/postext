@@ -1,0 +1,250 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { PdfFontAnswer, PdfFontFile } from 'postext-pdf';
+import { parseFontsourceCss, parseUnicodeRange, pickSlices } from './fontsourceSlices.js';
+
+vi.mock('../../controls/fonts/fontLoader.js', () => ({
+  getCustomFontFamily: () => undefined,
+  // The catalogue's record of the family, which the loader keeps (#753).
+  fontFamilyWeights: async () => [400, 700],
+  isUncataloguedFontFamily: () => false,
+  // No static files declared by the loader (#757): the provider reads the
+  // family's stylesheet itself, as it did for every family before. What it
+  // embeds when the loader has them is in controls/fontCuts.test.ts.
+  staticFaceFiles: async () => null,
+  sheetFaceFiles: async () => null,
+  // No version read from a style sheet's answer (#766): the range stands.
+  fontsourcePackageVersion: () => null,
+  facesForCodePoints: <T,>(faces: readonly T[]) => [...faces],
+}));
+vi.mock('../../storage/fontStorage.js', () => ({ getFontFile: async () => null }));
+vi.mock('postext-pdf', () => ({ decompressWoff2: async (bytes: Uint8Array) => bytes }));
+
+// Abridged from `@fontsource/noto-serif-tc@5/400.css`: numbered slices
+// first, the named Latin subsets last.
+const CSS = `
+/* noto-serif-tc-[122]-400-normal */
+@font-face {
+  font-family: 'Noto Serif TC';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(./files/noto-serif-tc-122-400-normal.woff2) format('woff2'), url(./files/noto-serif-tc-122-400-normal.woff) format('woff');
+  unicode-range: U+d,U+2b,U+7c,U+a0,U+a9,U+300c-300d,U+4e4b,U+4e5f,U+ff01,U+ff08-ff09,U+ff1f;
+}
+/* noto-serif-tc-[123]-400-normal */
+@font-face {
+  font-family: 'Noto Serif TC';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(./files/noto-serif-tc-123-400-normal.woff2) format('woff2'), url(./files/noto-serif-tc-123-400-normal.woff) format('woff');
+  unicode-range: U+20-22,U+27-2a,U+2c-3b,U+3f,U+41-5d,U+61-7b,U+3002,U+4e00,U+ff0c,U+ff1a;
+}
+/* noto-serif-tc-latin-ext-400-normal */
+@font-face {
+  font-family: 'Noto Serif TC';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(./files/noto-serif-tc-latin-ext-400-normal.woff2) format('woff2'), url(./files/noto-serif-tc-latin-ext-400-normal.woff) format('woff');
+  unicode-range: U+0100-02BA,U+1E00-1E9F;
+}
+/* noto-serif-tc-latin-400-normal */
+@font-face {
+  font-family: 'Noto Serif TC';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(./files/noto-serif-tc-latin-400-normal.woff2) format('woff2'), url(./files/noto-serif-tc-latin-400-normal.woff) format('woff');
+  unicode-range: U+0000-00FF,U+0131,U+2000-206F;
+}
+`;
+const CSS_URL = 'https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-tc@latest/400.css';
+const cps = (text: string) => new Set([...text].map((ch) => ch.codePointAt(0)!));
+
+describe('parseFontsourceCss', () => {
+  it('reads every file with its name, absolute URL and ranges, in declaration order', () => {
+    const slices = parseFontsourceCss(CSS, CSS_URL);
+    expect(slices.map((s) => s.name)).toEqual(['122', '123', 'latin-ext', 'latin']);
+    expect(slices[0]!.url).toBe('https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-tc@latest/files/noto-serif-tc-122-400-normal.woff2');
+    expect(slices[3]!.ranges).toEqual([[0, 0xff], [0x131, 0x131], [0x2000, 0x206f]]);
+  });
+
+  it('reads wildcard ranges', () => {
+    expect(parseUnicodeRange('U+4E??, u+30A0-30FF')).toEqual([[0x4e00, 0x4eff], [0x30a0, 0x30ff]]);
+  });
+});
+
+describe('pickSlices', () => {
+  const slices = parseFontsourceCss(CSS, CSS_URL);
+
+  it('picks the slices a Chinese sentence touches, the last declared first', () => {
+    // 也 之 「 」 ！ in [122]; 。 ， 一 in [123]; the space in latin.
+    expect(pickSlices(slices, cps('一之也。「」，！ ')).map((s) => s.name)).toEqual(['latin', '123', '122']);
+  });
+
+  it('gives Latin text the latin file alone, and latin-ext for what latin lacks', () => {
+    expect(pickSlices(slices, cps('Plain text.')).map((s) => s.name)).toEqual(['latin']);
+    expect(pickSlices(slices, cps('Dvořák')).map((s) => s.name)).toEqual(['latin', 'latin-ext']);
+  });
+
+  it('falls back to the latin file when the characters are unknown', () => {
+    expect(pickSlices(slices).map((s) => s.name)).toEqual(['latin']);
+    expect(pickSlices(slices, []).map((s) => s.name)).toEqual(['latin']);
+  });
+});
+
+describe('createPdfFontProvider (#196)', () => {
+  const fetched: string[] = [];
+  /** Files (by URL) whose next fetches fail with a 503, and how many. */
+  const failing = new Map<string, number>();
+  /** Stylesheet URLs whose next fetch throws (a network error). */
+  const unreachable = new Set<string>();
+  /** A file of the stub stylesheet, served from `family`'s package. */
+  const fileUrl = (family: string, slice: string) => `https://cdn.jsdelivr.net/npm/@fontsource/${family}@5/files/noto-serif-tc-${slice}-400-normal.woff2`;
+  /** The files of an answer: each is its bytes, and may say its range and
+   *  its place in the declaration (#770). */
+  const filesOf = (files: PdfFontAnswer): PdfFontFile[] => (Array.isArray(files) ? files : [files]);
+  const names = (files: PdfFontAnswer) => filesOf(files).map((f) => new TextDecoder().decode(f));
+  beforeEach(() => {
+    fetched.length = 0;
+    failing.clear();
+    unreachable.clear();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubGlobal('fetch', async (url: string) => {
+      fetched.push(url);
+      if (unreachable.delete(url)) throw new TypeError('Failed to fetch');
+      if (url.endsWith('/400.css')) return new Response(CSS);
+      if (url.endsWith('.css')) return new Response('', { status: 404 });
+      const left = failing.get(url) ?? 0;
+      if (left > 0) {
+        failing.set(url, left - 1);
+        return new Response('', { status: 503 });
+      }
+      return new Response(new TextEncoder().encode(url.slice(url.lastIndexOf('/') + 1)));
+    });
+  });
+
+  it('answers a Chinese face with the slices of its characters', async () => {
+    const { createPdfFontProvider } = await import('./pdfFontProvider.js');
+    const provider = createPdfFontProvider();
+    const files = await provider('Noto Serif TC', 400, 'normal', { codePoints: cps('之也，') });
+    expect(names(files)).toEqual(['noto-serif-tc-123-400-normal.woff2', 'noto-serif-tc-122-400-normal.woff2']);
+    // A face with no italic stylesheet sets its italic from the upright files.
+    const italic = await provider('Noto Serif TC', 400, 'italic', { codePoints: cps('Ab') });
+    expect(names(italic)).toEqual(['noto-serif-tc-latin-400-normal.woff2']);
+    expect(fetched.filter((u) => u.endsWith('.css'))).toContain('https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-tc@5/400-italic.css');
+  });
+
+  it('hands each file with its unicode-range and its place in the style sheet (#770)', async () => {
+    // The PDF sets a character two files hold in the one declared last
+    // among those whose range holds it, as the page does: it needs the
+    // range of each file and where its rule stands (122, 123, latin-ext,
+    // latin: 0 to 3), whatever files an answer leaves out.
+    const { createPdfFontProvider } = await import('./pdfFontProvider.js');
+    const provider = createPdfFontProvider();
+    const files = filesOf(await provider('Noto Serif TC', 400, 'normal', { codePoints: cps('之也， A') }));
+    expect(files.every((f) => f instanceof Uint8Array)).toBe(true);
+    expect(files.map((f) => [new TextDecoder().decode(f).replace(/^noto-serif-tc-|-400-normal\.woff2$/g, ''), f.order, f.unicodeRange])).toEqual([
+      ['latin', 3, 'U+0000-00FF,U+0131,U+2000-206F'],
+      ['123', 1, 'U+20-22,U+27-2a,U+2c-3b,U+3f,U+41-5d,U+61-7b,U+3002,U+4e00,U+ff0c,U+ff1a'],
+      ['122', 0, 'U+d,U+2b,U+7c,U+a0,U+a9,U+300c-300d,U+4e4b,U+4e5f,U+ff01,U+ff08-ff09,U+ff1f'],
+    ]);
+    // The same file asked for again says the same, and the bytes kept
+    // for the next answer are not the ones marked.
+    const again = filesOf(await provider('Noto Serif TC', 400, 'normal', { codePoints: cps('A') }));
+    expect([again[0]!.order, again[0]!.unicodeRange]).toEqual([3, 'U+0000-00FF,U+0131,U+2000-206F']);
+    expect(again[0]).not.toBe(files[0]);
+    // An SVG picture's provider answers bytes that say nothing.
+    const raw = filesOf(await createPdfFontProvider({ raw: true })('Noto Serif TC', 400, 'normal', { codePoints: cps('之') }));
+    expect(raw.map((f) => [f.order, f.unicodeRange])).toEqual([[undefined, undefined]]);
+  });
+
+  it('fetches a file that failed once again, and leaves out one that fails twice', async () => {
+    const { createPdfFontProvider } = await import('./pdfFontProvider.js');
+    const provider = createPdfFontProvider();
+    failing.set(fileUrl('noto-sans-tc', '122'), 1);
+    expect(names(await provider('Noto Sans TC', 400, 'normal', { codePoints: cps('之也，') }))).toEqual([
+      'noto-serif-tc-123-400-normal.woff2',
+      'noto-serif-tc-122-400-normal.woff2',
+    ]);
+    // One file down for good: the face keeps the others; the PDF reports
+    // the characters of the missing one.
+    failing.set(fileUrl('noto-sans-sc', '122'), 2);
+    expect(names(await provider('Noto Sans SC', 400, 'normal', { codePoints: cps('之也，') }))).toEqual([
+      'noto-serif-tc-123-400-normal.woff2',
+    ]);
+    expect(fetched.filter((u) => u === fileUrl('noto-sans-sc', '122'))).toHaveLength(2);
+  });
+
+  it('rejects the face only when none of its files can be had', async () => {
+    const { createPdfFontProvider } = await import('./pdfFontProvider.js');
+    const provider = createPdfFontProvider();
+    failing.set(fileUrl('noto-serif-jp', '122'), 2);
+    failing.set(fileUrl('noto-serif-jp', '123'), 2);
+    await expect(provider('Noto Serif JP', 400, 'normal', { codePoints: cps('之也，') })).rejects.toThrow(/none of the 2 file/);
+  });
+
+  it('remembers a stylesheet the CDN does not have, and fetches one it could not reach again', async () => {
+    const { createPdfFontProvider } = await import('./pdfFontProvider.js');
+    const provider = createPdfFontProvider();
+    const italicCss = 'https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/400-italic.css';
+    await provider('Noto Serif SC', 400, 'italic', { codePoints: cps('Ab') });
+    await provider('Noto Serif SC', 400, 'italic', { codePoints: cps('Cd') });
+    expect(fetched.filter((u) => u === italicCss)).toHaveLength(1);
+    const uprightCss = 'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-jp@5/400.css';
+    unreachable.add(uprightCss);
+    await provider('Noto Sans JP', 400, 'normal', { codePoints: cps('Ab') });
+    expect(names(await provider('Noto Sans JP', 400, 'normal', { codePoints: cps('之') }))).toEqual(['noto-serif-tc-122-400-normal.woff2']);
+    expect(fetched.filter((u) => u === uprightCss)).toHaveLength(2);
+  });
+});
+
+// Abridged from `@fontsource/amiri@5/400.css`: one file per script, the
+// Arabic one first.
+const AMIRI_CSS = `
+/* amiri-arabic-400-normal */
+@font-face {
+  font-family: 'Amiri';
+  font-weight: 400;
+  src: url(./files/amiri-arabic-400-normal.woff2) format('woff2'), url(./files/amiri-arabic-400-normal.woff) format('woff');
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;
+}
+/* amiri-latin-ext-400-normal */
+@font-face {
+  font-family: 'Amiri';
+  font-weight: 400;
+  src: url(./files/amiri-latin-ext-400-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+1E00-1E9F,U+2020,U+20A0-20AB;
+}
+/* amiri-latin-400-normal */
+@font-face {
+  font-family: 'Amiri';
+  font-weight: 400;
+  src: url(./files/amiri-latin-400-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+2000-206F,U+FEFF,U+FFFD;
+}
+`;
+
+describe('Arabic faces (#381)', () => {
+  const slices = parseFontsourceCss(AMIRI_CSS, 'https://cdn.jsdelivr.net/npm/@fontsource/amiri@latest/400.css');
+  const picked = (text: string) => pickSlices(slices, [...text].map((c) => c.codePointAt(0)!)).map((s) => s.name);
+
+  it('reads the script subsets of a Fontsource stylesheet', () => {
+    expect(slices.map((s) => s.name)).toEqual(['arabic', 'latin-ext', 'latin']);
+  });
+
+  it('takes the Arabic file for Arabic letters, digits and presentation forms', () => {
+    expect(picked('الليلة الأولى')).toEqual(['latin', 'arabic']);
+    expect(picked('١٢٣')).toEqual(['arabic']);
+    expect(picked('ﷺ')).toEqual(['arabic']);
+    // A Latin word in the Arabic text needs the Latin file too; ā the
+    // extended one.
+    expect(picked('قال Shahrazād')).toEqual(['latin', 'latin-ext', 'arabic']);
+  });
+
+  it('takes the Latin file alone for text with no Arabic in it', () => {
+    expect(picked('Chapter 1')).toEqual(['latin']);
+    expect(picked('')).toEqual(['latin']);
+  });
+});

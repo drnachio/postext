@@ -13,7 +13,7 @@ import { SETTINGS_GROUPS, isSettingsGroupId } from '../../sidebar/sections/regis
 import { loadSettingsHelpMode, saveSettingsGroup, saveSettingsHelpMode } from '../../storage/persistence.js';
 import { VIEWPORT_TABS, readViewHash, viewHashFragment } from '../../storage/viewHash.js';
 import type { PanelId, ViewportTab } from '../../types/index.js';
-import { folioSupported } from '../../viewport/folioSupport.js';
+import { folioSupported } from '../../viewport/folio/folioSupport.js';
 import { FIT_MARKS_MODES, fitMarksViewOf, setFitMarksChoice, type FitMarksMode } from '../../viewport/composed/fitMarksView.js';
 import { viewerControls, type ViewerContentsEntry, type ViewerControls, type ViewerSettings } from '../../viewport/viewerControls.js';
 import { SETTLE_TIMEOUT_MS, chapterOf, dispatchAndWait, layOutChapter, pageIndexOf, whenSettled, type SandboxToolHost } from '../host.js';

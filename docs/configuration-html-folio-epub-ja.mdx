@@ -190,7 +190,7 @@ export function PostextHtmlViewer({
 - **単色の図**：`diagramStyle.singleInk`を有効にすると、SVGの`<img>`にCSSフィルターが掛かります。すでに色を変えてあるURLには`singleInk: false`を渡してください。[CanvasとHTMLでの単色刷り](/ja/docs/configuration-resources#canvasとhtmlでの単色刷り)を参照してください。
 - **組版ページと漫画ページを印刷用の紙面で**：画面幅でスクロールの高さがあるページでは、組版ページ（`::::page{template}`）の地に固定したフレームがスクロールの最下部に来てしまいます。組むときの設定に`composedViewerLeaf: { width, height, margins? }`（印刷ページの寸法と余白）を渡すと、組版ページはその寸法のページに印刷どおりの配置で組まれ、それを画面に合わせて拡大縮小できます（postext 1.47以降）。`comics.viewerLeaf`は漫画ページに同じことを行い、`fitWidth` pxに縮尺します（[漫画](/ja/docs/configuration-comics)を参照）。どちらもホスト向けの設定で、SandboxのHTMLビューアーが設定し、文書と一緒に保存されることはありません。
 
-Sandboxの`HtmlPreview`コンポーネント（`packages/postext-sandbox/src/viewport/HtmlPreview/index.tsx`）は、ここで示したのと同じAPIの上にこれらすべてを実装しており、参考にできます。また、すべてのビルドを共有のレイアウトワーカーに通しているので（[Web Workerでレイアウトを実行する](/ja/docs/configuration-programmatic-usage#web-workerでレイアウトを実行する)を参照）、ライブ編集やサイズ変更がメインスレッドをふさぐことはありません。レイアウトをメインスレッドから外す準備ができたら、上のコードの`buildDocument(...)`の直接呼び出しを`layoutWorker.build(...)`に置き換えてください。
+Sandboxの`HtmlPreview`コンポーネント（`packages/postext-sandbox/src/viewport/html/HtmlPreview/index.tsx`）は、ここで示したのと同じAPIの上にこれらすべてを実装しており、参考にできます。また、すべてのビルドを共有のレイアウトワーカーに通しているので（[Web Workerでレイアウトを実行する](/ja/docs/configuration-programmatic-usage#web-workerでレイアウトを実行する)を参照）、ライブ編集やサイズ変更がメインスレッドをふさぐことはありません。レイアウトをメインスレッドから外す準備ができたら、上のコードの`buildDocument(...)`の直接呼び出しを`layoutWorker.build(...)`に置き換えてください。
 
 ### HTML出力とcanvas、PDFとの違い
 

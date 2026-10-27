@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { computePageMetrics } from '../../pipeline/buildHelpers.js';
+import { computePageMetrics } from '../../pipeline/blocks/buildHelpers.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { DesignElement, ElementAnchor, PostextConfig } from '../../types.js';
 import type { VDTPage } from '../../vdt.js';

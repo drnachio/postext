@@ -5,8 +5,8 @@
 
 import { baseFontFamily, documentFontFaces, exportStandInOf, type PostextConfig, type VDTDocument } from 'postext';
 import type { EpubCover, EpubFontFile, EpubResourceBytes, EpubSvgFontOptions } from 'postext-epub';
-import { collectFontPayloadsForFaces, configFontUses, getConfigFontFamilies, getCustomFontFamily, listCustomFontFamilies } from '../controls/fontLoader.js';
-import { sandboxSvgFontProvider, withholdNonRedistributable } from '../controls/svgFontProvider.js';
+import { collectFontPayloadsForFaces, configFontUses, getConfigFontFamilies, getCustomFontFamily, listCustomFontFamilies } from '../controls/fonts/fontLoader.js';
+import { sandboxSvgFontProvider, withholdNonRedistributable } from '../controls/media/svgFontProvider.js';
 import { getBlob } from '../storage/blobStore.js';
 import { documentCodePoints, facesForText, fontFormatOf } from './fontSubsets.js';
 

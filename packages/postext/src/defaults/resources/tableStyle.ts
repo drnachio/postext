@@ -1,0 +1,247 @@
+import type {
+  TableStyleConfig,
+  ResolvedTableStyleConfig,
+  NamedTableStyleConfig,
+  ResolvedNamedTableStyleConfig,
+  ResolvedBodyTextConfig,
+  ColorValue,
+} from '../../types.js';
+import { dimensionsEqual, colorsEqual } from '../shared.js';
+import { presentTag, stringsFor } from '../../hyphenation/locale.js';
+import { withFigureStyle } from '../../fonts/figureStyle.js';
+
+/** Default header fill — a neutral light grey. */
+const DEFAULT_HEADER_BACKGROUND: ColorValue = { hex: '#f0f0f0', model: 'hex' };
+/** Default body fill — white (only painted when explicitly enabled). */
+const DEFAULT_BODY_BACKGROUND: ColorValue = { hex: '#ffffff', model: 'hex' };
+/** Default fill of the alternate (zebra) body rows — a light grey, only
+ *  painted when explicitly enabled. */
+const DEFAULT_BODY_ALTERNATE_BACKGROUND: ColorValue = { hex: '#f2f2f2', model: 'hex' };
+
+/** Static defaults independent of the body text (fonts/colours inherit body
+ *  text and are filled in {@link resolveTableStyleConfig}). */
+const STATIC_DEFAULTS = {
+  headerBold: true,
+  headerItalic: false,
+  headerLetterSpacing: { value: 0, unit: 'pt' as const },
+  headerTextTransform: 'none' as const,
+  headerBackgroundEnabled: true,
+  headerBackground: DEFAULT_HEADER_BACKGROUND,
+  bodyBackgroundEnabled: false,
+  bodyBackground: DEFAULT_BODY_BACKGROUND,
+  bodyAlternateBackgroundEnabled: false,
+  bodyAlternateBackground: DEFAULT_BODY_ALTERNATE_BACKGROUND,
+  borders: true,
+  // 0.75pt ≈ 1px at 96dpi, and scales with the page dpi (preserving the
+  // previous `Math.max(1, round(dpi/96))` behaviour).
+  borderWidth: { value: 0.75, unit: 'pt' as const },
+  // 0.375em ≈ 0.25 × the 1.5em line height — matches the previous padding.
+  cellPadding: { value: 0.375, unit: 'em' as const },
+  rules: 'grid' as const,
+  borderRadius: { value: 0, unit: 'pt' as const },
+  // Booktabs (#625): LaTeX's \heavyrulewidth, \lightrulewidth,
+  // \cmidrulewidth and \cmidrulekern, resolved against the body cell size.
+  heavyRuleWidth: { value: 0.08, unit: 'em' as const },
+  lightRuleWidth: { value: 0.05, unit: 'em' as const },
+  spanRuleWidth: { value: 0.03, unit: 'em' as const },
+  spanRules: 'trimmed' as const,
+  spanRuleTrim: { value: 0.5, unit: 'em' as const },
+  groupRules: false,
+  continuedFootRule: 'light' as const,
+  overflow: 'split' as const,
+  splitInline: true,
+  continuesMarkerEnabled: true,
+} satisfies Partial<ResolvedTableStyleConfig>;
+
+/** Localised continuation strings: the caption suffix of a continued slice
+ *  and the marker under a slice that continues, one per bundled hyphenation
+ *  language plus Chinese in each script, Japanese and Arabic (keyed by
+ *  `stringsKeyOf`). English
+ *  is the fallback for any locale not listed here. Add a language by adding
+ *  a key. */
+const CONTINUATION_STRINGS: Record<string, { continuedSuffix: string; continuesMarker: string }> = {
+  en: { continuedSuffix: '(cont.)', continuesMarker: 'Continued' },
+  es: { continuedSuffix: '(cont.)', continuesMarker: 'Continúa' },
+  fr: { continuedSuffix: '(suite)', continuesMarker: 'À suivre' },
+  de: { continuedSuffix: '(Forts.)', continuesMarker: 'Wird fortgesetzt' },
+  it: { continuedSuffix: '(segue)', continuesMarker: 'Continua' },
+  pt: { continuedSuffix: '(cont.)', continuesMarker: 'Continua' },
+  ca: { continuedSuffix: '(cont.)', continuesMarker: 'Continua' },
+  nl: { continuedSuffix: '(vervolg)', continuesMarker: 'Wordt vervolgd' },
+  'zh-hans': { continuedSuffix: '（续）', continuesMarker: '接下页' },
+  'zh-hant': { continuedSuffix: '（續）', continuesMarker: '接下頁' },
+  // 「表1-2（続き）」 on the slice that continues a table, 「次ページへ続く」
+  // under the one that goes on overleaf.
+  ja: { continuedSuffix: '（続き）', continuesMarker: '次ページへ続く' },
+  // «جدول ٢-١ (تابع)» on the slice that continues a table; «يتبع» under
+  // the slice that goes on overleaf.
+  ar: { continuedSuffix: '(تابع)', continuesMarker: 'يتبع' },
+};
+
+/** Default continuation strings for a (possibly regional) locale tag such
+ *  as `es-ES` or `pt_BR`, falling back to English. */
+export function defaultTableContinuationStrings(locale = 'en'): { continuedSuffix: string; continuesMarker: string } {
+  return { ...stringsFor(CONTINUATION_STRINGS, locale) };
+}
+
+/** Resolve a partial table-style config into a fully-specified one. Font
+ *  family, size, and colour inherit the resolved body text when unset, so a
+ *  document with no table config renders exactly as before. */
+export function resolveTableStyleConfig(
+  partial: TableStyleConfig | undefined,
+  bodyText: ResolvedBodyTextConfig,
+  locale?: string,
+): ResolvedTableStyleConfig {
+  const p = partial ?? {};
+  // Continuation strings follow the document language: the explicit
+  // `locale`, else the hyphenation locale (which the sandbox derives from
+  // the app language when unset).
+  const strings = defaultTableContinuationStrings(presentTag(locale) ?? bodyText.hyphenation.tag ?? bodyText.hyphenation.locale);
+  return {
+    // The figures (#1237) of every cell, in the family each takes.
+    bodyFontFamily: withFigureStyle(p.bodyFontFamily ?? bodyText.fontFamily, p.figureStyle),
+    bodyFontSize: p.bodyFontSize ?? bodyText.fontSize,
+    bodyColor: p.bodyColor ?? bodyText.color,
+    headerFontFamily: withFigureStyle(p.headerFontFamily ?? bodyText.fontFamily, p.figureStyle),
+    headerFontSize: p.headerFontSize ?? bodyText.fontSize,
+    headerColor: p.headerColor ?? bodyText.color,
+    headerBold: p.headerBold ?? STATIC_DEFAULTS.headerBold,
+    headerItalic: p.headerItalic ?? STATIC_DEFAULTS.headerItalic,
+    headerLetterSpacing: p.headerLetterSpacing ?? STATIC_DEFAULTS.headerLetterSpacing,
+    headerTextTransform: p.headerTextTransform ?? STATIC_DEFAULTS.headerTextTransform,
+    headerBackgroundEnabled: p.headerBackgroundEnabled ?? STATIC_DEFAULTS.headerBackgroundEnabled,
+    headerBackground: p.headerBackground ?? STATIC_DEFAULTS.headerBackground,
+    bodyBackgroundEnabled: p.bodyBackgroundEnabled ?? STATIC_DEFAULTS.bodyBackgroundEnabled,
+    bodyBackground: p.bodyBackground ?? STATIC_DEFAULTS.bodyBackground,
+    bodyAlternateBackgroundEnabled: p.bodyAlternateBackgroundEnabled ?? STATIC_DEFAULTS.bodyAlternateBackgroundEnabled,
+    bodyAlternateBackground: p.bodyAlternateBackground ?? STATIC_DEFAULTS.bodyAlternateBackground,
+    borders: p.borders ?? STATIC_DEFAULTS.borders,
+    borderColor: p.borderColor ?? bodyText.color,
+    borderWidth: p.borderWidth ?? STATIC_DEFAULTS.borderWidth,
+    cellPadding: p.cellPadding ?? STATIC_DEFAULTS.cellPadding,
+    rules: p.rules ?? STATIC_DEFAULTS.rules,
+    borderRadius: p.borderRadius ?? STATIC_DEFAULTS.borderRadius,
+    heavyRuleWidth: p.heavyRuleWidth ?? STATIC_DEFAULTS.heavyRuleWidth,
+    lightRuleWidth: p.lightRuleWidth ?? STATIC_DEFAULTS.lightRuleWidth,
+    spanRuleWidth: p.spanRuleWidth ?? STATIC_DEFAULTS.spanRuleWidth,
+    spanRules: p.spanRules ?? STATIC_DEFAULTS.spanRules,
+    spanRuleTrim: p.spanRuleTrim ?? STATIC_DEFAULTS.spanRuleTrim,
+    groupRules: p.groupRules ?? STATIC_DEFAULTS.groupRules,
+    continuedFootRule: p.continuedFootRule ?? STATIC_DEFAULTS.continuedFootRule,
+    overflow: p.overflow ?? STATIC_DEFAULTS.overflow,
+    splitInline: p.splitInline ?? STATIC_DEFAULTS.splitInline,
+    continuedSuffix: p.continuedSuffix ?? strings.continuedSuffix,
+    continuesMarkerEnabled: p.continuesMarkerEnabled ?? STATIC_DEFAULTS.continuesMarkerEnabled,
+    continuesMarker: p.continuesMarker ?? strings.continuesMarker,
+  };
+}
+
+/** Drop fields equal to their static default. Font/colour fields inherit the
+ *  body text (no static default to compare against), so they are kept whenever
+ *  explicitly set — that is the intended override. Returns `undefined` when
+ *  nothing remains. */
+export function stripTableStyleDefaults(
+  tableStyle: TableStyleConfig | undefined,
+): TableStyleConfig | undefined {
+  if (!tableStyle) return undefined;
+  const r: TableStyleConfig = {};
+  let has = false;
+  const keep = <K extends keyof TableStyleConfig>(k: K) => {
+    if (tableStyle[k] !== undefined) {
+      r[k] = tableStyle[k];
+      has = true;
+    }
+  };
+
+  // Inherited (body-text) fields: keep when present.
+  keep('bodyFontFamily');
+  keep('figureStyle');
+  keep('bodyColor');
+  keep('headerFontFamily');
+  keep('headerColor');
+  keep('borderColor');
+  // Continuation strings default per document locale: keep whenever set.
+  keep('continuedSuffix');
+  keep('continuesMarker');
+  if (tableStyle.bodyFontSize !== undefined) { r.bodyFontSize = tableStyle.bodyFontSize; has = true; }
+  if (tableStyle.headerFontSize !== undefined) { r.headerFontSize = tableStyle.headerFontSize; has = true; }
+
+  // Statically-defaulted fields: keep only when different from the default.
+  if (tableStyle.headerBold !== undefined && tableStyle.headerBold !== STATIC_DEFAULTS.headerBold) { r.headerBold = tableStyle.headerBold; has = true; }
+  if (tableStyle.headerItalic !== undefined && tableStyle.headerItalic !== STATIC_DEFAULTS.headerItalic) { r.headerItalic = tableStyle.headerItalic; has = true; }
+  if (tableStyle.headerLetterSpacing !== undefined && tableStyle.headerLetterSpacing.value !== 0) { r.headerLetterSpacing = tableStyle.headerLetterSpacing; has = true; }
+  if (tableStyle.headerTextTransform !== undefined && tableStyle.headerTextTransform !== STATIC_DEFAULTS.headerTextTransform) { r.headerTextTransform = tableStyle.headerTextTransform; has = true; }
+  if (tableStyle.headerBackgroundEnabled !== undefined && tableStyle.headerBackgroundEnabled !== STATIC_DEFAULTS.headerBackgroundEnabled) { r.headerBackgroundEnabled = tableStyle.headerBackgroundEnabled; has = true; }
+  if (tableStyle.headerBackground !== undefined && !colorsEqual(tableStyle.headerBackground, STATIC_DEFAULTS.headerBackground)) { r.headerBackground = tableStyle.headerBackground; has = true; }
+  if (tableStyle.bodyBackgroundEnabled !== undefined && tableStyle.bodyBackgroundEnabled !== STATIC_DEFAULTS.bodyBackgroundEnabled) { r.bodyBackgroundEnabled = tableStyle.bodyBackgroundEnabled; has = true; }
+  if (tableStyle.bodyBackground !== undefined && !colorsEqual(tableStyle.bodyBackground, STATIC_DEFAULTS.bodyBackground)) { r.bodyBackground = tableStyle.bodyBackground; has = true; }
+  if (tableStyle.bodyAlternateBackgroundEnabled !== undefined && tableStyle.bodyAlternateBackgroundEnabled !== STATIC_DEFAULTS.bodyAlternateBackgroundEnabled) { r.bodyAlternateBackgroundEnabled = tableStyle.bodyAlternateBackgroundEnabled; has = true; }
+  if (tableStyle.bodyAlternateBackground !== undefined && !colorsEqual(tableStyle.bodyAlternateBackground, STATIC_DEFAULTS.bodyAlternateBackground)) { r.bodyAlternateBackground = tableStyle.bodyAlternateBackground; has = true; }
+  if (tableStyle.borders !== undefined && tableStyle.borders !== STATIC_DEFAULTS.borders) { r.borders = tableStyle.borders; has = true; }
+  if (tableStyle.borderWidth !== undefined && !dimensionsEqual(tableStyle.borderWidth, STATIC_DEFAULTS.borderWidth)) { r.borderWidth = tableStyle.borderWidth; has = true; }
+  if (tableStyle.cellPadding !== undefined && !dimensionsEqual(tableStyle.cellPadding, STATIC_DEFAULTS.cellPadding)) { r.cellPadding = tableStyle.cellPadding; has = true; }
+  if (tableStyle.rules !== undefined && tableStyle.rules !== STATIC_DEFAULTS.rules) { r.rules = tableStyle.rules; has = true; }
+  if (tableStyle.borderRadius !== undefined && tableStyle.borderRadius.value !== 0) { r.borderRadius = tableStyle.borderRadius; has = true; }
+  if (tableStyle.heavyRuleWidth !== undefined && !dimensionsEqual(tableStyle.heavyRuleWidth, STATIC_DEFAULTS.heavyRuleWidth)) { r.heavyRuleWidth = tableStyle.heavyRuleWidth; has = true; }
+  if (tableStyle.lightRuleWidth !== undefined && !dimensionsEqual(tableStyle.lightRuleWidth, STATIC_DEFAULTS.lightRuleWidth)) { r.lightRuleWidth = tableStyle.lightRuleWidth; has = true; }
+  if (tableStyle.spanRuleWidth !== undefined && !dimensionsEqual(tableStyle.spanRuleWidth, STATIC_DEFAULTS.spanRuleWidth)) { r.spanRuleWidth = tableStyle.spanRuleWidth; has = true; }
+  if (tableStyle.spanRules !== undefined && tableStyle.spanRules !== STATIC_DEFAULTS.spanRules) { r.spanRules = tableStyle.spanRules; has = true; }
+  if (tableStyle.spanRuleTrim !== undefined && !dimensionsEqual(tableStyle.spanRuleTrim, STATIC_DEFAULTS.spanRuleTrim)) { r.spanRuleTrim = tableStyle.spanRuleTrim; has = true; }
+  if (tableStyle.groupRules !== undefined && tableStyle.groupRules !== STATIC_DEFAULTS.groupRules) { r.groupRules = tableStyle.groupRules; has = true; }
+  if (tableStyle.continuedFootRule !== undefined && tableStyle.continuedFootRule !== STATIC_DEFAULTS.continuedFootRule) { r.continuedFootRule = tableStyle.continuedFootRule; has = true; }
+  if (tableStyle.overflow !== undefined && tableStyle.overflow !== STATIC_DEFAULTS.overflow) { r.overflow = tableStyle.overflow; has = true; }
+  if (tableStyle.splitInline !== undefined && tableStyle.splitInline !== STATIC_DEFAULTS.splitInline) { r.splitInline = tableStyle.splitInline; has = true; }
+  if (tableStyle.continuesMarkerEnabled !== undefined && tableStyle.continuesMarkerEnabled !== STATIC_DEFAULTS.continuesMarkerEnabled) { r.continuesMarkerEnabled = tableStyle.continuesMarkerEnabled; has = true; }
+
+  return has ? r : undefined;
+}
+
+/** The fields of a partial style that are actually set (an explicit
+ *  `undefined` must not mask the value it would inherit). */
+function definedFields(style: TableStyleConfig): TableStyleConfig {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(style)) if (v !== undefined) out[k] = v;
+  return out as TableStyleConfig;
+}
+
+/** Resolve the named table styles: each one is laid over the document's
+ *  `tableStyle` partial and resolved like it, so an unset field reads the
+ *  global table style first and the body text after that. */
+export function resolveTableStylesConfig(
+  styles: NamedTableStyleConfig[] | undefined,
+  base: TableStyleConfig | undefined,
+  bodyText: ResolvedBodyTextConfig,
+  locale?: string,
+): ResolvedNamedTableStyleConfig[] {
+  return (styles ?? []).map(({ id, name, ...fields }) => ({
+    id,
+    name: name ?? id,
+    ...resolveTableStyleConfig({ ...definedFields(base ?? {}), ...definedFields(fields) }, bodyText, locale),
+  }));
+}
+
+/** Drop unset fields and a `name` equal to the `id`. Unlike
+ *  {@link stripTableStyleDefaults}, a field equal to its static default is
+ *  kept: a named style inherits the global `tableStyle`, so `borders: true`
+ *  still matters when the global style turns borders off. Returns
+ *  `undefined` when no styles remain. */
+export function stripTableStylesDefaults(
+  styles: NamedTableStyleConfig[] | undefined,
+): NamedTableStyleConfig[] | undefined {
+  if (!styles || styles.length === 0) return undefined;
+  return styles.map(({ id, name, ...fields }) => ({
+    id,
+    ...(name !== undefined && name !== id ? { name } : {}),
+    ...definedFields(fields),
+  }));
+}
+
+/** The resolved style a table resource is set in: the named style its
+ *  `table.styleId` selects, else the document's `tableStyle`. */
+export function pickTableStyle(
+  resolved: { tableStyle: ResolvedTableStyleConfig; tableStyles?: readonly ResolvedNamedTableStyleConfig[] },
+  styleId: string | undefined,
+): ResolvedTableStyleConfig {
+  if (!styleId) return resolved.tableStyle;
+  return resolved.tableStyles?.find((s) => s.id === styleId) ?? resolved.tableStyle;
+}

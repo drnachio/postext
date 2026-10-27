@@ -17,13 +17,13 @@ import { arabicDefaults, isArabicScriptLanguage } from '../../context/arabicDefa
 import { chineseDefaults } from '../../context/chineseDefaults.js';
 import { japaneseDefaults } from '../../context/japaneseDefaults.js';
 import { unlinkPaletteRefs } from '../../context/paletteUtils.js';
-import { fetchGoogleFonts } from '../../controls/FontPicker.js';
+import { fetchGoogleFonts } from '../../controls/fonts/FontPicker.js';
 import { applyStyleRewrite } from '../../frameStyles/applyRewrite.js';
 import { planRename } from '../../frameStyles/styleMerge.js';
 import { applyExerciseStyleRename, planExerciseStyleRename } from '../../frameStyles/exerciseRefs.js';
 import { removeCalloutStyle } from '../../frameStyles/styleRemove.js';
 import { applyLabelStyleRename } from '../../labelStyles/applyRename.js';
-import { applyFileResolutions, readFileResolutions } from '../../panels/resources/fileResolutions.js';
+import { applyFileResolutions, readFileResolutions } from '../../panels/resources/uploads/fileResolutions.js';
 import { pruneComics, removeById, renameById, retargetCast, sanitizeSpeakerId, setComicsField, slugifyStyleId } from '../../sidebar/sections/comics/comicsConfig.js';
 import { putBlob } from '../../storage/blobStore.js';
 import { pageAreas, templateAreaRect } from '../../templates/frameGeometry.js';

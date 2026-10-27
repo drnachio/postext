@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { clearTextWidthCache, measureTextWidth } from '../../measure/canvas.js';
-import { cjkMarkCuts } from '../../measure/cjkClasses.js';
-import { markCuts } from '../../measure/markCuts.js';
+import { cjkMarkCuts } from '../../measure/cjk/cjkClasses.js';
+import { markCuts } from '../../measure/cjk/markCuts.js';
 import { graphemesOf } from '../../measure/graphemes.js';
 import type { Dimension, PostextConfig, WritingMode } from '../../types.js';
 import type { VDTDocument, VDTLine } from '../../vdt.js';

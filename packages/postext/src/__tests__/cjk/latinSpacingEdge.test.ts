@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
-import { cjkCompositionKey, cjkCompositionOf } from '../../measure/cjkPunctuation.js';
-import { cjkRegionOfConfig, defaultCjkLatinSpacingEdge, resolveCjkConfig, stripCjkDefaults } from '../../defaults/cjk.js';
+import { cjkCompositionKey, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
+import { cjkRegionOfConfig, defaultCjkLatinSpacingEdge, resolveCjkConfig, stripCjkDefaults } from '../../defaults/text/cjk.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { CjkConfig, PostextConfig } from '../../types.js';

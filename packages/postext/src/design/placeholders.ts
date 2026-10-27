@@ -1,8 +1,8 @@
 import type { Dimension, DigitSystem, DocumentMetadata, PostextConfig, ResolvedChipStyleConfig } from '../types.js';
-import { withDigits } from '../arabicNumerals.js';
+import { withDigits } from '../numerals/arabicNumerals.js';
 import type { VDTPage } from '../vdt.js';
-import { formatCounter, formatNumeral, hanInformalStyle } from '../numbering.js';
-import { metadataText } from '../frontmatter.js';
+import { formatCounter, formatNumeral, hanInformalStyle } from '../numerals/numbering.js';
+import { metadataText } from '../parse/frontmatter.js';
 import {
   resolvePlaceholders as legacyResolvePlaceholders,
   attrPlaceholderKey,
@@ -14,7 +14,7 @@ import {
   type PlaceholderContext as LegacyPlaceholderContext,
   type PlaceholderResolveOptions,
   type PlaceholderResult,
-} from '../pipeline/placeholders.js';
+} from '../pipeline/pages/placeholders.js';
 
 /** `'part'` is the opener design of a `:::part` page: it resolves the
  *  heading placeholder set with the part's number and title. */

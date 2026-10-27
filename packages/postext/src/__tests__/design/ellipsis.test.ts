@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../../design/layout.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';
 import type { DesignElement, DesignTextElement, TextOverflow } from '../../types.js';
 import type { VDTPage } from '../../vdt.js';

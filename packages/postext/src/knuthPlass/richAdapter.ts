@@ -15,7 +15,7 @@ import { trimChipLineEdges } from '../measure/chipEdges.js';
 import { lineTracking, trackSegments } from './tracking.js';
 import { graphemeCount } from '../measure/graphemes.js';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate.js';
-import { joiningScriptIn } from '../measure/joining.js';
+import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { pieceScriptContext } from '../measure/script.js';
 
 interface RichBreakPoint {
@@ -99,7 +99,7 @@ interface RichToken {
   orientation?: 'upright' | 'sideways';
   /** Styled runs of one word of a joining script (see `measure/rich.ts`). */
   runs?: { text: string; bold?: boolean; italic?: boolean }[];
-  /** How far kashidas may widen this word, px (`measure/kashida.ts`). */
+  /** How far kashidas may widen this word, px (`measure/rtl/kashida.ts`). */
   kashida?: number;
   /** The script a word with no letter is shaped in (#725, see
    *  `measure/rich.ts`). */
@@ -146,7 +146,7 @@ export function richTokensToItems(
 
     // Characters tracking spreads: none on a formula or a swatch, nor on a
     // word of a joining script (its letters connect; see
-    // `measure/joining.ts`); a chip paints its own runs, so its line takes
+    // `measure/rtl/joining.ts`); a chip paints its own runs, so its line takes
     // no tracking at all.
     // Two stacked scripts advance as far as the wider one: the first
     // counts no character, the second the longer run's (see `trackSegments`).

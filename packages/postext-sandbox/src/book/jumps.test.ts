@@ -11,8 +11,8 @@ import { applyTarget } from '../selection/applySelection.js';
 import { pickAt, selectionAtSource } from '../selection/pageSelection.js';
 import { selectionTarget } from '../selection/selectionTargets.js';
 import { setSelectionChapters } from '../selection/selectionStore.js';
-import { findCaretBlockIdx, findCarriedCaretBlockIdx } from '../viewport/CanvasPreview/caret.js';
-import { drawOverlay } from '../viewport/CanvasPreview/overlay.js';
+import { findCaretBlockIdx, findCarriedCaretBlockIdx } from '../viewport/canvas/CanvasPreview/caret.js';
+import { drawOverlay } from '../viewport/canvas/CanvasPreview/overlay.js';
 import type { BookPlan, Chapter, ChapterLayout, ChapterPlan } from './types.js';
 
 // #943: a story that jumps from one chapter file into a page of a later

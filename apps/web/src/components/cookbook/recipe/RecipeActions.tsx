@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { AppWindow, ArrowUpRight, Copy, Download, FileDown, Play } from "lucide-react";
 import { defineData, pageHtml } from "@/lib/cookbook/compose";
 import type { ComposedPen, SampleLocale, PenJson } from "@/lib/cookbook/types";
-import { openCodePenWindow, openInCodePen, submitToCodePen } from "@/lib/codepenClient";
+import { openCodePenWindow, openInCodePen, submitToCodePen } from "@/lib/codepen/codepenClient";
 import { cn } from "@/lib/utils";
 import { SOURCES_ID, type RecipeSourcesPayload, type WholeCode } from "./sources";
 import { copyText, showToast } from "./toast";

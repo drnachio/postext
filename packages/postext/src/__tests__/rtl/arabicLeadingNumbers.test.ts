@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { lineRuns, markerRuns, resolveParagraph } from '../../bidi.js';
+import { lineRuns, markerRuns, resolveParagraph } from '../../writing/bidi.js';
 import { buildDocument } from '../../pipeline/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { cachedMeasureBlock } from '../../measure/cache.js';
 import { measureRichBlock } from '../../measure/rich.js';
-import { getMeasureArabicNumbers, setMeasureArabicNumbers } from '../../measure/bidiLines.js';
+import { getMeasureArabicNumbers, setMeasureArabicNumbers } from '../../measure/rtl/bidiLines.js';
 import { arabicNumbersOf, resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../vdt.js';

@@ -8,7 +8,7 @@ import {
   isUprightMarkPair,
   verticalOrientation,
   verticalRuns,
-} from '../../writingMode.js';
+} from '../../writing/writingMode.js';
 import { registerVerticalAlternates, unregisterVerticalAlternates, VERTICAL_ALTERNATE_SAMPLE } from '../../canvas-backend/verticalText.js';
 import { graphemesOf } from '../../measure/graphemes.js';
 import type { CjkRegion, Dimension, PostextConfig } from '../../types.js';

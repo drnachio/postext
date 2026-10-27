@@ -815,7 +815,7 @@ Los estilos también pueden llegar al worker después de una compilación: un pe
 
 `registerFonts` recibe los bytes de las fuentes tal cual. El hilo principal es el sitio adecuado para obtenerlos, porque con una caché central varias instancias del worker pueden compartir los mismos bytes.
 
-`collectFontPayloadsForFamilies`, del Sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`), es una implementación de referencia. Esto es lo que hace:
+`collectFontPayloadsForFamilies`, del Sandbox (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`), es una implementación de referencia. Esto es lo que hace:
 
 1. Consulta `https://api.fontsource.org/v1/fonts/{id-de-familia}` para saber qué pesos y estilos tiene la familia.
 2. Lee los subconjuntos de la familia y su `unicode-range` en su paquete de jsDelivr (`@fontsource/{id-de-familia}@5/400.css`), una vez por familia. Los archivos se piden después a la versión exacta desde la que se sirvió esa hoja de estilos (`x-jsd-version` de jsDelivr), de modo que una familia nunca llega de dos versiones de su paquete.

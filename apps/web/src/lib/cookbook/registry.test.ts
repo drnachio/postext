@@ -205,7 +205,7 @@ describe("cookbook/_registry", () => {
     });
 
     it("explains every Sandbox warning kind", () => {
-      const source = fs.readFileSync(path.join(REPO_DIR, "packages/postext-sandbox/src/warnings/types.ts"), "utf-8");
+      const source = fs.readFileSync(path.join(REPO_DIR, "packages/postext-sandbox/src/warnings/types/kind.ts"), "utf-8");
       const union = /export type WarningKind =([\s\S]*?);/.exec(source)?.[1] ?? "";
       const kinds = [...union.matchAll(/'([A-Za-z]+)'/g)].map((m) => m[1]);
       expect(kinds.length).toBeGreaterThan(20);

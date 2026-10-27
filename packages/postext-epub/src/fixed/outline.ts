@@ -1,6 +1,6 @@
 // The book outline of a fixed layout: the headings of every page (and the
 // part divider pages) as a nested table of contents, as the PDF backend
-// derives its bookmarks (postext-pdf/src/pdf-backend/outlines.ts).
+// derives its bookmarks (postext-pdf/src/pdf-backend/structure/outlines.ts).
 
 import { blockLinesText, plainTitleText } from 'postext';
 import type { VDTBlock, VDTDocument, VDTPage } from 'postext';

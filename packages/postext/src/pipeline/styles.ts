@@ -3,7 +3,7 @@ import { dimensionToPx } from '../units.js';
 import type { ResolvedConfig } from '../vdt.js';
 import { buildFontString } from '../measure/index.js';
 import { computeBaselineGrid } from './config.js';
-import { DEFAULT_BLOCKQUOTE_CONFIG } from '../defaults/bodyText.js';
+import { DEFAULT_BLOCKQUOTE_CONFIG } from '../defaults/text/bodyText.js';
 
 export interface BlockStyle {
   fontString: string;

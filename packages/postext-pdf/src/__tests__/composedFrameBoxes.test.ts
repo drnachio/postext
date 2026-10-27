@@ -5,7 +5,7 @@ import fontkit from '@pdf-lib/fontkit';
 import { buildDocument, frameMatrix } from 'postext';
 import type { PostextConfig, Resource, VDTDocument, VDTFrame } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
-import { sheetMatrixToPdf } from '../pdf-backend/comic.js';
+import { sheetMatrixToPdf } from '../pdf-backend/page/comic.js';
 import { parseFontString } from '../fontString.js';
 
 // #910: the tagged PDF's `BBox` of a figure in a composed frame whose text

@@ -1,10 +1,10 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../../measure/rich.js';
 import { measureBlock } from '../../measure/plain.js';
-import { cjkCompositionKey, cjkCompositionOf, setCjkComposition } from '../../measure/cjkPunctuation.js';
-import { resolveCjkConfig } from '../../defaults/cjk.js';
+import { cjkCompositionKey, cjkCompositionOf, setCjkComposition } from '../../measure/cjk/cjkPunctuation.js';
+import { resolveCjkConfig } from '../../defaults/text/cjk.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
-import { setCjkLineBreak } from '../../measure/cjkClasses.js';
+import { setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { MeasureBlockOptions } from '../../measure/types.js';
 import type { VDTLine } from '../../vdt.js';

@@ -418,7 +418,7 @@ balancing, footnote areas and trailing caps keep assuming a page's columns are o
 The callout layouter (`makeCalloutLayouter`, `splitCalloutFragment`, `CalloutCut`) is the frame
 typesetter: each frame's slot content is laid as a callout of the frame's style (or a frameless
 synthetic style, as `:::columns` does) at the frame's inner width and cut at its height. P4 factors
-these closures out of `placeDocumentPass` into `pipeline/frameLayout.ts` with an explicit pass
+these closures out of `placeDocumentPass` into `pipeline/callouts/frameLayout.ts` with an explicit pass
 context, so composed pages do not grow `build.ts` further.
 
 ### 5.2 Order of work per page
@@ -532,7 +532,7 @@ Recorded where the implementation settles a point the sections above leave open,
 - **Stories.** Before layout, `composed/wrap.ts` regroups a page's content into one frameless box
   (`:::callout` of the synthetic style `__postext-frame`) per *story*: the content of a frame and of
   the frames its chain continues into (`next`, or `overflow.continueIn: '#frame'`, read the same),
-  in chain order, each frame's pieces in Markdown order. The box typesetter (`pipeline/frameLayout.ts`,
+  in chain order, each frame's pieces in Markdown order. The box typesetter (`pipeline/callouts/frameLayout.ts`,
   factored out of `placeDocumentPass` with no change for callouts) sets a story at each frame's width
   and cuts it at its height (`CalloutCut`); a later frame of the chain re-breaks the cut paragraph at
   its own width. The regrouping reads the template without a side's variant (takes, flow frame,
@@ -674,7 +674,7 @@ Recorded where the implementation settles a point the sections above leave open,
 
 ### 5.11 What P5 built (#858)
 
-- **Where the ladder runs.** In `layoutComposedPage` (`pipeline/composedLayout.ts`), around one
+- **Where the ladder runs.** In `layoutComposedPage` (`pipeline/composedPages/composedLayout.ts`), around one
   laying out of the whole page (`composePage`, P4's and P14's work unchanged): a step is a *fit
   state* (frame patches, text scale per story, picture scale per story, groups that redistribute)
   and the page is composed again with it; compositions are memoised by state. Frames that overflow
@@ -887,12 +887,12 @@ Recorded where the implementation settles a point the sections above leave open,
   prefixes and numbers, list metrics, the `contentBlocks` the drop cap and indent rules read, comic
   strips and heading designs; each story's box takes the measure context of the story it replaces
   and the trial keeps its own `dropCapNotes` / `joiningLetterSpacing`. `layoutComposedPage` gives
-  every run a `MeasureMemo` (`pipeline/measureMemo.ts`) on its pass: `layoutCallout` asks it before
+  every run a `MeasureMemo` (`pipeline/composedPages/measureMemo.ts`) on its pass: `layoutCallout` asks it before
   `measureContentBlock` for a child at a width (key: context, style `body`/`lists`, block, width,
   paragraph-group style, writing mode and language state), replays the drop cap note and the
   joining-script mark of the first measure, and never keeps a figure or table. Dropped with the
   run, since `leftFlow` and the numbers are fixed only for it.
-- **Box styles based on another (#905).** `CalloutStyleConfig.extends` (`defaults/calloutStyles.ts`:
+- **Box styles based on another (#905).** `CalloutStyleConfig.extends` (`defaults/boxes/calloutStyles.ts`:
   `inheritCalloutStyles` before resolving, objects merged key by key, colours and lengths whole,
   `id`/`name` never; `calloutStyleChain`; warnings `calloutStyleExtendsUnknown` /
   `calloutStyleExtendsCycle`, WARNING_SINCE 1.39.0). The frame-style library (§2.4) merging on the
@@ -1126,7 +1126,7 @@ fence of a later file. One `buildDocument` call is one chapter, so the rest of t
   are unchanged. The VDT of a vertical composed page that holds a figure in a frame changes (the picture and
   caption no longer turn with the flow); no public preset or bundle chapter does, parity 0 diffs.
 - **The reflow ladder reuses a frame's whole layout (#972).** Each step of the ladder composes the page again,
-  and most frames come out of it as they went in. `pass.layoutMemo` (`pipeline/layoutMemo.ts`, made with the
+  and most frames come out of it as they went in. `pass.layoutMemo` (`pipeline/composedPages/layoutMemo.ts`, made with the
   measurement memo in `layoutComposedPage` and dropped with it) answers `makeCalloutLayouter`'s `layoutRange`
   for a range laid out before: key = pass, measure context, story and its end, the box style by content (the
   ladder resolves the style again every composition: two equal styles are one key), the cut, width, frame id,
@@ -1941,7 +1941,7 @@ Recorded where the implementation settles a point §12.9 leaves open, or departs
   then `stroke` with width, `setLineDash`, cap, join; markers filled on top). HTML: an inline
   `<svg aria-hidden="true">` placed on `bbox` with `overflow:visible` (a mitre past the box still
   shows), the path in the box's own coordinates; fixed-layout EPUB takes the same markup. PDF
-  (`pdf-backend/pathBlock.ts`): `m l c h`, a quadratic as its cubic, `f`/`f*`, `S`, `B`/`B*`, `w`, `J`,
+  (`pdf-backend/vector/pathBlock.ts`): `m l c h`, a quadratic as its cubic, `f`/`f*`, `S`, `B`/`B*`, `w`, `J`,
   `j`, `d` (scaled to points), alpha through the shared ExtGState; a dot is four cubics, an arrow a
   triangle. Tagged PDF: the slot's artifact like a rule (a Layout artifact on decoration).
 - **Other consumers.** `offsetDesignBlock` moves the outline and markers with the box (so spreads'
@@ -3648,7 +3648,7 @@ a point of the box's top side (`top-left`, `top`, `top-right`, `top-start`, `top
 edges but `align-bottom`), then round after round those anchored (any edge) to a member, and the frames
 of a member group (a grid's instances too); a frame anchored to the box's foot or middle never (its
 place follows the box's height); with a list, the frames and groups named. `composePage`
-(`pipeline/composedLayout.ts`) lays the page; then, for each growing box that is laid and not turned,
+(`pipeline/composedPages/composedLayout.ts`) lays the page; then, for each growing box that is laid and not turned,
 `grownHeight` takes the lowest foot among its members and its style's bottom padding, and when the
 box ends above it (by more than half a pixel) the page is laid again with that height as the box's
 `minHeight` (in mm), at most three times. The members stand where the box's top puts them, so one

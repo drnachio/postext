@@ -7,8 +7,8 @@
 
 import type { ContentBlock } from '../parse/index.js';
 import type { CalloutStyleConfig, ColorValue, DesignElement, DigitSystem } from '../types.js';
-import { withDigits } from '../arabicNumerals.js';
-import type { ResolvedExerciseStyle } from '../defaults/exercises.js';
+import { withDigits } from '../numerals/arabicNumerals.js';
+import type { ResolvedExerciseStyle } from '../defaults/boxes/exercises.js';
 import { graphemesOf } from '../measure/graphemes.js';
 import { drawnBox, pathElement, textElement } from './designs.js';
 import type { ExerciseModel, ExerciseOperation } from './types.js';

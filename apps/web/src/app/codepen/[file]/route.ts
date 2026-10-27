@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { notFound } from "next/navigation";
-import { readPenSources } from "@/lib/codepen";
+import { readPenSources } from "@/lib/codepen/codepen";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -16,7 +16,7 @@ export function generateStaticParams() {
     .map((d) => ({ file: `${d.name}.json` }));
 }
 
-/** A docs example's sources for "Open in CodePen" (`lib/codepenDefine`),
+/** A docs example's sources for "Open in CodePen" (`lib/codepen/codepenDefine`),
  *  fetched on demand so a page does not carry them in its payload. */
 export async function GET(_req: Request, { params }: { params: Promise<{ file: string }> }) {
   const { file } = await params;

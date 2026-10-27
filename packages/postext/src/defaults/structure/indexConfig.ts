@@ -1,0 +1,173 @@
+import type { Dimension, IndexConfig, IndexGroupBy, ResolvedBodyTextConfig, ResolvedIndexConfig } from '../../types.js';
+import { isJapaneseLanguage, languageOf, localeScript, presentTag } from '../../hyphenation/locale.js';
+
+const ONE_EM: Dimension = { value: 1, unit: 'em' };
+const TWO_EM: Dimension = { value: 2, unit: 'em' };
+const ZERO: Dimension = { value: 0, unit: 'em' };
+
+/** Static defaults of the `index` section (#165). Typography inherits the
+ *  body text at resolve time; the labels follow the document language. */
+export const DEFAULT_INDEX_CONFIG = {
+  indent: ONE_EM,
+  turnoverIndent: TWO_EM,
+  entrySpacing: ZERO,
+  separator: ', ',
+  locatorSeparator: ', ',
+  rangeSeparator: '–',
+  mergeRanges: true,
+  rangeFormat: 'full' as const,
+  main: { bold: true, italic: false },
+  see: { italic: true, separator: '. ' },
+  groupBy: 'auto' as IndexGroupBy,
+  groups: { enabled: true, fontWeight: 700, splitMinEntries: 2 },
+};
+
+const GROUP_BY: readonly IndexGroupBy[] = ['auto', 'letter', 'pinyin', 'stroke', 'gojuon', 'kana', 'none'];
+
+/** What precedes a cross-reference in the languages whose indexes do not
+ *  set it after a full stop (#836): a comma and a small letter in French,
+ *  Italian and German (`pierrier, voir éboulis`, `pietraia, vedi
+ *  ghiaione`, `Geröllhalde, siehe Schutthalde`); a bare space in
+ *  Portuguese (ABNT NBR 6034: `Aviação ver Aeronáutica`) and Catalan (the
+ *  IEC's *Manual d'estil*: `abecedari v. alfabet`); the full stop 。 with
+ *  no space in Chinese (`贾琏 12。见贾政`); an ideographic space in
+ *  Japanese (`夏目漱石 12, 45　→漱石`). */
+const SEE_SEPARATORS: Readonly<Record<string, string>> = {
+  fr: ', ',
+  it: ', ',
+  de: ', ',
+  pt: ' ',
+  ca: ' ',
+  zh: '。',
+  ja: '\u3000',
+};
+
+/** The defaults that follow the language the index sorts in: an index in
+ *  Arabic script separates with the Arabic comma `،` and sets its
+ *  cross-reference labels upright (Arabic fonts have no italics; a slanted
+ *  Arabic word is a distortion, not an emphasis); an Arabic one ignores the
+ *  article `ال`. A Japanese index sets its labels (→, も見よ) upright too:
+ *  Japanese has no italics. The separator before a cross-reference follows
+ *  {@link SEE_SEPARATORS}. Every other language takes the static
+ *  defaults. */
+function languageDefaults(
+  locale: string | undefined,
+): { separator: string; italicSee: boolean; seeSeparator: string; ignoreArticle: boolean } {
+  const arabicScript = locale !== undefined && localeScript(locale) === 'Arab';
+  return {
+    // J10 (#425): the Japanese page-number separator (、 or ，).
+    separator: arabicScript ? '، ' : DEFAULT_INDEX_CONFIG.separator,
+    italicSee: arabicScript || isJapaneseLanguage(locale) ? false : DEFAULT_INDEX_CONFIG.see.italic,
+    seeSeparator: SEE_SEPARATORS[languageOf(locale)] ?? DEFAULT_INDEX_CONFIG.see.separator,
+    ignoreArticle: languageOf(locale) === 'ar',
+  };
+}
+
+/** `documentLocale` is the document language (`resolvedLocale`): with the
+ *  index's own `locale`, it decides the defaults of an Arabic index (see
+ *  {@link languageDefaults}). */
+export function resolveIndexConfig(
+  partial: IndexConfig | undefined,
+  bodyText: ResolvedBodyTextConfig,
+  documentLocale?: string,
+): ResolvedIndexConfig {
+  const d = DEFAULT_INDEX_CONFIG;
+  const byLanguage = languageDefaults(presentTag(partial?.locale) ?? presentTag(documentLocale));
+  const fontFamily = partial?.fontFamily ?? bodyText.fontFamily;
+  const fontSize = partial?.fontSize ?? bodyText.fontSize;
+  const lineHeight = partial?.lineHeight ?? bodyText.lineHeight;
+  const color = partial?.color ?? bodyText.color;
+  const g = partial?.groups;
+  return {
+    fontFamily,
+    fontSize,
+    lineHeight,
+    fontWeight: partial?.fontWeight ?? bodyText.fontWeight,
+    color,
+    indent: partial?.indent ?? d.indent,
+    turnoverIndent: partial?.turnoverIndent ?? d.turnoverIndent,
+    entrySpacing: partial?.entrySpacing ?? d.entrySpacing,
+    separator: partial?.separator ?? byLanguage.separator,
+    locatorSeparator: partial?.locatorSeparator ?? byLanguage.separator,
+    rangeSeparator: partial?.rangeSeparator ?? d.rangeSeparator,
+    mergeRanges: partial?.mergeRanges ?? d.mergeRanges,
+    rangeFormat: partial?.rangeFormat === 'chicago' ? 'chicago' : d.rangeFormat,
+    main: { bold: partial?.main?.bold ?? d.main.bold, italic: partial?.main?.italic ?? d.main.italic },
+    see: {
+      ...(partial?.see?.label !== undefined ? { label: partial.see.label } : {}),
+      ...(partial?.see?.alsoLabel !== undefined ? { alsoLabel: partial.see.alsoLabel } : {}),
+      italic: partial?.see?.italic ?? byLanguage.italicSee,
+      separator: typeof partial?.see?.separator === 'string' ? partial.see.separator : byLanguage.seeSeparator,
+    },
+    ...(partial?.locale ? { locale: partial.locale } : {}),
+    groupBy: partial?.groupBy !== undefined && GROUP_BY.includes(partial.groupBy) ? partial.groupBy : d.groupBy,
+    ignoreArticle: typeof partial?.ignoreArticle === 'boolean' ? partial.ignoreArticle : byLanguage.ignoreArticle,
+    groups: {
+      enabled: g?.enabled ?? d.groups.enabled,
+      fontFamily: g?.fontFamily ?? fontFamily,
+      fontSize: g?.fontSize ?? fontSize,
+      fontWeight: g?.fontWeight ?? d.groups.fontWeight,
+      italic: g?.italic ?? false,
+      color: g?.color ?? color,
+      // One line of the index's own leading: a blank line between groups.
+      marginTop: g?.marginTop ?? lineHeight,
+      // A whole number of 1 or more (#712).
+      splitMinEntries: typeof g?.splitMinEntries === 'number' && Number.isFinite(g.splitMinEntries)
+        ? Math.max(1, Math.round(g.splitMinEntries))
+        : d.groups.splitMinEntries,
+      ...(g?.symbolsLabel !== undefined ? { symbolsLabel: g.symbolsLabel } : {}),
+      ...(g?.numbersLabel !== undefined ? { numbersLabel: g.numbersLabel } : {}),
+    },
+  };
+}
+
+function definedFields<T extends object>(obj: T | undefined): T | undefined {
+  if (!obj) return undefined;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) if (v !== undefined) out[k] = v;
+  return Object.keys(out).length > 0 ? (out as T) : undefined;
+}
+
+/** Drop unset fields and the static defaults. Returns `undefined` when
+ *  nothing remains. `ignoreArticle` is kept whenever it is set: its default
+ *  depends on the language. `documentLocale` is the document language, as
+ *  for {@link resolveIndexConfig}: the separators and the italics of the
+ *  cross-reference labels are kept where the static default is not the
+ *  default of the index's language (`', '` in an Arabic index, `see.italic:
+ *  true` in an Arabic or Japanese one, #651; `see.separator: '. '` in a
+ *  French one, #836). */
+export function stripIndexDefaults(index: IndexConfig | undefined, documentLocale?: string): IndexConfig | undefined {
+  if (!index) return undefined;
+  const d = DEFAULT_INDEX_CONFIG;
+  const byLanguage = languageDefaults(presentTag(index.locale) ?? presentTag(documentLocale));
+  const r = definedFields({ ...index }) ?? {};
+  if (r.separator === d.separator && r.separator === byLanguage.separator) delete r.separator;
+  if (r.locatorSeparator === d.locatorSeparator && r.locatorSeparator === byLanguage.separator) delete r.locatorSeparator;
+  if (r.rangeSeparator === d.rangeSeparator) delete r.rangeSeparator;
+  if (r.mergeRanges === d.mergeRanges) delete r.mergeRanges;
+  if (r.rangeFormat === d.rangeFormat) delete r.rangeFormat;
+  if (r.groupBy === d.groupBy) delete r.groupBy;
+  if (r.main) {
+    const m = definedFields(r.main);
+    if (m?.bold === d.main.bold) delete m.bold;
+    if (m?.italic === d.main.italic) delete m.italic;
+    if (m && Object.keys(m).length > 0) r.main = m;
+    else delete r.main;
+  }
+  if (r.see) {
+    const s = definedFields(r.see);
+    if (s?.italic === d.see.italic && s.italic === byLanguage.italicSee) delete s.italic;
+    if (s?.separator === d.see.separator && s.separator === byLanguage.seeSeparator) delete s.separator;
+    if (s && Object.keys(s).length > 0) r.see = s;
+    else delete r.see;
+  }
+  if (r.groups) {
+    const g = definedFields(r.groups);
+    if (g?.enabled === d.groups.enabled) delete g.enabled;
+    if (g?.fontWeight === d.groups.fontWeight) delete g.fontWeight;
+    if (g?.splitMinEntries === d.groups.splitMinEntries) delete g.splitMinEntries;
+    if (g && Object.keys(g).length > 0) r.groups = g;
+    else delete r.groups;
+  }
+  return Object.keys(r).length > 0 ? r : undefined;
+}

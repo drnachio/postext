@@ -1,4 +1,4 @@
-import { markImage } from "@/lib/og-mark";
+import { markImage } from "@/lib/og/og-mark";
 
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";

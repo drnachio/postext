@@ -7,8 +7,8 @@ import { defaultCaptionLabels, dimensionToPx, initMusicEngine, inlineSvgFonts, p
 import { documentLanguage } from '../../context/documentDirection.js';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { getBlob } from '../../storage/blobStore.js';
-import { sandboxSvgFontProvider } from '../../controls/svgFontProvider.js';
-import { parseInlinePreview } from '../../controls/InlineMarkdownInput.js';
+import { sandboxSvgFontProvider } from '../../controls/media/svgFontProvider.js';
+import { parseInlinePreview } from '../../controls/inputs/InlineMarkdownInput.js';
 import { captionPreviewLabel } from './captionLabel.js';
 import { useRightToLeftFlow } from '../../sidebar/settings/flowSides.js';
 

@@ -3,7 +3,7 @@
  * each `::::page{template}` fence regrouped into one synthetic box per
  * *story*, the text a frame (and the frames it chains to with `next`)
  * receives. The layout then sets each story with the box typesetter
- * (`pipeline/frameLayout.ts`) at its frames' widths, cut at their heights.
+ * (`pipeline/callouts/frameLayout.ts`) at its frames' widths, cut at their heights.
  *
  * A story is one contiguous `:::callout` of the frameless
  * {@link FRAME_STYLE_ID} style, so the callout plan, the measure caches and

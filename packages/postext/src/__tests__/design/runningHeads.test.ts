@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { layoutDesignSlot } from '../../design/layout.js';
 import { resolveDesignPlaceholders, type DesignPlaceholderContext } from '../../design/placeholders.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
-import { computeChapterTitles } from '../../pipeline/placeholders.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
+import { computeChapterTitles } from '../../pipeline/pages/placeholders.js';
 import type { DesignElement } from '../../types.js';
 import type { VDTBlock, VDTLine, VDTPage } from '../../vdt.js';
 

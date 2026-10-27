@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { measureRichBlock } from '../../measure/rich.js';
 import { measureBlock } from '../../measure/plain.js';
-import { setCjkLineBreak, type CjkLineBreakLevel } from '../../measure/cjkClasses.js';
-import { setCjkComposition } from '../../measure/cjkPunctuation.js';
+import { setCjkLineBreak, type CjkLineBreakLevel } from '../../measure/cjk/cjkClasses.js';
+import { setCjkComposition } from '../../measure/cjk/cjkPunctuation.js';
 import type { InlineSpan } from '../../parse/index.js';
 import type { MeasureBlockOptions } from '../../measure/types.js';
 import type { VDTLine } from '../../vdt.js';

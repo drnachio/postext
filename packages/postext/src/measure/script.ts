@@ -50,8 +50,8 @@
  * full em otherwise.
  */
 
-import { bidiClassOf, type BidiIsolate } from '../bidi.js';
-import { languageOf, localeScript } from '../locale.js';
+import { bidiClassOf, type BidiIsolate } from '../writing/bidi.js';
+import { languageOf, localeScript } from '../hyphenation/locale.js';
 import { measureMarkedWidth, scriptSensitive } from './canvas.js';
 
 /** The scripts a word with no letter may be shaped in (ISO 15924). `'Hani'`
@@ -232,7 +232,7 @@ export function cutDoubledMarks(word: string): string[] | undefined {
 
 /**
  * Whether a word shaped in `script` takes no tracking, as a word of a
- * joining script takes none (`measure/joining.ts`): the Arabic script. The
+ * joining script takes none (`measure/rtl/joining.ts`): the Arabic script. The
  * word belongs to the Arabic text it stands in, which is never spaced
  * apart; and a current browser applies no letter-spacing to a run in a
  * cursive script, where Chrome 131 did, so tracked the word was one width

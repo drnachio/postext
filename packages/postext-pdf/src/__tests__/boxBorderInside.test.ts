@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { PDFDocument, type PDFPage } from 'pdf-lib';
 import type { VDTDesignBoxStyle, VDTDesignSlot } from 'postext';
 import { FontCache } from '../fontCache.js';
-import { renderHeaderFooterSlot } from '../pdf-backend/headerFooter.js';
+import { renderHeaderFooterSlot } from '../pdf-backend/page/headerFooter.js';
 import { makeScale, type PageCtx } from '../pdf-backend/primitives.js';
 
 /** The page's content stream operators, before pdf-lib deflates them. */

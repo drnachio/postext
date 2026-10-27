@@ -12,7 +12,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { contentOutline } from '../../pipeline/continuation.js';
 import { readBundle } from '../../bundle/codec.js';
 import { mergeConfigLayers } from '../../defaults/configLayers.js';
-import { extractFrontmatter } from '../../frontmatter.js';
+import { extractFrontmatter } from '../../parse/frontmatter.js';
 import type { VDTDocument } from '../../index.js';
 
 const BUNDLE = join(__dirname, '../../../../../apps/web/public/presets/hongloumeng');

@@ -28,7 +28,7 @@ import { sameLocaleTag } from '../../presets/locale.js';
 import { localeDisplayName } from '../../presets/localeNames.js';
 import { readViewHash } from '../../storage/viewHash.js';
 import { IconButton, Select, Switch, cn } from '../../ui/index.js';
-import { createOverlaySvg } from '../CanvasPreview/dom.js';
+import { createOverlaySvg } from '../canvas/CanvasPreview/dom.js';
 import { drawPageFitMarks } from './fitMarks.js';
 import { fitMarksViewOf, useFitMarksChoice } from './fitMarksView.js';
 import { syncedScrollTop } from './compareSync.js';

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { layoutResourceBlock } from '../../pipeline/resourceLayout.js';
-import type { TableSliceSpec } from '../../pipeline/resourceLayout.js';
+import { layoutResourceBlock } from '../../pipeline/resources/resourceLayout.js';
+import type { TableSliceSpec } from '../../pipeline/resources/resourceLayout.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
-import { resolveTableStyleConfig, stripTableStyleDefaults } from '../../defaults/tableStyle.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
+import { resolveTableStyleConfig, stripTableStyleDefaults } from '../../defaults/resources/tableStyle.js';
 import { resolveBodyTextConfig } from '../../defaults/index.js';
 import { buildDocument } from '../../pipeline/build.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { renderResourceBlock } from '../../canvas-backend/renderResourceBlock.js';
 import type { PostextConfig, Resource, TableCell, TableModel, TableStyleConfig } from '../../types.js';
 import type { VDTBlock, VDTTableStroke } from '../../vdt.js';

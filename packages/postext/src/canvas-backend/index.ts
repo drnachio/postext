@@ -1,14 +1,14 @@
 import type { RenderWarning, VDTDocument, VDTPage } from '../vdt.js';
 import { computePageTextExtent, verticalFlowOf } from '../vdt.js';
 import { dimensionToPx } from '../units.js';
-import { columnClipRect } from '../columnClip.js';
-import { pageColumnRule } from '../columnRule.js';
+import { columnClipRect } from '../paint/columnClip.js';
+import { pageColumnRule } from '../paint/columnRule.js';
 import { renderBaselineGrid, renderCharacterGrid, renderColumnRule, renderCutLines, renderFootnoteRules, computeContentArea } from './decorations.js';
-import { cjkGridCells } from '../pipeline/cjkGrid.js';
+import { cjkGridCells } from '../pipeline/text/cjkGrid.js';
 import { renderBlock } from './blockRender.js';
 import { renderHeaderFooterSlot } from './headerFooter.js';
 import { documentInkHex } from '../svg/singleInk.js';
-import { shapingLanguageOf } from '../locale.js';
+import { shapingLanguageOf } from '../hyphenation/locale.js';
 import { setSegmentLanguages } from './wordRuns.js';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock.js';
 import { setVerticalPaint } from './verticalText.js';

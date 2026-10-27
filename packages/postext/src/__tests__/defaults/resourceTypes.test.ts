@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { defaultResourceTypes } from '../../defaults/resourceTypes.js';
+import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import { parseMarkdown } from '../../parse/index.js';
 import {
   computeHeadingContext,
   computeResourceNumbering,
-} from '../../pipeline/resourceNumbering.js';
+} from '../../pipeline/resources/resourceNumbering.js';
 import type { Resource } from '../../types.js';
 
 const VALID_FORMATS = new Set([

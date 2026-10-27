@@ -113,7 +113,7 @@ const bytes = await renderToPdf(doc, {
 
 ### ブラウザー向けフォントプロバイダー（Fontsource + WOFF2）
 
-Sandboxには`createPdfFontProvider()`（`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`）があり、どのブラウザーアプリにもコピーして使えます。要点は次のとおりです。
+Sandboxには`createPdfFontProvider()`（`packages/postext-sandbox/src/viewport/pdf/pdfFontProvider.ts`）があり、どのブラウザーアプリにもコピーして使えます。要点は次のとおりです。
 
 ```ts
 import type { PdfFontProvider } from 'postext-pdf';
@@ -328,7 +328,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**重要**：Webフォントを参照する設定では、`buildDocument`の*前*に`ensureConfigFontsLoaded(config)`（または同等の処理）を呼び出してください。レイアウトは、そのファミリーについてブラウザーがその時点で持っているフォントメトリクスで計測されます。本来のフォントがまだ届いていなければ、VDTは代替フォントで計測され、PDFはCanvasやHTMLの出力と一致しません。Sandboxは描画のたびに、その前にこれを明示的に行っています（`packages/postext-sandbox/src/viewport/PdfViewport.tsx`を参照）。
+**重要**：Webフォントを参照する設定では、`buildDocument`の*前*に`ensureConfigFontsLoaded(config)`（または同等の処理）を呼び出してください。レイアウトは、そのファミリーについてブラウザーがその時点で持っているフォントメトリクスで計測されます。本来のフォントがまだ届いていなければ、VDTは代替フォントで計測され、PDFはCanvasやHTMLの出力と一致しません。Sandboxは描画のたびに、その前にこれを明示的に行っています（`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`を参照）。
 
 ### ライブサンプル：ブラウザーでPDFを作る
 
@@ -384,4 +384,4 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 
 ### リファレンス実装
 
-Sandboxの`PdfViewport`コンポーネント（`packages/postext-sandbox/src/viewport/PdfViewport.tsx`）は、上の要素を組み合わせて、再計算、ダウンロード、印刷のボタンを備えたライブプレビューにしたもので、ブラウザー内でPDFを扱う組み込みの出発点に適しています。VDTは共有のレイアウトワーカーで構築するので（[Web Workerでレイアウトを実行する](/ja/docs/configuration-programmatic-usage#web-workerでレイアウトを実行する)を参照）、**再計算**をクリックしても、パイプラインの実行中にUIが固まりません。メインスレッドが受け持つのは`renderToPdf`だけです（VDTができていれば、これは高速です）。
+Sandboxの`PdfViewport`コンポーネント（`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`）は、上の要素を組み合わせて、再計算、ダウンロード、印刷のボタンを備えたライブプレビューにしたもので、ブラウザー内でPDFを扱う組み込みの出発点に適しています。VDTは共有のレイアウトワーカーで構築するので（[Web Workerでレイアウトを実行する](/ja/docs/configuration-programmatic-usage#web-workerでレイアウトを実行する)を参照）、**再計算**をクリックしても、パイプラインの実行中にUIが固まりません。メインスレッドが受け持つのは`renderToPdf`だけです（VDTができていれば、これは高速です）。

@@ -13,7 +13,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { CONFIG_VERSION, migrateBundleConfig } from '../../bundle/configVersion.js';
 import { pickLocaleOverrides } from '../../bundle/manifest.js';
-import { shapingLanguageOf } from '../../locale.js';
+import { shapingLanguageOf } from '../../hyphenation/locale.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { BundleManifest } from '../../bundle/types.js';
 

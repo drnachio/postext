@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { renderHeaderFooterSlot } from '../../canvas-backend/headerFooter.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { buildDocument } from '../../pipeline/index.js';
-import { offsetDesignBlock } from '../../pipeline/calloutLayout.js';
-import { applyPartPalettesToFlow } from '../../pipeline/partPalette.js';
-import { preflightDocument } from '../../preflight.js';
+import { offsetDesignBlock } from '../../pipeline/callouts/calloutLayout.js';
+import { applyPartPalettesToFlow } from '../../pipeline/sections/partPalette.js';
+import { preflightDocument } from '../../checks/preflight.js';
 import { markerSvgData, pathHit, pathInkBox, pathMarkerOutline, pathSvgData, quadToCubic } from '../../design/pathBlock.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDesignPathBlock, VDTDesignSlot, VDTDocument } from '../../vdt.js';

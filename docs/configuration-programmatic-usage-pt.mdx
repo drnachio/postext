@@ -816,7 +816,7 @@ As faces também podem chegar ao worker depois de uma diagramação: um peso de 
 
 `registerFonts` recebe os bytes brutos das fontes. A thread principal é o lugar certo para buscá-los, porque um cache central permite que várias instâncias de worker compartilhem os mesmos bytes.
 
-O `collectFontPayloadsForFamilies` do Sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`) é uma implementação de referência. Ele:
+O `collectFontPayloadsForFamilies` do Sandbox (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`) é uma implementação de referência. Ele:
 
 1. Consulta `https://api.fontsource.org/v1/fonts/{family-id}` para saber quais pesos e estilos a família tem.
 2. Lê os subconjuntos da família e o `unicode-range` de cada um no pacote dela no jsDelivr (`@fontsource/{family-id}@5/400.css`), uma vez por família. Os arquivos são então pedidos à versão exata de onde essa folha de estilos foi respondida (`x-jsd-version` do jsDelivr), de modo que uma família nunca chega de duas versões do pacote dela.

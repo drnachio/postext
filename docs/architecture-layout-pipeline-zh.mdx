@@ -19,7 +19,7 @@ export const metadata = {
 
 一个放置遍，版面需要几次就运行几次。这就是排版流水线的全部。
 
-这一遍（`placeDocumentPass`，位于`packages/postext/src/pipeline/build.ts`）从第一个块到最后一个块遍历内容。对每个块，它做完排定这个块所需的一切：按块即将进入的那一栏的宽度测量它，看它是否放得下，按分页规则和保持同页规则拆分它或把它后移，给它引用的浮动体提供位置，再让文本流回到基线网格上（见[垂直韵律系统](/zh/docs/architecture#垂直韵律系统)）。浮动体、孤行和网格都没有各自单独的一遍：它们在每个块落定时就已解决。
+这一遍（`placeDocumentPass`，位于`packages/postext/src/pipeline/build/pass.ts`）从第一个块到最后一个块遍历内容。对每个块，它做完排定这个块所需的一切：按块即将进入的那一栏的宽度测量它，看它是否放得下，按分页规则和保持同页规则拆分它或把它后移，给它引用的浮动体提供位置，再让文本流回到基线网格上（见[垂直韵律系统](/zh/docs/architecture#垂直韵律系统)）。浮动体、孤行和网格都没有各自单独的一遍：它们在每个块落定时就已解决。
 
 有些决定无法在一次遍历之内做出，因为它们取决于遍历最终的结果：目录印出的页码；通栏框（横跨整个页面宽度排出的框）在什么高度切断它上方的各栏；一个短栏还缺几行。对于这些决定，`buildDocument`带着从前一遍结果中取得的*提示*重新运行这一遍。下面的五个阶段跟随一个块走完这一遍；[放置遍的驱动器](#放置遍的驱动器)和[各栏齐底](#各栏齐底)讲的是重新运行。
 
@@ -62,16 +62,16 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
 
 在往页面上放入任何内容块之前，这一遍先为结构性元素预留空间：书眉和页脚（按`config.header` / `config.footer`作为设计槽位排出），以及已经等待放到新开页面上的浮动带。这些预留会减少每栏的`availableHeight`，因此内容块开始排入时，引擎已经确切知道还有多少空间。
 
-**栏带与通栏栏**。`page.columns`是一个按阅读顺序排列的扁平数组，但一页并不总是只有一排栏。在多栏版面中，通栏的行内块会把页面切成上下堆叠的*栏带*。有四种东西算作这样的块：样式或围栏设置了`span: 'page'`的`:::callout`，正文中的`:::columns{span="page"}`组，放置规则解析为`{ position: 'here', span: 'page' }`的行内`::resource`，以及在书写处横跨页面排出的漫画条（`:::strip{span=page}`）。后三种在放置之前先被包进一个无边框的通栏框（`pipeline/flowColumns.ts`、`pipeline/spanEmbeds.ts`），所以四种都由同一个机制排出。在切割处，当前栏带的文本栏在切割线处封闭（高度被截断，`availableHeight`为零），该块获得自己的一个全宽栏，`kind: 'span'`，并在它下方追加一个新的文本栏带（`band + 1`，x和宽度相同，底边与被替代的栏带相同）。栏只会被追加，因此`columnIndex`始终对应`page.columns[i]`，渲染器也无需特殊绘制：每栏按自己的bbox裁剪（由`columnClipRect`放宽：字形墨迹留2pt，再加上该栏的设计覆盖层（如标题页签或标注框徽标）超出其两侧的距离，以及标题设计超出其顶部的距离；底边仍是栏的边缘；Canvas和PDF后端使用同一个矩形）。栏间分隔线按栏带在相邻文本栏之间绘制，从页首通栏标题所占栏带的下方开始（`columnRuleSegments`）；带样式的章节设置了分隔线时，使用该页自己的分隔线（`VDTPage.columnRule`，通过`pageColumnRule`读取）。各栏齐底会忽略通栏栏、侧栏和高度为零的栏带。通栏块在栏带齐平的位置（页首、紧接章首标题之后、另一个通栏块之后或顶部浮动带之后）直接切割；如果到达时栏带各栏不齐，它就提出一个*栏带上限*（`packages/postext/src/pipeline/bandCaps.ts`）：以某个内容块开头的栏带，其各栏被缩短到`ceil(Σ used / N / grid)`行。`buildDocument`带着这个上限重新运行放置遍（受限栏带放不下时每次增加一行，最多`MAX_BAND_CAP_RETRIES` = 3次，之后放弃这个上限，该块于是退回到下一页的顶部），于是文本在遵守所有放置规则的前提下填满缩短后的各栏，在切割处齐平结束，封闭的栏把剩余的空白保留为`availableHeight`，交给各栏齐底去吸收。同一机制也用于让章节末尾和文档末尾的*收尾*栏带齐平（`headings.balancing.trailing`）：遇到章首页、`:::part`、结束一章的`placement: 'fixed'`标注框或文档末尾时，如果当前栏带各栏不齐，就提出一个`kind: 'trailing'`上限，以该边界块为键。由于上限以开启其栏带的块为键，而只要前面某页吸收了额外的齐底行，这个块就会移动，因此收尾上限要在各栏齐底稳定*之后*、在冻结齐底提示的情况下求解，然后再进行一轮简短的润色，让各个齐底手段补足切割留下的空缺。`placement: 'fixed'`的标注框脱离文本流：框锚定在页面版心、成品框或出血框上，它覆盖的文本栏让出该区域（像浮动带一样从底部或顶部切掉，冲突时移到下一页），框体及其子元素进入`page.floats`。
+**栏带与通栏栏**。`page.columns`是一个按阅读顺序排列的扁平数组，但一页并不总是只有一排栏。在多栏版面中，通栏的行内块会把页面切成上下堆叠的*栏带*。有四种东西算作这样的块：样式或围栏设置了`span: 'page'`的`:::callout`，正文中的`:::columns{span="page"}`组，放置规则解析为`{ position: 'here', span: 'page' }`的行内`::resource`，以及在书写处横跨页面排出的漫画条（`:::strip{span=page}`）。后三种在放置之前先被包进一个无边框的通栏框（`pipeline/columns/flowColumns.ts`、`pipeline/floats/spanEmbeds.ts`），所以四种都由同一个机制排出。在切割处，当前栏带的文本栏在切割线处封闭（高度被截断，`availableHeight`为零），该块获得自己的一个全宽栏，`kind: 'span'`，并在它下方追加一个新的文本栏带（`band + 1`，x和宽度相同，底边与被替代的栏带相同）。栏只会被追加，因此`columnIndex`始终对应`page.columns[i]`，渲染器也无需特殊绘制：每栏按自己的bbox裁剪（由`columnClipRect`放宽：字形墨迹留2pt，再加上该栏的设计覆盖层（如标题页签或标注框徽标）超出其两侧的距离，以及标题设计超出其顶部的距离；底边仍是栏的边缘；Canvas和PDF后端使用同一个矩形）。栏间分隔线按栏带在相邻文本栏之间绘制，从页首通栏标题所占栏带的下方开始（`columnRuleSegments`）；带样式的章节设置了分隔线时，使用该页自己的分隔线（`VDTPage.columnRule`，通过`pageColumnRule`读取）。各栏齐底会忽略通栏栏、侧栏和高度为零的栏带。通栏块在栏带齐平的位置（页首、紧接章首标题之后、另一个通栏块之后或顶部浮动带之后）直接切割；如果到达时栏带各栏不齐，它就提出一个*栏带上限*（`packages/postext/src/pipeline/columns/bandCaps.ts`）：以某个内容块开头的栏带，其各栏被缩短到`ceil(Σ used / N / grid)`行。`buildDocument`带着这个上限重新运行放置遍（受限栏带放不下时每次增加一行，最多`MAX_BAND_CAP_RETRIES` = 3次，之后放弃这个上限，该块于是退回到下一页的顶部），于是文本在遵守所有放置规则的前提下填满缩短后的各栏，在切割处齐平结束，封闭的栏把剩余的空白保留为`availableHeight`，交给各栏齐底去吸收。同一机制也用于让章节末尾和文档末尾的*收尾*栏带齐平（`headings.balancing.trailing`）：遇到章首页、`:::part`、结束一章的`placement: 'fixed'`标注框或文档末尾时，如果当前栏带各栏不齐，就提出一个`kind: 'trailing'`上限，以该边界块为键。由于上限以开启其栏带的块为键，而只要前面某页吸收了额外的齐底行，这个块就会移动，因此收尾上限要在各栏齐底稳定*之后*、在冻结齐底提示的情况下求解，然后再进行一轮简短的润色，让各个齐底手段补足切割留下的空缺。`placement: 'fixed'`的标注框脱离文本流：框锚定在页面版心、成品框或出血框上，它覆盖的文本栏让出该区域（像浮动带一样从底部或顶部切掉，冲突时移到下一页），框体及其子元素进入`page.floats`。
 
 **竖排页面**。设置`layout.writingMode: 'vertical-rl'`时，这一遍排出的是一个顺时针旋转了90度的横排页面。在这样的页面上，版心、栏、块、行、浮动体和脚注区都使用**流坐标**，`VDTPage.flow`携带把它们变换到纸面上的旋转：流坐标中的点(x, y)落在(页宽 − y, x)。下游无需知道这一点：断行、浮动体、保持同页规则和各栏齐底都在流坐标系中照常工作，流中的一栏就是纸面上的一层，各后端在绘制时应用旋转（`flowToPage`和`pageToFlow`在两个方向上映射点）。书眉、页码、裁切线和背景保持纸面坐标。图和表作为直立的块排版，在框内转回原方向；需要直立的字符在绘制时逐个转回。
 
-**漫画页和模板页**。有两种页面不由分栏文字流填充，它们的栏保持为空。漫画页（`:::page`，`role: 'comic'`）按分割表达式切成分格，每格的图片裁切到它的格子，对白框、旁白和拟声词根据脚本排字（`comics/layoutPage.ts`），结果放在`VDTPage.comic`中。模板页（`::::page{template="…"}`，`role: 'composed'`）由`layoutComposedPage`（`pipeline/composedLayout.ts`）按`pageTemplates`中的模板排版：它放置模板的各个框，用框排版器把每个框接收的内容排进去；某个框的内容放不下时，就逐级尝试一系列重排步骤（空余空间、框所在的组、缩小图片、缩小文字、续排到另一页），每一步都重排整页。仍然放不下的内容被裁掉，并报告为`frameOverflow`。各个框在`VDTPage.composed`中，框的盒子和内容放进`page.floats`。这种页面前后的正文在它周围的页面上继续排。参见[模板页](/zh/docs/composed-pages)和[漫画](/zh/docs/comics)。
+**漫画页和模板页**。有两种页面不由分栏文字流填充，它们的栏保持为空。漫画页（`:::page`，`role: 'comic'`）按分割表达式切成分格，每格的图片裁切到它的格子，对白框、旁白和拟声词根据脚本排字（`comics/layoutPage.ts`），结果放在`VDTPage.comic`中。模板页（`::::page{template="…"}`，`role: 'composed'`）由`layoutComposedPage`（`pipeline/composedPages/composedLayout.ts`）按`pageTemplates`中的模板排版：它放置模板的各个框，用框排版器把每个框接收的内容排进去；某个框的内容放不下时，就逐级尝试一系列重排步骤（空余空间、框所在的组、缩小图片、缩小文字、续排到另一页），每一步都重排整页。仍然放不下的内容被裁掉，并报告为`frameOverflow`。各个框在`VDTPage.composed`中，框的盒子和内容放进`page.floats`。这种页面前后的正文在它周围的页面上继续排。参见[模板页](/zh/docs/composed-pages)和[漫画](/zh/docs/comics)。
 
 ### 第4阶段：资源放置
 
 - **输入**：第1阶段的浮动体规划，以及到目前为止已放置的各页
-- **处理**：把每个被引用的资源浮动到其首次引用之后的第一个空闲位置：引用所在栏的底部、下一个空栏的顶部或底部，或下一页的某个浮动带（`packages/postext/src/pipeline/floatPlacement.ts`规划浮动体，`pipeline/floatSlots.ts`枚举并测量各位置；放置遍在遍历过程中预留浮动带）
+- **处理**：把每个被引用的资源浮动到其首次引用之后的第一个空闲位置：引用所在栏的底部、下一个空栏的顶部或底部，或下一页的某个浮动带（`packages/postext/src/pipeline/floats/floatPlacement.ts`规划浮动体，`pipeline/floats/floatSlots.ts`枚举并测量各位置；放置遍在遍历过程中预留浮动带）
 - **运行时机**：包含首次引用的块一落定就运行，在同一次遍历之内；此后放置的文本绕开浮动带排布
 - **放置规则解析**：对每个资源，引擎依次解析`resource.placement` → 该类型的`resourceType.defaultPlacement` → 内置默认值`{ position: 'auto', span: 'column' }`
 
@@ -130,7 +130,7 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
 - **留白**。浮动带与旁边的文本之间隔开一个正文行高。
 - **基线网格对齐**。顶部浮动带*向上*取整到基线网格的整数倍（增大浮动体下方的间隙），使每一行被推开的文本仍然落在网格上。底部浮动体的锚定方式是让题注的最后一条基线落在网格上：题注与相邻各栏最后一行文本共用基线，各栏以及左右相对的两页都在同一高度结束。
 
-<strong>按类型、按首次引用编号。</strong>资源*不*在Markdown中编号。`pipeline/resourceNumbering.ts`按阅读顺序，在每个资源首次被引用时为它分配编号，依据是资源的`ResourceType`：`numberingTemplate`把按类型计数的`{n}`与引用处生效的标题计数器`{h1}`..`{h6}`组合起来（例如`'{h1}.{n}'` → “1.7”），`resetOn`控制计数器何时重置（`'never'`或任意标题级别），`counterFormat`选择十进制、罗马数字或字母编号。内置的*图*和*表*类型来自`defaultResourceTypes(locale)`，按文档语言本地化。由于编号遵循首次引用的顺序，在文档中间插入一张新图时，其后的所有编号会自动更新，无需修改源文件。
+<strong>按类型、按首次引用编号。</strong>资源*不*在Markdown中编号。`pipeline/resources/resourceNumbering.ts`按阅读顺序，在每个资源首次被引用时为它分配编号，依据是资源的`ResourceType`：`numberingTemplate`把按类型计数的`{n}`与引用处生效的标题计数器`{h1}`..`{h6}`组合起来（例如`'{h1}.{n}'` → “1.7”），`resetOn`控制计数器何时重置（`'never'`或任意标题级别），`counterFormat`选择十进制、罗马数字或字母编号。内置的*图*和*表*类型来自`defaultResourceTypes(locale)`，按文档语言本地化。由于编号遵循首次引用的顺序，在文档中间插入一张新图时，其后的所有编号会自动更新，无需修改源文件。
 
 ### 第5阶段：分页与保持同页规则
 
@@ -150,7 +150,7 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
 
 **孤字在断行器中解决**。孤字只与段落本身有关：无论段落落在哪里，它的最后一行都一样短。所以三条规则中只有这一条是Knuth-Plass断行器看得到的。如果一组断点会让段落的最后一行内容宽度小于`runtMinCharacters × normalSpaceWidth`（`runtMinCharacters`默认20：二十个词间空格宽的内容，大约8到12个字母），断行器就在平方缺陷值公式中把`runtPenalty`（默认1000）加到这一行的劣度上。这样它与行劣度（在10000处饱和）在同一尺度上竞争，而不会被后者淹没。这个惩罚值与通常的缺陷值（劣度、断词代价、适配等级不匹配）一起参与同一个全局优化，断行器几乎总能找到一组没有孤字的断点。找不到时，只要词间空格加上少量负字距能吸收这一差额，`bodyText.tightenRunts`就把段落少排一行。测量模块把惩罚值交给断行器（`measure/plain.ts`、`measure/rich.ts`），由`knuthPlass/breakpoints.ts`应用。
 
-**段首孤行和段末孤行在栏末解决**。断行器按某个宽度给段落断行。它不知道段落会落在页面的什么位置，所以无从知道哪一行会结束一栏。放置遍知道。段落的各行无法全部放进这一栏剩下的空间时，`chooseParagraphSplit`（位于`pipeline/orphanWidow.ts`）对已经断好的各行尝试每一种拆分`k`，从0到放得下的行数：`k`行留下，其余的行开启下一栏。每个候选拆分这样计分：
+**段首孤行和段末孤行在栏末解决**。断行器按某个宽度给段落断行。它不知道段落会落在页面的什么位置，所以无从知道哪一行会结束一栏。放置遍知道。段落的各行无法全部放进这一栏剩下的空间时，`chooseParagraphSplit`（位于`pipeline/blocks/orphanWidow.ts`）对已经断好的各行尝试每一种拆分`k`，从0到放得下的行数：`k`行留下，其余的行开启下一栏。每个候选拆分这样计分：
 
 - `slackWeight · slack²`，对应它在栏底留空的行，其中`slack`是放得下的行数减去`k`（`slackWeight`默认10）；
 - 在栏底留下的行少于`widowMinLines`时，加上`widowPenalty`（默认1000）；
@@ -251,7 +251,7 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
 ### 各栏齐底
 
 - **运行时机**：作为驱动器的第6轮和第8轮（默认开启；`headings.balancing.enabled: false`可将其关闭，在竖排和字符网格上默认关闭，见[配置 › 各栏齐底](/zh/docs/configuration-page-flow#各栏齐底)）
-- **输入**：目前为止最好的版面，以及每个可齐底的栏底部的空网格行（`collectColumnGaps`，位于`pipeline/columnBalancing.ts`）
+- **输入**：目前为止最好的版面，以及每个可齐底的栏底部的空网格行（`collectColumnGaps`，位于`pipeline/columns/columnBalancing.ts`）
 - **处理**：提议在原处填满每个短栏的手段，带着它们运行放置遍，分段的空隙分数下降时为该分段保留结果
 - **输出**：结束于页面最后一个网格行的各栏，每个手段都记录在它所作用的块上（`VDTBlock.balancing`）
 

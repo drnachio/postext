@@ -815,7 +815,7 @@ Schnitte können den Worker auch nach einem Build erreichen: eine Stärke, die d
 
 `registerFonts` nimmt rohe Schriftbytes. Der Haupt-Thread ist der richtige Ort, um sie abzurufen, weil ein zentraler Cache mehreren Worker-Instanzen erlaubt, dieselben Bytes zu teilen.
 
-`collectFontPayloadsForFamilies` aus der Sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`) ist eine Referenzimplementierung. Die Funktion:
+`collectFontPayloadsForFamilies` aus der Sandbox (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`) ist eine Referenzimplementierung. Die Funktion:
 
 1. fragt `https://api.fontsource.org/v1/fonts/{family-id}` nach den Stärken und Stilen ab, die die Familie hat.
 2. liest die Teilmengen der Familie und ihre `unicode-range` aus ihrem Paket auf jsDelivr (`@fontsource/{family-id}@5/400.css`), einmal pro Familie. Die Dateien werden dann bei genau der Version angefragt, aus der dieses Stylesheet beantwortet wurde (das `x-jsd-version` von jsDelivr), sodass eine Familie nie aus zwei Versionen ihres Pakets eintrifft.

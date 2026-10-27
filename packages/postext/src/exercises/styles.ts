@@ -6,7 +6,7 @@
  */
 
 import type { CalloutStyleConfig, ChipStyleConfig, Dimension, ParagraphStyleConfig, TabStop } from '../types.js';
-import type { ResolvedExerciseStyle } from '../defaults/exercises.js';
+import type { ResolvedExerciseStyle } from '../defaults/boxes/exercises.js';
 import { CHIP_ASCENT_RATIO, CHIP_DESCENT_RATIO } from '../measure/rich.js';
 
 export const EX_PREFIX = '__postext-ex';

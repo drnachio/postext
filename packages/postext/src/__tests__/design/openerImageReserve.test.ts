@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { measureHeadingAdvancedDesignHeight } from '../../pipeline/headerFooter.js';
-import { resolveHeadingsConfig } from '../../defaults/headings.js';
+import { measureHeadingAdvancedDesignHeight } from '../../pipeline/pages/headerFooter.js';
+import { resolveHeadingsConfig } from '../../defaults/structure/headings.js';
 import type { DesignElement, PostextConfig, Resource } from '../../types.js';
 import type { VDTDocument } from '../../vdt.js';
 

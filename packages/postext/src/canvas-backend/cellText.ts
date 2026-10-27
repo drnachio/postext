@@ -1,5 +1,5 @@
 import { measurementGeneration } from '../measure/canvas.js';
-import { cellsOf } from '../wordPieces.js';
+import { cellsOf } from '../paint/wordPieces.js';
 import { languageOf, letterSpacingOf } from './contextState.js';
 import { contextTextWidth } from './contextText.js';
 import { paintAsOneRun } from './mirrorFrame.js';

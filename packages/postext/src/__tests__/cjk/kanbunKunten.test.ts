@@ -3,7 +3,7 @@ import { buildDocument } from '../../index.js';
 import { parseMarkdown } from '../../parse/index.js';
 import { stripAnnotations } from '../../parse/annotations.js';
 import { plainSpans } from '../../parse/inlineFormatting.js';
-import { resolveCjkConfig, stripCjkDefaults } from '../../defaults/cjk.js';
+import { resolveCjkConfig, stripCjkDefaults } from '../../defaults/text/cjk.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { InlineSpan } from '../../parse/index.js';
 import type { PostextConfig } from '../../types.js';

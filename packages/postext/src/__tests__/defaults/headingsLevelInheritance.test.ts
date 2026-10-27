@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/headings.js';
+import { DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from '../../defaults/structure/headings.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import type { HeadingsConfig } from '../../types.js';
 

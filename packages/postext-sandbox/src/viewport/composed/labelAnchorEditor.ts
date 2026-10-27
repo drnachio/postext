@@ -30,173 +30,19 @@
  * texture.
  */
 
-import type { Dispatch, MutableRefObject } from 'react';
-import type { Resource, VDTDocument } from 'postext';
-import type { SandboxAction } from '../../context/SandboxContext.js';
-import type { ComposedBook } from '../../book/types.js';
-import type { SandboxLabels } from '../../types/labels.js';
-import { segmentAtOffset } from '../../book/compose.js';
-import { applyViewerEdit } from '../../editor/viewerEdits.js';
+import type { VDTDocument } from 'postext';
 import { editModeNow, onEditModeChange } from '../../editing/editMode.js';
-import { templateEditorHost } from '../../templates/editorStore.js';
-import { requestAnchorEditor } from '../../panels/resources/anchorEditorRequest.js';
-import { labelAt, labelsOnPage, sheetToPicture, type PageLabel } from './labelAnchorGeometry.js';
-import { labelKey, labelMarkShapes, paintShapesSvg, type MarkShape } from './labelMarks.js';
+import { requestAnchorEditor } from '../../panels/resources/marks/anchorEditorRequest.js';
+import { type PageLabel, labelsOnPage, labelAt } from './labelAnchorGeometry.js';
+import { labelKey, labelMarkShapes, type MarkShape, paintShapesSvg } from './labelMarks.js';
+import { dropLabel, openLabelPicture } from './labelAnchorEditor/edits.js';
+import { pointGrabCssPx, dragStartCssPx, SVG_NS, touchPads } from './labelAnchorEditor/touch.js';
+import type { LabelEditor, LabelEditorOptions, Drag, LabelAnchorEditorRefs, LabelPoint } from './labelAnchorEditor/types.js';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-/** CSS px a pointer may travel before a press becomes a drag. */
-const DRAG_START_CSS_PX = 3;
-/** CSS px round an anchor point that grab it. */
-const POINT_CSS_PX = 9;
-/** The same for a finger or a pen (#992): a fingertip lands on a spot about
- *  as wide as the 44 px target the interface sets everywhere else, and
- *  wanders a few px between the press and the lift. */
-const POINT_TOUCH_CSS_PX = 22;
-const DRAG_START_TOUCH_CSS_PX = 8;
-
-/** Whether a pointer is a finger or a pen rather than a mouse. */
-const isFinger = (pointerType: string | undefined): boolean => pointerType === 'touch' || pointerType === 'pen';
-/** CSS px round a point that a pointer of this kind grabs. */
-export const pointGrabCssPx = (pointerType?: string): number => (isFinger(pointerType) ? POINT_TOUCH_CSS_PX : POINT_CSS_PX);
-/** CSS px a pointer of this kind travels before a press is a drag. */
-export const dragStartCssPx = (pointerType?: string): number => (isFinger(pointerType) ? DRAG_START_TOUCH_CSS_PX : DRAG_START_CSS_PX);
-
-/** A box laid over a mark for a touch screen (#992), as fractions of the
- *  page: the browser decides at the first touch whether a finger scrolls the
- *  page or is the page's own, from the `touch-action` of what is under it,
- *  and the marks are drawn in an SVG that takes no pointer. A pad is that
- *  something: `touch-action: none` under every label's box and point, so a
- *  finger that lands on a label drags it and one that lands on bare paper
- *  scrolls the canvas. `minCssPx` is the least a side measures on screen. */
-export interface TouchPad {
-  centerX: number;
-  centerY: number;
-  width: number;
-  height: number;
-  minCssPx: number;
-}
-
-/** The pads of a page's `shapes` (sheet px, a page `pageWidthPx` by
- *  `pageHeightPx`): a box for each label's outline and a finger's width
- *  round each point. The ghost of a drag has none, the finger is down. */
-export function touchPads(shapes: readonly MarkShape[], pageWidthPx: number, pageHeightPx: number): TouchPad[] {
-  const pads: TouchPad[] = [];
-  for (const s of shapes) {
-    if (s.kind === 'circle') {
-      pads.push({ centerX: s.cx / pageWidthPx, centerY: s.cy / pageHeightPx, width: 0, height: 0, minCssPx: 2 * POINT_TOUCH_CSS_PX });
-    } else if (s.kind === 'polygon' && !s.fill && s.points.length > 0) {
-      const xs = s.points.map((p) => p.x);
-      const ys = s.points.map((p) => p.y);
-      const x0 = Math.min(...xs);
-      const y0 = Math.min(...ys);
-      pads.push({ centerX: (x0 + Math.max(...xs)) / 2 / pageWidthPx, centerY: (y0 + Math.max(...ys)) / 2 / pageHeightPx, width: (Math.max(...xs) - x0) / pageWidthPx, height: (Math.max(...ys) - y0) / pageHeightPx, minCssPx: 0 });
-    }
-  }
-  return pads;
-}
-
-export interface LabelAnchorEditorRefs {
-  docRef: MutableRefObject<VDTDocument | null>;
-  dispatchRef: MutableRefObject<Dispatch<SandboxAction>>;
-  labelsRef?: MutableRefObject<SandboxLabels>;
-  /** The book a page was laid out from, for the Markdown a label placed by
-   *  percentages is rewritten in (#931). */
-  sourceOfPage?: (pageIndex: number) => ComposedBook | null;
-}
-
-/** A point on a page of the document, in sheet pixels. */
-export interface LabelPoint {
-  pageIndex: number;
-  x: number;
-  y: number;
-}
-
-/** Where an editor paints and how big a pixel is there. */
-export interface LabelSurface {
-  /** Paint the marks of page `pageIndex` as the editor has them, in sheet
-   *  px; null: the editor has nothing of its own to show on the page (a
-   *  host that paints the label marks itself shows its own). */
-  paint(pageIndex: number, shapes: MarkShape[] | null): void;
-  /** Sheet px for one CSS px on screen at the page: how near a press must
-   *  be to a point to take it, how far it must travel to be a drag. */
-  sheetPxPerCssPx(pageIndex: number): number;
-  /** The sheet px of one CSS px the marks are drawn at; `sheetPxPerCssPx`
-   *  when left out. */
-  markScale?(pageIndex: number): number;
-}
-
-export interface LabelEditorOptions {
-  surface: LabelSurface;
-  docRef: MutableRefObject<VDTDocument | null>;
-  dispatchRef: MutableRefObject<Dispatch<SandboxAction>>;
-  labelsRef?: MutableRefObject<SandboxLabels>;
-  sourceOfPage?: (pageIndex: number) => ComposedBook | null;
-  /** Whether labels can be edited now, besides Design mode (which the
-   *  editor asks of itself): always, when left out. */
-  enabled?: () => boolean;
-  /** Pages whose label marks the editor paints at rest (the preview draws
-   *  them itself). On any other page it paints only while a label of it is
-   *  under the pointer or dragged, and hands the page back to the host's own
-   *  marks (null) after. */
-  restPages?: readonly number[];
-  /** Keep the label last pressed marked (the preview does; the Folio's
-   *  pages are repainted for the pointer alone). */
-  keepActive?: boolean;
-  /** A press the editor took ended (dropped or cancelled): the host frees
-   *  its pointer capture. */
-  onDragEnd?: (pointerId: number) => void;
-}
-
-/** What the editor needs of a pointer event. */
-export interface LabelPointer {
-  pointerId: number;
-  /** `mouse`, `touch` or `pen`; a mouse when left out. */
-  pointerType?: string;
-  clientX: number;
-  clientY: number;
-  /** Alt held: the drag sets the label away from its point (#1064). */
-  altKey?: boolean;
-}
-
-export interface LabelEditor {
-  /** A press: true when a label took it (drag begun). */
-  pointerDown(ev: LabelPointer, at: LabelPoint): boolean;
-  /** The pointer moves without a button: whether a label is under it. */
-  hover(at: LabelPoint | null): boolean;
-  dragging(): boolean;
-  /** The pointer moves while a label is held. */
-  dragMove(ev: LabelPointer, at: LabelPoint | null): void;
-  /** The press ends: the label is dropped where it was dragged, or its
-   *  picture opened when it did not move. */
-  pointerUp(ev: LabelPointer, cancelled: boolean): void;
-  /** A double click on an anchored label opens its anchor editor. */
-  dblclick(at: LabelPoint): boolean;
-  /** Leave a drag (Escape). */
-  cancel(): void;
-  /** The pointer left the pages. */
-  leave(): void;
-  /** Read the labels again and paint (a relayout, a mode switch). */
-  sync(): void;
-  /** Paint again with the labels as they are (the label marked changed). */
-  repaint(): void;
-  dispose(): void;
-}
-
-interface Drag {
-  pointerId: number;
-  pointerType: string | undefined;
-  label: PageLabel;
-  pageIndex: number;
-  startX: number;
-  startY: number;
-  startClientX: number;
-  startClientY: number;
-  started: boolean;
-  dx: number;
-  dy: number;
-  /** The drop writes `labelAt` (#1064). */
-  away: boolean;
-}
+export { pointGrabCssPx, dragStartCssPx, touchPads } from './labelAnchorEditor/touch.js';
+export type { TouchPad } from './labelAnchorEditor/touch.js';
+export type { LabelAnchorEditorRefs, LabelPoint, LabelSurface, LabelEditorOptions, LabelPointer, LabelEditor } from './labelAnchorEditor/types.js';
+export { withAnchorMoved, withLabelAtMoved, percentPlace, percentMoveEdit, dropLabel, openLabelPicture } from './labelAnchorEditor/edits.js';
 
 const live = new Set<LabelEditor>();
 let subscribed = false;
@@ -213,84 +59,6 @@ export function syncLabelAnchorEditors(): void {
 /** Paint again every page's marks, with the labels as they are. */
 function repaintLabelEditors(): void {
   for (const e of [...live]) e.repaint();
-}
-
-/** `resource` with anchor `id` moved to `(x, y)` (fractions, kept inside
- *  the picture, four decimals as the anchor editor stores them). */
-export function withAnchorMoved(resource: Resource, id: string, x: number, y: number, now = Date.now()): Resource | null {
-  const anchors = resource.anchors ?? [];
-  const i = anchors.findIndex((a) => a.id === id);
-  if (i < 0) return null;
-  const round = (v: number) => Math.round(Math.max(0, Math.min(1, v)) * 10000) / 10000;
-  const nx = round(x);
-  const ny = round(y);
-  if (anchors[i]!.x === nx && anchors[i]!.y === ny) return null;
-  return { ...resource, anchors: anchors.map((a, k) => (k === i ? { ...a, x: nx, y: ny } : a)), updatedAt: now };
-}
-
-/** `resource` with the label of anchor `id` set at `(x, y)` away from its
- *  point (`labelAt`, #1064; fractions of the whole picture, four decimals,
- *  not kept inside it: a label may stand off the picture). */
-export function withLabelAtMoved(resource: Resource, id: string, x: number, y: number, now = Date.now()): Resource | null {
-  const anchors = resource.anchors ?? [];
-  const i = anchors.findIndex((a) => a.id === id);
-  if (i < 0 || !Number.isFinite(x) || !Number.isFinite(y)) return null;
-  const round = (v: number) => Math.round(v * 10000) / 10000;
-  const at = { x: round(x), y: round(y) };
-  const before = anchors[i]!.labelAt;
-  if (before && before.x === at.x && before.y === at.y) return null;
-  return { ...resource, anchors: anchors.map((a, k) => (k === i ? { ...a, labelAt: at } : a)), updatedAt: now };
-}
-
-/** `x% y%` as `at="…"` writes a place: fractions of the whole picture,
- *  kept inside it, to a tenth of a percent. */
-export function percentPlace(x: number, y: number): string {
-  const pct = (v: number) => Math.round(Math.max(0, Math.min(1, v)) * 1000) / 10;
-  return `${pct(x)}% ${pct(y)}%`;
-}
-
-/** The edit that moves a label placed by percentages to the picture point
- *  `(x, y)`: its `at` value rewritten in the chapter the book's offsets
- *  fall in; null when the label has no `at` to rewrite, the book is not
- *  known, or the value is already that place. */
-export function percentMoveEdit(pl: Pick<PageLabel, 'label'>, x: number, y: number, book: ComposedBook | null): { chapterId: string; changes: { from: number; to: number; insert: string }[]; baseLength: number } | null {
-  const at = pl.label.atSource;
-  if (!at || 'anchor' in pl.label.at || !book || book.segments.length === 0) return null;
-  const seg = segmentAtOffset(book, at.start);
-  if (at.start < seg.start || at.end > seg.end) return null;
-  const insert = percentPlace(x, y);
-  if (book.markdown.slice(at.start, at.end) === insert) return null;
-  return { chapterId: seg.chapterId, changes: [{ from: at.start - seg.start, to: at.end - seg.start, insert }], baseLength: seg.end - seg.start };
-}
-
-/** Write the label dragged by `(dx, dy)` sheet px where it was dropped: its
- *  anchor on the resource (one step of the history), or the percentages in
- *  the text of the edition on screen. The drop of every surface (#970). */
-export function dropLabel(pl: PageLabel, dx: number, dy: number, refs: Pick<LabelAnchorEditorRefs, 'dispatchRef' | 'sourceOfPage'>, pageIndex: number, away = false): void {
-  const p = sheetToPicture(pl, pl.point.x + dx, pl.point.y + dy);
-  if (!p) return;
-  const id = pl.anchorId;
-  if (id) {
-    const host = templateEditorHost();
-    if (!host) return;
-    const resource = host.getState().resources.find((r) => r.id === pl.resourceId);
-    // A label away from its point moves where it stands (#1064).
-    const next = !resource ? null : away || pl.anchorPoint ? withLabelAtMoved(resource, id, p.x, p.y) : withAnchorMoved(resource, id, p.x, p.y);
-    // One step of the history (#899) per drop.
-    if (next) refs.dispatchRef.current({ type: 'UPSERT_RESOURCE', payload: next, history: { merge: false } });
-    return;
-  }
-  const edit = percentMoveEdit(pl, p.x, p.y, refs.sourceOfPage?.(pageIndex) ?? null);
-  if (edit) applyViewerEdit(refs.dispatchRef.current, edit.chapterId, edit.changes, edit.baseLength);
-}
-
-/** A click on a label: its picture in the Resources panel. */
-export function openLabelPicture(pl: PageLabel, dispatchRef: MutableRefObject<Dispatch<SandboxAction>>): void {
-  const host = templateEditorHost();
-  const s = host?.getState();
-  if (s?.activePanel === 'resources' && s.activeResourceId === pl.resourceId) return;
-  dispatchRef.current({ type: 'SET_PANEL', payload: 'resources' });
-  dispatchRef.current({ type: 'SET_ACTIVE_RESOURCE', payload: pl.resourceId });
 }
 
 /**

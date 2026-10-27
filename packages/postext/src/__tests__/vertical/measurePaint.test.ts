@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, measureBlock, getCjkLineBreak, setCjkLineBreak } from '../../index.js';
-import { forcedVerticalRuns, segmentOrientation, verticalRuns } from '../../writingMode.js';
+import { forcedVerticalRuns, segmentOrientation, verticalRuns } from '../../writing/writingMode.js';
 import { graphemesOf } from '../../measure/graphemes.js';
 import { getMeasureWritingMode } from '../../measure/vertical.js';
 import type { PostextConfig, Dimension, Resource } from '../../types.js';

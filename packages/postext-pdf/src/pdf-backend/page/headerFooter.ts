@@ -1,0 +1,424 @@
+import type {
+  VDTDesignSlot,
+  VDTDesignTextBlock,
+  VDTDesignRuleBlock,
+  VDTDesignBoxBlock,
+  VDTDesignImageBlock,
+  VDTDesignBoxStyle,
+} from 'postext';
+import { boxNeedsShape, boxStylePathBlocks, segmentOrientation } from 'postext';
+import { drawRightToLeftRun } from '../text/rtlRun.js';
+import { inkScaleOperators } from '../text/inkScale.js';
+import { paintChipRuns } from '../blocks/chip.js';
+import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from '../blocks/renderResourceBlock.js';
+import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from '../structure/tagging.js';
+import { renderPathBlock } from '../vector/pathBlock.js';
+
+/** How an accessible render tags a design slot: its text goes to the
+ *  element `text()` returns (created on first use), or counts as an
+ *  artifact when `text` is absent (running headers / footers) or the text
+ *  block is pagination furniture (`artifact`: a split callout's repeated
+ *  title and continuation marker). A picture with alternative text
+ *  (`VDTDesignImageBlock.altText`, #213) is a `Figure` that `figure`
+ *  creates — read after the slot's text element, `after`, when the slot
+ *  has text; without `figure` (running heads) it stays an artifact. Rules,
+ *  boxes, vector shapes (#1055) and pictures without alternative text are
+ *  artifacts of class `artifact`. */
+/** How a slot's text is painted: `silent`, left out of text extraction
+ *  and copying (the line numbers, #621). */
+export interface SlotPaintOptions {
+  silent?: boolean;
+}
+
+export interface SlotMark {
+  text?: () => StructElem;
+  artifact: ArtifactSpec;
+  figure?: (alt: string, attributes: StructAttrs['attributes'], after: StructElem | undefined) => StructElem;
+}
+
+function tagSlotText(ctx: PageCtx, mark: SlotMark | undefined, block: VDTDesignTextBlock): void {
+  if (!mark) return;
+  if (mark.text && !block.artifact) tagContent(ctx, mark.text());
+  else tagArtifact(ctx, mark.artifact);
+}
+import { parseFontString } from '../../fontString.js';
+import { FontCache } from '../../fontCache.js';
+import {
+  type PageCtx,
+  alphaOf,
+  colorFromHex,
+  drawTextDotsPx,
+  drawTextPx,
+  drawChipBoxPx,
+  invisibleText,
+  setTrackingPx,
+  pushFrame,
+  popFrame,
+  quarterTurnMatrix,
+  fillRectPx,
+  pushClipOutline,
+  pushClipRect,
+  popClip,
+  type TextOutline,
+} from '../primitives.js';
+
+/** pdf-lib drawing options for a translucent fill / stroke (none when opaque). */
+const opacity = (alpha: number) => (alpha < 1 ? { opacity: alpha } : {});
+const borderOpacity = (alpha: number) => (alpha < 1 ? { borderOpacity: alpha } : {});
+
+/** A rounded rectangle (px, top-down) as an SVG path in top-down points,
+ *  for `drawSvgPath` anchored at the page's top-left corner. Clockwise on
+ *  the page, or counter-clockwise with `reverse`, so that a filled path
+ *  holding both leaves the inner one empty. A radius of 0 gives no arcs. */
+export function roundedRectSvgPath(
+  ctx: PageCtx,
+  xPx: number,
+  yPx: number,
+  wPx: number,
+  hPx: number,
+  radiusPx: number,
+  reverse = false,
+): string {
+  const { scale } = ctx;
+  const r = Math.max(0, Math.min(radiusPx, wPx / 2, hPx / 2)) * scale;
+  const sx = xPx * scale;
+  const sy = yPx * scale;
+  const width = wPx * scale;
+  const height = hPx * scale;
+  const arc = (x: number, y: number) => (r > 0 ? ` A ${r} ${r} 0 0 ${reverse ? 0 : 1} ${x} ${y}` : '');
+  if (reverse) {
+    return (
+      `M ${sx + r} ${sy}` +
+      arc(sx, sy + r) +
+      ` L ${sx} ${sy + height - r}` +
+      arc(sx + r, sy + height) +
+      ` L ${sx + width - r} ${sy + height}` +
+      arc(sx + width, sy + height - r) +
+      ` L ${sx + width} ${sy + r}` +
+      arc(sx + width - r, sy) +
+      ' Z'
+    );
+  }
+  return (
+    `M ${sx + r} ${sy}` +
+    ` L ${sx + width - r} ${sy}` +
+    arc(sx + width, sy + r) +
+    ` L ${sx + width} ${sy + height - r}` +
+    arc(sx + width - r, sy + height) +
+    ` L ${sx + r} ${sy + height}` +
+    arc(sx, sy + height - r) +
+    ` L ${sx} ${sy + r}` +
+    arc(sx + r, sy) +
+    ' Z'
+  );
+}
+
+/**
+ * A box's fill, then its border inside the box (EF-131), as the canvas
+ * backend and the HTML output (`box-sizing: border-box`) draw it: the
+ * border's outer edge runs along the box edge. A square border is stroked
+ * on a path half its width in. A rounded one is filled as the ring between
+ * the box's outline and the same outline inset by the border width, its
+ * radius less that width and at least 0 (CSS's inner border edge), so the
+ * outer corner keeps the box's radius even where that is under half the
+ * border width. A border as wide as the box fills it. Up to postext 1.4 the
+ * stroke was centred on the edge.
+ */
+export function drawRoundedBox(
+  ctx: PageCtx,
+  xPx: number,
+  yPx: number,
+  wPx: number,
+  hPx: number,
+  style: VDTDesignBoxStyle,
+): void {
+  if (wPx <= 0 || hPx <= 0) return;
+  // Corners of their own or a border per side (#1059): the shape's fill
+  // and border pieces as vector paths.
+  if (boxNeedsShape(style)) {
+    for (const b of boxStylePathBlocks(xPx, yPx, wPx, hPx, style)) renderPathBlock(ctx, b);
+    return;
+  }
+  const { scale, pageHeightPt } = ctx;
+  const radius = Math.max(0, Math.min(style.borderRadiusPx, wPx / 2, hPx / 2));
+  const bw = style.borderColor ? Math.max(0, style.borderWidthPx) : 0;
+  const solid = bw > 0 && (bw >= wPx || bw >= hPx);
+  const fillHex = solid ? style.borderColor : style.backgroundColor;
+  if (radius <= 0) {
+    const rect = (x: number, y: number, w: number, h: number) =>
+      ({ x: x * scale, y: pageHeightPt - (y + h) * scale, width: w * scale, height: h * scale });
+    if (fillHex) {
+      const color = colorFromHex(fillHex, ctx.colorSpace);
+      ctx.page.drawRectangle({ ...rect(xPx, yPx, wPx, hPx), color, ...opacity(alphaOf(color)) });
+    }
+    if (bw > 0 && !solid) {
+      const borderColor = colorFromHex(style.borderColor!, ctx.colorSpace);
+      ctx.page.drawRectangle({
+        ...rect(xPx + bw / 2, yPx + bw / 2, wPx - bw, hPx - bw),
+        borderColor,
+        borderWidth: bw * scale,
+        ...borderOpacity(alphaOf(borderColor)),
+      });
+    }
+    return;
+  }
+  // pdf-lib 1.x has no borderRadius on drawRectangle, so a rounded box is an
+  // SVG path. `drawSvgPath` interprets the path in SVG space (y grows
+  // downwards) from the origin passed as `x`/`y`, so anchor it at the top-left
+  // corner of the page and express the corners in top-down points.
+  const origin = { x: 0, y: pageHeightPt };
+  if (fillHex) {
+    const color = colorFromHex(fillHex, ctx.colorSpace);
+    ctx.page.drawSvgPath(roundedRectSvgPath(ctx, xPx, yPx, wPx, hPx, radius), { ...origin, color, ...opacity(alphaOf(color)) });
+  }
+  if (bw > 0 && !solid) {
+    const color = colorFromHex(style.borderColor!, ctx.colorSpace);
+    // drawSvgPath fills by the nonzero rule: the inner outline runs the
+    // other way round and stays empty.
+    let path = roundedRectSvgPath(ctx, xPx, yPx, wPx, hPx, radius);
+    if (wPx > 2 * bw && hPx > 2 * bw) path += ` ${roundedRectSvgPath(ctx, xPx + bw, yPx + bw, wPx - 2 * bw, hPx - 2 * bw, radius - bw, true)}`;
+    ctx.page.drawSvgPath(path, { ...origin, color, ...opacity(alphaOf(color)) });
+  }
+}
+
+/** Paint a design text block (its box, then its lines: horizontal, bidi
+ *  or vertical), tagged through `mark`. */
+export function renderTextBlock(
+  ctx: PageCtx,
+  block: VDTDesignTextBlock,
+  fontCache: FontCache,
+  mark: SlotMark | undefined,
+  options?: SlotPaintOptions,
+): void {
+  // Text extraction reads nothing of a silent block (an empty
+  // `/ActualText` over each run).
+  const actualText = options?.silent ? '' : undefined;
+  if (block.box) {
+    if (mark) tagArtifact(ctx, mark.artifact);
+    drawRoundedBox(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
+  }
+  const font = fontCache.get(block.fontString);
+  if (!font) return;
+  const size = parseFontString(block.fontString)?.sizePx ?? 0;
+  const color = colorFromHex(block.color, ctx.colorSpace);
+  const clip = block.clip;
+  if (clip) {
+    pushClipRect(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height);
+  }
+  // Negative tracking tightens the letters (EF-82).
+  const tracked = block.letterSpacingPx !== undefined && block.letterSpacingPx !== 0;
+  if (tracked) setTrackingPx(ctx, block.letterSpacingPx!);
+  const stroked: TextOutline | undefined = block.stroke && block.stroke.widthPx > 0
+    ? { color: colorFromHex(block.stroke.color, ctx.colorSpace), widthPx: block.stroke.widthPx, hollow: block.stroke.hollow }
+    : undefined;
+  // Letters to trace (#1017): each run's dots, the text invisible under
+  // them (a run whose dots cannot be drawn is filled, as it was).
+  const dotted = block.dotted && !block.vertical ? block.dotted : undefined;
+  let outline = stroked;
+  const dotsOf = (text: string, x: number, y: number, fontString: string, rtl: boolean): void => {
+    if (!dotted) return;
+    outline = drawTextDotsPx(ctx, text, x, y, fontString, dotted, color, rtl) ? invisibleText(color) : stroked;
+  };
+  tagSlotText(ctx, mark, block);
+  // A vertical block (`VDTDesignTextBlock.vertical`) paints its lines in
+  // its own frame, turned a quarter turn clockwise about the box's top
+  // right corner, set down the column.
+  const vertical = block.vertical;
+  const outerVertical = ctx.vertical;
+  if (vertical) {
+    pushFrame(ctx, quarterTurnMatrix({ direction: 'cw', originX: block.bbox.x + block.bbox.width, originY: block.bbox.y }, ctx.scale, ctx.pageHeightPt));
+    ctx.vertical = { region: vertical.region, uprightDigits: vertical.uprightDigits, axes: vertical.centralBaselines };
+    tagSlotText(ctx, mark, block);
+  }
+  const originX = vertical ? 0 : block.bbox.x;
+  for (const line of block.lines) {
+    if (!line.runs) {
+      dotsOf(line.text, originX + line.xOffset, line.baselineY, block.fontString, false);
+      drawTextPx(ctx, line.text, originX + line.xOffset, line.baselineY, font, size, color, outline, actualText);
+      continue;
+    }
+    // Inline marks, or a line with right-to-left text: each run in its own
+    // font and direction, one after another in the line's paint order.
+    let x = originX + line.xOffset;
+    const order = line.order && line.order.length === line.runs.length ? line.order : undefined;
+    for (let k = 0; k < line.runs.length; k++) {
+      const run = line.runs[order ? order[k]! : k]!;
+      if (run.chip) {
+        // A heading title's chip (#1162): the box a layout artifact, the
+        // words text of the slot, in the block's colour where the chip
+        // style sets none.
+        const cx = x + (run.inkOffset ?? 0);
+        if (mark) tagArtifact(ctx, { type: 'Layout' });
+        drawChipBoxPx(ctx, run.chip, cx, line.baselineY);
+        if (mark) tagSlotText(ctx, mark, block);
+        const chipColor = run.chip.color ? colorFromHex(run.chip.color, ctx.colorSpace) : color;
+        paintChipRuns(ctx, run.chip, cx, line.baselineY, fontCache, font, size, () => chipColor, actualText);
+        x += run.width;
+        continue;
+      }
+      const runFont = fontCache.get(run.fontString) ?? font;
+      const runSize = parseFontString(run.fontString)?.sizePx ?? size;
+      const y = line.baselineY + (run.baselineShift ?? 0);
+      // A run whose width is its box (a CJK mark that gave up blank, #637)
+      // paints its glyphs `inkOffset` into it.
+      const gx = x + (run.inkOffset ?? 0);
+      if (!run.leader) dotsOf(run.text, gx, y, run.fontString, run.rtl === true);
+      if (run.rtl && actualText !== undefined) drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, undefined, 'rtl');
+      else if (run.rtl) drawRightToLeftRun(ctx, run.text, gx, y, runFont, runSize, color, outline);
+      else if (run.inkScale !== undefined) {
+        // A dash of a 破折号 (#652): stretched over its cell (`Tz`), and
+        // shown turned with the frame down a vertical line, as a body
+        // segment's is.
+        const stretch = inkScaleOperators(run.inkScale);
+        ctx.page.pushOperators(...stretch.before);
+        drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, ctx.vertical ? 'sideways' : undefined);
+        ctx.page.pushOperators(...stretch.after);
+      }
+      // A vertical line: the orientation its author gave the run.
+      else if (run.leader) {
+        // A contents part row's leader (#889): a layout artifact under an
+        // empty `/ActualText`, as an entry row's is; the row's text goes on
+        // after it.
+        if (mark) tagArtifact(ctx, { type: 'Layout' });
+        // In a colour of its own when the contents give it one (#1121).
+        const runColor = run.color ? colorFromHex(run.color, ctx.colorSpace) : color;
+        if (run.text) drawTextPx(ctx, run.text, gx, y, runFont, runSize, runColor, outline, '');
+        if (mark) tagSlotText(ctx, mark, block);
+      } else drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, segmentOrientation(run));
+      x += run.width;
+    }
+  }
+  if (vertical) {
+    popFrame(ctx);
+    if (outerVertical) ctx.vertical = outerVertical;
+    else delete ctx.vertical;
+  }
+  if (tracked) setTrackingPx(ctx, 0);
+  if (clip) popClip(ctx);
+}
+
+function renderRuleBlock(ctx: PageCtx, block: VDTDesignRuleBlock): void {
+  const color = colorFromHex(block.color, ctx.colorSpace);
+  if (block.direction === 'vertical') {
+    fillRectPx(ctx, block.bbox.x, block.bbox.y, block.thicknessPx, block.bbox.height, color);
+  } else {
+    fillRectPx(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.thicknessPx, color);
+  }
+}
+
+function renderBoxBlock(ctx: PageCtx, block: VDTDesignBoxBlock): void {
+  drawRoundedBox(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
+}
+
+/** Image block (e.g. a callout icon): drawn from the preloaded resource
+ *  image map, with a neutral placeholder when the image is absent. `tag`
+ *  routes the picture in an accessible render (a `Figure`, an artifact):
+ *  it runs where the picture is painted, inside the turned frame of a
+ *  vertical page, since entering a frame ends the open marked-content
+ *  sequence. */
+function renderImageBlock(
+  ctx: PageCtx,
+  block: VDTDesignImageBlock,
+  images: ResourceImageMap | undefined,
+  tag?: () => void,
+): void {
+  const { x, y, width, height } = block.bbox;
+  const turned = !!ctx.vertical && width > 0 && height > 0;
+  if (!turned && !(block.crop && width > 0 && height > 0)) tag?.();
+  if (width <= 0 || height <= 0) return;
+  const embedded = images?.get(block.fileId);
+  const draw = (bx: number, by: number, bw: number, bh: number): void => {
+    if (embedded) {
+      drawEmbeddedResource(ctx, embedded, bx, by, bw, bh, block.tint);
+    } else {
+      ctx.onMissingImage?.(block.fileId);
+      fillRectPx(ctx, bx, by, bw, bh, colorFromHex('#e8e8e8', ctx.colorSpace));
+    }
+  };
+  if (!ctx.vertical) {
+    if (block.crop) {
+      // A cover crop (#923): the whole picture over its uncropped box,
+      // clipped to the element's. The tag opens inside the clip's state.
+      pushClipRect(ctx, x, y, width, height);
+      tag?.();
+      const c = block.crop;
+      const w = width / c.width;
+      const h = height / c.height;
+      draw(x - c.x * w, y - c.y * h, w, h);
+      popClip(ctx);
+      return;
+    }
+    draw(x, y, width, height);
+    return;
+  }
+  // In a vertical page's flow the picture stands upright on the sheet, as
+  // the canvas and the HTML draw it: turned back inside its box, whose
+  // `width` runs down the sheet and whose `height` runs across it. A box
+  // sized for that (`upright`) is filled; any other picture (a callout
+  // icon) is fitted inside it, keeping its proportions.
+  pushFrame(ctx, quarterTurnMatrix({ direction: 'ccw', originX: x, originY: y + height }, ctx.scale, ctx.pageHeightPt));
+  if (block.upright && block.crop) {
+    // A cover crop (#946): the whole picture over its uncropped box in the
+    // upright frame, clipped to the box turned back.
+    pushClipRect(ctx, 0, 0, height, width);
+    tag?.();
+    const c = block.crop;
+    const w = height / c.width;
+    const h = width / c.height;
+    draw(-c.x * w, -c.y * h, w, h);
+    popClip(ctx);
+    popFrame(ctx);
+    return;
+  }
+  tag?.();
+  if (block.upright) draw(0, 0, height, width);
+  else {
+    const k = Math.min(height / width, width / height);
+    draw((height - width * k) / 2, (width - height * k) / 2, width * k, height * k);
+  }
+  popFrame(ctx);
+}
+
+export function renderHeaderFooterSlot(
+  ctx: PageCtx,
+  slot: VDTDesignSlot,
+  fontCache: FontCache,
+  images?: ResourceImageMap,
+  mark?: SlotMark,
+  options?: SlotPaintOptions,
+): void {
+  for (const block of slot.blocks) {
+    if (block.kind === 'text') {
+      renderTextBlock(ctx, block, fontCache, mark, options);
+      continue;
+    }
+    if (block.kind === 'image' && block.altText && mark?.figure) {
+      // A picture that is content: a `Figure` with its alternative text,
+      // read after the slot's own text (a chapter's plate after its
+      // heading).
+      const hasText = !!mark.text && slot.blocks.some((b) => b.kind === 'text' && !b.artifact);
+      const { x, y, width, height } = block.bbox;
+      const figure = mark.figure(block.altText, figureLayout(ctx, x, y, width, height), hasText ? mark.text!() : undefined);
+      renderImageBlock(ctx, block, images, () => tagContent(ctx, figure));
+      continue;
+    }
+    if (block.kind === 'box' && block.clip) {
+      // A callout stripe on a rounded frame, clipped to the frame's
+      // outline. The clip's graphics state opens first: a marked-content
+      // sequence must nest inside it, so the artifact opens after it.
+      pushClipOutline(ctx, block.clip);
+      if (mark) tagArtifact(ctx, mark.artifact);
+      renderBoxBlock(ctx, block);
+      popClip(ctx);
+      continue;
+    }
+    if (block.kind === 'image') {
+      renderImageBlock(ctx, block, images, mark ? () => tagArtifact(ctx, mark.artifact) : undefined);
+      continue;
+    }
+    if (mark) tagArtifact(ctx, mark.artifact);
+    if (block.kind === 'rule') renderRuleBlock(ctx, block);
+    else if (block.kind === 'path') renderPathBlock(ctx, block);
+    else renderBoxBlock(ctx, block);
+  }
+}

@@ -1,8 +1,8 @@
 import type { Dispatch } from 'react';
 import { clearMeasurementCache } from 'postext';
 import type { SandboxAction } from '../context/SandboxContext.js';
-import { invalidateResourceImage } from '../controls/resourceImages.js';
-import { setCustomFonts } from '../controls/fontLoader.js';
+import { invalidateResourceImage } from '../controls/media/resourceImages.js';
+import { setCustomFonts } from '../controls/fonts/fontLoader.js';
 import { putBlobsAt } from '../storage/blobStore.js';
 import { putFontFiles } from '../storage/fontStorage.js';
 import { saveBook, saveConfig, savePresetApplied, savePresetId } from '../storage/persistence.js';

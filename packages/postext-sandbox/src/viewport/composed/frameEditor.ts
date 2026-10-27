@@ -29,115 +29,27 @@
  * events they handle.
  */
 
-import type { Dispatch, MutableRefObject } from 'react';
-import { flowToPage, resolvePageTemplate, type PostextConfig, type ResolvedPageTemplate, type VDTComposedPage, type VDTDocument, type VDTFrame, type VDTPage } from 'postext';
-import type { SandboxAction } from '../../context/SandboxContext.js';
-import type { ComposedBook } from '../../book/types.js';
+import { type VDTPage, type VDTComposedPage, type VDTFrame, flowToPage, type PostextConfig } from 'postext';
 import { segmentAtOffset } from '../../book/compose.js';
-import type { SandboxLabels } from '../../types/labels.js';
 import { applyViewerEdit } from '../../editor/viewerEdits.js';
-import {
-  RESIZE_HANDLES,
-  dimensionToMm,
-  dragRect,
-  frameBoxPatch,
-  frameFromRect,
-  gridGeometry,
-  handleAt,
-  handlePoint,
-  mmToPx,
-  pageAreas,
-  rectBetween,
-  spreadFlowSide,
-  spreadGutterBand,
-  spreadPageAreas,
-  snapLines,
-  snapRect,
-  templateAreaRect,
-  type Handle,
-  type Rect,
-} from '../../templates/frameGeometry.js';
+import { type Rect, spreadFlowSide, spreadPageAreas, pageAreas, templateAreaRect, gridGeometry, mmToPx, dimensionToMm, spreadGutterBand, RESIZE_HANDLES, handlePoint, frameFromRect, frameBoxPatch, type Handle, handleAt, rectBetween, dragRect, snapLines, snapRect } from '../../templates/frameGeometry.js';
 import { templateEditor, templateEditorHost } from '../../templates/editorStore.js';
 import { showPageTemplatesSection } from '../../templates/showSection.js';
-import { emitFrameEditorEvent, type FrameDragKind } from '../../templates/frameEvents.js';
-import { addFrame, ancestorsOf, namesInUse, uniqueName } from '../../templates/templateEdits.js';
+import { emitFrameEditorEvent } from '../../templates/frameEvents.js';
+import { ancestorsOf, uniqueName, namesInUse, addFrame } from '../../templates/templateEdits.js';
 import { decorationElement, pickConnectorFrame, updateDecorationElement } from '../../templates/connectorEdits.js';
 import { connectorHandles } from '../../templates/connectorHandles.js';
-import { changeFrameForPage, changeTemplateFrame, frameScopeOnPage, templateDisplayName } from '../../templates/pageEdits.js';
-import { countTemplatePages, fenceTemplateChange, templateFences } from '../../templates/templateUsage.js';
+import { frameScopeOnPage, changeTemplateFrame, templateDisplayName, changeFrameForPage } from '../../templates/pageEdits.js';
+import { templateFences, countTemplatePages, fenceTemplateChange } from '../../templates/templateUsage.js';
 import { nextFrameName } from '../../templates/frameChain.js';
-import { flowBoxOnSheet, frameHitAt, sheetToFlow } from './frameHit.js';
+import { sheetToFlow, flowBoxOnSheet, frameHitAt } from './frameHit.js';
 import { setPointer } from '../../templates/pointerEdits.js';
-import { frameAnchorAt, frameAnchorsOnPage, type FrameAnchorPoint } from './labelAnchorGeometry.js';
+import { type FrameAnchorPoint, frameAnchorsOnPage, frameAnchorAt } from './labelAnchorGeometry.js';
 import { selectFrame as pickFrame } from '../../editing/editMode.js';
+import { type Instance, type FrameEditorRefs, svgEl, type Drag, pageTemplate, COLORS, pointerGripOf, GRIP_GAP_CSS_PX, GRIP_CSS_PX, MIN_DRAW_CSS_PX, dragKind, HANDLE_CSS_PX, DRAG_START_CSS_PX, ANCHOR_DROP_CSS_PX, SNAP_CSS_PX } from './frameEditor/shared.js';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-/** CSS px a pointer may travel before a press becomes a drag. */
-const DRAG_START_CSS_PX = 3;
-/** CSS px within which a handle is grabbed and a side snaps. */
-const HANDLE_CSS_PX = 7;
-const SNAP_CSS_PX = 6;
-/** Smallest frame drawn, CSS px. */
-const MIN_DRAW_CSS_PX = 8;
-
-const COLORS = {
-  frame: '#2f6fd6',
-  frameMuted: 'rgba(47, 111, 214, 0.55)',
-  margin: 'rgba(214, 72, 47, 0.7)',
-  area: 'rgba(47, 111, 214, 0.35)',
-  grid: 'rgba(47, 111, 214, 0.08)',
-  gutter: 'rgba(214, 72, 47, 0.18)',
-  chain: '#c26a00',
-  guide: '#d6482f',
-  ghost: 'rgba(47, 111, 214, 0.12)',
-  label: '#ffffff',
-  // A connector's ends (#1063): its start filled, the ends it goes to open.
-  connector: '#b3127a',
-  pointer: '#0f766e',
-};
-/** CSS px from the selected frame's side to its pointer grip, its radius,
- *  and how near an anchor the pointer must be dropped. */
-const GRIP_GAP_CSS_PX = 12;
-const GRIP_CSS_PX = 6;
-const ANCHOR_DROP_CSS_PX = 14;
-
-/** Where the pointer grip of a frame stands (flow px): beside the middle of
- *  its end side, `gap` out. */
-export function pointerGripOf(rect: Rect, gap: number): { x: number; y: number } {
-  return { x: rect.x + rect.width + gap, y: rect.y + rect.height / 2 };
-}
-
-export interface FrameEditorRefs {
-  docRef: MutableRefObject<VDTDocument | null>;
-  dispatchRef: MutableRefObject<Dispatch<SandboxAction>>;
-  sourceRef: MutableRefObject<ComposedBook | null>;
-  pageSourceRef?: MutableRefObject<((pageIndex: number) => ComposedBook | null) | null>;
-  labelsRef?: MutableRefObject<SandboxLabels>;
-}
-
-interface Drag {
-  pointerId: number;
-  kind: 'frame' | 'draw' | 'pointer';
-  handle: Handle;
-  frame?: VDTFrame;
-  startX: number;
-  startY: number;
-  startClientX: number;
-  startClientY: number;
-  started: boolean;
-  rect: Rect;
-  guideX?: number;
-  guideY?: number;
-  /** A pointer being drawn (#1064): the pointer on the sheet and the anchor
-   *  under it. */
-  sheet?: { x: number; y: number };
-  target?: FrameAnchorPoint | null;
-}
-
-interface Instance {
-  slot: HTMLElement;
-  paint(): void;
-}
+export { pointerGripOf } from './frameEditor/shared.js';
+export type { FrameEditorRefs } from './frameEditor/shared.js';
 
 const live = new Set<Instance>();
 let subscribed = false;
@@ -150,19 +62,6 @@ export function syncFrameEditors(): void {
     else e.paint();
   }
 }
-
-function svgEl<K extends keyof SVGElementTagNameMap>(name: K, attrs: Record<string, string | number>): SVGElementTagNameMap[K] {
-  const el = document.createElementNS(SVG_NS, name);
-  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
-  return el;
-}
-
-/** The template a composed page is set with, resolved for its side. */
-function pageTemplate(config: PostextConfig, composed: VDTComposedPage): ResolvedPageTemplate | undefined {
-  return resolvePageTemplate(config, composed.template, { ...(composed.variant ? { parity: composed.variant } : {}), ...(composed.modules ? { modules: composed.modules } : {}) });
-}
-
-const dragKind = (d: { kind: 'frame' | 'draw' | 'pointer'; handle: Handle }): FrameDragKind => (d.kind === 'draw' ? 'draw' : d.handle === 'move' ? 'move' : 'resize');
 
 export function attachFrameEditor(slot: HTMLElement, pageIndex: number, pageWidthPx: number, pageHeightPx: number, refs: FrameEditorRefs): void {
   const svg = svgEl('svg', { viewBox: `0 0 ${pageWidthPx} ${pageHeightPx}`, preserveAspectRatio: 'none', 'aria-hidden': 'true' });

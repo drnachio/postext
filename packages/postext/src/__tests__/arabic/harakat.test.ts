@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { annotateArabicMarks, hasArabicMarks, lineWordInks, markInkOverhang } from '../../arabicMarks.js';
-import { columnClipRect } from '../../columnClip.js';
+import { annotateArabicMarks, hasArabicMarks, lineWordInks, markInkOverhang } from '../../marks/arabicMarks.js';
+import { columnClipRect } from '../../paint/columnClip.js';
 import { clearMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTColumn, VDTDocument, VDTLine } from '../../vdt.js';

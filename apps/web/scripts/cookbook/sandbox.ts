@@ -45,21 +45,24 @@
  *
  * Run by Node's type stripping: erasable TypeScript, relative `.ts` imports.
  */
-import { execFileSync } from "node:child_process";
-import fs from "node:fs";
-import path from "node:path";
-import { styleText } from "node:util";
-import type { Browser, CDPSession, Page } from "puppeteer-core";
-import { htmlLang } from "../../src/i18n/locales.ts";
-import { captureDir, REPO_DIR, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
-import { listRecipeSlugs, readRecipeMeta } from "../../src/lib/cookbook/sources.ts";
-import type { CaptureManifest, CaptureVariant, SampleLocale } from "../../src/lib/cookbook/types.ts";
-import { SAMPLE_LOCALES } from "../../src/lib/cookbook/types.ts";
-import { UsageError, flag, int, list, parseArgs, str, userPath } from "./args.ts";
-import type { CaptureResult } from "./capture.ts";
-import type { NetIssue } from "./net.ts";
-import { releasedVersion } from "./shim.ts";
-import { harnessDetail, step, StepError } from "./steps.ts";
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { styleText } from 'node:util';
+import type { CDPSession, Browser, Page } from 'puppeteer-core';
+import { htmlLang } from '../../src/i18n/locales.ts';
+import { WEB_DIR, REPO_DIR, captureDir } from '../../src/lib/cookbook/paths.ts';
+import { listRecipeSlugs, readRecipeMeta } from '../../src/lib/cookbook/sources.ts';
+import { type SampleLocale, type CaptureVariant, SAMPLE_LOCALES } from '../../src/lib/cookbook/types.ts';
+import { parseArgs, str, UsageError, flag, list, int, userPath } from './args.ts';
+import type { CaptureResult } from './capture.ts';
+import type { NetIssue } from './net.ts';
+import { releasedVersion } from './shim.ts';
+import { step, StepError, harnessDetail } from './steps.ts';
+import { type Edition, editionsOf, dim, bundleFile, compareEdition, resultOf, pool } from './sandbox/compare.ts';
+
+export { extraWarnings, WARNING_SINCE, warningSince, laterRelease, variableFamilies } from './sandbox/warnings.ts';
+export { compareEdition } from './sandbox/compare.ts';
 
 export { SANDBOX_USAGE } from "./sandbox-usage.ts";
 
@@ -102,271 +105,6 @@ export interface SandboxExpected {
 export interface SandboxFinding {
   severity: "fail" | "warn" | "info";
   detail: string;
-}
-
-/** The warnings in `got` beyond those in `expected`, each as often as it is over. */
-export function extraWarnings(expected: readonly string[], got: readonly string[]): string[] {
-  const left = new Map<string, number>();
-  for (const w of expected) left.set(w, (left.get(w) ?? 0) + 1);
-  const out: string[] = [];
-  for (const w of got) {
-    const n = left.get(w) ?? 0;
-    if (n > 0) left.set(w, n - 1);
-    else out.push(w);
-  }
-  return out;
-}
-
-/**
- * Warning kinds by the release that first raises them. A recipe pins the
- * engine of its capture; the Sandbox runs the tree's. A kind that came after
- * the pinned engine is one the pen could not raise: the edition is to be
- * captured again on the release that brings it (#887), not broken. A new
- * reason of an older kind is keyed `"<kind> <reason>"` (a word of the
- * warning after its kind).
- */
-export const WARNING_SINCE: Readonly<Record<string, string>> = {
-  contentInConfig: "1.34.0",
-  tocGroupSplit: "1.34.0",
-  templateUnknown: "1.34.0",
-  slotUnknown: "1.34.0",
-  slotEmpty: "1.34.0",
-  pageFenceLength: "1.34.0",
-  templateDuplicate: "1.34.0",
-  templateExtendsCycle: "1.34.0",
-  templateExtendsUnknown: "1.34.0",
-  frameDuplicate: "1.34.0",
-  frameStyleUnknown: "1.34.0",
-  frameAnchorUnknown: "1.34.0",
-  frameMinMax: "1.34.0",
-  groupFrameUnknown: "1.34.0",
-  groupFrameTwice: "1.34.0",
-  frameChainLoop: "1.34.0",
-  overflowTargetUnknown: "1.34.0",
-  labelStyleUnknown: "1.34.0",
-  frameOverflow: "1.34.1",
-  unknownMarkStyle: "1.34.1",
-  spreadMismatch: "1.35.0",
-  "textWrap noContour": "1.36.0",
-  frameContinuationLimit: "1.37.0",
-  labelAnchorUnknown: "1.37.0",
-  anchorUnlabelled: "1.37.0",
-  pictureBelowPrintSize: "1.37.0",
-  comicPanelFrame: "1.38.0",
-  continueTargetMissing: "1.38.0",
-  calloutStyleExtendsUnknown: "1.39.0",
-  calloutStyleExtendsCycle: "1.39.0",
-  labelOverflow: "1.39.0",
-  labelOverlap: "1.39.0",
-  figureWordsShared: "1.42.0",
-  headingClaimsColumn: "1.43.0",
-  frameCovered: "1.48.0",
-  frameOutsideArea: "1.48.0",
-  repeatOverflow: "1.48.0",
-  moduleUnknown: "1.48.0",
-  moduleAsPage: "1.48.0",
-  moduleNested: "1.48.0",
-  moduleNameRejected: "1.48.0",
-  lookUnknown: "1.50.0",
-  emptyCaption: "1.52.0",
-  resourceMoved: "1.52.0",
-  glyphFallback: "1.52.0",
-  wordDividedByCharacter: "1.52.0",
-  wordDividedBySyllable: "1.52.0",
-  strayFence: "1.52.0",
-  folioMissing: "1.53.0",
-};
-
-/** The release that first raises `warning` (its kind, or its kind and one
- *  of its words: a reason added later), if it is in {@link WARNING_SINCE}. */
-export function warningSince(warning: string): string | undefined {
-  const [kind = "", ...words] = warning.split(" ");
-  for (const word of words) {
-    const since = WARNING_SINCE[`${kind} ${word}`];
-    if (since) return since;
-  }
-  return WARNING_SINCE[kind];
-}
-
-/** `a` is a later release than `b` ("1.34.0" against "1.33.11"). */
-export function laterRelease(a: string, b: string): boolean {
-  const pa = a.split(/[.-]/).map((n) => Number.parseInt(n, 10) || 0);
-  const pb = b.split(/[.-]/).map((n) => Number.parseInt(n, 10) || 0);
-  for (let i = 0; i < 3; i++) if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) > (pb[i] ?? 0);
-  return false;
-}
-
-/** "fontFallback Bangers 700 (synthesized)" → "Bangers". */
-function fallbackFamily(warning: string, families: readonly string[]): string | null {
-  if (!warning.startsWith("fontFallback ")) return null;
-  const rest = warning.slice("fontFallback ".length);
-  return [...families].sort((a, b) => b.length - a.length).find((family) => rest.startsWith(`${family} `)) ?? null;
-}
-
-/** "A", "A and B", "A, B and C". */
-const listed = (names: readonly string[]) => (names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`);
-
-/**
- * The families of a run the page set from a variable file: every loaded
- * face of theirs answers for a range of weights ("200 900 normal"). A
- * family with one cut and a stand-in for its bold (#688: "400 normal" and
- * "600 900 normal") is not one. Empty for a run that reports no faces
- * (`--site`).
- */
-export function variableFamilies(fonts: SandboxRun["fonts"]): string[] {
-  return Object.entries(fonts)
-    .filter(([, held]) => {
-      const loaded = held.page.filter((face) => !/\((unloaded|loading|error)\)/.test(face));
-      return loaded.length > 0 && loaded.every((face) => /^\d+ \d+ /.test(face));
-    })
-    .map(([family]) => family);
-}
-
-/**
- * An edition's run against its record. Failures: an error of the page or
- * the worker, a layout that did not settle, a warning the pen's builds do
- * not have (for a `fontFallback`, with the family's faces on the page and
- * in the worker; a kind newer than the recipe's engine is a warning). A chapter count, a page count or, on the recorded engine
- * (`sameEngine`), lines other than the recorded ones: failures with
- * `strict`, warnings without. A layout hash other than the recorded one
- * under the recorded lines is a note: the Sandbox measures with another
- * build of the family than the pen (Google's variable file, the pen the
- * static cuts), and the hash rounds widths that differ by fractions of a
- * pixel. With no lines recorded (a capture from before them) the layout
- * hash cannot tell a line that moved from such a width: a warning that
- * says to capture again. An edition whose capture.json has no
- * `sandbox.chapters` yet is compared on its page total, and its warnings
- * are notes: there is nothing recorded to read them against.
- */
-export function compareEdition(
-  expected: SandboxExpected,
-  run: SandboxRun,
-  { strict, sameEngine, ownBundle }: { strict: boolean; sameEngine: boolean; ownBundle?: string },
-): SandboxFinding[] {
-  const out: SandboxFinding[] = [];
-  const add = (severity: SandboxFinding["severity"], detail: string) => out.push({ severity, detail });
-  const moved: SandboxFinding["severity"] = strict ? "fail" : "warn";
-  for (const error of run.errors) add("fail", error);
-  if (!run.chapters.length) {
-    if (!run.errors.length) add("fail", "the Sandbox laid out no chapter");
-    return out;
-  }
-  if (!run.settled) add("fail", "the book's plan did not settle: a chapter kept being asked for again");
-  if (ownBundle !== undefined && run.bundleUrl !== ownBundle) {
-    add("fail", `the page fetched ${run.bundleUrl ?? "no bundle"}, not the edition's own ${ownBundle}`);
-  }
-
-  const s = (n: number) => `${n} page${n === 1 ? "" : "s"}`;
-  const got = run.chapters;
-  const want = expected.sandbox.chapters;
-  const raised = got.flatMap((c) => c.warnings);
-  const faces = (warning: string) => {
-    const family = fallbackFamily(warning, Object.keys(run.fonts));
-    const held = family ? run.fonts[family] : undefined;
-    return held ? ` (${family} on the page: ${held.page.join(", ") || "no face"}; in the worker: ${held.worker.join(", ") || "no face"})` : "";
-  };
-  if (!want) {
-    // Before the capture records chapters: the page total, and notes.
-    const total = got.reduce((sum, c) => sum + c.pages, 0);
-    const recorded = expected.sandbox.pages ?? expected.pages;
-    if (total !== recorded) add(moved, `the Sandbox lays the bundle out to ${s(total)}, the capture counts ${recorded}`);
-    for (const warning of raised) add("info", `the Sandbox raises ${warning}${faces(warning)} (capture.json records no sandbox.warnings to read it against: capture with --sandbox-only)`);
-    return out;
-  }
-  for (const warning of extraWarnings(expected.sandbox.warnings ?? [], raised)) {
-    const since = warningSince(warning);
-    if (since && laterRelease(since, expected.engine)) {
-      add("warn", `the Sandbox raises ${warning}, a warning postext ${since} added after the recipe's ${expected.engine}: capture again on ${since} or later`);
-      continue;
-    }
-    add("fail", `the Sandbox raises a warning the pen does not: ${warning}${faces(warning)}`);
-  }
-  if (got.length !== want.length) {
-    add(moved, `the Sandbox lays out ${got.length} chapter${got.length === 1 ? "" : "s"}, the capture records ${want.length}`);
-    return out;
-  }
-  const one = want.length === 1;
-  const variable = variableFamilies(run.fonts);
-  const measured = variable.length ? `the Sandbox measures ${listed(variable)} from ${variable.length === 1 ? "a variable file" : "variable files"}, a pen from the static cuts` : "";
-  got.forEach((chapter, i) => {
-    const name = one ? "the bundle" : `chapter ${i + 1}`;
-    const recorded = want[i]!;
-    if (chapter.pages !== recorded.pages) {
-      add(moved, `the Sandbox lays ${name} out to ${s(chapter.pages)}, the capture records ${recorded.pages}`);
-      return;
-    }
-    if (!sameEngine || chapter.hash === undefined || chapter.hash === recorded.hash) return;
-    const hashes = `layout hash ${chapter.hash} against ${recorded.hash}`;
-    if (recorded.lines === undefined || chapter.lines === undefined) {
-      add("warn", `the Sandbox lays ${name} out to another layout hash than the capture records (${s(chapter.pages)} on both sides, ${hashes}), and capture.json records no lines hash to tell a line that breaks elsewhere from one set to another width: capture with --sandbox-only`);
-    } else if (chapter.lines !== recorded.lines) {
-      add(moved, `the Sandbox breaks the lines of ${name} otherwise than the capture records (${s(chapter.pages)} on both sides, lines hash ${chapter.lines} against ${recorded.lines})${measured ? `; ${measured}, and a line a fraction of a pixel from its measure breaks on either side of it` : ""}`);
-    } else {
-      add("info", `the Sandbox sets ${name} in the lines the capture records, some of them to another width (${hashes})${measured ? `: ${measured}` : ""}`);
-    }
-  });
-  return out;
-}
-
-// ─── The editions of a run ──────────────────────────────────────────────────
-
-interface Edition extends SandboxExpected {
-  timeoutMs: number;
-}
-
-function editionsOf(slugs: readonly string[], langs: readonly SampleLocale[], timeoutMs: number): { editions: Edition[]; broken: CaptureResult[] } {
-  const editions: Edition[] = [];
-  const broken: CaptureResult[] = [];
-  const failed = (slug: string, detail: string): CaptureResult => ({
-    slug, variant: "en", ok: false, fails: [{ check: "sandbox", detail }], warns: [], pages: 0, totalMs: 0, written: false, outDir: captureDir(slug),
-  });
-  for (const slug of slugs) {
-    const file = path.join(captureDir(slug), "capture.json");
-    if (!fs.existsSync(file)) {
-      broken.push(failed(slug, "no capture.json: capture the recipe first"));
-      continue;
-    }
-    let manifest: CaptureManifest;
-    try {
-      manifest = JSON.parse(fs.readFileSync(file, "utf-8")) as CaptureManifest;
-    } catch (error) {
-      broken.push(failed(slug, `capture.json does not parse: ${(error as Error).message}`));
-      continue;
-    }
-    for (const variant of SAMPLE_LOCALES) {
-      const data = manifest.variants?.[variant];
-      if (!data?.sandbox || !langs.includes(variant)) continue;
-      editions.push({ slug, variant, sandbox: data.sandbox, pages: data.specimen.pages, engine: manifest.engine.postext, timeoutMs });
-    }
-  }
-  return { editions, broken };
-}
-
-const bundleFile = (slug: string, lang: string) => path.join(captureDir(slug), lang, `${slug}.postext`);
-const dim = (text: string) => styleText("dim", text, { stream: process.stderr });
-
-/** A run's findings as the capture's report prints them. */
-function resultOf(edition: Edition, findings: SandboxFinding[], run: SandboxRun | null, totalMs: number, engine: string): CaptureResult {
-  const fails = findings.filter((f) => f.severity === "fail").map((f) => ({ check: "sandbox", detail: f.detail }));
-  return {
-    slug: edition.slug, variant: edition.variant, ok: fails.length === 0, fails,
-    warns: findings.filter((f): f is SandboxFinding & { severity: "warn" | "info" } => f.severity !== "fail").map((f) => ({ check: "sandbox", severity: f.severity, detail: f.detail })),
-    pages: run?.chapters.reduce((sum, c) => sum + c.pages, 0) ?? 0, totalMs, written: false,
-    outDir: path.join(captureDir(edition.slug), edition.variant), engine,
-  };
-}
-
-async function pool<T>(jobs: (() => Promise<T>)[], limit: number): Promise<T[]> {
-  const results: T[] = new Array(jobs.length);
-  let next = 0;
-  const worker = async () => {
-    while (next < jobs.length) {
-      const i = next++;
-      results[i] = await jobs[i]();
-    }
-  };
-  await Promise.all(Array.from({ length: Math.max(1, Math.min(limit, jobs.length)) }, worker));
-  return results;
 }
 
 // ─── The working tree ───────────────────────────────────────────────────────

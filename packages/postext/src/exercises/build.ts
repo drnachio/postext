@@ -7,9 +7,9 @@
 import type { ContentBlock } from '../parse/index.js';
 import type { LayoutContinuation, OutlineEntry } from '../types.js';
 import type { ResolvedConfig, VDTBlock, VDTDocument } from '../vdt.js';
-import { exerciseSettingsOf, type ExerciseSettings } from '../defaults/exercises.js';
-import { resolveChipStylesConfig } from '../defaults/chipStyles.js';
-import { resolveParagraphStylesConfig } from '../defaults/paragraphStyles.js';
+import { exerciseSettingsOf, type ExerciseSettings } from '../defaults/boxes/exercises.js';
+import { resolveChipStylesConfig } from '../defaults/text/chipStyles.js';
+import { resolveParagraphStylesConfig } from '../defaults/text/paragraphStyles.js';
 import { relinkToPalette } from '../defaults/shared.js';
 import { dimensionToPx } from '../units.js';
 import { computeBaselineGrid, resolvedDirection, resolvedLocale } from '../pipeline/config.js';

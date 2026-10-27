@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { computePageMetrics, contentAreaForPage, pageMirrored } from '../../pipeline/buildHelpers.js';
+import { computePageMetrics, contentAreaForPage, pageMirrored } from '../../pipeline/blocks/buildHelpers.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { flowRectToPage, flowToPage, pageRectToFlow, pageToFlow, verticalFlowOf, type VDTDocument, type VDTPage } from '../../vdt.js';
 import type { PostextConfig, Dimension } from '../../types.js';

@@ -4,7 +4,7 @@ import {
   ogSize,
   ogContentType,
   ogTextLocale,
-} from "@/lib/og-image";
+} from "@/lib/og/og-image";
 import { getTranslations } from "next-intl/server";
 import { getDocSource, getDocSlugsForLocale } from "@/lib/docs";
 import { docPart } from "@/lib/docParts";

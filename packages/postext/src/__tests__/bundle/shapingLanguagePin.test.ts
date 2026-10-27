@@ -3,7 +3,7 @@ import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { createBundle, openBundle, pinLegacySlashBreaks } from '../../bundle/index.js';
 import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyShapingLanguage } from '../../bundle/configVersion.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
-import { shapingLanguageOf } from '../../locale.js';
+import { shapingLanguageOf } from '../../hyphenation/locale.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig } from '../../types.js';
 

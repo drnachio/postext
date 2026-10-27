@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Generate src/bidiData.ts, the Unicode tables of the bidi algorithm
-// (src/bidi.ts), from a directory holding the UCD files:
+// Generate src/writing/bidiData.ts, the Unicode tables of the bidi algorithm
+// (src/writing/bidi.ts), from a directory holding the UCD files:
 //
 //   node scripts/gen-bidi-data.mjs <ucd-dir>
 //
@@ -142,7 +142,7 @@ ${rows(mirrors, ([a, b]) => `${hex(a)},${hex(b)}`)}
 ];
 `;
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const target = join(root, 'src', 'bidiData.ts');
+const target = join(root, 'src', 'writing', 'bidiData.ts');
 writeFileSync(target, out);
 
 // Conformance subsets: deterministic, so a regenerated subset only changes

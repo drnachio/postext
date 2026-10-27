@@ -815,7 +815,7 @@ const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garam
 
 `registerFonts`はフォントの生のバイト列を受け取ります。取得するのはメインスレッドが適しています。中央のキャッシュがあれば、複数のワーカーインスタンスで同じバイト列を共有できるからです。
 
-Sandboxの`collectFontPayloadsForFamilies`（`packages/postext-sandbox/src/controls/fontLoader.ts`）は参考実装です。次の処理を行います。
+Sandboxの`collectFontPayloadsForFamilies`（`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`）は参考実装です。次の処理を行います。
 
 1. `https://api.fontsource.org/v1/fonts/{family-id}`に問い合わせ、ファミリーにあるウェイトとスタイルを調べます。
 2. jsDelivrにあるファミリーのパッケージ（`@fontsource/{family-id}@5/400.css`）から、サブセットとそれぞれの`unicode-range`を読みます。ファミリーごとに1回です。その後、各ファイルはそのスタイルシートを返した正確なバージョン（jsDelivrの`x-jsd-version`）に対して取得するので、ファミリーがパッケージの2つのバージョンから届くことはありません。

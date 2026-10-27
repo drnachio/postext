@@ -3,8 +3,8 @@ import {
   DEFAULT_PARAGRAPH_STYLES,
   resolveParagraphStylesConfig,
   stripParagraphStylesDefaults,
-} from '../../defaults/paragraphStyles.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
+} from '../../defaults/text/paragraphStyles.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
 import { stripConfigDefaults, applyPaletteToConfig } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { ParagraphStyleConfig, PostextConfig } from '../../types.js';

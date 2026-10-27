@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { generateOgImage, ogSize, ogContentType, ogTextLocale } from "@/lib/og-image";
+import { generateOgImage, ogSize, ogContentType, ogTextLocale } from "@/lib/og/og-image";
 
 export const alt = "Postext — Cookbook";
 export const size = ogSize;

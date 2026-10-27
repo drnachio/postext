@@ -113,7 +113,7 @@ const bytes = await renderToPdf(doc, {
 
 ### 浏览器字体提供函数（Fontsource + WOFF2）
 
-沙盒附带`createPdfFontProvider()`（`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`），你可以把它复制到任何浏览器应用中。核心部分如下：
+沙盒附带`createPdfFontProvider()`（`packages/postext-sandbox/src/viewport/pdf/pdfFontProvider.ts`），你可以把它复制到任何浏览器应用中。核心部分如下：
 
 ```ts
 import type { PdfFontProvider } from 'postext-pdf';
@@ -328,7 +328,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**重要**：如果配置引用了Web字体，要在`buildDocument`*之前*调用`ensureConfigFontsLoaded(config)`（或等效的做法）。排版按浏览器当时拥有的该家族字体度量来测量；如果真正的字体还没到达，VDT就会按后备字体测量，PDF将与Canvas或HTML输出不一致。沙盒在每次渲染前都显式做了这一步（见`packages/postext-sandbox/src/viewport/PdfViewport.tsx`）。
+**重要**：如果配置引用了Web字体，要在`buildDocument`*之前*调用`ensureConfigFontsLoaded(config)`（或等效的做法）。排版按浏览器当时拥有的该家族字体度量来测量；如果真正的字体还没到达，VDT就会按后备字体测量，PDF将与Canvas或HTML输出不一致。沙盒在每次渲染前都显式做了这一步（见`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`）。
 
 ### 在线示例：在浏览器中生成PDF
 
@@ -384,4 +384,4 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 
 ### 参考实现
 
-沙盒的`PdfViewport`组件（`packages/postext-sandbox/src/viewport/PdfViewport.tsx`）把上述各部分接成一个实时预览，带有重新生成、下载和打印按钮，是任何浏览器内PDF集成的良好起点。它通过共享的排版工作线程构建VDT（见[在Web Worker中运行排版](/zh/docs/configuration-programmatic-usage#在web-worker中运行排版)），所以点击*重新生成*时，流水线运行期间界面不会卡住；主线程只负责`renderToPdf`（VDT一旦存在，它已经很快）。
+沙盒的`PdfViewport`组件（`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`）把上述各部分接成一个实时预览，带有重新生成、下载和打印按钮，是任何浏览器内PDF集成的良好起点。它通过共享的排版工作线程构建VDT（见[在Web Worker中运行排版](/zh/docs/configuration-programmatic-usage#在web-worker中运行排版)），所以点击*重新生成*时，流水线运行期间界面不会卡住；主线程只负责`renderToPdf`（VDT一旦存在，它已经很快）。

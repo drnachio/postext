@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
-import { compileDocsMdx } from "@/lib/mdx";
-import { readPenSources } from "@/lib/codepen";
+import { compileDocsMdx } from "@/lib/mdx/mdx";
+import { readPenSources } from "@/lib/codepen/codepen";
 import { CodePenEmbed } from "./CodePenEmbed";
 
 interface CodePenExampleProps {

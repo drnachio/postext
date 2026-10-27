@@ -11,7 +11,7 @@ import { parseFontString } from '../fontString.js';
 import { parseUnicodeRange, rangesHold } from '../unicodeRange.js';
 import { withDocumentLanguage } from '../shapingLanguage.js';
 import { drawTextPx, textAdvancePx, type PageCtx } from '../pdf-backend/primitives.js';
-import { inlineSvgFontsForRaster } from '../pdf-backend/renderResourceBlock.js';
+import { inlineSvgFontsForRaster } from '../pdf-backend/blocks/renderResourceBlock.js';
 import { paintedGlyphs, type PaintedGlyph } from './glyphPositions.js';
 
 // #770: a browser sets a character two files of a family hold in the file

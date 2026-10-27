@@ -15,7 +15,7 @@ import { extractInlineMath, injectMathSpans } from './inlineMath.js';
  * outside the markdown document, so their "source" is the snippet string
  * itself and offsets are relative to it.
  *
- * Measurement (`pipeline/resourceLayout.ts`) and selection mapping (the
+ * Measurement (`pipeline/resources/resourceLayout.ts`) and selection mapping (the
  * sandbox's click-to-edit) must agree on one parse, hence this module: the
  * measurer consumes {@link parseInlineSnippetSpans}; a host that maps a
  * rendered glyph back to a position in the snippet uses

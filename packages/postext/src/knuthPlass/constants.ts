@@ -24,7 +24,7 @@ export const TRACKING_BADNESS = 100;
 export const COLUMN_END_HYPHEN_BADNESS = 1000;
 export const MAX_STRETCH = Number.MAX_SAFE_INTEGER;
 /** Word spacing (justified over normal space) past which a justified line
- *  is set ragged instead of stretched (`pipeline/raggedLines.ts`). The
+ *  is set ragged instead of stretched (`pipeline/text/raggedLines.ts`). The
  *  breaker's looseness gate counts such lines apart from the ones that
  *  stay justified. */
 export const RAGGED_SPACE_RATIO = 3;

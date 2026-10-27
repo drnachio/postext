@@ -15,7 +15,7 @@ import type { BoundingBox, ContentWarning, ResolvedConfig, VDTComicArt, VDTComic
 import { flowRectToPage } from '../vdt.js';
 import { resolvedDirection, resolvedLocale } from '../pipeline/config.js';
 import { dimensionToPx } from '../units.js';
-import { chineseScriptOf, directionOf, isCjkLanguage, isJapaneseLanguage, presentTag } from '../locale.js';
+import { chineseScriptOf, directionOf, isCjkLanguage, isJapaneseLanguage, presentTag } from '../hyphenation/locale.js';
 import { comicReadingDirection, DEFAULT_LETTERING_STATIC, pickBalloonStyle, pickPanelStyle, resolvedComics } from '../defaults/comics.js';
 import { comicArtCrop, comicArtPointToPage, comicArtRectToPage } from './art.js';
 import { comicGeometry, physicalSide, pointInPolygon, type ComicFrameSide } from './geometry.js';

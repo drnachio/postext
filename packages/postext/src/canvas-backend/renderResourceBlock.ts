@@ -15,11 +15,11 @@
 
 import { paintScoreBody } from './scoreRender.js';
 import type { VDTBlock, VDTFigureLabelLayout, VDTLine, ResolvedResourceBlock, RoundedOutline, VDTResourceVideo } from '../vdt.js';
-import { playMarkTriangle, qrModuleRuns } from '../pipeline/videoOverlay.js';
+import { playMarkTriangle, qrModuleRuns } from '../pipeline/resources/videoOverlay.js';
 import { fillFlowText, setVerticalPaint, verticalPaintActive } from './verticalText.js';
 import { fillSegmentText, fillWordsText } from './segmentText.js';
-import { lineMarkCuts } from '../measure/markCuts.js';
-import { hasCJK } from '../measure/cjk.js';
+import { lineMarkCuts } from '../measure/cjk/markCuts.js';
+import { hasCJK } from '../measure/cjk/cjk.js';
 import { tableCellFill, tableFrameOutline } from '../vdt.js';
 import { paintSwatchSegment } from './swatch.js';
 import { paintChip } from './chip.js';
@@ -27,7 +27,7 @@ import { renderMathSegment } from './blockRender.js';
 import { applySingleInkToPixels, isSingleInkSvgUrl } from '../svg/singleInk.js';
 import { fillSegmentWord, type WordRun } from './wordRuns.js';
 import { paintedSegments } from './wordPieces.js';
-import { uncroppedPictureBox } from '../pipeline/safeArea.js';
+import { uncroppedPictureBox } from '../pipeline/resources/safeArea.js';
 import { figureLabelLeaderPaths, figureLabelMatrix, labelPlateBox, unmirrorLabelLayout } from '../composed/labels.js';
 import { drawBoxBackground, renderPathBlock } from './headerFooter.js';
 import { mirroredPaintActive, paintUnmirrored } from './mirrorFrame.js';

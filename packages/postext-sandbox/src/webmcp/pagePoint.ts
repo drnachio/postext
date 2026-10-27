@@ -6,7 +6,7 @@
 import { formatNumeral, pageComics, pageToFlow } from 'postext';
 import type { Resource, VDTBlock, VDTComicBalloon, VDTDocument } from 'postext';
 import type { BookPlan, Chapter } from '../book/types.js';
-import { getSvgTextIndex } from '../controls/svgTextIndex.js';
+import { getSvgTextIndex } from '../controls/media/svgTextIndex.js';
 import {
   designImageFileIdAtPixel,
   findLinkLocation,
@@ -14,8 +14,8 @@ import {
   pageTargetAtPixel,
   pixelToSourceOffset,
   type LinkTarget,
-} from '../viewport/CanvasPreview/geometry.js';
-import { resourceTextAtPixel, type ResourceTextHit } from '../viewport/CanvasPreview/resourceHit.js';
+} from '../viewport/canvas/CanvasPreview/geometry.js';
+import { resourceTextAtPixel, type ResourceTextHit } from '../viewport/canvas/CanvasPreview/resourceHit.js';
 import { registryArtOpacity } from '../viewport/comics/artAlpha.js';
 import { comicPressAt, type ComicPress } from '../viewport/comics/comicHit.js';
 

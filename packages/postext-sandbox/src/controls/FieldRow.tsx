@@ -4,12 +4,12 @@ import { forwardRef, useContext, useId, useMemo, useState, type ReactNode } from
 import { CircleHelp } from 'lucide-react';
 import { cn } from '../ui/cn.js';
 import { HighlightedText } from '../ui/highlight.js';
-import { Tooltip } from '../ui/tooltip.js';
+import { Tooltip } from '../ui/overlays/tooltip.js';
 import { useSandboxLabels } from '../context/SandboxContext.js';
 import { useFieldMatch } from '../sidebar/search/MatchScope.js';
 import { normalizeText } from '../sidebar/search/normalize.js';
 import { FieldIdsContext, ShowingDefaultsContext, useHelpMode, type FieldIds } from './fieldContext.js';
-import { ResetButton } from './ResetButton.js';
+import { ResetButton } from './inputs/ResetButton.js';
 import { FieldLayerContext, LayerChip, LayerDot, fieldLayerOf, layerText } from './fieldLayer.js';
 import { Link2 } from 'lucide-react';
 

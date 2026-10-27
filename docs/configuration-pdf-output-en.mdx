@@ -113,7 +113,7 @@ Without `onWarning`, the message goes to `console.warn`. The text keeps its posi
 
 ### Browser font provider (Fontsource + WOFF2)
 
-The sandbox ships `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`), which you can copy into any browser app. The essentials:
+The sandbox ships `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdf/pdfFontProvider.ts`), which you can copy into any browser app. The essentials:
 
 ```ts
 import type { PdfFontProvider } from 'postext-pdf';
@@ -328,7 +328,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**Important:** call `ensureConfigFontsLoaded(config)` (or equivalent) *before* `buildDocument` when your config references web fonts. Layout is measured against whatever font metrics the browser currently has for that family — if the real font has not landed yet, the VDT is measured against a fallback and the PDF will not match the canvas or HTML output. The sandbox does this explicitly before every render (see `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+**Important:** call `ensureConfigFontsLoaded(config)` (or equivalent) *before* `buildDocument` when your config references web fonts. Layout is measured against whatever font metrics the browser currently has for that family — if the real font has not landed yet, the VDT is measured against a fallback and the PDF will not match the canvas or HTML output. The sandbox does this explicitly before every render (see `packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`).
 
 ### Live example: a PDF in the browser
 
@@ -384,4 +384,4 @@ For production print workflows, tune these configuration options before renderin
 
 ### Reference implementation
 
-The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) wires the pieces above into a live preview with regenerate, download, and print buttons, and is a good starting point for any in-browser PDF integration. It builds the VDT through the shared layout worker (see [Running layout in a Web Worker](/en/docs/configuration-programmatic-usage#running-layout-in-a-web-worker)) so clicking *Regenerate* doesn't freeze the UI while the pipeline runs — the main thread only handles `renderToPdf` (which is already fast once the VDT exists).
+The sandbox's `PdfViewport` component (`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`) wires the pieces above into a live preview with regenerate, download, and print buttons, and is a good starting point for any in-browser PDF integration. It builds the VDT through the shared layout worker (see [Running layout in a Web Worker](/en/docs/configuration-programmatic-usage#running-layout-in-a-web-worker)) so clicking *Regenerate* doesn't freeze the UI while the pipeline runs — the main thread only handles `renderToPdf` (which is already fast once the VDT exists).

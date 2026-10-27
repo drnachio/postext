@@ -26,7 +26,7 @@ import { sameLocaleTag } from '../../presets/locale.js';
 import { localeDisplayName, localeShortTag } from '../../presets/localeNames.js';
 import { readViewHash } from '../../storage/viewHash.js';
 import { useUiRtl } from '../../ui/index.js';
-import { TOOLBAR_STYLE_BASE, ToolbarButton, ToolbarSeparator, toolbarHiddenStyle } from '../CanvasToolbar.js';
+import { TOOLBAR_STYLE_BASE, ToolbarButton, ToolbarSeparator, toolbarHiddenStyle } from '../canvas/CanvasToolbar.js';
 import { useFloatingToolbarShell } from '../useFloatingToolbarShell.js';
 import { hasComposedPages } from './ReflowPanel.js';
 import { useReflowShown } from './reflowView.js';

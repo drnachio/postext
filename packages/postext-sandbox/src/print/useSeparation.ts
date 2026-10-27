@@ -7,7 +7,7 @@
 
 import { useMemo } from 'react';
 import { useSandboxSelector } from '../context/SandboxContext.js';
-import { cmykToRgb, rgbToCmyk, rgbToHex, type CMYK, type RGB } from '../controls/color-utils.js';
+import { cmykToRgb, rgbToCmyk, rgbToHex, type CMYK, type RGB } from '../controls/color/color-utils.js';
 import { usePrintSetup } from './printSetup.js';
 
 export interface Separation {

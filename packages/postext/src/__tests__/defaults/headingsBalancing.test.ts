@@ -3,7 +3,7 @@ import {
   DEFAULT_COLUMN_BALANCING,
   resolveHeadingsConfig,
   stripHeadingsDefaults,
-} from '../../defaults/headings.js';
+} from '../../defaults/structure/headings.js';
 
 describe('headings.balancing defaults', () => {
   it('beforeSpan (level the band a page-span box leaves) is on by default', () => {

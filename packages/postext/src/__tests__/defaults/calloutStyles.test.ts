@@ -4,10 +4,10 @@ import {
   DEFAULT_CALLOUT_STYLE_STATIC,
   resolveCalloutStylesConfig,
   stripCalloutStylesDefaults,
-} from '../../defaults/calloutStyles.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
-import { resolveHeadingsConfig } from '../../defaults/headings.js';
-import { resolveUnorderedListsConfig } from '../../defaults/unorderedLists.js';
+} from '../../defaults/boxes/calloutStyles.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
+import { resolveHeadingsConfig } from '../../defaults/structure/headings.js';
+import { resolveUnorderedListsConfig } from '../../defaults/text/unorderedLists.js';
 import { stripConfigDefaults, applyPaletteToConfig, DEFAULT_MAIN_COLOR_HEX } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { CalloutStyleConfig, PostextConfig } from '../../types.js';

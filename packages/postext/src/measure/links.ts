@@ -9,7 +9,7 @@
 
 import type { VDTLine, VDTLineSegment, VDTSegmentMark } from '../vdt.js';
 import type { InlineSpan } from '../parse/index.js';
-import { writtenText } from './kashida.js';
+import { writtenText } from './rtl/kashida.js';
 import { SOFT_HYPHEN } from './types.js';
 import { GEMINATE_DOT, endsInsideGeminate } from './geminate.js';
 import { BREAKING_SPACE_RE } from './spaces.js';

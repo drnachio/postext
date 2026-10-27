@@ -9,8 +9,8 @@ import { buildDocument, createMeasurementCache, type CalloutStyleConfig, type De
 import { createTemplate, updateTemplate } from './templateEdits.js';
 import { newConnector, pickConnectorFrame, updateDecorationElement, type ConnectorPickPhase } from './connectorEdits.js';
 import { connectorHandles } from './connectorHandles.js';
-import { joinedTabPatch } from '../sidebar/sections/CalloutStylesSection.js';
-import { setCorner, unlinkCorners } from '../sidebar/sections/HeaderFooterSection/shapeEdits.js';
+import { joinedTabPatch } from '../sidebar/sections/callouts/CalloutStylesSection.js';
+import { setCorner, unlinkCorners } from '../sidebar/sections/running/HeaderFooterSection/shapeEdits.js';
 
 class StubCtx {
   font = '';

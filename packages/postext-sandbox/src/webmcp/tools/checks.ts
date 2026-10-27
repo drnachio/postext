@@ -6,8 +6,8 @@
 import { describeFrameCoverProposal, describeFrameOutsideProposal, describeFrameOverflowProposal, resolvePdfGenerationConfig, resolvePrintConfig } from 'postext';
 import type { FrameCoverProposal, FrameOutsideProposal, FrameOverflowProposal, PostextConfig, Resource } from 'postext';
 import { composeBookMemo } from '../../book/compose.js';
-import { pdfFontChecksFor } from '../../controls/pdfFontWarnings.js';
-import { svgFontIssues, unavailableResourceImages } from '../../controls/resourceImages.js';
+import { pdfFontChecksFor } from '../../controls/fonts/pdfFontWarnings.js';
+import { svgFontIssues, unavailableResourceImages } from '../../controls/media/resourceImages.js';
 import { onPreflightInputsChange, preflightInputs, type PreflightInputs } from '../../print/preflightInputs.js';
 import { detailFor, titleFor } from '../../sidebar/WarningsPanel.js';
 import { hasIndexedDB } from '../../storage/blobStore.js';

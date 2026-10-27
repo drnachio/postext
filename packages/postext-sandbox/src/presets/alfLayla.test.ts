@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from 'postext';
 import { pickBundleView, type BundleManifest } from 'postext/bundle';
 import { computeWarnings } from '../warnings/compute.js';
-import { missingUsedVariants } from '../controls/fontLoader.js';
+import { missingUsedVariants } from '../controls/fonts/fontLoader.js';
 import { effectiveCanvasScope } from '../book/scope.js';
 import { fontsToCustomFonts } from './manifest.js';
 import type { PresetFontFamilySpec } from './types.js';

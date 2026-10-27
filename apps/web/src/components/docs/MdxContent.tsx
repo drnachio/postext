@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { getLocale } from "next-intl/server";
-import { compileDocsMdx } from "@/lib/mdx";
+import { compileDocsMdx } from "@/lib/mdx/mdx";
 import * as illustrations from "./illustrations";
 import { CodePenExample } from "./CodePenExample";
 import { TutorialVideo } from "./TutorialVideo";
 import { Screenshot } from "./Screenshot";
 import { TableFit } from "./TableFit";
-import { literalStringExpressions } from "@/lib/mdxStrings";
+import { literalStringExpressions } from "@/lib/mdx/mdxStrings";
 import { NewTabNote } from "@/components/ui/NewTabNote";
 
 /** The plain text of rendered children (inline code, emphasis and all). */

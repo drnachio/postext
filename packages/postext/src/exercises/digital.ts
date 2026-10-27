@@ -6,7 +6,7 @@
  * writes for the exercise script (`attachExercises`, `EXERCISE_SCRIPT`).
  */
 
-import { assessmentLimitsOf, type ExerciseSettings, type ExerciseWords } from '../defaults/exercises.js';
+import { assessmentLimitsOf, type ExerciseSettings, type ExerciseWords } from '../defaults/boxes/exercises.js';
 import type { ExerciseRecord } from './record.js';
 import type { Dimension, ExerciseAssessmentConfig } from '../types.js';
 import { dimensionToPx } from '../units.js';

@@ -815,7 +815,7 @@ const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garam
 
 `registerFonts`接收原始字体字节。最好在主线程上获取这些字节，因为集中缓存可以让多个工作线程实例共享同一份字节。
 
-沙盒的`collectFontPayloadsForFamilies`（`packages/postext-sandbox/src/controls/fontLoader.ts`）是一份参考实现。它：
+沙盒的`collectFontPayloadsForFamilies`（`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`）是一份参考实现。它：
 
 1. 查询`https://api.fontsource.org/v1/fonts/{family-id}`，得知该字体族有哪些字重和样式。
 2. 从该字体族在jsDelivr上的包（`@fontsource/{family-id}@5/400.css`）读取它的子集及各自的`unicode-range`，每个字体族读一次。随后各个文件都从提供该样式表的那个确切版本（jsDelivr的`x-jsd-version`）请求，这样同一个字体族的文件不会混用两个版本的包。

@@ -6,10 +6,10 @@ import type { Resource, ResourceKind, ResourcePlacement, ResourceType, TableMode
 import { defaultExampleResourceType, defaultVideoResourceType } from 'postext';
 import type { SandboxAction } from '../../context/SandboxContext.js';
 import { getBlob, putBlob } from '../../storage/blobStore.js';
-import type { BitmapUploadResult } from './BitmapUploader.js';
+import type { BitmapUploadResult } from './uploads/BitmapUploader.js';
 import { uniqueSlug } from './slugify.js';
-import type { SvgSourceCommit } from './SvgSourceEditor.js';
-import type { SvgUploadResult } from './SvgUploader.js';
+import type { SvgSourceCommit } from './svg/SvgSourceEditor.js';
+import type { SvgUploadResult } from './svg/SvgUploader.js';
 
 /** Build a fresh, empty 2×2 table model for new table resources. */
 export function emptyTableModel(): TableModel {

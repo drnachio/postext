@@ -16,7 +16,7 @@ import { cookbookIndex, docsIndex } from "@/lib/siteSearch";
 import type { Catalog, PartColor } from "@/lib/cookbook/types";
 import { unpackCatalog, type PackedCatalog } from "@/lib/cookbook/wire";
 import { findPhrase, foldQuery, phraseTier, rankByPhrase } from "@/lib/searchPhrase";
-import { scrollToAnchor } from "@/lib/scrollToAnchor";
+import { scrollToAnchor } from "@/lib/anchors/scrollToAnchor";
 
 interface IndexPayload {
   locale: string;

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas, columnClipRect } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../vdt.js';
-import { cjkMarkPieces } from '../../measure/cjkClasses.js';
+import { cjkMarkPieces } from '../../measure/cjk/cjkClasses.js';
 import { graphemeCount } from '../../measure/graphemes.js';
 
 // CJK characters 16 px (1 em at 16 px), a space 4 px, anything else 8 px.

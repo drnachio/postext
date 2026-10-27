@@ -9,7 +9,7 @@ import { Button } from '../../../ui/index.js';
 import type { SandboxLabels } from '../../../types/labels.js';
 import { SearchScope } from '../../search/SearchScope.js';
 import { BalloonPreview } from '../../settings/BalloonPreview.js';
-import { configShapingLanguage } from '../../../controls/measureLanguage.js';
+import { configShapingLanguage } from '../../../controls/language/measureLanguage.js';
 import {
   isBuiltInBalloonStyle,
   nextFreeId,

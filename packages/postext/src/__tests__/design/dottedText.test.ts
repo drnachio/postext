@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { layoutDesignSlot, type ResolvedTextPrimitive } from '../../design/layout.js';
-import { resolveDesignSlot } from '../../defaults/headerFooter.js';
-import { layoutSlotToVdt } from '../../pipeline/headerFooter.js';
-import { resolveChipBox } from '../../pipeline/chips.js';
-import { resolveChipStylesConfig, stripChipStylesDefaults } from '../../defaults/chipStyles.js';
-import { dotsOnRaster, resolveTextDots, textDots, traceContours } from '../../textDots.js';
+import { resolveDesignSlot } from '../../defaults/structure/headerFooter.js';
+import { layoutSlotToVdt } from '../../pipeline/pages/headerFooter.js';
+import { resolveChipBox } from '../../pipeline/text/chips.js';
+import { resolveChipStylesConfig, stripChipStylesDefaults } from '../../defaults/text/chipStyles.js';
+import { dotsOnRaster, resolveTextDots, textDots, traceContours } from '../../paint/textDots.js';
 import { renderTextBlock } from '../../canvas-backend/headerFooter.js';
 import { beginMirroredFlow } from '../../canvas-backend/mirrorFrame.js';
 import type { DesignPlaceholderContext } from '../../design/placeholders.js';
@@ -48,8 +48,8 @@ const blockOf = (el: DesignElement): VDTDesignTextBlock =>
 
 // The painters' dots, when a test sets them (`fake`); else the module's own.
 const fake = vi.hoisted(() => ({ dots: undefined as undefined | (() => { points: Float32Array; width: number } | null) }));
-vi.mock('../../textDots.js', async (original) => {
-  const actual = await original<typeof import('../../textDots.js')>();
+vi.mock('../../paint/textDots.js', async (original) => {
+  const actual = await original<typeof import('../../paint/textDots.js')>();
   return { ...actual, textDots: (req: Parameters<typeof actual.textDots>[0]) => (fake.dots ? fake.dots() : actual.textDots(req)) };
 });
 

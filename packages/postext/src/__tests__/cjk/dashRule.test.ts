@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { measureRichBlock } from '../../measure/rich.js';
-import type { CjkComposition } from '../../measure/cjkPunctuation.js';
+import type { CjkComposition } from '../../measure/cjk/cjkPunctuation.js';
 import type { Dimension, PostextConfig } from '../../types.js';
 import type { VDTLine, VDTLineSegment } from '../../vdt.js';
 

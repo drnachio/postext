@@ -113,7 +113,7 @@ Sans `onWarning`, le message va à `console.warn`. Le texte garde ses positions,
 
 ### Fournisseur de polices dans le navigateur (Fontsource + WOFF2)
 
-Le Sandbox fournit `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`), que vous pouvez copier dans n’importe quelle application web. L’essentiel :
+Le Sandbox fournit `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdf/pdfFontProvider.ts`), que vous pouvez copier dans n’importe quelle application web. L’essentiel :
 
 ```ts
 import type { PdfFontProvider } from 'postext-pdf';
@@ -328,7 +328,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**Important :** appelez `ensureConfigFontsLoaded(config)` (ou l’équivalent) *avant* `buildDocument` quand votre configuration fait référence à des polices web. La mise en page est mesurée avec les métriques dont dispose le navigateur à ce moment pour la famille : si la vraie police n’est pas encore arrivée, le VDT est mesuré avec une police de secours et le PDF ne correspondra pas à la sortie canvas ou HTML. Le Sandbox le fait explicitement avant chaque rendu (voir `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+**Important :** appelez `ensureConfigFontsLoaded(config)` (ou l’équivalent) *avant* `buildDocument` quand votre configuration fait référence à des polices web. La mise en page est mesurée avec les métriques dont dispose le navigateur à ce moment pour la famille : si la vraie police n’est pas encore arrivée, le VDT est mesuré avec une police de secours et le PDF ne correspondra pas à la sortie canvas ou HTML. Le Sandbox le fait explicitement avant chaque rendu (voir `packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`).
 
 ### Exemple en direct : un PDF dans le navigateur
 
@@ -384,4 +384,4 @@ Pour une chaîne de production imprimée, réglez ces options de configuration a
 
 ### Implémentation de référence
 
-Le composant `PdfViewport` du Sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) relie les pièces ci-dessus dans un aperçu en direct doté de boutons de régénération, de téléchargement et d’impression, et constitue un bon point de départ pour toute intégration PDF dans le navigateur. Il construit le VDT au moyen du worker de mise en page partagé (voir [Exécuter la mise en page dans un Web Worker](/fr/docs/configuration-programmatic-usage#mise-en-page-dans-un-web-worker)) : un clic sur *Recalculer* ne fige donc pas l’interface pendant l’exécution du pipeline : le fil principal ne s’occupe que de `renderToPdf` (déjà rapide une fois le VDT disponible).
+Le composant `PdfViewport` du Sandbox (`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`) relie les pièces ci-dessus dans un aperçu en direct doté de boutons de régénération, de téléchargement et d’impression, et constitue un bon point de départ pour toute intégration PDF dans le navigateur. Il construit le VDT au moyen du worker de mise en page partagé (voir [Exécuter la mise en page dans un Web Worker](/fr/docs/configuration-programmatic-usage#mise-en-page-dans-un-web-worker)) : un clic sur *Recalculer* ne fige donc pas l’interface pendant l’exécution du pipeline : le fil principal ne s’occupe que de `renderToPdf` (déjà rapide une fois le VDT disponible).

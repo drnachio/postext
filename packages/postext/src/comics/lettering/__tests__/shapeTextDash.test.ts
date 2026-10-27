@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { clearTextWidthCache } from '../../../measure/canvas.js';
-import { cjkCompositionOf, getCjkComposition, PLAIN_CJK_COMPOSITION, setCjkComposition } from '../../../measure/cjkPunctuation.js';
-import { resolveCjkConfig } from '../../../defaults/cjk.js';
+import { cjkCompositionOf, getCjkComposition, PLAIN_CJK_COMPOSITION, setCjkComposition } from '../../../measure/cjk/cjkPunctuation.js';
+import { resolveCjkConfig } from '../../../defaults/text/cjk.js';
 import { prepareText, readLetteringText } from '../text.js';
 import { shapeText } from '../shape-text.js';
 import { presetLetteringStyles } from '../presets.js';

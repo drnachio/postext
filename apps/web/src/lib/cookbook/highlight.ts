@@ -12,7 +12,7 @@
  * Server-only. Memoised per process.
  */
 import { createHighlighter, type Highlighter } from "shiki";
-import { CODE_THEME_DARK, CODE_THEME_LIGHT } from "@/lib/codeThemes";
+import { CODE_THEME_DARK, CODE_THEME_LIGHT } from "@/lib/mdx/codeThemes";
 
 export type HighlightLang = "js" | "html" | "css" | "markdown" | "json" | "diff";
 const LANGS: HighlightLang[] = ["js", "html", "css", "markdown", "json", "diff"];

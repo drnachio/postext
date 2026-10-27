@@ -113,7 +113,7 @@ Senza `onWarning`, il messaggio va a `console.warn`. Il testo mantiene le sue po
 
 ### Provider di font per il browser (Fontsource + WOFF2)
 
-La Sandbox include `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`), che puoi copiare in qualsiasi app per browser. L’essenziale:
+La Sandbox include `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdf/pdfFontProvider.ts`), che puoi copiare in qualsiasi app per browser. L’essenziale:
 
 ```ts
 import type { PdfFontProvider } from 'postext-pdf';
@@ -328,7 +328,7 @@ export async function downloadPdf(markdown: string, config: PostextConfig) {
 }
 ```
 
-**Importante:** chiama `ensureConfigFontsLoaded(config)` (o un equivalente) *prima* di `buildDocument` quando la tua configurazione fa riferimento a web font. L’impaginazione viene misurata con le metriche che il browser ha in quel momento per quella famiglia: se il font vero non è ancora arrivato, il VDT viene misurato con un font di ripiego e il PDF non corrisponderà all’output canvas o HTML. La Sandbox lo fa esplicitamente prima di ogni rendering (vedi `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+**Importante:** chiama `ensureConfigFontsLoaded(config)` (o un equivalente) *prima* di `buildDocument` quando la tua configurazione fa riferimento a web font. L’impaginazione viene misurata con le metriche che il browser ha in quel momento per quella famiglia: se il font vero non è ancora arrivato, il VDT viene misurato con un font di ripiego e il PDF non corrisponderà all’output canvas o HTML. La Sandbox lo fa esplicitamente prima di ogni rendering (vedi `packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`).
 
 ### Esempio dal vivo: un PDF nel browser
 
@@ -384,4 +384,4 @@ Per i flussi di lavoro di stampa in produzione, regola queste opzioni di configu
 
 ### Implementazione di riferimento
 
-Il componente `PdfViewport` della Sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) collega i pezzi descritti sopra in un’anteprima dal vivo con i pulsanti per rigenerare, scaricare e stampare, ed è un buon punto di partenza per qualsiasi integrazione PDF nel browser. Costruisce il VDT tramite il worker di impaginazione condiviso (vedi [Eseguire l’impaginazione in un Web Worker](/it/docs/configuration-programmatic-usage#eseguire-limpaginazione-in-un-web-worker)), così un clic su *Ricalcola* non blocca l’interfaccia mentre la pipeline è in esecuzione: il thread principale gestisce solo `renderToPdf` (che è già veloce una volta che il VDT esiste).
+Il componente `PdfViewport` della Sandbox (`packages/postext-sandbox/src/viewport/pdf/PdfViewport.tsx`) collega i pezzi descritti sopra in un’anteprima dal vivo con i pulsanti per rigenerare, scaricare e stampare, ed è un buon punto di partenza per qualsiasi integrazione PDF nel browser. Costruisce il VDT tramite il worker di impaginazione condiviso (vedi [Eseguire l’impaginazione in un Web Worker](/it/docs/configuration-programmatic-usage#eseguire-limpaginazione-in-un-web-worker)), così un clic su *Ricalcola* non blocca l’interfaccia mentre la pipeline è in esecuzione: il thread principale gestisce solo `renderToPdf` (che è già veloce una volta che il VDT esiste).

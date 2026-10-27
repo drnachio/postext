@@ -1,7 +1,7 @@
 """The lint's list of config keys follows the engine (#1125).
 
 `config_keys.json` is generated from `PostextConfig` in the engine's
-types.ts (`config_keys.py --write`). This test fails while the engine has a
+types/config.ts (`config_keys.py --write`). This test fails while the engine has a
 key the list lacks, so a release that adds a setting cannot leave the lint
 calling it unknown.
 
@@ -22,7 +22,7 @@ import config_keys as ck  # noqa: E402
 import lint_project as lp  # noqa: E402
 
 
-@unittest.skipUnless(ck.DEFAULT_TYPES.is_file(), "needs the Postext checkout (packages/postext/src/types.ts)")
+@unittest.skipUnless(ck.DEFAULT_TYPES.is_file(), "needs the Postext checkout (packages/postext/src/types/config.ts)")
 class FollowsTheEngine(unittest.TestCase):
     def test_every_engine_key_is_known_to_the_lint(self):
         missing = [k for k in ck.engine_keys() if k not in lp.CONFIG_TOP_KEYS]

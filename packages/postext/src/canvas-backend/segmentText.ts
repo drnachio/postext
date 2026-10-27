@@ -1,7 +1,7 @@
 import type { VDTLineSegment } from '../vdt.js';
-import type { MarkCutRule } from '../measure/markCuts.js';
-import { hasCJK } from '../measure/cjk.js';
-import { segmentOrientation } from '../writingMode.js';
+import type { MarkCutRule } from '../measure/cjk/markCuts.js';
+import { hasCJK } from '../measure/cjk/cjk.js';
+import { segmentOrientation } from '../writing/writingMode.js';
 import { fillFlowText, verticalPaintActive } from './verticalText.js';
 import { fillTrackedWord } from './trackedText.js';
 import { inSegmentLanguage } from './wordRuns.js';

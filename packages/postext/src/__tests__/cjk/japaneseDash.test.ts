@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { measureRichBlock } from '../../measure/rich.js';
-import { cjkCompositionOf, type CjkComposition } from '../../measure/cjkPunctuation.js';
-import { resolveCjkConfig } from '../../defaults/cjk.js';
+import { cjkCompositionOf, type CjkComposition } from '../../measure/cjk/cjkPunctuation.js';
+import { resolveCjkConfig } from '../../defaults/text/cjk.js';
 import type { Dimension, PostextConfig } from '../../types.js';
 import type { VDTLine, VDTLineSegment } from '../../vdt.js';
 

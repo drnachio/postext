@@ -17,7 +17,7 @@
 
 import type { OutlineEntry } from '../types.js';
 import type { StoryJump } from '../composed/carry.js';
-import type { CarriedPlace } from '../pipeline/carriedOutline.js';
+import type { CarriedPlace } from '../pipeline/references/carriedOutline.js';
 import type { VDTDocument } from '../vdt.js';
 
 /** What a build needs of a chapter laid out, besides its document: what

@@ -1,7 +1,7 @@
 import type { VDTLine } from '../vdt.js';
 import type { CjkWordBreak, TextAlign, WritingMode } from '../types.js';
-import type { CjkLineBreakLevel } from './cjkClasses.js';
-import type { CjkComposition } from './cjkPunctuation.js';
+import type { CjkLineBreakLevel } from './cjk/cjkClasses.js';
+import type { CjkComposition } from './cjk/cjkPunctuation.js';
 
 /** Where the Knuth–Plass breaker broke a paragraph: the path it ran on
  *  (the plain and the rich path number their items differently) and the
@@ -267,12 +267,12 @@ export interface MeasureBlockOptions {
    *  `maxJustifyTracking` at the text size. The line records it as
    *  `VDTLine.letterSpacing`. Unset or 0: off. */
   justifyTrackingPx?: number;
-  /** Kashida justification (`bodyText.kashida`, #375; `measure/kashida.ts`):
+  /** Kashida justification (`bodyText.kashida`, #375; `measure/rtl/kashida.ts`):
    *  a justified paragraph's Arabic words count their elongation as stretch
    *  in Knuth–Plass, and its lines but the last fill their slack with
    *  tatweels before their spaces. Rich path only (a paragraph with
    *  right-to-left text always takes it). Unset: off. */
-  kashida?: import('./kashida.js').KashidaOptions;
+  kashida?: import('./rtl/kashida.js').KashidaOptions;
   /** Let a line end after an em or en dash set closed between words ("say—
    *  that’s", "riddles.—I"; see `breaksAfterDash`), on the Knuth–Plass path
    *  as well as line by line (`BodyTextConfig.breakAfterDashes`). Unset:
@@ -333,7 +333,7 @@ export interface MeasureBlockOptions {
   /** The paragraph's base direction (its embedding level, UAX #9): `rtl`
    *  for an Arabic paragraph, `ltr` for an English one, whatever letter it
    *  opens with. Its lines get their segments' directions and order
-   *  (`VDTLine.order`, `VDTLineSegment.rtl`; see `measure/bidiLines.ts`).
+   *  (`VDTLine.order`, `VDTLineSegment.rtl`; see `measure/rtl/bidiLines.ts`).
    *  Unset: the build's (`setMeasureDirection`, the document's direction),
    *  left to right outside a build. A paragraph set left to right that
    *  holds no right-to-left letter is measured as it always was. */

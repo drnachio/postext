@@ -3,7 +3,7 @@
 
 import { VIEWPORT_TABS } from '../../storage/viewHash.js';
 import type { ViewportTab } from '../../types/index.js';
-import { folioSupported } from '../../viewport/folioSupport.js';
+import { folioSupported } from '../../viewport/folio/folioSupport.js';
 import type { ViewerControls, ViewerVideo } from '../../viewport/viewerControls.js';
 import { SETTLE_TIMEOUT_MS, dispatchAndWait, whenSettled, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';

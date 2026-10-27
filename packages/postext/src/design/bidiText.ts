@@ -18,11 +18,11 @@
  * axis runs from the sheet's right edge: its runs go in the reverse of the
  * visual order, as {@link VDTLine.order} does for body lines. A chip is
  * measured blind to its frame, like the body line it sits in; the build's
- * mirror pass (`pipeline/mirrorFrame.ts`) turns its order on mirrored
+ * mirror pass (`pipeline/blocks/mirrorFrame.ts`) turns its order on mirrored
  * pages.
  */
 
-import { bidiClassOf, lineLevels, needsBidi, resolveParagraph, visualOrder } from '../bidi.js';
+import { bidiClassOf, lineLevels, needsBidi, resolveParagraph, visualOrder } from '../writing/bidi.js';
 import { getMeasureLanguage } from '../measure/canvas.js';
 import { graphemeCount } from '../measure/graphemes.js';
 import { rtlTextWidth } from '../measure/script.js';

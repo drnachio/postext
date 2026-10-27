@@ -40,13 +40,13 @@ import type {
   VDTVerticalText,
 } from '../vdt.js';
 import type { MeasurementCache } from '../measure/index.js';
-import type { ResourceNumberingMap } from '../pipeline/resourceNumbering.js';
+import type { ResourceNumberingMap } from '../pipeline/resources/resourceNumbering.js';
 import { buildFontString } from '../measure/index.js';
 import { flowTextWidth, fontFamilyOf, measureCentralBaseline, withMeasureWritingMode } from '../measure/vertical.js';
 import { dimensionToPx } from '../units.js';
 import { resolveColorValue } from '../defaults/shared.js';
-import { layoutLabelLines } from '../pipeline/resourceLayout.js';
-import { uppercasePreservingLength } from '../pipeline/buildBlockKind.js';
+import { layoutLabelLines } from '../pipeline/resources/resourceLayout.js';
+import { uppercasePreservingLength } from '../pipeline/blocks/buildBlockKind.js';
 import { firstStrongDirection } from '../design/bidiText.js';
 import { withIconAlts } from './labelText.js';
 import { BREAK_PLACEHOLDER, SWATCH_PLACEHOLDER } from '../parse/inlineFormatting.js';

@@ -815,7 +815,7 @@ Des polices peuvent aussi atteindre le worker après une construction : une gra
 
 `registerFonts` prend des octets de police bruts. Le thread principal est le bon endroit pour les récupérer, car un cache central permet à plusieurs instances de worker de partager les mêmes octets.
 
-Le `collectFontPayloadsForFamilies` du Sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`) sert d’implémentation de référence. Il :
+Le `collectFontPayloadsForFamilies` du Sandbox (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`) sert d’implémentation de référence. Il :
 
 1. Interroge `https://api.fontsource.org/v1/fonts/{family-id}` pour connaître les graisses et les styles de la famille.
 2. Lit les sous-ensembles de la famille et leur `unicode-range` dans son paquet sur jsDelivr (`@fontsource/{family-id}@5/400.css`), une fois par famille. Les fichiers sont ensuite demandés à la version exacte depuis laquelle cette feuille de style a été servie (le `x-jsd-version` de jsDelivr) : une famille n’arrive donc jamais de deux versions de son paquet.

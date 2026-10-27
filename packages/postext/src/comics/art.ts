@@ -18,7 +18,7 @@
 
 import type { ResourceAnchor, ResourceSafeArea } from '../types.js';
 import type { BoundingBox, VDTComicArt, VDTPoint } from '../vdt.js';
-import { normalizeSafeArea } from '../pipeline/safeArea.js';
+import { normalizeSafeArea } from '../pipeline/resources/safeArea.js';
 
 export interface ComicCropInput {
   /** The picture's intrinsic size (any unit; only the ratio counts). */

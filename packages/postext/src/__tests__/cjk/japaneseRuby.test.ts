@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas } from '../../index.js';
-import { renderToHtml } from '../../html-backend.js';
+import { renderToHtml } from '../../html-backend/html-backend.js';
 import { parseMarkdown } from '../../parse/index.js';
-import { defaultCjkRubyAlign, defaultCjkRubyOverhang, resolveCjkConfig, stripCjkDefaults } from '../../defaults/cjk.js';
-import { layoutJisRuby, layoutJukugo, overhangs, fullSizeKana } from '../../measure/rubyJis.js';
+import { defaultCjkRubyAlign, defaultCjkRubyOverhang, resolveCjkConfig, stripCjkDefaults } from '../../defaults/text/cjk.js';
+import { layoutJisRuby, layoutJukugo, overhangs, fullSizeKana } from '../../measure/cjk/rubyJis.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { InlineSpan } from '../../parse/index.js';
 import type { CjkRegion, PostextConfig } from '../../types.js';

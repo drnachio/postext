@@ -6,13 +6,13 @@
 // reading order.
 
 import { pointInConvex, pathData, rectOf, boundsOf, add, insetConvex, type PathCmd } from './geom.js';
-import { hasCJK } from '../../measure/cjk.js';
+import { hasCJK } from '../../measure/cjk/cjk.js';
 import { onTextWidthCacheClear, measureLanguageKey } from '../../measure/canvas.js';
-import { getCjkLineBreak } from '../../measure/cjkClasses.js';
-import { getCjkComposition } from '../../measure/cjkPunctuation.js';
-import { getMeasureArabicNumbers, getMeasureDirection } from '../../measure/bidiLines.js';
+import { getCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
+import { getCjkComposition } from '../../measure/cjk/cjkPunctuation.js';
+import { getMeasureArabicNumbers, getMeasureDirection } from '../../measure/rtl/bidiLines.js';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode } from '../../measure/vertical.js';
-import { isCjkLanguage } from '../../locale.js';
+import { isCjkLanguage } from '../../hyphenation/locale.js';
 import { buildBody, buildNeck, buildTail, dashOf, translateBody, type Body } from './shapes.js';
 import { shapeTextCandidates, styleIsVertical, translateBlock, type ShapedText, type ShapeOptions } from './shape-text.js';
 import { isIsolateControl, prepareText, readLetteringText, type PreparedText } from './text.js';

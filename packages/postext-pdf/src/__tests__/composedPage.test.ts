@@ -5,8 +5,8 @@ import fontkit from '@pdf-lib/fontkit';
 import { buildDocument, frameMatrix } from 'postext';
 import type { VDTDocument, VDTFrame, VDTPage } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
-import { collectFontText } from '../pdf-backend/fontHelpers.js';
-import { sheetMatrixToPdf } from '../pdf-backend/comic.js';
+import { collectFontText } from '../pdf-backend/text/fontHelpers.js';
+import { sheetMatrixToPdf } from '../pdf-backend/page/comic.js';
 import { parseFontString } from '../fontString.js';
 
 // #855: the PDF paints a composed page's frames in layer order (the

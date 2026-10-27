@@ -815,7 +815,7 @@ Faces may also reach the worker after a build: a weight the pages turn out to ne
 
 `registerFonts` takes raw font bytes. The main thread is the right place to fetch them, because a central cache lets multiple worker instances share the same bytes.
 
-The sandbox's `collectFontPayloadsForFamilies` (`packages/postext-sandbox/src/controls/fontLoader.ts`) is a reference implementation. It:
+The sandbox's `collectFontPayloadsForFamilies` (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`) is a reference implementation. It:
 
 1. Queries `https://api.fontsource.org/v1/fonts/{family-id}` for the weights and styles the family has.
 2. Reads the family's subsets and their `unicode-range` from its package on jsDelivr (`@fontsource/{family-id}@5/400.css`), once per family. The files are then requested from the exact version that served that style sheet (jsDelivr's `x-jsd-version`), so a family never arrives from two versions of its package.

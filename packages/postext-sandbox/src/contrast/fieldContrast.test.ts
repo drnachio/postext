@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDocument, contrastPairs } from 'postext';
 import type { PostextConfig } from 'postext';
 import { SandboxStoreContext } from '../context/SandboxContext.js';
-import { ColorPicker } from '../controls/ColorPicker.js';
+import { ColorPicker } from '../controls/color/ColorPicker.js';
 import { DEFAULT_LABELS } from '../types/defaultLabels.js';
 import { computeWarnings } from '../warnings/compute.js';
 import { isAcceptedWarning, warningCategory } from '../warnings/categories.js';

@@ -20,7 +20,7 @@
 import type { ContentBlock, InlineSpan } from '../parse/types.js';
 import type { VDTPage } from '../vdt.js';
 import { measurementGeneration } from '../measure/canvas.js';
-import { layoutComposedPage, type ComposedPageInput, type ComposedPageLayout } from '../pipeline/composedLayout.js';
+import { layoutComposedPage, type ComposedPageInput, type ComposedPageLayout } from '../pipeline/composedPages/composedLayout.js';
 
 /** What the memo reads of the pass that lays the page out. */
 export interface ComposedMemoContext {

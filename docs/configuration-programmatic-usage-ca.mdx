@@ -814,7 +814,7 @@ Les variants també poden arribar al worker després d'una composició: un pes q
 
 `registerFonts` pren bytes de font en brut. El fil principal és el lloc adequat per obtenir-los, perquè una memòria cau centralitzada permet que diverses instàncies del worker comparteixin els mateixos bytes.
 
-`collectFontPayloadsForFamilies` del Sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`) és una implementació de referència. El que fa:
+`collectFontPayloadsForFamilies` del Sandbox (`packages/postext-sandbox/src/controls/fonts/fontLoader.ts`) és una implementació de referència. El que fa:
 
 1. Consulta `https://api.fontsource.org/v1/fonts/{id-de-familia}` per saber quins pesos i estils té la família.
 2. Llegeix els subconjunts de la família i el seu `unicode-range` al seu paquet de jsDelivr (`@fontsource/{id-de-familia}@5/400.css`), una vegada per família. Els fitxers es demanen després a la versió exacta des de la qual es va servir aquest full d'estils (`x-jsd-version` de jsDelivr), de manera que una família no arriba mai de dues versions del seu paquet.

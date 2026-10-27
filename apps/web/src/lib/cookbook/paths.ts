@@ -1,7 +1,7 @@
 /**
  * Where the Cookbook lives on disk. Next (dev, build), vitest and the CLI all
  * run with `apps/web` as the working directory, like `lib/docs.ts` and
- * `lib/codepen.ts` assume; `POSTEXT_WEB_DIR` overrides it.
+ * `lib/codepen/codepen.ts` assume; `POSTEXT_WEB_DIR` overrides it.
  *
  * Isomorphic: plain Node imports, relative `.ts` imports only.
  */

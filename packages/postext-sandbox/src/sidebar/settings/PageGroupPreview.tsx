@@ -3,10 +3,10 @@
 import { resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
 import { useMemo } from 'react';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
-import { toPt } from '../../controls/units.js';
-import { defaultDocumentLocale } from '../../controls/hyphenation.js';
+import { toPt } from '../../controls/inputs/units.js';
+import { defaultDocumentLocale } from '../../controls/language/hyphenation.js';
 import { documentComicDirection, documentDirection, documentLanguage } from '../../context/documentDirection.js';
-import { pageDrawingConfig } from '../sections/cjkGridReadout.js';
+import { pageDrawingConfig } from '../sections/writing/cjkGridReadout.js';
 import { PagePreview } from './PagePreview.js';
 import { usePreviewHighlight } from './previewHighlight.js';
 

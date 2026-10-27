@@ -103,6 +103,16 @@ CI runs its jobs at once, each on a runner of its own: the long suites in shards
 - Relative imports in the published packages carry the extension Node needs: `./layout.js` for `layout.ts`, `./parse/index.js` for a folder. Their `dist` then loads in plain Node and vitest leaves it untransformed; `check-types` reports a missing extension (TS2834).
 - Run `pnpm lint` before submitting. The CI pipeline will reject PRs that fail linting.
 
+### Code Layout
+
+The source is kept in files a reader (or an agent) can take in at once (#1276):
+
+- A source file stays under about 600 lines, and a folder under about 25 source files. Tests, generated files, label tables and locale files don't count.
+- When a module outgrows that, it becomes a folder named after it (`vdt.ts` → `vdt/blocks.ts`, `vdt/pages.ts`, …). The original file stays as the façade that re-exports the folder, so importers don't change.
+- A folder with too many files is grouped by topic into subfolders (`pipeline/columns/`, `pipeline/floats/`, …). The tests mirror the source folders under `__tests__/`.
+- A function that holds many helpers, such as the placement pass, keeps them in factory modules (`create<Topic>(deps)`). What those modules share goes in one explicit object (`state`, or a loop's per-turn object) rather than in closures.
+- CI runs `node scripts/source-size.mjs --check`. It fails when a new file or folder goes over the limits, or when one already listed in `scripts/source-size.baseline.json` grows. After splitting a listed file, run `node scripts/source-size.mjs --update` to shrink the baseline. Never update the baseline to let a file grow.
+
 ### Documentation Convention
 
 The documentation lives in the top-level `docs/` folder as one MDX file per topic and locale, `<topic>-<locale>.mdx`, in ten locales: `en`, `es`, `ca`, `fr`, `de`, `it`, `pt` (Brazilian Portuguese), `zh` (Simplified Chinese), `ja` and `ar` (e.g. `configuration-en.mdx`, `configuration-es.mdx`…). English is the reference, and every locale says the same thing: never change one without the others. Each file starts with an exported metadata object:

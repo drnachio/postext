@@ -7,7 +7,7 @@ import { ogImageFile } from "@/lib/cookbook/images";
 import { getRecipe, getVisibleRecipes, writeupFor } from "@/lib/cookbook/recipes";
 import { loadRegistry } from "@/lib/cookbook/registry";
 import type { Locale } from "@/lib/cookbook/types";
-import { generateOgImage, ogContentType, ogDrawable, ogSize, ogTextLocale } from "@/lib/og-image";
+import { generateOgImage, ogContentType, ogDrawable, ogSize, ogTextLocale } from "@/lib/og/og-image";
 
 export const alt = "Postext Cookbook";
 export const size = ogSize;

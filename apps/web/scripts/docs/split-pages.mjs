@@ -20,9 +20,9 @@
  * - moves the `docs: { slug, heading }` entries of the Cookbook registries;
  * - regroups the Configuration index by page;
  * - renumbers `order` and recomputes `readingTime` in every docs page;
- * - updates `src/lib/configurationAnchors.json` (the old single-page
+ * - updates `src/lib/anchors/configurationAnchors.json` (the old single-page
  *   Configuration ids, which pointed at pages split now) and writes
- *   `src/lib/movedAnchors.json`: every heading id that left a page, per
+ *   `src/lib/anchors/movedAnchors.json`: every heading id that left a page, per
  *   page and language, with the page that holds it now (the data of the
  *   redirect on the pages that were split).
  *
@@ -566,7 +566,7 @@ for (const rel of ["apps/web/src/lib/webmcp/siteTools.test.ts"]) {
 }
 
 // The old single-page Configuration ids that pointed at a page split now.
-const CONFIG_ANCHORS = path.join(ROOT, "apps/web/src/lib/configurationAnchors.json");
+const CONFIG_ANCHORS = path.join(ROOT, "apps/web/src/lib/anchors/configurationAnchors.json");
 const configAnchors = JSON.parse(fs.readFileSync(CONFIG_ANCHORS, "utf8"));
 for (const l of Object.keys(configAnchors)) {
   const table = configAnchors[l];
@@ -589,7 +589,7 @@ write(CONFIG_ANCHORS, `${JSON.stringify(configAnchors, null, 2)}\n`);
 
 // The redirect data of the split pages: every id that left a page (or was
 // renamed on it), under the page that holds it now.
-const MOVED = path.join(ROOT, "apps/web/src/lib/movedAnchors.json");
+const MOVED = path.join(ROOT, "apps/web/src/lib/anchors/movedAnchors.json");
 const moved = fs.existsSync(MOVED) ? JSON.parse(fs.readFileSync(MOVED, "utf8")) : {};
 for (const split of SPLITS) {
   moved[split.from] = {};

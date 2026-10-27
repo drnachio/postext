@@ -7,7 +7,7 @@ import {
   isNewspaperSizePreset,
   resolveFolioConfig,
   stripFolioDefaults,
-} from '../../defaults/folio.js';
+} from '../../defaults/output/folio.js';
 import { applyPaletteToConfig, stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { ColorValue, FolioPaperType, PageSizePreset } from '../../types.js';

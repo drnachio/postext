@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ColorPaletteEntry, ColorValue, ResolvedBalloonStyleConfig, ResolvedLetteringConfig } from 'postext';
 import { resolveColorValue } from 'postext';
-import { loadFont } from '../../controls/fontLoader.js';
-import { measureInLanguage } from '../../controls/measureLanguage.js';
+import { loadFont } from '../../controls/fonts/fontLoader.js';
+import { measureInLanguage } from '../../controls/language/measureLanguage.js';
 import { balloonPreviewGeometry, dimensionToPx, estimateTextWidth } from './balloonPreviewGeometry.js';
 
 /** Preview px per point: the lettering size (7.5 pt by default) reads at

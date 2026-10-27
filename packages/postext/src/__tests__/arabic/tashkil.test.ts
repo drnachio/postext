@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
-import { collectConfigWarnings } from '../../configWarnings.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
-import { resolveBodyTextConfig } from '../../defaults/bodyText.js';
+import { resolveBodyTextConfig } from '../../defaults/text/bodyText.js';
 import { parseMarkdown } from '../../parse/index.js';
-import { stripBlockTashkil, stripTashkil, tashkilFor } from '../../pipeline/tashkil.js';
+import { stripBlockTashkil, stripTashkil, tashkilFor } from '../../pipeline/text/tashkil.js';
 import type { PostextConfig } from '../../types.js';
 
 // Issue #376: `bodyText.tashkil` takes the Arabic vowel marks out of the text

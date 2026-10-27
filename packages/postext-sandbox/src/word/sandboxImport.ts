@@ -9,7 +9,7 @@ import type { Chapter } from '../book/types.js';
 import type { SandboxAction } from '../context/SandboxContext.js';
 import { putBlob } from '../storage/blobStore.js';
 import { generateId } from '../storage/ids.js';
-import { isValidSvg, svgIntrinsicSize } from '../panels/resources/svgIntrinsic.js';
+import { isValidSvg, svgIntrinsicSize } from '../panels/resources/svg/svgIntrinsic.js';
 import {
   applyStyleTracking,
   characterTargetOf,

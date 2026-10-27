@@ -8,7 +8,7 @@
 
 import type { InlineSpan } from '../../parse/types.js';
 import type { BoundingBox, VDTComicBalloon, VDTPoint } from '../../vdt.js';
-import type { CjkLineBreakLevel } from '../../measure/cjkClasses.js';
+import type { CjkLineBreakLevel } from '../../measure/cjk/cjkClasses.js';
 import type { CjkRegion } from '../../types.js';
 
 /** A point in page px. */
