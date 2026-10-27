@@ -1,10 +1,7 @@
 {
  "$comment": "Files and directories still over the limits of scripts/source-size.mjs (#1276), with their size. CI fails when one grows or a new one appears; shrink this list, never grow it.",
  "files": {
-  "apps/web/scripts/cookbook/lib/probe.js": 2752,
   "packages/postext-folio/src/pageFlip.ts": 2134,
-  "apps/web/src/components/landing/transcripts.ts": 1766,
-  "apps/web/src/lib/glossary/terms.ts": 1763,
   "packages/postext/src/exercises/runtime.ts": 1657,
   "packages/postext-epub/src/reflowable/walk.ts": 1656,
   "packages/postext-folio/src/viewer.ts": 1291,
@@ -17,12 +14,7 @@
   "packages/postext-sandbox/src/sidebar/sections/running/HeaderFooterSection/TextElementEditor.tsx": 841,
   "packages/postext-epub/src/reflowable/xhtml.ts": 813,
   "packages/postext-sandbox/src/sidebar/sections/writing/CjkSection.tsx": 750,
-  "packages/postext-sandbox/src/sidebar/sections/text/CodeStyleSection.tsx": 709,
-  "apps/web/src/lib/cookbook/detect.ts": 645,
-  "apps/web/src/lib/cookbook/search.ts": 624,
-  "apps/web/scripts/docs/split-pages.mjs": 612,
-  "apps/web/scripts/cookbook/harness.ts": 611,
-  "apps/web/scripts/cookbook/shim.ts": 609
+  "packages/postext-sandbox/src/sidebar/sections/text/CodeStyleSection.tsx": 709
  },
  "dirs": {}
 }

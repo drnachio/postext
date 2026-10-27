@@ -8,7 +8,8 @@
  *   /                      the page
  *   /__pen/script.js       the composed script
  *   /__shim/*.js           the engine shims (pinned versions)
- *   /__cb/probe.js         the in-page half of the harness (lib/probe.js)
+ *   /__cb/probe.js         the in-page half of the harness (lib/probe.js),
+ *                          and its modules at /__cb/probe/<name>.js
  *   /__cb/events           live mode: server-sent reload events
  *   /__repo/<path>         a repo file (live mode rewrites jsDelivr URLs here)
  *   /__public/<path>       a file of apps/web/public (live mode: postext.dev)
@@ -36,7 +37,14 @@ import { contentType, safeFile } from "./net.ts";
 import type { EngineSpec } from "./shim.ts";
 import { importMapTag, LOCAL_PREFIX, pdfDateOf, resolveEngine, rewriteBareImports, shimModules } from "./shim.ts";
 
-const PROBE_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), "lib", "probe.js");
+const PROBE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "lib");
+
+/** lib/probe.js or one of its modules (lib/probe/<name>.js) for a
+ *  `/__cb/probe.js` or `/__cb/probe/<name>.js` route, else null. */
+function probeFile(route: string): string | null {
+  const match = /^\/__cb\/(probe(?:\/[A-Za-z]+)?\.js)$/.exec(route);
+  return match ? safeFile(PROBE_DIR, match[1]!) : null;
+}
 
 export interface PenServerOptions {
   slug: string;
@@ -230,7 +238,8 @@ export interface SandboxServer {
  *                              interceptor lets them through, and answering
  *                              a worker's module requests from the cache
  *                              stalls it (net.ts)
- *   /__cb/probe.js             the layout hash and the warning keys
+ *   /__cb/probe.js             the layout hash and the warning keys (and
+ *                              its modules, /__cb/probe/<name>.js)
  *   /__bundle/<slug>/<lang>    an edition's committed `.postext`
  */
 export async function startSandboxServer({ buildDir, bundleFile, port }: { buildDir: string; bundleFile(slug: string, lang: string): string; port?: number }): Promise<SandboxServer> {
@@ -242,7 +251,8 @@ export async function startSandboxServer({ buildDir, bundleFile, port }: { build
     const route = new URL(req.url ?? "/", "http://localhost").pathname;
     try {
       if (route === "/" || route === "/index.html") return send(res, 200, "text/html; charset=utf-8", SANDBOX_PAGE);
-      if (route === "/__cb/probe.js") return send(res, 200, "text/javascript; charset=utf-8", fs.readFileSync(PROBE_FILE));
+      const probe = probeFile(route);
+      if (probe && fs.existsSync(probe)) return send(res, 200, "text/javascript; charset=utf-8", fs.readFileSync(probe));
       const built = /^\/__sb\/(.+)$/.exec(route);
       if (built) {
         const file = safeFile(buildDir, built[1]!);
@@ -316,7 +326,8 @@ export async function startPenServer(opts: PenServerOptions): Promise<PenServer>
       }
       if (route === "/__pen/script.js") return send(res, 200, "text/javascript; charset=utf-8", fresh().pen.js);
       if (shims[route] !== undefined) return send(res, 200, "text/javascript; charset=utf-8", shims[route]);
-      if (route === "/__cb/probe.js") return send(res, 200, "text/javascript; charset=utf-8", fs.readFileSync(PROBE_FILE));
+      const probe = probeFile(route);
+      if (probe && fs.existsSync(probe)) return send(res, 200, "text/javascript; charset=utf-8", fs.readFileSync(probe));
       if (route === "/__cb/events" && live) {
         res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-store", connection: "keep-alive" });
         res.write(": connected\n\n");
