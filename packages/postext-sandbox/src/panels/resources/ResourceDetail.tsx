@@ -1,79 +1,31 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
 import { ChevronLeft, Trash2 } from 'lucide-react';
-import type {
-  Resource,
-  ResourceType,
-  ResourcePlacement,
-  ResourceFloatPosition as PlacementPosition,
-  ResourceFloatSpan as PlacementSpan,
-  ResourceRotation,
-  FloatShrinkMode,
-} from 'postext';
-import { DEFAULT_FLOAT_MIN_SCALE, DEFAULT_TEXT_WRAP, resolveBodyTextConfig } from 'postext';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, type ResourceFocusTarget } from '../../context/SandboxContext.js';
-import { InlineMarkdownInput, type InlineSelection } from '../../controls/inputs/InlineMarkdownInput.js';
-import { ConfirmPopover, IconButton, PanelBody, PanelHeader } from '../../ui/index.js';
-import { FieldRow } from '../../controls/FieldRow.js';
-import { DimensionInput, NumberInput, SelectInput, ToggleSwitch } from '../../controls/index.js';
-import { wrapChoiceOf, wrapSideOf } from '../../sidebar/settings/textWrap.js';
-import { captionSideOf, captionSideValue } from '../../sidebar/settings/captionSide.js';
+import { type Resource, type ResourceFloatPosition as PlacementPosition, type ResourceFloatSpan as PlacementSpan, type ResourcePlacement, resolveBodyTextConfig, type FloatShrinkMode, type TableModel } from 'postext';
+import { useSandboxDispatch, useSandboxLabels } from '../../context/SandboxContext.js';
+import { InlineMarkdownInput } from '../../controls/inputs/InlineMarkdownInput.js';
+import { PanelHeader, IconButton, ConfirmPopover, PanelBody } from '../../ui/index.js';
+import { SelectInput, NumberInput, ToggleSwitch, DimensionInput } from '../../controls/index.js';
+import { captionSideValue, captionSideOf } from '../../sidebar/settings/captionSide.js';
 import { ContourFields } from './marks/ContourFields.js';
 import { ResourcePreview } from './ResourcePreview.js';
-import { BitmapUploader, type BitmapUploadResult } from './uploads/BitmapUploader.js';
+import { BitmapUploader } from './uploads/BitmapUploader.js';
 import { BitmapResolutionField } from './uploads/BitmapResolutionField.js';
-import { SvgUploader, type SvgUploadResult } from './svg/SvgUploader.js';
+import { SvgUploader } from './svg/SvgUploader.js';
 import { PdfMasterUploader } from './uploads/PdfMasterUploader.js';
 import { SvgFontsField } from './svg/SvgFontsField.js';
 import { SafeAreaField } from './marks/SafeAreaEditor.js';
 import { applyMarks } from './marks/pictureMarks.js';
 import { VideoEditor } from './video/VideoEditor.js';
 import { ScoreEditor } from './ScoreEditor.js';
-import { SvgSourceEditor, type SvgSourceCommit } from './svg/SvgSourceEditor.js';
-import { TableEditor, type TableFocusRequest } from './TableEditor/TableEditor.js';
-import { slugify } from './slugify.js';
-import { bitmapReplaced, placementWith, svgReplaced, svgSourceSaved, tableWithDirection, tableWithStyle } from './resourceEdits.js';
-import type { TableCellPos, TableModel } from 'postext';
-import { flowSideLabels, useRightToLeftFlow } from '../../sidebar/settings/flowSides.js';
-import { hasSeveralColumns } from '../../sidebar/settings/multiColumnBook.js';
+import { SvgSourceEditor } from './svg/SvgSourceEditor.js';
+import { TableEditor } from './TableEditor/TableEditor.js';
 import { MULTIPLE_COLUMNS_MAX } from '../../sidebar/settings/multipleColumns.js';
-
-const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-2 py-1.5';
-const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)', fontFamily: 'inherit', fontSize: 13, lineHeight: '20px' } as const;
-const labelStyle = { color: 'var(--slate)', fontSize: 11, lineHeight: '14px' } as const;
-
-interface FieldProps {
-  label: string;
-  tooltip?: string;
-  children: React.ReactNode;
-  hint?: string;
-}
-
-function Field({ label, tooltip, children, hint }: FieldProps) {
-  return (
-    <FieldRow stacked label={label} tooltip={tooltip} hint={hint} className="mb-0">
-      {children}
-    </FieldRow>
-  );
-}
-
-interface ResourceDetailProps {
-  resource: Resource;
-  types: ResourceType[];
-  /** Set of every existing id except this resource's, for uniqueness checks. */
-  otherIds: Set<string>;
-  /** How many times this resource is referenced in the document. */
-  referenceCount: number;
-  onChange: (next: Resource) => void;
-  /** Rename: change the resource id (callers update selection + storage). */
-  onRename: (oldId: string, next: Resource) => void;
-  onDelete: () => void;
-  /** Return to the resource list. */
-  onBack: () => void;
-  /** Host theme for the embedded SVG source editor. */
-  isDark?: boolean;
-}
+import { useFocusRequests } from './ResourceDetail/useFocusRequests.js';
+import { usePlacementFields } from './ResourceDetail/usePlacementFields.js';
+import { useResourceEdits } from './ResourceDetail/useResourceEdits.js';
+import { Field, inputClass, inputStyle, labelStyle } from './ResourceDetail/Field.js';
+import type { ResourceDetailProps } from './ResourceDetail/props.js';
 
 /** Detail view: editable detail for the selected resource, with a back button. */
 export function ResourceDetail({
@@ -91,149 +43,21 @@ export function ResourceDetail({
   const labels = useSandboxLabels();
   const type = types.find((t) => t.id === resource.typeId);
 
-  // Preview click → panel: the pending request addressed to this resource is
-  // routed to the matching field by its target kind and cleared once applied;
-  // every field reports its selection back for the preview highlight. Read
-  // through a selector so unrelated state changes leave this pane alone.
-  const pending = useSandboxSelector((s) => (s.pendingResourceFocus?.resourceId === resource.id ? s.pendingResourceFocus : null));
-  const captionRequest = pending?.target.kind === 'caption' ? pending : null;
-  const noteRequest = pending?.target.kind === 'note' ? pending : null;
-  const svgRequest = pending?.target.kind === 'svgText' ? pending : null;
-  const cellRequest = useMemo<TableFocusRequest | null>(() => {
-    if (!pending || pending.target.kind !== 'cell') return null;
-    const { row, col } = pending.target;
-    return { row, col, anchor: pending.anchor, head: pending.head, selectWord: pending.selectWord };
-  }, [pending]);
-  const consumeFocus = useCallback(
-    () => dispatch({ type: 'SET_PENDING_RESOURCE_FOCUS', payload: null }),
-    [dispatch],
-  );
-  const reportSelection = useCallback(
-    (target: ResourceFocusTarget, sel: InlineSelection | null) => {
-      dispatch({
-        type: 'SET_RESOURCE_SELECTION',
-        payload: sel ? { resourceId: resource.id, target, from: sel.from, to: sel.to, head: sel.head } : null,
-      });
-    },
-    [dispatch, resource.id],
-  );
-  const onCaptionSelection = useCallback((sel: InlineSelection | null) => reportSelection({ kind: 'caption' }, sel), [reportSelection]);
-  const onNoteSelection = useCallback((sel: InlineSelection | null) => reportSelection({ kind: 'note' }, sel), [reportSelection]);
-  const onSvgSelection = useCallback((sel: InlineSelection | null) => reportSelection({ kind: 'svgText' }, sel), [reportSelection]);
-  const onCellSelection = useCallback(
-    (pos: TableCellPos, sel: InlineSelection | null) => reportSelection({ kind: 'cell', row: pos.row, col: pos.col }, sel),
-    [reportSelection],
-  );
+  const { captionRequest, noteRequest, svgRequest, cellRequest, consumeFocus, onCaptionSelection, onNoteSelection, onSvgSelection, onCellSelection } = useFocusRequests({
+    resource, dispatch });
   const touch = (partial: Partial<Resource>): Resource => ({
     ...resource,
     ...partial,
     updatedAt: Date.now(),
   });
 
-  // Placement, resolved key by key as the engine does: the resource's own
-  // value → its type's `defaultPlacement` → the built-in default. Each row
-  // shows the effective value; a key the resource sets is marked and resets
-  // back to the type's.
-  const currentPlacement: ResourcePlacement = resource.placement ?? {};
-  const typePlacement: ResourcePlacement = type?.defaultPlacement ?? {};
-  const placementPosition: PlacementPosition = currentPlacement.position ?? typePlacement.position ?? 'auto';
-  const placementSpan: PlacementSpan = currentPlacement.span ?? typePlacement.span ?? 'column';
-  const placementRotate: ResourceRotation | 'none' = currentPlacement.rotate ?? typePlacement.rotate ?? 'none';
-  /** Merge one placement key; `undefined` drops it so the resource falls
-   *  back to its type's default placement. */
-  const setPlacementKey = <K extends keyof ResourcePlacement>(key: K, value: ResourcePlacement[K] | undefined) => {
-    onChange(touch({ placement: placementWith(currentPlacement, key, value) }));
-  };
-  // How many columns a column float takes (#505): offered when a page of
-  // the book has more than one, or when the resource sets it.
-  const placementColumns = currentPlacement.columns ?? typePlacement.columns ?? 1;
-  const severalColumns = useSandboxSelector((s) => hasSeveralColumns(s.config));
-  // Text wrap (#627): the side of the column the resource sits on with the
-  // text beside it; a wrapped resource without a width of its own takes
-  // `layout.wrap.defaultWidth`.
-  const layoutWrap = useSandboxSelector((s) => s.config.layout?.wrap);
-  const bodyLineHeight = useSandboxSelector((s) => s.config.bodyText?.lineHeight);
-  const placementWrapChoice = wrapChoiceOf(currentPlacement.wrap ?? typePlacement.wrap);
-  // A contour wrap (#883) wraps at the side its align names.
-  const placementWrap = placementWrapChoice === 'contour' ? 'contour' : wrapSideOf(currentPlacement.wrap ?? typePlacement.wrap);
-  const placementWidthPercent = Math.round((currentPlacement.width ?? typePlacement.width ?? (placementWrap !== 'none' ? layoutWrap?.defaultWidth ?? DEFAULT_TEXT_WRAP.defaultWidth : 1)) * 100);
-  // An inline embed is never turned; a turned resource is a page-span float.
-  const placementInline = placementPosition === 'here';
-  const placementRotated = !placementInline && placementRotate !== 'none';
-  // The alignment places a resource narrower than its slot: one narrowed by
-  // Width, or a picture (bitmap or SVG) narrower than the column — smaller
-  // than it, or shrunk by `layout.fitFiguresToPage` — at any width.
-  const isPicture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
-  const alignApplies = placementWidthPercent < 100 || isPicture;
-  // Shrinking a floated picture to the room of its slot (#626): the
-  // resource's own value → its type's → the document's `layout.floatShrink`.
-  const floatShrink = useSandboxSelector((s) => s.config.layout?.floatShrink);
-  const placementShrink = currentPlacement.shrink ?? typePlacement.shrink ?? floatShrink?.mode ?? 'never';
-  const placementMinScale = currentPlacement.minScale ?? typePlacement.minScale ?? floatShrink?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
-  const placementCaptionMeasure = currentPlacement.captionMeasure ?? typePlacement.captionMeasure ?? 'slot';
-  // Heading the page or column that cites it (#633): the resource's own
-  // value → its type's → the document's `layout.floatsAtCitingPage`.
-  const floatsAtCitingPage = useSandboxSelector((s) => s.config.layout?.floatsAtCitingPage);
-  const placementCitingPage = currentPlacement.citingPage ?? typePlacement.citingPage ?? floatsAtCitingPage ?? false;
+  const { currentPlacement, typePlacement, placementPosition, placementSpan, placementRotate, setPlacementKey, placementColumns, severalColumns, layoutWrap,
+    bodyLineHeight, placementWrapChoice, placementWrap, placementWidthPercent, placementInline, placementRotated, isPicture, alignApplies, placementShrink,
+    placementMinScale, placementCaptionMeasure, placementCitingPage, tableStyles, tableStyleId, setTableStyleId, placementAlign, floatSide, tableDirection,
+    tableRtl, setTableDirection } = usePlacementFields({ resource, onChange, labels, type, touch });
 
-  // Named table style (`config.tableStyles`); unset = the document's table style.
-  const tableStyles = useSandboxSelector((s) => s.config.tableStyles) ?? [];
-  const tableStyleId = resource.table?.styleId;
-  const setTableStyleId = (styleId: string | undefined) => {
-    onChange(touch({ table: tableWithStyle(resource, styleId) }));
-  };
-  // `start` / `end` are synonyms of left / right for a float (#371).
-  const rawAlign = currentPlacement.align ?? typePlacement.align;
-  const placementAlign = rawAlign === 'start' ? 'left' : rawAlign === 'end' ? 'right' : rawAlign ?? 'left';
-  // In a right-to-left book the body's sides are mirrored: a float's
-  // `left` stands on the sheet's right.
-  const rtlBook = useRightToLeftFlow();
-  const floatSide = flowSideLabels(rtlBook, labels.headerFooterElementAlignLeft, labels.headerFooterElementAlignRight);
-  // A table runs with the document unless it names its own direction.
-  const tableDirection = resource.table?.direction;
-  const tableRtl = tableDirection ? tableDirection === 'rtl' : rtlBook;
-  const setTableDirection = (direction: string) => {
-    onChange(touch({ table: tableWithDirection(resource, direction) }));
-  };
-
-  // The id is edited locally and committed (renamed) on blur / Enter so the
-  // detail pane is not remounted on every keystroke.
-  const [idDraft, setIdDraft] = useState(resource.id);
-  const draftSlug = slugify(idDraft);
-  const idTaken = draftSlug.length > 0 && otherIds.has(draftSlug);
-  const idEmpty = draftSlug.length === 0;
-  const suggestedId = slugify(resource.caption ?? '') || `resource-${resource.kind}`;
-
-  const commitId = () => {
-    const next = draftSlug || suggestedId;
-    setIdDraft(next);
-    if (next === resource.id) return;
-    if (otherIds.has(next)) return; // keep editing; collision not committed
-    onRename(resource.id, { ...resource, id: next, updatedAt: Date.now() });
-  };
-
-  const applyBitmap = (r: BitmapUploadResult) => {
-    onChange(touch(bitmapReplaced(resource, r)));
-  };
-
-  const applySvg = (r: SvgUploadResult) => {
-    onChange(touch(svgReplaced(resource, r)));
-  };
-
-  const applyPdfMaster = (pdfFileId: string | undefined) => {
-    if (!resource.svg) return;
-    onChange(touch({ svg: { ...resource.svg, pdfFileId } }));
-  };
-
-  // A source edit saved as a new blob (see `svgSourceSaved`).
-  const applySvgSource = useCallback(
-    (c: SvgSourceCommit) => {
-      onChange(touch(svgSourceSaved(resource, c)));
-    },
-    // `touch` closes over `resource`, which is already a dependency.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onChange, resource],
-  );
+  const { idDraft, setIdDraft, idTaken, idEmpty, suggestedId, commitId, applyBitmap, applySvg, applyPdfMaster, applySvgSource } = useResourceEdits({
+    resource, otherIds, onChange, onRename, touch });
 
   const deleteMessage = (
     <>

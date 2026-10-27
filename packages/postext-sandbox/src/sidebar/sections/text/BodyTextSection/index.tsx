@@ -2,24 +2,10 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../../context/SandboxContext.js';
-import { resolveBodyTextConfig, DEFAULT_BODY_TEXT_CONFIG, baseFontFamily, avoidOrphansByDefault, avoidWidowsByDefault, dimensionsEqual, colorsEqual, isCjkLanguage } from 'postext';
-import type { BodyTextConfig, ColonListRoom, CompositionRule, EmphasisStyle, HyphenationConfig, TashkilMode } from 'postext';
-import { ChevronRight } from 'lucide-react';
-import {
-  CollapsibleSection,
-  FieldGroup,
-  ColorPicker,
-  DimensionInput,
-  FontPicker,
-  NumberInput,
-  SelectInput,
-  ToggleSwitch,
-  FieldRow,
-  useFieldIds,
-} from '../../../../controls/index.js';
-import { documentLocaleLabel, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants.js';
+import { DEFAULT_BODY_TEXT_CONFIG, isCjkLanguage, avoidWidowsByDefault, avoidOrphansByDefault, resolveBodyTextConfig, baseFontFamily, dimensionsEqual, colorsEqual, type EmphasisStyle, type TashkilMode, type ColonListRoom, type CompositionRule } from 'postext';
+import { CollapsibleSection, FieldGroup, FontPicker, DimensionInput, NumberInput, SelectInput, ToggleSwitch, ColorPicker, FieldRow } from '../../../../controls/index.js';
+import { TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants.js';
 import { defaultDocumentLocale, withHyphenationLocale } from '../../../../controls/language/hyphenation.js';
-import { useOpenSettingsGroup } from '../../../../context/settingsNavigation.js';
 import { JustificationSubsection, KashidaFields, RaggedBreakingSubsection } from './JustificationSubsection.js';
 import { BlockquoteSubsection } from './BlockquoteSubsection.js';
 import { VerseSubsection } from './VerseSubsection.js';
@@ -28,10 +14,12 @@ import { TypeSample } from '../../../settings/TypeSample.js';
 import { AlignPicture } from '../../../settings/pictures.js';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections.js';
 import { isArabicScriptLanguage } from '../../../../context/arabicDefaults.js';
-import { flowSideLabels, useRightToLeftFlow } from '../../../settings/flowSides.js';
+import { useRightToLeftFlow, flowSideLabels } from '../../../settings/flowSides.js';
 import { TabStopsField } from '../../../settings/TabStopsField.js';
 import { ParagraphSpacingField } from '../../../settings/ParagraphSpacingField.js';
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
+import { DocumentLocalePointer } from './DocumentLocalePointer.js';
+import { createBodyTextWriters } from './writers.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -62,57 +50,11 @@ export const BodyTextSection = memo(function BodyTextSection() {
     avoidOrphans: raw?.avoidOrphans ?? avoidOrphansDefault,
   };
 
-  const updateBodyText = (partial: Partial<BodyTextConfig>) => {
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { bodyText: { ...raw, ...partial } },
-    });
-  };
-
-  // The document language is kept: it is set under Writing system.
-  const resetBodyText = () => {
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { bodyText: undefined },
-    });
-  };
-
-  const resetField = (field: keyof BodyTextConfig) => {
-    if (!raw) return;
-    const next = { ...raw };
-    delete next[field];
-    const hasKeys = Object.keys(next).length > 0;
-    dispatch({
-      type: 'UPDATE_CONFIG',
-      payload: { bodyText: hasKeys ? next : undefined },
-    });
-  };
-
-  const updateHyphenation = (partial: Partial<HyphenationConfig>) => {
-    const next: HyphenationConfig = { ...raw?.hyphenation, ...partial };
-    // Chinese, Japanese and Korean have no patterns: turning hyphenation on
-    // in such a document names the language of its Latin words, English
-    // until the author picks another.
-    if (partial.enabled === true && isCjkLanguage(next.locale ?? effectiveDocumentLocale)) next.locale = 'en-us';
-    updateBodyText({ hyphenation: next });
-  };
-
-  const handleTextAlignChange = (value: string) => {
-    const textAlign = value as BodyTextConfig['textAlign'];
-    // Going ragged drops the justified-only hyphenation settings, unless
-    // ragged text hyphenates too.
-    if (textAlign === 'left' && !raw?.hyphenation?.ragged) {
-      const next: BodyTextConfig = { ...raw, textAlign };
-      delete next.hyphenation;
-      const hasKeys = Object.keys(next).length > 0;
-      dispatch({
-        type: 'UPDATE_CONFIG',
-        payload: { bodyText: hasKeys ? next : undefined },
-      });
-    } else {
-      updateBodyText({ textAlign });
-    }
-  };
+  const {
+    updateBodyText, resetBodyText, resetField, updateHyphenation, handleTextAlignChange
+  } = createBodyTextWriters({
+    dispatch, raw, effectiveDocumentLocale
+  });
 
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   // The resolved family carries the figures (#1237): compare the family.
@@ -644,27 +586,3 @@ export const BodyTextSection = memo(function BodyTextSection() {
     </CollapsibleSection>
   );
 });
-
-/** The document language, named in its own language: a link to Writing
- *  system, where it is set. Plain text outside the Design panel. */
-function DocumentLocalePointer({ tag }: { tag: string }) {
-  const labels = useSandboxLabels();
-  const openGroup = useOpenSettingsGroup();
-  const ids = useFieldIds();
-  const name = documentLocaleLabel(tag);
-  if (!openGroup) return <span lang={tag} className="text-[0.8rem] text-(--foreground)">{name}</span>;
-  return (
-    <button
-      id={ids?.controlId}
-      type="button"
-      onClick={() => openGroup('writing')}
-      aria-describedby={ids?.descriptionId}
-      title={labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}
-      className="inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1 rounded-md px-1.5 text-[0.8rem] text-(--foreground) transition-colors hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)"
-    >
-      <span lang={tag} className="min-w-0 truncate">{name}</span>
-      <span className="sr-only"> — {labels.settingsOpenGroup.replace('__group__', labels.settingsGroupWriting)}</span>
-      <ChevronRight size={12} aria-hidden="true" className="shrink-0 text-(--slate) rtl:-scale-x-100" />
-    </button>
-  );
-}

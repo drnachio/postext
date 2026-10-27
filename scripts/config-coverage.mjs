@@ -17,7 +17,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join, relative } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const require = createRequire(join(ROOT, 'packages/postext/package.json'));
@@ -241,10 +241,22 @@ const hit = (texts, f, prose) => {
 // The panel files that name a type edit its fields: there a field must be
 // written (`update({ field`, `'field'`, `field: …` that is not an option's
 // `label: labels.…`, `next.field = …`, `delete next.field`). A type no panel file names falls back to `hit`.
+// A section split into a folder (#1278) may name the type in one module and
+// write its fields in another, so a naming file inside a module's folder
+// (one with an `index`, or a façade `<folder>.ts(x)` beside it) brings in
+// the folder's files and the façade.
 const panelSources = corpora.panel.map((l) => l.join('\n'));
+const panelSet = new Set(panelFiles);
+const moduleGroup = (p) => {
+  const d = dirname(p);
+  const facades = [`${d}.ts`, `${d}.tsx`].filter((q) => panelSet.has(q));
+  const isModule = facades.length > 0 || panelSet.has(`${d}/index.ts`) || panelSet.has(`${d}/index.tsx`);
+  return isModule ? [...panelFiles.filter((q) => dirname(q) === d), ...facades] : [p];
+};
 const panelHit = (f) => {
   const name = f.field.split('.').pop();
-  const owners = panelSources.filter((t) => word(f.owner).test(t));
+  const group = new Set(panelFiles.filter((_, i) => word(f.owner).test(panelSources[i])).flatMap(moduleGroup));
+  const owners = panelSources.filter((_, i) => group.has(panelFiles[i]));
   if (owners.length === 0 || f.field.includes('.')) return hit(units.panel, f, false);
   const written = new RegExp(
     `\\(\\{ ?${esc(name)}\\b|['"]${esc(name)}['"]|[{,]\\s*${esc(name)}\\??:(?! labels\\.)|\\b${esc(name)}: (?!labels\\.)` +

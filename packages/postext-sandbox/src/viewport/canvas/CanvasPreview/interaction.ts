@@ -1,19 +1,16 @@
-import { pageToFlow, sourceAt } from 'postext';
 import type { ResourceFocusTarget } from '../../../context/SandboxContext.js';
 import type { ComposedBook } from '../../../book/types.js';
 import { toChapterFocus } from './chapterFocus.js';
-import { getSvgTextIndex } from '../../../controls/media/svgTextIndex.js';
-import { pixelToSourceOffset, type LinkTarget, linkTargetAtPixel, findLinkLocation, pageTargetAtPixel, designImageFileIdAtPixel } from './geometry.js';
-import { type ResourceTextHit, resourceTextAtPixel } from './resourceHit.js';
+import { type ResourceTextHit } from './resourceHit.js';
 import { createComicEditor, type BalloonTextPress } from '../../comics/comicEditing.js';
 import { createFrameTools } from '../../composed/frameTools.js';
 import { createLabelEditor } from '../../composed/labelAnchorEditor.js';
 import { editModeNow } from '../../../editing/editMode.js';
-import { type PageSelection, pickAt } from '../../../selection/pageSelection.js';
-import { selectionChapters, pageSelectionNow, clearPageSelection, setPageSelection } from '../../../selection/selectionStore.js';
+import { selectionChapters, clearPageSelection, setPageSelection } from '../../../selection/selectionStore.js';
 import { createSelectionApply } from '../../../selection/applySelection.js';
-import { chapterOfPages } from '../../../selection/viewerSelection.js';
 import type { PageInteractionOptions, PageInteraction, PagePointer, PageCursor } from './interaction/types.js';
+import { createInteractionTargets } from './interaction/targets.js';
+import type { PageInteractionState } from './interaction/state.js';
 
 export type { PageNavigator, PagePointer, PageInteractionOptions, PageCursor, PageInteraction } from './interaction/types.js';
 export { attachSlotClickHandler } from './interaction/slotClick.js';
@@ -36,6 +33,7 @@ export { toChapterFocus };
  * single element can carry several pages (the Folio's spread).
  */
 export function attachPageInteraction(target: HTMLElement, opts: PageInteractionOptions): PageInteraction {
+  const state = {} as PageInteractionState;
   const { locate, docRef, dispatchRef, activePanelRef, sourceRef, navigateRef, resourcesRef, pageSourceRef } = opts;
   const pagesHost = target;
   const on = () => opts.enabled?.() ?? true;
@@ -111,190 +109,14 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     chapters: selectionChapters,
     openFrameSlot: (page, frame) => frames?.openSlot(page, frame) ?? false,
   });
-  /** Pick at a click: the innermost element, the next level up on a click
-   *  again on the spot; the frame first in Design mode; the paragraph on
-   *  a triple click. */
-  const pick = (at: PagePointer, detail: number): PageSelection | null => {
-    const doc = docRef.current;
-    if (!doc) return null;
-    const now = pageSelectionNow();
-    const prev = now && now.doc === doc && detail < 3 ? now.selection : null;
-    let sel = pickAt(doc, at.pageIndex, at.x, at.y, prev);
-    if (!sel) {
-      clearPageSelection();
-      return null;
-    }
-    if (sel.level === 0) {
-      const frameAt = sel.chain.findIndex((e) => e.level === 'frame');
-      const blockAt = sel.chain.findIndex((e) => e.level === 'block' || e.level === 'box');
-      if (detail >= 3 && blockAt > 0) sel = { ...sel, level: blockAt };
-      else if (editModeNow() === 'design' && frameAt > 0) sel = { ...sel, level: frameAt };
-    }
-    const chapter = chapterOfPages(sourceOfPage)(at.pageIndex);
-    if (chapter !== undefined) sel = { ...sel, chapter };
-    setPageSelection(sel, doc, selectionApply);
-    return sel;
-  };
-  /** Whether a pick is carried out by the selection rather than by the
-   *  viewer's own click: a level climbed to, Design mode, or what is not
-   *  body text (a design element, an attribute, a figure label). */
-  const selectionLeads = (sel: PageSelection, at: PagePointer): boolean => {
-    if (editModeNow() === 'design') {
-      // An empty frame's mark (its «Write here» box) is the frame's, though
-      // the source map sees the page there.
-      const frame = frames?.frameAt(at.pageIndex, at.x, at.y);
-      return !frame || sel.chain.some((e) => e.id === frame.id);
-    }
-    if (sel.level > 0) return true;
-    const el = sel.chain[0]!;
-    return el.level === 'design' || el.level === 'slot' || el.level === 'attr' || el.level === 'label' || (el.level === 'text' && el.source.kind === 'attr');
-  };
 
-  const resolveSheetPoint = (ev: MouseEvent): PagePointer | null => locate(ev);
-  // The point in the page's flow frame, where the text, the floats and
-  // the opener live: a vertical page's flow is the sheet turned a quarter
-  // turn (`VDTPage.flow`), the identity elsewhere.
-  const resolvePagePoint = (ev: MouseEvent): PagePointer | null => {
-    const pt = resolveSheetPoint(ev);
-    const page = pt ? docRef.current?.pages[pt.pageIndex] : undefined;
-    return pt && page ? { pageIndex: pt.pageIndex, ...pageToFlow(page, pt.x, pt.y) } : pt;
-  };
-
-  /** The chapter the text under the last point resolved belongs to when a
-   *  story carried it in from another one (#943): its position in the
-   *  book; undefined for the page's own text. */
-  let offsetChapter: number | undefined;
-  const resolveOffset = (ev: MouseEvent): number | null => {
-    const doc = docRef.current;
-    offsetChapter = undefined;
-    if (!doc) return null;
-    const pt = resolvePagePoint(ev);
-    if (!pt) return null;
-    const offset = pixelToSourceOffset(doc, pt.pageIndex, pt.x, pt.y);
-    if (offset !== null && doc.pages[pt.pageIndex]?.composed) {
-      const sheet = resolveSheetPoint(ev);
-      const el = sheet ? sourceAt(doc, sheet.pageIndex, sheet.x, sheet.y).find((e) => e.source.kind === 'markdown') : undefined;
-      if (el?.source.kind === 'markdown') offsetChapter = el.source.chapter;
-    }
-    return offset;
-  };
-
-  const resolveLink = (ev: MouseEvent): LinkTarget | null => {
-    const doc = docRef.current;
-    if (!doc) return null;
-    const pt = resolvePagePoint(ev);
-    if (!pt) return null;
-    return linkTargetAtPixel(doc, pt.pageIndex, pt.x, pt.y);
-  };
-
-  /** Whether a click here follows a link: an internal one always, a URL
-   *  with Cmd/Ctrl held. */
-  const isFollowable = (link: LinkTarget | null, ev: MouseEvent): boolean =>
-    link !== null && (link.kind !== 'url' || ev.metaKey || ev.ctrlKey);
-
-  /** Follow a link (#265): scroll to a target of this document, go to the
-   *  chapter of an anchor or a page outside it, open a URL in a new tab.
-   *  False when the link goes nowhere (a figure an earlier chapter set). */
-  const followLink = (link: LinkTarget): boolean => {
-    const doc = docRef.current;
-    if (!doc) return false;
-    if (link.kind === 'url') {
-      if (!/^(?:https?|mailto|tel|ftp):/i.test(link.href)) return false;
-      window.open(link.href, '_blank', 'noopener,noreferrer');
-      return true;
-    }
-    if (link.kind === 'page') {
-      if (!navigateRef?.current) return false;
-      navigateRef.current(link.pageIndex, doc);
-      return true;
-    }
-    const loc = findLinkLocation(doc, link);
-    if (loc) {
-      opts.showLocation(doc, loc);
-      return true;
-    }
-    if (link.kind === 'anchor' && link.pageIndex !== undefined && navigateRef?.current) {
-      navigateRef.current(link.pageIndex, doc);
-      return true;
-    }
-    return false;
-  };
-
-  const resolvePageTarget = (ev: MouseEvent): number | null => {
-    const doc = docRef.current;
-    if (!doc || !navigateRef?.current) return null;
-    const pt = resolvePagePoint(ev);
-    if (!pt) return null;
-    return pageTargetAtPixel(doc, pt.pageIndex, pt.x, pt.y);
-  };
-
-  // The resource behind an image drawn by a design slot under the pointer.
-  const resolveDesignImage = (ev: MouseEvent): string | null => {
-    const doc = docRef.current;
-    const resources = resourcesRef?.current;
-    if (!doc || !resources) return null;
-    const pt = resolveSheetPoint(ev);
-    if (!pt) return null;
-    const fileId = designImageFileIdAtPixel(doc, pt.pageIndex, pt.x, pt.y);
-    if (fileId === null) return null;
-    return resources.find((r) => r.bitmap?.fileId === fileId || r.svg?.fileId === fileId || r.video?.poster?.fileId === fileId)?.id ?? null;
-  };
-
-  // Editable resource text (table cells, captions, notes, SVG text nodes) is
-  // tried before the body-text mapping: an inline `::resource` block would
-  // otherwise resolve to its directive line.
-  const resolveResourceHit = (ev: MouseEvent): ResourceTextHit | null => {
-    const doc = docRef.current;
-    if (!doc) return null;
-    const pt = resolvePagePoint(ev);
-    if (!pt) return null;
-    return resourceTextAtPixel(doc, pt.pageIndex, pt.x, pt.y, getSvgTextIndex, sourceOfPage(pt.pageIndex)?.markdown);
-  };
-
-  const focusEditor = (anchor: number, head: number, selectWord: boolean, chapter?: number): void => {
-    const dispatch = dispatchRef.current;
-    if (activePanelRef.current !== 'markdown') {
-      dispatch({ type: 'SET_PANEL', payload: 'markdown' });
-    }
-    // Text carried in from another chapter: its offsets are that file's.
-    const owner = chapter !== undefined ? selectionChapters()[chapter] : undefined;
-    dispatch({
-      type: 'SET_PENDING_EDITOR_FOCUS',
-      payload: owner
-        ? { chapterId: owner.id, anchor, head, selectWord, fromViewer: true }
-        : { ...toChapterFocus(sourceOfPage(), anchor, head, selectWord), fromViewer: true },
-    });
-  };
-
-  // Open the Resources panel on a resource (no editor selection).
-  const openResource = (resourceId: string): void => {
-    const dispatch = dispatchRef.current;
-    if (activePanelRef.current !== 'resources') {
-      dispatch({ type: 'SET_PANEL', payload: 'resources' });
-    }
-    dispatch({ type: 'SET_ACTIVE_RESOURCE', payload: resourceId });
-  };
-
-  // Open the Resources panel on the hit resource and hand its editor the
-  // selection (words a figure gives in the Markdown go to the editor). The
-  // three dispatches land in one render, so `ResourceDetail` mounts with the
-  // request already present.
-  const focusResource = (hit: ResourceTextHit, anchor: number, head: number, selectWord: boolean): void => {
-    // Words a figure gives in the Markdown (#935) are selected there.
-    if (hit.source !== undefined) {
-      focusEditor(hit.source + anchor, hit.source + head, selectWord);
-      return;
-    }
-    const dispatch = dispatchRef.current;
-    if (activePanelRef.current !== 'resources') {
-      dispatch({ type: 'SET_PANEL', payload: 'resources' });
-    }
-    dispatch({ type: 'SET_ACTIVE_RESOURCE', payload: hit.resourceId });
-    dispatch({
-      type: 'SET_PENDING_RESOURCE_FOCUS',
-      payload: { resourceId: hit.resourceId, target: hit.target, anchor, head, selectWord },
-    });
-  };
+  const {
+    pick, selectionLeads, resolveOffset, resolveLink, isFollowable, followLink, resolvePageTarget,
+    resolveDesignImage, resolveResourceHit, focusEditor, openResource, focusResource
+  } = createInteractionTargets({
+    opts, locate, docRef, dispatchRef, activePanelRef, navigateRef, resourcesRef, sourceOfPage,
+    frames, selectionApply, state
+  });
 
   const DRAG_THRESHOLD_PX = 3;
   let dragAnchorOffset: number | null = null;
@@ -357,7 +179,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     dragBalloonText = balloonText;
     dragResource = resourceHit;
     dragAnchorOffset = offset;
-    dragChapter = balloonText || resourceHit ? undefined : offsetChapter;
+    dragChapter = balloonText || resourceHit ? undefined : state.offsetChapter;
     dragAnchorClient = { x: ev.clientX, y: ev.clientY };
     dragPointerId = ev.pointerId;
     dragging = false;
@@ -424,7 +246,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     const head = resolveOffset(ev);
     if (head === null) return;
     // One editor shows one chapter: a drag stays in the text it began in.
-    if (offsetChapter !== dragChapter) return;
+    if (state.offsetChapter !== dragChapter) return;
     if (head === lastHead) return;
     lastHead = head;
     focusEditor(dragAnchorOffset, head, false, dragChapter);
@@ -569,7 +391,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     }
     const offset = resolveOffset(ev);
     if (offset === null) return;
-    focusEditor(offset, offset, false, offsetChapter);
+    focusEditor(offset, offset, false, state.offsetChapter);
   });
 
   target.addEventListener('dblclick', (ev) => {
@@ -621,7 +443,7 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     const offset = resolveOffset(ev);
     if (offset === null) return;
     ev.preventDefault();
-    focusEditor(offset, offset, true, offsetChapter);
+    focusEditor(offset, offset, true, state.offsetChapter);
   });
 
   return { comic, frames, labels };

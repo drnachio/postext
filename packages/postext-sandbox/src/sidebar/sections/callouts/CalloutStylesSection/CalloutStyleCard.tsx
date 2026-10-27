@@ -4,7 +4,7 @@
 // numbering fields (#1276: split out of CalloutStylesSection.tsx).
 import { useState } from 'react';
 import { Copy, Trash2 } from 'lucide-react';
-import { type CalloutStyleConfig, type ResolvedCalloutStyleConfig, type Resource, type Dimension, type CalloutBorderConfig, type CalloutPaddingConfig, type CalloutStripeConfig, type CalloutIconConfig, type CalloutMarkerConfig, type CalloutMarkerRuleConfig, type CalloutBodyStyleConfig, type CalloutListStyleConfig, type CalloutDesignConfig, type DesignSlot, type AnchorEdge, type ElementAnchor, type CalloutFixedConfig, type CalloutSpan, type CalloutSideAtColumnEnd, type CalloutPlacement, type CalloutWidth, uniformRadius, type CalloutMarkerTextAlign, type CalloutStripeSide, resolveDesignSlot, type ResourceCounterReset, type ResourceCounterFormat } from 'postext';
+import { type CalloutStyleConfig, type CalloutBorderConfig, type CalloutPaddingConfig, type CalloutStripeConfig, type CalloutIconConfig, type CalloutMarkerConfig, type CalloutMarkerRuleConfig, type CalloutBodyStyleConfig, type CalloutListStyleConfig, type CalloutDesignConfig, type DesignSlot, type AnchorEdge, type ElementAnchor, type Dimension, type CalloutFixedConfig, type CalloutSpan, type CalloutSideAtColumnEnd, type CalloutPlacement, type CalloutWidth, uniformRadius, type CalloutMarkerTextAlign, type CalloutStripeSide, resolveDesignSlot } from 'postext';
 import { useSandboxLabels, useSandboxSelector } from '../../../../context/SandboxContext.js';
 import { ItemCard, SelectInput, TextInput, NumberInput, DimensionInput, ToggleSwitch, ColorPicker, CollapsibleSection, NestedGroup, FontPicker } from '../../../../controls/index.js';
 import { ConfirmPopover } from '../../../../ui/index.js';
@@ -16,31 +16,12 @@ import { useRightToLeftFlow, flowSideLabels } from '../../../settings/flowSides.
 import { hasSeveralColumns } from '../../../settings/multiColumnBook.js';
 import { MULTIPLE_COLUMNS_MAX } from '../../../settings/multipleColumns.js';
 import { TabStopsField } from '../../../settings/TabStopsField.js';
-import { resetOnOptions, counterFormatOptions } from '../../../settings/counterOptions.js';
 import { ParagraphSpacingField } from '../../../settings/ParagraphSpacingField.js';
 import { IconFields } from './iconFields.js';
 import { CalloutLabelFields, CalloutTitleStyleFields } from './labelFields.js';
-import { slugifyStyleId, type Group, type GroupConfig, CardButton, Field, inputClass, inputStyle, OFFSET_UNITS, SPACING_UNITS, STROKE_UNITS, ZERO_PT, MIN_HEIGHT_UNITS, FONT_SIZE_UNITS, LINE_HEIGHT_UNITS, TRACKING_UNITS, type CalloutNumbering } from './shared.js';
-
-interface CalloutStyleCardProps {
-  style: CalloutStyleConfig;
-  resolved: ResolvedCalloutStyleConfig;
-  otherIds: Set<string>;
-  /** The styles this one may be based on (#905): every other style but
-   *  those based on it, in list order, with their names. */
-  parents: { id: string; name: string }[];
-  /** Whether the style is stored in the config (the built-in style shown
-   *  while the config has no list is not an override). */
-  stored: boolean;
-  iconResources: Resource[];
-  /** Resolved document list values the optional bullet fields fall back to. */
-  listDefaults: { bulletFontSize: Dimension; bulletFontWeight: number; bulletFontFamily: string; marginTop: Dimension; marginBottom: Dimension };
-  onChange: (partial: Partial<CalloutStyleConfig>) => void;
-  onResetField: (field: keyof CalloutStyleConfig) => void;
-  onRename: (nextId: string) => void;
-  onDuplicate: () => void;
-  onRemove: () => void;
-}
+import { slugifyStyleId, type Group, type GroupConfig, CardButton, Field, inputClass, inputStyle, OFFSET_UNITS, SPACING_UNITS, STROKE_UNITS, ZERO_PT, MIN_HEIGHT_UNITS, FONT_SIZE_UNITS, LINE_HEIGHT_UNITS, TRACKING_UNITS } from './shared.js';
+import { CalloutNumberingFields } from './CalloutStyleCard/CalloutNumberingFields.js';
+import type { CalloutStyleCardProps } from './CalloutStyleCard/props.js';
 
 /** One callout style. Every control shows the resolved value and offers a
  *  per-field reset while the key is set, so a style only stores what
@@ -1091,147 +1072,5 @@ export function CalloutStyleCard({
       </CollapsibleSection>
     </ItemCard>
     </SearchScope>
-  );
-}
-
-/** Numbered statements (#530) and the closing mark of a proof: the
- *  `numbering` group and `endMark`. */
-function CalloutNumberingFields({ style, resolved, onChange, onResetField, sectionId }: {
-  style: CalloutStyleConfig;
-  resolved: ResolvedCalloutStyleConfig;
-  onChange: (partial: Partial<CalloutStyleConfig>) => void;
-  onResetField: (field: keyof CalloutStyleConfig) => void;
-  sectionId: string;
-}) {
-  const labels = useSandboxLabels();
-  const raw = style.numbering;
-  const num = resolved.numbering;
-  const set = (partial: Partial<CalloutNumbering>) => onChange({ numbering: { label: num?.label ?? '', ...raw, ...partial } });
-  const reset = (field: Exclude<keyof CalloutNumbering, 'label'>) => {
-    if (!raw) return;
-    const next = { ...raw };
-    delete next[field];
-    onChange({ numbering: next });
-  };
-  const unset = (field: keyof CalloutNumbering) => raw?.[field] === undefined;
-  return (
-    <CollapsibleSection title={labels.calloutStyleNumberingGroup} sectionId={`${sectionId}.numbering`} variant="subsection">
-      <ToggleSwitch
-        label={labels.calloutStyleNumbering}
-        checked={num !== undefined}
-        onChange={(v) => (v ? onChange({ numbering: { label: style.name ?? style.id } }) : onResetField('numbering'))}
-        tooltip={labels.calloutStyleNumberingTooltip}
-        isDefault={raw === undefined}
-        onReset={() => onResetField('numbering')}
-      />
-      {num && (
-        <NestedGroup>
-          <TextInput
-            label={labels.calloutStyleNumberingLabel}
-            value={num.label}
-            onChange={(v) => set({ label: v })}
-            tooltip={labels.calloutStyleNumberingLabelTooltip}
-            isDefault={false}
-          />
-          <ToggleSwitch
-            label={labels.calloutStyleNumberingNumbered}
-            checked={raw?.counter !== false}
-            onChange={(v) => (v ? reset('counter') : set({ counter: false }))}
-            tooltip={labels.calloutStyleNumberingNumberedTooltip}
-            isDefault={raw?.counter !== false}
-            onReset={() => reset('counter')}
-          />
-          {raw?.counter !== false && (
-            <>
-              <TextInput
-                label={labels.calloutStyleNumberingCounter}
-                value={typeof raw?.counter === 'string' ? raw.counter : ''}
-                onChange={(v) => (v === '' ? reset('counter') : set({ counter: v }))}
-                placeholder={style.id}
-                tooltip={labels.calloutStyleNumberingCounterTooltip}
-                isDefault={unset('counter')}
-                onReset={() => reset('counter')}
-              />
-              <TextInput
-                label={labels.resourceTypeNumberingLabel}
-                value={num.numberingTemplate}
-                onChange={(v) => (v === '' ? reset('numberingTemplate') : set({ numberingTemplate: v }))}
-                tooltip={labels.resourceTypeNumberingTooltip}
-                isDefault={unset('numberingTemplate')}
-                onReset={() => reset('numberingTemplate')}
-              />
-              <SelectInput
-                label={labels.resourceTypeResetCounterLabel}
-                value={num.resetOn}
-                options={resetOnOptions(labels)}
-                onChange={(v) => set({ resetOn: v as ResourceCounterReset })}
-                tooltip={labels.resourceTypeResetCounterTooltip}
-                isDefault={unset('resetOn')}
-                onReset={() => reset('resetOn')}
-              />
-              <SelectInput
-                label={labels.resourceTypeCounterFormatLabel}
-                value={num.counterFormat}
-                options={counterFormatOptions(labels)}
-                onChange={(v) => set({ counterFormat: v as ResourceCounterFormat })}
-                tooltip={labels.resourceTypeCounterFormatTooltip}
-                isDefault={unset('counterFormat')}
-                onReset={() => reset('counterFormat')}
-              />
-            </>
-          )}
-          <SelectInput
-            label={labels.calloutStyleNumberingPlacement}
-            value={num.placement}
-            options={[
-              { value: 'runIn', label: labels.calloutStyleNumberingPlacementRunIn },
-              { value: 'title', label: labels.calloutStyleNumberingPlacementTitle },
-            ]}
-            onChange={(v) => set({ placement: v as 'runIn' | 'title' })}
-            tooltip={labels.calloutStyleNumberingPlacementTooltip}
-            variant="segmented"
-            isDefault={unset('placement')}
-            onReset={() => reset('placement')}
-          />
-          {num.placement === 'runIn' && (
-            <>
-              <ToggleSwitch
-                label={labels.bold}
-                checked={num.bold}
-                onChange={(v) => set({ bold: v })}
-                isDefault={unset('bold')}
-                onReset={() => reset('bold')}
-              />
-              <ToggleSwitch
-                label={labels.italic}
-                checked={num.italic}
-                onChange={(v) => set({ italic: v })}
-                isDefault={unset('italic')}
-                onReset={() => reset('italic')}
-              />
-              <TextInput
-                label={labels.calloutStyleNumberingSuffix}
-                value={num.suffix}
-                onChange={(v) => set({ suffix: v })}
-                tooltip={labels.calloutStyleNumberingSuffixTooltip}
-                isDefault={unset('suffix')}
-                onReset={() => reset('suffix')}
-                widthCh={6}
-              />
-            </>
-          )}
-        </NestedGroup>
-      )}
-      <TextInput
-        label={labels.calloutStyleEndMark}
-        value={resolved.endMark}
-        onChange={(v) => (v === '' ? onResetField('endMark') : onChange({ endMark: v }))}
-        placeholder="∎"
-        tooltip={labels.calloutStyleEndMarkTooltip}
-        isDefault={style.endMark === undefined}
-        onReset={() => onResetField('endMark')}
-        widthCh={6}
-      />
-    </CollapsibleSection>
   );
 }

@@ -43,6 +43,8 @@ const EXEMPT = [
   /(^|\/)defaultLabels\.ts$/,
   /(^|\/)messages\//,
   /(^|\/)locales?\//,
+  // The sample book's text, one Markdown document per locale.
+  /(^|\/)defaultMarkdown\/[^/]+\.ts$/,
 ];
 
 const files = execFileSync('git', ['ls-files', 'apps', 'packages'], { cwd: ROOT, encoding: 'utf8' })
