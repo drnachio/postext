@@ -1,0 +1,539 @@
+// The converter that walks a Word model into Postext chapters.
+import { type InlineRun, renderInline, guardLineStart, LINE_BREAK, WORD_JOINER } from '../inline.js';
+import type { WordDocument, WordParagraph, WordRun, WordTabStop, WordTextRun, WordTable, WordBlock } from '../model.js';
+import type { ParagraphTarget, CharacterTarget } from '../template.js';
+import { type ImportedChapter, type Chunk, type Group, type ListLevel, type ImportedPicture, type ImportedTable, type ImportSettings, paragraphTargetOf, attrValue, joinChunks, characterTargetOf, tabDirective, slugify, FENCE_OPEN_RE, FENCE_CLOSE_RE, paragraphTabs, stripCaptionLabel, tableModel, type ImportResult } from './helpers.js';
+
+export class Converter {
+  private chapters: ImportedChapter[] = [];
+  private chunks: Chunk[] = [];
+  private notes: string[] = [];
+  private title: string | undefined;
+  private group: Group | null = null;
+  private explicitDepth = 0;
+  private list: ListLevel[] = [];
+  private counters = new Map<string, number>();
+  private noteSeq = 0;
+  private pendingCaption: string | undefined;
+  private lastResource: ImportedPicture | ImportedTable | null = null;
+  private usedIds: Set<string>;
+  private hasChapterMarkers: boolean;
+  readonly pictures: ImportedPicture[] = [];
+  readonly tables: ImportedTable[] = [];
+  readonly skippedPictures: string[] = [];
+  droppedHeadingNotes = 0;
+
+  /** Tidy style boundaries (spaces between two bold words, a style change
+   *  inside a word) in documents from Word; a Sandbox export keeps its runs
+   *  exactly as they were written. */
+  private tidy: boolean;
+
+  constructor(private doc: WordDocument, private s: ImportSettings) {
+    this.tidy = doc.embeddedTemplate === undefined;
+    this.usedIds = new Set(s.existingIds);
+    this.hasChapterMarkers = doc.blocks.some((b) => b.type === 'paragraph' && this.target(b).kind === 'chapter');
+  }
+
+  private target(p: WordParagraph): ParagraphTarget {
+    return paragraphTargetOf(this.doc, p.styleId, this.s.template, this.s.config);
+  }
+
+  private uniqueId(base: string): string {
+    // `table-1` taken: `table-2`, not `table-1-2`.
+    const numbered = /^(.*-)(\d+)$/.exec(base);
+    let id = base;
+    for (let n = 2; this.usedIds.has(id); n++) id = numbered ? `${numbered[1]}${Number(numbered[2]) + n - 1}` : `${base}-${n}`;
+    this.usedIds.add(id);
+    return id;
+  }
+
+  private render(runs: InlineRun[]): string {
+    return renderInline(runs, { tidy: this.tidy }).trim();
+  }
+
+  // -- output ---------------------------------------------------------------
+
+  private out(chunk: Chunk): void {
+    if (chunk.kind !== 'list') this.list = [];
+    (this.group ? this.group.chunks : this.chunks).push(chunk);
+  }
+
+  private closeGroup(): void {
+    const g = this.group;
+    if (!g) return;
+    this.group = null;
+    if (g.chunks.length === 0 && !g.title) return;
+    const verseAttrs = [...(g.key ? [`style=${attrValue(g.key)}`] : []), ...(g.layoutLines ? ['layout=lines'] : [])];
+    const attrs = g.kind === 'callout'
+      ? `{type=${attrValue(g.key)}${g.title ? ` title=${attrValue(g.title)}` : ''}}`
+      : g.kind === 'verse' ? (verseAttrs.length ? `{${verseAttrs.join(' ')}}` : '')
+        : `{style=${attrValue(g.key)}}`;
+    const inner = joinChunks(g.chunks);
+    this.chunks.push({ kind: 'block', text: `:::${g.kind}${attrs}${inner ? `\n${inner}` : ''}\n:::` });
+    this.list = [];
+  }
+
+  private openGroup(kind: Group['kind'], key: string): void {
+    if (this.group && this.group.kind === kind && this.group.key === key) return;
+    this.closeGroup();
+    this.group = { kind, key, chunks: [] };
+  }
+
+  private flushChapter(nextTitle?: string): void {
+    this.closeGroup();
+    this.flushCaption();
+    const body = joinChunks(this.chunks);
+    const notes = this.notes.join('\n\n');
+    const markdown = [body, notes].filter(Boolean).join('\n\n');
+    if (markdown.trim() || this.title !== undefined) {
+      this.chapters.push({ title: this.title ?? this.s.untitledChapter, markdown: markdown ? markdown + '\n' : '' });
+    }
+    this.chunks = [];
+    this.notes = [];
+    this.list = [];
+    this.title = nextTitle;
+  }
+
+  private flushCaption(): void {
+    if (this.pendingCaption === undefined) return;
+    const text = this.pendingCaption;
+    this.pendingCaption = undefined;
+    this.out({ kind: 'block', text: guardLineStart(text) });
+  }
+
+  // -- runs -----------------------------------------------------------------
+
+  private charTarget(name: string): CharacterTarget {
+    return characterTargetOf(this.doc, name, this.s.template, this.s.config);
+  }
+
+  /** Runs → inline runs, split at line breaks when `split` (verse typed
+   *  with Shift+Enter) and at page breaks. Notes are numbered here. */
+  private inlineRuns(runs: WordRun[], opts: { heading?: boolean; splitLines?: boolean; inCell?: boolean; inNote?: boolean; verse?: boolean; tabs?: readonly WordTabStop[] }): { lines: InlineRun[][]; images: Array<Extract<WordRun, { type: 'image' }>>; pageBreak: boolean; displayMath: string[] } {
+    const lines: InlineRun[][] = [[]];
+    // Tabs since the start of the line (#622): the n-th goes to the n-th
+    // stop the paragraph has.
+    let tabsOnLine = 0;
+    const images: Array<Extract<WordRun, { type: 'image' }>> = [];
+    const displayMath: string[] = [];
+    let pageBreak = false;
+    const keepDirect = this.s.template.options.directFormatting === 'keep';
+    const cur = (): InlineRun[] => lines[lines.length - 1]!;
+    for (const r of runs) {
+      switch (r.type) {
+        case 'text': {
+          if (r.hidden) break;
+          const t = this.textRun(r, keepDirect, !!opts.heading);
+          if (t) cur().push(t);
+          break;
+        }
+        case 'tab':
+          // A tab at the start of a line of verse indents it (#620); in
+          // body text it is a tab (#622), to the stop Word set for it.
+          if (opts.verse) cur().push({ text: '\t' });
+          else if (opts.heading || opts.inCell || opts.inNote) cur().push({ text: ' ' });
+          else cur().push({ text: ` ${tabDirective(opts.tabs?.[tabsOnLine])} `, raw: true });
+          tabsOnLine++;
+          break;
+        case 'break':
+          if (r.kind === 'line') tabsOnLine = 0;
+          if (r.kind === 'page') pageBreak = true;
+          if (r.kind === 'line' && opts.heading) cur().push({ text: ' \\\\ ', raw: true });
+          else if (r.kind === 'line' && opts.splitLines) lines.push([]);
+          else if (r.kind === 'line' && opts.inCell && !opts.inNote) cur().push({ text: '\n', raw: true });
+          // A forced line break inside the paragraph (#620).
+          else if (r.kind === 'line' && !opts.inCell && this.s.template.options.lineBreaks === 'break') cur().push({ text: LINE_BREAK });
+          else cur().push({ text: ' ' });
+          break;
+        case 'note': {
+          if (opts.heading || opts.inCell || opts.inNote) {
+            this.droppedHeadingNotes++;
+            break;
+          }
+          const blocks = (r.kind === 'footnote' ? this.doc.footnotes : this.doc.endnotes).get(r.id);
+          if (!blocks) break;
+          const id = String(++this.noteSeq);
+          const text = blocks
+            .filter((b): b is WordParagraph => b.type === 'paragraph')
+            .map((b) => this.renderRuns(b.runs, { inNote: true }))
+            .filter(Boolean)
+            .join(' ');
+          this.notes.push(`[^${id}]: ${text}`);
+          cur().push({ text: '', note: id });
+          break;
+        }
+        case 'math':
+          if (r.display && !opts.inCell && !opts.inNote) displayMath.push(r.tex);
+          else cur().push({ text: `$${r.tex}$`, raw: true });
+          break;
+        case 'image':
+          images.push(r);
+          break;
+        case 'index': {
+          if (opts.inCell) break;
+          const term = r.term.map((t) => t.replace(/!/g, '')).join('!');
+          let a = `term=${attrValue(term)}`;
+          if (r.main) a += ' main';
+          if (r.see) a += ` see=${attrValue(r.see)}`;
+          cur().push({ text: `:index{${a}}`, raw: true });
+          break;
+        }
+      }
+    }
+    return { lines, images, pageBreak, displayMath };
+  }
+
+  private textRun(r: WordTextRun, keepDirect: boolean, heading: boolean): InlineRun | null {
+    const t: InlineRun = { text: r.text.replace(/[​﻿]/g, '') };
+    if (!t.text) return null;
+    if (r.href !== undefined && !heading) t.href = r.href;
+    if (keepDirect) {
+      if (r.bold) t.bold = true;
+      if (r.italic) t.italic = true;
+      if (r.smallCaps) t.smallCaps = true;
+      if (r.script) t.script = r.script;
+    }
+    if (r.charStyle) {
+      const target = this.charTarget(r.charStyle);
+      switch (target.kind) {
+        case 'drop':
+          return null;
+        case 'markup': {
+          // Verbatim, inside the emphasis and link around it.
+          const raw: InlineRun = { text: r.text, raw: true };
+          if (t.bold && r.bold !== false) raw.bold = true;
+          if (t.italic && r.italic !== false) raw.italic = true;
+          if (t.smallCaps) raw.smallCaps = true;
+          if (t.href !== undefined) raw.href = t.href;
+          return raw;
+        }
+        case 'bold':
+          if (r.bold !== false) t.bold = true;
+          break;
+        case 'italic':
+          if (r.italic !== false) t.italic = true;
+          break;
+        case 'boldItalic':
+          if (r.bold !== false) t.bold = true;
+          if (r.italic !== false) t.italic = true;
+          break;
+        case 'smallCaps':
+          if (r.smallCaps !== false) t.smallCaps = true;
+          break;
+        case 'sup':
+        case 'sub':
+          t.script = target.kind;
+          break;
+        case 'chip':
+          if (!heading) t.chip = target.style;
+          break;
+        default:
+          break;
+      }
+    }
+    if (r.bold === false) delete t.bold;
+    if (r.italic === false) delete t.italic;
+    return t;
+  }
+
+  private renderRuns(runs: WordRun[], opts: { inNote?: boolean } = {}): string {
+    const { lines } = this.inlineRuns(runs, { inNote: !!opts.inNote });
+    return lines.map((l) => this.render(l)).filter(Boolean).join(' ');
+  }
+
+  // -- blocks ---------------------------------------------------------------
+
+  private emitImages(images: Array<Extract<WordRun, { type: 'image' }>>): void {
+    if (!this.s.template.options.images) return;
+    for (const img of images) {
+      const media = this.doc.media.get(img.rId);
+      if (!media) continue;
+      if (!/^image\/(png|jpeg|gif|webp|svg\+xml)$/.test(media.contentType)) {
+        this.skippedPictures.push(media.path.split('/').pop() ?? media.path);
+        continue;
+      }
+      const base = slugify(img.alt ?? '', '') || slugify(img.name ?? '', '') || 'figure';
+      const id = this.uniqueId(/^(picture|imagen|image|figure)\b/i.test(base) || !/[a-z]/.test(base) ? `fig-${this.pictures.length + 1}` : base);
+      const pic: ImportedPicture = {
+        id, media, ...(img.name ? { name: img.name } : {}), ...(img.alt ? { alt: img.alt } : {}),
+        ...(img.widthEmu && img.widthEmu > 0 ? { widthEmu: img.widthEmu } : {}),
+        ...(img.heightEmu && img.heightEmu > 0 ? { heightEmu: img.heightEmu } : {}),
+      };
+      if (this.pendingCaption !== undefined) {
+        pic.caption = this.pendingCaption;
+        this.pendingCaption = undefined;
+      }
+      this.pictures.push(pic);
+      this.lastResource = pic;
+      this.out({ kind: 'block', text: `::resource{id="${id}"}` });
+    }
+  }
+
+  private emitMarkup(p: WordParagraph): void {
+    let text = '';
+    for (const r of p.runs) {
+      if (r.type === 'text' && !r.hidden) text += r.text;
+      else if (r.type === 'tab') text += '\t';
+      else if (r.type === 'break' && r.kind === 'line') text += '\n';
+    }
+    this.closeGroup();
+    this.flushCaption();
+    for (const line of text.split('\n')) {
+      const t = line.replace(/\s+$/, '');
+      if (FENCE_OPEN_RE.test(t.trim())) this.explicitDepth++;
+      else if (FENCE_CLOSE_RE.test(t.trim()) && this.explicitDepth > 0) this.explicitDepth--;
+    }
+    this.out({ kind: 'markup', text: text.replace(/\s+$/, '') });
+  }
+
+  private listMarker(p: WordParagraph): { indent: string; marker: string } {
+    const { numId, ilvl } = p.list!;
+    const num = this.doc.numbering.nums.get(numId);
+    const level = num ? this.doc.numbering.abstracts.get(num.abstractId)?.get(ilvl) : undefined;
+    const ordered = !!level && level.format !== 'bullet' && level.format !== 'none';
+    let marker = '- ';
+    if (ordered) {
+      const k = `${numId}:${ilvl}`;
+      const start = num?.starts.get(ilvl) ?? level?.start ?? 1;
+      const n = this.counters.has(k) ? this.counters.get(k)! + 1 : start;
+      this.counters.set(k, n);
+      for (const key of [...this.counters.keys()]) {
+        const [id, l] = key.split(':');
+        if (id === numId && Number(l) > ilvl) this.counters.delete(key);
+      }
+      marker = `${n}. `;
+    }
+    while (this.list.length && this.list[this.list.length - 1]!.ilvl >= ilvl) this.list.pop();
+    const parent = this.list[this.list.length - 1];
+    const indent = parent ? parent.indent + parent.width : 0;
+    this.list.push({ ilvl, indent, width: marker.length });
+    return { indent: ' '.repeat(indent), marker };
+  }
+
+  /** A line of verse (#620): its leading tabs and spaces kept as its
+   *  indent, the rest rendered; a line that would read as a stepped line
+   *  (`+ …`) keeps its plus sign. */
+  private verseLine(runs: InlineRun[]): string {
+    const rest = runs.map((r) => ({ ...r }));
+    let lead = '';
+    while (rest.length > 0 && !rest[0]!.raw && rest[0]!.note === undefined && /^[ \t]/.test(rest[0]!.text)) {
+      const ws = /^[ \t]+/.exec(rest[0]!.text)![0];
+      lead += ws;
+      rest[0]!.text = rest[0]!.text.slice(ws.length);
+      if (!rest[0]!.text) rest.shift();
+    }
+    const text = this.render(rest.map((r) => (r.raw ? r : { ...r, text: r.text.replace(/\t/g, ' ') })));
+    if (!text) return '';
+    return lead + (/^\+\s/.test(text) ? `\\${text}` : text);
+  }
+
+  private isManualHeading(p: WordParagraph, text: string): boolean {
+    if (!this.s.template.options.manualHeadings || p.list) return false;
+    const runs = p.runs.filter((r): r is WordTextRun => r.type === 'text' && r.text.trim() !== '');
+    if (!runs.length) return false;
+    const t = text.trim();
+    if (t.length > 120 || /[.:;,]$/.test(t)) return false;
+    return runs.every((r) => r.bold || (r.charStyle && ['bold', 'boldItalic'].includes(this.charTarget(r.charStyle).kind)));
+  }
+
+  paragraph(p: WordParagraph): void {
+    let target = this.target(p);
+    const plain = p.runs.map((r) => (r.type === 'text' && !r.hidden ? r.text : r.type === 'tab' || r.type === 'break' ? ' ' : '')).join('').replace(/\s+/g, ' ').trim();
+    if (target.kind === 'drop') return;
+    if (target.kind === 'markup') {
+      this.emitMarkup(p);
+      return;
+    }
+    if (target.kind === 'chapter') {
+      if (this.s.chapters === 'split') this.flushChapter(plain || this.s.untitledChapter);
+      return;
+    }
+    if (p.pageBreakBefore && this.s.template.options.pageBreaks === 'keep' && !(target.kind === 'heading' && target.level === 1)) {
+      this.closeGroup();
+      this.out({ kind: 'block', text: ':::pagebreak' });
+    }
+    let manualHeading = false;
+    if (target.kind === 'body' && this.isManualHeading(p, plain)) {
+      target = { kind: 'heading', level: this.s.template.options.manualHeadings };
+      manualHeading = true;
+    }
+    if (this.explicitDepth > 0 && (target.kind === 'callout' || target.kind === 'paragraphs' || target.kind === 'calloutTitle')) {
+      target = target.kind === 'calloutTitle' ? target : { kind: 'body' };
+    }
+
+    if (target.kind === 'heading') {
+      const level = Math.min(6, Math.max(1, target.level));
+      if (level === 1 && this.s.chapters === 'split' && !this.hasChapterMarkers) this.flushChapter(plain || this.s.untitledChapter);
+      else {
+        this.closeGroup();
+        this.flushCaption();
+      }
+      const { lines } = this.inlineRuns(p.runs, { heading: true });
+      // A heading typed in bold by hand: the bold was its only sign.
+      let text = this.render(manualHeading ? lines.flat().map((x) => ({ ...x, bold: undefined })) : lines.flat());
+      if (!text) return;
+      if (target.style) {
+        const attrs = /\s\{([^{}]*)\}$/.exec(text);
+        if (attrs && !/\bstyle\s*=/.test(attrs[1]!)) text = text.slice(0, attrs.index) + ` {style=${attrValue(target.style)} ${attrs[1]!.trim()}}`;
+        else if (!attrs) text += ` {style=${attrValue(target.style)}}`;
+      } else if (text.endsWith('}') && !/\s\{[^{}]*\}$/.test(text)) text += WORD_JOINER;
+      this.out({ kind: 'block', text: `${'#'.repeat(level)} ${text}` });
+      return;
+    }
+
+    // A poem (#620): each line typed with Shift+Enter a line of verse, its
+    // leading tabs and spaces its indent; a paragraph of lines a stanza,
+    // one-line paragraphs in a row one stanza, an empty paragraph a
+    // stanza break.
+    if (target.kind === 'verse') {
+      this.flushCaption();
+      const key = target.style ?? '';
+      if (!(this.group?.kind === 'verse' && this.group.key === key)) this.openGroup('verse', key);
+      const g = this.group!;
+      const { lines, images, displayMath } = this.inlineRuns(p.runs, { splitLines: true, verse: true });
+      const verse = lines.map((l) => this.verseLine(l)).filter((l) => l.trim() !== '');
+      if (verse.length === 0) {
+        g.stanzaBreak = true;
+      } else {
+        if (verse.some((l) => l.includes('||') || /\s\\\\\s/.test(l))) g.layoutLines = true;
+        const last = g.chunks[g.chunks.length - 1];
+        if (verse.length === 1 && last && g.runOn && !g.stanzaBreak) last.text += `\n${verse[0]}`;
+        else g.chunks.push({ kind: 'block', text: verse.join('\n') });
+        g.runOn = verse.length === 1;
+        g.stanzaBreak = false;
+      }
+      if (images.length > 0 || displayMath.length > 0) {
+        this.closeGroup();
+        for (const tex of displayMath) this.out({ kind: 'block', text: `$$${tex}$$` });
+        this.emitImages(images);
+      }
+      return;
+    }
+
+    const splitLines = this.s.template.options.lineBreaks === 'paragraph' && !p.list;
+    // Word's stops, unless the paragraph goes to a style of the book that
+    // sets its own (a Sandbox export coming back).
+    const styleId = target.kind === 'paragraphs' ? target.style : undefined;
+    const own = (styleId !== undefined ? this.s.config.paragraphStyles?.find((st) => st.id === styleId)?.tabStops : undefined) ?? this.s.config.bodyText?.tabStops;
+    const { lines, images, pageBreak, displayMath } = this.inlineRuns(p.runs, { splitLines, ...(own?.length ? {} : { tabs: paragraphTabs(this.doc, p) }) });
+    const rendered = lines.map((l) => this.render(l)).filter(Boolean);
+
+    if (target.kind === 'caption') {
+      const text = stripCaptionLabel(rendered.join(' '));
+      if (images.length === 0 && text) {
+        if (this.lastResource && !this.lastResource.caption && this.lastChunkIsResource()) {
+          this.lastResource.caption = text;
+        } else {
+          this.flushCaption();
+          this.pendingCaption = text;
+        }
+        return;
+      }
+    }
+    if (target.kind === 'calloutTitle') {
+      if (this.explicitDepth > 0) {
+        // Inside a fence the box is already open: the title is a paragraph.
+        target = { kind: 'body' };
+      } else {
+        this.closeGroup();
+        this.flushCaption();
+        // A callout title is plain text.
+        this.group = { kind: 'callout', key: target.type, title: plain || undefined, chunks: [] };
+        this.emitImages(images);
+        return;
+      }
+    }
+
+    if (target.kind === 'callout') {
+      if (!(this.group?.kind === 'callout' && this.group.key === target.type)) this.openGroup('callout', target.type);
+    } else if (target.kind === 'paragraphs') {
+      this.openGroup('paragraphs', target.style);
+    } else if (this.group) {
+      this.closeGroup();
+    }
+    this.flushCaption();
+
+    if (rendered.length) {
+      if (p.list) {
+        // A list item is one line: its forced breaks are `\\` (#620).
+        const { indent, marker } = this.listMarker(p);
+        this.out({ kind: 'list', text: indent + marker + rendered.join(' ').replace(/\\\n/g, ' \\\\ ') });
+      } else if (target.kind === 'quote') {
+        for (const line of rendered) this.out({ kind: 'block', text: `> ${line.replace(/\n/g, '\n> ')}` });
+      } else {
+        for (const line of rendered) this.out({ kind: 'block', text: guardLineStart(line) });
+      }
+    }
+    for (const tex of displayMath) this.out({ kind: 'block', text: `$$${tex}$$` });
+    this.emitImages(images);
+    if (pageBreak && this.s.template.options.pageBreaks === 'keep') {
+      this.closeGroup();
+      this.out({ kind: 'block', text: ':::pagebreak' });
+    }
+    for (const box of p.textBoxes ?? []) this.block(box);
+  }
+
+  private lastChunkIsResource(): boolean {
+    const list = this.group ? this.group.chunks : this.chunks;
+    const last = list[list.length - 1];
+    return !!last && last.text.startsWith('::resource{');
+  }
+
+  table(t: WordTable): void {
+    if (!this.s.template.options.tables) {
+      for (const row of t.rows) for (const cell of row) for (const b of cell.blocks) this.block(b);
+      return;
+    }
+    this.closeGroup();
+    const model = tableModel(t, (p) => this.cellText(p));
+    const id = this.uniqueId(`table-${this.tables.length + 1}`);
+    const table: ImportedTable = { id, model };
+    if (this.pendingCaption !== undefined) {
+      table.caption = this.pendingCaption;
+      this.pendingCaption = undefined;
+    }
+    this.tables.push(table);
+    this.lastResource = table;
+    this.out({ kind: 'block', text: `::resource{id="${id}"}` });
+  }
+
+  private cellText(blocks: WordBlock[]): string {
+    const lines: string[] = [];
+    let depthBase: number | null = null;
+    for (const b of blocks) {
+      if (b.type !== 'paragraph') continue;
+      const { lines: ls } = this.inlineRuns(b.runs, { inCell: true });
+      const text = ls.map((l) => renderInline(l, { collapseSpaces: false, tidy: this.tidy }).replace(/[ \t]+/g, ' ').trim()).join(' ');
+      if (!text) continue;
+      if (b.list) {
+        const num = this.doc.numbering.nums.get(b.list.numId);
+        const level = num ? this.doc.numbering.abstracts.get(num.abstractId)?.get(b.list.ilvl) : undefined;
+        if (depthBase === null) depthBase = b.list.ilvl;
+        const ordered = !!level && level.format !== 'bullet';
+        const k = `cell:${b.list.numId}:${b.list.ilvl}`;
+        const n = (this.counters.get(k) ?? (level?.start ?? 1) - 1) + 1;
+        this.counters.set(k, n);
+        lines.push('  '.repeat(Math.max(0, b.list.ilvl - depthBase)) + (ordered ? `${n}. ` : '- ') + text);
+      } else lines.push(text);
+    }
+    return lines.join('\n');
+  }
+
+  block(b: WordBlock): void {
+    if (b.type === 'table') this.table(b);
+    else this.paragraph(b);
+  }
+
+  run(): ImportResult {
+    for (const b of this.doc.blocks) this.block(b);
+    this.flushChapter();
+    if (this.chapters.length === 0) this.chapters.push({ title: this.s.untitledChapter, markdown: '' });
+    return {
+      chapters: this.chapters,
+      pictures: this.pictures,
+      tables: this.tables,
+      skippedPictures: this.skippedPictures,
+      droppedHeadingNotes: this.droppedHeadingNotes,
+    };
+  }
+}
