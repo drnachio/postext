@@ -3,6 +3,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
+import { textOfHtml } from '../htmlText.js';
 
 // #403: every word of a line is its own absolutely positioned box, so the
 // HTML carries the word spaces (and what separates one line from the next)
@@ -42,7 +43,7 @@ function copied(html: string, block: VDTBlock): string {
   const rest = html.slice(start);
   const end = rest.indexOf('<div class="pt-block"', 1);
   const markup = end < 0 ? rest : rest.slice(0, end);
-  return unescape(markup.replace(/<[^>]+>/g, ''));
+  return unescape(textOfHtml(markup));
 }
 
 const paragraphs = (doc: VDTDocument): VDTBlock[] => doc.blocks.filter((b) => b.type === 'paragraph');

@@ -6,6 +6,7 @@ import { measureRichBlock } from '../../measure/rich.js';
 import { setHyphenationLocale } from '../../hyphenation/hyphenate.js';
 import type { MeasureBlockOptions } from '../../measure/types.js';
 import type { VDTLine } from '../../vdt.js';
+import { pxOf } from '../htmlText.js';
 
 // #770: one book set the same word two ways. A paragraph with a style in
 // it is cut word by word, and a word a line may end inside is measured
@@ -17,7 +18,7 @@ import type { VDTLine } from '../../vdt.js';
 // widths it had.
 
 const DOT = '·';
-const sizeOf = (font: string): number => parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+const sizeOf = (font: string): number => parseFloat(pxOf(font) ?? '10');
 
 /**
  * The advance of `text`, px at 10 px, in a face like Crimson Pro: every

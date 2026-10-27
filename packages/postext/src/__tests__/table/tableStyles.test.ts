@@ -182,7 +182,12 @@ describe('table borderRadius', () => {
     const doc = buildDocument({ markdown: 'Text :ref{id="a"} and :ref{id="b"}.', resources: [table('a'), table('b', 'option')] }, PAGE);
     const html = renderToHtml(doc);
     expect(html).toContain('overflow:hidden;border-radius:');
-    const bordered = html.match(/border:[^;]+solid #163a76;border-radius:/g) ?? [];
+    // Each `border:… solid #163a76` declaration followed by a border-radius.
+    const declarations = html.split(';');
+    const bordered = declarations.filter((d, i) => {
+      const border = d.indexOf('border:');
+      return border >= 0 && d.endsWith('solid #163a76') && d.length - 'solid #163a76'.length > border + 'border:'.length && (declarations[i + 1] ?? '').startsWith('border-radius:');
+    });
     expect(bordered.length).toBe(1);
     expect(html).toMatch(/solid #7a9cc6;border-radius:/);
   });

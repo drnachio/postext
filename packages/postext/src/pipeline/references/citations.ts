@@ -13,7 +13,7 @@ import { FOOTNOTE_PLACEHOLDER } from '../../parse/inlineFormatting.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import { type CitationContext, blockResourceIds } from '../../citations/context.js';
 import { citationEngine } from '../../citations/registry.js';
-import { htmlToSpans, decodeEntities } from '../../citations/html.js';
+import { htmlToSpans, decodeEntities, stripTags } from '../../citations/html.js';
 import { narrativeName } from './citations/markers.js';
 import { type ProcessedCitations, BIBLIOGRAPHY_ANCHOR_PREFIX, BIBLIOGRAPHY_CONTAINER_BASE, BIBLIOGRAPHY_STYLE_ID, defaultBibliographyTitle, citationLocale, WARICHU_ID_BASE, CITATION_NOTE_PREFIX } from './citations/process.js';
 import { isolated, linked, plain, CLOSING_CJK, withoutFinalStop, withSpans } from './citations/spans.js';
@@ -165,7 +165,7 @@ export function applyCitations(
     for (const entry of entries) {
       // An entry in the other direction keeps its punctuation (#667).
       const body = isolated(htmlToSpans(entry.html), documentDirection, 0);
-      const label = entry.label ? decodeEntities(entry.label.replace(/<[^>]*>/g, '')) : undefined;
+      const label = entry.label ? decodeEntities(stripTags(entry.label)) : undefined;
       if (label) labelChars = Math.max(labelChars, [...label].length);
       // The label in a column of its own (#290): the en space after it is
       // widened when the entry is measured, so every entry's text starts

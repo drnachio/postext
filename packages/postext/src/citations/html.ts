@@ -28,6 +28,21 @@ export function decodeEntities(text: string): string {
   });
 }
 
+/** `html` with its tags dropped: each `<` up to the next `>` goes in one
+ *  scan, so no tag can reassemble from what a removal leaves behind (#1283).
+ *  A `<` with no `>` after it stays, text and all. */
+export function stripTags(html: string): string {
+  let out = '';
+  let at = 0;
+  for (;;) {
+    const open = html.indexOf('<', at);
+    const close = open < 0 ? -1 : html.indexOf('>', open + 1);
+    if (close < 0) return out + html.slice(at);
+    out += html.slice(at, open);
+    at = close + 1;
+  }
+}
+
 /** The spans of a formatted citation or bibliography entry. `base` is
  *  the emphasis of the text around it (a citation in an italic sentence). */
 export function htmlToSpans(html: string, base: { bold: boolean; italic: boolean } = { bold: false, italic: false }): InlineSpan[] {

@@ -14,6 +14,7 @@ import { parseInlineFormatting } from '../../parse/inlineFormatting.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLineSegment } from '../../vdt.js';
 import { setSlashBreaks } from '../../measure/breakRules.js';
+import { attrsBefore, textOfHtml } from '../htmlText.js';
 
 // #725: a word with no letter (`46.`, `1367)`) has no script of its own. A
 // face may draw its punctuation by script (Amiri: a Latin full stop and
@@ -590,7 +591,23 @@ describe('a word with no letter on canvas (#725)', () => {
 describe('a word with no letter in HTML (#725)', () => {
   const MARK = (mark: string): string => `<span aria-hidden="true" style="font-size:0;-webkit-user-select:none;user-select:none;">${mark}</span>`;
   /** The text a reader selects and copies: the marks are no part of it. */
-  const copied = (html: string): string => html.replace(/<span aria-hidden="true" style="font-size:0;[^>]*>[^<]*<\/span>/g, '').replace(/<[^>]+>/g, '');
+  const copied = (html: string): string => {
+    // Each mark box (no tag inside it) dropped, then the tags.
+    const OPEN = '<span aria-hidden="true" style="font-size:0;';
+    let kept = '';
+    let from = 0;
+    let at = html.indexOf(OPEN);
+    while (at >= 0) {
+      const gt = html.indexOf('>', at + OPEN.length);
+      const lt = gt < 0 ? -1 : html.indexOf('<', gt);
+      if (lt >= 0 && html.startsWith('</span>', lt)) {
+        kept += html.slice(from, at);
+        from = lt + '</span>'.length;
+        at = html.indexOf(OPEN, from);
+      } else at = html.indexOf(OPEN, at + 1);
+    }
+    return textOfHtml(kept + html.slice(from));
+  };
 
   it('holds the mark of its script in a box of no size, after it', () => {
     const html = renderToHtml(build('It ends in 46. Then.', config('Amiri')));
@@ -647,8 +664,10 @@ describe('a word with no letter on a tracked line (#725)', () => {
       }
       // And the HTML says so on each of them.
       const html = renderToHtml(doc);
-      expect(html.match(/letter-spacing:0;[^"]*"><span aria-hidden="true" style="font-size:0;/g) ?? []).toHaveLength(2);
-      expect(html).toMatch(/letter-spacing:0;[^"]*">1367<span aria-hidden="true"/);
+      // Each mark box right after a style that sets no tracking.
+      const untracked = (marker: string): number => attrsBefore(html, marker).filter((style) => style.includes('letter-spacing:0;')).length;
+      expect(untracked('"><span aria-hidden="true" style="font-size:0;')).toBe(2);
+      expect(untracked('">1367<span aria-hidden="true"')).toBeGreaterThan(0);
     }
   });
 });

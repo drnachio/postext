@@ -7,6 +7,7 @@ import { CONFIG_VERSION, migrateConfig, migrateBundleConfig, pinLegacyHardBreaks
 import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../../defaults/text/bodyText.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../../vdt.js';
+import { textOfHtml } from '../../htmlText.js';
 
 // #620: forced line breaks inside a paragraph — a backslash that ends a
 // source line, or `\\` — end the line there; the line before the break is
@@ -159,7 +160,7 @@ describe('layout (#620)', () => {
     const html = renderToHtml(doc);
     const [p] = paragraphs(doc);
     const start = html.indexOf(`data-block-id="${p!.id}"`);
-    const text = html.slice(start).replace(/<[^>]+>/g, '');
+    const text = textOfHtml(html.slice(start));
     expect(text.startsWith(`${SHORT}\n`) || text.includes(`${SHORT}\n`)).toBe(true);
   });
 

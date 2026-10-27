@@ -59,7 +59,8 @@ function itemProperties(item: EpubItem): string[] {
   const out = given.filter((p) => p !== 'svg' && p !== 'mathml' && p !== 'scripted' && p !== 'remote-resources');
   if (/<(?:[a-z]+:)?svg[\s>/]/.test(text)) out.push('svg');
   if (/<(?:[a-z]+:)?math[\s>/]/.test(text)) out.push('mathml');
-  if (/<script[\s>/]/.test(text)) out.push('scripted');
+  // Matched in any case, as a filter for script tags should be (#1289).
+  if (/<script[\s>/]/i.test(text)) out.push('scripted');
   if (/<(?:video|audio|source)\b[^>]*\ssrc="https?:/.test(text)) out.push('remote-resources');
   return out;
 }

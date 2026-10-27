@@ -8,6 +8,7 @@ import { parseBibtex } from '../../../citations/bibtex.js';
 import { normalizeCslItem } from '../../../citations/data.js';
 import type { CitationEngine, CitationProcessor } from '../../../citations/types.js';
 import type { PostextConfig } from '../../../index.js';
+import { textOfHtml } from '../../htmlText.js';
 
 // Japanese citations (#426): the ja-JP locale, the narrative names a
 // numbered marker or a note writes in the sentence, and family-first CJK
@@ -66,7 +67,7 @@ const front = [
   '',
 ].join('\n');
 const text = (markdown: string, locale: string): string =>
-  renderToHtml(buildDocument({ markdown: front + markdown }, config(locale))).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ');
+  textOfHtml(renderToHtml(buildDocument({ markdown: front + markdown }, config(locale)))).replace(/\s+/g, ' ');
 
 describe('citation locale', () => {
   it('maps every Japanese tag to ja-JP', () => {

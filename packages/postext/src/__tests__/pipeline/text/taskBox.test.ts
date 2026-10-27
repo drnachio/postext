@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument, renderPageToCanvas, renderToHtml, TASK_BOX_SIDE_EM, TASK_BOX_TICK, taskBoxSize, taskBoxSvgBody, taskBoxTick } from '../../../index.js';
 import type { PostextConfig, VDTBlock, VDTDocument } from '../../../index.js';
+import { elementsOf } from '../../htmlText.js';
 
 // #765: the box of a task item (`- [ ]`, `- [x]`) is drawn by the engine.
 // Up to postext 1.28 it was the character ☐ (☑ when done) in the list's
@@ -281,7 +282,7 @@ describe('the box of a task item in the HTML (#765)', () => {
   const doc = buildDocument({ markdown: MD }, config());
   const [open, done] = items(doc);
   const html = renderToHtml(doc);
-  const boxes = [...html.matchAll(/<div class="pt-bullet pt-task-box"[^>]*>.*?<\/div>/g)].map((m) => m[0]);
+  const boxes = elementsOf(html, '<div class="pt-bullet pt-task-box"', '</div>').map((e) => e.outer);
 
   it('is an inline SVG in an image named by the character it stands for', () => {
     expect(boxes).toHaveLength(2);
@@ -309,7 +310,7 @@ describe('the box of a task item in the HTML (#765)', () => {
 
   it('draws the tick turned back on a vertical page', () => {
     const vertical = buildDocument({ markdown: MD }, config({ layout: { layoutType: 'single', writingMode: 'vertical-rl' } }));
-    const turned = [...renderToHtml(vertical).matchAll(/<div class="pt-bullet pt-task-box"[^>]*>.*?<\/div>/g)].map((m) => m[0]);
+    const turned = elementsOf(renderToHtml(vertical), '<div class="pt-bullet pt-task-box"', '</div>').map((e) => e.outer);
     expect(turned).toHaveLength(2);
     expect(turned[1]).toContain(taskBoxSvgBody(0.1, true, 'vertical'));
     expect(taskBoxSvgBody(0.1, true, 'vertical')).not.toBe(taskBoxSvgBody(0.1, true));

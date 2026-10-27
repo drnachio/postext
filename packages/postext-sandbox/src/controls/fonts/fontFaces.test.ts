@@ -53,6 +53,8 @@ const COMMIT_MONO = {
  *  status. Font files answer their own URL as bytes. */
 let routes: Record<string, string | object | Error | number>;
 let requests: string[];
+/** The host a request went to ('' for one that is no absolute URL). */
+const hostOf = (url: string): string => (URL.canParse(url) ? new URL(url).hostname : '');
 /** Files answered later the earlier they are asked for. */
 let reverseArrival = false;
 
@@ -314,7 +316,7 @@ describe('a family Google Fonts does not serve (#689)', () => {
     await loader.loadFont('Commit Mono', [{ weight: 400, style: 'italic' }, { weight: 700, style: 'normal' }, { weight: 700, style: 'italic' }]);
     expect(fonts.declared('Commit Mono').sort()).toEqual(['400 italic', '400 normal', '700 italic', '700 normal']);
     expect(fonts.faces.every((f) => f.status === 'loaded')).toBe(true);
-    expect(requests.some((u) => u.includes('fonts.googleapis.com'))).toBe(false);
+    expect(requests.some((u) => hostOf(u) === 'fonts.googleapis.com')).toBe(false);
   });
 
   it('is not asked for again at every build while it cannot be had', async () => {

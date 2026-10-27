@@ -151,7 +151,7 @@ describe('readBundle over a long book (#199)', () => {
       inFlight++;
       peak = Math.max(peak, inFlight);
       // Later chapters answer sooner: order must come from the manifest.
-      const n = Number(/(\d+)\.md$/.exec(path)?.[1] ?? 0);
+      const n = path.endsWith('.md') ? Number(path.slice(path.lastIndexOf('/') + 1, -'.md'.length)) : 0;
       await new Promise((r) => setTimeout(r, DELAY - (n % 7) * 5));
       inFlight--;
       return new TextEncoder().encode(`# 第${n}回\n\n${han}`).buffer as ArrayBuffer;

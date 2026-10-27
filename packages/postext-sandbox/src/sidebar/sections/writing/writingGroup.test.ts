@@ -31,6 +31,22 @@ function searching(query: string): SettingsSearchState {
   return { query, matcher: compileMatcher(query), overriddenOnly: false, active: true };
 }
 
+/** Markup without its tags, in one scan: each `<` up to the next `>`
+ *  dropped (a `<` with no `>` after it stays, as text). */
+function textOf(html: string): string {
+  let out = '';
+  let from = 0;
+  for (;;) {
+    const lt = html.indexOf('<', from);
+    if (lt < 0) break;
+    const gt = html.indexOf('>', lt + 1);
+    if (gt < 0) break;
+    out += html.slice(from, lt);
+    from = gt + 1;
+  }
+  return out + html.slice(from);
+}
+
 function render(section: ComponentType, config: PostextConfig, { labels = DEFAULT_LABELS, search = IDLE } = {}): string {
   const state = { config, resources: [], labels, locale: labels === ES ? 'es' : 'en' };
   const store = { getSnapshot: () => state, subscribe: () => () => {}, dispatch: () => {} };
@@ -40,8 +56,7 @@ function render(section: ComponentType, config: PostextConfig, { labels = DEFAUL
         h(MatchScopeProvider, { id: 'root', children: h(section) }))),
   );
   // The text as read: tags (search highlights among them) dropped.
-  return html
-    .replace(/<[^>]+>/g, '')
+  return textOf(html)
     .replace(/&#x27;/g, "'")
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, '&');

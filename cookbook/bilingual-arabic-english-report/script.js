@@ -63,7 +63,7 @@ const SPANISH = { 'Books translated into Arabic': 'Libros traducidos al árabe',
 const change = (a, b) => `${b > a ? '+' : ''}${Math.round((100 * (b - a)) / a)}%`;
 const AR = (n) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]); // the author's ٠–٩
 const tableAr = tableOf(['البرنامج', '٢٠٢٤', '٢٠٢٥', 'التغيّر'], FIGURES.map(([ar, , a, b]) =>
-  [ar, AR(a), AR(b), AR(change(a, b)).replace('%', '٪')]));
+  [ar, AR(a), AR(b), AR(change(a, b)).replaceAll('%', '٪')]));
 const tableEn = tableOf(t({ en: ['Programme', '2024', '2025', 'Change'],
   es: ['Programa', '2024', '2025', 'Cambio'] }), FIGURES.map(([, en, a, b]) =>
   [t({ en, es: SPANISH[en] }), String(a), String(b), change(a, b)]));

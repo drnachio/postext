@@ -4,6 +4,7 @@ import { initMathEngine, renderMath, clearMathCache } from '../../math/index.js'
 import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { MathRender } from '../../math/index.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
+import { tagsAt } from '../htmlText.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
@@ -150,17 +151,24 @@ describe('numbered display formulas (EF-74)', () => {
     // the unnumbered formula's markup keeps. The flattened markup of a
     // numbered one must keep it too, placed where MathJax put it.
     const plain = renderMath('x = \\text{ecuación}', true, 100);
-    expect(plain.svg).toMatch(/<text\b[^>]*>ó<\/text>/);
+    // The attributes of the first `<text …>ó</text>` of an SVG.
+    const textOf = (svg: string): string | undefined => {
+      const t = tagsAt(svg, '<text', 'ó</text>').find((x) => !/\w/.test(x.tag['<text'.length] ?? ''));
+      return t?.tag.slice('<text'.length, -1);
+    };
+    expect(textOf(plain.svg)).toBeDefined();
     const r = renderMath('x = \\text{ecuación} \\tag{5}', true, 100, { containerWidthPx: 3000 });
     expect(r.error).toBeUndefined();
-    const text = /<text\b([^>]*)>ó<\/text>/.exec(r.svg);
-    expect(text).not.toBeNull();
+    const attrs = textOf(r.svg);
+    expect(attrs).toBeDefined();
     expect(r.svg).not.toContain('<svg data-');
     // Its transform is flattened into the box's px, like the paths: the
     // "ó" sits among the formula's glyphs, left of the number.
-    const m = /transform="matrix\(([^)]*)\)"/.exec(text![1]!);
-    expect(m).not.toBeNull();
-    const [, , , , e, f] = m![1]!.split(' ').map(Number);
+    const open = attrs!.indexOf('transform="matrix(');
+    const close = open < 0 ? -1 : attrs!.indexOf(')', open);
+    const matrix = close >= 0 && attrs![close + 1] === '"' ? attrs!.slice(open + 'transform="matrix('.length, close) : undefined;
+    expect(matrix).toBeDefined();
+    const [, , , , e, f] = matrix!.split(' ').map(Number);
     const tag = pathsBox(r.paths.slice(-3)); // ( 5 )
     expect(e).toBeGreaterThan(0);
     expect(e).toBeLessThan(tag.minX);

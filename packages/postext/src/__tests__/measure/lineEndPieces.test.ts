@@ -5,6 +5,7 @@ import { measureRichBlock } from '../../measure/rich.js';
 import { setHyphenationLocale } from '../../hyphenation/hyphenate.js';
 import type { MeasureBlockOptions } from '../../measure/types.js';
 import type { VDTLine, VDTLineSegment } from '../../vdt.js';
+import { pxOf } from '../htmlText.js';
 
 // #770, round 2: the two halves of a word broken at a line end. In a
 // paragraph cut word by word a piece of a word was as wide as the word
@@ -17,7 +18,7 @@ import type { VDTLine, VDTLineSegment } from '../../vdt.js';
 
 const SHY = '­';
 const DOT = '·';
-const sizeOf = (font: string): number => parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+const sizeOf = (font: string): number => parseFloat(pxOf(font) ?? '10');
 
 /**
  * The advance of `text` in a face that draws across its letters, px at

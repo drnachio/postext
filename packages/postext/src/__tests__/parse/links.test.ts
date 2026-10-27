@@ -3,6 +3,7 @@ import { buildDocument, renderToHtml } from '../../index.js';
 import { parseInlineFormatting, stripInlineFormatting } from '../../parse/inlineFormatting.js';
 import { mapInlineSnippet } from '../../parse/inlineSnippet.js';
 import type { PostextConfig, Resource, VDTDocument, VDTLine, VDTLineSegment } from '../../index.js';
+import { elementsOf, startTags, textOfHtml } from '../htmlText.js';
 
 // EF-36: a Markdown link `[text](url)` keeps its URL. The parser records it
 // on the spans (without splitting them, so layout is exactly what it was),
@@ -221,13 +222,13 @@ describe('links in HTML (EF-36)', () => {
   it('wraps each run of linked words in one anchor that keeps the text colour', () => {
     const doc = buildDocument({ markdown: 'Go to [the postext docs](https://postext.dev/docs?a=1&b=2) now.' }, narrow);
     const html = renderToHtml(doc);
-    const anchors = html.match(/<a [^>]*href="https:\/\/postext\.dev\/docs\?a=1&amp;b=2"[^>]*>/g) ?? [];
+    const anchors = startTags(html, '<a ').filter((tag) => tag.includes('href="https://postext.dev/docs?a=1&amp;b=2"'));
     expect(anchors).toHaveLength(1);
     expect(anchors[0]).toContain('color:inherit');
-    const inner = /<a [^>]*href="https:\/\/postext\.dev[^"]*"[^>]*>([\s\S]*?)<\/a>/.exec(html)![1]!;
+    const inner = elementsOf(html, '<a ', '</a>', 'href="https://postext.dev')[0]!.inner;
     // The word spaces copy with the words (#403); the one after the link
     // is outside it.
-    expect(inner.replace(/<[^>]+>/g, '')).toBe('the postext docs');
+    expect(textOfHtml(inner)).toBe('the postext docs');
   });
 
   it('adds no anchors to text without links', () => {

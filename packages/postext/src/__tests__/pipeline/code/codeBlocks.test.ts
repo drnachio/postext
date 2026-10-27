@@ -13,6 +13,7 @@ import { configFontFamilies, collectFontUsage } from '../../../fonts/usage.js';
 import { formatWarning } from '../../../pipeline/contentWarnings.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../../vdt.js';
+import { textOfHtml } from '../../htmlText.js';
 
 // #624: code blocks. The stub font: 7 px a character, a space 4 px; the
 // 'Shrinky' face scales with its size (7 px at 17 px).
@@ -49,6 +50,32 @@ const frames = (doc: VDTDocument): VDTBlock[] => doc.blocks.filter((b) => b.type
 const codeLines = (doc: VDTDocument): VDTLine[] => codeBlocks(doc).flatMap((b) => b.lines);
 const pageOf = (doc: VDTDocument, block: VDTBlock): number => doc.pages.findIndex((p) => p.columns.some((c) => c.blocks.includes(block)));
 
+/** The markup without its hidden boxes (`<span aria-hidden="true"…>`):
+ *  each holding text and at most one inner `<span…>text</span>`. */
+function dropHidden(html: string): string {
+  const OPEN = '<span aria-hidden="true"';
+  const CLOSE = '</span>';
+  let kept = '';
+  let from = 0;
+  let at = html.indexOf(OPEN);
+  while (at >= 0) {
+    const gt = html.indexOf('>', at + OPEN.length);
+    let lt = gt < 0 ? -1 : html.indexOf('<', gt);
+    if (lt >= 0 && !html.startsWith(CLOSE, lt) && html.startsWith('<span', lt)) {
+      // One inner box, then the outer one's end.
+      const innerGt = html.indexOf('>', lt);
+      const innerLt = innerGt < 0 ? -1 : html.indexOf('<', innerGt);
+      lt = innerLt >= 0 && html.startsWith(CLOSE, innerLt) ? innerLt + CLOSE.length : -1;
+    }
+    if (lt >= 0 && html.startsWith(CLOSE, lt)) {
+      kept += html.slice(from, at);
+      from = lt + CLOSE.length;
+      at = html.indexOf(OPEN, from);
+    } else at = html.indexOf(OPEN, at + 1);
+  }
+  return kept + html.slice(from);
+}
+
 /** Copied text of a block in the HTML viewer: its markup with tags and
  *  hidden spans (leaders, numbers) left out. */
 function copiedText(html: string, blockId: string): string {
@@ -62,8 +89,8 @@ function copiedText(html: string, blockId: string): string {
     depth += m[1] ? -1 : 1;
     if (depth === 0) { end = m.index; break; }
   }
-  const inner = html.slice(open, end).replace(/<span aria-hidden="true"[^>]*>[^<]*(?:<span[^>]*>[^<]*<\/span>)?<\/span>/g, '');
-  return inner.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+  const inner = dropHidden(html.slice(open, end));
+  return textOfHtml(inner).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
 }
 
 afterEach(() => {
