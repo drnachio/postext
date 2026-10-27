@@ -5,6 +5,7 @@ import { sesamePath } from '../../canvas-backend/annotations.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { ResolvedResourceBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from '../vertical/stub.js';
+import { startTags } from '../htmlText.js';
 
 // Ruby, emphasis marks, side lines and warichu notes in table cells,
 // captions and notes (#429): measured, marked and painted as in the body.
@@ -223,7 +224,7 @@ describe('annotations of resource blocks in HTML', () => {
       // Four sesame paths, the lens as in horizontal text.
       const [a] = sesamePath(6, false);
       const first = `M${(a![0]!.x + 6).toFixed(3)} ${(a![0]!.y + 6).toFixed(3)}`;
-      expect(html.match(/<svg aria-hidden="true" width="12.000" height="12.000"[^>]*><path d="M/g)).toHaveLength(4);
+      expect(startTags(html, '<svg aria-hidden="true" width="12.000" height="12.000"', '<path d="M')).toHaveLength(4);
       expect(html.split(`<path d="${first}`).length - 1).toBe(4);
       // The marked text is emphasis.
       expect(html).toContain('<em style="font-style:inherit;">大切</em>');

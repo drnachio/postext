@@ -2,6 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { buildBundle, buildDocument, createBundleLayoutCache, renderToHtml, type PostextConfig, type VDTDocument } from 'postext';
 import '../register.js';
 
+/** Markup without its tags, in one scan: each `<` up to the next `>`
+ *  dropped (a `<` with no `>` after it stays, as text). */
+function textOf(html: string): string {
+  let out = '';
+  let from = 0;
+  for (;;) {
+    const lt = html.indexOf('<', from);
+    if (lt < 0) break;
+    const gt = html.indexOf('>', lt + 1);
+    if (gt < 0) break;
+    out += html.slice(from, lt);
+    from = gt + 1;
+  }
+  return out + html.slice(from);
+}
+
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
   font = '';
@@ -162,10 +178,13 @@ describe('MLA narrative citations in the paragraph (#640)', () => {
 
   it('the HTML output carries no space at the end of the citation', () => {
     const html = renderToHtml(doc);
-    const text = (h: string) => h.replace(/<[^>]+>/g, '');
-    const narrative = /<a href="#pt-a-ref-stillinger1974"[^>]*>(.*?)<\/a>(.*?)records/.exec(html)!;
-    expect(text(narrative[1]!)).toBe('Stillinger');
-    expect(text(narrative[2]!)).toBe(' ');
+    // The anchor's text, and what stands between it and "records".
+    const open = html.indexOf('<a href="#pt-a-ref-stillinger1974"');
+    const start = html.indexOf('>', open) + 1;
+    const close = html.indexOf('</a>', start);
+    const narrative = [html.slice(start, close), html.slice(close + '</a>'.length, html.indexOf('records', close))];
+    expect(textOf(narrative[0]!)).toBe('Stillinger');
+    expect(textOf(narrative[1]!)).toBe(' ');
   });
 
   it('BibTeX shorttitle tells two works by one author apart', () => {
@@ -194,7 +213,7 @@ describe('a TeX double hyphen in a locator (#647)', () => {
   });
 
   it('the HTML output and the BibTeX pages carry the same dash', () => {
-    const html = renderToHtml(build('--', 'modern-language-association')).replace(/<[^>]+>/g, '');
+    const html = textOf(renderToHtml(build('--', 'modern-language-association')));
     expect(html).toContain('(Keats 1–3)');
     expect(html).toContain('113–16');
     expect(html).not.toContain('--');

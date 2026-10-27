@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, VDTDocument } from 'postext';
 import { baseConfig, layOut } from './__tests__/vdt.js';
 import { buildReflowablePublication } from './index.js';
+import { textOfMarkup } from './__tests__/markup.js';
 
 // #702: a reference whose label is words is set word by word and may stand
 // on two print lines. The reflowed text holds one link around the whole
@@ -28,7 +29,7 @@ describe('reflowable EPUB: a reference label on two print lines (#702)', () => {
     // Non-vacuous: the print layout broke the label.
     expect(labelLines(doc)).toBeGreaterThan(1);
     const xhtml = await chapterXhtml([doc]);
-    const anchors = [...xhtml.matchAll(/<a\b[^>]*href="[^"]*#[^"]*"[^>]*>(.*?)<\/a>/g)].map((m) => m[1]!.replace(/<[^>]+>/g, ''));
+    const anchors = [...xhtml.matchAll(/<a\b[^>]*href="[^"]*#[^"]*"[^>]*>(.*?)<\/a>/g)].map((m) => textOfMarkup(m[1]!));
     expect(anchors.filter((text) => LABEL.includes(text.trim()) && text.trim() !== '')).toEqual([LABEL]);
   });
 
