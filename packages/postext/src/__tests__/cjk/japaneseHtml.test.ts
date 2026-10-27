@@ -5,6 +5,7 @@ import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineSegment, VDTRuby } from '../../vdt.js';
 import { installSizedStub } from '../vertical/stub.js';
 import { verticalSpans } from '../vertical/verticalSpans.js';
+import { dropTags, startTags } from '../htmlText.js';
 
 // #428: the HTML backend writes a ruby base and its reading as a semantic
 // <ruby> (the positioned boxes unchanged inside it), and a Japanese
@@ -95,7 +96,7 @@ describe('semantic ruby in horizontal HTML (#428)', () => {
     const html = renderToHtml(buildDocument({ markdown: MD }, config()));
     // Taking the elements out leaves the markup the backend wrote before
     // them (#194), the readings then hidden from assistive technology.
-    const bare = html.replace(/<\/?ruby[^>]*>|<\/?rt[^>]*>/g, '');
+    const bare = dropTags(html, ['<ruby', '</ruby', '<rt', '</rt']);
     expect(bare).not.toContain('display:contents;"><span');
     expect(bare.match(/position:absolute;left:[\d.]+px;top:-[\d.]+px;white-space:pre;/g)).toHaveLength(5);
   });
@@ -159,7 +160,7 @@ describe('semantic ruby in vertical HTML (#428)', () => {
 });
 
 describe('page language (#428)', () => {
-  const pageTag = (html: string): string => /<div class="pt-page"[^>]*>/.exec(html)![0];
+  const pageTag = (html: string): string => startTags(html, '<div class="pt-page"')[0]!;
 
   it('a Japanese document\'s pages declare it, for a host that mounts them apart from the root', () => {
     const indexed = renderToHtmlIndexed(buildDocument({ markdown: '吾輩は猫である。' }, config()));

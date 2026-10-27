@@ -3,6 +3,7 @@ import { buildDocument, renderPageToCanvas, findLooseLines } from '../../index.j
 import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
+import { elementsOf } from '../htmlText.js';
 
 // CJK characters 16 px (1 em at 16 px), anything else 8 px.
 const adv = (s: string): number => {
@@ -94,14 +95,57 @@ describe('justified CJK lines reach the measure in every renderer', () => {
     }
   });
 
+  /** Each placed run of a line's markup: its left, its letter spacing (when
+   *  its style sets one right after `white-space:pre;`) and its text. */
+  const placedRuns = (html: string): [unknown, string, string | undefined, string][] => {
+    const runs: [unknown, string, string | undefined, string][] = [];
+    const number = (from: number): number => {
+      let end = from;
+      while (end < html.length && ((html[end]! >= '0' && html[end]! <= '9') || html[end] === '.')) end++;
+      return end;
+    };
+    let at = html.indexOf('left:');
+    while (at >= 0) {
+      let next = at + 1;
+      const leftEnd = number(at + 'left:'.length);
+      if (leftEnd > at + 'left:'.length && html.startsWith('px;top:', leftEnd)) {
+        const semi = html.indexOf(';', leftEnd + 'px;top:'.length);
+        if (semi >= 0 && html.startsWith(';white-space:pre;', semi)) {
+          let after = semi + ';white-space:pre;'.length;
+          let spacing: string | undefined;
+          const ls = after + 'letter-spacing:'.length;
+          if (html.startsWith('letter-spacing:', after) && number(ls) > ls && html.startsWith('px;', number(ls))) {
+            spacing = html.slice(ls, number(ls));
+            after = number(ls) + 'px;'.length;
+          }
+          const gt = html.indexOf('>', after);
+          const lt = gt < 0 ? -1 : html.indexOf('<', gt);
+          if (lt >= 0) {
+            runs.push([undefined, html.slice(at + 'left:'.length, leftEnd), spacing, html.slice(gt + 1, lt)]);
+            next = lt + 1;
+          }
+        }
+      }
+      at = html.indexOf('left:', next);
+    }
+    return runs;
+  };
+
   it('in HTML: each tracked span carries its letter spacing and the line ends on the measure', () => {
     const html = renderToHtml(doc);
     // `s`: a paragraph's last line ends on the newline a copy takes (#403).
-    const lines = [...html.matchAll(/<div class="pt-line"[^>]*style="[^"]*left:([\d.]+)px;[^"]*">(.*?)<\/div>/gs)];
+    // Each line box whose style (its last attribute) sets a left: that left
+    // and what the box holds.
+    const lines = elementsOf(html, '<div class="pt-line"', '</div>').flatMap((line) => {
+      const style = line.tag.lastIndexOf('style="');
+      const value = style < 0 || !line.tag.endsWith('">') ? '"' : line.tag.slice(style + 'style="'.length, -2);
+      const left = value.includes('"') ? undefined : [...value.matchAll(/left:([\d.]+)px;/g)].pop();
+      return left ? [[line.outer, left[1]!, line.inner] as const] : [];
+    });
     const bodyLines = lines.filter((m) => block.lines.some((l) => m[2]!.includes(l.text.slice(0, 2))));
     expect(bodyLines.length).toBe(block.lines.length);
     bodyLines.forEach((m, li) => {
-      const spans = [...m[2]!.matchAll(/left:([\d.]+)px;top:[^;]*;white-space:pre;(?:letter-spacing:([\d.]+)px;)?[^>]*>([^<]*)</g)];
+      const spans = placedRuns(m[2]!);
       const last = spans[spans.length - 1]!;
       const n = [...last[3]!].length;
       const end = Number(m[1]) + Number(last[1]) + adv(last[3]!) + Number(last[2] ?? 0) * (n - 1);

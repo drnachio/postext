@@ -1,3 +1,5 @@
+import { pxOf, textOfHtml } from '../htmlText.js';
+
 /**
  * The runs of a vertical line's upright box in the HTML, with the line
  * height the browser uses for each: declarations of one `style` apply in
@@ -29,11 +31,41 @@ export function effectiveLineHeight(style: string): string | undefined {
     const value = decl.slice(at + 1).trim();
     if (prop === 'line-height') lh = value;
     else if (prop === 'font') {
-      const m = /\d*\.?\d+px\s*\/\s*([^\s]+)/.exec(value);
-      lh = m ? m[1]! : 'normal';
+      lh = fontLineHeight(value) ?? 'normal';
     }
   }
   return lh;
+}
+
+const space = (c: string | undefined): boolean => c !== undefined && /\s/.test(c);
+const digit = (c: string | undefined): boolean => c !== undefined && c >= '0' && c <= '9';
+
+/** The line height a `font` shorthand carries after its size
+ *  (`16px / 2 Serif` → `2`): what `\d*\.?\d+px\s*\/\s*(\S+)` captures. */
+function fontLineHeight(font: string): string | undefined {
+  for (let at = font.indexOf('px'); at >= 0; at = font.indexOf('px', at + 2)) {
+    if (!digit(font[at - 1])) continue;
+    let i = at + 2;
+    while (space(font[i])) i++;
+    if (font[i] !== '/') continue;
+    i++;
+    while (space(font[i])) i++;
+    let end = i;
+    while (end < font.length && !space(font[end])) end++;
+    if (end > i) return font.slice(i, end);
+  }
+  return undefined;
+}
+
+/** The size the first `font` declaration of a style that sets one in px
+ *  gives: what `(?:^|;)font:[^;]*?(\d*\.?\d+)px` captures. */
+function fontSize(style: string): string | undefined {
+  for (const decl of style.split(';')) {
+    if (!decl.startsWith('font:')) continue;
+    const size = pxOf(decl.slice('font:'.length));
+    if (size !== undefined) return size;
+  }
+  return undefined;
 }
 
 /** Every absolutely placed run (`top` + `right`) of `html` (a ruby base
@@ -46,13 +78,13 @@ export function verticalSpans(html: string): VerticalSpan[] {
     const right = parseFloat(/right:(-?[\d.]+)(?:px)?/.exec(style)![1]!);
     const lh = effectiveLineHeight(style);
     const lineHeight = lh !== undefined && /px$/.test(lh) ? parseFloat(lh) : Number.NaN;
-    const size = /(?:^|;)font:[^;]*?(\d*\.?\d+)px/.exec(style);
+    const size = fontSize(style);
     out.push({
       top,
       axis: right + lineHeight / 2,
       lineHeight,
-      ...(size ? { size: parseFloat(size[1]!) } : {}),
-      text: m[2]!.replace(/<[^>]*>/g, ''),
+      ...(size ? { size: parseFloat(size) } : {}),
+      text: textOfHtml(m[2]!),
     });
   }
   return out;

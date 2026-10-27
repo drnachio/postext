@@ -3,6 +3,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { HTML_TEXT_RESET, renderToHtml, renderToHtmlIndexed } from '../../html-backend/html-backend.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../vdt.js';
+import { textOfHtml } from '../htmlText.js';
 
 // #379: the HTML backend renders right-to-left text. Every word stays a box
 // at the x the layout gave it; a box whose direction differs from what it
@@ -43,7 +44,7 @@ function boxes(html: string): Box[] {
   const out: Box[] = [];
   const re = /<span( dir="(ltr|rtl)")? style="position:absolute;left:([\d.-]+)px;top:[^"]*white-space:pre;[^"]*">(.*?)<\/span>(?=<span|<\/div>|<a |<\/a>)/g;
   for (const m of html.matchAll(re)) {
-    out.push({ ...(m[2] ? { dir: m[2] } : {}), left: Number(m[3]), html: m[4]!, text: m[4]!.replace(/<[^>]+>/g, '') });
+    out.push({ ...(m[2] ? { dir: m[2] } : {}), left: Number(m[3]), html: m[4]!, text: textOfHtml(m[4]!) });
   }
   return out;
 }

@@ -140,12 +140,27 @@ function vdtLetters(docs) {
   }
   return counts;
 }
+/** Markup without its tags, in one scan: each `<` up to the next `>`
+ *  dropped (a `<` with no `>` after it stays, as text). */
+function stripTags(markup) {
+  let out = '';
+  let from = 0;
+  for (;;) {
+    const lt = markup.indexOf('<', from);
+    if (lt < 0) break;
+    const gt = markup.indexOf('>', lt + 1);
+    if (gt < 0) break;
+    out += markup.slice(from, lt);
+    from = gt + 1;
+  }
+  return out + markup.slice(from);
+}
 function xhtmlLetters(files, spine) {
   const counts = new Map();
   for (const s of spine) {
     if (/nav\.xhtml$|cover\.xhtml$/.test(s.path)) continue;
     let x = new TextDecoder().decode(files.get(s.path));
-    x = x.replace(/<head>[\s\S]*?<\/head>/, '').replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<[^>]+>/g, '')
+    x = stripTags(x.replace(/<head>[\s\S]*?<\/head>/, '').replace(/<svg[\s\S]*?<\/svg>/g, ''))
       .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, '&');
     for (const ch of x.normalize('NFC').toLowerCase()) if (/[\p{L}\p{N}]/u.test(ch)) counts.set(ch, (counts.get(ch) ?? 0) + 1);
   }
@@ -199,7 +214,7 @@ for (const layout of layouts) {
     const diff = diffLetters(vdtLetters(docs), xhtmlLetters(book.files, book.spine));
     result.textDiff = { missing: diff.filter(([, d]) => d < 0).reduce((n, [, d]) => n - d, 0), extra: diff.filter(([, d]) => d > 0).reduce((n, [, d]) => n + d, 0), top: diff.slice(0, 12) };
     if (process.env.AUDIT_DUMP) {
-      const text = book.spine.filter((x) => !/nav\.xhtml$|cover\.xhtml$/.test(x.path)).map((x) => new TextDecoder().decode(book.files.get(x.path)).replace(/<head>[\s\S]*?<\/head>/, '').replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<\/?(?:p|h\d|li|figcaption|td|th|div|section|aside|br|caption|tr|nav|figure|ul|ol|blockquote)\b[^>]*>/g, ' ').replace(/<[^>]+>/g, '')).join('\n');
+      const text = book.spine.filter((x) => !/nav\.xhtml$|cover\.xhtml$/.test(x.path)).map((x) => stripTags(new TextDecoder().decode(book.files.get(x.path)).replace(/<head>[\s\S]*?<\/head>/, '').replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<\/?(?:p|h\d|li|figcaption|td|th|div|section|aside|br|caption|tr|nav|figure|ul|ol|blockquote)\b[^>]*>/g, ' '))).join('\n');
       const lt = (l) => (l.segments ? l.segments.filter((x) => x.kind !== 'math').map((x) => x.text).join('') : l.text);
       const lines = [];
       const walkRes = (x) => {

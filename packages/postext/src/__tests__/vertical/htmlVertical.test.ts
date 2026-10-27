@@ -29,12 +29,25 @@ function cssMatrix(transform: string): number[] {
     a[0]! * b[2]! + a[2]! * b[3]!, a[1]! * b[2]! + a[3]! * b[3]!,
     a[0]! * b[4]! + a[2]! * b[5]! + a[4]!, a[1]! * b[4]! + a[3]! * b[5]! + a[5]!,
   ];
-  for (const f of transform.matchAll(/(translate|rotate)\(([^)]*)\)/g)) {
-    if (f[1] === 'translate') {
-      const [x, y] = f[2]!.split(',').map((v) => parseFloat(v));
+  // Each `translate(…)` or `rotate(…)`, in order, up to its `)`.
+  const steps: [string, string][] = [];
+  for (let from = 0; ;) {
+    const t = transform.indexOf('translate(', from);
+    const r = transform.indexOf('rotate(', from);
+    const at = t < 0 ? r : r < 0 ? t : Math.min(t, r);
+    if (at < 0) break;
+    const name = at === t ? 'translate' : 'rotate';
+    const close = transform.indexOf(')', at + name.length + 1);
+    if (close < 0) break;
+    steps.push([name, transform.slice(at + name.length + 1, close)]);
+    from = close + 1;
+  }
+  for (const [name, args] of steps) {
+    if (name === 'translate') {
+      const [x, y] = args.split(',').map((v) => parseFloat(v));
       m = mul(m, [1, 0, 0, 1, x!, y ?? 0]);
     } else {
-      const t = (parseFloat(f[2]!) * Math.PI) / 180;
+      const t = (parseFloat(args) * Math.PI) / 180;
       m = mul(m, [Math.round(Math.cos(t)), Math.round(Math.sin(t)), -Math.round(Math.sin(t)), Math.round(Math.cos(t)), 0, 0]);
     }
   }

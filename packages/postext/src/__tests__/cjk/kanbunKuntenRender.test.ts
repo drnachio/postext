@@ -4,6 +4,7 @@ import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { VDTDocument, VDTLine } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from '../vertical/stub.js';
+import { attrRunsBefore } from '../htmlText.js';
 
 // Kanbun marks (#430) in the canvas and HTML backends: the runs and the
 // 竪点 where the layout placed them; in HTML the 送り仮名 read and copy
@@ -103,8 +104,13 @@ describe('kanbun marks in HTML', () => {
   it('vertical: the runs beside the column, the 送り仮名 read after their character', () => {
     const html = renderToHtml(buildDocument({ markdown: MD }, vertical()), { mode: 'single' });
     expect(html).toContain('color:#c00000;');
-    expect(html).toMatch(/opacity:0;[^"]*">ビテ<\/span>/);
-    expect(html.indexOf('學')).toBeLessThan(html.search(/opacity:0;[^"]*">ビテ/));
+    // A hidden run (its style sets `opacity:0;`) that reads ビテ.
+    const hidden = (marker: string): number => {
+      const style = attrRunsBefore(html, marker).find((r) => r.run.includes('opacity:0;'));
+      return style ? style.start + style.run.indexOf('opacity:0;') : -1;
+    };
+    expect(hidden('">ビテ</span>')).toBeGreaterThanOrEqual(0);
+    expect(html.indexOf('學')).toBeLessThan(hidden('">ビテ'));
   });
 });
 

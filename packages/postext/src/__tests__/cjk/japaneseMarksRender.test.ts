@@ -5,6 +5,7 @@ import { sesamePath } from '../../canvas-backend/annotations.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineMark } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from '../vertical/stub.js';
+import { tagsAt } from '../htmlText.js';
 
 // The sesame (傍点) and the side lines (傍線) of #421 in the canvas and HTML
 // backends: the sesame stands on the sheet the same way in horizontal and
@@ -107,7 +108,11 @@ describe('the sesame on a vertical page', () => {
 
   it('is drawn turned back in HTML on a vertical page only', () => {
     const md = 'これは:dots[大切]なこと';
-    const pathOf = (html: string) => /<svg aria-hidden="true"[^>]*><path d="([^"]+)"/.exec(html)![1]!;
+    // The path of the first mark drawn: an SVG that opens with it.
+    const pathOf = (html: string) => {
+      const d = tagsAt(html, '<svg aria-hidden="true"', '<path d="').map((t) => t.end + '<path d="'.length).find((at) => html.indexOf('"', at) > at)!;
+      return html.slice(d, html.indexOf('"', d));
+    };
     const h = pathOf(renderToHtml(buildDocument({ markdown: md }, config()), { mode: 'single' }));
     const v = pathOf(renderToHtml(buildDocument({ markdown: md }, vertical()), { mode: 'single' }));
     expect(h).not.toBe(v);

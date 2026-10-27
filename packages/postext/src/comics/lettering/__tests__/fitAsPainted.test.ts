@@ -3,6 +3,7 @@ import { clearTextWidthCache, setMeasureLanguage } from '../../../measure/canvas
 import { prepareText, readLetteringText } from '../text.js';
 import { shapeText } from '../shape-text.js';
 import { presetLetteringStyles } from '../presets.js';
+import { pxOf } from '../../../__tests__/htmlText.js';
 
 // #770, round 2: the lines a shaping tries are measured as the layout sets
 // the ones it chooses. In a document shaped in its own language the layout
@@ -12,7 +13,6 @@ import { presetLetteringStyles } from '../presets.js';
 // width than it is set at.
 
 const EM = 20;
-const SIZE_RE = /(\d*\.?\d+)px/;
 
 /**
  * The advance of `text`, in em, in a face that draws its marks by the run
@@ -38,7 +38,7 @@ class StubCtx {
   lang = 'inherit';
   direction = 'ltr';
   measureText(s: string): { width: number } {
-    const px = Number(SIZE_RE.exec(this.font)?.[1] ?? EM);
+    const px = Number(pxOf(this.font) ?? EM);
     return { width: faceWidth(s, this.direction === 'rtl') * px };
   }
 }

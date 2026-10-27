@@ -7,6 +7,7 @@ import { buildReflowablePublication } from './index.js';
 import { buildOpf } from '../package/pack.js';
 import { appendLine, appendLines, type InlineContext, type TextSink } from './inline.js';
 import type { EpubPublication, RenderToEpubOptions } from '../types.js';
+import { textOfMarkup } from './__tests__/markup.js';
 
 const para = 'Body text that runs on for a while so the page fills and the paragraph wraps over several lines. ';
 
@@ -677,7 +678,7 @@ describe('reflowable rendition: verse line by line (#620)', () => {
     expect(hang).toBeGreaterThan(0);
     expect(pad! - hang!).toBeCloseTo(1, 2);
     // The line and its turnover read as one line.
-    expect(text!.replace(/<[^>]+>/g, '')).toContain('His house is in the village though; and this line runs on past the measure of the page, so it turns over');
+    expect(textOfMarkup(text!)).toContain('His house is in the village though; and this line runs on past the measure of the page, so it turns over');
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
     expect(css).toContain('.pt-verse-line {');
     expect(css).toContain('.pt-stanza {');
@@ -830,8 +831,8 @@ describe('reflowable rendition: code listings (#624)', () => {
     expect(all).toMatch(/<mark class="pt-code-hl">\t<span style="color:#8b2c8f">return<\/span> a &lt; <span style="color:#985f00">1<\/span>/);
     expect(all).toContain('<span style="color:#7a7f87;font-style:italic">// note</span>');
     // The source text, line by line, once the markup is gone.
-    const code = /<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!
-      .replace(/<span class="pt-code-num"[^>]*>[^<]*<\/span>/g, '').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    const code = textOfMarkup(/<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!
+      .replace(/<span class="pt-code-num"[^>]*>[^<]*<\/span>/g, '')).replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
     expect(code).toBe('function f(a) {\n\treturn a < 1 ? "x" : 2; // note\n}');
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
     expect(css).toContain('pre.pt-code {');
@@ -842,7 +843,7 @@ describe('reflowable rendition: code listings (#624)', () => {
   it('joins a line the print turned over', async () => {
     const long = `const s = "${'a'.repeat(120)}";`;
     const { all } = await render([layOut(['```js', long, '```'].join('\n'), baseConfig)]);
-    const code = /<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"');
+    const code = textOfMarkup(/<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!).replace(/&quot;/g, '"');
     expect(code).toBe(long);
   });
 
