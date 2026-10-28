@@ -8,7 +8,7 @@ import { defaultResourceTypes } from 'postext';
 import { guideLang, type GuideLang } from '../defaultResources/lang.js';
 import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, HEAD, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, SANS, TEXT, TEXT_W,
-  at, box, col, colorPalette, guideCodeStyle, image, mm, pt, rule, slot, text, type TextOpts,
+  at, box, col, colorPalette, guideCodeStyle, image, mm, openerBand, pt, rule, slot, text, type TextOpts,
 } from './guideKit.js';
 import { createChineseGuideConfig } from './guideConfigZh.js';
 import { createArabicGuideConfig } from './guideConfigAr.js';
@@ -150,8 +150,7 @@ function chapterOpener(lang: LatinLang) {
     enabled: true,
     minHeight: mm(OPENER_H + 6),
     slot: slot(
-      box('openerBand', 'band', { anchor: at('bleed', 'top-left'), height: 3 + M_TOP + OPENER_H }),
-      box('openerFoot', 'ink', { anchor: at('bleed', 'top-left'), offset: [0, 3 + M_TOP + OPENER_H], height: 1.6 }),
+      ...openerBand(3 + M_TOP + OPENER_H, 'openerLead', 14),
       text('openerNumber', '{chapterNumber}', {
         anchor: at('container', 'top-right'), offset: [0, -6], width: 60,
         size: 118, family: DISPLAY, weight: 800, color: 'white', align: 'right', lineHeight: 1,

@@ -809,7 +809,7 @@ interface ElementPlacement {
    *  content, so elements anchored to it stay attached, but a long text wraps or
    *  ellipsizes there — a running head can reserve room for the label hanging
    *  off it instead of squeezing that label out. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -846,6 +846,12 @@ A size can also run to an edge of another box: `{ to, edge }`, where `to` names 
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight` (since postext 1.64) is a floor for a fixed height or one that runs to an edge: the element is never shorter than that, and grows past it when the edge it runs to moves down. A chapter opener's band that runs to a few millimetres under its lead (an empty `leadPad` box hung below the lead) keeps the design's height while the title is short and grows with a title that takes more lines; whatever hangs below the band follows it. It has no effect on an `'auto'` or `'fill'` height.
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 With cut lines on, whatever an element paints past the bleed box is clipped (see [Cut lines](/en/docs/configuration-page-layout#cut-lines)).

@@ -7,7 +7,7 @@ import type {
 import { defaultResourceTypes } from 'postext';
 import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, TEXT_W,
-  at, box, col, colorPalette, em, guideCodeStyle, image, mm, pt, rule, slot, text, type TextOpts,
+  at, box, col, colorPalette, em, guideCodeStyle, image, mm, openerBand, pt, rule, slot, text, type TextOpts,
 } from './guideKit.js';
 
 // The Arabic edition of the Postext guide, in Modern Standard Arabic, set as
@@ -162,8 +162,7 @@ function chapterOpener() {
     enabled: true,
     minHeight: mm(OPENER_H + 6),
     slot: slot(
-      box('openerBand', 'band', { anchor: at('bleed', 'top-left'), height: 3 + M_TOP + OPENER_H }),
-      box('openerFoot', 'ink', { anchor: at('bleed', 'top-left'), offset: [0, 3 + M_TOP + OPENER_H], height: 1.6 }),
+      ...openerBand(3 + M_TOP + OPENER_H, 'openerLead', 14),
       t('openerNumber', '{chapterNumber}', {
         anchor: at('container', 'top-right'), offset: [0, -8], width: 50,
         size: 100, family: AR_HEAD, weight: 800, color: 'white', align: 'right', lineHeight: 1.25,

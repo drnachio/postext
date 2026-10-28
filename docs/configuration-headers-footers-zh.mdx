@@ -808,7 +808,7 @@ interface ElementPlacement {
    *  `maxWidth` 限制 'auto' 宽度（文本）的上限：元素仍收缩贴合其内容，
    *  所以锚定到它的元素保持相连，但长文本会在此处折行或加省略号，
    *  这样书眉可以为挂在它旁边的标签预留空间，而不会把标签挤掉。 */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -845,6 +845,12 @@ interface ElementPlacement {
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight`(自 postext 1.64 起)是固定高度或延伸到某条边的高度的下限:元素不会比它更矮,所延伸到的边下移时随之变高。延伸到导语下方几毫米处(导语下方挂一个空盒 `leadPad`)的章首色带,在标题较短时保持设计的高度,标题占更多行时随之变高;挂在色带下方的元素跟着它移动。对 `'auto'` 和 `'fill'` 高度不起作用。
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 开启裁切线时，元素画出出血框之外的部分都会被裁掉（见[裁切线](/zh/docs/configuration-page-layout#裁切线)）。

@@ -225,6 +225,27 @@ export function box(id: string, fill: PaletteId, o: Common & { width?: number; h
     style: { backgroundColor: col(fill), borderRadius: mm(0) },
   };
 }
+/** A chapter opener's band in the part colour, bled off the head, and the
+ *  ink foot under it (#1293). The band reaches `band` mm below the bleed's
+ *  top at least and, past it, `pad` mm below the foot of `below` (the
+ *  lead, under the title), so a title or a lead longer than usual stays on
+ *  the band; the foot, and the text under the opener, follow it, with the
+ *  room under the foot the openers' `minHeight` leaves at the band's least
+ *  (6 mm past it, less the 3 mm the band runs above the type area's top
+ *  and the 1.6 mm foot), so an opener of the usual length is unchanged. */
+export function openerBand(band: number, below: string, pad: number): DesignBoxElement[] {
+  const gap = 6 - 3 - 1.6;
+  const el = (id: string, fill: PaletteId | undefined, anchor: ElementAnchor, size: ElementPlacement['size']): DesignBoxElement => ({
+    kind: 'box', id, placement: placement({ anchor }, size), style: fill ? { backgroundColor: col(fill), borderRadius: mm(0) } : {},
+  });
+  return [
+    el(`${below}Pad`, undefined, at(`#${below}`, 'below'), { width: mm(0), height: mm(pad) }),
+    el('openerBand', 'band', at('bleed', 'top-left'), { width: 'fill', height: { to: `#${below}Pad`, edge: 'bottom' }, minHeight: mm(band) }),
+    el('openerFoot', 'ink', at('#openerBand', 'below'), { width: { to: 'bleed', edge: 'right' }, height: mm(1.6) }),
+    el('openerFootPad', undefined, at('#openerFoot', 'below'), { width: mm(0), height: mm(gap) }),
+  ];
+}
+
 export function rule(id: string, color: PaletteId, o: Common & { width: number; thickness: number }): DesignRuleElement {
   return {
     kind: 'rule',

@@ -858,6 +858,11 @@ placement: {
   ground follows the band when the band moves. A height takes `top`/`bottom`, a width `left`/`right`; an
   edge behind the anchor point gives 0, an edge across the axis or a missing box reads as `'fill'`. Do not
   work such lengths out from the page geometry in the generator.
+- `size.minHeight` (≥ 1.64) floors a fixed height or one that runs to an edge. A chapter opener's band
+  that must hold any title: `height: { to: '#leadPad', edge: 'bottom' }` (an empty box hung below the
+  lead) with `minHeight` the band's designed height, and the foot hung `below` the band; the band keeps
+  its height for a short title and grows with a long one, instead of a fixed height the text spills out
+  of.
 - Element edges put a corner on a corner of the target: `right-of` = beside, tops level;
   `left-of` = to its left, tops level; `below` = under, left edges level; `above` = over, left
   edges level; `align-top` and `align-left` are the SAME placement (top-left corners together);

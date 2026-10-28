@@ -809,7 +809,7 @@ interface ElementPlacement {
    *  content, so elements anchored to it stay attached, but a long text wraps or
    *  ellipsizes there — a running head can reserve room for the label hanging
    *  off it instead of squeezing that label out. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -846,6 +846,12 @@ interface ElementPlacement {
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight` (منذ postext 1.64) حدٌّ أدنى للارتفاع الثابت أو للارتفاع الممتد إلى حافة: لا يقصر العنصر عنه، ويطول متجاوزًا إياه حين تنزل الحافة التي يمتد إليها. فشريط افتتاحية الفصل الممتد إلى ما تحت المقدّمة ببضعة مليمترات (صندوق فارغ `leadPad` معلّق تحتها) يحتفظ بارتفاع التصميم ما دام العنوان قصيرًا، ويطول مع عنوان يشغل أسطرًا أكثر، ويتبعه ما يتدلّى تحته. ولا أثر له في ارتفاع `'auto'` أو `'fill'`.
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 مع تفعيل خطوط القص، يُقص كل ما يرسمه عنصر خارج صندوق النزف (انظر [خطوط القص](/ar/docs/configuration-page-layout#خطوط-القص)).

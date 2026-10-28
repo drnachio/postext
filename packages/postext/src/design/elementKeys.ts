@@ -49,7 +49,7 @@ export const TEMPLATE_DECORATION_KEYS = { elements: true } satisfies Record<keyo
 export const PLACEMENT_KEYS = { anchor: true, offset: true, size: true } satisfies Record<keyof ElementPlacement, true>;
 export const ANCHOR_KEYS = { to: true, edge: true, at: true } satisfies Record<keyof ElementAnchor, true>;
 export const OFFSET_KEYS = { x: true, y: true } satisfies Record<keyof NonNullable<ElementPlacement['offset']>, true>;
-export const SIZE_KEYS = { width: true, height: true, maxWidth: true } satisfies Record<keyof NonNullable<ElementPlacement['size']>, true>;
+export const SIZE_KEYS = { width: true, height: true, maxWidth: true, minHeight: true } satisfies Record<keyof NonNullable<ElementPlacement['size']>, true>;
 export const SIZE_TO_KEYS = { to: true, edge: true } satisfies Record<keyof ElementSizeTo, true>;
 
 const BOX_STYLE_KEYS = {

@@ -809,7 +809,7 @@ interface ElementPlacement {
    *  content, so elements anchored to it stay attached, but a long text wraps or
    *  ellipsizes there — a running head can reserve room for the label hanging
    *  off it instead of squeezing that label out. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -846,6 +846,12 @@ Eine Größe kann auch bis zu einer Kante eines anderen Kastens reichen: `{ to, 
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight` (seit postext 1.64) ist eine Untergrenze für eine feste Höhe oder eine, die bis zu einer Kante reicht: Das Element wird nie niedriger und wächst darüber hinaus, wenn die Kante, bis zu der es reicht, nach unten rückt. Das Band einer Kapiteleröffnung, das bis einige Millimeter unter den Vorspann reicht (eine leere Box `leadPad` unter ihm), behält die Höhe des Designs, solange der Titel kurz ist, und wächst mit einem Titel, der mehr Zeilen braucht; was unter dem Band hängt, folgt ihm. Auf eine Höhe `'auto'` oder `'fill'` wirkt es nicht.
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 Bei eingeschalteten Schnittmarken wird alles, was ein Element über die Anschnittbox hinaus zeichnet, abgeschnitten (siehe [Schnittmarken](/de/docs/configuration-page-layout#schnittmarken)).
