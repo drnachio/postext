@@ -265,6 +265,8 @@ export function verticalToc(f: VerticalFaces, partRow: string, uprightSummary = 
     unnumbered: { fontFamily: f.text, fontWeight: 400, color: col('ink') },
     pageNumber: { fontFamily: f.sans, fontSize: pt(9), fontWeight: 700, color: col('ink'), width: mm(14) },
     leader: { enabled: true, char: '·', gap: mm(1.5) },
+    // A part's row stays on the page of its chapters.
+    groups: { keepTogether: true },
     subtitle: { enabled: true, attr: 'summary', fontFamily: f.text, fontSize: pt(8), ...(uprightSummary ? { italic: false } : {}), color: col('muted'), indent: mm(17) },
     parts: {
       enabled: true, height: pt(14), marginTop: pt(6), marginBottom: pt(2),

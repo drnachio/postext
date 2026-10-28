@@ -9,7 +9,7 @@ import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, TEXT_W,
   at, box, col, colorPalette, em, guideCodeStyle, image, mm, openerBand, pt, rule, slot, text, type TextOpts,
 } from './guideKit.js';
-import { FEATURE_NAMES, asideCallout, guideChipStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Arabic edition of the Postext guide, in Modern Standard Arabic, set as
 // an Arabic book: right to left and bound on the right, so its first page
@@ -252,9 +252,11 @@ const FEATURES: FeatureOptions = { boxLead: 15, bodyAlign: 'left', upperLabels: 
 
 function headingStyles(): HeadingStyleConfig[] {
   const empty = slot();
+  // The contents opens on the back of the cover, a spread of two pages
+  // with the colophon at its foot.
   const contents: HeadingStyleConfig = {
     id: 'contents', name: 'المحتويات', numbered: false, toc: false, span: 'page',
-    breakBefore: { enabled: true, parity: 'odd' },
+    breakBefore: { enabled: true, parity: 'even' },
     advancedDesign: frontOpener(),
     layout: { layoutType: 'single' },
   };
@@ -281,9 +283,11 @@ function headingStyles(): HeadingStyleConfig[] {
   ];
 }
 
+/** The colophon's type, set as a box at the foot of the contents. */
+const COLOPHON_TYPE: ParagraphStyleConfig = { id: 'colophon', name: 'بيانات النشر', fontFamily: AR_SANS, fontSize: pt(8), lineHeight: pt(13.5), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') };
+
 function paragraphStyles(): ParagraphStyleConfig[] {
   return [
-    { id: 'colophon', name: 'بيانات النشر', fontFamily: AR_SANS, fontSize: pt(8), lineHeight: pt(13.5), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') },
     { id: 'standfirst', name: 'التمهيد', fontFamily: AR_TEXT, fontSize: pt(14), lineHeight: pt(24), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(6), marginBottom: pt(6), color: col('ink'), boldColor: col('band') },
     // Right is the end of an Arabic line: the signature stands on the left.
     { id: 'signature', name: 'التوقيع', fontFamily: AR_SANS, fontSize: pt(8.5), lineHeight: pt(13), textAlign: 'right', firstLineIndent: mm(0), marginTop: pt(4), color: col('muted') },
@@ -372,6 +376,8 @@ function toc() {
     unnumbered: { fontFamily: AR_TEXT, fontWeight: 400, color: col('ink') },
     pageNumber: { fontFamily: AR_SANS, fontSize: pt(10), fontWeight: 700, color: col('ink'), width: mm(10) },
     leader: { enabled: true, char: '.', gap: mm(1.5) },
+    // A part's row stays on the page of its chapters.
+    groups: { keepTogether: true },
     subtitle: { enabled: true, attr: 'summary', fontFamily: AR_TEXT, fontSize: pt(9.5), color: col('muted'), indent: mm(11) },
     parts: {
       enabled: true, height: pt(20), marginTop: pt(14), marginBottom: pt(2),
@@ -437,8 +443,9 @@ export function createArabicGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: [...calloutStyles(), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'])],
+    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'])],
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ar']),
+    markStyles: guideMarkStyles(FEATURE_NAMES['ar']),
     pageTemplates: [sheetTemplate(FEATURE_NAMES['ar'].sheet)],
     parts: {
       // A part opens on an odd page (the left-hand one) facing an even page
@@ -446,7 +453,7 @@ export function createArabicGuideConfig(): PostextConfig {
       // divider, as in the Latin editions.
       breakBefore: { parity: 'always-odd' },
       breakAfter: { enabled: true, parity: 'even' },
-      margins: { top: mm(178), bottom: mm(66), left: mm(M_INNER), right: mm(M_OUTER + 40) },
+      margins: { top: mm(164), bottom: mm(66), left: mm(M_INNER), right: mm(M_OUTER + 40) },
       design: partDesign(),
       bodyStyle: {
         // 19 pt lines: the five chapters of part III fit the 36 mm between

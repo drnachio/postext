@@ -7,19 +7,17 @@ publishDate: "2026-10-04"
 
 # Postext {style="cover" toc="false" kicker="Motor de maquetación de código abierto · La guía" publisher="postext.dev · Licencia MIT · Cada página de este libro la ha compuesto Postext en tu navegador"}
 
-:::pagebreak
+# Índice {style="contents" toc="false"}
 
-:::paragraphs{style="colophon"}
+:::toc
+
+:::callout{type="colophon"}
 **Guía de Postext** es el libro de muestra que acompaña al Sandbox. Es a la vez un recorrido por el motor y una demostración de lo que hace: la cubierta, el índice que se numera solo, las portadillas de parte, las aperturas de capítulo, las cabeceras, cada figura y cada tabla que flota hasta su sitio… todo lo maqueta Postext, en tu navegador, a partir del Markdown que puedes abrir en el editor.
 
 Compuesto en Fraunces, Lora, Bricolage Grotesque, Geist y Geist Mono, servidas por Google Fonts. Los diagramas son archivos SVG sencillos, que se dibujan como vectores en el canvas, en la vista HTML y en el PDF. Cambia lo que quieras —una palabra, un margen, un color de la paleta— y el libro vuelve a componerse.
 
 Postext es de código abierto, con licencia MIT. Texto © 2026 Ignacio Ferro y quienes contribuyen a Postext.
 :::
-
-# Índice {style="contents" toc="false"}
-
-:::toc
 
 :::part{number="I" title="Fundamentos" palette="band=#2b4acb"}
 1. Por qué Postext
@@ -42,7 +40,7 @@ Si prefieres verlo antes de leerlo, :ref{id="postext-showreel"} lo recorre en do
 
 El libro se organiza en cuatro partes. **Fundamentos**, la parte en la que estás, explica el problema que resuelve Postext y cómo está construido el motor: qué entra, qué sale y qué ocurre entre medias. **El oficio** trata de tipografía: cómo se compone una línea, cómo se enmarca una página, adónde van las figuras, las tablas y los recuadros, cómo un conjunto de capítulos se convierte en un libro y cómo un mismo libro vive en varios idiomas. **Más allá del texto corrido** compone páginas que no son un flujo de columnas: páginas compuestas, cómics, música y ejercicios. **La práctica** se ocupa de las herramientas: el formato del documento, el Sandbox, las salidas y la imprenta, la línea de comandos y los agentes, y el proyecto que los rodea.
 
-Cada capítulo se abre con una breve introducción sobre su banda, y la mayoría cierran sus secciones con un recuadro titulado _Pruébalo en el Sandbox_: un pequeño experimento que puedes hacer sobre este mismo libro, ahora mismo, para ver la función en acción. Nada de lo que propone puede estropear nada —**Restaurar el original…**, en el menú de la fila de la guía del panel **Libros**, la devuelve a su estado original—, así que cambia lo que quieras. Los capítulos pueden leerse en cualquier orden; cuando uno depende de otro, lo dice.
+Cada capítulo se abre con una breve introducción sobre su banda, y la mayoría cierran sus secciones con un recuadro titulado _Pruébalo en el Sandbox_: un pequeño experimento que puedes hacer sobre este mismo libro, ahora mismo, para ver la función en acción. Nada de lo que propone puede estropear nada —**Restaurar el original…**, en el menú de la fila de la guía del panel **Libros**, la devuelve a su estado original—, así que cambia lo que quieras.
 
 ## Maquetación de aplicaciones y maquetación editorial
 
@@ -53,7 +51,7 @@ El CSS moderno es una herramienta extraordinaria para construir interfaces. Flex
 
 El contraste de :ref{id="feature-comparison"} resume dónde divergen ambos enfoques en los documentos largos. (Basta con mencionarla: la tabla flota por sí sola al primer hueco libre tras este párrafo, y nunca hay que colocarla dos veces).
 
-La diferencia no es de grado, sino de naturaleza. Una interfaz se adapta a la ventana que la contiene y el lector la recorre a su ritmo; una página, en cambio, tiene un tamaño fijo, un principio y un final, y todo lo que contiene debe resolverse dentro de esos límites: qué cabe en esta columna y qué pasa a la siguiente, dónde va cada figura, cómo termina cada línea y cada párrafo. Esas decisiones son las que definen la calidad de un libro, y ninguna de ellas puede tomarse mirando un solo elemento aislado, por mucho cuidado que se ponga en él.
+La diferencia no es de grado, sino de naturaleza. Una interfaz se adapta a la ventana que la contiene y el lector la recorre a su ritmo; una página, en cambio, tiene un tamaño fijo, un principio y un final, y todo lo que contiene debe resolverse dentro de esos límites: qué cabe en esta columna y qué pasa a la siguiente, dónde va cada figura, cómo termina cada línea y cada párrafo. Esas decisiones son las que definen la calidad de un libro, y ninguna de ellas puede tomarse mirando un solo elemento aislado.
 
 CSS resuelve el primer caso de forma brillante. Para el segundo, la plataforma nunca ha ofrecido las primitivas que importan:
 
@@ -67,7 +65,7 @@ CSS resuelve el primer caso de forma brillante. Para el segundo, la plataforma n
 _La tipografía editorial es un problema de satisfacción de restricciones. Al navegador nunca se le dio el lenguaje para enunciarlas._
 :::
 
-CSS describe con gran detalle la _apariencia_ de cualquier región de texto. Lo que le falta es _optimización global_: la capacidad de sopesar un párrafo, una columna y una página enteros antes de decidir nada. Un navegador decide cada línea y cada salto de columna o de página en el momento en que llega a él, y no vuelve atrás aunque lo que viene después hubiera pedido otra decisión.
+CSS describe con gran detalle la _apariencia_ de cualquier región de texto. Lo que le falta es _optimización global_: la capacidad de sopesar un párrafo, una columna y una página enteros antes de decidir nada.
 
 ## Lo que no resuelven las herramientas existentes
 
@@ -78,7 +76,7 @@ Otras herramientas abordan partes del problema. Los procesadores de texto pagina
 - Sus formatos de origen son propietarios, binarios o difíciles de generar por programa
 - Viven fuera de las herramientas de frontend que un equipo web ya usa
 
-Postext toma otro camino, y la :ref{id="tools-comparison"} lo compara con los demás. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, lee Markdown, aplica las reglas de la tipografía profesional y devuelve una maquetación que se puede dibujar como canvas, HTML o PDF, o escribir como libro electrónico EPUB. Está pensada para que la incrusten, configuren y amplíen desarrolladores que quieren páginas de calidad editorial sin salir de sus herramientas, y para que la configuren diseñadores que nunca necesitan tocar el código. Todo ocurre en el navegador de quien lee: no hay servidor que maquete las páginas ni programa que instalar, y lo que se ve en pantalla es lo que llega a la imprenta.
+Postext toma otro camino, y la :ref{id="tools-comparison"} lo compara con los demás. Es una **biblioteca de JavaScript** que se ejecuta en el navegador, lee Markdown, aplica las reglas de la tipografía profesional y devuelve una maquetación que se puede dibujar como canvas, HTML o PDF, o escribir como libro electrónico EPUB. Está pensada para que la incrusten, configuren y amplíen desarrolladores que quieren páginas de calidad editorial sin salir de sus herramientas, y para que la configuren diseñadores que nunca necesitan tocar el código.
 
 ## Un oficio con mucha memoria
 
@@ -95,17 +93,13 @@ Postext resulta útil allí donde un texto largo y estructurado tiene que parece
 - **Desarrolladores** que construyen experiencias de lectura —informes, revistas, catálogos, documentos generados— y quieren calidad editorial de una biblioteca en lugar de una aplicación de escritorio
 - **Diseñadores y tipógrafos** que quieren describir un diseño una sola vez, como reglas, y verlo aplicado con coherencia a lo largo de cientos de páginas
 
-Lo que comparten es la preferencia por describir el resultado en lugar de colocarlo a mano, y la necesidad de que el resultado sea tan bueno como el que habría producido un cajista cuidadoso.
-
 ## Lo que Postext no es
 
-Tener claro el alcance mantiene afilado el núcleo. Postext no sustituye a CSS en las interfaces: es un motor especializado en contenido extenso y estructurado. No es un editor WYSIWYG: tú escribes Markdown y describes el diseño, y el motor compone las páginas. No gestiona puntos de ruptura adaptables: elegir una configuración para cada tamaño de pantalla es decisión de la aplicación que lo aloja. No carga las fuentes por ti: el motor mide con las fuentes que el navegador ya tiene, así que una página debe cargar sus tipos antes de maquetar. Y, por ahora, el motor de maquetación solo funciona en el navegador, porque sus medidas vienen de las métricas de fuente del canvas de un navegador real; los generadores de PDF y de EPUB, en cambio, también funcionan en Node.
-
-La misma modestia se aplica al contenido. Postext no intenta entender el texto que compone; aplica reglas a la estructura que recibe. Un título tiene que estar marcado como título, una figura se declara como recurso y una tabla ha de ser una tabla. A cambio, nunca enmienda al autor: nada se mueve, se renombra ni se reescribe, y cada decisión que toma el motor es visible en la maquetación y puede rastrearse hasta una regla de la configuración. Si una decisión no convence, se cambia la regla, no el texto, y el libro se compone de nuevo.
+Postext no sustituye a CSS en las interfaces: es un motor especializado en contenido extenso y estructurado. No es un editor WYSIWYG: tú escribes Markdown y describes el diseño, y el motor compone las páginas. No carga las fuentes por ti: el motor mide con las fuentes que el navegador ya tiene, así que una página debe cargar sus tipos antes de maquetar. Y, por ahora, el motor de maquetación solo funciona en el navegador, porque sus medidas vienen de las métricas de fuente del canvas de un navegador real; los generadores de PDF y de EPUB, en cambio, también funcionan en Node.
 
 # Cómo funciona el motor {#engine lead="Entran Markdown y un objeto de configuración; sale un árbol en el que cada línea tiene una posición en unidades reales. En medio, una tubería breve que mide el texto sin tocar el DOM e itera hasta que la página se asienta." summary="Analizar, medir, maquetar, converger"}
 
-La forma más rápida de entender lo que Postext puede hacer es seguir un documento a través de él. El motor es una tubería, esbozada en :ref{id="layout-pipeline"}, en la que cada etapa refina una única representación del documento en memoria. Ninguna etapa se esconde tras un formato opaco y ninguna toca el disco. Además, la tubería es pura: con el mismo contenido y la misma configuración produce siempre la misma maquetación.
+La forma más rápida de entender lo que Postext puede hacer es seguir un documento a través de él. El motor es una tubería, esbozada en :ref{id="layout-pipeline"}, en la que cada etapa refina una única representación del documento en memoria. Además, la tubería es pura: con el mismo contenido y la misma configuración produce siempre la misma maquetación.
 
 ## Contenido y configuración
 
@@ -123,11 +117,11 @@ A la tubería entran dos cosas, y las dos están pensadas para que las lean y ed
    - Estilos de título, de párrafo y de recuadro, partes e índice
    - Cabeceras, una paleta de colores con nombre y las opciones del PDF
 
-Separarlos es deliberado. El mismo Markdown puede convertirse en un libro de bolsillo, en una revista a dos columnas o en un libro de texto con columna lateral con solo cambiar la configuración. Por eso el motor se niega a meter decisiones visuales en el contenido.
+Separarlos es deliberado. El mismo Markdown puede convertirse en un libro de bolsillo, en una revista a dos columnas o en un libro de texto con columna lateral con solo cambiar la configuración.
 
 ## Análisis
 
-El analizador lee el Markdown enriquecido y produce una lista plana de bloques: títulos, párrafos, citas en bloque, elementos de lista, fórmulas destacadas y las directivas que dan forma al libro. No decide nada sobre la maquetación. Lo que hace es estructurar la entrada con cuidado: une las líneas de un párrafo, sigue el anidamiento de las listas, separa el título de un encabezado de sus atributos, resuelve cada \`:ref\` contra los recursos declarados fuera del texto y registra, para cada bloque, el tramo exacto del original del que procede.
+El analizador lee el Markdown enriquecido y produce una lista plana de bloques: títulos, párrafos, citas en bloque, elementos de lista, fórmulas destacadas y las directivas que dan forma al libro. Lo que hace es estructurar la entrada con cuidado: une las líneas de un párrafo, sigue el anidamiento de las listas, separa el título de un encabezado de sus atributos, resuelve cada \`:ref\` contra los recursos declarados fuera del texto y registra, para cada bloque, el tramo exacto del original del que procede.
 
 El formato en línea se analiza al mismo tiempo. La negrita, la cursiva y su combinación, los superíndices y los subíndices, las matemáticas en línea, las muestras de color y las referencias se convierten en tramos tipados dentro del párrafo, para que la etapa de medición pueda dar a cada uno su propia fuente y su propio color. Los metadatos del principio del documento se leen como tales —el título, el subtítulo, el autor y la fecha— y quedan a disposición de todos los diseños.
 
@@ -137,7 +131,7 @@ Antes de colocar nada, el motor tiene que saber cuánto sitio necesita cada elem
 
 Postext mide con _pretext_:index{term="pretext"}, una biblioteca de medición de texto sin DOM que usa las métricas de fuente del canvas y pura aritmética. Su paso caro, preparar un texto para una fuente dada, se guarda en caché; componerlo a un ancho concreto es casi gratis. El método es entre 300 y 600 veces más rápido que medir mediante reflujos, como ilustra :ref{id="measurement-speed"}, y sobre él el módulo de medición del motor añade tramos enriquecidos de negrita, cursiva y matemáticas, separación silábica, justificación y corte óptimo de líneas. Cada resultado se guarda con una clave que incluye el texto, las fuentes, el ancho y todas las opciones que pueden cambiar una línea, de modo que escribir en un párrafo vuelve a medir ese párrafo y ningún otro.
 
-La carga de las fuentes es la única parte de la medición que el motor deja en manos de quien lo aloja. Medir con una fuente que aún no ha llegado mediría en realidad la fuente de sustitución, y todas las líneas se moverían al aparecer la definitiva. Por eso la biblioteca espera que las fuentes estén cargadas antes de la primera compilación, y ofrece una forma de vaciar sus cachés de medición cuando una fuente llega tarde, para que la compilación siguiente vuelva a medir con las métricas correctas. El Sandbox lo hace automáticamente: carga todas las familias que nombra la configuración, desde Google Fonts o desde el panel Fuentes, antes de maquetar una página.
+La carga de las fuentes es la única parte de la medición que el motor deja en manos de quien lo aloja. Medir con una fuente que aún no ha llegado mediría en realidad la fuente de sustitución, y todas las líneas se moverían al aparecer la definitiva. Por eso la biblioteca espera que las fuentes estén cargadas antes de la primera compilación, y ofrece una forma de vaciar sus cachés de medición cuando una fuente llega tarde, para que la compilación siguiente vuelva a medir con las métricas correctas.
 
 ## Un cortador de líneas en WebAssembly
 
@@ -155,7 +149,7 @@ La maquetación propiamente dicha se hace en siete pasadas:
 6. **Equilibrado de columnas**: iguala las columnas de cada página
 7. **Ritmo vertical**: devuelve el texto a la rejilla de línea base después de todo lo que la rompe
 
-Estas pasadas dependen unas de otras en círculo. Mantener un título con su párrafo puede empujar a ambos a la columna siguiente; ese movimiento puede dejar una viuda; corregir la viuda devuelve una línea, lo que puede separar otra vez el título. Postext deshace el círculo con el **bucle de convergencia**:index{term="bucle de convergencia"} de :ref{id="convergence-loop"}: las pasadas tres a siete se repiten, marcando solo lo que ha cambiado, hasta que nada se mueve. El bucle tiene un tope de cinco iteraciones y los documentos habituales se asientan en una o dos. Una puntuación de infracciones tipográficas acompaña a cada iteración, así que, si alguna vez se alcanza el tope, el motor se queda con la mejor maquetación que encontró, no con la última.
+Estas pasadas dependen unas de otras en círculo. Mantener un título con su párrafo puede empujar a ambos a la columna siguiente; ese movimiento puede dejar una viuda; corregir la viuda devuelve una línea, lo que puede separar otra vez el título. Postext deshace el círculo con el **bucle de convergencia**:index{term="bucle de convergencia"} de :ref{id="convergence-loop"}: las pasadas tres a siete se repiten, marcando solo lo que ha cambiado, hasta que nada se mueve. Una puntuación de infracciones tipográficas acompaña a cada iteración, así que, si alguna vez se alcanza el tope, el motor se queda con la mejor maquetación que encontró, no con la última.
 
 Las reglas que se aplican en estas pasadas son, a propósito, pocas y estrictas. Un título se mantiene siempre con las primeras líneas de lo que lo sigue. Un párrafo que termina en dos puntos se mantiene con la lista que introduce. Una figura y su pie nunca se separan. Un recuadro de página completa divide la página en bandas, y las columnas de cada banda se equilibran por su cuenta, de modo que el texto que queda sobre una tabla ancha se lee de arriba abajo en las dos columnas antes de cruzar por debajo de ella. Cuando no pueden cumplirse dos de estas reglas a la vez, gana la que menos daña la página, y la elección se hace siempre de la misma manera.
 
@@ -187,7 +181,7 @@ El equilibrado converge tramo a tramo, entre aperturas de capítulo y saltos de 
 
 :index{term="VDT (árbol virtual del documento)"}Lo que sobrevive al bucle es el **VDT**, el árbol virtual del documento: páginas que contienen columnas, columnas que contienen bloques, bloques que contienen líneas, cada uno con su caja en unidades reales, junto a una lista plana de todos los bloques para acceder rápido. El árbol es geometría pura —no sabe nada de canvas, HTML, PDF ni EPUB— y eso es justo lo que permite a todos los renderizadores dibujar salidas idénticas. Cada línea recuerda además el tramo de Markdown del que procede, y así un clic en la página lleva el cursor del editor a la palabra correcta.
 
-Las páginas registran también para qué sirven. Una página puede ser de cuerpo, una apertura de capítulo, una portadilla de parte o una página en blanco insertada para alcanzar la paridad correcta, y ese papel es lo que permite a las cabeceras, los folios y los adornos decidir dónde aparecen. Las etiquetas de página —el folio impreso dentro de su secuencia— se calculan una sola vez, en el árbol, de modo que el canvas, el HTML y el PDF coinciden en ellas sin hacer cada uno su propia cuenta. Un prefacio numerado en romanos y un cuerpo que vuelve a empezar en uno no necesitan ningún caso especial en ningún renderizador: cada uno imprime la etiqueta que le da el árbol, sin volver a contar.
+Las páginas registran también para qué sirven. Una página puede ser de cuerpo, una apertura de capítulo, una portadilla de parte o una página en blanco insertada para alcanzar la paridad correcta, y ese papel es lo que permite a las cabeceras, los folios y los adornos decidir dónde aparecen. Las etiquetas de página —el folio impreso dentro de su secuencia— se calculan una sola vez, en el árbol, de modo que el canvas, el HTML y el PDF coinciden en ellas sin hacer cada uno su propia cuenta.
 
 ## Fuera del hilo principal
 
@@ -230,7 +224,7 @@ donde $p$ es la penalización del corte. Dos líneas seguidas con guion cuestan 
 
 Piensa en un párrafo cuya primera línea acaba justo después de una palabra larga. Un cortador voraz acepta el corte, porque cabe, y sigue adelante. La segunda línea empieza entonces con una serie de palabras cortas, no llega a llenarse y hay que estirarla; la tercera hereda el problema y termina con un guion; la última acaba con una sola palabra. Ninguno de estos defectos se ve desde la primera línea, que es la única que ha mirado el cortador voraz.
 
-El cortador óptimo ve la cadena entera. Puede decidir terminar la primera línea una palabra antes, algo más floja de lo que podría ir, porque esa elección permite que la segunda línea se llene con naturalidad, quita el guion de la tercera y baja una segunda palabra a la última. El párrafo en su conjunto es mejor aunque su primera línea, tomada sola, no lo sea. Esa es la esencia del algoritmo de Knuth-Plass, y la razón de que produzca la textura gris y pareja que los lectores asocian a los libros bien compuestos.
+El cortador óptimo ve la cadena entera. Puede decidir terminar la primera línea una palabra antes, algo más floja de lo que podría ir, porque esa elección permite que la segunda línea se llene con naturalidad, quita el guion de la tercera y baja una segunda palabra a la última. El párrafo en su conjunto es mejor aunque su primera línea, tomada sola, no lo sea.
 
 ## Separación silábica
 
@@ -256,7 +250,7 @@ El resto de un libro chino sigue los mismos ajustes. Las plantillas de capítulo
 
 Con \`layout.writingMode: 'vertical-rl'\` el libro se compone en vertical. Las líneas van de arriba abajo y se suceden de derecha a izquierda, dos columnas se convierten en dos pisos apilados en la página, las figuras y las tablas se mantienen derechas, las palabras latinas y los números largos se tumban de lado, y cada signo toma el lugar o la forma que tiene en el texto vertical: los paréntesis y las comillas adoptan su forma vertical, y el punto pasa a la esquina superior derecha de su casilla en China continental y se queda centrado en Taiwán y Hong Kong. Un libro así se encuaderna por la derecha (\`page.binding\`): su primera página queda sola a la izquierda del lomo, y el Sandbox muestra sus pliegos de derecha a izquierda. El canvas y el PDF componen las mismas líneas verticales; la vista HTML corta sus propias líneas a la altura de su página, y pone de pie o tumba cada carácter igual que ellos. Por defecto, un número de hasta dos cifras se pone de pie en una sola casilla, y \`cjk.uprightDigits\` puede subirlo a tres o cuatro (\`:tcy[…]\` hace lo mismo con cualquier tramo corto).
 
-Los libros chinos marcan además el texto de maneras que la tipografía latina no conoce. El énfasis se señala con un punto junto a cada carácter y no con cursiva, así que en un documento chino \`*…*\` pone puntos de énfasis en los caracteres chinos que abarca, como \`:dots[…]\`; \`cjk.emphasis: 'italic'\` conserva la cursiva. \`:name[…]\` traza la línea recta de los nombres propios, y \`:book[…]\` señala el título de una obra, y \`cjk.bookTitleMark\` elige cómo: con los signos angulares dobles de China continental o con la línea ondulada de Taiwán y Hong Kong. \`:ruby[…]{rt="…"}\` compone una lectura, en pinyin sobre los caracteres o en zhuyin a la derecha de cada uno, y \`:warichu[…]\` compone una nota en dos filas de medio cuerpo dentro de la línea, que sigue en la línea o la página siguiente cuando no cabe. Ninguna cambia el interlineado: el panel **Revisión** avisa cuando los puntos, las líneas o las lecturas necesitan entre líneas más hueco del que deja el párrafo. En texto vertical, los puntos pasan a la derecha de la columna, las líneas a su izquierda, y de una nota se lee primero la fila de la derecha.
+Los libros chinos marcan además el texto de maneras que la tipografía latina no conoce. El énfasis se señala con un punto junto a cada carácter y no con cursiva, así que en un documento chino \`*…*\` pone puntos de énfasis en los caracteres chinos que abarca, como \`:dots[…]\`; \`cjk.emphasis: 'italic'\` conserva la cursiva. \`:name[…]\` traza la línea recta de los nombres propios, y \`:book[…]\` señala el título de una obra, y \`cjk.bookTitleMark\` elige cómo: con los signos angulares dobles de China continental o con la línea ondulada de Taiwán y Hong Kong. \`:ruby[…]{rt="…"}\` compone una lectura, en pinyin sobre los caracteres o en zhuyin a la derecha de cada uno, y \`:warichu[…]\` compone una nota en dos filas de medio cuerpo dentro de la línea. Ninguna cambia el interlineado: el panel **Revisión** avisa cuando los puntos, las líneas o las lecturas necesitan entre líneas más hueco del que deja el párrafo. En texto vertical, los puntos pasan a la derecha de la columna, las líneas a su izquierda, y de una nota se lee primero la fila de la derecha.
 
 ## El árabe, de derecha a izquierda
 
@@ -270,7 +264,7 @@ Las vocales se apilan encima y debajo de las letras, dentro del interlineado, qu
 
 ## Énfasis y tramos
 
-Un párrafo rara vez es un único tramo de texto. La negrita, la cursiva y la negrita cursiva se componen en los cortes reales de la familia —una cursiva verdadera, no una redonda inclinada—, cada uno medido con sus propias métricas, de modo que una palabra en negrita ocupa exactamente el sitio que necesita. El color del texto en negrita, del texto en cursiva y de las referencias puede fijarse por separado; en este libro, las referencias a figuras y tablas van en negrita y en el color de parte, para que sean fáciles de encontrar en la página y en el PDF, donde además son enlaces.
+Un párrafo rara vez es un único tramo de texto. La negrita, la cursiva y la negrita cursiva se componen en los cortes reales de la familia —una cursiva verdadera, no una redonda inclinada—, cada uno medido con sus propias métricas, de modo que una palabra en negrita ocupa exactamente el sitio que necesita. El color del texto en negrita, del texto en cursiva y de las referencias puede fijarse por separado; en este libro, las referencias a figuras y tablas van en negrita y en el color de parte; en el PDF, además, son enlaces.
 
 Los superíndices y los subíndices se componen más pequeños y desplazados de la línea base sin alterar el interlineado, y las muestras de color en línea se asientan en la línea base como una letra más. Todos ellos son atómicos: el cortador de líneas puede cortar antes o después, pero nunca por dentro, así que una fórmula o una muestra nunca acaban partidas entre dos líneas.
 
@@ -294,7 +288,7 @@ En el panel **Diseño**, busca _flojas_ y activa **Resaltar líneas flojas**, en
 
 ## Matemáticas
 
-:index{term="matemáticas"}Las fórmulas son ciudadanas de pleno derecho. Las expresiones en línea, como $e^{i\\pi}+1=0$, fluyen con el texto, compuestas por MathJax como trazados vectoriales que se mantienen nítidos a cualquier ampliación. Cuando una fórmula es más alta de lo que permite la línea, se reduce de forma uniforme para que la rejilla de línea base sobreviva, y el lector conserva el ritmo del texto por densa que sea la notación, aunque la página esté llena de subíndices, exponentes y raíces. Las fórmulas destacadas ocupan líneas propias, centradas en la columna, con sus propios márgenes, y el texto que las sigue vuelve a la rejilla:
+:index{term="matemáticas"}Las fórmulas son ciudadanas de pleno derecho. Las expresiones en línea, como $e^{i\\pi}+1=0$, fluyen con el texto, compuestas por MathJax como trazados vectoriales que se mantienen nítidos a cualquier ampliación. Cuando una fórmula es más alta de lo que permite la línea, se reduce de forma uniforme para que la rejilla de línea base sobreviva. Las fórmulas destacadas ocupan líneas propias, centradas en la columna, con sus propios márgenes, y el texto que las sigue vuelve a la rejilla:
 
 $$
 \\int_0^{\\infty} e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}
@@ -302,7 +296,7 @@ $$
 
 El canvas, la vista HTML y el PDF dibujan los mismos trazados, de modo que las fórmulas coinciden en las tres salidas y siguen siendo vectores en la imprenta.
 
-Unos cuantos ejemplos más muestran el abanico de notación que maneja el motor, y lo que hace con cada caso para que la fórmula conviva con el texto. El primero es una serie infinita, la suma de los inversos de los cuadrados que Euler resolvió en 1734. En una fórmula destacada, los límites del sumatorio se colocan encima y debajo del símbolo, como en un libro de análisis, y la fracción del resultado toma su tamaño completo en lugar de la versión reducida que se usa dentro de una línea.
+Unos cuantos ejemplos más muestran el abanico de notación que maneja el motor. El primero es una serie infinita, la suma de los inversos de los cuadrados que Euler resolvió en 1734. En una fórmula destacada, los límites del sumatorio se colocan encima y debajo del símbolo, y la fracción del resultado toma su tamaño completo en lugar de la versión reducida que se usa dentro de una línea.
 
 $$
 \\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}
@@ -314,7 +308,7 @@ $$
 \\det \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc
 $$
 
-La distribución normal reúne en una sola expresión casi todo lo que complica la composición matemática: una raíz con su barra, letras griegas para la media y la desviación típica, y una fracción entera dentro de un exponente, que debe reducirse dos veces sin perder legibilidad. Es la fórmula que aparece en cualquier manual de estadística, y aquí se compone con las mismas reglas que usaría TeX.
+La distribución normal reúne en una sola expresión casi todo lo que complica la composición matemática: una raíz con su barra, letras griegas para la media y la desviación típica, y una fracción entera dentro de un exponente, que debe reducirse dos veces sin perder legibilidad.
 
 $$
 f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\, e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}
@@ -388,7 +382,7 @@ En el panel **Diseño**, abre **Títulos e índice** y desactiva **Equilibrar co
 
 ## Reglas que eliges tú
 
-Algunas decisiones son cuestión de estilo de la casa más que de acierto o error, y la configuración las deja en manos de cada libro. ¿Puede partirse entre dos columnas una lista corta de tres elementos? ¿Puede flotar una figura hasta una apertura de capítulo? Cada una de estas **reglas de composición** toma uno de tres valores.:index{term="reglas de composición"} :chip[allow]{style="state"} deja que el motor lo haga, :chip[warn]{style="state"} deja que ocurra y añade una entrada en el panel Revisión, y :chip[avoid]{style="state"} obliga al motor a cambiar la página para que no ocurra nunca: la lista entera pasa adelante con su introducción y la figura espera a la página que sigue a la apertura. Poner una regla en warn es como un editor averigua cuántas veces la rompería el libro antes de decidir.
+Algunas decisiones son cuestión de estilo de la casa más que de acierto o error, y la configuración las deja en manos de cada libro. ¿Puede partirse entre dos columnas una lista corta de tres elementos? ¿Puede flotar una figura hasta una apertura de capítulo? Cada una de estas **reglas de composición** toma uno de tres valores.:index{term="reglas de composición"} :chip[allow]{style="state"} deja que el motor lo haga, :chip[warn]{style="state"} deja que ocurra y añade una entrada en el panel Revisión, y :chip[avoid]{style="state"} obliga al motor a cambiar la página para que no ocurra nunca: la lista entera pasa adelante con su introducción y la figura espera a la página que sigue a la apertura. Poner una regla en warn es como un editor averigua cuántas veces la rompería el libro antes de decidir. Las dos reglas empiezan en allow, así que una configuración que no las menciona compone sus páginas como siempre, y una lista corta es la de tres elementos como mucho, salvo que la configuración indique otro número.
 
 # Figuras, tablas y flotantes {lead="Una referencia es una promesa, no una posición. Menciona una figura y Postext le busca casa: el primer hueco libre tras la mención, numerada por orden de lectura, con su pie, y nunca antes de las palabras que la llaman." summary="Dónde caen los recursos, cómo se numeran, tablas que se parten"}
 
@@ -408,47 +402,39 @@ Unas pocas reglas mantienen honrados a los flotantes:
 
 ## Colocación
 
-Cada recurso puede indicar dónde prefiere ir, y cada tipo de recurso tiene un valor por defecto; los campos se recogen en :ref{id="placement-options"}. Un recurso también puede insertarse en un punto exacto, cuando su posición es _here_. Y una tabla o una figura demasiado ancha para la página puede girar un cuarto de vuelta: entonces ocupa una página propia, pegada al lomo.
+Cada recurso puede indicar dónde prefiere ir, y cada tipo de recurso tiene un valor por defecto; los campos se recogen en :ref{id="placement-options"}. Un recurso también puede insertarse en un punto exacto, cuando su posición es _here_. Y una tabla o una figura demasiado ancha para la página puede girar un cuarto de vuelta, hacia un lado o hacia el otro: entonces ocupa una página propia, pegada al lomo y dimensionada según la altura de la página.
 
 ## Números y etiquetas
 
 Los tipos de recurso definen sus propias secuencias de numeración. Figuras y tablas vienen de serie y se traducen al idioma del documento; un tipo puede añadir un prefijo, una etiqueta abreviada, una plantilla como \`{h1}.{n}\` para numerar por capítulo —la figura 5.2 es la segunda figura del capítulo 5—, una regla de reinicio y un formato de contador. Los números siguen la **primera referencia en el orden de lectura**: si insertas una mención anterior, se mueven todos los números posteriores. Una referencia puede imprimir solo el número, la etiqueta completa o la abreviada, cambiar su caja o imprimir un texto propio.
 
-La numeración se mantiene correcta en todo un libro porque forma parte de lo que cada capítulo hereda de los anteriores. El séptimo capítulo de esta guía empieza sus figuras en la 7.1 porque así lo dice el contador de capítulos, no porque nadie haya escrito el número, y mover un capítulo renumera todo lo que viene después la siguiente vez que se maqueta el libro.
+La numeración se mantiene correcta en todo un libro porque forma parte de lo que cada capítulo hereda de los anteriores. El séptimo capítulo de esta guía empieza sus figuras en la 7.1 porque así lo dice el contador de capítulos, no porque nadie haya escrito el número.
 
 ## Tipos propios
 
-Las figuras y las tablas son solo los dos tipos que necesita cualquier libro. Una configuración puede declarar tantos tipos de recurso como use una publicación —mapas, láminas, recuadros, gráficos, documentos—, cada uno con un nombre en singular y en plural, una etiqueta abreviada para las referencias, un prefijo para sus pies y una secuencia de numeración propia. Un catálogo puede numerar sus láminas 1, 2, 3 a lo largo de todo el libro mientras sus figuras vuelven a empezar en cada capítulo; un libro de texto puede numerar sus recuadros 1-1, 1-2 en el capítulo uno y 2-1 en el capítulo dos. Cada tipo puede llevar además su colocación por defecto y ajustar el estilo del pie, de modo que las láminas ocupen una página entera con el pie encima mientras las figuras flotan al ancho de la columna.
-
-Un tipo con el prefijo vacío y sin pie también es útil: convierte una imagen en un adorno, una viñeta o un logotipo que puede insertarse exactamente donde se menciona, sin número y sin entrar nunca en la lista de figuras.
+Una configuración puede declarar tantos tipos de recurso como use una publicación —mapas, láminas, recuadros, gráficos, documentos—, cada uno con un nombre en singular y en plural, una etiqueta abreviada para las referencias, un prefijo para sus pies y una secuencia de numeración propia. Cada tipo puede llevar además su colocación por defecto y ajustar el estilo del pie, de modo que las láminas ocupen una página entera con el pie encima mientras las figuras flotan al ancho de la columna.
 
 ## Tablas
 
 :index{term="tablas"}Las tablas llevan su modelo consigo: filas de celdas con fusiones de columnas y filas, filas de cabecera, alineación y anchos de columna relativos. Las celdas admiten Markdown en línea, párrafos y listas sencillas, un relleno propio —los cuatro colores de parte de este libro son :swatch{color="#2b4acb"} azul, :swatch{color="#8f6408"} oro, :swatch{color="#1f7a6d"} verde azulado y :swatch{color="#c0452f"} bermellón— e incluso una imagen. El estilo de las tablas se define una vez para todo el documento: tipografía del cuerpo y de la cabecera, relleno de la cabecera y filetes en retícula, solo horizontales, solo exteriores o ninguno.
 
-Las tablas se editan en el panel Recursos, en un editor que funciona como una pequeña hoja de cálculo: añade o quita filas y columnas, fusiona y divide celdas, marca filas y columnas de cabecera, alinea celdas, fija rellenos y anchos de columna, suelta una imagen en una celda y pega un bloque de celdas copiado de una hoja de cálculo. Todo cambio se puede deshacer, y la tabla de la página sigue lo que escribes.
-
 Una tabla más alta que la página se parte entre páginas. Sus filas de cabecera se repiten en cada tramo, el pie de cada continuación gana el sufijo _(cont.)_, un aviso de _Continúa_ cierra cada tramo salvo el último, y ningún corte atraviesa una fusión de filas. Una tabla girada se parte igual, página tras página.
 
 ## Figuras junto al texto
 
-En una maquetación de columna y media cuya columna lateral solo lleva flotantes, los recursos pueden vivir junto al texto en lugar de dentro de él. Una figura con el ancho _side_ se apila en la columna lateral junto al párrafo que la cita; un recuadro puede hacer lo mismo, y así los libros de texto pueden mantener definiciones, conceptos clave y figuras al margen junto a las líneas que explican. Una figura ancha puede además llevar el pie a su lado, en la columna lateral, que es la disposición clásica de los libros de texto ilustrados y de los catálogos de exposición. Entre los presets de muestra hay un manual de bioquímica y una edición literaria compuestos exactamente así.
+En una maquetación de columna y media cuya columna lateral solo lleva flotantes, los recursos pueden vivir junto al texto en lugar de dentro de él. Una figura con el ancho _side_ se apila en la columna lateral junto al párrafo que la cita; un recuadro puede hacer lo mismo, y así los libros de texto pueden mantener definiciones, conceptos clave y figuras al margen junto a las líneas que explican. Una figura ancha puede además llevar el pie a su lado, en la columna lateral.
 
 ## Texto que rodea las imágenes
 
-:index{term="ajuste del texto"}Una imagen o un recuadro más estrecho que su columna puede quedarse a un lado de ella, con el texto corriendo a su lado en la medida que sobra y volviendo a la medida completa por debajo, como en una revista. Las líneas siguen en la rejilla de línea base, y el párrafo que empieza junto a la imagen y termina debajo sigue siendo un solo párrafo. Un dibujo recortado puede ir más lejos: con el ajuste de **contorno**, cada línea se compone tan corta como ancho es el dibujo a su altura, de modo que el texto sigue la silueta y no la caja. Los títulos, las fórmulas y las demás figuras no corren junto a un elemento rodeado de texto; esperan debajo de él.
+:index{term="ajuste del texto"}Una imagen o un recuadro más estrecho que su columna puede quedarse a un lado de ella, con el texto corriendo a su lado en la medida que sobra y volviendo a la medida completa por debajo. Un dibujo recortado puede ir más lejos: con el ajuste de **contorno**, cada línea se compone tan corta como ancho es el dibujo a su altura, de modo que el texto sigue la silueta y no la caja.
 
 ## Zonas seguras
 
-Una fotografía rara vez se necesita entera. Una imagen puede marcar su **zona segura**:index{term="zona segura"}, el rectángulo que contiene lo que importa, y el motor puede entonces recortarla en cualquier punto entre la imagen entera y ese rectángulo, sin cambiar su ancho. Aprovecha esa libertad para mantener una imagen en una columna que de otro modo quedaría corta, para encajar una imagen más alta que la página y para equilibrar columnas: una imagen con zona segura puede crecer líneas enteras hasta llenar el pie de una columna corta, sin dejar ningún hueco a la vista. La zona segura se dibuja sobre la imagen en el panel Recursos, y las viñetas de los cómics usan la misma marca para saber qué no deben cortar nunca.
+Una fotografía rara vez se necesita entera. Una imagen puede marcar su **zona segura**:index{term="zona segura"}, el rectángulo que contiene lo que importa, y el motor puede entonces recortarla en cualquier punto entre la imagen entera y ese rectángulo, sin cambiar su ancho. Aprovecha esa libertad para mantener una imagen en una columna que de otro modo quedaría corta, para encajar una imagen más alta que la página y para equilibrar columnas: una imagen con zona segura puede crecer líneas enteras hasta llenar el pie de una columna corta, sin dejar ningún hueco a la vista. La zona segura se dibuja sobre la imagen en el panel Recursos.
 
 ## Pies y créditos
 
-Un pie es el prefijo del tipo, el número y el texto del pie, que admite Markdown en línea y referencias propias. Los pies van encima o debajo de su recurso, opcionalmente sobre una barra de color, con la tipografía y el tamaño del estilo de pie; la etiqueta puede ir en negrita o en color, como en este libro. Un recurso puede llevar además una nota: una línea más pequeña de crédito o de fuente bajo él.
-
-## Un cuarto de vuelta
-
-Algunos recursos son más anchos de lo que la página es alta: una cronología, una tabla ancha de resultados, una lámina panorámica. Un recurso así puede girar un cuarto de vuelta, en el sentido de las agujas del reloj o en el contrario. Entonces ocupa una página propia, pegada al lomo, para que girar el libro para leerlo resulte natural, y se dimensiona según la altura de la página y no según su anchura. Una tabla girada más alta que una página girada —es decir, más ancha que la altura de la página— se parte en tantas páginas como necesite, repitiendo sus filas de cabecera, igual que una tabla sin girar.
+Un pie es el prefijo del tipo, el número y el texto del pie, que admite Markdown en línea y referencias propias. Los pies van encima o debajo de su recurso, con la tipografía y el tamaño del estilo de pie; la etiqueta puede ir en negrita o en color, como en este libro. Un recurso puede llevar además una nota: una línea más pequeña de crédito o de fuente bajo él.
 
 ## Figuras vectoriales
 
@@ -456,7 +442,7 @@ Los diagramas SVG se dibujan como vectores en todas partes. El PDF convierte el 
 
 El texto de un SVG sigue siendo texto. En el PDF se compone con fuentes reales y se puede seleccionar y buscar, y en el Sandbox se puede editar en su sitio: el panel Recursos abre el código del diagrama con solo su texto editable —el dibujo en sí queda bloqueado salvo que lo desbloquees—, de modo que una etiqueta puede corregirse o traducirse sin abrir un programa de dibujo. Los diagramas de este libro se generan para cada idioma, y por eso sus etiquetas están en español en la edición española, en catalán en la catalana, en inglés en la inglesa, en chino en la china y en árabe en la árabe.
 
-Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces. Abre el PDF, amplíalo varias veces su tamaño y mira los bordes: siguen tan nítidos como el texto que los rodea, porque se dibujan con los mismos operadores y no se pegan como imágenes. Prueba a seleccionar las etiquetas del gráfico, o a buscarlas: son texto. Lo mismo vale para el microtexto de la roseta, legible a cualquier ampliación; en papel, esa línea de dos puntos y medio solo se lee con lupa.
+Tres figuras compuestas aquí lo demuestran. La roseta de :ref{id="vector-rosette"} está hecha de curvas de Bézier, trazos finísimos y una línea de microtexto de dos puntos y medio de alto; el gráfico de :ref{id="vector-chart"} combina un área rellena, una línea discontinua y etiquetas de texto; y :ref{id="vector-clip"} usa un trazado de recorte, un grupo dibujado con transparencia y una misma forma reutilizada cinco veces.
 
 :::callout{type="try"}
 Haz clic en el pie de cualquier figura del canvas: el panel Recursos se abre en ese recurso, con el campo del pie listo. Cambia su colocación de _auto_ a _top_ y mira cómo se mueve.
@@ -464,28 +450,28 @@ Haz clic en el pie de cualquier figura del canvas: el panel Recursos se abre en 
 
 ## Vídeos
 
-:index{term="vídeos"}Un vídeo es un recurso más. Se menciona, se numera aparte (Vídeo 1.1 junto a Figura 1.1) y flota hasta el primer hueco libre, como una figura. Puede venir de YouTube o de Vimeo, de un archivo guardado en el libro o de una dirección web: un MP4 o un WebM en un servidor, o un flujo HLS, la lista \`.m3u8\` con la que se sirve un vídeo largo por fragmentos y en varias calidades.
+:index{term="vídeos"}Un vídeo es un recurso más. Se menciona, se numera aparte y flota hasta el primer hueco libre, como una figura. Puede venir de YouTube o de Vimeo, de un archivo guardado en el libro o de una dirección web: un MP4 o un WebM en un servidor, o un flujo HLS.
 
-En papel se imprime su portada, un fotograma elegido, con una marca de reproducción y un código QR que abre el vídeo; en el PDF la portada también es un enlace. La vista HTML y el EPUB lo reproducen en su propio reproductor, salvo los de YouTube y Vimeo y los flujos HLS, que un libro electrónico solo puede enlazar. En la vista Folio, un clic en la portada lo reproduce en la página, y el vídeo sigue mientras se pasa la hoja. Los vídeos de este libro, como :ref{id="postext-showreel"}, son flujos HLS servidos desde una red de distribución de contenidos.
+En papel se imprime su portada, un fotograma elegido, con una marca de reproducción y un código QR que abre el vídeo. La vista HTML y el EPUB lo reproducen en su propio reproductor, salvo los de YouTube y Vimeo y los flujos HLS, que un libro electrónico solo puede enlazar. En la vista Folio, un clic en la portada lo reproduce en la página. Los vídeos de este libro, como :ref{id="postext-showreel"}, son flujos HLS servidos desde una red de distribución de contenidos.
 
 # Recuadros, notas y marcas {#boxes lead="Alrededor del texto corrido un libro guarda una segunda capa: recuadros que apartan un comentario, notas al pie de la columna, pequeñas marcas dentro de la línea y un índice que recuerda cada página. Todo se escribe en el Markdown y lo dibuja la configuración." summary="Recuadros, recuadros anidados y flotantes, chips, notas al pie y el índice analítico"}
 
-El texto corrido es solo una parte de lo que encuentra un lector en una página. Los libros de texto enmarcan definiciones y ejercicios, los ensayos bajan sus fuentes al pie de la página, los manuales señalan teclas y estados dentro de la frase y los libros largos terminan con un índice analítico. Postext trata cada una de estas cosas como un contenido con nombre, escrito donde le corresponde en el texto, y deja su aspecto a la configuración. Este capítulo las usa todas en sus propias páginas.
+Los libros de texto enmarcan definiciones y ejercicios, los ensayos bajan sus fuentes al pie de la página, los manuales señalan teclas y estados dentro de la frase y los libros largos terminan con un índice. Postext escribe cada una donde le corresponde en el texto y deja su aspecto a la configuración.
 
 ## Recuadros
 
-:index{term="recuadros"}\`:::callout\` compone una caja con un título opcional, en uno de los estilos que define la configuración. Este libro define cinco: los recuadros _Pruébalo_ que te mandan al Sandbox, las notas técnicas, las citas destacadas en cursiva de rótulo, el panel oscuro de página completa con cifras clave y, nuevo en este capítulo, un aparte al margen señalado con un filete. Un estilo decide el fondo, el borde, la franja y el radio de las esquinas de la caja, un icono o marca opcional, la tipografía de su título, su cuerpo y sus listas, y dónde va: en el flujo, en la cabeza o al pie de una columna, a lo ancho de la página, en la columna lateral de una maquetación de columna y media o fijo en una posición de la página.
+:index{term="recuadros"}\`:::callout\` compone una caja con un título opcional, en uno de los estilos que define la configuración. Este libro define cinco: los recuadros _Pruébalo_ que te mandan al Sandbox, las notas técnicas, las citas destacadas en cursiva de rótulo, el panel oscuro de página completa con cifras clave y, un aparte al margen señalado con un filete. Un estilo decide el fondo, el borde, la franja y las esquinas de la caja, la tipografía de su título y su cuerpo, y dónde va: en el flujo, en la cabeza o al pie de una columna, a lo ancho de la página, en la columna lateral o fijo en una posición de la página.
 
 Un recuadro largo puede partirse entre sus párrafos, o incluso entre sus líneas, dejando al menos dos a cada lado; la continuación omite el título. Dentro de un recuadro, \`:::columns\` compone su contenido en columnas equilibradas, como el panel de cifras de :ref{id="engine"}.
 
-Los atributos de un recuadro pueden sustituir su estilo para una sola caja: un \`title\`, una \`placement\`, un \`span\` de columna, de página o lateral, y una \`label\` impresa en una pestaña de su esquina superior, como las etiquetas _Recuadro 1-1_ de un libro de texto. Los estilos también pueden detener los flotantes en su borde, para que una figura mencionada dentro de una caja nunca escape más allá de ella, y pueden decidir si una caja demasiado alta para su columna debe partirse o avisar.
+Los atributos de un recuadro pueden sustituir su estilo para una sola caja: un \`title\`, una \`placement\`, un \`span\` de columna, de página o lateral, y una \`label\` impresa en una pestaña de su esquina superior.
 
 ## Recuadros dentro de recuadros
 
-:index{term="recuadros!anidados"}Un recuadro puede contener otro. Así se pone un ejemplo resuelto dentro de una lección o una advertencia dentro de un procedimiento: el recuadro interior se abre dentro del exterior y se cierra antes que él, y cada \`:::\` suelto cierra el recuadro más interno que siga abierto. El recuadro interior toma el ancho de su padre, menos el relleno de este, y conserva su propio estilo, de modo que una nota técnica puede llevar dentro un recuadro _Pruébalo_ sin que ninguno de los dos pierda sus colores.
+:index{term="recuadros!anidados"}Un recuadro puede contener otro. Así se pone un ejemplo resuelto dentro de una lección o una advertencia dentro de un procedimiento: el recuadro interior se abre dentro del exterior y se cierra antes que él, y cada \`:::\` suelto cierra el recuadro más interno que siga abierto. El recuadro interior toma el ancho de su padre, y conserva su propio estilo.
 
 :::callout{type="note" title="Dos recuadros, un bloque"}
-El recuadro exterior es una nota técnica. Se mantiene unido a lo que contiene, así que el motor coloca los dos como un solo bloque: nunca deja el recuadro interior solo en la cabeza de la columna siguiente.
+El recuadro exterior es una nota técnica. Se mantiene unido a lo que contiene, así que el motor coloca los dos como un solo bloque.
 
 :::callout{type="try"}
 Abre el panel Texto en este capítulo y borra la línea que cierra el recuadro interior. El recuadro exterior termina ahora donde termina el capítulo, y el panel Revisión lo señala.
@@ -496,41 +482,39 @@ El recuadro exterior sigue después del interior, con su propio estilo.
 
 ## Recuadros que flotan
 
-Un recuadro suele quedarse donde se escribe, entre los párrafos que lo rodean. Algunos no tienen por qué interrumpir la lectura: una columna aparte, un perfil, un resumen de cifras. Con una \`placement\` _top_ o _bottom_, un recuadro así flota como una figura hasta la cabeza o el pie de la primera columna con sitio para él, y el texto que lo sigue en el Markdown llena la página por encima o por debajo. El recuadro que hay bajo este párrafo se escribió aquí, en mitad de la sección, y se ha compuesto al pie de una columna.
+Hay recuadros que no tienen por qué interrumpir la lectura: una columna aparte, un perfil, un resumen de cifras. Con una \`placement\` _top_ o _bottom_, un recuadro así flota como una figura hasta la cabeza o el pie de la primera columna con sitio para él, y el texto que lo sigue en el Markdown llena la página por encima o por debajo.
 
 :::callout{type="aside" placement="bottom" title="Dónde cae un recuadro flotante"}
-En el primer hueco libre a partir del punto donde se escribe, la misma regla que sigue una figura. Un recuadro que debe ir entero cede ante los recuadros y las figuras ya colocados, nunca al revés.
+En el primer hueco libre a partir del punto donde se escribe. Un recuadro que debe ir entero cede ante los recuadros y las figuras ya colocados, nunca al revés.
 :::
-
-Un recuadro flotante conserva todas las demás reglas de su estilo. Puede ser más ancho que una columna, puede llevar etiqueta y nunca se adelanta al punto donde se escribió, así que quien lo encuentra siempre ha leído ya el párrafo que lleva a él.
 
 ## Marcas y recuadros con diseño
 
-Un estilo puede dibujar una **marca** fuera del recuadro, en una columna estrecha propia a su lado: un icono, un glifo, una forma o una imagen de los recursos, con un filete que recorre la altura del recuadro. El aparte que flotaba en la sección anterior lleva una: un punto dorado sobre un filete del mismo color.
+Un estilo puede dibujar una **marca** fuera del recuadro, en una columna estrecha propia a su lado: un icono, un glifo, una forma o una imagen de los recursos, con un filete que recorre la altura del recuadro.
 
-Cuando una marca no basta, un estilo puede dibujar el recuadro entero con un **diseño**, los mismos elementos de texto, cajas, filetes e imágenes que dibujan las aperturas de capítulo de este libro. El texto del recuadro pasa a ser un elemento más, y los atributos escritos en el recuadro pueden imprimirse en el diseño: un número en una insignia, un nivel en una pestaña, un nombre en una franja al pie. El cuaderno de caligrafía de las recetas del Recetario dibuja así sus líneas para repasar.
+Cuando una marca no basta, un estilo puede dibujar el recuadro entero con un **diseño**. El texto del recuadro pasa a ser un elemento más, y los atributos escritos en el recuadro pueden imprimirse en el diseño.
 
 ## Marcas dentro de la línea
 
-:index{term="chips"}Hay contenidos más pequeños que un recuadro. \`:chip[…]\` pone una palabra en una cajita redondeada que fluye con el texto, para teclas, estados y etiquetas: un ajuste que puede valer :chip[allow]{style="state"}, :chip[warn]{style="state"} o :chip[avoid]{style="state"}, o una tecla como :chip[Esc]. Un chip tiene un estilo, como un recuadro: su fondo, su borde, su radio, su tipo de letra y su color, y el espacio que lo rodea, todo desde la configuración. Un chip nunca se parte por dentro, y el motor cuenta su ancho al elegir los cortes del párrafo.
+:index{term="chips"}\`:chip[…]\` pone una palabra en una cajita redondeada que fluye con el texto, para teclas, estados y etiquetas: un ajuste que puede valer :chip[allow]{style="state"}, :chip[warn]{style="state"} o :chip[avoid]{style="state"}, o una tecla como :chip[Esc].
 
-Las muestras de color son otra clase. Escrita \`:swatch{color="#c0452f"}\`, una muestra pone dentro de la línea un cuadradito de ese color, :swatch{color="#c0452f"} como este, que es como una guía de estilo o una tabla de tintas nombra un color y lo enseña a la vez.
+Escrita \`:swatch{color="#c0452f"}\`, una muestra pone dentro de la línea un cuadradito de ese color, :swatch{color="#c0452f"} como este.
 
 ## Notas al pie
 
-:index{term="notas al pie"}Una nota se cita con \`[^id]\` justo después de la palabra o del signo al que pertenece,[^first-note] y se escribe en cualquier lugar del capítulo como un párrafo que empieza por \`[^id]:\`. Las notas se numeran en el orden en que se citan por primera vez, de nuevo desde uno en cada capítulo; \`footnotes.numbering\` puede seguir la numeración a lo largo del libro o reiniciarla en cada página, como hacen los libros chinos y los árabes clásicos, y los números pueden imprimirse en círculos o entre paréntesis.
+:index{term="notas al pie"}Una nota se cita con \`[^id]\` justo después de la palabra o del signo al que pertenece,[^first-note] y se escribe en cualquier lugar del capítulo como un párrafo que empieza por \`[^id]:\`. Las notas se numeran en el orden en que se citan por primera vez, de nuevo desde uno en cada capítulo; \`footnotes.numbering\` puede seguir la numeración a lo largo del libro o reiniciarla en cada página.
 
-[^first-note]: Esta es una. Se escribió unas líneas más abajo en el Markdown, como un párrafo propio, y se ha compuesto al pie de la columna que contiene la línea que la cita.
+[^first-note]: Esta es una. Se escribió más abajo en el Markdown, como un párrafo propio.
 
-La nota se compone al pie de la columna que contiene la línea que la cita, bajo un filete corto, y la línea y su nota comparten siempre columna: si la nota no cabe, la línea pasa con ella a la siguiente.[^second-note] \`footnotes.placement: 'chapterEnd'\` reúne en cambio las notas de un capítulo después de su último bloque. Una llamada sin nota y una nota que nadie cita aparecen en el panel **Revisión**. Entre los libros de ejemplo, _El paraíso perdido_ lleva ochocientas, marcadas con letras que vuelven a empezar en cada página.
+La nota se compone al pie de la columna que contiene la línea que la cita, bajo un filete corto, y la línea y su nota comparten siempre columna: si la nota no cabe, la línea pasa con ella a la siguiente.[^second-note] \`footnotes.placement: 'chapterEnd'\` reúne en cambio las notas de un capítulo después de su último bloque.
 
 [^second-note]: El motor equilibra la columna contando las líneas de la nota, así que una página con notas también termina a la par.
 
 ## Un índice al final
 
-:index{term="índice analítico"}El índice analítico se escribe donde el texto trata cada término. \`:index[anemia]\` imprime la palabra y la registra; \`:index{term="Corazón!válvulas"}\` no imprime nada y registra la página bajo una subentrada. La marca \`main\` pone la página en negrita, \`range="start"\` y \`range="end"\` acotan un pasaje que ocupa varias páginas, y \`see\` y \`seealso\` escriben las remisiones. \`:::index\` imprime el índice donde está, normalmente bajo un título cuyo estilo lo compone a dos columnas, y junto al principal pueden convivir índices con nombre, de personas o de lugares.
+:index{term="índice analítico"}El índice analítico se escribe donde el texto trata cada término. \`:index[anemia]\` imprime la palabra y la registra; \`:index{term="Corazón!válvulas"}\` no imprime nada y registra la página bajo una subentrada. La marca \`main\` pone la página en negrita, \`range="start"\` y \`range="end"\` acotan un pasaje que ocupa varias páginas, y \`see\` y \`seealso\` escriben las remisiones. \`:::index\` imprime el índice donde está.
 
-El motor lee la página de cada marca después de maquetar, así que los números siguen al texto: si se añade un párrafo, se mueve un capítulo o se cambia el formato, el índice imprime las páginas nuevas. Las entradas se ordenan según el alfabeto del idioma del documento —en español, la _ñ_ con encabezado propio después de la _n_— y se agrupan bajo su letra inicial, las páginas seguidas se unen en un intervalo y cada número es un enlace en el PDF. Un índice árabe ignora el artículo _al-_ al ordenar, y uno chino ordena por la lectura de cada carácter. Este libro tiene uno, al final, hecho con marcas escritas en todos sus capítulos.
+El motor lee la página de cada marca después de maquetar, así que los números siguen al texto. Las entradas se ordenan según el alfabeto del idioma del documento —en español, la _ñ_ con encabezado propio después de la _n_— y se agrupan bajo su letra inicial, las páginas seguidas se unen en un intervalo y cada número es un enlace en el PDF. Este libro tiene uno, al final, hecho con marcas escritas en todos sus capítulos.
 
 # Libros, partes y cabeceras {lead="Un libro es más que sus capítulos: una cubierta, un índice que se mantiene al día, portadillas de parte, aperturas que anuncian cada capítulo y cabeceras que saben dónde está el lector. Todo ello es configuración." summary="Capítulos, estilos de título, diseños, partes, índice y folios"}
 
@@ -538,45 +522,43 @@ Esta guía es un libro de veintiún capítulos, y cada capítulo es un documento
 
 ## Los capítulos hacen el libro
 
-Cada capítulo se maqueta por separado, _continuando_ a los anteriores: hereda su número de páginas y su paridad, sus contadores de capítulos y de figuras, la parte abierta y las cabeceras. Por eso las figuras de este capítulo se numeran desde la 7.1, y por eso editar un capítulo nunca obliga al motor a componer de nuevo el libro entero. Las vistas previas pueden mostrar el capítulo actual o el libro completo, y el PDF se puede generar de cualquiera de los dos. Los capítulos se pueden añadir, renombrar, reordenar, dividir por sus títulos de primer nivel o fusionar con el anterior.
+Cada capítulo se maqueta por separado, _continuando_ a los anteriores: hereda su número de páginas y su paridad, sus contadores de capítulos y de figuras, la parte abierta y las cabeceras. Por eso las figuras de este capítulo se numeran desde la 7.1.
 
 ## Lo que hereda un capítulo
 
-La continuación que recibe un capítulo es pequeña y precisa. Lleva el número de páginas y la paridad de la página siguiente, para que una apertura que debe caer en página par sepa si necesita una página en blanco delante. Lleva los contadores: el número de capítulo, los números de cada secuencia de recursos, la secuencia de numeración de las etiquetas de página. Lleva la parte abierta, con su título, su número y su paleta, para que un capítulo en mitad de una parte conserve sus colores. Y lleva el esquema del libro, para que un índice en el capítulo dos pueda imprimir la página en la que empieza el capítulo diez.
-
-Como la continuación es todo lo que un capítulo necesita del resto del libro, los capítulos pueden maquetarse de forma independiente, en segundo plano, y unirse para la vista del libro completo y para el PDF. El resultado es el mismo que maquetar el libro entero de una vez, página a página: una propiedad que el motor está construido para garantizar.
+Lleva el número de páginas y la paridad de la página siguiente, para que una apertura que debe caer en página par sepa si necesita una página en blanco delante. Lleva los contadores de capítulos, de recursos y de etiquetas de página. Y lleva el esquema del libro, para que un índice en el capítulo dos pueda imprimir la página en la que empieza el capítulo diez.
 
 ## Estilos de título
 
-Un título puede llevar atributos, escritos entre llaves al final de su línea. El más potente de ellos es el **estilo**: \`{style="cover"}\` aplica un estilo de título con nombre, que cambia la tipografía y el diseño del título y, para la sección que abre, puede cambiar las cabeceras, los márgenes de página, la disposición de columnas, la tipografía del cuerpo y la paleta. La cubierta de este libro es un estilo de título con márgenes propios, sin cabeceras y con un diseño a página completa; el índice es otro. Un estilo también puede dejar sin numerar sus títulos, para que un prólogo no desplace la numeración de los capítulos, y dejarlos fuera del índice.
+Un título puede llevar atributos, escritos entre llaves al final de su línea. El más potente de ellos es el **estilo**: \`{style="cover"}\` aplica un estilo de título con nombre, que cambia la tipografía y el diseño del título y, para la sección que abre, puede cambiar las cabeceras, los márgenes de página, la disposición de columnas, la tipografía del cuerpo y la paleta. Un estilo también puede dejar sin numerar sus títulos, para que un prólogo no desplace la numeración de los capítulos, y dejarlos fuera del índice.
 
 ## Un vistazo a la configuración de este libro
 
-Merece la pena ver cómo están construidas las páginas que estás leyendo. La cubierta es el título de primer nivel del primer capítulo, con el estilo _cover_. El estilo da a esa sección unos márgenes que empujan cualquier texto al pie de la página, quita las cabeceras y dibuja un diseño a página completa: una caja que llena el sangrado con el color noche, la ilustración de cubierta como elemento de imagen anclado a la parte superior del sangrado, un antetítulo en versales doradas con un espaciado generoso, el título de los metadatos en Fraunces a 88 puntos, un filete dorado corto, el subtítulo en Lora cursiva y una línea de créditos al pie. El antetítulo y los créditos proceden de atributos del título, escritos en su línea del Markdown.
+La cubierta es el título de primer nivel del primer capítulo, con el estilo _cover_. El estilo quita las cabeceras y dibuja un diseño a página completa: una caja que llena el sangrado con el color noche, la ilustración de cubierta, un antetítulo en versales doradas, el título de los metadatos en Fraunces a 88 puntos, un filete dorado corto, el subtítulo en Lora cursiva y una línea de créditos al pie.
 
-Las aperturas de capítulo son un diseño del primer nivel de título. Una caja llena la parte superior del sangrado con el color de parte; el número de capítulo se imprime en grande junto al borde exterior, el antetítulo combina la palabra _Capítulo_, el número y el título de la parte, y bajo un filete blanco corto vienen el título y la introducción del capítulo, tomada del atributo \`lead\` del título. El atributo \`summary\` del mismo título es lo que el índice imprime bajo cada entrada. Nada en estos diseños es propio de este libro: cualquier configuración puede componer los suyos.
+Las aperturas de capítulo son un diseño del primer nivel de título. Una caja llena la parte superior del sangrado con el color de parte; el número de capítulo se imprime en grande junto al borde exterior, el antetítulo combina la palabra _Capítulo_, el número y el título de la parte, y bajo un filete blanco corto vienen el título y la introducción del capítulo, tomada del atributo \`lead\` del título. El atributo \`summary\` del mismo título es lo que el índice imprime bajo cada entrada.
 
 ## Diseños
 
-:index{term="diseños"}Las cabeceras, los pies de página, las aperturas de capítulo y las portadillas se dibujan con **diseños**: pequeñas composiciones libres de textos, filetes, cajas e imágenes. Cada elemento se ancla a la página, al sangrado, a la caja de texto o a otro elemento, con desplazamientos y tamaños en unidades reales, y su texto puede llevar **marcadores** como \`{pageNumber}\`, \`{chapterTitle}\`, \`{partTitle}\` o cualquier atributo del título, como el \`{attr.lead}\` que pone la entradilla en la banda de este capítulo. Los elementos se pueden limitar a las páginas pares o impares y a las páginas de un papel concreto —cuerpo, apertura, parte o blanca—, y así las cabeceras de este libro desaparecen en las aperturas de capítulo mientras aparece un folio al pie. Los elementos de texto pueden ajustarse, dividir palabras, recortarse con puntos suspensivos, dibujar una caja detrás y abrir con una capitular.
+:index{term="diseños"}Las cabeceras, los pies de página, las aperturas de capítulo y las portadillas se dibujan con **diseños**: pequeñas composiciones libres de textos, filetes, cajas e imágenes. Cada elemento se ancla a la página, al sangrado, a la caja de texto o a otro elemento, con desplazamientos y tamaños en unidades reales, y su texto puede llevar **marcadores** como \`{pageNumber}\`, \`{chapterTitle}\`, \`{partTitle}\` o cualquier atributo del título, como el \`{attr.lead}\` que pone la entradilla en la banda de este capítulo. Los elementos se pueden limitar a las páginas pares o impares y a las páginas de un papel concreto: cuerpo, apertura, parte o blanca.
 
-Las cabeceras son un diseño corriente, con elementos filtrados por paridad y por papel. En las páginas pares de este libro, el folio en el color de parte y el título del libro van junto al borde exterior; en las impares, el título del capítulo y el folio. Solo aparecen en las páginas de cuerpo; las aperturas llevan en su lugar un folio al pie, y las portadillas de parte no llevan nada. La página negra que da frente a cada portadilla de parte también es un elemento de diseño: una caja que llena el sangrado, visible solo en las páginas pares en blanco, que, en un libro cuyos capítulos abren en página par y cuyas partes abren en página impar, son exactamente las páginas que dan frente a una parte.
+En las páginas pares de este libro, el folio en el color de parte y el título del libro van junto al borde exterior; en las impares, el título del capítulo y el folio. Solo aparecen en las páginas de cuerpo; las aperturas llevan en su lugar un folio al pie, y las portadillas de parte no llevan nada. La página en el color de parte que da frente a cada portadilla también es un elemento de diseño: una caja que llena el sangrado, visible solo en las páginas pares en blanco.
 
 ## Partes y paletas
 
-:index{term="partes"}\`:::part\` abre una portadilla de parte: una página propia, llevada a la paridad que pide la configuración, dibujada con el diseño de parte y seguida de un cuerpo, normalmente la lista de sus capítulos. Las partes se arrastran, de modo que las cabeceras y las aperturas de los capítulos siguientes pueden nombrar la parte a la que pertenecen, y aparecen tanto en el índice como en los marcadores del PDF.
+:index{term="partes"}\`:::part\` abre una portadilla de parte: una página propia, llevada a la paridad que pide la configuración, dibujada con el diseño de parte y seguida de un cuerpo, normalmente la lista de sus capítulos.
 
-En este libro cada parte se abre como un pliego: una página par negra a la izquierda y la portadilla a la derecha. Las partes saltan con la paridad _siempre impar_, que coloca una hoja en blanco delante de cada portadilla y añade una segunda cuando el capítulo anterior termina en página par, de modo que la portadilla cae siempre en página impar con una página par en blanco delante. El primer capítulo de la parte se abre entonces al dorso de la portadilla, en página par, como todos los capítulos.
+En este libro cada parte se abre como un pliego: una página par en el color de parte a la izquierda y la portadilla a la derecha. Las partes saltan con la paridad _siempre impar_, que coloca una hoja en blanco delante de cada portadilla, de modo que la portadilla cae siempre en página impar.
 
-Una parte también puede cambiar el color del libro. Los colores de la configuración pueden enlazarse a entradas con nombre de la **paleta**:index{term="paleta"}, y el atributo \`palette\` de una parte sustituye entradas hasta la parte siguiente. Este libro define una entrada, el _color de parte_, y cada parte le da un valor: azul para los fundamentos, oro para el oficio, verde azulado para las páginas que van más allá del texto corrido, bermellón para la práctica. Las bandas de los capítulos, los números de los títulos, los folios y los pies lo siguen.
+Una parte también puede cambiar el color del libro. Los colores de la configuración pueden enlazarse a entradas con nombre de la **paleta**:index{term="paleta"}, y el atributo \`palette\` de una parte sustituye entradas hasta la parte siguiente. Este libro define una entrada, el _color de parte_, y cada parte le da un valor: azul para los fundamentos, oro para el oficio, verde azulado para las páginas que van más allá del texto corrido, bermellón para la práctica.
 
 ## Un índice que se mantiene al día
 
-:index{term="índice general"}\`:::toc\` imprime el índice: una entrada por cada título de los niveles indicados y una fila por cada parte, con números, títulos, puntos guía, folios y, si se quiere, una línea tomada de un atributo del título; en este libro, el resumen de cada capítulo. Los folios son reales: el motor maqueta el libro, lee dónde ha caído cada título y vuelve a componer el índice hasta que los números se asientan, lo que lleva como mucho tres pasadas más. En el PDF las entradas son enlaces. Cambiar un título en el Markdown basta para que el índice lo recoja en la siguiente maquetación.
+:index{term="índice general"}\`:::toc\` imprime el índice: una entrada por cada título de los niveles indicados y una fila por cada parte, con números, títulos, puntos guía, folios y, si se quiere, una línea tomada de un atributo del título; en este libro, el resumen de cada capítulo. Los folios son reales: el motor maqueta el libro, lee dónde ha caído cada título y vuelve a componer el índice hasta que los números se asientan.
 
 ## Saltos de página y numeración
 
-\`:::pagebreak\` empieza una página nueva y puede pedir que sea impar o par, añadiendo una página en blanco si hace falta. \`:::numbering\` cambia la secuencia de folios desde la página siguiente; así, unos preliminares numerados en romanos dan paso a los arábigos en el capítulo uno. Las aperturas de capítulo pueden pedir su propia paridad, y las páginas en blanco se reconocen como tales, de modo que las cabeceras las dejan limpias. Y donde un pasaje pide un poco más de aire encima, \`:::space\` deja una línea en blanco, o \`:::space{lines=2}\` dos; las líneas en blanco de más en el Markdown no añaden nada, como en cualquier Markdown.
+\`:::pagebreak\` empieza una página nueva y puede pedir que sea impar o par, añadiendo una página en blanco si hace falta. \`:::numbering\` cambia la secuencia de folios desde la página siguiente. Y donde un pasaje pide un poco más de aire encima, \`:::space\` deja una línea en blanco, o \`:::space{lines=2}\` dos; las líneas en blanco de más en el Markdown no añaden nada.
 
 # Un libro, muchos idiomas {#languages lead="Esta guía existe en diez ediciones, en cuatro escrituras y dos direcciones, y todas comparten un mismo diseño. Cada edición guarda solo lo que su idioma necesita decir de otra manera." summary="Ediciones, ajustes generales, ajustes propios, escrituras y direcciones"}
 
@@ -586,23 +568,23 @@ Un libro traducido suele ser un segundo libro. Quien lo diseña abre el primero,
 
 :index{term="ediciones"}Un libro del Sandbox puede contener varios idiomas. Cada **edición** tiene sus capítulos, su nombre y su descripción y, donde una figura lo necesita, sus propias ilustraciones; los recursos, las fuentes y el diseño son del libro. El panel Libros muestra una etiqueta por cada idioma que contiene un libro, y la dirección de la página nombra el que está en pantalla, de modo que un enlace abre la edición desde la que se copió. El canvas puede maquetar dos ediciones una junto a otra, y así comprueba quien traduce que el capítulo en español sigue cabiendo en las páginas que llena el inglés.
 
-Una edición nueva empieza como copia de la que está en pantalla, todavía sin traducir, desde **Añadir un idioma…** en el menú del libro. Cuando el idioma nuevo es el árabe, el chino o el japonés, la copia toma por el camino los valores por defecto de ese idioma: la dirección, el modo de escritura, los tipos de letra y las reglas de su tipografía, que se apartan demasiado de las de un libro latino como para dejarlos al azar.
+Una edición nueva empieza como copia de la que está en pantalla, todavía sin traducir, desde **Añadir un idioma…** en el menú del libro. Cuando el idioma nuevo es el árabe, el chino o el japonés, la copia toma por el camino los valores por defecto de ese idioma: la dirección, el modo de escritura, los tipos de letra y las reglas de su tipografía.
 
 ## Ajustes generales y ajustes propios
 
 El diseño de un libro en varios idiomas se guarda en dos capas. Los **ajustes generales** son los que usan todas las ediciones:index{term="ajustes generales"}; cada idioma tiene además una **capa propia** que nombra solo los campos que fija de otra manera, combinada campo a campo sobre los generales. Un color, un tamaño o un margen cambiado en la capa general llega a todas las ediciones a la vez; cambiado en la capa de un idioma, llega solo a esa edición.
 
-El panel Diseño muestra las dos capas con un selector en su cabecera, entre _Todos los idiomas_ y solo el idioma actual. Con el selector en un idioma, cada campo que ese idioma fija por su cuenta lleva una marca, y el panel puede llevar un valor a la capa general o devolver una edición a ella. Una lista breve en la cabecera del panel nombra todos los ajustes que el idioma fija por su cuenta, de modo que ninguno queda escondido en un rincón de quinientos campos.
+El panel Diseño muestra las dos capas con un selector en su cabecera, entre _Todos los idiomas_ y solo el idioma actual. Con el selector en un idioma, cada campo que ese idioma fija por su cuenta lleva una marca, y el panel puede llevar un valor a la capa general o devolver una edición a ella. Una lista breve en la cabecera del panel nombra todos los ajustes que el idioma fija por su cuenta.
 
 :::callout{type="note" title="Cómo está hecha esta guía"}
 Las siete ediciones en escritura latina lo comparten casi todo. De los ajustes que forman el diseño, cada una fija unas pocas decenas por su cuenta, todos ellos palabras: los títulos de sus recuadros, los nombres de sus colores, estilos y figuras, el título de sus cabeceras y el idioma de su separación silábica. Las ediciones árabe, china y japonesa conservan la misma página, la misma paleta y las mismas partes, y fijan los tipos de letra, la dirección y el modo de escritura que pide cada escritura.
 :::
 
-Esas cifras aparecen en :ref{id="edition-layers"}. El reparto lo calcula el motor a partir de las propias ediciones, y es la capa propia más pequeña que puede tener cada una; no depende de cómo se escribió la guía.
+Esas cifras aparecen en :ref{id="edition-layers"}.
 
 ## Lo que cambia un idioma
 
-El idioma del documento es un ajuste, \`locale\`, y llega más lejos que la separación silábica. Elige los patrones de separación, de los que vienen ocho idiomas de serie; los nombres de los tipos de figura y de tabla incorporados, _Figure_ en inglés, _Figura_ en español, _Abbildung_ en alemán; las palabras que imprimen una tabla partida o un recuadro que continúa; el orden de un índice; y las cifras, que un libro árabe puede componer en numerales arábigo-índicos. Un título o un párrafo pueden cambiar de idioma por su cuenta, y unas pocas palabras en otro idioma pueden marcarse dentro de la línea, de modo que una cita en francés dentro de un capítulo en español se divide según las reglas del francés.
+El idioma del documento es un ajuste, \`locale\`, y llega más lejos que la separación silábica. Elige los patrones de separación, de los que vienen ocho idiomas de serie; los nombres de los tipos de figura y de tabla incorporados, _Figure_ en inglés, _Figura_ en español, _Abbildung_ en alemán; las palabras que imprimen una tabla partida o un recuadro que continúa; el orden de un índice; y las cifras, que un libro árabe puede componer en numerales arábigo-índicos. Un título o un párrafo pueden cambiar de idioma por su cuenta, y unas pocas palabras en otro idioma pueden marcarse dentro de la línea.
 
 ## Cuatro escrituras, dos direcciones
 
@@ -612,7 +594,7 @@ Las ediciones **china** y **japonesa** se componen en vertical, en columnas que 
 
 ## Traducir con el motor a la vista
 
-Como las páginas se componen mientras escribes, una traducción se puede juzgar a medida que se escribe. Una frase alemana un tercio más larga que su original inglés enseña enseguida lo que cuesta: una columna que se pasa una línea o un título que ya no cabe en su banda. Cada edición de esta guía se compuso página a página con el panel Revisión abierto, leyendo las columnas en busca de huecos y de finales cortos, como lo haría a mano un cajista.
+Como las páginas se componen mientras escribes, una traducción se puede juzgar a medida que se escribe. Una frase alemana un tercio más larga que su original inglés enseña enseguida lo que cuesta: una columna que se pasa una línea o un título que ya no cabe en su banda.
 
 :::callout{type="try"}
 Abre el panel Libros y cambia el idioma de esta guía con los botones de su fila. Después abre el panel Diseño, pon el selector de su cabecera en el idioma actual y lee la lista de lo que esta edición fija por su cuenta.
@@ -632,13 +614,13 @@ Los capítulos anteriores componen texto en columnas que pasan de página en pá
 
 :index{term="páginas compuestas"}Una **plantilla de página** forma parte de la configuración:index{term="plantillas de página"}, bajo \`pageTemplates\`. Nombra un conjunto de **marcos**: rectángulos situados en la página por un ancla y un desplazamiento o por una celda de una retícula, con un ancho, un alto y un estilo de caja tomado de los estilos de recuadro del libro. Un marco puede ser tan alto como su contenido, fijo, o llegar hasta el borde de la página; los marcos pueden apilarse o ponerse en fila como un **grupo**, de modo que cuando uno crece los demás se mueven con él. Una plantilla lleva además una **decoración**: filetes, bandas, imágenes y textos breves que se colocan cuando los marcos ya están en su sitio, de modo que una banda puede colgar de un recuadro y seguirlo.
 
-En una plantilla no vive ninguna palabra. Un marco tiene un nombre, un tamaño y un aspecto; el título que imprime, el texto que contiene y la imagen que enmarca vienen de la página que lo usa. Por eso las diez ediciones de esta guía comparten una sola plantilla para la página que cierra este capítulo: cada una llena los mismos marcos con sus propias palabras.
+En una plantilla no vive ninguna palabra. Un marco tiene un nombre, un tamaño y un aspecto; el título que imprime, el texto que contiene y la imagen que enmarca vienen de la página que lo usa. Por eso las diez ediciones de esta guía comparten una sola plantilla para la hoja de consulta rápida que cierra el libro, antes del índice analítico: cada una llena los mismos marcos con sus propias palabras.
 
 ## Llenar los marcos desde el Markdown
 
-Una página compuesta es un bloque de cuatro dos puntos que nombra su plantilla. Dentro de él, \`:::frame{slot="…"}\` manda su contenido al marco de ese nombre, y un título, un recurso o un recuadro pueden nombrar un marco propio. El contenido que no nombra ninguno va al marco que la plantilla señala como marco de **flujo**, y el primer título va al marco que recoge los títulos de su nivel. La última página de este capítulo se escribió así, y su Markdown se lee como el de cualquier otro capítulo.
+Una página compuesta es un bloque de cuatro dos puntos que nombra su plantilla. Dentro de él, \`:::frame{slot="…"}\` manda su contenido al marco de ese nombre, y un título, un recurso o un recuadro pueden nombrar un marco propio. El contenido que no nombra ninguno va al marco que la plantilla señala como marco de **flujo**, y el primer título va al marco que recoge los títulos de su nivel. La hoja de consulta rápida del final del libro se escribió así, y su Markdown se lee como el de cualquier otro capítulo.
 
-:::callout{type="note" title="El bloque de la última página"}
+:::callout{type="note" title="El bloque de la hoja de consulta rápida"}
 \`::::page{template="sheet"}\` lo abre y \`::::\` lo cierra. Entre ambos van un título, un párrafo para el marco de flujo, seis bloques \`:::frame\` para las tarjetas y uno para la clave al pie de la página. Las posiciones, los tamaños y los colores están en la plantilla, en Diseño › Página y columnas › Plantillas de página.
 :::
 
@@ -665,42 +647,8 @@ Las plantillas se editan en el panel Diseño, donde cada una se dibuja con sus m
 También existe el camino inverso. Una página maquetada a mano puede guardarse como plantilla, y un libro cuyos estilos antiguos guardaban sus palabras puede llevarlas al Markdown, donde deben estar, con una sola orden para todo el libro.
 
 :::callout{type="try"}
-Pasa la vista previa al modo Diseño, ve a la última página de este capítulo y arrastra hacia abajo una de las tarjetas. El Sandbox pregunta si cambiar la plantilla o solo esta página; elige solo esta página y abre el panel Texto para ver que el bloque nombra ahora una plantilla nueva.
+Pasa la vista previa al modo Diseño, ve a la hoja de consulta rápida, justo antes del índice analítico, y arrastra hacia abajo una de las tarjetas. El Sandbox pregunta si cambiar la plantilla o solo esta página; elige solo esta página y abre el panel Texto para ver que el bloque nombra ahora una plantilla nueva.
 :::
-
-::::page{template="sheet"}
-## Postext en una página
-
-Postext compone libros a partir de dos entradas: un Markdown que dice qué es el texto y una configuración que dice cómo se ve. Si cambia cualquiera de las dos, las páginas se componen de nuevo, en el navegador, en una fracción de segundo.
-
-:::frame{slot="card" label="Escribir"}
-Markdown y unas pocas directivas: \`:::callout\` para un recuadro, \`:ref\` para una figura, \`[^id]\` para una nota, \`::::page\` para una página como esta. El texto nunca dice dónde va nada.
-:::
-
-:::frame{slot="card" label="Diseñar"}
-Más de quinientos ajustes en el panel Diseño: la página y sus columnas, la letra, los recuadros, las aperturas, las cabeceras y una paleta que cada parte puede cambiar.
-:::
-
-:::frame{slot="card" label="Componer"}
-Cada párrafo cortado entero, columnas que acaban a la par, figuras en el primer hueco tras su mención y un libro recompuesto hasta que sus folios se asientan.
-:::
-
-:::frame{slot="card" label="Revisar"}
-El panel Revisión lista lo que ha visto el motor: una línea floja, una fuente que falta, un color muy pálido, una imagen sin resolución para imprenta. Un clic lleva a la línea.
-:::
-
-:::frame{slot="card" label="Publicar"}
-Una maquetación, cinco salidas: el canvas, HTML para la pantalla, un PDF para imprenta o biblioteca, EPUB para lectores electrónicos y un paquete SCORM para un curso.
-:::
-
-:::frame{slot="card" label="Compartir"}
-Un libro viaja en un archivo .postext con capítulos, diseño, imágenes y fuentes. La línea de comandos lo compone en un servidor; el Sandbox lo abre en cualquier navegador.
-:::
-
-:::frame{slot="key" label="Teclas"}
-Esta hoja es una página compuesta: una plantilla con un título, un marco de flujo, una retícula de tarjetas y un recuadro al pie, llena con el Markdown de este capítulo. En el editor, :chip[⌘ Z] deshace y :chip[⌘ F] busca; :chip[Esc] cierra un diálogo.
-:::
-::::
 
 # Cómics y partituras {#comics lead="Hay libros que hablan con imágenes y otros con notas. Un cómic es un conjunto de dibujos y un guion; una partitura es música escrita como texto. En los dos casos Postext guarda las palabras en el Markdown y se encarga él mismo de rotular y de grabar." summary="Viñetas, bocadillos, rotulación, tiras y notación musical"}
 
@@ -839,6 +787,10 @@ Conviene conocer algunos detalles. Las líneas consecutivas de un párrafo se un
 
 Parte de Markdown se deja fuera a propósito, porque un libro tiene otras formas de decirlo: las imágenes son recursos y no dibujos en línea, las tablas son recursos con un modelo y no tablas de barras, y el HTML en bruto no significa nada en una página impresa. Los enlaces funcionan en la vista HTML y en el PDF, y el código en línea entre comillas invertidas se compone con la letra de código del libro, como la sintaxis que cita este libro.
 
+## Resaltados, versalitas y tabuladores
+
+Otras tres marcas cambian el aspecto de las palabras sin sacarlas de la línea. \`:mark[…]\` tiende una banda de color detrás de una frase, :mark[como subraya un libro de texto lo que importa], y las palabras que cubre se siguen cortando, dividiendo y justificando como las de alrededor, así que marcar un libro terminado no mueve ninguna de sus páginas. \`:smallcaps[…]\` compone las minúsculas como versalitas, como el nombre de :smallcaps[Hamlet] en el reparto de una obra o una sigla como :smallcaps[unesco], tomadas de las mayúsculas de la propia fuente y dibujadas igual en todas las salidas. Y \`:tab\` lleva el resto de una línea hasta un tope que fija la configuración: un precio al final de la medida tras una fila de puntos, o la puntuación de una pregunta de examen en el margen.
+
 ## Directivas y contenedores
 
 Todo lo demás se expresa con un pequeño vocabulario de directivas, recogido en :ref{id="document-format"}. Las directivas de una línea empiezan con tres dos puntos y actúan en el punto donde aparecen. Los contenedores envuelven bloques entre una línea de apertura con atributos y una línea de cierre con tres dos puntos; se pueden anidar, y uno sin cerrar se cierra al final del capítulo, con un aviso.
@@ -861,13 +813,27 @@ Las obras se citan como las escribe Pandoc, \`[@garcia2020, pág. 33]\` o \`@gar
 
 Las matemáticas se escriben en notación LaTeX. Las fórmulas en línea van entre signos de dólar sencillos, en mitad de una frase; las fórmulas destacadas van entre dobles signos de dólar, en una línea propia o como un bloque de varias líneas. Un signo de dólar que deba imprimirse como tal se escapa con una barra invertida. Una fórmula que nunca se cierra, o que MathJax no puede leer, se señala en el panel Revisión y se sustituye en la página por un marcador rojo, para que no pueda colarse sin que nadie lo note en el PDF.
 
+## Código
+
+Un fragmento de código más largo es un **listado**, escrito entre dos líneas de tres comillas invertidas. Todo lo que va dentro se conserva tal como se escribió, espacios y líneas en blanco incluidos, y nada se lee como Markdown. La palabra que sigue a las comillas de apertura nombra el lenguaje, y el motor colorea las palabras clave, las cadenas, los números y los comentarios de una docena de ellos; los atributos añaden un título, números de línea y un fondo detrás de las líneas que importan:
+
+\`\`\`js {title="chapter.js" lineNumbers highlight="4"}
+import { buildDocument } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+const doc = buildDocument(markdown, config);
+const pdf = await renderToPdf(doc, { fontProvider });
+\`\`\`
+
+Una línea más ancha que su columna sigue en la línea siguiente bajo una pequeña marca, o el listado entero se compone algo más pequeño, o la línea se corta en el borde, según diga el estilo del código, en Diseño › Tipografía › Código. Un listado largo se parte entre líneas como un recuadro, sin dejar nunca menos de dos líneas a cada lado, y un bloque de código también puede ocupar el ancho de la página o flotar hasta la cabeza o el pie de una columna.
+
 ## Estilos de párrafo
 
-\`:::paragraphs{style="…"}\` aplica un estilo de párrafo con nombre a los párrafos que envuelve: un epígrafe, una dedicatoria, una bibliografía, un colofón. Un estilo puede cambiar el tipo de letra, el cuerpo, el interlineado, el color, la alineación —también centrada y a la derecha—, la sangría y el espaciado. El colofón del dorso de la cubierta de este libro es uno.
+\`:::paragraphs{style="…"}\` aplica un estilo de párrafo con nombre a los párrafos que envuelve: un epígrafe, una dedicatoria, una bibliografía, un colofón. Un estilo puede cambiar el tipo de letra, el cuerpo, el interlineado, el color, la alineación —también centrada y a la derecha—, la sangría y el espaciado. La firma que cierra el último capítulo de este libro es uno. Un estilo también puede abrir su primer párrafo con una **capitular**, una inicial que ocupa dos o tres líneas, y el atributo \`dropcap\` de un título la activa o la desactiva en el párrafo que lo sigue.
 
 ## Escribir bien para el motor
 
-Unas cuantas costumbres facilitan el trabajo del motor y mejoran las páginas. Introduce cada lista con una frase, para que la lista nunca sea lo primero bajo un título; el panel Revisión puede señalar las que lo son. Mantén los títulos en orden, sin saltarte niveles. Menciona cada figura y cada tabla en el texto, cerca de donde la quieres: la mención decide adónde puede ir el recurso y qué número recibe. Deja la colocación a la configuración salvo que un recurso necesite de verdad una posición propia. Y escribe un texto alternativo para cada figura, porque el PDF accesible se lo ofrece a los lectores que no pueden ver la imagen.
+Unas cuantas costumbres facilitan el trabajo del motor y mejoran las páginas. Introduce cada lista con una frase, para que la lista nunca sea lo primero bajo un título; el panel Revisión puede señalar las que lo son. Mantén los títulos en orden, sin saltarte niveles. Menciona cada figura y cada tabla en el texto, cerca de donde la quieres: la mención decide adónde puede ir el recurso y qué número recibe. Deja la colocación a la configuración salvo que un recurso necesite de verdad una posición propia. Marca los términos del índice donde el texto los trata, no en cualquier sitio donde se nombran. Y escribe un texto alternativo para cada figura, porque el PDF accesible se lo ofrece a los lectores que no pueden ver la imagen.
 
 ## Metadatos
 
@@ -887,7 +853,9 @@ La barra lateral y el visor comparten la ventana, y la frontera entre ambos se p
 
 El editor del panel **Texto** resalta los metadatos y las matemáticas, y su barra de herramientas inserta formato, listas, saltos de página y cambios de numeración. En su cabecera, un **selector de capítulos** recorre los capítulos del libro y muestra sus páginas; cada capítulo conserva su propio historial de deshacer y su cursor. Editor y páginas se siguen en los dos sentidos: hacer clic en una palabra de la página lleva el cursor a ella en el Markdown, y seleccionar texto lo resalta en la página. El panel **Capítulos** muestra el libro abierto de una vez, con sus capítulos en orden y las páginas de cada uno.
 
-El editor vigila además el libro entero. Su menú de capítulos lista cada capítulo con las páginas que ocupa en cuanto se conocen, y pasar a otro capítulo cambia las vistas previas a él. Los capítulos se pueden crear, renombrar, reordenar, dividir por sus títulos de primer nivel o fusionar con el anterior, y el capítulo entero se puede exportar como archivo Markdown o sustituir por uno.
+La barra que hay sobre la vista previa cambia entre dos maneras de trabajar. En el modo **Contenido** se edita el texto, en el panel Texto y sobre las páginas; en el modo **Diseño**, los estilos y las plantillas de página, y un clic en la página elige el estilo o el marco que ha dibujado lo que queda bajo el puntero. Un segundo clic en el mismo sitio sube un nivel, de una palabra a su párrafo, su recuadro y su página, y :chip[⌘ Z] deshace el último cambio de cualquiera de los dos tipos, una palabra escrita o un ajuste movido, desde un único historial.
+
+El editor vigila además el libro entero. Su menú de capítulos lista cada capítulo con las páginas que ocupa en cuanto se conocen, y pasar a otro capítulo cambia las vistas previas a él. Los capítulos se pueden crear, renombrar, reordenar, dividir por sus títulos de primer nivel o fusionar con el anterior, y el capítulo entero se puede exportar como archivo Markdown o sustituir por uno. Un libro de ciento veinte capítulos funciona como uno corto: el menú los lista bajo sus partes y, a partir de treinta, se abre con un campo de búsqueda que encuentra un capítulo por su número o por una palabra de su título.
 
 ## Configuración
 
@@ -931,31 +899,29 @@ El Sandbox es a su vez un paquete, _postext-sandbox_, un componente de React que
 
 # Salida: canvas, HTML, PDF y EPUB {#output lead="Un árbol, cuatro salidas. El canvas previsualiza, el HTML se lee en pantalla, el PDF va a imprenta y el EPUB va al dispositivo de quien lee, y todas se escriben a partir de la misma maquetación." summary="Los renderizadores, el PDF accesible, los libros EPUB y el uso de la biblioteca"}
 
-Como todos los renderizadores leen el mismo VDT, la promesa de _lo que ves es lo que obtienes_ es literal: los cortes de línea, los límites de página y la posición de cada figura coinciden en el canvas, el HTML y el PDF, y un EPUB de maquetación fija los conserva también. Un EPUB fluido renuncia a la página a propósito y conserva todo lo demás que resolvió la maquetación: los números, las notas, las referencias y los folios impresos. El skill de agente que pasa libros existentes a Postext revisa su trabajo con estas salidas, como muestra :ref{id="skill-tutorial"}.
+Como todos los renderizadores leen el mismo VDT, la promesa de _lo que ves es lo que obtienes_ es literal: los cortes de línea, los límites de página y la posición de cada figura coinciden en el canvas, el HTML y el PDF, y un EPUB de maquetación fija los conserva también. El skill de agente que pasa libros existentes a Postext revisa su trabajo con estas salidas, como muestra :ref{id="skill-tutorial"}.
 
 ## Canvas
 
-El renderizador de canvas dibuja una página en un canvas HTML, a cualquier resolución. En el Sandbox es la vista previa viva, con ampliación, ajuste al ancho o al alto, páginas sueltas o pliegos, y páginas que se dibujan según entran en pantalla, de modo que los libros largos siguen respondiendo.
-
-Las imágenes de los recursos se registran en el renderizador una sola vez, por identificador de archivo, y se reutilizan en todas las páginas. Las páginas pueden dibujarse en cualquier canvas a cualquier escala, lo que hace útil el mismo renderizador para miniaturas, vistas previas de impresión y exportación a imagen: los ejemplos vivos de la documentación dibujan una página y la convierten en un PNG.
+El renderizador de canvas dibuja una página en un canvas HTML, a cualquier resolución. En el Sandbox es la vista previa viva, con ampliación, ajuste al ancho o al alto, páginas sueltas o pliegos, y páginas que se dibujan según entran en pantalla.
 
 ## HTML
 
-El renderizador HTML devuelve HTML con posicionamiento absoluto y CSS editorial: cada línea donde la puso la maquetación, con su fuente, su cuerpo y su línea base exactos. Una variante indexada indica qué partes de la página han cambiado, para que un visor solo parchee esas. En el Sandbox, la pestaña HTML aísla la salida en un Shadow DOM y añade un modo de lectura con una sola columna que se desplaza o con tantas columnas como quepan en la pantalla, con un control de tamaño de letra. Un conjunto de ajustes solo para pantalla puede adaptar el diseño a la lectura en pantalla sin tocar las páginas impresas.
+El renderizador HTML devuelve HTML con posicionamiento absoluto y CSS editorial: cada línea donde la puso la maquetación, con su fuente, su cuerpo y su línea base exactos. En el Sandbox, la pestaña HTML aísla la salida en un Shadow DOM y añade un modo de lectura con una sola columna que se desplaza o con tantas columnas como quepan en la pantalla, con un control de tamaño de letra. Un conjunto de ajustes solo para pantalla puede adaptar el diseño a la lectura en pantalla sin tocar las páginas impresas.
 
-El renderizador recibe una función que convierte el identificador de archivo de un recurso en una URL, para que las imágenes puedan servirse desde cualquier sitio, y un color de fondo para la página. Su salida es marcado y CSS sin más, sin ningún script, lo que la hace adecuada para alojamiento estático, vistas previas de correo electrónico o almacenamiento en servidor una vez calculada la maquetación en un navegador.
+El renderizador recibe una función que convierte el identificador de archivo de un recurso en una URL, para que las imágenes puedan servirse desde cualquier sitio, y un color de fondo para la página. Su salida es marcado y CSS sin más, sin ningún script, lo que la hace adecuada para alojamiento estático.
 
 ## PDF
 
-:index{term="PDF"}El paquete _postext-pdf_ convierte el VDT en un PDF real, de un documento o de un libro entero. Nunca vuelve a medir: las métricas del canvas son la referencia y el PDF solo las transporta, por eso las líneas se cortan exactamente en los mismos sitios. Incrusta fuentes reales, una estática por peso, así que la negrita es negrita, la cursiva es cursiva y el texto se puede seleccionar. Sobre las páginas añade marcadores a partir de los títulos y las partes, etiquetas de página que coinciden con los folios impresos, referencias pulsables, figuras SVG como vectores y una elección de espacio de color —RGB, CMYK o escala de grises— para la imprenta.
+:index{term="PDF"}El paquete _postext-pdf_ convierte el VDT en un PDF real, de un documento o de un libro entero. Nunca vuelve a medir: las métricas del canvas son la referencia y el PDF solo las transporta, por eso las líneas se cortan exactamente en los mismos sitios. Incrusta fuentes reales, una estática por peso, así que la negrita es negrita, la cursiva es cursiva y el texto se puede seleccionar. Sobre las páginas añade marcadores a partir de los títulos y las partes, etiquetas de página que coinciden con los folios impresos, referencias pulsables y figuras SVG como vectores.
 
-Las fuentes llegan al PDF a través de un **proveedor de fuentes**, una función que devuelve los bytes de una familia en un peso y un estilo dados. El proveedor del Sandbox descarga caras estáticas de Fontsource, un archivo por peso, y las descomprime desde WOFF2; las fuentes propias vienen del panel Fuentes. Los bytes de los recursos se entregan de la misma manera, por identificador de archivo. El renderizado informa de su progreso, se ejecuta en un worker propio cuando se le pide y acepta un libro entero como una lista de documentos de capítulo, del que produce un único PDF con etiquetas de página continuas, marcadores y enlaces. El Sandbox muestra ese progreso en una barra mientras se genera el archivo.
+Las fuentes llegan al PDF a través de un **proveedor de fuentes**, una función que devuelve los bytes de una familia en un peso y un estilo dados. El proveedor del Sandbox descarga caras estáticas de Fontsource, un archivo por peso, y las descomprime desde WOFF2; las fuentes propias vienen del panel Fuentes. El renderizado informa de su progreso, se ejecuta en un worker propio cuando se le pide y acepta un libro entero como una lista de documentos de capítulo, del que produce un único PDF con etiquetas de página continuas, marcadores y enlaces.
 
 ## Accesible por defecto
 
-:index{term="PDF!accesible (PDF/UA)"}Todo PDF sale **etiquetado** por defecto, según la norma PDF/UA-1: un árbol de estructura con títulos, párrafos, listas, tablas y figuras en orden de lectura, texto alternativo para cada figura, el idioma del documento y los elementos decorativos marcados como artefactos para que los lectores de pantalla los salten. La accesibilidad no es una opción de exportación que haya que recordar: es la manera en que se fabrica el archivo.
+:index{term="PDF!accesible (PDF/UA)"}Todo PDF sale **etiquetado** por defecto, según la norma PDF/UA-1: un árbol de estructura con títulos, párrafos, listas, tablas y figuras en orden de lectura, texto alternativo para cada figura, el idioma del documento y los elementos decorativos marcados como artefactos para que los lectores de pantalla los salten.
 
-El etiquetado sigue a la maquetación y no al original. Los párrafos partidos entre columnas y páginas se etiquetan como un solo párrafo, las listas mantienen juntos sus elementos, las tablas conservan sus celdas de cabecera y las figuras llevan su texto alternativo —o su pie, o su etiqueta, cuando no se ha escrito texto alternativo—. El título y el idioma del documento viajan en sus metadatos, las cabeceras y los adornos de página se marcan como artefactos, y las referencias entre el texto y las figuras que menciona son enlaces reales.
+El etiquetado sigue a la maquetación y no al original. Los párrafos partidos entre columnas y páginas se etiquetan como un solo párrafo, las listas mantienen juntos sus elementos, las tablas conservan sus celdas de cabecera y las figuras llevan su texto alternativo —o su pie, o su etiqueta, cuando no se ha escrito texto alternativo—. El título y el idioma del documento viajan en sus metadatos, y las referencias entre el texto y las figuras que menciona son enlaces reales.
 
 ## Color para imprenta
 
@@ -963,41 +929,33 @@ Los colores de la configuración se escriben como valores hexadecimales, opciona
 
 ## Libros enteros
 
-El PDF de un libro no es una concatenación de archivos sueltos. El renderizador recibe la maquetación de cada capítulo y escribe un único documento: las etiquetas de página continúan de un capítulo a otro, los marcadores forman un solo árbol con las partes por encima de sus capítulos, y la estructura accesible del libro entero es un único árbol en orden de lectura. Como cada capítulo se maquetó como continuación de los anteriores, las páginas del capítulo siete en el PDF del libro son exactamente las páginas del capítulo siete impreso por separado.
-
-El Sandbox ofrece las dos cosas: la vista PDF puede alternar entre el capítulo actual, para pruebas rápidas, y el libro completo, para el archivo definitivo. Compilar el libro entero lleva más tiempo, así que se ejecuta en el worker de PDF e informa de su progreso página a página.
+El renderizador recibe la maquetación de cada capítulo y escribe un único documento: las etiquetas de página continúan de un capítulo a otro, los marcadores forman un solo árbol con las partes por encima de sus capítulos, y la estructura accesible del libro entero es un único árbol en orden de lectura.
 
 ## Las fuentes en el PDF
 
-Un PDF vale lo que valen las fuentes que lleva dentro. Postext incrusta cada tipo que ha usado la maquetación —un archivo estático por peso y estilo—, de modo que una palabra en negrita se compone con la negrita real y una cursiva con la cursiva real, nunca con una imitación inclinada o engrosada. Los tipos TrueType se reducen a los glifos que el libro usa de verdad, lo que mantiene los archivos ligeros incluso con cuatro familias; los tipos OpenType con contornos PostScript se incrustan enteros, porque algunos visores no saben leer sus subconjuntos. Cada fuente incrustada lleva un mapa de los glifos a los caracteres, ligaduras incluidas, de modo que al copiar una frase del PDF se obtiene la frase que se escribió, y al buscar en el documento se encuentran todas las palabras.
+Postext incrusta cada tipo que ha usado la maquetación —un archivo estático por peso y estilo—, de modo que una palabra en negrita se compone con la negrita real y una cursiva con la cursiva real, nunca con una imitación inclinada o engrosada. Los tipos TrueType se reducen a los glifos que el libro usa de verdad; los tipos OpenType con contornos PostScript se incrustan enteros, porque algunos visores no saben leer sus subconjuntos. Cada fuente incrustada lleva un mapa de los glifos a los caracteres, ligaduras incluidas, de modo que al copiar una frase del PDF se obtiene la frase que se escribió.
 
-Las familias llegan de donde el Sandbox las encontró. Las de Google Fonts se descargan tipo a tipo desde Fontsource y se descomprimen al vuelo; las que se suben en el panel de Fuentes se incrustan a partir de los archivos que les diste. Una familia disponible solo en WOFF no se admite en el PDF, porque ese formato no se puede incrustar con garantías; WOFF2, TrueType y OpenType funcionan.
+Una familia disponible solo en WOFF no se admite en el PDF, porque ese formato no se puede incrustar con garantías; WOFF2, TrueType y OpenType funcionan.
 
 ## EPUB 3
 
-:index{term="EPUB"}El paquete _postext-epub_ escribe un libro maquetado como archivo EPUB 3, el formato de las tiendas de libros electrónicos, las bibliotecas y las aplicaciones de lectura. Lee los mismos documentos de capítulo que el PDF de un libro entero, así que los folios, las notas, las citas, las referencias cruzadas, el índice general y el analítico llegan resueltos, y devuelve el archivo como bytes, en el navegador o en Node, sin servidor. EPUB define dos maquetaciones, comparadas en :ref{id="epub-renditions"}, y el generador produce cualquiera de las dos a partir de la misma maquetación.
+:index{term="EPUB"}El paquete _postext-epub_ escribe un libro maquetado como archivo EPUB 3, el formato de las tiendas de libros electrónicos, las bibliotecas y las aplicaciones de lectura. Lee los mismos documentos de capítulo que el PDF de un libro entero, así que los folios, las notas, las citas, las referencias cruzadas, el índice general y el analítico llegan resueltos, y devuelve el archivo como bytes, en el navegador o en Node, sin servidor. EPUB define dos maquetaciones, comparadas en :ref{id="epub-renditions"}.
 
-La **maquetación fija** conserva la página impresa. Cada página se convierte en un documento propio, del tamaño de la página, con el texto donde lo pone el PDF y en las fuentes del libro, de modo que se mantienen las columnas, los flotantes, las cabeceras, las aperturas y todos los cortes de línea. El texto sigue siendo texto: se puede seleccionar, buscar y leer en voz alta, y los enlaces del libro funcionan entre páginas —referencias cruzadas, notas, el índice impreso y el analítico—. Los pliegos se emparejan como en papel, y un libro encuadernado a la derecha, en árabe o en chino vertical, se pasa de derecha a izquierda. Conviene a los libros cuyas páginas están diseñadas como páginas —un libro ilustrado, un manual, un catálogo, una revista— leídos en una pantalla grande; en un móvil, la página se reduce y quien lee tiene que ampliarla.
+La **maquetación fija** conserva la página impresa. Cada página se convierte en un documento propio, del tamaño de la página, con el texto donde lo pone el PDF y en las fuentes del libro, de modo que se mantienen las columnas, los flotantes, las cabeceras, las aperturas y todos los cortes de línea. El texto sigue siendo texto: se puede seleccionar, buscar y leer en voz alta, y los enlaces del libro funcionan entre páginas. Los pliegos se emparejan como en papel, y un libro encuadernado a la derecha, en árabe o en chino vertical, se pasa de derecha a izquierda. Conviene a los libros cuyas páginas están diseñadas como páginas —un libro ilustrado, un manual, un catálogo, una revista— leídos en una pantalla grande.
 
 ## Libros fluidos
 
-La **maquetación fluida** renuncia a la página y conserva el texto. Cada capítulo se convierte en un documento que el sistema de lectura compone de nuevo para su pantalla, con el tipo de letra, el tamaño y los márgenes que elige quien lee. El generador no vuelve al Markdown: reconstruye cada párrafo a partir de las líneas que compuso el motor, quita los guiones que añadieron los cortes de línea y conserva los que pertenecen a la palabra, de modo que un párrafo repartido entre dos columnas o dos páginas vuelve a ser un solo párrafo. Las figuras y las tablas siguen al texto que las cita, con sus pies numerados y su texto alternativo; las tablas siguen siendo tablas de verdad, con filas de encabezado y celdas combinadas; los recuadros se convierten en apartes con su título, y las notas enlazan con el final del capítulo y vuelven. Cada página impresa deja una marca donde empieza su texto, de modo que se puede encontrar la página 112 de la edición impresa, y el índice analítico apunta a esas marcas.
+La **maquetación fluida** renuncia a la página y conserva el texto. Cada capítulo se convierte en un documento que el sistema de lectura compone de nuevo para su pantalla, con el tipo de letra, el tamaño y los márgenes que elige quien lee. El generador no vuelve al Markdown: reconstruye cada párrafo a partir de las líneas que compuso el motor, quita los guiones que añadieron los cortes de línea y conserva los que pertenecen a la palabra. Las figuras y las tablas siguen al texto que las cita, con sus pies numerados y su texto alternativo; las tablas siguen siendo tablas de verdad, con filas de encabezado y celdas combinadas; los recuadros se convierten en apartes con su título, y las notas enlazan con el final del capítulo y vuelven. Cada página impresa deja una marca donde empieza su texto, de modo que se puede encontrar la página 112 de la edición impresa, y el índice analítico apunta a esas marcas.
 
-El aspecto sale de la configuración. Una hoja de estilos derivada de ella da a los títulos, los recuadros, las tablas, los pies y las listas sus tamaños y sus colores, relativos al cuerpo del texto, para que el tamaño que elige quien lee se aplique a todo. Los párrafos compuestos con un estilo de párrafo lo conservan, porque la maquetación anota qué estilo compuso cada bloque, y los niveles del índice analítico se distinguen de la misma manera; un capítulo configurado de otro modo, o una parte que cambia los colores del libro, añade una segunda hoja con solo las reglas que cambian. Un destacado repite palabras del texto, así que se muestra pero queda oculto para los lectores de pantalla y la lectura en voz alta, y sus palabras se leen una sola vez. El chino vertical conserva sus líneas verticales, y un libro árabe va de derecha a izquierda.
+El aspecto sale de la configuración. Una hoja de estilos derivada de ella da a los títulos, los recuadros, las tablas, los pies y las listas sus tamaños y sus colores, relativos al cuerpo del texto, para que el tamaño que elige quien lee se aplique a todo. Los párrafos compuestos con un estilo de párrafo lo conservan.
 
-Las dos maquetaciones llevan la misma navegación: una tabla de contenidos a partir de los títulos y las partes, una lista de los folios impresos y puntos de referencia para la cubierta, el índice impreso y el comienzo del texto. Se incrustan todas las familias que nombra el diseño, salvo las marcadas como no redistribuibles, y cada imagen va una sola vez. Las dos llevan los metadatos de EPUB Accessibility 1.1 y las dos pasan EPUBCheck, el validador del W3C que aplican las tiendas a los archivos que reciben, sin errores ni avisos, tanto esta guía como todos los libros de ejemplo. En el Sandbox, la pestaña **EPUB 3** escribe el archivo en un worker, de modo que la página sigue respondiendo mientras se escribe un libro largo.
-
-## Elegir una salida
-
-Las cuatro salidas comparten la maquetación, pero sirven a momentos distintos de la vida de un libro. El **canvas** es la vista de trabajo: rápida, fiel, la que el Sandbox mantiene abierta mientras escribes y diseñas. El **HTML** sirve para leer en pantalla y para publicar dentro de una aplicación web: las mismas páginas como marcado posicionado, o el texto reorganizado en los modos de lectura del visor, aislado de los estilos de la página que lo rodea. El **PDF** es el objeto terminado: el archivo que va a la imprenta, a un archivo o al dispositivo de un lector, etiquetado, con marcadores y con búsqueda. El **EPUB** es para los lectores de libros electrónicos y las tiendas: maquetación fija cuando lo que importa es la página, fluida cuando lo que importa es el texto.
-
-Nada obliga a elegir entre ellas. Un libro puede escribirse en el Sandbox con el canvas abierto, revisarse en el visor HTML por alguien que lee en el móvil y enviarse esa misma tarde a imprenta como PDF y a una tienda como EPUB, desde la misma fuente y la misma configuración, sin que ninguna salida se aparte de las otras.
+Las dos maquetaciones llevan la misma navegación: una tabla de contenidos a partir de los títulos y las partes, una lista de los folios impresos y puntos de referencia para la cubierta, el índice impreso y el comienzo del texto. Se incrustan todas las familias que nombra el diseño, salvo las marcadas como no redistribuibles. Las dos llevan los metadatos de EPUB Accessibility 1.1 y las dos pasan EPUBCheck, el validador del W3C, sin errores ni avisos. En el Sandbox, la pestaña **EPUB 3** escribe el archivo en un worker.
 
 ## Usar la biblioteca
 
-El motor se distribuye en npm como _postext_, para la maquetación y los renderizadores de canvas y HTML, con un paquete para cada salida más pesada: _postext-pdf_ para el PDF, _postext-epub_ para el EPUB 3 y _postext-folio_ para el libro en 3D. Todos son módulos ES con licencia MIT y también se pueden importar directamente desde una CDN. La documentación incluye ejemplos vivos que convierten una página en imagen, en HTML y en PDF, listos para copiar y modificar.
+El motor se distribuye en npm como _postext_, para la maquetación y los renderizadores de canvas y HTML, con un paquete para cada salida más pesada: _postext-pdf_ para el PDF, _postext-epub_ para el EPUB 3 y _postext-folio_ para el libro en 3D. Todos son módulos ES con licencia MIT y también se pueden importar directamente desde una CDN.
 
-El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ y _postext-epub_ también se ejecutan en el navegador, y además en Node, de modo que un PDF o un EPUB pueden producirse en un servidor a partir de una maquetación calculada en otro sitio. Un libro entero viaja igual: \`openBundle\` lee un archivo .postext, \`buildBundle\` maqueta sus capítulos en orden y el resultado pasa directamente a \`renderToPdf\` o a \`renderToEpub\`. Los paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF. La documentación recorre todo el camino, desde instalar los paquetes hasta un primer PDF.
+El motor de maquetación se ejecuta en el navegador, donde puede medir con las fuentes que ve el lector; _postext-pdf_ y _postext-epub_ también se ejecutan en el navegador, y además en Node. Un libro entero viaja igual: \`openBundle\` lee un archivo .postext, \`buildBundle\` maqueta sus capítulos en orden y el resultado pasa directamente a \`renderToPdf\` o a \`renderToEpub\`. Los paquetes son solo módulos ES, con los tipos de TypeScript incluidos, y algunos empaquetadores necesitan un ajuste de una línea para el descompresor WOFF2 que usa el paquete de PDF.
 
 :::callout{type="note" title="Cuatro pasos" placement="top"}
 1. Carga las fuentes que nombra la configuración, para que el navegador pueda medirlas
@@ -1006,33 +964,31 @@ El motor de maquetación se ejecuta en el navegador, donde puede medir con las f
 4. Para imprenta, pasa el mismo documento a \`renderToPdf\` con un proveedor de fuentes; para un libro electrónico, pasa los capítulos a \`renderToEpub\`
 :::
 
-El motor y su renderizador de PDF se publican juntos, con el mismo número de versión, para que los dos coincidan siempre en la forma de la maquetación que comparten. El generador de EPUB y el visor Folio llevan su propia numeración y declaran el motor como dependencia de par, así que un proyecto los actualiza a la vez.
-
 ## Páginas como imágenes, desde un script
 
-Una página no necesita un navegador para convertirse en imagen. El renderizador de canvas dibuja en cualquier canvas que hable la interfaz de dibujo del navegador, y en Node lo hace un canvas precompilado: se maqueta el libro, se dibuja la página y se codifica como JPEG o PNG. Así revisa su propio trabajo el skill de agente que adapta libros existentes a Postext. Tras cada cambio en la configuración o en el texto vuelve a maquetar el libro, dibuja solo las páginas en las que está trabajando y las lee como imágenes, en un segundo o dos, sin generar un PDF ni recortar imágenes de él. El PDF se genera al final, para las comprobaciones que solo un PDF puede responder: las fuentes incrustadas, las imágenes a su resolución, la estructura etiquetada.
+Una página no necesita un navegador para convertirse en imagen. El renderizador de canvas dibuja en cualquier canvas que hable la interfaz de dibujo del navegador, y en Node lo hace un canvas precompilado: se maqueta el libro, se dibuja la página y se codifica como JPEG o PNG. Así revisa su propio trabajo el skill de agente que adapta libros existentes a Postext. Tras cada cambio en la configuración o en el texto vuelve a maquetar el libro, dibuja solo las páginas en las que está trabajando y las lee como imágenes. El PDF se genera al final, para las comprobaciones que solo un PDF puede responder: las fuentes incrustadas, las imágenes a su resolución, la estructura etiquetada.
 
 En :ref{id="skill-tutorial"} se ve el skill de principio a fin: recibe el PDF de referencia, las fuentes y las ilustraciones originales, propone una ficha de especificaciones, compone el primer capítulo y revisa cada página que compone.
 
 # Pruebas e imprenta {#press lead="Una imprenta hace preguntas distintas de las de un lector. ¿Tiene cada imagen nitidez suficiente a su tamaño impreso, usa una sola tinta el negro del texto, pasa la ilustración más allá del corte? Postext las responde antes de que el archivo salga del navegador." summary="Revisión, contraste, color ICC, PDF/X, el negro y el preflight"}
 
-Un libro se termina dos veces. Está terminado para el lector cuando el texto es correcto y las páginas se ven como deben; está terminado para la imprenta cuando el archivo cumple las reglas de la máquina que lo va a imprimir. Lo primero se juzga en pantalla; lo segundo, en un departamento de preimpresión con una lista de comprobación. Postext guarda las dos listas en el mismo sitio, para que un problema se vea cuando todavía hay tiempo de arreglarlo en el Markdown o en la configuración, y no en una llamada de la imprenta.
+Un libro se termina dos veces. Está terminado para el lector cuando el texto es correcto y las páginas se ven como deben; está terminado para la imprenta cuando el archivo cumple las reglas de la máquina que lo va a imprimir. Postext guarda las dos listas en el mismo sitio.
 
 ## El panel Revisión
 
-:index{term="panel Revisión"}Todo lo que nota el motor se reúne en el panel **Revisión**, ordenado como lo atendería un editor de producción: primero las fuentes, después las figuras y las tablas, el texto y el marcado, el diseño, el contraste, la composición, el preflight y el navegador. Cada entrada indica su capítulo y su línea, y un clic lleva hasta ella; cuando no hay nada mal, el panel dice _Todo en orden_. Qué comprobaciones se hacen es un ajuste, en Diseño › Avanzado › Avisos, de modo que un libro puede silenciar un aviso que acepta a propósito.
+:index{term="panel Revisión"}Todo lo que nota el motor se reúne en el panel **Revisión**, ordenado como lo atendería un editor de producción: primero las fuentes, después las figuras y las tablas, el texto y el marcado, el diseño, el contraste, la composición, el preflight y el navegador. Cada entrada indica su capítulo y su línea, y un clic lleva hasta ella. Qué comprobaciones se hacen es un ajuste, en Diseño › Avanzado › Avisos.
 
 Algunas comprobaciones tratan del texto: una línea floja, un nivel de título que se salta, una directiva desconocida, un recuadro demasiado alto para su columna. Otras tratan del diseño y vienen de las **reglas de composición**, descritas en :ref{id="columns"}, que una configuración pone en _allow_, _warn_ o _avoid_. Una regla en _warn_ deja la página como está y añade una entrada; en _avoid_, el motor cambia la página y no se avisa de nada.
 
 ## Contraste
 
-:index{term="contraste"}El color de una página es cuestión de legibilidad antes que de gusto. La comprobación de contraste mide cada par de colores de texto y de fondo que usa el libro, incluido el texto de los recuadros, los pies, las cabeceras y los diseños, y señala los pares que quedan por debajo del nivel pedido: AA o el más exigente AAA de las pautas de accesibilidad. Puede juzgar los colores tal como los muestra una pantalla, tal como se imprimirán o de las dos maneras. En el panel Diseño, cada campo de color muestra su contraste más bajo junto a la muestra, de modo que un cambio de paleta enseña lo que cuesta antes de maquetar nada.
+:index{term="contraste"}La comprobación de contraste mide cada par de colores de texto y de fondo que usa el libro, incluido el texto de los recuadros, los pies, las cabeceras y los diseños, y señala los pares que quedan por debajo del nivel pedido: AA o el más exigente AAA de las pautas de accesibilidad. En el panel Diseño, cada campo de color muestra su contraste más bajo junto a la muestra.
 
-La impresión añade un problema que una pantalla nunca tiene. Un texto blanco calado sobre una banda oscura se imprime como la ausencia de cuatro tintas superpuestas, y los trazos finos se cierran en cuanto el registro de la máquina se desvía un pelo. La comprobación señala el texto calado demasiado pequeño o demasiado fino para la imprenta, el tipo de defecto que se ve bien en un monitor y se empasta en el papel.
+La impresión añade un problema que una pantalla nunca tiene. Un texto blanco calado sobre una banda oscura se imprime como la ausencia de cuatro tintas superpuestas, y los trazos finos se cierran en cuanto el registro de la máquina se desvía un pelo. La comprobación señala el texto calado demasiado pequeño o demasiado fino para la imprenta.
 
 ## Un color que entienda la imprenta
 
-Una pantalla mezcla luz; una máquina de imprimir deposita tinta. Los colores de una configuración se escriben para la pantalla, y de camino a la imprenta hay que convertirlos a las cuatro tintas de la condición de impresión: un papel, una máquina y una norma concretos. Esa conversión es lo que describe un **perfil ICC**:index{term="perfiles ICC"}, y Postext lleva quince, de FOGRA39 y FOGRA51 para papel estucado en Europa a GRACoL y SWOP para Norteamérica, con FOGRA39 por defecto. Una editorial con un perfil propio puede subir el archivo y dar nombre a su condición de impresión.
+Los colores de una configuración se escriben para la pantalla, y de camino a la imprenta hay que convertirlos a las cuatro tintas de la condición de impresión: un papel, una máquina y una norma concretos. Esa conversión es lo que describe un **perfil ICC**:index{term="perfiles ICC"}, y Postext lleva quince, de FOGRA39 y FOGRA51 para papel estucado en Europa a GRACoL y SWOP para Norteamérica, con FOGRA39 por defecto.
 
 La conversión la hace el propio Postext, en el navegador, con un propósito de conversión, relativo o perceptual, y compensación del punto negro. Las imágenes también se pueden convertir, de modo que una fotografía del PDF ya está en las tintas de la imprenta, y un **límite de tinta** pone tope a la cobertura total de las cuatro tintas donde el papel no llegaría a secarse. Los ajustes de impresión nunca mueven una línea: la maquetación los ignora, y solo actúan en el PDF, en la simulación de impresión y en el preflight.
 
@@ -1040,15 +996,15 @@ La conversión la hace el propio Postext, en el navegador, con un propósito de 
 
 Las imprentas piden **PDF/X**:index{term="PDF!PDF/X"} porque elimina las conjeturas. Un archivo PDF/X dice para qué condición de impresión se hizo, incrusta todas las fuentes, lleva sus cajas de corte y de sangrado y deja fuera todo lo que una máquina no puede usar, como los enlaces. Postext escribe las dos versiones que más piden las imprentas. PDF/X-1a es la conservadora: solo cuatro tintas y gris, sin transparencias. PDF/X-4 conserva las transparencias y es hoy la elección habitual. Cualquiera de las dos se elige en Diseño › Exportación › Preparación para imprenta, o con la opción \`--pdfx\` de la línea de comandos.
 
-Un libro para imprimir necesita además **sangrado**:index{term="sangrado"}: las imágenes y las bandas que salen de la página deben pasar unos milímetros del corte, para que una cuchilla un pelo desviada nunca deje un borde blanco. Los ajustes de líneas de corte añaden el sangrado y dibujan marcas de corte en las esquinas, en el color de registro, que se imprime en todas las planchas. Esta guía se compone con sangrado: su cubierta, las bandas de sus capítulos y sus portadillas de parte pasan todas del corte.
+Un libro para imprimir necesita además **sangrado**:index{term="sangrado"}: las imágenes y las bandas que salen de la página deben pasar unos milímetros del corte, para que una cuchilla un pelo desviada nunca deje un borde blanco. Los ajustes de líneas de corte añaden el sangrado y dibujan marcas de corte en las esquinas.
 
 ## El negro
 
-El negro es el color que más preocupa a una imprenta. El texto del cuerpo debería imprimirse solo con tinta negra, porque un texto compuesto en cuatro tintas se emborrona en cuanto las planchas se desplazan. Los grises y los negros pueden limitarse a la tinta negra, y el negro sólido puede **sobreimprimirse**, encima de lo que tiene debajo, para que nunca aparezca un fino hilo blanco alrededor de una letra negra sobre una banda de color. Las masas grandes de negro son el caso contrario: una sola tinta se ve lavada, así que un **negro enriquecido** añade:index{term="negro enriquecido"} debajo las otras tres tintas, a partir de un tamaño al que el texto nunca llega. El texto nunca pasa a negro enriquecido.
+El texto del cuerpo debería imprimirse solo con tinta negra, porque un texto compuesto en cuatro tintas se emborrona en cuanto las planchas se desplazan. Los grises y los negros pueden limitarse a la tinta negra, y el negro sólido puede **sobreimprimirse**, encima de lo que tiene debajo, para que nunca aparezca un fino hilo blanco alrededor de una letra negra sobre una banda de color. Las masas grandes de negro son el caso contrario: una sola tinta se ve lavada, así que un **negro enriquecido** añade:index{term="negro enriquecido"} debajo las otras tres tintas, a partir de un tamaño al que el texto nunca llega.
 
 ## Preflight
 
-:index{term="preflight"}Antes de que un archivo vaya a máquina, preimpresión hace un **preflight**: una lectura mecánica de cada página frente a las reglas del trabajo. Postext hace el suyo siempre que un libro está preparado para imprenta, con una norma PDF/X, un PDF en CMYK o marcas de corte, y enumera lo que encuentra en el panel Revisión, primero lo crítico. Señala las imágenes por debajo de 300 píxeles por pulgada a su tamaño impreso, y como críticas las que bajan de 150; las imágenes que siguen en RGB; los filetes más finos que un cuarto de punto; el texto pequeño en varias tintas; la tinta por encima del límite; el texto demasiado cerca del corte; las ilustraciones que se quedan justo antes del corte, cuando deberían mantenerse lejos de él o entrar en el sangrado; y, en un PDF colocado como imagen, las fuentes sin incrustar, el color RGB y las transparencias.
+:index{term="preflight"}Antes de que un archivo vaya a máquina, preimpresión hace un **preflight**: una lectura mecánica de cada página frente a las reglas del trabajo. Postext hace el suyo siempre que un libro está preparado para imprenta, con una norma PDF/X, un PDF en CMYK o marcas de corte, y enumera lo que encuentra en el panel Revisión. Señala las imágenes por debajo de 300 píxeles por pulgada a su tamaño impreso, y como críticas las que bajan de 150; las imágenes que siguen en RGB; los filetes más finos que un cuarto de punto; el texto pequeño en varias tintas; la tinta por encima del límite; el texto demasiado cerca del corte; las ilustraciones que se quedan justo antes del corte, cuando deberían mantenerse lejos de él o entrar en el sangrado.
 
 El mismo preflight funciona fuera del Sandbox. La orden \`check\` de la línea de comandos termina con un código de error cuando encuentra un problema crítico, de modo que una cadena de publicación puede negarse a enviar un archivo que la imprenta devolvería.
 
@@ -1058,13 +1014,11 @@ Abre Diseño › Exportación › Preparación para imprenta, elige PDF/X-4 y ac
 
 ## Una prueba en pantalla
 
-La **simulación de impresión** muestra:index{term="simulación de impresión"} las páginas tal como las imprimirá la máquina. Cada color se separa con el perfil del trabajo y se vuelve a dibujar sobre el blanco del papel, negros enriquecidos incluidos; un libro en escala de grises se muestra solo en tinta negra. Las guías y los contornos desaparecen, y no se vuelve a maquetar nada: la simulación solo repinta. Es un interruptor de la barra de herramientas de la vista Canvas, compartido con la vista Folio, donde las páginas se ven además sobre el papel en que se imprimirá el libro.
-
-Ninguna pantalla es una prueba de contrato, y un libro que importa sigue mereciendo una prueba impresa en el papel adecuado. Pero la simulación descubre pronto las sorpresas habituales: un azul saturado que vira a morado en CMYK, un gris pálido que desaparece, una banda que parecía negra y sale de un marrón turbio.
+La **simulación de impresión** muestra:index{term="simulación de impresión"} las páginas tal como las imprimirá la máquina. Cada color se separa con el perfil del trabajo y se vuelve a dibujar sobre el blanco del papel, negros enriquecidos incluidos; un libro en escala de grises se muestra solo en tinta negra. Es un interruptor de la barra de herramientas de la vista Canvas, compartido con la vista Folio.
 
 ## El PDF accesible y el impreso
 
-El PDF para la imprenta y el PDF para los lectores pueden ser el mismo archivo. La estructura etiquetada que hace accesible un PDF, descrita en :ref{id="output"}, convive sin conflicto con las reglas de PDF/X; solo se pierden los enlaces, porque una norma de impresión no los admite. Una editorial que quiera los dos puede exportar el PDF dos veces a partir de la misma maquetación, uno para la imprenta y otro para la biblioteca, y cada línea caerá en el mismo sitio en ambos.
+El PDF para la imprenta y el PDF para los lectores pueden ser el mismo archivo. La estructura etiquetada que hace accesible un PDF, descrita en :ref{id="output"}, convive sin conflicto con las reglas de PDF/X; solo se pierden los enlaces, porque una norma de impresión no los admite.
 
 # El libro en 3D {lead="Una maquetación es un conjunto de páginas, pero un libro es un objeto: un papel de cierto gramaje y color, una encuadernación que abre de cierta manera, un grosor que nota la mano. La vista Folio muestra las páginas como ese objeto antes de imprimir nada." summary="La vista Folio, los papeles, las encuadernaciones, las cubiertas y la luz"}
 
@@ -1080,9 +1034,11 @@ Cada hoja se curva según su papel. El papel biblia, fino, se enrolla en una cur
 
 La vista también se mueve. Arrastrar con el botón derecho del ratón gira alrededor del libro, hasta un ángulo rasante, para ver el lomo, el corte delantero o el grosor del bloque, y se puede hacer mientras las hojas aún están girando. La vista se queda donde se dejó hasta que **Restablecer la vista** la devuelve al ángulo que fijan los ajustes. En una ventana estrecha el libro muestra una página cada vez, y sigue pasando la hoja por encima del lomo; cuando el sistema pide movimiento reducido, los pliegos cambian sin el giro.
 
-Tres botones de la barra de herramientas eligen qué hace el puntero sobre el libro: pasar las páginas a mano, orbitar la vista, que es lo que necesita un trackpad o una tableta en lugar del arrastre con el botón derecho, o seleccionar texto. La selección funciona sobre las páginas tal como se ven, inclinadas o giradas, igual que en la vista canvas: un clic lleva el cursor del editor a esa palabra, un arrastre selecciona, un doble clic toma una palabra y un enlace se sigue. También funciona al revés: el cursor y la selección del editor se dibujan sobre las páginas, y llevar el cursor a una página que no está a la vista pasa el libro hasta ella.
+Cuatro botones de la barra de herramientas, o las teclas H, O, S y M, eligen qué hace el puntero sobre el libro: pasar las páginas a mano, orbitar la vista, que es lo que necesita un trackpad o una tableta en lugar del arrastre con el botón derecho, seleccionar texto o sostener una lupa. La selección funciona sobre las páginas tal como se ven, inclinadas o giradas, igual que en la vista canvas: un clic lleva el cursor del editor a esa palabra, un arrastre selecciona, un doble clic toma una palabra y un enlace se sigue. También funciona al revés: el cursor y la selección del editor se dibujan sobre las páginas, y llevar el cursor a una página que no está a la vista pasa el libro hasta ella.
 
-Los vídeos se reproducen en la página. En el modo de pasar páginas, un clic en la portada de un vídeo lo pone en marcha allí mismo, y sigue mientras la hoja gira. Otro clic lo pausa, empezar otro detiene el anterior, y el vídeo se detiene cuando el libro queda abierto por un pliego que ya no lo muestra. Los de YouTube y Vimeo no se pueden dibujar dentro de la página: un clic en ellos pasa la hoja.
+La **lupa** se sostiene sobre el libro donde está el puntero, o un poco por encima del dedo en una pantalla táctil: una lente redonda con un aro negro que muestra la página como la ve el ojo, iluminada y curvada tal como está, con el mayor aumento en el centro. La rueda y las teclas de más y de menos cambian el aumento, de una vez y media a diez, y Esc la guarda. Con ella se lee una nota al pie o el microtexto de una figura sin salir de la vista.
+
+Los vídeos se reproducen en la página. En el modo de pasar páginas, un clic en la portada de un vídeo lo pone en marcha allí mismo, y sigue mientras la hoja gira. Otro clic lo pausa, empezar otro detiene el anterior, y el vídeo se detiene cuando el libro queda abierto por un pliego que ya no lo muestra. Un vídeo configurado para reproducirse por sí solo empieza la primera vez que aparece su pliego. Los de YouTube y Vimeo no se pueden dibujar dentro de la página: un clic en ellos pasa la hoja.
 
 :::callout{type="try"}
 Abre la pestaña Folio con esta guía, pasa unas cuantas páginas arrastrando sus esquinas y luego gira el libro arrastrando con el botón derecho para ver su pliegue grapado. Restablecer la vista lo devuelve a su sitio.
@@ -1094,11 +1050,11 @@ El papel se elige como lo pediría un impresor: por **tipo**, la clase de papel,
 
 El grosor sale de dos números. La **mano** de un papel, en centímetros cúbicos por gramo, dice cuánto sitio ocupa un gramo de él; el gramaje por la mano da el grosor de una hoja en micras. El bloque de un libro es su número de hojas por ese grosor, y por eso las mismas trescientas páginas hacen un volumen delgado en papel estucado y uno grueso en papel de libro de alta mano. Folio cuenta el libro entero, así que un capítulo mostrado solo sigue entre las páginas anteriores y posteriores, con su grosor real.
 
-La superficie tiene tres ajustes. El **acabado** dice si el papel está sin estucar, con su fibra y sin brillo, o estucado y calandrado hasta un acabado mate, semimate o brillo, que refleja la habitación. La **textura** es el relieve: lisa, el grano fino de la vitela, la trama regular del papel uniforme, las líneas del verjurado, un gofrado de tela o las marcas irregulares del fieltro; su intensidad se puede bajar o subir. El **tono** es el color del papel antes de imprimir, blanco, natural o ahuesado, y la **transparencia** deja ver tenuemente lo impreso en el reverso del papel fino, menos cuanto más pesa el papel.
+La superficie tiene tres ajustes. El **acabado** dice si el papel está sin estucar, con su fibra y sin brillo, o estucado y calandrado hasta un acabado mate, semimate o brillo, que refleja la habitación. La **textura** es el relieve: lisa, el grano fino de la vitela, la trama regular del papel uniforme, las líneas del verjurado, un gofrado de tela o las marcas irregulares del fieltro; su intensidad se puede bajar o subir. El **tono** es el color del papel antes de imprimir, blanco, natural o ahuesado, y la **transparencia** deja ver tenuemente lo impreso en el reverso del papel fino, menos cuanto más pesa el papel. Un periódico no necesita nada de esto: un libro con formato de periódico, sábana, berlinés o tabloide, descansa sobre la mesa como papel prensa doblado, salvo que sus ajustes elijan otro papel y otra encuadernación.
 
 ## Encuadernaciones y cubiertas
 
-Hay cinco encuadernaciones. El **cartoné** lleva tapas de cartón algo mayores que las páginas. La **rústica fresada** tiene el lomo fresado y encolado, y abre menos. La **rústica cosida** conserva sus cuadernillos cosidos bajo una cubierta blanda y abre con más facilidad. La **encuadernación plana** abre del todo, sin que las páginas se hundan hacia el lomo. El **grapado a caballete** forma un folleto de pliegos doblados y grapados por el pliegue, como una revista o un programa de mano, y no tiene lomo plano. Un libro grueso abre como abre un libro grueso, con el lomo de pie entre los dos bloques de páginas.
+Hay cinco encuadernaciones. El **cartoné** lleva tapas de cartón algo mayores que las páginas. La **rústica fresada** tiene el lomo fresado y encolado, y abre menos. La **rústica cosida** conserva sus cuadernillos cosidos bajo una cubierta blanda y abre con más facilidad. La **encuadernación plana** abre del todo, sin que las páginas se hundan hacia el lomo. El **grapado a caballete** forma un folleto de pliegos doblados y grapados por el pliegue, como una revista o un programa de mano, y no tiene lomo plano. Un libro grueso abre como abre un libro grueso, con el lomo de pie entre los dos bloques de páginas. Un libro encuadernado a la derecha, sea árabe o chino o japonés compuesto en vertical, aparece en espejo, con el lomo a la derecha, y sus hojas y las teclas de flecha pasan en el otro sentido.
 
 Las cubiertas salen de uno de dos sitios. Por defecto, Folio dibuja **una tapa alrededor de las páginas**, de tela, cartulina o piel y en el color de la cubierta. Cuando el documento ya trae sus cubiertas, como esta guía, pueden ser **las páginas del documento**: la primera página pasa a ser la cubierta y la última, si cae en página par, la contracubierta. El libro descansa entonces cerrado sobre su cubierta hasta que el lector lo abre, la cubierta gira como un cartón rígido y al pasar la última hoja el libro vuelve a cerrarse.
 
@@ -1128,11 +1084,11 @@ Folio dibuja con WebGL2, los gráficos tridimensionales del navegador, con una t
 El visor es un paquete propio, _postext-folio_, construido sobre three.js. \`createFolioFromDocument(container, doc)\` muestra un documento maquetado como un libro; \`setDocument\` muestra la maquetación siguiente en la misma página, \`setAppearance\` cambia el papel, la encuadernación o la luz, y \`resetView\` devuelve la vista a su sitio. \`createFolio\` hace lo mismo con cualquier conjunto de imágenes de página.
 :::
 
-El mismo paquete pasa las páginas de las recetas del Recetario, y puede ir en cualquier página web que quiera presentar un libro como un libro: el catálogo de una editorial, una prueba enviada a un autor, una vista previa antes de que el pedido vaya a la imprenta. Como el visor recibe la maquetación ya hecha, cada cambio en el texto o en el diseño llega al libro en cuanto Postext vuelve a componer sus páginas.
+El mismo paquete pasa las páginas de las recetas del Recetario, y puede ir en cualquier página web que quiera presentar un libro como un libro: el catálogo de una editorial, una prueba enviada a un autor, una vista previa antes de que el pedido vaya a la imprenta. La mesa de luz del Recetario pasa las páginas de una receta con el mismo paquete, en plano, sin la tercera dimensión. Como el visor recibe la maquetación ya hecha, cada cambio en el texto o en el diseño llega al libro en cuanto Postext vuelve a componer sus páginas.
 
 # Herramientas en torno al motor {#tools lead="El Sandbox es una de las entradas a Postext. Una línea de comandos compone libros desde un terminal, un formato de archivo los lleva enteros, los documentos de Word entran y salen, y los agentes pueden manejar el Sandbox o adaptar un libro a partir de su PDF." summary="La línea de comandos, el archivo .postext, Word, WebMCP y el skill de adaptación"}
 
-El motor que está en el centro de este libro es una biblioteca, y a una biblioteca se la puede llamar desde cualquier sitio. El Sandbox es el lugar más visible donde se ejecuta, pero una editorial con un catálogo que producir, un desarrollador con una cadena de compilación o un asistente al que se le pide componer un manuscrito necesitan cada uno otra puerta. Este capítulo las recorre, del terminal a los agentes.
+El motor que está en el centro de este libro es una biblioteca, y a una biblioteca se la puede llamar desde cualquier sitio. El Sandbox es el lugar más visible donde se ejecuta, pero una editorial con un catálogo que producir, un desarrollador con una cadena de compilación o un asistente al que se le pide componer un manuscrito necesitan cada uno otra puerta.
 
 ## La línea de comandos
 
@@ -1147,37 +1103,33 @@ El programa lee un archivo \`.postext\`, una carpeta que contiene un libro o arc
 4. \`postext build libro/ --watch\` vuelve a componer el libro cada vez que se guarda un capítulo
 :::
 
-Dos órdenes sirven a la automatización. \`check\` maqueta el libro e informa de lo que mostraría el panel Revisión, con el preflight cuando el libro está preparado para imprenta, y termina con un código de error que un script puede comprobar. \`build --watch\` mantiene un libro abierto y lo vuelve a componer cuando cambia un archivo, de modo que un editor y un visor de PDF uno junto a otro se comportan como el Sandbox. En un portátil corriente, una novela ilustrada de 140 páginas se compone y se escribe como PDF en unos diez segundos.
+Dos órdenes sirven a la automatización. \`check\` maqueta el libro e informa de lo que mostraría el panel Revisión, con el preflight cuando el libro está preparado para imprenta, y termina con un código de error que un script puede comprobar. \`build --watch\` mantiene un libro abierto y lo vuelve a componer cuando cambia un archivo. En un portátil corriente, una novela ilustrada de 140 páginas se compone y se escribe como PDF en unos diez segundos.
 
 ## Un libro en un archivo
 
-:index{term="formato de archivo (.postext)"}Un archivo **.postext** es un libro empaquetado para viajar: un archivo zip con los capítulos en Markdown, la configuración, los recursos, las fuentes y un manifiesto que lo une todo. También puede llevar la paginación ya calculada, de modo que el libro se abre maquetado y la primera página aparece antes de que el motor haya compuesto una línea. El Sandbox descarga un libro en este formato desde el panel Libros y lo abre desde el mismo sitio; la línea de comandos lo lee y lo escribe; los libros de ejemplo del sitio web se sirven como archivos .postext.
+:index{term="formato de archivo (.postext)"}Un archivo **.postext** es un libro empaquetado para viajar: un archivo zip con los capítulos en Markdown, la configuración, los recursos, las fuentes y un manifiesto que lo une todo. También puede llevar la paginación ya calculada, de modo que el libro se abre maquetado y la primera página aparece antes de que el motor haya compuesto una línea. El Sandbox descarga un libro en este formato desde el panel Libros y lo abre desde el mismo sitio; la línea de comandos lo lee y lo escribe.
 
 Un archivo puede contener varios idiomas, cada uno con sus capítulos, sus recursos y sus ajustes, como describe :ref{id="languages"}. Los programas leen y escriben el formato con una pequeña interfaz del motor, \`openBundle\`, \`createBundle\` y \`buildBundle\`, que maqueta todos los capítulos de un paquete como un solo libro, con los contadores y los folios continuados. Un archivo hecho con una versión de Postext se abre en la siguiente: el manifiesto anota la versión de los ajustes con la que se escribió, y los archivos antiguos se leen como se pensaron.
 
 ## Documentos de Word
 
-:index{term="Word, documentos de"}La mayoría de los manuscritos llegan como archivos de Word. El panel Texto importa un .docx en el navegador, sin enviarlo a ninguna parte, y abre un diálogo antes de cambiar nada. Primero juzga el documento: _estilos bien aplicados_ cuando el autor usó estilos de párrafo, _estilos aplicados en parte_, o _sin estilos_ cuando cada título se puso en negrita a mano. Después muestra cómo se leerá cada estilo de Word, como nivel de título, estilo de párrafo, lista, cita o texto normal, y deja cambiar cualquiera; las elecciones se pueden guardar como plantilla y usar para el siguiente manuscrito del mismo autor o de la misma editorial. Una vista previa del Markdown resultante se actualiza sobre la marcha.
+:index{term="Word, documentos de"}La mayoría de los manuscritos llegan como archivos de Word. El panel Texto importa un .docx en el navegador, sin enviarlo a ninguna parte, y abre un diálogo antes de cambiar nada. Primero juzga el documento: _estilos bien aplicados_ cuando el autor usó estilos de párrafo, _estilos aplicados en parte_, o _sin estilos_ cuando cada título se puso en negrita a mano. Después muestra cómo se leerá cada estilo de Word, como nivel de título, estilo de párrafo, lista, cita o texto normal, y deja cambiar cualquiera; las elecciones se pueden guardar como plantilla.
 
-Las imágenes y las tablas pasan a ser recursos, las notas al pie pasan a ser notas, los campos de índice de Word se convierten en marcas de índice y sus ecuaciones, en matemáticas. La importación puede sustituir el capítulo actual, añadir capítulos nuevos tras él o sustituir el libro entero, cortado por sus títulos de primer nivel.
+Las imágenes y las tablas pasan a ser recursos, las notas al pie pasan a ser notas, los campos de índice de Word se convierten en marcas de índice y sus ecuaciones, en matemáticas. La importación puede sustituir el capítulo actual, añadir capítulos nuevos tras él o sustituir el libro entero.
 
 El viaje también se hace al revés. **Exportar a Word** escribe un capítulo o el libro entero como .docx para un autor o un editor que trabaja en Word. Lo que Word no puede mostrar, una directiva o una referencia a un recurso, se guarda en párrafos grises de un estilo llamado _Postext Markup_, y la plantilla viaja dentro del archivo, de modo que el documento corregido vuelve a Postext sin perder nada.
 
 ## Agentes en el Sandbox
 
-Un asistente que sabe usar un navegador también puede usar el Sandbox, a través de **WebMCP**:index{term="WebMCP"}, una propuesta de estándar web para que las páginas ofrezcan herramientas a los agentes. Mientras el Sandbox está abierto ofrece más de cincuenta: leer el estado del libro, editar un capítulo, cambiar un ajuste, añadir un recurso, dibujar una página como imagen, leer los avisos, exportar un PDF, deshacer. Un agente al que se le pide apretar un capítulo puede editar el texto, mirar la página que ha salido y volver a intentarlo, como lo haría una persona, y cada cambio que hace está en pantalla y en el historial de deshacer.
+Un asistente que sabe usar un navegador también puede usar el Sandbox, a través de **WebMCP**:index{term="WebMCP"}, una propuesta de estándar web para que las páginas ofrezcan herramientas a los agentes. Mientras el Sandbox está abierto ofrece más de cincuenta: leer el estado del libro, editar un capítulo, cambiar un ajuste, añadir un recurso, dibujar una página como imagen, leer los avisos, exportar un PDF, deshacer. Un agente al que se le pide apretar un capítulo puede editar el texto, mirar la página que ha salido y volver a intentarlo, y cada cambio que hace está en pantalla y en el historial de deshacer.
 
 Las herramientas que destruyen trabajo, como borrar un capítulo, un recurso o un libro, van marcadas como delicadas, así que el navegador pregunta a la persona antes de ejecutarlas. Una aplicación que incrusta el Sandbox puede desactivar las herramientas.
 
 ## Adaptar un libro con un agente
 
-Traer a Postext un libro que ya existe es sobre todo cuestión de leer su diseño: el formato, los márgenes, las columnas, los cuerpos, cómo se abren los capítulos y dónde se asientan las figuras. El skill **postext-port**:index{term="postext-port, skill"} enseña a un agente a hacerlo a partir de lo que tenga la editorial: un PDF, un archivo de Word o de InDesign, un EPUB, LaTeX, HTML o páginas escaneadas. Hace inventario del original, mide las páginas, propone una ficha de especificaciones, escribe la configuración y los capítulos, y después revisa su propio trabajo: dibuja como imagen cada página que compone y la compara con la original, página a página, hasta que coinciden. El resultado es un archivo .postext que se abre en el Sandbox como cualquier otro libro.
+Traer a Postext un libro que ya existe es sobre todo cuestión de leer su diseño: el formato, los márgenes, las columnas, los cuerpos, cómo se abren los capítulos y dónde se asientan las figuras. El skill **postext-port**:index{term="postext-port, skill"} enseña a un agente a hacerlo a partir de lo que tenga la editorial: un PDF, un archivo de Word o de InDesign, un EPUB, LaTeX, HTML o páginas escaneadas. Hace inventario del original, mide las páginas, propone una ficha de especificaciones, escribe la configuración y los capítulos, y después revisa su propio trabajo: dibuja como imagen cada página que compone y la compara con la original, página a página, hasta que coinciden.
 
 El skill se instala con una sola orden en cualquier agente que lea skills, y en Claude Code como plugin. Conoce las escrituras de este libro: libros chinos y japoneses compuestos en vertical, libros árabes compuestos desde la derecha, cómics rotulados de nuevo en otro idioma y libros de texto construidos con páginas compuestas.
-
-## La biblioteca, incrustada
-
-Por último, el propio Sandbox es un componente de React que una aplicación puede incrustar con su propio Markdown, su propia configuración, su idioma de interfaz y sus libros de ejemplo. Por debajo, las bibliotecas descritas en :ref{id="output"} maquetan, dibujan y escriben libros sin ninguna interfaz. El Sandbox, la línea de comandos, el formato de archivo y los agentes están construidos con esos mismos paquetes, y por eso una página sale igual sea cual sea la puerta por la que llegó.
 
 # Hoja de ruta y comunidad {lead="Postext es joven y abierto. La tubería principal, el formato del documento y el sistema de configuración ya están hechos; lo que viene después se decide en público." summary="Dónde está el proyecto y cómo participar"}
 
@@ -1237,6 +1189,40 @@ Si algo de esto te resuena, el repositorio es el siguiente paso. Abre una issue,
 :::paragraphs{style="signature"}
 postext.dev · github.com/drnachio/postext
 :::
+
+::::page{template="sheet"}
+## Postext en una página
+
+Postext compone libros a partir de dos entradas: un Markdown que dice qué es el texto y una configuración que dice cómo se ve. Si cambia cualquiera de las dos, las páginas se componen de nuevo, en el navegador, en una fracción de segundo.
+
+:::frame{slot="card" label="Escribir"}
+Markdown y unas pocas directivas: \`:::callout\` para un recuadro, \`:ref\` para una figura, \`[^id]\` para una nota, \`::::page\` para una página como esta. El texto nunca dice dónde va nada.
+:::
+
+:::frame{slot="card" label="Diseñar"}
+Más de quinientos ajustes en el panel Diseño: la página y sus columnas, la letra, los recuadros, las aperturas, las cabeceras y una paleta que cada parte puede cambiar.
+:::
+
+:::frame{slot="card" label="Componer"}
+Cada párrafo cortado entero, columnas que acaban a la par, figuras en el primer hueco tras su mención y un libro recompuesto hasta que sus folios se asientan.
+:::
+
+:::frame{slot="card" label="Revisar"}
+El panel Revisión lista lo que ha visto el motor: una línea floja, una fuente que falta, un color muy pálido, una imagen sin resolución para imprenta. Un clic lleva a la línea.
+:::
+
+:::frame{slot="card" label="Publicar"}
+Una maquetación, cinco salidas: el canvas, HTML para la pantalla, un PDF para imprenta o biblioteca, EPUB para lectores electrónicos y un paquete SCORM para un curso.
+:::
+
+:::frame{slot="card" label="Compartir"}
+Un libro viaja en un archivo .postext con capítulos, diseño, imágenes y fuentes. La línea de comandos lo compone en un servidor; el Sandbox lo abre en cualquier navegador.
+:::
+
+:::frame{slot="key" label="Teclas"}
+Esta hoja es una página compuesta: una plantilla con un título, un marco de flujo, una retícula de tarjetas y un recuadro al pie, llena con el Markdown del último capítulo. En el editor, :chip[⌘ Z] deshace y :chip[⌘ F] busca; :chip[Esc] cierra un diálogo.
+:::
+::::
 
 # Índice analítico {style="index" summary="Todos los términos que marca esta guía, con sus páginas"}
 

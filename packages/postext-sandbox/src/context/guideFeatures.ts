@@ -1,4 +1,4 @@
-import type { CalloutStyleConfig, ChipStyleConfig, PageTemplate } from 'postext';
+import type { CalloutStyleConfig, ChipStyleConfig, MarkStyleConfig, PageTemplate, ParagraphStyleConfig } from 'postext';
 import { at, box, col, mm, pt, rule } from './guideKit.js';
 import type { GuideLang } from '../defaultResources/lang.js';
 
@@ -36,6 +36,7 @@ export interface FeatureNames {
   key: string;
   state: string;
   sheet: string;
+  mark: string;
 }
 
 function boxBody(f: FeatureFaces, o: FeatureOptions) {
@@ -68,6 +69,25 @@ export function asideCallout(f: FeatureFaces, o: FeatureOptions, name: string): 
     titleStyle: { ...labelType(f, o), color: col('ink'), gap: mm(1.4) },
     body: boxBody(f, o),
     marginTop: pt(6), marginBottom: pt(6), keepTogether: true,
+  };
+}
+
+/** The colophon at the foot of the contents: no box, set in the edition's
+ *  colophon type and floated to the bottom of the page, so the contents
+ *  can open on the back of the cover as a spread (#1299). */
+export function colophonCallout(type: ParagraphStyleConfig): CalloutStyleConfig {
+  return {
+    id: 'colophon', name: type.name,
+    span: 'column', placement: 'bottom',
+    backgroundEnabled: false, border: { enabled: false }, borderRadius: mm(0),
+    padding: { top: mm(0), right: mm(0), bottom: mm(0), left: mm(0) },
+    icon: { kind: 'none' },
+    body: {
+      fontFamily: type.fontFamily, fontSize: type.fontSize, lineHeight: type.lineHeight,
+      color: col('muted'), boldColor: col('ink'), textAlign: type.textAlign === 'justify' ? 'justify' : 'left',
+      hyphenation: false, paragraphSpacing: true, firstLineIndent: mm(0),
+    },
+    marginTop: pt(12), marginBottom: pt(0), keepTogether: true,
   };
 }
 
@@ -123,12 +143,18 @@ export function guideChipStyles(f: FeatureFaces, names: FeatureNames): ChipStyle
   ];
 }
 
+/** The highlight of \`:mark[…]\`: a band of pale gilt behind the words. */
+export function guideMarkStyles(names: FeatureNames): MarkStyleConfig[] {
+  return [{ id: 'key', name: names.mark, background: { hex: '#f1e3b4', model: 'hex' }, borderRadius: { value: 0.15, unit: 'em' }, paddingX: { value: 0.1, unit: 'em' } }];
+}
+
 /** The quick-reference sheet that closes the chapter on composed pages: a
  *  title (the page's heading, then its first paragraph), cards three to a
  *  row, filled one per `:::frame{slot="card"}`, and a key standing on the
  *  foot of the area. Every size follows the area, so the template stands in a
- *  horizontal page and in a vertical one alike. */
-export function sheetTemplate(name: string): PageTemplate {
+ *  horizontal page and in a vertical one alike; `cardHeight` (mm) lets the
+ *  Latin editions fill their page with taller cards. */
+export function sheetTemplate(name: string, cardHeight = 72): PageTemplate {
   return {
     id: 'sheet', name,
     decoration: {
@@ -140,7 +166,7 @@ export function sheetTemplate(name: string): PageTemplate {
     frames: [
       { name: 'title', takes: 'h2', style: 'sheet-title', width: 'fill', placement: { anchor: at('container', 'top-left') } },
       { name: 'lead', flow: true, style: 'sheet-title', width: 'fill', placement: { anchor: at('#title', 'below'), offset: { y: mm(6) } } },
-      { name: 'card', style: 'sheet-card', width: 'fill', minHeight: mm(72) },
+      { name: 'card', style: 'sheet-card', width: 'fill', minHeight: mm(cardHeight) },
       { name: 'key', style: 'sheet-key', width: 'fill', placement: { anchor: at('container', 'bottom-left') } },
     ],
     groups: [
@@ -155,20 +181,20 @@ export function sheetTemplate(name: string): PageTemplate {
 /** The names of the new styles in each edition's language, and the name of
  *  its index heading style. */
 export const FEATURE_NAMES: Record<GuideLang, FeatureNames & { index: string }> = {
-  en: { aside: 'Aside', sheetTitle: 'Sheet title', sheetCard: 'Sheet card', sheetKey: 'Sheet key', key: 'Key', state: 'State', sheet: 'Quick-reference sheet', index: 'Index' },
-  es: { aside: 'Aparte', sheetTitle: 'Título de ficha', sheetCard: 'Tarjeta de ficha', sheetKey: 'Clave de ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', index: 'Índice alfabético' },
-  ca: { aside: 'Apart', sheetTitle: 'Títol de fitxa', sheetCard: 'Targeta de fitxa', sheetKey: 'Clau de fitxa', key: 'Tecla', state: 'Estat', sheet: 'Fitxa de consulta', index: 'Índex alfabètic' },
-  'pt-BR': { aside: 'Aparte', sheetTitle: 'Título da ficha', sheetCard: 'Cartão da ficha', sheetKey: 'Chave da ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', index: 'Índice remissivo' },
-  fr: { aside: 'Aparté', sheetTitle: 'Titre de fiche', sheetCard: 'Carte de fiche', sheetKey: 'Clé de fiche', key: 'Touche', state: 'État', sheet: 'Fiche mémo', index: 'Index' },
-  de: { aside: 'Randbemerkung', sheetTitle: 'Blatttitel', sheetCard: 'Blattkarte', sheetKey: 'Blattlegende', key: 'Taste', state: 'Zustand', sheet: 'Übersichtsblatt', index: 'Register' },
-  it: { aside: 'Inciso', sheetTitle: 'Titolo della scheda', sheetCard: 'Riquadro della scheda', sheetKey: 'Legenda della scheda', key: 'Tasto', state: 'Stato', sheet: 'Scheda riassuntiva', index: 'Indice analitico' },
-  ar: { aside: 'حاشية', sheetTitle: 'عنوان البطاقة', sheetCard: 'خانة البطاقة', sheetKey: 'مفتاح البطاقة', key: 'مفتاح', state: 'حالة', sheet: 'بطاقة مرجعية', index: 'الفهرس' },
-  'zh-Hans': { aside: '旁注', sheetTitle: '速查页标题', sheetCard: '速查页卡片', sheetKey: '速查页图例', key: '按键', state: '状态', sheet: '速查页', index: '索引' },
-  ja: { aside: '傍注', sheetTitle: '早見表の見出し', sheetCard: '早見表のカード', sheetKey: '早見表の凡例', key: 'キー', state: '状態', sheet: '早見表', index: '索引' },
+  en: { aside: 'Aside', sheetTitle: 'Sheet title', sheetCard: 'Sheet card', sheetKey: 'Sheet key', key: 'Key', state: 'State', sheet: 'Quick-reference sheet', mark: 'Highlight', index: 'Index' },
+  es: { aside: 'Aparte', sheetTitle: 'Título de ficha', sheetCard: 'Tarjeta de ficha', sheetKey: 'Clave de ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', mark: 'Resaltado', index: 'Índice alfabético' },
+  ca: { aside: 'Apart', sheetTitle: 'Títol de fitxa', sheetCard: 'Targeta de fitxa', sheetKey: 'Clau de fitxa', key: 'Tecla', state: 'Estat', sheet: 'Fitxa de consulta', mark: 'Ressaltat', index: 'Índex alfabètic' },
+  'pt-BR': { aside: 'Aparte', sheetTitle: 'Título da ficha', sheetCard: 'Cartão da ficha', sheetKey: 'Chave da ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', mark: 'Destaque', index: 'Índice remissivo' },
+  fr: { aside: 'Aparté', sheetTitle: 'Titre de fiche', sheetCard: 'Carte de fiche', sheetKey: 'Clé de fiche', key: 'Touche', state: 'État', sheet: 'Fiche mémo', mark: 'Surlignage', index: 'Index' },
+  de: { aside: 'Randbemerkung', sheetTitle: 'Blatttitel', sheetCard: 'Blattkarte', sheetKey: 'Blattlegende', key: 'Taste', state: 'Zustand', sheet: 'Übersichtsblatt', mark: 'Hervorhebung', index: 'Register' },
+  it: { aside: 'Inciso', sheetTitle: 'Titolo della scheda', sheetCard: 'Riquadro della scheda', sheetKey: 'Legenda della scheda', key: 'Tasto', state: 'Stato', sheet: 'Scheda riassuntiva', mark: 'Evidenziazione', index: 'Indice analitico' },
+  ar: { aside: 'حاشية', sheetTitle: 'عنوان البطاقة', sheetCard: 'خانة البطاقة', sheetKey: 'مفتاح البطاقة', key: 'مفتاح', state: 'حالة', sheet: 'بطاقة مرجعية', mark: 'تظليل', index: 'الفهرس' },
+  'zh-Hans': { aside: '旁注', sheetTitle: '速查页标题', sheetCard: '速查页卡片', sheetKey: '速查页图例', key: '按键', state: '状态', sheet: '速查页', mark: '高亮', index: '索引' },
+  ja: { aside: '傍注', sheetTitle: '早見表の見出し', sheetCard: '早見表のカード', sheetKey: '早見表の凡例', key: 'キー', state: '状態', sheet: '早見表', mark: 'マーカー', index: '索引' },
 };
 
 /** The index chapter's heading style: the contents page's design, its
- *  entries in two columns. */
+ *  entries in two columns, opening on a verso like every chapter. */
 export function indexHeadingStyle<T extends { id: string; name?: string; toc?: boolean; layout?: unknown }>(contents: T, name: string, gutter: number): T {
-  return { ...contents, id: 'index', name, toc: true, layout: { layoutType: 'double', gutterWidth: mm(gutter) } };
+  return { ...contents, id: 'index', name, toc: true, breakBefore: { enabled: true, parity: 'even' }, layout: { layoutType: 'double', gutterWidth: mm(gutter) } };
 }

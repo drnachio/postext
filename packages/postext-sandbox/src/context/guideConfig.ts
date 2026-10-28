@@ -13,7 +13,7 @@ import {
 import { createChineseGuideConfig } from './guideConfigZh.js';
 import { createArabicGuideConfig } from './guideConfigAr.js';
 import { createJapaneseGuideConfig } from './guideConfigJa.js';
-import { FEATURE_NAMES, asideCallout, guideChipStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureFaces, type FeatureOptions } from './guideFeatures.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureFaces, type FeatureOptions } from './guideFeatures.js';
 
 export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit.js';
 
@@ -234,8 +234,10 @@ function openerFooter() {
 function headingStyles(lang: LatinLang): HeadingStyleConfig[] {
   const empty = slot();
   const contents: HeadingStyleConfig = {
+    // The contents opens on the back of the cover, a spread of two pages
+    // with the colophon at its foot.
     id: 'contents', name: 'Contents', numbered: false, toc: false, span: 'page',
-    breakBefore: { enabled: true, parity: 'odd' },
+    breakBefore: { enabled: true, parity: 'even' },
     advancedDesign: frontOpener(),
     layout: { layoutType: 'single' },
   };
@@ -262,9 +264,11 @@ function headingStyles(lang: LatinLang): HeadingStyleConfig[] {
   ];
 }
 
+/** The colophon's type, set as a box at the foot of the contents. */
+const COLOPHON_TYPE: ParagraphStyleConfig = { id: 'colophon', name: 'Colophon', fontFamily: SANS, fontSize: pt(7.5), lineHeight: pt(11), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') };
+
 function paragraphStyles(): ParagraphStyleConfig[] {
   return [
-    { id: 'colophon', name: 'Colophon', fontFamily: SANS, fontSize: pt(7.5), lineHeight: pt(11), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') },
     { id: 'standfirst', name: 'Standfirst', fontFamily: TEXT, fontSize: pt(12), lineHeight: pt(17), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(6), marginBottom: pt(6), color: col('ink'), boldColor: col('band'), hyphenation: false },
     { id: 'signature', name: 'Signature', fontFamily: SANS, fontSize: pt(8), lineHeight: pt(11), textAlign: 'right', firstLineIndent: mm(0), marginTop: pt(4), color: col('muted') },
   ];
@@ -358,6 +362,8 @@ function toc(lang: LatinLang) {
     unnumbered: { fontFamily: TEXT, fontWeight: 400, italic: true, color: col('ink') },
     pageNumber: { fontFamily: SANS, fontSize: pt(9), fontWeight: 700, color: col('ink'), width: mm(10) },
     leader: { enabled: true, char: '.', gap: mm(1.5) },
+    // A part's row stays on the page of its chapters.
+    groups: { keepTogether: true },
     subtitle: { enabled: true, attr: 'summary', fontFamily: TEXT, fontSize: pt(8), italic: true, color: col('muted'), indent: mm(13) },
     parts: {
       enabled: true, height: pt(18), marginTop: pt(18), marginBottom: pt(2),
@@ -423,9 +429,10 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
     },
     headingStyles: headingStyles(lang),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: [...calloutStyles(lang), asideCallout(FACES, FEATURES, FEATURE_NAMES[lang].aside), ...sheetCallouts(FACES, FEATURES, FEATURE_NAMES[lang])],
+    calloutStyles: [...calloutStyles(lang), colophonCallout(COLOPHON_TYPE), asideCallout(FACES, FEATURES, FEATURE_NAMES[lang].aside), ...sheetCallouts(FACES, FEATURES, FEATURE_NAMES[lang])],
     chipStyles: guideChipStyles(FACES, FEATURE_NAMES[lang]),
-    pageTemplates: [sheetTemplate(FEATURE_NAMES[lang].sheet)],
+    markStyles: guideMarkStyles(FEATURE_NAMES[lang]),
+    pageTemplates: [sheetTemplate(FEATURE_NAMES[lang].sheet, 84)],
     parts: {
       // A part opens on a recto facing a verso in its colour: `always-odd` lays one
       // blank leaf before it (the coloured verso) and pads a white recto first
@@ -433,7 +440,7 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       // the back of the divider, a verso.
       breakBefore: { parity: 'always-odd' },
       breakAfter: { enabled: true, parity: 'even' },
-      margins: { top: mm(172), bottom: mm(70), left: mm(M_INNER), right: mm(M_OUTER + 40) },
+      margins: { top: mm(160), bottom: mm(70), left: mm(M_INNER), right: mm(M_OUTER + 40) },
       design: partDesign(lang),
       bodyStyle: {
         fontFamily: TEXT, fontSize: pt(11), lineHeight: pt(16), color: col('white'), textAlign: 'left',

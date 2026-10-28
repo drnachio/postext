@@ -145,10 +145,18 @@ export const CODE = 'Geist Mono';
  *  sentence in the code face, on a pale fill outlined by a hairline, so it
  *  reads as code on the page, on the warm tint of the "Try it" boxes and on
  *  the cool panel of the notes. The fill and the outline are fixed colours,
- *  not the part colour, which references already wear. */
+ *  not the part colour, which references already wear. Listings (#1299) sit
+ *  on the cool panel of the notes, their title in the part colour. */
 export function guideCodeStyle(): CodeStyleConfig {
   return {
     fontFamily: CODE,
+    fontSize: em(0.8),
+    background: col('panel'),
+    borderRadius: mm(1.2),
+    padding: { top: mm(2.6), right: mm(3), bottom: mm(2.6), left: mm(3) },
+    lineNumberColor: col('muted'),
+    highlightBackground: { hex: '#e2e6f0', model: 'hex' },
+    titleStyle: { fontFamily: CODE, fontSize: pt(7.2), fontWeight: 600, color: col('band') },
     inline: {
       fontSize: em(0.84),
       color: col('ink'),

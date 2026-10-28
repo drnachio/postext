@@ -14,7 +14,7 @@ import {
   verticalBackCover, verticalCallouts, verticalChapterOpener, verticalContentsOpener, verticalCover, verticalPartDesign, verticalToc,
   type VerticalFaces,
 } from './guideVerticalKit.js';
-import { FEATURE_NAMES, asideCallout, guideChipStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Japanese edition of the Postext guide: a vertical book bound on the
 // right (縦組み・右綴じ), set after the Requirements for Japanese Text Layout
@@ -123,9 +123,11 @@ const FEATURES: FeatureOptions = { boxLead: 13.5, bodyAlign: 'justify', upperLab
 
 function headingStyles(): HeadingStyleConfig[] {
   const empty = slot();
+  // The contents opens on the back of the cover, a spread of two pages
+  // with the colophon at its foot.
   const contents: HeadingStyleConfig = {
     id: 'contents', name: '目次', numbered: false, toc: false, span: 'page',
-    breakBefore: { enabled: true, parity: 'odd' },
+    breakBefore: { enabled: true, parity: 'even' },
     advancedDesign: verticalContentsOpener(FACES),
     layout: { layoutType: 'single' },
   };
@@ -136,9 +138,6 @@ function headingStyles(): HeadingStyleConfig[] {
       advancedDesign: verticalCover(FACES),
       header: empty, footer: empty,
       layout: { layoutType: 'single' },
-      // The credits on the back of the cover stand in the lower left of
-      // the page, where the book's last columns end.
-      margins: { top: mm(PAGE_H - 132), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(PAGE_W - M_INNER - 92) },
     },
     contents,
     // The index at the back, in two columns under the contents page's design.
@@ -154,9 +153,11 @@ function headingStyles(): HeadingStyleConfig[] {
   ];
 }
 
+/** The colophon's type, set as a box at the foot of the contents. */
+const COLOPHON_TYPE: ParagraphStyleConfig = { id: 'colophon', name: '奥付', fontFamily: JA_SANS, fontSize: pt(7.5), lineHeight: pt(12.5), textAlign: 'justify', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') };
+
 function paragraphStyles(): ParagraphStyleConfig[] {
   return [
-    { id: 'colophon', name: '奥付', fontFamily: JA_SANS, fontSize: pt(7.5), lineHeight: pt(12.5), textAlign: 'justify', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') },
     { id: 'standfirst', name: 'リード', fontFamily: JA_TEXT, fontSize: pt(12), lineHeight: pt(20), textAlign: 'justify', firstLineIndent: mm(0), spaceBetween: pt(6), marginBottom: pt(6), color: col('ink'), boldColor: col('band') },
     // 地から一字上げ: the signature at the foot of its column, one
     // character up from it (Aozora ［＃地から１字上げ］).
@@ -237,8 +238,9 @@ export function createJapaneseGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: [...calloutStyles(), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'])],
+    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'])],
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ja']),
+    markStyles: guideMarkStyles(FEATURE_NAMES['ja']),
     pageTemplates: [sheetTemplate(FEATURE_NAMES['ja'].sheet)],
     parts: {
       // A part opens on a recto (the left-hand page) facing a verso in its
