@@ -1,7 +1,7 @@
 // Warnings on the whole document before layout: the engine's content
 // findings, hyphenation locales, running heads, frontmatter metadata and
 // maths that does not render (#1276: split out of compute.ts).
-import { type PostextConfig, type Resource, collectContentWarnings, type VDTDocument, type SvgFontFaceReport, resolveDebugConfig, parseMarkdownWithIssues, extractFrontmatter, matchHyphenationLocale, isUnhyphenatedLanguage, isMetadataPlaceholder, metadataText, type ResolvedDesignSlot, collectPlaceholderNames, isAllowedPlaceholder, resolveHeaderFooterConfig, resolveHeadingsConfig, resolveDesignSlot } from 'postext';
+import { type PostextConfig, type PostextContent, type Resource, anchorOutline, collectContentWarnings, type VDTDocument, type SvgFontFaceReport, resolveDebugConfig, parseMarkdownWithIssues, extractFrontmatter, matchHyphenationLocale, isUnhyphenatedLanguage, isMetadataPlaceholder, metadataText, type ResolvedDesignSlot, collectPlaceholderNames, isAllowedPlaceholder, resolveHeaderFooterConfig, resolveHeadingsConfig, resolveDesignSlot } from 'postext';
 import { getConfigFontFamilies, hasLatinEmphasis, getCustomFontFamily, missingUsedVariants, isRemovedCustomFontFamily, isKnownUnavailableGoogleFont } from '../../controls/fonts/fontLoader.js';
 import type { Warning, WarningPayload, WarningSlotKind } from '../types.js';
 import { collectHeadingHierarchyWarnings, collectConsecutiveHeadingsWarnings, collectHeadingDesignCutWarnings, collectDirectiveWarnings, collectContainerWarnings, collectChipOverlapWarnings, collectDesignTruncationWarnings } from './content.js';
@@ -9,17 +9,26 @@ import { collectListAfterHeadingWarnings, collectHeadingBreakParityWarnings, col
 import { lineNumberForOffset, detectMissingFonts, collectLooseLineWarnings, collectLayoutWarnings } from './layout.js';
 import { collectResourceWarnings, configImageResourceIds } from './resources.js';
 
+/** What a chapter's build is handed of the rest of its book: the outline
+ *  (every heading with an id and every anchor) and the citations. */
+export type BookContent = Pick<PostextContent, 'outline' | 'citations'>;
+
 /**
  * The engine's content warnings (`collectContentWarnings`, what the build
  * lists in `doc.contentWarnings`): unknown resource ids, `:::name` lines,
  * paragraph, callout, chip, heading and table style ids, and ragged table
  * grids. Read from the source here — so they show before the first layout —
- * rather than from the document, so each is listed once.
+ * rather than from the document, so each is listed once. `bookContent` is
+ * what the chapter's build is handed of the rest of its book (its plan's
+ * outline and citations): a reference to a heading, an anchor or a source
+ * of another chapter names something that exists (#1300).
  */
-export function collectEngineContentWarnings(markdown: string, config: PostextConfig, resources: Resource[]): Warning[] {
+export function collectEngineContentWarnings(markdown: string, config: PostextConfig, resources: Resource[], bookContent?: BookContent): Warning[] {
   let found: ReturnType<typeof collectContentWarnings>;
   try {
-    found = collectContentWarnings(markdown, config, resources);
+    const bookAnchors = bookContent?.outline ? new Set(anchorOutline(bookContent.outline).map((e) => e.anchorId!)) : undefined;
+    const bookCitationKeys = bookContent?.citations ? new Set(bookContent.citations.items.map((i) => i.id)) : undefined;
+    found = collectContentWarnings(markdown, config, resources, bookAnchors, bookCitationKeys);
   } catch {
     return [];
   }
@@ -55,8 +64,11 @@ export function computeDocumentWarnings(params: {
   /** The book's metadata (`ComposedBook.metadata`), handed to the engine
    *  beside `markdown`. */
   bookMetadata?: Record<string, unknown>;
+  /** The outline and citations of the book the chapter is laid out in
+   *  (its plan's), so references into other chapters resolve. */
+  bookContent?: BookContent;
 }): Warning[] {
-  const { markdown, config, doc, resources, storageUnavailable, unavailableImages, svgFontIssues, bookMetadata } = params;
+  const { markdown, config, doc, resources, storageUnavailable, unavailableImages, svgFontIssues, bookMetadata, bookContent } = params;
   const debug = resolveDebugConfig(config.debug);
   const toggles = debug.warnings;
   const warnings: Warning[] = [];
@@ -176,7 +188,7 @@ export function computeDocumentWarnings(params: {
   if (doc) warnings.push(...collectHeadingDesignCutWarnings(doc, markdown));
 
   warnings.push(...collectHeaderFooterWarnings(config, doc, markdown, bookMetadata));
-  warnings.push(...collectEngineContentWarnings(markdown, config, resources));
+  warnings.push(...collectEngineContentWarnings(markdown, config, resources, bookContent));
   warnings.push(...collectDirectiveWarnings(markdown, blocks));
   warnings.push(...collectContainerWarnings(markdown, issues));
   warnings.push(...collectChipOverlapWarnings(markdown, doc));

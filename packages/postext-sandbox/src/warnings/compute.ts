@@ -8,7 +8,7 @@ import { fromBookOffset, fromBookLine } from '../book/compose.js';
 import { frontmatterRange } from '../book/frontmatter.js';
 import { isComposedCheckKind } from './composedChecks.js';
 import { collectConfigValueWarnings } from './compute/design.js';
-import { computeDocumentWarnings, collectEngineContentWarnings } from './compute/document.js';
+import { computeDocumentWarnings, collectEngineContentWarnings, type BookContent } from './compute/document.js';
 import { collectLayoutWarnings } from './compute/layout.js';
 
 export { configImageResourceIds } from './compute/resources.js';
@@ -32,6 +32,10 @@ export function computeWarnings(params: {
   /** The composed book `markdown` came from. When given, every located
    *  warning also carries its chapter and chapter-local line/offsets. */
   book?: ComposedBook;
+  /** What the chapter's build is handed of the rest of its book (its
+   *  plan's outline and citations, `planContent`): references to headings,
+   *  anchors and sources of other chapters are not unknown (#1300). */
+  bookContent?: BookContent;
   /** Chapter titles by id (for `chapterFrontmatterIgnored`). */
   chapterTitles?: ReadonlyMap<string, string>;
   /** The font warnings of the last PDF generated (see `pdfFontChecksFor`):
@@ -44,8 +48,8 @@ export function computeWarnings(params: {
    *  preflight runs. */
   preflight?: PreflightInputs;
 }): Warning[] {
-  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, svgFontIssues, book, chapterTitles, pdfFontChecks = [], pdfFontChecksStale = false, preflight } = params;
-  const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, svgFontIssues, bookMetadata: book?.metadata });
+  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, svgFontIssues, book, bookContent, chapterTitles, pdfFontChecks = [], pdfFontChecksStale = false, preflight } = params;
+  const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, svgFontIssues, bookMetadata: book?.metadata, bookContent });
   warnings.push(...pdfFontWarnings(pdfFontChecks, pdfFontChecksStale));
   if (preflight && doc) warnings.push(...collectPreflightWarnings(doc, config, resources, preflight));
   if (doc) warnings.push(...collectContrastWarnings(doc, config, preflight?.transform));

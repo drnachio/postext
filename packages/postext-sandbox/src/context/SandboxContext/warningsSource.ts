@@ -14,6 +14,7 @@ import { computeWarnings } from '../../warnings/compute.js';
 import { hasIndexedDB } from '../../storage/blobStore.js';
 import { unavailableResourceImages, svgFontIssues, onUnavailableResourceImagesChange, onSvgFontReportsChange } from '../../controls/media/resourceImages.js';
 import { createBookPlanner } from '../../book/pagination.js';
+import { planContent } from '../../book/jumps.js';
 import { WARNINGS_DEBOUNCE_MS } from './timings.js';
 
 /** What useWarningsSource takes from the sandbox provider. */
@@ -55,6 +56,7 @@ export function useWarningsSource(deps: UseWarningsSourceDeps) {
     const doc = stitched ? chapterDocsRef.current.get(s.activeChapterId)?.doc ?? null : docRef.current;
     const fontChecks = pdfFontChecksFor(s);
     const preflight = preflightInputs(s.config.print, s.resources);
+    const chapterPlan = getPlanRef.current(s).byId[s.activeChapterId];
     // The colour fields show their contrast against every page laid out
     // so far, not the active chapter's alone (#748).
     const laidOut = new Set<VDTDocument>([...(doc ? [doc] : []), ...[...chapterDocsRef.current.values()].map((c) => c.doc)]);
@@ -68,6 +70,9 @@ export function useWarningsSource(deps: UseWarningsSourceDeps) {
       unavailableImages: unavailableResourceImages(),
       svgFontIssues: svgFontIssues(),
       book,
+      // The book's outline and citations, as the chapter's build has them:
+      // a reference into another chapter is not unknown (#1300).
+      ...(chapterPlan ? { bookContent: planContent(chapterPlan) } : {}),
       chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
       // Another book's are dropped; after an edit they are marked stale.
       pdfFontChecks: fontChecks.checks,
