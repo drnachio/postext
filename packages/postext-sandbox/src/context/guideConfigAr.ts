@@ -9,6 +9,7 @@ import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, TEXT_W,
   at, box, col, colorPalette, em, guideCodeStyle, image, mm, openerBand, pt, rule, slot, text, type TextOpts,
 } from './guideKit.js';
+import { FEATURE_NAMES, asideCallout, guideChipStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Arabic edition of the Postext guide, in Modern Standard Arabic, set as
 // an Arabic book: right to left and bound on the right, so its first page
@@ -103,7 +104,7 @@ function coverDesign() {
  *  foot, where to find it and its licence. */
 function backCoverDesign() {
   const y = 62;
-  const band = (id: string, color: 'main-color' | 'gilt' | 'vermilion', k: number) =>
+  const band = (id: string, color: 'main-color' | 'gilt' | 'teal' | 'vermilion', k: number) =>
     box(id, color, { anchor: at('page', 'top-left'), offset: [M_OUTER + k * 14, y], width: 12, height: 2.5 });
   return {
     enabled: true,
@@ -112,7 +113,8 @@ function backCoverDesign() {
       box('backBg', 'night', { anchor: at('bleed', 'top-left') }),
       band('backBandFoundations', 'main-color', 0),
       band('backBandCraft', 'gilt', 1),
-      band('backBandPractice', 'vermilion', 2),
+      band('backBandBeyond', 'teal', 2),
+      band('backBandPractice', 'vermilion', 3),
       t('backTitle', '{attr.book}', {
         anchor: at('page', 'top-left'), offset: [M_OUTER, y + 12], width: TEXT_W,
         size: 38, family: AR_HEAD, weight: 700, color: 'white', lineHeight: 1.35,
@@ -244,8 +246,18 @@ function openerFooter() {
   );
 }
 
+/** The faces and leading of the new feature styles (`guideFeatures.ts`). */
+const FEATURE_FACES = { text: AR_TEXT, sans: AR_SANS };
+const FEATURES: FeatureOptions = { boxLead: 15, bodyAlign: 'left', upperLabels: false };
+
 function headingStyles(): HeadingStyleConfig[] {
   const empty = slot();
+  const contents: HeadingStyleConfig = {
+    id: 'contents', name: 'المحتويات', numbered: false, toc: false, span: 'page',
+    breakBefore: { enabled: true, parity: 'odd' },
+    advancedDesign: frontOpener(),
+    layout: { layoutType: 'single' },
+  };
   return [
     {
       id: 'cover', name: 'الغلاف', numbered: false, toc: false, span: 'page',
@@ -255,12 +267,9 @@ function headingStyles(): HeadingStyleConfig[] {
       layout: { layoutType: 'single' },
       margins: { top: mm(PAGE_H - 104), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(PAGE_W - M_INNER - 116) },
     },
-    {
-      id: 'contents', name: 'المحتويات', numbered: false, toc: false, span: 'page',
-      breakBefore: { enabled: true, parity: 'odd' },
-      advancedDesign: frontOpener(),
-      layout: { layoutType: 'single' },
-    },
+    contents,
+    // The index at the back, in two columns under the contents page's design.
+    indexHeadingStyle(contents, FEATURE_NAMES['ar'].index, GUTTER),
     {
       // The last page, always an even one: Folio turns it as the back cover.
       id: 'back', name: 'الغلاف الخلفي', numbered: false, toc: false, span: 'page',
@@ -428,7 +437,9 @@ export function createArabicGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: calloutStyles(),
+    calloutStyles: [...calloutStyles(), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'])],
+    chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ar']),
+    pageTemplates: [sheetTemplate(FEATURE_NAMES['ar'].sheet)],
     parts: {
       // A part opens on an odd page (the left-hand one) facing an even page
       // in its colour, and its first chapter opens on the back of the

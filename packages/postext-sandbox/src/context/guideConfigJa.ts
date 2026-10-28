@@ -14,6 +14,7 @@ import {
   verticalBackCover, verticalCallouts, verticalChapterOpener, verticalContentsOpener, verticalCover, verticalPartDesign, verticalToc,
   type VerticalFaces,
 } from './guideVerticalKit.js';
+import { FEATURE_NAMES, asideCallout, guideChipStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Japanese edition of the Postext guide: a vertical book bound on the
 // right (縦組み・右綴じ), set after the Requirements for Japanese Text Layout
@@ -116,8 +117,18 @@ function folios() {
   );
 }
 
+/** The faces and leading of the new feature styles (`guideFeatures.ts`). */
+const FEATURE_FACES = FACES;
+const FEATURES: FeatureOptions = { boxLead: 13.5, bodyAlign: 'justify', upperLabels: false };
+
 function headingStyles(): HeadingStyleConfig[] {
   const empty = slot();
+  const contents: HeadingStyleConfig = {
+    id: 'contents', name: '目次', numbered: false, toc: false, span: 'page',
+    breakBefore: { enabled: true, parity: 'odd' },
+    advancedDesign: verticalContentsOpener(FACES),
+    layout: { layoutType: 'single' },
+  };
   return [
     {
       id: 'cover', name: '表紙', numbered: false, toc: false, span: 'page',
@@ -129,12 +140,9 @@ function headingStyles(): HeadingStyleConfig[] {
       // the page, where the book's last columns end.
       margins: { top: mm(PAGE_H - 132), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(PAGE_W - M_INNER - 92) },
     },
-    {
-      id: 'contents', name: '目次', numbered: false, toc: false, span: 'page',
-      breakBefore: { enabled: true, parity: 'odd' },
-      advancedDesign: verticalContentsOpener(FACES),
-      layout: { layoutType: 'single' },
-    },
+    contents,
+    // The index at the back, in two columns under the contents page's design.
+    indexHeadingStyle(contents, FEATURE_NAMES['ja'].index, GUTTER),
     {
       // The last page: Folio turns it as the back cover.
       id: 'back', name: '裏表紙', numbered: false, toc: false, span: 'page',
@@ -229,7 +237,9 @@ export function createJapaneseGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: calloutStyles(),
+    calloutStyles: [...calloutStyles(), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'])],
+    chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ja']),
+    pageTemplates: [sheetTemplate(FEATURE_NAMES['ja'].sheet)],
     parts: {
       // A part opens on a recto (the left-hand page) facing a verso in its
       // colour, and its first chapter opens on the back of the divider.

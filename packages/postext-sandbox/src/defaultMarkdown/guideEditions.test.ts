@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR, DEFAULT_MARKDOWN_ZH_HANS } from './index.js';
+import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_DE, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_FR, DEFAULT_MARKDOWN_IT, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR, DEFAULT_MARKDOWN_ZH_HANS } from './index.js';
 import { sampleChapterTexts } from '../book/chapterOps.js';
 import { DEFAULT_RESOURCE_IDS, GUIDE_VIDEO_IDS } from '../defaultResources/index.js';
 
-const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS, ar: DEFAULT_MARKDOWN_AR, ja: DEFAULT_MARKDOWN_JA, 'pt-BR': DEFAULT_MARKDOWN_PT_BR } as const;
+const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT_MARKDOWN_CA, 'zh-Hans': DEFAULT_MARKDOWN_ZH_HANS, ar: DEFAULT_MARKDOWN_AR, ja: DEFAULT_MARKDOWN_JA, 'pt-BR': DEFAULT_MARKDOWN_PT_BR, fr: DEFAULT_MARKDOWN_FR, de: DEFAULT_MARKDOWN_DE, it: DEFAULT_MARKDOWN_IT } as const;
 
 // `:ref{id="…"}` in the prose is the syntax, not a reference.
 const refsOf = (md: string): string[] => [...md.matchAll(/:ref\{id="([^"…]+)"/g)].map((m) => m[1]!);
@@ -12,7 +12,7 @@ const h1s = (md: string): string[] => [...md.matchAll(/^# (.+?)(?:\s*\{.*\})?$/g
 /** Han, kana and the CJK marks and full-width forms. */
 const HAN = /[㐀-鿿　-〿぀-ヿ＀-￯]/;
 
-describe('the seven editions of the guide', () => {
+describe('the ten editions of the guide', () => {
   it('have the same chapters, headings levels and figure references', () => {
     const shape = (md: string) => ({
       chapters: sampleChapterTexts(md).length,
@@ -20,21 +20,23 @@ describe('the seven editions of the guide', () => {
       refs: refsOf(md),
       directives: (md.match(/^:::[a-z]+/gm) ?? []).join(' '),
       maths: (md.match(/\$\$/g) ?? []).length,
+      // The index marks (#1296), counted per chapter, and the chapters'
+      // anchors the cross-references name.
+      index: sampleChapterTexts(md).map((c) => (c.match(/:index[[{]/g) ?? []).length),
+      anchors: [...md.matchAll(/^#+ .*\{#([\w-]+)/gm)].map((m) => m[1]),
     });
     const en = shape(DEFAULT_MARKDOWN_EN);
-    expect(en.chapters).toBe(14);
-    expect(shape(DEFAULT_MARKDOWN_ES)).toEqual(en);
-    expect(shape(DEFAULT_MARKDOWN_CA)).toEqual(en);
-    expect(shape(DEFAULT_MARKDOWN_ZH_HANS)).toEqual(en);
-    expect(shape(DEFAULT_MARKDOWN_AR)).toEqual(en);
-    expect(shape(DEFAULT_MARKDOWN_JA)).toEqual(en);
-    expect(shape(DEFAULT_MARKDOWN_PT_BR)).toEqual(en);
+    expect(en.chapters).toBe(22);
+    for (const [lang, md] of Object.entries(EDITIONS)) expect(shape(md), lang).toEqual(en);
   });
 
   it('mention only resources the guide ships, the Chinese composition figure among them', () => {
     const ids = new Set<string>([...Object.values(DEFAULT_RESOURCE_IDS), ...VIDEO_IDS]);
     for (const md of Object.values(EDITIONS)) {
-      for (const id of refsOf(md)) expect(ids.has(id), id).toBe(true);
+      // A reference may also name a chapter by its heading's id (#1296) or
+      // the numbered comic strip.
+      const anchors = new Set([...md.matchAll(/^#+ .*\{#([\w-]+)/gm), ...md.matchAll(/^:::strip\{.*\bid=([\w-]+)/gm)].map((m) => m[1]));
+      for (const id of refsOf(md)) expect(ids.has(id) || anchors.has(id), id).toBe(true);
       expect(refsOf(md)).toContain('cjk-composition');
     }
   });
@@ -50,7 +52,7 @@ describe('the seven editions of the guide', () => {
       const titles = h1s(md);
       const listed = [...md.matchAll(/^:::part\{[^}]*\}\n([\s\S]*?)\n:::$/gm)]
         .flatMap((m) => m[1]!.split('\n').map((l) => l.replace(/^\d+\.\s+/, '').trim()));
-      expect(listed.length).toBe(11);
+      expect(listed.length).toBe(18);
       for (const title of listed) expect(titles).toContain(title);
     }
   });

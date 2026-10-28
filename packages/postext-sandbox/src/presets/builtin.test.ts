@@ -163,8 +163,8 @@ describe('the built-in guide in ten languages', () => {
   });
 
   it('cuts every edition into the same chapters', async () => {
-    const counts = await Promise.all(['en', 'es', 'ca', 'zh-Hans', 'ar', 'ja', 'pt-BR'].map(async (l) => (await preset().load(l)).chapters.length));
-    expect(counts).toEqual([14, 14, 14, 14, 14, 14, 14]);
+    const counts = await Promise.all(['en', 'es', 'ca', 'zh-Hans', 'ar', 'ja', 'pt-BR', 'fr', 'de', 'it'].map(async (l) => (await preset().load(l)).chapters.length));
+    expect(counts).toEqual(Array(10).fill(22));
   });
 
   it('follows the language asked for when the host passes one of the samples', async () => {

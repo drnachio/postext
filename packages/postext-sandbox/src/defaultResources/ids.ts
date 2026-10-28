@@ -35,4 +35,5 @@ export const DEFAULT_RESOURCE_IDS = {
   presetTable: 'preset-sizes',
   phasesTable: 'development-phases',
   paperStocksTable: 'paper-stocks',
+  editionLayersTable: 'edition-layers',
 } as const;

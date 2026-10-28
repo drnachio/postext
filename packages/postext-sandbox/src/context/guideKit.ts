@@ -44,11 +44,12 @@ export const COLOURS = {
   night: '#0e1014',
   paper: '#ffffff',
   white: '#ffffff',
-  // The part colour: gilt by default, blue / gilt / vermilion per part.
-  band: '#b7820f',
+  // The part colour: gilt by default, blue / gilt / teal / vermilion per part.
+  band: '#8f6408',
   gilt: '#d8a21a',
   'main-color': '#2b4acb',
   vermilion: '#c0452f',
+  teal: '#1f7a6d',
   muted: '#6c7079',
   mist: '#b9bcc4',
   rule: '#d9d5cc',
@@ -60,58 +61,58 @@ export type PaletteId = keyof typeof COLOURS;
 export const PALETTE_NAMES: Record<GuideLang, Record<PaletteId, string>> = {
   en: {
     ink: 'Ink', night: 'Cover night', paper: 'Paper', white: 'White', band: 'Part colour', gilt: 'Gilt',
-    'main-color': 'Postext blue', vermilion: 'Vermilion', muted: 'Muted grey', mist: 'Mist', rule: 'Rules',
+    'main-color': 'Postext blue', vermilion: 'Vermilion', teal: 'Teal', muted: 'Muted grey', mist: 'Mist', rule: 'Rules',
     tint: 'Warm tint', panel: 'Cool panel',
   },
   es: {
     ink: 'Tinta', night: 'Noche de cubierta', paper: 'Papel', white: 'Blanco', band: 'Color de parte', gilt: 'Oro',
-    'main-color': 'Azul Postext', vermilion: 'Bermellón', muted: 'Gris de notas', mist: 'Bruma', rule: 'Filetes',
+    'main-color': 'Azul Postext', vermilion: 'Bermellón', teal: 'Verde azulado', muted: 'Gris de notas', mist: 'Bruma', rule: 'Filetes',
     tint: 'Fondo cálido', panel: 'Fondo frío',
   },
   'zh-Hans': {
     ink: '墨色', night: '封面夜色', paper: '纸色', white: '白色', band: '篇色', gilt: '金色',
-    'main-color': 'Postext蓝', vermilion: '朱红', muted: '注释灰', mist: '雾灰', rule: '线条',
+    'main-color': 'Postext蓝', vermilion: '朱红', teal: '青绿', muted: '注释灰', mist: '雾灰', rule: '线条',
     tint: '暖色底', panel: '冷色底',
   },
   ca: {
     ink: 'Tinta', night: 'Nit de coberta', paper: 'Paper', white: 'Blanc', band: 'Color de part', gilt: 'Or',
-    'main-color': 'Blau Postext', vermilion: 'Vermelló', muted: 'Gris de notes', mist: 'Boira', rule: 'Filets',
+    'main-color': 'Blau Postext', vermilion: 'Vermelló', teal: 'Verd blavós', muted: 'Gris de notes', mist: 'Boira', rule: 'Filets',
     tint: 'Fons càlid', panel: 'Fons fred',
   },
   ar: {
     ink: 'الحبر', night: 'ليل الغلاف', paper: 'الورق', white: 'الأبيض', band: 'لون الجزء', gilt: 'الذهبي',
-    'main-color': 'أزرق Postext', vermilion: 'الزنجفري', muted: 'رمادي الحواشي', mist: 'الضباب', rule: 'الخطوط',
+    'main-color': 'أزرق Postext', vermilion: 'الزنجفري', teal: 'الأزرق المخضر', muted: 'رمادي الحواشي', mist: 'الضباب', rule: 'الخطوط',
     tint: 'خلفية دافئة', panel: 'خلفية باردة',
   },
   ja: {
     ink: '墨', night: '表紙の夜色', paper: '紙', white: '白', band: '部の色', gilt: '金',
-    'main-color': 'Postextの青', vermilion: '朱', muted: '注記の灰色', mist: '霧の灰色', rule: '罫',
+    'main-color': 'Postextの青', vermilion: '朱', teal: '青緑', muted: '注記の灰色', mist: '霧の灰色', rule: '罫',
     tint: '暖色の地', panel: '寒色の地',
   },
   'pt-BR': {
     ink: 'Tinta', night: 'Noite da capa', paper: 'Papel', white: 'Branco', band: 'Cor da parte', gilt: 'Ouro',
-    'main-color': 'Azul Postext', vermilion: 'Vermelhão', muted: 'Cinza das notas', mist: 'Névoa', rule: 'Fios',
+    'main-color': 'Azul Postext', vermilion: 'Vermelhão', teal: 'Verde-azulado', muted: 'Cinza das notas', mist: 'Névoa', rule: 'Fios',
     tint: 'Fundo quente', panel: 'Fundo frio',
   },
   fr: {
     ink: 'Encre', night: 'Nuit de couverture', paper: 'Papier', white: 'Blanc', band: 'Couleur de partie', gilt: 'Or',
-    'main-color': 'Bleu Postext', vermilion: 'Vermillon', muted: 'Gris des notes', mist: 'Brume', rule: 'Filets',
+    'main-color': 'Bleu Postext', vermilion: 'Vermillon', teal: 'Bleu canard', muted: 'Gris des notes', mist: 'Brume', rule: 'Filets',
     tint: 'Fond chaud', panel: 'Fond froid',
   },
   de: {
     ink: 'Tinte', night: 'Umschlagnacht', paper: 'Papier', white: 'Weiß', band: 'Teilfarbe', gilt: 'Gold',
-    'main-color': 'Postext-Blau', vermilion: 'Zinnoberrot', muted: 'Notizgrau', mist: 'Nebel', rule: 'Linien',
+    'main-color': 'Postext-Blau', vermilion: 'Zinnoberrot', teal: 'Petrol', muted: 'Notizgrau', mist: 'Nebel', rule: 'Linien',
     tint: 'Warmer Grund', panel: 'Kühler Grund',
   },
   it: {
     ink: 'Inchiostro', night: 'Notte di copertina', paper: 'Carta', white: 'Bianco', band: 'Colore di parte', gilt: 'Oro',
-    'main-color': 'Blu Postext', vermilion: 'Vermiglione', muted: 'Grigio delle note', mist: 'Foschia', rule: 'Filetti',
+    'main-color': 'Blu Postext', vermilion: 'Vermiglione', teal: 'Verde petrolio', muted: 'Grigio delle note', mist: 'Foschia', rule: 'Filetti',
     tint: 'Fondo caldo', panel: 'Fondo freddo',
   },
 };
 
 /** Part colours, as `:::part{palette="band=#…"}` in the guide's markdown. */
-export const GUIDE_PART_COLOURS = { foundations: '#2b4acb', craft: '#b7820f', practice: '#c0452f' } as const;
+export const GUIDE_PART_COLOURS = { foundations: '#2b4acb', craft: '#8f6408', beyond: '#1f7a6d', practice: '#c0452f' } as const;
 
 /** Resource id of the cover artwork (see `defaultResources`). */
 export const GUIDE_COVER_RESOURCE_ID = 'guide-cover';

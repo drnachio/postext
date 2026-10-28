@@ -67,11 +67,11 @@ export function verticalCover(f: VerticalFaces) {
 }
 
 /** The back cover, the last page: the night of the front, a strip down the
- *  right as on the cover — the three part colours as bands, "Postext"
+ *  right as on the cover — the four part colours as bands, "Postext"
  *  turned down the column, a gilt rule and a few lines on the engine — and
  *  where to find it at the foot of the strip. */
 export function verticalBackCover(f: VerticalFaces) {
-  const band = (id: string, color: 'main-color' | 'gilt' | 'vermilion', k: number) =>
+  const band = (id: string, color: 'main-color' | 'gilt' | 'teal' | 'vermilion', k: number) =>
     box(id, color, { anchor: at('page', 'top-left'), offset: [40 + k * 14, 12], width: 12, height: 2.5 });
   return {
     enabled: true,
@@ -80,7 +80,8 @@ export function verticalBackCover(f: VerticalFaces) {
       box('backBg', 'night', { anchor: at('bleed', 'top-left') }),
       band('backBandFoundations', 'main-color', 0),
       band('backBandCraft', 'gilt', 1),
-      band('backBandPractice', 'vermilion', 2),
+      band('backBandBeyond', 'teal', 2),
+      band('backBandPractice', 'vermilion', 3),
       text('backTitle', '{attr.book}', {
         anchor: at('page', 'top-left'), offset: [40, 20], width: 200,
         size: 60, family: DISPLAY, weight: 700, color: 'white', lineHeight: 1,
