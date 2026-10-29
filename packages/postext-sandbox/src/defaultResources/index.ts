@@ -23,6 +23,7 @@ import { invalidateResourceImage } from '../controls/media/resourceImages.js';
 import { putBlobAt } from '../storage/blobStore.js';
 import { type GuideLang, GUIDE_LANGS, guideLang } from './lang.js';
 import { guideVideosSignature, guideVideoPosters, guideVideoResources } from './videos.js';
+import { guideStripArt, guideStripResources, guideStripSignature } from './strip.js';
 import { SVG_FIGURES, figureSize } from './figures.js';
 import { FIGURE_SPECS } from './figureSpecs.js';
 import { TABLE_SPECS } from './tableSpecs.js';
@@ -33,6 +34,7 @@ export type { GuideFigure } from './figures.js';
 
 export { GUIDE_LANGS, guideLang, type GuideLang } from './lang.js';
 export { GUIDE_VIDEO_IDS, guideHasVideos, guideVideoPosters } from './videos.js';
+export { GUIDE_STRIP_IDS, guideStripArt } from './strip.js';
 
 /** A figure's or table's placement in an edition. The Chinese and Japanese
  *  editions are vertical: a figure or table stands upright in its tier and
@@ -58,7 +60,7 @@ export function figureBlobId(fileId: string, lang: GuideLang): string {
  *  built-in preset's fingerprint (no blob is written). */
 export function defaultResourcesSignature(): string {
   // `blob-ids-by-locale`: each language's figures moved to ids of their own.
-  const parts: unknown[] = ['blob-ids-by-locale', guideVideosSignature()];
+  const parts: unknown[] = ['blob-ids-by-locale', guideVideosSignature(), guideStripSignature()];
   for (const lang of GUIDE_LANGS) {
     for (const [fileId, fig] of Object.entries(SVG_FIGURES)) parts.push(fileId, fig.generate(lang));
     for (const f of FIGURE_SPECS) parts.push(f.id, f.fileId, figurePlacement(f.placement, lang), f.caption[lang], f.altText[lang]);
@@ -124,6 +126,19 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
       }
     }),
   );
+  // The comic strip's panels (#1296): one copy of the pictures for every
+  // edition, stored like the posters.
+  const strip = await guideStripArt().catch(() => ({} as Record<string, Uint8Array>));
+  await Promise.all(
+    Object.entries(strip).map(async ([blobId, bytes]) => {
+      try {
+        await putBlobAt(blobId, bytes.buffer as ArrayBuffer, 'image/jpeg');
+        invalidateResourceImage(blobId);
+      } catch {
+        // as for the figures
+      }
+    }),
+  );
   const videos: Resource[] = guideVideoResources(lang, now).map((r) => ({ ...r, placement: figurePlacement(r.placement!, lang) }));
 
   const tables: Resource[] = TABLE_SPECS.map((spec) => ({
@@ -137,5 +152,5 @@ export async function buildDefaultResources(locale = 'en'): Promise<Resource[]> 
     updatedAt: now,
   }));
 
-  return [...figures, ...videos, ...tables];
+  return [...figures, ...videos, ...tables, ...guideStripResources(lang, now)];
 }

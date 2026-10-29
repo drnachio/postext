@@ -14,6 +14,7 @@ import {
   verticalBackCover, verticalCallouts, verticalChapterOpener, verticalContentsOpener, verticalCover, verticalPartDesign, verticalToc,
   type VerticalFaces,
 } from './guideVerticalKit.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Chinese edition of the Postext guide: a vertical book bound on the
 // right, as a Chinese book was set before horizontal type took over the
@@ -91,8 +92,20 @@ function runningHeads() {
   );
 }
 
+/** The faces and leading of the new feature styles (`guideFeatures.ts`). */
+const FEATURE_FACES = FACES;
+const FEATURES: FeatureOptions = { boxLead: 13.5, bodyAlign: 'left', upperLabels: false };
+
 function headingStyles(): HeadingStyleConfig[] {
   const empty = slot();
+  // The contents opens on the back of the cover, a spread of two pages
+  // with the colophon at its foot.
+  const contents: HeadingStyleConfig = {
+    id: 'contents', name: '目录', numbered: false, toc: false, span: 'page',
+    breakBefore: { enabled: true, parity: 'even' },
+    advancedDesign: verticalContentsOpener(FACES),
+    layout: { layoutType: 'single' },
+  };
   return [
     {
       id: 'cover', name: '封面', numbered: false, toc: false, span: 'page',
@@ -100,16 +113,10 @@ function headingStyles(): HeadingStyleConfig[] {
       advancedDesign: verticalCover(FACES),
       header: empty, footer: empty,
       layout: { layoutType: 'single' },
-      // The colophon on the back of the cover stands in the lower left of
-      // the page, where the book's last columns end.
-      margins: { top: mm(PAGE_H - 132), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(PAGE_W - M_INNER - 92) },
     },
-    {
-      id: 'contents', name: '目录', numbered: false, toc: false, span: 'page',
-      breakBefore: { enabled: true, parity: 'odd' },
-      advancedDesign: verticalContentsOpener(FACES),
-      layout: { layoutType: 'single' },
-    },
+    contents,
+    // The index at the back, in two columns under the contents page's design.
+    indexHeadingStyle(contents, FEATURE_NAMES['zh-Hans'].index, GUTTER),
     {
       // The last page: Folio turns it as the back cover.
       id: 'back', name: '封底', numbered: false, toc: false, span: 'page',
@@ -121,9 +128,11 @@ function headingStyles(): HeadingStyleConfig[] {
   ];
 }
 
+/** The colophon's type, set as a box at the foot of the contents. */
+const COLOPHON_TYPE: ParagraphStyleConfig = { id: 'colophon', name: '版权页', fontFamily: ZH_SANS, fontSize: pt(7.5), lineHeight: pt(12.5), textAlign: 'justify', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') };
+
 function paragraphStyles(): ParagraphStyleConfig[] {
   return [
-    { id: 'colophon', name: '版权页', fontFamily: ZH_SANS, fontSize: pt(7.5), lineHeight: pt(12.5), textAlign: 'justify', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') },
     { id: 'standfirst', name: '导语', fontFamily: ZH_TEXT, fontSize: pt(12), lineHeight: pt(20), textAlign: 'justify', firstLineIndent: mm(0), spaceBetween: pt(6), marginBottom: pt(6), color: col('ink'), boldColor: col('band') },
     // Right-aligned is foot-aligned down a column: a signature at the foot.
     { id: 'signature', name: '署名', fontFamily: ZH_SANS, fontSize: pt(8), lineHeight: pt(12), textAlign: 'right', firstLineIndent: mm(0), marginTop: pt(4), color: col('muted') },
@@ -198,7 +207,10 @@ export function createChineseGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: calloutStyles(),
+    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'])],
+    chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['zh-Hans']),
+    markStyles: guideMarkStyles(FEATURE_NAMES['zh-Hans']),
+    pageTemplates: [sheetTemplate(FEATURE_NAMES['zh-Hans'].sheet)],
     parts: {
       // A part opens on a recto (the left-hand page) facing a verso in its
       // colour, and its first chapter opens on the back of the divider.

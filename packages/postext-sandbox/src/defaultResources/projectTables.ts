@@ -127,121 +127,71 @@ export function presetTableModel(lang: GuideLang): TableModel {
       );
 }
 
+/** The project's phases, as each edition words them (#1296). */
+const PHASES: Record<GuideLang, { head: string[]; rows: string[][] }> = {
+  en: { head: ['Phase', 'Shipped', 'Still open'], rows: [
+    ['1 · Foundation', 'Data model, parser, DOM-free measurement, document format', 'Open: finalise the configuration format'],
+    ['2 · Editorial layout', 'Columns, balancing, floats, tables that split or rotate, text wrapped round pictures, books and parts, composed pages', 'Open: text on both sides of a picture'],
+    ['3 · Professional typography', 'Knuth-Plass, hyphenation in 8 languages, orphans, widows and runts, mathematics, footnotes, citations, a back-of-book index, Chinese and Japanese set horizontally and vertically, Arabic with kashida, comics, music, exercises', 'Open: margin notes'],
+    ['4 · Output', 'Canvas, HTML, tagged PDF and PDF/X, EPUB 3, SCORM, worker, Sandbox with presets, command line', '**Shipped**'],
+  ] },
+  es: { head: ['Fase', 'Hecho', 'Pendiente'], rows: [
+    ['1 · Fundamentos', 'Modelo de datos, parser, medición sin DOM, formato del documento', 'Abierto: cerrar el formato de configuración'],
+    ['2 · Maquetación editorial', 'Columnas, equilibrado, flotantes, tablas que se parten o giran, texto que rodea las imágenes, libros y partes, páginas compuestas', 'Abierto: texto a ambos lados de una imagen'],
+    ['3 · Tipografía profesional', 'Knuth-Plass, separación silábica en 8 idiomas, huérfanas, viudas y líneas cortas, matemáticas, notas al pie, citas, índice analítico, chino y japonés en horizontal y en vertical, árabe con cachida, cómics, música, ejercicios', 'Abierto: notas al margen'],
+    ['4 · Salida', 'Canvas, HTML, PDF etiquetado y PDF/X, EPUB 3, SCORM, worker, Sandbox con presets, línea de comandos', '**Hecho**'],
+  ] },
+  ca: { head: ['Fase', 'Fet', 'Pendent'], rows: [
+    ['1 · Fonaments', 'Model de dades, parser, mesura sense DOM, format del document', 'Obert: tancar el format de configuració'],
+    ['2 · Maquetació editorial', 'Columnes, equilibri, flotants, taules que es parteixen o giren, text que envolta imatges, llibres i parts, pàgines compostes', 'Obert: text a banda i banda d\'una imatge'],
+    ['3 · Tipografia professional', 'Knuth-Plass, partició de mots en 8 llengües, òrfenes, vídues i línies curtes, matemàtiques, notes a peu de pàgina, cites, índex analític, xinès i japonès en horitzontal i en vertical, àrab amb kashida, còmics, música, exercicis', 'Obert: notes al marge'],
+    ['4 · Sortida', 'Canvas, HTML, PDF etiquetat i PDF/X, EPUB 3, SCORM, worker, Sandbox amb presets, línia d\'ordres', '**Fet**'],
+  ] },
+  'pt-BR': { head: ['Fase', 'Entregue', 'Pendente'], rows: [
+    ['1 · Fundamentos', 'Modelo de dados, parser, medição sem DOM, formato do documento', 'Em aberto: fechar o formato de configuração'],
+    ['2 · Diagramação editorial', 'Colunas, balanceamento, flutuantes, tabelas que se dividem ou giram, texto que contorna imagens, livros e partes, páginas compostas', 'Em aberto: texto dos dois lados de uma imagem'],
+    ['3 · Tipografia profissional', 'Knuth-Plass, hifenização em 8 idiomas, órfãs, viúvas e linhas curtas, matemática, notas de rodapé, citações, índice remissivo, chinês e japonês na horizontal e na vertical, árabe com kashida, quadrinhos, música, exercícios', 'Em aberto: notas de margem'],
+    ['4 · Saída', 'Canvas, HTML, PDF com tags e PDF/X, EPUB 3, SCORM, worker, Sandbox com predefinições, linha de comando', '**Entregue**'],
+  ] },
+  fr: { head: ['Phase', 'Livré', 'Encore ouvert'], rows: [
+    ['1 · Fondations', 'Modèle de données, parseur, mesure sans DOM, format du document', 'Ouvert : finaliser le format de configuration'],
+    ['2 · Mise en page éditoriale', 'Colonnes, équilibrage, flottants, tableaux qui se divisent ou pivotent, texte qui contourne les images, livres et parties, pages composées', 'Ouvert : texte des deux côtés d’une image'],
+    ['3 · Typographie professionnelle', 'Knuth-Plass, césure en 8 langues, orphelines, veuves et lignes trop courtes, mathématiques, notes de bas de page, citations, index, chinois et japonais composés horizontalement et verticalement, arabe avec kashida, bande dessinée, musique, exercices', 'Ouvert : notes marginales'],
+    ['4 · Sortie', 'Canvas, HTML, PDF balisé et PDF/X, EPUB 3, SCORM, worker, Sandbox avec préréglages, ligne de commande', '**Livré**'],
+  ] },
+  de: { head: ['Phase', 'Ausgeliefert', 'Noch offen'], rows: [
+    ['1 · Grundlagen', 'Datenmodell, Parser, Messung ohne DOM, Dokumentformat', 'Offen: das Konfigurationsformat festschreiben'],
+    ['2 · Verlegerisches Layout', 'Spalten, Spaltenausgleich, Gleitobjekte, Tabellen, die sich teilen oder drehen, Text, der Bilder umfließt, Bücher und Teile, zusammengesetzte Seiten', 'Offen: Text auf beiden Seiten eines Bildes'],
+    ['3 · Professionelle Typografie', 'Knuth-Plass, Silbentrennung in 8 Sprachen, Waisen, Witwen und zu kurze Ausgangszeilen, Mathematik, Fußnoten, Zitate, ein Register, Chinesisch und Japanisch horizontal und vertikal gesetzt, Arabisch mit Kaschida, Comics, Musik, Übungen', 'Offen: Marginalien'],
+    ['4 · Ausgabe', 'Canvas, HTML, getaggtes PDF und PDF/X, EPUB 3, SCORM, Worker, Sandbox mit Vorlagen, Kommandozeile', '**Ausgeliefert**'],
+  ] },
+  it: { head: ['Fase', 'Rilasciato', 'Ancora aperto'], rows: [
+    ['1 · Fondamenta', 'Modello dei dati, parser, misura senza DOM, formato del documento', 'Aperto: definire il formato di configurazione'],
+    ['2 · Impaginazione editoriale', 'Colonne, bilanciamento, elementi flottanti, tabelle che si dividono o ruotano, testo che scorre intorno alle immagini, libri e parti, pagine composte', 'Aperto: testo su entrambi i lati di un’immagine'],
+    ['3 · Tipografia professionale', 'Knuth-Plass, sillabazione in 8 lingue, orfane, vedove e righe finali troppo corte, matematica, note a piè di pagina, citazioni, indice analitico, cinese e giapponese composti in orizzontale e in verticale, arabo con kashida, fumetti, musica, esercizi', 'Aperto: note a margine'],
+    ['4 · Output', 'Canvas, HTML, PDF con tag e PDF/X, EPUB 3, SCORM, worker, Sandbox con preset, riga di comando', '**Rilasciato**'],
+  ] },
+  ar: { head: ['المرحلة', 'ما أُنجز', 'ما بقي'], rows: [
+    ['1 · الأسس', 'نموذج البيانات، والمحلّل، والقياس بلا DOM، وصيغة المستند', 'مفتوح: تثبيت صيغة الإعدادات'],
+    ['2 · التنضيد التحريري', 'الأعمدة، والموازنة، والعناصر العائمة، والجداول التي تنقسم أو تدور، والنص الملتفّ حول الصور، والكتب والأجزاء، والصفحات المركّبة', 'مفتوح: نص على جانبي الصورة معًا'],
+    ['3 · الطباعة الاحترافية', 'Knuth-Plass، وتقطيع الكلمات في 8 لغات، والأرامل واليتامى والأسطر القصيرة، والرياضيات، والحواشي السفلية، والاستشهادات، والفهرس الأبجدي، والصينية واليابانية أفقيًا وعموديًا، والعربية بالكشيدة، والقصص المصوّرة، والموسيقى، والتمارين', 'مفتوح: حواشي الهامش'],
+    ['4 · المخرجات', 'Canvas، وHTML، وPDF موسوم وPDF/X، وEPUB 3، وSCORM، وworker، وSandbox بكتب جاهزة، وسطر الأوامر', '**أُنجز**'],
+  ] },
+  'zh-Hans': { head: ['阶段', '已完成', '待完成'], rows: [
+    ['1 · 基础', '数据模型、解析器、不借助DOM的测量、文档格式', '确定配置格式'],
+    ['2 · 出版排版', '分栏、平衡分栏、浮动体、可拆分或旋转的表、图旁绕排的文字、书与篇、模板页', '图两侧都排文字'],
+    ['3 · 专业排版', 'Knuth–Plass断行、8种语言的断词、段首孤行、段末孤行与孤字、数学公式、脚注、文献引用、书后索引、中文和日文的横排与竖排、用卡希达两端对齐的阿拉伯文、漫画、乐谱、练习', '边注'],
+    ['4 · 输出', 'Canvas、HTML、带标签的PDF和PDF/X、EPUB 3、SCORM、worker、带预设的Sandbox、命令行', '**已完成**'],
+  ] },
+  ja: { head: ['段階', '完了', '残り'], rows: [
+    ['1 · 基盤', 'データモデル、パーサー、DOMを使わない計測、文書形式', '設定形式の確定'],
+    ['2 · 書籍の組版', '段組、段末そろえ、フロート、分割・回転できる表、図版への回り込み、本と部、テンプレートページ', '図版の両側に流れる文字'],
+    ['3 · 本格的な組版', 'Knuth–Plass、8言語のハイフネーション、オーファン・ウィドウ・孤立した最終行、数式、脚注、文献の引用、巻末の索引、中国語と日本語の横組み・縦組み、カシーダを使うアラビア語、漫画、楽譜、練習問題', '欄外の注'],
+    ['4 · 出力', 'Canvas、HTML、タグ付きPDFとPDF/X、EPUB 3、SCORM、ワーカー、プリセット付きのSandbox、コマンドライン', '**完了**'],
+  ] },
+};
+
 export function phasesTableModel(lang: GuideLang): TableModel {
-  if (lang === 'ar') {
-    const open = 'مفتوح';
-    return table(
-      ['المرحلة', 'ما أُنجز', 'ما بقي'],
-      [
-        ['1 · الأسس', 'نموذج البيانات، والمحلّل، والقياس بلا DOM، وصيغة المستند', open + ': تثبيت صيغة الإعدادات'],
-        ['2 · التنضيد التحريري', 'الأعمدة، والموازنة، والعناصر العائمة، والجداول التي تنقسم أو تدور، والكتب والأجزاء', open + ': نص يلتف حول العوائق'],
-        ['3 · الطباعة الاحترافية', 'Knuth-Plass، وتقطيع الكلمات في 8 لغات، والأرامل واليتامى والأسطر القصيرة، والرياضيات، والحواشي وتعليقات نهاية الفصل، والصينية أفقيًا وعموديًا، والعربية من اليمين إلى اليسار بالكشيدة', open + ': حواشي الهامش'],
-        ['4 · المخرجات', 'Canvas، وHTML، وPDF موسوم، وworker، وSandbox بكتب جاهزة', '**أُنجز**'],
-      ],
-    );
-  }
-  if (lang === 'ja') {
-    return table(
-      ['段階', '完了', '残り'],
-      [
-        ['1 · 基盤', 'データモデル、パーサー、DOMを使わない計測、文書形式', '設定形式の確定'],
-        ['2 · 書籍の組版', '段組、段末そろえ、フロート、分割・回転できる表、本と部', '障害物を避けて流れる文字'],
-        ['3 · 本格的な組版', 'Knuth–Plass、8言語のハイフネーション、オーファン・ウィドウ・孤立した最終行、数式、脚注と章末注、中国語と日本語の横組み・縦組み', '欄外の注'],
-        ['4 · 出力', 'Canvas、HTML、タグ付きPDF、EPUB 3、ワーカー、プリセット付きのSandbox', '**完了**'],
-      ],
-    );
-  }
-  if (lang === 'zh-Hans') {
-    return table(
-      ['阶段', '已完成', '待完成'],
-      [
-        ['1 · 基础', '数据模型、解析器、不借助DOM的测量、文档格式', '确定配置格式'],
-        ['2 · 出版排版', '分栏、平衡分栏、浮动体、可拆分或旋转的表、书与篇', '文字绕排'],
-        ['3 · 专业排版', 'Knuth–Plass断行、8种语言的断词、段首孤行、段末孤行与孤字、数学公式、脚注和章末注、中文横排与竖排', '边注'],
-        ['4 · 输出', 'Canvas、HTML、带标签的PDF、EPUB 3、worker、带预设的Sandbox', '**已完成**'],
-      ],
-    );
-  }
-  if (lang === 'de') {
-    const open = 'Offen';
-    return table(
-      ['Phase', 'Ausgeliefert', 'Noch offen'],
-      [
-        ['1 · Grundlagen', 'Datenmodell, Parser, Messung ohne DOM, Dokumentformat', open + ': das Konfigurationsformat festschreiben'],
-        ['2 · Verlegerisches Layout', 'Spalten, Spaltenausgleich, Gleitobjekte, Tabellen, die sich teilen oder drehen, Bücher und Teile', open + ': Text, der Hindernisse umfließt'],
-        ['3 · Professionelle Typografie', 'Knuth-Plass, Silbentrennung in 8 Sprachen, Waisen, Witwen und zu kurze Ausgangszeilen, Mathematik, Fußnoten und Kapitelendnoten, Chinesisch horizontal und vertikal gesetzt', open + ': Marginalien'],
-        ['4 · Ausgabe', 'Canvas, HTML, getaggtes PDF, EPUB 3, Worker, Sandbox mit Vorlagen', '**Ausgeliefert**'],
-      ],
-    );
-  }
-  if (lang === 'fr') {
-    const open = 'Ouvert';
-    return table(
-      ['Phase', 'Livré', 'Encore ouvert'],
-      [
-        ['1 · Fondations', 'Modèle de données, parseur, mesure sans DOM, format du document', open + ' : finaliser le format de configuration'],
-        ['2 · Mise en page éditoriale', 'Colonnes, équilibrage, flottants, tableaux qui se divisent ou pivotent, livres et parties', open + ' : texte qui contourne les obstacles'],
-        ['3 · Typographie professionnelle', 'Knuth-Plass, césure en 8 langues, orphelines, veuves et lignes trop courtes, mathématiques, notes de bas de page et notes de fin de chapitre, chinois composé horizontalement et verticalement', open + ' : notes marginales'],
-        ['4 · Sortie', 'Canvas, HTML, PDF balisé, EPUB 3, worker, Sandbox avec préréglages', '**Livré**'],
-      ],
-    );
-  }
-  if (lang === 'it') {
-    const open = 'Aperto';
-    return table(
-      ['Fase', 'Rilasciato', 'Ancora aperto'],
-      [
-        ['1 · Fondamenta', 'Modello dei dati, parser, misura senza DOM, formato del documento', open + ': definire il formato di configurazione'],
-        ['2 · Impaginazione editoriale', 'Colonne, bilanciamento, elementi flottanti, tabelle che si dividono o ruotano, libri e parti', open + ': testo che scorre intorno agli ostacoli'],
-        ['3 · Tipografia professionale', 'Knuth-Plass, sillabazione in 8 lingue, orfane, vedove e righe finali troppo corte, matematica, note a piè di pagina e note di fine capitolo, cinese composto in orizzontale e in verticale', open + ': note a margine'],
-        ['4 · Output', 'Canvas, HTML, PDF con tag, EPUB 3, worker, Sandbox con preset', '**Rilasciato**'],
-      ],
-    );
-  }
-  if (lang === 'pt-BR') {
-    const open = 'Em aberto';
-    return table(
-      ['Fase', 'Entregue', 'Pendente'],
-      [
-        ['1 · Fundamentos', 'Modelo de dados, parser, medição sem DOM, formato do documento', open + ': fechar o formato de configuração'],
-        ['2 · Diagramação editorial', 'Colunas, balanceamento, flutuantes, tabelas que se dividem ou giram, livros e partes', open + ': texto que contorna obstáculos'],
-        ['3 · Tipografia profissional', 'Knuth-Plass, hifenização em 8 idiomas, órfãs, viúvas e linhas curtas, matemática, notas de rodapé e notas de fim de capítulo, chinês na horizontal e na vertical', open + ': notas de margem'],
-        ['4 · Saída', 'Canvas, HTML, PDF com tags, EPUB 3, worker, Sandbox com predefinições', '**Entregue**'],
-      ],
-    );
-  }
-  if (lang === 'ca') {
-    const open = 'Obert';
-    return table(
-      ['Fase', 'Fet', 'Pendent'],
-      [
-        ['1 · Fonaments', 'Model de dades, parser, mesura sense DOM, format del document', open + ': tancar el format de configuració'],
-        ['2 · Maquetació editorial', 'Columnes, equilibri, flotants, taules que es parteixen o giren, llibres i parts', open + ': text que envolta obstacles'],
-        ['3 · Tipografia professional', 'Knuth-Plass, partició de mots en 8 llengües, òrfenes, vídues i línies curtes, matemàtiques, notes a peu de pàgina i notes de final de capítol, xinès en horitzontal i en vertical', open + ': notes al marge'],
-        ['4 · Sortida', 'Canvas, HTML, PDF etiquetat, EPUB 3, worker, Sandbox amb presets', '**Fet**'],
-      ],
-    );
-  }
-  const es = lang === 'es';
-  const done = es ? '**Hecho**' : '**Shipped**';
-  const open = es ? 'Abierto' : 'Open';
-  return es
-    ? table(
-        ['Fase', 'Hecho', 'Pendiente'],
-        [
-          ['1 · Fundamentos', 'Modelo de datos, parser, medición sin DOM, formato del documento', open + ': cerrar el formato de configuración'],
-          ['2 · Maquetación editorial', 'Columnas, equilibrado, flotantes, tablas que se parten o giran, libros y partes', open + ': texto que rodea obstáculos'],
-          ['3 · Tipografía profesional', 'Knuth-Plass, separación silábica en 8 idiomas, huérfanas, viudas y líneas cortas, matemáticas, notas al pie y notas de final de capítulo, chino en horizontal y en vertical', open + ': notas al margen'],
-          ['4 · Salida', 'Canvas, HTML, PDF etiquetado, EPUB 3, worker, Sandbox con presets', done],
-        ],
-      )
-    : table(
-        ['Phase', 'Shipped', 'Still open'],
-        [
-          ['1 · Foundation', 'Data model, parser, DOM-free measurement, document format', open + ': finalise the configuration format'],
-          ['2 · Editorial layout', 'Columns, balancing, floats, tables that split or rotate, books and parts', open + ': text flowing around obstacles'],
-          ['3 · Professional typography', 'Knuth-Plass, hyphenation in 8 languages, orphans, widows and runts, mathematics, footnotes and chapter-end notes, Chinese set horizontally and vertically', open + ': margin notes'],
-          ['4 · Output', 'Canvas, HTML, tagged PDF, EPUB 3, worker, Sandbox with presets', done],
-        ],
-      );
+  const { head, rows } = PHASES[lang];
+  return table(head, rows);
 }

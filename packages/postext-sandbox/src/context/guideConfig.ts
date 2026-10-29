@@ -8,11 +8,12 @@ import { defaultResourceTypes } from 'postext';
 import { guideLang, type GuideLang } from '../defaultResources/lang.js';
 import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, HEAD, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, SANS, TEXT, TEXT_W,
-  at, box, col, colorPalette, guideCodeStyle, image, mm, pt, rule, slot, text, type TextOpts,
+  at, box, col, colorPalette, guideCodeStyle, image, mm, openerBand, pt, rule, slot, text, type TextOpts,
 } from './guideKit.js';
 import { createChineseGuideConfig } from './guideConfigZh.js';
 import { createArabicGuideConfig } from './guideConfigAr.js';
 import { createJapaneseGuideConfig } from './guideConfigJa.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureFaces, type FeatureOptions } from './guideFeatures.js';
 
 export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit.js';
 
@@ -20,7 +21,7 @@ export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit.js';
 // the colours and typefaces of the Postext brand (Fraunces for display, Lora
 // for the text, Geist for labels, Bricolage Grotesque for section headings,
 // gilt and blue on dark ink). A cover, a
-// self-numbering contents page, three part dividers — each recolouring the
+// self-numbering contents page, four part dividers — each recolouring the
 // palette-linked `band` colour with `:::part{palette=…}` — chapter openers
 // on a full-bleed band, running heads, and the callout styles the guide
 // uses to show the engine at work. Every font is served by Google Fonts, so
@@ -39,6 +40,9 @@ export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit.js';
 type LatinLang = Exclude<GuideLang, 'zh-Hans' | 'ar' | 'ja'>;
 
 const GUTTER = 9;
+/** The boxes of the Latin editions: Geist on a 12 pt leading, ragged. */
+const FACES: FeatureFaces = { text: TEXT, sans: SANS };
+const FEATURES: FeatureOptions = { boxLead: 12, bodyAlign: 'left', upperLabels: true };
 /** Height of a chapter opener's band below the top margin. */
 const OPENER_H = 74;
 /** Height of the cover artwork (full bleed, 3 mm of bleed each side). */
@@ -94,7 +98,7 @@ function coverDesign() {
  *  where to find it and its licence. */
 function backCoverDesign() {
   const y = 62;
-  const band = (id: string, color: 'main-color' | 'gilt' | 'vermilion', k: number) =>
+  const band = (id: string, color: 'main-color' | 'gilt' | 'teal' | 'vermilion', k: number) =>
     box(id, color, { anchor: at('page', 'top-left'), offset: [M_OUTER + k * 14, y], width: 12, height: 2.5 });
   return {
     enabled: true,
@@ -103,7 +107,8 @@ function backCoverDesign() {
       box('backBg', 'night', { anchor: at('bleed', 'top-left') }),
       band('backBandFoundations', 'main-color', 0),
       band('backBandCraft', 'gilt', 1),
-      band('backBandPractice', 'vermilion', 2),
+      band('backBandBeyond', 'teal', 2),
+      band('backBandPractice', 'vermilion', 3),
       text('backTitle', '{attr.book}', {
         anchor: at('page', 'top-left'), offset: [M_OUTER, y + 12], width: TEXT_W,
         size: 44, family: DISPLAY, weight: 700, color: 'white', lineHeight: 1,
@@ -150,8 +155,7 @@ function chapterOpener(lang: LatinLang) {
     enabled: true,
     minHeight: mm(OPENER_H + 6),
     slot: slot(
-      box('openerBand', 'band', { anchor: at('bleed', 'top-left'), height: 3 + M_TOP + OPENER_H }),
-      box('openerFoot', 'ink', { anchor: at('bleed', 'top-left'), offset: [0, 3 + M_TOP + OPENER_H], height: 1.6 }),
+      ...openerBand(3 + M_TOP + OPENER_H, 'openerLead', 14),
       text('openerNumber', '{chapterNumber}', {
         anchor: at('container', 'top-right'), offset: [0, -6], width: 60,
         size: 118, family: DISPLAY, weight: 800, color: 'white', align: 'right', lineHeight: 1,
@@ -227,8 +231,16 @@ function openerFooter() {
   );
 }
 
-function headingStyles(): HeadingStyleConfig[] {
+function headingStyles(lang: LatinLang): HeadingStyleConfig[] {
   const empty = slot();
+  const contents: HeadingStyleConfig = {
+    // The contents opens on the back of the cover, a spread of two pages
+    // with the colophon at its foot.
+    id: 'contents', name: 'Contents', numbered: false, toc: false, span: 'page',
+    breakBefore: { enabled: true, parity: 'even' },
+    advancedDesign: frontOpener(),
+    layout: { layoutType: 'single' },
+  };
   return [
     {
       id: 'cover', name: 'Cover', numbered: false, toc: false, span: 'page',
@@ -238,12 +250,9 @@ function headingStyles(): HeadingStyleConfig[] {
       layout: { layoutType: 'single' },
       margins: { top: mm(PAGE_H - 96), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(PAGE_W - M_INNER - 110) },
     },
-    {
-      id: 'contents', name: 'Contents', numbered: false, toc: false, span: 'page',
-      breakBefore: { enabled: true, parity: 'odd' },
-      advancedDesign: frontOpener(),
-      layout: { layoutType: 'single' },
-    },
+    contents,
+    // The index at the back, in two columns under the contents page's design.
+    indexHeadingStyle(contents, FEATURE_NAMES[lang].index, GUTTER),
     {
       // The last page, always a verso: Folio turns it as the back cover.
       id: 'back', name: 'Back cover', numbered: false, toc: false, span: 'page',
@@ -255,9 +264,11 @@ function headingStyles(): HeadingStyleConfig[] {
   ];
 }
 
+/** The colophon's type, set as a box at the foot of the contents. */
+const COLOPHON_TYPE: ParagraphStyleConfig = { id: 'colophon', name: 'Colophon', fontFamily: SANS, fontSize: pt(7.5), lineHeight: pt(11), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') };
+
 function paragraphStyles(): ParagraphStyleConfig[] {
   return [
-    { id: 'colophon', name: 'Colophon', fontFamily: SANS, fontSize: pt(7.5), lineHeight: pt(11), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') },
     { id: 'standfirst', name: 'Standfirst', fontFamily: TEXT, fontSize: pt(12), lineHeight: pt(17), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(6), marginBottom: pt(6), color: col('ink'), boldColor: col('band'), hyphenation: false },
     { id: 'signature', name: 'Signature', fontFamily: SANS, fontSize: pt(8), lineHeight: pt(11), textAlign: 'right', firstLineIndent: mm(0), marginTop: pt(4), color: col('muted') },
   ];
@@ -351,6 +362,8 @@ function toc(lang: LatinLang) {
     unnumbered: { fontFamily: TEXT, fontWeight: 400, italic: true, color: col('ink') },
     pageNumber: { fontFamily: SANS, fontSize: pt(9), fontWeight: 700, color: col('ink'), width: mm(10) },
     leader: { enabled: true, char: '.', gap: mm(1.5) },
+    // A part's row stays on the page of its chapters.
+    groups: { keepTogether: true },
     subtitle: { enabled: true, attr: 'summary', fontFamily: TEXT, fontSize: pt(8), italic: true, color: col('muted'), indent: mm(13) },
     parts: {
       enabled: true, height: pt(18), marginTop: pt(18), marginBottom: pt(2),
@@ -414,9 +427,12 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
         },
       ],
     },
-    headingStyles: headingStyles(),
+    headingStyles: headingStyles(lang),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: calloutStyles(lang),
+    calloutStyles: [...calloutStyles(lang), colophonCallout(COLOPHON_TYPE), asideCallout(FACES, FEATURES, FEATURE_NAMES[lang].aside), ...sheetCallouts(FACES, FEATURES, FEATURE_NAMES[lang])],
+    chipStyles: guideChipStyles(FACES, FEATURE_NAMES[lang]),
+    markStyles: guideMarkStyles(FEATURE_NAMES[lang]),
+    pageTemplates: [sheetTemplate(FEATURE_NAMES[lang].sheet, 84)],
     parts: {
       // A part opens on a recto facing a verso in its colour: `always-odd` lays one
       // blank leaf before it (the coloured verso) and pads a white recto first
@@ -424,7 +440,7 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       // the back of the divider, a verso.
       breakBefore: { parity: 'always-odd' },
       breakAfter: { enabled: true, parity: 'even' },
-      margins: { top: mm(172), bottom: mm(70), left: mm(M_INNER), right: mm(M_OUTER + 40) },
+      margins: { top: mm(160), bottom: mm(70), left: mm(M_INNER), right: mm(M_OUTER + 40) },
       design: partDesign(lang),
       bodyStyle: {
         fontFamily: TEXT, fontSize: pt(11), lineHeight: pt(16), color: col('white'), textAlign: 'left',

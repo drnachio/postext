@@ -809,7 +809,7 @@ interface ElementPlacement {
    *  content, so elements anchored to it stay attached, but a long text wraps or
    *  ellipsizes there — a running head can reserve room for the label hanging
    *  off it instead of squeezing that label out. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -846,6 +846,12 @@ Una dimensione può anche arrivare fino a un bordo di un altro riquadro: `{ to, 
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight` (da postext 1.64) è un minimo per un'altezza fissa o per una che arriva fino a un bordo: l'elemento non è mai più basso di così e cresce quando il bordo a cui arriva scende. La fascia di un'apertura di capitolo che arriva a qualche millimetro sotto l'occhiello (una scatola vuota `leadPad` appesa sotto di esso) mantiene l'altezza del design finché il titolo è breve e cresce con un titolo che occupa più righe; ciò che pende sotto la fascia la segue. Non ha effetto su un'altezza `'auto'` o `'fill'`.
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 Con i segni di taglio attivi, tutto ciò che un elemento dipinge oltre il riquadro dell’abbondanza viene tagliato (vedi [Segni di taglio](/it/docs/configuration-page-layout#segni-di-taglio)).

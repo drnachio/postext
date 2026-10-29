@@ -65,7 +65,7 @@ describe('the Japanese guide laid out as a book', () => {
   }, 120_000);
 
   it('sets every chapter vertically, each with pages', () => {
-    expect(docs.length).toBe(14);
+    expect(docs.length).toBe(22);
     for (const doc of docs) {
       expect(doc.pages.length).toBeGreaterThan(0);
       expect(doc.pages[0]!.flow?.writingMode).toBe('vertical-rl');
@@ -112,11 +112,11 @@ describe('the Japanese guide laid out as a book', () => {
     expect(composed).toBeGreaterThan(500);
   });
 
-  it('numbers chapters 第一章 … 第十一章, parts 第一部 … 第三部 and figures by chapter, 図3-1', () => {
+  it('numbers chapters 第一章 … 第十八章, parts 第一部 … 第四部 and figures by chapter, 図3-1', () => {
     const numbered = docs.flatMap((doc) => doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 1 && b.numberPrefix)).map((b) => b.numberPrefix);
-    expect(numbered).toEqual(['第一章', '第二章', '第三章', '第四章', '第五章', '第六章', '第七章', '第八章', '第九章', '第十章', '第十一章']);
+    expect(numbered).toEqual(['第一章', '第二章', '第三章', '第四章', '第五章', '第六章', '第七章', '第八章', '第九章', '第十章', '第十一章', '第十二章', '第十三章', '第十四章', '第十五章', '第十六章', '第十七章', '第十八章']);
     const book = JSON.stringify(docs.map((d) => d.pages));
-    for (const part of ['第一部', '第二部', '第三部']) expect(book).toContain(part);
+    for (const part of ['第一部', '第二部', '第三部', '第四部']) expect(book).toContain(part);
     const captions = JSON.stringify(docs[4]!.pages);
     expect(captions).toContain('図3-1');
     expect(captions).toContain('図3-2');
@@ -125,8 +125,10 @@ describe('the Japanese guide laid out as a book', () => {
   it('sets the section headings three lines deep and three characters down (行取り, 字下げ)', () => {
     const pitch = docs[2]!.blocks.find((b) => b.type === 'paragraph')!.lines[0]!.bbox.height;
     const body = (9.25 / 72) * 300;
-    const headings = docs.flatMap((doc) => doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 2));
-    expect(headings.length).toBe(92);
+    // The title of the composed page (#1296) sits in its template's frame,
+    // not in a tier: it is left out.
+    const headings = docs.flatMap((doc) => doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 2 && !doc.pages[b.pageIndex]?.composed));
+    expect(headings.length).toBe(134);
     for (const h of headings) {
       // The band: three lines of the tier, whatever the heading's own pitch.
       expect(h.bbox.height / pitch, h.lines[0]?.text).toBeCloseTo(3, 1);

@@ -809,7 +809,7 @@ interface ElementPlacement {
    *  content, so elements anchored to it stay attached, but a long text wraps or
    *  ellipsizes there — a running head can reserve room for the label hanging
    *  off it instead of squeezing that label out. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -846,6 +846,12 @@ Um tamanho também pode ir até uma borda de outra caixa: `{ to, edge }`, em que
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight` (desde o postext 1.64) é um piso para uma altura fixa ou para uma que vai até uma borda: o elemento nunca fica mais baixo que isso e cresce quando a borda até a qual vai desce. A faixa de uma abertura de capítulo que vai até alguns milímetros abaixo do olho (uma caixa vazia `leadPad` pendurada abaixo dele) mantém a altura do design enquanto o título é curto e cresce com um título que ocupa mais linhas; o que pende abaixo da faixa a acompanha. Não afeta uma altura `'auto'` nem `'fill'`.
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 Com as marcas de corte ativadas, tudo o que um elemento pinta além da caixa de sangria é cortado (veja [Marcas de corte](/pt/docs/configuration-page-layout#marcas-de-corte)).

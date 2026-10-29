@@ -11,7 +11,7 @@ import { repeatInstance } from '../../composed/templates.js';
 import { getCjkComposition } from '../../measure/cjk/cjkPunctuation.js';
 import { plainDesignText } from '../richText.js';
 import { layoutVerticalTextElement, layoutLeaderTextElement, layoutRuleElement, layoutPathElement, layoutImageElement, layoutBoxElement } from './elements.js';
-import { type AnchorResult, type AnchorReference, anchorTargetId, sizeTargetIds, topoSort, frameFor, ELEMENT_TO_ELEMENT_EDGES, resolveElementAnchor, resolveContainerAnchor, dimPx } from './geometry.js';
+import { type AnchorResult, type AnchorReference, anchorTargetId, sizeTargetIds, topoSort, frameFor, ELEMENT_TO_ELEMENT_EDGES, resolveElementAnchor, resolveContainerAnchor, resolveFixedSize, dimPx } from './geometry.js';
 import { type ResolvedPrimitive, type DesignFrames, type LayoutIssue, type ResolvedPathPrimitive, type LayoutContext, type DesignSlotLayout, pageMatchesParity, pageMatchesRole, applyPaletteOverrides } from './primitives.js';
 import { mirroredTextSeams } from './text.js';
 import { layoutTextElement } from './textElement.js';
@@ -55,7 +55,7 @@ function withSizesTo<T extends ResolvedPlacedDesignElement>(
   refOf: (to: ElementSizeTo['to']) => AnchorReference | undefined,
 ): T {
   const size = el.placement.size;
-  if (!size || (!isSizeTo(size.width) && !isSizeTo(size.height) && !isSizeTo(size.maxWidth))) return el;
+  if (!size || (!isSizeTo(size.width) && !isSizeTo(size.height) && !isSizeTo(size.maxWidth) && !isSizeTo(size.minHeight))) return el;
   const along = (s: ElementSizeTo, axis: 'x' | 'y'): ElementSize => {
     const ref = refOf(s.to);
     // `center` (#1055): the box's middle on the axis being sized.
@@ -72,7 +72,22 @@ function withSizesTo<T extends ResolvedPlacedDesignElement>(
   if (isSizeTo(size.width)) out.width = along(size.width, 'x');
   if (isSizeTo(size.height)) out.height = along(size.height, 'y');
   if (isSizeTo(size.maxWidth)) out.maxWidth = along(size.maxWidth, 'x');
+  if (isSizeTo(size.minHeight)) out.minHeight = along(size.minHeight, 'y');
   return { ...el, placement: { ...el.placement, size: out } };
+}
+
+/** `el` with a fixed height (a length, or one `{ to, edge }` gave) raised
+ *  to its `minHeight` (#1293): a band that runs down to the foot of a text
+ *  but is never shorter than the design's own. A `'fill'` or `'auto'`
+ *  height keeps its own rule. */
+function withMinHeight<T extends ResolvedPlacedDesignElement>(el: T, dpi: number): T {
+  const size = el.placement.size;
+  const height = size?.height;
+  if (!size || size.minHeight === undefined || height === undefined || height === 'auto' || height === 'fill' || isSizeTo(height)) return el;
+  const min = resolveFixedSize(size.minHeight, dpi);
+  const own = dimPx(height, dpi);
+  if (typeof min !== 'number' || !(min > own)) return el;
+  return { ...el, placement: { ...el.placement, size: { ...size, height: { value: min, unit: 'px' } } } };
 }
 
 /**
@@ -310,14 +325,14 @@ export function layoutDesignSlot(
     const anchorX = anchor.anchorX + offsetX;
     const anchorY = anchor.anchorY + offsetY;
     // A size that runs to an edge of another box (#928), in px from here.
-    const el = withSizesTo(given, { anchorX, anchorY, pinX: anchor.pinX, pinY: anchor.pinY }, (to) => {
+    const el = withMinHeight(withSizesTo(given, { anchorX, anchorY, pinX: anchor.pinX, pinY: anchor.pinY }, (to) => {
       if (to === 'container') return containerRef;
       if (to === 'page' || to === 'bleed' || to === 'outer') return context.frames?.[to] ?? containerRef;
       const id = to.slice(1);
       const dep = resolvedGeo.get(id);
       if (dep) return { x: dep.x, y: dep.y, width: dep.width, height: dep.height };
       return (given.pin ? context.frames?.declared?.[id] : undefined) ?? context.frames?.named?.[id];
-    });
+    }), context.dpi);
 
     if (el.kind === 'text') {
       const pin: AnchorResult = { anchorX, anchorY, pinX: anchor.pinX, pinY: anchor.pinY };

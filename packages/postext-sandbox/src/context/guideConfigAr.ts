@@ -7,8 +7,9 @@ import type {
 import { defaultResourceTypes } from 'postext';
 import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, TEXT_W,
-  at, box, col, colorPalette, em, guideCodeStyle, image, mm, pt, rule, slot, text, type TextOpts,
+  at, box, col, colorPalette, em, guideCodeStyle, image, mm, openerBand, pt, rule, slot, text, type TextOpts,
 } from './guideKit.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Arabic edition of the Postext guide, in Modern Standard Arabic, set as
 // an Arabic book: right to left and bound on the right, so its first page
@@ -103,7 +104,7 @@ function coverDesign() {
  *  foot, where to find it and its licence. */
 function backCoverDesign() {
   const y = 62;
-  const band = (id: string, color: 'main-color' | 'gilt' | 'vermilion', k: number) =>
+  const band = (id: string, color: 'main-color' | 'gilt' | 'teal' | 'vermilion', k: number) =>
     box(id, color, { anchor: at('page', 'top-left'), offset: [M_OUTER + k * 14, y], width: 12, height: 2.5 });
   return {
     enabled: true,
@@ -112,7 +113,8 @@ function backCoverDesign() {
       box('backBg', 'night', { anchor: at('bleed', 'top-left') }),
       band('backBandFoundations', 'main-color', 0),
       band('backBandCraft', 'gilt', 1),
-      band('backBandPractice', 'vermilion', 2),
+      band('backBandBeyond', 'teal', 2),
+      band('backBandPractice', 'vermilion', 3),
       t('backTitle', '{attr.book}', {
         anchor: at('page', 'top-left'), offset: [M_OUTER, y + 12], width: TEXT_W,
         size: 38, family: AR_HEAD, weight: 700, color: 'white', lineHeight: 1.35,
@@ -162,8 +164,7 @@ function chapterOpener() {
     enabled: true,
     minHeight: mm(OPENER_H + 6),
     slot: slot(
-      box('openerBand', 'band', { anchor: at('bleed', 'top-left'), height: 3 + M_TOP + OPENER_H }),
-      box('openerFoot', 'ink', { anchor: at('bleed', 'top-left'), offset: [0, 3 + M_TOP + OPENER_H], height: 1.6 }),
+      ...openerBand(3 + M_TOP + OPENER_H, 'openerLead', 14),
       t('openerNumber', '{chapterNumber}', {
         anchor: at('container', 'top-right'), offset: [0, -8], width: 50,
         size: 100, family: AR_HEAD, weight: 800, color: 'white', align: 'right', lineHeight: 1.25,
@@ -245,8 +246,20 @@ function openerFooter() {
   );
 }
 
+/** The faces and leading of the new feature styles (`guideFeatures.ts`). */
+const FEATURE_FACES = { text: AR_TEXT, sans: AR_SANS };
+const FEATURES: FeatureOptions = { boxLead: 15, bodyAlign: 'left', upperLabels: false };
+
 function headingStyles(): HeadingStyleConfig[] {
   const empty = slot();
+  // The contents opens on the back of the cover, a spread of two pages
+  // with the colophon at its foot.
+  const contents: HeadingStyleConfig = {
+    id: 'contents', name: 'المحتويات', numbered: false, toc: false, span: 'page',
+    breakBefore: { enabled: true, parity: 'even' },
+    advancedDesign: frontOpener(),
+    layout: { layoutType: 'single' },
+  };
   return [
     {
       id: 'cover', name: 'الغلاف', numbered: false, toc: false, span: 'page',
@@ -256,12 +269,9 @@ function headingStyles(): HeadingStyleConfig[] {
       layout: { layoutType: 'single' },
       margins: { top: mm(PAGE_H - 104), bottom: mm(M_BOTTOM), left: mm(M_INNER), right: mm(PAGE_W - M_INNER - 116) },
     },
-    {
-      id: 'contents', name: 'المحتويات', numbered: false, toc: false, span: 'page',
-      breakBefore: { enabled: true, parity: 'odd' },
-      advancedDesign: frontOpener(),
-      layout: { layoutType: 'single' },
-    },
+    contents,
+    // The index at the back, in two columns under the contents page's design.
+    indexHeadingStyle(contents, FEATURE_NAMES['ar'].index, GUTTER),
     {
       // The last page, always an even one: Folio turns it as the back cover.
       id: 'back', name: 'الغلاف الخلفي', numbered: false, toc: false, span: 'page',
@@ -273,9 +283,11 @@ function headingStyles(): HeadingStyleConfig[] {
   ];
 }
 
+/** The colophon's type, set as a box at the foot of the contents. */
+const COLOPHON_TYPE: ParagraphStyleConfig = { id: 'colophon', name: 'بيانات النشر', fontFamily: AR_SANS, fontSize: pt(8), lineHeight: pt(13.5), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') };
+
 function paragraphStyles(): ParagraphStyleConfig[] {
   return [
-    { id: 'colophon', name: 'بيانات النشر', fontFamily: AR_SANS, fontSize: pt(8), lineHeight: pt(13.5), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(5), color: col('muted'), boldColor: col('ink') },
     { id: 'standfirst', name: 'التمهيد', fontFamily: AR_TEXT, fontSize: pt(14), lineHeight: pt(24), textAlign: 'left', firstLineIndent: mm(0), spaceBetween: pt(6), marginBottom: pt(6), color: col('ink'), boldColor: col('band') },
     // Right is the end of an Arabic line: the signature stands on the left.
     { id: 'signature', name: 'التوقيع', fontFamily: AR_SANS, fontSize: pt(8.5), lineHeight: pt(13), textAlign: 'right', firstLineIndent: mm(0), marginTop: pt(4), color: col('muted') },
@@ -364,6 +376,8 @@ function toc() {
     unnumbered: { fontFamily: AR_TEXT, fontWeight: 400, color: col('ink') },
     pageNumber: { fontFamily: AR_SANS, fontSize: pt(10), fontWeight: 700, color: col('ink'), width: mm(10) },
     leader: { enabled: true, char: '.', gap: mm(1.5) },
+    // A part's row stays on the page of its chapters.
+    groups: { keepTogether: true },
     subtitle: { enabled: true, attr: 'summary', fontFamily: AR_TEXT, fontSize: pt(9.5), color: col('muted'), indent: mm(11) },
     parts: {
       enabled: true, height: pt(20), marginTop: pt(14), marginBottom: pt(2),
@@ -429,14 +443,17 @@ export function createArabicGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: calloutStyles(),
+    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'])],
+    chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ar']),
+    markStyles: guideMarkStyles(FEATURE_NAMES['ar']),
+    pageTemplates: [sheetTemplate(FEATURE_NAMES['ar'].sheet)],
     parts: {
       // A part opens on an odd page (the left-hand one) facing an even page
       // in its colour, and its first chapter opens on the back of the
       // divider, as in the Latin editions.
       breakBefore: { parity: 'always-odd' },
       breakAfter: { enabled: true, parity: 'even' },
-      margins: { top: mm(178), bottom: mm(66), left: mm(M_INNER), right: mm(M_OUTER + 40) },
+      margins: { top: mm(164), bottom: mm(66), left: mm(M_INNER), right: mm(M_OUTER + 40) },
       design: partDesign(),
       bodyStyle: {
         // 19 pt lines: the five chapters of part III fit the 36 mm between

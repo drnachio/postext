@@ -37,7 +37,7 @@ const load = (path) => import(new URL(path, sandbox).href);
 const { createPostextGuideConfig } = await load('context/guideConfig.ts');
 const { DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES } = await load('defaultMarkdown/index.ts');
 const { sampleBook } = await load('book/chapterOps.ts');
-const { buildDefaultResources, SVG_FIGURES, figureBlobId, guideVideoPosters } = await load('defaultResources/index.ts');
+const { buildDefaultResources, SVG_FIGURES, figureBlobId, guideVideoPosters, guideStripArt } = await load('defaultResources/index.ts');
 const { coverThumbnailSvg } = await load('defaultResources/cover.ts');
 const { createBundle, zipBundle, readBundle } = await import(new URL('../../../packages/postext/dist/bundle/index.js', import.meta.url).href);
 const { layerManifest } = await import(new URL('../../../scripts/presets/layer-configs.mjs', import.meta.url).href);
@@ -118,6 +118,8 @@ for (const locale of LOCALES) {
   for (const [fileId, fig] of Object.entries(SVG_FIGURES)) files[figureBlobId(fileId, locale)] = fig.generate(locale);
   // The videos' posters (#478): the videos stream from the media CDN.
   Object.assign(files, await guideVideoPosters(locale));
+  // The comic strip's panels (#1296), the same pictures in every edition.
+  Object.assign(files, await guideStripArt());
   const { chapters } = sampleBook(MARKDOWN[locale], () => 'chapter', NAME[locale]);
   const bundle = await createBundle({
     id: 'postext-guide',

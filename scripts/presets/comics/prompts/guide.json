@@ -1,0 +1,76 @@
+{
+ "cast": "guide",
+ "quality": "high",
+ "style": "Editorial ink-and-wash illustration with confident brush outlines and a restrained palette: deep ink blue-black, warm gilt yellow (#d8a21a), Postext blue (#2b4acb), soft paper whites and warm greys; calm, intelligent mood, like the illustrations of a well-designed technical book.",
+ "suffix": "Clean artwork only: no text, no letters, no words, no numbers, no speech balloons, no captions, no sound-effect lettering, no signature, no logo, no panel border, no frame; the picture runs to the edges of the image. Any page, screen or book shown carries only grey lines suggesting text, never legible letters.",
+ "crops": {
+  "_refs/guide/sheet-cast.png": {
+   "_refs/guide/editor.png": [
+    0,
+    0,
+    768,
+    1024
+   ],
+   "_refs/guide/designer.png": [
+    768,
+    0,
+    1536,
+    1024
+   ]
+  }
+ },
+ "items": [
+  {
+   "id": "sheet-cast",
+   "endpoint": "t2i",
+   "out": "_refs/guide/sheet-cast.png",
+   "size": [
+    1536,
+    1024
+   ],
+   "prompt": "Character reference sheet on a plain pure white background, two full-body figures standing side by side in a neutral pose, front three-quarter view, evenly spaced with a wide white gap between them so each can be cut out separately, no shadows on the ground, no background scenery. Left: Marta, the editor, a woman in her sixties with short grey hair in a neat bob, round tortoiseshell glasses, a deep blue cardigan over a white blouse, grey trousers, holding a red pencil. Right: Leo, the designer, a man in his late twenties with short curly dark hair and a short beard, a mustard-yellow sweater, dark jeans, white sneakers."
+  },
+  {
+   "id": "strip-proof",
+   "endpoint": "edit",
+   "out": "guide-strip/strip-proof.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/guide/editor.png",
+    "_refs/guide/designer.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Marta, the editor: a woman in her sixties with short grey hair in a neat bob, round tortoiseshell glasses, a deep blue cardigan over a white blouse; reference image 2 shows Leo, the designer: a man in his late twenties with short curly dark hair, a short beard, a mustard-yellow sweater. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. In a bright small publishing studio, Marta stands at a large table holding up a printed proof page of a two-column book, tapping the foot of the page with her red pencil, eyebrows raised; Leo leans in from the right to look, one hand on the table. Medium shot, both characters from the waist up, Marta on the left. Keep the top third of the picture quiet and uncluttered (a plain pale studio wall) so speech balloons can be lettered there later."
+  },
+  {
+   "id": "strip-screen",
+   "endpoint": "edit",
+   "out": "guide-strip/strip-screen.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/guide/editor.png",
+    "_refs/guide/designer.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Marta, the editor: a woman in her sixties with short grey hair in a neat bob, round tortoiseshell glasses, a deep blue cardigan over a white blouse; reference image 2 shows Leo, the designer: a man in his late twenties with short curly dark hair, a short beard, a mustard-yellow sweater. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Leo sits at a desk in front of a large monitor showing a book page set in two columns beside a panel of text (only grey lines, no legible letters), one hand on the mouse, turning his head to explain calmly; Marta stands behind his chair on the left, arms folded, listening with a small approving smile. Medium shot from slightly behind the desk. Keep the top third of the picture quiet and uncluttered (a plain pale studio wall) so speech balloons can be lettered there later."
+  },
+  {
+   "id": "strip-book",
+   "endpoint": "edit",
+   "out": "guide-strip/strip-book.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "refs": [
+    "_refs/guide/editor.png",
+    "_refs/guide/designer.png"
+   ],
+   "prompt": "Draw a NEW comic panel in exactly the drawing style of the reference images. The references are design sheets only: reference image 1 shows Marta, the editor: a woman in her sixties with short grey hair in a neat bob, round tortoiseshell glasses, a deep blue cardigan over a white blouse; reference image 2 shows Leo, the designer: a man in his late twenties with short curly dark hair, a short beard, a mustard-yellow sweater. Keep each character's face, hair, clothes, colours and proportions identical to the reference, but give them the new pose and expression described; do not copy the white background or the poses of the references. Close-up on the table: Marta's hands, with the blue cardigan cuffs, flip open a freshly printed hardback book, its pages fanning in a soft motion blur; Leo's hand in the yellow sleeve rests on a small stack of identical books beside it. Warm light, a sense of satisfaction. No faces needed. Keep the top third of the picture quiet and uncluttered (a plain pale studio wall) so speech balloons can be lettered there later."
+  }
+ ]
+}

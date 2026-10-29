@@ -1178,3 +1178,22 @@ describe('a heading design that fills its column (#997)', () => {
     expect(hits(note({}))[0]!.payload).toEqual({ kind: 'headingClaimsColumn', level: 2, page: 4 });
   });
 });
+
+describe('references into other chapters (#1300)', () => {
+  // The chapter's build is handed the book's outline (its plan's) and
+  // resolves a reference to a heading of another chapter: the Checks panel,
+  // which reads the content warnings from the source, must too.
+  const markdown = '# One\n\nAs :ref{id="engine"} explains, and :ref{id="ghost"} does not.';
+  const unknown = (bookContent?: Parameters<typeof computeWarnings>[0]['bookContent']) =>
+    computeWarnings({ markdown, config: {}, doc: null, ...(bookContent ? { bookContent } : {}) })
+      .flatMap((w) => (w.payload.kind === 'unknownResourceId' ? [w.payload.resourceId] : []));
+
+  it('knows the headings with an id and the anchors of the book outline', () => {
+    const outline = [
+      { kind: 'heading' as const, level: 1, title: 'One', number: '1', numbered: true, listed: true },
+      { kind: 'heading' as const, level: 1, title: 'How the engine works', number: '2', numbered: true, listed: true, anchorId: 'engine' },
+    ];
+    expect(unknown()).toEqual(['engine', 'ghost']);
+    expect(unknown({ outline })).toEqual(['ghost']);
+  });
+});

@@ -807,7 +807,7 @@ interface ElementPlacement {
    *  contingut, de manera que els elements que s'hi ancoren no se'n desenganxen, però un text llarg
    *  es talla o es plega allà — una capçalera pot reservar lloc per a l'etiqueta que
    *  en penja en comptes d'expulsar-la. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -844,6 +844,12 @@ Una mida també pot arribar fins a una vora d'una altra caixa: `{ to, edge }`, o
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight` (des de postext 1.64) és un terra per a una alçada fixa o per a una que arriba fins a una vora: l'element no és mai més baix que això i creix quan baixa la vora a la qual arriba. La banda d'una portadella de capítol que arriba a uns mil·límetres sota l'entradeta (una capsa buida `leadPad` penjada sota seu) conserva l'alçada del disseny mentre el títol és curt i creix amb un títol que ocupa més línies; el que penja sota la banda la segueix. No afecta una alçada `'auto'` ni `'fill'`.
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 Amb les marques de tall activades, el que un element pinta fora de la caixa de sang es retalla (vegeu [Marques de tall](/ca/docs/configuration-page-layout#marques-de-tall)).

@@ -73,7 +73,7 @@ export function sizeTargetIds(placement: ElementPlacement): string[] {
   const size = placement.size;
   if (!size) return [];
   const out: string[] = [];
-  for (const v of [size.width, size.height, size.maxWidth]) {
+  for (const v of [size.width, size.height, size.maxWidth, size.minHeight]) {
     if (typeof v === 'object' && v !== null && 'to' in v && typeof v.to === 'string' && v.to.startsWith('#')) out.push(v.to.slice(1));
   }
   return out;

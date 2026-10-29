@@ -809,7 +809,7 @@ interface ElementPlacement {
    *  content, so elements anchored to it stay attached, but a long text wraps or
    *  ellipsizes there — a running head can reserve room for the label hanging
    *  off it instead of squeezing that label out. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -846,6 +846,12 @@ Une taille peut aussi aller jusqu’à un bord d’une autre boîte : `{ to, ed
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight` (depuis postext 1.64) est un plancher pour une hauteur fixe ou pour une hauteur qui va jusqu'à un bord : l'élément n'est jamais plus bas que cela et grandit quand le bord qu'il rejoint descend. Le bandeau d'une ouverture de chapitre qui va jusqu'à quelques millimètres sous le chapeau (une boîte vide `leadPad` accrochée sous lui) garde la hauteur du design tant que le titre est court et grandit avec un titre qui prend plus de lignes ; ce qui pend sous le bandeau le suit. Sans effet sur une hauteur `'auto'` ou `'fill'`.
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 Avec les traits de coupe activés, tout ce qu’un élément peint au-delà de la zone de fond perdu est rogné (voir [Traits de coupe](/fr/docs/configuration-page-layout#traits-de-coupe)).

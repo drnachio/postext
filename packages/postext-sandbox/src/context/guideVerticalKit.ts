@@ -1,7 +1,7 @@
 import type { CalloutStyleConfig } from 'postext';
 import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, M_BOTTOM, M_OUTER, PAGE_H, PAGE_W,
-  at, box, col, image, mm, pt, rule, slot, text,
+  at, box, col, image, mm, openerBand, pt, rule, slot, text,
 } from './guideKit.js';
 
 // The designs the two vertical editions of the guide share — the Chinese
@@ -67,11 +67,11 @@ export function verticalCover(f: VerticalFaces) {
 }
 
 /** The back cover, the last page: the night of the front, a strip down the
- *  right as on the cover — the three part colours as bands, "Postext"
+ *  right as on the cover — the four part colours as bands, "Postext"
  *  turned down the column, a gilt rule and a few lines on the engine — and
  *  where to find it at the foot of the strip. */
 export function verticalBackCover(f: VerticalFaces) {
-  const band = (id: string, color: 'main-color' | 'gilt' | 'vermilion', k: number) =>
+  const band = (id: string, color: 'main-color' | 'gilt' | 'teal' | 'vermilion', k: number) =>
     box(id, color, { anchor: at('page', 'top-left'), offset: [40 + k * 14, 12], width: 12, height: 2.5 });
   return {
     enabled: true,
@@ -80,7 +80,8 @@ export function verticalBackCover(f: VerticalFaces) {
       box('backBg', 'night', { anchor: at('bleed', 'top-left') }),
       band('backBandFoundations', 'main-color', 0),
       band('backBandCraft', 'gilt', 1),
-      band('backBandPractice', 'vermilion', 2),
+      band('backBandBeyond', 'teal', 2),
+      band('backBandPractice', 'vermilion', 3),
       text('backTitle', '{attr.book}', {
         anchor: at('page', 'top-left'), offset: [40, 20], width: 200,
         size: 60, family: DISPLAY, weight: 700, color: 'white', lineHeight: 1,
@@ -120,13 +121,11 @@ export function verticalContentsOpener(f: VerticalFaces) {
  *  (第三章 · 技艺), a white rule, the title and the lead in columns from the
  *  right, with the chapter's number set large at the foot of the band. */
 export function verticalChapterOpener(f: VerticalFaces, kicker = '{chapterNumber} · {partTitle}') {
-  const band = 3 + M_OUTER + OPENER_W;
   return {
     enabled: true,
     minHeight: mm(OPENER_W + 6),
     slot: slot(
-      box('openerBand', 'band', { anchor: at('bleed', 'top-left'), height: band }),
-      box('openerFoot', 'ink', { anchor: at('bleed', 'top-left'), offset: [0, band], height: 1.6 }),
+      ...openerBand(3 + M_OUTER + OPENER_W, 'openerLead', 14),
       // The number in the brand's Fraunces, as in the Latin editions,
       // standing upright in one cell (the kicker reads it 第三章).
       text('openerNumber', '{numberDecimal}', {
@@ -266,6 +265,8 @@ export function verticalToc(f: VerticalFaces, partRow: string, uprightSummary = 
     unnumbered: { fontFamily: f.text, fontWeight: 400, color: col('ink') },
     pageNumber: { fontFamily: f.sans, fontSize: pt(9), fontWeight: 700, color: col('ink'), width: mm(14) },
     leader: { enabled: true, char: '·', gap: mm(1.5) },
+    // A part's row stays on the page of its chapters.
+    groups: { keepTogether: true },
     subtitle: { enabled: true, attr: 'summary', fontFamily: f.text, fontSize: pt(8), ...(uprightSummary ? { italic: false } : {}), color: col('muted'), indent: mm(17) },
     parts: {
       enabled: true, height: pt(14), marginTop: pt(6), marginBottom: pt(2),

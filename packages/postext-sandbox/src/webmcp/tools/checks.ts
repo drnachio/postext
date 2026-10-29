@@ -6,6 +6,7 @@
 import { describeFrameCoverProposal, describeFrameOutsideProposal, describeFrameOverflowProposal, resolvePdfGenerationConfig, resolvePrintConfig } from 'postext';
 import type { FrameCoverProposal, FrameOutsideProposal, FrameOverflowProposal, PostextConfig, Resource } from 'postext';
 import { composeBookMemo } from '../../book/compose.js';
+import { planContent } from '../../book/jumps.js';
 import { pdfFontChecksFor } from '../../controls/fonts/pdfFontWarnings.js';
 import { svgFontIssues, unavailableResourceImages } from '../../controls/media/resourceImages.js';
 import { onPreflightInputsChange, preflightInputs, type PreflightInputs } from '../../print/preflightInputs.js';
@@ -83,7 +84,8 @@ export function checkTools(host: SandboxToolHost): WebMcpTool[] {
       const perChapter: { chapter: number; title: string; warnings: number }[] = [];
       let laidOut = true;
       for (const target of targets) {
-        const { doc, state, settled } = await layOutChapter(host, target.chapter.id, signal);
+        const { doc, state, plan, settled } = await layOutChapter(host, target.chapter.id, signal);
+        const chapterPlan = plan.byId[target.chapter.id];
         laidOut &&= settled;
         const book = composeBookMemo(state.chapters, target.chapter.id);
         const fontChecks = pdfFontChecksFor(state);
@@ -96,6 +98,7 @@ export function checkTools(host: SandboxToolHost): WebMcpTool[] {
           unavailableImages: unavailableResourceImages(),
           svgFontIssues: svgFontIssues(),
           book,
+          ...(chapterPlan ? { bookContent: planContent(chapterPlan) } : {}),
           chapterTitles: new Map(state.chapters.map((c) => [c.id, c.title])),
           pdfFontChecks: fontChecks.checks,
           pdfFontChecksStale: fontChecks.stale,

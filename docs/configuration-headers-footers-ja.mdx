@@ -809,7 +809,7 @@ interface ElementPlacement {
    *  content, so elements anchored to it stay attached, but a long text wraps or
    *  ellipsizes there — a running head can reserve room for the label hanging
    *  off it instead of squeezing that label out. */
-  size?: { width?: Size; height?: Size; maxWidth?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
+  size?: { width?: Size; height?: Size; maxWidth?: Size; minHeight?: Size }; // Size: Dimension | 'fill' | 'auto' | { to, edge }
 }
 ```
 
@@ -846,6 +846,12 @@ interface ElementPlacement {
 
 ```json
 { "kind": "box", "id": "ground", "placement": { "anchor": { "to": "#band", "edge": "below" }, "size": { "width": "fill", "height": { "to": "bleed", "edge": "bottom" } } }, "style": { "backgroundColor": { "hex": "#f6efe0", "model": "hex" } } }
+```
+
+`minHeight`(postext 1.64 以降)は、固定の高さや辺まで届く高さの下限です。要素はこれより低くならず、届く先の辺が下がるとそれに合わせて伸びます。リードの数ミリ下(リードの下に吊るした空のボックス `leadPad`)まで届く章扉の帯は、タイトルが短いうちはデザインの高さを保ち、行数の多いタイトルでは伸びます。帯の下に吊るした要素も帯に付いて動きます。`'auto'` と `'fill'` の高さには効きません。
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "to": "#leadPad", "edge": "bottom" }, "minHeight": { "value": 101, "unit": "mm" } } }, "style": { "backgroundColor": { "hex": "#2b4acb", "model": "hex" } } }
 ```
 
 トンボを有効にすると、要素が塗り足しの枠の外に描いた部分は切り取られます（[トンボ](/ja/docs/configuration-page-layout#トンボ)を参照）。

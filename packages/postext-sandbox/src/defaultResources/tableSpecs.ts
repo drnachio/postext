@@ -6,6 +6,7 @@ import { featureTableModel, toolsTableModel, placementTableModel } from './featu
 import { documentFormatTableModel, paperStocksTableModel } from './formatTables.js';
 import { DEFAULT_RESOURCE_IDS } from './ids.js';
 import { presetTableModel, phasesTableModel } from './projectTables.js';
+import { editionLayersTableModel } from './editionTables.js';
 
 interface TableSpec {
   id: string;
@@ -67,5 +68,11 @@ export const TABLE_SPECS: TableSpec[] = [
     model: phasesTableModel,
     placement: { position: 'auto', span: 'page' },
     caption: byLang('The four phases of the project: what has shipped and what is still open.', 'Las cuatro fases del proyecto: lo que ya está hecho y lo que sigue abierto.', '项目的四个阶段：已完成的和待完成的。', 'Les quatre fases del projecte: el que ja està fet i el que continua obert.', 'مراحل المشروع الأربع: ما أُنجز وما لا يزال مفتوحًا.', 'プロジェクトの四つの段階：完了したことと残っていること。', 'As quatro fases do projeto: o que já foi entregue e o que continua em aberto.', 'Les quatre phases du projet : ce qui est livré et ce qui reste ouvert.', 'Die vier Phasen des Projekts: was ausgeliefert ist und was noch offen ist.', 'Le quattro fasi del progetto: ciò che è stato rilasciato e ciò che resta aperto.'),
+  },
+  {
+    id: DEFAULT_RESOURCE_IDS.editionLayersTable,
+    model: editionLayersTableModel,
+    placement: { position: 'auto', span: 'page' },
+    caption: byLang('What each edition of this guide sets for itself over the general settings.', 'Lo que cada edición de esta guía fija por su cuenta sobre los ajustes generales.', '本指南各版本在通用设置之上自行设定的内容。', 'El que cada edició d\'aquesta guia fixa pel seu compte sobre la configuració general.', 'ما تضبطه كل طبعة من هذا الدليل لنفسها فوق الإعدادات العامة.', 'このガイドの各版が全体の設定に加えて独自に定めているもの。', 'O que cada edição deste guia define por conta própria sobre as configurações gerais.', 'Ce que chaque édition de ce guide règle pour elle-même par-dessus les réglages généraux.', 'Was jede Ausgabe dieses Leitfadens über die allgemeinen Einstellungen hinaus selbst festlegt.', 'Ciò che ogni edizione di questa guida imposta per conto proprio sopra le impostazioni generali.'),
   },
 ];

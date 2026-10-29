@@ -116,6 +116,12 @@ export interface ElementPlacement {
      *  grows past this — the text wraps or ellipsizes there. Lets a running
      *  head reserve room for the label that hangs off it. */
     maxWidth?: ElementSize;
+    /** Floor for a fixed height or one that runs to an edge (`{ to,
+     *  edge }`): the element is never shorter than this (#1293). A band
+     *  that runs down to the foot of a text keeps the design's own height
+     *  while the text is short. Ignored for an `'auto'` or `'fill'`
+     *  height. */
+    minHeight?: ElementSize;
   };
 }
 
