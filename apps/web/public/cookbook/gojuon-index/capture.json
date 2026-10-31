@@ -3,27 +3,21 @@
   "slug": "gojuon-index",
   "sourceHash": "9752ce10e122605dac7d1d3fa126855ad25a850e6de6106d58d900ec29815ea8",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:36:51.246Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:58.691Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:18:35.434Z",
   "variants": {
     "en": {
-      "hash8": "7c68ce42",
+      "hash8": "45bdde9e",
       "vdtHash": "7556b4a7dc3b73735932746bb03fbec5e5a6e4af",
       "timings": {
-        "importMs": 225,
-        "fontsMs": 167,
-        "buildMs": 90,
-        "totalMs": 1039,
+        "importMs": 6364,
+        "fontsMs": 1139,
+        "buildMs": 108,
+        "totalMs": 8734,
         "builds": 1
       },
       "specimen": {
@@ -105,7 +99,7 @@
       },
       "pdf": {
         "file": "gojuon-index.pdf",
-        "bytes": 137093,
+        "bytes": 137063,
         "pages": 3
       },
       "sandbox": {
@@ -334,9 +328,19 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -347,13 +351,13 @@
       }
     },
     "es": {
-      "hash8": "ef10c836",
+      "hash8": "f29568ae",
       "vdtHash": "901fcb413553333ee76fc85109634f24cbbf9f0d",
       "timings": {
-        "importMs": 208,
-        "fontsMs": 151,
-        "buildMs": 90,
-        "totalMs": 1028,
+        "importMs": 2145,
+        "fontsMs": 701,
+        "buildMs": 107,
+        "totalMs": 3581,
         "builds": 1
       },
       "specimen": {
@@ -435,7 +439,7 @@
       },
       "pdf": {
         "file": "gojuon-index.pdf",
-        "bytes": 137069,
+        "bytes": 137032,
         "pages": 3
       },
       "sandbox": {
@@ -664,9 +668,19 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",
