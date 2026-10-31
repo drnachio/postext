@@ -3,27 +3,21 @@
   "slug": "novel-footnotes-column-foot",
   "sourceHash": "bc821196e254229526ff82a71a1eb98e5fa5c17f4765ca68a342a672f49da315",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:33.872Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:02.427Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:01:29.969Z",
   "variants": {
     "en": {
-      "hash8": "90541c65",
-      "vdtHash": "4c3ec8000e4cf4a2c9bb61da4aac0508a455884e",
+      "hash8": "b1e6cbab",
+      "vdtHash": "154606fba8421b141a11b797f87385a3a1b31957",
       "timings": {
-        "importMs": 294,
-        "fontsMs": 25,
-        "buildMs": 21,
-        "totalMs": 2126,
+        "importMs": 2671,
+        "fontsMs": 27,
+        "buildMs": 28,
+        "totalMs": 3851,
         "builds": 1
       },
       "specimen": {
@@ -117,8 +111,8 @@
         "chapters": [
           {
             "pages": 3,
-            "hash": "92713acbd0d22867",
-            "lines": "eb7d04bcfe6cb248"
+            "hash": "86db6db81f5c2fb8",
+            "lines": "45094ea28082d78a"
           }
         ]
       },
@@ -316,6 +310,21 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -324,13 +333,13 @@
       }
     },
     "es": {
-      "hash8": "27b2efb3",
-      "vdtHash": "11e8daa80867058ec9fa0fb580a9730f915d12c5",
+      "hash8": "e4395396",
+      "vdtHash": "bde1f512880d392781e3957370456fd99f9984c9",
       "timings": {
-        "importMs": 272,
-        "fontsMs": 26,
-        "buildMs": 37,
-        "totalMs": 1180,
+        "importMs": 3070,
+        "fontsMs": 31,
+        "buildMs": 69,
+        "totalMs": 4406,
         "builds": 1
       },
       "specimen": {
@@ -419,13 +428,13 @@
       },
       "sandbox": {
         "file": "novel-footnotes-column-foot.postext",
-        "bytes": 44491,
+        "bytes": 44455,
         "folio": "5dc5724f",
         "chapters": [
           {
             "pages": 3,
-            "hash": "f20d7082913d7ffc",
-            "lines": "bdce9d440c69c1b0"
+            "hash": "062301f7a02f157d",
+            "lines": "aa07bbb24a807fc2"
           }
         ]
       },
@@ -622,6 +631,21 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",
