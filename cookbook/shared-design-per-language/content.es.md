@@ -38,9 +38,9 @@ El tercero se hizo en Europa en 1462 y se atribuye al astrónomo Regiomontano, J
 
 Regiomontano trabajó en Viena, en Italia y en Núremberg, y escribió sobre las tablas y los instrumentos de la astronomía. Un astrolabio de su tiempo se leía igual que sus modelos árabes, con la misma red, las mismas láminas y la misma alidada en el dorso.
 
-::resource{id="three"}
+Puestos uno junto a otro, los instrumentos responden a las mismas preguntas con las mismas piezas móviles. Lo que cambia es la escritura del latón y el ornamento que rodea las estrellas. Quien sabe leer uno puede leer los otros dos.
 
-Puestos uno junto a otro, los instrumentos responden a las mismas preguntas con las mismas piezas móviles. Lo que cambia es la escritura del latón y el ornamento que rodea las estrellas.
+::resource{id="three"}
 
 :::paragraphs{style="colophon"}
 Gabinete de Instrumentos, cuaderno 3. Publicado también en inglés y en árabe, con el mismo diseño · Compuesto en Source Serif 4 y Source Sans 3 (SIL OFL) · Texto: original, CC BY 4.0 · Fotografías: The Metropolitan Museum of Art, Nueva York, Open Access (CC0).

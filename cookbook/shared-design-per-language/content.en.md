@@ -38,9 +38,9 @@ The third was made in Europe in 1462 and is attributed to the astronomer Regiomo
 
 Regiomontanus worked in Vienna, in Italy and in Nuremberg, and wrote on the tables and instruments of astronomy. An astrolabe of his time was read exactly as its Arabic models were, with the same rete, the same plates and the same alidade on the back.
 
-::resource{id="three"}
+Set side by side, the three instruments answer the same questions with the same moving parts. What changes is the script on the brass and the ornament around the stars. A reader who has learned one of them can read the other two.
 
-Set side by side, the instruments answer the same questions with the same moving parts. What changes is the script on the brass and the ornament around the stars.
+::resource{id="three"}
 
 :::paragraphs{style="colophon"}
 Cabinet of Instruments, booklet 3. Also published in Spanish and in Arabic, from the same design · Set in Source Serif 4 and Source Sans 3 (SIL OFL) · Text: original, CC BY 4.0 · Photographs: The Metropolitan Museum of Art, New York, Open Access (CC0).
