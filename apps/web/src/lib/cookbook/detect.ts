@@ -19,7 +19,7 @@ export type { JsLiteral, JsScan } from "./detect/scan.ts";
 export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
   "diagramStyle", "scoreStyle", "scoreStyles", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "markStyles", "parts", "headingStyles", "toc",
-  "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
+  "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "links", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
   "htmlViewer", "canvasViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "resourceTypes", "comics", "print", "lineNumbers", "codeStyle", "contrast", "checks",
   "pageTemplates", "labelStyles", "frameLooks", "composedViewerLeaf", "exerciseStyles", "exercises",
 ];
