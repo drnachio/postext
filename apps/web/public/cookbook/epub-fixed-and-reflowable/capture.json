@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "epub-fixed-and-reflowable",
-  "sourceHash": "e6a80e52c31843bd70a27f5345a1aa48cef9dac04d86cb972842d6a0507c9543",
+  "sourceHash": "63f4f680278cc8ec8973c18f43d8eec6170df902740612c231088200f84f6141",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.434Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:57.996Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:08:18.430Z",
   "variants": {
     "en": {
-      "hash8": "030c23eb",
+      "hash8": "30284f74",
       "vdtHash": "fda08c8e832d042c9b4c5d2350d7a3ce3cf4fc17",
       "timings": {
-        "importMs": 683,
-        "fontsMs": 56,
-        "buildMs": 163,
-        "totalMs": 1635,
+        "importMs": 4028,
+        "fontsMs": 501,
+        "buildMs": 137,
+        "totalMs": 6445,
         "builds": 1
       },
       "specimen": {
@@ -145,7 +140,7 @@
       },
       "sandbox": {
         "file": "epub-fixed-and-reflowable.postext",
-        "bytes": 33224,
+        "bytes": 33209,
         "chapters": [
           {
             "pages": 2,
@@ -364,7 +359,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -375,13 +375,13 @@
       }
     },
     "es": {
-      "hash8": "9f5b7cb3",
-      "vdtHash": "fdf6ad4e0afe6090995fb0d1295cd4afe31a2099",
+      "hash8": "1aecc1fb",
+      "vdtHash": "de59240ce6ef89c044ba90f1683a875d23a3bd6f",
       "timings": {
-        "importMs": 1770,
-        "fontsMs": 99,
-        "buildMs": 149,
-        "totalMs": 2974,
+        "importMs": 4266,
+        "fontsMs": 177,
+        "buildMs": 196,
+        "totalMs": 5805,
         "builds": 1
       },
       "specimen": {
@@ -505,7 +505,7 @@
       },
       "sandbox": {
         "file": "epub-fixed-and-reflowable.postext",
-        "bytes": 34862,
+        "bytes": 34847,
         "chapters": [
           {
             "pages": 2,
@@ -518,14 +518,14 @@
             "lines": "6a1d65d665d36912"
           },
           {
-            "pages": 6,
-            "hash": "f790430b606280d1",
-            "lines": "9d827efb7e61ca95"
+            "pages": 3,
+            "hash": "7b517ce0a37fb918",
+            "lines": "22eca2f22a03f85c"
           },
           {
-            "pages": 3,
-            "hash": "7070c5298f9a6d51",
-            "lines": "b07a3aaeafb5b408"
+            "pages": 6,
+            "hash": "22a7b525be25b917",
+            "lines": "ce99d7cf26779adb"
           }
         ]
       },
@@ -734,7 +734,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",
