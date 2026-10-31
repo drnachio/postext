@@ -131,7 +131,7 @@ export function playMarkTriangle(mark: VDTVideoPlayMark): Array<[number, number]
 /** The dark modules of a QR code as horizontal runs, one rect per run, in
  *  px relative to the plate's top-left corner: what a renderer fills
  *  (fewer, abutting shapes than one square per module). */
-export function qrModuleRuns(qr: VDTVideoQr): Array<{ x: number; y: number; w: number; h: number }> {
+export function qrModuleRuns(qr: Pick<VDTVideoQr, 'rows' | 'moduleSize' | 'quietZone'>): Array<{ x: number; y: number; w: number; h: number }> {
   const runs: Array<{ x: number; y: number; w: number; h: number }> = [];
   const m = qr.moduleSize;
   const off = qr.quietZone * m;

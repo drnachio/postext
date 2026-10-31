@@ -154,8 +154,16 @@ export function guideCodeStyle(): CodeStyleConfig {
     background: col('panel'),
     borderRadius: mm(1.2),
     padding: { top: mm(2.6), right: mm(3), bottom: mm(2.6), left: mm(3) },
-    lineNumberColor: col('muted'),
+    // Line numbers, the turn-over mark and the tokens whose default colour is
+    // too light keep 4.5:1 on the panel and on the highlighted line's tint.
+    lineNumberColor: { hex: '#5c6168', model: 'hex' },
     highlightBackground: { hex: '#e2e6f0', model: 'hex' },
+    tokens: {
+      string: { color: { hex: '#2f6a20', model: 'hex' } },
+      number: { color: { hex: '#82510a', model: 'hex' } },
+      meta: { color: { hex: '#82510a', model: 'hex' } },
+      comment: { color: { hex: '#5c6168', model: 'hex' }, italic: true },
+    },
     titleStyle: { fontFamily: CODE, fontSize: pt(7.2), fontWeight: 600, color: col('band') },
     inline: {
       fontSize: em(0.84),

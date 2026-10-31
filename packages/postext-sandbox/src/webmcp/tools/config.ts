@@ -40,7 +40,7 @@ async function editionsKeeping(state: SandboxState, paths: readonly string[]): P
 const CONFIG_KEYS = [
   'page', 'layout', 'bodyText', 'headings', 'tableStyle', 'tableStyles', 'captionStyle', 'diagramStyle', 'scoreStyle', 'scoreStyles', 'videoStyle',
   'paragraphStyles', 'calloutStyles', 'chipStyles', 'markStyles', 'parts', 'headingStyles', 'toc', 'index', 'unorderedLists',
-  'orderedLists', 'math', 'footnotes', 'crossRefs', 'citations', 'cjk', 'lineNumbers', 'codeStyle', 'header', 'footer',
+  'orderedLists', 'math', 'footnotes', 'links', 'crossRefs', 'citations', 'cjk', 'lineNumbers', 'codeStyle', 'header', 'footer',
   'locale', 'direction', 'numerals', 'debug', 'htmlViewer', 'canvasViewer', 'folio', 'comics', 'pdfGeneration', 'print', 'contrast', 'checks',
   'colorPalette', 'customFonts', 'resourceTypes', 'pageTemplates', 'labelStyles', 'frameLooks', 'exerciseStyles', 'exercises',
 ] as const satisfies readonly (keyof PostextConfig)[];

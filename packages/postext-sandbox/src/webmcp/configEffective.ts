@@ -20,6 +20,7 @@ import {
   resolveCanvasViewerConfig,
   resolveHtmlViewerConfig,
   resolveLineNumbersConfig,
+  resolveLinksConfig,
   resolvePdfGenerationConfig,
   resolvePrintConfig,
 } from 'postext';
@@ -31,7 +32,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 
 /** `config` as the engine resolves it for a book read in `locale`, with
  *  the sections the engine only resolves when a book sets them (print,
- *  the PDF, the Folio, line numbers, code, comics, the contrast check,
+ *  the PDF, the Folio, line numbers, code, links in print, comics, the
+ *  contrast check,
  *  the checks of the configuration, page templates, label styles and the
  *  exercise settings)
  *  and the ones the Sandbox reads itself (the guides, the HTML reader).
@@ -58,6 +60,7 @@ export function resolveEffectiveConfig(config: PostextConfig, locale: string, re
     folio: resolved.folio ?? resolveFolioConfig(config.folio, resolved.page.sizePreset),
     lineNumbers: resolved.lineNumbers ?? resolveLineNumbersConfig(config.lineNumbers, resolved.bodyText),
     codeStyle: resolved.codeStyle ?? resolveCodeStyleConfig(config.codeStyle, resolved.bodyText),
+    links: resolved.links ?? resolveLinksConfig(config.links),
     comics: resolved.comics ?? resolveComicsConfig(config.comics, documentLocale),
     debug: resolveDebugConfig(config.debug),
     htmlViewer: resolveHtmlViewerConfig(config.htmlViewer),

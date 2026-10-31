@@ -1,7 +1,7 @@
 export { createBoundingBox, createVDTDocument, createVDTPage, createVDTColumn, createVDTBlock, computePageTextExtent } from './vdt/document.js';
 export type { BoundingBox, ResolvedConfig, VDTDocument, VDTCarriedOutlineEntry } from './vdt/document.js';
 export type { VDTSegmentMark, VDTChipRun, VDTSwatch, VDTChip, VDTInlineIcon, VDTLineSegment, VDTSegmentMarks, VDTAnnotationRun, VDTRuby, VDTKunten, VDTWarichu } from './vdt/segments.js';
-export type { VDTLineHighlight, VDTLineMark, VDTAnchor, VDTLine } from './vdt/lines.js';
+export type { VDTLineHighlight, VDTLineMark, VDTAnchor, VDTLine, VDTLineQr } from './vdt/lines.js';
 export type { VDTBlockType, VDTScoreInfo, TextAlign, VDTDropCap, VDTStripCaption, VDTBlock, ResolvedCalloutBlock, BalanceLever, VDTGridBalancing, VDTBalancing, VDTColumn, VDTExclusion, VDTExclusionContour, VDTContourSpan, VDTFootnoteArea } from './vdt/blocks.js';
 export { tableFrameOutline, tableCellFill, tableCellFillRects } from './vdt/resourceTables.js';
 export type { VDTResourceTableCellImage, VDTResourceTableCell, VDTResourceTableLayout, VDTTableStroke, RoundedOutline, TableCellFillRects, VDTCaptionBar, VDTTableSlice } from './vdt/resourceTables.js';

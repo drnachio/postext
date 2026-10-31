@@ -14,6 +14,7 @@ import { UnorderedListsSection } from './lists/UnorderedListsSection/index.js';
 import { OrderedListsSection } from './lists/OrderedListsSection/index.js';
 import { MathSection } from './text/MathSection.js';
 import { FootnotesSection } from './text/FootnotesSection.js';
+import { LinksSection } from './text/LinksSection.js';
 import { LineNumbersSection } from './text/LineNumbersSection.js';
 import { CrossRefsSection } from './headings/CrossRefsSection.js';
 import { CitationsSection } from './text/CitationsSection.js';
@@ -73,6 +74,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'ordered-lists': OrderedListsSection,
   'math': MathSection,
   'footnotes': FootnotesSection,
+  'links': LinksSection,
   'lineNumbers': LineNumbersSection,
   'crossRefs': CrossRefsSection,
   'citations': CitationsSection,

@@ -44,6 +44,7 @@ export type SettingsSectionId =
   | 'ordered-lists'
   | 'math'
   | 'footnotes'
+  | 'links'
   | 'lineNumbers'
   | 'crossRefs'
   | 'citations'
@@ -136,6 +137,8 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'codeStyle', group: 'text', labelKey: 'codeStyleSection', configKeys: ['codeStyle'] },
   { id: 'math', group: 'text', labelKey: 'mathSection', configKeys: ['math'] },
   { id: 'footnotes', group: 'text', labelKey: 'footnotesSection', configKeys: ['footnotes'] },
+  // External links in print (#1302): the address, a note or a QR code.
+  { id: 'links', group: 'text', labelKey: 'linksSection', configKeys: ['links'] },
   { id: 'lineNumbers', group: 'text', labelKey: 'lineNumbersSection', configKeys: ['lineNumbers'] },
   { id: 'citations', group: 'text', labelKey: 'citationsSection', configKeys: ['citations'] },
   { id: 'headings', group: 'headings', labelKey: 'headings', configKeys: ['headings'] },

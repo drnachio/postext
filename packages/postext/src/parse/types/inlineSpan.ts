@@ -107,6 +107,11 @@ export interface InlineSpan {
    *  (`:sideways[12]`), the whole run turned with the line. No effect in
    *  horizontal text. */
   orientation?: 'upright' | 'sideways';
+  /** The span is an address the layout prints for a link (#1302,
+   *  `links.print`): broken at its joints as a URL, never hyphenated, even
+   *  when written without its scheme (`links.urlDisplay: 'short'`). Set by
+   *  the pipeline. */
+  url?: true;
   /** A space of the span's own width that a line neither breaks at nor
    *  stretches or shrinks when it is justified: the gap after a footnote's
    *  number, which keeps one width in every note. Set by the pipeline. */

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notes and references',
   description: 'Footnotes, cross-references and anchors, citations and the bibliography, and the marks of the back-of-book index',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '14 min',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 The Checks panel lists a key that no reference defines (`unknownCitationKey`) and a references block that cannot be read (`referencesUnreadable`). A text that cites works when no citation engine is registered gets a `citationsUnavailable` warning, and its citations print as written.
 
+
+## Links in print
+
+A Markdown link, `[text](https://…)`, is clickable in the Sandbox, the PDF, HTML, EPUB, SCORM and Folio. On paper the reader sees only the link text. The `links.print` setting chooses what the printed page adds after it, with no change to the text:
+
+```md
+The full timetable is on the [harbour authority's site](https://www.example.org/ferries/).
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- **`print: 'none'`** (the default) prints the link text alone.
+- **`print: 'inline'`** prints *harbour authority's site (https://www.example.org/ferries/)*.
+- **`print: 'notes'`** puts a note marker after the link text. The note is numbered and placed with the footnotes and prints the address (`show: 'url'`), a QR code that opens it (`'qr'`) or both (`'both'`). With `urlDisplay: 'short'` the address reads `example.org/ferries`.
+
+Only `http:` and `https:` links count. A `mailto:` or `tel:` link, a link to an anchor of the book, a link in a heading and a bibliography entry print as written. Autolinks (`<https://…>`) and bare addresses are plain text in Postext, so they already show on the page. A link inside a footnote takes its address in parentheses. The other settings (repeated addresses, the size and placement of the code) are in [Links in print](/en/docs/configuration-notes-references#links-in-print) in the configuration reference.
 
 ## Back-of-book index
 

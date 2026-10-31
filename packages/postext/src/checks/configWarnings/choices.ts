@@ -18,6 +18,7 @@ import { isDropCap, readDropCap, DROP_CAP_PUNCTUATION, DROP_CAP_SHORT_PARAGRAPH 
 import { outputProfileInfo } from '../../color/catalogue.js';
 import { CODE_OVERFLOWS } from '../../defaults/text/codeStyle.js';
 import { closestKey } from '../../util/closestKey.js';
+import { DEFAULT_LINKS_CONFIG } from '../../defaults/structure/links.js';
 import { isResourceCounterReset } from '../../defaults/resources/resourceTypes.js';
 import { LINE_NUMBERS_COUNTS, LINE_NUMBERS_RESTARTS, LINE_NUMBERS_POSITIONS, LINE_NUMBERS_MULTI_COLUMN, LINE_NUMBERS_ALIGNS } from '../../defaults/text/lineNumbers.js';
 
@@ -85,6 +86,27 @@ export function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   // horizontal document sets them at the column foot.
   if (config.footnotes?.placement === 'spread' && resolveAllConfig(config).layout.writingMode !== 'vertical-rl') {
     out.push({ kind: 'unknownConfigValue', path: 'footnotes.placement', value: 'spread', used: 'column' });
+  }
+  // External links in print (#1302): a word it does not know is read as
+  // the default.
+  const links = config.links as Record<string, unknown> | undefined;
+  if (links) {
+    const choice = (path: string, value: unknown, known: readonly string[], used: string) => {
+      if (value !== undefined && !known.includes(value as string)) out.push({ kind: 'unknownConfigValue', path, value: String(value), used });
+    };
+    const d = DEFAULT_LINKS_CONFIG;
+    choice('links.print', links.print, ['none', 'inline', 'notes'], d.print);
+    choice('links.show', links.show, ['url', 'qr', 'both'], d.show);
+    choice('links.urlDisplay', links.urlDisplay, ['full', 'short'], d.urlDisplay);
+    choice('links.repeat', links.repeat, ['every', 'first'], d.repeat);
+    choice('links.visibleUrls', links.visibleUrls, ['skip', 'note'], d.visibleUrls);
+    const qr = links.qr as Record<string, unknown> | undefined;
+    choice('links.qr.errorCorrection', qr?.errorCorrection, ['L', 'M', 'Q', 'H'], d.qr.errorCorrection);
+    choice('links.qr.side', qr?.side, ['start', 'end'], d.qr.side);
+    // Vertical text sets no code: its notes print the address.
+    if (links.print === 'notes' && (links.show === 'qr' || links.show === 'both') && resolveAllConfig(config).layout.writingMode === 'vertical-rl') {
+      out.push({ kind: 'unknownConfigValue', path: 'links.show', value: String(links.show), used: 'url' });
+    }
   }
   out.push(...collectComicChoiceWarnings(config));
   out.push(...collectPrintChoiceWarnings(config));

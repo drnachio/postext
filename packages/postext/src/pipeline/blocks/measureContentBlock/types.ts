@@ -159,4 +159,7 @@ export interface MeasureContentBlockOptions {
    *  paragraph's `'shrink'`), or with a lead-in of `leadInWords` words
    *  (the first line's, counted by the first setting). */
   dropCap?: { skip?: true; lines?: number; leadInWords?: number };
+  /** Internal to a link note's QR code (#1302): the note measured beside
+   *  it (the code's room is in `lineInsets`). */
+  linkQr?: true;
 }

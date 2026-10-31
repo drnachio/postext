@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '注と参照',
   description: '脚注、相互参照とアンカー、引用と参考文献、巻末の索引のマーク',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '14分',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 **検査**パネルには、どの文献データにも定義されていないキー（`unknownCitationKey`）と、読み取れない文献ブロック（`referencesUnreadable`）が表示されます。引用エンジンを登録せずに文献を引用したテキストには`citationsUnavailable`の警告が出て、引用は書いたとおりに出力されます。
 
+
+## 印刷物でのリンク
+
+Markdownのリンク`[テキスト](https://…)`は、Sandbox、PDF、HTML、EPUB、SCORM、Folioでクリックできます。紙では読者にはリンクのテキストしか見えません。`links.print`の設定で、印刷したページがリンクの後に何を加えるかを選びます。本文を書き換える必要はありません。
+
+```md
+全便の時刻表は[港湾局のサイト](https://www.example.org/ferries/)にあります。
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- `print: 'none'`（既定）はリンクのテキストだけを印刷します。
+- `print: 'inline'`は「港湾局のサイト (https://www.example.org/ferries/)」と印刷します。
+- `print: 'notes'`はリンクのテキストの後に合印を置きます。注は脚注と一緒に番号を付けて配置され、アドレス（`show: 'url'`）、アドレスを開くQRコード（`'qr'`）、またはその両方（`'both'`）を印刷します。`urlDisplay: 'short'`ではアドレスが`example.org/ferries`になります。
+
+対象は`http:`と`https:`のリンクだけです。`mailto:`や`tel:`のリンク、本の中のアンカーへのリンク、見出しの中のリンク、参考文献の項目は書いたとおりに印刷されます。自動リンク（`<https://…>`）とむき出しのアドレスはPostextでは普通のテキストなので、もともとページに見えています。脚注の中のリンクは括弧でアドレスを印刷します。そのほかの設定（繰り返し出てくるアドレス、コードの大きさと位置）は、設定リファレンスの[印刷物でのリンク](/ja/docs/configuration-notes-references#印刷物でのリンク)にあります。
 
 ## 索引
 

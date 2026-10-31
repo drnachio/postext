@@ -214,7 +214,7 @@ export function tokenizeSpans(
       const partAt = partStart;
       partStart += part.length;
       const isSpace = isBreakingSpaceRun(part);
-      if (!isSpace && URL_LIKE_RE.test(part.replace(/\u00AD/g, '')) && !(letterSpacingPx !== 0 && joiningScriptIn(part))) {
+      if (!isSpace && (span.url || URL_LIKE_RE.test(part.replace(/\u00AD/g, ''))) && !(letterSpacingPx !== 0 && joiningScriptIn(part))) {
         const clean = part.replace(/\u00AD/g, '');
         // An address is one script run: its pieces with no letter
         // (`10.1006/`, `.2001`) are measured in the script they have in

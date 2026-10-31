@@ -12,6 +12,7 @@ import { paintLineHighlights, paintLineMarks } from '../annotations.js';
 import { taskBoxTick } from '../../paint/taskBox.js';
 import { saveContext, restoreContext, setLetterSpacing } from '../contextState.js';
 import { renderLine } from './lines.js';
+import { paintLineQr } from '../lineQr.js';
 import type { BlockTextStyle } from './segments.js';
 
 /**
@@ -238,6 +239,8 @@ function renderBlockUpright(
     if (tracking !== 0) setLetterSpacing(ctx, 0);
     // Emphasis dots, proper-name and book-title lines (#193).
     if (line.marks) paintLineMarks(ctx, line, block.color);
+    // A link note's QR code (#1302).
+    if (line.qr) paintLineQr(ctx, line as typeof line & { qr: NonNullable<typeof line.qr> }, block.color);
   }
   if (block.strikethroughText) {
     renderStrikethrough(ctx, block);

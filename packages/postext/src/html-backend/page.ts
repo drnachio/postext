@@ -12,6 +12,7 @@ import type { ExerciseData } from '../exercises/digital.js';
 import { renderDesignSlot, renderDesignTextBlock } from './design.js';
 import { inkFilterDefs, imageUrl, inkFilterDecl } from './images.js';
 import { renderBullet, dropCapHtml, renderLine } from './lines.js';
+import { lineQrHtml } from './lineQr.js';
 import type { HtmlPaint } from './render.js';
 import { renderResourceBlockHtml } from './resources.js';
 import { resourceAnchorId, footnoteElementId, anchorElementId, pageElementId } from './segmentText.js';
@@ -38,6 +39,8 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
     const next = block.lines[i + 1];
     const lead = i === 0 && block.dropCap && !v ? dropCapHtml(block.dropCap, line, quoteFontString(block.fontString), (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0)) : '';
     parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next, options) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next, lead, options));
+    // A link note's QR code (#1302).
+    if (line.qr && !v) parts.push(lineQrHtml(line as typeof line & { qr: NonNullable<typeof line.qr> }, block.color));
   });
   return parts.join('');
 }

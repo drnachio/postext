@@ -34,6 +34,7 @@ export type * from './types/output/folio.js';
 export type * from './types/text/math.js';
 export type * from './types/structure/footnotes.js';
 export type * from './types/structure/citations.js';
+export type * from './types/structure/links.js';
 export type * from './types/text/cjk.js';
 export type * from './types/output/print.js';
 export type * from './types/text/fonts.js';

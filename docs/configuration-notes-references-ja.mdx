@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '注と参照',
   description: '脚注、行番号、相互参照と引用、目次、巻末の索引',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '27分',
   order: 12,
   parent: 'configuration',
@@ -379,14 +379,14 @@ lineNumbers: {
 数える行と数えない行：
 
 - **数えないもの**：見出し、キャプション、表と画像、別行立て数式、デザインのテキスト（扉、柱）、脚注と章末の注、目次、索引と参考文献の項目、白ページ。
-- **囲みと散文。** 囲みの中のテキストは数えません。`count: 'verse'`では散文も数えません。ただし、そのテキストを組む段落スタイルが`lineNumbers: true`を指定していれば数えます。`lineNumbers: false`のスタイルは決して数えません（[段落スタイル](/ja/docs/configuration-styles#段落スタイル)を参照）。
-- **1つの詩。** 詩の開始行には`numbered=false`（その詩の行を数えない）、`lineStart=N`（最初の行をNとし、そこから数え直す）、`interval=N`を書けます。`:::numbering{lines=N}`は、どこにあっても、次に数える行をNにします。[文書形式 › `:::verse`](/ja/docs/document-format-directives#verse)と[`:::numbering`](/ja/docs/document-format-directives#numbering)を参照してください。
+- **囲みと散文**。 囲みの中のテキストは数えません。`count: 'verse'`では散文も数えません。ただし、そのテキストを組む段落スタイルが`lineNumbers: true`を指定していれば数えます。`lineNumbers: false`のスタイルは決して数えません（[段落スタイル](/ja/docs/configuration-styles#段落スタイル)を参照）。
+- **1つの詩**。 詩の開始行には`numbered=false`（その詩の行を数えない）、`lineStart=N`（最初の行をNとし、そこから数え直す）、`interval=N`を書けます。`:::numbering{lines=N}`は、どこにあっても、次に数える行をNにします。[文書形式 › `:::verse`](/ja/docs/document-format-directives#verse)と[`:::numbering`](/ja/docs/document-format-directives#numbering)を参照してください。
 
 章ごとにレイアウトする本では、`restart: 'document'`は`continuation.lineNumber`で章から次の章へ数を引き継ぎます。`continuationAfter`は詩の行をテキストから数えます。`count: 'all'`では数がレイアウトによって決まるので、ホストは前の章の文書の`lastLineNumber`を渡します。Sandboxはそうしています。
 
 `position: 'side'`では、番号はサイドの囲み、キャプション、図とサイド段を共有します。そのどれかに重なる番号もそのまま描かれ、どちらも動きません。レイアウトは、番号を付けた行を指す内容の警告`lineNumberOverlap`を出します。
 
-**出力。** Canvas、PDF、HTMLビューアー、固定レイアウトのEPUBが番号を描画します。タグ付きPDFでは番号はレイアウトのアーティファクトで、それぞれに空の`/ActualText`が付くので、コピーや抽出したテキストは番号を含まずに行から行へ続きます。HTML出力は番号を支援技術（`aria-hidden`）、選択、コピーするテキストから隠します。行を閲覧システムが組むリフロー型のEPUBでは、詩の行の番号だけが残ります。印刷版で番号の付く行の横、連の行頭側の余白に置く`pt-line-number`のspan（これも`aria-hidden`）です。VDTでは、番号は各ページのデザインスロット（`page.lineNumbers`。そのテキストブロックには`artifact`の印が付きます）と、マークのリスト（`page.lineNumberMarks`：`number`、`label`、`columnIndex`、`blockId`、`lineIndex`）です。文書は`lastLineNumber`を記録します。
+**出力**。 Canvas、PDF、HTMLビューアー、固定レイアウトのEPUBが番号を描画します。タグ付きPDFでは番号はレイアウトのアーティファクトで、それぞれに空の`/ActualText`が付くので、コピーや抽出したテキストは番号を含まずに行から行へ続きます。HTML出力は番号を支援技術（`aria-hidden`）、選択、コピーするテキストから隠します。行を閲覧システムが組むリフロー型のEPUBでは、詩の行の番号だけが残ります。印刷版で番号の付く行の横、連の行頭側の余白に置く`pt-line-number`のspan（これも`aria-hidden`）です。VDTでは、番号は各ページのデザインスロット（`page.lineNumbers`。そのテキストブロックには`artifact`の印が付きます）と、マークのリスト（`page.lineNumberMarks`：`number`、`label`、`columnIndex`、`blockId`、`lineIndex`）です。文書は`lastLineNumber`を記録します。
 
 **対応していないもの**：縦組みの行番号、行の番号を印字する相互参照、行番号に結び付けた注、表のセル、キャプション、コードリストの行の番号。
 
@@ -628,6 +628,130 @@ interface CitationsConfig {
     </tr>
   </tbody>
 </table>
+
+## 印刷物でのリンク
+
+`links`プロパティは、`[テキスト](https://…)`と書いたリンクの先にあるアドレスを、印刷したページでどう示すかを決めます。リンクをたどれる出力（Sandboxのキャンバス、PDF、HTML、EPUB、SCORM、Folio）では、リンクはそのままクリックできます。紙ではリンクのテキストしか残らず、読者には行き先がわかりません。リンクの書き方は[文書形式](/ja/docs/document-format-notes-references#印刷物でのリンク)で説明しています。postext 1.65以降。
+
+```ts
+interface LinksConfig {
+  print?: 'none' | 'inline' | 'notes'; // 何もしない、括弧でアドレス、または注。
+  show?: 'url' | 'qr' | 'both';        // print: 'notes'のとき、注に印刷するもの。
+  urlDisplay?: 'full' | 'short';       // short：https://、先頭のwww.、末尾の/を省く。
+  repeat?: 'every' | 'first';          // first：章内で注を付けたアドレスはその注を使い回す。
+  visibleUrls?: 'skip' | 'note';       // テキストがアドレスそのものであるリンク。
+  qr?: {
+    size?: Dimension;                  // クワイエットゾーンを含むコードの一辺。
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    quietZone?: number;                // コードの周りの明るいモジュール数（0–8）。
+    color?: ColorValue;                // 未設定なら注の色。
+    side?: 'start' | 'end';            // 注の行のどちら側にコードを置くか。
+    gap?: Dimension;                   // コードと行の間隔。emは注の文字サイズ。
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>プロパティ</th>
+      <th>型</th>
+      <th>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>print</code></td>
+      <td><code>'none' | 'inline' | 'notes'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>'none'</code>は画面と同じく、リンクのテキストだけを印刷します。<code>'inline'</code>はテキストの後に括弧でアドレスを加えます。強調は周りのテキストと同じで、アドレス自体もリンクになり、URLとして改行されます。<code>'notes'</code>はリンクのテキストの後に合印を置き、アドレス、アドレスを開くQRコード、またはその両方を印刷する注を組みます（<code>show</code>）。リンクの注は脚注です。<code>[^id]</code>で書いた注と番号を共有し、<code>footnotes.placement</code>、<code>numbering</code>、<code>numberFormat</code>と注のスタイルに従います。</td>
+    </tr>
+    <tr>
+      <td><code>show</code></td>
+      <td><code>'url' | 'qr' | 'both'</code></td>
+      <td><code>'url'</code></td>
+      <td><code>print: 'notes'</code>のとき、アドレス、アドレスを開くQRコード、またはその両方。コードがあると注の行はその横に組まれ、注の高さはコード以上になります。縦組みの注はコードを付けずにアドレスを印刷します。</td>
+    </tr>
+    <tr>
+      <td><code>urlDisplay</code></td>
+      <td><code>'full' | 'short'</code></td>
+      <td><code>'full'</code></td>
+      <td>アドレスの書き方。<code>'short'</code>は<code>https://</code>または<code>http://</code>、先頭の<code>www.</code>、末尾の<code>/</code>を省きます。<code>https://www.example.com/</code>は<code>example.com</code>と印刷されます。リンク自体は完全なアドレスを保ちます。</td>
+    </tr>
+    <tr>
+      <td><code>repeat</code></td>
+      <td><code>'every' | 'first'</code></td>
+      <td><code>'every'</code></td>
+      <td><code>print: 'notes'</code>のとき、リンクごとに注を付けます。<code>'first'</code>では、同じ章の前のリンクがすでに注を付けたアドレスへのリンクは、その注の番号を印刷するだけで新しい注を加えません。数え直しは見出しレベル1ごとです。</td>
+    </tr>
+    <tr>
+      <td><code>visibleUrls</code></td>
+      <td><code>'skip' | 'note'</code></td>
+      <td><code>'skip'</code></td>
+      <td>テキストがすでにアドレスになっているリンク（<code>[https://example.com](https://example.com)</code>）。<code>'skip'</code>はそのままにしますが、<code>show: 'qr'</code>または<code>'both'</code>のときはコードのための注を付けます。<code>'note'</code>はほかのリンクと同じに扱います。</td>
+    </tr>
+    <tr>
+      <td><code>qr.size</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>15mm</code></td>
+      <td>クワイエットゾーンを含むコードの一辺。コードが段の幅の40%を超えることはありません。スマートフォンのカメラで読めるよう、1モジュールを3分の1ミリ以上にしてください。アドレスが長いほどモジュールが増え、コードも大きくする必要があります。</td>
+    </tr>
+    <tr>
+      <td><code>qr.errorCorrection</code></td>
+      <td><code>'L' | 'M' | 'Q' | 'H'</code></td>
+      <td><code>'M'</code></td>
+      <td>誤り訂正レベル。同じモジュール数でより高いレベルが収まるときは、エンコーダーが自動で引き上げます。</td>
+    </tr>
+    <tr>
+      <td><code>qr.quietZone</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>コードの周りの明るいモジュール数（0〜8）。ページ上では1で足ります。注の紙面とコード横の間隔がクワイエットゾーンを補います。</td>
+    </tr>
+    <tr>
+      <td><code>qr.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>注の色</td>
+      <td>暗いモジュールの色。未設定なら<code>footnotes.color</code>です。紙と十分なコントラストを保ってください。</td>
+    </tr>
+    <tr>
+      <td><code>qr.side</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>注の行に対するコードの位置。行末（左から右へ書く文では右）か行頭です。コードは注の1行目にそろえて置かれます。</td>
+    </tr>
+    <tr>
+      <td><code>qr.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>コードと注の行の間隔。<code>em</code>は注の文字サイズです。</td>
+    </tr>
+  </tbody>
+</table>
+
+コードと短いアドレスで読者をウェブへ案内する印刷版の例です。
+
+```ts
+links: {
+  print: 'notes',
+  show: 'both',
+  urlDisplay: 'short',
+  repeat: 'first',
+  qr: { size: { value: 18, unit: 'mm' } },
+}
+```
+
+- **対象のリンク**。`http:`と`https:`のアドレスだけです。`mailto:`、`tel:`、本の中の場所へのリンクはそのまま印刷されます。Postextは`<https://…>`とむき出しのアドレスを普通のテキストとして読みます。もともとページに見えているので、何も加えません。
+- **対象の場所**。段落、リスト項目、引用ブロック、囲みの中のテキスト。見出し（そのテキストは目次と柱に使われます）と参考文献の項目（DOIとURLは`citations.bibliography.doi`に従います）はそのままです。脚注の中のリンクは、`print`の値にかかわらず括弧でアドレスを印刷します。注に注を付けることはできないためです。
+- **版ごとの設定**。出版社は電子版では`print: 'none'`のままにし、印刷版の設定で`print: 'notes'`と`show: 'both'`を指定するのが普通です。Markdownはどちらの版も同じです。
+- **PDF**。コードはベクターで描かれ、アドレスへのリンクになります。タグ付きPDFでは`Link`の中の`Figure`となり、アドレスが代替テキストになります。
+
+解決関数と除去関数は、ほかのセクションと同じ形です。
+
+```ts
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+```
 
 ## 目次
 

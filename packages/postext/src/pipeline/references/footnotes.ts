@@ -317,6 +317,8 @@ export function noteContentBlock(
     // A note written in a block of its own direction (`[^id]: …` inside
     // `:::paragraphs{dir=rtl}`) is set in it (#371).
     ...(def?.direction ? { direction: def.direction } : {}),
+    // A link note's QR code (#1302) goes with it.
+    ...(def?.linkQr !== undefined ? { linkQr: def.linkQr } : {}),
   };
 }
 

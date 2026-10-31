@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '注释与引用',
   description: '脚注、行号、交叉引用、文献引用、目录和书末索引',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '19分钟',
   order: 12,
   parent: 'configuration',
@@ -628,6 +628,130 @@ interface CitationsConfig {
     </tr>
   </tbody>
 </table>
+
+## 印刷版中的链接
+
+`links`属性决定印刷页面怎样交代`[文字](https://…)`这种链接背后的网址。在能跟随链接的输出里（Sandbox画布、PDF、HTML、EPUB、SCORM和Folio），链接照样可以点击；印在纸上却只剩链接文字，读者不知道它指向哪里。链接的写法见[文档格式](/zh/docs/document-format-notes-references#印刷版中的链接)。从postext 1.65起。
+
+```ts
+interface LinksConfig {
+  print?: 'none' | 'inline' | 'notes'; // 不加、括号里的网址，或一条注释。
+  show?: 'url' | 'qr' | 'both';        // print: 'notes'时注释印什么。
+  urlDisplay?: 'full' | 'short';       // short：去掉https://、开头的www.和末尾的/。
+  repeat?: 'every' | 'first';          // first：本章已经注过的网址沿用那条注释。
+  visibleUrls?: 'skip' | 'note';       // 文字就是网址本身的链接。
+  qr?: {
+    size?: Dimension;                  // 二维码连同静区的边长。
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    quietZone?: number;                // 二维码四周的浅色模块数（0–8）。
+    color?: ColorValue;                // 未设置时用注释的颜色。
+    side?: 'start' | 'end';            // 二维码在注释文字的哪一侧。
+    gap?: Dimension;                   // 二维码与文字之间的距离；em为注释字号。
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>属性</th>
+      <th>类型</th>
+      <th>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>print</code></td>
+      <td><code>'none' | 'inline' | 'notes'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>'none'</code>只印链接文字，与屏幕上相同。<code>'inline'</code>在链接文字后加上括号括起的网址，强调样式与周围文字相同；网址本身也是链接，按网址的规则断行。<code>'notes'</code>在链接文字后加注码，并排一条注释，印出网址、可打开网址的二维码，或两者都印（<code>show</code>）。链接注释就是脚注：与用<code>[^id]</code>写的注释共用编号，遵循<code>footnotes.placement</code>、<code>numbering</code>、<code>numberFormat</code>和注释的样式。</td>
+    </tr>
+    <tr>
+      <td><code>show</code></td>
+      <td><code>'url' | 'qr' | 'both'</code></td>
+      <td><code>'url'</code></td>
+      <td><code>print: 'notes'</code>时：印网址、打开网址的二维码，或两者都印。有二维码时，注释文字排在二维码旁边，注释的高度不小于二维码。竖排文字的注释只印网址，不印二维码。</td>
+    </tr>
+    <tr>
+      <td><code>urlDisplay</code></td>
+      <td><code>'full' | 'short'</code></td>
+      <td><code>'full'</code></td>
+      <td>网址的写法。<code>'short'</code>去掉<code>https://</code>或<code>http://</code>、开头的<code>www.</code>和末尾的<code>/</code>：<code>https://www.example.com/</code>印作<code>example.com</code>。链接本身仍指向完整的网址。</td>
+    </tr>
+    <tr>
+      <td><code>repeat</code></td>
+      <td><code>'every' | 'first'</code></td>
+      <td><code>'every'</code></td>
+      <td><code>print: 'notes'</code>时：每个链接各有一条注释；设为<code>'first'</code>时，如果同一章前面的链接已经注过这个网址，后面的链接只印那条注释的编号，不再添加注释。每遇到一级标题重新计算。</td>
+    </tr>
+    <tr>
+      <td><code>visibleUrls</code></td>
+      <td><code>'skip' | 'note'</code></td>
+      <td><code>'skip'</code></td>
+      <td>文字已经是网址的链接，如<code>[https://example.com](https://example.com)</code>。<code>'skip'</code>保持原样，但在<code>show: 'qr'</code>或<code>'both'</code>时仍为二维码加一条注释。<code>'note'</code>与其他链接一样处理。</td>
+    </tr>
+    <tr>
+      <td><code>qr.size</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>15mm</code></td>
+      <td>二维码的边长，包括静区。二维码最多占栏宽的40%。为了让手机摄像头读得出来，每个模块至少要有三分之一毫米：网址越长，模块越多，二维码也就要越大。</td>
+    </tr>
+    <tr>
+      <td><code>qr.errorCorrection</code></td>
+      <td><code>'L' | 'M' | 'Q' | 'H'</code></td>
+      <td><code>'M'</code></td>
+      <td>纠错等级。模块数不变而网址还有余地时，编码器会自动提高等级。</td>
+    </tr>
+    <tr>
+      <td><code>qr.quietZone</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>二维码四周的浅色模块数，0到8。在页面上一个就够了：注释的纸面和二维码旁的间距会补足静区。</td>
+    </tr>
+    <tr>
+      <td><code>qr.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>注释的颜色</td>
+      <td>深色模块的颜色，未设置时为<code>footnotes.color</code>。颜色要与纸面有足够的反差。</td>
+    </tr>
+    <tr>
+      <td><code>qr.side</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>二维码在注释文字的哪一侧：行尾（从左到右的文字为右侧）或行首。二维码与注释第一行对齐。</td>
+    </tr>
+    <tr>
+      <td><code>qr.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>二维码与注释文字之间的距离；<code>em</code>为注释字号。</td>
+    </tr>
+  </tbody>
+</table>
+
+印刷版用二维码和简短网址把读者引到网上：
+
+```ts
+links: {
+  print: 'notes',
+  show: 'both',
+  urlDisplay: 'short',
+  repeat: 'first',
+  qr: { size: { value: 18, unit: 'mm' } },
+}
+```
+
+- **哪些链接**。只处理`http:`和`https:`网址。`mailto:`、`tel:`和指向书中某处的链接照原样印出。Postext把`<https://…>`和裸露的网址当作普通文字，它们本来就印在页面上，所以不加任何东西。
+- **哪些位置**。段落、列表项、引文块和框内的文字。标题（其文字会进入目录和书眉）和参考文献条目（其DOI和URL按`citations.bibliography.doi`处理）保持不变。脚注里的链接无论`print`怎样设置，都把网址印在括号里，因为注释不能再加注释。
+- **每个版本一份配置**。出版者通常在电子版保留`print: 'none'`，在印刷版的配置里设置`print: 'notes'`和`show: 'both'`；两版的Markdown完全相同。
+- **PDF**。二维码以矢量绘制，本身是指向该网址的链接。在带标签的PDF中，它是`Link`里的一个`Figure`，以网址作为替代文字。
+
+解析函数和精简函数的用法与其他各节相同：
+
+```ts
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+```
 
 ## 目录
 
