@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "dictionary-thumb-index",
-  "sourceHash": "fb2128f7106180b8e7122d738886bd98cb7bdf2d7b309b859916aa30e4dce68e",
+  "sourceHash": "1a0e16882835332eb934c9139550fcaaea699aa34dd6adfda11b81052dce34e3",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:34:49.173Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:57.944Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:57:07.647Z",
   "variants": {
     "en": {
-      "hash8": "1a50c3fd",
-      "vdtHash": "5c53d52eef97738b56c82ca4d989ed1a28f92048",
+      "hash8": "3c1d7cdf",
+      "vdtHash": "e899b9a09c3dcc0241f893ba7a7be3e96848e67d",
       "timings": {
-        "importMs": 174,
+        "importMs": 1741,
         "fontsMs": 2,
-        "buildMs": 99,
-        "totalMs": 1928,
+        "buildMs": 131,
+        "totalMs": 2657,
         "builds": 1
       },
       "specimen": {
@@ -56,7 +51,7 @@
           "file": "p01.webp",
           "strip": "p01.s.webp",
           "bytes": 152294,
-          "alt": "Opening page 1: The Sailor’s Word- Book."
+          "alt": "Opening page 1: The Sailor’s Word-Book."
         },
         {
           "n": 2,
@@ -77,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 196422,
+          "bytes": 203702,
           "alt": "Page 3: C."
         },
         {
@@ -120,13 +115,13 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 38600,
+        "bytes": 38734,
         "folio": "444e4865",
         "chapters": [
           {
             "pages": 4,
-            "hash": "2727262345905133",
-            "lines": "52086dbc7a72a888"
+            "hash": "c44a621e5e078b68",
+            "lines": "6df5d483c1665a05"
           }
         ]
       },
@@ -302,7 +297,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 3,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -313,6 +308,21 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -321,13 +331,13 @@
       }
     },
     "es": {
-      "hash8": "75139b06",
-      "vdtHash": "d6d5bcea097e756646965108103e17e70b120572",
+      "hash8": "7d28c317",
+      "vdtHash": "fdb8ddb6ce972ee74b7839fc7b177abe3207bd13",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 2,
-        "buildMs": 108,
-        "totalMs": 1286,
+        "importMs": 1929,
+        "fontsMs": 3,
+        "buildMs": 176,
+        "totalMs": 2994,
         "builds": 1
       },
       "specimen": {
@@ -383,7 +393,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 199322,
+          "bytes": 196330,
           "alt": "Página 3: C."
         },
         {
@@ -394,7 +404,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 128376,
+          "bytes": 138608,
           "alt": "Página 4."
         }
       ],
@@ -426,13 +436,13 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 39088,
+        "bytes": 37548,
         "folio": "444e4865",
         "chapters": [
           {
             "pages": 4,
-            "hash": "bce927688f90c6fa",
-            "lines": "e1eb54521cfd1f3c"
+            "hash": "a49f74cf02930669",
+            "lines": "7a07dd6bc4230b15"
           }
         ]
       },
@@ -608,7 +618,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 5,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -618,6 +628,21 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 046 · Dictionary with a moving thumb index ═══════════════
 // https://postext.dev/en/cookbook/dictionary-thumb-index
 // Code: MIT · Text: W. H. Smyth, 1867 (PD); Spanish translation CC BY 4.0 · Pictures: code
-// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.57.0
+// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

@@ -58,6 +58,8 @@ author: "W. H. Smyth"
 
 **Bitter-end.** *Chicote.* La parte del cable que queda a popa de las bitas, y por tanto dentro de la borda, cuando el buque está fondeado. Dicen «Bend to the bitter-end» cuando quieren entalingar ese chicote al ancla; y cuando una cadena o un cabo se han filado hasta el *bitter-end*, no queda más por largar. El *bitter-end* es el chicote de la talinga: a veces se entalinga ese al ancla, porque no se ha usado nunca y es más de fiar. De un cable de 115 brazas, las primeras 40 suelen estar gastadas cuando el chicote de dentro está casi nuevo.
 
+**Bluff.** *Morro.* Tierra alta y abrupta que se adelanta casi a plomo sobre el mar y presenta un frente atrevido, más redondeado que acantilado.
+
 **Booby.** *Piquero.* Conocida ave marina tropical, *Sula fusca*, de la familia de los *Pelecanidae*. Gusta de descansar fuera del agua por la noche, y hasta prefiere una percha inestable en la verga de un buque. El nombre inglés, que vale tanto como «bobo», le viene de lo fácil que se deja atrapar recién posado. La dirección en que vuelan al caer la tarde indica a menudo dónde hay tierra.
 
 **Brace of shakes.** *Un santiamén.* Un momento, tomado del flamear de una vela: «Estaré contigo antes de que flamee tres veces».

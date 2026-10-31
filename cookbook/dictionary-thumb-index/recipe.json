@@ -26,7 +26,7 @@
   "workarounds": [
     { "followup": "EF-60", "package": "postext", "note": "the letter styles set no breakBefore and inherit level 1's disabled break, so B and C open mid-column; a letter that should open a page needs its own breakBefore on its style" }
   ],
-  "engine": { "postext": "1.57.0" },
+  "engine": { "postext": "1.65.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -66,5 +66,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-10-22"
+  "updated": "2026-10-31"
 }
