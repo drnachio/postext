@@ -42,7 +42,7 @@ We need a coherent and global approach that addresses all the challenges we face
 
 To cover the real value, we would need a much more ambitious taxation system, both for corporate and personal tax, designed to induce a more sustainable behaviour. And, costs need to be integrated not only downstream on the consumption side but also upstream on the production side. As consumption and production systems are connected globally, integration requires an approach that extends beyond sovereign states’ rules and regulations.
 
-To be effective, this approach needs to be backed by a governance system with regulators that can ensure and enforce a level playing field with well-defined rules. On the ground, in addition to ambitious taxes and common standards, measures like anti‑dumping duties and carbon border taxes as well as a common approach towards environmentally harmful subsidies will be necessary.
+To be effective, this approach needs to be backed by a governance system with regulators that can ensure and enforce a level playing field with well-defined rules. On the ground, in addition to ambitious taxes and common standards, measures like anti-dumping duties and carbon border taxes as well as a common approach towards environmentally harmful subsidies will be necessary.
 
 :::paragraphs{style="firma"}
 Professor Geert Van Calster · Head of Leuven Law’s department of European and international law University of Leuven

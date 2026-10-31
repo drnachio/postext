@@ -581,10 +581,14 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
             if FURTHER_READING.match(b.text):
                 # the reading list closes the article: a panel from a later
                 # page goes before its heading, never between heading and list
+                back = ed.PANEL_BACK.get((lang, spec["slug"]), 0)
                 while ig_idx < len(infographics):
                     pg, title, intro = infographics[ig_idx]
                     md = panel_markdown(pg, title, intro, lang)
-                    if md:
+                    if md and back:
+                        at = para_end[-1 - back]
+                        lines[at:at] = [md]
+                    elif md:
                         lines.append(md)
                     ig_idx += 1
                 if drop_reading:

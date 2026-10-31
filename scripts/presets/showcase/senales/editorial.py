@@ -71,6 +71,9 @@ NO_PULL_QUOTE = {("en", "aire")}
 # (lang, photo).
 COLUMN_PHOTOS = {("es", "chemicals-2"), ("es", "industry-2"), ("en", "water-2")}
 PHOTO_AFTER: dict[tuple[str, str], int] = {("es", "aire"): 7, ("en", "aire"): 7}
+# A panel the PDF sets at the article's end stands this many paragraphs
+# earlier, so the closing page ends level, by (lang, slug).
+PANEL_BACK: dict[tuple[str, str], int] = {("es", "agua"): 1}
 
 # Articles whose closing reading list is left out, by (lang, slug): the
 # Spanish noise list only points at English pages.

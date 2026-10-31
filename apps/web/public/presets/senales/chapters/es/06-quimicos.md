@@ -40,7 +40,7 @@ Hay aproximadamente 800 sustancias que se sabe o se sospecha que son alteradores
 Entre los alteradores endocrinos se incluyen el bisfenol A (BPA), las dioxinas, los bifenilos policlorados (PCB) y algunos tipos de ftalatos. Los ftalatos, por ejemplo, se usan para ablandar el plástico para su uso en una amplia gama de productos de consumo, como suelos de vinilo, adhesivos, detergentes, ambientadores, aceites lubricantes, envases de comida, ropa, productos para el cuidado personal y juguetes.
 
 :::callout{type="dato" title="Efectos de las PFAS en la salud humana"}
-Las sustancias perfluoroalquiladas y polifluoroalquiladas (PFAS) son un grupo de sustancias químicas sumamente persistentes que se usan en muchos productos de consumo. Las PFAS se usan en los productos porque pueden, por ejemplo, aumentar la repelencia al aceite y al agua o resistir altas temperaturas. En la actualidad, hay más de 4 700 PFAS distintas que se acumulan en los seres
+Las sustancias perfluoroalquiladas y polifluoroalquiladas (PFAS) son un grupo de sustancias químicas sumamente persistentes que se usan en muchos productos de consumo. Las PFAS se usan en los productos porque pueden, por ejemplo, aumentar la repelencia al aceite y al agua o resistir altas temperaturas. En la actualidad, hay más de 4 700 PFAS distintas que se acumulan en los seres humanos y en el medio ambiente.
 :::
 
 El consumo de alimentos y bebidas a partir de recipientes que incluyen ftalatos es una forma de exponerse. Otra es la inhalación en interiores de polvo contaminado con ftalatos que se liberan de productos de plástico o muebles de cloruro de polivinilo (PVC) —este es uno de los motivos por los que es importante ventilar las habitaciones regularmente—. Los niños que juegan con juguetes que contienen estas sustancias también tienen riesgo y, puesto que los ftalatos se encuentran asimismo en productos de consumo, como jabones y protectores solares, la exposición igualmente puede producirse a través de la piel.
@@ -56,7 +56,7 @@ Desde la década de 1970, los esfuerzos concertados han reducido la presencia de
 Las sustancias químicas consideradas peligrosas se han sustituido en ocasiones por otras sustancias de estructura similar, para después demostrarse que eran igual de tóxicas. Estos casos se denominan «sustituciones desafortunadas», como ocurre con la sustitución del bisfenol-A, una sustancia química usada anteriormente en muchos objetos de plástico y papel de impresora térmico, por el bisfenol-S y el bisfenol-F.
 
 :::callout{type="dato" title="El territorio desconocido de los riesgos de las sustancias químicas"}
-Hay muchas sustancias químicas en el mercado y los riesgos solo se han estudiado bien en una pequeña parte de ellas. El diseño de productos seguros con un menor número de sustancias químicas distintas es
+Hay muchas sustancias químicas en el mercado y los riesgos solo se han estudiado bien en una pequeña parte de ellas. El diseño de productos seguros con un menor número de sustancias químicas distintas es una manera de reducir los posibles riesgos.
 :::
 
 ## Las sustancias químicas que ingerimos

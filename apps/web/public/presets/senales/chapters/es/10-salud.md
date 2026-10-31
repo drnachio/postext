@@ -35,7 +35,7 @@ Si nos centramos en el ejemplo de la contaminación del aire, tenemos que ir a l
 Creo que también es importante reconocer que los efectos de la contaminación en general, y de la contaminación atmosférica en particular, no se distribuyen por igual. Las personas que residen en zonas más desfavorecidas suelen vivir cerca de lugares contaminados o en zonas donde hay mucho tráfico. Las diferencias pueden ser grandes, no solo entre los países, sino también dentro de los propios países.
 
 :::callout{type="dato" title="¿El futuro de la vigilancia de la contaminación?"}
-Las nuevas tecnologías y herramientas están abriendo nuevas posibilidades de vigilancia y análisis del medio ambiente. Por ejemplo, la ciencia ciudadana, las observaciones vía satélite, los macrodatos y la inteligencia artificial representan una oportunidad para mejorar la actualidad, comparabilidad, precisión
+Las nuevas tecnologías y herramientas están abriendo nuevas posibilidades de vigilancia y análisis del medio ambiente. Por ejemplo, la ciencia ciudadana, las observaciones vía satélite, los macrodatos y la inteligencia artificial representan una oportunidad para mejorar la actualidad, comparabilidad, precisión e integración de los datos.
 :::
 
 ## ¿Qué está haciendo la OMS en Europa en el ámbito del medio ambiente y la contaminación? {style="pregunta"}

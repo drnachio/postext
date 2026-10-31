@@ -32,7 +32,7 @@ The EEA has worked together with a number of European cities in a pilot project 
 
 These measures reduce local air pollution and often noise, and they improve residents’ quality of life. Moreover, the same actions cut greenhouse gas emissions and, in many cases, save money. Still, the same cities also reported important challenges, especially in engaging with citizens and making the political case for measures to improve air quality.
 
-For best results, local and regional actions go along with effective national and EU policies that often offer substantial co‑benefits in reducing greenhouse gas emissions and air pollution at the same time. These co-benefits can be achieved by, for example, improving energy efficiency and greening the mobility system.
+For best results, local and regional actions go along with effective national and EU policies that often offer substantial co-benefits in reducing greenhouse gas emissions and air pollution at the same time. These co-benefits can be achieved by, for example, improving energy efficiency and greening the mobility system.
 
 ## People demand clean air
 
@@ -49,7 +49,7 @@ Local-, regional-, national- and EU-level actions and policies with binding targ
 The actions that are necessary to cut air pollution, both in Europe and globally, are largely the same actions that are necessary to address the climate crisis and stop the degradation of nature. We need to fundamentally change and decarbonise our systems of production and consumption, especially those related to mobility, energy and food.
 
 :::callout{type="datos" title="Air quality problems in Europe’s cities"}
-Almost all Europeans who live in cities are exposed to air pollution that exceeds the levels set in the World Health Organization’s (WHO’s) guidelines for clean air. Air pollution is the greatest environmental
+Almost all Europeans who live in cities are exposed to air pollution that exceeds the levels set in the World Health Organization’s (WHO’s) guidelines for clean air. Air pollution is the greatest environmental health hazard in Europe and globally.
 :::
 
 ::resource{id="tabla-17"}

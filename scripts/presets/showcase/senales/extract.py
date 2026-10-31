@@ -70,6 +70,23 @@ def _span_text(spans) -> str:
     return text.strip()
 
 
+def _panel_intro(lines: list[dict]) -> list[str]:
+    """The introduction of an infographic page: the run of small lines at the
+    top, from its first full-width line to the last line of the paragraph
+    (which is short, so it is kept by position, not by width)."""
+    small = sorted((ln for ln in lines if _role(ln) == "small" and ln["y"] < 130), key=lambda ln: ln["y"])
+    out: list[dict] = []
+    for ln in small:
+        if not out:
+            if ln["w"] > 250 and ln["y"] < 110:
+                out.append(ln)
+        elif ln["y"] - out[-1]["y"] <= 16:
+            out.append(ln)
+        else:
+            break
+    return [ln["text"] for ln in out]
+
+
 def _join(lines: list[str]) -> str:
     text = ""
     for ln in lines:
@@ -82,6 +99,8 @@ def _join(lines: list[str]) -> str:
         else:
             text = text + " " + ln
     text = re.sub(r"\s+([,.;:!?])", r"\1", text)
+    # U+2011 is not in the bundled faces: print a plain hyphen
+    text = text.replace("\u2011", "-")
     # the Spanish PDF sets "Ruido::" — and `::` would open a directive
     text = re.sub(r"(?<=\w)::(?=\s)", ":", text)
     text = re.sub(r":(?=(?:www\.|https?://))", ": ", text)
@@ -177,7 +196,7 @@ def extract(pdf_path: str, first_page: int, last_page: int, references_from: int
         lines = [ln for ln in _lines(page) if not _page_number_line(ln)]
         if _is_infographic(page, lines):
             title = next((ln["text"] for ln in lines if _role(ln) == "subhead" and ln["y"] < 60), "")
-            intro_lines = [ln["text"] for ln in lines if _role(ln) == "small" and ln["y"] < 110 and ln["w"] > 250]
+            intro_lines = _panel_intro(lines)
             if current is not None and title:
                 current.infographics.append((current_page, title, _join(intro_lines)))
             continue

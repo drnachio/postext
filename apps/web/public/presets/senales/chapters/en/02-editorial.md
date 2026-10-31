@@ -4,7 +4,7 @@ One cannot help drawing parallels between the pandemic, the climate crisis and t
 
 We cannot paint an exact picture of a world that is two or four degrees warmer. We do not know exactly what the tipping points will be for entire ecosystems. What we do know is that, unless we take decisive action and aim for systemic transitions, the outlook is not positive and time is running out. A pandemic can, we hope, be controlled in a relatively short period of time. It might prove to be much more difficult to reverse any damage caused by reaching a tipping point in climate change or in the degradation of nature.
 
-The links between these fast- and slow‑moving crises and pollution are clear. Cutting air pollution and reducing greenhouse gas emissions almost always go hand in hand. Curbing water and soil pollution would benefit nature. Reducing resource use and moving to a circular economy would also reduce pollution.
+The links between these fast- and slow-moving crises and pollution are clear. Cutting air pollution and reducing greenhouse gas emissions almost always go hand in hand. Curbing water and soil pollution would benefit nature. Reducing resource use and moving to a circular economy would also reduce pollution.
 
 ::resource{id="photo-editorial"}
 

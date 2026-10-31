@@ -59,7 +59,7 @@ Según un reciente análisis de la AEMA,el uso de las mejores técnicas disponib
 La plena aplicación de todas estas directivas ayudaría a la UE a lograr objetivos medioambientales, como los de la calidad del aire y del agua. Sin embargo, las directivas relacionadas con las emisiones suelen ser independientes y existe un claro margen para una mayor integración de los objetivos medioambientales en la política industrial de la UE. Avanzar hacia una contaminación cero requerirá una legislación, una aplicación y un seguimiento aún más sólidos para garantizar que las industrias del mañana sean limpias y sostenibles.
 
 :::callout{type="dato" title="Contaminación por plásticos"}
-Los plásticos han aportado muchos beneficios a nuestra vida diaria, pero el problema es que estos productos nunca desaparecen realmente. Por tanto, quizás deberíamos concebir los plásticos como un tipo de contaminante desde el momento de su fabricación y evitar que los productos y los residuos
+Los plásticos han aportado muchos beneficios a nuestra vida diaria, pero el problema es que estos productos nunca desaparecen realmente. Por tanto, quizás deberíamos concebir los plásticos como un tipo de contaminante desde el momento de su fabricación y evitar que los productos y los residuos plásticos pasen al medio ambiente.
 :::
 
 :::callout{type="lectura" title="Para más información"}
