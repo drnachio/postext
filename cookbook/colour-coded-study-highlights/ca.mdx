@@ -1,72 +1,62 @@
 ---
-# Tots els valors van entre cometes. Límits: title ≤ 60 caràcters (un resultat, no una llista
-# de funcions); summary 60–160 (la resposta en una frase, amb el mecanisme); description 120–160.
-title: "Una pàgina de llibre amb capçaleres"
-summary: "Marges simètrics, una obertura de capítol enfonsada i capçaleres que saben a quin costat de la doble pàgina són, a la pàgina d'un llibre en rústica."
-description: "Una pàgina de llibre amb Postext: marges simètrics, obertura enfonsada 52 mm, capçaleres segons la paritat i foli al peu a les obertures, amb tot el codi."
-# plain: "…"           40–240 caràcters: el resum en paraules corrents, sense argot (es mostra com a «En poques paraules»)
-# question: "…"        opcional, ≤ 110 caràcters: reformula answers[0] per a aquesta pàgina
-# pageNotes: { "3": "…" }  opcional: text alternatiu addicional per a una pàgina capturada
-aliases: ["pàgina de llibre", "capçaleres", "obertura de capítol"]
+title: "Ressaltats per colors en un llibre de lectures"
+summary: "Un llibre de lectures d'història amb tres colors de ressaltat (verd per als termes, ambre per a les dates, blau per als noms) definits a markStyles."
+plain: "Una lectura escolar sobre la història de la impremta. Els termes clau van en verd, les dates en ambre i les persones i els llocs en blau, i una clau a la primera pàgina explica què vol dir cada color."
+description: "Un llibre de lectures d'història compost amb Postext amb tres estils de ressaltat: termes en verd, dates en ambre, noms en blau i una clau a l'obertura."
+question: "Com ressalto un text d'estudi amb colors que vulguin dir alguna cosa: termes, dates i noms?"
+aliases: ["ressaltat", "retolador fluorescent", "codi de colors", "clau de colors", "paraules clau", "text d'estudi", "llibre de lectures", "llibre d'història", "glossari", "marca", "impremta", "Gutenberg"]
+pageNotes: { "1": "La pàgina d'obertura: a dalt, una pintura d'un taller d'impremta cap al 1460; a sota, l'avanttítol, el títol i una entradeta en cursiva; després, un requadre tintat sota un filet vermell que explica els tres colors amb una mostra verda, una d'ambre i una de blava, i les primeres línies de la lectura.", "2": "Una pàgina parella de la lectura: dates com 1455 i 1462 sobre franges d'ambre, noms com Johann Fust, Subiaco o William Caxton sobre franges blau pàl·lid i termes com tipus mòbils o colofó sobre franges verdes, dins d'un text justificat.", "4": "L'última pàgina: les preguntes de repàs, el glossari, on cada entrada comença pel terme en negreta sobre una franja verda amb les línies següents sagnades, i el colofó en lletra grisa petita." }
 ---
 
 ## Què compondràs
 
-{/*
-  60–150 paraules, amb veu de director d'art: la publicació, la idea de disseny i per què
-  costa d'aconseguir en un altre lloc. Anomena la publicació («una edició en rústica de…»,
-  «el número de juny de…»). Sense llistes de funcions: Ingredients es genera des de recipe.json.
-  La pàgina afegeix sola, sota aquesta secció, la llista «Aquesta recepta respon» (d'answers).
-*/}
-
-Les primeres pàgines d'una novel·la en rústica: un capítol que comença en pàgina senar, a un terç de l'alçada, sota un avanttítol petit en versaletes espaiades i un filet curt de l'únic color d'accent del llibre; després, pàgina rere pàgina de text justificat, amb el títol del llibre a l'esquerra i el del capítol a la dreta. Res a la pàgina no alça la veu. L'ofici és a la geometria: marges que s'emmirallen a la doble pàgina, capçaleres que saben a quin costat són i un foli que baixa al peu a l'obertura, on una capçalera destorbaria el títol.
+La lectura 2 d'una unitat d'un llibre escolar d'història, *Lecturas de historia moderna*: quatre pàgines sobre com la impremta es va estendre per Europa des de Magúncia entre el 1450 i el 1550, en una pàgina de 170 × 240 mm. Els editors han marcat el text com ho faria un bon estudiant, amb un codi que no canvia en tot el llibre: els termes clau sobre una franja verda, les dates sobre ambre, les persones i els llocs sobre blau pàl·lid. Una clau sota el títol explica el codi amb els tres colors, i el glossari de l'última pàgina obre cada entrada amb el seu terme en verd. Les marques són franges sota text corrent, de manera que les línies es tallen, es divideixen i es justifiquen com si no hi fossin.
 
 ## Elaboració
 
-{/*
-  De 3 a 7 passos, cadascun un H3 numerat «1 · …». Cada pas obre amb un Excerpt d'una #region
-  de script.js (el fitxer compost, amb els seus números de línia reals) i continua amb 1–3 frases
-  sobre el PERQUÈ, no sobre el què: el què ja es veu. La resposta curta ja mostra la
-  #region answer: un pas que en parli remet allà en lloc de repetir-la. en.mdx, es.mdx, ca.mdx i zh.mdx
-  mostren les mateixes regions en el mateix ordre. Components opcionals: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Un estil per a cada mena de paraula
 
-### 1 · L'obertura és un disseny, no un títol
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `markStyles` declara tres estils amb nom, i el text en tria un a cada marca: `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colofón]{style="term"}` ([marques de ressaltat](/ca/docs/document-format-inline#marques-de-ressaltat)). Cada estil diu què vol dir (`name` és el que veu qui edita), de manera que el Markdown guarda per què es marca una paraula i no de quin color va. Si canvies el color d'un estil, canvien amb ell totes les dates del llibre. Els extrems són rectes, com per defecte des de postext 1.52 ([estils de ressaltat](/ca/docs/configuration-styles#estils-de-ressaltat)): un retolador fluorescent deixa els extrems rectes, i una franja arrodonida es llegeix com un xip.
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El títol de primer nivell conserva el seu lloc al text i a l'índex, però es dibuixa des d'una zona de disseny: l'avanttítol surt d'un atribut del títol, el títol es parteix amb una mida fixa i el filet s'ancora sota l'alçada que ocupi el títol. `minHeight` enfonsa el text fins a la mateixa línia a totes les obertures, sigui quina sigui la llargada del títol.
-
-### 2 · Les capçaleres saben en quina pàgina són
-
-<Excerpt region="running-heads" />
-
-Cada element s'ancora a la pàgina física i es filtra per paritat, de manera que el foli queda sempre a la vora exterior i el títol del llibre al verso. `pages: 'body'` els manté fora de l'obertura, que rep en canvi un foli centrat al peu des del peu de pàgina.
-
-### 3 · Un sol accent, enllaçat a tot arreu
+### 2 · Tres tintes de la paleta
 
 <Excerpt region="palette" />
 
-Cada color de la configuració fa referència a la seva entrada de la paleta, de manera que qui canviï una mostra canvia el to de tot el llibre, i una part o un estil d'encapçalament poden tornar a acolorir una secció pel seu id. Fer apuntar `main-color` a l'accent atrapa tots els valors per defecte que la configuració no redefineix.
+Les tres franges són entrades de la paleta, igual que la tinta i l'accent, així que qui obri el llibre al Sandbox pot canviar el codi des d'una sola mostra de color. Són pàl·lides, d'una lluminositat semblant a la del fons del requadre, i el text a sobre conserva un contrast de 12,6:1 o més; les tres es distingeixen quan es troben en una línia, com a «En 1517, Martín Lutero» a la pàgina 3. Una marca no ocupa espai: `paddingX` entra 0,12 em a l'espai del costat de la frase i `paddingBottom` baixa la franja per sota dels traços descendents, i tots dos es pinten en un espai que ja hi era.
+
+### 3 · L'obertura: una pintura sobre el títol
+
+<Excerpt region="opener" />
+
+El títol de primer nivell imprimeix un disseny. La pintura s'ancora a la pàgina, així que surt a sang per dalt i pels dos costats, 170 per 96 mm, amb `fit: 'cover'`. L'avanttítol i l'entradeta surten d'atributs de la línia del títol ([atributs de títol](/ca/docs/document-format#atributs-dencapçalament)), i la clau segueix com un `:::callout` corrent amb uns elements de llista que comencen per les tres marques. `minHeight` fixa la profunditat: la clau comença a la mateixa línia per molt que ocupi el títol.
+
+### 4 · Capçaleres segons la paritat
+
+<Excerpt region="running-heads" />
+
+La pàgina parella porta el títol de la col·lecció i la senar el de la lectura, totes dues filtrades per `parity` i fora de l'obertura gràcies a `pages: 'body'` ([elements de text](/ca/docs/configuration-headers-footers#elements-de-text)). L'obertura porta el foli al peu.
 
 ## Variants
 
-{/*
-  Opcional, d'1 a 4 entrades: un H3 en imperatiu, una frase i un diff contra script.js,
-  o un enllaç a una recepta germana.
-*/}
+### Arrodoneix els extrems de les franges
 
-### Compon el text a dues columnes
-
-Un format més ample admet dues columnes; l'obertura ocupa les dues i les capçaleres es queden on són.
+Un radi d'una cinquena part del cos dona els extrems suaus d'un retolador.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Dona a cada línia la seva franja
+
+Amb `decorationBreak: 'clone'`, una marca que passa de línia porta el farciment als dos extrems de cada tros, en lloc de quedar recta on es talla la línia.
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
 ```
 
 ## Errors freqüents
 
-{/*
-  Opcional. Els errors freqüents i els avisos que llista recipe.json hi apareixen sols;
-  afegeix-hi una línia només per a un problema propi d'aquesta recepta.
-*/}
+- El color sol no sobreviu a una fotocòpia en blanc i negre, que és com arriben moltes lectures a l'aula. El glossari posa a més els termes en negreta; si els teus lectors fotocopiaran les pàgines, dona a una de les tres menes un segon senyal propi.
+- Un id d'estil que `markStyles` no declara pren el primer estil, sense cap error a la pàgina (el Sandbox l'assenyala). Fes servir ids curts i revisa com els escrius al text.
