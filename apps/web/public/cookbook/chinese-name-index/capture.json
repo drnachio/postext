@@ -3,27 +3,21 @@
   "slug": "chinese-name-index",
   "sourceHash": "8e9f53d8fc56269ff8eb401db8fb5ce602a201d2fa7675d21bfcc13e7eeb4bec",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:32:12.468Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:56.672Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:17:54.011Z",
   "variants": {
     "en": {
-      "hash8": "53a17715",
+      "hash8": "384c8d4c",
       "vdtHash": "55e30ab4a45b566f212b97f1c44e655eceec9a0f",
       "timings": {
-        "importMs": 250,
-        "fontsMs": 352,
-        "buildMs": 114,
-        "totalMs": 1459,
+        "importMs": 2426,
+        "fontsMs": 1117,
+        "buildMs": 142,
+        "totalMs": 4506,
         "builds": 2
       },
       "specimen": {
@@ -232,7 +226,7 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307077,
+        "bytes": 307102,
         "pages": 8
       },
       "sandbox": {
@@ -481,6 +475,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -489,13 +493,13 @@
       }
     },
     "es": {
-      "hash8": "b83ce0d8",
+      "hash8": "f8449c6d",
       "vdtHash": "b3092498bc15450767349f3a8584a7be5c5922e2",
       "timings": {
-        "importMs": 247,
-        "fontsMs": 648,
-        "buildMs": 118,
-        "totalMs": 1743,
+        "importMs": 3781,
+        "fontsMs": 1421,
+        "buildMs": 154,
+        "totalMs": 6344,
         "builds": 2
       },
       "specimen": {
@@ -704,7 +708,7 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307303,
+        "bytes": 307323,
         "pages": 8
       },
       "sandbox": {
@@ -952,6 +956,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",
