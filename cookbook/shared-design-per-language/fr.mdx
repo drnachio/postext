@@ -1,73 +1,57 @@
 ---
-# Toutes les valeurs sont entre guillemets. Limites : title ≤ 60 caractères (un résultat, pas une liste de fonctions) ;
-# summary 60–160 (la réponse en une phrase, qui nomme le mécanisme) ; description 120–160.
-title: "Une page de livre avec titres courants"
-summary: "Des marges en miroir, une ouverture de chapitre abaissée et des titres courants qui savent de quel côté de la double page ils sont, sur une page de roman."
-description: "Une page de roman dans Postext : marges en miroir, ouverture abaissée de 52 mm, titres courants selon la parité, folio en pied aux ouvertures, code complet."
-# plain: "…"           40–240 caractères : le résumé en mots de tous les jours, sans jargon (affiché sous « En bref »)
-# question: "…"        facultatif, ≤ 110 caractères : reformule answers[0] pour cette page
-# pageNotes: { "3": "…" }  facultatif : texte de remplacement supplémentaire pour une page capturée
-aliases: ["page de livre", "titres courants", "titre courant", "ouverture de chapitre", "running heads"]
+title: "Une maquette pour trois éditions en trois langues"
+summary: "Un livret en anglais, en espagnol et en arabe tiré de réglages généraux, avec une surcharge pour ce qui revient à chaque langue : polices, corps, interlettrage."
+plain: "Un livret sur trois astrolabes anciens, imprimé en anglais, en espagnol et en arabe. Les trois partagent une maquette ; seule l’édition arabe change ses polices et ses corps."
+description: "Réglages généraux et surcharges par langue dans Postext : un livret anglais, espagnol et arabe qui partage une maquette et change là où la langue l’exige."
+question: "Comment partager une maquette entre éditions d’un livre en ne changeant que polices et libellés par langue ?"
+aliases: ["réglages généraux", "surcharges par langue", "mergeConfigLayers", "configuration partagée", "édition multilingue", "édition arabe", "astrolabe"]
+pageNotes: {"1": "La couverture de l’édition anglaise : la photographie d’un astrolabe en laiton de 1291 incrusté d’argent occupe la page ; sur le haut sombre de la photo, un surtitre blanc espacé, un filet court et le titre Three Astrolabes sur deux lignes blanches ; en pied, Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Verso 2 : titre courant avec le folio en laiton et le titre du livre ; les sections A map of the sky you can turn et The sultan’s instrument, en texte justifié aux intertitres couleur laiton.", "3": "Recto 3 : un encadré avec un filet laiton à gauche ; la section A garden of stars avec la photo d’un astrolabe persan à droite de la colonne et le texte à côté ; en pied, l’intertitre de la dernière section.", "4": "Verso 4 : la dernière section avec la photo de l’astrolabe européen de 1462 à droite et le texte à côté ; un tableau des trois instruments à l’en-tête sombre ; un paragraphe de clôture et le colophon."}
 ---
 
 ## Ce que vous allez composer
 
-{/*
-  60 à 150 mots, avec la voix d’un directeur artistique : la publication, l’idée de maquette et
-  pourquoi elle est difficile à obtenir ailleurs. Nommez la publication (« une édition de poche
-  de… », « le numéro de juin de… »). Pas de liste de fonctions : la section Ingrédients est générée
-  à partir de recipe.json. La page ajoute d’elle-même, sous cette section, la liste « Cette recette
-  répond à » (tirée de answers).
-*/}
-
-Les premières pages d’un roman broché : un chapitre qui commence sur un recto, au tiers de la hauteur, sous un petit surtitre interlettré et un filet court dans l’unique couleur d’accent du livre, puis page après page de texte justifié, avec le titre du livre à gauche et celui du chapitre à droite. Rien sur la page n’élève la voix. Le métier est dans la géométrie : des marges qui se répondent en miroir sur la double page, des titres courants qui savent de quel côté ils sont, et un folio qui descend en pied sur l’ouverture, là où un titre courant encombrerait le titre.
+Un livret de quatre pages A5 sur trois astrolabes du Metropolitan Museum of Art : l’un fait au Yémen en 1291, l’autre en Iran en 1654, le dernier en Europe en 1462. L’éditeur le publie en anglais, en espagnol et en arabe, et les trois éditions sont une seule maquette. La photo de couverture, les intertitres couleur laiton, l’encadré et son filet, les figures habillées par le texte et l’en-tête sombre du tableau viennent des mêmes réglages. L’édition arabe change ce qui tient à son écriture : Amiri et IBM Plex Sans Arabic au lieu de Source Serif et Source Sans, un corps plus grand et des libellés sans capitales ni interlettrage. Elle se lit depuis la droite et se relie à droite sans une seule coordonnée à elle.
 
 ## Préparation
 
-{/*
-  3 à 7 étapes, chacune un H3 numéroté « 1 · … ». Chaque étape s’ouvre sur un Excerpt d’une #region
-  de script.js (le fichier composé, avec ses vrais numéros de ligne), puis 1 à 3 phrases sur le
-  POURQUOI, pas sur le quoi : le quoi, le lecteur le voit. La réponse courte montre déjà la #region
-  answer : une étape qui en parle y renvoie au lieu de la réimprimer. en.mdx, es.mdx et zh.mdx
-  montrent les mêmes régions dans le même ordre.
-  Composants facultatifs : Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Des réglages généraux et trois petites surcharges
 
-### 1 · L’ouverture est une maquette, pas un titre
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. `config` contient les réglages généraux ; `mergeConfigLayers` pose par-dessus la surcharge d’une édition, champ par champ. L’anglais et l’espagnol n’ont pas de surcharge : leur `locale` choisit les motifs de césure et les mots *Figure* et *Table*, *Figura* et *Tabla*. La surcharge arabe ne nomme que des champs : `bodyText.fontFamily` change la police et garde la couleur, l’alignement et la césure, et l’élément `kicker` de la couverture change sa police et son interlettrage et garde son ancre, sa couleur et sa taille. Un changement de palette ou de marges dans `config` atteint les trois éditions.
 
-Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Le titre de niveau 1 garde sa place dans le texte et dans la table des matières, mais il se dessine à partir d’une zone de maquette : le surtitre vient d’un attribut du titre, le titre passe à la ligne sur une justification fixe et le filet s’ancre sous la hauteur que prend le titre, quelle qu’elle soit. `minHeight` abaisse le texte courant jusqu’à la même ligne sur chaque ouverture, quelle que soit la longueur du titre.
+### 2 · Des côtés nommés selon le sens du texte
 
-### 2 · Les titres courants savent sur quelle page ils sont
+<Excerpt region="heads" />
 
-<Excerpt region="running-heads" />
+Le bord extérieur d’une page paire est le début de ses lignes dans les deux sens, celui d’une page impaire leur fin ; `top-start` et `top-end` mettent donc les folios à l’extérieur sur un verso anglais comme sur un verso arabe. Le filet de l’encadré est `side: 'start'` et le texte de couverture s’ancre à `top-start` : aucun n’a besoin de surcharge.
 
-Chaque élément est ancré à la page physique et filtré selon la parité : le folio reste donc toujours sur le bord extérieur et le titre du livre sur le verso. `pages: 'body'` les tient à l’écart de l’ouverture, qui reçoit à la place un folio centré en pied, venu du pied de page.
+### 3 · Des figures en fin de ligne, habillées par le texte
 
-### 3 · Un seul accent, lié partout
+<Excerpt region="pictures" />
 
-<Excerpt region="palette" />
+`wrap: 'end'` place chaque photographie à droite d’une colonne anglaise et à gauche d’une colonne arabe, et le texte court à côté. Légendes et textes alternatifs sont dans la langue de chaque édition ; les légendes arabes donnent d’abord la date de l’hégire.
 
-Chaque couleur de la configuration renvoie à son entrée de palette : un lecteur qui change une pastille de couleur reteinte tout le livre, et une partie ou un style de titre peut recolorer une section par son identifiant. Faire pointer `main-color` sur l’accent rattrape toutes les valeurs par défaut que la configuration ne redéfinit pas.
+### 4 · Le tableau avec les mots et les chiffres de chaque édition
+
+<Excerpt region="table" />
+
+Les données du tableau sont du contenu et changent avec l’édition : chiffres arabes orientaux et séparateur décimal arabe dans l’édition arabe, virgule décimale dans l’espagnole. Son style est général : la surcharge ne fixe que la police et le corps arabes.
 
 ## Variantes
 
-{/*
-  Facultatif, 1 à 4 entrées : un H3 à l’impératif, une phrase, puis un diff par rapport à script.js
-  ou un lien vers une recette voisine.
-*/}
+### Écrire les surcharges dans un paquet
 
-### Composez le texte sur deux colonnes
+<RecipeLink slug="bundle-round-trip">L’aller-retour .postext</RecipeLink> écrit un livre en deux langues dans un fichier. Depuis postext 1.58, `createBundle` enregistre une fois les réglages généraux et, à côté des chapitres de chaque langue, sa surcharge, telle que `mergeConfigLayers` la lit ici. Le livre de cette recette s’ouvre ainsi dans le Sandbox : passez le panneau de mise en page de *Toutes les langues* à l’édition arabe pour voir les champs que fixe l’édition arabe.
 
-Un format plus large accueille deux colonnes ; l’ouverture s’étend sur les deux et les titres courants restent où ils sont.
+### Imprimer l’édition arabe pour le Maghreb
+
+`ar-MA` garde le sens et la reliure et écrit en chiffres européens les nombres générés, folios et numéros de figure. Retapez aussi les chiffres du tableau.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
 ```
 
 ## Erreurs fréquentes
 
-{/*
-  Facultatif. Les pièges et les avertissements listés dans recipe.json s’affichent ici d’eux-mêmes ;
-  n’ajoutez une ligne que pour un piège propre à cette recette.
-*/}
+- Les lettres arabes se lient : un libellé interlettré dans les réglages généraux doit perdre son `letterSpacing` dans la surcharge arabe, sinon le moteur émet un avertissement `joiningScriptLetterSpacing`. `textTransform: 'none'` l’accompagne : l’arabe n’a pas de capitales.
+- Les lignes d’une édition arabe sont plus hautes et ses pages se coupent ailleurs. Chaque édition a été ajustée à part : l’encadré arabe flotte en pied de page (`placement="bottom"`) et ses phrases de clôture courent à côté de la dernière photographie.

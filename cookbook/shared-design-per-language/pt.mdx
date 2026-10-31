@@ -1,72 +1,57 @@
 ---
-# Todos os valores vão entre aspas. Limites: title ≤ 60 caracteres (um resultado, não uma lista de recursos);
-# summary 60–160 (a resposta em uma frase, nomeando o mecanismo); description 120–160
-title: "Uma página de livro com cabeços"
-summary: "Margens espelhadas, uma abertura de capítulo rebaixada e cabeços que sabem em que lado da página dupla estão, numa página de livro em brochura."
-description: "Uma página de livro no Postext: margens espelhadas, abertura rebaixada 52 mm, cabeços por paridade e fólio no pé nas aberturas, com o código completo."
-# plain: "…"           40–240 caracteres: o resumo em palavras do dia a dia, sem jargão (aparece como "Em poucas palavras")
-# question: "…"        opcional, ≤ 110 caracteres: reformula answers[0] para esta página
-# pageNotes: { "3": "…" }  opcional: texto alternativo extra para uma página capturada
-aliases: ["página de livro", "cabeços", "cabeço", "abertura de capítulo", "running heads"]
+title: "Um projeto gráfico para três edições em três idiomas"
+summary: "Um livreto em inglês, espanhol e árabe a partir de ajustes gerais, com substituições só para o que é de cada idioma: fontes, corpos, espacejamento."
+plain: "Um livreto sobre três astrolábios antigos, impresso em inglês, espanhol e árabe. Os três compartilham um projeto; só a edição árabe troca as fontes e os tamanhos."
+description: "Ajustes gerais e substituições por idioma no Postext: um livreto em inglês, espanhol e árabe que compartilha um projeto e só muda onde o idioma pede."
+question: "Como compartilho um projeto entre as edições de um livro e troco só as fontes e rótulos de cada idioma?"
+aliases: ["ajustes gerais", "substituições por idioma", "mergeConfigLayers", "configuração compartilhada", "edição multilíngue", "edição árabe", "astrolábio"]
+pageNotes: {"1": "A capa da edição inglesa: a fotografia de um astrolábio de latão de 1291 com incrustações de prata ocupa a página; sobre a parte escura da foto, um antetítulo branco espacejado, um fio curto e o título Three Astrolabes em duas linhas brancas; no pé, Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Página par 2: cabeço com o fólio em latão e o título do livro; as seções A map of the sky you can turn e The sultan’s instrument, em texto justificado com os títulos cor de latão.", "3": "Página ímpar 3: um box com um fio de latão à esquerda; a seção A garden of stars com a foto de um astrolábio persa à direita da coluna e o texto ao lado; no pé, o título da última seção.", "4": "Página par 4: a última seção com a foto do astrolábio europeu de 1462 à direita e o texto ao lado; uma tabela dos três instrumentos com o cabeçalho escuro; um parágrafo de fecho e o colofão."}
 ---
 
 ## O que você vai compor
 
-{/*
-  60–150 palavras, com a voz de um diretor de arte: a publicação, a ideia de design e por que
-  ela é difícil de conseguir em outro lugar. Dê nome à publicação ("uma edição de bolso de…",
-  "a edição de junho de…"). Sem listas de recursos: a seção Ingredientes é gerada a partir de
-  recipe.json. A página acrescenta sozinha, sob esta seção, a lista "Esta receita responde" (de answers).
-*/}
-
-As primeiras páginas de um romance em brochura: um capítulo que começa numa página ímpar, a um terço da altura, sob um antetítulo pequeno em letras espaçadas e um fio curto na única cor de destaque do livro; depois, página após página de texto justificado, com o título do livro à esquerda e o do capítulo à direita. Nada na página levanta a voz. O ofício está na geometria: margens que se espelham na página dupla, cabeços que sabem de que lado estão e um fólio que desce para o pé na abertura, onde um cabeço atrapalharia o título.
+Um livreto de quatro páginas A5 sobre três astrolábios do Metropolitan Museum of Art: um feito no Iêmen em 1291, outro no Irã em 1654 e outro na Europa em 1462. A editora o publica em inglês, espanhol e árabe, e as três edições são um só projeto. A foto de capa, os títulos cor de latão, o box com seu fio, as figuras com o texto ao lado e o cabeçalho escuro da tabela saem dos mesmos ajustes. A edição árabe troca o que é da sua escrita: Amiri e IBM Plex Sans Arabic no lugar de Source Serif e Source Sans, um corpo maior e rótulos sem maiúsculas nem espacejamento. Ela se lê a partir da direita e é encadernada à direita sem uma única coordenada própria.
 
 ## Preparo
 
-{/*
-  De 3 a 7 passos, cada um um H3 numerado "1 · …". Cada passo abre com um Excerpt de uma #region
-  de script.js (o arquivo composto, com os números de linha reais) e segue com 1–3 frases sobre o
-  PORQUÊ, não sobre o quê: o quê o leitor já vê. A resposta curta já mostra a #region answer: um
-  passo que trate dela remete para lá em vez de repeti-la. en.mdx, es.mdx e zh.mdx mostram as
-  mesmas regiões na mesma ordem.
-  Componentes opcionais: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Ajustes gerais e três pequenas substituições
 
-### 1 · A abertura é um design, não um título
+O código está na [resposta curta](#a-resposta-curta) acima. `config` guarda os ajustes gerais; `mergeConfigLayers` põe por cima a substituição de uma edição, campo a campo. Inglês e espanhol não têm substituição: o `locale` deles escolhe os padrões de hifenização e as palavras *Figure* e *Table*, *Figura* e *Tabla*. A substituição árabe nomeia só campos soltos: `bodyText.fontFamily` troca a fonte e mantém a cor, o alinhamento e a hifenização, e o elemento `kicker` da capa troca a fonte e o espacejamento e mantém a âncora, a cor e o tamanho. Uma mudança na paleta ou nas margens em `config` chega às três edições.
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. O título de nível 1 mantém seu lugar no texto e no sumário, mas é desenhado a partir de um espaço de design: o antetítulo vem de um atributo do título, o título quebra numa medida fixa e o fio se ancora abaixo da altura que o título ocupar. `minHeight` rebaixa o texto corrido até a mesma linha em todas as aberturas, seja qual for o comprimento do título.
+### 2 · Lados nomeados pela direção do texto
 
-### 2 · Os cabeços sabem em que página estão
+<Excerpt region="heads" />
 
-<Excerpt region="running-heads" />
+A borda externa de uma página par é o início das suas linhas nas duas direções, e a de uma ímpar, o fim; por isso `top-start` e `top-end` levam os fólios para fora tanto numa página par inglesa quanto numa árabe. O fio do box é `side: 'start'` e o texto da capa se ancora em `top-start`: nenhum precisa de substituição.
 
-Cada elemento é ancorado à página física e filtrado por paridade, de modo que o fólio fica sempre na borda externa e o título do livro no verso. `pages: 'body'` os mantém fora da abertura, que recebe no lugar um fólio centralizado no pé, vindo do rodapé.
+### 3 · Figuras no fim da linha, com o texto ao lado
 
-### 3 · Uma só cor de destaque, ligada em todo lugar
+<Excerpt region="pictures" />
 
-<Excerpt region="palette" />
+`wrap: 'end'` põe cada foto à direita de uma coluna inglesa e à esquerda de uma árabe, e o texto corre ao lado. Legendas e textos alternativos vêm no idioma de cada edição; as legendas árabes dão primeiro a data da Hégira.
 
-Cada cor da configuração indica sua entrada na paleta, por isso quem trocar uma amostra de cor muda o tom do livro inteiro, e uma parte ou um estilo de título pode recolorir uma seção pelo id. Apontar `main-color` para a cor de destaque pega todos os valores padrão que a configuração não redefine.
+### 4 · A tabela com as palavras e os algarismos de cada edição
+
+<Excerpt region="table" />
+
+Os dados da tabela são conteúdo e mudam com a edição: algarismos arábico-índicos e o separador decimal árabe na edição árabe, vírgula decimal na espanhola. O estilo é geral: a substituição só define a fonte e o corpo árabes.
 
 ## Variações
 
-{/*
-  Opcional, de 1 a 4 entradas: um H3 no imperativo, uma frase e um diff contra script.js,
-  ou um link para uma receita irmã.
-*/}
+### Grave as substituições num pacote
 
-### Componha o texto em duas colunas
+<RecipeLink slug="bundle-round-trip">A ida e volta do .postext</RecipeLink> grava um livro em dois idiomas num arquivo. Desde o postext 1.58, `createBundle` salva uma vez os ajustes gerais e, junto aos capítulos de cada idioma, a sua substituição, como `mergeConfigLayers` a lê aqui. O livro desta receita abre assim no Sandbox: alterne o painel de design entre *Todos os idiomas* e a edição árabe para ver que campos a edição árabe define.
 
-Um formato mais largo comporta duas colunas; a abertura ocupa as duas e os cabeços ficam onde estão.
+### Imprima a edição árabe para o Magrebe
+
+`ar-MA` mantém a direção e a encadernação e escreve em algarismos europeus os números gerados, fólios e números das figuras. Redigite também os algarismos da tabela.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
 ```
 
 ## Erros comuns
 
-{/*
-  Opcional. Os erros comuns e os avisos listados em recipe.json aparecem aqui sozinhos;
-  acrescente uma linha só para um problema que pertença apenas a esta receita.
-*/}
+- As letras árabes se ligam: um rótulo espacejado nos ajustes gerais precisa perder o `letterSpacing` na substituição árabe, senão o motor emite o aviso `joiningScriptLetterSpacing`. Com ele vai `textTransform: 'none'`: o árabe não tem maiúsculas.
+- As linhas de uma edição árabe são mais altas e as páginas quebram em outros pontos. Cada edição foi ajustada por conta própria: o box árabe flutua para o pé da página (`placement="bottom"`) e as frases de fecho correm ao lado da última foto.

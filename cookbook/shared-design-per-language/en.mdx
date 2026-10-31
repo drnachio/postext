@@ -1,72 +1,57 @@
 ---
-# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
-# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
-title: "A book page with running heads"
-summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
-description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
-# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
-# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
-# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
-aliases: ["book page", "running heads", "chapter opener"]
+title: "One design for three language editions"
+summary: "One booklet in English, Spanish and Arabic from a single set of general settings, with an override for what belongs to each language: faces, sizes, tracking."
+plain: "A small booklet about three old astrolabes, printed in English, Spanish and Arabic. All three share one design; only the Arabic edition changes its fonts and sizes."
+description: "General settings and per-language overrides in Postext: an English, Spanish and Arabic booklet that share one design and differ only where a language needs it."
+question: "How do I share one design between the editions of a book and change only each language's fonts and labels?"
+aliases: ["general settings", "per-language overrides", "mergeConfigLayers", "shared config", "multilingual edition", "Arabic edition", "translated booklet", "astrolabe"]
+pageNotes: {"1": "The cover: a photograph of a brass astrolabe of 1291, inlaid with silver, fills the page; on the dark head of the photograph a tracked white kicker, a short rule and the title Three Astrolabes in two lines of white serif; at the foot, in small capitals, Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Verso 2: running head with the folio in brass and the book's title; the sections A map of the sky you can turn and The sultan's instrument, justified serif text with headings in brass.", "3": "Recto 3: a box with a brass stripe on its left, Telling the time by a star; the section A garden of stars with a photograph of a Persian astrolabe on the right of the column and the text running beside it; the heading of the last section at the foot.", "4": "Verso 4: the last section with a photograph of the European astrolabe of 1462 on the right, the text beside it; a table of the three instruments with a dark header; a closing paragraph and the colophon."}
 ---
 
 ## What you'll build
 
-{/*
-  60–150 words, in an art director's voice: the publication, the design idea, and why it is
-  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
-  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
-  "This recipe answers" list (from answers) under this section by itself.
-*/}
-
-The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+A booklet of four A5 pages on three astrolabes in the Metropolitan Museum of Art: one made in Yemen in 1291, one in Iran in 1654 and one in Europe in 1462. The publisher prints it in English, Spanish and Arabic, and the three editions are one design. The cover photograph, the brass headings, the box with its stripe, the figures with the text beside them and the dark table header come from a single set of settings. The Arabic edition changes what belongs to its script: Amiri and IBM Plex Sans Arabic for Source Serif and Source Sans, a larger size, and labels without capitals or tracking. It reads from the right and binds on the right without one coordinate of its own.
 
 ## Method
 
-{/*
-  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
-  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
-  what: the reader can see what. The short answer already shows #region answer: a step about
-  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
-  regions in the same order.
-  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · General settings and three small overrides
 
-### 1 · The opener is a design, not a heading
+The code is [the short answer](#the-short-answer) above. `config` holds the general settings; `mergeConfigLayers` lays an edition's override over them field by field. English and Spanish have no override: their `locale` picks the hyphenation patterns and the words *Figure* and *Table*, *Figura* and *Tabla*. The Arabic override names only fields: `bodyText.fontFamily` changes the face and keeps the colour, the alignment and the hyphenation setting, and the cover's `kicker` element changes its face and tracking and keeps its anchor, colour and size of box. A change to the palette or the margins in `config` reaches all three editions.
 
-The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+### 2 · Sides named by the direction of the text
 
-### 2 · Running heads know which page they are on
+<Excerpt region="heads" />
 
-<Excerpt region="running-heads" />
+An even page's outer edge is the start of its lines in both directions, and an odd page's is the end, so `top-start` and `top-end` put the folios outside on an English verso and on an Arabic one. The box stripe is `side: 'start'` and the cover's text is anchored to `top-start`: none of them needs an override.
 
-Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+### 3 · Figures wrapped at the end of the line
 
-### 3 · One accent, linked everywhere
+<Excerpt region="pictures" />
 
-<Excerpt region="palette" />
+`wrap: 'end'` puts each photograph on the right of an English column and on the left of an Arabic one, and the text runs beside it. The captions and alt texts come in each edition's language; the Arabic captions give the Hijri date first.
 
-Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+### 4 · The table in each edition's words and digits
+
+<Excerpt region="table" />
+
+The table's data is content, so it changes with the edition: Arabic-Indic digits and the Arabic decimal separator in the Arabic edition, a decimal comma in the Spanish one. Its style is general: the override only sets the Arabic face and size.
 
 ## Variations
 
-{/*
-  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
-  or a link to a sibling recipe.
-*/}
+### Write the overrides into a bundle
 
-### Set the text in two columns
+<RecipeLink slug="bundle-round-trip">The .postext round trip</RecipeLink> writes a book in two languages to one file. Since postext 1.58 `createBundle` stores the general settings once and each language's override beside its chapters, as `mergeConfigLayers` reads them here. The Sandbox book of this recipe opens that way: switch the Design panel between *All languages* and the Arabic edition to see which fields the Arabic edition sets.
 
-A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+### Print the Arabic edition for the Maghreb
+
+`ar-MA` keeps the direction and the binding and writes the generated numbers, the folios and the figure numbers, in European digits. Retype the table's digits too.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
 ```
 
 ## Pitfalls
 
-{/*
-  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
-  line only for a pitfall that belongs to this recipe alone.
-*/}
+- Arabic letters join, so a label tracked in the general settings must lose its `letterSpacing` in the Arabic override, or the engine raises a `joiningScriptLetterSpacing` warning. `textTransform: 'none'` goes with it: Arabic has no capitals.
+- The lines of an Arabic edition are deeper, so its pages break in other places. Each edition here was fitted on its own: the Arabic box floats to the foot of its page (`placement="bottom"`) and its closing sentences run beside the last photograph.

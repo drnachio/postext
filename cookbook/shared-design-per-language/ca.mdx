@@ -1,72 +1,57 @@
 ---
-# Tots els valors van entre cometes. Límits: title ≤ 60 caràcters (un resultat, no una llista
-# de funcions); summary 60–160 (la resposta en una frase, amb el mecanisme); description 120–160.
-title: "Una pàgina de llibre amb capçaleres"
-summary: "Marges simètrics, una obertura de capítol enfonsada i capçaleres que saben a quin costat de la doble pàgina són, a la pàgina d'un llibre en rústica."
-description: "Una pàgina de llibre amb Postext: marges simètrics, obertura enfonsada 52 mm, capçaleres segons la paritat i foli al peu a les obertures, amb tot el codi."
-# plain: "…"           40–240 caràcters: el resum en paraules corrents, sense argot (es mostra com a «En poques paraules»)
-# question: "…"        opcional, ≤ 110 caràcters: reformula answers[0] per a aquesta pàgina
-# pageNotes: { "3": "…" }  opcional: text alternatiu addicional per a una pàgina capturada
-aliases: ["pàgina de llibre", "capçaleres", "obertura de capítol"]
+title: "Un disseny per a tres edicions en altres llengües"
+summary: "Un quadernet en anglès, castellà i àrab amb uns ajustos generals i, per a cada llengua, només el que és seu: les fonts, els cossos i l'espaiat."
+plain: "Un quadernet sobre tres astrolabis antics, imprès en anglès, castellà i àrab. Les tres edicions comparteixen el disseny; només l'àrab canvia les fonts i els cossos."
+description: "Ajustos generals i ajustos propis de cada llengua a Postext: un quadernet en anglès, castellà i àrab amb un disseny, diferent només on ho demana la llengua."
+question: "Com comparteixo un disseny entre edicions d'un llibre i canvio només les fonts i etiquetes de cada llengua?"
+aliases: ["ajustos generals", "ajustos propis de cada llengua", "mergeConfigLayers", "configuració compartida", "edició multilingüe", "edició àrab", "astrolabi"]
+pageNotes: {"1": "La coberta de l'edició castellana: la fotografia d'un astrolabi de llautó de 1291 amb incrustacions de plata ocupa la pàgina; sobre la part fosca de la foto, un avantítol blanc espaiat, un filet curt i el títol Tres astrolabios en dues línies blanques; al peu, Yemen 1291 · Irán 1654 · Europa 1462.", "2": "Pàgina parella 2: capçalera amb el foli en llautó i el títol del llibre; les seccions Un mapa del cielo que se puede girar i El instrumento del sultán, en text justificat amb els títols en llautó.", "3": "Pàgina senar 3: un requadre amb un filet de llautó a l'esquerra; la secció Un jardín de estrellas amb la foto d'un astrolabi persa a la dreta de la columna i el text al costat; al peu, el títol de l'última secció.", "4": "Pàgina parella 4: l'última secció amb la foto de l'astrolabi europeu de 1462 a la dreta i el text al costat; una taula dels tres instruments amb la capçalera fosca; un paràgraf de tancament i el colofó."}
 ---
 
 ## Què compondràs
 
-{/*
-  60–150 paraules, amb veu de director d'art: la publicació, la idea de disseny i per què
-  costa d'aconseguir en un altre lloc. Anomena la publicació («una edició en rústica de…»,
-  «el número de juny de…»). Sense llistes de funcions: Ingredients es genera des de recipe.json.
-  La pàgina afegeix sola, sota aquesta secció, la llista «Aquesta recepta respon» (d'answers).
-*/}
-
-Les primeres pàgines d'una novel·la en rústica: un capítol que comença en pàgina senar, a un terç de l'alçada, sota un avanttítol petit en versaletes espaiades i un filet curt de l'únic color d'accent del llibre; després, pàgina rere pàgina de text justificat, amb el títol del llibre a l'esquerra i el del capítol a la dreta. Res a la pàgina no alça la veu. L'ofici és a la geometria: marges que s'emmirallen a la doble pàgina, capçaleres que saben a quin costat són i un foli que baixa al peu a l'obertura, on una capçalera destorbaria el títol.
+Un quadernet de quatre pàgines A5 sobre tres astrolabis del Metropolitan Museum of Art: un fet al Iemen el 1291, un altre a l'Iran el 1654 i un altre a Europa el 1462. L'editorial el publica en anglès, castellà i àrab, i les tres edicions són un sol disseny. La foto de coberta, els títols en llautó, el requadre amb el filet, les figures amb el text al costat i la capçalera fosca de la taula surten d'uns mateixos ajustos. L'edició àrab canvia el que és de la seva escriptura: Amiri i IBM Plex Sans Arabic en lloc de Source Serif i Source Sans, un cos més gran i etiquetes sense majúscules ni espaiat. Es llegeix des de la dreta i s'enquaderna per la dreta sense cap coordenada pròpia.
 
 ## Elaboració
 
-{/*
-  De 3 a 7 passos, cadascun un H3 numerat «1 · …». Cada pas obre amb un Excerpt d'una #region
-  de script.js (el fitxer compost, amb els seus números de línia reals) i continua amb 1–3 frases
-  sobre el PERQUÈ, no sobre el què: el què ja es veu. La resposta curta ja mostra la
-  #region answer: un pas que en parli remet allà en lloc de repetir-la. en.mdx, es.mdx, ca.mdx i zh.mdx
-  mostren les mateixes regions en el mateix ordre. Components opcionals: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Uns ajustos generals i tres ajustos de llengua petits
 
-### 1 · L'obertura és un disseny, no un títol
+El codi és a [la resposta curta](#la-resposta-curta). `config` desa els ajustos generals; `mergeConfigLayers` hi posa a sobre els d'una edició camp per camp. L'anglès i el castellà no tenen ajustos propis: el seu `locale` tria els patrons de partició de mots i les paraules *Figure* i *Table*, *Figura* i *Tabla*. Els ajustos àrabs només anomenen camps solts: `bodyText.fontFamily` canvia la font i conserva el color, l'alineació i la partició, i l'element `kicker` de la coberta canvia la font i l'espaiat i conserva l'àncora, el color i la mida. Un canvi a la paleta o als marges de `config` arriba a les tres edicions.
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El títol de primer nivell conserva el seu lloc al text i a l'índex, però es dibuixa des d'una zona de disseny: l'avanttítol surt d'un atribut del títol, el títol es parteix amb una mida fixa i el filet s'ancora sota l'alçada que ocupi el títol. `minHeight` enfonsa el text fins a la mateixa línia a totes les obertures, sigui quina sigui la llargada del títol.
+### 2 · Costats anomenats segons la direcció del text
 
-### 2 · Les capçaleres saben en quina pàgina són
+<Excerpt region="heads" />
 
-<Excerpt region="running-heads" />
+La vora exterior d'una pàgina parella és el costat on comencen les línies en totes dues direccions, i la d'una senar, el costat on acaben; per això `top-start` i `top-end` porten els folis a fora tant en una pàgina parella anglesa com en una d'àrab. El filet del requadre és `side: 'start'` i el text de la coberta s'ancora a `top-start`: cap no necessita un ajust propi.
 
-Cada element s'ancora a la pàgina física i es filtra per paritat, de manera que el foli queda sempre a la vora exterior i el títol del llibre al verso. `pages: 'body'` els manté fora de l'obertura, que rep en canvi un foli centrat al peu des del peu de pàgina.
+### 3 · Figures al final de la línia, amb el text al costat
 
-### 3 · Un sol accent, enllaçat a tot arreu
+<Excerpt region="pictures" />
 
-<Excerpt region="palette" />
+`wrap: 'end'` posa cada fotografia a la dreta d'una columna anglesa i a l'esquerra d'una d'àrab, i el text corre al costat. Els peus i els textos alternatius van en la llengua de cada edició; els peus àrabs donen primer la data de l'hègira.
 
-Cada color de la configuració fa referència a la seva entrada de la paleta, de manera que qui canviï una mostra canvia el to de tot el llibre, i una part o un estil d'encapçalament poden tornar a acolorir una secció pel seu id. Fer apuntar `main-color` a l'accent atrapa tots els valors per defecte que la configuració no redefineix.
+### 4 · La taula amb les paraules i les xifres de cada edició
+
+<Excerpt region="table" />
+
+Les dades de la taula són contingut i canvien amb l'edició: xifres aràbigues orientals i el separador decimal àrab a l'edició àrab, coma decimal a la castellana. L'estil és general: l'ajust àrab només posa la font i el cos.
 
 ## Variants
 
-{/*
-  Opcional, d'1 a 4 entrades: un H3 en imperatiu, una frase i un diff contra script.js,
-  o un enllaç a una recepta germana.
-*/}
+### Desa els ajustos de cada llengua en un paquet
 
-### Compon el text a dues columnes
+<RecipeLink slug="bundle-round-trip">L'anada i tornada del .postext</RecipeLink> desa un llibre en dues llengües en un fitxer. Des de postext 1.58, `createBundle` escriu una vegada els ajustos generals i, al costat dels capítols de cada llengua, els seus ajustos propis, tal com els llegeix aquí `mergeConfigLayers`. El llibre d'aquesta recepta al Sandbox s'obre així: canvia el tauler de disseny entre *Totes les llengües* i l'edició àrab per veure quins camps fixa l'edició àrab.
 
-Un format més ample admet dues columnes; l'obertura ocupa les dues i les capçaleres es queden on són.
+### Imprimeix l'edició àrab per al Magrib
+
+`ar-MA` conserva la direcció i l'enquadernació i escriu en xifres europees els nombres generats: els folis i els números de les figures. Torna a escriure també les xifres de la taula.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
 ```
 
 ## Errors freqüents
 
-{/*
-  Opcional. Els errors freqüents i els avisos que llista recipe.json hi apareixen sols;
-  afegeix-hi una línia només per a un problema propi d'aquesta recepta.
-*/}
+- Les lletres àrabs van enllaçades, de manera que una etiqueta espaiada als ajustos generals ha de perdre el `letterSpacing` als ajustos àrabs; si no, el motor dona un avís `joiningScriptLetterSpacing`. Amb ell va `textTransform: 'none'`: l'àrab no té majúscules.
+- Les línies d'una edició àrab són més altes i les seves pàgines tallen en altres llocs. Cada edició s'ha ajustat pel seu compte: el requadre àrab flota al peu de la pàgina (`placement="bottom"`) i les frases de tancament corren al costat de l'última fotografia.

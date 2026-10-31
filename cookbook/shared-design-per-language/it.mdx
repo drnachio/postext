@@ -1,72 +1,57 @@
 ---
-# Ogni valore va tra virgolette. Limiti: title ≤ 60 caratteri (un risultato, non un elenco di funzioni);
-# summary 60–160 (la risposta in una frase, che nomina il meccanismo); description 120–160.
-title: "Una pagina di libro con le testatine"
-summary: "Margini speculari, un’apertura di capitolo abbassata e testatine che sanno su quale lato della doppia pagina si trovano, su una pagina di narrativa."
-description: "Una pagina di narrativa in Postext: margini speculari, apertura abbassata di 52 mm, testatine per parità, numero al piede nelle aperture, codice completo."
-# plain: "…"           40–240 caratteri: il riassunto in parole di tutti i giorni, senza gergo (mostrato come «In breve»)
-# question: "…"        facoltativo, ≤ 110 caratteri: riformula answers[0] per questa pagina
-# pageNotes: { "3": "…" }  facoltativo: testo alternativo in più per una pagina catturata
-aliases: ["pagina di libro", "testatine", "testatina", "apertura di capitolo", "running heads"]
+title: "Un progetto grafico per tre edizioni in tre lingue"
+summary: "Un libretto in inglese, spagnolo e arabo da impostazioni generali, con impostazioni per lingua solo per ciò che le appartiene: caratteri, corpi, spaziatura."
+plain: "Un libretto su tre antichi astrolabi, stampato in inglese, spagnolo e arabo. I tre condividono un progetto; solo l’edizione araba cambia caratteri e corpi."
+description: "Impostazioni generali e per lingua in Postext: un libretto in inglese, spagnolo e arabo che condivide un progetto e cambia solo dove la lingua lo chiede."
+question: "Come condivido un progetto tra le edizioni di un libro e cambio solo caratteri ed etichette di ogni lingua?"
+aliases: ["impostazioni generali", "impostazioni per lingua", "mergeConfigLayers", "configurazione condivisa", "edizione multilingue", "edizione araba", "astrolabio"]
+pageNotes: {"1": "La copertina dell’edizione inglese: la fotografia di un astrolabio in ottone del 1291 con agemine d’argento occupa la pagina; sulla parte scura della foto, un occhiello bianco spaziato, un filetto corto e il titolo Three Astrolabes su due righe bianche; al piede, Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Pagina pari 2: testatina con il folio in ottone e il titolo del libro; le sezioni A map of the sky you can turn e The sultan’s instrument, testo giustificato con i titoli color ottone.", "3": "Pagina dispari 3: un riquadro con un filetto ottone a sinistra; la sezione A garden of stars con la foto di un astrolabio persiano a destra della colonna e il testo accanto; al piede, il titolo dell’ultima sezione.", "4": "Pagina pari 4: l’ultima sezione con la foto dell’astrolabio europeo del 1462 a destra e il testo accanto; una tabella dei tre strumenti con l’intestazione scura; un paragrafo di chiusura e il colophon."}
 ---
 
 ## Che cosa comporrai
 
-{/*
-  60–150 parole, con la voce di un art director: la pubblicazione, l’idea grafica e perché è
-  difficile ottenerla altrove. Nomina la pubblicazione («un’edizione tascabile di…», «il numero
-  di giugno di…»). Niente elenchi di funzioni: la sezione Ingredienti è generata da recipe.json.
-  La pagina aggiunge da sola, sotto questa sezione, l’elenco «Questa ricetta risponde a» (preso da answers).
-*/}
-
-Le prime pagine di un romanzo in brossura: un capitolo che comincia su un recto a un terzo dell’altezza, sotto un piccolo occhiello spaziato e un filetto corto nell’unico colore d’accento del libro, poi pagina dopo pagina di testo giustificato, con il titolo del libro a sinistra e il capitolo a destra. Nulla sulla pagina alza la voce. Il mestiere sta nella geometria: margini che si specchiano sulla doppia pagina, testatine che sanno da che lato si trovano e un numero di pagina che scende al piede nell’apertura, dove una testatina affollerebbe il titolo.
+Un libretto di quattro pagine A5 su tre astrolabi del Metropolitan Museum of Art: uno fatto nello Yemen nel 1291, uno in Iran nel 1654 e uno in Europa nel 1462. L’editore lo pubblica in inglese, spagnolo e arabo, e le tre edizioni sono un solo progetto. La foto di copertina, i titoli color ottone, il riquadro con il suo filetto, le figure con il testo accanto e l’intestazione scura della tabella vengono dalle stesse impostazioni. L’edizione araba cambia ciò che appartiene alla sua scrittura: Amiri e IBM Plex Sans Arabic al posto di Source Serif e Source Sans, un corpo più grande ed etichette senza maiuscole né spaziatura. Si legge da destra e si rilega a destra senza una sola coordinata propria.
 
 ## Preparazione
 
-{/*
-  3–7 passi, ciascuno un H3 numerato «1 · …». Ogni passo si apre con un Excerpt di una #region
-  di script.js (il file composto, con i suoi veri numeri di riga), poi 1–3 frasi sul PERCHÉ, non
-  sul cosa: il cosa il lettore lo vede. La risposta breve mostra già la #region answer: un passo
-  che ne parla rimanda lì invece di ristamparla. en.mdx, es.mdx e zh.mdx mostrano le stesse
-  regioni nello stesso ordine.
-  Componenti facoltativi: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Impostazioni generali e tre piccole impostazioni per lingua
 
-### 1 · L’apertura è un progetto grafico, non un titolo
+Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. `config` contiene le impostazioni generali; `mergeConfigLayers` vi sovrappone quelle di un’edizione campo per campo. Inglese e spagnolo non ne hanno di proprie: il loro `locale` sceglie i modelli di sillabazione e le parole *Figure* e *Table*, *Figura* e *Tabla*. Le impostazioni arabe nominano solo campi singoli: `bodyText.fontFamily` cambia il carattere e conserva colore, allineamento e sillabazione, e l’elemento `kicker` della copertina cambia carattere e spaziatura e conserva ancora, colore e dimensione. Un cambio della tavolozza o dei margini in `config` arriva a tutte e tre le edizioni.
 
-Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. Il titolo di livello 1 mantiene il suo posto nel testo e nell’indice, ma si disegna da uno spazio grafico fatto di elementi: l’occhiello viene da un attributo del titolo, il titolo va a capo su una giustezza fissa e il filetto si ancora sotto l’altezza che il titolo occupa, qualunque sia. `minHeight` abbassa il testo corrente alla stessa riga in ogni apertura, per quanto lungo sia il titolo.
+### 2 · Lati nominati secondo la direzione del testo
 
-### 2 · Le testatine sanno su quale pagina si trovano
+<Excerpt region="heads" />
 
-<Excerpt region="running-heads" />
+Il margine esterno di una pagina pari è l’inizio delle sue righe in entrambe le direzioni, quello di una dispari la loro fine; così `top-start` e `top-end` portano i folii all’esterno su una pagina pari inglese come su una araba. Il filetto del riquadro è `side: 'start'` e il testo di copertina si ancora a `top-start`: nessuno ha bisogno di impostazioni proprie.
 
-Ogni elemento è ancorato alla pagina fisica e filtrato per parità, così il numero di pagina sta sempre sul margine esterno e il titolo del libro sul verso. `pages: 'body'` le tiene lontane dall’apertura, che riceve invece un numero di pagina centrato al piede dal piè di pagina.
+### 3 · Figure a fine riga, con il testo accanto
 
-### 3 · Un solo accento, collegato ovunque
+<Excerpt region="pictures" />
 
-<Excerpt region="palette" />
+`wrap: 'end'` mette ogni fotografia a destra di una colonna inglese e a sinistra di una araba, e il testo scorre accanto. Didascalie e testi alternativi sono nella lingua di ogni edizione; le didascalie arabe danno prima la data dell’egira.
 
-Ogni colore della configurazione indica la sua voce della tavolozza: un lettore che cambia un campione di colore ritinge tutto il libro, e una parte o uno stile di titolo può ricolorare una sezione tramite il suo id. Puntare `main-color` sull’accento cattura tutti i valori predefiniti che la configurazione non ridichiara.
+### 4 · La tabella con le parole e le cifre di ogni edizione
+
+<Excerpt region="table" />
+
+I dati della tabella sono contenuto e cambiano con l’edizione: cifre arabo-indiane e separatore decimale arabo nell’edizione araba, virgola decimale in quella spagnola. Il suo stile è generale: le impostazioni arabe fissano solo carattere e corpo.
 
 ## Varianti
 
-{/*
-  Facoltativo, 1–4 voci: un H3 all’imperativo, una frase, poi un diff rispetto a script.js
-  o un link a una ricetta vicina.
-*/}
+### Scrivi le impostazioni per lingua in un pacchetto
 
-### Componi il testo su due colonne
+<RecipeLink slug="bundle-round-trip">Andata e ritorno del .postext</RecipeLink> scrive un libro in due lingue in un file. Da postext 1.58 `createBundle` salva una volta le impostazioni generali e, accanto ai capitoli di ogni lingua, le sue impostazioni proprie, come le legge qui `mergeConfigLayers`. Il libro di questa ricetta si apre così nel Sandbox: passa il pannello di design da *Tutte le lingue* all’edizione araba per vedere quali campi fissa l’edizione araba.
 
-Un formato più largo accoglie due colonne; l’apertura le occupa entrambe e le testatine restano dove sono.
+### Stampa l’edizione araba per il Maghreb
+
+`ar-MA` conserva direzione e rilegatura e scrive in cifre europee i numeri generati, folii e numeri delle figure. Riscrivi anche le cifre della tabella.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
 ```
 
 ## Errori frequenti
 
-{/*
-  Facoltativo. Le insidie e gli avvisi elencati in recipe.json compaiono qui da soli; aggiungi
-  una riga solo per un’insidia che appartiene a questa ricetta e a nessun’altra.
-*/}
+- Le lettere arabe sono legate: un’etichetta spaziata nelle impostazioni generali deve perdere il suo `letterSpacing` in quelle arabe, altrimenti il motore dà l’avviso `joiningScriptLetterSpacing`. Con esso va `textTransform: 'none'`: l’arabo non ha maiuscole.
+- Le righe di un’edizione araba sono più alte e le sue pagine si spezzano altrove. Ogni edizione è stata adattata a parte: il riquadro arabo galleggia al piede della pagina (`placement="bottom"`) e le frasi di chiusura scorrono accanto all’ultima fotografia.
