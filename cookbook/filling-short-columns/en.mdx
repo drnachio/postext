@@ -1,72 +1,64 @@
 ---
-# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
-# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
-title: "A book page with running heads"
-summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
-description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
-# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
-# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
-# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
-aliases: ["book page", "running heads", "chapter opener"]
+title: "Filling the column the widow rule left short"
+summary: "Ragged magazine columns end on the grid: fillShortColumns sets a paragraph of a short column a line longer or shorter instead of leaving a hole at its foot."
+description: "A ragged two-column magazine feature set with and without fillShortColumns, to compare the column the widow and orphan rules left a line short."
+plain: "When a column of text stops one line above the bottom of the page because a paragraph cannot be split there, this setting rewraps one paragraph of that column so the column reaches the bottom."
+question: "Why does a ragged column end a line short, and how do I fill it and keep the widow and orphan rules?"
+aliases: ["short column", "gap at the foot", "column ends short", "ragged columns", "vertical justification", "widow rule"]
+pageNotes: { "1": "The opener without the setting: a lit Fresnel lens painted across the top, the headline The Lens That Lit the Coast, and two ragged columns whose left one ends a line above the right one.", "4": "The same opener with fillShortColumns: the left column's first paragraph runs to one more line and both columns end on the same baseline." }
 ---
 
 ## What you'll build
 
-{/*
-  60–150 words, in an art director's voice: the publication, the design idea, and why it is
-  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
-  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
-  "This recipe answers" list (from answers) under this section by itself.
-*/}
-
-The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+Three pages of *Littoral*, a coastal magazine: a long read on the Fresnel lens, opened by a painting of a lit lens in its lantern. The text runs in two ragged columns of Public Sans with a blank grid line between paragraphs, and the widow and orphan rules keep at least two lines of a paragraph on each side of a break. The pen sets the feature twice. Without the setting, on <PageRef page={1}>the opener</PageRef> the left column ends a line above the right one: the next paragraph cannot start with a single line at the foot. With it, on <PageRef page={4}>the same page</PageRef>, the first paragraph wraps to one more line and both columns end on the last grid line. Overleaf, the setting also takes the extra air that balancing had put above two crossheads.
 
 ## Method
 
-{/*
-  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
-  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
-  what: the reader can see what. The short answer already shows #region answer: a step about
-  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
-  regions in the same order.
-  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Give a ragged column a lever of its own
 
-### 1 · The opener is a design, not a heading
+<Excerpt region="answer" />
 
-The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+Column balancing fills a short column by adding grid lines above a heading, after a list, under a box or a figure, and as a last resort by setting a justified paragraph a line looser. A ragged column of running text has none of these between its crossheads, so the line the widow and orphan rules hold back stays empty. `fillShortColumns` lets a ragged paragraph of that column wrap a line longer within its own word spacing; when no paragraph can, it sets one a line shorter so that the paragraph after the break moves up and fills the line. The engine keeps the change only when fewer columns end short, so turning it on never makes a page worse. `maxLinesBeforeLoose: 0` tries the paragraphs before the headings, so every crosshead keeps one grid line of air above it.
 
-### 2 · Running heads know which page they are on
+### 2 · Set the feature twice and compare
 
-<Excerpt region="running-heads" />
+<Excerpt region="builds" />
 
-Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+Both documents come from one config and one Markdown string. The second build passes the config as written; the first passes a copy with the setting off, so the bundle that opens in the Sandbox carries `fillShortColumns: true`. The two buttons over the desk switch between the builds. Only the pages that flow on are filled to the foot: page 3 closes the feature, and its columns are cut level with each other, as they are in both builds.
 
-### 3 · One accent, linked everywhere
+### 3 · Open on the painting
 
-<Excerpt region="palette" />
+<Excerpt region="opener" />
 
-Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+The painting is an image element anchored to the bleed, 150 mm deep, so it reaches the trim on three sides, which no float does. The kicker, headline, standfirst and byline come from the attributes of the `#` line. The byline ends in a 6 mm padding that counts toward the opener's height, so the columns start on the first grid line below it.
+
+### 4 · Running heads off the opener
+
+<Excerpt region="heads" />
+
+The verso names the magazine and the issue from the frontmatter, the recto the feature, and `pages: 'body'` keeps both off the opener, which has only a folio at its foot. The label sits 0.35 mm lower than the folio, so the two sizes share a baseline. The hairline under them is 197 mm long, the width of the text block.
 
 ## Variations
 
-{/*
-  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
-  or a link to a sibling recipe.
-*/}
+### Let the crossheads take the slack first
 
-### Set the text in two columns
-
-A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+With the default order, a heading takes up to two grid lines before a paragraph is set longer, and the crossheads overleaf open up again.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Justify the text
+
+A justified paragraph can already run a line looser without the setting, within `maxWordSpacing`. With `fillShortColumns` it may also run a line tighter, and it is never set looser than its own loosest line.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
 ```
 
 ## Pitfalls
 
-{/*
-  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
-  line only for a pitfall that belongs to this recipe alone.
-*/}
+- The setting closes a gap of one line. A column two lines short, such as one that ends after a paragraph space with room for only one line of the next paragraph, may stay short: copy-fit it by a sentence.
+- A paragraph whose new setting would end on a runt is not used, so a column can stay short when its only paragraphs are short ones.

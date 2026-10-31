@@ -1,73 +1,64 @@
 ---
-# Toutes les valeurs sont entre guillemets. Limites : title ≤ 60 caractères (un résultat, pas une liste de fonctions) ;
-# summary 60–160 (la réponse en une phrase, qui nomme le mécanisme) ; description 120–160.
-title: "Une page de livre avec titres courants"
-summary: "Des marges en miroir, une ouverture de chapitre abaissée et des titres courants qui savent de quel côté de la double page ils sont, sur une page de roman."
-description: "Une page de roman dans Postext : marges en miroir, ouverture abaissée de 52 mm, titres courants selon la parité, folio en pied aux ouvertures, code complet."
-# plain: "…"           40–240 caractères : le résumé en mots de tous les jours, sans jargon (affiché sous « En bref »)
-# question: "…"        facultatif, ≤ 110 caractères : reformule answers[0] pour cette page
-# pageNotes: { "3": "…" }  facultatif : texte de remplacement supplémentaire pour une page capturée
-aliases: ["page de livre", "titres courants", "titre courant", "ouverture de chapitre", "running heads"]
+title: "La colonne que la règle des veuves laissait courte"
+summary: "Des colonnes en drapeau qui finissent sur la grille : fillShortColumns allonge ou raccourcit d’une ligne un paragraphe de la colonne courte."
+description: "Un long article de magazine sur deux colonnes en drapeau, avec et sans fillShortColumns, pour comparer la colonne que veuves et orphelines laissaient courte."
+plain: "Quand une colonne s’arrête une ligne au-dessus du pied parce qu’un paragraphe ne peut pas y être coupé, ce réglage recompose un paragraphe de cette colonne pour qu’elle descende jusqu’en bas."
+question: "Pourquoi une colonne en drapeau finit-elle une ligne trop haut, et comment la remplir sans veuve ?"
+aliases: ["colonne courte", "blanc en pied de colonne", "colonnes en drapeau", "justification verticale", "règle des veuves", "fillShortColumns"]
+pageNotes: { "1": "L’ouverture sans le réglage : une lentille de Fresnel allumée peinte sur toute la largeur, le titre et deux colonnes en drapeau, celle de gauche une ligne plus courte que celle de droite.", "4": "La même ouverture avec fillShortColumns : le premier paragraphe gagne une ligne et les deux colonnes finissent sur la même ligne de base." }
 ---
 
 ## Ce que vous allez composer
 
-{/*
-  60 à 150 mots, avec la voix d’un directeur artistique : la publication, l’idée de maquette et
-  pourquoi elle est difficile à obtenir ailleurs. Nommez la publication (« une édition de poche
-  de… », « le numéro de juin de… »). Pas de liste de fonctions : la section Ingrédients est générée
-  à partir de recipe.json. La page ajoute d’elle-même, sous cette section, la liste « Cette recette
-  répond à » (tirée de answers).
-*/}
-
-Les premières pages d’un roman broché : un chapitre qui commence sur un recto, au tiers de la hauteur, sous un petit surtitre interlettré et un filet court dans l’unique couleur d’accent du livre, puis page après page de texte justifié, avec le titre du livre à gauche et celui du chapitre à droite. Rien sur la page n’élève la voix. Le métier est dans la géométrie : des marges qui se répondent en miroir sur la double page, des titres courants qui savent de quel côté ils sont, et un folio qui descend en pied sur l’ouverture, là où un titre courant encombrerait le titre.
+Trois pages de *Littoral*, un magazine de la côte : un long article sur la lentille de Fresnel, ouvert par la peinture d’une lentille allumée dans sa lanterne. Le texte court sur deux colonnes en drapeau en Public Sans, avec une ligne de grille vide entre les paragraphes, et les règles des veuves et des orphelines gardent au moins deux lignes d’un paragraphe de chaque côté d’une coupure. Le pen compose l’article deux fois. Sans le réglage, sur <PageRef page={1}>l’ouverture</PageRef>, la colonne de gauche s’arrête une ligne au-dessus de celle de droite : le paragraphe suivant ne peut pas commencer par une seule ligne en pied. Avec lui, sur <PageRef page={4}>la même page</PageRef>, le premier paragraphe passe à une ligne de plus et les deux colonnes finissent sur la dernière ligne de la grille. Page suivante, le réglage reprend aussi l’air en trop que l’équilibrage avait mis au-dessus de deux intertitres.
 
 ## Préparation
 
-{/*
-  3 à 7 étapes, chacune un H3 numéroté « 1 · … ». Chaque étape s’ouvre sur un Excerpt d’une #region
-  de script.js (le fichier composé, avec ses vrais numéros de ligne), puis 1 à 3 phrases sur le
-  POURQUOI, pas sur le quoi : le quoi, le lecteur le voit. La réponse courte montre déjà la #region
-  answer : une étape qui en parle y renvoie au lieu de la réimprimer. en.mdx, es.mdx et zh.mdx
-  montrent les mêmes régions dans le même ordre.
-  Composants facultatifs : Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Donner à la colonne en drapeau un levier à elle
 
-### 1 · L’ouverture est une maquette, pas un titre
+<Excerpt region="answer" />
 
-Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Le titre de niveau 1 garde sa place dans le texte et dans la table des matières, mais il se dessine à partir d’une zone de maquette : le surtitre vient d’un attribut du titre, le titre passe à la ligne sur une justification fixe et le filet s’ancre sous la hauteur que prend le titre, quelle qu’elle soit. `minHeight` abaisse le texte courant jusqu’à la même ligne sur chaque ouverture, quelle que soit la longueur du titre.
+L’équilibrage des colonnes remplit une colonne courte en ajoutant des lignes de grille au-dessus d’un titre, après une liste, sous un encadré ou une figure et, en dernier recours, en composant un paragraphe justifié une ligne plus lâche. Une colonne de texte courant en drapeau n’a rien de tout cela entre ses intertitres, et la ligne que retiennent les règles des veuves et des orphelines reste vide. `fillShortColumns` laisse un paragraphe en drapeau de cette colonne prendre une ligne de plus avec ses propres espaces ; quand aucun ne le peut, il en compose un avec une ligne de moins pour que le paragraphe qui suit la coupure remonte et remplisse la ligne. Le moteur ne garde le changement que si moins de colonnes finissent courtes : l’activer ne dégrade jamais une page. `maxLinesBeforeLoose: 0` essaie les paragraphes avant les titres, si bien que chaque intertitre garde une seule ligne d’air au-dessus de lui.
 
-### 2 · Les titres courants savent sur quelle page ils sont
+### 2 · Composer l’article deux fois et comparer
 
-<Excerpt region="running-heads" />
+<Excerpt region="builds" />
 
-Chaque élément est ancré à la page physique et filtré selon la parité : le folio reste donc toujours sur le bord extérieur et le titre du livre sur le verso. `pages: 'body'` les tient à l’écart de l’ouverture, qui reçoit à la place un folio centré en pied, venu du pied de page.
+Les deux documents viennent d’une même configuration et d’une même chaîne Markdown. La seconde composition passe la configuration telle quelle ; la première, une copie avec le réglage désactivé, de sorte que le paquet qui s’ouvre dans le Sandbox porte `fillShortColumns: true`. Les deux boutons au-dessus du bureau passent d’une composition à l’autre. Seules les pages qui continuent sont remplies jusqu’au pied : la page 3 clôt l’article, et ses colonnes sont coupées à la même hauteur dans les deux compositions.
 
-### 3 · Un seul accent, lié partout
+### 3 · Ouvrir sur la peinture
 
-<Excerpt region="palette" />
+<Excerpt region="opener" />
 
-Chaque couleur de la configuration renvoie à son entrée de palette : un lecteur qui change une pastille de couleur reteinte tout le livre, et une partie ou un style de titre peut recolorer une section par son identifiant. Faire pointer `main-color` sur l’accent rattrape toutes les valeurs par défaut que la configuration ne redéfinit pas.
+La peinture est un élément image ancré au fond perdu, haut de 150 mm, qui atteint donc la coupe sur trois côtés, ce qu’aucun flottant ne fait. Le surtitre, le titre, le chapeau et la signature viennent des attributs de la ligne `#`. La signature se termine par une marge intérieure de 6 mm qui compte dans la hauteur de l’ouverture : les colonnes commencent sur la première ligne de grille au-dessous.
+
+### 4 · Des titres courants hors de l’ouverture
+
+<Excerpt region="heads" />
+
+La page paire nomme le magazine et le numéro depuis le frontmatter, la page impaire l’article, et `pages: 'body'` les écarte de l’ouverture, qui ne porte qu’un folio en pied. L’étiquette descend de 0,35 mm par rapport au folio, pour que les deux corps partagent une ligne de base. Le filet placé dessous mesure 197 mm, la largeur du bloc de texte.
 
 ## Variantes
 
-{/*
-  Facultatif, 1 à 4 entrées : un H3 à l’impératif, une phrase, puis un diff par rapport à script.js
-  ou un lien vers une recette voisine.
-*/}
+### Laisser les intertitres prendre le blanc d’abord
 
-### Composez le texte sur deux colonnes
-
-Un format plus large accueille deux colonnes ; l’ouverture s’étend sur les deux et les titres courants restent où ils sont.
+Avec l’ordre par défaut, un titre prend jusqu’à deux lignes de grille avant qu’un paragraphe ne s’allonge, et les intertitres de la page suivante s’ouvrent de nouveau.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Justifier le texte
+
+Un paragraphe justifié pouvait déjà prendre une ligne de plus sans le réglage, dans la limite de `maxWordSpacing`. Avec `fillShortColumns`, il peut aussi en prendre une de moins, et il n’est jamais composé plus lâche que sa ligne la plus lâche.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
 ```
 
 ## Erreurs fréquentes
 
-{/*
-  Facultatif. Les pièges et les avertissements listés dans recipe.json s’affichent ici d’eux-mêmes ;
-  n’ajoutez une ligne que pour un piège propre à cette recette.
-*/}
+- Le réglage comble un blanc d’une ligne. Une colonne à laquelle il en manque deux, par exemple celle qui finit après l’espace entre paragraphes avec la place d’une seule ligne du suivant, peut rester courte : ajustez le texte d’une phrase.
+- Un paragraphe dont la nouvelle composition finirait sur une ligne trop courte n’est pas utilisé, si bien qu’une colonne peut rester courte quand elle n’a que des paragraphes brefs.

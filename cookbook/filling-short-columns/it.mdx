@@ -1,72 +1,64 @@
 ---
-# Ogni valore va tra virgolette. Limiti: title ≤ 60 caratteri (un risultato, non un elenco di funzioni);
-# summary 60–160 (la risposta in una frase, che nomina il meccanismo); description 120–160.
-title: "Una pagina di libro con le testatine"
-summary: "Margini speculari, un’apertura di capitolo abbassata e testatine che sanno su quale lato della doppia pagina si trovano, su una pagina di narrativa."
-description: "Una pagina di narrativa in Postext: margini speculari, apertura abbassata di 52 mm, testatine per parità, numero al piede nelle aperture, codice completo."
-# plain: "…"           40–240 caratteri: il riassunto in parole di tutti i giorni, senza gergo (mostrato come «In breve»)
-# question: "…"        facoltativo, ≤ 110 caratteri: riformula answers[0] per questa pagina
-# pageNotes: { "3": "…" }  facoltativo: testo alternativo in più per una pagina catturata
-aliases: ["pagina di libro", "testatine", "testatina", "apertura di capitolo", "running heads"]
+title: "La colonna che la regola delle vedove lasciava corta"
+summary: "Colonne a bandiera che finiscono sulla griglia: fillShortColumns allunga o accorcia di una riga un paragrafo della colonna corta."
+description: "Un lungo articolo di rivista su due colonne a bandiera, con e senza fillShortColumns, per confrontare la colonna che vedove e orfane lasciavano corta."
+plain: "Quando una colonna si ferma una riga sopra il piede perché un paragrafo non si può spezzare lì, questa impostazione ricompone un paragrafo della colonna perché arrivi fino in fondo."
+question: "Perché una colonna a bandiera finisce una riga prima del piede, e come la riempio senza vedove né orfane?"
+aliases: ["colonna corta", "vuoto al piede", "colonne a bandiera", "giustificazione verticale", "regola delle vedove", "fillShortColumns"]
+pageNotes: { "1": "L’apertura senza l’impostazione: una lente di Fresnel accesa dipinta su tutta la larghezza, il titolo e due colonne a bandiera, la sinistra una riga più corta della destra.", "4": "La stessa apertura con fillShortColumns: il primo paragrafo guadagna una riga e le due colonne finiscono sulla stessa linea di base." }
 ---
 
 ## Che cosa comporrai
 
-{/*
-  60–150 parole, con la voce di un art director: la pubblicazione, l’idea grafica e perché è
-  difficile ottenerla altrove. Nomina la pubblicazione («un’edizione tascabile di…», «il numero
-  di giugno di…»). Niente elenchi di funzioni: la sezione Ingredienti è generata da recipe.json.
-  La pagina aggiunge da sola, sotto questa sezione, l’elenco «Questa ricetta risponde a» (preso da answers).
-*/}
-
-Le prime pagine di un romanzo in brossura: un capitolo che comincia su un recto a un terzo dell’altezza, sotto un piccolo occhiello spaziato e un filetto corto nell’unico colore d’accento del libro, poi pagina dopo pagina di testo giustificato, con il titolo del libro a sinistra e il capitolo a destra. Nulla sulla pagina alza la voce. Il mestiere sta nella geometria: margini che si specchiano sulla doppia pagina, testatine che sanno da che lato si trovano e un numero di pagina che scende al piede nell’apertura, dove una testatina affollerebbe il titolo.
+Tre pagine di *Littoral*, una rivista di costa: un lungo articolo sulla lente di Fresnel, aperto dal dipinto di una lente accesa nella sua lanterna. Il testo corre su due colonne a bandiera in Public Sans, con una riga di griglia vuota tra i paragrafi, e le regole su vedove e orfane tengono almeno due righe di un paragrafo da ciascun lato di un'interruzione. Il pen compone l'articolo due volte. Senza l'impostazione, nell'<PageRef page={1}>apertura</PageRef> la colonna sinistra si ferma una riga sopra la destra: il paragrafo seguente non può cominciare con una sola riga al piede. Con l'impostazione, nella <PageRef page={4}>stessa pagina</PageRef>, il primo paragrafo va a capo su una riga in più e le due colonne finiscono sull'ultima riga della griglia. Nella pagina seguente l'impostazione riprende anche l'aria in più che il bilanciamento aveva messo sopra due titoletti.
 
 ## Preparazione
 
-{/*
-  3–7 passi, ciascuno un H3 numerato «1 · …». Ogni passo si apre con un Excerpt di una #region
-  di script.js (il file composto, con i suoi veri numeri di riga), poi 1–3 frasi sul PERCHÉ, non
-  sul cosa: il cosa il lettore lo vede. La risposta breve mostra già la #region answer: un passo
-  che ne parla rimanda lì invece di ristamparla. en.mdx, es.mdx e zh.mdx mostrano le stesse
-  regioni nello stesso ordine.
-  Componenti facoltativi: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Dai alla colonna a bandiera una leva sua
 
-### 1 · L’apertura è un progetto grafico, non un titolo
+<Excerpt region="answer" />
 
-Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. Il titolo di livello 1 mantiene il suo posto nel testo e nell’indice, ma si disegna da uno spazio grafico fatto di elementi: l’occhiello viene da un attributo del titolo, il titolo va a capo su una giustezza fissa e il filetto si ancora sotto l’altezza che il titolo occupa, qualunque sia. `minHeight` abbassa il testo corrente alla stessa riga in ogni apertura, per quanto lungo sia il titolo.
+Il bilanciamento delle colonne riempie una colonna corta aggiungendo righe di griglia sopra un titolo, dopo un elenco, sotto un riquadro o una figura e, come ultima risorsa, componendo un paragrafo giustificato una riga più largo. Una colonna di testo corrente a bandiera non ha nulla di tutto questo tra i suoi titoletti, e la riga che le regole su vedove e orfane trattengono resta vuota. `fillShortColumns` lascia che un paragrafo a bandiera di quella colonna occupi una riga in più con la propria spaziatura; quando nessuno può, ne compone uno con una riga in meno perché il paragrafo dopo l'interruzione salga e riempia la riga. Il motore tiene la modifica solo se finiscono corte meno colonne, quindi attivarla non peggiora mai una pagina. `maxLinesBeforeLoose: 0` prova i paragrafi prima dei titoli, così ogni titoletto conserva una sola riga d'aria sopra di sé.
 
-### 2 · Le testatine sanno su quale pagina si trovano
+### 2 · Componi l'articolo due volte e confronta
 
-<Excerpt region="running-heads" />
+<Excerpt region="builds" />
 
-Ogni elemento è ancorato alla pagina fisica e filtrato per parità, così il numero di pagina sta sempre sul margine esterno e il titolo del libro sul verso. `pages: 'body'` le tiene lontane dall’apertura, che riceve invece un numero di pagina centrato al piede dal piè di pagina.
+I due documenti nascono dalla stessa configurazione e dalla stessa stringa Markdown. La seconda composizione passa la configurazione così com'è; la prima, una copia con l'impostazione spenta, così il pacchetto che si apre nel Sandbox porta `fillShortColumns: true`. I due pulsanti sopra il tavolo passano da una composizione all'altra. Si riempiono fino al piede solo le pagine che proseguono: la pagina 3 chiude l'articolo e le sue colonne vengono tagliate alla stessa altezza in entrambe le composizioni.
 
-### 3 · Un solo accento, collegato ovunque
+### 3 · Apri con il dipinto
 
-<Excerpt region="palette" />
+<Excerpt region="opener" />
 
-Ogni colore della configurazione indica la sua voce della tavolozza: un lettore che cambia un campione di colore ritinge tutto il libro, e una parte o uno stile di titolo può ricolorare una sezione tramite il suo id. Puntare `main-color` sull’accento cattura tutti i valori predefiniti che la configurazione non ridichiara.
+Il dipinto è un elemento immagine ancorato al margine di stampa, alto 150 mm, quindi arriva al taglio su tre lati, cosa che nessun elemento flottante fa. L'occhiello, il titolo, il sommario e la firma vengono dagli attributi della riga `#`. La firma termina con un margine interno di 6 mm che conta nell'altezza dell'apertura, così le colonne cominciano sulla prima riga di griglia sottostante.
+
+### 4 · Testatine fuori dall'apertura
+
+<Excerpt region="heads" />
+
+La pagina pari nomina la rivista e il numero dal frontmatter, la dispari l'articolo, e `pages: 'body'` le tiene fuori dall'apertura, che porta solo un numero di pagina al piede. L'etichetta scende di 0,35 mm rispetto al numero di pagina perché i due corpi condividano la linea di base. Il filetto sotto misura 197 mm, la larghezza della gabbia del testo.
 
 ## Varianti
 
-{/*
-  Facoltativo, 1–4 voci: un H3 all’imperativo, una frase, poi un diff rispetto a script.js
-  o un link a una ricetta vicina.
-*/}
+### Lascia che i titoletti prendano il vuoto per primi
 
-### Componi il testo su due colonne
-
-Un formato più largo accoglie due colonne; l’apertura le occupa entrambe e le testatine restano dove sono.
+Con l'ordine predefinito un titolo prende fino a due righe di griglia prima che un paragrafo si allunghi, e i titoletti della pagina seguente tornano ad aprirsi.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Giustifica il testo
+
+Un paragrafo giustificato poteva già occupare una riga in più senza l'impostazione, entro `maxWordSpacing`. Con `fillShortColumns` può occuparne anche una in meno, e non viene mai composto più largo della sua riga più larga.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
 ```
 
 ## Errori frequenti
 
-{/*
-  Facoltativo. Le insidie e gli avvisi elencati in recipe.json compaiono qui da soli; aggiungi
-  una riga solo per un’insidia che appartiene a questa ricetta e a nessun’altra.
-*/}
+- L'impostazione chiude un vuoto di una riga. Una colonna a cui ne mancano due, per esempio una che finisce dopo lo spazio tra paragrafi con posto per una sola riga del seguente, può restare corta: aggiusta il testo con una frase.
+- Un paragrafo la cui nuova composizione finirebbe su una riga troppo corta non viene usato, quindi una colonna può restare corta quando ha solo paragrafi brevi.

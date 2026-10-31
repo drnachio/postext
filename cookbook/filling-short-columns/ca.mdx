@@ -1,72 +1,64 @@
 ---
-# Tots els valors van entre cometes. Límits: title ≤ 60 caràcters (un resultat, no una llista
-# de funcions); summary 60–160 (la resposta en una frase, amb el mecanisme); description 120–160.
-title: "Una pàgina de llibre amb capçaleres"
-summary: "Marges simètrics, una obertura de capítol enfonsada i capçaleres que saben a quin costat de la doble pàgina són, a la pàgina d'un llibre en rústica."
-description: "Una pàgina de llibre amb Postext: marges simètrics, obertura enfonsada 52 mm, capçaleres segons la paritat i foli al peu a les obertures, amb tot el codi."
-# plain: "…"           40–240 caràcters: el resum en paraules corrents, sense argot (es mostra com a «En poques paraules»)
-# question: "…"        opcional, ≤ 110 caràcters: reformula answers[0] per a aquesta pàgina
-# pageNotes: { "3": "…" }  opcional: text alternatiu addicional per a una pàgina capturada
-aliases: ["pàgina de llibre", "capçaleres", "obertura de capítol"]
+title: "La columna que la regla de vídues deixava curta"
+summary: "Columnes en bandera que acaben a la reixeta: fillShortColumns allarga o escurça una línia un paràgraf de la columna curta en lloc de deixar un buit al peu."
+description: "Un reportatge de revista a dues columnes en bandera, amb i sense fillShortColumns, per comparar la columna que les vídues i òrfenes deixaven curta."
+plain: "Quan una columna es queda una línia per sobre del peu perquè un paràgraf no es pot partir allà, aquest ajust torna a tallar les línies d'un paràgraf d'aquesta columna perquè arribi a baix."
+question: "Per què una columna en bandera acaba una línia abans del peu, i com l'omplo sense vídues ni òrfenes?"
+aliases: ["columna curta", "buit al peu", "columnes en bandera", "justificació vertical", "regla de vídues", "fillShortColumns"]
+pageNotes: { "1": "L'obertura sense l'ajust: una lent de Fresnel encesa pintada d'un costat a l'altre de la pàgina, el títol i dues columnes en bandera, la dreta una línia més curta que l'esquerra.", "4": "La mateixa obertura amb fillShortColumns: el paràgraf de la columna dreta guanya una línia i les dues columnes acaben a la mateixa línia de base." }
 ---
 
 ## Què compondràs
 
-{/*
-  60–150 paraules, amb veu de director d'art: la publicació, la idea de disseny i per què
-  costa d'aconseguir en un altre lloc. Anomena la publicació («una edició en rústica de…»,
-  «el número de juny de…»). Sense llistes de funcions: Ingredients es genera des de recipe.json.
-  La pàgina afegeix sola, sota aquesta secció, la llista «Aquesta recepta respon» (d'answers).
-*/}
-
-Les primeres pàgines d'una novel·la en rústica: un capítol que comença en pàgina senar, a un terç de l'alçada, sota un avanttítol petit en versaletes espaiades i un filet curt de l'únic color d'accent del llibre; després, pàgina rere pàgina de text justificat, amb el títol del llibre a l'esquerra i el del capítol a la dreta. Res a la pàgina no alça la veu. L'ofici és a la geometria: marges que s'emmirallen a la doble pàgina, capçaleres que saben a quin costat són i un foli que baixa al peu a l'obertura, on una capçalera destorbaria el títol.
+Tres pàgines de *Litoral*, una revista de costa: un reportatge llarg sobre la lent de Fresnel que s'obre amb la pintura d'una lent encesa a la seva llanterna. El text va en dues columnes en bandera de Public Sans, amb una línia de reixeta en blanc entre paràgrafs, i les regles de vídues i òrfenes deixen almenys dues línies de cada paràgraf a cada costat d'un tall. El pen compon el reportatge dues vegades. Sense l'ajust, a <PageRef page={1}>l'obertura</PageRef> la columna dreta es queda una línia per sobre de l'esquerra: el paràgraf següent no pot començar amb una sola línia al peu. Amb l'ajust, a <PageRef page={4}>la mateixa pàgina</PageRef>, el paràgraf d'aquesta columna es talla en una línia més i les dues columnes acaben a l'última línia de la reixeta. A la pàgina següent, l'ajust també recull l'aire de més que l'equilibri posava sobre un subtítol.
 
 ## Elaboració
 
-{/*
-  De 3 a 7 passos, cadascun un H3 numerat «1 · …». Cada pas obre amb un Excerpt d'una #region
-  de script.js (el fitxer compost, amb els seus números de línia reals) i continua amb 1–3 frases
-  sobre el PERQUÈ, no sobre el què: el què ja es veu. La resposta curta ja mostra la
-  #region answer: un pas que en parli remet allà en lloc de repetir-la. en.mdx, es.mdx, ca.mdx i zh.mdx
-  mostren les mateixes regions en el mateix ordre. Components opcionals: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Dona a la columna en bandera una palanca pròpia
 
-### 1 · L'obertura és un disseny, no un títol
+<Excerpt region="answer" />
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El títol de primer nivell conserva el seu lloc al text i a l'índex, però es dibuixa des d'una zona de disseny: l'avanttítol surt d'un atribut del títol, el títol es parteix amb una mida fixa i el filet s'ancora sota l'alçada que ocupi el títol. `minHeight` enfonsa el text fins a la mateixa línia a totes les obertures, sigui quina sigui la llargada del títol.
+L'equilibri de columnes omple una columna curta amb línies de reixeta sobre un títol, després d'una llista, sota un requadre o una figura i, com a últim recurs, component un paràgraf justificat una línia més ample. Una columna de text corregut en bandera no té res d'això entre els seus subtítols, així que la línia que retenen les regles de vídues i òrfenes es queda buida. `fillShortColumns` deixa que un paràgraf en bandera d'aquesta columna ocupi una línia més amb el seu propi espaiat; quan cap no pot, en compon un amb una línia menys perquè el paràgraf de després del tall pugi i ocupi aquesta línia. El motor només conserva el canvi si acaben curtes menys columnes, així que activar-lo mai no empitjora una pàgina. Amb `maxLinesBeforeLoose: 0` es proven els paràgrafs abans que els títols, i cada subtítol conserva una sola línia d'aire a sobre.
 
-### 2 · Les capçaleres saben en quina pàgina són
+### 2 · Compon el reportatge dues vegades i compara
 
-<Excerpt region="running-heads" />
+<Excerpt region="builds" />
 
-Cada element s'ancora a la pàgina física i es filtra per paritat, de manera que el foli queda sempre a la vora exterior i el títol del llibre al verso. `pages: 'body'` els manté fora de l'obertura, que rep en canvi un foli centrat al peu des del peu de pàgina.
+Els dos documents surten d'una mateixa configuració i un mateix Markdown. La segona composició passa la configuració tal com és; la primera, una còpia amb l'ajust apagat, de manera que el paquet que s'obre al Sandbox porta `fillShortColumns: true`. Els dos botons sobre la taula canvien d'una composició a l'altra. Només s'omplen fins al peu les pàgines que continuen: la pàgina 3 tanca el reportatge i les seves columnes es tallen a la mateixa altura, igual en les dues composicions.
 
-### 3 · Un sol accent, enllaçat a tot arreu
+### 3 · Obre amb la pintura
 
-<Excerpt region="palette" />
+<Excerpt region="opener" />
 
-Cada color de la configuració fa referència a la seva entrada de la paleta, de manera que qui canviï una mostra canvia el to de tot el llibre, i una part o un estil d'encapçalament poden tornar a acolorir una secció pel seu id. Fer apuntar `main-color` a l'accent atrapa tots els valors per defecte que la configuració no redefineix.
+La pintura és un element d'imatge ancorat al sagnat, de 150 mm d'alt, així que arriba al tall per tres costats, cosa que cap flotant no fa. L'avanttítol, el títol, l'entradeta i la signatura surten dels atributs de la línia `#`. La signatura acaba en un farciment de 6 mm que compta en l'alçada de l'obertura, així que les columnes comencen a la primera línia de reixeta de sota.
+
+### 4 · Capçaleres fora de l'obertura
+
+<Excerpt region="heads" />
+
+La pàgina parella anomena la revista i el número des del frontmatter, la senar el reportatge, i `pages: 'body'` les treu de l'obertura, que només porta un foli al peu. L'etiqueta baixa 0,35 mm respecte al foli perquè els dos cossos comparteixin línia de base. El filet de sota fa 197 mm, l'amplada de la caixa de text.
 
 ## Variants
 
-{/*
-  Opcional, d'1 a 4 entrades: un H3 en imperatiu, una frase i un diff contra script.js,
-  o un enllaç a una recepta germana.
-*/}
+### Deixa que els subtítols prenguin el buit primer
 
-### Compon el text a dues columnes
-
-Un format més ample admet dues columnes; l'obertura ocupa les dues i les capçaleres es queden on són.
+Amb l'ordre per defecte, un títol pren fins a dues línies de reixeta abans que un paràgraf s'allargui, i els subtítols de la pàgina següent tornen a obrir-se.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Justifica el text
+
+Un paràgraf justificat ja podia ocupar una línia més sense l'ajust, dins de `maxWordSpacing`. Amb `fillShortColumns` també pot ocupar una línia menys, i mai no es compon més ample que la seva línia més ampla.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
 ```
 
 ## Errors freqüents
 
-{/*
-  Opcional. Els errors freqüents i els avisos que llista recipe.json hi apareixen sols;
-  afegeix-hi una línia només per a un problema propi d'aquesta recepta.
-*/}
+- L'ajust tanca un buit d'una línia. Una columna a la qual en falten dues, per exemple una que acaba després del blanc entre paràgrafs amb lloc per a una sola línia del següent, es pot quedar curta: ajusta el text amb una frase.
+- No es fa servir un paràgraf la nova composició del qual acabaria en una línia curta, així que una columna es pot quedar curta quan només té paràgrafs breus.
