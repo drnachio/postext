@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 138 · Machine-learning paper with theorems and proofs ═══
 // https://postext.dev/en/cookbook/ml-paper-theorems-proofs
 // Code: MIT · Text: Rafailov et al. 2023, arXiv:2305.18290 (CC BY 4.0), abridged · Art: code
-// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.34.0
+// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 // DPO (NeurIPS 2023) re-set as a preprint: numbered equations with labels and references,
 // definition, lemma and theorem boxes, proofs that end in a square, author–year citations.
 import {

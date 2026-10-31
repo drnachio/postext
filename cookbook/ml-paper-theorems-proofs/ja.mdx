@@ -5,7 +5,7 @@ plain: "有名な機械学習の論文をオープンアクセスの原稿から
 description: "DPO論文（NeurIPS 2023、CC BY 4.0）を抄録して組み直す。\\labelと\\eqrefで数式に番号と参照を付け、amsthm風に定理と証明を組み、Harvard形式で引用する。"
 question: "論文で数式に番号を付け、定理と証明を組み、それらを番号で参照するには？"
 aliases: ["定理", "補題", "定義", "証明", "証明終わり", "QED", "amsthm", "数式番号", "eqref", "label", "相互参照", "機械学習の論文", "NeurIPS", "arXiv", "プレプリント", "DPO", "natbib", "著者年方式", "Harvard", "theorem", "proof"]
-pageNotes: { "1": "ページ上部にプラム色の帯があり、淡いロジスティック曲線の束、柱見出しPreprint · Machine learning · Re-set and abridged、白抜きの表題Direct Preference Optimization: Your Language Model is Secretly a Reward Model、学会の行が載る。その下の白地に6人の著者と所属、プラム色の罫の下に要旨、ページ下端に出典とライセンスの行。", "3": "ページ上部に図1。左はオーカー色のRLHFの流れで、選好データから報酬モデルを当てはめ、言語モデルの方策との間でサンプリングと強化学習を繰り返す。右はプラム色のDPOの流れで、選好データから最尤推定で直接最終モデルを得る。その下に3節の続きと式1。", "6": "5節。定義1と補題1・2に灰色とプラム色の縦罫、定理1は淡いプラム色の地、続いて証明の概略と式8。", "9": "付録A.1の続き。4行をそろえた式は最終行だけに番号10、続いて式11〜13、そして付録A.5で補題1を再掲し、その証明が始まる。" }
+pageNotes: { "1": "ページ上部にプラム色の帯があり、淡いロジスティック曲線の束、柱見出しPreprint · Machine learning · Re-set and abridged、白抜きの表題Direct Preference Optimization: Your Language Model is Secretly a Reward Model、学会の行が載る。その下の白地に6人の著者と所属、プラム色の罫の下に要旨、ページ下端に出典とライセンスの行。", "3": "ページ上部に図1。左はオーカー色のRLHFの流れで、選好データから報酬モデルを当てはめ、言語モデルの方策との間でサンプリングと強化学習を繰り返す。右はプラム色のDPOの流れで、選好データから最尤推定で直接最終モデルを得る。その下に3節の続きと式1。", "6": "5節。定義1と補題1・2に灰色とプラム色の縦罫、定理1は淡いプラム色の地、続いて証明の概略と式8。", "9": "付録Aは新しいページから。A.1の導出と式9、最終行だけに番号10を振った4行をそろえた式、分配関数、式11〜13。" }
 ---
 
 ## できあがり
@@ -28,7 +28,7 @@ Rafailov、Sharma、Mitchell、Ermon、Manning、Finnの論文*Direct Preference
 
 <Excerpt region="citations" />
 
-参考文献は`:::references{format=bibtex}`ブロックのBibTeXで、論文の`.bbl`から、抄録した本文がなお引いている20件だけを組み直しました。Cite Them Right Harvardは本文では「(Bong and Rinaldo, 2022)」、文献リストでは「Ouyang, L. *et al.* (2022)」とし、著者が4人以上なら筆頭著者だけを残します。本文に`@ziegler2020finetuning`と書くと、Ziegler *et al.* (2020)という叙述形になります。リストは`:::bibliography`の位置、つまり7節の後、付録の前に置かれ、論文と同じ並びです。
+参考文献は`:::references{format=bibtex}`ブロックのBibTeXで、論文の`.bbl`から、抄録した本文がなお引いている20件だけを組み直しました。Cite Them Right Harvardは本文では「(Bong and Rinaldo, 2022)」、文献リストでは「Ouyang, L. *et al.* (2022)」とし、著者が4人以上なら筆頭著者だけを残します。本文に`@ziegler2020finetuning`と書くと、Ziegler *et al.* (2020)という叙述形になります。リストは`:::bibliography`の位置、つまり7節の後、付録の前に置かれ、論文と同じ並びです。その前の`:::pagebreak`で、学会論文と同じく付録を新しいページから始めます。こうしないと、A.1の4行の式が収まらず、文献リスト最後のページの下に5行の空きが残ります。
 
 ### 4 · 表題は帯の上に、出典はページ下端に
 
