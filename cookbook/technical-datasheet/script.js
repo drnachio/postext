@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 010 · Datasheet: tables from data, merged headers ════════
 // https://postext.dev/en/cookbook/technical-datasheet
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Fira Sans, Fira Sans Condensed, Fira Mono (SIL OFL 1.1) · Needs postext ≥ 1.28.0
+// Fonts: Fira Sans, Fira Sans Condensed, Fira Mono (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 // The datasheet of a fictional sensor. Postext reads no pipe tables, so the tables are data:
 // TSV pasted from a spreadsheet, parsed into table models, then merged, aligned and filled.
 import {
@@ -193,7 +193,8 @@ const config = () => ({ locale: 'en-us', // the datasheet is written in English
     borderWidth: pt(0.5), cellPadding: mm(1.3) },
   tableStyles: [ // a resource picks one with table.styleId
     // White rules cut the fills apart and show where each merge and each group ends.
-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
+    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
+      figureStyle: 'tabular' }, // Fira's tnum: the digits of Min, Typ and Max line up
     // Written out although it is the default: 'clip' and 'hide' cut a table taller than the page.
     { id: 'grouped', overflow: 'split', continuedSuffix: '(continued)',
       continuesMarker: 'Continued on the next page' },

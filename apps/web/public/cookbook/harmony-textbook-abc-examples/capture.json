@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "harmony-textbook-abc-examples",
-  "sourceHash": "c60c267842b8147435022727d3f73c5539d9020019ee309641cd71357e2ae292",
+  "sourceHash": "cbec1f870efb3795bff655811e7f48bddaebc8e0f12b3931f57982602d97cdc9",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:36:51.329Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.543Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:04:39.462Z",
   "variants": {
     "en": {
-      "hash8": "75766f03",
-      "vdtHash": "ee95d024b288225b637515a7e364cdb146a6949f",
+      "hash8": "7444d09d",
+      "vdtHash": "a922dd494a351fec2fb3445091ed7af8ba8a30d4",
       "timings": {
-        "importMs": 269,
-        "fontsMs": 508,
-        "buildMs": 13,
-        "totalMs": 1939,
+        "importMs": 6073,
+        "fontsMs": 3042,
+        "buildMs": 32,
+        "totalMs": 11243,
         "builds": 1
       },
       "specimen": {
@@ -78,7 +72,7 @@
           "h": 1389,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 85784,
+          "bytes": 101060,
           "alt": "Page 3: THE DECEPTIVE CADENCE."
         },
         {
@@ -121,408 +115,18 @@
       },
       "pdf": {
         "file": "harmony-textbook-abc-examples.pdf",
-        "bytes": 117034,
+        "bytes": 118804,
         "pages": 4
       },
       "sandbox": {
         "file": "harmony-textbook-abc-examples.postext",
-        "bytes": 15798,
+        "bytes": 17190,
         "folio": "d719dace",
         "chapters": [
           {
             "pages": 4,
-            "hash": "622f36decb4af1a6",
-            "lines": "0ad23849a7fc406b"
-          }
-        ]
-      },
-      "detected": {
-        "apis": [
-          "buildDocumentWithFonts",
-          "decompressWoff2",
-          "initMusicEngine",
-          "renderPageToCanvas",
-          "renderToPdf"
-        ],
-        "configKeys": [
-          "bodyText",
-          "bodyText.avoidOrphans",
-          "bodyText.avoidRunts",
-          "bodyText.avoidWidows",
-          "bodyText.boldColor",
-          "bodyText.color",
-          "bodyText.firstLineIndent",
-          "bodyText.fontFamily",
-          "bodyText.fontSize",
-          "bodyText.hyphenation",
-          "bodyText.hyphenation.enabled",
-          "bodyText.indentAfterHeading",
-          "bodyText.italicColor",
-          "bodyText.lineHeight",
-          "bodyText.optimalLineBreaking",
-          "bodyText.referenceColor",
-          "bodyText.textAlign",
-          "calloutStyles",
-          "calloutStyles[].background",
-          "calloutStyles[].body",
-          "calloutStyles[].body.boldColor",
-          "calloutStyles[].body.color",
-          "calloutStyles[].body.firstLineIndent",
-          "calloutStyles[].body.fontSize",
-          "calloutStyles[].body.italicColor",
-          "calloutStyles[].body.lineHeight",
-          "calloutStyles[].body.textAlign",
-          "calloutStyles[].id",
-          "calloutStyles[].padding",
-          "calloutStyles[].padding.bottom",
-          "calloutStyles[].padding.left",
-          "calloutStyles[].padding.right",
-          "calloutStyles[].padding.top",
-          "calloutStyles[].stripe",
-          "calloutStyles[].stripe.color",
-          "calloutStyles[].stripe.enabled",
-          "calloutStyles[].stripe.side",
-          "calloutStyles[].stripe.width",
-          "calloutStyles[].title",
-          "calloutStyles[].titleStyle",
-          "calloutStyles[].titleStyle.color",
-          "calloutStyles[].titleStyle.fontFamily",
-          "calloutStyles[].titleStyle.fontSize",
-          "calloutStyles[].titleStyle.fontWeight",
-          "calloutStyles[].titleStyle.letterSpacing",
-          "calloutStyles[].titleStyle.textTransform",
-          "colorPalette",
-          "colorPalette[].id",
-          "colorPalette[].name",
-          "colorPalette[].value",
-          "footer",
-          "footer.elements",
-          "footer.elements[].align",
-          "footer.elements[].color",
-          "footer.elements[].content",
-          "footer.elements[].fontFamily",
-          "footer.elements[].fontSize",
-          "footer.elements[].fontWeight",
-          "footer.elements[].id",
-          "footer.elements[].kind",
-          "footer.elements[].letterSpacing",
-          "footer.elements[].pages",
-          "footer.elements[].parity",
-          "footer.elements[].placement",
-          "footer.elements[].textTransform",
-          "header",
-          "header.elements",
-          "header.elements[].color",
-          "header.elements[].content",
-          "header.elements[].fontFamily",
-          "header.elements[].fontSize",
-          "header.elements[].fontWeight",
-          "header.elements[].id",
-          "header.elements[].kind",
-          "header.elements[].letterSpacing",
-          "header.elements[].pages",
-          "header.elements[].parity",
-          "header.elements[].placement",
-          "header.elements[].textTransform",
-          "headings",
-          "headings.color",
-          "headings.fontFamily",
-          "headings.fontWeight",
-          "headings.levels",
-          "headings.levels[].advancedDesign",
-          "headings.levels[].breakBefore",
-          "headings.levels[].color",
-          "headings.levels[].fontFamily",
-          "headings.levels[].fontSize",
-          "headings.levels[].fontWeight",
-          "headings.levels[].letterSpacing",
-          "headings.levels[].level",
-          "headings.levels[].lineHeight",
-          "headings.levels[].marginBottom",
-          "headings.levels[].marginTop",
-          "headings.levels[].textTransform",
-          "layout",
-          "layout.layoutType",
-          "locale",
-          "orderedLists",
-          "orderedLists.color",
-          "orderedLists.fontWeight",
-          "orderedLists.marginBottom",
-          "orderedLists.marginTop",
-          "orderedLists.numberFormat",
-          "page",
-          "page.dpi",
-          "page.height",
-          "page.margins",
-          "page.margins.bottom",
-          "page.margins.left",
-          "page.margins.mirror",
-          "page.margins.right",
-          "page.margins.top",
-          "page.sizePreset",
-          "page.width",
-          "paragraphStyles",
-          "paragraphStyles[].color",
-          "paragraphStyles[].firstLineIndent",
-          "paragraphStyles[].fontFamily",
-          "paragraphStyles[].fontSize",
-          "paragraphStyles[].id",
-          "paragraphStyles[].lineHeight",
-          "paragraphStyles[].marginTop",
-          "paragraphStyles[].textAlign",
-          "scoreStyle",
-          "scoreStyle.barNumbers",
-          "scoreStyle.color",
-          "scoreStyle.marginBottom",
-          "scoreStyle.marginTop",
-          "scoreStyle.minSystemsAtBreak",
-          "scoreStyle.musicFont",
-          "scoreStyle.spacing",
-          "scoreStyle.staffSize",
-          "scoreStyle.systemGap",
-          "scoreStyle.textFont",
-          "tableStyle",
-          "tableStyle.bodyColor",
-          "tableStyle.bodyFontFamily",
-          "tableStyle.bodyFontSize",
-          "tableStyle.borderColor",
-          "tableStyle.borderWidth",
-          "tableStyle.cellPadding",
-          "tableStyle.headerBackground",
-          "tableStyle.headerColor",
-          "tableStyle.headerFontFamily",
-          "tableStyle.headerFontSize",
-          "tableStyle.rules"
-        ],
-        "configSections": [
-          "bodyText",
-          "calloutStyles",
-          "colorPalette",
-          "footer",
-          "header",
-          "headings",
-          "layout",
-          "locale",
-          "orderedLists",
-          "page",
-          "paragraphStyles",
-          "scoreStyle",
-          "tableStyle"
-        ],
-        "configLeaves": 238,
-        "designElements": 8,
-        "directives": [
-          ":::callout",
-          ":::paragraphs"
-        ],
-        "inline": [
-          "{attrs}",
-          "^…^"
-        ],
-        "resources": {
-          "svg": 0,
-          "bitmap": 0,
-          "table": 0
-        },
-        "fonts": [
-          {
-            "family": "Libre Caslon Display",
-            "weight": 400,
-            "style": "normal"
-          },
-          {
-            "family": "Libre Caslon Text",
-            "weight": 400,
-            "style": "italic"
-          },
-          {
-            "family": "Libre Caslon Text",
-            "weight": 400,
-            "style": "normal"
-          },
-          {
-            "family": "Libre Caslon Text",
-            "weight": 700,
-            "style": "normal"
-          },
-          {
-            "family": "Libre Franklin",
-            "weight": 400,
-            "style": "italic"
-          },
-          {
-            "family": "Libre Franklin",
-            "weight": 400,
-            "style": "normal"
-          },
-          {
-            "family": "Libre Franklin",
-            "weight": 600,
-            "style": "normal"
-          },
-          {
-            "family": "Libre Franklin",
-            "weight": 700,
-            "style": "normal"
-          }
-        ],
-        "features": [
-          "callout-styles",
-          "code-listings",
-          "heading-attributes",
-          "music-notation",
-          "opener-design",
-          "page-role-filters",
-          "paragraph-styles",
-          "pdf-export",
-          "pdf-fonts",
-          "score-style",
-          "super-subscripts"
-        ],
-        "suggestedLevel": 3
-      },
-      "diagnostics": {
-        "converged": true,
-        "iterationCount": 3,
-        "looseLines": {
-          "count": 0,
-          "share": 0,
-          "worst": 1.79
-        },
-        "raggedLines": {
-          "count": 0
-        },
-        "findings": [
-          {
-            "check": "C26",
-            "severity": "warn",
-            "detail": "the hero is 0.0 % colour, pictures or display type (aim for 25 %+)"
-          },
-          {
-            "check": "sandbox",
-            "severity": "info",
-            "detail": "book in several languages: en, es"
-          }
-        ]
-      }
-    },
-    "es": {
-      "hash8": "5ed22fda",
-      "vdtHash": "eecbf55528efa687506c139d576925f58538204b",
-      "timings": {
-        "importMs": 490,
-        "fontsMs": 494,
-        "buildMs": 13,
-        "totalMs": 2037,
-        "builds": 1
-      },
-      "specimen": {
-        "trimMm": [
-          180,
-          250
-        ],
-        "dpi": 150,
-        "layoutType": "single",
-        "mirror": true,
-        "body": {
-          "family": "Libre Caslon Text",
-          "sizePt": 10.5,
-          "leadingPt": 14.5
-        },
-        "families": [
-          "Libre Caslon Display",
-          "Libre Caslon Text",
-          "Libre Franklin"
-        ],
-        "pages": 4,
-        "ownLines": 152
-      },
-      "pages": [
-        {
-          "n": 1,
-          "label": "1",
-          "role": "opener",
-          "w": 1000,
-          "h": 1389,
-          "file": "p01.webp",
-          "strip": "p01.s.webp",
-          "bytes": 85400,
-          "alt": "Página de apertura 1: Cadencias."
-        },
-        {
-          "n": 2,
-          "label": "2",
-          "role": "body",
-          "w": 1000,
-          "h": 1389,
-          "file": "p02.webp",
-          "strip": "p02.s.webp",
-          "bytes": 88440,
-          "alt": "Página 2: LA CADENCIA IMPERFECTA."
-        },
-        {
-          "n": 3,
-          "label": "3",
-          "role": "body",
-          "w": 1000,
-          "h": 1389,
-          "file": "p03.webp",
-          "strip": "p03.s.webp",
-          "bytes": 92236,
-          "alt": "Página 3: LA CADENCIA ROTA."
-        },
-        {
-          "n": 4,
-          "label": "4",
-          "role": "body",
-          "w": 1000,
-          "h": 1389,
-          "file": "p04.webp",
-          "strip": "p04.s.webp",
-          "bytes": 68998,
-          "alt": "Página 4: EJERCICIOS."
-        }
-      ],
-      "spreads": [
-        [
-          null,
-          0
-        ],
-        [
-          1,
-          2
-        ],
-        [
-          3,
-          null
-        ]
-      ],
-      "card": {
-        "file": "card.webp",
-        "file480": "card.480.webp",
-        "w": 960,
-        "h": 720,
-        "mode": "crop"
-      },
-      "og": {
-        "file": "og.jpg",
-        "w": 580,
-        "h": 622
-      },
-      "pdf": {
-        "file": "harmony-textbook-abc-examples.pdf",
-        "bytes": 120451,
-        "pages": 4
-      },
-      "sandbox": {
-        "file": "harmony-textbook-abc-examples.postext",
-        "bytes": 15766,
-        "folio": "d719dace",
-        "chapters": [
-          {
-            "pages": 4,
-            "hash": "98b36b7c071c11f6",
-            "lines": "b32f3aa59cea5a95"
+            "hash": "965ffada12841b6e",
+            "lines": "db364b14e788f8f0"
           }
         ]
       },
@@ -777,7 +381,7 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.96
+          "worst": 1.79
         },
         "raggedLines": {
           "count": 0
@@ -787,6 +391,416 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 0.0 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "3f1f4555",
+      "vdtHash": "7677e4926e7ee1701ab08dcb598b1fe80120147d",
+      "timings": {
+        "importMs": 3919,
+        "fontsMs": 1280,
+        "buildMs": 35,
+        "totalMs": 6747,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          180,
+          250
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libre Caslon Text",
+          "sizePt": 10.5,
+          "leadingPt": 14.5
+        },
+        "families": [
+          "Libre Caslon Display",
+          "Libre Caslon Text",
+          "Libre Franklin"
+        ],
+        "pages": 4,
+        "ownLines": 152
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1389,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 85400,
+          "alt": "Página de apertura 1: Cadencias."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1389,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 88440,
+          "alt": "Página 2: LA CADENCIA IMPERFECTA."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1389,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 105782,
+          "alt": "Página 3: LA CADENCIA ROTA."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1389,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 68998,
+          "alt": "Página 4: EJERCICIOS."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "harmony-textbook-abc-examples.pdf",
+        "bytes": 122310,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "harmony-textbook-abc-examples.postext",
+        "bytes": 16342,
+        "folio": "d719dace",
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "64a1badd339331ff",
+            "lines": "27acbd3d0a5a6d3f"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "initMusicEngine",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontWeight",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "scoreStyle",
+          "scoreStyle.barNumbers",
+          "scoreStyle.color",
+          "scoreStyle.marginBottom",
+          "scoreStyle.marginTop",
+          "scoreStyle.minSystemsAtBreak",
+          "scoreStyle.musicFont",
+          "scoreStyle.spacing",
+          "scoreStyle.staffSize",
+          "scoreStyle.systemGap",
+          "scoreStyle.textFont",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles",
+          "scoreStyle",
+          "tableStyle"
+        ],
+        "configLeaves": 238,
+        "designElements": 8,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "^…^"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Franklin",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "code-listings",
+          "heading-attributes",
+          "music-notation",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "score-style",
+          "super-subscripts"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.75
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C26",
+            "severity": "warn",
+            "detail": "the hero is 0.0 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

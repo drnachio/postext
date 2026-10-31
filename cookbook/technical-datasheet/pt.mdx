@@ -34,7 +34,7 @@ A tabela de pinos e o mapa de registradores saem os dois de `groupedTable`. Uma 
 
 <Excerpt region="styles" />
 
-`tableStyle` guarda o que todas as tabelas compartilham. Cada entrada de `tableStyles` define só o que as tabelas mudam, e um recurso escolhe uma com `table.styleId`. A tabela elétrica troca os fios finos cinza por fios brancos de 1,4 pt, que separam os fundos e mostram onde termina cada mesclagem. A tabela de códigos de pedido ganha uma moldura externa arredondada e a Fira Sans Condensed, para que as quatro colunas caibam numa coluna de texto.
+`tableStyle` guarda o que todas as tabelas compartilham. Cada entrada de `tableStyles` define só o que as tabelas mudam, e um recurso escolhe uma com `table.styleId`. A tabela elétrica troca os fios finos cinza por fios brancos de 1,4 pt, que separam os fundos e mostram onde termina cada mesclagem. A tabela de códigos de pedido ganha uma moldura externa arredondada e a Fira Sans Condensed, para que as quatro colunas caibam numa coluna de texto. O `figureStyle: 'tabular'` do estilo elétrico pede à Fira Sans o recurso `tnum`, algarismos de mesma largura, para que os dígitos de Min, Typ e Max se alinhem em cada coluna.
 
 ### 5 · Rótulos que continuam texto no PDF
 
@@ -55,8 +55,8 @@ O código da peça é o título de nível 1, e o espaço de design dele desenha 
 Fios de meio ponto no cinza `rule` da paleta separam todas as linhas, com fundo ou sem; os brancos somem onde duas linhas sem fundo se encontram.
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### Pôr as legendas das tabelas sobre uma barra

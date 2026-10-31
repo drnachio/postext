@@ -1,0 +1,62 @@
+---
+title: "Evidenziazioni a colori in un libro di letture"
+summary: "Un libro di letture di storia le cui parole chiave hanno tre colori (verde per i termini, ambra per le date, blu per i nomi) presi da tre markStyles."
+plain: "Una lettura scolastica sulla storia della stampa. I termini chiave sono evidenziati in verde, le date in ambra, le persone e i luoghi in blu, e una legenda nella prima pagina dice che cosa significa ogni colore."
+description: "Un libro di letture di storia composto con Postext e tre stili di evidenziazione: termini in verde, date in ambra, nomi in blu e una legenda nell’apertura."
+question: "Come evidenzio un testo di studio con colori che abbiano ciascuno un significato: termini, date e nomi?"
+aliases: ["evidenziazione", "evidenziatore", "codice colore", "legenda dei colori", "parole chiave", "testo di studio", "libro di letture", "manuale di storia", "glossario", "segno", "stampa", "Gutenberg"]
+pageNotes: { "1": "La pagina di apertura: in alto un dipinto di una bottega tipografica verso il 1460; sotto, l’occhiello, il titolo e un sommario in corsivo; poi un riquadro colorato sotto un filetto rosso che spiega i tre colori con un campione verde, uno ambra e uno blu, e le prime righe della lettura.", "2": "Una pagina pari della lettura: date come 1455 e 1462 su fasce ambra, nomi come Johann Fust, Subiaco o William Caxton su fasce azzurre e termini come movable type o colophon su fasce verdi, in un testo giustificato.", "4": "L’ultima pagina: il glossario, ogni voce aperta dal suo termine in neretto su una fascia verde, le righe successive rientrate, poi il colophon in piccolo corpo grigio." }
+---
+
+## Che cosa comporrai
+
+La lettura 2 di un’unità di un libro scolastico di storia, *Readings in Early Modern History*: quattro pagine su come la stampa si diffuse in Europa da Magonza tra il 1450 e il 1550, su una pagina di 170 × 240 mm. I curatori hanno segnato il testo come farebbe uno studente attento, con un codice che resta lo stesso in tutto il libro: i termini chiave su una fascia verde, le date sull’ambra, le persone e i luoghi sull’azzurro. Una legenda sotto il titolo spiega il codice con i tre colori stessi, e il glossario dell’ultima pagina apre ogni voce con il suo termine verde. I segni sono fasce sotto testo normale, quindi le righe vanno a capo, si sillabano e si giustificano come se le fasce non ci fossero.
+
+## Preparazione
+
+### 1 · Uno stile per ogni tipo di parola
+
+Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. `markStyles` dichiara tre stili con nome, e il testo ne sceglie uno per ogni segno: `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colophon]{style="term"}` ([evidenziazioni](/it/docs/document-format-inline#evidenziazioni)). Ogni stile dice che cosa significa (`name` è ciò che vede chi cura il testo), così il Markdown registra perché una parola è segnata e non di che colore è. Se cambi il colore di uno stile, cambiano con lui tutte le date del libro. Le estremità sono dritte, come di default da postext 1.52 ([stili di evidenziazione](/it/docs/configuration-styles#stili-di-evidenziazione)): un evidenziatore lascia estremità dritte, e una fascia arrotondata si legge come un chip.
+
+### 2 · Tre tinte dalla tavolozza
+
+<Excerpt region="palette" />
+
+Le tre fasce sono voci della tavolozza come l’inchiostro e l’accento, quindi chi apre il libro nel Sandbox può ricolorare il codice da un solo campione. Sono chiare, vicine alla luminosità del fondo del riquadro, e il testo sopra di esse mantiene un contrasto di 12,6:1 o più; le tre restano distinte quando si incontrano su una riga, come in «In 1517 Martin Luther» a pagina 3. Un segno non occupa spazio: `paddingX` entra di 0,12 em nello spazio accanto alla frase e `paddingBottom` porta la fascia sotto i discendenti, entrambi dipinti in uno spazio che c’era già.
+
+### 3 · L’apertura: un dipinto sopra il titolo
+
+<Excerpt region="opener" />
+
+Il titolo di primo livello stampa un design. Il dipinto è ancorato alla pagina, quindi va al vivo in alto e sui due lati, 170 per 96 mm, con `fit: 'cover'`. L’occhiello e il sommario vengono da attributi della riga del titolo ([attributi dei titoli](/it/docs/document-format#attributi-dei-titoli)), e la legenda segue come un normale `:::callout` le cui voci di elenco cominciano con i tre segni. `minHeight` fissa la profondità: la legenda comincia sulla stessa riga per quanto lungo sia il titolo.
+
+### 4 · Testatine secondo la parità
+
+<Excerpt region="running-heads" />
+
+La pagina pari porta il titolo della collana e la dispari quello della lettura, filtrati con `parity` e tenuti fuori dall’apertura da `pages: 'body'` ([elementi di testo](/it/docs/configuration-headers-footers#elementi-di-testo)). L’apertura porta il numero di pagina al piede.
+
+## Varianti
+
+### Arrotonda le estremità delle fasce
+
+Un raggio di un quinto del corpo dà le estremità morbide di un pennarello.
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Dai a ogni riga la sua fascia
+
+Con `decorationBreak: 'clone'`, un segno che va a capo riceve il margine alle due estremità di ogni pezzo, come a pagina 3, dove «pamphlets» si spezza dopo «pam-».
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## Errori frequenti
+
+- Il colore da solo non sopravvive a una fotocopia in bianco e nero, che è il modo in cui molte letture arrivano in classe. Il glossario mette in più i termini in neretto; se i tuoi lettori fotocopieranno le pagine, dai a uno dei tre tipi un secondo segno tutto suo.
+- Un id di stile che `markStyles` non dichiara prende il primo stile, senza errori sulla pagina (il Sandbox lo segnala). Usa id brevi e controlla come li scrivi nel testo.

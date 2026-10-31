@@ -1,0 +1,63 @@
+---
+title: "Un mòdul de curs amb examen que es respon en pantalla"
+summary: "Dos estils d'exercici en un Markdown: pràctica sense límit i examen d'una sola comprovació; attachExercises els respon en HTML, i l'EPUB també."
+plain: "Una lliçó sobre els terratrèmols: la llegeixes, practiques tant com vulguis i fas un examen curt que només deixa comprovar cada resposta una vegada. S'imprimeix com a quadern i funciona en pantalla i en un llibre electrònic."
+description: "Un mòdul de quatre pàgines amb una pràctica i un examen que es responen al visor HTML i en un EPUB de maquetació fixa, amb límits i aprovat al 70 %."
+question: "Com deixo que l'alumne respongui els exercicis en pantalla, amb un examen que només admet una comprovació?"
+aliases: ["exercicis interactius", "autocorrecció", "examen en línia", "aula virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "L'obertura del mòdul: una pintura d'una falla que travessa una plana seca, a sang per dalt, l'avanttítol, el títol i una entradeta en cursiva.", "3": "Pràctica: tres exercicis amb el número en un disc òxid i les solucions de la pràctica.", "4": "Examen del mòdul: quatre exercicis amb un filet pissarra a sobre i el número en un quadrat, i el colofó." }
+---
+
+## Què compondràs
+
+El mòdul 4 d'*El planeta inquieto*, un curs d'iniciació a les ciències de la Terra: quatre pàgines sobre els terratrèmols, en un format de 176 × 250 mm que s'obre sota una pintura d'una falla que travessa una plana seca. La lectura porta a una pràctica i a un examen, escrits al Markdown com a blocs `:::exercise` amb les respostes. El mòdul imprès porta les solucions de la pràctica i deixa fora les de l'examen. En pantalla, les mateixes pàgines es responen: la pràctica es comprova i es repeteix tant com es vulgui, i cada pregunta de l'examen admet una sola comprovació, no es pot repetir i només mostra la solució quan aquesta comprovació s'ha gastat. Un plafó al costat de les pàgines suma el que desaria una plataforma d'aprenentatge: la nota, si l'examen està acabat i l'aprovat o el suspens amb el 70 %.
+
+## Elaboració
+
+### 1 · Dos estils, dues regles
+
+El codi és a [la resposta curta](#la-resposta-curta). Els exercicis només diuen què pregunten; l'`style` del bloc decideix com es comporten. `practice` conserva el que porta el llibre, de manera que la barra ofereix Comprova, Mostra la solució i Torna a començar sense límit. `test` l'amplia amb un bloc `digital`: `maxChecks: 1`, `reset: false` i `showSolution: 'noChecksLeft'`, i la barra compta fins a «Sense més comprovacions» i només llavors ofereix la solució. En paper, aquest mateix estil no imprimeix les solucions (`placement: 'none'`), mentre que les de la pràctica surten on hi ha la línia `:::solutions`.
+
+### 2 · Un intent desat torna del magatzem
+
+<Excerpt region="attempt" />
+
+`attachExercises` llegeix les respostes de cada exercici amb `getItem` i les escriu amb `setItem`, sota la `storageKey` i l'àncora de l'exercici. Qualsevol objecte amb aquestes tres crides pot ocupar el lloc de `localStorage`; una plataforma d'aprenentatge desa aquest mateix JSON entre les dades de l'alumne. Aquest retorna tres preguntes de l'examen ja comprovades, amb dos errors (vertader a l'afirmació 3 i 180 km a la distància), i la pàgina s'obre tal com la trobaria un alumne que hi torna: aquestes preguntes bloquejades, les solucions disponibles i la d'ordenar encara per fer.
+
+### 3 · Respondre les pàgines i sentir cada comprovació
+
+<Excerpt region="screen" />
+
+`renderToHtml` escriu les pàgines i les dades dels exercicis; `attachExercises` hi col·loca a sobre els camps, les caselles i la barra. `onResult` rep cada exercici quan es prepara i després de cada comprovació, cada reinici i cada solució mostrada, amb les respostes avaluades encertades (`right`) i totals (`total`), les comprovacions gastades i si l'intent està bloquejat (`locked`). El plafó suma les respostes de l'examen com ho fa un reproductor SCORM: encerts entre respostes avaluades de tot l'examen, acabat quan cada pregunta està comprovada o bloquejada, aprovat a partir de `passingScore`. La pàgina fa servir `dpi: 96`, i un mil·límetre de la pàgina impresa és un mil·límetre CSS en pantalla.
+
+### 4 · Els mateixos exercicis en un EPUB
+
+<Excerpt region="epub" />
+
+L'EPUB de maquetació fixa porta les dades dels exercicis i l'script que els respon, de manera que un sistema de lectura que executa scripts ofereix els mateixos camps i els mateixos límits; un que no els executa conserva les solucions que hi afegeix l'escriptor. Les fonts se li passen com a bytes, els mateixos fitxers de Fontsource que va carregar la pàgina.
+
+## Variants
+
+### Empaquetar el mòdul per a una plataforma d'aprenentatge
+
+`postext-scorm` pren els mateixos documents i escriu un zip SCORM 1.2 o 2004 el reproductor del qual connecta el magatzem i els resultats amb l'LMS. Un SCO compta tots els exercicis que conté, també els de pràctica, així que un curs que només qualifica l'examen en fa un SCO propi amb `items` (consulta <Feature id="scorm-packages">Paquets SCORM</Feature>).
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### Corregir cada resposta en donar-la
+
+Per a un qüestionari sense botó Comprova, posa `check: 'instant'` a `exercises.digital`. La correcció immediata treu el límit de comprovacions; l'estil de l'examen manté `showSolution`.
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## Errors freqüents
+
+Posa una àncora a cada exercici que s'avalua (`:::exercise{#test-scales}`). Les respostes es desen sota l'àncora; sense, la clau surt del lloc de l'exercici al document, i una pregunta afegida abans retorna a l'alumne les respostes desades d'una altra.

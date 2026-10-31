@@ -1,0 +1,63 @@
+---
+title: "链接印成二维码的博物馆导览"
+summary: "一本口袋博物馆导览：网页链接在页脚印成编号注释，附短网址和二维码，用的是 links.print 设为 notes。"
+description: "用 Postext 排的博物馆导览：指向馆藏目录的链接印成带短网址和二维码的编号注释，一页一幅画，附完整代码。"
+plain: "一本介绍五幅画的小导览。正文提到网页的地方有一个小号数字，指向页脚；页脚有一个方形码，用手机一扫就能打开那个网页。"
+question: "怎样把导览里的链接印成编号注释，并配上参观者可以扫描的二维码？"
+aliases: ["二维码", "印刷二维码", "印刷网址", "博物馆导览", "步行导览", "链接注释", "QR code", "museum guide"]
+---
+
+## 成品一览
+
+一本大都会艺术博物馆荷兰展厅的口袋导览：五幅画，步行一小时，一页一幅。封面是维米尔窗边的少女，画面在上边缘被裁切。每一站先是展厅号、画名和画家，再是画作，旁边放展签，然后是三段短文。正文像普通网页那样链接到博物馆的藏品目录。印在纸上时，每个链接变成一个小号数字；页脚的注释给出短网址和一个二维码，参观者站在画前用手机对准它即可。
+
+## 做法
+
+### 1 · 写链接，印注释
+
+代码就是上面的[简短回答](#简短回答)。Markdown 里保留普通链接 `[The catalogue entry](https://www.metmuseum.org/…/436616)`，`links.print: 'notes'` 把每个链接变成带网址和二维码的编号注释（[印刷版中的链接](/zh/docs/configuration-notes-references#印刷版中的链接)）。这些注释就是脚注：`numbering: 'document'` 在整条路线上连续编号，读者看到的是 1 到 7；`repeat: 'first'` 让最后一站用注释 3 引用哈尔斯那幅画，不必把同一个码印两次。在 PDF 里，二维码以矢量绘制，本身也是一个链接。
+
+<PageShot page={3} crop="0,0.74,1,0.2" caption="第一站的页脚：注释 3，画作的目录页以短网址印在一个 16 毫米的二维码旁。" />
+
+### 2 · 一站一页
+
+<Excerpt region="stops" />
+
+每一站是一个二级标题，它的 `breakBefore` 另起一页，奇偶不限，参观者每看一幅画翻一页。展厅号和画家是标题属性；版式把它们放在画名的上方和下方，`minHeight` 让每页的画作从同一高度开始。
+
+### 3 · 展签放在画旁
+
+<Excerpt region="resources" />
+
+`captionSide: 'inside'` 把图注和来源注释放在画的旁边，就像展厅里挂的展签；`width` 决定每幅画占版心的比例：竖长的哈尔斯少一些，横宽的雷斯达尔多一些，这样五页的正文高度相近。展签由材质、厘米尺寸（用不换行空格连接）和博物馆的入藏说明组成，西班牙语版用逗号作小数点。
+
+### 4 · 书眉写出这一站
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` 印出本页开始的那一站的标题，所以奇数页写画名，偶数页写导览名。书眉不会出现在封面上，因为封面的页面角色是开篇页。
+
+## 变化
+
+### 把网址印在行内
+
+在家里读的导览，可用 `'inline'` 在链接文字后加上括号里的网址，不设注释也不印二维码。
+
+```diff
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### 只印二维码
+
+`show: 'qr'` 只在注释编号旁印二维码，适合海报或展签，那里印网址只会占地方。
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
+```
+
+## 常见问题
+
+带二维码的注释至少和二维码一样高。如果载有链接的那一行在本页下方放不下它的注释，这一行会连同注释移到下一页。所以在必须停在固定位置的页面上，别把链接放在最后几行，本导览封面的第一段就是这样处理的。

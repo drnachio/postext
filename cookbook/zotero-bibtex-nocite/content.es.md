@@ -35,7 +35,7 @@ La última semana vuelve al siglo XVII con una pregunta más amplia: ¿cómo dec
 
 ## Para seguir leyendo
 
-La lista que sigue es la colección de Zotero del seminario, exportada en BibTeX y compuesta tal como salió de Zotero. Incluye todas las obras citadas arriba y cinco que el seminario no comenta pero que encontraréis en los ensayos que leáis: la monografía de Fleck, los ensayos de Merton sobre las normas de la ciencia, el manual posterior de Latour, el estudio de Rheinberger sobre los sistemas experimentales y una historia de la ciencia española de los siglos XVI y XVII.
+La lista que sigue es la colección de Zotero del seminario, exportada en BibTeX y compuesta tal cual. Incluye todas las obras citadas arriba y cinco que el seminario no comenta pero que veréis citadas a menudo: la monografía de Fleck, los ensayos de Merton sobre las normas de la ciencia, el manual posterior de Latour, el estudio de Rheinberger sobre los sistemas experimentales y una historia de la ciencia española de los siglos XVI y XVII.
 
 :::bibliography{title=""}
 

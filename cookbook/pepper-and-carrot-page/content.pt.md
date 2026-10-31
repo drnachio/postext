@@ -11,11 +11,11 @@ Junho 2015 - www.peppercarrot.com - Arte e roteiro por David Revoy - Tradução 
 
 Art & Scenario: David Revoy — Translation: Frederico Batista — Proofreading: Alexandre E. Almeida
 
-Licença: Creative Commons Atribuição 4.0 (CC BY 4.0).
+Licença: [Creative Commons Atribuição 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.pt-br).
 
 Obra derivada de “A Festa de Aniversário da Pepper”, de David Revoy, licenciada sob CC BY 4.0: o Postext refez os balões e o letreiramento e recompôs as páginas a partir da tradução oficial para o português do Brasil.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/pt/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

@@ -174,6 +174,7 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 
 - Footnotes (`[^id]`) set at the foot of the column that cites them, or gathered at the end of the chapter; numbered per chapter, through the book, per page or per column, in decimal, roman or circled numbers (①).
 - Cross-references to headings, figures, tables and anchors (`{#id}`), clickable in the PDF.
+- External links stay clickable in every output, and a printed page can show where they lead (`links.print`): the address in parentheses after the link text, or a numbered note set with the footnotes that prints the address, a QR code that opens it, or both. Short addresses, first-citation-only notes and the code's size, colour and error correction are settings; right-to-left and vertical books are handled.
 - Citations in Pandoc syntax (`[@garcia2020, p. 33]`) formatted in a CSL style (APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714, OSCOLA, …) with a generated bibliography, from BibTeX, CSL-JSON or CSL-YAML. With a note style each citation becomes a footnote. The styles are applied by `postext-citeproc`.
 - A back-of-book index built from `:index[…]` marks and printed with `:::index`: sub-entries, sort keys, principal pages in bold and several indexes per book. The page numbers are found after layout, so they follow the text.
 
@@ -222,7 +223,7 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 
 - **Canvas renderer.** Rasterize any page for previews and thumbnails (`renderPage`, `renderPageToCanvas`).
 - **HTML renderer.** Precise absolutely-positioned markup; `renderToHtmlIndexed` returns a per-block index so viewers can patch only the DOM nodes that changed between builds.
-- **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference links, embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, HarfBuzz shaping for Arabic, page labels, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF. `postext-pdf/worker` writes long books off the main thread.
+- **PDF renderer** (`postext-pdf`). Print-ready output with document outlines, clickable cross-reference and web links (with QR codes for printed addresses), embedded custom fonts (woff2/woff/ttf/otf) with GPOS kerning, HarfBuzz shaping for Arabic, page labels, vector SVG figures (with optional PDF print masters), RGB, CMYK, or grayscale color spaces, and **tagged, accessible PDF/UA-1** output validated with veraPDF. `postext-pdf/worker` writes long books off the main thread.
 - **EPUB 3 writer** (`postext-epub`). The whole book as an EPUB 3.3 file, written in the browser or in Node: a **fixed layout** (`pre-paginated`) that keeps every printed page with real, selectable text, or a **reflowable** book in semantic XHTML (paragraphs rebuilt from the lines, notes, figures and tables in reading order, print page markers) styled from the same configuration. Fonts embedded, with navigation, print page numbers, right-to-left books and accessibility metadata; validated with W3C EPUBCheck.
 - **SCORM packages** (`postext-scorm`). A book, or the chapters and sections picked from it, as a SCORM 1.2 or SCORM 2004 package for a learning management system (Moodle, Canvas, Blackboard, …): fixed pages or reflowable text from the EPUB writer, a small player per SCO, and exercises that send their score, completion and pass or fail to the LMS (`renderToScorm`).
 - **Print production.** PDF/X-1a and PDF/X-4 files (`print.standard`) with an ICC output profile (FOGRA, GRACoL, SWOP and IFRA profiles are bundled, or your own), every colour and RGB picture separated through it, black overprint and rich black, an ink limit, and a preflight that reports low-resolution pictures, thin rules, small text in several inks and text near the trim before the file is written. The Sandbox shows a print preview of the separated pages.
@@ -239,11 +240,11 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 - A book holds an edition per language, each with its own title and pagination: the editions rail switches between them, the Design panel edits either the general settings or one language's override (each field shows which layer sets it), and the side-by-side view shows two editions of the whole book, kept on the same passage of text.
 - Books travel as `.postext` bundles that carry their pagination, so an imported book opens already paginated.
 - The same `.postext` files are created and opened from code with the `postext` package (`createBundle`, `openBundle`, `buildBundle`), so a book moves between the Sandbox, the agent skill and your own program.
-- Showcase bundles — a magazine, literary editions (*Don Quijote*, an annotated *Paradise Lost*), an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual, the classic Chinese novel *Dream of the Red Chamber* (红楼梦), Natsume Sōseki's *Kokoro* (こころ) set vertically and *One Thousand and One Nights* in Arabic — plus a built-in guide to Postext, itself set as a book in every language of the site: Chinese and Japanese vertical, Arabic right to left.
+- Showcase bundles — a magazine, literary editions (*Don Quijote*, an annotated *Paradise Lost*), an atlas, an exhibition catalogue, a physics textbook, a column-and-a-half biochemistry manual, the classic Chinese novel *Dream of the Red Chamber* (红楼梦), Natsume Sōseki's *Kokoro* (こころ) set vertically and *One Thousand and One Nights* in Arabic — plus a built-in guide to Postext that covers every feature, itself set as a book in every language of the site and checked page by page in each edition: Chinese and Japanese vertical, Arabic right to left.
 
 ### Cookbook
 
-- More than 170 complete, copy-ready examples at [postext.dev/en/cookbook](https://postext.dev/en/cookbook) (*Recetario* in Spanish): each recipe is a real publication set with Postext — an opener, a book page with running heads, a data table, a songbook page, a print-ready PDF — grouped in chapters and searchable by feature, genre, level and output.
+- 180 complete, copy-ready examples at [postext.dev/en/cookbook](https://postext.dev/en/cookbook) (*Recetario* in Spanish): each recipe is a real publication set with Postext — an opener, a book page with running heads, a data table, a songbook page, a print-ready PDF — grouped in chapters and searchable by feature, genre, level and output.
 - Every recipe page shows the captured pages and the whole pen, with Copy, Open in CodePen, an `.html` download and, where it applies, the PDF; a write-up explains the method step by step, with excerpts of the real code, and the pitfalls. The same content is available as Markdown for agents (`/en/cookbook/<slug>.md`, and in `llms.txt`).
 - Recipes live in [`cookbook/`](cookbook/README.md), one folder each (metadata, bilingual write-ups, the pen and its sample text); `pnpm cookbook new | dev | lint | capture` scaffolds, previews, checks and captures them against the released engine, and `pnpm cookbook sandbox` and `pnpm cookbook bench` check the captured books in the Sandbox's own layout and the composed pages under longer text.
 
@@ -506,6 +507,7 @@ Every milestone of the original roadmap is closed. Postext now typesets full boo
 - [x] General settings with per-language overrides for books in several languages ([#1209](https://github.com/drnachio/postext/issues/1209))
 - [x] Textbook and workbook exercises, printed and answerable on screen ([#1235](https://github.com/drnachio/postext/issues/1235)), and SCORM packages for learning platforms ([#1270](https://github.com/drnachio/postext/issues/1270))
 - [x] Figure styles per text style: old-style, lining, tabular, proportional ([#1237](https://github.com/drnachio/postext/issues/1237))
+- [x] Printed link addresses: inline URLs, link notes and QR codes ([#1302](https://github.com/drnachio/postext/issues/1302))
 
 What comes next is driven by the community: open an issue that describes the publication you are trying to set and where Postext falls short.
 
@@ -515,7 +517,7 @@ What comes next is driven by the community: open an issue that describes the pub
 
 Postext is a community-driven open-source project. An active community of contributors is growing around it, and new collaborators are always welcome. The goal is to build a shared standard that any editorial development team worldwide can adopt — a common foundation for professional web typography.
 
-If you want to contribute code, please open an issue first to discuss the approach. This helps avoid duplicate work and ensures alignment with the project direction. Follow existing code style and TypeScript strict mode.
+If you want to contribute code, please open an issue first to discuss the approach. This helps avoid duplicate work and ensures alignment with the project direction. Follow existing code style and TypeScript strict mode. A source file stays under about 600 lines and a folder under about 25 files; CI checks it with `node scripts/source-size.mjs --check` (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 The project especially welcomes people with experience in:
 

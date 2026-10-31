@@ -1,0 +1,57 @@
+---
+title: "Um projeto gráfico para três edições em três idiomas"
+summary: "Um livreto em inglês, espanhol e árabe a partir de ajustes gerais, com substituições só para o que é de cada idioma: fontes, corpos, espacejamento."
+plain: "Um livreto sobre três astrolábios antigos, impresso em inglês, espanhol e árabe. Os três compartilham um projeto; só a edição árabe troca as fontes e os tamanhos."
+description: "Ajustes gerais e substituições por idioma no Postext: um livreto em inglês, espanhol e árabe que compartilha um projeto e só muda onde o idioma pede."
+question: "Como compartilho um projeto entre as edições de um livro e troco só as fontes e rótulos de cada idioma?"
+aliases: ["ajustes gerais", "substituições por idioma", "mergeConfigLayers", "configuração compartilhada", "edição multilíngue", "edição árabe", "astrolábio"]
+pageNotes: {"1": "A capa da edição inglesa: a fotografia de um astrolábio de latão de 1291 com incrustações de prata ocupa a página; sobre a parte escura da foto, um antetítulo branco espacejado, um fio curto e o título Three Astrolabes em duas linhas brancas; no pé, Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Página par 2: cabeço com o fólio em latão e o título do livro; as seções A map of the sky you can turn e The sultan’s instrument, em texto justificado com os títulos cor de latão.", "3": "Página ímpar 3: um box com um fio de latão à esquerda; a seção A garden of stars com a foto de um astrolábio persa à direita da coluna e o texto ao lado; no pé, o título da última seção.", "4": "Página par 4: a última seção com a foto do astrolábio europeu de 1462 à direita e o texto ao lado, até o parágrafo de fecho; uma tabela dos três instrumentos com o cabeçalho escuro; o colofão."}
+---
+
+## O que você vai compor
+
+Um livreto de quatro páginas A5 sobre três astrolábios do Metropolitan Museum of Art: um feito no Iêmen em 1291, outro no Irã em 1654 e outro na Europa em 1462. A editora o publica em inglês, espanhol e árabe, e as três edições são um só projeto. A foto de capa, os títulos cor de latão, o box com seu fio, as figuras com o texto ao lado e o cabeçalho escuro da tabela saem dos mesmos ajustes. A edição árabe troca o que é da sua escrita: Amiri e IBM Plex Sans Arabic no lugar de Source Serif e Source Sans, um corpo maior e rótulos sem maiúsculas nem espacejamento. Ela se lê a partir da direita e é encadernada à direita sem uma única coordenada própria.
+
+## Preparo
+
+### 1 · Ajustes gerais e três pequenas substituições
+
+O código está na [resposta curta](#a-resposta-curta) acima. `config` guarda os ajustes gerais; `mergeConfigLayers` põe por cima a substituição de uma edição, campo a campo. Inglês e espanhol não têm substituição: o `locale` deles escolhe os padrões de hifenização e as palavras *Figure* e *Table*, *Figura* e *Tabla*. A substituição árabe nomeia só campos soltos: `bodyText.fontFamily` troca a fonte e mantém a cor, o alinhamento e a hifenização, e o elemento `kicker` da capa troca a fonte e o espacejamento e mantém a âncora, a cor e o tamanho. Uma mudança na paleta ou nas margens em `config` chega às três edições.
+
+### 2 · Lados nomeados pela direção do texto
+
+<Excerpt region="heads" />
+
+A borda externa de uma página par é o início das suas linhas nas duas direções, e a de uma ímpar, o fim; por isso `top-start` e `top-end` levam os fólios para fora tanto numa página par inglesa quanto numa árabe. O fio do box é `side: 'start'` e o texto da capa se ancora em `top-start`: nenhum precisa de substituição.
+
+### 3 · Figuras no fim da linha, com o texto ao lado
+
+<Excerpt region="pictures" />
+
+`wrap: 'end'` põe cada foto à direita de uma coluna inglesa e à esquerda de uma árabe, e o texto corre ao lado. Legendas e textos alternativos vêm no idioma de cada edição; as legendas árabes dão primeiro a data da Hégira.
+
+### 4 · A tabela com as palavras e os algarismos de cada edição
+
+<Excerpt region="table" />
+
+Os dados da tabela são conteúdo e mudam com a edição: algarismos arábico-índicos e o separador decimal árabe na edição árabe, vírgula decimal na espanhola. O estilo é geral: a substituição só define a fonte e o corpo árabes.
+
+## Variações
+
+### Grave as substituições num pacote
+
+<RecipeLink slug="bundle-round-trip">A ida e volta do .postext</RecipeLink> grava um livro em dois idiomas num arquivo. Desde o postext 1.58, `createBundle` salva uma vez os ajustes gerais e, junto aos capítulos de cada idioma, a sua substituição, como `mergeConfigLayers` a lê aqui. O livro desta receita abre assim no Sandbox: alterne o painel de design entre *Todos os idiomas* e a edição árabe para ver que campos a edição árabe define.
+
+### Imprima a edição árabe para o Magrebe
+
+`ar-MA` mantém a direção e a encadernação e escreve em algarismos europeus os números gerados, fólios e números das figuras. Redigite também os algarismos da tabela.
+
+```diff
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
+```
+
+## Erros comuns
+
+- As letras árabes se ligam: um rótulo espacejado nos ajustes gerais precisa perder o `letterSpacing` na substituição árabe, senão o motor emite o aviso `joiningScriptLetterSpacing`. Com ele vai `textTransform: 'none'`: o árabe não tem maiúsculas.
+- As linhas de uma edição árabe são mais altas e as páginas quebram em outros pontos. Cada edição foi ajustada por conta própria: o box árabe flutua para o pé da página (`placement="bottom"`) e as frases de fecho correm ao lado da última foto.

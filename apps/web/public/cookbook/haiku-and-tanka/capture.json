@@ -3,27 +3,21 @@
   "slug": "haiku-and-tanka",
   "sourceHash": "7722c1910efd52624b593ced711390486dfe5af66fc0174684d7ac2c2e4d3088",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:36:51.252Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:58.702Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:24:17.527Z",
   "variants": {
     "en": {
-      "hash8": "19425a1b",
+      "hash8": "53e4359a",
       "vdtHash": "351aa50ad42f719591ada45f71b4b1a8ff2d4369",
       "timings": {
-        "importMs": 214,
-        "fontsMs": 187,
-        "buildMs": 59,
-        "totalMs": 1044,
+        "importMs": 3520,
+        "fontsMs": 2028,
+        "buildMs": 91,
+        "totalMs": 6683,
         "builds": 1
       },
       "specimen": {
@@ -173,7 +167,7 @@
       },
       "pdf": {
         "file": "haiku-and-tanka.pdf",
-        "bytes": 221291,
+        "bytes": 221209,
         "pages": 8
       },
       "sandbox": {
@@ -363,6 +357,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -371,13 +375,13 @@
       }
     },
     "es": {
-      "hash8": "45062160",
+      "hash8": "6479e6e4",
       "vdtHash": "a5d3308460805ad0d7f0cc310898046450ac8fc0",
       "timings": {
-        "importMs": 200,
-        "fontsMs": 166,
-        "buildMs": 58,
-        "totalMs": 1021,
+        "importMs": 6224,
+        "fontsMs": 2157,
+        "buildMs": 73,
+        "totalMs": 9229,
         "builds": 1
       },
       "specimen": {
@@ -527,7 +531,7 @@
       },
       "pdf": {
         "file": "haiku-and-tanka.pdf",
-        "bytes": 220702,
+        "bytes": 220564,
         "pages": 8
       },
       "sandbox": {
@@ -716,6 +720,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

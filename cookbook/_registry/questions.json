@@ -5798,5 +5798,173 @@
       "ar": "تدريبات يابانية عمودية"
     },
     "theme": "textbooks"
+  },
+  "Q208": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print the web addresses of a book's links, as numbered notes or QR codes a reader can scan?",
+      "es": "¿Cómo imprimo las direcciones web de los enlaces de un libro, como notas numeradas o códigos QR que el lector pueda escanear?",
+      "ca": "Com imprimeixo les adreces web dels enllaços d'un llibre, com a notes numerades o codis QR que el lector pugui escanejar?",
+      "fr": "Comment imprimer les adresses web des liens d’un livre, en notes numérotées ou en codes QR que le lecteur peut scanner ?",
+      "de": "Wie drucke ich die Webadressen der Links eines Buchs als nummerierte Anmerkungen oder als QR-Codes, die der Leser scannen kann?",
+      "it": "Come stampo gli indirizzi web dei link di un libro, come note numerate o codici QR che il lettore può inquadrare?",
+      "pt": "Como imprimo os endereços web dos links de um livro, como notas numeradas ou códigos QR que o leitor possa escanear?",
+      "zh": "怎样把书中链接的网址印出来，做成编号注释或读者可扫描的二维码？",
+      "ja": "本のリンクのウェブアドレスを、番号付きの注や読者が読み取れる QR コードとして印刷するには？",
+      "ar": "كيف أطبع عناوين الويب لروابط الكتاب حواشيَ مرقّمة أو رموز QR يمسحها القارئ؟"
+    },
+    "index": {
+      "en": "Links, printed addresses and QR codes",
+      "es": "Enlaces, direcciones impresas y códigos QR",
+      "ca": "Enllaços, adreces impreses i codis QR",
+      "fr": "Liens, adresses imprimées et codes QR",
+      "de": "Links, gedruckte Adressen und QR-Codes",
+      "it": "Link, indirizzi stampati e codici QR",
+      "pt": "Links, endereços impressos e códigos QR",
+      "zh": "链接、印刷网址与二维码",
+      "ja": "リンク、印刷アドレスと QR コード",
+      "ar": "الروابط والعناوين المطبوعة ورموز QR"
+    },
+    "theme": "structure"
+  },
+  "Q209": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set old-style figures in the running text, lining figures in the headings and tabular figures in the tables?",
+      "es": "¿Cómo compongo cifras elzevirianas en el texto, cifras de caja alta en los títulos y cifras tabulares en las tablas?",
+      "ca": "Com componc xifres elzevirianes al text, xifres de caixa alta als títols i xifres tabulars a les taules?",
+      "fr": "Comment composer des chiffres elzéviriens dans le texte, des chiffres alignés dans les titres et des chiffres tabulaires dans les tableaux ?",
+      "de": "Wie setze ich Mediävalziffern im Fließtext, Versalziffern in den Überschriften und Tabellenziffern in den Tabellen?",
+      "it": "Come compongo cifre old-style nel testo, cifre maiuscole nei titoli e cifre tabellari nelle tabelle?",
+      "pt": "Como componho algarismos de estilo antigo no texto, algarismos alinhados nos títulos e algarismos tabulares nas tabelas?",
+      "zh": "怎样在正文中用旧式数字、标题中用等高数字、表格中用等宽数字？",
+      "ja": "本文にオールドスタイル数字、見出しにライニング数字、表にタビュラー数字を使うには？",
+      "ar": "كيف أستعمل الأرقام قديمة الطراز في المتن والأرقام المصطفّة في العناوين والأرقام الجدولية في الجداول؟"
+    },
+    "index": {
+      "en": "Figures, old-style, lining and tabular",
+      "es": "Cifras elzevirianas, de caja alta y tabulares",
+      "ca": "Xifres elzevirianes, de caixa alta i tabulars",
+      "fr": "Chiffres elzéviriens, alignés et tabulaires",
+      "de": "Ziffern, Mediäval-, Versal- und Tabellen-",
+      "it": "Cifre old-style, maiuscole e tabellari",
+      "pt": "Algarismos de estilo antigo, alinhados e tabulares",
+      "zh": "旧式、等高与等宽数字",
+      "ja": "オールドスタイル・ライニング・タビュラー数字",
+      "ar": "الأرقام قديمة الطراز والمصطفّة والجدولية"
+    },
+    "theme": "type"
+  },
+  "Q210": {
+    "kind": "why",
+    "text": {
+      "en": "Why does a column end a line or two short of the foot, and how do I fill it without breaking the widow and orphan rules?",
+      "es": "¿Por qué una columna acaba una o dos líneas antes del pie, y cómo la relleno sin romper las reglas de viudas y huérfanas?",
+      "ca": "Per què una columna acaba una o dues línies abans del peu, i com l'omplo sense trencar les regles de vídues i òrfenes?",
+      "fr": "Pourquoi une colonne s’arrête-t-elle une ligne ou deux avant le pied, et comment la remplir sans enfreindre les règles de veuves et d’orphelines ?",
+      "de": "Warum endet eine Spalte ein oder zwei Zeilen vor dem Fuß, und wie fülle ich sie, ohne die Regeln für Hurenkinder und Schusterjungen zu brechen?",
+      "it": "Perché una colonna finisce una o due righe prima del piede, e come la riempio senza violare le regole su vedove e orfane?",
+      "pt": "Por que uma coluna termina uma ou duas linhas antes do pé, e como a preencho sem quebrar as regras de viúvas e órfãs?",
+      "zh": "为什么一栏在页脚上方空出一两行？怎样在不违反寡行孤行规则的前提下把它补满？",
+      "ja": "段が下端より 1〜2 行手前で終わるのはなぜ？ウィドウとオーファンの規則を守ったまま埋めるには？",
+      "ar": "لماذا ينتهي العمود قبل أسفل الصفحة بسطر أو سطرين، وكيف أملؤه دون خرق قواعد الأسطر اليتيمة والأرملة؟"
+    },
+    "index": {
+      "en": "Short columns, filling",
+      "es": "Columnas cortas, relleno",
+      "ca": "Columnes curtes, farciment",
+      "fr": "Colonnes courtes, remplissage",
+      "de": "Kurze Spalten, füllen",
+      "it": "Colonne corte, riempimento",
+      "pt": "Colunas curtas, preenchimento",
+      "zh": "短栏的补满",
+      "ja": "短い段を埋める",
+      "ar": "الأعمدة القصيرة، ملؤها"
+    },
+    "theme": "page"
+  },
+  "Q211": {
+    "kind": "how",
+    "text": {
+      "en": "How do I share one design between the editions of a book in several languages and change only each language's fonts, hyphenation, quotes and labels?",
+      "es": "¿Cómo comparto un diseño entre las ediciones de un libro en varios idiomas y cambio solo las fuentes, la división de palabras, las comillas y las etiquetas de cada idioma?",
+      "ca": "Com comparteixo un disseny entre les edicions d'un llibre en diverses llengües i canvio només les fonts, la partició de mots, les cometes i les etiquetes de cada llengua?",
+      "fr": "Comment partager une maquette entre les éditions d’un livre en plusieurs langues et ne changer que les polices, la césure, les guillemets et les libellés de chaque langue ?",
+      "de": "Wie teile ich eine Gestaltung zwischen den Ausgaben eines Buchs in mehreren Sprachen und ändere nur Schriften, Silbentrennung, Anführungszeichen und Beschriftungen jeder Sprache?",
+      "it": "Come condivido un progetto grafico tra le edizioni di un libro in più lingue e cambio solo caratteri, sillabazione, virgolette ed etichette di ciascuna lingua?",
+      "pt": "Como compartilho um projeto gráfico entre as edições de um livro em vários idiomas e mudo só as fontes, a hifenização, as aspas e os rótulos de cada idioma?",
+      "zh": "怎样让一本书的多语种版本共用一套设计，只改各语言的字体、断词、引号和标签？",
+      "ja": "多言語の版で1つのデザインを共有し、言語ごとの書体・ハイフネーション・引用符・ラベルだけを変えるには？",
+      "ar": "كيف أجعل طبعات كتاب بعدّة لغات تتشارك تصميمًا واحدًا وأغيّر فقط خطوط كل لغة وتقطيع كلماتها وعلامات اقتباسها وتسمياتها؟"
+    },
+    "index": {
+      "en": "Editions in several languages, shared design",
+      "es": "Ediciones en varios idiomas, diseño compartido",
+      "ca": "Edicions en diverses llengües, disseny compartit",
+      "fr": "Éditions en plusieurs langues, maquette partagée",
+      "de": "Ausgaben in mehreren Sprachen, gemeinsame Gestaltung",
+      "it": "Edizioni in più lingue, progetto condiviso",
+      "pt": "Edições em vários idiomas, projeto compartilhado",
+      "zh": "多语种版本的共用设计",
+      "ja": "多言語の版と共通デザイン",
+      "ar": "طبعات بعدّة لغات، تصميم مشترك"
+    },
+    "theme": "output"
+  },
+  "Q212": {
+    "kind": "how",
+    "text": {
+      "en": "How do I turn a book's exercises into a SCORM course that reports scores to a learning platform, with a test that allows one check?",
+      "es": "¿Cómo convierto los ejercicios de un libro en un curso SCORM que envía las notas a una plataforma de aprendizaje, con un examen que solo deja comprobar una vez?",
+      "ca": "Com converteixo els exercicis d'un llibre en un curs SCORM que envia les notes a una plataforma d'aprenentatge, amb un examen que només deixa comprovar un cop?",
+      "fr": "Comment faire des exercices d’un livre un cours SCORM qui envoie les notes à une plateforme pédagogique, avec un test qui ne permet qu’une vérification ?",
+      "de": "Wie mache ich aus den Übungen eines Buchs einen SCORM-Kurs, der die Punktzahlen an eine Lernplattform meldet, mit einem Test, der nur eine Prüfung erlaubt?",
+      "it": "Come trasformo gli esercizi di un libro in un corso SCORM che invia i punteggi a una piattaforma di apprendimento, con una verifica che consente un solo controllo?",
+      "pt": "Como transformo os exercícios de um livro num curso SCORM que envia as notas a um ambiente virtual de aprendizagem, com uma prova que só permite uma verificação?",
+      "zh": "怎样把书中的练习做成向学习平台上报分数的 SCORM 课程，并设一份只能检查一次的测验？",
+      "ja": "本の練習問題を、学習プラットフォームに得点を報告する SCORM 教材にし、答え合わせが1回だけのテストを設けるには？",
+      "ar": "كيف أحوّل تمارين كتاب إلى مقرّر SCORM يرسل الدرجات إلى منصة تعلّم، مع اختبار لا يسمح إلا بتحقّق واحد؟"
+    },
+    "index": {
+      "en": "SCORM course from exercises",
+      "es": "Curso SCORM a partir de ejercicios",
+      "ca": "Curs SCORM a partir d'exercicis",
+      "fr": "Cours SCORM à partir d’exercices",
+      "de": "SCORM-Kurs aus Übungen",
+      "it": "Corso SCORM dagli esercizi",
+      "pt": "Curso SCORM a partir de exercícios",
+      "zh": "由练习生成 SCORM 课程",
+      "ja": "練習問題から作る SCORM 教材",
+      "ar": "مقرّر SCORM من التمارين"
+    },
+    "theme": "output"
+  },
+  "Q213": {
+    "kind": "how",
+    "text": {
+      "en": "How do I highlight the key words of a study text in colours that each mean something (terms, dates, names)?",
+      "es": "¿Cómo resalto las palabras clave de un texto de estudio con colores que signifiquen algo cada uno (términos, fechas, nombres)?",
+      "ca": "Com ressalto les paraules clau d'un text d'estudi amb colors que vulguin dir alguna cosa cadascun (termes, dates, noms)?",
+      "fr": "Comment surligner les mots clés d’un texte d’étude avec des couleurs qui ont chacune un sens (termes, dates, noms) ?",
+      "de": "Wie hebe ich die Schlüsselwörter eines Lerntexts in Farben hervor, die jeweils etwas bedeuten (Begriffe, Daten, Namen)?",
+      "it": "Come evidenzio le parole chiave di un testo di studio con colori che abbiano ciascuno un significato (termini, date, nomi)?",
+      "pt": "Como destaco as palavras-chave de um texto de estudo com cores que signifiquem algo cada uma (termos, datas, nomes)?",
+      "zh": "怎样用各有含义的颜色（术语、日期、人名）给学习材料的关键词划重点？",
+      "ja": "学習用の文章のキーワードを、意味ごとに色を分けて（用語・年代・人名）ハイライトするには？",
+      "ar": "كيف أظلّل الكلمات المفتاحية في نص دراسي بألوان لكل منها معنى (المصطلحات والتواريخ والأسماء)؟"
+    },
+    "index": {
+      "en": "Highlights, colour-coded",
+      "es": "Resaltados por colores",
+      "ca": "Ressaltats per colors",
+      "fr": "Surlignages par couleur",
+      "de": "Hervorhebungen, farbcodiert",
+      "it": "Evidenziazioni a colori",
+      "pt": "Destaques por cor",
+      "zh": "按颜色分类的高亮",
+      "ja": "色分けしたハイライト",
+      "ar": "تظليل مرمَّز بالألوان"
+    },
+    "theme": "type"
   }
 }

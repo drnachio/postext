@@ -1,0 +1,64 @@
+---
+title: "La columna que la regla de viudas dejaba corta"
+summary: "Columnas en bandera que acaban en la rejilla: fillShortColumns alarga o acorta una línea un párrafo de la columna corta en vez de dejar un hueco al pie."
+description: "Un reportaje de revista a dos columnas en bandera, con y sin fillShortColumns, para comparar la columna que las viudas y huérfanas dejaban corta."
+plain: "Cuando una columna se queda una línea por encima del pie porque un párrafo no se puede partir ahí, este ajuste vuelve a cortar las líneas de un párrafo de esa columna para que llegue abajo."
+question: "¿Por qué una columna en bandera acaba una línea antes del pie, y cómo la lleno sin viudas ni huérfanas?"
+aliases: ["columna corta", "hueco al pie", "columnas en bandera", "justificación vertical", "regla de viudas", "fillShortColumns"]
+pageNotes: { "1": "La apertura sin el ajuste: una lente de Fresnel encendida pintada a lo ancho de la página, el título La lente que encendió la costa y dos columnas en bandera, la derecha una línea más corta que la izquierda.", "4": "La misma apertura con fillShortColumns: el párrafo de la columna derecha gana una línea y las dos columnas acaban en la misma línea base." }
+---
+
+## Lo que vas a componer
+
+Tres páginas de *Litoral*, una revista de costa: un reportaje largo sobre la lente de Fresnel que abre con la pintura de una lente encendida en su linterna. El texto va en dos columnas en bandera de Public Sans, con una línea de rejilla en blanco entre párrafos, y las reglas de viudas y huérfanas dejan al menos dos líneas de cada párrafo a cada lado de un corte. El pen compone el reportaje dos veces. Sin el ajuste, en <PageRef page={1}>la apertura</PageRef> la columna derecha se queda una línea por encima de la izquierda: el párrafo siguiente no puede empezar con una sola línea al pie. Con él, en <PageRef page={4}>la misma página</PageRef>, el párrafo de esa columna se corta en una línea más y las dos columnas acaban en la última línea de la rejilla. En la página siguiente, el ajuste también recoge el aire de más que el equilibrado ponía sobre un ladillo.
+
+## Elaboración
+
+### 1 · Dale a la columna en bandera una palanca propia
+
+<Excerpt region="answer" />
+
+El equilibrado de columnas rellena una columna corta con líneas de rejilla sobre un título, tras una lista, bajo un recuadro o una figura y, como último recurso, componiendo un párrafo justificado una línea más holgado. Una columna de texto corrido en bandera no tiene nada de eso entre sus ladillos, así que la línea que retienen las reglas de viudas y huérfanas se queda vacía. `fillShortColumns` deja que un párrafo en bandera de esa columna ocupe una línea más con su propio espaciado; cuando ninguno puede, compone uno con una línea menos para que el párrafo de después del corte suba y ocupe esa línea. El motor solo conserva el cambio si acaban cortas menos columnas, así que activarlo nunca empeora una página. Con `maxLinesBeforeLoose: 0` se prueban los párrafos antes que los títulos, y cada ladillo conserva una sola línea de aire encima.
+
+### 2 · Compón el reportaje dos veces y compara
+
+<Excerpt region="builds" />
+
+Los dos documentos salen de una misma configuración y un mismo Markdown. La segunda composición pasa la configuración tal cual; la primera, una copia con el ajuste apagado, de modo que el paquete que se abre en el Sandbox lleva `fillShortColumns: true`. Los dos botones sobre la mesa cambian de una composición a otra. Solo se llenan hasta el pie las páginas que siguen: la página 3 cierra el reportaje y sus columnas se cortan a la misma altura, igual en las dos composiciones.
+
+### 3 · Abre con la pintura
+
+<Excerpt region="opener" />
+
+La pintura es un elemento de imagen anclado al sangrado, de 150 mm de alto, así que llega al corte por tres lados, algo que ningún flotante hace. El antetítulo, el título, la entradilla y la firma salen de los atributos de la línea `#`. La firma termina en un relleno de 6 mm que cuenta en la altura de la apertura, así que las columnas empiezan en la primera línea de rejilla por debajo.
+
+### 4 · Cabeceras fuera de la apertura
+
+<Excerpt region="heads" />
+
+La página par nombra la revista y el número desde el frontmatter, la impar el reportaje, y `pages: 'body'` las saca de la apertura, que solo lleva un folio al pie. La etiqueta baja 0,35 mm respecto al folio para que los dos cuerpos compartan línea base. El filete que va debajo mide 197 mm, el ancho de la caja de texto.
+
+## Variantes
+
+### Deja que los ladillos tomen el hueco primero
+
+Con el orden por defecto, un título toma hasta dos líneas de rejilla antes de que un párrafo se alargue, y los ladillos de la página siguiente vuelven a abrirse.
+
+```diff
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Justifica el texto
+
+Un párrafo justificado ya podía ocupar una línea más sin el ajuste, dentro de `maxWordSpacing`. Con `fillShortColumns` también puede ocupar una línea menos, y nunca se compone más holgado que su línea más holgada.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
+```
+
+## Errores frecuentes
+
+- El ajuste cierra un hueco de una línea. Una columna a la que le faltan dos, por ejemplo una que acaba tras el blanco entre párrafos con sitio para una sola línea del siguiente, puede quedarse corta: ajusta el texto con una frase.
+- No se usa un párrafo cuya nueva composición acabaría en una línea corta, así que una columna puede quedarse corta cuando solo tiene párrafos breves.

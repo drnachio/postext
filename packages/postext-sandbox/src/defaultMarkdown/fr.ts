@@ -806,6 +806,10 @@ Les renvois méritent qu’on s’y arrête, car c’est avec eux que s’écrit
 
 Les ouvrages se citent comme les écrit Pandoc, \`[@garcia2020, p. 33]\` ou \`@garcia2020\` dans la phrase, avec les références dans l’en-tête YAML ou dans un bloc \`:::references\` en BibTeX. Le style de citation est un réglage, pas une propriété du texte : APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 ou un style à vous, choisi dans Maquette › Citations, où un aperçu montre le résultat. La bibliographie suit le dernier chapitre, ou se place là où \`:::bibliography\` est écrit. La citation d’un ouvrage absent des références s’imprime telle qu’elle est écrite et figure parmi les avertissements.
 
+## Les liens sur papier
+
+:index{term="liens"}Un lien vers le web s’écrit comme dans tout Markdown, \`[mots](https://…)\`, et reste un lien partout où le lecteur peut le suivre : ces aperçus, le HTML, le PDF et l’EPUB. Sur papier, seuls ses mots se verraient. \`links.print\` décide de ce que la page imprimée ajoute : rien, l’adresse entre parenthèses après les mots (\`'inline'\`), ou une note (\`'notes'\`) avec l’adresse, un code QR qu’un téléphone ouvre, ou les deux. Les notes de lien prennent la numérotation et le style des notes de bas de page. Ce livre imprime l’adresse abrégée et le code, comme le montre la note de ce lien vers le [dépôt de Postext](https://github.com/drnachio/postext).
+
 ## Les mathématiques dans la source
 
 Les mathématiques s’écrivent en notation LaTeX. Les formules en ligne se placent entre deux signes dollar simples, au milieu d’une phrase ; les formules hors texte, entre doubles signes dollar, sur une ligne à part ou en un bloc de plusieurs lignes. Un signe dollar qui doit s’imprimer comme tel s’échappe avec une barre oblique inverse. Une formule jamais fermée, ou que MathJax ne sait pas lire, est signalée dans le panneau Vérifications et remplacée sur la page par un repère rouge, si bien qu’elle ne peut pas passer inaperçue jusqu’au PDF.

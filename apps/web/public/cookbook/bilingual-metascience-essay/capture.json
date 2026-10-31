@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-metascience-essay",
-  "sourceHash": "d6992c5d7b76d8ba98c67dd64d55e7ba4ec87f5f917914cf333f323520d4244e",
+  "sourceHash": "5455c540985dcd4738698ebbfd7aa875e21ec3b08c29fad5b2e5fb1af1366289",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.355Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:54.490Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:59:53.360Z",
   "variants": {
     "en": {
-      "hash8": "e0330b49",
-      "vdtHash": "75a3cbe8f6641e34a567b4cc8ee51534dc4035aa",
+      "hash8": "807a2293",
+      "vdtHash": "e991aaf7c5240eaf4b65fc284520fe721c963d89",
       "timings": {
-        "importMs": 876,
-        "fontsMs": 2150,
-        "buildMs": 385,
-        "totalMs": 4154,
+        "importMs": 6510,
+        "fontsMs": 564,
+        "buildMs": 749,
+        "totalMs": 9113,
         "builds": 1
       },
       "specimen": {
@@ -45,7 +39,7 @@
           "Sofia Sans Semi Condensed"
         ],
         "pages": 7,
-        "ownLines": 222
+        "ownLines": 232
       },
       "pages": [
         {
@@ -56,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 135728,
+          "bytes": 139198,
           "alt": "Opening page 1: Why Most Published Research Findings Are False."
         },
         {
@@ -100,7 +94,7 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 235522,
+          "bytes": 236236,
           "alt": "Page 6: How Can We Improve the Situation?"
         },
         {
@@ -111,7 +105,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 162478,
+          "bytes": 158902,
           "alt": "Page 7: REFERENCES."
         }
       ],
@@ -147,18 +141,18 @@
       },
       "pdf": {
         "file": "bilingual-metascience-essay.pdf",
-        "bytes": 393181,
+        "bytes": 393424,
         "pages": 7
       },
       "sandbox": {
         "file": "bilingual-metascience-essay.postext",
-        "bytes": 221945,
+        "bytes": 222086,
         "folio": "a418809e",
         "chapters": [
           {
             "pages": 7,
-            "hash": "ce796db642790550",
-            "lines": "8f164d3c0c07d9b2"
+            "hash": "35b8121399f28473",
+            "lines": "32d6cc684d213bd4"
           }
         ]
       },
@@ -204,10 +198,13 @@
           "calloutStyles[].background",
           "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
           "calloutStyles[].body.firstLineIndent",
           "calloutStyles[].body.fontFamily",
           "calloutStyles[].body.fontSize",
           "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
           "calloutStyles[].border",
           "calloutStyles[].border.enabled",
           "calloutStyles[].columnGap",
@@ -317,6 +314,8 @@
           "headingStyles[].span",
           "headingStyles[].textTransform",
           "headings",
+          "headings.balancing",
+          "headings.balancing.fillShortColumns",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -401,7 +400,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 374,
+        "configLeaves": 396,
         "designElements": 12,
         "directives": [
           ":::callout",
@@ -470,7 +469,9 @@
           "callout-styles",
           "chips",
           "citation-styles",
+          "column-balancing",
           "figure-citations",
+          "fill-short-columns",
           "generated-bibliography",
           "heading-attributes",
           "heading-styles",
@@ -491,7 +492,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 7,
         "looseLines": {
           "count": 5,
           "share": 0.0156,
@@ -522,6 +523,16 @@
             "detail": "the hero is 24.7 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -530,13 +541,13 @@
       }
     },
     "es": {
-      "hash8": "e09ea6e0",
-      "vdtHash": "e98ec382113fd2f776867edf43342fecd5d46fe1",
+      "hash8": "4986b013",
+      "vdtHash": "1fbf6e9c9cec80a0c51872cbb2459c08352d6e86",
       "timings": {
-        "importMs": 875,
-        "fontsMs": 248,
-        "buildMs": 328,
-        "totalMs": 2272,
+        "importMs": 5343,
+        "fontsMs": 544,
+        "buildMs": 454,
+        "totalMs": 7247,
         "builds": 1
       },
       "specimen": {
@@ -558,7 +569,7 @@
           "Sofia Sans Semi Condensed"
         ],
         "pages": 7,
-        "ownLines": 222
+        "ownLines": 232
       },
       "pages": [
         {
@@ -569,7 +580,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 156686,
+          "bytes": 152832,
           "alt": "Página de apertura 1: Por qué la mayoría de los resultados de investigación publicados son falsos."
         },
         {
@@ -580,7 +591,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 185704,
+          "bytes": 186952,
           "alt": "Página 2: El sesgo. Tabla 1. Resultados de la investigación y relaciones verdaderas."
         },
         {
@@ -591,7 +602,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 118824,
+          "bytes": 110654,
           "alt": "Página 3: Corolarios. Tabla 2. Resultados de la investigación y relaciones verdaderas en presencia de sesgo · Figura 1. VPP (probabilidad de que un resultado de la investigación sea verdadero) en función de la razón de probabilidades previa al estudio para varios niveles de se…"
         },
         {
@@ -602,7 +613,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 241912,
+          "bytes": 240888,
           "alt": "Página 5: En la mayoría de los diseños y de los campos, la mayoría de los resultados son falsos."
         },
         {
@@ -613,7 +624,7 @@
           "h": 1333,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 206404,
+          "bytes": 205294,
           "alt": "Página 6: ¿Cómo podemos mejorar la situación? Tabla 4. VPP de los resultados de la investigación para varias combinaciones de potencia (￼), razón entre relaciones verdaderas y no verdaderas (￼) y sesgo (￼)."
         },
         {
@@ -624,7 +635,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 212060,
+          "bytes": 227352,
           "alt": "Página 7: INFORMACIÓN DEL ARTÍCULO."
         }
       ],
@@ -660,18 +671,18 @@
       },
       "pdf": {
         "file": "bilingual-metascience-essay.pdf",
-        "bytes": 423886,
+        "bytes": 424595,
         "pages": 7
       },
       "sandbox": {
         "file": "bilingual-metascience-essay.postext",
-        "bytes": 223912,
+        "bytes": 223099,
         "folio": "a418809e",
         "chapters": [
           {
             "pages": 7,
-            "hash": "7102d9794f7dd883",
-            "lines": "cbe2338f9df4446d"
+            "hash": "0797943ceec2a24c",
+            "lines": "6b94b6c4db2e4ad8"
           }
         ]
       },
@@ -717,10 +728,13 @@
           "calloutStyles[].background",
           "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
           "calloutStyles[].body.firstLineIndent",
           "calloutStyles[].body.fontFamily",
           "calloutStyles[].body.fontSize",
           "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
           "calloutStyles[].border",
           "calloutStyles[].border.enabled",
           "calloutStyles[].columnGap",
@@ -830,6 +844,8 @@
           "headingStyles[].span",
           "headingStyles[].textTransform",
           "headings",
+          "headings.balancing",
+          "headings.balancing.fillShortColumns",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -914,7 +930,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 374,
+        "configLeaves": 396,
         "designElements": 12,
         "directives": [
           ":::callout",
@@ -983,7 +999,9 @@
           "callout-styles",
           "chips",
           "citation-styles",
+          "column-balancing",
           "figure-citations",
+          "fill-short-columns",
           "generated-bibliography",
           "heading-attributes",
           "heading-styles",
@@ -1004,7 +1022,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 2,
         "looseLines": {
           "count": 2,
           "share": 0.0058,
@@ -1023,6 +1041,16 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 24.7 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

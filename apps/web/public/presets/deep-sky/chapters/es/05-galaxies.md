@@ -38,7 +38,7 @@ Debido a las propiedades de las nebulosas planetarias, se pueden utilizar como m
 Los futuros proyectos que utilicen este mapa explorarán cómo fluye el gas, cómo cambia su composición y cómo forma estrellas en toda esta galaxia. "*Cómo procesos tan pequeños pueden tener un impacto tan grande en una galaxia cuyo tamaño total es miles de veces más grande: esto sigue siendo un misterio*", concluye Congiu.
 
 :::paragraphs{style="fuente"}
-Nota de prensa eso2510 de ESO, 18 de Junio de 2025. Texto e imágenes bajo licencia CC BY 4.0. [https://www.eso.org/public/spain/news/eso2510/](https://www.eso.org/public/spain/news/eso2510/)
+[Nota de prensa eso2510](https://www.eso.org/public/spain/news/eso2510/) de ESO, 18 de Junio de 2025. Texto e imágenes bajo licencia CC BY 4.0.
 :::
 
 ## La Galaxia del Sombrero, revelada como nunca antes {lead="La Cámara de Energía Oscura revela los tenues detalles brillantes de Messier 104, también conocida como la Galaxia del Sombrero" source="NSF NOIRLab" date="24 Abril 2026" release="noirlab2612" standfirst="La Cámara de Energía Oscura revela los tenues detalles brillantes de Messier 104, también conocida como la Galaxia del Sombrero"}
@@ -76,5 +76,5 @@ Sin embargo, no fue hasta que el astrónomo francés Camille Flammarion confirm�
 Sus llamativas características visuales y la facilidad con que puede observarse con instrumentos al alcance de aficionados han contribuido a la popularidad de Messier 104. Quienes practican la astronomía aficionada disfrutan observando y fotografiando esta galaxia, lo que la convierte en un objetivo destacado para proyectos de ciencia ciudadana y actividades de divulgación. Además, es un excelente ejemplo para mostrar al público las maravillas del Universo y despertar su interés por la astronomía y la ciencia.
 
 :::paragraphs{style="fuente"}
-Nota de prensa noirlab2612 de NSF NOIRLab, 24 Abril 2026. Texto e imágenes bajo licencia CC BY 4.0. [https://noirlab.edu/public/es/news/noirlab2612/](https://noirlab.edu/public/es/news/noirlab2612/)
+[Nota de prensa noirlab2612](https://noirlab.edu/public/es/news/noirlab2612/) de NSF NOIRLab, 24 Abril 2026. Texto e imágenes bajo licencia CC BY 4.0.
 :::

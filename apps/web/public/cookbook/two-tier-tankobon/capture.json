@@ -3,27 +3,21 @@
   "slug": "two-tier-tankobon",
   "sourceHash": "f0658a84fde3951254ef84d28af6fa831a8c3a544edda1ba80eeb7a3536f158b",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:42:15.094Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:04.619Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:50:52.708Z",
   "variants": {
     "en": {
-      "hash8": "1daed551",
+      "hash8": "4dc81629",
       "vdtHash": "67258c9bf6f5c0c1ade6528c963766933df61385",
       "timings": {
-        "importMs": 271,
-        "fontsMs": 266,
-        "buildMs": 63,
-        "totalMs": 1196,
+        "importMs": 2448,
+        "fontsMs": 739,
+        "buildMs": 87,
+        "totalMs": 4516,
         "builds": 1
       },
       "specimen": {
@@ -159,7 +153,7 @@
       },
       "pdf": {
         "file": "two-tier-tankobon.pdf",
-        "bytes": 280008,
+        "bytes": 279899,
         "pages": 7
       },
       "sandbox": {
@@ -349,6 +343,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -357,13 +361,13 @@
       }
     },
     "es": {
-      "hash8": "48aa5217",
+      "hash8": "7eabe90b",
       "vdtHash": "126571f4ba3eb720413355fd7c18821414d7f297",
       "timings": {
-        "importMs": 284,
-        "fontsMs": 499,
-        "buildMs": 74,
-        "totalMs": 1493,
+        "importMs": 918,
+        "fontsMs": 417,
+        "buildMs": 76,
+        "totalMs": 2065,
         "builds": 1
       },
       "specimen": {
@@ -499,7 +503,7 @@
       },
       "pdf": {
         "file": "two-tier-tankobon.pdf",
-        "bytes": 280139,
+        "bytes": 280036,
         "pages": 7
       },
       "sandbox": {
@@ -688,6 +692,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

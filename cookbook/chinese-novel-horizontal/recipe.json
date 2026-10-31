@@ -37,7 +37,7 @@
   ],
   "explainsWarnings": ["cjkGridClamped"],
   "related": ["spanish-pocket-novel", "justification-lab", "trade-paperback-novel", "baseline-grid-book-page"],
-  "engine": { "postext": "1.57.0", "postextPdf": "1.57.0" },
+  "engine": { "postext": "1.65.0", "postextPdf": "1.65.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "expect": { "imageMb": 1.2 } },
@@ -88,5 +88,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-29",
-  "updated": "2026-10-22"
+  "updated": "2026-10-31"
 }

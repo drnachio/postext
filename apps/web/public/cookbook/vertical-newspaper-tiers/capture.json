@@ -3,27 +3,21 @@
   "slug": "vertical-newspaper-tiers",
   "sourceHash": "2e77c9d936667d2c68af62d545078ad02f49680de686a63283e73dbec82a3cde",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:43:09.546Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:04.642Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:50:24.273Z",
   "variants": {
     "en": {
-      "hash8": "176e7a01",
+      "hash8": "dfa69cb7",
       "vdtHash": "cf2f7dea811908e83d27c17d45b0424dd5be5cca",
       "timings": {
-        "importMs": 627,
-        "fontsMs": 601,
-        "buildMs": 53,
-        "totalMs": 1926,
+        "importMs": 1521,
+        "fontsMs": 796,
+        "buildMs": 61,
+        "totalMs": 3047,
         "builds": 1
       },
       "specimen": {
@@ -97,7 +91,7 @@
       },
       "pdf": {
         "file": "vertical-newspaper-tiers.pdf",
-        "bytes": 378595,
+        "bytes": 378427,
         "pages": 2
       },
       "sandbox": {
@@ -355,6 +349,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -363,13 +367,13 @@
       }
     },
     "es": {
-      "hash8": "421e00ba",
+      "hash8": "5e7b99ba",
       "vdtHash": "fc6d9ffa8989d4767d45e22f380aa76440036d76",
       "timings": {
-        "importMs": 623,
-        "fontsMs": 599,
-        "buildMs": 53,
-        "totalMs": 1929,
+        "importMs": 1342,
+        "fontsMs": 760,
+        "buildMs": 70,
+        "totalMs": 2922,
         "builds": 1
       },
       "specimen": {
@@ -443,7 +447,7 @@
       },
       "pdf": {
         "file": "vertical-newspaper-tiers.pdf",
-        "bytes": 378740,
+        "bytes": 378577,
         "pages": 2
       },
       "sandbox": {
@@ -700,6 +704,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

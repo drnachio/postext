@@ -38,7 +38,7 @@ Moreover, the E-PRTR is now integrated with wider reporting under the Industrial
 
 In order to account for the external costs of air pollution, an individual pollutant’s adverse impacts on human health and the environment are expressed in a common metric, a monetary value, which has been developed through cooperation between different scientific and economic disciplines.
 
-Damage cost estimates are just that — estimates. However, when considered alongside other sources of information, they can support decisions by drawing attention to the implicit trade-offs in decision‑making, such as the cost-benefit analyses used to inform impact assessments and subsequent legislation.
+Damage cost estimates are just that — estimates. However, when considered alongside other sources of information, they can support decisions by drawing attention to the implicit trade-offs in decision-making, such as the cost-benefit analyses used to inform impact assessments and subsequent legislation.
 
 The EEA estimated in 2014 that the aggregated cost of damage over the 5-year period 2008-2012 caused by emissions from E-PRTR industrial facilities was at least EUR 329 billion (2005 value) and rising. What is perhaps even more striking in this analysis is that about half of the damage costs occurred as a result of emissions from only 147, or 1 %, of the 14 000 facilities in the data set.
 
@@ -60,7 +60,8 @@ However, the emission-related directives often act independently and there is cl
 Plastics have brought many benefits to our daily lives but the problem is that these products never truly disappear. Therefore, we should perhaps think about plastics as a type of pollutant from the point of their production and prevent plastic products and waste from leaking into the environment.
 :::
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Industry](https://www.eea.europa.eu/themes/industry)
+- [SOER 2020, Chapter 12 on industrial pollution](https://www.eea.europa.eu/publications/soer-2020/chapter-12_soer2020-industrial-pollution/view)
 
-- Industry: www.eea.europa.eu/themes/ industry
-- SOER 2020, Chapter 12 on industrial pollution: www.eea.europa.eu/ publications/soer-2020/chapter-12_ soer2020-industrial-pollution/view
+:::

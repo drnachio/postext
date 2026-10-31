@@ -17,7 +17,7 @@ sfx{at="74% 30%" rotate=-8 size=2.6 font="Dela Gothic One" vertical break}: ド�
 sfx{at="64% 80%" rotate=-8 size=0.9}: SDENG!
 hana{shout}: MEN!!
 ::panel{art=coach}
-shinpan{tail=top}: Men! Punto!
+shinpan{tail=top at="85% 52%"}: Men! Punto!
 mori{thought}: …Mmh. Niente male.
 ::panel{art=stands}
 sora{shout}: Ce l’ha fatta!!

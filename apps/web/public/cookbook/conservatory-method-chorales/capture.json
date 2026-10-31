@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "conservatory-method-chorales",
-  "sourceHash": "972b23911ce4e830c92292a91982d6a8a93b08769d11a5d45fce1be6549262d8",
+  "sourceHash": "c7302e84e66a8ddffcd8e317316d0c1557900da80f1156f367edecd821b0fd79",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:34:49.159Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:57.839Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:38:21.163Z",
   "variants": {
     "en": {
-      "hash8": "892c2a86",
-      "vdtHash": "f23264c307f0f899d26194daae2edb91935b253e",
+      "hash8": "c09c178a",
+      "vdtHash": "029c149355b8aa8a3c949798f58b4be76b311eae",
       "timings": {
-        "importMs": 327,
-        "fontsMs": 579,
-        "buildMs": 46,
-        "totalMs": 4224,
+        "importMs": 2876,
+        "fontsMs": 1346,
+        "buildMs": 38,
+        "totalMs": 6339,
         "builds": 1
       },
       "specimen": {
@@ -77,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 68700,
+          "bytes": 72162,
           "alt": "Page 63: Exercises. Example 4.4. The Old Hundredth: an imperfect authentic cadence, a half cadence and two perfect ones · Example 4.5. The last line of the Old Hundredth, closing first on vi, then on I."
         }
       ],
@@ -105,13 +100,13 @@
       },
       "sandbox": {
         "file": "conservatory-method-chorales.postext",
-        "bytes": 25308,
+        "bytes": 26034,
         "folio": "f561b8ee",
         "chapters": [
           {
             "pages": 3,
-            "hash": "ca7833580a9bfffe",
-            "lines": "ce6804fcda9fb7ac"
+            "hash": "4008314812ad1686",
+            "lines": "6b74f1bdf13c21db"
           }
         ]
       },
@@ -376,10 +371,10 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 4,
         "looseLines": {
           "count": 1,
-          "share": 0.0095,
+          "share": 0.0093,
           "worst": 2.41
         },
         "raggedLines": {
@@ -402,9 +397,24 @@
             "detail": "the hero is 7.0 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageNumbering, headings"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
           },
           {
             "check": "sandbox",
@@ -415,13 +425,13 @@
       }
     },
     "es": {
-      "hash8": "f475c2ad",
+      "hash8": "fe122a7a",
       "vdtHash": "52f9a7e5c0fdcb451a6a17aef95ebd0d89b349a4",
       "timings": {
-        "importMs": 333,
-        "fontsMs": 644,
-        "buildMs": 43,
-        "totalMs": 4217,
+        "importMs": 4271,
+        "fontsMs": 1612,
+        "buildMs": 49,
+        "totalMs": 7722,
         "builds": 1
       },
       "specimen": {
@@ -505,7 +515,7 @@
       },
       "sandbox": {
         "file": "conservatory-method-chorales.postext",
-        "bytes": 27751,
+        "bytes": 27752,
         "folio": "f561b8ee",
         "chapters": [
           {
@@ -792,9 +802,19 @@
             "detail": "the hero is 7.6 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageNumbering, headings"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
           },
           {
             "check": "sandbox",

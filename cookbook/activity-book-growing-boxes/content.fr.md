@@ -78,12 +78,12 @@ Un pluviomètre mesure la quantité de pluie qui tombe à un endroit. Les statio
 :::
 
 :::frame{slot="pasos" label="Étape par étape"}
-1. Demande à un adulte de couper la bouteille à l’endroit où elle commence à se rétrécir. Garde le haut : ce sera l’entonnoir.
+1. Demande à un adulte de couper le haut de la bouteille. Garde-le : ce sera l’entonnoir.
 2. Mets les cailloux au fond. Ainsi, la bouteille ne se renversera pas avec le vent.
-3. Verse de l’eau jusqu’à recouvrir les cailloux et trace un trait au feutre à ce niveau. Ce trait est le zéro de ton pluviomètre.
-4. Colle la règle à l’extérieur avec du ruban adhésif, de sorte que le zéro de la règle tombe juste sur le trait que tu as tracé.
+3. Recouvre les cailloux d’eau et trace un trait à ce niveau : c’est ton zéro.
+4. Colle la règle à l’extérieur, son zéro juste sur le trait que tu as tracé.
 5. Retourne le haut de la bouteille et emboîte-le, goulot vers le bas. L’entonnoir recueille la pluie et ralentit l’évaporation.
-6. Cherche un endroit dégagé de la cour ou du jardin, loin des arbres et des toits, qui détournent la pluie.
+6. Place-le à découvert, loin des arbres et des toits, qui détournent la pluie.
 7. Chaque jour à la même heure, regarde de combien de millimètres l’eau est montée au-dessus du zéro et note-le dans ton relevé. Vide ensuite l’eau jusqu’au trait du zéro.
 
 ### Mon relevé de la semaine

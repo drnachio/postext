@@ -1,0 +1,133 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 177,
+  "status": "published",
+  "chapter": "page",
+  "order": 190,
+  "level": 2,
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "fill-short-columns"
+    ],
+    "also": [
+      "column-balancing",
+      "widows-orphans-runts",
+      "knuth-plass",
+      "opener-design",
+      "design-images",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "color-palette",
+      "paragraph-styles"
+    ]
+  },
+  "answers": [
+    "Q210",
+    "Q19",
+    "Q21"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.65.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 4,
+    "card": "page",
+    "doc": [
+      "first",
+      "last"
+    ],
+    "sandbox": "last",
+    "pages": [
+      1,
+      4,
+      5,
+      6
+    ]
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "A lit Fresnel lens in a lighthouse lantern at dusk",
+          "es": "Una lente de Fresnel encendida en la linterna de un faro al anochecer"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lens-1400.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Public Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Caslon Display",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Caslon Text",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-10-31",
+  "updated": "2026-10-31",
+  "related": [
+    "photos-fill-short-columns",
+    "annual-report-flush-columns",
+    "magazine-feature-opener",
+    "broadsheet-six-columns"
+  ],
+  "folio": {
+    "paper": {
+      "type": "coatedSilk",
+      "grammage": 115,
+      "showThrough": false
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#2c4a5e"
+    },
+    "surface": {
+      "type": "marble"
+    },
+    "lighting": {
+      "environment": "studio"
+    }
+  }
+}

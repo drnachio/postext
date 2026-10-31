@@ -78,12 +78,12 @@ A rain gauge measures how much rain falls in one place. Weather stations use ver
 :::
 
 :::frame{slot="pasos" label="Step by step"}
-1. Ask an adult to cut the bottle where it starts to get narrower. Keep the top part: it will be your funnel.
+1. Ask an adult to cut the top off the bottle. Keep the top: it will be your funnel.
 2. Put the stones in the bottom. They stop the bottle blowing over in the wind.
-3. Pour in water until the stones are covered and mark that level with the marker. That line is the zero of your rain gauge.
-4. Tape the ruler to the outside of the bottle, so that the zero on the ruler sits exactly on the line you marked.
+3. Cover the stones with water and mark that level: it is the zero of your rain gauge.
+4. Tape the ruler to the outside of the bottle with its zero on the line you marked.
 5. Turn the top part upside down and push it into the bottle, neck first. The funnel collects the rain and slows down evaporation.
-6. Find an open spot in the playground or the garden, away from trees and roofs, which keep the rain off.
+6. Put it in an open spot, away from trees and roofs, which keep the rain off.
 7. Every day at the same time, read how many millimetres the water has risen above the zero and write it in your record. Then pour the water out down to the zero line.
 
 ### My record for the week

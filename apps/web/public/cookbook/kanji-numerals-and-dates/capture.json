@@ -3,27 +3,21 @@
   "slug": "kanji-numerals-and-dates",
   "sourceHash": "6f51eeb5e1c9ce79abe6480d6cb7ebbf028ccaf010180909a1f5a56ba88eceac",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:37:57.714Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.753Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:36:27.010Z",
   "variants": {
     "en": {
-      "hash8": "6503ebeb",
+      "hash8": "c208be57",
       "vdtHash": "53061b2de6c10bcd2205f7be9f3e4975e589b28c",
       "timings": {
-        "importMs": 276,
-        "fontsMs": 503,
-        "buildMs": 84,
-        "totalMs": 1467,
+        "importMs": 3980,
+        "fontsMs": 2458,
+        "buildMs": 123,
+        "totalMs": 8328,
         "builds": 1
       },
       "specimen": {
@@ -122,7 +116,7 @@
       },
       "pdf": {
         "file": "kanji-numerals-and-dates.pdf",
-        "bytes": 172977,
+        "bytes": 172969,
         "pages": 4
       },
       "sandbox": {
@@ -413,6 +407,16 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 3 −5‰ “Set in Noto Serif JP, Noto Sans JP and Zen Maru …”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -421,13 +425,13 @@
       }
     },
     "es": {
-      "hash8": "88651742",
+      "hash8": "55211519",
       "vdtHash": "7961f07ca2dea68669b6bbb183fba9facfeeebe0",
       "timings": {
-        "importMs": 244,
-        "fontsMs": 354,
-        "buildMs": 80,
-        "totalMs": 1435,
+        "importMs": 2001,
+        "fontsMs": 1672,
+        "buildMs": 150,
+        "totalMs": 4550,
         "builds": 1
       },
       "specimen": {
@@ -526,7 +530,7 @@
       },
       "pdf": {
         "file": "kanji-numerals-and-dates.pdf",
-        "bytes": 173097,
+        "bytes": 173082,
         "pages": 4
       },
       "sandbox": {
@@ -806,6 +810,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

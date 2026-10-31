@@ -3,18 +3,12 @@
   "slug": "splash-inset-broken-border",
   "sourceHash": "b43e47287a84c0c34d711c6ac1bb4c9b0dbb207fe84d41c810cfb5cbfc046900",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:41:23.132Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:03.868Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:41:41.754Z",
   "variants": {
     "en": {
       "hash8": "f2fe74ad",
@@ -245,6 +239,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -483,6 +487,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
@@ -720,6 +734,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
@@ -728,13 +752,13 @@
       }
     },
     "zh": {
-      "hash8": "89c83b87",
+      "hash8": "9d5406a5",
       "vdtHash": "69a714d811223c07ee4617800fe1b6c4129a8924",
       "timings": {
-        "importMs": 216,
-        "fontsMs": 418,
-        "buildMs": 129,
-        "totalMs": 1502,
+        "importMs": 1533,
+        "fontsMs": 732,
+        "buildMs": 156,
+        "totalMs": 3075,
         "builds": 1
       },
       "specimen": {
@@ -804,7 +828,7 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 791048,
+        "bytes": 791025,
         "pages": 2
       },
       "sandbox": {
@@ -957,6 +981,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, en, es, ca, ar, ja, pt, fr, de, it"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -1199,6 +1233,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
@@ -1207,13 +1251,13 @@
       }
     },
     "ja": {
-      "hash8": "1e234c2c",
+      "hash8": "a0de10a1",
       "vdtHash": "a6e280cef897624f349f209d33e1f87e3bbbca57",
       "timings": {
-        "importMs": 477,
-        "fontsMs": 485,
-        "buildMs": 99,
-        "totalMs": 1737,
+        "importMs": 8388,
+        "fontsMs": 2674,
+        "buildMs": 135,
+        "totalMs": 12137,
         "builds": 1
       },
       "specimen": {
@@ -1284,7 +1328,7 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 783665,
+        "bytes": 783642,
         "pages": 2
       },
       "sandbox": {
@@ -1438,6 +1482,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, en, es, ca, zh, ar, pt, fr, de, it"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -1676,6 +1730,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
@@ -1912,6 +1976,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, ca, zh, ar, ja, pt, de, it"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -2150,6 +2224,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
@@ -2386,6 +2470,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, ca, zh, ar, ja, pt, fr, de"
+          },
           {
             "check": "sandbox",
             "severity": "info",

@@ -70,6 +70,23 @@ def _span_text(spans) -> str:
     return text.strip()
 
 
+def _panel_intro(lines: list[dict]) -> list[str]:
+    """The introduction of an infographic page: the run of small lines at the
+    top, from its first full-width line to the last line of the paragraph
+    (which is short, so it is kept by position, not by width)."""
+    small = sorted((ln for ln in lines if _role(ln) == "small" and ln["y"] < 130), key=lambda ln: ln["y"])
+    out: list[dict] = []
+    for ln in small:
+        if not out:
+            if ln["w"] > 250 and ln["y"] < 110:
+                out.append(ln)
+        elif ln["y"] - out[-1]["y"] <= 16:
+            out.append(ln)
+        else:
+            break
+    return [ln["text"] for ln in out]
+
+
 def _join(lines: list[str]) -> str:
     text = ""
     for ln in lines:
@@ -82,6 +99,8 @@ def _join(lines: list[str]) -> str:
         else:
             text = text + " " + ln
     text = re.sub(r"\s+([,.;:!?])", r"\1", text)
+    # U+2011 is not in the bundled faces: print a plain hyphen
+    text = text.replace("\u2011", "-")
     # the Spanish PDF sets "Ruido::" — and `::` would open a directive
     text = re.sub(r"(?<=\w)::(?=\s)", ":", text)
     text = re.sub(r":(?=(?:www\.|https?://))", ": ", text)
@@ -103,8 +122,12 @@ def _lines(page) -> list[dict]:
             if not text:
                 continue
             x0, y0, x1, y1 = l["bbox"]
+            whole = "".join(s["text"] for s in l["spans"])
             raw = re.sub(r"\s+", " ", "".join(s["text"] for s in spans)).strip()
-            out.append({"font": s0["font"], "size": round(s0["size"]), "x": x0, "y": y0, "w": x1 - x0, "text": text, "raw": raw})
+            # a line set before a word space ends in one; a URL broken over
+            # lines does not (the reference list joins its lines by this)
+            trail = whole[-1:].isspace() if whole else False
+            out.append({"font": s0["font"], "size": round(s0["size"]), "x": x0, "y": y0, "w": x1 - x0, "text": text, "raw": raw, "trail": trail})
     return out
 
 
@@ -173,7 +196,7 @@ def extract(pdf_path: str, first_page: int, last_page: int, references_from: int
         lines = [ln for ln in _lines(page) if not _page_number_line(ln)]
         if _is_infographic(page, lines):
             title = next((ln["text"] for ln in lines if _role(ln) == "subhead" and ln["y"] < 60), "")
-            intro_lines = [ln["text"] for ln in lines if _role(ln) == "small" and ln["y"] < 110 and ln["w"] > 250]
+            intro_lines = _panel_intro(lines)
             if current is not None and title:
                 current.infographics.append((current_page, title, _join(intro_lines)))
             continue
@@ -338,17 +361,26 @@ def extract(pdf_path: str, first_page: int, last_page: int, references_from: int
         if not any(ln["text"].startswith("http") or re.match(r"^\d+\s+http", ln["text"]) for ln in lines):
             continue
         ordered = sorted(lines, key=lambda ln: (0 if ln["x"] < COLUMN_SPLIT else 1, ln["y"]))
-        num, url = None, ""
+        num, url, trail = None, "", False
         for ln in ordered:
-            m = re.match(r"^(\d+)\s*((?:https?://|www\.)\S.*)$", ln["raw"])
+            # an entry opens with its number at the margin: an address, or
+            # a citation in words (41 "US National Toxicology Program")
+            m = re.match(r"^(\d+)\s*((?:https?://|www\.)\S.*)$", ln["raw"]) or (
+                re.match(r"^(\d+)(?:\s+(\S.*))?$", ln["raw"]) if ln["x"] < 50 or COLUMN_SPLIT < ln["x"] < 252 else None)
             if m:
                 if num is not None:
                     references.append((num, url))
-                num, url = m.group(1), m.group(2)
+                num, url = m.group(1), m.group(2) or ""
             elif num is not None and ln["x"] > 50:
-                url += ln["raw"]
+                url += (" " if trail else "") + ln["raw"]
+            else:
+                continue
+            trail = ln["trail"]
         if num is not None:
             references.append((num, url))
+    # an address glued to the word before it ("lives:https://…")
+    # and an address broken after a hyphen with a word space kept
+    references = [(n, re.sub(r"(https?://\S*[-/_])\s+(?=\S)", r"\1", re.sub(r"(?<=\S)(?=https?://)", " ", u))) for n, u in references]
     return Extraction(articles, references)
 
 

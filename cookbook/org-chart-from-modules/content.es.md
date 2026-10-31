@@ -9,7 +9,8 @@ Valdeloma tiene 8.400 vecinos y un ayuntamiento con cuatro áreas de gobierno. C
 
 :::frame{slot="alcaldia"}
 **Alcaldía y Pleno municipal** \\
-Plaza Mayor, 1 · 13 concejales elegidos cada cuatro años
+Plaza Mayor, 1 \\
+13 concejales elegidos cada cuatro años
 :::
 
 :::module{template="area"}
@@ -27,7 +28,7 @@ Lenguaje musical e instrumento desde los seis años
 :::
 :::frame{slot="servicio"}
 **Casa de Cultura** \\
-Exposiciones, talleres y salón de actos
+Exposiciones, talleres y actos
 :::
 :::
 
@@ -42,7 +43,7 @@ Cursos de natación y baño libre
 :::
 :::frame{slot="servicio"}
 **Polideportivo** \\
-Pistas, gimnasio y alquiler por horas
+Pistas y gimnasio por horas
 :::
 :::frame{slot="servicio"}
 **Escuelas deportivas** \\
@@ -57,11 +58,11 @@ Calle del Pozo, 8
 :::
 :::frame{slot="servicio"}
 **Centro de día** \\
-Comedor, talleres y transporte adaptado
+Comedor, talleres y transporte
 :::
 :::frame{slot="servicio"}
 **Ayuda a domicilio** \\
-Aseo, compras y compañía en casa
+Aseo, compras y compañía
 :::
 :::
 
@@ -72,7 +73,7 @@ Plaza Mayor, 1, segunda planta
 :::
 :::frame{slot="servicio"}
 **Mercado de los sábados** \\
-Cuarenta puestos en los soportales
+Cuarenta puestos en la plaza
 :::
 :::frame{slot="servicio"}
 **Punto limpio** \\
@@ -80,7 +81,7 @@ Muebles, aparatos y aceite usado
 :::
 :::frame{slot="servicio"}
 **Parques y jardines** \\
-Riego, poda y avisos de incidencias
+Riego, poda y averías
 :::
 :::
 ::::
@@ -143,7 +144,7 @@ De lunes a sábado, de 8 a 22 h
 :::frame{slot="pie"}
 **Polideportivo** \\
 Avenida del Río, s/n \\
-Reserva de pistas en la oficina de atención
+Reserva de pistas en la oficina
 :::
 :::
 
@@ -165,6 +166,6 @@ Planta baja del ayuntamiento, Plaza Mayor, 1. De lunes a viernes, de 8:30 a 14:3
 :::
 
 :::frame{slot="colofon"}
-Valdeloma es un municipio inventado para esta guía. Texto: CC BY 4.0. Ilustraciones generadas con modelos de difusión. Tipos: Public Sans y Source Serif 4 (SIL OFL).
+Valdeloma es un municipio inventado. Texto: CC BY 4.0. Ilustraciones generadas con modelos de difusión. Tipos: Public Sans y Source Serif 4 (SIL OFL).
 :::
 ::::

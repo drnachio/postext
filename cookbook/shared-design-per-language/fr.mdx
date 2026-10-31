@@ -1,0 +1,57 @@
+---
+title: "Une maquette pour trois éditions en trois langues"
+summary: "Un livret en anglais, en espagnol et en arabe tiré de réglages généraux, avec une surcharge pour ce qui revient à chaque langue : polices, corps, interlettrage."
+plain: "Un livret sur trois astrolabes anciens, imprimé en anglais, en espagnol et en arabe. Les trois partagent une maquette ; seule l’édition arabe change ses polices et ses corps."
+description: "Réglages généraux et surcharges par langue dans Postext : un livret anglais, espagnol et arabe qui partage une maquette et change là où la langue l’exige."
+question: "Comment partager une maquette entre éditions d’un livre en ne changeant que polices et libellés par langue ?"
+aliases: ["réglages généraux", "surcharges par langue", "mergeConfigLayers", "configuration partagée", "édition multilingue", "édition arabe", "astrolabe"]
+pageNotes: {"1": "La couverture de l’édition anglaise : la photographie d’un astrolabe en laiton de 1291 incrusté d’argent occupe la page ; sur le haut sombre de la photo, un surtitre blanc espacé, un filet court et le titre Three Astrolabes sur deux lignes blanches ; en pied, Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Verso 2 : titre courant avec le folio en laiton et le titre du livre ; les sections A map of the sky you can turn et The sultan’s instrument, en texte justifié aux intertitres couleur laiton.", "3": "Recto 3 : un encadré avec un filet laiton à gauche ; la section A garden of stars avec la photo d’un astrolabe persan à droite de la colonne et le texte à côté ; en pied, l’intertitre de la dernière section.", "4": "Verso 4 : la dernière section avec la photo de l’astrolabe européen de 1462 à droite et le texte, paragraphe de clôture compris, à côté ; un tableau des trois instruments à l’en-tête sombre ; le colophon."}
+---
+
+## Ce que vous allez composer
+
+Un livret de quatre pages A5 sur trois astrolabes du Metropolitan Museum of Art : l’un fait au Yémen en 1291, l’autre en Iran en 1654, le dernier en Europe en 1462. L’éditeur le publie en anglais, en espagnol et en arabe, et les trois éditions sont une seule maquette. La photo de couverture, les intertitres couleur laiton, l’encadré et son filet, les figures habillées par le texte et l’en-tête sombre du tableau viennent des mêmes réglages. L’édition arabe change ce qui tient à son écriture : Amiri et IBM Plex Sans Arabic au lieu de Source Serif et Source Sans, un corps plus grand et des libellés sans capitales ni interlettrage. Elle se lit depuis la droite et se relie à droite sans une seule coordonnée à elle.
+
+## Préparation
+
+### 1 · Des réglages généraux et trois petites surcharges
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. `config` contient les réglages généraux ; `mergeConfigLayers` pose par-dessus la surcharge d’une édition, champ par champ. L’anglais et l’espagnol n’ont pas de surcharge : leur `locale` choisit les motifs de césure et les mots *Figure* et *Table*, *Figura* et *Tabla*. La surcharge arabe ne nomme que des champs : `bodyText.fontFamily` change la police et garde la couleur, l’alignement et la césure, et l’élément `kicker` de la couverture change sa police et son interlettrage et garde son ancre, sa couleur et sa taille. Un changement de palette ou de marges dans `config` atteint les trois éditions.
+
+### 2 · Des côtés nommés selon le sens du texte
+
+<Excerpt region="heads" />
+
+Le bord extérieur d’une page paire est le début de ses lignes dans les deux sens, celui d’une page impaire leur fin ; `top-start` et `top-end` mettent donc les folios à l’extérieur sur un verso anglais comme sur un verso arabe. Le filet de l’encadré est `side: 'start'` et le texte de couverture s’ancre à `top-start` : aucun n’a besoin de surcharge.
+
+### 3 · Des figures en fin de ligne, habillées par le texte
+
+<Excerpt region="pictures" />
+
+`wrap: 'end'` place chaque photographie à droite d’une colonne anglaise et à gauche d’une colonne arabe, et le texte court à côté. Légendes et textes alternatifs sont dans la langue de chaque édition ; les légendes arabes donnent d’abord la date de l’hégire.
+
+### 4 · Le tableau avec les mots et les chiffres de chaque édition
+
+<Excerpt region="table" />
+
+Les données du tableau sont du contenu et changent avec l’édition : chiffres arabes orientaux et séparateur décimal arabe dans l’édition arabe, virgule décimale dans l’espagnole. Son style est général : la surcharge ne fixe que la police et le corps arabes.
+
+## Variantes
+
+### Écrire les surcharges dans un paquet
+
+<RecipeLink slug="bundle-round-trip">L’aller-retour .postext</RecipeLink> écrit un livre en deux langues dans un fichier. Depuis postext 1.58, `createBundle` enregistre une fois les réglages généraux et, à côté des chapitres de chaque langue, sa surcharge, telle que `mergeConfigLayers` la lit ici. Le livre de cette recette s’ouvre ainsi dans le Sandbox : passez le panneau de mise en page de *Toutes les langues* à l’édition arabe pour voir les champs que fixe l’édition arabe.
+
+### Imprimer l’édition arabe pour le Maghreb
+
+`ar-MA` garde le sens et la reliure et écrit en chiffres européens les nombres générés, folios et numéros de figure. Retapez aussi les chiffres du tableau.
+
+```diff
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
+```
+
+## Erreurs fréquentes
+
+- Les lettres arabes se lient : un libellé interlettré dans les réglages généraux doit perdre son `letterSpacing` dans la surcharge arabe, sinon le moteur émet un avertissement `joiningScriptLetterSpacing`. `textTransform: 'none'` l’accompagne : l’arabe n’a pas de capitales.
+- Les lignes d’une édition arabe sont plus hautes et ses pages se coupent ailleurs. Chaque édition a été ajustée à part : l’encadré arabe flotte en pied de page (`placement="bottom"`) et ses phrases de clôture courent à côté de la dernière photographie.

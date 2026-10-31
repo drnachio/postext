@@ -3,18 +3,12 @@
   "slug": "one-page-six-languages",
   "sourceHash": "74183f0d0d1ff5320a2e77886b69410ff49e2fe7b835b5b45d311a3ad08318b3",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:33.879Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:02.505Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:49:19.393Z",
   "variants": {
     "en": {
       "hash8": "85c512e3",
@@ -252,6 +246,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ja, zh, ar"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -497,6 +501,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ja, zh, ar"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ja, zh, ar"
@@ -505,13 +519,13 @@
       }
     },
     "zh": {
-      "hash8": "d89e6447",
+      "hash8": "7cf75558",
       "vdtHash": "965e9d9f675437e307a4f6b60577836d19cc3680",
       "timings": {
-        "importMs": 323,
-        "fontsMs": 313,
-        "buildMs": 156,
-        "totalMs": 1604,
+        "importMs": 5459,
+        "fontsMs": 3721,
+        "buildMs": 276,
+        "totalMs": 10706,
         "builds": 2
       },
       "specimen": {
@@ -582,7 +596,7 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 809201,
+        "bytes": 809218,
         "pages": 1
       },
       "sandbox": {
@@ -747,6 +761,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, en, es, ja, ar"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -1002,6 +1026,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, en, es, ja, zh"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar, en, es, ja, zh"
@@ -1010,13 +1044,13 @@
       }
     },
     "ja": {
-      "hash8": "e03dca63",
+      "hash8": "9e70b5f9",
       "vdtHash": "6b576972cb22932447af736fc3e9eeeb34cf423d",
       "timings": {
-        "importMs": 298,
-        "fontsMs": 413,
-        "buildMs": 131,
-        "totalMs": 1618,
+        "importMs": 4641,
+        "fontsMs": 3798,
+        "buildMs": 210,
+        "totalMs": 10139,
         "builds": 2
       },
       "specimen": {
@@ -1088,7 +1122,7 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 819713,
+        "bytes": 819706,
         "pages": 1
       },
       "sandbox": {
@@ -1254,6 +1288,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, en, es, zh, ar"
+          },
           {
             "check": "sandbox",
             "severity": "info",

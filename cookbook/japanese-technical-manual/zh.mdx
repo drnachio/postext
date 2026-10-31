@@ -40,6 +40,8 @@ pageNotes: { "1": "第41页，章首页：页面上部三分之一是一条浅�
 
 脚注只需设定字号：在日文横排文档里，默认值就是JLReq为横排书描述的做法，注文排在引用它的那一栏底部，每页从1编号，序号为上标，注线长为行长的三分之一（[脚注](/zh/docs/configuration-notes-references#脚注)）。序号放在句号之前，`保存していた[^hfs]。`，这样。永远不会和序号分开、跑到下一行行首。
 
+注2引用定义四种形式的Unicode报告，引文是一个链接：`[Unicode Standard Annex #15「…」](https://www.unicode.org/reports/tr15/)`。脚注不能再带自己的脚注，所以脚注里的链接会在文字后面用括号印出地址；`links.urlDisplay: 'short'`去掉`https://`和`www.`，PDF里仍保留完整链接。`links.print: 'inline'`对正文里的链接也这样处理（[印刷版中的链接](/zh/docs/configuration-notes-references#印刷版中的链接)）。这条注以日文开头，长长的拉丁文标题之前，第一行就能排满。
+
 ### 5 · 占三行位置的节标题
 
 <Excerpt region="opener" />
@@ -70,5 +72,5 @@ pageNotes: { "1": "第41页，章首页：页面上部三分之一是一条浅�
 
 - 拉丁单词在日文行里不能断开，所以行尾一个长单词被挤到下一行时，前一行只能在字与字之间拉开。这一章的初稿给术语附了英文，正準等価（canonical equivalence），结果有两行排得很松；不能帮助读者的英文术语后来都删掉了。
 - 按代码里的字符选代码字体。这里最先试用的M PLUS 1 Code没有半角片假名：屏幕上ｶﾞｲﾄﾞ回退到了系统字体，PDF里则缺了这些字形。
-- 代码清单跨页时在行与行之间拆分，每侧至少两行（`codeStyle.splitMinLines`）。第43页3.3节下面剩下的空间只放得下标题和一行，放不下两行，所以整个清单从第44页开始；`keepTogether: true`让每个清单都不拆分。
+- 代码清单跨页时在行与行之间拆分，每侧至少两行（`codeStyle.splitMinLines`）。第43页3.3节下面剩下的空间放不下标题加两行，所以整个清单从第44页开始；`keepTogether: true`让每个清单都不拆分。
 - 字符网格上的页面不管段落或列表在换页处怎样断开，都排满29行，所以四种规范化形式的列表会把第一项NFC单独留在第42页的页脚。`shortListSplit: 'avoid'`加上`shortListMaxItems: 4`把整个列表移到第43页，第42页在脚注上方少排一行。

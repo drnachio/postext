@@ -807,6 +807,10 @@ Les referències mereixen una mirada més atenta, perquè amb elles s'escriu la 
 
 Les obres es citen com ho fa Pandoc: entre claudàtors, \`[@garcia2020, pág. 33]\`, o dins de la frase, \`@garcia2020\`, amb les referències al front matter o en un bloc \`:::references\` de BibTeX. L'estil de cita és un ajust, no una propietat del text: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 o un estil propi, que es tria a Disseny › Cites, on una previsualització mostra el resultat. La bibliografia va després de l'últim capítol, o allà on s'escrigui \`:::bibliography\`.
 
+## Enllaços en paper
+
+:index{term="enllaços"}Un enllaç al web s'escriu com en qualsevol Markdown, \`[paraules](https://…)\`, i continua sent un enllaç allà on el lector el pot seguir: aquestes previsualitzacions, l'HTML, el PDF i l'EPUB. En paper només se'n veurien les paraules. \`links.print\` decideix què afegeix la pàgina impresa: res, l'adreça entre parèntesis després de les paraules (\`'inline'\`) o una nota (\`'notes'\`) amb l'adreça, un codi QR que obre el mòbil, o totes dues coses. Les notes d'enllaç prenen la numeració i l'estil de les notes a peu de pàgina. Aquest llibre imprimeix l'adreça abreujada i el codi, com mostra la nota d'aquest enllaç al [repositori de Postext](https://github.com/drnachio/postext).
+
 ## Matemàtiques a l'original
 
 Les matemàtiques s'escriuen en notació LaTeX. Les fórmules en línia van entre signes de dòlar senzills, enmig d'una frase; les fórmules destacades van entre dobles signes de dòlar, en una línia pròpia o com un bloc de diverses línies. Un signe de dòlar que s'hagi d'imprimir com a tal s'escapa amb una barra inversa. Una fórmula que no es tanca mai, o que MathJax no pot llegir, s'assenyala al tauler Revisió i se substitueix a la pàgina per un marcador vermell, perquè no es pugui colar al PDF sense que ningú se n'adoni.

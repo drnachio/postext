@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 162 · An org chart and a photo grid built from modules ═══
 // https://postext.dev/en/cookbook/org-chart-from-modules
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Public Sans, Source Serif 4 (SIL OFL 1.1) · Needs postext ≥ 1.48.1
+// Fonts: Public Sans, Source Serif 4 (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

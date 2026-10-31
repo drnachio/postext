@@ -5,7 +5,7 @@ plain: "把一篇著名的机器学习论文从开放获取的源文件重新排
 description: "DPO论文（NeurIPS 2023，CC BY 4.0）节选重排：用\\label和\\eqref给公式编号并引用，按amsthm的方式排定理和证明，参考文献采用Harvard格式。"
 question: "怎样在论文中给公式编号、陈述定理、排证明，并按编号引用它们？"
 aliases: ["定理", "引理", "定义", "证明", "证毕", "证明结束符", "amsthm", "公式编号", "eqref", "label", "交叉引用", "机器学习论文", "NeurIPS", "arXiv", "预印本", "DPO", "natbib", "作者-年份", "Harvard", "theorem", "proof"]
-pageNotes: { "1": "页面顶部是一条梅紫色色带，上面有一束浅色的逻辑斯谛曲线、眉题Preprint · Machine learning · Re-set and abridged、白色标题Direct Preference Optimization: Your Language Model is Secretly a Reward Model和会议信息行；下方白底上是六位作者及其单位，接着是梅紫色横线下的摘要，页脚是来源和许可声明。", "3": "图1位于页面顶部：左边用赭色画出RLHF流程，偏好数据拟合出奖励模型，再与语言模型策略之间循环采样和强化学习；右边用梅紫色画出DPO流程，偏好数据通过最大似然直接得到最终模型。下方接着第3节和公式1。", "6": "第5节：定义1和引理1、2旁边各有灰色和梅紫色的侧边条，定理1衬浅梅紫色底，然后是证明概要和公式8。", "9": "附录A.1的后半：一个四行对齐的公式，只在最后一行标号10，接着是公式11至13，然后进入附录A.5，重新陈述引理1并开始证明。" }
+pageNotes: { "1": "页面顶部是一条梅紫色色带，上面有一束浅色的逻辑斯谛曲线、眉题Preprint · Machine learning · Re-set and abridged、白色标题Direct Preference Optimization: Your Language Model is Secretly a Reward Model和会议信息行；下方白底上是六位作者及其单位，接着是梅紫色横线下的摘要，页脚是来源和许可声明。", "3": "图1位于页面顶部：左边用赭色画出RLHF流程，偏好数据拟合出奖励模型，再与语言模型策略之间循环采样和强化学习；右边用梅紫色画出DPO流程，偏好数据通过最大似然直接得到最终模型。下方接着第3节和公式1。", "6": "第5节：定义1和引理1、2旁边各有灰色和梅紫色的侧边条，定理1衬浅梅紫色底，然后是证明概要和公式8。", "9": "附录A另起一页：A.1的推导和公式9，只在最后一行标号10的四行对齐公式，配分函数，以及公式11至13。" }
 ---
 
 ## 成品一览
@@ -28,7 +28,7 @@ Rafailov、Sharma、Mitchell、Ermon、Manning和Finn的论文*Direct Preference
 
 <Excerpt region="citations" />
 
-参考文献是`:::references{format=bibtex}`块里的BibTeX，根据论文的`.bbl`重建，只保留节选正文仍在引用的二十种文献。Cite Them Right Harvard在正文中排成“(Bong and Rinaldo, 2022)”，在文献表中排成“Ouyang, L. *et al.* (2022)”，四位及以上作者只列第一位。正文里写`@ziegler2020finetuning`得到叙述式引用Ziegler *et al.* (2020)。文献表放在`:::bibliography`所在的位置，即第7节之后、附录之前，与原论文相同。
+参考文献是`:::references{format=bibtex}`块里的BibTeX，根据论文的`.bbl`重建，只保留节选正文仍在引用的二十种文献。Cite Them Right Harvard在正文中排成“(Bong and Rinaldo, 2022)”，在文献表中排成“Ouyang, L. *et al.* (2022)”，四位及以上作者只列第一位。正文里写`@ziegler2020finetuning`得到叙述式引用Ziegler *et al.* (2020)。文献表放在`:::bibliography`所在的位置，即第7节之后、附录之前，与原论文相同。它前面的`:::pagebreak`让附录像会议论文那样另起一页；否则A.1那个四行的公式放不下，文献表最后一页的页脚会空出五行。
 
 ### 4 · 标题放在色带上，来源放在页脚
 

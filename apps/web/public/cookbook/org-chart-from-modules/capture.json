@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "org-chart-from-modules",
-  "sourceHash": "a3eaa3537a8caf21c8fe1c9014df83b2acc7905e2a1524d688a3e56a6a53d207",
+  "sourceHash": "b9e5e783f414728607e0777a7517dc68c14b4fd3b7916b9a9c4024413bb88d43",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:33.901Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:02.538Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T18:53:15.557Z",
   "variants": {
     "en": {
-      "hash8": "fe0fa74d",
-      "vdtHash": "d99d144fa1ce5f8f822c1bd8d5b0bb31d0c07336",
+      "hash8": "d7c1aec9",
+      "vdtHash": "9f540fbd13646f80eddfdf601261d6c36af92087",
       "timings": {
-        "importMs": 331,
-        "fontsMs": 290,
-        "buildMs": 93,
-        "totalMs": 1353,
+        "importMs": 4614,
+        "fontsMs": 582,
+        "buildMs": 169,
+        "totalMs": 6173,
         "builds": 1
       },
       "specimen": {
@@ -55,7 +49,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 61594,
+          "bytes": 59214,
           "alt": "Page 1: How your town hall is run."
         },
         {
@@ -66,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 142294,
+          "bytes": 142274,
           "alt": "Page 2: Where to find us."
         }
       ],
@@ -90,18 +84,18 @@
       },
       "pdf": {
         "file": "org-chart-from-modules.pdf",
-        "bytes": 995599,
+        "bytes": 995459,
         "pages": 2
       },
       "sandbox": {
         "file": "org-chart-from-modules.postext",
-        "bytes": 986304,
+        "bytes": 986240,
         "folio": "90508e83",
         "chapters": [
           {
             "pages": 2,
-            "hash": "3ee345c1d498427b",
-            "lines": "275c6dc2b54419d4"
+            "hash": "2d9e5c6deb4019e5",
+            "lines": "71a1db5b63c18a87"
           }
         ]
       },
@@ -339,11 +333,26 @@
         "raggedLines": {
           "count": 0
         },
+        "runtFixes": {
+          "count": 1,
+          "tracked": 1,
+          "worst": 10
+        },
         "findings": [
           {
             "check": "C40",
             "severity": "info",
-            "detail": "every element came back to its source: 36 block, 36 frame, 71 line"
+            "detail": "every element came back to its source: 36 block, 36 frame, 67 line"
+          },
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "1 paragraph set a line short with tracking (worst −10‰, the cap): p. 1 −10‰ “Day centre Lunches, workshops and a minibus”"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -354,18 +363,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           }
         ]
       }
     },
     "es": {
-      "hash8": "e6bf5f2c",
-      "vdtHash": "41b71c1bb38e7ed3f008025114c43907da49beb8",
+      "hash8": "302f558d",
+      "vdtHash": "1365c78b792ced450f4ceefe68c0ab8642c2605e",
       "timings": {
-        "importMs": 306,
-        "fontsMs": 59,
-        "buildMs": 79,
-        "totalMs": 1072,
+        "importMs": 4647,
+        "fontsMs": 626,
+        "buildMs": 161,
+        "totalMs": 6257,
         "builds": 1
       },
       "specimen": {
@@ -397,7 +411,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 66648,
+          "bytes": 63772,
           "alt": "Página 1: Así se organiza tu ayuntamiento."
         },
         {
@@ -408,7 +422,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 147684,
+          "bytes": 146170,
           "alt": "Página 2: Dónde encontrarnos."
         }
       ],
@@ -432,18 +446,18 @@
       },
       "pdf": {
         "file": "org-chart-from-modules.pdf",
-        "bytes": 995645,
+        "bytes": 995431,
         "pages": 2
       },
       "sandbox": {
         "file": "org-chart-from-modules.postext",
-        "bytes": 987378,
+        "bytes": 986874,
         "folio": "90508e83",
         "chapters": [
           {
             "pages": 2,
-            "hash": "3720784962de65e7",
-            "lines": "674624e0bfe414c2"
+            "hash": "be075a59112f0a93",
+            "lines": "3f68b73ecbe56972"
           }
         ]
       },
@@ -685,12 +699,17 @@
           {
             "check": "C40",
             "severity": "info",
-            "detail": "every element came back to its source: 36 block, 36 frame, 75 line"
+            "detail": "every element came back to its source: 36 block, 36 frame, 67 line"
           },
           {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

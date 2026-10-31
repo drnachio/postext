@@ -59,6 +59,8 @@ author: "W. H. Smyth"
 
 **Bitter-end.** That part of the cable which is abaft the bitts, and therefore within board when the ship rides at anchor. They say, “Bend to the bitter-end” when they would have that end bent to the anchor, and when a chain or rope is paid out to the bitter-end, no more remains to be let go. The bitter-end is the clinching end – sometimes that end is bent to the anchor, because it has never been used, and is more trustworthy. The first 40 fathoms of a cable of 115 fathoms is generally worn out when the inner end is comparatively new.
 
+**Bluff.** An abrupt high land, projecting almost perpendicularly into the sea, and presenting a bold front, rather rounded than cliffy in outline.
+
 **Booby.** A well-known tropical sea-bird, *Sula fusca*, of the family *Pelecanidae*. It is fond of resting out of the water at night, even preferring an unstable perch on the yard of a ship. The name is derived from the way in which it allows itself to be caught immediately after settling. The direction in which they fly as evening comes on often shows where land may be found.
 
 **Brace of shakes.** A moment: taken from the flapping of a sail. I will be with you before it shakes thrice.

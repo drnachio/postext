@@ -1,0 +1,57 @@
+---
+title: "Ein Entwurf für drei Sprachausgaben"
+summary: "Ein Heft auf Englisch, Spanisch und Arabisch aus allgemeinen Einstellungen, mit Abweichungen nur für das, was jeder Sprache gehört: Schriften, Grade, Sperrung."
+plain: "Ein Heft über drei alte Astrolabien, gedruckt auf Englisch, Spanisch und Arabisch. Alle drei teilen einen Entwurf; nur die arabische Ausgabe ändert Schriften und Größen."
+description: "Allgemeine Einstellungen und Abweichungen je Sprache in Postext: ein Heft auf Englisch, Spanisch und Arabisch, das einen Entwurf teilt."
+question: "Wie teile ich einen Entwurf zwischen Buchausgaben und ändere nur Schriften und Beschriftungen je Sprache?"
+aliases: ["allgemeine Einstellungen", "sprachspezifische Abweichungen", "mergeConfigLayers", "gemeinsame Konfiguration", "mehrsprachige Ausgabe", "arabische Ausgabe", "Astrolabium"]
+pageNotes: {"1": "Der Umschlag der englischen Ausgabe: das Foto eines silbertauschierten Messing-Astrolabiums von 1291 füllt die Seite; auf dem dunklen oberen Teil eine gesperrte weiße Dachzeile, eine kurze Linie und der Titel Three Astrolabes in zwei weißen Zeilen; am Fuß Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Linke Seite 2: Kolumnentitel mit der Seitenzahl in Messing und dem Buchtitel; die Abschnitte A map of the sky you can turn und The sultan’s instrument im Blocksatz mit messingfarbenen Zwischentiteln.", "3": "Rechte Seite 3: ein Kasten mit einer Messinglinie links; der Abschnitt A garden of stars mit dem Foto eines persischen Astrolabiums rechts in der Spalte und dem Text daneben; am Fuß der Titel des letzten Abschnitts.", "4": "Linke Seite 4: der letzte Abschnitt mit dem Foto des europäischen Astrolabiums von 1462 rechts und dem Text samt Schlussabsatz daneben; eine Tabelle der drei Instrumente mit dunklem Kopf; das Impressum."}
+---
+
+## Was Sie setzen
+
+Ein Heft von vier A5-Seiten über drei Astrolabien im Metropolitan Museum of Art: eines 1291 im Jemen gebaut, eines 1654 in Iran, eines 1462 in Europa. Der Verlag bringt es auf Englisch, Spanisch und Arabisch heraus, und die drei Ausgaben sind ein Entwurf. Umschlagfoto, messingfarbene Zwischentitel, der Kasten mit seiner Linie, die umflossenen Abbildungen und der dunkle Tabellenkopf kommen aus denselben Einstellungen. Die arabische Ausgabe ändert, was zu ihrer Schrift gehört: Amiri und IBM Plex Sans Arabic statt Source Serif und Source Sans, einen größeren Grad und Beschriftungen ohne Versalien und Sperrung. Sie liest sich von rechts und wird rechts gebunden, ohne eine einzige eigene Koordinate.
+
+## Zubereitung
+
+### 1 · Allgemeine Einstellungen und drei kleine Abweichungen
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort) oben. `config` enthält die allgemeinen Einstellungen; `mergeConfigLayers` legt die Abweichung einer Ausgabe Feld für Feld darüber. Englisch und Spanisch haben keine Abweichung: ihr `locale` wählt die Trennmuster und die Wörter *Figure* und *Table*, *Figura* und *Tabla*. Die arabische Abweichung nennt nur einzelne Felder: `bodyText.fontFamily` ändert die Schrift und behält Farbe, Ausrichtung und Silbentrennung, und das Element `kicker` des Umschlags ändert Schrift und Sperrung und behält Anker, Farbe und Größe. Eine Änderung an Palette oder Rändern in `config` erreicht alle drei Ausgaben.
+
+### 2 · Seiten nach der Schreibrichtung benannt
+
+<Excerpt region="heads" />
+
+Der Außenrand einer geraden Seite ist in beiden Richtungen der Zeilenanfang, der einer ungeraden das Zeilenende; `top-start` und `top-end` setzen die Seitenzahlen deshalb auf einer englischen wie auf einer arabischen linken Seite außen. Die Linie des Kastens ist `side: 'start'`, und der Umschlagtext hängt an `top-start`: keines braucht eine Abweichung.
+
+### 3 · Abbildungen am Zeilenende, vom Text umflossen
+
+<Excerpt region="pictures" />
+
+`wrap: 'end'` setzt jedes Foto rechts in eine englische und links in eine arabische Spalte, und der Text läuft daneben. Bildunterschriften und Alternativtexte stehen in der Sprache der Ausgabe; die arabischen nennen zuerst das Hidschra-Datum.
+
+### 4 · Die Tabelle in den Wörtern und Ziffern jeder Ausgabe
+
+<Excerpt region="table" />
+
+Die Tabellendaten sind Inhalt und wechseln mit der Ausgabe: arabisch-indische Ziffern und das arabische Dezimaltrennzeichen in der arabischen Ausgabe, ein Dezimalkomma in der spanischen. Ihr Stil ist allgemein: die Abweichung setzt nur die arabische Schrift und ihren Grad.
+
+## Varianten
+
+### Die Abweichungen in ein Paket schreiben
+
+<RecipeLink slug="bundle-round-trip">Die .postext-Hin-und-Rückreise</RecipeLink> schreibt ein Buch in zwei Sprachen in eine Datei. Seit postext 1.58 speichert `createBundle` die allgemeinen Einstellungen einmal und neben den Kapiteln jeder Sprache ihre Abweichung, so wie `mergeConfigLayers` sie hier liest. Das Sandbox-Buch dieses Rezepts öffnet sich so: Schalten Sie das Design-Panel zwischen *Alle Sprachen* und der arabischen Ausgabe um, um zu sehen, welche Felder die arabische Ausgabe setzt.
+
+### Die arabische Ausgabe für den Maghreb drucken
+
+`ar-MA` behält Richtung und Bindung und schreibt die erzeugten Zahlen, Seitenzahlen und Abbildungsnummern, in europäischen Ziffern. Tippen Sie auch die Ziffern der Tabelle neu.
+
+```diff
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
+```
+
+## Häufige Fehler
+
+- Arabische Buchstaben sind verbunden: Eine in den allgemeinen Einstellungen gesperrte Beschriftung muss in der arabischen Abweichung ihr `letterSpacing` verlieren, sonst meldet die Engine `joiningScriptLetterSpacing`. Dazu gehört `textTransform: 'none'`: Arabisch hat keine Versalien.
+- Die Zeilen einer arabischen Ausgabe sind höher, ihre Seiten brechen an anderen Stellen. Jede Ausgabe wurde für sich eingepasst: Der arabische Kasten fließt an den Fuß seiner Seite (`placement="bottom"`), und die Schlusssätze laufen neben dem letzten Foto.

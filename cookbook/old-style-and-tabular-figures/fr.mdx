@@ -1,0 +1,65 @@
+---
+title: "Chiffres elzéviriens, alignés et tabulaires"
+summary: "Les comptes de Walden : figureStyle met des chiffres alignés dans les titres en petites capitales, tabulaires dans les comptes ; la prose reste elzévirienne."
+plain: "Une petite édition des comptes domestiques que Thoreau a publiés dans Walden. Les chiffres du texte sont petits comme des minuscules, les années des titres ont la hauteur des capitales et les sommes des comptes s'alignent en colonne."
+description: "Les comptes de Walden dans Postext : chiffres elzéviriens dans la prose, alignés dans les titres en petites capitales, tabulaires dans les comptes."
+question: "Comment avoir des chiffres elzéviriens dans le texte, alignés dans les titres, tabulaires dans les tableaux ?"
+aliases: ["chiffres elzéviriens", "chiffres bas de casse", "chiffres alignés", "chiffres tabulaires", "styles de chiffres", "onum", "lnum", "tnum", "Thoreau", "Walden", "comptes"]
+pageNotes: { "1": "La page d'ouverture : la gravure de 1854 de la cabane de Thoreau parmi les pins, le titre THE ACCOUNTS en petites capitales au-dessus de Concord, 1845–1847 en chiffres alignés, un chapeau en italique dont les dates sont en chiffres elzéviriens, et la première section, The House, 1845.", "2": "Le coût de la maison : treize postes avec leur prix dans une colonne de chiffres elzéviriens de même largeur, une colonne pour les demi-cents, les remarques de Thoreau à droite et le total, $28.12½, sous un filet fin." }
+---
+
+## Ce que vous allez composer
+
+Une petite édition des comptes que Thoreau a publiés dans le premier chapitre de *Walden* : ce que lui a coûté sa maison, ce que lui a rapporté le champ de haricots, ce qu'il a mangé en huit mois. Elle est composée sur une page de 140 × 216 mm dans la famille Alegreya, avec la gravure de 1854 de la cabane en ouverture. Les chiffres changent selon leur rôle. Dans la prose, *March, 1845* et *$13.34* sont en chiffres elzéviriens, qui montent et descendent comme des minuscules, si bien que les dates ne sortent pas de la ligne. Les titres sont en petites capitales, et leurs années ont la hauteur des capitales. Dans les comptes, tous les chiffres ont la même largeur : les cents de treize lignes de planches, de lattes et de clous tombent les uns sous les autres jusqu'au total.
+
+## Préparation
+
+### 1 · Un style de chiffres par style de texte
+
+Le code de cette étape est la réponse courte, plus haut. `figureStyle` demande à la police d'un style ses chiffres OpenType ([styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres)). Le corps ne demande rien, car les chiffres propres d'Alegreya sont déjà elzéviriens et proportionnels : le 1 fait 342 unités et le 0, 533. Les titres de niveau 2 demandent à Alegreya SC `'lining'`, ses chiffres `lnum`, qui ont la hauteur des capitales qui les entourent. Le style de tableau demande `'tabular'`, le `tnum` de la police : les chiffres gardent leur forme elzévirienne et prennent tous la même largeur, 450 unités, de sorte qu'une colonne de prix se lit de haut en bas. Avec `'lining-tabular'`, ils seraient à la hauteur des capitales (voir « Variantes »).
+
+### 2 · Les comptes sont des tableaux à cinq colonnes
+
+<Excerpt region="accounts" />
+
+Les comptes de Thoreau sont gardés en TSV dans `content.accounts.en.md`, un bloc par compte, et l'édition espagnole traduit les postes et remplace le point décimal par la virgule sans toucher au code. Chaque ligne porte le poste, le signe du dollar, le montant, une fraction et une remarque. Les demis et les quarts ont leur propre colonne : ½ fait 713 unités et ¾, 689, plus qu'un chiffre tabulaire, et Alegreya n'a pas d'espace de chiffre pour compléter les autres montants. Un total est fait de cellules d'en-tête, si bien que `groupRules` trace un filet fin au-dessus, comme l'imprimeur de Thoreau traçait une ligne avant *In all*. Le signe du dollar s'écrit `\$`, car un `$` seul ouvre une formule dans une cellule comme dans le texte. Le type de ressource `account` n'a ni numéro ni préfixe de légende, et son placement par défaut est `'here'` : chaque compte se place là où la phrase de Thoreau l'annonce.
+
+### 3 · L'ouverture déclare ses propres chiffres
+
+<Excerpt region="opener" />
+
+Un texte de maquette fixe sa propre famille, donc les chiffres du corps ne l'atteignent pas. *Concord, 1845–1847* est en Alegreya SC et demande `'lining'` lui-même, comme les titres. La vignette est la gravure de la page de titre de 1854, recadrée et ramenée au noir sur blanc ; le surtitre, le titre et les dates prennent la justification et se centrent dessous.
+
+### 4 · Des titres courants avec la section sur la belle page
+
+<Excerpt region="running-heads" />
+
+La fausse page porte le titre du livre, et la belle page la section en cours, `{firstMark.h2}` : la page 3 indique *The Bean-Field, 1845*. Les folios sont en Alegreya et gardent ses chiffres elzéviriens.
+
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="Page 2 : les chiffres elzéviriens du compte de la maison ont tous la même largeur, et les cents s'alignent jusqu'au total." />
+
+## Variantes
+
+### Composer les comptes en chiffres alignés
+
+Un livre de comptes ou une liste de prix d'un livre moderne met souvent ses chiffres à la hauteur des capitales.
+
+```diff
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### Composer les folios en chiffres alignés
+
+Des folios en chiffres alignés vont avec des titres courants en capitales.
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
+```
+
+## Erreurs fréquentes
+
+- Les fichiers latin que sert Fontsource laissent souvent `onum` de côté : Lora, EB Garamond, Source Serif 4, Crimson Pro, Newsreader et Literata ne gardent que `pnum` et `tnum`. Avec ces fichiers, `figureStyle: 'oldstyle'` ne change rien et le texte garde des chiffres alignés. Choisissez une police dont les chiffres propres sont elzéviriens, comme Alegreya, Gelasio ou Cormorant Garamond, qui ajoutent `lnum` pour les titres, ou chargez les fichiers complets de la fonderie.
+- Un `$` dans le Markdown ou dans une cellule ouvre une formule en ligne. Écrivez `\$14.72½` dans le texte et `\$` dans une cellule.

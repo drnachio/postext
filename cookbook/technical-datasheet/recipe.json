@@ -13,8 +13,8 @@
     "also": [
       "cell-fills", "table-styles", "table-style", "captions", "heading-attributes",
       "super-subscripts", "chips", "resources", "float-placement", "opener-design", "opener-band",
-      "design-images", "running-heads", "heading-numbering", "callout-styles", "color-palette",
-      "pdf-export"
+      "design-images", "running-heads", "heading-numbering", "callout-styles",
+      "figure-styles", "pdf-export"
     ]
   },
   "answers": ["Q65", "Q66", "Q68", "Q70", "Q10"],
@@ -44,7 +44,7 @@
     }
   ],
   "related": ["seed-catalogue", "product-manual-warnings", "journal-article-with-maths", "figures-float-where-cited"],
-  "engine": { "postext": "1.28.0", "postextPdf": "1.28.0" },
+  "engine": { "postext": "1.65.0", "postextPdf": "1.65.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -72,5 +72,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-11"
+  "updated": "2026-10-31"
 }

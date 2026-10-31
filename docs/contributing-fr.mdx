@@ -149,6 +149,8 @@ plus lourd :
 Si vous comptez écrire du code, ouvrez d’abord une issue pour discuter de l’approche : cela évite le
 travail en double, et une courte conversation en amont fait gagner du temps à tout le monde.
 
+Gardez chaque fichier source sous 600 lignes environ et chaque dossier sous 25 fichiers source environ : un module qui dépasse devient un dossier du même nom, et l’ancien fichier reste comme façade qui le réexporte. La CI vérifie ces limites avec `node scripts/source-size.mjs --check` (voir *Code Layout* dans CONTRIBUTING.md).
+
 ### Que lire ensuite
 
 Pour vous repérer avant de vous lancer :

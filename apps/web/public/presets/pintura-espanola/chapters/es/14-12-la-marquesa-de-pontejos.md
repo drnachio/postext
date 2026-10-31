@@ -5,5 +5,5 @@ Goya se convertiría ese mismo año de 1786 en pintor de cámara de Carlos III y
 Doña María Ana de Pontejos Sandoval, marquesa de Pontejos, nacida en 1762 y muerta el 18 de julio de 1834 era mecenas de Francisco de Goya. En 1786, a los veinticuatro años, se casó con el hermano del conde de Floridablanca, ministro de Carlos III, y entonces embajador de España en Portugal. El retrato probablemente fue realizado para conmemorar el enlace.
 
 :::paragraphs{style="fuente"}
-Comentario adaptado del artículo «Retrato de la marquesa de Pontejos» de Wikipedia en español (revisión 155417138, CC BY-SA 4.0).
+Comentario adaptado del artículo «Retrato de la marquesa de Pontejos» de Wikipedia en español (revisión 155417138, CC BY-SA 4.0). Ficha e imagen ampliable en la [web del museo](https://www.nga.gov/artworks/92-marquesa-de-pontejos).
 :::

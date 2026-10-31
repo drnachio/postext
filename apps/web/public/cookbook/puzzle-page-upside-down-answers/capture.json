@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "puzzle-page-upside-down-answers",
-  "sourceHash": "a9ea7f40f5042b1e32f35ac8a9ba66fa19c3b0065002ade2d5ce74615214d583",
+  "sourceHash": "0a6e72da5c976f4b45ec04882d91562a98fe1bd4ee8cea224c765fd0edc6a63d",
   "engine": {
-    "postext": "1.63.0",
-    "postextPdf": "1.63.0",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-26T01:08:22.036Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:07:40.867Z",
   "variants": {
     "en": {
-      "hash8": "face85ae",
-      "vdtHash": "027cc2d9d246484ca38f8a13f021b43bb2352dc5",
+      "hash8": "e7a4ffc5",
+      "vdtHash": "64aca5f50cc1debd942952f1555029c7d04db48d",
       "timings": {
-        "importMs": 283,
-        "fontsMs": 62,
-        "buildMs": 60,
-        "totalMs": 1050,
+        "importMs": 3342,
+        "fontsMs": 155,
+        "buildMs": 216,
+        "totalMs": 5034,
         "builds": 1
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 129
+        "ownLines": 130
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 146564,
+          "bytes": 156798,
           "alt": "Opening page 1: Reef Puzzles."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 58262,
+          "bytes": 47356,
           "alt": "Page 2."
         }
       ],
@@ -90,12 +90,12 @@
       },
       "sandbox": {
         "file": "puzzle-page-upside-down-answers.postext",
-        "bytes": 329514,
+        "bytes": 330576,
         "chapters": [
           {
             "pages": 2,
-            "hash": "ce640b19da904d39",
-            "lines": "151417f8d2c314ee"
+            "hash": "3bb82740e7feb3e8",
+            "lines": "131d4d5ebd78f462"
           }
         ]
       },
@@ -328,7 +328,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 8,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -349,6 +349,11 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 2 −5‰ “Whale – calf · Seal – pup · Turtle – hatchling ·…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "vdt",
             "severity": "info",
             "detail": "the layout changed since the committed capture"
@@ -367,13 +372,13 @@
       }
     },
     "es": {
-      "hash8": "e721a2eb",
-      "vdtHash": "6ceb0e9ed91c35eace6e9dd7422255a0afde691a",
+      "hash8": "744cecfd",
+      "vdtHash": "e45534fc9a838440b74217d285f2ae16685f56b0",
       "timings": {
-        "importMs": 219,
-        "fontsMs": 55,
-        "buildMs": 59,
-        "totalMs": 969,
+        "importMs": 4774,
+        "fontsMs": 186,
+        "buildMs": 246,
+        "totalMs": 6128,
         "builds": 1
       },
       "specimen": {
@@ -396,7 +401,7 @@
           "Nunito"
         ],
         "pages": 2,
-        "ownLines": 129
+        "ownLines": 130
       },
       "pages": [
         {
@@ -407,7 +412,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 149834,
+          "bytes": 163066,
           "alt": "Página de apertura 1: Pasatiempos del arrecife."
         },
         {
@@ -418,7 +423,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 64076,
+          "bytes": 51938,
           "alt": "Página 2."
         }
       ],
@@ -446,12 +451,12 @@
       },
       "sandbox": {
         "file": "puzzle-page-upside-down-answers.postext",
-        "bytes": 330303,
+        "bytes": 331360,
         "chapters": [
           {
             "pages": 2,
-            "hash": "f971646c97f71ecc",
-            "lines": "9d95fd74ae2f22b2"
+            "hash": "bcc8b601f3eb2733",
+            "lines": "7c5c16308cf9a87a"
           }
         ]
       },
@@ -684,7 +689,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 8,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -694,6 +699,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
           {
             "check": "vdt",
             "severity": "info",

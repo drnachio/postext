@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 045 · Side heads, hanging numbers and run-in heads ═══════
 // https://postext.dev/en/cookbook/side-heads-hanging-numbers
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: made in code (MIT)
-// Fonts: Mona Sans, Noto Serif Display, DM Mono (SIL OFL 1.1) · Needs postext ≥ 1.28.0
+// Fonts: Mona Sans, Noto Serif Display, DM Mono (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
@@ -186,6 +186,8 @@ const config = () => ({
   tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
     headerBackground: col('ink'), headerColor: col('paper'), headerFontSize: pt(8),
     bodyFontSize: pt(8.6), cellPadding: mm(1.4) },
+  // Table 1 only: tnum puts every digit on one width, so the m² column lines up.
+  tableStyles: [{ id: 'figures', figureStyle: 'tabular' }],
   captionStyle: { fontSize: pt(8), labelColor: col('signal'), gap: mm(2) },
   header, footer,
 });
@@ -245,7 +247,7 @@ const resources = [
       + 'las armaduras corroídas.' }),
     altText: t({ en: 'Elevation of the hall: thirteen vaults, eleven arches, four frames in red.',
       es: 'Alzado de la lonja: trece bóvedas, once arcos y cuatro pórticos en rojo.' }) }),
-  resource('programa', 'table', { kind: 'table', table: programme,
+  resource('programa', 'table', { kind: 'table', table: { ...programme, styleId: 'figures' },
     placement: { position: 'top', captionSide: true }, caption: t({
       en: 'Schedule of net floor areas.', es: 'Programa de superficies útiles por zonas.' }) }),
   resource('calendario', 'table', { kind: 'table', table: calendar,

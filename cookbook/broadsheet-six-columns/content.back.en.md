@@ -40,7 +40,7 @@ Rees carries the evening. He is on stage for almost all of its two hours and for
 
 It is also, quietly, a play about this city. The Steam Packet Company’s offices stood on the Eastern Quays until 1971, a few yards from where the trams will stop. Several people in the audience on Saturday had grandparents who worked there, and the director, Sara Quince, has filled the programme with photographs from the city archive. At the end the cast took four calls, and the applause went on after the house lights came up.
 
-*The Tally Clerk* runs at the Playhouse, Water Lane, until 31 October, at half past seven, with matinées on Wednesdays and Saturdays at half past two. Tickets cost £14 to £32. The performance on Thursday 22 October will be captioned, and the one on Saturday 24 October relaxed. Book early for the last week: the Friday and Saturday evenings are already close to full, and the theatre has no plans to extend the run.
+*The Tally Clerk* runs at the Playhouse, Water Lane, until 31 October, at half past seven, with matinées on Wednesdays and Saturdays at half past two. Tickets cost £14 to £32. The performance on Thursday 22 October will be captioned, and the one on Saturday 24 October relaxed. Book early for the last week: the Friday and Saturday evenings are already close to full, and the theatre has no plans to extend the run. Latecomers wait for the interval, so allow time to park on Water Lane.
 
 :::columnbreak
 

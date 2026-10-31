@@ -68,9 +68,9 @@ The opposition’s cheaper bus route deserved a hearing, and it got one. But a b
 
 ### Count the empty rooms
 
-Three hundred students began term without a room of their own. The blame is shared by a university that took more students than it could house and by a city that let 1,860 of its homes become holiday flats.
+Three hundred students began term without a room of their own. The blame is shared by a university that took more students than it could house and by a city that let 1,860 of its homes become holiday flats. Both can begin to put it right before the next intake arrives in September.
 
-The licence the council will discuss next month is modest. It should pass, and the money it raises should pay for inspectors in Westfield, where the council found one house in five too full. A city that wants students to stay after they graduate should start by giving them somewhere decent to live while they study. The university, for its part, should not admit more students next year than it can house, however welcome their fees. Its students should not have to learn, in their first week, what a damp mattress smells like.
+The licence the council will discuss next month is modest. It should pass, and the money it raises should pay for inspectors in Westfield, where the council found one house in five too full. A city that wants students to stay after they graduate should start by giving them somewhere decent to live while they study. The university, for its part, should not admit more students next year than it can house, however welcome their fees. Its students should not have to learn, in their first week, what a damp mattress smells like. Both can spare them that lesson.
 
 :::columnbreak
 
@@ -111,9 +111,9 @@ Letters
 
 **A word for the ferry.** Thank you for reporting the return of the Saturday ferry. The crew of the *Hollin Belle* have kept it running through two winters on a council grant that has not risen since 2019. They deserve the city’s thanks. *Moira Kennedy, Hollin Point*
 
-**Seals and dogs.** Please remind dog walkers on Hollin Point that the seals have pups on the sandbanks until December. Keep dogs on a lead below the high-water mark, and give the seals at least fifty metres. *Imogen Clarke, Hollin Point*
+**Seals and dogs.** Please remind dog walkers on Hollin Point that the seals have pups on the sandbanks until December. Keep dogs on a lead below the high-water mark, and give the seals at least fifty metres. They were here first. *Imogen Clarke, Hollin Point*
 
-**Thanks to the lifeboat.** It reached my son’s capsized dinghy in nine minutes on Sunday. *Leon Marsh, Wharfside*
+**Thanks to the lifeboat.** It reached my son’s capsized dinghy in nine minutes on Sunday. He was cold, frightened and very sorry, and he was home in time for tea. *Leon Marsh, Wharfside*
 
 **Write to us** at 12 Bridge Street, Corrington, or hand your letter in at the front desk. Letters may be shortened, and we cannot print letters that arrive without a name and an address.
 :::

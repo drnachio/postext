@@ -9,5 +9,5 @@ Este lienzo representa un tema de la Ilíada, que relata el castigo sufrido por 
 En primer plano, a la izquierda y en el centro, los tres personajes del mito —desnudos— son atacados por dos serpientes. Laocoonte y uno de sus hijos luchan con ellas, a punto de ser mordidos, mientras el otro hijo yace ya muerto. A la derecha —también desnudos— contemplan la escena dos personajes, que parecen levitar en lugar de posarse sobre el suelo. Uno de ellos levanta su mano izquierda, realizando un gesto con los dedos.
 
 :::paragraphs{style="fuente"}
-Comentario adaptado del artículo «Laocoonte (El Greco)» de Wikipedia en español (revisión 175003465, CC BY-SA 4.0).
+Comentario adaptado del artículo «Laocoonte (El Greco)» de Wikipedia en español (revisión 175003465, CC BY-SA 4.0). Ficha e imagen ampliable en la [web del museo](https://www.nga.gov/artworks/33253-laocoon).
 :::

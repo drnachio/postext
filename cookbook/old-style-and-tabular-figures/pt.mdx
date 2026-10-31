@@ -1,0 +1,65 @@
+---
+title: "Algarismos de estilo antigo, alinhados e tabulares"
+summary: "As contas de Thoreau em Walden: figureStyle dá algarismos alinhados aos títulos em versaletes e tabulares às contas; a prosa mantém os de estilo antigo."
+plain: "Uma pequena edição das contas domésticas que Thoreau publicou em Walden. Os números do texto são pequenos como minúsculas, os anos dos títulos têm a altura das maiúsculas e as somas das contas se alinham em coluna."
+description: "As contas de Walden no Postext: algarismos de estilo antigo na prosa, alinhados nos títulos em versaletes e tabulares nas contas, na tela e no PDF."
+question: "Como componho algarismos de estilo antigo no texto, alinhados nos títulos e tabulares nas tabelas?"
+aliases: ["algarismos de estilo antigo", "algarismos elzevirianos", "algarismos alinhados", "algarismos tabulares", "estilos de algarismos", "onum", "lnum", "tnum", "Thoreau", "Walden", "contas"]
+pageNotes: { "1": "A página de abertura: a gravura de 1854 da cabana de Thoreau entre pinheiros, o título THE ACCOUNTS em versaletes sobre Concord, 1845–1847 em algarismos alinhados, uma nota introdutória em itálico com as datas em algarismos de estilo antigo e a primeira seção, The House, 1845.", "2": "O custo da casa: treze itens com o preço numa coluna de algarismos de estilo antigo da mesma largura, uma coluna para os meios centavos, as observações de Thoreau à direita e o total, $28.12½, sob um fio fino." }
+---
+
+## O que você vai compor
+
+Uma pequena edição das contas que Thoreau publicou no primeiro capítulo de *Walden*: quanto lhe custou a casa, quanto rendeu o campo de feijão, o que comeu em oito meses. Ela é composta numa página de 140 × 216 mm na família Alegreya, com a gravura de 1854 da cabana na abertura. Os algarismos mudam conforme a função. Na prosa, *March, 1845* e *$13.34* vão em algarismos de estilo antigo, que sobem e descem como as minúsculas, e as datas não saltam da linha. Os títulos são versaletes, e seus anos têm a altura das maiúsculas. Nas contas todos os algarismos têm a mesma largura, e os centavos de treze linhas de tábuas, sarrafos e pregos ficam um embaixo do outro até o total.
+
+## Preparo
+
+### 1 · Um estilo de algarismos por estilo de texto
+
+O código deste passo é a resposta curta, mais acima. `figureStyle` pede à fonte de um estilo seus algarismos OpenType ([estilos de algarismos](/pt/docs/configuration-fonts-colors-viewers#estilos-de-algarismos)). O corpo não pede nada, porque os algarismos próprios da Alegreya já são de estilo antigo e proporcionais: o 1 tem 342 unidades e o 0, 533. Os títulos de segundo nível pedem à Alegreya SC `'lining'`, seus algarismos `lnum`, da altura das maiúsculas ao redor. O estilo de tabela pede `'tabular'`, o `tnum` da fonte: os algarismos mantêm a forma de estilo antigo e ficam todos com a mesma largura, 450 unidades, e uma coluna de preços se lê de cima a baixo. Com `'lining-tabular'` eles ficariam na altura das maiúsculas (veja “Variações”).
+
+### 2 · As contas são tabelas de cinco colunas
+
+<Excerpt region="accounts" />
+
+As contas de Thoreau ficam em TSV em `content.accounts.en.md`, um bloco por conta, e a edição espanhola traduz os itens e troca o ponto decimal pela vírgula sem mexer no código. Cada linha tem o item, o cifrão, o valor, uma fração e uma observação. As metades e os quartos têm coluna própria: ½ tem 713 unidades e ¾, 689, mais que um algarismo tabular, e a Alegreya não tem espaço de algarismo para completar os outros valores. Um total é feito de células de cabeçalho, então `groupRules` traça um fio fino acima dele, como o impressor de Thoreau traçava uma linha antes de *In all*. O cifrão se escreve `\$`, porque um `$` sozinho abre uma fórmula numa célula, como no texto. O tipo de recurso `account` não tem número nem prefixo de legenda, e sua colocação padrão é `'here'`: cada conta fica onde a frase de Thoreau a apresenta.
+
+### 3 · A abertura declara seus próprios algarismos
+
+<Excerpt region="opener" />
+
+Um texto de design define a própria família, então os algarismos do corpo não chegam até ele. *Concord, 1845–1847* está em Alegreya SC e pede `'lining'` por conta própria, como os títulos. A vinheta é a gravura da folha de rosto de 1854, recortada e ajustada para preto sobre branco; o antetítulo, o título e as datas tomam a largura da mancha e se centralizam embaixo dela.
+
+### 4 · Cabeços com a seção na página ímpar
+
+<Excerpt region="running-heads" />
+
+A página par traz o título do livro, e a ímpar, a seção em curso, `{firstMark.h2}`: a página 3 diz *The Bean-Field, 1845*. Os fólios vão em Alegreya e mantêm os algarismos de estilo antigo.
+
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="Página 2: os algarismos de estilo antigo da conta da casa têm todos a mesma largura, e os centavos se alinham até o total." />
+
+## Variações
+
+### Componha as contas em algarismos alinhados
+
+Um livro-caixa ou uma lista de preços num livro moderno costuma pôr os algarismos na altura das maiúsculas.
+
+```diff
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### Componha os fólios em algarismos alinhados
+
+Fólios em algarismos alinhados combinam com cabeços em maiúsculas.
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
+```
+
+## Erros comuns
+
+- Os arquivos latin que a Fontsource serve muitas vezes deixam `onum` de fora: Lora, EB Garamond, Source Serif 4, Crimson Pro, Newsreader e Literata só mantêm `pnum` e `tnum`. Com esses arquivos, `figureStyle: 'oldstyle'` não muda nada e o texto continua com algarismos alinhados. Escolha uma fonte cujos algarismos próprios sejam de estilo antigo, como Alegreya, Gelasio ou Cormorant Garamond, que trazem `lnum` para os títulos, ou carregue os arquivos completos da fundição.
+- Um `$` no Markdown ou numa célula abre uma fórmula em linha. Escreva `\$14.72½` no texto e `\$` numa célula.

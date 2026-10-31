@@ -3,5 +3,5 @@
 Goya, newly appointed painter to the king, adopts the format of the courtly portrait and the pastel palette of the rococo, yet the picture is already his own: the dress is painted as a cloud of grey and rose, the landscape is a mere suggestion, and the doll-like stiffness of the pose is offset by the frankness of the face. It is one of the earliest of the great society portraits that would occupy him for the next thirty years. :ref{id="goya-pontejos" case="lower"}
 
 :::paragraphs{style="fuente"}
-Commentary written for this edition (CC BY 4.0).
+Commentary written for this edition (CC BY 4.0). Record and zoomable image on the [museum's website](https://www.nga.gov/artworks/92-marquesa-de-pontejos).
 :::

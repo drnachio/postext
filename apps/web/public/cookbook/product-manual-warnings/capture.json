@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "product-manual-warnings",
-  "sourceHash": "e165da1b437a2509e1ecc32bebe560635219708c1def4590ff09cb7136ab64d8",
+  "sourceHash": "a5ff77f8ee9dd315480bf07d73cdfbbda0280fbb9d094824383e02536760a00f",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:37.802Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:03.066Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:07:14.028Z",
   "variants": {
     "en": {
-      "hash8": "3c7f47ad",
-      "vdtHash": "bfc240c842f1489d7062f7bdada09dd386ecb87a",
+      "hash8": "4b292eb8",
+      "vdtHash": "fe1ffa10d26ea22f68872f2add3f6b3803fbb9a8",
       "timings": {
-        "importMs": 169,
-        "fontsMs": 789,
-        "buildMs": 87,
-        "totalMs": 1712,
+        "importMs": 5328,
+        "fontsMs": 716,
+        "buildMs": 182,
+        "totalMs": 7093,
         "builds": 1
       },
       "specimen": {
@@ -43,7 +38,7 @@
           "Red Hat Text"
         ],
         "pages": 7,
-        "ownLines": 180
+        "ownLines": 184
       },
       "pages": [
         {
@@ -120,7 +115,7 @@
           "h": 1419,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 79302,
+          "bytes": 72094,
           "alt": "Page 7: 6 Technische Daten. Tabelle 3. Kenndaten des VW-170 · Tabelle 2. Störungen und ihre Behebung (Fortsetzung)."
         }
       ],
@@ -156,13 +151,13 @@
       },
       "sandbox": {
         "file": "product-manual-warnings.postext",
-        "bytes": 39469,
+        "bytes": 39494,
         "folio": "6d89ead9",
         "chapters": [
           {
             "pages": 7,
-            "hash": "7de8d186f7b740fa",
-            "lines": "fc502be864ee3b26"
+            "hash": "b4e89553fb1b2ef1",
+            "lines": "7c83f273f6237c91"
           }
         ]
       },
@@ -268,6 +263,16 @@
           "footer.elements[].pages",
           "footer.elements[].parity",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceAbove",
           "header",
           "header.elements",
           "header.elements[].align",
@@ -310,6 +315,13 @@
           "headings.lineHeight",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "orderedLists",
           "orderedLists.color",
@@ -384,10 +396,12 @@
           "chipStyles",
           "colorPalette",
           "footer",
+          "footnotes",
           "header",
           "headingStyles",
           "headings",
           "layout",
+          "links",
           "locale",
           "orderedLists",
           "page",
@@ -397,7 +411,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 479,
+        "configLeaves": 492,
         "designElements": 14,
         "directives": [
           ":::pagebreak",
@@ -467,6 +481,7 @@
           "callout-styles",
           "chips",
           "figure-citations",
+          "footnotes",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -476,6 +491,7 @@
           "page-breaks",
           "page-role-filters",
           "paragraph-styles",
+          "print-links",
           "resource-types",
           "resources",
           "table-model",
@@ -504,7 +520,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -515,13 +541,13 @@
       }
     },
     "es": {
-      "hash8": "c1bd3163",
-      "vdtHash": "bfc240c842f1489d7062f7bdada09dd386ecb87a",
+      "hash8": "0bd739e9",
+      "vdtHash": "fe1ffa10d26ea22f68872f2add3f6b3803fbb9a8",
       "timings": {
-        "importMs": 188,
-        "fontsMs": 39,
-        "buildMs": 92,
-        "totalMs": 985,
+        "importMs": 3837,
+        "fontsMs": 384,
+        "buildMs": 150,
+        "totalMs": 5411,
         "builds": 1
       },
       "specimen": {
@@ -543,7 +569,7 @@
           "Red Hat Text"
         ],
         "pages": 7,
-        "ownLines": 180
+        "ownLines": 184
       },
       "pages": [
         {
@@ -620,7 +646,7 @@
           "h": 1419,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 79302,
+          "bytes": 72094,
           "alt": "Página 7: 6 Technische Daten. Tabelle 3. Kenndaten des VW-170 · Tabelle 2. Störungen und ihre Behebung (Fortsetzung)."
         }
       ],
@@ -656,13 +682,13 @@
       },
       "sandbox": {
         "file": "product-manual-warnings.postext",
-        "bytes": 39467,
+        "bytes": 39492,
         "folio": "6d89ead9",
         "chapters": [
           {
             "pages": 7,
-            "hash": "7de8d186f7b740fa",
-            "lines": "fc502be864ee3b26"
+            "hash": "b4e89553fb1b2ef1",
+            "lines": "7c83f273f6237c91"
           }
         ]
       },
@@ -768,6 +794,16 @@
           "footer.elements[].pages",
           "footer.elements[].parity",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceAbove",
           "header",
           "header.elements",
           "header.elements[].align",
@@ -810,6 +846,13 @@
           "headings.lineHeight",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "orderedLists",
           "orderedLists.color",
@@ -884,10 +927,12 @@
           "chipStyles",
           "colorPalette",
           "footer",
+          "footnotes",
           "header",
           "headingStyles",
           "headings",
           "layout",
+          "links",
           "locale",
           "orderedLists",
           "page",
@@ -897,7 +942,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 479,
+        "configLeaves": 492,
         "designElements": 14,
         "directives": [
           ":::pagebreak",
@@ -967,6 +1012,7 @@
           "callout-styles",
           "chips",
           "figure-citations",
+          "footnotes",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -976,6 +1022,7 @@
           "page-breaks",
           "page-role-filters",
           "paragraph-styles",
+          "print-links",
           "resource-types",
           "resources",
           "table-model",
@@ -1004,7 +1051,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

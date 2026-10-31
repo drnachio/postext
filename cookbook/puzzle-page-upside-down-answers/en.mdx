@@ -5,7 +5,7 @@ plain: "The puzzle page of a children's magazine about the sea. Each puzzle sits
 description: "A magazine puzzle page in Postext: a crossword and a word search built from word lists, a riddle, a story to order, all with answers upside down."
 question: "How do I make a crossword and a word search from a list of words, with the answers upside down?"
 aliases: ["puzzle page", "crossword", "word search", "wordsearch", "riddle", "answers upside down", "inverted answers", "children's magazine", "activity page", "pasatiempos"]
-pageNotes: { "1": "The first page: a bright painting of a coral reef with a turtle, an octopus, a clownfish, a pufferfish and a seahorse fills the top of the page to the bleed, with a coral PUZZLE PAGE badge, the title Reef Puzzles in big white letters and a dark standfirst box; below, two cream cards: a numbered crossword with its Across and Down clues, and a nine-by-nine word search with its word list, each with its answers upside down at the foot.", "2": "The second page: cards for a riddle with three ringed options, a story to order with a painted hatchling turtle and five boxes, a mixed-up fact with a line to write it on, and a matching puzzle with dots, each with its answers upside down." }
+pageNotes: { "1": "The first page: a bright painting of a coral reef with a turtle, an octopus, a clownfish, a pufferfish and a seahorse fills the top of the page to the bleed, with a coral PUZZLE PAGE badge, the title Reef Puzzles in big white letters and a dark standfirst box; below, two cream cards: a numbered crossword with its Across and Down clues, and a nine-by-nine word search with its word list, each with its answers upside down at the foot; under the word search, a riddle with three ringed options.", "2": "The second page: cards for a story to order with a painted hatchling turtle and five boxes, a mixed-up fact with a line to write it on, and a matching puzzle with dots, each with its answers upside down." }
 ---
 
 ## What you'll build
@@ -52,3 +52,4 @@ A harder word search prints only the grid: add `hidden` to the fence.
 
 - A crossword word that crosses no other is left out and reported as `exerciseWordUnplaced`. Choose words that share letters, or add one that links two groups.
 - A puzzle card is kept together, so a tall crossword moves to the next column when it does not fit: check the Spanish edition, whose words are longer.
+- Balancing is on (`headings.balancing.enabled`), so the closing page is cut level: the last cards share its two columns instead of filling the first one and leaving the second almost empty. Keep the cards of the last page close in height, or one tall card still ends its column alone.

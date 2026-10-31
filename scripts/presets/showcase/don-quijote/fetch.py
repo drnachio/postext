@@ -147,6 +147,9 @@ def fetch_plates() -> None:
                 "width": info["width"],
                 "height": info["height"],
                 "page": info["descriptionurl"],
+                # The page id gives the short address the printed credits show
+                # (https://commons.wikimedia.org/?curid=N opens the same page).
+                "pageid": page["pageid"],
                 "license": info.get("extmetadata", {}).get("LicenseShortName", {}).get("value", ""),
             }
         )

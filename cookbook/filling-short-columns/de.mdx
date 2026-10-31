@@ -1,0 +1,64 @@
+---
+title: "Die Spalte, die die Hurenkind-Regel kurz ließ"
+summary: "Flattersatzspalten, die auf dem Raster enden: fillShortColumns setzt einen Absatz der kurzen Spalte eine Zeile länger oder kürzer."
+description: "Ein Magazinartikel in zwei Flattersatzspalten, mit und ohne fillShortColumns gesetzt, um die Spalte zu sehen, die die Hurenkind-Regel kurz ließ."
+plain: "Wenn eine Spalte eine Zeile über dem Seitenfuß endet, weil ein Absatz dort nicht umbrochen werden darf, bricht diese Einstellung einen Absatz der Spalte neu um, damit sie bis unten reicht."
+question: "Warum endet eine Flattersatzspalte eine Zeile zu früh, und wie fülle ich sie ohne Hurenkinder?"
+aliases: ["kurze Spalte", "Lücke am Spaltenfuß", "Flattersatz", "vertikaler Ausgleich", "Hurenkind", "fillShortColumns"]
+pageNotes: { "1": "Die Auftaktseite ohne die Einstellung: eine leuchtende Fresnel-Linse über die ganze Breite gemalt, die Überschrift und zwei Flattersatzspalten, die linke eine Zeile kürzer als die rechte.", "4": "Dieselbe Auftaktseite mit fillShortColumns: der erste Absatz läuft eine Zeile länger, und beide Spalten enden auf derselben Grundlinie." }
+---
+
+## Was Sie setzen
+
+Drei Seiten aus *Littoral*, einem Küstenmagazin: ein langer Artikel über die Fresnel-Linse, eröffnet von dem Gemälde einer leuchtenden Linse in ihrer Laterne. Der Text läuft in zwei Flattersatzspalten aus Public Sans, mit einer leeren Rasterzeile zwischen den Absätzen, und die Regeln gegen Hurenkinder und Schusterjungen lassen auf jeder Seite eines Umbruchs mindestens zwei Zeilen eines Absatzes stehen. Der Pen setzt den Artikel zweimal. Ohne die Einstellung endet auf <PageRef page={1}>der Auftaktseite</PageRef> die linke Spalte eine Zeile über der rechten: Der nächste Absatz darf nicht mit einer einzelnen Zeile am Fuß beginnen. Mit ihr läuft auf <PageRef page={4}>derselben Seite</PageRef> der erste Absatz eine Zeile länger, und beide Spalten enden auf der letzten Rasterzeile. Auf der Folgeseite nimmt die Einstellung auch die zusätzliche Luft zurück, die der Ausgleich über zwei Zwischentitel gesetzt hatte.
+
+## Zubereitung
+
+### 1 · Der Flattersatzspalte einen eigenen Hebel geben
+
+<Excerpt region="answer" />
+
+Der Spaltenausgleich füllt eine kurze Spalte, indem er Rasterzeilen über einer Überschrift, nach einer Liste, unter einem Kasten oder einer Abbildung einfügt und zuletzt einen Absatz im Blocksatz eine Zeile lockerer setzt. Eine Flattersatzspalte mit Fließtext hat zwischen ihren Zwischentiteln nichts davon, also bleibt die Zeile leer, die die Regeln gegen Hurenkinder und Schusterjungen zurückhalten. `fillShortColumns` lässt einen Flattersatzabsatz dieser Spalte mit seinen eigenen Wortabständen eine Zeile länger laufen; kann das keiner, wird einer eine Zeile kürzer gesetzt, damit der Absatz nach dem Umbruch nachrückt und die Zeile füllt. Die Engine behält die Änderung nur, wenn danach weniger Spalten kurz enden, also macht die Einstellung keine Seite schlechter. `maxLinesBeforeLoose: 0` probiert die Absätze vor den Überschriften, sodass jeder Zwischentitel genau eine Rasterzeile Luft über sich behält.
+
+### 2 · Den Artikel zweimal setzen und vergleichen
+
+<Excerpt region="builds" />
+
+Beide Dokumente entstehen aus derselben Konfiguration und demselben Markdown. Der zweite Satz übergibt die Konfiguration, wie sie ist; der erste eine Kopie mit ausgeschalteter Einstellung, sodass das Paket, das sich in der Sandbox öffnet, `fillShortColumns: true` trägt. Die beiden Schaltflächen über dem Tisch wechseln zwischen den Sätzen. Nur Seiten, auf die der Text weiterläuft, werden bis zum Fuß gefüllt: Seite 3 schließt den Artikel, und ihre Spalten werden in beiden Sätzen auf gleiche Höhe gekürzt.
+
+### 3 · Mit dem Gemälde eröffnen
+
+<Excerpt region="opener" />
+
+Das Gemälde ist ein Bildelement, am Anschnitt verankert und 150 mm hoch, sodass es an drei Seiten bis zum Beschnitt reicht, was kein Float tut. Dachzeile, Überschrift, Vorspann und Autorenzeile kommen aus den Attributen der `#`-Zeile. Die Autorenzeile endet in einem Innenabstand von 6 mm, der zur Höhe des Auftakts zählt, sodass die Spalten auf der ersten Rasterzeile darunter beginnen.
+
+### 4 · Kolumnentitel außerhalb des Auftakts
+
+<Excerpt region="heads" />
+
+Die linke Seite nennt Magazin und Ausgabe aus dem Frontmatter, die rechte den Artikel, und `pages: 'body'` hält beide vom Auftakt fern, der nur eine Seitenzahl am Fuß trägt. Das Label steht 0,35 mm tiefer als die Seitenzahl, damit beide Größen eine Grundlinie teilen. Die feine Linie darunter ist 197 mm lang, so breit wie der Satzspiegel.
+
+## Varianten
+
+### Die Zwischentitel zuerst ausgleichen lassen
+
+In der Standardreihenfolge nimmt eine Überschrift bis zu zwei Rasterzeilen, bevor ein Absatz verlängert wird, und die Zwischentitel der Folgeseite öffnen sich wieder.
+
+```diff
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Den Text im Blocksatz setzen
+
+Ein Absatz im Blocksatz konnte auch ohne die Einstellung eine Zeile lockerer laufen, innerhalb von `maxWordSpacing`. Mit `fillShortColumns` darf er auch eine Zeile enger laufen und wird nie lockerer gesetzt als seine lockerste Zeile.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
+```
+
+## Häufige Fehler
+
+- Die Einstellung schließt eine Lücke von einer Zeile. Eine Spalte, der zwei fehlen, etwa eine, die nach dem Abstand zwischen zwei Absätzen nur noch Platz für eine Zeile des nächsten hat, kann kurz bleiben: Gleichen Sie den Text um einen Satz aus.
+- Ein Absatz, dessen neuer Umbruch auf einer zu kurzen Ausgangszeile enden würde, wird nicht verwendet; eine Spalte mit nur kurzen Absätzen kann deshalb kurz bleiben.

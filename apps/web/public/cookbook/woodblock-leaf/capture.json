@@ -3,27 +3,21 @@
   "slug": "woodblock-leaf",
   "sourceHash": "e2fd8a6b3e4dbf325ba69545915455c2dba6a00575493dec34d372b52f8400a3",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:43:09.600Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:04.705Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:51:17.325Z",
   "variants": {
     "en": {
-      "hash8": "29dee23c",
+      "hash8": "5477ef6f",
       "vdtHash": "91ea12b4e4b739496a275ae667b92b4fef3b7255",
       "timings": {
-        "importMs": 366,
-        "fontsMs": 287,
-        "buildMs": 52,
-        "totalMs": 1329,
+        "importMs": 2217,
+        "fontsMs": 371,
+        "buildMs": 65,
+        "totalMs": 3508,
         "builds": 1
       },
       "specimen": {
@@ -132,7 +126,7 @@
       },
       "pdf": {
         "file": "woodblock-leaf.pdf",
-        "bytes": 209059,
+        "bytes": 208960,
         "pages": 7
       },
       "sandbox": {
@@ -314,9 +308,19 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "bundle locale zh-Hant, the document's language: en names its resource types otherwise"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (its bundle is in zh-Hant, as another edition's)"
           },
           {
             "check": "sandbox",
@@ -327,13 +331,13 @@
       }
     },
     "es": {
-      "hash8": "a8de8ced",
+      "hash8": "99dc90b7",
       "vdtHash": "644b1ce8232fdd9b1350f719fe85772a763d0d2d",
       "timings": {
-        "importMs": 442,
-        "fontsMs": 158,
-        "buildMs": 55,
-        "totalMs": 1320,
+        "importMs": 2272,
+        "fontsMs": 525,
+        "buildMs": 67,
+        "totalMs": 3870,
         "builds": 1
       },
       "specimen": {
@@ -442,7 +446,7 @@
       },
       "pdf": {
         "file": "woodblock-leaf.pdf",
-        "bytes": 209335,
+        "bytes": 209235,
         "pages": 7
       },
       "sandbox": {
@@ -624,9 +628,19 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "bundle locale zh-Hant, the document's language: es names its resource types otherwise"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (its bundle is in zh-Hant, as another edition's)"
           },
           {
             "check": "sandbox",

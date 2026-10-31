@@ -1,0 +1,65 @@
+---
+title: "Cifre old-style, maiuscole e tabellari"
+summary: "I conti di Thoreau in Walden: figureStyle dà cifre maiuscole ai titoli in maiuscoletto e cifre tabellari ai conti; la prosa conserva le cifre old-style."
+plain: "Una piccola edizione dei conti di casa che Thoreau pubblicò in Walden. Le cifre del testo sono piccole come le minuscole, gli anni dei titoli alti come le maiuscole e le somme dei conti si allineano in colonna."
+description: "I conti di Walden in Postext: cifre old-style nella prosa, cifre maiuscole nei titoli in maiuscoletto e cifre tabellari nei conti, a schermo e nel PDF."
+question: "Come compongo cifre old-style nel testo, maiuscole nei titoli e tabellari nelle tabelle?"
+aliases: ["cifre old-style", "cifre minuscole", "cifre maiuscole", "cifre tabellari", "stili delle cifre", "onum", "lnum", "tnum", "Thoreau", "Walden", "conti"]
+pageNotes: { "1": "La pagina d'apertura: l'incisione del 1854 con la capanna di Thoreau tra i pini, il titolo THE ACCOUNTS in maiuscoletto sopra Concord, 1845–1847 in cifre maiuscole, una nota introduttiva in corsivo con le date in cifre old-style e la prima sezione, The House, 1845.", "2": "Il costo della casa: tredici voci con il prezzo in una colonna di cifre old-style della stessa larghezza, una colonna per i mezzi centesimi, le osservazioni di Thoreau a destra e il totale, $28.12½, sotto un filetto sottile." }
+---
+
+## Che cosa comporrai
+
+Una piccola edizione dei conti che Thoreau pubblicò nel primo capitolo di *Walden*: quanto gli costò la casa, quanto gli rese il campo di fagioli, che cosa mangiò in otto mesi. È composta su una pagina di 140 × 216 mm con la famiglia Alegreya, e l'apertura porta l'incisione del 1854 della capanna. Le cifre cambiano con il lavoro che fanno. Nella prosa, *March, 1845* e *$13.34* sono in cifre old-style, che salgono e scendono come le minuscole, così le date non sporgono dalla riga. I titoli sono in maiuscoletto, e i loro anni sono alti come le maiuscole. Nei conti ogni cifra ha la stessa larghezza, e i centesimi di tredici righe di assi, listelli e chiodi stanno uno sotto l'altro fino al totale.
+
+## Preparazione
+
+### 1 · Uno stile di cifre per ogni stile di testo
+
+Il codice di questo passo è la risposta breve, più sopra. `figureStyle` chiede al carattere di uno stile le sue cifre OpenType ([stili delle cifre](/it/docs/configuration-fonts-colors-viewers#stili-delle-cifre)). Il corpo non chiede nulla, perché le cifre proprie di Alegreya sono già old-style e proporzionali: l'1 è largo 342 unità e lo 0 533. I titoli di secondo livello chiedono ad Alegreya SC `'lining'`, le sue cifre `lnum`, alte come le maiuscole che le circondano. Lo stile di tabella chiede `'tabular'`, il `tnum` del carattere: le cifre mantengono la forma old-style e prendono tutte la stessa larghezza, 450 unità, così una colonna di prezzi si legge dall'alto in basso. Con `'lining-tabular'` starebbero all'altezza delle maiuscole (vedi «Varianti»).
+
+### 2 · I conti sono tabelle di cinque colonne
+
+<Excerpt region="accounts" />
+
+I conti di Thoreau sono conservati come TSV in `content.accounts.en.md`, un blocco per conto, e l'edizione spagnola traduce le voci e passa dal punto alla virgola decimale senza toccare il codice. Ogni riga ha la voce, il segno del dollaro, l'importo, una frazione e un'osservazione. Le metà e i quarti hanno una colonna propria: ½ è largo 713 unità e ¾ 689, più di una cifra tabellare, e Alegreya non ha uno spazio cifra con cui completare gli altri importi. Un totale è fatto di celle d'intestazione, quindi `groupRules` traccia sopra un filetto sottile, come lo stampatore di Thoreau tracciava una linea prima di *In all*. Il segno del dollaro si scrive `\$`, perché un `$` da solo apre una formula in una cella come nel testo. Il tipo di risorsa `account` non ha numero né prefisso di didascalia, e il suo posizionamento predefinito è `'here'`: ogni conto sta dove la frase di Thoreau lo introduce.
+
+### 3 · L'apertura dichiara le proprie cifre
+
+<Excerpt region="opener" />
+
+Un testo di design stabilisce la propria famiglia, quindi le cifre del corpo non lo raggiungono. *Concord, 1845–1847* è in Alegreya SC e chiede `'lining'` per conto suo, come i titoli. La vignetta è l'incisione del frontespizio del 1854, ritagliata e portata a nero su bianco; occhiello, titolo e date prendono la giustezza e si centrano sotto di essa.
+
+### 4 · Testatine con la sezione sulla pagina dispari
+
+<Excerpt region="running-heads" />
+
+La pagina pari porta il titolo del libro, la dispari la sezione in corso, `{firstMark.h2}`: la pagina 3 dice *The Bean-Field, 1845*. I folii sono in Alegreya e conservano le cifre old-style.
+
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="Pagina 2: le cifre old-style del conto della casa hanno tutte la stessa larghezza, e i centesimi si allineano fino al totale." />
+
+## Varianti
+
+### Componi i conti in cifre maiuscole
+
+Un libro contabile o un listino prezzi in un libro moderno porta spesso le cifre all'altezza delle maiuscole.
+
+```diff
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### Componi i folii in cifre maiuscole
+
+Folii in cifre maiuscole si accordano con testatine in maiuscolo.
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
+```
+
+## Errori frequenti
+
+- I file latin serviti da Fontsource spesso lasciano fuori `onum`: Lora, EB Garamond, Source Serif 4, Crimson Pro, Newsreader e Literata tengono solo `pnum` e `tnum`. Con questi file `figureStyle: 'oldstyle'` non cambia nulla e il testo resta in cifre maiuscole. Scegli un carattere le cui cifre proprie siano old-style, come Alegreya, Gelasio o Cormorant Garamond, che aggiungono `lnum` per i titoli, oppure carica i file completi della fonderia.
+- Un `$` nel Markdown o in una cella apre una formula in linea. Scrivi `\$14.72½` nel testo e `\$` in una cella.

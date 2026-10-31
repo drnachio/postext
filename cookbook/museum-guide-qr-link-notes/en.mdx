@@ -1,0 +1,64 @@
+---
+title: "A gallery guide whose links print as QR codes"
+summary: "A pocket museum walk whose web links print as numbered notes at the page foot, each with a short address and a QR code, from links.print set to notes."
+description: "A gallery guide in Postext: links to the museum's catalogue print as numbered notes with a short address and a QR code, one painting to a page, with the code."
+plain: "A small printed guide to five paintings. Wherever the text mentions a web page, a small number leads to the foot of the page, where a square code opens that page on a phone."
+question: "How do I print a guide's web links as numbered notes with a QR code a visitor can scan?"
+aliases: ["QR code", "QR codes in print", "printed URLs", "museum guide", "gallery guide", "walking guide", "link notes", "código QR", "guía de museo"]
+pageNotes: { "1": "The cover: Vermeer's Young Woman with a Water Pitcher bleeds off the top of the page, over the title The Dutch Rooms, an italic standfirst and a first paragraph whose link prints note 1 at the foot, a QR code beside the short address metmuseum.org/plan-your-visit.", "3": "Stop 1: Frans Hals's Young Man and Woman in an Inn beside its wall label, three paragraphs, and note 3 at the foot with a QR code for the painting's catalogue page." }
+---
+
+## What you'll build
+
+A pocket guide to the Dutch rooms of the Metropolitan Museum of Art: five paintings, an hour on foot, one painting to a page. The cover is Vermeer's young woman at the window, cut off at the top edge. Each stop opens on its gallery number, title and painter, then the picture with its wall label beside it, then three short paragraphs. The text links to the museum's catalogue as any web page would. On paper each link becomes a small number, and at the foot of the page the note gives the short address and a QR code that a visitor holds a phone over, standing in front of the painting.
+
+## Method
+
+### 1 · Write links, print notes
+
+The code is [the short answer](#the-short-answer) above. The Markdown keeps ordinary links, `[The catalogue entry](https://www.metmuseum.org/…/436616)`, and `links.print: 'notes'` turns each one into a numbered note with the address and the code ([links in print](/en/docs/configuration-notes-references#links-in-print)). The notes are footnotes: `numbering: 'document'` counts them through the walk, so the reader meets 1 to 7, and `repeat: 'first'` lets the last stop cite the Hals by its note 3 instead of printing the same code twice. In the PDF the code is drawn as vectors and is itself a link.
+
+<PageShot page={3} crop="0,0.74,1,0.2" caption="The foot of stop 1: note 3, the painting's catalogue page as a short address beside a 16 mm code." />
+
+### 2 · One stop to a page
+
+<Excerpt region="stops" />
+
+Each stop is a second-level heading whose `breakBefore` opens a page, either side, so a visitor turns one leaf per painting. The gallery number and the painter are heading attributes; the design sets them above and below the title, and `minHeight` keeps the picture at the same height on every page.
+
+### 3 · The wall label beside the picture
+
+<Excerpt region="resources" />
+
+`captionSide: 'inside'` sets the caption and its credit note beside the picture, as a museum hangs its label, and `width` gives each picture its share of the measure: less for the tall Hals, more for the wide Ruisdael, so the five pages keep a similar height of text. The label is built from the medium, the size in centimetres with no-break spaces and the museum's credit line, with a decimal comma in the Spanish edition.
+
+### 4 · The stop in the running head
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` prints the title of the stop that starts on the page, so the recto names the painting and the verso the guide. No running head reaches the cover, a page whose role is the opener.
+
+## Variations
+
+### Print the address in the line instead
+
+For a guide read at home, `'inline'` adds the address in parentheses after the link text and sets no note and no code.
+
+```diff
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Codes without addresses
+
+`show: 'qr'` prints the code alone beside the note number, for a poster or a label where an address would only take room.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
+```
+
+## Pitfalls
+
+A note with a code is at least as tall as the code. When the line that carries the link has no room for its note below it on the page, the line moves on with its note, so keep a link out of the last lines of a page that must end where it does, as the cover's first paragraph is here.

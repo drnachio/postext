@@ -1,0 +1,63 @@
+---
+title: "Ein Museumsführer, dessen Links als QR-Codes gedruckt werden"
+summary: "Ein Museumsrundgang im Taschenformat, dessen Weblinks als nummerierte Fußnoten mit Kurzadresse und QR-Code gedruckt werden (links.print auf notes)."
+description: "Ein Museumsführer in Postext: Links zum Sammlungskatalog werden als nummerierte Fußnoten mit Kurzadresse und QR-Code gedruckt, ein Gemälde je Seite."
+plain: "Ein kleiner gedruckter Führer zu fünf Gemälden. Wo der Text eine Webseite nennt, führt eine kleine Ziffer an den Fuß der Seite, wo ein quadratischer Code diese Seite auf dem Handy öffnet."
+question: "Wie drucke ich die Links eines Führers als nummerierte Anmerkungen mit QR-Code zum Scannen?"
+aliases: ["QR-Code", "gedruckte QR-Codes", "gedruckte Adressen", "Museumsführer", "Rundgang", "Linkanmerkungen", "QR code", "museum guide"]
+---
+
+## Was Sie setzen
+
+Ein Taschenführer durch die holländischen Säle des Metropolitan Museum of Art: fünf Gemälde, eine Stunde zu Fuß, ein Gemälde je Seite. Den Umschlag bildet Vermeers junge Frau am Fenster, vom oberen Seitenrand angeschnitten. Jede Station beginnt mit Saalnummer, Titel und Maler, dann folgt das Bild mit dem Saaltext daneben, dann drei kurze Absätze. Der Text verlinkt auf den Katalog des Museums wie jede Webseite. Auf Papier wird jeder Link zu einer kleinen Ziffer, und am Fuß der Seite nennt die Anmerkung die Kurzadresse und einen QR-Code, den der Besucher vor dem Bild mit dem Handy erfasst.
+
+## Zubereitung
+
+### 1 · Links schreiben, Anmerkungen drucken
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Das Markdown behält gewöhnliche Links, `[Der Katalogeintrag](https://www.metmuseum.org/…/436616)`, und `links.print: 'notes'` macht aus jedem eine nummerierte Anmerkung mit Adresse und Code ([Links im Druck](/de/docs/configuration-notes-references#links-im-druck)). Die Anmerkungen sind Fußnoten: `numbering: 'document'` zählt sie über den ganzen Rundgang, der Leser trifft also auf 1 bis 7, und `repeat: 'first'` lässt die letzte Station den Hals mit seiner Anmerkung 3 zitieren, statt denselben Code zweimal zu drucken. Im PDF ist der Code als Vektorgrafik gezeichnet und selbst ein Link.
+
+<PageShot page={3} crop="0,0.74,1,0.2" caption="Der Fuß von Station 1: Anmerkung 3, der Katalogeintrag des Gemäldes als Kurzadresse neben einem 16 mm großen Code." />
+
+### 2 · Eine Station je Seite
+
+<Excerpt region="stops" />
+
+Jede Station ist eine Überschrift zweiter Ebene, deren `breakBefore` eine neue Seite beginnt, links oder rechts, sodass der Besucher je Gemälde ein Blatt umschlägt. Saalnummer und Maler sind Attribute der Überschrift; die Gestaltung setzt sie über und unter den Titel, und `minHeight` hält das Bild auf jeder Seite auf derselben Höhe.
+
+### 3 · Der Saaltext neben dem Bild
+
+<Excerpt region="resources" />
+
+`captionSide: 'inside'` setzt Bildunterschrift und Nachweis neben das Bild, wie ein Museum seinen Saaltext hängt, und `width` gibt jedem Bild seinen Anteil an der Satzbreite: weniger für den hohen Hals, mehr für den breiten Ruisdael, damit die fünf Seiten eine ähnliche Textmenge tragen. Der Saaltext setzt sich aus Technik, Maßen in Zentimetern mit geschützten Leerzeichen und der Erwerbungszeile des Museums zusammen, in der spanischen Ausgabe mit Dezimalkomma.
+
+### 4 · Die Station im Kolumnentitel
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` druckt den Titel der Station, die auf der Seite beginnt: Die rechte Seite nennt das Gemälde, die linke den Führer. Kein Kolumnentitel erreicht den Umschlag, eine Seite in der Rolle eines Auftakts.
+
+## Varianten
+
+### Die Adresse in der Zeile drucken
+
+Für einen Führer, den man zu Hause liest, setzt `'inline'` die Adresse in Klammern hinter den Linktext, ohne Anmerkung und ohne Code.
+
+```diff
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Codes ohne Adresse
+
+`show: 'qr'` druckt nur den Code neben der Anmerkungsziffer, für ein Plakat oder ein Schild, auf dem die Adresse nur Platz kosten würde.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
+```
+
+## Häufige Fehler
+
+Eine Anmerkung mit Code ist mindestens so hoch wie der Code. Hat die Zeile mit dem Link auf der Seite keinen Platz mehr für ihre Anmerkung darunter, wandert die Zeile mit ihrer Anmerkung auf die nächste Seite. Halten Sie Links daher aus den letzten Zeilen einer Seite heraus, die an ihrer Stelle enden muss, wie der erste Absatz auf dem Umschlag dieses Führers.

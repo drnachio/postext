@@ -6,8 +6,6 @@ Despite this progress, the EEA’s annual Air quality in Europe assessments cons
 
 Air pollution is the number one cause of premature deaths from environmental factors in Europe but it also has considerable economic impacts. It increases medical costs and reduces economic productivity due to the ill health of workers. Air pollution also harms soil, crops, forests, lakes and rivers. Pollutants even damage our houses, bridges and other built infrastructure.
 
-::resource{id="photo-air-2"}
-
 Moreover, the negative impacts of poor air quality are not equally distributed across society. A recent EEA report showed that air pollution, as well as extreme temperatures and noise, disproportionately affect Europe’s most vulnerable citizens, especially in Europe’s eastern and southern regions. In addition to overall improvements, targeted action is needed to better protect vulnerable groups.
 
 :::callout{type="recuadro" title="COVID-19 and air pollution"}
@@ -22,11 +20,9 @@ Particulate matter (PM), nitrogen dioxide (NO2) and ground-level ozone (O3) are 
 
 In cities, where about three out of four Europeans live, road transport is often the main source of air pollution, especially because cars emit pollutants at the ground level, close to people. In parts of Europe, domestic heating with wood and coal is the most important source of harmful pollutants. Unfortunately, these emissions also increase during winter months when weather conditions often prevent pollutants from dispersing.
 
-:::callout{type="cita"}
-“The tragic consequence of this is that, according to the EEA’s estimates, every year about 400 000 Europeans die prematurely because of poor air quality.”
-:::
-
 What is common to the sources of air pollutants is that they are deeply rooted in our societies’ core systems of mobility, energy and food production and consumption. These same systems are not only the main sources of air pollutants, but also the root causes of the climate crisis and the rapid loss of biodiversity.
+
+::resource{id="photo-air-2"}
 
 How we move people and goods around, how we generate heat and electricity, and how we produce and consume our food are, in many ways, the foundations of our current way of life. This is why changing these systems is not easy. In many cases, it requires us to reconsider the way we have built our societies and the way in which we live our lives.
 
@@ -36,7 +32,7 @@ The EEA has worked together with a number of European cities in a pilot project 
 
 These measures reduce local air pollution and often noise, and they improve residents’ quality of life. Moreover, the same actions cut greenhouse gas emissions and, in many cases, save money. Still, the same cities also reported important challenges, especially in engaging with citizens and making the political case for measures to improve air quality.
 
-For best results, local and regional actions go along with effective national and EU policies that often offer substantial co‑benefits in reducing greenhouse gas emissions and air pollution at the same time. These co-benefits can be achieved by, for example, improving energy efficiency and greening the mobility system.
+For best results, local and regional actions go along with effective national and EU policies that often offer substantial co-benefits in reducing greenhouse gas emissions and air pollution at the same time. These co-benefits can be achieved by, for example, improving energy efficiency and greening the mobility system.
 
 ## People demand clean air
 
@@ -53,13 +49,14 @@ Local-, regional-, national- and EU-level actions and policies with binding targ
 The actions that are necessary to cut air pollution, both in Europe and globally, are largely the same actions that are necessary to address the climate crisis and stop the degradation of nature. We need to fundamentally change and decarbonise our systems of production and consumption, especially those related to mobility, energy and food.
 
 :::callout{type="datos" title="Air quality problems in Europe’s cities"}
-Almost all Europeans who live in cities are exposed to air pollution that exceeds the levels set in the World Health Organization’s (WHO’s) guidelines for clean air. Air pollution is the greatest environmental
+Almost all Europeans who live in cities are exposed to air pollution that exceeds the levels set in the World Health Organization’s (WHO’s) guidelines for clean air. Air pollution is the greatest environmental health hazard in Europe and globally.
 :::
 
 ::resource{id="tabla-17"}
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Air pollution](https://www.eea.europa.eu/themes/air)
+- [SOER 2020, Chapter 8 on air pollution](https://www.eea.europa.eu/publications/soer-2020/chapter-08_soer2020-air-pollution/view)
+- [European Air Quality Index](https://www.eea.europa.eu/themes/air/air-quality-index)
 
-- Air pollution: www.eea.europa.eu/ themes/air
-- SOER 2020, Chapter 8 on air pollution: www.eea.europa.eu/publications/ soer-2020/chapter-08_soer2020-airpollution/view
-- European Air Quality Index: www.eea. europa.eu/themes/air/air-quality-index
+:::

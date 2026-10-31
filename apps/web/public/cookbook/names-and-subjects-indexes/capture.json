@@ -3,18 +3,12 @@
   "slug": "names-and-subjects-indexes",
   "sourceHash": "930578d5b0edbd4b52f77bc1725d7cfdd1aa59132464ae8132b026c9e0d5d7c3",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:33.822Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:01.887Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:15:00.538Z",
   "variants": {
     "en": {
       "hash8": "19dfb5ef",
@@ -404,6 +398,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -412,13 +416,13 @@
       }
     },
     "es": {
-      "hash8": "5a31cc71",
-      "vdtHash": "f76220c95da32c4a77284ada4c89083d3ec6062f",
+      "hash8": "037f0ee6",
+      "vdtHash": "59df8f4f323d81fc0a6282984fc9c3387b86f540",
       "timings": {
-        "importMs": 620,
-        "fontsMs": 26,
-        "buildMs": 130,
-        "totalMs": 1586,
+        "importMs": 3078,
+        "fontsMs": 30,
+        "buildMs": 159,
+        "totalMs": 4374,
         "builds": 1
       },
       "specimen": {
@@ -563,8 +567,8 @@
         "chapters": [
           {
             "pages": 7,
-            "hash": "cb43e0277bf54877",
-            "lines": "b9f1a413596d4363"
+            "hash": "a05d749c8c45b966",
+            "lines": "3d2f79b1d1aba429"
           }
         ]
       },
@@ -802,6 +806,21 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 0.91 MB (warning at 0.9 MB for 7 pages; capture.expect.imageMb states the figure of a book of paintings)"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

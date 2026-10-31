@@ -290,6 +290,7 @@
   },
   "bodyText": {
    "fontFamily": "EB Garamond",
+   "figureStyle": "oldstyle",
    "fontSize": {
     "value": 11,
     "unit": "pt"
@@ -366,10 +367,14 @@
       "enabled": true,
       "parity": "even"
      },
+     "marginBottom": {
+      "value": 9,
+      "unit": "pt"
+     },
      "advancedDesign": {
       "enabled": true,
       "minHeight": {
-       "value": 74,
+       "value": 40,
        "unit": "mm"
       },
       "slot": {
@@ -640,6 +645,7 @@
           "paletteId": "ink"
          },
          "hyphenate": true,
+         "figureStyle": "oldstyle",
          "dropCap": {
           "lines": 3,
           "fontFamily": "Bodoni Moda",
@@ -958,9 +964,9 @@
         "lineHeight": 1.2,
         "overflow": "wrap",
         "color": {
-         "hex": "#6d675f",
+         "hex": "#c8c2b6",
          "model": "hex",
-         "paletteId": "muted"
+         "paletteId": "rule"
         },
         "textTransform": "uppercase",
         "letterSpacing": {
@@ -1207,9 +1213,9 @@
         "lineHeight": 1.2,
         "overflow": "wrap",
         "color": {
-         "hex": "#6d675f",
+         "hex": "#c8c2b6",
          "model": "hex",
-         "paletteId": "muted"
+         "paletteId": "rule"
         },
         "textTransform": "uppercase",
         "letterSpacing": {
@@ -1368,6 +1374,7 @@
          "paletteId": "ink"
         },
         "hyphenate": true,
+        "figureStyle": "oldstyle",
         "dropCap": {
          "lines": 3,
          "fontFamily": "Bodoni Moda",
@@ -1389,6 +1396,203 @@
        }
       ]
      }
+    }
+   },
+   {
+    "id": "creditos",
+    "name": "Créditos",
+    "numbered": false,
+    "span": "page",
+    "breakBefore": {
+     "enabled": true,
+     "parity": "any"
+    },
+    "advancedDesign": {
+     "enabled": true,
+     "minHeight": {
+      "value": 36,
+      "unit": "mm"
+     },
+     "slot": {
+      "elements": [
+       {
+        "kind": "text",
+        "id": "frontTitle",
+        "placement": {
+         "anchor": {
+          "to": "container",
+          "edge": "top-left"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144,
+           "unit": "mm"
+          },
+          "height": "auto"
+         }
+        },
+        "content": "{titleText}",
+        "fontFamily": "Bodoni Moda",
+        "fontSize": {
+         "value": 30,
+         "unit": "pt"
+        },
+        "fontWeight": 400,
+        "italic": true,
+        "align": "left",
+        "verticalAlign": "middle",
+        "lineHeight": 1.1,
+        "overflow": "wrap",
+        "color": {
+         "hex": "#1c1a19",
+         "model": "hex",
+         "paletteId": "ink"
+        }
+       },
+       {
+        "kind": "rule",
+        "id": "frontRule",
+        "direction": "horizontal",
+        "placement": {
+         "anchor": {
+          "to": "#frontTitle",
+          "edge": "below"
+         },
+         "offset": {
+          "x": {
+           "value": 0,
+           "unit": "mm"
+          },
+          "y": {
+           "value": 6,
+           "unit": "mm"
+          }
+         },
+         "size": {
+          "width": {
+           "value": 144,
+           "unit": "mm"
+          }
+         }
+        },
+        "color": {
+         "hex": "#c8c2b6",
+         "model": "hex",
+         "paletteId": "rule"
+        },
+        "thickness": {
+         "value": 0.5,
+         "unit": "pt"
+        }
+       }
+      ]
+     }
+    },
+    "header": {
+     "elements": [
+      {
+       "kind": "text",
+       "id": "creditsEven",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-left"
+        },
+        "offset": {
+         "x": {
+          "value": 44,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 120,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "EB Garamond",
+       "fontSize": {
+        "value": 8.5,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": true,
+       "align": "left",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#6d675f",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "even",
+       "pages": "body"
+      },
+      {
+       "kind": "text",
+       "id": "creditsOdd",
+       "placement": {
+        "anchor": {
+         "to": "page",
+         "edge": "top-right"
+        },
+        "offset": {
+         "x": {
+          "value": -44,
+          "unit": "mm"
+         },
+         "y": {
+          "value": 13,
+          "unit": "mm"
+         }
+        },
+        "size": {
+         "width": {
+          "value": 120,
+          "unit": "mm"
+         },
+         "height": "auto"
+        }
+       },
+       "content": "{chapterTitle}",
+       "fontFamily": "EB Garamond",
+       "fontSize": {
+        "value": 8.5,
+        "unit": "pt"
+       },
+       "fontWeight": 400,
+       "italic": true,
+       "align": "right",
+       "verticalAlign": "middle",
+       "lineHeight": 1.2,
+       "overflow": "ellipsis-end",
+       "color": {
+        "hex": "#6d675f",
+        "model": "hex",
+        "paletteId": "muted"
+       },
+       "parity": "odd",
+       "pages": "body"
+      }
+     ]
     }
    },
    {
@@ -1543,7 +1747,7 @@
      "unit": "pt"
     },
     "marginTop": {
-     "value": 14,
+     "value": 10,
      "unit": "pt"
     },
     "color": {
@@ -1571,6 +1775,56 @@
     "spaceBetween": {
      "value": 6,
      "unit": "pt"
+    }
+   },
+   {
+    "id": "fechas",
+    "name": "Fechas del artista",
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontWeight": 500,
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "letterSpacing": {
+     "value": 1.4,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex",
+     "paletteId": "white"
+    }
+   },
+   {
+    "id": "semblanza",
+    "name": "Semblanza",
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex",
+     "paletteId": "white"
     }
    },
    {
@@ -1790,7 +2044,6 @@
     ]
    },
    "bodyStyle": {
-    "fontFamily": "EB Garamond",
     "fontSize": {
      "value": 11,
      "unit": "pt"
@@ -2273,6 +2526,50 @@
   },
   "pdfGeneration": {
    "outlines": true
+  },
+  "links": {
+   "print": "notes",
+   "show": "both",
+   "urlDisplay": "short",
+   "qr": {
+    "size": {
+     "value": 15,
+     "unit": "mm"
+    },
+    "color": {
+     "hex": "#1c1a19",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "side": "start",
+    "gap": {
+     "value": 3,
+     "unit": "mm"
+    }
+   }
+  },
+  "footnotes": {
+   "fontSize": {
+    "value": 8,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 10.5,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#6d675f",
+    "model": "hex",
+    "paletteId": "muted"
+   },
+   "textAlign": "left",
+   "spaceAbove": {
+    "value": 6,
+    "unit": "pt"
+   },
+   "separator": {
+    "enabled": false
+   }
   },
   "folio": {
    "paper": {

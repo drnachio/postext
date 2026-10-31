@@ -224,6 +224,8 @@ Skerra Lines, which runs the ferries to the islands, made a profit of £3.1 mill
 
 The company chartered a smaller vessel for the summer at a cost of £1.9 million and lost most of its freight trade while it was away. The *Holm Maid* returned to service yesterday. Skerra Lines expects the full year to come in close to last year’s £11 million, and has kept its dividend at 4.2p.
 
+The shares rose 3.1% to 318p on the news. One of the two ferries Corran’s is building for the islands will join the Skerra crossing in 2028, so that a refit need not leave the island with one boat again.
+
 ## Tessary puts the cost of Monday’s storm at £9 million
 
 :::paragraphs{style="flush"}

@@ -1,0 +1,64 @@
+---
+title: "A coluna que a regra das viúvas deixava curta"
+summary: "Colunas alinhadas à esquerda que terminam na grade: fillShortColumns alonga ou encurta em uma linha um parágrafo da coluna curta em vez de deixar um vão no pé."
+description: "Uma longa matéria de revista em duas colunas alinhadas à esquerda, com e sem fillShortColumns, para comparar a coluna que viúvas e órfãs deixavam curta."
+plain: "Quando uma coluna para uma linha acima do pé porque um parágrafo não pode ser quebrado ali, este ajuste refaz as linhas de um parágrafo da coluna para que ela chegue até embaixo."
+question: "Por que uma coluna alinhada à esquerda termina uma linha antes do pé, e como preenchê-la sem viúvas nem órfãs?"
+aliases: ["coluna curta", "vão no pé", "texto alinhado à esquerda", "justificação vertical", "regra das viúvas", "fillShortColumns"]
+pageNotes: { "1": "A abertura sem o ajuste: uma lente de Fresnel acesa pintada de ponta a ponta, o título e duas colunas alinhadas à esquerda, a da esquerda uma linha mais curta que a da direita.", "4": "A mesma abertura com fillShortColumns: o primeiro parágrafo ganha uma linha e as duas colunas terminam na mesma linha de base." }
+---
+
+## O que você vai compor
+
+Três páginas de *Littoral*, uma revista do litoral: uma longa matéria sobre a lente de Fresnel, aberta pela pintura de uma lente acesa em sua lanterna. O texto corre em duas colunas alinhadas à esquerda em Public Sans, com uma linha de grade em branco entre os parágrafos, e as regras de viúvas e órfãs mantêm pelo menos duas linhas de um parágrafo de cada lado de uma quebra. O pen compõe a matéria duas vezes. Sem o ajuste, na <PageRef page={1}>abertura</PageRef> a coluna da esquerda termina uma linha acima da da direita: o parágrafo seguinte não pode começar com uma só linha no pé. Com ele, na <PageRef page={4}>mesma página</PageRef>, o primeiro parágrafo ganha uma linha e as duas colunas terminam na última linha da grade. Na página seguinte, o ajuste também recolhe o respiro a mais que o equilíbrio havia posto acima de dois intertítulos.
+
+## Preparo
+
+### 1 · Dê à coluna alinhada à esquerda uma alavanca própria
+
+<Excerpt region="answer" />
+
+O equilíbrio de colunas preenche uma coluna curta acrescentando linhas de grade acima de um título, depois de uma lista, sob um box ou uma figura e, em último caso, compondo um parágrafo justificado uma linha mais folgado. Uma coluna de texto corrido alinhada à esquerda não tem nada disso entre seus intertítulos, e a linha que as regras de viúvas e órfãs seguram fica vazia. `fillShortColumns` deixa um parágrafo dessa coluna ocupar uma linha a mais com o próprio espaçamento; quando nenhum consegue, compõe um com uma linha a menos para que o parágrafo depois da quebra suba e ocupe a linha. O motor só mantém a mudança se menos colunas terminarem curtas, então ativá-lo nunca piora uma página. `maxLinesBeforeLoose: 0` tenta os parágrafos antes dos títulos, e cada intertítulo mantém uma única linha de respiro acima.
+
+### 2 · Componha a matéria duas vezes e compare
+
+<Excerpt region="builds" />
+
+Os dois documentos saem da mesma configuração e da mesma string Markdown. A segunda composição passa a configuração como está; a primeira, uma cópia com o ajuste desligado, de modo que o pacote aberto no Sandbox leva `fillShortColumns: true`. Os dois botões acima da mesa alternam entre as composições. Só as páginas que continuam são preenchidas até o pé: a página 3 fecha a matéria, e suas colunas são cortadas na mesma altura nas duas composições.
+
+### 3 · Abra com a pintura
+
+<Excerpt region="opener" />
+
+A pintura é um elemento de imagem ancorado à sangria, com 150 mm de altura, e por isso chega ao corte em três lados, o que nenhum flutuante faz. O chapéu, o título, a linha fina e a assinatura vêm dos atributos da linha `#`. A assinatura termina em um preenchimento de 6 mm que conta na altura da abertura, e as colunas começam na primeira linha de grade abaixo dela.
+
+### 4 · Cabeços fora da abertura
+
+<Excerpt region="heads" />
+
+A página par traz a revista e a edição do frontmatter, a ímpar a matéria, e `pages: 'body'` tira os dois da abertura, que só leva um fólio no pé. O rótulo desce 0,35 mm em relação ao fólio para que os dois corpos dividam a linha de base. O fio abaixo deles mede 197 mm, a largura da mancha.
+
+## Variações
+
+### Deixe os intertítulos ocuparem o vão primeiro
+
+Na ordem padrão, um título ocupa até duas linhas de grade antes de um parágrafo ser alongado, e os intertítulos da página seguinte voltam a se abrir.
+
+```diff
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Justifique o texto
+
+Um parágrafo justificado já podia ocupar uma linha a mais sem o ajuste, dentro de `maxWordSpacing`. Com `fillShortColumns` ele também pode ocupar uma linha a menos, e nunca é composto mais folgado que sua linha mais folgada.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
+```
+
+## Erros comuns
+
+- O ajuste fecha um vão de uma linha. Uma coluna à qual faltam duas, por exemplo uma que termina depois do espaço entre parágrafos com lugar para uma só linha do seguinte, pode ficar curta: ajuste o texto com uma frase.
+- Um parágrafo cuja nova composição terminaria em uma linha curta demais não é usado, então uma coluna pode ficar curta quando só tem parágrafos breves.

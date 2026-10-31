@@ -26,6 +26,41 @@ def local(el: ET.Element) -> str:
     return el.tag.split("}", 1)[-1]
 
 
+# Some modules carry Windows-1252 bytes read as Latin-1: C1 control
+# characters where an em dash or an apostrophe was meant (U+0097, U+0092).
+C1_FIX = {c: bytes([c]).decode("cp1252") for c in range(0x80, 0xA0) if c not in (0x81, 0x8D, 0x8F, 0x90, 0x9D)}
+# A few prose runs use mathematical alphanumerics (𝜹 for δ in "𝜹A/A"),
+# which the book's faces do not carry: write the plain letter.
+C1_FIX[0x1D739] = "δ"
+
+
+def parse_module(path: str) -> ET.Element:
+    with open(path, encoding="utf-8") as f:
+        return ET.fromstring(f.read().translate(C1_FIX).encode("utf-8"))
+
+
+LONE_REF_RE = re.compile(r':ref\{id="([^"]+)"[^}]*\}')
+PLAIN_START = ("#", ":::", "::", "- ", "1. ", "$$", "> ", "|", "```", ":ref{")
+
+
+def fold_lone_refs(blocks: list[str]) -> list[str]:
+    """A figure that no sentence before it cites gets a `:ref` of its own,
+    which would print alone ("fig. 1.12"): the reference joins the next
+    paragraph instead, or goes when that paragraph already cites it."""
+    out = list(blocks)
+    i = 0
+    while i < len(out):
+        m = LONE_REF_RE.fullmatch(out[i].strip())
+        nxt = next((j for j in range(i + 1, len(out)) if not out[j].startswith(PLAIN_START)), None)
+        if m and nxt is not None:
+            if f'id="{m.group(1)}"' not in out[nxt]:
+                out[nxt] = out[nxt] + f" ({out[i].strip()})"
+            del out[i]
+            continue
+        i += 1
+    return out
+
+
 # --- MathML → LaTeX -------------------------------------------------------------
 
 # Postext unescapes `\$` inside inline math before MathJax sees it, so a
@@ -150,8 +185,12 @@ def tex_of(math_el: ET.Element) -> str:
 
 # --- inline content --------------------------------------------------------------
 
-SUP = str.maketrans("0123456789+-−=()n", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁻⁼⁽⁾ⁿ")
-SUB = str.maketrans("0123456789+-−=()", "₀₁₂₃₄₅₆₇₈₉₊₋₋₌₍₎")
+# Superior and inferior figures for plain digits only: Source Serif 4 has
+# no superscript or subscript signs (⁺ ⁻ ⁼), so an exponent with a sign is
+# set as math, its minus written as a hyphen (the sources also use – and −).
+SUP = str.maketrans("0123456789()n", "⁰¹²³⁴⁵⁶⁷⁸⁹⁽⁾ⁿ")
+SUB = str.maketrans("0123456789()", "₀₁₂₃₄₅₆₇₈₉₍₎")
+SIGNS = str.maketrans({"−": "-", "–": "-"})
 
 
 def md_escape(s: str) -> str:
@@ -216,10 +255,10 @@ def inline(el: ET.Element, ctx: Ctx, *, in_title: bool = False, strip: bool = Tr
                 out.append(inner)
         elif tag == "sup":
             raw = "".join(k.itertext()).strip()
-            out.append(raw.translate(SUP) if re.fullmatch(r"[0-9+\-−=()n]*", raw) else "${}^{" + _tex_text(raw) + "}$")
+            out.append(raw.translate(SUP) if re.fullmatch(r"[0-9()n]*", raw) else "${}^{" + _tex_text(raw.translate(SIGNS)) + "}$")
         elif tag == "sub":
             raw = "".join(k.itertext()).strip()
-            out.append(raw.translate(SUB) if re.fullmatch(r"[0-9+\-−=()]*", raw) else "${}_{" + _tex_text(raw) + "}$")
+            out.append(raw.translate(SUB) if re.fullmatch(r"[0-9()]*", raw) else "${}_{" + _tex_text(raw.translate(SIGNS)) + "}$")
         elif tag == "newline":
             out.append("  \n")
         elif tag in ("footnote",):
@@ -269,9 +308,12 @@ def block_parts(piece: str) -> list[tuple[str, str]]:
 
 
 def snippet(text: str) -> str:
-    """Text for a caption or table cell. Snippets have no math and no `\\$`
-    escape, so a currency sign is written bare."""
-    return text.replace("\\$", "$")
+    """Text for a caption or table cell. Snippets have no `\\$` or `\\[`
+    escape, so a currency sign or a bracket is written bare. They are set
+    in Source Sans, which has a superscript minus: a negative exponent
+    takes superior figures like its positive neighbours."""
+    text = re.sub(r"\$\{\}\^\{-([0-9]+)\}\$", lambda m: "⁻" + m.group(1).translate(SUP), text)
+    return text.replace("\\$", "$").replace("\\[", "[")
 
 
 def one_line(text: str) -> str:
@@ -315,8 +357,7 @@ class Converter:
 
     # -- entry -------------------------------------------------------------
     def module(self, path: str, module_id: str, resource_prefix: str) -> Module:
-        tree = ET.parse(path)
-        root = tree.getroot()
+        root = parse_module(path)
         title_el = root.find(q("title"))
         mod = Module(module_id, inline(title_el, Ctx(self.lang, module_id), in_title=True) if title_el is not None else module_id)
         ctx = Ctx(self.lang, module_id, words=self.words)
@@ -345,6 +386,7 @@ class Converter:
             mod.objectives = [inline(it, ctx) for it in first.findall(q("item"))]
             content.remove(first)
         self.blocks(content, mod.blocks, level=3)
+        mod.blocks = fold_lone_refs(mod.blocks)
         gl = root.find(q("glossary"))
         if gl is not None:
             for d in gl.findall(q("definition")):
@@ -764,4 +806,4 @@ class Converter:
 
     def callout(self, kind: str, title: str, body: list[str]) -> str:
         title = title.replace('"', "”")
-        return f':::callout{{type="{kind}" title="{title}"}}\n' + "\n\n".join(body) + "\n:::"
+        return f':::callout{{type="{kind}" title="{title}"}}\n' + "\n\n".join(fold_lone_refs(body)) + "\n:::"

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 115 · One book, two EPUB 3 files: fixed and reflowable ════
 // https://postext.dev/en/cookbook/epub-fixed-and-reflowable
 // Code: MIT · Text: Aesop, tr. G. F. Townsend, 1867; L. Alas, Clarín, 1893 (PD) · Pictures: none
-// Fonts: Libre Caslon Text, Libre Caslon Display, Jost (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+// Fonts: Libre Caslon Text, Libre Caslon Display, Jost (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 //
 // A small book of three chapters, laid out once with buildBundle and written as two EPUB 3
 // files with postext-epub: a fixed layout that keeps every printed page, and reflowable text

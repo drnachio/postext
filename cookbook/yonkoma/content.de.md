@@ -12,14 +12,14 @@ kuro: Mrrp.
 mugi: Jeder einen Napf, ja?
 ::panel{art=onebowl}
 sfx: MAMPF MAMPF
-mugi{tail=top}: …Wieso alle aus demselben?
+mugi{tail=top at=top-start}: …Wieso alle aus demselben?
 ::panel{art=toast}
 sfx: STARR
 mugi: Ihr habt doch gerade gefressen!
 ::panel{art=guest}
-caption{title}: Therapie
-kyaku: Ich will mich von Katzen heilen lassen…
-mugi: Willkommen!
+caption{title at="55% 8%"}: Therapie
+kyaku{at="50% 62%"}: Ich will mich von Katzen heilen lassen…
+mugi{at="82% 88%"}: Willkommen!
 ::panel{art=nap}
 sfx: zzz
 kyaku{tail=top}: …Die schlafen ja alle.

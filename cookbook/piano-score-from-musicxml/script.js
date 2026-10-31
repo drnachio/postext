@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 167 · A piano score from MusicXML over several pages ═══════
 // https://postext.dev/en/cookbook/piano-score-from-musicxml
 // Code: MIT · Text: original (CC BY 4.0) · Music: Mutopia Project (public domain)
-// Fonts: Libre Caslon Text, Bodoni Moda, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.54.0
+// Fonts: Libre Caslon Text, Bodoni Moda, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, initMusicEngine,
 } from 'https://esm.sh/postext';

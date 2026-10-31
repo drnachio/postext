@@ -1,0 +1,65 @@
+---
+title: "旧式数字、等高数字与等宽数字"
+summary: "《瓦尔登湖》里梭罗的账目：figureStyle让小型大写字母标题用等高数字，账目用等宽数字，正文保留字体自带的旧式数字。"
+plain: "梭罗在《瓦尔登湖》里刊出的家庭账目的小型版本。正文里的数字像小写字母一样有高有低，标题里的年份与大写字母等高，账目里的金额按列对齐。"
+description: "用Postext排梭罗《瓦尔登湖》的账目：正文用旧式数字，小型大写字母标题用等高数字，账目表格用等宽数字，屏幕上和PDF里都一样。"
+question: "怎样让正文用旧式数字、标题用等高数字、表格用等宽数字？"
+aliases: ["旧式数字", "等高数字", "等宽数字", "数字样式", "onum", "lnum", "tnum", "old-style figures", "tabular figures", "梭罗", "瓦尔登湖", "账目"]
+pageNotes: { "1": "开篇页：1854年版扉页上梭罗林中小屋的版画，小型大写字母的标题THE ACCOUNTS，下面是用等高数字排的Concord, 1845–1847，一段斜体导言，其中的日期是旧式数字，然后是第一节The House, 1845。", "2": "房子的造价：十三个项目，价格排成一列等宽的旧式数字，半分另占一列，右边是梭罗的批注，合计$28.12½上方有一条细线。" }
+---
+
+## 成品一览
+
+这是梭罗在《瓦尔登湖》第一章刊出的账目的小型版本：房子花了多少钱，豆田挣了多少，八个月吃了些什么。页面为140 × 216 mm，用Alegreya字族排，开篇放1854年版的小屋版画。数字随用途而变。正文里的 *March, 1845* 和 *$13.34* 用旧式数字，像小写字母一样有升有降，日期不会在行中显得突兀。标题是小型大写字母，其中的年份与大写字母等高。账目里每个数字宽度相同，木板、板条和钉子共十三行的分位上下对齐，一直到合计。
+
+## 做法
+
+### 1 · 每种文字样式一种数字
+
+这一步的代码就是上面的简短回答。`figureStyle` 向一种样式的字体要它的OpenType数字（[数字样式](/zh/docs/configuration-fonts-colors-viewers#数字样式)）。正文什么也不要，因为Alegreya自带的数字已经是比例宽度的旧式数字：1宽342个单位，0宽533。二级标题向Alegreya SC要 `'lining'`，即它的 `lnum` 数字，与周围的大写字母等高。表格样式要 `'tabular'`，即字体的 `tnum`：数字保持旧式字形，宽度都是450个单位，一列价格从上往下读得整齐。改成 `'lining-tabular'` 就会排成大写高度（见“变化”）。
+
+### 2 · 账目是五列的表格
+
+<Excerpt region="accounts" />
+
+梭罗的账目以TSV保存在 `content.accounts.en.md` 里，一笔账一个块；西班牙语版翻译项目、把小数点换成逗号，而不必改代码。每行有项目、美元符号、金额、分数和批注。半分和四分之三分各占一列：½宽713个单位，¾宽689，都比等宽数字宽，而Alegreya没有数字空格可以补齐其他金额。合计由表头单元格组成，所以 `groupRules` 在它上方画一条细线，就像梭罗的印刷工在 *In all* 前画的线。美元符号写作 `\$`，因为单独的 `$` 在单元格里和在正文里一样会开始一个公式。资源类型 `account` 没有编号和题注前缀，默认位置是 `'here'`，所以每笔账都排在梭罗引出它的那句话之后。
+
+### 3 · 开篇设计自己声明数字
+
+<Excerpt region="opener" />
+
+设计里的文字有自己的字族，正文的数字样式传不到它那里。*Concord, 1845–1847* 用Alegreya SC，自己要 `'lining'`，和标题一样。小插图是1854年版扉页上的版画，裁切后调成白底黑线；眉题、标题和年份占满版心宽度，在插图下居中。
+
+### 4 · 奇数页书眉显示当前小节
+
+<Excerpt region="running-heads" />
+
+偶数页书眉是书名，奇数页是当前小节 `{firstMark.h2}`，所以第3页显示 *The Bean-Field, 1845*。页码用Alegreya，保留旧式数字。
+
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="第2页：房子账目里的旧式数字宽度相同，分位一直对齐到合计。" />
+
+## 变化
+
+### 账目改用等高数字
+
+现代书里的账簿或价目表常把数字排在大写高度。
+
+```diff
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### 页码改用等高数字
+
+等高数字的页码与全大写的书眉相配。
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
+```
+
+## 常见问题
+
+- Fontsource提供的latin文件常常去掉了 `onum`：Lora、EB Garamond、Source Serif 4、Crimson Pro、Newsreader和Literata只保留 `pnum` 和 `tnum`。用这些文件时，`figureStyle: 'oldstyle'` 不起作用，正文仍是等高数字。请选自带旧式数字的字体，如Alegreya、Gelasio或Cormorant Garamond，它们另有供标题用的 `lnum`；或者载入字体厂商的完整文件。
+- Markdown或表格单元格里的 `$` 会开始一个行内公式。正文里写 `\$14.72½`，单元格里写 `\$`。

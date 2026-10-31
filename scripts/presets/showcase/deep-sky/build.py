@@ -75,11 +75,18 @@ COLOURS = {
     "galaxies": "#2a7f97",
     "cosmos": "#5b4a9c",
     "night": "#000000",
+    # Pale tints of the section colours for the cells of the features table,
+    # where the ink of the text has to read against them.
+    "solarTint": "#eed1bb",
+    "starsTint": "#e8c2c1",
+    "galaxiesTint": "#bbd6de",
+    "cosmosTint": "#cbc5df",
 }
 NAMES = {
     "ink": "Tinta y fondos oscuros", "paper": "Papel", "white": "Blanco", "band": "Color de sección", "grey": "Gris de recuadros",
     "rule": "Filetes", "muted": "Gris de notas", "solar": "Sistema solar", "stars": "Estrellas", "galaxies": "Galaxias", "cosmos": "Cosmos",
-    "night": "Negro de contraportada",
+    "night": "Negro de contraportada", "solarTint": "Sistema solar, celda", "starsTint": "Estrellas, celda",
+    "galaxiesTint": "Galaxias, celda", "cosmosTint": "Cosmos, celda",
 }
 col, COLOR_PALETTE = make_palette(COLOURS, NAMES)
 DISPLAY, TEXT, SANS = "Archivo", "Newsreader", "Chivo"
@@ -220,13 +227,16 @@ def part_design(label: str) -> dict:
 def callout_styles() -> list[dict]:
     return [
         {
-            "id": "ficha", "name": "De un vistazo", "span": "column", "placement": "here",
+            # The fact box floats to the head of the next free column, so
+            # the text after it fills the column it was written in.
+            "id": "ficha", "name": "De un vistazo", "span": "column", "placement": "top",
             "backgroundEnabled": True, "background": col("grey"), "border": {"enabled": False}, "borderRadius": mm(0),
             "padding": {"top": mm(3), "right": mm(3.5), "bottom": mm(2.5), "left": mm(3.5)},
             "stripe": {"enabled": True, "side": "top", "width": pt(2.5), "color": col("band")},
             "icon": {"kind": "none"},
             "titleStyle": {"fontFamily": SANS, "fontSize": tp(7.5), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": tp(1.6), "gap": mm(1.8)},
-            "body": {"fontFamily": TEXT, "fontSize": tp(8.5), "lineHeight": tp(11.5), "color": col("ink"), "boldColor": col("ink"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
+            # Half a line between the entries of the fact box, not a whole one.
+            "body": {"fontFamily": TEXT, "fontSize": tp(8.5), "lineHeight": tp(11.5), "color": col("ink"), "boldColor": col("ink"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": tp(5), "firstLineIndent": mm(0)},
             "marginTop": tp(4), "marginBottom": tp(10), "keepTogether": True,
         },
         {
@@ -277,6 +287,7 @@ def headings(lang: str) -> dict:
     subhead inside a feature."""
     return {
         "fontFamily": DISPLAY, "color": col("ink"), "keepWithNext": True,
+        "balancing": {"fillShortColumns": True},
         "levels": [
             {"level": 1, "fontSize": tp(22), "lineHeight": tp(26), "span": "page", "breakBefore": {"enabled": True, "parity": "any"}},
             # A feature always opens on the left-hand page of a spread, so
@@ -371,11 +382,19 @@ def shared_config() -> dict:
         },
         "tableStyle": {
             "bodyFontFamily": SANS, "bodyFontSize": tp(8.5), "bodyLineHeight": tp(11), "bodyColor": col("ink"),
-            "headerFontFamily": SANS, "headerFontSize": tp(8), "headerBold": True, "headerBackgroundEnabled": True, "headerBackground": col("ink"),
+            "headerFontFamily": SANS, "headerFontSize": tp(8), "headerBold": True, "headerColor": col("white"), "headerBackgroundEnabled": True, "headerBackground": col("ink"),
             "borderColor": col("rule"), "borderWidth": pt(0.5), "cellPadding": mm(1.0), "rules": "horizontal",
         },
         "unorderedLists": {"bulletChar": "•", "color": col("band")},
         "orderedLists": {"color": col("band")},
+        # A printed magazine sends its readers to the web with a code: the
+        # press-release link of each feature's source line prints a note at
+        # the foot of its column with a QR code and the short address.
+        "links": {"print": "notes", "show": "both", "urlDisplay": "short", "qr": {"size": mm(14)}},
+        "footnotes": {
+            "fontSize": tp(6.5), "lineHeight": tp(8.5), "color": col("muted"), "textAlign": "left",
+            "separator": {"enabled": True, "width": 0.25, "lineWidth": pt(0.5), "color": col("rule")},
+        },
         "colorPalette": COLOR_PALETTE,
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
@@ -406,12 +425,55 @@ PLACEMENT = {
 }
 
 
+# The part of each picture that has to stay in view (fractions of its width
+# and height from the top-left corner). With it the engine may crop a hero to
+# keep it on the opener page under the band, and grow a column picture by
+# whole lines to fill a short column. Mosaics, diagrams and pictures with
+# lettering keep no safe area: they are always shown whole.
+SAFE_AREAS = {
+    "eso2314a": (0.14, 0.12, 0.75, 0.66),
+    "noirlab2532b": (0.25, 0.22, 0.55, 0.5),
+    "eso2511a": (0.3, 0.2, 0.42, 0.56),
+    "noirlab2515a": (0.08, 0.14, 0.86, 0.68),
+    "noirlab2612a": (0.2, 0.2, 0.62, 0.6),
+    "eso2406a": (0.14, 0.14, 0.72, 0.7),
+    "eso2406b": (0.03, 0.08, 0.94, 0.84),
+    "noirlab2618a": (0.1, 0.2, 0.8, 0.6),
+    "eso2314b": (0.1, 0.08, 0.8, 0.84),
+    "noirlab2532a": (0.2, 0.2, 0.6, 0.6),
+    "eso2511b": (0.2, 0.18, 0.62, 0.62),
+    "noirlab2515c": (0.15, 0.15, 0.75, 0.75),
+    "noirlab2612b": (0.08, 0.25, 0.84, 0.55),
+}
+
+
+# A hero is set in the text right under the opener band, across the page.
+# The engine crops an inline picture within its safe area only in a column,
+# not across the page, so the hero is cut here to a band no taller than half
+# its width: band, picture, caption and the first lines of the feature then
+# share the opener page. The cut keeps the middle of the safe area.
+HERO_ASPECT = 2.0
+
+
+def crop_hero(im: Image.Image, img: str) -> Image.Image:
+    w, h = im.size
+    keep = round(w / HERO_ASPECT)
+    if keep >= h:
+        return im
+    x, y, sw, sh = SAFE_AREAS.get(img, (0.0, 0.0, 1.0, 1.0))
+    centre = (y + sh / 2) * h
+    top = int(min(max(centre - keep / 2, 0), h - keep))
+    return im.crop((0, top, w, top + keep))
+
+
 def process_images(images_meta: dict) -> dict[str, dict]:
     os.makedirs(os.path.join(OUT, "resources"), exist_ok=True)
     out: dict[str, dict] = {}
     for spec in ed.RELEASES:
         for img, role in spec["roles"].items():
             im = Image.open(os.path.join(SOURCE, images_meta[img]["file"])).convert("RGB")
+            if role == "hero":
+                im = crop_hero(im, img)
             limit = ROLE_MAX[role]
             if max(im.size) > limit:
                 im.thumbnail((limit, limit), Image.LANCZOS)
@@ -426,7 +488,8 @@ def features_table(lang: str) -> dict:
     rows = [[{"content": h, "isHeader": True} for h in book["table_head"]]]
     for spec in ed.RELEASES:
         name, obs, obj, dist = spec["row"][lang]
-        bg = {"hex": COLOURS[spec["part"]], "model": "hex", "paletteId": spec["part"]}
+        tint = spec["part"] + "Tint"
+        bg = {"hex": COLOURS[tint], "model": "hex", "paletteId": tint}
         rows.append([{"content": f"**{name}**", "background": bg}, {"content": obs}, {"content": obj}, {"content": dist}])
     return {"model": {"rows": rows, "headerRowCount": 1, "columnWidths": [2.2, 2, 2, 2]}}
 
@@ -439,9 +502,18 @@ def resource_specs(images: dict[str, dict], parsed: dict) -> tuple[list[dict], d
             p = images[img]
             caps = {lang: parsed[lang][spec["id"]].captions.get(img) or parsed[lang][spec["id"]].title for lang in LANGS}
             note = {lang: ("Crédito: " if lang == "es" else "Credit: ") + p["credit"] for lang in LANGS}
-            shared.append({"id": img, "typeId": "figure", "kind": "bitmap", "file": p["rel"], "width": p["w"], "height": p["h"], "caption": caps["es"], "note": note["es"], "altText": caps["es"], "placement": PLACEMENT[role]})
+            # Make-up: keys shared by both editions, and an edition's own
+            # under its language (merged into that edition's wording).
+            fit = spec.get("placement", {}).get(img, {})
+            placement = {**PLACEMENT[role], **{k: v for k, v in fit.items() if k not in LANGS}}
+            res = {"id": img, "typeId": "figure", "kind": "bitmap", "file": p["rel"], "width": p["w"], "height": p["h"], "caption": caps["es"], "note": note["es"], "altText": caps["es"], "placement": placement}
+            if img in SAFE_AREAS and role != "hero":
+                x, y, w, h = SAFE_AREAS[img]
+                res["safeArea"] = {"x": x, "y": y, "width": w, "height": h}
+            shared.append(res)
             for lang in LANGS:
-                wording[lang].append({"id": img, "caption": caps[lang], "note": note[lang], "altText": caps[lang]})
+                own = {"placement": {**placement, **fit[lang]}} if lang in fit else {}
+                wording[lang].append({"id": img, "caption": caps[lang], "note": note[lang], "altText": caps[lang], **own})
     shared.append({"id": "features-table", "typeId": "table", "kind": "table", "caption": ed.BOOK["es"]["table_caption"], "table": features_table("es")})
     for lang in LANGS:
         wording[lang].append({"id": "features-table", "caption": ed.BOOK[lang]["table_caption"], "table": features_table(lang)})
@@ -474,7 +546,13 @@ def build_fonts() -> list[dict]:
 # --- chapters ------------------------------------------------------------------------
 
 SENTENCE_END = re.compile(r"(?<=[.!?…»”)])\s+")
-QUOTE = re.compile(r"[\"“«]\s*\*?([^\"”»]{90,300}?)\*?\s*[\"”»]")
+# Quoted spans: guillemets pair by shape; double quotes, straight or curly
+# (the English releases mix them, even within one quotation), pair in
+# order, so the words between a closing quote and the next opening one are
+# never taken for a quotation.
+QUOTED = re.compile(r'[“"]([^“”"]+)[”"]|«([^»]+)»')
+# A speech verb set between dashes inside the quotation (« -añade- »).
+INTERJECTION = re.compile(r"\s+[-–—]\s?\w+\s?[-–—]\s+")
 
 
 def split_lead(paragraph: str, target: int = 230) -> tuple[str, str]:
@@ -498,11 +576,17 @@ def ficha_block(lang: str, spec: dict) -> str:
     return f':::callout{{type="ficha" title="{ed.BOOK[lang]["ficha"]}"}}\n{lines}\n:::'
 
 
-def pull_quote(paragraphs: list[str]) -> tuple[int, str] | None:
-    for i, p in enumerate(paragraphs[1:], start=1):
-        m = QUOTE.search(p)
-        if m:
-            q = m.group(1).strip().replace("*", "")
+def pull_quote(paragraphs: list[str], start: int = 1) -> tuple[int, str] | None:
+    """The first quotation of 90–300 characters from paragraph `start` on,
+    for the pull quote: italics dropped, the speech verb between dashes and
+    a trailing comma (the sentence goes on after it in the text) left out."""
+    for i, p in enumerate(paragraphs[start:], start=start):
+        for m in QUOTED.finditer(p):
+            q = next(g for g in m.groups() if g is not None).replace("*", "").strip()
+            # A whole sentence: a fragment run into the text is no pull quote.
+            if not 90 <= len(q) <= 300 or not (q[0].isupper() or q[0] in "¿¡"):
+                continue
+            q = INTERJECTION.sub(" ", q).strip().rstrip(",;:").strip()
             return i, q
     return None
 
@@ -532,20 +616,34 @@ def feature_markdown(lang: str, spec: dict, r: rel.Release) -> tuple[str, str]:
             out.append(f'::resource{{id="{img}"}}\n')
             continue
         refs.setdefault(min(k * 2 - 1, len(paragraphs) - 1), []).append(img)
+    # The pull quote: where the text quotes it, unless the issue's make-up
+    # sets it elsewhere (`quote_at`, a paragraph to follow) or leaves it out
+    # (None), to fill or free the lines a closing page needs.
     quote = pull_quote(paragraphs)
+    fit = spec.get("quote_at", {})
+    if quote and lang in fit:
+        quote = None if fit[lang] is None else (fit[lang], quote[1])
     for i, p in enumerate(paragraphs):
         para = md(p)
         for img in refs.get(i, []):
             para += f' (:ref{{id="{img}" case="lower"}})'
         out.append(para + "\n")
+        # An image the make-up sets in the text (`position: "here"`) is
+        # embedded right after the paragraph that cites it.
+        for img in refs.get(i, []):
+            fit = spec.get("placement", {}).get(img, {})
+            if {**fit, **fit.get(lang, {})}.get("position") == "here":
+                out.append(f'::resource{{id="{img}"}}\n')
         if i == 0:
             out.append(ficha_block(lang, spec) + "\n")
         if quote and i == quote[0]:
             out.append(f':::callout{{type="cita"}}\n«{quote[1]}»\n:::\n' if lang == "es" else f':::callout{{type="cita"}}\n“{quote[1]}”\n:::\n')
     url = (f"https://www.eso.org/public/{'spain/' if lang == 'es' else ''}news/{spec['id']}/" if spec["org"] == "eso"
            else f"https://noirlab.edu/public/{'es/' if lang == 'es' else ''}news/{spec['id']}/")
-    line = book["source_line"].format(id=spec["id"], org=book["org"][spec["org"]], date=r.date)
-    out.append(f':::paragraphs{{style="fuente"}}\n{line} [{url}]({url})\n:::\n')
+    # The release number links to the release: on paper `links.print`
+    # prints the address as a note with a QR code a reader can scan.
+    line = book["source_line"].format(id=spec["id"], org=book["org"][spec["org"]], date=r.date, url=url)
+    out.append(f':::paragraphs{{style="fuente"}}\n{line}\n:::\n')
     return r.title, "\n".join(out)
 
 
@@ -594,7 +692,9 @@ def write_chapters(images: dict[str, dict]) -> dict[str, list[dict]]:
             emit(part["id"], part["title"][lang], "\n".join(body))
 
         paras = "\n\n".join(ed.CREDITS[lang])
-        img_lines = "\n\n".join(f"[{img}]({images[img]['page']}) — {images[img]['credit']}" for spec in ed.RELEASES for img in spec["roles"])
+        # The image pages are named in the text above (site + identifier), so
+        # the ids stay plain: a link each would print eighteen QR notes here.
+        img_lines = "\n\n".join(f"**{img}** — {images[img]['credit']}" for spec in ed.RELEASES for img in spec["roles"])
         emit("creditos" if lang == "es" else "credits", book["credits"], f'# {book["credits"]} {{style="preliminar"}}\n\n:::paragraphs{{style="creditos"}}\n{paras}\n\n{img_lines}\n:::\n')
         back = ed.BACK_COVER[lang]
         emit("contraportada" if lang == "es" else "back-cover", book["back_cover"], (

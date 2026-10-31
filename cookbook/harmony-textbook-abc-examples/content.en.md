@@ -68,7 +68,7 @@ w: I IV I
 
 ## The deceptive cadence
 
-When V moves to vi instead of I, the listener gets a chord that shares two notes with the tonic but is not the tonic. The leading tone still rises to G, so the voice leading keeps its promise while the harmony breaks it. The other two upper voices step down, and the chord doubles its third, G, which keeps the bass and the inner voices out of parallel octaves. The phrase has to go on, and it usually ends with an authentic cadence a few bars later.
+When V moves to vi instead of I, the listener gets a chord that shares two notes with the tonic but is not the tonic. The leading tone still rises to G, so the voice leading keeps its promise while the harmony breaks it. The other two upper voices step down, and the chord doubles its third, G, which keeps the bass and the inner voices out of parallel octaves. The phrase has to go on, and it usually ends with an authentic cadence a few bars later. In a minor key the same move goes from V to VI, the major chord on the sixth degree.
 
 ```abc {alt="Deceptive cadence in G major: V to VI, the leading tone rising to G"}
 X:5
@@ -81,7 +81,7 @@ w: IV V vi
 
 ## Cadences in a melody
 
-A melody shows its cadences even without chords. *Greensleeves*, an English tune from the sixteenth century, is written here in A minor with a Roman numeral over each bar, the chords a guitarist would play. Its first phrase stops on E, the dominant, over a half cadence; the second ends on A over V–i, the leading tone G-sharp rising to the tonic. The same plan returns in the refrain, which starts on a high G over C, the relative major, and comes back to A minor for the final close. Sing it, mark each cadence and say which kind it is before you check the numerals over the staff.
+A melody shows its cadences even without chords. *Greensleeves*, an English tune from the sixteenth century, is written here in A minor with a Roman numeral over each bar, the chords a guitarist would play. The time signature is 6/8: two beats to the bar, three eighth notes to each beat, and the A before the first bar line is a pickup into the first beat. Its first phrase stops on E, the dominant, over a half cadence; the second ends on A over V–i, the leading tone G-sharp rising to the tonic. The same plan returns in the refrain, which starts on a high G over C, the relative major, and comes back to A minor for the final close. Sing it, mark each cadence and say which kind it is before you check the numerals over the staff.
 
 ```abc {alt="Greensleeves in A minor with a Roman numeral over each bar"}
 X:6

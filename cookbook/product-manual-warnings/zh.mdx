@@ -5,7 +5,7 @@ plain: "一本七页的德语电热水壶说明书。示例演示怎样做带警
 description: "用Postext排一本德文家电说明书：信号词标注框的三角位于彩色色带上，另有按键标签、零件图和跨两页拆分的表格。"
 question: "怎样做出图标位于彩色竖条上的警告框？如果文档语言是Postext没有内置标签的语言，又该怎么办？"
 aliases: ["安全提示", "警告框", "注意框", "标注框", "信号词", "警告三角", "危险标志", "使用说明书", "用户手册", "产品说明书", "德文", "按键标签", "故障排除表", "safety notice", "warning box", "signal word", "user manual", "Bedienungsanleitung", "WARNUNG", "VORSICHT", "keycap", "troubleshooting table"]
-pageNotes: { "1": "封面：蓝绿色背景上是白色的Verra W1，下方一把用蓝绿色线条画的白色水壶立在页面下三分之一的白底上；另有Bedienungsanleitung、一个DE标签和型号行。", "2": "第1节Sicherheitshinweise，标题前是印着白色1的蓝绿色方标。三段正文，最后一段把信号词排成红色、琥珀色和蓝绿色的实心标签；接着是两个标注框：WARNUNG · STROMSCHLAG在细红框内，红色色带上有白色三角；VORSICHT · VERBRÜHUNGSGEFAHR的琥珀色色带上是黑色三角。", "3": "第2节：水壶侧视图，带八条编号的蓝绿色引线，题为Abbildung 1；接着是Tabelle 1，一个四行图例，编号是蓝绿色圆形标签，控制面板那一行显示三个描边按键；然后是两段短文和一个三项检查清单。", "4": "第3节：用蓝绿色大号数字编号的步骤，配描边按键标签；最后一步下嵌套两级短横线列表；一个圆角蓝绿色HINWEIS标注框带信息图标；还有一个四项的温度列表。", "5": "第4节Reinigung und Entkalken：两段正文，三个用蓝绿色大号数字编号的除垢步骤和一个HINWEIS标注框；接着是第5节Störungen beheben，其中一段引用了Tabelle 2。", "6": "Tabelle 2，故障排除表：黑色表头行，粗体的故障项横跨其各项原因，最后一行下方是Fortsetzung auf der nächsten Seite。", "7": "Tabelle 2的续表，表头重复，题注带(Fortsetzung)；然后是四列表格Technische Daten，以及带版权说明的Entsorgung。" }
+pageNotes: { "1": "封面：蓝绿色背景上是白色的Verra W1，下方一把用蓝绿色线条画的白色水壶立在页面下三分之一的白底上；另有Bedienungsanleitung、一个DE标签和型号行。", "2": "第1节Sicherheitshinweise，标题前是印着白色1的蓝绿色方标。三段正文，最后一段把信号词排成红色、琥珀色和蓝绿色的实心标签；接着是两个标注框：WARNUNG · STROMSCHLAG在细红框内，红色色带上有白色三角；VORSICHT · VERBRÜHUNGSGEFAHR的琥珀色色带上是黑色三角。", "3": "第2节：水壶侧视图，带八条编号的蓝绿色引线，题为Abbildung 1；接着是Tabelle 1，一个四行图例，编号是蓝绿色圆形标签，控制面板那一行显示三个描边按键；然后是两段短文和一个三项检查清单。", "4": "第3节：用蓝绿色大号数字编号的步骤，配描边按键标签；最后一步下嵌套两级短横线列表；一个圆角蓝绿色HINWEIS标注框带信息图标；还有一个四项的温度列表。", "5": "第4节Reinigung und Entkalken：两段正文，三个用蓝绿色大号数字编号的除垢步骤和一个HINWEIS标注框；接着是第5节Störungen beheben，其中一段引用了Tabelle 2。", "6": "Tabelle 2，故障排除表：黑色表头行，粗体的故障项横跨其各项原因，最后一行下方是Fortsetzung auf der nächsten Seite。", "7": "Tabelle 2的续表，表头重复，题注带(Fortsetzung)；然后是四列表格Technische Daten，以及带版权说明的Entsorgung。 页脚是Entsorgung中链接的脚注：简短的网址，旁边是一个二维码。" }
 ---
 
 ## 成品一览
@@ -47,6 +47,10 @@ pageNotes: { "1": "封面：蓝绿色背景上是白色的Verra W1，下方一�
 <Excerpt region="tables" />
 
 每个表格都是单独内容文件里的TSV。在故障排除数据中，第一个单元格为空的行属于上方的故障，`mergeCells`把这些首格合并成一个高单元格，并把被覆盖的单元格标为隐藏。`parseTSV`不设表头行，所以用`headerRowCount: 1`声明，这一行就是第7页上重复的那一行。这个表格比一页还高，所以要拆分，在下一页接续。`position: 'top'`把它设为第6页顶部的浮动体；从postext 1.25起，设为`'here'`时它也会同样拆分，但表后的文字在第7页上会从更低的位置开始，最后几行会被挤到第8页。拆分落在行与行之间，从不穿过合并单元格，因此每个故障都与它的原因在同一页（[比页面还高的表格](/zh/docs/configuration-resources#比页面还高的表)）。它在第5页被引用，排在第6页顶部，这是引用之后第一个能容纳顶部浮动体的页面。`fold`把一个列表的两半并排排出，图例和技术数据都用它；图例用`align: 'center'`让编号标签居中。
+
+### 7 · 给纸上读者的网址和二维码
+
+“废弃处理”一节用普通的Markdown链接指向Stiftung EAR（德国废旧电器登记机构）的回收点查询页。在屏幕上和PDF中它仍是链接；纸上的读者无法点击，所以`links: { print: 'notes', show: 'both' }`在链接文字后加一个注号，把网址和二维码一起排在页脚。`urlDisplay: 'short'`去掉印出网址的`https://`和末尾的斜杠，`qr: { size: mm(12), side: 'start' }`把12毫米的二维码放在注文行前。链接注就是脚注，所以字号、颜色和注线由`footnotes`决定。这条注占去第7页三行，因此缩短了废弃处理一段、表格中的一条处理方法和版权说明，手册仍是七页（[印刷版中的链接](/zh/docs/configuration-notes-references#印刷版中的链接)）。
 
 ## 变化
 

@@ -3,27 +3,21 @@
   "slug": "sist02-research-paper",
   "sourceHash": "f07a64b7e7bdb61375149dbc5930b33690100d110eaf7daf20d0b466435067e4",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:41:23.115Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:03.570Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:21:57.084Z",
   "variants": {
     "en": {
-      "hash8": "311ed60b",
-      "vdtHash": "5952d7e7ba5a11716c051c1d1a377a700c5a5059",
+      "hash8": "9ff159f9",
+      "vdtHash": "e81492a7ce8b5d7f0954ae1d9464ec64625dcde6",
       "timings": {
-        "importMs": 454,
-        "fontsMs": 415,
-        "buildMs": 163,
-        "totalMs": 1685,
+        "importMs": 4181,
+        "fontsMs": 1234,
+        "buildMs": 217,
+        "totalMs": 6354,
         "builds": 1
       },
       "specimen": {
@@ -58,7 +52,7 @@
           "file": "p01.webp",
           "strip": "p01.s.webp",
           "bytes": 106404,
-          "alt": "Opening page 23: 号数活字の三つの系列： 近代日本の活字の大きさは どう決められたか. 表1 号数活字の大きさ。新号数はJIS Z 8305（1962）による."
+          "alt": "Opening page 23: 号数活字の三つの系列： 近代日本の活字の大きさはどう 決められたか. 表1 号数活字の大きさ。新号数はJIS Z 8305（1962）による."
         },
         {
           "n": 2,
@@ -96,7 +90,7 @@
       },
       "pdf": {
         "file": "sist02-research-paper.pdf",
-        "bytes": 226763,
+        "bytes": 226576,
         "pages": 2
       },
       "sandbox": {
@@ -106,8 +100,8 @@
         "chapters": [
           {
             "pages": 2,
-            "hash": "7fc3b37746649ac1",
-            "lines": "f186d43aec4849e0"
+            "hash": "496404775dc2996d",
+            "lines": "ea0763344e14732a"
           }
         ]
       },
@@ -406,6 +400,21 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 2 −5‰ “A specimen article written for the Postext Cookb…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -414,13 +423,13 @@
       }
     },
     "es": {
-      "hash8": "e11a9765",
-      "vdtHash": "f3218b0fa5e1bb8f0cb8f16daf7a4c60af76d94d",
+      "hash8": "c3f24871",
+      "vdtHash": "17b26ac85c326f64ae5820ca88ade07668abd440",
       "timings": {
-        "importMs": 286,
-        "fontsMs": 198,
-        "buildMs": 143,
-        "totalMs": 1350,
+        "importMs": 3450,
+        "fontsMs": 1163,
+        "buildMs": 191,
+        "totalMs": 6085,
         "builds": 1
       },
       "specimen": {
@@ -455,7 +464,7 @@
           "file": "p01.webp",
           "strip": "p01.s.webp",
           "bytes": 106404,
-          "alt": "Página de apertura 23: 号数活字の三つの系列： 近代日本の活字の大きさは どう決められたか. 表1 号数活字の大きさ。新号数はJIS Z 8305（1962）による."
+          "alt": "Página de apertura 23: 号数活字の三つの系列： 近代日本の活字の大きさはどう 決められたか. 表1 号数活字の大きさ。新号数はJIS Z 8305（1962）による."
         },
         {
           "n": 2,
@@ -493,7 +502,7 @@
       },
       "pdf": {
         "file": "sist02-research-paper.pdf",
-        "bytes": 226409,
+        "bytes": 226218,
         "pages": 2
       },
       "sandbox": {
@@ -503,8 +512,8 @@
         "chapters": [
           {
             "pages": 2,
-            "hash": "e3448c63ed580383",
-            "lines": "675759caeaed5916"
+            "hash": "d473a76377978127",
+            "lines": "3e0fa3dcce0ed064"
           }
         ]
       },
@@ -792,6 +801,21 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

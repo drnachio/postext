@@ -3,25 +3,20 @@
   "slug": "figures-float-where-cited",
   "sourceHash": "56fe349ebb72f3a1efbcff46f4210834eb16395c262d37386c4154946786b3ed",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:35:36.675Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:58.407Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:27:04.146Z",
   "variants": {
     "en": {
-      "hash8": "dae9c9fe",
-      "vdtHash": "4fd2f5a163450f45e1d31a8139a3e1c4c6e66a3e",
+      "hash8": "797d885f",
+      "vdtHash": "624aee077be90354add915f220b24dffb1d37b1d",
       "timings": {
-        "importMs": 255,
-        "fontsMs": 304,
-        "buildMs": 101,
-        "totalMs": 1428,
+        "importMs": 2105,
+        "fontsMs": 1228,
+        "buildMs": 197,
+        "totalMs": 4588,
         "builds": 1
       },
       "specimen": {
@@ -125,8 +120,8 @@
         "chapters": [
           {
             "pages": 4,
-            "hash": "aa0b76eeab5d372e",
-            "lines": "52d53c87b5d7cbbb"
+            "hash": "e28aafadff8ee9f5",
+            "lines": "4afd553f5c8a75c5"
           }
         ]
       },
@@ -332,7 +327,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           },
           {
             "check": "sandbox",
@@ -343,18 +343,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           }
         ]
       }
     },
     "es": {
-      "hash8": "064f0934",
-      "vdtHash": "4c8ba6bdb4560f29de6300e41f0e3dc026c3b2e0",
+      "hash8": "99660469",
+      "vdtHash": "a34258cd0aebc26e7b641eb0d2726a77c2df29bc",
       "timings": {
-        "importMs": 153,
-        "fontsMs": 2125,
-        "buildMs": 99,
-        "totalMs": 3002,
+        "importMs": 3768,
+        "fontsMs": 635,
+        "buildMs": 172,
+        "totalMs": 5462,
         "builds": 1
       },
       "specimen": {
@@ -453,13 +458,13 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 2897688,
+        "bytes": 2897686,
         "folio": "3d25f7bf",
         "chapters": [
           {
             "pages": 4,
-            "hash": "b06b5e3963905069",
-            "lines": "0136a7f29651291e"
+            "hash": "85f05ad2a50a33da",
+            "lines": "2acea7f00be50d64"
           }
         ]
       },
@@ -665,12 +670,22 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           },
           {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageNumbering, headings"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

@@ -1,0 +1,65 @@
+---
+title: "Old-style, lining and tabular figures"
+summary: "Thoreau's accounts from Walden: figureStyle sets lining figures in the small-capital headings and tabular ones in the accounts; the prose keeps old-style."
+plain: "A short edition of the household accounts Thoreau printed in Walden. The numbers in the text are small like lower-case letters, the years in the headings stand as tall as capitals, and the sums in the accounts line up in columns."
+description: "Walden's accounts set in Postext: old-style figures in the prose, lining figures in small-capital headings and tabular figures in the accounts."
+question: "How do I set old-style figures in the text, lining figures in the headings and tabular figures in the tables?"
+aliases: ["old-style figures", "oldstyle numerals", "text figures", "lining figures", "tabular figures", "figure styles", "onum", "lnum", "tnum", "font-variant-numeric", "Thoreau", "Walden", "accounts", "ledger"]
+pageNotes: { "1": "The opening page: the 1854 engraving of Thoreau's cabin among pines, the title THE ACCOUNTS in small capitals over Concord, 1845–1847 in lining figures, an italic headnote whose dates are old-style figures, and the first section, The House, 1845.", "2": "The cost of the house: thirteen items with their prices in a column of old-style figures of one width, a fraction column for the halves, Thoreau's remarks on the right and the total, $28.12½, under a light rule.", "4": "The food account: rice, molasses, rye and Indian meal, then a group headed All experiments which failed, the cents of every line under one another." }
+---
+
+## What you'll build
+
+A short edition of the accounts Thoreau printed in the first chapter of *Walden*: what his house cost, what the bean-field brought in, what he ate in eight months. It is set on a 140 × 216 mm page in the Alegreya family, with the 1854 engraving of the cabin over the opening. The figures change with the job they do. In the prose, *March, 1845* and *$13.34* use old-style figures that rise and fall like lower-case letters, so the dates do not stand out of the line. The headings are small capitals, and their years stand at the height of the capitals. In the accounts every figure is the same width, so the cents of thirteen lines of boards, laths and nails sit under one another down to the total.
+
+## Method
+
+### 1 · One figure style per text style
+
+The code is the short answer above. `figureStyle` asks a style's font for its OpenType figures ([figure styles](/en/docs/configuration-fonts-colors-viewers#figure-styles)). The body asks for nothing, because Alegreya's own figures are already old-style and proportional: a 1 is 342 units wide and a 0 is 533. The level-2 headings ask Alegreya SC for `'lining'`, its `lnum` figures, which stand as tall as the capitals around them. The table style asks for `'tabular'`, the font's `tnum`: the figures keep their old-style form and all take the same width, 450 units each, so a column of prices reads straight down. `'lining-tabular'` would set them at cap height instead (see Variations).
+
+### 2 · The accounts are tables of five columns
+
+<Excerpt region="accounts" />
+
+Thoreau's accounts are kept as TSV in `content.accounts.en.md`, one block per account, so the Spanish edition translates the items and changes the decimal point to a comma without touching the code. Each row has an item, a dollar sign, the amount, a fraction and a remark. The halves and quarters have a column of their own: ½ is 713 units wide and ¾ is 689, more than a tabular figure, and Alegreya has no figure space to pad the other amounts with. A total is made of header cells, so `groupRules` draws a light rule above it, as Thoreau's printer drew a line before *In all*. The dollar sign is written `\$`, because a bare `$` opens a formula in a cell as it does in the text. The resource type `account` has no number and no caption prefix, and its default placement is `'here'`, so each account sits where Thoreau's sentence introduces it.
+
+### 3 · The opener names its own figures
+
+<Excerpt region="opener" />
+
+A design text sets its own family, so the figures of the body do not reach it. *Concord, 1845–1847* is in Alegreya SC and asks for `'lining'` itself, like the headings. The vignette is the engraving from the 1854 title page, cropped and levelled to black on white, and the kicker, the title and the dates take the measure and centre under it.
+
+### 4 · Running heads with the section on the recto
+
+<Excerpt region="running-heads" />
+
+The verso carries the book's title and the recto the section in force, `{firstMark.h2}`, so page 3 reads *The Bean-Field, 1845*. The folios are in Alegreya and keep its old-style figures.
+
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="Page 2: the old-style figures of the house account all take one width, so the cents line up to the total." />
+
+## Variations
+
+### Set the accounts in lining figures
+
+A ledger or a price list in a modern book often sets its figures at cap height.
+
+```diff
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### Set the folios in lining figures
+
+Folios in lining figures match running heads set in capitals.
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
+```
+
+## Pitfalls
+
+- The latin files Fontsource serves often leave `onum` out: Lora, EB Garamond, Source Serif 4, Crimson Pro, Newsreader and Literata keep only `pnum` and `tnum`. With those files `figureStyle: 'oldstyle'` changes nothing and the text keeps lining figures. Pick a face whose own figures are old-style, such as Alegreya, Gelasio or Cormorant Garamond, which add `lnum` for headings, or load the foundry's full files.
+- A `$` in the Markdown or in a table cell opens an inline formula. Write `\$14.72½` in the text and `\$` in a cell.

@@ -34,7 +34,7 @@ Le tableau des broches et la carte de registres sortent tous deux de `groupedTab
 
 <Excerpt region="styles" />
 
-`tableStyle` contient ce que partagent tous les tableaux. Chaque entrée de `tableStyles` ne règle que ce que ses tableaux changent, et une ressource en choisit une avec `table.styleId`. Le tableau électrique remplace les filets fins gris par des filets blancs de 1,4 pt, qui séparent ses fonds et montrent où finit chaque fusion. Le tableau des références de commande reçoit un cadre extérieur arrondi et Fira Sans Condensed, pour que ses quatre colonnes tiennent dans une colonne de texte.
+`tableStyle` contient ce que partagent tous les tableaux. Chaque entrée de `tableStyles` ne règle que ce que ses tableaux changent, et une ressource en choisit une avec `table.styleId`. Le tableau électrique remplace les filets fins gris par des filets blancs de 1,4 pt, qui séparent ses fonds et montrent où finit chaque fusion. Le tableau des références de commande reçoit un cadre extérieur arrondi et Fira Sans Condensed, pour que ses quatre colonnes tiennent dans une colonne de texte. Le `figureStyle: 'tabular'` du style électrique demande à la Fira Sans la fonction `tnum`, des chiffres d'une même chasse, pour que les chiffres de Min, Typ et Max s'alignent dans chaque colonne.
 
 ### 5 · Des étiquettes qui restent du texte dans le PDF
 
@@ -55,8 +55,8 @@ La référence du composant est le titre de niveau 1, et sa zone de maquette des
 Des filets d’un demi-point dans le gris `rule` de la palette séparent chaque rang, avec ou sans fond ; les filets blancs disparaissent là où deux rangs sans fond se touchent.
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### Poser les légendes de tableau sur une barre

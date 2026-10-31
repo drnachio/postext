@@ -809,6 +809,10 @@ As referências merecem um olhar mais atento, porque é com elas que se escreve 
 
 As obras são citadas como o Pandoc as escreve, \`[@garcia2020, p. 33]\` ou \`@garcia2020\` no meio da frase, com as referências nos metadados iniciais ou num bloco \`:::references\` de BibTeX. O estilo de citação é uma configuração, não uma propriedade do texto: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 ou um estilo próprio, escolhido em Design › Citações, onde uma visualização mostra o resultado. A bibliografia vem depois do último capítulo, ou fica onde quer que se escreva \`:::bibliography\`. A citação de uma obra que não está nas referências é impressa como foi escrita e aparece entre os avisos.
 
+## Links no papel
+
+:index{term="links"}Um link para a web é escrito como em qualquer Markdown, \`[palavras](https://…)\`, e continua sendo um link onde quer que o leitor possa segui-lo: nestas visualizações, no HTML, no PDF e no EPUB. No papel, só as suas palavras apareceriam. \`links.print\` decide o que a página impressa acrescenta: nada, o endereço entre parênteses depois das palavras (\`'inline'\`) ou uma nota (\`'notes'\`) com o endereço, um código QR que o celular abre, ou os dois. As notas de link seguem a numeração e o estilo das notas de rodapé. Este livro imprime o endereço abreviado e o código, como mostra a nota deste link para o [repositório do Postext](https://github.com/drnachio/postext).
+
 ## Matemática no original
 
 A matemática é escrita em notação LaTeX. As fórmulas no meio do texto vão entre cifrões simples, no meio de uma frase; as fórmulas em destaque vão entre cifrões duplos, numa linha própria ou como um bloco de várias linhas. Um cifrão que deva ser impresso como cifrão é escapado com uma barra invertida. Uma fórmula que nunca é fechada, ou que o MathJax não consegue ler, é apontada no painel Verificações e substituída na página por um marcador vermelho, para que não chegue ao PDF sem ninguém perceber.

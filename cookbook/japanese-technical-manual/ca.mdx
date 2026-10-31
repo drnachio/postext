@@ -40,6 +40,8 @@ El bloc és un [bloc de codi](/ca/docs/document-format#blocs-de-codi): Postext e
 
 Les notes no necessiten cap paràmetre a part del cos. En un document japonès horitzontal, els valors per defecte són els que JLReq descriu per als llibres horitzontals: la nota al peu de la columna on es cita, numerada des d'1 a cada pàgina, amb la crida volada i un filet d'un terç de la mida ([Notes a peu de pàgina](/ca/docs/configuration-notes-references#notes-a-peu-de-pàgina)). La crida va abans del punt, `保存していた[^hfs]。`, i així el 。 no obre mai la línia següent separat d'ella.
 
+La nota 2 cita l'informe d'Unicode que defineix les quatre formes, i la cita és un enllaç: `[Unicode Standard Annex #15「…」](https://www.unicode.org/reports/tr15/)`. Una nota no pot portar una altra nota, així que un enllaç dins d'ella imprimeix la seva adreça després del text, entre parèntesis; `links.urlDisplay: 'short'` treu `https://` i `www.`, i el PDF conserva l'enllaç sencer. `links.print: 'inline'` fa el mateix amb un enllaç del text ([Enllaços en paper](/ca/docs/configuration-notes-references#enllaços-en-paper)). La nota comença amb paraules japoneses, perquè la primera línia s'ompli abans del títol llatí, que és llarg.
+
 ### 5 · Un títol d'apartat de tres línies
 
 <Excerpt region="opener" />
@@ -70,5 +72,5 @@ Algunes editorials componen les paraules llatines enganxades al kana, sense el q
 
 - Una paraula llatina no es pot tallar dins d'una línia japonesa, així que una de llarga al final de línia deixa l'anterior espaiada entre els caràcters. El primer esborrany d'aquest capítol glossava els termes en anglès, 正準等価（canonical equivalence）, i dues línies van sortir fluixes; es van treure els termes anglesos allà on no ajudaven el lector.
 - Tria la lletra del codi pels caràcters que conté. M PLUS 1 Code, la primera que es va provar aquí, no té katakana de mitja amplada: la pantalla va recórrer a una lletra del sistema per a ｶﾞｲﾄﾞ i al PDF hi faltaven els glifs.
-- Un llistat es divideix entre línies d'una pàgina a l'altra, amb almenys dues línies a cada costat (`codeStyle.splitMinLines`). A la pàgina 43, l'espai que queda sota 3.3 només admet el títol i una línia, no dues, així que el llistat sencer obre la pàgina 44; `keepTogether: true` manté cada llistat d'una peça.
+- Un llistat es divideix entre línies d'una pàgina a l'altra, amb almenys dues línies a cada costat (`codeStyle.splitMinLines`). A la pàgina 43, l'espai que queda sota 3.3 no admet el títol i dues línies, així que el llistat sencer obre la pàgina 44; `keepTogether: true` manté cada llistat d'una peça.
 - En una retícula de caràcters la pàgina porta les seves 29 línies faci el que faci un paràgraf o una llista en el canvi de pàgina, així que la llista de les quatre formes deixaria el primer element, NFC, sol al peu de la pàgina 42. `shortListSplit: 'avoid'` amb `shortListMaxItems: 4` passa la llista sencera a la pàgina 43, i la pàgina 42 acaba una línia abans, sobre les notes a peu de pàgina.

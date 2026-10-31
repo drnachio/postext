@@ -17,9 +17,9 @@ mugi{tail=top}: …Pourquoi tous dans le même ?
 sfx: FIXE
 mugi: Vous venez de manger !
 ::panel{art=guest}
-caption{title}: Thérapie
-kyaku: Je viens me faire soigner par les chats…
-mugi: Bienvenue !
+caption{title at="55% 8%"}: Thérapie
+kyaku{at="50% 62%"}: Je viens me faire soigner par les chats…
+mugi{at="82% 88%"}: Bienvenue !
 ::panel{art=nap}
 sfx: zzz
 kyaku{tail=top}: …Ils dorment tous.

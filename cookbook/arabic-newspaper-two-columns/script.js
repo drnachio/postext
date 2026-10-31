@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 108 · A two-column Arabic newspaper page ══════════════════
 // https://postext.dev/en/cookbook/arabic-newspaper-two-columns
 // Code: MIT · Text: original Arabic news copy (CC BY 4.0) · Map: drawn in code
-// Fonts: Aref Ruqaa, Noto Kufi Arabic, Noto Naskh Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+// Fonts: Aref Ruqaa, Noto Kufi Arabic, Noto Naskh Arabic (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

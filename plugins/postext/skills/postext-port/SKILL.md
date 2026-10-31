@@ -805,6 +805,11 @@ Read each chapter against the source pages and apply
   (≥ 1.24), not a `:::columns` group;
 - footnotes as `[^n]` markers + `[^n]: text` definitions (not in headings,
   captions or cells), margin notes as side callouts;
+- web links as `[text](https://…)`, never with the address typed after
+  them: a source that prints the address in parentheses, in a numbered note
+  or as a QR code gets it from the config `links.print` (`'inline'` /
+  `'notes'`, `show: 'url' | 'qr' | 'both'`; postext ≥ 1.65,
+  configuration.md §19a4), not from the text or a pasted QR picture;
 - a back-of-book index as `:index` marks plus a closing `:::index` chapter,
   rebuilt from the source's markup or, for a printed index,
   `scripts/index_marks.py parse|place` once the text is final

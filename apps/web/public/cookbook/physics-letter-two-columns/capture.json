@@ -3,21 +3,21 @@
   "slug": "physics-letter-two-columns",
   "sourceHash": "1e84f83cfd840eab3763a01105fcb454ab60716913872f1f6506289c5e372e00",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.481Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:28:05.603Z",
   "variants": {
     "en": {
-      "hash8": "38a06af0",
-      "vdtHash": "fdf66b60c6e725575965247f6435d0be3590aecb",
+      "hash8": "bd44acb1",
+      "vdtHash": "f1f736e98f47e1db230647d64350843a5d0ac9d0",
       "timings": {
-        "importMs": 1773,
-        "fontsMs": 247,
-        "buildMs": 255,
-        "totalMs": 3204,
+        "importMs": 4007,
+        "fontsMs": 583,
+        "buildMs": 209,
+        "totalMs": 6119,
         "builds": 1
       },
       "specimen": {
@@ -136,8 +136,8 @@
         "chapters": [
           {
             "pages": 5,
-            "hash": "b1234ba4d5fa78c0",
-            "lines": "0f6a2ba91c8413df"
+            "hash": "18df6ce93c271327",
+            "lines": "b15c26979ca9051d"
           }
         ]
       },
@@ -470,7 +470,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           }
         ]
       }

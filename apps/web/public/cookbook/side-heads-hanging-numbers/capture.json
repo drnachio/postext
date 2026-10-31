@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "side-heads-hanging-numbers",
-  "sourceHash": "46593bac13fb9c3e2992a245ec8a78e5b671012f3dc09233d3153abb0b8b7006",
+  "sourceHash": "0a0d5d4e1f225b7ab06f4b8813bd380ac6b05b56bff1cfc569209d3cc5d947af",
   "engine": {
-    "postext": "1.58.0",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T17:36:11.811Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:12:25.463Z",
   "variants": {
     "en": {
-      "hash8": "bcb38708",
-      "vdtHash": "be97d96132d9f794682a9b642202b77080cda483",
+      "hash8": "dd84ffb8",
+      "vdtHash": "135d917d8807c08ae1e2291fc592731e174bce85",
       "timings": {
-        "importMs": 742,
-        "fontsMs": 4,
-        "buildMs": 66,
-        "totalMs": 1698,
+        "importMs": 4813,
+        "fontsMs": 5,
+        "buildMs": 86,
+        "totalMs": 6217,
         "builds": 1
       },
       "specimen": {
@@ -36,10 +36,11 @@
         "families": [
           "DM Mono",
           "Mona Sans",
+          "Mona Sans@tnum",
           "Noto Serif Display"
         ],
         "pages": 5,
-        "ownLines": 261
+        "ownLines": 263
       },
       "pages": [
         {
@@ -72,7 +73,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 73870,
+          "bytes": 74042,
           "alt": "Page 3: 3.2 Staff areas. Figure 2. Quay front, 1:300. In red, the four frames at the east end, where the reinforcement has corroded. · Table 1. Schedule of net floor areas."
         },
         {
@@ -126,12 +127,12 @@
       },
       "sandbox": {
         "file": "side-heads-hanging-numbers.postext",
-        "bytes": 31868,
+        "bytes": 31913,
         "folio": "2324bd6f",
         "chapters": [
           {
             "pages": 5,
-            "hash": "0b49deadc30d25cd",
+            "hash": "a49761623a732c42",
             "lines": "7f576375078af4a3"
           }
         ]
@@ -264,7 +265,10 @@
           "tableStyle.headerBackground",
           "tableStyle.headerColor",
           "tableStyle.headerFontSize",
-          "tableStyle.rules"
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].figureStyle",
+          "tableStyles[].id"
         ],
         "configSections": [
           "bodyText",
@@ -279,9 +283,10 @@
           "page",
           "paragraphStyles",
           "resourceTypes",
-          "tableStyle"
+          "tableStyle",
+          "tableStyles"
         ],
-        "configLeaves": 334,
+        "configLeaves": 336,
         "designElements": 15,
         "directives": [
           ":::callout",
@@ -301,6 +306,16 @@
           {
             "family": "DM Mono",
             "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Mona Sans@tnum",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Mona Sans@tnum",
+            "weight": 600,
             "style": "normal"
           },
           {
@@ -334,6 +349,7 @@
           "column-and-a-half",
           "column-balancing",
           "figure-citations",
+          "figure-styles",
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
@@ -345,7 +361,8 @@
           "resource-types",
           "resources",
           "side-boxes",
-          "side-column-floats"
+          "side-column-floats",
+          "table-styles"
         ],
         "suggestedLevel": 3
       },
@@ -363,8 +380,8 @@
         "findings": [
           {
             "check": "vdt",
-            "severity": "warn",
-            "detail": "the layout changed with the same sources (engine or font regression?)"
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -380,13 +397,13 @@
       }
     },
     "es": {
-      "hash8": "797bd4bc",
-      "vdtHash": "635ba35e522e49be434a3e1dd1c2a239463c2143",
+      "hash8": "51bac3b0",
+      "vdtHash": "33ccfd09ee6317cbe06628d07ac3e7ada5fa6602",
       "timings": {
-        "importMs": 788,
-        "fontsMs": 4,
-        "buildMs": 64,
-        "totalMs": 1676,
+        "importMs": 4649,
+        "fontsMs": 8,
+        "buildMs": 119,
+        "totalMs": 6347,
         "builds": 1
       },
       "specimen": {
@@ -406,10 +423,11 @@
         "families": [
           "DM Mono",
           "Mona Sans",
+          "Mona Sans@tnum",
           "Noto Serif Display"
         ],
         "pages": 5,
-        "ownLines": 261
+        "ownLines": 263
       },
       "pages": [
         {
@@ -442,7 +460,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 77124,
+          "bytes": 77560,
           "alt": "Página 3: 3.2 Áreas internas. Figura 2. Fachada al muelle, 1:300. En rojo, los cuatro pórticos del extremo este, con las armaduras corroídas. · Tabla 1. Programa de superficies útiles por zonas."
         },
         {
@@ -496,12 +514,12 @@
       },
       "sandbox": {
         "file": "side-heads-hanging-numbers.postext",
-        "bytes": 32740,
+        "bytes": 32793,
         "folio": "2324bd6f",
         "chapters": [
           {
             "pages": 5,
-            "hash": "062aef6e9dcf5580",
+            "hash": "1ac2c7db9e89226d",
             "lines": "99bd51e4abbbf8c4"
           }
         ]
@@ -634,7 +652,10 @@
           "tableStyle.headerBackground",
           "tableStyle.headerColor",
           "tableStyle.headerFontSize",
-          "tableStyle.rules"
+          "tableStyle.rules",
+          "tableStyles",
+          "tableStyles[].figureStyle",
+          "tableStyles[].id"
         ],
         "configSections": [
           "bodyText",
@@ -649,9 +670,10 @@
           "page",
           "paragraphStyles",
           "resourceTypes",
-          "tableStyle"
+          "tableStyle",
+          "tableStyles"
         ],
-        "configLeaves": 334,
+        "configLeaves": 336,
         "designElements": 15,
         "directives": [
           ":::callout",
@@ -671,6 +693,16 @@
           {
             "family": "DM Mono",
             "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Mona Sans@tnum",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Mona Sans@tnum",
+            "weight": 600,
             "style": "normal"
           },
           {
@@ -704,6 +736,7 @@
           "column-and-a-half",
           "column-balancing",
           "figure-citations",
+          "figure-styles",
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
@@ -715,7 +748,8 @@
           "resource-types",
           "resources",
           "side-boxes",
-          "side-column-floats"
+          "side-column-floats",
+          "table-styles"
         ],
         "suggestedLevel": 3
       },
@@ -733,8 +767,8 @@
         "findings": [
           {
             "check": "vdt",
-            "severity": "warn",
-            "detail": "the layout changed with the same sources (engine or font regression?)"
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

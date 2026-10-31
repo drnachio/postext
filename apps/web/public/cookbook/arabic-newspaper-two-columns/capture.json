@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "arabic-newspaper-two-columns",
-  "sourceHash": "46cee3a0f7c754d6736167ae3aae9008ab91b3348ca42dcb043c1ddd64f9f35f",
+  "sourceHash": "b0def89030cd577c9a2e417ab92915707a1c2b2c4557f46343311b263ff571a9",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:30:46.670Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:53.436Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:55:52.917Z",
   "variants": {
     "en": {
-      "hash8": "beaa5336",
-      "vdtHash": "57eda6054abf963604d9e51db5f63121091bb9a6",
+      "hash8": "abe170ad",
+      "vdtHash": "893fc625c6b53bc942108d3613bbd5ff358cc7b2",
       "timings": {
-        "importMs": 475,
-        "fontsMs": 254,
-        "buildMs": 127,
-        "totalMs": 1537,
+        "importMs": 2137,
+        "fontsMs": 225,
+        "buildMs": 175,
+        "totalMs": 3347,
         "builds": 1
       },
       "specimen": {
@@ -57,7 +51,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 87624,
+          "bytes": 98036,
           "alt": "Opening page ١: الساحل. مسار الخط الأول: ثماني عشرة محطة بين الميناء شرقًا والجامعة غربًا."
         },
         {
@@ -68,7 +62,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 123884,
+          "bytes": 161152,
           "alt": "Opening page ٢: محليات. مواقيت الصلاة في رأس المرجان، الخميس ١ أكتوبر."
         }
       ],
@@ -97,18 +91,18 @@
       },
       "pdf": {
         "file": "arabic-newspaper-two-columns.pdf",
-        "bytes": 96788,
+        "bytes": 106817,
         "pages": 2
       },
       "sandbox": {
         "file": "arabic-newspaper-two-columns.postext",
-        "bytes": 26867,
+        "bytes": 28339,
         "folio": "7d33b710",
         "chapters": [
           {
             "pages": 2,
-            "hash": "a96987b871607088",
-            "lines": "0880e7205c1fb8ea"
+            "hash": "f3dfdec27c56d7cc",
+            "lines": "308911a1ff872803"
           }
         ]
       },
@@ -364,16 +358,26 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 6,
+        "iterationCount": 3,
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.71
+          "worst": 1.34
         },
         "raggedLines": {
           "count": 0
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -383,13 +387,13 @@
       }
     },
     "es": {
-      "hash8": "8fe54a73",
-      "vdtHash": "bfed373063ca5969801b5259a8f0279afb332901",
+      "hash8": "94007159",
+      "vdtHash": "0b4e320cc29bc502211d3fe3476b4ea0578ec592",
       "timings": {
-        "importMs": 476,
-        "fontsMs": 251,
-        "buildMs": 129,
-        "totalMs": 1479,
+        "importMs": 2150,
+        "fontsMs": 223,
+        "buildMs": 153,
+        "totalMs": 3340,
         "builds": 1
       },
       "specimen": {
@@ -423,7 +427,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 87624,
+          "bytes": 98036,
           "alt": "Página de apertura ١: الساحل. مسار الخط الأول: ثماني عشرة محطة بين الميناء شرقًا والجامعة غربًا."
         },
         {
@@ -434,7 +438,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 124208,
+          "bytes": 161332,
           "alt": "Página de apertura ٢: محليات. مواقيت الصلاة في رأس المرجان، الخميس ١ أكتوبر."
         }
       ],
@@ -463,18 +467,18 @@
       },
       "pdf": {
         "file": "arabic-newspaper-two-columns.pdf",
-        "bytes": 96887,
+        "bytes": 106909,
         "pages": 2
       },
       "sandbox": {
         "file": "arabic-newspaper-two-columns.postext",
-        "bytes": 26864,
+        "bytes": 28336,
         "folio": "7d33b710",
         "chapters": [
           {
             "pages": 2,
-            "hash": "1affc6663ff0940a",
-            "lines": "9079b11b7a35a53d"
+            "hash": "70bcd1a0014f5bae",
+            "lines": "f5921bb0a6fe4878"
           }
         ]
       },
@@ -730,16 +734,26 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 6,
+        "iterationCount": 3,
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.71
+          "worst": 1.34
         },
         "raggedLines": {
           "count": 0
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

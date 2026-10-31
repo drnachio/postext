@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "technical-datasheet",
-  "sourceHash": "b50c548b5c27f009f3f11cb4c254e584a82f4f713b50d139e4d5c32ce42b9bbb",
+  "sourceHash": "3d7ad156e496b999e1bbbbbb9683075e0acc7c088919a067bc0400d01ba51b0e",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:42:15.051Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:43:44.608Z",
   "variants": {
     "en": {
-      "hash8": "a1f97df6",
-      "vdtHash": "7df32176e0a262d80da59a96330d0558ba1d3b8c",
+      "hash8": "985f879e",
+      "vdtHash": "a7cfd8b6dd360310a4410d523cb5a3d239191ef7",
       "timings": {
-        "importMs": 311,
-        "fontsMs": 81,
-        "buildMs": 96,
-        "totalMs": 1238,
+        "importMs": 2702,
+        "fontsMs": 236,
+        "buildMs": 169,
+        "totalMs": 4190,
         "builds": 1
       },
       "specimen": {
@@ -37,10 +37,12 @@
         "families": [
           "Fira Mono",
           "Fira Sans",
-          "Fira Sans Condensed"
+          "Fira Sans Condensed",
+          "Fira Sans Condensed@tnum",
+          "Fira Sans@tnum"
         ],
         "pages": 4,
-        "ownLines": 256
+        "ownLines": 257
       },
       "pages": [
         {
@@ -62,7 +64,7 @@
           "h": 1292,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 100790,
+          "bytes": 101198,
           "alt": "Page 2: 4 Specifications. Table 1. Electrical characteristics, VDD = 1.6 V to 5.5 V and TA = −40 °C to 125 °C unless noted."
         },
         {
@@ -116,17 +118,17 @@
       },
       "pdf": {
         "file": "technical-datasheet.pdf",
-        "bytes": 134517,
+        "bytes": 150699,
         "pages": 4
       },
       "sandbox": {
         "file": "technical-datasheet.postext",
-        "bytes": 78261,
+        "bytes": 78547,
         "folio": "ca48c30e",
         "chapters": [
           {
             "pages": 4,
-            "hash": "e428b777ccb3858d",
+            "hash": "19a13f52000f95a2",
             "lines": "7679bf24b5d23574"
           }
         ]
@@ -303,6 +305,7 @@
           "tableStyles[].cellPadding",
           "tableStyles[].continuedSuffix",
           "tableStyles[].continuesMarker",
+          "tableStyles[].figureStyle",
           "tableStyles[].headerBackground",
           "tableStyles[].headerColor",
           "tableStyles[].id",
@@ -335,7 +338,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 443,
+        "configLeaves": 444,
         "designElements": 21,
         "directives": [
           ":::columnbreak",
@@ -361,6 +364,11 @@
             "style": "normal"
           },
           {
+            "family": "Fira Sans Condensed@tnum",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
             "family": "Fira Sans Condensed",
             "weight": 400,
             "style": "italic"
@@ -378,6 +386,16 @@
           {
             "family": "Fira Sans Condensed",
             "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans@tnum",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Fira Sans@tnum",
+            "weight": 400,
             "style": "normal"
           },
           {
@@ -406,6 +424,7 @@
           "cell-fills",
           "chips",
           "figure-citations",
+          "figure-styles",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -442,6 +461,16 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 24.7 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

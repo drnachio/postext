@@ -3,27 +3,21 @@
   "slug": "katakana-majiri-proclamation",
   "sourceHash": "ba0cd9e976a65e90d96e1a7a89e5138491fec4d0b8a65f09a80a0a415839a221",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:37:57.720Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.764Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:27:37.237Z",
   "variants": {
     "en": {
-      "hash8": "c1f8af1b",
+      "hash8": "545bc2e4",
       "vdtHash": "37b8f33daff8b0376c1b77cf25b87f45bc3eca1d",
       "timings": {
-        "importMs": 256,
-        "fontsMs": 655,
-        "buildMs": 57,
-        "totalMs": 1602,
+        "importMs": 2795,
+        "fontsMs": 1758,
+        "buildMs": 62,
+        "totalMs": 6113,
         "builds": 1
       },
       "specimen": {
@@ -173,7 +167,7 @@
       },
       "pdf": {
         "file": "katakana-majiri-proclamation.pdf",
-        "bytes": 341706,
+        "bytes": 341529,
         "pages": 8
       },
       "sandbox": {
@@ -403,6 +397,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -411,13 +415,13 @@
       }
     },
     "es": {
-      "hash8": "806b17fb",
+      "hash8": "98aa7381",
       "vdtHash": "4720d00e789c69898f7917b7933d75af4082d8d5",
       "timings": {
-        "importMs": 278,
-        "fontsMs": 465,
-        "buildMs": 56,
-        "totalMs": 1570,
+        "importMs": 2395,
+        "fontsMs": 2151,
+        "buildMs": 72,
+        "totalMs": 5372,
         "builds": 1
       },
       "specimen": {
@@ -567,7 +571,7 @@
       },
       "pdf": {
         "file": "katakana-majiri-proclamation.pdf",
-        "bytes": 342159,
+        "bytes": 341997,
         "pages": 8
       },
       "sandbox": {
@@ -796,6 +800,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

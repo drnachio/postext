@@ -50,8 +50,9 @@ Many existing and upcoming policy initiatives under the European Green Deal — 
 Agriculture has multiple impacts on the environment, climate and human health. Unsustainable farming practices lead to pollution of soil, water, air and food and over-exploitation of natural resources.
 :::
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Soil](https://www.eea.europa.eu/themes/soil)
+- [SOER 2020, Chapter 5 on land and soil](https://www.eea.europa.eu/publications/soer-2020/chapter-05_soer2020-land-and-soil/view)
+- [EEA Signals 2019 — Land and soil in Europe](https://www.eea.europa.eu/signals/signals-2019)
 
-- Soil: www.eea.europa.eu/themes/soil
-- SOER 2020, Chapter 5 on land and soil: www.eea.europa.eu/publications/soer- 2020/chapter-05_soer2020-land-andsoil/view
-- EEA Signals 2019 — Land and soil in Europe: www.eea.europa.eu/signals/ signals-2019
+:::

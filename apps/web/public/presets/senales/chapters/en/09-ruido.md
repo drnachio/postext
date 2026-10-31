@@ -6,18 +6,18 @@ At least one in five Europeans is currently exposed to road traffic noise levels
 
 ## Noise can be bad for your health
 
-An estimated 113 million Europeans are affected by long-term exposure to day‑evening-night traffic noise levels of at least 55 decibels. In addition, 22 million Europeans are exposed to high levels of noise from railways, 4 million to high levels of aircraft noise and fewer than 1 million to high levels of noise caused by industries.
+An estimated 113 million Europeans are affected by long-term exposure to day-evening-night traffic noise levels of at least 55 decibels. In addition, 22 million Europeans are exposed to high levels of noise from railways, 4 million to high levels of aircraft noise and fewer than 1 million to high levels of noise caused by industries.
 
 ::resource{id="photo-noise-2"}
 
-What many people may not know is that long-term exposure to noise, even at the levels we are used to in urban areas, has significant health impacts. In most European countries, more than 50 % of people living in urban areas are exposed to road noise levels of 55 decibels or higher during the measured day-evening-night period. Long‑term exposure to this level, according to the World Health Organization (WHO), is likely to have negative impacts on health.
+What many people may not know is that long-term exposure to noise, even at the levels we are used to in urban areas, has significant health impacts. In most European countries, more than 50 % of people living in urban areas are exposed to road noise levels of 55 decibels or higher during the measured day-evening-night period. Long-term exposure to this level, according to the World Health Organization (WHO), is likely to have negative impacts on health.
 
 The EEA estimates that long-term exposure to environmental noise causes 12 000 premature deaths and contributes to 48 000 new cases of ischaemic heart disease every year across Europe. It is also estimated that 22 million people suffer chronic high annoyance and 6.5 million people suffer chronic high sleep disturbance.
 
-According to WHO evidence, these health impacts start to occur even below the 55 decibel noise level for the dayevening‑night period and the 50 decibel noise level for the night period, which are the reporting thresholds set out by the EU’s Environmental Noise Directive. Therefore, these numbers are likely to be underestimated. Furthermore, the information provided by countries under EU law do not cover all urban areas, roads, railways and airports, nor do they cover all sources of noise.
+According to WHO evidence, these health impacts start to occur even below the 55 decibel noise level for the dayevening-night period and the 50 decibel noise level for the night period, which are the reporting thresholds set out by the EU’s Environmental Noise Directive. Therefore, these numbers are likely to be underestimated. Furthermore, the information provided by countries under EU law do not cover all urban areas, roads, railways and airports, nor do they cover all sources of noise.
 
 :::callout{type="cita"}
-“An estimated 113 million Europeans are affected by long-term exposure to day‑evening-night traffic noise levels of at least 55 decibels.”
+“An estimated 113 million Europeans are affected by long-term exposure to day-evening-night traffic noise levels of at least 55 decibels.”
 :::
 
 :::callout{type="recuadro" title="What the EU is doing to reduce noise pollution"}
@@ -45,7 +45,7 @@ However, EEA research found issues related to the availability of and access to 
 :::callout{type="recuadro" title="COVID-19 and noise"}
 Noise pollution from transport sources, such as road, rail or air traffic, is linked to economic activity. Therefore, a significant short-term reduction in transportation noise levels can be expected as a result of COVID-19-related lockdowns. However, environmental noise levels are reported over a prolonged period, as health effects appear when exposure is long term. As such, a short-term reduction in noise levels would not significantly reduce the annual noise level indicator used to measure the effects of noise.
 
-Find out more: https://www.eea.europa.eu/post-corona-planet/explore.
+Find out more: www.eea.europa.eu/post-corona-planet/explore.
 :::
 
 ## Turn down the volume
@@ -74,7 +74,8 @@ Many EU Member States will need to do more to take the steps needed to address n
 *Sources: EEA report ‘Environmental noise in Europe — 2020’.*
 :::
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Noise](https://www.eea.europa.eu/themes/human/noise)
+- [SOER 2020, Chapter 11 on environmental noise](https://www.eea.europa.eu/publications/soer-2020/chapter-11_soer2020-environmental-noise/view)
 
-- Noise: www.eea.europa.eu/themes/ human/noise
-- SOER 2020, Chapter 11 on environmental noise: www.eea.europa. eu/publications/soer-2020/chapter-11_ soer2020-environmental-noise/view
+:::

@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "legal-opinion-oscola",
-  "sourceHash": "95c8f3d9a83a201b3ad49707851fcb458431c80dbd4f6bcd1a032d1f32697f23",
+  "sourceHash": "ed295caeeb4daecdb5bc2a4357f02d50681bcd62d82d94a5068275a3207d6ae3",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:37:57.730Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.821Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:26:14.499Z",
   "variants": {
     "en": {
-      "hash8": "f064b7f3",
+      "hash8": "50285172",
       "vdtHash": "befe6b0e5fca16cba211cfd372710d730d74c63a",
       "timings": {
-        "importMs": 437,
-        "fontsMs": 32,
-        "buildMs": 108,
-        "totalMs": 2859,
+        "importMs": 5565,
+        "fontsMs": 46,
+        "buildMs": 200,
+        "totalMs": 7087,
         "builds": 1
       },
       "specimen": {
@@ -126,7 +120,7 @@
       },
       "sandbox": {
         "file": "legal-opinion-oscola.postext",
-        "bytes": 28354,
+        "bytes": 28468,
         "folio": "223edec1",
         "chapters": [
           {
@@ -351,7 +345,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -362,13 +361,13 @@
       }
     },
     "es": {
-      "hash8": "91f84c90",
-      "vdtHash": "1411220aaa1cd2cebf6c32ef4c490c732961644b",
+      "hash8": "43fc67f8",
+      "vdtHash": "06dc5d9e6ad62d34416dfd40390c684f810692f3",
       "timings": {
-        "importMs": 485,
-        "fontsMs": 30,
-        "buildMs": 120,
-        "totalMs": 2758,
+        "importMs": 4282,
+        "fontsMs": 55,
+        "buildMs": 184,
+        "totalMs": 6153,
         "builds": 1
       },
       "specimen": {
@@ -412,7 +411,7 @@
           "h": 1481,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 155872,
+          "bytes": 174328,
           "alt": "Página 2: No existe un «test de Caparo»."
         },
         {
@@ -466,18 +465,18 @@
       },
       "pdf": {
         "file": "legal-opinion-oscola.pdf",
-        "bytes": 92574,
+        "bytes": 93997,
         "pages": 4
       },
       "sandbox": {
         "file": "legal-opinion-oscola.postext",
-        "bytes": 28366,
+        "bytes": 28480,
         "folio": "223edec1",
         "chapters": [
           {
             "pages": 4,
-            "hash": "8ea68e52784d77a2",
-            "lines": "f747e798a0625164"
+            "hash": "5e4249bfffdf7bb7",
+            "lines": "397032499cea7813"
           }
         ]
       },
@@ -706,7 +705,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

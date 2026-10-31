@@ -1,0 +1,63 @@
+---
+title: "在屏幕上作答测验的课程单元"
+summary: "同一份 Markdown 里两种练习样式：练习不限次数，测验只能检查一次；attachExercises 让它们在 HTML 里可以作答，EPUB 里也一样。"
+plain: "一课讲地震的内容：先读课文，想练多少遍就练多少遍，然后做一份小测验，每个答案只能检查一次。它可以印成练习册，也能在屏幕上和电子书里使用。"
+description: "四页的课程单元，练习和测验都能在 HTML 查看器和固定版式 EPUB 里作答，测验有检查次数限制，七十分算通过。这是同一份 Markdown 的纸本与屏幕两种用法。"
+question: "怎样让学生在屏幕上作答练习，并让测验只允许检查一次？"
+aliases: ["交互练习", "自动批改", "在线测验", "学习平台", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "单元开篇：一幅断层横穿干旱平原的画作出血到页顶，下面是眉题、标题和一段斜体导语。", "3": "练习：三道题，题号在铁锈色圆片里，后面是练习答案。", "4": "单元测验：四道题，上方一条石板蓝细线，题号在方块里，最后是版权说明。" }
+---
+
+## 成品一览
+
+*The Restless Planet* 是一门地球科学入门课，这里是它的第四单元：四页讲地震，开本 176 × 250 mm，开篇是一幅断层横穿干旱平原的画。读完课文后是一组练习和一份测验，在 Markdown 里写成带答案的 `:::exercise` 块。印出来的单元附有练习答案，测验答案不印。在屏幕上，同样的页面可以直接作答：练习可以随意检查、重新开始；测验的每道题只能检查一次，不能重来，检查用完后才显示答案。页面旁边的面板汇总学习平台会记录的内容：得分、测验是否做完，以及按 70 % 判定的通过与否。
+
+## 做法
+
+### 1 · 两种样式，两套规则
+
+代码见[简短回答](#简短回答)。练习本身只写问什么，块上的 `style` 决定它怎样表现。`practice` 沿用书里的默认值，所以工具栏提供检查、显示答案和重新开始，不限次数。`test` 在它的基础上加了 `digital` 块：`maxChecks: 1`、`reset: false`、`showSolution: 'noChecksLeft'`，工具栏一直数到“检查次数已用完”，然后才给出答案。印在纸上时，这个样式不印答案（`placement: 'none'`），练习答案则印在 `:::solutions` 那一行所在的位置。
+
+### 2 · 存过的作答从存储里取回
+
+<Excerpt region="attempt" />
+
+`attachExercises` 用 `getItem` 读取每道题的作答，用 `setItem` 写回，键由 `storageKey` 加上这道题的锚点组成。任何带有这三个方法的对象都能代替 `localStorage`；学习平台会把同样的 JSON 存在学生的数据里。这里交回三道已经检查过的测验题，其中有两处错误（第 3 句判成正确，距离填成 180 km），于是页面打开时就像学生回来时看到的那样：这几道题已锁定，答案可以查看，排序题还没有做。
+
+### 3 · 在页面上作答，接收每一次检查
+
+<Excerpt region="screen" />
+
+`renderToHtml` 写出页面和练习数据；`attachExercises` 在上面放置输入框、选项和工具栏。`onResult` 在每道题准备好时，以及每次检查、重新开始和显示答案之后都会收到结果：答对的评分空数（`right`）、评分空总数（`total`）、已用的检查次数，以及作答是否锁定（`locked`）。面板像 SCORM 播放器那样汇总测验：整份测验答对数除以评分空数，每道题都检查过或已锁定就算做完，达到 `passingScore` 即通过。页面使用 `dpi: 96`，所以印刷页上的一毫米就是屏幕上的一个 CSS 毫米。
+
+### 4 · 同样的练习放进 EPUB
+
+<Excerpt region="epub" />
+
+固定版式 EPUB 带着练习数据和让它们可作答的脚本：能运行脚本的阅读系统提供同样的输入框和同样的限制，不运行脚本的阅读系统则保留写出器附上的答案。字体以字节形式传入，用的是页面加载过的同一批 Fontsource 文件。
+
+## 变化
+
+### 为学习平台打包单元
+
+`postext-scorm` 接收同样的文档，写出 SCORM 1.2 或 2004 的 zip 包，包里的播放器把存储和结果接到 LMS 上。一个 SCO 会统计它包含的所有练习，练习题也算在内；只给测验打分的课程可以用 `items` 把测验单独做成一个 SCO（见 <Feature id="scorm-packages">SCORM 包</Feature>）。
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### 每填一个答案就批改
+
+想要没有检查按钮的小测验，就在 `exercises.digital` 里设 `check: 'instant'`。即时批改会取消检查次数限制；测验样式仍保留 `showSolution`。
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## 常见问题
+
+给每道要评分的题加上锚点（`:::exercise{#test-scales}`）。作答按锚点保存；没有锚点时，键取自这道题在文档里的位置，前面一旦插入新题，回来的学生就会拿到另一道题存下的作答。

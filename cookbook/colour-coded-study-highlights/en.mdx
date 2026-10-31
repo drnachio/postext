@@ -1,0 +1,62 @@
+---
+title: "Colour-coded highlights in a study reader"
+summary: "A history reader whose key words carry three highlight colours (green for terms, amber for dates, blue for names) from three markStyles in the palette."
+plain: "A school reading on the history of printing. Key terms are marked in green, dates in amber and people and places in blue, and a key on the first page tells the reader what each colour means."
+description: "A history study reader set in Postext with three highlight styles: terms in green, dates in amber, names in blue, a key on the opener and a glossary."
+question: "How do I highlight a study text in colours that each mean something: terms, dates and names?"
+aliases: ["highlight", "highlighter", "marker pen", "colour code", "colour key", "key words", "study text", "reader", "history textbook", "glossary", "mark", "resaltado", "printing press", "Gutenberg"]
+pageNotes: { "1": "The opening page: a painting of a printing workshop around 1460 across the top, the kicker UNIT 4 · READING 2, the title How Printing Spread Across Europe and an italic standfirst, then a tinted box under a red rule that explains the three colours with a green, an amber and a blue sample, and the first lines of the reading.", "2": "A verso of the reading: dates such as 1455 and 1462 on amber bands, names such as Johann Fust, Subiaco and William Caxton on pale blue bands, and terms such as movable type and colophon on green bands, inside justified text.", "4": "The last page: the glossary, each entry opening with its term in bold on a green band, the turnovers hung, and the colophon in small grey type." }
+---
+
+## What you'll build
+
+Reading 2 of a unit in a school history reader, *Readings in Early Modern History*: four pages on how printing spread from Mainz across Europe between 1450 and 1550, on a 170 × 240 mm page. The editors have marked the text the way a careful student would, with a code that stays the same through the whole book: key terms on a green band, dates on amber, people and places on pale blue. A key under the title explains the code with the three colours themselves, and the glossary on the last page opens each entry with its green term. The marks are bands under ordinary text, so the lines break, hyphenate and justify as if the bands were not there.
+
+## Method
+
+### 1 · One style for each kind of word
+
+The code is [the short answer](#the-short-answer) above. `markStyles` declares three named styles, and the text picks one per mark: `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colophon]{style="term"}` ([highlight marks](/en/docs/document-format-inline#highlight-marks)). Each style names what it means (`name` is what an editor sees), so the Markdown records why a word is marked, not which colour it wears. Change the colour of a style and every date in the book changes with it. The ends are square, as since postext 1.52 by default ([highlight styles](/en/docs/configuration-styles#highlight-styles)): a highlighter pen leaves square ends, and a rounded band reads as a chip.
+
+### 2 · Three tints from the palette
+
+<Excerpt region="palette" />
+
+The three bands are palette entries like the ink and the accent, so a reader who opens the book in the Sandbox can retint the code from one swatch. They are pale, close to the lightness of the box tint, so the ink on them keeps a contrast of 12.6:1 or more, and the three stay apart when they meet in one line, as at "In 1517 Martin Luther" on page 3. A mark takes no room: `paddingX` reaches 0.12 em into the space beside the phrase, and `paddingBottom` takes the band under the descenders, both painted into space that is already there.
+
+### 3 · The opener: a painting over the title
+
+<Excerpt region="opener" />
+
+The first-level heading prints a design. The painting is anchored to the page, so it bleeds off the top and both sides, 170 by 96 mm, with `fit: 'cover'`. The kicker and the standfirst come from attributes on the heading line ([heading attributes](/en/docs/document-format#heading-attributes)), and the key follows as an ordinary `:::callout` whose list items open on the three marks. `minHeight` sets the depth: the key starts on the same line however long the title runs.
+
+### 4 · Running heads by parity
+
+<Excerpt region="running-heads" />
+
+The verso carries the title of the series and the recto the title of the reading, both filtered by `parity` and kept off the opener by `pages: 'body'` ([text elements](/en/docs/configuration-headers-footers#text-elements)). The opener carries its folio at the foot.
+
+## Variations
+
+### Round the ends of the bands
+
+A radius of a fifth of the text size gives the soft ends of a felt-tip pen.
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Give each line its own band
+
+With `decorationBreak: 'clone'`, a mark that runs over a line end gets the padding at both ends of each piece, as on page 3, where "pamphlets" breaks after "pam-".
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## Pitfalls
+
+- Colour alone does not survive a black-and-white photocopy, which is how many readers reach a classroom. The glossary also sets the terms in bold; if your readers will copy the pages, give one of the three kinds a second sign of its own.
+- A style id that `markStyles` does not declare falls back to the first style, with no error on the page (the Sandbox flags it). Keep the ids short and check the spelling in the text.

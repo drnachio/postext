@@ -3,27 +3,21 @@
   "slug": "pendulum-lab-video-players",
   "sourceHash": "c4304c5da7f3e9401c20fb05a1ed0340b5a3d572b8534a3cae202aaa8cb61430",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:37.706Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:02.595Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:51:00.936Z",
   "variants": {
     "en": {
-      "hash8": "6251975e",
+      "hash8": "18f8859a",
       "vdtHash": "d8323bc086e4138cf4d143856ad04a36ef4222a2",
       "timings": {
-        "importMs": 683,
-        "fontsMs": 99,
-        "buildMs": 135,
-        "totalMs": 1789,
+        "importMs": 1021,
+        "fontsMs": 226,
+        "buildMs": 144,
+        "totalMs": 2181,
         "builds": 2
       },
       "specimen": {
@@ -96,7 +90,7 @@
       },
       "pdf": {
         "file": "pendulum-lab-video-players.pdf",
-        "bytes": 83725,
+        "bytes": 83728,
         "pages": 2
       },
       "sandbox": {
@@ -443,6 +437,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "small: video file pendulum-small.mp4 left out (it plays from video.url)"
@@ -456,18 +455,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           }
         ]
       }
     },
     "es": {
-      "hash8": "a4dfb941",
+      "hash8": "c1107666",
       "vdtHash": "308e5f7fb0b6b74bf6f6925ac494ffe658225361",
       "timings": {
-        "importMs": 696,
-        "fontsMs": 102,
-        "buildMs": 140,
-        "totalMs": 1818,
+        "importMs": 1040,
+        "fontsMs": 96,
+        "buildMs": 172,
+        "totalMs": 2083,
         "builds": 2
       },
       "specimen": {
@@ -540,7 +544,7 @@
       },
       "pdf": {
         "file": "pendulum-lab-video-players.pdf",
-        "bytes": 85469,
+        "bytes": 85472,
         "pages": 2
       },
       "sandbox": {
@@ -897,6 +901,11 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 2 −5‰ “La primera corrección a la fórmula de las oscila…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "small: video file pendulum-small.mp4 left out (it plays from video.url)"
@@ -905,6 +914,11 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "large: video file pendulum-large.mp4 left out (it plays from video.url)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

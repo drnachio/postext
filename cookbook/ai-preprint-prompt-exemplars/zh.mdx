@@ -5,7 +5,7 @@ plain: "一篇著名的人工智能论文，删节后重新排版。示例提示
 description: "用Postext重排Wei等人的思维链论文：图1由两栏嵌套框组成，natbib式作者–年份引用，表2和规模曲线图按原文数据重绘。"
 question: "怎样把AI论文中的提示词和模型输出示例并排排在框里？"
 aliases: ["提示词图", "模型输入", "模型输出", "思维链", "chain of thought", "少样本示例", "机器学习论文", "NeurIPS", "arXiv", "natbib", "作者–年份", "预印本", "Wei et al. 2022"]
-pageNotes: { "1": "第1页：一行蓝色等宽字体的会议信息，两行粗体衬线标题Chain-of-Thought Prompting Elicits Reasoning in Large Language Models，分两行排列的九位作者和Google Research, Brain Team；一段删节说明；浅蓝底纹上的摘要；然后是通栏的图1：左边Standard Prompting，右边Chain-of-Thought Prompting，各有一个蓝色页签的Model Input框和一个绿色页签的Model Output框，示例用等宽字体。思维链在输入中是蓝色粗体，在输出中是绿色粗体；左边的答案27角上有红色叉号，右边的答案9有绿色对勾。", "2": "第2页：第1节Introduction和第2节Chain-of-Thought Prompting，两栏两端对齐，引用形如(Kaplan et al., 2020; Brown et al., 2020, inter alia)。", "3": "第3页：图2，GSM8K解题率的横向条形图（微调的GPT-3 33，此前最佳55，PaLM 540B标准提示18，思维链提示57），方法四个特性的有序列表，以及第3节Arithmetic Reasoning的实验设置。", "4": "第4页：通栏的图4，九幅小折线图，展示LaMDA、GPT和PaLM在GSM8K、SVAMP和MAWPS上的解题率随模型规模的变化；在最大的模型上，蓝色的思维链曲线升到灰色的标准提示曲线之上。下方是结果和第4节。", "5": "第5页：通栏的表2，蓝色两行表头，列出每个模型和规模在五个基准上的解题率，思维链胜出的数字用粗体；然后是常识推理的结果和第5节Symbolic Reasoning，带一条脚注。", "6": "第6页：第5节的结尾、第6节Discussion、第7节Conclusions和致谢。", "7": "第7页：两栏的参考文献，按作者排序，年份紧跟姓名，最后是一行带许可证的版权说明。" }
+pageNotes: { "1": "第1页：一行蓝色等宽字体的会议信息，两行粗体衬线标题Chain-of-Thought Prompting Elicits Reasoning in Large Language Models，分两行排列的九位作者和Google Research, Brain Team；一段删节说明；浅蓝底纹上的摘要；然后是通栏的图1：左边Standard Prompting，右边Chain-of-Thought Prompting，各有一个蓝色页签的Model Input框和一个绿色页签的Model Output框，示例用等宽字体。思维链在输入中是蓝色粗体，在输出中是绿色粗体；左边的答案27角上有红色叉号，右边的答案9有绿色对勾。", "2": "第2页：第1节Introduction和第2节Chain-of-Thought Prompting，两栏两端对齐，引用形如(Kaplan et al., 2020; Brown et al., 2020, inter alia)。", "3": "第3页：图2，GSM8K解题率的横向条形图（微调的GPT-3 33，此前最佳55，PaLM 540B标准提示18，思维链提示57），方法四个特性的有序列表，以及第3节Arithmetic Reasoning的实验设置。", "4": "第4页：通栏的图4，九幅小折线图，展示LaMDA、GPT和PaLM在GSM8K、SVAMP和MAWPS上的解题率随模型规模的变化；在最大的模型上，蓝色的思维链曲线升到灰色的标准提示曲线之上。下方是结果和第4节。", "5": "第5页：通栏的表2，蓝色两行表头，列出每个模型和规模在五个基准上的解题率，思维链胜出的数字用粗体；然后是常识推理的结果和第5节Symbolic Reasoning，带一条脚注。", "6": "第6页：第5节的结尾、第6节Discussion、第7节Conclusions和致谢。", "7": "第7页：两栏的参考文献，按作者排序，年份紧跟姓名，最后是两行带许可证的版权说明。" }
 ---
 
 ## 成品一览
@@ -23,6 +23,8 @@ pageNotes: { "1": "第1页：一行蓝色等宽字体的会议信息，两行粗
 <Excerpt region="citations" />
 
 机器学习会议采用natbib的作者–年份样式：姓名和年份之间加逗号，三位作者以上写*et al.*。引擎自带的样式中最接近的是Chicago author-date，所以本例把其CSL中连接作者和年份的那一组，从空格改成逗号。你的`.bib`文件可以原样带来：粘贴进`:::references{format=bibtex}`块，用`[@key]`得到*(Brown et al., 2020)*，用`@key`得到*Brown et al. (2020)*。后缀保留前面写的逗号和其中的强调，所以`[@brown2020language, *inter alia*]`印成(Brown et al., 2020, *inter alia*)，与原文一致。题注的引用写法相同：图4的题注写`@jie2022learning`和`@lan2021mwptoolkit`，这两部文献不用`nocite`也会进入参考文献表。
+
+正文里的两个网址，第5节的人名普查数据和版权说明里的许可证，都写成链接：`[name census data](https://namecensus.com/)`。设置 `links: { print: 'inline', urlDisplay: 'short' }` 后，纸面在链接文字后面用括号印出地址，去掉 `https://`，PDF 里的链接照样可以点击。直接把地址当普通文字写进去，印出来一样，点击却打不开。
 
 ### 3 · 标题区
 

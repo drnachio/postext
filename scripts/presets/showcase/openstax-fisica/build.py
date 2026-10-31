@@ -27,6 +27,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.dirname(HERE))
 import cnxml  # noqa: E402
 import editorial as ed  # noqa: E402
+import fitmath  # noqa: E402
 from _common import (  # noqa: E402
     PRESETS_ROOT, at, attr_value, box_el, bundle_size, copy_licences, copy_thumbnail, image_el, instance_font,
     layer_configs, make_palette, mm, pt, register, rule_el, text_el, write_fingerprint, build_spines, spine_thickness_mm,
@@ -61,12 +62,15 @@ COLOURS = {
     "white": "#ffffff",
     "band": "#005a8c",
     "accent": "#d9822b",
+    # The example titles: the orange darkened to 5:1 on white (the brand
+    # orange is 2.9:1, short of the 4.5:1 text of their size needs).
+    "accentInk": "#a85c15",
     "tint": "#e8f1f7",
     "grey": "#f3f4f6",
     "rule": "#c9ced3",
     "muted": "#5f6b74",
 }
-NAMES = {"ink": "Tinta", "paper": "Papel", "white": "Blanco", "band": "Azul del libro", "accent": "Naranja de ejemplos", "tint": "Fondo de recuadros", "grey": "Fondo de comprobaciones", "rule": "Filetes", "muted": "Gris de notas"}
+NAMES = {"ink": "Tinta", "paper": "Papel", "white": "Blanco", "band": "Azul del libro", "accent": "Naranja de ejemplos", "accentInk": "Naranja de títulos", "tint": "Fondo de recuadros", "grey": "Fondo de comprobaciones", "rule": "Filetes", "muted": "Gris de notas"}
 col, COLOR_PALETTE = make_palette(COLOURS, NAMES)
 TEXT, SANS = "Source Serif 4", "Source Sans 3"
 
@@ -212,19 +216,23 @@ def callout_styles() -> list[dict]:
             "padding": {"top": mm(3.5), "right": mm(4.5), "bottom": mm(3), "left": mm(4.5)},
             "stripe": {"enabled": True, "side": "left", "width": pt(3), "color": col("accent")},
             "icon": {"kind": "none"},
-            "titleStyle": {"fontFamily": SANS, "fontSize": pt(11), "fontWeight": 700, "color": col("accent"), "gap": mm(2)},
+            "titleStyle": {"fontFamily": SANS, "fontSize": pt(11), "fontWeight": 700, "color": col("accentInk"), "gap": mm(2)},
             "body": body,
-            "marginTop": pt(6), "marginBottom": pt(10), "keepTogether": False, "splitMinLines": 3,
+            "marginTop": pt(6), "marginBottom": pt(10), "keepTogether": False, "splitMinLines": 2,
         },
         {
-            "id": "comprobacion", "name": "Comprobación", "span": "column", "placement": "here",
+            # A question and its answer, kept whole: it floats to the first
+            # free band (the foot of the page, or the head of the next) and
+            # the text after it fills the page, so a box that does not fit
+            # leaves no hole.
+            "id": "comprobacion", "name": "Comprobación", "span": "column", "placement": "auto",
             "backgroundEnabled": True, "background": col("grey"), "border": {"enabled": False}, "borderRadius": mm(0),
             "padding": {"top": mm(3), "right": mm(4.5), "bottom": mm(2.5), "left": mm(4.5)},
             "stripe": {"enabled": True, "side": "left", "width": pt(3), "color": col("band")},
             "icon": {"kind": "none"},
             "titleStyle": {"fontFamily": SANS, "fontSize": pt(9), "fontWeight": 700, "color": col("band"), "gap": mm(1.8)},
             "body": {**body, "fontSize": pt(9.2), "lineHeight": pt(12.6)},
-            "marginTop": pt(5), "marginBottom": pt(9), "keepTogether": False, "splitMinLines": 2,
+            "marginTop": pt(5), "marginBottom": pt(9), "keepTogether": True,
         },
         {
             "id": "nota", "name": "Nota", "span": "column", "placement": "here",
@@ -270,7 +278,7 @@ def headings() -> dict:
         "fontFamily": SANS, "color": col("ink"), "keepWithNext": True,
         "levels": [
             {"level": 1, "fontSize": pt(30), "lineHeight": pt(34), "fontWeight": 700, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "numberingTemplate": "{1}", "advancedDesign": front_opener()},
-            {"level": 2, "fontSize": pt(17), "lineHeight": pt(21), "fontWeight": 700, "color": col("band"), "numberingTemplate": "{1}.{2}", "marginTop": pt(22), "marginBottom": pt(6), "breakBefore": {"enabled": True, "parity": "any"}, "span": "page"},
+            {"level": 2, "fontSize": pt(17), "lineHeight": pt(21), "fontWeight": 700, "color": col("band"), "numberingTemplate": "{1}.{2}", "marginTop": pt(26), "marginBottom": pt(6), "span": "column"},
             {"level": 3, "fontSize": pt(12.5), "lineHeight": pt(16), "fontWeight": 700, "numberingTemplate": "", "marginTop": pt(14), "marginBottom": pt(3)},
             {"level": 4, "fontSize": pt(10.8), "lineHeight": pt(14), "fontWeight": 600, "italic": True, "numberingTemplate": "", "marginTop": pt(10), "marginBottom": pt(2)},
         ],
@@ -331,6 +339,11 @@ def shared_config(chapters: dict[str, list[dict]], images: dict[str, dict]) -> d
         "header": running_heads("es"),
         "footer": opener_footer(),
         "math": {"enabled": True, "fontSizeScale": 1.0, "marginTop": pt(6), "marginBottom": pt(6)},
+        # The "Link" boxes send the reader to PhET simulations and OpenStax
+        # pages: on paper each link gets a note at the foot of its column
+        # with the short address and a code a phone can open.
+        "links": {"print": "notes", "show": "both", "urlDisplay": "short", "repeat": "first", "qr": {"size": mm(14)}},
+        "footnotes": {"fontSize": pt(8.3), "lineHeight": pt(11), "textAlign": "left", "color": col("ink")},
         "captionStyle": {"fontFamily": SANS, "fontSize": pt(8.3), "color": col("ink"), "align": "left", "gap": mm(1.8), "labelBold": True, "labelColor": col("band"), "descriptionItalic": False, "note": {"fontSize": pt(6.8), "color": col("muted"), "italic": False, "gap": mm(0.6)}},
         "tableStyle": {
             "bodyFontFamily": SANS, "bodyFontSize": pt(8.8), "bodyLineHeight": pt(11.8), "bodyColor": col("ink"),
@@ -396,6 +409,42 @@ def table_spec(res: cnxml.Resource) -> dict:
     return {"id": res.id, "typeId": "table", "kind": "table", "caption": res.caption, "table": res.table, "placement": {"position": "auto", "span": "page" if res.wide else "column"}}
 
 
+with open(os.path.join(HERE, "wide_formulas.json"), encoding="utf-8") as _f:
+    WIDE_FORMULAS: dict[str, dict] = json.load(_f)
+DISPLAY_RE = re.compile(r"\$\$\n(.+?)\n\$\$", re.S)
+
+
+def fit_formulas(lang: str, body: str) -> str:
+    """Break the display formulas a layout found wider than their measure
+    (wide_formulas.json, see fitmath.py), and set the few that the
+    MathML conversion garbles as editorial.FORMULA_FIXES gives them."""
+    wide = WIDE_FORMULAS.get(lang, {})
+    fixes = ed.FORMULA_FIXES.get(lang, {})
+
+    def one(m: re.Match) -> str:
+        fixed = fixes.get(fitmath.key(m.group(1)))
+        if fixed is not None:
+            return "$$\n" + fixed + "\n$$"
+        entry = wide.get(fitmath.key(m.group(1)))
+        if entry is None:
+            return m.group(0)
+        ratio, small = (entry, False) if isinstance(entry, (int, float)) else (entry[0], "small" in entry[1:])
+        return "$$\n" + fitmath.fit(m.group(1), ratio, small) + "\n$$"
+
+    return INLINE_ARRAY_RE.sub(inline_chain, DISPLAY_RE.sub(one, body))
+
+
+# An aligned derivation set inline (one in the English 2.4 example) shrinks
+# to the height of a line and cannot be read: run its rows on as one chain,
+# a = Δv/Δt = … = 5 m/s².
+INLINE_ARRAY_RE = re.compile(r"(?<![$\\])\$\\begin\{array\}\{l+\}(.+?)\\end\{array\}\$")
+
+
+def inline_chain(m: re.Match) -> str:
+    rows = [" ".join(c.strip() for c in row.split("&") if c.strip()) for row in m.group(1).split(r"\\")]
+    return "$" + " ".join(r for r in rows if r) + "$"
+
+
 def build_language(lang: str, images: dict[str, dict]) -> tuple[list[dict], list[dict], list[dict]]:
     """Chapter markdown files, resources and resource wording of one edition."""
     book = ed.BOOK[lang]
@@ -415,7 +464,7 @@ def build_language(lang: str, images: dict[str, dict]) -> tuple[list[dict], list
         nonlocal n_file
         rel = f"chapters/{lang}/{n_file:02d}-{slug}.md"
         with open(os.path.join(OUT, rel), "w", encoding="utf-8") as f:
-            f.write(body)
+            f.write(fit_formulas(lang, body))
         specs.append({"title": title, "file": rel})
         n_file += 1
 
@@ -558,7 +607,7 @@ def write_manifest(chapter_specs, resources, wording, fonts, chapters, images) -
 # book's blue, OpenStax in the orange of the examples; each edition sized
 # for about its own page count.
 SPINE = "spine"
-SPINE_PAGES = {"es": 126, "en": 84}
+SPINE_PAGES = {"es": 122, "en": 82}
 SPINE_TITLES = {"es": "Física universitaria · Volumen 1", "en": "Physics"}
 
 

@@ -1089,7 +1089,7 @@ def en_folios() -> dict:
     els = []
     for parity in ("even", "odd"):
         for pages in ("body", "opener"):
-            els.append(text(f"folio-{parity}-{pages}", "{pageNumber}", anchor=at("page", "top-left"), offset=(g.left(parity), y), width=g.text_w, size_pt=9, family=SERIF_EN, align="center", parity=parity, pages=pages, overflow="clip"))
+            els.append(text(f"folio-{parity}-{pages}", "{pageNumber}", anchor=at("page", "top-left"), offset=(g.left(parity), y), width=g.text_w, size_pt=9, family=SERIF_EN, align="center", parity=parity, pages=pages, overflow="clip", figureStyle="oldstyle"))
     return {"elements": els}
 
 
@@ -1173,6 +1173,9 @@ def en_config() -> dict:
         "cjk": {},
         "bodyText": {
             "fontFamily": SERIF_EN,
+            # EB Garamond's default figures are lining; the novel's dates,
+            # hours and sums in taels read in old-style ones (onum).
+            "figureStyle": "oldstyle",
             "fontSize": pt(g.body_pt),
             "lineHeight": lead,
             "textAlign": "justify",
