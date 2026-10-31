@@ -3633,7 +3633,7 @@
     {
      "id": "spine",
      "file": "resources/spine-es.jpg",
-     "width": 87,
+     "width": 85,
      "height": 3850
     }
    ]
@@ -3675,7 +3675,7 @@
     {
      "id": "spine",
      "file": "resources/spine-en.jpg",
-     "width": 61,
+     "width": 60,
      "height": 3850
     }
    ]
@@ -6670,7 +6670,7 @@
    "typeId": "figure",
    "kind": "bitmap",
    "file": "resources/spine-es.jpg",
-   "width": 87,
+   "width": 85,
    "height": 3850,
    "placement": {
     "position": "here",

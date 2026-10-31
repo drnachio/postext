@@ -596,7 +596,7 @@ def write_manifest(chapter_specs, resources, wording, fonts, chapters, images) -
 # book's blue, OpenStax in the orange of the examples; each edition sized
 # for about its own page count.
 SPINE = "spine"
-SPINE_PAGES = {"es": 126, "en": 84}
+SPINE_PAGES = {"es": 122, "en": 82}
 SPINE_TITLES = {"es": "Física universitaria · Volumen 1", "en": "Physics"}
 
 
