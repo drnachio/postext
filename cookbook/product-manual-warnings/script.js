@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 050 · Product manual with safety notices ════════════════
 // https://postext.dev/en/cookbook/product-manual-warnings
 // Code: MIT · Text: original, in German (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Red Hat Text, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.34.0
+// Fonts: Red Hat Text, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
   mergeCells, defaultResourceTypes, inlineSvgFonts } from 'https://esm.sh/postext';
@@ -141,6 +141,10 @@ const config = () => ({
     levels: [section, { level: 2, fontSize: pt(10.4), color: col('brand'), marginTop: pt(LEAD),
       marginBottom: pt(0), numberingTemplate: '{1}.{2}' }] }, // 3.1, 3.2 …
   captionStyle: { fontFamily: TEXT, fontSize: pt(8.2), labelColor: col('brand'), gap: mm(1.6) },
+  // A web link prints its address in a foot note, with a code to scan beside it.
+  links: { print: 'notes', show: 'both', urlDisplay: 'short', qr: { size: mm(12), side: 'start' } },
+  footnotes: { fontSize: pt(7.4), lineHeight: pt(9.6), color: col('ink'), spaceAbove: pt(LEAD / 2),
+    separator: { enabled: true, width: 0.25, lineWidth: pt(0.5), color: col('rule') } },
   paragraphStyles: [{ id: 'colophon', fontFamily: TEXT, fontSize: pt(7), lineHeight: pt(9.6),
     color: col('muted'), textAlign: 'left', marginTop: pt(LEAD) }],
   header: { elements: [head('verso', '{title}', 'even', 'top-left', PAGE.outer),
