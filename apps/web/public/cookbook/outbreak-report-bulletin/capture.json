@@ -3,21 +3,21 @@
   "slug": "outbreak-report-bulletin",
   "sourceHash": "d2a782ba1dfaeaad70c1d0378922f0535b88e2dfbc1e79a131377bc569d807a3",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:33.911Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:12:20.650Z",
   "variants": {
     "en": {
-      "hash8": "70145e2e",
-      "vdtHash": "bc55b8be0b4d1db5f0cc57f06ddc8084aa5fbca2",
+      "hash8": "b4aab2b7",
+      "vdtHash": "d5820526b49e68099880d031cdb0a0b520d2e2db",
       "timings": {
-        "importMs": 541,
-        "fontsMs": 68,
-        "buildMs": 181,
-        "totalMs": 3013,
+        "importMs": 5151,
+        "fontsMs": 481,
+        "buildMs": 303,
+        "totalMs": 7326,
         "builds": 1
       },
       "specimen": {
@@ -147,13 +147,13 @@
       },
       "sandbox": {
         "file": "outbreak-report-bulletin.postext",
-        "bytes": 95658,
+        "bytes": 95656,
         "folio": "0cf5d184",
         "chapters": [
           {
             "pages": 6,
-            "hash": "0b598436956689ce",
-            "lines": "4acd041a6244148c"
+            "hash": "7156d0d1f1f4e0ad",
+            "lines": "f9f2eeb4804c0cf6"
           }
         ]
       },
@@ -444,7 +444,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 4,
         "looseLines": {
           "count": 1,
           "share": 0.0047,
@@ -458,6 +458,16 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.07 MB (warning at 0.9 MB for 6 pages; capture.expect.imageMb states the figure of a book of paintings)"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           }
         ]
       }
