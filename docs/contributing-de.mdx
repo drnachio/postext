@@ -149,6 +149,8 @@ Engagement:
 Wenn Sie Code schreiben wollen, eröffnen Sie zuerst ein Issue, um den Ansatz zu besprechen – das
 vermeidet doppelte Arbeit, und ein kurzes Gespräch vorab spart allen Zeit.
 
+Halten Sie jede Quelldatei unter etwa 600 Zeilen und jeden Ordner unter etwa 25 Quelldateien: Ein Modul, das darüber hinauswächst, wird zu einem gleichnamigen Ordner, und die alte Datei bleibt als Fassade, die ihn re-exportiert. Die CI prüft die Grenzen mit `node scripts/source-size.mjs --check` (siehe *Code Layout* in CONTRIBUTING.md).
+
 ### Was Sie als Nächstes lesen sollten
 
 Zur Orientierung, bevor Sie loslegen:

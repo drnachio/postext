@@ -341,6 +341,7 @@ interface VDTLine {
   sourceEnd?: number;
   plainStart?: number;          // 到纯文本的映射
   plainEnd?: number;
+  qr?: VDTLineQr;               // 链接注释的二维码（links.show），挂在注释的第一行
 }
 
 // 经过测量、可以安放的资源嵌入（位图 / svg / 表格 / 视频）

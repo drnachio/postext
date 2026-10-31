@@ -26,7 +26,7 @@ Some decisions cannot be taken inside one walk, because they depend on where the
 ### Stage 1: Content Structuring
 
 - **Input:** Raw `PostextContent`
-- **Action:** Parse the markdown into content blocks, resolve resource references against `resources[]` by ID, take the footnote definitions (`[^id]:`) out of the flow and number their markers in citation order, number the headings, and plan the floats: which resources float, and after which block (`notes[]` is not read)
+- **Action:** Parse the markdown into content blocks, resolve resource references against `resources[]` by ID, take the footnote definitions (`[^id]:`) out of the flow and number their markers in citation order, give external links a note when `links.print` is `'notes'` (or their address in parentheses with `'inline'`), number the headings, and plan the floats: which resources float, and after which block (`notes[]` is not read)
 - **Output:** A flat list of content blocks (typed and content-filled, but with no page or column assignment) and the float plan
 - **Runs:** at the start of every placement pass. The parse is read from its memo after the first pass; the rest is worked out again
 

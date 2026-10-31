@@ -147,6 +147,8 @@ Una vez que lo tengas todo listo, aquí tienes tres pasos concretos, de menor a 
 Si piensas escribir código, abre antes un issue para hablar del enfoque: así se evita el trabajo
 duplicado, y una conversación breve al principio ahorra tiempo a todos.
 
+Mantén cada archivo de código por debajo de unas 600 líneas y cada carpeta por debajo de unos 25 archivos de código: un módulo que crece más se convierte en una carpeta con su mismo nombre, y el archivo antiguo queda como fachada que la reexporta. La CI comprueba los límites con `node scripts/source-size.mjs --check` (ver *Code Layout* en CONTRIBUTING.md).
+
 ### Qué leer después
 
 Para orientarte antes de lanzarte:
