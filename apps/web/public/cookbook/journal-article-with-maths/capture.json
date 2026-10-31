@@ -3,21 +3,21 @@
   "slug": "journal-article-with-maths",
   "sourceHash": "26e5cb6dcd226da1bb0a06efc03576cae2db13e4c8125a46fd1d99d817d37441",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.462Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:19:05.689Z",
   "variants": {
     "en": {
-      "hash8": "a749515f",
-      "vdtHash": "9802da86e822bb2ee023d5400acacaa72c822280",
+      "hash8": "c190866a",
+      "vdtHash": "c0ce79f62d82503692d22c76cbf3de797f781bc0",
       "timings": {
-        "importMs": 648,
-        "fontsMs": 238,
-        "buildMs": 223,
-        "totalMs": 2053,
+        "importMs": 3028,
+        "fontsMs": 195,
+        "buildMs": 161,
+        "totalMs": 4450,
         "builds": 1
       },
       "specimen": {
@@ -121,13 +121,13 @@
       },
       "sandbox": {
         "file": "journal-article-with-maths.postext",
-        "bytes": 45010,
+        "bytes": 45009,
         "folio": "ba291173",
         "chapters": [
           {
             "pages": 4,
-            "hash": "3ce86e4eb26ad8a0",
-            "lines": "a048e991c7190531"
+            "hash": "d71482fa1fc2ed70",
+            "lines": "74c509bb1012289b"
           }
         ]
       },
@@ -446,7 +446,18 @@
         "raggedLines": {
           "count": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          }
+        ]
       }
     }
   }
