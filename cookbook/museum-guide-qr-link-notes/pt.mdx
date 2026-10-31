@@ -1,72 +1,63 @@
 ---
-# Todos os valores vão entre aspas. Limites: title ≤ 60 caracteres (um resultado, não uma lista de recursos);
-# summary 60–160 (a resposta em uma frase, nomeando o mecanismo); description 120–160
-title: "Uma página de livro com cabeços"
-summary: "Margens espelhadas, uma abertura de capítulo rebaixada e cabeços que sabem em que lado da página dupla estão, numa página de livro em brochura."
-description: "Uma página de livro no Postext: margens espelhadas, abertura rebaixada 52 mm, cabeços por paridade e fólio no pé nas aberturas, com o código completo."
-# plain: "…"           40–240 caracteres: o resumo em palavras do dia a dia, sem jargão (aparece como "Em poucas palavras")
-# question: "…"        opcional, ≤ 110 caracteres: reformula answers[0] para esta página
-# pageNotes: { "3": "…" }  opcional: texto alternativo extra para uma página capturada
-aliases: ["página de livro", "cabeços", "cabeço", "abertura de capítulo", "running heads"]
+title: "Um guia de museu com os links impressos como códigos QR"
+summary: "Um passeio de bolso por um museu com os links impressos como notas numeradas no rodapé, com endereço curto e código QR (links.print em notes)."
+description: "Um guia de museu no Postext: os links para o catálogo saem como notas numeradas com endereço curto e código QR, um quadro por página, com o código."
+plain: "Um pequeno guia impresso de cinco quadros. Onde o texto cita uma página web, um número pequeno leva ao pé da página, onde um código quadrado abre essa página no celular."
+question: "Como imprimo os links de um guia como notas numeradas com um código QR que o visitante possa escanear?"
+aliases: ["código QR", "códigos QR impressos", "endereços impressos", "guia de museu", "roteiro a pé", "notas de link", "QR code", "museum guide"]
 ---
 
 ## O que você vai compor
 
-{/*
-  60–150 palavras, com a voz de um diretor de arte: a publicação, a ideia de design e por que
-  ela é difícil de conseguir em outro lugar. Dê nome à publicação ("uma edição de bolso de…",
-  "a edição de junho de…"). Sem listas de recursos: a seção Ingredientes é gerada a partir de
-  recipe.json. A página acrescenta sozinha, sob esta seção, a lista "Esta receita responde" (de answers).
-*/}
-
-As primeiras páginas de um romance em brochura: um capítulo que começa numa página ímpar, a um terço da altura, sob um antetítulo pequeno em letras espaçadas e um fio curto na única cor de destaque do livro; depois, página após página de texto justificado, com o título do livro à esquerda e o do capítulo à direita. Nada na página levanta a voz. O ofício está na geometria: margens que se espelham na página dupla, cabeços que sabem de que lado estão e um fólio que desce para o pé na abertura, onde um cabeço atrapalharia o título.
+Um guia de bolso das salas holandesas do Metropolitan Museum of Art: cinco quadros, uma hora a pé, um quadro por página. A capa é a jovem de Vermeer junto à janela, cortada pela borda superior. Cada parada abre com o número da sala, o título e o pintor, depois o quadro com a etiqueta ao lado e depois três parágrafos curtos. O texto aponta para o catálogo do museu como qualquer página web faria. No papel, cada link vira um número pequeno, e no pé da página a nota traz o endereço curto e um código QR que o visitante aponta com o celular diante do quadro.
 
 ## Preparo
 
-{/*
-  De 3 a 7 passos, cada um um H3 numerado "1 · …". Cada passo abre com um Excerpt de uma #region
-  de script.js (o arquivo composto, com os números de linha reais) e segue com 1–3 frases sobre o
-  PORQUÊ, não sobre o quê: o quê o leitor já vê. A resposta curta já mostra a #region answer: um
-  passo que trate dela remete para lá em vez de repeti-la. en.mdx, es.mdx e zh.mdx mostram as
-  mesmas regiões na mesma ordem.
-  Componentes opcionais: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Escreva links, imprima notas
 
-### 1 · A abertura é um design, não um título
+O código é [a resposta curta](#a-resposta-curta) acima. O Markdown mantém links comuns, `[A ficha do catálogo](https://www.metmuseum.org/…/436616)`, e `links.print: 'notes'` transforma cada um numa nota numerada com o endereço e o código ([links na edição impressa](/pt/docs/configuration-notes-references#links-na-edição-impressa)). As notas são notas de rodapé: `numbering: 'document'` as conta ao longo do passeio, então o leitor encontra de 1 a 7, e `repeat: 'first'` deixa a última parada citar o Hals pela nota 3 em vez de imprimir o mesmo código duas vezes. No PDF o código é desenhado em vetores e é ele mesmo um link.
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. O título de nível 1 mantém seu lugar no texto e no sumário, mas é desenhado a partir de um espaço de design: o antetítulo vem de um atributo do título, o título quebra numa medida fixa e o fio se ancora abaixo da altura que o título ocupar. `minHeight` rebaixa o texto corrido até a mesma linha em todas as aberturas, seja qual for o comprimento do título.
+<PageShot page={3} crop="0,0.74,1,0.2" caption="O pé da parada 1: a nota 3, a ficha do quadro como endereço curto ao lado de um código de 16 mm." />
 
-### 2 · Os cabeços sabem em que página estão
+### 2 · Uma parada por página
 
-<Excerpt region="running-heads" />
+<Excerpt region="stops" />
 
-Cada elemento é ancorado à página física e filtrado por paridade, de modo que o fólio fica sempre na borda externa e o título do livro no verso. `pages: 'body'` os mantém fora da abertura, que recebe no lugar um fólio centralizado no pé, vindo do rodapé.
+Cada parada é um título de segundo nível cujo `breakBefore` abre uma página, par ou ímpar, e assim o visitante vira uma folha por quadro. O número da sala e o pintor são atributos do título; o design os põe acima e abaixo do título, e `minHeight` deixa o quadro na mesma altura em todas as páginas.
 
-### 3 · Uma só cor de destaque, ligada em todo lugar
+### 3 · A etiqueta ao lado do quadro
 
-<Excerpt region="palette" />
+<Excerpt region="resources" />
 
-Cada cor da configuração indica sua entrada na paleta, por isso quem trocar uma amostra de cor muda o tom do livro inteiro, e uma parte ou um estilo de título pode recolorir uma seção pelo id. Apontar `main-color` para a cor de destaque pega todos os valores padrão que a configuração não redefine.
+`captionSide: 'inside'` põe a legenda e a nota de crédito ao lado do quadro, como um museu pendura a etiqueta, e `width` dá a cada quadro sua parte da medida: menos ao Hals, que é alto, mais ao Ruisdael, que é horizontal, para que as cinco páginas tenham uma altura de texto parecida. A etiqueta junta a técnica, as medidas em centímetros com espaços inseparáveis e a linha de crédito do museu, com vírgula decimal na edição espanhola.
+
+### 4 · A parada no cabeçalho
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` imprime o título da parada que começa na página: a página ímpar nomeia o quadro, a par, o guia. Nenhum cabeçalho chega à capa, uma página com papel de abertura.
 
 ## Variações
 
-{/*
-  Opcional, de 1 a 4 entradas: um H3 no imperativo, uma frase e um diff contra script.js,
-  ou um link para uma receita irmã.
-*/}
+### Imprima o endereço na linha
 
-### Componha o texto em duas colunas
-
-Um formato mais largo comporta duas colunas; a abertura ocupa as duas e os cabeços ficam onde estão.
+Para um guia lido em casa, `'inline'` acrescenta o endereço entre parênteses depois do texto do link, sem nota nem código.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Códigos sem endereço
+
+`show: 'qr'` imprime só o código ao lado do número da nota, para um cartaz ou uma etiqueta em que o endereço só ocuparia espaço.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
 ```
 
 ## Erros comuns
 
-{/*
-  Opcional. Os erros comuns e os avisos listados em recipe.json aparecem aqui sozinhos;
-  acrescente uma linha só para um problema que pertença apenas a esta receita.
-*/}
+Uma nota com código tem pelo menos a altura do código. Quando a linha que leva o link não tem espaço embaixo para a nota na página, a linha passa para a seguinte com a nota; deixe os links fora das últimas linhas de uma página que precisa terminar onde termina, como o primeiro parágrafo da capa deste guia.

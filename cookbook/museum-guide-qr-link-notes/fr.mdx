@@ -1,73 +1,63 @@
 ---
-# Toutes les valeurs sont entre guillemets. Limites : title ≤ 60 caractères (un résultat, pas une liste de fonctions) ;
-# summary 60–160 (la réponse en une phrase, qui nomme le mécanisme) ; description 120–160.
-title: "Une page de livre avec titres courants"
-summary: "Des marges en miroir, une ouverture de chapitre abaissée et des titres courants qui savent de quel côté de la double page ils sont, sur une page de roman."
-description: "Une page de roman dans Postext : marges en miroir, ouverture abaissée de 52 mm, titres courants selon la parité, folio en pied aux ouvertures, code complet."
-# plain: "…"           40–240 caractères : le résumé en mots de tous les jours, sans jargon (affiché sous « En bref »)
-# question: "…"        facultatif, ≤ 110 caractères : reformule answers[0] pour cette page
-# pageNotes: { "3": "…" }  facultatif : texte de remplacement supplémentaire pour une page capturée
-aliases: ["page de livre", "titres courants", "titre courant", "ouverture de chapitre", "running heads"]
+title: "Un guide de musée dont les liens s’impriment en codes QR"
+summary: "Une promenade de poche dans un musée dont les liens web s’impriment en notes numérotées en bas de page, avec adresse courte et code QR (links.print à notes)."
+description: "Un guide de musée dans Postext : les liens vers le catalogue s’impriment en notes numérotées avec adresse courte et code QR, un tableau par page, avec le code."
+plain: "Un petit guide imprimé de cinq tableaux. Là où le texte cite une page web, un petit numéro renvoie au bas de la page, où un code carré ouvre cette page sur le téléphone."
+question: "Comment imprimer les liens d’un guide en notes numérotées avec un code QR que le visiteur peut scanner ?"
+aliases: ["code QR", "codes QR imprimés", "adresses imprimées", "guide de musée", "guide de promenade", "notes de lien", "QR code", "museum guide"]
 ---
 
 ## Ce que vous allez composer
 
-{/*
-  60 à 150 mots, avec la voix d’un directeur artistique : la publication, l’idée de maquette et
-  pourquoi elle est difficile à obtenir ailleurs. Nommez la publication (« une édition de poche
-  de… », « le numéro de juin de… »). Pas de liste de fonctions : la section Ingrédients est générée
-  à partir de recipe.json. La page ajoute d’elle-même, sous cette section, la liste « Cette recette
-  répond à » (tirée de answers).
-*/}
-
-Les premières pages d’un roman broché : un chapitre qui commence sur un recto, au tiers de la hauteur, sous un petit surtitre interlettré et un filet court dans l’unique couleur d’accent du livre, puis page après page de texte justifié, avec le titre du livre à gauche et celui du chapitre à droite. Rien sur la page n’élève la voix. Le métier est dans la géométrie : des marges qui se répondent en miroir sur la double page, des titres courants qui savent de quel côté ils sont, et un folio qui descend en pied sur l’ouverture, là où un titre courant encombrerait le titre.
+Un guide de poche des salles hollandaises du Metropolitan Museum of Art : cinq tableaux, une heure à pied, un tableau par page. La couverture est la jeune femme de Vermeer à la fenêtre, coupée par le bord supérieur. Chaque étape s’ouvre sur le numéro de salle, le titre et le peintre, puis le tableau avec son cartel à côté, puis trois courts paragraphes. Le texte renvoie au catalogue du musée comme le ferait n’importe quelle page web. Sur papier, chaque lien devient un petit numéro, et en bas de page la note donne l’adresse courte et un code QR que le visiteur vise avec son téléphone devant le tableau.
 
 ## Préparation
 
-{/*
-  3 à 7 étapes, chacune un H3 numéroté « 1 · … ». Chaque étape s’ouvre sur un Excerpt d’une #region
-  de script.js (le fichier composé, avec ses vrais numéros de ligne), puis 1 à 3 phrases sur le
-  POURQUOI, pas sur le quoi : le quoi, le lecteur le voit. La réponse courte montre déjà la #region
-  answer : une étape qui en parle y renvoie au lieu de la réimprimer. en.mdx, es.mdx et zh.mdx
-  montrent les mêmes régions dans le même ordre.
-  Composants facultatifs : Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Écrire des liens, imprimer des notes
 
-### 1 · L’ouverture est une maquette, pas un titre
+Le code est [la réponse courte](#la-réponse-courte) ci-dessus. Le Markdown garde des liens ordinaires, `[La fiche du catalogue](https://www.metmuseum.org/…/436616)`, et `links.print: 'notes'` change chacun en note numérotée avec l’adresse et le code ([liens sur papier](/fr/docs/configuration-notes-references#liens-sur-papier)). Ces notes sont des notes de bas de page : `numbering: 'document'` les compte sur toute la promenade, le lecteur rencontre donc les notes 1 à 7, et `repeat: 'first'` laisse la dernière étape citer le Hals par sa note 3 au lieu d’imprimer deux fois le même code. Dans le PDF, le code est dessiné en vectoriel et forme lui-même un lien.
 
-Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Le titre de niveau 1 garde sa place dans le texte et dans la table des matières, mais il se dessine à partir d’une zone de maquette : le surtitre vient d’un attribut du titre, le titre passe à la ligne sur une justification fixe et le filet s’ancre sous la hauteur que prend le titre, quelle qu’elle soit. `minHeight` abaisse le texte courant jusqu’à la même ligne sur chaque ouverture, quelle que soit la longueur du titre.
+<PageShot page={3} crop="0,0.74,1,0.2" caption="Le bas de l’étape 1 : la note 3, la fiche du tableau en adresse courte à côté d’un code de 16 mm." />
 
-### 2 · Les titres courants savent sur quelle page ils sont
+### 2 · Une étape par page
 
-<Excerpt region="running-heads" />
+<Excerpt region="stops" />
 
-Chaque élément est ancré à la page physique et filtré selon la parité : le folio reste donc toujours sur le bord extérieur et le titre du livre sur le verso. `pages: 'body'` les tient à l’écart de l’ouverture, qui reçoit à la place un folio centré en pied, venu du pied de page.
+Chaque étape est un titre de second niveau dont le `breakBefore` ouvre une page, paire ou impaire : le visiteur tourne un feuillet par tableau. Le numéro de salle et le peintre sont des attributs du titre ; le dessin les place au-dessus et au-dessous du titre, et `minHeight` met le tableau à la même hauteur sur toutes les pages.
 
-### 3 · Un seul accent, lié partout
+### 3 · Le cartel à côté du tableau
 
-<Excerpt region="palette" />
+<Excerpt region="resources" />
 
-Chaque couleur de la configuration renvoie à son entrée de palette : un lecteur qui change une pastille de couleur reteinte tout le livre, et une partie ou un style de titre peut recolorer une section par son identifiant. Faire pointer `main-color` sur l’accent rattrape toutes les valeurs par défaut que la configuration ne redéfinit pas.
+`captionSide: 'inside'` place la légende et sa note de crédit à côté du tableau, comme un musée accroche son cartel, et `width` donne à chaque tableau sa part de la justification : moins au Hals, qui est haut, plus au Ruisdael, qui est en largeur, si bien que les cinq pages gardent une hauteur de texte voisine. Le cartel réunit la technique, les dimensions en centimètres avec des espaces insécables et la ligne de crédit du musée, avec une virgule décimale dans l’édition espagnole.
+
+### 4 · L’étape dans le titre courant
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` imprime le titre de l’étape qui commence sur la page : la belle page nomme le tableau, la fausse page le guide. Aucun titre courant n’atteint la couverture, une page dont le rôle est celui d’ouverture.
 
 ## Variantes
 
-{/*
-  Facultatif, 1 à 4 entrées : un H3 à l’impératif, une phrase, puis un diff par rapport à script.js
-  ou un lien vers une recette voisine.
-*/}
+### Imprimer l’adresse dans la ligne
 
-### Composez le texte sur deux colonnes
-
-Un format plus large accueille deux colonnes ; l’ouverture s’étend sur les deux et les titres courants restent où ils sont.
+Pour un guide lu chez soi, `'inline'` ajoute l’adresse entre parenthèses après le texte du lien, sans note ni code.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Des codes sans adresse
+
+`show: 'qr'` imprime le code seul à côté du numéro de note, pour une affiche ou un cartel où l’adresse ne ferait que prendre de la place.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
 ```
 
 ## Erreurs fréquentes
 
-{/*
-  Facultatif. Les pièges et les avertissements listés dans recipe.json s’affichent ici d’eux-mêmes ;
-  n’ajoutez une ligne que pour un piège propre à cette recette.
-*/}
+Une note avec code est au moins aussi haute que le code. Quand la ligne qui porte le lien n’a pas la place de sa note en dessous sur la page, la ligne passe à la suivante avec sa note : gardez les liens hors des dernières lignes d’une page qui doit finir là où elle finit, comme le premier paragraphe de la couverture de ce guide.

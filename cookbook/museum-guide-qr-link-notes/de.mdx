@@ -1,73 +1,63 @@
 ---
-# Jeder Wert steht in Anführungszeichen. Grenzen: title ≤ 60 Zeichen (ein Ergebnis, keine Funktionsliste);
-# summary 60–160 (die Antwort in einem Satz, mit dem Mechanismus beim Namen); description 120–160.
-title: "Eine Buchseite mit Kolumnentiteln"
-summary: "Gespiegelte Ränder, ein abgesenkter Kapitelauftakt und Kolumnentitel, die wissen, auf welcher Seite der Doppelseite sie stehen, auf einer Romanseite."
-description: "Eine Romanseite in Postext: gespiegelte Ränder, ein um 52 mm abgesenkter Auftakt, Kolumnentitel nach Parität und Pagina am Fuß der Auftakte, mit Code."
-# plain: "…"           40–240 Zeichen: die Zusammenfassung in Alltagssprache, ohne Fachjargon (erscheint als „Kurz gesagt“)
-# question: "…"        optional, ≤ 110 Zeichen: formuliert answers[0] für diese Seite neu
-# pageNotes: { "3": "…" }  optional: zusätzlicher Alternativtext für eine erfasste Seite
-aliases: ["Buchseite", "Kolumnentitel", "lebender Kolumnentitel", "Kapitelauftakt", "running heads"]
+title: "Ein Museumsführer, dessen Links als QR-Codes gedruckt werden"
+summary: "Ein Museumsrundgang im Taschenformat, dessen Weblinks als nummerierte Fußnoten mit Kurzadresse und QR-Code gedruckt werden (links.print auf notes)."
+description: "Ein Museumsführer in Postext: Links zum Sammlungskatalog werden als nummerierte Fußnoten mit Kurzadresse und QR-Code gedruckt, ein Gemälde je Seite."
+plain: "Ein kleiner gedruckter Führer zu fünf Gemälden. Wo der Text eine Webseite nennt, führt eine kleine Ziffer an den Fuß der Seite, wo ein quadratischer Code diese Seite auf dem Handy öffnet."
+question: "Wie drucke ich die Links eines Führers als nummerierte Anmerkungen mit QR-Code zum Scannen?"
+aliases: ["QR-Code", "gedruckte QR-Codes", "gedruckte Adressen", "Museumsführer", "Rundgang", "Linkanmerkungen", "QR code", "museum guide"]
 ---
 
 ## Was Sie setzen
 
-{/*
-  60–150 Wörter, in der Stimme eines Art Directors: die Publikation, die Gestaltungsidee und warum
-  sie anderswo schwer zu erreichen ist. Nennen Sie die Publikation („eine Taschenbuchausgabe von …“,
-  „die Juni-Ausgabe von …“). Keine Funktionslisten: Der Abschnitt Zutaten wird aus recipe.json
-  erzeugt. Die Seite fügt die Liste „Dieses Rezept beantwortet“ (aus answers) von selbst unter
-  diesem Abschnitt ein.
-*/}
-
-Die ersten Seiten eines Paperbacks: Ein Kapitel beginnt auf einer rechten Seite ein Drittel unterhalb des Kopfes, unter einer kleinen gesperrten Dachzeile und einer kurzen Linie in der einzigen Akzentfarbe des Buches, danach folgt Seite um Seite Blocksatz, links der Titel des Buches, rechts das Kapitel. Nichts auf der Seite drängt sich vor. Das Handwerk steckt in der Geometrie: Ränder, die sich über die Doppelseite spiegeln, Kolumnentitel, die wissen, auf welcher Seite sie stehen, und eine Pagina, die auf dem Auftakt an den Fuß wandert, wo ein Kolumnentitel dem Titel zu nahe käme.
+Ein Taschenführer durch die holländischen Säle des Metropolitan Museum of Art: fünf Gemälde, eine Stunde zu Fuß, ein Gemälde je Seite. Den Umschlag bildet Vermeers junge Frau am Fenster, vom oberen Seitenrand angeschnitten. Jede Station beginnt mit Saalnummer, Titel und Maler, dann folgt das Bild mit dem Saaltext daneben, dann drei kurze Absätze. Der Text verlinkt auf den Katalog des Museums wie jede Webseite. Auf Papier wird jeder Link zu einer kleinen Ziffer, und am Fuß der Seite nennt die Anmerkung die Kurzadresse und einen QR-Code, den der Besucher vor dem Bild mit dem Handy erfasst.
 
 ## Zubereitung
 
-{/*
-  3–7 Schritte, jeder eine H3 mit der Nummerierung „1 · …“. Jeder Schritt beginnt mit einem Excerpt
-  einer #region aus script.js (der zusammengesetzten Datei, mit ihren echten Zeilennummern), danach
-  1–3 Sätze zum WARUM, nicht zum Was: Das Was sieht der Leser selbst. Die kurze Antwort zeigt bereits
-  #region answer: Ein Schritt dazu verweist dorthin, statt sie noch einmal abzudrucken. en.mdx, es.mdx
-  und zh.mdx zeigen dieselben Regionen in derselben Reihenfolge.
-  Optionale Komponenten: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Links schreiben, Anmerkungen drucken
 
-### 1 · Der Auftakt ist eine Gestaltung, keine Überschrift
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Das Markdown behält gewöhnliche Links, `[Der Katalogeintrag](https://www.metmuseum.org/…/436616)`, und `links.print: 'notes'` macht aus jedem eine nummerierte Anmerkung mit Adresse und Code ([Links im Druck](/de/docs/configuration-notes-references#links-im-druck)). Die Anmerkungen sind Fußnoten: `numbering: 'document'` zählt sie über den ganzen Rundgang, der Leser trifft also auf 1 bis 7, und `repeat: 'first'` lässt die letzte Station den Hals mit seiner Anmerkung 3 zitieren, statt denselben Code zweimal zu drucken. Im PDF ist der Code als Vektorgrafik gezeichnet und selbst ein Link.
 
-Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Die Überschrift der Ebene 1 behält ihren Platz im Text und im Inhaltsverzeichnis, wird aber aus einem Gestaltungsfeld mit Elementen gezeichnet: Die Dachzeile kommt aus einem Attribut der Überschrift, der Titel bricht auf einer festen Satzbreite um, und die Linie wird unter dem Titel verankert, wie hoch er auch ist. `minHeight` senkt den Grundtext auf jedem Auftakt auf dieselbe Zeile ab, wie lang der Titel auch ist.
+<PageShot page={3} crop="0,0.74,1,0.2" caption="Der Fuß von Station 1: Anmerkung 3, der Katalogeintrag des Gemäldes als Kurzadresse neben einem 16 mm großen Code." />
 
-### 2 · Kolumnentitel wissen, auf welcher Seite sie stehen
+### 2 · Eine Station je Seite
 
-<Excerpt region="running-heads" />
+<Excerpt region="stops" />
 
-Jedes Element ist an der physischen Seite verankert und nach Parität gefiltert, sodass die Pagina immer am Außenrand und der Buchtitel auf der linken Seite steht. `pages: 'body'` hält sie vom Auftakt fern, der stattdessen eine zentrierte Pagina am Fuß aus der Fußzeile bekommt.
+Jede Station ist eine Überschrift zweiter Ebene, deren `breakBefore` eine neue Seite beginnt, links oder rechts, sodass der Besucher je Gemälde ein Blatt umschlägt. Saalnummer und Maler sind Attribute der Überschrift; die Gestaltung setzt sie über und unter den Titel, und `minHeight` hält das Bild auf jeder Seite auf derselben Höhe.
 
-### 3 · Ein Akzent, überall verknüpft
+### 3 · Der Saaltext neben dem Bild
 
-<Excerpt region="palette" />
+<Excerpt region="resources" />
 
-Jede Farbe der Konfiguration verweist auf ihren Paletteneintrag. Ändert ein Leser ein Farbfeld, färbt sich das ganze Buch um, und ein Teil oder ein Überschriftenstil kann einen Abschnitt über die ID umfärben. Wird `main-color` auf den Akzent gerichtet, erfasst das jeden Standardwert, den die Konfiguration nicht neu angibt.
+`captionSide: 'inside'` setzt Bildunterschrift und Nachweis neben das Bild, wie ein Museum seinen Saaltext hängt, und `width` gibt jedem Bild seinen Anteil an der Satzbreite: weniger für den hohen Hals, mehr für den breiten Ruisdael, damit die fünf Seiten eine ähnliche Textmenge tragen. Der Saaltext setzt sich aus Technik, Maßen in Zentimetern mit geschützten Leerzeichen und der Erwerbungszeile des Museums zusammen, in der spanischen Ausgabe mit Dezimalkomma.
+
+### 4 · Die Station im Kolumnentitel
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` druckt den Titel der Station, die auf der Seite beginnt: Die rechte Seite nennt das Gemälde, die linke den Führer. Kein Kolumnentitel erreicht den Umschlag, eine Seite in der Rolle eines Auftakts.
 
 ## Varianten
 
-{/*
-  Optional, 1–4 Einträge: eine H3 im Imperativ, ein Satz, dann ein Diff gegen script.js
-  oder ein Link zu einem verwandten Rezept.
-*/}
+### Die Adresse in der Zeile drucken
 
-### Den Text zweispaltig setzen
-
-Ein breiteres Endformat nimmt zwei Spalten auf; der Auftakt läuft über beide, und die Kolumnentitel bleiben, wo sie sind.
+Für einen Führer, den man zu Hause liest, setzt `'inline'` die Adresse in Klammern hinter den Linktext, ohne Anmerkung und ohne Code.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Codes ohne Adresse
+
+`show: 'qr'` druckt nur den Code neben der Anmerkungsziffer, für ein Plakat oder ein Schild, auf dem die Adresse nur Platz kosten würde.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
 ```
 
 ## Häufige Fehler
 
-{/*
-  Optional. Die in recipe.json aufgeführten Fallstricke und Warnungen erscheinen hier von selbst;
-  fügen Sie nur dann eine Zeile hinzu, wenn ein Fehler allein zu diesem Rezept gehört.
-*/}
+Eine Anmerkung mit Code ist mindestens so hoch wie der Code. Hat die Zeile mit dem Link auf der Seite keinen Platz mehr für ihre Anmerkung darunter, wandert die Zeile mit ihrer Anmerkung auf die nächste Seite. Halten Sie Links daher aus den letzten Zeilen einer Seite heraus, die an ihrer Stelle enden muss, wie der erste Absatz auf dem Umschlag dieses Führers.

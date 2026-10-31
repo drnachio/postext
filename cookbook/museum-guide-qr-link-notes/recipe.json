@@ -2,39 +2,178 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 175,
-  "status": "draft",
+  "status": "published",
   "chapter": "structure",
   "order": 260,
   "level": 2,
-  "genres": ["novel"],
-  "outputs": ["canvas"],
+  "genres": [
+    "manual",
+    "ephemera"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
   "features": {
-    "primary": ["mirrored-margins", "running-heads"],
+    "primary": [
+      "print-links",
+      "footnotes"
+    ],
     "also": [
       "opener-design",
       "heading-attributes",
+      "design-images",
+      "guide-words",
+      "running-heads",
       "page-role-filters",
-      "widows-orphans-runts",
-      "paragraph-styles",
-      "callout-styles"
+      "inline-embeds",
+      "side-captions",
+      "resource-types",
+      "credit-notes",
+      "color-palette",
+      "pdf-export"
     ]
   },
-  "answers": ["Q16", "Q30"],
+  "answers": [
+    "Q208"
+  ],
   "gotchas": [],
-  "engine": { "postext": "1.25.0" },
-  "kit": ["core", "fonts", "viewer"],
-  "sample": { "locales": ["en"] },
-  "capture": { "hero": 1, "card": "page" },
-  "credits": {
-    "authors": [{ "name": "Your Name", "github": "your-github" }],
-    "text": [],
-    "images": [],
-    "fonts": [
-      { "family": "Source Serif 4", "license": "OFL-1.1" },
-      { "family": "Source Sans 3", "license": "OFL-1.1" }
+  "engine": {
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
     ]
   },
-  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "capture": {
+    "hero": 1,
+    "card": "page"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "Johannes Vermeer, Young Woman with a Water Pitcher, about 1662 (the cover, cropped)",
+          "es": "Johannes Vermeer, Joven con una jarra de agua, hacia 1662 (la portada, recortada)"
+        },
+        "who": "The Metropolitan Museum of Art",
+        "source": "https://www.metmuseum.org/art/collection/search/437881",
+        "license": "CC0-1.0",
+        "file": "vermeer-cover-1800.jpg"
+      },
+      {
+        "what": {
+          "en": "Frans Hals, Young Man and Woman in an Inn, 1623 (stop 1)",
+          "es": "Frans Hals, Joven pareja en una posada, 1623 (parada 1)"
+        },
+        "who": "The Metropolitan Museum of Art",
+        "source": "https://www.metmuseum.org/art/collection/search/436616",
+        "license": "CC0-1.0",
+        "file": "hals-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Jan Steen, Merry Company on a Terrace, about 1670 (stop 2)",
+          "es": "Jan Steen, Alegre compañía en una terraza, hacia 1670 (parada 2)"
+        },
+        "who": "The Metropolitan Museum of Art",
+        "source": "https://www.metmuseum.org/art/collection/search/437749",
+        "license": "CC0-1.0",
+        "file": "steen-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Rembrandt, Aristotle with a Bust of Homer, 1653 (stop 3)",
+          "es": "Rembrandt, Aristóteles con un busto de Homero, 1653 (parada 3)"
+        },
+        "who": "The Metropolitan Museum of Art",
+        "source": "https://www.metmuseum.org/art/collection/search/437394",
+        "license": "CC0-1.0",
+        "file": "rembrandt-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Johannes Vermeer, Young Woman with a Water Pitcher, about 1662 (stop 4)",
+          "es": "Johannes Vermeer, Joven con una jarra de agua, hacia 1662 (parada 4)"
+        },
+        "who": "The Metropolitan Museum of Art",
+        "source": "https://www.metmuseum.org/art/collection/search/437881",
+        "license": "CC0-1.0",
+        "file": "vermeer-1600.jpg"
+      },
+      {
+        "what": {
+          "en": "Jacob van Ruisdael, Wheat Fields, about 1670 (stop 5)",
+          "es": "Jacob van Ruisdael, Campos de trigo, hacia 1670 (parada 5)"
+        },
+        "who": "The Metropolitan Museum of Art",
+        "source": "https://www.metmuseum.org/art/collection/search/437549",
+        "license": "CC0-1.0",
+        "file": "ruisdael-1400.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Newsreader",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Instrument Serif",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Archivo",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
   "created": "2026-10-31",
-  "updated": "2026-10-31"
+  "updated": "2026-10-31",
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "coatedSilk",
+      "grammage": 115
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#2b4a7a"
+    },
+    "surface": {
+      "type": "marble"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  },
+  "related": [
+    "pepper-and-carrot-page",
+    "product-manual-warnings",
+    "magazine-feature-opener"
+  ]
 }

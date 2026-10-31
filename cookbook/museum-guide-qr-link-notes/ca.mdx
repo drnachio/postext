@@ -1,72 +1,63 @@
 ---
-# Tots els valors van entre cometes. Límits: title ≤ 60 caràcters (un resultat, no una llista
-# de funcions); summary 60–160 (la resposta en una frase, amb el mecanisme); description 120–160.
-title: "Una pàgina de llibre amb capçaleres"
-summary: "Marges simètrics, una obertura de capítol enfonsada i capçaleres que saben a quin costat de la doble pàgina són, a la pàgina d'un llibre en rústica."
-description: "Una pàgina de llibre amb Postext: marges simètrics, obertura enfonsada 52 mm, capçaleres segons la paritat i foli al peu a les obertures, amb tot el codi."
-# plain: "…"           40–240 caràcters: el resum en paraules corrents, sense argot (es mostra com a «En poques paraules»)
-# question: "…"        opcional, ≤ 110 caràcters: reformula answers[0] per a aquesta pàgina
-# pageNotes: { "3": "…" }  opcional: text alternatiu addicional per a una pàgina capturada
-aliases: ["pàgina de llibre", "capçaleres", "obertura de capítol"]
+title: "Una guia de museu amb els enllaços impresos com a codis QR"
+summary: "Un passeig de butxaca per un museu amb els enllaços impresos com a notes numerades al peu, amb adreça curta i codi QR (links.print a notes)."
+description: "Una guia de museu a Postext: els enllaços al catàleg s'imprimeixen com a notes numerades amb adreça curta i codi QR, un quadre per pàgina, amb el codi."
+plain: "Una petita guia impresa de cinc quadres. On el text esmenta una pàgina web, un número petit porta al peu de la pàgina, on un codi quadrat obre aquesta pàgina al mòbil."
+question: "Com imprimeixo els enllaços d'una guia com a notes numerades amb un codi QR que el visitant pugui escanejar?"
+aliases: ["codi QR", "codis QR impresos", "adreces impreses", "guia de museu", "guia de passeig", "notes d'enllaç", "QR code", "museum guide"]
 ---
 
 ## Què compondràs
 
-{/*
-  60–150 paraules, amb veu de director d'art: la publicació, la idea de disseny i per què
-  costa d'aconseguir en un altre lloc. Anomena la publicació («una edició en rústica de…»,
-  «el número de juny de…»). Sense llistes de funcions: Ingredients es genera des de recipe.json.
-  La pàgina afegeix sola, sota aquesta secció, la llista «Aquesta recepta respon» (d'answers).
-*/}
-
-Les primeres pàgines d'una novel·la en rústica: un capítol que comença en pàgina senar, a un terç de l'alçada, sota un avanttítol petit en versaletes espaiades i un filet curt de l'únic color d'accent del llibre; després, pàgina rere pàgina de text justificat, amb el títol del llibre a l'esquerra i el del capítol a la dreta. Res a la pàgina no alça la veu. L'ofici és a la geometria: marges que s'emmirallen a la doble pàgina, capçaleres que saben a quin costat són i un foli que baixa al peu a l'obertura, on una capçalera destorbaria el títol.
+Una guia de butxaca de les sales holandeses del Metropolitan Museum of Art: cinc quadres, una hora a peu, un quadre per pàgina. La coberta és la noia de Vermeer al costat de la finestra, tallada per la vora superior. Cada parada s'obre amb el número de sala, el títol i el pintor, després el quadre amb la cartel·la al costat i després tres paràgrafs breus. El text enllaça amb el catàleg del museu com ho faria qualsevol pàgina web. En paper, cada enllaç es converteix en un número petit, i al peu de la pàgina la nota dona l'adreça curta i un codi QR al qual el visitant acosta el mòbil davant del quadre.
 
 ## Elaboració
 
-{/*
-  De 3 a 7 passos, cadascun un H3 numerat «1 · …». Cada pas obre amb un Excerpt d'una #region
-  de script.js (el fitxer compost, amb els seus números de línia reals) i continua amb 1–3 frases
-  sobre el PERQUÈ, no sobre el què: el què ja es veu. La resposta curta ja mostra la
-  #region answer: un pas que en parli remet allà en lloc de repetir-la. en.mdx, es.mdx, ca.mdx i zh.mdx
-  mostren les mateixes regions en el mateix ordre. Components opcionals: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Escriu enllaços, imprimeix notes
 
-### 1 · L'obertura és un disseny, no un títol
+El codi és [la resposta curta](#la-resposta-curta) de dalt. El Markdown conserva enllaços normals, `[La fitxa del catàleg](https://www.metmuseum.org/…/436616)`, i `links.print: 'notes'` converteix cadascun en una nota numerada amb l'adreça i el codi ([enllaços en paper](/ca/docs/configuration-notes-references#enllaços-en-paper)). Les notes són notes al peu: `numbering: 'document'` les compta al llarg del passeig, de manera que el lector troba de l'1 al 7, i `repeat: 'first'` deixa que l'última parada citi el Hals per la nota 3 en lloc d'imprimir dues vegades el mateix codi. Al PDF el codi es dibuixa en vectors i és ell mateix un enllaç.
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El títol de primer nivell conserva el seu lloc al text i a l'índex, però es dibuixa des d'una zona de disseny: l'avanttítol surt d'un atribut del títol, el títol es parteix amb una mida fixa i el filet s'ancora sota l'alçada que ocupi el títol. `minHeight` enfonsa el text fins a la mateixa línia a totes les obertures, sigui quina sigui la llargada del títol.
+<PageShot page={3} crop="0,0.74,1,0.2" caption="El peu de la parada 1: la nota 3, la fitxa del quadre com a adreça curta al costat d'un codi de 16 mm." />
 
-### 2 · Les capçaleres saben en quina pàgina són
+### 2 · Una parada per pàgina
 
-<Excerpt region="running-heads" />
+<Excerpt region="stops" />
 
-Cada element s'ancora a la pàgina física i es filtra per paritat, de manera que el foli queda sempre a la vora exterior i el títol del llibre al verso. `pages: 'body'` els manté fora de l'obertura, que rep en canvi un foli centrat al peu des del peu de pàgina.
+Cada parada és un títol de segon nivell amb un `breakBefore` que obre pàgina, parella o senar, així que el visitant passa un full per quadre. El número de sala i el pintor són atributs del títol; el disseny els col·loca a sobre i a sota del títol, i `minHeight` deixa el quadre a la mateixa altura a totes les pàgines.
 
-### 3 · Un sol accent, enllaçat a tot arreu
+### 3 · La cartel·la al costat del quadre
 
-<Excerpt region="palette" />
+<Excerpt region="resources" />
 
-Cada color de la configuració fa referència a la seva entrada de la paleta, de manera que qui canviï una mostra canvia el to de tot el llibre, i una part o un estil d'encapçalament poden tornar a acolorir una secció pel seu id. Fer apuntar `main-color` a l'accent atrapa tots els valors per defecte que la configuració no redefineix.
+`captionSide: 'inside'` posa el peu i la nota de crèdit al costat del quadre, com penja un museu la cartel·la, i `width` dona a cada quadre la seva part de la mesura: menys al Hals, que és alt, i més al Ruisdael, que és apaïsat, de manera que les cinc pàgines tenen una altura de text semblant. La cartel·la es fa amb la tècnica, les mides en centímetres amb espais de no separació i la línia de crèdit del museu, amb coma decimal a l'edició castellana.
+
+### 4 · La parada a la capçalera
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` imprimeix el títol de la parada que comença a la pàgina, així que la pàgina senar anomena el quadre i la parella, la guia. Cap capçalera no arriba a la coberta, una pàgina que fa d'obertura.
 
 ## Variants
 
-{/*
-  Opcional, d'1 a 4 entrades: un H3 en imperatiu, una frase i un diff contra script.js,
-  o un enllaç a una recepta germana.
-*/}
+### Imprimeix l'adreça a la línia
 
-### Compon el text a dues columnes
-
-Un format més ample admet dues columnes; l'obertura ocupa les dues i les capçaleres es queden on són.
+Per a una guia que es llegeix a casa, `'inline'` afegeix l'adreça entre parèntesis després del text de l'enllaç i no posa nota ni codi.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Codis sense adreça
+
+`show: 'qr'` imprimeix només el codi al costat del número de nota, per a un cartell o una cartel·la on l'adreça només ocuparia lloc.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
 ```
 
 ## Errors freqüents
 
-{/*
-  Opcional. Els errors freqüents i els avisos que llista recipe.json hi apareixen sols;
-  afegeix-hi una línia només per a un problema propi d'aquesta recepta.
-*/}
+Una nota amb codi fa com a mínim el que fa el codi. Quan la línia que porta l'enllaç no té lloc a sota per a la nota a la pàgina, la línia passa a la següent amb la nota; deixa els enllaços fora de les últimes línies d'una pàgina que ha d'acabar on acaba, com el primer paràgraf de la coberta d'aquesta guia.
