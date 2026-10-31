@@ -3,21 +3,21 @@
   "slug": "vertical-novel-right-bound",
   "sourceHash": "ea3df8340886e9e2f85b7c2ffa2a5474409cb1bf7c5ca034f6a662e32f11a8b2",
   "engine": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T17:36:11.836Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:50:47.364Z",
   "variants": {
     "en": {
-      "hash8": "5a7d1520",
+      "hash8": "d72f3337",
       "vdtHash": "fc245764e090748c178c898acdf19d8f2cc6b592",
       "timings": {
-        "importMs": 637,
-        "fontsMs": 427,
-        "buildMs": 51,
-        "totalMs": 1842,
+        "importMs": 2124,
+        "fontsMs": 2216,
+        "buildMs": 60,
+        "totalMs": 5371,
         "builds": 1
       },
       "specimen": {
@@ -154,7 +154,7 @@
       },
       "pdf": {
         "file": "vertical-novel-right-bound.pdf",
-        "bytes": 754914,
+        "bytes": 754804,
         "pages": 11
       },
       "sandbox": {
@@ -364,6 +364,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "bundle locale zh-Hant, the document's language: en names its resource types otherwise"
@@ -382,13 +387,13 @@
       }
     },
     "es": {
-      "hash8": "9a272daa",
+      "hash8": "e7ff1aee",
       "vdtHash": "324528048aa4e7301b6ded3c2185f9076c5aacb3",
       "timings": {
-        "importMs": 779,
-        "fontsMs": 715,
-        "buildMs": 60,
-        "totalMs": 2270,
+        "importMs": 2384,
+        "fontsMs": 904,
+        "buildMs": 74,
+        "totalMs": 4115,
         "builds": 1
       },
       "specimen": {
@@ -525,7 +530,7 @@
       },
       "pdf": {
         "file": "vertical-novel-right-bound.pdf",
-        "bytes": 754305,
+        "bytes": 754187,
         "pages": 11
       },
       "sandbox": {
@@ -734,6 +739,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
           {
             "check": "sandbox",
             "severity": "info",
