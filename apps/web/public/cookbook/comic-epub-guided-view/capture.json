@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-epub-guided-view",
-  "sourceHash": "059560b81c6a4d05fc81533d7d61954532d3c80c308a92fcedfa30afd5e5c674",
+  "sourceHash": "384a31471cf1748b4add78613131f38f00dd16dc09c72bd0129fbdbec5adcf3c",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.374Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:57.405Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:54:21.644Z",
   "variants": {
     "en": {
-      "hash8": "ac9516c1",
+      "hash8": "c08ea178",
       "vdtHash": "64c420f4051c59e7c12aca770d7ead2328540ded",
       "timings": {
-        "importMs": 928,
-        "fontsMs": 285,
-        "buildMs": 276,
-        "totalMs": 2566,
+        "importMs": 3988,
+        "fontsMs": 735,
+        "buildMs": 280,
+        "totalMs": 5985,
         "builds": 1
       },
       "specimen": {
@@ -110,7 +104,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818427,
+        "bytes": 818440,
         "chapters": [
           {
             "pages": 3,
@@ -294,6 +288,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
@@ -302,13 +306,13 @@
       }
     },
     "es": {
-      "hash8": "86a17f77",
+      "hash8": "2df6d470",
       "vdtHash": "e3390a1020791a0ab7ade1d7db54b176d75fcf9d",
       "timings": {
-        "importMs": 783,
-        "fontsMs": 453,
-        "buildMs": 299,
-        "totalMs": 2332,
+        "importMs": 2444,
+        "fontsMs": 272,
+        "buildMs": 256,
+        "totalMs": 3722,
         "builds": 1
       },
       "specimen": {
@@ -395,7 +399,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818589,
+        "bytes": 818602,
         "chapters": [
           {
             "pages": 3,
@@ -579,6 +583,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
@@ -587,13 +601,13 @@
       }
     },
     "ca": {
-      "hash8": "922e70be",
+      "hash8": "b6725d5e",
       "vdtHash": "52378a5a6f5c12056b8aa0d4afd146f52762148e",
       "timings": {
-        "importMs": 1080,
-        "fontsMs": 254,
-        "buildMs": 259,
-        "totalMs": 2262,
+        "importMs": 2892,
+        "fontsMs": 410,
+        "buildMs": 299,
+        "totalMs": 4510,
         "builds": 1
       },
       "specimen": {
@@ -680,7 +694,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818452,
+        "bytes": 818465,
         "chapters": [
           {
             "pages": 3,
@@ -864,6 +878,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
@@ -872,13 +896,13 @@
       }
     },
     "zh": {
-      "hash8": "0d75bbb9",
+      "hash8": "01f78efe",
       "vdtHash": "1ae1a2a01eb6d5de92779490b23522a6747ebf11",
       "timings": {
-        "importMs": 603,
-        "fontsMs": 538,
-        "buildMs": 236,
-        "totalMs": 3021,
+        "importMs": 2945,
+        "fontsMs": 785,
+        "buildMs": 233,
+        "totalMs": 5801,
         "builds": 1
       },
       "specimen": {
@@ -960,12 +984,12 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 844404,
+        "bytes": 844395,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818582,
+        "bytes": 818595,
         "chapters": [
           {
             "pages": 3,
@@ -1150,6 +1174,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, en, es, ca, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: zh, en, es, ca, ar, ja, pt, fr, de, it"
@@ -1158,13 +1192,13 @@
       }
     },
     "ar": {
-      "hash8": "c2100466",
+      "hash8": "f46fe044",
       "vdtHash": "8bf6113f0eff83e357b09713e25ae9e612868aab",
       "timings": {
-        "importMs": 1048,
-        "fontsMs": 274,
-        "buildMs": 251,
-        "totalMs": 2463,
+        "importMs": 3099,
+        "fontsMs": 812,
+        "buildMs": 265,
+        "totalMs": 4903,
         "builds": 1
       },
       "specimen": {
@@ -1252,7 +1286,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818814,
+        "bytes": 818827,
         "chapters": [
           {
             "pages": 3,
@@ -1439,6 +1473,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
@@ -1447,13 +1491,13 @@
       }
     },
     "ja": {
-      "hash8": "c7d09a24",
+      "hash8": "0b7f1898",
       "vdtHash": "4e664c70bd7729b7c091d697b398a62d48b3803a",
       "timings": {
-        "importMs": 688,
-        "fontsMs": 807,
-        "buildMs": 245,
-        "totalMs": 3073,
+        "importMs": 2070,
+        "fontsMs": 1013,
+        "buildMs": 221,
+        "totalMs": 4636,
         "builds": 1
       },
       "specimen": {
@@ -1496,7 +1540,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 239118,
+          "bytes": 239976,
           "alt": "2ページ。"
         },
         {
@@ -1536,12 +1580,12 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 846857,
+        "bytes": 846677,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818839,
+        "bytes": 819010,
         "chapters": [
           {
             "pages": 3,
@@ -1727,6 +1771,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, en, es, ca, zh, ar, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ja, en, es, ca, zh, ar, pt, fr, de, it"
@@ -1735,13 +1789,13 @@
       }
     },
     "pt": {
-      "hash8": "90637fbc",
+      "hash8": "87502951",
       "vdtHash": "55f251632ca226235a26fa4dae410d75d1032b48",
       "timings": {
-        "importMs": 959,
-        "fontsMs": 179,
-        "buildMs": 345,
-        "totalMs": 2108,
+        "importMs": 1245,
+        "fontsMs": 220,
+        "buildMs": 223,
+        "totalMs": 2376,
         "builds": 1
       },
       "specimen": {
@@ -1828,7 +1882,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818439,
+        "bytes": 818452,
         "chapters": [
           {
             "pages": 3,
@@ -2012,6 +2066,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
@@ -2020,13 +2084,13 @@
       }
     },
     "fr": {
-      "hash8": "197ea82d",
+      "hash8": "cf4229e9",
       "vdtHash": "2e51b8052fe5711c66cb316c21e348177e49fdd1",
       "timings": {
-        "importMs": 1027,
-        "fontsMs": 952,
-        "buildMs": 300,
-        "totalMs": 3156,
+        "importMs": 1281,
+        "fontsMs": 418,
+        "buildMs": 245,
+        "totalMs": 2656,
         "builds": 1
       },
       "specimen": {
@@ -2113,7 +2177,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818451,
+        "bytes": 818464,
         "chapters": [
           {
             "pages": 3,
@@ -2297,6 +2361,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, ca, zh, ar, ja, pt, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: fr, en, es, ca, zh, ar, ja, pt, de, it"
@@ -2305,13 +2379,13 @@
       }
     },
     "de": {
-      "hash8": "35c47cb3",
+      "hash8": "0f17c771",
       "vdtHash": "f09781cbf15f0a0b04bab39cd8e3c66eefa5e0bf",
       "timings": {
-        "importMs": 1001,
-        "fontsMs": 224,
-        "buildMs": 304,
-        "totalMs": 2371,
+        "importMs": 969,
+        "fontsMs": 131,
+        "buildMs": 246,
+        "totalMs": 2007,
         "builds": 1
       },
       "specimen": {
@@ -2398,7 +2472,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818438,
+        "bytes": 818451,
         "chapters": [
           {
             "pages": 3,
@@ -2582,6 +2656,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
@@ -2590,13 +2674,13 @@
       }
     },
     "it": {
-      "hash8": "9e8ea02c",
+      "hash8": "e1556983",
       "vdtHash": "3abb4fae7183fc416083851450f907e985f037f3",
       "timings": {
-        "importMs": 681,
-        "fontsMs": 239,
-        "buildMs": 307,
-        "totalMs": 2114,
+        "importMs": 1278,
+        "fontsMs": 281,
+        "buildMs": 284,
+        "totalMs": 2532,
         "builds": 1
       },
       "specimen": {
@@ -2683,7 +2767,7 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 818520,
+        "bytes": 818533,
         "chapters": [
           {
             "pages": 3,
@@ -2866,6 +2950,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, ca, zh, ar, ja, pt, fr, de"
+          },
           {
             "check": "sandbox",
             "severity": "info",
