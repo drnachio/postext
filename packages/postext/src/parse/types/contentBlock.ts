@@ -174,6 +174,10 @@ export interface ContentBlock {
    *  with this id (`[^id]: text`, the `[^id]:` left out of `text`). The
    *  layout takes it out of the flow and sets it as a note. */
   footnoteDef?: string;
+  /** On the definition of a link note (#1302, `links.show: 'qr' | 'both'`):
+   *  the address its QR code opens. The note is measured beside the code
+   *  and is at least as tall as it. */
+  linkQr?: string;
   /** Set on the paragraphs the layout builds to set a note (`chapterEnd`
    *  placement): the id of the note. */
   footnoteNote?: string;

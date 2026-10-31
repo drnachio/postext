@@ -11,6 +11,7 @@ import { paintLineHighlights, paintLineMarks } from '../text/annotations.js';
 import { renderLine } from './blockRender/lineText.js';
 import { renderBullet, dropCapLead, renderDropCap, renderStrikethrough } from './blockRender/markers.js';
 import { sheetRect, footnoteDestination } from './blockRender/segments.js';
+import { paintLineQr } from './blockRender/lineQr.js';
 
 export { renderMathSegment } from './blockRender/segments.js';
 
@@ -173,6 +174,8 @@ function renderBlockUpright(
     renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem, i === 0 ? capLead : undefined);
     // Emphasis dots, proper-name and book-title lines (#193).
     if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
+    // A link note's QR code (#1302).
+    if (line.qr) paintLineQr(ctx, line as typeof line & { qr: NonNullable<typeof line.qr> }, block.color, linkRegistry, elem);
   });
   if (targetPage !== undefined && linkRegistry) {
     const contents = block.lines.map((l) => l.text).join(' ');

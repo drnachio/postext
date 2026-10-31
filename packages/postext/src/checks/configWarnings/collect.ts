@@ -33,7 +33,8 @@ import { collectValueWarnings, collectSideColumnWarnings, collectColumnCountWarn
  *   `direction`, the Arabic body text words (`emphasis`, `tashkil`,
  *   `kashida`, `kashidaPatterns`), the composition rules, `toc.groups.head`,
  *   a heading's `numberPosition`, spread footnotes in a horizontal
- *   document, the comics words, `print.standard`, `outputProfile` and
+ *   document, the print links (`links`, a QR code asked of vertical
+ *   text), the comics words, `print.standard`, `outputProfile` and
  *   `renderingIntent`, the contrast check, the Canvas gaps
  *   (`canvasViewer`), the `checks.contentInConfig` limits (`maxWords`,
  *   `maxChars`), the line numbers, a resource type's `resetOn` and text

@@ -114,6 +114,7 @@ Conversion at `page.dpi` (default 300):
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `crossRefs` | CrossRefsConfig | §19a2 | words of heading/anchor references, default style, label breaking (≥ 1.12) |
 | `citations` | CitationsConfig | §19a3 | CSL style, locale, markers, note mode, numbering, bibliography (≥ 1.12; needs postext-citeproc) |
+| `links` | LinksConfig | §19a4 | what paper shows of an external link's address: nothing, `(address)` inline, or a footnote with the address and/or a QR code (≥ 1.65) |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9); Japanese summary §19c2 (≥ 1.16) |
 | `lineNumbers` | LineNumbersConfig | §19f | line numbers in the margin, the gutter or the side column (postext ≥ 1.23): verse or every body line, interval, restarts, position, face; off by default |
@@ -1820,6 +1821,49 @@ Japanese (≥ 1.16): the ja-JP locale (と, ほか, 「」 with 『』 inside) a
 science and technology norm: `山田太郎, 佐藤花子. 縦組みの行間について. 印刷雑誌. 2015, vol. 98, no. 4, p. 12–19.`).
 A CJK name with a space in BibTeX/YAML (`夏目 漱石`) is read family first. No humanities 『』 style ships; a house
 style is `style: 'custom'` with its CSL.
+
+## 19a4. `links` — LinksConfig (postext ≥ 1.65)
+
+What a printed page shows of the address behind `[text](https://…)` (document-format.md §4, Link). The link stays
+clickable in every interactive output (canvas, PDF, HTML, EPUB, SCORM, Folio); this only decides what a reader of
+the paper sees.
+
+```ts
+links: {
+  print?: 'none' | 'inline' | 'notes'; // 'none' (default): link text only; 'inline': " (address)" after it, itself a
+                                       // link, in the surrounding emphasis; 'notes': a note marker after it
+  show?: 'url' | 'qr' | 'both';        // print: 'notes': the note prints the address, a QR code, or both ('url')
+  urlDisplay?: 'full' | 'short';       // 'short' drops https://, a leading www. and a trailing /; the link keeps the full address
+  repeat?: 'every' | 'first';          // 'first': a link to an address already noted in the chapter reuses that note's number
+  visibleUrls?: 'skip' | 'note';       // [https://x](https://x): 'skip' (default) leaves it, but show qr/both still notes it for the code
+  qr?: {
+    size?: Dimension;                  // 15mm, quiet zone included; capped at 40 % of the column; keep modules ≥ 1/3 mm
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H'; // 'M'; raised when it fits the same module count
+    quietZone?: number;                // 1 module (0–8)
+    color?: ColorValue;                // the notes' colour
+    side?: 'start' | 'end';            // 'end': code at the line end, level with the note's first line
+    gap?: Dimension;                   // 1em of the note size
+  };
+}
+```
+
+- Link notes **are footnotes**: they share the `[^id]` numbering and follow `footnotes.placement`
+  (`column` / `chapterEnd` / `spread`), `numbering`, `numberFormat` and the note style (§19a). With a code the
+  note's lines run beside it and the note is at least as tall as the code. Vertical text prints the address
+  with no code.
+- Only `http:`/`https:` links count; `mailto:`, `tel:` and internal links (`#anchor`) stay as they are. Autolinks
+  `<https://…>` and bare URLs are plain text in Postext (already visible), so they get nothing.
+- Paragraphs, list items, blockquotes and box text only; headings and bibliography entries are left alone. A
+  link inside a footnote gets `(address)` whatever `print` says (a note cannot carry a note).
+- PDF: the code is vector, a link annotation, and in a tagged PDF a `Figure` inside a `Link` with the address as alt text.
+- **Porting:** a source that prints URLs in parentheses after the link text → `print: 'inline'`; one with URL
+  footnotes or QR codes in the margin/foot → `print: 'notes'` (+ `show: 'both'`/`'qr'`). Keep the Markdown as plain
+  `[text](url)`: never type the address or a `[^n]` URL note into the text. A publisher with a digital and a print
+  edition keeps `print: 'none'` in the digital config and sets `'notes'` in the print one.
+
+```json
+"links": { "print": "notes", "show": "both", "urlDisplay": "short", "repeat": "first" }
+```
 
 ## 19b. `index` — IndexConfig (postext ≥ 1.7)
 

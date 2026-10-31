@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '注释与引用',
   description: '脚注、交叉引用与锚点、引用与参考文献，以及用来编制书末索引的标记',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '10分钟',
   order: 29,
   parent: 'document-format',
@@ -38,7 +38,7 @@ so he learned to count the steps in the dark.
 
 交叉引用指向书中的某个位置，并印出它的编号、标题或页码：*见第3.2节*、*第4章已说明*、*见第112页*。印出的文字和编号随正文自动更新：移动一节、给各章重新编号或重排全书，所有引用都会跟着变。在PDF、HTML和沙盒预览中，每个引用都是链接，点击即可跳到目标，目标在别的章里也可以。
 
-**锚点。** 引用需要有一个目标：
+**锚点**。 引用需要有一个目标：
 
 - **带标识符的标题**：`## 方法 {#sec-method}`（Pandoc的写法；也可写`id="sec-method"`）。
 - **带标识符的框或其他容器**：`:::callout{#box-safety title="安全"}`。编号样式的框（定理）按标签和编号引用：*定理2*。
@@ -47,7 +47,7 @@ so he learned to count the steps in the dark.
 
 标识符可用字母、数字、`-`、`_`、`.`和`:`，在全书中必须唯一：检查面板会列出重复的标识符（`duplicateAnchor`），引用指向第一个。
 
-**引用。** `:ref{id="…"}`指向锚点的方式与指向图表相同：
+**引用**。 `:ref{id="…"}`指向锚点的方式与指向图表相同：
 
 ```md
 ## 方法 {#sec-method}
@@ -70,11 +70,11 @@ so he learned to count the steps in the dark.
 
 `text="…"`印出自定的文字，仍然是链接；`case=capitalize`使西文名称首字母大写。文字随文档语言变化（*section 3.2*、*sección 3.2*、*第3.2节*），可在配置的[交叉引用](/zh/docs/configuration-notes-references#交叉引用)中修改；编号模板已含文字的标题（*第四章*、*Chapter 4*）照原样印出。在竖排中，引用里的数字按`cjk.uprightDigits`的规则排列。
 
-**断行。** 印出文字的引用与周围正文一样在空格处断行：锚点的文字（`[close the lever so that it points backwards]{#step}`）、标题、自定的`text="…"`都是如此。其中的空格就是行内的空格，在两端对齐的行里与其他空格一同拉伸；引用仍是一个链接，跨两行时分成两段。其中的词从不断词。在这样的引用文字里，数字、罗马数字或单个字母总与前面的词连在一起，所以`text="Fig. 1a"`、`text="plate IV"`不会被拆到两行。带编号或页码的引用文字（*section 3.2*、*p. 112*、*Fig. 1.7*、*Theorem 2*）从不断行，不论模板里用的是哪种空格；引用文字中的不断行空格与在别处一样，让两边的词连在一起。`crossRefs.breakLabels: false`让每个引用文字保持完整，与postext 1.27及更早版本相同，那时引用文字是一个词，无法移上前一行；见[交叉引用](/zh/docs/configuration-notes-references#交叉引用)。
+**断行**。 印出文字的引用与周围正文一样在空格处断行：锚点的文字（`[close the lever so that it points backwards]{#step}`）、标题、自定的`text="…"`都是如此。其中的空格就是行内的空格，在两端对齐的行里与其他空格一同拉伸；引用仍是一个链接，跨两行时分成两段。其中的词从不断词。在这样的引用文字里，数字、罗马数字或单个字母总与前面的词连在一起，所以`text="Fig. 1a"`、`text="plate IV"`不会被拆到两行。带编号或页码的引用文字（*section 3.2*、*p. 112*、*Fig. 1.7*、*Theorem 2*）从不断行，不论模板里用的是哪种空格；引用文字中的不断行空格与在别处一样，让两边的词连在一起。`crossRefs.breakLabels: false`让每个引用文字保持完整，与postext 1.27及更早版本相同，那时引用文字是一个词，无法移上前一行；见[交叉引用](/zh/docs/configuration-notes-references#交叉引用)。
 
 **页码引用**要在全书排好后才知道。引擎会用上一遍的页码重新排版，直到页码不再变化，与目录的做法相同；在此之前页码印为*?*。
 
-**pandoc-crossref。** 为pandoc-crossref写的文本照样可读：`@sec:method`、`[@fig:map]`，`[-@tbl:data]`只印编号。前缀首字母大写（`@Sec:method`）会让标签首字母大写，与`case=capitalize`相同。前缀（`sec`、`fig`、`tbl`、`eq`、`lst`）可以是标识符的一部分（`{#sec:method}`），也可以不写（`{#method}`）。紧贴在词后的`@`（如电子邮件地址）仍是文本。
+**pandoc-crossref**。 为pandoc-crossref写的文本照样可读：`@sec:method`、`[@fig:map]`，`[-@tbl:data]`只印编号。前缀首字母大写（`@Sec:method`）会让标签首字母大写，与`case=capitalize`相同。前缀（`sec`、`fig`、`tbl`、`eq`、`lst`）可以是标识符的一部分（`{#sec:method}`），也可以不写（`{#method}`）。紧贴在词后的`@`（如电子邮件地址）仍是文本。
 
 指向不存在的id的引用印为*?*，并在检查面板中列出（`unknownResourceId`）。在沙盒编辑器中输入`@`，会列出书中的图、表、带标识符的标题和锚点。
 
@@ -170,9 +170,9 @@ nocite: "@lopez2019"
 
 使用**注释体样式**时，每条引用成为一个脚注，按脚注设置放置和编号；同一文献的后续引用采用简略形式。在中文正文中，`citations.notes: 'warichu'`把引用排成行内双行夹注；夹注后紧跟中文标点（`，`、`。`）时，省去夹注末尾的句点。
 
-**中文。** GB/T 7714-2015样式写出文献类型标识（`[M]`、`[J]`、`[D]`、`[EB/OL]`），中文姓名完整保留，列出三位著者之后，中文文献写`等`，西文文献写`et al.`，按每条文献的`language`判断。竖排时，上标编号位于所注字的右侧；`citations.marker: 'corner'`写作`〔1〕`，在竖排中保持直立。
+**中文**。 GB/T 7714-2015样式写出文献类型标识（`[M]`、`[J]`、`[D]`、`[EB/OL]`），中文姓名完整保留，列出三位著者之后，中文文献写`等`，西文文献写`et al.`，按每条文献的`language`判断。竖排时，上标编号位于所注字的右侧；`citations.marker: 'corner'`写作`〔1〕`，在竖排中保持直立。
 
-**引擎。** 引用由`postext-citeproc`包（citeproc-js与CSL样式）排版。沙盒会为有引用的文档加载它；在自己的代码中，排版前先注册：
+**引擎**。 引用由`postext-citeproc`包（citeproc-js与CSL样式）排版。沙盒会为有引用的文档加载它；在自己的代码中，排版前先注册：
 
 ```ts
 import 'postext-citeproc/register';
@@ -180,6 +180,24 @@ import 'postext-citeproc/register';
 
 检查面板会列出没有参考文献定义的键（`unknownCitationKey`）和无法读取的参考文献块（`referencesUnreadable`）。文本引用了文献却没有注册引文引擎时，会得到`citationsUnavailable`警告，引用按原样印出。
 
+
+## 印刷版中的链接
+
+Markdown链接`[文字](https://…)`在Sandbox、PDF、HTML、EPUB、SCORM和Folio中都可以点击，印在纸上却只剩链接文字。`links.print`设置决定印刷页面在链接后补上什么，正文不必改动：
+
+```md
+完整的班次表见[港务局网站](https://www.example.org/ferries/)。
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- `print: 'none'`（默认）只印链接文字。
+- `print: 'inline'`印作“港务局网站 (https://www.example.org/ferries/)”。
+- `print: 'notes'`在链接文字后加注码。这条注释与脚注一起编号、排放，印出网址（`show: 'url'`）、可打开网址的二维码（`'qr'`）或两者（`'both'`）。设为`urlDisplay: 'short'`时，网址印作`example.org/ferries`。
+
+只处理`http:`和`https:`链接。`mailto:`或`tel:`链接、指向书中锚点的链接、标题里的链接和参考文献条目都照原样印出。自动链接（`<https://…>`）和裸露的网址在Postext中是普通文字，本来就印在页面上。脚注里的链接把网址印在括号里。其他设置（重复的网址、二维码的大小和位置）见配置参考中的[印刷版中的链接](/zh/docs/configuration-notes-references#印刷版中的链接)。
 
 ## 索引
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notes i referències',
   description: "Com es configuren les notes a peu de pàgina, la numeració de línies, les referències creuades i les cites, l'índex general i l'índex analític",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '29 min',
   order: 12,
   parent: 'configuration',
@@ -628,6 +628,130 @@ interface CitationsConfig {
     </tr>
   </tbody>
 </table>
+## Enllaços en paper
+
+La propietat `links` decideix què mostra la pàgina impresa de l'adreça que hi ha darrere d'un enllaç escrit `[text](https://…)`. L'enllaç continua funcionant a totes les sortides que el poden seguir (el llenç del Sandbox, el PDF, HTML, EPUB, SCORM i Folio); en paper només en quedaria el text i el lector no sabria on porta. Com s'escriuen els enllaços s'explica a [Format del document](/ca/docs/document-format-notes-references#enllaços-en-paper). Des de postext 1.65.
+
+```ts
+interface LinksConfig {
+  print?: 'none' | 'inline' | 'notes'; // Res, l'adreça entre parèntesis o una nota.
+  show?: 'url' | 'qr' | 'both';        // print: 'notes': què imprimeix la nota.
+  urlDisplay?: 'full' | 'short';       // short: sense https://, sense www. inicial ni / final.
+  repeat?: 'every' | 'first';          // first: una adreça ja anotada al capítol reutilitza aquella nota.
+  visibleUrls?: 'skip' | 'note';       // Un enllaç el text del qual és la seva pròpia adreça.
+  qr?: {
+    size?: Dimension;                  // Costat del codi amb la zona de silenci.
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    quietZone?: number;                // Mòduls clars al voltant del codi (0–8).
+    color?: ColorValue;                // Sense valor, el color de les notes.
+    side?: 'start' | 'end';            // A quin costat de les línies de la nota va el codi.
+    gap?: Dimension;                   // Espai entre el codi i les línies; em és el cos de la nota.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Propietat</th>
+      <th>Tipus</th>
+      <th>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>print</code></td>
+      <td><code>'none' | 'inline' | 'notes'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>'none'</code> imprimeix només el text de l'enllaç, com es veu a la pantalla. <code>'inline'</code> afegeix l'adreça entre parèntesis després del text, amb el mateix èmfasi que el text que l'envolta; l'adreça també és un enllaç i es talla com es tallen els URL. <code>'notes'</code> posa una crida de nota després del text de l'enllaç i compon una nota amb l'adreça, un codi QR o totes dues coses (<code>show</code>). Les notes d'enllaç són notes a peu de pàgina: comparteixen la numeració de les notes escrites amb <code>[^id]</code> i segueixen <code>footnotes.placement</code>, <code>numbering</code>, <code>numberFormat</code> i l'estil de les notes.</td>
+    </tr>
+    <tr>
+      <td><code>show</code></td>
+      <td><code>'url' | 'qr' | 'both'</code></td>
+      <td><code>'url'</code></td>
+      <td>Amb <code>print: 'notes'</code>: l'adreça, un codi QR que l'obre, o totes dues. Amb codi, les línies de la nota es componen al seu costat i la nota fa com a mínim l'alçada del codi. En text vertical la nota imprimeix l'adreça sense codi.</td>
+    </tr>
+    <tr>
+      <td><code>urlDisplay</code></td>
+      <td><code>'full' | 'short'</code></td>
+      <td><code>'full'</code></td>
+      <td>Com s'escriu l'adreça. <code>'short'</code> treu <code>https://</code> o <code>http://</code>, un <code>www.</code> inicial i una <code>/</code> final: <code>https://www.example.com/</code> s'imprimeix <code>example.com</code>. L'enllaç conserva l'adreça completa.</td>
+    </tr>
+    <tr>
+      <td><code>repeat</code></td>
+      <td><code>'every' | 'first'</code></td>
+      <td><code>'every'</code></td>
+      <td>Amb <code>print: 'notes'</code>: cada enllaç porta la seva nota o, amb <code>'first'</code>, un enllaç a una adreça que un enllaç anterior del mateix capítol ja va anotar imprimeix el número d'aquella nota i no n'afegeix cap. El compte torna a començar a cada encapçalament de nivell 1.</td>
+    </tr>
+    <tr>
+      <td><code>visibleUrls</code></td>
+      <td><code>'skip' | 'note'</code></td>
+      <td><code>'skip'</code></td>
+      <td>Un enllaç el text del qual ja és la seva adreça, <code>[https://example.com](https://example.com)</code>. <code>'skip'</code> el deixa com està, tret que amb <code>show: 'qr'</code> o <code>'both'</code> rep una nota per al codi. <code>'note'</code> el tracta com qualsevol altre enllaç.</td>
+    </tr>
+    <tr>
+      <td><code>qr.size</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>15mm</code></td>
+      <td>Costat del codi, zona de silenci inclosa. El codi no ocupa mai més del 40&nbsp;% de la columna. Perquè la càmera d'un mòbil el llegeixi, cada mòdul ha de fer almenys un terç de mil·límetre: una adreça llarga necessita més mòduls i, per tant, un codi més gran.</td>
+    </tr>
+    <tr>
+      <td><code>qr.errorCorrection</code></td>
+      <td><code>'L' | 'M' | 'Q' | 'H'</code></td>
+      <td><code>'M'</code></td>
+      <td>Nivell de correcció d'errors. El codificador l'apuja quan l'adreça deixa lloc per a un nivell més alt amb el mateix nombre de mòduls.</td>
+    </tr>
+    <tr>
+      <td><code>qr.quietZone</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Mòduls clars al voltant del codi, de 0 a 8. A la pàgina n'hi ha prou amb un: el paper de la nota i l'espai al costat del codi completen la zona de silenci.</td>
+    </tr>
+    <tr>
+      <td><code>qr.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color de les notes</td>
+      <td>Color dels mòduls foscos; sense valor, <code>footnotes.color</code>. Convé que contrasti bé amb el paper.</td>
+    </tr>
+    <tr>
+      <td><code>qr.side</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>On va el codi respecte de les línies de la nota: al final de la línia (a la dreta en text d'esquerra a dreta) o al principi. El codi s'alinea amb la primera línia de la nota.</td>
+    </tr>
+    <tr>
+      <td><code>qr.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Espai entre el codi i les línies de la nota; <code>em</code> és el cos de la nota.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una edició impresa que envia el lector al web amb un codi i l'adreça abreujada:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'both',
+  urlDisplay: 'short',
+  repeat: 'first',
+  qr: { size: { value: 18, unit: 'mm' } },
+}
+```
+
+- **Quins enllaços.** Només les adreces `http:` i `https:`. Un `mailto:`, un `tel:` i un enllaç a un altre punt del llibre s'imprimeixen tal com són. Postext llegeix `<https://…>` i una adreça solta com a text, que ja es veu a la pàgina, i per això no reben res.
+- **On.** Paràgrafs, elements de llista, citacions en bloc i el text dels requadres. Els encapçalaments (el seu text passa a l'índex i als titolets) i les entrades de la bibliografia (els seus DOI i URL segueixen `citations.bibliography.doi`) es queden com estan. Un enllaç dins d'una nota a peu de pàgina porta l'adreça entre parèntesis, digui el que digui `print`, perquè una nota no pot tenir nota.
+- **Una configuració per edició.** El més habitual és que l'editorial deixi `print: 'none'` a l'edició digital i fixi `print: 'notes'` amb `show: 'both'` a la configuració de la impresa; el Markdown és el mateix a totes dues.
+- **PDF.** El codi es dibuixa en vectors i enllaça amb l'adreça. En un PDF etiquetat és un `Figure` dins d'un `Link`, amb l'adreça com a text alternatiu.
+
+El resolutor i el depurador segueixen el patró de les altres seccions:
+
+```ts
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+```
+
 ## Índex general
 
 La propietat `toc` configura el que imprimeix una directiva `:::toc` (vegeu [Format del document](/ca/docs/document-format-directives#toc)). L'índex general es construeix a partir de l'**esquema** del document (cada encapçalament amb el número i l'etiqueta de pàgina, cada `:::part`), de manera que segueix els capítols: si en reanomenes un, el mous a una altra part o en canvies els autors, les entrades canvien amb el capítol. Una entrada consta del número de l'encapçalament en una columna pròpia, el títol, una línia de punts i l'etiqueta de pàgina a la vora dreta, i després una línia de subtítol opcional; una part és una fila amb el disseny de `parts.design`.

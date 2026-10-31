@@ -1,7 +1,7 @@
 // The VDT document root and what it carries: the resolved config, the
 // bounding box every node uses, and the factory functions that create a
 // document, page, column and block (#1276: split out of vdt.ts).
-import type { ResolvedPageConfig, ResolvedLayoutConfig, ResolvedBodyTextConfig, ResolvedHeadingsConfig, ResolvedTableStyleConfig, ResolvedNamedTableStyleConfig, ResolvedCaptionStyleConfig, ResolvedDiagramStyleConfig, ResolvedScoreStyleConfig, ResolvedNamedScoreStyleConfig, ResolvedVideoStyleConfig, ResolvedParagraphStyleConfig, ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedMarkStyleConfig, ResolvedUnorderedListsConfig, ResolvedOrderedListsConfig, ResolvedMathConfig, ResolvedDesignSlot, ResolvedPartsConfig, ResolvedHeadingStyleConfig, ResolvedTocConfig, ResolvedIndexConfig, ResolvedFootnotesConfig, ResolvedCrossRefsConfig, ResolvedCitationsConfig, ResolvedCjkConfig, PostextConfig, ColorPaletteEntry, ResolvedPdfGenerationConfig, ResolvedPrintConfig, ResolvedContrastConfig, ResolvedChecksConfig, ResolvedFolioConfig, ResolvedComicsConfig, ResolvedLineNumbersConfig, ResolvedCodeStyleConfig, PageTemplate, ResolvedLabelStyle, FrameLookEntry, Dimension, PageMargins, DocumentMetadata, PartState } from '../types.js';
+import type { ResolvedPageConfig, ResolvedLayoutConfig, ResolvedBodyTextConfig, ResolvedHeadingsConfig, ResolvedTableStyleConfig, ResolvedNamedTableStyleConfig, ResolvedCaptionStyleConfig, ResolvedDiagramStyleConfig, ResolvedScoreStyleConfig, ResolvedNamedScoreStyleConfig, ResolvedVideoStyleConfig, ResolvedParagraphStyleConfig, ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedMarkStyleConfig, ResolvedUnorderedListsConfig, ResolvedOrderedListsConfig, ResolvedMathConfig, ResolvedDesignSlot, ResolvedPartsConfig, ResolvedHeadingStyleConfig, ResolvedTocConfig, ResolvedIndexConfig, ResolvedFootnotesConfig, ResolvedCrossRefsConfig, ResolvedCitationsConfig, ResolvedLinksConfig, ResolvedCjkConfig, PostextConfig, ColorPaletteEntry, ResolvedPdfGenerationConfig, ResolvedPrintConfig, ResolvedContrastConfig, ResolvedChecksConfig, ResolvedFolioConfig, ResolvedComicsConfig, ResolvedLineNumbersConfig, ResolvedCodeStyleConfig, PageTemplate, ResolvedLabelStyle, FrameLookEntry, Dimension, PageMargins, DocumentMetadata, PartState } from '../types.js';
 import type { StoryJump } from '../composed/carryTypes.js';
 import type { VDTBlock, VDTGridBalancing, VDTColumn, VDTBlockType, TextAlign } from './blocks.js';
 import type { ContentWarning } from './contentWarnings.js';
@@ -64,6 +64,9 @@ export interface ResolvedConfig {
   crossRefs: ResolvedCrossRefsConfig;
   /** Citations and the bibliography (#270). */
   citations: ResolvedCitationsConfig;
+  /** External links in print (#1302); present only when they print
+   *  something (`print` other than `'none'`). */
+  links?: ResolvedLinksConfig;
   /** East Asian typography (`cjk`), with `'auto'` resolved from the
    *  document language. */
   cjk: ResolvedCjkConfig;

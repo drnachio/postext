@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Anmerkungen und Verweise',
   description: 'Fußnoten, Zeilennummern, Querverweise und Zitationen, das Inhaltsverzeichnis und das Register',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '27 min',
   order: 12,
   parent: 'configuration',
@@ -628,6 +628,130 @@ interface CitationsConfig {
     </tr>
   </tbody>
 </table>
+
+## Links im Druck
+
+Die Eigenschaft `links` legt fest, was die gedruckte Seite von der Adresse hinter einem Link `[Text](https://…)` zeigt. Der Link bleibt in jeder Ausgabe anklickbar, die ihm folgen kann (Canvas im Sandbox, PDF, HTML, EPUB, SCORM und Folio); auf Papier bliebe nur sein Text, und niemand wüsste, wohin er führt. Wie Links geschrieben werden, steht unter [Dokumentformat](/de/docs/document-format-notes-references#links-im-druck). Seit postext 1.65.
+
+```ts
+interface LinksConfig {
+  print?: 'none' | 'inline' | 'notes'; // Nichts, die Adresse in Klammern oder eine Anmerkung.
+  show?: 'url' | 'qr' | 'both';        // print: 'notes': was die Anmerkung druckt.
+  urlDisplay?: 'full' | 'short';       // short: ohne https://, ohne führendes www. und abschließenden /.
+  repeat?: 'every' | 'first';          // first: eine im Kapitel schon vermerkte Adresse nutzt diese Anmerkung.
+  visibleUrls?: 'skip' | 'note';       // Ein Link, dessen Text seine eigene Adresse ist.
+  qr?: {
+    size?: Dimension;                  // Seitenlänge des Codes samt Ruhezone.
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    quietZone?: number;                // Helle Module um den Code (0–8).
+    color?: ColorValue;                // Ohne Wert die Farbe der Anmerkungen.
+    side?: 'start' | 'end';            // Auf welcher Seite der Anmerkungszeilen der Code steht.
+    gap?: Dimension;                   // Abstand zwischen Code und Zeilen; em ist der Schriftgrad der Anmerkung.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Eigenschaft</th>
+      <th>Typ</th>
+      <th>Standardwert</th>
+      <th>Beschreibung</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>print</code></td>
+      <td><code>'none' | 'inline' | 'notes'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>'none'</code> druckt nur den Linktext, wie auf dem Bildschirm. <code>'inline'</code> setzt die Adresse in Klammern hinter den Linktext, in der Auszeichnung des umgebenden Textes; die Adresse ist selbst ein Link und wird wie eine URL umbrochen. <code>'notes'</code> setzt ein Anmerkungszeichen hinter den Linktext und eine Anmerkung, die die Adresse, einen QR-Code oder beides druckt (<code>show</code>). Link-Anmerkungen sind Fußnoten: Sie teilen sich die Zählung mit den Anmerkungen aus <code>[^id]</code> und folgen <code>footnotes.placement</code>, <code>numbering</code>, <code>numberFormat</code> und dem Stil der Anmerkungen.</td>
+    </tr>
+    <tr>
+      <td><code>show</code></td>
+      <td><code>'url' | 'qr' | 'both'</code></td>
+      <td><code>'url'</code></td>
+      <td>Mit <code>print: 'notes'</code>: die Adresse, ein QR-Code, der sie öffnet, oder beides. Mit Code laufen die Zeilen der Anmerkung neben ihm, und die Anmerkung ist mindestens so hoch wie der Code. In vertikaler Schrift druckt die Anmerkung die Adresse ohne Code.</td>
+    </tr>
+    <tr>
+      <td><code>urlDisplay</code></td>
+      <td><code>'full' | 'short'</code></td>
+      <td><code>'full'</code></td>
+      <td>Wie die Adresse geschrieben wird. <code>'short'</code> entfernt <code>https://</code> oder <code>http://</code>, ein führendes <code>www.</code> und einen abschließenden <code>/</code>: <code>https://www.example.com/</code> wird als <code>example.com</code> gedruckt. Der Link behält die volle Adresse.</td>
+    </tr>
+    <tr>
+      <td><code>repeat</code></td>
+      <td><code>'every' | 'first'</code></td>
+      <td><code>'every'</code></td>
+      <td>Mit <code>print: 'notes'</code>: Jeder Link erhält eine eigene Anmerkung, oder (<code>'first'</code>) ein Link auf eine Adresse, die ein früherer Link desselben Kapitels schon vermerkt hat, druckt die Nummer dieser Anmerkung und fügt keine neue hinzu. Die Zählung beginnt bei jeder Überschrift der Ebene 1 neu.</td>
+    </tr>
+    <tr>
+      <td><code>visibleUrls</code></td>
+      <td><code>'skip' | 'note'</code></td>
+      <td><code>'skip'</code></td>
+      <td>Ein Link, dessen Text schon seine Adresse ist, <code>[https://example.com](https://example.com)</code>. <code>'skip'</code> lässt ihn, wie er ist; nur mit <code>show: 'qr'</code> oder <code>'both'</code> erhält er eine Anmerkung für den Code. <code>'note'</code> behandelt ihn wie jeden anderen Link.</td>
+    </tr>
+    <tr>
+      <td><code>qr.size</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>15mm</code></td>
+      <td>Seitenlänge des Codes einschließlich Ruhezone. Der Code nimmt nie mehr als 40&nbsp;% der Spalte ein. Damit eine Handykamera ihn liest, sollte jedes Modul mindestens einen Drittelmillimeter breit sein: Eine lange Adresse braucht mehr Module und damit einen größeren Code.</td>
+    </tr>
+    <tr>
+      <td><code>qr.errorCorrection</code></td>
+      <td><code>'L' | 'M' | 'Q' | 'H'</code></td>
+      <td><code>'M'</code></td>
+      <td>Fehlerkorrekturstufe. Der Encoder hebt sie an, wenn die Adresse bei gleicher Modulzahl Platz für eine höhere Stufe lässt.</td>
+    </tr>
+    <tr>
+      <td><code>qr.quietZone</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Helle Module um den Code, 0 bis 8. Auf der Seite genügt eins: Das Papier der Anmerkung und der Abstand neben dem Code ergänzen die Ruhezone.</td>
+    </tr>
+    <tr>
+      <td><code>qr.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Farbe der Anmerkungen</td>
+      <td>Farbe der dunklen Module; ohne Wert <code>footnotes.color</code>. Sie sollte sich deutlich vom Papier abheben.</td>
+    </tr>
+    <tr>
+      <td><code>qr.side</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>Wo der Code neben den Zeilen der Anmerkung steht: am Zeilenende (rechts in Text von links nach rechts) oder am Zeilenanfang. Der Code steht auf der Höhe der ersten Zeile der Anmerkung.</td>
+    </tr>
+    <tr>
+      <td><code>qr.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Abstand zwischen dem Code und den Zeilen der Anmerkung; <code>em</code> ist der Schriftgrad der Anmerkung.</td>
+    </tr>
+  </tbody>
+</table>
+
+Eine Druckausgabe, die mit Code und gekürzter Adresse ins Web verweist:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'both',
+  urlDisplay: 'short',
+  repeat: 'first',
+  qr: { size: { value: 18, unit: 'mm' } },
+}
+```
+
+- **Welche Links.** Nur Adressen mit `http:` und `https:`. Ein `mailto:`, ein `tel:` und ein Link an eine Stelle im Buch werden gedruckt, wie sie sind. `<https://…>` und eine nackte Adresse liest Postext als gewöhnlichen Text, der schon auf der Seite steht; sie erhalten nichts.
+- **Wo.** Absätze, Listenpunkte, Blockzitate und der Text von Kästen. Überschriften (ihr Text geht ins Inhaltsverzeichnis und in die Kolumnentitel) und Einträge des Literaturverzeichnisses (deren DOI und URL `citations.bibliography.doi` folgen) bleiben unverändert. Ein Link in einer Fußnote erhält seine Adresse in Klammern, gleich was `print` sagt, denn eine Anmerkung kann keine eigene Anmerkung tragen.
+- **Eine Konfiguration pro Ausgabe.** Meist behält ein Verlag in der digitalen Ausgabe `print: 'none'` und setzt in der Konfiguration der Druckausgabe `print: 'notes'` mit `show: 'both'`; das Markdown bleibt dasselbe.
+- **PDF.** Der Code wird als Vektorgrafik gezeichnet und ist ein Link auf die Adresse. In einem getaggten PDF ist er eine `Figure` in einem `Link`, mit der Adresse als Alternativtext.
+
+Resolver und Stripper arbeiten wie in den anderen Abschnitten:
+
+```ts
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+```
 
 ## Inhaltsverzeichnis
 

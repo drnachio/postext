@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notes et références',
   description: 'Les notes de bas de page, les renvois et les ancres, les citations et la bibliographie, et les marques d’index',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '15 min',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 Le panneau Vérifications liste une clé qu’aucune référence ne définit (`unknownCitationKey`) et un bloc de références illisible (`referencesUnreadable`). Un texte qui cite des ouvrages sans moteur de citations enregistré reçoit un avertissement `citationsUnavailable`, et ses citations s’impriment telles qu’elles sont écrites.
 
+
+## Liens sur papier
+
+Un lien Markdown, `[texte](https://…)`, est cliquable dans le Sandbox, le PDF, HTML, EPUB, SCORM et Folio. Sur papier, le lecteur n’en voit que le texte. Le réglage `links.print` choisit ce que la page imprimée ajoute après lui, sans toucher au texte :
+
+```md
+Les horaires complets sont sur le [site de l’autorité portuaire](https://www.example.org/traversees/).
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- **`print: 'none'`** (par défaut) imprime le seul texte du lien.
+- **`print: 'inline'`** imprime *site de l’autorité portuaire (https://www.example.org/traversees/)*.
+- **`print: 'notes'`** place un appel de note après le texte du lien. La note est numérotée et placée avec les notes de bas de page, et imprime l’adresse (`show: 'url'`), un code QR qui l’ouvre (`'qr'`) ou les deux (`'both'`). Avec `urlDisplay: 'short'`, l’adresse devient `example.org/traversees`.
+
+Seuls comptent les liens `http:` et `https:`. Un lien `mailto:` ou `tel:`, un lien vers une ancre du livre, un lien dans un titre et une entrée de bibliographie s’impriment tels qu’ils sont écrits. Les liens automatiques (`<https://…>`) et les adresses nues sont du texte ordinaire pour Postext : ils se voient déjà sur la page. Un lien placé dans une note de bas de page reçoit son adresse entre parenthèses. Les autres réglages (adresses répétées, taille et position du code) se trouvent dans [Liens sur papier](/fr/docs/configuration-notes-references#liens-sur-papier), dans la référence de configuration.
 
 ## Index
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Note e riferimenti',
   description: 'Come si scrivono note a piè di pagina, rimandi e ancore, citazioni e bibliografia, e come si segnano i termini dell’indice analitico',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '15 min',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 Il pannello **Verifiche** segnala una chiave che nessun riferimento definisce (`unknownCitationKey`) e un blocco di riferimenti illeggibile (`referencesUnreadable`). Un testo che cita opere senza alcun motore di citazione registrato riceve un avviso `citationsUnavailable`, e le sue citazioni si stampano così come sono scritte.
 
+
+## Link su carta
+
+Un link Markdown, `[testo](https://…)`, è cliccabile nel Sandbox, nel PDF, in HTML, EPUB, SCORM e Folio. Su carta il lettore ne vede solo il testo. L’impostazione `links.print` sceglie che cosa aggiunge la pagina stampata dopo il link, senza toccare il testo:
+
+```md
+Gli orari completi sono sul [sito dell’autorità portuale](https://www.example.org/traghetti/).
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- **`print: 'none'`** (il predefinito) stampa solo il testo del link.
+- **`print: 'inline'`** stampa *sito dell’autorità portuale (https://www.example.org/traghetti/)*.
+- **`print: 'notes'`** mette un richiamo di nota dopo il testo del link. La nota è numerata e collocata insieme alle note a piè di pagina e stampa l’indirizzo (`show: 'url'`), un codice QR che lo apre (`'qr'`) o entrambi (`'both'`). Con `urlDisplay: 'short'` l’indirizzo diventa `example.org/traghetti`.
+
+Contano solo i link `http:` e `https:`. Un link `mailto:` o `tel:`, un link a un’ancora del libro, un link in un titolo e una voce della bibliografia si stampano come sono scritti. Gli autolink (`<https://…>`) e gli indirizzi nudi sono testo normale in Postext, quindi si vedono già sulla pagina. Un link dentro una nota a piè di pagina riceve l’indirizzo tra parentesi. Le altre impostazioni (indirizzi ripetuti, dimensione e posizione del codice) sono in [Link su carta](/it/docs/configuration-notes-references#link-su-carta), nel riferimento della configurazione.
 
 ## Indice analitico
 

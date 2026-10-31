@@ -80,6 +80,26 @@ export interface VDTAnchor {
   chapter?: number;
 }
 
+/** The QR code of a link note (#1302, `links.show: 'qr' | 'both'`), hung
+ *  on the note's first line: the note's lines run beside it, and the note
+ *  is at least as tall. */
+export interface VDTLineQr {
+  /** From the line's `bbox.x` / `bbox.y` to the code's top-left corner. */
+  dx: number;
+  dy: number;
+  /** Side of the code with its quiet zone (px). */
+  side: number;
+  /** The address it opens. */
+  text: string;
+  /** Modules per side, the dark ones `'1'`, row by row (no quiet zone). */
+  size: number;
+  rows: string[];
+  quietZone: number;
+  moduleSize: number;
+  /** Dark modules (hex). Absent: the line's text colour. */
+  color?: string;
+}
+
 export interface VDTLine {
   text: string;
   /** Where the line sits and its natural width: the sum of its segments'
@@ -250,6 +270,8 @@ export interface VDTLine {
    *  text wraps round (#627): the span is the line's narrowed measure, and
    *  the line keeps its block's alignment in it. */
   measure?: { x: number; width: number; wrap?: true };
+  /** The QR code of a link note (#1302), on the note's first line. */
+  qr?: VDTLineQr;
   /** How many kashidas (tatweels, U+0640) justification inserted into the
    *  line's words, for warnings and overlays. The tatweels themselves are in
    *  the segments' text, and each segment lists where

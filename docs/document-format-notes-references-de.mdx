@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Anmerkungen und Verweise',
   description: 'Fußnoten, Querverweise und ihre Verweisziele, Zitate und das Literaturverzeichnis sowie die Marken für das Register am Ende des Buchs',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '14 min',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 Das Bedienfeld Prüfungen führt einen Schlüssel auf, den keine Literaturangabe definiert (`unknownCitationKey`), sowie einen Literaturblock, der sich nicht lesen lässt (`referencesUnreadable`). Ein Text, der Werke zitiert, ohne dass eine Zitier-Engine registriert ist, erhält die Warnung `citationsUnavailable`, und seine Zitate werden so gesetzt, wie sie geschrieben sind.
 
+
+## Links im Druck
+
+Ein Markdown-Link, `[Text](https://…)`, ist im Sandbox, im PDF, in HTML, EPUB, SCORM und Folio anklickbar. Auf Papier sieht man nur den Linktext. Die Einstellung `links.print` bestimmt, was die gedruckte Seite dahinter ergänzt, ohne den Text zu ändern:
+
+```md
+Den vollständigen Fahrplan gibt es auf der [Seite der Hafenbehörde](https://www.example.org/faehren/).
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- **`print: 'none'`** (Standard) druckt nur den Linktext.
+- **`print: 'inline'`** druckt *Seite der Hafenbehörde (https://www.example.org/faehren/)*.
+- **`print: 'notes'`** setzt ein Anmerkungszeichen hinter den Linktext. Die Anmerkung wird mit den Fußnoten gezählt und platziert und druckt die Adresse (`show: 'url'`), einen QR-Code, der sie öffnet (`'qr'`), oder beides (`'both'`). Mit `urlDisplay: 'short'` lautet die Adresse `example.org/faehren`.
+
+Es zählen nur Links mit `http:` und `https:`. Ein `mailto:`- oder `tel:`-Link, ein Link auf einen Anker im Buch, ein Link in einer Überschrift und ein Eintrag des Literaturverzeichnisses werden gedruckt, wie sie geschrieben sind. Autolinks (`<https://…>`) und nackte Adressen sind in Postext gewöhnlicher Text und stehen damit schon auf der Seite. Ein Link in einer Fußnote erhält seine Adresse in Klammern. Die übrigen Einstellungen (wiederholte Adressen, Größe und Lage des Codes) stehen unter [Links im Druck](/de/docs/configuration-notes-references#links-im-druck) in der Konfigurationsreferenz.
 
 ## Register
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notes and references',
   description: 'Footnotes, line numbers, cross-references and citations, the table of contents and the back-of-book index',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '27 min',
   order: 12,
   parent: 'configuration',
@@ -628,6 +628,130 @@ interface CitationsConfig {
     </tr>
   </tbody>
 </table>
+
+## Links in print
+
+The `links` property decides what a printed page shows of the address behind a link written `[text](https://…)`. The link stays clickable in every output that can follow it (the Sandbox canvas, the PDF, HTML, EPUB, SCORM and Folio); on paper only its text would show, so the reader would not know where it goes. How links are written is described in [Document format](/en/docs/document-format-notes-references#links-in-print). Since postext 1.65.
+
+```ts
+interface LinksConfig {
+  print?: 'none' | 'inline' | 'notes'; // Nothing, the address in parentheses, or a note.
+  show?: 'url' | 'qr' | 'both';        // print: 'notes': what the note prints.
+  urlDisplay?: 'full' | 'short';       // short: no https://, no leading www., no trailing /.
+  repeat?: 'every' | 'first';          // first: an address noted earlier in the chapter reuses that note.
+  visibleUrls?: 'skip' | 'note';       // A link whose text is its own address.
+  qr?: {
+    size?: Dimension;                  // Side of the code with its quiet zone.
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    quietZone?: number;                // Light modules around the code (0–8).
+    color?: ColorValue;                // The note colour when unset.
+    side?: 'start' | 'end';            // Where the code stands beside the note's lines.
+    gap?: Dimension;                   // Space between the code and the lines; em is the note size.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>print</code></td>
+      <td><code>'none' | 'inline' | 'notes'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>'none'</code> prints the link text alone, as the screen shows it. <code>'inline'</code> adds the address in parentheses after the link text, in the emphasis of the text around it; the address is itself a link and breaks as a URL does. <code>'notes'</code> adds a note marker after the link text and sets a note that prints the address, a QR code or both (<code>show</code>). Link notes are footnotes: they share the numbers of the notes written with <code>[^id]</code> and follow <code>footnotes.placement</code>, <code>numbering</code>, <code>numberFormat</code> and the note style.</td>
+    </tr>
+    <tr>
+      <td><code>show</code></td>
+      <td><code>'url' | 'qr' | 'both'</code></td>
+      <td><code>'url'</code></td>
+      <td>With <code>print: 'notes'</code>: the address, a QR code that opens it, or both. With a code, the note's lines run beside it and the note is at least as tall as the code. Vertical text prints the address without a code.</td>
+    </tr>
+    <tr>
+      <td><code>urlDisplay</code></td>
+      <td><code>'full' | 'short'</code></td>
+      <td><code>'full'</code></td>
+      <td>How the address is written. <code>'short'</code> drops <code>https://</code> or <code>http://</code>, a leading <code>www.</code> and a trailing <code>/</code>: <code>https://www.example.com/</code> prints <code>example.com</code>. The link keeps the full address.</td>
+    </tr>
+    <tr>
+      <td><code>repeat</code></td>
+      <td><code>'every' | 'first'</code></td>
+      <td><code>'every'</code></td>
+      <td>With <code>print: 'notes'</code>: every link takes a note of its own, or (<code>'first'</code>) a link to an address that an earlier link of the same chapter already noted prints that note's number and adds no note. The count starts again at each level-1 heading.</td>
+    </tr>
+    <tr>
+      <td><code>visibleUrls</code></td>
+      <td><code>'skip' | 'note'</code></td>
+      <td><code>'skip'</code></td>
+      <td>A link whose text is already its address, <code>[https://example.com](https://example.com)</code>. <code>'skip'</code> leaves it as it is, except that with <code>show: 'qr'</code> or <code>'both'</code> it still takes a note for the code. <code>'note'</code> treats it like any other link.</td>
+    </tr>
+    <tr>
+      <td><code>qr.size</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>15mm</code></td>
+      <td>Side of the code, quiet zone included. The code never takes more than 40&nbsp;% of the column. Keep each module at least a third of a millimetre wide so a phone camera reads it: a long address needs more modules, so a larger code.</td>
+    </tr>
+    <tr>
+      <td><code>qr.errorCorrection</code></td>
+      <td><code>'L' | 'M' | 'Q' | 'H'</code></td>
+      <td><code>'M'</code></td>
+      <td>Error-correction level. The encoder raises it when the address leaves room for a higher level at the same number of modules.</td>
+    </tr>
+    <tr>
+      <td><code>qr.quietZone</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Light modules around the code, 0 to 8. One is enough on the page: the paper of the note and the gap beside the code complete it.</td>
+    </tr>
+    <tr>
+      <td><code>qr.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>note colour</td>
+      <td>Colour of the dark modules, <code>footnotes.color</code> when unset. Keep it dark against the paper.</td>
+    </tr>
+    <tr>
+      <td><code>qr.side</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>Where the code stands beside the note's lines: at the end of the line (the right in left-to-right text) or at its start. The code is set level with the note's first line.</td>
+    </tr>
+    <tr>
+      <td><code>qr.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Space between the code and the note's lines; <code>em</code> is the note size.</td>
+    </tr>
+  </tbody>
+</table>
+
+A print edition that sends readers to the web with a code and a short address:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'both',
+  urlDisplay: 'short',
+  repeat: 'first',
+  qr: { size: { value: 18, unit: 'mm' } },
+}
+```
+
+- **Which links.** Only `http:` and `https:` addresses. A `mailto:`, a `tel:` and a link to a place in the book print as they are. Postext reads `<https://…>` and a bare address as plain text, already visible, so they get nothing.
+- **Where.** Paragraphs, list items, blockquotes and the text of boxes. Headings (their text goes to the contents and the running heads) and bibliography entries (whose DOIs and URLs follow `citations.bibliography.doi`) are left alone. A link inside a footnote gets its address in parentheses, whatever `print` says, since a note cannot carry a note of its own.
+- **One configuration per edition.** A publisher usually keeps `print: 'none'` in the digital edition and sets `print: 'notes'` with `show: 'both'` in the print edition's config; the Markdown is the same in both.
+- **PDF.** The code is drawn as vectors and is a link to the address. A tagged PDF sets it as a `Figure` inside a `Link`, with the address as its alternative text.
+
+The resolver and the stripper work as in the other sections:
+
+```ts
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+```
 
 ## Table of contents
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notas y referencias',
   description: 'Las notas al pie, la numeración de líneas, las referencias cruzadas, las citas bibliográficas, el índice general y el índice analítico',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '30 min',
   order: 12,
   parent: 'configuration',
@@ -628,6 +628,130 @@ interface CitationsConfig {
     </tr>
   </tbody>
 </table>
+
+## Enlaces en papel
+
+La propiedad `links` decide qué muestra la página impresa de la dirección que hay detrás de un enlace escrito `[texto](https://…)`. El enlace sigue funcionando en todas las salidas que pueden seguirlo (el lienzo del Sandbox, el PDF, HTML, EPUB, SCORM y Folio); en papel solo quedaría su texto y el lector no sabría adónde lleva. Cómo se escriben los enlaces se explica en [Formato del documento](/es/docs/document-format-notes-references#enlaces-en-papel). Desde postext 1.65.
+
+```ts
+interface LinksConfig {
+  print?: 'none' | 'inline' | 'notes'; // Nada, la dirección entre paréntesis o una nota.
+  show?: 'url' | 'qr' | 'both';        // print: 'notes': qué imprime la nota.
+  urlDisplay?: 'full' | 'short';       // short: sin https://, sin www. inicial ni / final.
+  repeat?: 'every' | 'first';          // first: una dirección ya anotada en el capítulo reutiliza esa nota.
+  visibleUrls?: 'skip' | 'note';       // Un enlace cuyo texto es su propia dirección.
+  qr?: {
+    size?: Dimension;                  // Lado del código con su zona de silencio.
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    quietZone?: number;                // Módulos claros alrededor del código (0–8).
+    color?: ColorValue;                // Sin valor, el color de las notas.
+    side?: 'start' | 'end';            // A qué lado de las líneas de la nota va el código.
+    gap?: Dimension;                   // Espacio entre el código y las líneas; em es el cuerpo de la nota.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Propiedad</th>
+      <th>Tipo</th>
+      <th>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>print</code></td>
+      <td><code>'none' | 'inline' | 'notes'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>'none'</code> imprime solo el texto del enlace, como se ve en pantalla. <code>'inline'</code> añade la dirección entre paréntesis detrás del texto, con el mismo énfasis que el texto que la rodea; la dirección es a su vez un enlace y se corta como se cortan las URL. <code>'notes'</code> pone una llamada de nota detrás del texto del enlace y compone una nota con la dirección, un código QR o las dos cosas (<code>show</code>). Las notas de enlace son notas al pie: comparten la numeración de las notas escritas con <code>[^id]</code> y siguen <code>footnotes.placement</code>, <code>numbering</code>, <code>numberFormat</code> y el estilo de las notas.</td>
+    </tr>
+    <tr>
+      <td><code>show</code></td>
+      <td><code>'url' | 'qr' | 'both'</code></td>
+      <td><code>'url'</code></td>
+      <td>Con <code>print: 'notes'</code>: la dirección, un código QR que la abre, o ambos. Con código, las líneas de la nota se componen a su lado y la nota mide al menos lo que el código. En texto vertical la nota imprime la dirección sin código.</td>
+    </tr>
+    <tr>
+      <td><code>urlDisplay</code></td>
+      <td><code>'full' | 'short'</code></td>
+      <td><code>'full'</code></td>
+      <td>Cómo se escribe la dirección. <code>'short'</code> quita <code>https://</code> o <code>http://</code>, un <code>www.</code> inicial y una <code>/</code> final: <code>https://www.example.com/</code> se imprime <code>example.com</code>. El enlace conserva la dirección completa.</td>
+    </tr>
+    <tr>
+      <td><code>repeat</code></td>
+      <td><code>'every' | 'first'</code></td>
+      <td><code>'every'</code></td>
+      <td>Con <code>print: 'notes'</code>: cada enlace lleva su propia nota o, con <code>'first'</code>, un enlace a una dirección que otro enlace anterior del mismo capítulo ya anotó imprime el número de esa nota y no añade ninguna. La cuenta vuelve a empezar en cada encabezado de nivel 1.</td>
+    </tr>
+    <tr>
+      <td><code>visibleUrls</code></td>
+      <td><code>'skip' | 'note'</code></td>
+      <td><code>'skip'</code></td>
+      <td>Un enlace cuyo texto ya es su dirección, <code>[https://example.com](https://example.com)</code>. <code>'skip'</code> lo deja como está, salvo con <code>show: 'qr'</code> o <code>'both'</code>, en que recibe una nota para el código. <code>'note'</code> lo trata como a cualquier otro enlace.</td>
+    </tr>
+    <tr>
+      <td><code>qr.size</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>15mm</code></td>
+      <td>Lado del código, zona de silencio incluida. El código nunca ocupa más del 40&nbsp;% de la columna. Para que la cámara de un móvil lo lea, cada módulo debe medir al menos un tercio de milímetro: una dirección larga necesita más módulos y, por tanto, un código mayor.</td>
+    </tr>
+    <tr>
+      <td><code>qr.errorCorrection</code></td>
+      <td><code>'L' | 'M' | 'Q' | 'H'</code></td>
+      <td><code>'M'</code></td>
+      <td>Nivel de corrección de errores. El codificador lo sube cuando la dirección deja sitio para un nivel más alto con el mismo número de módulos.</td>
+    </tr>
+    <tr>
+      <td><code>qr.quietZone</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Módulos claros alrededor del código, de 0 a 8. En la página basta con uno: el papel de la nota y el espacio junto al código completan la zona de silencio.</td>
+    </tr>
+    <tr>
+      <td><code>qr.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color de las notas</td>
+      <td>Color de los módulos oscuros; sin valor, <code>footnotes.color</code>. Conviene que contraste bien con el papel.</td>
+    </tr>
+    <tr>
+      <td><code>qr.side</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>Dónde va el código respecto a las líneas de la nota: al final de la línea (a la derecha en texto de izquierda a derecha) o al principio. El código se alinea con la primera línea de la nota.</td>
+    </tr>
+    <tr>
+      <td><code>qr.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Espacio entre el código y las líneas de la nota; <code>em</code> es el cuerpo de la nota.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una edición impresa que remite al lector a la web con un código y la dirección abreviada:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'both',
+  urlDisplay: 'short',
+  repeat: 'first',
+  qr: { size: { value: 18, unit: 'mm' } },
+}
+```
+
+- **Qué enlaces.** Solo las direcciones `http:` y `https:`. Un `mailto:`, un `tel:` y un enlace a otro punto del libro se imprimen tal cual. Postext lee `<https://…>` y una dirección suelta como texto, que ya se ve en la página, así que no reciben nada.
+- **Dónde.** Párrafos, elementos de lista, citas en bloque y el texto de los recuadros. Los encabezados (su texto pasa al índice y a los titulillos) y las entradas de la bibliografía (sus DOI y URL siguen `citations.bibliography.doi`) se quedan como están. Un enlace dentro de una nota al pie lleva la dirección entre paréntesis, diga lo que diga `print`, porque una nota no puede tener nota.
+- **Una configuración por edición.** Lo habitual es que la editorial deje `print: 'none'` en la edición digital y fije `print: 'notes'` con `show: 'both'` en la configuración de la impresa; el Markdown es el mismo en las dos.
+- **PDF.** El código se dibuja en vectores y enlaza con la dirección. En un PDF etiquetado es un `Figure` dentro de un `Link`, con la dirección como texto alternativo.
+
+El resolutor y el depurador siguen el patrón de las demás secciones:
+
+```ts
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+```
 
 ## Índice general
 

@@ -8,6 +8,7 @@ import { resolvedLocale, computeColumnBboxes } from '../../../config.js';
 import { needsExerciseExpansion, expandDocumentExercises, withExerciseStyles, exerciseSettingsFor, nameExerciseAnchors } from '../../../../exercises/build.js';
 import { exerciseDigitalOf } from '../../../../exercises/digital.js';
 import { splitFootnoteDefinitions, numberFootnotes, footnoteFormatOf, appendChapterEndNotes, noteNumberPositionOf, withFootnoteStyle } from '../../../references/footnotes.js';
+import { applyLinkNotes } from '../../../references/linkNotes.js';
 import { hasAnchorRefs, anchorTargetsOf } from '../../../references/crossRefs.js';
 import { hasTocDirective, hasIndexDirective, computeOutline, headingTemplatesOf, headingNumberingOptions } from '../../../contents/outline.js';
 import type { AnchorRefContext } from '../../../resources/resourceLayout.js';
@@ -108,7 +109,10 @@ export function createContentSetup(deps: ContentSetupDeps) {
     doc.exercises = exerciseExpansion.records;
     doc.exerciseDigital = exerciseDigitalOf(exerciseSettingsFor(setup.resolved));
   }
-  const footnoteSplit = splitFootnoteDefinitions(exerciseExpansion?.blocks ?? citationsApplied?.blocks ?? parsedBody);
+  // External links in print (#1302): their addresses in parentheses, or
+  // in notes that join the footnotes.
+  const linked = applyLinkNotes(exerciseExpansion?.blocks ?? citationsApplied?.blocks ?? parsedBody, setup.resolved.links, setup.resolved.layout.writingMode === 'vertical-rl', setup.resolved.direction === 'rtl');
+  const footnoteSplit = splitFootnoteDefinitions(linked);
   const footnoteDefs = footnoteSplit.defs;
   // Numbered by page or column (`numbering: 'page'`), a note takes the
   // number the previous build gave it where it landed; the first build

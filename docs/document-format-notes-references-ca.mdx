@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notes i referències',
   description: "Les notes a peu de pàgina, les referències creuades i les àncores, les citacions i la bibliografia, i les marques de l'índex analític",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '15 min',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 El tauler Revisió avisa d'una clau que cap referència no defineix (`unknownCitationKey`) i d'un bloc de referències que no es pot llegir (`referencesUnreadable`). Un text que cita obres sense cap motor de citació registrat rep un avís `citationsUnavailable`, i les citacions s'imprimeixen tal com s'han escrit.
 
+
+## Enllaços en paper
+
+Un enllaç de Markdown, `[text](https://…)`, es pot clicar al Sandbox, al PDF, a HTML, EPUB, SCORM i Folio. En paper el lector només en veu el text. L'ajust `links.print` tria què afegeix la pàgina impresa després de l'enllaç, sense tocar el text:
+
+```md
+Els horaris complets són al [web de l'autoritat portuària](https://www.example.org/ferris/).
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- **`print: 'none'`** (el valor per defecte) imprimeix només el text de l'enllaç.
+- **`print: 'inline'`** imprimeix *web de l'autoritat portuària (https://www.example.org/ferris/)*.
+- **`print: 'notes'`** posa una crida de nota després del text de l'enllaç. La nota es numera i es col·loca amb les notes a peu de pàgina, i imprimeix l'adreça (`show: 'url'`), un codi QR que l'obre (`'qr'`) o totes dues (`'both'`). Amb `urlDisplay: 'short'` l'adreça queda en `example.org/ferris`.
+
+Només compten els enllaços `http:` i `https:`. Un enllaç `mailto:` o `tel:`, un enllaç a una àncora del llibre, un enllaç en un encapçalament i una entrada de la bibliografia s'imprimeixen tal com estan escrits. Els enllaços automàtics (`<https://…>`) i les adreces soltes són text normal a Postext, de manera que ja es veuen a la pàgina. Un enllaç dins d'una nota a peu de pàgina porta l'adreça entre parèntesis. La resta d'ajustos (adreces repetides, mida i posició del codi) són a [Enllaços en paper](/ca/docs/configuration-notes-references#enllaços-en-paper), a la referència de configuració.
 
 ## Índex analític
 

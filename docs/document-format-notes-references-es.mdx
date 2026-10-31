@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notas y referencias',
   description: 'Cómo se escriben las notas al pie, las referencias cruzadas y sus anclas, las citas y la bibliografía, y las marcas del índice analítico',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '15 min',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 El panel Revisión avisa de una clave que ninguna referencia define (`unknownCitationKey`) y de un bloque de referencias que no se puede leer (`referencesUnreadable`). Un texto que cita obras sin ningún motor de citas registrado recibe un aviso `citationsUnavailable`, y sus citas se imprimen tal como están escritas.
 
+
+## Enlaces en papel
+
+Un enlace de Markdown, `[texto](https://…)`, se puede pulsar en el Sandbox, el PDF, HTML, EPUB, SCORM y Folio. En papel el lector solo ve el texto del enlace. El ajuste `links.print` elige qué añade la página impresa detrás de él, sin tocar el texto:
+
+```md
+Los horarios completos están en la [web de la autoridad portuaria](https://www.example.org/ferris/).
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- **`print: 'none'`** (el valor por defecto) imprime solo el texto del enlace.
+- **`print: 'inline'`** imprime *web de la autoridad portuaria (https://www.example.org/ferris/)*.
+- **`print: 'notes'`** pone una llamada de nota detrás del texto del enlace. La nota se numera y se coloca con las notas al pie, e imprime la dirección (`show: 'url'`), un código QR que la abre (`'qr'`) o ambos (`'both'`). Con `urlDisplay: 'short'` la dirección queda en `example.org/ferris`.
+
+Solo cuentan los enlaces `http:` y `https:`. Un enlace `mailto:` o `tel:`, un enlace a un ancla del libro, un enlace en un encabezado y una entrada de la bibliografía se imprimen como están escritos. Los autoenlaces (`<https://…>`) y las direcciones sueltas son texto normal en Postext, de modo que ya se ven en la página. Un enlace dentro de una nota al pie lleva la dirección entre paréntesis. El resto de ajustes (direcciones repetidas, tamaño y posición del código) están en [Enlaces en papel](/es/docs/configuration-notes-references#enlaces-en-papel), en la referencia de configuración.
 
 ## Índice analítico
 

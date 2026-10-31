@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الحواشي والإحالات',
   description: 'الحواشي السفلية، وترقيم الأسطر، والإحالات والاستشهادات، وجدول المحتويات، والفهرس الأبجدي في آخر الكتاب',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '27 دقيقة',
   order: 12,
   parent: 'configuration',
@@ -628,6 +628,130 @@ interface CitationsConfig {
     </tr>
   </tbody>
 </table>
+
+## الروابط في النسخة المطبوعة
+
+تحدد الخاصية `links` ما تُظهره الصفحة المطبوعة من العنوان الذي يقف وراء رابط مكتوب بالصيغة `[نص](https://…)`. يبقى الرابط قابلًا للنقر في كل مخرج يستطيع اتباعه (لوحة الرسم في Sandbox، وPDF، وHTML، وEPUB، وSCORM، وFolio)؛ أما على الورق فلا يبقى منه إلا نصه، فلا يعرف القارئ إلى أين يقود. طريقة كتابة الروابط موصوفة في [صيغة المستند](/ar/docs/document-format-notes-references#الروابط-في-النسخة-المطبوعة). منذ postext 1.65.
+
+```ts
+interface LinksConfig {
+  print?: 'none' | 'inline' | 'notes'; // لا شيء، أو العنوان بين قوسين، أو حاشية.
+  show?: 'url' | 'qr' | 'both';        // مع print: 'notes': ما تطبعه الحاشية.
+  urlDisplay?: 'full' | 'short';       // short: دون https:// ولا www. في البداية ولا / في النهاية.
+  repeat?: 'every' | 'first';          // first: العنوان الذي سبقت له حاشية في الفصل يعيد استعمالها.
+  visibleUrls?: 'skip' | 'note';       // رابط نصه هو عنوانه نفسه.
+  qr?: {
+    size?: Dimension;                  // ضلع الرمز مع منطقته الهادئة.
+    errorCorrection?: 'L' | 'M' | 'Q' | 'H';
+    quietZone?: number;                // الوحدات الفاتحة حول الرمز (0–8).
+    color?: ColorValue;                // لون الحواشي إن لم يُضبط.
+    side?: 'start' | 'end';            // في أي جانب من أسطر الحاشية يقف الرمز.
+    gap?: Dimension;                   // المسافة بين الرمز والأسطر؛ em هو حجم خط الحاشية.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>الخاصية</th>
+      <th>النوع</th>
+      <th>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>print</code></td>
+      <td><code>'none' | 'inline' | 'notes'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>'none'</code> تطبع نص الرابط وحده كما يظهر على الشاشة. <code>'inline'</code> تضيف العنوان بين قوسين بعد النص، بتنسيق النص المحيط به؛ والعنوان نفسه رابط، ويُقسم على الأسطر كما تُقسم عناوين URL. <code>'notes'</code> تضع علامة حاشية بعد نص الرابط وتصفّ حاشية تطبع العنوان، أو رمز QR يفتحه، أو كليهما (<code>show</code>). حواشي الروابط حواشٍ سفلية: تشترك في الترقيم مع الحواشي المكتوبة بـ<code>[^id]</code>، وتتبع <code>footnotes.placement</code> و<code>numbering</code> و<code>numberFormat</code> ونمط الحواشي.</td>
+    </tr>
+    <tr>
+      <td><code>show</code></td>
+      <td><code>'url' | 'qr' | 'both'</code></td>
+      <td><code>'url'</code></td>
+      <td>مع <code>print: 'notes'</code>: العنوان، أو رمز QR يفتحه، أو كلاهما. إذا كان هناك رمز جرت أسطر الحاشية بجانبه، ولا يقل ارتفاع الحاشية عن ارتفاعه. وفي الكتابة العمودية تطبع الحاشية العنوان دون رمز.</td>
+    </tr>
+    <tr>
+      <td><code>urlDisplay</code></td>
+      <td><code>'full' | 'short'</code></td>
+      <td><code>'full'</code></td>
+      <td>طريقة كتابة العنوان. <code>'short'</code> تحذف <code>https://</code> أو <code>http://</code>، و<code>www.</code> في البداية، و<code>/</code> في النهاية: يُطبع <code>https://www.example.com/</code> هكذا <code>example.com</code>. ويحتفظ الرابط بالعنوان كاملًا.</td>
+    </tr>
+    <tr>
+      <td><code>repeat</code></td>
+      <td><code>'every' | 'first'</code></td>
+      <td><code>'every'</code></td>
+      <td>مع <code>print: 'notes'</code>: لكل رابط حاشيته، أو (<code>'first'</code>) الرابط إلى عنوان سبق أن أُفردت له حاشية في الفصل نفسه يطبع رقم تلك الحاشية ولا يضيف أخرى. ويبدأ العدّ من جديد عند كل عنوان من المستوى الأول.</td>
+    </tr>
+    <tr>
+      <td><code>visibleUrls</code></td>
+      <td><code>'skip' | 'note'</code></td>
+      <td><code>'skip'</code></td>
+      <td>رابط نصه هو عنوانه أصلًا، <code>[https://example.com](https://example.com)</code>. <code>'skip'</code> تتركه كما هو، إلا مع <code>show: 'qr'</code> أو <code>'both'</code> فيأخذ حاشية للرمز. و<code>'note'</code> تعامله كأي رابط آخر.</td>
+    </tr>
+    <tr>
+      <td><code>qr.size</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>15mm</code></td>
+      <td>ضلع الرمز بما فيه المنطقة الهادئة. لا يتجاوز الرمز 40% من عرض العمود. ولكي تقرأه كاميرا الهاتف ينبغي ألا تقل الوحدة الواحدة عن ثلث مليمتر: العنوان الطويل يحتاج إلى وحدات أكثر، أي إلى رمز أكبر.</td>
+    </tr>
+    <tr>
+      <td><code>qr.errorCorrection</code></td>
+      <td><code>'L' | 'M' | 'Q' | 'H'</code></td>
+      <td><code>'M'</code></td>
+      <td>مستوى تصحيح الأخطاء. يرفعه المرمِّز إذا اتسع العنوان لمستوى أعلى بالعدد نفسه من الوحدات.</td>
+    </tr>
+    <tr>
+      <td><code>qr.quietZone</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>الوحدات الفاتحة حول الرمز، من 0 إلى 8. تكفي وحدة واحدة على الصفحة: فورق الحاشية والمسافة بجانب الرمز يكملان المنطقة الهادئة.</td>
+    </tr>
+    <tr>
+      <td><code>qr.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون الحواشي</td>
+      <td>لون الوحدات الداكنة؛ وإن لم يُضبط فهو <code>footnotes.color</code>. اجعله واضح التباين مع الورق.</td>
+    </tr>
+    <tr>
+      <td><code>qr.side</code></td>
+      <td><code>'start' | 'end'</code></td>
+      <td><code>'end'</code></td>
+      <td>موضع الرمز من أسطر الحاشية: في نهاية السطر (اليمين في النص المكتوب من اليسار إلى اليمين) أو في بدايته. ويُحاذى الرمز مع السطر الأول من الحاشية.</td>
+    </tr>
+    <tr>
+      <td><code>qr.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>المسافة بين الرمز وأسطر الحاشية؛ <code>em</code> هو حجم خط الحاشية.</td>
+    </tr>
+  </tbody>
+</table>
+
+نسخة مطبوعة تحيل القارئ إلى الويب برمز وعنوان مختصر:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'both',
+  urlDisplay: 'short',
+  repeat: 'first',
+  qr: { size: { value: 18, unit: 'mm' } },
+}
+```
+
+- **أي الروابط.** عناوين `http:` و`https:` وحدها. أما `mailto:` و`tel:` والرابط إلى موضع في الكتاب فتُطبع كما هي. ويقرأ Postext الصيغة `<https://…>` والعنوان المكتوب مجردًا نصًّا عاديًّا ظاهرًا على الصفحة، فلا يُضاف إليهما شيء.
+- **أين.** الفقرات وعناصر القوائم والاقتباسات الكتلية ونصوص الصناديق. وتبقى العناوين (يذهب نصها إلى جدول المحتويات والترويسات) ومداخل قائمة المراجع (تتبع معرّفات DOI وعناوين URL فيها `citations.bibliography.doi`) على حالها. والرابط داخل حاشية سفلية يأخذ عنوانه بين قوسين أيًّا كانت قيمة `print`، لأن الحاشية لا تحمل حاشية.
+- **إعداد لكل نسخة.** يُبقي الناشر عادةً `print: 'none'` في النسخة الرقمية، ويضبط `print: 'notes'` مع `show: 'both'` في إعداد النسخة المطبوعة؛ وMarkdown واحد في النسختين.
+- **PDF.** يُرسم الرمز رسمًا متجهيًّا، وهو رابط إلى العنوان. وفي ملف PDF الموسوم يكون `Figure` داخل `Link`، والعنوان نصه البديل.
+
+دالتا الحل والتجريد مماثلتان لنظيراتهما في الأقسام الأخرى:
+
+```ts
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+```
 
 ## جدول المحتويات
 

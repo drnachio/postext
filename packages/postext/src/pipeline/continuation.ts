@@ -6,6 +6,7 @@
 // preceding content produced and how its last page was numbered.
 
 import { hasAnchorRefs } from './references/crossRefs.js';
+import { applyLinkNotes } from './references/linkNotes.js';
 import { extractFrontmatter } from '../parse/frontmatter.js';
 import { parseMarkdownMemo } from '../parse/index.js';
 import type { ContentBlock } from '../parse/index.js';
@@ -68,7 +69,7 @@ export function continuationAfter(
   // Notes numbered through the book go on from the last one printed.
   let footnoteNumber = before?.footnoteNumber ?? 0;
   if (resolved.footnotes.numbering === 'document') {
-    const numbering = numberFootnotes(splitFootnoteDefinitions(blocks).blocks, 'document', footnoteNumber);
+    const numbering = numberFootnotes(splitFootnoteDefinitions(applyLinkNotes(blocks, resolved.links, resolved.layout.writingMode === 'vertical-rl', resolved.direction === 'rtl')).blocks, 'document', footnoteNumber);
     footnoteNumber = Math.max(footnoteNumber, lastFootnoteNumber(numbering));
   }
   // Labelled equations and counted boxes number on through the book (#530).

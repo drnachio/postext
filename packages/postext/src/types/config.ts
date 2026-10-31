@@ -12,6 +12,7 @@ import type { ExerciseStyleConfig, ExercisesConfig } from './boxes/exercises.js'
 import type { FolioConfig } from './output/folio.js';
 import type { CustomFontFamily } from './text/fonts.js';
 import type { FootnotesConfig } from './structure/footnotes.js';
+import type { LinksConfig } from './structure/links.js';
 import type { HeaderFooterSlot } from './structure/headerFooter.js';
 import type { HeadingsConfig } from './structure/headings.js';
 import type { HeadingStyleConfig } from './structure/headingStyles.js';
@@ -95,6 +96,9 @@ export interface PostextConfig {
   /** Citations (`[@key]`) and the bibliography: style, language and
    *  presentation (#270). */
   citations?: CitationsConfig;
+  /** External links in print: the address of each link printed as a note
+   *  (its URL, a QR code, or both) or in parentheses (#1302). */
+  links?: LinksConfig;
   /** East Asian typography: line breaking and justification of Chinese,
    *  Japanese and Korean text (see {@link CjkConfig}). */
   cjk?: CjkConfig;

@@ -37,6 +37,7 @@ import { containerStartOf, wordSpacingProfile, runtTrackingLadder, headingJidori
 import { resolveInlineSpans, poemStanzaIndices } from './measureContentBlock/inlineSpans.js';
 import type { BlockMeasureContext, MeasureContentBlockOptions, MeasuredContentBlock } from './measureContentBlock/types.js';
 import { createMeasureOptions } from './measureContentBlock/measureOptions.js';
+import { linkQrSetting, hangLinkQr } from './measureContentBlock/linkQr.js';
 
 export type { BlockMeasureContext, DropCapNote, MeasuredContentBlock, MeasureContentBlockOptions } from './measureContentBlock/types.js';
 export { wordSpacingProfile } from './measureContentBlock/helpers.js';
@@ -65,6 +66,19 @@ export function measureContentBlock(
     blockIdx,
     paragraphStyleOverride: opts?.styleOverride,
   });
+
+  // A link note's QR code (#1302): the note set beside it, as tall as it.
+  if (rawBlock.linkQr !== undefined && !opts?.linkQr && !measuringVertically()) {
+    const qr = linkQrSetting(rawBlock, resolved, columnWidth, kind.style.fontSizePx);
+    if (qr) {
+      const m = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { ...opts, linkQr: true, lineInsets: [...(opts?.lineInsets ?? []), qr.inset] });
+      if (m) {
+        hangLinkQr(m.measured.lines, qr, rawBlock.linkQr, columnWidth, kind.style.lineHeightPx);
+        m.measured.totalHeight = Math.max(m.measured.totalHeight, m.measured.lines.length * kind.style.lineHeightPx);
+      }
+      return m;
+    }
+  }
 
   // A code listing (#624): line by line as written, in its box's measure.
   if (rawBlock.type === 'code') {
@@ -335,7 +349,7 @@ export function measureContentBlock(
   });
   // URLs / DOIs get their bare break opportunities on the rich path only,
   // and so does a hyphenation zone (the rich greedy breaker weighs it).
-  const hasUrl = /(?:^|\s)(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S/i.test(contentBlock.text);
+  const hasUrl = /(?:^|\s)(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S/i.test(contentBlock.text) || contentBlock.spans.some((s) => s.url);
   const zoned = style.hyphenationZonePx !== undefined;
   // A Markdown link in a paragraph the CJK composer sets: on the formatted
   // path the composer sees the link's range and gives its characters

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Notas e referências',
   description: 'Notas de rodapé, referências cruzadas e âncoras, citações e bibliografia, e as marcas do índice remissivo',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-31',
   readingTime: '15 min',
   order: 29,
   parent: 'document-format',
@@ -178,6 +178,24 @@ import 'postext-citeproc/register';
 
 O painel Verificações lista uma chave que nenhuma referência define (`unknownCitationKey`) e um bloco de referências que não pode ser lido (`referencesUnreadable`). Um texto que cita obras sem nenhum motor de citações registrado recebe um aviso `citationsUnavailable`, e as citações saem como foram escritas.
 
+
+## Links na edição impressa
+
+Um link de Markdown, `[texto](https://…)`, é clicável no Sandbox, no PDF, em HTML, EPUB, SCORM e Folio. No papel o leitor vê só o texto do link. A opção `links.print` escolhe o que a página impressa acrescenta depois dele, sem mexer no texto:
+
+```md
+Os horários completos estão no [site da autoridade portuária](https://www.example.org/balsas/).
+```
+
+```ts
+links: { print: 'notes', show: 'both', urlDisplay: 'short' }
+```
+
+- **`print: 'none'`** (o padrão) imprime só o texto do link.
+- **`print: 'inline'`** imprime *site da autoridade portuária (https://www.example.org/balsas/)*.
+- **`print: 'notes'`** põe uma chamada de nota depois do texto do link. A nota é numerada e posicionada junto com as notas de rodapé e imprime o endereço (`show: 'url'`), um código QR que o abre (`'qr'`) ou os dois (`'both'`). Com `urlDisplay: 'short'` o endereço fica `example.org/balsas`.
+
+Só contam os links `http:` e `https:`. Um link `mailto:` ou `tel:`, um link para uma âncora do livro, um link num título e uma entrada da bibliografia são impressos como foram escritos. Os autolinks (`<https://…>`) e os endereços soltos são texto comum no Postext, então já aparecem na página. Um link dentro de uma nota de rodapé recebe o endereço entre parênteses. As demais opções (endereços repetidos, tamanho e posição do código) estão em [Links na edição impressa](/pt/docs/configuration-notes-references#links-na-edição-impressa), na referência de configuração.
 
 ## Índice remissivo
 
