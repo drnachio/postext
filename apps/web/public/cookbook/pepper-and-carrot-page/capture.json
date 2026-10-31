@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "pepper-and-carrot-page",
-  "sourceHash": "1dba477af60b96379522e1bd0bd23fc30d229d8a54e0ecce4ab81c69deb58496",
+  "sourceHash": "45ee69e8c02b4414660c53480f207ac36d5f0f93e56acca8468600774a2d8266",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:37.717Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:02.916Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:42:57.567Z",
   "variants": {
     "en": {
-      "hash8": "949b83ce",
-      "vdtHash": "5b1c728f7fbbd533a4750aa355861202d1b3b50a",
+      "hash8": "73b2f4cd",
+      "vdtHash": "7f1f93c71cf964e88755895d9e217c7bd6f80d58",
       "timings": {
-        "importMs": 686,
-        "fontsMs": 273,
-        "buildMs": 157,
-        "totalMs": 1864,
+        "importMs": 8650,
+        "fontsMs": 1180,
+        "buildMs": 227,
+        "totalMs": 11506,
         "builds": 1
       },
       "specimen": {
@@ -44,7 +38,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -55,7 +49,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 37772,
+          "bytes": 47960,
           "alt": "Opening page 1: Episode 8: Pepper's Birthday Party."
         },
         {
@@ -105,17 +99,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 688477,
+        "bytes": 699347,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 690964,
+        "bytes": 691899,
         "chapters": [
           {
             "pages": 3,
-            "hash": "12bfca5857993efa",
-            "lines": "842f7bad46bd9dd7"
+            "hash": "cb4ee7223f984990",
+            "lines": "9402027ba87fa5a9"
           }
         ]
       },
@@ -192,6 +186,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -208,6 +212,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -232,14 +244,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -271,11 +285,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -297,18 +313,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
           }
         ]
       }
     },
     "es": {
-      "hash8": "3bcc53cf",
-      "vdtHash": "a90c36d43fad75d592c989d7768284ce2a715a43",
+      "hash8": "4b514a5f",
+      "vdtHash": "a8a839f3e5fe93a1d711ec86f430d067cb862a3d",
       "timings": {
-        "importMs": 575,
-        "fontsMs": 364,
-        "buildMs": 168,
-        "totalMs": 1756,
+        "importMs": 2160,
+        "fontsMs": 631,
+        "buildMs": 224,
+        "totalMs": 3856,
         "builds": 1
       },
       "specimen": {
@@ -329,7 +350,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -340,7 +361,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 39804,
+          "bytes": 50376,
           "alt": "Página de apertura 1: Episodio 8: El cumpleaños de Pimienta."
         },
         {
@@ -390,17 +411,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 690513,
+        "bytes": 701451,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 690900,
+        "bytes": 691839,
         "chapters": [
           {
             "pages": 3,
-            "hash": "af58ace61e416e3c",
-            "lines": "1a7e9d213470476d"
+            "hash": "8a37460ab67cd646",
+            "lines": "7b4d0f2fd06c3d9d"
           }
         ]
       },
@@ -477,6 +498,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -493,6 +524,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -517,14 +556,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -556,11 +597,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -582,18 +625,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
           }
         ]
       }
     },
     "ca": {
-      "hash8": "c39bfb76",
-      "vdtHash": "c1acac32fe32e65510d5ce5e71eafdab2db766f6",
+      "hash8": "23340a60",
+      "vdtHash": "65439be37ffcd4bd6b70169c12c487f323e2f81d",
       "timings": {
-        "importMs": 496,
-        "fontsMs": 417,
-        "buildMs": 166,
-        "totalMs": 1696,
+        "importMs": 3474,
+        "fontsMs": 1091,
+        "buildMs": 288,
+        "totalMs": 5730,
         "builds": 1
       },
       "specimen": {
@@ -614,7 +662,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -625,7 +673,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 43700,
+          "bytes": 53918,
           "alt": "Pàgina d'obertura 1: Episodi 8: La festa d'aniversari de la Pepper."
         },
         {
@@ -675,17 +723,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 688750,
+        "bytes": 699743,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 690676,
+        "bytes": 691590,
         "chapters": [
           {
             "pages": 3,
-            "hash": "3f97818c082209ca",
-            "lines": "9a779598e8191fc8"
+            "hash": "ca06c02aeb703b18",
+            "lines": "9aa1f74e885e1820"
           }
         ]
       },
@@ -762,6 +810,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -778,6 +836,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -802,14 +868,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -841,11 +909,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -867,18 +937,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
           }
         ]
       }
     },
     "zh": {
-      "hash8": "1ee36929",
-      "vdtHash": "6d4640c02a77be2578270ee81f7c11cb359284d5",
+      "hash8": "2fbcf101",
+      "vdtHash": "b0ed2cc887bdfe59ef88f7fc67c2e4795be53728",
       "timings": {
-        "importMs": 629,
-        "fontsMs": 471,
-        "buildMs": 138,
-        "totalMs": 1871,
+        "importMs": 2924,
+        "fontsMs": 3906,
+        "buildMs": 242,
+        "totalMs": 7977,
         "builds": 1
       },
       "specimen": {
@@ -899,7 +974,7 @@
           "ZCOOL KuaiLe"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -910,7 +985,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 29136,
+          "bytes": 39810,
           "alt": "章首页，第 1 页：第8集：小辣椒的生日。"
         },
         {
@@ -960,17 +1035,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 739317,
+        "bytes": 750774,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 690743,
+        "bytes": 691703,
         "chapters": [
           {
             "pages": 3,
-            "hash": "1bb3f8a56ec69d1d",
-            "lines": "4a0b266f7577f83b"
+            "hash": "f063aa8bbe9e6afd",
+            "lines": "a56f15e183132a11"
           }
         ]
       },
@@ -1047,6 +1122,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -1063,6 +1148,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -1087,14 +1180,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -1127,11 +1222,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -1153,18 +1250,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: zh, en, es, ca, ar, ja, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, en, es, ca, ar, ja, pt, fr, de, it"
           }
         ]
       }
     },
     "ar": {
-      "hash8": "cbff98f8",
-      "vdtHash": "1b785ccdf3009d9a11a68bd1448b1a5d210bc58c",
+      "hash8": "95889c38",
+      "vdtHash": "57cb508f57ab3340100a4fe413bc7dd7939c3777",
       "timings": {
-        "importMs": 415,
-        "fontsMs": 685,
-        "buildMs": 160,
-        "totalMs": 1868,
+        "importMs": 4981,
+        "fontsMs": 1262,
+        "buildMs": 258,
+        "totalMs": 7852,
         "builds": 1
       },
       "specimen": {
@@ -1185,7 +1287,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -1196,7 +1298,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 29034,
+          "bytes": 39594,
           "alt": "صفحة الافتتاح ١: حلقة ٨ : حفلةُ عيدِ ميلادِ فُلفُل."
         },
         {
@@ -1247,17 +1349,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 692207,
+        "bytes": 704074,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 691284,
+        "bytes": 692224,
         "chapters": [
           {
             "pages": 3,
-            "hash": "8f57d1f0359085d2",
-            "lines": "b2e1ae7cece51556"
+            "hash": "71aa68f3eacabb17",
+            "lines": "aca33844ee6a9c0a"
           }
         ]
       },
@@ -1334,6 +1436,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -1350,6 +1462,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -1374,14 +1494,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -1414,11 +1536,13 @@
           "comic-panel-styles",
           "comic-speakers",
           "document-digits",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "right-binding",
           "sound-effects",
@@ -1442,18 +1566,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
           }
         ]
       }
     },
     "ja": {
-      "hash8": "f92be8af",
-      "vdtHash": "c6747e7d24ce903aafc04151730f7047754f962a",
+      "hash8": "73bbb101",
+      "vdtHash": "79c1b5145608ba3ad909e5582e63e953697472e6",
       "timings": {
-        "importMs": 587,
-        "fontsMs": 697,
-        "buildMs": 158,
-        "totalMs": 2031,
+        "importMs": 5003,
+        "fontsMs": 4588,
+        "buildMs": 241,
+        "totalMs": 11648,
         "builds": 1
       },
       "specimen": {
@@ -1474,7 +1603,7 @@
           "Zen Antique"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -1485,7 +1614,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 35032,
+          "bytes": 45378,
           "alt": "章扉、1ページ：エピソード 8: ペッパーの誕生パーティー。"
         },
         {
@@ -1536,17 +1665,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 725121,
+        "bytes": 737026,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 691459,
+        "bytes": 692420,
         "chapters": [
           {
             "pages": 3,
-            "hash": "d08dabd25f12e812",
-            "lines": "e3980f29ce8d40f3"
+            "hash": "5c683b7b3a53f61f",
+            "lines": "2052be6d342855b7"
           }
         ]
       },
@@ -1623,6 +1752,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -1639,6 +1778,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -1663,14 +1810,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -1703,11 +1852,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "right-binding",
           "sound-effects"
@@ -1730,18 +1881,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ja, en, es, ca, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, en, es, ca, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "pt": {
-      "hash8": "b6f86bdc",
-      "vdtHash": "760a4756a869fb1c7ad83e264894eebbb35ee21b",
+      "hash8": "e98abc7f",
+      "vdtHash": "e385e3081bdb918068eaf8d999f42cff276743d8",
       "timings": {
-        "importMs": 257,
-        "fontsMs": 338,
-        "buildMs": 153,
-        "totalMs": 1384,
+        "importMs": 3488,
+        "fontsMs": 1501,
+        "buildMs": 201,
+        "totalMs": 5959,
         "builds": 1
       },
       "specimen": {
@@ -1762,7 +1918,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -1773,7 +1929,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 43764,
+          "bytes": 54204,
           "alt": "Página de abertura 1: Episódio 8: A Festa de Aniversário da Pepper."
         },
         {
@@ -1823,17 +1979,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 689871,
+        "bytes": 700953,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 690821,
+        "bytes": 691756,
         "chapters": [
           {
             "pages": 3,
-            "hash": "a3016b7120189889",
-            "lines": "247b763e36d6f940"
+            "hash": "d01a4b1bb904190d",
+            "lines": "3da0d93faacc2b99"
           }
         ]
       },
@@ -1910,6 +2066,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -1926,6 +2092,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -1950,14 +2124,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -1989,11 +2165,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -2015,18 +2193,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
           }
         ]
       }
     },
     "fr": {
-      "hash8": "0b9a9a0e",
-      "vdtHash": "c4a08aa43daeb1f98e6ed88884dac59498881180",
+      "hash8": "d9e69eeb",
+      "vdtHash": "5cf20b43d928d99bcfd66cf993e29f2ab7393c58",
       "timings": {
-        "importMs": 262,
-        "fontsMs": 481,
-        "buildMs": 160,
-        "totalMs": 1487,
+        "importMs": 2025,
+        "fontsMs": 609,
+        "buildMs": 217,
+        "totalMs": 3614,
         "builds": 1
       },
       "specimen": {
@@ -2047,7 +2230,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -2058,7 +2241,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 37516,
+          "bytes": 48040,
           "alt": "Page d’ouverture 1 : Épisode 8 : L’anniversaire de Pepper."
         },
         {
@@ -2108,17 +2291,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 689156,
+        "bytes": 700158,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 690708,
+        "bytes": 691677,
         "chapters": [
           {
             "pages": 3,
-            "hash": "f43690f8f17c9fe2",
-            "lines": "e5e170f52540d6f9"
+            "hash": "ecfffead39bf014b",
+            "lines": "68a226d341497011"
           }
         ]
       },
@@ -2195,6 +2378,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -2211,6 +2404,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -2235,14 +2436,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -2274,11 +2477,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -2300,18 +2505,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: fr, en, es, ca, zh, ar, ja, pt, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, ca, zh, ar, ja, pt, de, it"
           }
         ]
       }
     },
     "de": {
-      "hash8": "8ff7f9a0",
-      "vdtHash": "dca67c9e01b572700f1f9e6a03379b6a98a361c3",
+      "hash8": "be58ef13",
+      "vdtHash": "3c08fb9522621501feb28de31527495c559527f4",
       "timings": {
-        "importMs": 276,
-        "fontsMs": 490,
-        "buildMs": 173,
-        "totalMs": 1581,
+        "importMs": 2465,
+        "fontsMs": 427,
+        "buildMs": 198,
+        "totalMs": 3872,
         "builds": 1
       },
       "specimen": {
@@ -2332,7 +2542,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -2343,7 +2553,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 44124,
+          "bytes": 54510,
           "alt": "Kapitelauftakt, Seite 1: Episode 8: Peppers Geburtstagsfeier."
         },
         {
@@ -2393,17 +2603,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 690398,
+        "bytes": 701432,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 691159,
+        "bytes": 692152,
         "chapters": [
           {
             "pages": 3,
-            "hash": "3507f9bc3cff6030",
-            "lines": "e9aca79951a696ad"
+            "hash": "8047c091a2dac177",
+            "lines": "f8d333bf5b906ded"
           }
         ]
       },
@@ -2480,6 +2690,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -2496,6 +2716,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -2520,14 +2748,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -2559,11 +2789,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -2585,18 +2817,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
           }
         ]
       }
     },
     "it": {
-      "hash8": "6612c0d9",
-      "vdtHash": "4d0e3d5bf0c16dfcfb7f623cdf51768e616e004d",
+      "hash8": "7a351557",
+      "vdtHash": "c1bdc40c7c5d2d8d6b32c71b4e9167f0ee3de4e5",
       "timings": {
-        "importMs": 249,
-        "fontsMs": 176,
-        "buildMs": 158,
-        "totalMs": 1246,
+        "importMs": 3373,
+        "fontsMs": 1942,
+        "buildMs": 208,
+        "totalMs": 6279,
         "builds": 1
       },
       "specimen": {
@@ -2617,7 +2854,7 @@
           "Source Serif 4"
         ],
         "pages": 3,
-        "ownLines": 174
+        "ownLines": 182
       },
       "pages": [
         {
@@ -2628,7 +2865,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 36438,
+          "bytes": 47048,
           "alt": "Pagina d’apertura 1: Episodio 8: Il compleanno di Pepper."
         },
         {
@@ -2678,17 +2915,17 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 687809,
+        "bytes": 698918,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 690884,
+        "bytes": 691782,
         "chapters": [
           {
             "pages": 3,
-            "hash": "407cfc54a636d6aa",
-            "lines": "3b03499d2fc06d93"
+            "hash": "efea2f6105cba593",
+            "lines": "8eeb6a1f4394ede3"
           }
         ]
       },
@@ -2765,6 +3002,16 @@
           "footer.elements[].kind",
           "footer.elements[].pages",
           "footer.elements[].placement",
+          "footnotes",
+          "footnotes.color",
+          "footnotes.fontSize",
+          "footnotes.lineHeight",
+          "footnotes.separator",
+          "footnotes.separator.color",
+          "footnotes.separator.enabled",
+          "footnotes.separator.lineWidth",
+          "footnotes.separator.width",
+          "footnotes.spaceBetween",
           "header",
           "header.elements",
           "headings",
@@ -2781,6 +3028,14 @@
           "headings.levels[].marginTop",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.qr",
+          "links.qr.color",
+          "links.qr.side",
+          "links.qr.size",
+          "links.show",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.backgroundColor",
@@ -2805,14 +3060,16 @@
           "colorPalette",
           "comics",
           "footer",
+          "footnotes",
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 125,
+        "configLeaves": 139,
         "designElements": 1,
         "directives": [
           ":::paragraphs",
@@ -2844,11 +3101,13 @@
           "comic-panel-split",
           "comic-panel-styles",
           "comic-speakers",
+          "footnotes",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resources",
           "sound-effects"
         ],
@@ -2866,6 +3125,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, ca, zh, ar, ja, pt, fr, de"
+          },
           {
             "check": "sandbox",
             "severity": "info",

@@ -11,11 +11,11 @@ June 2015 - www.peppercarrot.com - Artwork and story by David Revoy - Translatio
 
 Art & Scenario: David Revoy — Translation: guruguru — Contribution: Hồ Nhựt Châu
 
-ライセンス：クリエイティブ・コモンズ 表示 4.0（CC BY 4.0）
+ライセンス：[クリエイティブ・コモンズ 表示 4.0（CC BY 4.0）](https://creativecommons.org/licenses/by/4.0/deed.ja)
 
 David Revoy『ペッパーの誕生パーティー』（CC BY 4.0）の二次著作物です。公式日本語訳をもとに、Postext が吹き出しと写植を作り直し、ページを組み直しました。
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/ja/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

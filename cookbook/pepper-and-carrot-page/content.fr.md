@@ -11,11 +11,11 @@ Juin 2015 - www.peppercarrot.com - Dessin et Scénario : David Revoy
 
 Art & Scenario: David Revoy (original version) — Proofreading: Aurélien Gâteau
 
-Licence : Creative Commons Attribution 4.0 (CC BY 4.0).
+Licence : [Creative Commons Attribution 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.fr).
 
 Œuvre dérivée de « L’anniversaire de Pepper » de David Revoy, sous licence CC BY 4.0 : Postext a refait les bulles et le lettrage, et remis en page les planches à partir de la version originale française.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/fr/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

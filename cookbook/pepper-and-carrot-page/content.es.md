@@ -11,11 +11,11 @@ Junio 2015 - Dibujo y Guión: David Revoy - Traducción: TheFaico
 
 Art & Scenario: David Revoy — Translation: Juanjo Faico — Contribution: Andrej Ficko, Hồ Nhựt Châu
 
-Licencia: Creative Commons Reconocimiento 4.0 (CC BY 4.0).
+Licencia: [Creative Commons Reconocimiento 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.es).
 
 Obra derivada de «El cumpleaños de Pimienta», de David Revoy, con licencia CC BY 4.0: Postext ha rehecho los bocadillos y la rotulación y ha vuelto a componer las páginas a partir de la traducción oficial al español.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/es/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

@@ -11,11 +11,11 @@ Juny del 2015 - www.peppercarrot.com - Dibuix i guió: David Revoy - Traducció 
 
 Art & Scenario: David Revoy — Translation: Juan José Segura
 
-Llicència: Creative Commons Reconeixement 4.0 (CC BY 4.0).
+Llicència: [Creative Commons Reconeixement 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.ca).
 
 Obra derivada de «La festa d'aniversari de la Pepper», de David Revoy, amb llicència CC BY 4.0: Postext n'ha refet els globus i la retolació i n'ha tornat a compondre les pàgines a partir de la traducció oficial al català.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/ca/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

@@ -5,7 +5,7 @@ plain: "Two pages of an open-licensed web comic, rebuilt from the artist's pictu
 description: "Pepper&Carrot episode 8 (CC BY 4.0) re-lettered by Postext: panels cut from the text-free art, speakers from the original tails, nine translations."
 question: "Can I re-letter an open-licensed comic from its transcript instead of editing its lettered pages?"
 aliases: ["Pepper&Carrot", "David Revoy", "re-lettering", "scanlation", "comic translation", "transcript", "open comic", "CC BY comic", "rotular de nuevo", "写植し直し", "重新嵌字"]
-pageNotes: { "1": "The title page: Episode 8: Pepper's Birthday Party in red, a short note on what the pages are, and the credits of the art, the story and the translation, with the CC BY 4.0 licence.", "2": "Page 5: lightning as Pepper, furious, pulls a spell book from the shelf (a jagged shout balloon, the book's title in gold on its cover); from above, Pepper draws three red magic circles in the rain; DZZZOOO in red across a red-lit close-up.", "3": "Page 6: three red-eyed demons rise in the storm and speak in black balloons with white blackletter; Pepper smiles slyly; the demons, Pepper and Carrot drink tea by candlelight, with the caption Episode 8 FIN." }
+pageNotes: { "1": "The title page: Episode 8: Pepper's Birthday Party in red, a short note on what the pages are, and the credits of the art, the story and the translation, with the CC BY 4.0 licence. At the foot, two notes with QR codes give the addresses of the licence and of the episode online.", "2": "Page 5: lightning as Pepper, furious, pulls a spell book from the shelf (a jagged shout balloon, the book's title in gold on its cover); from above, Pepper draws three red magic circles in the rain; DZZZOOO in red across a red-lit close-up.", "3": "Page 6: three red-eyed demons rise in the storm and speak in black balloons with white blackletter; Pepper smiles slyly; the demons, Pepper and Carrot drink tea by candlelight, with the caption Episode 8 FIN." }
 ---
 
 ## What you'll build
@@ -37,6 +37,10 @@ The cast in the short answer gives the demons black balloons with white letters,
 <Excerpt region="vietnamese" />
 
 The licence asks for the author, the source, the licence and a note of the changes; the title page prints them in each edition's words, from the episode's own credits. One contributor to the Spanish and Japanese translations is Hồ Nhựt Châu, and Vietnamese letters are in a Fontsource file of their own: the recipe loads it for the credits' face and hands it to the PDF.
+
+In print a link shows only its text, so the credits' two links, the licence and the episode on peppercarrot.com, would send the reader nowhere. `links.print: 'notes'` with `show: 'both'` turns each into a note at the foot of the title page: the short address and a QR code beside it, drawn in the ink colour so a phone reads it. Each edition links the licence deed and the episode in its own language.
+
+<Excerpt region="links" />
 
 ## Variations
 
