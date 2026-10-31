@@ -431,7 +431,18 @@ def fit_formulas(lang: str, body: str) -> str:
         ratio, small = (entry, False) if isinstance(entry, (int, float)) else (entry[0], "small" in entry[1:])
         return "$$\n" + fitmath.fit(m.group(1), ratio, small) + "\n$$"
 
-    return DISPLAY_RE.sub(one, body)
+    return INLINE_ARRAY_RE.sub(inline_chain, DISPLAY_RE.sub(one, body))
+
+
+# An aligned derivation set inline (one in the English 2.4 example) shrinks
+# to the height of a line and cannot be read: run its rows on as one chain,
+# a = Δv/Δt = … = 5 m/s².
+INLINE_ARRAY_RE = re.compile(r"(?<![$\\])\$\\begin\{array\}\{l+\}(.+?)\\end\{array\}\$")
+
+
+def inline_chain(m: re.Match) -> str:
+    rows = [" ".join(c.strip() for c in row.split("&") if c.strip()) for row in m.group(1).split(r"\\")]
+    return "$" + " ".join(r for r in rows if r) + "$"
 
 
 def build_language(lang: str, images: dict[str, dict]) -> tuple[list[dict], list[dict], list[dict]]:

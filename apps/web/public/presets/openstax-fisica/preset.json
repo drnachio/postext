@@ -3689,7 +3689,7 @@
    "file": "resources/es-1-cnx-uphysics-01-00-whirlpool.jpg",
    "width": 790,
    "height": 450,
-   "caption": "Esta imagen podría estar mostrando cualquier cantidad de cosas. Puede ser un remolino en un tanque de agua o quizás un *collage* de pintura y cuentas brillantes hecho para la clase de arte. Sin conocer el tamaño del objeto en unidades que todos reconocemos, como los metros o las pulgadas, es difícil saber qué estamos viendo. De hecho, esta imagen muestra la galaxia Remolino (y su galaxia compañera), que tiene aproximadamente 60.000 años luz de diámetro (unos $6\\,\\times \\,{10}^{17}\\text{km}$ de un lado a otro) (créditos: modificación del trabajo de S. Beckwith (Instituto de Ciencias del Telescopio Espacial \\[Space Telescope Science Institute, STScI]), Equipo Hubble Heritage (STScI/Asociación de Universidades para la Investigación en Astronomía \\[Association of Universities for Research in Astronomy, AURA]), Agencia Espacial Europea \\[European Space Agency, ESA] y Administración Nacional de Aeronáutica y el Espacio \\[National Aeronautics and Space Administration, NASA]).",
+   "caption": "Esta imagen podría estar mostrando cualquier cantidad de cosas. Puede ser un remolino en un tanque de agua o quizás un *collage* de pintura y cuentas brillantes hecho para la clase de arte. Sin conocer el tamaño del objeto en unidades que todos reconocemos, como los metros o las pulgadas, es difícil saber qué estamos viendo. De hecho, esta imagen muestra la galaxia Remolino (y su galaxia compañera), que tiene aproximadamente 60.000 años luz de diámetro (unos $6\\,\\times \\,{10}^{17}\\text{km}$ de un lado a otro) (créditos: modificación del trabajo de S. Beckwith (Instituto de Ciencias del Telescopio Espacial [Space Telescope Science Institute, STScI]), Equipo Hubble Heritage (STScI/Asociación de Universidades para la Investigación en Astronomía [Association of Universities for Research in Astronomy, AURA]), Agencia Espacial Europea [European Space Agency, ESA] y Administración Nacional de Aeronáutica y el Espacio [National Aeronautics and Space Administration, NASA]).",
    "altText": "Fotografía de la Galaxia Remolino",
    "placement": {
     "position": "here",
@@ -3734,7 +3734,7 @@
    "file": "resources/es-1-cnx-uphysics-01-01-orders.jpg",
    "width": 975,
    "height": 319,
-   "caption": "(a) Con un microscopio de efecto túnel, los científicos pueden ver cada uno de los átomos (diámetros de unos 10⁻¹⁰ m) que componen esta lámina de oro. (b) Diminutos fitoplancton nadan entre los cristales de hielo en el océano Antártico. Su longitud oscila entre unos cuantos micrómetros (1 *μ*m es 10⁻⁶ m) y hasta 2 mm (1 mm es 10⁻³ m). (c) Estas dos galaxias en colisión, conocidas como NGC 4676A (derecha) y NGC 4676B (izquierda), reciben el apodo de \"Los Ratones\" por la cola de gas que emana de cada una. Se encuentran a 300 millones de años luz de la Tierra, en la constelación Coma Berenices. Con el tiempo, estas dos galaxias se fusionarán en una sola (créditos: a. modificación del trabajo de \"Erwinrossen\"/Wikimedia Commons; b. modificación del trabajo del Prof. Gordon T. Taylor, Universidad de Stony Brook, Colecciones de NOAA Corps; c. modificación del trabajo de la NASA, H. Ford (Universidad Johns Hopkins, \\[Johns Hopkins University, JHU]), G. Illingworth (Universidad de California, Santa Cruz \\[UCSC]/LO), M. Clampin (STScI), G. Hartig (STScI), el equipo científico de la Sociedad Estadounidense de Química \\[American Chemical Society, ACS] y la ESA).",
+   "caption": "(a) Con un microscopio de efecto túnel, los científicos pueden ver cada uno de los átomos (diámetros de unos 10⁻¹⁰ m) que componen esta lámina de oro. (b) Diminutos fitoplancton nadan entre los cristales de hielo en el océano Antártico. Su longitud oscila entre unos cuantos micrómetros (1 *μ*m es 10⁻⁶ m) y hasta 2 mm (1 mm es 10⁻³ m). (c) Estas dos galaxias en colisión, conocidas como NGC 4676A (derecha) y NGC 4676B (izquierda), reciben el apodo de \"Los Ratones\" por la cola de gas que emana de cada una. Se encuentran a 300 millones de años luz de la Tierra, en la constelación Coma Berenices. Con el tiempo, estas dos galaxias se fusionarán en una sola (créditos: a. modificación del trabajo de \"Erwinrossen\"/Wikimedia Commons; b. modificación del trabajo del Prof. Gordon T. Taylor, Universidad de Stony Brook, Colecciones de NOAA Corps; c. modificación del trabajo de la NASA, H. Ford (Universidad Johns Hopkins, [Johns Hopkins University, JHU]), G. Illingworth (Universidad de California, Santa Cruz [UCSC]/LO), M. Clampin (STScI), G. Hartig (STScI), el equipo científico de la Sociedad Estadounidense de Química [American Chemical Society, ACS] y la ESA).",
    "altText": "La Figura a muestra una imagen de alta resolución de una lámina de oro captada por un microscopio electrónico de barrido. La Figura b muestra una imagen ampliada del fitoplancton y los cristales de hielo. La Figura c muestra una fotografía de dos galaxias.",
    "placement": {
     "position": "auto",
@@ -4650,7 +4650,7 @@
    "file": "resources/es-2-cnx-uphysics-02-02-heron.jpg",
    "width": 465,
    "height": 248,
-   "caption": "El dron IAI Heron en vuelo (créditos: sargento de Estado Mayor \\[Staff Sargeant, SSgt] Reynaldo Ramon, Fuerzas Aéreas de los EE. UU. \\[U.S. Air Force, USAF]).",
+   "caption": "El dron IAI Heron en vuelo (créditos: sargento de Estado Mayor [Staff Sargeant, SSgt] Reynaldo Ramon, Fuerzas Aéreas de los EE. UU. [U.S. Air Force, USAF]).",
    "altText": "Una foto de un avión tipo dron.",
    "placement": {
     "position": "auto",
@@ -5404,7 +5404,7 @@
         "content": "d"
        },
        {
-        "content": "10${}^{–1}$"
+        "content": "10⁻¹"
        },
        {
         "content": "Deciliter"
@@ -5413,7 +5413,7 @@
         "content": "dL"
        },
        {
-        "content": "10${}^{–1}$ L"
+        "content": "10⁻¹ L"
        },
        {
         "content": "Less than half a soda"
@@ -5427,7 +5427,7 @@
         "content": "c"
        },
        {
-        "content": "10${}^{–2}$"
+        "content": "10⁻²"
        },
        {
         "content": "Centimeter"
@@ -5436,7 +5436,7 @@
         "content": "cm"
        },
        {
-        "content": "10${}^{–2}$ m"
+        "content": "10⁻² m"
        },
        {
         "content": "Fingertip thickness"
@@ -5450,7 +5450,7 @@
         "content": "m"
        },
        {
-        "content": "10${}^{–3}$"
+        "content": "10⁻³"
        },
        {
         "content": "Millimeter"
@@ -5459,7 +5459,7 @@
         "content": "mm"
        },
        {
-        "content": "10${}^{–3}$ m"
+        "content": "10⁻³ m"
        },
        {
         "content": "Flea at its shoulder"
@@ -5473,7 +5473,7 @@
         "content": "µ"
        },
        {
-        "content": "10${}^{–6}$"
+        "content": "10⁻⁶"
        },
        {
         "content": "Micrometer"
@@ -5482,7 +5482,7 @@
         "content": "µm"
        },
        {
-        "content": "10${}^{–6}$ m"
+        "content": "10⁻⁶ m"
        },
        {
         "content": "Detail in microscope"
@@ -5496,7 +5496,7 @@
         "content": "n"
        },
        {
-        "content": "10${}^{–9}$"
+        "content": "10⁻⁹"
        },
        {
         "content": "Nanogram"
@@ -5505,7 +5505,7 @@
         "content": "ng"
        },
        {
-        "content": "10${}^{–9}$ g"
+        "content": "10⁻⁹ g"
        },
        {
         "content": "Small speck of dust"
@@ -5519,7 +5519,7 @@
         "content": "p"
        },
        {
-        "content": "10${}^{–12}$"
+        "content": "10⁻¹²"
        },
        {
         "content": "Picofarad"
@@ -5528,7 +5528,7 @@
         "content": "pF"
        },
        {
-        "content": "10${}^{–12}$ F"
+        "content": "10⁻¹² F"
        },
        {
         "content": "Small capacitor in radio"
@@ -5542,7 +5542,7 @@
         "content": "f"
        },
        {
-        "content": "10${}^{–15}$"
+        "content": "10⁻¹⁵"
        },
        {
         "content": "Femtometer"
@@ -5551,7 +5551,7 @@
         "content": "fm"
        },
        {
-        "content": "10${}^{–15}$ m"
+        "content": "10⁻¹⁵ m"
        },
        {
         "content": "Size of a proton"
@@ -5565,7 +5565,7 @@
         "content": "a"
        },
        {
-        "content": "10${}^{–18}$"
+        "content": "10⁻¹⁸"
        },
        {
         "content": "Attosecond"
@@ -5574,7 +5574,7 @@
         "content": "as"
        },
        {
-        "content": "10${}^{–18}$ s"
+        "content": "10⁻¹⁸ s"
        },
        {
         "content": "Time light takes to cross an atom"
@@ -5634,19 +5634,19 @@
       ],
       [
        {
-        "content": "10${}^{–18}$"
+        "content": "10⁻¹⁸"
        },
        {
         "content": "Present experimental limit to smallest observable detail"
        },
        {
-        "content": "10${}^{–30}$"
+        "content": "10⁻³⁰"
        },
        {
-        "content": "Mass of an electron (9.11 $\\times$ 10${}^{–31}$ kg)"
+        "content": "Mass of an electron (9.11 $\\times$ 10⁻³¹ kg)"
        },
        {
-        "content": "10${}^{–23}$"
+        "content": "10⁻²³"
        },
        {
         "content": "Time for light to cross a proton"
@@ -5654,19 +5654,19 @@
       ],
       [
        {
-        "content": "10${}^{–15}$"
+        "content": "10⁻¹⁵"
        },
        {
         "content": "Diameter of a proton"
        },
        {
-        "content": "10${}^{–27}$"
+        "content": "10⁻²⁷"
        },
        {
-        "content": "Mass of a hydrogen atom (1.67 $\\times$ 10${}^{–27}$ kg)"
+        "content": "Mass of a hydrogen atom (1.67 $\\times$ 10⁻²⁷ kg)"
        },
        {
-        "content": "10${}^{–22}$"
+        "content": "10⁻²²"
        },
        {
         "content": "Mean life of an extremely unstable nucleus"
@@ -5674,19 +5674,19 @@
       ],
       [
        {
-        "content": "10${}^{–14}$"
+        "content": "10⁻¹⁴"
        },
        {
         "content": "Diameter of a uranium nucleus"
        },
        {
-        "content": "10${}^{–15}$"
+        "content": "10⁻¹⁵"
        },
        {
         "content": "Mass of a bacterium"
        },
        {
-        "content": "10${}^{–15}$"
+        "content": "10⁻¹⁵"
        },
        {
         "content": "Time for one oscillation of a visible light"
@@ -5694,19 +5694,19 @@
       ],
       [
        {
-        "content": "10${}^{–10}$"
+        "content": "10⁻¹⁰"
        },
        {
         "content": "Diameter of a hydrogen atom"
        },
        {
-        "content": "10${}^{–5}$"
+        "content": "10⁻⁵"
        },
        {
         "content": "Mass of a mosquito"
        },
        {
-        "content": "10${}^{–13}$"
+        "content": "10⁻¹³"
        },
        {
         "content": "Time for one vibration of an atom in a solid"
@@ -5714,19 +5714,19 @@
       ],
       [
        {
-        "content": "10${}^{–8}$"
+        "content": "10⁻⁸"
        },
        {
         "content": "Thickness of membranes in cell of living organism"
        },
        {
-        "content": "10${}^{–2}$"
+        "content": "10⁻²"
        },
        {
         "content": "Mass of a hummingbird"
        },
        {
-        "content": "10${}^{–8}$"
+        "content": "10⁻⁸"
        },
        {
         "content": "Time for one oscillation of an FM radio wave"
@@ -5734,7 +5734,7 @@
       ],
       [
        {
-        "content": "10${}^{–6}$"
+        "content": "10⁻⁶"
        },
        {
         "content": "Wavelength of visible light"
@@ -5746,7 +5746,7 @@
         "content": "Mass of a liter of water (about a quart)"
        },
        {
-        "content": "10${}^{–3}$"
+        "content": "10⁻³"
        },
        {
         "content": "Duration of a nerve impulse"
@@ -5754,7 +5754,7 @@
       ],
       [
        {
-        "content": "10${}^{–3}$"
+        "content": "10⁻³"
        },
        {
         "content": "Size of a grain of sand"
@@ -6206,7 +6206,7 @@
       ],
       [
        {
-        "content": "6.520 $\\times$ 10${}^{–23}$"
+        "content": "6.520 $\\times$ 10⁻²³"
        },
        {
         "content": "4"

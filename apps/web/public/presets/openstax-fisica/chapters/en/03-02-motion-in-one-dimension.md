@@ -521,7 +521,7 @@ Use this figure to (a) find the displacement of the jet car over the time shown 
   3. Add them together to get a net displacement of 2,700 m.
 - (b)
   1. Take two points on the velocity line. Say, *t* = 5 s and *t* = 25 s. At *t* = 5 s, the value of *v* = 40 m/s. At *t* = 25 s, *v* = 140 m/s.
-  2. Find the slope. $\begin{array}{lll} a & = & \frac{\Delta v}{\Delta t} \\ & = & \frac{100\,\text{ m/s}}{20\,\text{ s}} \\ & = & 5{\text{ m/s}}^{2} \end{array}$
+  2. Find the slope. $a = \frac{\Delta v}{\Delta t} = \frac{100\,\text{ m/s}}{20\,\text{ s}} = 5{\text{ m/s}}^{2}$
 - (c) The instantaneous velocity at *t* = 5 s, as we found in part (b) is just 40 m/s.
 - (d)
   1. Find the net displacement, which we found in part (a) was 2,700 m.

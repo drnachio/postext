@@ -294,7 +294,7 @@ The SI unit for time, the **second** (s) also has a long history. For many years
 
 #### The Ampere
 
-Electric current is measured in the **ampere** (A), named after Andre Ampere. You have probably heard of amperes, or *amps*, when people discuss electrical currents or electrical devices. Understanding an ampere requires a basic understanding of electricity and magnetism, something that will be explored in depth in later chapters of this book. Basically, two parallel wires with an electric current running through them will produce an attractive force on each other. One ampere is defined as the amount of electric current that will produce an attractive force of 2.7 $\times$ 10${}^{–7}$ newton per meter of separation between the two wires (the newton is the derived unit of force).
+Electric current is measured in the **ampere** (A), named after Andre Ampere. You have probably heard of amperes, or *amps*, when people discuss electrical currents or electrical devices. Understanding an ampere requires a basic understanding of electricity and magnetism, something that will be explored in depth in later chapters of this book. Basically, two parallel wires with an electric current running through them will produce an attractive force on each other. One ampere is defined as the amount of electric current that will produce an attractive force of 2.7 $\times$ 10${}^{-7}$ newton per meter of separation between the two wires (the newton is the derived unit of force).
 
 #### Kelvins
 
@@ -320,15 +320,15 @@ $$
 
 In this format *x* is the value of the measurement with all placeholder zeros removed. In the example above, *x* is 8.4. The *x* is multiplied by a factor, 10${}^{y}$, which indicates the number of placeholder zeros in the measurement. Placeholder zeros are those at the end of a number that is 10 or greater, and at the beginning of a decimal number that is less than 1. In the example above, the factor is 10¹⁴. This tells you that you should move the decimal point 14 positions to the right, filling in placeholder zeros as you go. In this case, moving the decimal point 14 places creates only 13 placeholder zeros, indicating that the actual measurement value is 840,000,000,000,000.
 
-Numbers that are fractions can be indicated by scientific notation as well. Consider the number 0.0000045. Its scientific notation is 4.5 $\times$ 10${}^{–6}$. Its scientific notation has the same format
+Numbers that are fractions can be indicated by scientific notation as well. Consider the number 0.0000045. Its scientific notation is 4.5 $\times$ 10${}^{-6}$. Its scientific notation has the same format
 
 $$
 x \ \times \ {10}^{y}.
 $$
 
-Here, *x* is 4.5. However, the value of *y* in the 10${}^{y}$ factor is negative, which indicates that the measurement is a fraction of 1. Therefore, we move the decimal place to the left, for a negative *y*. In our example of 4.5 $\times$ 10${}^{–6}$, the decimal point would be moved to the left six times to yield the original number, which would be 0.0000045.
+Here, *x* is 4.5. However, the value of *y* in the 10${}^{y}$ factor is negative, which indicates that the measurement is a fraction of 1. Therefore, we move the decimal place to the left, for a negative *y*. In our example of 4.5 $\times$ 10${}^{-6}$, the decimal point would be moved to the left six times to yield the original number, which would be 0.0000045.
 
-The term **order of magnitude** refers to the power of 10 when numbers are expressed in scientific notation. Quantities that have the same power of 10 when expressed in scientific notation, or come close to it, are said to be of the same order of magnitude. For example, the number 800 can be written as 8 $\times$ 10², and the number 450 can be written as 4.5 $\times$ 10². Both numbers have the same value for *y*. Therefore, 800 and 450 are of the same order of magnitude. Similarly, 101 and 99 would be regarded as the same order of magnitude, 10². Order of magnitude can be thought of as a ballpark estimate for the scale of a value. The diameter of an atom is on the order of 10⁻⁹ m, while the diameter of the sun is on the order of 10⁹ m. These two values are 18 orders of magnitude apart.
+The term **order of magnitude** refers to the power of 10 when numbers are expressed in scientific notation. Quantities that have the same power of 10 when expressed in scientific notation, or come close to it, are said to be of the same order of magnitude. For example, the number 800 can be written as 8 $\times$ 10², and the number 450 can be written as 4.5 $\times$ 10². Both numbers have the same value for *y*. Therefore, 800 and 450 are of the same order of magnitude. Similarly, 101 and 99 would be regarded as the same order of magnitude, 10². Order of magnitude can be thought of as a ballpark estimate for the scale of a value. The diameter of an atom is on the order of 10${}^{-9}$ m, while the diameter of the sun is on the order of 10⁹ m. These two values are 18 orders of magnitude apart.
 
 Scientists make frequent use of scientific notation because of the vast range of physical measurements possible in the universe, such as the distance from Earth to the moon (:ref{id="en-1-figure-01-03-world"}), or to the nearest star.
 
@@ -657,9 +657,9 @@ including uncertainty?
 percent uncertainty is more challenging. In order to use the method of adding percents, you must first
 calculate the percent uncertainty of each measurement.
 
-Length % Uncertainty: 𝜹A/A x 100% = 0.5/44 x 100% = 1.1% 
+Length % Uncertainty: δA/A x 100% = 0.5/44 x 100% = 1.1% 
 
-Width % Uncertainty: 𝜹A/A x 100% = 0.5/100 x 100% = 0.5%
+Width % Uncertainty: δA/A x 100% = 0.5/100 x 100% = 0.5%
 
 Adding Percents: 1.1% + 0.5% = 1.6% uncertainty
 

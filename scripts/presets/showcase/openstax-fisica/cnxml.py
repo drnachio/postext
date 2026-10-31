@@ -29,6 +29,9 @@ def local(el: ET.Element) -> str:
 # Some modules carry Windows-1252 bytes read as Latin-1: C1 control
 # characters where an em dash or an apostrophe was meant (U+0097, U+0092).
 C1_FIX = {c: bytes([c]).decode("cp1252") for c in range(0x80, 0xA0) if c not in (0x81, 0x8D, 0x8F, 0x90, 0x9D)}
+# A few prose runs use mathematical alphanumerics (𝜹 for δ in "𝜹A/A"),
+# which the book's faces do not carry: write the plain letter.
+C1_FIX[0x1D739] = "δ"
 
 
 def parse_module(path: str) -> ET.Element:
@@ -182,8 +185,12 @@ def tex_of(math_el: ET.Element) -> str:
 
 # --- inline content --------------------------------------------------------------
 
-SUP = str.maketrans("0123456789+-−=()n", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁻⁼⁽⁾ⁿ")
-SUB = str.maketrans("0123456789+-−=()", "₀₁₂₃₄₅₆₇₈₉₊₋₋₌₍₎")
+# Superior and inferior figures for plain digits only: Source Serif 4 has
+# no superscript or subscript signs (⁺ ⁻ ⁼), so an exponent with a sign is
+# set as math, its minus written as a hyphen (the sources also use – and −).
+SUP = str.maketrans("0123456789()n", "⁰¹²³⁴⁵⁶⁷⁸⁹⁽⁾ⁿ")
+SUB = str.maketrans("0123456789()", "₀₁₂₃₄₅₆₇₈₉₍₎")
+SIGNS = str.maketrans({"−": "-", "–": "-"})
 
 
 def md_escape(s: str) -> str:
@@ -248,10 +255,10 @@ def inline(el: ET.Element, ctx: Ctx, *, in_title: bool = False, strip: bool = Tr
                 out.append(inner)
         elif tag == "sup":
             raw = "".join(k.itertext()).strip()
-            out.append(raw.translate(SUP) if re.fullmatch(r"[0-9+\-−=()n]*", raw) else "${}^{" + _tex_text(raw) + "}$")
+            out.append(raw.translate(SUP) if re.fullmatch(r"[0-9()n]*", raw) else "${}^{" + _tex_text(raw.translate(SIGNS)) + "}$")
         elif tag == "sub":
             raw = "".join(k.itertext()).strip()
-            out.append(raw.translate(SUB) if re.fullmatch(r"[0-9+\-−=()]*", raw) else "${}_{" + _tex_text(raw) + "}$")
+            out.append(raw.translate(SUB) if re.fullmatch(r"[0-9()]*", raw) else "${}_{" + _tex_text(raw.translate(SIGNS)) + "}$")
         elif tag == "newline":
             out.append("  \n")
         elif tag in ("footnote",):
@@ -301,9 +308,12 @@ def block_parts(piece: str) -> list[tuple[str, str]]:
 
 
 def snippet(text: str) -> str:
-    """Text for a caption or table cell. Snippets have no math and no `\\$`
-    escape, so a currency sign is written bare."""
-    return text.replace("\\$", "$")
+    """Text for a caption or table cell. Snippets have no `\\$` or `\\[`
+    escape, so a currency sign or a bracket is written bare. They are set
+    in Source Sans, which has a superscript minus: a negative exponent
+    takes superior figures like its positive neighbours."""
+    text = re.sub(r"\$\{\}\^\{-([0-9]+)\}\$", lambda m: "⁻" + m.group(1).translate(SUP), text)
+    return text.replace("\\$", "$").replace("\\[", "[")
 
 
 def one_line(text: str) -> str:
