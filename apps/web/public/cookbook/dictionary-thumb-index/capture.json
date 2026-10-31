@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "dictionary-thumb-index",
-  "sourceHash": "1a0e16882835332eb934c9139550fcaaea699aa34dd6adfda11b81052dce34e3",
+  "sourceHash": "099f4fc30269d7fab1ba6ae8def61ca5952b74e819c33a57d446c22e0f710af3",
   "engine": {
     "postext": "1.65.0",
     "source": "npm"
   },
   "chrome": "156.0.8078.76",
-  "capturedAt": "2026-10-31T17:57:07.647Z",
+  "capturedAt": "2026-10-31T19:12:46.485Z",
   "variants": {
     "en": {
-      "hash8": "3c1d7cdf",
+      "hash8": "12e7877a",
       "vdtHash": "e899b9a09c3dcc0241f893ba7a7be3e96848e67d",
       "timings": {
-        "importMs": 1741,
-        "fontsMs": 2,
-        "buildMs": 131,
-        "totalMs": 2657,
+        "importMs": 5877,
+        "fontsMs": 3,
+        "buildMs": 172,
+        "totalMs": 8118,
         "builds": 1
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 38734,
+        "bytes": 38663,
         "folio": "444e4865",
         "chapters": [
           {
@@ -308,16 +308,6 @@
         },
         "findings": [
           {
-            "check": "chrome",
-            "severity": "warn",
-            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -331,13 +321,13 @@
       }
     },
     "es": {
-      "hash8": "7d28c317",
-      "vdtHash": "fdb8ddb6ce972ee74b7839fc7b177abe3207bd13",
+      "hash8": "8750a887",
+      "vdtHash": "dc5a6f2916ae792b2a2a05a8cbfa0565f6a148d8",
       "timings": {
-        "importMs": 1929,
-        "fontsMs": 3,
-        "buildMs": 176,
-        "totalMs": 2994,
+        "importMs": 10526,
+        "fontsMs": 4,
+        "buildMs": 195,
+        "totalMs": 12451,
         "builds": 1
       },
       "specimen": {
@@ -393,7 +383,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 196330,
+          "bytes": 199322,
           "alt": "Página 3: C."
         },
         {
@@ -404,7 +394,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 138608,
+          "bytes": 128376,
           "alt": "Página 4."
         }
       ],
@@ -436,13 +426,13 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 37548,
+        "bytes": 39151,
         "folio": "444e4865",
         "chapters": [
           {
             "pages": 4,
-            "hash": "a49f74cf02930669",
-            "lines": "7a07dd6bc4230b15"
+            "hash": "0c75487e93798730",
+            "lines": "a4b72404525685b6"
           }
         ]
       },
@@ -618,7 +608,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 4,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -628,11 +618,6 @@
           "count": 0
         },
         "findings": [
-          {
-            "check": "chrome",
-            "severity": "warn",
-            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
-          },
           {
             "check": "vdt",
             "severity": "info",
