@@ -119,6 +119,14 @@
     }
    },
    {
+    "id": "accentInk",
+    "name": "Naranja de títulos",
+    "value": {
+     "hex": "#a85c15",
+     "model": "hex"
+    }
+   },
+   {
     "id": "tint",
     "name": "Fondo de recuadros",
     "value": {
@@ -455,18 +463,14 @@
      },
      "numberingTemplate": "{1}.{2}",
      "marginTop": {
-      "value": 22,
+      "value": 26,
       "unit": "pt"
      },
      "marginBottom": {
       "value": 6,
       "unit": "pt"
      },
-     "breakBefore": {
-      "enabled": true,
-      "parity": "any"
-     },
-     "span": "page"
+     "span": "column"
     },
     {
      "level": 3,
@@ -2763,9 +2767,9 @@
      },
      "fontWeight": 700,
      "color": {
-      "hex": "#d9822b",
+      "hex": "#a85c15",
       "model": "hex",
-      "paletteId": "accent"
+      "paletteId": "accentInk"
      },
      "gap": {
       "value": 2,
@@ -2809,13 +2813,13 @@
      "unit": "pt"
     },
     "keepTogether": false,
-    "splitMinLines": 3
+    "splitMinLines": 2
    },
    {
     "id": "comprobacion",
     "name": "Comprobación",
     "span": "column",
-    "placement": "here",
+    "placement": "auto",
     "backgroundEnabled": true,
     "background": {
      "hex": "#f3f4f6",
@@ -2916,8 +2920,7 @@
      "value": 9,
      "unit": "pt"
     },
-    "keepTogether": false,
-    "splitMinLines": 2
+    "keepTogether": true
    },
    {
     "id": "nota",
@@ -3423,6 +3426,34 @@
    "marginBottom": {
     "value": 6,
     "unit": "pt"
+   }
+  },
+  "links": {
+   "print": "notes",
+   "show": "both",
+   "urlDisplay": "short",
+   "repeat": "first",
+   "qr": {
+    "size": {
+     "value": 14,
+     "unit": "mm"
+    }
+   }
+  },
+  "footnotes": {
+   "fontSize": {
+    "value": 8.3,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 11,
+    "unit": "pt"
+   },
+   "textAlign": "left",
+   "color": {
+    "hex": "#1f2328",
+    "model": "hex",
+    "paletteId": "ink"
    }
   },
   "captionStyle": {

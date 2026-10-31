@@ -294,7 +294,7 @@ $$
 3. Convierta las millas por minuto en metros por segundo al multiplicar por el factor de conversión que anula las millas y deja los metros, y también por el factor de conversión que anula los minutos y deja los segundos:
 
 $$
-0{,}50\,\frac{\cancel{\text{milla}}}{\cancel{\text{min}}}\,\times \,\frac{1.609\,\text{m}}{1\,\cancel{\text{milla}}}\,\times \,\frac{1\,\cancel{\text{min}}}{60\,\text{s}}=\frac{(0{,}50)(1.609)}{60}\,\text{m/s}=13\,\text{m/s}.
+\begin{aligned}0{,}50\,\frac{\cancel{\text{milla}}}{\cancel{\text{min}}}\,\times \,\frac{1.609\,\text{m}}{1\,\cancel{\text{milla}}}\,\times \,\frac{1\,\cancel{\text{min}}}{60\,\text{s}} &= \frac{(0{,}50)(1.609)}{60}\,\text{m/s} \\ &= 13\,\text{m/s}.\end{aligned}
 $$
 
 **Importancia.** Compruebe la respuesta de las siguientes maneras:
@@ -315,7 +315,7 @@ La densidad del hierro es $7{,}86\,{\text{g/cm}}^{3}$ en condiciones normales. C
 **Estrategia.** Necesitamos convertir los gramos en kilogramos y los centímetros cúbicos en metros cúbicos. Los factores de conversión que necesitamos son $1\,\text{kg}={10}^{3}\text{g}$ y $1\,\text{cm}={10}^{−2}\text{m}\text{.}$ Sin embargo, estamos tratando con centímetros cúbicos ${\text{(cm}}^{3}=\text{cm}\,\times \,\text{cm}\,\times \,\text{cm),}$ por lo que tenemos que utilizar el segundo factor de conversión tres veces (es decir, tenemos que elevarlo al cubo). La idea sigue siendo multiplicar por los factores de conversión de forma que se anulen las unidades que queremos eliminar y se introduzcan las que queremos mantener.
 
 $$
-7{,}86\,\frac{\cancel{\text{g}}}{{\cancel{\text{cm}}}^{3}}\,\times \,\frac{\text{kg}}{{10}^{3}\cancel{\text{g}}}\,\times \,{(\frac{\cancel{\text{cm}}}{{10}^{−2}\text{m}})}^{3}=\frac{7{,}86}{({10}^{3})({10}^{−6})}\,{\text{kg/m}}^{3}=7{,}86\,\times \,{10}^{3}{\,\text{kg/m}}^{3}
+\begin{aligned}7{,}86\,\frac{\cancel{\text{g}}}{{\cancel{\text{cm}}}^{3}}\,\times \,\frac{\text{kg}}{{10}^{3}\cancel{\text{g}}}\,\times \,{(\frac{\cancel{\text{cm}}}{{10}^{−2}\text{m}})}^{3} &= \frac{7{,}86}{({10}^{3})({10}^{−6})}\,{\text{kg/m}}^{3} \\ &= 7{,}86\,\times \,{10}^{3}{\,\text{kg/m}}^{3}\end{aligned}
 $$
 
 **Importancia.** Recuerde que siempre es importante comprobar la respuesta.
@@ -615,7 +615,7 @@ $$
 **Solución.** Sustituya los valores en la ecuación:
 
 $$
-\text{Porcentaje de incertidumbre}=\frac{\delta A}{A}\,\times \,100\%=\frac{0{,}3\,\text{lb}}{5{,}1\,\text{lb}}\,\times \,100\%=5{,}9\%\approx 6\%.
+\begin{aligned}\text{Porcentaje de incertidumbre} &= \frac{\delta A}{A}\,\times \,100\% \\ &= \frac{0{,}3\,\text{lb}}{5{,}1\,\text{lb}}\,\times \,100\%= 5{,}9\% \\ &\approx  6\%.\end{aligned}
 $$
 
 **Importancia.** Podemos concluir que el peso promedio de una bolsa de manzanas de esta tienda es de 5,1 libras ± 6 %. Observe que el porcentaje de incertidumbre es adimensional porque las unidades de peso en $\delta A=0{,}2$ lb anularon las de *A* = 5,1 lb cuando tomamos la proporción.
@@ -662,7 +662,7 @@ aunque *π* es apropiado hasta al menos ocho dígitos.
 2. *En las sumas y restas, la respuesta no puede contener más decimales que la medida menos precisa.* Supongamos que compramos 7,56 kg de papas en una tienda de comestibles, pesados con una báscula con precisión de 0,01 kg, y luego dejamos 6,052 kg de papas en su laboratorio, pesados con una báscula con precisión de 0,001 kg. Luego, vamos a casa y añadimos 13,7 kg de papas, pesados con una báscula de baño con precisión de 0,1 kg. ¿Cuántos kilogramos de papas tenemos ahora y cuántas cifras significativas corresponden a la respuesta? La masa se encuentra por simple suma y resta:
 
 $$
-\begin{array}{l} \\ \\ \,7{,}56\,\text{kg} \\ -6{,}052\,\text{kg} \\ \\ \\ \,\frac{\,+13{,}7\,\text{kg}}{15{,}208\,\text{kg}}=15{,}2\,\text{kg}\text{.} \end{array}
+\begin{array}{rl} 7{,}56 & \text{kg} \\ -6{,}052 & \text{kg} \\ \underline{+13{,}7} & \underline{\text{kg}} \\ 15{,}208 & \text{kg} = 15{,}2\,\text{kg}. \end{array}
 $$
 
 A continuación, identificamos la medida menos precisa: 13,7 kg. Esta medida se expresa con 0,1 decimales, por lo que nuestra respuesta final también debe expresarse con 0,1 decimales. Por lo tanto, la respuesta se redondea a la décima, lo que nos da 15,2 kg.
@@ -714,9 +714,7 @@ En este texto, se supone que la mayoría de los números tienen tres cifras sign
 - Resumir el proceso para evaluar la importancia de la solución numérica de un problema.
 :::
 
-:ref{id="es-1-cnx-uphysics-01-07-ti83" case="lower"}
-
-Las habilidades de resolución de problemas son claramente esenciales para el éxito en un curso cuantitativo de física. Lo que es más importante, la capacidad de aplicar amplios principios físicos, normalmente representados por ecuaciones, a situaciones concretas es una forma muy poderosa de conocimiento. Es mucho más potente que memorizar una lista de hechos. La capacidad de análisis y de resolución de problemas puede aplicarse a nuevas situaciones, mientras que una lista de hechos no puede ser lo suficientemente larga como para contener todas las circunstancias posibles. Esta capacidad de análisis es útil tanto para resolver los problemas de este texto como para aplicar la física en la vida cotidiana.
+Las habilidades de resolución de problemas son claramente esenciales para el éxito en un curso cuantitativo de física. Lo que es más importante, la capacidad de aplicar amplios principios físicos, normalmente representados por ecuaciones, a situaciones concretas es una forma muy poderosa de conocimiento. Es mucho más potente que memorizar una lista de hechos. La capacidad de análisis y de resolución de problemas puede aplicarse a nuevas situaciones, mientras que una lista de hechos no puede ser lo suficientemente larga como para contener todas las circunstancias posibles. Esta capacidad de análisis es útil tanto para resolver los problemas de este texto como para aplicar la física en la vida cotidiana. (:ref{id="es-1-cnx-uphysics-01-07-ti83" case="lower"})
 
 Como probablemente sepa, se necesita cierta dosis de creatividad y perspicacia para resolver los problemas. Ningún procedimiento rígido funciona siempre. La creatividad y la perspicacia crecen con la experiencia. Con la práctica, los fundamentos de la resolución de problemas se vuelven casi automáticos. Una forma de practicar es resolver los ejemplos del texto mientras se lee. Otra es trabajar tantos problemas de final de sección como sea posible, empezando por los más fáciles para ganar confianza y luego progresando hacia los más difíciles. Después de involucrarse en la física, la verá a su alrededor, y podrá empezar a aplicarla a situaciones que encuentre fuera del aula, tal y como se hace en muchas de las aplicaciones de este texto.
 

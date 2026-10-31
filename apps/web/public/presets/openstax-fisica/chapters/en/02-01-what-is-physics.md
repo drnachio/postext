@@ -32,7 +32,7 @@ As our technology evolved over the centuries, physics expanded into many branche
 
 Ancient people also studied **statics** and **dynamics**, which focus on how objects start moving, stop moving, and change speed and direction in response to forces that push or pull on the objects. This early interest in kinematics and dynamics allowed humans to invent simple machines, such as the lever, the pulley, the ramp, and the wheel. These simple machines were gradually combined and integrated to produce more complicated machines, such as wagons and cranes. Machines allowed humans to gradually do more work more effectively in less time, allowing them to create larger and more complicated buildings and structures, many of which still exist today from ancient times.
 
-As technology advanced, the branches of physics diversified even more. These include branches such as **acoustics**, the study of sound, and **optics**, the study of the light. In 1608, the invention of the telescope by a German spectacle maker, Hans Lippershey, led to huge breakthroughs in astronomythe study of objects or phenomena in space. One year later, in 1609, Galileo Galilei began the first studies of the solar system and the universe using a telescope. During the Baroque era, Isaac Newton used observations made by Galileo to construct his three laws of motion. These laws were the standard for studying kinematics and dynamics even today.
+As technology advanced, the branches of physics diversified even more. These include branches such as **acoustics**, the study of sound, and **optics**, the study of the light. In 1608, the invention of the telescope by a German spectacle maker, Hans Lippershey, led to huge breakthroughs in astronomy—the study of objects or phenomena in space. One year later, in 1609, Galileo Galilei began the first studies of the solar system and the universe using a telescope. During the Baroque era, Isaac Newton used observations made by Galileo to construct his three laws of motion. These laws were the standard for studying kinematics and dynamics even today.
 
 Another major branch of physics is **thermodynamics**, which includes the study of thermal energy and the transfer of heat. James Prescott Joule, an English physicist, studied the nature of heat and its relationship to work. Joule’s work helped lay the foundation for the first of three laws of thermodynamics that describe how energy in our universe is transferred from one object to another or transformed from one form to another. Studies in thermodynamics were motivated by the need to make engines more efficient, keep people safe from the elements, and preserve food.
 
@@ -159,7 +159,7 @@ In summary, physics studies many of the most basic aspects of science. A knowled
 
 **modern physics** physics as developed from the twentieth century to the present, involving the theories of relativity and quantum mechanics
 
-**physics** science aimed at describing the fundamental aspects of our universeenergy, matter, space, motion, and time
+**physics** science aimed at describing the fundamental aspects of our universe—energy, matter, space, motion, and time
 
 **quantum mechanics** major theory of modern physics which describes the properties and nature of atoms and their subatomic particles
 
@@ -186,7 +186,7 @@ An investigation often begins with a scientist making an **observation**. The sc
 
 Scientists may test the hypothesis by performing an **experiment**. During an experiment, the scientist collects data that will help them learn about the phenomenon they are studying. Then the scientists analyze the results of the experiment (that is, the data), often using statistical, mathematical, and/or graphical methods. From the data analysis, they draw conclusions. They may conclude that their experiment either supports or rejects their hypothesis. If the hypothesis is supported, the scientist usually goes on to test another hypothesis related to the first. If their hypothesis is rejected, they will often then test a new and different hypothesis in their effort to learn more about whatever they are studying.
 
-Scientific processes can be applied to many situations. Let’s say that you try to turn on your car, but it will not start. You have just made an observation! You ask yourself, "Why won’t my car start?" You can now use scientific processes to answer this question. First, you generate a hypothesis such as, "The car won’t start because it has no gasoline in the gas tank." To test this hypothesis, you put gasoline in the car and try to start it again. If the car starts, then your hypothesis is supported by the experiment. If the car does not start, then your hypothesis is rejected. You will then need to think up a new hypothesis to test such as, "My car won’t start because the fuel pump is broken." Hopefully, your investigations lead you to discover why the car wont start and enable you to fix it.
+Scientific processes can be applied to many situations. Let’s say that you try to turn on your car, but it will not start. You have just made an observation! You ask yourself, "Why won’t my car start?" You can now use scientific processes to answer this question. First, you generate a hypothesis such as, "The car won’t start because it has no gasoline in the gas tank." To test this hypothesis, you put gasoline in the car and try to start it again. If the car starts, then your hypothesis is supported by the experiment. If the car does not start, then your hypothesis is rejected. You will then need to think up a new hypothesis to test such as, "My car won’t start because the fuel pump is broken." Hopefully, your investigations lead you to discover why the car won’t start and enable you to fix it.
 
 ### Modeling
 
@@ -548,13 +548,13 @@ $$
 2. Calculate the number of stacks. Note that a trillion dollars is equal to $\unicode{36}1\times {10}^{12}$, and a stack of one-hundred $\unicode{36}100$ bills is equal to $\unicode{36}10,000,$ or $\unicode{36}1\times {10}^{4}$ . The number of stacks you will have is
 
 $$
-{\unicode{36}\text{1 × 10}}^{\text{12}}{\text{ (a trillion dollars) / }\unicode{36}\text{1 × 10}}^{\text{4}}{\text{ per stack = 1 × 10}}^{\text{8}}\text{ stacks}\text{.}
+{\small {\unicode{36}\text{1 × 10}}^{\text{12}}{\text{ (a trillion dollars) / }\unicode{36}\text{1 × 10}}^{\text{4}}{\text{ per stack = 1 × 10}}^{\text{8}}\text{ stacks}\text{.}}
 $$
 
 3. Calculate the area of a football field in square inches. The area of a football field is $100\,\text{ yd}\times \text{ 50}\text{yd}$, which gives $5,000{\text{ yd}}^{\text{2}}$ . Because we are working in inches, we need to convert square yards to square inches
 
 $$
-\begin{array}{l} {\text{Area = 5,000 yd}}^{\text{2}}\text{ × }\frac{\text{3 ft}}{\text{1yd}}\text{ × }\frac{\text{3 ft}}{\text{1yd}}\text{ × }\frac{\text{12 in}\text{.}}{\text{1 foot}}\text{ × }\frac{\text{12 in}\text{.}}{\text{1 foot}}\text{ = 6,480,000 in}{\text{.}}^{\text{2}}\text{,} \\ \text{Area}\approx {\text{6 × 10}}^{\text{6}}\text{ in}{\text{.}}^{\text{2}}\text{.} \end{array}
+{\small \begin{array}{l} {\text{Area = 5,000 yd}}^{\text{2}}\text{ × }\frac{\text{3 ft}}{\text{1yd}}\text{ × }\frac{\text{3 ft}}{\text{1yd}}\text{ × }\frac{\text{12 in}\text{.}}{\text{1 foot}}\text{ × }\frac{\text{12 in}\text{.}}{\text{1 foot}}\text{ = 6,480,000 in}{\text{.}}^{\text{2}}\text{,} \\ \text{Area}\approx {\text{6 × 10}}^{\text{6}}\text{ in}{\text{.}}^{\text{2}}\text{.} \end{array}}
 $$
 
 This conversion gives us ${\text{6 × 10}}^{\text{6}}\text{ in}{\text{.}}^{\text{2}}$ for the area of the field. (Note that we are using only one significant figure in these calculations.)
@@ -678,10 +678,10 @@ In this simulation you will examine how changing the slope and *y*-intercept of 
 1. How would the following changes affect a line that is neither horizontal nor vertical and has a positive slope?
   1. increase the slope but keeping the *y*-intercept constant
   2. increase the *y*-intercept but keeping the slope constant
-    - (a) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the lines slope.
-    - (b) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the lines slope.
-    - (c) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the lines slope.
-    - (d) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the lines slope.
+    - (a) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the line’s slope.
+    - (b) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move vertically up on the graph without changing the line’s slope.
+    - (c) Increasing the slope will cause the line to rotate clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the line’s slope.
+    - (d) Increasing the slope will cause the line to rotate counter-clockwise around the *y*-intercept. Increasing the *y*-intercept will cause the line to move horizontally right on the graph without changing the line’s slope.
 :::
 
 ### Section Summary

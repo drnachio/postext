@@ -26,6 +26,38 @@ def local(el: ET.Element) -> str:
     return el.tag.split("}", 1)[-1]
 
 
+# Some modules carry Windows-1252 bytes read as Latin-1: C1 control
+# characters where an em dash or an apostrophe was meant (U+0097, U+0092).
+C1_FIX = {c: bytes([c]).decode("cp1252") for c in range(0x80, 0xA0) if c not in (0x81, 0x8D, 0x8F, 0x90, 0x9D)}
+
+
+def parse_module(path: str) -> ET.Element:
+    with open(path, encoding="utf-8") as f:
+        return ET.fromstring(f.read().translate(C1_FIX).encode("utf-8"))
+
+
+LONE_REF_RE = re.compile(r':ref\{id="([^"]+)"[^}]*\}')
+PLAIN_START = ("#", ":::", "::", "- ", "1. ", "$$", "> ", "|", "```", ":ref{")
+
+
+def fold_lone_refs(blocks: list[str]) -> list[str]:
+    """A figure that no sentence before it cites gets a `:ref` of its own,
+    which would print alone ("fig. 1.12"): the reference joins the next
+    paragraph instead, or goes when that paragraph already cites it."""
+    out = list(blocks)
+    i = 0
+    while i < len(out):
+        m = LONE_REF_RE.fullmatch(out[i].strip())
+        nxt = next((j for j in range(i + 1, len(out)) if not out[j].startswith(PLAIN_START)), None)
+        if m and nxt is not None:
+            if f'id="{m.group(1)}"' not in out[nxt]:
+                out[nxt] = out[nxt] + f" ({out[i].strip()})"
+            del out[i]
+            continue
+        i += 1
+    return out
+
+
 # --- MathML → LaTeX -------------------------------------------------------------
 
 # Postext unescapes `\$` inside inline math before MathJax sees it, so a
@@ -315,8 +347,7 @@ class Converter:
 
     # -- entry -------------------------------------------------------------
     def module(self, path: str, module_id: str, resource_prefix: str) -> Module:
-        tree = ET.parse(path)
-        root = tree.getroot()
+        root = parse_module(path)
         title_el = root.find(q("title"))
         mod = Module(module_id, inline(title_el, Ctx(self.lang, module_id), in_title=True) if title_el is not None else module_id)
         ctx = Ctx(self.lang, module_id, words=self.words)
@@ -345,6 +376,7 @@ class Converter:
             mod.objectives = [inline(it, ctx) for it in first.findall(q("item"))]
             content.remove(first)
         self.blocks(content, mod.blocks, level=3)
+        mod.blocks = fold_lone_refs(mod.blocks)
         gl = root.find(q("glossary"))
         if gl is not None:
             for d in gl.findall(q("definition")):
@@ -764,4 +796,4 @@ class Converter:
 
     def callout(self, kind: str, title: str, body: list[str]) -> str:
         title = title.replace('"', "”")
-        return f':::callout{{type="{kind}" title="{title}"}}\n' + "\n\n".join(body) + "\n:::"
+        return f':::callout{{type="{kind}" title="{title}"}}\n' + "\n\n".join(fold_lone_refs(body)) + "\n:::"

@@ -49,8 +49,6 @@ In this activity you will look at motion from two reference frames. Which refere
 :::
 
 :::callout{type="nota" title="History: Galileo's Ship"}
-:ref{id="en-2-figure-02-01-galileo" case="lower"}
-
 The idea that a description of motion depends on the reference frame of the observer has been known for hundreds of years. The 17${}^{th}$-century astronomer **Galileo** Galilei (:ref{id="en-2-figure-02-01-galileo"}) was one of the first scientists to explore this idea. Galileo suggested the following thought experiment: Imagine a windowless ship moving at a constant speed and direction along a perfectly calm sea. Is there a way that a person inside the ship can determine whether the ship is moving? You can extend this thought experiment by also imagining a person standing on the shore. How can a person on the shore determine whether the ship is moving?
 
 Galileo came to an amazing conclusion. Only by looking at each other can a person in the ship or a person on shore describe the motion of one relative to the other. In addition, their descriptions of motion would be symmetric or opposite. A person inside the ship would describe the person on the land as moving past the ship. The person on shore would describe the ship and the person inside it as moving past. Galileo realized that observers moving at a constant speed and direction relative to each other describe motion in the same way. Galileo had discovered that a description of motion is only meaningful if you specify a reference frame.
