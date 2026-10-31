@@ -355,6 +355,21 @@ FOLIO = {
 }
 
 
+def public_config(config: dict) -> dict:
+    """The private design with what the public bundle sets on top of it.
+
+    `fillShortColumns` (postext 1.59.1): a main column the widow and orphan
+    rules leave a line short fills from its own paragraphs, so the section
+    heading after it can open at its foot instead of moving on and leaving
+    a hole above the figure or box at the bottom of the page (Spanish p. 20,
+    above Figure 1-16)."""
+    out = copy.deepcopy(config)
+    headings = out.setdefault("headings", {})
+    headings["balancing"] = {**headings.get("balancing", {}), "fillShortColumns": True}
+    out["folio"] = FOLIO
+    return out
+
+
 def build() -> None:
     missing = check()
     if missing:
@@ -393,9 +408,9 @@ def build() -> None:
         "id": PRESET_ID,
         **meta,
         "chapters": chapters,
-        "config": {**manifest["config"], "folio": FOLIO},
+        "config": public_config(manifest["config"]),
         "localized": {"en": {
-            "config": localized_config(manifest["config"], strings),
+            "config": localized_config(public_config(manifest["config"]), strings),
             "resources": localized_resources(manifest, strings, translated, keep),
         }},
         "resources": resources,
