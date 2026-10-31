@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "manga-action-slants",
-  "sourceHash": "e784fd726d90366cd8065350ab3ad92040429e6fc034124fccfc36d8386ce9b1",
+  "sourceHash": "2f406cd16145b945ffbffe1724432b9661c3c9ba80a0cc1cbd75d19f52229be5",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:08.073Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:01.338Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:53:16.913Z",
   "variants": {
     "en": {
-      "hash8": "8c5ba31e",
+      "hash8": "38cae17f",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 585,
-        "fontsMs": 719,
-        "buildMs": 176,
-        "totalMs": 2219,
+        "importMs": 3073,
+        "fontsMs": 1261,
+        "buildMs": 166,
+        "totalMs": 5537,
         "builds": 2
       },
       "specimen": {
@@ -89,12 +83,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972490,
+        "bytes": 972481,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 966919,
+        "bytes": 966938,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -235,6 +229,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -253,18 +252,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es, ca, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "es": {
-      "hash8": "7b47bd73",
+      "hash8": "8649d773",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 355,
-        "fontsMs": 437,
-        "buildMs": 168,
-        "totalMs": 1681,
+        "importMs": 1721,
+        "fontsMs": 704,
+        "buildMs": 220,
+        "totalMs": 3491,
         "builds": 2
       },
       "specimen": {
@@ -330,12 +339,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972927,
+        "bytes": 972916,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 966904,
+        "bytes": 966923,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -476,6 +485,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -494,18 +508,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ca, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "ca": {
-      "hash8": "31d04eb3",
+      "hash8": "9e729c20",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 429,
-        "fontsMs": 630,
-        "buildMs": 176,
-        "totalMs": 2059,
+        "importMs": 1752,
+        "fontsMs": 771,
+        "buildMs": 226,
+        "totalMs": 3672,
         "builds": 2
       },
       "specimen": {
@@ -571,12 +595,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972873,
+        "bytes": 972859,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 966918,
+        "bytes": 966937,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -717,6 +741,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -735,18 +764,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ca, en, es, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, en, es, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "zh": {
-      "hash8": "765b06d9",
+      "hash8": "933a2752",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 424,
-        "fontsMs": 587,
-        "buildMs": 169,
-        "totalMs": 2140,
+        "importMs": 2083,
+        "fontsMs": 775,
+        "buildMs": 181,
+        "totalMs": 4312,
         "builds": 2
       },
       "specimen": {
@@ -812,12 +851,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972019,
+        "bytes": 972042,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 966647,
+        "bytes": 966666,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -958,6 +997,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -976,18 +1020,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: zh, en, es, ca, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, en, es, ca, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "ar": {
-      "hash8": "da98c71e",
+      "hash8": "cd4d3a31",
       "vdtHash": "08247c9074426635127f197675bbff6d2e99ae28",
       "timings": {
-        "importMs": 279,
-        "fontsMs": 471,
-        "buildMs": 167,
-        "totalMs": 1721,
+        "importMs": 1654,
+        "fontsMs": 879,
+        "buildMs": 206,
+        "totalMs": 3596,
         "builds": 2
       },
       "specimen": {
@@ -1028,7 +1082,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 203202,
+          "bytes": 203756,
           "alt": "الصفحة ١."
         }
       ],
@@ -1053,12 +1107,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 973084,
+        "bytes": 973082,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 966669,
+        "bytes": 966776,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1199,6 +1253,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -1217,18 +1276,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar, en, es, ca, zh, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, en, es, ca, zh, pt, fr, de, it"
           }
         ]
       }
     },
     "ja": {
-      "hash8": "dbcba679",
+      "hash8": "58c674c6",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 580,
-        "fontsMs": 718,
-        "buildMs": 176,
-        "totalMs": 2286,
+        "importMs": 4911,
+        "fontsMs": 1116,
+        "buildMs": 232,
+        "totalMs": 7420,
         "builds": 2
       },
       "specimen": {
@@ -1294,12 +1363,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972214,
+        "bytes": 972187,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 967073,
+        "bytes": 967092,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1440,6 +1509,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -1463,18 +1537,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ja, es, ca, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (its bundle is in en, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, es, ca, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "pt": {
-      "hash8": "6fbedd58",
+      "hash8": "6bbfc13d",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 404,
-        "fontsMs": 710,
-        "buildMs": 166,
-        "totalMs": 2003,
+        "importMs": 1524,
+        "fontsMs": 866,
+        "buildMs": 234,
+        "totalMs": 3747,
         "builds": 2
       },
       "specimen": {
@@ -1540,12 +1624,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972573,
+        "bytes": 972550,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 966855,
+        "bytes": 966874,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1686,6 +1770,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -1704,18 +1793,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, ca, zh, ar, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, ca, zh, ar, fr, de, it"
           }
         ]
       }
     },
     "fr": {
-      "hash8": "36d23a17",
+      "hash8": "1d57d0b3",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 618,
-        "fontsMs": 438,
-        "buildMs": 168,
-        "totalMs": 2018,
+        "importMs": 3895,
+        "fontsMs": 1259,
+        "buildMs": 195,
+        "totalMs": 6290,
         "builds": 2
       },
       "specimen": {
@@ -1781,12 +1880,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 971874,
+        "bytes": 971870,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 967005,
+        "bytes": 967024,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1927,6 +2026,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -1945,18 +2049,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: fr, en, es, ca, zh, ar, pt, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, ca, zh, ar, pt, de, it"
           }
         ]
       }
     },
     "de": {
-      "hash8": "f39b7909",
+      "hash8": "e63c6bfc",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 622,
-        "fontsMs": 439,
-        "buildMs": 166,
-        "totalMs": 1948,
+        "importMs": 6147,
+        "fontsMs": 4085,
+        "buildMs": 246,
+        "totalMs": 11781,
         "builds": 2
       },
       "specimen": {
@@ -2022,12 +2136,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972769,
+        "bytes": 972734,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 966853,
+        "bytes": 966872,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -2168,6 +2282,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -2186,18 +2305,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: de, en, es, ca, zh, ar, pt, fr, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, ca, zh, ar, pt, fr, it"
           }
         ]
       }
     },
     "it": {
-      "hash8": "21aeed60",
+      "hash8": "0a297ee0",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 330,
-        "fontsMs": 740,
-        "buildMs": 162,
-        "totalMs": 1961,
+        "importMs": 5517,
+        "fontsMs": 1121,
+        "buildMs": 185,
+        "totalMs": 8302,
         "builds": 2
       },
       "specimen": {
@@ -2238,7 +2367,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 206224,
+          "bytes": 206084,
           "alt": "Pagina 1."
         }
       ],
@@ -2263,12 +2392,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972596,
+        "bytes": 972631,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 967061,
+        "bytes": 967078,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -2409,6 +2538,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -2417,6 +2551,16 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, ca, zh, ar, pt, fr, de"
           },
           {
             "check": "sandbox",
