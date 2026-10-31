@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "japanese-technical-manual",
-  "sourceHash": "4058fa04e58e0b5351ca429365d5026418f9ce63ec5bc4d2a275ede476c26660",
+  "sourceHash": "990e11d087c84e38316b8a631d8b28deed5a5c82f0b738cbb5fee594b623f048",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:37:57.690Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.706Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:43:17.378Z",
   "variants": {
     "en": {
-      "hash8": "9f341cd0",
-      "vdtHash": "9b4fdab31f73c05f0707629400d3f726155a49f2",
+      "hash8": "0d0e31bc",
+      "vdtHash": "32287aed8a93f5b4b7a30b8b1d0febf8649b45d0",
       "timings": {
-        "importMs": 588,
-        "fontsMs": 223,
-        "buildMs": 104,
-        "totalMs": 1582,
+        "importMs": 6884,
+        "fontsMs": 1990,
+        "buildMs": 157,
+        "totalMs": 10072,
         "builds": 1
       },
       "specimen": {
@@ -45,7 +39,7 @@
           "Noto Serif JP"
         ],
         "pages": 5,
-        "ownLines": 199
+        "ownLines": 202
       },
       "pages": [
         {
@@ -67,7 +61,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 86230,
+          "bytes": 86940,
           "alt": "Page 42: 3.2 四つの正規化形式. 図3-1 「が」の二つの表し方。上段が符号位置、下段がUTF-8のバイト列."
         },
         {
@@ -78,7 +72,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 63336,
+          "bytes": 70488,
           "alt": "Page 43: 3.3 Pythonで正規化する. 表3-1 日本語の文字と四つの正規化形式（NFKDは、NFKCで合成された文字を分解した 形になる）."
         },
         {
@@ -100,7 +94,7 @@
           "h": 1419,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 32496,
+          "bytes": 57356,
           "alt": "Page 45."
         }
       ],
@@ -132,18 +126,18 @@
       },
       "pdf": {
         "file": "japanese-technical-manual.pdf",
-        "bytes": 298714,
+        "bytes": 307217,
         "pages": 5
       },
       "sandbox": {
         "file": "japanese-technical-manual.postext",
-        "bytes": 44639,
+        "bytes": 45183,
         "folio": "90d2b4f0",
         "chapters": [
           {
             "pages": 5,
-            "hash": "9484e4eb3eb12065",
-            "lines": "f4b2018eaaeb5ae6"
+            "hash": "96b5f7dfe361f645",
+            "lines": "8b8ad3b69b28d684"
           }
         ]
       },
@@ -294,6 +288,9 @@
           "headings.levels[].numberingTemplate",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.dpi",
@@ -347,6 +344,7 @@
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles",
@@ -354,7 +352,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 262,
+        "configLeaves": 264,
         "designElements": 9,
         "directives": [
           ":::paragraphs",
@@ -409,6 +407,7 @@
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resource-types",
           "resources",
           "table-model"
@@ -426,7 +425,7 @@
         "cjkLooseLines": {
           "count": 0,
           "share": 0,
-          "worst": 0.04
+          "worst": 0.13
         },
         "raggedLines": {
           "count": 0
@@ -441,18 +440,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           }
         ]
       }
     },
     "es": {
-      "hash8": "aae04081",
-      "vdtHash": "21bbc8c7f62c85daf5c9b42a8e86b6aec1d2a29f",
+      "hash8": "1015e8b8",
+      "vdtHash": "6c2f14144940622005cb00b54ab30c83b7f467f5",
       "timings": {
-        "importMs": 581,
-        "fontsMs": 229,
-        "buildMs": 105,
-        "totalMs": 1584,
+        "importMs": 4710,
+        "fontsMs": 1427,
+        "buildMs": 150,
+        "totalMs": 7051,
         "builds": 1
       },
       "specimen": {
@@ -474,7 +478,7 @@
           "Noto Serif JP"
         ],
         "pages": 5,
-        "ownLines": 199
+        "ownLines": 202
       },
       "pages": [
         {
@@ -496,7 +500,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 86230,
+          "bytes": 86940,
           "alt": "Página 42: 3.2 四つの正規化形式. 図3-1 「が」の二つの表し方。上段が符号位置、下段がUTF-8のバイト列."
         },
         {
@@ -507,7 +511,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 63336,
+          "bytes": 70488,
           "alt": "Página 43: 3.3 Pythonで正規化する. 表3-1 日本語の文字と四つの正規化形式（NFKDは、NFKCで合成された文字を分解した 形になる）."
         },
         {
@@ -529,7 +533,7 @@
           "h": 1419,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 32776,
+          "bytes": 57628,
           "alt": "Página 45."
         }
       ],
@@ -561,18 +565,18 @@
       },
       "pdf": {
         "file": "japanese-technical-manual.pdf",
-        "bytes": 298844,
+        "bytes": 307349,
         "pages": 5
       },
       "sandbox": {
         "file": "japanese-technical-manual.postext",
-        "bytes": 44640,
+        "bytes": 45183,
         "folio": "90d2b4f0",
         "chapters": [
           {
             "pages": 5,
-            "hash": "f765bf9c7723f476",
-            "lines": "4226654fb0e51b4d"
+            "hash": "f0a2a5148c8b97ce",
+            "lines": "7e19d0271502f00f"
           }
         ]
       },
@@ -723,6 +727,9 @@
           "headings.levels[].numberingTemplate",
           "layout",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.urlDisplay",
           "locale",
           "page",
           "page.dpi",
@@ -776,6 +783,7 @@
           "header",
           "headings",
           "layout",
+          "links",
           "locale",
           "page",
           "paragraphStyles",
@@ -783,7 +791,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 262,
+        "configLeaves": 264,
         "designElements": 9,
         "directives": [
           ":::paragraphs",
@@ -838,6 +846,7 @@
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resource-types",
           "resources",
           "table-model"
@@ -855,7 +864,7 @@
         "cjkLooseLines": {
           "count": 0,
           "share": 0,
-          "worst": 0.04
+          "worst": 0.13
         },
         "raggedLines": {
           "count": 0
@@ -865,6 +874,11 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering, headings"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

@@ -40,6 +40,8 @@ The fence is a [code block](/en/docs/document-format#code-blocks): Postext sets 
 
 The notes need no setting beyond their size: in a horizontal Japanese document the defaults are the ones JLReq describes for horizontal books, a note at the foot of the column where it is cited, numbered from 1 on each page, a superscript marker and a rule a third of the measure long ([Footnotes](/en/docs/configuration-notes-references#footnotes)). The marker goes before the full stop, `保存していた[^hfs]。`, so the 。 never starts the next line apart from it.
 
+Note 2 cites the Unicode report that defines the four forms, and the citation is a link: `[Unicode Standard Annex #15「…」](https://www.unicode.org/reports/tr15/)`. A note cannot carry a note of its own, so a link inside one prints its address after the text, in parentheses; `links.urlDisplay: 'short'` drops `https://` and `www.`, and the PDF keeps the full link. `links.print: 'inline'` does the same for a link in the text ([Links in print](/en/docs/configuration-notes-references#links-in-print)). The note opens with Japanese words, so its first line fills out before the long Latin title.
+
 ### 5 · A three-line section head
 
 <Excerpt region="opener" />
@@ -70,5 +72,5 @@ Some publishers set Latin words solid against the kana, with no quarter em.
 
 - A Latin word cannot be broken inside a Japanese line, so a long one at the end of a line leaves the line before it spread between its characters. The first draft of this chapter glossed its terms in English, 正準等価（canonical equivalence）, and two lines came out loose; the English terms were dropped where they did not help the reader.
 - Choose the code face by the characters the code holds. M PLUS 1 Code, the first face tried here, has no half-width katakana: the screen fell back to a system face for ｶﾞｲﾄﾞ and the PDF lacked the glyphs.
-- A listing splits between its lines across pages, with at least two lines on each side (`codeStyle.splitMinLines`). On page 43 the room left under 3.3 holds the title and one line, not two, so the whole listing opens page 44; `keepTogether: true` keeps every listing in one piece.
+- A listing splits between its lines across pages, with at least two lines on each side (`codeStyle.splitMinLines`). On page 43 the room left under 3.3 is too shallow for the title and two lines, so the whole listing opens page 44; `keepTogether: true` keeps every listing in one piece.
 - On a character grid a page takes its 29 lines whatever a paragraph or a list does at the turn, so the list of the four forms would leave its first item, NFC, alone at the foot of page 42. `shortListSplit: 'avoid'` with `shortListMaxItems: 4` moves the whole list to page 43, and page 42 ends a line short above its notes.

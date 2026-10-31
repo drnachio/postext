@@ -40,6 +40,8 @@ Il blocco delimitato è un [blocco di codice](/it/docs/document-format#blocchi-d
 
 Le note non richiedono impostazioni oltre alla dimensione: in un documento giapponese orizzontale i valori predefiniti sono quelli che JLReq descrive per i libri orizzontali, una nota al piede della colonna in cui è citata, numerata da 1 in ogni pagina, un richiamo in apice e un filetto lungo un terzo della giustezza ([Footnotes](/it/docs/configuration-notes-references#note-a-piè-di-pagina)). Il richiamo va prima del punto, `保存していた[^hfs]。`, così il 。 non comincia mai la riga successiva separato da esso.
 
+La nota 2 cita il rapporto di Unicode che definisce le quattro forme, e la citazione è un link: `[Unicode Standard Annex #15「…」](https://www.unicode.org/reports/tr15/)`. Una nota non può portare una nota propria, quindi un link al suo interno stampa l’indirizzo dopo il testo, tra parentesi; `links.urlDisplay: 'short'` toglie `https://` e `www.`, e il PDF conserva il link completo. `links.print: 'inline'` fa lo stesso con un link nel testo ([Link su carta](/it/docs/configuration-notes-references#link-su-carta)). La nota comincia con parole giapponesi, così la prima riga si riempie prima del lungo titolo latino.
+
 ### 5 · Un titolo di sezione di tre righe
 
 <Excerpt region="opener" />
@@ -70,5 +72,5 @@ Alcuni editori compongono le parole latine attaccate ai kana, senza quarto di em
 
 - Una parola latina non si può spezzare in una riga giapponese, quindi una parola lunga alla fine di una riga lascia la riga precedente allargata tra i suoi caratteri. La prima stesura di questo capitolo glossava i termini in inglese, 正準等価（canonical equivalence）, e due righe uscivano troppo spaziate; i termini inglesi sono stati tolti dove non aiutavano il lettore.
 - Scegli il carattere del codice in base ai caratteri che il codice contiene. M PLUS 1 Code, il primo carattere provato qui, non ha katakana a mezza larghezza: lo schermo ripiegava su un carattere di sistema per ｶﾞｲﾄﾞ e nel PDF mancavano i glifi.
-- Un listato si divide tra le sue righe da una pagina all’altra, con almeno due righe per parte (`codeStyle.splitMinLines`). A pagina 43 lo spazio rimasto sotto 3.3 contiene il titolo e una riga, non due, quindi l’intero listato apre la pagina 44; `keepTogether: true` tiene ogni listato in un solo pezzo.
+- Un listato si divide tra le sue righe da una pagina all’altra, con almeno due righe per parte (`codeStyle.splitMinLines`). A pagina 43 lo spazio rimasto sotto 3.3 non contiene il titolo e due righe, quindi l’intero listato apre la pagina 44; `keepTogether: true` tiene ogni listato in un solo pezzo.
 - Su una griglia di caratteri una pagina prende le sue 29 righe qualunque cosa faccia un paragrafo o un elenco al cambio di pagina, quindi l’elenco delle quattro forme lascerebbe il suo primo elemento, NFC, da solo al piede di pagina 42. `shortListSplit: 'avoid'` con `shortListMaxItems: 4` sposta l’intero elenco a pagina 43, e la pagina 42 finisce una riga prima sopra le sue note.

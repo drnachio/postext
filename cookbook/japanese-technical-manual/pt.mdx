@@ -40,6 +40,8 @@ A listagem é um [bloco de código](/pt/docs/document-format#blocos-de-código):
 
 As notas não pedem nenhum ajuste além do corpo: num documento japonês horizontal, os valores padrão são os que o JLReq descreve para livros horizontais, a nota no pé da coluna onde é citada, numerada a partir de 1 em cada página, com chamada sobrescrita e um fio de um terço da medida ([Notas de rodapé](/pt/docs/configuration-notes-references#notas-de-rodapé)). A chamada vem antes do ponto final, `保存していた[^hfs]。`, para que o 。 nunca abra a linha seguinte separado dela.
 
+A nota 2 cita o relatório do Unicode que define as quatro formas, e a citação é um link: `[Unicode Standard Annex #15「…」](https://www.unicode.org/reports/tr15/)`. Uma nota não pode ter uma nota própria, então um link dentro dela imprime o endereço depois do texto, entre parênteses; `links.urlDisplay: 'short'` tira `https://` e `www.`, e o PDF mantém o link completo. `links.print: 'inline'` faz o mesmo com um link do texto ([Links na edição impressa](/pt/docs/configuration-notes-references#links-na-edição-impressa)). A nota começa com palavras japonesas, para que a primeira linha se preencha antes do longo título latino.
+
 ### 5 · Um título de seção de três linhas
 
 <Excerpt region="opener" />
@@ -70,5 +72,5 @@ Algumas editoras compõem as palavras latinas coladas ao kana, sem o quarto de e
 
 - Uma palavra latina não pode ser quebrada dentro de uma linha japonesa, por isso uma palavra longa no fim da linha deixa a linha anterior espaçada entre os caracteres. O primeiro rascunho deste capítulo glosava os termos em inglês, 正準等価（canonical equivalence）, e duas linhas saíram frouxas; os termos em inglês foram retirados onde não ajudavam o leitor.
 - Escolha a fonte de código pelos caracteres que o código contém. A M PLUS 1 Code, a primeira testada aqui, não tem katakana de meia largura: a tela recorreu a uma fonte do sistema para ｶﾞｲﾄﾞ e faltaram os glifos no PDF.
-- Uma listagem se divide entre linhas de uma página para outra, com pelo menos duas linhas de cada lado (`codeStyle.splitMinLines`). Na página 43, o espaço que sobra sob 3.3 comporta o título e uma linha, não duas, de modo que a listagem inteira abre a página 44; `keepTogether: true` mantém cada listagem inteira.
+- Uma listagem se divide entre linhas de uma página para outra, com pelo menos duas linhas de cada lado (`codeStyle.splitMinLines`). Na página 43, o espaço que sobra sob 3.3 não comporta o título e duas linhas, de modo que a listagem inteira abre a página 44; `keepTogether: true` mantém cada listagem inteira.
 - Numa grade de caracteres a página leva as 29 linhas, faça o que fizer um parágrafo ou uma lista na virada de página, por isso a lista das quatro formas deixaria o primeiro item, NFC, sozinho no pé da página 42. `shortListSplit: 'avoid'` com `shortListMaxItems: 4` passa a lista inteira para a página 43, e a página 42 termina uma linha antes, acima das notas de rodapé.

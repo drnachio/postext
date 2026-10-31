@@ -23,6 +23,7 @@
     "also": [
       "japanese-notes",
       "footnotes",
+      "print-links",
       "figure-numbering",
       "localised-labels",
       "heading-numbering",
@@ -36,7 +37,6 @@
       "resources",
       "running-heads",
       "opener-design",
-      "color-palette",
       "pdf-export"
     ]
   },
@@ -57,8 +57,8 @@
     "technical-book-crossref-chapters"
   ],
   "engine": {
-    "postext": "1.28.0",
-    "postextPdf": "1.28.0"
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0"
   },
   "kit": [
     "core",
@@ -140,5 +140,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-05",
-  "updated": "2026-10-11"
+  "updated": "2026-10-31"
 }
