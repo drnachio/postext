@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ai-preprint-prompt-exemplars",
-  "sourceHash": "d83f06b63e9bd6e3bf15511090e43bbc9a244f0bf0742c777ef178619cd48daa",
+  "sourceHash": "dd8b700e9f21e2a85ae909cc41b517c95dbe234040b34508140419ed8167255d",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.334Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:17:19.780Z",
   "variants": {
     "en": {
-      "hash8": "df4ea4bd",
-      "vdtHash": "2c74b1a0b3e09208cb79243121a098ea29159c0f",
+      "hash8": "ceee01eb",
+      "vdtHash": "76313d79b1bbb0d20fdbc9b627719899b26335a1",
       "timings": {
-        "importMs": 1097,
-        "fontsMs": 101,
-        "buildMs": 686,
-        "totalMs": 2931,
+        "importMs": 3128,
+        "fontsMs": 123,
+        "buildMs": 698,
+        "totalMs": 5004,
         "builds": 1
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Newsreader"
         ],
         "pages": 7,
-        "ownLines": 243
+        "ownLines": 247
       },
       "pages": [
         {
@@ -62,7 +62,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 233738,
+          "bytes": 227706,
           "alt": "Page 2: 1 Introduction."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 200454,
+          "bytes": 195352,
           "alt": "Page 3: 3 Arithmetic Reasoning. Figure 2. PaLM 540B uses chain-of-thought prompting to achieve new state-of-the-art performance on the GSM8K benchmark of math word problems. Finetuned GPT-3 and prior best are from Cobbe et al. (2021)."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 157622,
+          "bytes": 155170,
           "alt": "Page 4: 4 Commonsense Reasoning. Figure 4. Chain-of-thought prompting enables large language models to solve challenging math problems. Notably, chain-of-thought reasoning is an emergent ability of increasing model scale. Prior best numbers are from Cobbe et al. (2021) for GSM…"
         },
         {
@@ -95,7 +95,7 @@
           "h": 1294,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 146822,
+          "bytes": 153444,
           "alt": "Page 5: 5 Symbolic Reasoning. Table 2. Standard prompting versus chain of thought prompting on five arithmetic reasoning benchmarks. Note that chain of thought prompting is an emergent ability of model scale—it does not positively impact performance until used with a model of…"
         },
         {
@@ -106,7 +106,7 @@
           "h": 1294,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 209154,
+          "bytes": 214098,
           "alt": "Page 6: 6 Discussion."
         },
         {
@@ -117,7 +117,7 @@
           "h": 1294,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 181186,
+          "bytes": 179394,
           "alt": "Page 7: References."
         }
       ],
@@ -153,18 +153,18 @@
       },
       "pdf": {
         "file": "ai-preprint-prompt-exemplars.pdf",
-        "bytes": 255576,
+        "bytes": 255800,
         "pages": 7
       },
       "sandbox": {
         "file": "ai-preprint-prompt-exemplars.postext",
-        "bytes": 153385,
+        "bytes": 153412,
         "folio": "055119a2",
         "chapters": [
           {
             "pages": 7,
-            "hash": "2f9862b61f14d7de",
-            "lines": "7d4230a158f63f73"
+            "hash": "4710ab8c12192fe8",
+            "lines": "111f4d31822b33cd"
           }
         ]
       },
@@ -199,6 +199,7 @@
           "bodyText.lineHeight",
           "bodyText.maxJustifyTracking",
           "bodyText.maxRuntTracking",
+          "bodyText.maxWordSpacing",
           "bodyText.optimalLineBreaking",
           "bodyText.referenceBold",
           "bodyText.referenceColor",
@@ -347,6 +348,9 @@
           "layout",
           "layout.gutterWidth",
           "layout.layoutType",
+          "links",
+          "links.print",
+          "links.urlDisplay",
           "locale",
           "orderedLists",
           "orderedLists.color",
@@ -418,6 +422,7 @@
           "headingStyles",
           "headings",
           "layout",
+          "links",
           "locale",
           "orderedLists",
           "page",
@@ -426,7 +431,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 484,
+        "configLeaves": 487,
         "designElements": 11,
         "directives": [
           ":::callout",
@@ -521,6 +526,7 @@
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
+          "print-links",
           "resource-types",
           "resources",
           "title-line-breaks",
@@ -530,11 +536,11 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 3,
         "looseLines": {
-          "count": 2,
-          "share": 0.006,
-          "worst": 2.14
+          "count": 0,
+          "share": 0,
+          "worst": 2.3
         },
         "raggedLines": {
           "count": 0
@@ -543,7 +549,12 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 1.33 MB (warning at 0.9 MB for 7 pages; capture.expect.imageMb states the figure of a book of paintings)"
+            "detail": "the edition's images weigh 1.32 MB (warning at 0.9 MB for 7 pages; capture.expect.imageMb states the figure of a book of paintings)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

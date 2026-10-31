@@ -15,7 +15,7 @@
 
 **Tasks.** We use the following two toy tasks.
 
-- **Last letter concatenation.** This task asks the model to concatenate the last letters of words in a name. It is a more challenging version of first letter concatenation, which language models can already perform without chain of thought.[^davinci] We generate full names by randomly concatenating names from the top one-thousand first and last names from name census data (https://namecensus.com/).
+- **Last letter concatenation.** This task asks the model to concatenate the last letters of words in a name. It is a more challenging version of first letter concatenation, which language models can already perform without chain of thought.[^davinci] We generate full names by randomly concatenating names from the top one-thousand first and last names from [name census data](https://namecensus.com/).
 - **Coin flip.** This task asks the model to answer whether a coin is still heads up after people either flip or don’t flip the coin.
 
 As the construction of these symbolic reasoning tasks is well-defined, for each task we consider an *in-domain* test set for which examples had the same number of steps as the training/few-shot exemplars, as well as an *out-of-domain* (OOD) test set, for which evaluation examples had more steps than those in the exemplars. For last letter concatenation, the model only sees exemplars of names with two words, and then performs last letter concatenation on names with 3 and 4 words.[^names] We do the same for the number of potential flips in the coin flip task. Our experimental setup uses the same methods and models as in the prior two sections. We again manually compose chains of thought for the few-shot exemplars for each task.
@@ -52,5 +52,5 @@ We thank Jacob Austin, Yuhuai Wu, Henryk Michalewski, Aitor Lewkowycz, Charles S
 :::bibliography{title=""}
 
 :::paragraphs{style="colophon"}
-Set in Newsreader, IBM Plex Sans and IBM Plex Mono (SIL OFL) · Text: Wei et al. (2022), arXiv:2201.11903v6, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), abridged, with the figures redrawn from the paper’s numbers.
+Set in Newsreader, IBM Plex Sans and IBM Plex Mono (SIL OFL) · Text: Wei et al. (2022), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), abridged.
 :::
