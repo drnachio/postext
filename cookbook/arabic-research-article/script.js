@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 107 · An Arabic research article with notes, citations and an index ═══
 // https://postext.dev/en/cookbook/arabic-research-article
 // Code: MIT · Text: original Arabic prose (CC BY 4.0) · Pictures: none
-// Fonts: Amiri, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.34.0
+// Fonts: Amiri, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
