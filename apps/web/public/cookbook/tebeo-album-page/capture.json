@@ -3,18 +3,12 @@
   "slug": "tebeo-album-page",
   "sourceHash": "31a0ef381c6cd84ad42cc0f7ce5e07f90b3baa4e52596d6c548c0087bf6cacde",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:42:15.004Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:04.416Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:47:18.614Z",
   "variants": {
     "en": {
       "hash8": "63b110b8",
@@ -299,9 +293,19 @@
             "detail": "card.webp weighs 99 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -594,9 +598,19 @@
             "detail": "card.webp weighs 100 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -894,9 +908,19 @@
             "detail": "card.480.webp weighs 35 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, es, en, zh, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -907,13 +931,13 @@
       }
     },
     "zh": {
-      "hash8": "116a2299",
+      "hash8": "9a871826",
       "vdtHash": "50f3d980fc2b9de7346d2b56fbf3f9cffc139eba",
       "timings": {
-        "importMs": 385,
-        "fontsMs": 830,
-        "buildMs": 494,
-        "totalMs": 2298,
+        "importMs": 3979,
+        "fontsMs": 1903,
+        "buildMs": 640,
+        "totalMs": 7416,
         "builds": 1
       },
       "specimen": {
@@ -980,7 +1004,7 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1157106,
+        "bytes": 1157046,
         "pages": 2
       },
       "sandbox": {
@@ -1190,9 +1214,19 @@
             "detail": "card.webp weighs 98 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, es, en, ca, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -1489,9 +1523,19 @@
             "detail": "card.webp weighs 97 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, es, en, ca, zh, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -1502,13 +1546,13 @@
       }
     },
     "ja": {
-      "hash8": "26d0c728",
+      "hash8": "c817ad61",
       "vdtHash": "d99080b560120794a7fae42a57d1aa6aa08b5ec8",
       "timings": {
-        "importMs": 520,
-        "fontsMs": 504,
-        "buildMs": 409,
-        "totalMs": 2088,
+        "importMs": 8969,
+        "fontsMs": 4338,
+        "buildMs": 417,
+        "totalMs": 15756,
         "builds": 1
       },
       "specimen": {
@@ -1576,7 +1620,7 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1154245,
+        "bytes": 1154247,
         "pages": 2
       },
       "sandbox": {
@@ -1787,9 +1831,19 @@
             "detail": "card.webp weighs 99 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, es, en, ca, zh, ar, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -2082,9 +2136,19 @@
             "detail": "card.webp weighs 100 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, es, en, ca, zh, ar, ja, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -2382,9 +2446,19 @@
             "detail": "card.480.webp weighs 35 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, es, en, ca, zh, ar, ja, pt, de, it"
           },
           {
             "check": "sandbox",
@@ -2677,9 +2751,19 @@
             "detail": "card.webp weighs 99 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, es, en, ca, zh, ar, ja, pt, fr, it"
           },
           {
             "check": "sandbox",
@@ -2972,9 +3056,19 @@
             "detail": "card.webp weighs 100 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, es, en, ca, zh, ar, ja, pt, fr, de"
           },
           {
             "check": "sandbox",
