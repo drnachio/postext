@@ -9,7 +9,8 @@ Valdeloma has 8,400 residents and a town hall with four departments. Each depart
 
 :::frame{slot="alcaldia"}
 **Mayor and Town Council** \\
-1 Plaza Mayor · 13 councillors elected every four years
+1 Plaza Mayor \\
+13 councillors elected every four years
 :::
 
 :::module{template="area"}
@@ -38,7 +39,7 @@ Municipal sports centre
 :::
 :::frame{slot="servicio"}
 **Covered pool** \\
-Swimming lessons and open sessions
+Lessons and open swimming
 :::
 :::frame{slot="servicio"}
 **Sports hall** \\
@@ -57,11 +58,11 @@ Football, basketball and athletics from October to June
 :::
 :::frame{slot="servicio"}
 **Day centre** \\
-Lunches, workshops and adapted transport
+Lunches, workshops and a minibus
 :::
 :::frame{slot="servicio"}
 **Home help** \\
-Washing, shopping and company at home
+Care and company at home
 :::
 :::
 
@@ -80,7 +81,7 @@ Furniture, appliances and used oil
 :::
 :::frame{slot="servicio"}
 **Parks and gardens** \\
-Watering, pruning and fault reports
+Watering, pruning and repairs
 :::
 :::
 ::::
