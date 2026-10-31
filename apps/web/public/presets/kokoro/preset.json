@@ -373,7 +373,7 @@
         },
         "style": {
          "backgroundColor": {
-          "hex": "#b8472d",
+          "hex": "#b5462c",
           "model": "hex",
           "paletteId": "shu"
          },
@@ -1342,7 +1342,7 @@
           }
          }
         },
-        "content": "著者　夏目漱石\n初版　大正三年九月二十日　岩波書店\n本版　二〇二六年十月　Postext",
+        "content": "{attr.imprint1}\n{attr.imprint2}\n{attr.imprint3}",
         "fontFamily": "Shippori Mincho B1",
         "fontSize": {
          "value": 7.5,
@@ -1389,7 +1389,7 @@
           }
          }
         },
-        "content": "本文　青空文庫（底本　集英社文庫、一九九一年）\n入力　j.utiyama　校正　伊藤時也\n序・予告・広告文　入力　砂場清隆　校正　小林繁雄\n扉・見返し・口絵　夏目漱石（国立国会図書館所蔵本より）\n表紙・挿絵　Generated With Diffusion Models\n書体　しっぽり明朝 B1・しっぽりアンチック B1",
+        "content": "{attr.credits1}\n{attr.credits2}\n{attr.credits3}\n{attr.credits4}\n{attr.credits5}\n{attr.credits6}",
         "fontFamily": "Shippori Mincho B1",
         "fontSize": {
          "value": 7.5,
@@ -1465,7 +1465,7 @@
         },
         "style": {
          "backgroundColor": {
-          "hex": "#b8472d",
+          "hex": "#b5462c",
           "model": "hex",
           "paletteId": "shu"
          },
@@ -2027,7 +2027,7 @@
       "lineHeight": 1.2,
       "overflow": "clip",
       "color": {
-       "hex": "#b8472d",
+       "hex": "#b5462c",
        "model": "hex",
        "paletteId": "shu"
       }
@@ -2110,7 +2110,7 @@
        }
       },
       "color": {
-       "hex": "#b8472d",
+       "hex": "#b5462c",
        "model": "hex",
        "paletteId": "shu"
       },
@@ -2673,7 +2673,7 @@
     "id": "shu",
     "name": "朱",
     "value": {
-     "hex": "#b8472d",
+     "hex": "#b5462c",
      "model": "hex"
     }
    },
