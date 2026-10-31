@@ -1,0 +1,63 @@
+---
+title: "Un module de cours avec un test à faire à l'écran"
+summary: "Deux styles d'exercice pour un même Markdown : entraînement sans limite et test à une seule vérification ; attachExercises les active en HTML et en EPUB."
+plain: "Une leçon sur les séismes : on la lit, on s'entraîne autant qu'on veut, puis on passe un court test où chaque réponse ne se vérifie qu'une fois. Elle s'imprime en livret et fonctionne à l'écran et dans un livre numérique."
+description: "Un module de quatre pages dont l'entraînement et le test se font dans la visionneuse HTML et un EPUB à mise en page fixe, avec des limites et 70 % pour réussir."
+question: "Comment laisser l'apprenant répondre à l'écran, avec un test qui n'autorise qu'une vérification ?"
+aliases: ["exercices interactifs", "autocorrection", "test en ligne", "plateforme pédagogique", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "L'ouverture du module : une peinture d'une faille qui traverse une plaine sèche, à fond perdu en tête, le surtitre, le titre et un chapeau en italique.", "3": "Entraînement : trois exercices au numéro dans un disque rouille, puis le corrigé de l'entraînement.", "4": "Test du module : quatre exercices sous un filet ardoise, au numéro dans un carré, et le colophon." }
+---
+
+## Ce que vous allez composer
+
+Le module 4 de *The Restless Planet*, un cours d'initiation aux sciences de la Terre : quatre pages sur les séismes, au format 176 × 250 mm, qui s'ouvrent sous une peinture d'une faille traversant une plaine sèche. La lecture mène à un entraînement et à un test, écrits dans le Markdown en blocs `:::exercise` avec leurs réponses. Le module imprimé donne le corrigé de l'entraînement et garde celui du test. À l'écran, les mêmes pages se remplissent : l'entraînement se vérifie et se recommence à volonté, tandis que chaque question du test n'admet qu'une vérification, ne se recommence pas et ne montre sa solution qu'une fois cette vérification épuisée. Un panneau à côté des pages additionne ce qu'une plateforme pédagogique enregistrerait : la note, si le test est terminé, et la réussite ou l'échec à 70 %.
+
+## Préparation
+
+### 1 · Deux styles, deux règles
+
+Le code est dans [la réponse courte](#la-réponse-courte). Les exercices disent seulement ce qu'ils demandent ; le `style` du bloc décide de leur comportement. `practice` garde les valeurs du livre, donc sa barre offre Vérifier, Voir la solution et Recommencer sans limite. `test` l'étend avec un bloc `digital` : `maxChecks: 1`, `reset: false` et `showSolution: 'noChecksLeft'`, si bien que la barre décompte jusqu'à « Plus de vérifications » et ne propose qu'alors la solution. Sur papier, le même style n'imprime pas ses solutions (`placement: 'none'`), alors que le corrigé de l'entraînement s'imprime là où se trouve la ligne `:::solutions`.
+
+### 2 · Une tentative enregistrée revient du stockage
+
+<Excerpt region="attempt" />
+
+`attachExercises` lit les réponses de chaque exercice avec `getItem` et les écrit avec `setItem`, sous la `storageKey` et l'ancre de l'exercice. Tout objet doté de ces trois appels peut remplacer `localStorage` ; une plateforme pédagogique conserve ce même JSON dans les données de l'apprenant. Celui-ci renvoie trois questions du test déjà vérifiées, avec deux erreurs (vrai pour l'affirmation 3 et 180 km pour la distance) : la page s'ouvre comme la retrouverait un apprenant qui revient, ces questions verrouillées, leurs solutions disponibles, la question de mise en ordre encore à faire.
+
+### 3 · Répondre sur les pages et entendre chaque vérification
+
+<Excerpt region="screen" />
+
+`renderToHtml` écrit les pages et les données des exercices ; `attachExercises` y pose les champs, les cases et la barre. `onResult` reçoit chaque exercice à sa mise en place, puis après chaque vérification, chaque nouveau départ et chaque solution affichée, avec les réponses notées justes (`right`) et totales (`total`), les vérifications utilisées et l'état verrouillé (`locked`). Le panneau additionne les réponses du test comme le fait un lecteur SCORM : réponses justes sur réponses notées pour tout le test, terminé quand chaque question est vérifiée ou verrouillée, réussi à partir de `passingScore`. La page utilise `dpi: 96`, donc un millimètre de la page imprimée vaut un millimètre CSS à l'écran.
+
+### 4 · Les mêmes exercices dans un EPUB
+
+<Excerpt region="epub" />
+
+L'EPUB à mise en page fixe contient les données des exercices et le script qui les rend actifs : un système de lecture qui exécute les scripts propose les mêmes champs et les mêmes limites, et un autre garde le corrigé que l'outil d'écriture ajoute. Les polices lui sont données en octets, les mêmes fichiers Fontsource que la page a chargés.
+
+## Variantes
+
+### Empaqueter le module pour une plateforme pédagogique
+
+`postext-scorm` prend les mêmes documents et écrit un zip SCORM 1.2 ou 2004 dont le lecteur relie le stockage et les résultats au LMS. Un SCO compte tous les exercices qu'il contient, entraînement compris : un cours qui ne note que le test en fait un SCO à part avec `items` (voir <Feature id="scorm-packages">Paquets SCORM</Feature>).
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### Corriger chaque réponse dès qu'elle est donnée
+
+Pour un quiz sans bouton Vérifier, mettez `check: 'instant'` dans `exercises.digital`. La correction immédiate supprime la limite de vérifications ; le style du test garde `showSolution`.
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## Erreurs fréquentes
+
+Donnez une ancre à chaque exercice noté (`:::exercise{#test-scales}`). Ses réponses sont conservées sous l'ancre ; sans elle, la clé vient de la place de l'exercice dans le document, et une question ajoutée avant rend à l'apprenant qui revient les réponses enregistrées d'une autre.

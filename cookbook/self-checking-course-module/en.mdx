@@ -1,0 +1,63 @@
+---
+title: "A course module with a test answered on screen"
+summary: "Two exercise styles from one Markdown: practice checked at will, a test with one check and no retry; attachExercises answers both in HTML, the EPUB keeps them."
+plain: "An Earth science lesson on earthquakes: read it, practise as often as you like, then take a short test that lets you check each answer once. It prints as a booklet and works on screen and in an e-book."
+description: "A four-page Earth science module whose practice and test are answered in the HTML viewer and a fixed-layout EPUB, with assessment limits and a 70 % pass mark."
+question: "How do I let learners answer the exercises on screen, with a test that allows one check?"
+aliases: ["interactive exercises", "self-check", "quiz", "online test", "e-learning", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "The module opener: a painting of a fault crossing a dry plain bled off the head, the kicker Module 4 · The Restless Planet, the title Earthquakes and an italic lead.", "3": "Practice: three exercises with rust number discs (choice in three columns, gaps with a word bank, matching), then the practice key.", "4": "Module test: four exercises in frames with a slate top rule and square numbers, and the colophon." }
+---
+
+## What you'll build
+
+Module 4 of *The Restless Planet*, an introductory Earth science course: four pages on earthquakes, on a 176 × 250 mm page that opens under a painting of a fault crossing a dry plain. The reading leads to a practice section and a module test, both written in the Markdown as `:::exercise` fences with their answers. The printed module shows the practice key and keeps the test's key out. On screen the same pages are answerable: the practice can be checked and started again at will, while each test question takes one check, never starts again and shows its solution only when that check is spent. A panel beside the pages adds up what a learning platform would record: the score, whether the test is complete, and pass or fail at 70 %.
+
+## Method
+
+### 1 · Two styles, two sets of rules
+
+The code is [the short answer](#the-short-answer) above. The exercises say only what they ask; the fence's `style` decides how they behave. `practice` keeps the book's defaults, so its bar offers Check, Show solution and Try again without limits. `test` extends it and adds a `digital` block: `maxChecks: 1`, `reset: false` and `showSolution: 'noChecksLeft'`, so the bar counts down to "No checks left" and only then offers the solution. On paper the same style sends its solutions nowhere (`placement: 'none'`), while the practice key prints where the `:::solutions` line stands.
+
+### 2 · A saved attempt comes back from the store
+
+<Excerpt region="attempt" />
+
+`attachExercises` reads each exercise's answers with `getItem` and writes them with `setItem`, under the `storageKey` and the exercise's anchor. Any object with those three calls can take the place of `localStorage`; a learning platform keeps the same JSON as the learner's saved data. This one hands back three checked questions of the test, with two wrong answers (true for statement 3, 180 km for the distance), so the page opens the way a returning learner would find it: those questions locked, their solutions available, the ordering question still to do.
+
+### 3 · Answer the pages and hear every check
+
+<Excerpt region="screen" />
+
+`renderToHtml` writes the pages and the exercise records; `attachExercises` lays inputs, toggles and the bar over them. `onResult` hears each exercise when it is set up and after every check, fresh start and solution shown, with `right` and `total` graded answers, the checks used and whether the attempt is `locked`. The panel adds the test's answers the way a SCORM player does: right answers over graded answers across the test, complete when every question is checked or locked, passed at `passingScore`. The page uses `dpi: 96`, so a millimetre of the print page is a CSS millimetre on screen.
+
+### 4 · The same exercises in an EPUB
+
+<Excerpt region="epub" />
+
+The fixed-layout EPUB carries the exercise data and the answering script, so a reading system that runs scripts offers the same inputs and the same limits; one that does not still has the answer key the writer adds. The fonts are handed over as bytes, the same Fontsource files the page loaded.
+
+## Variations
+
+### Package the module for a learning platform
+
+`postext-scorm` takes the same documents and writes a SCORM 1.2 or 2004 zip whose player wires the store and the results to the LMS. A SCO counts every exercise in it, practice included, so a course that grades only the test makes the test its own SCO with `items` (see <Feature id="scorm-packages">SCORM packages</Feature>).
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### Check each answer as it is given
+
+For a quiz with no Check button, set `check: 'instant'` in `exercises.digital`. Instant checking drops the check limit; the test style keeps `showSolution`.
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## Pitfalls
+
+Give every graded exercise an anchor (`:::exercise{#test-scales}`). Its answers are kept under the anchor; without one the key is built from the exercise's place in the document, and a question added before it hands a returning learner the wrong saved answers.

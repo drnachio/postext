@@ -1,0 +1,63 @@
+---
+title: "Un módulo de curso con examen que se contesta en pantalla"
+summary: "Dos estilos de ejercicio en un Markdown: práctica sin límite y examen de una sola comprobación; attachExercises los contesta en HTML, y el EPUB también."
+plain: "Una lección sobre los terremotos: la lees, practicas cuanto quieras y haces un examen corto que solo deja comprobar cada respuesta una vez. Se imprime como cuadernillo y funciona en pantalla y en un libro electrónico."
+description: "Un módulo de cuatro páginas cuya práctica y cuyo examen se contestan en el visor HTML y en un EPUB de maquetación fija, con límites y aprobado al 70 %."
+question: "¿Cómo dejo que el alumno conteste los ejercicios en pantalla, con un examen que solo admite una comprobación?"
+aliases: ["ejercicios interactivos", "autocorrección", "examen en línea", "aula virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "La apertura del módulo: una pintura de una falla que cruza una llanura seca, a sangre por arriba, el antetítulo Módulo 4 · El planeta inquieto, el título Terremotos y una entradilla en cursiva.", "3": "Práctica: tres ejercicios con el número en un disco óxido (elección en tres columnas, huecos con banco de palabras y unir con flechas) y las soluciones de la práctica.", "4": "Examen del módulo: cuatro ejercicios con un filete pizarra encima y el número en un cuadrado, y el colofón." }
+---
+
+## Lo que vas a componer
+
+El módulo 4 de *El planeta inquieto*, un curso de iniciación a las ciencias de la Tierra: cuatro páginas sobre los terremotos, en un formato de 176 × 250 mm que se abre bajo una pintura de una falla que cruza una llanura seca. La lectura lleva a una práctica y a un examen, escritos en el Markdown como bloques `:::exercise` con sus respuestas. El módulo impreso trae las soluciones de la práctica y deja fuera las del examen. En pantalla, las mismas páginas se contestan: la práctica se comprueba y se repite cuanto se quiera, y cada pregunta del examen admite una sola comprobación, no se puede repetir y solo enseña la solución cuando esa comprobación se ha gastado. Un panel junto a las páginas suma lo que guardaría una plataforma de aprendizaje: la nota, si el examen está terminado y el aprobado o suspenso con el 70 %.
+
+## Elaboración
+
+### 1 · Dos estilos, dos reglas
+
+El código está en [la respuesta corta](#la-respuesta-corta). Los ejercicios solo dicen qué preguntan; el `style` del bloque decide cómo se comportan. `practice` conserva lo que trae el libro, así que su barra ofrece Comprobar, Ver la solución y Volver a empezar sin límite. `test` lo amplía con un bloque `digital`: `maxChecks: 1`, `reset: false` y `showSolution: 'noChecksLeft'`, de modo que la barra cuenta hasta «Sin más comprobaciones» y solo entonces ofrece la solución. En papel, ese mismo estilo no imprime sus soluciones (`placement: 'none'`), mientras que las de la práctica salen donde está la línea `:::solutions`.
+
+### 2 · Un intento guardado vuelve del almacén
+
+<Excerpt region="attempt" />
+
+`attachExercises` lee las respuestas de cada ejercicio con `getItem` y las escribe con `setItem`, bajo la `storageKey` y el ancla del ejercicio. Cualquier objeto con esas tres llamadas puede ocupar el lugar de `localStorage`; una plataforma de aprendizaje guarda ese mismo JSON entre los datos del alumno. Este devuelve tres preguntas del examen ya comprobadas, con dos errores (verdadero en la afirmación 3 y 180 km en la distancia), así que la página se abre como la encontraría un alumno que vuelve: esas preguntas bloqueadas, sus soluciones disponibles y la de ordenar aún por hacer.
+
+### 3 · Contestar las páginas y oír cada comprobación
+
+<Excerpt region="screen" />
+
+`renderToHtml` escribe las páginas y los datos de los ejercicios; `attachExercises` coloca encima los campos, las casillas y la barra. `onResult` recibe cada ejercicio al prepararse y después de cada comprobación, cada reinicio y cada solución mostrada, con las respuestas evaluadas acertadas (`right`) y totales (`total`), las comprobaciones gastadas y si el intento está bloqueado (`locked`). El panel suma las respuestas del examen como lo hace un reproductor SCORM: aciertos entre respuestas evaluadas de todo el examen, terminado cuando cada pregunta está comprobada o bloqueada, aprobado a partir de `passingScore`. La página usa `dpi: 96`, así que un milímetro de la página impresa es un milímetro CSS en pantalla.
+
+### 4 · Los mismos ejercicios en un EPUB
+
+<Excerpt region="epub" />
+
+El EPUB de maquetación fija lleva los datos de los ejercicios y el script que los contesta, de modo que un sistema de lectura que ejecuta scripts ofrece los mismos campos y los mismos límites; uno que no los ejecuta conserva las soluciones que añade el escritor. Las fuentes se le pasan como bytes, los mismos archivos de Fontsource que cargó la página.
+
+## Variantes
+
+### Empaquetar el módulo para una plataforma de aprendizaje
+
+`postext-scorm` toma los mismos documentos y escribe un zip SCORM 1.2 o 2004 cuyo reproductor conecta el almacén y los resultados con el LMS. Un SCO cuenta todos los ejercicios que contiene, también los de práctica, así que un curso que solo califica el examen hace del examen un SCO propio con `items` (consulta <Feature id="scorm-packages">Paquetes SCORM</Feature>).
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### Corregir cada respuesta al darla
+
+Para un cuestionario sin botón Comprobar, pon `check: 'instant'` en `exercises.digital`. La corrección inmediata quita el límite de comprobaciones; el estilo del examen mantiene `showSolution`.
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## Errores frecuentes
+
+Pon un ancla a cada ejercicio que se evalúa (`:::exercise{#test-scales}`). Sus respuestas se guardan bajo el ancla; sin ella, la clave sale del lugar del ejercicio en el documento, y una pregunta añadida antes le devuelve al alumno que vuelve las respuestas guardadas de otra.

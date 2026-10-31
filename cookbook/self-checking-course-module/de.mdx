@@ -1,0 +1,63 @@
+---
+title: "Ein Kursmodul mit einem Test, der am Bildschirm gelöst wird"
+summary: "Zwei Übungsstile aus einem Markdown: Übung ohne Grenzen und ein Test mit nur einer Prüfung; attachExercises macht beide im HTML lösbar, das EPUB ebenso."
+plain: "Eine Lektion über Erdbeben: lesen, beliebig oft üben, dann einen kurzen Test schreiben, in dem jede Antwort nur einmal geprüft wird. Sie wird als Heft gedruckt und funktioniert am Bildschirm und im E-Book."
+description: "Ein vierseitiges Modul, dessen Übung und Test im HTML-Viewer und in einem EPUB mit festem Layout gelöst werden, mit Grenzen pro Versuch und 70 % zum Bestehen."
+question: "Wie lasse ich Lernende die Übungen am Bildschirm lösen, mit einem Test, der nur eine Prüfung erlaubt?"
+aliases: ["interaktive Übungen", "Selbstkontrolle", "Online-Test", "Lernplattform", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "Die Moduleröffnung: ein Gemälde einer Verwerfung quer durch eine trockene Ebene, oben angeschnitten, Dachzeile, Titel und ein kursiver Vorspann.", "3": "Übung: drei Aufgaben mit der Nummer in einer rostroten Scheibe, danach die Lösungen der Übung.", "4": "Modultest: vier Aufgaben unter einer schiefergrauen Linie, die Nummer im Quadrat, und das Kolophon." }
+---
+
+## Was Sie setzen
+
+Modul 4 von *The Restless Planet*, einem Einführungskurs in die Geowissenschaften: vier Seiten über Erdbeben im Format 176 × 250 mm, die unter einem Gemälde einer Verwerfung quer durch eine trockene Ebene beginnen. Der Lesetext führt zu einer Übung und einem Modultest, im Markdown als `:::exercise`-Blöcke mit ihren Antworten geschrieben. Das gedruckte Modul enthält die Lösungen der Übung und lässt die des Tests weg. Am Bildschirm sind dieselben Seiten lösbar: Die Übung lässt sich beliebig oft prüfen und neu beginnen, jede Testfrage dagegen nur einmal prüfen, nie neu beginnen, und ihre Lösung erscheint erst, wenn diese Prüfung verbraucht ist. Ein Feld neben den Seiten zählt zusammen, was eine Lernplattform speichern würde: die Punktzahl, ob der Test abgeschlossen ist, und bestanden oder nicht bei 70 %.
+
+## Zubereitung
+
+### 1 · Zwei Stile, zwei Regeln
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort). Die Übungen sagen nur, was sie fragen; der `style` des Blocks bestimmt, wie sie sich verhalten. `practice` behält die Vorgaben des Buchs, also bietet seine Leiste Prüfen, Lösung zeigen und Neu beginnen ohne Grenze. `test` erweitert ihn um einen `digital`-Block: `maxChecks: 1`, `reset: false` und `showSolution: 'noChecksLeft'`, sodass die Leiste bis „Keine Prüfung mehr“ herunterzählt und erst dann die Lösung anbietet. Auf Papier druckt derselbe Stil seine Lösungen nicht (`placement: 'none'`), die Lösungen der Übung stehen dort, wo die Zeile `:::solutions` steht.
+
+### 2 · Ein gespeicherter Versuch kommt aus dem Speicher zurück
+
+<Excerpt region="attempt" />
+
+`attachExercises` liest die Antworten jeder Übung mit `getItem` und schreibt sie mit `setItem`, unter dem `storageKey` und dem Anker der Übung. Jedes Objekt mit diesen drei Aufrufen kann `localStorage` ersetzen; eine Lernplattform speichert dasselbe JSON in den Daten der Lernenden. Dieses liefert drei bereits geprüfte Testfragen mit zwei Fehlern (wahr bei Aussage 3, 180 km bei der Entfernung), und die Seite öffnet sich so, wie sie jemand vorfindet, der zurückkommt: diese Fragen gesperrt, ihre Lösungen verfügbar, die Reihenfolge-Aufgabe noch offen.
+
+### 3 · Auf den Seiten antworten und jede Prüfung hören
+
+<Excerpt region="screen" />
+
+`renderToHtml` schreibt die Seiten und die Daten der Übungen; `attachExercises` legt Eingabefelder, Schalter und die Leiste darüber. `onResult` hört jede Übung beim Einrichten und nach jeder Prüfung, jedem Neubeginn und jeder gezeigten Lösung, mit den richtigen (`right`) und allen bewerteten Antworten (`total`), den verbrauchten Prüfungen und ob der Versuch gesperrt ist (`locked`). Das Feld zählt die Antworten des Tests so zusammen wie ein SCORM-Player: richtige über bewertete Antworten im ganzen Test, abgeschlossen, wenn jede Frage geprüft oder gesperrt ist, bestanden ab `passingScore`. Die Seite nutzt `dpi: 96`, sodass ein Millimeter der Druckseite ein CSS-Millimeter am Bildschirm ist.
+
+### 4 · Dieselben Übungen in einem EPUB
+
+<Excerpt region="epub" />
+
+Das EPUB mit festem Layout enthält die Daten der Übungen und das Skript, das sie lösbar macht: Ein Lesesystem, das Skripte ausführt, bietet dieselben Felder und dieselben Grenzen, eines ohne Skripte behält die Lösungen, die der Writer hinzufügt. Die Schriften bekommt er als Bytes, dieselben Fontsource-Dateien, die die Seite geladen hat.
+
+## Varianten
+
+### Das Modul für eine Lernplattform verpacken
+
+`postext-scorm` nimmt dieselben Dokumente und schreibt ein SCORM-1.2- oder 2004-Zip, dessen Player Speicher und Ergebnisse mit dem LMS verbindet. Ein SCO zählt alle Übungen, die es enthält, auch die zum Üben; ein Kurs, der nur den Test bewertet, macht ihn mit `items` zu einem eigenen SCO (siehe <Feature id="scorm-packages">SCORM-Pakete</Feature>).
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### Jede Antwort sofort prüfen
+
+Für ein Quiz ohne Prüfen-Knopf setzen Sie `check: 'instant'` in `exercises.digital`. Die sofortige Prüfung hebt die Prüfgrenze auf; der Teststil behält `showSolution`.
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## Häufige Fehler
+
+Geben Sie jeder bewerteten Übung einen Anker (`:::exercise{#test-scales}`). Ihre Antworten werden unter dem Anker gespeichert; ohne ihn entsteht der Schlüssel aus der Stelle der Übung im Dokument, und eine davor eingefügte Frage gibt Zurückkehrenden die gespeicherten Antworten einer anderen.
