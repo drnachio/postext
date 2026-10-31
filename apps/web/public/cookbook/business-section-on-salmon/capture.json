@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "business-section-on-salmon",
-  "sourceHash": "c8e6cb25490ae286127ee87ad5eee187ccd8582fa955073f5ec70eb42f2c111e",
+  "sourceHash": "7830b6d77390d0007bc151988e2516cc241afbd474899023871b7ad04f481257",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:32:12.322Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:18:32.124Z",
   "variants": {
     "en": {
-      "hash8": "5a430f16",
-      "vdtHash": "a237f56bf659bc50de2e3f6dbaba793088bb7e4b",
+      "hash8": "d09bb337",
+      "vdtHash": "ae93bda1ce4bdabb964e5b2dacb5372f5b948856",
       "timings": {
-        "importMs": 420,
-        "fontsMs": 76,
-        "buildMs": 332,
-        "totalMs": 1905,
+        "importMs": 3625,
+        "fontsMs": 413,
+        "buildMs": 390,
+        "totalMs": 5841,
         "builds": 1
       },
       "specimen": {
@@ -73,7 +73,7 @@
           "h": 1492,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 155712,
+          "bytes": 155686,
           "alt": "Opening page 3: Region. Where the money goes · Weather · Tides at Kingsquay · The Holm Maid leaves Skerra pier on her first crossing since May."
         },
         {
@@ -117,7 +117,7 @@
           "h": 1492,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 133716,
+          "bytes": 138448,
           "alt": "Opening page 7: Companies. Results · Company diary · Halden’s Quayside plant bakes 1.1 million loaves a week."
         }
       ],
@@ -153,13 +153,13 @@
       },
       "sandbox": {
         "file": "business-section-on-salmon.postext",
-        "bytes": 1218837,
+        "bytes": 1218910,
         "folio": "77d83e3b",
         "chapters": [
           {
             "pages": 8,
-            "hash": "56fb59fd128415e7",
-            "lines": "de23b46b296d6f79"
+            "hash": "75b4aa20250f4edc",
+            "lines": "031e339263f17416"
           }
         ]
       },
@@ -489,8 +489,8 @@
         "iterationCount": 6,
         "looseLines": {
           "count": 16,
-          "share": 0.0297,
-          "worst": 2.98
+          "share": 0.0294,
+          "worst": 2.73
         },
         "raggedLines": {
           "count": 0
@@ -509,7 +509,7 @@
           {
             "check": "C24",
             "severity": "warn",
-            "detail": "16 of 539 justified lines (3.0 %) stretch past 2× (worst 2.98×); loosest: p. 3 2.98× “Saltmarsh, Fenner’s Green and”, p. 7 2.73× “The company estimated”, p. 6 2.68× “In the currency market”"
+            "detail": "16 of 545 justified lines (2.9 %) stretch past 2× (worst 2.73×); loosest: p. 7 2.73× “The company estimated”, p. 6 2.68× “In the currency market”, p. 3 2.66× “terday, raises on-street parking”"
           },
           {
             "check": "C35",

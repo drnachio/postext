@@ -158,7 +158,7 @@ Marrowick City Council will keep all eleven of its branch libraries open next ye
 
 The draft budget, published yesterday, raises on-street parking charges by 40p an hour in the city centre and closes two of the council’s five highways depots. Council tax rises by 4.99%, the most allowed without a local vote, adding £1.38 a week to a Band D bill.
 
-The four libraries, at Holmside, Saltmarsh, Fenner’s Green and Kelby Rise, drew 3,100 signatures to a petition in the summer. “The libraries are where people go for the internet, for warmth and for help with forms,” said the council’s leader, Ann Fairlie. “We heard that.”
+The four libraries, at Holmside, Kelby Rise, Saltmarsh and Fenner’s Green, drew 3,100 signatures to a petition in the summer. “The libraries are where people go for the internet, for warmth and for help with forms,” said the council’s leader, Ann Fairlie. “We heard that.”
 
 Adult social care takes the largest increase, £14.6 million, as the number of people over 85 in the city grows by about 600 a year. Spending on roads falls by 4% :ref{id="budget" text="(table, below)"}.
 
