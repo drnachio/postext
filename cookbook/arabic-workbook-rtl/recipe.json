@@ -50,8 +50,8 @@
     "arabic-fonts-subset"
   ],
   "engine": {
-    "postext": "1.63.0",
-    "postextPdf": "1.63.0"
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0"
   },
   "kit": [
     "core",
@@ -79,8 +79,8 @@
     "sandbox": "first",
     "expect": {
       "pages": [
-        8,
-        8
+        6,
+        6
       ]
     }
   },
@@ -119,7 +119,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-24",
-  "updated": "2026-10-24",
+  "updated": "2026-10-31",
   "related": [
     "handwriting-workbook",
     "maghreb-edition-european-digits",

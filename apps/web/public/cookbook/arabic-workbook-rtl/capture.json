@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "arabic-workbook-rtl",
-  "sourceHash": "adab82af6fcf527561ae5652f977485925800163059cbaf25dfe3c0ecb957946",
+  "sourceHash": "a63ece032344153f0327f0c9b3a9149b688468ab058ba0bac36d74ad424b44ac",
   "engine": {
-    "postext": "1.63.0",
-    "postextPdf": "1.63.0",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-26T01:08:22.020Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:01:09.820Z",
   "variants": {
     "ar": {
-      "hash8": "cd08e1dc",
-      "vdtHash": "b4ab12fd1b010cece6bfbcf30c9c72c9dde5e744",
+      "hash8": "c15988eb",
+      "vdtHash": "6cc260553ca2fa690aaf58d8006b48b7a7553270",
       "timings": {
-        "importMs": 408,
-        "fontsMs": 94,
-        "buildMs": 82,
-        "totalMs": 1171,
+        "importMs": 3676,
+        "fontsMs": 248,
+        "buildMs": 93,
+        "totalMs": 5481,
         "builds": 2
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Baloo Bhaijaan 2",
           "Noto Naskh Arabic"
         ],
-        "pages": 8,
+        "pages": 6,
         "ownLines": 149
       },
       "pages": [
@@ -49,7 +49,7 @@
           "h": 1412,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 89624,
+          "bytes": 103324,
           "alt": "صفحة الافتتاح ١: في الحديقة."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1412,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 46064,
+          "bytes": 50470,
           "alt": "الصفحة ٢."
         },
         {
@@ -71,63 +71,41 @@
           "h": 1412,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 41602,
+          "bytes": 34074,
           "alt": "الصفحة ٣."
         },
         {
           "n": 4,
-          "label": "٤",
-          "role": "body",
-          "w": 1000,
-          "h": 1412,
-          "file": "p04.webp",
-          "strip": "p04.s.webp",
-          "bytes": 14342,
-          "alt": "الصفحة ٤."
-        },
-        {
-          "n": 5,
           "label": "1",
           "role": "opener",
           "w": 1000,
           "h": 1412,
-          "file": "p05.webp",
-          "strip": "p05.s.webp",
-          "bytes": 89776,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 103446,
           "alt": "صفحة الافتتاح 1: في الحديقة."
         },
         {
-          "n": 6,
+          "n": 5,
           "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 50796,
+          "alt": "الصفحة 2."
+        },
+        {
+          "n": 6,
+          "label": "3",
           "role": "body",
           "w": 1000,
           "h": 1412,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 46284,
-          "alt": "الصفحة 2."
-        },
-        {
-          "n": 7,
-          "label": "3",
-          "role": "body",
-          "w": 1000,
-          "h": 1412,
-          "file": "p07.webp",
-          "strip": "p07.s.webp",
-          "bytes": 42322,
+          "bytes": 35116,
           "alt": "الصفحة 3."
-        },
-        {
-          "n": 8,
-          "label": "4",
-          "role": "body",
-          "w": 1000,
-          "h": 1412,
-          "file": "p08.webp",
-          "strip": "p08.s.webp",
-          "bytes": 14750,
-          "alt": "الصفحة 4."
         }
       ],
       "spreads": [
@@ -140,20 +118,12 @@
           2
         ],
         [
-          3,
-          null
-        ],
-        [
           null,
-          4
+          3
         ],
         [
-          5,
-          6
-        ],
-        [
-          7,
-          null
+          4,
+          5
         ]
       ],
       "binding": "right",
@@ -171,14 +141,14 @@
       },
       "sandbox": {
         "file": "arabic-workbook-rtl.postext",
-        "bytes": 178912,
+        "bytes": 180624,
         "keep": "first",
-        "pages": 4,
+        "pages": 3,
         "chapters": [
           {
-            "pages": 4,
-            "hash": "190992637e193e17",
-            "lines": "998958e79d343e99"
+            "pages": 3,
+            "hash": "4304ffbd5b541e37",
+            "lines": "1c0a79e69bee4898"
           }
         ]
       },
@@ -437,6 +407,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",
