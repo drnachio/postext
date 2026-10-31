@@ -72,8 +72,8 @@ Two cadences belong to the minor mode. A chorale in minor often closes on a majo
 
 1. Write the five cadences of :ref{id="ex-cadences" case="lower"} in D major and in F major, in close and in open position.
 2. Harmonize the first line of the Old Hundredth with a perfect authentic cadence in place of the imperfect one. Which note of the melody must change?
-3. Find the cadence at the end of each line in three chorales of your choice and label it.
-4. Rewrite the last two bars of :ref{id="ex-old-hundredth" case="lower"} with a plagal *Amen* after the final chord.
+3. In three chorales of your choice, find the cadence at the end of each line, label it and circle the leading tone where it resolves.
+4. Rewrite the last two bars of :ref{id="ex-old-hundredth" case="lower"} with a plagal *Amen* after the final chord, keeping the tonic in the same voice.
 
 :::paragraphs{style="colophon"}
 *Four-Part Harmony*, a method for the first years of the conservatory · Set in Crimson Pro, Playfair Display and Fira Sans Condensed (SIL OFL) · Music engraved in Bravura · Melodies in the public domain; harmonizations and text original, CC BY 4.0.
