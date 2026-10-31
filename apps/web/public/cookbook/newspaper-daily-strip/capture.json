@@ -3,27 +3,21 @@
   "slug": "newspaper-daily-strip",
   "sourceHash": "0662ec555b26fa5ef37b2aae80e431927b102035c48d3b9f34cab5b0fa318d6d",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:33.831Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:02.399Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:50:58.195Z",
   "variants": {
     "en": {
-      "hash8": "0d6fbf7e",
+      "hash8": "202d27de",
       "vdtHash": "d9c682beeac52135ee3e4c9c36073f95d284710d",
       "timings": {
-        "importMs": 623,
-        "fontsMs": 252,
-        "buildMs": 307,
-        "totalMs": 1856,
+        "importMs": 6210,
+        "fontsMs": 1248,
+        "buildMs": 806,
+        "totalMs": 9598,
         "builds": 1
       },
       "specimen": {
@@ -94,7 +88,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 879958,
+        "bytes": 879957,
         "pages": 2
       },
       "sandbox": {
@@ -341,6 +335,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
@@ -349,13 +353,13 @@
       }
     },
     "es": {
-      "hash8": "8f8621ea",
+      "hash8": "844a2237",
       "vdtHash": "c12bf47ba17eb0f6827eb5cd8e177234c24d5de7",
       "timings": {
-        "importMs": 528,
-        "fontsMs": 416,
-        "buildMs": 363,
-        "totalMs": 2009,
+        "importMs": 6623,
+        "fontsMs": 1527,
+        "buildMs": 747,
+        "totalMs": 10208,
         "builds": 1
       },
       "specimen": {
@@ -426,7 +430,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 884332,
+        "bytes": 884323,
         "pages": 2
       },
       "sandbox": {
@@ -673,6 +677,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
@@ -681,13 +695,13 @@
       }
     },
     "ca": {
-      "hash8": "3a3c9ad7",
+      "hash8": "57bc3d46",
       "vdtHash": "22dfffcadc3a976d72fd443f1b3b7d368879d0b9",
       "timings": {
-        "importMs": 530,
-        "fontsMs": 429,
-        "buildMs": 316,
-        "totalMs": 1885,
+        "importMs": 4652,
+        "fontsMs": 842,
+        "buildMs": 532,
+        "totalMs": 7095,
         "builds": 1
       },
       "specimen": {
@@ -1005,6 +1019,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ca, en, es, zh, ar, ja, pt, fr, de, it"
@@ -1013,13 +1037,13 @@
       }
     },
     "zh": {
-      "hash8": "6dc8a68b",
+      "hash8": "f3f25c82",
       "vdtHash": "aa42116175019bf67d19d2dfd06d4d33bf340ea9",
       "timings": {
-        "importMs": 675,
-        "fontsMs": 638,
-        "buildMs": 288,
-        "totalMs": 2212,
+        "importMs": 5400,
+        "fontsMs": 3778,
+        "buildMs": 455,
+        "totalMs": 11369,
         "builds": 1
       },
       "specimen": {
@@ -1090,7 +1114,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1013634,
+        "bytes": 1013590,
         "pages": 2
       },
       "sandbox": {
@@ -1337,6 +1361,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, en, es, ca, ar, ja, pt, fr, de, it"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -1670,6 +1704,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar, en, es, ca, zh, ja, pt, fr, de, it"
@@ -1678,13 +1722,13 @@
       }
     },
     "ja": {
-      "hash8": "a5f5590d",
+      "hash8": "1494a25a",
       "vdtHash": "e2c852be5d879979d1bca8c565db57588298896a",
       "timings": {
-        "importMs": 472,
-        "fontsMs": 686,
-        "buildMs": 320,
-        "totalMs": 2080,
+        "importMs": 9631,
+        "fontsMs": 7093,
+        "buildMs": 540,
+        "totalMs": 18523,
         "builds": 1
       },
       "specimen": {
@@ -1756,7 +1800,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1004899,
+        "bytes": 1004816,
         "pages": 2
       },
       "sandbox": {
@@ -2005,6 +2049,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, en, es, ca, zh, ar, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ja, en, es, ca, zh, ar, pt, fr, de, it"
@@ -2013,13 +2067,13 @@
       }
     },
     "pt": {
-      "hash8": "596f08b0",
+      "hash8": "c0da0062",
       "vdtHash": "d9e0f3f92fbe5bf035ffe45dba0eec3d1102a6cf",
       "timings": {
-        "importMs": 315,
-        "fontsMs": 145,
-        "buildMs": 291,
-        "totalMs": 1526,
+        "importMs": 4770,
+        "fontsMs": 849,
+        "buildMs": 429,
+        "totalMs": 6975,
         "builds": 1
       },
       "specimen": {
@@ -2090,7 +2144,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 882812,
+        "bytes": 882813,
         "pages": 2
       },
       "sandbox": {
@@ -2347,6 +2401,16 @@
             "detail": "2 paragraphs set a line short with tracking (worst −5‰): p. 2 −5‰ ““A regra é que a piada tem que cair no quarto qu…”, p. 2 −5‰ “Pip responde: Uma vez. Levei dois dias, e o Otto…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, ca, zh, ar, ja, fr, de, it"
@@ -2355,13 +2419,13 @@
       }
     },
     "fr": {
-      "hash8": "4f90859c",
+      "hash8": "bf676589",
       "vdtHash": "be42959c67b0b16d470858da695522e8056c8a4f",
       "timings": {
-        "importMs": 235,
-        "fontsMs": 215,
-        "buildMs": 358,
-        "totalMs": 1420,
+        "importMs": 4785,
+        "fontsMs": 1035,
+        "buildMs": 495,
+        "totalMs": 7355,
         "builds": 1
       },
       "specimen": {
@@ -2432,7 +2496,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 881702,
+        "bytes": 881689,
         "pages": 2
       },
       "sandbox": {
@@ -2689,6 +2753,16 @@
             "detail": "4 paragraphs set a line short with tracking (worst −10‰, the cap): p. 2 −10‰ “À l’été 2016, elle a posté ses six premiers stri…”, p. 2 −10‰ “Cher Pip, as-tu déjà fini un croissant entier ? …”, p. 2 −5‰ “Enfant, Barlow vivait au-dessus de la boulangeri…”, p. 2 −5‰ “Le strip du dimanche fait exception à la règle d…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, ca, zh, ar, ja, pt, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: fr, en, es, ca, zh, ar, ja, pt, de, it"
@@ -2697,13 +2771,13 @@
       }
     },
     "de": {
-      "hash8": "fb2fa72e",
+      "hash8": "33886602",
       "vdtHash": "63868a60c0170fe91ffbadc05d05fe8da9b7a247",
       "timings": {
-        "importMs": 267,
-        "fontsMs": 381,
-        "buildMs": 348,
-        "totalMs": 1615,
+        "importMs": 4221,
+        "fontsMs": 1287,
+        "buildMs": 642,
+        "totalMs": 7356,
         "builds": 1
       },
       "specimen": {
@@ -2774,7 +2848,7 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 883264,
+        "bytes": 883262,
         "pages": 2
       },
       "sandbox": {
@@ -3031,6 +3105,16 @@
             "detail": "2 paragraphs set a line short with tracking (worst −5‰): p. 2 −5‰ “Ines Barlow zeichnet seit zehn Jahren an jedem W…”, p. 2 −5‰ “„Die Regel ist, dass die Pointe im vierten Bild …”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: de, en, es, ca, zh, ar, ja, pt, fr, it"
@@ -3039,13 +3123,13 @@
       }
     },
     "it": {
-      "hash8": "8df3b6f3",
+      "hash8": "2fe6030c",
       "vdtHash": "e5db6c17de48ff64f84233903cacc7c01a80d0b2",
       "timings": {
-        "importMs": 249,
-        "fontsMs": 214,
-        "buildMs": 344,
-        "totalMs": 1387,
+        "importMs": 8196,
+        "fontsMs": 837,
+        "buildMs": 389,
+        "totalMs": 10661,
         "builds": 1
       },
       "specimen": {
@@ -3371,6 +3455,16 @@
             "check": "C35",
             "severity": "info",
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 2 −5‰ “L’abitudine è nata nel 2019, con l’edizione fran…”"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, ca, zh, ar, ja, pt, fr, de"
           },
           {
             "check": "sandbox",
