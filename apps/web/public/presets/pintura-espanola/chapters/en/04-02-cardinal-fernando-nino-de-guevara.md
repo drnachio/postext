@@ -5,5 +5,5 @@ In the article, "Three Paintings by El Greco", Walter Liedtke theorizes that it 
 The commission of this painting likely occurred in the spring of 1600, when the Cardinal visiting Toledo for several weeks. As Katharine Baetjer notes, Guevara was named cardinal of San Martino ai Monti in 1596 and thereafter traveled to Rome. In 1599, the Cardinal then received a nomination and subsequent promotion to Inquisitor General of Spain, and made a trip to Toledo. It is possible that, during the Cardinal's visit to Toledo, Conde de Los Arcos may have recommended El Greco to his uncle. Although Guevara had siblings who could have commissioned his portrait, during this time, his sisters were dedicated to various convents and his brother, Rodrigo, lived primarily in the Spanish Netherlands and was likely not in Spain often enough to know the prominence and popularity of the work of El Greco.
 
 :::paragraphs{style="fuente"}
-Commentary adapted from the English Wikipedia article “Portrait of Fernando Niño de Guevara” (revision 1324424771, CC BY-SA 4.0).
+Commentary adapted from the English Wikipedia article “Portrait of Fernando Niño de Guevara” (revision 1324424771, CC BY-SA 4.0). Record and zoomable image on the [museum's website](https://www.metmuseum.org/art/collection/search/436573).
 :::

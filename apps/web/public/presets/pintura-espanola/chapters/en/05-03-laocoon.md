@@ -7,5 +7,5 @@ According to Greco-Roman mythology, Laocoön was a figure in the Trojan War wage
 Laocoön became involved in the war after Greek soldiers, frustrated by their unsuccessful ten-year siege of the city, devised a ruse to end the war: the hollow Trojan Horse filled with Greek soldiers. Laocoön attempted to warn his compatriots that the horse was a "deadly fraud" instead of a gift, but the Trojans did not heed the warning. Believing that the war was over, the Trojans triumphantly brought the horse within their city walls and initiated a catastrophic series of events that brought about the sack of Troy.
 
 :::paragraphs{style="fuente"}
-Commentary adapted from the English Wikipedia article “Laocoön (El Greco)” (revision 1358201626, CC BY-SA 4.0).
+Commentary adapted from the English Wikipedia article “Laocoön (El Greco)” (revision 1358201626, CC BY-SA 4.0). Record and zoomable image on the [museum's website](https://www.nga.gov/artworks/33253-laocoon).
 :::

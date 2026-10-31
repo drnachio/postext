@@ -9,5 +9,5 @@ The attribution has not been uncontested. As recently as 1944 biographer F. J. S
 The painting came into the possession of Andrew W. Mellon in 1927, thence to the National Gallery as part of the Mellon collection in 1937.
 
 :::paragraphs{style="fuente"}
-Commentary adapted from the English Wikipedia article “The Needlewoman” (revision 1361431488, CC BY-SA 4.0).
+Commentary adapted from the English Wikipedia article “The Needlewoman” (revision 1361431488, CC BY-SA 4.0). Record and zoomable image on the [museum's website](https://www.nga.gov/collection/art-object-page.88.html).
 :::

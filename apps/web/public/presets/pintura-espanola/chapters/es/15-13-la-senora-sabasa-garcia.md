@@ -3,5 +3,5 @@
 El resultado es uno de los retratos femeninos más directos de Goya. La joven, envuelta en un chal de gasa color crema, mira de frente sobre un fondo vacío, sin joyas ni atributos que distraigan; toda la pintura se concentra en el rostro, en los rizos oscuros y en la transparencia del tejido sobre los brazos. La factura, rápida y segura, y la ausencia de adornos anuncian el retrato moderno del siglo XIX. :ref{id="goya-sabasa" case="lower"}
 
 :::paragraphs{style="fuente"}
-Comentario escrito para esta edición (CC BY 4.0).
+Comentario escrito para esta edición (CC BY 4.0). Ficha e imagen ampliable en la [web del museo](https://www.nga.gov/artworks/95-senora-sabasa-garcia).
 :::

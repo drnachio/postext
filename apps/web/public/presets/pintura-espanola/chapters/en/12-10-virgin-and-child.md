@@ -3,5 +3,5 @@
 This is the Murillo of the final decade, of the so-called vaporous style: contours that dissolve, warm flesh tones, a loose brush that lets the canvas breathe. Images like this one, made for private devotion in Sevillian homes, made Murillo the most copied painter in Europe during the following century and account for the tenderness, sometimes misread as sweetness, attached to his name. :ref{id="murillo-virgen" case="lower"}
 
 :::paragraphs{style="fuente"}
-Commentary written for this edition (CC BY 4.0).
+Commentary written for this edition (CC BY 4.0). Record and zoomable image on the [museum's website](https://www.metmuseum.org/art/collection/search/437175).
 :::
