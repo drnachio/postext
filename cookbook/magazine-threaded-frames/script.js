@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 160 · A magazine feature threaded through frames ═════
 // https://postext.dev/en/cookbook/magazine-threaded-frames
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: Generated With Diffusion Models
-// Fonts: Literata, Fraunces, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.38.0
+// Fonts: Literata, Fraunces, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 //
 // A six-page feature of an invented city magazine, set as one composed page: an opening
 // spread whose frames are drawn in the config, and pages the text adds as it runs on.

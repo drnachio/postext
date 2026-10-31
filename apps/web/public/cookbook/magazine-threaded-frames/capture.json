@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "magazine-threaded-frames",
-  "sourceHash": "998c7d988ac379810b3c33f1fd70780a6c4a43e56b2de9c00ebc31aebd05546d",
+  "sourceHash": "74975c9e93a47f531586e6da1720a77a16b7be3753be281c0dfe06fbe7071bcc",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:08.050Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.981Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:24:50.676Z",
   "variants": {
     "en": {
-      "hash8": "bea53396",
+      "hash8": "56e63b54",
       "vdtHash": "698d0f4d2ce612416d63367a9e39edbe6b194b16",
       "timings": {
-        "importMs": 497,
-        "fontsMs": 84,
-        "buildMs": 136,
-        "totalMs": 1398,
+        "importMs": 4412,
+        "fontsMs": 164,
+        "buildMs": 158,
+        "totalMs": 5883,
         "builds": 1
       },
       "specimen": {
@@ -122,7 +116,7 @@
       },
       "sandbox": {
         "file": "magazine-threaded-frames.postext",
-        "bytes": 546675,
+        "bytes": 546665,
         "folio": "6a05e16e",
         "chapters": [
           {
@@ -422,14 +416,14 @@
             "detail": "2 paragraphs set a line short with tracking (worst −5‰): p. 2 −5‰ “For thirty years Carmen Aldaba set books by hand…”, p. 3 −5‰ “For four years she has taught a beginners’ cours…”"
           },
           {
-            "check": "chrome",
-            "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+            "detail": "book in several languages: en, es, de"
           },
           {
             "check": "sandbox",
@@ -440,13 +434,13 @@
       }
     },
     "es": {
-      "hash8": "1cfa7db4",
-      "vdtHash": "4ab979bf7bb75aa2248cdef731384cd3734adb9f",
+      "hash8": "4d645eee",
+      "vdtHash": "ca4486b023b868d1480c61293a7f9ab104293558",
       "timings": {
-        "importMs": 340,
-        "fontsMs": 204,
-        "buildMs": 157,
-        "totalMs": 1375,
+        "importMs": 7954,
+        "fontsMs": 353,
+        "buildMs": 162,
+        "totalMs": 9888,
         "builds": 1
       },
       "specimen": {
@@ -512,7 +506,7 @@
           "h": 1320,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 85188,
+          "bytes": 83858,
           "alt": "Página 49: Las abejas del tejado (continuación)."
         }
       ],
@@ -540,18 +534,18 @@
       },
       "pdf": {
         "file": "magazine-threaded-frames.pdf",
-        "bytes": 692505,
+        "bytes": 692329,
         "pages": 4
       },
       "sandbox": {
         "file": "magazine-threaded-frames.postext",
-        "bytes": 546630,
+        "bytes": 546622,
         "folio": "6a05e16e",
         "chapters": [
           {
             "pages": 4,
-            "hash": "de86cfa8099d0f20",
-            "lines": "fa8700c0b3130816"
+            "hash": "f2269087f27a5237",
+            "lines": "602a1a7ab6508788"
           }
         ],
         "warnings": [
@@ -822,17 +816,12 @@
           {
             "check": "C40",
             "severity": "info",
-            "detail": "every element came back to its source: 49 block, 12 frame, 306 line, 2 text"
+            "detail": "every element came back to its source: 48 block, 11 frame, 305 line, 2 text"
           },
           {
             "check": "C20",
             "severity": "warn",
             "detail": "card.webp weighs 92 KB (aim for ≤ 90 KB; capture.expect.cardKb states the figure of a painted card)"
-          },
-          {
-            "check": "chrome",
-            "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
           },
           {
             "check": "sandbox",
@@ -843,18 +832,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, de"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, de"
           }
         ]
       }
     },
     "de": {
-      "hash8": "d7920a82",
+      "hash8": "e8895987",
       "vdtHash": "0b5fec9eca7dd5087cf3fa8df9e60fe1ff5be4d4",
       "timings": {
-        "importMs": 246,
-        "fontsMs": 69,
-        "buildMs": 130,
-        "totalMs": 1094,
+        "importMs": 5258,
+        "fontsMs": 570,
+        "buildMs": 232,
+        "totalMs": 7541,
         "builds": 1
       },
       "specimen": {
@@ -953,7 +947,7 @@
       },
       "sandbox": {
         "file": "magazine-threaded-frames.postext",
-        "bytes": 546919,
+        "bytes": 546907,
         "folio": "6a05e16e",
         "chapters": [
           {
@@ -1258,14 +1252,14 @@
             "detail": "2 paragraphs set a line short with tracking (worst −10‰, the cap): p. 3 −10‰ “Die Königin im Gewimmel zu finden, braucht Gedul…”, p. 4 −5‰ “„Stellst du auf einen Quadratkilometer hundert V…”"
           },
           {
-            "check": "chrome",
-            "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
           },
           {
             "check": "sandbox",
             "severity": "info",
-            "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+            "detail": "book in several languages: de, es, en"
           },
           {
             "check": "sandbox",
