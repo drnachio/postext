@@ -204,6 +204,22 @@
      "hex": "#676c72",
      "model": "hex"
     }
+   },
+   {
+    "id": "bandLight",
+    "name": "Color de la revista sobre fondo oscuro",
+    "value": {
+     "hex": "#5aa9c4",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "mutedLight",
+    "name": "Gris sobre fondo oscuro",
+    "value": {
+     "hex": "#9aa0a6",
+     "model": "hex"
+    }
    }
   ],
   "resourceTypes": [
@@ -343,6 +359,12 @@
     "paletteId": "ink"
    },
    "keepWithNext": true,
+   "balancing": {
+    "fillShortColumns": true,
+    "maxLinesBeforeLoose": 4,
+    "stretchAfterWideFloats": "always",
+    "trailingStep": "grid"
+   },
    "levels": [
     {
      "level": 1,
@@ -516,12 +538,7 @@
      }
     }
    ],
-   "keepWithNextSplit": "fill",
-   "balancing": {
-    "maxLinesBeforeLoose": 4,
-    "stretchAfterWideFloats": "always",
-    "trailingStep": "grid"
-   }
+   "keepWithNextSplit": "fill"
   },
   "headingStyles": [
    {
@@ -685,9 +702,9 @@
         "lineHeight": 1.2,
         "overflow": "wrap",
         "color": {
-         "hex": "#1f6f8b",
+         "hex": "#5aa9c4",
          "model": "hex",
-         "paletteId": "band"
+         "paletteId": "bandLight"
         },
         "textTransform": "uppercase",
         "letterSpacing": {
@@ -822,9 +839,9 @@
         "lineHeight": 1.2,
         "overflow": "wrap",
         "color": {
-         "hex": "#676c72",
+         "hex": "#9aa0a6",
          "model": "hex",
-         "paletteId": "muted"
+         "paletteId": "mutedLight"
         },
         "textTransform": "uppercase",
         "letterSpacing": {
@@ -1289,6 +1306,10 @@
     "name": "Página de texto",
     "numbered": false,
     "span": "page",
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    },
     "breakBefore": {
      "enabled": true,
      "parity": "any"
@@ -1424,13 +1445,42 @@
     }
    },
    {
+    "id": "pregunta",
+    "name": "Pregunta",
+    "numbered": false,
+    "toc": false,
+    "fontFamily": "Open Sans",
+    "fontSize": {
+     "value": 9.6,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13.2,
+     "unit": "pt"
+    },
+    "fontWeight": 700,
+    "color": {
+     "hex": "#1f6f8b",
+     "model": "hex",
+     "paletteId": "band"
+    },
+    "marginTop": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
     "id": "art-editorial",
     "name": "Editorial",
     "numbered": true,
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -1657,7 +1707,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -1884,7 +1934,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -2111,7 +2161,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -2338,7 +2388,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -2565,7 +2615,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -2792,7 +2842,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -3019,7 +3069,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -3246,7 +3296,7 @@
     "span": "page",
     "breakBefore": {
      "enabled": true,
-     "parity": "odd"
+     "parity": "any"
     },
     "advancedDesign": {
      "enabled": true,
@@ -3469,38 +3519,6 @@
   ],
   "paragraphStyles": [
    {
-    "id": "pregunta",
-    "name": "Pregunta",
-    "fontFamily": "Open Sans",
-    "fontSize": {
-     "value": 9.6,
-     "unit": "pt"
-    },
-    "lineHeight": {
-     "value": 13.2,
-     "unit": "pt"
-    },
-    "fontWeight": 700,
-    "textAlign": "left",
-    "firstLineIndent": {
-     "value": 0,
-     "unit": "mm"
-    },
-    "spaceBetween": {
-     "value": 6,
-     "unit": "pt"
-    },
-    "marginTop": {
-     "value": 6,
-     "unit": "pt"
-    },
-    "color": {
-     "hex": "#1f6f8b",
-     "model": "hex",
-     "paletteId": "band"
-    }
-   },
-   {
     "id": "firma",
     "name": "Firma",
     "fontFamily": "Outfit",
@@ -3613,26 +3631,39 @@
     "name": "Referencia",
     "fontFamily": "Open Sans",
     "fontSize": {
-     "value": 8,
+     "value": 7.3,
      "unit": "pt"
     },
     "lineHeight": {
-     "value": 11,
+     "value": 9.6,
      "unit": "pt"
     },
     "textAlign": "left",
-    "firstLineIndent": {
-     "value": 0,
+    "hangingIndent": {
+     "value": 5.5,
      "unit": "mm"
     },
+    "tabStops": [
+     {
+      "position": {
+       "value": 5.5,
+       "unit": "mm"
+      }
+     }
+    ],
     "spaceBetween": {
-     "value": 3,
+     "value": 1.5,
      "unit": "pt"
     },
     "color": {
      "hex": "#1c1f22",
      "model": "hex",
      "paletteId": "ink"
+    },
+    "boldColor": {
+     "hex": "#1f6f8b",
+     "model": "hex",
+     "paletteId": "band"
     }
    }
   ],
@@ -4036,6 +4067,108 @@
     "keepTogether": true
    },
    {
+    "id": "lectura",
+    "name": "Para más información",
+    "span": "column",
+    "placement": "here",
+    "backgroundEnabled": false,
+    "border": {
+     "enabled": false
+    },
+    "borderRadius": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "padding": {
+     "top": {
+      "value": 2.5,
+      "unit": "mm"
+     },
+     "right": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "bottom": {
+      "value": 0,
+      "unit": "mm"
+     },
+     "left": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "stripe": {
+     "enabled": true,
+     "side": "top",
+     "width": {
+      "value": 1.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     }
+    },
+    "icon": {
+     "kind": "none"
+    },
+    "titleStyle": {
+     "fontFamily": "Outfit",
+     "fontSize": {
+      "value": 10.5,
+      "unit": "pt"
+     },
+     "fontWeight": 700,
+     "color": {
+      "hex": "#1f6f8b",
+      "model": "hex",
+      "paletteId": "band"
+     },
+     "gap": {
+      "value": 1.5,
+      "unit": "mm"
+     }
+    },
+    "body": {
+     "fontFamily": "Open Sans",
+     "fontSize": {
+      "value": 8.5,
+      "unit": "pt"
+     },
+     "lineHeight": {
+      "value": 11.5,
+      "unit": "pt"
+     },
+     "color": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "boldColor": {
+      "hex": "#1c1f22",
+      "model": "hex",
+      "paletteId": "ink"
+     },
+     "textAlign": "left",
+     "hyphenation": false,
+     "paragraphSpacing": true,
+     "firstLineIndent": {
+      "value": 0,
+      "unit": "mm"
+     }
+    },
+    "marginTop": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 4,
+     "unit": "pt"
+    },
+    "keepTogether": true
+   },
+   {
     "id": "cifras",
     "name": "Cifras",
     "span": "page",
@@ -4086,9 +4219,9 @@
      },
      "fontWeight": 700,
      "color": {
-      "hex": "#1f6f8b",
+      "hex": "#5aa9c4",
       "model": "hex",
-      "paletteId": "band"
+      "paletteId": "bandLight"
      },
      "textTransform": "uppercase",
      "letterSpacing": {
@@ -4119,6 +4252,11 @@
       "hex": "#ffffff",
       "model": "hex",
       "paletteId": "white"
+     },
+     "italicColor": {
+      "hex": "#cfd4d8",
+      "model": "hex",
+      "paletteId": "rule"
      },
      "textAlign": "left",
      "hyphenation": false,
@@ -4333,7 +4471,7 @@
        "height": "auto"
       }
      },
-     "content": "{chapterTitle}",
+     "content": "{attr.kicker}",
      "fontFamily": "Outfit",
      "fontSize": {
       "value": 7.5,
@@ -4590,6 +4728,50 @@
    "rules": "horizontal",
    "splitInline": false
   },
+  "links": {
+   "print": "notes",
+   "show": "both",
+   "urlDisplay": "short",
+   "repeat": "first",
+   "qr": {
+    "size": {
+     "value": 14,
+     "unit": "mm"
+    }
+   }
+  },
+  "footnotes": {
+   "placement": "chapterEnd",
+   "chapterEndAlign": "text",
+   "fontFamily": "Open Sans",
+   "fontSize": {
+    "value": 6.8,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 9,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#676c72",
+    "model": "hex",
+    "paletteId": "muted"
+   },
+   "textAlign": "left",
+   "separator": {
+    "enabled": true,
+    "width": 0.25,
+    "lineWidth": {
+     "value": 0.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#cfd4d8",
+     "model": "hex",
+     "paletteId": "rule"
+    }
+   }
+  },
   "unorderedLists": {
    "bulletChar": "•",
    "color": {
@@ -4732,7 +4914,12 @@
      "id": "photo-chemicals-2",
      "caption": "Fotografía: chuttersnap · Unsplash, CC0",
      "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
-     "altText": "Pile of graduated cylinders"
+     "altText": "Pile of graduated cylinders",
+     "placement": {
+      "position": "auto",
+      "span": "column",
+      "width": 1
+     }
     },
     {
      "id": "photo-polluter-1",
@@ -4756,7 +4943,12 @@
      "id": "photo-industry-2",
      "caption": "Fotografía: Jason Blackeye jeisblack · Unsplash, CC0",
      "note": "Fotografía de dominio público (CC0) publicada en Unsplash y archivada en Wikimedia Commons; sustituye a la imagen de la edición original.",
-     "altText": "Wind Turbines (Unsplash)"
+     "altText": "Wind Turbines (Unsplash)",
+     "placement": {
+      "position": "auto",
+      "span": "column",
+      "width": 1
+     }
     },
     {
      "id": "photo-noise-1",
@@ -4954,7 +5146,12 @@
      "id": "photo-water-2",
      "caption": "Photograph: Joseph Milla · Unsplash, CC0",
      "note": "Public-domain photograph (CC0) published on Unsplash and archived on Wikimedia Commons; it replaces the picture of the original edition.",
-     "altText": "Breaking waves (Unsplash zIU96X1f4pM)"
+     "altText": "Breaking waves (Unsplash zIU96X1f4pM)",
+     "placement": {
+      "position": "auto",
+      "span": "column",
+      "width": 1
+     }
     },
     {
      "id": "photo-soil-1",

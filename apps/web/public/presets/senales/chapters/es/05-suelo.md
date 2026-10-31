@@ -52,8 +52,9 @@ Muchas iniciativas políticas actuales y futuras englobadas en el Pacto Verde Eu
 La agricultura tiene numerosas repercusiones en el medio ambiente, el clima y la salud humana. Las prácticas agrícolas no sostenibles contaminan el suelo, el aire y los alimentos y sobreexplotan
 :::
 
-## Para más información
+:::callout{type="lectura" title="Para más información"}
+- [Suelo](https://www.eea.europa.eu/themes/soil)
+- [SOER 2020, Capítulo 5 sobre la tierra y el suelo](https://www.eea.europa.eu/publications/soer-2020/chapter-05_soer2020-land-and-soil/view)
+- [Señales de la AEMA 2019 — Grunty i gleby w Europie](https://www.eea.europa.eu/signals/signals-2019)
 
-- Suelo: www.eea.europa.eu/themes/soil
-- SOER 2020, Capítulo 5 sobre la tierra y el suelo. www.eea.europa.eu/publications/soer-2020/ chapter-05_soer2020-land-and-soil/view
-- Señales de la AEMA 2019 — Grunty i gleby w Europie: www.eea.europa.eu/signals/ signals-2019
+:::

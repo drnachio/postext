@@ -85,7 +85,8 @@ The EU has a body of legislation to regulate chemicals in detergents, biocides, 
 
 Still, there is room for improvement to create a less toxic environment, and the European Green Deal aims to further protect citizens against dangerous chemicals with a new chemicals strategy and by moving the EU towards the zero pollution ambition.
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Chemicals](https://www.eea.europa.eu/themes/human/chemicals)
+- [SOER 2020, Chapter 10 on chemical pollution](https://www.eea.europa.eu/publications/soer-2020/chapter-10_soer2020-chemical-pollution/view)
 
-- Chemicals: www.eea.europa.eu/ themes/human/chemicals
-- SOER 2020, Chapter 10 on chemical pollution: www.eea.europa.eu/ publications/soer-2020/chapter-10_ soer2020-chemical-pollution/view
+:::

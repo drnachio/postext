@@ -87,7 +87,8 @@ Asimismo, en la UE disponemos de un corpus legislativo para regular las sustanci
 
 Aun así, hay margen de mejora para crear un medio ambiente menos tóxico, y el Pacto Verde Europeo tiene por objeto seguir protegiendo a los ciudadanos contra las sustancias químicas peligrosas con una nueva estrategia de productos químicos y con avances para lograr el objetivo de contaminación cero en la UE.
 
-## Para más información
+:::callout{type="lectura" title="Para más información"}
+- [Sustancias químicas](https://www.eea.europa.eu/themes/human/chemicals)
+- [SOER 2020, Capítulo 10 sobre la contaminación química](https://www.eea.europa.eu/publications/soer-2020/chapter-10_soer2020-chemical-pollution/view)
 
-- Sustancias químicas: www.eea.europa. eu/themes/human/chemicals
-- SOER 2020, Capítulo 10 sobre la contaminación química: www.eea. europa.eu/publications/soer-2020/ chapter-10_soer2020-chemicalpollution/view
+:::

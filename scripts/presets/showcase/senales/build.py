@@ -64,8 +64,12 @@ COLOURS = {
     "grey": "#f2f1ed",
     "rule": "#cfd4d8",
     "muted": "#676c72",
+    # The cover's small lines on the dark ground: the magazine's colour and
+    # the notes' grey lightened until they read (AA, 4.5:1 on the ink).
+    "bandLight": "#5aa9c4",
+    "mutedLight": "#9aa0a6",
 }
-NAMES = {"ink": "Tinta", "paper": "Papel", "white": "Blanco", "band": "Color de la revista", "tint": "Fondo de recuadros", "grey": "Fondo de datos", "rule": "Filetes", "muted": "Gris de notas"}
+NAMES = {"ink": "Tinta", "paper": "Papel", "white": "Blanco", "band": "Color de la revista", "tint": "Fondo de recuadros", "grey": "Fondo de datos", "rule": "Filetes", "muted": "Gris de notas", "bandLight": "Color de la revista sobre fondo oscuro", "mutedLight": "Gris sobre fondo oscuro"}
 col, COLOR_PALETTE = make_palette(COLOURS, NAMES)
 DISPLAY, TEXT = "Outfit", "Open Sans"
 
@@ -99,7 +103,7 @@ def running_heads(lang: str) -> dict:
     return {
         "elements": [
             T("folioEven", "{pageNumber}", anchor=at("page", "top-left"), offset=(M_OUTER, y), size_pt=8.5, family=DISPLAY, weight=700, parity="even", pages="body", overflow="ellipsis-end"),
-            T("chapterEven", "{chapterTitle}", anchor=at("page", "top-left"), offset=(M_OUTER + 8, y), width=110, size_pt=7.5, family=DISPLAY, weight=500, color="muted", parity="even", pages="body", overflow="ellipsis-end", textTransform="uppercase", letterSpacing=pt(1.2)),
+            T("chapterEven", "{attr.kicker}", anchor=at("page", "top-left"), offset=(M_OUTER + 8, y), width=110, size_pt=7.5, family=DISPLAY, weight=500, color="muted", parity="even", pages="body", overflow="ellipsis-end", textTransform="uppercase", letterSpacing=pt(1.2)),
             T("titleOdd", f"{book['title']} · {book['subtitle']}", anchor=at("page", "top-right"), offset=(-(M_OUTER + 8), y), width=120, size_pt=7.5, family=DISPLAY, weight=500, color="muted", align="right", parity="odd", pages="body", overflow="ellipsis-end", textTransform="uppercase", letterSpacing=pt(1.2)),
             T("folioOdd", "{pageNumber}", anchor=at("page", "top-right"), offset=(-M_OUTER, y), size_pt=8.5, family=DISPLAY, weight=700, align="right", parity="odd", pages="body", overflow="ellipsis-end"),
         ]
@@ -159,10 +163,10 @@ def cover_design(photo: str, aspect: float) -> dict:
                 B("coverBg", anchor=at("bleed", "top-left"), fill="ink"),
                 image_el("coverPhoto", photo, anchor=at("bleed", "top-left"), width=max(img_w, PAGE_W + 6), height=img_h),
                 B("coverRule", anchor=at("bleed", "top-left"), offset=(0, img_h - 3), height=3, fill="band"),
-                T("coverSeries", "{attr.series}", anchor=at("page", "top-left"), offset=(M_INNER, img_h + 8), width=TEXT_W, size_pt=8, family=DISPLAY, weight=700, color="band", textTransform="uppercase", letterSpacing=pt(2.4)),
+                T("coverSeries", "{attr.series}", anchor=at("page", "top-left"), offset=(M_INNER, img_h + 8), width=TEXT_W, size_pt=8, family=DISPLAY, weight=700, color="bandLight", textTransform="uppercase", letterSpacing=pt(2.4)),
                 T("coverTitle", "{title}", anchor=at("#coverSeries", "below"), offset=(0, 2), width=TEXT_W, size_pt=48, family=DISPLAY, weight=800, line_height=1.0, color="white"),
                 T("coverSubtitle", "{subtitle}", anchor=at("#coverTitle", "below"), offset=(0, 4), width=TEXT_W - 20, size_pt=14, family=DISPLAY, weight=500, line_height=1.25, color="rule"),
-                T("coverPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_INNER, -13), width=TEXT_W, size_pt=7, family=DISPLAY, color="muted", textTransform="uppercase", letterSpacing=pt(1.4)),
+                T("coverPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_INNER, -13), width=TEXT_W, size_pt=7, family=DISPLAY, color="mutedLight", textTransform="uppercase", letterSpacing=pt(1.4)),
             ]
         },
     }
@@ -232,12 +236,24 @@ def callout_styles() -> list[dict]:
             "marginTop": pt(6), "marginBottom": pt(10), "keepTogether": True,
         },
         {
+            # "Find out more": the article's closing reading list, kept in
+            # one column under a rule; its links print QR notes.
+            "id": "lectura", "name": "Para más información", "span": "column", "placement": "here",
+            "backgroundEnabled": False, "border": {"enabled": False}, "borderRadius": mm(0),
+            "padding": {"top": mm(2.5), "right": mm(0), "bottom": mm(0), "left": mm(0)},
+            "stripe": {"enabled": True, "side": "top", "width": pt(1.5), "color": col("band")},
+            "icon": {"kind": "none"},
+            "titleStyle": {"fontFamily": DISPLAY, "fontSize": pt(10.5), "fontWeight": 700, "color": col("band"), "gap": mm(1.5)},
+            "body": {"fontFamily": TEXT, "fontSize": pt(8.5), "lineHeight": pt(11.5), "color": col("ink"), "boldColor": col("ink"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
+            "marginTop": pt(8), "marginBottom": pt(4), "keepTogether": True,
+        },
+        {
             "id": "cifras", "name": "Cifras", "span": "page", "placement": "here",
             "backgroundEnabled": True, "background": col("ink"), "border": {"enabled": False}, "borderRadius": mm(0),
             "padding": {"top": mm(5), "right": mm(6), "bottom": mm(4), "left": mm(6)},
             "icon": {"kind": "none"}, "columnGap": mm(8),
-            "titleStyle": {"fontFamily": DISPLAY, "fontSize": pt(8), "fontWeight": 700, "color": col("band"), "textTransform": "uppercase", "letterSpacing": pt(1.8), "gap": mm(3)},
-            "body": {"fontFamily": DISPLAY, "fontSize": pt(10), "lineHeight": pt(14), "color": col("white"), "boldColor": col("white"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
+            "titleStyle": {"fontFamily": DISPLAY, "fontSize": pt(8), "fontWeight": 700, "color": col("bandLight"), "textTransform": "uppercase", "letterSpacing": pt(1.8), "gap": mm(3)},
+            "body": {"fontFamily": DISPLAY, "fontSize": pt(10), "lineHeight": pt(14), "color": col("white"), "boldColor": col("white"), "italicColor": col("rule"), "textAlign": "left", "hyphenation": False, "paragraphSpacing": True, "firstLineIndent": mm(0)},
             "marginTop": pt(8), "marginBottom": pt(12), "keepTogether": True,
         },
     ]
@@ -266,6 +282,9 @@ def body_text(lang: str) -> dict:
 def headings() -> dict:
     return {
         "fontFamily": DISPLAY, "color": col("ink"), "keepWithNext": True,
+        # A column the widow and orphan rules leave a line short is filled
+        # from its own paragraphs before the page is left uneven.
+        "balancing": {"fillShortColumns": True},
         "levels": [
             {"level": 1, "fontSize": pt(23), "lineHeight": pt(26), "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "numberingTemplate": "{1}", "advancedDesign": front_opener()},
             {"level": 2, "fontSize": pt(11.5), "lineHeight": pt(14), "fontWeight": 700, "color": col("band"), "marginTop": pt(12), "marginBottom": pt(3)},
@@ -292,22 +311,26 @@ def heading_styles(photos: dict[str, dict]) -> list[dict]:
         # The last page, always a verso: Folio turns it as the back cover.
         {"id": "contraportada", "name": "Contraportada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": back_cover_design("photo-water-1", photos["water-1"]["aspect"]), "header": empty, "footer": empty, "layout": {"layoutType": "single"}},
         {"id": "sumario", "name": "Sumario", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": front_opener(), "layout": {"layoutType": "single"}},
-        {"id": "preliminar", "name": "Página de texto", "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener()},
+        {"id": "preliminar", "name": "Página de texto", "numbered": False, "span": "page", "marginBottom": pt(0), "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener()},
+        # An interviewer's question is a heading, so it keeps with the
+        # answer it asks for and never ends a column on its own.
+        {"id": "pregunta", "name": "Pregunta", "numbered": False, "toc": False, "fontFamily": TEXT, "fontSize": pt(9.6), "lineHeight": pt(13.2), "fontWeight": 700, "color": col("band"), "marginTop": pt(12), "marginBottom": pt(6)},
     ]
     for spec in ed.ARTICLES:
         pid = spec["photos"][0]
-        styles.append({"id": f"art-{spec['slug']}", "name": spec["kicker"]["es"], "numbered": True, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": article_opener(f"photo-{pid}", photos[pid]["aspect"], spec["colour"])})
+        # An article opens on the next page, left or right: a magazine
+        # leaves no blank page before a feature.
+        styles.append({"id": f"art-{spec['slug']}", "name": spec["kicker"]["es"], "numbered": True, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": article_opener(f"photo-{pid}", photos[pid]["aspect"], spec["colour"])})
     return styles
 
 
 def paragraph_styles() -> list[dict]:
     return [
-        {"id": "pregunta", "name": "Pregunta", "fontFamily": TEXT, "fontSize": pt(9.6), "lineHeight": pt(13.2), "fontWeight": 700, "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "marginTop": pt(6), "color": col("band")},
         {"id": "firma", "name": "Firma", "fontFamily": DISPLAY, "fontSize": pt(9), "lineHeight": pt(12.5), "fontWeight": 500, "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(4), "marginTop": pt(8), "color": col("muted")},
         {"id": "fuentes", "name": "Fuentes", "fontFamily": TEXT, "fontSize": pt(7.2), "lineHeight": pt(9.8), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(3), "color": col("muted")},
         {"id": "colofon", "name": "Colofón", "fontFamily": TEXT, "fontSize": pt(8), "lineHeight": pt(11), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "color": col("muted")},
         {"id": "creditos", "name": "Créditos", "fontFamily": TEXT, "fontSize": pt(9.3), "lineHeight": pt(13.2), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6)},
-        {"id": "referencia", "name": "Referencia", "fontFamily": TEXT, "fontSize": pt(8), "lineHeight": pt(11), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(3), "color": col("ink")},
+        {"id": "referencia", "name": "Referencia", "fontFamily": TEXT, "fontSize": pt(7.3), "lineHeight": pt(9.6), "textAlign": "left", "firstLineIndent": mm(0), "hangingIndent": mm(5.5), "tabStops": [{"position": mm(5.5)}], "spaceBetween": pt(1.5), "color": col("ink"), "boldColor": col("band")},
     ]
 
 
@@ -332,6 +355,15 @@ def shared_config(photos: dict[str, dict]) -> dict:
             "bodyFontFamily": TEXT, "bodyFontSize": pt(8.5), "bodyLineHeight": pt(11.5), "bodyColor": col("ink"),
             "headerFontFamily": DISPLAY, "headerFontSize": pt(8.5), "headerBold": True, "headerBackgroundEnabled": True, "headerBackground": col("band"), "headerColor": col("white"),
             "borderColor": col("rule"), "borderWidth": pt(0.5), "cellPadding": mm(1.8), "rules": "horizontal",
+        },
+        # Print links: every "Find out more" entry prints a note with a QR
+        # code and the short address, as a printed magazine sends readers on.
+        "links": {"print": "notes", "show": "both", "urlDisplay": "short", "repeat": "first", "qr": {"size": mm(14)}},
+        # The notes close the article, right under its reading list.
+        "footnotes": {
+            "placement": "chapterEnd", "chapterEndAlign": "text",
+            "fontFamily": TEXT, "fontSize": pt(6.8), "lineHeight": pt(9), "color": col("muted"), "textAlign": "left",
+            "separator": {"enabled": True, "width": 0.25, "lineWidth": pt(0.5), "color": col("rule")},
         },
         "unorderedLists": {"bulletChar": "•", "color": col("band")},
         "orderedLists": {"color": col("band")},
@@ -402,7 +434,10 @@ def resource_specs(photos: dict[str, dict]) -> tuple[list[dict], dict[str, list[
                        "caption": photo_caption(p, "es"), "note": ed.BOOK["es"]["photo_note"], "altText": p["title"].replace("File:", "").rsplit(".", 1)[0],
                        "placement": {"position": "auto", "span": "page", "width": 1}})
         for lang in LANGS:
-            wording[lang].append({"id": f"photo-{pid}", "caption": photo_caption(p, lang), "note": ed.BOOK[lang]["photo_note"], "altText": p["title"].replace("File:", "").rsplit(".", 1)[0]})
+            words = {"id": f"photo-{pid}", "caption": photo_caption(p, lang), "note": ed.BOOK[lang]["photo_note"], "altText": p["title"].replace("File:", "").rsplit(".", 1)[0]}
+            if (lang, pid) in ed.COLUMN_PHOTOS:
+                words["placement"] = {"position": "auto", "span": "column", "width": 1}
+            wording[lang].append(words)
     for page, panel in ed.PANELS.items():
         if panel["kind"] != "table":
             continue
@@ -459,6 +494,41 @@ def panel_markdown(page: int, title: str, intro: str, lang: str) -> str:
 
 
 FURTHER_READING = re.compile(r"^(Find out more|Para más información)$")
+URL_START = re.compile(r"(?:https?://|www\.)")
+# "Visit: www.hbm4eu.eu" keeps the address as its words; any other label
+# ("Find out more", "Air pollution") becomes the link text.
+VISIBLE_URL_LABELS = ("visit", "véase")
+
+
+def canonical_url(raw: str) -> str:
+    """The published address behind an extracted one: spaces dropped, and
+    matched against ed.LINKS ignoring hyphens (a line break can lose one)."""
+    url = re.sub(r"\s+", "", raw).rstrip(".")
+    bare = re.sub(r"^https?://", "", url).replace("-", "")
+    for link in ed.LINKS:
+        if re.sub(r"^https?://", "", link).replace("-", "") == bare:
+            return link
+    raise SystemExit(f"unknown address {url!r}: add it to editorial.LINKS")
+
+
+def linkify(text: str, plain: bool = False) -> str:
+    """A trailing "Label: address" becomes a Markdown link, so the print
+    edition notes it with a QR code (`links.print: 'notes'`). `plain` (the
+    grey boxes, which already print their address) only mends the address."""
+    m = URL_START.search(text)
+    if not m:
+        return text
+    head, raw = text[: m.start()].rstrip(), text[m.start():]
+    url = canonical_url(raw)
+    if plain:
+        return f"{head} {re.sub(r'^https?://', '', url)}" + ("." if raw.rstrip().endswith(".") else "")
+    lead, _, label = head.rstrip(":.").rpartition(". ")
+    lead = lead + ". " if lead else ""
+    label = label.strip()
+    if not label or label.lower() in VISIBLE_URL_LABELS:
+        shown = re.sub(r"^https?://", "", url)
+        return f"{head} [{shown}]({url})"
+    return f"{lead}[{label}]({url})" + ("." if raw.rstrip().endswith(".") else "")
 
 
 def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
@@ -474,10 +544,17 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
     ig_idx = 0
     drop_reading = (lang, spec["slug"]) in ed.DROP_FURTHER_READING
     skipping = False
+    reading = False  # inside the closing "Find out more" list
+    para_end: list[int] = []  # len(lines) after each paragraph
+    signature_at = None
+
     for b in article.blocks:
         if skipping and b.kind != "subhead":
             continue
         skipping = False
+        if reading and b.kind != "paragraph":
+            lines.append(":::\n")
+            reading = False
         while ig_idx < len(infographics) and infographics[ig_idx][0] < b.page:
             pg, title, intro = infographics[ig_idx]
             md = panel_markdown(pg, title, intro, lang)
@@ -486,14 +563,17 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
             ig_idx += 1
         if b.kind == "paragraph":
             for item in bullets(b.text):
+                if reading and item.startswith("- "):
+                    item = "- " + linkify(item[2:])
                 lines.append(item + "\n" if not item.startswith("- ") else item)
             if lines[-1].startswith("- "):
                 lines.append("")
             n_para += 1
-            if n_para == 3 and not photo_done:
+            para_end.append(len(lines))
+            if n_para == ed.PHOTO_AFTER.get((lang, spec["slug"]), 3) and not photo_done:
                 lines.append(inline_photo)
                 photo_done = True
-            if n_para == 6 and quote and not quote_done:
+            if n_para == 6 and quote and not quote_done and (lang, spec["slug"]) not in ed.NO_PULL_QUOTE:
                 q = f"«{quote}»" if lang == "es" else f"“{quote}”"
                 lines.append(f':::callout{{type="cita"}}\n{q}\n:::\n')
                 quote_done = True
@@ -510,13 +590,19 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
                 if drop_reading:
                     skipping = True
                     continue
+                reading = True
+                # the list stays whole in one column under its title; its QR
+                # notes follow it (footnotes.placement 'chapterEnd')
+                lines.append(f':::callout{{type="lectura" title="{attr_value(b.text)}"}}')
+                continue
             lines.append(f"## {b.text}\n")
         elif b.kind == "question":
-            lines.append(f':::paragraphs{{style="pregunta"}}\n{b.text}\n:::\n')
+            lines.append(f'## {b.text} {{style="pregunta"}}\n')
         elif b.kind == "signature":
+            signature_at = len(lines)
             lines.append(f':::paragraphs{{style="firma"}}\n{b.text}\n:::\n')
         elif b.kind == "box":
-            body = "\n\n".join("\n".join(bullets(p)) for p in b.paras)
+            body = "\n\n".join("\n".join(bullets(linkify(p, plain=True))) for p in b.paras)
             lines.append(f':::callout{{type="recuadro" title="{attr_value(b.title)}"}}\n{body}\n:::\n')
         # pulled figures ("83 %") have no label of their own: dropped
     while ig_idx < len(infographics):
@@ -525,8 +611,18 @@ def article_markdown(article: extract.Article, spec: dict, lang: str) -> str:
         if md:
             lines.append(md)
         ig_idx += 1
+    if reading:
+        lines.append(":::\n")
     if not photo_done:
         lines.append(inline_photo)
+    after = ed.SIDEBARS_AFTER.get(spec["slug"])
+    if after is not None and signature_at is not None:
+        # a signed letter ends with its signature: the panels the PDF sets
+        # after it stand in the text instead, after paragraph `after`
+        tail = lines[signature_at + 1:]
+        del lines[signature_at + 1:]
+        at = para_end[after - 1]
+        lines[at:at] = tail
     return "\n".join(lines)
 
 
@@ -555,13 +651,14 @@ def write_chapters(lang: str, ex: extract.Extraction, photos: dict[str, dict]) -
         raise SystemExit(f"{lang}: {len(ex.articles)} articles extracted, {len(ed.ARTICLES)} expected: " + " | ".join(a.title[:30] for a in ex.articles))
     for article, spec in zip(ex.articles, ed.ARTICLES):
         emit(spec["slug"], article.title, article_markdown(article, spec, lang))
-    refs = "\n\n".join(f"{n}. {url}" for n, url in ex.references)
-    emit("referencias" if lang == "es" else "references", book["references"], f'# {book["references"]} {{style="preliminar"}}\n\n:::paragraphs{{style="referencia"}}\n{refs}\n:::\n')
+    # numbered paragraphs, not a Markdown list: a list keeps the body leading
+    refs = "\n\n".join(f"**{n}.**\t{url}" for n, url in ex.references)
+    emit("referencias" if lang == "es" else "references", book["references"], f'# {book["references"]} {{style="preliminar" kicker="{attr_value(book["references"])}"}}\n\n:::paragraphs{{style="referencia"}}\n{refs}\n:::\n')
     photo_lines = []
     for pid, p in photos.items():
-        photo_lines.append(f"**{pid}** — {p['title'].replace('File:', '')}: {author_name(p)}, {p['licence']} — [commons.wikimedia.org]({p['page']})")
+        photo_lines.append(f"**{pid}** — {p['title'].replace('File:', '')}: {author_name(p)}, {p['licence']} — Wikimedia Commons")
     paras = "\n\n".join(ed.CREDITS[lang])
-    emit("creditos" if lang == "es" else "credits", book["credits"], f'# {book["credits"]} {{style="preliminar"}}\n\n:::paragraphs{{style="creditos"}}\n{paras}\n:::\n\n:::paragraphs{{style="fuentes"}}\n' + "\n\n".join(photo_lines) + "\n:::\n")
+    emit("creditos" if lang == "es" else "credits", book["credits"], f'# {book["credits"]} {{style="preliminar" kicker="{attr_value(book["credits"])}"}}\n\n:::paragraphs{{style="creditos"}}\n{paras}\n:::\n\n:::paragraphs{{style="fuentes"}}\n' + "\n\n".join(photo_lines) + "\n:::\n")
     back = ed.BACK_COVER[lang]
     emit("contraportada" if lang == "es" else "back-cover", book["back_cover"], (
         f'# {book["back_cover"]} {{style="contraportada" toc="false" masthead="{attr_value(book["title"])}" blurb="{attr_value(back["blurb"])}"'

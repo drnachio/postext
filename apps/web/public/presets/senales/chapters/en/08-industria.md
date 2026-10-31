@@ -60,7 +60,8 @@ However, the emission-related directives often act independently and there is cl
 Plastics have brought many benefits to our daily lives but the problem is that these products never truly disappear. Therefore, we should perhaps think about plastics as a type of pollutant from the point of their production and prevent plastic products and waste from leaking into the environment.
 :::
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Industry](https://www.eea.europa.eu/themes/industry)
+- [SOER 2020, Chapter 12 on industrial pollution](https://www.eea.europa.eu/publications/soer-2020/chapter-12_soer2020-industrial-pollution/view)
 
-- Industry: www.eea.europa.eu/themes/ industry
-- SOER 2020, Chapter 12 on industrial pollution: www.eea.europa.eu/ publications/soer-2020/chapter-12_ soer2020-industrial-pollution/view
+:::

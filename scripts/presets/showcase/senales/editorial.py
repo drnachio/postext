@@ -56,6 +56,22 @@ ARTICLES = [
     {"slug": "salud", "kicker": {"es": "Entrevista", "en": "Interview"}, "photos": ["health-1", "health-2"], "colour": "#3c8a55"},
 ]
 
+# Articles whose panels and boxes, set after the signature in the PDF,
+# stand in the text after the given paragraph (the editorial is a letter
+# and ends with its signature; the health interview keeps its panel off a
+# closing page of its own).
+SIDEBARS_AFTER = {"editorial": 8, "salud": 9}
+
+# Copy-fitting, by (lang, slug). The pull quote repeats a sentence of the
+# article: where the article would end with its reading notes alone on a
+# page, it is left out. The inline photograph follows paragraph 3 unless
+# that sends it to the head of the next page and leaves a hole.
+NO_PULL_QUOTE = {("en", "aire")}
+# Inline photographs set in one column instead of across the page, by
+# (lang, photo).
+COLUMN_PHOTOS = {("es", "chemicals-2"), ("es", "industry-2"), ("en", "water-2")}
+PHOTO_AFTER: dict[tuple[str, str], int] = {("es", "aire"): 7, ("en", "aire"): 7}
+
 # Articles whose closing reading list is left out, by (lang, slug): the
 # Spanish noise list only points at English pages.
 DROP_FURTHER_READING = {("es", "ruido")}
@@ -152,3 +168,28 @@ CREDITS = {
         "**Type.** Open Sans (Steve Matteson) and Outfit (Rodrigo Fuenzalida), under the SIL Open Font License 1.1; the licences travel with the fonts in the bundle.",
     ],
 }
+
+# The web addresses the articles send readers to, as the EEA publishes
+# them. The PDF breaks them over lines (a space or a lost hyphen at each
+# break); build.py matches what it extracts against this list, so every
+# "Find out more" entry links to the right page and prints its QR note.
+LINKS = [
+    "https://www.eea.europa.eu/post-corona-planet/explore",
+    "https://www.eea.europa.eu/themes/air",
+    "https://www.eea.europa.eu/themes/air/air-quality-index",
+    "https://www.eea.europa.eu/themes/water",
+    "https://www.eea.europa.eu/themes/soil",
+    "https://www.eea.europa.eu/themes/human/chemicals",
+    "https://www.eea.europa.eu/themes/human/noise",
+    "https://www.eea.europa.eu/themes/industry",
+    "https://www.eea.europa.eu/publications/soer-2020/chapter-04_soer2020-freshwater/view",
+    "https://www.eea.europa.eu/publications/soer-2020/chapter-05_soer2020-land-and-soil/view",
+    "https://www.eea.europa.eu/publications/soer-2020/chapter-06_soer2020-marine-environment/view",
+    "https://www.eea.europa.eu/publications/soer-2020/chapter-08_soer2020-air-pollution/view",
+    "https://www.eea.europa.eu/publications/soer-2020/chapter-10_soer2020-chemical-pollution/view",
+    "https://www.eea.europa.eu/publications/soer-2020/chapter-11_soer2020-environmental-noise/view",
+    "https://www.eea.europa.eu/publications/soer-2020/chapter-12_soer2020-industrial-pollution/view",
+    "https://www.eea.europa.eu/signals/signals-2018-content-list",
+    "https://www.eea.europa.eu/signals/signals-2019",
+    "https://www.hbm4eu.eu",
+]

@@ -70,9 +70,10 @@ Para ayudar a luchar contra el problema de los plásticos, la UE ya ha propuesto
 El tratamiento de las aguas residuales y las reducciones de la liberación de nutrientes de la agricultura han permitido mejorar considerablemente la calidad del agua en Europa. Sin embargo, muchas masas de agua dulce de Europa todavía se encuentran en mal estado y la situación de los mares de Europa es
 :::
 
-## Para más información
+:::callout{type="lectura" title="Para más información"}
+- [El agua y el medio marino](https://www.eea.europa.eu/themes/water)
+- [SOER 2020, Capítulo 4 sobre el agua dulce](https://www.eea.europa.eu/publications/soer-2020/chapter-04_soer2020-freshwater/view)
+- [SOER 2020, Capítulo 6 sobre el medio ambiente marino](https://www.eea.europa.eu/publications/soer-2020/chapter-06_soer2020-marine-environment/view)
+- [Señales de la AEMA 2018 — El agua es vida](https://www.eea.europa.eu/signals/signals-2018-content-list)
 
-- El agua y el medio marino: www.eea.europa.eu/themes/water
-- SOER 2020, Capítulo 4 sobre el agua dulce: www.eea.europa.eu/ publications/soer-2020/chapter-04_ soer2020-freshwater/view
-- SOER 2020, Capítulo 6 sobre el medio ambiente marino: www.eea.europa. eu/publications/soer-2020/chapter-06_ soer2020-marine-environment/view
-- Señales de la AEMA 2018 — El agua es vida: www.eea.europa.eu/signals/ signals-2018-content-list
+:::

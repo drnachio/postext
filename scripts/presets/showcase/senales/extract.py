@@ -103,8 +103,12 @@ def _lines(page) -> list[dict]:
             if not text:
                 continue
             x0, y0, x1, y1 = l["bbox"]
+            whole = "".join(s["text"] for s in l["spans"])
             raw = re.sub(r"\s+", " ", "".join(s["text"] for s in spans)).strip()
-            out.append({"font": s0["font"], "size": round(s0["size"]), "x": x0, "y": y0, "w": x1 - x0, "text": text, "raw": raw})
+            # a line set before a word space ends in one; a URL broken over
+            # lines does not (the reference list joins its lines by this)
+            trail = whole[-1:].isspace() if whole else False
+            out.append({"font": s0["font"], "size": round(s0["size"]), "x": x0, "y": y0, "w": x1 - x0, "text": text, "raw": raw, "trail": trail})
     return out
 
 
@@ -338,17 +342,26 @@ def extract(pdf_path: str, first_page: int, last_page: int, references_from: int
         if not any(ln["text"].startswith("http") or re.match(r"^\d+\s+http", ln["text"]) for ln in lines):
             continue
         ordered = sorted(lines, key=lambda ln: (0 if ln["x"] < COLUMN_SPLIT else 1, ln["y"]))
-        num, url = None, ""
+        num, url, trail = None, "", False
         for ln in ordered:
-            m = re.match(r"^(\d+)\s*((?:https?://|www\.)\S.*)$", ln["raw"])
+            # an entry opens with its number at the margin: an address, or
+            # a citation in words (41 "US National Toxicology Program")
+            m = re.match(r"^(\d+)\s*((?:https?://|www\.)\S.*)$", ln["raw"]) or (
+                re.match(r"^(\d+)(?:\s+(\S.*))?$", ln["raw"]) if ln["x"] < 50 or COLUMN_SPLIT < ln["x"] < 252 else None)
             if m:
                 if num is not None:
                     references.append((num, url))
-                num, url = m.group(1), m.group(2)
+                num, url = m.group(1), m.group(2) or ""
             elif num is not None and ln["x"] > 50:
-                url += ln["raw"]
+                url += (" " if trail else "") + ln["raw"]
+            else:
+                continue
+            trail = ln["trail"]
         if num is not None:
             references.append((num, url))
+    # an address glued to the word before it ("lives:https://…")
+    # and an address broken after a hyphen with a word space kept
+    references = [(n, re.sub(r"(https?://\S*[-/_])\s+(?=\S)", r"\1", re.sub(r"(?<=\S)(?=https?://)", " ", u))) for n, u in references]
     return Extraction(articles, references)
 
 

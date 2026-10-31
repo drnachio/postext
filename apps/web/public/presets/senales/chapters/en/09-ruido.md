@@ -45,7 +45,7 @@ However, EEA research found issues related to the availability of and access to 
 :::callout{type="recuadro" title="COVID-19 and noise"}
 Noise pollution from transport sources, such as road, rail or air traffic, is linked to economic activity. Therefore, a significant short-term reduction in transportation noise levels can be expected as a result of COVID-19-related lockdowns. However, environmental noise levels are reported over a prolonged period, as health effects appear when exposure is long term. As such, a short-term reduction in noise levels would not significantly reduce the annual noise level indicator used to measure the effects of noise.
 
-Find out more: https://www.eea.europa.eu/post-corona-planet/explore.
+Find out more: www.eea.europa.eu/post-corona-planet/explore.
 :::
 
 ## Turn down the volume
@@ -74,7 +74,8 @@ Many EU Member States will need to do more to take the steps needed to address n
 *Sources: EEA report ‘Environmental noise in Europe — 2020’.*
 :::
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Noise](https://www.eea.europa.eu/themes/human/noise)
+- [SOER 2020, Chapter 11 on environmental noise](https://www.eea.europa.eu/publications/soer-2020/chapter-11_soer2020-environmental-noise/view)
 
-- Noise: www.eea.europa.eu/themes/ human/noise
-- SOER 2020, Chapter 11 on environmental noise: www.eea.europa. eu/publications/soer-2020/chapter-11_ soer2020-environmental-noise/view
+:::

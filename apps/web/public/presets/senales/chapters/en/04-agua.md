@@ -70,9 +70,10 @@ To help tackle the plastics problem, the EU has already proposed a plastics stra
 Waste water treatment and reductions in nutrient losses from agriculture have led to significant improvements in water quality in Europe. However, many of Europe’s freshwater bodies are still not doing well and the condition of Europe’s seas is generally poor, partly because of pollution.
 :::
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Water and marine environment](https://www.eea.europa.eu/themes/water)
+- [SOER 2020, Chapter 4 on freshwater](https://www.eea.europa.eu/publications/soer-2020/chapter-04_soer2020-freshwater/view)
+- [SOER 2020, Chapter 6 on the marine environment](https://www.eea.europa.eu/publications/soer-2020/chapter-06_soer2020-marine-environment/view)
+- [EEA Signals 2018 — Water is life](https://www.eea.europa.eu/signals/signals-2018-content-list)
 
-- Water and marine environment: www.eea.europa.eu/themes/water
-- SOER 2020, Chapter 4 on freshwater: www.eea.europa.eu/publications/soer- 2020/chapter-04_soer2020-freshwater/ view
-- SOER 2020, Chapter 6 on the marine environment: www.eea.europa.eu/ publications/soer-2020/chapter-06_ soer2020-marine-environment/view
-- EEA Signals 2018 — Water is life: www. eea.europa.eu/signals/signals-2018content-list
+:::

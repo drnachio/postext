@@ -22,6 +22,24 @@ In most places in Europe, air does not look, feel, smell or taste dirty. Yet, ev
 
 The problems are clear but we should also remember that actions and policies to tackle pollution have made a difference. The number of Europeans dying prematurely as a result of poor air quality is less than half of early 1990s levels. Europe’s industry is becoming cleaner, with fewer emissions to air and water. Advanced waste water treatment covers more and more communities. Our agricultural practices are slowly evolving.
 
+:::callout{type="datos" title="What is pollution?"}
+Pollution changes a medium such as air, water or soil in a way that can make it harmful to people or nature. Different types of pollutants include chemicals, dust, noise and radiation. These pollutants have many different sources. Some of those sources are diffuse, such as transport or agriculture, whereas others are linked to a specific place, such as a factory or power plant.
+
+- **Transport** is responsible for around 45 % of Europe's emissions of nitrogen oxides (NOx) and a significant proportion of the total emissions of other key pollutants.
+- **Road traffic** is the most widespread source of environmental noise, with more than 100 million people affected by harmful levels in Europe.
+- **Energy production and distribution** are the main source of sulphur oxides (SOx) emissions and a major source of NOx emissions.
+- **The agricultural sector** is responsible for more than 90 % of Europe's ammonia emissions and almost 20 % of emissions of non-methane volatile organic compounds (NMVOCs), such as benzene and ethanol.
+- **Unsustainable farming practices** lead to pollution of soil, water, air and food, overexploitation of natural resources, and biodiversity loss and ecosystem degradation.
+- **Domestic heating** is an important source of dust pollution: commercial, institutional and residential buildings account for 53 % of fine particulate matter (PM2.5) emissions. Households are also a source of pollution discharges to water.
+- **Waste** production and poor waste management contribute to air pollution and affect ecosystems. Dump sites, illegal disposal and littering create further risks, including soil pollution and marine litter.
+
+*Sources: NEDC data viewer and LRTAP data viewer; EEA report ‘The European environment — state and outlook 2020’; EEA indicator ‘Exposure of Europe’s population to environmental noise’.*
+:::
+
+:::callout{type="recuadro" title="The European Commission’s zero pollution ambition"}
+The zero-pollution ambition for Europe was announced in the European Green Deal, part of the European Commission’s strategy to implement the United Nations Sustainable Development Goals agenda. Its key aim is to protect citizens and ecosystems by better monitoring, reporting, preventing and remedying pollution. The zero-pollution ambition can help the EU further decouple prosperity from harmful levels of pollution, while enhancing EU resilience and strategic autonomy. This can also support a sustainable post-COVID-19 recovery by, for instance: helping to mainstream the zero-pollution ambition in recovery efforts; promoting adequate and timely information on the health and economic benefits of acting on pollution; and exploring further development of business practices that reduce pollution, create job opportunities and reduce social inequalities, as pollution disproportionately affects the most vulnerable people. As part of the wider zero-pollution ambition, the European Commission has already announced actions to reduce pollution in several Green Deal initiatives, in particular the Circular Economy Action Plan, the Biodiversity Strategy and the Farm to Fork Strategy. Foreseen to be published in 2020 and 2021, the Chemicals Strategy for Sustainability and the Zero-Pollution Action Plan will help boost cleaner products and technologies across all relevant economic sectors, prioritising pollution prevention over remediation. Following an open public consultation, the Zero-Pollution Action Plan is foreseen for the first half of 2021. The Zero-Pollution Action Plan will, amongst other priorities, focus on enhancing implementation of existing and new legislation, revising key pollution control instruments, addressing pollutants of emerging concern, and setting up an integrated zero-pollution monitoring and outlook framework. The European Environment Agency will be a key partner in these activities.
+:::
+
 Yet, we can and should do much more. This will require the better implementation of existing policies and also ambitious targets that show a path towards climate neutrality, zero pollution, circular economy, healthy nature, and social justice in this fundamental sustainability transition.
 
 Ursula von der Leyen, President of the European Commission, has set an ambitious agenda for her team’s political priorities for the next 5 years. The European Green Deal and its zero pollution ambition outline actions that reflect European citizens’ demand for addressing the climate and biodiversity crises, while ensuring a just transition where people are not left behind. This is an agenda that could have a lasting legacy in Europe.
@@ -42,22 +60,4 @@ Despite progress over past decades, the EEA’s landmark assessment ‘The Europ
 
 :::paragraphs{style="firma"}
 Hans Bruyninckx · EEA Executive Director
-:::
-
-:::callout{type="datos" title="What is pollution?"}
-Pollution changes a medium such as air, water or soil in a way that can make it harmful to people or nature. Different types of pollutants include chemicals, dust, noise and radiation. These pollutants have many different sources. Some of those sources are diffuse, such as transport or agriculture, whereas others are linked to a specific place, such as a factory or power plant.
-
-- **Transport** is responsible for around 45 % of Europe's emissions of nitrogen oxides (NOx) and a significant proportion of the total emissions of other key pollutants.
-- **Road traffic** is the most widespread source of environmental noise, with more than 100 million people affected by harmful levels in Europe.
-- **Energy production and distribution** are the main source of sulphur oxides (SOx) emissions and a major source of NOx emissions.
-- **The agricultural sector** is responsible for more than 90 % of Europe's ammonia emissions and almost 20 % of emissions of non-methane volatile organic compounds (NMVOCs), such as benzene and ethanol.
-- **Unsustainable farming practices** lead to pollution of soil, water, air and food, overexploitation of natural resources, and biodiversity loss and ecosystem degradation.
-- **Domestic heating** is an important source of dust pollution: commercial, institutional and residential buildings account for 53 % of fine particulate matter (PM2.5) emissions. Households are also a source of pollution discharges to water.
-- **Waste** production and poor waste management contribute to air pollution and affect ecosystems. Dump sites, illegal disposal and littering create further risks, including soil pollution and marine litter.
-
-*Sources: NEDC data viewer and LRTAP data viewer; EEA report ‘The European environment — state and outlook 2020’; EEA indicator ‘Exposure of Europe’s population to environmental noise’.*
-:::
-
-:::callout{type="recuadro" title="The European Commission’s zero pollution ambition"}
-The zero-pollution ambition for Europe was announced in the European Green Deal, part of the European Commission’s strategy to implement the United Nations Sustainable Development Goals agenda. Its key aim is to protect citizens and ecosystems by better monitoring, reporting, preventing and remedying pollution. The zero-pollution ambition can help the EU further decouple prosperity from harmful levels of pollution, while enhancing EU resilience and strategic autonomy. This can also support a sustainable post-COVID-19 recovery by, for instance: helping to mainstream the zero-pollution ambition in recovery efforts; promoting adequate and timely information on the health and economic benefits of acting on pollution; and exploring further development of business practices that reduce pollution, create job opportunities and reduce social inequalities, as pollution disproportionately affects the most vulnerable people. As part of the wider zero-pollution ambition, the European Commission has already announced actions to reduce pollution in several Green Deal initiatives, in particular the Circular Economy Action Plan, the Biodiversity Strategy and the Farm to Fork Strategy. Foreseen to be published in 2020 and 2021, the Chemicals Strategy for Sustainability and the Zero-Pollution Action Plan will help boost cleaner products and technologies across all relevant economic sectors, prioritising pollution prevention over remediation. Following an open public consultation, the Zero-Pollution Action Plan is foreseen for the first half of 2021. The Zero-Pollution Action Plan will, amongst other priorities, focus on enhancing implementation of existing and new legislation, revising key pollution control instruments, addressing pollutants of emerging concern, and setting up an integrated zero-pollution monitoring and outlook framework. The European Environment Agency will be a key partner in these activities.
 :::

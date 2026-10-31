@@ -62,7 +62,8 @@ La plena aplicación de todas estas directivas ayudaría a la UE a lograr objeti
 Los plásticos han aportado muchos beneficios a nuestra vida diaria, pero el problema es que estos productos nunca desaparecen realmente. Por tanto, quizás deberíamos concebir los plásticos como un tipo de contaminante desde el momento de su fabricación y evitar que los productos y los residuos
 :::
 
-## Para más información
+:::callout{type="lectura" title="Para más información"}
+- [Industria](https://www.eea.europa.eu/themes/industry)
+- [SOER 2020, Capítulo 12 sobre la contaminación industrial](https://www.eea.europa.eu/publications/soer-2020/chapter-12_soer2020-industrial-pollution/view)
 
-- Industria: www.eea.europa.eu/themes/ industry
-- SOER 2020, Capítulo 12 sobre la contaminación industrial: www.eea. europa.eu/publications/soer-2020/ chapter-12_soer2020-industrialpollution/view
+:::
