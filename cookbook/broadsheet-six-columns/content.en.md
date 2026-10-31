@@ -118,7 +118,7 @@ The gate will be closed for every tide forecast above 6.2 metres, about a dozen 
 :::
 :::
 
-Boats in the inner basin were held for six hours. Three fishing boats waited outside the gate, and the ferry to Hollin Point ran from the outer pier. Andrew Pell, who skippers the trawler *Morning Star*, said the wait had cost him a day’s fishing. “I’m not complaining,” he said. “My mother’s house was one of the eleven hundred. I’ll wait six hours if it keeps her kitchen dry.” The authority will give a week’s notice of each closure on its website and by text message to river users who sign up.
+Boats in the inner basin were held for six hours. Three fishing boats waited outside the gate, and the ferry to Hollin Point ran from the outer pier. Andrew Pell, who skippers the trawler *Morning Star*, said the wait had cost him a day’s fishing. “I’m not complaining,” he said. “My mother’s house was one of the eleven hundred. I’ll wait six hours if it keeps her kitchen dry.” The authority will give a week’s notice of each closure on its website and by text message to river users who sign up. Pell signed up on the quay, before the gate had finished rising.
 
 :::paragraphs{style="turn"}
 More river news, page 2
@@ -145,5 +145,5 @@ In brief
 
 **Choir wins in Cardiff.** The Corrington Youth Choir took first prize in the under-18 section of a national choral competition in Cardiff on Saturday, singing three pieces by its own director, Lena Fairclough. The 34 singers came home on the overnight coach.
 
-**Blood donors wanted.** The blood service will hold sessions at St Mary’s church hall on 20 and 21 October, from one until seven. New donors can book a place by telephone or turn up on the day.
+**Blood donors wanted.** The blood service will hold sessions at St Mary’s church hall on 20 and 21 October, from one until seven. New donors can book a place by telephone or turn up on the day. Donors should eat beforehand.
 :::

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 133 · A broadsheet on six columns ════════════════════
 // https://postext.dev/en/cookbook/broadsheet-six-columns
 // Code: MIT · Text: original (CC BY 4.0) · Photos: generated (CC BY 4.0)
-// Fonts: Newsreader, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+// Fonts: Newsreader, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -158,7 +158,9 @@ const config = () => ({
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: 'Playfair Display', fontWeight: 700, color: col('ink'),
-    balancing: { trailing: false }, // every page closes a section: fill each column to the foot
+    // every page closes a section: fill each column to the foot, and give a column the widow
+    // and orphan rules leave a line short a line of its own paragraphs
+    balancing: { trailing: false, fillShortColumns: true },
     levels: [
     // Each section opens a page of its own, recto or verso.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' }, advancedDesign: flag },
@@ -246,7 +248,9 @@ function forecast() { // Thursday to Monday: sky, outlook, °C, wind, rain, sun,
       th('Sunset', 'right'), th('High water', 'right')],
     ...days.map(([day, sky, text, hi, lo, wind, mm, rise, set, tide]) => [cell(`**${day}**`),
       cell('', { image: { resourceId: `sky-${sky}` } }), cell(text), right(`${hi}°`),
-      right(`${lo}°`), right(wind), right(mm), right(rise), right(set), right(tide)])] };
+      right(`${lo}°`), right(wind), right(mm), right(rise), right(set), right(tide)]
+      // The symbol sets each row's depth: the words and figures stand level with its middle.
+      .map((c) => ({ ...c, verticalAlign: 'middle' })))] };
 }
 // #endregion
 // #region pictures: each photo names how many columns it takes; the fences place it
