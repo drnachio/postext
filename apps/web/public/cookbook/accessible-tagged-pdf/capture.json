@@ -3,21 +3,21 @@
   "slug": "accessible-tagged-pdf",
   "sourceHash": "be8e697aade44fea0b8e862de7bb96c5e4ca5e607b1e6e8ff6cf42d9e8ee0f83",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:30:46.627Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:47:57.091Z",
   "variants": {
     "es": {
-      "hash8": "fabd01dc",
-      "vdtHash": "b4d90a107216c3f089ce544b14ad07edef22c525",
+      "hash8": "892f8218",
+      "vdtHash": "8279af6c2f843a8e556a217c59deed5dc2f7858f",
       "timings": {
-        "importMs": 671,
-        "fontsMs": 28,
-        "buildMs": 87,
-        "totalMs": 2727,
+        "importMs": 1316,
+        "fontsMs": 31,
+        "buildMs": 205,
+        "totalMs": 2400,
         "builds": 1
       },
       "specimen": {
@@ -121,13 +121,13 @@
       },
       "sandbox": {
         "file": "accessible-tagged-pdf.postext",
-        "bytes": 36305,
+        "bytes": 36306,
         "folio": "ccb10a06",
         "chapters": [
           {
             "pages": 4,
-            "hash": "e5927d70139ca394",
-            "lines": "a6104eeefc88f676"
+            "hash": "aff1ccc947967a6b",
+            "lines": "ff4ae1a0dc963162"
           }
         ]
       },
@@ -387,7 +387,18 @@
         "raggedLines": {
           "count": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          }
+        ]
       }
     }
   }
