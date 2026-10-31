@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "org-chart-from-modules",
-  "sourceHash": "20898830c805d598638b98eaeaa947f54270ca6c00c6478020135a0531397cbc",
+  "sourceHash": "b9e5e783f414728607e0777a7517dc68c14b4fd3b7916b9a9c4024413bb88d43",
   "engine": {
     "postext": "1.65.0",
     "postextPdf": "1.65.0",
     "source": "npm"
   },
   "chrome": "156.0.8078.76",
-  "capturedAt": "2026-10-31T17:04:17.583Z",
+  "capturedAt": "2026-10-31T18:53:15.557Z",
   "variants": {
     "en": {
-      "hash8": "a0d61377",
-      "vdtHash": "0e1ab08b96c22ef4510a1c6859b4cbac08b573bf",
+      "hash8": "d7c1aec9",
+      "vdtHash": "9f540fbd13646f80eddfdf601261d6c36af92087",
       "timings": {
-        "importMs": 5078,
-        "fontsMs": 348,
-        "buildMs": 181,
-        "totalMs": 6503,
+        "importMs": 4614,
+        "fontsMs": 582,
+        "buildMs": 169,
+        "totalMs": 6173,
         "builds": 1
       },
       "specimen": {
@@ -60,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 142294,
+          "bytes": 142274,
           "alt": "Page 2: Where to find us."
         }
       ],
@@ -84,18 +84,18 @@
       },
       "pdf": {
         "file": "org-chart-from-modules.pdf",
-        "bytes": 995460,
+        "bytes": 995459,
         "pages": 2
       },
       "sandbox": {
         "file": "org-chart-from-modules.postext",
-        "bytes": 986216,
+        "bytes": 986240,
         "folio": "90508e83",
         "chapters": [
           {
             "pages": 2,
-            "hash": "76464b03cb27e02d",
-            "lines": "480428d7dae038f7"
+            "hash": "2d9e5c6deb4019e5",
+            "lines": "71a1db5b63c18a87"
           }
         ]
       },
@@ -350,6 +350,11 @@
             "detail": "1 paragraph set a line short with tracking (worst −10‰, the cap): p. 1 −10‰ “Day centre Lunches, workshops and a minibus”"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset"
@@ -368,13 +373,13 @@
       }
     },
     "es": {
-      "hash8": "119f1351",
+      "hash8": "302f558d",
       "vdtHash": "1365c78b792ced450f4ceefe68c0ab8642c2605e",
       "timings": {
-        "importMs": 5009,
-        "fontsMs": 504,
-        "buildMs": 143,
-        "totalMs": 6775,
+        "importMs": 4647,
+        "fontsMs": 626,
+        "buildMs": 161,
+        "totalMs": 6257,
         "builds": 1
       },
       "specimen": {
@@ -446,7 +451,7 @@
       },
       "sandbox": {
         "file": "org-chart-from-modules.postext",
-        "bytes": 986868,
+        "bytes": 986874,
         "folio": "90508e83",
         "chapters": [
           {

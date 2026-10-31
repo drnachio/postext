@@ -161,7 +161,7 @@ Saturdays, 8 am to 2 pm
 
 :::module{template="aviso"}
 :::frame{slot="texto" label="Residents' office"}
-Ground floor of the town hall, 1 Plaza Mayor. Monday to Friday, 8.30 am to 2.30 pm, and on Thursdays also 5 pm to 7 pm. This is where you ask for certificates, pay for courses and courts, and hand in a complaint or a suggestion about any service. **Phone 010**, from any landline or mobile in the town.
+Ground floor of the town hall, 1 Plaza Mayor. Monday to Friday, 8.30 am to 2.30 pm, and on Thursdays also 5 pm to 7 pm. This is where you ask for certificates, pay for courses and courts, and hand in a complaint or a suggestion about any service. **Phone 010**, from any landline or mobile in the town.
 :::
 :::
 
