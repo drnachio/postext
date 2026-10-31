@@ -25,9 +25,7 @@ Con todo, la mayoría de los nuevos descubrimientos seguirán saliendo de invest
 ## Información del artículo {style="back"}
 
 :::paragraphs{style="colophon"}
-**Conflicto de intereses.** El autor declara no tener ningún conflicto de intereses. **Abreviatura.** VPP, valor predictivo positivo.
-
-**Esta edición.** Traducción hecha para el Recetario de Postext de una versión abreviada de J. P. A. Ioannidis, «Why Most Published Research Findings Are False», *PLoS Medicine* 2(8): e124 (2005), doi:10.1371/journal.pmed.0020124; texto original en inglés con licencia Creative Commons Attribution. Se omiten algunas frases y párrafos, las fórmulas van numeradas, las tablas y las figuras se han redibujado y se ha corregido una errata. Compuesto en Gelasio y Sofia Sans Semi Condensed (SIL OFL); fórmulas con MathJax.
+**Esta edición.** Traducción hecha para el Recetario de Postext de una versión abreviada de J. P. A. Ioannidis, «Why Most Published Research Findings Are False», *PLoS Medicine* 2(8): e124 (2005), doi:10.1371/journal.pmed.0020124; texto original en inglés con licencia Creative Commons Attribution. Se omiten algunas frases y párrafos, las fórmulas van numeradas, las tablas y las figuras se han redibujado y se ha corregido una errata. Los títulos de las obras citadas se dejan en inglés, como en el original. Compuesto en Gelasio y Sofia Sans Semi Condensed (SIL OFL); fórmulas con MathJax.
 :::
 
 ## Referencias {style="back"}

@@ -25,8 +25,6 @@ Nevertheless, most new discoveries will continue to stem from hypothesis-generat
 ## Article information {style="back"}
 
 :::paragraphs{style="colophon"}
-**Competing interests.** The author has declared that no competing interests exist. **Abbreviation.** PPV, positive predictive value.
-
 **This edition.** Abridged from J. P. A. Ioannidis, “Why Most Published Research Findings Are False”, *PLoS Medicine* 2(8): e124 (2005), doi:10.1371/journal.pmed.0020124, under the Creative Commons Attribution License. Some sentences and paragraphs are left out, the formulas are numbered, the tables and figures are redrawn and one typing slip is corrected. Set in Gelasio and Sofia Sans Semi Condensed (SIL OFL); formulas by MathJax.
 :::
 
