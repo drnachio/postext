@@ -1,145 +1,147 @@
-// ═══ Postext Cookbook · Nº 176 · Your recipe title ═══════════════════════════════
+// ═══ Postext Cookbook · Nº 176 · Old-style, lining and tabular figures ═══════════════
 // https://postext.dev/en/cookbook/old-style-and-tabular-figures
-// Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.25.0
-//
-// The template for a new recipe (`pnpm cookbook new <slug>` copies it and fills in the
-// slug and the Nº). It already runs, and it already clears the design bar: a trade-book
-// page with mirrored margins, a three-voice palette, a quiet chapter opener and running
-// heads. Keep what serves your recipe, replace the rest, and read cookbook/README.md.
+// Code: MIT · Text: H. D. Thoreau, Walden (1854, public domain) · Vignette: 1854 title page (PD)
+// Fonts: Alegreya, Alegreya SC, Alegreya Sans (SIL OFL 1.1) · Needs postext ≥ 1.65.0
+// Thoreau's accounts from Walden. Each text style asks Alegreya for one kind of figures:
+// old-style in the prose, lining in the small-capital headings, tabular in the accounts.
 import {
-  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
+import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'old-style-and-tabular-figures';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
-// Everything that makes these pages look the way they do. Start reading here.
-// #region palette: semantic colours, every one linked by id
 const palette = {
-  ink: '#1e1c1a', // text: a warm near-black, never #000
-  accent: '#9b3a26', // the one accent: kickers, rules, bullets
-  tint: '#f3eee5', // box backgrounds
-  rule: '#cdc4b6', // hairlines
-  muted: '#6e675f', // running heads, notes, credits
+  ink: '#221e1a', // text: a warm near-black
+  accent: '#7d3a1f', // walnut: headings, kicker, rules of the opener
+  rule: '#8a7f73', // the light rules of the accounts
+  muted: '#6b6158', // running heads, the colophon
   paper: '#ffffff',
 };
-// Every colour links to its palette entry, so a reader can retint the whole book.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
-  // The engine's defaults link to main-color: point it at the accent, so any default
-  // this config does not restate follows the design instead of printing blue.
   { id: 'main-color', name: 'accent (defaults)', value: { hex: palette.accent, model: 'hex' } },
 ];
-// #endregion
-const OUTER = 17; // outer margin in mm: the running heads and folios align to it
-const LEAD = 14.5; // body leading in pt: the baseline grid
+const TEXT = 'Alegreya', CAPS = 'Alegreya SC', LABEL = 'Alegreya Sans';
+const TRIM = [140, 216], INNER = 19, OUTER = 16; // mm: a trade paperback
+const MEASURE = TRIM[0] - INNER - OUTER, VIGNETTE = 50; // mm
+const LEAD = 14.5; // pt: the body leading, the grid the headings keep to
 
-// #region answer: a quiet chapter opener: kicker, title and a short rule, sunk 52 mm
-const opener = {
-  enabled: true,
-  minHeight: mm(52), // the sink: the body starts this far below the top margin
-  slot: {
-    elements: [
-      { kind: 'text', id: 'kicker', content: '{attr.kicker}', fontFamily: 'Source Sans 3',
-        fontSize: pt(8), fontWeight: 700, letterSpacing: pt(1.6), textTransform: 'uppercase',
-        color: col('accent'), align: 'left',
-        placement: { anchor: { to: 'container', edge: 'top-left' },
-          offset: { x: mm(0), y: mm(12) } } },
-      { kind: 'text', id: 'title', content: '{titleText}', fontFamily: 'Source Serif 4',
-        fontSize: pt(27), lineHeight: 1.08, fontWeight: 700, color: col('ink'), align: 'left',
-        placement: { anchor: { to: '#kicker', edge: 'below' }, offset: { x: mm(0), y: mm(3) },
-          size: { width: mm(96), height: 'auto' } } },
-      { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(1.5), color: col('accent'),
-        placement: { anchor: { to: '#title', edge: 'below' }, offset: { x: mm(0), y: mm(5) },
-          size: { width: mm(14) } } },
-    ],
-  },
+// #region answer: one figure style per text style
+// Alegreya's own figures are old-style, so the prose asks for none: the cut Fontsource
+// serves has no onum, and 'oldstyle' would change nothing (see the write-up).
+const bodyText = {
+  fontFamily: TEXT, fontSize: pt(10.8), lineHeight: pt(LEAD), color: col('ink'),
+  boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
+  textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
+  hyphenation: { enabled: true }, optimalLineBreaking: true,
+  avoidWidows: true, avoidOrphans: true, avoidRunts: true,
+};
+// Small capitals take lining figures (lnum), at the height of the capitals around them.
+const section = { level: 2, fontFamily: CAPS, fontSize: pt(12.5), lineHeight: pt(LEAD),
+  fontWeight: 400, letterSpacing: pt(0.6), color: col('accent'), figureStyle: 'lining',
+  marginTop: pt(LEAD), marginBottom: pt(0) };
+// The accounts: every figure on one width (tnum), so the cents stand in columns.
+// 'tabular' keeps the font's form, old-style; 'lining-tabular' would set them at cap height.
+const tableStyle = {
+  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+  rules: 'booktabs', groupRules: true, borderColor: col('rule'), lightRuleWidth: pt(0.4),
+  heavyRuleWidth: pt(0.7), headerBackgroundEnabled: false, headerFontFamily: TEXT,
+  headerFontSize: pt(9.8), headerColor: col('ink'), headerBold: false, headerItalic: false,
+  cellPadding: mm(0.7),
 };
 // #endregion
 
-// #region running-heads: book title on the verso, chapter on the recto, folios outside
+// #region accounts: Thoreau's TSV columns: item, $, dollars.cents, fraction, remark
+// A row starting '=' is a total (header cells: a light rule above it), '+' heads a group.
+const C = (content, align = 'left', extra = {}) => ({ content, align, ...extra });
+function account(tsv) {
+  const rows = tsv.replace(/^\n+|\n+$/g, '').split('\n').map((line) => {
+    const total = line.startsWith('='), group = line.startsWith('+');
+    const [item, dollar, amount, fraction, remark] = line.replace(/^[=+]/, '').split('\t');
+    if (group) return [C(item, 'left', { colSpan: 5, isHeader: true }),
+      ...[1, 2, 3, 4].map(() => C('', 'left', { hiddenBy: { row: -1, col: 0 } }))];
+    const h = { isHeader: total };
+    return [C(item, 'left', h), C(dollar ? '\\$' : '', 'right', h), // `$` alone opens maths
+      C(amount ?? '', 'right', h), C(fraction ?? '', 'left', h), C(remark ?? '', 'left', h)];
+  });
+  rows.forEach((row, r) => row.forEach((cell) => cell.hiddenBy && (cell.hiddenBy.row = r)));
+  return { rows, headerRowCount: 0, columnWidths: [34, 2.4, 8, 3.6, 35] };
+}
+const accounts = /* @content:accounts */ ''; // content.accounts.<lang>.md: one block per table
+const tables = Object.fromEntries(accounts.split(/^=== /m).filter(Boolean)
+  .map((block) => [block.slice(0, block.indexOf('\n')).trim(), block.slice(block.indexOf('\n'))]));
+// #endregion
+
+// #region opener: the 1854 vignette of the cabin, the title, the years in lining capitals
+const at = (to, edge, y, x = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
+// 'below' starts a text at the left edge of what it hangs from: the texts take the measure
+// and start half the difference to the left of the vignette, so they centre on the page.
+const centred = (to, y) => ({ ...at(to, 'below', y, (VIGNETTE - MEASURE) / 2),
+  size: { width: mm(MEASURE) } });
+const opener = { enabled: true, minHeight: pt(19 * LEAD), slot: { elements: [
+  { kind: 'image', id: 'cabin', resourceId: 'cabin',
+    placement: { ...at('container', 'top', 0), size: { width: mm(VIGNETTE) } } },
+  { kind: 'text', id: 'kicker', content: '{attr.kicker}', fontFamily: LABEL, fontWeight: 500,
+    fontSize: pt(7.5), letterSpacing: pt(1.5), textTransform: 'uppercase', color: col('accent'),
+    align: 'center', placement: centred('#cabin', 6) },
+  { kind: 'text', id: 'title', content: '{titleText}', fontFamily: CAPS, fontSize: pt(30),
+    letterSpacing: pt(1.2), lineHeight: 1, color: col('ink'), align: 'center',
+    placement: { ...at('#kicker', 'below', 2.5), size: { width: mm(MEASURE) } } },
+  // A design text names its own family, so it states its figures too.
+  { kind: 'text', id: 'dates', content: '{attr.dates}', fontFamily: CAPS, fontSize: pt(11),
+    letterSpacing: pt(0.8), color: col('accent'), align: 'center', figureStyle: 'lining',
+    placement: { ...at('#title', 'below', 2.5), size: { width: mm(MEASURE) } } },
+] } };
+// #endregion
+
+// #region running-heads: book title on the verso, section on the recto, folios outside
 const head = (id, content, parity, edge, x, extra = {}) => ({
-  kind: 'text', id, content, parity, pages: 'body', // never on openers or blank pages
-  fontFamily: 'Source Sans 3', fontSize: pt(7.5), fontWeight: 600, letterSpacing: pt(1.2),
-  textTransform: 'uppercase', color: col('muted'),
-  placement: { anchor: { to: 'page', edge }, offset: { x: mm(x), y: mm(13) } },
-  ...extra,
-});
-const folio = { fontWeight: 700, color: col('ink') };
-const header = {
-  elements: [
-    head('verso-folio', '{pageNumber}', 'even', 'top-left', OUTER, folio),
-    head('verso-title', '{title}', 'even', 'top-left', OUTER + 9),
-    head('recto-title', '{chapterTitle}', 'odd', 'top-right', -(OUTER + 9)),
-    head('recto-folio', '{pageNumber}', 'odd', 'top-right', -OUTER, folio),
-  ],
-};
-// Openers carry a drop folio instead, centred 9 mm under the text block.
-const footer = {
-  elements: [head('drop-folio', '{pageNumber}', 'all', 'top', 0, {
-    ...folio, pages: 'opener',
-    placement: { anchor: { to: 'container', edge: 'top' }, offset: { x: mm(0), y: mm(9) } },
-  })],
-};
+  kind: 'text', id, content, parity, pages: 'body', fontFamily: LABEL, fontSize: pt(7.5),
+  fontWeight: 500, letterSpacing: pt(1.2), textTransform: 'uppercase', color: col('muted'),
+  placement: { anchor: { to: 'page', edge }, offset: { x: mm(x), y: mm(13) } }, ...extra });
+const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
+  color: col('ink') };
+const header = { elements: [
+  head('verso-folio', '{pageNumber}', 'even', 'top-left', OUTER, folio),
+  head('verso-title', '{title}', 'even', 'top-left', OUTER + 8),
+  head('recto-title', '{firstMark.h2}', 'odd', 'top-right', -(OUTER + 8)),
+  head('recto-folio', '{pageNumber}', 'odd', 'top-right', -OUTER, folio),
+] };
+const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'top', 0, {
+  ...folio, pages: 'opener', placement: at('container', 'top', 8) })] };
 // #endregion
 
 const config = {
-  locale: t({ en: 'en-us', es: 'es' }), // the language the text is hyphenated in
-  resourceTypes: defaultResourceTypes(LANG), // "Figura" in Spanish
+  locale: t({ en: 'en-us', es: 'es' }),
+  // The accounts are set where Thoreau prints them, unnumbered and without a caption.
+  resourceTypes: [...defaultResourceTypes(LANG), { id: 'account', name: 'Account',
+    captionPrefix: '', numberingTemplate: '', defaultPlacement: { position: 'here' } }],
   colorPalette,
-  page: {
-    sizePreset: 'custom', width: mm(156), height: mm(234), dpi: 150,
-    margins: { top: mm(22), bottom: mm(26), left: mm(20), right: mm(OUTER), mirror: true },
-  },
+  page: { sizePreset: 'custom', width: mm(TRIM[0]), height: mm(TRIM[1]), dpi: 150,
+    margins: { top: mm(22), bottom: mm(21), left: mm(INNER), right: mm(OUTER), mirror: true } },
   layout: { layoutType: 'single' },
-  bodyText: {
-    fontFamily: 'Source Serif 4', fontSize: pt(10.5), lineHeight: pt(LEAD), color: col('ink'),
-    boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
-    textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
-    hyphenation: { enabled: true }, optimalLineBreaking: true,
-    avoidWidows: true, avoidOrphans: true, avoidRunts: true,
-  },
-  headings: {
-    fontFamily: 'Source Serif 4', color: col('ink'), fontWeight: 700,
+  bodyText,
+  headings: { fontFamily: CAPS, color: col('ink'), fontWeight: 400,
     levels: [
-      // An H1 opens on a recto by default, after a blank verso when it must ('always-odd');
-      // 'odd' keeps the recto and forces no blank page before it.
-      { level: 1, fontSize: pt(27), breakBefore: { parity: 'odd' }, advancedDesign: opener },
-      { level: 2, fontSize: pt(12.5), lineHeight: pt(LEAD), fontWeight: 400, italic: true,
-        color: col('accent'), marginTop: pt(LEAD), marginBottom: pt(0) },
-      { level: 3, fontFamily: 'Source Sans 3', fontSize: pt(8.5), lineHeight: pt(LEAD),
-        textTransform: 'uppercase', marginTop: pt(LEAD), marginBottom: pt(0) },
-    ],
-  },
-  // Lists sit on the grid with no extra space.
-  unorderedLists: { bulletChar: '–', color: col('accent'), fontWeight: 400,
-    marginTop: pt(0), marginBottom: pt(0) },
-  orderedLists: { numberFormat: 'arabic', color: col('accent'), fontWeight: 700,
-    marginTop: pt(0), marginBottom: pt(0) },
+      { level: 1, fontSize: pt(30), breakBefore: { parity: 'odd' }, advancedDesign: opener,
+        marginBottom: pt(0) },
+      section,
+    ] },
   paragraphStyles: [
-    { id: 'colophon', fontFamily: 'Source Sans 3', fontSize: pt(7.5), lineHeight: pt(10),
+    { id: 'headnote', fontSize: pt(9.8), lineHeight: pt(LEAD), italic: true,
+      firstLineIndent: pt(0) },
+    // Thoreau's sentence goes on under an account: no indent.
+    { id: 'runon', firstLineIndent: pt(0) },
+    { id: 'colophon', fontFamily: LABEL, fontSize: pt(7.3), lineHeight: pt(10),
       color: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },
   ],
-  // Styles for boxes, tables and captions, so none of them ever falls back to the default skin.
-  calloutStyles: [
-    { id: 'note', title: t({ en: 'Note', es: 'Nota' }), background: col('tint'),
-      stripe: { enabled: true, side: 'left', width: pt(2.5), color: col('accent') },
-      padding: { top: mm(3), right: mm(4), bottom: mm(3), left: mm(4) },
-      titleStyle: { fontFamily: 'Source Sans 3', fontSize: pt(7.5), fontWeight: 700,
-        textTransform: 'uppercase', letterSpacing: pt(1.2), color: col('accent') },
-      body: { fontSize: pt(9.5), lineHeight: pt(13), color: col('ink'), firstLineIndent: pt(0),
-        boldColor: col('ink'), italicColor: col('ink') } },
-  ],
-  tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
-    headerBackground: col('ink'), headerColor: col('paper'), headerFontFamily: 'Source Sans 3',
-    bodyFontFamily: 'Source Serif 4', bodyFontSize: pt(9), bodyColor: col('ink'),
-    cellPadding: mm(1.4) },
-  captionStyle: { fontFamily: 'Source Serif 4', fontSize: pt(8.5), color: col('ink'),
-    labelBold: true, labelColor: col('accent'), descriptionItalic: true,
-    note: { color: col('muted') } },
+  tableStyle,
+  captionStyle: { fontFamily: LABEL, fontSize: pt(8), color: col('ink'),
+    labelColor: col('accent'), note: { color: col('muted') } },
   header,
   footer,
 };
@@ -147,20 +149,27 @@ const config = {
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
+const resources = [
+  { id: 'cabin', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
+    bitmap: { fileId: 'cabin-860.jpg', format: 'jpeg', width: 860, height: 975 },
+    altText: t({ en: 'Thoreau’s cabin among pines, an engraving from the 1854 title page.',
+      es: 'La cabaña de Thoreau entre pinos, grabado de la portada de 1854.' }) },
+  ...Object.entries(tables).map(([id, tsv]) => ({ id, typeId: 'account', kind: 'table',
+    createdAt: 0, updatedAt: 0, caption: '', table: { model: account(tsv) } })),
+];
+
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses. The engine loads them, and any face the config
-// names, from Fontsource before the first build (kitFonts, buildDocumentWithFonts).
 const FONTS = {
-  'Source Serif 4': ['400', '400i', '700', '700i'],
-  'Source Sans 3': ['400', '600', '700'],
+  Alegreya: ['400', '400i'],
+  'Alegreya SC': ['400'],
+  'Alegreya Sans': ['400', '400i', '500'], // the italic: the book title in the colophon
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-const doc = await buildDocumentWithFonts({ markdown }, config, kitFonts(FONTS));
-showPages(doc, { title: t({ en: 'Your recipe title', es: 'El título de tu receta' }) });
-// Pictures (README §5.3): add "images" to recipe.json kit and registerResourceImage to the
-// import, then `await loadImage('photo.jpg', asset('photo-2400.jpg'))` before the build.
-// A PDF: add "pdf" to outputs and kit, import renderToPdf and decompressWoff2 from postext-pdf,
-// then `offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`)`.
+await loadImage('cabin-860.jpg', asset('cabin-860.jpg'));
+const doc = await buildDocumentWithFonts({ markdown, resources }, config, kitFonts(FONTS));
+showPages(doc, { title: t({ en: 'Walden: the accounts', es: 'Walden: las cuentas' }) });
+offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
+  `${RECIPE}.pdf`);
 
 // @kit core fonts viewer · the Cookbook inlines cookbook/_kit/*.js here

@@ -1,72 +1,65 @@
 ---
-# Every value is quoted. Limits: title ≤ 60 characters (an outcome, not a feature list);
-# summary 60–160 (the answer in one sentence, naming the mechanism); description 120–160.
-title: "A book page with running heads"
-summary: "Mirrored margins, a sunk chapter opener and running heads that know which side of the spread they are on, on a trade-book page."
-description: "A trade-book page in Postext: mirrored margins, a chapter opener sunk 52 mm, running heads by parity and a drop folio on openers, with the full code."
-# plain: "…"           40–240 characters: the summary in everyday words, no jargon (shown as "In short")
-# question: "…"        optional, ≤ 110 characters: rephrases answers[0] for this page
-# pageNotes: { "3": "…" }  optional: extra alt text for a captured page
-aliases: ["book page", "running heads", "chapter opener"]
+title: "Old-style, lining and tabular figures"
+summary: "Thoreau's accounts from Walden: figureStyle sets lining figures in the small-capital headings and tabular ones in the accounts; the prose keeps old-style."
+plain: "A short edition of the household accounts Thoreau printed in Walden. The numbers in the text are small like lower-case letters, the years in the headings stand as tall as capitals, and the sums in the accounts line up in columns."
+description: "Walden's accounts set in Postext: old-style figures in the prose, lining figures in small-capital headings and tabular figures in the accounts."
+question: "How do I set old-style figures in the text, lining figures in the headings and tabular figures in the tables?"
+aliases: ["old-style figures", "oldstyle numerals", "text figures", "lining figures", "tabular figures", "figure styles", "onum", "lnum", "tnum", "font-variant-numeric", "Thoreau", "Walden", "accounts", "ledger"]
+pageNotes: { "1": "The opening page: the 1854 engraving of Thoreau's cabin among pines, the title THE ACCOUNTS in small capitals over Concord, 1845–1847 in lining figures, an italic headnote whose dates are old-style figures, and the first section, The House, 1845.", "2": "The cost of the house: thirteen items with their prices in a column of old-style figures of one width, a fraction column for the halves, Thoreau's remarks on the right and the total, $28.12½, under a light rule.", "4": "The food account: rice, molasses, rye and Indian meal, then a group headed All experiments which failed, the cents of every line under one another." }
 ---
 
 ## What you'll build
 
-{/*
-  60–150 words, in an art director's voice: the publication, the design idea, and why it is
-  hard to get elsewhere. Name the publication ("a pocket edition of…", "the June issue of…").
-  No feature lists: the Ingredients section is generated from recipe.json. The page adds the
-  "This recipe answers" list (from answers) under this section by itself.
-*/}
-
-The opening pages of a trade paperback: a chapter that starts on a recto a third of the way down, under a small tracked kicker and a short rule in the book's one accent colour, then page after page of justified text with the book's title on the left and the chapter on the right. Nothing on the page shouts. The craft is in the geometry: margins that mirror across the spread, running heads that know which side they are on, and a folio that drops to the foot on the opener, where a running head would crowd the title.
+A short edition of the accounts Thoreau printed in the first chapter of *Walden*: what his house cost, what the bean-field brought in, what he ate in eight months. It is set on a 140 × 216 mm page in the Alegreya family, with the 1854 engraving of the cabin over the opening. The figures change with the job they do. In the prose, *March, 1845* and *$13.34* use old-style figures that rise and fall like lower-case letters, so the dates do not stand out of the line. The headings are small capitals, and their years stand at the height of the capitals. In the accounts every figure is the same width, so the cents of thirteen lines of boards, laths and nails sit under one another down to the total.
 
 ## Method
 
-{/*
-  3–7 steps, each an H3 numbered "1 · …". Each step opens with an Excerpt of one #region of
-  script.js (the composed file, with its real line numbers), then 1–3 sentences on WHY, not
-  what: the reader can see what. The short answer already shows #region answer: a step about
-  it points there instead of printing it again. en.mdx, es.mdx and zh.mdx show the same
-  regions in the same order.
-  Optional components: Excerpt highlight="4-7", PageRef, PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · One figure style per text style
 
-### 1 · The opener is a design, not a heading
+The code is the short answer above. `figureStyle` asks a style's font for its OpenType figures ([figure styles](/en/docs/configuration-fonts-colors-viewers#figure-styles)). The body asks for nothing, because Alegreya's own figures are already old-style and proportional: a 1 is 342 units wide and a 0 is 533. The level-2 headings ask Alegreya SC for `'lining'`, its `lnum` figures, which stand as tall as the capitals around them. The table style asks for `'tabular'`, the font's `tnum`: the figures keep their old-style form and all take the same width, 450 units each, so a column of prices reads straight down. `'lining-tabular'` would set them at cap height instead (see Variations).
 
-The code is [the short answer](#the-short-answer) above. The first-level heading keeps its place in the text and the contents, but it draws itself from a slot of elements: the kicker comes from a heading attribute, the title wraps at a fixed measure, and the rule anchors below whatever height the title takes. `minHeight` sinks the body text to the same line on every opener, however long the title is.
+### 2 · The accounts are tables of five columns
 
-### 2 · Running heads know which page they are on
+<Excerpt region="accounts" />
+
+Thoreau's accounts are kept as TSV in `content.accounts.en.md`, one block per account, so the Spanish edition translates the items and changes the decimal point to a comma without touching the code. Each row has an item, a dollar sign, the amount, a fraction and a remark. The halves and quarters have a column of their own: ½ is 713 units wide and ¾ is 689, more than a tabular figure, and Alegreya has no figure space to pad the other amounts with. A total is made of header cells, so `groupRules` draws a light rule above it, as Thoreau's printer drew a line before *In all*. The dollar sign is written `\$`, because a bare `$` opens a formula in a cell as it does in the text. The resource type `account` has no number and no caption prefix, and its default placement is `'here'`, so each account sits where Thoreau's sentence introduces it.
+
+### 3 · The opener names its own figures
+
+<Excerpt region="opener" />
+
+A design text sets its own family, so the figures of the body do not reach it. *Concord, 1845–1847* is in Alegreya SC and asks for `'lining'` itself, like the headings. The vignette is the engraving from the 1854 title page, cropped and levelled to black on white, and the kicker, the title and the dates take the measure and centre under it.
+
+### 4 · Running heads with the section on the recto
 
 <Excerpt region="running-heads" />
 
-Each element is anchored to the physical page and filtered by parity, so the folio always sits on the outer edge and the book title on the verso. `pages: 'body'` keeps them off the opener, which gets a centred drop folio from the footer instead.
+The verso carries the book's title and the recto the section in force, `{firstMark.h2}`, so page 3 reads *The Bean-Field, 1845*. The folios are in Alegreya and keep its old-style figures.
 
-### 3 · One accent, linked everywhere
-
-<Excerpt region="palette" />
-
-Every colour in the config names its palette entry, so a reader who changes one swatch retints the whole book, and a part or a heading style can recolour a section by id. Pointing `main-color` at the accent catches every default the config does not restate.
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="Page 2: the old-style figures of the house account all take one width, so the cents line up to the total." />
 
 ## Variations
 
-{/*
-  Optional, 1–4 entries: an imperative H3, one sentence, then a diff against script.js
-  or a link to a sibling recipe.
-*/}
+### Set the accounts in lining figures
 
-### Set the text in two columns
-
-A wider trim takes two columns; the opener spans both and the running heads stay where they are.
+A ledger or a price list in a modern book often sets its figures at cap height.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### Set the folios in lining figures
+
+Folios in lining figures match running heads set in capitals.
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
 ```
 
 ## Pitfalls
 
-{/*
-  Optional. The gotchas and warnings listed in recipe.json render here by themselves; add a
-  line only for a pitfall that belongs to this recipe alone.
-*/}
+- The latin files Fontsource serves often leave `onum` out: Lora, EB Garamond, Source Serif 4, Crimson Pro, Newsreader and Literata keep only `pnum` and `tnum`. With those files `figureStyle: 'oldstyle'` changes nothing and the text keeps lining figures. Pick a face whose own figures are old-style, such as Alegreya, Gelasio or Cormorant Garamond, which add `lnum` for headings, or load the foundry's full files.
+- A `$` in the Markdown or in a table cell opens an inline formula. Write `\$14.72½` in the text and `\$` in a cell.

@@ -2,39 +2,163 @@
   "$schema": "../recipe.schema.json",
   "schemaVersion": 1,
   "number": 176,
-  "status": "draft",
+  "status": "published",
   "chapter": "type",
   "order": 370,
   "level": 2,
-  "genres": ["novel"],
-  "outputs": ["canvas"],
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
   "features": {
-    "primary": ["mirrored-margins", "running-heads"],
+    "primary": [
+      "figure-styles",
+      "table-style"
+    ],
     "also": [
+      "table-model",
+      "resource-types",
+      "float-placement",
       "opener-design",
+      "design-images",
       "heading-attributes",
-      "page-role-filters",
-      "widows-orphans-runts",
+      "section-running-heads",
+      "running-heads",
+      "mirrored-margins",
       "paragraph-styles",
-      "callout-styles"
+      "color-palette",
+      "pdf-export",
+      "pdf-fonts"
     ]
   },
-  "answers": ["Q16", "Q30"],
+  "answers": [
+    "Q209",
+    "Q73"
+  ],
   "gotchas": [],
-  "engine": { "postext": "1.25.0" },
-  "kit": ["core", "fonts", "viewer"],
-  "sample": { "locales": ["en"] },
-  "capture": { "hero": 1, "card": "page" },
-  "credits": {
-    "authors": [{ "name": "Your Name", "github": "your-github" }],
-    "text": [],
-    "images": [],
-    "fonts": [
-      { "family": "Source Serif 4", "license": "OFL-1.1" },
-      { "family": "Source Sans 3", "license": "OFL-1.1" }
+  "engine": {
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
     ]
   },
-  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "capture": {
+    "hero": 1,
+    "card": "loupe",
+    "focus": {
+      "page": 1,
+      "x": 0.12,
+      "y": 0.551,
+      "w": 0.78,
+      "h": 0.192
+    },
+    "expect": {
+      "pages": [
+        6,
+        6
+      ]
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The accounts and the passages around them from “Economy,” the first chapter of Walden; or, Life in the Woods (Boston: Ticknor and Fields, 1854)",
+          "es": "Las cuentas y los pasajes que las rodean, de «Economy», primer capítulo de Walden; or, Life in the Woods (Boston: Ticknor and Fields, 1854)"
+        },
+        "who": "Henry D. Thoreau",
+        "source": "https://www.gutenberg.org/ebooks/205",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The headnote, and the Spanish translation of the passages and the accounts",
+          "es": "La nota preliminar y la traducción al español de los pasajes y las cuentas"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The vignette of Thoreau’s cabin from the title page of the first edition (1854), cropped and levelled to black on white",
+          "es": "La viñeta de la cabaña de Thoreau en la portada de la primera edición (1854), recortada y ajustada a negro sobre blanco"
+        },
+        "who": "Ticknor and Fields, Boston, 1854 (engraver unknown)",
+        "source": "https://commons.wikimedia.org/wiki/File:Walden_Thoreau.jpg",
+        "license": "PD",
+        "file": "cabin-860.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Alegreya",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Alegreya SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Alegreya Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
   "created": "2026-10-31",
-  "updated": "2026-10-31"
+  "updated": "2026-10-31",
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 80,
+      "texture": "laid",
+      "textureStrength": 0.5
+    },
+    "binding": {
+      "type": "sewn",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#7d3a1f"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "lamp"
+    }
+  },
+  "related": [
+    "technical-datasheet",
+    "side-heads-hanging-numbers",
+    "spanish-pocket-novel",
+    "critical-edition-line-numbers"
+  ]
 }

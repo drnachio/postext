@@ -1,72 +1,65 @@
 ---
-# Tots els valors van entre cometes. Límits: title ≤ 60 caràcters (un resultat, no una llista
-# de funcions); summary 60–160 (la resposta en una frase, amb el mecanisme); description 120–160.
-title: "Una pàgina de llibre amb capçaleres"
-summary: "Marges simètrics, una obertura de capítol enfonsada i capçaleres que saben a quin costat de la doble pàgina són, a la pàgina d'un llibre en rústica."
-description: "Una pàgina de llibre amb Postext: marges simètrics, obertura enfonsada 52 mm, capçaleres segons la paritat i foli al peu a les obertures, amb tot el codi."
-# plain: "…"           40–240 caràcters: el resum en paraules corrents, sense argot (es mostra com a «En poques paraules»)
-# question: "…"        opcional, ≤ 110 caràcters: reformula answers[0] per a aquesta pàgina
-# pageNotes: { "3": "…" }  opcional: text alternatiu addicional per a una pàgina capturada
-aliases: ["pàgina de llibre", "capçaleres", "obertura de capítol"]
+title: "Xifres elzevirianes, de caixa alta i tabulars"
+summary: "Els comptes de Walden: figureStyle dona xifres de caixa alta als títols en versaletes i xifres tabulars als comptes; la prosa conserva les elzevirianes."
+plain: "Una edició breu dels comptes domèstics que Thoreau va publicar a Walden. Les xifres del text són petites com les minúscules, els anys dels títols fan l'alçada de les majúscules i les sumes dels comptes s'alineen en columna."
+description: "Els comptes de Walden a Postext: xifres elzevirianes a la prosa, de caixa alta als títols en versaletes i tabulars als comptes, en pantalla i en PDF."
+question: "Com componc xifres elzevirianes al text, de caixa alta als títols i tabulars a les taules?"
+aliases: ["xifres elzevirianes", "xifres d'estil antic", "xifres de caixa alta", "xifres tabulars", "estils de xifres", "onum", "lnum", "tnum", "Thoreau", "Walden", "comptes"]
+pageNotes: { "1": "La pàgina d'obertura: el gravat de 1854 de la cabana de Thoreau entre pins, el títol LAS CUENTAS en versaletes sobre Concord, 1845–1847 en xifres de caixa alta, una nota preliminar en cursiva amb les dates en xifres elzevirianes i la primera secció, La casa, 1845.", "2": "El cost de la casa: tretze partides amb el preu en una columna de xifres elzevirianes d'una mateixa amplada, una columna per als mitjos cèntims, les observacions de Thoreau a la dreta i el total, $28,12½, sota un filet fi." }
 ---
 
 ## Què compondràs
 
-{/*
-  60–150 paraules, amb veu de director d'art: la publicació, la idea de disseny i per què
-  costa d'aconseguir en un altre lloc. Anomena la publicació («una edició en rústica de…»,
-  «el número de juny de…»). Sense llistes de funcions: Ingredients es genera des de recipe.json.
-  La pàgina afegeix sola, sota aquesta secció, la llista «Aquesta recepta respon» (d'answers).
-*/}
-
-Les primeres pàgines d'una novel·la en rústica: un capítol que comença en pàgina senar, a un terç de l'alçada, sota un avanttítol petit en versaletes espaiades i un filet curt de l'únic color d'accent del llibre; després, pàgina rere pàgina de text justificat, amb el títol del llibre a l'esquerra i el del capítol a la dreta. Res a la pàgina no alça la veu. L'ofici és a la geometria: marges que s'emmirallen a la doble pàgina, capçaleres que saben a quin costat són i un foli que baixa al peu a l'obertura, on una capçalera destorbaria el títol.
+Una edició breu dels comptes que Thoreau va publicar al primer capítol de *Walden*: el que li va costar la casa, el que li va donar el camp de mongetes, el que va menjar en vuit mesos. Va en una pàgina de 140 × 216 mm amb la família Alegreya, i l'obertura porta el gravat de 1854 de la cabana. Les xifres canvien segons la feina que fan. A la prosa, *març de 1845* i *$13,34* van en xifres elzevirianes, que pugen i baixen com les minúscules, i les dates no destaquen a la línia. Els títols van en versaletes, i els seus anys fan l'alçada de les majúscules. Als comptes totes les xifres tenen la mateixa amplada, de manera que els cèntims de tretze línies de taules, llistons i claus queden l'un sota l'altre fins al total.
 
 ## Elaboració
 
-{/*
-  De 3 a 7 passos, cadascun un H3 numerat «1 · …». Cada pas obre amb un Excerpt d'una #region
-  de script.js (el fitxer compost, amb els seus números de línia reals) i continua amb 1–3 frases
-  sobre el PERQUÈ, no sobre el què: el què ja es veu. La resposta curta ja mostra la
-  #region answer: un pas que en parli remet allà en lloc de repetir-la. en.mdx, es.mdx, ca.mdx i zh.mdx
-  mostren les mateixes regions en el mateix ordre. Components opcionals: Excerpt highlight="4-7", PageRef,
-  PageShot, Gotcha, Feature, RecipeLink, Note.
-*/}
+### 1 · Un estil de xifres per estil de text
 
-### 1 · L'obertura és un disseny, no un títol
+El codi d'aquest pas és la resposta curta, més amunt. `figureStyle` demana a la font d'un estil les seves xifres OpenType ([estils de xifres](/ca/docs/configuration-fonts-colors-viewers#estils-de-xifres)). El cos no demana res, perquè les xifres pròpies d'Alegreya ja són elzevirianes i proporcionals: l'1 fa 342 unitats i el 0, 533. Els títols de segon nivell demanen a Alegreya SC `'lining'`, les seves xifres `lnum`, que fan l'alçada de les majúscules que les envolten. L'estil de taula demana `'tabular'`, el `tnum` de la font: les xifres conserven la forma elzeviriana i prenen totes la mateixa amplada, 450 unitats, així que una columna de preus es llegeix de dalt a baix. Amb `'lining-tabular'` anirien a l'alçada de les majúscules (mira «Variants»).
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El títol de primer nivell conserva el seu lloc al text i a l'índex, però es dibuixa des d'una zona de disseny: l'avanttítol surt d'un atribut del títol, el títol es parteix amb una mida fixa i el filet s'ancora sota l'alçada que ocupi el títol. `minHeight` enfonsa el text fins a la mateixa línia a totes les obertures, sigui quina sigui la llargada del títol.
+### 2 · Els comptes són taules de cinc columnes
 
-### 2 · Les capçaleres saben en quina pàgina són
+<Excerpt region="accounts" />
+
+Els comptes de Thoreau es guarden com a TSV a `content.accounts.es.md`, un bloc per compte, de manera que l'edició castellana tradueix les partides i canvia el punt decimal per la coma sense tocar el codi. Cada fila porta la partida, el signe del dòlar, l'import, una fracció i una observació. Els mitjos i els quarts tenen columna pròpia: ½ fa 713 unitats i ¾, 689, més que una xifra tabular, i Alegreya no té espai de xifra per omplir els altres imports. Un total està fet de cel·les de capçalera, així que `groupRules` hi traça un filet fi a sobre, com l'impressor de Thoreau traçava una línia abans d'*In all*. El signe del dòlar s'escriu `\$`, perquè un `$` sol obre una fórmula en una cel·la, igual que al text. El tipus de recurs `account` no porta número ni prefix de peu, i la seva col·locació per defecte és `'here'`, així que cada compte va on el presenta la frase de Thoreau.
+
+### 3 · L'obertura declara les seves xifres
+
+<Excerpt region="opener" />
+
+Un text de disseny fixa la seva pròpia família, així que les xifres del cos no hi arriben. *Concord, 1845–1847* va en Alegreya SC i demana `'lining'` pel seu compte, com els títols. La vinyeta és el gravat de la portada de 1854, retallat i ajustat a negre sobre blanc; l'avanttítol, el títol i les dates prenen la mesura de la caixa i se centren a sota.
+
+### 4 · Capçaleres amb la secció a la pàgina senar
 
 <Excerpt region="running-heads" />
 
-Cada element s'ancora a la pàgina física i es filtra per paritat, de manera que el foli queda sempre a la vora exterior i el títol del llibre al verso. `pages: 'body'` els manté fora de l'obertura, que rep en canvi un foli centrat al peu des del peu de pàgina.
+La pàgina parella porta el títol del llibre, i la senar, la secció en curs, `{firstMark.h2}`, de manera que la pàgina 3 diu *El campo de judías, 1845*. Els folis van en Alegreya i conserven les xifres elzevirianes.
 
-### 3 · Un sol accent, enllaçat a tot arreu
-
-<Excerpt region="palette" />
-
-Cada color de la configuració fa referència a la seva entrada de la paleta, de manera que qui canviï una mostra canvia el to de tot el llibre, i una part o un estil d'encapçalament poden tornar a acolorir una secció pel seu id. Fer apuntar `main-color` a l'accent atrapa tots els valors per defecte que la configuració no redefineix.
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="Pàgina 2: les xifres elzevirianes del compte de la casa tenen totes la mateixa amplada, i els cèntims s'alineen fins al total." />
 
 ## Variants
 
-{/*
-  Opcional, d'1 a 4 entrades: un H3 en imperatiu, una frase i un diff contra script.js,
-  o un enllaç a una recepta germana.
-*/}
+### Compon els comptes en xifres de caixa alta
 
-### Compon el text a dues columnes
-
-Un format més ample admet dues columnes; l'obertura ocupa les dues i les capçaleres es queden on són.
+Un llibre de comptes o una llista de preus d'un llibre modern sol portar les xifres a l'alçada de les majúscules.
 
 ```diff
--  layout: { layoutType: 'single' },
-+  layout: { layoutType: 'double', gutterWidth: mm(6) },
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### Compon els folis en xifres de caixa alta
+
+Els folis en xifres de caixa alta casen amb capçaleres en majúscules.
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
 ```
 
 ## Errors freqüents
 
-{/*
-  Opcional. Els errors freqüents i els avisos que llista recipe.json hi apareixen sols;
-  afegeix-hi una línia només per a un problema propi d'aquesta recepta.
-*/}
+- Els fitxers latin que serveix Fontsource sovint deixen fora `onum`: Lora, EB Garamond, Source Serif 4, Crimson Pro, Newsreader i Literata només conserven `pnum` i `tnum`. Amb aquests fitxers, `figureStyle: 'oldstyle'` no canvia res i el text continua amb xifres de caixa alta. Tria una lletra amb xifres pròpies elzevirianes, com Alegreya, Gelasio o Cormorant Garamond, que afegeixen `lnum` per als títols, o carrega els fitxers complets de la foneria.
+- Un `$` al Markdown o en una cel·la obre una fórmula en línia. Escriu `\$14,72½` al text i `\$` en una cel·la.
