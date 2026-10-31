@@ -1,6 +1,6 @@
 // Arabic layout terms.
 import type { GlossaryTerm } from "../terms";
-import { term } from "./term";
+import { term } from "./term.ts";
 
 export const ARABIC_TERMS: readonly GlossaryTerm[] = [
   // ── Arabic layout ──────────────────────────────────────────────────────
