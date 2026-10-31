@@ -46,7 +46,7 @@ mamá
 mapa
 :::
 
-Une y lee: :chip[ma]{style="letra"} + :chip[pa]{style="letra"} = :chip[mapa]{style="puntos"} · :chip[pi]{style="letra"} + :chip[pa]{style="letra"} = :chip[pipa]{style="puntos"} · :chip[mo]{style="letra"} + :chip[mo]{style="letra"} = :chip[momo]{style="puntos"}
+Une y lee: :chip[ma]{style="letra"} + :chip[pa]{style="letra"} = :chip[mapa]{style="puntos"} · :chip[pi]{style="letra"} + :chip[pa]{style="letra"} = :chip[pipa]{style="puntos"} · :chip[mo]{style="letra"} + :chip[mo]{style="letra"} = :chip[momo]{style="puntos"}
 
 :::callout{type="recuerda" title="Recuerda"}
 Antes de **p** y de **b** se escribe siempre **m**: campo, tambor, siempre.
