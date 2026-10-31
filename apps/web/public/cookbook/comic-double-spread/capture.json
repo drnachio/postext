@@ -3,18 +3,12 @@
   "slug": "comic-double-spread",
   "sourceHash": "ec282feeb666ba8961b8151fa8674919fe599c112eef8ecb57471b6ecb61f425",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:34:49.053Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:57.083Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:51:18.334Z",
   "variants": {
     "en": {
       "hash8": "36c58f12",
@@ -270,9 +264,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -536,9 +540,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -802,9 +816,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, es, en, zh, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -815,13 +839,13 @@
       }
     },
     "zh": {
-      "hash8": "3c96ed72",
+      "hash8": "5c1f1b2e",
       "vdtHash": "a95d6688e5763446c909ea3f306a081d82b8d8fa",
       "timings": {
-        "importMs": 403,
-        "fontsMs": 264,
-        "buildMs": 253,
-        "totalMs": 1524,
+        "importMs": 4830,
+        "fontsMs": 2134,
+        "buildMs": 390,
+        "totalMs": 8349,
         "builds": 1
       },
       "specimen": {
@@ -887,7 +911,7 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 895125,
+        "bytes": 895097,
         "pages": 2
       },
       "sandbox": {
@@ -1069,9 +1093,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, es, en, ca, ar, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -1339,9 +1373,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, es, en, ca, zh, ja, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -1352,13 +1396,13 @@
       }
     },
     "ja": {
-      "hash8": "08a266e3",
+      "hash8": "5e0128f9",
       "vdtHash": "e0fea0a1e39d501e8c605675983a84d3865583a3",
       "timings": {
-        "importMs": 227,
-        "fontsMs": 209,
-        "buildMs": 222,
-        "totalMs": 1280,
+        "importMs": 4578,
+        "fontsMs": 1621,
+        "buildMs": 301,
+        "totalMs": 7249,
         "builds": 1
       },
       "specimen": {
@@ -1425,7 +1469,7 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 895103,
+        "bytes": 895108,
         "pages": 2
       },
       "sandbox": {
@@ -1608,9 +1652,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, es, en, ca, zh, ar, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -1874,9 +1928,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, es, en, ca, zh, ar, ja, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -2140,9 +2204,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, es, en, ca, zh, ar, ja, pt, de, it"
           },
           {
             "check": "sandbox",
@@ -2406,9 +2480,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, es, en, ca, zh, ar, ja, pt, fr, it"
           },
           {
             "check": "sandbox",
@@ -2672,9 +2756,19 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB; capture.expect.cardKb states the figure of a painted card)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, es, en, ca, zh, ar, ja, pt, fr, de"
           },
           {
             "check": "sandbox",
