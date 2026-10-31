@@ -3,16 +3,11 @@
   "slug": "justification-lab",
   "sourceHash": "0c100ace6aaf438bc5220f4818f005b99392090816912a1fe5a1dc64351c6233",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:37:57.703Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.733Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:20:28.294Z",
   "variants": {
     "en": {
       "hash8": "93322995",
@@ -355,7 +350,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -366,13 +366,13 @@
       }
     },
     "es": {
-      "hash8": "02c7ca99",
-      "vdtHash": "a23b6ba3bc41d28d7528646e0414754fe8f2d48a",
+      "hash8": "2de2e3a9",
+      "vdtHash": "83651c89e01d7e7c07952c370f46b9b2ee12955a",
       "timings": {
-        "importMs": 338,
+        "importMs": 3293,
         "fontsMs": 2,
-        "buildMs": 43,
-        "totalMs": 1626,
+        "buildMs": 50,
+        "totalMs": 4543,
         "builds": 2
       },
       "specimen": {
@@ -461,8 +461,8 @@
         "chapters": [
           {
             "pages": 3,
-            "hash": "f5aafde4decbadc8",
-            "lines": "3dd25ddee56638ec"
+            "hash": "985f252905d9934b",
+            "lines": "5384bd5e1d30c3d2"
           }
         ],
         "warnings": [
@@ -705,7 +705,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",
