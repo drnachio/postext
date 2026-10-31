@@ -40,7 +40,7 @@ Las observaciones también ofrecieron un resultado sorpresa. "*En el proceso des
 Ahora, con la ayuda del VLT de ESO, es posible que la comunidad astronómica estudie características como estas manchas desde la Tierra. "*Es asombroso impulso en la capacidad de la humanidad para observar el cosmos. Al principio, solo podíamos detectar estos puntos enviando allí una nave espacial, como la Voyager. Luego tuvimos la capacidad de distinguirlos de forma remota con el Hubble. Finalmente, la tecnología ha avanzado para permitir hacerlo desde la superficie terrestre*", concluye Wong, antes de agregar, bromeando: "*¡Esto podría dejarme sin trabajo como observador del Hubble!*".
 
 :::paragraphs{style="fuente"}
-Nota de prensa eso2314 de ESO, 24 de Agosto de 2023. Texto e imágenes bajo licencia CC BY 4.0. [https://www.eso.org/public/spain/news/eso2314/](https://www.eso.org/public/spain/news/eso2314/)
+[Nota de prensa eso2314](https://www.eso.org/public/spain/news/eso2314/) de ESO, 24 de Agosto de 2023. Texto e imágenes bajo licencia CC BY 4.0.
 :::
 
 ## Gemini Norte captura en detalle el brillo verdoso del Cometa 3I/ATLAS {lead="El público, a través del programa Shadow the Scientists, se unió a los científicos en una observación en vivo desde Hawai‘i, para ver las nuevas y espectaculares imágenes del cometa interestelar" source="NSF NOIRLab" date="12 Diciembre 2025" release="noirlab2532" standfirst="El público, a través del programa Shadow the Scientists, se unió a los científicos en una observación en vivo desde Hawai‘i, para ver las nuevas y espectaculares imágenes del cometa interestelar"}
@@ -74,5 +74,5 @@ La colaboración con *Shadow the Scientists* se basa en la tradición de NOIRLab
 *“Compartir una experiencia de observación en una de las mejores condiciones posibles, ofrece al público una visión privilegiada de nuestro visitante interestelar. Permitir al público ver lo que hacemos los astrónomos y cómo lo hacemos, también ayuda a desmitificar el proceso científico y de recopilación de datos, lo que añade transparencia a nuestro estudio de este fascinante objeto”*, explicó Bolin.
 
 :::paragraphs{style="fuente"}
-Nota de prensa noirlab2532 de NSF NOIRLab, 12 Diciembre 2025. Texto e imágenes bajo licencia CC BY 4.0. [https://noirlab.edu/public/es/news/noirlab2532/](https://noirlab.edu/public/es/news/noirlab2532/)
+[Nota de prensa noirlab2532](https://noirlab.edu/public/es/news/noirlab2532/) de NSF NOIRLab, 12 Diciembre 2025. Texto e imágenes bajo licencia CC BY 4.0.
 :::

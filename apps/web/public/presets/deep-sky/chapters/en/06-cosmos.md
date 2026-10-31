@@ -5,7 +5,7 @@
 
 ## Astronomers unveil strong magnetic fields spiraling at the edge of Milky Way’s central black hole {lead="A new image from the Event Horizon Telescope (EHT) collaboration has uncovered strong and organised magnetic fields spiraling from the edge of the supermassive black hole Sagittarius A* (Sgr A*)." source="ESO" date="27 March 2024" release="eso2406"}
 
-::resource{id="eso2406a"}
+::resource{id="eso2406b"}
 
 Seen in polarised light for the first time, this new view of the monster lurking at the heart of the Milky Way galaxy has revealed a magnetic field structure strikingly similar to that of the black hole at the centre of the M87 galaxy, suggesting that strong magnetic fields may be common to all black holes. This similarity also hints toward a hidden jet in Sgr A*. The results were published today in The Astrophysical Journal Letters.
 
@@ -19,12 +19,12 @@ Seen in polarised light for the first time, this new view of the monster lurking
 **Distance** 27,000 light-years
 :::
 
-In 2022 scientists unveiled the first image of Sgr A* at press conferences around the world, including at the European Southern Observatory (ESO). While the Milky Way’s supermassive black hole, which is roughly 27 000 light-years away from Earth, is more than a thousand times smaller and less massive than M87’s, the first-ever black hole imaged, the observations revealed that the two look remarkably similar. This made scientists wonder whether the two shared common traits outside of their looks. To find out, the team decided to study Sgr A* in polarised light. Previous studies of light around the M87 black hole (M87*) revealed that the magnetic fields around it allowed the black hole to launch powerful jets of material back into the surrounding environment. Building on this work, the new images have revealed that the same may be true for Sgr A*. (:ref{id="eso2406b" case="lower"})
+In 2022 scientists unveiled the first image of Sgr A* at press conferences around the world, including at the European Southern Observatory (ESO). While the Milky Way’s supermassive black hole, which is roughly 27 000 light-years away from Earth, is more than a thousand times smaller and less massive than M87’s, the first-ever black hole imaged, the observations revealed that the two look remarkably similar. This made scientists wonder whether the two shared common traits outside of their looks. To find out, the team decided to study Sgr A* in polarised light. Previous studies of light around the M87 black hole (M87*) revealed that the magnetic fields around it allowed the black hole to launch powerful jets of material back into the surrounding environment. Building on this work, the new images have revealed that the same may be true for Sgr A*. (:ref{id="eso2406a" case="lower"})
 
 “*What we’re seeing now is that there are strong, twisted, and organised magnetic fields near the black hole at the centre of the Milky Way galaxy,*” said Sara Issaoun, NASA Hubble Fellowship Program Einstein Fellow at the Center for Astrophysics | Harvard & Smithsonian, US, and co-lead of the project. “*Along with Sgr A* having a strikingly similar polarisation structure to that seen in the much larger and more powerful M87* black hole, we’ve learned that strong and ordered magnetic fields are critical to how black holes interact with the gas and matter around them.*”
 
 :::callout{type="cita"}
-“What we’re seeing now is that there are strong, twisted, and organised magnetic fields near the black hole at the centre of the Milky Way galaxy,”
+“What we’re seeing now is that there are strong, twisted, and organised magnetic fields near the black hole at the centre of the Milky Way galaxy”
 :::
 
 Light is an oscillating, or moving, electromagnetic wave that allows us to see objects. Sometimes, light oscillates in a preferred orientation, and we call it ‘polarised’. Although polarised light surrounds us, to human eyes it is indistinguishable from ‘normal’ light. In the plasma around these black holes, particles whirling around magnetic field lines impart a polarisation pattern perpendicular to the field. This allows astronomers to see in increasingly vivid detail what’s happening in black hole regions and map their magnetic field lines.
@@ -42,7 +42,7 @@ To observe Sgr A*, the collaboration linked eight telescopes around the world to
 The EHT has conducted several observations since 2017 and is scheduled to observe Sgr A* again in April 2024. Each year, the images improve as the EHT incorporates new telescopes, larger bandwidth, and new observing frequencies. Planned expansions for the next decade will enable high-fidelity movies of Sgr A*, may reveal a hidden jet, and could allow astronomers to observe similar polarisation features in other black holes. Meanwhile, extending the EHT into space would provide sharper images of black holes than ever before.
 
 :::paragraphs{style="fuente"}
-Press release eso2406 by ESO, 27 March 2024. Text and images licensed CC BY 4.0. [https://www.eso.org/public/news/eso2406/](https://www.eso.org/public/news/eso2406/)
+[Press release eso2406](https://www.eso.org/public/news/eso2406/) by ESO, 27 March 2024. Text and images licensed CC BY 4.0.
 :::
 
 ## NSF–DOE Rubin Observatory Opens Deep Window on Famous Cosmic Field {lead="A new NSF–DOE Vera C. Rubin Observatory image featuring hundreds of thousands of distant galaxies in and around the COSMOS field marks the Observatory’s first LSST Camera image and catalog release for science" source="NSF NOIRLab" date="31 July 2026" release="noirlab2618" standfirst="A new NSF–DOE Vera C. Rubin Observatory image featuring hundreds of thousands of distant galaxies in and around the COSMOS field marks the Observatory’s first LSST Camera image and catalog release for science"}
@@ -96,5 +96,5 @@ The second phase of EDP2, expected in the October–December 2026 timeframe, wil
 Access to EDP2 is available right now to researchers in the U.S. and Chile, as well as authorized international Rubin data-rights holders. In keeping with Rubin Observatory’s data-access policy, the data products will be made openly available to the public after a two-year proprietary period.
 
 :::paragraphs{style="fuente"}
-Press release noirlab2618 by NSF NOIRLab, 31 July 2026. Text and images licensed CC BY 4.0. [https://noirlab.edu/public/news/noirlab2618/](https://noirlab.edu/public/news/noirlab2618/)
+[Press release noirlab2618](https://noirlab.edu/public/news/noirlab2618/) by NSF NOIRLab, 31 July 2026. Text and images licensed CC BY 4.0.
 :::
