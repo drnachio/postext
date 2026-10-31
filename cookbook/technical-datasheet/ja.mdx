@@ -34,7 +34,7 @@ pageNotes: { "1": "表紙ページ：品番、リード、3つの主要な数値
 
 <Excerpt region="styles" />
 
-`tableStyle`はすべての表に共通する設定をまとめます。`tableStyles`の各項目は、その表が変える部分だけを設定し、リソースは`table.styleId`で1つを選びます。電気的特性の表は、灰色の細い罫を1.4 ptの白い罫に替えて地色を切り分け、各結合の終わりを見せます。型番の表は角丸の外枠とFira Sans Condensedを使い、4列を本文の1段に収めます。
+`tableStyle`はすべての表に共通する設定をまとめます。`tableStyles`の各項目は、その表が変える部分だけを設定し、リソースは`table.styleId`で1つを選びます。電気的特性の表は、灰色の細い罫を1.4 ptの白い罫に替えて地色を切り分け、各結合の終わりを見せます。型番の表は角丸の外枠とFira Sans Condensedを使い、4列を本文の1段に収めます。 電気的特性の表スタイルの `figureStyle: 'tabular'` は Fira Sans に `tnum`（等幅数字）を求めるので、Min・Typ・Max の各列で桁がそろいます。
 
 ### 5 · PDFでテキストのまま残るラベル
 
@@ -55,8 +55,8 @@ pageNotes: { "1": "表紙ページ：品番、リード、3つの主要な数値
 パレットの灰色`rule`の0.5 ptの罫が、地色の有無にかかわらずすべての行を区切ります。白い罫は、地色のない2行が接するところでは見えなくなります。
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### 表のキャプションを帯の上に組む

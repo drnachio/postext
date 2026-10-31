@@ -34,7 +34,7 @@ La tabella dei pin e la mappa dei registri escono entrambe da `groupedTable`. Un
 
 <Excerpt region="styles" />
 
-`tableStyle` contiene ciò che tutte le tabelle condividono. Ogni voce di `tableStyles` imposta solo ciò che le sue tabelle cambiano, e una risorsa ne sceglie una con `table.styleId`. La tabella elettrica sostituisce i filetti sottili grigi con filetti bianchi di 1,4 pt, che separano i suoi riempimenti e mostrano dove finisce ogni unione. La tabella dei codici d’ordine riceve un bordo esterno arrotondato e Fira Sans Condensed, così le sue quattro colonne stanno in una colonna di testo.
+`tableStyle` contiene ciò che tutte le tabelle condividono. Ogni voce di `tableStyles` imposta solo ciò che le sue tabelle cambiano, e una risorsa ne sceglie una con `table.styleId`. La tabella elettrica sostituisce i filetti sottili grigi con filetti bianchi di 1,4 pt, che separano i suoi riempimenti e mostrano dove finisce ogni unione. La tabella dei codici d’ordine riceve un bordo esterno arrotondato e Fira Sans Condensed, così le sue quattro colonne stanno in una colonna di testo. Il `figureStyle: 'tabular'` dello stile elettrico chiede alla Fira Sans la funzione `tnum`, cifre di uguale larghezza, perché le cifre di Min, Typ e Max si allineino in ogni colonna.
 
 ### 5 · Etichette che restano testo nel PDF
 
@@ -55,8 +55,8 @@ Il codice del componente è il titolo di primo livello, e il suo spazio grafico 
 Filetti di mezzo punto nel colore grigio `rule` della tavolozza separano ogni riga, colorata o no; quelli bianchi spariscono dove si incontrano due righe senza riempimento.
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### Componi le didascalie delle tabelle su una barra
