@@ -19,6 +19,8 @@ export const metadata = {
 
 Uma nota de rodapé tem duas partes: a chamada `[^id]`, no ponto em que a nota é citada, e a definição, um parágrafo próprio que começa com `[^id]:` em qualquer ponto do capítulo.
 
+<YouTubeVideo film="footnotes" />
+
 ```md
 The keeper climbed the tower every evening.[^steps] The wind put out his candle,
 so he learned to count the steps in the dark.
@@ -37,6 +39,8 @@ so he learned to count the steps in the dark.
 ## Referências cruzadas e âncoras
 
 Uma referência cruzada indica um lugar do livro e imprime o número, o título ou a página dele: *veja a seção 3.2*, *como explica o capítulo 4*, *na p. 112*. As palavras e os números acompanham o texto, de modo que mover uma seção, renumerar os capítulos ou refazer a diagramação do livro atualiza todas as referências. No PDF, no HTML e nas visualizações do Sandbox, cada referência é um link: um clique leva o leitor ao destino, inclusive em outro capítulo.
+
+<YouTubeVideo film="crossReferences" />
 
 **Âncoras.** Uma referência precisa de algo para onde apontar:
 
@@ -82,6 +86,8 @@ Uma referência a um id que nada define imprime *?* e o painel Verificações a 
 ## Citações e bibliografia
 
 Escreva as citações como o Pandoc as lê, mantenha as referências no documento e escolha o estilo de citação nas configurações: passar de APA para IEEE, ou para as notas do Chicago, muda o ajuste de estilo, não o texto. Toda citação tem um link para sua entrada na bibliografia.
+
+<YouTubeVideo film="citations" />
 
 ### Como citar
 
@@ -200,6 +206,8 @@ Só contam os links `http:` e `https:`. Um link `mailto:` ou `tel:`, um link par
 ## Índice remissivo
 
 Um índice remissivo lista os termos de um livro com as páginas em que aparecem. Marque cada termo onde o texto trata dele e imprima o índice com `:::index` onde ele deve ficar, normalmente num capítulo próprio no fim. O motor descobre a página de cada marca depois da diagramação, de modo que os números acompanham o texto: acrescente um parágrafo, mova um capítulo ou mude o formato, e o índice imprime as páginas novas.
+
+<YouTubeVideo film="backIndex" />
 
 ```md
 Iron-deficiency :index[anaemia] is the most common kind.

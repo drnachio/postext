@@ -298,6 +298,8 @@ El manifiesto enumera todos los idiomas en `locales` (`['es', 'en']`), conserva 
 
 Las ediciones de un libro en varios idiomas suelen compartir casi todo el diseño: la página, la retícula, los estilos de recuadro, la paleta. Unos pocos ajustes son de un idioma: los tipos de letra de su escritura, lo que depende de la dirección del texto, el texto de una etiqueta. Un paquete escrito para las reglas de configuración 21 (`configVersion: 21`) los guarda por separado. El `config` del manifiesto contiene los **ajustes generales**, que leen todas las ediciones, y `localized[<idioma>].config` contiene los **ajustes propios** de ese idioma, solo con los campos que fija de otro modo. Un cambio en un ajuste general llega a todas las ediciones que no fijan ese mismo campo por su cuenta.
 
+<YouTubeVideo film="everyLanguage" />
+
 Los ajustes propios se combinan con los generales campo a campo:
 
 <table>

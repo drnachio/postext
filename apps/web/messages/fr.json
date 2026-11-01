@@ -345,6 +345,28 @@
     "fullscreen": "Plein écran",
     "exitFullscreen": "Quitter le plein écran"
   },
+  "YouTubeVideos": {
+    "play": "Lire la vidéo",
+    "watch": "Regarder sur YouTube",
+    "hint": "Le lecteur se charge depuis YouTube lorsque vous lancez la lecture.",
+    "editing": "Modifiez un livre Postext avec un agent IA : chapitres, nouvelles éditions, adaptations — tutoriel 2",
+    "contents": "Table des matières automatique et numérotation dans Postext — à la main ou avec un agent IA (1/4)",
+    "resources": "Figures et tableaux qui se placent seuls : renvois dans Postext et le raccourci @ (2/4)",
+    "footnotes": "Des notes de bas de page qui restent sur leur page : Postext, à la main ou avec un agent IA (3/4)",
+    "backIndex": "Un index qui se fait tout seul, dans Postext : à la main ou avec un agent IA (4/4)",
+    "citations": "Des citations qui s’écrivent seules : citations et bibliographie dans Postext, avec ou sans IA (1/3)",
+    "citationStyles": "Tout style de citation en un réglage : APA, Chicago, IEEE, Vancouver et CSL dans Postext (2/3)",
+    "crossReferences": "Des renvois qui ne se perdent pas : sections et pages liées dans Postext (3/3)",
+    "comics": "La BD dans Postext : planches, cases et bulles lettrées par le moteur, à la main ou avec l’IA",
+    "composedPages": "Pages composées avec Postext : manuels, cahiers et fiches de maternelle, à la main ou avec l’IA",
+    "labelledImages": "Cartes et dessins étiquetés avec Postext : les noms en Markdown, sur l’image, à la main ou avec l’IA",
+    "everyScript": "Un manuscrit, toutes les écritures : japonais, chinois et arabe avec Postext, à la main ou avec l’IA",
+    "checks": "Votre livre est-il prêt pour l’imprimeur ? Vérifications dans Postext, à la main ou avec l’IA",
+    "music": "La musique dans vos livres : chansons, partitions et accords en texte, gravés par Postext, avec l’IA",
+    "exercises": "Exercices dans vos livres : fiches, livre du professeur, réponses à l’écran, à la main ou avec l’IA",
+    "everyLanguage": "Un livre, toutes les langues : maquette commune, réglages propres à chaque édition, avec ou sans IA",
+    "everyOutput": "Un manuscrit, toutes les sorties : PDF d’impression, PDF accessible, web, EPUB et SCORM, avec l’IA"
+  },
   "About": {
     "eyebrow": "Pourquoi Postext",
     "titleLine1": "La mise en page éditoriale,",

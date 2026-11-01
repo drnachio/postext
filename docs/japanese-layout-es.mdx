@@ -19,6 +19,8 @@ Postext compone el japonés de arriba abajo y a lo ancho de la página, con un m
 
 Las reglas siguen los *Requisitos para la composición de textos japoneses* del W3C ([JLReq](https://www.w3.org/TR/jlreq/)), citados más abajo por apartado, y la JIS X 4051, la norma japonesa que recogen. Buena parte de la maquinaria es común con el chino, y [Composición china](/es/docs/chinese-layout) describe lo que esta página solo menciona: la retícula de caracteres, el marco girado de una página vertical, la encuadernación por la derecha y las salidas. Las referencias están al final.
 
+<YouTubeVideo film="everyScript" />
+
 ## La región Japón
 
 Un documento cuyo `locale` es japonés (`ja`, `ja-JP`, `ja-Jpan`, en mayúsculas o minúsculas y con `-` o `_`) toma la región `japan` de los ajustes `cjk`. Todos los campos de `cjk` que se quedan en `'auto'` se resuelven entonces a la convención japonesa, y lo mismo hacen las notas, el índice, las citas y los textos que trae el motor. `cjk.region: 'japan'` también puede fijarse a mano, en cualquier documento, para componer una página con las reglas japonesas; los textos del motor y los valores por defecto de las notas, el índice y las citas siguen entonces al idioma. `DOCUMENT_LANGUAGES`, la lista que muestra el desplegable **Idioma del documento** del Sandbox, tiene 日本語 entre las entradas chinas y el árabe.

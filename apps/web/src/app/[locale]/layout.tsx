@@ -120,7 +120,8 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   // Client components get every namespace but the Sandbox's (three
   // quarters of the messages): the sandbox layout provides it to its page.
-  const clientMessages = Object.fromEntries(Object.entries(messages).filter(([ns]) => ns !== "Sandbox"));
+  // The docs' film titles are read on the server only.
+  const clientMessages = Object.fromEntries(Object.entries(messages).filter(([ns]) => ns !== "Sandbox" && ns !== "YouTubeVideos"));
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
   const jsonLd = [

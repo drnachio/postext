@@ -298,6 +298,8 @@ Le manifeste liste toutes les langues dans `locales` (`['en', 'es']`), garde la 
 
 Les éditions d’un livre en plusieurs langues partagent d’ordinaire l’essentiel de la maquette : la page, la grille, les styles d’encadré, la palette. Quelques réglages relèvent d’une seule langue : les polices de son écriture, ce qui dépend du sens du texte, le libellé d’une étiquette. Un paquet écrit pour les règles de configuration 21 (`configVersion: 21`) sépare les deux. La `config` du manifeste contient les **réglages généraux**, que lit chaque édition, et `localized[<lang>].config` contient la **surcharge** de cette langue, réduite aux champs qu’elle fixe autrement. Un réglage général modifié s’applique à toutes les éditions qui ne fixent pas elles-mêmes ce champ.
 
+<YouTubeVideo film="everyLanguage" />
+
 Une surcharge se fusionne champ par champ sur les réglages généraux :
 
 <table>

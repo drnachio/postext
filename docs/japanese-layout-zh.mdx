@@ -19,6 +19,8 @@ Postext用同一份Markdown源文件和同一套配置，既能横排日文，�
 
 这些规则依据W3C的《日文排版需求》（*Requirements for Japanese Text Layout*，[JLReq](https://www.w3.org/TR/jlreq/)），下文按章节号引用；也依据JLReq所介绍的日本工业标准JIS X 4051。很多机制与中文共用：字符网格、竖排页面转过的坐标系、右侧装订和各种输出，本页只简单提及，详见[中文排版](/zh/docs/chinese-layout)。参考资料列在本页末尾。
 
+<YouTubeVideo film="everyScript" />
+
 ## 日本地区
 
 `locale`为日语的文档（`ja`、`ja-JP`、`ja-Jpan`，大小写不限，用`-`或`_`都可以）采用`cjk`设置中的`japan`地区。于是每个保持`'auto'`的`cjk`字段都取日文惯例，注释、索引、引用和内置用词也是如此。也可以在任何文档中手动设置`cjk.region: 'japan'`，按日文的规则排页面；这时内置用词以及注释、索引和引用的默认值仍跟随语言。沙盒**文档语言**下拉框所显示的列表`DOCUMENT_LANGUAGES`中，日本語排在各个中文条目和阿拉伯语之间。

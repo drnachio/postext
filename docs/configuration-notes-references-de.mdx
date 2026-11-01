@@ -462,6 +462,8 @@ Verweise erhalten Farbe, Schriftstärke und Neigung, die für alle Verweise gelt
 
 Die Eigenschaft `citations` wählt den Zitierstil und bestimmt, wie Zitationen und Literaturverzeichnis aussehen. Das Markup ist unter [Zitationen und Literaturverzeichnis](/de/docs/document-format-notes-references#zitationen-und-literaturverzeichnis) beschrieben; den Stil wendet das Paket `postext-citeproc` an.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## Inhaltsverzeichnis
 
 Die Eigenschaft `toc` konfiguriert, was eine Direktive `:::toc` ausgibt (siehe [Dokumentformat](/de/docs/document-format-directives#toc)). Das Inhaltsverzeichnis wird aus der **Gliederung** des Dokuments zusammengestellt – jede Überschrift mit ihrer Nummer und ihrer Seitenbezeichnung, jeder `:::part` –, es folgt also den Kapiteln: Benennen Sie eines um, verschieben Sie es in einen anderen Teil, ändern Sie seine Autoren, und die Einträge ändern sich mit. Ein Eintrag besteht aus der Nummer der Überschrift in einer eigenen Spalte, dem Titel, Füllzeichen und der Seitenbezeichnung am rechten Rand, dann optional einer Untertitelzeile; ein Teil ist eine Zeile, die `parts.design` gestaltet.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

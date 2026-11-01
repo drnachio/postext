@@ -462,6 +462,8 @@ Les renvois prennent la couleur, la graisse et l’inclinaison communes à tous 
 
 La propriété `citations` choisit le style de citation et l’apparence des citations et de la bibliographie. Le balisage est décrit dans [Citations et bibliographie](/fr/docs/document-format-notes-references#citations-et-bibliographie) ; le style est appliqué par le paquet npm `postext-citeproc`.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## Table des matières
 
 La propriété `toc` configure ce qu’imprime une directive `:::toc` (voir [Format du document](/fr/docs/document-format-directives#toc)). La table est assemblée à partir du **plan** du document (chaque titre avec son numéro et l’étiquette de sa page, chaque `:::part`) : elle suit donc les chapitres. Renommez-en un, déplacez-le dans une autre partie, changez ses auteurs, et les entrées changent avec lui. Une entrée se compose du numéro du titre dans une colonne à part, de l’intitulé, de points de conduite et de l’étiquette de page au bord droit, puis d’une ligne de sous-titre facultative ; une partie est une rangée dessinée par `parts.design`.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

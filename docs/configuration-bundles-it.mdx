@@ -298,6 +298,8 @@ Il manifesto elenca ogni lingua in `locales` (`['en', 'es']`), mantiene quella p
 
 Le edizioni di un libro in più lingue di solito condividono quasi tutta la grafica: la pagina, la griglia, gli stili dei riquadri, la tavolozza. Alcune impostazioni appartengono a una sola lingua: i caratteri della sua scrittura, ciò che dipende dalla direzione del testo, il testo di un’etichetta. Un pacchetto scritto per le regole di configurazione 21 (`configVersion: 21`) tiene separate le due cose. Il `config` del manifesto contiene le **impostazioni generali**, che ogni edizione legge, e `localized[<lang>].config` contiene le **impostazioni proprie** di quella lingua, con i soli campi che imposta in modo diverso. Una modifica a un’impostazione generale arriva a ogni edizione che non imposta da sé lo stesso campo.
 
+<YouTubeVideo film="everyLanguage" />
+
 Le impostazioni proprie si uniscono a quelle generali campo per campo:
 
 <table>

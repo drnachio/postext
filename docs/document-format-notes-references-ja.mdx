@@ -19,6 +19,8 @@ export const metadata = {
 
 脚注は2つの部分からなります。注を付ける箇所に置く合印`[^id]`と、定義です。定義は`[^id]:`で始まる独立した段落で、章の中のどこに書いてもかまいません。
 
+<YouTubeVideo film="footnotes" />
+
 ```md
 The keeper climbed the tower every evening.[^steps] The wind put out his candle,
 so he learned to count the steps in the dark.
@@ -37,6 +39,8 @@ so he learned to count the steps in the dark.
 ## 相互参照とアンカー
 
 相互参照は本の中の場所を指し、その番号、タイトル、ページを印刷します。「3.2節を参照」「第4章で説明するとおり」「112ページ」のような表現です。語と番号はテキストに従うので、節を移動しても、章の番号を振り直しても、本を組み直しても、すべての参照が更新されます。PDF、HTML、Sandboxのプレビューでは各参照がリンクになり、クリックすると、別の章であっても参照先へ移動します。
+
+<YouTubeVideo film="crossReferences" />
 
 **アンカー**：参照には指す対象が必要です。
 
@@ -82,6 +86,8 @@ LaTeXの`\eqref{x}`と`\ref{x}`も本文で使えます。`\eqref`は`style`を�
 ## 引用と参考文献
 
 引用はPandocが読む形式で書き、文献データは文書の中に置き、引用スタイルは設定で選びます。APAからIEEEへ、あるいはChicagoの注方式へ切り替えるときに変えるのはスタイルの設定で、テキストではありません。すべての引用は、参考文献の該当する項目にリンクします。
+
+<YouTubeVideo film="citations" />
 
 ### 引用の書き方
 
@@ -200,6 +206,8 @@ links: { print: 'notes', show: 'both', urlDisplay: 'short' }
 ## 索引
 
 索引は、本の用語とそれが現れるページを挙げるものです。本文で用語を扱う箇所ごとに印を付け、索引を置きたい場所（ふつうは巻末の独立した章）で`:::index`を使って印刷します。エンジンはレイアウトのあとにすべての印のページを調べるので、番号はテキストに従います。段落を加えても、章を移動しても、仕上がりサイズを変えても、索引は新しいページを印刷します。
+
+<YouTubeVideo film="backIndex" />
 
 ```md
 Iron-deficiency :index[anaemia] is the most common kind.

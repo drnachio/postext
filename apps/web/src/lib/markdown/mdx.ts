@@ -4,6 +4,7 @@
 import { localizedUrl, SITE_URL } from '@/lib/seo';
 import { labelsFor, REPO_URL, messagesFor } from './labels';
 import { transcriptMarkdown } from './pages';
+import { isYouTubeFilm, youtubeCut, youtubeWatchUrl } from '@/lib/youtubeVideos';
 
 /** URL of a page's Markdown rendition: the HTML URL with `.md` appended. */
 export function markdownUrl(locale: string, path: string = ""): string {
@@ -160,7 +161,7 @@ function jsxAttrs(tag: string): Record<string, string> {
 }
 
 /** Block components that stand alone on their lines (`<Excerpt … />`). */
-const BLOCK_TAGS = ["Illustration", "CodePenExample", "TutorialVideo", "Screenshot", "Excerpt", "PageShot", "Gotcha"] as const;
+const BLOCK_TAGS = ["Illustration", "CodePenExample", "TutorialVideo", "YouTubeVideo", "Screenshot", "Excerpt", "PageShot", "Gotcha"] as const;
 type CookbookBlockTag = "Excerpt" | "PageShot" | "Gotcha";
 /** Inline components (`<Feature id="x">text</Feature>`, or self-closing). */
 const INLINE_TAGS = ["Feature", "RecipeLink", "PageRef"] as const;
@@ -246,6 +247,14 @@ export function mdxToMarkdown(
       // the player has no Markdown form: name the video (the page links it)
       else if (name === "TutorialVideo") {
         out.push(`> *${messagesFor(locale).Tutorial.title}* · ${messagesFor(locale).Tutorial.watch}`, "", transcriptMarkdown("tutorial", locale));
+      }
+      // a film on YouTube: its title, linked, and how long it runs
+      else if (name === "YouTubeVideo") {
+        const { film } = jsxAttrs(trimmed);
+        if (film && isYouTubeFilm(film)) {
+          const { id, duration } = youtubeCut(film, locale);
+          out.push(`> [${messagesFor(locale).YouTubeVideos[film]}](${youtubeWatchUrl(id)}) · ${duration}`);
+        }
       }
       // a capture of the Sandbox: the picture at its address on the site, then its caption
       else if (name === "Screenshot") {

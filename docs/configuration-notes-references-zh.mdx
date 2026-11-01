@@ -462,6 +462,8 @@ interface CrossRefsConfig {
 
 `citations`属性选择引用样式，并决定引用和参考文献表的外观。标记语法见[引用与参考文献](/zh/docs/document-format-notes-references#引用与参考文献)；样式由`postext-citeproc`包负责应用。
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## 目录
 
 `toc`属性决定`:::toc`指令印出什么（参见[文档格式](/zh/docs/document-format-directives#toc)）。目录由文档的**大纲**汇编而成，大纲包含每个标题及其编号和页码标签，以及每个`:::part`，所以目录会跟着各章变化：给某章改名、把它移到另一篇、修改它的作者，条目都会随之改变。一个条目依次是：单独一栏的标题编号、标题、前导符、右边缘的页码标签，然后是可选的副标题行；篇则是由`parts.design`设计的一行。
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

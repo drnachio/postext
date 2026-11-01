@@ -462,6 +462,8 @@ I rimandi prendono il colore, il peso e l’inclinazione comuni a tutti i rimand
 
 La proprietà `citations` sceglie lo stile delle citazioni e l’aspetto delle citazioni e della bibliografia. Il markup è descritto in [Citazioni e bibliografia](/it/docs/document-format-notes-references#citazioni-e-bibliografia); lo stile viene applicato dal pacchetto `postext-citeproc`.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## Indice dei contenuti
 
 La proprietà `toc` configura ciò che stampa una direttiva `:::toc` (vedi [Formato del documento](/it/docs/document-format-directives#toc)). L’indice si costruisce a partire dalla **struttura** del documento (ogni titolo con il suo numero e la sua etichetta di pagina, ogni `:::part`), quindi segue i capitoli: rinominane uno, spostalo in un’altra parte, cambiane gli autori, e le voci cambiano di conseguenza. Una voce è il numero del titolo in una colonna propria, il titolo, una linea di guida e l’etichetta di pagina al margine destro, poi una riga facoltativa di sottotitolo; una parte è una riga disegnata da `parts.design`.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

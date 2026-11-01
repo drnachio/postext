@@ -19,6 +19,8 @@ export const metadata = {
 
 Una nota al pie tiene dos partes: la llamada `[^id]` en el lugar donde se cita la nota, y la definición, un párrafo propio que empieza por `[^id]:` en cualquier punto del capítulo.
 
+<YouTubeVideo film="footnotes" />
+
 ```md
 El farero subía la torre cada tarde.[^peldanos] El viento le apagaba la vela,
 así que aprendió a contar los escalones a oscuras.
@@ -37,6 +39,8 @@ así que aprendió a contar los escalones a oscuras.
 ## Referencias cruzadas y anclas
 
 Una referencia cruzada remite a un lugar del libro e imprime su número, su título o su página: *véase la sección 3.2*, *como explica el capítulo 4*, *en la pág. 112*. Las palabras y los números siguen al texto: si una sección cambia de sitio, si los capítulos se renumeran o si el libro se recompone, todas las referencias se actualizan. En el PDF, en el HTML y en las vistas previas del Sandbox, cada referencia es un enlace: un clic lleva al destino, aunque esté en otro capítulo.
+
+<YouTubeVideo film="crossReferences" />
 
 **Anclas.** Una referencia necesita algo a lo que apuntar:
 
@@ -82,6 +86,8 @@ Una referencia a un id que no está definido imprime *?* y aparece en el panel R
 ## Citas y bibliografía
 
 Escribe las citas como las lee Pandoc, guarda las referencias en el documento y elige el estilo de cita en los ajustes: pasar de APA a IEEE, o a las notas de Chicago, solo cambia ese ajuste, no el texto. Cada cita enlaza con su entrada en la bibliografía.
+
+<YouTubeVideo film="citations" />
 
 ### Citar
 
@@ -200,6 +206,8 @@ Solo cuentan los enlaces `http:` y `https:`. Un enlace `mailto:` o `tel:`, un en
 ## Índice analítico
 
 Un índice analítico recoge los términos de un libro con las páginas en que aparecen. Marca cada término donde el texto lo trata e imprime el índice con `:::index` donde corresponda, normalmente en un capítulo propio al final. El motor busca la página de cada marca después de componer, así que los números siguen al texto: si añades un párrafo, mueves un capítulo o cambias el formato de página, el índice imprime las páginas nuevas.
+
+<YouTubeVideo film="backIndex" />
 
 ```md
 La :index[anemia] ferropénica es la más frecuente.

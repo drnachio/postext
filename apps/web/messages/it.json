@@ -346,6 +346,28 @@
     "fullscreen": "Schermo intero",
     "exitFullscreen": "Esci dallo schermo intero"
   },
+  "YouTubeVideos": {
+    "play": "Riproduci il video",
+    "watch": "Guarda su YouTube",
+    "hint": "Il player viene caricato da YouTube quando premi play.",
+    "editing": "Modifica un libro Postext con un agente di IA: capitoli, nuove edizioni, adattamenti — tutorial 2",
+    "contents": "Indice automatico e numerazione in Postext — a mano o con un agente di IA (1/4)",
+    "resources": "Figure e tabelle che si collocano da sole: risorse con rimandi in Postext e la scorciatoia @ (2/4)",
+    "footnotes": "Note a piè di pagina che restano sulla loro pagina: Postext, a mano o con un agente di IA (3/4)",
+    "backIndex": "Un indice analitico che si fa da solo, in Postext: a mano o con un agente di IA (4/4)",
+    "citations": "Citazioni che si scrivono da sole: citazioni e bibliografia in Postext, a mano o con l’IA (1/3)",
+    "citationStyles": "Ogni stile di citazione con un’impostazione: APA, Chicago, IEEE, Vancouver e CSL in Postext (2/3)",
+    "crossReferences": "Rimandi che non si perdono: sezioni e pagine con link in Postext (3/3)",
+    "comics": "Fumetti in Postext: tavole, vignette e nuvolette letterate dal motore, a mano o con l’IA",
+    "composedPages": "Pagine composte in Postext: libri di testo, quaderni e schede per l’infanzia, a mano o con l’IA",
+    "labelledImages": "Mappe e disegni con etichette in Postext: i nomi in Markdown, sull’immagine, a mano o con l’IA",
+    "everyScript": "Un manoscritto, tutte le scritture: giapponese, cinese e arabo con Postext, a mano o con l’IA",
+    "checks": "Il tuo libro è pronto per la stampa? Verifiche e preflight in Postext, a mano o con l’IA",
+    "music": "Musica nei libri: canzonieri, partiture e accordi come testo, incisi da Postext, a mano o con l’IA",
+    "exercises": "Esercizi nei tuoi libri: schede, edizione per l’insegnante e risposte a schermo, a mano o con l’IA",
+    "everyLanguage": "Un libro in tutte le lingue: grafica condivisa e impostazioni di ogni edizione, a mano o con l’IA",
+    "everyOutput": "Un manoscritto, ogni formato: PDF di stampa, PDF accessibile, web, EPUB e SCORM, a mano o con l’IA"
+  },
   "About": {
     "eyebrow": "Perché Postext",
     "titleLine1": "Impaginazione editoriale,",

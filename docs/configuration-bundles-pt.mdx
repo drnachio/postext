@@ -298,6 +298,8 @@ O manifesto lista todos os idiomas em `locales` (`['en', 'es']`), mantém o prin
 
 As edições de um livro em vários idiomas costumam compartilhar quase todo o projeto gráfico: a página, o grid, os estilos de boxe, a paleta. Alguns ajustes pertencem a um só idioma: as fontes do sistema de escrita dele, o que depende da direção do texto, o texto de um rótulo. Um pacote gravado para as regras de configuração 21 (`configVersion: 21`) mantém as duas coisas separadas. O `config` do manifesto contém os **ajustes gerais**, que todas as edições leem, e `localized[<lang>].config` contém a **substituição** daquele idioma, só com os campos que ele define de outro modo. Uma mudança num ajuste geral chega a todas as edições que não definem esse mesmo campo por conta própria.
 
+<YouTubeVideo film="everyLanguage" />
+
 A substituição é combinada com os ajustes gerais campo a campo:
 
 <table>

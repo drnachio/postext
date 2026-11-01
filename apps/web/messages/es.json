@@ -345,6 +345,28 @@
     "fullscreen": "Pantalla completa",
     "exitFullscreen": "Salir de pantalla completa"
   },
+  "YouTubeVideos": {
+    "play": "Reproducir el vídeo",
+    "watch": "Ver en YouTube",
+    "hint": "El reproductor se carga desde YouTube al pulsar reproducir.",
+    "editing": "Edita un libro Postext con un agente de IA: capítulos, nuevas ediciones, adaptaciones — tutorial 2",
+    "contents": "Índice automático y numeración en Postext — a mano o con un agente de IA (1/4)",
+    "resources": "Figuras y tablas que se colocan solas: recursos referenciados en Postext y el atajo @ (2/4)",
+    "footnotes": "Notas al pie que no se separan de su página: notas en Postext, a mano o con un agente de IA (3/4)",
+    "backIndex": "Un índice analítico que se hace solo, en Postext: a mano o con un agente de IA (4/4)",
+    "citations": "Citas que se escriben solas: citas y bibliografía en Postext, a mano o con IA (1/3)",
+    "citationStyles": "Cualquier estilo de cita con un ajuste: APA, Chicago, IEEE, Vancouver y estilos CSL en Postext (2/3)",
+    "crossReferences": "Referencias cruzadas que no se pierden: secciones y páginas enlazadas en Postext (3/3)",
+    "comics": "Cómics en Postext: páginas, viñetas y bocadillos rotulados por el motor, a mano o con IA",
+    "composedPages": "Páginas compuestas en Postext: libros de texto, cuadernos y fichas de infantil, a mano o con IA",
+    "labelledImages": "Mapas y dibujos con rótulos en Postext: los nombres en Markdown, sobre la imagen, a mano o con IA",
+    "everyScript": "Un manuscrito, todas las escrituras: japonés, chino y árabe con Postext, a mano o con IA",
+    "checks": "¿Está tu libro listo para la imprenta? Revisión y preflight en Postext, a mano o con IA",
+    "music": "Música en tus libros: cancioneros, partituras y acordes como texto, con Postext, a mano o con IA",
+    "exercises": "Ejercicios en tus libros: fichas, libro del profesor y respuestas en pantalla, a mano o con IA",
+    "everyLanguage": "Un libro en todos los idiomas: un diseño compartido y los ajustes de cada edición, a mano o con IA",
+    "everyOutput": "Un manuscrito, todas las salidas: PDF de imprenta, PDF accesible, web, EPUB y SCORM, a mano o con IA"
+  },
   "About": {
     "eyebrow": "Por qué Postext",
     "titleLine1": "Maquetación editorial,",

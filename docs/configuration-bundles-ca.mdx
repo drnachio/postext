@@ -297,6 +297,8 @@ El manifest enumera totes les llengües a `locales` (`['es', 'en']`), conserva l
 
 Les edicions d'un llibre en diverses llengües solen compartir la major part del disseny: la pàgina, la retícula, els estils de caixa, la paleta. Uns quants ajustos són d'una sola llengua: les lletres de la seva escriptura, el que depèn de la direcció del text, el text d'una etiqueta. Un paquet escrit per a les regles de configuració 21 (`configVersion: 21`) els manté separats. La `config` del manifest conté els **ajustos generals**, que llegeixen totes les edicions, i `localized[<lang>].config` conté els **ajustos propis** d'aquesta llengua, només amb els camps que fixa d'una altra manera. Un canvi en un ajust general arriba a totes les edicions que no fixen elles mateixes aquell camp.
 
+<YouTubeVideo film="everyLanguage" />
+
 Els ajustos propis es combinen amb els generals camp per camp:
 
 <table>

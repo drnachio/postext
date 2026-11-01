@@ -5,6 +5,7 @@ import { compileDocsMdx } from "@/lib/mdx/mdx";
 import * as illustrations from "./illustrations";
 import { CodePenExample } from "./CodePenExample";
 import { TutorialVideo } from "./TutorialVideo";
+import { YouTubeVideo } from "./YouTubeVideo";
 import { Screenshot } from "./Screenshot";
 import { TableFit } from "./TableFit";
 import { literalStringExpressions } from "@/lib/mdx/mdxStrings";
@@ -67,6 +68,7 @@ const components = {
   ...illustrations,
   CodePenExample,
   TutorialVideo,
+  YouTubeVideo,
   Screenshot,
 };
 

@@ -462,6 +462,8 @@ As referências recebem a cor, o peso e a inclinação de todas as referências 
 
 A propriedade `citations` escolhe o estilo de citação e a aparência das citações e da bibliografia. A marcação é descrita em [Citações e bibliografia](/pt/docs/document-format-notes-references#citações-e-bibliografia); o estilo é aplicado pelo pacote `postext-citeproc`.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… ou 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## Sumário
 
 A propriedade `toc` configura o que uma diretiva `:::toc` imprime (veja [Formato do documento](/pt/docs/document-format-directives#toc)). O sumário é montado a partir da **estrutura** do documento (cada título com o número e o rótulo da página, cada `:::part`); por isso, acompanha os capítulos: renomeie um, mova-o para outra parte, mude os autores dele, e as entradas mudam junto. Uma entrada é o número do título numa coluna própria, o título, uma linha de pontos e o rótulo da página na margem direita, e depois uma linha de subtítulo opcional; uma parte é uma linha desenhada por `parts.design`.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

@@ -19,6 +19,8 @@ export const metadata = {
 
 インターフェースの右側には、描画された出力が表示されます。描画方式ごとに1つ、計6つのタブが**Canvas**、**PDF**、**Folio**、**HTML**、**EPUB 3**、**SCORM**の順に並びます（最後のタブは、EPUBの内容から学習プラットフォーム向けのパッケージを書き出します）。タブを切り替えてもレイアウトは実行し直されません。同じVDTがすべてのバックエンドに渡されるので、どの方式でも表示される内容は一致します。Folioタブは、ブラウザーがWebGL2に対応し、画面がスマートフォンのものでない場合にだけ表示されます（[Folioタブ](#folioタブ)を参照）。
 
+<YouTubeVideo film="everyOutput" />
+
 各ビューポートは、専用の**Web Worker**（`postext/worker`）の中でレイアウト処理を実行します。ビューポートごとの`useLayoutWorker`フックがワーカーのハンドルを持ち、フォントを転送可能な`ArrayBuffer`としてワーカーに送り、**後勝ちのキャンセル**でビルドを進めます。キー入力やスライダーのドラッグがあると、次のビルドを始める前に前のビルドの`AbortSignal`を中断するので、速く入力してもメインスレッドに古い処理がたまることはありません。ビューポートをアンマウントすると、そのワーカーは破棄され、待機中のビルドは拒否されます。ここで使っている組み込みのパターンは、[設定 → Web Workerでレイアウトを実行する](/ja/docs/configuration-programmatic-usage#web-workerでレイアウトを実行する)を参照してください。
 
 <Illustration name="SandboxSyncFlow" data='{"title": "1つのVDTから5つの出力", "desc": "SandboxのMarkdownと設定は、メモリー上の1つのVDTに渡されます。Canvas、PDF、Folio、HTML、EPUB 3はどれも同じVDTから描画されるので、どのタブにも同じレイアウトが表示されます。", "caption": "1つのVDTから5つの出力タブが作られます。", "markdownLabel": "Markdown", "configLabel": "設定", "vdtTitle": "VDT", "vdtSubtitle": "共有のレイアウト", "canvasLabel": "Canvas", "htmlLabel": "HTML", "folioLabel": "Folio", "pdfLabel": "PDF", "epubLabel": "EPUB 3", "singleSource": "唯一の情報源"}' />

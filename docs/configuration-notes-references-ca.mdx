@@ -462,6 +462,8 @@ Les referències creuades agafen el color, el pes i la inclinació comuns a tote
 
 La propietat `citations` tria l'estil de cita i l'aspecte de les cites i de la bibliografia. El marcatge es descriu a [Cites i bibliografia](/ca/docs/document-format-notes-references#citacions-i-bibliografia); l'estil l'aplica el paquet `postext-citeproc`.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -755,6 +757,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## Índex general
 
 La propietat `toc` configura el que imprimeix una directiva `:::toc` (vegeu [Format del document](/ca/docs/document-format-directives#toc)). L'índex general es construeix a partir de l'**esquema** del document (cada encapçalament amb el número i l'etiqueta de pàgina, cada `:::part`), de manera que segueix els capítols: si en reanomenes un, el mous a una altra part o en canvies els autors, les entrades canvien amb el capítol. Una entrada consta del número de l'encapçalament en una columna pròpia, el títol, una línia de punts i l'etiqueta de pàgina a la vora dreta, i després una línia de subtítol opcional; una part és una fila amb el disseny de `parts.design`.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

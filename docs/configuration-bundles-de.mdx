@@ -298,6 +298,8 @@ Das Manifest listet jede Sprache in `locales` auf (`['en', 'es']`), behält die 
 
 Die Ausgaben eines Buches in mehreren Sprachen teilen meist den größten Teil der Gestaltung: die Seite, das Raster, die Kastenstile, die Palette. Einige Einstellungen gehören zu einer einzelnen Sprache: die Schriften ihres Schriftsystems, alles, was von der Schreibrichtung abhängt, der Wortlaut einer Beschriftung. Ein Paket, das für die Konfigurationsregeln 21 (`configVersion: 21`) geschrieben ist, hält beides getrennt. Die `config` des Manifests enthält die **allgemeinen Einstellungen**, die jede Ausgabe liest, und `localized[<lang>].config` die **Abweichung** dieser Sprache, nur mit den Feldern, die sie anders setzt. Eine Änderung an einer allgemeinen Einstellung erreicht jede Ausgabe, die dasselbe Feld nicht selbst setzt.
 
+<YouTubeVideo film="everyLanguage" />
+
 Eine Abweichung wird Feld für Feld über die allgemeinen Einstellungen gelegt:
 
 <table>

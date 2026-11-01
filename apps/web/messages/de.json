@@ -346,6 +346,28 @@
     "fullscreen": "Vollbild",
     "exitFullscreen": "Vollbild beenden"
   },
+  "YouTubeVideos": {
+    "play": "Video abspielen",
+    "watch": "Auf YouTube ansehen",
+    "hint": "Der Player wird erst beim Abspielen von YouTube geladen.",
+    "editing": "Ein Postext-Buch mit einem KI-Agenten bearbeiten: Kapitel, Neuauflagen, Bearbeitungen – Tutorial 2",
+    "contents": "Automatisches Inhaltsverzeichnis und Nummerierung in Postext – von Hand oder mit KI-Agenten (1/4)",
+    "resources": "Abbildungen und Tabellen, die ihren Platz selbst finden: Verweise in Postext und das Kürzel @ (2/4)",
+    "footnotes": "Fußnoten, die bei ihrer Seite bleiben: Fußnoten in Postext, von Hand oder mit einem KI-Agenten (3/4)",
+    "backIndex": "Ein Register, das sich selbst erstellt, in Postext: von Hand oder mit einem KI-Agenten (4/4)",
+    "citations": "Zitate, die sich selbst schreiben: Zitate und Bibliografie in Postext, von Hand oder mit KI (1/3)",
+    "citationStyles": "Jeder Zitierstil mit einer Einstellung: APA, Chicago, IEEE, Vancouver und CSL in Postext (2/3)",
+    "crossReferences": "Querverweise, die nicht verloren gehen: Abschnitte und Seiten mit Links in Postext (3/3)",
+    "comics": "Comics in Postext: Seiten, Panels und Sprechblasen, von der Engine gelettert – von Hand oder mit KI",
+    "composedPages": "Zusammengesetzte Seiten in Postext: Schulbücher, Arbeitshefte, Arbeitsblätter, von Hand oder mit KI",
+    "labelledImages": "Beschriftete Karten und Zeichnungen in Postext: Namen aus dem Markdown, von Hand oder mit KI",
+    "everyScript": "Ein Manuskript, alle Schriftsysteme: Japanisch, Chinesisch und Arabisch in Postext, mit oder ohne KI",
+    "checks": "Ist Ihr Buch bereit für die Druckerei? Prüfungen und Preflight in Postext, von Hand oder mit KI",
+    "music": "Musik im Buch: Liederbücher, Noten und Akkorde als Text, gestochen von Postext, von Hand oder mit KI",
+    "exercises": "Übungen im Buch: Arbeitsblätter, Lehrerausgabe und Antworten am Bildschirm, von Hand oder mit KI",
+    "everyLanguage": "Ein Buch in allen Sprachen: gemeinsame Gestaltung, eigene Werte je Ausgabe, von Hand oder mit KI",
+    "everyOutput": "Ein Manuskript, jede Ausgabe: Druck-PDF, barrierefreies PDF, Web, EPUB, SCORM, von Hand oder mit KI"
+  },
   "About": {
     "eyebrow": "Warum Postext",
     "titleLine1": "Seitengestaltung,",
