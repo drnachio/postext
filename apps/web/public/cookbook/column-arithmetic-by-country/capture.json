@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "column-arithmetic-by-country",
-  "sourceHash": "19efb8d2f6789cc306109aa5622beb74470e6420a45f911d39442803df49649d",
+  "sourceHash": "eff51f1daefc1599f383e61dd9e5c23542280e1607ca1eac3e86d843a74e9d61",
   "engine": {
-    "postext": "1.63.0",
-    "postextPdf": "1.63.0",
+    "postext": "1.66.0",
+    "postextPdf": "1.66.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-26T01:08:22.003Z",
-  "verified": {
-    "postext": "1.65.0",
-    "postextPdf": "1.65.0",
-    "chrome": "156.0.8078.76",
-    "at": "2026-10-31T16:57:17.422Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-11-01T11:24:04.268Z",
   "variants": {
     "en": {
-      "hash8": "82c33a6a",
-      "vdtHash": "5f01e9f2764e23ea80a8fad39245a8d77da5fc7b",
+      "hash8": "51b0a49e",
+      "vdtHash": "b385e2ba16647f8d71a498390ce823831711845a",
       "timings": {
-        "importMs": 275,
-        "fontsMs": 26,
-        "buildMs": 47,
-        "totalMs": 1114,
+        "importMs": 1667,
+        "fontsMs": 49,
+        "buildMs": 93,
+        "totalMs": 2651,
         "builds": 3
       },
       "specimen": {
@@ -66,7 +60,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 24242,
+          "bytes": 24432,
           "alt": "Page 2."
         },
         {
@@ -88,7 +82,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 29930,
+          "bytes": 29992,
           "alt": "Page 2."
         }
       ],
@@ -124,7 +118,7 @@
       },
       "pdf": {
         "file": "column-arithmetic-by-country.pdf",
-        "bytes": 33351,
+        "bytes": 33356,
         "pages": 2
       },
       "sandbox": {
@@ -135,8 +129,8 @@
         "chapters": [
           {
             "pages": 2,
-            "hash": "01c25f272f85f20d",
-            "lines": "b93cd45de00e20e5"
+            "hash": "0718decb22b86081",
+            "lines": "d004018b9b47c4a7"
           }
         ]
       },
@@ -352,6 +346,11 @@
             "detail": "the hero is 13.8 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "vdt",
             "severity": "info",
             "detail": "the layout changed since the committed capture"
@@ -375,13 +374,13 @@
       }
     },
     "es": {
-      "hash8": "4cdf9d17",
-      "vdtHash": "bd0f2537508d252b581475f5032948c4bb8ba1b5",
+      "hash8": "658fa705",
+      "vdtHash": "3207b5b642aeb28a4d9c5a2356e1fbe8340afee0",
       "timings": {
-        "importMs": 207,
-        "fontsMs": 26,
-        "buildMs": 48,
-        "totalMs": 964,
+        "importMs": 16460,
+        "fontsMs": 76,
+        "buildMs": 113,
+        "totalMs": 17718,
         "builds": 3
       },
       "specimen": {
@@ -446,7 +445,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 31046,
+          "bytes": 31048,
           "alt": "Página 2."
         }
       ],
@@ -710,6 +709,11 @@
             "detail": "the hero is 14.2 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "vdt",
             "severity": "info",
             "detail": "the layout changed since the committed capture"
@@ -733,13 +737,13 @@
       }
     },
     "fr": {
-      "hash8": "45c7052c",
-      "vdtHash": "1ea1421dd1d78992126e4385893171614defff34",
+      "hash8": "7a866ea3",
+      "vdtHash": "a8870dade620fe7a1d9d7b8b54ba6cd974b21a82",
       "timings": {
-        "importMs": 253,
-        "fontsMs": 26,
-        "buildMs": 50,
-        "totalMs": 1248,
+        "importMs": 1393,
+        "fontsMs": 41,
+        "buildMs": 96,
+        "totalMs": 2381,
         "builds": 3
       },
       "specimen": {
@@ -804,7 +808,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 31128,
+          "bytes": 31272,
           "alt": "Page 2."
         }
       ],
@@ -1068,6 +1072,11 @@
             "detail": "the hero is 14.0 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "vdt",
             "severity": "info",
             "detail": "the layout changed since the committed capture"
@@ -1094,10 +1103,10 @@
       "hash8": "a627cd84",
       "vdtHash": "0fc1f3d708428ab3833429cb486976c0098ea225",
       "timings": {
-        "importMs": 246,
-        "fontsMs": 26,
-        "buildMs": 50,
-        "totalMs": 1116,
+        "importMs": 1832,
+        "fontsMs": 51,
+        "buildMs": 83,
+        "totalMs": 3008,
         "builds": 3
       },
       "specimen": {
@@ -1426,9 +1435,9 @@
             "detail": "the hero is 14.5 % colour, pictures or display type (aim for 25 %+)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
           },
           {
             "check": "sandbox",

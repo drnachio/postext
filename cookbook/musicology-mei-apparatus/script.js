@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 165 · MEI music examples with a critical apparatus ═════
 // https://postext.dev/en/cookbook/musicology-mei-apparatus
 // Code: MIT · Text: original (CC BY 4.0) · Music: Sumer is icumen in, after Rockstro (PD)
-// Fonts: Crimson Pro, Cormorant Garamond, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.54.0
+// Fonts: Crimson Pro, Cormorant Garamond, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.66.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, initMusicEngine,
 } from 'https://esm.sh/postext';
