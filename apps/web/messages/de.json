@@ -2753,6 +2753,8 @@
     "warningsAfterTextDetail": "Seite __page__ · Es steht auf einer Seite ohne Text: Der Text seines Kapitels endete, während es noch auf Platz in der Seitenspalte wartete. Setzen Sie es im Text weiter nach vorn oder kürzen Sie es.",
     "warningsUnplacedTitle": "Auf keiner Seite",
     "warningsUnplacedDetail": "Es wartete noch auf einen Platz, als das Layout endete, und steht daher auf keiner Seite: Die dafür geöffneten Seiten können es nicht aufnehmen (etwa ein seitlicher Kasten, wo die Seiten keine Seitenspalte haben). Ändern Sie seine Spannweite oder seine Platzierung.",
+    "warningsHereNotEmbeddedTitle": "Hier platziert, nie eingebettet",
+    "warningsHereNotEmbeddedDetail": "Seine Platzierung ist `position: here`, daher wird es nur dort gesetzt, wo eine ::resource-Zeile steht, und der Text zitiert es nur mit :ref: Es steht auf keiner Seite. Betten Sie es dort ein, wo es hingehört, oder geben Sie ihm eine gleitende Position (top, bottom oder auto).",
     "warningsShortListSplitTitle": "Kurze Liste über Spalten getrennt",
     "warningsShortListSplitDetail": "Seite __page__ · Eine Liste mit __items__ Punkten ist zwischen zwei Spalten oder Seiten getrennt. Mit der Regel auf „Vermeiden“ konnte keine Spalte sie ganz aufnehmen.",
     "warningsTocGroupSplitTitle": "Block des Inhaltsverzeichnisses über Spalten getrennt",

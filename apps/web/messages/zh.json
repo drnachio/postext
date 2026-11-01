@@ -2752,6 +2752,8 @@
     "warningsAfterTextDetail": "第__page__页 · 它排在没有正文的页面上：所在章的正文结束时，它还在等侧栏的空位。请把它往前放，或把它缩短。",
     "warningsUnplacedTitle": "未排入任何页面",
     "warningsUnplacedDetail": "排版结束时它还在等空位，因此不在任何页面上：为它新开的页面放不下它（例如页面没有侧栏，而它是侧栏框）。请修改它的跨度（span）或位置。",
+    "warningsHereNotEmbeddedTitle": "设为原位却从未嵌入",
+    "warningsHereNotEmbeddedDetail": "它的位置是`position: here`，只会排在::resource行所在之处，而正文只用:ref引用它，因此它不在任何页面上。请在应放的位置嵌入它，或给它一个浮动位置（top、bottom或auto）。",
     "warningsShortListSplitTitle": "短列表跨栏拆分",
     "warningsShortListSplitDetail": "第__page__页 · 共__items__项的列表被拆在两栏或两页之间。规则设为“避免”时，说明没有哪一栏放得下整个列表。",
     "warningsTocGroupSplitTitle": "目录分组跨栏拆分",

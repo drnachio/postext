@@ -2753,6 +2753,8 @@
     "warningsAfterTextDetail": "pagina __page__ · sta su una pagina senza testo: il testo del suo capitolo è finito mentre aspettava ancora spazio nella colonna laterale. Apri il suo blocco più in alto nel testo o rendilo più corto.",
     "warningsUnplacedTitle": "Non è su nessuna pagina",
     "warningsUnplacedDetail": "Aspettava ancora un posto quando l’impaginazione è finita, quindi non è su nessuna pagina: le pagine aperte per esso non possono accoglierlo (per esempio un riquadro laterale dove le pagine non hanno colonna laterale). Cambiane l’estensione o la posizione.",
+    "warningsHereNotEmbeddedTitle": "Collocato qui, mai inserito",
+    "warningsHereNotEmbeddedDetail": "La sua collocazione è `position: here`, quindi viene composto solo dove c’è una riga ::resource, e il testo lo cita soltanto con :ref: non è su nessuna pagina. Inseriscilo dove deve stare o dagli una posizione flottante (top, bottom o auto).",
     "warningsShortListSplitTitle": "Elenco breve diviso tra colonne",
     "warningsShortListSplitDetail": "pagina __page__ · un elenco di __items__ voci è diviso tra due colonne o pagine. Con la regola su Evita, nessuna colonna poteva contenerlo intero.",
     "warningsTocGroupSplitTitle": "Blocco dell’indice diviso tra colonne",

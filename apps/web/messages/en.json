@@ -2753,6 +2753,8 @@
     "warningsAfterTextDetail": "page __page__ · it stands on a page with no text: its chapter's text ended while it still waited for room in the side column. Fence it earlier or make it shorter.",
     "warningsUnplacedTitle": "Not on any page",
     "warningsUnplacedDetail": "It was still waiting for a slot when the layout ended, so it is on no page: the pages opened for it cannot take it (a side box where the pages have no side column, say). Change its span or its placement.",
+    "warningsHereNotEmbeddedTitle": "Placed here, never embedded",
+    "warningsHereNotEmbeddedDetail": "Its placement is `position: here`, so it is set only where a ::resource line stands, and the text only cites it with :ref: it is on no page. Embed it where it belongs, or give it a floating position (top, bottom or auto).",
     "warningsShortListSplitTitle": "Short list cut between columns",
     "warningsShortListSplitDetail": "page __page__ · a list of __items__ items is cut between two columns or pages. With the rule on Avoid, no column could hold it whole.",
     "warningsTocGroupSplitTitle": "Contents block cut between columns",

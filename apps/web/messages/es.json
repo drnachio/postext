@@ -4168,6 +4168,8 @@
     "warningsAfterTextDetail": "página __page__ · queda en una página sin texto: el texto de su capítulo terminó mientras esperaba sitio en la columna lateral. Ponlo antes en el texto o acórtalo.",
     "warningsUnplacedTitle": "No está en ninguna página",
     "warningsUnplacedDetail": "Seguía esperando un hueco cuando terminó la composición, así que no está en ninguna página: las páginas abiertas para él no pueden acogerlo (un recuadro lateral donde las páginas no tienen columna lateral, por ejemplo). Cambia su ancho (span) o su colocación.",
+    "warningsHereNotEmbeddedTitle": "Colocado aquí, nunca insertado",
+    "warningsHereNotEmbeddedDetail": "Su colocación es `position: here`, así que solo se compone donde está una línea ::resource, y el texto solo lo cita con :ref: no está en ninguna página. Insértalo donde le corresponde o dale una posición flotante (top, bottom o auto).",
     "warningsShortListSplitTitle": "Lista corta partida entre columnas",
     "warningsShortListSplitDetail": "página __page__ · una lista de __items__ elementos queda partida entre dos columnas o páginas. Con la regla en Evitar, ninguna columna podía acogerla entera.",
     "warningsTocGroupSplitTitle": "Bloque del índice partido entre columnas",

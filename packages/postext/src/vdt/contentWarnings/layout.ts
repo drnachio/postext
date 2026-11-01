@@ -102,6 +102,13 @@ export type LayoutWarning =
    *  say). The build reports it instead of dropping it silently. It has a
    *  source range and no page. Found by the layout. */
   | { kind: 'unplaced'; resourceId?: string }
+  /** `hereNotEmbedded` (#1365): a resource placed `position: 'here'` that
+   *  the text cites with `:ref` and never embeds with `::resource` (nor
+   *  did the content before it, `continuation.resourceNumbers`): a `here`
+   *  resource is set only where its `::resource` line stands, so it is on
+   *  no page. One per resource, with the range of its first `:ref` and no
+   *  page. Found by the build. */
+  | { kind: 'hereNotEmbedded'; resourceId: string }
   /** `shortListSplit` (#749): a list of `items` items, short by
    *  `bodyText.shortListMaxItems`, cut between two columns or pages. Under
    *  `bodyText.shortListSplit: 'warn'` every such list is reported; under

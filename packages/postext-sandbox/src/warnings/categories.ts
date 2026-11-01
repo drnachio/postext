@@ -39,6 +39,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'pictureBelowPrintSize':
     case 'emptyCaption':
     case 'resourceMoved':
+    case 'hereNotEmbedded':
     case 'textWrap':
     case 'unknownTableStyle':
     case 'raggedTableGrid':

@@ -3,6 +3,8 @@
 import { type ContentWarning, type VDTColumn, pageIsVertical, pageIsMirrored } from '../../../../vdt.js';
 import { unplacedByDoc, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrinkWarningsByDoc, textWrapWarningsByDoc, composedWarningsByDoc, compositionWarningsByDoc } from '../../warnings.js';
 import { centrePageText } from '../../passHelpers.js';
+import { hereResourcesNotEmbedded } from '../../../floats/hereNotEmbedded.js';
+import { effectiveResourceTypes } from '../../../../defaults/resources/resourceTypes.js';
 import { dimensionToPx } from '../../../../units.js';
 import { pageLayoutOf } from '../../../blocks/placement.js';
 import { paperByBlock, stampPagePaper } from '../../../pages/paper.js';
@@ -107,6 +109,12 @@ export function createPassFinish(deps: PassFinishDeps) {
     unplaced.push(box
       ? { kind: 'unplaced', ...sourceOf(f.callout!.startIdx, box.plan.endIdx) }
       : { kind: 'unplaced', resourceId: f.resourceId, ...sourceOf(f.firstBlockIdx, f.firstBlockIdx) });
+  }
+  // A resource placed `here` that the text cites and never embeds (#1365).
+  const resources = givenResources ?? [];
+  const incorporated = new Set(Object.keys(continuation?.resourceNumbers ?? {}));
+  for (const r of hereResourcesNotEmbedded(contentBlocks, resources, effectiveResourceTypes(config, resources), incorporated)) {
+    unplaced.push({ kind: 'hereNotEmbedded', resourceId: r.resourceId, sourceStart: r.sourceStart + bodyOffset, sourceEnd: r.sourceEnd + bodyOffset });
   }
   if (unplaced.length > 0) unplacedByDoc.set(doc, unplaced);
   // The notes, in the room the flow reserved for them.
