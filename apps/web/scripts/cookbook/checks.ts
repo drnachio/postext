@@ -10,13 +10,13 @@ import { type RecipeMeta, type Registry, IMAGE_BUDGET, CARD_AIM_KB } from '../..
 import { usesComposedPages, C37_CONFIG_KINDS, composedFindings, roundTripFindings, configSizeFindings } from './checks/composed.ts';
 import type { Detected } from './checks/detect.ts';
 import { type ProbeFacts, type Finding, dedupe, type Severity, firstLines, CONFIG_WARNING_SEVERITY, configWarningText, type ProbeFace } from './checks/facts.ts';
-import type { EpubRecord } from './checks/readBack.ts';
+import type { EpubRecord, ScormRecord } from './checks/readBack.ts';
 
 export { configWarningText } from './checks/facts.ts';
 export type { Severity, Finding, ProbeFace, ProbeConfigWarning, ProbePage, ProbeFacts, ComposedFrameFact, ComposedEventFact, ComposedProposalFact, ComposedFacts } from './checks/facts.ts';
 export { configStats, detectFeatures, suggestLevel, detect, pdfPageCount } from './checks/detect.ts';
 export { readBackFindings, compareFindings } from './checks/readBack.ts';
-export type { EpubRecord, BundleReadBack } from './checks/readBack.ts';
+export type { EpubRecord, ScormRecord, BundleReadBack } from './checks/readBack.ts';
 export { PAGE_TEMPLATE_WARNING_KINDS, CONFIG_LIMIT_BYTES, usesComposedPages, usefulProposal, composedFindings, roundTripFindings, configSizeFindings, changesAgainstBase, stressFindings } from './checks/composed.ts';
 export type { StressInput } from './checks/composed.ts';
 
@@ -44,6 +44,8 @@ export interface CheckInput {
   pdf: { button: boolean; timedOut: boolean; error: string | null; fontFailures: string[]; bytes: number; pages: number | null } | null;
   /** The EPUBs the pen wrote with postext-epub (C30). */
   epubs?: EpubRecord[];
+  /** The SCORM packages the pen wrote with postext-scorm (C42). */
+  scorms?: ScormRecord[];
   published: number[];
   publishError: string | null;
   cardErrors: string[];
@@ -268,6 +270,28 @@ function collect(input: CheckInput): Finding[] {
     else if (epub.readLayout !== epub.layout) add("C30", "fail", `${name} reads back as ${epub.readLayout ?? "no layout"}`);
     for (const warning of epub.warnings) add("C30", "warn", `${name}: ${warning}`);
     if (epub.bytes > 2 * MB) add("C20", "warn", `${name} weighs ${(epub.bytes / MB).toFixed(2)} MB`);
+  }
+
+  // C42: the SCORM packages (#1346). A recipe with a "scorm" output writes
+  // at least one while its module runs, and each opens as an LMS imports
+  // it: a manifest, the version asked for, one launch page per SCO, every
+  // file the manifest names in the zip.
+  const scorms = input.scorms ?? [];
+  if (meta.outputs.includes("scorm") && !scorms.length) {
+    add("C42", "fail", "outputs include \"scorm\" but the pen wrote no SCORM package before it settled (call renderToScorm at top level)");
+  }
+  for (const scorm of scorms) {
+    const name = `the SCORM ${scorm.version ?? "?"} ${scorm.layout ?? "?"} package`;
+    if (scorm.error) add("C42", "fail", `${name}: ${firstLines(scorm.error, 1)}`);
+    else if (!scorm.manifest) add("C42", "fail", `${name} has no imsmanifest.xml at its root`);
+    else {
+      if (scorm.readVersion !== scorm.version) add("C42", "fail", `${name} declares SCORM ${scorm.readVersion ?? "no version"}`);
+      if (!scorm.scos) add("C42", "fail", `${name} has no SCO`);
+      else if (scorm.launchPages !== scorm.scos) add("C42", "fail", `${name} has ${scorm.scos} SCOs and ${scorm.launchPages} launch pages in the zip`);
+      if (scorm.missing.length) add("C42", "fail", `${name} lacks files its manifest names: ${scorm.missing.slice(0, 5).join(", ")}${scorm.missing.length > 5 ? ` and ${scorm.missing.length - 5} more` : ""}`);
+    }
+    for (const warning of scorm.warnings) add("C42", "warn", `${name}: ${warning}`);
+    if (scorm.bytes > 2 * MB) add("C20", "warn", `${name} weighs ${(scorm.bytes / MB).toFixed(2)} MB`);
   }
 
   // C15 and the pictures.

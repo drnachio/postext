@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { altText, cardProblems, sidesOf, spreadsOf } from "../../../scripts/cookbook/cards.ts";
 import { detect, detectFeatures, readBackFindings, runChecks } from "../../../scripts/cookbook/checks.ts";
-import type { BundleReadBack, CheckInput, EpubRecord, ProbeFacts, ProbePage } from "../../../scripts/cookbook/checks.ts";
+import type { BundleReadBack, CheckInput, EpubRecord, ProbeFacts, ProbePage, ScormRecord } from "../../../scripts/cookbook/checks.ts";
 import { blankFont, mathErrorsOf, textOfFaces } from "../../../scripts/cookbook/lib/probe.js";
 import { loadRegistry } from "./registry.ts";
 import type { ComposedPen, RecipeMeta } from "./types.ts";
@@ -441,6 +441,41 @@ describe("C30: the EPUBs a pen writes (#404)", () => {
     expect(warned).toEqual([{ check: "C30", severity: "warn", detail: "the fixed EPUB: missingFont: Literata" }]);
     // A recipe without the output is not asked for one.
     expect(of("C30", runChecks(input()))).toEqual([]);
+  });
+});
+
+describe("C42: the SCORM packages a pen writes (#1346)", () => {
+  const scorm = (extra: Partial<ScormRecord> = {}): ScormRecord => ({
+    version: "2004", layout: "fixed", bytes: 300_000, ms: 400, files: 40, manifest: true, readVersion: "2004",
+    scos: 1, launchPages: 1, items: 1, missing: [], warnings: [], error: null, ...extra,
+  });
+  const scormMeta = meta({ outputs: ["canvas", "html", "scorm"] });
+
+  it("fails a scorm recipe that wrote none, or a package an LMS could not import", () => {
+    expect(of("C42", runChecks(input({ meta: scormMeta, scorms: [] }))).map((f) => f.severity)).toEqual(["fail"]);
+    const broken = of("C42", runChecks(input({ meta: scormMeta, scorms: [
+      scorm({ error: "read back: not a zip (no end of central directory)" }),
+      scorm({ manifest: false }),
+      scorm({ version: "1.2", readVersion: "2004" }),
+      scorm({ scos: 0, launchPages: 0 }),
+      scorm({ scos: 3, launchPages: 2, missing: ["sco-3.html"] }),
+    ] })));
+    expect(broken.map((f) => f.detail)).toEqual([
+      "the SCORM 2004 fixed package: read back: not a zip (no end of central directory)",
+      "the SCORM 2004 fixed package has no imsmanifest.xml at its root",
+      "the SCORM 1.2 fixed package declares SCORM 2004",
+      "the SCORM 2004 fixed package has no SCO",
+      "the SCORM 2004 fixed package has 3 SCOs and 2 launch pages in the zip",
+      "the SCORM 2004 fixed package lacks files its manifest names: sco-3.html",
+    ]);
+  });
+
+  it("passes a whole package and reports the writer's warnings", () => {
+    const fine = [scorm(), scorm({ version: "1.2", readVersion: "1.2", layout: "reflowable" })];
+    expect(of("C42", runChecks(input({ meta: scormMeta, scorms: fine })))).toEqual([]);
+    const warned = of("C42", runChecks(input({ meta: scormMeta, scorms: [scorm({ warnings: ["missingFont: Archivo"] })] })));
+    expect(warned).toEqual([{ check: "C42", severity: "warn", detail: "the SCORM 2004 fixed package: missingFont: Archivo" }]);
+    expect(of("C42", runChecks(input()))).toEqual([]);
   });
 });
 

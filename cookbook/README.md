@@ -120,7 +120,7 @@ findings; they exit 0 when green, 1 on any failure, 2 on a usage error.
 | `pnpm cookbook capture [slug…]` | Runs the pen in Chrome against the released engine, verifies it (§11) and writes the pages, card, social image, PDF and `capture.json`. With no slug: every recipe whose capture is missing or stale. |
 | `pnpm cookbook capture <slug> --check` | Runs and verifies, writes nothing (a regression run). |
 | `pnpm cookbook capture <slug> --preview-dir <dir>` | Also writes PNG copies of every page, the card and the social image, and the PDF the pen builds, to `<dir>/<slug>/<lang>/`, with the `capture.json` entry the edition would get. |
-| `pnpm cookbook dev <slug> --engine local`, `pnpm cookbook capture <slug> --engine local --preview-dir <dir>` | Run the pen on the workspace engine (`packages/postext/dist` and `packages/postext-pdf/dist`, and the `dist` of `postext-folio` or `postext-epub` when the pen imports it; run `npx tsc` in each first; MathJax is served as the one module `pnpm build` ships and HarfBuzz as the binary it copies, whichever of the two wrote `dist`; a worker recipe starts its layout worker on the same files) instead of the released one, to preview a recipe that needs an unreleased feature. The capture only checks: a published recipe is captured from npm once the engine is released. |
+| `pnpm cookbook dev <slug> --engine local`, `pnpm cookbook capture <slug> --engine local --preview-dir <dir>` | Run the pen on the workspace engine (`packages/postext/dist` and `packages/postext-pdf/dist`, and the `dist` of `postext-folio`, `postext-epub` or `postext-scorm` when the pen imports it; run `npx tsc` in each first; MathJax is served as the one module `pnpm build` ships and HarfBuzz as the binary it copies, whichever of the two wrote `dist`; a worker recipe starts its layout worker on the same files) instead of the released one, to preview a recipe that needs an unreleased feature. The capture only checks: a published recipe is captured from npm once the engine is released. |
 | `pnpm cookbook capture [slug…] --sandbox-only` | Writes only each edition's `<slug>.postext`, its `sandbox` entry in `capture.json` and the bundle's own findings there (`sandbox`, C33), running the pen on the engine version `capture.json` records. Pages, card, social image and PDF are left alone. With no slug: every captured recipe; with `--check`, nothing is written and the bundles are only verified. It is all a change of `folio` or `capture.sandbox` needs. |
 | `pnpm cookbook capture [slug…] --verify` | For after a release: runs as a capture does and writes only the record that this release left the capture unchanged (`verified` in `capture.json`, §11), which the recipe page, its Markdown page and the gallery print as "tested with". A recipe whose files would change is listed as needing a recapture, with the reason (layout hash, pixels, PDF, bundle), and the command exits 1. The round after a release is `pnpm cookbook capture --all --verify`, a look at what it lists, and `pnpm cookbook capture <those>`. |
 | `pnpm cookbook sandbox [slug…] [--lang en,es] [--strict]` | Lays out each captured edition's `<slug>.postext` the way the Sandbox does, on the working tree: its font loader (Fontsource's static cuts, by family name), its layout service and its worker, built with bun from `packages/postext-sandbox` (build the packages first: `pnpm turbo run build --filter=postext-sandbox...`). It compares what comes back with `capture.json` (§11): pages, lines and warnings. With no slug: every captured recipe. `--concurrency`, `--timeout <s>` (60 per edition) and `--report <out.json>` as for a capture. |
@@ -167,7 +167,7 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `chapter`, `order` | One chapter; sparse order inside it (10, 20, 30…). |
 | `level` | 1 Basic, 2 Intermediate, 3 Advanced (rubric below). The lint warns when the code reads two levels away. |
 | `genres` | 1–3 of `novel poetry textbook workbook manual paper report magazine newsletter catalogue photobook comic ephemera any`. |
-| `outputs` | 1–4 of `canvas html pdf epub bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`; `epub` ⇔ an import from `https://esm.sh/postext-epub`. |
+| `outputs` | 1–4 of `canvas html pdf epub scorm bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`; `epub` ⇔ an import from `https://esm.sh/postext-epub`; `scorm` ⇔ an import from `https://esm.sh/postext-scorm`. |
 | `features` | `primary`: 1–3 features the recipe **teaches**; `also`: up to 17 others it uses. Ids from `_registry/features.json`. |
 | `answers` | Question ids (`Q01`…`Q185`); `answers[0]` is the question the recipe page leads with. |
 | `gaps` | Unsupported features the recipe works around (gives the Workaround badge). When the engine closes one (`fixedIn` in `gaps.json`) and the recipe pins that version or a later one, the id leaves the list: the lint fails it. |
@@ -187,7 +187,7 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 **Level rubric.** *Basic*: Markdown plus at most four design sections in the config (the
 `colorPalette` and the empty `header` and `footer` every recipe carries do not count), no
 design slots, one resource at most, a single `buildDocument`. *Intermediate*: design slots (openers, running
-heads), placed resources, named styles or a PDF or EPUB export. *Advanced*: any of `buildBundle`,
+heads), placed resources, named styles or a PDF, EPUB or SCORM export. *Advanced*: any of `buildBundle`,
 part palettes, rotated or split tables, a column-and-a-half float channel with side captions,
 maths, workers or interactive rebuilds.
 
@@ -203,7 +203,7 @@ maths, workers or interactive rebuilds.
    attach listeners afterwards.
 3. **One engine entry.** Named imports come from `https://esm.sh/postext` (plus
    `https://esm.sh/postext-pdf` for PDFs, `https://esm.sh/postext-folio` for the 3D book,
-   `https://esm.sh/postext-epub` for EPUB files), never pinned: the capture pins the released
+   `https://esm.sh/postext-epub` for EPUB files, `https://esm.sh/postext-scorm` for SCORM packages), never pinned: the capture pins the released
    version for you. Maths recipes use the same import; `https://esm.sh/postext?bundle`, which
    postext 1.4 needed for MathJax, still lints in an `engine.math` recipe written with it.
 4. **Design first.** The file reads top to bottom: design, content, fonts, build. The answer
@@ -312,6 +312,13 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   `https://esm.sh/postext-epub/worker` instead and call `createEpubWorker().render(docs, …)`
   with the same options; the capture records its files like `renderToEpub`'s (needs
   postext-epub ≥ 0.1.1, which starts its worker from esm.sh).
+- **SCORM.** Add `"scorm"` to `outputs` and import `renderToScorm` (and `scormTree` and
+  `treeLeaves`, to cut the course into SCOs by heading) from `https://esm.sh/postext-scorm`; the
+  capture pins `packages/postext-scorm`'s version, with the same `postext` and `postext-epub`
+  as its peers. It takes the options `renderToEpub` takes plus `version` (`'1.2'` or `'2004'`)
+  and `items`. Write the package at top level, from the documents the pen built, so the capture
+  reads it back (C42), and offer it through an `<a download>` link.
+  `self-checking-course-module` (Nº 179) is the model.
 
 ### 5.4 The kit
 
@@ -1042,7 +1049,10 @@ PDF errors (C14), a tainted canvas (C15), "undefined" or "NaN" printed (C16), th
 skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a build over
 4 s (C21; the one build of `buildDocumentWithFonts` starts with nothing measured), and, for an `epub` output, no EPUB written before the module settled, or a file
 that `readEpub` cannot read back in its own layout (C30; the writer's `missingFont` and
-`missingImage` reports are warnings), and a config value the engine could not use as written
+`missingImage` reports are warnings), for a `scorm` output, no SCORM package written before
+the module settled, or a package an LMS could not import as written (C42: the zip has no
+`imsmanifest.xml`, declares another SCORM version than the pen asked for, has no SCO, lacks the
+launch page of a SCO or a file the manifest names; the writer's reports are warnings), and a config value the engine could not use as written
 (C31, from `doc.configWarnings`): a character grid or a side column cut to what the page holds
 (`cjkGridClamped`, `sideColumnPercentClamped`), a numbering format or `numerals` value it does
 not know (`unknownNumberFormat`, `unknownNumerals`), a value outside a setting's choices

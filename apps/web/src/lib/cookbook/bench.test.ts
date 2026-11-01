@@ -65,7 +65,7 @@ function allChecks(f: ProbeFacts) {
   const input: CheckInput = {
     meta: { ...fixtureMeta(), capture: { hero: 1, card: "page" } }, facts: f, done: "ok", err: null, loaderErrors: [], console: [],
     pageErrors: [], net: [], failedRequests: [], settleTimedOut: false, kit: { state: "ready", status: "" }, tainted: [], passive: false,
-    workerEngines: [], engine: "1.35.0", timeoutMs: 60_000, totalMs: 2000, pdf: null, epubs: [], published: [1], publishError: null,
+    workerEngines: [], engine: "1.35.0", timeoutMs: 60_000, totalMs: 2000, pdf: null, epubs: [], scorms: [], published: [1], publishError: null,
     cardErrors: [], renderError: null, magnification: null, bytes: 100_000, cardBytes: null, assets: [],
     detected: {
       apis: [], configKeys: [], configSections: [], configLeaves: 0, designElements: 0, directives: [], inline: [],

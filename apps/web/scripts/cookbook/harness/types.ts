@@ -1,6 +1,6 @@
 // What a capture run takes and returns: rendered pages, cards, the bundle.
 import type { SampleLocale, RecipeMeta } from "../../../src/lib/cookbook/types.ts";
-import type { ProbeFacts, EpubRecord, BundleReadBack } from "../checks.ts";
+import type { ProbeFacts, EpubRecord, ScormRecord, BundleReadBack } from "../checks.ts";
 import type { NetIssue } from "../net.ts";
 import type { PenServer } from "../serve.ts";
 import type { HarnessBrowser } from "./browser.ts";
@@ -49,6 +49,8 @@ export interface VariantRun {
   pdf: { wanted: boolean; button: boolean; timedOut: boolean; error: string | null; fontFailures: string[]; ms: number; bytes: Buffer | null } | null;
   /** The EPUBs the pen wrote while it ran (C30). */
   epubs: EpubRecord[];
+  /** The SCORM packages the pen wrote while it ran (C42). */
+  scorms: ScormRecord[];
   published: number[];
   publishError: string | null;
   cardErrors: string[];

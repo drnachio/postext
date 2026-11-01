@@ -22,7 +22,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { REPO_DIR } from "../../src/lib/cookbook/paths.ts";
-import { RECORDER, engineShim, workerShim, pdfShim, epubShim, epubWorkerShim } from "./shim/sources.ts";
+import { RECORDER, engineShim, workerShim, pdfShim, epubShim, epubWorkerShim, scormShim } from "./shim/sources.ts";
 
 export interface EngineSpec {
   /** Pinned postext version, e.g. "1.4.1". */
@@ -35,6 +35,8 @@ export interface EngineSpec {
   postextFolio: string;
   /** Pinned postext-epub version (versioned on its own, 0.x). */
   postextEpub: string;
+  /** Pinned postext-scorm version (versioned on its own, 0.x, #1346). */
+  postextScorm: string;
   /** `local`: the workspace packages' `dist`, served by the pen server
    *  (previews of unreleased features; never written as a capture). */
   source: "npm" | "local";
@@ -43,7 +45,7 @@ export interface EngineSpec {
 const VERSION = /^\d+\.\d+\.\d+$/;
 
 /** The released version of a workspace package (its package.json). */
-export function releasedVersion(name: "postext" | "postext-pdf" | "postext-citeproc" | "postext-folio" | "postext-epub"): string {
+export function releasedVersion(name: "postext" | "postext-pdf" | "postext-citeproc" | "postext-folio" | "postext-epub" | "postext-scorm"): string {
   const file = path.join(REPO_DIR, "packages", name, "package.json");
   const version = (JSON.parse(fs.readFileSync(file, "utf-8")) as { version?: string }).version ?? "";
   if (!VERSION.test(version)) throw new Error(`packages/${name}/package.json has no x.y.z version`);
@@ -53,8 +55,8 @@ export function releasedVersion(name: "postext" | "postext-pdf" | "postext-citep
 /** `npm` (default: the released versions) or `npm@x.y.z` (both packages,
  *  which the release script publishes with one version). */
 export function resolveEngine(spec: string = "npm"): EngineSpec {
-  // The viewer and the EPUB writer have versions of their own.
-  const own = { postextFolio: releasedVersion("postext-folio"), postextEpub: releasedVersion("postext-epub") };
+  // The viewer and the EPUB and SCORM writers have versions of their own.
+  const own = { postextFolio: releasedVersion("postext-folio"), postextEpub: releasedVersion("postext-epub"), postextScorm: releasedVersion("postext-scorm") };
   if (spec === "npm") {
     return { postext: releasedVersion("postext"), postextPdf: releasedVersion("postext-pdf"), postextCiteproc: releasedVersion("postext-citeproc"), ...own, source: "npm" };
   }
@@ -115,6 +117,7 @@ export const SHIM_PATHS = {
   "https://esm.sh/postext-folio": "/__shim/postext-folio.js",
   "https://esm.sh/postext-epub": "/__shim/postext-epub.js",
   "https://esm.sh/postext-epub/worker": "/__shim/postext-epub-worker.js",
+  "https://esm.sh/postext-scorm": "/__shim/postext-scorm.js",
 } as const;
 
 /** Where the local engine's modules are served (`packages/<name>/dist`). */
@@ -151,6 +154,7 @@ export function localImports(): Record<string, string> {
     "postext-epub": `${LOCAL_PREFIX}postext-epub/index.js`,
     "postext-epub/worker": `${LOCAL_PREFIX}postext-epub/worker/client.js`,
     "postext-folio": `${LOCAL_PREFIX}postext-folio/index.js`,
+    "postext-scorm": `${LOCAL_PREFIX}postext-scorm/index.js`,
   };
   for (const dep of ["@chenglou/pretext", "fflate", "gray-matter", "hypher", "react"]) imports[dep] = esm("postext", dep);
   for (const lang of ["ca", "de", "en-us", "es", "fr", "it", "nl", "pt"]) imports[`hyphenation.${lang}`] = esm("postext", `hyphenation.${lang}`);
@@ -291,6 +295,7 @@ export function shimModules(engine: EngineSpec, { pdfDate = null, force = forced
       "/__shim/postext-folio.js": `export * from '${local("postext-folio/index.js")}';\n`,
       "/__shim/postext-epub.js": epubShim(local("postext-epub/index.js")),
       "/__shim/postext-epub-worker.js": epubWorkerShim(local("postext-epub/worker/client.js"), local("postext-epub/index.js")),
+      "/__shim/postext-scorm.js": scormShim(local("postext-scorm/index.js")),
     };
   }
   return {
@@ -307,5 +312,7 @@ export function shimModules(engine: EngineSpec, { pdfDate = null, force = forced
       `https://esm.sh/postext-epub@${engine.postextEpub}/worker?deps=postext@${V}`,
       `https://esm.sh/postext-epub@${engine.postextEpub}?deps=postext@${V}`,
     ),
+    // Its peers pinned too: the engine of the pen and the EPUB writer it builds on.
+    "/__shim/postext-scorm.js": scormShim(`https://esm.sh/postext-scorm@${engine.postextScorm}?deps=postext@${V},postext-epub@${engine.postextEpub}`),
   };
 }

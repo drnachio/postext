@@ -900,6 +900,51 @@
       "it": "Scrivere un libro"
     }
   },
+  "renderToScorm": {
+    "slug": "configuration-html-folio-epub",
+    "heading": {
+      "en": "SCORM packages (`postext-scorm`)",
+      "es": "Paquetes SCORM (`postext-scorm`)",
+      "ca": "Paquets SCORM (`postext-scorm`)",
+      "zh": "SCORM包（`postext-scorm`）",
+      "ar": "حزم SCORM (`postext-scorm`)",
+      "ja": "SCORMパッケージ（`postext-scorm`）",
+      "pt": "Pacotes SCORM (`postext-scorm`)",
+      "fr": "Paquets SCORM (`postext-scorm`)",
+      "de": "SCORM-Pakete (`postext-scorm`)",
+      "it": "Pacchetti SCORM (`postext-scorm`)"
+    }
+  },
+  "scormTree": {
+    "slug": "configuration-html-folio-epub",
+    "heading": {
+      "en": "SCORM packages (`postext-scorm`)",
+      "es": "Paquetes SCORM (`postext-scorm`)",
+      "ca": "Paquets SCORM (`postext-scorm`)",
+      "zh": "SCORM包（`postext-scorm`）",
+      "ar": "حزم SCORM (`postext-scorm`)",
+      "ja": "SCORMパッケージ（`postext-scorm`）",
+      "pt": "Pacotes SCORM (`postext-scorm`)",
+      "fr": "Paquets SCORM (`postext-scorm`)",
+      "de": "SCORM-Pakete (`postext-scorm`)",
+      "it": "Pacchetti SCORM (`postext-scorm`)"
+    }
+  },
+  "treeLeaves": {
+    "slug": "configuration-html-folio-epub",
+    "heading": {
+      "en": "SCORM packages (`postext-scorm`)",
+      "es": "Paquetes SCORM (`postext-scorm`)",
+      "ca": "Paquets SCORM (`postext-scorm`)",
+      "zh": "SCORM包（`postext-scorm`）",
+      "ar": "حزم SCORM (`postext-scorm`)",
+      "ja": "SCORMパッケージ（`postext-scorm`）",
+      "pt": "Pacotes SCORM (`postext-scorm`)",
+      "fr": "Paquets SCORM (`postext-scorm`)",
+      "de": "SCORM-Pakete (`postext-scorm`)",
+      "it": "Pacchetti SCORM (`postext-scorm`)"
+    }
+  },
   "parseVideoUrl": {
     "slug": "document-format-resources",
     "heading": {

@@ -21,6 +21,31 @@ export interface EpubRecord {
   error: string | null;
 }
 
+/** A SCORM package the pen wrote, as the postext-scorm shim recorded it and
+ *  read it back from the zip (check C42, #1346). */
+export interface ScormRecord {
+  /** The SCORM version and layout the pen asked for. */
+  version: string | null;
+  layout: string | null;
+  bytes: number;
+  ms: number;
+  /** Entries in the zip. */
+  files: number;
+  /** The zip holds `imsmanifest.xml` at its root. */
+  manifest: boolean;
+  /** The version the manifest's `<schemaversion>` declares ("1.2", "2004"). */
+  readVersion: string | null;
+  /** Resources typed as SCOs, the distinct launch pages of them the zip
+   *  holds, and the organization's items that open a resource. */
+  scos: number;
+  launchPages: number;
+  items: number;
+  /** Files the manifest names that the zip lacks. */
+  missing: string[];
+  warnings: string[];
+  error: string | null;
+}
+
 /** A Sandbox bundle opened again by the pen's engine and laid out as the
  *  Sandbox lays a book out, beside the documents the pen built from the
  *  same source (lib/probe.js `readBundleBack`, check C33). */

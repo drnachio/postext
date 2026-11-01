@@ -17,7 +17,7 @@ import type { CaptureManifest, CaptureVariant, RecipeMeta, SampleLocale } from "
 const SLUG = "a-recipe";
 const A = "1.27.0";
 const B = "1.28.0";
-const engineOf = (version: string): EngineSpec => ({ postext: version, postextPdf: version, postextCiteproc: version, postextFolio: "0.16.1", postextEpub: "0.13.1", source: "npm" });
+const engineOf = (version: string): EngineSpec => ({ postext: version, postextPdf: version, postextCiteproc: version, postextFolio: "0.16.1", postextEpub: "0.13.1", postextScorm: "0.3.0", source: "npm" });
 const meta = { sample: { locales: ["en", "es"] }, outputs: ["pdf"], downloads: { pdf: true }, engine: { postext: A, postextPdf: A } } as unknown as RecipeMeta;
 const bytes = (text: string) => Buffer.from(text);
 
