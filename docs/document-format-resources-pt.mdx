@@ -19,6 +19,8 @@ export const metadata = {
 
 Imagens, SVGs, tabelas e vídeos não são escritos no meio do texto. Eles são declarados uma vez como **recursos** (gerenciados no [painel Recursos](/pt/docs/sandbox#painel-recursos) do Sandbox, que cuida do envio de imagens e SVGs, de um editor de tabelas interativo, de vídeos do YouTube, do Vimeo e enviados, e da edição de legendas e posicionamento) e depois ligados ao texto por id. **Referenciar um recurso basta para incorporá-lo**: você o menciona uma vez com um `:ref{id="…"}` em linha, e o motor faz a figura ou a tabela flutuar até o primeiro espaço livre depois dessa referência (o pé da coluna em que você o menciona, o topo da coluna seguinte, uma faixa da página seguinte), como faria um compositor de livros impressos. Você não o posiciona uma segunda vez.
 
+<YouTubeVideo film="resources" />
+
 As duas formas abaixo são sintaxe nova que não colide com o CommonMark, de modo que um documento que as usa continua legível como texto simples em qualquer outro visualizador de Markdown.
 
 ### Referência em linha (a forma principal)

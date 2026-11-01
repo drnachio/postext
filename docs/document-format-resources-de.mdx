@@ -19,6 +19,8 @@ export const metadata = {
 
 Bilder, SVGs, Tabellen und Videos werden nicht im Text geschrieben. Sie werden einmal als **Ressourcen** angelegt (verwaltet im [Bedienfeld Ressourcen](/de/docs/sandbox#bedienfeld-ressourcen) der Sandbox, das das Hochladen von Bildern und SVGs, einen interaktiven Tabelleneditor, YouTube-, Vimeo- und hochgeladene Videos sowie die Bearbeitung von Legende und Platzierung übernimmt) und dann über ihre ID mit dem Text verbunden. **Ein Verweis auf eine Ressource genügt, um sie einzubinden** – Sie nennen sie einmal mit einem `:ref{id="…"}` im Text, und die Engine setzt die Abbildung oder Tabelle als Gleitobjekt an den ersten freien Platz nach diesem Verweis – an den Fuß der Spalte, in der Sie sie nennen, an den Kopf der nächsten Spalte, an Kopf oder Fuß der nächsten Seite –, so wie es ein Setzer im Druck täte. Sie platzieren sie kein zweites Mal.
 
+<YouTubeVideo film="resources" />
+
 Beide Formen unten sind neue Syntax, die nicht mit CommonMark kollidiert, sodass ein Dokument, das sie verwendet, in jedem anderen Markdown-Betrachter weiterhin als reiner Text lesbar bleibt.
 
 ### Verweis im Text (die Hauptform)

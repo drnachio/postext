@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "harmony-textbook-abc-examples",
-  "sourceHash": "cbec1f870efb3795bff655811e7f48bddaebc8e0f12b3931f57982602d97cdc9",
+  "sourceHash": "0091a03d479da01dc61438ba9dc90765530c88b0e52837278d402fd4843113d8",
   "engine": {
-    "postext": "1.65.0",
-    "postextPdf": "1.65.0",
+    "postext": "1.66.0",
+    "postextPdf": "1.66.0",
     "source": "npm"
   },
   "chrome": "156.0.8078.76",
-  "capturedAt": "2026-10-31T17:04:39.462Z",
+  "capturedAt": "2026-11-01T11:24:04.338Z",
   "variants": {
     "en": {
-      "hash8": "7444d09d",
+      "hash8": "fb2c0510",
       "vdtHash": "a922dd494a351fec2fb3445091ed7af8ba8a30d4",
       "timings": {
-        "importMs": 6073,
-        "fontsMs": 3042,
-        "buildMs": 32,
-        "totalMs": 11243,
+        "importMs": 1219,
+        "fontsMs": 1161,
+        "buildMs": 18,
+        "totalMs": 3748,
         "builds": 1
       },
       "specimen": {
@@ -72,7 +72,7 @@
           "h": 1389,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 101060,
+          "bytes": 101096,
           "alt": "Page 3: THE DECEPTIVE CADENCE."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1389,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 66658,
+          "bytes": 66764,
           "alt": "Page 4: EXERCISES."
         }
       ],
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "harmony-textbook-abc-examples.pdf",
-        "bytes": 118804,
+        "bytes": 118797,
         "pages": 4
       },
       "sandbox": {
         "file": "harmony-textbook-abc-examples.postext",
-        "bytes": 17190,
+        "bytes": 17268,
         "folio": "d719dace",
         "chapters": [
           {
@@ -393,11 +393,6 @@
             "detail": "the hero is 0.0 % colour, pictures or display type (aim for 25 %+)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -411,13 +406,13 @@
       }
     },
     "es": {
-      "hash8": "3f1f4555",
+      "hash8": "bc2bd57a",
       "vdtHash": "7677e4926e7ee1701ab08dcb598b1fe80120147d",
       "timings": {
-        "importMs": 3919,
-        "fontsMs": 1280,
-        "buildMs": 35,
-        "totalMs": 6747,
+        "importMs": 1192,
+        "fontsMs": 979,
+        "buildMs": 13,
+        "totalMs": 3323,
         "builds": 1
       },
       "specimen": {
@@ -472,7 +467,7 @@
           "h": 1389,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 105782,
+          "bytes": 105826,
           "alt": "Página 3: LA CADENCIA ROTA."
         },
         {
@@ -483,7 +478,7 @@
           "h": 1389,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 68998,
+          "bytes": 69038,
           "alt": "Página 4: EJERCICIOS."
         }
       ],
@@ -515,12 +510,12 @@
       },
       "pdf": {
         "file": "harmony-textbook-abc-examples.pdf",
-        "bytes": 122310,
+        "bytes": 122301,
         "pages": 4
       },
       "sandbox": {
         "file": "harmony-textbook-abc-examples.postext",
-        "bytes": 16342,
+        "bytes": 16398,
         "folio": "d719dace",
         "chapters": [
           {
@@ -791,11 +786,6 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 0.0 % colour, pictures or display type (aim for 25 %+)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

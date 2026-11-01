@@ -19,6 +19,8 @@ export const metadata = {
 
 Immagini, SVG, tabelle e video non si scrivono in linea. Si dichiarano una volta come **risorse** (gestite nel [pannello Risorse](/it/docs/sandbox#pannello-risorse) della Sandbox, che si occupa del caricamento di immagini e SVG, di un editor interattivo delle tabelle, dei video di YouTube, Vimeo o caricati, e della modifica di didascalie e collocazione) e poi si collegano alla prosa tramite id. **Fare riferimento a una risorsa basta per inserirla**: la citi una volta con un `:ref{id="…"}` in linea e il motore fa flottare la figura o la tabella nel primo spazio libero dopo quel rimando (il fondo della colonna in cui la citi, la cima della colonna successiva, una fascia della pagina seguente), proprio come farebbe un compositore tipografico. Non devi collocarla una seconda volta.
 
+<YouTubeVideo film="resources" />
+
 Entrambe le forme qui sotto sono sintassi nuova che non entra in conflitto con CommonMark, quindi un documento che le usa si legge ancora come testo semplice in qualsiasi altro visualizzatore markdown.
 
 ### Rimando in linea (la forma principale)

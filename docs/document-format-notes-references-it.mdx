@@ -19,6 +19,8 @@ export const metadata = {
 
 Una nota a piè di pagina ha due parti: il richiamo `[^id]`, nel punto del testo a cui la nota si riferisce, e la definizione, un paragrafo a sé che inizia con `[^id]:` e può stare in qualsiasi punto del capitolo.
 
+<YouTubeVideo film="footnotes" />
+
 ```md
 The keeper climbed the tower every evening.[^steps] The wind put out his candle,
 so he learned to count the steps in the dark.
@@ -37,6 +39,8 @@ so he learned to count the steps in the dark.
 ## Rimandi e ancore
 
 Un rimando indica un punto del libro e ne stampa il numero, il titolo o la pagina: *vedi la sezione 3.2*, *come spiega il capitolo 4*, *a p. 112*. Parole e numeri seguono il testo: se sposti una sezione, rinumeri i capitoli o reimpagini il libro, ogni rimando si aggiorna. Nel PDF, nell’HTML e nelle anteprime della Sandbox ogni rimando è un link: con un clic chi legge raggiunge la destinazione, anche se si trova in un altro capitolo.
+
+<YouTubeVideo film="crossReferences" />
 
 **Ancore.** Un rimando ha bisogno di qualcosa a cui puntare:
 
@@ -82,6 +86,8 @@ Un rimando a un id che non è definito da nessuna parte stampa *?*, e il pannell
 ## Citazioni e bibliografia
 
 Scrivi le citazioni come le legge Pandoc, tieni i riferimenti nel documento e scegli lo stile di citazione nelle impostazioni: per passare da APA a IEEE, o alle note Chicago, cambi l’impostazione dello stile, non il testo. Ogni citazione è un link alla sua voce nella bibliografia.
+
+<YouTubeVideo film="citations" />
 
 ### Citare
 
@@ -200,6 +206,8 @@ Contano solo i link `http:` e `https:`. Un link `mailto:` o `tel:`, un link a un
 ## Indice analitico
 
 Un indice analitico elenca i termini di un libro con le pagine in cui compaiono. Segna ogni termine nel punto in cui il testo ne parla, e stampa l’indice con `:::index` dove vuoi che compaia, di solito in un capitolo a sé alla fine. Il motore trova la pagina di ogni segno dopo l’impaginazione, quindi i numeri seguono il testo: aggiungi un paragrafo, sposta un capitolo o cambia il formato, e l’indice stampa le nuove pagine.
+
+<YouTubeVideo film="backIndex" />
 
 ```md
 Iron-deficiency :index[anaemia] is the most common kind.

@@ -462,6 +462,8 @@ References take the colour, weight and slant of every reference (`bodyText.refer
 
 The `citations` property chooses the citation style and how citations and the bibliography look. The markup is described in [Citations and bibliography](/en/docs/document-format-notes-references#citations-and-bibliography); the style is applied by the `postext-citeproc` package.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## Table of contents
 
 The `toc` property configures what a `:::toc` directive prints (see [Document format](/en/docs/document-format-directives#toc)). The contents are assembled from the document's **outline** — every heading with its number and page label, every `:::part` — so they follow the chapters: rename one, move it to another part, change its authors, and the entries change with it. An entry is the heading's number in a column of its own, the title, a leader and the page label at the right edge, then an optional subtitle line; a part is a row designed by `parts.design`.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

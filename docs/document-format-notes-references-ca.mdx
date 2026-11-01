@@ -19,6 +19,8 @@ export const metadata = {
 
 Una nota a peu de pàgina té dues parts: la crida `[^id]` al lloc on se cita la nota, i la definició, un paràgraf propi que comença per `[^id]:` en qualsevol punt del capítol.
 
+<YouTubeVideo film="footnotes" />
+
 ```md
 El faroner pujava a la torre cada vespre.[^peldanos] El vent li apagava l'espelma,
 així que va aprendre a comptar els graons a les fosques.
@@ -37,6 +39,8 @@ així que va aprendre a comptar els graons a les fosques.
 ## Referències creuades i àncores
 
 Una referència creuada remet a un lloc del llibre i n'imprimeix el número, el títol o la pàgina: *vegeu la secció 3.2*, *com explica el capítol 4*, *a la pàg. 112*. Les paraules i els números segueixen el text: si una secció canvia de lloc, si els capítols es renumeren o si el llibre es recompon, totes les referències s'actualitzen. Al PDF, a l'HTML i a les previsualitzacions del Sandbox cada referència és un enllaç: un clic porta al destí, també en un altre capítol.
+
+<YouTubeVideo film="crossReferences" />
 
 **Àncores.** Una referència necessita alguna cosa a què apuntar:
 
@@ -82,6 +86,8 @@ Una referència a un id que res no defineix imprimeix *?* i apareix al tauler Re
 ## Citacions i bibliografia
 
 Escriu les citacions com les llegeix Pandoc, posa les referències al document i tria l'estil de citació a la configuració: per passar d'APA a IEEE, o a les notes de Chicago, canvies un paràmetre, no el text. Cada citació enllaça amb la seva entrada a la bibliografia.
+
+<YouTubeVideo film="citations" />
 
 ### Citar
 
@@ -200,6 +206,8 @@ Només compten els enllaços `http:` i `https:`. Un enllaç `mailto:` o `tel:`, 
 ## Índex analític
 
 Un índex analític recull els termes d'un llibre amb les pàgines on apareixen. Marca cada terme allà on el text en tracta i imprimeix l'índex amb `:::index` on correspongui, normalment en un capítol propi al final. El motor troba la pàgina de cada marca després de compondre, de manera que els números segueixen el text: afegeix un paràgraf, mou un capítol o canvia el format de pàgina, i l'índex imprimeix les pàgines noves.
+
+<YouTubeVideo film="backIndex" />
 
 ```md
 L':index[anèmia] ferropènica és la més freqüent.

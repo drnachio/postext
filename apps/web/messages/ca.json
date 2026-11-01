@@ -345,6 +345,28 @@
     "fullscreen": "Pantalla completa",
     "exitFullscreen": "Sortir de la pantalla completa"
   },
+  "YouTubeVideos": {
+    "play": "Reprodueix el vídeo",
+    "watch": "Mira’l a YouTube",
+    "hint": "El reproductor es carrega des de YouTube quan prems reproduir.",
+    "editing": "Edita un llibre Postext amb un agent d’IA: capítols, noves edicions, adaptacions — tutorial 2",
+    "contents": "Sumari automàtic i numeració a Postext — a mà o amb un agent d’IA (1/4)",
+    "resources": "Figures i taules que es col·loquen soles: recursos referenciats a Postext i la drecera @ (2/4)",
+    "footnotes": "Notes al peu que no deixen la seva pàgina: notes a Postext, a mà o amb un agent d’IA (3/4)",
+    "backIndex": "Un índex analític que es fa sol, a Postext: a mà o amb un agent d’IA (4/4)",
+    "citations": "Cites que s’escriuen soles: cites i bibliografia a Postext, a mà o amb IA (1/3)",
+    "citationStyles": "Qualsevol estil de cita amb un ajust: APA, Chicago, IEEE, Vancouver i estils CSL a Postext (2/3)",
+    "crossReferences": "Referències creuades que no es perden: seccions i pàgines enllaçades a Postext (3/3)",
+    "comics": "Còmics a Postext: pàgines, vinyetes i bafarades retolades pel motor, a mà o amb IA",
+    "composedPages": "Pàgines compostes a Postext: llibres de text, quaderns i fitxes d’infantil, a mà o amb IA",
+    "labelledImages": "Mapes i dibuixos amb rètols a Postext: els noms en Markdown, sobre la imatge, a mà o amb IA",
+    "everyScript": "Un manuscrit, totes les escriptures: japonès, xinès i àrab amb Postext, a mà o amb IA",
+    "checks": "El teu llibre és a punt per a la impremta? Revisió i preflight a Postext, a mà o amb IA",
+    "music": "Música als llibres: cançoners, partitures i acords com a text, gravats per Postext, a mà o amb IA",
+    "exercises": "Exercicis als llibres: fitxes, llibre del professor i respostes en pantalla, a mà o amb IA",
+    "everyLanguage": "Un llibre en totes les llengües: un disseny compartit i els ajustos de cada edició, a mà o amb IA",
+    "everyOutput": "Un manuscrit, totes les sortides: PDF d’impremta, PDF accessible, web, EPUB i SCORM, a mà o amb IA"
+  },
   "About": {
     "eyebrow": "Per què Postext",
     "titleLine1": "Maquetació editorial,",

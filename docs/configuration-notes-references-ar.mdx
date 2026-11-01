@@ -462,6 +462,8 @@ interface CrossRefsConfig {
 
 تختار الخاصية `citations` نمط الاستشهاد وطريقة ظهور الاستشهادات وقائمة المراجع. الترميز موصوف في [الاستشهادات والمراجع](/ar/docs/document-format-notes-references#الاستشهادات-وقائمة-المراجع)؛ ويطبّق النمطَ الحزمةُ `postext-citeproc`.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## جدول المحتويات
 
 تضبط الخاصية `toc` ما يطبعه التوجيه `:::toc` (انظر [صيغة المستند](/ar/docs/document-format-directives#toc)). تُجمَع المحتويات من **مخطّط** المستند (outline): كل عنوان برقمه وتسمية صفحته، وكل `:::part`؛ ولذلك تتبع الفصول: إن غيّرت اسم فصل، أو نقلته إلى جزء آخر، أو غيّرت مؤلفيه، تغيّرت المداخل معه. يتكوّن المدخل من رقم العنوان في عمود خاص به، ثم العنوان، ثم خط الإرشاد (leader) وتسمية الصفحة عند الحافة اليمنى، ثم سطر عنوان فرعي اختياري؛ أما الجزء فصفّ يصمّمه `parts.design`.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

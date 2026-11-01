@@ -19,6 +19,8 @@ export const metadata = {
 
 Les imatges, els SVG, les taules i els vídeos no s'escriuen en línia. Es declaren una sola vegada com a **recursos** (es gestionen al [tauler Recursos](/ca/docs/sandbox#tauler-de-recursos) del Sandbox, que permet pujar imatges i SVG, editar taules de manera interactiva, afegir vídeos de YouTube, de Vimeo o pujats, i editar els peus i la col·locació) i després es vinculen al text per id. **N'hi ha prou de fer referència a un recurs per incorporar-lo**: l'esmentes una vegada amb `:ref{id="…"}` i el motor fa flotar la figura o la taula fins al primer espai lliure després d'aquesta referència (el final de la columna on l'esmentes, el principi de la següent, una banda de la pàgina següent), igual que faria un tipògraf d'impremta. No cal col·locar-lo una segona vegada.
 
+<YouTubeVideo film="resources" />
+
 Les dues formes de sota són una sintaxi completament nova que no entra en conflicte amb CommonMark, de manera que un document que les faci servir es continua llegint com a text pla en qualsevol altre visor de Markdown.
 
 ### Referència en línia (la forma principal)

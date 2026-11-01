@@ -298,6 +298,8 @@ The manifest lists every language in `locales` (`['en', 'es']`), keeps the prima
 
 The editions of a book in several languages usually share most of the design: the page, the grid, the box styles, the palette. A few settings belong to one language: the typefaces of its script, what depends on the direction of the text, the wording of a label. A bundle written for configuration rules 21 (`configVersion: 21`) keeps the two apart. The manifest's `config` holds the **general settings**, which every edition reads, and `localized[<lang>].config` holds that language's **override**, with only the fields it sets differently. A change to a general setting reaches every edition that does not set the same field itself.
 
+<YouTubeVideo film="everyLanguage" />
+
 An override is merged over the general settings field by field:
 
 <table>

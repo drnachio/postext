@@ -28,7 +28,8 @@ export function DocOpener({
         <span
           aria-hidden="true"
           className={cn(
-            "display pointer-events-none absolute -top-1 end-5 select-none leading-[0.85] md:end-7",
+            // Floated into the corner, so kicker and title wrap around it.
+            "display pointer-events-none float-end -me-1 -mt-9 mb-1 ms-3 select-none leading-[0.85] md:-mt-11",
             number.includes(".") ? "text-[4rem] md:text-[6rem]" : "text-[6rem] md:text-[8.5rem]",
           )}
         >

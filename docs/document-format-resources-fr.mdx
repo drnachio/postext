@@ -19,6 +19,8 @@ export const metadata = {
 
 Les images, les SVG, les tableaux et les vidéos ne s’écrivent pas dans le texte. Vous les déclarez une fois comme **ressources** (gérées dans le [panneau Ressources](/fr/docs/sandbox#panneau-ressources) du Sandbox, qui prend en charge l’import d’images et de SVG, un éditeur de tableaux interactif, les vidéos YouTube, Vimeo et importées, et l’édition des légendes et du placement), puis vous les reliez au texte par leur identifiant. **Renvoyer à une ressource suffit à l’insérer** : vous la mentionnez une fois avec un `:ref{id="…"}` dans le texte, et le moteur fait flotter la figure ou le tableau dans le premier emplacement libre après ce renvoi (le pied de la colonne où vous la mentionnez, le haut de la colonne suivante, une bande de la page suivante), exactement comme le ferait un compositeur pour l’imprimé. Vous ne la placez pas une seconde fois.
 
+<YouTubeVideo film="resources" />
+
 Les deux formes ci-dessous sont une syntaxe nouvelle qui n’entre pas en conflit avec CommonMark ; un document qui les utilise se lit donc toujours comme du texte brut dans n’importe quelle autre visionneuse Markdown.
 
 ### Renvoi dans le texte (la forme principale)

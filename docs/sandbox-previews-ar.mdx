@@ -19,6 +19,8 @@ export const metadata = {
 
 يعرض الجانب الأيمن من الواجهة المخرجات المرسومة. تتاح ستة تبويبات، واحد لكل نمط إخراج، بهذا الترتيب: **Canvas** و**PDF** و**Folio** و**HTML** و**EPUB 3** و**SCORM** (يكتب الأخير حزمة لمنصة تعلّم من محتوى EPUB). التنقل بين التبويبات لا يعيد تشغيل الإخراج: الشجرة VDT نفسها تغذّي كل مُخرِج، فيبقى المحتوى الذي تراه متّسقًا عبر الأنماط. ولا يُعرض تبويب Folio إلا حيث يدعم المتصفح WebGL2 ولا تكون الشاشة شاشة هاتف (انظر [تبويب Folio](#تبويب-folio)).
 
+<YouTubeVideo film="everyOutput" />
+
 تشغّل كل منطقة عرض مسار الإخراج داخل **عامل ويب** (Web Worker) مخصّص (`postext/worker`). يملك الخطّاف `useLayoutWorker` الخاص بكل منطقة عرض مقبض العامل، ويرسل إليه الخطوط بوصفها `ArrayBuffer` قابلة للنقل، ويدير عمليات البناء **بإلغاء لا يُبقي إلا البناء الأخير** (last-wins cancellation) — ضغطة مفتاح أو سحب منزلق يُلغي `AbortSignal` الخاص بالبناء السابق قبل أن يبدأ البناء التالي، فلا تتراكم الكتابة السريعة أعمالًا متقادمة في الخيط الرئيسي. وإزالة منطقة عرض تتخلص من عاملها وترفض أي بناء معلّق. انظر [الإعدادات › تشغيل الإخراج في عامل ويب](/ar/docs/configuration-programmatic-usage#تشغيل-الإخراج-في-web-worker) لنمط الدمج المستخدم هنا.
 
 <Illustration name="SandboxSyncFlow" data='{"title": "VDT واحدة، خمسة مخرجات", "desc": "يغذّي نص Markdown وإعدادات Sandbox شجرة VDT واحدة في الذاكرة. يرسم كلٌّ من Canvas وPDF وFolio وHTML وEPUB 3 من شجرة VDT نفسها، فتعرض كل التبويبات الإخراج نفسه.", "caption": "شجرة VDT واحدة تغذّي تبويبات المخرجات الخمسة.", "markdownLabel": "Markdown", "configLabel": "الإعدادات", "vdtTitle": "VDT", "vdtSubtitle": "إخراج مشترك", "canvasLabel": "Canvas", "htmlLabel": "HTML", "folioLabel": "Folio", "pdfLabel": "PDF", "epubLabel": "EPUB 3", "singleSource": "مصدر وحيد للحقيقة"}' />

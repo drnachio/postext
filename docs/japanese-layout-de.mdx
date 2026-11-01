@@ -19,6 +19,8 @@ Postext setzt Japanisch senkrecht und waagerecht, aus einer Markdown-Quelle und 
 
 Die Regeln folgen den *Requirements for Japanese Text Layout* des W3C ([JLReq](https://www.w3.org/TR/jlreq/)), unten nach Abschnitt zitiert, und JIS X 4051, der japanischen Norm, die es wiedergibt. Ein Großteil der Mechanik wird mit dem Chinesischen geteilt, und [Chinesischer Satz](/de/docs/chinese-layout) beschreibt die Teile, die diese Seite nur erwähnt: das Zeichenraster, den gedrehten Rahmen einer senkrechten Seite, die Bindung rechts und die Ausgaben. Die Quellen stehen am Ende.
 
+<YouTubeVideo film="everyScript" />
+
 ## Die Region Japan
 
 Ein Dokument mit japanischer `locale` (`ja`, `ja-JP`, `ja-Jpan`, in beliebiger Schreibung und mit `-` oder `_`) übernimmt die Region `japan` der `cjk`-Einstellungen. Jedes `cjk`-Feld, das auf `'auto'` steht, löst sich dann zur japanischen Konvention auf, ebenso die Anmerkungen, das Register, die Zitate und die eingebauten Wörter. `cjk.region: 'japan'` lässt sich auch von Hand in jedem Dokument setzen, um eine Seite nach den japanischen Regeln zu setzen; die eingebauten Wörter und die Standards für Anmerkungen, Register und Zitate folgen weiterhin der Sprache. `DOCUMENT_LANGUAGES`, die Liste, die die Auswahl **Dokumentsprache** der Sandbox zeigt, führt 日本語 zwischen den chinesischen Einträgen und Arabisch.

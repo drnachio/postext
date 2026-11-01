@@ -19,6 +19,8 @@ export const metadata = {
 
 Eine Fußnote hat zwei Teile: das Fußnotenzeichen `[^id]` an der Stelle, die auf die Anmerkung verweist, und die Definition, einen eigenen Absatz, der irgendwo im Kapitel mit `[^id]:` beginnt.
 
+<YouTubeVideo film="footnotes" />
+
 ```md
 The keeper climbed the tower every evening.[^steps] The wind put out his candle,
 so he learned to count the steps in the dark.
@@ -37,6 +39,8 @@ so he learned to count the steps in the dark.
 ## Querverweise und Verweisziele
 
 Ein Querverweis bezieht sich auf eine Stelle im Buch und gibt ihre Nummer, ihren Titel oder ihre Seite aus: *siehe Abschnitt 3.2*, *wie Kapitel 4 erläutert*, *auf S. 112*. Wörter und Nummern folgen dem Text; wird ein Abschnitt verschoben, werden die Kapitel neu nummeriert oder das Buch neu umbrochen, aktualisiert sich jeder Verweis. Im PDF, im HTML und in den Vorschauen der Sandbox ist jeder Verweis ein Link: Ein Klick führt den Leser zu seinem Ziel, auch in ein anderes Kapitel.
+
+<YouTubeVideo film="crossReferences" />
 
 **Verweisziele.** Ein Verweis braucht etwas, worauf er zeigt:
 
@@ -82,6 +86,8 @@ Ein Verweis auf eine ID, die nirgends vergeben ist, gibt *?* aus, und das Bedien
 ## Zitationen und Literaturverzeichnis
 
 Schreiben Sie Zitate so, wie Pandoc sie liest, halten Sie die Literaturangaben im Dokument und wählen Sie den Zitierstil in den Einstellungen: Der Wechsel von APA zu IEEE oder zu Chicago-Anmerkungen ändert die Stileinstellung, nicht den Text. Jedes Zitat verlinkt auf seinen Eintrag im Literaturverzeichnis.
+
+<YouTubeVideo film="citations" />
 
 ### Zitieren
 
@@ -200,6 +206,8 @@ Es zählen nur Links mit `http:` und `https:`. Ein `mailto:`- oder `tel:`-Link, 
 ## Register
 
 Ein Register führt die Begriffe eines Buchs mit den Seiten auf, auf denen sie vorkommen. Markieren Sie jeden Begriff dort, wo der Text ihn behandelt, und setzen Sie das Register mit `:::index` an die Stelle, an die es gehört, meist in ein eigenes Kapitel am Ende. Die Engine ermittelt die Seite jeder Marke nach dem Setzen, sodass die Zahlen dem Text folgen: Fügen Sie einen Absatz hinzu, verschieben Sie ein Kapitel oder ändern Sie das Endformat, und das Register zeigt die neuen Seiten.
+
+<YouTubeVideo film="backIndex" />
 
 ```md
 Iron-deficiency :index[anaemia] is the most common kind.

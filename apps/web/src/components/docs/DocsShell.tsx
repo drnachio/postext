@@ -25,7 +25,7 @@ export function DocsShell({ children }: DocsShellProps) {
   return (
     <div
       ref={ref}
-      className="mx-auto flex max-w-7xl px-4 2xl:max-w-[90rem] 2xl:px-6 4xl:px-8"
+      className="mx-auto flex max-w-6xl px-6 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12"
       style={{ ["--docs-nav-h" as string]: "4rem" }}
     >
       {children}

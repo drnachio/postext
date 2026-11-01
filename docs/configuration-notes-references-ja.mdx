@@ -462,6 +462,8 @@ interface CrossRefsConfig {
 
 `citations`プロパティでは、引用スタイルと、引用と参考文献の見た目を選びます。記法は[引用と参考文献](/ja/docs/document-format-notes-references#引用と参考文献)で説明しています。スタイルは`postext-citeproc`パッケージが適用します。
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## 目次
 
 `toc`プロパティは、`:::toc`ディレクティブが印刷する内容を設定します（[文書形式](/ja/docs/document-format-directives#toc)を参照）。目次は文書の**アウトライン**、つまり番号とページラベルの付いたすべての見出しと、すべての`:::part`から組み立てられるため、章に追従します。章の名前を変える、別の部へ移す、著者を変えると、項目もそれに合わせて変わります。項目は、独立した欄に置く見出しの番号、タイトル、リーダー、右端のページラベル、そして任意のサブタイトル行からなります。部は`parts.design`でデザインする行になります。
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

@@ -345,6 +345,28 @@
     "fullscreen": "全屏",
     "exitFullscreen": "退出全屏"
   },
+  "YouTubeVideos": {
+    "play": "播放视频",
+    "watch": "在 YouTube 上观看",
+    "hint": "按下播放后才会从 YouTube 加载播放器。",
+    "editing": "用 AI 智能体修改 Postext 书：加章节、出新版、改编——教程 2",
+    "contents": "Postext 自动生成目录和编号：手工做，或者借助 AI 智能体（1/4）",
+    "resources": "图表自己找位置：Postext 的引用资源与 @ 快捷键（2/4）",
+    "footnotes": "脚注不离本页：Postext 的脚注，手工做或借助 AI 智能体（3/4）",
+    "backIndex": "索引自己生成：Postext 的主题索引，手工做或借助 AI 智能体（4/4）",
+    "citations": "引用自己写出来：Postext 的引用与参考文献，手工做或借助 AI 智能体（1/3）",
+    "citationStyles": "任何引用样式，只改一处：Postext 的 GB/T 7714、夹注与 CSL 样式（2/3）",
+    "crossReferences": "交叉引用永远不会迷路：Postext 的章节与页码引用和链接（3/3）",
+    "comics": "Postext 漫画：分格、对白框和嵌字都交给引擎，手工做或借助 AI 智能体",
+    "composedPages": "Postext 模板页：课本、练习册和幼儿练习页，手工做或借助 AI 智能体",
+    "labelledImages": "Postext 带标注的地图和图画：名称写在 Markdown 里，排在图上，手工做或借助 AI",
+    "everyScript": "一份书稿，每种文字：用 Postext 做日文、中文和阿拉伯文版本，手工做或借助 AI",
+    "checks": "你的书准备好付印了吗？Postext 的“检查”与印前检查，手工做或借助 AI",
+    "music": "书里的音乐：歌本、乐谱与和弦写成文字，由 Postext 刻谱，手工做或借助 AI",
+    "exercises": "书里的练习：练习册、教师用书与屏幕作答，手工做或借助 AI",
+    "everyLanguage": "一本书，所有语言：共用一个设计，每个版本保留自己的设置，手工做或借助 AI",
+    "everyOutput": "一份书稿，每一种输出：印刷 PDF、无障碍 PDF、网页、EPUB 和 SCORM，手工做或借助 AI"
+  },
   "About": {
     "eyebrow": "为什么选择Postext",
     "titleLine1": "书刊排版，",

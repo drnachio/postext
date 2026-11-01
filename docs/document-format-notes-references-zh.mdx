@@ -19,6 +19,8 @@ export const metadata = {
 
 脚注由两部分组成：引用处的标号`[^id]`，以及定义，即本章任意位置以`[^id]:`开头的独立段落。
 
+<YouTubeVideo film="footnotes" />
+
 ```md
 The keeper climbed the tower every evening.[^steps] The wind put out his candle,
 so he learned to count the steps in the dark.
@@ -37,6 +39,8 @@ so he learned to count the steps in the dark.
 ## 交叉引用与锚点
 
 交叉引用指向书中的某个位置，并印出它的编号、标题或页码：*见第3.2节*、*第4章已说明*、*见第112页*。印出的文字和编号随正文自动更新：移动一节、给各章重新编号或重排全书，所有引用都会跟着变。在PDF、HTML和沙盒预览中，每个引用都是链接，点击即可跳到目标，目标在别的章里也可以。
+
+<YouTubeVideo film="crossReferences" />
 
 **锚点**。 引用需要有一个目标：
 
@@ -82,6 +86,8 @@ so he learned to count the steps in the dark.
 ## 引用与参考文献
 
 按Pandoc的写法书写引用，把参考文献保存在文档中，在设置里选择引用样式：从APA换成IEEE或芝加哥注释体，只需改设置中的样式，不必改正文。每条引用都链接到参考文献表中的对应条目。
+
+<YouTubeVideo film="citations" />
 
 ### 引用
 
@@ -202,6 +208,8 @@ links: { print: 'notes', show: 'both', urlDisplay: 'short' }
 ## 索引
 
 书后索引列出书中的术语及其出现的页码。在正文讨论某个术语的地方标记它，再用`:::index`在需要的位置印出索引，通常放在书末单独的一章。排版完成后，引擎找出每个标记所在的页，因此页码随正文变化：增加一段、移动一章或改变成品尺寸，索引都会印出新的页码。
+
+<YouTubeVideo film="backIndex" />
 
 ```md
 Iron-deficiency :index[anaemia] is the most common kind.

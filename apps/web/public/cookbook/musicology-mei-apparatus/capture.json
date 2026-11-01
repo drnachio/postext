@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "musicology-mei-apparatus",
-  "sourceHash": "1add0b07566ad0bf756443f575cc80269b49cc30215ae0da9d818e9e8449cfb7",
+  "sourceHash": "ef0b05c44ca81af38690dd9085383fcded3a41e3629d09b69bb289988e8efb96",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.66.0",
+    "postextPdf": "1.66.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:08.167Z",
-  "verified": {
-    "postext": "1.65.0",
-    "postextPdf": "1.65.0",
-    "chrome": "156.0.8078.76",
-    "at": "2026-10-31T17:00:11.383Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-11-01T11:24:04.379Z",
   "variants": {
     "en": {
-      "hash8": "cd2d6301",
+      "hash8": "8dbc9a2c",
       "vdtHash": "9c5d08d43024ea72a99d7f40916b2d1c672b98ab",
       "timings": {
-        "importMs": 340,
-        "fontsMs": 503,
-        "buildMs": 17,
-        "totalMs": 1907,
+        "importMs": 1548,
+        "fontsMs": 1042,
+        "buildMs": 30,
+        "totalMs": 3787,
         "builds": 1
       },
       "specimen": {
@@ -67,7 +61,7 @@
           "h": 1500,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 122492,
+          "bytes": 122498,
           "alt": "Page 2: The first phrase and a corrected note."
         },
         {
@@ -100,7 +94,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 118558,
+          "bytes": 118540,
           "alt": "Page 5: “Cuccu” in bar 40."
         }
       ],
@@ -132,12 +126,12 @@
       },
       "pdf": {
         "file": "musicology-mei-apparatus.pdf",
-        "bytes": 132530,
+        "bytes": 132635,
         "pages": 5
       },
       "sandbox": {
         "file": "musicology-mei-apparatus.postext",
-        "bytes": 35096,
+        "bytes": 35124,
         "folio": "28263a13",
         "chapters": [
           {
@@ -379,6 +373,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -387,13 +391,13 @@
       }
     },
     "es": {
-      "hash8": "8847e03f",
+      "hash8": "ebc0c4fd",
       "vdtHash": "31fe047bfe8a672e01d4109ad5dbba2badd99ce8",
       "timings": {
-        "importMs": 358,
-        "fontsMs": 747,
-        "buildMs": 13,
-        "totalMs": 1953,
+        "importMs": 1467,
+        "fontsMs": 1134,
+        "buildMs": 35,
+        "totalMs": 3882,
         "builds": 1
       },
       "specimen": {
@@ -437,7 +441,7 @@
           "h": 1500,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 130684,
+          "bytes": 130570,
           "alt": "Página 2: La primera frase y una nota corregida."
         },
         {
@@ -470,7 +474,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 95284,
+          "bytes": 95110,
           "alt": "Página 5: «Cuccu» en el c. 40."
         }
       ],
@@ -502,12 +506,12 @@
       },
       "pdf": {
         "file": "musicology-mei-apparatus.pdf",
-        "bytes": 145572,
+        "bytes": 145680,
         "pages": 5
       },
       "sandbox": {
         "file": "musicology-mei-apparatus.postext",
-        "bytes": 37584,
+        "bytes": 37490,
         "folio": "28263a13",
         "chapters": [
           {
@@ -772,6 +776,16 @@
             "check": "C35",
             "severity": "info",
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 4 −5‰ “9 Ro, iv, 2. Los números de compás remiten a la …”"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

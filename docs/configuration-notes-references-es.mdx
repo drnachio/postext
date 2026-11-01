@@ -462,6 +462,8 @@ Las referencias toman el color, el peso y la inclinación de todas las referenci
 
 La propiedad `citations` elige el estilo de cita y cómo se ven las citas y la bibliografía. El marcado se describe en [Citas y bibliografía](/es/docs/document-format-notes-references#citas-y-bibliografía); el estilo lo aplica el paquete `postext-citeproc`.
 
+<YouTubeVideo film="citationStyles" />
+
 ```ts
 interface CitationsConfig {
   style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
@@ -756,6 +758,8 @@ import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'po
 ## Índice general
 
 La propiedad `toc` configura lo que imprime una directiva `:::toc` (véase [Formato del documento](/es/docs/document-format-directives#toc)). El índice se construye a partir del **esquema** del documento (cada encabezado con su número y su etiqueta de página, cada `:::part`), de modo que sigue a los capítulos: renombra uno, muévelo a otra parte, cambia sus autores, y las entradas cambian con él. Una entrada es el número del encabezado en una columna propia, el título, una línea de puntos y la etiqueta de página en el borde derecho, y después una línea de subtítulo opcional; una parte es una fila diseñada por `parts.design`.
+
+<YouTubeVideo film="contents" />
 
 ```ts
 const config: PostextConfig = {

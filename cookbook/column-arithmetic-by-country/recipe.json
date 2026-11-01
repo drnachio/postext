@@ -40,8 +40,8 @@
   ],
   "gotchas": [],
   "engine": {
-    "postext": "1.63.0",
-    "postextPdf": "1.63.0"
+    "postext": "1.66.0",
+    "postextPdf": "1.66.0"
   },
   "kit": [
     "core",
@@ -97,7 +97,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-24",
-  "updated": "2026-10-24",
+  "updated": "2026-11-01",
   "downloads": {
     "pdf": true
   }

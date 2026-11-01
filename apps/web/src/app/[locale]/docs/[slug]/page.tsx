@@ -159,7 +159,7 @@ export default async function DocPage({
       <main
         id="main-content"
         tabIndex={-1}
-        className={`min-w-0 flex-1 px-4 py-6 lg:px-8 2xl:px-12 ${partClass(part.color)}`}
+        className={`min-w-0 flex-1 py-6 lg:ps-8 xl:pe-8 ${partClass(part.color)}`}
       >
         <div className="relative mb-6 lg:hidden">
           <DocsMobileNav docs={docs} toc={toc} />
@@ -198,7 +198,7 @@ export default async function DocPage({
             </>
           )}
           {availableLocales.length > 1 && (
-            <span className="ms-auto flex gap-1">
+            <span className="ms-auto flex flex-wrap gap-1">
               {availableLocales.map((l) => (
                 <a
                   key={l}

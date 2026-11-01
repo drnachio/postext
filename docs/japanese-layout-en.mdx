@@ -19,6 +19,8 @@ Postext sets Japanese down the page and across it, from one Markdown source and 
 
 The rules follow the W3C *Requirements for Japanese Text Layout* ([JLReq](https://www.w3.org/TR/jlreq/)), cited below by section, and JIS X 4051, the Japanese standard it describes. Much of the machinery is shared with Chinese, and [Chinese layout](/en/docs/chinese-layout) describes the parts this page only mentions: the character grid, the turned frame of a vertical page, right binding and the outputs. The sources are listed at the end.
 
+<YouTubeVideo film="everyScript" />
+
 ## The Japan region
 
 A document whose `locale` is Japanese (`ja`, `ja-JP`, `ja-Jpan`, in any case and with `-` or `_`) takes the `japan` region of the `cjk` settings. Every `cjk` field left at `'auto'` then resolves to the Japanese convention, and so do the notes, the index, the citations and the built-in words. `cjk.region: 'japan'` can also be set by hand, in any document, to compose a page by the Japanese rules; the built-in words and the defaults of the notes, the index and the citations still follow the language. `DOCUMENT_LANGUAGES`, the list the Sandbox's **Document language** select shows, has 日本語 between the Chinese entries and Arabic.

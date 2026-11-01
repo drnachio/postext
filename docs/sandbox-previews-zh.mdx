@@ -19,6 +19,8 @@ export const metadata = {
 
 界面的右侧显示渲染结果。共有六个标签页，每种渲染模式一个，依次为**Canvas**、**PDF**、**书页**、**HTML**、**EPUB 3**和**SCORM**（最后一个用EPUB的内容为学习平台写出一个包）。切换标签页不会重新排版：同一个VDT供给所有后端，所以你在不同模式中看到的内容是一致的。只有浏览器支持WebGL2、且屏幕不是手机屏幕时，才提供书页标签页（见[书页标签页](#书页标签页)）。
 
+<YouTubeVideo film="everyOutput" />
+
 每个视口都在一个专用的**Web Worker**（`postext/worker`）中运行排版流程。每个视口的`useLayoutWorker` hook持有工作线程的句柄，以可转移的`ArrayBuffer`把字体送入工作线程，并以**后发优先的取消机制**驱动构建——每次按键或拖动滑块时，都会先通过`AbortSignal`中止前一次构建，再开始下一次，所以快速输入永远不会在主线程上堆积过时的工作。卸载视口时，会销毁它的工作线程，并拒绝所有未完成的构建。这里使用的集成方式见[配置 › 在Web Worker中运行排版](/zh/docs/configuration-programmatic-usage#在web-worker中运行排版)。
 
 <Illustration name="SandboxSyncFlow" data='{"title": "一个VDT，五种输出", "desc": "沙盒里的Markdown和配置汇入内存中的同一个VDT。Canvas、PDF、书页、HTML和EPUB 3都从这个VDT渲染，所以每个标签页显示的版面都相同。", "caption": "五个输出标签页都来自同一个VDT。", "markdownLabel": "Markdown", "configLabel": "配置", "vdtTitle": "VDT", "vdtSubtitle": "共享的版面", "canvasLabel": "Canvas", "htmlLabel": "HTML", "folioLabel": "书页", "pdfLabel": "PDF", "epubLabel": "EPUB 3", "singleSource": "唯一的数据来源"}' />
