@@ -1,5 +1,5 @@
 // The source text of the recording shims: the recorder and the engine,
-// worker, PDF and EPUB wrappers.
+// worker, PDF, EPUB and SCORM wrappers.
 
 /** Shared by every shim: the record in `window.__cb`. */
 export const RECORDER = `// The capture's record of what the pen did with the engine.
@@ -8,6 +8,8 @@ export const cb = (window.__cb ??= {
   pdf: null, pdfError: null, pdfMs: 0, fontFailures: [],
   // Every EPUB the pen writes (shim postext-epub.js, check C30).
   epubs: [],
+  // Every SCORM package it writes (shim postext-scorm.js, check C42).
+  scorms: [],
   // For the Sandbox bundle (probe sandboxBundle): what each registered
   // fileId was drawn from, the files handed to createBundle, the blob each
   // ImageBitmap was decoded from and the faces built from bytes.
@@ -296,6 +298,105 @@ export function createEpubWorker(...args) {
     return bytes;
   };
   return handle;
+}
+`;
+}
+
+/** renderToScorm recorded (#1346): each package the pen writes is opened
+ *  again as an LMS imports it, from the zip's central directory: its
+ *  `imsmanifest.xml`, the SCORM version it declares, its SCOs and the
+ *  launch page of each, and any file the manifest names that the zip lacks
+ *  (check C42). postext-scorm has no reader of its own; the page inflates
+ *  the manifest with the browser's DecompressionStream. */
+export function scormShim(url: string): string {
+  return `export * from '${url}';
+import * as real from '${url}';
+import { cb } from '/__shim/recorder.js';
+
+const ZIP_END = 0x06054b50;
+const ZIP_ENTRY = 0x02014b50;
+
+/** The zip's entries by name: method, compressed size, local header offset. */
+function zipEntries(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let end = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+    if (view.getUint32(i, true) === ZIP_END) { end = i; break; }
+  }
+  if (end < 0) throw new Error('not a zip (no end of central directory)');
+  const count = view.getUint16(end + 10, true);
+  let at = view.getUint32(end + 16, true);
+  const names = new TextDecoder();
+  const entries = new Map();
+  for (let n = 0; n < count; n++) {
+    if (view.getUint32(at, true) !== ZIP_ENTRY) throw new Error('broken central directory at entry ' + (n + 1));
+    const nameLength = view.getUint16(at + 28, true);
+    const name = names.decode(bytes.subarray(at + 46, at + 46 + nameLength));
+    entries.set(name, { method: view.getUint16(at + 10, true), size: view.getUint32(at + 20, true), local: view.getUint32(at + 42, true) });
+    at += 46 + nameLength + view.getUint16(at + 30, true) + view.getUint16(at + 32, true);
+  }
+  return { view, entries };
+}
+
+/** One entry's text, stored or deflated. */
+async function entryText(bytes, view, entry) {
+  const start = entry.local + 30 + view.getUint16(entry.local + 26, true) + view.getUint16(entry.local + 28, true);
+  const data = bytes.slice(start, start + entry.size);
+  if (entry.method === 0) return new TextDecoder().decode(data);
+  if (entry.method !== 8) throw new Error('compression method ' + entry.method);
+  return new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+}
+
+const attr = (tag, name) => new RegExp('\\\\b' + name + '="([^"]*)"').exec(tag)?.[1] ?? null;
+
+async function readBack(bytes, entry) {
+  const { view, entries } = zipEntries(bytes);
+  entry.files = entries.size;
+  const manifestEntry = entries.get('imsmanifest.xml');
+  if (!manifestEntry) return;
+  entry.manifest = true;
+  const manifest = await entryText(bytes, view, manifestEntry);
+  const declared = /<schemaversion>\\s*([^<]*?)\\s*<\\/schemaversion>/.exec(manifest)?.[1] ?? '';
+  entry.readVersion = declared === '1.2' ? '1.2' : declared.startsWith('2004') ? '2004' : declared || null;
+  const launch = new Set();
+  for (const tag of manifest.match(/<resource\\b[^>]*>/g) ?? []) {
+    if (!/\\badlcp:scorm[tT]ype="sco"/.test(tag)) continue;
+    entry.scos++;
+    const href = attr(tag, 'href');
+    if (href && entries.has(href.split('#')[0])) launch.add(href);
+  }
+  entry.launchPages = launch.size;
+  entry.items = (manifest.match(/<item\\b[^>]*\\bidentifierref="/g) ?? []).length;
+  for (const tag of manifest.match(/<file\\b[^>]*>/g) ?? []) {
+    const href = attr(tag, 'href');
+    if (href && !entries.has(href) && !entry.missing.includes(href)) entry.missing.push(href);
+  }
+}
+
+export async function renderToScorm(docs, options = {}) {
+  const entry = { version: options.version ?? null, layout: options.layout ?? null, bytes: 0, ms: 0, files: 0,
+    manifest: false, readVersion: null, scos: 0, launchPages: 0, items: 0, missing: [], warnings: [], error: null };
+  cb.scorms.push(entry);
+  const onWarning = (w) => {
+    entry.warnings.push(w.kind + ': ' + (w.fileId ?? w.family ?? w.detail ?? ''));
+    options.onWarning?.(w);
+  };
+  const t0 = performance.now();
+  let bytes;
+  try {
+    bytes = await real.renderToScorm(docs, { ...options, onWarning });
+  } catch (error) {
+    entry.error = String(error?.stack ?? error);
+    throw error;
+  }
+  entry.ms = performance.now() - t0;
+  entry.bytes = bytes.length;
+  try {
+    await readBack(bytes, entry);
+  } catch (error) {
+    entry.error = 'read back: ' + String(error?.message ?? error);
+  }
+  return bytes;
 }
 `;
 }

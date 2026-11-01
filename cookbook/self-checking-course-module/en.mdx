@@ -1,16 +1,16 @@
 ---
 title: "A course module with a test answered on screen"
-summary: "Two exercise styles from one Markdown: practice checked at will, a test with one check and no retry; attachExercises answers both in HTML, the EPUB keeps them."
-plain: "An Earth science lesson on earthquakes: read it, practise as often as you like, then take a short test that lets you check each answer once. It prints as a booklet and works on screen and in an e-book."
-description: "A four-page Earth science module whose practice and test are answered in the HTML viewer and a fixed-layout EPUB, with assessment limits and a 70 % pass mark."
+summary: "Two exercise styles from one Markdown: practice checked at will, a test with one check and no retry; answered in HTML and EPUB, graded in a SCORM course."
+plain: "An Earth science lesson on earthquakes: read it, practise as often as you like, then take a short test that lets you check each answer once. It prints as a booklet and works on screen, in an e-book and on a learning platform."
+description: "A four-page Earth science module answered in the HTML viewer, a fixed-layout EPUB and a SCORM 2004 course, with test limits and a 70 % pass mark."
 question: "How do I let learners answer the exercises on screen, with a test that allows one check?"
-aliases: ["interactive exercises", "self-check", "quiz", "online test", "e-learning", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+aliases: ["interactive exercises", "self-check", "quiz", "online test", "e-learning", "attachExercises", "maxChecks", "passingScore", "LMS", "postext-scorm", "SCORM"]
 pageNotes: { "1": "The module opener: a painting of a fault crossing a dry plain bled off the head, the kicker Module 4 · The Restless Planet, the title Earthquakes and an italic lead.", "3": "Practice: three exercises with rust number discs (choice in three columns, gaps with a word bank, matching), then the practice key.", "4": "Module test: four exercises in frames with a slate top rule and square numbers, and the colophon." }
 ---
 
 ## What you'll build
 
-Module 4 of *The Restless Planet*, an introductory Earth science course: four pages on earthquakes, on a 176 × 250 mm page that opens under a painting of a fault crossing a dry plain. The reading leads to a practice section and a module test, both written in the Markdown as `:::exercise` fences with their answers. The printed module shows the practice key and keeps the test's key out. On screen the same pages are answerable: the practice can be checked and started again at will, while each test question takes one check, never starts again and shows its solution only when that check is spent. A panel beside the pages adds up what a learning platform would record: the score, whether the test is complete, and pass or fail at 70 %.
+Module 4 of *The Restless Planet*, an introductory Earth science course: four pages on earthquakes, on a 176 × 250 mm page that opens under a painting of a fault crossing a dry plain. The reading leads to a practice section and a module test, both written in the Markdown as `:::exercise` fences with their answers. The printed module shows the practice key and keeps the test's key out. On screen the same pages are answerable: the practice can be checked and started again at will, while each test question takes one check, never starts again and shows its solution only when that check is spent. A panel beside the pages adds up what a learning platform would record: the score, whether the test is complete, and pass or fail at 70 %. The same pages are written as a fixed-layout EPUB and as a SCORM 2004 package, a course with the lesson and the test as two parts the platform grades on their own.
 
 ## Method
 
@@ -36,17 +36,21 @@ The code is [the short answer](#the-short-answer) above. The exercises say only 
 
 The fixed-layout EPUB carries the exercise data and the answering script, so a reading system that runs scripts offers the same inputs and the same limits; one that does not still has the answer key the writer adds. The fonts are handed over as bytes, the same Fontsource files the page loaded.
 
+### 5 · A SCORM course with the test on its own
+
+<Excerpt region="scorm" />
+
+`renderToScorm` takes the documents and the options `renderToEpub` takes, plus the SCORM `version` and the course's `items`. Each item is a SCO, the part of a course a learning platform launches and grades by itself, and a SCO counts every exercise in it. `scormTree` reads the module's headings with the stretch of Markdown each one covers, so the first SCO runs from the title to the test (the practice is graded there) and the second holds the test alone, to the end. Each reports passed or failed against `exercises.digital.passingScore`. Inside the package a player stands where `platform` stands on this page: it keeps the answers in the platform's record and sends every check, so a learner who comes back finds the test as they left it.
+
 ## Variations
 
-### Package the module for a learning platform
+### SCORM 1.2, or the text reflowed
 
-`postext-scorm` takes the same documents and writes a SCORM 1.2 or 2004 zip whose player wires the store and the results to the LMS. A SCO counts every exercise in it, practice included, so a course that grades only the test makes the test its own SCO with `items` (see <Feature id="scorm-packages">SCORM packages</Feature>).
+Older platforms often import only SCORM 1.2, where the pass mark becomes each SCO's mastery score. `layout: 'reflowable'` sends the text instead of the printed pages, for learners on a phone.
 
 ```diff
-+import { renderToScorm } from 'https://esm.sh/postext-scorm';
-+const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
-+  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
-+  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+-const scorm = await renderToScorm([doc], { version: '2004', layout: 'fixed', items, metadata,
++const scorm = await renderToScorm([doc], { version: '1.2', layout: 'reflowable', items, metadata,
 ```
 
 ### Check each answer as it is given

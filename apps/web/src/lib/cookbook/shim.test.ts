@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import zlib from "node:zlib";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { runCapture, runSandboxOnly } from "../../../scripts/cookbook/capture.ts";
@@ -8,7 +9,9 @@ import {
   OWN_WOFF2_SINCE, SHIM_PATHS, WAWOFF2_IMPORTS, WAWOFF2_SHIM, WOFF2_BINDING_URL, forcedConfig, importMap, importMapTag, localImports,
   releasedVersion, resolveBare, resolveEngine, rewriteBareImports, shimModules, wawoff2Shim,
 } from "../../../scripts/cookbook/shim.ts";
-import { POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_FOLIO_URL, isEngineUrl } from "./detect.ts";
+import { scormShim } from "../../../scripts/cookbook/shim/sources.ts";
+import type { ScormRecord } from "../../../scripts/cookbook/checks.ts";
+import { POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_FOLIO_URL, POSTEXT_SCORM_URL, isEngineUrl } from "./detect.ts";
 import { ALLOWED_IMPORTS } from "./lint.ts";
 import { REPO_DIR, WEB_DIR } from "./paths.ts";
 import { compareSemVer } from "./validate.ts";
@@ -46,7 +49,89 @@ describe("capture shims", () => {
     expect(shimModules(resolveEngine("local"))["/__shim/postext-epub-worker.js"]).toContain("'/__local/postext-epub/worker/client.js'");
     expect(importMapTag()).toContain(`"${POSTEXT_EPUB_WORKER_URL}":"/__shim/postext-epub-worker.js"`);
   });
+
+  it("pin postext-scorm with its postext and postext-epub peers (#1346)", () => {
+    const npm = resolveEngine("npm");
+    expect(npm.postextScorm).toBe(version("postext-scorm"));
+    expect(releasedVersion("postext-scorm")).toBe(version("postext-scorm"));
+    expect(resolveEngine("npm@1.20.0").postextScorm).toBe(version("postext-scorm"));
+    const shim = shimModules(npm)["/__shim/postext-scorm.js"];
+    expect(shim).toContain(`https://esm.sh/postext-scorm@${npm.postextScorm}?deps=postext@${npm.postext},postext-epub@${npm.postextEpub}`);
+    expect(shim).toContain("export async function renderToScorm(docs, options = {})");
+    expect(shimModules(resolveEngine("local"))["/__shim/postext-scorm.js"]).toContain("'/__local/postext-scorm/index.js'");
+    expect(importMapTag()).toContain(`"${POSTEXT_SCORM_URL}":"/__shim/postext-scorm.js"`);
+    expect(localImports()["postext-scorm"]).toBe("/__local/postext-scorm/index.js");
+  });
+
+  it("read a SCORM package back: manifest, version, a launch page per SCO, missing files (#1346)", async () => {
+    const manifest = (version: string) => `<?xml version="1.0"?><manifest><metadata><schema>ADL SCORM</schema><schemaversion>${version}</schemaversion></metadata>
+<organizations default="org"><organization identifier="org"><item identifier="item-1" identifierref="res-1"><title>A</title></item>
+<item identifier="item-2" identifierref="res-2"><title>B</title></item></organization></organizations><resources>
+<resource identifier="res-1" type="webcontent" adlcp:scormType="sco" href="sco-1.html"><file href="sco-1.html"/><file href="content/a.xhtml"/></resource>
+<resource identifier="res-2" type="webcontent" adlcp:scormType="sco" href="sco-2.html"><file href="sco-2.html"/><file href="content/b.xhtml"/></resource>
+<resource identifier="shared" type="webcontent" adlcp:scormType="asset"><file href="player/player.js"/></resource></resources></manifest>`;
+    const whole = { "imsmanifest.xml": manifest("2004 4th Edition"), "sco-1.html": "<p>1</p>", "sco-2.html": "<p>2</p>",
+      "content/a.xhtml": "a", "content/b.xhtml": "b", "player/player.js": "//" };
+    const run = async (files: Record<string, string>, options: Record<string, unknown>) => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cb-scorm-"));
+      const zipFile = path.join(dir, "zip.bin");
+      fs.writeFileSync(zipFile, zipOf(files));
+      const recorder = path.join(dir, "recorder.mjs");
+      fs.writeFileSync(recorder, "export const cb = { scorms: [] };\n");
+      const real = path.join(dir, "real.mjs");
+      fs.writeFileSync(real, `import fs from 'node:fs';\nexport async function renderToScorm() { return new Uint8Array(fs.readFileSync(${JSON.stringify(zipFile)})); }\n`);
+      const shim = path.join(dir, "shim.mjs");
+      fs.writeFileSync(shim, scormShim(pathToFileURL(real).href).replace("'/__shim/recorder.js'", `'${pathToFileURL(recorder).href}'`));
+      const mod = (await import(pathToFileURL(shim).href)) as { renderToScorm: (d: unknown[], o: unknown) => Promise<Uint8Array> };
+      const { cb } = (await import(pathToFileURL(recorder).href)) as { cb: { scorms: ScormRecord[] } };
+      await mod.renderToScorm([], options);
+      fs.rmSync(dir, { recursive: true, force: true });
+      return cb.scorms[0]!;
+    };
+    const good = await run(whole, { version: "2004", layout: "fixed" });
+    expect(good).toMatchObject({ version: "2004", layout: "fixed", manifest: true, readVersion: "2004", scos: 2, launchPages: 2, items: 2, files: 6, missing: [], error: null });
+    const { "sco-2.html": _gone, "content/b.xhtml": _too, ...partial } = whole;
+    const broken = await run({ ...partial, "imsmanifest.xml": manifest("1.2") }, { version: "2004", layout: "fixed" });
+    expect(broken).toMatchObject({ readVersion: "1.2", scos: 2, launchPages: 1, missing: ["sco-2.html", "content/b.xhtml"] });
+    const { "imsmanifest.xml": _none, ...bare } = whole;
+    expect(await run(bare, { version: "1.2", layout: "reflowable" })).toMatchObject({ manifest: false, scos: 0 });
+  });
 });
+
+/** A zip of `files`, each deflated, as postext-scorm writes one. */
+function zipOf(files: Record<string, string>): Buffer {
+  const local: Buffer[] = [];
+  const central: Buffer[] = [];
+  let offset = 0;
+  for (const [name, text] of Object.entries(files)) {
+    const nameBytes = Buffer.from(name);
+    const data = zlib.deflateRawSync(Buffer.from(text));
+    const head = Buffer.alloc(30);
+    head.writeUInt32LE(0x04034b50, 0);
+    head.writeUInt16LE(8, 8);
+    head.writeUInt32LE(data.length, 18);
+    head.writeUInt32LE(text.length, 22);
+    head.writeUInt16LE(nameBytes.length, 26);
+    local.push(head, nameBytes, data);
+    const entry = Buffer.alloc(46);
+    entry.writeUInt32LE(0x02014b50, 0);
+    entry.writeUInt16LE(8, 10);
+    entry.writeUInt32LE(data.length, 20);
+    entry.writeUInt32LE(text.length, 24);
+    entry.writeUInt16LE(nameBytes.length, 28);
+    entry.writeUInt32LE(offset, 42);
+    central.push(entry, nameBytes);
+    offset += 30 + nameBytes.length + data.length;
+  }
+  const dir = Buffer.concat(central);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(Object.keys(files).length, 8);
+  end.writeUInt16LE(Object.keys(files).length, 10);
+  end.writeUInt32LE(dir.length, 12);
+  end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...local, dir, end]);
+}
 
 // A run can force a configuration on every build (COOKBOOK_FORCE_CONFIG):
 // the paint check of #764 laid the recipes out under

@@ -1,16 +1,16 @@
 ---
 title: "Un mòdul de curs amb examen que es respon en pantalla"
-summary: "Dos estils d'exercici en un Markdown: pràctica sense límit i examen d'una sola comprovació; attachExercises els respon en HTML, i l'EPUB també."
-plain: "Una lliçó sobre els terratrèmols: la llegeixes, practiques tant com vulguis i fas un examen curt que només deixa comprovar cada resposta una vegada. S'imprimeix com a quadern i funciona en pantalla i en un llibre electrònic."
-description: "Un mòdul de quatre pàgines amb una pràctica i un examen que es responen al visor HTML i en un EPUB de maquetació fixa, amb límits i aprovat al 70 %."
+summary: "Dos estils d'exercici en un Markdown: pràctica sense límit i examen d'una sola comprovació; es responen en HTML i en EPUB i es qualifiquen en un curs SCORM."
+plain: "Una lliçó sobre els terratrèmols: la llegeixes, practiques tant com vulguis i fas un examen curt que només deixa comprovar cada resposta un cop. S'imprimeix i funciona en pantalla, en un llibre electrònic i en una aula virtual."
+description: "Un mòdul de quatre pàgines que es respon al visor HTML, en un EPUB de maquetació fixa i en un curs SCORM 2004, amb límits i aprovat al 70 %."
 question: "Com deixo que l'alumne respongui els exercicis en pantalla, amb un examen que només admet una comprovació?"
-aliases: ["exercicis interactius", "autocorrecció", "examen en línia", "aula virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+aliases: ["exercicis interactius", "autocorrecció", "examen en línia", "aula virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "postext-scorm", "SCORM"]
 pageNotes: { "1": "L'obertura del mòdul: una pintura d'una falla que travessa una plana seca, a sang per dalt, l'avanttítol, el títol i una entradeta en cursiva.", "3": "Pràctica: tres exercicis amb el número en un disc òxid i les solucions de la pràctica.", "4": "Examen del mòdul: quatre exercicis amb un filet pissarra a sobre i el número en un quadrat, i el colofó." }
 ---
 
 ## Què compondràs
 
-El mòdul 4 d'*El planeta inquieto*, un curs d'iniciació a les ciències de la Terra: quatre pàgines sobre els terratrèmols, en un format de 176 × 250 mm que s'obre sota una pintura d'una falla que travessa una plana seca. La lectura porta a una pràctica i a un examen, escrits al Markdown com a blocs `:::exercise` amb les respostes. El mòdul imprès porta les solucions de la pràctica i deixa fora les de l'examen. En pantalla, les mateixes pàgines es responen: la pràctica es comprova i es repeteix tant com es vulgui, i cada pregunta de l'examen admet una sola comprovació, no es pot repetir i només mostra la solució quan aquesta comprovació s'ha gastat. Un plafó al costat de les pàgines suma el que desaria una plataforma d'aprenentatge: la nota, si l'examen està acabat i l'aprovat o el suspens amb el 70 %.
+El mòdul 4 d'*El planeta inquieto*, un curs d'iniciació a les ciències de la Terra: quatre pàgines sobre els terratrèmols, en un format de 176 × 250 mm que s'obre sota una pintura d'una falla que travessa una plana seca. La lectura porta a una pràctica i a un examen, escrits al Markdown com a blocs `:::exercise` amb les respostes. El mòdul imprès porta les solucions de la pràctica i deixa fora les de l'examen. En pantalla, les mateixes pàgines es responen: la pràctica es comprova i es repeteix tant com es vulgui, i cada pregunta de l'examen admet una sola comprovació, no es pot repetir i només mostra la solució quan aquesta comprovació s'ha gastat. Un plafó al costat de les pàgines suma el que desaria una plataforma d'aprenentatge: la nota, si l'examen està acabat i l'aprovat o el suspens amb el 70 %. Les mateixes pàgines s'escriuen com a EPUB de maquetació fixa i com a paquet SCORM 2004: un curs amb la lliçó i l'examen com a dues parts que la plataforma qualifica per separat.
 
 ## Elaboració
 
@@ -36,17 +36,21 @@ El codi és a [la resposta curta](#la-resposta-curta). Els exercicis només diue
 
 L'EPUB de maquetació fixa porta les dades dels exercicis i l'script que els respon, de manera que un sistema de lectura que executa scripts ofereix els mateixos camps i els mateixos límits; un que no els executa conserva les solucions que hi afegeix l'escriptor. Les fonts se li passen com a bytes, els mateixos fitxers de Fontsource que va carregar la pàgina.
 
+### 5 · Un curs SCORM amb l'examen a part
+
+<Excerpt region="scorm" />
+
+`renderToScorm` pren els documents i les opcions de `renderToEpub`, més la `version` de SCORM i els `items` del curs. Cada item és un SCO, la part d'un curs que la plataforma obre i qualifica pel seu compte, i un SCO compta tots els exercicis que conté. `scormTree` llegeix els encapçalaments del mòdul amb el tram de Markdown que abasta cadascun, de manera que el primer SCO va del títol a l'examen (s'hi qualifica la pràctica) i el segon porta només l'examen, fins al final. Cadascun comunica l'aprovat o el suspens amb `exercises.digital.passingScore`. Dins del paquet, un reproductor ocupa el lloc que `platform` ocupa en aquesta pàgina: desa les respostes al registre de la plataforma i envia cada comprovació, de manera que l'alumne que torna troba l'examen com el va deixar.
+
 ## Variants
 
-### Empaquetar el mòdul per a una plataforma d'aprenentatge
+### SCORM 1.2, o el text refluït
 
-`postext-scorm` pren els mateixos documents i escriu un zip SCORM 1.2 o 2004 el reproductor del qual connecta el magatzem i els resultats amb l'LMS. Un SCO compta tots els exercicis que conté, també els de pràctica, així que un curs que només qualifica l'examen en fa un SCO propi amb `items` (consulta <Feature id="scorm-packages">Paquets SCORM</Feature>).
+Moltes plataformes antigues només importen SCORM 1.2, on l'aprovat passa a ser la nota de domini de cada SCO. `layout: 'reflowable'` envia el text en lloc de les pàgines impreses, per a qui estudia al mòbil.
 
 ```diff
-+import { renderToScorm } from 'https://esm.sh/postext-scorm';
-+const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
-+  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
-+  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+-const scorm = await renderToScorm([doc], { version: '2004', layout: 'fixed', items, metadata,
++const scorm = await renderToScorm([doc], { version: '1.2', layout: 'reflowable', items, metadata,
 ```
 
 ### Corregir cada resposta en donar-la

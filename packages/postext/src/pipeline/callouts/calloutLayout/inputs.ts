@@ -120,6 +120,11 @@ export interface CalloutLayoutInput {
    *  the children is set at this share of the width it would take, below
    *  1. */
   pictureScale?: number;
+  /** Set each picture with a safe area (`Resource.safeArea`) among the
+   *  children this many px taller (or shorter, when negative) by cropping
+   *  outside its safe area (`ResourceLayoutInput.bodyHeightDelta`): the
+   *  page-span embed box cropped to the room left under it (#1364). */
+  pictureHeightDelta?: number;
   /** A frame set in a vertical mode on a horizontal page (#960), which
    *  the page turns a quarter turn: its pictures are laid out upright in
    *  a frame counter-rotated against it (`ResourceLayoutInput.upright`),

@@ -100,12 +100,19 @@ function layOperation(op: ExerciseOperation, opts: OpOptions, k: number): OpLayo
   const rem = op.remainder ? graphemesOf(op.remainder) : [];
   if (division === 'bracket') {
     // ⟌: the quotient over the dividend, the divisor to the left.
+    // A remainder follows the quotient, `212 r 2`, past the bracket's end
+    // (#1311).
     const lead = b.length + 1;
-    const cols = lead + a.length;
-    q.forEach((d, j) => cells.push({ r: 0, c: cols - q.length + j, text: d, answer: true, slot: `a${k}_${j}` }));
+    const end = lead + a.length;
+    const cols = end + (rem.length > 0 ? rem.length + 2 : 0);
+    q.forEach((d, j) => cells.push({ r: 0, c: end - q.length + j, text: d, answer: true, slot: `a${k}_${j}` }));
+    if (rem.length > 0) {
+      cells.push({ r: 0, c: end + 1, text: 'r' });
+      rem.forEach((d, j) => cells.push({ r: 0, c: end + 2 + j, text: d, answer: true, slot: `a${k}_r${j}` }));
+    }
     b.forEach((d, j) => cells.push({ r: 1, c: j, text: d }));
     a.forEach((d, j) => cells.push({ r: 1, c: lead + j, text: d }));
-    rules.push([1, lead, cols]);
+    rules.push([1, lead, end]);
     return { cells, rules, rows: 2 + working, cols, extra: `bracket:${lead}` };
   }
   if (division === 'potence') {

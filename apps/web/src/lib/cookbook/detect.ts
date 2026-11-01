@@ -54,6 +54,8 @@ export const POSTEXT_FOLIO_URL = "https://esm.sh/postext-folio";
 export const POSTEXT_EPUB_URL = "https://esm.sh/postext-epub";
 /** The EPUB writer on a worker (`createEpubWorker`). */
 export const POSTEXT_EPUB_WORKER_URL = "https://esm.sh/postext-epub/worker";
+/** The SCORM package writer (course recipes, #1346). */
+export const POSTEXT_SCORM_URL = "https://esm.sh/postext-scorm";
 /** The layout worker's client (worker recipes, `engine.worker`). */
 export const POSTEXT_WORKER_URL = "https://esm.sh/postext/worker";
 
@@ -114,7 +116,7 @@ export function parseImports(js: string, scan: JsScan = scanJs(js)): PenImport[]
 /** True for the engine's module URLs (any version or query: the lint
  *  decides which forms are allowed). */
 export function isEngineUrl(url: string): boolean {
-  return /^https:\/\/esm\.sh\/postext(-pdf|-citeproc|-folio|-epub)?(@[^/?]*)?(\/worker)?(\?.*)?$/.test(url);
+  return /^https:\/\/esm\.sh\/postext(-pdf|-citeproc|-folio|-epub|-scorm)?(@[^/?]*)?(\/worker)?(\?.*)?$/.test(url);
 }
 
 /** `text` as a literal inside a regular expression (backslash included). */

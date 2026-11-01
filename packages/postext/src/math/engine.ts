@@ -7,6 +7,7 @@ import {
   transformPath,
   type AffineMatrix,
 } from './pathTransform.js';
+import { normalizeTableRules, ownStrokeWidth, shapeOutlines } from './strokes.js';
 
 // ---------------------------------------------------------------------------
 // MathJax singleton — lazy init, liteAdaptor so it runs in any environment
@@ -269,9 +270,9 @@ function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined
 
   const paths: MathPath[] = [];
   const texts: string[] = [];
-  interface Frame { matrix: AffineMatrix; fill: string; stroke: string; tag: string }
+  interface Frame { matrix: AffineMatrix; fill: string; stroke: string; strokeWidth: number; tag: string }
   const stack: Frame[] = [
-    { matrix: IDENTITY, fill: 'currentColor', stroke: 'currentColor', tag: '__root__' },
+    { matrix: IDENTITY, fill: 'currentColor', stroke: 'currentColor', strokeWidth: 1, tag: '__root__' },
   ];
 
   // Tokenise into start/end/self-closing tags plus text runs.
@@ -291,6 +292,7 @@ function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined
     if (attrs['transform']) ctm = multiply(ctm, parseSvgTransform(attrs['transform']));
     const fill = attrs['fill'] ?? parent.fill;
     const stroke = attrs['stroke'] ?? parent.stroke;
+    const strokeWidth = ownStrokeWidth(attrs) ?? parent.strokeWidth;
 
     if (name === 'svg') {
       // A nested viewport (MathJax's equation / number boxes): its
@@ -303,9 +305,6 @@ function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined
       ctm = multiply(ctm, vb && vb.length === 4 && vb.every(Number.isFinite)
         ? viewportMatrix(vb, x, y, w, h, attrs['preserveAspectRatio'])
         : [1, 0, 0, 1, x, y]);
-    } else if (name === 'path' && attrs['d']) {
-      const dOut = transformPath(attrs['d']!, ctm);
-      paths.push({ d: dOut, fill });
     } else if (name === 'use') {
       const ref = attrs['xlink:href'] ?? attrs['href'] ?? '';
       const id = ref.startsWith('#') ? ref.slice(1) : ref;
@@ -329,21 +328,17 @@ function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined
         texts.push(`<text transform="matrix(${matrix})" fill="${fill}"${kept}>${content}</text>`);
       }
       continue;
-    } else if (name === 'rect') {
-      // MathJax emits <rect> for fraction bars, sqrt bars, etc.
-      const x = Number(attrs['x'] ?? 0);
-      const y = Number(attrs['y'] ?? 0);
-      const w = Number(attrs['width'] ?? 0);
-      const h = Number(attrs['height'] ?? 0);
-      if (w > 0 && h > 0) {
-        const rectPath = `M${x} ${y}L${x + w} ${y}L${x + w} ${y + h}L${x} ${y + h}Z`;
-        const dOut = transformPath(rectPath, ctm);
-        paths.push({ d: dOut, fill: fill === 'none' ? (stroke !== 'none' ? stroke : fill) : fill });
+    } else if (name === 'path' || name === 'rect' || name === 'line' || name === 'ellipse' || name === 'circle') {
+      // Fraction and root bars (filled rects), and the strokes of array
+      // rules, frames, \boxed, \cancel and \enclose, as filled outlines
+      // (#1362, #1371).
+      for (const o of shapeOutlines(name, attrs, fill, stroke, strokeWidth)) {
+        paths.push({ d: transformPath(o.d, ctm), fill: o.fill });
       }
     }
 
     if (!selfClose && (name === 'g' || name === 'svg')) {
-      stack.push({ matrix: ctm, fill, stroke, tag: name });
+      stack.push({ matrix: ctm, fill, stroke, strokeWidth, tag: name });
     }
   }
 
@@ -525,7 +520,9 @@ export function renderMath(
     cacheSet(key, r);
     return r;
   }
-  const svgOnly = inner[0];
+  // MathJax's stylesheet draws its table rules; without it they need
+  // their stroke as attributes (#1362).
+  const svgOnly = normalizeTableRules(inner[0]);
 
   // Check for error markers emitted by MathJax's noerrors/noundefined.
   // merror/mtext with data-merror → error in the TeX source.

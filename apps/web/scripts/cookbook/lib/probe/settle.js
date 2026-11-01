@@ -71,6 +71,11 @@ export function epubState() {
   return (record().epubs ?? []).map((epub) => ({ ...epub, ms: round(epub.ms) }));
 }
 
+/** The SCORM packages the pen wrote (shim postext-scorm.js), each read back. */
+export function scormState() {
+  return (record().scorms ?? []).map((scorm) => ({ ...scorm, ms: round(scorm.ms) }));
+}
+
 export function pdfBase64() {
   const bytes = record().pdf;
   if (!bytes) return null;

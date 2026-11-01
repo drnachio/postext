@@ -2,7 +2,7 @@
 // kit calls, config and Markdown, and the engine pins and level-one breaks
 // it tests (#1276: split out of lint.ts).
 import { defineData } from '../compose.ts';
-import { scanJs, lineLookup, parseImports, isEngineUrl, POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, usedApis, configObjectRange, configKeys, CONFIG_KEYS, matchBracket, referencesIdentifier, malformedResourceEmbeds, markdownConstructs, configString, staticLevel } from '../detect.ts';
+import { scanJs, lineLookup, parseImports, isEngineUrl, POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_SCORM_URL, usedApis, configObjectRange, configKeys, CONFIG_KEYS, matchBracket, referencesIdentifier, malformedResourceEmbeds, markdownConstructs, configString, staticLevel } from '../detect.ts';
 import { type KitBlock, KIT_ORDER, type ComposedPen, type RecipeMeta, type RecipeSources, type Locale } from '../types.ts';
 import { unquotedFrontmatter, compareSemVer } from '../validate.ts';
 import { textLength, CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, styleMessages } from '../style.ts';
@@ -155,6 +155,15 @@ export function lintPen(
     fails.push(
       `script.js: an "epub" output and an import from ${POSTEXT_EPUB_URL} (or its /worker) go together ` +
         `(output ${epubOutput ? "yes" : "no"}, import ${epubImport ? "yes" : "no"})`,
+    );
+  }
+  // Nor has a SCORM package (#1346).
+  const scormImport = imports.some((imp) => imp.url === POSTEXT_SCORM_URL);
+  const scormOutput = meta.outputs?.includes("scorm") ?? false;
+  if (scormOutput !== scormImport) {
+    fails.push(
+      `script.js: a "scorm" output and an import from ${POSTEXT_SCORM_URL} go together ` +
+        `(output ${scormOutput ? "yes" : "no"}, import ${scormImport ? "yes" : "no"})`,
     );
   }
   const pdfNames = new Set(imports.filter((imp) => imp.url === POSTEXT_PDF_URL).flatMap((imp) => imp.names));

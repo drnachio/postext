@@ -271,6 +271,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsAfterTextTitle;
     case 'unplaced':
       return labels.warningsUnplacedTitle;
+    case 'hereNotEmbedded':
+      return labels.warningsHereNotEmbeddedTitle;
     case 'shortListSplit':
       return labels.warningsShortListSplitTitle;
     case 'openerFloat':

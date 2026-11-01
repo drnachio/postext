@@ -141,6 +141,12 @@ export function createChildPlace(deps: ChildPlaceDeps) {
       const smaller = measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride, figureMaxBodyWidth: picture.bodyRect.width * pictureScale });
       if (smaller) measuredBlock = smaller;
     }
+    // A picture with a safe area cropped to the room the box has (#1364).
+    const heightDelta = input.pictureHeightDelta;
+    if (heightDelta && measuredBlock.resourceBlock?.bodyFlex) {
+      const cropped = measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride, figureHeightDelta: heightDelta });
+      if (cropped) measuredBlock = cropped;
+    }
     const { kind, mathDisplayRender, resourceBlock, code } = measuredBlock;
     let { measured, prefixLen, absoluteSourceMap, letterSpacingPx, runtTracking } = measuredBlock;
     const { vdtType, headingLevel, numberPrefix, numberSeparator, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;

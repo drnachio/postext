@@ -1,16 +1,16 @@
 ---
 title: "Un modulo di corso con una verifica da fare a schermo"
-summary: "Due stili di esercizio in un Markdown: esercitazione senza limiti e verifica con un solo controllo; attachExercises li rende risolvibili in HTML e in EPUB."
-plain: "Una lezione sui terremoti: la leggi, ti eserciti quanto vuoi e poi fai una breve verifica in cui ogni risposta si controlla una volta sola. Si stampa come fascicolo e funziona a schermo e in un libro digitale."
-description: "Un modulo di quattro pagine in cui esercitazione e verifica si fanno nel visualizzatore HTML e in un EPUB a layout fisso, con limiti e sufficienza al 70 %."
+summary: "Due stili di esercizio in un Markdown: esercitazione libera e verifica con un solo controllo; si risolvono in HTML e in EPUB e si valutano in un corso SCORM."
+plain: "Una lezione sui terremoti: la leggi, ti eserciti quanto vuoi e poi fai una breve verifica in cui ogni risposta si controlla una volta sola. Si stampa come fascicolo e funziona a schermo, in un libro digitale e su una piattaforma didattica."
+description: "Un modulo di quattro pagine che si risolve nel visualizzatore HTML, in un EPUB a layout fisso e in un corso SCORM 2004, con limiti e sufficienza al 70 %."
 question: "Come faccio rispondere agli esercizi a schermo, con una verifica che consente un solo controllo?"
-aliases: ["esercizi interattivi", "autocorrezione", "verifica online", "piattaforma didattica", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+aliases: ["esercizi interattivi", "autocorrezione", "verifica online", "piattaforma didattica", "attachExercises", "maxChecks", "passingScore", "LMS", "postext-scorm", "SCORM"]
 pageNotes: { "1": "L'apertura del modulo: un dipinto di una faglia che attraversa una pianura arida, al vivo in testa, l'occhiello, il titolo e un sommario in corsivo.", "3": "Esercitazione: tre esercizi con il numero in un disco ruggine, poi le soluzioni dell'esercitazione.", "4": "Verifica del modulo: quattro esercizi sotto un filetto ardesia con il numero in un quadrato, e il colophon." }
 ---
 
 ## Che cosa comporrai
 
-Il modulo 4 di *The Restless Planet*, un corso introduttivo di scienze della Terra: quattro pagine sui terremoti, in formato 176 × 250 mm, che si aprono sotto il dipinto di una faglia che attraversa una pianura arida. La lettura porta a un'esercitazione e a una verifica, scritte nel Markdown come blocchi `:::exercise` con le loro risposte. Il modulo stampato riporta le soluzioni dell'esercitazione e tiene fuori quelle della verifica. A schermo le stesse pagine si compilano: l'esercitazione si controlla e si ricomincia a piacere, mentre ogni domanda della verifica ammette un solo controllo, non si ricomincia e mostra la soluzione solo quando quel controllo è esaurito. Un pannello accanto alle pagine somma ciò che registrerebbe una piattaforma didattica: il punteggio, se la verifica è completa, e promosso o bocciato al 70 %.
+Il modulo 4 di *The Restless Planet*, un corso introduttivo di scienze della Terra: quattro pagine sui terremoti, in formato 176 × 250 mm, che si aprono sotto il dipinto di una faglia che attraversa una pianura arida. La lettura porta a un'esercitazione e a una verifica, scritte nel Markdown come blocchi `:::exercise` con le loro risposte. Il modulo stampato riporta le soluzioni dell'esercitazione e tiene fuori quelle della verifica. A schermo le stesse pagine si compilano: l'esercitazione si controlla e si ricomincia a piacere, mentre ogni domanda della verifica ammette un solo controllo, non si ricomincia e mostra la soluzione solo quando quel controllo è esaurito. Un pannello accanto alle pagine somma ciò che registrerebbe una piattaforma didattica: il punteggio, se la verifica è completa, e promosso o bocciato al 70 %. Le stesse pagine si scrivono come EPUB a layout fisso e come pacchetto SCORM 2004: un corso in cui lezione e verifica sono due parti che la piattaforma valuta ciascuna per conto suo.
 
 ## Preparazione
 
@@ -36,17 +36,21 @@ Il codice è nella [risposta breve](#la-risposta-breve). Gli esercizi dicono sol
 
 L'EPUB a layout fisso contiene i dati degli esercizi e lo script che li rende risolvibili: un sistema di lettura che esegue gli script offre gli stessi campi e gli stessi limiti, uno che non li esegue conserva le soluzioni che il writer aggiunge. I font gli arrivano come byte, gli stessi file Fontsource caricati dalla pagina.
 
+### 5 · Un corso SCORM con la verifica a parte
+
+<Excerpt region="scorm" />
+
+`renderToScorm` prende i documenti e le opzioni di `renderToEpub`, più la `version` SCORM e gli `items` del corso. Ogni item è uno SCO, la parte di un corso che la piattaforma avvia e valuta da sola, e uno SCO conta tutti gli esercizi che contiene. `scormTree` legge i titoli del modulo con il tratto di Markdown che ognuno copre: il primo SCO va dal titolo alla verifica (lì si valuta l'esercitazione), il secondo contiene solo la verifica, fino alla fine. Ognuno comunica promosso o bocciato secondo `exercises.digital.passingScore`. Nel pacchetto un player sta dove in questa pagina sta `platform`: tiene le risposte nel registro della piattaforma e invia ogni controllo, così chi torna trova la verifica come l'aveva lasciata.
+
 ## Varianti
 
-### Impacchettare il modulo per una piattaforma didattica
+### SCORM 1.2, o il testo riformattato
 
-`postext-scorm` prende gli stessi documenti e scrive uno zip SCORM 1.2 o 2004 il cui player collega archivio e risultati all'LMS. Uno SCO conta tutti gli esercizi che contiene, esercitazione compresa: un corso che valuta solo la verifica ne fa uno SCO a sé con `items` (vedi <Feature id="scorm-packages">Pacchetti SCORM</Feature>).
+Molte piattaforme più vecchie importano solo SCORM 1.2, dove la sufficienza diventa il punteggio di padronanza di ogni SCO. `layout: 'reflowable'` invia il testo al posto delle pagine stampate, per chi studia sul telefono.
 
 ```diff
-+import { renderToScorm } from 'https://esm.sh/postext-scorm';
-+const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
-+  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
-+  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+-const scorm = await renderToScorm([doc], { version: '2004', layout: 'fixed', items, metadata,
++const scorm = await renderToScorm([doc], { version: '1.2', layout: 'reflowable', items, metadata,
 ```
 
 ### Correggere ogni risposta appena data

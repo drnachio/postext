@@ -6111,6 +6111,60 @@
       }
     }
   },
+  "hereNotEmbedded": {
+    "source": "engine",
+    "label": {
+      "en": "Placed here, never embedded",
+      "es": "Colocado aquí, nunca insertado",
+      "ca": "Col·locat aquí, mai inserit",
+      "zh": "设为原位却从未嵌入",
+      "ar": "موضوع هنا ولم يُضمَّن قط",
+      "ja": "「here」配置なのに埋め込まれていません",
+      "pt": "Posicionado aqui, nunca inserido",
+      "fr": "Placé ici, jamais inséré",
+      "de": "Hier platziert, nie eingebettet",
+      "it": "Collocato qui, mai inserito"
+    },
+    "cause": {
+      "en": "A resource whose placement is position: 'here' is cited with :ref but no ::resource line of the document embeds it. A here resource is set only where its ::resource line stands and never floats, so it is on no page. Up to postext 1.65.1 the build said nothing. The engine lists it in doc.contentWarnings with the range of its first :ref and no page; a resource an earlier chapter placed (continuation.resourceNumbers) is not reported.",
+      "es": "Un recurso cuya colocación es position: 'here' se cita con :ref, pero ninguna línea ::resource del documento lo inserta. Un recurso here solo se compone donde está su línea ::resource y nunca flota, así que no está en ninguna página. Hasta postext 1.65.1 la composición no avisaba. El motor lo anota en doc.contentWarnings con el rango de su primer :ref y sin página; no se avisa de un recurso que ya colocó un capítulo anterior (continuation.resourceNumbers).",
+      "ca": "Un recurs amb la col·locació position: 'here' es cita amb :ref, però cap línia ::resource del document no l'insereix. Un recurs here només es compon on hi ha la seva línia ::resource i mai no flota, de manera que no és a cap pàgina. Fins a postext 1.65.1 la composició no avisava. El motor ho anota a doc.contentWarnings amb el rang del seu primer :ref i sense pàgina; no s'avisa d'un recurs que ja va col·locar un capítol anterior (continuation.resourceNumbers).",
+      "zh": "某个资源的位置是position: 'here'，正文用:ref引用了它，但文档中没有任何::resource行嵌入它。here资源只排在它的::resource行所在之处，从不浮动，因此它不在任何页面上。在postext 1.65.1及以前，排版对此没有任何提示。引擎把它记在doc.contentWarnings中，带第一个:ref的源码范围，不带页码；前面某一章已经排入的资源（continuation.resourceNumbers）不会报告。",
+      "ar": "مورد موضعه position: 'here' يُستشهد به بـ :ref، لكن لا يضمّنه أي سطر ::resource في المستند. فالمورد here لا يُنضَّد إلا حيث يوجد سطر ::resource الخاص به ولا يعوم أبدًا، فليس في أي صفحة. وحتى postext 1.65.1 لم يكن الإخراج ينبّه إلى ذلك. يسجّله المحرّك في doc.contentWarnings مع موضع أول :ref له في المصدر وبلا صفحة؛ ولا يُبلَّغ عن مورد وضعه فصل سابق (continuation.resourceNumbers).",
+      "ja": "配置がposition: 'here'のリソースが:refで参照されているのに、文書のどの::resource行もそれを埋め込んでいません。hereのリソースは::resource行のある場所にだけ組まれ、フロートしないため、どのページにもありません。postext 1.65.1までは組版は何も知らせませんでした。エンジンはこれを最初の:refのソース範囲つき、ページなしでdoc.contentWarningsに記録します。前の章ですでに置かれたリソース（continuation.resourceNumbers）は報告しません。",
+      "pt": "Um recurso cujo posicionamento é position: 'here' é citado com :ref, mas nenhuma linha ::resource do documento o insere. Um recurso here só é composto onde está a linha ::resource dele e nunca flutua, por isso não está em nenhuma página. Até o postext 1.65.1 a diagramação não avisava. O motor registra isso em doc.contentWarnings com o intervalo do primeiro :ref e sem página; um recurso que um capítulo anterior já posicionou (continuation.resourceNumbers) não é sinalizado.",
+      "fr": "Une ressource dont le placement est position: 'here' est citée avec :ref, mais aucune ligne ::resource du document ne l’insère. Une ressource here n’est composée que là où se trouve sa ligne ::resource et ne flotte jamais : elle ne figure donc sur aucune page. Jusqu’à postext 1.65.1, la mise en page ne disait rien. Le moteur la liste dans doc.contentWarnings avec la position de son premier :ref et sans page ; une ressource qu’un chapitre précédent a déjà placée (continuation.resourceNumbers) n’est pas signalée.",
+      "de": "Eine Ressource mit der Platzierung position: 'here' wird mit :ref zitiert, aber keine ::resource-Zeile des Dokuments bettet sie ein. Eine here-Ressource wird nur dort gesetzt, wo ihre ::resource-Zeile steht, und gleitet nie; sie steht daher auf keiner Seite. Bis postext 1.65.1 meldete der Satz das nicht. Die Engine führt sie mit dem Bereich ihres ersten :ref und ohne Seite in doc.contentWarnings auf; eine Ressource, die ein früheres Kapitel schon gesetzt hat (continuation.resourceNumbers), wird nicht gemeldet.",
+      "it": "Una risorsa con collocazione position: 'here' è citata con :ref, ma nessuna riga ::resource del documento la inserisce. Una risorsa here viene composta solo dove c’è la sua riga ::resource e non flotta mai, quindi non è su nessuna pagina. Fino a postext 1.65.1 l’impaginazione non lo segnalava. Il motore la elenca in doc.contentWarnings con l’intervallo del suo primo :ref e senza pagina; una risorsa già collocata da un capitolo precedente (continuation.resourceNumbers) non viene segnalata."
+    },
+    "fix": {
+      "en": "Embed it with a ::resource line where it belongs, or give it a floating position (top, bottom or auto) so the :ref places it in the first free slot after the reference.",
+      "es": "Insértalo con una línea ::resource donde le corresponde, o dale una posición flotante (top, bottom o auto) para que el :ref lo coloque en el primer hueco libre después de la referencia.",
+      "ca": "Insereix-lo amb una línia ::resource on li toca, o dona-li una posició flotant (top, bottom o auto) perquè el :ref el col·loqui al primer espai lliure després de la referència.",
+      "zh": "在应放的位置用::resource行嵌入它，或给它一个浮动位置（top、bottom或auto），让:ref把它放进引用之后的第一个空位。",
+      "ar": "ضمِّنه بسطر ::resource حيث ينبغي أن يكون، أو أعطه موضعًا عائمًا (top أو bottom أو auto) ليضعه :ref في أول موضع فارغ بعد الإحالة.",
+      "ja": "置くべき場所に::resource行で埋め込むか、フロートの配置（top、bottom、auto）にして、:refが参照の後の最初の空きに置くようにしてください。",
+      "pt": "Insira-o com uma linha ::resource onde ele deve ficar, ou dê a ele uma posição flutuante (top, bottom ou auto) para que o :ref o coloque no primeiro espaço livre depois da referência.",
+      "fr": "Insérez-la avec une ligne ::resource là où elle doit être, ou donnez-lui une position flottante (top, bottom ou auto) pour que le :ref la place dans le premier emplacement libre après la référence.",
+      "de": "Betten Sie sie mit einer ::resource-Zeile dort ein, wo sie hingehört, oder geben Sie ihr eine gleitende Position (top, bottom oder auto), damit :ref sie in den ersten freien Platz nach dem Verweis setzt.",
+      "it": "Inseriscila con una riga ::resource dove deve stare, oppure dalle una posizione flottante (top, bottom o auto) perché il :ref la collochi nel primo spazio libero dopo il riferimento."
+    },
+    "docs": {
+      "slug": "document-format-resources",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento",
+        "fr": "Placement",
+        "de": "Platzierung",
+        "it": "Collocazione"
+      }
+    }
+  },
   "shortListSplit": {
     "source": "engine",
     "label": {

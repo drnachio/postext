@@ -7,9 +7,9 @@
   "order": 200,
   "level": 3,
   "genres": ["textbook", "workbook"],
-  "outputs": ["canvas", "html", "epub"],
+  "outputs": ["canvas", "html", "epub", "scorm"],
   "features": {
-    "primary": ["exercise-digital", "exercise-styles"],
+    "primary": ["exercise-digital", "exercise-styles", "scorm-packages"],
     "also": [
       "exercises",
       "exercise-choice",
@@ -28,7 +28,7 @@
       "widows-orphans-runts"
     ]
   },
-  "answers": ["Q205"],
+  "answers": ["Q205", "Q212"],
   "gotchas": [],
   "related": ["epub-fixed-and-reflowable", "primary-workbook-activities", "print-and-screen-editions"],
   "engine": { "postext": "1.65.0" },
@@ -62,5 +62,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-31",
-  "updated": "2026-10-31"
+  "updated": "2026-11-01"
 }

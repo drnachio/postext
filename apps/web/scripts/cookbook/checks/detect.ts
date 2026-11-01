@@ -112,7 +112,7 @@ export function suggestLevel(
   const config = facts.userConfig ?? {};
   const named = NAMED_STYLES.some((key) => Array.isArray(config[key]) && (config[key] as unknown[]).length > 0);
   const intermediate =
-    stats.designElements > 0 || !!s?.placements || named || meta.outputs.includes("pdf") || meta.outputs.includes("epub") || stats.leaves >= 60 ||
+    stats.designElements > 0 || !!s?.placements || named || meta.outputs.includes("pdf") || meta.outputs.includes("epub") || meta.outputs.includes("scorm") || stats.leaves >= 60 ||
     (facts.resources?.length ?? 0) > 1 || apis.length > 4;
   return intermediate ? 2 : 1;
 }

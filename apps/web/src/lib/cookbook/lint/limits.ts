@@ -1,6 +1,6 @@
 // The reports a lint returns, the size limits, the allowed imports, hosts
 // and kit calls, and byte formatting (#1276: split out of lint.ts).
-import { POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL } from '../detect.ts';
+import { POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_SCORM_URL } from '../detect.ts';
 import type { KitBlock } from '../types.ts';
 
 export interface LintReport {
@@ -33,7 +33,7 @@ export const LIMITS = {
 } as const;
 
 /** The only module URLs a pen imports (unpinned: the capture pins them). */
-export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL];
+export const ALLOWED_IMPORTS: readonly string[] = [POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_WORKER_URL, POSTEXT_CITEPROC_URL, POSTEXT_FOLIO_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_SCORM_URL];
 
 /** Hosts (and path prefixes) a pen may fetch from. Nothing else: no hotlinking. */
 export const NETWORK_ALLOWLIST: readonly { host: string; path?: string }[] = [

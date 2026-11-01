@@ -10,7 +10,7 @@
  * from /__cb/probe/<name>.js.
  */
 
-export { settle, fontsReady, frames, pdfState, epubState, pdfBase64 } from './probe/settle.js';
+export { settle, fontsReady, frames, pdfState, epubState, scormState, pdfBase64 } from './probe/settle.js';
 export { parseFont, blankFont, textOfFaces, charsInNoFace, paintedFaces, systemFontChars } from './probe/fonts.js';
 export { mathErrorsOf } from './probe/paint.js';
 export { COMPOSED_CONTENT_KINDS, COMPOSED_FENCE, composedRoundTrip, composedFacts } from './probe/composed.js';

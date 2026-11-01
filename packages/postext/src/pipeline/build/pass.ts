@@ -279,7 +279,7 @@ function placeDocumentPass(
   const {
     calloutsOutOfFlow, joiningLetterSpacing, dropCapNotes, measureCtx, notesPrefixCost,
     reserveCitedNotes, reserveLeftoverNotes, dropChapterEndNotes, ruleChapterEndNotes,
-    setColumnNotes
+    setColumnNotes, notesTopUnder, shiftNotesUnder
   } = createNotes({
     cache, resolved: setup.resolved, headingLevels, dpi, doc, pageIndexOffset, pageWidthPx, pageHeightPx,
     markdownBody, bodyOffset, captionCitations, footnoteDefs, footnoteNumbering, anchorRefContext,
@@ -323,7 +323,7 @@ function placeDocumentPass(
     pageHeightPx, bodyOffset, contentBlocks, pendingFloats, releaseStaleCitationGates, floatGapPx,
     offsetResourceBlockToAbsolute, tryPlacePendingFloatsOnCurrentPage, drainPendingFloats, cursor,
     markForcedBreak, openerOwnColumn, openerHeadFloats, spanHeadingOpenedHere, rollbackHeadings,
-    proposeTrailingCap, state, late
+    proposeTrailingCap, notesTopUnder, shiftNotesUnder, state, late
   });
   Object.assign(late, { isFreeHeading, holdsHeadFloat, stampCalloutSource });
 
