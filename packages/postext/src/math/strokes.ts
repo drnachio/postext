@@ -44,6 +44,8 @@ export function normalizeTableRules(svg: string): string {
   });
 }
 
+import { flattenPath, polylinesD, roundedRectD, strokePolylines } from './strokePath.js';
+
 const num = (v: string | undefined, fallback = 0): number => {
   const n = parseFloat(v ?? '');
   return Number.isFinite(n) ? n : fallback;
@@ -162,9 +164,43 @@ export function strokeEllipse(cx: number, cy: number, rx: number, ry: number, wi
   return outer + ellipsePath(cx, cy, rx - o, ry - o, true);
 }
 
-/** The filled outlines of one stroked or filled shape element (`line`,
- *  `rect`, `ellipse`, `circle`), in its own user space: the fill first,
- *  then the stroke over it, as SVG paints them. */
+/** An element's own `stroke-width`, from its attribute or its `style`
+ *  (MathJax puts a stroked path's there); undefined to inherit it. */
+export function ownStrokeWidth(attrs: Record<string, string>): number | undefined {
+  const fromStyle = /(?:^|;)\s*stroke-width\s*:\s*([^;]+)/.exec(attrs['style'] ?? '')?.[1];
+  const v = parseFloat(fromStyle ?? attrs['stroke-width'] ?? '');
+  return Number.isFinite(v) ? v : undefined;
+}
+
+/** A path, filled and stroked (#1371): a fill with arcs is flattened
+ *  (`transformPath` cannot mirror an arc), a stroke drawn as its area. */
+function pathOutlines(
+  d: string,
+  attrs: Record<string, string>,
+  fill: string,
+  stroke: string,
+  strokeWidth: number,
+): { d: string; fill: string }[] {
+  const out: { d: string; fill: string }[] = [];
+  const hasArc = /[Aa]/.test(d);
+  const subs = hasArc || (stroke !== 'none' && strokeWidth > 0) ? flattenPath(d) : [];
+  if (fill !== 'none') out.push({ d: hasArc ? polylinesD(subs) : d, fill });
+  if (stroke !== 'none' && strokeWidth > 0) {
+    const miter = parseFloat(attrs['stroke-miterlimit'] ?? '');
+    const sd = strokePolylines(subs, {
+      width: strokeWidth,
+      ...(attrs['stroke-linecap'] ? { linecap: attrs['stroke-linecap'] } : {}),
+      ...(attrs['stroke-linejoin'] ? { linejoin: attrs['stroke-linejoin'] } : {}),
+      ...(Number.isFinite(miter) ? { miterlimit: miter } : {}),
+    });
+    if (sd) out.push({ d: sd, fill: stroke });
+  }
+  return out.filter((o) => o.d);
+}
+
+/** The filled outlines of one stroked or filled shape element (`path`,
+ *  `line`, `rect`, `ellipse`, `circle`), in its own user space: the fill
+ *  first, then the stroke over it, as SVG paints them. */
 export function shapeOutlines(
   name: string,
   attrs: Record<string, string>,
@@ -176,6 +212,9 @@ export function shapeOutlines(
   const dashArray = attrs['stroke-dasharray'];
   const linecap = attrs['stroke-linecap'];
   const stroked = stroke !== 'none' && strokeWidth > 0;
+  if (name === 'path') {
+    return attrs['d'] ? pathOutlines(attrs['d'], attrs, fill, stroke, strokeWidth) : out;
+  }
   if (name === 'line') {
     if (!stroked) return out;
     const d = strokeSegment(num(attrs['x1']), num(attrs['y1']), num(attrs['x2']), num(attrs['y2']), strokeWidth, dashArray, linecap);
@@ -183,6 +222,11 @@ export function shapeOutlines(
   } else if (name === 'rect') {
     const x = num(attrs['x']), y = num(attrs['y']);
     const w = num(attrs['width']), h = num(attrs['height']);
+    // A rounded box (`\enclose{roundedbox}`): `rx` alone sets `ry` too.
+    const rx = num(attrs['rx'] ?? attrs['ry']), ry = num(attrs['ry'] ?? attrs['rx']);
+    if (rx > 0 && ry > 0 && w > 0 && h > 0) {
+      return pathOutlines(roundedRectD(x, y, w, h, rx, ry), attrs, fill, stroke, strokeWidth);
+    }
     if (fill !== 'none' && w > 0 && h > 0) {
       out.push({ d: `M${x} ${y}L${x + w} ${y}L${x + w} ${y + h}L${x} ${y + h}Z`, fill });
     }

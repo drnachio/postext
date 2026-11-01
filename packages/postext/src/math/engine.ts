@@ -7,7 +7,7 @@ import {
   transformPath,
   type AffineMatrix,
 } from './pathTransform.js';
-import { normalizeTableRules, shapeOutlines } from './strokes.js';
+import { normalizeTableRules, ownStrokeWidth, shapeOutlines } from './strokes.js';
 
 // ---------------------------------------------------------------------------
 // MathJax singleton — lazy init, liteAdaptor so it runs in any environment
@@ -292,8 +292,7 @@ function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined
     if (attrs['transform']) ctm = multiply(ctm, parseSvgTransform(attrs['transform']));
     const fill = attrs['fill'] ?? parent.fill;
     const stroke = attrs['stroke'] ?? parent.stroke;
-    const swAttr = parseFloat(attrs['stroke-width'] ?? '');
-    const strokeWidth = Number.isFinite(swAttr) ? swAttr : parent.strokeWidth;
+    const strokeWidth = ownStrokeWidth(attrs) ?? parent.strokeWidth;
 
     if (name === 'svg') {
       // A nested viewport (MathJax's equation / number boxes): its
@@ -306,9 +305,6 @@ function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined
       ctm = multiply(ctm, vb && vb.length === 4 && vb.every(Number.isFinite)
         ? viewportMatrix(vb, x, y, w, h, attrs['preserveAspectRatio'])
         : [1, 0, 0, 1, x, y]);
-    } else if (name === 'path' && attrs['d']) {
-      const dOut = transformPath(attrs['d']!, ctm);
-      paths.push({ d: dOut, fill });
     } else if (name === 'use') {
       const ref = attrs['xlink:href'] ?? attrs['href'] ?? '';
       const id = ref.startsWith('#') ? ref.slice(1) : ref;
@@ -332,9 +328,10 @@ function parseSvg(svgMarkup: string, exPx: number, measurePx: number | undefined
         texts.push(`<text transform="matrix(${matrix})" fill="${fill}"${kept}>${content}</text>`);
       }
       continue;
-    } else if (name === 'rect' || name === 'line' || name === 'ellipse' || name === 'circle') {
+    } else if (name === 'path' || name === 'rect' || name === 'line' || name === 'ellipse' || name === 'circle') {
       // Fraction and root bars (filled rects), and the strokes of array
-      // rules, frames, \boxed and \cancel, as filled outlines (#1362).
+      // rules, frames, \boxed, \cancel and \enclose, as filled outlines
+      // (#1362, #1371).
       for (const o of shapeOutlines(name, attrs, fill, stroke, strokeWidth)) {
         paths.push({ d: transformPath(o.d, ctm), fill: o.fill });
       }
