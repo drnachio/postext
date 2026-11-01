@@ -1407,7 +1407,7 @@ ExerciseStyleConfig {
   bank: { box?: calloutStyles id, order='shuffle'|'alpha'|'written', separator=em space },
   area: { kind='lines'|'dots'|'grid'|'seyes'|'tianzige'|'box'|'none', lines=3, spacing? (1.35 × line height),
           color=#b8b8b8, weight=0.5pt },
-  grid: { cell=1.6em, fontFamily?, color?, rule=#8a8a8a, ruleWidth=0.6pt, uppercase=true,
+  grid: { cell=1.6em, fontFamily? (also a dotted match's items), color?, rule=#8a8a8a, ruleWidth=0.6pt, uppercase=true,
           fontSize? (em of the text; else 0.58 of the cell), blocked? (a crossword's empty cells) }  (operations' cells are 0.8 × cell),
   arithmetic: { division=lang ('bracket' en zh ja ar; 'potence' es ca fr it pt; 'inline' de), columns=4,
                 partialProducts=true (≥ 1.60: a row per non-zero digit of a 2+ digit multiplier),

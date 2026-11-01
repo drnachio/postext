@@ -131,7 +131,7 @@ Avant de placer quoi que ce soit, le moteur doit savoir combien de place il faut
 
 Postext mesure avec _pretext_:index{term="pretext"}, une bibliothèque de mesure de texte sans DOM qui s’appuie sur les métriques de police du canvas et sur de l’arithmétique pure. Son étape coûteuse, la préparation d’un texte pour une police donnée, est mise en cache ; la mise en page à une largeur donnée ne coûte presque rien. Cette approche est de 300 à 600 fois plus rapide que la mesure par reflow, comme le montre bien :ref{id="measurement-speed"}, et le module de mesure du moteur y ajoute les segments enrichis de gras, d’italique et de mathématiques, la césure, la justification et la coupure optimale des lignes. Chaque résultat est mis en cache sous une clé qui comprend le texte, les polices, la largeur et toute option capable de modifier une ligne : taper dans un paragraphe remesure ce paragraphe et rien d’autre.
 
-Le chargement des polices est la seule partie de la mesure que le moteur laisse à son hôte. Mesurer avec une police qui n’est pas encore arrivée reviendrait à mesurer la police de repli, et chaque ligne bougerait à l’apparition du vrai caractère. La bibliothèque attend donc que les polices soient chargées avant la première construction, et offre un moyen de vider ses caches de mesure quand une police arrive en retard, pour que la construction suivante mesure à nouveau avec les bonnes métriques. Le Sandbox le fait automatiquement : il charge chaque famille que nomme la configuration, depuis Google Fonts ou depuis le panneau **Polices**, avant de mettre une page en page.
+Le chargement des polices est la seule partie de la mesure que le moteur laisse à son hôte. Mesurer avec une police qui n’est pas encore arrivée reviendrait à mesurer la police de repli, et chaque ligne bougerait à l’apparition du vrai caractère. La bibliothèque attend donc que les polices soient chargées avant la première construction, et offre un moyen de vider ses caches de mesure quand une police arrive en retard, pour que la construction suivante mesure à nouveau avec les bonnes métriques. Le Sandbox le fait automatiquement : il charge chaque famille que nomme la configuration, depuis [Google Fonts](https://fonts.google.com) ou depuis le panneau **Polices**, avant de mettre une page en page.
 
 ## Une coupure des lignes en WebAssembly
 
@@ -481,7 +481,7 @@ L’encadré extérieur continue après l’encadré intérieur, dans son propre
 Un encadré se place d’ordinaire là où il est écrit, entre les paragraphes qui l’entourent. Avec un \`placement\` _top_ ou _bottom_, un encadré flotte comme une figure vers la tête ou le pied de la première colonne qui a de la place pour lui, et le texte qui le suit dans le Markdown remplit la page au-dessus ou au-dessous. L’encadré qui suit ce paragraphe a été écrit ici, au milieu de la section, et composé au pied d’une colonne.
 
 :::callout{type="aside" placement="bottom" title="Où se pose un encadré flottant"}
-Dans le premier emplacement libre à partir de l’endroit où il est écrit, selon la règle que suit une figure.
+Dans le premier emplacement libre à partir de l’endroit où il est écrit, selon la règle que suit une figure. Un encadré qui doit rester entier cède la place aux encadrés et aux figures déjà posés, jamais l’inverse.
 :::
 
 ## Repères et encadrés dessinés
@@ -492,17 +492,17 @@ Quand un repère ne suffit pas, un style peut dessiner tout l’encadré avec un
 
 ## Des marques dans la ligne
 
-:index{term="pastilles"}Certains contenus sont plus petits qu’un encadré. \`:chip[…]\` compose un mot dans une petite boîte arrondie qui suit le texte, pour les touches, les états et les étiquettes : un réglage qui peut valoir :chip[allow]{style="state"}, :chip[warn]{style="state"} ou :chip[avoid]{style="state"}, ou une touche comme :chip[Esc]. Une pastille a un style, comme un encadré : son fond, sa bordure, son rayon, son caractère et sa couleur.
+:index{term="pastilles"}Certains contenus sont plus petits qu’un encadré. \`:chip[…]\` compose un mot dans une petite boîte arrondie qui suit le texte, pour les touches, les états et les étiquettes : un réglage qui peut valoir :chip[allow]{style="state"}, :chip[warn]{style="state"} ou :chip[avoid]{style="state"}, ou une touche comme :chip[Esc]. Une pastille a un style, comme un encadré : son fond, sa bordure, son rayon, son caractère et sa couleur. Les pastilles suivent les coupures de la ligne sans jamais se couper en leur milieu, et le moteur compte leur largeur quand il choisit les coupures du paragraphe.
 
-Écrite \`:swatch{color="#c0452f"}\`, une pastille de couleur compose dans la ligne un petit carré de cette couleur, :swatch{color="#c0452f"} comme celui-ci.
+Écrite \`:swatch{color="#c0452f"}\`, une pastille de couleur compose dans la ligne un petit carré de cette couleur, :swatch{color="#c0452f"} comme celui-ci. Un guide de style ou un tableau d’encres peut ainsi nommer une couleur et la montrer d’un même geste.
 
 ## Notes de bas de page
 
-:index{term="notes de bas de page"}Une note s’appelle avec \`[^id]\` juste après le mot ou la ponctuation auxquels elle se rattache,[^first-note] et s’écrit n’importe où dans le chapitre, sous la forme d’un paragraphe qui commence par \`[^id]:\`. Les notes sont numérotées dans l’ordre de leur premier appel, en repartant de un dans chaque chapitre ; \`footnotes.numbering\` peut les numéroter en continu sur tout le livre ou recommencer à chaque page.
+:index{term="notes de bas de page"}Une note s’appelle avec \`[^id]\` juste après le mot ou la ponctuation auxquels elle se rattache,[^first-note] et s’écrit n’importe où dans le chapitre, sous la forme d’un paragraphe qui commence par \`[^id]:\`. Les notes sont numérotées dans l’ordre de leur premier appel, en repartant de un dans chaque chapitre ; \`footnotes.numbering\` peut les numéroter en continu sur tout le livre ou recommencer à chaque page, comme le font les livres chinois et arabes classiques.
 
-[^first-note]: En voici une. Elle a été écrite quelques lignes plus bas dans le Markdown, comme un paragraphe à part.
+[^first-note]: En voici une. Elle a été écrite quelques lignes plus bas dans le Markdown, comme un paragraphe à part, et composée au pied de la colonne qui porte la ligne où elle est appelée.
 
-Une note se compose au pied de la colonne qui contient la ligne où elle est appelée, sous un court filet, et la ligne et sa note partagent toujours une colonne : quand la note ne tient pas, la ligne part avec elle.[^second-note] \`footnotes.placement: 'chapterEnd'\` réunit plutôt les notes d’un chapitre après son dernier bloc.
+Une note se compose au pied de la colonne qui contient la ligne où elle est appelée, sous un court filet, et la ligne et sa note partagent toujours une colonne : quand la note ne tient pas, la ligne part avec elle.[^second-note] \`footnotes.placement: 'chapterEnd'\` réunit plutôt les notes d’un chapitre après son dernier bloc. Un appel sans note et une note que rien n’appelle sont tous deux signalés dans le panneau **Vérifications**.
 
 [^second-note]: Le moteur équilibre la colonne en comptant les lignes de la note : une page qui porte des notes finit elle aussi à niveau.
 
@@ -676,15 +676,15 @@ sfx: FLIP FLAP
 
 Une bande dessinée occidentale se lit de gauche à droite, un manga et une bande dessinée arabe de droite à gauche. Postext prend le sens de lecture dans la langue de l’édition : une édition arabe ou japonaise dispose les cases de chaque strip à partir de la droite, inverse les angles et les obliques, et relie le livre à droite, tandis que les images restent telles qu’elles ont été dessinées. Les bulles japonaises sont lettrées en colonnes verticales, avec la ponctuation tournée pour la colonne.
 
-Une traduction, c’est le même Markdown avec d’autres mots. Les images, les recadrages et les marques sont communs ; chaque édition mesure son propre texte et place ses propres bulles. L’espagnol est environ un cinquième plus long que l’anglais, le chinois bien plus court, et les bulles changent de taille avec lui.
+Une traduction, c’est le même Markdown avec d’autres mots. Les images, les recadrages et les marques sont communs ; chaque édition mesure son propre texte et place ses propres bulles.
 
 ## Planches, doubles pages et strips
 
-Une bande dessinée peut remplir une page, courir sur deux pages en regard pour un panorama, ou s’insérer dans le texte sous la forme d’un **strip**, de la largeur d’une colonne ou de la page, comme le strip quotidien d’un journal. Un strip se comporte comme une figure : il peut être numéroté et légendé, cité avec \`:ref\` et flotter vers la tête ou le pied d’une page.
+Une bande dessinée peut remplir une page, courir sur deux pages en regard pour un panorama, ou s’insérer dans le texte sous la forme d’un **strip**, de la largeur d’une colonne ou de la page, comme le strip quotidien d’un journal. Un strip se comporte comme une figure : il peut être numéroté et légendé, cité avec \`:ref\` et flotter vers la tête ou le pied d’une page. Les recettes de journaux de la [section Recettes](https://postext.dev/fr/cookbook) placent ainsi des strips entre les articles.
 
 ## La musique comme texte
 
-:index{term="notation musicale"}Une partition s’écrit dans le chapitre comme un bloc délimité de notation. Postext lit quatre formats : **ABC**, compact et facile à taper, pour les mélodies et les chansons ; **MusicXML**, exporté par les logiciels de notation qu’utilisent les musiciens ; **MEI**, pour les éditions savantes ; et **Humdrum**, pour les chorals et l’analyse. Le moteur grave la musique avec Verovio, la bibliothèque de gravure de la Music Encoding Initiative, à la largeur de la colonne.
+:index{term="notation musicale"}Une partition s’écrit dans le chapitre comme un bloc délimité de notation. Postext lit quatre formats : **ABC**, compact et facile à taper, pour les mélodies et les chansons ; **MusicXML**, exporté par les logiciels de notation qu’utilisent les musiciens ; **MEI**, pour les éditions savantes ; et **Humdrum**, pour les chorals et l’analyse. Le moteur grave la musique avec [Verovio](https://www.verovio.org), la bibliothèque de gravure de la Music Encoding Initiative, à la largeur de la colonne.
 
 L’air ci-dessous s’écrit en cinq lignes d’ABC dans le Markdown de ce chapitre. Le moteur le grave et le compose comme une formule centrée, sur la grille de ligne de base.
 
@@ -696,9 +696,9 @@ K:G
 D2 | G2 B2 d2 | c2 A2 F2 | G4 B2 | A4 D2 | G2 B2 d2 | e2 c2 A2 | G6 |]
 \`\`\`
 
-Une longue partition se découpe en **systèmes**, les lignes de musique que suit le lecteur, et les systèmes passent de colonne en colonne et de page en page comme les lignes d’un paragraphe, sans jamais couper une portée. Un exemple musical que cite le texte peut aussi être une ressource, numérotée et légendée comme une figure. L’apparence de la musique est un réglage : la taille des portées, la police musicale, les numéros de mesure et les marges autour d’une partition, avec des styles nommés pour les exemples plus petits placés dans un encadré.
+Une longue partition se découpe en **systèmes**, les lignes de musique que suit le lecteur, et les systèmes passent de colonne en colonne et de page en page comme les lignes d’un paragraphe, sans jamais couper une portée. Un exemple musical que cite le texte peut aussi être une ressource, numérotée et légendée comme une figure. L’apparence de la musique est un réglage : la taille des portées, la police musicale, les numéros de mesure et les marges.
 
-La musique est facultative. Le graveur pèse plusieurs mégaoctets et n’est chargé que par les livres qui contiennent de la notation : un roman ne le paie jamais. Les partitions sont dessinées en vectoriel dans le canvas, le HTML et le PDF, balisées comme figures avec leur texte alternatif dans le PDF accessible, et transmises à l’EPUB.
+La musique est facultative. Le graveur pèse plusieurs mégaoctets et n’est chargé que par les livres qui contiennent de la notation.
 
 # Exercices et cours {#exercises lead="Un manuel demande à son lecteur de faire quelque chose : choisir, compléter, relier, écrire. Postext lit les questions et leurs réponses dans le Markdown, imprime l’exercice pour l’élève et permet aux éditions à l’écran de le corriger." summary="Types d’exercice, corrigés, solutions, éditions à l’écran et SCORM"}
 
@@ -721,9 +721,9 @@ Laquelle de ces choses la configuration décide-t-elle, plutôt que le Markdown�
 :::exercise{bank level=2}
 Complétez les phrases avec les mots de l’encadré.
 
-1. Une figure flotte vers le premier emplacement libre après sa [[mention]].
+1. Une figure flotte vers une place libre, juste après sa [[mention]].
 2. Le moteur coupe un paragraphe comme un [[tout]], pas ligne par ligne.
-3. Une page composée remplit les blocs d’un [[gabarit]].
+3. Une page composée remplit les blocs que dessine un [[gabarit]].
 
 ::bank[marge | colonne]
 :::
@@ -733,7 +733,7 @@ Reliez chaque sortie à ce à quoi elle sert.
 
 - PDF/X -> L’imprimeur
 - EPUB -> Une liseuse
-- SCORM -> Un cours sur une plateforme d’apprentissage
+- SCORM -> Un cours en ligne
 :::
 
 ## Douze types
@@ -758,7 +758,7 @@ Ouvrez la vue HTML sur ce chapitre et répondez aux trois exercices. Vérifiez-l
 
 ## Cours
 
-:index{term="SCORM"}Un livre qui contient des exercices peut devenir un cours. La vue **SCORM** du Sandbox réunit les chapitres et les sections que vous choisissez en un paquet SCORM, le format que lisent les plateformes d’apprentissage comme Moodle. Chaque partie du livre que suit la plateforme transmet un score, tiré des exercices bien répondus, indique si elle est terminée, chaque page vue et chaque exercice vérifié, et si elle est réussie, par rapport à une note que fixe le livre. Une évaluation peut limiter le nombre de vérifications d’un exercice, le nombre de fois qu’il recommence et le moment où sa solution apparaît.
+:index{term="SCORM"}Un livre qui contient des exercices peut devenir un cours. La vue **SCORM** du Sandbox réunit les chapitres et les sections que vous choisissez en un paquet SCORM, le format que lisent les plateformes d’apprentissage comme [Moodle](https://moodle.org). Chaque partie du livre que suit la plateforme transmet un score, tiré des exercices bien répondus, indique si elle est terminée, chaque page vue et chaque exercice vérifié, et si elle est réussie, par rapport à une note que fixe le livre. Une évaluation peut limiter le nombre de vérifications d’un exercice, le nombre de fois qu’il recommence et le moment où sa solution apparaît.
 
 Le paquet porte le livre tel que le montre la vue HTML, mis en page par le même moteur : le cours ressemble au livre imprimé que les élèves ont sur leur table.
 
@@ -888,7 +888,7 @@ Votre travail s’enregistre dans le navigateur au fil de la frappe. Les **proje
 
 Les préréglages suivent leur source. Quand le paquet d’un préréglage change sur le serveur, le Sandbox s’en aperçoit en quelques secondes : un préréglage intact se recharge de lui-même, et celui que vous avez modifié affiche un bandeau qui propose de le recharger, si bien qu’un travail en cours n’est jamais écrasé. Les préréglages peuvent être masqués de la liste puis réaffichés, et chacun peut s’ouvrir dans n’importe laquelle de ses langues quand il en a plusieurs, comme ce guide, qui existe en anglais, espagnol, catalan, français, allemand, italien, portugais du Brésil, chinois simplifié, arabe et japonais.
 
-Un livre voyage sous la forme d’un seul fichier **.postext** : ses chapitres, sa configuration, ses ressources et ses polices, plus la pagination déjà calculée, si bien qu’il s’ouvre paginé. Les recettes de la section Recettes s’ouvrent dans le Sandbox de la même façon, comme des livres à vous ; une recette déjà ouverte demande s’il faut ouvrir votre copie, avec vos modifications, ou la remplacer par la version publiée, qui a pu être corrigée depuis. Et la barre d’adresse contient toujours un lien permanent vers ce que vous regardez : le livre, la langue, la visionneuse, le chapitre et la page.
+Un livre voyage sous la forme d’un seul fichier **.postext** : ses chapitres, sa configuration, ses ressources et ses polices, plus la pagination déjà calculée, si bien qu’il s’ouvre paginé. Les recettes de la [section Recettes](https://postext.dev/fr/cookbook) s’ouvrent dans le Sandbox de la même façon, comme des livres à vous ; une recette déjà ouverte demande s’il faut ouvrir votre copie, avec vos modifications, ou la remplacer par la version publiée, qui a pu être corrigée depuis. Et la barre d’adresse contient toujours un lien permanent vers ce que vous regardez : le livre, la langue, la visionneuse, le chapitre et la page.
 
 :::callout{type="try"}
 Faites défiler jusqu’à une page qui vous plaît et copiez l’adresse dans le navigateur : ouvrir ce lien affiche le même livre, dans la même visionneuse, à la même page.
@@ -954,7 +954,7 @@ Les deux restitutions portent la même navigation : une table des matières tir
 
 ## Utiliser la bibliothèque
 
-Le moteur est distribué sur npm sous le nom _postext_, pour la mise en page et les moteurs de rendu canvas et HTML, avec un paquet pour chaque sortie plus lourde : _postext-pdf_ pour le PDF, _postext-epub_ pour l’EPUB 3 et _postext-folio_ pour le livre en 3D. Tous sont des modules ES sous licence MIT et peuvent aussi s’importer directement depuis un CDN.
+Le moteur est distribué sur npm sous le nom [_postext_](https://www.npmjs.com/package/postext), pour la mise en page et les moteurs de rendu canvas et HTML, avec un paquet pour chaque sortie plus lourde : _postext-pdf_ pour le PDF, _postext-epub_ pour l’EPUB 3 et _postext-folio_ pour le livre en 3D. Tous sont des modules ES sous licence MIT et peuvent aussi s’importer directement depuis un CDN.
 
 Le moteur de mise en page s’exécute dans le navigateur, où il peut mesurer avec les polices que voit le lecteur ; _postext-pdf_ et _postext-epub_ s’exécutent aussi dans le navigateur, mais également dans Node, si bien qu’un PDF ou un EPUB peut être produit sur un serveur à partir d’une mise en page calculée ailleurs. Un livre entier voyage de la même façon : \`openBundle\` lit un fichier .postext, \`buildBundle\` compose ses chapitres dans l’ordre, et le résultat va directement à \`renderToPdf\` ou à \`renderToEpub\`.
 
@@ -1079,13 +1079,19 @@ Ce guide est monté en brochure en piqûre à cheval, sur papier couché brillan
 
 ## Où Folio fonctionne
 
-Folio dessine avec WebGL2, le graphisme en trois dimensions du navigateur, avec une texture pour chaque face de chaque page peinte. Ne peindre que les doubles pages autour de celle qui est ouverte ramène la mémoire d’un long livre à celle de quelques pages, mais un téléphone accorde encore à un onglet de navigateur moins de mémoire qu’il n’en faut à un livre : le Sandbox propose donc l’onglet Folio sur les ordinateurs et les tablettes, mais pas sur les téléphones, ni dans les navigateurs sans WebGL2. Sur un téléphone, les autres vues restent là : le canvas, le HTML et l’EPUB se lisent dans la page, et le PDF s’ouvre dans le lecteur du système. Le livre ne change pas pour autant : ce sont les mêmes pages, et ses réglages de papier et de reliure l’attendent pour le jour où on l’ouvre sur un ordinateur.
+Folio dessine avec WebGL2, le graphisme en trois dimensions du navigateur, avec une texture pour chaque face de chaque page peinte. Ne peindre que les doubles pages autour de celle qui est ouverte ramène la mémoire d’un long livre à celle de quelques pages, et les pages plus éloignées ne sont peintes qu’à mesure que le lecteur s’en approche. Un téléphone accorde pourtant à un onglet de navigateur moins de mémoire qu’il n’en faut à un livre : le Sandbox propose donc l’onglet Folio sur les ordinateurs et les tablettes, mais pas sur les téléphones, ni dans les navigateurs sans WebGL2. Sur un téléphone, les autres vues restent là : le canvas, le HTML et l’EPUB se lisent dans la page, et le PDF s’ouvre dans le lecteur du système. Le choix ne dépend que de l’appareil : aucun réglage du livre n’y entre, et un auteur n’a rien à préparer pour que ses lecteurs voient le volume en trois dimensions. Le livre ne change pas pour autant : ce sont les mêmes pages, et ses réglages de papier et de reliure l’attendent pour le jour où on l’ouvre sur un ordinateur.
 
 :::callout{type="note" title="Dans le code"}
 La visionneuse est un paquet à part entière, _postext-folio_, construit sur three.js. \`createFolioFromDocument(container, doc)\` montre un document mis en page sous forme de livre ; \`setDocument\` montre la mise en page suivante sur la même page, \`setAppearance\` change le papier, la reliure ou la lumière, et \`resetView\` ramène la vue à sa position. \`createFolio\` fait de même à partir de n’importe quelles images de pages.
 :::
 
-Le même paquet tourne les pages des recettes de la section Recettes, et il peut prendre place dans n’importe quelle page web qui veut présenter un livre comme un livre : le catalogue d’un éditeur, une épreuve envoyée à un auteur, un aperçu avant que la commande parte chez l’imprimeur. La table lumineuse de la section Recettes tourne les pages d’une recette avec ce même paquet, à plat, sans la troisième dimension.
+Le même paquet tourne les pages des [recettes de la section Recettes](https://postext.dev/fr/cookbook), et il peut prendre place dans n’importe quelle page web qui veut présenter un livre comme un livre : le catalogue d’un éditeur, une épreuve envoyée à un auteur, un aperçu avant que la commande parte chez l’imprimeur. La table lumineuse de la section Recettes tourne les pages d’une recette avec ce même paquet, à plat, sans la troisième dimension.
+
+## Folio et les autres vues
+
+Folio lit la même mise en page que le canvas. Une correction faite dans le panneau **Texte** gagne le feuillet dès que la page est recomposée : seules les faces modifiées sont repeintes, et le livre reste ouvert là où il était. Le papier, la reliure et la lumière se tiennent hors de la mise en page ; essayer un autre papier ne demande donc aucune nouvelle pagination, et le PDF qui part chez l’imprimeur reste le même fichier, avant comme après.
+
+Cette vue ajoute l’objet. L’épaisseur du bloc vient du nombre de feuillets et de la main du papier : cent pages de plus se voient sur la tranche, et un papier plus lourd à la façon dont un feuillet retombe. Une double page dont l’image traverse le dos se juge dans le petit fond, là où elle se courbera vraiment, et une marge qui paraît généreuse sur une page à plat peut se révéler trop étroite une fois la page pliée vers la reliure. Une maquette imprimée répondait autrefois à ces questions ; un éditeur peut désormais les poser avant d’en payer une.
 
 # Des outils autour du moteur {#tools lead="Le Sandbox est une des portes d’entrée de Postext. Une ligne de commande compose des livres depuis un terminal, un format de fichier les transporte entiers, les documents Word entrent et sortent, et des agents peuvent manier le Sandbox ou porter un livre à partir de son PDF." summary="La ligne de commande, le fichier .postext, Word, WebMCP et le skill de portage"}
 
@@ -1093,7 +1099,7 @@ Le moteur au centre de ce livre est une bibliothèque, et une bibliothèque peut
 
 ## La ligne de commande
 
-:index{term="ligne de commande"}**postext** est un programme pour le terminal qui transforme un livre en PDF, en EPUB, en HTML, en images de pages ou en document Word, sans navigateur. Il se présente sous la forme d’un fichier par système, pour macOS, Linux et Windows, téléchargé depuis les versions publiées du projet, ou par npm sous le nom _postext-cli_. Tout ce dont il a besoin voyage avec lui : le moteur, une bibliothèque de dessin, un moteur de mise en forme du texte, les profils ICC du chapitre sur l’impression et deux familles de polices. Les autres polices sont récupérées une fois sur Google Fonts ou dans un dossier que vous indiquez, puis gardées en cache ; les polices installées sur l’ordinateur ne servent jamais, si bien qu’un livre se compose de la même façon sur toutes les machines.
+:index{term="ligne de commande"}**postext** est un programme pour le terminal qui transforme un livre en PDF, en EPUB, en HTML, en images de pages ou en document Word, sans navigateur. Il se présente sous la forme d’un fichier par système, pour macOS, Linux et Windows, téléchargé depuis les [versions publiées du projet](https://github.com/drnachio/postext/releases), ou par npm sous le nom _postext-cli_. Tout ce dont il a besoin voyage avec lui : le moteur, une bibliothèque de dessin, un moteur de mise en forme du texte, les profils ICC du chapitre sur l’impression et deux familles de polices. Les autres polices sont récupérées une fois sur Google Fonts ou dans un dossier que vous indiquez, puis gardées en cache ; les polices installées sur l’ordinateur ne servent jamais, si bien qu’un livre se compose de la même façon sur toutes les machines.
 
 Le programme lit un fichier \`.postext\`, un dossier qui contient un livre, ou des fichiers Markdown isolés pris comme chapitres dans l’ordre de leurs noms. Chaque sortie a sa commande : \`pdf\`, \`epub\`, \`html\`, \`image\` et \`images\`, \`docx\`. Les options couvrent ce que le Sandbox propose dans ses panneaux : une norme PDF/X et un profil, un EPUB fixe ou recomposable, une seule page ou une plage de pages dans la numérotation qu’imprime le livre, une résolution, un aperçu d’impression. \`--set\` change n’importe quel réglage le temps d’une exécution, \`--locale\` choisit une édition et \`--chapters\` une partie du livre.
 
@@ -1146,7 +1152,7 @@ Ce qui manque encore compte autant que ce qui est livré. Les **notes marginales
 
 ## S’impliquer
 
-Le projet vit sur GitHub, et chaque échange s’y déroule au grand jour : les **issues** pour les bogues, les demandes et les tâches concrètes ; les **pull requests** pour le code, relues en public ; les **discussions** pour les idées, les questions de conception et tout ce qui n’est pas encore assez concret pour devenir une issue. Les issues étiquetées _good first issue_ sont la porte d’entrée la plus facile.
+Le projet vit sur [GitHub](https://github.com/drnachio/postext), et chaque échange s’y déroule au grand jour : les **issues** pour les bogues, les demandes et les tâches concrètes ; les **pull requests** pour le code, relues en public ; les **[discussions](https://github.com/drnachio/postext/discussions)** pour les idées, les questions de conception et tout ce qui n’est pas encore assez concret pour devenir une issue. Les issues étiquetées _good first issue_ sont la porte d’entrée la plus facile.
 
 Le chemin habituel de l’idée au code est court : une issue décrit le problème, une discussion tranche l’approche quand il y en a plusieurs, une pull request la met en œuvre, et le changement est fusionné dans la branche de développement puis publié à partir de là. Ouvrir une issue avant une grosse pull request fait gagner du temps à tout le monde, parce que l’approche peut être convenue avant que le code soit écrit.
 
@@ -1169,11 +1175,11 @@ La plupart des contributions ne demandent pas d’écrire du code :
 
 Il y a des choses que Postext ne deviendra pas, délibérément, et le dire fait partie de l’honnêteté du projet. Ce ne sera pas un traitement de texte : rien n’est prévu pour modifier la page directement, parce que la page est le résultat des règles, pas leur point de départ. Il ne gérera pas les points de rupture responsive de son hôte, parce que cette décision appartient à l’application. Il ne chargera pas les polices de lui-même, parce que le chargement des polices relève de la page qui l’intègre. Et il ne deviendra pas une plateforme documentaire généraliste, avec stockage, collaboration et circuits de publication, quand d’autres outils font bien ces choses-là et que Postext peut s’y intégrer.
 
-D’autres choses ne sont simplement pas encore faites. La collaboration en temps réel, c’est-à-dire le partage d’une session en direct par un lien, figure dans la liste d’idées du Sandbox, et les notes marginales sont une question de conception autant qu’une question technique. Les deux seront discutées en public avant que la moindre ligne de code soit écrite.
+D’autres choses ne sont simplement pas encore faites. La collaboration en temps réel, c’est-à-dire le partage d’une session en direct par un lien, figure dans la liste d’idées du Sandbox, et les notes marginales sont une question de conception autant qu’une question technique. Les deux seront discutées en public avant que la moindre ligne de code soit écrite, et chacun peut y prendre part dès maintenant.
 
 ## Licence
 
-:index{term="licence"}Postext est publié sous **licence MIT** : le moteur, les générateurs PDF et EPUB, la visionneuse Folio et le Sandbox peuvent être utilisés, modifiés et intégrés dans des projets ouverts comme fermés, commerciaux ou non, à condition que la mention de licence accompagne le code. Les caractères de ce livre sont des polices libres servies par Google Fonts, les diagrammes font partie des sources du Sandbox, et le texte de ce guide appartient au projet et à ses contributeurs.
+:index{term="licence"}Postext est publié sous **licence MIT** : le moteur, les générateurs PDF et EPUB, la visionneuse Folio et le Sandbox peuvent être utilisés, modifiés et intégrés dans des projets ouverts comme fermés, commerciaux ou non, à condition que la mention de licence accompagne le code. Chacun peut composer et vendre ses livres avec Postext sans rien devoir au projet. Les caractères de ce livre sont des polices libres servies par Google Fonts, les diagrammes font partie des sources du Sandbox, et le texte de ce guide appartient au projet et à ses contributeurs.
 
 ## Valeurs
 

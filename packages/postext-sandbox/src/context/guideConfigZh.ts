@@ -14,7 +14,7 @@ import {
   verticalBackCover, verticalCallouts, verticalChapterOpener, verticalContentsOpener, verticalCover, verticalPartDesign, verticalToc,
   type VerticalFaces,
 } from './guideVerticalKit.js';
-import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, exerciseCallouts, guideChipStyles, guideExerciseStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Chinese edition of the Postext guide: a vertical book bound on the
 // right, as a Chinese book was set before horizontal type took over the
@@ -207,7 +207,8 @@ export function createChineseGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'])],
+    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'].aside), ...exerciseCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans']), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'])],
+    exerciseStyles: guideExerciseStyles(FEATURE_FACES, FEATURE_NAMES['zh-Hans']),
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['zh-Hans']),
     markStyles: guideMarkStyles(FEATURE_NAMES['zh-Hans']),
     pageTemplates: [sheetTemplate(FEATURE_NAMES['zh-Hans'].sheet)],
@@ -235,7 +236,7 @@ export function createChineseGuideConfig(): PostextConfig {
     // A web link prints its short address and a QR code in a note at the
     // foot of the column (a vertical edition prints the address alone); the
     // HTML view reads on screen, where the link is followed, and adds none.
-    links: { print: 'notes', show: 'both', urlDisplay: 'short' },
+    links: { print: 'notes', show: 'url', urlDisplay: 'short' },
     // On screen the book reads as one scroll: no section dividers (the parts
     // still colour their chapters), and a link prints nothing more.
     htmlViewer: { overrides: { parts: { page: false }, links: { print: 'none' } } },

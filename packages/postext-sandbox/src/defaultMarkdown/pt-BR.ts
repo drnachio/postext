@@ -131,7 +131,7 @@ Antes de posicionar qualquer coisa, o motor precisa saber quanto espaço cada el
 
 O Postext mede com o _pretext_:index{term="pretext"}, uma biblioteca de medição de texto sem DOM que usa as métricas de fonte do canvas e aritmética pura. O seu passo caro, preparar um texto para uma fonte específica, fica em cache; dispô-lo numa largura específica sai quase de graça. O método é de 300 a 600 vezes mais rápido que medir por reflow, como a :ref{id="measurement-speed"} deixa claro, e sobre ele o módulo de medição do próprio motor acrescenta trechos ricos de negrito, itálico e matemática, hifenização, justificação e quebra ótima de linhas. Cada resultado fica em cache sob uma chave que inclui o texto, as fontes, a largura e todas as opções capazes de mudar uma linha, de modo que digitar num parágrafo mede de novo esse parágrafo e nenhum outro.
 
-O carregamento das fontes é a única parte da medição que o motor deixa para quem o hospeda. Medir com uma fonte que ainda não chegou mediria, na verdade, a fonte substituta, e todas as linhas se moveriam quando a definitiva aparecesse. Por isso a biblioteca espera que as fontes estejam carregadas antes da primeira compilação, e oferece um meio de limpar os seus caches de medição quando uma fonte chega atrasada, para que a compilação seguinte meça de novo com as métricas certas.
+O carregamento das fontes é a única parte da medição que o motor deixa para quem o hospeda. Medir com uma fonte que ainda não chegou mediria, na verdade, a fonte substituta, e todas as linhas se moveriam quando a definitiva aparecesse. Por isso a biblioteca espera que as fontes estejam carregadas antes da primeira compilação, e oferece um meio de limpar os seus caches de medição quando uma fonte chega atrasada, para que a compilação seguinte meça de novo com as métricas certas. O Sandbox faz isso sozinho: carrega cada família que a configuração nomeia, do [Google Fonts](https://fonts.google.com) ou do painel Fontes, antes de diagramar uma página.
 
 ## Um quebrador de linhas em WebAssembly
 
@@ -185,7 +185,7 @@ As páginas também registram para que servem. Uma página pode ser de miolo, um
 
 ## Fora da thread principal
 
-Um layout pode levar mais tempo que uma tecla, então o motor pode rodar num Web Worker:index{term="Web Worker"}. O worker mantém o seu próprio cache de medição entre compilações e é cancelado de forma cooperativa: quando se pede uma compilação nova, a anterior para no seu próximo ponto de verificação e o último pedido vence. O Sandbox diagrama todas as visualizações assim, e os geradores de PDF e de EPUB têm workers próprios, de modo que a interface continua respondendo enquanto um livro inteiro é composto ou escrito.
+Um layout pode levar mais tempo que uma tecla, então o motor pode rodar num Web Worker:index{term="Web Worker"}. O worker mantém o seu próprio cache de medição entre compilações e é cancelado de forma cooperativa: quando se pede uma compilação nova, a anterior para no seu próximo ponto de verificação e o último pedido vence. O Sandbox diagrama todas as visualizações assim, e os geradores de PDF e de EPUB têm workers próprios, de modo que a interface continua respondendo enquanto um livro inteiro é composto ou escrito. Quem digita num capítulo longo não precisa esperar a página se recompor.
 
 :::callout{type="note" title="No código"}
 \`buildDocument(content, config)\` devolve a VDT. \`renderPage\` desenha uma página num canvas, \`renderToHtml\` devolve HTML posicionado e \`renderToPdf\`, do pacote _postext-pdf_, devolve os bytes de um PDF, de um documento ou de um livro inteiro passado como um array de capítulos. \`renderToEpub\`, do _postext-epub_, escreve os mesmos capítulos como um arquivo EPUB 3. \`createLayoutWorker\`, do _postext/worker_, roda a compilação fora da thread principal.
@@ -662,7 +662,7 @@ O roteiro é o Markdown do capítulo. Um bloco \`:::page\` corta uma página em 
 
 ## Letreiramento
 
-:index{term="letreiramento"}O motor letreira cada balão num único tamanho, na fonte de letreiramento do livro. Ele quebra as palavras em linhas que formam um contorno arredondado, curtas no alto e embaixo, depois desenha o balão em volta delas com o mesmo respiro de todos os lados, posiciona-o na ordem de leitura dentro do quadro, longe dos rostos e das zonas que a imagem marca, e aponta o rabicho para a boca de quem fala. Duas falas seguidas do mesmo personagem se unem num único balão de dois lóbulos. O texto nunca é reduzido para caber: um balão que não cabe muda de forma, se move ou é apontado no painel Verificações.
+:index{term="letreiramento"}O motor letreira cada balão num único tamanho, na fonte de letreiramento do livro. Ele quebra as palavras em linhas que formam um contorno arredondado, curtas no alto e embaixo, depois desenha o balão em volta delas com o mesmo respiro de todos os lados, posiciona-o na ordem de leitura dentro do quadro, longe dos rostos e das zonas que a imagem marca, e aponta o rabicho para a boca de quem fala. O texto nunca é reduzido para caber: um balão que não cabe muda de forma, se move ou é apontado no painel Verificações.
 
 A tira da :ref{id="guide-strip"} foi letreirada assim. Os seus três desenhos não levam palavras; as falas são três linhas de Markdown neste capítulo, e cada edição deste guia as letreira no seu próprio idioma.
 
@@ -677,19 +677,19 @@ sfx: FLAP
 
 ## Direção de leitura e tradução
 
-Um quadrinho ocidental é lido da esquerda para a direita; um mangá e um quadrinho árabe, da direita para a esquerda. O Postext tira a direção do idioma da edição: uma edição em árabe ou em japonês dispõe os quadros de cada fileira a partir da direita, espelha os cantos e as inclinações e encaderna o livro pela direita, enquanto as imagens ficam como foram desenhadas. Os balões japoneses são letreirados em colunas verticais, com a pontuação girada para a coluna.
+Um quadrinho ocidental é lido da esquerda para a direita; um mangá e um quadrinho árabe, da direita para a esquerda. O Postext tira a direção do idioma da edição: uma edição em árabe ou em japonês dispõe os quadros de cada fileira a partir da direita, espelha os cantos e as inclinações e encaderna o livro pela direita, enquanto as imagens ficam como foram desenhadas.
 
-Uma tradução é o mesmo Markdown com outras palavras. As imagens, os recortes e as marcas são compartilhados; cada edição mede o seu próprio texto e posiciona os seus próprios balões. O espanhol corre cerca de um quinto mais longo que o inglês e o chinês bem mais curto, e os balões mudam de tamanho com ele, sem que ninguém os mova à mão.
+Uma tradução é o mesmo Markdown com outras palavras. As imagens, os recortes e as marcas são compartilhados; cada edição mede o seu próprio texto e posiciona os seus próprios balões. O espanhol corre cerca de um quinto mais longo que o inglês e o chinês bem mais curto, e os balões mudam de tamanho com ele.
 
 ## Páginas, páginas duplas e tiras
 
-Um quadrinho pode ocupar uma página, correr por duas páginas que se olham num panorama ou ficar no texto como uma **tira**, da largura de uma coluna ou da página, como a tira diária de um jornal. Uma tira se comporta como uma figura: pode ser numerada e levar legenda, ser citada com \`:ref\` e flutuar até o topo ou o pé de uma página.
+Um quadrinho pode ocupar uma página, correr por duas páginas que se olham num panorama ou ficar no texto como uma **tira**, da largura de uma coluna ou da página, como a tira diária de um jornal. Uma tira se comporta como uma figura: pode ser numerada e levar legenda, ser citada com \`:ref\` e flutuar até o topo ou o pé de uma página. As receitas de jornal da seção [Receitas](https://postext.dev/pt/cookbook) compõem tiras assim, entre as matérias.
 
 ## Música como texto
 
-:index{term="notação musical"}Uma partitura é escrita no capítulo como um bloco cercado de notação. O Postext lê quatro formatos: **ABC**, compacto e fácil de digitar, para melodias e canções; **MusicXML**, exportado pelos programas de notação que os músicos usam; **MEI**, para edições acadêmicas; e **Humdrum**, para corais e análise. O motor grava a música com o Verovio, a biblioteca de gravura da Music Encoding Initiative, na largura da coluna.
+:index{term="notação musical"}Uma partitura é escrita no capítulo como um bloco cercado de notação. O Postext lê quatro formatos: **ABC**, compacto e fácil de digitar, para melodias e canções; **MusicXML**, exportado pelos programas de notação que os músicos usam; **MEI**, para edições acadêmicas; e **Humdrum**, para corais e análise. O motor grava a música com o [Verovio](https://www.verovio.org), a biblioteca de gravura da Music Encoding Initiative, na largura da coluna.
 
-A melodia abaixo está escrita em cinco linhas de ABC no Markdown deste capítulo. O motor a grava e a compõe como uma fórmula em destaque, sobre a grade de linhas de base, e o texto continua depois dela.
+A melodia abaixo está escrita em cinco linhas de ABC no Markdown deste capítulo. O motor a grava e a compõe como uma fórmula em destaque, sobre a grade de linhas de base.
 
 \`\`\`abc {alt="Uma melodia curta em sol maior, em compasso de três por quatro"}
 X:1
@@ -699,9 +699,9 @@ K:G
 D2 | G2 B2 d2 | c2 A2 F2 | G4 B2 | A4 D2 | G2 B2 d2 | e2 c2 A2 | G6 |]
 \`\`\`
 
-Uma partitura longa é cortada em **sistemas**, as linhas de música que um leitor acompanha, e os sistemas seguem de coluna em coluna e de página em página como as linhas de um parágrafo, sem nunca cortar uma pauta. Um exemplo musical que o texto cita pode, em vez disso, ser um recurso, numerado e com legenda como uma figura. A aparência da música é uma configuração: o tamanho das pautas, a fonte musical, os números de compasso e as margens em volta de uma partitura, com estilos nomeados para exemplos menores dentro de um boxe.
+Uma partitura longa é cortada em **sistemas**, as linhas de música que um leitor acompanha, e os sistemas seguem de coluna em coluna e de página em página como as linhas de um parágrafo, sem nunca cortar uma pauta. Um exemplo musical que o texto cita pode, em vez disso, ser um recurso, numerado e com legenda como uma figura. A aparência da música é uma configuração: o tamanho das pautas, a fonte, os números de compasso e as margens, com estilos nomeados para exemplos menores dentro de um boxe.
 
-A música é opcional. O gravador pesa vários megabytes e só é carregado pelos livros que contêm notação. As partituras são desenhadas como vetores no canvas, no HTML e no PDF, etiquetadas como figuras com o seu texto alternativo no PDF acessível, e levadas para o EPUB.
+A música é opcional: o gravador pesa vários megabytes e só é carregado pelos livros que contêm notação. As partituras são vetores no canvas, no HTML e no PDF, e levam texto alternativo no PDF acessível.
 
 # Exercícios e cursos {#exercises lead="Um livro didático pede ao leitor que faça algo: escolher, completar, relacionar, escrever. O Postext lê as perguntas e as respostas no Markdown, imprime o exercício para o aluno e deixa as edições de tela corrigi-lo." summary="Tipos de exercício, gabaritos, soluções, edições de tela e SCORM"}
 
@@ -724,7 +724,7 @@ Qual destas coisas a configuração decide, e não o Markdown?
 :::exercise{bank level=2}
 Complete as frases com as palavras do quadro.
 
-1. Uma figura flutua até o primeiro espaço livre depois da sua [[menção]].
+1. Uma figura flutua até um espaço livre depois da sua [[menção]].
 2. O motor quebra um parágrafo como um [[todo]], não uma linha de cada vez.
 3. Uma página composta preenche os blocos de um [[modelo]].
 
@@ -736,7 +736,7 @@ Relacione cada saída com o seu destino.
 
 - PDF/X -> A gráfica
 - EPUB -> Um leitor digital
-- SCORM -> Um curso numa plataforma de ensino
+- SCORM -> Um curso on-line
 :::
 
 ## Doze tipos
@@ -761,7 +761,7 @@ Abra a visualização HTML neste capítulo e responda aos três exercícios. Con
 
 ## Cursos
 
-:index{term="SCORM"}Um livro com exercícios pode virar um curso. A visualização **SCORM** do Sandbox empacota os capítulos e as seções que você escolher num pacote SCORM, o formato que plataformas de ensino como o Moodle leem. Cada parte do livro que a plataforma acompanha informa uma nota, tirada dos exercícios respondidos certo, se está concluída, com cada página vista e cada exercício conferido, e se foi aprovada, segundo uma nota mínima que o livro define. Uma avaliação pode limitar quantas vezes um exercício é conferido, quantas vezes recomeça e quando a sua solução aparece.
+:index{term="SCORM"}Um livro com exercícios pode virar um curso. A visualização **SCORM** do Sandbox empacota os capítulos e as seções que você escolher num pacote SCORM, o formato que plataformas de ensino como o [Moodle](https://moodle.org) leem. Cada parte do livro que a plataforma acompanha informa uma nota, tirada dos exercícios respondidos certo, se está concluída, com cada página vista e cada exercício conferido, e se foi aprovada, segundo uma nota mínima que o livro define. Uma avaliação pode limitar quantas vezes um exercício é conferido, quantas vezes recomeça e quando a sua solução aparece.
 
 O pacote leva o livro como a visualização HTML o mostra, diagramado pelo mesmo motor, de modo que o curso se parece com o livro impresso que os alunos têm sobre a mesa.
 
@@ -891,7 +891,7 @@ O seu trabalho é salvo no navegador enquanto você digita. Os **projetos** são
 
 As predefinições acompanham a sua origem. Quando o pacote de uma predefinição muda no servidor, o Sandbox percebe em poucos segundos: uma predefinição que você não tocou é recarregada sozinha, e uma que você editou mostra um aviso que oferece recarregá-la, de modo que o trabalho em andamento nunca é sobrescrito. As predefinições podem ser ocultadas da lista e mostradas de novo, e cada uma pode ser aberta em qualquer um dos seus idiomas quando tem mais de um, como este guia, que está em inglês, espanhol, catalão, francês, alemão, italiano, português do Brasil, chinês simplificado, árabe e japonês.
 
-Um livro viaja como um único arquivo **.postext**: seus capítulos, configuração, recursos e fontes, mais a paginação já calculada, de modo que ele abre paginado. As receitas da seção Receitas abrem no Sandbox do mesmo jeito, como livros seus; uma receita que você já abriu antes pergunta se você quer **Abrir minha cópia**, com as suas alterações, ou **Substituir pela versão publicada**, que pode ter sido corrigida desde então. E a barra de endereços sempre guarda um link permanente para o que você está vendo: o livro, o idioma, a visualização, o capítulo e a página.
+Um livro viaja como um único arquivo **.postext**: seus capítulos, configuração, recursos e fontes, mais a paginação já calculada, de modo que ele abre paginado. As receitas da seção [Receitas](https://postext.dev/pt/cookbook) abrem no Sandbox do mesmo jeito, como livros seus; uma receita que você já abriu antes pergunta se você quer **Abrir minha cópia**, com as suas alterações, ou **Substituir pela versão publicada**, que pode ter sido corrigida desde então. E a barra de endereços sempre guarda um link permanente para o que você está vendo: o livro, o idioma, a visualização, o capítulo e a página.
 
 :::callout{type="try"}
 Role até uma página de que você goste e copie o endereço do navegador: abrir esse link mostra o mesmo livro, na mesma visualização, na mesma página.
@@ -957,7 +957,7 @@ As duas versões levam a mesma navegação: um sumário a partir dos títulos e 
 
 ## Usar a biblioteca
 
-O motor é distribuído no npm como _postext_, para a diagramação e os renderizadores de canvas e HTML, com um pacote para cada saída mais pesada: _postext-pdf_ para o PDF, _postext-epub_ para o EPUB 3 e _postext-folio_ para o livro em 3D. Todos são módulos ES sob a licença MIT e também podem ser importados diretamente de uma CDN. A documentação traz exemplos ao vivo que renderizam uma página como imagem, como HTML e como PDF.
+O motor é distribuído no npm como [_postext_](https://www.npmjs.com/package/postext), para a diagramação e os renderizadores de canvas e HTML, com um pacote para cada saída mais pesada: _postext-pdf_ para o PDF, _postext-epub_ para o EPUB 3 e _postext-folio_ para o livro em 3D. Todos são módulos ES sob a licença MIT e também podem ser importados diretamente de uma CDN. A documentação traz exemplos ao vivo que renderizam uma página como imagem, como HTML e como PDF.
 
 O motor de diagramação roda no navegador, onde pode medir com as fontes que o leitor vê; _postext-pdf_ e _postext-epub_ também rodam no navegador, e além disso no Node, de modo que um PDF ou um EPUB pode ser produzido num servidor a partir de uma diagramação calculada em outro lugar. Um livro inteiro viaja do mesmo jeito: \`openBundle\` lê um arquivo .postext, \`buildBundle\` diagrama os seus capítulos em ordem, e o resultado vai direto para \`renderToPdf\` ou \`renderToEpub\`. Os pacotes são apenas módulos ES, com os tipos de TypeScript incluídos, e alguns empacotadores precisam de uma configuração de uma linha para o decodificador de WOFF2 que o pacote de PDF usa.
 
@@ -1088,7 +1088,13 @@ O Folio desenha com WebGL2, os gráficos tridimensionais do navegador, com uma t
 O visualizador é um pacote próprio, _postext-folio_, construído sobre o three.js. \`createFolioFromDocument(container, doc)\` mostra um documento diagramado como um livro; \`setDocument\` mostra a diagramação seguinte na mesma página, \`setAppearance\` muda o papel, a encadernação ou a luz, e \`resetView\` traz a vista de volta. \`createFolio\` faz o mesmo com quaisquer imagens de página.
 :::
 
-O mesmo pacote vira as páginas das receitas da seção Receitas, e pode ficar em qualquer página web que queira apresentar um livro como um livro: o catálogo de uma editora, a vitrine de uma livraria, uma prova enviada a um autor, uma prévia antes de o pedido ir para a gráfica. A mesa de luz da seção Receitas vira as páginas de uma receita com o mesmo pacote, plana, sem a terceira dimensão. Como o visualizador recebe a diagramação já pronta, cada mudança no texto ou no design chega ao livro assim que o Postext volta a compor as suas páginas.
+O mesmo pacote vira as páginas das [receitas da seção Receitas](https://postext.dev/pt/cookbook), e pode ficar em qualquer página web que queira apresentar um livro como um livro: o catálogo de uma editora, a vitrine de uma livraria, uma prova enviada a um autor, uma prévia antes de o pedido ir para a gráfica. A mesa de luz da seção Receitas vira as páginas de uma receita com o mesmo pacote, plana, sem a terceira dimensão.
+
+## O Folio e as outras visualizações
+
+O Folio lê a mesma diagramação do canvas. Uma correção no painel Texto chega à folha assim que a página é composta de novo: só os lados que mudaram são repintados, e o livro continua aberto onde estava. O papel, a encadernação e a luz ficam fora da diagramação, então experimentar outro papel não exige nova paginação, e o PDF que vai para a gráfica é o mesmo arquivo antes e depois.
+
+O que esta visualização acrescenta é o objeto. A espessura do miolo vem do número de folhas e do calibre do papel, de modo que cem páginas a mais se notam na mão, e um papel mais encorpado se nota no jeito como a folha cai. Uma página dupla com a imagem atravessando a lombada pode ser avaliada na medianiz, onde ela vai se curvar de verdade, e uma margem que parece folgada na página plana pode se revelar estreita demais quando a folha se inclina para a encadernação. Essas perguntas antes dependiam de uma boneca impressa, e agora a editora pode fazê-las antes de pagar por uma.
 
 # Ferramentas em torno do motor {#tools lead="O Sandbox é uma das portas de entrada do Postext. Uma linha de comando compõe livros a partir de um terminal, um formato de arquivo os leva inteiros, documentos do Word entram e saem, e agentes podem operar o Sandbox ou portar um livro a partir do seu PDF." summary="A linha de comando, o arquivo .postext, o Word, o WebMCP e a skill de portabilidade"}
 
@@ -1096,7 +1102,7 @@ O motor no centro deste livro é uma biblioteca, e uma biblioteca pode ser chama
 
 ## A linha de comando
 
-:index{term="linha de comando"}**postext** é um programa de terminal que transforma um livro em PDF, EPUB, HTML, imagens de página ou documento do Word, sem navegador. Ele vem como um único arquivo por sistema, para macOS, Linux e Windows, baixado das versões publicadas do projeto, ou pelo npm como _postext-cli_. Tudo de que ele precisa viaja dentro dele: o motor, uma biblioteca de desenho, um modelador de texto, os perfis ICC do capítulo sobre impressão e duas famílias de fontes. As outras fontes são baixadas uma vez do Google Fonts ou de uma pasta que você indicar e guardadas num cache; as fontes instaladas no computador nunca são usadas, de modo que um livro sai igual em qualquer máquina.
+:index{term="linha de comando"}**postext** é um programa de terminal que transforma um livro em PDF, EPUB, HTML, imagens de página ou documento do Word, sem navegador. Ele vem como um único arquivo por sistema, para macOS, Linux e Windows, baixado das [versões publicadas do projeto](https://github.com/drnachio/postext/releases), ou pelo npm como _postext-cli_. Tudo de que ele precisa viaja dentro dele: o motor, uma biblioteca de desenho, um modelador de texto, os perfis ICC do capítulo sobre impressão e duas famílias de fontes. As outras fontes são baixadas uma vez do Google Fonts ou de uma pasta que você indicar e guardadas num cache; as fontes instaladas no computador nunca são usadas, de modo que um livro sai igual em qualquer máquina.
 
 O programa lê um arquivo \`.postext\`, uma pasta que contém um livro ou arquivos Markdown soltos, tomados como capítulos na ordem dos seus nomes. Cada saída tem o seu comando: \`pdf\`, \`epub\`, \`html\`, \`image\` e \`images\`, \`docx\`. As opções cobrem o que o Sandbox oferece nos seus painéis: uma norma PDF/X e um perfil, um EPUB fixo ou refluível, uma única página ou um intervalo de páginas na numeração que o livro imprime, uma resolução, uma simulação de impressão. \`--set\` muda qualquer configuração para uma execução, \`--locale\` escolhe uma edição e \`--chapters\` uma parte do livro.
 
@@ -1113,7 +1119,7 @@ Dois comandos servem à automação. \`check\` diagrama o livro e informa o que 
 
 :index{term="formato de arquivo (.postext)"}Um arquivo **.postext** é um livro empacotado para viagem: um arquivo zip com os capítulos em Markdown, a configuração, os recursos, as fontes e um manifesto que liga tudo. Ele também pode levar a paginação já calculada, de modo que um livro abre diagramado e a primeira página aparece antes que o motor tenha composto uma linha. O Sandbox baixa um livro nesse formato a partir do painel Livros e o abre a partir do mesmo lugar; a linha de comando lê e escreve esses arquivos.
 
-Um arquivo pode conter vários idiomas, cada um com os seus capítulos, os seus recursos e as suas configurações, como descreve o :ref{id="languages"}. Os programas leem e escrevem o formato por meio de uma pequena interface do motor, \`openBundle\`, \`createBundle\` e \`buildBundle\`, que diagrama todos os capítulos de um pacote como um único livro, com os contadores e os fólios continuados. Um arquivo feito por uma versão do Postext abre na seguinte: o manifesto registra a versão das configurações com que foi escrito, e os arquivos mais antigos são lidos do jeito que foram pensados.
+Um arquivo pode conter vários idiomas, cada um com os seus capítulos, os seus recursos e as suas configurações, como descreve o :ref{id="languages"}. Os programas leem e escrevem o formato por meio de uma pequena interface do motor, \`openBundle\`, \`createBundle\` e \`buildBundle\`, que diagrama todos os capítulos de um pacote como um único livro, com os contadores e os fólios continuados. Um arquivo feito por uma versão do Postext abre nas seguintes, porque o manifesto registra a versão das configurações com que foi escrito.
 
 ## Documentos do Word
 
@@ -1133,7 +1139,7 @@ As ferramentas que destroem trabalho, como excluir um capítulo, um recurso ou u
 
 Trazer um livro existente para o Postext é sobretudo uma questão de ler o seu design: o formato, as margens, as colunas, os corpos, o jeito como os capítulos abrem e as figuras se assentam. A skill **postext-port**:index{term="skill postext-port"} ensina um agente a fazer isso a partir do que a editora tiver: um PDF, um arquivo do Word ou do InDesign, um EPUB, LaTeX, HTML ou páginas digitalizadas. Ela faz o inventário do original, mede as páginas, propõe uma ficha de especificações, escreve a configuração e os capítulos e então confere o próprio trabalho: desenha cada página que compõe como imagem e a compara com o original, página por página, até as duas coincidirem.
 
-A skill se instala com um único comando em qualquer agente que leia skills, e no Claude Code como plugin. Ela conhece as escritas deste livro: livros chineses e japoneses compostos na vertical, livros árabes compostos a partir da direita, quadrinhos letreirados de novo em outro idioma, livros didáticos construídos com páginas compostas.
+A skill se instala com um único comando em qualquer agente que leia skills, e no Claude Code como plugin. Ela conhece as escritas deste livro, do chinês e do japonês na vertical ao árabe composto a partir da direita, além de quadrinhos e de livros didáticos em páginas compostas.
 
 # Roteiro e comunidade {lead="O Postext é jovem e aberto. O pipeline principal, o formato do documento e o sistema de configuração já foram entregues; o que vem a seguir se decide em público." summary="Onde o projeto está e como participar"}
 
@@ -1149,7 +1155,7 @@ O que ainda falta importa tanto quanto o que já foi entregue. As **notas de mar
 
 ## Como participar
 
-O projeto vive no GitHub, e todas as conversas acontecem à vista de todos: **issues** para bugs, pedidos e tarefas concretas; **pull requests** para o código, revisado em público; **discussions** para ideias, questões de design e tudo o que ainda não está concreto o bastante para virar uma issue. As issues com a etiqueta _good first issue_ são a porta de entrada mais fácil.
+O projeto vive no [GitHub](https://github.com/drnachio/postext), e todas as conversas acontecem à vista de todos: **issues** para bugs, pedidos e tarefas concretas; **pull requests** para o código, revisado em público; **[discussions](https://github.com/drnachio/postext/discussions)** para ideias, questões de design e tudo o que ainda não está concreto o bastante para virar uma issue. As issues com a etiqueta _good first issue_ são a porta de entrada mais fácil.
 
 O caminho habitual da ideia ao código é curto: uma issue descreve o problema, uma discussion define a abordagem quando há mais de uma, uma pull request a implementa, e a mudança é mesclada no branch de desenvolvimento e lançada a partir dali. Abrir uma issue antes de uma pull request grande poupa o tempo de todos, porque a abordagem pode ser combinada antes de o código ser escrito.
 
@@ -1186,7 +1192,7 @@ _Design pensado antes da pressa._ A tipografia acumula séculos de sabedoria, e 
 
 _Clareza antes da esperteza._ O código, a configuração e a documentação devem ser fáceis de ler, mudar e explicar. Uma opção que precisa de um parágrafo de ressalvas é sinal de que o design ainda não está terminado; uma função que só o autor consegue acompanhar não sobrevive às férias dele. A configuração usa unidades reais e nomes simples, o formato do documento continua legível em qualquer editor, e as decisões do motor sempre podem ser rastreadas até uma regra que alguém consegue apontar.
 
-_Colaboração antes de território._ As decisões são tomadas em público, em issues e discussions que qualquer pessoa pode ler e das quais pode participar, e nenhuma parte do código pertence a uma só pessoa. Toda contribuição é reconhecida (código, documentação, traduções, relatos de bugs, conselhos tipográficos e os livros de exemplo que mostram o que o motor sabe fazer), porque um motor de diagramação para todos só pode ser construído por muitas pessoas.
+_Colaboração antes de território._ As decisões são tomadas em público, em issues e discussions que qualquer pessoa pode ler e das quais pode participar, e nenhuma parte do código pertence a uma só pessoa. Toda contribuição é reconhecida (código, documentação, traduções, relatos de bugs, conselhos tipográficos e os livros de exemplo que mostram o que o motor sabe fazer), porque um motor de diagramação para todos só pode ser construído por muitas pessoas. Uma correção de uma linha numa tradução já conta, e o nome de quem a fez fica no histórico do projeto.
 
 Se algo disso faz sentido para você, o repositório é o próximo passo. Abra uma issue, faça uma pergunta nas discussions ou mude algo neste livro e veja o que o motor faz com isso.
 

@@ -160,6 +160,8 @@ export interface ExerciseAreaStyle {
 export interface ExerciseGridStyle {
   /** A cell's side. Default `1.6em`. */
   cell?: Dimension;
+  /** The face of the letters, and of a dotted match's items. Default the
+   *  text's. */
   fontFamily?: string;
   fontSize?: Dimension;
   color?: ColorValue;

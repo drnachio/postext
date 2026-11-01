@@ -13,7 +13,7 @@ import {
 import { createChineseGuideConfig } from './guideConfigZh.js';
 import { createArabicGuideConfig } from './guideConfigAr.js';
 import { createJapaneseGuideConfig } from './guideConfigJa.js';
-import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureFaces, type FeatureOptions } from './guideFeatures.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, exerciseCallouts, guideChipStyles, guideExerciseStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureFaces, type FeatureOptions } from './guideFeatures.js';
 
 export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit.js';
 
@@ -429,7 +429,8 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
     },
     headingStyles: headingStyles(lang),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: [...calloutStyles(lang), colophonCallout(COLOPHON_TYPE), asideCallout(FACES, FEATURES, FEATURE_NAMES[lang].aside), ...sheetCallouts(FACES, FEATURES, FEATURE_NAMES[lang])],
+    calloutStyles: [...calloutStyles(lang), colophonCallout(COLOPHON_TYPE), asideCallout(FACES, FEATURES, FEATURE_NAMES[lang].aside), ...exerciseCallouts(FACES, FEATURES, FEATURE_NAMES[lang]), ...sheetCallouts(FACES, FEATURES, FEATURE_NAMES[lang])],
+    exerciseStyles: guideExerciseStyles(FACES, FEATURE_NAMES[lang]),
     chipStyles: guideChipStyles(FACES, FEATURE_NAMES[lang]),
     markStyles: guideMarkStyles(FEATURE_NAMES[lang]),
     pageTemplates: [sheetTemplate(FEATURE_NAMES[lang].sheet, 84)],
