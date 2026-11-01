@@ -2537,6 +2537,9 @@ Sandbox: the **Figures** field next to each style's typeface in the Design panel
   warnings name a feature family `Base@onum`, `Base@lnum+tnum` (the base family's files with the features).
   The CLI (Skia sets no features) registers a copy whose cmap maps the digits to the feature's glyphs (single
   substitutions only: a font that reaches its figures through contextual lookups keeps its own there).
+  `render.mjs` (skill 1.74.1) does the same with the bundled files: fontkit measures with the features, the
+  `--jpeg` painter registers frozen copies, the PDF embeds the base files with the features. An older copy of
+  the script reports `Base@onum` as an unbundled family and sets it in a stand-in face.
 - Porting: measure the source's figures. Old-style figures in the text and lining tabular ones in the tables
   (the usual book setting) → `bodyText.figureStyle: 'oldstyle'`, `tableStyle.figureStyle: 'lining-tabular'`;
   lining headings over old-style text → `headings.figureStyle: 'lining'`; old-style folios → `figureStyle:

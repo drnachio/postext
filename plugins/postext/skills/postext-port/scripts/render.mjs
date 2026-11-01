@@ -36,6 +36,12 @@
 // not have it (the command line caches the files). This script downloads
 // nothing: only bundled faces exist here, an unbundled family is measured
 // with a stand-in face, so bundle every family you use.
+// Figure styles (postext >= 1.61): a style with `figureStyle` sets its text in
+// a feature family (`EB Garamond@onum`), the base family's files with the
+// OpenType features: measured here with fontkit and the features, painted on
+// Skia (--jpeg) from copies with the features frozen into the cmap
+// (`freezeFontFeatures`, as the command line does), embedded in the PDF with
+// them. Only a bundled family takes a figure style, as in the Sandbox.
 // The config is read as the Sandbox reads it: a manifest without
 // `configVersion` keeps the postext 1.4 rules it was written for (a NOTE line
 // lists them).
@@ -195,6 +201,14 @@ async function loadFace(file) {
   return e;
 }
 const families = new Map((manifest.fonts ?? []).map((f) => [f.name, f.variants]));
+// A feature family (#1237, `EB Garamond@onum`) is its base family's files
+// set with features; a release without figure styles has no such names.
+const featureParts = (name) => postext.featureFamilyParts?.(name) ?? { family: name, features: [] };
+// Only a family whose files are here can be declared with features (the
+// Sandbox's rule): an unbundled one keeps its own figures, under its name.
+postext.setFigureStyleFamilies?.((family) => families.has(family));
+// The feature families the layout measured text in, for the page painter.
+const featureFamiliesUsed = new Set();
 // The weight CSS font matching settles on among `weights` (CSS Fonts 4 §5.2,
 // the engine's `cssWeightOrder`, written out here for the releases that do
 // not export it): from 400 to 500 the weights up to 500, then the lighter
@@ -208,7 +222,8 @@ function cssWeight(weight, weights) {
   if (weight >= 400 && weight <= 500) return [...heavier.filter((w) => w <= 500), ...lighter, ...heavier][0];
   return (weight < 400 ? [...lighter, ...heavier] : [...heavier, ...lighter])[0];
 }
-function pickVariant(family, weight, style) {
+function pickVariant(name, weight, style) {
+  const family = featureParts(name).family;
   const vs = families.get(family) ?? families.values().next().value ?? [];
   const pool = vs.filter((v) => (v.style ?? 'normal') === style);
   const list = pool.length ? pool : vs;
@@ -222,23 +237,27 @@ class Ctx {
   measureText(s) {
     const m = /^(?:(italic|oblique)\s+)?(?:(\d{3}|bold|normal)\s+)?([\d.]+)px\s+(.+)$/.exec(this.font.trim());
     if (!m) return { width: s.length * 7 };
-    const family = m[4].replace(/["']/g, '').split(',')[0].trim();
+    const name = m[4].replace(/["']/g, '').split(',')[0].trim();
+    const { family, features } = featureParts(name);
     if (!families.has(family)) unknownFamilies.add(family);
+    else if (features.length) featureFamiliesUsed.add(name);
     const v = pickVariant(family, m[2] === 'bold' ? 700 : m[2] ? Number(m[2]) : 400, m[1] ? 'italic' : 'normal');
     if (!v) return { width: s.length * Number(m[3]) * 0.5 };
     const { face } = faces.get(v.file);
-    return { width: (advanceOf(face, s) / face.unitsPerEm) * Number(m[3]) };
+    return { width: (advanceOf(face, s, features.length ? [...features] : undefined) / face.unitsPerEm) * Number(m[3]) };
   }
 }
 // A face whose glyf data is cut short for one glyph (a shipped Saira has an
 // empty no-break space) makes fontkit throw while it reads that glyph's box:
 // measure such a string a character at a time, the bad glyph by its hmtx
 // advance (what a browser uses), instead of stopping the whole layout.
-function advanceOf(face, s) {
-  try { return face.layout(s).advanceWidth; } catch { /* a glyph fontkit cannot read */ }
+// `features` are a feature family's (`['onum']`), applied as the browser
+// applies a face's `featureSettings`.
+function advanceOf(face, s, features) {
+  try { return face.layout(s, features).advanceWidth; } catch { /* a glyph fontkit cannot read */ }
   let w = 0;
   for (const ch of s) {
-    try { w += face.layout(ch).advanceWidth; continue; } catch { /* below */ }
+    try { w += face.layout(ch, features).advanceWidth; continue; } catch { /* below */ }
     const g = face.glyphForCodePoint(ch.codePointAt(0));
     w += face.hmtx?.metrics?.get?.(g.id)?.advance ?? face.unitsPerEm / 4;
   }
@@ -594,6 +613,19 @@ if (JPEG) {
   for (const vs of families.values()) for (const v of vs) {
     const { bytes } = await loadFace(v.file);
     napi.GlobalFonts.register(Buffer.from(bytes), [...families.entries()].find(([, x]) => x === vs)[0]);
+  }
+  // Each feature family (#1237) from copies of its base family's files
+  // whose cmap maps the characters to the glyphs the features choose:
+  // Skia sets no features (the command line's `registerFeatureFamily`).
+  const featureFamilies = new Set([...featureFamiliesUsed, ...(postext.configFeatureFamilies?.(config) ?? [])]);
+  for (const name of featureFamilies) {
+    const { family, features } = featureParts(name);
+    if (!families.has(family) || !postext.freezeFontFeatures) continue;
+    for (const v of families.get(family)) {
+      const { bytes } = await loadFace(v.file);
+      const frozen = postext.freezeFontFeatures(bytes, [...features]) ?? bytes;
+      napi.GlobalFonts.register(Buffer.from(frozen.buffer, frozen.byteOffset, frozen.byteLength), name);
+    }
   }
   // A book with `diagramStyle.singleInk` shows its drawings in that ink:
   // the markup is recoloured before it is decoded, as the command line
