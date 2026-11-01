@@ -174,15 +174,51 @@ export function createNotes(deps: NotesDeps) {
   let spreadDeferredPage = -1;
   /** Notes cited by blocks set outside the flow (the paragraphs of a box,
    *  inline, floated or fixed): they wait for the next text the flow
-   *  places, and go to the foot of its column, in citation order. */
+   *  places, and go to the foot of its column, in citation order — when
+   *  that is the column of the block citing them (see
+   *  `settleStrandedNotes`). */
   const pendingNotes: string[] = [];
+  /** The block citing each pending note. */
+  const pendingCiter = new Map<string, VDTBlock>();
   /** How far `doc.blocks` was read for such citations. */
   let notesScanned = 0;
   const collectPendingNotes = (): void => {
     for (; notesScanned < doc.blocks.length; notesScanned++) {
-      for (const id of footnoteIdsOfLines(doc.blocks[notesScanned]!.lines)) {
-        if (!placedNotes.has(id) && !pendingNotes.includes(id) && !spreadDeferred.includes(id)) pendingNotes.push(id);
+      const block = doc.blocks[notesScanned]!;
+      for (const id of footnoteIdsOfLines(block.lines)) {
+        if (!placedNotes.has(id) && !pendingNotes.includes(id) && !spreadDeferred.includes(id)) {
+          pendingNotes.push(id);
+          pendingCiter.set(id, block);
+        }
       }
+    }
+  };
+  /** The pending notes cited in a column of the body other than column
+   *  `colIndex` of the page at `pageIndex`, where the flow sets its next
+   *  text: a box's, when the box filled its column or a chapter boundary
+   *  follows it. They go to the foot of the column the citing block stands
+   *  in, when they fit under what it holds, not to a later column, page or
+   *  chapter (#1369); the others wait for the text, as before. */
+  const settleStrandedNotes = (pageIndex: number, colIndex: number): void => {
+    if (!columnNotes || spreadNotes || pendingNotes.length === 0) return;
+    const groups = new Map<VDTColumn, { page: VDTPage; ids: string[]; anchor: number }>();
+    for (const id of pendingNotes) {
+      const b = pendingCiter.get(id);
+      if (!b || b.pageIndex < 0 || (b.pageIndex === pageIndex && b.columnIndex === colIndex)) continue;
+      const page = doc.pages[b.pageIndex];
+      const col = page?.columns[b.columnIndex];
+      if (!page || !col || col.kind === 'span' || col.kind === 'side') continue;
+      const group = groups.get(col) ?? { page, ids: [], anchor: b.contentIndex ?? 0 };
+      group.ids.push(id);
+      groups.set(col, group);
+    }
+    for (const [col, group] of groups) {
+      // A column a band cap cut keeps its notes under the cut.
+      const capped = uncappedBottoms.get(col);
+      const underCut = capped === undefined ? 0 : Math.max(0, capped - (col.bbox.y + col.bbox.height));
+      if (notesCost(col, group.ids) > col.availableHeight + underCut + 0.01) continue;
+      for (const id of group.ids) pendingNotes.splice(pendingNotes.indexOf(id), 1);
+      reserveNotes(group.page, col, group.ids, group.anchor);
     }
   };
   /** Whether the page at `pageIndex` opens its spread (an even book page),
@@ -226,6 +262,7 @@ export function createNotes(deps: NotesDeps) {
     if (!columnNotes) return undefined;
     collectPendingNotes();
     const page = cursor.pageIndex;
+    settleStrandedNotes(page, col.index);
     // Sidenotes waiting for this page are set first; on the even page of a
     // spread only the notes that stay on it cost room.
     const waiting = deferredFor(page);
@@ -257,6 +294,7 @@ export function createNotes(deps: NotesDeps) {
   const reserveCitedNotes = (placed: VDTBlock): void => {
     if (!columnNotes || placed.pageIndex < 0) return;
     collectPendingNotes();
+    settleStrandedNotes(placed.pageIndex, placed.columnIndex);
     const waiting = deferredFor(placed.pageIndex);
     const cited = footnoteIdsOfLines(placed.lines).filter((id) => !placedNotes.has(id) && !pendingNotes.includes(id) && !spreadDeferred.includes(id));
     if (cited.length === 0 && pendingNotes.length === 0 && waiting.length === 0) return;
@@ -325,6 +363,7 @@ export function createNotes(deps: NotesDeps) {
     if (!columnNotes) return;
     collectPendingNotes();
     reserveLeftoverSidenotes();
+    settleStrandedNotes(cursor.pageIndex, cursor.columnIndex);
     if (pendingNotes.length === 0) return;
     const page = doc.pages[cursor.pageIndex];
     const col = page?.columns[cursor.columnIndex];

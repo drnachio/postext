@@ -63,3 +63,38 @@ describe('link notes and a page-span float at the foot of a closing page (#1367)
     });
   }
 });
+
+describe('link notes cited in a box with footnotes.placement column (#1369)', () => {
+  const COLUMN: PostextConfig = {
+    ...TWO_COL,
+    headings: { balancing: { enabled: false }, levels: [{ level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } }] },
+    links: { print: 'notes' },
+    footnotes: { placement: 'column' },
+  };
+  const box = ':::callout{title="Further reading"}\n- [One](https://example.org/a)\n- [Two](https://example.org/b)\n:::';
+  /** Each note on the page and in the column of the box line citing it, under what the column holds. */
+  const expectNotesWithTheBox = (doc: VDTDocument): void => {
+    const notes = doc.blocks.filter((b) => b.footnoteNote !== undefined);
+    expect(notes).toHaveLength(2);
+    for (const note of notes) {
+      const citing = doc.blocks.find((b) => b.footnoteNote === undefined && b.lines.some((l) => l.segments?.some((s) => s.footnoteId === note.footnoteNote)))!;
+      expect(citing.containerId).toBeDefined();
+      expect([note.pageIndex, note.columnIndex]).toEqual([citing.pageIndex, citing.columnIndex]);
+      const col = doc.pages[note.pageIndex]!.columns[note.columnIndex]!;
+      for (const b of col.blocks) expect(b.bbox.y + b.bbox.height).toBeLessThanOrEqual(note.bbox.y + 0.5);
+    }
+  };
+
+  it('sets them at the foot of the box\'s column when a chapter opens after the box', () => {
+    // The notes waited for the next text the flow placed: the next
+    // chapter's, on its own page.
+    const doc = buildDocument({ markdown: `# One\n\n${filler(10)}\n\n${box}\n\n# Two\n\n${filler(2)}` }, COLUMN, createMeasurementCache());
+    expect(doc.pages.length).toBeGreaterThan(1);
+    expectNotesWithTheBox(doc);
+    expect(doc.pages[1]!.floats?.some((f) => f.footnoteNote !== undefined) ?? false).toBe(false);
+  });
+
+  it('sets them at the foot of the box\'s column when the box closes the document', () => {
+    expectNotesWithTheBox(buildDocument({ markdown: `${filler(30)}\n\n${box}` }, COLUMN, createMeasurementCache()));
+  });
+});
