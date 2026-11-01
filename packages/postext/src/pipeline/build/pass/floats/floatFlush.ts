@@ -66,8 +66,10 @@ export function createFloatFlush(deps: FloatFlushDeps) {
    *  while they place something, so a page-span float held back behind a
    *  column float of its sequence still gets the page's foot once that one
    *  is set. A float that does not fit holds up the ones behind it in its
-   *  numbering sequence (see `heldBack`), never the other sequence. */
-  const flushPendingFloatsIntoPage = (page: VDTPage): void => {
+   *  numbering sequence (see `heldBack`), never the other sequence.
+   *  `afterPageSpan` runs once the page-span floats are set, before the
+   *  column floats take their heads. */
+  const flushPendingFloatsIntoPage = (page: VDTPage, afterPageSpan?: () => void): void => {
     if (pendingFloats.length === 0) { late.flushSideBoxesIntoPage(page); return; }
     // A floated box heading the page goes first: the figures then take
     // the foot under it (a figure set first would claim the foot and push
@@ -164,6 +166,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       }
       progress = state.floatsPlaced > before;
     }
+      if (stage === 0) afterPageSpan?.();
     }
     if (!sideBoxesFlushed) late.flushSideBoxesIntoPage(page);
   };
@@ -336,8 +339,10 @@ export function createFloatFlush(deps: FloatFlushDeps) {
    *  the floats the page owes to earlier pages (cited before them, read
    *  before them): each where its citing line lands, when its sequence is
    *  set up to it and it fits within `layout.maxTopFraction` of the column,
-   *  the text room kept under it. One that does not is placed as usual. */
-  const placeCitingHeads = (page: VDTPage): void => {
+   *  the text room kept under it. One that does not is placed as usual.
+   *  `pageSpanOnly`: only the floats across the page (set before the
+   *  column floats the page owes take their heads). */
+  const placeCitingHeads = (page: VDTPage, pageSpanOnly = false): void => {
     const heads = citingHeadsByPage.get(page.index);
     if (!heads) return;
     if (opensAfterBreak(doc.pages, page.index, forcedBreakPages) || page.openerBand || page.partInfo) return;
@@ -353,6 +358,10 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       if (at >= 0 ? !awaitsCitation(pendingFloats[at]!) : enqueuedFloatIds.has(id)) continue;
       if (!sequenceSetBefore(planned)) continue;
       const pageSpan = spansPageOn(page, planned, textCols);
+      if (pageSpanOnly && !pageSpan) continue;
+      // A band across the page needs the columns' heads level: under a
+      // box floated to one column's head it would cover the other (#1366).
+      if (pageSpan && textCols.some((c) => Math.abs(c.bbox.y - textCols[0]!.bbox.y) > 0.5)) continue;
       const cols = pageSpan ? [...textCols, ...sideColumns(page)] : citingColumnsOf(planned, textCols, citingPageFloats!.get(id)!.columnIndex);
       if (!cols) continue;
       const f: PlannedFloat = { ...planned, refPageIndex: page.index };
@@ -477,7 +486,10 @@ export function createFloatFlush(deps: FloatFlushDeps) {
   /** Reserve the floats a freshly opened page owes: those waiting for a
    *  page's bands, then those that head the page citing them (#633). */
   const flushFloatsIntoPage = (page: VDTPage): void => {
-    flushPendingFloatsIntoPage(page);
+    // The page-span heads take the band across the page before the column
+    // floats owed to earlier pages set their heads under it (#1366).
+    const spanHeads = citingHeadsByPage.has(page.index) ? () => placeCitingHeads(page, true) : undefined;
+    flushPendingFloatsIntoPage(page, spanHeads);
     if (citingHeadsByPage.size > 0) placeCitingHeads(page);
   };
 

@@ -38,19 +38,25 @@ function fragmentOf(b: VDTBlock): number {
   return m ? Number(m[1]) : 0;
 }
 
+/** Whether float `f` stands over column `col`: it overlaps the column
+ *  horizontally and its box ends at or above the column's top, with no
+ *  page-span block between them. A float heading the band above a span
+ *  block does not stand over the columns under that block: their top was
+ *  never pushed down by it, so no room goes there (#1368). */
+function floatStandsOver(page: VDTPage, f: VDTBlock, col: VDTColumn): boolean {
+  const bottom = f.bbox.y + f.bbox.height;
+  return f.bbox.x < col.bbox.x + col.bbox.width - 0.5
+    && f.bbox.x + f.bbox.width > col.bbox.x + 0.5
+    && bottom <= col.bbox.y + 0.5
+    && f.bbox.y >= page.contentArea.y - 0.5
+    && !page.columns.some((k) => k.kind === 'span' && k.bbox.height > 0.5
+      && k.bbox.y >= bottom - 0.5 && k.bbox.y + k.bbox.height <= col.bbox.y + 0.5);
+}
+
 /** Whether a float band sits right above the column (the column's top was
- *  pushed down under it): a float on the page overlapping the column
- *  horizontally whose box ends at or above the column's top. */
+ *  pushed down under it). */
 function columnUnderTopFloat(page: VDTPage, col: VDTColumn): boolean {
-  const floats = page.floats ?? [];
-  const left = col.bbox.x;
-  const right = col.bbox.x + col.bbox.width;
-  return floats.some((f) =>
-    f.bbox.x < right - 0.5
-    && f.bbox.x + f.bbox.width > left + 0.5
-    && f.bbox.y + f.bbox.height <= col.bbox.y + 0.5
-    && f.bbox.y >= page.contentArea.y - 0.5,
-  );
+  return (page.floats ?? []).some((f) => floatStandsOver(page, f, col));
 }
 
 /** Regular flow column with a usable height — never a page-span block's
@@ -65,11 +71,7 @@ function isTextColumn(col: VDTColumn): boolean {
  *  when several are stacked. Null under a float of the column's own. */
 function wideFloatOver(page: VDTPage, col: VDTColumn): { key: string; under: number } | null {
   const floats = page.floats ?? [];
-  const above = (f: VDTBlock, k: VDTColumn): boolean =>
-    f.bbox.x < k.bbox.x + k.bbox.width - 0.5
-    && f.bbox.x + f.bbox.width > k.bbox.x + 0.5
-    && f.bbox.y + f.bbox.height <= k.bbox.y + 0.5
-    && f.bbox.y >= page.contentArea.y - 0.5;
+  const above = (f: VDTBlock, k: VDTColumn): boolean => floatStandsOver(page, f, k);
   let best: { index: number; bottom: number; under: number } | null = null;
   floats.forEach((f, index) => {
     if (!above(f, col)) return;
