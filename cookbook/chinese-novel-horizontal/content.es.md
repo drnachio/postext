@@ -134,7 +134,7 @@ author: "鲁迅"
 :::
 
 :::paragraphs{style="colophon"}
-本书正文用Noto Serif SC五号字排，每行28字，每面28行；书眉、页码和版本说明用Noto Sans SC，篇首题句用Ma Shan Zheng，均为SIL OFL字体。篇首插图由程序绘制。
+本书正文用Noto Serif SC五号字排，每行28字，每面28行；书眉、页码和版本说明用Noto Sans SC，篇首题句用Ma Shan Zheng，均为SIL OFL字体。篇首插图为一幅绘画。
 :::
 
 :::paragraphs{style="colophon"}

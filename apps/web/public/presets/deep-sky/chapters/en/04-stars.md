@@ -24,7 +24,7 @@ Most supernovae are the explosive deaths of massive stars, but one important var
 "*The explosions of white dwarfs play a crucial role in astronomy*,” says Priyam Das, a PhD student at the University of New South Wales Canberra, Australia, who led the study on SNR 0509-67.5 published today in *Nature Astronomy*. Much of our knowledge of how the Universe expands rests on Type Ia supernovae, and they are also the primary source of iron on our planet, including the iron in our blood. “*Yet, despite their importance, the long-standing puzzle of the exact mechanism triggering their explosion remains unsolved*," he adds.
 
 :::callout{type="cita"}
-“Yet, despite their importance, the long-standing puzzle of the exact mechanism triggering their explosion remains unsolved,”
+“Yet, despite their importance, the long-standing puzzle of the exact mechanism triggering their explosion remains unsolved”
 :::
 
 All models that explain Type Ia supernovae begin with a white dwarf in a pair of stars. If it orbits close enough to the other star in this pair, the dwarf can steal material from its partner. In the most established theory behind Type Ia supernovae, the white dwarf accumulates matter from its companion until it reaches a critical mass, at which point it undergoes a single explosion. However, recent studies have hinted that at least some Type Ia supernovae could be better explained by a double explosion triggered before the star reached this critical mass.
@@ -40,7 +40,7 @@ Type Ia supernovae are key to our understanding of the Universe. They behave in 
 Das also has another motivation to study these explosions. “*This tangible evidence of a double-detonation not only contributes towards solving a long-standing mystery, but also offers a visual spectacle*,” he says, describing the “*beautifully layered structure*” that a supernova creates. For him, “*revealing the inner workings of such a spectacular cosmic explosion is incredibly rewarding*.”
 
 :::paragraphs{style="fuente"}
-Press release eso2511 by ESO, 2 July 2025. Text and images licensed CC BY 4.0. [https://www.eso.org/public/news/eso2511/](https://www.eso.org/public/news/eso2511/)
+[Press release eso2511](https://www.eso.org/public/news/eso2511/) by ESO, 2 July 2025. Text and images licensed CC BY 4.0.
 :::
 
 ## Circinus West: A Dark Nebula Harboring a Nest of Newly Formed Stars {lead="Department of Energy-fabricated Dark Energy Camera spots a puddle of cosmic ink staining the starry night sky" source="NSF NOIRLab" date="24 April 2025" release="noirlab2515" standfirst="Department of Energy-fabricated Dark Energy Camera spots a puddle of cosmic ink staining the starry night sky"}
@@ -65,6 +65,8 @@ This image was captured with the Department of Energy-fabricated Dark Energy Cam
 
 Circinus West is known for harboring dozens of young stellar objects — stars that are in their early stages of development. Despite being shrouded in dense gas and dust, these infant stars make themselves known. Zooming in, various clues to their presence can be seen dotted throughout Circinus West’s snaking tendrils. (:ref{id="noirlab2515c" case="lower"})
 
+::resource{id="noirlab2515c"}
+
 One indication of newly formed stars are the sparse pockets of light seen bursting through the murky clouds. This light is emanating from actively forming stars, and the cavities around them have been carved out by molecular outflows — powerful jets ejected from protostars as a way to release gas and momentum that built up during formation. These energetic outflows are much easier for astronomers to find than the embedded stars themselves and are a powerful tool for studying stellar nurseries.
 
 Many of the bright spots seen throughout the dark clouds indicate the positions of young stars that have ejected the material around them. Multiple outflow sources can be seen within Circinus West’s central black plume, an area known as the Cir-MMS region that loosely resembles a downward-stretched hand with long, shadowy fingers. Near the center of this region the radiation from a newborn star is carving out a cavity from within the opaque cloud. And at the extreme bottom left of the central cloud another announces its birth with an explosion of light.
@@ -74,5 +76,5 @@ Another signpost of star formation, of which there is no shortage of in Circinus
 Studying the outflows in Circinus West may offer valuable clues into the star formation process and also reveal how young stars impact their environment. With such a variety of outflows, it serves as a natural laboratory for studying not just the life cycles of stars but also the dynamics of molecular clouds and the mechanisms governing the evolution of galaxies. The massive outflows occurring there may even resemble the conditions under which our Solar System formed, providing us a glimpse into the processes that led to our own emergence in the Universe.
 
 :::paragraphs{style="fuente"}
-Press release noirlab2515 by NSF NOIRLab, 24 April 2025. Text and images licensed CC BY 4.0. [https://noirlab.edu/public/news/noirlab2515/](https://noirlab.edu/public/news/noirlab2515/)
+[Press release noirlab2515](https://noirlab.edu/public/news/noirlab2515/) by NSF NOIRLab, 24 April 2025. Text and images licensed CC BY 4.0.
 :::

@@ -461,7 +461,7 @@ Certain functional groups present in biological molecules can behave as weak aci
 
 Regulating pH is therefore essential, both inside and outside the cell, if the molecules are to work at their best. **Buffers** are aqueous systems that tend to damp down the changes in pH that occur when small amounts of acid (H^+^) or base (OH^−^) are added. These buffer systems are made up of a weak acid and its conjugate base, or else of a weak base and its conjugate acid. When the concentrations of the two species are similar, the system has a great buffering capacity. In that situation any ­rise in the concentration of H^+^ can be absorbed by the conjugate base, and if the concentration of OH^−^ rises it is the weak acid of the buffer system that gives a proton to the medium to neutralise the hydroxyl ion. By the Henderson-Hasselbalch equation (**Box 1-6**), when the pH of the solution equals the p*K*~a~ of the system, the concentrations of the two species that define the system are equal. In the cell, then, substances with a p*K*~a~ near 7 (physiological pH) make good buffers.
 
-:::callout{type="recuadro" label="BOX 1-6" title="Calculating the dissociation constant of an acid, and the Henderson-Hasselbalch equation"}
+:::callout{type="recuadro" label="BOX 1-6" placement="top" title="Calculating the dissociation constant of an acid, and the Henderson-Hasselbalch equation"}
 :::columns{count=2 breaks="8"}
 A general dissociation reaction of an acid may be written as the general reaction:
 

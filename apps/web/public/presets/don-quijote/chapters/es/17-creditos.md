@@ -14,58 +14,60 @@
 **Composición.** Página de 155 × 235 mm, columna principal junto al lomo y columna exterior para viñetas y glosas; portadillas, índice dinámico, folios y titulillos generados por Postext.
 
 Láminas reproducidas, con su página en Wikimedia Commons:
+:::
 
-Lámina I. [Gustave Doré - Miguel de Cervantes - Don Quixote - Part 1 - Chapter 1 - Plate 1 "A world of disorderly notions, picked out of his books, crowded into his imagination"](https://commons.wikimedia.org/wiki/File:Gustave_Dor%C3%A9_-_Miguel_de_Cervantes_-_Don_Quixote_-_Part_1_-_Chapter_1_-_Plate_1_%22A_world_of_disorderly_notions,_picked_out_of_his_books,_crowded_into_his_imagination%22.jpg)
+:::paragraphs{style="laminas"}
+Lámina I. [Gustave Doré - Miguel de Cervantes - Don Quixote - Part 1 - Chapter 1 - Plate 1 "A world of disorderly notions, picked out of his books, crowded into his imagination"](https://commons.wikimedia.org/?curid=6912771)
 
-Lámina II. [Gustave Doré - Dom Quixote - Parte 1 - Cap 1 - 2](https://commons.wikimedia.org/wiki/File:Gustave_Dor%C3%A9_-_Dom_Quixote_-_Parte_1_-_Cap_1_-_2.jpg)
+Lámina II. [Gustave Doré - Dom Quixote - Parte 1 - Cap 1 - 2](https://commons.wikimedia.org/?curid=98067761)
 
-Lámina III. [Cap II Chegada de Quixote a uma estalagem](https://commons.wikimedia.org/wiki/File:Cap_II_Chegada_de_Quixote_a_uma_estalagem.jpg)
+Lámina III. [Cap II Chegada de Quixote a uma estalagem](https://commons.wikimedia.org/?curid=75357968)
 
-Lámina IV. [Cap II beber vinho por um canudo](https://commons.wikimedia.org/wiki/File:Cap_II_beber_vinho_por_um_canudo.jpg)
+Lámina IV. [Cap II beber vinho por um canudo](https://commons.wikimedia.org/?curid=75358243)
 
-Lámina V. [Cap III Quixote a velar armas](https://commons.wikimedia.org/wiki/File:Cap_III_Quixote_a_velar_armas.jpg)
+Lámina V. [Cap III Quixote a velar armas](https://commons.wikimedia.org/?curid=75377892)
 
-Lámina VI. [Cap III Quixote e o estalajadeiro](https://commons.wikimedia.org/wiki/File:Cap_III_Quixote_e_o_estalajadeiro.jpg)
+Lámina VI. [Cap III Quixote e o estalajadeiro](https://commons.wikimedia.org/?curid=75377843)
 
-Lámina VII. [Cap III Quixote armado cavaleiro](https://commons.wikimedia.org/wiki/File:Cap_III_Quixote_armado_cavaleiro.jpg)
+Lámina VII. [Cap III Quixote armado cavaleiro](https://commons.wikimedia.org/?curid=75377910)
 
-Lámina VIII. [Cap IV Dom Quixote investe contra o ruim vilão](https://commons.wikimedia.org/wiki/File:Cap_IV_Dom_Quixote_investe_contra_o_ruim_vil%C3%A3o.jpg)
+Lámina VIII. [Cap IV Dom Quixote investe contra o ruim vilão](https://commons.wikimedia.org/?curid=75390706)
 
-Lámina IX. [Cap IV Dom Quixote é sovado pelo criado dos mercadores](https://commons.wikimedia.org/wiki/File:Cap_IV_Dom_Quixote_%C3%A9_sovado_pelo_criado_dos_mercadores.jpg)
+Lámina IX. [Cap IV Dom Quixote é sovado pelo criado dos mercadores](https://commons.wikimedia.org/?curid=75390704)
 
-Lámina X. [Cap IV Dom Quixote desfalecido](https://commons.wikimedia.org/wiki/File:Cap_IV_Dom_Quixote_desfalecido.jpg)
+Lámina X. [Cap IV Dom Quixote desfalecido](https://commons.wikimedia.org/?curid=75390703)
 
-Lámina XI. [Cap V Dom Quixote é ajudado por um lavrador seu vizinho](https://commons.wikimedia.org/wiki/File:Cap_V_Dom_Quixote_%C3%A9_ajudado_por_um_lavrador_seu_vizinho.jpg)
+Lámina XI. [Cap V Dom Quixote é ajudado por um lavrador seu vizinho](https://commons.wikimedia.org/?curid=75437332)
 
-Lámina XII. [Cap V Dom Quixote chega a casa](https://commons.wikimedia.org/wiki/File:Cap_V_Dom_Quixote_chega_a_casa.jpg)
+Lámina XII. [Cap V Dom Quixote chega a casa](https://commons.wikimedia.org/?curid=75437331)
 
-Lámina XIII. [Cap V Dom Quixote acompanhado pelo lavrador vizinho](https://commons.wikimedia.org/wiki/File:Cap_V_Dom_Quixote_acompanhado_pelo_lavrador_vizinho.jpg)
+Lámina XIII. [Cap V Dom Quixote acompanhado pelo lavrador vizinho](https://commons.wikimedia.org/?curid=75437333)
 
-Lámina XIV. [Cap VI A queima dos livros Doré](https://commons.wikimedia.org/wiki/File:Cap_VI_A_queima_dos_livros_Dor%C3%A9.jpg)
+Lámina XIV. [Cap VI A queima dos livros Doré](https://commons.wikimedia.org/?curid=75447042)
 
-Lámina XV. [Cap VII D. Quixote convence Sancho Pança II G Doré](https://commons.wikimedia.org/wiki/File:Cap_VII_D._Quixote_convence_Sancho_Pan%C3%A7a_II_G_Dor%C3%A9.jpg)
+Lámina XV. [Cap VII D. Quixote convence Sancho Pança II G Doré](https://commons.wikimedia.org/?curid=75660592)
 
-Lámina XVI. [Cap VII A Varredura das histórias fantásticas Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_VII_A_Varredura_das_hist%C3%B3rias_fant%C3%A1sticas_Gustave_Dor%C3%A9.jpg)
+Lámina XVI. [Cap VII A Varredura das histórias fantásticas Gustave Doré](https://commons.wikimedia.org/?curid=75660471)
 
-Lámina XVII. [Adventure with the Windmills](https://commons.wikimedia.org/wiki/File:Adventure_with_the_Windmills.jpg)
+Lámina XVII. [Adventure with the Windmills](https://commons.wikimedia.org/?curid=12656792)
 
-Lámina XVIII. [Cap VIII Dom Quixote caido Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_VIII_Dom_Quixote_caido_Gustave_Dor%C3%A9.jpg)
+Lámina XVIII. [Cap VIII Dom Quixote caido Gustave Doré](https://commons.wikimedia.org/?curid=75670762)
 
-Lámina XIX. [Cap VIII Sancho Pança ajuda Dom Quixote a montar a cavalo Doré](https://commons.wikimedia.org/wiki/File:Cap_VIII_Sancho_Pan%C3%A7a_ajuda_Dom_Quixote_a_montar_a_cavalo_Dor%C3%A9.jpg)
+Lámina XIX. [Cap VIII Sancho Pança ajuda Dom Quixote a montar a cavalo Doré](https://commons.wikimedia.org/?curid=75670761)
 
-Lámina XX. [Cap IX As Damas pedem a Dom Quixote para poupar a vida do escudeiro G Doré](https://commons.wikimedia.org/wiki/File:Cap_IX_As_Damas_pedem_a_Dom_Quixote_para_poupar_a_vida_do_escudeiro_G_Dor%C3%A9.jpg)
+Lámina XX. [Cap IX As Damas pedem a Dom Quixote para poupar a vida do escudeiro G Doré](https://commons.wikimedia.org/?curid=75745848)
 
-Lámina XXI. [Cap X Dom Quixote e Sancho Pança pernoitam ao relento](https://commons.wikimedia.org/wiki/File:Cap_X_Dom_Quixote_e_Sancho_Pan%C3%A7a_pernoitam_ao_relento.jpg)
+Lámina XXI. [Cap X Dom Quixote e Sancho Pança pernoitam ao relento](https://commons.wikimedia.org/?curid=75768272)
 
-Lámina XXII. [Cap XI Discurso de Dom Quixote aos Cabreiros](https://commons.wikimedia.org/wiki/File:Cap_XI_Discurso_de_Dom_Quixote_aos_Cabreiros.jpg)
+Lámina XXII. [Cap XI Discurso de Dom Quixote aos Cabreiros](https://commons.wikimedia.org/?curid=75865459)
 
-Lámina XXIII. [Cap XI Um Cabreiro trata a orelha de Dom Quixote](https://commons.wikimedia.org/wiki/File:Cap_XI_Um_Cabreiro_trata_a_orelha_de_Dom_Quixote.jpg)
+Lámina XXIII. [Cap XI Um Cabreiro trata a orelha de Dom Quixote](https://commons.wikimedia.org/?curid=75865460)
 
-Lámina XXIV. [Cap XII Sancho Pança a dormir entre Rocinante e o jumento](https://commons.wikimedia.org/wiki/File:Cap_XII_Sancho_Pan%C3%A7a_a_dormir_entre_Rocinante_e_o_jumento.jpg)
+Lámina XXIV. [Cap XII Sancho Pança a dormir entre Rocinante e o jumento](https://commons.wikimedia.org/?curid=75903958)
 
-Lámina XXV. [Cap XIII O túmulo de Crisóstomo](https://commons.wikimedia.org/wiki/File:Cap_XIII_O_t%C3%BAmulo_de_Cris%C3%B3stomo.jpg)
+Lámina XXV. [Cap XIII O túmulo de Crisóstomo](https://commons.wikimedia.org/?curid=75972430)
 
-Lámina XXVI. [Cap XIV Funeral de Crisóstomo Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_XIV_Funeral_de_Cris%C3%B3stomo_Gustave_Dor%C3%A9.jpg)
+Lámina XXVI. [Cap XIV Funeral de Crisóstomo Gustave Doré](https://commons.wikimedia.org/?curid=76043958)
 
-Lámina XXVII. [Cap XIV O Amor e a Morte Gustave Doré](https://commons.wikimedia.org/wiki/File:Cap_XIV_O_Amor_e_a_Morte_Gustave_Dor%C3%A9.jpg)
+Lámina XXVII. [Cap XIV O Amor e a Morte Gustave Doré](https://commons.wikimedia.org/?curid=76043957)
 :::

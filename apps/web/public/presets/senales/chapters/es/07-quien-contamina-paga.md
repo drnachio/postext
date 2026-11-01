@@ -1,8 +1,6 @@
 # ¿Paga el que contamina? {style="art-quien-contamina-paga" kicker="Entrevista" standfirst="Una idea sencilla, pero poderosa es el eje vertebrador de la legislación medioambiental de la UE: «quien contamina paga». Este principio se ha aplicado en forma de impuestos, multas y otras medidas, como las cuotas por las emisiones de contaminantes y la Directiva sobre responsabilidad medioambiental. Hablamos con el profesor Geert Van Calster sobre este principio, sus beneficios y sus inconvenientes."}
 
-:::paragraphs{style="pregunta"}
-¿En qué consiste el principio de «quien contamina paga»?
-:::
+## ¿En qué consiste el principio de «quien contamina paga»? {style="pregunta"}
 
 El principio de «quien contamina paga» es un principio sencillo que se basa en el sentido común: el que contamina —los responsables de la contaminación o la actividad que causa la contaminación— debe pagar para reparar el mal causado. Esto podría suponer limpiar el área contaminada o cubrir los gastos sanitarios de las personas afectadas.
 
@@ -14,9 +12,7 @@ Sin embargo, incluso en los casos sencillos en los que se puede identificar el c
 
 Además, con el tiempo, el principio se ha aplicado a casos más complejos de contaminación persistente y prevalente, como la contaminación atmosférica procedente de fuentes difusas, en los que resulta aún más difícil atribuir la responsabilidad y la puesta en práctica.
 
-:::paragraphs{style="pregunta"}
-¿Cómo podemos determinar quién tiene que pagar a quién?
-:::
+## ¿Cómo podemos determinar quién tiene que pagar a quién? {style="pregunta"}
 
 En los casos de contaminación difusa, no es fácil hacer un seguimiento e identificar al que contamina y relacionarlo con las personas afectadas. La contaminación del aire puede deberse a contaminantes liberados de distintas fuentes y de diferentes lugares, algunos de los cuales pueden estar en fronteras internacionales. También debemos reflexionar sobre los resultados positivos y los beneficios de estas actividades contaminantes. Se trata de productos y servicios, como alimentos, ropa y transporte, que nos benefician individualmente y a la sociedad en su conjunto.
 
@@ -26,25 +22,19 @@ Por ejemplo, las actividades contaminantes fuera de la UE podrían estar afectan
 «Sin embargo, incluso en los casos sencillos en los que se puede identificar el contaminante, la puesta en práctica puede ser difícil.»
 :::
 
-:::paragraphs{style="pregunta"}
-¿Hay algún buen ejemplo de medidas eficaces?
-:::
+## ¿Hay algún buen ejemplo de medidas eficaces? {style="pregunta"}
 
 Existen dos tipos distintos de estrategias. El primero tiene como objetivo ayudar a los afectados y hay muchos buenos ejemplos en Europa. Los paneles reductores del ruido o estructuras similares construidos a lo largo de las autovías pueden reducir los niveles de ruido de manera significativa y, por tanto, el daño a quienes viven allí.
 
 El segundo tipo tiene como objetivo limitar o prevenir la contaminación o las actividades nocivas en primer lugar, mediante, por ejemplo, la imposición de impuestos, cuotas de contaminación o ciertas soluciones tecnológicas. También Europa está introduciendo combustibles más limpios y reduciendo progresivamente las emisiones de carbono de los vehículos nuevos. En algunos sectores, los derechos de emisión tienen unos límites y pueden negociarse. Algunas de estas medidas buscan ajustar el precio de tal manera que influya en las conductas de consumo. Del mismo modo, en muchos Estados miembros ahora el agua se cobra por la cantidad extraída o utilizada, en vez de por el número de grifos, y esto ha modificado considerablemente nuestro uso del agua.
 
-:::paragraphs{style="pregunta"}
-¿Hay algún inconveniente en la forma en que aplicamos el principio de «quien contamina paga»?
-:::
+## ¿Hay algún inconveniente en la forma en que aplicamos el principio de «quien contamina paga»? {style="pregunta"}
 
 Lamentablemente, el sistema actual puede verse y usarse como una «licencia para contaminar»: mientras puedas pagar (es decir, si te lo puedes permitir), tienes derecho a contaminar. Esto está estrechamente relacionado con la distribución desigual de los beneficios y costes de estas actividades contaminantes. El problema de la desigualdad también ocupa un lugar central en las negociaciones mundiales sobre el clima, tanto en términos de emisiones históricas (la cantidad que cada país ha emitido hasta la fecha) como de emisiones actuales por persona. En un mundo ideal, todo el mundo recibiría la misma cantidad de crédito de carbono.
 
 El segundo inconveniente es que el «pago» apenas cubre todos los «gastos». La tierra contaminada en antiguas zonas industriales podría limpiarse para que las personas pudieran vivir allí. Es una operación muy cara, pero no necesariamente deshace el daño causado a las masas de agua o a las personas y animales que dependen de ese agua. Los costes suelen limitarse a los gastos operativos y no reflejan el valor real de los beneficios que obtenemos de la naturaleza.
 
-:::paragraphs{style="pregunta"}
-¿Podemos diseñar un sistema que cubra el valor completo?
-:::
+## ¿Podemos diseñar un sistema que cubra el valor completo? {style="pregunta"}
 
 Necesitamos un enfoque coherente y global que aborde todos los retos a los que nos enfrentamos (degradación del medio ambiente, cambio climático, uso de los recursos y desigualdades), del mismo modo que lo hacen los Objetivos de Desarrollo Sostenible. El Pacto Verde Europeo tiene como objetivo llevar algunas de estas ideas a las políticas europeas.
 

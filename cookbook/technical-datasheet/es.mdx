@@ -34,7 +34,7 @@ La tabla de patillas y el mapa de registros salen de la misma función, `grouped
 
 <Excerpt region="styles" />
 
-`tableStyle` recoge lo que comparten todas las tablas. Cada entrada de `tableStyles` fija solo lo que cambia en las suyas, y un recurso elige una con `table.styleId`. La tabla eléctrica cambia los filetes grises por filetes blancos de 1,4 pt, que separan los fondos y marcan dónde acaba cada celda combinada. La de pedidos lleva un marco exterior redondeado y la Fira Sans Condensed, para que sus cuatro columnas quepan en una columna de texto.
+`tableStyle` recoge lo que comparten todas las tablas. Cada entrada de `tableStyles` fija solo lo que cambia en las suyas, y un recurso elige una con `table.styleId`. La tabla eléctrica cambia los filetes grises por filetes blancos de 1,4 pt, que separan los fondos y marcan dónde acaba cada celda combinada. La de pedidos lleva un marco exterior redondeado y la Fira Sans Condensed, para que sus cuatro columnas quepan en una columna de texto. El `figureStyle: 'tabular'` del estilo eléctrico pide a la Fira Sans el rasgo `tnum`, cifras de un mismo ancho, para que los dígitos de Min, Typ y Max se alineen en cada columna.
 
 ### 5 · Rótulos que siguen siendo texto en el PDF
 
@@ -55,8 +55,8 @@ La referencia es el encabezado de primer nivel, y su apertura se dibuja con una 
 Con filetes de medio punto en el gris `rule` de la paleta, todas las filas quedan separadas, tengan fondo o no; los blancos desaparecen donde se tocan dos filas sin fondo.
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### Pon los pies de tabla sobre una barra

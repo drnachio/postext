@@ -19,6 +19,7 @@
       "resource-types"
     ],
     "also": [
+      "print-links",
       "chips",
       "figure-citations",
       "inline-embeds",
@@ -28,7 +29,6 @@
       "table-split",
       "heading-numbering",
       "numbered-lists",
-      "bullet-lists",
       "hyphenation-languages",
       "localised-labels",
       "opener-design",
@@ -75,7 +75,7 @@
     "section-heads-field-manual"
   ],
   "engine": {
-    "postext": "1.34.0"
+    "postext": "1.65.0"
   },
   "kit": [
     "core",
@@ -145,5 +145,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-10-16"
+  "updated": "2026-10-31"
 }

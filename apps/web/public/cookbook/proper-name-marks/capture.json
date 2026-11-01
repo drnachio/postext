@@ -3,27 +3,21 @@
   "slug": "proper-name-marks",
   "sourceHash": "5e1ebfd16b832e963e2581357a6b43f12824e8bbec5e2a92c87fedb450256108",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:58.422Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:03.087Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:22:05.360Z",
   "variants": {
     "en": {
-      "hash8": "1b4754a7",
+      "hash8": "590c5316",
       "vdtHash": "666b14ae1706626f3a5dda2a0371d7dcbd4dd76e",
       "timings": {
-        "importMs": 841,
-        "fontsMs": 502,
-        "buildMs": 66,
-        "totalMs": 2121,
+        "importMs": 5670,
+        "fontsMs": 1401,
+        "buildMs": 76,
+        "totalMs": 8050,
         "builds": 1
       },
       "specimen": {
@@ -107,7 +101,7 @@
       },
       "pdf": {
         "file": "proper-name-marks.pdf",
-        "bytes": 170204,
+        "bytes": 170190,
         "pages": 3
       },
       "sandbox": {
@@ -322,6 +316,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -330,13 +334,13 @@
       }
     },
     "es": {
-      "hash8": "5f3486fd",
+      "hash8": "24e3c085",
       "vdtHash": "4ef88f23fb888f40f39312aab00daabe9b7c9bf4",
       "timings": {
-        "importMs": 828,
-        "fontsMs": 493,
-        "buildMs": 65,
-        "totalMs": 2042,
+        "importMs": 4291,
+        "fontsMs": 3498,
+        "buildMs": 75,
+        "totalMs": 8886,
         "builds": 1
       },
       "specimen": {
@@ -420,7 +424,7 @@
       },
       "pdf": {
         "file": "proper-name-marks.pdf",
-        "bytes": 170792,
+        "bytes": 170775,
         "pages": 3
       },
       "sandbox": {
@@ -634,6 +638,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

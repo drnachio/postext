@@ -26,7 +26,7 @@ Algunes decisions no es poden prendre dins d'un sol recorregut, perquè depenen 
 ### Etapa 1: Estructuració del contingut
 
 - **Entrada:** `PostextContent` sense processar
-- **Acció:** Analitzar el Markdown i convertir-lo en blocs de contingut, resoldre les referències a recursos buscant-ne l'ID a `resources[]`, treure del flux les definicions de notes a peu de pàgina (`[^id]:`) i numerar-ne les crides per ordre de citació, numerar els encapçalaments i planificar els flotants: quins recursos floten, i després de quin bloc (`notes[]` no es llegeix)
+- **Acció:** Analitzar el Markdown i convertir-lo en blocs de contingut, resoldre les referències a recursos buscant-ne l'ID a `resources[]`, treure del flux les definicions de notes a peu de pàgina (`[^id]:`) i numerar-ne les crides per ordre de citació, donar una nota als enllaços externs quan `links.print` és `'notes'` (o la seva adreça entre parèntesis amb `'inline'`), numerar els encapçalaments i planificar els flotants: quins recursos floten, i després de quin bloc (`notes[]` no es llegeix)
 - **Sortida:** Una llista plana de blocs de contingut (tipats i amb contingut, però sense assignació de pàgina ni de columna) i el pla de flotants
 - **S'executa:** a l'inici de cada passada de col·locació. Després de la primera passada, l'anàlisi es reutilitza des de la memòria; la resta es torna a calcular
 

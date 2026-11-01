@@ -464,9 +464,13 @@ export function createArabicGuideConfig(): PostextConfig {
       },
     },
     toc: toc(),
+    // A web link prints its short address and a QR code in a note at the
+    // foot of the column (a vertical edition prints the address alone); the
+    // HTML view reads on screen, where the link is followed, and adds none.
+    links: { print: 'notes', show: 'both', urlDisplay: 'short' },
     // On screen the book reads as one scroll: no section dividers (the parts
-    // still colour their chapters).
-    htmlViewer: { overrides: { parts: { page: false } } },
+    // still colour their chapters), and a link prints nothing more.
+    htmlViewer: { overrides: { parts: { page: false }, links: { print: 'none' } } },
     // The two pages of a part divider are one sheet in the part's colour: the
     // Canvas shows a spread with its pages joined.
     canvasViewer: { pageGap: 0 },

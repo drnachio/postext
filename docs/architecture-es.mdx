@@ -342,6 +342,7 @@ interface VDTLine {
   sourceEnd?: number;
   plainStart?: number;          // mapa al texto plano del bloque
   plainEnd?: number;
+  qr?: VDTLineQr;               // el código QR de una nota de enlace (links.show), en la primera línea de la nota
 }
 
 // Un embebido de recurso medido y listo para colocar (bitmap / svg / tabla / vídeo)

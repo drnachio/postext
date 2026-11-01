@@ -3,5 +3,5 @@
 Zurbarán convierte un episodio devocional en una escena doméstica de gran intimidad, sostenida por un bodegón disperso: el jarro con lirios y rosas, los libros, la fruta sobre la mesa, la taza en el suelo. Cada objeto tiene su carga simbólica, pero está pintado con la misma atención que un cuadro de cocina. La composición, en dos mitades unidas por la mirada de María, es una de las más sobrias y conmovedoras del pintor extremeño; se conocen varias versiones del asunto, y esta, de hacia 1640, es la más completa. :ref{id="zurbaran-nazaret" case="lower"}
 
 :::paragraphs{style="fuente"}
-Comentario escrito para esta edición (CC BY 4.0).
+Comentario escrito para esta edición (CC BY 4.0). Ficha e imagen ampliable en la [web del museo](https://clevelandart.org/art/1960.117).
 :::

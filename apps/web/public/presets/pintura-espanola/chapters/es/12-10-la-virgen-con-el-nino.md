@@ -3,5 +3,5 @@
 Es el Murillo de la última década, el del llamado estilo vaporoso: contornos que se diluyen, carnaciones cálidas, una pincelada suelta que deja respirar la tela. Imágenes como esta, pensadas para la devoción privada de las casas sevillanas, hicieron de Murillo el pintor más copiado de Europa durante el siglo siguiente y explican la ternura, a veces malentendida como dulzura, que se asocia a su nombre. :ref{id="murillo-virgen" case="lower"}
 
 :::paragraphs{style="fuente"}
-Comentario escrito para esta edición (CC BY 4.0).
+Comentario escrito para esta edición (CC BY 4.0). Ficha e imagen ampliable en la [web del museo](https://www.metmuseum.org/art/collection/search/437175).
 :::

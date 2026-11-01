@@ -20,7 +20,7 @@ BOOK = {
         "figure": ("Imagen", "Imágenes", "imagen"),
         "table": ("Tabla", "Tablas", "tabla"),
         "ficha": "De un vistazo",
-        "source_line": "Nota de prensa {id} de {org}, {date}. Texto e imágenes bajo licencia CC BY 4.0.",
+        "source_line": "[Nota de prensa {id}]({url}) de {org}, {date}. Texto e imágenes bajo licencia CC BY 4.0.",
         "table_caption": "Las ocho observaciones de este número. :swatch{color=\"solar\"} Sistema solar · :swatch{color=\"stars\"} Estrellas · :swatch{color=\"galaxies\"} Galaxias · :swatch{color=\"cosmos\"} Cosmos.",
         "table_head": ["Reportaje", "Observatorio", "Objeto", "Distancia"],
         "org": {"eso": "ESO", "noirlab": "NSF NOIRLab"},
@@ -44,7 +44,7 @@ BOOK = {
         "figure": ("Image", "Images", "image"),
         "table": ("Table", "Tables", "table"),
         "ficha": "At a glance",
-        "source_line": "Press release {id} by {org}, {date}. Text and images licensed CC BY 4.0.",
+        "source_line": "[Press release {id}]({url}) by {org}, {date}. Text and images licensed CC BY 4.0.",
         "table_caption": "The eight observations in this issue. :swatch{color=\"solar\"} Solar System · :swatch{color=\"stars\"} Stars · :swatch{color=\"galaxies\"} Galaxies · :swatch{color=\"cosmos\"} Cosmos.",
         "table_head": ["Feature", "Observatory", "Object", "Distance"],
         "org": {"eso": "ESO", "noirlab": "NSF NOIRLab"},
@@ -68,6 +68,11 @@ PARTS = [
 # opener), "page" (page-wide float), "column" (column float); the hero is
 # also the cover of its section in the contents. Fact files are written
 # for the preset from the releases' own data.
+#
+# Make-up, set by looking at the pages of both editions: `quote_at` moves a
+# language's pull quote after another paragraph (None leaves it out) and
+# `placement` changes where an image goes, so that every feature closes on
+# a page of level columns instead of a runt page.
 RELEASES = [
     {
         "id": "eso2314", "org": "eso", "part": "solar",
@@ -86,6 +91,7 @@ RELEASES = [
             "en": [("Observatory", "Gemini North, Maunakea"), ("Instrument", "GMOS-N"), ("Object", "Interstellar comet 3I/ATLAS"), ("Origin", "Another star system")],
         },
         "row": {"es": ("Cometa 3I/ATLAS", "Gemini Norte · GMOS", "3I/ATLAS", "Interestelar"), "en": ("Comet 3I/ATLAS", "Gemini North · GMOS", "3I/ATLAS", "Interstellar")},
+        "quote_at": {"en": 3},
     },
     {
         "id": "eso2511", "org": "eso", "part": "stars",
@@ -104,6 +110,7 @@ RELEASES = [
             "en": [("Observatory", "Blanco 4-m Telescope, Cerro Tololo"), ("Instrument", "Dark Energy Camera (DECam)"), ("Object", "Circinus West molecular cloud"), ("Distance", "About 2,500 light-years")],
         },
         "row": {"es": ("Circinus Oeste", "Blanco · DECam", "Nube molecular", "2500 años luz"), "en": ("Circinus West", "Blanco · DECam", "Molecular cloud", "2,500 light-years")},
+        "placement": {"noirlab2515b": {"es": {"position": "here"}}, "noirlab2515c": {"position": "here"}},
     },
     {
         "id": "eso2510", "org": "eso", "part": "galaxies",
@@ -113,6 +120,8 @@ RELEASES = [
             "en": [("Observatory", "ESO’s VLT"), ("Instrument", "MUSE, over a hundred hours"), ("Object", "NGC 253, the Sculptor Galaxy"), ("Distance", "11 million light-years")],
         },
         "row": {"es": ("Galaxia del Escultor", "VLT · MUSE", "NGC 253", "11 millones de años luz"), "en": ("Sculptor Galaxy", "VLT · MUSE", "NGC 253", "11 million light-years")},
+        "quote_at": {"en": None},
+        "placement": {"eso2510b": {"es": {"span": "column"}, "en": {"position": "top"}}},
     },
     {
         "id": "noirlab2612", "org": "noirlab", "part": "galaxies",
@@ -125,12 +134,15 @@ RELEASES = [
     },
     {
         "id": "eso2406", "org": "eso", "part": "cosmos",
-        "roles": {"eso2406a": "hero", "eso2406b": "page"},
+        # The two rings side by side open the feature; the polarised Sgr A*
+        # alone (also the back cover) sits in a column of the text.
+        "roles": {"eso2406b": "hero", "eso2406a": "column"},
         "ficha": {
             "es": [("Observatorio", "Telescopio del Horizonte de Sucesos"), ("Técnica", "Interferometría en luz polarizada"), ("Objeto", "Sagitario A*"), ("Distancia", "27 000 años luz")],
             "en": [("Observatory", "Event Horizon Telescope"), ("Technique", "Interferometry in polarised light"), ("Object", "Sagittarius A*"), ("Distance", "27,000 light-years")],
         },
         "row": {"es": ("Sagitario A*", "EHT", "Agujero negro", "27 000 años luz"), "en": ("Sagittarius A*", "EHT", "Black hole", "27,000 light-years")},
+        "quote_at": {"es": None},
     },
     {
         "id": "noirlab2618", "org": "noirlab", "part": "cosmos",
@@ -166,15 +178,15 @@ BACK_COVER = {
 
 CREDITS = {
     "es": [
-        "**Textos e imágenes.** Notas de prensa del Observatorio Europeo Austral (ESO) y de NSF NOIRLab, publicadas bajo la licencia Creative Commons Atribución 4.0 Internacional. Cada reportaje indica al pie su número de nota y su fecha; cada imagen lleva la línea de crédito que figura en su página de origen.",
+        "**Textos e imágenes.** Notas de prensa del Observatorio Europeo Austral (ESO) y de NSF NOIRLab, publicadas bajo la licencia Creative Commons Atribución 4.0 Internacional. Cada reportaje indica al pie su número de nota y su fecha, con un código QR que abre la nota original; cada imagen lleva la línea de crédito que figura en su página de origen, en eso.org/public/images o noirlab.edu/public/images seguida de su identificador.",
         "**Traducciones.** Las versiones en español de ESO las realiza la red ESON (ESO Science Outreach Network); las de NOIRLab, su oficina de comunicación en Chile.",
         "**Tipografía.** Archivo y Chivo, de Omnibus-Type; Newsreader, de Production Type. Las tres familias se distribuyen bajo la SIL Open Font License 1.1.",
-        "**Composición.** Página de 225 × 297 mm a dos columnas; aperturas con banda de sección, imágenes a página y a columna, recuadros y citas flotantes, tabla con celdas de color y sumario generado por Postext.",
+        "**Composición.** Página de 225 × 297 mm a dos columnas; aperturas con banda de sección, imágenes a página y a columna, recuadros y citas flotantes, tabla con celdas de color, sumario generado por Postext y notas con código QR para las direcciones web.",
     ],
     "en": [
-        "**Texts and images.** Press releases of the European Southern Observatory (ESO) and NSF NOIRLab, published under the Creative Commons Attribution 4.0 International licence. Each feature gives its release number and date at the foot; each image carries the credit line printed on its source page.",
+        "**Texts and images.** Press releases of the European Southern Observatory (ESO) and NSF NOIRLab, published under the Creative Commons Attribution 4.0 International licence. Each feature gives its release number and date at the foot, with a QR code that opens the original release; each image carries the credit line printed on its source page, at eso.org/public/images or noirlab.edu/public/images followed by its identifier.",
         "**Translations.** The Spanish versions of ESO releases are made by the ESO Science Outreach Network (ESON); those of NOIRLab by its communications office in Chile.",
         "**Type.** Archivo and Chivo by Omnibus-Type; Newsreader by Production Type. All three families are distributed under the SIL Open Font License 1.1.",
-        "**Setting.** A 225 × 297 mm two-column page; section-banded openers, page-wide and column images, floating boxes and pull quotes, a table with coloured cells and a contents page generated by Postext.",
+        "**Setting.** A 225 × 297 mm two-column page; section-banded openers, page-wide and column images, floating boxes and pull quotes, a table with coloured cells, a contents page generated by Postext and QR-code notes for the web addresses.",
     ],
 }

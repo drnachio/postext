@@ -2100,6 +2100,102 @@
       ]
     }
   },
+  "fill-short-columns": {
+    "label": {
+      "en": "Filling short columns",
+      "es": "Columnas cortas rellenas",
+      "ca": "Columnes curtes omplertes",
+      "zh": "补满短栏",
+      "ar": "ملء الأعمدة القصيرة",
+      "ja": "短い段を埋める",
+      "pt": "Colunas curtas preenchidas",
+      "fr": "Colonnes courtes remplies",
+      "de": "Kurze Spalten füllen",
+      "it": "Colonne corte riempite"
+    },
+    "definition": {
+      "en": "When the widow and orphan rules end a column a line or two above the foot, balancing spreads the gap over the column's headings, lists and paragraphs so it ends flush (headings.balancing.fillShortColumns).",
+      "es": "Cuando las reglas de viudas y huérfanas dejan una columna una o dos líneas por encima del pie, el equilibrado reparte el hueco entre los títulos, listas y párrafos de la columna para que acabe a ras (headings.balancing.fillShortColumns).",
+      "ca": "Quan les regles de vídues i òrfenes deixen una columna una o dues línies per sobre del peu, l'equilibri reparteix el buit entre els títols, llistes i paràgrafs de la columna perquè acabi arran (headings.balancing.fillShortColumns).",
+      "zh": "当寡行和孤行规则让一栏在页脚上方空出一两行时，齐底功能把空白分摊到该栏的标题、列表和段落之间，使它与页脚平齐（headings.balancing.fillShortColumns）。",
+      "ar": "حين تُنهي قواعد الأسطر اليتيمة والأرملة عمودًا قبل أسفل الصفحة بسطر أو سطرين، توزّع الموازنة الفراغ على عناوين العمود وقوائمه وفقراته حتى ينتهي محاذيًا للأسفل (headings.balancing.fillShortColumns).",
+      "ja": "ウィドウとオーファンの規則で段が下端より 1〜2 行手前で終わるとき、段末そろえがその空きを段の見出し・リスト・段落に振り分け、下端にそろえます（headings.balancing.fillShortColumns）。",
+      "pt": "Quando as regras de viúvas e órfãs deixam uma coluna uma ou duas linhas acima do pé, o equilíbrio distribui o vão entre os títulos, listas e parágrafos da coluna para que ela termine rente (headings.balancing.fillShortColumns).",
+      "fr": "Quand les règles de veuves et d’orphelines arrêtent une colonne une ligne ou deux au-dessus du pied, l’équilibrage répartit le vide entre les titres, les listes et les paragraphes de la colonne pour qu’elle finisse au ras (headings.balancing.fillShortColumns).",
+      "de": "Wenn die Regeln für Hurenkinder und Schusterjungen eine Spalte ein oder zwei Zeilen über dem Fuß enden lassen, verteilt der Ausgleich die Lücke auf Überschriften, Listen und Absätze der Spalte, bis sie bündig endet (headings.balancing.fillShortColumns).",
+      "it": "Quando le regole su vedove e orfane fanno finire una colonna una o due righe sopra il piede, il bilanciamento distribuisce il vuoto tra i titoli, gli elenchi e i paragrafi della colonna perché finisca a filo (headings.balancing.fillShortColumns)."
+    },
+    "aliases": {
+      "en": [
+        "short column",
+        "fillShortColumns",
+        "gap at the foot",
+        "column ends short"
+      ],
+      "es": [
+        "columna corta",
+        "hueco al pie",
+        "fillShortColumns"
+      ],
+      "ca": [
+        "columna curta",
+        "buit al peu"
+      ],
+      "zh": [
+        "短栏",
+        "栏底空白",
+        "fillShortColumns"
+      ],
+      "ar": [
+        "عمود قصير",
+        "فراغ أسفل العمود"
+      ],
+      "ja": [
+        "短い段",
+        "段末の空き",
+        "fillShortColumns"
+      ],
+      "pt": [
+        "coluna curta",
+        "vão no pé"
+      ],
+      "fr": [
+        "colonne courte",
+        "blanc en pied de colonne"
+      ],
+      "de": [
+        "kurze Spalte",
+        "Lücke am Spaltenfuß"
+      ],
+      "it": [
+        "colonna corta",
+        "vuoto al piede"
+      ]
+    },
+    "group": "page",
+    "docs": {
+      "slug": "configuration-page-flow",
+      "heading": {
+        "en": "Column balancing",
+        "es": "Equilibrado de columnas",
+        "ca": "Equilibratge de columnes",
+        "zh": "各栏齐底",
+        "ar": "موازنة الأعمدة",
+        "ja": "段末そろえ",
+        "pt": "Equilíbrio de colunas",
+        "fr": "Équilibrage des colonnes",
+        "de": "Spaltenausgleich",
+        "it": "Bilanciamento delle colonne"
+      }
+    },
+    "since": "1.59.1",
+    "research": [],
+    "detect": {
+      "config": [
+        "headings.balancing.fillShortColumns"
+      ]
+    }
+  },
   "body-typography": {
     "label": {
       "en": "Body type",
@@ -5239,6 +5335,134 @@
       ]
     }
   },
+  "figure-styles": {
+    "label": {
+      "en": "Figure styles",
+      "es": "Estilos de cifras",
+      "ca": "Estils de xifres",
+      "zh": "数字样式",
+      "ar": "أنماط الأرقام",
+      "ja": "数字のスタイル",
+      "pt": "Estilos de algarismos",
+      "fr": "Styles de chiffres",
+      "de": "Ziffernarten",
+      "it": "Stili delle cifre"
+    },
+    "definition": {
+      "en": "Each text style asks its font for one kind of figures through OpenType features: old-style figures in the running text, lining figures in headings, tabular figures that line up in the columns of a table.",
+      "es": "Cada estilo de texto pide a su fuente una clase de cifras mediante rasgos OpenType: cifras elzevirianas en el texto corrido, cifras de caja alta en los títulos, cifras tabulares que se alinean en las columnas de una tabla.",
+      "ca": "Cada estil de text demana a la seva font una mena de xifres mitjançant trets OpenType: xifres elzevirianes al text corrent, xifres de caixa alta als títols, xifres tabulars que s'alineen a les columnes d'una taula.",
+      "zh": "每种文字样式通过 OpenType 特性向字体要一种数字：正文用旧式数字，标题用等高数字，表格用等宽数字，让各栏数字对齐。",
+      "ar": "يطلب كل نمط نصّي من خطّه نوعًا من الأرقام عبر خصائص OpenType: أرقامًا قديمة الطراز في متن النص، وأرقامًا مصطفّة في العناوين، وأرقامًا جدولية متساوية العرض تصطفّ في أعمدة الجدول.",
+      "ja": "テキストのスタイルごとに、OpenType の機能でフォントに数字の種類を指定します。本文にはオールドスタイル数字、見出しにはライニング数字、表には列がそろうタビュラー数字を使います。",
+      "pt": "Cada estilo de texto pede à sua fonte um tipo de algarismos por meio de recursos OpenType: algarismos de estilo antigo no texto corrido, algarismos alinhados nos títulos, algarismos tabulares que se alinham nas colunas de uma tabela.",
+      "fr": "Chaque style de texte demande à sa police un genre de chiffres par les fonctions OpenType : chiffres elzéviriens dans le texte courant, chiffres alignés dans les titres, chiffres tabulaires qui s’alignent dans les colonnes d’un tableau.",
+      "de": "Jeder Textstil verlangt von seiner Schrift über OpenType-Features eine Art Ziffern: Mediävalziffern im Fließtext, Versalziffern in Überschriften, Tabellenziffern, die in den Spalten einer Tabelle untereinander stehen.",
+      "it": "Ogni stile di testo chiede al suo carattere un tipo di cifre tramite le funzioni OpenType: cifre minuscole (old-style) nel testo corrente, cifre maiuscole nei titoli, cifre tabellari che si allineano nelle colonne di una tabella."
+    },
+    "aliases": {
+      "en": [
+        "old-style figures",
+        "oldstyle numerals",
+        "lining figures",
+        "tabular figures",
+        "onum",
+        "tnum",
+        "figureStyle"
+      ],
+      "es": [
+        "cifras elzevirianas",
+        "números de estilo antiguo",
+        "cifras de caja alta",
+        "cifras tabulares",
+        "onum",
+        "figureStyle"
+      ],
+      "ca": [
+        "xifres elzevirianes",
+        "xifres de caixa alta",
+        "xifres tabulars",
+        "onum"
+      ],
+      "zh": [
+        "旧式数字",
+        "等高数字",
+        "等宽数字",
+        "onum",
+        "tnum",
+        "figureStyle"
+      ],
+      "ar": [
+        "أرقام قديمة الطراز",
+        "أرقام جدولية",
+        "onum"
+      ],
+      "ja": [
+        "オールドスタイル数字",
+        "ライニング数字",
+        "等幅数字",
+        "onum",
+        "tnum"
+      ],
+      "pt": [
+        "algarismos de estilo antigo",
+        "algarismos alinhados",
+        "algarismos tabulares",
+        "onum"
+      ],
+      "fr": [
+        "chiffres elzéviriens",
+        "chiffres bas de casse",
+        "chiffres alignés",
+        "chiffres tabulaires",
+        "onum"
+      ],
+      "de": [
+        "Mediävalziffern",
+        "Versalziffern",
+        "Tabellenziffern",
+        "onum",
+        "tnum"
+      ],
+      "it": [
+        "cifre old-style",
+        "cifre minuscole",
+        "cifre maiuscole",
+        "cifre tabellari",
+        "onum"
+      ]
+    },
+    "group": "fonts",
+    "docs": {
+      "slug": "configuration-fonts-colors-viewers",
+      "heading": {
+        "en": "Figure styles",
+        "es": "Estilos de cifras",
+        "ca": "Estils de xifres",
+        "zh": "数字样式",
+        "ar": "أنماط الأرقام",
+        "ja": "数字のスタイル",
+        "pt": "Estilos de algarismos",
+        "fr": "Styles de chiffres",
+        "de": "Ziffernarten",
+        "it": "Stili delle cifre"
+      }
+    },
+    "since": "1.61.0",
+    "research": [],
+    "detect": {
+      "config": [
+        "bodyText.figureStyle",
+        "paragraphStyles[].figureStyle",
+        "headings.figureStyle",
+        "headings.levels[].figureStyle",
+        "headingStyles[].figureStyle",
+        "tableStyle.figureStyle",
+        "tableStyles[].figureStyle",
+        "captionStyle.figureStyle"
+      ]
+    }
+  },
   "pdf-fonts": {
     "label": {
       "en": "Fonts embedded in the PDF",
@@ -5753,6 +5977,102 @@
         "it": "Aprire un pacchetto"
       }
     }
+  },
+  "config-layers": {
+    "label": {
+      "en": "Per-language overrides",
+      "es": "Ajustes propios de cada idioma",
+      "ca": "Ajustos propis de cada llengua",
+      "zh": "各语言覆盖设置",
+      "ar": "إعدادات خاصة بكل لغة",
+      "ja": "言語ごとの上書き",
+      "pt": "Substituições por idioma",
+      "fr": "Surcharges par langue",
+      "de": "Sprachspezifische Abweichungen",
+      "it": "Impostazioni per lingua"
+    },
+    "definition": {
+      "en": "The editions of a book share one set of general settings, and each language overrides only what belongs to it, such as the typefaces of its script, its hyphenation, quotes or labels; the override merges field by field.",
+      "es": "Las ediciones de un libro comparten unos ajustes generales y cada idioma cambia solo lo que es suyo, como las fuentes de su escritura, la división de palabras, las comillas o las etiquetas; sus ajustes se combinan campo a campo.",
+      "ca": "Les edicions d'un llibre comparteixen uns ajustos generals i cada llengua canvia només el que és seu, com les fonts de la seva escriptura, la partició de mots, les cometes o les etiquetes; els seus ajustos es combinen camp a camp.",
+      "zh": "一本书的各个版本共用一套通用设置，每种语言只覆盖属于自己的部分，例如其文字的字体、断词、引号或标签；覆盖设置逐字段合并。",
+      "ar": "تشترك طبعات الكتاب في إعدادات عامة واحدة، وتغيّر كل لغة ما يخصّها فقط، مثل خطوط كتابتها وتقطيع كلماتها وعلامات الاقتباس والتسميات؛ وتُدمج إعداداتها حقلًا حقلًا.",
+      "ja": "1冊の本の各版が共通設定を共有し、各言語は自分に関わるもの（文字体系の書体、ハイフネーション、引用符、ラベルなど）だけを上書きします。上書きはフィールドごとに統合されます。",
+      "pt": "As edições de um livro compartilham um conjunto de ajustes gerais, e cada idioma substitui só o que é seu, como as fontes da sua escrita, a hifenização, as aspas ou os rótulos; a substituição é mesclada campo a campo.",
+      "fr": "Les éditions d’un livre partagent des réglages généraux et chaque langue ne surcharge que ce qui lui revient, comme les polices de son écriture, la césure, les guillemets ou les libellés ; la surcharge se fusionne champ par champ.",
+      "de": "Die Ausgaben eines Buchs teilen allgemeine Einstellungen, und jede Sprache ändert nur, was ihr gehört, etwa die Schriften ihres Schriftsystems, die Silbentrennung, die Anführungszeichen oder die Beschriftungen; die Abweichung wird Feld für Feld zusammengeführt.",
+      "it": "Le edizioni di un libro condividono impostazioni generali e ogni lingua cambia solo ciò che le appartiene, come i caratteri della sua scrittura, la sillabazione, le virgolette o le etichette; le sue impostazioni si uniscono campo per campo."
+    },
+    "aliases": {
+      "en": [
+        "general settings",
+        "shared config",
+        "sharedConfig",
+        "per-language config",
+        "localized config"
+      ],
+      "es": [
+        "ajustes generales",
+        "configuración compartida",
+        "configuración por idioma"
+      ],
+      "ca": [
+        "ajustos generals",
+        "configuració compartida",
+        "configuració per llengua"
+      ],
+      "zh": [
+        "通用设置",
+        "共享配置",
+        "sharedConfig"
+      ],
+      "ar": [
+        "الإعدادات العامة",
+        "إعدادات مشتركة"
+      ],
+      "ja": [
+        "共通設定",
+        "sharedConfig"
+      ],
+      "pt": [
+        "ajustes gerais",
+        "configuração compartilhada",
+        "configuração por idioma"
+      ],
+      "fr": [
+        "réglages généraux",
+        "configuration partagée",
+        "configuration par langue"
+      ],
+      "de": [
+        "allgemeine Einstellungen",
+        "gemeinsame Konfiguration",
+        "Konfiguration je Sprache"
+      ],
+      "it": [
+        "impostazioni generali",
+        "configurazione condivisa",
+        "configurazione per lingua"
+      ]
+    },
+    "group": "languages",
+    "docs": {
+      "slug": "configuration-bundles",
+      "heading": {
+        "en": "General settings and per-language overrides",
+        "es": "Ajustes generales y ajustes propios de cada idioma",
+        "ca": "Ajustos generals i ajustos propis de cada llengua",
+        "zh": "通用设置与各语言覆盖",
+        "ar": "الإعدادات العامة والإعدادات الخاصة بكل لغة",
+        "ja": "共通設定と言語ごとの上書き",
+        "pt": "Ajustes gerais e substituições por idioma",
+        "fr": "Réglages généraux et surcharges par langue",
+        "de": "Allgemeine Einstellungen und sprachspezifische Abweichungen",
+        "it": "Impostazioni generali e impostazioni per lingua"
+      }
+    },
+    "since": "1.58.0",
+    "research": []
   },
   "heading-typography": {
     "label": {
@@ -20755,6 +21075,119 @@
       ]
     }
   },
+  "print-links": {
+    "label": {
+      "en": "Link addresses in print",
+      "es": "Direcciones de los enlaces en papel",
+      "ca": "Adreces dels enllaços en paper",
+      "zh": "印刷版中的链接地址",
+      "ar": "عناوين الروابط في النسخة المطبوعة",
+      "ja": "印刷物でのリンクのアドレス",
+      "pt": "Endereços dos links no papel",
+      "fr": "Adresses des liens sur papier",
+      "de": "Linkadressen im Druck",
+      "it": "Indirizzi dei link su carta"
+    },
+    "definition": {
+      "en": "On paper a link shows only its text, so Postext can print where it goes: the address in parentheses after the text, or a numbered note with the address, a QR code a phone can scan, or both. The link stays clickable in the PDF and the screen outputs.",
+      "es": "En papel un enlace solo muestra su texto, así que Postext puede imprimir adónde lleva: la dirección entre paréntesis tras el texto, o una nota numerada con la dirección, un código QR que se lee con el móvil, o las dos cosas. El enlace sigue funcionando en el PDF y en las salidas de pantalla.",
+      "ca": "En paper un enllaç només mostra el seu text, així que Postext pot imprimir on porta: l'adreça entre parèntesis després del text, o una nota numerada amb l'adreça, un codi QR que es llegeix amb el mòbil, o totes dues coses. L'enllaç continua funcionant al PDF i a les sortides de pantalla.",
+      "zh": "纸上的链接只显示文字，因此 Postext 可以把链接指向的地址印出来：在文字后的括号里写出地址，或加一条编号注释，注明地址、可用手机扫描的二维码，或两者兼有。在 PDF 和屏幕输出中，链接仍可点击。",
+      "ar": "لا يُظهر الرابط على الورق إلا نصّه، لذا يستطيع Postext أن يطبع وجهته: العنوان بين قوسين بعد النص، أو حاشية مرقّمة فيها العنوان أو رمز QR يقرؤه الهاتف أو كلاهما. ويبقى الرابط قابلًا للنقر في ملف PDF وفي مخرجات الشاشة.",
+      "ja": "紙の上ではリンクは文字しか見えないため、Postext はリンク先を印刷できます。文字のあとに括弧でアドレスを入れるか、番号付きの注にアドレス、スマートフォンで読める QR コード、またはその両方を入れます。PDF と画面向けの出力ではリンクはそのままクリックできます。",
+      "pt": "No papel um link mostra só o seu texto, então o Postext pode imprimir para onde ele leva: o endereço entre parênteses depois do texto, ou uma nota numerada com o endereço, um código QR que o celular lê, ou os dois. O link continua clicável no PDF e nas saídas de tela.",
+      "fr": "Sur papier, un lien ne montre que son texte : Postext peut donc imprimer où il mène, l’adresse entre parenthèses après le texte, ou une note numérotée avec l’adresse, un code QR qu’un téléphone lit, ou les deux. Le lien reste cliquable dans le PDF et à l’écran.",
+      "de": "Auf Papier zeigt ein Link nur seinen Text, deshalb kann Postext drucken, wohin er führt: die Adresse in Klammern nach dem Text oder eine nummerierte Anmerkung mit der Adresse, einem QR-Code, den ein Handy liest, oder beidem. Im PDF und in den Bildschirmausgaben bleibt der Link anklickbar.",
+      "it": "Su carta un link mostra solo il suo testo, perciò Postext può stampare dove porta: l’indirizzo tra parentesi dopo il testo, oppure una nota numerata con l’indirizzo, un codice QR che il telefono legge, o entrambi. Nel PDF e nelle uscite a schermo il link resta cliccabile."
+    },
+    "aliases": {
+      "en": [
+        "QR code",
+        "printed URL",
+        "link notes",
+        "web address in print",
+        "links.print"
+      ],
+      "es": [
+        "código QR",
+        "URL impresa",
+        "notas de enlace",
+        "dirección web en papel",
+        "links.print"
+      ],
+      "ca": [
+        "codi QR",
+        "URL impresa",
+        "notes d'enllaç",
+        "adreça web en paper"
+      ],
+      "zh": [
+        "二维码",
+        "印刷网址",
+        "链接注释",
+        "QR code",
+        "links.print"
+      ],
+      "ar": [
+        "رمز QR",
+        "عنوان ويب مطبوع",
+        "حواشي الروابط"
+      ],
+      "ja": [
+        "QRコード",
+        "URLの印刷",
+        "リンクの注",
+        "links.print"
+      ],
+      "pt": [
+        "código QR",
+        "URL impressa",
+        "notas de link",
+        "endereço web no papel"
+      ],
+      "fr": [
+        "code QR",
+        "URL imprimée",
+        "notes de lien",
+        "adresse web sur papier"
+      ],
+      "de": [
+        "QR-Code",
+        "gedruckte URL",
+        "Linkanmerkungen",
+        "Webadresse im Druck"
+      ],
+      "it": [
+        "codice QR",
+        "URL stampato",
+        "note dei link",
+        "indirizzo web su carta"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "configuration-notes-references",
+      "heading": {
+        "en": "Links in print",
+        "es": "Enlaces en papel",
+        "ca": "Enllaços en paper",
+        "zh": "印刷版中的链接",
+        "ar": "الروابط في النسخة المطبوعة",
+        "ja": "印刷物でのリンク",
+        "pt": "Links na edição impressa",
+        "fr": "Liens sur papier",
+        "de": "Links im Druck",
+        "it": "Link su carta"
+      }
+    },
+    "since": "1.65.0",
+    "research": [],
+    "detect": {
+      "config": [
+        "links.print"
+      ]
+    }
+  },
   "folio-viewer": {
     "label": {
       "en": "3D book viewer (Folio)",
@@ -26597,6 +27030,124 @@
       ],
       "config": [
         "exercises.digital"
+      ]
+    }
+  },
+  "scorm-packages": {
+    "label": {
+      "en": "SCORM packages",
+      "es": "Paquetes SCORM",
+      "ca": "Paquets SCORM",
+      "zh": "SCORM 包",
+      "ar": "حزم SCORM",
+      "ja": "SCORM パッケージ",
+      "pt": "Pacotes SCORM",
+      "fr": "Paquets SCORM",
+      "de": "SCORM-Pakete",
+      "it": "Pacchetti SCORM"
+    },
+    "definition": {
+      "en": "The book as a SCORM course for a learning management system: its exercises are answered on the page and report a score, completion and pass or fail, and settings can turn practice into a test with limited checks and attempts.",
+      "es": "El libro como curso SCORM para una plataforma de aprendizaje: sus ejercicios se contestan en la página y comunican la nota, si se completó y si se aprobó, y unos ajustes convierten la práctica en examen con comprobaciones e intentos limitados.",
+      "ca": "El llibre com a curs SCORM per a una plataforma d'aprenentatge: els seus exercicis es responen a la pàgina i comuniquen la nota, si s'ha completat i si s'ha aprovat, i uns ajustos converteixen la pràctica en examen amb comprovacions i intents limitats.",
+      "zh": "把书打包成供学习管理系统使用的 SCORM 课程：练习在页面上作答，并上报分数、完成情况和是否通过；还可通过设置限制检查和作答次数，把练习变成测验。",
+      "ar": "الكتاب مقرّرًا بصيغة SCORM لنظام إدارة التعلّم: تُحلّ تمارينه على الصفحة وتُرسل الدرجة والإكمال والنجاح أو الرسوب، ويمكن بالإعدادات تحويل التدريب إلى اختبار بعدد محدود من مرات التحقق والمحاولات.",
+      "ja": "本を学習管理システム向けの SCORM 教材にします。練習問題はページ上で解答でき、得点・完了・合否を報告します。設定で答え合わせと挑戦の回数を制限し、練習をテストにできます。",
+      "pt": "O livro como curso SCORM para um ambiente virtual de aprendizagem: os exercícios são respondidos na página e informam a nota, a conclusão e a aprovação, e alguns ajustes transformam a prática em prova com verificações e tentativas limitadas.",
+      "fr": "Le livre comme cours SCORM pour une plateforme d’apprentissage : ses exercices se font sur la page et transmettent la note, l’achèvement et la réussite, et des réglages font d’un entraînement un test aux vérifications et tentatives limitées.",
+      "de": "Das Buch als SCORM-Kurs für eine Lernplattform: Die Übungen werden auf der Seite gelöst und melden Punktzahl, Abschluss und Bestehen; Einstellungen machen aus der Übung einen Test mit begrenzten Prüfungen und Versuchen.",
+      "it": "Il libro come corso SCORM per una piattaforma di apprendimento: gli esercizi si risolvono sulla pagina e riportano punteggio, completamento ed esito, e alcune impostazioni trasformano l’esercitazione in una verifica con controlli e tentativi limitati."
+    },
+    "aliases": {
+      "en": [
+        "SCORM",
+        "LMS",
+        "e-learning",
+        "Moodle",
+        "postext-scorm",
+        "passing score"
+      ],
+      "es": [
+        "SCORM",
+        "LMS",
+        "Moodle",
+        "aula virtual",
+        "nota de aprobado"
+      ],
+      "ca": [
+        "SCORM",
+        "LMS",
+        "Moodle",
+        "aula virtual"
+      ],
+      "zh": [
+        "SCORM",
+        "LMS",
+        "学习管理系统",
+        "Moodle"
+      ],
+      "ar": [
+        "SCORM",
+        "نظام إدارة التعلم",
+        "Moodle"
+      ],
+      "ja": [
+        "SCORM",
+        "LMS",
+        "eラーニング",
+        "Moodle"
+      ],
+      "pt": [
+        "SCORM",
+        "AVA",
+        "Moodle",
+        "ambiente virtual"
+      ],
+      "fr": [
+        "SCORM",
+        "LMS",
+        "Moodle",
+        "plateforme pédagogique"
+      ],
+      "de": [
+        "SCORM",
+        "LMS",
+        "Lernplattform",
+        "Moodle"
+      ],
+      "it": [
+        "SCORM",
+        "LMS",
+        "Moodle",
+        "piattaforma e-learning"
+      ]
+    },
+    "group": "integration",
+    "docs": {
+      "slug": "exercises",
+      "heading": {
+        "en": "Exercises in a SCORM package",
+        "es": "Ejercicios en un paquete SCORM",
+        "ca": "Exercicis en un paquet SCORM",
+        "zh": "SCORM包中的练习",
+        "ar": "التمارين في حزمة SCORM",
+        "ja": "SCORM パッケージの練習問題",
+        "pt": "Exercícios num pacote SCORM",
+        "fr": "Exercices dans un paquet SCORM",
+        "de": "Übungen in einem SCORM-Paket",
+        "it": "Esercizi in un pacchetto SCORM"
+      }
+    },
+    "since": "1.63.0",
+    "research": [],
+    "detect": {
+      "api": [
+        "renderToScorm"
+      ],
+      "config": [
+        "exercises.digital.passingScore",
+        "exercises.digital.maxChecks",
+        "exerciseStyles[].digital"
       ]
     }
   }

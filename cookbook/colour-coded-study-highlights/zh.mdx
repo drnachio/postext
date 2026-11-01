@@ -1,0 +1,62 @@
+---
+title: "学习读本里按颜色分类的高亮"
+summary: "一本历史读本，关键词用三种颜色高亮：术语绿色、日期琥珀色、人名地名蓝色，三种样式都在 markStyles 里定义并链接到调色板。"
+plain: "一篇讲印刷术历史的学校读物。关键术语标成绿色，年代标成琥珀色，人物和地点标成蓝色，第一页的图例说明每种颜色的含义。"
+description: "用 Postext 排的历史学习读本，三种高亮样式：术语绿色、日期琥珀色、人名地名蓝色，开篇页有颜色图例，末页有术语表，附完整代码。"
+question: "怎样用各有含义的颜色（术语、日期、人名）给学习材料划重点？"
+aliases: ["高亮", "划重点", "荧光笔", "颜色编码", "颜色图例", "关键词", "学习材料", "读本", "历史课本", "术语表", "标记", "印刷术", "古腾堡"]
+pageNotes: { "1": "开篇页：上方是一幅约1460年印刷作坊的画，下面是栏目标签、标题和斜体导语，再往下是红色细线下的浅底方框，用绿色、琥珀色、蓝色各一个样本说明三种颜色，最后是正文的头几行。", "2": "正文的一个左页：1455、1462 等年代在琥珀色色带上，Johann Fust、Subiaco、William Caxton 等名字在浅蓝色色带上，movable type、colophon 等术语在绿色色带上，全部在两端对齐的正文里。", "4": "最后一页：术语表，每个词条以绿色色带上的粗体术语开头，转行悬挂缩进，最后是灰色小字的版权说明。" }
+---
+
+## 成品一览
+
+学校历史读本《Readings in Early Modern History》中某单元的第二篇读物：四页，讲1450年到1550年间印刷术如何从美因茨传遍欧洲，页面 170 × 240 mm。编者像一个认真的学生那样给正文划了重点，而且整本书用同一套颜色：关键术语铺绿色，年代铺琥珀色，人物和地点铺浅蓝色。标题下的图例直接用这三种颜色说明代码，末页的术语表每个词条都以绿色术语开头。高亮只是铺在普通文字下面的色带，所以行的断行、断词和两端对齐都和没有色带时完全一样。
+
+## 做法
+
+### 1 · 每类词一个样式
+
+代码就是上面的[简短回答](#简短回答)。`markStyles` 声明三个有名字的样式，正文里每处高亮选一个：`:mark[Johann Fust]{style="name"}`、`:mark[1455]{style="date"}`、`:mark[colophon]{style="term"}`（[高亮标记](/zh/docs/document-format-inline#高亮标记)）。每个样式表示一种含义（`name` 是编辑时看到的名字），于是 Markdown 记下的是一个词为什么被标出，而不是它用什么颜色。改一个样式的颜色，全书所有日期都跟着变。两端是方的，postext 1.52 起默认如此（[高亮样式](/zh/docs/configuration-styles#高亮样式)）：荧光笔画出来的两端是方的，圆角色带看起来像标签。
+
+### 2 · 调色板里的三种浅色
+
+<Excerpt region="palette" />
+
+三条色带和正文墨色、强调色一样是调色板条目，在 Sandbox 里打开这本书的人改一个色样就能换掉整套颜色。它们很浅，亮度接近方框的底色，上面的文字对比度保持在 12.6:1 以上；三种颜色在同一行里相邻时也分得清，比如第3页的“In 1517 Martin Luther”。高亮不占地方：`paddingX` 向短语旁边的空格伸出 0.12 em，`paddingBottom` 把色带延到下伸部以下，两者都画在原本就有的空白里。
+
+### 3 · 开篇：标题上方的画
+
+<Excerpt region="opener" />
+
+一级标题印的是一个设计。画锚定在页面上，所以从上边和左右两边出血，170 × 96 mm，用 `fit: 'cover'`。栏目标签和导语来自标题行上的属性（[标题属性](/zh/docs/document-format#标题属性)），图例则是一个普通的 `:::callout`，列表项分别以三种高亮开头。`minHeight` 决定开篇的深度：不管标题多长，图例都从同一行开始。
+
+### 4 · 按奇偶页排的书眉
+
+<Excerpt region="running-heads" />
+
+左页印丛书名，右页印本篇标题，两者都用 `parity` 筛选，并用 `pages: 'body'` 避开开篇页（[文本元素](/zh/docs/configuration-headers-footers#文本元素)）。开篇页的页码放在页脚。
+
+## 变化
+
+### 让色带两端变圆
+
+圆角取字号的五分之一，就像记号笔画出的柔和两端。
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### 每行一条完整色带
+
+设置 `decorationBreak: 'clone'` 后，跨行的高亮在每一段的两端都有留白，比如第3页的“pamphlets”在“pam-”后断开的地方。
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## 常见问题
+
+- 只靠颜色，黑白复印后就看不出来了，而很多读物正是这样复印后发到课堂上的。术语表另外把术语设为粗体；如果读者会复印这些页面，就给三类词中的一类再加一个自己的标志。
+- `markStyles` 里没有声明的样式 id 会退回第一个样式，页面上不会报错（Sandbox 会提示）。id 要短，并检查正文里的拼写。

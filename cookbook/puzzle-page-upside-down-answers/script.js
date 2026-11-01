@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 174 · A puzzle page with the answers upside down ═══════
 // https://postext.dev/en/cookbook/puzzle-page-upside-down-answers
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Baloo 2, Nunito, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.63.0
+// Fonts: Baloo 2, Nunito, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -39,7 +39,7 @@ const puzzle = {
   number: { shape: 'disc', fontFamily: DISPLAY, background: col('coral') },
   instruction: { fontFamily: TEXT, bold: false },
   options: { marker: 'circle', labels: 'none' }, // a ring to colour in, no letters
-  grid: { fontFamily: LABEL, rule: col('sea'), cell: em(1.45) },
+  grid: { fontFamily: LABEL, rule: col('sea'), cell: em(1.3) },
   match: { color: col('sea') },
   area: { kind: 'lines', color: col('sea') },
   answers: { color: col('coral'), fontFamily: LABEL },
@@ -51,7 +51,7 @@ const card = { id: 'card', title: '', background: col('card'), borderRadius: mm(
   titleStyle: { fontFamily: DISPLAY, fontSize: pt(15), fontWeight: 700, color: col('ink') },
   body: { fontFamily: TEXT, fontSize: pt(10.5), lineHeight: pt(15), color: col('ink'),
     firstLineIndent: pt(0) },
-  marginTop: mm(0), marginBottom: mm(5), keepTogether: true };
+  marginTop: mm(0), marginBottom: mm(4), keepTogether: true };
 const turned = { id: 'turned', title: '', backgroundEnabled: false, border: { enabled: false },
   padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) },
   body: { fontFamily: LABEL, fontSize: pt(8.5), lineHeight: pt(11), color: col('muted'),
@@ -92,7 +92,8 @@ const config = {
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'left', firstLineIndent: pt(0), hyphenation: { enabled: true } },
   headings: { fontFamily: DISPLAY, color: col('ink'), fontWeight: 800,
-    balancing: { enabled: false },
+    // Balancing cuts the closing page level: its last cards share both columns.
+    balancing: { enabled: true },
     // The opener spans both columns; the puzzles start under the painting.
     levels: [{ level: 1, fontSize: pt(56), span: 'page', breakBefore: { parity: 'any' },
       marginBottom: pt(0), advancedDesign: opener }] },

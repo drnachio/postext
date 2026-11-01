@@ -11,11 +11,11 @@
 
 Art & Scenario: David Revoy — Translation: Mahwiii
 
-الترخيص: المشاع الإبداعي – نسب المصنَّف 4.0 ‏(CC BY 4.0).
+الترخيص: [المشاع الإبداعي – نسب المصنَّف 4.0 ‏(CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.ar).
 
 عمل مشتق من «حفلةُ عيدِ ميلادِ فُلفُل» لديفيد ريفوي، مرخّص بموجب CC BY 4.0: أعاد Postext رسم فقاعات الحوار وكتابة النصوص وتنضيد الصفحات انطلاقًا من الترجمة العربية الرسمية.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/ar/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

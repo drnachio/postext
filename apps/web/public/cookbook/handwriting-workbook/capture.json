@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "handwriting-workbook",
-  "sourceHash": "f17755fc55da7e86d5c6c8bbb8f313d46d2c0b746c008ab61a6e29f2ed7684e8",
+  "sourceHash": "94fb84a2c408e8dfa6ca8800a39312827ee8a105d7ac6e4997a60eb6e3d2a3fd",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:36:51.264Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.529Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:05:24.467Z",
   "variants": {
     "en": {
-      "hash8": "225107df",
+      "hash8": "ada3abef",
       "vdtHash": "e4da08b466b45848fe6f61a8639605fb5a371359",
       "timings": {
-        "importMs": 206,
-        "fontsMs": 81,
-        "buildMs": 67,
-        "totalMs": 949,
+        "importMs": 2897,
+        "fontsMs": 224,
+        "buildMs": 98,
+        "totalMs": 4046,
         "builds": 1
       },
       "specimen": {
@@ -225,12 +219,12 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 1156839,
+        "bytes": 1156849,
         "pages": 12
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 918777,
+        "bytes": 918775,
         "chapters": [
           {
             "pages": 12,
@@ -475,6 +469,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es left out (the resources differ when read back)"
@@ -523,13 +567,13 @@
       }
     },
     "es": {
-      "hash8": "dcc33587",
-      "vdtHash": "64880385fc5c39e8e6db9e303adc27a403b7481f",
+      "hash8": "e2b97c3b",
+      "vdtHash": "b5fba46750b4b4279fbaa53bfd3d0e8d5905f45c",
       "timings": {
-        "importMs": 197,
-        "fontsMs": 86,
-        "buildMs": 68,
-        "totalMs": 957,
+        "importMs": 4006,
+        "fontsMs": 646,
+        "buildMs": 158,
+        "totalMs": 5732,
         "builds": 1
       },
       "specimen": {
@@ -595,7 +639,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 59712,
+          "bytes": 60164,
           "alt": "Página de apertura 4: La m y la p."
         },
         {
@@ -731,17 +775,17 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 1225674,
+        "bytes": 1225590,
         "pages": 12
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 944599,
+        "bytes": 944607,
         "chapters": [
           {
             "pages": 12,
-            "hash": "024bc4d6b20dac24",
-            "lines": "e9d6258a80b20170"
+            "hash": "875158f1317e5a7f",
+            "lines": "eb7e31920f5fd210"
           }
         ]
       },
@@ -981,6 +1025,61 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -1029,13 +1128,13 @@
       }
     },
     "ca": {
-      "hash8": "7ae6955c",
+      "hash8": "4f87c669",
       "vdtHash": "1e6380b815e57609aabd99d284e9775e294867c1",
       "timings": {
-        "importMs": 209,
-        "fontsMs": 81,
-        "buildMs": 68,
-        "totalMs": 938,
+        "importMs": 3467,
+        "fontsMs": 665,
+        "buildMs": 153,
+        "totalMs": 5727,
         "builds": 1
       },
       "specimen": {
@@ -1237,12 +1336,12 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 1226265,
+        "bytes": 1226269,
         "pages": 12
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 940049,
+        "bytes": 940045,
         "chapters": [
           {
             "pages": 12,
@@ -1487,6 +1586,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -1535,13 +1684,13 @@
       }
     },
     "zh": {
-      "hash8": "89b15bb3",
+      "hash8": "07dd652c",
       "vdtHash": "36599b3f63f98d33721a4df5579939ac3c04cbde",
       "timings": {
-        "importMs": 207,
-        "fontsMs": 262,
-        "buildMs": 74,
-        "totalMs": 1208,
+        "importMs": 1787,
+        "fontsMs": 1388,
+        "buildMs": 110,
+        "totalMs": 3955,
         "builds": 1
       },
       "specimen": {
@@ -1744,12 +1893,12 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 995747,
+        "bytes": 995717,
         "pages": 12
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 811745,
+        "bytes": 811739,
         "chapters": [
           {
             "pages": 12,
@@ -1994,6 +2143,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -2042,13 +2241,13 @@
       }
     },
     "ar": {
-      "hash8": "af583c1f",
+      "hash8": "b2af66d5",
       "vdtHash": "c7f4ceec58c3e049e14fac43559b093245c2721c",
       "timings": {
-        "importMs": 478,
-        "fontsMs": 111,
-        "buildMs": 84,
-        "totalMs": 1375,
+        "importMs": 7003,
+        "fontsMs": 647,
+        "buildMs": 112,
+        "totalMs": 9123,
         "builds": 1
       },
       "specimen": {
@@ -2256,7 +2455,7 @@
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 856343,
+        "bytes": 856340,
         "chapters": [
           {
             "pages": 12,
@@ -2498,6 +2697,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -2546,13 +2795,13 @@
       }
     },
     "ja": {
-      "hash8": "053fe2a2",
+      "hash8": "d2a697bf",
       "vdtHash": "3dec642d767e314ff20b3d66a9fdb10979a29069",
       "timings": {
-        "importMs": 483,
-        "fontsMs": 177,
-        "buildMs": 66,
-        "totalMs": 1375,
+        "importMs": 4841,
+        "fontsMs": 970,
+        "buildMs": 100,
+        "totalMs": 7380,
         "builds": 1
       },
       "specimen": {
@@ -2758,7 +3007,7 @@
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 987050,
+        "bytes": 987009,
         "chapters": [
           {
             "pages": 12,
@@ -2988,6 +3237,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -3036,13 +3335,13 @@
       }
     },
     "pt": {
-      "hash8": "56ba1dd2",
+      "hash8": "49c32122",
       "vdtHash": "55306373789fb4809478b0e0ca841bed2c7f1d77",
       "timings": {
-        "importMs": 207,
-        "fontsMs": 84,
-        "buildMs": 65,
-        "totalMs": 962,
+        "importMs": 3083,
+        "fontsMs": 278,
+        "buildMs": 105,
+        "totalMs": 4177,
         "builds": 1
       },
       "specimen": {
@@ -3244,12 +3543,12 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 1290417,
+        "bytes": 1290419,
         "pages": 12
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 976435,
+        "bytes": 976433,
         "chapters": [
           {
             "pages": 12,
@@ -3494,6 +3793,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -3542,13 +3891,13 @@
       }
     },
     "fr": {
-      "hash8": "55a742d8",
+      "hash8": "cc41271c",
       "vdtHash": "33dca3c904d95ad503f10eb8ac176e9a4667d3fb",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 82,
-        "buildMs": 67,
-        "totalMs": 937,
+        "importMs": 4853,
+        "fontsMs": 332,
+        "buildMs": 116,
+        "totalMs": 6674,
         "builds": 1
       },
       "specimen": {
@@ -3750,7 +4099,7 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 1278462,
+        "bytes": 1278469,
         "pages": 12
       },
       "sandbox": {
@@ -4000,6 +4349,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -4048,13 +4447,13 @@
       }
     },
     "de": {
-      "hash8": "651b80a3",
+      "hash8": "4156d232",
       "vdtHash": "6a71e86b360848c394580ea0560991047d209c04",
       "timings": {
-        "importMs": 217,
-        "fontsMs": 81,
-        "buildMs": 64,
-        "totalMs": 963,
+        "importMs": 4938,
+        "fontsMs": 493,
+        "buildMs": 148,
+        "totalMs": 7536,
         "builds": 1
       },
       "specimen": {
@@ -4256,12 +4655,12 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 1198006,
+        "bytes": 1198013,
         "pages": 12
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 888555,
+        "bytes": 888565,
         "chapters": [
           {
             "pages": 12,
@@ -4506,6 +4905,56 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en left out (the resources differ when read back)"
@@ -4554,13 +5003,13 @@
       }
     },
     "it": {
-      "hash8": "29c160be",
+      "hash8": "e88272cf",
       "vdtHash": "8d78f234c494408b36d3fbcc54776df388d36b8b",
       "timings": {
-        "importMs": 218,
-        "fontsMs": 83,
-        "buildMs": 66,
-        "totalMs": 961,
+        "importMs": 2775,
+        "fontsMs": 276,
+        "buildMs": 163,
+        "totalMs": 4105,
         "builds": 1
       },
       "specimen": {
@@ -4762,12 +5211,12 @@
       },
       "pdf": {
         "file": "handwriting-workbook.pdf",
-        "bytes": 1174254,
+        "bytes": 1174253,
         "pages": 12
       },
       "sandbox": {
         "file": "handwriting-workbook.postext",
-        "bytes": 891036,
+        "bytes": 891071,
         "chapters": [
           {
             "pages": 12,
@@ -5011,6 +5460,56 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
           {
             "check": "sandbox",
             "severity": "info",

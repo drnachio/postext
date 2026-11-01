@@ -5,7 +5,7 @@ plain: "有名なAI論文を短くして組み直したものです。プロン�
 description: "Wei et al.の思考の連鎖の論文をPostextで組みます。図1は2段の入れ子の囲み、natbib風の著者–年の引用、表2とスケーリングの図を論文の数値から描き直します。"
 question: "AI論文のプロンプトとモデル出力の例を、囲みに入れて左右に並べるには？"
 aliases: ["プロンプトの図", "モデル入力", "モデル出力", "思考の連鎖", "chain of thought", "few-shotの例", "機械学習の論文", "NeurIPS", "arXiv", "natbib", "著者–年方式", "プレプリント", "Wei et al. 2022"]
-pageNotes: { "1": "1ページ目。青い等幅書体の学会名の行、太いセリフ体で2行のタイトルChain-of-Thought Prompting Elicits Reasoning in Large Language Models、2行に並ぶ9人の著者とGoogle Research, Brain Team、短縮版であることの注記、淡い青の地の抄録。その下に全幅の図1：左にStandard Prompting、右にChain-of-Thought Promptingがあり、それぞれ青いタブのModel Inputの囲みと緑のタブのModel Outputの囲みを等幅書体で組んでいます。思考の連鎖は入力では青の太字、出力では緑の太字です。左の答え27の角には赤い×、右の答え9には緑のチェック。", "2": "2ページ目。1節Introductionと2節Chain-of-Thought Promptingを両端そろえの2段で。引用は (Kaplan et al., 2020; Brown et al., 2020, inter alia) の形です。", "3": "3ページ目。図2、GSM8Kの正答率の横棒グラフ（ファインチューニングしたGPT-3が33、従来の最高が55、PaLM 540Bは標準のプロンプトで18、思考の連鎖で57）、手法の4つの性質の番号付きリスト、3節Arithmetic Reasoningの実験設定。", "4": "4ページ目。全幅の図4。LaMDA、GPT、PaLMのGSM8K、SVAMP、MAWPSでの正答率をモデル規模に対して描いた9つの小さな折れ線グラフで、最大のモデルでは青い思考の連鎖の線が灰色の標準の線を上回ります。下に結果と4節。", "5": "5ページ目。全幅の表2。青い2行の見出しで、各モデルと規模の5つのベンチマークでの正答率を示し、思考の連鎖が勝る数値は太字です。続いて常識推論の結果と、脚注の付いた5節Symbolic Reasoning。", "6": "6ページ目。5節の終わり、6節Discussion、7節Conclusions、謝辞。", "7": "7ページ目。2段の参考文献。著者順に並び、名前のすぐ後に年が来ます。最後にライセンスを記した1行の奥付。" }
+pageNotes: { "1": "1ページ目。青い等幅書体の学会名の行、太いセリフ体で2行のタイトルChain-of-Thought Prompting Elicits Reasoning in Large Language Models、2行に並ぶ9人の著者とGoogle Research, Brain Team、短縮版であることの注記、淡い青の地の抄録。その下に全幅の図1：左にStandard Prompting、右にChain-of-Thought Promptingがあり、それぞれ青いタブのModel Inputの囲みと緑のタブのModel Outputの囲みを等幅書体で組んでいます。思考の連鎖は入力では青の太字、出力では緑の太字です。左の答え27の角には赤い×、右の答え9には緑のチェック。", "2": "2ページ目。1節Introductionと2節Chain-of-Thought Promptingを両端そろえの2段で。引用は (Kaplan et al., 2020; Brown et al., 2020, inter alia) の形です。", "3": "3ページ目。図2、GSM8Kの正答率の横棒グラフ（ファインチューニングしたGPT-3が33、従来の最高が55、PaLM 540Bは標準のプロンプトで18、思考の連鎖で57）、手法の4つの性質の番号付きリスト、3節Arithmetic Reasoningの実験設定。", "4": "4ページ目。全幅の図4。LaMDA、GPT、PaLMのGSM8K、SVAMP、MAWPSでの正答率をモデル規模に対して描いた9つの小さな折れ線グラフで、最大のモデルでは青い思考の連鎖の線が灰色の標準の線を上回ります。下に結果と4節。", "5": "5ページ目。全幅の表2。青い2行の見出しで、各モデルと規模の5つのベンチマークでの正答率を示し、思考の連鎖が勝る数値は太字です。続いて常識推論の結果と、脚注の付いた5節Symbolic Reasoning。", "6": "6ページ目。5節の終わり、6節Discussion、7節Conclusions、謝辞。", "7": "7ページ目。2段の参考文献。著者順に並び、名前のすぐ後に年が来ます。最後にライセンスを記した2行の奥付。" }
 ---
 
 ## できあがり
@@ -23,6 +23,8 @@ pageNotes: { "1": "1ページ目。青い等幅書体の学会名の行、太い
 <Excerpt region="citations" />
 
 機械学習の学会はnatbibの著者–年方式を使います。名前と年の間にコンマを入れ、著者が3人以上なら *et al.* とします。同梱のスタイルでいちばん近いのはChicago author-dateなので、このレシピではCSLのうち著者と年をつなぐグループの区切りを空白からコンマに変えています。自分の`.bib`ファイルはそのまま使えます。`:::references{format=bibtex}`のブロックに貼り、*(Brown et al., 2020)* なら`[@key]`、*Brown et al. (2020)* なら`@key`で引用します。後置きは前に書いたコンマと強調を保つので、`[@brown2020language, *inter alia*]`は原論文と同じく (Brown et al., 2020, *inter alia*) と印刷されます。キャプションも同じ書き方で引用できます。図4のキャプションは`@jie2022learning`と`@lan2021mwptoolkit`を引き、どちらも`nocite`なしで参考文献に載ります。
+
+本文にある二つのウェブアドレス、第5節の人名統計データと奥付のライセンスは、`[name census data](https://namecensus.com/)` のようにリンクとして書きます。`links: { print: 'inline', urlDisplay: 'short' }` を指定すると、紙面ではリンクの文字の後ろに括弧でアドレスが `https://` なしで印刷され、PDF ではリンクがそのまま働きます。アドレスをただの文字として書いても印刷は同じですが、クリックしてもどこにも飛びません。
 
 ### 3 · タイトルのブロック
 

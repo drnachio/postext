@@ -1,0 +1,64 @@
+---
+title: "La columna que la regla de vídues deixava curta"
+summary: "Columnes en bandera que acaben a la reixeta: fillShortColumns allarga o escurça una línia un paràgraf de la columna curta en lloc de deixar un buit al peu."
+description: "Un reportatge de revista a dues columnes en bandera, amb i sense fillShortColumns, per comparar la columna que les vídues i òrfenes deixaven curta."
+plain: "Quan una columna es queda una línia per sobre del peu perquè un paràgraf no es pot partir allà, aquest ajust torna a tallar les línies d'un paràgraf d'aquesta columna perquè arribi a baix."
+question: "Per què una columna en bandera acaba una línia abans del peu, i com l'omplo sense vídues ni òrfenes?"
+aliases: ["columna curta", "buit al peu", "columnes en bandera", "justificació vertical", "regla de vídues", "fillShortColumns"]
+pageNotes: { "1": "L'obertura sense l'ajust: una lent de Fresnel encesa pintada d'un costat a l'altre de la pàgina, el títol i dues columnes en bandera, la dreta una línia més curta que l'esquerra.", "4": "La mateixa obertura amb fillShortColumns: el paràgraf de la columna dreta guanya una línia i les dues columnes acaben a la mateixa línia de base." }
+---
+
+## Què compondràs
+
+Tres pàgines de *Litoral*, una revista de costa: un reportatge llarg sobre la lent de Fresnel que s'obre amb la pintura d'una lent encesa a la seva llanterna. El text va en dues columnes en bandera de Public Sans, amb una línia de reixeta en blanc entre paràgrafs, i les regles de vídues i òrfenes deixen almenys dues línies de cada paràgraf a cada costat d'un tall. El pen compon el reportatge dues vegades. Sense l'ajust, a <PageRef page={1}>l'obertura</PageRef> la columna dreta es queda una línia per sobre de l'esquerra: el paràgraf següent no pot començar amb una sola línia al peu. Amb l'ajust, a <PageRef page={4}>la mateixa pàgina</PageRef>, el paràgraf d'aquesta columna es talla en una línia més i les dues columnes acaben a l'última línia de la reixeta. A la pàgina següent, l'ajust també recull l'aire de més que l'equilibri posava sobre un subtítol.
+
+## Elaboració
+
+### 1 · Dona a la columna en bandera una palanca pròpia
+
+<Excerpt region="answer" />
+
+L'equilibri de columnes omple una columna curta amb línies de reixeta sobre un títol, després d'una llista, sota un requadre o una figura i, com a últim recurs, component un paràgraf justificat una línia més ample. Una columna de text corregut en bandera no té res d'això entre els seus subtítols, així que la línia que retenen les regles de vídues i òrfenes es queda buida. `fillShortColumns` deixa que un paràgraf en bandera d'aquesta columna ocupi una línia més amb el seu propi espaiat; quan cap no pot, en compon un amb una línia menys perquè el paràgraf de després del tall pugi i ocupi aquesta línia. El motor només conserva el canvi si acaben curtes menys columnes, així que activar-lo mai no empitjora una pàgina. Amb `maxLinesBeforeLoose: 0` es proven els paràgrafs abans que els títols, i cada subtítol conserva una sola línia d'aire a sobre.
+
+### 2 · Compon el reportatge dues vegades i compara
+
+<Excerpt region="builds" />
+
+Els dos documents surten d'una mateixa configuració i un mateix Markdown. La segona composició passa la configuració tal com és; la primera, una còpia amb l'ajust apagat, de manera que el paquet que s'obre al Sandbox porta `fillShortColumns: true`. Els dos botons sobre la taula canvien d'una composició a l'altra. Només s'omplen fins al peu les pàgines que continuen: la pàgina 3 tanca el reportatge i les seves columnes es tallen a la mateixa altura, igual en les dues composicions.
+
+### 3 · Obre amb la pintura
+
+<Excerpt region="opener" />
+
+La pintura és un element d'imatge ancorat al sagnat, de 150 mm d'alt, així que arriba al tall per tres costats, cosa que cap flotant no fa. L'avanttítol, el títol, l'entradeta i la signatura surten dels atributs de la línia `#`. La signatura acaba en un farciment de 6 mm que compta en l'alçada de l'obertura, així que les columnes comencen a la primera línia de reixeta de sota.
+
+### 4 · Capçaleres fora de l'obertura
+
+<Excerpt region="heads" />
+
+La pàgina parella anomena la revista i el número des del frontmatter, la senar el reportatge, i `pages: 'body'` les treu de l'obertura, que només porta un foli al peu. L'etiqueta baixa 0,35 mm respecte al foli perquè els dos cossos comparteixin línia de base. El filet de sota fa 197 mm, l'amplada de la caixa de text.
+
+## Variants
+
+### Deixa que els subtítols prenguin el buit primer
+
+Amb l'ordre per defecte, un títol pren fins a dues línies de reixeta abans que un paràgraf s'allargui, i els subtítols de la pàgina següent tornen a obrir-se.
+
+```diff
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Justifica el text
+
+Un paràgraf justificat ja podia ocupar una línia més sense l'ajust, dins de `maxWordSpacing`. Amb `fillShortColumns` també pot ocupar una línia menys, i mai no es compon més ample que la seva línia més ampla.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
+```
+
+## Errors freqüents
+
+- L'ajust tanca un buit d'una línia. Una columna a la qual en falten dues, per exemple una que acaba després del blanc entre paràgrafs amb lloc per a una sola línia del següent, es pot quedar curta: ajusta el text amb una frase.
+- No es fa servir un paràgraf la nova composició del qual acabaria en una línia curta, així que una columna es pot quedar curta quan només té paràgrafs breus.

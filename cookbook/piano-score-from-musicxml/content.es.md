@@ -18,7 +18,7 @@ Cada minueto tiene 32 compases en dos mitades de 16, y cada mitad se repite. El 
 
 Las notas siguen la edición de la Bach-Gesellschaft, tal como la introdujo Allen Garvin para el Mutopia Project, que la puso en el dominio público. Se han convertido a MusicXML 4.0 y se han revisado compás a compás frente a esa fuente: alturas, ritmos, alteraciones, las dos voces de los compases finales y las barras de las corcheas. Los adornos son los de la fuente, como la apoyatura del compás 8 y el becuadro de precaución del compás 24 del minueto I.
 
-Ni la fuente ni esta edición indican digitaciones, matices ni ligaduras. Los márgenes dejan sitio para anotarlos a lápiz.
+Ni la fuente ni esta edición indican digitaciones, matices ni ligaduras. Los márgenes dejan sitio para anotarlos a lápiz a medida que el alumno los decida con su profesor.
 
 ## Notas de interpretación
 
@@ -26,7 +26,7 @@ Un minueto de este tipo se siente a un pulso por compás y no a tres, en torno a
 
 El mordente, el signo atravesado por una raya, es la nota principal, la inferior y otra vez la principal, rápido y a tiempo. El trino breve sin raya, en el compás 30 del minueto I y en los compases 8, 9, 15 y 31 del minueto II, empieza por la nota superior, a tiempo.
 
-Cada minueto ocupa una doble página, así que no hay que pasar página dentro de una pieza. El único paso de página cae entre los dos minuetos.
+Cada minueto ocupa una doble página, así que no hay que pasar página dentro de una pieza. El único paso de página cae entre los dos minuetos, donde el intérprete puede tomar aliento.
 
 :::paragraphs{style="colophon"}
 Compuesto en Libre Caslon Text, Bodoni Moda y Archivo Narrow (SIL OFL). Música en Bravura (SIL OFL), grabada con Verovio. Notas según el Mutopia Project (dominio público).

@@ -40,6 +40,8 @@ Le bloc délimité est un [bloc de code](/fr/docs/document-format#blocs-de-code)
 
 Les notes n’ont besoin d’aucun réglage en dehors de leur corps : dans un document japonais horizontal, les valeurs par défaut sont celles que JLReq décrit pour les livres horizontaux, une note au pied de la colonne où elle est appelée, numérotée à partir de 1 à chaque page, un appel en exposant et un filet long d’un tiers de la justification ([Notes de bas de page](/fr/docs/configuration-notes-references#notes-de-bas-de-page)). L’appel se place avant le point, `保存していた[^hfs]。` : le 。 ne commence donc jamais la ligne suivante séparé de lui.
 
+La note 2 cite le rapport d’Unicode qui définit les quatre formes, et la citation est un lien : `[Unicode Standard Annex #15「…」](https://www.unicode.org/reports/tr15/)`. Une note ne peut pas porter de note à son tour : un lien qu’elle contient imprime donc son adresse après le texte, entre parenthèses ; `links.urlDisplay: 'short'` retire `https://` et `www.`, et le PDF garde le lien complet. `links.print: 'inline'` fait de même pour un lien du texte ([Liens sur papier](/fr/docs/configuration-notes-references#liens-sur-papier)). La note commence par des mots japonais, pour que sa première ligne se remplisse avant le long titre latin.
+
 ### 5 · Un titre de section sur trois lignes
 
 <Excerpt region="opener" />
@@ -70,5 +72,5 @@ Certains éditeurs composent les mots latins collés aux kana, sans quart de cad
 
 - Un mot latin ne peut pas se couper dans une ligne japonaise : un mot long en fin de ligne laisse la ligne précédente espacée entre ses caractères. Le premier jet de ce chapitre glosait ses termes en anglais, 正準等価（canonical equivalence）, et deux lignes en sont sorties lâches ; les termes anglais ont été retirés là où ils n’aidaient pas le lecteur.
 - Choisissez le caractère de code selon les caractères que contient le code. M PLUS 1 Code, le premier essayé ici, n’a pas de katakana demi-chasse : l’écran se rabattait sur une police système pour ｶﾞｲﾄﾞ et il manquait les glyphes au PDF.
-- Un listing se coupe entre ses lignes d’une page à l’autre, avec au moins deux lignes de chaque côté (`codeStyle.splitMinLines`). Page 43, la place restant sous 3.3 contient le titre et une seule ligne, pas deux : le listing entier ouvre donc la page 44 ; `keepTogether: true` garde chaque listing d’un seul tenant.
+- Un listing se coupe entre ses lignes d’une page à l’autre, avec au moins deux lignes de chaque côté (`codeStyle.splitMinLines`). Page 43, la place restant sous 3.3 ne contient pas le titre et deux lignes : le listing entier ouvre donc la page 44 ; `keepTogether: true` garde chaque listing d’un seul tenant.
 - Sur une grille de caractères, une page prend ses 29 lignes quoi que fasse un paragraphe ou une liste au changement de page : la liste des quatre formes laisserait donc son premier élément, NFC, seul au pied de la page 42. `shortListSplit: 'avoid'` avec `shortListMaxItems: 4` fait passer toute la liste en page 43, et la page 42 finit une ligne plus haut, au-dessus de ses notes.

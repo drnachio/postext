@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "broadsheet-six-columns",
-  "sourceHash": "ef94eaeaed0fdbc3baa9dd7d75d24563c98526127aa949f11840473937b85adb",
+  "sourceHash": "442c43372ad0102256b3d0cebb97464f771900f7dcd3f5e5b7aabd59c84615ac",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:31:43.276Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:59:31.807Z",
   "variants": {
     "en": {
-      "hash8": "a6f4d729",
-      "vdtHash": "681e9c700e07e377d1c75e609df1343774e56b5a",
+      "hash8": "0efd55ff",
+      "vdtHash": "00c7b75097a78bffdd6020435d3647dd7d97e97f",
       "timings": {
-        "importMs": 166,
-        "fontsMs": 44,
-        "buildMs": 62,
-        "totalMs": 1815,
+        "importMs": 4412,
+        "fontsMs": 304,
+        "buildMs": 140,
+        "totalMs": 6622,
         "builds": 1
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Playfair Display"
         ],
         "pages": 4,
-        "ownLines": 245
+        "ownLines": 247
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "h": 1592,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 259448,
+          "bytes": 261006,
           "alt": "Opening page 1: The Corrington Despatch. The end of the line. The Eastern Quays at sunrise. The trams will run on the old dock railway’s route past the bonded warehouses. · Paying for the line · Holding. Engineers watch the gate at 6.40 yesterday morning."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1592,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 203820,
+          "bytes": 205126,
           "alt": "Opening page 2: City. Moving day on Albion Terrace, where a two-bedroom flat now lets for £1,240."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1592,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 194126,
+          "bytes": 197450,
           "alt": "Opening page 3: Opinion. Forty lengths. The Albert Baths, opened in 1894, on a weekday morning."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1592,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 155510,
+          "bytes": 155902,
           "alt": "Opening page 4: Arts & Weather. Ledgers and lies. The shipping office of The Tally Clerk. · The next five days in Corrington."
         }
       ],
@@ -116,13 +116,13 @@
       },
       "sandbox": {
         "file": "broadsheet-six-columns.postext",
-        "bytes": 1366210,
+        "bytes": 1366447,
         "folio": "ac94dacf",
         "chapters": [
           {
             "pages": 4,
-            "hash": "ffb7235d245319e3",
-            "lines": "545cfc816bb29a5b"
+            "hash": "64c3c6a2929e349a",
+            "lines": "028a2133ea294d0f"
           }
         ]
       },
@@ -239,6 +239,7 @@
           "headingStyles[].marginTop",
           "headings",
           "headings.balancing",
+          "headings.balancing.fillShortColumns",
           "headings.balancing.trailing",
           "headings.color",
           "headings.fontFamily",
@@ -325,7 +326,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 705,
+        "configLeaves": 706,
         "designElements": 27,
         "directives": [
           ":::callout",
@@ -408,6 +409,7 @@
           "column-balancing",
           "column-rule",
           "figure-citations",
+          "fill-short-columns",
           "float-columns",
           "floated-callouts",
           "heading-attributes",
@@ -430,10 +432,10 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 4,
         "looseLines": {
           "count": 1,
-          "share": 0.0019,
+          "share": 0.0018,
           "worst": 2.59
         },
         "raggedLines": {
@@ -448,7 +450,7 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "the edition's images weigh 0.98 MB (warning at 0.9 MB for 4 pages; capture.expect.imageMb states the figure of a book of paintings)"
+            "detail": "the edition's images weigh 0.99 MB (warning at 0.9 MB for 4 pages; capture.expect.imageMb states the figure of a book of paintings)"
           },
           {
             "check": "C35",

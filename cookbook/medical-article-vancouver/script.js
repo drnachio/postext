@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 095 · A medical article in Vancouver style ══════════════
 // https://postext.dev/en/cookbook/medical-article-vancouver
 // Code: MIT · Text: original (CC BY 4.0) · Chart: generated in code (CC BY 4.0)
-// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.34.0
+// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
   defaultResourceTypes, parseTSV, inlineSvgFonts,
@@ -145,7 +145,8 @@ const config = () => ({
   tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
     headerBackground: col('accent'), headerColor: col('paper'), headerBold: true,
     headerFontFamily: SANS, headerFontSize: pt(7.6), bodyFontFamily: SANS,
-    bodyFontSize: pt(7.6), bodyColor: col('ink'), cellPadding: mm(1.2) },
+    bodyFontSize: pt(7.6), bodyColor: col('ink'), cellPadding: mm(1.2),
+    figureStyle: 'tabular' }, // Fira's tnum: every digit one width, 58.7 (11.2) over 60.1 (10.4)
   captionStyle: { fontFamily: SANS, fontSize: pt(7.8), color: col('ink'), labelBold: true,
     labelColor: col('accent'), gap: mm(2), note: { fontSize: pt(6.8), color: col('muted') } },
 });

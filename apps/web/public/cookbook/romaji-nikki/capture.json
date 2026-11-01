@@ -3,27 +3,21 @@
   "slug": "romaji-nikki",
   "sourceHash": "8ed5914fb4205e3818f13f2c55f0779aadf9738299d269db5413ed9610a79aa5",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:58.468Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:36:11.788Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:37:13.287Z",
   "variants": {
     "en": {
-      "hash8": "18928c39",
+      "hash8": "3a719220",
       "vdtHash": "82d693e9a6d7d3ffcdce158b9dfa43e9084eed21",
       "timings": {
-        "importMs": 335,
-        "fontsMs": 275,
-        "buildMs": 75,
-        "totalMs": 1344,
+        "importMs": 7017,
+        "fontsMs": 1324,
+        "buildMs": 119,
+        "totalMs": 9608,
         "builds": 1
       },
       "specimen": {
@@ -121,7 +115,7 @@
       },
       "pdf": {
         "file": "romaji-nikki.pdf",
-        "bytes": 123202,
+        "bytes": 123185,
         "pages": 4
       },
       "sandbox": {
@@ -322,6 +316,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -330,13 +334,13 @@
       }
     },
     "es": {
-      "hash8": "bba7f0bb",
+      "hash8": "7b576b23",
       "vdtHash": "05ba8ba6c5d7b5df7fd90f8904b3f6f58bc75dad",
       "timings": {
-        "importMs": 442,
-        "fontsMs": 130,
-        "buildMs": 76,
-        "totalMs": 1279,
+        "importMs": 9465,
+        "fontsMs": 1112,
+        "buildMs": 123,
+        "totalMs": 12881,
         "builds": 1
       },
       "specimen": {
@@ -434,7 +438,7 @@
       },
       "pdf": {
         "file": "romaji-nikki.pdf",
-        "bytes": 123832,
+        "bytes": 123821,
         "pages": 4
       },
       "sandbox": {
@@ -634,6 +638,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

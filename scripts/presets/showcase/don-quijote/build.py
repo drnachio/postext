@@ -518,6 +518,10 @@ def paragraph_styles() -> list[dict]:
     return [
         {"id": "colofon", "name": "Colofón", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "color": col("muted")},
         {"id": "creditos", "name": "Créditos", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(5)},
+        # The list of plates in the credits: one entry a paragraph, its
+        # turnover lines (the printed Commons address) hung under the label,
+        # set closer than the credits so the list keeps to one spread.
+        {"id": "laminas", "name": "Lista de láminas", "fontSize": pt(8), "lineHeight": pt(10.5), "textAlign": "left", "firstLineIndent": mm(0), "hangingIndent": mm(4), "spaceBetween": pt(2)},
         # Verse: one paragraph per line, ragged right, runover lines hung.
         {"id": "verso", "name": "Verso", "fontSize": pt(10), "lineHeight": pt(13.5), "textAlign": "left", "hyphenation": False, "firstLineIndent": mm(0), "hangingIndent": mm(4), "spaceBetween": pt(0), "marginTop": pt(6), "marginBottom": pt(6)},
         # The title over a poem (Antonio's ballad, Grisóstomo's song).
@@ -568,6 +572,11 @@ def shared_config() -> dict:
         "colorPalette": color_palette(),
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # The credits' plate list is the book's only set of web links: on paper
+        # each entry prints its Commons page after the file name, in the short
+        # form (commons.wikimedia.org/?curid=N), so the list still says where
+        # every plate comes from.
+        "links": {"print": "inline", "urlDisplay": "short"},
         # Folio: a cream book wove with the faint laid lines of an old
         # edition, bound in boards (the first page is the cover and the last
         # the back cover, turned as the boards), on a leather desk by day.
@@ -904,6 +913,15 @@ def compose_section(key: str, section: g.Section, lang: str) -> tuple[str, str]:
     return lead, "\n".join(lines)
 
 
+def commons_url(plate: dict) -> str:
+    """The plate's Commons page. Its short form (?curid=) is what the printed
+    credits show after the file name (`links.print: 'inline'`); a meta.json
+    fetched before the page ids were recorded keeps the file address."""
+    if plate.get("pageid"):
+        return f"https://commons.wikimedia.org/?curid={plate['pageid']}"
+    return plate["page"]
+
+
 def roman(n: int) -> str:
     out = ""
     for value, numeral in ((50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")):
@@ -977,14 +995,15 @@ def write_chapters(plates: dict[str, dict]) -> dict[str, list[dict]]:
         paras = "\n\n".join(ed.CREDITS[lang])
         numbered = [s for s, sp in ed.PLATES.items() if sp["role"] in NUMBERED_ROLES]
         plate_lines = "\n\n".join(
-            f"{book['plate'][0]} {roman(i + 1)}. [{plates[s]['title'].rsplit('.', 1)[0]}]({plates[s]['page']})"
+            f"{book['plate'][0]} {roman(i + 1)}. [{plates[s]['title'].rsplit('.', 1)[0]}]({commons_url(plates[s])})"
             for i, s in enumerate(numbered)
         )
         # A blank page separates the story from the credits.
         credits = (
             ':::pagebreak{parity="always-odd"}\n\n'
             f'# {book["credits"]} {{style="preliminar"}}\n\n'
-            f':::paragraphs{{style="creditos"}}\n{paras}\n\n{ed.PLATE_LIST_INTRO[lang]}\n\n{plate_lines}\n:::\n'
+            f':::paragraphs{{style="creditos"}}\n{paras}\n\n{ed.PLATE_LIST_INTRO[lang]}\n:::\n\n'
+            f':::paragraphs{{style="laminas"}}\n{plate_lines}\n:::\n'
         )
         emit(CHAPTERS + 3, "creditos" if lang == "es" else "credits", book["credits"], credits)
 

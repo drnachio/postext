@@ -26,7 +26,7 @@ Algumas decisões não podem ser tomadas dentro de um único percurso, porque de
 ### Etapa 1: estruturação do conteúdo
 
 - **Entrada:** o `PostextContent` bruto
-- **Ação:** converter o Markdown em blocos de conteúdo, resolver as referências a recursos contra `resources[]` por ID, tirar do fluxo as definições de notas de rodapé (`[^id]:`), numerar as chamadas delas na ordem de citação, numerar os títulos e planejar os flutuantes: quais recursos flutuam, e depois de qual bloco (`notes[]` não é lido)
+- **Ação:** converter o Markdown em blocos de conteúdo, resolver as referências a recursos contra `resources[]` por ID, tirar do fluxo as definições de notas de rodapé (`[^id]:`), numerar as chamadas delas na ordem de citação, dar uma nota aos links externos quando `links.print` é `'notes'` (ou o endereço deles entre parênteses com `'inline'`), numerar os títulos e planejar os flutuantes: quais recursos flutuam, e depois de qual bloco (`notes[]` não é lido)
 - **Saída:** uma lista plana de blocos de conteúdo (tipados e com conteúdo, mas sem página nem coluna atribuída) e o plano de flutuantes
 - **Roda:** no início de cada passada de posicionamento. Depois da primeira passada, o resultado da análise do Markdown vem do memo; o resto é calculado de novo
 

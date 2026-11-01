@@ -1,0 +1,659 @@
+{
+  "schemaVersion": 1,
+  "slug": "filling-short-columns",
+  "sourceHash": "cd69e93c8a914407b9fb2ae937514da0443db98bd761198ae9bffb21958fd7e3",
+  "engine": {
+    "postext": "1.65.0",
+    "source": "npm"
+  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T18:31:27.654Z",
+  "variants": {
+    "en": {
+      "hash8": "76529999",
+      "vdtHash": "4cf50f7f419ce78041748e159c40ec0777b14f5d",
+      "timings": {
+        "importMs": 3151,
+        "fontsMs": 164,
+        "buildMs": 149,
+        "totalMs": 4606,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          225,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Public Sans",
+          "sizePt": 9.4,
+          "leadingPt": 13.2
+        },
+        "families": [
+          "Libre Caslon Display",
+          "Libre Caslon Text",
+          "Public Sans"
+        ],
+        "pages": 6,
+        "ownLines": 162
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 175504,
+          "alt": "Opening page 1: The Lens That Lit the Coast."
+        },
+        {
+          "n": 4,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 175896,
+          "alt": "Opening page 1: The Lens That Lit the Coast."
+        },
+        {
+          "n": 5,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 219282,
+          "alt": "Page 2: A lamp in a ring of prisms."
+        },
+        {
+          "n": 6,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 102604,
+          "alt": "Page 3: When the keepers left."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "filling-short-columns.postext",
+        "bytes": 418902,
+        "folio": "1a1f741a",
+        "keep": "last",
+        "pages": 3,
+        "chapters": [
+          {
+            "pages": 3,
+            "hash": "8430e82a702732d0",
+            "lines": "11ab274e335852d4"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.optimalRagged",
+          "bodyText.orphanMinLines",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "bodyText.widowMinLines",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.fillShortColumns",
+          "headings.balancing.maxLinesBeforeLoose",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 260,
+        "designElements": 14,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "column-balancing",
+          "fill-short-columns",
+          "heading-attributes",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 3,
+          "tracked": 3,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "3 paragraphs set a line short with tracking (worst −10‰, the cap): p. 2 −10‰ “Around the central belt of rings he added prisms…”, p. 5 −10‰ “Around the central belt of rings he added prisms…”, p. 1 −5‰ “The tower of Cordouan stands on a reef at the mo…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 2 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "c991aab5",
+      "vdtHash": "0415cfac0b605fb520e7dba655ee487747231c44",
+      "timings": {
+        "importMs": 2032,
+        "fontsMs": 33,
+        "buildMs": 92,
+        "totalMs": 3359,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          225,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Public Sans",
+          "sizePt": 9.4,
+          "leadingPt": 13.2
+        },
+        "families": [
+          "Libre Caslon Display",
+          "Libre Caslon Text",
+          "Public Sans"
+        ],
+        "pages": 6,
+        "ownLines": 162
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 176394,
+          "alt": "Página de apertura 1: La lente que encendió la costa."
+        },
+        {
+          "n": 4,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1320,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 177016,
+          "alt": "Página de apertura 1: La lente que encendió la costa."
+        },
+        {
+          "n": 5,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 220798,
+          "alt": "Página 2: Una lámpara entre prismas."
+        },
+        {
+          "n": 6,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1320,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 137984,
+          "alt": "Página 3: Cuando se fueron los torreros."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "filling-short-columns.postext",
+        "bytes": 418965,
+        "folio": "1a1f741a",
+        "keep": "last",
+        "pages": 3,
+        "chapters": [
+          {
+            "pages": 3,
+            "hash": "d7eb68379a18a9a1",
+            "lines": "c0b82e4ac7458cd2"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.optimalRagged",
+          "bodyText.orphanMinLines",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "bodyText.widowMinLines",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "header.elements[].thickness",
+          "headings",
+          "headings.balancing",
+          "headings.balancing.fillShortColumns",
+          "headings.balancing.maxLinesBeforeLoose",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 260,
+        "designElements": 14,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Public Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "column-balancing",
+          "fill-short-columns",
+          "heading-attributes",
+          "opener-band",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 2 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

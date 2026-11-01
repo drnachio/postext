@@ -3,27 +3,21 @@
   "slug": "bunko-novel-furigana",
   "sourceHash": "b027c1916add7a27e0dec59f6454c1f12cd5c37661bd027c3ff244af679dcfb5",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:32:12.308Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:54.585Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:50:27.292Z",
   "variants": {
     "en": {
-      "hash8": "2bb7df8e",
+      "hash8": "b54cf144",
       "vdtHash": "4bc3ba62eaf3420823d9125f756f27f3becbd4c4",
       "timings": {
-        "importMs": 640,
-        "fontsMs": 297,
-        "buildMs": 52,
-        "totalMs": 1713,
+        "importMs": 1388,
+        "fontsMs": 986,
+        "buildMs": 74,
+        "totalMs": 3179,
         "builds": 1
       },
       "specimen": {
@@ -158,7 +152,7 @@
       },
       "pdf": {
         "file": "bunko-novel-furigana.pdf",
-        "bytes": 331439,
+        "bytes": 331401,
         "pages": 9
       },
       "sandbox": {
@@ -356,6 +350,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -364,13 +368,13 @@
       }
     },
     "es": {
-      "hash8": "cf9df00e",
+      "hash8": "2f9f827d",
       "vdtHash": "7b77b0391d2637313d9067388ea8db7ee6456beb",
       "timings": {
-        "importMs": 420,
-        "fontsMs": 261,
-        "buildMs": 54,
-        "totalMs": 1449,
+        "importMs": 1181,
+        "fontsMs": 470,
+        "buildMs": 88,
+        "totalMs": 2438,
         "builds": 1
       },
       "specimen": {
@@ -505,7 +509,7 @@
       },
       "pdf": {
         "file": "bunko-novel-furigana.pdf",
-        "bytes": 331576,
+        "bytes": 331539,
         "pages": 9
       },
       "sandbox": {
@@ -702,6 +706,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

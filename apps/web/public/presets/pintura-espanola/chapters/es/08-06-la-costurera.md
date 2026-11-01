@@ -5,5 +5,5 @@ La obra, inacabada, se ha puesto en relación con una entrada en el inventario d
 Para José Gudiol la dama retratada podría ser la esposa del pintor, Juana Pacheco, en tanto August L. Mayer pensó en su hija Francisca, esposa de Juan Bautista Martínez del Mazo, pero López-Rey objeta que siendo Mazo el autor del inventario de los bienes de Velázquez, no hubiese repertoriado el retrato de su esposa como simple escena de género, aunque su semejanza con otros modelos pudiera hacer pensar en una persona próxima al pintor.
 
 :::paragraphs{style="fuente"}
-Comentario adaptado del artículo «La costurera» de Wikipedia en español (revisión 174427463, CC BY-SA 4.0).
+Comentario adaptado del artículo «La costurera» de Wikipedia en español (revisión 174427463, CC BY-SA 4.0). Ficha e imagen ampliable en la [web del museo](https://www.nga.gov/collection/art-object-page.88.html).
 :::

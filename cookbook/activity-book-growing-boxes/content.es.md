@@ -78,12 +78,12 @@ Un pluviómetro mide cuánta lluvia cae en un lugar. En las estaciones meteorol�
 :::
 
 :::frame{slot="pasos" label="Paso a paso"}
-1. Pide a una persona adulta que corte la botella por donde empieza a estrecharse. Guarda la parte de arriba: será el embudo.
+1. Pide a un adulto que corte la parte de arriba de la botella. Guárdala: será el embudo.
 2. Mete las piedras en el fondo. Así la botella no se caerá con el viento.
-3. Echa agua hasta tapar las piedras y marca esa altura con el rotulador. Esa línea es el cero de tu pluviómetro.
-4. Pega la regla por fuera con cinta adhesiva, de modo que el cero de la regla quede justo en la línea que has marcado.
+3. Cubre las piedras de agua y marca esa altura: es el cero de tu pluviómetro.
+4. Pega la regla por fuera, con su cero justo en la línea que has marcado.
 5. Da la vuelta a la parte de arriba y encájala en la botella, con la boca hacia abajo. El embudo recoge la lluvia y no deja que el agua se evapore tan deprisa.
-6. Busca un sitio despejado del patio o de la terraza, lejos de los árboles y de los tejados, que desvían la lluvia.
+6. Ponlo en un sitio despejado, lejos de árboles y tejados, que desvían la lluvia.
 7. Cada día, a la misma hora, mira cuántos milímetros ha subido el agua desde el cero y apúntalo en tu registro. Después vacía el agua hasta la línea del cero.
 
 ### Mi registro de la semana

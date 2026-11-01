@@ -12,5 +12,5 @@ Störung	Mögliche Ursache	Abhilfe
 **Wasser steht auf dem Sockel.**	Die Kanne war beim Aufsetzen außen nass.	Netzstecker ziehen und den Sockel trocknen lassen.
 	Die Kanne ist undicht.	Gerät nicht mehr benutzen und den Kundendienst anrufen.
 **Das Wasser schmeckt nach Kunststoff.**	Das Gerät ist neu.	Zweimal Wasser aufkochen und weggießen.
-	Das Wasser stand lange in der Kanne.	Kanne nach Gebrauch leeren und stets frisches Wasser einfüllen.
+	Das Wasser stand lange in der Kanne.	Stets frisches Wasser einfüllen.
 **Kein Signalton ertönt.**	Der Signalton ist ausgeschaltet.	:chip[WARM]{style="taste"} 3 Sekunden gedrückt halten, bis die Leuchte zweimal blinkt.

@@ -9,5 +9,5 @@ El estado de conservación es muy bueno. Unos ligeros puntos deteriorados en la 
 La concepción de este retrato recuerda al Retrato de Julio II de Rafael Sanzio, al Retrato de Paulo III y al Retrato de Carlos V sentado, ambos de Tiziano, que el Greco podía haber visto en Italia, o conocido a través de grabados u otras reproducciones. Niño de Guevara aparece con una expresión adusta y severa, muy bien concebida por el Greco. Cejijunto, con una barba grisácea que justo deja espacio para sus finos labios, lleva unas gafas que acentúan su aspecto frío y decidido.
 
 :::paragraphs{style="fuente"}
-Comentario adaptado del artículo «Retrato del cardenal Fernando Niño de Guevara» de Wikipedia en español (revisión 175005657, CC BY-SA 4.0).
+Comentario adaptado del artículo «Retrato del cardenal Fernando Niño de Guevara» de Wikipedia en español (revisión 175005657, CC BY-SA 4.0). Ficha e imagen ampliable en la [web del museo](https://www.metmuseum.org/art/collection/search/436573).
 :::

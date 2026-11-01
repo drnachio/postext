@@ -1630,6 +1630,27 @@
     }
    },
    {
+    "id": "laminas",
+    "name": "Lista de láminas",
+    "fontSize": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "hangingIndent": {
+     "value": 4,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 2,
+     "unit": "pt"
+    }
+   },
+   {
     "id": "verso",
     "name": "Verso",
     "fontSize": {
@@ -2416,6 +2437,10 @@
   },
   "pdfGeneration": {
    "outlines": true
+  },
+  "links": {
+   "print": "inline",
+   "urlDisplay": "short"
   },
   "folio": {
    "paper": {

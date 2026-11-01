@@ -11,11 +11,11 @@ June 2015 - www.peppercarrot.com - Disegni e sceneggiatura di David Revoy - Trad
 
 Art & Scenario: David Revoy — Translation: Carlo Gandolfi
 
-Licenza: Creative Commons Attribuzione 4.0 (CC BY 4.0).
+Licenza: [Creative Commons Attribuzione 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.it).
 
 Opera derivata da «Il compleanno di Pepper» di David Revoy, con licenza CC BY 4.0: Postext ha rifatto i balloon e il lettering e ha ricomposto le pagine a partire dalla traduzione ufficiale italiana.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/it/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

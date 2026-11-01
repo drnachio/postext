@@ -104,6 +104,8 @@ The resolvers (`resolve*Config`), strippers (`strip*Defaults`), `DEFAULT_*` cons
 
 Footnotes are written in the markdown: a `[^id]` marker where the note is cited and a paragraph that opens with `[^id]:` for its text. Each note is set at the foot of the column that cites it; `footnotes.placement: 'chapterEnd'` gathers them after the chapter instead. See [Footnotes](https://postext.dev/en/docs/document-format-notes-references#footnotes).
 
+External links (`[text](https://…)`) stay links in every output. On a printed page `links.print` shows where they lead: `'inline'` sets the address in parentheses after the link text, and `'notes'` adds a note, numbered and placed with the footnotes, that prints the address, a QR code that opens it, or both (`links.show`). See [Links in print](https://postext.dev/en/docs/configuration-notes-references#links-in-print).
+
 ## Fonts
 
 postext measures text with the browser's canvas, so the document's web fonts must be loaded before layout. `await buildDocumentWithFonts(content, config)` does both: it loads every face the configuration and the text ask for, lays the document out, and lays it out again when the pages used a face that was missing. `await prepareFonts(content, config)` only loads them, before a `buildDocument` of your own. Both load the faces the page declares (an `@font-face` rule, a `FontFace` you added) and take a `resolve(family, weight, style)` option that hands over the files of the rest.

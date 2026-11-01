@@ -3,21 +3,21 @@
   "slug": "tang-poems-facing-english",
   "sourceHash": "25b52387ae35ae8119d7de3671e686d50ee282b1bd6980192fe43c7583b842d3",
   "engine": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T17:37:59.672Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:49:12.097Z",
   "variants": {
     "en": {
-      "hash8": "ff0739fc",
+      "hash8": "2394f87c",
       "vdtHash": "15e7223af4029b7119f93bfea6aa701acd417534",
       "timings": {
-        "importMs": 627,
-        "fontsMs": 362,
-        "buildMs": 127,
-        "totalMs": 1805,
+        "importMs": 2103,
+        "fontsMs": 629,
+        "buildMs": 123,
+        "totalMs": 3525,
         "builds": 1
       },
       "specimen": {
@@ -195,7 +195,7 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 152598,
+        "bytes": 152562,
         "pages": 10
       },
       "sandbox": {
@@ -438,6 +438,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -451,13 +456,13 @@
       }
     },
     "es": {
-      "hash8": "bc19b41e",
+      "hash8": "b650a3e7",
       "vdtHash": "4c379d391176e97074a39ae6eccbd6cb5ca9a74f",
       "timings": {
-        "importMs": 230,
-        "fontsMs": 157,
-        "buildMs": 96,
-        "totalMs": 1126,
+        "importMs": 3156,
+        "fontsMs": 901,
+        "buildMs": 120,
+        "totalMs": 4968,
         "builds": 1
       },
       "specimen": {
@@ -635,7 +640,7 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 154585,
+        "bytes": 154546,
         "pages": 10
       },
       "sandbox": {
@@ -877,6 +882,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
           {
             "check": "sandbox",
             "severity": "info",

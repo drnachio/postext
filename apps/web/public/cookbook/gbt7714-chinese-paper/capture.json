@@ -3,27 +3,21 @@
   "slug": "gbt7714-chinese-paper",
   "sourceHash": "c29b6f579812ee75c43f40feb8a685b93bf904e4967354f536622674c988d1f1",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.445Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:58.671Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:22:08.434Z",
   "variants": {
     "en": {
-      "hash8": "c573102e",
-      "vdtHash": "ceff2471240e5acd6fbbeb34ea122a22d36e0df2",
+      "hash8": "93f9d52a",
+      "vdtHash": "dc8f71f0dac69e6ebace6591c30d5afeb8d9e304",
       "timings": {
-        "importMs": 1839,
-        "fontsMs": 315,
-        "buildMs": 166,
-        "totalMs": 3233,
+        "importMs": 3112,
+        "fontsMs": 903,
+        "buildMs": 151,
+        "totalMs": 5059,
         "builds": 1
       },
       "specimen": {
@@ -58,7 +52,7 @@
           "file": "p01.webp",
           "strip": "p01.s.webp",
           "bytes": 148324,
-          "alt": "Opening page 41: 横排中文正文的行长与行 距： 一项纸本与屏幕的对 照阅读实验."
+          "alt": "Opening page 41: 横排中文正文的行长与行距： 一项纸本与屏幕的对照 阅读实验."
         },
         {
           "n": 2,
@@ -96,18 +90,18 @@
       },
       "pdf": {
         "file": "gbt7714-chinese-paper.pdf",
-        "bytes": 164296,
+        "bytes": 164237,
         "pages": 2
       },
       "sandbox": {
         "file": "gbt7714-chinese-paper.postext",
-        "bytes": 25843,
+        "bytes": 25863,
         "folio": "1668ad62",
         "chapters": [
           {
             "pages": 2,
-            "hash": "a252c611a9d18e3b",
-            "lines": "677b101f57b4d259"
+            "hash": "35857397be374cf5",
+            "lines": "5b4850b5b6dc33ab"
           }
         ]
       },
@@ -349,6 +343,21 @@
             "detail": "the hero is 19.1 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -357,13 +366,13 @@
       }
     },
     "es": {
-      "hash8": "2cf26f13",
-      "vdtHash": "5601d7d042f56dda3ee9e1d8e777a0b223ae5f3a",
+      "hash8": "4383c77a",
+      "vdtHash": "68e9fcd5ff8d43c23be78bc1af3639133c562d61",
       "timings": {
-        "importMs": 859,
-        "fontsMs": 1002,
-        "buildMs": 178,
-        "totalMs": 2867,
+        "importMs": 6473,
+        "fontsMs": 1289,
+        "buildMs": 241,
+        "totalMs": 8962,
         "builds": 1
       },
       "specimen": {
@@ -398,7 +407,7 @@
           "file": "p01.webp",
           "strip": "p01.s.webp",
           "bytes": 148324,
-          "alt": "Página de apertura 41: 横排中文正文的行长与行 距： 一项纸本与屏幕的对 照阅读实验."
+          "alt": "Página de apertura 41: 横排中文正文的行长与行距： 一项纸本与屏幕的对照 阅读实验."
         },
         {
           "n": 2,
@@ -436,18 +445,18 @@
       },
       "pdf": {
         "file": "gbt7714-chinese-paper.pdf",
-        "bytes": 164605,
+        "bytes": 164541,
         "pages": 2
       },
       "sandbox": {
         "file": "gbt7714-chinese-paper.postext",
-        "bytes": 25851,
+        "bytes": 25871,
         "folio": "1668ad62",
         "chapters": [
           {
             "pages": 2,
-            "hash": "5f994da7bb5a1ecf",
-            "lines": "750c8018c6e9cb22"
+            "hash": "d45e01552d9a71c9",
+            "lines": "698b21faf3253280"
           }
         ]
       },
@@ -687,6 +696,21 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 19.1 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

@@ -11,6 +11,10 @@ Crece la preocupación por que la mayoría de los resultados de investigación p
 
 Los resultados de investigación publicados a veces quedan refutados por pruebas posteriores, con la confusión y la decepción consiguientes. La refutación y la controversia aparecen en todos los diseños, desde los ensayos clínicos y los estudios epidemiológicos tradicionales [@ioannidis2001a; @lawlor2004; @vandenbroucke2004] hasta la investigación molecular más moderna [@michiels2005; @ioannidis2001b]. Cada vez preocupa más que, en la investigación actual, los resultados falsos sean la mayoría, o incluso la inmensa mayoría, de las afirmaciones publicadas [@colhoun2003; @ioannidis2003; @ioannidis2005a]. Sin embargo, no debería sorprendernos. Se puede demostrar que la mayoría de los resultados que se proclaman son falsos. Aquí examino los factores principales que influyen en este problema y algunos corolarios que se derivan de ellos.
 
+:::callout{type="note"}
+**Conflicto de intereses.** El autor declara no tener ningún conflicto de intereses. **Abreviatura.** VPP, valor predictivo positivo.
+:::
+
 ## Un modelo para los resultados falsos positivos
 
 Varios metodólogos han señalado [@sterne2001; @wacholder2004; @risch2000] que la alta tasa de no replicación (falta de confirmación) de los descubrimientos es consecuencia de una estrategia cómoda pero mal fundada: proclamar resultados concluyentes a partir de un único estudio valorado por su significación estadística formal, típicamente con un valor *p* inferior a 0,05.

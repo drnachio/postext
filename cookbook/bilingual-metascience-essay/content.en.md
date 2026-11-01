@@ -11,6 +11,10 @@ There is increasing concern that most current published research findings are fa
 
 Published research findings are sometimes refuted by subsequent evidence, with ensuing confusion and disappointment. Refutation and controversy is seen across the range of research designs, from clinical trials and traditional epidemiological studies [@ioannidis2001a; @lawlor2004; @vandenbroucke2004] to the most modern molecular research [@michiels2005; @ioannidis2001b]. There is increasing concern that in modern research, false findings may be the majority or even the vast majority of published research claims [@colhoun2003; @ioannidis2003; @ioannidis2005a]. However, this should not be surprising. It can be proven that most claimed research findings are false. Here I will examine the key factors that influence this problem and some corollaries thereof.
 
+:::callout{type="note"}
+**Competing interests.** The author has declared that no competing interests exist. **Abbreviation.** PPV, positive predictive value.
+:::
+
 
 ## Modeling the Framework for False Positive Findings
 

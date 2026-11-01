@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "medical-article-vancouver",
-  "sourceHash": "41427ac7e0c89fd7efc0416de07a6a2d71cc9985cb3e070f5795d255cc7acf0f",
+  "sourceHash": "c54ac6c957b26da382679b2c5e3ebc1904ebfbbe8840e5609ea8ddaaef75a7ff",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:08.154Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:01.850Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:20:57.795Z",
   "variants": {
     "en": {
-      "hash8": "af3891ef",
-      "vdtHash": "a8d6a209888808b60ff5622197aa2faef500533d",
+      "hash8": "9abe5e26",
+      "vdtHash": "cfc03e8f9e05b31178d531f15fe8a047cc932e82",
       "timings": {
-        "importMs": 229,
-        "fontsMs": 67,
-        "buildMs": 131,
-        "totalMs": 3407,
+        "importMs": 1842,
+        "fontsMs": 130,
+        "buildMs": 298,
+        "totalMs": 3206,
         "builds": 1
       },
       "specimen": {
@@ -43,10 +37,11 @@
         "families": [
           "Fira Sans",
           "Fira Sans Condensed",
+          "Fira Sans@tnum",
           "PT Serif"
         ],
         "pages": 3,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -68,7 +63,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 190286,
+          "bytes": 191708,
           "alt": "Page 182: Outcomes and analysis. Table 1. Characteristics of the patients at baseline. · Figure 1. Mean home systolic pressure by week in the telemonitoring group, with its 95% confidence interval. The dashed line is the home target of 135 mm Hg."
         },
         {
@@ -107,18 +102,18 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 122597,
+        "bytes": 134517,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 86437,
+        "bytes": 86449,
         "folio": "b245c39c",
         "chapters": [
           {
             "pages": 3,
-            "hash": "2fb1048698621502",
-            "lines": "1c00665105eaba1f"
+            "hash": "4847395df44b443d",
+            "lines": "2095df150b0fb6a7"
           }
         ]
       },
@@ -309,6 +304,7 @@
           "tableStyle.borderColor",
           "tableStyle.borderWidth",
           "tableStyle.cellPadding",
+          "tableStyle.figureStyle",
           "tableStyle.headerBackground",
           "tableStyle.headerBold",
           "tableStyle.headerColor",
@@ -333,7 +329,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 401,
+        "configLeaves": 402,
         "designElements": 14,
         "directives": [
           ":::callout",
@@ -359,6 +355,16 @@
           {
             "family": "Fira Sans Condensed",
             "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans@tnum",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans@tnum",
+            "weight": 700,
             "style": "normal"
           },
           {
@@ -391,6 +397,7 @@
           "callout-styles",
           "citation-styles",
           "figure-citations",
+          "figure-styles",
           "generated-bibliography",
           "heading-attributes",
           "heading-styles",
@@ -432,6 +439,21 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 1 −5‰ “What is already known Self-monitoring lowers blo…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -440,13 +462,13 @@
       }
     },
     "es": {
-      "hash8": "6ed7b616",
-      "vdtHash": "97dd5176f2bbf8319fcd8999cc7c2855cb07c2cc",
+      "hash8": "abc27ce7",
+      "vdtHash": "5c2868b283e8f2ca915c315409d06e70ca9e1493",
       "timings": {
-        "importMs": 399,
-        "fontsMs": 55,
-        "buildMs": 117,
-        "totalMs": 2527,
+        "importMs": 1275,
+        "fontsMs": 87,
+        "buildMs": 143,
+        "totalMs": 2361,
         "builds": 1
       },
       "specimen": {
@@ -466,10 +488,11 @@
         "families": [
           "Fira Sans",
           "Fira Sans Condensed",
+          "Fira Sans@tnum",
           "PT Serif"
         ],
         "pages": 3,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -491,7 +514,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 189722,
+          "bytes": 190228,
           "alt": "Página 182: Intervenciones. Tabla 1. Características de los pacientes al inicio. · Figura 1. Presión sistólica domiciliaria media por semana en el grupo de telemonitorización, con su intervalo de confianza del 95 %. La línea discontinua es el objetivo de 135 mm Hg."
         },
         {
@@ -530,18 +553,18 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 131883,
+        "bytes": 143485,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 87067,
+        "bytes": 87077,
         "folio": "b245c39c",
         "chapters": [
           {
             "pages": 3,
-            "hash": "f97d306cd432e3cc",
-            "lines": "506fc45c8a36e33c"
+            "hash": "a9dda8802a8a8706",
+            "lines": "799385ce28d527e8"
           }
         ]
       },
@@ -732,6 +755,7 @@
           "tableStyle.borderColor",
           "tableStyle.borderWidth",
           "tableStyle.cellPadding",
+          "tableStyle.figureStyle",
           "tableStyle.headerBackground",
           "tableStyle.headerBold",
           "tableStyle.headerColor",
@@ -756,7 +780,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 401,
+        "configLeaves": 402,
         "designElements": 14,
         "directives": [
           ":::callout",
@@ -782,6 +806,16 @@
           {
             "family": "Fira Sans Condensed",
             "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans@tnum",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fira Sans@tnum",
+            "weight": 700,
             "style": "normal"
           },
           {
@@ -814,6 +848,7 @@
           "callout-styles",
           "citation-styles",
           "figure-citations",
+          "figure-styles",
           "generated-bibliography",
           "heading-attributes",
           "heading-styles",
@@ -844,6 +879,21 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

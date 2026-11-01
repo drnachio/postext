@@ -1,6 +1,6 @@
 // Typesetting terms: type, spacing, line breaking and the lines of a column.
 import type { GlossaryTerm } from "../terms";
-import { term } from "./term";
+import { term } from "./term.ts";
 
 export const TYPE_TEXT_TERMS: readonly GlossaryTerm[] = [
   // ── Typesetting and the page ────────────────────────────────────────────

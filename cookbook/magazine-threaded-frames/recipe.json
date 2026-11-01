@@ -33,8 +33,8 @@
     "magazine-feature-opener"
   ],
   "engine": {
-    "postext": "1.38.0",
-    "postextPdf": "1.38.0"
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0"
   },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": {
@@ -113,5 +113,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-17",
-  "updated": "2026-10-17"
+  "updated": "2026-10-31"
 }

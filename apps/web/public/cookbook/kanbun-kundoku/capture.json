@@ -3,27 +3,21 @@
   "slug": "kanbun-kundoku",
   "sourceHash": "f99e48dcb967bba075935eb3b7b72f6a8f6604aac21eea0105866efa29b9d1e4",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:37:57.711Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.742Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:27:35.190Z",
   "variants": {
     "en": {
-      "hash8": "e6c373aa",
+      "hash8": "eca989f5",
       "vdtHash": "cea294344d4ba3029b117bd33687c965b41d48c7",
       "timings": {
-        "importMs": 260,
-        "fontsMs": 465,
-        "buildMs": 50,
-        "totalMs": 1371,
+        "importMs": 1941,
+        "fontsMs": 1239,
+        "buildMs": 52,
+        "totalMs": 4086,
         "builds": 1
       },
       "specimen": {
@@ -107,7 +101,7 @@
       },
       "pdf": {
         "file": "kanbun-kundoku.pdf",
-        "bytes": 138253,
+        "bytes": 138225,
         "pages": 3
       },
       "sandbox": {
@@ -309,6 +303,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -317,13 +321,13 @@
       }
     },
     "es": {
-      "hash8": "496cdc9e",
+      "hash8": "8f875b95",
       "vdtHash": "eeffa96ae9ff865139c37006dc7fc4599bc7e1e1",
       "timings": {
-        "importMs": 250,
-        "fontsMs": 325,
-        "buildMs": 46,
-        "totalMs": 1297,
+        "importMs": 2416,
+        "fontsMs": 1234,
+        "buildMs": 55,
+        "totalMs": 4392,
         "builds": 1
       },
       "specimen": {
@@ -407,7 +411,7 @@
       },
       "pdf": {
         "file": "kanbun-kundoku.pdf",
-        "bytes": 138180,
+        "bytes": 138158,
         "pages": 3
       },
       "sandbox": {
@@ -608,6 +612,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

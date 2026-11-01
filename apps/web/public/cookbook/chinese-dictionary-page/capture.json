@@ -3,27 +3,21 @@
   "slug": "chinese-dictionary-page",
   "sourceHash": "7e4c7d76de554913f13292155a25b546fa69b4ea15726610f03c600905223964",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:32:12.462Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:56.652Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:51:21.848Z",
   "variants": {
     "en": {
-      "hash8": "3c28f0de",
+      "hash8": "f1dab3d3",
       "vdtHash": "14d4d8506ffa1837119ab89f2594c754da927bf0",
       "timings": {
-        "importMs": 246,
-        "fontsMs": 539,
-        "buildMs": 69,
-        "totalMs": 1483,
+        "importMs": 6017,
+        "fontsMs": 1343,
+        "buildMs": 88,
+        "totalMs": 8373,
         "builds": 1
       },
       "specimen": {
@@ -118,7 +112,7 @@
       },
       "pdf": {
         "file": "chinese-dictionary-page.pdf",
-        "bytes": 310447,
+        "bytes": 310354,
         "pages": 4
       },
       "sandbox": {
@@ -310,9 +304,19 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -323,13 +327,13 @@
       }
     },
     "es": {
-      "hash8": "8f80e148",
+      "hash8": "6463742a",
       "vdtHash": "1aeac785e2d796b6da3f1c1e1584832851430942",
       "timings": {
-        "importMs": 323,
-        "fontsMs": 424,
-        "buildMs": 68,
-        "totalMs": 1446,
+        "importMs": 4779,
+        "fontsMs": 2269,
+        "buildMs": 108,
+        "totalMs": 7960,
         "builds": 1
       },
       "specimen": {
@@ -424,7 +428,7 @@
       },
       "pdf": {
         "file": "chinese-dictionary-page.pdf",
-        "bytes": 310427,
+        "bytes": 310329,
         "pages": 4
       },
       "sandbox": {
@@ -616,9 +620,19 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

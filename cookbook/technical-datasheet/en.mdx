@@ -34,7 +34,7 @@ The pin table and the register map both come out of `groupedTable`. A row with o
 
 <Excerpt region="styles" />
 
-`tableStyle` holds what every table shares. Each entry in `tableStyles` sets only what its tables change, and a resource picks one with `table.styleId`. The electrical table swaps the grey hairlines for 1.4 pt white rules, which cut its fills apart and show where each merge ends. The order-code table gets a rounded outer frame and Fira Sans Condensed, so its four columns fit in one text column.
+`tableStyle` holds what every table shares. Each entry in `tableStyles` sets only what its tables change, and a resource picks one with `table.styleId`. The electrical table swaps the grey hairlines for 1.4 pt white rules, which cut its fills apart and show where each merge ends. The order-code table gets a rounded outer frame and Fira Sans Condensed, so its four columns fit in one text column. The electrical style's `figureStyle: 'tabular'` asks Fira Sans for `tnum`, figures of one width, so the digits of Min, Typ and Max line up down each column.
 
 ### 5 · Labels that stay text in the PDF
 
@@ -55,8 +55,8 @@ The part number is the first-level heading, and its design slot draws the opener
 Half-point rules in the palette's grey `rule` colour separate every row, filled or not; the white ones disappear where two unfilled rows meet.
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### Set table captions on a bar

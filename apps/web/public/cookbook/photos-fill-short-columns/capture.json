@@ -3,27 +3,21 @@
   "slug": "photos-fill-short-columns",
   "sourceHash": "fe35af3b78be386b602209edcad6c88c3aab23bed12791436201d894445ffd0c",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:37.759Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:02.998Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:28:13.351Z",
   "variants": {
     "en": {
-      "hash8": "d689d105",
-      "vdtHash": "a426a320fdd0f037549985fcd24be667cf7d280f",
+      "hash8": "2fd46106",
+      "vdtHash": "815880f6cd59add2361b1907af452588c8fb8b59",
       "timings": {
-        "importMs": 230,
-        "fontsMs": 105,
-        "buildMs": 71,
-        "totalMs": 1091,
+        "importMs": 4327,
+        "fontsMs": 160,
+        "buildMs": 80,
+        "totalMs": 5997,
         "builds": 2
       },
       "specimen": {
@@ -138,14 +132,14 @@
       },
       "sandbox": {
         "file": "photos-fill-short-columns.postext",
-        "bytes": 1924762,
+        "bytes": 1924768,
         "folio": "111a3296",
         "pages": 3,
         "chapters": [
           {
             "pages": 3,
-            "hash": "d281b4484d5248d0",
-            "lines": "3fd8732d75fa25ab"
+            "hash": "ac8d4ad9f296531f",
+            "lines": "c0d8430bc123d981"
           }
         ]
       },
@@ -360,6 +354,21 @@
             "detail": "the edition's images weigh 1.17 MB (warning at 0.9 MB for 5 pages; capture.expect.imageMb states the figure of a book of paintings)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -368,13 +377,13 @@
       }
     },
     "es": {
-      "hash8": "64ab7bc8",
-      "vdtHash": "b97a0aefe68ac2040ec3ad56f79861ff6580b56f",
+      "hash8": "1319e09a",
+      "vdtHash": "f1e94d153c444359f34d4f7d7c8e7e4736a02754",
       "timings": {
-        "importMs": 245,
-        "fontsMs": 94,
-        "buildMs": 68,
-        "totalMs": 1278,
+        "importMs": 4118,
+        "fontsMs": 501,
+        "buildMs": 84,
+        "totalMs": 5894,
         "builds": 2
       },
       "specimen": {
@@ -489,14 +498,14 @@
       },
       "sandbox": {
         "file": "photos-fill-short-columns.postext",
-        "bytes": 1924470,
+        "bytes": 1924480,
         "folio": "111a3296",
         "pages": 3,
         "chapters": [
           {
             "pages": 3,
-            "hash": "c79be8da0c3a0d5c",
-            "lines": "58b75d7bff46e77d"
+            "hash": "8da9876bd28f7a0d",
+            "lines": "afdc1a0d554f6837"
           }
         ]
       },
@@ -709,6 +718,21 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.18 MB (warning at 0.9 MB for 5 pages; capture.expect.imageMb states the figure of a book of paintings)"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

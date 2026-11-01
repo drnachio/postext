@@ -1,0 +1,62 @@
+---
+title: "Resaltados por colores en un libro de lecturas"
+summary: "Un libro de lecturas de historia con tres colores de resaltado (verde para términos, ámbar para fechas, azul para nombres) definidos en markStyles."
+plain: "Una lectura escolar sobre la historia de la imprenta. Los términos clave van en verde, las fechas en ámbar y las personas y lugares en azul, y una clave en la primera página explica qué significa cada color."
+description: "Un libro de lecturas de historia compuesto en Postext con tres estilos de resaltado: términos en verde, fechas en ámbar, nombres en azul y una clave."
+question: "¿Cómo resalto un texto de estudio con colores que signifiquen algo: términos, fechas y nombres?"
+aliases: ["resaltado", "resaltador", "fosforito", "rotulador", "código de colores", "clave de colores", "palabras clave", "texto de estudio", "libro de lecturas", "libro de texto de historia", "glosario", "marca", "imprenta", "Gutenberg"]
+pageNotes: { "1": "La página de apertura: arriba, una pintura de un taller de imprenta hacia 1460; debajo, el antetítulo UNIDAD 4 · LECTURA 2, el título Cómo se extendió la imprenta por Europa y una entradilla en cursiva; después, un recuadro tintado bajo un filete rojo que explica los tres colores con una muestra verde, una ámbar y una azul, y las primeras líneas de la lectura.", "2": "Una página par de la lectura: fechas como 1455 y 1462 sobre franjas ámbar, nombres como Johann Fust, Subiaco o William Caxton sobre franjas azul pálido y términos como tipos móviles o colofón sobre franjas verdes, dentro de un texto justificado.", "4": "La última página: las preguntas de repaso, el glosario, en el que cada entrada empieza por su término en negrita sobre una franja verde con las líneas siguientes sangradas, y el colofón en letra gris pequeña." }
+---
+
+## Lo que vas a componer
+
+La lectura 2 de una unidad de un libro escolar de historia, *Lecturas de historia moderna*: cuatro páginas sobre cómo se extendió la imprenta desde Maguncia por Europa entre 1450 y 1550, en una página de 170 × 240 mm. Los editores han marcado el texto como lo haría un buen estudiante, con un código que no cambia en todo el libro: los términos clave sobre una franja verde, las fechas sobre ámbar, las personas y los lugares sobre azul pálido. Una clave bajo el título explica el código con los tres colores, y el glosario de la última página abre cada entrada con su término en verde. Las marcas son franjas debajo de texto corriente, así que las líneas se cortan, se dividen y se justifican como si no estuvieran.
+
+## Elaboración
+
+### 1 · Un estilo para cada clase de palabra
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `markStyles` declara tres estilos con nombre, y el texto elige uno en cada marca: `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colofón]{style="term"}` ([marcas de resaltado](/es/docs/document-format-inline#marcas-de-resaltado)). Cada estilo dice lo que significa (`name` es lo que ve quien edita), de modo que el Markdown guarda por qué se marca una palabra y no de qué color va. Si cambias el color de un estilo, cambian con él todas las fechas del libro. Los extremos son rectos, como por defecto desde postext 1.52 ([estilos de resaltado](/es/docs/configuration-styles#estilos-de-resaltado)): un fosforito deja los extremos rectos, y una franja redondeada se lee como un chip.
+
+### 2 · Tres tintas de la paleta
+
+<Excerpt region="palette" />
+
+Las tres franjas son entradas de la paleta, igual que la tinta y el acento, así que quien abra el libro en el Sandbox puede cambiar el código desde una sola muestra de color. Son pálidas, de una luminosidad parecida a la del fondo del recuadro, y el texto sobre ellas conserva un contraste de 12,6:1 o más; las tres se distinguen cuando se juntan en una línea, como en «En 1517, Martín Lutero» en la página 3. Una marca no ocupa sitio: `paddingX` entra 0,12 em en el espacio junto a la frase y `paddingBottom` baja la franja por debajo de los trazos descendentes, y ambos se pintan en un espacio que ya existía.
+
+### 3 · La apertura: una pintura sobre el título
+
+<Excerpt region="opener" />
+
+El título de primer nivel imprime un diseño. La pintura se ancla a la página, así que sangra por arriba y por los dos lados, 170 por 96 mm, con `fit: 'cover'`. El antetítulo y la entradilla salen de atributos de la línea del título ([atributos de título](/es/docs/document-format#atributos-de-encabezado)), y la clave sigue como un `:::callout` corriente cuyos elementos de lista empiezan por las tres marcas. `minHeight` fija la profundidad: la clave empieza en la misma línea por mucho que ocupe el título.
+
+### 4 · Cabeceras según la paridad
+
+<Excerpt region="running-heads" />
+
+La página par lleva el título de la colección y la impar el de la lectura, ambas filtradas por `parity` y fuera de la apertura gracias a `pages: 'body'` ([elementos de texto](/es/docs/configuration-headers-footers#elementos-de-texto)). La apertura lleva el folio al pie.
+
+## Variantes
+
+### Redondea los extremos de las franjas
+
+Un radio de una quinta parte del cuerpo da los extremos suaves de un rotulador.
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Da a cada línea su propia franja
+
+Con `decorationBreak: 'clone'`, una marca que pasa de línea lleva el relleno en los dos extremos de cada trozo, en lugar de quedar recta donde se corta la línea.
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## Errores frecuentes
+
+- El color solo no sobrevive a una fotocopia en blanco y negro, que es como llegan muchas lecturas al aula. El glosario pone además los términos en negrita; si tus lectores van a fotocopiar las páginas, da a una de las tres clases una segunda señal propia.
+- Un id de estilo que `markStyles` no declara toma el primer estilo, sin ningún error en la página (el Sandbox lo señala). Usa ids cortos y revisa cómo los escribes en el texto.

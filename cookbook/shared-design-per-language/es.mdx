@@ -1,0 +1,57 @@
+---
+title: "Un diseño para tres ediciones en otros idiomas"
+summary: "Un cuadernillo en inglés, español y árabe con unos ajustes generales y, para cada idioma, solo lo que es suyo: las fuentes, los tamaños y el espaciado."
+plain: "Un cuadernillo sobre tres astrolabios antiguos, impreso en inglés, español y árabe. Las tres ediciones comparten el diseño; solo la árabe cambia sus fuentes y tamaños."
+description: "Ajustes generales y ajustes propios de cada idioma en Postext: un cuadernillo en inglés, español y árabe con un diseño, distinto solo donde lo pide el idioma."
+question: "¿Cómo comparto un diseño entre las ediciones de un libro y cambio solo las fuentes y etiquetas de cada idioma?"
+aliases: ["ajustes generales", "ajustes propios de cada idioma", "mergeConfigLayers", "configuración compartida", "edición multilingüe", "edición árabe", "cuadernillo traducido", "astrolabio"]
+pageNotes: {"1": "La cubierta: la fotografía de un astrolabio de latón de 1291 con incrustaciones de plata ocupa la página; sobre la parte oscura de la foto, un antetítulo blanco espaciado, un filete corto y el título Tres astrolabios en dos líneas de serifa blanca; al pie, en versalitas, Yemen 1291 · Irán 1654 · Europa 1462.", "2": "Página par 2: cabecera con el folio en latón y el título del libro; las secciones Un mapa del cielo que se puede girar y El instrumento del sultán, en texto justificado con los títulos en latón.", "3": "Página impar 3: un recuadro con un filete de latón a la izquierda, La hora por una estrella; la sección Un jardín de estrellas con la foto de un astrolabio persa a la derecha de la columna y el texto a su lado; al pie, el título de la última sección.", "4": "Página par 4: la última sección con la foto del astrolabio europeo de 1462 a la derecha y el texto y el párrafo de cierre a su lado; una tabla de los tres instrumentos con la cabecera oscura; el colofón."}
+---
+
+## Lo que vas a componer
+
+Un cuadernillo de cuatro páginas A5 sobre tres astrolabios del Metropolitan Museum of Art: uno hecho en Yemen en 1291, otro en Irán en 1654 y otro en Europa en 1462. La editorial lo publica en inglés, español y árabe, y las tres ediciones son un solo diseño. La foto de cubierta, los títulos en latón, el recuadro con su filete, las figuras con el texto al lado y la cabecera oscura de la tabla salen de unos mismos ajustes. La edición árabe cambia lo que es de su escritura: Amiri e IBM Plex Sans Arabic en lugar de Source Serif y Source Sans, un cuerpo mayor y etiquetas sin mayúsculas ni espaciado. Se lee desde la derecha y se encuaderna por la derecha sin una sola coordenada propia.
+
+## Elaboración
+
+### 1 · Unos ajustes generales y tres ajustes de idioma pequeños
+
+El código está en [la respuesta corta](#la-respuesta-corta). `config` guarda los ajustes generales; `mergeConfigLayers` pone encima los de una edición campo a campo. El inglés y el español no tienen ajustes propios: su `locale` elige los patrones de separación silábica y las palabras *Figure* y *Table*, *Figura* y *Tabla*. Los ajustes árabes nombran solo campos sueltos: `bodyText.fontFamily` cambia la fuente y conserva el color, la alineación y la separación silábica, y el elemento `kicker` de la cubierta cambia su fuente y su espaciado y conserva su ancla, su color y su tamaño. Un cambio en la paleta o en los márgenes de `config` llega a las tres ediciones.
+
+### 2 · Lados nombrados según la dirección del texto
+
+<Excerpt region="heads" />
+
+El borde exterior de una página par es el lado donde empiezan sus líneas en las dos direcciones, y el de una impar, el lado donde acaban; por eso `top-start` y `top-end` llevan los folios al exterior tanto en una página par inglesa como en una árabe. El filete del recuadro es `side: 'start'` y el texto de la cubierta se ancla a `top-start`: ninguno necesita un ajuste propio.
+
+### 3 · Figuras al final de la línea, con el texto al lado
+
+<Excerpt region="pictures" />
+
+`wrap: 'end'` pone cada fotografía a la derecha de una columna inglesa y a la izquierda de una árabe, y el texto corre a su lado. Los pies y los textos alternativos van en el idioma de cada edición; los pies árabes dan primero la fecha de la hégira.
+
+### 4 · La tabla con las palabras y las cifras de cada edición
+
+<Excerpt region="table" />
+
+Los datos de la tabla son contenido y cambian con la edición: cifras arábigo-índicas y el separador decimal árabe en la edición árabe, coma decimal en la española. Su estilo es general: el ajuste árabe solo pone la fuente y el cuerpo.
+
+## Variantes
+
+### Guarda los ajustes de cada idioma en un paquete
+
+<RecipeLink slug="bundle-round-trip">El viaje de ida y vuelta del .postext</RecipeLink> guarda un libro en dos idiomas en un archivo. Desde postext 1.58, `createBundle` escribe una vez los ajustes generales y, junto a los capítulos de cada idioma, sus ajustes propios, tal como los lee aquí `mergeConfigLayers`. El libro de esta receta en el Sandbox se abre así: cambia el panel de diseño entre *Todos los idiomas* y la edición árabe para ver qué campos fija la edición árabe.
+
+### Imprime la edición árabe para el Magreb
+
+`ar-MA` conserva la dirección y la encuadernación y escribe en cifras europeas los números generados: los folios y los números de las figuras. Vuelve a escribir también las cifras de la tabla.
+
+```diff
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
+```
+
+## Errores frecuentes
+
+- Las letras árabes van enlazadas, así que una etiqueta espaciada en los ajustes generales debe perder su `letterSpacing` en los ajustes árabes; si no, el motor da un aviso `joiningScriptLetterSpacing`. Con él va `textTransform: 'none'`: el árabe no tiene mayúsculas.
+- Las líneas de una edición árabe son más altas y sus páginas cortan en otros sitios. Cada edición se ha ajustado por su cuenta: el recuadro árabe flota al pie de su página (`placement="bottom"`) y sus frases de cierre corren junto a la última fotografía.

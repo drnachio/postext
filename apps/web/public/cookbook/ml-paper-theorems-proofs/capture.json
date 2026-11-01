@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ml-paper-theorems-proofs",
-  "sourceHash": "997a667537e5c3435a1676840d4d57f4a199493b3396aa81633e29586b82e5d1",
+  "sourceHash": "9e7e188a9cf6c269593495ae4558ddd5e9cb8f5e3f8255de3125c81063aaa1e3",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.474Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:29:59.144Z",
   "variants": {
     "en": {
-      "hash8": "747039c1",
-      "vdtHash": "5ba31fc5061a61f5b7fea762c9bdc619ee666eaf",
+      "hash8": "051e2b71",
+      "vdtHash": "dc596eb6572743d350b5fc539ef3add31cc0b83e",
       "timings": {
-        "importMs": 1772,
-        "fontsMs": 297,
-        "buildMs": 329,
-        "totalMs": 3615,
+        "importMs": 4349,
+        "fontsMs": 359,
+        "buildMs": 363,
+        "totalMs": 6603,
         "builds": 1
       },
       "specimen": {
@@ -127,8 +127,8 @@
           "h": 1427,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 130668,
-          "alt": "Page 8: A Mathematical Derivations."
+          "bytes": 109326,
+          "alt": "Page 8."
         },
         {
           "n": 9,
@@ -138,8 +138,8 @@
           "h": 1427,
           "file": "p09.webp",
           "strip": "p09.s.webp",
-          "bytes": 92400,
-          "alt": "Page 9: A.5 Proof of Lemma 1 and 2."
+          "bytes": 80956,
+          "alt": "Page 9: A Mathematical Derivations."
         },
         {
           "n": 10,
@@ -149,8 +149,8 @@
           "h": 1427,
           "file": "p10.webp",
           "strip": "p10.s.webp",
-          "bytes": 32612,
-          "alt": "Page 10."
+          "bytes": 65030,
+          "alt": "Page 10: A.5 Proof of Lemma 1 and 2."
         }
       ],
       "spreads": [
@@ -193,18 +193,18 @@
       },
       "pdf": {
         "file": "ml-paper-theorems-proofs.pdf",
-        "bytes": 975882,
+        "bytes": 975132,
         "pages": 10
       },
       "sandbox": {
         "file": "ml-paper-theorems-proofs.postext",
-        "bytes": 86692,
+        "bytes": 86698,
         "folio": "70aa8698",
         "chapters": [
           {
             "pages": 10,
-            "hash": "484a1533703e96f1",
-            "lines": "23f40b0a40031390"
+            "hash": "efd6b228e52bfacc",
+            "lines": "771549b8bab2fa2c"
           }
         ]
       },
@@ -447,6 +447,7 @@
           "::resource",
           "$$",
           ":::bibliography",
+          ":::pagebreak",
           ":::paragraphs",
           ":::references"
         ],
@@ -531,6 +532,7 @@
           "math",
           "off-grid-spacing",
           "opener-design",
+          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",

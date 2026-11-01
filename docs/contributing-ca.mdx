@@ -146,6 +146,8 @@ Un cop ho tinguis tot a punt, hi ha tres accions concretes, de menys a més comp
 Si penses escriure codi, obre primer un issue per discutir l'enfocament: així s'evita la feina
 duplicada, i una conversa breu al principi estalvia temps a tothom.
 
+Mantén cada fitxer de codi per sota d'unes 600 línies i cada carpeta per sota d'uns 25 fitxers de codi: un mòdul que creix més es converteix en una carpeta amb el mateix nom, i el fitxer antic queda com a façana que la reexporta. La CI comprova els límits amb `node scripts/source-size.mjs --check` (vegeu *Code Layout* a CONTRIBUTING.md).
+
 ### Què llegir després
 
 Per orientar-te abans de començar:

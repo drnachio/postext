@@ -66,10 +66,9 @@ describe('kokoro in the Sandbox', () => {
     const all = computeWarnings({ markdown: CHAPTER, config: manifest.config, doc: null, resources: manifest.resources as unknown as Resource[] });
     const warnings = all.filter((w) => w.payload.kind !== 'contentInConfig').map((w) => JSON.stringify(w.payload));
     expect(warnings).toEqual([]);
-    // The colophon and the frontispiece captions still set their wording in
-    // the design (#849): it moves to the Markdown with the composed pages
-    // (#846).
-    expect(all.flatMap((w) => (w.payload.kind === 'contentInConfig' ? [w.payload.ownerId] : []))).toEqual(['colophon', 'frontis-kami', 'frontis-shimo']);
+    // The frontispiece captions still set their wording in the design (#849);
+    // the colophon's moved to heading attributes in the Markdown (#1357).
+    expect(all.flatMap((w) => (w.payload.kind === 'contentInConfig' ? [w.payload.ownerId] : []))).toEqual(['frontis-kami', 'frontis-shimo']);
   });
 
   it('names only heading styles, paragraph styles and resources the bundle has', async () => {

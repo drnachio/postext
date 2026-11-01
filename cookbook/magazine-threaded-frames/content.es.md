@@ -97,13 +97,13 @@ Por eso este año no ha dividido ninguna colonia, aunque tenía tres lo bastante
 
 ## La cosecha en la sala de composición
 
-La extracción se hace donde ella trabajó tantos años. La sala de composición está vacía desde 2011, salvo dos chibaletes de madera con sus cajas de tipos, que la cooperativa conservó «por si acaso». Ahí, sobre una mesa larga, Aldaba desopercula los cuadros con un cuchillo caliente y los mete en un extractor de cuatro cuadros que gira a mano. La miel cae a un bidón con un filtro doble y reposa una semana antes de envasarse.
+La extracción se hace donde ella trabajó tantos años. La sala de composición está vacía desde 2011, salvo dos chibaletes con sus cajas de tipos, que la cooperativa conservó «por si acaso». Ahí, sobre una mesa larga, Aldaba desopercula los cuadros con un cuchillo caliente y los mete en un extractor manual de cuatro cuadros. La miel cae a un bidón con un filtro doble y reposa una semana antes de envasarse.
 
 Los niños de la escuela de cerámica bajan a mirar. Algunos se llevan un trozo de panal en un plato; otros prefieren las cajas de tipos, y Aldaba les deja componer su nombre en un componedor y estamparlo en la minerva, al lado de la etiqueta de la miel.
 
 —Una colmena es como una caja de tipos —les dice—. Cada cosa tiene su sitio. Si sabes dónde está, no tienes que mirar.
 
-A finales de octubre la azotea se queda quieta. Las abejas de invierno, más longevas que las de verano, se apiñan en el centro de cada caja alrededor de la reina, y Aldaba sólo sube para comprobar que no ha entrado agua. Deja las colmenas con miel suficiente para pasar el invierno y no vuelve a abrirlas hasta marzo, cuando florecen los almendros del parque y las primeras obreras salen a buscar polen. Para entonces ya sabrá qué colmenas han aguantado el frío, y si la A sigue siendo la más brava.
+A finales de octubre la azotea se queda quieta. Las abejas de invierno, más longevas que las de verano, se apiñan en el centro de cada caja alrededor de la reina, y Aldaba sólo sube para comprobar que no ha entrado agua. Les deja miel suficiente para pasar el invierno y no vuelve a abrir las colmenas hasta marzo, cuando florecen los almendros del parque y las primeras obreras salen a buscar polen. Para entonces sabrá qué colmenas han aguantado el frío, y si la A sigue siendo la más brava.
 
 :::paragraphs{style="colofon"}
 Patio es una revista inventada para este recetario; Carmen Aldaba, Gráficas Lezcano y su azotea también. Fotografías generadas con modelos de difusión. Compuesto en Literata, Fraunces e Instrument Sans (SIL OFL) · Texto: CC BY 4.0

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 074 · A Chinese novel page on a 28 × 28 grid ════════════
 // https://postext.dev/en/cookbook/chinese-novel-horizontal
 // Code: MIT · Text: Lu Xun, 故乡 (1921), public domain, zh.wikisource · Plate: diffusion models
-// Fonts: Noto Serif SC, Noto Sans SC, Ma Shan Zheng (SIL OFL 1.1) · Needs postext ≥ 1.57.0
+// Fonts: Noto Serif SC, Noto Sans SC, Ma Shan Zheng (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

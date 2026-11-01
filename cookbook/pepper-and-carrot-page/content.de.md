@@ -11,11 +11,11 @@ Juni 2015 - www.peppercarrot.com - Grafik und Handlung: David Revoy - Übersetzu
 
 Art & Scenario: David Revoy — Translation: Helmar Suschka — Proofreading: GunChleoc, Philipp (hapit) Hemmer
 
-Lizenz: Creative Commons Namensnennung 4.0 (CC BY 4.0).
+Lizenz: [Creative Commons Namensnennung 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.de).
 
 Eine Bearbeitung von „Peppers Geburtstagsfeier“ von David Revoy, lizenziert unter CC BY 4.0: Postext hat die Sprechblasen und das Lettering neu gebaut und die Seiten nach der offiziellen deutschen Übersetzung neu gesetzt.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/de/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

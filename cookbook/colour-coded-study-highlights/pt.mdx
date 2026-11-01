@@ -1,0 +1,62 @@
+---
+title: "Destaques por cor em um livro de leituras"
+summary: "Um livro de leituras de história cujas palavras-chave levam três cores (verde para termos, âmbar para datas, azul para nomes) vindas de três markStyles."
+plain: "Uma leitura escolar sobre a história da imprensa. Os termos-chave são destacados em verde, as datas em âmbar e as pessoas e lugares em azul, e uma legenda na primeira página diz o que cada cor significa."
+description: "Um livro de leituras de história composto no Postext com três estilos de destaque: termos em verde, datas em âmbar, nomes em azul e uma legenda na abertura."
+question: "Como destaco um texto de estudo com cores que signifiquem algo cada uma: termos, datas e nomes?"
+aliases: ["destaque", "marca-texto", "código de cores", "legenda de cores", "palavras-chave", "texto de estudo", "livro de leituras", "livro de história", "glossário", "marca", "imprensa", "Gutenberg"]
+pageNotes: { "1": "A página de abertura: no alto, uma pintura de uma oficina tipográfica por volta de 1460; abaixo, o chapéu, o título e um linha-fina em itálico; depois, um quadro tingido sob um fio vermelho que explica as três cores com uma amostra verde, uma âmbar e uma azul, e as primeiras linhas da leitura.", "2": "Uma página par da leitura: datas como 1455 e 1462 sobre faixas âmbar, nomes como Johann Fust, Subiaco ou William Caxton sobre faixas azul-claras e termos como movable type ou colophon sobre faixas verdes, em texto justificado.", "4": "A última página: o glossário, cada verbete aberto pelo seu termo em negrito sobre uma faixa verde, as linhas seguintes recuadas, e o colofão em letra cinza pequena." }
+---
+
+## O que você vai compor
+
+A leitura 2 de uma unidade de um livro escolar de história, *Readings in Early Modern History*: quatro páginas sobre como a imprensa se espalhou pela Europa a partir de Mainz entre 1450 e 1550, em uma página de 170 × 240 mm. Os editores marcaram o texto como faria um bom aluno, com um código que não muda no livro inteiro: os termos-chave sobre uma faixa verde, as datas sobre âmbar, as pessoas e os lugares sobre azul-claro. Uma legenda sob o título explica o código com as próprias três cores, e o glossário da última página abre cada verbete com o seu termo verde. As marcas são faixas sob texto comum, então as linhas quebram, hifenizam e justificam como se as faixas não existissem.
+
+## Preparo
+
+### 1 · Um estilo para cada tipo de palavra
+
+O código está na [resposta curta](#a-resposta-curta) acima. `markStyles` declara três estilos com nome, e o texto escolhe um em cada marca: `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colophon]{style="term"}` ([destaques](/pt/docs/document-format-inline#destaques)). Cada estilo diz o que significa (`name` é o que vê quem edita), então o Markdown guarda por que uma palavra foi marcada, não de que cor ela é. Mude a cor de um estilo e todas as datas do livro mudam junto. As pontas são retas, como por padrão desde o postext 1.52 ([estilos de destaque](/pt/docs/configuration-styles#estilos-de-destaque)): um marca-texto deixa pontas retas, e uma faixa arredondada se lê como um chip.
+
+### 2 · Três tons da paleta
+
+<Excerpt region="palette" />
+
+As três faixas são entradas da paleta, como a tinta e o acento, então quem abrir o livro no Sandbox pode trocar o código a partir de uma só amostra de cor. São claras, de luminosidade próxima à do fundo do quadro, e o texto sobre elas mantém um contraste de 12,6:1 ou mais; as três continuam distintas quando se encontram em uma linha, como em “In 1517 Martin Luther” na página 3. Uma marca não ocupa espaço: `paddingX` avança 0,12 em no espaço ao lado da frase e `paddingBottom` desce a faixa abaixo das descendentes, ambos pintados em um espaço que já existia.
+
+### 3 · A abertura: uma pintura sobre o título
+
+<Excerpt region="opener" />
+
+O título de primeiro nível imprime um design. A pintura é ancorada à página, então sangra no alto e nos dois lados, 170 por 96 mm, com `fit: 'cover'`. O chapéu e a linha-fina vêm de atributos da linha do título ([atributos de título](/pt/docs/document-format#atributos-de-título)), e a legenda segue como um `:::callout` comum cujos itens de lista começam pelas três marcas. `minHeight` fixa a profundidade: a legenda começa na mesma linha, seja qual for o tamanho do título.
+
+### 4 · Cabeços conforme a paridade
+
+<Excerpt region="running-heads" />
+
+A página par leva o título da coleção e a ímpar o da leitura, ambos filtrados por `parity` e mantidos fora da abertura por `pages: 'body'` ([elementos de texto](/pt/docs/configuration-headers-footers#elementos-de-texto)). A abertura leva o fólio ao pé.
+
+## Variações
+
+### Arredonde as pontas das faixas
+
+Um raio de um quinto do corpo dá as pontas suaves de uma caneta hidrográfica.
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Dê a cada linha a sua faixa
+
+Com `decorationBreak: 'clone'`, uma marca que passa de linha recebe a margem nas duas pontas de cada pedaço, como na página 3, onde “pamphlets” quebra depois de “pam-”.
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## Erros comuns
+
+- A cor sozinha não sobrevive a uma fotocópia em preto e branco, que é como muitas leituras chegam à sala de aula. O glossário também põe os termos em negrito; se os seus leitores vão fotocopiar as páginas, dê a um dos três tipos um segundo sinal próprio.
+- Um id de estilo que `markStyles` não declara assume o primeiro estilo, sem erro na página (o Sandbox o aponta). Use ids curtos e confira como você os escreve no texto.

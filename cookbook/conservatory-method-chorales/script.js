@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 166 · Numbered chorale examples in a harmony method ══
 // https://postext.dev/en/cookbook/conservatory-method-chorales
 // Code: MIT · Text and four-part settings: original (CC BY 4.0) · Melodies: public domain
-// Fonts: Crimson Pro, Playfair Display, Fira Sans Condensed (OFL 1.1) · Needs postext ≥ 1.54.0
+// Fonts: Crimson Pro, Playfair Display, Fira Sans Condensed (OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes, initMusicEngine,
 } from 'https://esm.sh/postext';

@@ -24,7 +24,7 @@ sora: 明天带上吧
 :::page{split="38 [44 | *] / 34 / *"}
 ::panel{art=coach}
 sfx: 哗啦
-mori: 喂。
+mori{at="85% 19%"}: 喂。
 mori: 放学时间早就过了。
 sora{tail=bottom}: 森、森老师……
 ::panel{art=smile}

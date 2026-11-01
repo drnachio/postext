@@ -24,7 +24,7 @@ La mayoría de las supernovas son el resultado de la muerte explosiva de estrell
 "*Las explosiones de enanas blancas juegan un papel crucial en la astronomía*", declara Priyam Das, estudiante de doctorado en la Universidad de Nueva Gales del Sur en Canberra (Australia), quien ha dirigido el estudio sobre SNR 0509-67.5, publicado en *Nature Astronomy*. Gran parte de nuestro conocimiento sobre cómo se expande el universo se basa en las supernovas de Tipo Ia, y también son la principal fuente de hierro en nuestro planeta, incluyendo el hierro en nuestra sangre. "*Sin embargo, *-añade-* a pesar de su importancia y después de tanto tiempo, el enigma en torno al mecanismo exacto que desencadena su explosión sigue sin resolverse*".
 
 :::callout{type="cita"}
-«Sin embargo, -añade- a pesar de su importancia y después de tanto tiempo, el enigma en torno al mecanismo exacto que desencadena su explosión sigue sin resolverse»
+«Sin embargo, a pesar de su importancia y después de tanto tiempo, el enigma en torno al mecanismo exacto que desencadena su explosión sigue sin resolverse»
 :::
 
 Todos los modelos que explican las supernovas de Tipo Ia comienzan con una enana blanca que forma parte de una pareja de estrellas. Si orbita lo suficientemente cerca de la otra estrella, la enana puede robar material de su compañera. En la teoría más establecida sobre las supernovas de Tipo Ia, la enana blanca acumula materia de su compañera hasta que alcanza una masa crítica, momento en el que sufre una sola explosión. Sin embargo, estudios recientes han insinuado que al menos algunas supernovas de Tipo Ia podrían explicarse mejor por una doble explosión desencadenada antes de que la estrella alcanzara esta masa crítica.
@@ -40,7 +40,7 @@ Las supernovas de Tipo Ia son clave para nuestra comprensión del universo. Se c
 Das también tiene otra motivación para estudiar estas explosiones. "*Esta evidencia tangible de una doble detonación no solo contribuye a resolver un antiguo misterio, sino que también ofrece un espectáculo visual*", afirma, describiendo la "*estructura bellamente estratificada*" que crea una supernova. Para él, "*revelar el funcionamiento interno de una explosión cósmica tan espectacular es increíblemente gratificante*".
 
 :::paragraphs{style="fuente"}
-Nota de prensa eso2511 de ESO, 2 de Julio de 2025. Texto e imágenes bajo licencia CC BY 4.0. [https://www.eso.org/public/spain/news/eso2511/](https://www.eso.org/public/spain/news/eso2511/)
+[Nota de prensa eso2511](https://www.eso.org/public/spain/news/eso2511/) de ESO, 2 de Julio de 2025. Texto e imágenes bajo licencia CC BY 4.0.
 :::
 
 ## Desde Chile capturan un nido estelar escondido en una oscura nebulosa {lead="La Cámara de Energía Oscura situada en Cerro Tololo, detectó este verdadero charco de tinta cósmica" source="NSF NOIRLab" date="24 Abril 2025" release="noirlab2515" standfirst="La Cámara de Energía Oscura situada en Cerro Tololo, detectó este verdadero charco de tinta cósmica"}
@@ -61,9 +61,13 @@ La sombra que se proyecta en medio del campo de estrellas de la imagen, y que se
 
 Esta sombra sinuosa en medio de un área repleta de estrellas, es la nube molecular Circinus Oeste, una región rica en gas y polvo conocida por albergar a estrellas recién nacidas. Este tipo de nubes son la cuna de la formación de estrellas, y son tan densas y frías que sus átomos se unen entre sí para formar moléculas. Algunas de estas nubes, como Circinus Oeste, son tan densas que la luz no puede atravesarlas y por ese motivo incluso se las conoce como nebulosas oscuras. Pero la creciente población de estrellas jóvenes de la nube ha ofrecido a los astrónomos una fuente rica en información sobre los procesos que impulsan la formación estelar y la evolución de las nubes moleculares. (:ref{id="noirlab2515b" case="lower"})
 
+::resource{id="noirlab2515b"}
+
 Esta imagen fue capturada por la Cámara de Energía Oscura (DECam, por sus siglas en inglés) que fabricó el Departamento de Energía de Estados Unidos, y que se encuentra instalada en Chile, en el Telescopio Víctor M. Blanco de 4 metros del Observatorio Interamericano Cerro Tololo, un Programa de NOIRLab de la Fundación Nacional de Ciencias de Estados Unidos. La fotografía muestra la porción occidental de la gran nube molecular Circinus, un impresionante objeto astronómico ubicado a unos 2.500 años luz de la Tierra en la constelación de Circinus. La nube tiene un diámetro de 180 años luz y una masa 250.000 veces superior a la del Sol.
 
 Circinus Oeste es conocida por albergar una docena de objetos estelares jóvenes, es decir, estrellas que están en sus etapas primarias de desarrollo. A pesar de estar envueltas en densas áreas de gas y polvo, estas jóvenes estrellas se dejan entrever, ya que al realizar un acercamiento a la imagen es posible ver varias pistas de su presencia salpicando las oscuras grietas de Circinus Oeste. (:ref{id="noirlab2515c" case="lower"})
+
+::resource{id="noirlab2515c"}
 
 Un indicio de la presencia de estrellas recién formadas son los escasos focos de luz que aparecen entre las turbias nubes. Esta luz emana de estrellas en formación activa, en tanto que las cavidades que las rodean fueron esculpidas por flujos moleculares, o sea, potentes chorros expulsados de protoestrellas para liberar el gas y el impulso acumulados durante la formación. Estos energéticos flujos de salida son más fáciles de encontrar para los astrónomos que las propias estrellas incrustadas, y constituyen una poderosa herramienta para estudiar las incubadoras estelares.
 
@@ -74,5 +78,5 @@ Otra señal de formación estelar es la presencia de objetos Herbig-Haro (HH) qu
 El estudio de los flujos de gas saliente de Circinus Oeste puede ofrecer información valiosa sobre el proceso de formación estelar y revelar el impacto que tienen las estrellas jóvenes en su entorno. Con esa variedad de flujos de salida, esta nebulosa constituye un laboratorio natural para estudiar no solamente el ciclo de vida de las estrellas, sino también la dinámica de las nubes moleculares y los mecanismos que influyen en la evolución de las galaxias. Los masivos flujos de salida de gas que ocurren aquí se pueden parecer a las condiciones en las que se formó nuestro Sistema Solar, proporcionándonos una visión de los procesos que condujeron a nuestra aparición en el Universo.
 
 :::paragraphs{style="fuente"}
-Nota de prensa noirlab2515 de NSF NOIRLab, 24 Abril 2025. Texto e imágenes bajo licencia CC BY 4.0. [https://noirlab.edu/public/es/news/noirlab2515/](https://noirlab.edu/public/es/news/noirlab2515/)
+[Nota de prensa noirlab2515](https://noirlab.edu/public/es/news/noirlab2515/) de NSF NOIRLab, 24 Abril 2025. Texto e imágenes bajo licencia CC BY 4.0.
 :::

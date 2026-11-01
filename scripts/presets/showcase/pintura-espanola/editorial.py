@@ -26,6 +26,10 @@ BOOK = {
         "source_wiki": "Comentario adaptado del artículo «__title__» de Wikipedia en español (revisión __revid__, CC BY-SA 4.0).",
         "source_own": "Comentario escrito para esta edición (CC BY 4.0).",
         "bio_source": "Semblanza adaptada de Wikipedia en español (CC BY-SA 4.0).",
+        # The link at the end of the source line (noted with its address and
+        # a QR code in print): sentence, link text.
+        "record_link": {"museum": ("Ficha e imagen ampliable en la ", "web del museo"), "commons": ("Imagen ampliable en ", "Wikimedia Commons")},
+        "revision": "revisión",
     },
     "en": {
         "title": "Spanish Painting",
@@ -48,6 +52,8 @@ BOOK = {
         "source_wiki": "Commentary adapted from the English Wikipedia article “__title__” (revision __revid__, CC BY-SA 4.0).",
         "source_own": "Commentary written for this edition (CC BY 4.0).",
         "bio_source": "Biographical note adapted from the English Wikipedia (CC BY-SA 4.0).",
+        "record_link": {"museum": ("Record and zoomable image on the ", "museum's website"), "commons": ("Zoomable image on ", "Wikimedia Commons")},
+        "revision": "revision",
     },
 }
 

@@ -34,7 +34,7 @@ pageNotes: { "1": "首页：紫色色带上是型号、一段导语和三项关�
 
 <Excerpt region="styles" />
 
-`tableStyle`存放所有表格共有的设置。`tableStyles`中的每一项只设置其表格要改的部分，资源用`table.styleId`选用其中一项。电气特性表把灰色细线换成1.4 pt的白线，把底色切开，并显示出每处合并的范围。订货型号表加了圆角外框，并使用Fira Sans Condensed，使四列能放进一栏。
+`tableStyle`存放所有表格共有的设置。`tableStyles`中的每一项只设置其表格要改的部分，资源用`table.styleId`选用其中一项。电气特性表把灰色细线换成1.4 pt的白线，把底色切开，并显示出每处合并的范围。订货型号表加了圆角外框，并使用Fira Sans Condensed，使四列能放进一栏。 电气表样式的 `figureStyle: 'tabular'` 向 Fira Sans 请求 `tnum` 特性，即等宽数字，让 Min、Typ、Max 各列的数字上下对齐。
 
 ### 5 · 在PDF中保持为文本的标签
 
@@ -55,8 +55,8 @@ pageNotes: { "1": "首页：紫色色带上是型号、一段导语和三项关�
 用调色板中灰色`rule`颜色的0.5 pt细线分隔每一行，不论有无底色；白线在两行无底色的行相接处会看不见。
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### 把表格题注排在色条上

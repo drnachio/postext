@@ -68,7 +68,7 @@ w: I IV I
 
 ## La cadencia rota
 
-Cuando el V va al vi en lugar de al I, el oyente recibe un acorde que comparte dos notas con la tónica pero no es la tónica. La sensible sigue subiendo a sol, de modo que la conducción de voces cumple su promesa mientras la armonía la rompe. Las otras dos voces superiores bajan por grados y el acorde duplica su tercera, sol, lo que evita octavas paralelas entre el bajo y las voces interiores. La frase tiene que continuar, y suele cerrar con una cadencia perfecta unos compases después.
+Cuando el V va al vi en lugar de al I, el oyente recibe un acorde que comparte dos notas con la tónica pero no es la tónica. La sensible sigue subiendo a sol, de modo que la conducción de voces cumple su promesa mientras la armonía la rompe. Las otras dos voces superiores bajan por grados y el acorde duplica su tercera, sol, lo que evita octavas paralelas entre el bajo y las voces interiores. La frase tiene que continuar, y suele cerrar con una cadencia perfecta unos compases después. En modo menor el mismo giro va del V al VI, el acorde mayor sobre el sexto grado.
 
 ```abc {alt="Cadencia rota en sol mayor: V a vi, con la sensible subiendo a sol"}
 X:5
@@ -81,7 +81,7 @@ w: IV V vi
 
 ## Cadencias en una melodía
 
-Una melodía muestra sus cadencias aunque no lleve acordes. *Greensleeves*, una canción inglesa del siglo XVI, aparece aquí en la menor con un número romano sobre cada compás, los acordes que tocaría un guitarrista. Su primera frase se detiene en mi, la dominante, sobre una semicadencia; la segunda termina en la sobre V–i, con el sol sostenido subiendo a la tónica. El mismo plan vuelve en el estribillo, que empieza en un sol agudo sobre do, el relativo mayor, y regresa a la menor para el cierre final. Cántala, marca cada cadencia y di de qué tipo es antes de comprobar los números sobre el pentagrama.
+Una melodía muestra sus cadencias aunque no lleve acordes. *Greensleeves*, una canción inglesa del siglo XVI, aparece aquí en la menor con un número romano sobre cada compás, los acordes que tocaría un guitarrista. El compás es de 6/8: dos tiempos por compás, tres corcheas en cada tiempo, y el la inicial es una anacrusa que lleva al primer tiempo. Su primera frase se detiene en mi, la dominante, sobre una semicadencia; la segunda termina en la sobre V–i, con el sol sostenido subiendo a la tónica. El mismo plan vuelve en el estribillo, que empieza en un sol agudo sobre do, el relativo mayor, y regresa a la menor para el cierre final. Cántala, marca cada cadencia y di de qué tipo es antes de comprobar los números sobre el pentagrama.
 
 ```abc {alt="Greensleeves en la menor con un número romano sobre cada compás"}
 X:6

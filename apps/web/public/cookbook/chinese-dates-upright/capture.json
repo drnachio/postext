@@ -3,27 +3,21 @@
   "slug": "chinese-dates-upright",
   "sourceHash": "360d9432be20dba6d431ceefc0081dc316ff7869f89075cb2b144002011ba224",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:32:12.456Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:56.629Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:51:54.761Z",
   "variants": {
     "en": {
-      "hash8": "f917ec7e",
+      "hash8": "52262c9f",
       "vdtHash": "ec36a99bb1848c89d578e641ede8f72b6d77ab73",
       "timings": {
-        "importMs": 272,
-        "fontsMs": 529,
-        "buildMs": 58,
-        "totalMs": 1493,
+        "importMs": 922,
+        "fontsMs": 403,
+        "buildMs": 59,
+        "totalMs": 2031,
         "builds": 1
       },
       "specimen": {
@@ -159,7 +153,7 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 308176,
+        "bytes": 308179,
         "pages": 7
       },
       "sandbox": {
@@ -368,6 +362,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -376,13 +380,13 @@
       }
     },
     "es": {
-      "hash8": "495e3f3e",
+      "hash8": "553e052a",
       "vdtHash": "a7ee20363f99c4ac3349d778e006dd3f48f0873f",
       "timings": {
-        "importMs": 241,
-        "fontsMs": 312,
-        "buildMs": 55,
-        "totalMs": 1231,
+        "importMs": 672,
+        "fontsMs": 369,
+        "buildMs": 62,
+        "totalMs": 1705,
         "builds": 1
       },
       "specimen": {
@@ -518,7 +522,7 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 308201,
+        "bytes": 308197,
         "pages": 7
       },
       "sandbox": {
@@ -726,6 +730,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

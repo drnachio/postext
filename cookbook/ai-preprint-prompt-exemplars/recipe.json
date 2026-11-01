@@ -33,6 +33,7 @@
       "table-model",
       "table-style",
       "footnotes",
+      "print-links",
       "running-heads",
       "color-palette",
       "pdf-export"
@@ -48,8 +49,8 @@
     "merged-cells-hiddenby"
   ],
   "engine": {
-    "postext": "1.34.0",
-    "postextPdf": "1.34.0"
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0"
   },
   "kit": [
     "core",
@@ -135,5 +136,5 @@
     "code-listings-and-keycaps"
   ],
   "created": "2026-10-06",
-  "updated": "2026-10-16"
+  "updated": "2026-10-31"
 }

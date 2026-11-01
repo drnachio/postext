@@ -17,7 +17,7 @@ El navegador corta un párrafo justificado línea a línea. Cada línea toma tan
 
 Los impresores disponen de un método mejor desde hace cuarenta años. @knuthplass1981 tratan el párrafo como un todo. Cada corte posible es un nodo de un grafo, cada línea una arista con su peso, y los cortes elegidos son los del camino de menor penalización total, de modo que una línea algo apretada al principio puede ahorrar otra muy floja más adelante. Los patrones de división de Liang, el trabajo de Plass sobre el corte de páginas y el propio TeX salieron del mismo proyecto de Stanford [@liang1983; @plass1981; @knuth1984], y el método sigue siendo la referencia con la que se juzga cualquier otro.
 
-No ha llegado al navegador. La razón que suele darse es la velocidad: una página que se recompone cada vez que la ventana cambia de tamaño no puede permitirse una búsqueda en cada párrafo. Ponemos a prueba esa razón. La :ref{id="sec:related"} sitúa la cuestión entre los trabajos anteriores, la :ref{id="sec:method"} describe el corpus y el banco de medida, y la :ref{id="sec:results"}, en la :ref{id="sec:results" style=page}, da los resultados. La :ref{id="sec:discussion"} los convierte en una regla que un diseñador de páginas puede aplicar.
+No ha llegado al navegador. La razón que suele darse es la velocidad: una página que se recompone cada vez que la ventana cambia de tamaño no puede permitirse una búsqueda en cada párrafo. Ponemos a prueba esa razón. La :ref{id="sec:related"} sitúa la cuestión entre los trabajos anteriores, la :ref{id="sec:method"} describe el corpus y el banco de medida, y la :ref{id="sec:results"}, en la :ref{id="sec:results" style=page}, da los resultados. La :ref{id="sec:discussion"} los convierte en una regla que un diseñador de páginas puede aplicar, y la :ref{id="sec:conclusion"} resume el caso.
 
 ## Trabajos relacionados {#sec:related}
 
@@ -49,7 +49,7 @@ El ajuste total cuesta unas décimas de milisegundo por párrafo, y el texto de 
 
 Los resultados dan también una regla para saber cuándo basta con el primer ajuste. En una sola columna de 70 caracteres o más, el lector rara vez encontrará una línea floja con cualquiera de los dos métodos, y el diseñador que no puede elegir el algoritmo pierde poco. En columnas estrechas, y en lenguas de palabras largas, la diferencia es grande y se ve, y el ajuste total con división de palabras es el método que hay que pedir. Coincide con el consejo de los impresores [@bringhurst2004, cap. 2], que prefieren componer en bandera una columna estrecha antes que justificarla sin cuidado.
 
-## Conclusión
+## Conclusión {#sec:conclusion}
 
 Medimos en un navegador el coste de cortar párrafos como lo hace TeX y resultó pequeño: 0,21 ms por párrafo, 3,4 veces lo que cuesta el método del propio navegador, a cambio de seis veces menos líneas flojas. La objeción al ajuste total en pantalla descansa en la velocidad, y con el equipo actual la velocidad ya no la sostiene.
 

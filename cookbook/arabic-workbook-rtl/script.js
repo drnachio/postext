@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 173 · An Arabic workbook, right to left ═══════════════
 // https://postext.dev/en/cookbook/arabic-workbook-rtl
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Noto Naskh Arabic, Baloo Bhaijaan 2 (SIL OFL 1.1) · Needs postext ≥ 1.63.0
+// Fonts: Noto Naskh Arabic, Baloo Bhaijaan 2 (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -56,7 +56,7 @@ const exercises = { solutions: { placement: 'directive' } };
 
 // #region opener: the garden to the bleed, the unit's tab and its title under it
 const BAND = 170 / 2.4; // mm: the painting's height at the page's width
-const opener = { enabled: true, minHeight: mm(BAND - 20 + 21), slot: { elements: [
+const opener = { enabled: true, minHeight: mm(BAND - 20 + 13), slot: { elements: [
   { kind: 'image', id: 'picture', resourceId: '{attr.pic}', decorative: true, reserve: false,
     placement: { anchor: { to: 'page', edge: 'top-left' },
       size: { width: mm(170), height: mm(BAND) } } },

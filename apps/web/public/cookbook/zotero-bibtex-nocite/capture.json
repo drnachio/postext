@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "zotero-bibtex-nocite",
-  "sourceHash": "e874c03f8a26cdd4508d4b94fd8d817d515d87baafe9a1c9b9d6f4d101631877",
+  "sourceHash": "bd36d788920fc51144d941949278177a4b3be5fdb91a517ea2510f151a9e605b",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:43:09.662Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:05.202Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:22:25.515Z",
   "variants": {
     "en": {
-      "hash8": "112602d4",
+      "hash8": "8f5d3868",
       "vdtHash": "9c12350cd4451185f5f8d2428661609ca85f8a5f",
       "timings": {
-        "importMs": 322,
-        "fontsMs": 7,
-        "buildMs": 575,
-        "totalMs": 1778,
+        "importMs": 4012,
+        "fontsMs": 5,
+        "buildMs": 547,
+        "totalMs": 6082,
         "builds": 1
       },
       "specimen": {
@@ -93,7 +88,7 @@
       },
       "sandbox": {
         "file": "zotero-bibtex-nocite.postext",
-        "bytes": 23718,
+        "bytes": 23706,
         "folio": "059452bc",
         "chapters": [
           {
@@ -284,7 +279,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -295,13 +295,13 @@
       }
     },
     "es": {
-      "hash8": "5b89c2ab",
-      "vdtHash": "b810b887425fbfad3e8c177b9b65dd79c0f61b1e",
+      "hash8": "e36f25f2",
+      "vdtHash": "9f67bd0b03ec9ab296ee70ce2ae1bdce0f81afbe",
       "timings": {
-        "importMs": 254,
+        "importMs": 2523,
         "fontsMs": 6,
-        "buildMs": 582,
-        "totalMs": 1708,
+        "buildMs": 550,
+        "totalMs": 4085,
         "builds": 1
       },
       "specimen": {
@@ -345,7 +345,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 133150,
+          "bytes": 129936,
           "alt": "Página 2: Semana 5 · La objetividad tiene historia."
         }
       ],
@@ -373,13 +373,13 @@
       },
       "sandbox": {
         "file": "zotero-bibtex-nocite.postext",
-        "bytes": 24131,
+        "bytes": 24119,
         "folio": "059452bc",
         "chapters": [
           {
             "pages": 2,
-            "hash": "4fc6e90b514ade55",
-            "lines": "9dfc41012210061d"
+            "hash": "dfa0d6f14c4d382d",
+            "lines": "e39af4a30a693e99"
           }
         ]
       },
@@ -551,7 +551,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -564,7 +564,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

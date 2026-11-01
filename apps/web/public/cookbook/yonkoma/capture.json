@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "yonkoma",
-  "sourceHash": "cf68af1841d215323129a28975958571f71e636ea8096bb6e0b04db97804e1af",
+  "sourceHash": "61c9ec22792f6d0f2fc04b2f3d8c57b07db1ad880fbcf880beb6ed0d1b0a2c1e",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:43:09.613Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:05.173Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:48:40.927Z",
   "variants": {
     "en": {
-      "hash8": "e782b0d3",
+      "hash8": "f602f976",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 271,
-        "fontsMs": 259,
-        "buildMs": 263,
-        "totalMs": 1577,
+        "importMs": 14027,
+        "fontsMs": 3482,
+        "buildMs": 487,
+        "totalMs": 21664,
         "builds": 2
       },
       "specimen": {
@@ -89,12 +83,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323034,
+        "bytes": 1323069,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273131,
+        "bytes": 1273191,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -239,6 +233,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -257,18 +256,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es, ca, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "es": {
-      "hash8": "428803e0",
+      "hash8": "5e5e2291",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 212,
-        "fontsMs": 477,
-        "buildMs": 281,
-        "totalMs": 1781,
+        "importMs": 8127,
+        "fontsMs": 2650,
+        "buildMs": 432,
+        "totalMs": 13927,
         "builds": 2
       },
       "specimen": {
@@ -334,12 +343,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323947,
+        "bytes": 1323975,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273227,
+        "bytes": 1273287,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -484,6 +493,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -502,18 +516,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, ca, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "ca": {
-      "hash8": "f62d1083",
+      "hash8": "7abac6c6",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 264,
-        "fontsMs": 293,
-        "buildMs": 288,
-        "totalMs": 1664,
+        "importMs": 6869,
+        "fontsMs": 2878,
+        "buildMs": 406,
+        "totalMs": 12179,
         "builds": 2
       },
       "specimen": {
@@ -579,12 +603,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323590,
+        "bytes": 1323620,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273238,
+        "bytes": 1273298,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -729,6 +753,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -747,18 +776,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ca, en, es, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, en, es, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "zh": {
-      "hash8": "c400137c",
+      "hash8": "7738c7a0",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 319,
-        "fontsMs": 572,
-        "buildMs": 281,
-        "totalMs": 2182,
+        "importMs": 3058,
+        "fontsMs": 1839,
+        "buildMs": 449,
+        "totalMs": 8973,
         "builds": 2
       },
       "specimen": {
@@ -824,12 +863,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1337824,
+        "bytes": 1337751,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273115,
+        "bytes": 1273175,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -974,6 +1013,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -992,18 +1036,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: zh, en, es, ca, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, en, es, ca, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "ar": {
-      "hash8": "cd58215b",
+      "hash8": "d705ca51",
       "vdtHash": "d61540f9adce65e201a2f033d6b41fbdbc3c42aa",
       "timings": {
-        "importMs": 307,
-        "fontsMs": 350,
-        "buildMs": 279,
-        "totalMs": 1754,
+        "importMs": 5634,
+        "fontsMs": 1135,
+        "buildMs": 433,
+        "totalMs": 8627,
         "builds": 2
       },
       "specimen": {
@@ -1069,12 +1123,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1327901,
+        "bytes": 1327874,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273128,
+        "bytes": 1273188,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1219,6 +1273,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -1237,18 +1296,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar, en, es, ca, zh, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar, en, es, ca, zh, pt, fr, de, it"
           }
         ]
       }
     },
     "ja": {
-      "hash8": "a2c34509",
+      "hash8": "94e404ad",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 228,
-        "fontsMs": 487,
-        "buildMs": 266,
-        "totalMs": 1749,
+        "importMs": 15788,
+        "fontsMs": 7609,
+        "buildMs": 507,
+        "totalMs": 27175,
         "builds": 2
       },
       "specimen": {
@@ -1314,12 +1383,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1322836,
+        "bytes": 1322876,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273307,
+        "bytes": 1273367,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1464,6 +1533,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -1487,18 +1561,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ja, es, ca, zh, ar, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (its bundle is in en, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, es, ca, zh, ar, pt, fr, de, it"
           }
         ]
       }
     },
     "pt": {
-      "hash8": "3c1fe468",
+      "hash8": "0ff30264",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 268,
-        "fontsMs": 570,
-        "buildMs": 281,
-        "totalMs": 1906,
+        "importMs": 2181,
+        "fontsMs": 688,
+        "buildMs": 332,
+        "totalMs": 4512,
         "builds": 2
       },
       "specimen": {
@@ -1564,12 +1648,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323931,
+        "bytes": 1323964,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273429,
+        "bytes": 1273489,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1713,6 +1797,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -1732,18 +1821,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, ca, zh, ar, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, ca, zh, ar, fr, de, it"
           }
         ]
       }
     },
     "fr": {
-      "hash8": "fe70ef0f",
+      "hash8": "c85d18ec",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 317,
-        "fontsMs": 301,
-        "buildMs": 285,
-        "totalMs": 1733,
+        "importMs": 3078,
+        "fontsMs": 2496,
+        "buildMs": 308,
+        "totalMs": 7410,
         "builds": 2
       },
       "specimen": {
@@ -1784,7 +1883,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 162190,
+          "bytes": 162596,
           "alt": "Page 1."
         }
       ],
@@ -1809,12 +1908,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323635,
+        "bytes": 1323574,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273166,
+        "bytes": 1273286,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -1958,6 +2057,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -1977,18 +2081,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: fr, en, es, ca, zh, ar, pt, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, ca, zh, ar, pt, de, it"
           }
         ]
       }
     },
     "de": {
-      "hash8": "a3bb4d85",
+      "hash8": "dcb6f99e",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 380,
-        "fontsMs": 484,
-        "buildMs": 300,
-        "totalMs": 2000,
+        "importMs": 4988,
+        "fontsMs": 3346,
+        "buildMs": 369,
+        "totalMs": 10343,
         "builds": 2
       },
       "specimen": {
@@ -2029,7 +2143,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 161586,
+          "bytes": 163938,
           "alt": "Seite 1."
         }
       ],
@@ -2054,12 +2168,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323745,
+        "bytes": 1323675,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273082,
+        "bytes": 1273284,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -2204,6 +2318,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -2222,18 +2341,28 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: de, en, es, ca, zh, ar, pt, fr, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, ca, zh, ar, pt, fr, it"
           }
         ]
       }
     },
     "it": {
-      "hash8": "cdab0148",
+      "hash8": "6059602f",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 264,
-        "fontsMs": 341,
-        "buildMs": 289,
-        "totalMs": 1688,
+        "importMs": 6588,
+        "fontsMs": 4480,
+        "buildMs": 367,
+        "totalMs": 13348,
         "builds": 2
       },
       "specimen": {
@@ -2299,12 +2428,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1322679,
+        "bytes": 1322712,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1273299,
+        "bytes": 1273359,
         "folio": "80b0969c",
         "keep": "last",
         "pages": 1,
@@ -2449,6 +2578,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2; build 1 left out (another configuration)"
@@ -2457,6 +2591,16 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (its bundle is in en-us, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, ca, zh, ar, pt, fr, de"
           },
           {
             "check": "sandbox",

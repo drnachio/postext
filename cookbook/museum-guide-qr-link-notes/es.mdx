@@ -1,0 +1,64 @@
+---
+title: "Una guía de museo cuyos enlaces se imprimen como códigos QR"
+summary: "Un paseo de bolsillo por un museo cuyos enlaces se imprimen como notas numeradas al pie, con dirección corta y código QR (links.print en notes)."
+description: "Una guía de museo en Postext: los enlaces al catálogo se imprimen como notas numeradas con dirección corta y código QR, un cuadro por página, con el código."
+plain: "Una pequeña guía impresa de cinco cuadros. Donde el texto menciona una página web, un número pequeño lleva al pie de la página, donde un código cuadrado abre esa página en el móvil."
+question: "¿Cómo imprimo los enlaces de una guía como notas numeradas con un código QR que el visitante pueda escanear?"
+aliases: ["código QR", "códigos QR impresos", "direcciones impresas", "guía de museo", "guía de paseo", "notas de enlace", "QR code", "museum guide"]
+pageNotes: { "1": "La portada: la Joven con una jarra de agua de Vermeer sangra por el borde superior, sobre el título Las salas holandesas, una entradilla en cursiva y un primer párrafo cuyo enlace imprime la nota 1 al pie, con un código QR junto a la dirección corta metmuseum.org/plan-your-visit.", "3": "Parada 1: la Joven pareja en una posada de Frans Hals junto a su cartela, tres párrafos y la nota 3 al pie con un código QR de la ficha del cuadro en el catálogo." }
+---
+
+## Lo que vas a componer
+
+Una guía de bolsillo de las salas holandesas del Metropolitan Museum of Art: cinco cuadros, una hora a pie, un cuadro por página. La portada es la joven de Vermeer junto a la ventana, cortada por el borde superior. Cada parada abre con su número de sala, el título y el pintor, luego el cuadro con su cartela al lado y después tres párrafos breves. El texto enlaza con el catálogo del museo como lo haría cualquier página web. En papel, cada enlace se convierte en un número pequeño, y al pie de la página la nota da la dirección corta y un código QR al que el visitante acerca el móvil delante del cuadro.
+
+## Elaboración
+
+### 1 · Escribe enlaces, imprime notas
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El Markdown conserva enlaces normales, `[La ficha del catálogo](https://www.metmuseum.org/…/436616)`, y `links.print: 'notes'` convierte cada uno en una nota numerada con la dirección y el código ([enlaces en papel](/es/docs/configuration-notes-references#enlaces-en-papel)). Las notas son notas al pie: `numbering: 'document'` las cuenta a lo largo del paseo, así que el lector encuentra de la 1 a la 7, y `repeat: 'first'` deja que la última parada cite el Hals por su nota 3 en vez de imprimir dos veces el mismo código. En el PDF el código se dibuja en vectores y es en sí mismo un enlace.
+
+<PageShot page={3} crop="0,0.74,1,0.2" caption="El pie de la parada 1: la nota 3, la ficha del cuadro como dirección corta junto a un código de 16 mm." />
+
+### 2 · Una parada por página
+
+<Excerpt region="stops" />
+
+Cada parada es un título de segundo nivel cuyo `breakBefore` abre página, par o impar, así que el visitante pasa una hoja por cuadro. El número de sala y el pintor son atributos del título; el diseño los coloca encima y debajo del título, y `minHeight` deja el cuadro a la misma altura en todas las páginas.
+
+### 3 · La cartela junto al cuadro
+
+<Excerpt region="resources" />
+
+`captionSide: 'inside'` pone el pie y su nota de crédito junto al cuadro, como cuelga un museo su cartela, y `width` da a cada cuadro su parte de la medida: menos al Hals, que es alto, y más al Ruisdael, que es apaisado, de modo que las cinco páginas tienen una altura de texto parecida. La cartela se arma con la técnica, las medidas en centímetros con espacios de no separación y la línea de crédito del museo, con coma decimal en la edición española.
+
+### 4 · La parada en la cabecera
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` imprime el título de la parada que empieza en la página, así que la página impar nombra el cuadro y la par, la guía. Ninguna cabecera llega a la portada, una página cuyo papel es el de apertura.
+
+## Variantes
+
+### Imprime la dirección en la línea
+
+Para una guía que se lee en casa, `'inline'` añade la dirección entre paréntesis tras el texto del enlace y no pone nota ni código.
+
+```diff
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Códigos sin dirección
+
+`show: 'qr'` imprime solo el código junto al número de nota, para un cartel o una cartela donde la dirección solo ocuparía sitio.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
+```
+
+## Errores frecuentes
+
+Una nota con código mide al menos lo que mide el código. Cuando la línea que lleva el enlace no tiene sitio debajo para su nota en la página, la línea pasa a la siguiente con su nota; deja los enlaces fuera de las últimas líneas de una página que tiene que acabar donde acaba, como el primer párrafo de la portada de esta guía.

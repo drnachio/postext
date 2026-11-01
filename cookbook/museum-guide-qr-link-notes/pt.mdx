@@ -1,0 +1,63 @@
+---
+title: "Um guia de museu com os links impressos como códigos QR"
+summary: "Um passeio de bolso por um museu com os links impressos como notas numeradas no rodapé, com endereço curto e código QR (links.print em notes)."
+description: "Um guia de museu no Postext: os links para o catálogo saem como notas numeradas com endereço curto e código QR, um quadro por página, com o código."
+plain: "Um pequeno guia impresso de cinco quadros. Onde o texto cita uma página web, um número pequeno leva ao pé da página, onde um código quadrado abre essa página no celular."
+question: "Como imprimo os links de um guia como notas numeradas com um código QR que o visitante possa escanear?"
+aliases: ["código QR", "códigos QR impressos", "endereços impressos", "guia de museu", "roteiro a pé", "notas de link", "QR code", "museum guide"]
+---
+
+## O que você vai compor
+
+Um guia de bolso das salas holandesas do Metropolitan Museum of Art: cinco quadros, uma hora a pé, um quadro por página. A capa é a jovem de Vermeer junto à janela, cortada pela borda superior. Cada parada abre com o número da sala, o título e o pintor, depois o quadro com a etiqueta ao lado e depois três parágrafos curtos. O texto aponta para o catálogo do museu como qualquer página web faria. No papel, cada link vira um número pequeno, e no pé da página a nota traz o endereço curto e um código QR que o visitante aponta com o celular diante do quadro.
+
+## Preparo
+
+### 1 · Escreva links, imprima notas
+
+O código é [a resposta curta](#a-resposta-curta) acima. O Markdown mantém links comuns, `[A ficha do catálogo](https://www.metmuseum.org/…/436616)`, e `links.print: 'notes'` transforma cada um numa nota numerada com o endereço e o código ([links na edição impressa](/pt/docs/configuration-notes-references#links-na-edição-impressa)). As notas são notas de rodapé: `numbering: 'document'` as conta ao longo do passeio, então o leitor encontra de 1 a 7, e `repeat: 'first'` deixa a última parada citar o Hals pela nota 3 em vez de imprimir o mesmo código duas vezes. No PDF o código é desenhado em vetores e é ele mesmo um link.
+
+<PageShot page={3} crop="0,0.74,1,0.2" caption="O pé da parada 1: a nota 3, a ficha do quadro como endereço curto ao lado de um código de 16 mm." />
+
+### 2 · Uma parada por página
+
+<Excerpt region="stops" />
+
+Cada parada é um título de segundo nível cujo `breakBefore` abre uma página, par ou ímpar, e assim o visitante vira uma folha por quadro. O número da sala e o pintor são atributos do título; o design os põe acima e abaixo do título, e `minHeight` deixa o quadro na mesma altura em todas as páginas.
+
+### 3 · A etiqueta ao lado do quadro
+
+<Excerpt region="resources" />
+
+`captionSide: 'inside'` põe a legenda e a nota de crédito ao lado do quadro, como um museu pendura a etiqueta, e `width` dá a cada quadro sua parte da medida: menos ao Hals, que é alto, mais ao Ruisdael, que é horizontal, para que as cinco páginas tenham uma altura de texto parecida. A etiqueta junta a técnica, as medidas em centímetros com espaços inseparáveis e a linha de crédito do museu, com vírgula decimal na edição espanhola.
+
+### 4 · A parada no cabeçalho
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` imprime o título da parada que começa na página: a página ímpar nomeia o quadro, a par, o guia. Nenhum cabeçalho chega à capa, uma página com papel de abertura.
+
+## Variações
+
+### Imprima o endereço na linha
+
+Para um guia lido em casa, `'inline'` acrescenta o endereço entre parênteses depois do texto do link, sem nota nem código.
+
+```diff
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Códigos sem endereço
+
+`show: 'qr'` imprime só o código ao lado do número da nota, para um cartaz ou uma etiqueta em que o endereço só ocuparia espaço.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
+```
+
+## Erros comuns
+
+Uma nota com código tem pelo menos a altura do código. Quando a linha que leva o link não tem espaço embaixo para a nota na página, a linha passa para a seguinte com a nota; deixe os links fora das últimas linhas de uma página que precisa terminar onde termina, como o primeiro parágrafo da capa deste guia.

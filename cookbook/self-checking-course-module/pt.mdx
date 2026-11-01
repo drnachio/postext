@@ -1,0 +1,63 @@
+---
+title: "Um módulo de curso com prova respondida na tela"
+summary: "Dois estilos de exercício num só Markdown: prática sem limite e prova com uma só verificação; attachExercises os torna respondíveis em HTML e no EPUB."
+plain: "Uma lição sobre terremotos: você lê, pratica quanto quiser e faz uma prova curta em que cada resposta só pode ser verificada uma vez. Ela é impressa como apostila e funciona na tela e num livro digital."
+description: "Um módulo de quatro páginas cuja prática e cuja prova são respondidas no visualizador HTML e num EPUB de layout fixo, com limites e aprovação com 70 %."
+question: "Como deixo o aluno responder aos exercícios na tela, com uma prova que permite uma só verificação?"
+aliases: ["exercícios interativos", "autocorreção", "prova online", "ambiente virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "A abertura do módulo: uma pintura de uma falha que cruza uma planície seca, sangrada no alto, o chapéu, o título e um olho em itálico.", "3": "Prática: três exercícios com o número num disco ferrugem, depois o gabarito da prática.", "4": "Prova do módulo: quatro exercícios sob um fio ardósia, com o número num quadrado, e o colofão." }
+---
+
+## O que você vai compor
+
+O módulo 4 de *The Restless Planet*, um curso introdutório de ciências da Terra: quatro páginas sobre terremotos, no formato 176 × 250 mm, que abrem sob a pintura de uma falha cruzando uma planície seca. A leitura leva a uma prática e a uma prova, escritas no Markdown como blocos `:::exercise` com suas respostas. O módulo impresso traz o gabarito da prática e deixa de fora o da prova. Na tela, as mesmas páginas são respondidas: a prática pode ser verificada e recomeçada à vontade, e cada questão da prova aceita uma só verificação, não recomeça e só mostra a resposta quando essa verificação acaba. Um painel ao lado das páginas soma o que uma plataforma de ensino registraria: a nota, se a prova está completa e aprovado ou reprovado com 70 %.
+
+## Preparo
+
+### 1 · Dois estilos, duas regras
+
+O código está na [resposta curta](#a-resposta-curta). Os exercícios só dizem o que perguntam; o `style` do bloco decide como se comportam. `practice` mantém os padrões do livro, então sua barra oferece Verificar, Ver a resposta e Recomeçar sem limite. `test` o estende com um bloco `digital`: `maxChecks: 1`, `reset: false` e `showSolution: 'noChecksLeft'`, e a barra conta até "Sem mais verificações" e só então oferece a resposta. No papel, o mesmo estilo não imprime suas soluções (`placement: 'none'`), enquanto o gabarito da prática sai onde está a linha `:::solutions`.
+
+### 2 · Uma tentativa salva volta do armazenamento
+
+<Excerpt region="attempt" />
+
+`attachExercises` lê as respostas de cada exercício com `getItem` e as grava com `setItem`, sob a `storageKey` e a âncora do exercício. Qualquer objeto com essas três chamadas pode ocupar o lugar de `localStorage`; uma plataforma de ensino guarda esse mesmo JSON nos dados do aluno. Este devolve três questões da prova já verificadas, com dois erros (verdadeiro na afirmação 3 e 180 km na distância), e a página abre como um aluno que volta a encontraria: essas questões bloqueadas, suas respostas disponíveis e a de ordenar ainda por fazer.
+
+### 3 · Responder nas páginas e ouvir cada verificação
+
+<Excerpt region="screen" />
+
+`renderToHtml` escreve as páginas e os dados dos exercícios; `attachExercises` põe por cima os campos, as caixas e a barra. `onResult` recebe cada exercício quando é preparado e depois de cada verificação, cada recomeço e cada resposta mostrada, com as respostas avaliadas certas (`right`) e totais (`total`), as verificações usadas e se a tentativa está bloqueada (`locked`). O painel soma as respostas da prova como faz um player SCORM: acertos sobre respostas avaliadas em toda a prova, completa quando cada questão está verificada ou bloqueada, aprovada a partir de `passingScore`. A página usa `dpi: 96`, então um milímetro da página impressa é um milímetro CSS na tela.
+
+### 4 · Os mesmos exercícios num EPUB
+
+<Excerpt region="epub" />
+
+O EPUB de layout fixo leva os dados dos exercícios e o script que os torna respondíveis: um sistema de leitura que executa scripts oferece os mesmos campos e os mesmos limites, e um que não executa mantém o gabarito que o gerador acrescenta. As fontes vão como bytes, os mesmos arquivos da Fontsource que a página carregou.
+
+## Variações
+
+### Empacotar o módulo para uma plataforma de ensino
+
+`postext-scorm` recebe os mesmos documentos e grava um zip SCORM 1.2 ou 2004 cujo player liga o armazenamento e os resultados ao LMS. Um SCO conta todos os exercícios que contém, inclusive os de prática, então um curso que só avalia a prova faz dela um SCO próprio com `items` (veja <Feature id="scorm-packages">Pacotes SCORM</Feature>).
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### Corrigir cada resposta ao ser dada
+
+Para um quiz sem botão Verificar, use `check: 'instant'` em `exercises.digital`. A correção imediata tira o limite de verificações; o estilo da prova mantém `showSolution`.
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## Erros comuns
+
+Dê uma âncora a cada exercício avaliado (`:::exercise{#test-scales}`). Suas respostas ficam guardadas sob a âncora; sem ela, a chave vem da posição do exercício no documento, e uma questão acrescentada antes devolve ao aluno que volta as respostas salvas de outra.

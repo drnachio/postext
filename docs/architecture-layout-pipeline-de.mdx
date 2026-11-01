@@ -26,7 +26,7 @@ Manche Entscheidungen lassen sich nicht innerhalb eines Durchgangs treffen, weil
 ### Stufe 1: Strukturierung des Inhalts
 
 - **Eingabe:** Rohes `PostextContent`
-- **Aktion:** Das Markdown in Inhaltsblöcke parsen, Ressourcenverweise per ID gegen `resources[]` auflösen, die Fußnotendefinitionen (`[^id]:`) aus dem Fluss nehmen und ihre Marken in Zitierreihenfolge nummerieren, die Überschriften nummerieren und die Gleitobjekte planen: welche Ressourcen gleiten und nach welchem Block (`notes[]` wird nicht gelesen)
+- **Aktion:** Das Markdown in Inhaltsblöcke parsen, Ressourcenverweise per ID gegen `resources[]` auflösen, die Fußnotendefinitionen (`[^id]:`) aus dem Fluss nehmen und ihre Marken in Zitierreihenfolge nummerieren, externen Links eine Note geben, wenn `links.print` `'notes'` ist (oder ihre Adresse in Klammern bei `'inline'`), die Überschriften nummerieren und die Gleitobjekte planen: welche Ressourcen gleiten und nach welchem Block (`notes[]` wird nicht gelesen)
 - **Ausgabe:** Eine flache Liste von Inhaltsblöcken (typisiert und mit Inhalt gefüllt, aber ohne Zuordnung zu Seite oder Spalte) und der Gleitplan
 - **Läuft:** zu Beginn jedes Platzierungsdurchlaufs. Das Parsen wird nach dem ersten Durchlauf aus seinem Memo gelesen; der Rest wird neu berechnet
 

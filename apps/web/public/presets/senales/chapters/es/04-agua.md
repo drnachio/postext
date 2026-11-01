@@ -64,15 +64,16 @@ Sin embargo, los esfuerzos para llegar a una contaminación cero requerirán un 
 
 La Estrategia de la Granja a la Mesa, uno de los principales elementos del Pacto Verde Europeo, tiene como objetivo reducir de manera significativa el uso agrícola y los riesgos de los plaguicidas químicos, el uso de antibióticos y las pérdidas de abonos al medio ambiente, por ejemplo mediante una gestión integrada de plagas y un plan integrado de gestión de nutrientes. La Estrategia de la UE sobre Biodiversidad para 2030 también apoya objetivos similares.
 
-Para ayudar a luchar contra el problema de los plásticos, la UE ya ha propuesto una estrategia para el plástico que tiene como objetivo «transformar la forma en que se diseñan, producen, usan y reciclan los productos en la UE». Mientras tanto, las actitudes de los consumidores están cambiando y las innovaciones permiten que algunos artículos que antes eran de plástico ahora pueden elaborarse a partir de fuentes de celulosa de papel reciclado, textiles, plantas o algas.
-
 :::callout{type="dato" title="Estado del agua en Europa"}
-El tratamiento de las aguas residuales y las reducciones de la liberación de nutrientes de la agricultura han permitido mejorar considerablemente la calidad del agua en Europa. Sin embargo, muchas masas de agua dulce de Europa todavía se encuentran en mal estado y la situación de los mares de Europa es
+El tratamiento de las aguas residuales y las reducciones de la liberación de nutrientes de la agricultura han permitido mejorar considerablemente la calidad del agua en Europa. Sin embargo, muchas masas de agua dulce de Europa todavía se encuentran en mal estado y la situación de los mares de Europa es mala en general, en parte debido a la contaminación.
 :::
 
-## Para más información
+Para ayudar a luchar contra el problema de los plásticos, la UE ya ha propuesto una estrategia para el plástico que tiene como objetivo «transformar la forma en que se diseñan, producen, usan y reciclan los productos en la UE». Mientras tanto, las actitudes de los consumidores están cambiando y las innovaciones permiten que algunos artículos que antes eran de plástico ahora pueden elaborarse a partir de fuentes de celulosa de papel reciclado, textiles, plantas o algas.
 
-- El agua y el medio marino: www.eea.europa.eu/themes/water
-- SOER 2020, Capítulo 4 sobre el agua dulce: www.eea.europa.eu/ publications/soer-2020/chapter-04_ soer2020-freshwater/view
-- SOER 2020, Capítulo 6 sobre el medio ambiente marino: www.eea.europa. eu/publications/soer-2020/chapter-06_ soer2020-marine-environment/view
-- Señales de la AEMA 2018 — El agua es vida: www.eea.europa.eu/signals/ signals-2018-content-list
+:::callout{type="lectura" title="Para más información"}
+- [El agua y el medio marino](https://www.eea.europa.eu/themes/water)
+- [SOER 2020, Capítulo 4 sobre el agua dulce](https://www.eea.europa.eu/publications/soer-2020/chapter-04_soer2020-freshwater/view)
+- [SOER 2020, Capítulo 6 sobre el medio ambiente marino](https://www.eea.europa.eu/publications/soer-2020/chapter-06_soer2020-marine-environment/view)
+- [Señales de la AEMA 2018 — El agua es vida](https://www.eea.europa.eu/signals/signals-2018-content-list)
+
+:::

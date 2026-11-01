@@ -3,20 +3,20 @@
   "slug": "magazine-three-column-feature",
   "sourceHash": "b4fab629c7ecd39c604243e3d56726faf3cd4129b6a3eddf0267b6488d1fb2f3",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:08.061Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:34:43.763Z",
   "variants": {
     "en": {
-      "hash8": "858a5667",
-      "vdtHash": "e99bed70a03a36125954ecc3d8d6aa2a9057ca83",
+      "hash8": "7fa42398",
+      "vdtHash": "b195b3d16e1cf17df178785bb84c3c02eaaaf8e4",
       "timings": {
-        "importMs": 298,
-        "fontsMs": 112,
-        "buildMs": 94,
-        "totalMs": 1282,
+        "importMs": 6348,
+        "fontsMs": 373,
+        "buildMs": 135,
+        "totalMs": 8169,
         "builds": 1
       },
       "specimen": {
@@ -138,13 +138,13 @@
       },
       "sandbox": {
         "file": "magazine-three-column-feature.postext",
-        "bytes": 1847655,
+        "bytes": 1847625,
         "folio": "579e6f1a",
         "chapters": [
           {
             "pages": 6,
-            "hash": "efbfd693f5edeaa1",
-            "lines": "e41a1ed6612808dc"
+            "hash": "d2aa6e7e9455fde6",
+            "lines": "122b94c2cb806182"
           }
         ]
       },
@@ -425,7 +425,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           },
           {
             "check": "sandbox",

@@ -17,7 +17,7 @@ A paragraph that a browser justifies is broken one line at a time. Each line tak
 
 Printers have had a better method for forty years. @knuthplass1981 treat the paragraph as a whole. Every possible break is a node in a graph, every line a weighted edge, and the breaks are those of the path with the least total penalty, so that a slightly tight line early on can save a very loose one later. Liang's hyphenation patterns, Plass's work on page breaking and TeX itself came out of the same project at Stanford [@liang1983; @plass1981; @knuth1984], and the method is still the reference against which other line breakers are judged.
 
-It has not reached the browser. The usual reason given is speed: a page that reflows whenever its window changes size cannot afford a search over every paragraph. We test that reason. :ref{id="sec:related"} places the question among earlier work, :ref{id="sec:method"} describes the corpus and the timing harness, and :ref{id="sec:results"}, on :ref{id="sec:results" style=page}, gives the measurements. :ref{id="sec:discussion"} turns them into a rule a page designer can apply.
+It has not reached the browser. The usual reason given is speed: a page that reflows whenever its window changes size cannot afford a search over every paragraph. We test that reason. :ref{id="sec:related"} places the question among earlier work, :ref{id="sec:method"} describes the corpus and the timing harness, and :ref{id="sec:results"}, on :ref{id="sec:results" style=page}, gives the measurements. :ref{id="sec:discussion"} turns them into a rule a page designer can apply, and :ref{id="sec:conclusion"} sums up the case.
 
 ## Related work {#sec:related}
 
@@ -49,7 +49,7 @@ The cost of total fit is a few tenths of a millisecond per paragraph, and the te
 
 The results also give a rule for when first fit is enough. In a single column of 70 characters or more, a reader will rarely meet a loose line with either method, and a designer who cannot choose the line breaker loses little. In narrow columns, and in languages with long words, the difference is large and visible, and total fit with hyphenation is the method to ask for. This matches the advice of the printers [@bringhurst2004, chap. 2], who allow a narrow column to go ragged rather than set it justified without care.
 
-## Conclusion
+## Conclusion {#sec:conclusion}
 
 We measured the cost of breaking paragraphs as TeX does in a browser and found it small: 0.21 ms per paragraph, 3.4 times the cost of the browser's own method, for six times fewer loose lines. The case against total fit on screen rests on speed, and on present hardware speed no longer supports it.
 

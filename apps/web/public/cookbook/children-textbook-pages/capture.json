@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "children-textbook-pages",
-  "sourceHash": "bbd77425da44aa6c41b581891bc022ddd6f692f29b7a098dc08a6d408bdb325f",
+  "sourceHash": "440aae59bf3377c3b1f3ccef3c22ede7dcf359cafd3b5bb226c04cdc3f96d7f0",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:32:12.370Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:56.604Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:58:07.497Z",
   "variants": {
     "en": {
-      "hash8": "0ca316d5",
+      "hash8": "79b1742d",
       "vdtHash": "fae03d32b06e40bc17dad1fdd761184265e74696",
       "timings": {
-        "importMs": 375,
-        "fontsMs": 133,
-        "buildMs": 39,
-        "totalMs": 1366,
+        "importMs": 6409,
+        "fontsMs": 603,
+        "buildMs": 53,
+        "totalMs": 8408,
         "builds": 2
       },
       "specimen": {
@@ -183,7 +177,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1731663,
+        "bytes": 1731651,
         "pages": 9
       },
       "sandbox": {
@@ -573,6 +567,31 @@
             "detail": "1 paragraph set a line short with tracking (worst −10‰, the cap): p. 8 −10‰ “We keep to the paths and leave plants and animal…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ca, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar left out (the resources differ when read back)"
@@ -596,13 +615,13 @@
       }
     },
     "es": {
-      "hash8": "a342cc5a",
+      "hash8": "1f434ba9",
       "vdtHash": "91bec0362f1d6d7e1f289c28d9fe106ca096e678",
       "timings": {
-        "importMs": 243,
-        "fontsMs": 76,
-        "buildMs": 34,
-        "totalMs": 2496,
+        "importMs": 8611,
+        "fontsMs": 536,
+        "buildMs": 82,
+        "totalMs": 10946,
         "builds": 2
       },
       "specimen": {
@@ -762,7 +781,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1732700,
+        "bytes": 1732696,
         "pages": 9
       },
       "sandbox": {
@@ -1152,6 +1171,31 @@
             "detail": "4 paragraphs set a line short with tracking (worst −10‰, the cap): p. 8 −10‰ “Ayudamos a limpiar la orilla cuando lo organiza …”, p. 9 −10‰ “Ahora el curso bajo, tranquilo, es un lugar para…”, p. 4 −5‰ “Llueve y nieva en las montañas. Parte del agua b…”, p. 6 −5‰ “El río Aldara mide 94 kilómetros. Nace en la sie…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ca, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar left out (the resources differ when read back)"
@@ -1175,13 +1219,13 @@
       }
     },
     "ca": {
-      "hash8": "6bbae8c1",
+      "hash8": "a5644972",
       "vdtHash": "b5aa30b769fbba04a10ef6eea708937e3559d8d3",
       "timings": {
-        "importMs": 379,
-        "fontsMs": 126,
-        "buildMs": 37,
-        "totalMs": 1290,
+        "importMs": 2845,
+        "fontsMs": 214,
+        "buildMs": 58,
+        "totalMs": 4227,
         "builds": 2
       },
       "specimen": {
@@ -1341,7 +1385,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1732361,
+        "bytes": 1732363,
         "pages": 9
       },
       "sandbox": {
@@ -1721,6 +1765,31 @@
             "detail": "every element came back to its source: 62 block, 40 frame, 6 label, 105 line, 1 text"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca, es, en, pt, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar left out (the resources differ when read back)"
@@ -1744,13 +1813,13 @@
       }
     },
     "zh": {
-      "hash8": "4b1d6d07",
+      "hash8": "042650ec",
       "vdtHash": "1a08de9f174024b677f7988c1d9858db196e16db",
       "timings": {
-        "importMs": 418,
-        "fontsMs": 281,
-        "buildMs": 100,
-        "totalMs": 1386,
+        "importMs": 5737,
+        "fontsMs": 996,
+        "buildMs": 142,
+        "totalMs": 7726,
         "builds": 1
       },
       "specimen": {
@@ -1911,7 +1980,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1864377,
+        "bytes": 1864391,
         "pages": 9
       },
       "sandbox": {
@@ -2290,6 +2359,56 @@
             "detail": "capture.expect.imageMb states 1.4 MB, and the edition weighs 1.17 MB: state 1.2 MB"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh, ja"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es left out (the resources differ when read back)"
@@ -2338,13 +2457,13 @@
       }
     },
     "ar": {
-      "hash8": "3505ed84",
+      "hash8": "15b7dd1b",
       "vdtHash": "337d795aabdf191d67b1b6b317304f3c5b44f89e",
       "timings": {
-        "importMs": 286,
-        "fontsMs": 219,
-        "buildMs": 131,
-        "totalMs": 1284,
+        "importMs": 2374,
+        "fontsMs": 512,
+        "buildMs": 242,
+        "totalMs": 4159,
         "builds": 1
       },
       "specimen": {
@@ -2510,7 +2629,7 @@
       },
       "sandbox": {
         "file": "children-textbook-pages.postext",
-        "bytes": 2107975,
+        "bytes": 2107974,
         "folio": "207b7a99",
         "chapters": [
           {
@@ -2888,6 +3007,56 @@
             "detail": "capture.expect.imageMb states 1.4 MB, and the edition weighs 1.19 MB: state 1.2 MB"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es left out (the resources differ when read back)"
@@ -2936,13 +3105,13 @@
       }
     },
     "ja": {
-      "hash8": "016d8dc0",
+      "hash8": "106a038e",
       "vdtHash": "1110d8168d79da7a6e445b60696bfe60891de700",
       "timings": {
-        "importMs": 265,
-        "fontsMs": 345,
-        "buildMs": 115,
-        "totalMs": 1392,
+        "importMs": 2843,
+        "fontsMs": 1569,
+        "buildMs": 194,
+        "totalMs": 5478,
         "builds": 1
       },
       "specimen": {
@@ -3103,7 +3272,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1881389,
+        "bytes": 1881293,
         "pages": 9
       },
       "sandbox": {
@@ -3492,6 +3661,56 @@
             "detail": "capture.expect.imageMb states 1.4 MB, and the edition weighs 1.19 MB: state 1.2 MB"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ca left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, zh"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es left out (the resources differ when read back)"
@@ -3540,13 +3759,13 @@
       }
     },
     "pt": {
-      "hash8": "fb0a9cb0",
+      "hash8": "fd239c7f",
       "vdtHash": "8ec86d48414bc40a36359763872e81163075375e",
       "timings": {
-        "importMs": 277,
-        "fontsMs": 87,
-        "buildMs": 33,
-        "totalMs": 1297,
+        "importMs": 4816,
+        "fontsMs": 526,
+        "buildMs": 36,
+        "totalMs": 6732,
         "builds": 2
       },
       "specimen": {
@@ -3706,7 +3925,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1732075,
+        "bytes": 1732068,
         "pages": 9
       },
       "sandbox": {
@@ -4096,6 +4315,31 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 9 −5‰ “No médio curso, os agricultores abrem pequenos c…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, es, en, ca, fr, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar left out (the resources differ when read back)"
@@ -4119,13 +4363,13 @@
       }
     },
     "fr": {
-      "hash8": "6fa30c3d",
+      "hash8": "b6e791e1",
       "vdtHash": "14504815c39a41dda92794b93618057079c54ce3",
       "timings": {
-        "importMs": 325,
-        "fontsMs": 98,
-        "buildMs": 38,
-        "totalMs": 1290,
+        "importMs": 3135,
+        "fontsMs": 173,
+        "buildMs": 86,
+        "totalMs": 4398,
         "builds": 2
       },
       "specimen": {
@@ -4285,7 +4529,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1733377,
+        "bytes": 1733370,
         "pages": 9
       },
       "sandbox": {
@@ -4680,6 +4924,31 @@
             "detail": "2 paragraphs set a line short with tracking (worst −10‰, the cap): p. 4 −10‰ “Tiens une éponge mouillée au-dessus d’un plateau…”, p. 8 −10‰ “Les gens se sont toujours installés près des riv…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, es, en, ca, pt, de, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar left out (the resources differ when read back)"
@@ -4703,13 +4972,13 @@
       }
     },
     "de": {
-      "hash8": "b1071bc1",
+      "hash8": "bf5c983c",
       "vdtHash": "8a91fd6d3cd0731750545bba60e30c3b71b7e27f",
       "timings": {
-        "importMs": 418,
-        "fontsMs": 85,
-        "buildMs": 34,
-        "totalMs": 1310,
+        "importMs": 3008,
+        "fontsMs": 381,
+        "buildMs": 51,
+        "totalMs": 4311,
         "builds": 2
       },
       "specimen": {
@@ -4869,7 +5138,7 @@
       },
       "pdf": {
         "file": "children-textbook-pages.pdf",
-        "bytes": 1733980,
+        "bytes": 1733978,
         "pages": 9
       },
       "sandbox": {
@@ -5264,6 +5533,31 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 8 −5‰ “Menschen haben sich schon immer gern an Flüssen …”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, es, en, ca, pt, fr, it"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: ar left out (the resources differ when read back)"
@@ -5287,13 +5581,13 @@
       }
     },
     "it": {
-      "hash8": "573c4547",
+      "hash8": "057f7a4a",
       "vdtHash": "37172b606872ee63c6875fcb61be6a378d3b4a7f",
       "timings": {
-        "importMs": 309,
-        "fontsMs": 92,
-        "buildMs": 36,
-        "totalMs": 1308,
+        "importMs": 2335,
+        "fontsMs": 236,
+        "buildMs": 52,
+        "totalMs": 3699,
         "builds": 2
       },
       "specimen": {
@@ -5841,6 +6135,31 @@
             "check": "C35",
             "severity": "info",
             "detail": "2 paragraphs set a line short with tracking (worst −5‰): p. 7 −5‰ “Il pendio è ripido. L’acqua è fredda, limpida e …”, p. 8 −5‰ “Un fiume resta pulito solo se ce ne prendiamo cu…”"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ar left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: zh left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, es, en, ca, pt, fr, de"
           },
           {
             "check": "sandbox",

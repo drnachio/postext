@@ -3,21 +3,21 @@
   "slug": "clinical-trial-consort-flow",
   "sourceHash": "ff315c86762735a9281771eb0425f26420950f46b7d7843dcd7efea1d870c4ca",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.370Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:30:31.612Z",
   "variants": {
     "en": {
-      "hash8": "497c4d73",
-      "vdtHash": "d6ec5891e0461f332517e1e533f444ce61124e44",
+      "hash8": "4c5207e3",
+      "vdtHash": "c3123abadc70c2b8320229fcdd8e91ca49c0f7ec",
       "timings": {
-        "importMs": 1111,
-        "fontsMs": 666,
-        "buildMs": 488,
-        "totalMs": 3137,
+        "importMs": 7115,
+        "fontsMs": 479,
+        "buildMs": 464,
+        "totalMs": 9434,
         "builds": 1
       },
       "specimen": {
@@ -135,13 +135,13 @@
       },
       "sandbox": {
         "file": "clinical-trial-consort-flow.postext",
-        "bytes": 121969,
+        "bytes": 121967,
         "folio": "a7ebcb67",
         "chapters": [
           {
             "pages": 8,
-            "hash": "2ed30e54ab5617e2",
-            "lines": "bff69ad51c3b7b87"
+            "hash": "9c9b6b5783cfbd87",
+            "lines": "a9f21e35b6602a3f"
           }
         ]
       },
@@ -505,6 +505,16 @@
             "check": "C35",
             "severity": "info",
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 1 −5‰ “Results Participants were on average 22.2 years …”"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           }
         ]
       }

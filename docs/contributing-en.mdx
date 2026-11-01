@@ -140,6 +140,8 @@ Once you are set up, three concrete actions, from lightest to heaviest commitmen
 If you plan to write code, open an issue first to discuss the approach — it avoids duplicate work,
 and a quick conversation upfront saves everyone time.
 
+Keep each source file under about 600 lines and each folder under about 25 source files: a module that outgrows that becomes a folder of the same name, with the old file left as a façade that re-exports it. CI checks the limits with `node scripts/source-size.mjs --check` (see *Code Layout* in CONTRIBUTING.md).
+
 ### What to read next
 
 To get your bearings before diving in:

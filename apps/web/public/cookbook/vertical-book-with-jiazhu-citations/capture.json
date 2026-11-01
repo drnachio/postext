@@ -3,27 +3,21 @@
   "slug": "vertical-book-with-jiazhu-citations",
   "sourceHash": "bacf9c450f8b0f23f119ed8f8096bea516f5b86201ff76305f77e20daa7c053a",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:42:15.105Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:04.630Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:13:24.429Z",
   "variants": {
     "en": {
-      "hash8": "80a89a05",
+      "hash8": "3f61f8e5",
       "vdtHash": "3968cb918da759615b8e2279e3f304d11d029fbb",
       "timings": {
-        "importMs": 375,
-        "fontsMs": 445,
-        "buildMs": 82,
-        "totalMs": 1530,
+        "importMs": 4898,
+        "fontsMs": 2900,
+        "buildMs": 120,
+        "totalMs": 9148,
         "builds": 1
       },
       "specimen": {
@@ -107,7 +101,7 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178833,
+        "bytes": 178780,
         "pages": 3
       },
       "sandbox": {
@@ -303,6 +297,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -311,13 +315,13 @@
       }
     },
     "es": {
-      "hash8": "23be6834",
+      "hash8": "2447b8e8",
       "vdtHash": "5fdae81a492fa9f544a513c13cf8ea92591e5813",
       "timings": {
-        "importMs": 325,
-        "fontsMs": 235,
-        "buildMs": 79,
-        "totalMs": 1234,
+        "importMs": 4217,
+        "fontsMs": 1086,
+        "buildMs": 123,
+        "totalMs": 6384,
         "builds": 1
       },
       "specimen": {
@@ -401,7 +405,7 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178800,
+        "bytes": 178745,
         "pages": 3
       },
       "sandbox": {
@@ -596,6 +600,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

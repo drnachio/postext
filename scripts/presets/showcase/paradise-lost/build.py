@@ -205,6 +205,8 @@ def back_cover_design(plates: dict[str, dict]) -> dict:
 def headings() -> dict:
     return {
         "fontFamily": DISPLAY,
+        # Fell has one roman weight: no bold is asked of it.
+        "fontWeight": 400,
         "color": col("ink"),
         "keepWithNext": True,
         "levels": [
@@ -281,6 +283,9 @@ def heading_styles(plates: dict[str, dict]) -> list[dict]:
 def body_text() -> dict:
     return {
         "fontFamily": BODY,
+        # EB Garamond's old-style figures, as the Fell folios have: the line
+        # numbers of the notes, the dates and the contents' page numbers.
+        "figureStyle": "oldstyle",
         "fontSize": pt(BODY_PT),
         "lineHeight": pt(LEAD_PT),
         "textAlign": "justify",
@@ -314,7 +319,11 @@ def paragraph_styles() -> list[dict]:
         {"id": "argument", "name": "Argument", "fontSize": pt(9.8), "lineHeight": pt(13), "italic": True, "textAlign": "justify", "firstLineIndent": mm(0), "marginTop": pt(0), "marginBottom": pt(16), "hyphenation": True},
         {"id": "prose", "name": "Prose note", "fontSize": pt(10.5), "lineHeight": pt(14), "textAlign": "justify", "firstLineIndent": mm(0), "spaceBetween": pt(0)},
         {"id": "colophon", "name": "Colophon", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "color": col("muted")},
-        {"id": "credits", "name": "Credits", "fontSize": pt(8.6), "lineHeight": pt(11.6), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(5)},
+        # The credits keep lining figures: in the printed addresses an
+        # old-style 0 would read as an o (paradiselostmilt00miltuoft).
+        {"id": "credits", "name": "Credits", "figureStyle": "lining", "fontSize": pt(8.6), "lineHeight": pt(11.6), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(5), "marginBottom": pt(0)},
+        # The list of plates: one entry each, its printed address hung under it.
+        {"id": "credits-list", "name": "Credits list", "figureStyle": "lining", "fontSize": pt(8.6), "lineHeight": pt(11.6), "textAlign": "left", "firstLineIndent": mm(0), "hangingIndent": mm(4), "spaceBetween": pt(1.5), "marginTop": pt(5)},
     ]
 
 
@@ -469,6 +478,9 @@ def config(plates: dict[str, dict]) -> dict:
         "colorPalette": COLOR_PALETTE,
         "resourceTypes": resource_types(),
         "pdfGeneration": {"outlines": True},
+        # On paper the credits print the short address of each source after
+        # its name (the links stay live in the PDF and on screen).
+        "links": {"print": "inline", "urlDisplay": "short"},
         "folio": folio_config(),
     }
 
@@ -719,21 +731,21 @@ def write_chapters(plates: dict[str, dict]) -> list[dict]:
     for book in books:
         emit(2 + book.number, f"book-{book.number:02d}", f"Book {roman(book.number)}", compose_book(book))
 
+    # Each title links its file's page, whose address prints after it.
     plate_lines = "\n\n".join(
-        f"{line_ref(p['book'], p['first'], p['last'])}: *{p['title']}*. [{plates[p['slug']]['title'].rsplit('.', 1)[0]}]({plates[p['slug']]['page']})"
+        f"{line_ref(p['book'], p['first'], p['last'])}: [{p['title']}]({plates[p['slug']]['page']})."
         for p in PLATES
     )
     credits = "\n\n".join([
-        "**Text.** John Milton, *Paradise Lost* (second edition, 1674). The words follow Project Gutenberg eBook #26; the verse paragraphs and the Arguments follow the validated Wikisource transcription of an 1890 reprint (*Paradise lost by Milton, John.djvu*). Where the two disagree, the reading of Verity’s text was taken. Public domain.",
-        "**Notes.** A selection from the notes of *Paradise Lost*, edited by A. W. Verity (Cambridge: at the University Press, 1910), from the scan of the University of Toronto copy on the Internet Archive (*paradiselostmilt00miltuoft*). The notes were chosen, shortened and corrected from the scan for this edition; the wording is Verity’s. Public domain.",
-        "**Plates.** Gustave Doré’s illustrations for *Milton’s Paradise Lost* (London: Cassell, Petter, and Galpin, 1866), from the Wikimedia Commons category *Illustrations of Paradise Lost by Gustave Doré*; converted to greyscale, trimmed and downscaled. Public domain.",
+        "**Text.** John Milton, *Paradise Lost* (second edition, 1674). The words follow [Project Gutenberg eBook #26](https://www.gutenberg.org/ebooks/26); the verse paragraphs and the Arguments follow the validated [Wikisource transcription](https://en.wikisource.org/wiki/Paradise_Lost_(1890)) of an 1890 reprint (*Paradise lost by Milton, John.djvu*). Where the two disagree, the reading of Verity’s text was taken. Public domain.",
+        "**Notes.** A selection from the notes of *Paradise Lost*, edited by A. W. Verity (Cambridge: at the University Press, 1910), from the scan of the University of Toronto copy on the [Internet Archive](https://archive.org/details/paradiselostmilt00miltuoft). The notes were chosen, shortened and corrected from the scan for this edition; the wording is Verity’s. Public domain.",
+        "**Plates.** Gustave Doré’s illustrations for *Milton’s Paradise Lost* (London: Cassell, Petter, and Galpin, 1866), from the Wikimedia Commons category [*Illustrations of Paradise Lost by Gustave Doré*](https://commons.wikimedia.org/wiki/Category:Illustrations_of_Paradise_Lost_by_Gustave_Doré); converted to greyscale, trimmed and downscaled. Public domain.",
         "**Fonts.** EB Garamond, by Georg Duffner and Octavio Pardo; IM Fell English and IM Fell English SC, the Fell types digitised by Igino Marini. SIL Open Font License 1.1.",
-        "**The plates and their pages on Wikimedia Commons:**",
-        plate_lines,
     ])
     emit(15, "credits", "Credits", (
         ':::pagebreak{parity="always-odd"}\n\n'
-        f'# Credits {{style="front"}}\n\n:::paragraphs{{style="credits"}}\n{credits}\n:::\n'
+        f'# Credits {{style="front"}}\n\n:::paragraphs{{style="credits"}}\n{credits}\n:::\n\n'
+        f':::paragraphs{{style="credits-list"}}\n**The plates and their files on Wikimedia Commons:**\n\n{plate_lines}\n:::\n'
     ))
     emit(16, "back-cover", "Back cover", f'# Back cover {{style="back-cover" toc="false" quote="{attr(BACK["quote"])}" blurb="{attr(BACK["blurb"])}"}}\n')
     return specs

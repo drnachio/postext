@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 161 · Handwriting workbook in ten scripts ═══════════════
 // https://postext.dev/en/cookbook/handwriting-workbook
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Playwrite, Playpen Sans Arabic, Klee One and others (SIL OFL) · Needs postext ≥ 1.46.0
+// Fonts: Playwrite, Playpen Sans Arabic, Klee One and others (SIL OFL) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

@@ -1,0 +1,69 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 180,
+  "status": "published",
+  "chapter": "type",
+  "order": 380,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas"],
+  "features": {
+    "primary": ["highlight-marks"],
+    "also": [
+      "callout-styles",
+      "color-palette",
+      "opener-design",
+      "design-images",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "paragraph-styles",
+      "widows-orphans-runts"
+    ]
+  },
+  "answers": ["Q213"],
+  "gotchas": [],
+  "engine": { "postext": "1.65.0" },
+  "kit": ["core", "fonts", "viewer", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page" },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 90},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "studio"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The reading, its key, the review questions and the colophon",
+          "es": "La lectura, su clave, las preguntas de repaso y el colofón"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The printing workshop on the opening page, a painting",
+          "es": "El taller de imprenta de la página de apertura, una pintura"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "press-1400.jpg"
+      }
+    ],
+    "fonts": [
+      { "family": "Source Serif 4", "license": "OFL-1.1" },
+      { "family": "Source Sans 3", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-10-31",
+  "updated": "2026-10-31"
+}

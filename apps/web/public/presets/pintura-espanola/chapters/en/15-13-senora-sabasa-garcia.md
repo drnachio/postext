@@ -3,5 +3,5 @@
 The result is one of Goya's most direct portraits of a woman. The young sitter, wrapped in a shawl of cream-coloured gauze, looks straight out from an empty ground, without jewels or attributes to distract; the whole painting is concentrated in the face, the dark curls and the transparency of the fabric over her arms. The quick, assured handling and the absence of ornament announce the modern portrait of the nineteenth century. :ref{id="goya-sabasa" case="lower"}
 
 :::paragraphs{style="fuente"}
-Commentary written for this edition (CC BY 4.0).
+Commentary written for this edition (CC BY 4.0). Record and zoomable image on the [museum's website](https://www.nga.gov/artworks/95-senora-sabasa-garcia).
 :::

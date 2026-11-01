@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "piano-score-from-musicxml",
-  "sourceHash": "4a5d24a7c03d705e7fd328292b79d4f28ec57c199e019edf108d2b6d4ee16f1b",
+  "sourceHash": "99cf1a50653e9033a5eb8d44cd7783e2f778a9e8551f5d7a67c2d848b907a495",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:37.774Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:03.022Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:43:18.646Z",
   "variants": {
     "en": {
-      "hash8": "c38bdad1",
-      "vdtHash": "14f7459e081670be6475db6ffd115fde87544936",
+      "hash8": "e05356d4",
+      "vdtHash": "26814b3972f40898a606d360d8215499ff0d1770",
       "timings": {
-        "importMs": 221,
-        "fontsMs": 529,
-        "buildMs": 313,
-        "totalMs": 1749,
+        "importMs": 5523,
+        "fontsMs": 1743,
+        "buildMs": 404,
+        "totalMs": 9296,
         "builds": 1
       },
       "specimen": {
@@ -56,7 +50,7 @@
           "h": 1326,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 116788,
+          "bytes": 118412,
           "alt": "Opening page 1: Two Menuets."
         },
         {
@@ -132,18 +126,18 @@
       },
       "pdf": {
         "file": "piano-score-from-musicxml.pdf",
-        "bytes": 185910,
+        "bytes": 186117,
         "pages": 5
       },
       "sandbox": {
         "file": "piano-score-from-musicxml.postext",
-        "bytes": 25485,
+        "bytes": 25559,
         "folio": "89f1f81c",
         "chapters": [
           {
             "pages": 5,
-            "hash": "67b85e2e8ef6dab0",
-            "lines": "1fd35cfa87c9a43c"
+            "hash": "1d5599d133571587",
+            "lines": "95b06705807e6983"
           }
         ]
       },
@@ -349,7 +343,7 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.93
+          "worst": 1.99
         },
         "raggedLines": {
           "count": 0
@@ -361,6 +355,21 @@
             "detail": "the hero is 2.1 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -369,13 +378,13 @@
       }
     },
     "es": {
-      "hash8": "730eac7e",
-      "vdtHash": "b2b91fee401cbfe6eceaa8acdf95024957c87bea",
+      "hash8": "d5522a54",
+      "vdtHash": "661e67ce616976ebdd96c5847afbfa67d411d885",
       "timings": {
-        "importMs": 281,
-        "fontsMs": 498,
-        "buildMs": 290,
-        "totalMs": 1801,
+        "importMs": 4173,
+        "fontsMs": 1302,
+        "buildMs": 356,
+        "totalMs": 6928,
         "builds": 1
       },
       "specimen": {
@@ -408,7 +417,7 @@
           "h": 1326,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 123788,
+          "bytes": 127502,
           "alt": "Página de apertura 1: Dos minuetos."
         },
         {
@@ -484,18 +493,18 @@
       },
       "pdf": {
         "file": "piano-score-from-musicxml.pdf",
-        "bytes": 187941,
+        "bytes": 188699,
         "pages": 5
       },
       "sandbox": {
         "file": "piano-score-from-musicxml.postext",
-        "bytes": 25532,
+        "bytes": 25606,
         "folio": "89f1f81c",
         "chapters": [
           {
             "pages": 5,
-            "hash": "aace70dc97a6c9a6",
-            "lines": "b519c43ddcd1300b"
+            "hash": "5bcc6bf05daa48d4",
+            "lines": "7ffc432deb88dca3"
           }
         ]
       },
@@ -711,6 +720,21 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 2.2 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

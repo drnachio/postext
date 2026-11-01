@@ -1,7 +1,11 @@
 :::part{number="VI" title="Francisco Goya" palette="band=#5f6b5a"}
+:::paragraphs{style="fechas"}
 Fuendetodos, 1746 – Bordeaux, 1828
+:::
 
+:::paragraphs{style="semblanza"}
 Francisco José de Goya y Lucientes was a Spanish romantic painter and printmaker. He is considered the most important Spanish artist of the late 18th and early 19th centuries. His paintings, drawings, and engravings reflected contemporary historical upheavals and influenced important 19th- and 20th-century painters. Goya is often referred to as the last of the Old Masters and the first of the moderns. He is widely regarded as one of the most influential figures in the history of Western art. Goya was born in Fuendetodos, Aragon to a middle-class family in 1746. He studied painting from age 14 under José Luzán y Martínez and moved to Madrid to study with Anton Raphael Mengs. He married Josefa Bayeu in 1773.
+:::
 :::
 
 # Manuel Osorio Manrique de Zuñiga {lead="Manuel Osorio Manrique de Zúñiga is a large full-length portrait in oil painted in 1787–88 by the Spanish artist Francisco Goya. It depicts a boy three or four years of age, standing in red clothes, with birds and cats. It is also known as Goya's ”Red Boy”." catlabel="Cat." cat="11" tombstone="1787–1788 · Oil on canvas · 127 × 101.6 cm · The Metropolitan Museum of Art, New York · 49.7.41"}
@@ -13,5 +17,5 @@ The painting was commissioned by the boy's father, Vicente Joaquín Osorio de Mo
 Altamira hired Goya to paint several family portraits. This painting, from 1787–88, depicts Altimira's youngest son, Manuel, who was born in April 1784 and died at age eight on June 12, 1792. Goya also painted a portrait of another of Altamira's four sons, Vicente Isabel Osorio de Moscoso y Álvarez de Toledo (1777–1837), and of his wife María Ignacia Álvarez de Toledo y Gonzaga, the condesa de Altamira (1757–1795) with their infant daughter, María Agustina (born 1787).
 
 :::paragraphs{style="fuente"}
-Commentary adapted from the English Wikipedia article “Manuel Osorio Manrique de Zúñiga” (revision 1361281580, CC BY-SA 4.0).
+Commentary adapted from the English Wikipedia article “Manuel Osorio Manrique de Zúñiga” (revision 1361281580, CC BY-SA 4.0). Record and zoomable image on the [museum's website](https://www.metmuseum.org/art/collection/search/436545).
 :::

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 109 · A Maghreb edition of an Arabic text, with European digits ═══
 // https://postext.dev/en/cookbook/maghreb-edition-european-digits
 // Code: MIT · Text: original Arabic prose (CC BY 4.0) · Pattern: drawn in code
-// Fonts: Noto Naskh Arabic, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+// Fonts: Noto Naskh Arabic, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

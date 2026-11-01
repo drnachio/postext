@@ -45,7 +45,7 @@ Sin embargo, las investigaciones de la AEMA detectaron problemas relacionados co
 :::callout{type="recuadro" title="COVID-19 y ruido"}
 La contaminación acústica procedente del transporte, como la carretera, las vías ferroviarias o el tráfico aéreo, está vinculada a la actividad económica. Por tanto, cabe esperar una reducción significativa a corto plazo en los niveles de ruido del transporte como consecuencia de los confinamientos relacionados con la COVID-19. Sin embargo, los niveles de ruido ambiental se notifican durante un período de tiempo prolongado, ya que los efectos para la salud aparecen con la exposición a largo plazo. Como tal, la reducción durante un corto plazo de los niveles de ruido no disminuiría de manera significativa el indicador de ruido anual usado para medir los efectos del ruido.
 
-Para más información: https://www.eea.europa.eu/post-corona-planet/explore.
+Para más información: www.eea.europa.eu/post-corona-planet/explore.
 :::
 
 ## Baje el volumen

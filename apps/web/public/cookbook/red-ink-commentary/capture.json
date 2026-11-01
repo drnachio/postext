@@ -3,27 +3,21 @@
   "slug": "red-ink-commentary",
   "sourceHash": "d09b71e1a94024e02146b41dc4665da01d1cf6f8616cfd657646c6298c3d4cdd",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:58.453Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:03.182Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:03:38.918Z",
   "variants": {
     "en": {
-      "hash8": "f1f4a3db",
+      "hash8": "4ade37dc",
       "vdtHash": "7def34376af266dd12ad436268b0a41daca7ad39",
       "timings": {
-        "importMs": 239,
-        "fontsMs": 341,
-        "buildMs": 64,
-        "totalMs": 1257,
+        "importMs": 5342,
+        "fontsMs": 1997,
+        "buildMs": 101,
+        "totalMs": 8968,
         "builds": 1
       },
       "specimen": {
@@ -149,7 +143,7 @@
       },
       "pdf": {
         "file": "red-ink-commentary.pdf",
-        "bytes": 512690,
+        "bytes": 512461,
         "pages": 6
       },
       "sandbox": {
@@ -371,6 +365,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -379,13 +383,13 @@
       }
     },
     "es": {
-      "hash8": "3aa45706",
+      "hash8": "4807498b",
       "vdtHash": "cfe780efe70a07358783d8838a77a783afac2a11",
       "timings": {
-        "importMs": 488,
-        "fontsMs": 270,
-        "buildMs": 57,
-        "totalMs": 1551,
+        "importMs": 4517,
+        "fontsMs": 3332,
+        "buildMs": 94,
+        "totalMs": 9087,
         "builds": 1
       },
       "specimen": {
@@ -511,7 +515,7 @@
       },
       "pdf": {
         "file": "red-ink-commentary.pdf",
-        "bytes": 512770,
+        "bytes": 512537,
         "pages": 6
       },
       "sandbox": {
@@ -732,6 +736,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

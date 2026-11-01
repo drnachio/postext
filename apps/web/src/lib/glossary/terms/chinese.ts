@@ -1,6 +1,6 @@
 // Chinese layout terms.
 import type { GlossaryTerm } from "../terms";
-import { term } from "./term";
+import { term } from "./term.ts";
 
 export const CHINESE_TERMS: readonly GlossaryTerm[] = [
   // ── Chinese layout ─────────────────────────────────────────────────────

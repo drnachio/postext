@@ -1,0 +1,64 @@
+---
+title: "La colonna che la regola delle vedove lasciava corta"
+summary: "Colonne a bandiera che finiscono sulla griglia: fillShortColumns allunga o accorcia di una riga un paragrafo della colonna corta."
+description: "Un lungo articolo di rivista su due colonne a bandiera, con e senza fillShortColumns, per confrontare la colonna che vedove e orfane lasciavano corta."
+plain: "Quando una colonna si ferma una riga sopra il piede perché un paragrafo non si può spezzare lì, questa impostazione ricompone un paragrafo della colonna perché arrivi fino in fondo."
+question: "Perché una colonna a bandiera finisce una riga prima del piede, e come la riempio senza vedove né orfane?"
+aliases: ["colonna corta", "vuoto al piede", "colonne a bandiera", "giustificazione verticale", "regola delle vedove", "fillShortColumns"]
+pageNotes: { "1": "L’apertura senza l’impostazione: una lente di Fresnel accesa dipinta su tutta la larghezza, il titolo e due colonne a bandiera, la sinistra una riga più corta della destra.", "4": "La stessa apertura con fillShortColumns: il primo paragrafo guadagna una riga e le due colonne finiscono sulla stessa linea di base." }
+---
+
+## Che cosa comporrai
+
+Tre pagine di *Littoral*, una rivista di costa: un lungo articolo sulla lente di Fresnel, aperto dal dipinto di una lente accesa nella sua lanterna. Il testo corre su due colonne a bandiera in Public Sans, con una riga di griglia vuota tra i paragrafi, e le regole su vedove e orfane tengono almeno due righe di un paragrafo da ciascun lato di un'interruzione. Il pen compone l'articolo due volte. Senza l'impostazione, nell'<PageRef page={1}>apertura</PageRef> la colonna sinistra si ferma una riga sopra la destra: il paragrafo seguente non può cominciare con una sola riga al piede. Con l'impostazione, nella <PageRef page={4}>stessa pagina</PageRef>, il primo paragrafo va a capo su una riga in più e le due colonne finiscono sull'ultima riga della griglia. Nella pagina seguente l'impostazione riprende anche l'aria in più che il bilanciamento aveva messo sopra due titoletti.
+
+## Preparazione
+
+### 1 · Dai alla colonna a bandiera una leva sua
+
+<Excerpt region="answer" />
+
+Il bilanciamento delle colonne riempie una colonna corta aggiungendo righe di griglia sopra un titolo, dopo un elenco, sotto un riquadro o una figura e, come ultima risorsa, componendo un paragrafo giustificato una riga più largo. Una colonna di testo corrente a bandiera non ha nulla di tutto questo tra i suoi titoletti, e la riga che le regole su vedove e orfane trattengono resta vuota. `fillShortColumns` lascia che un paragrafo a bandiera di quella colonna occupi una riga in più con la propria spaziatura; quando nessuno può, ne compone uno con una riga in meno perché il paragrafo dopo l'interruzione salga e riempia la riga. Il motore tiene la modifica solo se finiscono corte meno colonne, quindi attivarla non peggiora mai una pagina. `maxLinesBeforeLoose: 0` prova i paragrafi prima dei titoli, così ogni titoletto conserva una sola riga d'aria sopra di sé.
+
+### 2 · Componi l'articolo due volte e confronta
+
+<Excerpt region="builds" />
+
+I due documenti nascono dalla stessa configurazione e dalla stessa stringa Markdown. La seconda composizione passa la configurazione così com'è; la prima, una copia con l'impostazione spenta, così il pacchetto che si apre nel Sandbox porta `fillShortColumns: true`. I due pulsanti sopra il tavolo passano da una composizione all'altra. Si riempiono fino al piede solo le pagine che proseguono: la pagina 3 chiude l'articolo e le sue colonne vengono tagliate alla stessa altezza in entrambe le composizioni.
+
+### 3 · Apri con il dipinto
+
+<Excerpt region="opener" />
+
+Il dipinto è un elemento immagine ancorato al margine di stampa, alto 150 mm, quindi arriva al taglio su tre lati, cosa che nessun elemento flottante fa. L'occhiello, il titolo, il sommario e la firma vengono dagli attributi della riga `#`. La firma termina con un margine interno di 6 mm che conta nell'altezza dell'apertura, così le colonne cominciano sulla prima riga di griglia sottostante.
+
+### 4 · Testatine fuori dall'apertura
+
+<Excerpt region="heads" />
+
+La pagina pari nomina la rivista e il numero dal frontmatter, la dispari l'articolo, e `pages: 'body'` le tiene fuori dall'apertura, che porta solo un numero di pagina al piede. L'etichetta scende di 0,35 mm rispetto al numero di pagina perché i due corpi condividano la linea di base. Il filetto sotto misura 197 mm, la larghezza della gabbia del testo.
+
+## Varianti
+
+### Lascia che i titoletti prendano il vuoto per primi
+
+Con l'ordine predefinito un titolo prende fino a due righe di griglia prima che un paragrafo si allunghi, e i titoletti della pagina seguente tornano ad aprirsi.
+
+```diff
+-  maxLinesBeforeLoose: 0,
++  maxLinesBeforeLoose: 2,
+```
+
+### Giustifica il testo
+
+Un paragrafo giustificato poteva già occupare una riga in più senza l'impostazione, entro `maxWordSpacing`. Con `fillShortColumns` può occuparne anche una in meno, e non viene mai composto più largo della sua riga più larga.
+
+```diff
+-  textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
++  textAlign: 'justify', firstLineIndent: pt(0), paragraphSpacing: true, // a grid line between
+```
+
+## Errori frequenti
+
+- L'impostazione chiude un vuoto di una riga. Una colonna a cui ne mancano due, per esempio una che finisce dopo lo spazio tra paragrafi con posto per una sola riga del seguente, può restare corta: aggiusta il testo con una frase.
+- Un paragrafo la cui nuova composizione finirebbe su una riga troppo corta non viene usato, quindi una colonna può restare corta quando ha solo paragrafi brevi.

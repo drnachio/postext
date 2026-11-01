@@ -1,0 +1,63 @@
+---
+title: "Una guida museale con i link stampati come codici QR"
+summary: "Una passeggiata tascabile in un museo con i link web stampati come note numerate a piè di pagina, con indirizzo breve e codice QR (links.print su notes)."
+description: "Una guida museale in Postext: i link al catalogo si stampano come note numerate con indirizzo breve e codice QR, un dipinto per pagina, con il codice."
+plain: "Una piccola guida stampata a cinque dipinti. Dove il testo cita una pagina web, un numero piccolo rimanda al piede della pagina, dove un codice quadrato apre quella pagina sul telefono."
+question: "Come stampo i link di una guida come note numerate con un codice QR che il visitatore possa inquadrare?"
+aliases: ["codice QR", "codici QR stampati", "indirizzi stampati", "guida museale", "guida a piedi", "note dei link", "QR code", "museum guide"]
+---
+
+## Che cosa comporrai
+
+Una guida tascabile alle sale olandesi del Metropolitan Museum of Art: cinque dipinti, un’ora a piedi, un dipinto per pagina. La copertina è la giovane donna di Vermeer alla finestra, tagliata dal margine superiore. Ogni tappa si apre con il numero di sala, il titolo e il pittore, poi il dipinto con la didascalia da parete accanto, poi tre brevi paragrafi. Il testo rimanda al catalogo del museo come farebbe qualunque pagina web. Sulla carta ogni link diventa un numero piccolo, e al piede della pagina la nota dà l’indirizzo breve e un codice QR che il visitatore inquadra con il telefono davanti al quadro.
+
+## Preparazione
+
+### 1 · Scrivere link, stampare note
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Il Markdown conserva link normali, `[La scheda del catalogo](https://www.metmuseum.org/…/436616)`, e `links.print: 'notes'` trasforma ciascuno in una nota numerata con l’indirizzo e il codice ([link su carta](/it/docs/configuration-notes-references#link-su-carta)). Le note sono note a piè di pagina: `numbering: 'document'` le conta lungo tutta la passeggiata, quindi il lettore incontra le note da 1 a 7, e `repeat: 'first'` lascia che l’ultima tappa citi il Hals con la sua nota 3 invece di stampare due volte lo stesso codice. Nel PDF il codice è disegnato in vettoriale ed è esso stesso un link.
+
+<PageShot page={3} crop="0,0.74,1,0.2" caption="Il piede della tappa 1: la nota 3, la scheda del dipinto come indirizzo breve accanto a un codice di 16 mm." />
+
+### 2 · Una tappa per pagina
+
+<Excerpt region="stops" />
+
+Ogni tappa è un titolo di secondo livello il cui `breakBefore` apre una pagina, pari o dispari, così il visitatore gira un foglio per dipinto. Il numero di sala e il pittore sono attributi del titolo; il disegno li mette sopra e sotto il titolo, e `minHeight` tiene il dipinto alla stessa altezza in ogni pagina.
+
+### 3 · La didascalia accanto al dipinto
+
+<Excerpt region="resources" />
+
+`captionSide: 'inside'` mette la didascalia e la nota di credito accanto al dipinto, come un museo appende il suo cartellino, e `width` dà a ogni dipinto la sua parte di giustezza: meno al Hals, che è alto, di più al Ruisdael, che è orizzontale, così le cinque pagine hanno un’altezza di testo simile. La didascalia unisce la tecnica, le misure in centimetri con spazi indivisibili e la riga di provenienza del museo, con la virgola decimale nell’edizione spagnola.
+
+### 4 · La tappa nella testatina
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` stampa il titolo della tappa che comincia nella pagina: la pagina dispari nomina il dipinto, quella pari la guida. Nessuna testatina arriva alla copertina, una pagina che ha il ruolo di apertura.
+
+## Varianti
+
+### Stampare l’indirizzo nella riga
+
+Per una guida da leggere a casa, `'inline'` aggiunge l’indirizzo tra parentesi dopo il testo del link, senza nota né codice.
+
+```diff
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Codici senza indirizzo
+
+`show: 'qr'` stampa solo il codice accanto al numero della nota, per un manifesto o un cartellino in cui l’indirizzo occuperebbe solo spazio.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
+```
+
+## Errori frequenti
+
+Una nota con codice è alta almeno quanto il codice. Quando la riga che porta il link non ha spazio sotto di sé per la sua nota nella pagina, la riga passa alla pagina seguente con la nota: tieni i link fuori dalle ultime righe di una pagina che deve finire dove finisce, come il primo paragrafo della copertina di questa guida.

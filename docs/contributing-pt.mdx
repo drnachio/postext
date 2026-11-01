@@ -145,6 +145,8 @@ Com tudo pronto, há três ações concretas, do compromisso mais leve ao mais p
 Se você pretende escrever código, abra uma issue antes para discutir a abordagem: isso evita
 trabalho duplicado, e uma conversa rápida no começo poupa tempo de todo mundo.
 
+Mantenha cada arquivo de código abaixo de umas 600 linhas e cada pasta abaixo de uns 25 arquivos de código: um módulo que cresce além disso vira uma pasta com o mesmo nome, e o arquivo antigo fica como fachada que a reexporta. A CI verifica os limites com `node scripts/source-size.mjs --check` (veja *Code Layout* no CONTRIBUTING.md).
+
 ### O que ler em seguida
 
 Para se orientar antes de começar:

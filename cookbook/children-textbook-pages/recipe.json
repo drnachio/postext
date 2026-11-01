@@ -45,8 +45,8 @@
   ],
   "gotchas": [],
   "engine": {
-    "postext": "1.48.0",
-    "postextPdf": "1.48.0"
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0"
   },
   "kit": [
     "core",
@@ -92,8 +92,8 @@
   "credits": {
     "authors": [
       {
-        "name": "Your Name",
-        "github": "your-github"
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
       }
     ],
     "text": [
@@ -238,7 +238,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-17",
-  "updated": "2026-10-21",
+  "updated": "2026-10-31",
   "downloads": {
     "pdf": true
   },

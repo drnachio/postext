@@ -107,7 +107,7 @@ def folio_footer() -> dict:
 
 
 def lead_element(anchor: dict, offset: tuple[float, float], width: float) -> dict:
-    return T("lead", "{attr.lead}", anchor=anchor, offset=offset, width=width, size_pt=11.5, line_height=1.45, hyphenate=True,
+    return T("lead", "{attr.lead}", anchor=anchor, offset=offset, width=width, size_pt=11.5, line_height=1.45, hyphenate=True, figureStyle="oldstyle",
              dropCap={"lines": 3, "fontFamily": DISPLAY, "fontWeight": 400, "color": col("band"), "gap": mm(1.6)})
 
 
@@ -117,7 +117,9 @@ def work_opener() -> dict:
     the lead with a drop cap. The plate floats onto the facing recto."""
     return {
         "enabled": True,
-        "minHeight": mm(74),
+        # The opener is as tall as its elements: a long title or lead pushes
+        # the commentary down, a short one leaves no hole above it.
+        "minHeight": mm(40),
         "slot": {
             "elements": [
                 T("catNumber", "{attr.catlabel} {attr.cat}", anchor=at("container", "top-left"), offset=(0, 4), width=TEXT_W, size_pt=8.5, family=SANS, weight=600, color="band", textTransform="uppercase", letterSpacing=pt(2.2)),
@@ -154,7 +156,7 @@ def cover_design(cover_resource: str, aspect: float) -> dict:
                 T("coverSeries", "{attr.series}", anchor=at("page", "top-left"), offset=(M_INNER, img_h + 9), width=TEXT_W + 20, size_pt=8.5, family=SANS, weight=600, color="rule", textTransform="uppercase", letterSpacing=pt(2.4)),
                 T("coverTitle", "{title}", anchor=at("#coverSeries", "below"), offset=(0, 3), width=TEXT_W + 20, size_pt=54, family=DISPLAY, weight=400, line_height=1.0, color="white"),
                 T("coverSubtitle", "{subtitle}", anchor=at("#coverTitle", "below"), offset=(0, 5), width=TEXT_W + 10, size_pt=13, italic=True, line_height=1.3, color="rule"),
-                T("coverPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_INNER, -14), width=TEXT_W + 20, size_pt=7.5, family=SANS, color="muted", textTransform="uppercase", letterSpacing=pt(1.8)),
+                T("coverPublisher", "{attr.publisher}", anchor=at("page", "bottom-left"), offset=(M_INNER, -14), width=TEXT_W + 20, size_pt=7.5, family=SANS, color="rule", textTransform="uppercase", letterSpacing=pt(1.8)),
             ]
         },
     }
@@ -179,7 +181,7 @@ def back_cover_design(aspect: float) -> dict:
                 image_el("backImage", BACK_WORK, anchor=at("page", "top"), offset=(0, 30), width=img_w, height=img_h),
                 T("backWork", "{attr.work}", anchor=at("page", "top"), offset=(0, 30 + img_h + 5), width=img_w, size_pt=8.5, italic=True, align="center", line_height=1.3, color="rule"),
                 T("backBlurb", "{attr.blurb}", anchor=at("page", "top"), offset=(0, 30 + img_h + 22), width=measure - 20, size_pt=15, family=DISPLAY, align="center", line_height=1.3, color="white"),
-                T("backPublisher", "{attr.publisher}", anchor=at("page", "bottom"), offset=(0, -14), width=measure, size_pt=7.5, family=SANS, align="center", color="muted", textTransform="uppercase", letterSpacing=pt(1.8)),
+                T("backPublisher", "{attr.publisher}", anchor=at("page", "bottom"), offset=(0, -14), width=measure, size_pt=7.5, family=SANS, align="center", color="rule", textTransform="uppercase", letterSpacing=pt(1.8)),
             ]
         },
     }
@@ -205,7 +207,9 @@ def resource_types(lang: str) -> list[dict]:
 
 def body_text(lang: str) -> dict:
     return {
-        "fontFamily": TEXT, "fontSize": pt(11), "lineHeight": pt(15.5), "textAlign": "justify",
+        # Old-style figures: the dates of the commentaries sit in the line
+        # of EB Garamond's lowercase.
+        "fontFamily": TEXT, "figureStyle": "oldstyle", "fontSize": pt(11), "lineHeight": pt(15.5), "textAlign": "justify",
         "firstLineIndent": mm(5), "indentAfterHeading": False, "paragraphSpacing": False,
         "color": col("ink"), "boldColor": col("ink"), "italicColor": col("ink"),
         "referenceColor": col("band"), "referenceBold": False, "referenceItalic": True,
@@ -218,7 +222,7 @@ def headings(lang: str) -> dict:
     return {
         "fontFamily": DISPLAY, "color": col("ink"), "keepWithNext": True,
         "levels": [
-            {"level": 1, "fontSize": pt(24), "lineHeight": pt(28), "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": work_opener()},
+            {"level": 1, "fontSize": pt(24), "lineHeight": pt(28), "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "marginBottom": pt(9), "advancedDesign": work_opener()},
             {"level": 2, "fontSize": pt(14), "lineHeight": pt(18), "fontWeight": 400, "italic": True, "color": col("band"), "marginTop": pt(14), "marginBottom": pt(4)},
         ],
     }
@@ -231,10 +235,19 @@ def parts(lang: str) -> dict:
         "margins": {"top": mm(128), "bottom": mm(28), "left": mm(M_INNER), "right": mm(62)},
         "design": part_design(ed.BOOK[lang]["part_label"]),
         "bodyStyle": {
-            "fontFamily": TEXT, "fontSize": pt(11), "lineHeight": pt(15.5), "color": col("white"), "textAlign": "left", "numberColor": col("white"),
+            "fontSize": pt(11), "lineHeight": pt(15.5), "color": col("white"), "textAlign": "left", "numberColor": col("white"),
             "orderedLists": {"numberFormat": "arabic", "separator": "", "gap": mm(3), "indent": mm(9), "fontFamily": SANS, "numberFontSize": pt(9), "itemSpacing": pt(2)},
         },
     }
+
+
+def credits_heads() -> dict:
+    y = M_TOP - 11.0
+    common = dict(size_pt=8.5, italic=True, color="muted", pages="body", overflow="ellipsis-end", width=120)
+    return {"elements": [
+        T("creditsEven", "{chapterTitle}", anchor=at("page", "top-left"), offset=(M_OUTER, y), parity="even", **common),
+        T("creditsOdd", "{chapterTitle}", anchor=at("page", "top-right"), offset=(-M_OUTER, y), align="right", parity="odd", **common),
+    ]}
 
 
 def toc_config() -> dict:
@@ -263,6 +276,10 @@ def heading_styles(cover_resource: str, aspect: float, back_aspect: float) -> li
         # The last page, always a verso: Folio turns it as the back board.
         {"id": "contraportada", "name": "Contraportada", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "even"}, "advancedDesign": back_cover_design(back_aspect), "header": empty, "footer": empty},
         {"id": "preliminar", "name": "Preliminar", "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "odd"}, "advancedDesign": front_opener(lead=True)},
+        # The credits: back matter after the last section, on the next page
+        # of either side, with its own title as running head (the section's
+        # artist would run on otherwise).
+        {"id": "creditos", "name": "Créditos", "numbered": False, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener(lead=False), "header": credits_heads()},
         {"id": "indice", "name": "Índice", "numbered": False, "toc": False, "span": "page", "breakBefore": {"enabled": True, "parity": "any"}, "advancedDesign": front_opener(lead=False)},
     ]
 
@@ -270,8 +287,11 @@ def heading_styles(cover_resource: str, aspect: float, back_aspect: float) -> li
 def paragraph_styles() -> list[dict]:
     return [
         {"id": "colofon", "name": "Colofón", "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6), "color": col("muted")},
-        {"id": "fuente", "name": "Fuente", "fontFamily": SANS, "fontSize": pt(7.5), "lineHeight": pt(10), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(4), "marginTop": pt(14), "color": col("muted")},
+        {"id": "fuente", "name": "Fuente", "fontFamily": SANS, "fontSize": pt(7.5), "lineHeight": pt(10), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(4), "marginTop": pt(10), "color": col("muted")},
         {"id": "creditos", "name": "Créditos", "fontSize": pt(10.5), "lineHeight": pt(14), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(6)},
+        # Section openers: the artist's dates over the biographical note.
+        {"id": "fechas", "name": "Fechas del artista", "fontFamily": SANS, "fontWeight": 500, "fontSize": pt(9), "lineHeight": pt(12), "letterSpacing": pt(1.4), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(0), "marginBottom": pt(9), "color": col("white")},
+        {"id": "semblanza", "name": "Semblanza", "textAlign": "left", "firstLineIndent": mm(0), "color": col("white")},
         {"id": "lista", "name": "Lista de obras", "fontFamily": SANS, "fontSize": pt(8.5), "lineHeight": pt(11.5), "textAlign": "left", "firstLineIndent": mm(0), "spaceBetween": pt(4)},
     ]
 
@@ -295,6 +315,11 @@ def shared_config(cover_resource: str, aspect: float, back_aspect: float) -> dic
         "colorPalette": COLOR_PALETTE,
         "resourceTypes": resource_types("es"),
         "pdfGeneration": {"outlines": True},
+        # Each verso links to the museum's record of the work: on paper the
+        # link takes a note at the foot of the page with the address and a
+        # code a phone opens, the record and its zoomable image.
+        "links": {"print": "notes", "show": "both", "urlDisplay": "short", "qr": {"size": mm(15), "color": col("ink"), "side": "start", "gap": mm(3)}},
+        "footnotes": {"fontSize": pt(8), "lineHeight": pt(10.5), "color": col("muted"), "textAlign": "left", "spaceAbove": pt(6), "separator": {"enabled": False}},
         # Folio: a lay-flat catalogue (the plates open without a gutter dip)
         # on heavy matte coated art paper, its own first and last pages the
         # boards, on a marble table in studio light.
@@ -413,6 +438,13 @@ def bio(lang: str, title: str, extracts: dict) -> tuple[list[str], dict]:
     return [" ".join(out)], art
 
 
+def readable_url(url: str) -> str:
+    """An address with its escaped letters written out (Niño, not
+    Ni%C3%B1o), without the scheme."""
+    from urllib.parse import unquote
+    return unquote(url).replace("https://", "").replace("http://", "")
+
+
 def slugify(s: str) -> str:
     s = unicodedata.normalize("NFKD", s.lower()).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "-", s).strip("-")
@@ -511,7 +543,7 @@ def write_chapters(lang: str, works: list[dict], artists: dict, extracts: dict, 
             first = False
         bio_paras, art = bio(lang, name, extracts)
         used_articles.setdefault(lang, {})[name] = art
-        body_lines = [part["dates"][lang], ""] + [p + "\n" for p in bio_paras]
+        body_lines = [':::paragraphs{style="fechas"}', part["dates"][lang], ":::", "", ':::paragraphs{style="semblanza"}'] + bio_paras + [":::", ""]
         head += f':::part{{number="{part["number"]}" title="{attr_value(name)}" palette="band={part["band"]}"}}\n' + "\n".join(body_lines) + ":::\n\n"
         for k, w in enumerate(mine):
             n += 1
@@ -531,19 +563,24 @@ def write_chapters(lang: str, works: list[dict], artists: dict, extracts: dict, 
                 body = [""]
             body[0] = (body[0] + " " if body[0] else "") + f':ref{{id="{w["id"]}" case="lower"}}'
             lines += [p + "\n" for p in body]
-            lines.append(f':::paragraphs{{style="fuente"}}\n{source}\n:::\n')
+            record = book["record_link"]["commons" if w["museum"] == "msorolla" else "museum"]
+            lines.append(f':::paragraphs{{style="fuente"}}\n{source} {record[0]}[{record[1]}]({w["page"]}).\n:::\n')
             emit(f"{n:02d}-{slugify(title)}", title, "\n".join(lines))
 
     # Credits: the works with their museum records, then the articles and fonts.
     works_lines = []
     for i, w in enumerate(works):
         record = ed.BOOK[lang]["museum"][w["museum"]] + (f", {w['accession']}" if w["accession"] else "")
-        works_lines.append(f"{cat_label} {i + 1}. {artists[w['artist']][lang]}, *{w['title'][lang]}*, {w['date']}. {record}. {w['licence']} — [{w['page'].split('//')[1].split('/')[0]}]({w['page']})")
+        # The record's address is noted on the work's own verso (address and
+        # code): here the list names the licence alone.
+        works_lines.append(f"{cat_label} {i + 1}. {artists[w['artist']][lang]}, *{w['title'][lang]}*, {w['date']}. {record}. {w['licence']}")
     arts = used_articles.get(lang, {})
-    art_lines = [f"*{a['title']}* — [{a['url']}]({a['url']}) (revision {a['revid']}, {a['timestamp'][:10]})" for a in arts.values() if a]
+    # The article addresses as plain, readable text (a link here would take
+    # a note and a code of its own in print).
+    art_lines = [f"*{a['title']}* — {readable_url(a['url'])} ({book['revision']} {a['revid']}, {a['timestamp'][:10]})" for a in arts.values() if a]
     paras = "\n\n".join(ed.CREDITS[lang])
     credits = (
-        f'# {book["credits"]} {{style="preliminar"}}\n\n'
+        f'# {book["credits"]} {{style="creditos"}}\n\n'
         f':::paragraphs{{style="creditos"}}\n{paras}\n:::\n\n'
         f':::paragraphs{{style="lista"}}\n' + "\n\n".join(works_lines) + "\n:::\n\n"
         f':::paragraphs{{style="lista"}}\n' + "\n\n".join(art_lines) + "\n:::\n"

@@ -10960,6 +10960,7 @@
       "unit": "em"
      },
      "indentAfterHeading": false,
+     "figureStyle": "oldstyle",
      "hyphenation": {
       "enabled": true,
       "locale": "en-us"
@@ -13253,7 +13254,8 @@
         "paletteId": "ink"
        },
        "parity": "even",
-       "pages": "body"
+       "pages": "body",
+       "figureStyle": "oldstyle"
       },
       {
        "kind": "text",
@@ -13299,7 +13301,8 @@
         "paletteId": "ink"
        },
        "parity": "even",
-       "pages": "opener"
+       "pages": "opener",
+       "figureStyle": "oldstyle"
       },
       {
        "kind": "text",
@@ -13345,7 +13348,8 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "body"
+       "pages": "body",
+       "figureStyle": "oldstyle"
       },
       {
        "kind": "text",
@@ -13391,7 +13395,8 @@
         "paletteId": "ink"
        },
        "parity": "odd",
-       "pages": "opener"
+       "pages": "opener",
+       "figureStyle": "oldstyle"
       }
      ]
     },

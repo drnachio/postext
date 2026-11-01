@@ -809,6 +809,10 @@ References deserve a closer look, because they are how most of a book's apparatu
 
 Works are cited as Pandoc writes them: in brackets, \`[@garcia2020, p. 33]\`, or in the sentence, \`@garcia2020\`, with the references in the front matter or in a \`:::references\` block of BibTeX. The citation style is a setting, not a property of the text: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 or a style of your own, chosen under Design › Citations, where a preview shows the result. The bibliography follows the last chapter, or stands wherever \`:::bibliography\` is written. A citation of a work the references do not hold prints as written and is listed among the warnings.
 
+## Links on paper
+
+:index{term="links"}A link to the web is written as in any Markdown, \`[words](https://…)\`, and stays a link wherever a reader can follow it: these previews, the HTML, the PDF and the EPUB. On paper only its words would show. \`links.print\` decides what a printed page adds: nothing, the address in parentheses after the words (\`'inline'\`), or a note (\`'notes'\`) with the address, a QR code that a phone opens, or both. Link notes take the numbers and the style of the footnotes. This book prints the short address and the code, as the note of this link to [the Postext repository](https://github.com/drnachio/postext) shows.
+
 ## Mathematics in the source
 
 Mathematics is written in LaTeX notation. Inline formulas go between single dollar signs, in the middle of a sentence; display formulas go between double dollar signs, on a line of their own or as a block of several lines. A dollar sign that should print as a dollar is escaped with a backslash. A formula that is never closed, or that MathJax cannot read, is reported in the Checks panel and replaced on the page by a red placeholder, so it cannot go unnoticed into the PDF.

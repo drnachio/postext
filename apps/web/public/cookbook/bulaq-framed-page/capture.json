@@ -3,27 +3,21 @@
   "slug": "bulaq-framed-page",
   "sourceHash": "c83a4d45ded158f40506ba7557c710492b1c89e3d990030c54ca5818e57b912b",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:31:43.283Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:54.554Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:50:10.988Z",
   "variants": {
     "en": {
-      "hash8": "c6b0080f",
+      "hash8": "21d8e07f",
       "vdtHash": "f209e5eff08c8f19b36eb49188ea00b8a7239131",
       "timings": {
-        "importMs": 210,
-        "fontsMs": 66,
-        "buildMs": 94,
-        "totalMs": 1011,
+        "importMs": 2613,
+        "fontsMs": 209,
+        "buildMs": 138,
+        "totalMs": 3796,
         "builds": 1
       },
       "specimen": {
@@ -148,7 +142,7 @@
       },
       "pdf": {
         "file": "bulaq-framed-page.pdf",
-        "bytes": 110673,
+        "bytes": 110670,
         "pages": 6
       },
       "sandbox": {
@@ -380,6 +374,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -388,13 +392,13 @@
       }
     },
     "es": {
-      "hash8": "21158ccc",
+      "hash8": "c7389f59",
       "vdtHash": "6b8d7055fc41adb04a90a265a431501113ae8f32",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 65,
-        "buildMs": 94,
-        "totalMs": 987,
+        "importMs": 2701,
+        "fontsMs": 206,
+        "buildMs": 131,
+        "totalMs": 4124,
         "builds": 1
       },
       "specimen": {
@@ -519,7 +523,7 @@
       },
       "pdf": {
         "file": "bulaq-framed-page.pdf",
-        "bytes": 111587,
+        "bytes": 111588,
         "pages": 6
       },
       "sandbox": {
@@ -750,6 +754,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

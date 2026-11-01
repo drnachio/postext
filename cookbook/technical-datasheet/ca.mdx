@@ -34,7 +34,7 @@ La taula de terminals i el mapa de registres surten de la mateixa funció, `grou
 
 <Excerpt region="styles" />
 
-`tableStyle` aplega el que comparteixen totes les taules. Cada entrada de `tableStyles` fixa només el que canvia en les seves, i un recurs en tria una amb `table.styleId`. La taula elèctrica canvia els filets grisos per filets blancs d'1,4 pt, que separen els fons i marquen on acaba cada cel·la combinada. La de comandes porta un marc exterior arrodonit i la Fira Sans Condensed, perquè les seves quatre columnes càpiguen en una columna de text.
+`tableStyle` aplega el que comparteixen totes les taules. Cada entrada de `tableStyles` fixa només el que canvia en les seves, i un recurs en tria una amb `table.styleId`. La taula elèctrica canvia els filets grisos per filets blancs d'1,4 pt, que separen els fons i marquen on acaba cada cel·la combinada. La de comandes porta un marc exterior arrodonit i la Fira Sans Condensed, perquè les seves quatre columnes càpiguen en una columna de text. El `figureStyle: 'tabular'` de l'estil elèctric demana a la Fira Sans el tret `tnum`, xifres d'una mateixa amplada, perquè els dígits de Min, Typ i Max quedin alineats a cada columna.
 
 ### 5 · Rètols que continuen sent text al PDF
 
@@ -55,8 +55,8 @@ La referència és el títol de primer nivell, i la seva obertura es dibuixa amb
 Amb filets de mig punt en el gris `rule` de la paleta, totes les files queden separades, tinguin fons o no; els blancs desapareixen on es toquen dues files sense fons.
 
 ```diff
--    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1) },
-+    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1) },
+-    { id: 'electrical', borderColor: col('paper'), borderWidth: pt(1.4), cellPadding: mm(1.1),
++    { id: 'electrical', borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1),
 ```
 
 ### Posa els peus de taula sobre una barra

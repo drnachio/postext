@@ -7,12 +7,12 @@
  * Isomorphic: no Node or React imports.
  */
 import type { SiteLocale } from "@/i18n/locales";
-import { TYPE_TEXT_TERMS } from "./terms/typeText";
-import { TYPE_PAGE_TERMS } from "./terms/typePage";
-import { CHINESE_TERMS } from "./terms/chinese";
-import { JAPANESE_TERMS } from "./terms/japanese";
-import { ARABIC_TERMS } from "./terms/arabic";
-import { WEB_TERMS } from "./terms/web";
+import { TYPE_TEXT_TERMS } from "./terms/typeText.ts";
+import { TYPE_PAGE_TERMS } from "./terms/typePage.ts";
+import { CHINESE_TERMS } from "./terms/chinese.ts";
+import { JAPANESE_TERMS } from "./terms/japanese.ts";
+import { ARABIC_TERMS } from "./terms/arabic.ts";
+import { WEB_TERMS } from "./terms/web.ts";
 
 export type GlossaryCategory = "type" | "cjk" | "japanese" | "arabic" | "web";
 

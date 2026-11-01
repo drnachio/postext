@@ -1,0 +1,57 @@
+---
+title: "Un disseny per a tres edicions en altres llengües"
+summary: "Un quadernet en anglès, castellà i àrab amb uns ajustos generals i, per a cada llengua, només el que és seu: les fonts, els cossos i l'espaiat."
+plain: "Un quadernet sobre tres astrolabis antics, imprès en anglès, castellà i àrab. Les tres edicions comparteixen el disseny; només l'àrab canvia les fonts i els cossos."
+description: "Ajustos generals i ajustos propis de cada llengua a Postext: un quadernet en anglès, castellà i àrab amb un disseny, diferent només on ho demana la llengua."
+question: "Com comparteixo un disseny entre edicions d'un llibre i canvio només les fonts i etiquetes de cada llengua?"
+aliases: ["ajustos generals", "ajustos propis de cada llengua", "mergeConfigLayers", "configuració compartida", "edició multilingüe", "edició àrab", "astrolabi"]
+pageNotes: {"1": "La coberta de l'edició castellana: la fotografia d'un astrolabi de llautó de 1291 amb incrustacions de plata ocupa la pàgina; sobre la part fosca de la foto, un avantítol blanc espaiat, un filet curt i el títol Tres astrolabios en dues línies blanques; al peu, Yemen 1291 · Irán 1654 · Europa 1462.", "2": "Pàgina parella 2: capçalera amb el foli en llautó i el títol del llibre; les seccions Un mapa del cielo que se puede girar i El instrumento del sultán, en text justificat amb els títols en llautó.", "3": "Pàgina senar 3: un requadre amb un filet de llautó a l'esquerra; la secció Un jardín de estrellas amb la foto d'un astrolabi persa a la dreta de la columna i el text al costat; al peu, el títol de l'última secció.", "4": "Pàgina parella 4: l'última secció amb la foto de l'astrolabi europeu de 1462 a la dreta i el text i el paràgraf de tancament al costat; una taula dels tres instruments amb la capçalera fosca; el colofó."}
+---
+
+## Què compondràs
+
+Un quadernet de quatre pàgines A5 sobre tres astrolabis del Metropolitan Museum of Art: un fet al Iemen el 1291, un altre a l'Iran el 1654 i un altre a Europa el 1462. L'editorial el publica en anglès, castellà i àrab, i les tres edicions són un sol disseny. La foto de coberta, els títols en llautó, el requadre amb el filet, les figures amb el text al costat i la capçalera fosca de la taula surten d'uns mateixos ajustos. L'edició àrab canvia el que és de la seva escriptura: Amiri i IBM Plex Sans Arabic en lloc de Source Serif i Source Sans, un cos més gran i etiquetes sense majúscules ni espaiat. Es llegeix des de la dreta i s'enquaderna per la dreta sense cap coordenada pròpia.
+
+## Elaboració
+
+### 1 · Uns ajustos generals i tres ajustos de llengua petits
+
+El codi és a [la resposta curta](#la-resposta-curta). `config` desa els ajustos generals; `mergeConfigLayers` hi posa a sobre els d'una edició camp per camp. L'anglès i el castellà no tenen ajustos propis: el seu `locale` tria els patrons de partició de mots i les paraules *Figure* i *Table*, *Figura* i *Tabla*. Els ajustos àrabs només anomenen camps solts: `bodyText.fontFamily` canvia la font i conserva el color, l'alineació i la partició, i l'element `kicker` de la coberta canvia la font i l'espaiat i conserva l'àncora, el color i la mida. Un canvi a la paleta o als marges de `config` arriba a les tres edicions.
+
+### 2 · Costats anomenats segons la direcció del text
+
+<Excerpt region="heads" />
+
+La vora exterior d'una pàgina parella és el costat on comencen les línies en totes dues direccions, i la d'una senar, el costat on acaben; per això `top-start` i `top-end` porten els folis a fora tant en una pàgina parella anglesa com en una d'àrab. El filet del requadre és `side: 'start'` i el text de la coberta s'ancora a `top-start`: cap no necessita un ajust propi.
+
+### 3 · Figures al final de la línia, amb el text al costat
+
+<Excerpt region="pictures" />
+
+`wrap: 'end'` posa cada fotografia a la dreta d'una columna anglesa i a l'esquerra d'una d'àrab, i el text corre al costat. Els peus i els textos alternatius van en la llengua de cada edició; els peus àrabs donen primer la data de l'hègira.
+
+### 4 · La taula amb les paraules i les xifres de cada edició
+
+<Excerpt region="table" />
+
+Les dades de la taula són contingut i canvien amb l'edició: xifres aràbigues orientals i el separador decimal àrab a l'edició àrab, coma decimal a la castellana. L'estil és general: l'ajust àrab només posa la font i el cos.
+
+## Variants
+
+### Desa els ajustos de cada llengua en un paquet
+
+<RecipeLink slug="bundle-round-trip">L'anada i tornada del .postext</RecipeLink> desa un llibre en dues llengües en un fitxer. Des de postext 1.58, `createBundle` escriu una vegada els ajustos generals i, al costat dels capítols de cada llengua, els seus ajustos propis, tal com els llegeix aquí `mergeConfigLayers`. El llibre d'aquesta recepta al Sandbox s'obre així: canvia el tauler de disseny entre *Totes les llengües* i l'edició àrab per veure quins camps fixa l'edició àrab.
+
+### Imprimeix l'edició àrab per al Magrib
+
+`ar-MA` conserva la direcció i l'enquadernació i escriu en xifres europees els nombres generats: els folis i els números de les figures. Torna a escriure també les xifres de la taula.
+
+```diff
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
+```
+
+## Errors freqüents
+
+- Les lletres àrabs van enllaçades, de manera que una etiqueta espaiada als ajustos generals ha de perdre el `letterSpacing` als ajustos àrabs; si no, el motor dona un avís `joiningScriptLetterSpacing`. Amb ell va `textTransform: 'none'`: l'àrab no té majúscules.
+- Les línies d'una edició àrab són més altes i les seves pàgines tallen en altres llocs. Cada edició s'ha ajustat pel seu compte: el requadre àrab flota al peu de la pàgina (`placement="bottom"`) i les frases de tancament corren al costat de l'última fotografia.

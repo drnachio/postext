@@ -626,12 +626,13 @@
      }
     }
    ],
-   "keepWithNextSplit": "fill",
    "balancing": {
+    "fillShortColumns": true,
     "maxLinesBeforeLoose": 4,
     "stretchAfterWideFloats": "always",
     "trailingStep": "grid"
-   }
+   },
+   "keepWithNextSplit": "fill"
   },
   "unorderedLists": {
    "bulletChar": "•",

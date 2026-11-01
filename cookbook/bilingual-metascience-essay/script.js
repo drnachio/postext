@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 141 · A metascience essay in English and Spanish ═══════
 // https://postext.dev/en/cookbook/bilingual-metascience-essay
 // Code: MIT · Text: J. P. A. Ioannidis, PLoS Med 2005 (CC BY) · Figures: drawn in code (CC BY 4.0)
-// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.34.0
+// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   registerCitationEngine, defaultResourceTypes, initMathEngine, parseTSV, mergeCells, setAlignment,
@@ -112,7 +112,9 @@ const config = () => ({
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   math: { marginTop: pt(LEAD / 2), marginBottom: pt(LEAD / 2), keepWithLeadIn: true },
-  headings: { fontFamily: SANS, color: col('navy'), fontWeight: 700, levels: [
+  // fillShortColumns: a paragraph may run a line long so that the references close level.
+  headings: { fontFamily: SANS, color: col('navy'), fontWeight: 700,
+    balancing: { fillShortColumns: true }, levels: [
     { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // the next page, either side
     { level: 2, fontSize: pt(12), lineHeight: pt(LEAD), marginTop: pt(LEAD),
       marginBottom: pt(LEAD / 2) },
@@ -139,6 +141,14 @@ const calloutStyles = [
     titleStyle: { fontFamily: SANS, fontSize: pt(9), fontWeight: 700, color: col('navy'),
       gap: mm(1.2) },
     body: { fontFamily: SANS, fontSize: pt(8.4), lineHeight: pt(11.2), firstLineIndent: mm(3) } },
+  // The journal's first-page note (competing interests, abbreviation) floated to the foot of
+  // the first column under a hairline, as PLoS Medicine sets it.
+  { id: 'note', placement: 'bottom', backgroundEnabled: false, border: { enabled: false },
+    stripe: { enabled: true, side: 'top', width: pt(0.5), color: col('rule') },
+    padding: { top: mm(1.6), right: mm(0), bottom: mm(0), left: mm(0) },
+    marginTop: pt(LEAD), marginBottom: pt(0),
+    body: { fontFamily: SANS, fontSize: pt(7.6), lineHeight: pt(10.4), color: col('muted'),
+      boldColor: col('ink'), textAlign: 'left', firstLineIndent: pt(0) } },
 ];
 // :chip[Corollary 1]{style="corollary"}: a label in the sans and the accent, no frame.
 const chipStyles = [{ id: 'corollary', fontFamily: SANS, fontSize: em(0.86), bold: true,

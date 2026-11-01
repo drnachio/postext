@@ -3,27 +3,21 @@
   "slug": "tahqiq-critical-edition",
   "sourceHash": "eb6e93e2ba9794352b27a768f9bd458ed156a9727d5800922a7fcae70e02617e",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:42:14.984Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:03.941Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:42:29.420Z",
   "variants": {
     "en": {
-      "hash8": "5d76b778",
+      "hash8": "2aec27de",
       "vdtHash": "3a637db169fc089c87a8f255b7df83665a626cd8",
       "timings": {
-        "importMs": 637,
-        "fontsMs": 120,
-        "buildMs": 281,
-        "totalMs": 1742,
+        "importMs": 4801,
+        "fontsMs": 324,
+        "buildMs": 432,
+        "totalMs": 6793,
         "builds": 1
       },
       "specimen": {
@@ -210,7 +204,7 @@
       },
       "pdf": {
         "file": "tahqiq-critical-edition.pdf",
-        "bytes": 154797,
+        "bytes": 154800,
         "pages": 11
       },
       "sandbox": {
@@ -446,6 +440,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -884,6 +888,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

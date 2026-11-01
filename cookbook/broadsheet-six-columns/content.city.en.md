@@ -8,7 +8,7 @@
 For the shops of Market Street, the council’s vote means two years of trenches, fences and diverted buses outside their windows, and a promise that it will be worth it in the end.
 :::
 
-“The tram will be lovely for the people who come after us,” said Margaret Imrie, who has run the wool shop at number 41 since 1987. “I would like to still be here when it arrives.” She has asked the council whether it will lower her business rates while the street is dug up. The answer, so far, is that it is looking at it.
+“The tram will be lovely for the people who come after us,” said Margaret Imrie, who has run the wool shop at number 41 since 1987. “I would like to still be here when it arrives.” She has asked the council whether it will lower her business rates while the street is dug up. The answer, so far, is that it is looking at it. She expects a reply by Christmas.
 
 The council’s plan splits the street into eight sections of about 150 metres. Each will be closed to traffic for twelve weeks at most, and every shop will keep a pavement and a front door. Deliveries will come in through the back lanes before ten in the morning, and the council will pay for extra bins and for signs telling shoppers that the street is open.
 
@@ -117,4 +117,4 @@ Some of those who found a room have found it in houses the council says are too 
 
 Students who think their house is overcrowded or unsafe can ask the council to inspect it, and their name will not be passed to the landlord. The students’ union runs a free advice session every Wednesday afternoon in the union building, where a housing lawyer checks tenancy agreements before they are signed.
 
-The council’s inspectors say the worst houses are rarely the ones students complain about. “The tenants who need us most are often the ones who are afraid to call,” said its chief housing officer, Grace Adeyemi. “They think they will lose the room, and they have nowhere else to go.” Her team will knock on the door of every licensed shared house in Westfield before Christmas, the first time it has done so since the licences were introduced in 2017.
+The council’s inspectors say the worst houses are rarely the ones students complain about. “The tenants who need us most are often the ones who are afraid to call,” said its chief housing officer, Grace Adeyemi. “They think they will lose the room, and they have nowhere else to go.” Her team will knock on the door of every licensed shared house in Westfield before Christmas, the first time it has done so since the licences were introduced in 2017. Landlords who turn the inspectors away can be fined up to £5,000.

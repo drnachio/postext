@@ -3,25 +3,20 @@
   "slug": "conference-programme",
   "sourceHash": "59509d32c3a71596967ff7b517f8e1bf0837a543a0a38d80cbac5ba76620844e",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:34:49.151Z",
-  "verified": {
-    "postext": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:57.824Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:42:25.402Z",
   "variants": {
     "en": {
-      "hash8": "a5beabb2",
-      "vdtHash": "d1f68a520dcf5124e4cc465f06abe6b97231b935",
+      "hash8": "bbe90ed2",
+      "vdtHash": "fbf26c1d1d0343d958acdc0c2156d312cbb6b4a3",
       "timings": {
-        "importMs": 336,
-        "fontsMs": 1483,
-        "buildMs": 80,
-        "totalMs": 2602,
+        "importMs": 4880,
+        "fontsMs": 317,
+        "buildMs": 131,
+        "totalMs": 6511,
         "builds": 1
       },
       "specimen": {
@@ -151,8 +146,8 @@
         "chapters": [
           {
             "pages": 6,
-            "hash": "a994467f6c018901",
-            "lines": "292213d7ef612409"
+            "hash": "2aac228dd445be05",
+            "lines": "2026a63134bf4023"
           }
         ]
       },
@@ -422,7 +417,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           },
           {
             "check": "sandbox",
@@ -433,13 +438,13 @@
       }
     },
     "es": {
-      "hash8": "4f493d82",
-      "vdtHash": "d1f68a520dcf5124e4cc465f06abe6b97231b935",
+      "hash8": "549aa759",
+      "vdtHash": "fbf26c1d1d0343d958acdc0c2156d312cbb6b4a3",
       "timings": {
-        "importMs": 342,
-        "fontsMs": 1481,
-        "buildMs": 79,
-        "totalMs": 2561,
+        "importMs": 5724,
+        "fontsMs": 288,
+        "buildMs": 106,
+        "totalMs": 8716,
         "builds": 1
       },
       "specimen": {
@@ -569,8 +574,8 @@
         "chapters": [
           {
             "pages": 6,
-            "hash": "a994467f6c018901",
-            "lines": "292213d7ef612409"
+            "hash": "2aac228dd445be05",
+            "lines": "2026a63134bf4023"
           }
         ]
       },
@@ -840,7 +845,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

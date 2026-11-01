@@ -11,11 +11,11 @@ June 2015 - www.peppercarrot.com - Artwork and story by David Revoy - Translatio
 
 Art & Scenario: David Revoy — Translation: Alex Gryson
 
-Licence: Creative Commons Attribution 4.0 (CC BY 4.0).
+Licence: [Creative Commons Attribution 4.0 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
 
 A derivative of “Pepper's Birthday Party” by David Revoy, licensed under CC BY 4.0: the balloons and the lettering were rebuilt and the pages laid out again by Postext from the official English translation.
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/en/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

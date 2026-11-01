@@ -136,6 +136,7 @@
   },
   "bodyText": {
    "fontFamily": "EB Garamond",
+   "figureStyle": "oldstyle",
    "fontSize": {
     "value": 11.0,
     "unit": "pt"
@@ -183,6 +184,7 @@
   },
   "headings": {
    "fontFamily": "IM Fell English",
+   "fontWeight": 400,
    "color": {
     "hex": "#1d1a17",
     "model": "hex",
@@ -1352,6 +1354,7 @@
    {
     "id": "credits",
     "name": "Credits",
+    "figureStyle": "lining",
     "fontSize": {
      "value": 8.6,
      "unit": "pt"
@@ -1366,6 +1369,40 @@
      "unit": "mm"
     },
     "spaceBetween": {
+     "value": 5,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "credits-list",
+    "name": "Credits list",
+    "figureStyle": "lining",
+    "fontSize": {
+     "value": 8.6,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11.6,
+     "unit": "pt"
+    },
+    "textAlign": "left",
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "hangingIndent": {
+     "value": 4,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 1.5,
+     "unit": "pt"
+    },
+    "marginTop": {
      "value": 5,
      "unit": "pt"
     }
@@ -1810,6 +1847,10 @@
   ],
   "pdfGeneration": {
    "outlines": true
+  },
+  "links": {
+   "print": "inline",
+   "urlDisplay": "short"
   },
   "folio": {
    "tilt": 20,

@@ -3,27 +3,21 @@
   "slug": "illustrated-timeline-spread",
   "sourceHash": "eb6736b46144211b55fc47759a4df01099ceb80fbd1b6ddda2f39a344200f327",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:36:51.349Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.679Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:53:15.573Z",
   "variants": {
     "en": {
-      "hash8": "db5e3cfd",
+      "hash8": "282ec879",
       "vdtHash": "fb3a73b64e2b429f88af05d004d869bbe1ac483a",
       "timings": {
-        "importMs": 250,
-        "fontsMs": 81,
-        "buildMs": 69,
-        "totalMs": 1044,
+        "importMs": 2734,
+        "fontsMs": 720,
+        "buildMs": 126,
+        "totalMs": 4403,
         "builds": 1
       },
       "specimen": {
@@ -90,7 +84,7 @@
       },
       "pdf": {
         "file": "illustrated-timeline-spread.pdf",
-        "bytes": 987265,
+        "bytes": 987282,
         "pages": 2
       },
       "sandbox": {
@@ -378,9 +372,19 @@
             "detail": "every element came back to its source: 24 block, 14 frame, 86 line, 2 text"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, ja"
           },
           {
             "check": "sandbox",
@@ -391,13 +395,13 @@
       }
     },
     "es": {
-      "hash8": "b8f0a028",
+      "hash8": "ef1c1b47",
       "vdtHash": "e8daf4ae63733680e981ccc1ccde383ae4891c3b",
       "timings": {
-        "importMs": 405,
-        "fontsMs": 161,
-        "buildMs": 79,
-        "totalMs": 1336,
+        "importMs": 2823,
+        "fontsMs": 293,
+        "buildMs": 143,
+        "totalMs": 4097,
         "builds": 1
       },
       "specimen": {
@@ -464,7 +468,7 @@
       },
       "pdf": {
         "file": "illustrated-timeline-spread.pdf",
-        "bytes": 988159,
+        "bytes": 988167,
         "pages": 2
       },
       "sandbox": {
@@ -762,9 +766,19 @@
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 2 −5‰ “La hoja se prensa entre fieltros y se cuelga par…”"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, ja"
           },
           {
             "check": "sandbox",
@@ -775,13 +789,13 @@
       }
     },
     "ja": {
-      "hash8": "0fe4613d",
+      "hash8": "53ef7f27",
       "vdtHash": "c9b661e94c2d2a33ed046a29bb2ac52e3d8b4ca8",
       "timings": {
-        "importMs": 238,
-        "fontsMs": 296,
-        "buildMs": 66,
-        "totalMs": 1168,
+        "importMs": 5095,
+        "fontsMs": 3016,
+        "buildMs": 133,
+        "totalMs": 9447,
         "builds": 1
       },
       "specimen": {
@@ -848,7 +862,7 @@
       },
       "pdf": {
         "file": "illustrated-timeline-spread.pdf",
-        "bytes": 1115808,
+        "bytes": 1115597,
         "pages": 2
       },
       "sandbox": {
@@ -1139,9 +1153,19 @@
             "detail": "every element came back to its source: 24 block, 14 frame, 64 line, 2 text"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: ja, es, en"
           },
           {
             "check": "sandbox",

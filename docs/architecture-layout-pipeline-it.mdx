@@ -26,7 +26,7 @@ Alcune decisioni non si possono prendere dentro un solo percorso, perché dipend
 ### Fase 1: strutturazione del contenuto
 
 - **Ingresso:** il `PostextContent` grezzo
-- **Azione:** analizza il markdown in blocchi di contenuto, risolve i riferimenti alle risorse in `resources[]` per ID, toglie dal flusso le definizioni delle note (`[^id]:`) e numera i loro richiami in ordine di citazione, numera i titoli e pianifica gli elementi flottanti: quali risorse flottano, e dopo quale blocco (`notes[]` non viene letto)
+- **Azione:** analizza il markdown in blocchi di contenuto, risolve i riferimenti alle risorse in `resources[]` per ID, toglie dal flusso le definizioni delle note (`[^id]:`) e numera i loro richiami in ordine di citazione, dà una nota ai link esterni quando `links.print` è `'notes'` (o il loro indirizzo tra parentesi con `'inline'`), numera i titoli e pianifica gli elementi flottanti: quali risorse flottano, e dopo quale blocco (`notes[]` non viene letto)
 - **Uscita:** un elenco piatto di blocchi di contenuto (tipizzati e con il loro contenuto, ma senza assegnazione a pagine o colonne) e il piano degli elementi flottanti
 - **Quando:** all’inizio di ogni passata di posizionamento. Dopo la prima passata l’analisi si legge dalla sua memoizzazione; il resto si ricalcola
 

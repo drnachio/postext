@@ -1,0 +1,62 @@
+---
+title: "Surlignages par couleur dans un livre de lectures"
+summary: "Un livre de lectures d’histoire dont les mots clés portent trois couleurs (vert pour les termes, ambre pour les dates, bleu pour les noms) tirées de markStyles."
+plain: "Une lecture scolaire sur l’histoire de l’imprimerie. Les termes clés sont surlignés en vert, les dates en ambre, les personnes et les lieux en bleu, et une légende en première page dit ce que veut dire chaque couleur."
+description: "Un livre de lectures d’histoire composé avec Postext et trois styles de surlignage : termes en vert, dates en ambre, noms en bleu, et une légende."
+question: "Comment surligner un texte d’étude avec des couleurs qui ont chacune un sens : termes, dates et noms ?"
+aliases: ["surlignage", "surligneur", "stabilo", "code couleur", "légende des couleurs", "mots clés", "texte d’étude", "livre de lectures", "manuel d’histoire", "glossaire", "marque", "imprimerie", "Gutenberg"]
+pageNotes: { "1": "La page d’ouverture : en haut, une peinture d’un atelier d’imprimerie vers 1460 ; dessous, le surtitre, le titre et un chapeau en italique ; puis un encadré teinté sous un filet rouge qui explique les trois couleurs avec un échantillon vert, un ambre et un bleu, et les premières lignes de la lecture.", "2": "Une page paire de la lecture : des dates comme 1455 et 1462 sur des bandes ambre, des noms comme Johann Fust, Subiaco ou William Caxton sur des bandes bleu pâle et des termes comme movable type ou colophon sur des bandes vertes, dans un texte justifié.", "4": "La dernière page : le glossaire, chaque entrée ouverte par son terme en gras sur une bande verte, les lignes suivantes en retrait, puis le colophon en petits caractères gris." }
+---
+
+## Ce que vous allez composer
+
+La lecture 2 d’une unité d’un livre scolaire d’histoire, *Readings in Early Modern History* : quatre pages sur la façon dont l’imprimerie a gagné l’Europe depuis Mayence entre 1450 et 1550, sur une page de 170 × 240 mm. Les éditeurs ont marqué le texte comme le ferait un bon élève, avec un code qui reste le même dans tout le livre : les termes clés sur une bande verte, les dates sur de l’ambre, les personnes et les lieux sur du bleu pâle. Une légende sous le titre explique le code avec les trois couleurs elles-mêmes, et le glossaire de la dernière page ouvre chaque entrée sur son terme vert. Les marques sont des bandes sous du texte ordinaire : les lignes se coupent, se divisent et se justifient comme si elles n’étaient pas là.
+
+## Préparation
+
+### 1 · Un style par sorte de mot
+
+Le code est [la réponse courte](#la-réponse-courte) plus haut. `markStyles` déclare trois styles nommés, et le texte en choisit un pour chaque marque : `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colophon]{style="term"}` ([surlignages](/fr/docs/document-format-inline#surlignages)). Chaque style dit ce qu’il signifie (`name` est ce que voit la personne qui édite) : le Markdown garde la raison pour laquelle un mot est marqué, pas la couleur qu’il porte. Changez la couleur d’un style, et toutes les dates du livre changent avec elle. Les extrémités sont droites, comme par défaut depuis postext 1.52 ([styles de surlignage](/fr/docs/configuration-styles#styles-de-surlignage)) : un surligneur laisse des bouts droits, et une bande arrondie se lit comme une pastille.
+
+### 2 · Trois teintes de la palette
+
+<Excerpt region="palette" />
+
+Les trois bandes sont des entrées de la palette, comme l’encre et l’accent : qui ouvre le livre dans le Sandbox peut changer le code depuis une seule nuance. Elles sont pâles, d’une clarté proche du fond de l’encadré, et le texte posé dessus garde un contraste de 12,6:1 ou plus ; les trois restent distinctes quand elles se suivent sur une ligne, comme à « In 1517 Martin Luther » en page 3. Une marque ne prend pas de place : `paddingX` entre de 0,12 em dans l’espace à côté de la phrase et `paddingBottom` descend la bande sous les jambages, les deux peints dans un espace qui existait déjà.
+
+### 3 · L’ouverture : une peinture au-dessus du titre
+
+<Excerpt region="opener" />
+
+Le titre de premier niveau imprime un design. La peinture est ancrée à la page : elle déborde à fond perdu en haut et des deux côtés, 170 sur 96 mm, avec `fit: 'cover'`. Le surtitre et le chapeau viennent d’attributs de la ligne du titre ([attributs de titre](/fr/docs/document-format#attributs-de-titre)), et la légende suit sous la forme d’un `:::callout` ordinaire dont les éléments de liste commencent par les trois marques. `minHeight` fixe la profondeur : la légende commence sur la même ligne quelle que soit la longueur du titre.
+
+### 4 · Titres courants selon la parité
+
+<Excerpt region="running-heads" />
+
+La page paire porte le titre de la collection et la page impaire celui de la lecture, filtrés par `parity` et tenus hors de l’ouverture par `pages: 'body'` ([éléments de texte](/fr/docs/configuration-headers-footers#éléments-de-texte)). L’ouverture porte son folio en pied de page.
+
+## Variantes
+
+### Arrondir les bouts des bandes
+
+Un rayon d’un cinquième du corps donne les bouts adoucis d’un feutre.
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Donner à chaque ligne sa propre bande
+
+Avec `decorationBreak: 'clone'`, une marque qui passe à la ligne reçoit la marge aux deux bouts de chaque morceau, comme en page 3, où « pamphlets » se coupe après « pam- ».
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## Erreurs fréquentes
+
+- La couleur seule ne survit pas à une photocopie en noir et blanc, qui est la façon dont beaucoup de lectures arrivent en classe. Le glossaire met en plus les termes en gras ; si vos lecteurs photocopient les pages, donnez à l’une des trois sortes un second signe qui lui soit propre.
+- Un identifiant de style que `markStyles` ne déclare pas prend le premier style, sans erreur sur la page (le Sandbox le signale). Gardez des identifiants courts et vérifiez leur orthographe dans le texte.

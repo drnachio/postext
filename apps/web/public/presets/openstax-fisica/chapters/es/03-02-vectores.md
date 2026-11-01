@@ -85,7 +85,7 @@ $$
 La suma vectorial de dos (o más) vectores se denomina **vector resultante** o, para abreviar, la *resultante*. Cuando se conocen los vectores del lado derecho de la aquí, podemos encontrar la resultante ${\vec{D}}_{AD}$ de la siguiente forma:
 
 $$
-{\vec{D}}_{AD}={\vec{D}}_{AC}+{\vec{D}}_{CD}=0{,}75{\vec{D}}_{AB}-0{,}2\,{\vec{D}}_{AB}=(0{,}75-0{,}2){\vec{D}}_{AB}=0{,}55{\vec{D}}_{AB}.
+\begin{aligned}{\vec{D}}_{AD} &= {\vec{D}}_{AC}+{\vec{D}}_{CD}= 0{,}75{\vec{D}}_{AB}-0{,}2\,{\vec{D}}_{AB}= (0{,}75-0{,}2){\vec{D}}_{AB} \\ &= 0{,}55{\vec{D}}_{AB}.\end{aligned}
 $$
 
 Cuando su amigo llega finalmente al estanque en *B*, su vector de desplazamiento ${\vec{D}}_{AB}$ desde el punto *A* es la suma vectorial de su vector de desplazamiento ${\vec{D}}_{AD}$ del punto *A* al punto *D* y su vector de desplazamiento ${\vec{D}}_{DB}$ desde el punto *D* hasta el agujero de pesca: ${\vec{D}}_{AB}={\vec{D}}_{AD}+{\vec{D}}_{DB}$ (vea la :ref{id="es-2-cnx-uphysics-02-01-fishtrip"}(c)). Esto significa que su vector de desplazamiento ${\vec{D}}_{DB}$ es la **diferencia de dos vectores**:
@@ -97,7 +97,7 @@ $$
 Observe que una diferencia de dos vectores no es más que la suma vectorial de dos vectores porque el segundo término de la aquí es el vector $\text{−}{\vec{D}}_{AD}$ (que es antiparalelo a ${\vec{D}}_{AD})$. Cuando sustituimos la aquí en la aquí, obtenemos el segundo vector de desplazamiento:
 
 $$
-{\vec{D}}_{DB}={\vec{D}}_{AB}-{\vec{D}}_{AD}={\vec{D}}_{AB}-0{,}55{\vec{D}}_{AB}=(1{,}0-0{,}55){\vec{D}}_{AB}=0{,}45{\vec{D}}_{AB}.
+\begin{aligned}{\vec{D}}_{DB} &= {\vec{D}}_{AB}-{\vec{D}}_{AD}= {\vec{D}}_{AB}-0{,}55{\vec{D}}_{AB}= (1{,}0-0{,}55){\vec{D}}_{AB} \\ &= 0{,}45{\vec{D}}_{AB}.\end{aligned}
 $$
 
 Este resultado significa que su amigo caminó ${D}_{DB}=0{,}45{D}_{AB}=0{,}45(6{,}0\,\text{km})=2{,}7\,\text{km}$ desde el punto donde encuentra su caja de anzuelos hasta el agujero de pesca.
@@ -152,7 +152,7 @@ El desplazamiento total $\vec{D}$ es la resultante de todos sus vectores de desp
 **Solución.** La resultante de todos los vectores de desplazamiento es
 
 $$
-\begin{array}{ll} \vec{D} & ={\vec{D}}_{1}+{\vec{D}}_{2}+{\vec{D}}_{3}+{\vec{D}}_{4}+{\vec{D}}_{5} \\ & =(15\,\text{cm})(+\hat{u})+(56\,\text{cm})(\text{−}\hat{u})+(3\,\text{cm})(+\hat{u})+(25\,\text{cm})(+\hat{u})+(19\,\text{cm})(\text{−}\hat{u}) \\ & =(15-56+3+25-19)\text{cm}\hat{u} \\ & =−32\,\text{cm}\hat{u}. \end{array}
+\begin{array}{ll} \vec{D} &= {\vec{D}}_{1}+{\vec{D}}_{2}+{\vec{D}}_{3}+{\vec{D}}_{4}+{\vec{D}}_{5} \\  &= (15\,\text{cm})(+\hat{u})+ (56\,\text{cm})(\text{−}\hat{u})+ (3\,\text{cm})(+\hat{u}) \\ &\quad + (25\,\text{cm})(+\hat{u})+ (19\,\text{cm})(\text{−}\hat{u}) \\  &= (15-56+3+25-19)\text{cm}\hat{u} \\  &= −32\,\text{cm}\hat{u}. \end{array}
 $$
 
 En este cálculo, utilizamos la ley distributiva dada por la aquí. El resultado es que el vector de desplazamiento total apunta lejos de la marca de 100 cm (lugar de aterrizaje inicial) hacia el extremo de la regla para medir que toca la pared. El extremo que toca la pared está marcado 0 cm, por lo que la posición final de la mariquita está en la marca (100 - 32)cm = 68 cm.
@@ -384,13 +384,13 @@ Usted mueve el puntero del ratón en la pantalla del monitor desde su posición 
 **Solución.** La magnitud del vector $\vec{D}$ es
 
 $$
-D=\sqrt{{D}_{x}^{2}+{D}_{y}^{2}}=\sqrt{{(−4{,}0\,\text{cm})}^{2}+{(2{,}9\,\text{cm})}^{2}}=\sqrt{{(4{,}0)}^{2}+{(2{,}9)}^{2}}\,\text{cm}=4{,}9\,\text{cm}.
+\begin{aligned}D &= \sqrt{{D}_{x}^{2}+{D}_{y}^{2}}= \sqrt{{(−4{,}0\,\text{cm})}^{2}+{(2{,}9\,\text{cm})}^{2}} \\ &= \sqrt{{(4{,}0)}^{2}+{(2{,}9)}^{2}}\,\text{cm}= 4{,}9\,\text{cm}.\end{aligned}
 $$
 
 El ángulo direccional es
 
 $$
-\text{tan}\,\theta =\frac{{D}_{y}}{{D}_{x}}=\frac{+2{,}9\,\text{cm}}{−4{,}0\,\text{cm}}=−0{,}725\,\Rightarrow \,\theta ={\text{tan}}^{−1}(−0{,}725)=−35{,}9\text{°}.
+\begin{aligned}\text{tan}\,\theta  &= \frac{{D}_{y}}{{D}_{x}}= \frac{+2{,}9\,\text{cm}}{−4{,}0\,\text{cm}}= −0{,}725\, \\ &\Rightarrow  \,\theta = {\text{tan}}^{−1}(−0{,}725)= −35{,}9\text{°}.\end{aligned}
 $$
 
 Vector $\vec{D}$ se encuentra en el segundo cuadrante, por lo que su ángulo direccional es
@@ -486,13 +486,13 @@ Un buscador de tesoros encuentra una moneda de plata en un lugar situado a 20,0 
 **Solución.** La coordenada angular de la moneda de plata es ${\varphi }_{S}=\pi \text{/}9$, mientras que la coordenada angular de la moneda de oro es ${\varphi }_{G}=\pi -\pi \text{/}9=8\pi \text{/}9$. Por lo tanto, las coordenadas polares de la moneda de plata son $({r}_{S},{\varphi }_{S})=(20{,}0\,\text{m},\pi \text{/}9)$ y las de la moneda de oro son $({r}_{G},{\varphi }_{G})=(10{,}0\,\text{m},8\pi \text{/}9)$. Sustituimos estas coordenadas en la aquí para obtener coordenadas rectangulares. Para la moneda de oro, las coordenadas son
 
 $$
-\{\begin{array}{l} {x}_{G}={r}_{G}\,\text{cos}\,{\varphi }_{G}=(10{,}0\,\text{m})\,\text{cos}\,8\pi \text{/}9=−9{,}4\,\text{m} \\ {y}_{G}={r}_{G}\,\text{sen}\,{\varphi }_{G}=(10{,}0\,\text{m})\,\text{sen}\,8\pi \text{/}9=3{,}4\,\text{m} \end{array}\,\Rightarrow \,({x}_{G},{y}_{G})=(−9{,}4\,\text{m},3{,}4\,\text{m}).
+\begin{gathered}\{\begin{array}{ll} {x}_{G} &= {r}_{G}\,\text{cos}\,{\varphi }_{G}= (10{,}0\,\text{m})\,\text{cos}\,8\pi \text{/}9= −9{,}4\,\text{m} \\ {y}_{G} &= {r}_{G}\,\text{sen}\,{\varphi }_{G}= (10{,}0\,\text{m})\,\text{sen}\,8\pi \text{/}9= 3{,}4\,\text{m} \end{array} \\ \,\Rightarrow \,({x}_{G},{y}_{G})=(−9{,}4\,\text{m},3{,}4\,\text{m}).\end{gathered}
 $$
 
 Para la moneda de plata, las coordenadas son
 
 $$
-\{\begin{array}{l} {x}_{S}={r}_{S}\,\text{cos}\,{\varphi }_{S}=(20{,}0\,\text{m})\,\text{cos}\,\pi \text{/}9=18{,}9\,\text{m} \\ {y}_{S}={r}_{S}\,\text{sen}\,{\varphi }_{S}=(20{,}0\,\text{m})\,\text{sen}\,\pi \text{/}9=6{,}8\,\text{m} \end{array}\,\Rightarrow \,({x}_{S},{y}_{S})=(18{,}9\,\text{m},6{,}8\,\text{m}).
+\begin{gathered}\{\begin{array}{ll} {x}_{S} &= {r}_{S}\,\text{cos}\,{\varphi }_{S}= (20{,}0\,\text{m})\,\text{cos}\,\pi \text{/}9= 18{,}9\,\text{m} \\ {y}_{S} &= {r}_{S}\,\text{sen}\,{\varphi }_{S}= (20{,}0\,\text{m})\,\text{sen}\,\pi \text{/}9= 6{,}8\,\text{m} \end{array} \\ \,\Rightarrow \,({x}_{S},{y}_{S})=(18{,}9\,\text{m},6{,}8\,\text{m}).\end{gathered}
 $$
 :::
 
@@ -540,13 +540,13 @@ $$
 Sustituimos estos componentes en la aquí para encontrar el vector de desplazamiento:
 
 $$
-\vec{D}={D}_{x}\hat{i}+{D}_{y}\hat{j}+{D}_{z}\hat{k}=900{,}0\,\text{m}\hat{i}+1.900,0\,\text{m}\hat{j}+150{,}0\,\text{m}\hat{k}=(0{,}90\hat{i}+1{,}90\hat{j}+0{,}15\hat{k})\,\text{km}.
+\begin{aligned}\vec{D} &= {D}_{x}\hat{i}+{D}_{y}\hat{j}+{D}_{z}\hat{k}= 900{,}0\,\text{m}\hat{i}+1.900,0\,\text{m}\hat{j}+150{,}0\,\text{m}\hat{k} \\ &= (0{,}90\hat{i}+1{,}90\hat{j}+0{,}15\hat{k})\,\text{km}.\end{aligned}
 $$
 
 Sustituimos en la aquí para encontrar la magnitud del desplazamiento:
 
 $$
-D=\sqrt{{D}_{x}^{2}+{D}_{y}^{2}+{D}_{z}^{2}}=\sqrt{{(0{,}90\,\text{km})}^{2}+{(1{,}90\,\text{km})}^{2}+{(0{,}15\,\text{km})}^{2}}=2{,}11\,\text{km}.
+\begin{aligned}D &= \sqrt{{D}_{x}^{2}+{D}_{y}^{2}+{D}_{z}^{2}} \\ &= \sqrt{{(0{,}90\,\text{km})}^{2}+{(1{,}90\,\text{km})}^{2}+{(0{,}15\,\text{km})}^{2}}= 2{,}11\,\text{km}.\end{aligned}
 $$
 :::
 
@@ -632,7 +632,7 @@ La generalización del número cero al álgebra vectorial se denomina **vector n
 Dos vectores $\vec{A}$ y $\vec{B}$ son **vectores iguales** si y solo si su diferencia es el vector nulo:
 
 $$
-\vec{0}=\vec{A}-\vec{B}=({A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k})-({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k})=({A}_{x}-{B}_{x})\hat{i}+({A}_{y}-{B}_{y})\hat{j}+({A}_{z}-{B}_{z})\hat{k}.
+\begin{aligned}\vec{0} &= \vec{A}-\vec{B}= ({A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k})-({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\ &= ({A}_{x}-{B}_{x})\hat{i}+({A}_{y}-{B}_{y})\hat{j}+({A}_{z}-{B}_{z})\hat{k}.\end{aligned}
 $$
 
 Esta ecuación vectorial significa que debemos tener simultáneamente ${A}_{x}-{B}_{x}=0$, ${A}_{y}-{B}_{y}=0$ y ${A}_{z}-{B}_{z}=0$. De allí que podemos escribir $\vec{A}=\vec{B}$ si y solo si los componentes correspondientes de los vectores $\vec{A}$ y $\vec{B}$ son iguales:
@@ -648,7 +648,7 @@ Dos vectores son iguales cuando sus componentes escalares correspondientes son i
 Resolver los vectores en sus componentes escalares (es decir, encontrar sus componentes escalares) y expresarlos analíticamente en forma de componentes vectoriales (dados por la aquí) nos permite utilizar el álgebra vectorial para encontrar sumas o diferencias de muchos vectores *analíticamente* (es decir, sin utilizar métodos gráficos). Por ejemplo, para encontrar la resultante de dos vectores $\vec{A}$ y $\vec{B}$, simplemente los sumamos componente por componente, de la siguiente manera:
 
 $$
-\vec{R}=\vec{A}+\vec{B}=({A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k})+({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k})=({A}_{x}+{B}_{x})\hat{i}+({A}_{y}+{B}_{y})\hat{j}+({A}_{z}+{B}_{z})\hat{k}.
+\begin{aligned}\vec{R} &= \vec{A}+\vec{B}= ({A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k})+({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\ &= ({A}_{x}+{B}_{x})\hat{i}+({A}_{y}+{B}_{y})\hat{j}+({A}_{z}+{B}_{z})\hat{k}.\end{aligned}
 $$
 
 De este modo, utilizando la aquí, los componentes escalares del vector resultante $\vec{R}={R}_{x}\hat{i}+{R}_{y}\hat{j}+{R}_{z}\hat{k}$ son las sumas de los correspondientes componentes escalares de los vectores $\vec{A}$ y $\vec{B}$:
@@ -660,7 +660,7 @@ $$
 Se pueden utilizar métodos analíticos para encontrar los componentes de una resultante de muchos vectores. Por ejemplo, si tenemos que sumar $N$ vectores ${\vec{F}}_{1},{\vec{F}}_{2},{\vec{F}}_{3},\ldots ,{\vec{F}}_{N}$, donde cada vector es ${\vec{F}}_{k}={F}_{kx}\hat{i}+{F}_{ky}\hat{j}+{F}_{kz}\hat{k}$, el vector resultante ${\vec{F}}_{R}$ es
 
 $$
-\begin{array}{ll} {\vec{F}}_{R}={\vec{F}}_{1}+{\vec{F}}_{2}+{\vec{F}}_{3}+\text{…}+{\vec{F}}_{N} & ={\sum }_{k=1}^{N}{\vec{F}}_{k}={\sum }_{k=1}^{N}({F}_{kx}\hat{i}+{F}_{ky}\hat{j}+{F}_{kz}\hat{k}) \\ & =({\sum }_{k=1}^{N}{F}_{kx})\hat{i}+({\sum }_{k=1}^{N}{F}_{ky})\hat{j}+({\sum }_{k=1}^{N}{F}_{kz})\hat{k}. \end{array}
+\begin{array}{ll} {\vec{F}}_{R}={\vec{F}}_{1}+{\vec{F}}_{2}+{\vec{F}}_{3}+\text{…}+{\vec{F}}_{N} &= {\sum }_{k=1}^{N}{\vec{F}}_{k} \\ &= {\sum }_{k=1}^{N}({F}_{kx}\hat{i}+{F}_{ky}\hat{j}+{F}_{kz}\hat{k}) \\  &= ({\sum }_{k=1}^{N}{F}_{kx})\hat{i} \\ &\quad + ({\sum }_{k=1}^{N}{F}_{ky})\hat{j} \\ &\quad + ({\sum }_{k=1}^{N}{F}_{kz})\hat{k}. \end{array}
 $$
 
 Por lo tanto, los componentes escalares del vector resultante son
@@ -693,7 +693,7 @@ $$
 Para (a) podemos sustituir directamente en la aquí para encontrar los componentes escalares de la resultante:
 
 $$
-\{\begin{array}{l} {R}_{x}={A}_{x}+{B}_{x}+{C}_{x}=8{,}19\,\text{cm}-2{,}39\,\text{cm}+6{,}93\,\text{cm}=12{,}73\,\text{cm} \\ {R}_{y}={A}_{y}+{B}_{y}+{C}_{y}=5{,}73\,\text{cm}-6{,}58\,\text{cm}+4{,}00\,\text{cm}=3{,}15\,\text{cm} \end{array}.
+\{\begin{array}{ll} {R}_{x} &= {A}_{x}+{B}_{x}+{C}_{x}= 8{,}19\,\text{cm}-2{,}39\,\text{cm}+6{,}93\,\text{cm} \\ &= 12{,}73\,\text{cm} \\ {R}_{y} &= {A}_{y}+{B}_{y}+{C}_{y}= 5{,}73\,\text{cm}-6{,}58\,\text{cm}+4{,}00\,\text{cm} \\ &= 3{,}15\,\text{cm} \end{array} .
 $$
 
 Por lo tanto, el vector resultante es $\vec{R}={R}_{x}\hat{i}+{R}_{y}\hat{j}=(12{,}7\hat{i}+3{,}1\hat{j})\text{cm}$.
@@ -701,7 +701,7 @@ Por lo tanto, el vector resultante es $\vec{R}={R}_{x}\hat{i}+{R}_{y}\hat{j}=(12
 Para (b), podemos escribir la diferencia de vectores como
 
 $$
-\vec{D}=\vec{A}-\vec{B}=({A}_{x}\hat{i}+{A}_{y}\hat{j})-({B}_{x}\hat{i}+{B}_{y}\hat{j})=({A}_{x}-{B}_{x})\hat{i}+({A}_{y}-{B}_{y})\hat{j}.
+\begin{aligned}\vec{D} &= \vec{A}-\vec{B}= ({A}_{x}\hat{i}+{A}_{y}\hat{j})-({B}_{x}\hat{i}+{B}_{y}\hat{j}) \\ &= ({A}_{x}-{B}_{x})\hat{i}+({A}_{y}-{B}_{y})\hat{j}.\end{aligned}
 $$
 
 Luego, los componentes escalares de la diferencia vectorial son
@@ -715,13 +715,13 @@ Por lo tanto, el vector de diferencia es $\vec{D}={D}_{x}\hat{i}+{D}_{y}\hat{j}=
 Para (c), podemos escribir el vector $\vec{S}$ en la siguiente forma explícita:
 
 $$
-\begin{array}{ll} \vec{S} & =\vec{A}-3\vec{B}+\vec{C}=({A}_{x}\hat{i}+{A}_{y}\hat{j})-3({B}_{x}\hat{i}+{B}_{y}\hat{j})+({C}_{x}\hat{i}+{C}_{y}\hat{j}) \\ & =({A}_{x}-3{B}_{x}+{C}_{x})\hat{i}+({A}_{y}-3{B}_{y}+{C}_{y})\hat{j}. \end{array}
+\begin{array}{ll} \vec{S} &= \vec{A}-3\vec{B}+\vec{C} \\ &= ({A}_{x}\hat{i}+{A}_{y}\hat{j})-3({B}_{x}\hat{i}+{B}_{y}\hat{j})+({C}_{x}\hat{i}+{C}_{y}\hat{j}) \\  &= ({A}_{x}-3{B}_{x}+{C}_{x})\hat{i}+({A}_{y}-3{B}_{y}+{C}_{y})\hat{j}. \end{array}
 $$
 
 Luego, los componentes escalares de $\vec{S}$ son
 
 $$
-\{\begin{array}{l} {S}_{x}={A}_{x}-3{B}_{x}+{C}_{x}=8{,}19\,\text{cm}-3(−2{,}39\,\text{cm})+6{,}93\,\text{cm}=22{,}29\,\text{cm} \\ {S}_{y}={A}_{y}-3{B}_{y}+{C}_{y}=5{,}73\,\text{cm}-3(−6{,}58\,\text{cm})+4{,}00\,\text{cm}=29{,}47\,\text{cm} \end{array}.
+\{\begin{array}{ll} {S}_{x} &= {A}_{x}-3{B}_{x}+{C}_{x}= 8{,}19\,\text{cm}-3(−2{,}39\,\text{cm})+6{,}93\,\text{cm} \\ &= 22{,}29\,\text{cm} \\ {S}_{y} &= {A}_{y}-3{B}_{y}+{C}_{y}= 5{,}73\,\text{cm}-3(−6{,}58\,\text{cm})+4{,}00\,\text{cm} \\ &= 29{,}47\,\text{cm} \end{array} .
 $$
 
 El vector es $\vec{S}={S}_{x}\hat{i}+{S}_{y}\hat{j}=(22{,}3\hat{i}+29{,}5\hat{j})\text{cm}$.
@@ -749,7 +749,7 @@ $$
 Ahora calculamos los componentes escalares del vector resultante $\vec{R}=\vec{A}+\vec{B}+\vec{C}$:
 
 $$
-\{\begin{array}{l} {R}_{x}={A}_{x}+{B}_{x}+{C}_{x}=+91{,}8\,\text{N}+173{,}2\,\text{N}-114{,}7\,\text{N}=+150{,}3\,\text{N} \\ {R}_{y}={A}_{y}+{B}_{y}+{C}_{y}=−131{,}1\,\text{N}+100{,}0\,\text{N}+80{,}3\,\text{N}=+49{,}2\,\text{N} \end{array}.
+\{\begin{array}{ll} {R}_{x} &= {A}_{x}+{B}_{x}+{C}_{x}= +91{,}8\,\text{N}+173{,}2\,\text{N}-114{,}7\,\text{N} \\ &= +150{,}3\,\text{N} \\ {R}_{y} &= {A}_{y}+{B}_{y}+{C}_{y}= −131{,}1\,\text{N}+100{,}0\,\text{N}+80{,}3\,\text{N} \\ &= +49{,}2\,\text{N} \end{array} .
 $$
 
 El vector antiparalelo a la resultante $\vec{R}$ es
@@ -785,13 +785,13 @@ Halle la magnitud del vector $\vec{C}$ que satisface la ecuación $2\vec{A}-6\ve
 **Estrategia.** Primero resolvemos la ecuación dada para el vector desconocido $\vec{C}$. Luego sustituimos $\vec{A}$ y $\vec{B}$; agrupamos los términos a lo largo de cada una de las tres direcciones $\hat{i}$, $\hat{j}$ y $\hat{k}$; e identificamos los componentes escalares ${C}_{x}$, ${C}_{y}$ y ${C}_{z}$. Finalmente, sustituimos en la aquí para encontrar la magnitud *C*.
 
 $$
-\begin{array}{lll} 2\vec{A}-6\vec{B}+3\vec{C} & = & 2\hat{j} \\ 3\vec{C} & = & 2\hat{j}-2\vec{A}+6\vec{B} \\ \vec{C} & = & \frac{2}{3}\hat{j}-\frac{2}{3}\vec{A}+2\vec{B} \\ & = & \frac{2}{3}\hat{j}-\frac{2}{3}(\hat{i}-2\hat{k})+2(\text{−}\hat{j}+\frac{\hat{k}}{2})=\frac{2}{3}\hat{j}-\frac{2}{3}\hat{i}+\frac{4}{3}\hat{k}-2\hat{j}+\hat{k} \\ & = & -\frac{2}{3}\hat{i}+(\frac{2}{3}-2)\hat{j}+(\frac{4}{3}+1)\hat{k} \\ & = & -\frac{2}{3}\hat{i}-\frac{4}{3}\hat{j}+\frac{7}{3}\hat{k}. \end{array}
+\begin{array}{lll} 2\vec{A}-6\vec{B}+3\vec{C} & = & 2\hat{j} \\ 3\vec{C} & = & 2\hat{j}-2\vec{A}+6\vec{B} \\ \vec{C} & = & \frac{2}{3}\hat{j}-\frac{2}{3}\vec{A}+2\vec{B} \\  & = & \frac{2}{3}\hat{j}-\frac{2}{3}(\hat{i}-2\hat{k})+2(\text{−}\hat{j}+\frac{\hat{k}}{2}) \\ & = & \frac{2}{3}\hat{j}-\frac{2}{3}\hat{i}+\frac{4}{3}\hat{k}-2\hat{j}+\hat{k} \\  & = & -\frac{2}{3}\hat{i}+(\frac{2}{3}-2)\hat{j}+(\frac{4}{3}+1)\hat{k} \\  & = & -\frac{2}{3}\hat{i}-\frac{4}{3}\hat{j}+\frac{7}{3}\hat{k}. \end{array}
 $$
 
 Los componentes son ${C}_{x}=\text{−}2\,\text{/}3$, ${C}_{y}=−4\text{/}3$ y ${C}_{z}=7\,\text{/}3$, y al sustituir en la aquí obtenemos
 
 $$
-C=\sqrt{{C}_{x}^{2}+{C}_{y}^{2}+{C}_{z}^{2}}=\sqrt{{(−2\text{/}3)}^{2}+{(\text{−}4\,\text{/}3)}^{2}+{(7\,\text{/}3)}^{2}}=\sqrt{23\text{/}3}.
+\begin{aligned}C &= \sqrt{{C}_{x}^{2}+{C}_{y}^{2}+{C}_{z}^{2}}= \sqrt{{(−2\text{/}3)}^{2}+{(\text{−}4\,\text{/}3)}^{2}+{(7\,\text{/}3)}^{2}} \\ &= \sqrt{23\text{/}3}.\end{aligned}
 $$
 :::
 
@@ -831,7 +831,7 @@ $$
 Por lo tanto, su vector de desplazamiento ${\vec{D}}_{TB}$ a lo largo de las escaleras es
 
 $$
-\begin{array}{ll} {\vec{D}}_{AT} & ={\vec{D}}_{AB}-{\vec{D}}_{TB}=(−90{,}0\hat{i}+30{,}0\hat{j})\text{m}-(−50{,}0\,\text{m})\hat{i}=[(−90{,}0+50{,}0)\hat{i}+30{,}0\hat{j})]\text{m} \\ & =(−40{,}0\hat{i}+30{,}0\hat{j})\text{m}. \end{array}
+\begin{array}{ll} {\vec{D}}_{AT} &= {\vec{D}}_{AB}-{\vec{D}}_{TB}= (−90{,}0\hat{i}+30{,}0\hat{j})\text{m}-(−50{,}0\,\text{m})\hat{i} \\ &= [(−90{,}0+50{,}0)\hat{i}+30{,}0\hat{j})]\text{m} \\  &= (−40{,}0\hat{i}+30{,}0\hat{j})\text{m}. \end{array}
 $$
 
 Sus componentes escalares son ${D}_{ATx}=−40{,}0\,\text{m}$ y ${D}_{ATy}=30{,}0\,\text{m}$. Por lo tanto, debemos tener
@@ -867,7 +867,7 @@ Si el vector de velocidad del convoy militar en el aquí es $\vec{v}=(4{,}000\ha
 **Solución.** La magnitud del vector $\vec{v}$ es
 
 $$
-v=\sqrt{{v}_{x}^{2}+{v}_{y}^{2}+{v}_{z}^{2}}=\sqrt{{4{,}000}^{2}+{3{,}000}^{2}+{0{,}100}^{2}}\text{km}\text{/}\text{h}=5{,}001\text{km}\text{/}\text{h}.
+\begin{aligned}v &= \sqrt{{v}_{x}^{2}+{v}_{y}^{2}+{v}_{z}^{2}}= \sqrt{{4{,}000}^{2}+{3{,}000}^{2}+{0{,}100}^{2}}\text{km}\text{/}\text{h} \\ &= 5{,}001\text{km}\text{/}\text{h}.\end{aligned}
 $$
 
 Para obtener el vector unitario $\hat{v}$, dividimos $\vec{v}$ entre su magnitud:
@@ -1041,13 +1041,13 @@ $$
 Sustituyendo los componentes escalares en la aquí produce el producto escalar
 
 $$
-\begin{array}{ll} {\vec{F}}_{1}\cdot {\vec{F}}_{2} & ={F}_{1x}{F}_{2x}+{F}_{1y}{F}_{2y}+{F}_{1z}{F}_{2z} \\ & =(10{,}0\,\text{N})(−15{,}0\,\text{N})+(−20{,}4\,\text{N})(0{,}0\,\text{N})+(2{,}0\,\text{N})(−6{,}2\,\text{N}) \\ & =−162{,}4\,{\text{N}}^{2}. \end{array}
+\begin{array}{ll} {\vec{F}}_{1}\cdot {\vec{F}}_{2} &= {F}_{1x}{F}_{2x}+{F}_{1y}{F}_{2y}+{F}_{1z}{F}_{2z} \\  &= (10{,}0\,\text{N})(−15{,}0\,\text{N})+ (−20{,}4\,\text{N})(0{,}0\,\text{N}) \\ &\quad + (2{,}0\,\text{N})(−6{,}2\,\text{N}) \\  &= −162{,}4\,{\text{N}}^{2}. \end{array}
 $$
 
 Finalmente, sustituyendo todo en la aquí se obtiene el ángulo
 
 $$
-\text{cos}\,\varphi =\frac{{\vec{F}}_{1}\cdot {\vec{F}}_{2}}{{F}_{1}{F}_{2}}=\frac{−162{,}4\,{\text{N}}^{2}}{(22{,}8\,\text{N})(16{,}2\,\text{N})}=−0{,}439\Rightarrow \,\varphi ={\text{cos}}^{−1}(−0{,}439)=116{,}0\text{°}.
+\begin{aligned}\text{cos}\,\varphi  &= \frac{{\vec{F}}_{1}\cdot {\vec{F}}_{2}}{{F}_{1}{F}_{2}}= \frac{−162{,}4\,{\text{N}}^{2}}{(22{,}8\,\text{N})(16{,}2\,\text{N})}= −0{,}439 \\ &\Rightarrow  \,\varphi = {\text{cos}}^{−1}(−0{,}439)= 116{,}0\text{°}.\end{aligned}
 $$
 
 **Importancia.** Observe que, cuando los vectores se dan en términos de los vectores unitarios de los ejes, podemos encontrar el ángulo entre ellos sin conocer los detalles de las direcciones geográficas que representan los vectores unitarios. En este caso, por ejemplo, la dirección de la *x* + puede ser hacia el este y la dirección de la +*y* puede ser hacia el norte. Sin embargo, el ángulo entre las fuerzas en el problema es el mismo si la dirección de la *x* + está al oeste y la dirección de la +*y* está al sur.
@@ -1067,7 +1067,7 @@ Cuando la fuerza $\vec{F}$ hala de un objeto y cuando provoca su desplazamiento 
 **Solución.** El cálculo del trabajo es la aplicación directa del producto punto:
 
 $$
-\begin{array}{ll} {W}_{3} & ={\vec{F}}_{3}\cdot \vec{D}={F}_{3x}{D}_{x}+{F}_{3y}{D}_{y}+{F}_{3z}{D}_{z} \\ & =(5{,}0\,\text{N})(0{,}0\,\text{cm})+(12{,}5\,\text{N})(−7{,}9\,\text{cm})+(0{,}0\,\text{N})(-4{,}2\,\text{cm}) \\ & =-98{,}7\,\text{N}\cdot \text{cm}. \end{array}
+\begin{array}{ll} {W}_{3} &= {\vec{F}}_{3}\cdot \vec{D}= {F}_{3x}{D}_{x}+{F}_{3y}{D}_{y}+{F}_{3z}{D}_{z} \\  &= (5{,}0\,\text{N})(0{,}0\,\text{cm})+ (12{,}5\,\text{N})(−7{,}9\,\text{cm}) \\ &\quad + (0{,}0\,\text{N})(-4{,}2\,\text{cm}) \\  &= -98{,}7\,\text{N}\cdot \text{cm}. \end{array}
 $$
 
 **Importancia.** La unidad de trabajo del SI se denomina julio $(\text{J})$, donde 1 J = 1 $\text{N}\cdot \text{m}$. La unidad $\text{cm}\cdot \text{N}$ puede escribirse como ${10}^{−2}\text{m}\cdot \text{N}={10}^{−2}\text{J}$, por lo que la respuesta puede expresarse como ${W}_{3}=-0{,}9875\,\text{J}\approx −1{,}0\,\text{J}$.
@@ -1113,13 +1113,13 @@ Para aflojar una tuerca oxidada, se aplica una fuerza de 20,00 N al mango de la 
 **Solución.** Para la situación de (a), la regla del sacacorchos nos da la dirección de $\vec{R}\,\times \,\vec{F}$ en la dirección positiva del eje *z*. Físicamente, significa que el vector de torque $\vec{\tau }$ apunta fuera de la página, perpendicular al mango de la llave. Identificamos *F* = 20,00 N y *R* = 0,25 m, y calculamos la magnitud utilizando la aquí:
 
 $$
-\tau \,=|\vec{R}\,\times \,\vec{F}|=\,RF\,\text{sen}\,\varphi =(0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,40\text{°}=3{,}21\,\text{N}\cdot \text{m}.
+\begin{aligned}\tau \, &= |\vec{R}\,\times \,\vec{F}|= \,RF\,\text{sen}\,\varphi = (0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,40\text{°} \\ &= 3{,}21\,\text{N}\cdot \text{m}.\end{aligned}
 $$
 
 Para la situación en (b), la regla del sacacorchos da la dirección de $\vec{R}\,\times \,\vec{F}$ en la dirección negativa del eje *z*. Físicamente, significa que el vector $\vec{\tau }$ apunta a la página, perpendicular al mango de la llave. La magnitud de este torque es
 
 $$
-\tau \,=|\vec{R}\,\times \,\vec{F}|=\,RF\,\text{sen}\,\varphi =(0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,45\text{°}=3{,}53\,\text{N}\cdot \text{m}.
+\begin{aligned}\tau \, &= |\vec{R}\,\times \,\vec{F}|= \,RF\,\text{sen}\,\varphi = (0{,}25\,\text{m})(20{,}00\,\text{N})\,\text{sen}\,45\text{°} \\ &= 3{,}53\,\text{N}\cdot \text{m}.\end{aligned}
 $$
 
 El torque tiene el mayor valor cuando el $\text{sen}\,\varphi =1$, lo que se produce cuando $\varphi =90\text{°}$. Físicamente, significa que la llave inglesa es más eficaz, es decir, nos proporciona la mejor ventaja mecánica, cuando aplicamos la fuerza perpendicular al mango de la llave. Para la situación de este ejemplo, este valor óptimo de torque es ${\tau }_{\text{óptimo}}=RF=(0{,}25\,\text{m})(20{,}00\,\text{N})=5{,}00\,\text{N}\cdot \text{m}$.
@@ -1168,14 +1168,14 @@ Observe que en la aquí, los tres vectores unitarios $\hat{i}$, $\hat{j}$ y $\ha
 Supongamos que queremos encontrar el producto cruz $\vec{A}\,\times \,\vec{B}$ para los vectores $\vec{A}={A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k}$ y $\vec{B}={B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}$. Podemos utilizar la propiedad distributiva (aquí), la anticonmutatividad (aquí), y los resultados en la aquí y la aquí para vectores unitarios para realizar la siguiente operación de álgebra:
 
 $$
-\begin{array}{lll} \vec{A}\,\times \,\vec{B} & = & ({A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k})\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\ & = & {A}_{x}\hat{i}\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k})+{A}_{y}\hat{j}\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k})+{A}_{z}\hat{k}\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\ & = & \,{A}_{x}{B}_{x}\hat{i}\,\times \,\hat{i}+{A}_{x}{B}_{y}\hat{i}\,\times \,\hat{j}+{A}_{x}{B}_{z}\hat{i}\,\times \,\hat{k} \\ & & +{A}_{y}{B}_{x}\hat{j}\,\times \,\hat{i}+{A}_{y}{B}_{y}\hat{j}\,\times \,\hat{j}+{A}_{y}{B}_{z}\hat{j}\,\times \,\hat{k} \\ & & +{A}_{z}{B}_{x}\hat{k}\,\times \,\hat{i}+{A}_{z}{B}_{y}\hat{k}\,\times \,\hat{j}+{A}_{z}{B}_{z}\hat{k}\,\times \,\hat{k} \\ & = & \,{A}_{x}{B}_{x}(0)+{A}_{x}{B}_{y}(+\hat{k})+{A}_{x}{B}_{z}(\text{−}\hat{j}) \\ & & +{A}_{y}{B}_{x}(\text{−}\hat{k})+{A}_{y}{B}_{y}(0)+{A}_{y}{B}_{z}(+\hat{i}) \\ & & +{A}_{z}{B}_{x}(+\hat{j})+{A}_{z}{B}_{y}(\text{−}\hat{i})+{A}_{z}{B}_{z}(0). \end{array}
+\begin{array}{lll} \vec{A}\,\times \,\vec{B} & = & ({A}_{x}\hat{i}+{A}_{y}\hat{j}+{A}_{z}\hat{k})\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\  & = & {A}_{x}\hat{i}\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\ & & \quad + {A}_{y}\hat{j}\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\ & & \quad + {A}_{z}\hat{k}\,\times \,({B}_{x}\hat{i}+{B}_{y}\hat{j}+{B}_{z}\hat{k}) \\  & = & \,{A}_{x}{B}_{x}\hat{i}\,\times \,\hat{i}+{A}_{x}{B}_{y}\hat{i}\,\times \,\hat{j}+{A}_{x}{B}_{z}\hat{i}\,\times \,\hat{k} \\  & &  +{A}_{y}{B}_{x}\hat{j}\,\times \,\hat{i} + {A}_{y}{B}_{y}\hat{j}\,\times \,\hat{j} + {A}_{y}{B}_{z}\hat{j}\,\times \,\hat{k} \\  & &  +{A}_{z}{B}_{x}\hat{k}\,\times \,\hat{i} + {A}_{z}{B}_{y}\hat{k}\,\times \,\hat{j} + {A}_{z}{B}_{z}\hat{k}\,\times \,\hat{k} \\  & = & \,{A}_{x}{B}_{x}(0)+{A}_{x}{B}_{y}(+\hat{k})+{A}_{x}{B}_{z}(\text{−}\hat{j}) \\  & &  +{A}_{y}{B}_{x}(\text{−}\hat{k}) + {A}_{y}{B}_{y}(0) + {A}_{y}{B}_{z}(+\hat{i}) \\  & &  +{A}_{z}{B}_{x}(+\hat{j}) + {A}_{z}{B}_{y}(\text{−}\hat{i}) + {A}_{z}{B}_{z}(0). \end{array}
 $$
 
 Cuando se realicen operaciones algebraicas que impliquen el producto cruz, hay que tener mucho cuidado en mantener el orden correcto de la multiplicación, ya que el producto cruz es anticonmutativo. Los dos últimos pasos que nos quedan por hacer para completar nuestra tarea son, primero, agrupar los términos que contienen un vector unitario común y, segundo, factorizar. De esta manera obtenemos la siguiente expresión muy útil para el cálculo del producto cruz:
 
 :::callout{type="nota" title="Nota"}
 $$
-\vec{C}=\vec{A}\,\times \,\vec{B}=({A}_{y}{B}_{z}-{A}_{z}{B}_{y})\hat{i}+({A}_{z}{B}_{x}-{A}_{x}{B}_{z})\hat{j}+({A}_{x}{B}_{y}-{A}_{y}{B}_{x})\hat{k}.
+\begin{aligned}\vec{C} &= \vec{A}\,\times \,\vec{B} \\ &= ({A}_{y}{B}_{z}-{A}_{z}{B}_{y})\hat{i}+({A}_{z}{B}_{x}-{A}_{x}{B}_{z})\hat{j}+({A}_{x}{B}_{y}-{A}_{y}{B}_{x})\hat{k}.\end{aligned}
 $$
 :::
 
@@ -1199,7 +1199,7 @@ Una partícula que se mueve en el espacio con un vector de velocidad $\vec{u}=�
 (a) Los componentes del vector de campo magnético son ${B}_{x}=7{,}2$, ${B}_{y}=−1{,}0$ y ${B}_{z}=−2{,}4$. Sustituyéndolos en la aquí se obtienen los componentes escalares del vector $\vec{F}=\zeta \vec{u}\,\times \,\vec{B}$:
 
 $$
-\{\begin{array}{l} {F}_{x}=\zeta ({u}_{y}{B}_{z}-{u}_{z}{B}_{y})=\zeta [(−2{,}0)(−2{,}4)-(3{,}5)(−1{,}0)]=8{,}3\zeta \\ {F}_{y}=\zeta ({u}_{z}{B}_{x}-{u}_{x}{B}_{z})=\zeta [(3{,}5)(7{,}2)-(−5{,}0)(−2{,}4)]=13{,}2\zeta \\ {F}_{z}=\zeta ({u}_{x}{B}_{y}-{u}_{y}{B}_{x})=\zeta [(−5{,}0)(−1{,}0)-(−2{,}0)(7{,}2)]=19{,}4\zeta \end{array}.
+\{\begin{array}{ll} {F}_{x} &= \zeta ({u}_{y}{B}_{z}-{u}_{z}{B}_{y})= \zeta [(−2{,}0)(−2{,}4)-(3{,}5)(−1{,}0)] \\ &= 8{,}3\zeta \\ {F}_{y} &= \zeta ({u}_{z}{B}_{x}-{u}_{x}{B}_{z})= \zeta [(3{,}5)(7{,}2)-(−5{,}0)(−2{,}4)] \\ &= 13{,}2\zeta \\ {F}_{z} &= \zeta ({u}_{x}{B}_{y}-{u}_{y}{B}_{x})= \zeta [(−5{,}0)(−1{,}0)-(−2{,}0)(7{,}2)] \\ &= 19{,}4\zeta \end{array} .
 $$
 
 Por lo tanto, la fuerza magnética es $\vec{F}=\zeta (8{,}3\hat{i}+13{,}2\hat{j}+19{,}4\hat{k})$ y su magnitud es
@@ -1217,7 +1217,7 @@ $$
 y el producto escalar $\vec{F}\cdot \vec{B}$:
 
 $$
-\vec{F}\cdot \vec{B}={F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z}=(8{,}3\zeta )(7{,}2)+(13{,}2\zeta )(−1{,}0)+(19{,}4\zeta )(−2{,}4)=0.
+\begin{aligned}\vec{F}\cdot \vec{B} &= {F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z} \\ &= (8{,}3\zeta )(7{,}2)+(13{,}2\zeta )(−1{,}0)+(19{,}4\zeta )(−2{,}4) \\ &= 0.\end{aligned}
 $$
 
 Ahora, sustituyendo en la aquí obtenemos el ángulo $\theta$:
@@ -1231,7 +1231,7 @@ Por lo tanto, el vector de fuerza magnética es perpendicular al vector de campo
 (b) Dado que el vector $\vec{B}=4{,}5\hat{k}$ tiene un solo componente, podemos realizar la operación de álgebra rápidamente y encontrar el producto vectorial directamente:
 
 $$
-\begin{array}{ll} \vec{F} & =\zeta \vec{u}\,\times \,\vec{B}=\zeta (−5{,}0\hat{i}-2{,}0\hat{j}+3{,}5\hat{k})\,\times \,(4{,}5\hat{k}) \\ & =\zeta [(−5{,}0)(4{,}5)\hat{i}\,\times \,\hat{k}+(−2{,}0)(4{,}5)\hat{j}\,\times \,\hat{k}+(3{,}5)(4{,}5)\hat{k}\,\times \,\hat{k}] \\ & =\zeta [-22{,}5(\text{−}\hat{j})-9{,}0(+\hat{i})+0]=\zeta (−9{,}0\hat{i}+22{,}5\hat{j}). \end{array}
+{\small \begin{array}{ll} \vec{F} &= \zeta \vec{u}\,\times \,\vec{B}= \zeta (−5{,}0\hat{i}-2{,}0\hat{j}+3{,}5\hat{k})\,\times \,(4{,}5\hat{k}) \\  &= \zeta [(−5{,}0)(4{,}5)\hat{i}\,\times \,\hat{k}+(−2{,}0)(4{,}5)\hat{j}\,\times \,\hat{k}+(3{,}5)(4{,}5)\hat{k}\,\times \,\hat{k}] \\  &= \zeta [-22{,}5(\text{−}\hat{j})-9{,}0(+\hat{i})+0]= \zeta (−9{,}0\hat{i}+22{,}5\hat{j}). \end{array}}
 $$
 
 La magnitud de la fuerza magnética es
@@ -1243,7 +1243,7 @@ $$
 Dado que el producto escalar es
 
 $$
-\vec{F}\cdot \vec{B}={F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z}=(−9{,}0\zeta )(0)+(22{,}5\zeta )(0)+(0)(4{,}5)=0,
+\begin{aligned}\vec{F}\cdot \vec{B} &= {F}_{x}{B}_{x}+{F}_{y}{B}_{y}+{F}_{z}{B}_{z} \\ &= (−9{,}0\zeta )(0)+(22{,}5\zeta )(0)+(0)(4{,}5)= 0,\end{aligned}
 $$
 
 el vector de fuerza magnética $\vec{F}$ es perpendicular al vector de campo magnético $\vec{B}$.

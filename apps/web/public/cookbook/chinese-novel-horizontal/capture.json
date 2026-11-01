@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-novel-horizontal",
-  "sourceHash": "f2cc3a9623ef685cb2866b58483f737d57b642e49d05f5bae96d99eee08c1228",
+  "sourceHash": "f9328caefe03ecd8912f64759f1eb66c61ab81e6ff9f1241cfe22dc24faecfe3",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:32:12.483Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:56.678Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:22:22.596Z",
   "variants": {
     "en": {
-      "hash8": "76a79225",
-      "vdtHash": "608e031e1bb1719ed4463a33ca71342e90ecc42e",
+      "hash8": "abd0ad35",
+      "vdtHash": "467f5de213edf4cb9725dd566208862b0f0b62ce",
       "timings": {
-        "importMs": 292,
-        "fontsMs": 242,
-        "buildMs": 71,
-        "totalMs": 1231,
+        "importMs": 4113,
+        "fontsMs": 829,
+        "buildMs": 99,
+        "totalMs": 5899,
         "builds": 1
       },
       "specimen": {
@@ -122,7 +116,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 84608,
+          "bytes": 84476,
           "alt": "Page 76."
         }
       ],
@@ -158,18 +152,18 @@
       },
       "pdf": {
         "file": "chinese-novel-horizontal.pdf",
-        "bytes": 650319,
+        "bytes": 649173,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 391426,
+        "bytes": 391444,
         "folio": "77b45883",
         "chapters": [
           {
             "pages": 7,
-            "hash": "0df4c387df8fb903",
-            "lines": "5c8324f3e5c57479"
+            "hash": "e2868bd0c4b37bb4",
+            "lines": "58abedb09c8dfe9e"
           }
         ]
       },
@@ -365,6 +359,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "bundle locale zh-Hans, the document's language: en names its resource types otherwise"
@@ -378,18 +382,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es left out (its bundle is in zh-Hans, as another edition's)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (its bundle is in zh-Hans, as another edition's)"
           }
         ]
       }
     },
     "es": {
-      "hash8": "1493a741",
-      "vdtHash": "27f3916327caf4aff3f8eb8cd7ea1329b7162b13",
+      "hash8": "4801ea0d",
+      "vdtHash": "da99124fe48522a95d1631385aace039320daec1",
       "timings": {
-        "importMs": 192,
-        "fontsMs": 218,
-        "buildMs": 73,
-        "totalMs": 1070,
+        "importMs": 3983,
+        "fontsMs": 1034,
+        "buildMs": 89,
+        "totalMs": 6065,
         "builds": 1
       },
       "specimen": {
@@ -488,7 +497,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 84784,
+          "bytes": 84650,
           "alt": "Página 76."
         }
       ],
@@ -524,18 +533,18 @@
       },
       "pdf": {
         "file": "chinese-novel-horizontal.pdf",
-        "bytes": 650273,
+        "bytes": 649128,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 391495,
+        "bytes": 391512,
         "folio": "77b45883",
         "chapters": [
           {
             "pages": 7,
-            "hash": "f7463f2b7c2db1a7",
-            "lines": "3549b44feea4eced"
+            "hash": "201572ae38530414",
+            "lines": "67a516dac1c7e366"
           }
         ]
       },
@@ -731,6 +740,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "bundle locale zh-Hans, the document's language: es names its resource types otherwise"
@@ -739,6 +758,11 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (its bundle is in zh-Hans, as another edition's)"
           },
           {
             "check": "sandbox",

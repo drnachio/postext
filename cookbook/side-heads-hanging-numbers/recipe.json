@@ -20,10 +20,10 @@
       "figure-citations",
       "float-placement",
       "callout-styles",
-      "paragraph-styles",
       "emphasis-colours",
       "running-heads",
       "table-style",
+      "figure-styles",
       "captions",
       "localised-labels",
       "side-captions",
@@ -39,7 +39,7 @@
     "textbook-margin-column",
     "figures-float-where-cited"
   ],
-  "engine": { "postext": "1.28.0" },
+  "engine": { "postext": "1.65.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -67,5 +67,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-10-11"
+  "updated": "2026-10-31"
 }

@@ -1,6 +1,6 @@
 // Typesetting terms: the parts of a page and a book, type sizes and print.
 import type { GlossaryTerm } from "../terms";
-import { term } from "./term";
+import { term } from "./term.ts";
 
 export const TYPE_PAGE_TERMS: readonly GlossaryTerm[] = [
   term("folio", "type", {

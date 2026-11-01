@@ -1,7 +1,11 @@
 :::part{number="V" title="Bartolomé Esteban Murillo" palette="band=#8a6a3b"}
+:::paragraphs{style="fechas"}
 Sevilla, 1617 – Sevilla, 1682
+:::
 
+:::paragraphs{style="semblanza"}
 Bartolomé Esteban Murillo (Sevilla, bautizado el 1 de enero de 1618-3 de abril de 1682) fue un pintor barroco español. Formado en el naturalismo tardío, evolucionó hacia fórmulas propias del barroco pleno con una sensibilidad que a veces anticipa el rococó en algunas de sus más peculiares e imitadas creaciones iconográficas, como la Inmaculada Concepción o el Buen Pastor en figura infantil.
+:::
 :::
 
 # Mujeres en la ventana {lead="Mujeres en la ventana es un óleo sobre lienzo realizado por el pintor español Bartolomé Esteban Murillo entre 1665 y 1675. Sus dimensiones son de 125 × 104 cm." catlabel="Cat." cat="9" tombstone="c. 1655–1660 · Óleo sobre lienzo · 125,1 × 104,5 cm · National Gallery of Art, Washington · 1942.9.46"}
@@ -13,5 +17,5 @@ Su primer propietario registrado fue Pedro Francisco Luján y Góngora, I duque 
 Se expone en la Galería Nacional de Arte, Washington D. C., Estados Unidos.
 
 :::paragraphs{style="fuente"}
-Comentario adaptado del artículo «Mujeres en la ventana» de Wikipedia en español (revisión 174432852, CC BY-SA 4.0).
+Comentario adaptado del artículo «Mujeres en la ventana» de Wikipedia en español (revisión 174432852, CC BY-SA 4.0). Ficha e imagen ampliable en la [web del museo](https://www.nga.gov/collection/art-object-page.1185.html).
 :::

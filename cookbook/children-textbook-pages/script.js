@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 156 · A children's textbook unit in ten languages ═════
 // https://postext.dev/en/cookbook/children-textbook-pages
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Nunito, Fredoka and three pairs for Arabic, Chinese, Japanese · Needs postext ≥ 1.48.0
+// Fonts: Nunito, Fredoka and three pairs for Arabic, Chinese, Japanese · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
   loadVerticalAlternates,

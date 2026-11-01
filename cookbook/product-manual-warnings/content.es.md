@@ -96,8 +96,8 @@ Viele Störungen können Sie selbst beheben. Suchen Sie in :ref{id="stoerungen" 
 
 # Entsorgung
 
-Elektrogeräte gehören nicht in den Hausmüll. Geben Sie den ausgedienten Wasserkocher bei einer Sammelstelle für Elektroaltgeräte ab, etwa beim Wertstoffhof Ihrer Gemeinde. Auch Händler, die auf mindestens 400 m² Elektrogeräte verkaufen, nehmen Altgeräte kostenlos zurück. Die Verpackung besteht aus Pappe und gehört ins Altpapier.
+Elektrogeräte gehören nicht in den Hausmüll. Geben Sie den ausgedienten Wasserkocher bei einer Sammelstelle für Elektroaltgeräte ab; die nächste nennt Ihnen der [Rückgabefinder](https://entsorgungsstellen.e-schrott-entsorgen.org/) nach Ihrer Postleitzahl. Die Verpackung gehört ins Altpapier.
 
 :::paragraphs{style="colophon"}
-Verra W1 · Bedienungsanleitung DE · Ausgabe 09/2026. Verra ist eine erfundene Marke; Gerät und Anleitung sind ein Beispiel aus dem Postext Cookbook. Gesetzt in Red Hat Text, Red Hat Display und Red Hat Mono (SIL OFL). Text und Zeichnungen: CC BY 4.0.
+Verra W1 · Ausgabe 09/2026 · Eine erfundene Marke, ein Beispiel aus dem Postext Cookbook · Red Hat Text, Display und Mono (SIL OFL) · Text und Zeichnungen: CC BY 4.0.
 :::

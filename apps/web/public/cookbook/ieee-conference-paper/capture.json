@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ieee-conference-paper",
-  "sourceHash": "6b3fe0360333ab2de165d3627acb18d58203d7039729bc3d9cdee56d3f9c1c6a",
+  "sourceHash": "a75c86de1a2791e598fad0b62883b042191f7c1d3ae01b1e04ac5322b2f4d881",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:51:48.455Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.615Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:20:05.576Z",
   "variants": {
     "en": {
-      "hash8": "6b0a9b7d",
-      "vdtHash": "a2bb3d3043b1fe7715d368fea9384d36d5cfcf90",
+      "hash8": "ab0d1aa8",
+      "vdtHash": "01c8f640ade75f1ea8026136b9228dfa03ce0318",
       "timings": {
-        "importMs": 982,
-        "fontsMs": 31,
-        "buildMs": 188,
-        "totalMs": 3237,
+        "importMs": 2160,
+        "fontsMs": 34,
+        "buildMs": 127,
+        "totalMs": 3309,
         "builds": 1
       },
       "specimen": {
@@ -56,7 +50,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 181684,
+          "bytes": 183094,
           "alt": "Opening page 1: Optimal Line Breaking in the Browser: What It Costs and When It Pays."
         },
         {
@@ -95,18 +89,18 @@
       },
       "pdf": {
         "file": "ieee-conference-paper.pdf",
-        "bytes": 81386,
+        "bytes": 81819,
         "pages": 2
       },
       "sandbox": {
         "file": "ieee-conference-paper.postext",
-        "bytes": 35231,
+        "bytes": 35413,
         "folio": "9f7fbdf3",
         "chapters": [
           {
             "pages": 2,
-            "hash": "9c033d6eabfb9efe",
-            "lines": "5a712e2d16a688d3"
+            "hash": "e07a8e608cd5dbaa",
+            "lines": "dda2391c65e2be9a"
           }
         ]
       },
@@ -314,7 +308,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -328,18 +322,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
           }
         ]
       }
     },
     "es": {
-      "hash8": "09cb2479",
-      "vdtHash": "b1cc021184d53ec26bc70f17dfffeebe62339896",
+      "hash8": "27a7ad0e",
+      "vdtHash": "87b2a02be4fbebf8fffe0bddb5ebc9af46ac8306",
       "timings": {
-        "importMs": 544,
-        "fontsMs": 40,
-        "buildMs": 198,
-        "totalMs": 1583,
+        "importMs": 3060,
+        "fontsMs": 34,
+        "buildMs": 119,
+        "totalMs": 4343,
         "builds": 1
       },
       "specimen": {
@@ -372,7 +371,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 183828,
+          "bytes": 183262,
           "alt": "Página de apertura 1: Corte óptimo de líneas en el navegador: cuánto cuesta y cuándo compensa."
         },
         {
@@ -383,7 +382,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 232112,
+          "bytes": 234826,
           "alt": "Página 2: III. MÉTODO."
         }
       ],
@@ -411,18 +410,18 @@
       },
       "pdf": {
         "file": "ieee-conference-paper.pdf",
-        "bytes": 93435,
+        "bytes": 93848,
         "pages": 2
       },
       "sandbox": {
         "file": "ieee-conference-paper.postext",
-        "bytes": 35327,
+        "bytes": 35343,
         "folio": "9f7fbdf3",
         "chapters": [
           {
             "pages": 2,
-            "hash": "2ef3204d62ed9835",
-            "lines": "89a50cf5f77f5b8f"
+            "hash": "7f59d72b18764795",
+            "lines": "ac11d62a2e510734"
           }
         ]
       },
@@ -630,7 +629,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 1,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -640,6 +639,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

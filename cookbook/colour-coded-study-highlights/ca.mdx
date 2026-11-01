@@ -1,0 +1,62 @@
+---
+title: "Ressaltats per colors en un llibre de lectures"
+summary: "Un llibre de lectures d'història amb tres colors de ressaltat (verd per als termes, ambre per a les dates, blau per als noms) definits a markStyles."
+plain: "Una lectura escolar sobre la història de la impremta. Els termes clau van en verd, les dates en ambre i les persones i els llocs en blau, i una clau a la primera pàgina explica què vol dir cada color."
+description: "Un llibre de lectures d'història compost amb Postext amb tres estils de ressaltat: termes en verd, dates en ambre, noms en blau i una clau a l'obertura."
+question: "Com ressalto un text d'estudi amb colors que vulguin dir alguna cosa: termes, dates i noms?"
+aliases: ["ressaltat", "retolador fluorescent", "codi de colors", "clau de colors", "paraules clau", "text d'estudi", "llibre de lectures", "llibre d'història", "glossari", "marca", "impremta", "Gutenberg"]
+pageNotes: { "1": "La pàgina d'obertura: a dalt, una pintura d'un taller d'impremta cap al 1460; a sota, l'avanttítol, el títol i una entradeta en cursiva; després, un requadre tintat sota un filet vermell que explica els tres colors amb una mostra verda, una d'ambre i una de blava, i les primeres línies de la lectura.", "2": "Una pàgina parella de la lectura: dates com 1455 i 1462 sobre franges d'ambre, noms com Johann Fust, Subiaco o William Caxton sobre franges blau pàl·lid i termes com tipus mòbils o colofó sobre franges verdes, dins d'un text justificat.", "4": "L'última pàgina: les preguntes de repàs, el glossari, on cada entrada comença pel terme en negreta sobre una franja verda amb les línies següents sagnades, i el colofó en lletra grisa petita." }
+---
+
+## Què compondràs
+
+La lectura 2 d'una unitat d'un llibre escolar d'història, *Lecturas de historia moderna*: quatre pàgines sobre com la impremta es va estendre per Europa des de Magúncia entre el 1450 i el 1550, en una pàgina de 170 × 240 mm. Els editors han marcat el text com ho faria un bon estudiant, amb un codi que no canvia en tot el llibre: els termes clau sobre una franja verda, les dates sobre ambre, les persones i els llocs sobre blau pàl·lid. Una clau sota el títol explica el codi amb els tres colors, i el glossari de l'última pàgina obre cada entrada amb el seu terme en verd. Les marques són franges sota text corrent, de manera que les línies es tallen, es divideixen i es justifiquen com si no hi fossin.
+
+## Elaboració
+
+### 1 · Un estil per a cada mena de paraula
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `markStyles` declara tres estils amb nom, i el text en tria un a cada marca: `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colofón]{style="term"}` ([marques de ressaltat](/ca/docs/document-format-inline#marques-de-ressaltat)). Cada estil diu què vol dir (`name` és el que veu qui edita), de manera que el Markdown guarda per què es marca una paraula i no de quin color va. Si canvies el color d'un estil, canvien amb ell totes les dates del llibre. Els extrems són rectes, com per defecte des de postext 1.52 ([estils de ressaltat](/ca/docs/configuration-styles#estils-de-ressaltat)): un retolador fluorescent deixa els extrems rectes, i una franja arrodonida es llegeix com un xip.
+
+### 2 · Tres tintes de la paleta
+
+<Excerpt region="palette" />
+
+Les tres franges són entrades de la paleta, igual que la tinta i l'accent, així que qui obri el llibre al Sandbox pot canviar el codi des d'una sola mostra de color. Són pàl·lides, d'una lluminositat semblant a la del fons del requadre, i el text a sobre conserva un contrast de 12,6:1 o més; les tres es distingeixen quan es troben en una línia, com a «En 1517, Martín Lutero» a la pàgina 3. Una marca no ocupa espai: `paddingX` entra 0,12 em a l'espai del costat de la frase i `paddingBottom` baixa la franja per sota dels traços descendents, i tots dos es pinten en un espai que ja hi era.
+
+### 3 · L'obertura: una pintura sobre el títol
+
+<Excerpt region="opener" />
+
+El títol de primer nivell imprimeix un disseny. La pintura s'ancora a la pàgina, així que surt a sang per dalt i pels dos costats, 170 per 96 mm, amb `fit: 'cover'`. L'avanttítol i l'entradeta surten d'atributs de la línia del títol ([atributs de títol](/ca/docs/document-format#atributs-dencapçalament)), i la clau segueix com un `:::callout` corrent amb uns elements de llista que comencen per les tres marques. `minHeight` fixa la profunditat: la clau comença a la mateixa línia per molt que ocupi el títol.
+
+### 4 · Capçaleres segons la paritat
+
+<Excerpt region="running-heads" />
+
+La pàgina parella porta el títol de la col·lecció i la senar el de la lectura, totes dues filtrades per `parity` i fora de l'obertura gràcies a `pages: 'body'` ([elements de text](/ca/docs/configuration-headers-footers#elements-de-text)). L'obertura porta el foli al peu.
+
+## Variants
+
+### Arrodoneix els extrems de les franges
+
+Un radi d'una cinquena part del cos dona els extrems suaus d'un retolador.
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Dona a cada línia la seva franja
+
+Amb `decorationBreak: 'clone'`, una marca que passa de línia porta el farciment als dos extrems de cada tros, en lloc de quedar recta on es talla la línia.
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## Errors freqüents
+
+- El color sol no sobreviu a una fotocòpia en blanc i negre, que és com arriben moltes lectures a l'aula. El glossari posa a més els termes en negreta; si els teus lectors fotocopiaran les pàgines, dona a una de les tres menes un segon senyal propi.
+- Un id d'estil que `markStyles` no declara pren el primer estil, sense cap error a la pàgina (el Sandbox l'assenyala). Fes servir ids curts i revisa com els escrius al text.

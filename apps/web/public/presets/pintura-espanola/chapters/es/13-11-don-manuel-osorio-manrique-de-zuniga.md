@@ -1,7 +1,11 @@
 :::part{number="VI" title="Francisco de Goya" palette="band=#5f6b5a"}
+:::paragraphs{style="fechas"}
 Fuendetodos, 1746 – Burdeos, 1828
+:::
 
+:::paragraphs{style="semblanza"}
 Francisco José de Goya y Lucientes (Fuendetodos, 30 de marzo de 1746 – Burdeos, 16 de abril de 1828) fue un pintor y grabador español. Su obra abarca la pintura de caballete y mural, el grabado y el dibujo. Su estilo evolucionó desde el rococó, pasando por el neoclasicismo, hasta el prerromanticismo, siempre interpretados de una forma personal y original, y siempre con un rasgo subyacente de naturalismo, del reflejo de la realidad sin una visión idealista que la edulcore ni desvirtúe, donde es igualmente importante el mensaje ético. Para Goya la pintura es un vehículo de instrucción moral, no un simple objeto estético.
+:::
 :::
 
 # Don Manuel Osorio Manrique de Zúñiga {lead="Don Manuel Osorio de Moscoso y Manrique de Zúñiga, niño es un cuadro de Francisco de Goya conservado en el Museo Metropolitano de Arte de Nueva York (Estados Unidos). Se trata de un retrato al óleo de 1788 que mide 110 centímetros de alto por 80 cm de ancho." catlabel="Cat." cat="11" tombstone="1787–1788 · Óleo sobre lienzo · 127 × 101,6 cm · The Metropolitan Museum of Art, Nueva York · 49.7.41"}
@@ -11,5 +15,5 @@ El retratado es el hijo menor de Vicente Joaquín Osorio de Moscoso y Guzmán, c
 Goya lo representa como un muñeco, más que como un niño. Está rígido, sin moverse. El gesto es serio, de expresión impenetrable. Viste con ricos ropajes, a la moda del momento: un traje de color rojo intenso con una faja de raso blanco, a juego con sus zapatitos. La luz queda en la parte superior del cuadro.
 
 :::paragraphs{style="fuente"}
-Comentario adaptado del artículo «Don Manuel Osorio Manrique de Zúñiga, niño» de Wikipedia en español (revisión 159536157, CC BY-SA 4.0).
+Comentario adaptado del artículo «Don Manuel Osorio Manrique de Zúñiga, niño» de Wikipedia en español (revisión 159536157, CC BY-SA 4.0). Ficha e imagen ampliable en la [web del museo](https://www.metmuseum.org/art/collection/search/436545).
 :::

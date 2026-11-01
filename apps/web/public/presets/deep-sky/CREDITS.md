@@ -43,8 +43,8 @@ downscaled for the bundle.
 | eso2510b | eso2510 | [eso2510b](https://www.eso.org/public/images/eso2510b/) | ESO/E. Congiu et al. |
 | noirlab2612a | noirlab2612 | [noirlab2612a](https://noirlab.edu/public/images/noirlab2612a/) | CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab) |
 | noirlab2612b | noirlab2612 | [noirlab2612b](https://noirlab.edu/public/images/noirlab2612b/) | CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab) |
-| eso2406a | eso2406 | [eso2406a](https://www.eso.org/public/images/eso2406a/) | EHT Collaboration |
 | eso2406b | eso2406 | [eso2406b](https://www.eso.org/public/images/eso2406b/) | EHT Collaboration |
+| eso2406a | eso2406 | [eso2406a](https://www.eso.org/public/images/eso2406a/) | EHT Collaboration |
 | noirlab2618a | noirlab2618 | [noirlab2618a](https://noirlab.edu/public/images/noirlab2618a/) | NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA |
 | noirlab2618b | noirlab2618 | [noirlab2618b](https://noirlab.edu/public/images/noirlab2618b/) | NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA |
 | noirlab2618c | noirlab2618 | [noirlab2618c](https://noirlab.edu/public/images/noirlab2618c/) | NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA |

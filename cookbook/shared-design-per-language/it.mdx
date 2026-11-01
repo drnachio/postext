@@ -1,0 +1,57 @@
+---
+title: "Un progetto grafico per tre edizioni in tre lingue"
+summary: "Un libretto in inglese, spagnolo e arabo da impostazioni generali, con impostazioni per lingua solo per ciò che le appartiene: caratteri, corpi, spaziatura."
+plain: "Un libretto su tre antichi astrolabi, stampato in inglese, spagnolo e arabo. I tre condividono un progetto; solo l’edizione araba cambia caratteri e corpi."
+description: "Impostazioni generali e per lingua in Postext: un libretto in inglese, spagnolo e arabo che condivide un progetto e cambia solo dove la lingua lo chiede."
+question: "Come condivido un progetto tra le edizioni di un libro e cambio solo caratteri ed etichette di ogni lingua?"
+aliases: ["impostazioni generali", "impostazioni per lingua", "mergeConfigLayers", "configurazione condivisa", "edizione multilingue", "edizione araba", "astrolabio"]
+pageNotes: {"1": "La copertina dell’edizione inglese: la fotografia di un astrolabio in ottone del 1291 con agemine d’argento occupa la pagina; sulla parte scura della foto, un occhiello bianco spaziato, un filetto corto e il titolo Three Astrolabes su due righe bianche; al piede, Yemen 1291 · Iran 1654 · Europe 1462.", "2": "Pagina pari 2: testatina con il folio in ottone e il titolo del libro; le sezioni A map of the sky you can turn e The sultan’s instrument, testo giustificato con i titoli color ottone.", "3": "Pagina dispari 3: un riquadro con un filetto ottone a sinistra; la sezione A garden of stars con la foto di un astrolabio persiano a destra della colonna e il testo accanto; al piede, il titolo dell’ultima sezione.", "4": "Pagina pari 4: l’ultima sezione con la foto dell’astrolabio europeo del 1462 a destra e il testo accanto, fino al paragrafo di chiusura; una tabella dei tre strumenti con l’intestazione scura; il colophon."}
+---
+
+## Che cosa comporrai
+
+Un libretto di quattro pagine A5 su tre astrolabi del Metropolitan Museum of Art: uno fatto nello Yemen nel 1291, uno in Iran nel 1654 e uno in Europa nel 1462. L’editore lo pubblica in inglese, spagnolo e arabo, e le tre edizioni sono un solo progetto. La foto di copertina, i titoli color ottone, il riquadro con il suo filetto, le figure con il testo accanto e l’intestazione scura della tabella vengono dalle stesse impostazioni. L’edizione araba cambia ciò che appartiene alla sua scrittura: Amiri e IBM Plex Sans Arabic al posto di Source Serif e Source Sans, un corpo più grande ed etichette senza maiuscole né spaziatura. Si legge da destra e si rilega a destra senza una sola coordinata propria.
+
+## Preparazione
+
+### 1 · Impostazioni generali e tre piccole impostazioni per lingua
+
+Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. `config` contiene le impostazioni generali; `mergeConfigLayers` vi sovrappone quelle di un’edizione campo per campo. Inglese e spagnolo non ne hanno di proprie: il loro `locale` sceglie i modelli di sillabazione e le parole *Figure* e *Table*, *Figura* e *Tabla*. Le impostazioni arabe nominano solo campi singoli: `bodyText.fontFamily` cambia il carattere e conserva colore, allineamento e sillabazione, e l’elemento `kicker` della copertina cambia carattere e spaziatura e conserva ancora, colore e dimensione. Un cambio della tavolozza o dei margini in `config` arriva a tutte e tre le edizioni.
+
+### 2 · Lati nominati secondo la direzione del testo
+
+<Excerpt region="heads" />
+
+Il margine esterno di una pagina pari è l’inizio delle sue righe in entrambe le direzioni, quello di una dispari la loro fine; così `top-start` e `top-end` portano i folii all’esterno su una pagina pari inglese come su una araba. Il filetto del riquadro è `side: 'start'` e il testo di copertina si ancora a `top-start`: nessuno ha bisogno di impostazioni proprie.
+
+### 3 · Figure a fine riga, con il testo accanto
+
+<Excerpt region="pictures" />
+
+`wrap: 'end'` mette ogni fotografia a destra di una colonna inglese e a sinistra di una araba, e il testo scorre accanto. Didascalie e testi alternativi sono nella lingua di ogni edizione; le didascalie arabe danno prima la data dell’egira.
+
+### 4 · La tabella con le parole e le cifre di ogni edizione
+
+<Excerpt region="table" />
+
+I dati della tabella sono contenuto e cambiano con l’edizione: cifre arabo-indiane e separatore decimale arabo nell’edizione araba, virgola decimale in quella spagnola. Il suo stile è generale: le impostazioni arabe fissano solo carattere e corpo.
+
+## Varianti
+
+### Scrivi le impostazioni per lingua in un pacchetto
+
+<RecipeLink slug="bundle-round-trip">Andata e ritorno del .postext</RecipeLink> scrive un libro in due lingue in un file. Da postext 1.58 `createBundle` salva una volta le impostazioni generali e, accanto ai capitoli di ogni lingua, le sue impostazioni proprie, come le legge qui `mergeConfigLayers`. Il libro di questa ricetta si apre così nel Sandbox: passa il pannello di design da *Tutte le lingue* all’edizione araba per vedere quali campi fissa l’edizione araba.
+
+### Stampa l’edizione araba per il Maghreb
+
+`ar-MA` conserva direzione e rilegatura e scrive in cifre europee i numeri generati, folii e numeri delle figure. Riscrivi anche le cifre della tabella.
+
+```diff
+-  locale: t({ en: 'en-gb', es: 'es', ar: 'ar' }), // ar: right to left, bound on the right
++  locale: t({ en: 'en-gb', es: 'es', ar: 'ar-MA' }), // ar-MA: European digits
+```
+
+## Errori frequenti
+
+- Le lettere arabe sono legate: un’etichetta spaziata nelle impostazioni generali deve perdere il suo `letterSpacing` in quelle arabe, altrimenti il motore dà l’avviso `joiningScriptLetterSpacing`. Con esso va `textTransform: 'none'`: l’arabo non ha maiuscole.
+- Le righe di un’edizione araba sono più alte e le sue pagine si spezzano altrove. Ogni edizione è stata adattata a parte: il riquadro arabo galleggia al piede della pagina (`placement="bottom"`) e le frasi di chiusura scorrono accanto all’ultima fotografia.

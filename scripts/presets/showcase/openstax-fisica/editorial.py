@@ -77,3 +77,15 @@ CREDITS = {
         "**Type.** Source Serif 4 and Source Sans 3 (Adobe, Frank Grießhammer and Paul D. Hunt), under the SIL Open Font License 1.1; the licences travel with the fonts in the bundle. Formulas set with MathJax.",
     ],
 }
+
+
+# Display formulas whose MathML does not survive the conversion, keyed by
+# fitmath.key() of the converted TeX. The Spanish sum of potato weights
+# draws its rule with a fraction and pads the column with empty rows: set
+# it as the column sum the text describes (the rule under the addends is
+# an underline: postext drops the <line> MathJax draws for \hline).
+FORMULA_FIXES = {
+    "es": {
+        "fc54ca510b73": r"\begin{array}{rl} 7{,}56 & \text{kg} \\ -6{,}052 & \text{kg} \\ \underline{+13{,}7} & \underline{\text{kg}} \\ 15{,}208 & \text{kg} = 15{,}2\,\text{kg}. \end{array}",
+    },
+}

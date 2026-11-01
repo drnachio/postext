@@ -26,7 +26,7 @@ Certaines décisions ne peuvent pas se prendre au cours d’un seul parcours, pa
 ### Étape 1 : structuration du contenu
 
 - **Entrée :** `PostextContent` brut
-- **Action :** analyser le Markdown en blocs de contenu, résoudre les références aux ressources dans `resources[]` par leur identifiant, sortir du flux les définitions de notes de bas de page (`[^id]:`) et numéroter leurs appels dans l’ordre des citations, numéroter les titres, et planifier les flottants : quelles ressources flottent, et après quel bloc (`notes[]` n’est pas lu)
+- **Action :** analyser le Markdown en blocs de contenu, résoudre les références aux ressources dans `resources[]` par leur identifiant, sortir du flux les définitions de notes de bas de page (`[^id]:`) et numéroter leurs appels dans l’ordre des citations, donner une note aux liens externes quand `links.print` vaut `'notes'` (ou leur adresse entre parenthèses avec `'inline'`), numéroter les titres, et planifier les flottants : quelles ressources flottent, et après quel bloc (`notes[]` n’est pas lu)
 - **Sortie :** une liste plate de blocs de contenu (typés et remplis, mais sans affectation à une page ni à une colonne) et le plan des flottants
 - **Exécution :** au début de chaque passe de placement. Après la première passe, le résultat de l’analyse est relu dans son cache ; le reste est recalculé
 

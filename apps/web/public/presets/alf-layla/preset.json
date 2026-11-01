@@ -8200,6 +8200,16 @@
    "altText": "رسم محفور على الخشب لوليم هارفي: معروف يحرث أرض الفلاح"
   },
   {
+   "id": "cover-art",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/cover-art.jpg",
+   "width": 1417,
+   "height": 2000,
+   "caption": "الغلاف",
+   "altText": "غلاف من الجلد الأحمر الداكن المذهَّب، في وسطه تصويرة لشهرزاد تحكي للملك شهريار في قاعة من قصره ليلًا، ومن ورائهما قباب المدينة ومآذنها تحت الهلال"
+  },
+  {
    "id": "headpiece",
    "typeId": "ornament",
    "kind": "svg",
@@ -8249,16 +8259,6 @@
     "width": 0.14,
     "align": "center"
    }
-  },
-  {
-   "id": "cover-art",
-   "typeId": "ornament",
-   "kind": "bitmap",
-   "file": "resources/cover-art.jpg",
-   "width": 1417,
-   "height": 2000,
-   "caption": "الغلاف",
-   "altText": "غلاف من الجلد الأحمر الداكن المذهَّب، في وسطه تصويرة لشهرزاد تحكي للملك شهريار في قاعة من قصره ليلًا، ومن ورائهما قباب المدينة ومآذنها تحت الهلال"
   },
   {
    "id": "spine",

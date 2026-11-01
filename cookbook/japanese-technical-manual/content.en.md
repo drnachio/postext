@@ -35,7 +35,7 @@ Unicodeは、こうした表し方の違いをそろえる手順を「正規化�
 
 ## Pythonで正規化する
 
-Pythonでは、標準ライブラリの`unicodedata`モジュールにある`normalize()`関数で正規化できる。第1引数に形式の名前を、第2引数に文字列を渡す。
+Pythonでは、標準ライブラリの`unicodedata`モジュールにある`normalize()`関数で正規化できる。第1引数に形式の名前を、第2引数に文字列を渡す。形式の名前は「NFC」「NFD」「NFKC」「NFKD」のいずれかで、それ以外を渡すと`ValueError`になる。
 
 ```python normalize.py
 import unicodedata
@@ -59,9 +59,22 @@ Python 3.8で加わった`is_normalized()`関数を使うと、文字列がす�
 
 もう一つ、NFKCでもそろわない揺れがある。波ダッシュ「〜」（U+301C）と全角チルダ「～」（U+FF5E）だ。NFKCは全角チルダを半角の「~」に変えるが、波ダッシュは変えない[^wave]。そのため「10〜20」と「10～20」は、NFKCを通しても一致しない。こうした文字は、正規化とは別に対応表を用意して置き換える必要がある。
 
+Pythonなら、正規化した文字列に、`str.maketrans()`で作った対応表を`translate()`で当てればよい。NFKCが全角チルダを「~」に変えるので、表には波ダッシュだけを書けば足りる。
+
+```python search_key.py
+import unicodedata
+
+WAVE = str.maketrans("〜", "~")
+
+def search_key(s):
+    return unicodedata.normalize("NFKC", s).translate(WAVE)
+```
+
+こうすれば、「10〜20」と「10～20」は、どちらも「10~20」という同じキーになる。
+
 [^hfs]: HFS+が使うのは、Unicodeの規格のNFDに近い独自の分解形である。2017年に導入されたAPFSは、ファイル名を書かれたとおりに保存する。
 
-[^uax15]: Unicode Standard Annex #15「Unicode Normalization Forms」。Unicodeの版ごとに改訂され、unicode.orgで公開されている。
+[^uax15]: Unicodeの版ごとに改訂される標準附属書、[Unicode Standard Annex #15「Unicode Normalization Forms」](https://www.unicode.org/reports/tr15/)。
 
 [^wave]: Shift_JISの0x8160は、JISの対応表では波ダッシュに、マイクロソフトのCP932の表では全角チルダに変換される。同じ文書でも、変換に使った表によって符号位置が分かれる。
 

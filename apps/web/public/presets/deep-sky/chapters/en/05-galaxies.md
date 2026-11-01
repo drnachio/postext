@@ -21,10 +21,6 @@ Using the European Southern Observatory’s Very Large Telescope (ESO’s VLT), 
 
 "*Galaxies are incredibly complex systems that we are still struggling to understand*," says ESO researcher Enrico Congiu, who led a new *Astronomy & Astrophysics* study on Sculptor. Reaching hundreds of thousands of light-years across, galaxies are extremely large, but their evolution depends on what’s happening at much smaller scales. “*The Sculptor Galaxy is in a sweet spot*,” says Congiu. “*It is close enough that we can resolve its internal structure and study its building blocks with incredible detail, but at the same time, big enough that we can still see it as a whole system*.” (:ref{id="eso2510b" case="lower"})
 
-:::callout{type="cita"}
-“says ESO researcher Enrico Congiu, who led a new Astronomy & Astrophysics study on Sculptor. Reaching hundreds of thousands of light-years across, galaxies are extremely large, but their evolution depends on what’s happening at much smaller scales. “The Sculptor Galaxy is in a sweet spot,”
-:::
-
 A galaxy’s building blocks *— *stars, gas and dust *— *emit light at different colours. Therefore, the more shades of colour there are in an image of a galaxy, the more we can learn about its inner workings. While conventional images contain only a handful of colours, this new Sculptor map comprises thousands. This tells astronomers everything they need to know about the stars, gas and dust within, such as their age, composition, and motion.
 
 To create this map of the Sculptor Galaxy, which is 11 million light-years away and is also known as NGC 253, the researchers observed it for over 50 hours with the Multi Unit Spectroscopic Explorer (MUSE) instrument on ESO’s VLT. The team had to stitch together over 100 exposures to cover an area of the galaxy about 65 000 light-years wide.
@@ -38,7 +34,7 @@ Because of the properties of planetary nebulae, they can be used as distance mar
 Future projects using the map will explore how gas flows, changes its composition, and forms stars all across this galaxy. “*How such small processes can have such a big impact on a galaxy whose entire size is thousands of times bigger is still a mystery*,” says Congiu.
 
 :::paragraphs{style="fuente"}
-Press release eso2510 by ESO, 18 June 2025. Text and images licensed CC BY 4.0. [https://www.eso.org/public/news/eso2510/](https://www.eso.org/public/news/eso2510/)
+[Press release eso2510](https://www.eso.org/public/news/eso2510/) by ESO, 18 June 2025. Text and images licensed CC BY 4.0.
 :::
 
 ## Sombrero Galaxy: The Universe’s Dusty Brimmed Hat Revealed Like Never Before {lead="Dark Energy Camera spies the faint glowing features of Messier 104, known as the Sombrero Galaxy" source="NSF NOIRLab" date="24 April 2026" release="noirlab2612" standfirst="Dark Energy Camera spies the faint glowing features of Messier 104, known as the Sombrero Galaxy"}
@@ -76,5 +72,5 @@ It wasn’t until French astronomer Camille Flammarion's subsequent confirmation
 Its alluring visual characteristics, coupled with its accessibility to amateur equipment, contribute to Messier 104’s popularity among stargazers. Amateur astronomers often enjoy observing and photographing the Sombrero Galaxy, making it a prime target for citizen science projects and public outreach efforts. It is an excellent subject for sharing the wonders of the Universe with the public and fostering engagement with astronomy and science.
 
 :::paragraphs{style="fuente"}
-Press release noirlab2612 by NSF NOIRLab, 24 April 2026. Text and images licensed CC BY 4.0. [https://noirlab.edu/public/news/noirlab2612/](https://noirlab.edu/public/news/noirlab2612/)
+[Press release noirlab2612](https://noirlab.edu/public/news/noirlab2612/) by NSF NOIRLab, 24 April 2026. Text and images licensed CC BY 4.0.
 :::

@@ -3,20 +3,20 @@
   "slug": "annual-report-flush-columns",
   "sourceHash": "f3219f6f019876fd57aef19d101976457a9bc29f5f7153bd7f652af8cef8e50a",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:30:46.659Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:15:01.920Z",
   "variants": {
     "en": {
-      "hash8": "2355aa8d",
-      "vdtHash": "bf67ac6f4df440ac568cb8a476603f3bc7690034",
+      "hash8": "938ef8c3",
+      "vdtHash": "7af12ede342f79ce99dc5cf902b40c039d521c18",
       "timings": {
-        "importMs": 375,
-        "fontsMs": 36,
-        "buildMs": 130,
-        "totalMs": 2657,
+        "importMs": 1651,
+        "fontsMs": 108,
+        "buildMs": 169,
+        "totalMs": 2892,
         "builds": 1
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 46926,
+          "bytes": 46896,
           "alt": "Opening page 1: Tidewell Community Energy."
         },
         {
@@ -126,13 +126,13 @@
       },
       "sandbox": {
         "file": "annual-report-flush-columns.postext",
-        "bytes": 88693,
+        "bytes": 88691,
         "folio": "8ef7de69",
         "chapters": [
           {
             "pages": 5,
-            "hash": "8b02013b2d9b820f",
-            "lines": "432b2d0a4c38349a"
+            "hash": "7451fc8522ec5947",
+            "lines": "a857ce82d16b953a"
           }
         ]
       },
@@ -425,7 +425,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           }
         ]
       }

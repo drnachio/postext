@@ -6,8 +6,6 @@ Pese a estos avances, las evaluaciones anuales de la AEMA Air quality in Europe 
 
 La contaminación atmosférica es la principal causa de muertes prematuras por factores medioambientales en Europa, pero también tiene un considerable impacto económico. Aumenta los gastos médicos y reduce la productividad económica, debido a la mala salud de los trabajadores. La contaminación del aire también perjudica al suelo, los cultivos, los bosques, los lagos y los ríos. Los contaminantes incluso dañan nuestras casas, puentes y otras construcciones.
 
-::resource{id="photo-air-2"}
-
 Además, el impacto negativo de la mala calidad del aire no se distribuye de manera uniforme en la sociedad. Un informe reciente de la AEMA mostraba que la contaminación del aire, igual que las temperaturas extremas y el ruido, afectan de manera desproporcionada a los ciudadanos más vulnerables de Europa, especialmente en las regiones del este y el sur de Europa. Además de las mejoras globales, se necesitan medidas específicas para proteger mejor a los grupos vulnerables.
 
 :::callout{type="recuadro" title="COVID-19 y la contaminación del aire"}
@@ -27,6 +25,8 @@ En las ciudades, donde viven alrededor de tres de cada cuatro europeos, el tráf
 :::
 
 Lo que tienen en común las fuentes de contaminantes del aire es que están muy arraigadas en los sistemas básicos de movilidad, energía y producción y consumo de alimentos de nuestras sociedades. Estos mismos sistemas no solo son las principales fuentes de contaminantes del aire, sino también las causas originarias de la crisis climática y la rápida pérdida de biodiversidad.
+
+::resource{id="photo-air-2"}
 
 La forma en que se mueven las personas y las mercancías, cómo generamos calor y electricidad y cómo producimos y consumimos los alimentos conforman, en muchos aspectos, las bases de nuestro modo de vida actual. Por ello, no es fácil cambiar estos sistemas. En muchos casos, nos obliga a reconsiderar la forma en que hemos construido nuestras sociedades y la manera en que vivimos nuestra vida.
 
@@ -58,8 +58,9 @@ Casi todos los europeos que viven en ciudades están expuestos a una contaminaci
 
 ::resource{id="tabla-17"}
 
-## Para más información
+:::callout{type="lectura" title="Para más información"}
+- [Contaminación del aire](https://www.eea.europa.eu/themes/air)
+- [SOER 2020, Capítulo 8 sobre la contaminación del aire](https://www.eea.europa.eu/publications/soer-2020/chapter-08_soer2020-air-pollution/view)
+- [Índice Europeo de Calidad del Aire](https://www.eea.europa.eu/themes/air/air-quality-index)
 
-- Contaminación del aire: www.eea.europa. eu/themes/air
-- SOER 2020, Capítulo 8 sobre la contaminación del aire: www.eea.europa. eu/publications/soer-2020/chapter-08_ soer2020-air-pollution/view
-- Índice Europeo de Calidad del Aire: www. eea.europa.eu/themes/air/air-quality-index
+:::

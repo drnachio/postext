@@ -36,7 +36,7 @@ pageNotes: { "1": "任务书第一页：左上角分两行印着市政府的名�
 
 <Excerpt region="resources" />
 
-地块平面图用`span: 'side'`放进旁栏，叠在第2节的旁标题下方（[定位](/zh/docs/document-format-resources#位置)）。`width: PLAN_W / SIDE`让它宽44 mm，88米的地块恰好是1:2000。立面图是横贯页面的`'top'`浮动体。它在第2页被引用，排在第3页开头，因为浮动体从不排在其引用位置之前。功能需求表同样在第2页被引用，浮动到第3页正文栏的顶部，排在立面图下方。`captionSide: true`让它的题注立在旁栏中，与表格顶部对齐。日程表放在`::resource`所在的位置，即任务书末尾，`captionSide: true`同样让它的题注立在旁栏中，在6.3小节旁边。
+地块平面图用`span: 'side'`放进旁栏，叠在第2节的旁标题下方（[定位](/zh/docs/document-format-resources#位置)）。`width: PLAN_W / SIDE`让它宽44 mm，88米的地块恰好是1:2000。立面图是横贯页面的`'top'`浮动体。它在第2页被引用，排在第3页开头，因为浮动体从不排在其引用位置之前。功能需求表同样在第2页被引用，浮动到第3页正文栏的顶部，排在立面图下方。`captionSide: true`让它的题注立在旁栏中，与表格顶部对齐。日程表放在`::resource`所在的位置，即任务书末尾，`captionSide: true`同样让它的题注立在旁栏中，在6.3小节旁边。Mona Sans默认使用比例数字，右对齐的一栏里120和560的各位数字对不齐。命名表格样式`tableStyles: [{ id: 'figures', figureStyle: 'tabular' }]`由表1用`styleId: 'figures'`选用，启用字体的`tnum`：它的等宽数字带斜线零，与DM Mono的编号相近。日程表中的日期保留字体自身的数字（[数字样式](/zh/docs/configuration-fonts-colors-viewers#数字样式)）。
 
 ### 5 · 以总平面图开启任务书
 

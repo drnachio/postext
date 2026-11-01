@@ -1,29 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "maghreb-edition-european-digits",
-  "sourceHash": "9ea416aa0d4fe98a74e25440dd4780c7c28ea70e667cde811a720cdaacdad2d3",
+  "sourceHash": "71985f9806988a98bfa8d4a40b108bf54177038054273b093b220d69f37b4761",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:39:08.068Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:35:00.985Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:26:03.599Z",
   "variants": {
     "en": {
-      "hash8": "a9f641a5",
-      "vdtHash": "44faa10401503a5e6b446afd42b04c4b1d9ab8f0",
+      "hash8": "a13818f9",
+      "vdtHash": "a724d692fc3da2bd93b898b51063021d614117fc",
       "timings": {
-        "importMs": 441,
-        "fontsMs": 99,
-        "buildMs": 82,
-        "totalMs": 1232,
+        "importMs": 3486,
+        "fontsMs": 434,
+        "buildMs": 106,
+        "totalMs": 4891,
         "builds": 1
       },
       "specimen": {
@@ -77,7 +71,7 @@
           "h": 1556,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 88498,
+          "bytes": 99502,
           "alt": "Page 43: 3-2 مدينة داخل السور."
         },
         {
@@ -88,7 +82,7 @@
           "h": 1556,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 91656,
+          "bytes": 77454,
           "alt": "Page 44: 3-3 الباب والكتاب."
         }
       ],
@@ -121,18 +115,18 @@
       },
       "pdf": {
         "file": "maghreb-edition-european-digits.pdf",
-        "bytes": 66014,
+        "bytes": 65739,
         "pages": 4
       },
       "sandbox": {
         "file": "maghreb-edition-european-digits.postext",
-        "bytes": 25815,
+        "bytes": 25800,
         "folio": "5362c1cb",
         "chapters": [
           {
             "pages": 4,
-            "hash": "9c34a3ed37bcbd37",
-            "lines": "0950146587e744b3"
+            "hash": "fe64bc60916ca376",
+            "lines": "10657670f57dcde2"
           }
         ]
       },
@@ -311,16 +305,31 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.35
+          "worst": 1.37
         },
         "raggedLines": {
           "count": 0
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "bundle locale ar-MA, the document's language: en names its resource types otherwise"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (its bundle is in ar-MA, as another edition's)"
           },
           {
             "check": "sandbox",
@@ -331,13 +340,13 @@
       }
     },
     "es": {
-      "hash8": "249d282c",
-      "vdtHash": "0a60514befd4a7537abe537fae5be136250e6ca8",
+      "hash8": "52ad704b",
+      "vdtHash": "d2324732abde83cf4c558873e8fa8b609cecf7ee",
       "timings": {
-        "importMs": 287,
-        "fontsMs": 65,
-        "buildMs": 75,
-        "totalMs": 1055,
+        "importMs": 7474,
+        "fontsMs": 218,
+        "buildMs": 130,
+        "totalMs": 9188,
         "builds": 1
       },
       "specimen": {
@@ -391,7 +400,7 @@
           "h": 1556,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 88498,
+          "bytes": 99502,
           "alt": "Página 43: 3-2 مدينة داخل السور."
         },
         {
@@ -402,7 +411,7 @@
           "h": 1556,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 93070,
+          "bytes": 78948,
           "alt": "Página 44: 3-3 الباب والكتاب."
         }
       ],
@@ -435,18 +444,18 @@
       },
       "pdf": {
         "file": "maghreb-edition-european-digits.pdf",
-        "bytes": 66406,
+        "bytes": 66138,
         "pages": 4
       },
       "sandbox": {
         "file": "maghreb-edition-european-digits.postext",
-        "bytes": 25878,
+        "bytes": 25862,
         "folio": "5362c1cb",
         "chapters": [
           {
             "pages": 4,
-            "hash": "cd2abc1bb15d57af",
-            "lines": "d42f4235af2ba0ff"
+            "hash": "f66770c00588b57a",
+            "lines": "5b7443b62905cbfa"
           }
         ]
       },
@@ -625,16 +634,31 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.35
+          "worst": 1.37
         },
         "raggedLines": {
           "count": 0
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "bundle locale ar-MA, the document's language: es names its resource types otherwise"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (its bundle is in ar-MA, as another edition's)"
           },
           {
             "check": "sandbox",

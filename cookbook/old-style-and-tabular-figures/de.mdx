@@ -1,0 +1,65 @@
+---
+title: "Mediäval-, Versal- und Tabellenziffern"
+summary: "Thoreaus Rechnungen aus Walden: figureStyle setzt Versalziffern in Kapitälchen-Überschriften und Tabellenziffern in die Rechnungen; der Text bleibt mediäval."
+plain: "Eine kleine Ausgabe der Haushaltsrechnungen, die Thoreau in Walden abdruckte. Die Zahlen im Text sind klein wie Kleinbuchstaben, die Jahreszahlen der Überschriften so hoch wie Großbuchstaben, die Beträge stehen in Spalten."
+description: "Thoreaus Rechnungen aus Walden in Postext: Mediävalziffern im Text, Versalziffern in Überschriften aus Kapitälchen und Tabellenziffern in den Rechnungen."
+question: "Wie setze ich Mediävalziffern im Text, Versalziffern in den Überschriften und Tabellenziffern in den Tabellen?"
+aliases: ["Mediävalziffern", "Minuskelziffern", "Versalziffern", "Tabellenziffern", "Ziffernarten", "onum", "lnum", "tnum", "Thoreau", "Walden", "Rechnungen"]
+pageNotes: { "1": "Die Eröffnungsseite: der Stich von 1854 mit Thoreaus Hütte unter Kiefern, der Titel THE ACCOUNTS in Kapitälchen über Concord, 1845–1847 in Versalziffern, ein kursiver Vorspann mit Daten in Mediävalziffern und der erste Abschnitt, The House, 1845.", "2": "Die Kosten des Hauses: dreizehn Posten mit ihren Preisen in einer Spalte gleich breiter Mediävalziffern, eine Spalte für die halben Cent, Thoreaus Bemerkungen rechts und die Summe, $28.12½, unter einer feinen Linie." }
+---
+
+## Was Sie setzen
+
+Eine kleine Ausgabe der Rechnungen, die Thoreau im ersten Kapitel von *Walden* abdruckte: was sein Haus kostete, was das Bohnenfeld einbrachte, was er in acht Monaten aß. Sie steht auf einer Seite von 140 × 216 mm in der Alegreya-Familie, mit dem Stich der Hütte von 1854 über der Eröffnung. Die Ziffern wechseln mit ihrer Aufgabe. Im Text stehen *March, 1845* und *$13.34* in Mediävalziffern, die wie Kleinbuchstaben auf- und absteigen, sodass die Daten nicht aus der Zeile fallen. Die Überschriften sind Kapitälchen, und ihre Jahreszahlen sind so hoch wie die Großbuchstaben. In den Rechnungen ist jede Ziffer gleich breit, und die Cent von dreizehn Zeilen Bretter, Latten und Nägel stehen bis zur Summe untereinander.
+
+## Zubereitung
+
+### 1 · Eine Ziffernart je Textstil
+
+Der Code dieses Schritts ist die kurze Antwort weiter oben. `figureStyle` verlangt von der Schrift eines Stils ihre OpenType-Ziffern ([Ziffernarten](/de/docs/configuration-fonts-colors-viewers#ziffernarten)). Der Grundtext verlangt nichts, denn Alegreyas eigene Ziffern sind schon Mediävalziffern mit eigener Breite: die 1 ist 342 Einheiten breit, die 0 533. Die Überschriften der zweiten Ebene verlangen von Alegreya SC `'lining'`, ihre `lnum`-Ziffern, die so hoch sind wie die Großbuchstaben daneben. Der Tabellenstil verlangt `'tabular'`, das `tnum` der Schrift: Die Ziffern behalten ihre Mediävalform und werden alle gleich breit, 450 Einheiten, sodass sich eine Spalte von Preisen von oben nach unten liest. Mit `'lining-tabular'` stünden sie auf Versalhöhe (siehe „Varianten“).
+
+### 2 · Die Rechnungen sind Tabellen mit fünf Spalten
+
+<Excerpt region="accounts" />
+
+Thoreaus Rechnungen liegen als TSV in `content.accounts.en.md`, ein Block je Rechnung, und die spanische Ausgabe übersetzt die Posten und setzt das Dezimalkomma, ohne den Code anzufassen. Jede Zeile hat einen Posten, das Dollarzeichen, den Betrag, einen Bruch und eine Bemerkung. Halbe und Viertel haben eine eigene Spalte: ½ ist 713 Einheiten breit und ¾ 689, mehr als eine Tabellenziffer, und Alegreya hat kein Ziffernleerzeichen, um die anderen Beträge aufzufüllen. Eine Summe besteht aus Kopfzellen, darum zieht `groupRules` eine feine Linie darüber, wie Thoreaus Drucker vor *In all* einen Strich zog. Das Dollarzeichen wird `\$` geschrieben, denn ein einzelnes `$` öffnet in einer Zelle wie im Text eine Formel. Der Ressourcentyp `account` hat weder Nummer noch Beschriftungspräfix, und seine Standardplatzierung ist `'here'`: Jede Rechnung steht dort, wo Thoreaus Satz sie ankündigt.
+
+### 3 · Die Eröffnung nennt ihre Ziffern selbst
+
+<Excerpt region="opener" />
+
+Ein Gestaltungstext legt seine eigene Familie fest, also erreichen ihn die Ziffern des Grundtexts nicht. *Concord, 1845–1847* steht in Alegreya SC und verlangt selbst `'lining'`, wie die Überschriften. Die Vignette ist der Stich vom Titelblatt von 1854, beschnitten und auf Schwarz auf Weiß gebracht; Spitzmarke, Titel und Daten nehmen die Satzbreite und stehen darunter auf Mitte.
+
+### 4 · Kolumnentitel mit dem Abschnitt auf der rechten Seite
+
+<Excerpt region="running-heads" />
+
+Die linke Seite trägt den Buchtitel, die rechte den laufenden Abschnitt, `{firstMark.h2}`: Seite 3 zeigt *The Bean-Field, 1845*. Die Seitenzahlen stehen in Alegreya und behalten ihre Mediävalziffern.
+
+<PageShot page={2} crop="0.08,0.32,0.84,0.44" caption="Seite 2: Die Mediävalziffern der Hausrechnung sind alle gleich breit, und die Cent stehen bis zur Summe untereinander." />
+
+## Varianten
+
+### Die Rechnungen in Versalziffern setzen
+
+Ein Kontobuch oder eine Preisliste in einem modernen Buch setzt die Ziffern oft auf Versalhöhe.
+
+```diff
+-  figureStyle: 'tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
++  figureStyle: 'lining-tabular', bodyFontFamily: TEXT, bodyFontSize: pt(9.8), bodyColor: col('ink'),
+```
+
+### Die Seitenzahlen in Versalziffern setzen
+
+Seitenzahlen in Versalziffern passen zu Kolumnentiteln in Großbuchstaben.
+
+```diff
+-const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++const folio = { fontFamily: TEXT, fontSize: pt(9.5), fontWeight: 400, letterSpacing: pt(0),
++  figureStyle: 'lining',
+```
+
+## Häufige Fehler
+
+- Die latin-Dateien, die Fontsource ausliefert, lassen `onum` oft weg: Lora, EB Garamond, Source Serif 4, Crimson Pro, Newsreader und Literata behalten nur `pnum` und `tnum`. Mit diesen Dateien ändert `figureStyle: 'oldstyle'` nichts, und der Text behält Versalziffern. Wählen Sie eine Schrift, deren eigene Ziffern Mediävalziffern sind, etwa Alegreya, Gelasio oder Cormorant Garamond, die `lnum` für Überschriften mitbringen, oder laden Sie die vollständigen Dateien der Schriftgießerei.
+- Ein `$` im Markdown oder in einer Tabellenzelle öffnet eine Formel. Schreiben Sie `\$14.72½` im Text und `\$` in einer Zelle.

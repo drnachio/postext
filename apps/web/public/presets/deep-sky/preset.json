@@ -196,6 +196,38 @@
      "hex": "#000000",
      "model": "hex"
     }
+   },
+   {
+    "id": "solarTint",
+    "name": "Sistema solar, celda",
+    "value": {
+     "hex": "#eed1bb",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "starsTint",
+    "name": "Estrellas, celda",
+    "value": {
+     "hex": "#e8c2c1",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "galaxiesTint",
+    "name": "Galaxias, celda",
+    "value": {
+     "hex": "#bbd6de",
+     "model": "hex"
+    }
+   },
+   {
+    "id": "cosmosTint",
+    "name": "Cosmos, celda",
+    "value": {
+     "hex": "#cbc5df",
+     "model": "hex"
+    }
    }
   ],
   "resourceTypes": [
@@ -334,6 +366,12 @@
     "paletteId": "ink"
    },
    "keepWithNext": true,
+   "balancing": {
+    "fillShortColumns": true,
+    "maxLinesBeforeLoose": 4,
+    "stretchAfterWideFloats": "always",
+    "trailingStep": "grid"
+   },
    "levels": [
     {
      "level": 1,
@@ -663,12 +701,7 @@
      }
     }
    ],
-   "keepWithNextSplit": "fill",
-   "balancing": {
-    "maxLinesBeforeLoose": 4,
-    "stretchAfterWideFloats": "always",
-    "trailingStep": "grid"
-   }
+   "keepWithNextSplit": "fill"
   },
   "headingStyles": [
    {
@@ -1639,7 +1672,7 @@
     "id": "ficha",
     "name": "De un vistazo",
     "span": "column",
-    "placement": "here",
+    "placement": "top",
     "backgroundEnabled": true,
     "background": {
      "hex": "#f0efeb",
@@ -1731,7 +1764,10 @@
      },
      "textAlign": "left",
      "hyphenation": false,
-     "paragraphSpacing": true,
+     "paragraphSpacing": {
+      "value": 6.5,
+      "unit": "pt"
+     },
      "firstLineIndent": {
       "value": 0,
       "unit": "mm"
@@ -2810,6 +2846,11 @@
     "unit": "pt"
    },
    "headerBold": true,
+   "headerColor": {
+    "hex": "#ffffff",
+    "model": "hex",
+    "paletteId": "white"
+   },
    "headerBackgroundEnabled": true,
    "headerBackground": {
     "hex": "#14181d",
@@ -2845,6 +2886,46 @@
     "hex": "#2a7f97",
     "model": "hex",
     "paletteId": "band"
+   }
+  },
+  "links": {
+   "print": "notes",
+   "show": "both",
+   "urlDisplay": "short",
+   "qr": {
+    "size": {
+     "value": 14,
+     "unit": "mm"
+    }
+   }
+  },
+  "footnotes": {
+   "fontSize": {
+    "value": 8.45,
+    "unit": "pt"
+   },
+   "lineHeight": {
+    "value": 11.05,
+    "unit": "pt"
+   },
+   "color": {
+    "hex": "#666b73",
+    "model": "hex",
+    "paletteId": "muted"
+   },
+   "textAlign": "left",
+   "separator": {
+    "enabled": true,
+    "width": 0.25,
+    "lineWidth": {
+     "value": 0.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c9c6bf",
+     "model": "hex",
+     "paletteId": "rule"
+    }
    }
   },
   "pdfGeneration": {
@@ -2961,7 +3042,12 @@
      "id": "noirlab2515b",
      "caption": "Gemas Cósmicas en Circinus Oeste",
      "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
-     "altText": "Gemas Cósmicas en Circinus Oeste"
+     "altText": "Gemas Cósmicas en Circinus Oeste",
+     "placement": {
+      "position": "here",
+      "span": "page",
+      "width": 1
+     }
     },
     {
      "id": "noirlab2515c",
@@ -2979,7 +3065,12 @@
      "id": "eso2510b",
      "caption": "Vista de MUSE del gas ionizado que hay en la Galaxia del Escultor",
      "note": "Crédito: ESO/E. Congiu et al.",
-     "altText": "Vista de MUSE del gas ionizado que hay en la Galaxia del Escultor"
+     "altText": "Vista de MUSE del gas ionizado que hay en la Galaxia del Escultor",
+     "placement": {
+      "position": "auto",
+      "span": "column",
+      "width": 1
+     }
     },
     {
      "id": "noirlab2612a",
@@ -2994,16 +3085,16 @@
      "altText": "Primer plano de las partes centrales de la Galaxia del Sombrero"
     },
     {
-     "id": "eso2406a",
-     "caption": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
-     "note": "Crédito: EHT Collaboration",
-     "altText": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada"
-    },
-    {
      "id": "eso2406b",
      "caption": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada",
      "note": "Crédito: EHT Collaboration",
      "altText": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada"
+    },
+    {
+     "id": "eso2406a",
+     "caption": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
+     "note": "Crédito: EHT Collaboration",
+     "altText": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada"
     },
     {
      "id": "noirlab2618a",
@@ -3051,9 +3142,9 @@
          {
           "content": "**Neptuno**",
           "background": {
-           "hex": "#c9702a",
+           "hex": "#eed1bb",
            "model": "hex",
-           "paletteId": "solar"
+           "paletteId": "solarTint"
           }
          },
          {
@@ -3070,9 +3161,9 @@
          {
           "content": "**Cometa 3I/ATLAS**",
           "background": {
-           "hex": "#c9702a",
+           "hex": "#eed1bb",
            "model": "hex",
-           "paletteId": "solar"
+           "paletteId": "solarTint"
           }
          },
          {
@@ -3089,9 +3180,9 @@
          {
           "content": "**Doble detonación**",
           "background": {
-           "hex": "#b8413d",
+           "hex": "#e8c2c1",
            "model": "hex",
-           "paletteId": "stars"
+           "paletteId": "starsTint"
           }
          },
          {
@@ -3108,9 +3199,9 @@
          {
           "content": "**Circinus Oeste**",
           "background": {
-           "hex": "#b8413d",
+           "hex": "#e8c2c1",
            "model": "hex",
-           "paletteId": "stars"
+           "paletteId": "starsTint"
           }
          },
          {
@@ -3127,9 +3218,9 @@
          {
           "content": "**Galaxia del Escultor**",
           "background": {
-           "hex": "#2a7f97",
+           "hex": "#bbd6de",
            "model": "hex",
-           "paletteId": "galaxies"
+           "paletteId": "galaxiesTint"
           }
          },
          {
@@ -3146,9 +3237,9 @@
          {
           "content": "**Galaxia del Sombrero**",
           "background": {
-           "hex": "#2a7f97",
+           "hex": "#bbd6de",
            "model": "hex",
-           "paletteId": "galaxies"
+           "paletteId": "galaxiesTint"
           }
          },
          {
@@ -3165,9 +3256,9 @@
          {
           "content": "**Sagitario A***",
           "background": {
-           "hex": "#5b4a9c",
+           "hex": "#cbc5df",
            "model": "hex",
-           "paletteId": "cosmos"
+           "paletteId": "cosmosTint"
           }
          },
          {
@@ -3184,9 +3275,9 @@
          {
           "content": "**Campo COSMOS**",
           "background": {
-           "hex": "#5b4a9c",
+           "hex": "#cbc5df",
            "model": "hex",
-           "paletteId": "cosmos"
+           "paletteId": "cosmosTint"
           }
          },
          {
@@ -3320,7 +3411,12 @@
      "id": "eso2510b",
      "caption": "MUSE view of ionised gas in the Sculptor Galaxy",
      "note": "Credit: ESO/E. Congiu et al.",
-     "altText": "MUSE view of ionised gas in the Sculptor Galaxy"
+     "altText": "MUSE view of ionised gas in the Sculptor Galaxy",
+     "placement": {
+      "position": "top",
+      "span": "page",
+      "width": 1
+     }
     },
     {
      "id": "noirlab2612a",
@@ -3335,16 +3431,16 @@
      "altText": "Close-up of the central parts of the Sombrero Galaxy"
     },
     {
-     "id": "eso2406a",
-     "caption": "A view of the Milky Way supermassive black hole Sagittarius A* in polarised light",
-     "note": "Credit: EHT Collaboration",
-     "altText": "A view of the Milky Way supermassive black hole Sagittarius A* in polarised light"
-    },
-    {
      "id": "eso2406b",
      "caption": "M87* and Sgr A* side-by-side in polarised light",
      "note": "Credit: EHT Collaboration",
      "altText": "M87* and Sgr A* side-by-side in polarised light"
+    },
+    {
+     "id": "eso2406a",
+     "caption": "A view of the Milky Way supermassive black hole Sagittarius A* in polarised light",
+     "note": "Credit: EHT Collaboration",
+     "altText": "A view of the Milky Way supermassive black hole Sagittarius A* in polarised light"
     },
     {
      "id": "noirlab2618a",
@@ -3392,9 +3488,9 @@
          {
           "content": "**Neptune**",
           "background": {
-           "hex": "#c9702a",
+           "hex": "#eed1bb",
            "model": "hex",
-           "paletteId": "solar"
+           "paletteId": "solarTint"
           }
          },
          {
@@ -3411,9 +3507,9 @@
          {
           "content": "**Comet 3I/ATLAS**",
           "background": {
-           "hex": "#c9702a",
+           "hex": "#eed1bb",
            "model": "hex",
-           "paletteId": "solar"
+           "paletteId": "solarTint"
           }
          },
          {
@@ -3430,9 +3526,9 @@
          {
           "content": "**Double detonation**",
           "background": {
-           "hex": "#b8413d",
+           "hex": "#e8c2c1",
            "model": "hex",
-           "paletteId": "stars"
+           "paletteId": "starsTint"
           }
          },
          {
@@ -3449,9 +3545,9 @@
          {
           "content": "**Circinus West**",
           "background": {
-           "hex": "#b8413d",
+           "hex": "#e8c2c1",
            "model": "hex",
-           "paletteId": "stars"
+           "paletteId": "starsTint"
           }
          },
          {
@@ -3468,9 +3564,9 @@
          {
           "content": "**Sculptor Galaxy**",
           "background": {
-           "hex": "#2a7f97",
+           "hex": "#bbd6de",
            "model": "hex",
-           "paletteId": "galaxies"
+           "paletteId": "galaxiesTint"
           }
          },
          {
@@ -3487,9 +3583,9 @@
          {
           "content": "**Sombrero Galaxy**",
           "background": {
-           "hex": "#2a7f97",
+           "hex": "#bbd6de",
            "model": "hex",
-           "paletteId": "galaxies"
+           "paletteId": "galaxiesTint"
           }
          },
          {
@@ -3506,9 +3602,9 @@
          {
           "content": "**Sagittarius A***",
           "background": {
-           "hex": "#5b4a9c",
+           "hex": "#cbc5df",
            "model": "hex",
-           "paletteId": "cosmos"
+           "paletteId": "cosmosTint"
           }
          },
          {
@@ -3525,9 +3621,9 @@
          {
           "content": "**COSMOS field**",
           "background": {
-           "hex": "#5b4a9c",
+           "hex": "#cbc5df",
            "model": "hex",
-           "paletteId": "cosmos"
+           "paletteId": "cosmosTint"
           }
          },
          {
@@ -3561,7 +3657,7 @@
    "kind": "bitmap",
    "file": "resources/eso2314a.jpg",
    "width": 3200,
-   "height": 1800,
+   "height": 1600,
    "caption": "Mancha oscura de Neptuno observada con el instrumento MUSE, instalado en el Very Large Telescope de ESO",
    "note": "Crédito: ESO/P. Irwin et al.",
    "altText": "Mancha oscura de Neptuno observada con el instrumento MUSE, instalado en el Very Large Telescope de ESO",
@@ -3585,6 +3681,12 @@
     "position": "auto",
     "span": "column",
     "width": 1
+   },
+   "safeArea": {
+    "x": 0.1,
+    "y": 0.08,
+    "width": 0.8,
+    "height": 0.84
    }
   },
   {
@@ -3593,7 +3695,7 @@
    "kind": "bitmap",
    "file": "resources/noirlab2532b.jpg",
    "width": 1994,
-   "height": 1668,
+   "height": 997,
    "caption": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
    "note": "Crédito: International Gemini Observatory/NOIRLab/NSF/AURA/B. Bolin. Image Processing: J. Miller & M. Rodriguez (International Gemini Observatory/NSF NOIRLab), T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), M. Zamani (NSF NOIRLab)",
    "altText": "Cometa 3I/ATLAS el 26 de noviembre de 2025",
@@ -3617,6 +3719,12 @@
     "position": "auto",
     "span": "column",
     "width": 1
+   },
+   "safeArea": {
+    "x": 0.2,
+    "y": 0.2,
+    "width": 0.6,
+    "height": 0.6
    }
   },
   {
@@ -3625,7 +3733,7 @@
    "kind": "bitmap",
    "file": "resources/eso2511a.jpg",
    "width": 3000,
-   "height": 2000,
+   "height": 1500,
    "caption": "Imagen del VLT de una supernova con doble explosión",
    "note": "Crédito: ESO/P. Das et al. Background stars (Hubble): K. Noll et al.",
    "altText": "Imagen del VLT de una supernova con doble explosión",
@@ -3649,6 +3757,12 @@
     "position": "auto",
     "span": "column",
     "width": 1
+   },
+   "safeArea": {
+    "x": 0.2,
+    "y": 0.18,
+    "width": 0.62,
+    "height": 0.62
    }
   },
   {
@@ -3657,7 +3771,7 @@
    "kind": "bitmap",
    "file": "resources/noirlab2515a.jpg",
    "width": 3200,
-   "height": 2602,
+   "height": 1600,
    "caption": "La Cámara de Energía Oscura registra la Nube Molecular de Circinus Oeste",
    "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
    "altText": "La Cámara de Energía Oscura registra la Nube Molecular de Circinus Oeste",
@@ -3694,9 +3808,15 @@
    "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Kosari (NSF NOIRLab)",
    "altText": "Panorámica de Circinus Oeste",
    "placement": {
-    "position": "auto",
+    "position": "here",
     "span": "column",
     "width": 1
+   },
+   "safeArea": {
+    "x": 0.15,
+    "y": 0.15,
+    "width": 0.75,
+    "height": 0.75
    }
   },
   {
@@ -3737,7 +3857,7 @@
    "kind": "bitmap",
    "file": "resources/noirlab2612a.jpg",
    "width": 3200,
-   "height": 2029,
+   "height": 1600,
    "caption": "La Galaxia del Sombrero, revelada como nunca antes",
    "note": "Crédito: CTIO/NOIRLab/DOE/NSF/AURA. Image Processing: T.A. Rector (University of Alaska Anchorage/NSF NOIRLab), D. de Martin & M. Zamani (NSF NOIRLab)",
    "altText": "La Galaxia del Sombrero, revelada como nunca antes",
@@ -3761,22 +3881,12 @@
     "position": "auto",
     "span": "column",
     "width": 1
-   }
-  },
-  {
-   "id": "eso2406a",
-   "typeId": "figure",
-   "kind": "bitmap",
-   "file": "resources/eso2406a.jpg",
-   "width": 3200,
-   "height": 3200,
-   "caption": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
-   "note": "Crédito: EHT Collaboration",
-   "altText": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
-   "placement": {
-    "position": "here",
-    "span": "page",
-    "width": 1
+   },
+   "safeArea": {
+    "x": 0.08,
+    "y": 0.25,
+    "width": 0.84,
+    "height": 0.55
    }
   },
   {
@@ -3785,14 +3895,36 @@
    "kind": "bitmap",
    "file": "resources/eso2406b.jpg",
    "width": 3200,
-   "height": 1800,
+   "height": 1600,
    "caption": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada",
    "note": "Crédito: EHT Collaboration",
    "altText": "M87* y Sgr A*, uno junto al otro, vistos con luz polarizada",
    "placement": {
-    "position": "auto",
+    "position": "here",
     "span": "page",
     "width": 1
+   }
+  },
+  {
+   "id": "eso2406a",
+   "typeId": "figure",
+   "kind": "bitmap",
+   "file": "resources/eso2406a.jpg",
+   "width": 1800,
+   "height": 1800,
+   "caption": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
+   "note": "Crédito: EHT Collaboration",
+   "altText": "Una vista del agujero negro supermasivo de la Vía Láctea Sagitario A* en luz polarizada",
+   "placement": {
+    "position": "auto",
+    "span": "column",
+    "width": 1
+   },
+   "safeArea": {
+    "x": 0.14,
+    "y": 0.14,
+    "width": 0.72,
+    "height": 0.7
    }
   },
   {
@@ -3801,7 +3933,7 @@
    "kind": "bitmap",
    "file": "resources/noirlab2618a.jpg",
    "width": 3200,
-   "height": 1746,
+   "height": 1600,
    "caption": "El Observatorio Rubin en Chile abre una nueva ventana al famoso campo COSMOS",
    "note": "Crédito: NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA",
    "altText": "El Observatorio Rubin en Chile abre una nueva ventana al famoso campo COSMOS",
@@ -3873,9 +4005,9 @@
        {
         "content": "**Neptuno**",
         "background": {
-         "hex": "#c9702a",
+         "hex": "#eed1bb",
          "model": "hex",
-         "paletteId": "solar"
+         "paletteId": "solarTint"
         }
        },
        {
@@ -3892,9 +4024,9 @@
        {
         "content": "**Cometa 3I/ATLAS**",
         "background": {
-         "hex": "#c9702a",
+         "hex": "#eed1bb",
          "model": "hex",
-         "paletteId": "solar"
+         "paletteId": "solarTint"
         }
        },
        {
@@ -3911,9 +4043,9 @@
        {
         "content": "**Doble detonación**",
         "background": {
-         "hex": "#b8413d",
+         "hex": "#e8c2c1",
          "model": "hex",
-         "paletteId": "stars"
+         "paletteId": "starsTint"
         }
        },
        {
@@ -3930,9 +4062,9 @@
        {
         "content": "**Circinus Oeste**",
         "background": {
-         "hex": "#b8413d",
+         "hex": "#e8c2c1",
          "model": "hex",
-         "paletteId": "stars"
+         "paletteId": "starsTint"
         }
        },
        {
@@ -3949,9 +4081,9 @@
        {
         "content": "**Galaxia del Escultor**",
         "background": {
-         "hex": "#2a7f97",
+         "hex": "#bbd6de",
          "model": "hex",
-         "paletteId": "galaxies"
+         "paletteId": "galaxiesTint"
         }
        },
        {
@@ -3968,9 +4100,9 @@
        {
         "content": "**Galaxia del Sombrero**",
         "background": {
-         "hex": "#2a7f97",
+         "hex": "#bbd6de",
          "model": "hex",
-         "paletteId": "galaxies"
+         "paletteId": "galaxiesTint"
         }
        },
        {
@@ -3987,9 +4119,9 @@
        {
         "content": "**Sagitario A***",
         "background": {
-         "hex": "#5b4a9c",
+         "hex": "#cbc5df",
          "model": "hex",
-         "paletteId": "cosmos"
+         "paletteId": "cosmosTint"
         }
        },
        {
@@ -4006,9 +4138,9 @@
        {
         "content": "**Campo COSMOS**",
         "background": {
-         "hex": "#5b4a9c",
+         "hex": "#cbc5df",
          "model": "hex",
-         "paletteId": "cosmos"
+         "paletteId": "cosmosTint"
         }
        },
        {

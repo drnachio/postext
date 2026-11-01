@@ -1,7 +1,7 @@
-// ═══ Postext Cookbook · Nº 134 · A business section on salmon newsprint ═══════════════
+// ═══ Postext Cookbook · Nº 134 · A business section on salmon newsprint ═══
 // https://postext.dev/en/cookbook/business-section-on-salmon
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated (CC BY 4.0)
-// Fonts: Source Serif 4, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.57.0
+// Fonts: Source Serif 4, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 //
 // Eight pages: four of news in five columns, then Business on salmon paper in six.
 // One heading style carries the change; a :::paper run gives Folio the salmon stock.

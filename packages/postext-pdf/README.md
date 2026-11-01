@@ -2,7 +2,7 @@
 
 **PDF backend for [postext](https://www.npmjs.com/package/postext).**
 
-`postext-pdf` turns the document that `postext` lays out into a real PDF, in the browser or in Node. It does not re-measure anything: it consumes the same `VDTDocument` the canvas and HTML renderers use and translates its coordinates into PDF points, so the three outputs agree on every line break, column height and resource placement. The PDF embeds the actual font files, carries outline bookmarks and is tagged for accessibility (PDF/UA oriented).
+`postext-pdf` turns the document that `postext` lays out into a real PDF, in the browser or in Node. It does not re-measure anything: it consumes the same `VDTDocument` the canvas and HTML renderers use and translates its coordinates into PDF points, so the three outputs agree on every line break, column height and resource placement. The PDF embeds the actual font files, carries outline bookmarks, keeps every link clickable (the QR codes of printed link notes are vector modules with a link of their own) and is tagged for accessibility (PDF/UA oriented).
 
 **Website:** [postext.dev](https://postext.dev/) · **Docs:** [PDF output](https://postext.dev/en/docs/configuration-pdf-output#generating-pdfs)
 

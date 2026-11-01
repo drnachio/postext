@@ -341,6 +341,7 @@ interface VDTLine {
   sourceEnd?: number;
   plainStart?: number;          // plain-text source map
   plainEnd?: number;
+  qr?: VDTLineQr;               // رمز QR لحاشية رابط (links.show)، على السطر الأول من الحاشية
 }
 
 // A measured, placement-ready resource embed (bitmap / svg / table / video)

@@ -26,7 +26,7 @@ Algunas decisiones no se pueden tomar dentro de un solo recorrido, porque depend
 ### Etapa 1: estructuración del contenido
 
 - **Entrada:** `PostextContent` sin procesar
-- **Acción:** Analizar el Markdown y convertirlo en bloques de contenido, resolver por id las referencias a recursos en `resources[]`, sacar del flujo las definiciones de las notas al pie (`[^id]:`) y numerar sus llamadas por orden de cita, numerar los encabezados y planificar los flotantes: qué recursos flotan y detrás de qué bloque (`notes[]` no se lee)
+- **Acción:** Analizar el Markdown y convertirlo en bloques de contenido, resolver por id las referencias a recursos en `resources[]`, sacar del flujo las definiciones de las notas al pie (`[^id]:`) y numerar sus llamadas por orden de cita, dar una nota a los enlaces externos cuando `links.print` es `'notes'` (o su dirección entre paréntesis con `'inline'`), numerar los encabezados y planificar los flotantes: qué recursos flotan y detrás de qué bloque (`notes[]` no se lee)
 - **Salida:** Una lista plana de bloques de contenido (con su tipo y su contenido, pero sin página ni columna asignadas) y el plan de los flotantes
 - **Se ejecuta:** al principio de cada pasada de colocación. A partir de la segunda pasada, el análisis se toma de su memoria; lo demás se vuelve a calcular
 

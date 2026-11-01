@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 137 · An AI preprint with prompt exemplars in boxes ═══════
 // https://postext.dev/en/cookbook/ai-preprint-prompt-exemplars
 // Code: MIT · Text: Wei et al. 2022, arXiv:2201.11903 (CC BY 4.0) · Charts: drawn in code
-// Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.34.0
+// Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
   inlineSvgFonts,
@@ -65,6 +65,9 @@ const natbib = STYLES['chicago-author-date']
 const citations = { style: 'custom', customStyle: natbib, link: true,
   bibliography: { fontSize: em(0.8), lineHeight: pt(10.2), entrySpacing: pt(1.8),
     hangingIndent: mm(4), doi: 'text' } };
+// The text's two web addresses are links: clickable in the PDF, printed in parentheses on
+// paper, `[name census data](https://namecensus.com/)` as "name census data (namecensus.com)".
+const links = { print: 'inline', urlDisplay: 'short' };
 // #endregion
 
 // #region title: venue line, title, authors and affiliation, then a source note
@@ -124,7 +127,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 
 
 const sans = (size) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: 600 });
 const config = () => ({
-  locale: 'en-us', colorPalette, citations, resourceTypes, header, footer,
+  locale: 'en-us', colorPalette, citations, links, resourceTypes, header, footer,
   checks: { contentInConfig: { allow: RUNNING } },
   crossRefs: { section: 'Section {n}' }, // \cref prints "Section 3"
   calloutStyles: [...promptBoxes,
@@ -148,6 +151,7 @@ const config = () => ({
   bodyText: { fontFamily: SERIF, fontSize: pt(9.6), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     referenceBold: false, textAlign: 'justify', firstLineIndent: mm(3.5), maxJustifyTracking: 10,
+    maxWordSpacing: 2.3, // room for a paragraph to run a line long in an 85 mm column
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     hyphenateAcrossColumns: 'withinPage', // no word is divided over a page
     avoidWidows: true, avoidOrphans: true, avoidRunts: true,

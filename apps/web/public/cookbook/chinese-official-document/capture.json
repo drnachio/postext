@@ -3,27 +3,21 @@
   "slug": "chinese-official-document",
   "sourceHash": "1c14187715b82d7b7356f0f92056c77597d5f003ef06b9c4b55e5b2b6d25fe59",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:34:49.039Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:56.694Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:47:29.307Z",
   "variants": {
     "en": {
-      "hash8": "29f1ff35",
+      "hash8": "c72e9970",
       "vdtHash": "80d8a526f7da634513bcf335a6e1537e7fa4f2f7",
       "timings": {
-        "importMs": 650,
-        "fontsMs": 253,
-        "buildMs": 73,
-        "totalMs": 1667,
+        "importMs": 1361,
+        "fontsMs": 489,
+        "buildMs": 63,
+        "totalMs": 2604,
         "builds": 1
       },
       "specimen": {
@@ -121,7 +115,7 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 127322,
+        "bytes": 127318,
         "pages": 4
       },
       "sandbox": {
@@ -373,6 +367,16 @@
             "detail": "the hero is 15.1 % colour, pictures or display type (aim for 25 %+)"
           },
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -381,13 +385,13 @@
       }
     },
     "es": {
-      "hash8": "1f949267",
+      "hash8": "cc8d19f6",
       "vdtHash": "2dcc65ad799e08155e5c0b6dd70622f5e28c1808",
       "timings": {
-        "importMs": 644,
-        "fontsMs": 237,
-        "buildMs": 78,
-        "totalMs": 1654,
+        "importMs": 2720,
+        "fontsMs": 435,
+        "buildMs": 62,
+        "totalMs": 4160,
         "builds": 1
       },
       "specimen": {
@@ -485,7 +489,7 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 127599,
+        "bytes": 127587,
         "pages": 4
       },
       "sandbox": {
@@ -735,6 +739,16 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 15.1 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

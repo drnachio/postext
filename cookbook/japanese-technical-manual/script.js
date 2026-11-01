@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 123 · A Japanese technical manual: kana, kanji and Latin ═══
 // https://postext.dev/en/cookbook/japanese-technical-manual
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code
-// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.28.0
+// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, defaultResourceTypes, parseTSV,
   registerResourceImage, inlineSvgFonts,
@@ -128,6 +128,9 @@ const config = () => ({
   // #region notes: only their size and colour; placement and numbering are the 'ja' defaults
   footnotes: { fontSize: pt(7.5), lineHeight: pt(12), color: col('ink'),
     separator: { color: col('rule') } }, // at the column foot, 1 on each page, superscript
+  // A link in a note prints its address after the text, in parentheses: the reader of the
+  // printed book can type it. 'short' drops https:// and www.; the PDF keeps the full link.
+  links: { print: 'inline', urlDisplay: 'short' },
   // #endregion
   unorderedLists: { bulletChar: '・', color: col('teal'), fontWeight: 400,
     marginTop: pt(0), marginBottom: pt(0) },

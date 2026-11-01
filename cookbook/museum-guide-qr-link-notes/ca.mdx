@@ -1,0 +1,63 @@
+---
+title: "Una guia de museu amb els enllaços impresos com a codis QR"
+summary: "Un passeig de butxaca per un museu amb els enllaços impresos com a notes numerades al peu, amb adreça curta i codi QR (links.print a notes)."
+description: "Una guia de museu a Postext: els enllaços al catàleg s'imprimeixen com a notes numerades amb adreça curta i codi QR, un quadre per pàgina, amb el codi."
+plain: "Una petita guia impresa de cinc quadres. On el text esmenta una pàgina web, un número petit porta al peu de la pàgina, on un codi quadrat obre aquesta pàgina al mòbil."
+question: "Com imprimeixo els enllaços d'una guia com a notes numerades amb un codi QR que el visitant pugui escanejar?"
+aliases: ["codi QR", "codis QR impresos", "adreces impreses", "guia de museu", "guia de passeig", "notes d'enllaç", "QR code", "museum guide"]
+---
+
+## Què compondràs
+
+Una guia de butxaca de les sales holandeses del Metropolitan Museum of Art: cinc quadres, una hora a peu, un quadre per pàgina. La coberta és la noia de Vermeer al costat de la finestra, tallada per la vora superior. Cada parada s'obre amb el número de sala, el títol i el pintor, després el quadre amb la cartel·la al costat i després tres paràgrafs breus. El text enllaça amb el catàleg del museu com ho faria qualsevol pàgina web. En paper, cada enllaç es converteix en un número petit, i al peu de la pàgina la nota dona l'adreça curta i un codi QR al qual el visitant acosta el mòbil davant del quadre.
+
+## Elaboració
+
+### 1 · Escriu enllaços, imprimeix notes
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. El Markdown conserva enllaços normals, `[La fitxa del catàleg](https://www.metmuseum.org/…/436616)`, i `links.print: 'notes'` converteix cadascun en una nota numerada amb l'adreça i el codi ([enllaços en paper](/ca/docs/configuration-notes-references#enllaços-en-paper)). Les notes són notes al peu: `numbering: 'document'` les compta al llarg del passeig, de manera que el lector troba de l'1 al 7, i `repeat: 'first'` deixa que l'última parada citi el Hals per la nota 3 en lloc d'imprimir dues vegades el mateix codi. Al PDF el codi es dibuixa en vectors i és ell mateix un enllaç.
+
+<PageShot page={3} crop="0,0.74,1,0.2" caption="El peu de la parada 1: la nota 3, la fitxa del quadre com a adreça curta al costat d'un codi de 16 mm." />
+
+### 2 · Una parada per pàgina
+
+<Excerpt region="stops" />
+
+Cada parada és un títol de segon nivell amb un `breakBefore` que obre pàgina, parella o senar, així que el visitant passa un full per quadre. El número de sala i el pintor són atributs del títol; el disseny els col·loca a sobre i a sota del títol, i `minHeight` deixa el quadre a la mateixa altura a totes les pàgines.
+
+### 3 · La cartel·la al costat del quadre
+
+<Excerpt region="resources" />
+
+`captionSide: 'inside'` posa el peu i la nota de crèdit al costat del quadre, com penja un museu la cartel·la, i `width` dona a cada quadre la seva part de la mesura: menys al Hals, que és alt, i més al Ruisdael, que és apaïsat, de manera que les cinc pàgines tenen una altura de text semblant. La cartel·la es fa amb la tècnica, les mides en centímetres amb espais de no separació i la línia de crèdit del museu, amb coma decimal a l'edició castellana.
+
+### 4 · La parada a la capçalera
+
+<Excerpt region="heads" />
+
+`{firstMark.h2}` imprimeix el títol de la parada que comença a la pàgina, així que la pàgina senar anomena el quadre i la parella, la guia. Cap capçalera no arriba a la coberta, una pàgina que fa d'obertura.
+
+## Variants
+
+### Imprimeix l'adreça a la línia
+
+Per a una guia que es llegeix a casa, `'inline'` afegeix l'adreça entre parèntesis després del text de l'enllaç i no posa nota ni codi.
+
+```diff
+-  print: 'notes', // a note marker after the link text, the address in a note at the foot
+-  show: 'both', // the short address for reading, the code for the phone
++  print: 'inline', // (metmuseum.org/…) after the link text
+```
+
+### Codis sense adreça
+
+`show: 'qr'` imprimeix només el codi al costat del número de nota, per a un cartell o una cartel·la on l'adreça només ocuparia lloc.
+
+```diff
+-  show: 'both', // the short address for reading, the code for the phone
++  show: 'qr', // the code alone
+```
+
+## Errors freqüents
+
+Una nota amb codi fa com a mínim el que fa el codi. Quan la línia que porta l'enllaç no té lloc a sota per a la nota a la pàgina, la línia passa a la següent amb la nota; deixa els enllaços fora de les últimes línies d'una pàgina que ha d'acabar on acaba, com el primer paràgraf de la coberta d'aquesta guia.

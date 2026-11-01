@@ -1,0 +1,63 @@
+---
+title: "Un modulo di corso con una verifica da fare a schermo"
+summary: "Due stili di esercizio in un Markdown: esercitazione senza limiti e verifica con un solo controllo; attachExercises li rende risolvibili in HTML e in EPUB."
+plain: "Una lezione sui terremoti: la leggi, ti eserciti quanto vuoi e poi fai una breve verifica in cui ogni risposta si controlla una volta sola. Si stampa come fascicolo e funziona a schermo e in un libro digitale."
+description: "Un modulo di quattro pagine in cui esercitazione e verifica si fanno nel visualizzatore HTML e in un EPUB a layout fisso, con limiti e sufficienza al 70 %."
+question: "Come faccio rispondere agli esercizi a schermo, con una verifica che consente un solo controllo?"
+aliases: ["esercizi interattivi", "autocorrezione", "verifica online", "piattaforma didattica", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+pageNotes: { "1": "L'apertura del modulo: un dipinto di una faglia che attraversa una pianura arida, al vivo in testa, l'occhiello, il titolo e un sommario in corsivo.", "3": "Esercitazione: tre esercizi con il numero in un disco ruggine, poi le soluzioni dell'esercitazione.", "4": "Verifica del modulo: quattro esercizi sotto un filetto ardesia con il numero in un quadrato, e il colophon." }
+---
+
+## Che cosa comporrai
+
+Il modulo 4 di *The Restless Planet*, un corso introduttivo di scienze della Terra: quattro pagine sui terremoti, in formato 176 × 250 mm, che si aprono sotto il dipinto di una faglia che attraversa una pianura arida. La lettura porta a un'esercitazione e a una verifica, scritte nel Markdown come blocchi `:::exercise` con le loro risposte. Il modulo stampato riporta le soluzioni dell'esercitazione e tiene fuori quelle della verifica. A schermo le stesse pagine si compilano: l'esercitazione si controlla e si ricomincia a piacere, mentre ogni domanda della verifica ammette un solo controllo, non si ricomincia e mostra la soluzione solo quando quel controllo è esaurito. Un pannello accanto alle pagine somma ciò che registrerebbe una piattaforma didattica: il punteggio, se la verifica è completa, e promosso o bocciato al 70 %.
+
+## Preparazione
+
+### 1 · Due stili, due regole
+
+Il codice è nella [risposta breve](#la-risposta-breve). Gli esercizi dicono solo che cosa chiedono; lo `style` del blocco decide come si comportano. `practice` mantiene i valori del libro, quindi la sua barra offre Verifica, Mostra la soluzione e Ricomincia senza limiti. `test` lo estende con un blocco `digital`: `maxChecks: 1`, `reset: false` e `showSolution: 'noChecksLeft'`, così la barra conta fino a «Nessuna verifica rimasta» e solo allora propone la soluzione. Su carta lo stesso stile non stampa le soluzioni (`placement: 'none'`), mentre quelle dell'esercitazione escono dove si trova la riga `:::solutions`.
+
+### 2 · Un tentativo salvato torna dall'archivio
+
+<Excerpt region="attempt" />
+
+`attachExercises` legge le risposte di ogni esercizio con `getItem` e le scrive con `setItem`, sotto la `storageKey` e l'ancora dell'esercizio. Qualunque oggetto con queste tre chiamate può prendere il posto di `localStorage`; una piattaforma didattica conserva lo stesso JSON tra i dati dello studente. Questo restituisce tre domande della verifica già controllate, con due errori (vero per l'affermazione 3 e 180 km per la distanza), e la pagina si apre come la troverebbe uno studente che torna: quelle domande bloccate, le soluzioni disponibili, quella da ordinare ancora da fare.
+
+### 3 · Rispondere sulle pagine e sentire ogni controllo
+
+<Excerpt region="screen" />
+
+`renderToHtml` scrive le pagine e i dati degli esercizi; `attachExercises` vi sovrappone campi, caselle e barra. `onResult` riceve ogni esercizio quando viene preparato e dopo ogni controllo, ogni nuovo inizio e ogni soluzione mostrata, con le risposte valutate giuste (`right`) e totali (`total`), i controlli usati e se il tentativo è bloccato (`locked`). Il pannello somma le risposte della verifica come fa un player SCORM: risposte giuste su risposte valutate in tutta la verifica, completa quando ogni domanda è controllata o bloccata, superata da `passingScore` in su. La pagina usa `dpi: 96`, quindi un millimetro della pagina stampata è un millimetro CSS a schermo.
+
+### 4 · Gli stessi esercizi in un EPUB
+
+<Excerpt region="epub" />
+
+L'EPUB a layout fisso contiene i dati degli esercizi e lo script che li rende risolvibili: un sistema di lettura che esegue gli script offre gli stessi campi e gli stessi limiti, uno che non li esegue conserva le soluzioni che il writer aggiunge. I font gli arrivano come byte, gli stessi file Fontsource caricati dalla pagina.
+
+## Varianti
+
+### Impacchettare il modulo per una piattaforma didattica
+
+`postext-scorm` prende gli stessi documenti e scrive uno zip SCORM 1.2 o 2004 il cui player collega archivio e risultati all'LMS. Uno SCO conta tutti gli esercizi che contiene, esercitazione compresa: un corso che valuta solo la verifica ne fa uno SCO a sé con `items` (vedi <Feature id="scorm-packages">Pacchetti SCORM</Feature>).
+
+```diff
++import { renderToScorm } from 'https://esm.sh/postext-scorm';
++const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
++  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
++  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+```
+
+### Correggere ogni risposta appena data
+
+Per un quiz senza pulsante Verifica, metti `check: 'instant'` in `exercises.digital`. La correzione immediata toglie il limite di controlli; lo stile della verifica mantiene `showSolution`.
+
+```diff
+-  digital: { passingScore: 70 },
++  digital: { passingScore: 70, check: 'instant' },
+```
+
+## Errori frequenti
+
+Dai un'ancora a ogni esercizio valutato (`:::exercise{#test-scales}`). Le sue risposte si salvano sotto l'ancora; senza, la chiave nasce dalla posizione dell'esercizio nel documento, e una domanda aggiunta prima restituisce allo studente che torna le risposte salvate di un'altra.

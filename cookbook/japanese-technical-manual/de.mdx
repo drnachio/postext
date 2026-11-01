@@ -40,6 +40,8 @@ Das Listing ist ein [Codeblock](/de/docs/document-format#codeblöcke): Postext s
 
 Die Fußnoten brauchen außer ihrer Größe keine Einstellung: In einem horizontalen japanischen Dokument sind die Standardwerte die, die JLReq für horizontale Bücher beschreibt, eine Fußnote am Fuß der Spalte, in der sie zitiert wird, auf jeder Seite ab 1 nummeriert, ein hochgestelltes Fußnotenzeichen und eine Linie von einem Drittel der Satzbreite ([Fußnoten](/de/docs/configuration-notes-references#fußnoten)). Das Fußnotenzeichen steht vor dem Punkt, `保存していた[^hfs]。`, sodass das 。 nie getrennt von ihm die nächste Zeile beginnt.
 
+Fußnote 2 zitiert den Unicode-Bericht, der die vier Formen festlegt, und das Zitat ist ein Link: `[Unicode Standard Annex #15「…」](https://www.unicode.org/reports/tr15/)`. Eine Fußnote kann keine eigene Fußnote tragen, also druckt ein Link darin seine Adresse in Klammern hinter den Text; `links.urlDisplay: 'short'` lässt `https://` und `www.` weg, und das PDF behält den vollständigen Link. `links.print: 'inline'` macht dasselbe mit einem Link im Fließtext ([Links im Druck](/de/docs/configuration-notes-references#links-im-druck)). Die Fußnote beginnt mit japanischen Wörtern, damit sich ihre erste Zeile vor dem langen lateinischen Titel füllt.
+
 ### 5 · Eine dreizeilige Abschnittsüberschrift
 
 <Excerpt region="opener" />
@@ -70,5 +72,5 @@ Manche Verlage setzen lateinische Wörter ohne Viertelgeviert direkt an die Kana
 
 - Ein lateinisches Wort lässt sich in einer japanischen Zeile nicht trennen, deshalb hinterlässt ein langes am Zeilenende davor eine Zeile, die zwischen ihren Zeichen gesperrt ist. Der erste Entwurf dieses Kapitels erläuterte seine Fachbegriffe auf Englisch, 正準等価（canonical equivalence）, und zwei Zeilen fielen zu locker aus; die englischen Begriffe wurden gestrichen, wo sie dem Leser nicht halfen.
 - Wählen Sie die Codeschrift nach den Zeichen, die der Code enthält. M PLUS 1 Code, die hier zuerst versuchte Schrift, hat keine Katakana in halber Breite: Der Bildschirm wich für ｶﾞｲﾄﾞ auf eine Systemschrift aus, und dem PDF fehlten die Glyphen.
-- Ein Listing teilt sich seitenübergreifend zwischen seinen Zeilen, mit mindestens zwei Zeilen auf jeder Seite (`codeStyle.splitMinLines`). Auf Seite 43 fasst der Raum unter 3.3 den Titel und eine Zeile, nicht zwei, deshalb eröffnet das ganze Listing Seite 44; `keepTogether: true` hält jedes Listing in einem Stück.
+- Ein Listing teilt sich seitenübergreifend zwischen seinen Zeilen, mit mindestens zwei Zeilen auf jeder Seite (`codeStyle.splitMinLines`). Auf Seite 43 fasst der Raum unter 3.3 den Titel und zwei Zeilen nicht, deshalb eröffnet das ganze Listing Seite 44; `keepTogether: true` hält jedes Listing in einem Stück.
 - In einem Zeichenraster nimmt eine Seite ihre 29 Zeilen auf, gleich was ein Absatz oder eine Liste am Seitenwechsel tut; die Liste der vier Formen würde deshalb ihren ersten Eintrag, NFC, allein am Fuß von Seite 42 lassen. `shortListSplit: 'avoid'` mit `shortListMaxItems: 4` rückt die ganze Liste auf Seite 43, und Seite 42 endet eine Zeile früher über ihren Fußnoten.

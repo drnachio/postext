@@ -1,1 +1,1 @@
-# 奥付 {style="colophon"}
+# 奥付 {style="colophon" imprint1="著者　夏目漱石" imprint2="初版　大正三年九月二十日　岩波書店" imprint3="本版　二〇二六年十月　Postext" credits1="本文　青空文庫（底本　集英社文庫、一九九一年）" credits2="入力　j.utiyama　校正　伊藤時也" credits3="序・予告・広告文　入力　砂場清隆　校正　小林繁雄" credits4="扉・見返し・口絵　夏目漱石（国立国会図書館所蔵本より）" credits5="表紙・挿絵　Generated With Diffusion Models" credits6="書体　しっぽり明朝 B1・しっぽりアンチック B1"}

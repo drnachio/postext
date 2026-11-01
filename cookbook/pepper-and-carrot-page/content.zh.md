@@ -11,11 +11,11 @@
 
 Art & Scenario: David Revoy — Translation: Ran Zhuang
 
-许可协议：知识共享 署名 4.0（CC BY 4.0）
+许可协议：[知识共享 署名 4.0（CC BY 4.0）](https://creativecommons.org/licenses/by/4.0/deed.zh-hans)
 
 本作品为 David Revoy《小辣椒的生日》（CC BY 4.0）的衍生作品：Postext 依据官方简体中文译本重新制作了对白框与文字，并重新排版。
 
-www.peppercarrot.com
+[www.peppercarrot.com](https://www.peppercarrot.com/cn/webcomic/ep08_Pepper-s-Birthday-Party.html)
 :::
 
 :::page{split="29.9 / 49.3 / *"}

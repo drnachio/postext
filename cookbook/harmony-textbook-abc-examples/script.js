@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 163 · Harmony textbook with ABC examples ═════════════
 // https://postext.dev/en/cookbook/harmony-textbook-abc-examples
 // Code: MIT · Text: original (CC BY 4.0) · Music: Greensleeves (traditional, PD)
-// Fonts: Libre Caslon Text & Display, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.54.0
+// Fonts: Libre Caslon Text & Display, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, initMusicEngine,
 } from 'https://esm.sh/postext';

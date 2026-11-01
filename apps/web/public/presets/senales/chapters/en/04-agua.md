@@ -16,7 +16,7 @@ Waste water treatment and reductions in nitrogen and phosphorus losses from agri
 
 The current condition of Europe’s seas — from the Baltic to the Mediterranean — is generally poor, according to the EEA’s Marine messages II assessment. Despite some positive developments achieved through regional cooperation, a range of pressures from historic and current human activities could cause irreversible damage to marine ecosystems.
 
-Moreover, the EEA’s report on contaminants in Europe’s seas showed that all four regional seas in Europe have a large-scale contamination problem, ranging from 96 % of the assessed area in the Baltic Sea and 91 % in the Black Sea to 87 % in the Mediterranean Sea and 75 % in the North‑East Atlantic Ocean. The contamination problem is mainly caused by synthetic chemicals and heavy metals originating from human activities both on land and at sea.
+Moreover, the EEA’s report on contaminants in Europe’s seas showed that all four regional seas in Europe have a large-scale contamination problem, ranging from 96 % of the assessed area in the Baltic Sea and 91 % in the Black Sea to 87 % in the Mediterranean Sea and 75 % in the North-East Atlantic Ocean. The contamination problem is mainly caused by synthetic chemicals and heavy metals originating from human activities both on land and at sea.
 
 :::callout{type="cita"}
 “From the 18th century onwards, Europe’s water bodies also started receiving pollutants from industry.”
@@ -30,7 +30,7 @@ Coastal and maritime activities, such as fishing, shipping, tourism, aquaculture
 
 Much has been done across Europe to enable the collection and treatment of urban waste water. According to EEA data, most European countries were collecting and treating sewage at the tertiary level from most of their population by 2017. Still, in a number of European countries less than 80 % of the population was connected to public urban waste water treatment systems.
 
-Meanwhile, existing infrastructure requires maintenance and new pressures require substantial investments, including adapting to climate change, providing improved waste water facilities and tackling new concerns, such as medicines or the so‑called mobile chemicals in waste water.
+Meanwhile, existing infrastructure requires maintenance and new pressures require substantial investments, including adapting to climate change, providing improved waste water facilities and tackling new concerns, such as medicines or the so-called mobile chemicals in waste water.
 
 In addition to point source pollution from industry and waste water treatment plants, water bodies also suffer from diffuse pollution, for example from transport, agriculture, forestry and rural dwellings. Pollutants that are first released to air and soil often also end up in water bodies.
 
@@ -70,9 +70,10 @@ To help tackle the plastics problem, the EU has already proposed a plastics stra
 Waste water treatment and reductions in nutrient losses from agriculture have led to significant improvements in water quality in Europe. However, many of Europe’s freshwater bodies are still not doing well and the condition of Europe’s seas is generally poor, partly because of pollution.
 :::
 
-## Find out more
+:::callout{type="lectura" title="Find out more"}
+- [Water and marine environment](https://www.eea.europa.eu/themes/water)
+- [SOER 2020, Chapter 4 on freshwater](https://www.eea.europa.eu/publications/soer-2020/chapter-04_soer2020-freshwater/view)
+- [SOER 2020, Chapter 6 on the marine environment](https://www.eea.europa.eu/publications/soer-2020/chapter-06_soer2020-marine-environment/view)
+- [EEA Signals 2018 — Water is life](https://www.eea.europa.eu/signals/signals-2018-content-list)
 
-- Water and marine environment: www.eea.europa.eu/themes/water
-- SOER 2020, Chapter 4 on freshwater: www.eea.europa.eu/publications/soer- 2020/chapter-04_soer2020-freshwater/ view
-- SOER 2020, Chapter 6 on the marine environment: www.eea.europa.eu/ publications/soer-2020/chapter-06_ soer2020-marine-environment/view
-- EEA Signals 2018 — Water is life: www. eea.europa.eu/signals/signals-2018content-list
+:::

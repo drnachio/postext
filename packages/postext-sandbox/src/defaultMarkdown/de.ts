@@ -813,9 +813,13 @@ Verweise verdienen einen genaueren Blick, denn mit ihnen wird der größte Teil 
 
 Werke werden so zitiert, wie Pandoc es schreibt, \`[@garcia2020, p. 33]\` oder \`@garcia2020\` im Satz, mit den Literaturangaben im Frontmatter oder in einem Block \`:::references\` im BibTeX-Format. Der Zitierstil ist eine Einstellung, keine Eigenschaft des Textes: APA, Chicago, MLA, IEEE, Vancouver, ISO 690, GB/T 7714 oder ein eigener Stil, ausgewählt unter Gestaltung › Zitate, wo eine Vorschau das Ergebnis zeigt. Das Literaturverzeichnis folgt auf das letzte Kapitel oder steht dort, wo \`:::bibliography\` geschrieben ist. Das Zitat eines Werkes, das in den Literaturangaben fehlt, wird so gedruckt, wie es geschrieben ist, und unter den Warnungen aufgeführt.
 
+## Links auf Papier
+
+:index{term="Links"}Ein Link ins Web wird wie in jedem Markdown geschrieben, \`[Wörter](https://…)\`, und bleibt ein Link überall dort, wo der Leser ihm folgen kann: in diesen Vorschauen, im HTML, im PDF und im EPUB. Auf Papier wären nur seine Wörter zu sehen. \`links.print\` legt fest, was die gedruckte Seite hinzufügt: nichts, die Adresse in Klammern nach den Wörtern (\`'inline'\`) oder eine Anmerkung (\`'notes'\`) mit der Adresse, einem QR-Code, den ein Telefon öffnet, oder beidem. Link-Anmerkungen übernehmen Nummerierung und Stil der Fußnoten. Dieses Buch druckt die kurze Adresse und den Code, wie die Anmerkung zu diesem Link zum [Postext-Repository](https://github.com/drnachio/postext) zeigt.
+
 ## Mathematik im Quelltext
 
-Mathematik wird in LaTeX-Notation geschrieben. Formeln im Text stehen zwischen einfachen Dollarzeichen mitten im Satz; abgesetzte Formeln stehen zwischen doppelten Dollarzeichen, auf einer eigenen Zeile oder als Block über mehrere Zeilen. Ein Dollarzeichen, das als Dollarzeichen gedruckt werden soll, wird mit einem Backslash maskiert. Eine Formel, die nie geschlossen wird oder die MathJax nicht lesen kann, wird im Bedienfeld Prüfungen gemeldet und auf der Seite durch einen roten Platzhalter ersetzt, damit sie nicht unbemerkt ins PDF gelangt.
+Mathematik wird in LaTeX-Notation geschrieben. Formeln im Text stehen zwischen einfachen Dollarzeichen mitten im Satz; abgesetzte Formeln stehen zwischen doppelten Dollarzeichen, auf einer eigenen Zeile oder als Block über mehrere Zeilen. Eine Formel im Text wird wie ein Wort gemessen; ist sie höher, als der Zeilenabstand erlaubt, wird sie gerade so weit verkleinert, dass die Zeilen um sie herum im Raster bleiben. Ein Dollarzeichen, das als Dollarzeichen gedruckt werden soll, wird mit einem Backslash maskiert. Eine Formel, die nie geschlossen wird oder die MathJax nicht lesen kann, wird im Bedienfeld Prüfungen gemeldet und auf der Seite durch einen roten Platzhalter ersetzt, damit sie nicht unbemerkt ins PDF gelangt.
 
 ## Code
 

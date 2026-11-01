@@ -1,0 +1,62 @@
+---
+title: "Farbcodierte Hervorhebungen in einem Lesebuch"
+summary: "Ein Geschichtslesebuch, dessen Schlüsselwörter drei Farben tragen (grün für Begriffe, bernstein für Daten, blau für Namen), aus drei markStyles der Palette."
+plain: "Ein Lesetext für die Schule über die Geschichte des Buchdrucks. Fachbegriffe sind grün markiert, Jahreszahlen bernsteinfarben, Personen und Orte blau, und eine Legende auf der ersten Seite sagt, was jede Farbe bedeutet."
+description: "Ein Geschichtslesebuch, in Postext gesetzt mit drei Hervorhebungsstilen: Begriffe grün, Daten bernsteinfarben, Namen blau, dazu eine Farblegende."
+question: "Wie hebe ich einen Lerntext in Farben hervor, die jeweils etwas bedeuten: Begriffe, Daten und Namen?"
+aliases: ["Hervorhebung", "Textmarker", "Leuchtstift", "Farbcode", "Farblegende", "Schlüsselwörter", "Lerntext", "Lesebuch", "Geschichtsbuch", "Glossar", "Markierung", "Buchdruck", "Gutenberg"]
+pageNotes: { "1": "Die Auftaktseite: oben ein Gemälde einer Druckwerkstatt um 1460, darunter Dachzeile, Titel und ein kursiver Vorspann, dann ein getönter Kasten unter einer roten Linie, der die drei Farben mit je einem grünen, bernsteinfarbenen und blauen Muster erklärt, und die ersten Zeilen des Lesetexts.", "2": "Eine linke Seite des Lesetexts: Jahreszahlen wie 1455 und 1462 auf bernsteinfarbenen Bändern, Namen wie Johann Fust, Subiaco oder William Caxton auf hellblauen Bändern und Begriffe wie movable type oder colophon auf grünen Bändern, in Blocksatz.", "4": "Die letzte Seite: das Glossar, jeder Eintrag beginnt mit seinem Begriff fett auf einem grünen Band, die Folgezeilen eingezogen, dann das Kolophon in kleiner grauer Schrift." }
+---
+
+## Was Sie setzen
+
+Lesetext 2 einer Unterrichtseinheit in einem Geschichtslesebuch, *Readings in Early Modern History*: vier Seiten darüber, wie sich der Buchdruck zwischen 1450 und 1550 von Mainz aus über Europa verbreitete, auf einer Seite von 170 × 240 mm. Die Herausgeber haben den Text markiert, wie es eine sorgfältige Schülerin täte, mit einem Code, der im ganzen Buch gleich bleibt: Fachbegriffe auf einem grünen Band, Jahreszahlen auf Bernstein, Personen und Orte auf Hellblau. Eine Legende unter dem Titel erklärt den Code mit den drei Farben selbst, und das Glossar auf der letzten Seite beginnt jeden Eintrag mit seinem grünen Begriff. Die Markierungen sind Bänder unter gewöhnlichem Text, also brechen, trennen und füllen sich die Zeilen, als gäbe es die Bänder nicht.
+
+## Zubereitung
+
+### 1 · Ein Stil für jede Art von Wort
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort) oben. `markStyles` deklariert drei benannte Stile, und der Text wählt für jede Markierung einen: `:mark[Johann Fust]{style="name"}`, `:mark[1455]{style="date"}`, `:mark[colophon]{style="term"}` ([Hervorhebungen](/de/docs/document-format-inline#hervorhebungen)). Jeder Stil sagt, was er bedeutet (`name` sieht, wer den Text bearbeitet), also hält das Markdown fest, warum ein Wort markiert ist, nicht welche Farbe es trägt. Ändern Sie die Farbe eines Stils, ändern sich alle Jahreszahlen des Buchs mit. Die Enden sind gerade, wie seit postext 1.52 voreingestellt ([Hervorhebungsstile](/de/docs/configuration-styles#hervorhebungsstile)): Ein Textmarker hinterlässt gerade Enden, ein abgerundetes Band liest sich wie ein Chip.
+
+### 2 · Drei Töne aus der Palette
+
+<Excerpt region="palette" />
+
+Die drei Bänder sind Einträge der Palette wie die Schrift- und die Akzentfarbe, also kann, wer das Buch im Sandbox öffnet, den Code an einem einzigen Farbfeld umfärben. Sie sind hell, etwa so hell wie der Fond des Kastens, und die Schrift darauf behält einen Kontrast von 12,6:1 oder mehr; die drei bleiben unterscheidbar, wo sie in einer Zeile aufeinandertreffen, wie bei „In 1517 Martin Luther“ auf Seite 3. Eine Markierung braucht keinen Platz: `paddingX` reicht 0,12 em in den Wortzwischenraum, `paddingBottom` zieht das Band unter die Unterlängen, beides in Raum, der schon da war.
+
+### 3 · Der Auftakt: ein Gemälde über dem Titel
+
+<Excerpt region="opener" />
+
+Die Überschrift erster Ebene druckt ein Design. Das Gemälde ist an der Seite verankert und läuft oben und an beiden Seiten in den Anschnitt, 170 mal 96 mm, mit `fit: 'cover'`. Dachzeile und Vorspann kommen aus Attributen der Überschriftenzeile ([Attribute von Überschriften](/de/docs/document-format#attribute-von-überschriften)), und die Legende folgt als gewöhnlicher `:::callout`, dessen Listenpunkte mit den drei Markierungen beginnen. `minHeight` legt die Tiefe fest: Die Legende beginnt auf derselben Zeile, wie lang der Titel auch ist.
+
+### 4 · Kolumnentitel nach Seitenparität
+
+<Excerpt region="running-heads" />
+
+Die linke Seite trägt den Titel der Reihe, die rechte den des Lesetexts, beide gefiltert mit `parity` und durch `pages: 'body'` vom Auftakt ferngehalten ([Textelemente](/de/docs/configuration-headers-footers#textelemente)). Der Auftakt trägt seine Seitenzahl am Fuß.
+
+## Varianten
+
+### Die Enden der Bänder runden
+
+Ein Radius von einem Fünftel des Schriftgrads gibt die weichen Enden eines Filzstifts.
+
+```diff
+-  // borderRadius: 0 is the default (square ends, as a highlighter pen leaves them)
++  borderRadius: em(0.2), // soft ends, as a felt-tip pen leaves them
+```
+
+### Jeder Zeile ein eigenes Band geben
+
+Mit `decorationBreak: 'clone'` bekommt eine Markierung, die umbricht, an beiden Enden jedes Stücks ihren Überstand, wie auf Seite 3, wo „pamphlets“ nach „pam-“ getrennt wird.
+
+```diff
+   paddingX: em(0.12), // the band reaches a little past the first and the last letter
++  decorationBreak: 'clone', // each line piece gets a whole band
+```
+
+## Häufige Fehler
+
+- Farbe allein übersteht keine Schwarzweißkopie, und so kommen viele Lesetexte ins Klassenzimmer. Das Glossar setzt die Begriffe zusätzlich fett; wenn Ihre Leser die Seiten kopieren, geben Sie einer der drei Arten ein zweites, eigenes Zeichen.
+- Eine Stil-ID, die `markStyles` nicht deklariert, nimmt den ersten Stil, ohne Fehler auf der Seite (das Sandbox meldet sie). Halten Sie die IDs kurz und prüfen Sie ihre Schreibung im Text.

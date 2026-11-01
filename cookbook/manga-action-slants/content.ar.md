@@ -20,5 +20,5 @@ hana{shout}: مين!!
 shinpan{tail=top}: مين! نقطة!
 mori{thought}: …همم. لا بأس.
 ::panel{art=stands}
-sora{shout}: فعلتها!!
+sora{shout at="30% 15%"}: فعلتها!!
 :::

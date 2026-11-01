@@ -1,6 +1,6 @@
 // Software and web terms.
 import type { GlossaryTerm } from "../terms";
-import { term } from "./term";
+import { term } from "./term.ts";
 
 export const WEB_TERMS: readonly GlossaryTerm[] = [
   // ── Software and the web ───────────────────────────────────────────────

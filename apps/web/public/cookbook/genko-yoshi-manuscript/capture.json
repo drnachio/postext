@@ -3,27 +3,21 @@
   "slug": "genko-yoshi-manuscript",
   "sourceHash": "d81463c685242476b37b9921a204c017d1c8441993fa4111d7a909646463f26a",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:36:51.241Z",
-  "verified": {
-    "postext": "1.58.0",
-    "postextPdf": "1.58.0",
-    "chrome": "155.0.8059.85",
-    "at": "2026-10-23T17:34:58.679Z"
-  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T16:47:46.593Z",
   "variants": {
     "en": {
-      "hash8": "643c7a1e",
+      "hash8": "ef531259",
       "vdtHash": "977e4b60e9fcbebfb37f7d6a7c39b8680528436f",
       "timings": {
-        "importMs": 214,
-        "fontsMs": 136,
-        "buildMs": 38,
-        "totalMs": 982,
+        "importMs": 1481,
+        "fontsMs": 743,
+        "buildMs": 52,
+        "totalMs": 3146,
         "builds": 1
       },
       "specimen": {
@@ -106,7 +100,7 @@
       },
       "pdf": {
         "file": "genko-yoshi-manuscript.pdf",
-        "bytes": 155865,
+        "bytes": 155824,
         "pages": 3
       },
       "sandbox": {
@@ -279,6 +273,16 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -287,13 +291,13 @@
       }
     },
     "es": {
-      "hash8": "09c834c1",
+      "hash8": "452fd811",
       "vdtHash": "1c881126e65dfb8031b7b41f177cd6e2f889cde8",
       "timings": {
-        "importMs": 221,
-        "fontsMs": 130,
-        "buildMs": 38,
-        "totalMs": 985,
+        "importMs": 1664,
+        "fontsMs": 433,
+        "buildMs": 53,
+        "totalMs": 2870,
         "builds": 1
       },
       "specimen": {
@@ -376,7 +380,7 @@
       },
       "pdf": {
         "file": "genko-yoshi-manuscript.pdf",
-        "bytes": 155886,
+        "bytes": 155829,
         "pages": 3
       },
       "sandbox": {
@@ -548,6 +552,16 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
           {
             "check": "sandbox",
             "severity": "info",

@@ -3,21 +3,21 @@
   "slug": "protein-paper-methods-section",
   "sourceHash": "ec5595b48db1328f15bdd73cdab38da37af1e944a899d9a984cfbaf038b286bd",
   "engine": {
-    "postext": "1.57.1",
-    "postextPdf": "1.57.1",
+    "postext": "1.65.0",
+    "postextPdf": "1.65.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:40:58.428Z",
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T17:11:51.716Z",
   "variants": {
     "en": {
-      "hash8": "f174dd66",
-      "vdtHash": "c6a91251811d0b7f32b17d49934df966dc76f9d4",
+      "hash8": "4fa6d4aa",
+      "vdtHash": "ad9acdd39c6664cb00e1be8e05af569ef6291cf8",
       "timings": {
-        "importMs": 825,
-        "fontsMs": 115,
-        "buildMs": 379,
-        "totalMs": 3728,
+        "importMs": 4611,
+        "fontsMs": 231,
+        "buildMs": 422,
+        "totalMs": 6434,
         "builds": 1
       },
       "specimen": {
@@ -126,18 +126,18 @@
       },
       "pdf": {
         "file": "protein-paper-methods-section.pdf",
-        "bytes": 203738,
+        "bytes": 203734,
         "pages": 5
       },
       "sandbox": {
         "file": "protein-paper-methods-section.postext",
-        "bytes": 77629,
+        "bytes": 77630,
         "folio": "9eaee533",
         "chapters": [
           {
             "pages": 5,
-            "hash": "52b1796f9f0380a9",
-            "lines": "e820e612a3bf9fa2"
+            "hash": "41bc823526164b03",
+            "lines": "6b4c977afe55a50c"
           }
         ]
       },
@@ -445,6 +445,16 @@
             "check": "C35",
             "severity": "info",
             "detail": "4 paragraphs set a line short with tracking (worst −10‰, the cap): p. 4 −10‰ “Since CASP14, we have found that the accuracy of…”, p. 5 −10‰ “53. Lim, C. J. et al. The structure of human CST…”, p. 5 −10‰ “Acknowledgements We thank A. Rrustemi, A. Gu, A.…”, p. 5 −5‰ “All input data are freely available from public …”"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.76, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "warn",
+            "detail": "the layout changed with the same sources (engine or font regression?)"
           }
         ]
       }

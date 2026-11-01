@@ -1,0 +1,835 @@
+{
+  "schemaVersion": 1,
+  "slug": "self-checking-course-module",
+  "sourceHash": "9b0c10eb6653712a7b7ee86bf7658d31282fd0a04390677e23dfc637159c0a68",
+  "engine": {
+    "postext": "1.65.0",
+    "source": "npm"
+  },
+  "chrome": "156.0.8078.76",
+  "capturedAt": "2026-10-31T18:28:44.728Z",
+  "variants": {
+    "en": {
+      "hash8": "5b0a80b2",
+      "vdtHash": "051a941af72219eb702887435e3c13efd9716469",
+      "timings": {
+        "importMs": 5429,
+        "fontsMs": 426,
+        "buildMs": 97,
+        "totalMs": 7521,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          176,
+          250
+        ],
+        "dpi": 96,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10.8,
+          "leadingPt": 15.5
+        },
+        "families": [
+          "Archivo",
+          "Source Serif 4"
+        ],
+        "pages": 4,
+        "ownLines": 222
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1420,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 183890,
+          "alt": "Opening page 1: Earthquakes."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 151842,
+          "alt": "Page 2: Waves through the Earth."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 88894,
+          "alt": "Page 3: Practice."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 93748,
+          "alt": "Page 4: Module test."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "self-checking-course-module.postext",
+        "bytes": 274621,
+        "folio": "c123713b",
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "f27537a53b71d199",
+            "lines": "c3dd1565be716c61"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "attachExercises",
+          "buildDocumentWithFonts",
+          "exerciseSolutionValue",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToEpub",
+          "renderToHtml"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "exerciseStyles",
+          "exerciseStyles[].bank",
+          "exerciseStyles[].bank.box",
+          "exerciseStyles[].blank",
+          "exerciseStyles[].blank.color",
+          "exerciseStyles[].blank.look",
+          "exerciseStyles[].blank.weight",
+          "exerciseStyles[].box",
+          "exerciseStyles[].digital",
+          "exerciseStyles[].digital.maxChecks",
+          "exerciseStyles[].digital.reset",
+          "exerciseStyles[].digital.showSolution",
+          "exerciseStyles[].extends",
+          "exerciseStyles[].id",
+          "exerciseStyles[].instruction",
+          "exerciseStyles[].instruction.bold",
+          "exerciseStyles[].instruction.fontFamily",
+          "exerciseStyles[].instruction.fontSize",
+          "exerciseStyles[].itemSpacing",
+          "exerciseStyles[].marginBottom",
+          "exerciseStyles[].marginTop",
+          "exerciseStyles[].match",
+          "exerciseStyles[].match.color",
+          "exerciseStyles[].match.gap",
+          "exerciseStyles[].match.look",
+          "exerciseStyles[].number",
+          "exerciseStyles[].number.background",
+          "exerciseStyles[].number.fontFamily",
+          "exerciseStyles[].number.fontWeight",
+          "exerciseStyles[].number.shape",
+          "exerciseStyles[].options",
+          "exerciseStyles[].options.marker",
+          "exerciseStyles[].solutions",
+          "exerciseStyles[].solutions.placement",
+          "exercises",
+          "exercises.digital",
+          "exercises.digital.passingScore",
+          "exercises.solutions",
+          "exercises.solutions.layout",
+          "exercises.solutions.placement",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontWeight",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "paragraphStyles[].textTransform"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "exerciseStyles",
+          "exercises",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 298,
+        "designElements": 9,
+        "directives": [
+          ":::callout",
+          ":::exercise",
+          ":::hint",
+          ":::solutions",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-splitting",
+          "callout-styles",
+          "cross-references",
+          "epub-export",
+          "exercise-choice",
+          "exercise-digital",
+          "exercise-gaps",
+          "exercise-match",
+          "exercise-order",
+          "exercise-solutions",
+          "exercise-styles",
+          "exercises",
+          "heading-attributes",
+          "html-viewer",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources",
+          "scorm-packages"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.69
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "4aa02f25",
+      "vdtHash": "037ae8f32d61e942191b8d3becaf5269dd7b6737",
+      "timings": {
+        "importMs": 4645,
+        "fontsMs": 110,
+        "buildMs": 98,
+        "totalMs": 5886,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          176,
+          250
+        ],
+        "dpi": 96,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10.8,
+          "leadingPt": 15.5
+        },
+        "families": [
+          "Archivo",
+          "Source Serif 4"
+        ],
+        "pages": 4,
+        "ownLines": 222
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1420,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 183610,
+          "alt": "Página de apertura 1: Terremotos."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 143480,
+          "alt": "Página 2: Ondas a través de la Tierra."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 91676,
+          "alt": "Página 3: Práctica."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1420,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 95600,
+          "alt": "Página 4: Examen del módulo."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "self-checking-course-module.postext",
+        "bytes": 274311,
+        "folio": "c123713b",
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "7df4f144958ce922",
+            "lines": "1ba2aa725ab33eaa"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "attachExercises",
+          "buildDocumentWithFonts",
+          "exerciseSolutionValue",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToEpub",
+          "renderToHtml"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].borderRadius",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "exerciseStyles",
+          "exerciseStyles[].bank",
+          "exerciseStyles[].bank.box",
+          "exerciseStyles[].blank",
+          "exerciseStyles[].blank.color",
+          "exerciseStyles[].blank.look",
+          "exerciseStyles[].blank.weight",
+          "exerciseStyles[].box",
+          "exerciseStyles[].digital",
+          "exerciseStyles[].digital.maxChecks",
+          "exerciseStyles[].digital.reset",
+          "exerciseStyles[].digital.showSolution",
+          "exerciseStyles[].extends",
+          "exerciseStyles[].id",
+          "exerciseStyles[].instruction",
+          "exerciseStyles[].instruction.bold",
+          "exerciseStyles[].instruction.fontFamily",
+          "exerciseStyles[].instruction.fontSize",
+          "exerciseStyles[].itemSpacing",
+          "exerciseStyles[].marginBottom",
+          "exerciseStyles[].marginTop",
+          "exerciseStyles[].match",
+          "exerciseStyles[].match.color",
+          "exerciseStyles[].match.gap",
+          "exerciseStyles[].match.look",
+          "exerciseStyles[].number",
+          "exerciseStyles[].number.background",
+          "exerciseStyles[].number.fontFamily",
+          "exerciseStyles[].number.fontWeight",
+          "exerciseStyles[].number.shape",
+          "exerciseStyles[].options",
+          "exerciseStyles[].options.marker",
+          "exerciseStyles[].solutions",
+          "exerciseStyles[].solutions.placement",
+          "exercises",
+          "exercises.digital",
+          "exercises.digital.passingScore",
+          "exercises.solutions",
+          "exercises.solutions.layout",
+          "exercises.solutions.placement",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "orderedLists",
+          "orderedLists.color",
+          "orderedLists.fontWeight",
+          "orderedLists.marginBottom",
+          "orderedLists.marginTop",
+          "orderedLists.numberFormat",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "paragraphStyles[].textTransform"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "exerciseStyles",
+          "exercises",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "orderedLists",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 298,
+        "designElements": 9,
+        "directives": [
+          ":::callout",
+          ":::exercise",
+          ":::hint",
+          ":::solutions",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Archivo",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-splitting",
+          "callout-styles",
+          "cross-references",
+          "epub-export",
+          "exercise-choice",
+          "exercise-digital",
+          "exercise-gaps",
+          "exercise-match",
+          "exercise-order",
+          "exercise-solutions",
+          "exercise-styles",
+          "exercises",
+          "heading-attributes",
+          "html-viewer",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources",
+          "scorm-packages"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.71
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 159 · Activity book with boxes that grow ══════════════
 // https://postext.dev/en/cookbook/activity-book-growing-boxes
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Andika, Baloo 2, Lexend (SIL OFL 1.1) · Needs postext ≥ 1.39.0
+// Fonts: Andika, Baloo 2, Lexend (SIL OFL 1.1) · Needs postext ≥ 1.65.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';

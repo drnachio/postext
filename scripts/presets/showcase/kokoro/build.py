@@ -71,7 +71,7 @@ PALETTE = {
     # 墨, the ink: the palette's main colour, so the Sandbox's main-colour
     # control recolours the text, the headings and every accent left at it.
     "main-color": "#1d1916",
-    "shu": "#b8472d",  # 朱: the box and cover of 1914
+    "shu": "#b5462c",  # 朱: the box and cover of 1914 (4.57:1 under paper-coloured text)
     "paper": "#f4ebd8",  # 生成り: every plate is toned to it
     "muted": "#6f655a",  # 鼠
 }
@@ -441,6 +441,11 @@ def colophon_design(imprint: list[str], credits: list[str]) -> dict:
     x0 = py + 16
     length = ph - 16
     small = dict(length=length, size_pt=COLOPHON_PT, align="left", line_height=COLOPHON_PITCH, overflow="wrap")
+    # The lines themselves are the book's text: they sit on the colophon
+    # heading in the Markdown (colophon_markdown) and the design reads them
+    # back as `{attr.imprint1}`, `{attr.credits1}`, …
+    imprint_text = "\n".join(f"{{attr.imprint{i}}}" for i in range(1, len(imprint) + 1))
+    credits_text = "\n".join(f"{{attr.credits{i}}}" for i in range(1, len(credits) + 1))
     return {
         "enabled": True,
         "minHeight": mm(G.width),
@@ -448,8 +453,8 @@ def colophon_design(imprint: list[str], credits: list[str]) -> dict:
             "elements": [
                 fimage("colophon-frame", COLOPHON_FRAME, x=top, y=sheet_to_flow(left, w), down=h, decorative=True),
                 ftext("colophon-title", "こころ", x=x0, y=y0, length=length, across=title_w, size_pt=COLOPHON_TITLE_PT, weight=700, align="left", letterSpacing=pt(6)),
-                ftext("colophon-imprint", "\n".join(imprint), x=x0 + 6, y=y0 + title_w + gap, across=len(imprint) * pitch, **small),
-                ftext("colophon-credits", "\n".join(credits), x=x0 + 6, y=y0 + title_w + gap + len(imprint) * pitch + gap, across=len(credits) * pitch, color="muted", **small),
+                ftext("colophon-imprint", imprint_text, x=x0 + 6, y=y0 + title_w + gap, across=len(imprint) * pitch, **small),
+                ftext("colophon-credits", credits_text, x=x0 + 6, y=y0 + title_w + gap + len(imprint) * pitch + gap, across=len(credits) * pitch, color="muted", **small),
             ]
         },
     }
@@ -702,7 +707,7 @@ def write_chapters(out: str, data: dict, scenes: list[dict]) -> list[dict]:
     emit(out, specs, "900-yokoku", "予告と広告文", notices_markdown())
     emit(out, specs, "901-edition", "本書について", edition_markdown(data))
     emit(out, specs, "902-credits", "底本と図版", credits_markdown(data))
-    emit(out, specs, "903-colophon", "奥付", '# 奥付 {style="colophon"}\n')
+    emit(out, specs, "903-colophon", "奥付", colophon_markdown(*colophon_lines()))
     emit(out, specs, "904-back-cover", "裏表紙", '# 裏表紙 {style="back-cover"}\n')
     return specs
 
@@ -796,6 +801,14 @@ def colophon_lines() -> tuple[list[str], list[str]]:
         "書体　しっぽり明朝 B1・しっぽりアンチック B1",
     ]
     return imprint, credits
+
+
+def colophon_markdown(imprint: list[str], credits: list[str]) -> str:
+    """The colophon heading, its imprint and credit lines as attributes
+    (one per printed line) that the colophon design sets in its panel."""
+    attrs = [f'{name}{i}="{line}"' for name, lines in (("imprint", imprint), ("credits", credits)) for i, line in enumerate(lines, 1)]
+    assert not any('"' in line for line in imprint + credits)
+    return '# 奥付 {style="colophon" ' + " ".join(attrs) + "}\n"
 
 
 # --- resources ----------------------------------------------------------------------------------------
