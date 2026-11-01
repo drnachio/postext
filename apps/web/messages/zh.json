@@ -146,6 +146,7 @@
     "badgePdf": "PDF",
     "badgeHtml": "HTML",
     "badgeEpub": "EPUB",
+    "badgeScorm": "SCORM",
     "badgeBundle": "文件包",
     "badgeLive": "实时",
     "matchQuestions": "问题",

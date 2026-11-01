@@ -18,7 +18,7 @@ import path from "node:path";
 import type { Page } from "puppeteer-core";
 import type { CaptureBuild, SampleLocale } from "../../src/lib/cookbook/types.ts";
 import { heroPages, publishedPages, cardProblems } from "./cards.ts";
-import type { EpubRecord, ProbeFacts, BundleReadBack } from "./checks.ts";
+import type { EpubRecord, ScormRecord, ProbeFacts, BundleReadBack } from "./checks.ts";
 import { type NetIssue, interceptor, routeFor } from "./net.ts";
 import { startPenServer } from "./serve.ts";
 import { step } from "./steps.ts";
@@ -89,6 +89,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     tainted: [],
     pdf: null,
     epubs: [],
+    scorms: [],
     published: [],
     publishError: null,
     cardErrors: [],
@@ -183,6 +184,7 @@ export async function runVariant(opts: RunOptions): Promise<VariantRun> {
     run.timings.runMs = Date.now() - t0;
     run.kit = await within("kit", () => probe(page, "kitState"));
     run.epubs = await within("epubs", () => probe<EpubRecord[]>(page, "epubState"));
+    run.scorms = await within("scorms", () => probe<ScormRecord[]>(page, "scormState"));
 
     if (meta.downloads?.pdf && !opts.sandboxOnly && !opts.factsOnly && !opts.pagesOnly) {
       const button = await within("pdfButton", () => page.$("[data-postext-pdf]"));

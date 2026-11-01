@@ -146,6 +146,7 @@
     "badgePdf": "PDF",
     "badgeHtml": "HTML",
     "badgeEpub": "EPUB",
+    "badgeScorm": "SCORM",
     "badgeBundle": "Paquet",
     "badgeLive": "En direct",
     "matchQuestions": "question",

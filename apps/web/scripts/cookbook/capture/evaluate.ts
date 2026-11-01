@@ -170,6 +170,7 @@ export function evaluate(
     totalMs: run.timings.runMs,
     pdf: run.pdf ? { ...run.pdf, bytes: pdfBytes?.length ?? 0, pages: pdfPages } : null,
     epubs: run.epubs,
+    scorms: run.scorms,
     published: run.published,
     publishError: run.publishError,
     cardErrors: run.cardErrors,

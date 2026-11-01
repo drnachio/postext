@@ -250,6 +250,23 @@ describe("lintPen (fixture)", () => {
     expect(usedApis(epub(SCRIPT))).toContain("renderToEpub");
   });
 
+  it("ties the scorm output to the postext-scorm import (#1346)", () => {
+    const scorm = (s: string) => s
+      .replace("const LANG", "import { renderToScorm } from 'https://esm.sh/postext-scorm';\nconst LANG")
+      .replace("// @kit", "await renderToScorm([doc], { version: '2004', layout: 'fixed', metadata: { title: 'F', language: 'en' } });\n\n// @kit");
+    const meta = { ...fixtureMeta(), outputs: ["canvas" as const, "pdf" as const, "scorm" as const] };
+    expect(lint(scorm, { meta }).fails).toEqual([]);
+    expect(lint(scorm).fails).toContain(
+      'script.js: a "scorm" output and an import from https://esm.sh/postext-scorm go together (output no, import yes)',
+    );
+    expect(lint(undefined, { meta }).fails).toContain(
+      'script.js: a "scorm" output and an import from https://esm.sh/postext-scorm go together (output yes, import no)',
+    );
+    const pinned = lint((s) => scorm(s).replace("esm.sh/postext-scorm'", "esm.sh/postext-scorm@0.3.0'"), { meta }).fails;
+    expect(pinned.some((f) => f.includes("no version pins"))).toBe(true);
+    expect(usedApis(scorm(SCRIPT))).toContain("renderToScorm");
+  });
+
   it("lets a pen write its EPUBs on a worker from postext-epub/worker (#406)", () => {
     const onWorker = (s: string) => s
       .replace("const LANG", "import { createEpubWorker } from 'https://esm.sh/postext-epub/worker';\nconst LANG")

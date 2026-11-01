@@ -1,16 +1,16 @@
 ---
 title: "Un módulo de curso con examen que se contesta en pantalla"
-summary: "Dos estilos de ejercicio en un Markdown: práctica sin límite y examen de una sola comprobación; attachExercises los contesta en HTML, y el EPUB también."
-plain: "Una lección sobre los terremotos: la lees, practicas cuanto quieras y haces un examen corto que solo deja comprobar cada respuesta una vez. Se imprime como cuadernillo y funciona en pantalla y en un libro electrónico."
-description: "Un módulo de cuatro páginas cuya práctica y cuyo examen se contestan en el visor HTML y en un EPUB de maquetación fija, con límites y aprobado al 70 %."
+summary: "Dos estilos de ejercicio en un Markdown: práctica sin límite y examen de una sola comprobación; se contestan en HTML y en EPUB y se califican en un curso SCORM."
+plain: "Una lección sobre los terremotos: la lees, practicas cuanto quieras y haces un examen corto que solo deja comprobar cada respuesta una vez. Se imprime y funciona en pantalla, en un libro electrónico y en un aula virtual."
+description: "Un módulo de cuatro páginas que se contesta en el visor HTML, en un EPUB de maquetación fija y en un curso SCORM 2004, con límites y aprobado al 70 %."
 question: "¿Cómo dejo que el alumno conteste los ejercicios en pantalla, con un examen que solo admite una comprobación?"
-aliases: ["ejercicios interactivos", "autocorrección", "examen en línea", "aula virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+aliases: ["ejercicios interactivos", "autocorrección", "examen en línea", "aula virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "postext-scorm", "SCORM"]
 pageNotes: { "1": "La apertura del módulo: una pintura de una falla que cruza una llanura seca, a sangre por arriba, el antetítulo Módulo 4 · El planeta inquieto, el título Terremotos y una entradilla en cursiva.", "3": "Práctica: tres ejercicios con el número en un disco óxido (elección en tres columnas, huecos con banco de palabras y unir con flechas) y las soluciones de la práctica.", "4": "Examen del módulo: cuatro ejercicios con un filete pizarra encima y el número en un cuadrado, y el colofón." }
 ---
 
 ## Lo que vas a componer
 
-El módulo 4 de *El planeta inquieto*, un curso de iniciación a las ciencias de la Tierra: cuatro páginas sobre los terremotos, en un formato de 176 × 250 mm que se abre bajo una pintura de una falla que cruza una llanura seca. La lectura lleva a una práctica y a un examen, escritos en el Markdown como bloques `:::exercise` con sus respuestas. El módulo impreso trae las soluciones de la práctica y deja fuera las del examen. En pantalla, las mismas páginas se contestan: la práctica se comprueba y se repite cuanto se quiera, y cada pregunta del examen admite una sola comprobación, no se puede repetir y solo enseña la solución cuando esa comprobación se ha gastado. Un panel junto a las páginas suma lo que guardaría una plataforma de aprendizaje: la nota, si el examen está terminado y el aprobado o suspenso con el 70 %.
+El módulo 4 de *El planeta inquieto*, un curso de iniciación a las ciencias de la Tierra: cuatro páginas sobre los terremotos, en un formato de 176 × 250 mm que se abre bajo una pintura de una falla que cruza una llanura seca. La lectura lleva a una práctica y a un examen, escritos en el Markdown como bloques `:::exercise` con sus respuestas. El módulo impreso trae las soluciones de la práctica y deja fuera las del examen. En pantalla, las mismas páginas se contestan: la práctica se comprueba y se repite cuanto se quiera, y cada pregunta del examen admite una sola comprobación, no se puede repetir y solo enseña la solución cuando esa comprobación se ha gastado. Un panel junto a las páginas suma lo que guardaría una plataforma de aprendizaje: la nota, si el examen está terminado y el aprobado o suspenso con el 70 %. Las mismas páginas se escriben como EPUB de maquetación fija y como paquete SCORM 2004: un curso con la lección y el examen como dos partes que la plataforma califica por separado.
 
 ## Elaboración
 
@@ -36,17 +36,21 @@ El código está en [la respuesta corta](#la-respuesta-corta). Los ejercicios so
 
 El EPUB de maquetación fija lleva los datos de los ejercicios y el script que los contesta, de modo que un sistema de lectura que ejecuta scripts ofrece los mismos campos y los mismos límites; uno que no los ejecuta conserva las soluciones que añade el escritor. Las fuentes se le pasan como bytes, los mismos archivos de Fontsource que cargó la página.
 
+### 5 · Un curso SCORM con el examen aparte
+
+<Excerpt region="scorm" />
+
+`renderToScorm` toma los documentos y las opciones de `renderToEpub`, más la `version` de SCORM y los `items` del curso. Cada item es un SCO, la parte de un curso que la plataforma abre y califica por su cuenta, y un SCO cuenta todos los ejercicios que contiene. `scormTree` lee los encabezados del módulo con el tramo de Markdown que abarca cada uno, así que el primer SCO va del título al examen (ahí se califica la práctica) y el segundo lleva solo el examen, hasta el final. Cada uno comunica el aprobado o el suspenso con `exercises.digital.passingScore`. Dentro del paquete, un reproductor ocupa el sitio que `platform` ocupa en esta página: guarda las respuestas en el registro de la plataforma y envía cada comprobación, así que el alumno que vuelve encuentra el examen como lo dejó.
+
 ## Variantes
 
-### Empaquetar el módulo para una plataforma de aprendizaje
+### SCORM 1.2, o el texto refluido
 
-`postext-scorm` toma los mismos documentos y escribe un zip SCORM 1.2 o 2004 cuyo reproductor conecta el almacén y los resultados con el LMS. Un SCO cuenta todos los ejercicios que contiene, también los de práctica, así que un curso que solo califica el examen hace del examen un SCO propio con `items` (consulta <Feature id="scorm-packages">Paquetes SCORM</Feature>).
+Muchas plataformas antiguas solo importan SCORM 1.2, donde el aprobado pasa a ser la nota de dominio de cada SCO. `layout: 'reflowable'` envía el texto en lugar de las páginas impresas, para quien estudia en el móvil.
 
 ```diff
-+import { renderToScorm } from 'https://esm.sh/postext-scorm';
-+const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
-+  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
-+  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+-const scorm = await renderToScorm([doc], { version: '2004', layout: 'fixed', items, metadata,
++const scorm = await renderToScorm([doc], { version: '1.2', layout: 'reflowable', items, metadata,
 ```
 
 ### Corregir cada respuesta al darla

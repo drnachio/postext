@@ -255,6 +255,7 @@
     { "id": "html", "title": { "en": "HTML", "es": "HTML", "ca": "HTML", "zh": "HTML", "ar": "HTML", "ja": "HTML", "pt": "HTML", "fr": "HTML", "de": "HTML", "it": "HTML" } },
     { "id": "pdf", "title": { "en": "PDF", "es": "PDF", "ca": "PDF", "zh": "PDF", "ar": "PDF", "ja": "PDF", "pt": "PDF", "fr": "PDF", "de": "PDF", "it": "PDF" } },
     { "id": "epub", "title": { "en": "EPUB", "es": "EPUB", "ca": "EPUB", "zh": "EPUB", "ar": "EPUB", "ja": "EPUB", "pt": "EPUB", "fr": "EPUB", "de": "EPUB", "it": "EPUB" } },
+    { "id": "scorm", "title": { "en": "SCORM", "es": "SCORM", "ca": "SCORM", "zh": "SCORM", "ar": "SCORM", "ja": "SCORM", "pt": "SCORM", "fr": "SCORM", "de": "SCORM", "it": "SCORM" } },
     { "id": "bundle", "title": { "en": ".postext bundle", "es": "Paquete .postext", "ca": "Paquet .postext", "zh": ".postext文件包", "ar": "حزمة .postext", "ja": ".postextバンドル", "pt": "Pacote .postext", "fr": "Paquet .postext", "de": ".postext-Paket", "it": "Pacchetto .postext" } },
     { "id": "live", "title": { "en": "Live controls", "es": "Controles en vivo", "ca": "Controls en viu", "zh": "实时控件", "ar": "عناصر تحكم حية", "ja": "ライブ操作", "pt": "Controles ao vivo", "fr": "Contrôles en direct", "de": "Live-Steuerung", "it": "Controlli dal vivo" } }
   ],

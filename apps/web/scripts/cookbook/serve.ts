@@ -148,15 +148,16 @@ function errorPage(message: string): string {
  *  server tries `.js` and `/index.js`). `packagesDir` is the workspace's
  *  `packages` folder (a test's stand-in for it). */
 export function localModule(rel: string, packagesDir: string = path.join(REPO_DIR, "packages")): { file: string; path: string } | null {
-  const match = /^(postext|postext-pdf|postext-citeproc|postext-folio|postext-epub)\/(.+)$/.exec(rel);
+  const match = /^(postext|postext-pdf|postext-citeproc|postext-folio|postext-epub|postext-scorm)\/(.+)$/.exec(rel);
   if (!match) return null;
   const dist = path.join(packagesDir, match[1]!, "dist");
   const asked = match[2]!;
   const base = asked.replace(/\.js$/, "");
   // A file the package ships beside its modules (postext-pdf's
   // harfbuzz.wasm, fetched from `new URL('./harfbuzz.wasm', import.meta.url)`)
-  // is served as it is.
-  const candidates = asked.endsWith(".js") ? [asked, `${base}/index.js`] : /\.wasm$/.test(asked) ? [asked] : [`${base}.js`, `${base}/index.js`];
+  // and a JSON module (postext-scorm's schemas.json, imported `with { type:
+  // 'json' }`) are served as they are.
+  const candidates = asked.endsWith(".js") ? [asked, `${base}/index.js`] : /\.(wasm|json)$/.test(asked) ? [asked] : [`${base}.js`, `${base}/index.js`];
   for (const candidate of candidates) {
     const file = safeFile(dist, candidate);
     if (file) return { file, path: `${match[1]}/${candidate}` };
@@ -350,7 +351,7 @@ export async function startPenServer(opts: PenServerOptions): Promise<PenServer>
           res.writeHead(302, { location: LOCAL_PREFIX + found.path, "cache-control": "no-store" });
           return res.end();
         }
-        const type = found.file.endsWith(".wasm") ? "application/wasm" : "text/javascript; charset=utf-8";
+        const type = found.file.endsWith(".wasm") ? "application/wasm" : found.file.endsWith(".json") ? "application/json" : "text/javascript; charset=utf-8";
         if (found.path === MATHJAX_MODULE) {
           localMathJaxModule(fs.readFileSync(found.file, "utf-8")).then(
             (code) => send(res, 200, type, code),
@@ -361,7 +362,7 @@ export async function startPenServer(opts: PenServerOptions): Promise<PenServer>
           );
           return;
         }
-        if (found.file.endsWith(".wasm")) return send(res, 200, type, fs.readFileSync(found.file));
+        if (/\.(wasm|json)$/.test(found.file)) return send(res, 200, type, fs.readFileSync(found.file));
         // The bare imports as URLs (#742): a worker has no import map.
         return send(res, 200, type, rewriteBareImports(fs.readFileSync(found.file, "utf-8")));
       }
