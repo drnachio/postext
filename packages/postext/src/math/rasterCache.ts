@@ -107,6 +107,7 @@ export function getMathRaster(
   ctx.scale(sx, sy);
   ctx.translate(-viewBox.minX, -viewBox.minY);
   for (const path of paths) {
+    if (path.fill === 'none') continue; // draws nothing (#1371)
     ctx.fillStyle = path.fill === 'currentColor' ? fallbackColor : path.fill;
     ctx.fill(new Path2D(path.d));
   }

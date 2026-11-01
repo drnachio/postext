@@ -87,6 +87,9 @@ function renderMathRender(
     ctx.scale(sx, sy);
     ctx.translate(-viewBox.minX, -viewBox.minY);
     for (let i = 0; i < paths.length; i++) {
+      // An unpainted path draws nothing: canvas would keep the fill style
+      // the path before it left (#1371).
+      if (paths[i]!.fill === 'none') continue;
       ctx.fillStyle = paths[i]!.fill === 'currentColor' ? fallbackColor : paths[i]!.fill;
       ctx.fill(path2ds[i]!);
     }
