@@ -89,6 +89,18 @@ describe('music engine', () => {
     expect(words('none').flat()).toEqual([]);
   });
 
+  it('keeps a two-digit bar number at a system start inside the slice (#1310)', () => {
+    const tune = `X:1\nM:6/8\nL:1/8\nK:Am\n${'A | c2 d e>fe | d2 B G>AB | c2 A A>^GA | B2 ^G E2 A |\n'.repeat(4)}]\n`;
+    const r = renderScore(tune, 'abc', 472, { ...OPTS, staffSizePx: 20.8, spacing: 1.6 });
+    const numbers = r.systems.flatMap((s) => s.items.filter((i) => i.type === 'text')) as Array<{ text: string; x: number; sizePx: number; anchor?: string }>;
+    expect(numbers.some((n) => n.text.length >= 2)).toBe(true);
+    for (const n of numbers) {
+      // Centred on x: half its width (about half an em a digit) left of it.
+      const half = n.anchor === 'middle' ? (n.text.length * n.sizePx * 0.5) / 2 : 0;
+      expect(n.x - half).toBeGreaterThanOrEqual(0);
+    }
+  });
+
   it('keeps a chord symbol\'s raised figure smaller and on its own baseline (**harm)', () => {
     const kern = ['**kern\t**harm', '*clefF4\t*', '*M4/4\t*', '4G\tI', '4D\tV7', '4C\tIV', '4G\tI', '==\t==', '*-\t*-'].join('\n');
     const words = renderScore(kern, 'humdrum', 600, OPTS).systems.flatMap((s) => s.items.filter((i) => i.type === 'text')) as Array<{ text: string; x: number; y: number; sizePx: number }>;

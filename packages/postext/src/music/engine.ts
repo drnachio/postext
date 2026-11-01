@@ -176,12 +176,30 @@ function verovioOptions(widthPx: number, o: ScoreRenderOptions, leftMarginPx = 0
 
 const COORD_RUN_RE = /[MLCQST]([^A-Za-z]*)/g;
 
-/** The leftmost x a system paints at (its paths' points; text is never
- *  left of the staves). */
-function itemsMinX(items: readonly ScoreItem[]): number {
+/** The width of a word set in `textFont` (about half an em per character
+ *  where nothing measures). */
+function wordWidth(text: string, sizePx: number, bold: boolean, italic: boolean, textFont: string): number {
+  try {
+    const w = measureTextWidth(text, buildFontString(textFont, sizePx, bold ? 'bold' : 'normal', italic ? 'italic' : 'normal'));
+    if (w > 0) return w;
+  } catch {
+    // No measuring context: the estimate below.
+  }
+  return text.length * sizePx * 0.5;
+}
+
+/** The leftmost x a system paints at: its paths' points, and the start of
+ *  its words. A bar number at a system start is centred on the staves'
+ *  left edge, so half of it stands left of them (#1310). */
+function itemsMinX(items: readonly ScoreItem[], textFont: string): number {
   let min = Infinity;
   for (const it of items) {
-    if (it.type !== 'path') continue;
+    if (it.type === 'text') {
+      const w = it.anchor ? wordWidth(it.text, it.sizePx, it.bold, it.italic, textFont) : 0;
+      const left = it.anchor === 'middle' ? it.x - w / 2 : it.anchor === 'end' ? it.x - w : it.x;
+      if (left < min) min = left;
+      continue;
+    }
     for (const m of it.d.matchAll(COORD_RUN_RE)) {
       const nums = m[1]!.trim().split(/[\s,]+/).filter(Boolean).map(Number);
       for (let k = 0; k < nums.length; k += 2) if (nums[k]! < min) min = nums[k]!;
@@ -196,23 +214,14 @@ const ENGRAVER_TEXT_FONT = 'Times New Roman';
 /**
  * A word of several runs (a chord symbol and its raised figure) as one item
  * per run, each at its size and baseline, laid side by side by their widths
- * in `textFont` (about half an em per character where nothing measures).
+ * in `textFont`.
  */
 function layOutRuns(items: ScoreItem[], textFont: string): ScoreItem[] {
   if (!items.some((it) => it.type === 'text' && it.runs)) return items;
-  const widthOf = (text: string, size: number, bold: boolean, italic: boolean): number => {
-    try {
-      const w = measureTextWidth(text, buildFontString(textFont, size, bold ? 'bold' : 'normal', italic ? 'italic' : 'normal'));
-      if (w > 0) return w;
-    } catch {
-      // No measuring context: the estimate below.
-    }
-    return text.length * size * 0.5;
-  };
   const out: ScoreItem[] = [];
   for (const it of items) {
     if (it.type !== 'text' || !it.runs) { out.push(it); continue; }
-    const widths = it.runs.map((r) => r.dx + widthOf(r.text, r.sizePx, r.bold ?? it.bold, r.italic ?? it.italic));
+    const widths = it.runs.map((r) => r.dx + wordWidth(r.text, r.sizePx, r.bold ?? it.bold, r.italic ?? it.italic, textFont));
     const total = widths.reduce((a, b) => a + b, 0);
     let x = it.anchor === 'middle' ? it.x - total / 2 : it.anchor === 'end' ? it.x - total : it.x;
     it.runs.forEach((r, i) => {
@@ -309,10 +318,10 @@ export function renderScore(
     return systems;
   };
   let systems = engrave(0);
-  // A brace or bracket joining staves stands left of them, past the
-  // measure's edge: engraved again with a left margin that takes it, the
-  // staves indented as far.
-  const overhang = systems ? -Math.min(0, ...systems.map((s) => itemsMinX(s.items))) : 0;
+  // A brace or bracket joining staves, or a bar number centred on their
+  // left edge, stands left of them, past the measure's edge: engraved again
+  // with a left margin that takes it, the staves indented as far.
+  const overhang = systems ? -Math.min(0, ...systems.map((s) => itemsMinX(s.items, s.textFont))) : 0;
   if (systems && overhang > 0.5) systems = engrave(Math.ceil(overhang + 1));
   const result: ScoreRender = systems
     ? { systems, ...meta }
