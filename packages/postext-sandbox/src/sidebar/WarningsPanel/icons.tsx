@@ -140,6 +140,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'textWrap':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
+    case 'hereNotEmbedded':
     case 'videoWithoutPoster':
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':

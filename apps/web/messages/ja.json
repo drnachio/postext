@@ -2753,6 +2753,8 @@
     "warningsAfterTextDetail": "__page__ページ · 本文のないページに置かれています。サイド段の空きを待っているうちに、その章の本文が終わりました。本文中のもっと前に置くか、短くしてください。",
     "warningsUnplacedTitle": "どのページにも置かれていません",
     "warningsUnplacedDetail": "組版が終わった時点でまだ空きを待っていたため、どのページにもありません。そのために開いたページには置けません（サイド段のないページでのサイド段の囲みなど）。幅（span）か配置を変えてください。",
+    "warningsHereNotEmbeddedTitle": "「here」配置なのに埋め込まれていません",
+    "warningsHereNotEmbeddedDetail": "配置が`position: here`なので、::resourceの行がある場所にだけ組まれますが、本文は:refで参照しているだけのため、どのページにもありません。置くべき場所に埋め込むか、フロートの配置（top、bottom、auto）にしてください。",
     "warningsShortListSplitTitle": "段をまたいで分かれた短いリスト",
     "warningsShortListSplitDetail": "__page__ページ · __items__項目のリストが2つの段またはページに分かれています。規則が「回避」のときは、リスト全体が入る段がなかったことを示します。",
     "warningsTocGroupSplitTitle": "段をまたいで分かれた目次のまとまり",

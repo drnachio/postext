@@ -2753,6 +2753,8 @@
     "warningsAfterTextDetail": "page __page__ · il se trouve sur une page sans texte : le texte de son chapitre s’est terminé alors qu’il attendait encore de la place dans la colonne latérale. Placez-le plus tôt ou raccourcissez-le.",
     "warningsUnplacedTitle": "Sur aucune page",
     "warningsUnplacedDetail": "Il attendait encore un emplacement quand la mise en page s’est terminée ; il ne figure donc sur aucune page : les pages ouvertes pour lui ne peuvent pas le recevoir (un encadré latéral alors que les pages n’ont pas de colonne latérale, par exemple). Changez sa largeur ou son placement.",
+    "warningsHereNotEmbeddedTitle": "Placé ici, jamais inséré",
+    "warningsHereNotEmbeddedDetail": "Son placement est `position: here` : il n’est composé que là où se trouve une ligne ::resource, et le texte ne fait que le citer avec :ref ; il ne figure sur aucune page. Insérez-le là où il doit être, ou donnez-lui une position flottante (top, bottom ou auto).",
     "warningsShortListSplitTitle": "Liste courte coupée entre colonnes",
     "warningsShortListSplitDetail": "page __page__ · une liste de __items__ éléments est coupée entre deux colonnes ou deux pages. Avec la règle sur Éviter, aucune colonne ne pouvait la contenir entière.",
     "warningsTocGroupSplitTitle": "Bloc de la table des matières coupé entre colonnes",

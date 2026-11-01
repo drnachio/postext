@@ -2750,6 +2750,8 @@
     "warningsAfterTextDetail": "página __page__ · fica em uma página sem texto: o texto do capítulo terminou enquanto ele esperava lugar na coluna lateral. Coloque-o antes no texto ou encurte-o.",
     "warningsUnplacedTitle": "Não está em nenhuma página",
     "warningsUnplacedDetail": "Ainda esperava um espaço quando a diagramação terminou, por isso não está em nenhuma página: as páginas abertas para ele não o comportam (um boxe lateral onde as páginas não têm coluna lateral, por exemplo). Mude a largura (span) ou a colocação.",
+    "warningsHereNotEmbeddedTitle": "Posicionado aqui, nunca inserido",
+    "warningsHereNotEmbeddedDetail": "O posicionamento dele é `position: here`, por isso só é composto onde há uma linha ::resource, e o texto apenas o cita com :ref: não está em nenhuma página. Insira-o onde ele deve ficar ou dê a ele uma posição flutuante (top, bottom ou auto).",
     "warningsShortListSplitTitle": "Lista curta dividida entre colunas",
     "warningsShortListSplitDetail": "página __page__ · uma lista de __items__ itens ficou dividida entre duas colunas ou páginas. Com a regra em Evitar, nenhuma coluna podia recebê-la inteira.",
     "warningsTocGroupSplitTitle": "Bloco do sumário dividido entre colunas",

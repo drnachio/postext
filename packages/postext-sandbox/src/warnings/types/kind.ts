@@ -129,6 +129,7 @@ export type WarningKind =
   | 'columnsTooNarrow'
   | 'afterText'
   | 'unplaced'
+  | 'hereNotEmbedded'
   | 'shortListSplit'
   | 'openerFloat'
   | 'tocGroupSplit'

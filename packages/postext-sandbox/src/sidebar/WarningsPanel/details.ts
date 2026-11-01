@@ -425,6 +425,8 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsAfterTextDetail.replace('__page__', String(payload.page))}`;
     case 'unplaced':
       return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsUnplacedDetail}`;
+    case 'hereNotEmbedded':
+      return `#${payload.resourceId} — ${labels.warningsHereNotEmbeddedDetail}`;
     case 'shortListSplit':
       return labels.warningsShortListSplitDetail.replace('__page__', String(payload.page)).replace('__items__', String(payload.items));
     case 'openerFloat':

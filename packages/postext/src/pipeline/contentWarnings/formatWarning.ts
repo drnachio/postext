@@ -324,6 +324,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unplaced':
       text = `${w.resourceId !== undefined ? `The resource "${w.resourceId}"` : 'A box'} found no slot before the layout ended — it is on no page`;
       break;
+    case 'hereNotEmbedded':
+      text = `The resource "${w.resourceId}" is placed "here" and cited with :ref, but no ::resource line embeds it — it is on no page; embed it where it belongs or give it a floating position (top, bottom or auto)`;
+      break;
     case 'tocGroupSplit':
       text = `The contents block "${w.title}" is cut between ${w.columns} columns — it is taller than a full column, or its column is too short to hold it; list fewer levels (:::toc{levels="1"}), head the blocks with a lower level (toc.groups.head) or make the rows smaller`;
       break;

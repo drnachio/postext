@@ -3,6 +3,7 @@
 import { type PlannedCallout, type CalloutLayoutResult, pickCalloutStyle } from '../../../callouts/calloutLayout.js';
 import type { ResolvedCalloutStyleConfig } from '../../../../types.js';
 import { type CalloutLayouter, type CalloutCut, CUT_START, type CalloutFragment, fragmentRange } from '../../../callouts/frameLayout.js';
+import { cropSpanEmbed } from './embedCrop.js';
 import { type VDTPage, type VDTColumn, pageIsVertical, type BoundingBox, type ResolvedConfig, type VDTDocument, type ResolvedResourceBlock, type VDTBlock } from '../../../../vdt.js';
 import { isMarkerBlock } from '../../../blocks/buildHelpers.js';
 import { isBandLevel, bandColumns, currentBand, closeBandAndInsertSpan, pageHasContent, advanceToNextColumn, pageIsOccupied, type PlacementCursor } from '../../../blocks/placement.js';
@@ -251,7 +252,7 @@ export function createCalloutSpan(deps: CalloutSpanDeps) {
       const continuation = part > 0;
       const layoutAt = (width: number): CalloutLayoutResult =>
         L.layoutRange(from, L.end, width, frameId, continuation, mirroredOf(page));
-      const result = layoutAt(page.contentArea.width);
+      let result = layoutAt(page.contentArea.width);
       // A keep-together box (or the rest of it) taller than a whole page
       // splits like a `keepTogether: false` one instead of overflowing.
       const splittable = !style.keepTogether || tallerThanColumn(result);
@@ -359,7 +360,23 @@ export function createCalloutSpan(deps: CalloutSpanDeps) {
         page = doc.pages[cursor.pageIndex]!;
       }
 
-      const fit = forceHere ? (measureBand(true) ?? measureBand(false)) : measureBand(!capActive);
+      const fitBand = (): SpanFit | null => forceHere ? (measureBand(true) ?? measureBand(false)) : measureBand(!capActive);
+      let fit = fitBand();
+      // A page-span embed whose picture has a safe area, a little too tall
+      // for the band: cropped within the safe area to stay here, with the
+      // widow minimum of text below it (#1364) — on a fresh page, flush
+      // with the band bottom rather than overflow it.
+      if (fit && part === 0 && (forceHere ? !fit.roomFlush : !fit.room)) {
+        const below = forceHere ? 0 : minRoomPx;
+        const maxHeight = Math.floor((fit.roomPx - below + 0.01) / baselineGrid) * baselineGrid
+          - fit.spacing - (forceHere ? 0 : result.marginBottomPx);
+        const cropped = cropSpanEmbed(style, result, maxHeight, (frame) =>
+          L.layoutRange(from, L.end, page.contentArea.width, frameId, continuation, mirroredOf(page), frame));
+        if (cropped) {
+          result = cropped;
+          fit = fitBand();
+        }
+      }
 
       // What lands in this band: the whole (remaining) box, or its head.
       type Action =

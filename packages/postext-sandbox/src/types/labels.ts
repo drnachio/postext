@@ -2289,6 +2289,8 @@ export interface SandboxLabels {
   warningsAfterTextDetail: string;
   warningsUnplacedTitle: string;
   warningsUnplacedDetail: string;
+  warningsHereNotEmbeddedTitle: string;
+  warningsHereNotEmbeddedDetail: string;
   warningsShortListSplitTitle: string;
   warningsShortListSplitDetail: string;
   warningsTocGroupSplitTitle: string;
