@@ -7,6 +7,7 @@ import {
   attachExercises, exerciseSolutionValue,
 } from 'https://esm.sh/postext';
 import { renderToEpub } from 'https://esm.sh/postext-epub';
+import { renderToScorm, scormTree, treeLeaves } from 'https://esm.sh/postext-scorm';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'self-checking-course-module';
@@ -223,15 +224,31 @@ const epubFonts = (faces) => Promise.all(Object.entries(faces).flatMap(([family,
     const bytes = new Uint8Array(await res.arrayBuffer());
     return { family, weight, style, format: 'woff2', bytes };
   })));
-const epub = await renderToEpub([doc], { layout: 'fixed',
-  metadata: { title: doc.metadata.title, subtitle: doc.metadata.subtitle, language: LANG,
-    modified: new Date('2026-10-31T00:00:00Z') }, // fixed: the same bytes on every run
-  fonts: await epubFonts(FONTS),
-  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
-const link = el('a', 'color: #d8a21a', `${RECIPE}.epub · ${Math.round(epub.length / 1024)} KB`);
-link.href = URL.createObjectURL(new Blob([epub], { type: 'application/epub+zip' }));
-link.download = `${RECIPE}.epub`;
-document.getElementById('pt-actions').append(link);
+const metadata = { title: doc.metadata.title, subtitle: doc.metadata.subtitle, language: LANG,
+  modified: new Date('2026-10-31T00:00:00Z') }; // fixed: the same bytes on every run
+const fonts = await epubFonts(FONTS);
+const resourceBytes = (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' });
+const epub = await renderToEpub([doc], { layout: 'fixed', metadata, fonts, resourceBytes });
+const offer = (bytes, name, type) => {
+  const link = el('a', 'color: #d8a21a', `${name} · ${Math.round(bytes.length / 1024)} KB`);
+  link.href = URL.createObjectURL(new Blob([bytes], { type }));
+  link.download = name;
+  document.getElementById('pt-actions').append(link);
+};
+offer(epub, `${RECIPE}.epub`, 'application/epub+zip');
+// #endregion
+// #region scorm: the module as a SCORM 2004 course, the test a SCO of its own
+// The module's headings as postext-scorm reads them; the last one, the test, runs to the end.
+const sections = treeLeaves(scormTree([{ markdown }], config)[0]);
+const exam = sections.at(-1);
+const items = [
+  { title: t({ en: 'Lesson and practice', es: 'Lección y práctica' }), doc: 0,
+    range: { start: sections[0].range.start, end: exam.range.start } },
+  { title: exam.title, doc: 0, range: exam.range }, // its score is the test's alone
+];
+const scorm = await renderToScorm([doc], { version: '2004', layout: 'fixed', items, metadata,
+  fonts, resourceBytes }); // the pass mark comes from exercises.digital.passingScore
+offer(scorm, `${RECIPE}-scorm.zip`, 'application/zip');
 // #endregion
 
 // @kit core fonts viewer images

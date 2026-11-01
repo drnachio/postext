@@ -1,16 +1,16 @@
 ---
 title: "Um módulo de curso com prova respondida na tela"
-summary: "Dois estilos de exercício num só Markdown: prática sem limite e prova com uma só verificação; attachExercises os torna respondíveis em HTML e no EPUB."
-plain: "Uma lição sobre terremotos: você lê, pratica quanto quiser e faz uma prova curta em que cada resposta só pode ser verificada uma vez. Ela é impressa como apostila e funciona na tela e num livro digital."
-description: "Um módulo de quatro páginas cuja prática e cuja prova são respondidas no visualizador HTML e num EPUB de layout fixo, com limites e aprovação com 70 %."
+summary: "Dois estilos de exercício num só Markdown: prática sem limite e prova com uma só verificação; respondidos em HTML e no EPUB e avaliados num curso SCORM."
+plain: "Uma lição sobre terremotos: você lê, pratica quanto quiser e faz uma prova curta em que cada resposta só pode ser verificada uma vez. Ela é impressa como apostila e funciona na tela, num livro digital e numa plataforma de ensino."
+description: "Um módulo de quatro páginas respondido no visualizador HTML, num EPUB de layout fixo e num curso SCORM 2004, com limites na prova e aprovação com 70 %."
 question: "Como deixo o aluno responder aos exercícios na tela, com uma prova que permite uma só verificação?"
-aliases: ["exercícios interativos", "autocorreção", "prova online", "ambiente virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "SCORM"]
+aliases: ["exercícios interativos", "autocorreção", "prova online", "ambiente virtual", "attachExercises", "maxChecks", "passingScore", "LMS", "postext-scorm", "SCORM"]
 pageNotes: { "1": "A abertura do módulo: uma pintura de uma falha que cruza uma planície seca, sangrada no alto, o chapéu, o título e um olho em itálico.", "3": "Prática: três exercícios com o número num disco ferrugem, depois o gabarito da prática.", "4": "Prova do módulo: quatro exercícios sob um fio ardósia, com o número num quadrado, e o colofão." }
 ---
 
 ## O que você vai compor
 
-O módulo 4 de *The Restless Planet*, um curso introdutório de ciências da Terra: quatro páginas sobre terremotos, no formato 176 × 250 mm, que abrem sob a pintura de uma falha cruzando uma planície seca. A leitura leva a uma prática e a uma prova, escritas no Markdown como blocos `:::exercise` com suas respostas. O módulo impresso traz o gabarito da prática e deixa de fora o da prova. Na tela, as mesmas páginas são respondidas: a prática pode ser verificada e recomeçada à vontade, e cada questão da prova aceita uma só verificação, não recomeça e só mostra a resposta quando essa verificação acaba. Um painel ao lado das páginas soma o que uma plataforma de ensino registraria: a nota, se a prova está completa e aprovado ou reprovado com 70 %.
+O módulo 4 de *The Restless Planet*, um curso introdutório de ciências da Terra: quatro páginas sobre terremotos, no formato 176 × 250 mm, que abrem sob a pintura de uma falha cruzando uma planície seca. A leitura leva a uma prática e a uma prova, escritas no Markdown como blocos `:::exercise` com suas respostas. O módulo impresso traz o gabarito da prática e deixa de fora o da prova. Na tela, as mesmas páginas são respondidas: a prática pode ser verificada e recomeçada à vontade, e cada questão da prova aceita uma só verificação, não recomeça e só mostra a resposta quando essa verificação acaba. Um painel ao lado das páginas soma o que uma plataforma de ensino registraria: a nota, se a prova está completa e aprovado ou reprovado com 70 %. As mesmas páginas são gravadas como EPUB de layout fixo e como pacote SCORM 2004: um curso em que a lição e a prova são duas partes que a plataforma avalia separadamente.
 
 ## Preparo
 
@@ -36,17 +36,21 @@ O código está na [resposta curta](#a-resposta-curta). Os exercícios só dizem
 
 O EPUB de layout fixo leva os dados dos exercícios e o script que os torna respondíveis: um sistema de leitura que executa scripts oferece os mesmos campos e os mesmos limites, e um que não executa mantém o gabarito que o gerador acrescenta. As fontes vão como bytes, os mesmos arquivos da Fontsource que a página carregou.
 
+### 5 · Um curso SCORM com a prova à parte
+
+<Excerpt region="scorm" />
+
+`renderToScorm` recebe os documentos e as opções de `renderToEpub`, mais a `version` do SCORM e os `items` do curso. Cada item é um SCO, a parte de um curso que a plataforma abre e avalia sozinha, e um SCO conta todos os exercícios que contém. `scormTree` lê os títulos do módulo com o trecho de Markdown que cada um cobre, então o primeiro SCO vai do título até a prova (ali se avalia a prática) e o segundo traz só a prova, até o fim. Cada um informa aprovado ou reprovado com `exercises.digital.passingScore`. Dentro do pacote, um player ocupa o lugar que `platform` ocupa nesta página: guarda as respostas no registro da plataforma e envia cada verificação, e quem volta encontra a prova como a deixou.
+
 ## Variações
 
-### Empacotar o módulo para uma plataforma de ensino
+### SCORM 1.2, ou o texto refluído
 
-`postext-scorm` recebe os mesmos documentos e grava um zip SCORM 1.2 ou 2004 cujo player liga o armazenamento e os resultados ao LMS. Um SCO conta todos os exercícios que contém, inclusive os de prática, então um curso que só avalia a prova faz dela um SCO próprio com `items` (veja <Feature id="scorm-packages">Pacotes SCORM</Feature>).
+Muitas plataformas mais antigas só importam SCORM 1.2, em que a nota de aprovação vira a nota de domínio de cada SCO. `layout: 'reflowable'` envia o texto no lugar das páginas impressas, para quem estuda no celular.
 
 ```diff
-+import { renderToScorm } from 'https://esm.sh/postext-scorm';
-+const zip = await renderToScorm([doc], { version: '1.2', layout: 'fixed',
-+  metadata: { title: doc.metadata.title, language: LANG }, fonts: await epubFonts(FONTS),
-+  resourceBytes: (fileId) => ({ bytes: imageBytes(fileId), mediaType: 'image/jpeg' }) });
+-const scorm = await renderToScorm([doc], { version: '2004', layout: 'fixed', items, metadata,
++const scorm = await renderToScorm([doc], { version: '1.2', layout: 'reflowable', items, metadata,
 ```
 
 ### Corrigir cada resposta ao ser dada

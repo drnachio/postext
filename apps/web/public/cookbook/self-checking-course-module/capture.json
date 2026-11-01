@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "self-checking-course-module",
-  "sourceHash": "9b0c10eb6653712a7b7ee86bf7658d31282fd0a04390677e23dfc637159c0a68",
+  "sourceHash": "d53fbbe6c034cb398dc448ffa027b7eb95de7c7dbced06c4785e1f7e1f5d39f7",
   "engine": {
     "postext": "1.65.0",
     "source": "npm"
   },
   "chrome": "156.0.8078.76",
-  "capturedAt": "2026-10-31T18:28:44.728Z",
+  "capturedAt": "2026-11-01T09:45:23.893Z",
   "variants": {
     "en": {
-      "hash8": "5b0a80b2",
+      "hash8": "4bb23622",
       "vdtHash": "051a941af72219eb702887435e3c13efd9716469",
       "timings": {
-        "importMs": 5429,
-        "fontsMs": 426,
-        "buildMs": 97,
-        "totalMs": 7521,
+        "importMs": 2592,
+        "fontsMs": 60,
+        "buildMs": 120,
+        "totalMs": 4513,
         "builds": 1
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Source Serif 4"
         ],
         "pages": 4,
-        "ownLines": 222
+        "ownLines": 239
       },
       "pages": [
         {
@@ -113,7 +113,7 @@
       },
       "sandbox": {
         "file": "self-checking-course-module.postext",
-        "bytes": 274621,
+        "bytes": 274620,
         "folio": "c123713b",
         "chapters": [
           {
@@ -131,7 +131,10 @@
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToHtml"
+          "renderToHtml",
+          "renderToScorm",
+          "scormTree",
+          "treeLeaves"
         ],
         "configKeys": [
           "bodyText",
@@ -421,13 +424,13 @@
       }
     },
     "es": {
-      "hash8": "4aa02f25",
+      "hash8": "3dc98881",
       "vdtHash": "037ae8f32d61e942191b8d3becaf5269dd7b6737",
       "timings": {
-        "importMs": 4645,
-        "fontsMs": 110,
-        "buildMs": 98,
-        "totalMs": 5886,
+        "importMs": 3119,
+        "fontsMs": 63,
+        "buildMs": 158,
+        "totalMs": 5118,
         "builds": 1
       },
       "specimen": {
@@ -448,7 +451,7 @@
           "Source Serif 4"
         ],
         "pages": 4,
-        "ownLines": 222
+        "ownLines": 239
       },
       "pages": [
         {
@@ -524,7 +527,7 @@
       },
       "sandbox": {
         "file": "self-checking-course-module.postext",
-        "bytes": 274311,
+        "bytes": 274308,
         "folio": "c123713b",
         "chapters": [
           {
@@ -542,7 +545,10 @@
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToHtml"
+          "renderToHtml",
+          "renderToScorm",
+          "scormTree",
+          "treeLeaves"
         ],
         "configKeys": [
           "bodyText",
