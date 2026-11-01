@@ -8,6 +8,7 @@ import { dimensionToPx } from '../../../units.js';
 import { type VDTColumn, type VDTPage, type VDTLine, type VDTBlock, createBoundingBox, createVDTBlock, type ResolvedConfig, type VDTDocument } from '../../../vdt.js';
 import { createPageWithColumns, resetLinePositions, type PlacementCursor } from '../../blocks/placement.js';
 import { trueBottom } from '../../floats/floatSlots.js';
+import { uncapBand } from '../../columns/bandCaps.js';
 import { applyStyleAttrs } from '../../blocks/buildHelpers.js';
 import { raggedLooseLines } from '../../text/raggedLines.js';
 import { resolvedDirection } from '../../config.js';
@@ -352,6 +353,13 @@ export function createNotes(deps: NotesDeps) {
         const foot = lastLine ? lastLine.bbox.y + lastLine.bbox.height : last.bbox.y + last.bbox.height;
         const d = trueBottom(col, uncappedBottoms) - foot;
         if (d < 0.5) continue;
+        // A column of a band cut level (the closing band's trailing cap)
+        // takes its true foot back: the notes stand under the cut, and the
+        // column's box must still hold them, or the renderers clip them
+        // and the cap reads as one that ran past its cut and is dropped,
+        // leaving the band uneven (#1363). Its text stays where the cut
+        // set it.
+        if (uncappedBottoms.has(col)) uncapBand([col], uncappedBottoms);
         for (const b of run) {
           b.bbox = createBoundingBox(b.bbox.x, b.bbox.y + d, b.bbox.width, b.bbox.height);
           for (const line of b.lines) {
