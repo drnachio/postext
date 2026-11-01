@@ -307,6 +307,18 @@ export function createNotes(deps: NotesDeps) {
     for (const id of ids) placedNotes.add(id);
     for (const id of ids) noteAnchor.set(id, anchor);
   };
+  /** The top of the room reserved for notes in `col` under `y` (page
+   *  coordinates), if any: what a page-span float hugging the closing text
+   *  (`hugClosingText`) must stay under (#1367). */
+  const notesTopUnder = (col: VDTColumn, y: number): number | undefined => {
+    const slots = columnNotesOf.get(col)?.slots.filter((s) => s.top >= y - 0.5);
+    return slots && slots.length > 0 ? Math.min(...slots.map((s) => s.top)) : undefined;
+  };
+  /** Move the room reserved for notes in `col` under `y` by `dy`: the
+   *  notes go up with the float they stand on. */
+  const shiftNotesUnder = (col: VDTColumn, y: number, dy: number): void => {
+    for (const slot of columnNotesOf.get(col)?.slots ?? []) if (slot.top >= y - 0.5) slot.top += dy;
+  };
   /** Notes still pending when the flow ends (a box closes the document):
    *  the foot of the column the flow ended in takes them. */
   const reserveLeftoverNotes = (): void => {
@@ -469,6 +481,6 @@ export function createNotes(deps: NotesDeps) {
   return {
     calloutsOutOfFlow, joiningLetterSpacing, dropCapNotes, measureCtx, notesPrefixCost,
     reserveCitedNotes, reserveLeftoverNotes, dropChapterEndNotes, ruleChapterEndNotes,
-    setColumnNotes
+    setColumnNotes, notesTopUnder, shiftNotesUnder
   };
 }

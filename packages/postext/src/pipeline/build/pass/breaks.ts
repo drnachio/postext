@@ -39,6 +39,8 @@ export interface BreaksDeps {
   spanHeadingOpenedHere: Map<number, string>;
   rollbackHeadings: (col: VDTColumn) => VDTBlock[];
   proposeTrailingCap: (boundaryIndex: number, zone?: BandCapZone, closeLevel?: boolean) => void;
+  notesTopUnder: (col: VDTColumn, y: number) => number | undefined;
+  shiftNotesUnder: (col: VDTColumn, y: number, dy: number) => void;
   state: PassState;
   late: PassLate;
 }
@@ -49,7 +51,7 @@ export function createBreaks(deps: BreaksDeps) {
     pageHeightPx, bodyOffset, contentBlocks, pendingFloats, releaseStaleCitationGates, floatGapPx,
     offsetResourceBlockToAbsolute, tryPlacePendingFloatsOnCurrentPage, drainPendingFloats, cursor,
     markForcedBreak, openerOwnColumn, openerHeadFloats, spanHeadingOpenedHere, rollbackHeadings,
-    proposeTrailingCap, state, late
+    proposeTrailingCap, notesTopUnder, shiftNotesUnder, state, late
   } = deps;
   /** Close the flow at a chapter-level boundary (block `boundaryIndex`):
    *  floats take the page's free slots, the closing band is levelled, the
@@ -111,12 +113,24 @@ export function createBreaks(deps: BreaksDeps) {
     const spanWidth = page.contentArea.width - 0.5;
     const below = floats.filter((b) => b.bbox.y >= textBottom - 0.5).sort((a, b) => a.bbox.y - b.bbox.y);
     let nextY = page.contentArea.y + Math.ceil((textBottom - page.contentArea.y - 0.01) / baselineGrid) * baselineGrid + floatGapPx;
+    /** The notes at the foot of a column of the band, between its text and
+     *  the first float, go up with the float, which they stand on: no
+     *  higher than their column's text (#1367). */
+    const textBottomOf = (c: VDTColumn): number => c.bbox.y + (c.bbox.height - c.availableHeight);
+    let notesRide = true;
     for (const b of below) {
       const rb = b.resourceBlock;
       // Only resource floats across the page move; anything else below the
       // text (a fixed or floated box) keeps its place and ends the run.
       if (!rb || rb.rotation || b.bbox.width < spanWidth) break;
-      const dy = nextY - b.bbox.y;
+      let dy = nextY - b.bbox.y;
+      const riding = notesRide ? cols.filter((c) => {
+        const top = notesTopUnder(c, textBottomOf(c));
+        return top !== undefined && top < b.bbox.y;
+      }) : [];
+      notesRide = false;
+      for (const c of riding) dy = Math.max(dy, textBottomOf(c) - notesTopUnder(c, textBottomOf(c))!);
+      if (dy < -0.5) for (const c of riding) shiftNotesUnder(c, textBottomOf(c), dy);
       if (dy < -0.5) {
         b.bbox.y += dy;
         offsetResourceBlockToAbsolute(rb, 0, dy);
