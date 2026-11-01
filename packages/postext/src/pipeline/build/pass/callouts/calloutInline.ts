@@ -2,6 +2,7 @@
 // Part of the placement pass (pass.ts), split out of it in #1276.
 import { type PlannedCallout, pickCalloutStyle, resolveCalloutAttrs, type CalloutLayoutResult } from '../../../callouts/calloutLayout.js';
 import { CUT_START, type CalloutCut, type CalloutFragment, fragmentRange, type CalloutLayouter } from '../../../callouts/frameLayout.js';
+import { cropSpanEmbed } from './embedCrop.js';
 import { currentColumn, bandColumns, currentBand, advanceToNextColumn, placeAtomicBlock, type PlacementCursor } from '../../../blocks/placement.js';
 import { floatColumnCount } from '../../../floats/floatPlacement.js';
 import { pageIsVertical, type ResolvedConfig, type VDTDocument, type VDTPage, type VDTColumn, type VDTBlock } from '../../../../vdt.js';
@@ -144,7 +145,7 @@ export function createCalloutInline(deps: CalloutInlineDeps) {
       enterBand(startIdx, part);
       let curCol = currentColumn(doc, cursor);
       const continuation = part > 0;
-      const result = L.layoutRange(from, L.end, curCol.bbox.width, frameId, continuation, mirroredOf(doc.pages[cursor.pageIndex]!));
+      let result = L.layoutRange(from, L.end, curCol.bbox.width, frameId, continuation, mirroredOf(doc.pages[cursor.pageIndex]!));
       // Column balancing: a box closing its column takes the column's gap
       // above it (the trailing-callout lever), so its foot lands on the
       // last grid slot — level with the column beside it. Any fragment
@@ -155,6 +156,12 @@ export function createCalloutInline(deps: CalloutInlineDeps) {
         : 0;
       const spacing = (atColumnHead(curCol) ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), result.marginTopPx)) + balanceBefore;
       const roomPx = curCol.availableHeight - spacing;
+      // A page-span embed set in the flow of a one-column page: its picture
+      // cropped within its safe area to stay in the room left (#1364).
+      if (part === 0 && result.totalHeight > roomPx + 0.01) {
+        result = cropSpanEmbed(style, result, roomPx, (frame) =>
+          L.layoutRange(from, L.end, curCol.bbox.width, frameId, continuation, mirroredOf(doc.pages[cursor.pageIndex]!), frame)) ?? result;
+      }
       let fragment: CalloutFragment | null = null;
       if (result.totalHeight > roomPx + 0.01) {
         // The (rest of the) box does not fit the column: a splittable box
