@@ -2,10 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../../parse/index.js';
 import { readExercises } from '../../exercises/model.js';
 import { gridBox } from '../../exercises/grids.js';
+import { areaElements } from '../../exercises/designs.js';
 import { exerciseSettingsOf } from '../../defaults/boxes/exercises.js';
 import type { DesignTextElement, PostextConfig } from '../../types.js';
 
-// A bracket division's remainder (#1311).
+// A bracket division's remainder (#1311) and model answers on squared paper
+// kept in words (#1312).
 
 describe('a bracket long division with a remainder', () => {
   const lay = (md: string, extra: PostextConfig, teacher = false) => {
@@ -42,5 +44,52 @@ describe('a bracket long division with a remainder', () => {
     const box = lay(':::exercise{type=arithmetic}\nDivide.\n\n- 864 ÷ 4\n:::\n', cfg);
     expect(box.slots!.some((s) => s.key.includes('_r'))).toBe(false);
     expect(box.info!.cols).toBe(5);
+  });
+});
+
+describe('a model answer on squared paper', () => {
+  const RED = { hex: '#c0392b', model: 'hex' as const };
+  const rows = (kind: 'grid' | 'tianzige', answer: string, cols: number, cells?: number[]) => {
+    const { elements } = areaElements({ kind, lines: 6, spacingPt: 10, widthPt: cols * 10, color: RED, weightPt: 0.5, answers: [answer], answerColor: RED, ...(cells ? { cells } : {}) });
+    const out: string[] = [];
+    for (const t of elements.filter((e): e is DesignTextElement => e.kind === 'text')) {
+      const r = Math.round((t.placement.offset!.y as { value: number }).value / 10);
+      const c = Math.round((t.placement.offset!.x as { value: number }).value / 10);
+      out[r] = (out[r] ?? '').padEnd(c, ' ') + t.content;
+    }
+    return out;
+  };
+
+  it('starts a word that does not fit the rest of a row on the next', () => {
+    const text = 'Four boxes cost £3.75 × 4 = £15. Your change is £20 − £15 = £5.';
+    const got = rows('grid', text, 34);
+    expect(got[0]).toBe('Four boxes cost £3.75 × 4 = £15.');
+    expect(got[1]).toBe('Your change is £20 − £15 = £5.');
+  });
+
+  it('keeps a number with its unit joined by a no-break space', () => {
+    const got = rows('grid', 'The change is 5 €.', 15);
+    expect(got[0]).toBe('The change is');
+    expect(got[1]).toBe('5 €.');
+  });
+
+  it('cuts a word longer than a row character by character', () => {
+    expect(rows('grid', 'ab Donaudampfschiff', 6)).toEqual(['ab', 'Donaud', 'ampfsc', 'hiff']);
+  });
+
+  it('keeps the answer\'s lines a space apart', () => {
+    expect(rows('grid', '', 10)).toEqual([]);
+    const { elements } = areaElements({ kind: 'grid', lines: 3, spacingPt: 10, widthPt: 100, color: RED, weightPt: 0.5, answers: ['one', 'two'], answerColor: RED });
+    const t = elements.filter((e): e is DesignTextElement => e.kind === 'text').find((e) => e.content === 't')!;
+    expect((t.placement.offset!.x as { value: number }).value).toBe(40);
+  });
+
+  it('fills Chinese text a character to a square, on a grid and on 田字格', () => {
+    const zh = '春天来了，小草绿了，花儿开了。';
+    for (const kind of ['grid', 'tianzige'] as const) {
+      expect(rows(kind, zh, 6)).toEqual(['春天来了，小', '草绿了，花儿', '开了。']);
+    }
+    // 田字格 keeps every character in order, spaces as empty squares.
+    expect(rows('tianzige', 'ab cd', 4)).toEqual(['ab c', 'd']);
   });
 });

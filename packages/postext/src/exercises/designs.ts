@@ -103,6 +103,36 @@ function cellGroups(cells: number[], cols: number, lines: number): { at: Array<{
   return { at, rows: r + lines };
 }
 
+/** A space a row may end at (a no-break space joins). */
+const isBreakSpace = (g: string): boolean => g === ' ' || g === '\t' || g === '\n' || g === '\r';
+/** A character that stands as a word of its own: Han, kana, CJK
+ *  punctuation and full-width forms, written without spaces. */
+const isOwnWord = (g: string): boolean => /^[\u2E80-\u303F\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFFEF]/u.test(g) || /^[\u{20000}-\u{3134F}]/u.test(g);
+
+/** `chars` laid on rows of `cols` squares, one character a square, with
+ *  the blank squares that start a word on the next row when it does not
+ *  fit the rest of one; a space at the start of a row is dropped, a word
+ *  longer than a row starts one and is cut where it ends. */
+function inWords(chars: string[], cols: number): string[] {
+  const words: string[][] = [];
+  let word: string[] = [];
+  const flush = (): void => { if (word.length > 0) words.push(word); word = []; };
+  for (const g of chars) {
+    if (isBreakSpace(g)) { flush(); words.push([' ']); continue; }
+    if (isOwnWord(g)) { flush(); words.push([g]); continue; }
+    word.push(g);
+  }
+  flush();
+  const out: string[] = [];
+  for (const w of words) {
+    const col = out.length % cols;
+    if (w[0] === ' ') { if (col > 0) out.push(' '); continue; }
+    if (col > 0 && col + w.length > cols) out.push(...Array<string>(cols - col).fill(' '));
+    out.push(...w);
+  }
+  return out;
+}
+
 /** The elements and height of a writing area. */
 export function areaElements(a: AreaSpec): { elements: DesignElement[]; heightPt: number } {
   const n = Math.max(1, Math.floor(a.lines));
@@ -165,7 +195,12 @@ export function areaElements(a: AreaSpec): { elements: DesignElement[]; heightPt
     const cols = Math.max(1, Math.floor(w / sp));
     const groups = a.cells && a.cells.length > 0 ? cellGroups(a.cells, cols, n).at : [{ c: 0, r: 0, n: cols }];
     const squares = groups.flatMap((g) => Array.from({ length: g.n * n }, (_, k) => ({ x: (g.c + (k % g.n)) * sp, y: (g.r + Math.floor(k / g.n)) * sp })));
-    const chars = graphemesOf(a.answers.join('')).filter((ch) => !(a.cells && ch.trim() === ''));
+    // On squared paper across the measure a pupil keeps the words of a
+    // language written with spaces whole (#1312); 田字格 and groups of
+    // cells take a character to a square.
+    const chars = a.kind === 'grid' && !(a.cells && a.cells.length > 0)
+      ? inWords(graphemesOf(a.answers.join(' ')), cols)
+      : graphemesOf(a.answers.join('')).filter((ch) => !(a.cells && ch.trim() === ''));
     chars.slice(0, squares.length).forEach((ch, k) => {
       if (ch.trim() === '') return;
       els.push(textElement(`answer${k}`, ch, squares[k]!.x, squares[k]!.y, sp, sp, sp * 0.62, {
