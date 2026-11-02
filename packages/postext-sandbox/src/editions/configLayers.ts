@@ -17,6 +17,9 @@ export type ConfigScope = 'all' | 'edition';
 export interface ConfigLayers {
   shared: PostextConfig;
   scope: ConfigScope;
+  /** A preset's own general settings as it was applied: what the reader's
+   *  changes are measured against (#1381). Absent for a project. */
+  base?: PostextConfig;
 }
 
 /** A built-in resource type's fields, each language's own (its names,

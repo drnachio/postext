@@ -84,7 +84,7 @@ export function useBookSwitch(deps: UseBookSwitchDeps) {
     const loc = late.stateRef.current.locale;
     // A preset in several languages: the draft opens on the general
     // settings in force now, keeping what it sets of its own (#1209).
-    const general = draft.sharedConfig ? loadPresetGeneral(draft.presetId) ?? draft.sharedConfig : null;
+    const general = draft.sharedConfig ? loadPresetGeneral(draft.presetId, draft.baseSharedConfig ?? draft.sharedConfig) ?? draft.sharedConfig : null;
     const scope = late.stateRef.current.configLayers?.scope ?? 'all';
     const config = withDefaultResourceTypes(general && draft.sharedConfig ? rebaseEdition(draft.sharedConfig, general, draft.config) : draft.config, loc);
     setCustomFonts(config.customFonts, { newBook: true });
@@ -97,7 +97,7 @@ export function useBookSwitch(deps: UseBookSwitchDeps) {
     dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
     dispatch({ type: 'SET_PRESET', payload: { id: draft.presetId, config: draft.baseConfig ? withDefaultResourceTypes(draft.baseConfig, loc) : undefined } });
     dispatch({ type: 'SET_CONFIG', payload: config });
-    dispatch({ type: 'SET_CONFIG_LAYERS', payload: general ? { shared: general, scope } : null });
+    dispatch({ type: 'SET_CONFIG_LAYERS', payload: general ? { shared: general, ...(draft.baseSharedConfig ? { base: draft.baseSharedConfig } : {}), scope } : null });
     dispatch({ type: 'SET_RESOURCES', payload: draft.resources });
     dispatch({ type: 'SET_BOOK', payload: book });
     dispatch({ type: 'SET_PRESET_APPLIED', payload: draft.snapshot });

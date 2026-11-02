@@ -1,4 +1,4 @@
-import { type PostextConfig, stripConfigDefaults } from 'postext';
+import { type ConfigOverride, type PostextConfig, diffConfigLayers, mergeConfigLayers, stripConfigDefaults } from 'postext';
 import type { AppliedPresetSnapshot } from '../presets/types.js';
 import type { BookContent } from '../book/types.js';
 import type { PanelId } from '../types/props.js';
@@ -245,21 +245,44 @@ export function clearStorage(): void {
 
 /** The general settings the reader gave a preset in several languages
  *  (#1209), by preset id: every edition of it opens on them, keeping what
- *  it sets of its own. Null while the preset's own are in force. */
-export function loadPresetGeneral(presetId: string): PostextConfig | null {
+ *  it sets of its own. Only what the reader changed is kept (#1381), read
+ *  over `own`, the preset's general settings now, so a later design of the
+ *  preset still arrives. Null while the preset's own are in force, also
+ *  for a record of the older kind, a whole copy of the settings that cannot
+ *  tell the reader's changes from the design of the day it was written. */
+export function loadPresetGeneral(presetId: string, own: PostextConfig): PostextConfig | null {
   try {
     const raw = getStorage()?.getItem(PRESET_GENERAL_PREFIX + presetId);
-    return raw ? (JSON.parse(raw) as PostextConfig) : null;
+    const override = raw ? (JSON.parse(raw) as { override?: ConfigOverride }).override : undefined;
+    return override ? mergeConfigLayers(own, override) : null;
   } catch {
     return null;
   }
 }
 
-export function savePresetGeneral(presetId: string, shared: PostextConfig | null): void {
+/** The whole copy of a preset's general settings a browser stored before
+ *  #1381, or null: it marks a book that may hold the design of that day. */
+export function loadPresetGeneralCopy(presetId: string): PostextConfig | null {
+  try {
+    const raw = getStorage()?.getItem(PRESET_GENERAL_PREFIX + presetId);
+    const parsed = raw ? (JSON.parse(raw) as PostextConfig & { override?: ConfigOverride }) : null;
+    return parsed && !parsed.override ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Keeps how `shared` differs from `base`, the preset's own general
+ *  settings: nothing when they agree, and `null` forgets the reader's. */
+export function savePresetGeneral(presetId: string, shared: PostextConfig | null, base?: PostextConfig): void {
   const storage = getStorage();
   if (!storage) return;
   try {
-    if (shared) storage.setItem(PRESET_GENERAL_PREFIX + presetId, JSON.stringify(shared));
+    // Resumed without a base: nothing to measure against until the watch
+    // on the preset gives it one.
+    if (shared && !base) return;
+    const override = shared && base ? diffConfigLayers(base, shared) : null;
+    if (override && Object.keys(override).length > 0) storage.setItem(PRESET_GENERAL_PREFIX + presetId, JSON.stringify({ override }));
     else storage.removeItem(PRESET_GENERAL_PREFIX + presetId);
   } catch (err) {
     console.warn('[postext-sandbox] could not persist the general settings', err);
@@ -268,23 +291,23 @@ export function savePresetGeneral(presetId: string, shared: PostextConfig | null
 
 /** The general settings of the preset on screen, beside the working
  *  configuration, so the next visit resumes it with them (#1209). */
-export function saveWorkingLayers(presetId: string | null, shared: PostextConfig | null): void {
+export function saveWorkingLayers(presetId: string | null, shared: PostextConfig | null, base?: PostextConfig): void {
   const storage = getStorage();
   if (!storage) return;
   try {
-    if (presetId && shared) storage.setItem(WORKING_LAYERS_KEY, JSON.stringify({ presetId, shared }));
+    if (presetId && shared) storage.setItem(WORKING_LAYERS_KEY, JSON.stringify({ presetId, shared, ...(base ? { base } : {}) }));
     else storage.removeItem(WORKING_LAYERS_KEY);
   } catch {
     // The preset opened again brings them back.
   }
 }
 
-export function loadWorkingLayers(presetId: string): PostextConfig | null {
+export function loadWorkingLayers(presetId: string): { shared: PostextConfig; base?: PostextConfig } | null {
   try {
     const raw = getStorage()?.getItem(WORKING_LAYERS_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { presetId?: string; shared?: PostextConfig };
-    return parsed.presetId === presetId && parsed.shared ? parsed.shared : null;
+    const parsed = JSON.parse(raw) as { presetId?: string; shared?: PostextConfig; base?: PostextConfig };
+    return parsed.presetId === presetId && parsed.shared ? { shared: parsed.shared, ...(parsed.base ? { base: parsed.base } : {}) } : null;
   } catch {
     return null;
   }

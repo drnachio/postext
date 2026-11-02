@@ -84,8 +84,8 @@ export function useMountLoad(deps: UseMountLoadDeps) {
         const resumed = projects.find((p) => p.id === late.stateRef.current.activeProjectId);
         const resumedShared = resumed ? recordSharedConfig(resumed) : null;
         const resumedPreset = !resumed && !late.stateRef.current.activeProjectId && late.stateRef.current.presetApplied ? loadWorkingLayers(late.stateRef.current.presetApplied.presetId) : null;
-        const resumedLayers = resumedShared ?? resumedPreset;
-        if (resumedLayers && !late.stateRef.current.configLayers) dispatch({ type: 'SET_CONFIG_LAYERS', payload: { shared: resumedLayers, scope: 'all' } });
+        const resumedLayers = resumedShared ? { shared: resumedShared } : resumedPreset;
+        if (resumedLayers && !late.stateRef.current.configLayers) dispatch({ type: 'SET_CONFIG_LAYERS', payload: { ...resumedLayers, scope: 'all' } });
         setDraftSummaries(drafts.map(toDraftSummary));
         projectsLoadedRef.current = true;
         // Layout records of chapters no book holds any more are dropped.
