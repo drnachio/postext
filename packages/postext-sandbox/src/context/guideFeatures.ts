@@ -1,4 +1,4 @@
-import type { CalloutStyleConfig, ChipStyleConfig, MarkStyleConfig, PageTemplate, ParagraphStyleConfig } from 'postext';
+import type { CalloutStyleConfig, ChipStyleConfig, ExerciseStyleConfig, MarkStyleConfig, PageTemplate, ParagraphStyleConfig } from 'postext';
 import { at, box, col, mm, pt, rule } from './guideKit.js';
 import type { GuideLang } from '../defaultResources/lang.js';
 
@@ -37,6 +37,8 @@ export interface FeatureNames {
   state: string;
   sheet: string;
   mark: string;
+  exercise: string;
+  exerciseBank: string;
 }
 
 function boxBody(f: FeatureFaces, o: FeatureOptions) {
@@ -87,8 +89,53 @@ export function colophonCallout(type: ParagraphStyleConfig): CalloutStyleConfig 
       color: col('muted'), boldColor: col('ink'), textAlign: type.textAlign === 'justify' ? 'justify' : 'left',
       hyphenation: false, paragraphSpacing: true, firstLineIndent: mm(0),
     },
-    marginTop: pt(12), marginBottom: pt(0), keepTogether: true,
+    marginTop: pt(20), marginBottom: pt(0), keepTogether: true,
   };
+}
+
+/** The exercises: a card in a cool panel, the number on a square in the
+ *  part colour, the instruction in the boxes' sans, circles to tick, a white
+ *  word bank and blanks ruled in the part colour. */
+export function exerciseCallouts(f: FeatureFaces, o: FeatureOptions, names: FeatureNames): CalloutStyleConfig[] {
+  const body = boxBody(f, o);
+  return [
+    {
+      id: 'exercise-card', name: names.exercise,
+      span: 'column', placement: 'here',
+      backgroundEnabled: true, background: col('panel'), border: { enabled: false }, borderRadius: mm(1.6),
+      padding: { top: mm(3.2), right: mm(3.5), bottom: mm(3.2), left: mm(3.5) },
+      icon: { kind: 'none' },
+      body: { ...body, fontSize: pt(8.8) },
+      lists: { color: col('band') },
+      marginTop: pt(4), marginBottom: pt(8), keepTogether: true,
+    },
+    {
+      id: 'exercise-bank', name: names.exerciseBank,
+      span: 'column', placement: 'here',
+      backgroundEnabled: true, background: col('white'), border: { enabled: false }, borderRadius: mm(1.2),
+      padding: { top: mm(1.8), right: mm(2.4), bottom: mm(1.8), left: mm(2.4) },
+      icon: { kind: 'none' },
+      body: { ...body, textAlign: 'left' },
+      marginTop: pt(5), marginBottom: pt(0), keepTogether: true,
+    },
+  ];
+}
+
+export function guideExerciseStyles(f: FeatureFaces, names: FeatureNames): ExerciseStyleConfig[] {
+  return [{
+    id: 'exercise', name: names.exercise,
+    box: 'exercise-card',
+    number: { shape: 'rounded', background: col('band'), color: col('white'), fontFamily: f.sans, fontSize: { value: 0.92, unit: 'em' }, fontWeight: 700 },
+    instruction: { bold: true, color: col('ink'), fontFamily: f.sans, fontSize: pt(8.8) },
+    options: { marker: 'circle', labels: 'none', indent: mm(0) },
+    blank: { width: 'longest', extra: { value: 0.4, unit: 'em' }, color: col('band'), weight: pt(0.7) },
+    match: { look: 'dots', gap: { value: 3, unit: 'em' }, dotSize: { value: 0.42, unit: 'em' }, color: col('band') },
+    bank: { box: 'exercise-bank', order: 'alpha' },
+    grid: { fontFamily: f.sans },
+    level: { glyph: '●', empty: '○', color: col('band') },
+    marginTop: pt(0), marginBottom: pt(0),
+    itemSpacing: { value: 0.35, unit: 'em' },
+  }];
 }
 
 /** The boxes of the composed page: a title set plain, three cards with a
@@ -181,16 +228,16 @@ export function sheetTemplate(name: string, cardHeight = 72): PageTemplate {
 /** The names of the new styles in each edition's language, and the name of
  *  its index heading style. */
 export const FEATURE_NAMES: Record<GuideLang, FeatureNames & { index: string }> = {
-  en: { aside: 'Aside', sheetTitle: 'Sheet title', sheetCard: 'Sheet card', sheetKey: 'Sheet key', key: 'Key', state: 'State', sheet: 'Quick-reference sheet', mark: 'Highlight', index: 'Index' },
-  es: { aside: 'Aparte', sheetTitle: 'Título de ficha', sheetCard: 'Tarjeta de ficha', sheetKey: 'Clave de ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', mark: 'Resaltado', index: 'Índice alfabético' },
-  ca: { aside: 'Apart', sheetTitle: 'Títol de fitxa', sheetCard: 'Targeta de fitxa', sheetKey: 'Clau de fitxa', key: 'Tecla', state: 'Estat', sheet: 'Fitxa de consulta', mark: 'Ressaltat', index: 'Índex alfabètic' },
-  'pt-BR': { aside: 'Aparte', sheetTitle: 'Título da ficha', sheetCard: 'Cartão da ficha', sheetKey: 'Chave da ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', mark: 'Destaque', index: 'Índice remissivo' },
-  fr: { aside: 'Aparté', sheetTitle: 'Titre de fiche', sheetCard: 'Carte de fiche', sheetKey: 'Clé de fiche', key: 'Touche', state: 'État', sheet: 'Fiche mémo', mark: 'Surlignage', index: 'Index' },
-  de: { aside: 'Randbemerkung', sheetTitle: 'Blatttitel', sheetCard: 'Blattkarte', sheetKey: 'Blattlegende', key: 'Taste', state: 'Zustand', sheet: 'Übersichtsblatt', mark: 'Hervorhebung', index: 'Register' },
-  it: { aside: 'Inciso', sheetTitle: 'Titolo della scheda', sheetCard: 'Riquadro della scheda', sheetKey: 'Legenda della scheda', key: 'Tasto', state: 'Stato', sheet: 'Scheda riassuntiva', mark: 'Evidenziazione', index: 'Indice analitico' },
-  ar: { aside: 'حاشية', sheetTitle: 'عنوان البطاقة', sheetCard: 'خانة البطاقة', sheetKey: 'مفتاح البطاقة', key: 'مفتاح', state: 'حالة', sheet: 'بطاقة مرجعية', mark: 'تظليل', index: 'الفهرس' },
-  'zh-Hans': { aside: '旁注', sheetTitle: '速查页标题', sheetCard: '速查页卡片', sheetKey: '速查页图例', key: '按键', state: '状态', sheet: '速查页', mark: '高亮', index: '索引' },
-  ja: { aside: '傍注', sheetTitle: '早見表の見出し', sheetCard: '早見表のカード', sheetKey: '早見表の凡例', key: 'キー', state: '状態', sheet: '早見表', mark: 'マーカー', index: '索引' },
+  en: { aside: 'Aside', sheetTitle: 'Sheet title', sheetCard: 'Sheet card', sheetKey: 'Sheet key', key: 'Key', state: 'State', sheet: 'Quick-reference sheet', mark: 'Highlight', exercise: 'Exercise', exerciseBank: 'Word bank', index: 'Index' },
+  es: { aside: 'Aparte', sheetTitle: 'Título de ficha', sheetCard: 'Tarjeta de ficha', sheetKey: 'Clave de ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', mark: 'Resaltado', exercise: 'Ejercicio', exerciseBank: 'Banco de palabras', index: 'Índice alfabético' },
+  ca: { aside: 'Apart', sheetTitle: 'Títol de fitxa', sheetCard: 'Targeta de fitxa', sheetKey: 'Clau de fitxa', key: 'Tecla', state: 'Estat', sheet: 'Fitxa de consulta', mark: 'Ressaltat', exercise: 'Exercici', exerciseBank: 'Banc de paraules', index: 'Índex alfabètic' },
+  'pt-BR': { aside: 'Aparte', sheetTitle: 'Título da ficha', sheetCard: 'Cartão da ficha', sheetKey: 'Chave da ficha', key: 'Tecla', state: 'Estado', sheet: 'Ficha de consulta', mark: 'Destaque', exercise: 'Exercício', exerciseBank: 'Banco de palavras', index: 'Índice remissivo' },
+  fr: { aside: 'Aparté', sheetTitle: 'Titre de fiche', sheetCard: 'Carte de fiche', sheetKey: 'Clé de fiche', key: 'Touche', state: 'État', sheet: 'Fiche mémo', mark: 'Surlignage', exercise: 'Exercice', exerciseBank: 'Banque de mots', index: 'Index' },
+  de: { aside: 'Randbemerkung', sheetTitle: 'Blatttitel', sheetCard: 'Blattkarte', sheetKey: 'Blattlegende', key: 'Taste', state: 'Zustand', sheet: 'Übersichtsblatt', mark: 'Hervorhebung', exercise: 'Übung', exerciseBank: 'Wortkasten', index: 'Register' },
+  it: { aside: 'Inciso', sheetTitle: 'Titolo della scheda', sheetCard: 'Riquadro della scheda', sheetKey: 'Legenda della scheda', key: 'Tasto', state: 'Stato', sheet: 'Scheda riassuntiva', mark: 'Evidenziazione', exercise: 'Esercizio', exerciseBank: 'Banca di parole', index: 'Indice analitico' },
+  ar: { aside: 'حاشية', sheetTitle: 'عنوان البطاقة', sheetCard: 'خانة البطاقة', sheetKey: 'مفتاح البطاقة', key: 'مفتاح', state: 'حالة', sheet: 'بطاقة مرجعية', mark: 'تظليل', exercise: 'تمرين', exerciseBank: 'بنك الكلمات', index: 'الفهرس' },
+  'zh-Hans': { aside: '旁注', sheetTitle: '速查页标题', sheetCard: '速查页卡片', sheetKey: '速查页图例', key: '按键', state: '状态', sheet: '速查页', mark: '高亮', exercise: '练习', exerciseBank: '词库', index: '索引' },
+  ja: { aside: '傍注', sheetTitle: '早見表の見出し', sheetCard: '早見表のカード', sheetKey: '早見表の凡例', key: 'キー', state: '状態', sheet: '早見表', mark: 'マーカー', exercise: '練習問題', exerciseBank: '語群', index: '索引' },
 };
 
 /** The index chapter's heading style: the contents page's design, its

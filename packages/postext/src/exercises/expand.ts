@@ -989,7 +989,7 @@ class Emitter {
         left: lefts.map((p) => plain(this.gapsOf(p.left))), right: order.map((k) => plain(this.gapsOf(rights[k]!))),
         links: this.teacher ? lefts.map((p) => posOf.get(pairs.indexOf(p))!) : this.example && lefts[0] ? [posOf.get(pairs.indexOf(lefts[0]))!] : undefined,
         bodySizePt: this.ctx.bodySizePt, lineHeightPt: this.ctx.lineHeightPt, measurePt: this.measure, labels: order.map((_, pos) => this.label(pos)),
-        ...(this.ctx.bodyFont ? { font: this.ctx.bodyFont } : {}),
+        ...(this.style.grid.fontFamily ?? this.ctx.bodyFont ? { font: this.style.grid.fontFamily ?? this.ctx.bodyFont } : {}),
       }));
     }
     const rows = Math.max(lefts.length, order.length);

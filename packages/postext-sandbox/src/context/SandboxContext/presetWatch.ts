@@ -1,8 +1,13 @@
 // The watch on the open preset's source and the resources' persistence
 // (#1276: split out of SandboxContext.tsx).
 import { useEffect } from 'react';
-import { savePresetApplied } from '../../storage/persistence.js';
+import { clearMeasurementCache } from 'postext';
+import { getPresetDraft, presetDraftKey } from '../../storage/presetDrafts.js';
+import { loadPresetGeneralCopy, saveConfig, savePresetApplied, savePresetGeneral, saveWorkingLayers } from '../../storage/persistence.js';
 import { isDocumentUntouched, decidePresetUpdate, type PresetProvider, type PresetApplyParts } from '../../presets/index.js';
+import { followPresetDesign } from '../../presets/followDesign.js';
+import { setCustomFonts } from '../../controls/fonts/fontLoader.js';
+import { withDefaultResourceTypes } from '../defaultConfig.js';
 import { PRESET_WATCH_INTERVAL_MS, PRESET_NOTICE_MS } from './timings.js';
 import { saveResource, deleteResource } from '../../storage/resources.js';
 import type { SandboxState, SandboxAction } from './state.js';
@@ -24,6 +29,31 @@ export function usePresetWatch(deps: UsePresetWatchDeps) {
   const {
     state, dispatch, prevResourcesRef, resourcesLoadedRef, presetProvidersRef, runPresetRef, late
   } = deps;
+  /** Bring the book on screen onto the preset's design now, keeping the
+   *  reader's text and the fields they changed (#1381). */
+  const followDesign = async (provider: PresetProvider, live: string | null): Promise<void> => {
+    const applied = late.stateRef.current.presetApplied;
+    if (!applied) return;
+    const fresh = await provider.load(applied.locale ?? late.stateRef.current.locale);
+    const draft = late.stateRef.current.presetConfig ? null : await getPresetDraft(presetDraftKey(provider.summary.id, applied.locale)).catch(() => null);
+    const s = late.stateRef.current;
+    if (s.activeProjectId !== null || s.activePresetId !== provider.summary.id || s.presetApplied?.presetId !== provider.summary.id) return;
+    const followed = followPresetDesign({ fresh, live, config: s.config, chapters: s.chapters, resources: s.resources, base: s.presetConfig ?? draft?.baseConfig ?? null, layers: s.configLayers, storedCopy: loadPresetGeneralCopy(provider.summary.id), snapshot: s.presetApplied });
+    if (!followed) return;
+    const config = withDefaultResourceTypes(followed.config, s.locale);
+    setCustomFonts(config.customFonts);
+    dispatch({ type: 'SET_PRESET', payload: { id: provider.summary.id, config: fresh.config } });
+    dispatch({ type: 'SET_CONFIG', payload: config });
+    dispatch({ type: 'SET_CONFIG_LAYERS', payload: followed.layers });
+    dispatch({ type: 'SET_PRESET_APPLIED', payload: followed.snapshot });
+    if (followed.current) dispatch({ type: 'SET_PRESET_STALE', payload: false });
+    clearMeasurementCache();
+    saveConfig(config);
+    savePresetApplied(followed.snapshot);
+    saveWorkingLayers(followed.layers ? provider.summary.id : null, followed.layers?.shared ?? null, followed.layers?.base);
+    savePresetGeneral(provider.summary.id, followed.layers?.shared ?? null, followed.layers?.base);
+  };
+
   // Live presets: while the page is visible, poll the active preset's source
   // fingerprint and follow bundle edits — re-apply when the document is
   // untouched, otherwise flag it stale and keep the user's work. Restarts
@@ -33,6 +63,8 @@ export function usePresetWatch(deps: UsePresetWatchDeps) {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     let disposed = false;
     let inFlight = false;
+    // The version of the source the book last followed, once per version.
+    let followedVersion: string | null = null;
 
     const tick = async (): Promise<void> => {
       if (disposed || inFlight) return;
@@ -79,6 +111,14 @@ export function usePresetWatch(deps: UsePresetWatchDeps) {
           dispatch({ type: 'SET_PRESET_UPDATED_AT', payload: Date.now() });
         } else if (decision === 'stale') {
           dispatch({ type: 'SET_PRESET_STALE', payload: true });
+          if (followedVersion !== live) {
+            followedVersion = live;
+            await followDesign(provider, live).catch(() => undefined);
+          }
+        } else if ((s.configLayers && !s.configLayers.base) || loadPresetGeneralCopy(provider.summary.id)) {
+          // General settings stored as a whole copy, before #1381: they
+          // hold the design of the day they were written.
+          await followDesign(provider, live).catch(() => undefined);
         } else if (s.presetStale && live !== null && snapshot?.fingerprint === live) {
           // The source went back to what was applied (e.g. an undone edit).
           dispatch({ type: 'SET_PRESET_STALE', payload: false });

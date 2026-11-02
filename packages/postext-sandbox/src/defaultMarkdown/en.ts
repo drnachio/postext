@@ -131,7 +131,7 @@ Before the engine can place anything it must know how much room each element nee
 
 Postext measures through _pretext_:index{term="pretext"}, a DOM-free text measurement library that uses canvas font metrics and pure arithmetic. Its expensive step, preparing a text for a given font, is cached; laying it out at a given width is nearly free. The approach is 300 to 600 times faster than measuring through reflow, as :ref{id="measurement-speed"} makes vivid, and on top of it the engine's own measurement module adds rich runs of bold, italic and mathematics, hyphenation, justification and optimal line breaking. Every result is cached under a key that includes the text, the fonts, the width and every option that can change a line, so typing into one paragraph re-measures that paragraph and nothing else.
 
-Font loading is the one part of measurement the engine leaves to its host. Measuring with a font that has not arrived yet would measure the fallback instead, and every line would move once the real face appeared. The library therefore expects fonts to be loaded before the first build, and offers a way to clear its measurement caches when a late font does arrive, so the next build measures again with the right metrics. The Sandbox does this automatically: it loads every family the configuration names, from Google Fonts or from the Fonts panel, before it lays out a page.
+Font loading is the one part of measurement the engine leaves to its host. Measuring with a font that has not arrived yet would measure the fallback instead, and every line would move once the real face appeared. The library therefore expects fonts to be loaded before the first build, and offers a way to clear its measurement caches when a late font does arrive, so the next build measures again with the right metrics. The Sandbox does this automatically: it loads every family the configuration names, from [Google Fonts](https://fonts.google.com) or from the Fonts panel, before it lays out a page.
 
 ## A line breaker in WebAssembly
 
@@ -683,11 +683,11 @@ A translation is the same Markdown with other words. The pictures, the crops and
 
 ## Pages, spreads and strips
 
-A comic can fill a page, run across two facing pages for a panorama, or sit in the text as a **strip**, the width of a column or of the page, like the daily strip of a newspaper. A strip behaves like a figure: it can be numbered and captioned, cited with \`:ref\`, and floated to the head or the foot of a page. The newspaper recipes of the Cookbook set strips this way, between articles.
+A comic can fill a page, run across two facing pages for a panorama, or sit in the text as a **strip**, the width of a column or of the page, like the daily strip of a newspaper. A strip behaves like a figure: it can be numbered and captioned, cited with \`:ref\`, and floated to the head or the foot of a page. The newspaper recipes of the [Cookbook](https://postext.dev/en/cookbook) set strips this way, between articles.
 
 ## Music as text
 
-:index{term="music notation"}A score is written in the chapter as a fenced block of notation, the way code is written in a technical book. Postext reads four formats: **ABC**, compact and easy to type, for melodies and songs; **MusicXML**, exported by the notation programs musicians use; **MEI**, for scholarly editions; and **Humdrum**, for chorales and analysis. The engine engraves the music with Verovio, the engraving library of the Music Encoding Initiative, at the width of the column.
+:index{term="music notation"}A score is written in the chapter as a fenced block of notation, the way code is written in a technical book. Postext reads four formats: **ABC**, compact and easy to type, for melodies and songs; **MusicXML**, exported by the notation programs musicians use; **MEI**, for scholarly editions; and **Humdrum**, for chorales and analysis. The engine engraves the music with [Verovio](https://www.verovio.org), the engraving library of the Music Encoding Initiative, at the width of the column.
 
 The tune below is written in five lines of ABC in this chapter's Markdown. The engine engraves it and sets it like a display formula, on the baseline grid, with the text resuming after it.
 
@@ -724,7 +724,7 @@ Which of these does the configuration decide, rather than the Markdown?
 :::exercise{bank level=2}
 Complete the sentences with the words in the box.
 
-1. A figure floats into the first free slot after its [[mention]].
+1. A figure floats to a free slot after its [[mention]].
 2. The engine breaks a paragraph as a [[whole]], not one line at a time.
 3. A composed page fills the frames of a [[template]].
 
@@ -736,7 +736,7 @@ Match each output with what it is for.
 
 - PDF/X -> The printer
 - EPUB -> An e-reader
-- SCORM -> A course on a learning platform
+- SCORM -> A learning platform
 :::
 
 ## Twelve kinds
@@ -761,7 +761,7 @@ Open the HTML view at this chapter and answer the three exercises. Check them, t
 
 ## Courses
 
-:index{term="SCORM"}A book with exercises can become a course. The **SCORM** view of the Sandbox packs the chapters and sections you choose into a SCORM package, the format learning platforms such as Moodle read. Each part of the book the platform tracks reports a score, from the exercises answered right, whether it is complete, every page seen and every exercise checked, and whether it is passed, against a mark the book sets. A test can limit how many times an exercise is checked, how many times it starts again and when its solution appears.
+:index{term="SCORM"}A book with exercises can become a course. The **SCORM** view of the Sandbox packs the chapters and sections you choose into a SCORM package, the format learning platforms such as [Moodle](https://moodle.org) read. Each part of the book the platform tracks reports a score, from the exercises answered right, whether it is complete, every page seen and every exercise checked, and whether it is passed, against a mark the book sets. A test can limit how many times an exercise is checked, how many times it starts again and when its solution appears.
 
 The package carries the book as the HTML view shows it, laid out by the same engine, so the course looks like the printed book its pupils have on the desk.
 
@@ -891,7 +891,7 @@ Your work is saved in the browser as you type. **Projects** are books stored loc
 
 Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in any of its languages when it has more than one, like this guide, which comes in English, Spanish, Catalan, French, German, Italian, Brazilian Portuguese, Simplified Chinese, Arabic and Japanese.
 
-A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. The recipes of the Cookbook open in the Sandbox the same way, as books of your own; a recipe you have opened before asks whether to open your copy, with your changes, or replace it with the published version, which may have been corrected since. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
+A book travels as a single **.postext** file: its chapters, configuration, resources and fonts, plus the pagination already computed, so it opens paginated. The recipes of the [Cookbook](https://postext.dev/en/cookbook) open in the Sandbox the same way, as books of your own; a recipe you have opened before asks whether to open your copy, with your changes, or replace it with the published version, which may have been corrected since. And the address bar always holds a permalink to what you are looking at — the book, the language, the viewer, the chapter and the page.
 
 :::callout{type="try"}
 Scroll to a page you like and copy the address from the browser: opening that link shows the same book, in the same viewer, at the same page.
@@ -957,7 +957,7 @@ Both renditions carry the same navigation: a table of contents from the headings
 
 ## Using the library
 
-The engine ships on npm as _postext_, for the layout and the canvas and HTML renderers, with a package for each heavier output: _postext-pdf_ for PDF, _postext-epub_ for EPUB 3 and _postext-folio_ for the book in 3D. All are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
+The engine ships on npm as [_postext_](https://www.npmjs.com/package/postext), for the layout and the canvas and HTML renderers, with a package for each heavier output: _postext-pdf_ for PDF, _postext-epub_ for EPUB 3 and _postext-folio_ for the book in 3D. All are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
 
 The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ and _postext-epub_ run in the browser too, and also in Node, so a PDF or an EPUB can be produced on a server from a layout computed elsewhere. A whole book travels the same way: \`openBundle\` reads a .postext file, \`buildBundle\` lays out its chapters in order, and the result goes straight to \`renderToPdf\` or \`renderToEpub\`. The packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF, and no step of it needs the Sandbox.
 
@@ -1088,7 +1088,13 @@ Folio draws with WebGL2, the three-dimensional graphics of the browser, with a t
 The viewer is a package of its own, _postext-folio_, built on three.js. \`createFolioFromDocument(container, doc)\` shows a laid-out document as a book; \`setDocument\` shows the next layout on the same page, \`setAppearance\` changes the paper, the binding or the light, and \`resetView\` brings the view back. \`createFolio\` does the same over any page images.
 :::
 
-The same package turns the pages of the Cookbook's recipes, and it can sit in any web page that wants to present a book as a book: a publisher's catalogue, a proof sent to an author, a preview before the order goes to the printer. The light table of the Cookbook turns the pages of a recipe with the same package, flat, without the third dimension.
+The same package turns the pages of the [Cookbook's recipes](https://postext.dev/en/cookbook), and it can sit in any web page that wants to present a book as a book: a publisher's catalogue, a proof sent to an author, a preview before the order goes to the printer. The light table of the Cookbook turns the pages of a recipe with the same package, flat, without the third dimension.
+
+## Folio beside the other views
+
+Folio reads the same layout as the canvas. A correction in the Text panel reaches the leaf once the page has been set again: only the sides that changed are painted anew, and the book stays open where it was. The paper, the binding and the light are out of the layout, so trying another stock costs no new pagination, and the PDF that goes to the printer is the same file before and after.
+
+What the view adds is the object. The thickness of the block comes from the number of leaves and the caliper of the paper, so a hundred more pages show in the hand, and a heavier stock shows in the way a leaf falls. A spread whose picture crosses the spine can be judged in the gutter, where it will really curve, and a margin that looks generous on a flat page can turn out too narrow once the page bends towards the binding. Those are the questions a printed dummy used to answer, and a publisher can now ask them before paying for one.
 
 # Tools around the engine {#tools lead="The Sandbox is one way into Postext. A command line sets books from a terminal, a file format carries them whole, Word documents come in and go out, and agents can work the Sandbox or port a book from its PDF." summary="The command line, the .postext file, Word, WebMCP and the porting skill"}
 
@@ -1096,7 +1102,7 @@ The engine at the centre of this book is a library, and a library can be called 
 
 ## The command line
 
-:index{term="command line"}**postext** is a program for the terminal that turns a book into a PDF, an EPUB, HTML, page images or a Word document, without a browser. It comes as one file per system, for macOS, Linux and Windows, downloaded from the project's releases, or through npm as _postext-cli_. Everything it needs travels inside it: the engine, a drawing library, a text shaper, the ICC profiles of the print chapter and two families of fonts. Other fonts are fetched once from Google Fonts or a folder you name and kept in a cache; the fonts installed on the computer are never used, so a book sets the same on every machine.
+:index{term="command line"}**postext** is a program for the terminal that turns a book into a PDF, an EPUB, HTML, page images or a Word document, without a browser. It comes as one file per system, for macOS, Linux and Windows, downloaded from the [project's releases](https://github.com/drnachio/postext/releases), or through npm as _postext-cli_. Everything it needs travels inside it: the engine, a drawing library, a text shaper, the ICC profiles of the print chapter and two families of fonts. Other fonts are fetched once from Google Fonts or a folder you name and kept in a cache; the fonts installed on the computer are never used, so a book sets the same on every machine.
 
 The program reads a \`.postext\` file, a folder holding a book, or loose Markdown files taken as chapters in the order of their names. Each output has its command: \`pdf\`, \`epub\`, \`html\`, \`image\` and \`images\`, \`docx\`. Options cover what the Sandbox offers in its panels: a PDF/X standard and a profile, a fixed or reflowable EPUB, a single page or a range of pages in the numbering the book prints, a resolution, a print preview. \`--set\` changes any setting for one run, \`--locale\` chooses an edition and \`--chapters\` a part of the book.
 
@@ -1149,7 +1155,7 @@ What is still missing is as important as what has shipped. **Margin notes** have
 
 ## Getting involved
 
-The project lives on GitHub, and every conversation happens in the open: **issues** for bugs, requests and concrete tasks; **pull requests** for code, reviewed in public; **discussions** for ideas, design questions and anything not yet concrete enough to be an issue. Issues labelled _good first issue_ are the easiest way in.
+The project lives on [GitHub](https://github.com/drnachio/postext), and every conversation happens in the open: **issues** for bugs, requests and concrete tasks; **pull requests** for code, reviewed in public; **[discussions](https://github.com/drnachio/postext/discussions)** for ideas, design questions and anything not yet concrete enough to be an issue. Issues labelled _good first issue_ are the easiest way in.
 
 The usual path from idea to code is short: an issue describes the problem, a discussion settles the approach when there is more than one, a pull request implements it, and the change is merged into the development branch and released from there. Opening an issue before a large pull request saves everyone time, because the approach can be agreed before the code is written.
 

@@ -14,7 +14,7 @@ import {
   verticalBackCover, verticalCallouts, verticalChapterOpener, verticalContentsOpener, verticalCover, verticalPartDesign, verticalToc,
   type VerticalFaces,
 } from './guideVerticalKit.js';
-import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, exerciseCallouts, guideChipStyles, guideExerciseStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Japanese edition of the Postext guide: a vertical book bound on the
 // right (縦組み・右綴じ), set after the Requirements for Japanese Text Layout
@@ -238,7 +238,8 @@ export function createJapaneseGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'])],
+    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'].aside), ...exerciseCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja']), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'])],
+    exerciseStyles: guideExerciseStyles(FEATURE_FACES, FEATURE_NAMES['ja']),
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ja']),
     markStyles: guideMarkStyles(FEATURE_NAMES['ja']),
     pageTemplates: [sheetTemplate(FEATURE_NAMES['ja'].sheet)],
@@ -267,7 +268,7 @@ export function createJapaneseGuideConfig(): PostextConfig {
     // A web link prints its short address and a QR code in a note at the
     // foot of the column (a vertical edition prints the address alone); the
     // HTML view reads on screen, where the link is followed, and adds none.
-    links: { print: 'notes', show: 'both', urlDisplay: 'short' },
+    links: { print: 'notes', show: 'url', urlDisplay: 'short' },
     // On screen the book reads as one scroll: no section dividers (the parts
     // still colour their chapters), and a link prints nothing more.
     htmlViewer: { overrides: { parts: { page: false }, links: { print: 'none' } } },

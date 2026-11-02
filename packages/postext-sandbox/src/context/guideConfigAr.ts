@@ -9,7 +9,7 @@ import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, TEXT_W,
   at, box, col, colorPalette, em, guideCodeStyle, image, mm, openerBand, pt, rule, slot, text, type TextOpts,
 } from './guideKit.js';
-import { FEATURE_NAMES, asideCallout, colophonCallout, guideChipStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
+import { FEATURE_NAMES, asideCallout, colophonCallout, exerciseCallouts, guideChipStyles, guideExerciseStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureOptions } from './guideFeatures.js';
 
 // The Arabic edition of the Postext guide, in Modern Standard Arabic, set as
 // an Arabic book: right to left and bound on the right, so its first page
@@ -443,7 +443,8 @@ export function createArabicGuideConfig(): PostextConfig {
     },
     headingStyles: headingStyles(),
     paragraphStyles: paragraphStyles(),
-    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'].aside), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'])],
+    calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'].aside), ...exerciseCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar']), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'])],
+    exerciseStyles: guideExerciseStyles(FEATURE_FACES, FEATURE_NAMES['ar']),
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ar']),
     markStyles: guideMarkStyles(FEATURE_NAMES['ar']),
     pageTemplates: [sheetTemplate(FEATURE_NAMES['ar'].sheet)],

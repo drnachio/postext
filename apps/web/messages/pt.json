@@ -320,6 +320,7 @@
     "subtitle": "O Postext parte de Markdown semântico e aplica regras editoriais com séculos de história (justificação Knuth-Plass, colunas equilibradas, flutuantes que sabem seu lugar) para produzir páginas com qualidade editorial em HTML, canvas ou PDF pronto para impressão.",
     "getStarted": "Começar",
     "openSandbox": "Abrir o Sandbox",
+    "openGuide": "Abrir o guia do Postext no Sandbox",
     "viewOnGitHub": "Ver no GitHub",
     "artAlt": "Uma página dupla aberta, desenhada como o motor a vê: linhas justificadas de caixas de palavras sobre uma grade de linhas de base, uma faixa de capítulo, uma figura flutuante e uma linha aberta em caixas, cola e uma penalidade",
     "colophon": "Cada página é calculada no seu navegador"

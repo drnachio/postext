@@ -320,6 +320,7 @@
     "subtitle": "Postextは、意味構造のあるMarkdownに、何世紀も受け継がれてきた組版の規則を当てはめます。Knuth-Plassの両端そろえ、高さのそろった段組み、収まるべき場所を心得たフロート。そうして、HTML、Canvas、入稿できるPDFで出版品質のページを生成します。",
     "getStarted": "はじめる",
     "openSandbox": "Sandboxを開く",
+    "openGuide": "PostextガイドをSandboxで開く",
     "viewOnGitHub": "GitHubで見る",
     "artAlt": "エンジンから見た見開き。ベースライングリッドに乗った、語のボックスが並ぶ両端そろえの行、章の帯、フロートとして配置された図、そしてボックス、グルー、ペナルティに分解した1行",
     "colophon": "すべてのページは、あなたのブラウザーの中で計算されます"

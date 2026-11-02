@@ -43,6 +43,9 @@ export interface PresetDraftRecord extends ProjectContent {
    *  draft's configuration was last based on: it opens on the ones in force
    *  now, keeping what it sets of its own. */
   sharedConfig?: PostextConfig;
+  /** The preset's own general settings when it was applied, what the
+   *  reader's changes to the general settings are measured against. */
+  baseSharedConfig?: PostextConfig;
   updatedAt: number;
 }
 

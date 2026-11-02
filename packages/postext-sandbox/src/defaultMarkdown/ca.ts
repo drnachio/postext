@@ -131,7 +131,7 @@ Abans de col·locar res, el motor ha de saber quant espai necessita cada element
 
 Postext mesura amb _pretext_:index{term="pretext"}, una biblioteca de mesura de text sense DOM que fa servir les mètriques de font del canvas i pura aritmètica. El seu pas car, preparar un text per a una font donada, es desa a la memòria cau; compondre'l a una amplada concreta és gairebé gratuït. El mètode és entre 300 i 600 vegades més ràpid que mesurar mitjançant refluxos, com il·lustra :ref{id="measurement-speed"}, i a sobre el mòdul de mesura del motor hi afegeix trams enriquits de negreta, cursiva i matemàtiques, partició de mots, justificació i tall òptim de línies. Cada resultat es desa amb una clau que inclou el text, les fonts, l'amplada i totes les opcions que poden canviar una línia, de manera que escriure en un paràgraf torna a mesurar aquell paràgraf i cap altre.
 
-La càrrega de les fonts és l'única part de la mesura que el motor deixa en mans de qui l'allotja. Mesurar amb una font que encara no ha arribat mesuraria en realitat la font de substitució, i totes les línies es mourien quan aparegués la definitiva. Per això la biblioteca espera que les fonts estiguin carregades abans de la primera compilació, i ofereix una manera de buidar les seves memòries cau de mesura quan una font arriba tard, perquè la compilació següent torni a mesurar amb les mètriques correctes. El Sandbox ho fa automàticament: carrega totes les famílies que anomena la configuració, des de Google Fonts o des del tauler Fonts, abans de maquetar una pàgina.
+La càrrega de les fonts és l'única part de la mesura que el motor deixa en mans de qui l'allotja. Mesurar amb una font que encara no ha arribat mesuraria en realitat la font de substitució, i totes les línies es mourien quan aparegués la definitiva. Per això la biblioteca espera que les fonts estiguin carregades abans de la primera compilació, i ofereix una manera de buidar les seves memòries cau de mesura quan una font arriba tard, perquè la compilació següent torni a mesurar amb les mètriques correctes. El Sandbox ho fa automàticament: carrega totes les famílies que anomena la configuració, des de [Google Fonts](https://fonts.google.com) o des del tauler Fonts, abans de maquetar una pàgina.
 
 ## Un tallador de línies en WebAssembly
 
@@ -185,7 +185,7 @@ Les pàgines registren també per a què serveixen. Una pàgina pot ser de cos, 
 
 ## Fora del fil principal
 
-Una maquetació pot trigar més que una pulsació de tecla, així que el motor es pot executar en un Web Worker:index{term="Web Worker"}. El worker conserva la seva pròpia memòria cau de mesura entre compilacions i es cancel·la de manera cooperativa: quan es demana una compilació nova, l'anterior s'atura al seu punt de control següent i guanya l'última petició. El Sandbox maqueta així totes les seves vistes, i el renderitzador de PDF i el generador d'EPUB tenen cadascun un worker propi, de manera que la interfície continua responent mentre es compon un llibre sencer o se'n genera el fitxer.
+Una maquetació pot trigar més que una pulsació de tecla, així que el motor es pot executar en un Web Worker:index{term="Web Worker"}. El worker conserva la seva pròpia memòria cau de mesura entre compilacions i es cancel·la de manera cooperativa: quan es demana una compilació nova, l'anterior s'atura al seu punt de control següent i guanya l'última petició. El Sandbox maqueta així totes les seves vistes, i el renderitzador de PDF i el generador d'EPUB tenen cadascun un worker propi, de manera que la interfície continua responent mentre es compon un llibre sencer o se'n genera el fitxer. Fora del Sandbox el worker és opcional: la mateixa compilació també es pot fer al fil principal.
 
 :::callout{type="note" title="En codi"}
 \`buildDocument(content, config)\` retorna el VDT. \`renderPage\` dibuixa una pàgina en un canvas, \`renderToHtml\` retorna HTML posicionat i \`renderToPdf\`, del paquet _postext-pdf_, retorna els bytes d'un PDF, d'un document o d'un llibre sencer passat com una llista de capítols. \`renderToEpub\`, de _postext-epub_, escriu els mateixos capítols com un fitxer EPUB 3. \`createLayoutWorker\`, de _postext/worker_, executa la compilació fora del fil principal.
@@ -650,7 +650,7 @@ Posa la previsualització en mode Disseny, ves al full de consulta ràpida, just
 
 # Còmics i partitures {#comics lead="Alguns llibres parlen amb imatges i d'altres amb notes. Un còmic és un conjunt de dibuixos i un guió; una partitura és música escrita com a text. En tots dos casos, Postext guarda les paraules al Markdown i s'encarrega ell mateix de la retolació i del gravat." summary="Vinyetes, bafarades, retolació, tires i notació musical"}
 
-Els còmics i la música semblen el contrari d'allò per a què serveix un motor de text. Una pàgina de còmic es dibuixa, una partitura es grava, i cap de les dues no és una columna de línies justificades. Tot i això, totes dues estan fetes de text en el fons. Cada bafarada d'un còmic és una línia de diàleg que s'ha de traduir, retolar i encabir en un dibuix, i cada compàs d'una partitura és notació que un músic pot escriure en un editor de text. Postext les tracta així: els dibuixos i les regles són recursos i ajustos, el diàleg i la música són al capítol.
+Els còmics i la música semblen el contrari d'allò per a què serveix un motor de text. Una pàgina de còmic es dibuixa, una partitura es grava, i cap de les dues no és una columna de línies justificades. Totes dues, però, estan fetes de text. Cada bafarada d'un còmic és una línia de diàleg que s'ha de traduir, retolar i encabir en un dibuix, i cada compàs d'una partitura és notació que un músic pot escriure en un editor de text. Postext les tracta així: els dibuixos i les regles són recursos i ajustos, el diàleg i la música són al capítol.
 
 ## Imatges sense paraules
 
@@ -677,17 +677,17 @@ sfx: FRRRT
 
 Un còmic occidental es llegeix d'esquerra a dreta; un manga i un còmic àrab, de dreta a esquerra. Postext pren la direcció de la llengua de l'edició: una edició àrab o japonesa disposa les vinyetes de cada pis des de la dreta, emmiralla les cantonades i les inclinacions i enquaderna el llibre per la dreta, mentre que les imatges es queden tal com es van dibuixar. Les bafarades japoneses es retolen en columnes verticals, amb la puntuació girada per a la columna.
 
-Una traducció és el mateix Markdown amb altres paraules. Les imatges, els retalls i les marques es comparteixen; cada edició mesura el seu text i col·loca les seves bafarades. El castellà ocupa aproximadament una cinquena part més que l'anglès i el xinès molt menys, i les bafarades canvien de mida amb ells, sense que ningú les mogui a mà.
+Una traducció és el mateix Markdown amb altres paraules. Les imatges, els retalls i les marques es comparteixen; cada edició mesura el seu text i col·loca les seves bafarades. El castellà ocupa una cinquena part més que l'anglès i el xinès molt menys, i les bafarades canvien de mida amb ells.
 
 ## Pàgines, plecs i tires
 
-Un còmic pot omplir una pàgina, estendre's per dues pàgines enfrontades en una panoràmica o anar dins del text com una **tira**, de l'amplada d'una columna o de la pàgina, com la tira diària d'un diari. Una tira es comporta com una figura: es pot numerar i portar peu, es pot citar amb \`:ref\` i pot flotar al cap o al peu d'una pàgina. Les receptes de diaris del Receptari componen així les tires, entre articles.
+Un còmic pot omplir una pàgina, estendre's per dues pàgines enfrontades en una panoràmica o anar dins del text com una **tira**, de l'amplada d'una columna o de la pàgina, com la tira diària d'un diari. Una tira es comporta com una figura: es pot numerar i portar peu, es pot citar amb \`:ref\` i pot flotar al cap o al peu d'una pàgina. Les receptes de diaris del [Receptari](https://postext.dev/ca/cookbook) componen així les tires, entre articles.
 
 ## La música com a text
 
-:index{term="notació musical"}Una partitura s'escriu al capítol com un bloc tancat de notació, igual que el codi en un llibre tècnic. Postext llegeix quatre formats: **ABC**, compacte i fàcil d'escriure, per a melodies i cançons; **MusicXML**, que exporten els programes de notació que fan servir els músics; **MEI**, per a edicions crítiques; i **Humdrum**, per a corals i anàlisi. El motor grava la música amb Verovio, la biblioteca de gravat de la Music Encoding Initiative, a l'amplada de la columna.
+:index{term="notació musical"}Una partitura s'escriu al capítol com un bloc tancat de notació, igual que el codi en un llibre tècnic. Postext llegeix quatre formats: **ABC**, compacte i fàcil d'escriure, per a melodies i cançons; **MusicXML**, que exporten els programes de notació que fan servir els músics; **MEI**, per a edicions crítiques; i **Humdrum**, per a corals i anàlisi. El motor grava la música amb [Verovio](https://www.verovio.org), la biblioteca de gravat de la Music Encoding Initiative, a l'amplada de la columna.
 
-La melodia de sota s'ha escrit en cinc línies d'ABC al Markdown d'aquest capítol. El motor la grava i la compon com una fórmula destacada, a la retícula de base, i el text continua després.
+La melodia de sota s'ha escrit en cinc línies d'ABC al Markdown d'aquest capítol. El motor la grava i la compon com una fórmula destacada.
 
 \`\`\`abc {alt="Una melodia breu en sol major, en compàs de tres per quatre"}
 X:1
@@ -697,9 +697,9 @@ K:G
 D2 | G2 B2 d2 | c2 A2 F2 | G4 B2 | A4 D2 | G2 B2 d2 | e2 c2 A2 | G6 |]
 \`\`\`
 
-Una partitura llarga es talla en **sistemes**, les línies de música que segueix qui llegeix, i els sistemes continuen de columna en columna i de pàgina en pàgina com les línies d'un paràgraf, sense tallar mai un pentagrama. Un exemple musical que el text cita pot ser un recurs, numerat i amb peu com una figura. L'aspecte de la música és un ajust: la mida dels pentagrames, la font musical, els números de compàs i els marges al voltant d'una partitura, amb estils amb nom per als exemples més petits dins d'un requadre.
+Una partitura llarga es talla en **sistemes**, les línies de música que segueix qui llegeix, i els sistemes continuen de columna en columna i de pàgina en pàgina com les línies d'un paràgraf, sense tallar mai un pentagrama. Un exemple musical que el text cita pot ser un recurs, numerat i amb peu com una figura. L'aspecte de la música és un ajust: la mida dels pentagrames, la font musical, els números de compàs i els marges al voltant d'una partitura.
 
-La música és opcional. El gravador pesa uns quants megabytes i només el carreguen els llibres que contenen notació, de manera que una novel·la no el paga mai. Les partitures es dibuixen com a vectors al canvas, a l'HTML i al PDF, s'etiqueten com a figures amb el seu text alternatiu al PDF accessible i passen a l'EPUB.
+El gravador pesa uns quants megabytes i només el carreguen els llibres que contenen notació. Les partitures es dibuixen com a vectors, s'etiqueten com a figures al PDF accessible i passen a l'EPUB.
 
 # Exercicis i cursos {#exercises lead="Un llibre de text demana a qui el llegeix que faci alguna cosa: triar, completar, relacionar, escriure. Postext llegeix les preguntes i les respostes del Markdown, imprimeix l'exercici per a l'alumne i deixa que les edicions en pantalla el corregeixin." summary="Tipus d'exercici, solucionaris, solucions, edicions en pantalla i SCORM"}
 
@@ -722,9 +722,9 @@ Quina d'aquestes coses decideix la configuració, i no el Markdown?
 :::exercise{bank level=2}
 Completa les frases amb les paraules del requadre.
 
-1. Una figura flota fins al primer espai lliure després de la seva [[menció]].
-2. El motor talla un paràgraf [[sencer]], no línia a línia.
-3. Una pàgina composta omple els marcs d'una [[plantilla]].
+1. Una figura flota després de la seva [[menció]].
+2. El motor talla un paràgraf [[sencer]], no línies.
+3. Una pàgina composta omple una [[plantilla]].
 
 ::bank[marge | columna]
 :::
@@ -733,8 +733,8 @@ Completa les frases amb les paraules del requadre.
 Relaciona cada sortida amb el seu destí.
 
 - PDF/X -> La impremta
-- EPUB -> Un lector de llibres electrònics
-- SCORM -> Un curs en una plataforma d'aprenentatge
+- EPUB -> Un lector digital
+- SCORM -> Un campus virtual
 :::
 
 ## Dotze tipus
@@ -759,7 +759,7 @@ Obre la vista HTML en aquest capítol i respon els tres exercicis. Comprova'ls i
 
 ## Cursos
 
-:index{term="SCORM"}Un llibre amb exercicis es pot convertir en un curs. La vista **SCORM** del Sandbox empaqueta els capítols i les seccions que triïs en un paquet SCORM, el format que llegeixen les plataformes d'aprenentatge com Moodle. Cada part del llibre que segueix la plataforma informa d'una nota, a partir dels exercicis ben resolts; de si està completa, amb totes les pàgines vistes i tots els exercicis comprovats; i de si està aprovada, segons una nota mínima que fixa el llibre. Una prova pot limitar quantes vegades es comprova un exercici, quantes vegades es torna a començar i quan apareix la solució.
+:index{term="SCORM"}Un llibre amb exercicis es pot convertir en un curs. La vista **SCORM** del Sandbox empaqueta els capítols i les seccions que triïs en un paquet SCORM, el format que llegeixen les plataformes d'aprenentatge com [Moodle](https://moodle.org). Cada part del llibre que segueix la plataforma informa d'una nota, a partir dels exercicis ben resolts; de si està completa, amb totes les pàgines vistes i tots els exercicis comprovats; i de si està aprovada, segons una nota mínima que fixa el llibre. Una prova pot limitar quantes vegades es comprova un exercici, quantes vegades es torna a començar i quan apareix la solució.
 
 El paquet porta el llibre tal com el mostra la vista HTML, maquetat pel mateix motor, de manera que el curs s'assembla al llibre imprès que els alumnes tenen damunt la taula.
 
@@ -888,7 +888,7 @@ La teva feina es desa al navegador mentre escrius. Els **projectes** són llibre
 
 Els presets segueixen el seu origen. Quan un paquet de preset canvia al servidor, el Sandbox ho detecta en qüestió de segons: un preset sense tocar es recarrega sol, i un que has editat mostra un avís que ofereix recarregar-lo, de manera que la feina en curs no se sobreescriu mai. Cada preset es pot obrir en qualsevol de les seves llengües quan en té més d'una, com aquesta guia, que es pot llegir en anglès, castellà, català, francès, alemany, italià, portuguès del Brasil, xinès simplificat, àrab i japonès.
 
-Un llibre viatja com un únic fitxer **.postext**: els seus capítols, la seva configuració, els seus recursos i les seves fonts, a més de la paginació ja calculada, de manera que s'obre paginat. Les receptes del Receptari s'obren al Sandbox de la mateixa manera, com a llibres teus; una recepta que ja havies obert abans et pregunta si vols **Obrir la meva còpia**, amb els teus canvis, o **Substituir per la versió publicada**. I la barra d'adreces conté sempre un enllaç permanent al que estàs veient: el llibre, la llengua, el visor, el capítol i la pàgina. L'enllaç es pot desar com a marcador per tornar més tard al punt exacte on eres: el Sandbox carrega el llibre i va directament al capítol i a la pàgina que indica. Els marcadors del navegador fan així de punts de llibre.
+Un llibre viatja com un únic fitxer **.postext**: els seus capítols, la seva configuració, els seus recursos i les seves fonts, a més de la paginació ja calculada, de manera que s'obre paginat. Les receptes del [Receptari](https://postext.dev/ca/cookbook) s'obren al Sandbox de la mateixa manera, com a llibres teus; una recepta que ja havies obert abans et pregunta si vols **Obrir la meva còpia**, amb els teus canvis, o **Substituir per la versió publicada**. I la barra d'adreces conté sempre un enllaç permanent al que estàs veient: el llibre, la llengua, el visor, el capítol i la pàgina. L'enllaç es pot desar com a marcador per tornar més tard al punt exacte on eres: el Sandbox carrega el llibre i va directament al capítol i a la pàgina que indica. Els marcadors del navegador fan així de punts de llibre.
 
 :::callout{type="try"}
 Ves fins a una pàgina que t'agradi i copia l'adreça del navegador: en obrir aquest enllaç veuràs el mateix llibre, al mateix visor, a la mateixa pàgina.
@@ -950,13 +950,13 @@ La **maquetació fixa** conserva la pàgina impresa. Cada pàgina es converteix 
 
 Un llibre de **maquetació fluida** renuncia a la pàgina i conserva el text. Cada capítol es converteix en un sol document que el sistema de lectura torna a compondre per a la seva pantalla, amb el tipus de lletra, la mida i els marges que tria qui llegeix. El generador reconstrueix cada paràgraf a partir de les línies que ha compost el motor, treu els guionets que hi han afegit els salts de línia i conserva els que formen part de la paraula, de manera que un paràgraf partit entre dues columnes o dues pàgines torna a ser un sol paràgraf. Les figures i les taules segueixen el text que les cita, amb els seus peus numerats i el seu text alternatiu; les taules continuen sent taules de veritat, amb files de capçalera i cel·les combinades; els requadres passen a ser blocs complementaris amb el seu títol, i les notes enllacen amb el final del capítol i tornen al text. Cada pàgina impresa deixa una marca allà on comença el seu text, de manera que es pot trobar la pàgina 112 de l'edició impresa, i l'índex analític apunta a aquestes marques.
 
-L'aspecte surt de la configuració. Un full d'estil derivat d'ella dona als títols, els requadres, les taules, els peus i les llistes les seves mides i els seus colors, relatius al text del cos, de manera que la mida de lletra que tria qui llegeix s'aplica a tot. Els paràgrafs compostos amb un estil de paràgraf el conserven, perquè la maquetació registra quin estil ha compost cada bloc, i els nivells de l'índex analític es distingeixen de la mateixa manera; un capítol configurat d'una altra manera, o una part que canvia el color del llibre, hi afegeix un segon full amb només les regles que canvien.
+L'aspecte surt de la configuració. Un full d'estil derivat d'ella dona als títols, els requadres, les taules, els peus i les llistes les seves mides i els seus colors, relatius al text del cos, de manera que la mida de lletra que tria qui llegeix s'aplica a tot. Els paràgrafs compostos amb un estil de paràgraf el conserven, perquè la maquetació registra quin estil ha compost cada bloc, i els nivells de l'índex analític es distingeixen de la mateixa manera.
 
-Totes dues maquetacions porten la mateixa navegació: un índex fet a partir dels títols i les parts, una llista de les pàgines impreses i punts de referència per a la coberta, l'índex imprès i el començament del text. S'hi incrusta cada família que anomena el disseny, tret que estigui marcada com a no redistribuïble, i cada imatge hi entra una sola vegada. Totes dues porten les metadades d'EPUB Accessibility 1.1 i passen sense cap error ni avís l'EPUBCheck del W3C, el validador que les botigues de llibres electrònics apliquen als fitxers que reben; així passa amb aquesta guia i amb tots els llibres d'exemple. Al Sandbox, la pestanya **EPUB 3** genera el fitxer en un worker, de manera que la pàgina continua responent mentre s'escriu un llibre llarg.
+Totes dues maquetacions porten la mateixa navegació: un índex fet a partir dels títols i les parts, una llista de les pàgines impreses i punts de referència per a la coberta, l'índex imprès i el començament del text. S'hi incrusta cada família que anomena el disseny, tret que estigui marcada com a no redistribuïble, i cada imatge hi entra una sola vegada. Totes dues porten les metadades d'EPUB Accessibility 1.1 i passen sense cap error ni avís l'EPUBCheck del W3C, el validador que les botigues de llibres electrònics apliquen als fitxers que reben. Al Sandbox, la pestanya **EPUB 3** genera el fitxer en un worker, de manera que la pàgina continua responent mentre s'escriu un llibre llarg.
 
 ## Fer servir la biblioteca
 
-El motor es distribueix a npm com a _postext_, per a la maquetació i els renderitzadors de canvas i HTML, amb un paquet per a cada sortida més pesant: _postext-pdf_ per al PDF, _postext-epub_ per a l'EPUB 3 i _postext-folio_ per al llibre en 3D. Tots són mòduls ES amb llicència MIT i també es poden importar directament des d'una CDN.
+El motor es distribueix a npm com a [_postext_](https://www.npmjs.com/package/postext), per a la maquetació i els renderitzadors de canvas i HTML, amb un paquet per a cada sortida més pesant: _postext-pdf_ per al PDF, _postext-epub_ per a l'EPUB 3 i _postext-folio_ per al llibre en 3D. Tots són mòduls ES amb llicència MIT i també es poden importar directament des d'una CDN.
 
 El motor de maquetació s'executa al navegador, on pot mesurar amb les fonts que veu el lector; _postext-pdf_ i _postext-epub_ també s'executen al navegador, i a més a Node, de manera que un PDF o un EPUB es poden produir en un servidor a partir d'una maquetació calculada en un altre lloc. Un llibre sencer fa el mateix camí: \`openBundle\` llegeix un fitxer .postext, \`buildBundle\` en maqueta els capítols per ordre, i el resultat passa directament a \`renderToPdf\` o a \`renderToEpub\`. Els tipus de TypeScript hi són inclosos, i alguns empaquetadors necessiten un ajust d'una línia per al descompressor WOFF2 que fa servir el paquet de PDF.
 
@@ -971,7 +971,7 @@ El motor de maquetació s'executa al navegador, on pot mesurar amb les fonts que
 
 Una pàgina no necessita un navegador per convertir-se en imatge. El renderitzador de canvas dibuixa en qualsevol canvas que parli la interfície de dibuix del navegador, i a Node ho fa un canvas precompilat: es maqueta el llibre, es dibuixa la pàgina i es codifica com a JPEG o PNG. Així revisa la seva pròpia feina l'skill d'agent que adapta llibres existents a Postext. Després de cada canvi a la configuració o al text torna a maquetar el llibre, dibuixa només les pàgines en què treballa i les llegeix com a imatges, en un segon o dos. El PDF es genera al final, per a les comprovacions que només un PDF pot respondre: les fonts incrustades, les imatges a la seva resolució, l'estructura etiquetada.
 
-:ref{id="skill-tutorial"} mostra l'skill de principi a fi, des del PDF de referència fins a la revisió de cada pàgina que compon.
+:ref{id="skill-tutorial"} mostra l'skill de principi a fi.
 
 # Proves i impremta {#press lead="Un impressor fa preguntes diferents de les d'un lector. Té cada imatge prou definició a la mida impresa, el negre del text fa servir una sola tinta, arriba la il·lustració més enllà del tall? Postext les respon abans que el fitxer surti del navegador." summary="Revisió, contrast, color ICC, PDF/X, el negre i el preflight"}
 
@@ -1087,7 +1087,13 @@ Folio dibuixa amb WebGL2, els gràfics tridimensionals del navegador, amb una te
 El visor és un paquet propi, _postext-folio_, construït sobre three.js. \`createFolioFromDocument(container, doc)\` mostra un document maquetat com un llibre; \`setDocument\` mostra la maquetació següent a la mateixa pàgina, \`setAppearance\` canvia el paper, l'enquadernació o la llum, i \`resetView\` torna la vista al seu lloc. \`createFolio\` fa el mateix amb qualsevol conjunt d'imatges de pàgina.
 :::
 
-El mateix paquet passa les pàgines de les receptes del Receptari, i pot anar a qualsevol pàgina web que vulgui presentar un llibre com un llibre: el catàleg d'una editorial, una prova enviada a un autor o una previsualització abans d'imprimir. La taula de llum del Receptari passa les pàgines d'una recepta amb el mateix paquet, en pla, sense la tercera dimensió. Com la resta de Postext, el paquet es publica a npm amb llicència MIT i es pot importar directament des d'una CDN; algunes receptes del Receptari el fan servir així, sense cap pas de compilació, dins de la mateixa pàgina de la recepta.
+El mateix paquet passa les pàgines de les [receptes del Receptari](https://postext.dev/ca/cookbook), i pot anar a qualsevol pàgina web que vulgui presentar un llibre com un llibre: el catàleg d'una editorial, una prova enviada a un autor o una previsualització abans d'imprimir. La taula de llum del Receptari passa les pàgines d'una recepta amb el mateix paquet, en pla, sense la tercera dimensió. Com la resta de Postext, el paquet es publica a npm amb llicència MIT i es pot importar directament des d'una CDN; algunes receptes del Receptari el fan servir així, sense cap pas de compilació, dins de la mateixa pàgina de la recepta.
+
+## Folio al costat de les altres vistes
+
+Folio llegeix la mateixa maquetació que el canvas. Una correcció al tauler Text arriba al full un cop s'ha tornat a compondre la pàgina: només es tornen a pintar les cares que han canviat, i el llibre es queda obert on era. El paper, l'enquadernació i la llum queden fora de la maquetació, de manera que provar un altre paper no costa cap paginació nova, i el PDF que va a impremta és el mateix fitxer abans i després.
+
+El que hi afegeix aquesta vista és l'objecte. El gruix del bloc depèn del nombre de fulls i del calibre del paper, així que cent pàgines més es noten a la mà, i un paper més pesant es nota en la manera com cau el full. Un plec amb una imatge que travessa el llom es pot valorar al medianil, on de debò es corbarà, i un marge que semblava generós en una pàgina plana pot resultar massa estret quan la pàgina es doblega cap a l'enquadernació. Aquestes preguntes les responia abans una maqueta impresa; ara una editorial les pot fer sense haver-ne de pagar cap.
 
 # Eines al voltant del motor {#tools lead="El Sandbox és una de les portes d'entrada a Postext. Una línia d'ordres compon llibres des d'un terminal, un format de fitxer els porta sencers, els documents de Word entren i surten, i els agents poden treballar al Sandbox o adaptar un llibre a partir del seu PDF." summary="La línia d'ordres, el fitxer .postext, Word, WebMCP i l'skill d'adaptació"}
 
@@ -1095,7 +1101,7 @@ El motor que és al centre d'aquest llibre és una biblioteca, i una biblioteca 
 
 ## La línia d'ordres
 
-:index{term="línia d'ordres"}**postext** és un programa per al terminal que converteix un llibre en un PDF, un EPUB, HTML, imatges de pàgina o un document de Word, sense navegador. Es distribueix com un fitxer per sistema, per a macOS, Linux i Windows, que es baixa de les versions publicades del projecte, o a través d'npm com a _postext-cli_. Tot el que necessita viatja a dins: el motor, una biblioteca de dibuix, un conformador de text, els perfils ICC del capítol d'impremta i dues famílies de fonts. Les altres fonts es baixen una vegada de Google Fonts o d'una carpeta que indiquis i es desen en una memòria cau; les fonts instal·lades a l'ordinador no es fan servir mai, de manera que un llibre surt igual a qualsevol màquina.
+:index{term="línia d'ordres"}**postext** és un programa per al terminal que converteix un llibre en un PDF, un EPUB, HTML, imatges de pàgina o un document de Word, sense navegador. Es distribueix com un fitxer per sistema, per a macOS, Linux i Windows, que es baixa de les [versions publicades del projecte](https://github.com/drnachio/postext/releases), o a través d'npm com a _postext-cli_. Tot el que necessita viatja a dins: el motor, una biblioteca de dibuix, un conformador de text, els perfils ICC del capítol d'impremta i dues famílies de fonts. Les altres fonts es baixen una vegada de Google Fonts o d'una carpeta que indiquis i es desen en una memòria cau; les fonts instal·lades a l'ordinador no es fan servir mai, de manera que un llibre surt igual a qualsevol màquina.
 
 El programa llegeix un fitxer \`.postext\`, una carpeta que conté un llibre o fitxers Markdown solts, presos com a capítols per l'ordre dels seus noms. Cada sortida té la seva ordre: \`pdf\`, \`epub\`, \`html\`, \`image\` i \`images\`, \`docx\`. Les opcions cobreixen el que el Sandbox ofereix als seus taulers: una norma PDF/X i un perfil, un EPUB fix o fluid, una sola pàgina o un interval de pàgines en la numeració que imprimeix el llibre, una resolució, una previsualització d'impressió. \`--set\` canvia qualsevol ajust per a una execució, \`--locale\` tria una edició i \`--chapters\` una part del llibre.
 
@@ -1148,7 +1154,7 @@ El que falta importa tant com el que ja està fet. Les **notes al marge** tenen 
 
 ## Com participar-hi
 
-El projecte viu a GitHub, i totes les converses tenen lloc a la vista: **issues** per a errors, peticions i tasques concretes; **pull requests** per al codi, revisat en públic; **discussions** per a idees, qüestions de disseny i tot allò que encara no és prou concret per ser una issue. Les issues amb l'etiqueta _good first issue_ són la porta d'entrada més senzilla.
+El projecte viu a [GitHub](https://github.com/drnachio/postext), i totes les converses tenen lloc a la vista: **issues** per a errors, peticions i tasques concretes; **pull requests** per al codi, revisat en públic; **[discussions](https://github.com/drnachio/postext/discussions)** per a idees, qüestions de disseny i tot allò que encara no és prou concret per ser una issue. Les issues amb l'etiqueta _good first issue_ són la porta d'entrada més senzilla.
 
 El camí habitual de la idea al codi és curt: una issue descriu el problema, una discussion fixa l'enfocament quan n'hi ha més d'un, una pull request l'implementa, i el canvi es fusiona a la branca de desenvolupament i es publica des d'allà. Obrir una issue abans d'una pull request gran estalvia temps a tothom, perquè l'enfocament es pot acordar abans d'escriure el codi.
 

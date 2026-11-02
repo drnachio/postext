@@ -18,7 +18,10 @@ describe('the ten editions of the guide', () => {
       chapters: sampleChapterTexts(md).length,
       h2: (md.match(/^## /gm) ?? []).length,
       refs: refsOf(md),
-      directives: (md.match(/^:::[a-z]+/gm) ?? []).join(' '),
+      // Per chapter and in any order: an edition may set a block earlier to
+      // fit its pages (Japanese closes the roadmap after the sheet, so that
+      // its chapter-end notes do not stand alone on a page).
+      directives: sampleChapterTexts(md).map((c) => (c.match(/^:::[a-z]+/gm) ?? []).sort().join(' ')),
       maths: (md.match(/\$\$/g) ?? []).length,
       // The index marks (#1296), counted per chapter, and the chapters'
       // anchors the cross-references name.

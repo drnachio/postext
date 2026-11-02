@@ -2,6 +2,7 @@
 // after asking whether it replaces the book (#1276: split out of
 // SandboxContext.tsx).
 import { isEditionOnScreen, choosePresetOpen } from '../../presets/locale.js';
+import { savePresetGeneral } from '../../storage/persistence.js';
 import { getPresetDraft, presetDraftKey, deletePresetDraft, type PresetDraftSummary, type PresetDraftRecord } from '../../storage/presetDrafts.js';
 import { presetSharedConfig } from '../../editions/configLayers.js';
 import { useRef } from 'react';
@@ -73,6 +74,9 @@ export function usePresetOpening(deps: UsePresetOpeningDeps) {
     const s = late.stateRef.current;
     const onScreen = s.activeProjectId === null && s.activePresetId === presetId;
     const screenLocale = onScreen && s.presetApplied?.presetId === presetId ? s.presetApplied.locale : undefined;
+    // The whole preset back: the general settings the reader gave every
+    // edition of it go too, or its original opens on them (#1381).
+    if (locale === undefined) savePresetGeneral(presetId, null);
     const keys = draftsRef.current
       .filter((d) => d.presetId === presetId && (locale === undefined || d.locale === locale))
       .map((d) => d.key);

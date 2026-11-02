@@ -320,6 +320,7 @@
     "subtitle": "Postext读入语义化的Markdown，套用延续数百年的书刊排版规则——Knuth-Plass两端对齐、各栏齐底、各得其所的浮动体——排出出版级的页面，输出为HTML、Canvas或可直接付印的PDF。",
     "getStarted": "开始使用",
     "openSandbox": "打开沙盒",
+    "openGuide": "在沙盒中打开Postext指南",
     "viewOnGitHub": "在GitHub上查看",
     "artAlt": "按引擎的视角画出的一个打开的跨页：基线网格上由词盒组成的两端对齐文字行、一条章首色带、一个浮动的图，其中一行被展开成盒子、粘连和一个惩罚值",
     "colophon": "每一页都在你的浏览器中计算得出"

@@ -121,17 +121,17 @@ Die Trennung ist gewollt. Dasselbe Markdown kann zu einem Taschenbuch, einer zwe
 
 ## Parsen
 
-Der Parser liest erweitertes Markdown und erzeugt eine flache Liste von Blöcken: Überschriften, Absätze, Blockzitate, Listeneinträge, abgesetzte Formeln und die Direktiven, die das Buch formen. Seine Aufgabe ist es, die Eingabe sorgfältig zu strukturieren: Er fügt die Zeilen eines Absatzes zusammen, verfolgt die Verschachtelung von Listen, trennt den Titel einer Überschrift von ihren Attributen, löst jeden \`:ref\` gegen die außerhalb des Textes deklarierten Ressourcen auf und hält für jeden Block genau fest, aus welchem Abschnitt der Quelle er stammt.
+Der Parser liest erweitertes Markdown und erzeugt eine flache Liste von Blöcken: Überschriften, Absätze, Blockzitate, Listeneinträge, abgesetzte Formeln und die Direktiven, die das Buch formen. Dabei fügt er die Zeilen eines Absatzes zusammen, verfolgt die Verschachtelung von Listen, trennt den Titel einer Überschrift von ihren Attributen, löst jeden \`:ref\` gegen die außerhalb des Textes deklarierten Ressourcen auf und merkt sich für jeden Block seine Stelle in der Quelle.
 
-Die Inline-Formatierung wird im selben Zug geparst. Fett, kursiv und beides zusammen, Hoch- und Tiefstellungen, Inline-Mathematik, Farbfelder und Verweise werden zu typisierten Spans innerhalb des Absatzes, damit die Messstufe jedem davon seine eigene Schrift und Farbe geben kann.
+Die Inline-Formatierung wird im selben Zug geparst. Fett und kursiv, Hoch- und Tiefstellungen, Inline-Mathematik, Farbfelder und Verweise werden zu typisierten Spans innerhalb des Absatzes, damit die Messstufe jedem davon seine eigene Schrift und Farbe geben kann.
 
 ## Messen ohne DOM
 
-Bevor die Engine irgendetwas platzieren kann, muss sie wissen, wie viel Raum jedes Element braucht, und genau hier beginnt das ganze Projekt. Text in einem Browser zu messen heißt normalerweise, ihn in die Seite zu rendern und seine Größe zurückzulesen – ein Reflow, der bei einem langen Dokument den Hauptthread Hunderte von Millisekunden blockieren kann.
+Bevor die Engine irgendetwas platzieren kann, muss sie wissen, wie viel Raum jedes Element braucht. Text in einem Browser zu messen heißt normalerweise, ihn in die Seite zu rendern und seine Größe zurückzulesen – ein Reflow, der bei einem langen Dokument den Hauptthread blockieren kann.
 
-Postext misst mit _pretext_:index{term="pretext"}, einer Bibliothek zur Textmessung ohne DOM, die Canvas-Schriftmetriken und reine Arithmetik verwendet. Ihr aufwendiger Schritt, einen Text für eine bestimmte Schrift vorzubereiten, wird zwischengespeichert; ihn auf eine bestimmte Breite umzubrechen, kostet fast nichts. Der Ansatz ist 300- bis 600-mal schneller als das Messen per Reflow, wie :ref{id="measurement-speed"} anschaulich zeigt, und darauf baut das eigene Messmodul der Engine gemischte Textläufe aus Fett, Kursiv und Mathematik, Silbentrennung, Blocksatz und optimalen Zeilenumbruch auf. Jedes Ergebnis wird unter einem Schlüssel zwischengespeichert, der den Text, die Schriften, die Breite und jede Option enthält, die eine Zeile verändern kann; wer in einen Absatz tippt, lässt also nur diesen einen Absatz neu messen und sonst nichts.
+Postext misst mit _pretext_:index{term="pretext"}, einer Bibliothek zur Textmessung ohne DOM, die Canvas-Schriftmetriken und reine Arithmetik verwendet. Ihr aufwendiger Schritt, einen Text für eine bestimmte Schrift vorzubereiten, wird zwischengespeichert; ihn auf eine bestimmte Breite umzubrechen, kostet fast nichts. Der Ansatz ist 300- bis 600-mal schneller als das Messen per Reflow, wie :ref{id="measurement-speed"} anschaulich zeigt, und darauf baut das eigene Messmodul der Engine gemischte Textläufe aus Fett, Kursiv und Mathematik, Silbentrennung, Blocksatz und optimalen Zeilenumbruch auf. Jedes Ergebnis wird unter einem Schlüssel gespeichert, der Text, Schriften, Breite und jede Option enthält, die eine Zeile verändern kann; wer in einen Absatz tippt, lässt nur diesen neu messen.
 
-Das Laden der Schriften ist der einzige Teil des Messens, den die Engine ihrem Host überlässt. Mit einer Schrift zu messen, die noch nicht angekommen ist, hieße, die Ersatzschrift zu messen, und jede Zeile würde sich verschieben, sobald die richtige Schrift erscheint. Die Bibliothek erwartet daher, dass die Schriften vor dem ersten Build geladen sind, und bietet eine Möglichkeit, ihre Mess-Caches zu leeren, wenn doch eine Schrift verspätet eintrifft, damit der nächste Build mit den richtigen Metriken neu misst.
+Das Laden der Schriften ist der einzige Teil des Messens, den die Engine ihrem Host überlässt. Mit einer Schrift zu messen, die noch nicht angekommen ist, hieße, die Ersatzschrift zu messen, und jede Zeile würde sich verschieben, sobald die richtige Schrift erscheint. Die Bibliothek erwartet daher, dass die Schriften vor dem ersten Build geladen sind, und kann ihre Mess-Caches leeren, wenn doch eine Schrift verspätet eintrifft, damit der nächste Build neu misst. Die Sandbox erledigt das von selbst: Sie lädt jede Familie der Konfiguration von [Google Fonts](https://fonts.google.com) oder aus dem Bedienfeld Schriften, bevor sie eine Seite setzt.
 
 ## Ein Zeilenumbruch in WebAssembly
 
@@ -181,14 +181,14 @@ Der Ausgleich konvergiert abschnittsweise, zwischen Kapitelauftakten und explizi
 
 :index{term="VDT (virtueller Dokumentbaum)"}Was die Schleife übersteht, ist der **VDT**, der virtuelle Dokumentbaum: Seiten, die Spalten enthalten, Spalten, die Blöcke enthalten, Blöcke, die Zeilen enthalten, jedes mit seinem Rahmen in echten Einheiten, dazu eine flache Liste aller Blöcke für den schnellen Zugriff. Der Baum ist reine Geometrie – er weiß nichts von Canvas, HTML, PDF oder EPUB –, und genau deshalb kann jeder Renderer übereinstimmende Ausgaben zeichnen. Jede Zeile merkt sich außerdem den Abschnitt des Markdowns, aus dem sie stammt; so setzt ein Klick auf die Seite den Cursor des Editors auf das richtige Wort.
 
-Seiten halten auch fest, wofür sie da sind. Eine Seite kann eine Textseite sein, ein Kapitelauftakt, ein Teiltitel oder eine Vakatseite, die eingefügt wurde, damit die folgende Seite rechts oder links zu liegen kommt, und nach dieser Rolle richten sich Kolumnentitel, Paginas und Schmuckelemente, wenn sie entscheiden, wo sie erscheinen. Seitenbezeichnungen – die gedruckte Seitenzahl in ihrer Zählung – werden einmal berechnet, im Baum, sodass Canvas, HTML und PDF darin übereinstimmen, ohne selbst zu zählen.
+Seiten halten auch fest, wofür sie da sind. Eine Seite kann eine Textseite sein, ein Kapitelauftakt, ein Teiltitel oder eine Vakatseite, die eingefügt wurde, damit die folgende Seite rechts oder links zu liegen kommt, und nach dieser Rolle richten sich Kolumnentitel, Paginas und Schmuckelemente. Seitenbezeichnungen – die gedruckte Seitenzahl in ihrer Zählung – werden einmal berechnet, im Baum, sodass Canvas, HTML und PDF darin übereinstimmen, ohne selbst zu zählen.
 
 ## Abseits des Hauptthreads
 
 Ein Layout kann länger dauern als ein Tastendruck, deshalb kann die Engine in einem Web Worker:index{term="Web Worker"} laufen. Der Worker behält seinen Mess-Cache zwischen den Builds und bricht kooperativ ab: Wird ein neuer Build angefordert, hält der vorige an seinem nächsten Prüfpunkt an, und die letzte Anfrage gewinnt. Die Sandbox setzt jede Ansicht auf diese Weise, und die PDF- und EPUB-Writer haben eigene Worker, sodass die Oberfläche reaktionsfähig bleibt, während ein ganzes Buch gesetzt oder geschrieben wird.
 
 :::callout{type="note" title="Im Code"}
-\`buildDocument(content, config)\` gibt den VDT zurück. \`renderPage\` zeichnet eine Seite auf ein Canvas, \`renderToHtml\` gibt positioniertes HTML zurück, und \`renderToPdf\` aus dem Paket _postext-pdf_ gibt die Bytes eines PDF zurück – für ein einzelnes Dokument oder für ein ganzes Buch, übergeben als Array von Kapiteln. \`renderToEpub\` aus _postext-epub_ schreibt dieselben Kapitel als EPUB-3-Datei. \`createLayoutWorker\` aus _postext/worker_ führt den Build abseits des Hauptthreads aus.
+\`buildDocument(content, config)\` gibt den VDT zurück. \`renderPage\` zeichnet eine Seite auf ein Canvas, \`renderToHtml\` gibt positioniertes HTML zurück, und \`renderToPdf\` aus dem Paket _postext-pdf_ gibt die Bytes eines PDF zurück – für ein Dokument oder ein ganzes Buch, als Array von Kapiteln. \`renderToEpub\` aus _postext-epub_ schreibt dieselben Kapitel als EPUB-3-Datei. \`createLayoutWorker\` aus _postext/worker_ führt den Build abseits des Hauptthreads aus.
 :::
 
 :::part{number="II" title="Das Handwerk" palette="band=#8f6408"}
@@ -570,7 +570,7 @@ Ein übersetztes Buch ist meist ein zweites Buch. Von da an muss jede Korrektur 
 
 ## Ausgaben
 
-:index{term="Ausgaben"}Ein Buch in der Sandbox kann mehrere Sprachen enthalten. Jede **Ausgabe** hat ihre eigenen Kapitel und, wo eine Abbildung es braucht, eigene Grafiken; Ressourcen, Schriften und Gestaltung gehören dem Buch. Die Adresse der Seite nennt die Ausgabe auf dem Bildschirm, sodass ein Link die Ausgabe öffnet, aus der er kopiert wurde. Der Canvas kann zwei Ausgaben nebeneinander setzen.
+:index{term="Ausgaben"}Ein Buch in der Sandbox kann mehrere Sprachen enthalten. Jede **Ausgabe** hat ihre eigenen Kapitel und, wo eine Abbildung es braucht, eigene Grafiken; Ressourcen, Schriften und Gestaltung gehören dem Buch. Die Adresse der Seite nennt die Ausgabe auf dem Bildschirm, sodass ein Link die Ausgabe öffnet, aus der er kopiert wurde. Das Bedienfeld Bücher zeigt für jede Sprache eines Buches ein Etikett. Der Canvas kann zwei Ausgaben nebeneinander setzen; so sieht, wer übersetzt, ob das deutsche Kapitel noch die Seiten füllt, die das englische füllt.
 
 Eine neue Ausgabe beginnt als Kopie der Ausgabe auf dem Bildschirm über **Sprache hinzufügen …** im Menü des Buches. Ist die neue Sprache Arabisch, Chinesisch oder Japanisch, übernimmt die Kopie dabei die Voreinstellungen dieser Sprache: die Laufrichtung, die Schreibrichtung, die Schriften und die Regeln ihrer Typografie.
 
@@ -666,7 +666,7 @@ Das Skript ist das Markdown des Kapitels. Ein Block \`:::page\` teilt eine Seite
 
 ## Lettering
 
-:index{term="Lettering"}Die Engine lettert jede Sprechblase in einer einzigen Größe, in der Lettering-Schrift des Buches. Sie bricht die Wörter in Zeilen um, die eine runde Form ergeben, oben und unten kurz, zeichnet dann die Blase mit gleich viel Luft auf jeder Seite um sie herum, platziert sie in Lesereihenfolge im Panel, abseits von Gesichtern und von den Zonen, die das Bild markiert, und richtet ihren Dorn auf den Mund des Sprechers. Zwei aufeinanderfolgende Zeilen desselben Sprechers werden zu einer Blase mit zwei Bäuchen verbunden. Text wird nie verkleinert, damit er passt: Eine Blase, die nicht passt, ändert ihre Form, rückt weiter oder wird im Bedienfeld Prüfungen gemeldet.
+:index{term="Lettering"}Die Engine lettert jede Sprechblase in einer einzigen Größe, in der Lettering-Schrift des Buches. Sie bricht die Wörter in Zeilen um, die eine runde Form ergeben, oben und unten kurz, zeichnet dann die Blase mit gleich viel Luft auf jeder Seite um sie herum, platziert sie in Lesereihenfolge im Panel, abseits von Gesichtern und von den Zonen, die das Bild markiert, und richtet ihren Dorn auf den Mund des Sprechers. Text wird nie verkleinert, damit er passt: Eine Blase, die nicht passt, ändert ihre Form, rückt weiter oder wird im Bedienfeld Prüfungen gemeldet.
 
 Der Strip in :ref{id="guide-strip"} wurde so gelettert. Seine drei Zeichnungen tragen keine Wörter; der Dialog sind drei Zeilen Markdown in diesem Kapitel, und jede Ausgabe dieses Leitfadens lettert ihn in ihrer eigenen Sprache.
 
@@ -683,17 +683,17 @@ sfx: RASCHEL
 
 Ein westlicher Comic wird von links nach rechts gelesen, ein Manga und ein arabischer Comic von rechts nach links. Postext nimmt die Richtung aus der Sprache der Ausgabe: Eine arabische oder japanische Ausgabe legt die Panels jeder Reihe von rechts her an, spiegelt die Ecken und Schrägen und bindet das Buch rechts, während die Bilder bleiben, wie sie gezeichnet sind. Japanische Sprechblasen werden in senkrechten Zeilen gelettert, mit Satzzeichen, die für die Zeile gedreht werden.
 
-Eine Übersetzung ist dasselbe Markdown mit anderen Wörtern. Die Bilder, die Beschnitte und die Markierungen werden geteilt; jede Ausgabe misst ihren eigenen Text und platziert ihre eigenen Sprechblasen. Die Sprechblasen ändern ihre Größe mit dem Text, ohne dass jemand sie von Hand verschiebt.
+Eine Übersetzung ist dasselbe Markdown mit anderen Wörtern. Die Bilder, die Beschnitte und die Markierungen werden geteilt; jede Ausgabe misst ihren eigenen Text und platziert ihre eigenen Sprechblasen.
 
 ## Seiten, Doppelseiten und Strips
 
-Ein Comic kann eine Seite füllen, sich für ein Panorama über zwei gegenüberliegende Seiten erstrecken oder als **Strip** im Text stehen, so breit wie eine Spalte oder die Seite. Ein Strip verhält sich wie eine Abbildung: Er lässt sich nummerieren und beschriften, mit \`:ref\` zitieren und an den Kopf oder den Fuß einer Seite gleiten lassen.
+Ein Comic kann eine Seite füllen, sich für ein Panorama über zwei gegenüberliegende Seiten erstrecken oder als **Strip** im Text stehen, so breit wie eine Spalte oder die Seite. Ein Strip verhält sich wie eine Abbildung: Er lässt sich nummerieren und beschriften, mit \`:ref\` zitieren und an den Kopf oder den Fuß einer Seite gleiten lassen. Die Zeitungsrezepte des [Rezeptbuchs](https://postext.dev/de/cookbook) setzen Strips so, zwischen den Artikeln.
 
 ## Musik als Text
 
-:index{term="Notensatz"}Eine Partitur wird im Kapitel als abgegrenzter Block von Notation geschrieben. Postext liest vier Formate: **ABC**, kompakt und leicht zu tippen, für Melodien und Lieder; **MusicXML**, das die Notationsprogramme der Musiker exportieren; **MEI** für wissenschaftliche Ausgaben; und **Humdrum** für Choräle und Analyse. Die Engine sticht die Musik mit Verovio, der Notenstichbibliothek der Music Encoding Initiative, in der Breite der Spalte.
+:index{term="Notensatz"}Eine Partitur wird im Kapitel als abgegrenzter Block von Notation geschrieben. Postext liest vier Formate: **ABC**, kompakt und leicht zu tippen, für Melodien und Lieder; **MusicXML**, das die Notationsprogramme der Musiker exportieren; **MEI** für wissenschaftliche Ausgaben; und **Humdrum** für Choräle und Analyse. Die Engine sticht die Musik mit [Verovio](https://www.verovio.org), der Notenstichbibliothek der Music Encoding Initiative, in der Breite der Spalte.
 
-Die Melodie unten steht in fünf Zeilen ABC im Markdown dieses Kapitels. Die Engine sticht sie und setzt sie wie eine abgesetzte Formel, auf dem Grundlinienraster.
+Die Melodie unten steht in fünf Zeilen ABC im Markdown dieses Kapitels. Die Engine sticht sie und setzt sie wie eine abgesetzte Formel.
 
 \`\`\`abc {alt="Eine kurze Melodie in G-Dur im Dreivierteltakt"}
 X:1
@@ -703,9 +703,9 @@ K:G
 D2 | G2 B2 d2 | c2 A2 F2 | G4 B2 | A4 D2 | G2 B2 d2 | e2 c2 A2 | G6 |]
 \`\`\`
 
-Eine lange Partitur wird in **Systeme** geteilt, die Notenzeilen, denen ein Leser folgt, und die Systeme laufen von Spalte zu Spalte und von Seite zu Seite weiter wie die Zeilen eines Absatzes, nie mitten durch ein Liniensystem geschnitten. Ein Notenbeispiel, das der Text zitiert, kann stattdessen eine Ressource sein, nummeriert und beschriftet wie eine Abbildung. Wie die Musik aussieht, ist eine Einstellung: die Größe der Liniensysteme, die Notenschrift, Taktzahlen und die Ränder um eine Partitur, mit benannten Formaten für kleinere Beispiele in einem Kasten.
+Eine lange Partitur wird in **Systeme** geteilt, und die Systeme laufen von Spalte zu Spalte und von Seite zu Seite weiter wie die Zeilen eines Absatzes, nie mitten durch ein Liniensystem geschnitten. Ein Notenbeispiel, das der Text zitiert, kann stattdessen eine Ressource sein, nummeriert und beschriftet wie eine Abbildung. Wie die Musik aussieht, ist eine Einstellung: die Größe der Liniensysteme, die Notenschrift, Taktzahlen und die Ränder um eine Partitur.
 
-Musik ist optional. Der Notenstecher wiegt mehrere Megabyte und wird nur von Büchern geladen, die Notation enthalten. Partituren werden in Canvas, HTML und PDF als Vektoren gezeichnet, im barrierefreien PDF als Abbildungen mit ihrem Alternativtext getaggt und ins EPUB übernommen.
+Musik ist optional. Der Notenstecher wiegt mehrere Megabyte und wird nur von Büchern geladen, die Notation enthalten. Partituren sind in Canvas, HTML und PDF Vektoren, im barrierefreien PDF getaggte Abbildungen mit Alternativtext, und auch das EPUB übernimmt sie.
 
 # Übungen und Kurse {#exercises lead="Ein Lehrbuch verlangt von seinem Leser etwas: wählen, ergänzen, zuordnen, schreiben. Postext liest die Fragen und ihre Antworten aus dem Markdown, druckt die Übung für den Schüler und lässt die Bildschirmausgaben sie prüfen." summary="Übungsarten, Lösungsschlüssel, Lösungen, Bildschirmausgaben und SCORM"}
 
@@ -728,7 +728,7 @@ Was davon entscheidet die Konfiguration und nicht das Markdown?
 :::exercise{bank level=2}
 Ergänzen Sie die Sätze mit den Wörtern aus dem Kasten.
 
-1. Eine Abbildung gleitet an die erste freie Stelle nach ihrer [[Erwähnung]].
+1. Eine Abbildung gleitet an eine freie Stelle nach ihrer [[Erwähnung]].
 2. Die Engine bricht einen Absatz als [[Ganzes]] um, nicht Zeile für Zeile.
 3. Eine zusammengesetzte Seite füllt die Rahmen einer [[Vorlage]].
 
@@ -740,7 +740,7 @@ Ordnen Sie jeder Ausgabe zu, wofür sie gedacht ist.
 
 - PDF/X -> Die Druckerei
 - EPUB -> Ein E-Reader
-- SCORM -> Ein Kurs auf einer Lernplattform
+- SCORM -> Eine Lernplattform
 :::
 
 ## Zwölf Arten
@@ -765,7 +765,7 @@ In der HTML-Ansicht und in einem EPUB lassen sich die Übungen beantworten. Der 
 
 ## Kurse
 
-:index{term="SCORM"}Ein Buch mit Übungen kann zum Kurs werden. Die Ansicht **SCORM** der Sandbox packt die Kapitel und Abschnitte, die Sie auswählen, in ein SCORM-Paket, das Format, das Lernplattformen wie Moodle lesen. Jeder Teil des Buches, den die Plattform verfolgt, meldet eine Punktzahl aus den richtig beantworteten Übungen, ob er abgeschlossen ist, also jede Seite gesehen und jede Übung geprüft, und ob er bestanden ist, gemessen an einer Schwelle, die das Buch festlegt. Ein Test kann begrenzen, wie oft eine Übung geprüft wird, wie oft sie neu beginnt und wann ihre Lösung erscheint.
+:index{term="SCORM"}Ein Buch mit Übungen kann zum Kurs werden. Die Ansicht **SCORM** der Sandbox packt die Kapitel und Abschnitte, die Sie auswählen, in ein SCORM-Paket, das Format, das Lernplattformen wie [Moodle](https://moodle.org) lesen. Jeder Teil des Buches, den die Plattform verfolgt, meldet eine Punktzahl aus den richtig beantworteten Übungen, ob er abgeschlossen ist, also jede Seite gesehen und jede Übung geprüft, und ob er bestanden ist, gemessen an einer Schwelle, die das Buch festlegt. Ein Test kann begrenzen, wie oft eine Übung geprüft wird, wie oft sie neu beginnt und wann ihre Lösung erscheint.
 
 Das Paket trägt das Buch so, wie die HTML-Ansicht es zeigt, gesetzt von derselben Engine, sodass der Kurs aussieht wie das gedruckte Buch, das die Schüler auf dem Tisch haben.
 
@@ -899,11 +899,11 @@ Vorlagen folgen ihrer Quelle. Ändert sich das Paket einer Vorlage auf dem Serve
 Blättern Sie zu einer Seite, die Ihnen gefällt, und kopieren Sie die Adresse aus dem Browser: Dieser Link öffnet dasselbe Buch im selben Betrachter auf derselben Seite.
 :::
 
-Ein Buch reist als eine einzige **.postext**-Datei: Kapitel, Konfiguration, Ressourcen und Schriften, dazu die bereits berechnete Paginierung, sodass es fertig umbrochen öffnet. Die Rezepte des Rezeptbuchs öffnen sich in der Sandbox auf dieselbe Weise, als Ihre eigenen Bücher; ein Rezept, das Sie schon einmal geöffnet haben, fragt, ob Ihre Kopie mit Ihren Änderungen geöffnet oder durch die veröffentlichte Fassung ersetzt werden soll, die inzwischen korrigiert worden sein kann. Und die Adressleiste enthält immer einen Permalink auf das, was Sie gerade ansehen – das Buch, die Sprache, den Betrachter, das Kapitel und die Seite.
+Ein Buch reist als eine einzige **.postext**-Datei: Kapitel, Konfiguration, Ressourcen und Schriften, dazu die bereits berechnete Paginierung, sodass es fertig umbrochen öffnet. Die Rezepte des [Rezeptbuchs](https://postext.dev/de/cookbook) öffnen sich in der Sandbox auf dieselbe Weise, als Ihre eigenen Bücher; ein Rezept, das Sie schon einmal geöffnet haben, fragt, ob Ihre Kopie mit Ihren Änderungen geöffnet oder durch die veröffentlichte Fassung ersetzt werden soll. Und die Adressleiste enthält immer einen Permalink auf das, was Sie gerade ansehen – das Buch, die Sprache, den Betrachter, das Kapitel und die Seite.
 
 ## Die Sandbox einbetten
 
-Die Sandbox ist selbst ein Paket, _postext-sandbox_, eine React-Komponente, die jede Webanwendung einbetten kann. Ihr Host bestimmt das anfängliche Markdown und die Konfiguration, die Sprache der Oberfläche und jede Beschriftung, die Quellen der angebotenen Vorlagen sowie den Theme-Umschalter, die Sprachauswahl und den Link zur Startseite, die sie zeigt. Die Sandbox, die Sie gerade benutzen, ist genau diese Komponente, eingebettet in die Website von Postext. Die Komponente stellt außerdem Werkzeuge für Agenten bereit: Ein Assistent im Browser kann ein Buch öffnen, den Text bearbeiten, die Konfiguration ändern und die Warnungen lesen.
+Die Sandbox ist selbst ein Paket, _postext-sandbox_, eine React-Komponente, die jede Webanwendung einbetten kann. Ihr Host bestimmt das anfängliche Markdown und die Konfiguration, die Sprache der Oberfläche, die Quellen der angebotenen Vorlagen und die Schalter, die sie zeigt. Die Sandbox, die Sie gerade benutzen, ist genau diese Komponente, eingebettet in die Website von Postext. Sie stellt außerdem Werkzeuge für Agenten bereit: Ein Assistent im Browser kann ein Buch öffnen, den Text bearbeiten, die Konfiguration ändern und die Warnungen lesen.
 
 # Ausgabe: Canvas, HTML, PDF und EPUB {#output lead="Ein Baum, vier Ausgaben. Der Canvas dient der Vorschau, das HTML liest man am Bildschirm, das PDF geht in Druck und das EPUB auf das Gerät des Lesers, und alle werden aus demselben Layout geschrieben." summary="Die Renderer, das barrierefreie PDF, EPUB-Bücher und die Bibliothek im Einsatz"}
 
@@ -943,7 +943,7 @@ Das PDF eines Buches ist keine Aneinanderreihung einzelner Dateien. Der Renderer
 
 Postext bettet jeden Schnitt ein, den das Layout verwendet hat – eine statische Datei pro Stärke und Stil, sodass ein fettes Wort im echten fetten Schnitt und ein kursives im echten Kursiv steht, nie in einer schräg gestellten oder verdickten Nachahmung. TrueType-Schriften werden auf die Glyphen reduziert, die das Buch tatsächlich verwendet; OpenType-Schriften mit PostScript-Konturen werden vollständig eingebettet, weil manche Betrachter ihre Teilmengen nicht lesen können. Jede eingebettete Schrift trägt eine Zuordnung von den Glyphen zurück zu den Zeichen, Ligaturen eingeschlossen, sodass ein aus dem PDF kopierter Satz den Satz zurückgibt, der geschrieben wurde.
 
-Eine Familie, die nur als WOFF vorliegt, akzeptiert das PDF nicht, weil sich das Format nicht zuverlässig einbetten lässt; WOFF2-, TrueType- und OpenType-Dateien funktionieren alle.
+WOFF-Dateien akzeptiert das PDF nicht, weil sich das Format nicht zuverlässig einbetten lässt; WOFF2, TrueType und OpenType funktionieren.
 
 ## EPUB 3
 
@@ -961,7 +961,7 @@ Beide Darstellungsformen tragen dieselbe Navigation: ein Inhaltsverzeichnis aus 
 
 ## Die Bibliothek im Einsatz
 
-Die Engine erscheint auf npm als _postext_, für das Layout sowie die Canvas- und HTML-Renderer, mit einem eigenen Paket für jede schwerere Ausgabe: _postext-pdf_ für PDF, _postext-epub_ für EPUB 3 und _postext-folio_ für das Buch in 3D. Alle sind ES-Module unter der MIT-Lizenz und lassen sich auch direkt von einem CDN importieren. Die Dokumentation enthält Live-Beispiele, die eine Seite als Bild, als HTML und als PDF rendern, bereit zum Forken.
+Die Engine erscheint auf npm als [_postext_](https://www.npmjs.com/package/postext), für das Layout sowie die Canvas- und HTML-Renderer, mit einem eigenen Paket für jede schwerere Ausgabe: _postext-pdf_ für PDF, _postext-epub_ für EPUB 3 und _postext-folio_ für das Buch in 3D. Alle sind ES-Module unter der MIT-Lizenz und lassen sich auch direkt von einem CDN importieren. Die Dokumentation enthält Live-Beispiele, die eine Seite als Bild, als HTML und als PDF rendern, bereit zum Forken.
 
 Die Layout-Engine läuft im Browser, wo sie mit den Schriften messen kann, die der Leser sieht; _postext-pdf_ und _postext-epub_ laufen ebenfalls im Browser und zusätzlich in Node, sodass ein PDF oder ein EPUB auf einem Server aus einem anderswo berechneten Layout erzeugt werden kann. Ein ganzes Buch geht denselben Weg: \`openBundle\` liest eine .postext-Datei, \`buildBundle\` bricht ihre Kapitel der Reihe nach um, und das Ergebnis geht direkt an \`renderToPdf\` oder \`renderToEpub\`. Die Pakete sind ausschließlich ES-Module, mit TypeScript-Typen, und manche Bundler brauchen eine einzeilige Einstellung für den WOFF2-Decoder, den das PDF-Paket verwendet.
 
@@ -1038,7 +1038,7 @@ Nichts darin ist ein zweites Layout. Die Seiten sind dieselben, die der Canvas m
 
 :index{term="Folio"}Eine Seite wird so umgeblättert, wie man eine Seite eben umblättert: am Rand fassen und hinüberziehen. Lässt man sie jenseits der Mitte los, landet sie auf der anderen Seite; lässt man sie davor los, fällt sie zurück. Auch ein Klick auf eine Seite blättert um, vorwärts auf der rechten Seite und zurück auf der linken, ebenso die Pfeile der Werkzeugleiste und die Pfeiltasten, Bild auf und Bild ab, Pos1 und Ende, wenn das Buch den Fokus hat. Das Seitenfeld der Werkzeugleiste nimmt eine Seitenzahl entgegen und blättert das Buch zu dieser Doppelseite.
 
-Jedes Blatt biegt sich gemäß seinem Papier. Dünndruckpapier rollt sich in einer engen Kurve und lässt den Druck der Rückseite durchscheinen; Karton wendet sich in weitem Bogen; Pappe, wie bei einem Pappbilderbuch für kleine Kinder, dreht sich als starre Platte um ihr Scharnier. Auch die Umschlagdeckel wenden sich wie Pappe. Ein Sprung um mehr als zehn Seiten blättert sie nicht einzeln um: Der Block der dazwischenliegenden Seiten hebt sich als eine Platte, so dick wie diese Seiten, und wird auf der anderen Seite abgelegt.
+Jedes Blatt biegt sich gemäß seinem Papier. Dünndruckpapier rollt sich in einer engen Kurve und lässt den Druck der Rückseite durchscheinen; Karton wendet sich in weitem Bogen; Pappe, wie bei einem Pappbilderbuch für kleine Kinder, dreht sich als starre Platte um ihr Scharnier. Ein Sprung um mehr als zehn Seiten blättert sie nicht einzeln um: Der Block der dazwischenliegenden Seiten hebt sich als eine Platte, so dick wie diese Seiten, und wird auf der anderen Seite abgelegt.
 
 Die Ansicht selbst lässt sich bewegen. Ziehen mit der rechten Maustaste kreist um das Buch, bis hinunter zu einem streifenden Blickwinkel, um den Rücken, den Vorderschnitt oder die Dicke des Blocks zu betrachten, und das geht auch, während sich noch Blätter wenden. Die Ansicht bleibt, wo man sie gelassen hat, bis **Ansicht zurücksetzen** sie auf den Winkel zurückbringt, den die Einstellungen vorgeben. In einem schmalen Fenster zeigt das Buch jeweils eine Seite und wendet sein Blatt dennoch über den Rücken; wenn das System reduzierte Bewegung verlangt, wechseln die Doppelseiten ohne Umblättern.
 
@@ -1062,11 +1062,11 @@ Die Beschaffenheit des Papiers hat drei Einstellungen. Die **Oberfläche** sagt,
 
 ## Bindungen und Umschläge
 
-Fünf Bindungen stehen zur Wahl. Ein **Hardcover** ist ein Deckenband, mit Deckeln, die etwas größer sind als die Seiten. Ein **Paperback** ist klebegebunden, sein Rücken gefräst und geleimt, und öffnet sich weniger flach. Eine **fadengeheftete Broschur** hält ihre Lagen unter einem weichen Umschlag vernäht und öffnet sich leichter. Eine **Lay-flat-Bindung** öffnet sich vollständig, ohne dass die Seiten zum Rücken hin absinken. Eine Broschüre mit **Rückendrahtheftung** besteht aus gefalzten Bogen, die durch den Falz geheftet sind, wie ein Magazin oder ein Programmheft, und hat keinen flachen Rücken. Ein dickes Buch öffnet sich, wie ein dickes Buch sich öffnet, mit seinem Rücken aufrecht zwischen den beiden Seitenblöcken. Ein rechts gebundenes Buch, ein arabisches oder ein vertikal gesetztes chinesisches oder japanisches, liegt gespiegelt, mit dem Rücken rechts, und seine Blätter und die Pfeiltasten wenden in die andere Richtung.
+Fünf Bindungen stehen zur Wahl. Ein **Hardcover** ist ein Deckenband, mit Deckeln, die etwas größer sind als die Seiten. Ein **Paperback** ist klebegebunden, sein Rücken gefräst und geleimt, und öffnet sich weniger flach. Eine **fadengeheftete Broschur** hält ihre Lagen unter einem weichen Umschlag vernäht und öffnet sich leichter. Eine **Lay-flat-Bindung** öffnet sich vollständig, ohne dass die Seiten zum Rücken hin absinken. Eine Broschüre mit **Rückendrahtheftung** besteht aus gefalzten Bogen, die durch den Falz geheftet sind, wie ein Magazin oder ein Programmheft, und hat keinen flachen Rücken. Ein rechts gebundenes Buch, ein arabisches oder ein vertikal gesetztes chinesisches oder japanisches, liegt gespiegelt, mit dem Rücken rechts, und seine Blätter und die Pfeiltasten wenden in die andere Richtung.
 
 Die Umschläge kommen aus einer von zwei Quellen. Standardmäßig zeichnet Folio eine **Buchdecke** um die Seiten, aus Leinen, Karton oder Leder und in der Umschlagfarbe. Wenn das Dokument seine Umschläge bereits mitbringt, wie dieser Leitfaden, können es **die Seiten des Dokuments** sein: Die erste Seite wird zum vorderen Umschlag und die letzte, wenn sie auf eine linke Seite fällt, zum hinteren. Das Buch liegt dann geschlossen auf seinem Umschlag, bis der Leser es öffnet, der Umschlag wendet sich als steifer Deckel, und das Umblättern des letzten Blattes schließt das Buch wieder.
 
-Der Rücken kann ein Bild tragen. Jedes Bild und jedes SVG aus dem Bedienfeld Ressourcen lässt sich darauf drucken, so ausgerichtet, wie man einen Buchrücken im Regal sieht, Kopf oben, mit dem vorderen Umschlag rechts; es wird so skaliert, dass es den Rücken bedeckt, und sollte deshalb an seinen Rändern etwas Luft lassen. Eine rückendrahtgeheftete Broschüre hat keinen Rücken, den man bedrucken könnte. Das Bild reist mit den Ressourcen des Buches in seiner .postext-Datei und erscheint, sobald die Ansicht zum Rücken gedreht wird.
+Der Rücken kann ein Bild tragen. Jedes Bild und jedes SVG aus dem Bedienfeld Ressourcen lässt sich darauf drucken, so ausgerichtet, wie man einen Buchrücken im Regal sieht, Kopf oben, mit dem vorderen Umschlag rechts; es wird so skaliert, dass es den Rücken bedeckt, und sollte deshalb an seinen Rändern etwas Luft lassen. Das Bild reist mit den Ressourcen des Buches in seiner .postext-Datei und erscheint, sobald die Ansicht zum Rücken gedreht wird.
 
 ## Tafeln auf anderem Papier
 
@@ -1092,7 +1092,13 @@ Folio zeichnet mit WebGL2, der dreidimensionalen Grafik des Browsers, mit einer 
 Der Betrachter ist ein eigenes Paket, _postext-folio_, aufgebaut auf three.js. \`createFolioFromDocument(container, doc)\` zeigt ein umbrochenes Dokument als Buch; \`setDocument\` zeigt das nächste Layout auf derselben Seite, \`setAppearance\` ändert Papier, Bindung oder Licht, und \`resetView\` bringt die Ansicht zurück. \`createFolio\` tut dasselbe mit beliebigen Seitenbildern.
 :::
 
-Dasselbe Paket blättert die Seiten der Rezepte im Rezeptbuch um, und es kann in jeder Webseite sitzen, die ein Buch als Buch zeigen will: im Katalog eines Verlags, in einem Korrekturabzug für einen Autor, in einer Vorschau, bevor der Auftrag an die Druckerei geht. Der Leuchttisch des Rezeptbuchs blättert die Seiten eines Rezepts mit demselben Paket um, flach, ohne die dritte Dimension. Eine Seite, die so ein Buch zeigt, braucht dafür nur die gerenderten Seiten.
+Dasselbe Paket blättert die Seiten der [Rezepte im Rezeptbuch](https://postext.dev/de/cookbook) um, und es kann in jeder Webseite sitzen, die ein Buch als Buch zeigen will: im Katalog eines Verlags, in einem Korrekturabzug für einen Autor, in einer Vorschau, bevor der Auftrag an die Druckerei geht. Der Leuchttisch des Rezeptbuchs blättert die Seiten eines Rezepts mit demselben Paket um, flach, ohne die dritte Dimension.
+
+## Folio neben den anderen Ansichten
+
+Folio liest dasselbe Layout wie der Canvas. Eine Korrektur im Bedienfeld Text erreicht das Blatt, sobald die Seite neu gesetzt ist: Nur die geänderten Seiten werden neu gemalt, und das Buch bleibt aufgeschlagen, wo es war. Papier, Bindung und Licht liegen außerhalb des Layouts; eine andere Papiersorte auszuprobieren kostet also keinen neuen Umbruch, und das PDF für die Druckerei ist davor wie danach dieselbe Datei.
+
+Hinzu kommt der Gegenstand. Die Dicke des Buchblocks ergibt sich aus der Zahl der Blätter und der Stärke des Papiers, sodass man hundert Seiten mehr dem Band ansieht und ein schwereres Papier daran erkennt, wie ein Blatt fällt. Eine Doppelseite, deren Bild über den Bund läuft, lässt sich dort beurteilen, wo sie sich wirklich wölben wird, und ein Rand, der auf der flachen Seite großzügig wirkt, kann sich als zu knapp erweisen, sobald sich die Seite zum Bund hin biegt. Solche Fragen beantwortete früher ein gedruckter Blindband, und ein Verlag kann sie heute stellen, bevor er einen bezahlt.
 
 # Werkzeuge rund um die Engine {#tools lead="Die Sandbox ist ein Weg zu Postext. Eine Kommandozeile setzt Bücher im Terminal, ein Dateiformat trägt sie als Ganzes, Word-Dokumente kommen herein und gehen hinaus, und Agenten können die Sandbox bedienen oder ein Buch aus seinem PDF übertragen." summary="Die Kommandozeile, die .postext-Datei, Word, WebMCP und der Skill zum Übertragen"}
 
@@ -1100,7 +1106,7 @@ Die Engine im Zentrum dieses Buches ist eine Bibliothek, und eine Bibliothek lä
 
 ## Die Kommandozeile
 
-:index{term="Kommandozeile"}**postext** ist ein Programm für das Terminal, das ein Buch ohne Browser in ein PDF, ein EPUB, HTML, Seitenbilder oder ein Word-Dokument verwandelt. Es kommt als eine Datei pro System, für macOS, Linux und Windows, heruntergeladen von den Releases des Projekts, oder über npm als _postext-cli_. Alles, was es braucht, reist darin mit: die Engine, eine Zeichenbibliothek, ein Text-Shaper, die ICC-Profile des Druckkapitels und zwei Schriftfamilien. Andere Schriften werden einmal von Google Fonts oder aus einem Ordner, den Sie angeben, geholt und in einem Cache gehalten; die auf dem Rechner installierten Schriften werden nie verwendet, sodass ein Buch auf jedem Rechner gleich ausfällt.
+:index{term="Kommandozeile"}**postext** ist ein Programm für das Terminal, das ein Buch ohne Browser in ein PDF, ein EPUB, HTML, Seitenbilder oder ein Word-Dokument verwandelt. Es kommt als eine Datei pro System, für macOS, Linux und Windows, heruntergeladen von den [Releases des Projekts](https://github.com/drnachio/postext/releases), oder über npm als _postext-cli_. Alles, was es braucht, reist darin mit: die Engine, eine Zeichenbibliothek, ein Text-Shaper, die ICC-Profile des Druckkapitels und zwei Schriftfamilien. Andere Schriften werden einmal von Google Fonts oder aus einem Ordner, den Sie angeben, geholt und in einem Cache gehalten; die auf dem Rechner installierten Schriften werden nie verwendet, sodass ein Buch auf jedem Rechner gleich ausfällt.
 
 Das Programm liest eine \`.postext\`-Datei, einen Ordner mit einem Buch oder lose Markdown-Dateien, die in der Reihenfolge ihrer Namen als Kapitel genommen werden. Jede Ausgabe hat ihren Befehl: \`pdf\`, \`epub\`, \`html\`, \`image\` und \`images\`, \`docx\`. Die Optionen decken ab, was die Sandbox in ihren Bedienfeldern anbietet: einen PDF/X-Standard und ein Profil, ein festes oder umfließendes EPUB, eine einzelne Seite oder einen Seitenbereich in der Zählung, die das Buch druckt. \`--set\` ändert jede Einstellung für einen Lauf, \`--locale\` wählt eine Ausgabe und \`--chapters\` einen Teil des Buches.
 
@@ -1153,7 +1159,7 @@ Was noch fehlt, ist so wichtig wie das, was ausgeliefert ist. **Marginalien** ha
 
 ## Mitmachen
 
-Das Projekt lebt auf GitHub, und jedes Gespräch findet öffentlich statt: **Issues** für Fehler, Wünsche und konkrete Aufgaben; **Pull-Requests** für Code, öffentlich begutachtet; **Discussions** für Ideen, Gestaltungsfragen und alles, was noch nicht konkret genug für ein Issue ist. Issues mit dem Label _good first issue_ sind der einfachste Einstieg.
+Das Projekt lebt auf [GitHub](https://github.com/drnachio/postext), und jedes Gespräch findet öffentlich statt: **Issues** für Fehler, Wünsche und konkrete Aufgaben; **Pull-Requests** für Code, öffentlich begutachtet; **[Discussions](https://github.com/drnachio/postext/discussions)** für Ideen, Gestaltungsfragen und alles, was noch nicht konkret genug für ein Issue ist. Issues mit dem Label _good first issue_ sind der einfachste Einstieg.
 
 Der übliche Weg von der Idee zum Code ist kurz: Ein Issue beschreibt das Problem, eine Diskussion klärt den Ansatz, wenn es mehr als einen gibt, ein Pull-Request setzt ihn um, und die Änderung wird in den Entwicklungszweig gemergt und von dort veröffentlicht. Vor einem großen Pull-Request ein Issue zu eröffnen spart allen Zeit, weil sich der Ansatz abstimmen lässt, bevor der Code geschrieben ist. Ein Issue ist auch der richtige Ort für einen Fehler im Satz: Ein Bildschirmfoto der Seite und der Markdown, der sie erzeugt, genügen meist, um ihn nachzustellen.
 

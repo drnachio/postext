@@ -43,7 +43,7 @@ export function useWorkingSave(deps: UseWorkingSaveDeps) {
     const s = late.stateRef.current;
     saveBook(bookOf(s));
     saveConfig(s.config);
-    saveWorkingLayers(s.activeProjectId ? null : s.presetApplied?.presetId ?? null, s.activeProjectId ? null : s.configLayers?.shared ?? null);
+    saveWorkingLayers(s.activeProjectId ? null : s.presetApplied?.presetId ?? null, s.activeProjectId ? null : s.configLayers?.shared ?? null, s.configLayers?.base);
     const resources = resourcesOverride ?? (s.storeReady ? s.resources : null);
     if (!resources) return;
     if (s.activeProjectId) {
@@ -75,7 +75,7 @@ export function useWorkingSave(deps: UseWorkingSaveDeps) {
     }
     // The general settings of a preset in several languages: every edition
     // opens on them (#1209).
-    if (s.configLayers && s.presetApplied) savePresetGeneral(s.presetApplied.presetId, s.configLayers.shared);
+    if (s.configLayers && s.presetApplied) savePresetGeneral(s.presetApplied.presetId, s.configLayers.shared, s.configLayers.base);
     const decision = decideDraftSave({
       activeProjectId: s.activeProjectId,
       activePresetId: s.activePresetId,
@@ -92,6 +92,7 @@ export function useWorkingSave(deps: UseWorkingSaveDeps) {
         snapshot: s.presetApplied,
         ...(s.presetConfig ? { baseConfig: s.presetConfig } : {}),
         ...(s.configLayers ? { sharedConfig: s.configLayers.shared } : {}),
+        ...(s.configLayers?.base ? { baseSharedConfig: s.configLayers.base } : {}),
         chapters: s.chapters,
         activeChapterId: s.activeChapterId,
         ...(s.canvasScope === 'book' ? { canvasScope: s.canvasScope } : {}),

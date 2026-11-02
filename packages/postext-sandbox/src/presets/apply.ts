@@ -96,12 +96,12 @@ export async function applyPreset(
   // A preset in several languages opens on the general settings the reader
   // gave it, if any, keeping what this edition sets of its own (#1209).
   const original = presetSharedConfig(loaded);
-  const general = original ? loadPresetGeneral(id) ?? original : null;
+  const general = original ? loadPresetGeneral(id, original) ?? original : null;
   const config = original && general ? rebaseEdition(original, general, loaded.config) : loaded.config;
   dispatch({ type: 'SET_PRESET', payload: { id, config: loaded.config } });
   if (parts === 'all' || parts === 'config') {
     dispatch({ type: 'SET_CONFIG', payload: config });
-    dispatch({ type: 'SET_CONFIG_LAYERS', payload: general ? { shared: general, scope: options.scope ?? 'all' } : null });
+    dispatch({ type: 'SET_CONFIG_LAYERS', payload: general && original ? { shared: general, base: original, scope: options.scope ?? 'all' } : null });
   } else if (parts === 'document' && loaded.config.customFonts !== undefined) {
     dispatch({ type: 'UPDATE_CONFIG', payload: { customFonts: loaded.config.customFonts } });
   }
@@ -126,6 +126,6 @@ export async function applyPreset(
   if (parts === 'all') {
     saveBook(book!);
     saveConfig(config);
-    saveWorkingLayers(general ? id : null, general);
+    saveWorkingLayers(general ? id : null, general, original ?? undefined);
   }
 }

@@ -202,7 +202,7 @@ export async function loadPresetEdition(
     const draft = await getPresetDraft(summary.key).catch(() => null);
     if (draft) {
       // On the general settings in force now (#1209).
-      const general = draft.sharedConfig ? loadPresetGeneral(provider.summary.id) ?? draft.sharedConfig : null;
+      const general = draft.sharedConfig ? loadPresetGeneral(provider.summary.id, draft.sharedConfig) ?? draft.sharedConfig : null;
       return {
         source: {
           locale: draft.locale || locale,
@@ -216,7 +216,7 @@ export async function loadPresetEdition(
   }
   const loaded = await provider.load(locale);
   const original = presetSharedConfig(loaded);
-  const general = original ? loadPresetGeneral(provider.summary.id) : null;
+  const general = original ? loadPresetGeneral(provider.summary.id, original) : null;
   return {
     source: {
       locale: loaded.locale,
