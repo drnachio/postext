@@ -105,6 +105,18 @@ export function linkNamesBookOnScreen(
   return isEditionOnScreen(summaries.find((p) => p.id === link.preset), link.lang, book.lang);
 }
 
+/** Whether a permalink asks by name for the edition of the preset on
+ *  screen (`lang=` given): it stays, whatever the interface language. A
+ *  link without a language, or to a book this browser passes over, asks
+ *  for no edition. */
+export function linkHoldsEditionOnScreen(
+  link: ViewHashBook,
+  book: ViewHashBook,
+  summaries: readonly (LocaleSummary & Pick<PresetSummary, 'id'>)[],
+): boolean {
+  return link.preset !== null && link.lang !== null && linkNamesBookOnScreen(link, book, summaries);
+}
+
 export interface PresetOpenChoice {
   /** The locale to open (a draft's own when one opens). */
   locale: string;
