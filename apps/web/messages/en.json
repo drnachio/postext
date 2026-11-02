@@ -321,6 +321,7 @@
     "subtitle": "Postext takes semantic markdown and applies centuries-old editorial rules — Knuth-Plass justification, balanced columns, floats that know their place — to produce publication-grade pages in HTML, canvas or print-ready PDF.",
     "getStarted": "Get started",
     "openSandbox": "Open the Sandbox",
+    "openGuide": "Open the Postext guide in the Sandbox",
     "viewOnGitHub": "View on GitHub",
     "artAlt": "An open spread drawn the way the engine sees it: justified lines of word boxes on a baseline grid, a chapter band, a floated figure, and one line opened into boxes, glue and a penalty",
     "colophon": "Every page is computed in your browser"

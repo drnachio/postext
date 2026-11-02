@@ -321,6 +321,7 @@
     "subtitle": "Postext nimmt semantisches Markdown und wendet darauf jahrhundertealte Satzregeln an – Blocksatz nach Knuth-Plass, ausgeglichene Spalten, Gleitobjekte, die ihren Platz kennen –, um Seiten in Verlagsqualität als HTML, Canvas oder druckfertiges PDF zu erzeugen.",
     "getStarted": "Erste Schritte",
     "openSandbox": "Sandbox öffnen",
+    "openGuide": "Den Postext-Leitfaden in der Sandbox öffnen",
     "viewOnGitHub": "Auf GitHub ansehen",
     "artAlt": "Eine aufgeschlagene Doppelseite, so gezeichnet, wie die Engine sie sieht: Zeilen aus Wortkästen im Blocksatz auf einem Grundlinienraster, ein Kapitelband, eine gleitende Abbildung und eine Zeile, aufgefächert in Boxen, Glue und eine Penalty",
     "colophon": "Jede Seite wird in Ihrem Browser berechnet"

@@ -3,6 +3,7 @@ import { abbreviate } from "@/components/brand/abbreviate";
 import { version } from "postext/package.json";
 import { Link } from "@/i18n/navigation";
 import { Kicker } from "@/components/brand/Kicker";
+import { guideSandboxHref } from "../guideHref";
 import { HERO_SPREAD_BLEED } from "../HeroArt";
 import { HeroArtClient } from "../HeroArtClient";
 import { InstallChip } from "../InstallChip";
@@ -66,7 +67,14 @@ export async function HeroSection() {
         {/* The column bleeds by the art's own margin so the spread's edges
             sit on the grid, flush with the navbar's button. */}
         <div className="relative lg:col-span-6" style={{ marginInline: `${-HERO_SPREAD_BLEED * 100}%` }}>
-          <HeroArtClient themed label={t("artAlt")} className="h-auto w-full drop-shadow-[0_24px_40px_rgba(14,16,20,0.18)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)]" />
+          <a
+            href={guideSandboxHref(locale)}
+            aria-label={t("openGuide")}
+            title={t("openGuide")}
+            className="block rounded-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-brand"
+          >
+            <HeroArtClient themed label={t("artAlt")} className="h-auto w-full drop-shadow-[0_24px_40px_rgba(14,16,20,0.18)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)]" />
+          </a>
           <p className="kicker mt-2 text-center text-slate">{t("colophon")}</p>
         </div>
       </div>

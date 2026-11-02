@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import Image from "next/image";
 import { Kicker } from "@/components/brand/Kicker";
+import { guideSandboxHref } from "../guideHref";
 import presetIndex from "../../../../public/presets/index.json";
 import { GuideCover } from "../GuideCover";
 import { shelfOrder } from "@/lib/shelf";
@@ -132,7 +133,6 @@ export async function ShowcaseSection() {
   const hero = await getTranslations("Hero");
   const locale = await getLocale();
   const presets = shelfOrder((presetIndex as { presets: PresetEntry[] }).presets);
-  const guideLang = locale.startsWith("zh") ? "zh-Hans" : locale.startsWith("es") ? "es" : locale.startsWith("ca") ? "ca" : locale.startsWith("ar") ? "ar" : locale.startsWith("ja") ? "ja" : locale.startsWith("pt") ? "pt-BR" : locale.startsWith("fr") ? "fr" : locale.startsWith("de") ? "de" : locale.startsWith("it") ? "it" : "en";
 
   return (
     <section aria-labelledby="showcase-heading" className="relative isolate overflow-hidden bg-surface py-16 text-foreground md:py-20 dark:bg-night">
@@ -151,7 +151,7 @@ export async function ShowcaseSection() {
       </div>
 
       <ul className="mx-auto mt-10 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pt-2 pb-6 md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
-        <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${guideLang}&view=canvas&restore=ask`} name={t("guideName")} description={t("guideDescription")}>
+        <Book href={guideSandboxHref(locale)} name={t("guideName")} description={t("guideDescription")}>
           <GuideCover kicker={hero("kicker")} title="Postext" subtitle={hero("colophon")} label={hero("artAlt")} />
         </Book>
         {presets.map((p) => {
