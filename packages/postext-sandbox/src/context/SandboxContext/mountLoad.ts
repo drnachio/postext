@@ -14,7 +14,7 @@ import { bookOf } from './reducer.js';
 import { isPristineBook } from '../../book/chapterOps.js';
 import { SAMPLE_DOCUMENTS } from './hooks.js';
 import { EMPTY_VIEW_HASH, type ViewHashBook, writeViewHash, type ViewHash, type HashBundleRef } from '../../storage/viewHash.js';
-import { choosePresetOpen, linkNamesBookOnScreen } from '../../presets/locale.js';
+import { choosePresetOpen, linkHoldsEditionOnScreen, linkNamesBookOnScreen } from '../../presets/locale.js';
 import type { HashBundleResolver } from '../../types/props.js';
 import type { SandboxAction, SandboxState } from './state.js';
 import type { Resource } from 'postext';
@@ -245,9 +245,10 @@ export function useMountLoad(deps: UseMountLoadDeps) {
           await openPresetRef.current(privateDefault.summary.id);
           return;
         }
-        if (pristineOtherLocale) {
+        if (pristineOtherLocale && !linkHoldsEditionOnScreen(wanted, onScreen, summaries)) {
           // The untouched guide in the other language: the guide in this
-          // one (its draft, if it was edited here before).
+          // one (its draft, if it was edited here before) — unless the
+          // permalink asked for the edition on screen.
           await saveOutgoing();
           await openPresetRef.current(BUILTIN_PRESET_ID, loc);
           return;

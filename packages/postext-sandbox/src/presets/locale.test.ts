@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeLocaleTag, bundleContentLocales, choosePresetOpen, isEditionOnScreen, linkNamesBookOnScreen, presetLocaleFor, presetOpenLocale, presetReaderLocale, resolvePresetLocale, sameContentLocale } from './locale.js';
+import { activeLocaleTag, bundleContentLocales, choosePresetOpen, isEditionOnScreen, linkHoldsEditionOnScreen, linkNamesBookOnScreen, presetLocaleFor, presetOpenLocale, presetReaderLocale, resolvePresetLocale, sameContentLocale } from './locale.js';
 
 const bilingual = { id: 'guide', locales: ['es', 'en'] };
 const spanish = { id: 'emp', locale: 'es' };
@@ -112,6 +112,19 @@ describe('Chinese editions', () => {
     expect(linkNamesBookOnScreen({ preset: 'other', project: null, lang: 'zh-TW' }, book, summaries)).toBe(false);
     expect(linkNamesBookOnScreen({ preset: 'hlm', project: null, lang: 'zh-TW' }, { preset: null, project: 'p1', lang: null }, summaries)).toBe(false);
     expect(linkNamesBookOnScreen({ preset: null, project: 'p1', lang: null }, { preset: null, project: 'p1', lang: null }, summaries)).toBe(true);
+  });
+
+  it('holds the edition on screen only when a link asks for it by language (#1385)', () => {
+    const guide = { id: 'postext-guide', locales: ['en', 'es'] };
+    const book = { preset: 'postext-guide', project: null, lang: 'es' };
+    expect(linkHoldsEditionOnScreen({ preset: 'postext-guide', project: null, lang: 'es' }, book, [guide])).toBe(true);
+    // Another edition is opened, not held.
+    expect(linkHoldsEditionOnScreen({ preset: 'postext-guide', project: null, lang: 'en' }, book, [guide])).toBe(false);
+    // Asking for no edition leaves the pristine guide free to follow the interface.
+    expect(linkHoldsEditionOnScreen({ preset: null, project: null, lang: null }, book, [guide])).toBe(false);
+    expect(linkHoldsEditionOnScreen({ preset: 'postext-guide', project: null, lang: null }, book, [guide])).toBe(false);
+    // A book this browser passes over asks for nothing here.
+    expect(linkHoldsEditionOnScreen({ preset: 'gone', project: null, lang: 'es' }, book, [guide])).toBe(false);
   });
 
   it('marks the row tag the active locale is served as', () => {
