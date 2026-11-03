@@ -515,7 +515,7 @@ What comes next is driven by the community: open an issue that describes the pub
 
 ## Contributing
 
-Postext is a community-driven open-source project. An active community of contributors is growing around it, and new collaborators are always welcome. The goal is to build a shared standard that any editorial development team worldwide can adopt — a common foundation for professional web typography.
+Postext is a young open-source project, and the community around it is only starting to form. New collaborators are always welcome. The goal is to build a shared standard that any editorial development team worldwide can adopt — a common foundation for professional web typography.
 
 If you want to contribute code, please open an issue first to discuss the approach. This helps avoid duplicate work and ensures alignment with the project direction. Follow existing code style and TypeScript strict mode. A source file stays under about 600 lines and a folder under about 25 files; CI checks it with `node scripts/source-size.mjs --check` (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 

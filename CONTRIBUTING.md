@@ -1,6 +1,6 @@
 # Contributing to Postext
 
-Thanks for your interest in contributing to postext! Postext is a community-driven open-source project with an active and growing community of contributors. Contributions of any kind — code, documentation, design feedback, bug reports, ideas, or questions — are welcome from everyone, regardless of experience level. This document explains how to get involved.
+Thanks for your interest in contributing to postext! Postext is a young open-source project, and the community around it is only starting to form. Contributions of any kind — code, documentation, design feedback, bug reports, ideas, or questions — are welcome from everyone, regardless of experience level. This document explains how to get involved.
 
 For the broader community vision, areas of contribution, and the project's goals, see the [Contributing guide](https://postext.dev/en/docs/contributing) in the documentation.
 
