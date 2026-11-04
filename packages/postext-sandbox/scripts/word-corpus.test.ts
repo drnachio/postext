@@ -1,12 +1,13 @@
 // Every chapter of the showcase presets and the cookbook recipes, sent to
-// Word and back: the engine must read the same blocks. Slow, so it runs on
-// request: `WORD_CORPUS=1 pnpm vitest run scripts/word-corpus`.
+// Word (the semantic export, #1390) and read back untouched (#1395): no
+// edit may be found and the text must come back as it was. Slow, so it
+// runs on request: `WORD_CORPUS=1 pnpm vitest run scripts/word-corpus`.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parseMarkdown, type PostextConfig } from 'postext';
-import { emptyTemplate, parseTemplate, postextToDocx, readDocx, wordToPostext } from 'postext/word';
+import type { PostextConfig } from 'postext';
+import { applyDocxEdits, semanticDocx } from 'postext/word';
 
 const ROOT = resolve(__dirname, '../../..');
 const run = process.env.WORD_CORPUS === '1';
@@ -27,22 +28,6 @@ function chapterFiles(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-const OFFSET_KEYS = new Set(['sourceStart', 'sourceEnd', 'sourceMap', 'lineStart', 'attrSources']);
-
-function blocksOf(markdown: string): unknown {
-  const ids = new Map<string, string>();
-  const id = (v: string): string => {
-    if (!ids.has(v)) ids.set(v, String(ids.size + 1));
-    return ids.get(v)!;
-  };
-  return JSON.parse(JSON.stringify(parseMarkdown(markdown), (k, v) => {
-    if (OFFSET_KEYS.has(k) || /[a-z](Start|End)$/.test(k)) return undefined;
-    if (k === 'footnoteDef' && typeof v === 'string') return id(v);
-    if (k === 'footnote' && v && typeof v.id === 'string') return { ...v, id: id(v.id) };
-    return v;
-  }));
-}
-
 describe.runIf(run)('Word round trip over the repository corpus', () => {
   const files = [
     ...chapterFiles(join(ROOT, 'apps/web/public/presets')),
@@ -50,12 +35,13 @@ describe.runIf(run)('Word round trip over the repository corpus', () => {
   ];
   const config = {} as PostextConfig;
   for (const file of files) {
-    it(relative(ROOT, file), () => {
+    it(relative(ROOT, file), async () => {
       const markdown = readFileSync(file, 'utf8');
-      const bytes = postextToDocx([{ title: 'x', markdown }], { template: emptyTemplate(), config, book: false });
-      const doc = readDocx(bytes);
-      const back = wordToPostext(doc, { template: parseTemplate(doc.embeddedTemplate)!, config, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' });
-      expect(blocksOf(back.chapters[0]!.markdown)).toEqual(blocksOf(markdown));
+      const chapters = [{ id: 'x', title: 'x', markdown }];
+      const bytes = await semanticDocx({ chapters, config, date: '2026-01-01T00:00:00Z' });
+      const back = applyDocxEdits(bytes, { chapters });
+      expect(back.edits).toEqual([]);
+      expect(back.chapters[0]!.markdown).toBe(markdown);
     });
   }
 });

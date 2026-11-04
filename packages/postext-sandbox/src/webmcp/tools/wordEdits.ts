@@ -1,0 +1,195 @@
+// The Word round trip as tools (#1397): `sandbox_export` writes either
+// Word document (`exportWordFile`), and `sandbox_apply_word_edits` reads
+// an edited export back into the book, as the Manuscript panel's export
+// dialog and review dialog do.
+
+import { DocxReadError, isExportedDocx, type DocxComment, type DocxEdit } from 'postext/word';
+import type { SandboxState } from '../../context/SandboxContext.js';
+import { downloadBytes } from '../../storage/persistence.js';
+import { createPdfFontProvider } from '../../viewport/pdf/pdfFontProvider.js';
+import { DOCX_MIME, buildWordExport, docxFileName, type WordExportNote, type WordVariant } from '../../word/wordExport.js';
+import { reviewChanges, reviewWordEdits, writeWordEdits } from '../../word/wordEdits.js';
+import { chapterText, stateReaches } from '../chapterEdits.js';
+import { layoutConfig, whenSettled, type SandboxToolHost } from '../host.js';
+import { ToolError, type WebMcpTool } from '../modelContext.js';
+import { WAIT_PARAM, fileParam, layoutAnswer } from './book.js';
+import { readFileInput, type FileInput } from './resources.js';
+
+/** How long the edits may take to reach the state. */
+const LANDING_MS = 5000;
+
+const messageOf = (err: unknown): string => (err instanceof Error ? err.message : String(err));
+
+function toBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary);
+}
+
+/** A chapter id as the tools name a chapter: its position from 1. */
+const positionOf = (s: SandboxState, id: string | undefined): number | null => {
+  const i = id === undefined ? -1 : s.chapters.findIndex((c) => c.id === id);
+  return i < 0 ? null : i + 1;
+};
+
+function describeNote(s: SandboxState, n: WordExportNote): Record<string, unknown> {
+  if (n.kind === 'font') return { font: n.family, reason: n.reason, ...(n.detail ? { detail: n.detail } : {}) };
+  const chapter = positionOf(s, n.chapter);
+  return { code: n.code, message: n.message, ...(chapter ? { chapter } : {}) };
+}
+
+export const VARIANT_PARAM = {
+  type: 'string',
+  enum: ['semantic', 'formatted'],
+  description: 'docx: semantic (default) is an editable document in Word styles, lists, footnotes and tables, built from the Markdown; formatted reproduces every page as the PDF prints it (same layout, pictures and embedded fonts) for checking the layout. Both carry the marks that take the edits made in Word back into the book (sandbox_apply_word_edits).',
+} as const;
+
+/** `sandbox_export` with format docx: the file, downloaded or handed back. */
+export async function exportWordFile(
+  host: SandboxToolHost,
+  args: Record<string, unknown>,
+  bookName: string,
+  maxDataBytes: number,
+  signal?: AbortSignal,
+): Promise<Record<string, unknown>> {
+  const variant = (args.variant as WordVariant | undefined) ?? 'semantic';
+  const scope = (args.scope as 'chapter' | 'book' | undefined) ?? 'book';
+  // The formatted document is the print chain: the book laid out first.
+  if (variant === 'formatted') await whenSettled(host, { signal });
+  const s = host.store.getSnapshot();
+  const notes: WordExportNote[] = [];
+  let bytes: Uint8Array;
+  try {
+    bytes = await buildWordExport({
+      variant,
+      scope,
+      service: host.layout,
+      clientId: 'webmcp:word-export',
+      chapters: s.chapters,
+      activeChapterId: s.activeChapterId,
+      resources: s.resources,
+      config: layoutConfig(s),
+      plan: host.store.getPlan(s),
+      title: bookName,
+      ...(variant === 'formatted' ? { fontProvider: createPdfFontProvider() } : {}),
+      onNote: (n) => notes.push(n),
+    });
+  } catch (err) {
+    throw new ToolError(`The Word document could not be written: ${messageOf(err)}`);
+  }
+  const active = s.chapters.find((c) => c.id === s.activeChapterId);
+  const file = docxFileName(bookName, scope === 'chapter' && s.chapters.length > 1 ? active?.title ?? '' : null);
+  const answer = {
+    format: 'docx',
+    variant,
+    scope,
+    file,
+    bytes: bytes.byteLength,
+    mimeType: DOCX_MIME,
+    ...(notes.length > 0 ? { notes: notes.map((n) => describeNote(s, n)) } : {}),
+  };
+  if (args.deliver === 'data') {
+    if (bytes.byteLength > maxDataBytes) throw new ToolError(`The docx is ${Math.round(bytes.byteLength / 1048576)} MB, too large to hand back in a result; ask for it as a download.`);
+    return { ...answer, base64: toBase64(bytes) };
+  }
+  downloadBytes(bytes, file, DOCX_MIME);
+  return { ...answer, downloaded: true };
+}
+
+function describeEdit(s: SandboxState, e: DocxEdit): Record<string, unknown> {
+  const chapter = positionOf(s, e.chapter);
+  return {
+    status: e.status,
+    kind: e.kind,
+    ...(chapter ? { chapter } : e.chapter !== undefined ? { chapterId: e.chapter } : {}),
+    ...(e.resourceId !== undefined ? { resource: e.resourceId, field: e.field } : {}),
+    before: e.before,
+    after: e.after,
+    ...(e.reason ? { reason: e.reason } : {}),
+  };
+}
+
+function describeComment(s: SandboxState, c: DocxComment): Record<string, unknown> {
+  const chapter = positionOf(s, c.chapter);
+  return {
+    ...(chapter ? { chapter } : {}),
+    ...(c.resourceId !== undefined ? { resource: c.resourceId } : {}),
+    ...(c.author ? { author: c.author } : {}),
+    text: c.text,
+    ...(c.start >= 0 && c.chapter !== undefined ? { on: (chapterText(s, c.chapter) ?? '').slice(c.start, c.end) } : {}),
+  };
+}
+
+export function wordEditTools(host: SandboxToolHost): WebMcpTool[] {
+  const { store } = host;
+
+  const applyEdits: WebMcpTool = {
+    name: 'sandbox_apply_word_edits',
+    title: 'Sandbox: bring back an edited Word export',
+    description: "Read a .docx that sandbox_export (format docx) or the export dialog wrote from this book and was then edited in Word, and put the changes made in it into the book's chapters and resources, as the Manuscript panel's Word import does with such a file. Every change found is listed: applied (it goes in), conflict (the same text also changed in the book since the export, or is no longer there) or rejected (text the book makes itself, such as a number or a label, or formatting it cannot place), with reason; the comments left in Word are listed too. Run it first with dryRun: true to see the list; without it the applied changes are written as one change that sandbox_undo takes back whole. A .docx that was not exported from the Sandbox goes through sandbox_import_word instead.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        file: fileParam('The edited .docx: where to fetch it (url) or its bytes (base64).'),
+        dryRun: { type: 'boolean', description: 'Change nothing: answer with the changes found and what each would do.' },
+        wait: WAIT_PARAM,
+      },
+      required: ['file'],
+      additionalProperties: false,
+    },
+    annotations: { untrustedContentHint: true },
+    execute: async (args, { signal }) => {
+      const input = await readFileInput(args.file as FileInput, signal);
+      const bytes = new Uint8Array(await input.arrayBuffer());
+      // A .docx is a zip archive: anything else is no Word document at all.
+      if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) throw new ToolError(`${input.name} is not a .docx file (a .doc is saved as .docx from Word first).`);
+      if (!isExportedDocx(bytes)) {
+        throw new ToolError(`${input.name} was not exported from the Sandbox (it carries no export marks): sandbox_import_word brings in any other Word document.`);
+      }
+      const s = store.getSnapshot();
+      let review: ReturnType<typeof reviewWordEdits>;
+      try {
+        review = reviewWordEdits(bytes, s);
+      } catch (err) {
+        if (!(err instanceof DocxReadError)) console.error(err);
+        throw new ToolError(`${input.name} could not be read back: ${messageOf(err)}`);
+      }
+      const about = {
+        file: input.name,
+        variant: review.result.variant,
+        counts: review.counts,
+        edits: review.result.edits.map((e) => describeEdit(s, e)),
+        ...(review.result.comments.length > 0 ? { comments: review.result.comments.map((c) => describeComment(s, c)) } : {}),
+      };
+      if (args.dryRun === true) {
+        return { dryRun: true, ...about, wouldChange: { chapters: [...review.chapterTexts.keys()].map((id) => positionOf(s, id)), resources: review.resources.map((r) => r.id) } };
+      }
+      if (!reviewChanges(review)) return { applied: false, ...about, changed: false };
+      const written = writeWordEdits((a) => store.dispatch(a), store.history, s, review);
+      const landed = await stateReaches(host, () => {
+        const now = store.getSnapshot();
+        return written.chapters.every((id) => chapterText(now, id) === review.chapterTexts.get(id))
+          && written.resources.every((id) => now.resources.find((r) => r.id === id)?.updatedAt !== s.resources.find((r) => r.id === id)?.updatedAt);
+      }, LANDING_MS);
+      // The group closes by itself once the chapter in the editor has taken
+      // its edit (a render later).
+      if (!landed) {
+        // What did arrive stays one change.
+        written.group?.close();
+        throw new ToolError('The book changed while the edits were on their way: read the file again with dryRun and apply it to the book as it is now.');
+      }
+      const after = store.getSnapshot();
+      return {
+        applied: true,
+        ...about,
+        changed: true,
+        chapters: written.chapters.map((id) => positionOf(after, id)),
+        ...(written.resources.length > 0 ? { resources: written.resources } : {}),
+        undo: 'sandbox_undo takes all these changes back at once.',
+        ...(await layoutAnswer(host, args.wait, signal)),
+      };
+    },
+  };
+
+  return [applyEdits];
+}

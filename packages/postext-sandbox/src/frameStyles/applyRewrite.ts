@@ -50,8 +50,8 @@ export function applyStyleRewrite(
 function ownStep(step: HistoryStepInfo | null, record: StyleRewriteRecord, chapters: ReadonlySet<string>, designDone: boolean): 'design' | 'text' | null {
   if (!step) return null;
   if (step.kind === 'config') return !designDone && step.keys.includes('calloutStyles') ? 'design' : null;
-  // A picture's marks (#866) are no step of a rewrite.
-  if (step.kind === 'resource') return null;
+  // A picture's marks (#866) and a group (#1397) are no step of a rewrite.
+  if (step.kind === 'resource' || step.kind === 'group') return null;
   return chapters.has(step.chapterId) ? 'text' : null;
 }
 
