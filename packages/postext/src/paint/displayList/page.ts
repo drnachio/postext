@@ -15,7 +15,7 @@ import { comicHoldsText, comicPaintsUnderText, composedFrameBlockIds, composedPa
 import { comicBlockOnSheet } from '../../comics/transform.js';
 import { comicLetteringItems, comicPanelItems } from './comic.js';
 import { compose, flowFrame, IDENTITY, placeShape, type Frame } from './frame.js';
-import { blockItems, type BlockContext } from './blocks.js';
+import { blockItems, stripCaptionItems, type BlockContext } from './blocks.js';
 import { slotItems, type SlotContext } from './design.js';
 import type { DisplayItem, DisplayListOptions, DisplayPage } from './types.js';
 
@@ -28,8 +28,10 @@ function floatItems(page: VDTPage, ctx: BlockContext): DisplayItem[] {
   const frameIds = composedFrameBlockIds(page);
   const items: DisplayItem[] = [];
   for (const block of page.floats ?? []) {
-    if (frameIds.has(block.id) || block.comic) continue;
-    items.push(...blockItems(block, ctx));
+    if (frameIds.has(block.id)) continue;
+    // A floated strip's caption in float order; its picture on the sheet.
+    if (block.comic) items.push(...stripCaptionItems(block, ctx));
+    else items.push(...blockItems(block, ctx));
   }
   return items;
 }
@@ -99,7 +101,9 @@ export function pageDisplayList(doc: VDTDocument, pageIndex: number, options?: D
         continue;
       }
       if (block.comic) {
+        // Its caption in the flow, in place; the strip on the sheet below.
         if (!block.hidden) strips.push(block);
+        items.push(...stripCaptionItems(block, colCtx));
         continue;
       }
       items.push(...blockItems(block, colCtx));

@@ -1,6 +1,7 @@
 // Display-list content of the formatted Word export round-trips (#1406):
 // chips cut into runs in their own faces, inline code, link-note QR codes,
-// video frames and overlays (turned or not) and chips in table cells; an
+// video frames and overlays (turned or not), chips in table cells and a
+// strip's caption; an
 // unedited export reads back with no edit and a valid package.
 
 import { describe, it, expect } from 'vitest';
@@ -65,5 +66,11 @@ describe('display-list content round-trips through the formatted export (#1406)'
     } as Resource;
     const xml = await roundTrip('Intro.\n\n::resource{id="t1"}\n', config(), [res]);
     expect(xml).toContain('Esc');
+  });
+
+  it('a strip’s caption', async () => {
+    const md = 'Text.\n\n:::strip{width=60% caption="A *quiet* morning." type=figure id=daily}\n::panel\n::panel\n:::\n\nAfter.\n';
+    const xml = await roundTrip(md, config());
+    expect(xml).toMatch(/Figure(?:(?!<\/w:p>).)*quiet(?:(?!<\/w:p>).)*morning/);
   });
 });

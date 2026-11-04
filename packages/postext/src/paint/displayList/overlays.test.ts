@@ -139,6 +139,34 @@ describe('chip runs on the sheet (#1406)', () => {
   });
 });
 
+describe('a strip’s caption in the display list (#1406)', () => {
+  const md = (attrs: string) => `Text.\n\n:::strip{width=60% caption="A *quiet* morning." type=figure id=daily ${attrs}}\n::panel\n::panel\n:::\n\nAfter.`;
+
+  it('sets the caption lines where the PDF paints them, generated, in the caption faces', () => {
+    const doc = build(md(''), config());
+    const block = doc.pages[0]!.columns[0]!.blocks.find((b) => b.comic)!;
+    const line = block.lines[block.stripCaption!.firstLine]!;
+    const caption = documentDisplayList(doc)[0]!.items.find((i): i is TextItem => i.kind === 'text' && i.role === 'caption')!;
+    expect(caption).toBeDefined();
+    expect(caption.lines.map((l) => l.text).join(' ')).toBe('Figure\u00A01. A quiet morning.');
+    expect(caption.lines[0]!.baseline).toBeCloseTo(line.baseline, 6);
+    expect(caption.lines[0]!.runs[0]!.x).toBeCloseTo(line.bbox.x, 6);
+    expect(caption.lines[0]!.runs.find((r) => r.text === 'quiet')!.fontString).toContain('italic');
+    expect(caption.source!.generated).toBe(true);
+    expect(caption.source!.map.every((m) => m === -1)).toBe(true);
+  });
+
+  it('draws its bar under it, and a floated strip’s caption too', () => {
+    const cfg = config({ captionStyle: { backgroundEnabled: true, background: { hex: '#eeeeee', model: 'hex' } } } as Partial<PostextConfig>);
+    for (const attrs of ['', 'placement=top']) {
+      const items = documentDisplayList(build(md(attrs), cfg)).flatMap((p) => p.items);
+      const at = items.findIndex((i) => i.kind === 'text' && i.role === 'caption');
+      expect(at, attrs).toBeGreaterThan(0);
+      expect(items.slice(0, at).some((i) => i.kind === 'rect' && i.fill === '#eeeeee'), attrs).toBe(true);
+    }
+  });
+});
+
 describe('QR codes and video overlays in the display list (#1406)', () => {
   it('draws a code’s dark modules as one path scaled to its box', () => {
     const item = qrModulesItem({ rows: ['10', '01'], moduleSize: 2, quietZone: 1 }, { x: 10, y: 20, width: 16, height: 16 }, '#000000')!;
