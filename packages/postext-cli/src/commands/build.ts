@@ -12,7 +12,7 @@ import { isProjectOnlyFile, loadBook, type Book } from '../input';
 import { sameBytes, sameFiles } from '../io';
 import { layOut, selectChapters } from '../layout';
 import { Reporter, style } from '../log';
-import { writeDocx } from '../outputs/docx';
+import { docxVariant, embedsFonts, writeDocx } from '../outputs/docx';
 import { writeEpub } from '../outputs/epub';
 import { writeHtml } from '../outputs/html';
 import { writeImages } from '../outputs/images';
@@ -55,13 +55,21 @@ function sameAssets(a: Assets, b: Assets): boolean {
 async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string[]> {
   const { opts, reporter } = ctx;
   const book = await reporter.time('read', () => loadBook(ctx.inputs, opts, reporter));
-  const needsLayout = TARGETS.some((t) => t !== 'docx' && opts.string(t));
-  if (needsLayout) {
-    const fonts = await reporter.time('fonts', () => resolveFonts(book, {
+  const docx = opts.string('docx');
+  const variant = docxVariant(opts, 'docx-variant');
+  // The formatted Word file is written from the layout the others share;
+  // the semantic one needs none, only the faces it embeds.
+  const needsLayout = TARGETS.some((t) => opts.string(t) && (t !== 'docx' || variant === 'formatted'));
+  const needsFonts = needsLayout || (!!docx && embedsFonts(opts, 'docx-fonts'));
+  const fonts = needsFonts
+    ? await reporter.time('fonts', () => resolveFonts(book, {
       fontDirs: opts.list('font-dir'),
       offline: opts.flag('offline') === true,
       ...(opts.string('cache-dir') ? { cacheDir: opts.string('cache-dir')! } : {}),
-    }, reporter));
+    }, reporter))
+    : undefined;
+  const docxFonts = fonts && embedsFonts(opts, 'docx-fonts') ? { fonts } : {};
+  if (needsLayout && fonts) {
     const assets = assetsOf(book, fonts);
     if (state.last && !sameAssets(state.last.assets, assets)) {
       // A picture or a face changed: nothing measured or laid out stands.
@@ -88,11 +96,11 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
     const previous = state.last?.docs;
     const repaint = previous ? (p: { doc: VDTDocument; chapter: number }) => p.doc !== previous[p.chapter - 1] : undefined;
     if (images) jobs.push(writeImages(book, layout, opts, reporter, images, opts.string('pages'), repaint));
+    if (docx && variant === 'formatted') jobs.push(writeDocx(book, { variant, chapters: layout.chapters, layout, ...docxFonts }, reporter, docx));
     await Promise.all(jobs);
     state.last = { docs: layout.docs, assets };
   }
-  const docx = opts.string('docx');
-  if (docx) await writeDocx(book, selectChapters(book, opts), opts.string('template'), reporter, docx);
+  if (docx && variant === 'semantic') await writeDocx(book, { variant, chapters: selectChapters(book, opts), ...docxFonts }, reporter, docx);
   return book.watchPaths;
 }
 

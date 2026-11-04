@@ -1,12 +1,22 @@
 import type { CommandContext } from '../context';
 import { loadBook } from '../input';
 import { selectChapters } from '../layout';
-import { writeDocx } from '../outputs/docx';
-import { defaultOutput } from '../session';
+import { docxVariant, embedsFonts, writeDocx } from '../outputs/docx';
+import { defaultOutput, openAndLayOut, openBook } from '../session';
 
 export default async function docx(ctx: CommandContext): Promise<void> {
-  // Word export needs no layout and no fonts: the Markdown and the styles.
-  const book = await ctx.reporter.time('read', () => loadBook(ctx.inputs, ctx.opts, ctx.reporter));
-  const chapters = selectChapters(book, ctx.opts);
-  await writeDocx(book, chapters, ctx.opts.string('template'), ctx.reporter, ctx.opts.string('out') ?? defaultOutput(ctx, book, '.docx'));
+  const { opts, reporter } = ctx;
+  const variant = docxVariant(opts);
+  if (variant === 'formatted') {
+    // The PDF's pages: the book laid out as for the PDF.
+    const { book, fonts, layout } = await openAndLayOut(ctx);
+    await writeDocx(book, { variant, chapters: layout.chapters, layout, ...(embedsFonts(opts) ? { fonts } : {}) }, reporter, opts.string('out') ?? defaultOutput(ctx, book, '.docx'));
+    return;
+  }
+  // The semantic file needs no layout: the Markdown, the settings and,
+  // to embed, the faces.
+  const { book, fonts } = embedsFonts(opts)
+    ? await openBook(ctx)
+    : { book: await reporter.time('read', () => loadBook(ctx.inputs, opts, reporter)), fonts: undefined };
+  await writeDocx(book, { variant, chapters: selectChapters(book, opts), ...(fonts ? { fonts } : {}) }, reporter, opts.string('out') ?? defaultOutput(ctx, book, '.docx'));
 }

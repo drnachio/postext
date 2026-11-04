@@ -1,7 +1,6 @@
 // The PDF: postext-pdf with the book's fonts, its pictures, HarfBuzz for
 // complex scripts and, for print, the ICC output profile.
 
-import { createCanvas } from '@napi-rs/canvas';
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { resolvePrintConfig, type PrintConfig } from 'postext';
@@ -14,23 +13,9 @@ import type { Book } from '../input';
 import { byteLength, writeOut } from '../io';
 import type { Layout } from '../layout';
 import type { Reporter } from '../log';
-import { drawsSvgAtSize, loadSvgImage } from '../svgImage';
+import { rasterizeSvg } from '../svgImage';
 
 const PDFX = { none: 'none', x1a: 'pdfx1a', x4: 'pdfx4', pdfx1a: 'pdfx1a', pdfx4: 'pdfx4' } as const;
-
-/** SVG to PNG through Skia, for the pictures the PDF cannot draw as vectors. */
-async function rasterizeSvg(svgText: string, width: number, height: number): Promise<Uint8Array | null> {
-  try {
-    const image = await loadSvgImage(svgText);
-    // Rasterised at the raster's size, not stretched from the SVG's own
-    // (#678), by resvg when Skia would leave a raster out (#771).
-    const canvas = drawsSvgAtSize(createCanvas(Math.max(1, Math.round(width)), Math.max(1, Math.round(height))));
-    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-    return new Uint8Array(await canvas.encode('png'));
-  } catch {
-    return null;
-  }
-}
 
 export async function pdfOptions(book: Book, fonts: FontSet, opts: Options, reporter: Reporter): Promise<RenderToPdfOptions> {
   const options: RenderToPdfOptions = {
