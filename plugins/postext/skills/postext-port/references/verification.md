@@ -442,8 +442,9 @@ those lines, or run the script.
   compounds' hyphens, ragged breaking, split under a heading, space under paragraph containers;
   below 18, mark styles with no `borderRadius` rounded at 0.2em when the text has a `:mark`; below 19,
   formatted text broken after a slash only inside a web address; below 20, a notation fence read as code; below 21,
-  each `localized.<lang>.config` replacing the shared top-level keys it names).
-  Set `"configVersion": 21` and check the pages again when the config is meant for today's rules.
+  each `localized.<lang>.config` replacing the shared top-level keys it names; below 22, the HTML viewer set line
+  by line unless the config names `htmlViewer.optimalLineBreaking`).
+  Set `"configVersion": 22` and check the pages again when the config is meant for today's rules.
 - Run each language (`--lang`).
 
 ## 3. Compare with the source, page by page

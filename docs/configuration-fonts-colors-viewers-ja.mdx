@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'フォント、色、出力',
   description: '単位、色とカラーパレット、カスタムフォント、HTMLビューアー、PDFと入稿データ、Folioビューアー、そしてデバッグ用の表示',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '40分',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>HTMLビューアーでKnuth–Plassの行分割を有効にします。ビューアーはリサイズや文字サイズの変更のたびにレイアウトをやり直すため、既定ではオフです。最初に収まる位置で改行する貪欲法なら、即座に反応すると感じられるほど高速です。canvasバックエンドと同じ最適な改行が必要なときにオンにします。</td>
+      <td><code>true</code></td>
+      <td>HTMLビューアーの行をKnuth–Plassで分割します。canvasやPDFと同じ最適な改行で、画面版は印刷版に品質で劣りません。<code>true</code>のときビューアーは<code>bodyText.optimalLineBreaking</code>に従うので、本文を1行ずつ組む文書は画面でもそのままです。<code>false</code>にすると各行を埋めてから次の行に進み、非常に長い本ではそのほうが速くなります。<code>configVersion</code> 21以前で保存され、この値を設定していない設定は、当時の組版どおり<code>false</code>として読まれます。</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined when everything matches the defaults

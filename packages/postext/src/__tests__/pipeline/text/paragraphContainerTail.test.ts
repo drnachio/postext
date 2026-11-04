@@ -6,7 +6,7 @@ import { resolveAllConfig } from '../../../pipeline/config.js';
 import { collectConfigWarnings } from '../../../checks/configWarnings.js';
 import type { BodyTextConfig, ParagraphStyleConfig, PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument } from '../../../vdt.js';
-import { CONFIG_VERSION, migrateConfig, pinLegacyParagraphContainerSpacing } from '../../../bundle/index.js';
+import { CONFIG_VERSION, migrateConfig, pinLegacyParagraphContainerSpacing, pinLegacyHtmlViewerBreaking } from '../../../bundle/index.js';
 import { migrateBundleConfig, pinLegacyBoxParagraphStyles, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../../bundle/configVersion.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -272,7 +272,7 @@ describe('configurations stored before rules 8 keep the 1.4 space under containe
   const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' }, paragraphStyles: [{ id: 's' }] };
 
   it('pins \'add\' when the book holds a :::paragraphs container', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     for (const version of [undefined, 3, 5, 6, 7]) {
       expect(migrateConfig(stored, version, { content: GROUP_THEN_HEADING }).bodyText?.paragraphContainerSpacing, `${version}`).toBe('add');
     }
@@ -286,7 +286,7 @@ describe('configurations stored before rules 8 keep the 1.4 space under containe
   });
 
   it('leaves a book with no container, no paragraph style, a named value or today\'s rules as it is', () => {
-    expect(migrateConfig(stored, 7, { content: 'Just text, and a mention of :::paragraphs in a line.' })).toEqual(pinLegacyBoxParagraphStyles(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(stored)))));
+    expect(migrateConfig(stored, 7, { content: 'Just text, and a mention of :::paragraphs in a line.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacyBoxParagraphStyles(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(stored))))));
     const noStyles: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
     // (GROUP_THEN_TEXT: a heading or a compound would bring the other
     // version-8 pins.)

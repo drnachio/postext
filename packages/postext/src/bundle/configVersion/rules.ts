@@ -4,7 +4,7 @@
 
 
 /**
- * The configuration rules this engine writes: 19 since #1164 (18 from #1149, 17 from #1119, 16 from #1056, 15 from #853, 14 from
+ * The configuration rules this engine writes: 22 since #1400 (21 from #1209, 20 from #1172, 19 from #1164, 18 from #1149, 17 from #1119, 16 from #1056, 15 from #853, 14 from
  * postext 1.30, 13 from 1.29, 12 from 1.28, 11 from 1.25, 10 from 1.24, 9 from 1.23, 8 from 1.5). Thirteen rules changed in 1.5 and
  * more since, and a configuration
  * stored under an older
@@ -209,6 +209,10 @@
  *   where up to 1.57 each of its top-level keys replaced the shared one
  *   whole. Nothing to pin: a bundle stamped 20 or less is read the old
  *   way.
+ * - 22 (#1400): the HTML viewer breaks its lines with Knuth–Plass
+ *   (`htmlViewer.optimalLineBreaking: true`), where up to 1.67 the screen
+ *   edition replaced `bodyText.optimalLineBreaking` with a line-by-line
+ *   breaker to favour speed ({@link pinLegacyHtmlViewerBreaking}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -235,9 +239,10 @@
  * as 18 was written by postext 1.52 and gets the version-19 pin; one stored
  * as 19 was written by postext 1.53 and gets the version-20 pin (which every
  * older one gets too); one stored as 20 or less has its locale layer read
- * key by key.
+ * key by key; one stored as 21 was written by postext 1.58 to 1.67 and gets
+ * the version-22 pin (which every older one gets too).
  */
-export const CONFIG_VERSION = 21;
+export const CONFIG_VERSION = 22;
 
 /** The rules that merge a partial heading break onto its level's. */
 export const HEADING_BREAK_RULES = 3;
@@ -363,3 +368,6 @@ export const SCORE_FENCE_RULES = 20;
 /** The rules that merge a bundle's locale configuration over the shared one
  *  field by field (#1209). */
 export const LOCALE_LAYER_RULES = 21;
+/** The rules that break the HTML viewer's lines with Knuth–Plass by
+ *  default (#1400). */
+export const HTML_VIEWER_BREAKING_RULES = 22;

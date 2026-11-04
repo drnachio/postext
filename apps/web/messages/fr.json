@@ -2310,7 +2310,7 @@
     "htmlViewerColumnGap": "Écart entre colonnes",
     "htmlViewerColumnGapTooltip": "Espacement horizontal entre les colonnes quand la visionneuse HTML est en mode multicolonne",
     "htmlViewerOptimalLineBreaking": "Coupure optimale des lignes",
-    "htmlViewerOptimalLineBreakingTooltip": "Utiliser la coupure optimale des lignes de Knuth–Plass dans la visionneuse HTML. Désactivée par défaut pour des raisons de performances ; le réglage global du texte courant n’est remplacé ici que pour le rendu HTML",
+    "htmlViewerOptimalLineBreakingTooltip": "Utiliser la coupure optimale des lignes de Knuth–Plass dans la visionneuse HTML, les mêmes coupures que le canvas et le PDF. Activée par défaut ; désactivez-la pour remplir chaque ligne avant la suivante. Un texte courant composé ligne par ligne le reste à l’écran",
     "canvasViewerSection": "Canvas (espacement des pages)",
     "canvasViewerPageGap": "Écart entre les pages d’une paire",
     "canvasViewerPageGapTooltip": "Écart, en pixels, entre la page de gauche et la page de droite d’une double page dans le Canvas. À 0, les deux pages se touchent et une image sur la double page se voit sans coupure. Ne change que le dessin du Canvas, jamais les pages.",

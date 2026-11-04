@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/index.js';
 import { measureBlock, measureRichBlock, type MeasureBlockOptions } from '../../../measure/index.js';
-import { migrateConfig, migrateBundleConfig, pinLegacyRaggedBreaking, CONFIG_VERSION, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacyBoxParagraphStyles, pinLegacySlashBreaks } from '../../../bundle/configVersion.js';
+import { migrateConfig, migrateBundleConfig, pinLegacyRaggedBreaking, CONFIG_VERSION, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacyBoxParagraphStyles, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../../bundle/configVersion.js';
 import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../../defaults/text/bodyText.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTLine } from '../../../vdt.js';
@@ -183,7 +183,7 @@ describe('optimalRagged in the configuration', () => {
   });
 
   it('is pinned off for configurations stored before rules 7 that set running text ragged', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     const ragged: PostextConfig = { bodyText: { textAlign: 'left' } };
     for (const version of [undefined, 3, 5, 6]) {
       expect(migrateConfig(ragged, version, { content: 'Text.' }).bodyText, `${version}`).toEqual({ textAlign: 'left', optimalRagged: false, scriptContext: false, shapingLanguage: 'host', breakAfterSlashes: false });
@@ -208,10 +208,10 @@ describe('optimalRagged in the configuration', () => {
       headings: { textAlign: 'left' },
       headingStyles: [{ id: 's', bodyStyle: { textAlign: 'justify' } }],
     };
-    expect(migrateConfig(justified, 6, { content: 'Text.' })).toEqual(pinLegacyBoxParagraphStyles(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(justified)))));
+    expect(migrateConfig(justified, 6, { content: 'Text.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacyBoxParagraphStyles(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(justified))))));
     expect(migrateConfig(ragged, CONFIG_VERSION, { content: 'Text.' })).toBe(ragged);
     const greedy: PostextConfig = { bodyText: { textAlign: 'left', optimalLineBreaking: false } };
-    expect(migrateConfig(greedy, undefined, { content: 'Text.' })).toEqual(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(greedy))));
+    expect(migrateConfig(greedy, undefined, { content: 'Text.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(greedy)))));
     const named: PostextConfig = { bodyText: { textAlign: 'left', optimalRagged: true } };
     expect(pinLegacyRaggedBreaking(named)).toBe(named);
     // The bundle reader pins the `bodyText` the layers leave in force.

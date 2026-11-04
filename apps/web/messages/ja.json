@@ -2310,7 +2310,7 @@
     "htmlViewerColumnGap": "段間",
     "htmlViewerColumnGapTooltip": "HTMLビューアーを段組み表示にしたときの段と段の水平方向の間隔です。",
     "htmlViewerOptimalLineBreaking": "最適改行",
-    "htmlViewerOptimalLineBreakingTooltip": "HTMLビューアーでKnuth-Plassの最適改行を使います。処理速度を優先して既定ではオフです。本文全体の設定は、HTMLの描画に限りここで上書きされます。",
+    "htmlViewerOptimalLineBreakingTooltip": "HTMLビューアーでKnuth-Plassの最適改行を使います。canvasやPDFと同じ改行になります。既定ではオンです。オフにすると各行を埋めてから次の行に進みます。本文を1行ずつ組む設定は、画面でもそのまま保たれます。",
     "canvasViewerSection": "Canvas（ページの間隔）",
     "canvasViewerPageGap": "見開きの左右のページの間隔",
     "canvasViewerPageGapTooltip": "Canvasで見開きの左ページと右ページの間隔をピクセルで指定します。0にすると2ページが接し、見開きにまたがる画像に隙間が出ません。Canvasの表示だけが変わり、ページ自体は変わりません。",

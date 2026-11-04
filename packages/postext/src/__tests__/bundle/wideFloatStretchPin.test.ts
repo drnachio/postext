@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migrateBundleConfig, migrateConfig, pinLegacyWideFloatStretch, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
+import { migrateBundleConfig, migrateConfig, pinLegacyWideFloatStretch, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig } from '../../types.js';
@@ -43,9 +43,9 @@ describe('pinLegacyWideFloatStretch (#708)', () => {
     const current: PostextConfig = {};
     // One stamped 12 or 13 takes the pin of the language alone (#764, #770);
     // one stamped 14 is read as it is.
-    expect(migrateConfig(current, 12, { content: FIGURE })).toEqual({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(current, 13, { content: FIGURE })).toEqual({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(current, 14, { content: FIGURE })).toEqual(pinLegacySlashBreaks(current));
+    expect(migrateConfig(current, 12, { content: FIGURE })).toEqual(pinLegacyHtmlViewerBreaking({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(current, 13, { content: FIGURE })).toEqual(pinLegacyHtmlViewerBreaking({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(current, 14, { content: FIGURE })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(current)));
     expect(resolveAllConfig(current).headings.balancing.stretchAfterWideFloats).toBe('flush');
   });
 

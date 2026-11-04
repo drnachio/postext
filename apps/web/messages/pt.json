@@ -2307,7 +2307,7 @@
     "htmlViewerColumnGap": "Espaço entre colunas",
     "htmlViewerColumnGapTooltip": "Espaço horizontal entre as colunas quando o visualizador HTML está no modo de várias colunas",
     "htmlViewerOptimalLineBreaking": "Quebra de linha ótima",
-    "htmlViewerOptimalLineBreakingTooltip": "Usa a quebra de linha ótima de Knuth-Plass no visualizador HTML. Desativada por padrão por desempenho; aqui ela substitui a configuração global do texto do corpo apenas na renderização HTML",
+    "htmlViewerOptimalLineBreakingTooltip": "Usa a quebra de linha ótima de Knuth-Plass no visualizador HTML, as mesmas quebras do canvas e do PDF. Ligada por padrão; desligue-a para preencher cada linha antes da seguinte. Um texto do corpo composto linha a linha continua assim na tela",
     "canvasViewerSection": "Canvas (espaço entre páginas)",
     "canvasViewerPageGap": "Espaço entre as páginas de um par",
     "canvasViewerPageGapTooltip": "Espaço, em pixels, entre a página esquerda e a direita de uma página dupla no Canvas. Com 0, as duas páginas se tocam e uma imagem em página dupla aparece sem corte. Só muda como o Canvas é desenhado, nunca as páginas.",

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fonts, colors i sortida',
   description: 'Com s’escriuen les unitats i els colors, la paleta, les fonts personalitzades, el visor HTML, el PDF i la producció per a impremta, el visor Folio i les ajudes de depuració',
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -332,8 +332,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Activa el tall de línies de Knuth–Plass dins del visor HTML. Està desactivat per defecte perquè el visor torna a maquetar cada vegada que canvia la mida, i l'algorisme voraç de primer ajust és prou ràpid perquè sembli instantani. Activa'l quan vulguis els mateixos talls òptims que fa servir el canvas.</td>
+      <td><code>true</code></td>
+      <td>Talla les línies del visor HTML amb Knuth–Plass, els mateixos talls òptims que fan el canvas i el PDF: l'edició en pantalla no perd qualitat davant de la impresa. Amb <code>true</code> el visor segueix <code>bodyText.optimalLineBreaking</code>, de manera que un document que compon el text línia a línia ho manté en pantalla. Posa'l a <code>false</code> per omplir cada línia abans de passar a la següent, més ràpid en un llibre molt llarg. Una configuració desada amb <code>configVersion</code> 21 o anterior que no l'indica es llegeix com a <code>false</code>, tal com es va maquetar aleshores.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -364,7 +364,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined quan tot coincideix amb els valors per defecte

@@ -34,7 +34,7 @@ describe('pinLegacyTaskBox (#765)', () => {
   });
 
   it('pins every version before 13 whose text may hold a task item, and none from 13', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     for (const v of [undefined, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
       // Unknown content may hold one.
       expect(kept(migrateConfig({}, v)), String(v)).toBe('character');

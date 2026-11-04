@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Polices, couleurs et sortie',
   description: 'Unités, couleurs et palette, polices personnalisées, visionneuse HTML, PDF et production pour l’impression, visionneuse Folio et calques de débogage',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Active la coupure des lignes Knuth–Plass dans la visionneuse HTML. Désactivée par défaut, car la visionneuse relance la mise en page à chaque redimensionnement et à chaque changement de taille de police : l’algorithme glouton (premier ajustement) est assez rapide pour paraître instantané. Activez-la si vous voulez les mêmes coupures optimales que le moteur canvas.</td>
+      <td><code>true</code></td>
+      <td>Coupe les lignes de la visionneuse HTML avec Knuth–Plass, les mêmes coupures optimales que celles du canvas et du PDF : l’édition à l’écran ne cède rien en qualité à l’édition imprimée. Avec <code>true</code>, la visionneuse suit <code>bodyText.optimalLineBreaking</code> : un document qui compose son texte ligne par ligne le garde à l’écran. Mettez-la à <code>false</code> pour remplir chaque ligne avant la suivante, ce qui va plus vite sur un très long livre. Une configuration enregistrée sous <code>configVersion</code> 21 ou antérieure qui ne la précise pas se lit comme <code>false</code>, telle qu’elle était composée alors.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined when everything matches the defaults

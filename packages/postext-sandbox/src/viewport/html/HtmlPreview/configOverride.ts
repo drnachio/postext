@@ -210,7 +210,9 @@ export function buildHtmlConfigOverride(
     },
     bodyText: {
       ...base.bodyText,
-      optimalLineBreaking,
+      // The viewer's setting can only give up Knuth–Plass for speed: a
+      // document that sets its own text line by line keeps that on screen.
+      optimalLineBreaking: optimalLineBreaking && base.bodyText?.optimalLineBreaking !== false,
       hyphenation: {
         ...(base.bodyText?.hyphenation ?? {}),
         locale: hypLocale,

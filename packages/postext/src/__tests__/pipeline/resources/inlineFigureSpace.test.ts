@@ -3,7 +3,7 @@ import { zipSync, strToU8 } from 'fflate';
 import { buildDocument } from '../../../pipeline/build.js';
 import { createMeasurementCache } from '../../../measure/index.js';
 import { resolveLayoutConfig, stripLayoutDefaults } from '../../../defaults/index.js';
-import { buildBundle, createBundle, migrateConfig, openBundle, pinLegacyInlineGap, CONFIG_VERSION, LEGACY_MATH_SIZE } from '../../../bundle/index.js';
+import { buildBundle, createBundle, migrateConfig, openBundle, pinLegacyInlineGap, CONFIG_VERSION, LEGACY_MATH_SIZE, pinLegacyHtmlViewerBreaking } from '../../../bundle/index.js';
 import { migrateBundleConfig, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../../bundle/configVersion.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../../index.js';
 
@@ -144,18 +144,18 @@ describe('layout.inlineResourceGap and configurations stored before postext 1.5 
 
   it('pins a stored configuration whose book embeds a resource, once', () => {
     const config: PostextConfig = { layout: { layoutType: 'single' } };
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     const pinned = migrateConfig(config, undefined, { content: MD });
     expect(pinned.layout).toEqual({ layoutType: 'single', inlineResourceGap: 'above' });
     // Stamped 4 (a 1.5 prerelease): the gap is the only pin it gets.
     expect(migrateConfig(config, 4, { content: MD }).layout).toEqual({ layoutType: 'single', inlineResourceGap: 'above' });
     // Today's rules, no `::resource`, or a gap already named: as it is.
     expect(migrateConfig(config, CONFIG_VERSION, { content: MD })).toBe(config);
-    expect(migrateConfig(config, 4, { content: 'No figures here.' })).toEqual(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(config))));
+    expect(migrateConfig(config, 4, { content: 'No figures here.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(config)))));
     // Only a line the parser reads as an embed counts: a mention in running
     // text or in a code span embeds nothing (the guide's chapter 9).
-    expect(migrateConfig(config, 4, { content: 'Write `::resource{id="fig"}` on a line of its own.' })).toEqual(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(config))));
-    expect(migrateConfig(config, 4, { content: ['No figure.', 'The ::resource directive embeds one.'] })).toEqual(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(config))));
+    expect(migrateConfig(config, 4, { content: 'Write `::resource{id="fig"}` on a line of its own.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(config)))));
+    expect(migrateConfig(config, 4, { content: ['No figure.', 'The ::resource directive embeds one.'] })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(config)))));
     expect(migrateConfig(config, 4, { content: ['No figure.', 'Text.\r\n  ::resource{id="fig"}  \r\nMore.'] }).layout)
       .toEqual({ layoutType: 'single', inlineResourceGap: 'above' });
     const named: PostextConfig = { layout: { inlineResourceGap: 'around' } };

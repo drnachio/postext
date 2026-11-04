@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fonts, colours and output',
   description: 'Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '36 min',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Enable Knuth–Plass line breaking in the HTML viewer. Off by default because the viewer reruns layout on every resize and font-size change — the greedy first-fit algorithm is fast enough to feel instantaneous. Turn it on when you want the same optimal breaks the canvas backend uses.</td>
+      <td><code>true</code></td>
+      <td>Break the lines of the HTML viewer with Knuth–Plass, the same optimal breaks the canvas and the PDF make: the screen edition gives up nothing in quality to the printed one. With <code>true</code> the viewer follows <code>bodyText.optimalLineBreaking</code>, so a document that sets its text line by line keeps that on screen. Set it to <code>false</code> to fill each line before the next, which is faster on a very long book. A configuration stored under <code>configVersion</code> 21 or older that does not set it reads as <code>false</code>, as it was laid out then.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined when everything matches the defaults

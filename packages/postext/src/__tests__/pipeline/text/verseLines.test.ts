@@ -475,7 +475,7 @@ describe('bodyText.verse and the configurations stored before #620', () => {
   const PLAIN = ':::verse\nA line\nAnother\n:::';
   const BAYT = ':::verse\nA || B\n:::';
   it('pins the 1.22 verse layout when the text holds a poem with no separator', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
     for (const version of [undefined, 3, 7, 8]) {
       expect(migrateConfig(stored, version, { content: PLAIN }).bodyText?.verse, `${version}`).toEqual({ layout: 'bayt' });

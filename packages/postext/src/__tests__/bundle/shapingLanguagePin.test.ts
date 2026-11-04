@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { createBundle, openBundle, pinLegacySlashBreaks } from '../../bundle/index.js';
-import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyShapingLanguage } from '../../bundle/configVersion.js';
+import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyShapingLanguage, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { shapingLanguageOf } from '../../hyphenation/locale.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
@@ -42,7 +42,7 @@ describe('pinLegacyShapingLanguage (#764, #770)', () => {
   });
 
   it('pins every version before 14, whatever its content, and none from 14', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     for (const v of [undefined, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) {
       expect(kept(migrateConfig({}, v)), String(v)).toBe('host');
       // A face may answer with other glyphs to any text: the content alone
@@ -60,20 +60,27 @@ describe('pinLegacyShapingLanguage (#764, #770)', () => {
     // and one stored under 13 whatever its text holds, get this pin and no
     // other (their text known to set no mark, #1149).
     const stored: PostextConfig = { locale: 'tr', bodyText: { fontFamily: 'Literata' } };
-    expect(migrateConfig(stored, 12, { content: 'Words.' })).toEqual({ locale: 'tr', bodyText: { fontFamily: 'Literata', shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(stored, 13, { content: 'Words.' })).toEqual({ locale: 'tr', bodyText: { fontFamily: 'Literata', shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(stored, 13, { content: '- [ ] a task\n\n:::page\n:::' })).toEqual({ locale: 'tr', bodyText: { fontFamily: 'Literata', shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig({} as PostextConfig, 13, { content: 'Words.' })).toEqual({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } });
+    expect(migrateConfig(stored, 12, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking({ locale: 'tr', bodyText: { fontFamily: 'Literata', shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(stored, 13, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking({ locale: 'tr', bodyText: { fontFamily: 'Literata', shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(stored, 13, { content: '- [ ] a task\n\n:::page\n:::' })).toEqual(pinLegacyHtmlViewerBreaking({ locale: 'tr', bodyText: { fontFamily: 'Literata', shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig({} as PostextConfig, 13, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } }));
     expect(stored.bodyText).toEqual({ fontFamily: 'Literata' });
     // One that names the setting has nothing of it left to pin (the breaks
     // at a slash of 1.51 aside, #1164).
     for (const value of ['document', 'host'] as const) {
       const named: PostextConfig = { bodyText: { shapingLanguage: value } };
-      for (const v of [12, 13, 14]) expect(migrateConfig(named, v, { content: 'Words.' })).toEqual(pinLegacySlashBreaks(named));
-      expect(migrateConfig(named, 19, { content: 'Words.' })).toBe(named);
+      for (const v of [12, 13, 14]) expect(migrateConfig(named, v, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(named)));
+      expect(migrateConfig(named, 19, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking(named));
     }
-    // One stored under today's rules is read as it is.
-    for (const v of [19, CONFIG_VERSION, 99]) {
+    // One stored under 19 to 21 gets the line breaker of the HTML viewer
+    // alone (#1400); one stored under today's rules is read as it is.
+    for (const v of [19, 21]) {
+      const current: PostextConfig = {};
+      expect(migrateConfig(current, v, { content: 'Words.' }), String(v)).toEqual(pinLegacyHtmlViewerBreaking(current));
+      const own: PostextConfig = { locale: 'ca', bodyText: { fontFamily: 'Literata' } };
+      expect(migrateConfig(own, v, { content: 'Words.' }), String(v)).toEqual(pinLegacyHtmlViewerBreaking(own));
+    }
+    for (const v of [CONFIG_VERSION, 99]) {
       const current: PostextConfig = {};
       expect(migrateConfig(current, v, { content: 'Words.' }), String(v)).toBe(current);
       const own: PostextConfig = { locale: 'ca', bodyText: { fontFamily: 'Literata' } };
@@ -166,7 +173,7 @@ describe('pinLegacyShapingLanguage (#764, #770)', () => {
 
   it('a bundle written by postext 1.29 keeps its lines, and one written today is shaped in its language', async () => {
     const written = await createBundle({ name: 'Llibre', locale: 'ca', markdown: 'El col\u00B7legi.', config: { locale: 'ca', bodyText: { fontFamily: 'Literata' } } });
-    expect(written.manifest.configVersion).toBe(21);
+    expect(written.manifest.configVersion).toBe(22);
     expect(written.manifest.config?.bodyText).toEqual({ fontFamily: 'Literata' });
     /** The language the chapters of an opened bundle are laid out in. */
     const laidOutIn = (bundle: Awaited<ReturnType<typeof openBundle>>): string | undefined => shapingLanguageOf(resolveAllConfig(bundle.config));
@@ -194,7 +201,7 @@ describe('pinLegacyShapingLanguage (#764, #770)', () => {
     // goes with it under today's number.
     const old = await openBundle(restamped(13, { fontFamily: 'Literata' }));
     const again = await createBundle({ name: 'Llibre', locale: 'ca', markdown: 'El col\u00B7legi.', config: stripConfigDefaults(old.config) });
-    expect(again.manifest.configVersion).toBe(21);
+    expect(again.manifest.configVersion).toBe(22);
     expect(again.manifest.config?.bodyText).toEqual({ fontFamily: 'Literata', shapingLanguage: 'host', breakAfterSlashes: false });
     expect(kept((await openBundle(again.bytes)).config)).toBe('host');
   });

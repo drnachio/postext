@@ -1685,7 +1685,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
     'Horizontal spacing between columns when the HTML viewer is in multi-column mode',
   htmlViewerOptimalLineBreaking: 'Optimal line breaking',
   htmlViewerOptimalLineBreakingTooltip:
-    'Use Knuth-Plass optimal line breaking in the HTML viewer. Off by default for performance — the global body-text setting is overridden here only for HTML rendering',
+    'Use Knuth-Plass optimal line breaking in the HTML viewer, the same breaks as the canvas and the PDF. On by default; turn it off to fill each line before the next. A body text set line by line stays so on screen',
   canvasViewerSection: 'Canvas (page spacing)',
   canvasViewerPageGap: 'Gap between the pages of a pair',
   canvasViewerPageGapTooltip: 'Space between the left and right page of a spread in the Canvas, in pixels. With 0 the two pages touch, so a picture across the spread shows no gap. It only changes how the Canvas is drawn, never the pages.',

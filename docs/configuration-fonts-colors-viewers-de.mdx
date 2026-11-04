@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Schriften, Farben und Ausgabe',
   description: 'Einheiten, Farben und die Palette, eigene Schriften, der HTML-Betrachter, PDF und Druckvorstufe, der Folio-Betrachter und die Debug-Überlagerungen',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '36 min',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Schaltet den Zeilenumbruch nach Knuth-Plass im HTML-Betrachter ein. Standardmäßig aus, weil der Betrachter das Layout bei jeder Größen- und Schriftgrößenänderung neu berechnet – der gierige First-Fit-Algorithmus ist schnell genug, um sich unmittelbar anzufühlen. Schalten Sie ihn ein, wenn Sie dieselben optimalen Umbrüche wollen, die das Canvas-Backend verwendet.</td>
+      <td><code>true</code></td>
+      <td>Bricht die Zeilen des HTML-Betrachters nach Knuth-Plass um, mit denselben optimalen Umbrüchen wie Canvas und PDF: Die Bildschirmausgabe gibt gegenüber der gedruckten nichts an Qualität auf. Mit <code>true</code> folgt der Betrachter <code>bodyText.optimalLineBreaking</code>: Ein Dokument, das seinen Text Zeile für Zeile setzt, behält das auf dem Bildschirm. Mit <code>false</code> wird jede Zeile gefüllt, bevor die nächste beginnt, was bei einem sehr langen Buch schneller ist. Eine unter <code>configVersion</code> 21 oder älter gespeicherte Konfiguration, die den Wert nicht setzt, wird als <code>false</code> gelesen, so wie sie damals gesetzt wurde.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined when everything matches the defaults

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Font, colori e output',
   description: 'Unità, colori e tavolozza; i font personalizzati; il visualizzatore HTML, il PDF e la produzione di stampa; il visualizzatore Folio e le sovrimpressioni di debug',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '40 min',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Attiva la divisione in righe Knuth–Plass nel visualizzatore HTML. È disattivata per impostazione predefinita perché il visualizzatore rifà l’impaginazione a ogni ridimensionamento e cambio di corpo: l’algoritmo greedy first-fit è abbastanza veloce da sembrare istantaneo. Attivala quando vuoi gli stessi a capo ottimali che usa il backend canvas.</td>
+      <td><code>true</code></td>
+      <td>Divide le righe del visualizzatore HTML con Knuth–Plass, gli stessi a capo ottimali del canvas e del PDF: l’edizione a schermo non cede nulla in qualità a quella stampata. Con <code>true</code> il visualizzatore segue <code>bodyText.optimalLineBreaking</code>: un documento che compone il testo riga per riga lo mantiene a schermo. Impostalo a <code>false</code> per riempire ogni riga prima della successiva, più veloce su un libro molto lungo. Una configurazione salvata con <code>configVersion</code> 21 o precedente che non lo imposta si legge come <code>false</code>, come era impaginata allora.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined when everything matches the defaults

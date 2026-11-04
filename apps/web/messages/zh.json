@@ -2310,7 +2310,7 @@
     "htmlViewerColumnGap": "栏间距",
     "htmlViewerColumnGapTooltip": "HTML阅读器处于多栏模式时栏与栏之间的水平间距",
     "htmlViewerOptimalLineBreaking": "最优断行",
-    "htmlViewerOptimalLineBreakingTooltip": "在HTML阅读器中使用Knuth-Plass最优断行。出于性能考虑默认关闭；这里只在HTML渲染时覆盖正文的全局设置",
+    "htmlViewerOptimalLineBreakingTooltip": "在HTML阅读器中使用Knuth-Plass最优断行，与Canvas和PDF的断行相同。默认开启；关闭后逐行填满再换下一行。正文设为逐行排版时，屏幕上也保持逐行排版",
     "canvasViewerSection": "Canvas（页面间距）",
     "canvasViewerPageGap": "一对页面之间的间距",
     "canvasViewerPageGapTooltip": "Canvas中跨页左右两页之间的间距，单位为像素。设为0时两页相接，横跨两页的图片不会出现缝隙。只改变Canvas的绘制方式，不会改变页面本身。",

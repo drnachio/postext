@@ -2466,7 +2466,7 @@ text typed into its elements is content like any other design text.
                               view?: { canvasScope?: 'book'|'chapter' },        // the edition's view over `view` (≥ 1.9.2)
                               start?: { … } } } }                               // the edition's own start, in place of `start`
 ```
-`configVersion: 21` says `config` and the `localized` overrides are written for today's rules (`preset_kit.write_manifest` sets it).
+`configVersion: 22` says `config` and the `localized` overrides are written for today's rules (`preset_kit.write_manifest` sets it).
 Rule 15 marks a config that may hold `pageTemplates` / `labelStyles` and pins nothing, so a manifest stamped 14
 (postext 1.30 to 1.33) loads unchanged. Without a number the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
 `layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
@@ -2637,7 +2637,8 @@ as a change. Left out, the file is stamped with the time of the call.
   in `postext check`, its own group in the Sandbox Checks) and no longer counts as a warning.
   Turn the check off (`enabled: false`) only when the user asks.
 
-`htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = false, overrides?: Omit<PostextConfig,'htmlViewer'> }`.
+`htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = true, overrides?: Omit<PostextConfig,'htmlViewer'> }`.
+`optimalLineBreaking`: `true` follows `bodyText.optimalLineBreaking` (Knuth-Plass on screen, as in the canvas and the PDF; a body set line by line stays so); `false` sets the screen edition line by line. A manifest stamped 21 or older that doesn't name it reads `false` (rules 22, #1400).
 `overrides` merge: objects recursive; `levels` arrays merged by `level`; every other array
 (design `elements`, `calloutStyles`, `colorPalette`, …) replaced wholesale. Typical:
 `{ parts: { page: false }, headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: {…screen opener…} } }] } }`.
