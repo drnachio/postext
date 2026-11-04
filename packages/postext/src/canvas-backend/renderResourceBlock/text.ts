@@ -12,7 +12,7 @@ import { paintedSegments } from '../wordPieces.js';
 import { paintLineHighlights, paintWarichu, paintRuby, paintKunten, paintLineMarks } from '../annotations.js';
 import { setLetterSpacing } from '../contextState.js';
 import { fillContextText } from '../contextText.js';
-import { linkFill, paintLinkUnderlines } from '../linkPaint.js';
+import { linkFill, paintLinkUnderlines } from '../blockRender/linkPaint.js';
 
 function pickFont(
   bold: boolean,

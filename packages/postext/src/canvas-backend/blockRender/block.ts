@@ -9,7 +9,7 @@ import { mirroredPaintActive } from '../mirrorFrame.js';
 import { paintRunInDirection } from '../runDirection.js';
 import { markerSetText } from '../../writing/bidi.js';
 import { paintLineHighlights, paintLineMarks } from '../annotations.js';
-import { paintLinkUnderlines } from '../linkPaint.js';
+import { paintLinkUnderlines } from './linkPaint.js';
 import { taskBoxTick } from '../../paint/taskBox.js';
 import { saveContext, restoreContext, setLetterSpacing } from '../contextState.js';
 import { renderLine } from './lines.js';

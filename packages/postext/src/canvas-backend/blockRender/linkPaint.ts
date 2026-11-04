@@ -5,12 +5,12 @@
  * a page is synchronous, so one page's style never reaches another's.
  */
 
-import type { LinkStyleOutput, ResolvedLinksConfig } from '../types.js';
-import type { VDTLine, VDTLineSegment } from '../vdt.js';
-import { linkStyleFor } from '../defaults/structure/links.js';
-import { styledLinkOf } from '../marks/linkUnderline.js';
-import { chipUnderlineDash } from './chip.js';
-import { restoreContext, saveContext } from './contextState.js';
+import type { LinkStyleOutput, ResolvedLinksConfig } from '../../types.js';
+import type { VDTLine, VDTLineSegment } from '../../vdt.js';
+import { linkStyleFor } from '../../defaults/structure/links.js';
+import { styledLinkOf } from '../../marks/linkUnderline.js';
+import { chipUnderlineDash } from '../chip.js';
+import { restoreContext, saveContext } from '../contextState.js';
 
 interface LinkPaint {
   color?: string;

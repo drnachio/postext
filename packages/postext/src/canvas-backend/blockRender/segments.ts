@@ -14,7 +14,7 @@ import { paintSideMarker, paintWarichu, paintRuby, paintKunten } from '../annota
 import { type WordRun, fillSegmentWord, paintsSegmentLanguage } from '../wordRuns.js';
 import { saveContext, restoreContext, setLetterSpacing } from '../contextState.js';
 import { fillContextText } from '../contextText.js';
-import { linkFill } from '../linkPaint.js';
+import { linkFill } from './linkPaint.js';
 
 export function pickSegmentFont(
   bold: boolean,

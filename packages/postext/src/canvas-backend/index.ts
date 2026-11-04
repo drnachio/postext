@@ -11,7 +11,7 @@ import { documentInkHex } from '../svg/singleInk.js';
 import { shapingLanguageOf } from '../hyphenation/locale.js';
 import { setSegmentLanguages } from './wordRuns.js';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock.js';
-import { restoreLinkPaint, setLinkPaint } from './linkPaint.js';
+import { restoreLinkPaint, setLinkPaint } from './blockRender/linkPaint.js';
 import { setVerticalPaint } from './verticalText.js';
 import { beginMirroredFlow } from './mirrorFrame.js';
 import { renderComicBalloons, renderComicPage, renderComicPanels } from './comic.js';
