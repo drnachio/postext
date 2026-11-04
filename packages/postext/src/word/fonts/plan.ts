@@ -6,6 +6,7 @@
 // (`Lora SemiBold`) with regular and italic slots.
 
 import { parseFontString } from '../../measure/fontString.js';
+import { featureFamilyParts } from '../../fonts/figureStyle.js';
 import type { EmbeddedFontFace } from '../ooxml/types.js';
 import { readCmap } from './cmap.js';
 import { mergeSlices } from './merge.js';
@@ -172,10 +173,11 @@ export async function planWordFonts(faces: SourceFace[], options: PlanWordFontsO
     wanted = new Set();
     for (const s of options.fontStrings) {
       const req = parseFontString(s);
-      const face = req && nearest(faces, req.family, req.weight, req.style);
+      const face = req && (nearest(faces, req.family, req.weight, req.style) ?? nearest(faces, featureFamilyParts(req.family).family, req.weight, req.style));
       if (face) wanted.add(face);
     }
   }
+  const usedText = baseUsedText(options.usedText);
 
   const prepared: Prepared[] = [];
   const taken = new Set<string>();
@@ -202,7 +204,7 @@ export async function planWordFonts(faces: SourceFace[], options: PlanWordFontsO
         continue;
       }
       const noSubset = slices.some((s) => fsType(s) & FS_TYPE_NO_SUBSETTING);
-      const used = noSubset ? undefined : (options.usedText?.get(p.key) ?? options.usedText?.get(face.family));
+      const used = noSubset ? undefined : (usedText?.get(p.key) ?? usedText?.get(face.family));
       const merged = mergeSlices(usedSlices(slices, used));
       if (typeof merged === 'string') {
         warnings.push({ family: face.family, reason: 'merge-failed', detail: merged });
@@ -249,17 +251,41 @@ export async function planWordFonts(faces: SourceFace[], options: PlanWordFontsO
 export function wordFontFor(plan: WordFontPlan, fontString: string): WordFontRef {
   const req = parseFontString(fontString);
   if (!req) return { family: fontString, bold: false, italic: false };
-  const exact = plan.map.get(faceKey(req.family, req.weight, req.style));
+  const found = planned(plan, req.family, req.weight, req.style);
+  if (found) return found;
+  // A feature family (`Lora@onum`, #1237) is its base family's face with
+  // the figures it asks for.
+  const parts = featureFamilyParts(req.family);
+  if (parts.features.length === 0) return { family: req.family, bold: req.weight >= 600, italic: req.style === 'italic' };
+  const base = planned(plan, parts.family, req.weight, req.style) ?? { family: parts.family, bold: req.weight >= 600, italic: req.style === 'italic' };
+  return { ...base, features: parts.features };
+}
+
+function planned(plan: WordFontPlan, family: string, weight: number, style: 'normal' | 'italic'): WordFontRef | undefined {
+  const exact = plan.map.get(faceKey(family, weight, style));
   if (exact) return exact;
   const entries = [...plan.map.keys()].map((key) => {
-    const [family, weight, style] = key.split('|');
-    return { key, family: family!, weight: Number(weight), style: style! };
+    const [fam, w, st] = key.split('|');
+    return { key, family: fam!, weight: Number(w), style: st! };
   });
-  const near = nearest(entries, req.family, req.weight, req.style);
-  if (near) {
-    const ref = plan.map.get(near.key)!;
-    // An italic asked of a family without one: Word slants the upright.
-    return near.style !== req.style && req.style === 'italic' ? { ...ref, italic: true } : ref;
+  const near = nearest(entries, family, weight, style);
+  if (!near) return undefined;
+  const ref = plan.map.get(near.key)!;
+  // An italic asked of a family without one: Word slants the upright.
+  return near.style !== style && style === 'italic' ? { ...ref, italic: true } : ref;
+}
+
+/** Used characters keyed by base family too: a feature family's text is
+ *  set in its base family's face. */
+function baseUsedText(used: Map<string, Set<number>> | undefined): Map<string, Set<number>> | undefined {
+  if (!used) return undefined;
+  const out = new Map(used);
+  for (const [key, set] of used) {
+    const [family, ...rest] = key.split('|');
+    const base = featureFamilyParts(family!).family;
+    if (base === family) continue;
+    const k = [base, ...rest].join('|');
+    out.set(k, new Set([...(out.get(k) ?? []), ...set]));
   }
-  return { family: req.family, bold: req.weight >= 600, italic: req.style === 'italic' };
+  return out;
 }

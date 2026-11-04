@@ -282,6 +282,16 @@ describe('planWordFonts', () => {
     expect(wordFontFor(plan, '700 12px "Other Face"')).toEqual({ family: 'Other Face', bold: true, italic: false });
   });
 
+  it('sets a feature family in its base family\'s face (#1406)', async () => {
+    const plan = await planWordFonts([face('Synth', 400, 'normal', [synthFont({ codes: LATIN })])], {
+      fontStrings: ['12px "Synth@onum"'],
+      usedText: new Map([['Synth@onum|400|normal', new Set([0x41])]]),
+    });
+    expect(plan.faces.map((f) => f.family)).toEqual(['Synth PTX']);
+    expect(wordFontFor(plan, 'italic 12px "Synth@lnum+tnum"')).toEqual({ family: 'Synth PTX', bold: false, italic: true, features: ['lnum', 'tnum'] });
+    expect(wordFontFor(plan, '12px "Gone@onum"')).toEqual({ family: 'Gone', bold: false, italic: false, features: ['onum'] });
+  });
+
   it('keeps CSS names with an empty suffix', async () => {
     const plan = await planWordFonts([face('Synth', 400, 'normal', [synthFont({ codes: LATIN })])], { familySuffix: '' });
     expect(plan.faces[0]!.family).toBe('Synth');
