@@ -71,6 +71,18 @@ describe('round trip, formatted text boxes', () => {
     expect(del.chapters[0]!.markdown).toBe(MD.replace('que sigue ', ''));
   });
 
+  it('keeps a paragraph mark between engine lines out of a word replaced beside it', () => {
+    // The writer starts a paragraph between two lines where the alignment
+    // changes: that mark stands for the line break, also when the word
+    // after it (or before it) is retyped.
+    const split = (x: string, before: string, after: string): string => replaceEach(x, `${t('Primer párrafo con ')}</w:r><w:r><w:br/></w:r><w:r>${t('un ejem-')}`, `${t(before)}</w:r></w:p><w:p><w:r>${t(after)}`);
+    const next = run((x) => split(x, 'Primer párrafo con ', 'otro ejem-'));
+    expect(next.chapters[0]!.markdown).toBe(MD.replace('con un', 'con otro'));
+    expect(next.edits).toMatchObject([{ before: 'un', after: 'otro', status: 'applied' }]);
+    const prev = run((x) => split(x, 'Primer párrafo sin ', 'un ejem-'));
+    expect(prev.chapters[0]!.markdown).toBe(MD.replace('con un', 'sin un'));
+  });
+
   it('accepts a tracked insertion inside a text box', () => {
     const r = run((x) => replaceEach(x, `<w:r>${t('plo claro de texto que ')}</w:r>`, `<w:r>${t('plo ')}</w:r><w:ins w:id="7" w:author="Ana"><w:r>${t('muy ')}</w:r></w:ins><w:r>${t('claro de texto que ')}</w:r>`));
     expect(r.chapters[0]!.markdown).toBe(MD.replace('ejemplo claro', 'ejemplo muy claro'));

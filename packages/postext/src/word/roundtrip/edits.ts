@@ -33,8 +33,9 @@ export function blockHunks(v: BlockView, base: string): Hunk[] {
   // A paragraph mark the writer put between two engine lines (the
   // formatted writer starts a new paragraph where the alignment changes)
   // reads back as a paragraph break where the map has a line break: the
-  // same break, not a paragraph the user made.
-  const raw = slideOffAtoms(v, diffText(v.O, v.N).filter((h) => !(h.a1 - h.a0 === h.b1 - h.b0 && h.a1 > h.a0 && sameBreaks(v, base, h))));
+  // same break, not a paragraph the user made. A hunk that also changes a
+  // word beside such a break gives the break back first.
+  const raw = slideOffAtoms(v, diffText(v.O, v.N).map((h) => trimBreaks(v, base, h)).filter((h) => h.a1 > h.a0 || h.b1 > h.b0));
   // Equations in equal text whose TeX Word changed.
   const eq = equalPairs(v, raw);
   const extra: Hunk[] = [];
@@ -143,18 +144,28 @@ export function slideOffAtoms(v: BlockView, hunks: Hunk[]): Hunk[] {
   return out;
 }
 
-/** Whether the hunk only turns engine line breaks (synthetic, or standing
- *  for the space they replace) into paragraph marks or spaces. */
-function sameBreaks(v: BlockView, base: string, h: Hunk): boolean {
-  for (let k = 0; k < h.a1 - h.a0; k++) {
-    const m = v.M[h.a0 + k]!;
-    const n = v.N[h.b0 + k];
-    if (v.O[h.a0 + k] !== '\n') return false;
-    // A synthetic break turned into a paragraph mark; one standing for a
-    // space turned into a paragraph mark or back into a space.
-    if (m < 0 ? n !== PARA_CHAR : !isSpace(base[m]) || (n !== PARA_CHAR && n !== ' ')) return false;
+/** Whether O[i] is an engine line break (synthetic, or standing for the
+ *  space it replaces) that N[j] keeps as a paragraph mark or a space. */
+function sameBreak(v: BlockView, base: string, i: number, j: number): boolean {
+  if (v.O[i] !== '\n') return false;
+  const m = v.M[i]!;
+  const n = v.N[j];
+  return m < 0 ? n === PARA_CHAR : isSpace(base[m]) && (n === PARA_CHAR || n === ' ');
+}
+
+/** The hunk without the engine line breaks it only turns into paragraph
+ *  marks or spaces, at either end (empty when that is all it does). */
+function trimBreaks(v: BlockView, base: string, h: Hunk): Hunk {
+  let { a0, a1, b0, b1 } = h;
+  while (a0 < a1 && b0 < b1 && sameBreak(v, base, a0, b0)) {
+    a0++;
+    b0++;
   }
-  return true;
+  while (a0 < a1 && b0 < b1 && sameBreak(v, base, a1 - 1, b1 - 1)) {
+    a1--;
+    b1--;
+  }
+  return a0 === h.a0 && a1 === h.a1 ? h : { ...h, a0, a1, b0, b1 };
 }
 
 /** Whether offset `i` falls between the two halves of a surrogate pair. */
