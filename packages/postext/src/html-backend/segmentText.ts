@@ -11,6 +11,7 @@ import { rubyGroupOf, RUBY_OPEN } from './htmlAnnotations.js';
 import { shapedText } from './render.js';
 import { type SegmentCjk, type SegmentBox, PLAIN_BOX, inkScaleDecl, CELLS_DECL, cjkTextDecl, DASH_FEATURES_DECL, cjkFeaturesDecl, TRACKED_LIGATURES_DECL, ligaturesDecl, CJK_TEXT_DECL, CJK_FEATURES_DECL } from './styles.js';
 import { esc, wordsHtml } from './textRuns.js';
+import { htmlLinkFill } from './linkPaint.js';
 
 /**
  * The resources this document anchors in its HTML (`id="pt-res-<id>"`):
@@ -117,6 +118,8 @@ export function pickSegmentColor(
   block: VDTBlock,
 ): string {
   if (seg.color) return seg.color;
+  const link = htmlLinkFill(seg);
+  if (link !== undefined) return link;
   if (seg.refResourceId !== undefined && block.refColor) return block.refColor;
   const bold = !!seg.bold;
   const italic = !!seg.italic;

@@ -147,6 +147,9 @@ export interface RenderToEpubOptions {
   onProgress?: (progress: EpubProgress) => void;
   onWarning?: (warning: EpubWarning) => void;
   signal?: AbortSignal;
+  /** The output the book's links take `links.style` for (#1402): `'epub'`
+   *  (the default), or `'scorm'` when a SCORM package is written from it. */
+  linkOutput?: 'epub' | 'scorm';
   /** Fixed layout with comic pages (`:::page`): add Kindle Panel View, a
    *  tap target over each panel that magnifies it (KF8 region
    *  magnification, `app-amzn-magnify`), and the Kindle comic metadata.

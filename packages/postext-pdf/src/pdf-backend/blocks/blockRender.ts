@@ -8,6 +8,7 @@ import { LinkRegistry } from '../structure/links.js';
 import { type StructElem, tagArtifact } from '../structure/tagging.js';
 import type { StructureFlow } from '../structure/structureFlow.js';
 import { paintLineHighlights, paintLineMarks } from '../text/annotations.js';
+import { paintLinkUnderlines } from '../text/linkStyle.js';
 import { renderLine } from './blockRender/lineText.js';
 import { renderBullet, dropCapLead, renderDropCap, renderStrikethrough } from './blockRender/markers.js';
 import { sheetRect, footnoteDestination } from './blockRender/segments.js';
@@ -59,6 +60,7 @@ export function renderStripCaption(
     if (line.highlights) paintLineHighlights(ctx, line);
     renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem);
     if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
+    if (line.linkUnderlines) paintLinkUnderlines(ctx, line, colorFromHex(block.color, ctx.colorSpace));
   }
 }
 
@@ -174,6 +176,8 @@ function renderBlockUpright(
     renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem, i === 0 ? capLead : undefined);
     // Emphasis dots, proper-name and book-title lines (#193).
     if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
+    // The lines under the links (#1402).
+    if (line.linkUnderlines) paintLinkUnderlines(ctx, line, colorFromHex(block.color, ctx.colorSpace));
     // A link note's QR code (#1302).
     if (line.qr) paintLineQr(ctx, line as typeof line & { qr: NonNullable<typeof line.qr> }, block.color, linkRegistry, elem);
   });

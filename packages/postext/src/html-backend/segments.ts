@@ -11,6 +11,7 @@ import { type HtmlPaint, ownShaping } from './render.js';
 import { lineEndHtml, linkRuns, wordSegmentsOf, pickSegmentColor, renderWordTextSegment, segmentHref, copyTextHtml, renderMathSegmentSvg, scoreSegmentSvg, renderRefRuns, refLinks, refKey, renderTextSegment, rubyRuns } from './segmentText.js';
 import { type TextDirection, dirAttr, pickSegmentFont, quoteFontString, ligaturesDecl, segmentBox, lineCjkDecl, segmentCjk, PLAIN_BOX } from './styles.js';
 import { wordsHtml } from './textRuns.js';
+import { lineLinkUnderlinesHtml } from './linkPaint.js';
 
 /**
  * The segments of a horizontal line. A line of the CJK composer goes to
@@ -168,6 +169,8 @@ export function renderSegments(
   parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
+  // The lines under the links (#1402).
+  if (line.linkUnderlines) parts.push(lineLinkUnderlinesHtml(line, block.color));
   return parts.join('');
 }
 
@@ -340,5 +343,7 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
+  // The lines under the links (#1402).
+  if (line.linkUnderlines) parts.push(lineLinkUnderlinesHtml(line, block.color));
   return parts.join('');
 }

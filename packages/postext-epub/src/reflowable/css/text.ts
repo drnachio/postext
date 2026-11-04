@@ -2,7 +2,7 @@
 // lists (#1276: split out of css.ts).
 import { rule, ALIGN, japaneseDecls, TRACKED_LIGATURES } from './helpers.js';
 import { round, idOf } from '../inline.js';
-import { dimensionToPx, type ResolvedConfig, type Dimension, type ColorValue, type ResolvedBodyTextConfig } from 'postext';
+import { dimensionToPx, linkStyleFor, type ResolvedConfig, type Dimension, type ColorValue, type ResolvedBodyTextConfig } from 'postext';
 import type { StylesheetOptions, CssRule } from './types.js';
 
 /** What createTextRules takes from bookStylesheet. */
@@ -67,7 +67,17 @@ export function createTextRules(deps: TextRulesDeps) {
   }
   out.push(rule('strong, b', [`font-weight: ${body.boldFontWeight}`, color(body.boldColor)]));
   out.push(rule('em, i', [color(body.italicColor)]));
-  out.push(rule('a', ['color: inherit', 'text-decoration: underline']));
+  // A book that styles its links here (#1402) sets their colour and line;
+  // one that does not underlines them in the text's colour.
+  const link = linkStyleFor(config.links, options.linkOutput ?? 'epub');
+  out.push(rule('a', link
+    ? [
+      link.color ? color(link.color) : 'color: inherit',
+      link.underline === 'none' ? 'text-decoration: none' : `text-decoration: underline ${link.underline}${link.underlineColor ? ` ${link.underlineColor.hex}` : ''}`,
+      link.underline !== 'none' && 'text-decoration-thickness: 0.06em',
+      link.underline !== 'none' && 'text-underline-offset: 0.13em',
+    ]
+    : ['color: inherit', 'text-decoration: underline']));
   out.push(rule('a.pt-ref', [
     color(body.referenceColor),
     'text-decoration: none',

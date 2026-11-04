@@ -11,6 +11,7 @@ import { documentInkHex } from '../svg/singleInk.js';
 import { shapingLanguageOf } from '../hyphenation/locale.js';
 import { setSegmentLanguages } from './wordRuns.js';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock.js';
+import { restoreLinkPaint, setLinkPaint } from './linkPaint.js';
 import { setVerticalPaint } from './verticalText.js';
 import { beginMirroredFlow } from './mirrorFrame.js';
 import { renderComicBalloons, renderComicPage, renderComicPanels } from './comic.js';
@@ -65,6 +66,9 @@ export interface RenderPageOptions {
    *  large black areas in rich black; then the trim, bleed and safe-zone
    *  guides and the preflight marks it carries are drawn over it. */
   printPreview?: PrintPreview;
+  /** The output the page is painted for, which decides whether its links
+   *  take `links.style` (#1402): `'canvas'` (the default) or `'folio'`. */
+  output?: 'canvas' | 'folio';
 }
 
 /** How far the painted area sits inside the sheet: the trim offset when
@@ -80,6 +84,7 @@ export function renderPageToCanvas(
   options?: RenderPageOptions,
 ): void {
   const previousTint = setTintUnflagged(options?.singleInk === true);
+  const previousLinks = setLinkPaint(doc.config?.links, options?.output ?? 'canvas');
   try {
     const onWarning = options?.onWarning;
     if (!onWarning) {
@@ -99,6 +104,7 @@ export function renderPageToCanvas(
     }
   } finally {
     setTintUnflagged(previousTint);
+    restoreLinkPaint(previousLinks);
   }
 }
 

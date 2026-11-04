@@ -808,7 +808,7 @@ Les ouvrages se citent comme les écrit Pandoc, \`[@garcia2020, p. 33]\` ou \`@g
 
 ## Les liens sur papier
 
-:index{term="liens"}Un lien vers le web s’écrit comme dans tout Markdown, \`[mots](https://…)\`, et reste un lien partout où le lecteur peut le suivre : ces aperçus, le HTML, le PDF et l’EPUB. Sur papier, seuls ses mots se verraient. \`links.print\` décide de ce que la page imprimée ajoute : rien, l’adresse entre parenthèses après les mots (\`'inline'\`), ou une note (\`'notes'\`) avec l’adresse, un code QR qu’un téléphone ouvre, ou les deux. Les notes de lien prennent la numérotation et le style des notes de bas de page. Ce livre imprime l’adresse abrégée et le code, comme le montre la note de ce lien vers le [dépôt de Postext](https://github.com/drnachio/postext).
+:index{term="liens"}Un lien vers le web s’écrit comme dans tout Markdown, \`[mots](https://…)\`, et reste un lien partout où le lecteur peut le suivre : ces aperçus, le HTML, le PDF et l’EPUB. Sur papier, seuls ses mots se verraient. \`links.print\` décide de ce que la page imprimée ajoute : rien, l’adresse entre parenthèses après les mots (\`'inline'\`), ou une note (\`'notes'\`) avec l’adresse, un code QR qu’un téléphone ouvre, ou les deux. Les notes de lien prennent la numérotation et le style des notes de bas de page. Ce livre imprime l’adresse abrégée et le code, comme le montre la note de ce lien vers le [dépôt de Postext](https://github.com/drnachio/postext). À l’écran, le même lien prend \`links.style\`, une couleur et un trait dessous dans les sorties choisies : ici la couleur des bandeaux de chapitre, souligné, dans la vue HTML, l’EPUB et SCORM.
 
 ## Les mathématiques dans la source
 

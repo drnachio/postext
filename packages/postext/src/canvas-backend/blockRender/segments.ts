@@ -14,6 +14,7 @@ import { paintSideMarker, paintWarichu, paintRuby, paintKunten } from '../annota
 import { type WordRun, fillSegmentWord, paintsSegmentLanguage } from '../wordRuns.js';
 import { saveContext, restoreContext, setLetterSpacing } from '../contextState.js';
 import { fillContextText } from '../contextText.js';
+import { linkFill } from '../linkPaint.js';
 
 export function pickSegmentFont(
   bold: boolean,
@@ -215,6 +216,7 @@ export function renderSegments(
       currentFont = font;
     }
     const fill = seg.color
+      ?? linkFill(seg)
       ?? (seg.refResourceId !== undefined && style.refColor
         ? style.refColor
         : pickSegmentColor(!!seg.bold, !!seg.italic, style.color, style.boldColor, style.italicColor));
@@ -237,7 +239,9 @@ export function segmentIsStyled(s: VDTLineSegment): boolean {
     // A word with no letter painted in the script of its context (#725).
     || s.leader !== undefined || s.scriptContext !== undefined
     // A word of a run in its own language, painted in it (#764).
-    || paintsSegmentLanguage(s);
+    || paintsSegmentLanguage(s)
+    // A link in its own colour (#1402).
+    || linkFill(s) !== undefined;
 }
 
 /** A rule leader (#622): a line across `width` px under the baseline, its
@@ -338,6 +342,7 @@ export function renderComposedSegments(
       currentFont = font;
     }
     const fill = seg.color
+      ?? linkFill(seg)
       ?? (seg.refResourceId !== undefined && style.refColor
         ? style.refColor
         : pickSegmentColor(!!seg.bold, !!seg.italic, style.color, style.boldColor, style.italicColor));
@@ -370,5 +375,7 @@ export function composedSegmentIsStyled(s: VDTLineSegment): boolean {
     || s.inkOffset !== undefined || s.hangs !== undefined || s.autospace !== undefined || s.tcy !== undefined || s.orientation !== undefined
     || s.ruby !== undefined || s.kunten !== undefined || s.warichu !== undefined || s.labelTab !== undefined || s.sideMarker !== undefined
     // A run in its own language, painted in it (#764).
-    || paintsSegmentLanguage(s);
+    || paintsSegmentLanguage(s)
+    // A link in its own colour (#1402).
+    || linkFill(s) !== undefined;
 }

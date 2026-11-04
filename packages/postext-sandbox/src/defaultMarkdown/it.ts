@@ -811,7 +811,7 @@ Le opere si citano come fa Pandoc: tra parentesi quadre, \`[@garcia2020, p. 33]\
 
 ## I link sulla carta
 
-:index{term="link"}Un link al web si scrive come in qualsiasi Markdown, \`[parole](https://…)\`, e resta un link ovunque il lettore possa seguirlo: queste anteprime, l’HTML, il PDF e l’EPUB. Sulla carta si vedrebbero solo le sue parole. \`links.print\` decide che cosa aggiunge la pagina stampata: niente, l’indirizzo tra parentesi dopo le parole (\`'inline'\`), oppure una nota (\`'notes'\`) con l’indirizzo, un codice QR che il telefono apre, o entrambi. Le note dei link prendono la numerazione e lo stile delle note a piè di pagina. Questo libro stampa l’indirizzo abbreviato e il codice, come mostra la nota di questo link al [repository di Postext](https://github.com/drnachio/postext).
+:index{term="link"}Un link al web si scrive come in qualsiasi Markdown, \`[parole](https://…)\`, e resta un link ovunque il lettore possa seguirlo: queste anteprime, l’HTML, il PDF e l’EPUB. Sulla carta si vedrebbero solo le sue parole. \`links.print\` decide che cosa aggiunge la pagina stampata: niente, l’indirizzo tra parentesi dopo le parole (\`'inline'\`), oppure una nota (\`'notes'\`) con l’indirizzo, un codice QR che il telefono apre, o entrambi. Le note dei link prendono la numerazione e lo stile delle note a piè di pagina. Questo libro stampa l’indirizzo abbreviato e il codice, come mostra la nota di questo link al [repository di Postext](https://github.com/drnachio/postext). Sullo schermo lo stesso link prende \`links.style\`, un colore e una linea sotto nelle uscite che scegli: qui il colore delle fasce dei capitoli, sottolineato, nella vista HTML, nell’EPUB e in SCORM.
 
 ## La matematica nel sorgente
 

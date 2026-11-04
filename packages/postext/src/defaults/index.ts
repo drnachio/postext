@@ -88,7 +88,7 @@ export { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbers
 export { DEFAULT_CODE_STYLE, DEFAULT_CODE_TOKENS, CODE_TOKEN_KINDS, CODE_OVERFLOWS, resolveCodeStyleConfig, resolvedCodeStyle, stripCodeStyleDefaults } from './text/codeStyle.js';
 export { resolveCrossRefsConfig, stripCrossRefsDefaults } from './structure/crossRefs.js';
 export { DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults } from './structure/citations.js';
-export { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from './structure/links.js';
+export { DEFAULT_LINKS_CONFIG, DEFAULT_LINK_STYLE_OUTPUTS, LINK_STYLE_OUTPUTS, resolveLinksConfig, resolveLinkStyleConfig, linkStyleFor, stripLinksDefaults } from './structure/links.js';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './structure/indexConfig.js';
 export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, comicReadingDirection, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './comics.js';
 export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak, defaultCjkPunctuationWidth, defaultCjkCompression, defaultCjkEmphasis, defaultCjkBookTitleMark, defaultCjkBookTitleBrackets, defaultCjkEmphasisMark, defaultCjkWarichuBrackets, defaultCjkHangingPunctuation, defaultCjkSpaceAfterQuestion, defaultCjkLatinSpacingEdge, cjkRegionOfConfig, defaultCjkParagraphStartBracket, defaultCjkRubyOverhang, defaultCjkRubyAlign } from './text/cjk.js';

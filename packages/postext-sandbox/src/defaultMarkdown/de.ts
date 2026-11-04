@@ -815,7 +815,7 @@ Werke werden so zitiert, wie Pandoc es schreibt, \`[@garcia2020, p. 33]\` oder \
 
 ## Links auf Papier
 
-:index{term="Links"}Ein Link ins Web wird wie in jedem Markdown geschrieben, \`[Wörter](https://…)\`, und bleibt ein Link überall dort, wo der Leser ihm folgen kann: in diesen Vorschauen, im HTML, im PDF und im EPUB. Auf Papier wären nur seine Wörter zu sehen. \`links.print\` legt fest, was die gedruckte Seite hinzufügt: nichts, die Adresse in Klammern nach den Wörtern (\`'inline'\`) oder eine Anmerkung (\`'notes'\`) mit der Adresse, einem QR-Code, den ein Telefon öffnet, oder beidem. Link-Anmerkungen übernehmen Nummerierung und Stil der Fußnoten. Dieses Buch druckt die kurze Adresse und den Code, wie die Anmerkung zu diesem Link zum [Postext-Repository](https://github.com/drnachio/postext) zeigt.
+:index{term="Links"}Ein Link ins Web wird wie in jedem Markdown geschrieben, \`[Wörter](https://…)\`, und bleibt ein Link überall dort, wo der Leser ihm folgen kann: in diesen Vorschauen, im HTML, im PDF und im EPUB. Auf Papier wären nur seine Wörter zu sehen. \`links.print\` legt fest, was die gedruckte Seite hinzufügt: nichts, die Adresse in Klammern nach den Wörtern (\`'inline'\`) oder eine Anmerkung (\`'notes'\`) mit der Adresse, einem QR-Code, den ein Telefon öffnet, oder beidem. Link-Anmerkungen übernehmen Nummerierung und Stil der Fußnoten. Dieses Buch druckt die kurze Adresse und den Code, wie die Anmerkung zu diesem Link zum [Postext-Repository](https://github.com/drnachio/postext) zeigt. Auf dem Bildschirm erhält derselbe Link \`links.style\`, eine Farbe und eine Linie darunter in den gewählten Ausgaben: hier die Farbe der Kapitelbänder, unterstrichen, in der HTML-Ansicht, im EPUB und in SCORM.
 
 ## Mathematik im Quelltext
 

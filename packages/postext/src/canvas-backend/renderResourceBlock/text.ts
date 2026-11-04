@@ -12,6 +12,7 @@ import { paintedSegments } from '../wordPieces.js';
 import { paintLineHighlights, paintWarichu, paintRuby, paintKunten, paintLineMarks } from '../annotations.js';
 import { setLetterSpacing } from '../contextState.js';
 import { fillContextText } from '../contextText.js';
+import { linkFill, paintLinkUnderlines } from '../linkPaint.js';
 
 function pickFont(
   bold: boolean,
@@ -124,11 +125,11 @@ function paintLineRuns(
         continue;
       }
       ctx.font = seg.fontString ?? pickFont(!!seg.bold, !!seg.italic, font, boldFont, italicFont, boldItalicFont);
-      const fill = seg.refResourceId !== undefined
+      const fill = linkFill(seg) ?? (seg.refResourceId !== undefined
         ? linkColor
         : seg.captionLabel
           ? labelColor
-          : color;
+          : color);
       ctx.fillStyle = fill;
       if (!composed) {
         // A word of a joining script untracked, a word in several styles
@@ -150,6 +151,7 @@ function paintLineRuns(
     // Emphasis marks, side lines, the proper-name and book-title lines
     // the layout set on the line (#193, #421, #429).
     if (line.marks) paintLineMarks(ctx, line, color);
+    if (line.linkUnderlines) paintLinkUnderlines(ctx, line, color);
     return;
   }
   ctx.font = font;

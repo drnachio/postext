@@ -171,9 +171,9 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     footnotes: resolveFootnotesConfig(config?.footnotes, documentLocale, layout.writingMode),
     crossRefs: resolveCrossRefsConfig(config?.crossRefs, documentLocale),
     citations: resolveCitationsConfig(config?.citations),
-    // Only a config that prints its links carries them: every other one
-    // resolves (and hashes) as it did before #1302.
-    ...(config?.links?.print === 'inline' || config?.links?.print === 'notes' ? { links: resolveLinksConfig(config.links) } : {}),
+    // Only a config that prints its links or styles them carries them: every
+    // other one resolves (and hashes) as it did before #1302.
+    ...(config?.links?.print === 'inline' || config?.links?.print === 'notes' || config?.links?.style ? { links: resolveLinksConfig(config.links) } : {}),
     cjk: resolveCjkConfig(config?.cjk, documentLocale),
     ...(config?.locale ? { locale: config.locale } : {}),
     // Only a right-to-left document carries it: a left-to-right one

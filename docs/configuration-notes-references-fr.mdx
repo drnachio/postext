@@ -650,6 +650,7 @@ interface LinksConfig {
     side?: 'start' | 'end';            // De quel côté des lignes de la note se place le code.
     gap?: Dimension;                   // Espace entre le code et les lignes ; em est le corps de la note.
   };
+  style?: LinkStyleConfig;             // L’aspect du texte d’un lien (plus bas).
 }
 ```
 
@@ -749,10 +750,79 @@ links: {
 - **Une configuration par édition.** En général, l’éditeur garde `print: 'none'` pour l’édition numérique et met `print: 'notes'` avec `show: 'both'` dans la configuration de l’édition imprimée ; le Markdown reste le même.
 - **PDF.** Le code est tracé en vectoriel et renvoie à l’adresse. Dans un PDF balisé, c’est un `Figure` à l’intérieur d’un `Link`, avec l’adresse comme texte de remplacement.
 
+### Style des liens
+
+`links.style` règle l’aspect du texte d’un lien : une couleur et un trait dessous. Le style est peint, pas mesuré : la page se compose de la même façon avec ou sans lui, et chaque sortie peut le montrer ou non. On colore et souligne d’habitude les liens dans les sorties où le lecteur clique (HTML, EPUB, SCORM) et on laisse le papier à `print: 'notes'`. Depuis postext 1.68.
+
+```ts
+interface LinkStyleConfig {
+  color?: ColorValue;                                  // Sans valeur, la couleur du texte.
+  underline?: 'none' | 'solid' | 'dotted' | 'dashed';
+  underlineColor?: ColorValue;                         // Sans valeur, la couleur du lien.
+  outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[];
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Propriété</th>
+      <th>Type</th>
+      <th>Par défaut</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>couleur du texte</td>
+      <td>Couleur du texte du lien. Sans valeur, le lien garde la couleur du texte qui l’entoure (celle du gras ou de l’italique à l’intérieur de ceux-ci). Une couleur liée à la palette la suit.</td>
+    </tr>
+    <tr>
+      <td><code>style.underline</code></td>
+      <td><code>'none' | 'solid' | 'dotted' | 'dashed'</code></td>
+      <td><code>'none'</code></td>
+      <td>Le trait sous le texte du lien : aucun, plein, pointillé ou en tirets.</td>
+    </tr>
+    <tr>
+      <td><code>style.underlineColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>couleur du lien</td>
+      <td>Couleur du soulignement ; celle du lien sans valeur, et sinon celle du texte.</td>
+    </tr>
+    <tr>
+      <td><code>style.outputs</code></td>
+      <td><code>('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]</code></td>
+      <td><code>['html', 'epub', 'scorm']</code></td>
+      <td>Où le style est peint : le canevas du Sandbox, Folio, le PDF, la visionneuse HTML et <code>renderToHtml</code>, un EPUB et un paquet SCORM. Les autres sorties composent les liens comme le texte qui les entoure ; une liste vide ne le peint nulle part.</td>
+    </tr>
+  </tbody>
+</table>
+
+Une édition imprimée à notes QR dont les sorties numériques colorent et soulignent les liens :
+
+```ts
+links: {
+  print: 'notes',
+  show: 'qr',
+  style: {
+    color: { hex: '#1a5fb4', model: 'hex' },
+    underline: 'solid',
+  },
+}
+```
+
+- **Quels liens.** Tous les liens Markdown : adresses web, `mailto:`, `tel:` et liens vers un endroit du livre. Une citation liée à son entrée de bibliographie, une `:ref` et un numéro de page de l’index gardent leurs propres couleurs.
+- **Le soulignement.** Il passe 0,13 em sous la ligne de base, épais de 0,06 em, sous les mots du lien et les espaces entre eux ; un lien coupé sur deux lignes est souligné sur chacune. Le texte vertical prend la couleur sans le soulignement.
+- **Graisse et inclinaison.** Elles ne font pas partie du style : elles changent la largeur des mots, et des sorties qui partagent une même composition ne pourraient plus différer.
+- **Hôtes.** Un hôte qui peint lui-même les pages indique la sortie qu’il peint : `renderPageToCanvas(page, doc, canvas, { output: 'folio' })`, `renderToHtml(doc, { output: 'epub' })`. Les générateurs PDF, EPUB et SCORM le font eux-mêmes. `linkStyleFor(doc.config.links, output)` renvoie le style que prend une sortie, ou `undefined`.
+- **EPUB recomposable.** Sans style, ses liens restent soulignés dans la couleur du texte, comme avant. Un style qui liste `epub` fixe leur couleur et leur trait dans la feuille de style.
+
 Le résolveur et la fonction de nettoyage fonctionnent comme dans les autres sections :
 
 ```ts
-import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, resolveLinkStyleConfig, linkStyleFor, stripLinksDefaults } from 'postext';
 ```
 
 ## Table des matières

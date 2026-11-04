@@ -13,6 +13,7 @@ import { orderedOffsets } from './segments.js';
 import { wordSegmentsOf, renderTextSegment, renderWordTextSegment, linkRuns, segmentHref, copyTextHtml, mathSegmentSvg, renderRefRuns, refLinks, refKey, lineEndHtml, lineEndText, resourceAnchorId, renderScoreBodyHtml } from './segmentText.js';
 import { type TextDirection, quoteFontString, lineCjkDecl, ligaturesDecl, segmentBox, segmentCjk, cjkTextDecl } from './styles.js';
 import { wordsHtml, esc } from './textRuns.js';
+import { htmlLinkFill, lineLinkUnderlinesHtml } from './linkPaint.js';
 import { type VerticalHtml, renderVerticalLine } from './vertical.js';
 
 // ---------------------------------------------------------------------------
@@ -70,7 +71,7 @@ function renderResourceLine(
     // A caption or cell line with right-to-left runs, or on a mirrored
     // page, advances through its segments in `order` (#379).
     const at = set.order && set.order.length === segs.length ? orderedOffsets(segs, set.order, 0, undefined) : undefined;
-    const segColorOf = (seg: VDTLineSegment): string => (seg.refResourceId !== undefined
+    const segColorOf = (seg: VDTLineSegment): string => htmlLinkFill(seg) ?? (seg.refResourceId !== undefined
       ? linkColor
       : seg.captionLabel
         ? labelColor
@@ -145,6 +146,7 @@ function renderResourceLine(
     // Emphasis marks, side lines, the proper-name and book-title lines
     // (#193, #421, #429).
     if (line.marks) parts.push(lineMarksHtml(line, color));
+    if (line.linkUnderlines) parts.push(lineLinkUnderlinesHtml(line, color));
   } else {
     parts.push(`<span style="position:absolute;left:0;top:0;white-space:pre;">${wordsHtml(line.text)}</span>`);
     parts.push(lineEndHtml(end, line.bbox.width));

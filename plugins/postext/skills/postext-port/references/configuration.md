@@ -114,7 +114,7 @@ Conversion at `page.dpi` (default 300):
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `crossRefs` | CrossRefsConfig | §19a2 | words of heading/anchor references, default style, label breaking (≥ 1.12) |
 | `citations` | CitationsConfig | §19a3 | CSL style, locale, markers, note mode, numbering, bibliography (≥ 1.12; needs postext-citeproc) |
-| `links` | LinksConfig | §19a4 | what paper shows of an external link's address: nothing, `(address)` inline, or a footnote with the address and/or a QR code (≥ 1.65) |
+| `links` | LinksConfig | §19a4 | what paper shows of an external link's address: nothing, `(address)` inline, or a footnote with the address and/or a QR code (≥ 1.65); `style`: link colour and underline per output (≥ 1.68) |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9); Japanese summary §19c2 (≥ 1.16) |
 | `lineNumbers` | LineNumbersConfig | §19f | line numbers in the margin, the gutter or the side column (postext ≥ 1.23): verse or every body line, interval, restarts, position, face; off by default |
@@ -1844,6 +1844,12 @@ links: {
     side?: 'start' | 'end';            // 'end': code at the line end, level with the note's first line
     gap?: Dimension;                   // 1em of the note size
   };
+  style?: {                            // ≥ 1.68: how a link's text looks, painted only (no line changes)
+    color?: ColorValue;                // unset: the colour of the text around it
+    underline?: 'none' | 'solid' | 'dotted' | 'dashed'; // 'none'
+    underlineColor?: ColorValue;       // unset: the link colour, else the text's
+    outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]; // ['html', 'epub', 'scorm']
+  };
 }
 ```
 
@@ -1863,6 +1869,21 @@ links: {
 
 ```json
 "links": { "print": "notes", "show": "both", "urlDisplay": "short", "repeat": "first" }
+```
+
+- **`links.style`** (≥ 1.68): a colour and an underline for every Markdown link (`mailto:` and `#anchor` too; a
+  citation linked to its bibliography entry, a `:ref` and an index page number keep their own colours), painted in
+  the outputs `outputs` lists. Paint only: pages lay out the same, so outputs that share a layout can differ. The
+  underline runs 0.13 em under the baseline, 0.06 em thick, across the link's words and spaces; vertical text gets
+  the colour only. No weight or slant (they would change the lines). Reflowable EPUB without a style keeps
+  underlining links in the text colour.
+- **Porting:** a source whose screen edition (web, EPUB, interactive PDF) shows coloured or underlined links →
+  `style` with the source's colour and line, `outputs` the digital outputs only when the print edition sets links as
+  plain text (with `print: 'notes'` or `'inline'`). Link the colour to the palette when the source uses a brand
+  colour. Never mark links up in the Markdown (`**[x](y)**`) to colour them.
+
+```json
+"links": { "print": "notes", "show": "qr", "style": { "color": { "hex": "#1a5fb4", "model": "hex" }, "underline": "solid" } }
 ```
 
 ## 19b. `index` — IndexConfig (postext ≥ 1.7)

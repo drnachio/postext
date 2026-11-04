@@ -236,7 +236,9 @@ export function createChineseGuideConfig(): PostextConfig {
     // A web link prints its short address and a QR code in a note at the
     // foot of the column (a vertical edition prints the address alone); the
     // HTML view reads on screen, where the link is followed, and adds none.
-    links: { print: 'notes', show: 'url', urlDisplay: 'short' },
+    // On screen (HTML, EPUB, SCORM) a link is set in the band colour and
+    // underlined; on paper it keeps its note (#1402).
+    links: { print: 'notes', show: 'url', urlDisplay: 'short', style: { color: col('band'), underline: 'solid' } },
     // On screen the book reads as one scroll: no section dividers (the parts
     // still colour their chapters), and a link prints nothing more.
     htmlViewer: { overrides: { parts: { page: false }, links: { print: 'none' } } },

@@ -77,6 +77,16 @@ export interface PageCtx {
    *  mirrored page, for a painter that does not pass its own to
    *  {@link pushTextObject}. */
   runAdvancePx?: number;
+  /** The style links take in the PDF (`links.style`, #1402); absent when
+   *  they are painted as plain text. */
+  links?: PdfLinkPaint;
+}
+
+/** {@link PageCtx.links}: hex colours. */
+export interface PdfLinkPaint {
+  color?: string;
+  underline: 'none' | 'solid' | 'dotted' | 'dashed';
+  underlineColor?: string;
 }
 
 /** What the vertical painter needs (see `verticalText.ts`): the Chinese

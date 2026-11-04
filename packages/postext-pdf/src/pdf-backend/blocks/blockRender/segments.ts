@@ -12,6 +12,7 @@ import { pickSegmentFont, pickSegmentColor } from '../../text/fontHelpers.js';
 import { LinkRegistry, RefRun, UriRuns, refTarget } from '../../structure/links.js';
 import { type StructElem, tagContent, tagArtifact } from '../../structure/tagging.js';
 import { paintRuby, paintKunten, paintWarichu, paintSideMarker } from '../../text/annotations.js';
+import { linkFillHex } from '../../text/linkStyle.js';
 import { inkScaleOperators } from '../../text/inkScale.js';
 import { paintSwatchSegmentPdf } from '../inlineIcon.js';
 import { drawStyledWordPx, drawShapedTextPx } from '../../text/shapedText.js';
@@ -327,6 +328,7 @@ export function renderSegments(
     const font = fontCache.get(fontStr) ?? blockFont;
     const size = parseFontString(fontStr)?.sizePx ?? blockSize;
     const colorHex = seg.color
+      ?? linkFillHex(ctx, seg)
       ?? (seg.refResourceId !== undefined && block.refColor
         ? block.refColor
         : pickSegmentColor(!!seg.bold, !!seg.italic, block));

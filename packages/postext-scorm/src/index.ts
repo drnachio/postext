@@ -99,6 +99,7 @@ export async function renderToScorm(docs: readonly VDTDocument[], options: Rende
   const epubOptions: RenderToEpubOptions = {
     layout,
     metadata,
+    linkOutput: 'scorm',
     ...(options.fonts ? { fonts: options.fonts } : {}),
     ...(options.svgFonts ? { svgFonts: options.svgFonts } : {}),
     ...(options.resourceBytes ? { resourceBytes: options.resourceBytes } : {}),

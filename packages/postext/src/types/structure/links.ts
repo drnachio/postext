@@ -57,6 +57,40 @@ export interface LinksConfig {
    *  other. With `show: 'qr'` or `'both'` it takes a note for the code. */
   visibleUrls?: 'skip' | 'note';
   qr?: LinkQrConfig;
+  /** How the text of a link looks, in the outputs it lists (#1402). */
+  style?: LinkStyleConfig;
+}
+
+/** An output a link style can be painted in: the Canvas preview, the Folio
+ *  book, the PDF, the HTML viewer (`renderToHtml`), an EPUB and a SCORM
+ *  package. */
+export type LinkStyleOutput = 'canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm';
+
+/** The line under a link's text. */
+export type LinkUnderline = 'none' | 'solid' | 'dotted' | 'dashed';
+
+/** The look of a link's text (`[text](url)`, #1402): a colour and a line
+ *  under it, painted in the outputs {@link outputs} lists. Paint only: the
+ *  lines are the same with or without it, so outputs that share a layout
+ *  can differ (coloured and underlined on screen, as set in print). A
+ *  citation linked to its entry is not styled. */
+export interface LinkStyleConfig {
+  /** Colour of the link's text. Unset: the colour of the text around it. */
+  color?: ColorValue;
+  /** Default `'none'`. */
+  underline?: LinkUnderline;
+  /** Colour of the underline. Unset: the link's colour. */
+  underlineColor?: ColorValue;
+  /** Where the style is painted. Default `['html', 'epub', 'scorm']`: the
+   *  outputs a reader clicks in. */
+  outputs?: LinkStyleOutput[];
+}
+
+export interface ResolvedLinkStyleConfig {
+  color?: ColorValue;
+  underline: LinkUnderline;
+  underlineColor?: ColorValue;
+  outputs: LinkStyleOutput[];
 }
 
 export interface ResolvedLinkQrConfig {
@@ -75,4 +109,6 @@ export interface ResolvedLinksConfig {
   repeat: 'every' | 'first';
   visibleUrls: 'skip' | 'note';
   qr: ResolvedLinkQrConfig;
+  /** Present when the config sets `links.style`. */
+  style?: ResolvedLinkStyleConfig;
 }

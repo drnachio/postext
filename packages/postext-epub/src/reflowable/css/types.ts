@@ -4,6 +4,8 @@
 
 /** What the walk found that decides the writing mode of the book. */
 export interface StylesheetOptions {
+  /** The output the links take `links.style` for (#1402); default `'epub'`. */
+  linkOutput?: 'epub' | 'scorm';
   /** Vertical Chinese / Japanese (`layout.writingMode: 'vertical-rl'`). */
   vertical: boolean;
   /** The book sets a `:::verse` poem (its rules are written only then). */

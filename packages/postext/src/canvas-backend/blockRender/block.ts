@@ -9,6 +9,7 @@ import { mirroredPaintActive } from '../mirrorFrame.js';
 import { paintRunInDirection } from '../runDirection.js';
 import { markerSetText } from '../../writing/bidi.js';
 import { paintLineHighlights, paintLineMarks } from '../annotations.js';
+import { paintLinkUnderlines } from '../linkPaint.js';
 import { taskBoxTick } from '../../paint/taskBox.js';
 import { saveContext, restoreContext, setLetterSpacing } from '../contextState.js';
 import { renderLine } from './lines.js';
@@ -156,6 +157,7 @@ function renderStripCaption(ctx: CanvasRenderingContext2D, block: VDTBlock): voi
     if (line.highlights) paintLineHighlights(ctx, line);
     renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, line.letterSpacing ?? 0), line.letterSpacing ?? 0, false);
     if (line.marks) paintLineMarks(ctx, line, block.color);
+    if (line.linkUnderlines) paintLinkUnderlines(ctx, line, block.color);
   }
 }
 
@@ -239,6 +241,7 @@ function renderBlockUpright(
     if (tracking !== 0) setLetterSpacing(ctx, 0);
     // Emphasis dots, proper-name and book-title lines (#193).
     if (line.marks) paintLineMarks(ctx, line, block.color);
+    if (line.linkUnderlines) paintLinkUnderlines(ctx, line, block.color);
     // A link note's QR code (#1302).
     if (line.qr) paintLineQr(ctx, line as typeof line & { qr: NonNullable<typeof line.qr> }, block.color);
   }
