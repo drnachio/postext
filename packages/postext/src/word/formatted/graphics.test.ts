@@ -112,6 +112,40 @@ describe('formatted Word graphics and helpers (#1392)', () => {
     expect(rastered).toEqual([svg]);
   });
 
+  it('leaves @font-face alone and reads the weight across sources and the font shorthand (#1406)', () => {
+    const plan: WordFontPlan = {
+      faces: [], warnings: [], altNames: new Map(),
+      map: new Map([
+        ['Geist|400|normal', { family: 'Geist PTX', bold: false, italic: false }],
+        ['Geist|700|normal', { family: 'Geist PTX', bold: true, italic: false }],
+        ['Geist|600|normal', { family: 'Geist SemiBold PTX', bold: false, italic: false }],
+      ]),
+    };
+    const face = `@font-face { font-family: "Geist"; font-weight: 600; src: url(data:font/woff2;base64,AAAA) }`;
+    const out = svgWithWordFonts(`<svg><style>${face} text { font-family: Geist }</style></svg>`, plan);
+    expect(out).toContain(face);
+    expect(out).toContain(`text { font-family: "Geist PTX", Geist }`);
+    expect(svgWithWordFonts(`<text style="font-family: Geist" font-weight="600">A</text>`, plan)).toBe(`<text style="font-family: 'Geist SemiBold PTX', Geist" font-weight="400">A</text>`);
+    expect(svgWithWordFonts(`<text font-family="Geist" style="font-weight: 600">A</text>`, plan)).toBe(`<text font-family="'Geist SemiBold PTX', Geist" style="font-weight: 400">A</text>`);
+    expect(svgWithWordFonts(`<text style="font: 600 12px Geist, sans-serif">A</text>`, plan)).toBe(`<text style="font: 400 12px 'Geist SemiBold PTX', Geist, sans-serif">A</text>`);
+    expect(svgWithWordFonts(`<text font-family="Geist" font-weight="700">B</text>`, plan)).toBe(`<text font-family="'Geist PTX', Geist" font-weight="700">B</text>`);
+  });
+
+  it('sets the readings of one jukugo word at one size (#1406)', () => {
+    const ctx = context({ lang: 'ja-JP' });
+    const rtPr = '<w:rPr><w:sz w:val="12"/><w:szCs w:val="12"/></w:rPr>';
+    const base = { x: 0, width: 12, fontString: '12px "X"', color: '#000', textStart: 0 };
+    const to: DisplayRun = { ...base, text: '東', ruby: { text: 'とう', fontString: '6px "X"', position: 'over', id: 1 } };
+    const kyo: DisplayRun = { ...base, x: 12, text: '京', ruby: { text: 'きょう', fontString: '6px "X"', position: 'over', id: 1 } };
+    const line = { runs: [to, kyo] } as unknown as DisplayLine;
+    const sz = (xml: string): string => /<w:hps w:val="(\d+)"\/>/.exec(xml)![1]!;
+    const a = rubyXml(ctx, to, '東', '<w:rPr/>', rtPr, { base: 24, rt: 12 }, line);
+    const b = rubyXml(ctx, kyo, '京', '<w:rPr/>', rtPr, { base: 24, rt: 12 }, line);
+    expect(sz(a)).toBe('8');
+    expect(sz(b)).toBe('8');
+    expect(sz(rubyXml(ctx, to, '東', '<w:rPr/>', rtPr, { base: 24, rt: 12 }))).toBe('12');
+  });
+
   it('sets a ruby reading longer than its base smaller (#1406)', () => {
     const ctx = context({ lang: 'ja-JP' });
     expect(readingEms('とうきょう')).toBe(5);

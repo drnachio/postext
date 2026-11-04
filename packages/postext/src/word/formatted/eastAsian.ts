@@ -84,18 +84,34 @@ export function condensedReading(ctx: WriterContext, rtPr: string, ems: number, 
   return { rtPr: rtPr.replace(/<w:sz w:val="\d+"\/>/, `<w:sz w:val="${sz}"/>`).replace(/<w:szCs w:val="\d+"\/>/, `<w:szCs w:val="${sz}"/>`), sz };
 }
 
+/** The reading size (half-points) of a ruby that runs over its base, the
+ *  smallest any run of its word takes: a jukugo word (runs of the line
+ *  sharing the ruby's id) keeps one reading size, each reading within its
+ *  own base, since Word widens a base to its reading. */
+function rubyFit(ctx: WriterContext, run: DisplayRun, rtPr: string, rt: number, line: DisplayLine | undefined): { rtPr: string; sz: number } | undefined {
+  const id = run.ruby!.id;
+  const word = id !== undefined && line ? line.runs.filter((r) => r.ruby?.id === id) : [run];
+  let fit: { rtPr: string; sz: number } | undefined;
+  for (const r of word.length ? word : [run]) {
+    const c = condensedReading(ctx, rtPr, readingEms(r.ruby!.text), rt, r.width);
+    if (c && (!fit || c.sz < fit.sz)) fit = c;
+  }
+  return fit;
+}
+
 /** A ruby base and its reading as one `w:ruby`. `rPr` is the base's
  *  properties, `rtPr` the reading's; the sizes are half-points. A reading
- *  longer than the base is set smaller, to the base's width. */
-export function rubyXml(ctx: WriterContext, run: DisplayRun, text: string, rPr: string, rtPr: string, sizes: { base: number; rt: number }): string {
+ *  longer than the base is set smaller, to the base's width (`line`: the
+ *  whole jukugo word at one size). */
+export function rubyXml(ctx: WriterContext, run: DisplayRun, text: string, rPr: string, rtPr: string, sizes: { base: number; rt: number }, line?: DisplayLine): string {
   const ruby = run.ruby!;
   if (ruby.position === 'under') ctx.warn('ruby-under', 'a ruby set under its base is set over it in Word (Word has no ruby under the text)');
   if (ruby.position === 'right') ctx.warn('ruby-right', 'zhuyin set beside the characters is set over them in Word');
   const raise = ruby.raise !== undefined ? Math.max(0, Math.round(halfPoints(Math.abs(ruby.raise), ctx.dpi))) : sizes.base;
   const align = ruby.group ? 'distributeSpace' : 'center';
   const lid = escapeAttr(ctx.lang ?? 'ja-JP');
-  const condensed = condensedReading(ctx, rtPr, readingEms(ruby.text), sizes.rt, run.width);
-  if (condensed) ctx.warn('ruby-overhang', `the reading "${ruby.text}" runs over its base, which Word does not allow: it is set smaller to fit the base`);
+  const condensed = rubyFit(ctx, run, rtPr, sizes.rt, line);
+  if (condensed) ctx.warn('ruby-overhang', `the reading "${ruby.text}" (or another of its word) runs over its base, which Word does not allow: it is set smaller to fit the base`);
   return (
     `<w:r>${rPr}<w:ruby>` +
     `<w:rubyPr><w:rubyAlign w:val="${align}"/><w:hps w:val="${condensed?.sz ?? sizes.rt}"/><w:hpsRaise w:val="${raise}"/><w:hpsBaseText w:val="${sizes.base}"/><w:lid w:val="${lid}"/></w:rubyPr>` +

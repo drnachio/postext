@@ -189,7 +189,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine):
   if (run.ruby) {
     const rt: DisplayRun = { text: run.ruby.text, x: run.x, width: 0, fontString: run.ruby.fontString, color: run.ruby.color ?? run.color, textStart: 0 };
     const sizes = { base: resolveFont(ctx, run.fontString).sz, rt: resolveFont(ctx, run.ruby.fontString).sz };
-    out.xml = rubyXml(ctx, run, text, rPr, runProps(ctx, rt, {}), sizes);
+    out.xml = rubyXml(ctx, run, text, rPr, runProps(ctx, rt, {}), sizes, line);
   } else if (run.warichu) {
     // Word's two lines in one puts the first half of the text on top.
     const { upper, lower } = run.warichu;

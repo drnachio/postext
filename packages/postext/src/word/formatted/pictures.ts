@@ -44,9 +44,12 @@ function fallbackSize(rect: DisplayRect, dpi: number): { w: number; h: number } 
 
 const unquote = (f: string): string => f.trim().replace(/^(['"])(.*)\1$/, '$2').trim();
 
-/** A `font-family` list led by the embedded Word family of its first
- *  family the plan holds (the web names stay as fallbacks), with the
- *  weight that family's slot takes ('' weight: none was given). */
+/** The embedded Word family that leads a `font-family` list (its first
+ *  family the plan holds) and the weight that family's slot takes (''
+ *  weight: none was given). The slot's weight wins over the web one: a
+ *  semibold slot is a family of its own set at 400, and 600 would make
+ *  Word and LibreOffice embolden it (the web names after it are family
+ *  fallbacks only). */
 function wordFamilyList(plan: WordFontPlan, list: string, weight: string, style: string, quote: string): { list: string; weight?: string } | undefined {
   const families = new Set([...plan.map.keys()].map((k) => k.split('|')[0]!.toLowerCase()));
   const fam = list.split(',').map(unquote).find((f) => families.has(f.toLowerCase()));
@@ -54,21 +57,64 @@ function wordFamilyList(plan: WordFontPlan, list: string, weight: string, style:
   const w = /^\d+$/.test(weight) ? Number(weight) : /bold/i.test(weight) ? 700 : 400;
   const ref = wordFontFor(plan, `${/italic|oblique/i.test(style) ? 'italic ' : ''}${w} 16px "${fam}"`);
   if (ref.family.toLowerCase() === fam.toLowerCase()) return undefined;
-  return { list: `${quote}${ref.family}${quote}, ${list}`, ...(weight ? { weight: ref.bold ? '700' : '400' } : {}) };
+  const slot = ref.bold ? '700' : '400';
+  return { list: `${quote}${ref.family}${quote}, ${list}`, ...(weight && weight !== slot ? { weight: slot } : {}) };
 }
 
-/** CSS declarations (`style` attribute or a `<style>` rule body) with
- *  their font family and weight rewritten. */
-function wordFontDecls(plan: WordFontPlan, decls: string, quote: string): string {
-  const fam = /(^|[;{\s])font-family\s*:\s*([^;}]+)/i.exec(decls);
-  if (!fam) return decls;
-  const weight = /(^|[;{\s])font-weight\s*:\s*([^;}]+)/i.exec(decls)?.[2]?.trim() ?? '';
-  const style = /(^|[;{\s])font-style\s*:\s*([^;}]+)/i.exec(decls)?.[2]?.trim() ?? '';
-  const r = wordFamilyList(plan, fam[2]!.trim(), weight, style, quote);
-  if (!r) return decls;
-  let out = decls.replace(/((?:^|[;{\s])font-family\s*:\s*)([^;}]+)/i, (_m, head: string) => `${head}${r.list}`);
-  if (r.weight) out = out.replace(/((?:^|[;{\s])font-weight\s*:\s*)([^;}]+)/i, (_m, head: string) => `${head}${r.weight}`);
+const declRe = (name: string): RegExp => new RegExp(`((?:^|[;{\\s])${name}\\s*:\\s*)([^;}]*[^;}\\s])`, 'i');
+const SIZE = /^(?:[\d.]+(?:px|pt|em|rem|%|ex|ch|mm|cm|in|pc|q|vw|vh)|xx?-small|small|medium|large|xx?x?-large|larger|smaller)(?:\/\S+)?$/i;
+const WEIGHT = /^(?:bold|bolder|lighter|\d{3})$/i;
+
+/** The CSS `font` shorthand cut into what stands before the size, the size
+ *  and the family list. */
+function shorthand(value: string): { pre: string[]; size: string; list: string } | undefined {
+  const tokens = value.trim().split(/\s+/);
+  const i = tokens.findIndex((t) => SIZE.test(t));
+  if (i < 0 || i === tokens.length - 1) return undefined;
+  return { pre: tokens.slice(0, i), size: tokens[i]!, list: tokens.slice(i + 1).join(' ') };
+}
+
+interface FontDecls {
+  family?: string;
+  weight?: string;
+  style?: string;
+}
+
+/** Font family, weight and style CSS declarations give (longhands over the
+ *  `font` shorthand). */
+function fontOfDecls(decls: string): FontDecls {
+  const get = (name: string): string | undefined => declRe(name).exec(decls)?.[2]?.trim();
+  const sh = shorthand(get('font') ?? '');
+  const family = get('font-family') ?? sh?.list;
+  const weight = get('font-weight') ?? sh?.pre.find((t) => WEIGHT.test(t));
+  const style = get('font-style') ?? sh?.pre.find((t) => /^(?:italic|oblique)$/i.test(t));
+  return { ...(family ? { family } : {}), ...(weight ? { weight } : {}), ...(style ? { style } : {}) };
+}
+
+/** CSS declarations with their family list and weight replaced (longhand,
+ *  else in the `font` shorthand). */
+function setFontDecls(decls: string, list: string | undefined, weight: string | undefined): string {
+  let out = decls;
+  const put = (name: string, value: string): boolean => {
+    if (!declRe(name).test(out)) return false;
+    out = out.replace(declRe(name), (_m, head: string) => `${head}${value}`);
+    return true;
+  };
+  const sh = (f: (s: NonNullable<ReturnType<typeof shorthand>>) => string): void => {
+    const m = declRe('font').exec(out);
+    const s = m ? shorthand(m[2]!) : undefined;
+    if (s) put('font', f(s));
+  };
+  if (list && !put('font-family', list)) sh((s) => [...s.pre, s.size, list].join(' '));
+  if (weight && !put('font-weight', weight)) sh((s) => [...s.pre.map((t) => (WEIGHT.test(t) ? weight : t)), s.size, s.list].join(' '));
   return out;
+}
+
+/** A `<style>` rule body with its font family and weight rewritten. */
+function wordFontRule(plan: WordFontPlan, decls: string): string {
+  const f = fontOfDecls(decls);
+  const r = f.family ? wordFamilyList(plan, f.family, f.weight ?? '', f.style ?? '', '"') : undefined;
+  return r ? setFontDecls(decls, r.list, r.weight) : decls;
 }
 
 const attrRe = (name: string): RegExp => new RegExp(`(\\s${name}\\s*=\\s*)(?:"([^"]*)"|'([^']*)')`, 'i');
@@ -85,30 +131,43 @@ function setAttr(tag: string, name: string, f: (value: string, quote: string) =>
   });
 }
 
+/** A tag with its font rewritten: the family, weight and style each from
+ *  the `style` attribute, else from the presentation attribute, and each
+ *  written back where it was found. */
+function wordFontTag(plan: WordFontPlan, tag: string): string {
+  const styleAttr = attrOf(tag, 'style');
+  const css = styleAttr ? fontOfDecls(styleAttr.value) : {};
+  const famAttr = attrOf(tag, 'font-family');
+  const list = css.family ?? famAttr?.value;
+  if (!list) return tag;
+  const weight = css.weight ?? attrOf(tag, 'font-weight')?.value ?? '';
+  const style = css.style ?? attrOf(tag, 'font-style')?.value ?? '';
+  const inStyle = css.family !== undefined;
+  const outer = inStyle ? styleAttr!.quote : famAttr!.quote;
+  const r = wordFamilyList(plan, list, weight, style, outer === '"' ? "'" : '"');
+  if (!r) return tag;
+  let t = tag;
+  const cssWeight = css.weight !== undefined ? r.weight : undefined;
+  if (inStyle || cssWeight) t = setAttr(t, 'style', (decls) => setFontDecls(decls, inStyle ? r.list : undefined, cssWeight));
+  if (!inStyle) t = setAttr(t, 'font-family', () => r.list);
+  if (r.weight && css.weight === undefined) t = setAttr(t, 'font-weight', () => r.weight!);
+  return t;
+}
+
 /**
  * An SVG whose text names the fonts the document embeds: the font plan
  * renames every family (' PTX'), and Word and LibreOffice resolve SVG
  * text against the document's and the system's fonts, so `font-family`
- * (attributes, `style` attributes and `<style>` rules) is led by the
- * embedded name and the weight set to the slot's (#1406).
+ * (attributes, `style` attributes, `<style>` rules, the `font`
+ * shorthand) is led by the embedded name and the weight set to the
+ * slot's (#1406). `@font-face` rules keep the SVG's own faces as they are.
  */
 export function svgWithWordFonts(svg: string, plan: WordFontPlan | undefined): string {
-  if (!plan || !plan.map.size || !/font-family/i.test(svg)) return svg;
-  let out = svg.replace(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi, (_m, attrs: string, css: string) =>
-    `<style${attrs}>${css.replace(/\{[^{}]*\}/g, (body) => wordFontDecls(plan, body, '"'))}</style>`,
+  if (!plan || !plan.map.size || !/font/i.test(svg)) return svg;
+  const out = svg.replace(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi, (_m, attrs: string, css: string) =>
+    `<style${attrs}>${css.replace(/(@font-face\s*)?\{[^{}]*\}/gi, (body, face: string | undefined) => (face ? body : wordFontRule(plan, body)))}</style>`,
   );
-  out = out.replace(/<[A-Za-z][^<>]*>/g, (tag) => {
-    if (!/font-family/i.test(tag)) return tag;
-    let t = setAttr(tag, 'style', (decls, q) => wordFontDecls(plan, decls, q === '"' ? "'" : '"'));
-    const fam = attrOf(t, 'font-family');
-    if (!fam) return t;
-    const r = wordFamilyList(plan, fam.value, attrOf(t, 'font-weight')?.value ?? '', attrOf(t, 'font-style')?.value ?? '', fam.quote === '"' ? "'" : '"');
-    if (!r) return t;
-    t = setAttr(t, 'font-family', () => r.list);
-    if (r.weight) t = setAttr(t, 'font-weight', () => r.weight!);
-    return t;
-  });
-  return out;
+  return out.replace(/<[A-Za-z][^<>]*>/g, (tag) => (/\sfont|style\s*=/i.test(tag) ? wordFontTag(plan, tag) : tag));
 }
 
 /** Register an SVG with its PNG fallback (drawn from the SVG as the book
