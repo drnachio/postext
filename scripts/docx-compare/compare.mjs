@@ -2,14 +2,16 @@
 // Fidelity check of a formatted Word export (#1399): the .docx converted to
 // PDF by LibreOffice headless, both PDFs rasterised by pdftoppm and compared
 // page by page (share of differing pixels, through ImageMagick), and the
-// text of every page compared line by line (pdftotext -bbox-layout), so a
-// line Word or LibreOffice broke differently from the engine shows up with
-// its text. Writes report.json and report.txt into the output folder and
-// prints the text report.
+// text of every page compared line by line (pdftotext -bbox-layout,
+// regrouped by lines.mjs), so a line Word or LibreOffice broke differently
+// from the engine shows up with its text, and a line the extractor reads
+// under an opaque shape counts as hidden (raster.mjs). Writes report.json
+// and report.txt into the output folder and prints the text report.
 //
 //   node scripts/docx-compare/compare.mjs book.docx book.pdf [--out DIR]
 //        [--docx-pdf FILE] [--dpi 72] [--fuzz 10%] [--threshold 0.02]
 //        [--pages 1-5,9] [--sheets | --sheets all] [--max-lines 5]
+//        [--dy-tolerance 0.25em | --dy-tolerance 2pt]
 //
 // Exit codes: 0 every page within the thresholds · 1 differences found ·
 // 2 wrong usage or a tool failed · 3 LibreOffice not found (pass the
@@ -20,14 +22,19 @@ import { accessSync, constants, existsSync, mkdirSync, readdirSync, realpathSync
 import { tmpdir } from 'node:os';
 import { basename, delimiter, extname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { lineKey, parseBboxLayout } from './lines.mjs';
+import { hiddenLine, loadGrey } from './raster.mjs';
+
+export { normaliseLine, parseBboxLayout } from './lines.mjs';
 
 const USAGE = `usage: compare.mjs <file.docx> <reference.pdf> [--out DIR] [--docx-pdf FILE] [--dpi N]
-       [--fuzz PCT] [--threshold RATIO] [--pages LIST] [--sheets [all]] [--max-lines N] [--quiet]`;
+       [--fuzz PCT] [--threshold RATIO] [--pages LIST] [--sheets [all]] [--max-lines N]
+       [--dy-tolerance Nem|Npt] [--quiet]`;
 
 // ---------------------------------------------------------------- options
 
 export function parseArgs(argv) {
-  const opts = { dpi: 72, fuzz: '10%', threshold: 0.02, maxLines: 5, sheets: false, quiet: false, pages: null, out: null, docxPdf: null };
+  const opts = { dpi: 72, fuzz: '10%', threshold: 0.02, maxLines: 5, sheets: false, quiet: false, pages: null, out: null, docxPdf: null, dyTolerance: { em: 0.25 } };
   const pos = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -43,6 +50,7 @@ export function parseArgs(argv) {
     else if (a === '--threshold') opts.threshold = Number(value());
     else if (a === '--pages') opts.pages = parsePages(value());
     else if (a === '--max-lines') opts.maxLines = Number(value());
+    else if (a === '--dy-tolerance') opts.dyTolerance = parseTolerance(value());
     else if (a === '--quiet' || a === '-q') opts.quiet = true;
     else if (a === '--sheets') opts.sheets = argv[i + 1] === 'all' ? (i++, 'all') : 'diff';
     else if (a === '--help' || a === '-h') throw new UsageError(null);
@@ -57,6 +65,13 @@ export function parseArgs(argv) {
 
 class UsageError extends Error {}
 class ToolError extends Error {}
+
+/** `0.25em` (of the line's height) or `2pt` / `2` (points). */
+function parseTolerance(v) {
+  const m = /^(\d+(?:\.\d+)?|\.\d+)\s*(em|pt)?$/.exec(v.trim());
+  if (!m) throw new UsageError(`bad --dy-tolerance "${v}" (give 0.25em or 2pt)`);
+  return m[2] === 'em' ? { em: Number(m[1]) } : { pt: Number(m[1]) };
+}
 
 function parsePages(list) {
   const set = new Set();
@@ -177,8 +192,9 @@ function size(im, png) {
 }
 
 /** Share of pixels that differ beyond the fuzz, with a diff image. A page
- *  of another size is padded (white) to the reference's size first. */
-function pixelDiff(im, ref, other, diffPng, fuzz) {
+ *  of another size is padded (white) or cropped to the reference's size
+ *  first. */
+function pixelDiff(im, ref, other, diffPng, fuzz, dpi) {
   const a = size(im, ref);
   const b = size(im, other);
   let input = other;
@@ -190,71 +206,78 @@ function pixelDiff(im, ref, other, diffPng, fuzz) {
   const output = (r.stderr || r.stdout).trim();
   const ae = Number(/^[\d.]+(?:e[+-]?\d+)?/i.exec(output)?.[0] ?? NaN);
   if (!Number.isFinite(ae)) throw new ToolError(`could not read the pixel count ImageMagick gave for ${basename(other)}: ${output.slice(0, 200)}`);
-  return { ratio: ae / (a.w * a.h), pixels: ae, sizeMismatch: a.w !== b.w || a.h !== b.h ? { reference: a, docx: b } : undefined };
+  // A docx page a point or two bigger (LibreOffice rounds the page size
+  // up) is cropped to the reference and not reported.
+  const slack = Math.ceil((2 * dpi) / 72) + 1;
+  const minor = b.w >= a.w && b.h >= a.h && b.w - a.w <= slack && b.h - a.h <= slack;
+  return { ratio: ae / (a.w * a.h), pixels: ae, sizeMismatch: (a.w !== b.w || a.h !== b.h) && !minor ? { reference: a, docx: b } : undefined };
 }
 
 // ---------------------------------------------------------------- text
-
-const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
-const decode = (s) => s.replace(/&(#x[\da-f]+|#\d+|\w+);/gi, (m, e) => (e[0] === '#' ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : Number(e.slice(1))) : ENTITIES[e] ?? m));
-
-const LIGATURES = { '\uFB00': 'ff', '\uFB01': 'fi', '\uFB02': 'fl', '\uFB03': 'ffi', '\uFB04': 'ffl', '\uFB05': 'st', '\uFB06': 'st' };
-
-/** A line's text as compared: NFKC (ligatures, presentation forms), no
- *  soft hyphens, tatweels or zero-width characters, one space between
- *  words, typographic dashes and quotes as they are. */
-export function normaliseLine(s) {
-  return s
-    .replace(/[\uFB00-\uFB06]/g, (c) => LIGATURES[c])
-    .normalize('NFKC')
-    .replace(/[\u00AD\u0640\u200B-\u200F\u2060\uFEFF]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-/** Lines per page from `pdftotext -bbox-layout`: text and box in points. */
-export function parseBboxLayout(html) {
-  const pages = [];
-  const pageRe = /<page\b[^>]*>([\s\S]*?)<\/page>/g;
-  for (let pm = pageRe.exec(html); pm; pm = pageRe.exec(html)) {
-    const lines = [];
-    const lineRe = /<line xMin="([\d.-]+)" yMin="([\d.-]+)" xMax="([\d.-]+)" yMax="([\d.-]+)">([\s\S]*?)<\/line>/g;
-    for (let lm = lineRe.exec(pm[1]); lm; lm = lineRe.exec(pm[1])) {
-      const words = [...lm[5].matchAll(/<word\b[^>]*>([\s\S]*?)<\/word>/g)].map((w) => decode(w[1]));
-      const text = normaliseLine(words.join(' '));
-      if (text) lines.push({ text, x: Number(lm[1]), y: Number(lm[2]), x2: Number(lm[3]), y2: Number(lm[4]) });
-    }
-    pages.push(lines);
-  }
-  return pages;
-}
 
 function pdfLines(pdf) {
   return parseBboxLayout(run(findTool(['pdftotext']) ?? 'pdftotext', ['-bbox-layout', '-enc', 'UTF-8', pdf, '-']).stdout);
 }
 
+const sortedKey = (l) => [...lineKey(l.text)].sort().join('');
+const overlaps = (a, b) => Math.min(a.x2, b.x2) > Math.max(a.x, b.x) && Math.min(a.y2, b.y2) > Math.max(a.y, b.y);
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s.length ? (s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2) : 0;
+};
+
+/** The pieces of `one` among `lines`: two or more lines on its baseline,
+ *  over its box, whose characters together are the characters of `one`
+ *  (pieces of a verse line come out in either order, and the extractors
+ *  reorder Arabic letters around a lam-alef); or null. */
+function halves(one, lines) {
+  const same = (a, b) => Math.min(a.y2, b.y2) - Math.max(a.y, b.y) >= 0.5 * Math.min(a.y2 - a.y, b.y2 - b.y);
+  const pieces = lines.filter((l) => overlaps(l, one) && same(l, one));
+  if (pieces.length < 2) return null;
+  const key = sortedKey(one);
+  if ([...pieces.map((l) => lineKey(l.text)).join('')].sort().join('') === key) return pieces;
+  for (const a of pieces) {
+    for (const b of pieces) {
+      if (b !== a && [...(lineKey(a.text) + lineKey(b.text))].sort().join('') === key) return [a, b];
+    }
+  }
+  return null;
+}
+
+/** The vertical move a line may make in points: `dyTolerance` em of its
+ *  height ({ em }, never under 1.5 pt: a pixel at 72 dpi and rounding) or
+ *  a fixed { pt }. */
+const tolerance = (l, t) => t.pt ?? Math.max(1.5, t.em * (l.y2 - l.y));
+
 /**
- * Lines of one page matched by text (each docx line used once, the nearest
- * one when a text repeats). Spaces do not count: letterspaced text and
- * word gaps the extractor reads differently in either file still match.
- * A line that does not match means the line broke elsewhere, or its text
- * changed. Matched lines report how far they moved.
+ * Lines of one page matched by key (lines.mjs: no spaces, no combining
+ * marks), each docx line used once, the nearest one when a key repeats.
+ * A line whose key matches no line is tried once more against the docx
+ * lines left over on the same spot with the same characters in another
+ * order (glyphs a display font draws out of reading order); those count
+ * as `reordered`. A reference line with no match broke elsewhere, or its
+ * text changed. Matched lines report how far they moved; the page's
+ * median vertical shift is taken as one offset (LibreOffice sets the
+ * baseline of an exact-height line at 80 % of it, Word does not), and a
+ * line counts as `moved` when it strays from that shift by more than
+ * `dyTolerance`, or moves more than its own height. A line set across in
+ * one PDF and down in the other counts under `orientation`.
  */
-export function compareLines(ref, docx) {
-  const key = (l) => l.text.replace(/ /g, '');
+export function compareLines(ref, docx, { dyTolerance = { em: 0.25 } } = {}) {
   const free = new Map();
   docx.forEach((l, i) => {
-    const list = free.get(key(l)) ?? [];
+    const k = lineKey(l.text);
+    const list = free.get(k) ?? [];
     list.push(i);
-    free.set(key(l), list);
+    free.set(k, list);
   });
   const used = new Set();
-  const missing = [];
-  const moves = [];
+  const pairs = [];
+  const unmatched = [];
   for (const l of ref) {
-    const list = free.get(key(l));
+    const list = free.get(lineKey(l.text));
     if (!list?.length) {
-      missing.push(l);
+      unmatched.push(l);
       continue;
     }
     let best = 0;
@@ -263,21 +286,83 @@ export function compareLines(ref, docx) {
     }
     const j = list.splice(best, 1)[0];
     used.add(j);
-    moves.push({ dx: docx[j].x - l.x, dy: docx[j].y - l.y });
+    pairs.push({ ref: l, docx: docx[j] });
   }
+  let missing = [];
+  let reordered = 0;
+  for (const l of unmatched) {
+    const key = sortedKey(l);
+    const j = docx.findIndex((d, i) => !used.has(i) && overlaps(l, d) && sortedKey(d) === key);
+    if (j < 0) {
+      missing.push(l);
+      continue;
+    }
+    used.add(j);
+    pairs.push({ ref: l, docx: docx[j] });
+    reordered++;
+  }
+  // Lines on one baseline in one PDF that the other's extractor reads as
+  // one (the halves of a verse line, a heading and its number).
+  let joined = 0;
+  const left = docx.map((d, i) => (used.has(i) ? null : d)).filter(Boolean);
+  for (const [ones, twos, refIsOne] of [[left, missing, false], [missing, left, true]]) {
+    for (const one of [...ones]) {
+      const two = halves(one, twos);
+      if (!two) continue;
+      for (const h of two) {
+        twos.splice(twos.indexOf(h), 1);
+        pairs.push(refIsOne ? { ref: one, docx: h, joined: true } : { ref: h, docx: one, joined: true });
+      }
+      ones.splice(ones.indexOf(one), 1);
+      joined++;
+    }
+  }
+  docx.forEach((d, i) => {
+    if (!left.includes(d)) used.add(i);
+  });
+  missing = missing.filter((l) => !pairs.some((p) => p.ref === l));
+  for (const p of pairs) {
+    p.dx = p.docx.x - p.ref.x;
+    // Box centres: a line joined from pieces (display faces, markers) may
+    // reach higher or lower in one PDF than in the other.
+    p.dy = (p.docx.y + p.docx.y2 - p.ref.y - p.ref.y2) / 2;
+  }
+  const shift = median(pairs.map((p) => p.dy));
+  const moved = pairs.filter((p) => Math.abs(p.dy - shift) > tolerance(p.ref, dyTolerance) || Math.abs(p.dy) > p.ref.y2 - p.ref.y);
+  const orientation = pairs.filter((p) => !p.joined && p.ref.orientation && p.docx.orientation && p.ref.orientation !== p.docx.orientation);
   const extra = docx.filter((_, i) => !used.has(i));
-  const abs = (k) => moves.map((m) => Math.abs(m[k]));
-  return {
+  const abs = (k) => pairs.map((m) => Math.abs(m[k]));
+  const result = {
     referenceLines: ref.length,
     docxLines: docx.length,
-    matched: moves.length,
+    matched: new Set(pairs.map((p) => p.ref)).size,
+    reordered,
+    joined,
+    hidden: [],
     missing: missing.map((l) => l.text),
     extra: extra.map((l) => l.text),
+    moved: moved.map((p) => ({ text: p.ref.text, dy: round(p.dy) })),
+    orientation: orientation.map((p) => ({ text: p.ref.text, reference: p.ref.orientation, docx: p.docx.orientation })),
+    shiftY: round(shift),
     maxDx: round(Math.max(0, ...abs('dx'))),
     maxDy: round(Math.max(0, ...abs('dy'))),
-    meanDy: round(moves.length ? abs('dy').reduce((a, b) => a + b, 0) / moves.length : 0),
+    meanDy: round(pairs.length ? abs('dy').reduce((a, b) => a + b, 0) / pairs.length : 0),
   };
+  Object.defineProperty(result, 'pairs', { value: pairs, enumerable: false });
+  return result;
 }
+
+/** Matched lines whose text the docx page does not show (hiddenLine)
+ *  leave `matched` for `hidden`. */
+export function markHidden(lines, isHidden) {
+  const hidden = lines.pairs.filter((p) => isHidden(p.ref, p.docx));
+  lines.hidden = hidden.map((p) => p.ref.text);
+  lines.matched -= hidden.length;
+  return lines;
+}
+
+/** Whether a page's lines differ in a way that fails it. */
+export const lineDifferences = (l) => l.missing.length + l.extra.length + l.hidden.length + l.moved.length + l.orientation.length;
 
 const round = (n, k = 2) => Math.round(n * 10 ** k) / 10 ** k;
 
@@ -317,12 +402,17 @@ export async function compare(opts) {
     }
     if (im && refPng.has(p) && docxPng.has(p)) {
       const diffPng = join(out, 'diff', `p-${String(p).padStart(3, '0')}.png`);
-      Object.assign(page, pixelDiff(im, refPng.get(p), docxPng.get(p), diffPng, opts.fuzz));
+      Object.assign(page, pixelDiff(im, refPng.get(p), docxPng.get(p), diffPng, opts.fuzz, opts.dpi));
       page.ratio = round(page.ratio, 5);
       page.diffImage = diffPng;
     }
-    page.lines = compareLines(refText[p - 1] ?? [], docxText[p - 1] ?? []);
-    page.pass = (page.ratio === undefined || page.ratio <= opts.threshold) && page.lines.missing.length === 0 && page.lines.extra.length === 0;
+    page.lines = compareLines(refText[p - 1] ?? [], docxText[p - 1] ?? [], opts);
+    if (im && refPng.has(p) && docxPng.has(p)) {
+      const a = loadGrey(im.convert, refPng.get(p));
+      const b = loadGrey(im.convert, docxPng.get(p));
+      if (a && b) markHidden(page.lines, (r, d) => hiddenLine(a, b, r, d, opts.dpi / 72));
+    }
+    page.pass = (page.ratio === undefined || page.ratio <= opts.threshold) && lineDifferences(page.lines) === 0;
     if (opts.sheets && im?.montage && (opts.sheets === 'all' || !page.pass)) {
       mkdirSync(join(out, 'sheets'), { recursive: true });
       page.sheet = join(out, 'sheets', `p-${String(p).padStart(3, '0')}.png`);
@@ -340,7 +430,7 @@ export async function compare(opts) {
   const compared = pages.filter((p) => p.lines);
   const ratios = compared.map((p) => p.ratio).filter((r) => r !== undefined);
   const worst = compared.reduce((w, p) => (p.ratio !== undefined && (!w || p.ratio > w.ratio) ? p : w), null);
-  const lineTotals = compared.reduce((t, p) => ({ ref: t.ref + p.lines.referenceLines, matched: t.matched + p.lines.matched }), { ref: 0, matched: 0 });
+  const total = (f) => compared.reduce((t, p) => t + f(p.lines), 0);
   const summary = {
     method,
     dpi: opts.dpi,
@@ -352,9 +442,18 @@ export async function compare(opts) {
     meanRatio: ratios.length ? round(ratios.reduce((a, b) => a + b, 0) / ratios.length, 5) : null,
     worstPage: worst ? { page: worst.page, ratio: worst.ratio } : null,
     pagesOverThreshold: compared.filter((p) => p.ratio !== undefined && p.ratio > opts.threshold).map((p) => p.page),
-    referenceLines: lineTotals.ref,
-    matchedLines: lineTotals.matched,
-    pagesWithLineDifferences: compared.filter((p) => p.lines.missing.length || p.lines.extra.length).map((p) => p.page),
+    dyTolerance: opts.dyTolerance.pt !== undefined ? `${opts.dyTolerance.pt}pt` : `${opts.dyTolerance.em}em`,
+    referenceLines: total((l) => l.referenceLines),
+    matchedLines: total((l) => l.matched),
+    reorderedLines: total((l) => l.reordered),
+    joinedLines: total((l) => l.joined),
+    hiddenLines: total((l) => l.hidden.length),
+    missingLines: total((l) => l.missing.length),
+    extraLines: total((l) => l.extra.length),
+    movedLines: total((l) => l.moved.length),
+    orientationMismatches: total((l) => l.orientation.length),
+    pagesWithLineDifferences: compared.filter((p) => lineDifferences(p.lines)).map((p) => p.page),
+    pagesWithHiddenLines: compared.filter((p) => p.lines.hidden.length).map((p) => p.page),
     pass: refPages === docxPages && pages.every((p) => p.pass),
   };
   const report = { docx: opts.docx, reference: opts.pdf, docxPdf, out, summary, pages };
@@ -374,6 +473,7 @@ export function textReport({ docx, reference, out, summary: s, pages }, maxLines
   if (s.method === 'text-only') lines.push('pixels: not compared (ImageMagick not found)');
   else lines.push(`pixels (${s.dpi} dpi, fuzz ${s.fuzz}): mean ${pct(s.meanRatio ?? 0)}, worst page ${s.worstPage?.page ?? '-'} (${pct(s.worstPage?.ratio ?? 0)}), ${s.pagesOverThreshold.length} page(s) over ${pct(s.threshold)}${s.pagesOverThreshold.length ? `: ${s.pagesOverThreshold.slice(0, 20).join(', ')}${s.pagesOverThreshold.length > 20 ? ', …' : ''}` : ''}`);
   lines.push(`lines: ${s.matchedLines} of ${s.referenceLines} reference lines found in the docx (${s.referenceLines ? pct(s.matchedLines / s.referenceLines) : '-'}), ${s.pagesWithLineDifferences.length} page(s) with line differences`);
+  lines.push(`       ${s.missingLines} missing, ${s.hiddenLines} hidden under a shape, ${s.extraLines} extra, ${s.movedLines} moved beyond ${s.dyTolerance} of the page's shift, ${s.orientationMismatches} set in the other direction, ${s.reorderedLines} matched with glyphs reordered, ${s.joinedLines} matched as two halves on one baseline`);
   for (const p of pages) {
     if (p.missingIn) {
       lines.push(`  page ${p.page}: only in the ${p.missingIn === 'reference' ? 'docx' : 'reference'}`);
@@ -381,9 +481,12 @@ export function textReport({ docx, reference, out, summary: s, pages }, maxLines
     }
     if (p.pass) continue;
     const l = p.lines;
-    lines.push(`  page ${p.page}:${p.ratio !== undefined ? ` ${pct(p.ratio)} pixels` : ''}${p.sizeMismatch ? ` (page size ${p.sizeMismatch.docx.w}x${p.sizeMismatch.docx.h} vs ${p.sizeMismatch.reference.w}x${p.sizeMismatch.reference.h})` : ''}, ${l.missing.length} reference line(s) not found, ${l.extra.length} docx line(s) not in the reference, matched lines moved up to ${l.maxDy} pt`);
+    lines.push(`  page ${p.page}:${p.ratio !== undefined ? ` ${pct(p.ratio)} pixels` : ''}${p.sizeMismatch ? ` (page size ${p.sizeMismatch.docx.w}x${p.sizeMismatch.docx.h} vs ${p.sizeMismatch.reference.w}x${p.sizeMismatch.reference.h})` : ''}, ${l.missing.length} reference line(s) not found, ${l.hidden.length} hidden, ${l.extra.length} docx line(s) not in the reference, ${l.moved.length} moved, ${l.orientation.length} turned; shift ${l.shiftY} pt, matched lines moved up to ${l.maxDy} pt`);
     for (const t of l.missing.slice(0, maxLines)) lines.push(`    pdf : ${JSON.stringify(t)}`);
+    for (const t of l.hidden.slice(0, maxLines)) lines.push(`    hid : ${JSON.stringify(t)}`);
     for (const t of l.extra.slice(0, maxLines)) lines.push(`    docx: ${JSON.stringify(t)}`);
+    for (const m of l.moved.slice(0, maxLines)) lines.push(`    move: ${m.dy > 0 ? '+' : ''}${m.dy} pt ${JSON.stringify(m.text)}`);
+    for (const o of l.orientation.slice(0, maxLines)) lines.push(`    turn: ${o.reference} -> ${o.docx} ${JSON.stringify(o.text)}`);
   }
   lines.push(s.pass ? 'result: pass' : 'result: differences found', `report: ${join(out, 'report.json')}`);
   return lines.join('\n') + '\n';
