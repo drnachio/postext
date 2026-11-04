@@ -59,7 +59,7 @@ export interface DisplayRun {
   /** A space whose width justification set. */
   space?: boolean;
   /** Embedded non-text content drawn in place of the run. */
-  inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number };
+  inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch };
   /** The run is a ruby base (#1394, `VDTLineSegment.ruby`): its reading. */
   ruby?: DisplayRuby;
   /** Vertical text: one tate-chu-yoko cell set by `:tcy[…]` (short
@@ -73,6 +73,34 @@ export interface DisplayRun {
   warichu?: { upper: string; lower: string; fontString: string; color?: string };
   /** Kanbun marks (返り点, 送り仮名, 竪点) painted from where the run starts. */
   kunten?: DisplayKunten;
+}
+
+/** A chip's box (`:chip[…]`, inline code), told from its first run:
+ *  `dx` px from the run's x, `ascent` / `descent` px about the baseline
+ *  (padding and border included). The outline is stroked inside the edge;
+ *  `underline` draws it as a line under the box only. */
+export interface DisplayChipBox {
+  dx: number;
+  width: number;
+  ascent: number;
+  descent: number;
+  fill?: string;
+  stroke?: string;
+  strokeWidthPx?: number;
+  radius?: number;
+  underline?: 'solid' | 'dotted' | 'dashed';
+}
+
+/** A colour swatch's paint (`:swatch{…}`): the fill, the outline's ink
+ *  (its own border colour, else the text's) and the shape it sets
+ *  (`swatchGeometry`); `icon`: an inline symbol, not a square. */
+export interface DisplaySwatch {
+  color?: string;
+  ink: string;
+  side?: number;
+  borderWidth?: number;
+  radius?: number;
+  icon?: boolean;
 }
 
 /** Text an annotation paints (a ruby reading, a kanbun mark), placed from

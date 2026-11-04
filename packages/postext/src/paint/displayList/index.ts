@@ -14,4 +14,6 @@ export type {
   DisplayAnnotation,
   DisplayRuby,
   DisplayKunten,
+  DisplayChipBox,
+  DisplaySwatch,
 } from './types.js';

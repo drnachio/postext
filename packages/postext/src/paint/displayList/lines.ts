@@ -11,6 +11,7 @@ import { lineTextAlign } from '../../vdt/flowFrames.js';
 import { lineWordSegmentsInOrder } from '../wordPieces.js';
 import { lineTrailingTracking } from '../lineInk.js';
 import { lineSource, segmentShownText, type Atom, type SourceBlock } from './source.js';
+import { chipRuns, swatchPaint } from './inline.js';
 import type { DisplayAnnotation, DisplayItem, DisplayLine, DisplayListOptions, DisplayRun, LineAlign } from './types.js';
 
 /** The faces and colours a line's segments pick from. */
@@ -174,9 +175,12 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
       const s = seg.scoreSystem;
       run.inline = { kind: 'score', ...(s.svg ? { svg: s.svg } : {}), widthPx: seg.width, heightPx: s.heightPx };
     } else if (seg.kind === 'swatch') {
-      run.inline = { kind: 'swatch', widthPx: seg.width, heightPx: seg.swatch?.side ?? seg.width };
+      // The ink is the block's text colour, as the painters outline it.
+      run.inline = { kind: 'swatch', widthPx: seg.width, heightPx: seg.swatch?.side ?? seg.width, swatch: swatchPaint(seg.swatch, style.color) };
     } else if (seg.chip) {
-      run.inline = { kind: 'chip', widthPx: seg.width, heightPx: seg.chip.ascent + seg.chip.descent, ascentPx: seg.chip.ascent };
+      // The chip's words in their own faces, its box under them.
+      runs.push(...chipRuns(run, seg.chip));
+      return;
     }
     if (seg.leader === 'rule') {
       leaders.push({ x: run.x, width: run.width, fontString, color });

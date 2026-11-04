@@ -11,6 +11,7 @@ import { baselineOffset } from './metrics.js';
 import { emitGroups, planChunks, planLines, type TextOut } from './paragraphs.js';
 import { imageRun } from './pictures.js';
 import { inlineDrawingRuns, lineOffsets } from './text.js';
+import { swatchShapeRuns } from './inlineShapes.js';
 import { eighths, twips, twipsToPx, wordColor } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -128,7 +129,8 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
     if (run) runs.push(run);
   }
   // Inline drawings of the cells, collected while their text was written.
-  for (const out of pending) runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate)));
+  for (const out of pending) runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate, false)));
+  for (const cell of item.cells) if (cell.item) runs.push(...swatchShapeRuns(ctx, cell.item.lines, centre, item.rotate));
   return runs;
 }
 
