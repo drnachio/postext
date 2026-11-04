@@ -36,6 +36,9 @@ export interface BlockView {
   NT: (string | undefined)[];
   /** Canonical OMML hash of each equation read back. */
   NH: (string | undefined)[];
+  /** Which characters read back are atom holders, when the file marks
+   *  them (`ReadDocx.holders`). */
+  NHeld?: boolean[];
   NTracked: boolean[];
   /** Positions in N where tracked-deleted text stood. */
   dels: number[];
@@ -54,7 +57,7 @@ function sameTarget(a: FragmentTarget, b: FragmentTarget): boolean {
 }
 
 /** Blocks in reading order (first appearance in the map). */
-export function buildBlocks(fragments: readonly MapFragment[], read: ReadonlyMap<string, ReadFragment>): BlockView[] {
+export function buildBlocks(fragments: readonly MapFragment[], read: ReadonlyMap<string, ReadFragment>, holders = false): BlockView[] {
   const groups = new Map<string, MapFragment[]>();
   for (const f of fragments) {
     let g = groups.get(f.block);
@@ -71,12 +74,12 @@ export function buildBlocks(fragments: readonly MapFragment[], read: ReadonlyMap
       if (last && sameTarget(last[0]!.target, f.target)) last.push(f);
       else runs.push([f]);
     }
-    runs.forEach((run, k) => out.push(buildBlock(runs.length > 1 ? `${id}#${k}` : id, run, read)));
+    runs.forEach((run, k) => out.push(buildBlock(runs.length > 1 ? `${id}#${k}` : id, run, read, holders)));
   }
   return out;
 }
 
-function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, ReadFragment>): BlockView {
+function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, ReadFragment>, holders: boolean): BlockView {
   let O = '';
   const M: number[] = [];
   const OK: string[] = [];
@@ -85,6 +88,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
   const NK: string[] = [];
   const NT: (string | undefined)[] = [];
   const NH: (string | undefined)[] = [];
+  const NHeld: boolean[] = [];
   const NTracked: boolean[] = [];
   const dels: number[] = [];
   const starts = new Map<string, number>();
@@ -131,6 +135,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
       NK.push(makeKey(c.flags, c.href));
       NT.push(c.tex);
       NH.push(c.mathHash);
+      NHeld.push(c.holder === true);
       NTracked.push(!!c.tracked);
     }
   }
@@ -139,7 +144,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
     for (let i = a.a0; i < a.a1; i++) atomOf[i] = k;
   });
   return {
-    id, target: frags[0]!.target, frags, O, M, OK, atomOf, atoms, N, NK, NT, NH, NTracked, dels, starts,
+    id, target: frags[0]!.target, frags, O, M, OK, atomOf, atoms, N, NK, NT, NH, ...(holders ? { NHeld } : {}), NTracked, dels, starts,
     missing: found === 0, startPara, endPara, range: [r0, r1],
   };
 }

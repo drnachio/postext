@@ -10,7 +10,7 @@ import { diffText, type Hunk } from './diff.js';
 import type { BlockView } from './blocks.js';
 import { escapeTyped, markupDeletable, splitKey, widenOverDelimiters, wrapFlags } from './markup.js';
 import { mathUnchanged, mathSource } from './math.js';
-import { OBJECT_CHAR, PARA_CHAR } from './walk.js';
+import { isHolderChar, OBJECT_CHAR, PARA_CHAR } from './walk.js';
 
 export interface SourceEdit {
   target: FragmentTarget;
@@ -82,38 +82,63 @@ export function blockHunks(v: BlockView, base: string): Hunk[] {
   return groups.map((g) => ({ a0: g.a0, a1: g.a1, b0: g.first.b0 - (g.first.a0 - g.a0), b1: g.last.b1 + (g.a1 - g.last.a1) }));
 }
 
-/** Hunks that take characters of an atom moved, where the diff allows it,
- *  onto the equal source characters beside it. An atom's holder can be the
- *  very character the source has next to it (U+00A0 holds an equation's
- *  room, and a typed no-break space is U+00A0 too): the diff may pair the
- *  holder with the source character and delete the holder, and widening
- *  would then delete the whole atom. A hunk slides one step when the
- *  character it lets go equals the one it takes on the other side, so the
- *  text it makes stays the same. */
+/** Hunks slid, where the diff allows it, along the equal characters
+ *  around them. An atom's holder can be the very character the source has
+ *  next to it (U+00A0 holds an equation's room, and a typed no-break space
+ *  is U+00A0 too), so which of a run of equal characters the user deleted
+ *  is ambiguous in the text, and widening a hunk that lands on a holder
+ *  deletes the whole atom. When the file marks its holders (`NHeld`), the
+ *  hunk goes where the source's holders pair with marked characters, so a
+ *  deleted holder deletes its atom and a deleted no-break space does not;
+ *  without the marks, a hunk keeps off the atoms. A slide keeps the text
+ *  it makes: each step lets go of a character equal to the one it takes. */
 export function slideOffAtoms(v: BlockView, hunks: Hunk[]): Hunk[] {
   const onAtom = (a0: number, a1: number): boolean => {
     for (let i = a0; i < a1; i++) if (v.atomOf[i]! >= 0) return true;
     return false;
   };
-  // A character the hunk may take: plain source text, not an atom's.
-  const plain = (i: number): boolean => v.M[i]! >= 0 && v.atomOf[i]! < 0;
+  // A character a hunk may take: source text or an atom's, never a
+  // synthetic one.
+  const takeable = (i: number): boolean => v.M[i]! >= 0 || v.atomOf[i]! >= 0;
+  const held = v.NHeld;
+  const heldO = (i: number): boolean => v.atomOf[i]! >= 0 && isHolderChar(v.O[i]);
   const out = hunks.map((h) => ({ ...h }));
   out.forEach((h, k) => {
-    if (h.a1 === h.a0 || !onAtom(h.a0, h.a1)) return;
+    if (h.a1 === h.a0 || (!held && !onAtom(h.a0, h.a1))) return;
     const lo = k > 0 ? out[k - 1]! : { a1: 0, b1: 0 };
     const hi = k + 1 < out.length ? out[k + 1]! : { a0: v.O.length, b0: v.N.length };
-    // Leftwards: O[a0 - 1] joins the hunk, O[a1 - 1] pairs with N[b1 - 1].
-    for (let d = 1; d <= h.a1 - h.a0; d++) {
-      const i = h.a0 - d;
-      if (i < lo.a1 || h.b0 - d < lo.b1 || !plain(i) || v.O[h.a1 - d] !== v.N[h.b1 - d]) break;
-      if (!onAtom(i, h.a1 - d)) return Object.assign(h, { a0: i, a1: h.a1 - d, b0: h.b0 - d, b1: h.b1 - d });
+    // Leftwards O[a0 - d] joins the hunk and O[a1 - d] pairs with
+    // N[b1 - d]; rightwards O[a1 + d - 1] joins and O[a0 + d - 1] pairs
+    // with N[b0 + d - 1].
+    let left = 0;
+    while (h.a0 - left - 1 >= lo.a1 && h.b0 - left - 1 >= lo.b1 && takeable(h.a0 - left - 1) && v.O[h.a1 - left - 1] === v.N[h.b1 - left - 1]) left++;
+    let right = 0;
+    while (h.a1 + right < hi.a0 && h.b1 + right < hi.b0 && takeable(h.a1 + right) && v.O[h.a0 + right] === v.N[h.b0 + right]) right++;
+    if (!left && !right) return;
+    // Outside the hunk a character pairs at a fixed offset on either side,
+    // whatever the shift: only the window the slides span is scored.
+    const cost = (s: number): number => {
+      let c = onAtom(h.a0 + s, h.a1 + s) ? 1 : 0;
+      if (held) {
+        for (let i = h.a0 - left; i < h.a1 + right; i++) {
+          if (i >= h.a0 + s && i < h.a1 + s) continue;
+          const j = i < h.a0 + s ? i + h.b0 - h.a0 : i + h.b1 - h.a1;
+          if (heldO(i) !== held[j]) c += 2;
+        }
+      }
+      return c;
+    };
+    // The cheapest shift, the nearest first and leftwards on a tie.
+    let best = 0;
+    let bestCost = cost(0);
+    for (let d = 1; d <= Math.max(left, right); d++) {
+      for (const s of [-d, d]) {
+        if (s < -left || s > right) continue;
+        const c = cost(s);
+        if (c < bestCost) [best, bestCost] = [s, c];
+      }
     }
-    // Rightwards: O[a1] joins the hunk, O[a0] pairs with N[b0].
-    for (let d = 1; d <= h.a1 - h.a0; d++) {
-      const i = h.a1 + d - 1;
-      if (i >= hi.a0 || h.b1 + d > hi.b0 || !plain(i) || v.O[h.a0 + d - 1] !== v.N[h.b0 + d - 1]) break;
-      if (!onAtom(h.a0 + d, i + 1)) return Object.assign(h, { a0: h.a0 + d, a1: i + 1, b0: h.b0 + d, b1: h.b1 + d });
-    }
+    if (best) Object.assign(h, { a0: h.a0 + best, a1: h.a1 + best, b0: h.b0 + best, b1: h.b1 + best });
   });
   return out;
 }

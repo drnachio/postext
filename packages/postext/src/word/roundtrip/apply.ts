@@ -119,7 +119,7 @@ function commentSource(v: BlockView, hunks: readonly Hunk[], fid: string, index:
 export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): DocxEditResult {
   const read = readExportedDocx(bytes);
   const { map } = read;
-  const blocks = buildBlocks(map.fragments, read.fragments);
+  const blocks = buildBlocks(map.fragments, read.fragments, read.holders);
   const byTarget = new Map<string, { target: TextTarget; edits: SourceEdit[] }>();
   const generated: SourceEdit[] = [];
   const hunksOf = new Map<BlockView, Hunk[]>();

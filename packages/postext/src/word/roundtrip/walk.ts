@@ -15,8 +15,12 @@ export const OBJECT_CHAR = '￼';
 /** A paragraph break inside a fragment (a paragraph the user split). */
 export const PARA_CHAR = ' ';
 
+/** Characters the formatted writer holds an atom's room with (U+2060 in
+ *  files written before #1406). */
+export const isHolderChar = (ch: string | undefined): boolean => ch === '\u00a0' || ch === '\u2060';
+
 export type Token =
-  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; para: number }
+  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; para: number }
   | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps }
   | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number }
   | { t: 'bmEnd'; wid: string; para: number }
@@ -78,6 +82,8 @@ interface WalkState {
   fields: { code: boolean; skip: boolean; instr: string; href?: string }[];
   /** Ordinal of a paragraph whose mark a tracked change deleted. */
   joinNext?: number;
+  /** A run marked w:noProof was seen (the mark survived the editor). */
+  noProof?: boolean;
 }
 
 const curPara = (s: WalkState): number => s.paras[s.paras.length - 1] ?? -1;
@@ -130,12 +136,23 @@ function emit(s: WalkState, ch: string, flags: string, ctx: RunCtx, tex?: string
 }
 
 function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
-  const flags = runFlags(child(r, 'rPr'));
+  const rPr = child(r, 'rPr');
+  const flags = runFlags(rPr);
+  // The formatted writer marks an atom's holder run w:noProof.
+  const held = rPr !== undefined && onOff(child(rPr, 'noProof')) === true;
+  if (held) s.noProof = true;
   for (const c of children(r)) {
     const name = localName(c.name);
     switch (name) {
       case 't':
-        for (const ch of textOf(c)) for (let i = 0; i < ch.length; i++) emit(s, ch[i]!, flags, ctx);
+        for (const ch of textOf(c)) {
+          for (let i = 0; i < ch.length; i++) {
+            const n = s.out.length;
+            emit(s, ch[i]!, flags, ctx);
+            const tok = s.out[n];
+            if (held && tok?.t === 'char' && isHolderChar(tok.ch)) tok.holder = true;
+          }
+        }
         break;
       case 'tab':
       case 'ptab':
@@ -321,8 +338,8 @@ function walkBlocks(s: WalkState, el: XmlElement, ctx: RunCtx): void {
 }
 
 /** The token stream of a part's block container (`w:body`, a note). */
-export function walkPart(container: XmlElement, links: Record<string, string>, out: Token[] = [], start = 0, boxStart = 0): { tokens: Token[]; nextPara: number; nextBox: number } {
+export function walkPart(container: XmlElement, links: Record<string, string>, out: Token[] = [], start = 0, boxStart = 0): { tokens: Token[]; nextPara: number; nextBox: number; noProof: boolean } {
   const s: WalkState = { out, links, paras: [], nextPara: start, boxes: [boxStart], nextBox: boxStart + 1, fields: [] };
   walkBlocks(s, container, {});
-  return { tokens: out, nextPara: s.nextPara, nextBox: s.nextBox };
+  return { tokens: out, nextPara: s.nextPara, nextBox: s.nextBox, noProof: s.noProof === true };
 }

@@ -75,4 +75,7 @@ export interface ExportMap {
   /** In document reading order. */
   fragments: MapFragment[];
   snapshot?: ExportSnapshot;
+  /** Atom holders are runs marked w:noProof (formatted, since #1406): the
+   *  importer tells them from typed no-break spaces. */
+  holders?: true;
 }

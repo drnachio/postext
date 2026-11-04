@@ -144,6 +144,9 @@ export interface RunPropsOptions {
   ea?: string;
   /** `w:w` in place of the font's own (a squeezed space). */
   scale?: number;
+  /** An atom's holder: marked w:noProof, which the importer reads to tell
+   *  it from a typed no-break space (both are U+00A0). */
+  holder?: boolean;
 }
 
 /** `w:rPr` of a run (CT_RPr child order), cached per distinct style. */
@@ -153,7 +156,7 @@ export function runProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOpti
   let cache = propsCache.get(ctx);
   if (!cache) propsCache.set(ctx, (cache = new Map()));
   // The font string carries a feature family's features (numForm).
-  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
+  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
   let props = cache.get(key);
   if (props === undefined) {
     props = buildRunProps(ctx, run, opts);
@@ -177,6 +180,7 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOption
   if (f.bold && !faceB) p.push('<w:b/><w:bCs/>');
   if (f.italic && !faceI) p.push('<w:i/><w:iCs/>');
   if (run.smallCaps) p.push('<w:smallCaps/>');
+  if (opts.holder) p.push('<w:noProof/>');
   p.push(`<w:color w:val="${textColorHex(run.color)}"/>`);
   if (opts.spacing) p.push(`<w:spacing w:val="${opts.spacing}"/>`);
   const scale = opts.scale ?? f.scale;
@@ -254,12 +258,12 @@ function blankFace(run: DisplayRun, line: DisplayLine): string {
 const clampSpacing = (tw: number): number => Math.max(-MAX_SPACING, Math.min(MAX_SPACING, tw));
 
 /** Pieces of `text` spaced by `fit`, the last character `gapTw` wider. */
-function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: FitSpacing, gapTw: number, rtl: boolean, scale?: number): RunPiece[] {
+function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: FitSpacing, gapTw: number, rtl: boolean, more: Pick<RunPropsOptions, 'scale' | 'holder'> = {}): RunPiece[] {
   const chars = Array.from(text);
   const out: RunPiece[] = [];
   const push = (from: number, to: number, spacing: number): void => {
     if (to <= from) return;
-    out.push({ rPr: runProps(ctx, run, { spacing: clampSpacing(spacing), rtl, ...(scale ? { scale } : {}) }), text: chars.slice(from, to).join('') });
+    out.push({ rPr: runProps(ctx, run, { spacing: clampSpacing(spacing), rtl, ...more }), text: chars.slice(from, to).join('') });
   };
   const n = chars.length;
   const last = gapTw ? n - 1 : n;
@@ -356,7 +360,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   const fixed = run.inline !== undefined && run.inline.kind !== 'chip' ? true : /^\t+$/.test(run.text);
   if (fixed) {
     const text = HOLDER.repeat(n);
-    const out: EmittedRun = { ...piecesOut(spacedPieces(ctx, run, text, fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n), gapTw, rtl)) };
+    const out: EmittedRun = { ...piecesOut(spacedPieces(ctx, run, text, fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n), gapTw, rtl, { holder: run.inline !== undefined })) };
     const inl = run.inline;
     if (inl && (inl.svg || inl.kind === 'swatch')) {
       const ascent = inl.ascentPx ?? inl.heightPx * 0.8;
@@ -414,7 +418,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     const flatPr = runProps(ctx, r, { spacing: flat, rtl });
     out.xml = verticalPieces(ctx, run, text).map((piece) => textRun(piece.tcy ? runProps(ctx, run, { spacing: flat, rtl, ea: eastAsianLayout(ctx, 'vert') }) : flatPr, piece.text)).join('');
   } else if (fit && (fit.extra > 0 || gapTw)) {
-    Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, scale)));
+    Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, scale ? { scale } : {})));
   } else if (gapTw) {
     Object.assign(out, piecesOut(spacedPieces(ctx, r, text, { each: flat, extra: 0 }, gapTw, rtl)));
   }
