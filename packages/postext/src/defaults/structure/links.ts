@@ -26,7 +26,6 @@ const PRINT: ReadonlySet<string> = new Set(['none', 'inline', 'notes']);
 const SHOW: ReadonlySet<string> = new Set(['url', 'qr', 'both']);
 const ECL: ReadonlySet<string> = new Set(['L', 'M', 'Q', 'H']);
 const UNDERLINE: ReadonlySet<string> = new Set(['none', 'solid', 'dotted', 'dashed']);
-const OUTPUTS: ReadonlySet<string> = new Set(LINK_STYLE_OUTPUTS);
 
 function pick<T extends string>(value: unknown, allowed: ReadonlySet<string>, fallback: T): T {
   return typeof value === 'string' && allowed.has(value) ? value as T : fallback;
