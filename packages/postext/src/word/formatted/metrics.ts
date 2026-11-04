@@ -101,6 +101,11 @@ function singlesOf(face: FaceAdvances, features: readonly string[]): Map<number,
   return map;
 }
 
+// Format characters (ZWSP, soft hyphen, word joiner, BOM, variation
+// selectors…) that Word and LibreOffice draw zero-wide when the face lacks
+// them: no fallback glyph, so they never count as missing.
+const IGNORABLE = /\p{Default_Ignorable_Code_Point}/u;
+
 /** Advance in ems of the characters of `text` the face has, and how many
  *  it lacks (a renderer draws those from a fallback face). `features`
  *  (onum, tnum, …) swap figures as Word's numForm/numSpacing do. */
@@ -111,7 +116,7 @@ export function measureEms(face: FaceAdvances, text: string, features: readonly 
   for (const ch of text) {
     const g = face.cmap.get(ch.codePointAt(0)!);
     if (g === undefined || g === 0) {
-      missing++;
+      if (!IGNORABLE.test(ch)) missing++;
       continue;
     }
     units += face.advances[subs?.get(g) ?? g] ?? 0;

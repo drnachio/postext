@@ -245,6 +245,17 @@ describe('run widths of the formatted Word export (#1406)', () => {
     expect(pieces.map((p) => p.text).join('')).toBe('\u2318 Z');
   });
 
+  it('counts a zero-width format character the face lacks as no advance', () => {
+    const ctx = context();
+    // "ab\u200Bcd": four letters (2 em = 480 tw); the ZWSP draws zero-wide.
+    for (const zw of ['\u200b', '\u00ad', '\u2060', '\ufeff']) {
+      const text = `ab${zw}cd`;
+      const out = emitRun(ctx, run(text, 0, 24), lineOf([run(text, 0, 24)]));
+      for (const p of out.pieces ?? [out]) expect(spacingOf(p.rPr)).toBe(0);
+    }
+    expect(naturalEms(FACE, 'ab\u200bcd')).toBe(2);
+  });
+
   it('sets a ruby base unspaced, the reading condensed to its width', () => {
     const ctx = context({ lang: 'ja' });
     // 漢 is 1 em (240 tw); the engine set it 1.5 em wide for its reading.
