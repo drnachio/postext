@@ -18,7 +18,7 @@ import { parseFontString } from '../../measure/fontString.js';
 import type { DisplayLine, DisplayRun } from '../../paint/displayList/types.js';
 import { escapeAttr } from '../xml.js';
 import { wordFontFor } from '../fonts/plan.js';
-import { fontSizePx, naturalEms } from './metrics.js';
+import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
 import { eastAsianLayout, kuntenOf, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
@@ -223,13 +223,22 @@ export function fitSpacing(ctx: WriterContext, widthPx: number, naturalTw: numbe
 }
 
 /** Natural advance (twips) of `text` in the Word face and size of
- *  `fontString`; undefined when the face's advances are unknown. */
-export function naturalTwips(ctx: WriterContext, fontString: string, text: string): number | undefined {
+ *  `fontString` (a feature family's figures swapped as Word does);
+ *  undefined when the face's advances are unknown. A character the face
+ *  lacks is drawn from a fallback face of unknown advance: given the run's
+ *  engine width `widthPx`, it counts as its share of what the covered
+ *  characters leave, at least an em, so a fallback glyph up to an em wide
+ *  never makes the run wider than the engine's; without it, undefined. */
+export function naturalTwips(ctx: WriterContext, fontString: string, text: string, widthPx?: number): number | undefined {
   const face = ctx.metrics.faceAdvances(fontString);
-  const ems = face && naturalEms(face, text);
-  if (ems === undefined) return undefined;
+  if (!face) return undefined;
   const f = resolveFont(ctx, fontString);
-  return ems * f.sz * 10 * ((f.scale ?? 100) / 100);
+  const { ems, missing } = measureEms(face, text, f.features);
+  const em = f.sz * 10 * ((f.scale ?? 100) / 100);
+  if (!missing) return ems * em;
+  if (widthPx === undefined) return undefined;
+  const share = ((widthPx * 1440) / ctx.dpi / em - ems) / missing;
+  return (ems + missing * Math.max(share, 1)) * em;
 }
 
 /** Natural advance of one holder (twips): the face's no-break space,
@@ -384,7 +393,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   // text, where LibreOffice drops negative spacing.
   let scale: number | undefined;
   if (fit && (blank || line.vertical) && fit.each < 0) {
-    const nat = naturalTwips(ctx, r.fontString, text)!;
+    const nat = naturalTwips(ctx, r.fontString, text, run.width)!;
     const own = resolveFont(ctx, r.fontString).scale ?? 100;
     const runTw = (run.width * 1440) / ctx.dpi;
     scale = Math.max(1, Math.min(600, Math.floor((own * runTw) / nat)));
@@ -405,7 +414,12 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   if (run.ruby) {
     const rt: DisplayRun = { text: run.ruby.text, x: run.x, width: 0, fontString: run.ruby.fontString, color: run.ruby.color ?? run.color, textStart: 0 };
     const sizes = { base: resolveFont(ctx, run.fontString).sz, rt: resolveFont(ctx, run.ruby.fontString).sz };
-    out.xml = rubyXml(ctx, run, text, rPr, runProps(ctx, rt, {}), sizes, line);
+    // The base is not spaced out: LibreOffice lengthens the ruby cell by a
+    // base's spacing beyond the reading it already makes room for, pushing
+    // the line on. The reading's size (condensedReading) is the one lever.
+    const basePr = runProps(ctx, r, { spacing: flat, rtl });
+    out.rPr = basePr;
+    out.xml = rubyXml(ctx, run, text, basePr, runProps(ctx, rt, {}), sizes, line);
   } else if (run.warichu) {
     // Word's two lines in one puts the first half of the text on top.
     const { upper, lower } = run.warichu;
@@ -435,7 +449,7 @@ function measurable(ctx: WriterContext, run: DisplayRun, line: DisplayLine, blan
 }
 
 function fitOf(ctx: WriterContext, run: DisplayRun, text: string, roomTw = 0): FitSpacing | undefined {
-  const nat = naturalTwips(ctx, run.fontString, text);
+  const nat = naturalTwips(ctx, run.fontString, text, run.width);
   if (nat === undefined) return undefined;
   const count = Array.from(text).length;
   return fitSpacing(ctx, run.width, nat + roomTw * count, count);

@@ -12,12 +12,13 @@
 // against a renderer (Word, LibreOffice) if a font lands off its line.
 //
 // The same faces give the natural advances of a run's characters (cmap →
-// hmtx, no kerning or shaping), so runs.ts can space every run out to the
-// width the engine set it at (#1406).
+// GSUB figure substitutions → hmtx, no kerning or shaping), so runs.ts can
+// space every run out to the width the engine set it at (#1406).
 
 import { readSfnt, type Sfnt } from '../fonts/sfnt.js';
 import { readCmap } from '../fonts/cmap.js';
 import { readHmtx } from '../fonts/glyf.js';
+import { gsubSingles } from '../fonts/gsub.js';
 import { wordFontFor } from '../fonts/plan.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { findPxSize } from '../../measure/fontString.js';
@@ -68,6 +69,8 @@ export interface FaceAdvances {
   unitsPerEm: number;
   cmap: Map<number, number>;
   advances: number[];
+  /** The face's GSUB table, for a feature family's figures. */
+  gsub?: Uint8Array;
 }
 
 /** cmap and hmtx of an sfnt, when it has both. */
@@ -81,19 +84,51 @@ export function faceAdvancesOf(font: Sfnt): FaceAdvances | undefined {
   const cmap = readCmap(font.tables.get('cmap'));
   if (!unitsPerEm || cmap.size === 0) return undefined;
   const advances = readHmtx(hmtx, u16(hhea, 34), u16(maxp, 4)).map((m) => m[0]);
-  return { unitsPerEm, cmap, advances };
+  const gsub = font.tables.get('GSUB');
+  return { unitsPerEm, cmap, advances, ...(gsub ? { gsub } : {}) };
+}
+
+const singlesCache = new WeakMap<FaceAdvances, Map<string, Map<number, number>>>();
+
+/** Glyph substitutions of `features` in a face, cached per face. */
+function singlesOf(face: FaceAdvances, features: readonly string[]): Map<number, number> | undefined {
+  if (!face.gsub || features.length === 0) return undefined;
+  let byKey = singlesCache.get(face);
+  if (!byKey) singlesCache.set(face, (byKey = new Map()));
+  const key = features.join(',');
+  let map = byKey.get(key);
+  if (!map) byKey.set(key, (map = gsubSingles(face.gsub, features)));
+  return map;
+}
+
+// Format characters (ZWSP, soft hyphen, word joiner, BOM, variation
+// selectors…) that Word and LibreOffice draw zero-wide when the face lacks
+// them: no fallback glyph, so they never count as missing.
+const IGNORABLE = /\p{Default_Ignorable_Code_Point}/u;
+
+/** Advance in ems of the characters of `text` the face has, and how many
+ *  it lacks (a renderer draws those from a fallback face). `features`
+ *  (onum, tnum, …) swap figures as Word's numForm/numSpacing do. */
+export function measureEms(face: FaceAdvances, text: string, features: readonly string[] = []): { ems: number; missing: number } {
+  const subs = singlesOf(face, features);
+  let units = 0;
+  let missing = 0;
+  for (const ch of text) {
+    const g = face.cmap.get(ch.codePointAt(0)!);
+    if (g === undefined || g === 0) {
+      if (!IGNORABLE.test(ch)) missing++;
+      continue;
+    }
+    units += face.advances[subs?.get(g) ?? g] ?? 0;
+  }
+  return { ems: units / face.unitsPerEm, missing };
 }
 
 /** Natural advance of `text` in ems; undefined when the face lacks a
  *  character (the renderer would fall back to another face). */
-export function naturalEms(face: FaceAdvances, text: string): number | undefined {
-  let units = 0;
-  for (const ch of text) {
-    const g = face.cmap.get(ch.codePointAt(0)!);
-    if (g === undefined || g === 0) return undefined;
-    units += face.advances[g] ?? 0;
-  }
-  return units / face.unitsPerEm;
+export function naturalEms(face: FaceAdvances, text: string, features: readonly string[] = []): number | undefined {
+  const m = measureEms(face, text, features);
+  return m.missing ? undefined : m.ems;
 }
 
 /** The px size of a CSS font shorthand (0 when it has none). */
