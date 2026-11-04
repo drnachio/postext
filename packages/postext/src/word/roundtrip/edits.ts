@@ -34,7 +34,7 @@ export function blockHunks(v: BlockView, base: string): Hunk[] {
   // formatted writer starts a new paragraph where the alignment changes)
   // reads back as a paragraph break where the map has a line break: the
   // same break, not a paragraph the user made.
-  const raw = diffText(v.O, v.N).filter((h) => !(h.a1 - h.a0 === h.b1 - h.b0 && h.a1 > h.a0 && sameBreaks(v, base, h)));
+  const raw = slideOffAtoms(v, diffText(v.O, v.N).filter((h) => !(h.a1 - h.a0 === h.b1 - h.b0 && h.a1 > h.a0 && sameBreaks(v, base, h))));
   // Equations in equal text whose TeX Word changed.
   const eq = equalPairs(v, raw);
   const extra: Hunk[] = [];
@@ -80,6 +80,42 @@ export function blockHunks(v: BlockView, base: string): Hunk[] {
     } else groups.push({ a0, a1, first: h, last: h });
   }
   return groups.map((g) => ({ a0: g.a0, a1: g.a1, b0: g.first.b0 - (g.first.a0 - g.a0), b1: g.last.b1 + (g.a1 - g.last.a1) }));
+}
+
+/** Hunks that take characters of an atom moved, where the diff allows it,
+ *  onto the equal source characters beside it. An atom's holder can be the
+ *  very character the source has next to it (U+00A0 holds an equation's
+ *  room, and a typed no-break space is U+00A0 too): the diff may pair the
+ *  holder with the source character and delete the holder, and widening
+ *  would then delete the whole atom. A hunk slides one step when the
+ *  character it lets go equals the one it takes on the other side, so the
+ *  text it makes stays the same. */
+export function slideOffAtoms(v: BlockView, hunks: Hunk[]): Hunk[] {
+  const onAtom = (a0: number, a1: number): boolean => {
+    for (let i = a0; i < a1; i++) if (v.atomOf[i]! >= 0) return true;
+    return false;
+  };
+  // A character the hunk may take: plain source text, not an atom's.
+  const plain = (i: number): boolean => v.M[i]! >= 0 && v.atomOf[i]! < 0;
+  const out = hunks.map((h) => ({ ...h }));
+  out.forEach((h, k) => {
+    if (h.a1 === h.a0 || !onAtom(h.a0, h.a1)) return;
+    const lo = k > 0 ? out[k - 1]! : { a1: 0, b1: 0 };
+    const hi = k + 1 < out.length ? out[k + 1]! : { a0: v.O.length, b0: v.N.length };
+    // Leftwards: O[a0 - 1] joins the hunk, O[a1 - 1] pairs with N[b1 - 1].
+    for (let d = 1; d <= h.a1 - h.a0; d++) {
+      const i = h.a0 - d;
+      if (i < lo.a1 || h.b0 - d < lo.b1 || !plain(i) || v.O[h.a1 - d] !== v.N[h.b1 - d]) break;
+      if (!onAtom(i, h.a1 - d)) return Object.assign(h, { a0: i, a1: h.a1 - d, b0: h.b0 - d, b1: h.b1 - d });
+    }
+    // Rightwards: O[a1] joins the hunk, O[a0] pairs with N[b0].
+    for (let d = 1; d <= h.a1 - h.a0; d++) {
+      const i = h.a1 + d - 1;
+      if (i >= hi.a0 || h.b1 + d > hi.b0 || !plain(i) || v.O[h.a0 + d - 1] !== v.N[h.b0 + d - 1]) break;
+      if (!onAtom(h.a0 + d, i + 1)) return Object.assign(h, { a0: h.a0 + d, a1: i + 1, b0: h.b0 + d, b1: h.b1 + d });
+    }
+  });
+  return out;
 }
 
 /** Whether the hunk only turns engine line breaks (synthetic, or standing
