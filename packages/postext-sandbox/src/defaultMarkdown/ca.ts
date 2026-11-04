@@ -809,7 +809,7 @@ Les obres es citen com ho fa Pandoc: entre claudàtors, \`[@garcia2020, pág. 33
 
 ## Enllaços en paper
 
-:index{term="enllaços"}Un enllaç al web s'escriu com en qualsevol Markdown, \`[paraules](https://…)\`, i continua sent un enllaç allà on el lector el pot seguir: aquestes previsualitzacions, l'HTML, el PDF i l'EPUB. En paper només se'n veurien les paraules. \`links.print\` decideix què afegeix la pàgina impresa: res, l'adreça entre parèntesis després de les paraules (\`'inline'\`) o una nota (\`'notes'\`) amb l'adreça, un codi QR que obre el mòbil, o totes dues coses. Les notes d'enllaç prenen la numeració i l'estil de les notes a peu de pàgina. Aquest llibre imprimeix l'adreça abreujada i el codi, com mostra la nota d'aquest enllaç al [repositori de Postext](https://github.com/drnachio/postext).
+:index{term="enllaços"}Un enllaç al web s'escriu com en qualsevol Markdown, \`[paraules](https://…)\`, i continua sent un enllaç allà on el lector el pot seguir: aquestes previsualitzacions, l'HTML, el PDF i l'EPUB. En paper només se'n veurien les paraules. \`links.print\` decideix què afegeix la pàgina impresa: res, l'adreça entre parèntesis després de les paraules (\`'inline'\`) o una nota (\`'notes'\`) amb l'adreça, un codi QR que obre el mòbil, o totes dues coses. Les notes d'enllaç prenen la numeració i l'estil de les notes a peu de pàgina. Aquest llibre imprimeix l'adreça abreujada i el codi, com mostra la nota d'aquest enllaç al [repositori de Postext](https://github.com/drnachio/postext). En pantalla, el mateix enllaç pren \`links.style\`, un color i una línia a sota a les sortides que triïs: aquí, el color de les bandes dels capítols, subratllat, a la vista HTML, l'EPUB i SCORM.
 
 ## Matemàtiques a l'original
 

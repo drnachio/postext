@@ -145,7 +145,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   signal?.throwIfAborted();
 
   const vertical = first.config.layout.writingMode === 'vertical-rl';
-  const sheetOptions = { vertical, ...(book.verse ? { verse: true } : {}), ...(book.stanzas ? { stanzas: true } : {}), ...(book.lineNumbers ? { lineNumbers: true } : {}), ...(book.tabs ? { tabs: true } : {}), ...(book.code ? { code: true } : {}), ...(book.wraps ? { wraps: true } : {}), ...(book.labelLayers ? { labelLayers: true } : {}), ...(book.dropCaps?.size ? { dropCaps: [...book.dropCaps] } : {}), ...(book.dots.size > 0 ? { dots: [...book.dots] } : {}), ...(book.composed ? { composed: { frameStyles: [...(book.frameStyles ?? [])] } } : {}) };
+  const sheetOptions = { vertical, ...(options.linkOutput ? { linkOutput: options.linkOutput } : {}), ...(book.verse ? { verse: true } : {}), ...(book.stanzas ? { stanzas: true } : {}), ...(book.lineNumbers ? { lineNumbers: true } : {}), ...(book.tabs ? { tabs: true } : {}), ...(book.code ? { code: true } : {}), ...(book.wraps ? { wraps: true } : {}), ...(book.labelLayers ? { labelLayers: true } : {}), ...(book.dropCaps?.size ? { dropCaps: [...book.dropCaps] } : {}), ...(book.dots.size > 0 ? { dots: [...book.dots] } : {}), ...(book.composed ? { composed: { frameStyles: [...(book.frameStyles ?? [])] } } : {}) };
   const sheet = bookStylesheet(first.config, fonts.css, sheetOptions);
   const items: EpubItem[] = [{ id: 'css', href: STYLESHEET_HREF, mediaType: 'text/css', data: sheet.css }];
   // The stylesheet follows the first chapter's configuration. A document

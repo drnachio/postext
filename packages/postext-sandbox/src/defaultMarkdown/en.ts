@@ -811,7 +811,7 @@ Works are cited as Pandoc writes them: in brackets, \`[@garcia2020, p. 33]\`, or
 
 ## Links on paper
 
-:index{term="links"}A link to the web is written as in any Markdown, \`[words](https://…)\`, and stays a link wherever a reader can follow it: these previews, the HTML, the PDF and the EPUB. On paper only its words would show. \`links.print\` decides what a printed page adds: nothing, the address in parentheses after the words (\`'inline'\`), or a note (\`'notes'\`) with the address, a QR code that a phone opens, or both. Link notes take the numbers and the style of the footnotes. This book prints the short address and the code, as the note of this link to [the Postext repository](https://github.com/drnachio/postext) shows.
+:index{term="links"}A link to the web is written as in any Markdown, \`[words](https://…)\`, and stays a link wherever a reader can follow it: these previews, the HTML, the PDF and the EPUB. On paper only its words would show. \`links.print\` decides what a printed page adds: nothing, the address in parentheses after the words (\`'inline'\`), or a note (\`'notes'\`) with the address, a QR code that a phone opens, or both. Link notes take the numbers and the style of the footnotes. This book prints the short address and the code, as the note of this link to [the Postext repository](https://github.com/drnachio/postext) shows. On screen the same link takes \`links.style\`, a colour and a line under it in the outputs you choose: here the colour of the chapter bands, underlined, in the HTML view, the EPUB and SCORM.
 
 ## Mathematics in the source
 

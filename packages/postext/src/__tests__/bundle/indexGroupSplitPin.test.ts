@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migrateBundleConfig, migrateConfig, pinLegacyIndexGroupSplit, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
+import { migrateBundleConfig, migrateConfig, pinLegacyIndexGroupSplit, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig } from '../../types.js';
@@ -39,9 +39,9 @@ describe('pinLegacyIndexGroupSplit (#712)', () => {
     const current: PostextConfig = {};
     // One stamped 12 or 13 takes the pin of the language alone (#764, #770);
     // one stamped 14 is read as it is.
-    expect(migrateConfig(current, 12, { content: INDEX })).toEqual({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(current, 13, { content: INDEX })).toEqual({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(current, 14, { content: INDEX })).toEqual(pinLegacySlashBreaks(current));
+    expect(migrateConfig(current, 12, { content: INDEX })).toEqual(pinLegacyHtmlViewerBreaking({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(current, 13, { content: INDEX })).toEqual(pinLegacyHtmlViewerBreaking({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(current, 14, { content: INDEX })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(current)));
   });
 
   it('survives a save; resolves a whole number of 1 or more', () => {

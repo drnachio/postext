@@ -650,6 +650,7 @@ interface LinksConfig {
     side?: 'start' | 'end';            // 注の行のどちら側にコードを置くか。
     gap?: Dimension;                   // コードと行の間隔。emは注の文字サイズ。
   };
+  style?: LinkStyleConfig;             // リンクの文字の見た目（後述）。
 }
 ```
 
@@ -749,10 +750,79 @@ links: {
 - **版ごとの設定**。出版社は電子版では`print: 'none'`のままにし、印刷版の設定で`print: 'notes'`と`show: 'both'`を指定するのが普通です。Markdownはどちらの版も同じです。
 - **PDF**。コードはベクターで描かれ、アドレスへのリンクになります。タグ付きPDFでは`Link`の中の`Figure`となり、アドレスが代替テキストになります。
 
+### リンクのスタイル
+
+`links.style` は、リンクの文字の見た目（色と下線）を決めます。スタイルは描画するだけで組版には加わらないため、あってもなくてもページの組みは同じで、出力ごとに表示するかどうかを選べます。読者がクリックする出力（HTML、EPUB、SCORM）でリンクに色と下線を付け、紙面は `print: 'notes'` に任せるのが一般的です。postext 1.68 以降。
+
+```ts
+interface LinkStyleConfig {
+  color?: ColorValue;                                  // 未設定なら文字の色。
+  underline?: 'none' | 'solid' | 'dotted' | 'dashed';
+  underlineColor?: ColorValue;                         // 未設定ならリンクの色。
+  outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[];
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>プロパティ</th>
+      <th>型</th>
+      <th>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>文字の色</td>
+      <td>リンクの文字の色。未設定のときは周りの文字の色のままです（太字・斜体の中ではその色）。パレットに結び付けた色はパレットに従います。</td>
+    </tr>
+    <tr>
+      <td><code>style.underline</code></td>
+      <td><code>'none' | 'solid' | 'dotted' | 'dashed'</code></td>
+      <td><code>'none'</code></td>
+      <td>リンクの文字の下に引く線。なし、実線、点線、破線から選びます。</td>
+    </tr>
+    <tr>
+      <td><code>style.underlineColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>リンクの色</td>
+      <td>下線の色。未設定ならリンクの色、それもなければ文字の色です。</td>
+    </tr>
+    <tr>
+      <td><code>style.outputs</code></td>
+      <td><code>('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]</code></td>
+      <td><code>['html', 'epub', 'scorm']</code></td>
+      <td>スタイルを描く出力。Sandbox のキャンバス、Folio、PDF、HTML ビューアーと <code>renderToHtml</code>、EPUB、SCORM パッケージです。それ以外の出力ではリンクを周りの文字と同じように組みます。空のリストならどこにも描きません。</td>
+    </tr>
+  </tbody>
+</table>
+
+QR の注を付けた印刷版で、デジタルの出力ではリンクに色と下線を付ける例です。
+
+```ts
+links: {
+  print: 'notes',
+  show: 'qr',
+  style: {
+    color: { hex: '#1a5fb4', model: 'hex' },
+    underline: 'solid',
+  },
+}
+```
+
+- **対象のリンク。** Markdown のリンクすべて（Web アドレス、`mailto:`、`tel:`、本の中の場所へのリンク）です。文献リストの項目に結び付いた引用、`:ref`、索引のページ番号は、それぞれの色のままです。
+- **下線。** ベースラインの 0.13 em 下に 0.06 em の太さで、リンクの語とその間のスペースに引きます。2 行にまたがるリンクは各行に引きます。縦組みでは色だけが付き、下線は引きません。
+- **太さと傾き。** スタイルには含めません。語の幅が変わるため、同じ組版を共有する出力どうしで違いを出せなくなるからです。
+- **ホスト。** ページを自分で描くホストは、どの出力かを指定します（`renderPageToCanvas(page, doc, canvas, { output: 'folio' })`、`renderToHtml(doc, { output: 'epub' })`）。PDF、EPUB、SCORM の出力処理は自分で指定します。`linkStyleFor(doc.config.links, output)` は、その出力が使うスタイルか `undefined` を返します。
+- **リフロー型 EPUB。** スタイルがないときは、これまでどおりリンクは文字の色で下線付きです。`epub` を含むスタイルがあれば、その色と線をスタイルシートに書き込みます。
+
 解決関数と除去関数は、ほかのセクションと同じ形です。
 
 ```ts
-import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, resolveLinkStyleConfig, linkStyleFor, stripLinksDefaults } from 'postext';
 ```
 
 ## 目次

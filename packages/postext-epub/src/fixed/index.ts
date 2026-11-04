@@ -197,6 +197,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
       resourceVideoUrl: videoUrl,
       videos: { files: 'player', streams: 'poster', hls: 'poster' },
       singleInk: false,
+      output: options.linkOutput ?? 'epub',
       refTargets: [...refTargets],
     });
     for (const [i, page] of doc.pages.entries()) {

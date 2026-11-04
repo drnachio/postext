@@ -18,6 +18,19 @@ export interface VDTLineHighlight {
   radiusRight: number;
 }
 
+/** The line under a run of one link's words (#1402): from `x` (px from the
+ *  line's `bbox.x`, where its text is painted) `length` px along the line,
+ *  centred `y` px under the baseline, `thickness` px thick. Set on every
+ *  line holding a link when the document styles its links; a renderer
+ *  draws it only in an output the style lists (`linkStyleFor`), in the
+ *  style's pattern and colour. */
+export interface VDTLinkUnderline {
+  x: number;
+  y: number;
+  length: number;
+  thickness: number;
+}
+
 /**
  * A mark the layout set on a line (#193, #421): an emphasis dot, circle or
  * sesame on one character, or a line along a run: the proper-name line,
@@ -237,6 +250,10 @@ export interface VDTLine {
   /** The bands of the highlight marks on this line (`:mark[…]`, #888),
    *  painted under its text; absent on a line with none. */
   highlights?: VDTLineHighlight[];
+  /** The underlines of the links on this line (`links.style`, #1402);
+   *  absent on a line with none or in a document that does not style its
+   *  links. */
+  linkUnderlines?: VDTLinkUnderline[];
   /** How far the ink of the line's words that carry Arabic vowel marks
    *  (ḥarakāt, #376) reaches above (`above`) and below (`below`) its
    *  baseline, px: the marks stack past the letters and may leave the

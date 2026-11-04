@@ -811,7 +811,7 @@ Las obras se citan como las escribe Pandoc, \`[@garcia2020, pág. 33]\` o \`@gar
 
 ## Enlaces en papel
 
-:index{term="enlaces"}Un enlace a la web se escribe como en cualquier Markdown, \`[palabras](https://…)\`, y sigue siendo un enlace allí donde el lector puede seguirlo: estas vistas previas, el HTML, el PDF y el EPUB. En papel solo se verían sus palabras. \`links.print\` decide qué añade la página impresa: nada, la dirección entre paréntesis tras las palabras (\`'inline'\`) o una nota (\`'notes'\`) con la dirección, un código QR que abre el móvil, o ambas cosas. Las notas de enlace toman la numeración y el estilo de las notas al pie. Este libro imprime la dirección abreviada y el código, como muestra la nota de este enlace al [repositorio de Postext](https://github.com/drnachio/postext).
+:index{term="enlaces"}Un enlace a la web se escribe como en cualquier Markdown, \`[palabras](https://…)\`, y sigue siendo un enlace allí donde el lector puede seguirlo: estas vistas previas, el HTML, el PDF y el EPUB. En papel solo se verían sus palabras. \`links.print\` decide qué añade la página impresa: nada, la dirección entre paréntesis tras las palabras (\`'inline'\`) o una nota (\`'notes'\`) con la dirección, un código QR que abre el móvil, o ambas cosas. Las notas de enlace toman la numeración y el estilo de las notas al pie. Este libro imprime la dirección abreviada y el código, como muestra la nota de este enlace al [repositorio de Postext](https://github.com/drnachio/postext). En pantalla, el mismo enlace toma \`links.style\`, un color y una línea debajo en las salidas que elijas: aquí, el color de las bandas de los capítulos, subrayado, en la vista HTML, el EPUB y SCORM.
 
 ## Matemáticas en el original
 

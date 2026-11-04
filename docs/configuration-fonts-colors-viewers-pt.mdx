@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fontes, cores e saída',
   description: 'As unidades, as cores e a paleta, as fontes personalizadas, o visualizador HTML, o PDF e a produção gráfica, o visualizador Folio e a depuração',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Ativa a quebra de linhas Knuth–Plass no visualizador HTML. Vem desligada porque o visualizador refaz a diagramação a cada redimensionamento e mudança de tamanho de fonte, e o algoritmo guloso (primeiro encaixe) é rápido o bastante para parecer instantâneo. Ligue-a quando quiser as mesmas quebras ótimas que o renderizador de canvas usa.</td>
+      <td><code>true</code></td>
+      <td>Quebra as linhas do visualizador HTML com Knuth–Plass, as mesmas quebras ótimas que o canvas e o PDF fazem: a edição na tela não perde qualidade em relação à impressa. Com <code>true</code> o visualizador segue <code>bodyText.optimalLineBreaking</code>, de modo que um documento que compõe o texto linha a linha mantém isso na tela. Defina-o como <code>false</code> para preencher cada linha antes da seguinte, o que é mais rápido num livro muito longo. Uma configuração salva com <code>configVersion</code> 21 ou anterior que não o define é lida como <code>false</code>, como era diagramada então.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined quando tudo coincide com os valores padrão

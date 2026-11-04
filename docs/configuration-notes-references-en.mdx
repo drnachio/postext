@@ -650,6 +650,7 @@ interface LinksConfig {
     side?: 'start' | 'end';            // Where the code stands beside the note's lines.
     gap?: Dimension;                   // Space between the code and the lines; em is the note size.
   };
+  style?: LinkStyleConfig;             // How a link's text looks (below).
 }
 ```
 
@@ -749,10 +750,79 @@ links: {
 - **One configuration per edition.** A publisher usually keeps `print: 'none'` in the digital edition and sets `print: 'notes'` with `show: 'both'` in the print edition's config; the Markdown is the same in both.
 - **PDF.** The code is drawn as vectors and is a link to the address. A tagged PDF sets it as a `Figure` inside a `Link`, with the address as its alternative text.
 
+### Link style
+
+`links.style` sets how the text of a link looks: a colour and a line under it. The style is painted, not measured, so a page lays out the same with or without it, and each output can show it or not. The usual setup colours and underlines links in the outputs a reader clicks in (HTML, EPUB, SCORM) and leaves paper to `print: 'notes'`. Since postext 1.68.
+
+```ts
+interface LinkStyleConfig {
+  color?: ColorValue;                                  // The text's colour when unset.
+  underline?: 'none' | 'solid' | 'dotted' | 'dashed';
+  underlineColor?: ColorValue;                         // The link colour when unset.
+  outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[];
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>text colour</td>
+      <td>Colour of the link's text. Unset, a link keeps the colour of the text around it (the bold or italic colour inside them). A colour linked to the palette follows it.</td>
+    </tr>
+    <tr>
+      <td><code>style.underline</code></td>
+      <td><code>'none' | 'solid' | 'dotted' | 'dashed'</code></td>
+      <td><code>'none'</code></td>
+      <td>The line under the link's text: none, solid, dotted or dashed.</td>
+    </tr>
+    <tr>
+      <td><code>style.underlineColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>link colour</td>
+      <td>Colour of the underline; the link colour when unset, else the text's.</td>
+    </tr>
+    <tr>
+      <td><code>style.outputs</code></td>
+      <td><code>('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]</code></td>
+      <td><code>['html', 'epub', 'scorm']</code></td>
+      <td>Where the style is painted: the Sandbox canvas, Folio, the PDF, the HTML viewer and <code>renderToHtml</code>, an EPUB and a SCORM package. The other outputs set links like the text around them; an empty list paints the style nowhere.</td>
+    </tr>
+  </tbody>
+</table>
+
+A print edition with QR notes whose digital outputs colour and underline the links:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'qr',
+  style: {
+    color: { hex: '#1a5fb4', model: 'hex' },
+    underline: 'solid',
+  },
+}
+```
+
+- **Which links.** Every Markdown link: web addresses, `mailto:`, `tel:` and links to a place in the book. A citation linked to its bibliography entry, a `:ref` and an index page number keep their own colours.
+- **The underline.** It runs 0.13 em under the baseline, 0.06 em thick, under the link's words and the spaces between them; a link broken over two lines is underlined on each. Vertical text takes the colour without the underline.
+- **Weight and slant.** They are not part of the style: they change the width of the words, and outputs that share one layout could no longer differ.
+- **Hosts.** A host that paints pages itself says which output it paints: `renderPageToCanvas(page, doc, canvas, { output: 'folio' })`, `renderToHtml(doc, { output: 'epub' })`. The PDF, EPUB and SCORM writers set it themselves. `linkStyleFor(doc.config.links, output)` gives the style an output takes, or `undefined`.
+- **Reflowable EPUB.** Without a style its links stay underlined in the text's colour, as before. A style that lists `epub` sets their colour and line in the stylesheet.
+
 The resolver and the stripper work as in the other sections:
 
 ```ts
-import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, resolveLinkStyleConfig, linkStyleFor, stripLinksDefaults } from 'postext';
 ```
 
 ## Table of contents

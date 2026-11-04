@@ -650,6 +650,7 @@ interface LinksConfig {
     side?: 'start' | 'end';            // 二维码在注释文字的哪一侧。
     gap?: Dimension;                   // 二维码与文字之间的距离；em为注释字号。
   };
+  style?: LinkStyleConfig;             // 链接文字的外观（见下文）。
 }
 ```
 
@@ -749,10 +750,79 @@ links: {
 - **每个版本一份配置**。出版者通常在电子版保留`print: 'none'`，在印刷版的配置里设置`print: 'notes'`和`show: 'both'`；两版的Markdown完全相同。
 - **PDF**。二维码以矢量绘制，本身是指向该网址的链接。在带标签的PDF中，它是`Link`里的一个`Figure`，以网址作为替代文字。
 
+### 链接样式
+
+`links.style` 决定链接文字的外观：颜色和下划线。样式只在绘制时加上，不参与排版，所以有没有它页面都排得一样，每种输出都可以选择是否显示。常见做法是在读者会点击的输出（HTML、EPUB、SCORM）中给链接加颜色和下划线，纸面则交给 `print: 'notes'`。自 postext 1.68 起。
+
+```ts
+interface LinkStyleConfig {
+  color?: ColorValue;                                  // 未设置时为文字颜色。
+  underline?: 'none' | 'solid' | 'dotted' | 'dashed';
+  underlineColor?: ColorValue;                         // 未设置时为链接颜色。
+  outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[];
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>属性</th>
+      <th>类型</th>
+      <th>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>文字颜色</td>
+      <td>链接文字的颜色。未设置时，链接沿用周围文字的颜色（在粗体或斜体中则为其颜色）。链接到调色板的颜色随调色板变化。</td>
+    </tr>
+    <tr>
+      <td><code>style.underline</code></td>
+      <td><code>'none' | 'solid' | 'dotted' | 'dashed'</code></td>
+      <td><code>'none'</code></td>
+      <td>链接文字下方的线：无、实线、点线或虚线。</td>
+    </tr>
+    <tr>
+      <td><code>style.underlineColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>链接颜色</td>
+      <td>下划线的颜色；未设置时为链接颜色，再无则为文字颜色。</td>
+    </tr>
+    <tr>
+      <td><code>style.outputs</code></td>
+      <td><code>('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]</code></td>
+      <td><code>['html', 'epub', 'scorm']</code></td>
+      <td>绘制样式的输出：Sandbox 画布、Folio、PDF、HTML 查看器与 <code>renderToHtml</code>、EPUB 和 SCORM 包。其他输出把链接排得与周围文字相同；列表为空则任何输出都不绘制。</td>
+    </tr>
+  </tbody>
+</table>
+
+一个带二维码注释的印刷版，其数字输出为链接加颜色和下划线：
+
+```ts
+links: {
+  print: 'notes',
+  show: 'qr',
+  style: {
+    color: { hex: '#1a5fb4', model: 'hex' },
+    underline: 'solid',
+  },
+}
+```
+
+- **哪些链接。** 所有 Markdown 链接：网址、`mailto:`、`tel:` 以及指向书中某处的链接。链接到参考文献条目的引文、`:ref` 和索引中的页码保留各自的颜色。
+- **下划线。** 位于基线下 0.13 em，粗 0.06 em，贯穿链接的词语及其间的空格；跨两行的链接每行都有下划线。竖排文字只加颜色，不加下划线。
+- **粗细与倾斜。** 不属于样式：它们会改变词语宽度，共用同一排版的输出就无法再有所不同。
+- **宿主。** 自行绘制页面的宿主需指明输出：`renderPageToCanvas(page, doc, canvas, { output: 'folio' })`、`renderToHtml(doc, { output: 'epub' })`。PDF、EPUB 和 SCORM 的生成器会自行指明。`linkStyleFor(doc.config.links, output)` 返回某个输出采用的样式，或 `undefined`。
+- **可重排 EPUB。** 没有样式时，链接仍像以前一样以文字颜色加下划线。样式列出 `epub` 时，样式表中写入其颜色和线条。
+
 解析函数和精简函数的用法与其他各节相同：
 
 ```ts
-import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, resolveLinkStyleConfig, linkStyleFor, stripLinksDefaults } from 'postext';
 ```
 
 ## 目录

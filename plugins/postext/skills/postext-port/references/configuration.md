@@ -114,7 +114,7 @@ Conversion at `page.dpi` (default 300):
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `crossRefs` | CrossRefsConfig | §19a2 | words of heading/anchor references, default style, label breaking (≥ 1.12) |
 | `citations` | CitationsConfig | §19a3 | CSL style, locale, markers, note mode, numbering, bibliography (≥ 1.12; needs postext-citeproc) |
-| `links` | LinksConfig | §19a4 | what paper shows of an external link's address: nothing, `(address)` inline, or a footnote with the address and/or a QR code (≥ 1.65) |
+| `links` | LinksConfig | §19a4 | what paper shows of an external link's address: nothing, `(address)` inline, or a footnote with the address and/or a QR code (≥ 1.65); `style`: link colour and underline per output (≥ 1.68) |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9); Japanese summary §19c2 (≥ 1.16) |
 | `lineNumbers` | LineNumbersConfig | §19f | line numbers in the margin, the gutter or the side column (postext ≥ 1.23): verse or every body line, interval, restarts, position, face; off by default |
@@ -1844,6 +1844,12 @@ links: {
     side?: 'start' | 'end';            // 'end': code at the line end, level with the note's first line
     gap?: Dimension;                   // 1em of the note size
   };
+  style?: {                            // ≥ 1.68: how a link's text looks, painted only (no line changes)
+    color?: ColorValue;                // unset: the colour of the text around it
+    underline?: 'none' | 'solid' | 'dotted' | 'dashed'; // 'none'
+    underlineColor?: ColorValue;       // unset: the link colour, else the text's
+    outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]; // ['html', 'epub', 'scorm']
+  };
 }
 ```
 
@@ -1863,6 +1869,21 @@ links: {
 
 ```json
 "links": { "print": "notes", "show": "both", "urlDisplay": "short", "repeat": "first" }
+```
+
+- **`links.style`** (≥ 1.68): a colour and an underline for every Markdown link (`mailto:` and `#anchor` too; a
+  citation linked to its bibliography entry, a `:ref` and an index page number keep their own colours), painted in
+  the outputs `outputs` lists. Paint only: pages lay out the same, so outputs that share a layout can differ. The
+  underline runs 0.13 em under the baseline, 0.06 em thick, across the link's words and spaces; vertical text gets
+  the colour only. No weight or slant (they would change the lines). Reflowable EPUB without a style keeps
+  underlining links in the text colour.
+- **Porting:** a source whose screen edition (web, EPUB, interactive PDF) shows coloured or underlined links →
+  `style` with the source's colour and line, `outputs` the digital outputs only when the print edition sets links as
+  plain text (with `print: 'notes'` or `'inline'`). Link the colour to the palette when the source uses a brand
+  colour. Never mark links up in the Markdown (`**[x](y)**`) to colour them.
+
+```json
+"links": { "print": "notes", "show": "qr", "style": { "color": { "hex": "#1a5fb4", "model": "hex" }, "underline": "solid" } }
 ```
 
 ## 19b. `index` — IndexConfig (postext ≥ 1.7)
@@ -2466,7 +2487,7 @@ text typed into its elements is content like any other design text.
                               view?: { canvasScope?: 'book'|'chapter' },        // the edition's view over `view` (≥ 1.9.2)
                               start?: { … } } } }                               // the edition's own start, in place of `start`
 ```
-`configVersion: 21` says `config` and the `localized` overrides are written for today's rules (`preset_kit.write_manifest` sets it).
+`configVersion: 22` says `config` and the `localized` overrides are written for today's rules (`preset_kit.write_manifest` sets it).
 Rule 15 marks a config that may hold `pageTemplates` / `labelStyles` and pins nothing, so a manifest stamped 14
 (postext 1.30 to 1.33) loads unchanged. Without a number the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
 `layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
@@ -2637,7 +2658,8 @@ as a change. Left out, the file is stamped with the time of the call.
   in `postext check`, its own group in the Sandbox Checks) and no longer counts as a warning.
   Turn the check off (`enabled: false`) only when the user asks.
 
-`htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = false, overrides?: Omit<PostextConfig,'htmlViewer'> }`.
+`htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = true, overrides?: Omit<PostextConfig,'htmlViewer'> }`.
+`optimalLineBreaking`: `true` follows `bodyText.optimalLineBreaking` (Knuth-Plass on screen, as in the canvas and the PDF; a body set line by line stays so); `false` sets the screen edition line by line. A manifest stamped 21 or older that doesn't name it reads `false` (rules 22, #1400).
 `overrides` merge: objects recursive; `levels` arrays merged by `level`; every other array
 (design `elements`, `calloutStyles`, `colorPalette`, …) replaced wholesale. Typical:
 `{ parts: { page: false }, headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: {…screen opener…} } }] } }`.

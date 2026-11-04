@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/build.js';
 import { createMeasurementCache } from '../../../measure/index.js';
 import { resolveHeadingsConfig, stripHeadingsDefaults } from '../../../defaults/structure/headings.js';
-import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyHeadingSplit, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../../bundle/configVersion.js';
+import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyHeadingSplit, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../../bundle/configVersion.js';
 import type { BodyTextConfig, KeepWithNextSplit, PostextConfig, VDTBlock, VDTDocument } from '../../../index.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -112,13 +112,13 @@ describe('a paragraph kept with the heading above it splits by the orphan rule t
     }
     // Stored under today's rules, it is read as it is.
     expect(migrateConfig(stored, CONFIG_VERSION, { content: markdown })).toBe(stored);
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
   });
 
   it('pins only what the setting changes', () => {
     const plain: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
     // No heading in the text: nothing is kept with one.
-    expect(migrateConfig(plain, 7, { content: 'Prose only, no heading.' })).toEqual(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(plain))));
+    expect(migrateConfig(plain, 7, { content: 'Prose only, no heading.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(plain)))));
     // Unknown content may hold one.
     // (with the version-12 pins of column balancing, #707, #708 and #711)
     expect(migrateConfig(plain, 7).headings).toEqual({ keepWithNextSplit: 'fill', balancing: { maxLinesBeforeLoose: 4, stretchAfterWideFloats: 'always', trailingStep: 'grid' } });

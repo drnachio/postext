@@ -41,6 +41,7 @@ export function createDocumentPainting(deps: DocumentPaintingDeps) {
     // The page as bound: trimmed, without the slug and the crop marks.
     renderPageToCanvas(page, ds.current, canvas, {
       trim: true,
+      output: 'folio',
       scale: width / trimmedSize(page, ds.current).width,
       singleInk: options.singleInk,
       pageNegative: options.pageNegative,

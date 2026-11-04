@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { unzipSync } from 'fflate';
 import { createBundle, openBundle, pinLegacySlashBreaks } from '../../bundle/index.js';
-import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyGridBreakRules } from '../../bundle/configVersion.js';
+import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyGridBreakRules, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig } from '../../types.js';
@@ -62,7 +62,7 @@ describe('pinLegacyGridBreakRules (#717)', () => {
   });
 
   it('pins every version before 12, none from 12', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     for (const v of [undefined, 1, 5, 8, 10, 11]) {
       expect(rules(migrateConfig(grid('ja'), v)), String(v)).toEqual(ON);
     }
@@ -72,13 +72,15 @@ describe('pinLegacyGridBreakRules (#717)', () => {
     // (#765) and the rounded mark ends (#1149), and the breaks at a slash
     // (#1164). One stamped 13 takes the language, the mark ends and the
     // slash breaks; one stamped 14 the mark ends and the slash breaks; one
-    // stamped 18 the slash breaks alone; one stamped 19 is read as it is.
-    expect(migrateConfig(current, 12)).toEqual({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false }, unorderedLists: { taskBox: 'character' }, markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } });
-    expect(migrateConfig(current, 13)).toEqual({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false }, markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } });
-    expect(migrateConfig(current, 14)).toEqual({ ...pinLegacySlashBreaks(current), markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } });
-    expect(migrateConfig(current, 18)).toEqual({ ...pinLegacySlashBreaks(current), scoreStyle: { enabled: false } });
-    expect(migrateConfig(current, 19)).toEqual({ ...current, scoreStyle: { enabled: false } });
-    expect(migrateConfig(current, 20)).toBe(current);
+    // stamped 18 the slash breaks alone. Every one before 22 also takes the
+    // line breaker of the HTML viewer (#1400); one stamped 22 is read as it is.
+    expect(migrateConfig(current, 12)).toEqual(pinLegacyHtmlViewerBreaking({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false }, unorderedLists: { taskBox: 'character' }, markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } }));
+    expect(migrateConfig(current, 13)).toEqual(pinLegacyHtmlViewerBreaking({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false }, markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } }));
+    expect(migrateConfig(current, 14)).toEqual(pinLegacyHtmlViewerBreaking({ ...pinLegacySlashBreaks(current), markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } }));
+    expect(migrateConfig(current, 18)).toEqual(pinLegacyHtmlViewerBreaking({ ...pinLegacySlashBreaks(current), scoreStyle: { enabled: false } }));
+    expect(migrateConfig(current, 19)).toEqual(pinLegacyHtmlViewerBreaking({ ...current, scoreStyle: { enabled: false } }));
+    expect(migrateConfig(current, 20)).toEqual(pinLegacyHtmlViewerBreaking(current));
+    expect(migrateConfig(current, CONFIG_VERSION)).toBe(current);
   });
 
   it('survives a save: the stripped configuration keeps the rules it was pinned to', () => {
@@ -133,7 +135,7 @@ describe('a bundle keeps the break rules of its grid (#717)', () => {
     expect(rules(opened.config)).toEqual(ON);
     // Written again from what was read: stamped 14, the rules spelled out.
     const again = await createBundle({ name: 'Old', locale: 'ja', markdown: MD, config: opened.config });
-    expect(again.manifest.configVersion).toBe(21);
+    expect(again.manifest.configVersion).toBe(22);
     expect(again.manifest.config!.bodyText).toEqual({ ...ON, scriptContext: false, shapingLanguage: 'host', breakAfterSlashes: false });
     expect(rules((await openBundle(again.bytes)).config)).toEqual(ON);
   });

@@ -9,6 +9,7 @@ import { type PageCtx, counterFlipPx, colorFromHex, setTrackingPx, textAdvancePx
 import { paintChip } from '../chip.js';
 import { renderMathSegment } from '../blockRender.js';
 import { paintLineHighlights, paintLineMarks, paintWarichu, paintRuby, paintKunten } from '../../text/annotations.js';
+import { linkFillHex, paintLinkUnderlines } from '../../text/linkStyle.js';
 import { type StructElem, tagContent } from '../../structure/tagging.js';
 import { drawVectorDrawing } from '../../vector/svgVector.js';
 import { inkScaleOperators } from '../../text/inkScale.js';
@@ -109,6 +110,7 @@ export function paintLine(
   paintLineRuns(ctx, line, fonts, fontCache, color, linkColor, linkRegistry, resolveRefId, labelColor, elem, tracking);
   if (tracking !== 0) setTrackingPx(ctx, 0);
   if (line.marks) paintLineMarks(ctx, line, color);
+  if (line.linkUnderlines) paintLinkUnderlines(ctx, line, color);
 }
 
 function paintLineRuns(
@@ -214,7 +216,8 @@ function paintLineRuns(
       const font = fontCache.get(fontStr) ?? baseFont;
       const size = parseFontString(fontStr)?.sizePx ?? baseSize;
       const refId = resolveRefId(seg);
-      const segColor = refId !== undefined ? linkColor : seg.captionLabel ? labelColor : color;
+      const linkHex = linkFillHex(ctx, seg);
+      const segColor = linkHex !== undefined ? colorFromHex(linkHex, ctx.colorSpace) : refId !== undefined ? linkColor : seg.captionLabel ? labelColor : color;
       // A `:ref` links to its resource — a ref painted as several runs
       // (small capitals) is one link —, a Markdown link's words to its URL.
       const uriElem = uris.word(refId === undefined ? seg.href : undefined, x, seg.width, seg.text);

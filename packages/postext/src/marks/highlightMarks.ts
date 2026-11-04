@@ -173,13 +173,10 @@ function resourceTexts(block: VDTBlock): { lines: VDTLine[]; like: BlockLike }[]
   return out;
 }
 
-/** Set `VDTLine.highlights` on every line of the document that holds a
- *  highlight mark (see the module comment): paragraphs, headings, list
- *  items, notes and the texts of resource blocks. A style that sets the
- *  text's `color` gives it to the marked words. */
-export function highlightDocument(doc: VDTDocument): void {
-  const styles = doc.config?.markStyles ?? [];
-  const dpi = doc.config?.page.dpi ?? 96;
+/** Every set text line of the document with what it is painted from:
+ *  paragraphs, headings, list items, notes and the texts of resource
+ *  blocks (each block once). */
+export function textLineGroups(doc: VDTDocument): { lines: VDTLine[]; like: BlockLike }[] {
   const groups: { lines: VDTLine[]; like: BlockLike }[] = [];
   const seen = new Set<VDTBlock>();
   const visit = (block: VDTBlock): void => {
@@ -193,7 +190,17 @@ export function highlightDocument(doc: VDTDocument): void {
     for (const block of page.floats ?? []) visit(block);
     for (const block of page.marginNotes ?? []) visit(block);
   }
-  for (const { lines, like } of groups) {
+  return groups;
+}
+
+/** Set `VDTLine.highlights` on every line of the document that holds a
+ *  highlight mark (see the module comment): paragraphs, headings, list
+ *  items, notes and the texts of resource blocks. A style that sets the
+ *  text's `color` gives it to the marked words. */
+export function highlightDocument(doc: VDTDocument): void {
+  const styles = doc.config?.markStyles ?? [];
+  const dpi = doc.config?.page.dpi ?? 96;
+  for (const { lines, like } of textLineGroups(doc)) {
     for (const line of lines) {
       if (!line.segments?.some((s) => s.mark)) {
         if (line.highlights) delete line.highlights;

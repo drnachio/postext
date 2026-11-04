@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/build.js';
 import { createMeasurementCache } from '../../../measure/index.js';
 import { resolveLayoutConfig, stripLayoutDefaults } from '../../../defaults/index.js';
-import { CONFIG_VERSION, migrateConfig, pinLegacyBoxChildCut } from '../../../bundle/index.js';
+import { CONFIG_VERSION, migrateConfig, pinLegacyBoxChildCut, pinLegacyHtmlViewerBreaking } from '../../../bundle/index.js';
 import { migrateBundleConfig, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../../bundle/configVersion.js';
 import type { VDTBlock, VDTDocument } from '../../../vdt.js';
 import type { PostextConfig } from '../../../types.js';
@@ -176,7 +176,7 @@ describe('layout.boxChildSplitMinLines', () => {
   it('is pinned to 1 for configurations stored before rules 6 whose book holds a box', () => {
     const cfg: PostextConfig = { layout: { layoutType: 'single', inlineResourceGap: 'around', inlineResourceGapInBoxes: true } };
     const box = twoLineItems(3);
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     // Unversioned (1.4) and stamped 5 (a 1.5 prerelease): pinned.
     expect(migrateConfig(cfg, undefined, { content: box }).layout?.boxChildSplitMinLines).toBe(1);
     expect(migrateConfig(cfg, 5, { content: ['No box here.', box] }).layout?.boxChildSplitMinLines).toBe(1);
@@ -185,7 +185,7 @@ describe('layout.boxChildSplitMinLines', () => {
     // Today's rules, a book with no box, or a configuration that names the
     // setting: as it is.
     expect(migrateConfig(cfg, CONFIG_VERSION, { content: box })).toBe(cfg);
-    expect(migrateConfig(cfg, 5, { content: `${SENTENCE}\n\nA mention of \`:::callout\` in the text.` })).toEqual(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(cfg))));
+    expect(migrateConfig(cfg, 5, { content: `${SENTENCE}\n\nA mention of \`:::callout\` in the text.` })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(cfg)))));
     const named: PostextConfig = { layout: { boxChildSplitMinLines: 2 } };
     expect(pinLegacyBoxChildCut(named)).toBe(named);
     expect(pinLegacyBoxChildCut({} as PostextConfig).layout).toEqual({ boxChildSplitMinLines: 1 });

@@ -650,6 +650,7 @@ interface LinksConfig {
     side?: 'start' | 'end';            // في أي جانب من أسطر الحاشية يقف الرمز.
     gap?: Dimension;                   // المسافة بين الرمز والأسطر؛ em هو حجم خط الحاشية.
   };
+  style?: LinkStyleConfig;             // مظهر نص الرابط (أدناه).
 }
 ```
 
@@ -749,10 +750,79 @@ links: {
 - **إعداد لكل نسخة.** يُبقي الناشر عادةً `print: 'none'` في النسخة الرقمية، ويضبط `print: 'notes'` مع `show: 'both'` في إعداد النسخة المطبوعة؛ وMarkdown واحد في النسختين.
 - **PDF.** يُرسم الرمز رسمًا متجهيًّا، وهو رابط إلى العنوان. وفي ملف PDF الموسوم يكون `Figure` داخل `Link`، والعنوان نصه البديل.
 
+### نمط الروابط
+
+يحدّد `links.style` مظهر نص الرابط: لونًا وخطًّا تحته. يُرسم النمط ولا يدخل في القياس، فتُصفّ الصفحة كما هي معه أو من دونه، ويمكن لكل مخرَج أن يُظهره أو لا. والمعتاد أن تُلوَّن الروابط وتُسطَّر في المخرجات التي ينقر فيها القارئ (HTML وEPUB وSCORM)، وأن يُترك الورق لـ `print: 'notes'`. منذ postext 1.68.
+
+```ts
+interface LinkStyleConfig {
+  color?: ColorValue;                                  // لون النص إن لم يُحدَّد.
+  underline?: 'none' | 'solid' | 'dotted' | 'dashed';
+  underlineColor?: ColorValue;                         // لون الرابط إن لم يُحدَّد.
+  outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[];
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>الخاصية</th>
+      <th>النوع</th>
+      <th>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون النص</td>
+      <td>لون نص الرابط. إن لم يُحدَّد، يحتفظ الرابط بلون النص المحيط به (لون الخط العريض أو المائل داخلهما). واللون المرتبط باللوحة يتبعها.</td>
+    </tr>
+    <tr>
+      <td><code>style.underline</code></td>
+      <td><code>'none' | 'solid' | 'dotted' | 'dashed'</code></td>
+      <td><code>'none'</code></td>
+      <td>الخط تحت نص الرابط: بلا، أو متصل، أو منقّط، أو متقطّع.</td>
+    </tr>
+    <tr>
+      <td><code>style.underlineColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون الرابط</td>
+      <td>لون التسطير؛ لون الرابط إن لم يُحدَّد، وإلا فلون النص.</td>
+    </tr>
+    <tr>
+      <td><code>style.outputs</code></td>
+      <td><code>('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]</code></td>
+      <td><code>['html', 'epub', 'scorm']</code></td>
+      <td>المخرجات التي يُرسم فيها النمط: لوحة Sandbox، وFolio، وPDF، وعارض HTML و<code>renderToHtml</code>، وEPUB، وحزمة SCORM. أما المخرجات الأخرى فتصفّ الروابط كالنص المحيط بها؛ والقائمة الفارغة لا ترسمه في أي مكان.</td>
+    </tr>
+  </tbody>
+</table>
+
+طبعة ورقية بحواشٍ ذات رموز QR تلوّن مخرجاتها الرقمية الروابط وتسطّرها:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'qr',
+  style: {
+    color: { hex: '#1a5fb4', model: 'hex' },
+    underline: 'solid',
+  },
+}
+```
+
+- **أيّ الروابط.** كل روابط Markdown: عناوين الويب، و`mailto:`، و`tel:`، والروابط إلى موضع في الكتاب. أما الإحالة المرتبطة بمدخلها في المراجع، و`:ref`، ورقم الصفحة في الفهرس، فتحتفظ بألوانها.
+- **التسطير.** يقع على بُعد 0.13 em تحت خط الأساس بسُمك 0.06 em، ويمتد تحت كلمات الرابط والمسافات بينها؛ والرابط المقسوم على سطرين يُسطَّر في كل منهما. ويأخذ النص العمودي اللون دون التسطير.
+- **الوزن والميل.** ليسا جزءًا من النمط: فهما يغيّران عرض الكلمات، فلا يعود ممكنًا أن تختلف المخرجات التي تتشارك التصفيف نفسه.
+- **المضيفون.** المضيف الذي يرسم الصفحات بنفسه يحدّد المخرَج: `renderPageToCanvas(page, doc, canvas, { output: 'folio' })`، `renderToHtml(doc, { output: 'epub' })`. ومولّدات PDF وEPUB وSCORM تحدّده بنفسها. وتُعيد `linkStyleFor(doc.config.links, output)` النمط الذي يأخذه مخرَج ما، أو `undefined`.
+- **EPUB القابل لإعادة التدفق.** من دون نمط تبقى روابطه مسطّرة بلون النص كما كانت. والنمط الذي يذكر `epub` يضبط لونها وخطّها في ورقة الأنماط.
+
 دالتا الحل والتجريد مماثلتان لنظيراتهما في الأقسام الأخرى:
 
 ```ts
-import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, resolveLinkStyleConfig, linkStyleFor, stripLinksDefaults } from 'postext';
 ```
 
 ## جدول المحتويات

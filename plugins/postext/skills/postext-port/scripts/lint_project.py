@@ -2524,7 +2524,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     if not any(s[0] == "callout" for s in stack) and page is None \
                             and (not comic_ctx.get("flow_columns", True) or (engine is not None and engine < (1, 25, 0))):
                         rep.warn(where, ":::columns in the running text is ignored with layout.flowColumns off "
-                                        "(configVersion below 11 reads it so): set configVersion 21, or put the "
+                                        "(configVersion below 11 reads it so): set configVersion 22, or put the "
                                         "group in a :::callout")
                 elif fname == "paper":
                     if any(s[0] == "callout" for s in stack):
@@ -3058,8 +3058,9 @@ def main() -> None:
                  "below 18: a mark style that names no borderRadius rounded at 0.2em when the text has a :mark; "
                  "below 19: formatted text, captions, cells and notes broken after a slash only inside a web "
                  "address, never between two words such as ACC/AHA; below 20: a ```abc fence read as code, not a "
-                 "score; below 21: each top-level key of a localized config replacing the shared one whole); "
-                 "set \"configVersion\": 21 for today's rules")
+                 "score; below 21: each top-level key of a localized config replacing the shared one whole; below 22: "
+                 "the HTML viewer setting its lines one by one unless the config names htmlViewer.optimalLineBreaking); "
+                 "set \"configVersion\": 22 for today's rules")
     for k in ("id", "name"):
         if not m.get(k):
             rep.error("preset.json", f"{k} is required")

@@ -5,6 +5,7 @@ import { PDFDocument, BlendMode } from 'pdf-lib';
 import { shapingLanguageOf, type VDTPage, type VDTDocument, dimensionToPx, comicPaintsUnderText, verticalFlowOf, computePageTextExtent, cjkGridCells, pageColumnRule, type VDTBlock, columnClipRect, composedFrameBlockIds, composedSheetClipOnSheet, decorationUnder, decorationOver, comicBlockOnSheet, comicHoldsText } from 'postext';
 import type { ColorMode } from '../../print/colorMode.js';
 import { FontCache } from '../../fontCache.js';
+import { pdfLinkPaint } from '../text/linkStyle.js';
 import { type PageCtx, makeScale, fillRectPx, whiteColor, colorFromHex, pushClipRect, type PdfMatrix, quarterTurnMatrix, mirrorMatrix, pushFrame, popFrame, popClip } from '../primitives.js';
 import { computeContentArea, renderBaselineGrid, renderCharacterGrid, renderColumnRule, renderFootnoteRules, renderCutLines } from '../page/pageDecorations.js';
 import { type ResourceRenderContext, renderStripCaption, renderBlock } from '../blocks/blockRender.js';
@@ -50,9 +51,11 @@ function paintPage(
     page.setTrimBox(trimPt, trimPt, pageWidthPt - 2 * trimPt, pageHeightPt - 2 * trimPt);
     page.setBleedBox(bleedPt, bleedPt, pageWidthPt - 2 * bleedPt, pageHeightPt - 2 * bleedPt);
   }
+  const links = pdfLinkPaint(doc);
   const ctx: PageCtx = {
     page, pageHeightPt, scale, colorSpace, tags: tree?.beginPage(page), ...(onMissingImage ? { onMissingImage } : {}), images: resourceCtx.images,
     frameCjk: { region: doc.config.cjk?.region ?? 'mainland', uprightDigits: doc.config.cjk?.uprightDigits ?? 2 },
+    ...(links ? { links } : {}),
   };
   const structure = resourceCtx.structure;
 

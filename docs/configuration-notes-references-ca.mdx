@@ -649,6 +649,7 @@ interface LinksConfig {
     side?: 'start' | 'end';            // A quin costat de les línies de la nota va el codi.
     gap?: Dimension;                   // Espai entre el codi i les línies; em és el cos de la nota.
   };
+  style?: LinkStyleConfig;             // Com es veu el text d'un enllaç (a sota).
 }
 ```
 
@@ -748,10 +749,79 @@ links: {
 - **Una configuració per edició.** El més habitual és que l'editorial deixi `print: 'none'` a l'edició digital i fixi `print: 'notes'` amb `show: 'both'` a la configuració de la impresa; el Markdown és el mateix a totes dues.
 - **PDF.** El codi es dibuixa en vectors i enllaça amb l'adreça. En un PDF etiquetat és un `Figure` dins d'un `Link`, amb l'adreça com a text alternatiu.
 
+### Estil dels enllaços
+
+`links.style` decideix com es veu el text d'un enllaç: un color i una línia a sota. L'estil es pinta, no es mesura, així que la pàgina es compon igual amb ell o sense, i cada sortida el pot mostrar o no. El més habitual és donar color i subratllat als enllaços a les sortides on el lector hi fa clic (HTML, EPUB, SCORM) i deixar el paper a `print: 'notes'`. Des de postext 1.68.
+
+```ts
+interface LinkStyleConfig {
+  color?: ColorValue;                                  // El color del text si no es defineix.
+  underline?: 'none' | 'solid' | 'dotted' | 'dashed';
+  underlineColor?: ColorValue;                         // El color de l'enllaç si no es defineix.
+  outputs?: ('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[];
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Propietat</th>
+      <th>Tipus</th>
+      <th>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del text</td>
+      <td>Color del text de l'enllaç. Sense definir, l'enllaç conserva el color del text que l'envolta (el de la negreta o la cursiva dins d'elles). Un color enllaçat a la paleta la segueix.</td>
+    </tr>
+    <tr>
+      <td><code>style.underline</code></td>
+      <td><code>'none' | 'solid' | 'dotted' | 'dashed'</code></td>
+      <td><code>'none'</code></td>
+      <td>La línia sota el text de l'enllaç: cap, contínua, puntejada o discontínua.</td>
+    </tr>
+    <tr>
+      <td><code>style.underlineColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color de l'enllaç</td>
+      <td>Color del subratllat; el de l'enllaç si no es defineix i, si tampoc, el del text.</td>
+    </tr>
+    <tr>
+      <td><code>style.outputs</code></td>
+      <td><code>('canvas' | 'folio' | 'pdf' | 'html' | 'epub' | 'scorm')[]</code></td>
+      <td><code>['html', 'epub', 'scorm']</code></td>
+      <td>On es pinta l'estil: el llenç del Sandbox, Folio, el PDF, el visor HTML i <code>renderToHtml</code>, un EPUB i un paquet SCORM. Les altres sortides componen els enllaços com el text que els envolta; una llista buida no el pinta enlloc.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una edició impresa amb notes QR les sortides digitals de la qual acoloreixen i subratllen els enllaços:
+
+```ts
+links: {
+  print: 'notes',
+  show: 'qr',
+  style: {
+    color: { hex: '#1a5fb4', model: 'hex' },
+    underline: 'solid',
+  },
+}
+```
+
+- **Quins enllaços.** Tots els enllaços de Markdown: adreces web, `mailto:`, `tel:` i enllaços a un lloc del llibre. Una cita enllaçada a la seva entrada de la bibliografia, una `:ref` i un número de pàgina de l'índex conserven els seus colors.
+- **El subratllat.** Va 0,13 em sota la línia de base, amb 0,06 em de gruix, sota les paraules de l'enllaç i els espais entre elles; un enllaç partit en dues línies es subratlla a cadascuna. El text vertical pren el color sense el subratllat.
+- **Pes i inclinació.** No formen part de l'estil: canvien l'amplada de les paraules, i les sortides que comparteixen una composició ja no podrien diferir.
+- **Amfitrions.** Qui pinta les pàgines pel seu compte indica quina sortida pinta: `renderPageToCanvas(page, doc, canvas, { output: 'folio' })`, `renderToHtml(doc, { output: 'epub' })`. Els generadors de PDF, EPUB i SCORM ho indiquen sols. `linkStyleFor(doc.config.links, output)` dona l'estil que pren una sortida, o `undefined`.
+- **EPUB adaptable.** Sense estil, els seus enllaços continuen subratllats en el color del text, com abans. Un estil que inclou `epub` en fixa el color i la línia al full d'estils.
+
 El resolutor i el depurador segueixen el patró de les altres seccions:
 
 ```ts
-import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, stripLinksDefaults } from 'postext';
+import { DEFAULT_LINKS_CONFIG, resolveLinksConfig, resolveLinkStyleConfig, linkStyleFor, stripLinksDefaults } from 'postext';
 ```
 
 ## Índex general

@@ -29,6 +29,7 @@ import { annotateDocument } from '../../marks/cjkMarks.js';
 import { annotateArabicMarks } from '../../marks/arabicMarks.js';
 import { overlineEmphasis } from '../../marks/emphasisOverline.js';
 import { highlightDocument } from '../../marks/highlightMarks.js';
+import { underlineDocumentLinks } from '../../marks/linkUnderline.js';
 import { buildDocumentBalanced } from './balanced.js';
 import { withIndexMarks } from './pageMarks.js';
 import { type CitingPageSlot, type BuildDocumentOptions, BuildCancelledError } from './passTypes.js';
@@ -161,6 +162,8 @@ export function* buildDocumentGen(
   overlineEmphasis(doc);
   // The bands of the highlight marks (`:mark[…]`, #888).
   highlightDocument(doc);
+  // The lines under the links (`links.style`, #1402).
+  underlineDocumentLinks(doc);
   // Faces the text was set in that the font set could not give (#629).
   const checkFonts = resolveDebugConfig(config?.debug).warnings.missingFont;
   const fallbacks: ContentWarning[] = fontSet && checkFonts

@@ -221,7 +221,7 @@ describe('CONFIG_VERSION 9 (#620)', () => {
   const stored = { bodyText: { fontSize: pt(10) } } as PostextConfig;
 
   it('pins documents stored before #620 whose text holds a forced break', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     for (const content of ['One line\\\nnext', 'a \\\\ b', 'a\\\\\nb', '> quote\\\n> more']) {
       expect(migrateConfig(stored, 8, { content }).bodyText?.hardLineBreaks).toBe(false);
     }

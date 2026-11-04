@@ -12,7 +12,7 @@ import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
-import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
+import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { configFingerprint } from '../../util/stableHash.js';
 import type { PageTemplate, PostextConfig, Resource } from '../../types.js';
 
@@ -373,16 +373,16 @@ describe('the config sections', () => {
 
 describe('configVersion 15 (#853)', () => {
   it('is the version this engine writes', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
   });
 
   it('reads a configuration stored under 14 as it is, templates and all', () => {
     const stored = config([TEMA], { labelStyles: [{ id: 'mar' }], bodyText: { fontSize: { value: 10, unit: 'pt' } } });
     // (with the breaks at a slash of 1.51, #1164, as every configuration
     // stored under 18 or less)
-    expect(migrateConfig(stored, 14, { content: '::::page{template="tema-cajas"}\n# T\n::::\n' })).toEqual(pinLegacySlashBreaks(stored));
-    expect(migrateConfig(stored, 15, { content: 'Words.' })).toEqual(pinLegacySlashBreaks(stored));
-    expect(migrateBundleConfig({}, [stored], 14, { content: 'Words.' })).toEqual(pinLegacySlashBreaks(stored));
-    expect(migrateBundleConfig({ locale: 'es' }, [{ pageTemplates: [TEMA] }, { labelStyles: [{ id: 'mar' }] }], 15, { content: 'Words.' })).toEqual({ locale: 'es', pageTemplates: [TEMA], labelStyles: [{ id: 'mar' }], bodyText: { breakAfterSlashes: false } });
+    expect(migrateConfig(stored, 14, { content: '::::page{template="tema-cajas"}\n# T\n::::\n' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(stored)));
+    expect(migrateConfig(stored, 15, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(stored)));
+    expect(migrateBundleConfig({}, [stored], 14, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(stored)));
+    expect(migrateBundleConfig({ locale: 'es' }, [{ pageTemplates: [TEMA] }, { labelStyles: [{ id: 'mar' }] }], 15, { content: 'Words.' })).toEqual(pinLegacyHtmlViewerBreaking({ locale: 'es', pageTemplates: [TEMA], labelStyles: [{ id: 'mar' }], bodyText: { breakAfterSlashes: false } }));
   });
 });

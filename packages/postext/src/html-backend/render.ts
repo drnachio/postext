@@ -1,6 +1,7 @@
 // The entry points renderToHtml and renderToHtmlIndexed, their options,
 // and the per-render shaping state they set while pages are written
 // (#1276: split out of html-backend.ts).
+import { restoreHtmlLinkPaint, setHtmlLinkPaint } from './linkPaint.js';
 import { featureFontCss } from '../fonts/figureStyle.js';
 import type { RenderWarning, VDTAnchor, VDTDocument } from '../vdt.js';
 import { dimensionToPx } from '../units.js';
@@ -105,6 +106,10 @@ export interface RenderHtmlOptions {
    *  the resources all of them place ({@link anchoredResourceIds}), so a
    *  reference to a figure an earlier chapter placed links to it. */
   refTargets?: Iterable<string>;
+  /** The output this HTML is written for, which decides whether its links
+   *  take `links.style` (#1402): `'html'` (the default), `'epub'` or
+   *  `'scorm'`. */
+  output?: 'html' | 'epub' | 'scorm';
   /** Embed the document's fonts in the SVG pictures `resourceImageUrl`
    *  serves as `data:image/svg+xml` URIs (#630): the faces their text
    *  names, as `@font-face` data URIs, so an `<img>` sets the labels in
@@ -274,6 +279,15 @@ export function renderToHtmlIndexed(
   doc: VDTDocument,
   options: RenderHtmlOptions = {},
 ): HtmlRenderIndex {
+  const previousLinks = setHtmlLinkPaint(doc.config?.links, options.output ?? 'html');
+  try {
+    return renderIndexed(doc, options);
+  } finally {
+    restoreHtmlLinkPaint(previousLinks);
+  }
+}
+
+function renderIndexed(doc: VDTDocument, options: RenderHtmlOptions): HtmlRenderIndex {
   const mode = options.mode ?? 'multi';
   const gap = options.columnGap ?? 24;
   const padding = options.padding ?? 24;
