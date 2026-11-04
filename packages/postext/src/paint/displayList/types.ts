@@ -49,6 +49,10 @@ export interface DisplayRun {
   baselineShift?: number;
   href?: string;
   footnoteId?: string;
+  /** A `:ref` run's target: a resource id, or an anchor's id (`anchor`). */
+  refTarget?: { id: string; anchor?: boolean };
+  /** Book page index the run links to (an index entry's page number). */
+  pageLink?: number;
   rtl?: boolean;
   /** Index of the run's first character in the line's `text`. */
   textStart: number;
@@ -69,7 +73,9 @@ export interface DisplayLine {
   baseline: number;
   /** Height of the line box (leading) in px. */
   lineHeight: number;
-  /** How the backend aligned this line (the PDF rule in `lineText.ts`). */
+  /** How the backend aligned this line (the PDF rule in `lineText.ts`),
+   *  as it stands on the sheet: a ragged line of a mirrored (right-to-left)
+   *  page set from its start reads `right`. */
   align: LineAlign;
   /** Width of each justified space, when `align === 'justify'`. */
   spaceWidth?: number;
