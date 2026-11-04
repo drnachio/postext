@@ -117,12 +117,15 @@ from typing import Any
 # merges each `localized.<lang>.config` over the shared `config` field by
 # field (objects key by key, lists of entries with an `id` by id, `levels`
 # by level, `null` back to the default, `{id, "$remove": true}` drops an
-# entry); 20 and older replace each top-level key it names whole.
-# A book ported today is stamped 21 and is shaped in its own language. An
+# entry); 20 and older replace each top-level key it names whole. 22 (#1400)
+# breaks the HTML viewer's lines with Knuth-Plass by default
+# (htmlViewer.optimalLineBreaking: true); 21 and older that don't name it
+# keep the screen edition set line by line.
+# A book ported today is stamped 22 and is shaped in its own language. An
 # engine older than 1.23 reads 9 as 8, one older than 1.24 reads 10 as 9,
 # one older than 1.25 reads 11 as 10, one older than 1.28 reads 12 as 11,
 # one older than 1.30 reads 14 as 13, one older than 1.34 reads 15 as 14.
-CONFIG_VERSION = 21
+CONFIG_VERSION = 22
 
 # The rules from which a localized config is an override merged field by
 # field (postext's LOCALE_LAYER_RULES).
@@ -856,7 +859,7 @@ def resources() -> list:
 def main() -> None:
     primary = LANGS[0]
     manifest = {{
-        "version": 2, "configVersion": 21, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
+        "version": 2, "configVersion": 22, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
         "view": {{"canvasScope": "book"}},
         "chapters": {{lang: chapters_from_dir(HERE, lang) for lang in LANGS}},
         "config": config(primary),
