@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '以编程方式使用',
   description: '用代码调用Postext：buildDocument及其报告的警告、默认值、字体、缓存，以及Web Worker',
   lang: 'zh',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-04',
   readingTime: '22分钟',
   order: 21,
   parent: 'configuration',
@@ -616,10 +616,41 @@ Postext的部分状态存放在模块级变量中。同一个JavaScript realm中
 
 ### Word文档（`postext/word`）
 
-`postext/word`子路径不借助DOM读写Word文档（`.docx`）。沙盒的Word导入和导出，以及命令行的`import-docx`和`docx`，都建立在它上面（见[命令行 › docx和import-docx](/zh/docs/command-line#docx和import-docx)）。
+`postext/word`子路径不借助DOM写出和读取Word文档（`.docx`），可在浏览器、Worker或Node中运行。沙盒的Word对话框，以及命令行的`docx`和`import-docx`，都建立在它上面（见[命令行 › docx和import-docx](/zh/docs/command-line#docx和import-docx)和[沙盒 › Word文档](/zh/docs/sandbox-books-saving#word文档)）。postext 1.68起。
 
 ```ts
-import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext, postextToDocx } from 'postext/word';
+import { buildDocument } from 'postext';
+import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { decompressWoff2 } from 'postext-pdf';
+
+const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // 导出和导入时使用相同的id
+
+// 语义：由Markdown和配置生成，使用Word自身的结构。
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
+
+// 版式：排好的页面，嵌入书中的字体。
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
+const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+
+// 校改后的文件，合并到书的当前版本中。
+if (isExportedDocx(edited)) {
+  const result = applyDocxEdits(edited, { chapters: current, resources });
+  for (const e of result.edits) console.log(e.status, e.reason ?? '', e.before, '→', e.after);
+  if (result.changed) save(result.chapters, result.resources);
+}
+```
+
+- <strong>`semanticDocx(options)`</strong>返回解析为`.docx`字节（`Uint8Array`）的Promise。它接受`chapters`（`{ id, title?, markdown }`）、`config`、带`resourceBytes(fileId)`（提供图片字节）的`resources`、`rasterizeSvg(svg, width, height)`（生成Word在SVG旁需要的PNG；没有它时SVG不导出）、`fonts`（`planWordFonts`给出的方案）、`title`、`author`、`date`（固定的ISO日期让字节可复现）和`onWarning`（报告Word按自己方式排的内容，`{ code, message, chapter? }`）。公式需要TeX到Word的转换器，首次使用时加载；加载不了时公式保持为TeX，并给出`mathUnavailable`警告。
+- <strong>`formattedDocx(options)`</strong>接受`docs`（按`chapters`的顺序，每章一个`VDTDocument`，即生成PDF的印刷链），以及同样的`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`和`onWarning`。`onProgress(done, total)`按写出的页数计数。
+- <strong>`planWordFonts(faces, options)`</strong>把书中的字体（`{ family, weight, style, files }`：WOFF2或sfnt，unicode-range分片数量不限）转成Word嵌入用的静态TrueType字体。`decompressWoff2`（`postext-pdf`导出的那个）用来读取WOFF2；`usedText`和`fontStrings`去掉导出用不到的分片和字体；`familySuffix`（默认`' PTX'`）加在每个嵌入的字体族名后。它的`warnings`列出未嵌入的字体（`restricted`、`cff`、`variable`、`missing`、`merge-failed`），以及只为预览和打印而嵌入的字体（`preview-print`）。
+- <strong>`isExportedDocx(bytes)`</strong>判断文件是否带有导出对照表，从不抛出异常。`readExportMap(files)`从解压后的部件（fflate的`unzipSync`）读取对照表本身：`exportId`、`variant`、`engine`、各章及其哈希，以及导出文字的副本。
+- <strong>`applyDocxEdits(bytes, { chapters, resources })`</strong>是同步函数。它返回应用了校改的全部章节（`chapters`）、题注、说明、替代文字或表格单元格有变化的资源的深拷贝（`resources`），以及`edits`、`comments`、`variant`、`exportId`和`changed`。每项修改带有`chapter`，或`resourceId`和`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`），当前文字中的`start`和`end`，`before`、`after`，`kind`（`text`、`format`、`paragraph`、`tracked`），以及`status`和对应的`reason`：`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）或`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`）。每条批注带有`author`、`text`和位置（不在导出文字上的批注，`start`为-1）。不是导出的`.docx`的文件会抛出`DocxReadError`。章的id必须与导出时相同：针对未知章的修改只报告，不应用。
+
+其他任何Word文件，都借助样式模板读成Markdown：
+
+```ts
+import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext } from 'postext/word';
 
 const word = readDocx(bytes);                                    // Uint8Array或ArrayBuffer
 const template = parseTemplate(word.embeddedTemplate) ?? emptyTemplate();
@@ -627,14 +658,11 @@ const report = analyzeDocx(word, template, config);              // report.verdi
 const { chapters, pictures, tables } = wordToPostext(word, {
   template, config, chapters: 'split', existingIds: new Set(), untitledChapter: 'Untitled',
 });
-
-const docx = postextToDocx(chapters, { template, config, book: chapters.length > 1, title: 'Field notes' });
 ```
 
-- <strong>`readDocx(bytes)`</strong>把文件读成一个Word模型：其中有它的样式、段落、注释和图片，文档的`title`，以及Postext导出的文件所带的导入模板（`embeddedTemplate`）。不是Word文档的文件会抛出`DocxReadError`。
+- <strong>`readDocx(bytes)`</strong>把文件读成一个Word模型：其中有它的样式、段落、注释和图片，文档的`title`，以及文件所带的导入模板（`embeddedTemplate`，postext 1.67及以前的Word导出会写入）。不是Word文档的文件会抛出`DocxReadError`。
 - <strong>`wordToPostext(word, settings)`</strong>把模型转换为章节（`{ title, markdown }`）、图片和表格。模板把每个Word样式对应到配置中的一个标题、段落样式、框、引文或题注。`chapters: 'split'`在每个一级标题处开始新的一章，`'single'`只保留一章。图片（`id`、`media.bytes`、`caption`、`alt`）和表格（`id`、`model`、`caption`）由宿主作为资源存储；`skippedPictures`列出被略去的EMF、WMF和TIFF图片。
 - <strong>`analyzeDocx(word, template, config)`</strong>是沙盒在导入前显示的质量报告：用到的样式、有多少段落套用了样式，以及`directFormatting`、`manualHeadings`、`typedNumbering`等发现，每项都附有数量和示例。
-- <strong>`postextToDocx(chapters, settings)`</strong>把章节写成`.docx`（一个`Uint8Array`），标题、段落、框、引文、列表和注释都使用Word样式。Word无法表达的内容原样保留在*Postext Markup*样式中，模板也放进文件里，所以文档导入回来时不会改变。`book: true`用一个`Postext Chapter`段落开始每一章，导入时据此重建各章。
 - <strong>`wordStyleTracking(word, template, config)`</strong>和<strong>`applyStyleTracking(config, tracking)`</strong>把Word样式的字间距带到配置中没有设置字间距的样式上。
 
 

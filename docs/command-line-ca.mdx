@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: "Línia d'ordres",
   description: "Un sol executable autònom, per a macOS, Linux i Windows, que converteix un llibre .postext, una carpeta de llibre o fitxers Markdown solts en PDF, HTML, EPUB, imatges de pàgina i Word. També crea paquets i revisa llibres, i pot respondre en JSON per a scripts i agents",
   lang: 'ca',
-  lastUpdated: '2026-10-20',
-  readingTime: '13 min',
+  lastUpdated: '2026-11-04',
+  readingTime: '14 min',
   order: 49,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir tots els fitxers del llibre en un de sol. També el poden fer servir altres programes i els assistents d'intel·ligència artificial, perquè pot respondre en un format que llegeixen sense dificultat.",
 };
@@ -148,8 +148,8 @@ es llegeix en la llengua principal, tret que `--locale` en demani una altra (`--
     <tr><td><code>epub</code></td><td>Un llibre EPUB 3, amb pàgines fixes com les impreses o amb text adaptable.</td></tr>
     <tr><td><code>image</code></td><td>Una pàgina com a imatge PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Totes les pàgines, o un interval, com a imatges en una carpeta.</td></tr>
-    <tr><td><code>docx</code></td><td>Els capítols com un document de Word que es torna a importar sense canvis.</td></tr>
-    <tr><td><code>import-docx</code></td><td>Un document de Word com a llibre de Postext (una carpeta o un <code>.postext</code>).</td></tr>
+    <tr><td><code>docx</code></td><td>Els capítols com un document de Word: semàntic (títols, llistes, notes i taules propis de Word) o maquetat (les pàgines del PDF).</td></tr>
+    <tr><td><code>import-docx</code></td><td>Les correccions fetes en un fitxer de Word exportat, de tornada al llibre; qualsevol altre document de Word, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de llibre o Markdown solt com un sol fitxer <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fitxer <code>.postext</code> com a carpeta.</td></tr>
     <tr><td><code>info</code></td><td>Els capítols, les llengües, els recursos i les fonts del llibre, i amb <code>--pages</code> el nombre de pàgines.</td></tr>
@@ -249,21 +249,64 @@ s'ha compost, sense passar per un PDF.
 
 ```bash
 postext docx book.postext -o book.docx
+postext docx book/ --variant formatted -o pages.docx
+postext import-docx book.docx book/ --dry-run
+postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
-postext import-docx manuscript.docx -o manuscript.postext
 ```
 
-`docx` escriu els capítols amb estils de Word per als títols, els paràgrafs,
-els requadres, les cites, les llistes i les notes. El que Word no pot
-expressar es conserva tal com està escrit amb els estils *Postext Markup*, i la
-plantilla d'importació va dins del fitxer, de manera que el document es pot
-tornar a importar sense canvis després que un editor hi hagi treballat.
-`import-docx` converteix un document de Word en un llibre: crea un capítol a cada
-títol de nivell 1 (amb `--no-split`, un de sol), converteix les imatges i les taules
-en recursos, i amb `--report` imprimeix l'informe de qualitat que mostra el
-Sandbox (estils en ús, format directe, numeració escrita a mà…). `--template`
-indica una plantilla d'importació (un `.json` desat des del Sandbox o un `.docx`
-que en contingui una).
+`docx` escriu qualsevol dels dos documents de Word que exporta el Sandbox
+(vegeu [Sandbox › Documents de Word](/ca/docs/sandbox-books-saving#documents-de-word)).
+`--variant semantic`, el valor per defecte, construeix un document editable a
+partir del Markdown, amb els títols, les llistes, les notes al peu, les taules,
+les equacions i les seccions propis de Word; el que no té estructura a Word
+viatja com a font en controls de contingut *Postext Source*. No cal compondre.
+`--variant formatted` compon el llibre com ho fa `pdf` i escriu cada pàgina com
+una secció de Word, amb el text en quadres de text col·locats línia a línia.
+Tots dos incrusten les fonts del llibre (`--no-embed-fonts` només les anomena).
+Una família que el llibre no pot cedir (`redistributable: false` a
+`customFonts`) es deixa fora i hi entra l'alternativa oberta, com a l'EPUB; una
+font la llicència de la qual prohibeix incrustar-la, una amb contorns
+PostScript i una font variable es notifiquen i només s'anomenen. A `build`,
+`--docx FITXER` escriu el mateix fitxer, amb `--docx-variant` i
+`--no-docx-fonts`. Des de postext 1.68; `--template` ja no s'aplica a `docx`
+ni a `build`.
+
+Amb un llibre després del fitxer, `import-docx` recupera les correccions fetes
+en un document que `docx` va exportar des d'aquest llibre. Llegeix el mapa que
+porta el fitxer, compara el text amb la còpia dels capítols feta a l'exportació
+i combina cada correcció amb el llibre tal com és ara: els fitxers de capítol
+d'una carpeta, d'un `.postext` o de Markdown solt, i el text dels recursos
+(peus, notes, text alternatiu, cel·les de taula) a `preset.json`, o al
+`resources.json` de `--resources DIR` si és Markdown solt. En un llibre amb
+diverses llengües, `--locale` indica l'edició des de la qual es va exportar el
+fitxer, i la correcció del text d'un recurs va al bloc `localized` d'aquella
+edició. Cada correcció es notifica en una línia pròpia:
+
+- `applied`, amb el fitxer i la línia on ha anat;
+- `conflict`: el text també ha canviat al llibre des de l'exportació, el
+  capítol o el recurs ja no existeix, o dues correccions es superposen;
+- `rejected`: text que genera el mateix llibre (números, etiquetes de peu) o un
+  format que travessa el marcatge de Postext.
+
+Els canvis amb control de canvis es prenen com a acceptats, i els comentaris
+s'enumeren amb l'autor i el lloc, però no s'escriuen. El codi de sortida és 3
+si una correcció no s'ha aplicat. `--dry-run` (`-n`) imprimeix l'informe i un
+diff unificat de cada fitxer que canviaria, i no escriu res. Cada fitxer
+s'escriu al costat del seu destí i es reanomena a sobre, de manera que una
+execució interrompuda no deixa mai mig capítol; un fitxer de capítol que ha
+canviat mentre s'executava la importació es deixa com està, amb un avís
+`docx.fileChanged`. `-o` no va amb un llibre. Amb `--json`, la resposta porta
+`variant`, `exportId`, `edits` (cadascuna amb `status`, `reason`, `kind`,
+`before`, `after` i `at`), `comments`, `files` i, en una prova en sec, `diff`.
+
+Sense cap llibre, `import-docx` converteix qualsevol document de Word en un
+llibre nou: crea un capítol a cada títol de nivell 1 (amb `--no-split`, un de
+sol), converteix les imatges i les taules en recursos, i amb `--report`
+imprimeix l'informe de qualitat que mostra el Sandbox (estils en ús, format
+directe, numeració escrita a mà…). `--template` indica una plantilla
+d'importació (un `.json` desat des del Sandbox o un `.docx` que en contingui
+una).
 
 L'espaiat entre caràcters és una propietat de l'estil, no del text, i per això no
 apareix al Markdown. `docx` escriu el `letterSpacing` dels estils de paràgraf, dels estils de títol
@@ -436,7 +479,7 @@ els agents de programació.
 
 - **Codis de sortida**: `0` fet, `1` error, `2` ús incorrecte (una opció
   desconeguda, una entrada que falta), `3` `check` ha trobat errors (o avisos
-  amb `--strict`).
+  amb `--strict`), o `import-docx` ha deixat fora una correcció de Word.
 - **Cap pregunta.** No espera mai que l'usuari escrigui res; si la carpeta no
   és buida, la rebutja en lloc de preguntar què cal fer.
 - **Sortida estàndard**: `-o -` hi escriu un PDF, una imatge o un paquet, per

@@ -125,7 +125,7 @@ postext images my-book --pages 40 --set bodyText.fontSize.value=10.5 --set headi
 postext check my-book --locale es --strict --json   # exit 3 on any warning too
 postext image my-book --page 12 --print-preview -o /tmp/p12-print.png   # through the output profile, trim and bleed drawn
 postext pdf my-book --color-space grayscale --no-outlines --no-accessible -o /tmp/gray.pdf
-postext docx my-book -o /tmp/my-book.docx            # Word for an editor; imports back unchanged (sources.md § Word)
+postext docx my-book -o /tmp/my-book.docx            # Word for an editor; `import-docx` brings corrections back (sources.md § Word)
 ```
 
 - `--set PATH=VALUE` (repeatable) works on every command that reads a book. It applies after

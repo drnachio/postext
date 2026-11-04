@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'エージェント、埋め込み、プリセット',
   description: 'AIエージェント向けのWebMCPツール、自分のアプリに組み込むPostextSandboxコンポーネント（propsとCSS）、そしてプリセットバンドルの形式',
   lang: 'ja',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '13分',
   order: 45,
   parent: 'sandbox',
@@ -22,7 +22,7 @@ Sandboxは、[WebMCP](https://webmachinelearning.github.io/webmcp/)（`document.
 ツールは、デザイナーが目で確かめながら繰り返す手順、つまり「変える、ページを見る、また変える」のために作られています。
 
 - **見る** — `sandbox_get_state`, `sandbox_render_page`, `sandbox_inspect_pages`, `sandbox_inspect_point`, `sandbox_inspect_comic`, `sandbox_get_warnings`：本とその章、ページの範囲、そして画面で起きていること（選択範囲、通知、回答待ちの確認）。任意のページを指定した幅のJPEG、PNG、WebPにしたもの、または細部を見るための切り抜き（求めれば印刷プレビュー付き）。同じページのデータ（ブロックと行、各段がどこまで埋まっているか、どの行がゆるいか、どの行が分割された語で終わっているか）。ページ上の1点にあるもの（ソースの行、リンクとその行き先、表のセル）。漫画のページのコマと吹き出し。そして、画面にどの章とどのビューアーが出ていても、任意の章または本全体について検査が見つけたもの。
-- **変える** — `sandbox_set_config`, `sandbox_get_config`, `sandbox_find_setting`, `sandbox_rename_design_item`, `sandbox_remove_design_item`, `sandbox_language_defaults`, `sandbox_print_profile`, `sandbox_save_layout_as_template`, `sandbox_edit_text`, `sandbox_write_text`, `sandbox_read_text`, `sandbox_search_text`, `sandbox_select_text`, `sandbox_undo_text`, `sandbox_manage_chapters`, `sandbox_save_resource`, `sandbox_save_font`, `sandbox_edit_comic`, `sandbox_import_word`：パスで指定する任意の設定（`bodyText.fontSize`、`page.margins.top`、`headings.levels[level=2].fontSize`、`header.elements[id=titleOdd].italic`）、完全一致の検索と置換による本文の編集（取り消しもできます）、章、画像、SVGの図、動画、書式つきの表、フォント、漫画のコマと吹き出し、スタイルを対応づけて読み込むWord文書。変更すると、各値の変更前と変更後、それぞれの章が何ページになったかが返ります。設定については、エンジンが実際に使う値と、それに連動して変わったほかの設定も返ります。エンジンが扱えない値は受け付けられず、何も変わりません。複数の言語で書かれた本では、`scope`で、設定をすべての言語の共通設定で読み書きするか、画面に出ている版だけで読み書きするかを指定します。
+- **変える** — `sandbox_set_config`, `sandbox_get_config`, `sandbox_find_setting`, `sandbox_rename_design_item`, `sandbox_remove_design_item`, `sandbox_language_defaults`, `sandbox_print_profile`, `sandbox_save_layout_as_template`, `sandbox_edit_text`, `sandbox_write_text`, `sandbox_read_text`, `sandbox_search_text`, `sandbox_select_text`, `sandbox_undo_text`, `sandbox_manage_chapters`, `sandbox_save_resource`, `sandbox_save_font`, `sandbox_edit_comic`, `sandbox_import_word`, `sandbox_apply_word_edits`：パスで指定する任意の設定（`bodyText.fontSize`、`page.margins.top`、`headings.levels[level=2].fontSize`、`header.elements[id=titleOdd].italic`）、完全一致の検索と置換による本文の編集（取り消しもできます）、章、画像、SVGの図、動画、書式つきの表、フォント、漫画のコマと吹き出し、スタイルを対応づけて読み込むWord文書。変更すると、各値の変更前と変更後、それぞれの章が何ページになったかが返ります。設定については、エンジンが実際に使う値と、それに連動して変わったほかの設定も返ります。エンジンが扱えない値は受け付けられず、何も変わりません。複数の言語で書かれた本では、`scope`で、設定をすべての言語の共通設定で読み書きするか、画面に出ている版だけで読み書きするかを指定します。
 - **表示する** — `sandbox_set_view`, `sandbox_go_to_page`, `sandbox_run_viewer`：ビューアーのタブ、サイドパネル、章か本全体か、拡大率、合わせ方と見開き、読者側の文字サイズ、印刷プレビュー、ページに描くガイド、Folioの拡大鏡、そして画面に出ているページ（ページ番号、本文の一節、アンカー、EPUBの目次の項目で指定）。PDFやEPUBの再生成、印刷、ページ上の動画の再生。
 - **保存する** — `sandbox_list_books`, `sandbox_open_book`, `sandbox_save_book`, `sandbox_import_book`, `sandbox_export`, `sandbox_word_templates`, `sandbox_answer`：サンプルと自分のプロジェクトとその表紙、`.postext`ファイルの読み込み、開いている本（または開いていない本）のPDF、EPUB、`.postext`、Word、Markdown、設定のJSONへの書き出し、Word読み込みのテンプレート、そしてSandboxからの確認への回答。
 

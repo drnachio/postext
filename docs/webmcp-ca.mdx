@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: "Què pot fer un agent d'IA al navegador amb les 53 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
   lang: 'ca',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '13 min',
   order: 50,
   plainSummary: "Aquesta pàgina és per a qui vol que un assistent d'intel·ligència artificial li faci la feina en un llibre del Sandbox. Mentre el Sandbox és obert, dona a l'assistent un joc d'eines per mirar qualsevol pàgina, canviar el disseny, editar el text, afegir imatges i taules, trobar problemes i desar fitxers. Li demanes les coses amb les teves paraules, per exemple «fes la lletra una mica més grossa i comprova que el llibre encara cap en 40 pàgines», i l'assistent fa servir les eines i et mostra les pàgines. Tot es queda al teu navegador. La pàgina explica com connectar-hi un assistent, què pot fer i com es crida cada eina.",
@@ -559,7 +559,10 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
   `set_cover` i `remove_cover` li posen o li treuen una portada.
 - **Exportar.** `sandbox_export` escriu `pdf`, `epub`, `postext`, `docx`,
   `markdown` o `config`. Per defecte, el navegador baixa el fitxer; amb
-  `deliver: "data"`, un PDF o un EPUB torna a l'agent codificat en base64:
+  `deliver: "data"`, un PDF, un EPUB o un fitxer de Word torna a l'agent
+  codificat en base64. Amb `docx`, `variant` tria `semantic` (el valor per
+  defecte: títols, llistes, notes i taules propis de Word) o `formatted` (les
+  pàgines tal com les imprimeix el PDF, amb les fonts incrustades):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -588,7 +591,17 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
   requadre del llibre que hi corresponen, sempre que el llibre no n'hi fixi cap. La simulació ho llista a `characterSpacing`.
 
   `sandbox_word_templates` llista, llegeix, desa i suprimeix les assignacions
-  desades, que també fa servir l'exportació a Word.
+  desades de la importació de Word.
+
+- **Recuperar les correccions** fetes en un fitxer de Word exportat des del
+  llibre, amb `sandbox_apply_word_edits`. Amb `dryRun: true` no canvia res i
+  enumera cada canvi trobat, `applied`, `conflict` (el mateix text també ha
+  canviat al llibre des de l'exportació, o ja no hi és) o `rejected` (un
+  número, una etiqueta o un altre text que genera el mateix llibre), amb el
+  motiu, i els comentaris deixats a Word. Sense aquesta opció, els canvis
+  aplicats van als capítols i als recursos en un sol pas, que `sandbox_undo`
+  reverteix sencer. `sandbox_import_word` rebutja un fitxer així i indica
+  aquesta eina. Des de postext 1.68.
 
 ### Preguntes i avisos
 
@@ -695,7 +708,7 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
 - **Llibres i fitxers**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
-- **Word**: `sandbox_import_word`, `sandbox_word_templates`.
+- **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **Preguntes**: `sandbox_answer`.
 - **La revisió**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

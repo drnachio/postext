@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Programmatic usage',
   description: 'Calling Postext from code: buildDocument and its warnings, defaults, fonts, caches and the Web Worker',
   lang: 'en',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-04',
   readingTime: '28 min',
   order: 21,
   parent: 'configuration',
@@ -616,10 +616,41 @@ The simplest isolation is a realm per document: an iframe per live example (a Co
 
 ### Word documents (`postext/word`)
 
-The `postext/word` subpath reads and writes Word documents (`.docx`) without a DOM. The Sandbox's Word import and export and the command line's `import-docx` and `docx` are built on it (see [Command line › docx and import-docx](/en/docs/command-line#docx-and-import-docx)).
+The `postext/word` subpath writes and reads Word documents (`.docx`) without a DOM, in the browser, a Worker or Node. The Sandbox's Word dialogs and the command line's `docx` and `import-docx` are built on it (see [Command line › docx and import-docx](/en/docs/command-line#docx-and-import-docx) and [Sandbox › Word documents](/en/docs/sandbox-books-saving#word-documents)). Since postext 1.68.
 
 ```ts
-import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext, postextToDocx } from 'postext/word';
+import { buildDocument } from 'postext';
+import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { decompressWoff2 } from 'postext-pdf';
+
+const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // the same ids at export and import
+
+// Semantic: Word's own structures, from the Markdown and the configuration.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
+
+// Formatted: the laid-out pages, with the book's faces embedded.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
+const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+
+// The corrected file, merged into the book as it is now.
+if (isExportedDocx(edited)) {
+  const result = applyDocxEdits(edited, { chapters: current, resources });
+  for (const e of result.edits) console.log(e.status, e.reason ?? '', e.before, '→', e.after);
+  if (result.changed) save(result.chapters, result.resources);
+}
+```
+
+- **`semanticDocx(options)`** resolves to the `.docx` bytes (a `Uint8Array`). It takes `chapters` (`{ id, title?, markdown }`), `config`, `resources` with `resourceBytes(fileId)` for the bytes of their pictures, `rasterizeSvg(svg, width, height)` for the PNG Word needs beside an SVG (without it an SVG is left out), `fonts` (a plan from `planWordFonts`), `title`, `author`, `date` (a fixed ISO date makes the bytes reproducible) and `onWarning` for what Word sets its own way (`{ code, message, chapter? }`). Equations need the TeX-to-Word converter, which loads on first use; when it cannot load they stay TeX, with a `mathUnavailable` warning.
+- **`formattedDocx(options)`** takes `docs`, one `VDTDocument` per chapter in the order of `chapters` (the print chain the PDF is drawn from), and the same `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` and `onWarning`. `onProgress(done, total)` counts the pages written.
+- **`planWordFonts(faces, options)`** turns the book's faces (`{ family, weight, style, files }`: WOFF2 or sfnt, any number of unicode-range slices) into the static TrueType faces Word embeds. `decompressWoff2` (the one `postext-pdf` exports) reads WOFF2; `usedText` and `fontStrings` leave out the slices and faces the export does not use; `familySuffix` (default `' PTX'`) is added to every embedded family. Its `warnings` name the faces left out (`restricted`, `cff`, `variable`, `missing`, `merge-failed`) and those embedded for preview and print only (`preview-print`).
+- **`isExportedDocx(bytes)`** says whether a file carries the export map, and never throws. `readExportMap(files)` reads the map itself from the unzipped parts (fflate's `unzipSync`): `exportId`, `variant`, `engine`, the chapters with their hashes, and the copy of the exported text.
+- **`applyDocxEdits(bytes, { chapters, resources })`** is synchronous. It returns every chapter with the corrections applied (`chapters`), deep copies of the resources whose caption, note, alternative text or table cells changed (`resources`), `edits`, `comments`, `variant`, `exportId` and `changed`. Each edit has `chapter`, or `resourceId` and `field` (`caption`, `note`, `alt`, `cell:<row>:<col>`); `start` and `end` in the current text; `before`, `after`; `kind` (`text`, `format`, `paragraph`, `tracked`); and `status` with its `reason`: `applied`, `conflict` (`changed-since-export`, `target-missing`, `no-snapshot`, `overlap`) or `rejected` (`generated`, `format-crosses-markup`, `format-partial`, `bookmarks-lost`). Each comment has its `author`, `text` and place (`start` is -1 for a comment on no exported text). A file that is not an exported `.docx` throws a `DocxReadError`. The chapter ids must be the ones the file was exported with: an edit to an unknown chapter is reported, not applied.
+
+Any other Word file is read into Markdown with a style template:
+
+```ts
+import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext } from 'postext/word';
 
 const word = readDocx(bytes);                                    // a Uint8Array or an ArrayBuffer
 const template = parseTemplate(word.embeddedTemplate) ?? emptyTemplate();
@@ -627,14 +658,11 @@ const report = analyzeDocx(word, template, config);              // report.verdi
 const { chapters, pictures, tables } = wordToPostext(word, {
   template, config, chapters: 'split', existingIds: new Set(), untitledChapter: 'Untitled',
 });
-
-const docx = postextToDocx(chapters, { template, config, book: chapters.length > 1, title: 'Field notes' });
 ```
 
-- **`readDocx(bytes)`** reads the file into a Word model: its styles, paragraphs, notes and pictures, the document's `title`, and the import template a Postext export carries (`embeddedTemplate`). A file that is not a Word document throws a `DocxReadError`.
+- **`readDocx(bytes)`** reads the file into a Word model: its styles, paragraphs, notes and pictures, the document's `title`, and the import template the file carries (`embeddedTemplate`, written by the Word exports of postext 1.67 and earlier). A file that is not a Word document throws a `DocxReadError`.
 - **`wordToPostext(word, settings)`** turns the model into chapters (`{ title, markdown }`), pictures and tables. The template maps each Word style to a heading, a paragraph style, a box, a quotation or a caption of the configuration. `chapters: 'split'` opens a chapter at each level-1 heading, `'single'` keeps one. The pictures (`id`, `media.bytes`, `caption`, `alt`) and tables (`id`, `model`, `caption`) are the host's to store as resources; `skippedPictures` names the EMF, WMF and TIFF pictures left out.
 - **`analyzeDocx(word, template, config)`** is the quality report the Sandbox shows before an import: the styles in use, how many paragraphs are styled, and findings such as `directFormatting`, `manualHeadings` and `typedNumbering`, each with a count and examples.
-- **`postextToDocx(chapters, settings)`** writes chapters as a `.docx` (a `Uint8Array`) with Word styles for headings, paragraphs, boxes, quotes, lists and notes. What Word cannot express is kept verbatim in the *Postext Markup* styles, and the template goes inside the file, so the document imports back unchanged. `book: true` opens each chapter with a `Postext Chapter` paragraph, from which the import rebuilds the chapters.
 - **`wordStyleTracking(word, template, config)`** and **`applyStyleTracking(config, tracking)`** carry the character spacing of Word's styles onto the styles of the configuration that set none.
 
 

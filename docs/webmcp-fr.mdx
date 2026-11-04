@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'Ce qu’un agent IA dans le navigateur peut faire avec le Sandbox grâce à ses 53 outils WebMCP (regarder les pages, changer n’importe quel réglage, modifier le texte, ajouter images, tableaux et polices, lancer les vérifications, exporter) et comment appeler chacun d’eux, avec de vrais arguments et de vraies réponses',
   lang: 'fr',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '13 min',
   order: 50,
   plainSummary: "Cette page s’adresse aux personnes qui veulent qu’un assistant d’intelligence artificielle travaille pour elles sur un livre dans le Sandbox. Tant que le Sandbox est ouvert, il donne à l’assistant une série d’outils : regarder n’importe quelle page, changer la maquette, modifier le texte, ajouter des images et des tableaux, trouver les problèmes et enregistrer des fichiers. Vous demandez avec vos propres mots, par exemple « grossissez un peu le texte et vérifiez que le livre tient toujours en 40 pages », et l’assistant utilise les outils et vous montre les pages. Tout reste dans votre navigateur. La page explique comment connecter un assistant, ce qu’il peut faire et comment chaque outil s’appelle.",
@@ -550,7 +550,10 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
   `set_cover` et `remove_cover` lui donnent une couverture ou la lui retirent.
 - **Exporter.** `sandbox_export` écrit `pdf`, `epub`, `postext`, `docx`,
   `markdown` ou `config`. Par défaut, le navigateur télécharge le fichier ; avec
-  `deliver: "data"`, un PDF ou un EPUB revient à l’agent encodé en base64 :
+  `deliver: "data"`, un PDF, un EPUB ou un fichier Word revient à l’agent
+  encodé en base64. Pour `docx`, `variant` choisit `semantic` (la valeur par
+  défaut : titres, listes, notes et tableaux propres à Word) ou `formatted` (les
+  pages telles que le PDF les imprime, polices incorporées) :
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -580,7 +583,17 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
   `characterSpacing`.
 
   `sandbox_word_templates` liste, lit, enregistre et supprime les correspondances
-  enregistrées, que l’export Word utilise aussi.
+  enregistrées de l’import Word.
+
+- **Rapporter les corrections** faites dans un fichier Word exporté depuis le
+  livre avec `sandbox_apply_word_edits`. Avec `dryRun: true`, il ne change rien
+  et liste chaque modification trouvée, `applied`, `conflict` (le même texte a
+  aussi changé dans le livre depuis l’export, ou n’y est plus) ou `rejected` (un
+  numéro, une étiquette ou un autre texte que produit le livre lui-même), avec
+  sa raison, ainsi que les commentaires laissés dans Word. Sans cette option,
+  les modifications appliquées vont dans les chapitres et les ressources en une
+  seule étape, que `sandbox_undo` retire en entier. `sandbox_import_word` refuse
+  un tel fichier et renvoie à cet outil. Depuis postext 1.68.
 
 ### Questions et messages
 
@@ -682,7 +695,7 @@ chacun s’obtiennent avec `postextWebMcp.listTools()`.
 - **Livres et fichiers** : `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
-- **Word** : `sandbox_import_word`, `sandbox_word_templates`.
+- **Word** : `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **Questions** : `sandbox_answer`.
 - **Les vérifications** : `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 
