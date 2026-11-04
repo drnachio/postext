@@ -50,6 +50,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # The cookbook's scripts import the engine from the workspace.
+      - run: pnpm turbo run build --filter=postext
+
       # The site's pages print the version they were built from (JSON-LD
       # `softwareVersion`): wait until the deploy of this release is live.
       - name: Wait for the deploy

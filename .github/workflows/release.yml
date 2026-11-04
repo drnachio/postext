@@ -274,7 +274,15 @@ jobs:
           git tag -a "postext-citeproc-v${{ steps.version_citeproc.outputs.version }}" -m "postext-citeproc v${{ steps.version_citeproc.outputs.version }}"
           git tag -a "postext-epub-v${{ steps.version_epub.outputs.version }}" -m "postext-epub v${{ steps.version_epub.outputs.version }}"
           git tag -a "postext-scorm-v${{ steps.version_scorm.outputs.version }}" -m "postext-scorm v${{ steps.version_scorm.outputs.version }}"
-          git push origin main --follow-tags
+          # The packages are already on npm: a push lost now costs a version
+          # (release-version.sh syncs to npm, then bumps). Wait out a GitHub
+          # outage instead (`fatal error in commit_refs`, 1.68.0, 2026-11-04).
+          for wait in 60 120 240 480 0; do
+            git push origin main --follow-tags && break
+            [ "$wait" != 0 ] || exit 1
+            echo "::warning::Push refused; trying again in $wait s"
+            sleep "$wait"
+          done
 
       # Keep develop in sync with the version bump
       - name: Sync version to develop
