@@ -6,12 +6,12 @@
 // left-to-right setting of caption, note and cell lines (`paintLine`).
 import type { VDTBlock } from '../../vdt/blocks.js';
 import type { VDTLine } from '../../vdt/lines.js';
-import type { VDTLineSegment } from '../../vdt/segments.js';
+import type { VDTAnnotationRun, VDTLineSegment } from '../../vdt/segments.js';
 import { lineTextAlign } from '../../vdt/flowFrames.js';
 import { lineWordSegmentsInOrder } from '../wordPieces.js';
 import { lineTrailingTracking } from '../lineInk.js';
 import { lineSource, segmentShownText, type Atom, type SourceBlock } from './source.js';
-import type { DisplayItem, DisplayLine, DisplayListOptions, DisplayRun, LineAlign } from './types.js';
+import type { DisplayAnnotation, DisplayItem, DisplayLine, DisplayListOptions, DisplayRun, LineAlign } from './types.js';
 
 /** The faces and colours a line's segments pick from. */
 export interface LineStyle {
@@ -112,6 +112,26 @@ function bodySetting(line: VDTLine, block: Pick<VDTBlock, 'textAlign' | 'bbox'>,
   return { segments, order, startX: lineX, align: shown };
 }
 
+/** A segment's East Asian setting on its run (#1394): ruby reading,
+ *  tate-chu-yoko and orientation, a warichu note's rows, kanbun marks. */
+function annotate(run: DisplayRun, seg: VDTLineSegment): void {
+  const ann = (a: VDTAnnotationRun): DisplayAnnotation => ({ text: a.text, dx: a.dx, dy: a.dy, fontString: a.fontString, ...(a.color ? { color: a.color } : {}) });
+  if (seg.ruby) {
+    const r = seg.ruby;
+    run.ruby = { text: r.text, fontString: r.fontString, position: r.position, ...(r.group ? { group: true } : {}), ...(r.id !== undefined ? { id: r.id } : {}), ...(r.color ? { color: r.color } : {}), ...(r.runs[0] ? { raise: -r.runs[0].dy } : {}) };
+  }
+  if (seg.tcy) run.tcy = true;
+  if (seg.orientation) run.orientation = seg.orientation;
+  if (seg.warichu) {
+    const w = seg.warichu;
+    run.warichu = { upper: w.upper, lower: w.lower, fontString: w.fontString, ...(w.color ? { color: w.color } : {}) };
+  }
+  if (seg.kunten) {
+    const k = seg.kunten;
+    run.kunten = { runs: k.runs.map((r) => ({ ...ann(r), role: r.role })), ...(k.tate ? { tate: { ...k.tate } } : {}), ...(k.color ? { color: k.color } : {}) };
+  }
+}
+
 /** The runs of a line set from `setting`: x per segment (in `order` when
  *  the line carries one), each space at the justified width. */
 function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking: number, leaders: PlacedLine['leaders']): DisplayRun[] {
@@ -144,6 +164,7 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
     if (seg.refResourceId !== undefined) run.refTarget = { id: seg.refResourceId, ...(seg.refAnchor ? { anchor: true } : {}) };
     if (seg.pageLink !== undefined) run.pageLink = seg.pageLink;
     if (seg.rtl) run.rtl = true;
+    annotate(run, seg);
     if (seg.kind === 'space') {
       if (setting.spaceWidth !== undefined && !(composed && seg.autospace)) run.space = true;
     } else if (seg.kind === 'math' && seg.mathRender) {

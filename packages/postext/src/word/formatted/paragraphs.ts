@@ -12,7 +12,8 @@ import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js'
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
 import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, linkTarget, wordText, type InlineDrawing } from './runs.js';
+import { emitRun, formatFlags, linkTarget, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
+import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
 import type { WriterContext } from './types.js';
@@ -183,6 +184,9 @@ export interface TextOut {
   /** Item text offset → chunk text offset, per line start. */
   lineStarts: { item: number; out: number; length: number }[];
   drawings: (InlineDrawing & { baseline: number })[];
+  /** Marks beside runs (kanbun) and their rules, item's unturned frame. */
+  annotations: Annotation[];
+  rules: NonNullable<EmittedRun['rules']>;
   /** Atoms the writer adds (forced breaks), at offsets of `text`. */
   atoms: NonNullable<MapFragment['atoms']>;
 }
@@ -237,9 +241,8 @@ function forcedBreakAtom(line: DisplayLine, next: DisplayLine | undefined): { st
 /** Paragraphs of `groups` (lines of `item`) inside the box [boxL, boxR]. */
 export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], boxL: number, boxR: number, opts: EmitOptions): TextOut {
   const xml: string[] = [];
-  const out: TextOut = { xml: '', text: '', map: [], formats: [], lineStarts: [], drawings: [], atoms: [] };
+  const out: TextOut = { xml: '', text: '', map: [], formats: [], lineStarts: [], drawings: [], annotations: [], rules: [], atoms: [] };
   let text = '';
-  const code = item.role === 'code';
   const pushFormat = (start: number, end: number, flags: string, href: string | undefined): void => {
     if (!flags && !href) return;
     const last = out.formats[out.formats.length - 1];
@@ -258,6 +261,7 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
       const lx: string[] = [];
       const lineFormats: MapFormat[] = [];
       const lineDrawings: TextOut['drawings'] = [];
+      const lineMarks: Pick<TextOut, 'annotations' | 'rules'> = { annotations: [], rules: [] };
       let firstProps = '';
       // Consecutive runs of one style and link become one `w:r`.
       let pendingProps = '';
@@ -277,11 +281,19 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
           if (target) lx.push(`<w:hyperlink r:id="${ctx.pkg.addLink(target)}">`);
           link = target;
         }
-        if (emitted.rPr !== pendingProps || emitted.drawing) flush();
-        pendingProps = emitted.rPr;
-        pendingText += emitted.text;
+        if (emitted.rPr !== pendingProps || emitted.drawing || emitted.xml) flush();
+        if (emitted.xml) {
+          // A run that writes its own XML (ruby, tate-chu-yoko, warichu).
+          lx.push(emitted.xml);
+          pendingProps = '';
+        } else {
+          pendingProps = emitted.rPr;
+          pendingText += emitted.text;
+        }
+        if (emitted.annotations) lineMarks.annotations.push(...emitted.annotations);
+        if (emitted.rules) lineMarks.rules.push(...emitted.rules);
         const at = text.length + lineText.length;
-        const flags = formatFlags(run, code);
+        const flags = formatFlags(run);
         if (flags || run.href) lineFormats.push({ start: at, end: at + emitted.text.length, flags, ...(run.href ? { href: run.href } : {}) });
         lineText += emitted.text;
         if (emitted.drawing) lineDrawings.push({ ...emitted.drawing, baseline: line.baseline });
@@ -292,6 +304,8 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         xml.push(...lx);
         for (const f of lineFormats) pushFormat(f.start, f.end, f.flags, f.href);
         out.drawings.push(...lineDrawings);
+        out.annotations.push(...lineMarks.annotations);
+        out.rules.push(...lineMarks.rules);
       } else {
         // Runs that do not spell the line (or no runs): the line is written
         // whole in its first run's style, so the bookmark holds exactly

@@ -70,7 +70,7 @@ export function paragraphsText(paras: XmlElement[]): string {
       const n = localName(c.name);
       if (n === 't') s += c.children.filter((x): x is string => typeof x === 'string').join('');
       else if (n === 'br') s += '\n';
-      else if (n !== 'pPr' && n !== 'rPr') s += one(c);
+      else if (n !== 'pPr' && n !== 'rPr' && n !== 'rt') s += one(c);
     }
     return s;
   };
@@ -84,7 +84,8 @@ export function pageBoxTexts(docXml: string): string[][] {
 }
 
 /** Text inside each `_ptx_` bookmark, in document order: `w:t`, `w:br`
- *  → '\n', and '\n' for a paragraph that starts while it runs on. */
+ *  → '\n', and '\n' for a paragraph that starts while it runs on. A
+ *  ruby's reading (`w:rt`) is skipped: only its base is the text. */
 export function bookmarkTexts(docXml: string): Map<string, string> {
   const out = new Map<string, string>();
   const open = new Map<string, string>();
@@ -104,6 +105,7 @@ export function bookmarkTexts(docXml: string): Map<string, string> {
       } else if (n === 'bookmarkEnd') open.delete(c.attrs['w:id']!);
       else if (n === 't') add(c.children.filter((x): x is string => typeof x === 'string').join(''));
       else if (n === 'br') add('\n');
+      else if (n === 'rt') continue;
       else {
         if (n === 'p') add('\n');
         walk(c);

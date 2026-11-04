@@ -60,6 +60,58 @@ export interface DisplayRun {
   space?: boolean;
   /** Embedded non-text content drawn in place of the run. */
   inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number };
+  /** The run is a ruby base (#1394, `VDTLineSegment.ruby`): its reading. */
+  ruby?: DisplayRuby;
+  /** Vertical text: one tate-chu-yoko cell set by `:tcy[…]` (short
+   *  numbers `cjk.uprightDigits` sets upright carry no flag: writers find
+   *  them as the measurer does, `verticalRuns`). */
+  tcy?: boolean;
+  /** Vertical text: the author's orientation (`:upright[…]`, `:sideways[…]`). */
+  orientation?: 'upright' | 'sideways';
+  /** The part of a warichu note set on this line: `text` is the upper
+   *  row then the lower one, painted as two rows. */
+  warichu?: { upper: string; lower: string; fontString: string; color?: string };
+  /** Kanbun marks (返り点, 送り仮名, 竪点) painted from where the run starts. */
+  kunten?: DisplayKunten;
+}
+
+/** Text an annotation paints (a ruby reading, a kanbun mark), placed from
+ *  its run: `dx` px along the line from the run's start, `dy` px from the
+ *  line's baseline across it (positive towards the line's foot: down in
+ *  horizontal text, left in vertical text), in the item's unturned frame. */
+export interface DisplayAnnotation {
+  text: string;
+  dx: number;
+  dy: number;
+  fontString: string;
+  color?: string;
+}
+
+export interface DisplayRuby {
+  /** The reading. */
+  text: string;
+  /** Its font (CSS shorthand at the ruby size). */
+  fontString: string;
+  /** Over or under the base (over is the right side of vertical text),
+   *  or beside each character (zhuyin). */
+  position: 'over' | 'under' | 'right';
+  /** One reading over the whole base. */
+  group?: boolean;
+  /** Runs of one line with the same id are one ruby (a jukugo word). */
+  id?: number;
+  color?: string;
+  /** Distance from the base's baseline to the reading's, px (positive:
+   *  over the base, the right of vertical text). */
+  raise?: number;
+}
+
+export interface DisplayKunten {
+  /** The marks as painted: 返り点 (`kaeri`) and 送り仮名 (`okuri`). */
+  runs: (DisplayAnnotation & { role: 'kaeri' | 'okuri' })[];
+  /** The 竪点: a thin rule along the line from `dx`, centred `dy` from the
+   *  baseline. */
+  tate?: { dx: number; dy: number; length: number; thickness: number };
+  color?: string;
 }
 
 export type LineAlign = 'justify' | 'left' | 'right' | 'center';
@@ -98,7 +150,7 @@ export type DisplayItem =
   | {
       kind: 'text';
       /** What the text is, for writers that style by role. */
-      role: 'body' | 'heading' | 'list' | 'quote' | 'code' | 'caption' | 'note' | 'continues' | 'footnote' | 'callout' | 'header' | 'footer' | 'opener' | 'design' | 'label' | 'cell' | 'dropCap' | 'marker';
+      role: 'body' | 'heading' | 'list' | 'quote' | 'code' | 'caption' | 'note' | 'continues' | 'footnote' | 'callout' | 'header' | 'footer' | 'opener' | 'design' | 'label' | 'cell' | 'dropCap' | 'marker' | 'balloon';
       /** The block's frame on the page (column fragment, caption box…). */
       bbox: DisplayRect;
       lines: DisplayLine[];
@@ -126,6 +178,9 @@ export type DisplayItem =
       tint?: string;
       alt?: string;
       rotate?: number;
+      /** Drawn flipped left to right inside `rect` (`crop` is told in the
+       *  picture as stored, unflipped): comic art set mirrored. */
+      flipH?: boolean;
     }
   | {
       kind: 'table';

@@ -97,7 +97,7 @@ export interface BlipRefs {
 
 /** A picture (`pic:pic`) stretched over the box, cropped by `srcRect`
  *  (1/1000 % of the picture per side). */
-export function pictureGraphic(id: number, cx: number, cy: number, refs: BlipRefs, opts: { name: string; descr?: string; srcRect?: string; rotate?: number }): string {
+export function pictureGraphic(id: number, cx: number, cy: number, refs: BlipRefs, opts: { name: string; descr?: string; srcRect?: string; rotate?: number; flipH?: boolean }): string {
   const ext = refs.svg
     ? `<a:extLst><a:ext uri="{96DAC541-7B7A-43D3-8B79-37D633B846F1}"><asvg:svgBlip r:embed="${refs.svg}"/></a:ext></a:extLst>`
     : '';
@@ -106,7 +106,7 @@ export function pictureGraphic(id: number, cx: number, cy: number, refs: BlipRef
     `<a:graphic><a:graphicData uri="${PIC_URI}"><pic:pic>` +
     `<pic:nvPicPr><pic:cNvPr id="${id}" name="${escapeAttr(opts.name)}"${descr}/><pic:cNvPicPr><a:picLocks noChangeAspect="1"/></pic:cNvPicPr></pic:nvPicPr>` +
     `<pic:blipFill><a:blip r:embed="${refs.blip}">${ext}</a:blip>${opts.srcRect ?? ''}<a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
-    `<pic:spPr>${xfrm(cx, cy, opts.rotate)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+    `<pic:spPr>${xfrm(cx, cy, opts.rotate, opts.flipH)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
     '</pic:pic></a:graphicData></a:graphic>'
   );
 }

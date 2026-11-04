@@ -101,10 +101,10 @@ describe('display list review fixes (#1388)', () => {
     const atom = item.source!.atoms!.find((a) => a.kind === 'ref')!;
     expect(caption.slice(atom.start, atom.end)).toBe(':ref{id="figure-with-a-long-identifier-one"}');
     expect(item.source!.map[atom.at]).toBe(atom.start);
-    // The placeholder's other letters map to nothing, the words after it
-    // into the caption past the directive.
+    // The placeholder's other letters belong to the atom (#1394), the
+    // words after it map into the caption past the directive.
     const after = text.indexOf(', the first one.');
-    for (let i = atom.at + 1; i < after; i++) expect(item.source!.map[i]).toBe(-1);
+    for (let i = atom.at + 1; i < after; i++) expect(item.source!.map[i]).toBe(atom.start);
     for (let i = after; i < text.length; i++) {
       const off = item.source!.map[i]!;
       expect(off).toBeGreaterThanOrEqual(atom.end);

@@ -8,6 +8,7 @@ import type { WordFontPlan } from '../fonts/types.js';
 import type { DocxPackageBuilder } from '../ooxml/types.js';
 import type { WordChapterInput } from '../semantic/types.js';
 import type { MetricsCache } from './metrics.js';
+import type { CjkRegion } from '../../types/text/cjk.js';
 
 export interface FormattedWarning {
   code: string;
@@ -59,4 +60,8 @@ export interface WriterContext {
   rasterizeSvg: FormattedDocxOptions['rasterizeSvg'];
   /** Media relationship ids per picture key (undefined = could not embed). */
   media: Map<string, { blip: string; svg?: string } | undefined>;
+  /** CJK setting of the current document (vertical text cells). */
+  cjk?: { region: CjkRegion; uprightDigits: number };
+  /** Last `w:eastAsianLayout w:id` handed out. */
+  eaId?: number;
 }

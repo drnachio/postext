@@ -7,6 +7,7 @@
 
 import { CONFIG_VERSION } from '../../bundle/configVersion/rules.js';
 import { pageDisplayList } from '../../paint/displayList/page.js';
+import { cjkRegionOfConfig, resolveCjkConfig } from '../../defaults/text/cjk.js';
 import type { ExportMap } from '../anchors/types.js';
 import { guidFrom, hashText } from '../anchors/hash.js';
 import { createDocxPackage } from '../ooxml/package.js';
@@ -60,6 +61,7 @@ export async function formattedDocx(options: FormattedDocxOptions): Promise<Uint
     ctx.docIndex = d;
     ctx.dpi = doc.config.page.dpi;
     ctx.lang = doc.config.locale;
+    ctx.cjk = { region: cjkRegionOfConfig(doc.config), uprightDigits: resolveCjkConfig(doc.config.cjk, doc.config.locale).uprightDigits };
     for (let p = 0; p < doc.pages.length; p++) {
       const page = pageDisplayList(doc, p);
       body.push(await pageXml(ctx, page, ++done === total));

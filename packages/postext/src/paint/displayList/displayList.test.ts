@@ -50,12 +50,14 @@ function expectMapsMatch(markdown: string, pages: DisplayPage[]): number {
   for (const item of textItems(pages)) {
     if (!item.source || item.source.resource || item.source.generated) continue;
     const atomAt = new Set((item.source.atoms ?? []).map((a) => a.at));
+    // A placeholder's later characters map to its construct's start.
+    const atomStarts = new Set((item.source.atoms ?? []).map((a) => a.start));
     let base = 0;
     for (const line of item.lines) {
       expect(line.map.length).toBe(line.text.length);
       for (let i = 0; i < line.text.length; i++) {
         const off = line.map[i]!;
-        if (off < 0 || atomAt.has(base + i)) continue;
+        if (off < 0 || atomAt.has(base + i) || atomStarts.has(off)) continue;
         expect(markdown[off], `${JSON.stringify(line.text)}[${i}]`).toBe(line.text[i]);
         checked++;
       }

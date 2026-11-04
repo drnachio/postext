@@ -1,7 +1,7 @@
 // Pictures of the formatted Word export (#1392): bitmaps as `a:blip`
 // (PNG, JPEG, GIF as they are), SVG as `asvg:svgBlip` with a PNG fallback
 // rasterised at print resolution, safe-area crops as `a:srcRect`, turned
-// pictures through `a:xfrm rot`. Inline maths and music are small SVG
+// and mirrored pictures (comic art) through `a:xfrm rot` / `flipH`. Inline maths and music are small SVG
 // pictures anchored where their run stands.
 
 import { strFromU8, strToU8 } from 'fflate';
@@ -97,7 +97,7 @@ export async function imageRun(ctx: WriterContext, item: ImageItem): Promise<str
   if (item.tint) ctx.warn('picture-tint', `picture ${item.fileId}: its tint is not carried into Word`);
   const crop = srcRect(item.crop);
   return anchorRun(ctx, { rect: item.rect, name: 'ptx picture', ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.alt ? { descr: item.alt } : {}) }, (id, cx, cy) =>
-    pictureGraphic(id, cx, cy, refs, { name: item.fileId, ...(item.alt ? { descr: item.alt } : {}), ...(crop ? { srcRect: crop } : {}), ...(item.rotate ? { rotate: item.rotate } : {}) }),
+    pictureGraphic(id, cx, cy, refs, { name: item.fileId, ...(item.alt ? { descr: item.alt } : {}), ...(crop ? { srcRect: crop } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.flipH ? { flipH: true } : {}) }),
   );
 }
 

@@ -27,6 +27,7 @@ const ROLE_STYLES: Record<TextItem['role'], [id: string, name: string]> = {
   cell: ['PostextCell', 'Postext Cell'],
   dropCap: ['PostextDropCap', 'Postext Drop Cap'],
   marker: ['PostextMarker', 'Postext Marker'],
+  balloon: ['PostextLettering', 'Postext Lettering'],
 };
 
 /** Character styles carrying a face's own weight and slant, and marking

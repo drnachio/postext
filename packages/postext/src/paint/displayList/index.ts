@@ -11,4 +11,7 @@ export type {
   DisplayPage,
   DisplayListOptions,
   LineAlign,
+  DisplayAnnotation,
+  DisplayRuby,
+  DisplayKunten,
 } from './types.js';

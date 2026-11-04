@@ -72,6 +72,9 @@ function expectMap(b: Built, md: string, resources: Resource[] = []): number {
     expect(marks.get(`_ptx_${f.id}`)).toBe(f.text);
     expect(f.map.length).toBe(f.text.length);
     const atomAt = new Set((f.atoms ?? []).map((a) => a.at));
+    // An atom's printed characters all map to its construct's start
+    // (#1394): the importer runs the atom over them.
+    for (const a of f.atoms ?? []) for (let k = a.at + 1; k < f.text.length && f.map[k] === a.start; k++) atomAt.add(k);
     const src = f.target.kind === 'markdown' ? md : f.target.kind === 'resource' ? (() => {
       const t = f.target;
       const r = resources.find((x) => x.id === t.resourceId)!;

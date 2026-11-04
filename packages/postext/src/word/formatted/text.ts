@@ -1,15 +1,19 @@
 // Text items as text boxes (#1392): each chunk of an item's lines (see
 // paragraphs.ts) becomes one page-anchored text box placed so Word's
 // first baseline lands on the engine's; a turned item turns every box
-// about the item's centre. Inline maths, music and swatches are drawn
-// over the holders their runs leave in the text.
+// about the item's centre, a vertical one (#1394) stands as an `eaVert`
+// box. Inline maths, music and swatches are drawn over the holders their
+// runs leave in the text, kanbun marks beside their characters.
 
-import type { DisplayItem, DisplayRect } from '../../paint/displayList/types.js';
-import { textBoxRun, turnedBox } from './drawing.js';
+import type { DisplayItem, DisplayRect, DisplayRun } from '../../paint/displayList/types.js';
+import { textBoxRun, turnedBox, turnPoint } from './drawing.js';
+import { annotationRect, smallTextBox, textRun } from './eastAsian.js';
+import { fontSizePx } from './metrics.js';
+import { runProps, wordText } from './runs.js';
+import { rectRuns, ruleRun } from './shapes.js';
 import { isImportable, recordFragment, reserveFragment } from './fragments.js';
 import { chunkBox, emitGroups, planChunks, planLines, type TextOut } from './paragraphs.js';
 import { inlineSvgRun } from './pictures.js';
-import { rectRuns } from './shapes.js';
 import type { WriterContext } from './types.js';
 
 type TextItem = Extract<DisplayItem, { kind: 'text' }>;
@@ -40,25 +44,65 @@ export async function inlineDrawingRuns(ctx: WriterContext, out: TextOut, centre
   return runs;
 }
 
+/** The sum of two clockwise angles in (-180, 180], undefined for 0. */
+function addAngles(a: number, b: number): number | undefined {
+  let r = (a + b) % 360;
+  if (r > 180) r -= 360;
+  if (r <= -180) r += 360;
+  return Math.abs(r) < 1e-9 ? undefined : r;
+}
+
+/** Where a box laid out in an item's unturned frame stands on the sheet.
+ *  A vertical item's lines run along the frame's x, which the item's
+ *  quarter turn brings down the sheet: Word's `eaVert` box sets lines top
+ *  to bottom and stacks them right to left by itself, so the box is the
+ *  frame's box turned (sides swapped) and only the turn past that
+ *  quarter is left to `rot`. */
+export function sheetBox(rect: DisplayRect, centre: { x: number; y: number }, rotate: number | undefined, vertical: boolean): { rect: DisplayRect; rotate?: number; vert: 'horz' | 'eaVert' } {
+  const r = turnedBox(rect, centre, rotate);
+  if (!vertical) return { rect: r, ...(rotate ? { rotate } : {}), vert: 'horz' };
+  const cx = r.x + r.width / 2;
+  const cy = r.y + r.height / 2;
+  const rest = addAngles(rotate ?? 0, -90);
+  return { rect: { x: cx - rect.height / 2, y: cy - rect.width / 2, width: rect.height, height: rect.width }, ...(rest !== undefined ? { rotate: rest } : {}), vert: 'eaVert' };
+}
+
+/** The kanbun marks and rules a run of paragraphs draws beside its runs. */
+function markRuns(ctx: WriterContext, out: TextOut, centre: { x: number; y: number }, rotate: number | undefined): string[] {
+  const runs: string[] = [];
+  for (const a of out.annotations) {
+    const placed = sheetBox(annotationRect(a), centre, rotate, a.vertical);
+    const run: DisplayRun = { text: a.text, x: a.x, width: 0, fontString: a.fontString, color: a.color, textStart: 0 };
+    runs.push(smallTextBox(ctx, placed.rect, textRun(runProps(ctx, run, {}), wordText(a.text)), fontSizePx(a.fontString), placed.rotate, placed.vert));
+  }
+  for (const r of out.rules) {
+    const p = turnPoint({ x: r.x1, y: r.y }, centre, rotate ?? 0);
+    const q = turnPoint({ x: r.x2, y: r.y }, centre, rotate ?? 0);
+    runs.push(ruleRun(ctx, { kind: 'rule', x1: p.x, y1: p.y, x2: q.x, y2: q.y, color: r.color, widthPx: r.thickness }));
+  }
+  return runs;
+}
+
 /** A text item's text boxes and the drawings over them. */
 export async function textItemRuns(ctx: WriterContext, item: TextItem): Promise<string[]> {
   if (item.lines.length === 0) return [];
   const vertical = item.lines.some((l) => l.vertical);
-  if (vertical) ctx.warn('vertical-text', 'vertical text is set in an East Asian text box at its item box; its line positions are approximate');
+  if (vertical) ctx.warn('vertical-text', 'vertical text is set in East Asian (eaVert) text boxes; Word centres the glyphs on its own line axis, so positions across a column are approximate');
   const plans = planLines(ctx, item.lines);
-  const chunks = planChunks(item.lines, plans, !vertical);
+  const chunks = planChunks(item.lines, plans);
   const offsets = lineOffsets(item);
   const importable = isImportable(item);
   const centre = { x: item.bbox.x + item.bbox.width / 2, y: item.bbox.y + item.bbox.height / 2 };
   const runs: string[] = [];
   for (const chunk of chunks) {
-    const box = vertical ? item.bbox : chunkBox(ctx, item.lines, chunk, plans);
+    const box = chunkBox(ctx, item.lines, chunk, plans);
     const slot = importable ? reserveFragment(ctx) : undefined;
     const out = emitGroups(ctx, item, chunk.groups, box.x, box.x + box.width, { offsets, ...(slot ? { bookmarkStart: slot.start, bookmarkEnd: slot.end } : {}) });
     if (slot && importable) recordFragment(ctx, slot, item, out);
-    const rect = turnedBox(box, centre, item.rotate);
-    runs.push(textBoxRun(ctx, { rect, name: `ptx ${item.role}`, ...(item.rotate ? { rotate: item.rotate } : {}) }, out.xml, vertical ? 'eaVert' : undefined));
+    const placed = sheetBox(box, centre, item.rotate, vertical);
+    runs.push(textBoxRun(ctx, { rect: placed.rect, name: `ptx ${item.role}`, ...(placed.rotate ? { rotate: placed.rotate } : {}) }, out.xml, vertical ? 'eaVert' : undefined));
     runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate)));
+    runs.push(...markRuns(ctx, out, centre, item.rotate));
   }
   return runs;
 }

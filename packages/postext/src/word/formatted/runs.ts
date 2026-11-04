@@ -4,7 +4,9 @@
 // own advances never push a word onto the next line (justification
 // stretches them back). Embedded content (maths, music, swatches, tabs)
 // keeps its width as zero-width word joiners spaced out to the run's
-// width; the picture itself is anchored over that spot.
+// width; the picture itself is anchored over that spot. Ruby bases,
+// tate-chu-yoko cells and warichu notes write their own East Asian runs
+// (eastAsian.ts, #1394).
 
 import { parseFontString } from '../../measure/fontString.js';
 import type { DisplayLine, DisplayRun } from '../../paint/displayList/types.js';
@@ -12,6 +14,7 @@ import { escapeAttr } from '../xml.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { fontSizePx } from './metrics.js';
 import { faceStyleId } from './styles.js';
+import { eastAsianLayout, kuntenOf, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -55,6 +58,12 @@ export interface EmittedRun {
   /** What the run puts in the document (same length as `run.text`). */
   text: string;
   drawing?: InlineDrawing;
+  /** The run's own XML, never merged (a ruby, tate-chu-yoko cells, a
+   *  warichu note): it holds `text` as the importer reads it. */
+  xml?: string;
+  /** Marks drawn beside the run (kanbun), in the item's unturned frame. */
+  annotations?: Annotation[];
+  rules?: ReturnType<typeof kuntenOf>['rules'];
 }
 
 const fontCache = new WeakMap<WriterContext, Map<string, ResolvedFont>>();
@@ -86,7 +95,9 @@ export function resolveFont(ctx: WriterContext, fontString: string): ResolvedFon
 const propsCache = new WeakMap<WriterContext, Map<string, string>>();
 
 /** `w:rPr` of a run (CT_RPr child order), cached per distinct style. */
-export function runProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: number; rtl?: boolean }): string {
+export function runProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: number; rtl?: boolean; ea?: string }): string {
+  // An East Asian layout carries an id of its own: never cached.
+  if (opts.ea) return buildRunProps(ctx, run, opts);
   let cache = propsCache.get(ctx);
   if (!cache) propsCache.set(ctx, (cache = new Map()));
   const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.rtl ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
@@ -98,7 +109,7 @@ export function runProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: 
   return props;
 }
 
-function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: number; rtl?: boolean }): string {
+function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: number; rtl?: boolean; ea?: string }): string {
   const f = resolveFont(ctx, run.fontString);
   const fam = escapeAttr(f.family);
   // Bold or italic that is the face's (a heading, a header cell, an italic
@@ -127,6 +138,7 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: nu
     const lang = escapeAttr(ctx.lang);
     p.push(opts.rtl ? `<w:lang w:val="${lang}" w:bidi="${lang}"/>` : `<w:lang w:val="${lang}"/>`);
   }
+  if (opts.ea) p.push(opts.ea);
   p.push('<w14:ligatures w14:val="standardContextual"/>');
   return `<w:rPr>${p.join('')}</w:rPr>`;
 }
@@ -159,18 +171,43 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine):
   const isSpace = run.space === true || /^[  ]+$/.test(run.text);
   const spacing = tracking + (justified && isSpace ? SPACE_SPACING : 0);
   const text = wordText(run.text);
-  return { rPr: runProps(ctx, run, { spacing, rtl }), text };
+  const rPr = runProps(ctx, run, { spacing, rtl });
+  const out: EmittedRun = { rPr, text };
+  if (run.kunten) {
+    const k = kuntenOf(run, line);
+    if (k.annotations.length) out.annotations = k.annotations;
+    if (k.rules.length) out.rules = k.rules;
+  }
+  if (run.ruby) {
+    const rt: DisplayRun = { text: run.ruby.text, x: run.x, width: 0, fontString: run.ruby.fontString, color: run.ruby.color ?? run.color, textStart: 0 };
+    const sizes = { base: resolveFont(ctx, run.fontString).sz, rt: resolveFont(ctx, run.ruby.fontString).sz };
+    out.xml = rubyXml(ctx, run, text, rPr, runProps(ctx, rt, {}), sizes);
+  } else if (run.warichu) {
+    // Word's two lines in one puts the first half of the text on top.
+    const { upper, lower } = run.warichu;
+    if (upper.length !== Math.ceil((upper.length + lower.length) / 2)) {
+      ctx.warn('warichu-split', `a warichu note's rows (${upper.length} and ${lower.length} characters) are split in half by Word's two lines in one`);
+    }
+    out.xml = textRun(runProps(ctx, run, { spacing, rtl, ea: eastAsianLayout(ctx, 'combine') }), text);
+  } else if (line.vertical) {
+    const pieces = verticalPieces(ctx, run, text);
+    if (pieces.some((piece) => piece.tcy)) {
+      out.xml = pieces.map((piece) => textRun(piece.tcy ? runProps(ctx, run, { spacing, rtl, ea: eastAsianLayout(ctx, 'vert') }) : rPr, piece.text)).join('');
+    }
+  }
+  return out;
 }
 
-/** The `MapFormat` flags of a run (b, i, c, p, s, k). */
-export function formatFlags(run: DisplayRun, code: boolean): string {
+/** The `MapFormat` flags of a run (b, i, c, p, s). A code block's lines are
+ *  code by their paragraph style, not by inline backticks: no `k`, which
+ *  would read back as removed. */
+export function formatFlags(run: DisplayRun): string {
   let f = '';
   if (run.bold) f += 'b';
   if (run.italic) f += 'i';
   if (run.smallCaps) f += 'c';
   if (run.script === 'sup') f += 'p';
   if (run.script === 'sub') f += 's';
-  if (code) f += 'k';
   return f;
 }
 

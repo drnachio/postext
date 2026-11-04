@@ -98,7 +98,10 @@ function atomEnd(seg: VDTLineSegment, kind: string, start: number, next: number)
  * counts {@link segmentPlainLength} plain characters from the line's
  * `plainStart`; an added or repeated hyphen, inserted brackets, leaders and
  * kashida get -1, a placeholder (reference, footnote marker, formula,
- * swatch, chip, tab) maps its first character and records an atom.
+ * swatch, chip, tab) records an atom and maps every character it prints
+ * to the construct's start (#1394), so the whole printed label ("Fig.
+ * 1.2", a note number "12") reads as one atom: the importer runs an atom
+ * over the characters after it that map to its start.
  */
 export function lineSource(block: SourceBlock, line: VDTLine): LineSource {
   const segs = line.segments;
@@ -133,7 +136,7 @@ export function lineSource(block: SourceBlock, line: VDTLine): LineSource {
       if (seg.chip?.sourceOffsets && start >= 0 && shown !== seg.text) {
         // A chip's words, each through its own offset from the chip's `:`.
         seg.chip.sourceOffsets.forEach((off, k) => { if (k < out.length) out[k] = start + off; });
-      } else out[0] = start;
+      } else out.fill(start);
       if (start >= 0) atoms.push({ at, start, end: atomEnd(seg, kind, start, sourceOfPlain(block, p + len)), kind });
     } else if (len > 0) {
       // Characters in order, skipping the ones the layout added.
@@ -184,10 +187,9 @@ function findConstruct(source: string, from: number, kind: string): { start: num
  * in order (case-insensitively, as a design may print a title in
  * capitals): markup in the source is skipped, a painted character not met
  * within a short reach gets -1. `base` is added to every offset found.
- * A placeholder of `atoms` ("Fig. 1" for `:ref{…}`) maps its first
- * character to the construct's start and the rest to -1, the construct
- * recorded in `found` — its letters are never matched against the
- * directive's.
+ * A placeholder of `atoms` ("Fig. 1" for `:ref{…}`) maps every character
+ * to the construct's start (one atom, #1394), the construct recorded in
+ * `found` — its letters are never matched against the directive's.
  */
 export function alignToSource(painted: string, source: string | undefined, base = 0, atoms?: readonly PaintedAtom[], found?: Atom[]): number[] {
   const out = new Array<number>(painted.length).fill(-1);
@@ -201,7 +203,7 @@ export function alignToSource(painted: string, source: string | undefined, base 
     if (atom) {
       const hit = findConstruct(source, j, atom.kind);
       if (hit) {
-        out[i] = base + hit.start;
+        out.fill(base + hit.start, i, Math.min(painted.length, i + atom.length));
         found?.push({ at: i, start: base + hit.start, end: base + hit.end, kind: atom.kind });
         j = hit.end;
       }
