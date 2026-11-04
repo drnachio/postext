@@ -2,7 +2,9 @@
 // importable piece of text (a chunk of a text item, a table cell) is
 // wrapped in a hidden `_ptx_` bookmark and described by a MapFragment in
 // reading order (page by page, boxes in paint order). Generated text
-// (running heads, folios, numbers, contents rows) gets neither.
+// (running heads, folios, numbers, contents rows) gets neither, unless it
+// reads as body text (`reportEdits`): then a `generated` fragment, so an
+// edit to it comes back rejected.
 
 import type { DisplayItem, DisplaySource } from '../../paint/displayList/types.js';
 import type { FragmentTarget, MapFormat, MapFragment } from '../anchors/types.js';
@@ -18,6 +20,12 @@ export function isImportable(item: TextItem): item is TextItem & { source: Displ
   return item.source !== undefined && !item.source.generated && item.source.map.some((m) => m >= 0);
 }
 
+/** Whether an item's text is wrapped in a map fragment: importable, or
+ *  generated text whose edits are reported (rejected) on import. */
+export function hasFragment(item: TextItem): item is TextItem & { source: DisplaySource } {
+  return isImportable(item) || (item.source?.generated === true && item.source.reportEdits === true);
+}
+
 /** The chapter index a source's offsets point into. */
 export function chapterIndexOf(ctx: WriterContext, source: DisplaySource): number {
   if (source.chapter === undefined) return ctx.docIndex;
@@ -28,6 +36,7 @@ export function chapterIndexOf(ctx: WriterContext, source: DisplaySource): numbe
 }
 
 function targetOf(ctx: WriterContext, source: DisplaySource): FragmentTarget {
+  if (source.generated) return { kind: 'generated' };
   const r = source.resource;
   if (r) {
     ctx.referenced.add(r.resourceId);

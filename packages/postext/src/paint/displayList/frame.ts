@@ -125,7 +125,16 @@ function placeTextWith(m: Frame, p: Placement, item: TextItem, own: boolean): Te
     const at = p.unturn(start.x, start.y);
     const runs = line.runs.map((run) => {
       const s = apply(m, p.flip ? run.x + run.width : run.x, line.baseline);
-      return { ...run, x: p.unturn(s.x, s.y).x };
+      const x = p.unturn(s.x, s.y).x;
+      const box = run.inline?.box;
+      if (!box) return { ...run, x };
+      // A chip's box is a rect of the flow frame, off its first run's
+      // start (the segment's left edge): mapped as a rect, so a mirror
+      // lays it over the whole segment, not beside the first run.
+      const a = apply(m, run.x + box.dx, line.baseline);
+      const b = apply(m, run.x + box.dx + box.width, line.baseline);
+      const dx = Math.min(p.unturn(a.x, a.y).x, p.unturn(b.x, b.y).x) - x;
+      return { ...run, x, inline: { ...run.inline!, box: { ...box, dx } } };
     });
     // A mirrored line is ragged on the other side of the sheet: its
     // alignment is told as it stands there, as its runs are.

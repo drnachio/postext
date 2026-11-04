@@ -41,7 +41,7 @@ function resourceText(
   role: TextItem['role'],
   ctx: BlockContext,
   frame: Frame,
-  source: { blockKey: string; text?: string; generated?: boolean; resource?: DisplaySource['resource'] },
+  source: { blockKey: string; text?: string; generated?: boolean; reportEdits?: boolean; resource?: DisplaySource['resource'] },
   box?: DisplayRect,
 ): TextItem | null {
   if (lines.length === 0) return null;
@@ -77,6 +77,7 @@ function resourceText(
   const src: DisplaySource = { blockKey: source.blockKey, map };
   if (atoms.length > 0) src.atoms = atoms;
   if (source.generated) src.generated = true;
+  if (source.reportEdits) src.reportEdits = true;
   if (source.resource) src.resource = source.resource;
   const item: TextItem = { kind: 'text', role, bbox: box ?? unionOf(lines), lines: placed, source: src, blockType: 'resource' };
   return placeText(frame, item);
@@ -181,7 +182,7 @@ export function resourceItems(block: VDTBlock, ctx: BlockContext): DisplayItem[]
   // A later slice's repeated caption is furniture.
   const caption = resourceText(rb.captionLines, captionStyle, 'caption', ctx, frame, {
     blockKey: key, ...(rb.resource.caption !== undefined ? { text: rb.resource.caption } : {}),
-    ...(rb.slice?.continued ? { generated: true } : {}),
+    ...(rb.slice?.continued ? { generated: true, reportEdits: true } : {}),
     resource: { resourceId: id, field: 'caption' },
   });
   if (caption) items.push(...highlightItems(rb.captionLines, frame), caption);

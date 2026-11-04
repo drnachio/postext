@@ -1,7 +1,7 @@
 // Inline boxes of a line as display runs (#1406): a chip's box and its
 // words in their own faces, a swatch's colours and shape, so writers draw
 // what the canvas and PDF paint (`canvas-backend/chip.ts`, `swatch.ts`).
-import type { VDTChip, VDTSwatch } from '../../vdt/segments.js';
+import type { VDTChip, VDTChipRun, VDTSwatch } from '../../vdt/segments.js';
 import type { DisplayChipBox, DisplayRun, DisplaySwatch } from './types.js';
 
 /** A chip's box from the run that starts at its segment's left edge
@@ -24,9 +24,11 @@ export function chipBox(chip: VDTChip, inkOffset = 0): DisplayChipBox {
  * when it sets one. The first carries the box and the room before the
  * words (gap, border, padding, `padStart`), the last the room after
  * them (`padEnd`), so the runs fill the segment. `run.text` is the chip
- * runs' text joined.
+ * runs' text joined. `inkFor`: a chip run's colour when the chip sets
+ * none (body lines pick it by the run's own emphasis, as the painters'
+ * `inkFor` does); the segment's colour otherwise.
  */
-export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0): DisplayRun[] {
+export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0, inkFor?: (r: VDTChipRun) => string): DisplayRun[] {
   const inline = { kind: 'chip' as const, widthPx: run.width, heightPx: chip.ascent + chip.descent, ascentPx: chip.ascent, box: chipBox(chip, inkOffset) };
   const parts = chip.runs.filter((r) => r.text.length > 0);
   const joined = parts.map((r) => r.text).join('');
@@ -38,7 +40,7 @@ export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0): Display
   parts.forEach((r, i) => {
     const last = i === parts.length - 1;
     const width = last ? run.x + run.width - x : r.width + (i === 0 ? lead : 0);
-    const part: DisplayRun = { ...run, text: r.text, x, width, fontString: r.fontString, color: chip.color ?? run.color, textStart };
+    const part: DisplayRun = { ...run, text: r.text, x, width, fontString: r.fontString, color: chip.color ?? inkFor?.(r) ?? run.color, textStart };
     // Emphasis stays the segment's: a bold or italic face the chip style
     // or its own words set is the run's face (`fontString`), which writers
     // set as a face, not as markup to read back.

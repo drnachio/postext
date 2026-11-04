@@ -225,3 +225,40 @@ export function blockItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
   if (block.type === 'resource') return resourceItems(block, c);
   return [...markerItems(block, c), ...dropCapItem(block, c), ...linesItems(block, c)];
 }
+
+/** A strip's caption (`VDTBlock.stripCaption`, #590), in the flow where
+ *  the PDF's `renderStripCaption` paints it: the bar, highlight bands,
+ *  then its lines set as a paragraph's in the block's measure. Its text
+ *  is a fence attribute (`caption=…`) with a generated label: shown, not
+ *  imported, as a repeated resource caption is; an edit to it is
+ *  reported as rejected. */
+export function stripCaptionItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
+  const caption = block.stripCaption;
+  if (!caption || block.hidden) return [];
+  const items: DisplayItem[] = [];
+  if (caption.bar) {
+    const { rect, background } = caption.bar;
+    items.push(placeShape(ctx.frame, { kind: 'rect', rect: { x: block.bbox.x + rect.x, y: block.bbox.y + rect.y, width: rect.width, height: rect.height }, fill: background }));
+  }
+  const vdtLines = block.lines.slice(caption.firstLine, caption.firstLine + caption.lineCount);
+  const lines: DisplayLine[] = [];
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const line of vdtLines) {
+    for (const h of highlightRects(line)) items.push(placeShape(ctx.frame, h));
+    const placed = placeBodyLine(line, block, ctx.vertical, ctx.options, ctx.rtl).line;
+    placed.map = new Array<number>(placed.text.length).fill(-1);
+    lines.push(placed);
+    x0 = Math.min(x0, line.bbox.x);
+    y0 = Math.min(y0, line.bbox.y);
+    x1 = Math.max(x1, line.bbox.x + line.bbox.width);
+    y1 = Math.max(y1, line.bbox.y + line.bbox.height);
+  }
+  if (lines.length === 0) return items;
+  const source: DisplaySource = { blockKey: `${blockKeyOf(block)}:caption`, map: lines.flatMap((l) => l.map), generated: true, reportEdits: true };
+  const chapter = chapterOf(block);
+  if (chapter !== undefined) source.chapter = chapter;
+  const item: TextItem = { kind: 'text', role: 'caption', bbox: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }, lines, source, blockType: block.type };
+  if (ctx.clip) item.clip = ctx.clip;
+  items.push(placeText(ctx.frame, item));
+  return items;
+}

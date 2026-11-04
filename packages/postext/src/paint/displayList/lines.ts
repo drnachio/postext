@@ -179,7 +179,8 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
       run.inline = { kind: 'swatch', widthPx: seg.width, heightPx: seg.swatch?.side ?? seg.width, swatch: swatchPaint(seg.swatch, style.color) };
     } else if (seg.chip) {
       // The chip's words in their own faces, its box under them.
-      runs.push(...chipRuns(run, seg.chip));
+      // Each chip run in its own emphasis colour, as `paintChip`'s inkFor.
+      runs.push(...chipRuns(run, seg.chip, 0, (r) => (r.bold && style.boldColor) || (r.italic && style.italicColor) || style.color));
       return;
     }
     if (seg.leader === 'rule') {
