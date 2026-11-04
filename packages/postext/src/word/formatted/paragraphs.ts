@@ -12,7 +12,7 @@ import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js'
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
 import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, linkTarget, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, wordText, writtenFace, type EmittedRun, type InlineDrawing } from './runs.js';
 import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
@@ -65,11 +65,11 @@ export interface Chunk {
   groups: Group[];
 }
 
-/** Descent of a line: its largest face's (Word sizes the line by it).
- *  Blank runs set in their neighbour's face and add nothing. */
+/** Descent of a line: its largest face's (Word sizes the line by it),
+ *  each run in the face it is written in (a space takes its word's). */
 export function lineDescent(ctx: WriterContext, line: DisplayLine): number {
   let d = 0;
-  for (const r of line.runs) if (r.text.length > 0 && !r.inline && !/^\s+$/.test(r.text)) d = Math.max(d, ctx.metrics.descentPx(r.fontString));
+  for (const r of line.runs) if (r.text.length > 0 && !r.inline) d = Math.max(d, ctx.metrics.descentPx(writtenFace(r, line)));
   return d || line.lineHeight * 0.16;
 }
 
@@ -304,11 +304,12 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (pendingText) lx.push(`<w:r>${pendingProps}<w:t xml:space="preserve">${escapeXml(pendingText)}</w:t></w:r>`);
         pendingText = '';
       };
-      const gaps = runGaps(line);
-      for (const [ri, run] of line.runs.entries()) {
-        const emitted = emitRun(ctx, run, line, gaps[ri]);
+      for (const { run, gap } of joinWordRuns(line, runGaps(line))) {
+        const emitted = emitRun(ctx, run, line, gap);
         if (!emitted.text) continue;
-        if (!firstProps) firstProps = emitted.rPr;
+        // The fallback line's style: the run's face and tracking, not the
+        // spacing or scale fitted to that run alone.
+        if (!firstProps) firstProps = runProps(ctx, run, { spacing: run.tracking ? twips(run.tracking, ctx.dpi) : 0, rtl: run.rtl === true });
         const target = linkTarget(run.href);
         if (target !== link) {
           flush();

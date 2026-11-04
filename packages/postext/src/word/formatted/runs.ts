@@ -40,6 +40,9 @@ const MAX_SPACING = 31680;
  *  marks): their runs are not measured. */
 const COMPLEX = /[\u0600-\u08ff\ufb50-\ufdff\ufe70-\ufeff\u0900-\u0dff\u0f00-\u0fff\u1000-\u109f\u1780-\u17ff\u1800-\u18af\p{M}\u200c\u200d]/u;
 const BLANK = /^[ \u00a0\u2000-\u200a\u202f\u205f\u3000]+$/;
+/** Pairs a face may set as one ligature: a run boundary between them
+ *  makes LibreOffice draw the ligature and the second letter again. */
+const LIGATURE = /^(?:f\p{L}|Th)$/u;
 /** Word's font size range, half-points (1 pt to 1638 pt). */
 export const MIN_SZ = 2;
 export const MAX_SZ = 3276;
@@ -111,7 +114,7 @@ export function resolveFont(ctx: WriterContext, fontString: string): ResolvedFon
   const sz = Math.min(MAX_SZ, Math.max(MIN_SZ, Math.round(exact)));
   // Word sizes go by half points: a size between them is set at the
   // nearest and scaled across (w:w) to the engine's widths, so every line
-  // still fills the measure it was broken for (8.8 pt: 9 pt at 98%).
+  // still fills the measure it was broken for (8.8 pt: 9 pt at 97%, floored).
   const pct = exact > 0 ? Math.min(600, Math.max(1, Math.floor((exact / sz) * 100 + 1e-9))) : 100;
   const scale = pct !== 100 ? pct : undefined;
   if (exact > 0 && (sz === MAX_SZ || sz === MIN_SZ) && Math.abs(sz - exact) / exact > 0.01) {
@@ -229,8 +232,12 @@ export function holderTwips(ctx: WriterContext, fontString: string): number {
   return FALLBACK_SPACE_EM * f.sz * 10 * ((f.scale ?? 100) / 100);
 }
 
-/** The font string a blank run is measured and set in: the word's beside
- *  it on the line (before, else after), else its own. */
+/** The font string a run is written in: a blank run's is the word's
+ *  beside it on the line (before, else after), else its own. */
+export function writtenFace(run: DisplayRun, line: DisplayLine): string {
+  return BLANK.test(run.text) ? blankFace(run, line) : run.fontString;
+}
+
 function blankFace(run: DisplayRun, line: DisplayLine): string {
   const i = line.runs.indexOf(run);
   const word = (r: DisplayRun | undefined): boolean => r !== undefined && !r.inline && r.text.length > 0 && !/^\s+$/.test(r.text);
@@ -251,9 +258,54 @@ function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: Fi
   };
   const n = chars.length;
   const last = gapTw ? n - 1 : n;
-  push(0, Math.min(fit.extra, last), fit.each + 1);
-  push(Math.min(fit.extra, last), last, fit.each);
+  const extra = Math.min(fit.extra, last);
+  // The wider characters are a block placed where neither of its ends
+  // splits a ligature (at the start when nowhere does).
+  const clean = (k: number): boolean => k <= 0 || k >= n || !LIGATURE.test(chars[k - 1]! + chars[k]!);
+  let s = 0;
+  if (extra > 0 && extra < last) {
+    for (let k = 0; k + extra <= last; k++) {
+      if (clean(k) && clean(k + extra)) {
+        s = k;
+        break;
+      }
+    }
+  }
+  push(0, s, fit.each);
+  push(s, s + extra, fit.each + 1);
+  push(s + extra, last, fit.each);
   if (gapTw) push(n - 1, n, fit.each + gapTw);
+  return out;
+}
+
+const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
+
+/** A run that may join its neighbour: plain text, no blank or tab. */
+const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
+
+/** Letters of the alphabetic scripts a word of which hyphenation splits
+ *  into runs (CJK runs stay apart: compressed punctuation is its own). */
+const ALPHA = /[\p{Script=Latin}\p{Script=Greek}\p{Script=Cyrillic}]/u;
+
+/** The line's runs with abutting runs of one style joined where letters
+ *  meet (the pieces of a word hyphenation split): each is spaced out as a
+ *  whole, so no run boundary falls inside a word, nor inside a ligature.
+ *  `gaps` are per run of the line; the joined run keeps its last run's. */
+export function joinWordRuns(line: DisplayLine, gaps: readonly number[]): { run: DisplayRun; gap: number }[] {
+  const out: { run: DisplayRun; gap: number }[] = [];
+  line.runs.forEach((r, i) => {
+    const prev = out[out.length - 1];
+    const p = prev?.run;
+    if (p && !prev.gap && joinable(p) && joinable(r) && STYLE_KEYS.every((k) => p[k] === r[k]) && p.refTarget?.id === r.refTarget?.id) {
+      const abut = r.rtl ? Math.abs(p.x - (r.x + r.width)) : Math.abs(r.x - (p.x + p.width));
+      if (abut < 0.5 && ALPHA.test(Array.from(p.text).pop()!) && ALPHA.test(Array.from(r.text)[0]!)) {
+        prev.run = { ...p, text: p.text + r.text, x: Math.min(p.x, r.x), width: p.width + r.width };
+        prev.gap = gaps[i] ?? 0;
+        return;
+      }
+    }
+    out.push({ run: r, gap: gaps[i] ?? 0 });
+  });
   return out;
 }
 

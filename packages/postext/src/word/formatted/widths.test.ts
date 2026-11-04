@@ -182,6 +182,37 @@ describe('run widths of the formatted Word export (#1406)', () => {
     const ctx = context({ plan: undefined, metrics: new MetricsCache(undefined) });
     const l = lineOf([run('ab', 0, 12), run(' ', 12, 4, { fontString: '40px "Big"' }), run('cd', 16, 12)]);
     expect(lineDescent(ctx, l)).toBeCloseTo(12 * 0.2, 6);
+    // A tab is written in its own face: it counts.
+    const tab = lineOf([run('ab', 0, 12), run('\t', 12, 4, { fontString: '40px "Big"' }), run('cd', 16, 12)]);
+    expect(lineDescent(ctx, tab)).toBeCloseTo(40 * 0.2, 6);
+  });
+
+  it('never splits a ligature between pieces of a run', () => {
+    const ctx = context();
+    // "ofi": 360 twips natural, set at 18.1 px = 362: two characters a twip
+    // wider, a block that would end between f and i at the start.
+    const out = emitRun(ctx, run('ofi', 0, 18.1), lineOf([run('ofi', 0, 18.1)]));
+    expect(out.pieces!.map((p) => [p.text, spacingOf(p.rPr)])).toEqual([['o', 0], ['fi', 1]]);
+    expect(writtenTwips(out.pieces!)).toBe(362);
+  });
+
+  it('joins the pieces of a hyphenated word into one run spaced as a whole', () => {
+    const ctx = context();
+    const parts = [run('sig', 0, 18.2), run('nif', 18.2, 17.6), run('i', 35.8, 6.1), run('cant', 41.9, 23.9)];
+    const l = lineOf(parts);
+    const items = { kind: 'text', role: 'body', lines: [l] } as Extract<DisplayItem, { kind: 'text' }>;
+    const [chunk] = planChunks([l], planLines(ctx, [l]));
+    const out = emitGroups(ctx, items, chunk!.groups, 0, 100, { offsets: [0] });
+    const runs = [...out.xml.matchAll(/<w:r>(<w:rPr>.*?<\/w:rPr>)<w:t xml:space="preserve">(.*?)<\/w:t><\/w:r>/g)].map((m) => ({ rPr: m[1]!, text: m[2]! }));
+    expect(runs.map((r) => r.text).join('')).toBe('significant');
+    expect(runs.some((r, i) => i > 0 && runs[i - 1]!.text.endsWith('f'))).toBe(false);
+    expect(writtenTwips(runs)).toBe(1316);
+    expect(out.text).toBe('significant');
+    // A run of another style keeps its own run.
+    const bold = lineOf([run('ab', 0, 12), run('cd', 12, 12, { color: '#f00' })]);
+    const boldItems = { kind: 'text', role: 'body', lines: [bold] } as Extract<DisplayItem, { kind: 'text' }>;
+    const [bc] = planChunks([bold], planLines(ctx, [bold]));
+    expect(emitGroups(ctx, boldItems, bc!.groups, 0, 100, { offsets: [0] }).xml).toContain('FF0000');
   });
 
   it('writes a feature family in its base face with its figures', () => {
