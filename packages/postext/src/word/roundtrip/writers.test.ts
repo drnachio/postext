@@ -33,6 +33,18 @@ describe('round trip through the writers', () => {
     expect(applyDocxEdits(bytes, { chapters }).edits).toEqual([]);
   });
 
+  it('semantic: a box titled by its style reads back unchanged', async () => {
+    const md = 'Before the box.\n\n:::callout{style="try"}\nChange a word here.\n:::\n\nAfter the box.\n';
+    const chapters = [{ id: 'c', markdown: md }];
+    const cfg = config({ calloutStyles: [{ id: 'try', name: 'Try it', title: 'Try it in the Sandbox' }] } as never);
+    const bytes = await semanticDocx({ chapters, config: cfg, date: DATE });
+    expect(strFromU8(unzipSync(bytes)['word/document.xml']!)).toContain('Try it in the Sandbox');
+    expect(applyDocxEdits(bytes, { chapters }).edits).toEqual([]);
+    const r = applyDocxEdits(edit(bytes, (x) => x.replace('Try it in the Sandbox', 'Try it now')), { chapters });
+    expect(r.chapters[0]!.markdown).toBe(md);
+    expect(r.edits.every((e) => e.status === 'rejected')).toBe(true);
+  });
+
   it('formatted: a paragraph over several pages, hyphenated', async () => {
     const md = `${LOREM} ${LOREM}\n\n${LOREM} ${LOREM} ${LOREM}\n`;
     const chapters = [{ id: 'c', markdown: md }];

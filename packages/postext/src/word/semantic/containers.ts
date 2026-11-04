@@ -30,7 +30,15 @@ function attrParagraph(ctx: WriterContext, node: ContainerNode, key: string, sty
   const md = ctx.chapter.markdown;
   const fence = abs(ctx, node.container.sourceStart);
   const range = attrRange(md, fence, key);
-  if (!range) return fallback ? paragraph({ style, ...props }, textRuns(fallback, '')) : '';
+  if (!range) {
+    if (!fallback) return '';
+    // A title the box style gives: generated, so Word edits to it are
+    // reported, and the paragraph is not read as one the user typed.
+    const g = new FragmentBuilder();
+    g.push(fallback, new Array<number>(fallback.length).fill(-1));
+    const runs = ctx.log.wrap(textRuns(fallback, ''), g, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: `style:${node.container.containerName}:${key}` });
+    return paragraph({ style, ...props }, runs);
+  }
   const f = new FragmentBuilder();
   const text = md.slice(range.start, range.end);
   if (!text) return '';
