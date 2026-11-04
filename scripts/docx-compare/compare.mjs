@@ -309,9 +309,12 @@ export function compareLines(ref, docx, { dyTolerance = { em: 0.25 } } = {}) {
     for (const one of [...ones]) {
       const two = halves(one, twos);
       if (!two) continue;
+      // The halves' left edge against the whole line's: the second half
+      // of a split line has not moved across.
+      const dx = refIsOne ? Math.min(...two.map((h) => h.x)) - one.x : one.x - Math.min(...two.map((h) => h.x));
       for (const h of two) {
         twos.splice(twos.indexOf(h), 1);
-        pairs.push(refIsOne ? { ref: one, docx: h, joined: true } : { ref: h, docx: one, joined: true });
+        pairs.push(refIsOne ? { ref: one, docx: h, joined: true, dx } : { ref: h, docx: one, joined: true, dx });
       }
       ones.splice(ones.indexOf(one), 1);
       joined++;
@@ -322,7 +325,7 @@ export function compareLines(ref, docx, { dyTolerance = { em: 0.25 } } = {}) {
   });
   missing = missing.filter((l) => !pairs.some((p) => p.ref === l));
   for (const p of pairs) {
-    p.dx = p.docx.x - p.ref.x;
+    p.dx ??= p.docx.x - p.ref.x;
     // Box centres: a line joined from pieces (display faces, markers) may
     // reach higher or lower in one PDF than in the other.
     p.dy = (p.docx.y + p.docx.y2 - p.ref.y - p.ref.y2) / 2;
@@ -355,8 +358,10 @@ export function compareLines(ref, docx, { dyTolerance = { em: 0.25 } } = {}) {
 /** Matched lines whose text the docx page does not show (hiddenLine)
  *  leave `matched` for `hidden`. */
 export function markHidden(lines, isHidden) {
-  const hidden = lines.pairs.filter((p) => isHidden(p.ref, p.docx));
-  lines.hidden = hidden.map((p) => p.ref.text);
+  // Per reference line: one of the halves a line was matched to hidden
+  // hides the line, once.
+  const hidden = [...new Set(lines.pairs.filter((p) => isHidden(p.ref, p.docx)).map((p) => p.ref))];
+  lines.hidden = hidden.map((r) => r.text);
   lines.matched -= hidden.length;
   return lines;
 }
@@ -473,7 +478,7 @@ export function textReport({ docx, reference, out, summary: s, pages }, maxLines
   if (s.method === 'text-only') lines.push('pixels: not compared (ImageMagick not found)');
   else lines.push(`pixels (${s.dpi} dpi, fuzz ${s.fuzz}): mean ${pct(s.meanRatio ?? 0)}, worst page ${s.worstPage?.page ?? '-'} (${pct(s.worstPage?.ratio ?? 0)}), ${s.pagesOverThreshold.length} page(s) over ${pct(s.threshold)}${s.pagesOverThreshold.length ? `: ${s.pagesOverThreshold.slice(0, 20).join(', ')}${s.pagesOverThreshold.length > 20 ? ', …' : ''}` : ''}`);
   lines.push(`lines: ${s.matchedLines} of ${s.referenceLines} reference lines found in the docx (${s.referenceLines ? pct(s.matchedLines / s.referenceLines) : '-'}), ${s.pagesWithLineDifferences.length} page(s) with line differences`);
-  lines.push(`       ${s.missingLines} missing, ${s.hiddenLines} hidden under a shape, ${s.extraLines} extra, ${s.movedLines} moved beyond ${s.dyTolerance} of the page's shift, ${s.orientationMismatches} set in the other direction, ${s.reorderedLines} matched with glyphs reordered, ${s.joinedLines} matched as two halves on one baseline`);
+  lines.push(`       ${s.missingLines} missing, ${s.hiddenLines} hidden under a shape, ${s.extraLines} extra, ${s.movedLines} moved beyond ${s.dyTolerance} of the page's shift or more than a line height, ${s.orientationMismatches} set in the other direction, ${s.reorderedLines} matched with glyphs reordered, ${s.joinedLines} matched as two halves on one baseline`);
   for (const p of pages) {
     if (p.missingIn) {
       lines.push(`  page ${p.page}: only in the ${p.missingIn === 'reference' ? 'docx' : 'reference'}`);

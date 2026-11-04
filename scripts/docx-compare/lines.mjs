@@ -15,7 +15,11 @@ const LIGATURES = { '\uFB00': 'ff', '\uFB01': 'fi', '\uFB02': 'fl', '\uFB03': 'f
 export function normaliseLine(s) {
   return s
     .replace(/[\uFB00-\uFB06]/g, (c) => LIGATURES[c])
-    .normalize('NFKC')
+    // NFKC outside the ellipsis: U+2026 would become three periods, read
+    // as a dot leader.
+    .split('\u2026')
+    .map((p) => p.normalize('NFKC'))
+    .join('\u2026')
     .replace(/[\u00AD\u0640\u200B-\u200F\u2060\uFEFF]/g, '')
     .replace(/\s+/g, ' ')
     .trim();

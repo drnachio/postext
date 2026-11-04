@@ -137,6 +137,20 @@ test('a matched line under a flat fill counts as hidden', () => {
   const lines = compareLines([{ text: 'x y', ...box }], [{ text: 'xy', ...box }]);
   markHidden(lines, (r, d) => hiddenLine(ref, img(60), r, d, 1));
   assert.deepEqual([lines.matched, lines.hidden], [0, ['x y']]);
+  // A line matched to two halves is hidden once, and its halves have not
+  // moved across.
+  const split = compareLines([{ text: 'Sing heavenly muse', x: 10, y: 0, x2: 200, y2: 12 }], [
+    { text: 'Sing heavenly', x: 10, y: 0, x2: 100, y2: 12 },
+    { text: 'muse', x: 120, y: 0, x2: 200, y2: 12 },
+  ]);
+  assert.deepEqual([split.matched, split.joined, split.maxDx], [1, 1, 0]);
+  markHidden(split, () => true);
+  assert.deepEqual([split.matched, split.hidden, lineDifferences(split)], [0, ['Sing heavenly muse'], 1]);
+});
+
+test('an ellipsis is text, not a dot leader', () => {
+  const html = '<page><line xMin="0" yMin="0" xMax="60" yMax="12"><word xMin="0" yMin="0" xMax="30" yMax="12">Wait\u2026</word><word xMin="33" yMin="0" xMax="60" yMax="12">what</word></line></page>';
+  assert.deepEqual(parseBboxLayout(html)[0].map((l) => l.text), ['Wait\u2026 what']);
 });
 
 test('matches lines by text, ignoring spaces, and reports moves and breaks', () => {
