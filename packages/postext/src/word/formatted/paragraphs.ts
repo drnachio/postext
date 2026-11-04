@@ -12,7 +12,7 @@ import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js'
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
 import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, linkTarget, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emitRun, formatFlags, linkTarget, roomAfter, roomSqueeze, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
 import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
@@ -270,9 +270,10 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (pendingText) lx.push(`<w:r>${pendingProps}<w:t xml:space="preserve">${escapeXml(pendingText)}</w:t></w:r>`);
         pendingText = '';
       };
-      for (const run of line.runs) {
-        const emitted = emitRun(ctx, run, line);
-        if (!emitted.text) continue;
+      const squeeze = roomSqueeze(ctx, line);
+      line.runs.forEach((run, ri) => {
+        const emitted = emitRun(ctx, run, line, roomAfter(line, ri), squeeze);
+        if (!emitted.text) return;
         if (!firstProps) firstProps = emitted.rPr;
         const target = linkTarget(run.href);
         if (target !== link) {
@@ -297,7 +298,7 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (flags || run.href) lineFormats.push({ start: at, end: at + emitted.text.length, flags, ...(run.href ? { href: run.href } : {}) });
         lineText += emitted.text;
         if (emitted.drawing) lineDrawings.push({ ...emitted.drawing, baseline: line.baseline });
-      }
+      });
       flush();
       if (link) lx.push('</w:hyperlink>');
       if (lineText.length === line.text.length) {

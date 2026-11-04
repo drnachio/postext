@@ -11,12 +11,15 @@ import { baselineOffset } from './metrics.js';
 import { emitGroups, planChunks, planLines, type TextOut } from './paragraphs.js';
 import { imageRun } from './pictures.js';
 import { inlineDrawingRuns, lineOffsets } from './text.js';
-import { swatchShapeRuns } from './inlineShapes.js';
+import { chipBoxRuns, swatchShapeRuns } from './inlineShapes.js';
 import { eighths, twips, twipsToPx, wordColor } from './units.js';
 import type { WriterContext } from './types.js';
 
 type TableItem = Extract<DisplayItem, { kind: 'table' }>;
 type Cell = TableItem['cells'][number];
+/** A cell's paragraphs with inline drawings, and whether its lines are
+ *  vertical (a swatch keeps its holder's square there). */
+type Pending = { out: TextOut; vertical: boolean };
 
 /** An empty paragraph that takes no room (a cell needs one; so does the
  *  end of a text box after a table). */
@@ -76,7 +79,7 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
   const nRows = Math.max(1, rows.length - 1);
   const centre = { x: item.rect.x + item.rect.width / 2, y: item.rect.y + item.rect.height / 2 };
   const borders = bordersXml(ctx, item);
-  const pending: TextOut[] = [];
+  const pending: Pending[] = [];
 
   // Where each cell sits in the grid.
   const at = new Map<string, { cell: Cell; c: number; r: number; span: number; rowSpan: number }>();
@@ -121,7 +124,9 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
     xml.push('</w:tr>');
   }
   xml.push('</w:tbl>', TINY_P);
-  const runs = [textBoxRun(ctx, { rect: item.rect, name: 'ptx table', ...(item.rotate ? { rotate: item.rotate } : {}) }, xml.join(''))];
+  // Chip boxes under the table (a shaded cell covers them).
+  const runs = item.cells.flatMap((cell) => (cell.item ? chipBoxRuns(ctx, cell.item.lines, centre, item.rotate) : []));
+  runs.push(textBoxRun(ctx, { rect: item.rect, name: 'ptx table', ...(item.rotate ? { rotate: item.rotate } : {}) }, xml.join('')));
   for (const cell of item.cells) {
     if (!cell.image) continue;
     const img = { ...cell.image, rect: turnedBox(cell.image.rect, centre, item.rotate), ...(item.rotate ? { rotate: item.rotate } : {}) };
@@ -129,14 +134,14 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
     if (run) runs.push(run);
   }
   // Inline drawings of the cells, collected while their text was written.
-  for (const out of pending) runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate, false)));
+  for (const p of pending) runs.push(...(await inlineDrawingRuns(ctx, p.out, centre, item.rotate, p.vertical)));
   for (const cell of item.cells) if (cell.item) runs.push(...swatchShapeRuns(ctx, cell.item.lines, centre, item.rotate));
   return runs;
 }
 
 /** The paragraphs of a cell (bookmarked when importable); a cell with
  *  inline drawings goes into `pending`, to draw them after the table. */
-function cellContent(ctx: WriterContext, cell: Cell, pending: TextOut[]): string {
+function cellContent(ctx: WriterContext, cell: Cell, pending: Pending[]): string {
   const item = cell.item;
   if (!item || item.lines.length === 0) return TINY_P;
   const plans = planLines(ctx, item.lines);
@@ -151,6 +156,6 @@ function cellContent(ctx: WriterContext, cell: Cell, pending: TextOut[]): string
     ...(slot ? { bookmarkStart: slot.start, bookmarkEnd: slot.end } : {}),
   });
   if (slot && isImportable(item)) recordFragment(ctx, slot, item, out);
-  if (out.drawings.length) pending.push(out);
+  if (out.drawings.length) pending.push({ out, vertical: item.lines.some((l) => l.vertical) });
   return out.xml;
 }

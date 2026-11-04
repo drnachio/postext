@@ -1,17 +1,17 @@
 // Vector overlays as display items (#1406): a video's poster frame, play
 // mark and QR plate (postext-pdf `renderResourceBlock/overlays.ts`), and a
-// link note's QR code (`VDTLine.qr`, #1302). A code is drawn upright on the
-// sheet whatever the frame (the painters turn it back on a mirrored page):
-// it must never read mirrored.
+// link note's QR code (`VDTLine.qr`, #1302). A code must never read
+// mirrored: the painters turn it back on a mirrored page.
 import type { VDTLine, VDTLineQr } from '../../vdt/lines.js';
 import type { ResolvedResourceBlock, VDTResourceVideo, VDTVideoPlayMark } from '../../vdt/resources.js';
 import type { VDTPathCommand } from '../../vdt/design.js';
 import { playMarkTriangle, qrModuleRuns } from '../../pipeline/resources/videoOverlay.js';
 import { lineQrBox } from '../lineQr.js';
-import { mapRect, placeShape, type Frame } from './frame.js';
+import { compose, mapRect, placeShape, type Frame } from './frame.js';
 import type { DisplayItem, DisplayRect } from './types.js';
 
 type PathItem = Extract<DisplayItem, { kind: 'path' }>;
+type ShapeItem = Extract<DisplayItem, { kind: 'rect' | 'path' }>;
 
 /** Poster frame of a video without a picture (the painters' fallback). */
 export const VIDEO_FALLBACK_FILL = '#1f1f1f';
@@ -64,8 +64,8 @@ export function lineQrItems(line: VDTLine, frame: Frame, color: string): Display
   return item ? [item] : [];
 }
 
-/** The play mark in a body at `body` on the sheet. */
-function playMarkItems(mark: VDTVideoPlayMark, body: DisplayRect): DisplayItem[] {
+/** The play mark in a body at `body`. */
+function playMarkItems(mark: VDTVideoPlayMark, body: DisplayRect): ShapeItem[] {
   const r: DisplayRect = { x: body.x + mark.rect.x, y: body.y + mark.rect.y, width: mark.rect.width, height: mark.rect.height };
   const tri: VDTPathCommand[] = [
     ...playMarkTriangle(mark).map(([px, py], i): VDTPathCommand => ({ op: i === 0 ? 'M' : 'L', x: r.x + px, y: r.y + py })),
@@ -75,15 +75,15 @@ function playMarkItems(mark: VDTVideoPlayMark, body: DisplayRect): DisplayItem[]
   if (mark.shape === 'triangle') {
     return [{ kind: 'path', bbox: r, subpaths: [tri], fill: mark.color, stroke: { color: background, widthPx: r.height * 0.08, join: 'round' } }];
   }
-  const disc: DisplayItem = mark.shape === 'circle'
+  const disc: ShapeItem = mark.shape === 'circle'
     ? { kind: 'path', bbox: { ...r }, subpaths: [ellipsePath(r)], fill: background }
     : { kind: 'rect', rect: { ...r }, fill: background, radius: r.height * 0.24 };
   return [disc, { kind: 'path', bbox: { ...r }, subpaths: [tri], fill: mark.color }];
 }
 
-/** A video's overlays over its body at `body` on the sheet. */
-function videoOverlayItems(video: VDTResourceVideo, body: DisplayRect): DisplayItem[] {
-  const items: DisplayItem[] = [];
+/** A video's overlays over its body at `body`, in the body's frame. */
+function videoOverlayItems(video: VDTResourceVideo, body: DisplayRect): ShapeItem[] {
+  const items: ShapeItem[] = [];
   if (video.playMark) items.push(...playMarkItems(video.playMark, body));
   const qr = video.qr;
   if (qr) {
@@ -98,11 +98,16 @@ function videoOverlayItems(video: VDTResourceVideo, body: DisplayRect): DisplayI
 /**
  * A video body's items, laid out at `body` in `frame`: the dark frame when
  * it has no poster (`poster` false), then its play mark and QR code, which
- * stand on the body as it lands on the sheet.
+ * turn with the body (a turned block) but are reflected back about it on
+ * a mirrored page, as the PDF paints them (`counterFlipPx`).
  */
 export function videoItems(rb: ResolvedResourceBlock, body: DisplayRect, frame: Frame, poster: boolean): DisplayItem[] {
   const items: DisplayItem[] = [];
   if (!poster) items.push(placeShape(frame, { kind: 'rect', rect: { ...body }, fill: VIDEO_FALLBACK_FILL }));
-  if (rb.video) items.push(...videoOverlayItems(rb.video, mapRect(frame, body)));
+  if (rb.video) {
+    const flips = frame[0] * frame[3] - frame[1] * frame[2] < 0;
+    const upright = flips ? compose(frame, [-1, 0, 0, 1, 2 * body.x + body.width, 0]) : frame;
+    items.push(...videoOverlayItems(rb.video, body).map((it) => placeShape(upright, it)));
+  }
   return items;
 }

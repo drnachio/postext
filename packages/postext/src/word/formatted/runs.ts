@@ -151,17 +151,47 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: nu
   return `<w:rPr>${p.join('')}</w:rPr>`;
 }
 
-/** A run's properties, what it writes and anything to draw over it. */
-export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine): EmittedRun {
+/** Content with a width of its own (embedded pictures, tabs). */
+const isFixedRun = (run: DisplayRun): boolean => (run.inline !== undefined && run.inline.kind !== 'chip') || /^\t+$/.test(run.text);
+const isSpaceRun = (run: DisplayRun): boolean => run.space === true || /^[  ]+$/.test(run.text);
+
+/** Px of room after run `i` of `line`: a chip's padding after its words,
+ *  or the room before the chip that follows (left to right only). */
+export function roomAfter(line: DisplayLine, i: number): number {
+  const run = line.runs[i]!;
+  const next = line.runs[i + 1];
+  if (line.vertical || run.rtl || next?.rtl) return 0;
+  return (run.padEnd ?? 0) + (next?.padStart ?? 0);
+}
+
+/** Twips taken off each letter of a justified line for the room its
+ *  chips add, so the line takes no more room in Word than before
+ *  (justification stretches the spaces back). Off the letters, not the
+ *  spaces: LibreOffice breaks before it lets spaces shrink. */
+export function roomSqueeze(ctx: WriterContext, line: DisplayLine): number {
+  if (line.align !== 'justify') return 0;
+  let room = 0;
+  let letters = 0;
+  line.runs.forEach((run, i) => {
+    room += roomAfter(line, i);
+    if (!isSpaceRun(run) && !isFixedRun(run)) letters += run.text.length;
+  });
+  return room > 0 && letters > 0 ? Math.ceil(twips(room, ctx.dpi) / letters) : 0;
+}
+
+/** A run's properties, what it writes and anything to draw over it.
+ *  `after`: px of room after its last character ({@link roomAfter}), as
+ *  spacing on that character; `squeeze`: twips off each letter
+ *  ({@link roomSqueeze}). */
+export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, after = 0, squeeze = 0): EmittedRun {
   const justified = line.align === 'justify';
   const rtl = run.rtl === true;
   const n = run.text.length;
   if (n === 0) return { rPr: '', text: '' };
   // Content with a width of its own: zero-width holders spaced out.
-  const fixed = run.inline !== undefined && run.inline.kind !== 'chip' ? true : /^\t+$/.test(run.text);
-  if (fixed) {
+  if (isFixedRun(run)) {
     const text = HOLDER.repeat(n);
-    const spacing = Math.round(twips(run.width, ctx.dpi) / n);
+    const spacing = Math.round(twips(run.width + after, ctx.dpi) / n);
     const out: EmittedRun = { rPr: runProps(ctx, run, { spacing, rtl }), text };
     const inl = run.inline;
     if (inl && (inl.svg || inl.kind === 'swatch')) {
@@ -169,18 +199,23 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine):
       out.drawing = {
         kind: inl.kind,
         ...(inl.svg ? { svg: inl.svg } : {}),
-        ...(inl.kind === 'swatch' ? { color: run.color } : {}),
+        ...(inl.kind === 'swatch' ? { color: inl.swatch?.color ?? run.color } : {}),
         rect: { x: run.x, y: line.baseline - (run.baselineShift ?? 0) - ascent, width: inl.widthPx, height: inl.heightPx },
       };
     }
     return out;
   }
   const tracking = run.tracking ? twips(run.tracking, ctx.dpi) : 0;
-  const isSpace = run.space === true || /^[  ]+$/.test(run.text);
-  const spacing = tracking + (justified && isSpace ? SPACE_SPACING : 0);
+  const spacing = tracking + (justified ? (isSpaceRun(run) ? SPACE_SPACING : -squeeze) : 0);
   const text = wordText(run.text);
   const rPr = runProps(ctx, run, { spacing, rtl });
   const out: EmittedRun = { rPr, text };
+  const room = after > 0 ? Math.round(twips(after, ctx.dpi)) : 0;
+  if (room && !run.ruby && !run.warichu) {
+    // Its own XML: the last character in a run of its own, spaced out.
+    const cut = text.length - (/[\ud800-\udbff][\udc00-\udfff]$/.test(text) ? 2 : 1);
+    out.xml = textRun(rPr, text.slice(0, cut)) + textRun(runProps(ctx, run, { spacing: spacing + room, rtl }), text.slice(cut));
+  }
   if (run.kunten) {
     const k = kuntenOf(run, line);
     if (k.annotations.length) out.annotations = k.annotations;

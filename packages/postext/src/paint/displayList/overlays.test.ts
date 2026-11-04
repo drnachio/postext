@@ -55,9 +55,16 @@ describe('inline chips and swatches in the display list (#1406)', () => {
     expect(out.map((r) => r.fontString)).toEqual(['400 10px "Mono"', '700 10px "Mono"']);
     expect(out.map((r) => r.color)).toEqual(['#aa0000', '#aa0000']);
     expect(out.map((r) => r.textStart)).toEqual([3, 5]);
-    expect(out[1]!.bold).toBe(true);
-    // Gap, border and padding before the first run's words.
+    // A bold face is the run's face, not emphasis to read back.
+    expect(out[1]!.bold).toBeUndefined();
+    expect(chipRuns({ ...run, bold: true }, CHIP).every((r) => r.bold)).toBe(true);
+    // Gap, border and padding before the first run's words, the rest after
+    // the last one's, told apart for writers that set the words.
     expect(out[0]!.width).toBe(1 + 1 + 2 + 14);
+    expect(out[0]!.padStart).toBe(4);
+    expect(out[0]!.padEnd).toBeUndefined();
+    expect(out[1]!.padStart).toBeUndefined();
+    expect(out[1]!.padEnd).toBe(142 - 118 - 16);
     expect(out[1]!.x).toBe(118);
     expect(out[1]!.x + out[1]!.width).toBe(142);
     expect(out[0]!.inline?.box).toEqual({ dx: 1, width: 40, ascent: 9, descent: 3, fill: '#eeeeee', stroke: '#999999', strokeWidthPx: 1, radius: 2 });
@@ -134,6 +141,40 @@ describe('QR codes and video overlays in the display list (#1406)', () => {
     expect(after.filter((i) => i.kind === 'path').length).toBeGreaterThanOrEqual(2);
     expect(after.some((i) => i.kind === 'rect' && i.fill === '#ffffff')).toBe(true);
     expect(items.some((i) => i.kind === 'image')).toBe(false);
+  });
+
+  it('turns a video’s play mark and code with a turned body', () => {
+    const turned = (rotate: 'ccw' | 'cw'): void => {
+      const video = {
+        id: 'talk', typeId: 'video', kind: 'video', caption: 'The talk.', createdAt: 0, updatedAt: 0,
+        video: { source: 'youtube', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+        placement: { rotate },
+      } as Resource;
+      const pages = documentDisplayList(build('See the talk :ref{id="talk"}.\n\nMore text.\n', config(), [video]));
+      const items = pages.flatMap((p) => p.items);
+      const frame = items.find((i): i is Extract<DisplayItem, { kind: 'rect' }> => i.kind === 'rect' && i.fill === '#1f1f1f')!;
+      expect(frame, rotate).toBeDefined();
+      const f = frame.rect;
+      // Turned: taller than wide on the sheet.
+      expect(f.height).toBeGreaterThan(f.width);
+      const after = items.slice(items.indexOf(frame) + 1, items.indexOf(frame) + 5);
+      const boxOf = (i: DisplayItem) => (i.kind === 'rect' ? i.rect : i.kind === 'path' ? i.bbox : undefined);
+      const plate = after.find((i) => i.kind === 'rect' && i.fill === '#ffffff')!;
+      const disc = after.find((i) => i.kind === 'path')!;
+      for (const it of [plate, disc]) {
+        const b = boxOf(it)!;
+        expect(b.x).toBeGreaterThanOrEqual(f.x - 0.01);
+        expect(b.y).toBeGreaterThanOrEqual(f.y - 0.01);
+        expect(b.x + b.width).toBeLessThanOrEqual(f.x + f.width + 0.01);
+        expect(b.y + b.height).toBeLessThanOrEqual(f.y + f.height + 0.01);
+      }
+      // The play mark at the frame's centre.
+      const d = boxOf(disc)!;
+      expect(d.y + d.height / 2).toBeCloseTo(f.y + f.height / 2, 0);
+      expect(d.x + d.width / 2).toBeCloseTo(f.x + f.width / 2, 0);
+    };
+    turned('ccw');
+    turned('cw');
   });
 });
 

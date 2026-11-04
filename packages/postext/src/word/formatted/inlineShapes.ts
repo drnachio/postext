@@ -13,7 +13,7 @@ import type { WriterContext } from './types.js';
 type Centre = { x: number; y: number };
 
 /** A box filled and stroked inside its edge, radius `r` at its outer edge. */
-function boxRuns(ctx: WriterContext, r: DisplayRect, radius: number, fill: string | undefined, stroke: string | undefined, strokeW: number, centre: Centre, rotate: number | undefined): string[] {
+function boxRuns(ctx: WriterContext, r: DisplayRect, radius: number, fill: string | undefined, stroke: string | undefined, strokeW: number, centre: Centre, rotate: number | undefined, frame = false): string[] {
   const half = stroke && strokeW > 0 ? strokeW / 2 : 0;
   // A centred DrawingML stroke on the box inset by half its width covers
   // the edge band; the fill under its inner half is hidden as on canvas.
@@ -25,7 +25,7 @@ function boxRuns(ctx: WriterContext, r: DisplayRect, radius: number, fill: strin
     ...(half ? { stroke, strokeWidthPx: strokeW } : {}),
     ...(radius - half > 0 ? { radius: radius - half } : {}),
     ...(rotate ? { rotate } : {}),
-  });
+  }, { frame });
 }
 
 /** The shapes of a chip run (its box) on `line`. */
@@ -35,17 +35,17 @@ function chipRuns(ctx: WriterContext, run: DisplayRun, line: DisplayLine, centre
   const baseline = line.baseline;
   const r: DisplayRect = { x: run.x + b.dx, y: baseline - b.ascent, width: b.width, height: b.ascent + b.descent };
   if (b.underline) {
-    if (!b.stroke || !b.strokeWidthPx) return b.fill ? boxRuns(ctx, r, b.radius ?? 0, b.fill, undefined, 0, centre, rotate) : [];
+    if (!b.stroke || !b.strokeWidthPx) return b.fill ? boxRuns(ctx, r, b.radius ?? 0, b.fill, undefined, 0, centre, rotate, true) : [];
     const y = r.y + r.height - b.strokeWidthPx / 2;
     const p = turnPoint({ x: r.x, y }, centre, rotate ?? 0);
     const q = turnPoint({ x: r.x + r.width, y }, centre, rotate ?? 0);
     const dash = b.underline === 'dotted' ? [b.strokeWidthPx, b.strokeWidthPx * 2.2] : b.underline === 'dashed' ? [b.strokeWidthPx * 3, b.strokeWidthPx * 2] : undefined;
-    const out = b.fill ? boxRuns(ctx, r, b.radius ?? 0, b.fill, undefined, 0, centre, rotate) : [];
+    const out = b.fill ? boxRuns(ctx, r, b.radius ?? 0, b.fill, undefined, 0, centre, rotate, true) : [];
     out.push(ruleRun(ctx, { kind: 'rule', x1: p.x, y1: p.y, x2: q.x, y2: q.y, color: b.stroke, widthPx: b.strokeWidthPx, ...(dash ? { dash } : {}) }));
     return out;
   }
   if (!b.fill && !b.stroke) return [];
-  return boxRuns(ctx, r, b.radius ?? 0, b.fill, b.stroke, b.strokeWidthPx ?? 0, centre, rotate);
+  return boxRuns(ctx, r, b.radius ?? 0, b.fill, b.stroke, b.strokeWidthPx ?? 0, centre, rotate, true);
 }
 
 /** The square of a swatch run on `line` (an inline symbol draws nothing). */
@@ -59,7 +59,8 @@ function swatchRuns(ctx: WriterContext, run: DisplayRun, line: DisplayLine, cent
   return boxRuns(ctx, { x: g.x, y: g.y, width: g.side, height: g.side }, g.radius, sw.color, sw.ink, g.stroke, centre, rotate);
 }
 
-/** The chip boxes of `lines` (drawn before their text, under it). */
+/** The chip boxes of `lines`, drawn before their text as empty text
+ *  boxes (under it in Word and in LibreOffice). */
 export function chipBoxRuns(ctx: WriterContext, lines: readonly DisplayLine[], centre: Centre, rotate: number | undefined): string[] {
   const out: string[] = [];
   for (const line of lines) {

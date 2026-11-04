@@ -12,6 +12,9 @@ type RuleItem = Extract<DisplayItem, { kind: 'rule' }>;
 type RectItem = Extract<DisplayItem, { kind: 'rect' }>;
 type PathItem = Extract<DisplayItem, { kind: 'path' }>;
 
+/** The one paragraph of an empty text box, too small to grow it. */
+const EMPTY_P = '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>';
+
 const CAP = { butt: 'flat', round: 'rnd', square: 'sq' } as const;
 
 /** `a:ln` of a stroke (dash lengths relative to the width, as DrawingML's
@@ -48,8 +51,12 @@ export function ruleRun(ctx: WriterContext, item: RuleItem): string {
 }
 
 /** A rect item: a filled and stroked rect or rounded rect; a box style
- *  whose sides differ gets its fill and one rule per side. */
-export function rectRuns(ctx: WriterContext, item: RectItem, behind = false): string[] {
+ *  whose sides differ gets its fill and one rule per side. `frame`: the
+ *  box is written as an empty text box, so LibreOffice, which stacks plain
+ *  shapes over text-box frames whatever their `relativeHeight`, keeps it
+ *  under the text written after it (a chip's box). */
+export function rectRuns(ctx: WriterContext, item: RectItem, opts: { behind?: boolean; frame?: boolean } = {}): string[] {
+  const behind = opts.behind === true;
   const box = item.box;
   const fill = item.fill ?? box?.backgroundColor;
   const sides = box?.borderSides;
@@ -64,7 +71,7 @@ export function rectRuns(ctx: WriterContext, item: RectItem, behind = false): st
     : '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>';
   const out = [
     anchorRun(ctx, { rect: r, name: 'ptx box', behind, ...(item.rotate ? { rotate: item.rotate } : {}) }, (_id, cx, cy) =>
-      shapeGraphic(`${xfrm(cx, cy, item.rotate)}${geom}${solidFill(fill)}${lineXml(ctx, stroke, strokeW)}`),
+      shapeGraphic(`${xfrm(cx, cy, item.rotate)}${geom}${solidFill(fill)}${lineXml(ctx, stroke, strokeW)}`, opts.frame ? { content: EMPTY_P } : undefined),
     ),
   ];
   if (sides && !item.rotate) {

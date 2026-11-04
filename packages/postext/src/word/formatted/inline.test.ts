@@ -7,6 +7,7 @@ import { MetricsCache } from './metrics.js';
 import { chipBoxRuns, swatchShapeRuns } from './inlineShapes.js';
 import { textItemRuns } from './text.js';
 import { pageRuns } from './page.js';
+import { tableRuns } from './tables.js';
 import { emu } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -50,6 +51,9 @@ describe('inline chips and swatches in the formatted writer (#1406)', () => {
     expect(box).toContain('val="999999"');
     // Inset by half the stroke: x = 50 + 1 + 0.5, y = 40 - 10 + 0.5.
     expect(offsets(box!)).toEqual([emu(51.5, 72), emu(30.5, 72)]);
+    // An empty text box: LibreOffice keeps it under the text written after.
+    expect(box).toContain('txBox="1"');
+    expect(box).toContain('behindDoc="0"');
     expect(xmlProblems(wrap(box!))).toEqual([]);
   });
 
@@ -68,7 +72,7 @@ describe('inline chips and swatches in the formatted writer (#1406)', () => {
     const item: TextItem = { kind: 'text', role: 'body', bbox: { x: 10, y: 26, width: 200, height: 18 }, lines: [line] };
     const runs = await textItemRuns(ctx, item);
     const box = runs.findIndex((r) => r.includes('name="ptx box') && r.includes('EEEEEE'));
-    const text = runs.findIndex((r) => r.includes('<wps:txbx>'));
+    const text = runs.findIndex((r) => r.includes('name="ptx body'));
     expect(box).toBeGreaterThanOrEqual(0);
     expect(box).toBeLessThan(text);
     expect(runs[text]).toContain('Geist Mono');
@@ -78,6 +82,67 @@ describe('inline chips and swatches in the formatted writer (#1406)', () => {
     expect(squares).toHaveLength(1);
     expect(runs.indexOf(squares[0]!)).toBeGreaterThan(text);
     for (const r of runs) expect(xmlProblems(wrap(r))).toEqual([]);
+  });
+
+  it('spaces out the room before and after a chip’s words', async () => {
+    const ctx = context();
+    const padded = lineOf([
+      { text: 'See ', x: 10, width: 40, fontString: SERIF, color: '#000000', textStart: 0 },
+      { ...chip, padStart: 4, padEnd: 3 },
+      { text: 'key', x: 95, width: 25, fontString: SERIF, color: '#000000', textStart: 9 },
+    ]);
+    const item: TextItem = { kind: 'text', role: 'body', bbox: { x: 10, y: 26, width: 200, height: 18 }, lines: [padded] };
+    const body = (await textItemRuns(ctx, item)).find((r) => r.includes('name="ptx body'))!;
+    // 'See' then the space before the chip, spaced out by 4 px (80 twips);
+    // the chip's last letter by 3 px (60 twips).
+    expect(body).toMatch(/<w:spacing w:val="80"\/>[^]*?<w:t xml:space="preserve"> <\/w:t>/);
+    expect(body).toContain('<w:t xml:space="preserve">See</w:t>');
+    expect(body).toMatch(/<w:spacing w:val="60"\/>[^]*?<w:t xml:space="preserve">r<\/w:t>/);
+    expect(body).toContain('<w:t xml:space="preserve">Ente</w:t>');
+    expect(xmlProblems(wrap(body))).toEqual([]);
+    // Justified, the room comes off the line's letters: 7 px (140 twips)
+    // over 11, 13 each; the spaces keep their −2, the first plus the 80.
+    const sp = (x: number, textStart: number): DisplayRun => ({ text: ' ', x, width: 5, fontString: SERIF, color: '#000000', textStart, space: true });
+    const spaced = lineOf([
+      { text: 'See', x: 10, width: 35, fontString: SERIF, color: '#000000', textStart: 0 }, sp(45, 3),
+      { ...chip, padStart: 4, padEnd: 3 }, sp(95, 9),
+      { text: 'key', x: 100, width: 25, fontString: SERIF, color: '#000000', textStart: 10 },
+    ], { align: 'justify' });
+    const jbody = (await textItemRuns(context(), { ...item, lines: [spaced] })).find((r) => r.includes('name="ptx body'))!;
+    expect(jbody).toMatch(/<w:spacing w:val="-13"\/>[^]*?<w:t xml:space="preserve">See<\/w:t>/);
+    expect(jbody).toMatch(/<w:spacing w:val="78"\/>[^]*?<w:t xml:space="preserve"> <\/w:t>/);
+    expect(jbody).toMatch(/<w:spacing w:val="47"\/>[^]*?<w:t xml:space="preserve">r<\/w:t>/);
+  });
+});
+
+describe('inline shapes in table cells (#1406)', () => {
+  const cellItem = (runs: DisplayRun[], vertical = false): TextItem => ({ kind: 'text', role: 'cell', bbox: { x: 10, y: 26, width: 200, height: 18 }, lines: [lineOf(runs, vertical ? { vertical: true } : {})] });
+  const table = (item: TextItem): Extract<DisplayItem, { kind: 'table' }> => ({
+    kind: 'table', rect: { x: 10, y: 20, width: 200, height: 30 }, columnEdges: [0, 200], rowEdges: [0, 30],
+    cells: [{ row: 0, col: 0, rowSpan: 1, colSpan: 1, rect: { x: 10, y: 20, width: 200, height: 30 }, item }],
+  });
+  const chip: DisplayRun = {
+    text: 'Esc', x: 50, width: 30, fontString: MONO, color: '#000000', textStart: 0,
+    inline: { kind: 'chip', widthPx: 30, heightPx: 14, ascentPx: 10, box: { dx: 0, width: 30, ascent: 10, descent: 4, fill: '#dddddd' } },
+  };
+  const swatch: DisplayRun = {
+    text: '⁠', x: 20, width: 10, fontString: SERIF, color: '#000000', textStart: 0,
+    inline: { kind: 'swatch', widthPx: 10, heightPx: 8, swatch: { color: '#ff0000', ink: '#000000' } },
+  };
+
+  it('draws a cell chip’s box under the table', async () => {
+    const runs = await tableRuns(context(), table(cellItem([chip])));
+    const box = runs.findIndex((r) => r.includes('DDDDDD'));
+    const tbl = runs.findIndex((r) => r.includes('name="ptx table'));
+    expect(box).toBeGreaterThanOrEqual(0);
+    expect(box).toBeLessThan(tbl);
+  });
+
+  it('draws a swatch in a vertical cell on its holder’s square', async () => {
+    const runs = await tableRuns(context(), table(cellItem([swatch], true)));
+    expect(runs.filter((r) => r.includes('FF0000'))).toHaveLength(1);
+    const flat = await tableRuns(context(), table(cellItem([swatch])));
+    expect(flat.filter((r) => r.includes('FF0000'))).toHaveLength(1);
   });
 });
 

@@ -22,8 +22,9 @@ export function chipBox(chip: VDTChip, inkOffset = 0): DisplayChipBox {
  * A chip segment's runs: `run` (the segment's, at its x and width) cut
  * into one run per chip run, each in its own face and the chip's colour
  * when it sets one. The first carries the box and the room before the
- * words (gap, border, padding), the last the room after them, so the
- * runs fill the segment. `run.text` is the chip runs' text joined.
+ * words (gap, border, padding, `padStart`), the last the room after
+ * them (`padEnd`), so the runs fill the segment. `run.text` is the chip
+ * runs' text joined.
  */
 export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0): DisplayRun[] {
   const inline = { kind: 'chip' as const, widthPx: run.width, heightPx: chip.ascent + chip.descent, ascentPx: chip.ascent, box: chipBox(chip, inkOffset) };
@@ -38,17 +39,19 @@ export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0): Display
     const last = i === parts.length - 1;
     const width = last ? run.x + run.width - x : r.width + (i === 0 ? lead : 0);
     const part: DisplayRun = { ...run, text: r.text, x, width, fontString: r.fontString, color: chip.color ?? run.color, textStart };
-    delete part.bold;
-    delete part.italic;
-    delete part.smallCaps;
-    if (r.bold || /\b(bold|[6-9]00)\b/.test(r.fontString)) part.bold = true;
-    if (r.italic || /\bitalic\b/.test(r.fontString)) part.italic = true;
-    if (/\bsmall-caps\b/.test(r.fontString)) part.smallCaps = true;
+    // Emphasis stays the segment's: a bold or italic face the chip style
+    // or its own words set is the run's face (`fontString`), which writers
+    // set as a face, not as markup to read back.
     if (r.baselineShift) part.baselineShift = -r.baselineShift;
     else delete part.baselineShift;
     if (r.rtl) part.rtl = true;
     if (i === 0) part.inline = inline;
     else delete part.inline;
+    delete part.padStart;
+    delete part.padEnd;
+    const before = i === 0 ? lead : 0;
+    if (before > 0) part.padStart = before;
+    if (last && width - r.width - before > 0) part.padEnd = width - r.width - before;
     out.push(part);
     x += width;
     textStart += r.text.length;

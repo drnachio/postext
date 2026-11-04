@@ -58,6 +58,10 @@ export interface DisplayRun {
   textStart: number;
   /** A space whose width justification set. */
   space?: boolean;
+  /** Px of `width` before / after the run's characters (a chip's gap,
+   *  border and padding), for writers that set the text themselves. */
+  padStart?: number;
+  padEnd?: number;
   /** Embedded non-text content drawn in place of the run. */
   inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch };
   /** The run is a ruby base (#1394, `VDTLineSegment.ruby`): its reading. */
