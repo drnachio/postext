@@ -133,11 +133,15 @@ export function lineSource(block: SourceBlock, line: VDTLine): LineSource {
     const out = new Array<number>(shown.length).fill(-1);
     if (len > 0 && kind !== undefined && kind !== 'tab') {
       const start = sourceOfPlain(block, p);
-      if (seg.chip?.sourceOffsets && start >= 0 && shown !== seg.text) {
-        // A chip's words, each through its own offset from the chip's `:`.
-        seg.chip.sourceOffsets.forEach((off, k) => { if (k < out.length) out[k] = start + off; });
-      } else out.fill(start);
-      if (start >= 0) atoms.push({ at, start, end: atomEnd(seg, kind, start, sourceOfPlain(block, p + len)), kind });
+      const offsets = seg.chip?.sourceOffsets;
+      if (offsets && start >= 0 && offsets.length === shown.length) {
+        // A chip's words, each through its own offset from the chip's `:`:
+        // text, not an atom, so a word retyped in it stays in its brackets.
+        offsets.forEach((off, k) => { out[k] = start + off; });
+      } else {
+        out.fill(start);
+        if (start >= 0) atoms.push({ at, start, end: atomEnd(seg, kind, start, sourceOfPlain(block, p + len)), kind });
+      }
     } else if (len > 0) {
       // Characters in order, skipping the ones the layout added.
       const skip = new Set<number>(seg.kashida ?? []);

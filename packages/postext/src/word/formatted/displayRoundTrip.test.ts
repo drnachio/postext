@@ -11,6 +11,7 @@ import { validateDocxPackage } from '../ooxml/validate.js';
 import { xmlProblems } from '../ooxml/wellFormed.js';
 import { applyDocxEdits } from '../roundtrip/index.js';
 import { editDocx } from '../roundtrip/fixture.test-helper.js';
+import { typeOver } from '../integration/wordEdit.test-helper.js';
 import { formattedDocx } from './index.js';
 import { hasFragment, isImportable } from './fragments.js';
 import { build, config, documentXml, LOREM, mm, unzip } from './formatted.test-helper.js';
@@ -48,6 +49,15 @@ describe('display-list content round-trips through the formatted export (#1406)'
     // Its box, an empty text box, and the room before its words.
     expect(xml).toMatch(/txBox="1"\/><wps:spPr>(?:(?!<\/wps:spPr>).)*EEEEEE/);
     expect(xml).toMatch(/<w:spacing w:val="\d+"\/>(?:(?!<\/w:r>).)*<w:t xml:space="preserve"> <\/w:t><\/w:r><w:r><w:rPr>(?:(?!<\/w:rPr>).)*<\/w:rPr><w:t xml:space="preserve">Ente/);
+  });
+
+  it('a word retyped in a chip stays inside its brackets', async () => {
+    const cfg = config({ chipStyles: [{ id: 'w', paddingX: pt(2) }] } as Partial<PostextConfig>);
+    const md = `:::paragraphs\n:chip[GOGGLES]{style="w"} :chip[TOWEL]{style="w"} :chip[BALL]{style="w"}\n:::\n`;
+    await roundTrip(md, cfg);
+    const bytes = await formattedDocx({ docs: [build(md, cfg)], chapters: [{ id: 'c', markdown: md }], date: '2026-11-04T00:00:00Z', exportId: 'x' });
+    const r = applyDocxEdits(editDocx(bytes, (x) => typeOver(x, 'TOWEL', 'harbour')), { chapters: [{ id: 'c', markdown: md }] });
+    expect(r.chapters[0]!.markdown).toBe(md.replace('TOWEL', 'harbour'));
   });
 
   it('a link note’s QR code', async () => {

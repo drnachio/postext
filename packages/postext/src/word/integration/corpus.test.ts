@@ -297,7 +297,10 @@ async function check(book: CorpusBook, tally: Tally, writer: Writer): Promise<st
   const known = new Set(plain.edits.map((e) => `${e.chapter}\u0000${e.before}\u0000${e.after}`));
   tally.chapters += chapters.length;
   const text = documentText(bytes);
-  const bookText = chapters.map((c) => c.markdown).join('\u0000');
+  // Inline directives counted as the words they print (`:chip[TOWEL]{…}`
+  // prints "TOWEL"), so a context that also stands in another chapter's
+  // chips is not taken as unique.
+  const bookText = chapters.map((c) => c.markdown.replace(/:[a-z]+\[([^\]]*)\]\{[^}]*\}/g, '$1')).join('\u0000');
   for (const [i, ch] of chapters.entries()) {
     if (broken.has(i)) continue;
     const edit = chooseEdit(ch.markdown, bookText, text, `${book.name}/${ch.id}`);
