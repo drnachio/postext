@@ -10,6 +10,7 @@ import { compose, placeShape, placeText, turnFrame, type Frame } from './frame.j
 import { slotItems } from './design.js';
 import { highlightRects, placeBodyLine, sizeOf } from './lines.js';
 import { resourceItems } from './resource.js';
+import { lineQrItems } from './overlays.js';
 import { sourceOfPlain, type Atom } from './source.js';
 import type { DisplayItem, DisplayLine, DisplayListOptions, DisplayRect, DisplaySource } from './types.js';
 
@@ -175,6 +176,8 @@ function linesItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
       const { dy, thickness } = leaderRuleGeometry(sizeOf(block.fontString));
       after.push(placeShape(ctx.frame, { kind: 'rule', x1: l.x, y1: line.baseline + dy, x2: l.x + l.width, y2: line.baseline + dy, color: block.color, widthPx: thickness }));
     }
+    // A link note's QR code (#1302), after the text.
+    after.push(...lineQrItems(line, ctx.frame, block.color));
   }
   if (block.strikethroughText) {
     const thickness = Math.max(1, block.lines[0]?.bbox.height ? block.lines[0].bbox.height * 0.05 : 1);
