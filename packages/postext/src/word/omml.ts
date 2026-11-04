@@ -27,13 +27,21 @@ function prop(el: XmlElement | undefined, prName: string, key: string): string |
 
 const group = (s: string): string => (s.length === 1 ? s : `{${s}}`);
 
+/** The base of a limit: a lone command (`\\lim`, `\\max`) takes its limit
+ *  straight (`\\lim_{x}`), anything else is grouped. */
+const limitBase = (s: string): string => (/^\\[A-Za-z]+$/.test(s) ? s : group(s));
+
+/** Inside an equation array a `&` is Word's alignment mark, which TeX
+ *  writes as `&` too; anywhere else it is a literal ampersand. */
+let alignDepth = 0;
+
 function runText(r: XmlElement): string {
   const t = children(r, 't').map(textOf).join('');
   if (FUNCTIONS.has(t)) return `\\${t}`;
   // Normal text (`m:nor`) inside an equation: words, not variables.
   if (child(child(r, 'rPr'), 'nor') !== undefined && /[A-Za-z]/.test(t)) return `\\text{${t}}`;
   let out = '';
-  for (const ch of t) out += TEX_SPECIAL[ch] ?? ch;
+  for (const ch of t) out += ch === '&' && alignDepth > 0 ? '&' : TEX_SPECIAL[ch] ?? ch;
   return out;
 }
 
@@ -112,16 +120,21 @@ function convert(el: XmlElement): string {
       return `${pos === 'top' ? '\\overbrace' : '\\underbrace'}{${arg(child(el, 'e'))}}`;
     }
     case 'limLow':
-      return `${group(arg(child(el, 'e')))}_{${arg(child(el, 'lim'))}}`;
+      return `${limitBase(arg(child(el, 'e')))}_{${arg(child(el, 'lim'))}}`;
     case 'limUpp':
-      return `${group(arg(child(el, 'e')))}^{${arg(child(el, 'lim'))}}`;
+      return `${limitBase(arg(child(el, 'e')))}^{${arg(child(el, 'lim'))}}`;
     case 'm': {
       const rows = children(el, 'mr').map((mr) => children(mr, 'e').map(arg).join(' & '));
       return `\\begin{matrix}${rows.join(' \\\\ ')}\\end{matrix}`;
     }
     case 'eqArr': {
-      const rows = children(el, 'e').map(arg);
-      return `\\begin{aligned}${rows.join(' \\\\ ')}\\end{aligned}`;
+      alignDepth++;
+      try {
+        const rows = children(el, 'e').map(arg);
+        return `\\begin{aligned}${rows.join(' \\\\ ')}\\end{aligned}`;
+      } finally {
+        alignDepth--;
+      }
     }
     case 'box':
     case 'borderBox':
