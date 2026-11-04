@@ -7,6 +7,8 @@
 import { strFromU8, strToU8 } from 'fflate';
 import type { DisplayItem, DisplayRect } from '../../paint/displayList/types.js';
 import { base64Decode } from '../anchors/base64.js';
+import { wordFontFor } from '../fonts/plan.js';
+import type { WordFontPlan } from '../fonts/types.js';
 import { anchorRun, pictureGraphic, type BlipRefs } from './drawing.js';
 import type { WriterContext } from './types.js';
 
@@ -40,9 +42,79 @@ function fallbackSize(rect: DisplayRect, dpi: number): { w: number; h: number } 
   return { w, h };
 }
 
-/** Register an SVG with its PNG fallback. */
+const unquote = (f: string): string => f.trim().replace(/^(['"])(.*)\1$/, '$2').trim();
+
+/** A `font-family` list led by the embedded Word family of its first
+ *  family the plan holds (the web names stay as fallbacks), with the
+ *  weight that family's slot takes ('' weight: none was given). */
+function wordFamilyList(plan: WordFontPlan, list: string, weight: string, style: string, quote: string): { list: string; weight?: string } | undefined {
+  const families = new Set([...plan.map.keys()].map((k) => k.split('|')[0]!.toLowerCase()));
+  const fam = list.split(',').map(unquote).find((f) => families.has(f.toLowerCase()));
+  if (!fam) return undefined;
+  const w = /^\d+$/.test(weight) ? Number(weight) : /bold/i.test(weight) ? 700 : 400;
+  const ref = wordFontFor(plan, `${/italic|oblique/i.test(style) ? 'italic ' : ''}${w} 16px "${fam}"`);
+  if (ref.family.toLowerCase() === fam.toLowerCase()) return undefined;
+  return { list: `${quote}${ref.family}${quote}, ${list}`, ...(weight ? { weight: ref.bold ? '700' : '400' } : {}) };
+}
+
+/** CSS declarations (`style` attribute or a `<style>` rule body) with
+ *  their font family and weight rewritten. */
+function wordFontDecls(plan: WordFontPlan, decls: string, quote: string): string {
+  const fam = /(^|[;{\s])font-family\s*:\s*([^;}]+)/i.exec(decls);
+  if (!fam) return decls;
+  const weight = /(^|[;{\s])font-weight\s*:\s*([^;}]+)/i.exec(decls)?.[2]?.trim() ?? '';
+  const style = /(^|[;{\s])font-style\s*:\s*([^;}]+)/i.exec(decls)?.[2]?.trim() ?? '';
+  const r = wordFamilyList(plan, fam[2]!.trim(), weight, style, quote);
+  if (!r) return decls;
+  let out = decls.replace(/((?:^|[;{\s])font-family\s*:\s*)([^;}]+)/i, (_m, head: string) => `${head}${r.list}`);
+  if (r.weight) out = out.replace(/((?:^|[;{\s])font-weight\s*:\s*)([^;}]+)/i, (_m, head: string) => `${head}${r.weight}`);
+  return out;
+}
+
+const attrRe = (name: string): RegExp => new RegExp(`(\\s${name}\\s*=\\s*)(?:"([^"]*)"|'([^']*)')`, 'i');
+
+function attrOf(tag: string, name: string): { value: string; quote: string } | undefined {
+  const m = attrRe(name).exec(tag);
+  return m ? { value: m[2] ?? m[3] ?? '', quote: m[2] !== undefined ? '"' : "'" } : undefined;
+}
+
+function setAttr(tag: string, name: string, f: (value: string, quote: string) => string): string {
+  return tag.replace(attrRe(name), (_m, head: string, dq: string | undefined, sq: string | undefined) => {
+    const q = dq !== undefined ? '"' : "'";
+    return `${head}${q}${f(dq ?? sq ?? '', q)}${q}`;
+  });
+}
+
+/**
+ * An SVG whose text names the fonts the document embeds: the font plan
+ * renames every family (' PTX'), and Word and LibreOffice resolve SVG
+ * text against the document's and the system's fonts, so `font-family`
+ * (attributes, `style` attributes and `<style>` rules) is led by the
+ * embedded name and the weight set to the slot's (#1406).
+ */
+export function svgWithWordFonts(svg: string, plan: WordFontPlan | undefined): string {
+  if (!plan || !plan.map.size || !/font-family/i.test(svg)) return svg;
+  let out = svg.replace(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi, (_m, attrs: string, css: string) =>
+    `<style${attrs}>${css.replace(/\{[^{}]*\}/g, (body) => wordFontDecls(plan, body, '"'))}</style>`,
+  );
+  out = out.replace(/<[A-Za-z][^<>]*>/g, (tag) => {
+    if (!/font-family/i.test(tag)) return tag;
+    let t = setAttr(tag, 'style', (decls, q) => wordFontDecls(plan, decls, q === '"' ? "'" : '"'));
+    const fam = attrOf(t, 'font-family');
+    if (!fam) return t;
+    const r = wordFamilyList(plan, fam.value, attrOf(t, 'font-weight')?.value ?? '', attrOf(t, 'font-style')?.value ?? '', fam.quote === '"' ? "'" : '"');
+    if (!r) return t;
+    t = setAttr(t, 'font-family', () => r.list);
+    if (r.weight) t = setAttr(t, 'font-weight', () => r.weight!);
+    return t;
+  });
+  return out;
+}
+
+/** Register an SVG with its PNG fallback (drawn from the SVG as the book
+ *  has it: the rasteriser knows the web fonts). */
 async function svgRefs(ctx: WriterContext, svg: string, rect: DisplayRect, label: string): Promise<BlipRefs> {
-  const svgRel = ctx.pkg.addMedia(strToU8(svg), 'svg');
+  const svgRel = ctx.pkg.addMedia(strToU8(svgWithWordFonts(svg, ctx.plan)), 'svg');
   const { w, h } = fallbackSize(rect, ctx.dpi);
   let png: Uint8Array | undefined;
   if (ctx.rasterizeSvg) {

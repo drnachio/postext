@@ -69,16 +69,20 @@ export function xfrm(cx: number, cy: number, rotate?: number, flipH?: boolean, f
   return `<a:xfrm${rot}${flipH ? ' flipH="1"' : ''}${flipV ? ' flipV="1"' : ''}><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>`;
 }
 
-/** A Word shape (`wps:wsp`) with its `spPr` children and, for a text
- *  box, its content and body properties. */
+/** Body of a shape that holds no text: an empty text box. LibreOffice
+ *  imports plain shapes and text boxes as two kinds of frame and loses
+ *  their `relativeHeight` order once a document holds many text boxes
+ *  (an opener band painted over its own text); one kind keeps it (#1406). */
+export const EMPTY_TXBX = '<w:p/>';
+
+/** A Word shape (`wps:wsp`) with its `spPr` children and its text box
+ *  (empty when `text` is absent) and body properties. */
 export function shapeGraphic(spPr: string, text?: { content: string; vert?: 'horz' | 'eaVert' }): string {
-  const body = text
-    ? `<wps:txbx><w:txbxContent>${text.content}</w:txbxContent></wps:txbx>` +
-      `<wps:bodyPr rot="0" vert="${text.vert ?? 'horz'}" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="0"><a:noAutofit/></wps:bodyPr>`
-    : '<wps:bodyPr/>';
   return (
     `<a:graphic><a:graphicData uri="${WPS_URI}"><wps:wsp>` +
-    `<wps:cNvSpPr${text ? ' txBox="1"' : ''}/><wps:spPr>${spPr}</wps:spPr>${body}` +
+    `<wps:cNvSpPr txBox="1"/><wps:spPr>${spPr}</wps:spPr>` +
+    `<wps:txbx><w:txbxContent>${text?.content ?? EMPTY_TXBX}</w:txbxContent></wps:txbx>` +
+    `<wps:bodyPr rot="0" vert="${text?.vert ?? 'horz'}" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="0"><a:noAutofit/></wps:bodyPr>` +
     '</wps:wsp></a:graphicData></a:graphic>'
   );
 }
