@@ -116,8 +116,9 @@ describe('run widths of the formatted Word export (#1406)', () => {
     const [chunk] = planChunks([l], plans);
     const out = emitGroups(ctx, items, chunk!.groups, 0, 100, { offsets: [0] });
     const runs = [...out.xml.matchAll(/<w:r>(<w:rPr>.*?<\/w:rPr>)<w:t xml:space="preserve">(.*?)<\/w:t><\/w:r>/g)].map((m) => [m[2], spacingOf(m[1]!)]);
-    // 、 set at half an em: −120 twips; the full-width runs merge (spacing 0).
-    expect(runs).toEqual([['漢字', 0], ['、', -120], ['漢', 0]]);
+    // 、 set at half an em: −120 twips; each letter of a justified line a
+    // twip narrower still (JUSTIFY_ROOM_TW), so the full-width runs stay whole.
+    expect(runs).toEqual([['漢字', -1], ['、', -121], ['漢', -1]]);
     expect(out.text).toBe('漢字、漢\n'); // a justified line ends in a break
   });
 

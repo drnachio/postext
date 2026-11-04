@@ -36,6 +36,11 @@ export const LEGACY_HOLDER = '\u2060';
 const FALLBACK_SPACE_EM = 0.25;
 /** Word's character spacing range, twips (±1584 pt). */
 const MAX_SPACING = 31680;
+/** Twips each letter of a justified line is set narrower than the engine's
+ *  width: LibreOffice rounds every glyph's advance to whole twips, which
+ *  over a line can add a point and break it early; justification stretches
+ *  the spaces back to the measure. */
+const JUSTIFY_ROOM_TW = 1;
 /** Characters shaped out of their cmap advances (joining scripts, Indic,
  *  marks): their runs are not measured. */
 const COMPLEX = /[\u0600-\u08ff\ufb50-\ufdff\ufe70-\ufeff\u0900-\u0dff\u0f00-\u0fff\u1000-\u109f\u1780-\u17ff\u1800-\u18af\p{M}\u200c\u200d]/u;
@@ -368,7 +373,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   // A blank run sets in its neighbour's face (its own emphasis flags stay).
   const r: DisplayRun = blank ? { ...run, fontString: blankFace(run, line) } : run;
   const text = wordText(run.text);
-  let fit = measurable(ctx, r, line, blank) ? fitOf(ctx, r, text) : undefined;
+  let fit = measurable(ctx, r, line, blank) ? fitOf(ctx, r, text, justified && !blank ? JUSTIFY_ROOM_TW : 0) : undefined;
   // A space squeezed below its natural advance narrows by w:w: LibreOffice
   // drops the spacing of blanks on a justified line, and neither renderer
   // shrinks a space on its own. So does compressed punctuation in vertical
@@ -425,10 +430,11 @@ function measurable(ctx: WriterContext, run: DisplayRun, line: DisplayLine, blan
   return blank || !COMPLEX.test(run.text);
 }
 
-function fitOf(ctx: WriterContext, run: DisplayRun, text: string): FitSpacing | undefined {
+function fitOf(ctx: WriterContext, run: DisplayRun, text: string, roomTw = 0): FitSpacing | undefined {
   const nat = naturalTwips(ctx, run.fontString, text);
   if (nat === undefined) return undefined;
-  return fitSpacing(ctx, run.width, nat, Array.from(text).length);
+  const count = Array.from(text).length;
+  return fitSpacing(ctx, run.width, nat + roomTw * count, count);
 }
 
 /** The `MapFormat` flags of a run (b, i, c, p, s). A code block's lines are
