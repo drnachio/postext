@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest';
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
+import { existsSync, readFileSync } from 'node:fs';
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
+import { fileURLToPath } from 'node:url';
 import { strFromU8, strToU8, zipSync } from 'fflate';
 import type { DisplayItem, DisplayLine, DisplayRun } from '../../paint/displayList/types.js';
 import { decodeExportMap, encodeExportMap, xmlPartText } from '../anchors/exportMap.js';
 import { EXPORT_MAP_ROOT } from '../anchors/types.js';
 import { writeCmap } from '../fonts/cmap.js';
-import { ByteWriter } from '../fonts/sfnt.js';
+import { ByteWriter, readSfnt } from '../fonts/sfnt.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { createDocxPackage } from '../ooxml/package.js';
 import { applyDocxEdits } from '../roundtrip/index.js';
@@ -227,6 +231,32 @@ describe('run widths of the formatted Word export (#1406)', () => {
     expect(runProps(ctx, run('1', 0, 8, { fontString: '16px "EB Garamond"' }), {})).not.toContain('numForm');
   });
 
+  it('fits a run whose face lacks a character, the missing one at least an em', () => {
+    const ctx = context();
+    // "⌘ Z": the face has " Z" (0.75 em = 180 tw); the engine set it at 30 px.
+    // ⌘ counts as what is left (600 − 180 = 420 tw): no spacing needed.
+    const wide = emitRun(ctx, run('\u2318 Z', 0, 30), lineOf([run('\u2318 Z', 0, 30)]));
+    expect(spacingOf(wide.rPr)).toBe(0);
+    // At 15 px (300 tw) the share left (120 tw) is under an em: ⌘ counts as
+    // 240 tw and every character gives back (420 − 300) / 3 = 40 tw.
+    const narrow = emitRun(ctx, run('\u2318 Z', 0, 15), lineOf([run('\u2318 Z', 0, 15)]));
+    const pieces = narrow.pieces ?? [narrow];
+    expect(pieces.every((p) => spacingOf(p.rPr) === -40)).toBe(true);
+    expect(pieces.map((p) => p.text).join('')).toBe('\u2318 Z');
+  });
+
+  it('sets a ruby base unspaced, the reading condensed to its width', () => {
+    const ctx = context({ lang: 'ja' });
+    // 漢 is 1 em (240 tw); the engine set it 1.5 em wide for its reading.
+    const base = run('漢', 0, 18, { ruby: { text: 'かんじ', fontString: '6px "Lora"', position: 'over' } });
+    const out = emitRun(ctx, base, lineOf([base]));
+    expect(out.xml).toBeDefined();
+    expect(out.xml).not.toContain('<w:spacing');
+    expect(/<w:rubyBase>.*<\/w:rubyBase>/.exec(out.xml!)![0]).toContain('漢');
+    // Three kana of 6 px (18 px) fit the 18 px base: the reading keeps its size.
+    expect(out.xml).toContain('<w:hps w:val="12"/>');
+  });
+
   it('reads advances from a face\'s cmap and hmtx', () => {
     const head = new Uint8Array(54);
     head[18] = 0x03; head[19] = 0xe8; // 1000 units
@@ -240,6 +270,35 @@ describe('run widths of the formatted Word export (#1406)', () => {
     expect(face.advances).toEqual([0, 600, 600]);
     expect(naturalEms(face, 'AB')).toBeCloseTo(1.2, 6);
     expect(naturalEms(face, 'AC')).toBeUndefined();
+  });
+});
+
+const loraPath = fileURLToPath(new URL('../../../../../apps/web/public/fonts/Lora-Regular.ttf', import.meta.url));
+
+describe.runIf(existsSync(loraPath))('feature families measured with their figures (#1406)', () => {
+  const lora = faceAdvancesOf(readSfnt(new Uint8Array(readFileSync(loraPath)))!)!;
+  class LoraMetrics extends MetricsCache {
+    constructor() {
+      super(undefined);
+    }
+    override faceAdvances(): FaceAdvances | undefined {
+      return lora;
+    }
+  }
+
+  it('fits tabular figures against their own advances', () => {
+    const ctx = context({ plan: plan([['Lora|400|normal', 'Lora PTX']]), metrics: new LoraMetrics() });
+    // "11" in Lora@tnum at 10 pt: two tabular ones of 650 units = 260 tw.
+    expect(naturalEms(lora, '11', ['tnum'])).toBeCloseTo(1.3, 6);
+    expect(naturalEms(lora, '11')).toBeCloseTo(0.728, 6);
+    const F2 = '10px "Lora@tnum"';
+    const r = run('11', 0, 13, { fontString: F2 });
+    const out = emitRun(ctx, r, lineOf([r]));
+    expect(out.rPr).toContain('<w14:numSpacing w14:val="tabular"/>');
+    expect(spacingOf(out.rPr)).toBe(0);
+    // Untouched figures of the plain family keep the cmap advances.
+    const plain = run('11', 0, 13, { fontString: '10px "Lora"' });
+    expect(spacingOf(emitRun(ctx, plain, lineOf([plain])).rPr)).toBeGreaterThan(50);
   });
 });
 
