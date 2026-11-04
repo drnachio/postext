@@ -72,8 +72,9 @@ export function xfrm(cx: number, cy: number, rotate?: number, flipH?: boolean, f
 /** Body of a shape that holds no text: an empty text box. LibreOffice
  *  imports plain shapes and text boxes as two kinds of frame and loses
  *  their `relativeHeight` order once a document holds many text boxes
- *  (an opener band painted over its own text); one kind keeps it (#1406). */
-export const EMPTY_TXBX = '<w:p/>';
+ *  (an opener band painted over its own text); one kind keeps it (#1406).
+ *  Its paragraph is a twip tall, so even a chip's box holds it. */
+export const EMPTY_TXBX = '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>';
 
 /** A Word shape (`wps:wsp`) with its `spPr` children and its text box
  *  (empty when `text` is absent) and body properties. */

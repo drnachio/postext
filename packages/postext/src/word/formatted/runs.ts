@@ -281,7 +281,7 @@ function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: Fi
 const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
 
 /** A run that may join its neighbour: plain text, no blank or tab. */
-const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
+const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.padStart && !r.padEnd && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
 
 /** Letters of the alphabetic scripts a word of which hyphenation splits
  *  into runs (CJK runs stay apart: compressed punctuation is its own). */
@@ -314,6 +314,30 @@ function piecesOut(pieces: RunPiece[]): Pick<EmittedRun, 'rPr' | 'text' | 'piece
   return pieces.length === 1 ? { rPr: pieces[0]!.rPr, text } : { rPr: pieces[0]!.rPr, text, pieces };
 }
 
+/** Px of a chip's padding that run `i` of `line` keeps out of its words:
+ *  `before` is carried by the run before it, `after` by its own last
+ *  character (left to right only; a chip that starts the line keeps it). */
+export function padsOf(line: DisplayLine, i: number): { before: number; after: number } {
+  const run = line.runs[i];
+  if (!run || line.vertical || line.rtl || run.rtl) return { before: 0, after: 0 };
+  const prev = line.runs.slice(0, i).some((r) => r.text.length > 0);
+  return { before: prev ? (run.padStart ?? 0) : 0, after: run.padEnd ?? 0 };
+}
+
+/** The line with each chip run's padding taken out of its width and added
+ *  to the gap after the run that carries it (`gaps` per run). */
+export function unpadded(line: DisplayLine, gaps: readonly number[]): { line: DisplayLine; gaps: number[] } {
+  const out = [...gaps];
+  const runs = line.runs.map((r, i) => {
+    const { before, after } = padsOf(line, i);
+    if (!before && !after) return r;
+    out[i] = (out[i] ?? 0) + after;
+    if (before) for (let k = i - 1; k >= 0; k--) if (line.runs[k]!.text.length > 0) { out[k] = (out[k] ?? 0) + before; break; }
+    return { ...r, x: r.x + before, width: Math.max(0, r.width - before - after) };
+  });
+  return { line: { ...line, runs }, gaps: out };
+}
+
 /** A run's properties, what it writes and anything to draw over it.
  *  `gapPx` is room after the run before the next one starts (a number set
  *  flush right): the last character carries it. */
@@ -334,7 +358,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
       out.drawing = {
         kind: inl.kind,
         ...(inl.svg ? { svg: inl.svg } : {}),
-        ...(inl.kind === 'swatch' ? { color: run.color } : {}),
+        ...(inl.kind === 'swatch' ? { color: inl.swatch?.color ?? run.color } : {}),
         rect: { x: run.x, y: line.baseline - (run.baselineShift ?? 0) - ascent, width: inl.widthPx, height: inl.heightPx },
       };
     }

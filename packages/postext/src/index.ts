@@ -62,7 +62,7 @@ export type { TextDots, TextDotsRequest } from './paint/textDots.js';
 // rule of the canvas, the HTML and the PDF.
 export { joinedWordPieces, lineWordSegments, lineWordSegmentsInOrder, cellsOf, type WordPiece, type SetLine } from './paint/wordPieces.js';
 export { segmentPlainLength } from './paint/segmentPlainLength.js';
-export { pageDisplayList, documentDisplayList, type DisplayRect, type DisplaySource, type DisplayRun, type DisplayLine, type DisplayItem, type DisplayPage, type DisplayListOptions, type LineAlign, type DisplayAnnotation, type DisplayRuby, type DisplayKunten } from './paint/displayList/index.js';
+export { pageDisplayList, documentDisplayList, type DisplayRect, type DisplaySource, type DisplayRun, type DisplayLine, type DisplayItem, type DisplayPage, type DisplayListOptions, type LineAlign, type DisplayAnnotation, type DisplayRuby, type DisplayKunten, type DisplayChipBox, type DisplaySwatch } from './paint/displayList/index.js';
 export { applyCjkGrid, cjkGridGeometry, cjkGridCells, CHARACTER_GRID_COLOR, type CjkGridGeometry, type CjkGridCells } from './pipeline/text/cjkGrid.js';
 export { balancingOnByDefault, avoidWidowsByDefault, avoidOrphansByDefault } from './pipeline/config.js';
 export { renderTemplateNumber } from './pipeline/resources/resourceNumbering.js';

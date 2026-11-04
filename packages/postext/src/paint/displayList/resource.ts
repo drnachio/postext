@@ -9,6 +9,7 @@ import type { ResolvedResourceBlock } from '../../vdt/resources.js';
 import { tableCellFill } from '../../vdt/resourceTables.js';
 import { compose, mapRect, placeImage, placeShape, placeTable, placeText, rotationFrame, type Frame } from './frame.js';
 import { highlightRects, placeResourceLine, type LineStyle } from './lines.js';
+import { videoItems } from './overlays.js';
 import { alignToSource, atomKind, segmentShownText, type Atom, type PaintedAtom } from './source.js';
 import type { BlockContext } from './blocks.js';
 import type { DisplayItem, DisplayLine, DisplayRect, DisplaySource } from './types.js';
@@ -157,6 +158,10 @@ export function resourceItems(block: VDTBlock, ctx: BlockContext): DisplayItem[]
     if (rb.resource.altText) image.alt = rb.resource.altText;
     // Down a vertical page an upright picture stands upright on the sheet.
     items.push(!rot && ctx.vertical ? { ...image, rect: mapRect(frame, image.rect) } : placeImage(frame, image));
+  }
+  if (rb.kind === 'video') {
+    // The dark frame of a video without a poster, its play mark and code.
+    items.push(...videoItems(rb, { x: bx, y: by, width: bw, height: bh }, frame, !!rb.fileId));
   } else if (rb.kind === 'table') {
     items.push(...tableItem(rb, bx, by, ctx, frame, key));
   }

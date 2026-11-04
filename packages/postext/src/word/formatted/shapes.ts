@@ -12,6 +12,8 @@ type RuleItem = Extract<DisplayItem, { kind: 'rule' }>;
 type RectItem = Extract<DisplayItem, { kind: 'rect' }>;
 type PathItem = Extract<DisplayItem, { kind: 'path' }>;
 
+/** The one paragraph of an empty text box, too small to grow it. */
+
 const CAP = { butt: 'flat', round: 'rnd', square: 'sq' } as const;
 
 /** `a:ln` of a stroke (dash lengths relative to the width, as DrawingML's
@@ -49,7 +51,8 @@ export function ruleRun(ctx: WriterContext, item: RuleItem): string {
 
 /** A rect item: a filled and stroked rect or rounded rect; a box style
  *  whose sides differ gets its fill and one rule per side. */
-export function rectRuns(ctx: WriterContext, item: RectItem, behind = false): string[] {
+export function rectRuns(ctx: WriterContext, item: RectItem, opts: { behind?: boolean } = {}): string[] {
+  const behind = opts.behind === true;
   const box = item.box;
   const fill = item.fill ?? box?.backgroundColor;
   const sides = box?.borderSides;

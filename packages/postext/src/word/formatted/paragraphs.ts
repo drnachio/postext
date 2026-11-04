@@ -12,7 +12,7 @@ import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js'
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
 import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, wordText, writtenFace, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, unpadded, wordText, writtenFace, type EmittedRun, type InlineDrawing } from './runs.js';
 import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
@@ -304,8 +304,9 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (pendingText) lx.push(`<w:r>${pendingProps}<w:t xml:space="preserve">${escapeXml(pendingText)}</w:t></w:r>`);
         pendingText = '';
       };
-      for (const { run, gap } of joinWordRuns(line, runGaps(line))) {
-        const emitted = emitRun(ctx, run, line, gap);
+      const flat = unpadded(line, runGaps(line));
+      for (const { run, gap } of joinWordRuns(flat.line, flat.gaps)) {
+        const emitted = emitRun(ctx, run, flat.line, gap);
         if (!emitted.text) continue;
         // The fallback line's style: the run's face and tracking, not the
         // spacing or scale fitted to that run alone.

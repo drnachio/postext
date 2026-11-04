@@ -78,7 +78,7 @@ describe('formatted Word graphics and helpers (#1392)', () => {
       expect(xmlProblems(wrap(x))).toEqual([]);
       // One frame kind for every object (LibreOffice keeps their order).
       expect(x).toContain('<wps:cNvSpPr txBox="1"/>');
-      expect(x).toMatch(/<\/wps:spPr><wps:txbx><w:txbxContent><w:p\/><\/w:txbxContent><\/wps:txbx><wps:bodyPr [^>]*lIns="0"[^>]*><a:noAutofit\/><\/wps:bodyPr><\/wps:wsp>/);
+      expect(x).toMatch(/<\/wps:spPr><wps:txbx><w:txbxContent><w:p><w:pPr>[^]*?<\/w:pPr><\/w:p><\/w:txbxContent><\/wps:txbx><wps:bodyPr [^>]*lIns="0"[^>]*><a:noAutofit\/><\/wps:bodyPr><\/wps:wsp>/);
     }
   });
 

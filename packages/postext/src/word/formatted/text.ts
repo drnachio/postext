@@ -3,7 +3,8 @@
 // first baseline lands on the engine's; a turned item turns every box
 // about the item's centre, a vertical one (#1394) stands as an `eaVert`
 // box. Inline maths, music and swatches are drawn over the holders their
-// runs leave in the text, kanbun marks beside their characters.
+// runs leave in the text, chip boxes under their words, kanbun marks
+// beside their characters.
 
 import type { DisplayItem, DisplayRect, DisplayRun } from '../../paint/displayList/types.js';
 import { textBoxRun, turnedBox, turnPoint } from './drawing.js';
@@ -14,6 +15,7 @@ import { rectRuns, ruleRun } from './shapes.js';
 import { isImportable, recordFragment, reserveFragment } from './fragments.js';
 import { chunkBox, emitGroups, planChunks, planLines, type TextOut } from './paragraphs.js';
 import { inlineSvgRun } from './pictures.js';
+import { chipBoxRuns, swatchShapeRuns } from './inlineShapes.js';
 import type { WriterContext } from './types.js';
 
 type TextItem = Extract<DisplayItem, { kind: 'text' }>;
@@ -29,15 +31,16 @@ export function lineOffsets(item: TextItem): number[] {
   return out;
 }
 
-/** The drawings over a run of paragraphs (inline pictures, swatches). */
-export async function inlineDrawingRuns(ctx: WriterContext, out: TextOut, centre: { x: number; y: number }, rotate: number | undefined): Promise<string[]> {
+/** The drawings over a run of paragraphs (inline pictures, swatches;
+ *  `swatches` false: the caller draws them from its lines). */
+export async function inlineDrawingRuns(ctx: WriterContext, out: TextOut, centre: { x: number; y: number }, rotate: number | undefined, swatches = true): Promise<string[]> {
   const runs: string[] = [];
   for (const d of out.drawings) {
     const rect: DisplayRect = turnedBox(d.rect, centre, rotate);
     if (d.svg) {
       const r = await inlineSvgRun(ctx, d.svg, rect, rotate, d.kind);
       if (r) runs.push(r);
-    } else if (d.kind === 'swatch') {
+    } else if (d.kind === 'swatch' && swatches) {
       runs.push(...rectRuns(ctx, { kind: 'rect', rect, ...(d.color ? { fill: d.color } : {}), ...(rotate ? { rotate } : {}) }));
     }
   }
@@ -100,8 +103,13 @@ export async function textItemRuns(ctx: WriterContext, item: TextItem): Promise<
     const out = emitGroups(ctx, item, chunk.groups, box.x, box.x + box.width, { offsets, ...(slot ? { bookmarkStart: slot.start, bookmarkEnd: slot.end } : {}) });
     if (slot && importable) recordFragment(ctx, slot, item, out);
     const placed = sheetBox(box, centre, item.rotate, vertical);
+    const lines = item.lines.slice(chunk.from, chunk.to + 1);
+    // Chip boxes under their words; swatches in their real shape over the
+    // holders (a vertical item keeps the holder's square).
+    runs.push(...chipBoxRuns(ctx, lines, centre, item.rotate));
     runs.push(textBoxRun(ctx, { rect: placed.rect, name: `ptx ${item.role}`, ...(placed.rotate ? { rotate: placed.rotate } : {}) }, out.xml, vertical ? 'eaVert' : undefined));
-    runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate)));
+    runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate, vertical)));
+    if (!vertical) runs.push(...swatchShapeRuns(ctx, lines, centre, item.rotate));
     runs.push(...markRuns(ctx, out, centre, item.rotate));
   }
   return runs;
