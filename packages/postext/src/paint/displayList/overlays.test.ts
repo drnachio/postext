@@ -99,6 +99,46 @@ describe('inline chips and swatches in the display list (#1406)', () => {
   });
 });
 
+describe('chip runs on the sheet (#1406)', () => {
+  const hex = (h: string) => ({ hex: h, model: 'hex' });
+  const chipStyle = { id: 'k', fontFamily: 'Test Mono', paddingX: pt(2), background: hex('#eeeeee'), gap: pt(6) };
+
+  it('colours each chip run by its own emphasis, as the painters do', () => {
+    const cfg = config({ bodyText: { color: hex('#000000'), boldColor: hex('#cc0000'), fontSize: pt(10), lineHeight: pt(14) }, chipStyles: [chipStyle] } as unknown as Partial<PostextConfig>);
+    const runs = allRuns(documentDisplayList(build('Press :chip[a **bold** c]{style=k} now.', cfg)));
+    const first = runs.findIndex((r) => r.inline?.kind === 'chip');
+    const parts = runs.slice(first, first + 3);
+    expect(parts.map((r) => r.text)).toEqual(['a ', 'bold', ' c']);
+    expect(parts.map((r) => r.color)).toEqual(['#000000', '#cc0000', '#000000']);
+  });
+
+  it('lays a mirrored chip’s box over its whole segment', () => {
+    const cfg = config({ locale: 'ar', direction: 'rtl', bodyText: { firstLineIndent: mm(0) }, chipStyles: [chipStyle] } as unknown as Partial<PostextConfig>);
+    for (const md of [':chip[abc]{style=k} نص عربي هنا.', 'نص :chip[abc]{style=k} عربي هنا.', 'نص :chip[a **b** c]{style=k} عربي.']) {
+      const doc = build(md, cfg);
+      const seg = doc.pages[0]!.columns[0]!.blocks[0]!.lines[0]!.segments!.find((s) => s.chip)!;
+      const c = seg.chip!;
+      const item = documentDisplayList(doc)[0]!.items.find((i): i is TextItem => i.kind === 'text' && i.role === 'body')!;
+      const runs = item.lines[0]!.runs;
+      const first = runs.findIndex((r) => r.inline?.kind === 'chip');
+      const parts = runs.slice(first, first + c.runs.filter((r) => r.text).length);
+      const right = Math.max(...parts.map((p) => p.x + p.width));
+      const box = parts[0]!.inline!.box!;
+      // The PDF mirrors the box with the page: its right edge sits the
+      // gap margin in from the segment's sheet-right edge.
+      expect(parts[0]!.x + box.dx + box.width, md).toBeCloseTo(right - c.marginLeft, 6);
+    }
+  });
+
+  it('leaves an unmirrored chip’s box at its segment’s left plus its margin', () => {
+    const cfg = config({ chipStyles: [chipStyle] } as unknown as Partial<PostextConfig>);
+    const doc = build('Press :chip[a **b** c]{style=k} now.', cfg);
+    const c = doc.blocks[0]!.lines[0]!.segments!.find((s) => s.chip)!.chip!;
+    const chip = allRuns(documentDisplayList(doc)).find((r) => r.inline?.kind === 'chip')!;
+    expect(chip.inline!.box!.dx).toBeCloseTo(c.marginLeft, 6);
+  });
+});
+
 describe('QR codes and video overlays in the display list (#1406)', () => {
   it('draws a code’s dark modules as one path scaled to its box', () => {
     const item = qrModulesItem({ rows: ['10', '01'], moduleSize: 2, quietZone: 1 }, { x: 10, y: 20, width: 16, height: 16 }, '#000000')!;
