@@ -3,7 +3,7 @@ import { buildDocument } from '../../../pipeline/build.js';
 import { createMeasurementCache } from '../../../measure/index.js';
 import { resolveAllConfig } from '../../../pipeline/config.js';
 import { stripBodyTextDefaults } from '../../../defaults/index.js';
-import { CONFIG_VERSION, migrateConfig, pinLegacyBoxParagraphStyles } from '../../../bundle/index.js';
+import { CONFIG_VERSION, migrateConfig, pinLegacyBoxParagraphStyles, pinLegacyHtmlViewerBreaking } from '../../../bundle/index.js';
 import type { VDTBlock, VDTDocument } from '../../../vdt.js';
 import type { PostextConfig } from '../../../types.js';
 
@@ -87,7 +87,7 @@ describe('paragraph styles inside a box (#1119)', () => {
 
 describe('rules 17: pinLegacyBoxParagraphStyles (#1119)', () => {
   it('comes before the current rule set', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
   });
 
   it('pins a configuration stored under 16 that declares paragraph styles', () => {
@@ -97,7 +97,8 @@ describe('rules 17: pinLegacyBoxParagraphStyles (#1119)', () => {
     // A current one, one without styles, and one that names the setting
     // are left as they are.
     expect(migrateConfig(CONFIG, 17).bodyText?.paragraphStylesInBoxes).toBeUndefined();
-    expect(migrateConfig(CONFIG, 20)).toBe(CONFIG);
+    expect(migrateConfig(CONFIG, 20)).toEqual(pinLegacyHtmlViewerBreaking(CONFIG));
+    expect(migrateConfig(CONFIG, CONFIG_VERSION)).toBe(CONFIG);
     const plain: PostextConfig = { bodyText: { fontSize: pt(10) } };
     expect(pinLegacyBoxParagraphStyles(plain)).toBe(plain);
     const named: PostextConfig = { ...CONFIG, bodyText: { paragraphStylesInBoxes: 'box' } };

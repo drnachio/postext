@@ -2311,7 +2311,7 @@
     "htmlViewerColumnGap": "Distanza tra colonne",
     "htmlViewerColumnGapTooltip": "Spazio orizzontale tra le colonne quando il visualizzatore HTML è in modalità a più colonne",
     "htmlViewerOptimalLineBreaking": "Divisione ottimale in righe",
-    "htmlViewerOptimalLineBreakingTooltip": "Usa la divisione ottimale in righe Knuth-Plass nel visualizzatore HTML. Disattivata per impostazione predefinita, per non pesare sulle prestazioni: prevale sull’impostazione generale del testo corrente solo nella visualizzazione HTML",
+    "htmlViewerOptimalLineBreakingTooltip": "Usa la divisione ottimale in righe Knuth-Plass nel visualizzatore HTML, gli stessi a capo del canvas e del PDF. Attiva per impostazione predefinita; disattivala per riempire ogni riga prima della successiva. Un testo corrente composto riga per riga resta così a schermo",
     "canvasViewerSection": "Canvas (spazio tra le pagine)",
     "canvasViewerPageGap": "Spazio tra le pagine di una coppia",
     "canvasViewerPageGapTooltip": "Spazio, in pixel, tra la pagina sinistra e quella destra di una doppia pagina nel Canvas. Con 0 le due pagine si toccano e un’immagine sulla doppia pagina si vede senza interruzione. Cambia solo come viene disegnato il Canvas, mai le pagine.",

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fuentes, colores y salida',
   description: 'Las unidades, los colores y la paleta; las fuentes personalizadas; el visor HTML, el PDF y la producción para imprenta; el visor Folio, y las ayudas de depuración.',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Activa el corte de líneas de Knuth–Plass en el visor HTML. Está desactivado por defecto porque el visor vuelve a maquetar cada vez que cambia el tamaño de la ventana o de la letra, y el algoritmo voraz es lo bastante rápido como para parecer instantáneo. Actívalo si quieres los mismos cortes óptimos que usa el backend de canvas.</td>
+      <td><code>true</code></td>
+      <td>Corta las líneas del visor HTML con Knuth–Plass, los mismos cortes óptimos que hacen el canvas y el PDF: la edición en pantalla no pierde calidad frente a la impresa. Con <code>true</code> el visor sigue a <code>bodyText.optimalLineBreaking</code>, así que un documento que compone su texto línea a línea lo mantiene en pantalla. Ponlo a <code>false</code> para llenar cada línea antes de pasar a la siguiente, más rápido en un libro muy largo. Una configuración guardada con <code>configVersion</code> 21 o anterior que no lo indica se lee como <code>false</code>, tal como se maquetó entonces.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined cuando todo coincide con los valores por defecto

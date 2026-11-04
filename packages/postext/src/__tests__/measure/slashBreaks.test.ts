@@ -3,7 +3,7 @@ import { emergencySplit, measureRichSnippet, type RichToken } from '../../measur
 import { getSlashBreaks, setSlashBreaks, slashBreakIndices, withoutZeroWidthSpaces } from '../../measure/breakRules.js';
 import { initHyphenator } from '../../measure/font.js';
 import { buildDocument } from '../../pipeline/index.js';
-import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
+import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
 import type { PostextConfig } from '../../types.js';
 
@@ -166,11 +166,16 @@ describe('pinLegacySlashBreaks (#1164)', () => {
   });
 
   it('pins every version before 19, whatever the chapters hold, and none from 19', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     for (const v of [undefined, 1, 8, 12, 15, 16, 17, 18]) {
       expect(migrateConfig<PostextConfig>({}, v, { content: 'Words.' }).bodyText?.breakAfterSlashes, String(v)).toBe(false);
     }
-    for (const v of [19, CONFIG_VERSION, 99]) {
+    for (const v of [19, 20, 21]) {
+      // (one stamped 19 to 21 still gets the line breaker of the HTML viewer of 1.67)
+      const config: PostextConfig = {};
+      expect(migrateConfig(config, v, { content: 'entrada/salida' }), String(v)).toEqual(pinLegacyHtmlViewerBreaking(config));
+    }
+    for (const v of [CONFIG_VERSION, 99]) {
       const config: PostextConfig = {};
       expect(migrateConfig(config, v, { content: 'entrada/salida' }), String(v)).toBe(config);
     }

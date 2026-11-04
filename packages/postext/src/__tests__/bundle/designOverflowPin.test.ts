@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyDesignOverflow, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
+import { CONFIG_VERSION, migrateBundleConfig, migrateConfig, pinLegacyDesignOverflow, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { DesignElement, DesignSlot, PostextConfig, ResolvedDesignSlot, ResolvedDesignTextElement, TextOverflow } from '../../types.js';
 
@@ -70,14 +70,14 @@ describe('pinLegacyDesignOverflow (#628)', () => {
   });
 
   it('pins every version before 10, none from 10', () => {
-    expect(CONFIG_VERSION).toBe(21);
+    expect(CONFIG_VERSION).toBe(22);
     for (const v of [undefined, 1, 5, 8, 9]) {
       expect(overflowOf(migrateConfig(stored(), v).parts!.design, 'partTitle'), String(v)).toBe('ellipsis-end');
     }
     const current = stored();
     // (Content with no embed: the version-11 inline table pin, #634, has
     // nothing to pin.)
-    expect(migrateConfig(current, 10, { content: '' })).toEqual(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(current))));
+    expect(migrateConfig(current, 10, { content: '' })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(pinLegacyShapingLanguage(pinLegacyScriptContext(current)))));
   });
 
   it('returns the same object when nothing needs the pin', () => {

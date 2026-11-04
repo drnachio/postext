@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { pinLegacyHtmlViewerBreaking } from 'postext/bundle';
 import { avoidOrphansByDefault, avoidWidowsByDefault, balancingOnByDefault, type PostextConfig } from 'postext';
 import { configKeyOf } from '../book/layoutKeys.js';
 import { hashConfig, isDocumentUntouched } from '../presets/hash.js';
@@ -329,9 +330,9 @@ describe('the break rules of a character grid survive a save (#717)', () => {
     const current = configFromExport({ type: 'postext-config', version: 1, configVersion: 12, config: japanese() });
     expect(laidOut(current)).toEqual(OFF);
     const today = japanese();
-    expect(configFromExport({ type: 'postext-config', version: 1, configVersion: 20, config: today })).toBe(today);
+    expect(configFromExport({ type: 'postext-config', version: 1, configVersion: 22, config: today })).toBe(today);
     // One stamped 13 (postext 1.29) keeps the language of the host (#770).
-    expect(configFromExport({ type: 'postext-config', version: 1, configVersion: 13, config: today })).toEqual({ ...today, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false }, markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } });
+    expect(configFromExport({ type: 'postext-config', version: 1, configVersion: 13, config: today })).toEqual(pinLegacyHtmlViewerBreaking({ ...today, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false }, markStyles: [{ id: 'mark', name: 'Mark', borderRadius: { value: 0.2, unit: 'em' } }], scoreStyle: { enabled: false } }));
   });
 
   it('the layout key sees a rule turned on where it is off by default', () => {

@@ -10,9 +10,13 @@ export interface HtmlViewerConfig {
   maxCharsPerLine?: number;
   /** Horizontal gap between columns in multi-column mode, in pixels. */
   columnGap?: number;
-  /** Use Knuth-Plass optimal line breaking in the HTML viewer. When false,
-   *  overrides `bodyText.optimalLineBreaking` only for HTML rendering to
-   *  favour performance. Default false. */
+  /** Use Knuth-Plass optimal line breaking in the HTML viewer, the same
+   *  breaks the canvas and the PDF make. True follows
+   *  `bodyText.optimalLineBreaking`; false sets the screen edition's lines
+   *  one by one, each filled before the next, whatever the body text says.
+   *  Default true
+   *  (#1400); a configuration stored under rules 21 or older that does not
+   *  name it reads as false (`pinLegacyHtmlViewerBreaking`). */
   optimalLineBreaking?: boolean;
   /** Screen-only alternative to parts of the document config. The HTML
    *  viewer merges it over the document config before laying out (see

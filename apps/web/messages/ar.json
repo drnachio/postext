@@ -2310,7 +2310,7 @@
     "htmlViewerColumnGap": "الفاصل بين الأعمدة",
     "htmlViewerColumnGapTooltip": "المسافة الأفقية بين الأعمدة حين يكون عارض HTML في وضع الأعمدة المتعددة",
     "htmlViewerOptimalLineBreaking": "التقسيم الأمثل للأسطر",
-    "htmlViewerOptimalLineBreakingTooltip": "استخدم خوارزمية Knuth-Plass لتقسيم الأسطر تقسيمًا أمثل في عارض HTML. معطّلة افتراضيًا حفاظًا على الأداء؛ ويحلّ هذا الإعداد محلّ الإعداد العام لنص المتن في رسم HTML وحده",
+    "htmlViewerOptimalLineBreakingTooltip": "استخدم خوارزمية Knuth-Plass لتقسيم الأسطر تقسيمًا أمثل في عارض HTML، بالتقسيمات نفسها التي في Canvas وملف PDF. مفعّلة افتراضيًا؛ عطّلها ليُملأ كل سطر قبل الذي يليه. ونص المتن المصفوف سطرًا سطرًا يبقى كذلك على الشاشة",
     "canvasViewerSection": "Canvas (المسافة بين الصفحات)",
     "canvasViewerPageGap": "المسافة بين صفحتي الزوج",
     "canvasViewerPageGapTooltip": "المسافة بالبكسل بين الصفحة اليسرى والصفحة اليمنى من الصفحتين المتقابلتين في Canvas. عند 0 تتلامس الصفحتان فلا تظهر فجوة في صورة ممتدة على الصفحتين. تغيّر طريقة رسم Canvas فقط ولا تغيّر الصفحات.",

@@ -3726,7 +3726,7 @@
     "htmlViewerColumnGap": "Separación entre columnas",
     "htmlViewerColumnGapTooltip": "Espacio horizontal entre columnas cuando el visor HTML está en modo de varias columnas",
     "htmlViewerOptimalLineBreaking": "Corte de líneas óptimo",
-    "htmlViewerOptimalLineBreakingTooltip": "Usa el corte de líneas óptimo de Knuth-Plass en el visor HTML. Desactivado por defecto por rendimiento: aquí sustituye el ajuste general del texto base solo en la salida HTML",
+    "htmlViewerOptimalLineBreakingTooltip": "Usa el corte de líneas óptimo de Knuth-Plass en el visor HTML, los mismos cortes que el canvas y el PDF. Activado por defecto; desactívalo para llenar cada línea antes de la siguiente. Un texto base compuesto línea a línea sigue así en pantalla",
     "canvasViewerSection": "Canvas (separación de páginas)",
     "canvasViewerPageGap": "Espacio entre las páginas de cada par",
     "canvasViewerPageGapTooltip": "Espacio, en píxeles, entre la página izquierda y la derecha de una doble página en el Canvas. Con 0 las dos páginas se tocan y una imagen a doble página se ve sin corte. Solo cambia cómo se dibuja el Canvas, nunca las páginas.",

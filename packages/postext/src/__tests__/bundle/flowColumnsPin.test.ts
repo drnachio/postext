@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migrateBundleConfig, migrateConfig, pinLegacyFlowColumns, pinLegacySlashBreaks } from '../../bundle/configVersion.js';
+import { migrateBundleConfig, migrateConfig, pinLegacyFlowColumns, pinLegacySlashBreaks, pinLegacyHtmlViewerBreaking } from '../../bundle/configVersion.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig } from '../../types.js';
 
@@ -38,9 +38,9 @@ describe('pinLegacyFlowColumns (#634)', () => {
     expect(migrateConfig(current, 11, { content: GROUP }).layout).toBeUndefined();
     // One stamped 12 or 13 takes the pin of the language alone (#764, #770);
     // one stamped 14 is read as it is.
-    expect(migrateConfig(current, 12, { content: GROUP })).toEqual({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(current, 13, { content: GROUP })).toEqual({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } });
-    expect(migrateConfig(current, 14, { content: GROUP })).toEqual(pinLegacySlashBreaks(current));
+    expect(migrateConfig(current, 12, { content: GROUP })).toEqual(pinLegacyHtmlViewerBreaking({ bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(current, 13, { content: GROUP })).toEqual(pinLegacyHtmlViewerBreaking({ ...current, bodyText: { shapingLanguage: 'host', breakAfterSlashes: false } }));
+    expect(migrateConfig(current, 14, { content: GROUP })).toEqual(pinLegacyHtmlViewerBreaking(pinLegacySlashBreaks(current)));
   });
 
   it('pins a bundle on its merged layers', () => {

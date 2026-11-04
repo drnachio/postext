@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الخطوط والألوان والمخرجات',
   description: 'الوحدات والألوان ولوحة الألوان، والخطوط المخصّصة، وعارض HTML، وإنتاج PDF والإنتاج الطباعي، وعارض Folio، والتصحيح',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '39 دقيقة',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>فعّل تقسيم الأسطر بخوارزمية Knuth–Plass في عارض HTML. معطّل افتراضيًا لأن العارض يعيد الإخراج عند كل تغيير في الحجم أو في حجم الخط، وخوارزمية الملاءمة الأولى الجشعة سريعة بما يكفي لتبدو فورية. فعّله حين تريد التقسيمات المثلى نفسها التي يستعملها مُخرِج Canvas.</td>
+      <td><code>true</code></td>
+      <td>يقسّم أسطر عارض HTML بخوارزمية Knuth–Plass، بالتقسيمات المثلى نفسها التي يصنعها Canvas وملف PDF، فلا تتنازل نسخة الشاشة عن شيء من جودة النسخة المطبوعة. ومع <code>true</code> يتبع العارض <code>bodyText.optimalLineBreaking</code>، فالمستند الذي يصفّ نصه سطرًا سطرًا يبقى كذلك على الشاشة. اضبطه على <code>false</code> ليملأ كل سطر قبل الانتقال إلى الذي يليه، وهو أسرع في كتاب طويل جدًا. والإعداد المحفوظ تحت <code>configVersion</code> 21 أو أقدم الذي لا يذكره يُقرأ <code>false</code>، كما أُخرج حينها.</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => undefined when everything matches the defaults

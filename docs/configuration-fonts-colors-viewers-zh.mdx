@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '字体、颜色与输出',
   description: '单位、颜色和调色板，自定义字体，HTML阅读器，PDF与印刷输出，Folio书页查看器，以及调试用的叠加层',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '28分钟',
   order: 20,
   parent: 'configuration',
@@ -333,8 +333,8 @@ type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
     <tr>
       <td><code>optimalLineBreaking</code></td>
       <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>在HTML阅读器中启用Knuth–Plass断行。默认关闭，因为查看器每次改变窗口大小或字号都会重新排版，贪心的首次适配算法足够快，感觉不到延迟。如果想得到与Canvas后端相同的最优断行，就打开它。</td>
+      <td><code>true</code></td>
+      <td>用Knuth–Plass为HTML阅读器断行，与Canvas和PDF的最优断行相同：屏幕版在质量上不输印刷版。设为<code>true</code>时阅读器沿用<code>bodyText.optimalLineBreaking</code>，逐行排版的文档在屏幕上也保持逐行排版。设为<code>false</code>则逐行填满再换下一行，篇幅很长的书会更快。以<code>configVersion</code> 21或更早版本保存、没有设置它的配置按<code>false</code>读取，与当时的排版一致。</td>
     </tr>
     <tr>
       <td><code>overrides</code></td>
@@ -365,7 +365,7 @@ import {
 } from 'postext';
 
 const resolved = resolveHtmlViewerConfig(config.htmlViewer);
-// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: true }
 
 const minimal = stripHtmlViewerDefaults(config.htmlViewer);
 // => 所有值都与默认值相同时为undefined

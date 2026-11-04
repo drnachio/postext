@@ -2311,7 +2311,7 @@
     "htmlViewerColumnGap": "Spaltenabstand",
     "htmlViewerColumnGapTooltip": "Horizontaler Abstand zwischen den Spalten, wenn der HTML-Betrachter im mehrspaltigen Modus ist",
     "htmlViewerOptimalLineBreaking": "Optimaler Zeilenumbruch",
-    "htmlViewerOptimalLineBreakingTooltip": "Verwendet im HTML-Betrachter den optimalen Zeilenumbruch nach Knuth-Plass. Aus Leistungsgründen standardmäßig aus – die globale Einstellung des Grundtexts wird hier nur für die HTML-Ausgabe überschrieben",
+    "htmlViewerOptimalLineBreakingTooltip": "Verwendet im HTML-Betrachter den optimalen Zeilenumbruch nach Knuth-Plass, mit denselben Umbrüchen wie Canvas und PDF. Standardmäßig an; ausgeschaltet wird jede Zeile gefüllt, bevor die nächste beginnt. Ein Zeile für Zeile gesetzter Grundtext bleibt es auf dem Bildschirm",
     "canvasViewerSection": "Canvas (Seitenabstand)",
     "canvasViewerPageGap": "Abstand zwischen den Seiten eines Paars",
     "canvasViewerPageGapTooltip": "Abstand in Pixeln zwischen linker und rechter Seite einer Doppelseite im Canvas. Bei 0 berühren sich die beiden Seiten, sodass ein Bild über die Doppelseite keine Lücke zeigt. Ändert nur, wie das Canvas gezeichnet wird, nie die Seiten.",

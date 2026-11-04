@@ -3,7 +3,7 @@ import type { HtmlViewerConfig, HtmlViewerOverrides, PostextConfig, ResolvedHtml
 export const DEFAULT_HTML_VIEWER_CONFIG: ResolvedHtmlViewerConfig = {
   maxCharsPerLine: 70,
   columnGap: 50,
-  optimalLineBreaking: false,
+  optimalLineBreaking: true,
 };
 
 export function resolveHtmlViewerConfig(

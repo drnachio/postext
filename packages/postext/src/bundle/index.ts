@@ -26,6 +26,7 @@ export { pinLegacyScriptContext, pinLegacyShapingLanguage } from './configVersio
 export { pinLegacyTaskBox } from './configVersion.js';
 export { pinLegacyBoxParagraphStyles } from './configVersion.js';
 export { pinLegacyBalloonPlacement } from './configVersion.js';
+export { pinLegacyHtmlViewerBreaking } from './configVersion.js';
 export type { MigrateConfigOptions } from './configVersion.js';
 export {
   isBundleManifest,

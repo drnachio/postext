@@ -36,6 +36,13 @@ const opts = {
 };
 
 describe('buildHtmlConfigOverride', () => {
+  it('follows the body text with the viewer on, and sets lines one by one with it off', () => {
+    expect(buildHtmlConfigOverride(base, { ...opts, optimalLineBreaking: true }).bodyText!.optimalLineBreaking).toBe(true);
+    expect(buildHtmlConfigOverride(base, opts).bodyText!.optimalLineBreaking).toBe(false);
+    const lineByLine = { ...base, bodyText: { ...base.bodyText, optimalLineBreaking: false } };
+    expect(buildHtmlConfigOverride(lineByLine, { ...opts, optimalLineBreaking: true }).bodyText!.optimalLineBreaking).toBe(false);
+  });
+
   it('keeps chapter and part page breaks but drops their parity', () => {
     const out = buildHtmlConfigOverride(base, opts);
     const levels = out.headings!.levels!;
