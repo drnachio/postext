@@ -24,7 +24,9 @@ export interface WordFontRef {
 
 export interface FontWarning {
   family: string;
-  reason: 'restricted' | 'cff' | 'variable' | 'missing' | 'merge-failed';
+  /** `preview-print` is a note, not a refusal: the face is embedded, and
+   *  Word shows and prints it but will not let its text be edited. */
+  reason: 'restricted' | 'cff' | 'variable' | 'missing' | 'merge-failed' | 'preview-print';
   detail?: string;
 }
 
@@ -34,4 +36,24 @@ export interface WordFontPlan {
   /** `${family}|${weight}|${style}` → Word family + slot flags. */
   map: Map<string, WordFontRef>;
   warnings: FontWarning[];
+  /** Word family → the CSS family it stands for, for `w:altName` (a
+   *  reader without the embedded copy falls back to an installed face). */
+  altNames: Map<string, string>;
+}
+
+export interface PlanWordFontsOptions {
+  /** Code points the book sets per face (`${family}|${weight}|${style}`)
+   *  or per family: unicode-range slices holding none of them (and not
+   *  Basic Latin) are left out of the merged face. */
+  usedText?: Map<string, Set<number>>;
+  /** VDT font strings the export uses: only the faces they resolve to are
+   *  embedded (all faces when absent). */
+  fontStrings?: string[];
+  /** WOFF2 decompressor (postext-pdf's `decompressWoff2`); WOFF2 files are
+   *  skipped with a `missing` warning without one. */
+  decompressWoff2?: (bytes: Uint8Array) => Promise<Uint8Array>;
+  /** Appended to every embedded Word family so an installed copy of
+   *  another version does not stand in for the book's face (default
+   *  `' PTX'`; `''` keeps the CSS names). */
+  familySuffix?: string;
 }
