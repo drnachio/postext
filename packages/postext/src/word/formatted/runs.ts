@@ -41,6 +41,9 @@ export interface ResolvedFont {
   italic: boolean;
   /** Half-points, rounded. */
   sz: number;
+  /** Character scale (`w:w`, percent) that brings the rounded size back to
+   *  the engine's widths; undefined at 100. */
+  scale?: number;
 }
 
 /** Something to draw over a run (inline picture or swatch), in the
@@ -77,16 +80,20 @@ export function resolveFont(ctx: WriterContext, fontString: string): ResolvedFon
   const px = fontSizePx(fontString);
   const exact = halfPoints(px, ctx.dpi);
   const sz = Math.min(MAX_SZ, Math.max(MIN_SZ, Math.round(exact)));
-  if (exact > 0 && Math.abs(sz - exact) / exact > 0.01) {
-    const why = sz === MAX_SZ || sz === MIN_SZ ? 'Word sizes run from 1 pt to 1638 pt' : 'Word sizes go by half points';
-    ctx.warn('font-size-rounded', `${fontString}: ${(exact / 2).toFixed(2)} pt is set at ${sz / 2} pt (${why})`);
+  // Word sizes go by half points: a size between them is set at the
+  // nearest and scaled across (w:w) to the engine's widths, so every line
+  // still fills the measure it was broken for (8.8 pt: 9 pt at 98%).
+  const pct = exact > 0 ? Math.min(600, Math.max(1, Math.round((exact / sz) * 100))) : 100;
+  const scale = pct !== 100 ? pct : undefined;
+  if (exact > 0 && (sz === MAX_SZ || sz === MIN_SZ) && Math.abs(sz - exact) / exact > 0.01) {
+    ctx.warn('font-size-rounded', `${fontString}: ${(exact / 2).toFixed(2)} pt is set at ${sz / 2} pt (Word sizes run from 1 pt to 1638 pt)`);
   }
   if (ctx.plan) {
     const ref = wordFontFor(ctx.plan, fontString);
-    f = { family: ref.family, bold: ref.bold, italic: ref.italic, sz };
+    f = { family: ref.family, bold: ref.bold, italic: ref.italic, sz, ...(scale ? { scale } : {}) };
   } else {
     const req = parseFontString(fontString);
-    f = { family: req?.family ?? 'Times New Roman', bold: (req?.weight ?? 400) >= 600, italic: req?.style === 'italic', sz };
+    f = { family: req?.family ?? 'Times New Roman', bold: (req?.weight ?? 400) >= 600, italic: req?.style === 'italic', sz, ...(scale ? { scale } : {}) };
   }
   cache.set(fontString, f);
   return f;
@@ -126,6 +133,7 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: { spacing?: nu
   if (run.smallCaps) p.push('<w:smallCaps/>');
   p.push(`<w:color w:val="${textColorHex(run.color)}"/>`);
   if (opts.spacing) p.push(`<w:spacing w:val="${opts.spacing}"/>`);
+  if (f.scale) p.push(`<w:w w:val="${f.scale}"/>`);
   p.push('<w:kern w:val="1"/>');
   // A shifted run carries its own (already reduced) size: raise it by the
   // shift; a bare script asks Word for its super/subscript.
