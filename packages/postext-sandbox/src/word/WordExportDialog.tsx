@@ -94,6 +94,8 @@ function WordExportPopup({ onClose, bookTitle }: WordExportDialogProps) {
   const closedRef = useRef(false);
   useEffect(() => {
     const clientId = clientRef.current;
+    // Mounted again (React's development double mount): open once more.
+    closedRef.current = false;
     return () => {
       closedRef.current = true;
       service.cancel(clientId);
