@@ -41,7 +41,8 @@ export interface MapFragment {
   target: FragmentTarget;
   /** Plain text as exported (engine line breaks as '\n', added hyphens included). */
   text: string;
-  /** Source offset per character of `text`; -1 = synthetic (line break,
+  /** Source offset per UTF-16 code unit of `text` (`map.length ===
+   *  text.length`); -1 = synthetic (line break,
    *  added/repeated hyphen, generated number). Resource targets index the
    *  resource field's text. */
   map: number[];

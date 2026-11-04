@@ -48,7 +48,10 @@ export interface DocxPackageInput {
   body: string;
   /** Inner XML of `w:styles` after `w:docDefaults` (or a full replacement via `stylesXml`). */
   styles: string;
+  /** `w:docDefaults` element (or its inner XML). */
   docDefaults?: string;
+  /** A whole `word/styles.xml` replacing `styles` + `docDefaults`. */
+  stylesXml?: string;
   /** Inner XML of `w:numbering` (absent = no numbering part). */
   numbering?: string;
   /** `w:footnote` elements with ids ≥ 1 (separators are added). */
