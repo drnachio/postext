@@ -5,6 +5,8 @@ Tools for #1399. They measure how closely the formatted `.docx` (the PDF's pages
 | File | What it does |
 | --- | --- |
 | `compare.mjs` | Compares one `.docx` with its reference PDF: pixels per page and line breaks per page |
+| `lines.mjs` | Reads the lines of each page from `pdftotext` and regroups them so both PDFs read the same visible line the same way |
+| `raster.mjs` | Samples the page images under a line's box, to tell a line that is visible from one hidden under a shape |
 | `export-fixtures.mjs` | Lays out the reference books once and writes each one as a PDF plus a formatted `.docx` (and a semantic `.docx` if asked) |
 | `guide-bundle.ts` | Packs the built-in guide into a `.postext` book the CLI can read (Bun only, because it imports the Sandbox's sources) |
 | `compare.test.mjs` | Tests for the comparator: `node --test scripts/docx-compare/compare.test.mjs` |
@@ -26,18 +28,30 @@ node scripts/docx-compare/compare.mjs book.docx book.pdf --docx-pdf book-from-wo
 The steps:
 
 1. LibreOffice converts the `.docx` to PDF in headless mode. It runs with its own profile in `<out>/lo-profile`, so a LibreOffice window that is already open does not take over the job.
-2. `pdftoppm` rasterises both PDFs at `--dpi` (72 by default).
-3. ImageMagick measures each page with `compare -metric AE -fuzz 10%`. A page counts as differing when its share of changed pixels is above `--threshold` (0.02 by default). If the two PDFs have different page sizes, the docx page is padded with white to the reference size and the size difference goes into the report.
-4. `pdftotext -bbox-layout` reads the lines of each page. Before comparing, every line is normalised:
+2. `pdftoppm` rasterises both PDFs at `--dpi` (72 by default; 144 for a finer pixel and visibility check).
+3. ImageMagick measures each page with `compare -metric AE -fuzz 10%`. A page counts as differing when its share of changed pixels is above `--threshold` (0.02 by default). If the two PDFs have different page sizes, the docx page is padded with white or cropped to the reference size. A docx page a point or two larger (LibreOffice rounds some page sizes up) is cropped without comment; a larger difference goes into the report.
+4. `pdftotext -bbox-layout` reads the lines of each page (`lines.mjs`). Every word is normalised:
    - NFKC, which also undoes ligatures and Arabic presentation forms
    - soft hyphens, tatweels and zero-width characters removed
    - whitespace collapsed
 
-   Lines are then matched by their text, ignoring spaces. A reference line with no match on the same docx page means Word or LibreOffice broke the line somewhere else, or the text changed. For matched lines the report also gives how far they moved (`maxDx`, `maxDy`, `meanDy` in points).
+   The two PDFs do not split text into lines the same way, so the lines are regrouped before matching:
+   - **Leaders.** A run of three or more periods (in one word or as separate dots) is cut out, and the text on either side becomes a line of its own. The engine's PDF draws leaders as graphics that `pdftotext` does not read, so a contents entry and its page number are two lines in both PDFs.
+   - **Split runs.** Pieces on one baseline whose boxes touch or overlap are joined: a word split at an italic/roman change, or the letters of an Arabic display face (Aref Ruqaa) that LibreOffice writes one by one. Long lines set over each other stay apart.
+   - **Markers.** A one- or two-character line shorter than its neighbour (a superscript note marker) is joined to the line it sits on.
+   - **Vertical pages.** When most glyphs on a page stand alone (LibreOffice writes each upright glyph of vertical text as its own word), they are joined into columns: one x band, each glyph within an em below the last, read top to bottom and right to left. Columns of glyphs much narrower than the page's usual glyph are ruby, which the engine's PDF does not give as text, and are dropped.
+   - **Direction.** Each line records whether it is set across (`h`) or down (`v`), from how it was joined or from its box.
+
+   Lines are matched by a key without spaces and without combining marks (`\p{Mn}`), for every script: extractors give Arabic harakat and shadda, and other marks, in whatever order the font's glyphs come. A line with no exact match is tried against the docx lines left on the same spot with the same characters in another order (`reordered`), and then against two or more lines on one baseline whose characters make the line (`joined`: the halves of a verse line that one extractor joins and the other does not).
+
+5. For every matched line, `raster.mjs` samples both page images inside the line's box. If the reference shows ink there and the docx page is a flat fill, the text is in the file but hidden under a shape, and the line counts as **hidden**, not found.
+6. Moves. LibreOffice sets the baseline of an exact-height line at 80 % of the line height, where Word follows the font's ascent, so each text box moves by a few points as a whole. The page's median vertical move is taken as that shift (`shiftY`), and a line counts as **moved** only when it strays from it by more than `--dy-tolerance` (0.25 em of the line's height by default, never less than 1.5 pt; or a fixed `2pt`), or moves more than its own height. Vertical moves are measured between box centres.
+
+A page fails when its pixels are over the threshold or when it has any missing, hidden, extra, moved or turned line (a line set across in one PDF and down in the other).
 
 Output in `--out` (default `<tmp>/postext-docx-compare/<name>`):
 
-- `report.json`: the summary, plus for each page the pixel ratio, the diff image, and the lines found in only one of the two PDFs (`missing` are reference lines, `extra` are docx lines)
+- `report.json`: the summary (totals of `missingLines`, `hiddenLines`, `extraLines`, `movedLines`, `orientationMismatches`, `reorderedLines`, `joinedLines`, and the pages with hidden lines), plus for each page the pixel ratio, the diff image, the lines found in only one of the two PDFs (`missing` are reference lines, `extra` are docx lines), the `hidden` lines, the `moved` lines with their move, the `orientation` mismatches, and `shiftY`, `maxDx`, `maxDy`, `meanDy` in points
 - `report.txt`: the same text the script prints, with up to `--max-lines` differing lines from each side per page
 - `reference/`, `docx/`, `diff/`: the page images
 - `sheets/` (with `--sheets`): a contact sheet for each page with differences (or every page with `--sheets all`), showing reference, docx and diff side by side
@@ -45,6 +59,8 @@ Output in `--out` (default `<tmp>/postext-docx-compare/<name>`):
 Options:
 
 - `--pages 1-5,9` limits the comparison to those pages
+- `--dy-tolerance 0.25em` or `--dy-tolerance 2pt` sets how far a line may stray from the page's shift
+- `--dpi 144` rasterises finer (the visibility check scales with it)
 - `--fuzz` sets the colour tolerance
 - `--quiet` prints nothing
 
@@ -105,7 +121,7 @@ LibreOffice does not render text boxes, `eaVert` text, ruby or kashida the way W
 
 Write the Word version and the result into the issue that tracks the release.
 
-Text extraction is weak on vertical pages: `pdftotext` returns few lines for vertical text, so on `vertical-cjk` the line comparison says little, and the pixel comparison and the contact sheets carry the check.
+On vertical pages the line comparison rests on the column regrouping above. It finds lines set across that should run down, and lines that overflow a column, but ruby is not compared, and the pixel comparison and the contact sheets still carry the check of the furigana and the 縦中横 digits.
 
 ## Round-trip corpus test
 
