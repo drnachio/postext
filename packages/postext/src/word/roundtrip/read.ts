@@ -271,7 +271,9 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
   const body = child(doc, 'body');
   if (!body) throw new DocxReadError('no document part');
   const tokens: Token[] = [];
-  let { nextPara: next, nextBox: box, noProof } = walkPart(body, linksOf(files, 'word/document.xml'), tokens);
+  const walked = walkPart(body, linksOf(files, 'word/document.xml'), tokens);
+  const { noProof } = walked;
+  let { nextPara: next, nextBox: box } = walked;
   // Notes after the body, in their part order (the semantic writer's).
   for (const [part, el] of [['word/footnotes.xml', 'footnote'], ['word/endnotes.xml', 'endnote']] as const) {
     const root = xmlOf(files, part);
