@@ -20,6 +20,9 @@ export interface WordFontRef {
   family: string;
   bold: boolean;
   italic: boolean;
+  /** Figure features of a feature family (`Lora@onum`, #1237), for
+   *  `w14:numForm` / `w14:numSpacing`. */
+  features?: readonly ('onum' | 'lnum' | 'pnum' | 'tnum')[];
 }
 
 export interface FontWarning {

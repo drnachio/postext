@@ -12,7 +12,7 @@ import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js'
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
 import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, linkTarget, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, wordText, writtenFace, type EmittedRun, type InlineDrawing } from './runs.js';
 import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
@@ -22,6 +22,8 @@ type TextItem = Extract<DisplayItem, { kind: 'text' }>;
 
 /** Measure edges equal within this many px. */
 const EPS = 0.05;
+/** A gap between two runs kept as room, px. */
+const GAP_MIN = 0.5;
 /** Room on a box's free side so a ragged line Word sets a hair wider
  *  than the engine does not wrap (pt). */
 export const SLACK_PT = 2;
@@ -63,14 +65,46 @@ export interface Chunk {
   groups: Group[];
 }
 
-/** Descent of a line: its largest face's (Word sizes the line by it). */
-function lineDescent(ctx: WriterContext, line: DisplayLine): number {
+/** Descent of a line: its largest face's (Word sizes the line by it),
+ *  each run in the face it is written in (a space takes its word's). */
+export function lineDescent(ctx: WriterContext, line: DisplayLine): number {
   let d = 0;
-  for (const r of line.runs) if (r.text.length > 0 && !r.inline) d = Math.max(d, ctx.metrics.descentPx(r.fontString));
+  for (const r of line.runs) if (r.text.length > 0 && !r.inline) d = Math.max(d, ctx.metrics.descentPx(writtenFace(r, line)));
   return d || line.lineHeight * 0.16;
 }
 
-const edges = (l: DisplayLine): { L: number; R: number } => ({ L: l.x, R: l.x + l.width });
+/** Room before the next run of the same direction, per run (px; runs
+ *  set apart, a number flush right). Vertical runs go by x too, along
+ *  the line in the item's unturned frame. */
+export function runGaps(line: DisplayLine): number[] {
+  const gaps = line.runs.map(() => 0);
+  const rtl = line.rtl === true;
+  let prev = -1;
+  line.runs.forEach((r, i) => {
+    if (r.text.length === 0) return;
+    const p = line.runs[prev];
+    if (p && (p.rtl === true) === rtl && (r.rtl === true) === rtl) {
+      const gap = rtl ? p.x - (r.x + r.width) : r.x - (p.x + p.width);
+      if (gap > GAP_MIN) gaps[prev] = gap;
+    }
+    prev = i;
+  });
+  return gaps;
+}
+
+/** A line's measure, its end side taken out to its runs where they
+ *  hang past it (CJK punctuation hung at the line end): Word, without
+ *  kinsoku, would move what hangs to the next line. */
+function edges(l: DisplayLine): { L: number; R: number } {
+  let L = l.x;
+  let R = l.x + l.width;
+  for (const r of l.runs) {
+    if (r.text.length === 0) continue;
+    if (l.rtl) L = Math.min(L, r.x);
+    else R = Math.max(R, r.x + r.width);
+  }
+  return { L: L < l.x - EPS ? L : l.x, R: R > l.x + l.width + EPS ? R : l.x + l.width };
+}
 
 /** Pitches and descents of an item's lines: line i's box is as tall as
  *  makes its baseline land `baselines[i] − baselines[i−1]` below the
@@ -270,10 +304,12 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (pendingText) lx.push(`<w:r>${pendingProps}<w:t xml:space="preserve">${escapeXml(pendingText)}</w:t></w:r>`);
         pendingText = '';
       };
-      for (const run of line.runs) {
-        const emitted = emitRun(ctx, run, line);
+      for (const { run, gap } of joinWordRuns(line, runGaps(line))) {
+        const emitted = emitRun(ctx, run, line, gap);
         if (!emitted.text) continue;
-        if (!firstProps) firstProps = emitted.rPr;
+        // The fallback line's style: the run's face and tracking, not the
+        // spacing or scale fitted to that run alone.
+        if (!firstProps) firstProps = runProps(ctx, run, { spacing: run.tracking ? twips(run.tracking, ctx.dpi) : 0, rtl: run.rtl === true });
         const target = linkTarget(run.href);
         if (target !== link) {
           flush();
@@ -281,14 +317,18 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
           if (target) lx.push(`<w:hyperlink r:id="${ctx.pkg.addLink(target)}">`);
           link = target;
         }
-        if (emitted.rPr !== pendingProps || emitted.drawing || emitted.xml) flush();
+        if (emitted.drawing || emitted.xml) flush();
         if (emitted.xml) {
           // A run that writes its own XML (ruby, tate-chu-yoko, warichu).
           lx.push(emitted.xml);
           pendingProps = '';
         } else {
-          pendingProps = emitted.rPr;
-          pendingText += emitted.text;
+          // Pieces of equal properties (and spacing) join one `w:r`.
+          for (const piece of emitted.pieces ?? [emitted]) {
+            if (piece.rPr !== pendingProps) flush();
+            pendingProps = piece.rPr;
+            pendingText += piece.text;
+          }
         }
         if (emitted.annotations) lineMarks.annotations.push(...emitted.annotations);
         if (emitted.rules) lineMarks.rules.push(...emitted.rules);

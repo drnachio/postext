@@ -83,10 +83,11 @@ describe('formatted Word export review fixes (#1392)', () => {
 
   it('scales a size between half points back to the engine\'s widths', () => {
     const ctx = context();
-    // 8.8 pt at the context's dpi: Word sets 9 pt at 98% wide, no warning.
+    // 8.8 pt at the context's dpi: Word sets 9 pt at 97% wide (floored,
+    // never wider than the engine; spacing makes up the rest), no warning.
     const f = resolveFont(ctx, `${(8.8 * ctx.dpi) / 72}px "Lora"`);
     expect(f.sz).toBe(18);
-    expect(f.scale).toBe(98);
+    expect(f.scale).toBe(97);
     expect(resolveFont(ctx, `${(9 * ctx.dpi) / 72}px "Lora"`).scale).toBeUndefined();
     expect(ctx.warnings).not.toContain('font-size-rounded');
   });
