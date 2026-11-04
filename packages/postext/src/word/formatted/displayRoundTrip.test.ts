@@ -2,14 +2,17 @@
 // chips cut into runs in their own faces, inline code, link-note QR codes,
 // video frames and overlays (turned or not), chips in table cells and a
 // strip's caption; an
-// unedited export reads back with no edit and a valid package.
+// unedited export reads back with no edit and a valid package, and an
+// edit to a strip's generated caption is reported as rejected.
 
 import { describe, it, expect } from 'vitest';
 import type { PostextConfig, Resource } from '../../index.js';
 import { validateDocxPackage } from '../ooxml/validate.js';
 import { xmlProblems } from '../ooxml/wellFormed.js';
 import { applyDocxEdits } from '../roundtrip/index.js';
+import { editDocx } from '../roundtrip/fixture.test-helper.js';
 import { formattedDocx } from './index.js';
+import { hasFragment, isImportable } from './fragments.js';
 import { build, config, documentXml, LOREM, mm, unzip } from './formatted.test-helper.js';
 
 const pt = (value: number) => ({ value, unit: 'pt' as const });
@@ -72,5 +75,27 @@ describe('display-list content round-trips through the formatted export (#1406)'
     const md = 'Text.\n\n:::strip{width=60% caption="A *quiet* morning." type=figure id=daily}\n::panel\n::panel\n:::\n\nAfter.\n';
     const xml = await roundTrip(md, config());
     expect(xml).toMatch(/Figure(?:(?!<\/w:p>).)*quiet(?:(?!<\/w:p>).)*morning/);
+  });
+
+  it('reports an edit to a strip’s caption as rejected, not dropped', async () => {
+    const md = 'Text.\n\n:::strip{width=60% caption="A *quiet* morning." type=figure id=daily}\n::panel\n::panel\n:::\n\nAfter.\n';
+    const doc = build(md, config());
+    const bytes = await formattedDocx({ docs: [doc], chapters: [{ id: 'c', markdown: md }], date: '2026-11-04T00:00:00Z', exportId: 'x' });
+    const edited = editDocx(bytes, (x) => x.replace('quiet', 'loud').replace('After.', 'Later.'));
+    const r = applyDocxEdits(edited, { chapters: [{ id: 'c', markdown: md }] });
+    expect(r.chapters[0]!.markdown).toBe(md.replace('After.', 'Later.'));
+    expect(r.edits).toEqual(expect.arrayContaining([
+      expect.objectContaining({ status: 'rejected', reason: 'generated', before: expect.stringContaining('quiet'), after: expect.stringContaining('loud') }),
+      expect.objectContaining({ status: 'applied', before: 'After', after: 'Later' }),
+    ]));
+  });
+
+  it('wraps generated text in a fragment only when its edits are reported', () => {
+    const item = (source: object) => ({ kind: 'text', role: 'caption', bbox: { x: 0, y: 0, width: 1, height: 1 }, lines: [], source }) as Parameters<typeof hasFragment>[0];
+    const repeated = item({ blockKey: 'r', map: [-1, -1], generated: true, reportEdits: true, resource: { resourceId: 't', field: 'caption' } });
+    expect(isImportable(repeated)).toBe(false);
+    expect(hasFragment(repeated)).toBe(true);
+    expect(hasFragment(item({ blockKey: 'h', map: [-1], generated: true }))).toBe(false);
+    expect(hasFragment(item({ blockKey: 'b', map: [0] }))).toBe(true);
   });
 });

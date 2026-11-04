@@ -12,7 +12,7 @@ import { annotationRect, smallTextBox, textRun } from './eastAsian.js';
 import { fontSizePx } from './metrics.js';
 import { runProps, wordText } from './runs.js';
 import { rectRuns, ruleRun } from './shapes.js';
-import { isImportable, recordFragment, reserveFragment } from './fragments.js';
+import { hasFragment, recordFragment, reserveFragment } from './fragments.js';
 import { chunkBox, emitGroups, planChunks, planLines, type TextOut } from './paragraphs.js';
 import { inlineSvgRun } from './pictures.js';
 import { chipBoxRuns, swatchShapeRuns } from './inlineShapes.js';
@@ -94,14 +94,14 @@ export async function textItemRuns(ctx: WriterContext, item: TextItem): Promise<
   const plans = planLines(ctx, item.lines);
   const chunks = planChunks(item.lines, plans);
   const offsets = lineOffsets(item);
-  const importable = isImportable(item);
+  const fragmented = hasFragment(item);
   const centre = { x: item.bbox.x + item.bbox.width / 2, y: item.bbox.y + item.bbox.height / 2 };
   const runs: string[] = [];
   for (const chunk of chunks) {
     const box = chunkBox(ctx, item.lines, chunk, plans);
-    const slot = importable ? reserveFragment(ctx) : undefined;
+    const slot = fragmented ? reserveFragment(ctx) : undefined;
     const out = emitGroups(ctx, item, chunk.groups, box.x, box.x + box.width, { offsets, ...(slot ? { bookmarkStart: slot.start, bookmarkEnd: slot.end } : {}) });
-    if (slot && importable) recordFragment(ctx, slot, item, out);
+    if (slot && fragmented) recordFragment(ctx, slot, item, out);
     const placed = sheetBox(box, centre, item.rotate, vertical);
     const lines = item.lines.slice(chunk.from, chunk.to + 1);
     // Chip boxes under their words; swatches in their real shape over the

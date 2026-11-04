@@ -27,6 +27,10 @@ export interface DisplaySource {
   /** Text the engine generated (running heads, TOC rows, caption numbers,
    *  index entries): shown, never imported. */
   generated?: boolean;
+  /** Generated text an editor takes for body text (a strip caption, a
+   *  repeated resource caption): written with a `generated` map fragment
+   *  so a Word edit to it comes back rejected instead of vanishing. */
+  reportEdits?: boolean;
   /** For text that lives in a resource (captions, notes, table cells). */
   resource?: { resourceId: string; field: 'caption' | 'note' | 'alt' | 'cell' | 'label'; row?: number; col?: number };
 }

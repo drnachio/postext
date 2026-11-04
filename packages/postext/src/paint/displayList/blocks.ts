@@ -230,7 +230,8 @@ export function blockItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
  *  the PDF's `renderStripCaption` paints it: the bar, highlight bands,
  *  then its lines set as a paragraph's in the block's measure. Its text
  *  is a fence attribute (`caption=…`) with a generated label: shown, not
- *  imported, as a repeated resource caption is. */
+ *  imported, as a repeated resource caption is; an edit to it is
+ *  reported as rejected. */
 export function stripCaptionItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
   const caption = block.stripCaption;
   if (!caption || block.hidden) return [];
@@ -253,7 +254,7 @@ export function stripCaptionItems(block: VDTBlock, ctx: BlockContext): DisplayIt
     y1 = Math.max(y1, line.bbox.y + line.bbox.height);
   }
   if (lines.length === 0) return items;
-  const source: DisplaySource = { blockKey: `${blockKeyOf(block)}:caption`, map: lines.flatMap((l) => l.map), generated: true };
+  const source: DisplaySource = { blockKey: `${blockKeyOf(block)}:caption`, map: lines.flatMap((l) => l.map), generated: true, reportEdits: true };
   const chapter = chapterOf(block);
   if (chapter !== undefined) source.chapter = chapter;
   const item: TextItem = { kind: 'text', role: 'caption', bbox: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }, lines, source, blockType: block.type };

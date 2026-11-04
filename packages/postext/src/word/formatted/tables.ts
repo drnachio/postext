@@ -6,7 +6,7 @@
 
 import type { DisplayItem } from '../../paint/displayList/types.js';
 import { textBoxRun, turnedBox } from './drawing.js';
-import { isImportable, recordFragment, reserveFragment } from './fragments.js';
+import { hasFragment, recordFragment, reserveFragment } from './fragments.js';
 import { baselineOffset } from './metrics.js';
 import { emitGroups, planChunks, planLines, type TextOut } from './paragraphs.js';
 import { imageRun } from './pictures.js';
@@ -149,13 +149,13 @@ function cellContent(ctx: WriterContext, cell: Cell, pending: Pending[]): string
   if (!chunk) return TINY_P;
   const first = item.lines[0]!;
   const top = first.baseline - baselineOffset(twipsToPx(plans[0]!.h, ctx.dpi), plans[0]!.d);
-  const slot = isImportable(item) ? reserveFragment(ctx) : undefined;
+  const slot = hasFragment(item) ? reserveFragment(ctx) : undefined;
   const out = emitGroups(ctx, item, chunk.groups, cell.rect.x, cell.rect.x + cell.rect.width, {
     offsets: lineOffsets(item),
     spaceBefore: twips(top - cell.rect.y, ctx.dpi),
     ...(slot ? { bookmarkStart: slot.start, bookmarkEnd: slot.end } : {}),
   });
-  if (slot && isImportable(item)) recordFragment(ctx, slot, item, out);
+  if (slot && hasFragment(item)) recordFragment(ctx, slot, item, out);
   if (out.drawings.length) pending.push({ out, vertical: item.lines.some((l) => l.vertical) });
   return out.xml;
 }
