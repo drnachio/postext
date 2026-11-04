@@ -97,7 +97,9 @@ describe('formatted Word graphics and helpers (#1392)', () => {
     const run: DisplayRun = { text: 'x', x: 30, width: 20, fontString: '12px "Lora"', color: '#000', textStart: 0, inline: { kind: 'math', svg: '<svg/>', widthPx: 20, heightPx: 10, ascentPx: 8 } };
     const out = emitRun(ctx, run, l);
     expect(out.text).toBe(HOLDER);
-    expect(out.rPr).toContain('<w:spacing w:val="400"/>');
+    // 20 px = 400 twips, less the holder's own advance (a quarter em of an
+    // unknown face: 3 pt).
+    expect(out.rPr).toContain('<w:spacing w:val="340"/>');
     expect(out.drawing!.rect).toEqual({ x: 30, y: 12, width: 20, height: 10 });
     const space = emitRun(ctx, { text: ' ', x: 0, width: 4, fontString: '12px "Lora"', color: '#000', textStart: 0, space: true }, l);
     expect(space.rPr).toContain('<w:spacing w:val="-2"/>');

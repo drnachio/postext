@@ -10,8 +10,14 @@
 // text. A text box is therefore placed with its top at
 // `firstBaseline − baselineOffset`. This is the one place to recalibrate
 // against a renderer (Word, LibreOffice) if a font lands off its line.
+//
+// The same faces give the natural advances of a run's characters (cmap →
+// hmtx, no kerning or shaping), so runs.ts can space every run out to the
+// width the engine set it at (#1406).
 
 import { readSfnt, type Sfnt } from '../fonts/sfnt.js';
+import { readCmap } from '../fonts/cmap.js';
+import { readHmtx } from '../fonts/glyf.js';
 import { wordFontFor } from '../fonts/plan.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { findPxSize } from '../../measure/fontString.js';
@@ -57,6 +63,39 @@ export function readFaceMetrics(bytes: Uint8Array): FaceMetrics | undefined {
   return font ? faceMetricsOf(font) : undefined;
 }
 
+/** Horizontal advances of a face, by code point. */
+export interface FaceAdvances {
+  unitsPerEm: number;
+  cmap: Map<number, number>;
+  advances: number[];
+}
+
+/** cmap and hmtx of an sfnt, when it has both. */
+export function faceAdvancesOf(font: Sfnt): FaceAdvances | undefined {
+  const head = font.tables.get('head');
+  const hhea = font.tables.get('hhea');
+  const maxp = font.tables.get('maxp');
+  const hmtx = font.tables.get('hmtx');
+  if (!head || head.length < 20 || !hhea || hhea.length < 36 || !maxp || maxp.length < 6 || !hmtx) return undefined;
+  const unitsPerEm = u16(head, 18);
+  const cmap = readCmap(font.tables.get('cmap'));
+  if (!unitsPerEm || cmap.size === 0) return undefined;
+  const advances = readHmtx(hmtx, u16(hhea, 34), u16(maxp, 4)).map((m) => m[0]);
+  return { unitsPerEm, cmap, advances };
+}
+
+/** Natural advance of `text` in ems; undefined when the face lacks a
+ *  character (the renderer would fall back to another face). */
+export function naturalEms(face: FaceAdvances, text: string): number | undefined {
+  let units = 0;
+  for (const ch of text) {
+    const g = face.cmap.get(ch.codePointAt(0)!);
+    if (g === undefined || g === 0) return undefined;
+    units += face.advances[g] ?? 0;
+  }
+  return units / face.unitsPerEm;
+}
+
 /** The px size of a CSS font shorthand (0 when it has none). */
 export function fontSizePx(fontString: string): number {
   const m = findPxSize(fontString);
@@ -68,24 +107,40 @@ export function baselineOffset(pitchPx: number, descentPx: number): number {
   return pitchPx - descentPx;
 }
 
-/** Font descents per font string, from the embedded faces of the plan. */
+interface ParsedFace {
+  metrics?: FaceMetrics;
+  advances?: FaceAdvances;
+}
+
+/** Font descents and advances per font string, from the embedded faces of
+ *  the plan (a feature family `Lora@onum` reads its base family's face). */
 export class MetricsCache {
   private readonly byFont = new Map<string, number>();
-  private readonly byFace = new Map<string, FaceMetrics | undefined>();
+  private readonly byFace = new Map<string, ParsedFace | undefined>();
 
   constructor(private readonly plan: WordFontPlan | undefined) {}
 
-  /** The face metrics a font string resolves to in the plan, if embedded. */
-  faceMetrics(fontString: string): FaceMetrics | undefined {
+  private face(fontString: string): ParsedFace | undefined {
     if (!this.plan) return undefined;
     const ref = wordFontFor(this.plan, fontString);
     const slot = ref.bold ? (ref.italic ? 'boldItalic' : 'bold') : ref.italic ? 'italic' : 'regular';
     const key = `${ref.family}|${slot}`;
     if (!this.byFace.has(key)) {
       const face = this.plan.faces.find((f) => f.family === ref.family && f.slot === slot) ?? this.plan.faces.find((f) => f.family === ref.family);
-      this.byFace.set(key, face ? readFaceMetrics(face.bytes) : undefined);
+      const font = face ? readSfnt(face.bytes) : undefined;
+      this.byFace.set(key, font ? { metrics: faceMetricsOf(font), advances: faceAdvancesOf(font) } : undefined);
     }
     return this.byFace.get(key);
+  }
+
+  /** The face metrics a font string resolves to in the plan, if embedded. */
+  faceMetrics(fontString: string): FaceMetrics | undefined {
+    return this.face(fontString)?.metrics;
+  }
+
+  /** The advances of the face a font string resolves to, if embedded. */
+  faceAdvances(fontString: string): FaceAdvances | undefined {
+    return this.face(fontString)?.advances;
   }
 
   /** Descent in px of a font string at its size. */
