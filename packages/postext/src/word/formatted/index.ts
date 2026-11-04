@@ -84,6 +84,7 @@ export async function formattedDocx(options: FormattedDocxOptions): Promise<Uint
     createdAt,
     chapters: chapters.map((c) => ({ id: c.id, ...(c.title !== undefined ? { title: c.title } : {}), hash: hashText(c.markdown) })),
     fragments: ctx.fragments,
+    holders: true,
     snapshot: {
       chapters: chapters.map((c) => ({ id: c.id, markdown: c.markdown })),
       ...(resources.length ? { resources: Object.fromEntries(resources.map((r) => [r.id, r as unknown])) } : {}),

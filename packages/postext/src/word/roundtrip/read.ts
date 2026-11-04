@@ -20,6 +20,8 @@ export interface ReadChar {
   /** Hash of the equation's canonical OMML. */
   mathHash?: string;
   tracked?: boolean;
+  /** An atom's holder, by the writer's w:noProof mark. */
+  holder?: true;
 }
 
 export interface ReadFragment {
@@ -60,6 +62,10 @@ export interface ReadDocx {
   /** The paragraph styles of the file, to read an added paragraph's role. */
   styles: ParaStyles;
   comments: ReadComment[];
+  /** The writer marked atom holders and the marks survived the editor
+   *  (its own w:noProof anchor runs are still there): an unmarked U+00A0
+   *  is then a typed no-break space. */
+  holders: boolean;
 }
 
 type Files = Record<string, Uint8Array>;
@@ -105,7 +111,7 @@ export function isExportedDocx(bytes: Uint8Array): boolean {
 }
 
 /** Distribute the token stream over the fragments. */
-function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'comments' | 'styles'> & { marks: Map<string, ReadPosition> } {
+function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'comments' | 'styles' | 'holders'> & { marks: Map<string, ReadPosition> } {
   const fragments = new Map<string, ReadFragment>();
   const open: { wid: string; fid: string; depth: number }[] = [];
   const lastClosedIn = new Map<number, string>();
@@ -265,7 +271,7 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
   const body = child(doc, 'body');
   if (!body) throw new DocxReadError('no document part');
   const tokens: Token[] = [];
-  let { nextPara: next, nextBox: box } = walkPart(body, linksOf(files, 'word/document.xml'), tokens);
+  let { nextPara: next, nextBox: box, noProof } = walkPart(body, linksOf(files, 'word/document.xml'), tokens);
   // Notes after the body, in their part order (the semantic writer's).
   for (const [part, el] of [['word/footnotes.xml', 'footnote'], ['word/endnotes.xml', 'endnote']] as const) {
     const root = xmlOf(files, part);
@@ -278,5 +284,6 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
     }
   }
   const { fragments, added, marks } = assign(tokens, map);
-  return { map, fragments, added, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks) };
+  const holders = map.holders === true && noProof;
+  return { map, fragments, added, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders };
 }
