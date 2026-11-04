@@ -6,6 +6,7 @@
 import type { VDTDesignSlot, VDTDesignTextBlock, VDTDesignTextLine } from '../../vdt/design.js';
 import { compose, mapRect, placeImage, placeShape, placeText, type Frame } from './frame.js';
 import { alignToSource } from './source.js';
+import { chipRuns } from './inline.js';
 import type { DisplayItem, DisplayLine, DisplayRun, DisplaySource } from './types.js';
 
 type TextRole = Extract<DisplayItem, { kind: 'text' }>['role'];
@@ -58,8 +59,8 @@ function designRuns(block: VDTDesignTextBlock, line: VDTDesignTextLine, originX:
     if (tracking && !r.rtl) run.tracking = tracking;
     if (r.baselineShift) run.baselineShift = -r.baselineShift;
     if (r.rtl) run.rtl = true;
-    if (r.chip) run.inline = { kind: 'chip', widthPx: r.width, heightPx: r.chip.ascent + r.chip.descent, ascentPx: r.chip.ascent };
-    runs.push(run);
+    if (r.chip) runs.push(...chipRuns(run, r.chip, r.inkOffset ?? 0));
+    else runs.push(run);
   });
   return { runs, text };
 }
@@ -113,7 +114,9 @@ function textBlockItems(block: VDTDesignTextBlock, ctx: SlotContext): DisplayIte
       map: [],
     };
     if (block.direction === 'rtl') out.rtl = true;
-    if (vertical) out.vertical = true;
+    // A horizontal block in a vertical page's flow is set down the
+    // column, as the painters set it (the page's vertical setting).
+    if (vertical || ctx.uprightPictures) out.vertical = true;
     lines.push(out);
     all += text;
   }
