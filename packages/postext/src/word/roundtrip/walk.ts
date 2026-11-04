@@ -8,6 +8,7 @@
 import { attr, child, children, localName, onOff, textOf, type XmlElement } from '../xml.js';
 import { fragmentIdOf } from '../anchors/bookmarks.js';
 import { ommlToTex } from '../omml.js';
+import { ommlHash } from '../anchors/ommlHash.js';
 
 /** Object replacement character: an equation or a note reference. */
 export const OBJECT_CHAR = '￼';
@@ -15,13 +16,45 @@ export const OBJECT_CHAR = '￼';
 export const PARA_CHAR = ' ';
 
 export type Token =
-  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; tracked?: boolean; para: number }
-  | { t: 'para'; para: number; depth: number; box: number }
+  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; para: number }
+  | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps }
   | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number }
   | { t: 'bmEnd'; wid: string; para: number }
   | { t: 'del'; para: number }
   | { t: 'cStart'; cid: string }
   | { t: 'cEnd'; cid: string };
+
+/** What a paragraph's own properties say about its role, for paragraphs
+ *  the user adds outside every bookmark. */
+export interface ParaProps {
+  style?: string;
+  /** List numbering (`w:numPr`). */
+  numId?: string;
+  ilvl?: number;
+  /** `w:outlineLvl` (0 = heading 1). */
+  outline?: number;
+  /** The paragraph ends a section (`w:sectPr`): a chapter end in the
+   *  semantic writer. */
+  sect?: boolean;
+}
+
+function paraProps(p: XmlElement): ParaProps | undefined {
+  const pPr = child(p, 'pPr');
+  if (!pPr) return undefined;
+  const out: ParaProps = {};
+  const style = attr(child(pPr, 'pStyle'), 'val');
+  if (style) out.style = style;
+  const numPr = child(pPr, 'numPr');
+  const numId = attr(child(numPr, 'numId'), 'val');
+  if (numId && numId !== '0') {
+    out.numId = numId;
+    out.ilvl = Number(attr(child(numPr, 'ilvl'), 'val') ?? 0) || 0;
+  }
+  const outline = attr(child(pPr, 'outlineLvl'), 'val');
+  if (outline !== undefined && Number(outline) < 9) out.outline = Number(outline);
+  if (child(pPr, 'sectPr')) out.sect = true;
+  return out;
+}
 
 interface RunCtx {
   href?: string;
@@ -83,7 +116,7 @@ function fieldHref(s: WalkState): string | undefined {
   return undefined;
 }
 
-function emit(s: WalkState, ch: string, flags: string, ctx: RunCtx, tex?: string): void {
+function emit(s: WalkState, ch: string, flags: string, ctx: RunCtx, tex?: string, mathHash?: string): void {
   if (ctx.deleted) return;
   const top = s.fields[s.fields.length - 1];
   if (top && (top.code || top.skip)) return;
@@ -91,6 +124,7 @@ function emit(s: WalkState, ch: string, flags: string, ctx: RunCtx, tex?: string
   const href = ctx.href ?? fieldHref(s);
   if (href) tok.href = href;
   if (tex !== undefined) tok.tex = tex;
+  if (mathHash !== undefined) tok.mathHash = mathHash;
   if (ctx.tracked) tok.tracked = true;
   s.out.push(tok);
 }
@@ -152,6 +186,12 @@ function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
       case 'AlternateContent':
         walkObject(s, c, ctx);
         break;
+      case 'ruby': {
+        // The base is the text; the reading (w:rt) comes from the source.
+        const base = child(c, 'rubyBase');
+        if (base) for (const br of children(base)) if (localName(br.name) === 'r') walkRun(s, br, ctx);
+        break;
+      }
       // softHyphen, delText, lastRenderedPageBreak, footnoteRef, rPr …
       default:
         break;
@@ -216,7 +256,7 @@ function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
         walkInline(s, c, ctx);
         break;
       case 'oMath':
-        emit(s, OBJECT_CHAR, '', ctx, ommlToTex(c));
+        emit(s, OBJECT_CHAR, '', ctx, ommlToTex(c), ommlHash(c));
         break;
       case 'bookmarkStart': {
         const fid = fragmentIdOf(attr(c, 'name') ?? '');
@@ -250,7 +290,10 @@ function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
   const depth = s.paras.length;
   s.paras.pop();
   if (child(child(child(p, 'pPr'), 'rPr'), 'del') !== undefined) s.joinNext = ord;
-  else if (!ctx.deleted) s.out.push({ t: 'para', para: ord, depth, box: curBox(s) });
+  else if (!ctx.deleted) {
+    const props = paraProps(p);
+    s.out.push({ t: 'para', para: ord, depth, box: curBox(s), ...(props ? { props } : {}) });
+  }
 }
 
 /** Block content: paragraphs, tables, content controls. */

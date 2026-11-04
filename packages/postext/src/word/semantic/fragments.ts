@@ -22,7 +22,7 @@ export const OBJECT_CHAR = '\uFFFC';
 export class FragmentBuilder {
   text = '';
   map: number[] = [];
-  atoms: { at: number; start: number; end: number; kind: string }[] = [];
+  atoms: { at: number; start: number; end: number; kind: string; hash?: string }[] = [];
   formats: MapFormat[] = [];
 
   /** Append characters; `map` gives each one's source offset (-1 =
@@ -50,9 +50,9 @@ export class FragmentBuilder {
 
   /** Append an atom: `text` (one char or a rendered label) stands for the
    *  whole source range `[start, end)`. */
-  atom(text: string, start: number, end: number, kind: string, flags = ''): void {
+  atom(text: string, start: number, end: number, kind: string, flags = '', hash?: string): void {
     const at = this.text.length;
-    this.atoms.push({ at, start, end, kind });
+    this.atoms.push({ at, start, end, kind, ...(hash ? { hash } : {}) });
     this.push(text, new Array<number>(text.length).fill(-1), flags);
   }
 

@@ -26,6 +26,13 @@ describe('round trip through the writers', () => {
     expect(r.chapters[0]!.markdown).toBe(md.replace('Typesetting', 'Typesettin').replace('item b', 'item B'));
   });
 
+  it('semantic: code inside a link keeps its backticks', async () => {
+    const md = 'Install [`postext`](https://www.npmjs.com/package/postext) now, or **`bold code`** and *[`it`](https://a.b)*.\n';
+    const chapters = [{ id: 'c', markdown: md }];
+    const bytes = await semanticDocx({ chapters, config: config(), date: DATE });
+    expect(applyDocxEdits(bytes, { chapters }).edits).toEqual([]);
+  });
+
   it('formatted: a paragraph over several pages, hyphenated', async () => {
     const md = `${LOREM} ${LOREM}\n\n${LOREM} ${LOREM} ${LOREM}\n`;
     const chapters = [{ id: 'c', markdown: md }];

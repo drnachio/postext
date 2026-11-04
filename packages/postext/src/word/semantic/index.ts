@@ -9,7 +9,6 @@
 
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { CONFIG_VERSION } from '../../bundle/configVersion/rules.js';
-import { defaultResourceTypes } from '../../defaults/resources/resourceTypes.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import { hashText } from '../anchors/hash.js';
@@ -17,6 +16,7 @@ import type { ExportMap } from '../anchors/types.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { initTexToOmml } from '../ommlWrite/index.js';
 import { createDocxPackage } from '../ooxml/package.js';
+import { bookNumbers } from './engineNumbers.js';
 import { parseChapter, renderChapter } from './chapter.js';
 import type { SemanticWarning, WriterContext } from './context.js';
 import { prepareMedia } from './figures.js';
@@ -74,22 +74,13 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   const pkg = createDocxPackage();
   const geo = pageGeometry(resolved, units);
   const resources = new Map((options.resources ?? []).map((r) => [r.id, r]));
-  const resourceTypes = options.config.resourceTypes ?? defaultResourceTypes(options.config.locale);
-  // Numbers by order of first showing, per resource type (as captions and
-  // `:ref` labels read them).
-  const resourceNumbers = new Map<string, number>();
-  const counters = new Map<string, number>();
-  const shown: string[] = [];
+  // Numbers as the engine prints them (captions, `:ref`s, headings).
+  const numbers = bookNumbers(parsed, options.config, resolved, options.resources ?? []);
+  const resourceTypes = numbers.resourceTypes;
+  // Resources shown as blocks, whose pictures go into the package.
+  const shown = new Set<string>();
   for (const pc of parsed) {
-    for (const b of pc.blocks) {
-      if (b.type !== 'resourceBlock' || !b.resourceId) continue;
-      const res = resources.get(b.resourceId);
-      if (!res || resourceNumbers.has(res.id)) continue;
-      const n = (counters.get(res.typeId) ?? 0) + 1;
-      counters.set(res.typeId, n);
-      resourceNumbers.set(res.id, n);
-      shown.push(res.id);
-    }
+    for (const b of pc.blocks) if (b.type === 'resourceBlock' && b.resourceId && resources.has(b.resourceId)) shown.add(b.resourceId);
   }
   let sdtId = 0;
   let footnoteId = 0;
@@ -109,7 +100,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     columnPx: geo.columnPx,
     textTwips: Math.round((geo.columnPx * 1440) / units.dpi),
     usedResources: new Set(),
-    resourceNumbers,
+    numbers,
     footnotes: [],
     headers: {},
     footers: {},
@@ -118,7 +109,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     warn,
     nextSdtId: () => ++sdtId,
     nextFootnoteId: () => ++footnoteId,
-    chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), blockCounter: 0 },
+    chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), headingNumbers: new Map(), blockCounter: 0 },
   };
   await prepareMedia(ctx, shown);
 

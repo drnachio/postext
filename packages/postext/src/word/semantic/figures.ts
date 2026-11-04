@@ -8,6 +8,7 @@ import type { ContentBlock } from '../../parse/types.js';
 import type { Resource } from '../../types.js';
 import { escapeAttr } from '../xml.js';
 import { abs, blockId, type PreparedPicture, type WriterContext } from './context.js';
+import { captionLabelParts, captionStyleOf } from './engineNumbers.js';
 import { FragmentBuilder } from './fragments.js';
 import { rawSdt } from './raw.js';
 import { snippetRuns } from './snippet.js';
@@ -120,16 +121,20 @@ function captionParagraph(ctx: WriterContext, b: ContentBlock, res: Resource, fi
  *  own (edits to it are rejected, not written into the caption). */
 function captionLabel(ctx: WriterContext, res: Resource): string {
   const type = ctx.resourceTypes.find((t) => t.id === res.typeId);
-  const n = ctx.resourceNumbers.get(res.id);
-  if (!type || n === undefined) return '';
-  const cap = ctx.resolved.captionStyle;
-  const prefix = type.captionPrefix || type.name;
+  const entry = ctx.numbers.resources[res.id];
+  // The label and number the engine prints ("Figure 1.7. ").
+  const label = type && entry ? captionLabelParts(ctx.resolved, type, entry.number) : undefined;
+  if (!type || !label) return '';
+  const cap = captionStyleOf(ctx.resolved, type);
   const props = `<w:rPr>${cap.labelBold ? '<w:b/>' : ''}${cap.labelItalic ? '<w:i/>' : ''}</w:rPr>`;
+  // A number that is the plain count of its type stays a SEQ field (Word
+  // lists the figures with it); a chapter number ("1.7") is text, which a
+  // field update would turn into the count.
   const seq = `SEQ ${type.id.replace(/[^A-Za-z0-9_]/g, '_') || 'Figure'} \\* ARABIC`;
-  const head = `${prefix}${cap.labelNumberGap ?? ' '}`;
-  const tail = cap.labelSeparator || ' ';
-  const runs = textRuns(head, props) + fieldRuns(seq, String(n), props) + textRuns(tail, props);
-  const text = head + String(n) + tail;
+  const plain = label.number !== '' && label.number === String(ctx.numbers.ordinals.get(res.id));
+  const num = !label.number ? '' : plain ? fieldRuns(seq, label.number, props) : textRuns(label.number, props);
+  const runs = textRuns(label.head, props) + num + textRuns(label.tail, props);
+  const text = label.head + label.number + label.tail;
   const frag = new FragmentBuilder();
   frag.push(text, new Array<number>(text.length).fill(-1), (cap.labelBold ? 'b' : '') + (cap.labelItalic ? 'i' : ''));
   return ctx.log.wrap(runs, frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'label' });

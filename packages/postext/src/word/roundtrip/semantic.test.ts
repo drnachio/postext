@@ -77,11 +77,13 @@ describe('round trip, semantic body', () => {
     expect(r.chapters[0]!.markdown).toBe(MD.replace(':index[término]{key="t"} aquí', ':index[términos]{key="t"} allí'));
   });
 
-  it('replaces a changed equation and a retyped reference whole', () => {
+  it('replaces a changed equation whole and rejects a retyped reference', () => {
     const r = run((x) => replaceOnce(x, '<m:t>2</m:t>', '<m:t>3</m:t>'));
     expect(r.chapters[0]!.markdown).toBe(MD.replace('$x^2$', '$x^{3}$'));
     const r2 = run((x) => replaceOnce(x, t(' y la 1 cierran.'), t(' y la 2 cierran.')));
-    expect(r2.chapters[0]!.markdown).toBe(MD.replace(':ref{fig1}', '2'));
+    // The engine prints the number: retyping it would lose the reference.
+    expect(r2.chapters[0]!.markdown).toBe(MD);
+    expect(r2.edits).toMatchObject([{ status: 'rejected', reason: 'generated' }]);
   });
 
   it('adds and removes bold', () => {

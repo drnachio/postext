@@ -33,6 +33,11 @@ export function parseChapter(input: WordChapterInput, options: ParseOptions): Pa
  *  ends with). */
 export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: number, geo: PageGeometry, last: boolean): string {
   const defs = new Map<string, ContentBlock>();
+  const headingNumbers = new Map<ContentBlock, string>();
+  const prefixes = ctx.numbers.headings[index] ?? [];
+  pc.blocks.forEach((b, i) => {
+    if (prefixes[i] !== undefined) headingNumbers.set(b, prefixes[i]!);
+  });
   for (const b of pc.blocks) if (b.footnoteDef !== undefined && !defs.has(b.footnoteDef)) defs.set(b.footnoteDef, b);
   ctx.chapter = {
     index,
@@ -42,6 +47,7 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
     defs,
     cited: citedNotes(pc.blocks),
     usedDefs: new Set(),
+    headingNumbers,
     blockCounter: 0,
   };
   for (const issue of pc.issues) ctx.warn(`parse:${issue.kind}`, `Unclosed or stray ${issue.delimiter} at offset ${issue.sourceStart + pc.offset}.`);

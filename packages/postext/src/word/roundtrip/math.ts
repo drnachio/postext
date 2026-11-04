@@ -1,5 +1,8 @@
-// Equations read back from Word: ommlToTex rarely gives the TeX that was
-// written (`x^{2}` for `x^2`), so an equation counts as unchanged when the
+// Equations read back from Word. The writer records a hash of the
+// canonical OMML of each equation (anchors/ommlHash.ts); an equation whose
+// OMML still hashes the same is untouched and keeps its source. Otherwise
+// ommlToTex gives the TeX, which rarely is the TeX that was written
+// (`x^{2}` for `x^2`), so the equation still counts as unchanged when the
 // two TeX strings agree after normalising, or, with the OMML writer
 // running, when both write the same OMML. Only a changed equation replaces
 // its source.

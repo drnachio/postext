@@ -1,13 +1,28 @@
-// Word documents in and out (#599): read a `.docx` into Postext Markdown
-// with a style template and a quality report, and write chapters back to a
-// `.docx` that carries the template for the round trip. Pure code (fflate
-// and a small XML reader): runs in the browser, a Worker and Node.
+// Word documents in and out. Export (#1387): a semantic .docx with native
+// Word structures (`semanticDocx`) or a formatted one that reproduces the
+// PDF pages (`formattedDocx`); both embed an export map, so the edits made
+// in Word go back into the exact Markdown and resource positions
+// (`applyDocxEdits`). Import of any other .docx (#599): read it into
+// Postext Markdown with a style template and a quality report. Pure code
+// (fflate and a small XML reader): runs in the browser, a Worker and Node.
+
+export { semanticDocx, SEMANTIC_ENGINE, SEMANTIC_STYLE } from './semantic/index.js';
+export type { SemanticDocxOptions, WordChapterInput, SemanticWarning } from './semantic/index.js';
+export { formattedDocx, FORMATTED_ENGINE } from './formatted/index.js';
+export type { FormattedDocxOptions, FormattedWarning } from './formatted/index.js';
+export { isExportedDocx, applyDocxEdits } from './roundtrip/index.js';
+export type { DocxEditSource, DocxEdit, DocxEditResult, DocxComment } from './roundtrip/index.js';
+export { planWordFonts, wordFontFor } from './fonts/index.js';
+export type { WordFontPlan, SourceFace, WordFontRef, FontWarning, PlanWordFontsOptions } from './fonts/index.js';
+export { texToOmml, initTexToOmml, isTexToOmmlReady, setTexToOmmlConverter } from './ommlWrite/index.js';
+export { createDocxPackage, validateDocxPackage } from './ooxml/index.js';
+export type { DocxPackageBuilder, DocxPackageInput, DocxCoreProps, DocxSettings, EmbeddedFontFace } from './ooxml/index.js';
+export { readExportMap, EXPORT_MAP_NS, EXPORT_MAP_ROOT, BOOKMARK_PREFIX } from './anchors/index.js';
+export type { ExportMap, ExportVariant, ExportSnapshot, MapChapter, MapFragment, MapFormat, FragmentTarget } from './anchors/index.js';
 
 export { readDocx, DocxReadError, TEMPLATE_XML_ROOT, TEMPLATE_XML_NS } from './docxRead.js';
 export { wordToPostext, pictureResolution, paragraphTargetOf, characterTargetOf, stripCaptionLabel, tableModel } from './toMarkdown.js';
 export type { ChapterMode, ImportedPicture, ImportedTable, ImportedChapter, ImportResult, ImportSettings } from './toMarkdown.js';
-export { postextToDocx, DEFAULT_STYLE_NAMES } from './toDocx.js';
-export type { ExportChapter, WordStyleNames, ExportSettings } from './toDocx.js';
 export { wordStyleTracking, applyStyleTracking } from './tracking.js';
 export type { StyleTracking } from './tracking.js';
 export { analyzeDocx } from './analyze.js';

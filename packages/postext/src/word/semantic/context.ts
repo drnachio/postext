@@ -11,6 +11,7 @@ import type { Numbering } from './numbering.js';
 import type { StyleRegistry } from './styles.js';
 import type { WordChapterInput } from './types.js';
 import type { Units } from './wml.js';
+import type { BookNumbers } from './engineNumbers.js';
 
 export interface SemanticWarning {
   code: string;
@@ -33,6 +34,8 @@ export interface ChapterState {
   cited: Set<string>;
   /** Definitions already set as a Word footnote. */
   usedDefs: Set<string>;
+  /** The number prefix the engine prints before each numbered heading. */
+  headingNumbers: Map<ContentBlock, string>;
   blockCounter: number;
 }
 
@@ -55,8 +58,9 @@ export interface WriterContext {
   textTwips: number;
   /** Resources the export shows or references (for the snapshot). */
   usedResources: Set<string>;
-  /** Number of each resource (by first figure), for `:ref` labels. */
-  resourceNumbers: Map<string, number>;
+  /** The numbers the engine prints: resources (captions, `:ref`s) and
+   *  heading prefixes, counted through the book. */
+  numbers: BookNumbers;
   footnotes: string[];
   /** Header/footer parts by id (inner XML). */
   headers: Record<string, string>;

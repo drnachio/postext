@@ -16,6 +16,8 @@ export interface BlockAtom {
   start: number;
   end: number;
   kind: string;
+  /** Canonical OMML hash the writer recorded (maths). */
+  hash?: string;
 }
 
 export interface BlockView {
@@ -32,6 +34,8 @@ export interface BlockView {
   N: string;
   NK: string[];
   NT: (string | undefined)[];
+  /** Canonical OMML hash of each equation read back. */
+  NH: (string | undefined)[];
   NTracked: boolean[];
   /** Positions in N where tracked-deleted text stood. */
   dels: number[];
@@ -80,6 +84,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
   let N = '';
   const NK: string[] = [];
   const NT: (string | undefined)[] = [];
+  const NH: (string | undefined)[] = [];
   const NTracked: boolean[] = [];
   const dels: number[] = [];
   const starts = new Map<string, number>();
@@ -104,7 +109,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
     for (const a of f.atoms ?? []) {
       let a1 = a.at + 1;
       while (a1 < f.text.length && f.map[a1] === a.start && a.start >= 0) a1++;
-      atoms.push({ a0: base + a.at, a1: base + a1, start: a.start, end: a.end, kind: a.kind });
+      atoms.push({ a0: base + a.at, a1: base + a1, start: a.start, end: a.end, kind: a.kind, ...(a.hash ? { hash: a.hash } : {}) });
     }
     r0 = Math.min(r0, f.range[0]);
     r1 = Math.max(r1, f.range[1]);
@@ -125,6 +130,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
       N += c.ch;
       NK.push(makeKey(c.flags, c.href));
       NT.push(c.tex);
+      NH.push(c.mathHash);
       NTracked.push(!!c.tracked);
     }
   }
@@ -133,7 +139,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
     for (let i = a.a0; i < a.a1; i++) atomOf[i] = k;
   });
   return {
-    id, target: frags[0]!.target, frags, O, M, OK, atomOf, atoms, N, NK, NT, NTracked, dels, starts,
+    id, target: frags[0]!.target, frags, O, M, OK, atomOf, atoms, N, NK, NT, NH, NTracked, dels, starts,
     missing: found === 0, startPara, endPara, range: [r0, r1],
   };
 }

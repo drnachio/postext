@@ -7,6 +7,7 @@
 
 import type { InlineSpan } from '../../parse/types.js';
 import { texToOmml } from '../ommlWrite/index.js';
+import { ommlHash } from '../anchors/ommlHash.js';
 import { atomEnd, chipText, refLabel } from './atoms.js';
 import type { WriterContext } from './context.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
@@ -54,7 +55,10 @@ const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm'
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
-    style: style ?? (f.href ? STYLE.hyperlink : f.k ? STYLE.codeChar : f.mark ? STYLE.mark : undefined),
+    // Code in a link keeps the code style (it is what marks the run as
+    // code on the way back), underlined like the link.
+    style: style ?? (f.k ? STYLE.codeChar : f.href ? STYLE.hyperlink : f.mark ? STYLE.mark : undefined),
+    u: (f.k && f.href !== undefined) || undefined,
     b: f.b || undefined,
     i: f.i || undefined,
     smallCaps: f.c || undefined,
@@ -79,7 +83,7 @@ function hyperlink(ctx: WriterContext, href: string, runs: string, field?: boole
 
 type Unit =
   | { kind: 'char'; p: number; ch: string; src: number; fmt: Fmt }
-  | { kind: 'obj'; p: number; xml: string; fmt: Fmt; text: string; atom?: { start: number; end: number; kind: string } }
+  | { kind: 'obj'; p: number; xml: string; fmt: Fmt; text: string; atom?: { start: number; end: number; kind: string; hash?: string } }
   | { kind: 'mapped'; p: number; text: string; map: number[]; fmt: Fmt; style: string };
 
 /** Runs and fragment of an inline source. */
@@ -114,7 +118,7 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       const start = s.toSrc(span.math.sourceStart);
       const end = s.toSrc(span.math.sourceEnd);
       const omml = texToOmml(span.math.tex, false);
-      if (omml) units.push({ kind: 'obj', p, xml: omml, fmt: base, text: OBJECT_CHAR, atom: { start, end, kind: 'math' } });
+      if (omml) units.push({ kind: 'obj', p, xml: omml, fmt: base, text: OBJECT_CHAR, atom: { start, end, kind: 'math', hash: ommlHash(omml) } });
       else units.push(sourceUnit(s, p, start, end));
     } else if (span.footnote) {
       const end = atomEnd(s.src, at, limit);
@@ -194,7 +198,7 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
     xml += insertAt(u.p);
     if (u.kind === 'obj') {
       xml += u.fmt.href ? hyperlink(ctx, u.fmt.href, u.xml, s.linkFields) : u.xml;
-      if (u.atom) frag.atom(u.text, u.atom.start, u.atom.end, u.atom.kind, flagsOf(u.fmt));
+      if (u.atom) frag.atom(u.text, u.atom.start, u.atom.end, u.atom.kind, flagsOf(u.fmt), u.atom.hash);
       else frag.push(u.text, new Array<number>(u.text.length).fill(-1), flagsOf(u.fmt));
       i++;
       continue;

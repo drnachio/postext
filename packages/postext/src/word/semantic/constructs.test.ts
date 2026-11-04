@@ -84,7 +84,7 @@ describe('semantic docx: text', () => {
       ['swatch', ':swatch{color="#f00"}'],
       ['tab', ':tab{at="4cm"}'],
     ]);
-    expect(f.text).toBe('See Fig. 1, @smith, [@smith, p. 3], Hi, \u25A0 and\tx.');
+    expect(f.text).toBe('See Fig.\u00a01, @smith, [@smith, p. 3], Hi, \u25A0 and\tx.');
     expect(e.doc).toContain('<w:rStyle w:val="PostextReference"/>');
     expect(e.doc).toContain('<w:color w:val="FF0000"/>');
   });
@@ -115,7 +115,7 @@ describe('semantic docx: text', () => {
     const e = await exportDocx(md);
     expect(exportProblems(e, [md])).toEqual([]);
     const inline = e.frag('Inline \uFFFC here.');
-    expect(inline.atoms).toEqual([{ at: 7, start: 7, end: 12, kind: 'math' }]);
+    expect(inline.atoms).toEqual([{ at: 7, start: 7, end: 12, hash: expect.stringMatching(/^[0-9a-f]{16}$/), kind: 'math' }]);
     expect(e.doc).toContain('<m:oMath><m:sSup>');
     expect(e.doc).toContain('<m:oMathPara><m:oMath><m:f>');
     const display = e.map.fragments.find((f) => f.role === 'math')!;
@@ -235,7 +235,7 @@ describe('semantic docx: structures', () => {
     expect(e.doc).toContain('w:fill="FFEEAA"');
     expect(e.doc).toMatch(/<w:tblGrid><w:gridCol w:w="(\d+)"\/><w:gridCol w:w="(\d+)"\/><\/w:tblGrid>/);
     expect(e.frag('b').target).toEqual({ kind: 'resource', resourceId: 't1', field: 'cell', row: 1, col: 1 });
-    expect(e.frag('c \uFFFC').atoms).toEqual([{ at: 2, start: 2, end: 7, kind: 'math' }]);
+    expect(e.frag('c \uFFFC').atoms).toEqual([{ at: 2, start: 2, end: 7, hash: expect.stringMatching(/^[0-9a-f]{16}$/), kind: 'math' }]);
   });
 });
 

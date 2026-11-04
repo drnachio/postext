@@ -4,6 +4,7 @@
 
 import type { ContentBlock } from '../../parse/types.js';
 import { texToOmml } from '../ommlWrite/index.js';
+import { ommlHash } from '../anchors/ommlHash.js';
 import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { renderResource } from './figures.js';
@@ -13,7 +14,7 @@ import { markInserts, namedBookmark } from './marks.js';
 import type { ListLevelKind } from './numbering.js';
 import { lineStart, rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
-import { blockSdt, paragraph, pPr, rPr, type ParaProps } from './wml.js';
+import { blockSdt, paragraph, pPr, rPr, textRuns, type ParaProps } from './wml.js';
 
 export type Node = { block: ContentBlock } | { container: ContentBlock; end?: ContentBlock; children: Node[] };
 
@@ -102,6 +103,20 @@ export function textParagraph(ctx: WriterContext, block: ContentBlock, props: Pa
     role,
   });
   return paragraph(props, lead + wrapped);
+}
+
+/** The number the engine prints before a numbered heading ("1.2 "), in a
+ *  fragment of generated text (edits to it are rejected). A number that
+ *  stands for the title (`numberPosition: 'replace'`) is left out: the
+ *  title's own text is what the source holds. */
+function headingNumber(ctx: WriterContext, b: ContentBlock): string {
+  const prefix = ctx.chapter.headingNumbers.get(b);
+  if (!prefix || b.numberIsTitle) return '';
+  const level = ctx.resolved.headings.levels.find((l) => l.level === (b.level ?? 1));
+  const text = prefix + (level?.numberSeparator ?? ' ');
+  const frag = new FragmentBuilder();
+  frag.push(text, new Array<number>(text.length).fill(-1));
+  return ctx.log.wrap(textRuns(text, ''), frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'number' });
 }
 
 /** Set footnote `id`'s definition as a Word footnote; its Word id, or
@@ -218,7 +233,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     case 'heading': {
       const level = b.level ?? 1;
       const style = ctx.styles.heading(level, b.attrs?.style);
-      const anchor = b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '';
+      const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + headingNumber(ctx, b);
       return textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1) }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
     }
     case 'paragraph': {
@@ -239,7 +254,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
       const omml = b.tex !== undefined ? texToOmml(b.tex, true) : null;
       if (!omml) return rawSdt(ctx, start, end, 'math');
       const f = new FragmentBuilder();
-      f.atom(OBJECT_CHAR, start, end, 'math');
+      f.atom(OBJECT_CHAR, start, end, 'math', '', ommlHash(omml));
       const xml = ctx.log.wrap(omml, f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [start, end], role: 'math' });
       return paragraph({ style: STYLE.math }, xml);
     }

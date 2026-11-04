@@ -4,6 +4,7 @@
 
 import type { InlineSpan } from '../../parse/types.js';
 import type { WriterContext } from './context.js';
+import { resourceRefLabel } from './engineNumbers.js';
 
 /** Index just past a balanced `open … close` group starting at `i`
  *  (backslash escapes and quoted strings inside braces skipped), or `i`
@@ -67,15 +68,7 @@ export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>
   const res = ref.anchor ? undefined : ctx.resources.get(ref.resourceId);
   if (!res) return ref.resourceId;
   ctx.usedResources.add(res.id);
-  const n = ctx.resourceNumbers.get(res.id);
-  const num = n === undefined ? '?' : String(n);
-  if (ref.style === 'number') return num;
-  const type = ctx.resourceTypes.find((t) => t.id === res.typeId);
-  let label = ref.style === 'full' ? type?.captionPrefix || type?.name || '' : type?.shortLabel || type?.name || '';
-  if (ref.case === 'lower') label = label.toLowerCase();
-  else if (ref.case === 'upper') label = label.toUpperCase();
-  else if (ref.case === 'capitalize') label = label.charAt(0).toUpperCase() + label.slice(1);
-  return label ? `${label} ${num}` : num;
+  return resourceRefLabel(ref, ctx.numbers, [res], ctx.resolved);
 }
 
 /** The text a chip shows: its words. */

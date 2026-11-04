@@ -46,7 +46,10 @@ export interface MapFragment {
    *  added/repeated hyphen, generated number). Resource targets index the
    *  resource field's text. */
   map: number[];
-  atoms?: { at: number; start: number; end: number; kind: string }[];
+  /** `hash` (maths only): hashText of the canonical OMML the writer
+   *  emitted (anchors/ommlHash.ts), so an equation Word left alone keeps
+   *  its TeX byte-identical. */
+  atoms?: { at: number; start: number; end: number; kind: string; hash?: string }[];
   formats?: MapFormat[];
   /** Source range the fragment covers [start, end). */
   range: [number, number];

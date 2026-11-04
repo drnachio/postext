@@ -115,7 +115,9 @@ describe('semantic round trip: Word edits', () => {
 
 describe('semantic round trip: generated text', () => {
   it('rejects edits to a caption label and its number', () => {
-    const { md, resources, r } = run((x) => once(x, /(<w:t xml:space="preserve">)1(<\/w:t><\/w:r><w:r><w:rPr><w:b\/><\/w:rPr><w:fldChar w:fldCharType="end"\/><\/w:r><w:r><w:rPr><w:b\/><\/w:rPr><w:t xml:space="preserve">\. <\/w:t><\/w:r><w:bookmarkEnd w:id="\d+"\/><w:bookmarkStart w:id="\d+" w:name="_ptx_\w+"\/><w:r>(<w:t xml:space="preserve">)Service)/, '$12$2'));
+    // The engine's number ("Figure 1.1. "), set as text: a SEQ field
+    // would count it as 1.
+    const { md, resources, r } = run((x) => once(x, /(Figure\u00a0<\/w:t>(?:(?!<w:t ).)*<w:t xml:space="preserve">)1\.1</, '$12.1<'));
     expect(md).toEqual([CH1, CH2]);
     expect(resources ?? RESOURCES).toEqual(RESOURCES);
     expect(r.edits).toMatchObject([{ status: 'rejected', reason: 'generated' }]);
@@ -123,7 +125,7 @@ describe('semantic round trip: generated text', () => {
   });
 
   it('rejects an edit to a cross-reference’s printed text', () => {
-    const { md, r } = run((x) => once(x, T('Fig. 1'), T('Fig. 2')));
+    const { md, r } = run((x) => once(x, T('Fig.\u00a01.1'), T('Fig.\u00a02.1')));
     expect(md).toEqual([CH1, CH2]);
     expect(r.edits).toMatchObject([{ status: 'rejected' }]);
   });

@@ -43,6 +43,9 @@ export function blockHunks(v: BlockView, base: string): Hunk[] {
     const j = eq.get(a.a0);
     if (j === undefined) continue;
     const tex = v.NT[j];
+    // The OMML the writer emitted, untouched (Word only rewrote its
+    // attributes and run properties): keep the source as it is.
+    if (a.hash !== undefined && v.NH[j] === a.hash) continue;
     if (tex !== undefined && !mathUnchanged(base.slice(a.start, a.end), tex)) extra.push({ a0: a.a0, a1: a.a1, b0: j, b1: j + 1 });
   }
   const all = [...raw, ...extra].sort((x, y) => x.a0 - y.a0 || x.a1 - y.a1);
@@ -306,8 +309,13 @@ const isGenerated = (v: BlockView, i: number): boolean => i >= 0 && i < v.O.leng
 function touchesGenerated(v: BlockView, h: Hunk): boolean {
   if (h.a0 === h.a1) return isGenerated(v, h.a0 - 1) && isGenerated(v, h.a0);
   for (let i = h.a0; i < h.a1; i++) if (isGenerated(v, i)) return true;
-  return false;
+  // A printed label ("Fig. 1.1", a note number) retyped: the engine writes
+  // it, so only deleting it whole changes the source.
+  return h.b1 > h.b0 && v.atoms.some((a) => LABEL_ATOMS.has(a.kind) && a.a0 < h.a1 && h.a0 < a.a1);
 }
+
+/** Atoms whose printed text the engine generates from the construct. */
+const LABEL_ATOMS = new Set(['ref', 'footnote']);
 
 /** Source edits for one changed hunk. */
 export function hunkEdits(v: BlockView, base: string, h: Hunk): SourceEdit[] {

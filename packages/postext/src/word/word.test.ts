@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
+import { readFileSync } from 'node:fs';
+import { strToU8, zipSync } from 'fflate';
 import { parseMarkdown } from '../parse/index.js';
 import type { PostextConfig } from '../types.js';
 import { analyzeDocx } from './analyze.js';
 import { readDocx } from './docxRead.js';
 import { parseInline, renderInline } from './inline.js';
 import { displayStyleName, emptyTemplate, guessCharacterTarget, guessParagraphTarget, parseTemplate, type WordTemplate } from './template.js';
-import { postextToDocx } from './toDocx.js';
 import { applyStyleTracking, wordStyleTracking } from './tracking.js';
 import { wordToPostext } from './toMarkdown.js';
 
@@ -17,9 +18,14 @@ const config = {
   headingStyles: [{ id: 'portada', name: 'Portada' }],
 } as unknown as PostextConfig;
 
-function roundTrip(markdown: string, template: WordTemplate = emptyTemplate()) {
-  const bytes = postextToDocx([{ title: 'One', markdown }], { template, config, book: false });
-  const doc = readDocx(bytes);
+/** A file written by the exporter before #1395 (`postextToDocx`, removed):
+ *  styles named after the book and the template in a custom XML part. The
+ *  fixtures were written from the Markdown each test lists. */
+const oldExport = (name: string): Uint8Array => new Uint8Array(readFileSync(new URL(`./__fixtures__/${name}.docx`, import.meta.url)));
+
+/** Read an old export back with the template it carries. */
+function readOld(name: string): string {
+  const doc = readDocx(oldExport(name));
   const embedded = parseTemplate(doc.embeddedTemplate);
   expect(embedded).toBeDefined();
   const result = wordToPostext(doc, { template: embedded!, config, chapters: 'single', existingIds: new Set(), untitledChapter: 'Untitled' });
@@ -68,7 +74,7 @@ describe('inline marks', () => {
   }
 });
 
-describe('Markdown → Word → Markdown', () => {
+describe('files from the old exporter → Markdown', () => {
   it('keeps headings, paragraph styles, quotes, lists and notes', () => {
     const md = [
       '# The lantern {style="portada"}',
@@ -111,7 +117,7 @@ describe('Markdown → Word → Markdown', () => {
       '',
       '[^steps]: The staircase has 112 steps.',
     ].join('\n');
-    const back = roundTrip(md);
+    const back = readOld('old-lantern');
     expect(blocksOf(back)).toEqual(blocksOf(md));
   });
 
@@ -132,7 +138,7 @@ describe('Markdown → Word → Markdown', () => {
       '',
       'Text after.',
     ].join('\n');
-    const back = roundTrip(md);
+    const back = readOld('old-frontmatter');
     expect(back).toContain('---\ntitle: "Pintura"\nauthor: "Anon"\n---');
     expect(back).toContain(':::verse{gap=2em}\nfirst || second\n\nthird || fourth\n:::');
     expect(blocksOf(back)).toEqual(blocksOf(md));
@@ -153,29 +159,26 @@ describe('Markdown → Word → Markdown', () => {
       '',
       'After.',
     ].join('\n');
-    const back = roundTrip(md);
+    const back = readOld('old-poem');
     expect(back).toContain(':::verse{style="verso"}\nWhose woods these are I think I know.\n  His house is in the village though;\n\n\nHe will not see me stopping here\n\tTo watch his woods fill up with snow.\n:::');
     expect(blocksOf(back)).toEqual(blocksOf(md));
   });
 
   it('keeps a code listing verbatim (#624)', () => {
     const md = ['Run this:', '', '```bash {title="x.sh"}', '# not a heading', '  - not a list', '', 'echo "$HOME"  # two spaces', '```', '', 'After.'].join('\n');
-    const back = roundTrip(md);
+    const back = readOld('old-code');
     expect(back).toContain('```bash {title="x.sh"}\n# not a heading\n  - not a list\n\necho "$HOME"  # two spaces\n```');
     expect(blocksOf(back)).toEqual(blocksOf(md));
   });
 
   it('keeps two adjacent paragraph groups of one style apart', () => {
     const md = ':::paragraphs{style="firma"}\nA\n:::\n\n:::paragraphs{style="firma"}\nB\n:::\n';
-    expect(blocksOf(roundTrip(md))).toEqual(blocksOf(md));
+    expect(blocksOf(readOld('old-groups'))).toEqual(blocksOf(md));
   });
 
   it('rebuilds a book from chapter markers', () => {
-    const bytes = postextToDocx(
-      [{ title: 'Uno', markdown: '# Uno\n\nTexto uno.' }, { title: 'Dos', markdown: '# Dos\n\nTexto dos.' }],
-      { template: emptyTemplate(), config, book: true },
-    );
-    const doc = readDocx(bytes);
+    // Chapters 'Uno' ('# Uno\n\nTexto uno.') and 'Dos', exported as a book.
+    const doc = readDocx(oldExport('old-book'));
     const result = wordToPostext(doc, { template: parseTemplate(doc.embeddedTemplate)!, config, chapters: 'split', existingIds: new Set(), untitledChapter: 'Untitled' });
     expect(result.chapters.map((c) => c.title)).toEqual(['Uno', 'Dos']);
     expect(result.chapters[1]!.markdown).toBe('# Dos\n\nTexto dos.\n');
@@ -360,7 +363,7 @@ describe('Word → Postext', () => {
 });
 
 describe('forced line breaks (#620)', () => {
-  it('write a soft return in Word and come back as a backslash ending the line', () => {
+  it('read the old exporter\'s soft returns back as a backslash ending the line', () => {
     const md = [
       'First line\\',
       'second line, and `C:\\\\x` stays.',
@@ -372,12 +375,11 @@ describe('forced line breaks (#620)', () => {
       '',
       'Ends with a backslash\\',
     ].join('\n');
-    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config, book: false });
-    const doc = readDocx(bytes);
+    const doc = readDocx(oldExport('old-breaks'));
     const paragraphs = doc.blocks.filter((b) => b.type === 'paragraph');
     const breaks = paragraphs.map((b) => b.type === 'paragraph' ? b.runs.filter((r) => r.type === 'break' && r.kind === 'line').length : 0);
     expect(breaks).toEqual([1, 1, 1, 0]);
-    const back = roundTrip(md);
+    const back = readOld('old-breaks');
     expect(blocksOf(back)).toEqual(blocksOf(md));
     expect(back).toContain('First line\\\nsecond line');
   });
@@ -417,11 +419,11 @@ describe('tabs (#622)', () => {
     expect(parseMarkdown('Soup :tab{at=432pt align=end leader="."} 8.50')[0]!.spans.find((x) => x.tab)!.tab!.stop).toEqual({ position: { value: 432, unit: 'pt' }, align: 'end', leader: '.' });
   });
 
-  it('write `:tab` as Word\'s tab and a paragraph style\'s stops as `w:tabs`, and come back', () => {
+  it('read the old exporter\'s `:tab` (Word\'s tab) and a paragraph style\'s stops (`w:tabs`) back', () => {
     const cfg = { ...config, paragraphStyles: [...(config.paragraphStyles ?? []), { id: 'menu', name: 'Menu', tabStops: [{ position: { value: 120, unit: 'mm' }, align: 'end', leader: '.' }] }] } as PostextConfig;
-    const md = ['Name :tab Value', '', ':::paragraphs{style="menu"}', 'Soup :tab 8.50', ':::', '', 'Signed :tab{at=end leader=rule}'].join('\n');
-    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: cfg, book: false });
-    const doc = readDocx(bytes);
+    // Written from 'Name :tab Value', a `menu` paragraph group 'Soup :tab
+    // 8.50' and 'Signed :tab{at=end leader=rule}', with `cfg`.
+    const doc = readDocx(oldExport('old-tabs'));
     const first = doc.blocks.find((b) => b.type === 'paragraph')!;
     expect(first.type === 'paragraph' && first.runs.map((x) => x.type)).toEqual(['text', 'tab', 'text']);
     const style = [...doc.styles.values()].find((st) => st.name === 'Menu');
@@ -433,20 +435,7 @@ describe('tabs (#622)', () => {
   });
 });
 
-describe('paragraph style tracking in Word (#907)', () => {
-  it('writes a style\'s letterSpacing as its character spacing', () => {
-    const cfg = { ...config, paragraphStyles: [{ id: 'titulo', name: 'Título de página', fontSize: { value: 20, unit: 'pt' }, letterSpacing: { value: 0.015, unit: 'em' } }] } as PostextConfig;
-    const md = [':::paragraphs{style="titulo"}', 'El dinero', ':::'].join('\n');
-    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: cfg, book: false });
-    const styles = strFromU8(unzipSync(bytes)['word/styles.xml']!);
-    // 0.015 em of 20 pt = 0.3 pt = 6 twentieths, after the colour and before the size.
-    expect(styles).toMatch(/Título de página[\s\S]*?<w:spacing w:val="6"\/><w:sz w:val="40"\/>/);
-  });
-});
-
 describe('character spacing of styles (#932)', () => {
-  const stylesOf = (md: string, cfg: PostextConfig): string => strFromU8(unzipSync(postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: cfg, book: false }))['word/styles.xml']!);
-  const styleXml = (styles: string, name: string): string => new RegExp(`<w:style [^>]*><w:name w:val="${name}"/>.*?</w:style>`).exec(styles)![0];
   const em = (value: number) => ({ value, unit: 'em' as const });
   const cfg = {
     ...config,
@@ -454,24 +443,9 @@ describe('character spacing of styles (#932)', () => {
     headingStyles: [{ id: 'portada', name: 'Portada', letterSpacing: em(0.1) }, { id: 'plana', name: 'Plana', letterSpacing: em(0) }],
     paragraphStyles: [{ id: 'firma', name: 'Firma', letterSpacing: em(0.05) }, { id: 'titulo', name: 'Título', fontSize: { value: 20, unit: 'pt' }, letterSpacing: em(0.015) }],
   } as unknown as PostextConfig;
-  const md = [
-    '# One', '', '## Two', '', '# The lantern {style="portada"}', '', '# Flat {style="plana"}', '',
-    ':::paragraphs{style="firma"}', 'Signed', ':::', '', ':::paragraphs{style="titulo"}', 'Big', ':::', '',
-  ].join('\n');
-
-  it('writes the tracking of heading levels and heading styles, as it does a paragraph style\'s', () => {
-    const styles = stylesOf(md, cfg);
-    // 0.02 em of the 20 pt Heading 1 = 0.4 pt = 8 twentieths; -0.5 pt = -10.
-    expect(styleXml(styles, 'heading 1')).toMatch(/<w:b\/><w:spacing w:val="8"\/><w:sz w:val="40"\/>/);
-    expect(styleXml(styles, 'heading 2')).toMatch(/<w:b\/><w:spacing w:val="-10"\/><w:sz w:val="32"\/>/);
-    expect(styleXml(styles, 'heading 3')).not.toMatch(/w:val="[-\d]+"\/><w:sz/);
-    // A heading style's own, even at zero (it takes the level's off), in its own size's em.
-    expect(styleXml(styles, 'Portada')).toMatch(/<w:rPr><w:spacing w:val="40"\/><\/w:rPr>/);
-    expect(styleXml(styles, 'Plana')).toMatch(/<w:rPr><w:spacing w:val="0"\/><\/w:rPr>/);
-    // 0.05 em of the 11 pt body = 0.55 pt = 11; 0.015 em of 20 pt = 6.
-    expect(styleXml(styles, 'Firma')).toMatch(/<w:spacing w:val="11"\/>/);
-    expect(styleXml(styles, 'Título')).toMatch(/<w:spacing w:val="6"\/><w:sz w:val="40"\/>/);
-  });
+  // `old-tracking` was written from headings One (1) and Two (2), The
+  // lantern (portada) and Flat (plana), and paragraph groups in firma and
+  // titulo, with `cfg`.
 
   it('reads a style\'s character spacing, its own or its ancestor\'s, in em of the style\'s size', () => {
     const doc = readDocx(docx([p('Firma', r('Signed')), p('Verse2', r('Child')), p('Plain', r('Plain'))].join(''), {
@@ -491,8 +465,8 @@ describe('character spacing of styles (#932)', () => {
 
   it('puts it on the book\'s styles that set none, and leaves what the book already sets', () => {
     const bare = { ...cfg, headings: undefined, paragraphStyles: [{ id: 'firma', name: 'Firma' }, { id: 'titulo', name: 'Título', letterSpacing: em(0.2) }], headingStyles: [{ id: 'portada', name: 'Portada' }] } as unknown as PostextConfig;
-    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: cfg, book: false });
-    const doc = readDocx(bytes);
+    // The old exporter wrote `md` with `cfg`'s tracking.
+    const doc = readDocx(oldExport('old-tracking'));
     const template = parseTemplate(doc.embeddedTemplate)!;
     const tracking = wordStyleTracking(doc, template, bare);
     const byStyle = Object.fromEntries(tracking.map((t) => [t.style, t.letterSpacing.value]));
@@ -507,7 +481,7 @@ describe('character spacing of styles (#932)', () => {
   });
 
   it('comes back as the same tracking when the book carries none: export, read, apply', () => {
-    const doc = readDocx(postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: cfg, book: false }));
+    const doc = readDocx(oldExport('old-tracking'));
     const bare = { ...cfg, headings: undefined, headingStyles: [{ id: 'portada', name: 'Portada' }, { id: 'plana', name: 'Plana' }], paragraphStyles: [{ id: 'firma', name: 'Firma' }, { id: 'titulo', name: 'Título', fontSize: { value: 20, unit: 'pt' } }], calloutStyles: [{ id: 'note', name: 'Nota' }] } as unknown as PostextConfig;
     const { config: back } = applyStyleTracking(bare, wordStyleTracking(doc, parseTemplate(doc.embeddedTemplate)!, bare));
     expect(back.paragraphStyles!.map((s) => s.letterSpacing)).toEqual([em(0.05), em(0.015)]);

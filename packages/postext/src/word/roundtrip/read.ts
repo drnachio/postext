@@ -9,13 +9,16 @@ import { attr, child, children, parseXml, textOf, type XmlElement } from '../xml
 import { readCustomProp, readExportMap, xmlPartText, PROP_EXPORT_ID } from '../anchors/exportMap.js';
 import type { ExportMap } from '../anchors/types.js';
 import { DocxReadError } from '../docxRead/parts.js';
-import { PARA_CHAR, walkPart, type Token } from './walk.js';
+import { PARA_CHAR, walkPart, type ParaProps, type Token } from './walk.js';
+import { readParaStyles, type ParaStyles } from './added.js';
 
 export interface ReadChar {
   ch: string;
   flags: string;
   href?: string;
   tex?: string;
+  /** Hash of the equation's canonical OMML. */
+  mathHash?: string;
   tracked?: boolean;
 }
 
@@ -40,9 +43,22 @@ export interface ReadComment {
   end?: ReadPosition;
 }
 
+/** A paragraph typed outside every bookmark: it goes into the source next
+ *  to the block of fragment `fid`, after it or (at a chapter's start)
+ *  before it. */
+export interface AddedParagraph {
+  fid: string;
+  side: 'after' | 'before';
+  chars: ReadChar[];
+  props?: ParaProps;
+}
+
 export interface ReadDocx {
   map: ExportMap;
   fragments: Map<string, ReadFragment>;
+  added: AddedParagraph[];
+  /** The paragraph styles of the file, to read an added paragraph's role. */
+  styles: ParaStyles;
   comments: ReadComment[];
 }
 
@@ -89,7 +105,7 @@ export function isExportedDocx(bytes: Uint8Array): boolean {
 }
 
 /** Distribute the token stream over the fragments. */
-function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'comments'> & { marks: Map<string, ReadPosition> } {
+function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'comments' | 'styles'> & { marks: Map<string, ReadPosition> } {
   const fragments = new Map<string, ReadFragment>();
   const open: { wid: string; fid: string; depth: number }[] = [];
   const lastClosedIn = new Map<number, string>();
@@ -97,7 +113,12 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
   let pending: { para: number; chars: ReadChar[]; dels: number } | undefined;
   /** Paragraphs without a bookmark yet (added by the user), with the
    *  container they stand in. */
-  let orphan: { chars: ReadChar[]; box: number }[] = [];
+  let orphan: { chars: ReadChar[]; box: number; props?: ParaProps; afterSect: boolean }[] = [];
+  const added: AddedParagraph[] = [];
+  /** A section ended since the last bookmark (semantic: a chapter end), so
+   *  what follows opens the next chapter. */
+  let sectSeen = false;
+  const chapterSections = map.variant === 'semantic';
   /** Containers holding at least one of our bookmarks. */
   const boxesWithMarks = new Set<number>();
   let lastFid: string | undefined;
@@ -116,15 +137,18 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
   // A paragraph in a container without any bookmark (a text box holding a
   // list marker, a folio or a running head) is decoration, not text the
   // user added; the formatted writer leaves those unbookmarked.
-  const flushOrphans = (nextBox?: number): void => {
+  // The others go after the block before them, or before the block after
+  // them when they open a chapter (or the document).
+  const flushOrphans = (nextBox?: number, nextFid?: string): void => {
     const paras = orphan
       .filter((o) => boxesWithMarks.has(o.box) || o.box === nextBox)
-      .map((o) => o.chars)
-      .filter((p) => p.some((c) => c.ch.trim() !== '' || c.tex !== undefined));
+      .filter((o) => o.chars.some((c) => c.ch.trim() !== '' || c.tex !== undefined));
     orphan = [];
-    if (!paras.length || !lastFid) return;
-    const f = frag(lastFid);
-    for (const p of paras) f.chars.push({ ch: PARA_CHAR, flags: '', tracked: p[0]?.tracked }, ...p);
+    for (const o of paras) {
+      const before = nextFid !== undefined && (!lastFid || o.afterSect);
+      const fid = before ? nextFid : lastFid;
+      if (fid) added.push({ fid, side: before ? 'before' : 'after', chars: o.chars, ...(o.props ? { props: o.props } : {}) });
+    }
   };
   const known = new Set(map.fragments.map((f) => f.id));
 
@@ -144,7 +168,8 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
           if (pending.dels) f.dels.push(0);
         }
         pending = undefined;
-        flushOrphans(tok.box);
+        flushOrphans(tok.box, tok.fid);
+        sectSeen = false;
         for (const cid of waiting) marks.set(cid, { fid: tok.fid, index: 0 });
         waiting.length = 0;
         lastFid = tok.fid;
@@ -182,9 +207,10 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
         if (top && top.depth === tok.depth) {
           frag(top.fid).chars.push({ ch: PARA_CHAR, flags: '' });
         } else if (pending && pending.para === tok.para) {
-          orphan.push({ chars: pending.chars, box: tok.box });
+          orphan.push({ chars: pending.chars, box: tok.box, afterSect: sectSeen, ...(tok.props ? { props: tok.props } : {}) });
           pending = undefined;
         }
+        if (chapterSections && tok.props?.sect && !open.length) sectSeen = true;
         // Likewise spaces alone after the bookmark end.
         if (tail && tail.para === tok.para) {
           const f = frag(tail.fid);
@@ -208,7 +234,7 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
     }
   }
   flushOrphans();
-  return { fragments, marks };
+  return { fragments, added, marks };
 }
 
 function readComments(files: Files, marks: Map<string, ReadPosition>): ReadComment[] {
@@ -251,6 +277,6 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
       ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box));
     }
   }
-  const { fragments, marks } = assign(tokens, map);
-  return { map, fragments, comments: readComments(files, marks) };
+  const { fragments, added, marks } = assign(tokens, map);
+  return { map, fragments, added, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks) };
 }

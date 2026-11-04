@@ -3,6 +3,7 @@
 // the current book and report each one.
 
 import type { Resource } from '../../types/resources/resources.js';
+import { addedEdits } from './added.js';
 import { buildBlocks, withLineSpaces, type BlockView } from './blocks.js';
 import { diffText, mapThrough, type Hunk } from './diff.js';
 import { blockHunks, hunkEdits, type SourceEdit } from './edits.js';
@@ -161,6 +162,8 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
         add(mergeEdit(v, next, base));
       }
     }
+    // Paragraphs typed outside every bookmark.
+    addedEdits(read.added, blocks, baseOf, read.styles).forEach(add);
   }
 
   const edits: DocxEdit[] = [];
