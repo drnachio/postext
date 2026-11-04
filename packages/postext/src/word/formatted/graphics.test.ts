@@ -5,7 +5,9 @@ import { xmlProblems } from '../ooxml/wellFormed.js';
 import { WORDML_NAMESPACES } from '../ooxml/constants.js';
 import { baselineOffset, faceMetricsOf, MetricsCache } from './metrics.js';
 import { planChunks, planLines } from './paragraphs.js';
-import { imageRun, sniffPicture, srcRect } from './pictures.js';
+import { imageRun, sniffPicture, srcRect, svgWithWordFonts } from './pictures.js';
+import { condensedReading, readingEms, rubyXml } from './eastAsian.js';
+import type { WordFontPlan } from '../fonts/types.js';
 import { HOLDER, emitRun } from './runs.js';
 import { pathRun, rectRuns, ruleRun } from './shapes.js';
 import { wordColor } from './units.js';
@@ -72,7 +74,95 @@ describe('formatted Word graphics and helpers (#1392)', () => {
     expect(path).toContain('<a:cubicBezTo>');
     expect(path).toContain('<a:quadBezTo>');
     expect(path).toContain('stroke="0"');
-    for (const x of [rule, box!, path]) expect(xmlProblems(wrap(x))).toEqual([]);
+    for (const x of [rule, box!, path]) {
+      expect(xmlProblems(wrap(x))).toEqual([]);
+      // One frame kind for every object (LibreOffice keeps their order).
+      expect(x).toContain('<wps:cNvSpPr txBox="1"/>');
+      expect(x).toMatch(/<\/wps:spPr><wps:txbx><w:txbxContent><w:p\/><\/w:txbxContent><\/wps:txbx><wps:bodyPr [^>]*lIns="0"[^>]*><a:noAutofit\/><\/wps:bodyPr><\/wps:wsp>/);
+    }
+  });
+
+  it('names the embedded fonts in an SVG\'s text (#1406)', async () => {
+    const plan: WordFontPlan = {
+      faces: [], warnings: [], altNames: new Map(),
+      map: new Map([
+        ['Geist|400|normal', { family: 'Geist PTX', bold: false, italic: false }],
+        ['Geist|700|normal', { family: 'Geist PTX', bold: true, italic: false }],
+        ['Geist|600|normal', { family: 'Geist SemiBold PTX', bold: false, italic: false }],
+        ['Lora|400|italic', { family: 'Lora PTX', bold: false, italic: true }],
+      ]),
+    };
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg"><style>.a { font-family: Lora, serif; font-style: italic }</style>' +
+      `<text font-family="Geist, -apple-system, 'Segoe UI', sans-serif" font-weight="600">A</text>` +
+      '<text font-family="Geist" font-weight="bold">B</text>' +
+      `<text style="font-family: 'Geist'; font-size: 3px">C</text>` +
+      `<text font-family="'Noto Serif SC', serif">中</text></svg>`;
+    const out = svgWithWordFonts(svg, plan);
+    expect(out).toContain(`.a { font-family: "Lora PTX", Lora, serif; font-style: italic }`);
+    expect(out).toContain(`<text font-family="'Geist SemiBold PTX', Geist, -apple-system, 'Segoe UI', sans-serif" font-weight="400">A</text>`);
+    expect(out).toContain(`<text font-family="'Geist PTX', Geist" font-weight="700">B</text>`);
+    expect(out).toContain(`<text style="font-family: 'Geist PTX', 'Geist'; font-size: 3px">C</text>`);
+    expect(out).toContain(`<text font-family="'Noto Serif SC', serif">`);
+    expect(svgWithWordFonts(svg, undefined)).toBe(svg);
+    // The embedded SVG carries the names, the fallback is drawn from the original.
+    const rastered: string[] = [];
+    const ctx = context({ plan, resourceBytes: () => new TextEncoder().encode(svg), rasterizeSvg: async (s) => { rastered.push(s); return PNG; } });
+    await imageRun(ctx, { kind: 'image', rect: { x: 0, y: 0, width: 10, height: 10 }, fileId: 'f.svg' });
+    expect(rastered).toEqual([svg]);
+  });
+
+  it('leaves @font-face alone and reads the weight across sources and the font shorthand (#1406)', () => {
+    const plan: WordFontPlan = {
+      faces: [], warnings: [], altNames: new Map(),
+      map: new Map([
+        ['Geist|400|normal', { family: 'Geist PTX', bold: false, italic: false }],
+        ['Geist|700|normal', { family: 'Geist PTX', bold: true, italic: false }],
+        ['Geist|600|normal', { family: 'Geist SemiBold PTX', bold: false, italic: false }],
+      ]),
+    };
+    const face = `@font-face { font-family: "Geist"; font-weight: 600; src: url(data:font/woff2;base64,AAAA) }`;
+    const out = svgWithWordFonts(`<svg><style>${face} text { font-family: Geist }</style></svg>`, plan);
+    expect(out).toContain(face);
+    expect(out).toContain(`text { font-family: "Geist PTX", Geist }`);
+    expect(svgWithWordFonts(`<text style="font-family: Geist" font-weight="600">A</text>`, plan)).toBe(`<text style="font-family: 'Geist SemiBold PTX', Geist" font-weight="400">A</text>`);
+    expect(svgWithWordFonts(`<text font-family="Geist" style="font-weight: 600">A</text>`, plan)).toBe(`<text font-family="'Geist SemiBold PTX', Geist" style="font-weight: 400">A</text>`);
+    expect(svgWithWordFonts(`<text style="font: 600 12px Geist, sans-serif">A</text>`, plan)).toBe(`<text style="font: 400 12px 'Geist SemiBold PTX', Geist, sans-serif">A</text>`);
+    expect(svgWithWordFonts(`<text font-family="Geist" font-weight="700">B</text>`, plan)).toBe(`<text font-family="'Geist PTX', Geist" font-weight="700">B</text>`);
+  });
+
+  it('sets the readings of one jukugo word at one size (#1406)', () => {
+    const ctx = context({ lang: 'ja-JP' });
+    const rtPr = '<w:rPr><w:sz w:val="12"/><w:szCs w:val="12"/></w:rPr>';
+    const base = { x: 0, width: 12, fontString: '12px "X"', color: '#000', textStart: 0 };
+    const to: DisplayRun = { ...base, text: '東', ruby: { text: 'とう', fontString: '6px "X"', position: 'over', id: 1 } };
+    const kyo: DisplayRun = { ...base, x: 12, text: '京', ruby: { text: 'きょう', fontString: '6px "X"', position: 'over', id: 1 } };
+    const line = { runs: [to, kyo] } as unknown as DisplayLine;
+    const sz = (xml: string): string => /<w:hps w:val="(\d+)"\/>/.exec(xml)![1]!;
+    const a = rubyXml(ctx, to, '東', '<w:rPr/>', rtPr, { base: 24, rt: 12 }, line);
+    const b = rubyXml(ctx, kyo, '京', '<w:rPr/>', rtPr, { base: 24, rt: 12 }, line);
+    expect(sz(a)).toBe('8');
+    expect(sz(b)).toBe('8');
+    expect(sz(rubyXml(ctx, to, '東', '<w:rPr/>', rtPr, { base: 24, rt: 12 }))).toBe('12');
+  });
+
+  it('sets a ruby reading longer than its base smaller (#1406)', () => {
+    const ctx = context({ lang: 'ja-JP' });
+    expect(readingEms('とうきょう')).toBe(5);
+    expect(readingEms('dōng jīng')).toBeCloseTo(4.25, 6);
+    const rtPr = '<w:rPr><w:rFonts w:ascii="X"/><w:color w:val="000000"/><w:kern w:val="1"/><w:sz w:val="12"/><w:szCs w:val="12"/></w:rPr>';
+    // Five kana at 6 pt over a 12 pt base: 30 pt into 12 pt, set at 2.4 pt.
+    expect(condensedReading(ctx, rtPr, 5, 12, 12)).toEqual({ sz: 4, rtPr: rtPr.replace(/w:val="12"/g, 'w:val="4"') });
+    expect(condensedReading(ctx, rtPr.replace('<w:kern', '<w:w w:val="50"/><w:kern'), 4, 12, 12)).toBeUndefined();
+    expect(condensedReading(ctx, rtPr, 2, 12, 12)).toBeUndefined();
+    const run: DisplayRun = { text: '東', x: 0, width: 12, fontString: '12px "X"', color: '#000', textStart: 0, ruby: { text: 'とうきょう', fontString: '6px "X"', position: 'over' } };
+    const xml = rubyXml(ctx, run, '東', '<w:rPr/>', rtPr, { base: 24, rt: 12 });
+    expect(xml).toContain('<w:rubyAlign w:val="center"/><w:hps w:val="4"/>');
+    expect(xml).toContain('<w:rt><w:r><w:rPr><w:rFonts w:ascii="X"/><w:color w:val="000000"/><w:kern w:val="1"/><w:sz w:val="4"/>');
+    expect(ctx.warnings).toEqual(['ruby-overhang']);
+    const short = rubyXml(ctx, { ...run, ruby: { ...run.ruby!, text: 'ひがし', group: true } }, '東', '<w:rPr/>', rtPr, { base: 24, rt: 12 });
+    expect(short).toContain('<w:rubyAlign w:val="distributeSpace"/><w:hps w:val="8"/>');
+    expect(rubyXml(ctx, { ...run, ruby: { ...run.ruby!, text: 'ね' } }, '東', '<w:rPr/>', rtPr, { base: 24, rt: 12 })).toContain('<w:hps w:val="12"/>');
   });
 
   it('embeds an SVG with a rasterised PNG fallback, and leaves out a missing file', async () => {

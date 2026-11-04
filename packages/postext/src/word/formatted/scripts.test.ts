@@ -147,6 +147,22 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     }
   });
 
+  it('writes boxes as empty text boxes that read back with no edit (#1406)', async () => {
+    const md = `Before the box.\n\n:::callout{type="note"}\nBoxed text inside a note, a few words long.\n:::\n\nAfter the box.`;
+    const b = await exportDoc(md, config());
+    expectUnedited(b, md);
+    const shapes = els(b.root, 'anchor').filter((a) => /^ptx (box|rule|path)/.test(els(a, 'docPr')[0]!.attrs.name!));
+    expect(shapes.length).toBeGreaterThan(0);
+    for (const a of shapes) {
+      const wsp = els(a, 'wsp')[0]!;
+      expect(childNames(wsp)).toEqual(['cNvSpPr', 'spPr', 'txbx', 'bodyPr']);
+      expect(els(wsp, 'cNvSpPr')[0]!.attrs.txBox).toBe('1');
+      expect(childNames(els(wsp, 'txbxContent')[0]!)).toEqual(['p']);
+      expect(textOf(wsp)).toBe('');
+      expect(els(wsp, 'noAutofit')).toHaveLength(1);
+    }
+  });
+
   it('places a composed page\'s turned frame by its layer', async () => {
     const md = '::::page{template="sheet"}\nMain text of the page set in the flow frame.\n\n:::frame{slot="side"}\nSide text turned with its frame, a few words long.\n:::\n::::\n';
     const b = await exportDoc(md, {

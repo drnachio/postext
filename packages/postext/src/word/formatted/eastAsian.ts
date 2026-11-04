@@ -59,19 +59,63 @@ export function textRun(rPr: string, text: string): string {
   return text ? `<w:r>${rPr}<w:t xml:space="preserve">${escapeXml(text)}</w:t></w:r>` : '';
 }
 
+/** Characters set one em wide: CJK ideographs and symbols, kana,
+ *  hangul, bopomofo, full-width forms. */
+const WIDE = /^[\u1100-\u115f\u2e80-\u303e\u3041-\u33ff\u3400-\u4dbf\u4e00-\u9fff\ua960-\ua97f\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]|^[\u{20000}-\u{3fffd}]/u;
+
+/** A reading's advance in ems, as Word sets it: wide characters one em,
+ *  the rest about half an em (no face is measured here). */
+export function readingEms(text: string): number {
+  let ems = 0;
+  for (const g of graphemesOf(text)) ems += /^\s+$/.test(g) ? 0.25 : WIDE.test(g) ? 1 : 0.5;
+  return ems;
+}
+
+/** The size (half-points) and `rtPr` that set a reading of `ems` in
+ *  `widthPx` along the line, when at `szHalfPoints` it would run longer:
+ *  Word has no overhang and widens the base to its reading, lengthening
+ *  the line the engine set (#1406). The size goes down: LibreOffice
+ *  ignores a reading's character scale and spacing. */
+export function condensedReading(ctx: WriterContext, rtPr: string, ems: number, szHalfPoints: number, widthPx: number): { rtPr: string; sz: number } | undefined {
+  const scale = Number(/<w:w w:val="(\d+)"\/>/.exec(rtPr)?.[1] ?? 100) / 100;
+  const advance = ems * ((szHalfPoints * ctx.dpi) / 144) * scale;
+  if (!(widthPx > 0) || advance <= widthPx + 0.01) return undefined;
+  const sz = Math.max(2, Math.floor((szHalfPoints * widthPx) / advance));
+  return { rtPr: rtPr.replace(/<w:sz w:val="\d+"\/>/, `<w:sz w:val="${sz}"/>`).replace(/<w:szCs w:val="\d+"\/>/, `<w:szCs w:val="${sz}"/>`), sz };
+}
+
+/** The reading size (half-points) of a ruby that runs over its base, the
+ *  smallest any run of its word takes: a jukugo word (runs of the line
+ *  sharing the ruby's id) keeps one reading size, each reading within its
+ *  own base, since Word widens a base to its reading. */
+function rubyFit(ctx: WriterContext, run: DisplayRun, rtPr: string, rt: number, line: DisplayLine | undefined): { rtPr: string; sz: number } | undefined {
+  const id = run.ruby!.id;
+  const word = id !== undefined && line ? line.runs.filter((r) => r.ruby?.id === id) : [run];
+  let fit: { rtPr: string; sz: number } | undefined;
+  for (const r of word.length ? word : [run]) {
+    const c = condensedReading(ctx, rtPr, readingEms(r.ruby!.text), rt, r.width);
+    if (c && (!fit || c.sz < fit.sz)) fit = c;
+  }
+  return fit;
+}
+
 /** A ruby base and its reading as one `w:ruby`. `rPr` is the base's
- *  properties, `rtPr` the reading's; the sizes are half-points. */
-export function rubyXml(ctx: WriterContext, run: DisplayRun, text: string, rPr: string, rtPr: string, sizes: { base: number; rt: number }): string {
+ *  properties, `rtPr` the reading's; the sizes are half-points. A reading
+ *  longer than the base is set smaller, to the base's width (`line`: the
+ *  whole jukugo word at one size). */
+export function rubyXml(ctx: WriterContext, run: DisplayRun, text: string, rPr: string, rtPr: string, sizes: { base: number; rt: number }, line?: DisplayLine): string {
   const ruby = run.ruby!;
   if (ruby.position === 'under') ctx.warn('ruby-under', 'a ruby set under its base is set over it in Word (Word has no ruby under the text)');
   if (ruby.position === 'right') ctx.warn('ruby-right', 'zhuyin set beside the characters is set over them in Word');
   const raise = ruby.raise !== undefined ? Math.max(0, Math.round(halfPoints(Math.abs(ruby.raise), ctx.dpi))) : sizes.base;
   const align = ruby.group ? 'distributeSpace' : 'center';
   const lid = escapeAttr(ctx.lang ?? 'ja-JP');
+  const condensed = rubyFit(ctx, run, rtPr, sizes.rt, line);
+  if (condensed) ctx.warn('ruby-overhang', `the reading "${ruby.text}" (or another of its word) runs over its base, which Word does not allow: it is set smaller to fit the base`);
   return (
     `<w:r>${rPr}<w:ruby>` +
-    `<w:rubyPr><w:rubyAlign w:val="${align}"/><w:hps w:val="${sizes.rt}"/><w:hpsRaise w:val="${raise}"/><w:hpsBaseText w:val="${sizes.base}"/><w:lid w:val="${lid}"/></w:rubyPr>` +
-    `<w:rt>${textRun(rtPr, ruby.text)}</w:rt>` +
+    `<w:rubyPr><w:rubyAlign w:val="${align}"/><w:hps w:val="${condensed?.sz ?? sizes.rt}"/><w:hpsRaise w:val="${raise}"/><w:hpsBaseText w:val="${sizes.base}"/><w:lid w:val="${lid}"/></w:rubyPr>` +
+    `<w:rt>${textRun(condensed?.rtPr ?? rtPr, ruby.text)}</w:rt>` +
     `<w:rubyBase>${textRun(rPr, text)}</w:rubyBase>` +
     '</w:ruby></w:r>'
   );
