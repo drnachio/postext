@@ -67,6 +67,16 @@ const base = (extra: Partial<PostextConfig> = {}): PostextConfig => ({
 });
 
 describe('vertical characters stand in the middle of their line', () => {
+  it('a list marker at the text\'s size stands on the axis of its line', () => {
+    const doc = buildDocument({ markdown: `- ${HLM}` }, base({ unorderedLists: { bulletChar: '\u3007', bulletFontSize: pt(10) } }));
+    const page = doc.pages[0]!;
+    const centres = paintedCentres(page, doc);
+    const marker = centres.find((c) => c.text === '\u3007')!;
+    const first = [...HLM][0]!;
+    const text = centres.find((c) => c.text === first)!;
+    expect(marker.x).toBeCloseTo(text.x, 3);
+  });
+
   it('the body: each column of characters in the middle of its pitch, symmetric in the type area', () => {
     const doc = buildDocument({ markdown: Array.from({ length: 3 }, () => HLM).join('\n\n') }, base());
     const page = doc.pages[0]!;
