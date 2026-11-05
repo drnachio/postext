@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Linha de comando',
   description: 'Um único executável autossuficiente para macOS, Linux e Windows. Ele transforma um livro .postext, uma pasta de livro ou arquivos Markdown soltos em PDF, HTML, EPUB, imagens das páginas e Word, monta pacotes, verifica livros e oferece saída JSON para scripts e agentes',
   lang: 'pt',
-  lastUpdated: '2026-10-20',
-  readingTime: '13 min',
+  lastUpdated: '2026-11-04',
+  readingTime: '14 min',
   order: 49,
   plainSummary: "Esta página é para quem quer fazer livros com o Postext a partir de um terminal, sem usar o site. Você baixa um único arquivo feito para o seu computador e o executa, sem instalar mais nada. Você entrega a ele o livro, ou alguns arquivos de texto, e ele faz um PDF, uma página da web, um livro digital, imagens das páginas ou um documento do Word. Ele também verifica se o livro tem problemas e junta todos os arquivos do livro em um só. Programas e assistentes de inteligência artificial também podem usá-lo, porque ele responde em um formato que esses programas leem com facilidade.",
 };
@@ -147,8 +147,8 @@ próprio idioma, a menos que `--locale` peça outro (`--locale en`).
     <tr><td><code>epub</code></td><td>Um livro EPUB 3, com páginas fixas como no impresso ou texto refluível.</td></tr>
     <tr><td><code>image</code></td><td>Uma página como imagem PNG, JPEG ou WebP.</td></tr>
     <tr><td><code>images</code></td><td>Todas as páginas, ou um intervalo, como imagens em uma pasta.</td></tr>
-    <tr><td><code>docx</code></td><td>Os capítulos como um documento do Word que é importado de volta sem mudanças.</td></tr>
-    <tr><td><code>import-docx</code></td><td>Um documento do Word como livro do Postext (uma pasta ou um <code>.postext</code>).</td></tr>
+    <tr><td><code>docx</code></td><td>Os capítulos como documento do Word: semântico (títulos, listas, notas e tabelas próprios do Word) ou diagramado (as páginas do PDF).</td></tr>
+    <tr><td><code>import-docx</code></td><td>As correções feitas num arquivo do Word exportado, de volta no livro; qualquer outro documento do Word, como livro novo (uma pasta ou um <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Uma pasta de livro ou Markdown solto como um único arquivo <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Um arquivo <code>.postext</code> como pasta.</td></tr>
     <tr><td><code>info</code></td><td>Os capítulos, idiomas, recursos e fontes do livro e, com <code>--pages</code>, o número de páginas.</td></tr>
@@ -245,18 +245,60 @@ por um PDF.
 
 ```bash
 postext docx book.postext -o book.docx
+postext docx book/ --variant formatted -o pages.docx
+postext import-docx book.docx book/ --dry-run
+postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
-postext import-docx manuscript.docx -o manuscript.postext
 ```
 
-`docx` grava os capítulos com estilos do Word para títulos, parágrafos,
-boxes, citações, listas e notas. O que o Word não consegue expressar fica
-literalmente nos estilos *Postext Markup*, e o modelo de importação vai
-dentro do arquivo; assim, o documento volta a ser importado sem mudanças
-depois que um editor trabalha nele. `import-docx` transforma um documento do Word em
-livro: um capítulo a cada título de nível 1 (`--no-split` mantém um só),
-imagens e tabelas como recursos, e `--report` imprime o relatório de
-qualidade que o Sandbox mostra (estilos em uso, formatação direta, numeração
+`docx` grava qualquer um dos dois documentos do Word que o Sandbox exporta
+(veja [Sandbox › Documentos do Word](/pt/docs/sandbox-books-saving#documentos-do-word)).
+`--variant semantic`, o padrão, constrói um documento editável a partir do
+Markdown, com os títulos, as listas, as notas de rodapé, as tabelas, as
+equações e as seções próprios do Word; o que não tem estrutura no Word viaja
+como fonte em controles de conteúdo *Postext Source*. Não precisa diagramar.
+`--variant formatted` diagrama o livro como o `pdf` faz e grava cada página
+como uma seção do Word, com o texto em caixas de texto postas linha a linha.
+Os dois incorporam as fontes do livro (`--no-embed-fonts` só as nomeia). Uma
+família que o livro não pode repassar (`redistributable: false` em
+`customFonts`) fica de fora e entra a alternativa aberta dela, como no EPUB;
+uma fonte cuja licença proíbe a incorporação, uma com contornos PostScript e
+uma fonte variável são avisadas e só nomeadas. No `build`, `--docx ARQUIVO`
+grava o mesmo arquivo, com `--docx-variant` e `--no-docx-fonts`. Desde o
+postext 1.68; `--template` não vale mais para `docx` nem para `build`.
+
+Com um livro depois do arquivo, o `import-docx` traz de volta as correções
+feitas num documento que o `docx` exportou desse livro. Ele lê o mapa que o
+arquivo leva, compara o texto com a cópia dos capítulos feita na exportação e
+combina cada correção com o livro como ele está agora: os arquivos de capítulo
+de uma pasta, de um `.postext` ou de Markdown solto, e o texto dos recursos
+(legendas, notas, texto alternativo, células de tabela) no `preset.json`, ou no
+`resources.json` de `--resources DIR` para Markdown solto. Num livro em várias
+línguas, `--locale` indica a edição da qual o arquivo foi exportado, e uma
+correção no texto de um recurso vai para o bloco `localized` dessa edição. Cada
+correção é informada numa linha própria:
+
+- `applied`, com o arquivo e a linha para onde foi;
+- `conflict`: o texto também mudou no livro desde a exportação, o capítulo ou o
+  recurso não existe mais, ou duas correções se sobrepõem;
+- `rejected`: texto que o próprio livro gera (números, rótulos de legenda) ou
+  uma formatação que atravessa a marcação do Postext.
+
+As alterações controladas são tomadas como aceitas, e os comentários são
+listados com autor e lugar, mas não gravados. O código de saída é 3 quando uma
+correção não foi aplicada. `--dry-run` (`-n`) imprime o relatório e um diff
+unificado de cada arquivo que mudaria, e não grava nada. Cada arquivo é gravado
+ao lado do destino e renomeado por cima dele, então uma execução interrompida
+nunca deixa meio capítulo; um arquivo de capítulo que mudou enquanto a
+importação rodava fica como está, com um aviso `docx.fileChanged`. `-o` não
+combina com um livro. Com `--json`, a resposta traz `variant`, `exportId`,
+`edits` (cada uma com `status`, `reason`, `kind`, `before`, `after` e `at`),
+`comments`, `files` e, num teste sem gravação, `diff`.
+
+Sem um livro, o `import-docx` transforma qualquer documento do Word em livro
+novo: um capítulo a cada título de nível 1 (`--no-split` mantém um só),
+imagens e tabelas como recursos, e `--report` imprime o relatório de qualidade
+que o Sandbox mostra (estilos em uso, formatação direta, numeração
 digitada…). `--template` recebe um modelo de importação (um `.json` salvo no
 Sandbox ou um `.docx` que traga um).
 
@@ -428,7 +470,7 @@ inclusive agentes de programação.
 
 - **Códigos de saída**: `0` concluído, `1` falhou, `2` uso incorreto (uma
   opção desconhecida, uma entrada que falta), `3` o `check` encontrou erros
-  (ou avisos com `--strict`).
+  (ou avisos com `--strict`), ou o `import-docx` deixou de fora uma correção do Word.
 - **Sem perguntas.** Ele nunca espera uma resposta; uma pasta que não está
   vazia é recusada em vez de gerar uma pergunta.
 - **Saída padrão**: `-o -` grava ali um PDF, uma imagem ou um pacote, para

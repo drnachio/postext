@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
 import type { PostextConfig, Resource } from 'postext';
 import { bitmapInfo, bundleBaseConfig, createBundle, svgSize } from 'postext/bundle';
-import { analyzeDocx, applyStyleTracking, emptyTemplate, parseTemplate, pictureResolution, readDocx, wordStyleTracking, wordToPostext, type ImportResult } from 'postext/word';
+import { analyzeDocx, applyStyleTracking, emptyTemplate, isExportedDocx, parseTemplate, pictureResolution, readDocx, wordStyleTracking, wordToPostext, type ImportResult } from 'postext/word';
 import { CliError, UsageError } from '../args';
 import type { CommandContext } from '../context';
 import { deepMerge } from '../input';
@@ -10,6 +10,7 @@ import { byteLength, writeOut } from '../io';
 import { firstPageCover } from '../outputs/cover';
 import { style } from '../log';
 import { readTemplate } from '../outputs/docx';
+import { importWordEdits } from '../wordEdits';
 
 const BITMAP_FORMATS: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/webp': 'webp', 'image/gif': 'gif' };
 const EXT: Record<string, string> = { png: 'png', jpeg: 'jpg', webp: 'webp', gif: 'gif' };
@@ -45,12 +46,25 @@ function importedResources(result: ImportResult, files: Map<string, Uint8Array>)
 
 export default async function importDocx(ctx: CommandContext): Promise<void> {
   const { opts, reporter, inputs } = ctx;
-  if (inputs.length !== 1) throw new UsageError('Give one .docx file to import');
+  if (inputs.length < 1 || inputs.length > 2) throw new UsageError('Give one .docx file to import, and the book it was exported from to apply its edits');
   const file = inputs[0]!;
   if (!existsSync(file)) throw new CliError(`No such file: ${file}`);
+  const bytes = new Uint8Array(readFileSync(file));
+  // A file `postext docx` exported: its edits go back into the book.
+  const exported = isExportedDocx(bytes);
+  const project = inputs[1];
+  if (project) {
+    // The edits are written into the book itself.
+    if (opts.string('out')) throw new UsageError('-o converts a Word file into a new book: with a book named, the edits are written into it (--dry-run to see them first)');
+    if (!exported) throw new CliError(`${file} was not exported by postext (it has no export map): import it without naming a book to convert it`);
+    await importWordEdits(bytes, file, project, opts, reporter);
+    return;
+  }
+  if (opts.flag('dry-run')) throw new UsageError('--dry-run applies to the edits of an exported file: name the book it was exported from');
+  if (exported) reporter.info(style.dim(`${file} was exported by postext: name its book (postext import-docx ${file} book/) to apply the edits made in Word; converting it into a new book instead`));
   let doc: ReturnType<typeof readDocx>;
   try {
-    doc = reporter.time('read', () => readDocx(new Uint8Array(readFileSync(file))));
+    doc = reporter.time('read', () => readDocx(bytes));
   } catch (err) {
     throw new CliError(`${file}: ${(err as Error).message}`);
   }

@@ -25,12 +25,16 @@ function isSmallCapsOpenerAt(markdown: string, r: number, end: number): boolean 
  *  source offsets in order. One in inline code (`code`) is text. */
 function markSourceSkips(markdown: string, from: number, end: number, code: Array<[number, number]>): Array<[number, number]> {
   const out: Array<[number, number]> = [];
-  for (let at = markdown.indexOf(MARK_OPENER, from); at >= 0 && at < end; at = markdown.indexOf(MARK_OPENER, at + 1)) {
+  // Read in the block's own text (a mark reads forward only), so a block
+  // costs its own length, not the document's.
+  const block = markdown.slice(from, end);
+  for (let k = block.indexOf(MARK_OPENER); k >= 0; k = block.indexOf(MARK_OPENER, k + 1)) {
+    const at = from + k;
     if (code.some(([s, e]) => at >= s && at < e)) continue;
-    const read = readMarkAt(markdown.slice(0, end), at);
+    const read = readMarkAt(block, k);
     if (!read) continue;
     const close = at + MARK_OPENER.length + read.inner.length;
-    out.push([at, at + MARK_OPENER.length], [close, read.end]);
+    out.push([at, at + MARK_OPENER.length], [close, from + read.end]);
   }
   return out;
 }
@@ -68,7 +72,9 @@ export function computeSourceMap(
   const code = roleCodeSpans(markdown, blockSrcStart, blockSrcEnd);
   let ci = 0;
   const annotationSkips = annotationSourceSkips(markdown, blockSrcStart, blockSrcEnd);
-  const markSkips = markdown.includes(MARK_OPENER) ? markSourceSkips(markdown, blockSrcStart, blockSrcEnd, code) : [];
+  // Looked for in the block only: a search of the whole document made
+  // every block cost the document's length (#1395).
+  const markSkips = markSourceSkips(markdown, blockSrcStart, blockSrcEnd, code);
   const skips = markSkips.length > 0 ? [...annotationSkips, ...markSkips].sort((a, b) => a[0] - b[0]) : annotationSkips;
   let si = 0;
   // The citations of the block (#1215), read as the parser reads them:

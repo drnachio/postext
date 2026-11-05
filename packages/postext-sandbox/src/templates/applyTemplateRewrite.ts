@@ -49,7 +49,7 @@ export function applyTemplateRewrite(dispatch: Dispatch<SandboxAction>, rewrite:
 function ownStep(step: HistoryStepInfo | null, chapters: ReadonlySet<string>, designLeft: boolean): 'design' | 'text' | null {
   if (!step) return null;
   if (step.kind === 'config') return designLeft && step.keys.includes('pageTemplates') ? 'design' : null;
-  if (step.kind === 'resource') return null;
+  if (step.kind === 'resource' || step.kind === 'group') return null;
   return chapters.has(step.chapterId) ? 'text' : null;
 }
 

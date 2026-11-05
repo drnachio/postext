@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createHash } from 'node:crypto';
 import type { VDTDocument } from 'postext';
-import { bookIdentifier, fontAssets, imageAssets, pageProgressionOf, placedFileIds } from './assets.js';
+import { bookIdentifier, fontAssets, imageAssets, pageProgressionOf, placedFileIds, slug } from './assets.js';
 import { sniffFontFormat, sniffImageType } from './media.js';
 import { sha1, uuidV5 } from './uuid.js';
 import type { EpubWarning } from '../types.js';
@@ -194,5 +194,17 @@ describe('pageProgressionOf', () => {
   it('is rtl for a right-bound book', () => {
     expect(pageProgressionOf([{ binding: 'right' } as VDTDocument])).toBe('rtl');
     expect(pageProgressionOf([{} as VDTDocument])).toBe('ltr');
+  });
+});
+
+describe('slug', () => {
+  it('leaves no dash at either end, also after the cut', () => {
+    expect(slug('--Déjà  vu!--')).toBe('deja-vu');
+    expect(slug('abc def', 4)).toBe('abc');
+    expect(slug('---')).toBe('x');
+  });
+
+  it('takes a long run of dashes in linear time', () => {
+    expect(slug(`${'-'.repeat(200_000)}a${'-'.repeat(200_000)}`)).toBe('a');
   });
 });

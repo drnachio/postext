@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Kommandozeile',
   description: 'Eine eigenständige ausführbare Datei für macOS, Linux und Windows. Sie wandelt ein .postext-Buch, einen Buchordner oder lose Markdown-Dateien in PDF, HTML, EPUB, Seitenbilder und Word um, packt Pakete, prüft Bücher und liefert JSON-Ausgabe für Skripte und Agenten',
   lang: 'de',
-  lastUpdated: '2026-10-20',
-  readingTime: '12 min',
+  lastUpdated: '2026-11-04',
+  readingTime: '13 min',
   order: 49,
   plainSummary: "Diese Seite richtet sich an alle, die Bücher mit Postext im Terminal statt auf der Website machen wollen. Sie laden eine einzige Datei für Ihren Computer herunter und führen sie aus, ohne etwas zu installieren. Sie geben ihr Ihr Buch oder ein paar Textdateien, und sie erzeugt ein PDF, eine Webseite, ein E-Book, Bilder der Seiten oder ein Word-Dokument. Sie kann ein Buch auch auf Probleme prüfen und seine Dateien zu einer einzigen packen. Auch Programme und KI-Assistenten können sie nutzen, denn sie kann in einem Format antworten, das diese leicht lesen.",
 };
@@ -145,8 +145,8 @@ Konfiguration des Buchs gelegt. Ein mehrsprachiges Paket wird in seiner eigenen 
     <tr><td><code>epub</code></td><td>Ein EPUB-3-Buch, mit festen Seiten wie gedruckt oder umfließendem Text.</td></tr>
     <tr><td><code>image</code></td><td>Eine Seite als PNG-, JPEG- oder WebP-Bild.</td></tr>
     <tr><td><code>images</code></td><td>Alle Seiten oder einen Bereich als Bilder in einem Ordner.</td></tr>
-    <tr><td><code>docx</code></td><td>Die Kapitel als Word-Dokument, das sich unverändert wieder importieren lässt.</td></tr>
-    <tr><td><code>import-docx</code></td><td>Ein Word-Dokument als Postext-Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
+    <tr><td><code>docx</code></td><td>Die Kapitel als Word-Dokument: semantisch (Überschriften, Listen, Anmerkungen und Tabellen von Word selbst) oder gesetzt (die Seiten des PDF).</td></tr>
+    <tr><td><code>import-docx</code></td><td>Die Korrekturen aus einer exportierten Word-Datei zurück ins Buch; jedes andere Word-Dokument als neues Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
     <tr><td><code>pack</code></td><td>Einen Buchordner oder lose Markdown-Dateien als eine einzige <code>.postext</code>-Datei.</td></tr>
     <tr><td><code>unpack</code></td><td>Eine <code>.postext</code>-Datei als Ordner.</td></tr>
     <tr><td><code>info</code></td><td>Kapitel, Sprachen, Ressourcen und Schriften des Buchs, mit <code>--pages</code> auch seine Seitenzahl.</td></tr>
@@ -240,19 +240,67 @@ ohne den Umweg über ein PDF.
 
 ```bash
 postext docx book.postext -o book.docx
+postext docx book/ --variant formatted -o pages.docx
+postext import-docx book.docx book/ --dry-run
+postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
-postext import-docx manuscript.docx -o manuscript.postext
 ```
 
-`docx` schreibt die Kapitel mit Word-Formatvorlagen für Überschriften, Absätze, Kästen,
-Zitate, Listen und Anmerkungen. Was Word nicht ausdrücken kann, bleibt wörtlich in den
-Formatvorlagen *Postext Markup* erhalten, und die Importvorlage wird in der Datei mitgespeichert, sodass
-sich das Dokument unverändert wieder importieren lässt, nachdem ein Lektorat daran gearbeitet hat.
-`import-docx` macht aus einem Word-Dokument ein Buch: ein Kapitel an jeder Überschrift
-der Ebene 1 (`--no-split` behält eines), Bilder und Tabellen als Ressourcen, und
-`--report` gibt den Qualitätsbericht aus, den die Sandbox zeigt (verwendete Formatvorlagen, direkte
-Formatierung, getippte Nummerierung …). `--template` nimmt eine Importvorlage an (eine
-aus der Sandbox gespeicherte `.json`-Datei oder eine `.docx`-Datei, die eine enthält).
+`docx` schreibt eines der beiden Word-Dokumente, die die Sandbox exportiert
+(siehe [Sandbox › Word-Dokumente](/de/docs/sandbox-books-saving#word-dokumente)).
+`--variant semantic`, die Voreinstellung, baut aus dem Markdown ein
+bearbeitbares Dokument mit Überschriften, Listen, Fußnoten, Tabellen, Formeln
+und Abschnitten von Word selbst; wofür Word keine Struktur hat, das reist als
+Quelltext in Inhaltssteuerelementen *Postext Source*. Es braucht kein Layout.
+`--variant formatted` setzt das Buch wie `pdf` und schreibt jede Seite als
+Word-Abschnitt, den Text in Zeile für Zeile platzierten Textfeldern. Beide
+betten die Schriften des Buchs ein (`--no-embed-fonts` nennt sie nur). Eine
+Familie, die das Buch nicht weitergeben darf (`redistributable: false` in
+`customFonts`), bleibt draußen, und ihr freier Ersatz kommt hinein, wie im
+EPUB; eine Schrift, deren Lizenz das Einbetten verbietet, eine mit
+PostScript-Konturen und eine variable Schrift werden gemeldet und nur genannt.
+In `build` schreibt `--docx DATEI` dieselbe Datei, mit `--docx-variant` und
+`--no-docx-fonts`. Seit postext 1.68; `--template` gilt nicht mehr für `docx`
+und `build`.
+
+Mit einem Buch nach der Datei bringt `import-docx` die Korrekturen zurück, die
+in einem von `docx` aus diesem Buch exportierten Dokument gemacht wurden. Es
+liest die Karte, die die Datei mitführt, vergleicht den Text mit der beim
+Export gemachten Kopie der Kapitel und führt jede Korrektur mit dem Buch
+zusammen, wie es jetzt ist: die Kapiteldateien eines Ordners, einer
+`.postext`-Datei oder loser Markdown-Dateien, und den Wortlaut der Ressourcen
+(Legenden, Anmerkungen, Alternativtext, Tabellenzellen) in `preset.json`, bei
+losem Markdown in der `resources.json` von `--resources DIR`. Bei einem Buch in
+mehreren Sprachen nennt `--locale` die Ausgabe, aus der die Datei exportiert
+wurde, und eine Korrektur am Wortlaut einer Ressource geht in den
+`localized`-Block dieser Ausgabe. Jede Korrektur wird in einer eigenen Zeile
+gemeldet:
+
+- `applied`, mit der Datei und Zeile, in die sie ging;
+- `conflict`: Der Text hat sich seit dem Export auch im Buch geändert, das
+  Kapitel oder die Ressource gibt es nicht mehr, oder zwei Korrekturen
+  überschneiden sich;
+- `rejected`: Text, den das Buch selbst erzeugt (Nummern, Legendenbezeichnungen),
+  oder Formatierung, die über Postext-Markup hinwegläuft.
+
+Nachverfolgte Änderungen gelten als angenommen, und Kommentare werden mit
+Autor und Stelle aufgeführt, aber nicht geschrieben. Der Exit-Code ist 3, wenn
+eine Korrektur nicht übernommen wurde. `--dry-run` (`-n`) gibt den Bericht und
+ein Unified Diff jeder Datei aus, die sich ändern würde, und schreibt nichts.
+Jede Datei wird neben ihr Ziel geschrieben und darüber umbenannt, sodass ein
+abgebrochener Lauf nie ein halbes Kapitel hinterlässt; eine Kapiteldatei, die
+sich während des Imports geändert hat, bleibt mit einer Warnung
+`docx.fileChanged` unangetastet. `-o` passt nicht zu einem Buch. Mit `--json`
+enthält die Antwort `variant`, `exportId`, `edits` (jeweils mit `status`,
+`reason`, `kind`, `before`, `after` und `at`), `comments`, `files` und bei
+einem Probelauf `diff`.
+
+Ohne Buch macht `import-docx` aus jedem Word-Dokument ein neues Buch: ein
+Kapitel an jeder Überschrift der Ebene 1 (`--no-split` behält eines), Bilder
+und Tabellen als Ressourcen, und `--report` gibt den Qualitätsbericht aus, den
+die Sandbox zeigt (verwendete Formatvorlagen, direkte Formatierung, getippte
+Nummerierung …). `--template` nimmt eine Importvorlage an (eine aus der Sandbox
+gespeicherte `.json`-Datei oder eine `.docx`-Datei, die eine enthält).
 
 Der Zeichenabstand gehört zur Formatvorlage, nicht zum Text, und steht deshalb nicht im
 Markdown. `docx` schreibt das `letterSpacing` der Absatzformate, der Überschriftenstile
@@ -417,7 +465,8 @@ Die Kommandozeile ist dafür gebaut, von anderen Programmen gesteuert zu werden,
 ```
 
 - **Exit-Codes**: `0` erledigt, `1` fehlgeschlagen, `2` falsche Verwendung (eine unbekannte Option, eine
-  fehlende Eingabe), `3` `check` hat Fehler gefunden (oder mit `--strict` Warnungen).
+  fehlende Eingabe), `3` `check` hat Fehler gefunden (oder mit `--strict` Warnungen),
+  oder `import-docx` hat eine Word-Korrektur nicht übernommen.
 - **Keine Rückfragen.** Die Kommandozeile wartet nie auf eine Eingabe; ein Ordner, der nicht leer
   ist, wird abgelehnt, statt nachzufragen.
 - **Standardausgabe**: `-o -` schreibt ein PDF, ein Bild oder ein Paket dorthin, um es

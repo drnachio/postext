@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Uso programmatico',
   description: 'Chiamare Postext dal codice: buildDocument e i suoi avvisi, i valori predefiniti, i font, le cache e il Web Worker',
   lang: 'it',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-04',
   readingTime: '31 min',
   order: 21,
   parent: 'configuration',
@@ -616,10 +616,41 @@ L’isolamento più semplice è un realm per documento: un iframe per esempio da
 
 ### Documenti Word (`postext/word`)
 
-Il sottopercorso `postext/word` legge e scrive documenti Word (`.docx`) senza un DOM. L’importazione e l’esportazione Word della Sandbox e i comandi `import-docx` e `docx` della riga di comando si basano su di esso (vedi [Riga di comando › docx e import-docx](/it/docs/command-line#docx-e-import-docx)).
+Il sottopercorso `postext/word` scrive e legge documenti Word (`.docx`) senza un DOM, nel browser, in un Worker o in Node. Le finestre di dialogo Word della Sandbox e i comandi `docx` e `import-docx` della riga di comando si basano su di esso (vedi [Riga di comando › docx e import-docx](/it/docs/command-line#docx-e-import-docx) e [Sandbox › Documenti Word](/it/docs/sandbox-books-saving#documenti-word)). Da postext 1.68.
 
 ```ts
-import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext, postextToDocx } from 'postext/word';
+import { buildDocument } from 'postext';
+import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { decompressWoff2 } from 'postext-pdf';
+
+const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // gli stessi id all’esportazione e all’importazione
+
+// Semantico: le strutture proprie di Word, dal Markdown e dalla configurazione.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
+
+// Impaginato: le pagine impaginate, con i font del libro incorporati.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
+const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+
+// Il file corretto, unito al libro così com’è ora.
+if (isExportedDocx(edited)) {
+  const result = applyDocxEdits(edited, { chapters: current, resources });
+  for (const e of result.edits) console.log(e.status, e.reason ?? '', e.before, '→', e.after);
+  if (result.changed) save(result.chapters, result.resources);
+}
+```
+
+- **`semanticDocx(options)`** si risolve nei byte del `.docx` (un `Uint8Array`). Riceve `chapters` (`{ id, title?, markdown }`), `config`, `resources` con `resourceBytes(fileId)` per i byte delle loro immagini, `rasterizeSvg(svg, width, height)` per il PNG di cui Word ha bisogno accanto a un SVG (senza, un SVG resta fuori), `fonts` (un piano di `planWordFonts`), `title`, `author`, `date` (una data ISO fissa rende i byte riproducibili) e `onWarning` per ciò che Word compone a modo suo (`{ code, message, chapter? }`). Le formule hanno bisogno del convertitore da TeX a Word, che si carica al primo uso; se non si carica, restano in TeX, con un avviso `mathUnavailable`.
+- **`formattedDocx(options)`** riceve `docs`, un `VDTDocument` per capitolo nell’ordine di `chapters` (la catena di stampa da cui nasce il PDF), e gli stessi `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` e `onWarning`. `onProgress(done, total)` conta le pagine scritte.
+- **`planWordFonts(faces, options)`** trasforma i font del libro (`{ family, weight, style, files }`: WOFF2 o sfnt, con qualsiasi numero di porzioni unicode-range) nei font TrueType statici che Word incorpora. `decompressWoff2` (quello esportato da `postext-pdf`) legge il WOFF2; `usedText` e `fontStrings` lasciano fuori le porzioni e i font che l’esportazione non usa; `familySuffix` (predefinito `' PTX'`) si aggiunge a ogni famiglia incorporata. I suoi `warnings` nominano i font lasciati fuori (`restricted`, `cff`, `variable`, `missing`, `merge-failed`) e quelli incorporati solo per anteprima e stampa (`preview-print`).
+- **`isExportedDocx(bytes)`** dice se un file porta la mappa di esportazione, e non solleva mai errori. `readExportMap(files)` legge la mappa stessa dalle parti decompresse (`unzipSync` di fflate): `exportId`, `variant`, `engine`, i capitoli con i loro hash e la copia del testo esportato.
+- **`applyDocxEdits(bytes, { chapters, resources })`** è sincrona. Restituisce tutti i capitoli con le correzioni applicate (`chapters`), copie profonde delle risorse la cui didascalia, nota, testo alternativo o celle di tabella sono cambiati (`resources`), `edits`, `comments`, `variant`, `exportId` e `changed`. Ogni modifica ha `chapter`, oppure `resourceId` e `field` (`caption`, `note`, `alt`, `cell:<riga>:<colonna>`); `start` ed `end` nel testo attuale; `before`, `after`; `kind` (`text`, `format`, `paragraph`, `tracked`); e `status` con la sua `reason`: `applied`, `conflict` (`changed-since-export`, `target-missing`, `no-snapshot`, `overlap`) o `rejected` (`generated`, `format-crosses-markup`, `format-partial`, `bookmarks-lost`). Ogni commento ha il suo `author`, il suo `text` e la sua posizione (`start` vale -1 per un commento che non sta su testo esportato). Un file che non è un `.docx` esportato solleva un `DocxReadError`. Gli id dei capitoli devono essere quelli dell’esportazione: una modifica in un capitolo sconosciuto viene segnalata, non applicata.
+
+Qualsiasi altro file Word si legge come Markdown con un modello di stili:
+
+```ts
+import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext } from 'postext/word';
 
 const word = readDocx(bytes);                                    // a Uint8Array or an ArrayBuffer
 const template = parseTemplate(word.embeddedTemplate) ?? emptyTemplate();
@@ -627,14 +658,11 @@ const report = analyzeDocx(word, template, config);              // report.verdi
 const { chapters, pictures, tables } = wordToPostext(word, {
   template, config, chapters: 'split', existingIds: new Set(), untitledChapter: 'Untitled',
 });
-
-const docx = postextToDocx(chapters, { template, config, book: chapters.length > 1, title: 'Field notes' });
 ```
 
-- **`readDocx(bytes)`** legge il file in un modello Word: i suoi stili, paragrafi, note e immagini, il `title` del documento e il modello di importazione che contiene un’esportazione di Postext (`embeddedTemplate`). Un file che non è un documento Word solleva un `DocxReadError`.
+- **`readDocx(bytes)`** legge il file in un modello Word: i suoi stili, paragrafi, note e immagini, il `title` del documento e il modello di importazione che il file porta con sé (`embeddedTemplate`, scritto dalle esportazioni in Word di postext 1.67 e precedenti). Un file che non è un documento Word solleva un `DocxReadError`.
 - **`wordToPostext(word, settings)`** trasforma il modello in capitoli (`{ title, markdown }`), immagini e tabelle. Il modello di importazione associa ogni stile Word a un titolo, a uno stile di paragrafo, a un riquadro, a una citazione o a una didascalia della configurazione. `chapters: 'split'` apre un capitolo a ogni titolo di livello 1, `'single'` ne tiene uno solo. Le immagini (`id`, `media.bytes`, `caption`, `alt`) e le tabelle (`id`, `model`, `caption`) le salva l’host come risorse; `skippedPictures` indica le immagini EMF, WMF e TIFF lasciate fuori.
 - **`analyzeDocx(word, template, config)`** è il rapporto di qualità che la Sandbox mostra prima di un’importazione: gli stili in uso, quanti paragrafi hanno uno stile e rilievi come `directFormatting`, `manualHeadings` e `typedNumbering`, ciascuno con un conteggio ed esempi.
-- **`postextToDocx(chapters, settings)`** scrive i capitoli come `.docx` (un `Uint8Array`) con stili Word per titoli, paragrafi, riquadri, citazioni, elenchi e note. Ciò che Word non sa esprimere resta tale e quale negli stili *Postext Markup*, e il modello di importazione va dentro il file, così il documento si reimporta senza modifiche. `book: true` apre ogni capitolo con un paragrafo `Postext Chapter`, da cui l’importazione ricostruisce i capitoli.
 - **`wordStyleTracking(word, template, config)`** e **`applyStyleTracking(config, tracking)`** riportano la spaziatura tra i caratteri degli stili Word sugli stili della configurazione che non ne impostano una.
 
 

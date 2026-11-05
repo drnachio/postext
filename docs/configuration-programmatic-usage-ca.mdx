@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ús programàtic',
   description: 'Com es fa servir Postext des del codi: buildDocument i els avisos que retorna, els valors per defecte, la càrrega de fonts, les memòries cau i el Web Worker',
   lang: 'ca',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-04',
   readingTime: '32 min',
   order: 21,
   parent: 'configuration',
@@ -615,10 +615,41 @@ L'aïllament més senzill és un context per document: un iframe per exemple en 
 
 ### Documents de Word (`postext/word`)
 
-El subcamí `postext/word` llegeix i escriu documents de Word (`.docx`) sense DOM. La importació i l'exportació de Word del Sandbox i les ordres `import-docx` i `docx` de la línia d'ordres s'hi basen (vegeu [Línia d'ordres › docx i import-docx](/ca/docs/command-line#docx-i-import-docx)).
+El subcamí `postext/word` escriu i llegeix documents de Word (`.docx`) sense DOM, al navegador, en un Worker o a Node. Els diàlegs de Word del Sandbox i les ordres `docx` i `import-docx` de la línia d'ordres s'hi basen (vegeu [Línia d'ordres › docx i import-docx](/ca/docs/command-line#docx-i-import-docx) i [Sandbox › Documents de Word](/ca/docs/sandbox-books-saving#documents-de-word)). Des de postext 1.68.
 
 ```ts
-import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext, postextToDocx } from 'postext/word';
+import { buildDocument } from 'postext';
+import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { decompressWoff2 } from 'postext-pdf';
+
+const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // els mateixos ids a l'exportació i a la importació
+
+// Semàntic: les estructures pròpies de Word, a partir del Markdown i la configuració.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
+
+// Maquetat: les pàgines compostes, amb les fonts del llibre incrustades.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
+const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+
+// El fitxer corregit, combinat amb el llibre tal com és ara.
+if (isExportedDocx(edited)) {
+  const result = applyDocxEdits(edited, { chapters: current, resources });
+  for (const e of result.edits) console.log(e.status, e.reason ?? '', e.before, '→', e.after);
+  if (result.changed) save(result.chapters, result.resources);
+}
+```
+
+- **`semanticDocx(options)`** es resol en els bytes del `.docx` (un `Uint8Array`). Rep `chapters` (`{ id, title?, markdown }`), `config`, `resources` amb `resourceBytes(fileId)` per als bytes de les seves imatges, `rasterizeSvg(svg, width, height)` per al PNG que Word necessita al costat d'un SVG (sense aquesta funció, un SVG es deixa fora), `fonts` (un pla de `planWordFonts`), `title`, `author`, `date` (una data ISO fixa fa els bytes reproduïbles) i `onWarning` per al que Word compon a la seva manera (`{ code, message, chapter? }`). Les fórmules necessiten el convertidor de TeX a Word, que es carrega la primera vegada que es fa servir; si no es pot carregar, es queden en TeX, amb un avís `mathUnavailable`.
+- **`formattedDocx(options)`** rep `docs`, un `VDTDocument` per capítol en l'ordre de `chapters` (la cadena d'impressió d'on surt el PDF), i els mateixos `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` i `onWarning`. `onProgress(done, total)` compta les pàgines escrites.
+- **`planWordFonts(faces, options)`** converteix les fonts del llibre (`{ family, weight, style, files }`: WOFF2 o sfnt, amb qualsevol nombre de fragments unicode-range) en les fonts TrueType estàtiques que Word incrusta. `decompressWoff2` (el que exporta `postext-pdf`) llegeix WOFF2; `usedText` i `fontStrings` deixen fora els fragments i les fonts que l'exportació no fa servir; `familySuffix` (per defecte `' PTX'`) s'afegeix a cada família incrustada. Els seus `warnings` anomenen les fonts que es deixen fora (`restricted`, `cff`, `variable`, `missing`, `merge-failed`) i les incrustades només per a previsualització i impressió (`preview-print`).
+- **`isExportedDocx(bytes)`** diu si un fitxer porta el mapa d'exportació, i no llança mai errors. `readExportMap(files)` llegeix el mapa mateix de les parts descomprimides (`unzipSync` de fflate): `exportId`, `variant`, `engine`, els capítols amb els seus hash i la còpia del text exportat.
+- **`applyDocxEdits(bytes, { chapters, resources })`** és síncrona. Retorna tots els capítols amb les correccions aplicades (`chapters`), còpies profundes dels recursos el peu, la nota, el text alternatiu o les cel·les de taula dels quals han canviat (`resources`), `edits`, `comments`, `variant`, `exportId` i `changed`. Cada edició porta `chapter`, o `resourceId` i `field` (`caption`, `note`, `alt`, `cell:<fila>:<columna>`); `start` i `end` al text actual; `before`, `after`; `kind` (`text`, `format`, `paragraph`, `tracked`), i `status` amb el seu `reason`: `applied`, `conflict` (`changed-since-export`, `target-missing`, `no-snapshot`, `overlap`) o `rejected` (`generated`, `format-crosses-markup`, `format-partial`, `bookmarks-lost`). Cada comentari porta el seu `author`, el seu `text` i el seu lloc (`start` val -1 en un comentari que no és sobre text exportat). Un fitxer que no és un `.docx` exportat llança un `DocxReadError`. Els ids de capítol han de ser els de l'exportació: una edició en un capítol desconegut es notifica, no s'aplica.
+
+Qualsevol altre fitxer de Word es llegeix com a Markdown amb una plantilla d'estils:
+
+```ts
+import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext } from 'postext/word';
 
 const word = readDocx(bytes);                                    // un Uint8Array o un ArrayBuffer
 const template = parseTemplate(word.embeddedTemplate) ?? emptyTemplate();
@@ -626,14 +657,11 @@ const report = analyzeDocx(word, template, config);              // report.verdi
 const { chapters, pictures, tables } = wordToPostext(word, {
   template, config, chapters: 'split', existingIds: new Set(), untitledChapter: 'Sense títol',
 });
-
-const docx = postextToDocx(chapters, { template, config, book: chapters.length > 1, title: 'Notes de camp' });
 ```
 
-- **`readDocx(bytes)`** llegeix el fitxer en un model de Word: els estils, els paràgrafs, les notes i les imatges, el `title` del document i la plantilla d'importació que porta una exportació de Postext (`embeddedTemplate`). Un fitxer que no és un document de Word llança un `DocxReadError`.
+- **`readDocx(bytes)`** llegeix el fitxer en un model de Word: els estils, els paràgrafs, les notes i les imatges, el `title` del document i la plantilla d'importació que porta el fitxer (`embeddedTemplate`, que escrivien les exportacions a Word de postext 1.67 i anteriors). Un fitxer que no és un document de Word llança un `DocxReadError`.
 - **`wordToPostext(word, settings)`** converteix el model en capítols (`{ title, markdown }`), imatges i taules. La plantilla fa correspondre cada estil de Word a un títol, un estil de paràgraf, un requadre, una cita o un peu de la configuració. `chapters: 'split'` obre un capítol a cada títol de nivell 1, i `'single'` en conserva un de sol. Les imatges (`id`, `media.bytes`, `caption`, `alt`) i les taules (`id`, `model`, `caption`) les ha de desar l'amfitrió com a recursos; `skippedPictures` enumera les imatges EMF, WMF i TIFF que s'han deixat fora.
 - **`analyzeDocx(word, template, config)`** és l'informe de qualitat que mostra el Sandbox abans d'una importació: els estils en ús, quants paràgrafs tenen estil i observacions com `directFormatting`, `manualHeadings` i `typedNumbering`, cadascuna amb un recompte i exemples.
-- **`postextToDocx(chapters, settings)`** escriu els capítols com un `.docx` (un `Uint8Array`) amb estils de Word per als títols, els paràgrafs, els requadres, les cites, les llistes i les notes. El que Word no pot expressar es conserva tal com està escrit amb els estils *Postext Markup*, i la plantilla va dins del fitxer, de manera que el document es torna a importar sense canvis. `book: true` obre cada capítol amb un paràgraf `Postext Chapter`, a partir del qual la importació reconstrueix els capítols.
 - **`wordStyleTracking(word, template, config)`** i **`applyStyleTracking(config, tracking)`** passen l'espaiat entre caràcters dels estils de Word als estils de la configuració que no en defineixen cap.
 
 

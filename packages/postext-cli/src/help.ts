@@ -48,6 +48,7 @@ export function mainHelp(): string {
     '  postext html chapters/ --name "Field notes" -o notes.html',
     '  postext build book/ --pdf book.pdf --epub book.epub --watch',
     '  postext check book.postext --json',
+    '  postext docx book/ -o book.docx && postext import-docx book.docx book/ --dry-run',
     '',
     style.bold('Book options') + ' (every command that reads a book)',
     ...optionLines(BOOK_OPTIONS),
@@ -55,7 +56,7 @@ export function mainHelp(): string {
     style.bold('Global options'),
     ...optionLines(GLOBAL_OPTIONS),
     '',
-    style.bold('Exit codes') + '  0 done · 1 failed · 2 wrong usage · 3 check found problems',
+    style.bold('Exit codes') + '  0 done · 1 failed · 2 wrong usage · 3 check found problems, or Word edits not applied',
     '',
     `Run ${style.bold('postext help <command>')} for the options of a command. Docs: https://postext.dev/docs`,
   ].join('\n');

@@ -11,6 +11,7 @@ import {
   characterTargetOf,
   chipStylesOf,
   emptyTemplate,
+  isExportedDocx,
   lookup,
   newTemplateId,
   parseTemplate,
@@ -136,7 +137,7 @@ export function wordTools(host: SandboxToolHost): WebMcpTool[] {
   const importWord: WebMcpTool = {
     name: 'sandbox_import_word',
     title: 'Sandbox: import a Word document',
-    description: "Bring a Word manuscript (.docx) into the book, as the Manuscript panel's Word import does: each Word style becomes a Postext construct (headings, paragraph styles, callouts, quotes, verse, captions; bold, italic, chips…), lists and footnotes are kept, pictures and tables become resources placed where they were. Run it first with dryRun: true — it changes nothing and answers with the quality report of the document, every style it uses with what each would become, the chapters and resources it would make, and the start of the Markdown; then correct what a style becomes with mapping, or the options, and run it for real. destination says where the text goes: chapter replaces a chapter's text (taken back with sandbox_undo_text), append adds new chapters after a chapter, book replaces every chapter of the book, which cannot be undone. Left out, the destination is book for a document the Sandbox exported as a whole book and chapter otherwise. For Markdown text, sandbox_write_text; for a .postext book, sandbox_import_book.",
+    description: "Bring a Word manuscript (.docx) into the book, as the Manuscript panel's Word import does: each Word style becomes a Postext construct (headings, paragraph styles, callouts, quotes, verse, captions; bold, italic, chips…), lists and footnotes are kept, pictures and tables become resources placed where they were. Run it first with dryRun: true — it changes nothing and answers with the quality report of the document, every style it uses with what each would become, the chapters and resources it would make, and the start of the Markdown; then correct what a style becomes with mapping, or the options, and run it for real. destination says where the text goes: chapter replaces a chapter's text (taken back with sandbox_undo_text), append adds new chapters after a chapter, book replaces every chapter of the book, which cannot be undone. Left out, the destination is book for a document the Sandbox exported as a whole book and chapter otherwise. A .docx exported from the Sandbox (sandbox_export, format docx) and edited in Word comes back through sandbox_apply_word_edits instead. For Markdown text, sandbox_write_text; for a .postext book, sandbox_import_book.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -144,7 +145,7 @@ export function wordTools(host: SandboxToolHost): WebMcpTool[] {
         dryRun: { type: 'boolean', description: 'Change nothing: answer with the report, the mapping of every style, and what the import would make.' },
         destination: { type: 'string', enum: ['chapter', 'append', 'book'], description: 'chapter: the whole document replaces one chapter\'s text. append: new chapters after one chapter, a new chapter at every level-1 heading, the first one shown. book: every chapter of the book is replaced, a new chapter at every level-1 heading.' },
         chapter: { ...CHAPTER_PARAM, description: 'chapter, append: the chapter to replace, or the one the new chapters follow (position from 1, title or id). The chapter on screen when left out.' },
-        template: { type: ['string', 'object'], description: 'The mapping to start from: the id of a saved template (sandbox_word_templates lists them), "embedded" (the one a .docx exported from the Sandbox carries), "auto" (none: every style is guessed from its name and its Word role) or a template object { paragraphs, characters, options }. Left out, as the dialog opens: the embedded one, else the template last used, else auto.' },
+        template: { type: ['string', 'object'], description: 'The mapping to start from: the id of a saved template (sandbox_word_templates lists them), "embedded" (the one a .docx exported by earlier versions of the Sandbox carries), "auto" (none: every style is guessed from its name and its Word role) or a template object { paragraphs, characters, options }. Left out, as the dialog opens: the embedded one, else the template last used, else auto.' },
         mapping: {
           type: 'object',
           description: `What Word styles become, by style name, on top of the template. paragraphs: { "<style name>": { kind, … } } with kind one of ${PARAGRAPH_KINDS}. characters: { "<style name>": { kind, … } } with kind one of ${CHARACTER_KINDS}. The dry run lists the names and what each becomes, in this shape.`,
@@ -173,9 +174,14 @@ export function wordTools(host: SandboxToolHost): WebMcpTool[] {
       if (args.saveTemplateAs !== undefined && !saveAs) throw new ToolError('saveTemplateAs needs a name.');
 
       const file = await readFileInput(args.file as FileInput, signal);
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      // A document the Sandbox exported comes back by its marks (#1397).
+      if (isExportedDocx(bytes)) {
+        throw new ToolError(`${file.name} was exported from the Sandbox: sandbox_apply_word_edits takes the changes made in it back into the book, each where it belongs.`);
+      }
       let doc: WordDocument;
       try {
-        doc = readDocx(await file.arrayBuffer());
+        doc = readDocx(bytes);
       } catch (err) {
         if (!(err instanceof DocxReadError)) console.error(err);
         throw new ToolError(`${file.name} could not be read as a Word document${err instanceof DocxReadError ? ` (${err.message})` : ''}. It must be a .docx file: a .doc is saved as .docx from Word first.`);
@@ -198,7 +204,7 @@ export function wordTools(host: SandboxToolHost): WebMcpTool[] {
         base = emptyTemplate();
         from = { source: 'auto' };
       } else if (wanted === 'embedded' || (wanted === undefined && embedded)) {
-        if (!embedded) throw new ToolError(`${file.name} carries no template: only a .docx exported from the Sandbox does. Name a saved template (${savedList(saved)}), or "auto".`);
+        if (!embedded) throw new ToolError(`${file.name} carries no template: only a .docx exported by an earlier version of the Sandbox does. Name a saved template (${savedList(saved)}), or "auto".`);
         base = { ...embedded, id: '', name: labels.wordTemplateEmbedded };
         from = { source: 'embedded' };
       } else {
@@ -351,7 +357,7 @@ export function wordTools(host: SandboxToolHost): WebMcpTool[] {
   const templates: WebMcpTool = {
     name: 'sandbox_word_templates',
     title: 'Sandbox: the Word import templates',
-    description: "The Word import templates kept in this browser, the ones the import and export dialogs offer: a template says what each Word style becomes ({ name, paragraphs: { \"<style name>\": { kind, … } }, characters: { … }, options }) and is used by sandbox_import_word and by sandbox_export (docx). list names them and says which was used last; get answers with one whole (and, with download, saves it as a .postext-word.json file through the browser); save keeps a template — the one whose id it carries is replaced, any other is added under a new id and becomes the one last used; delete removes one and answers with it, so it can be saved back.",
+    description: "The Word import templates kept in this browser, the ones the import dialog offers: a template says what each Word style becomes ({ name, paragraphs: { \"<style name>\": { kind, … } }, characters: { … }, options }) and is used by sandbox_import_word. list names them and says which was used last; get answers with one whole (and, with download, saves it as a .postext-word.json file through the browser); save keeps a template — the one whose id it carries is replaced, any other is added under a new id and becomes the one last used; delete removes one and answers with it, so it can be saved back.",
     inputSchema: {
       type: 'object',
       properties: {

@@ -83,7 +83,8 @@ document.body.append(...doc.pages.map((page) => renderPage(page, doc)));
 | `renderToScorm(docs, options)` | From `postext-scorm`: a SCORM 1.2 or 2004 package for a learning platform, its exercises reporting their scores. |
 | `createLayoutWorker()` (`postext/worker`) | Runs the layout in a Web Worker, with cancellation. Works from esm.sh too. |
 | `createLayout(content, config?)` (`postext/react`) | A React component that lays the content out and shows its pages. |
-| `readDocx`, `analyzeDocx`, `wordToPostext`, `postextToDocx`, `wordStyleTracking`, `applyStyleTracking` (`postext/word`) | Read a Word `.docx` and report its quality, turn it into Markdown chapters with its styles mapped, write chapters back as a `.docx`, and carry the character spacing of Word styles onto the book's styles. |
+| `readDocx`, `analyzeDocx`, `wordToPostext`, `wordStyleTracking`, `applyStyleTracking` (`postext/word`) | Read a Word `.docx` and report its quality, turn it into Markdown chapters with its styles mapped, and carry the character spacing of Word styles onto the book's styles. |
+| `semanticDocx`, `formattedDocx`, `planWordFonts`, `isExportedDocx`, `applyDocxEdits` (`postext/word`) | Write a book as an editable Word file or as one whose pages match the PDF (with its fonts embedded), and bring the corrections made in either back into the Markdown and the resources. |
 
 The resolvers (`resolve*Config`), strippers (`strip*Defaults`), `DEFAULT_*` constants and every type are exported as well. The ICC output profiles of print production ship in the package as `postext/icc/<id>.icc`. See the [configuration reference](https://postext.dev/en/docs/configuration) and the [document format](https://postext.dev/en/docs/document-format).
 

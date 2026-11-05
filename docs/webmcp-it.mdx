@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'Che cosa può fare con la Sandbox un agente di IA nel browser tramite i suoi 53 strumenti WebMCP (guardare le pagine, cambiare qualunque impostazione, modificare il testo, aggiungere immagini, tabelle e font, eseguire le verifiche, esportare) e come si invoca ciascuno, con argomenti e risposte reali',
   lang: 'it',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '12 min',
   order: 50,
   plainSummary: "Questa pagina è per chi vuole che un assistente di intelligenza artificiale lavori al posto suo su un libro nella Sandbox. Mentre la Sandbox è aperta, dà all’assistente una serie di strumenti: per guardare qualunque pagina, cambiare la grafica, modificare il testo, aggiungere immagini e tabelle, trovare problemi e salvare file. Chiedi con parole tue, per esempio «ingrandisci un po’ il testo e controlla che il libro stia ancora in 40 pagine», e l’assistente usa gli strumenti e ti mostra le pagine. Tutto resta nel tuo browser. La pagina spiega come collegare un assistente, che cosa può fare e come si usa ogni strumento.",
@@ -550,7 +550,10 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
   `set_cover` e `remove_cover` gli danno una copertina o gliela tolgono.
 - **Esportare.** `sandbox_export` scrive `pdf`, `epub`, `postext`, `docx`,
   `markdown` o `config`. Per impostazione predefinita il browser scarica il file; con
-  `deliver: "data"` un PDF o un EPUB torna all’agente codificato in base64:
+  `deliver: "data"` un PDF, un EPUB o un file Word torna all’agente codificato
+  in base64. Per `docx`, `variant` sceglie `semantic` (il valore predefinito:
+  titoli, elenchi, note e tabelle propri di Word) o `formatted` (le pagine come
+  le stampa il PDF, con i font incorporati):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -580,7 +583,17 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
   `characterSpacing`.
 
   `sandbox_word_templates` elenca, legge, salva ed elimina le mappature
-  salvate, che usa anche l’esportazione in Word.
+  salvate dell’importazione Word.
+
+- **Riportare le correzioni** fatte in un file Word esportato dal libro con
+  `sandbox_apply_word_edits`. Con `dryRun: true` non cambia nulla ed elenca ogni
+  modifica trovata, `applied`, `conflict` (lo stesso testo è cambiato anche nel
+  libro dopo l’esportazione, o non c’è più) o `rejected` (un numero,
+  un’etichetta o altro testo che genera il libro stesso), con il motivo, e i
+  commenti lasciati in Word. Senza, le modifiche applicate vanno nei capitoli e
+  nelle risorse in un solo passo, che `sandbox_undo` annulla per intero.
+  `sandbox_import_word` rifiuta un file del genere e indica questo strumento.
+  Da postext 1.68.
 
 ### Domande e notifiche
 
@@ -682,7 +695,7 @@ ciascuno arrivano con `postextWebMcp.listTools()`.
 - **Libri e file**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
-- **Word**: `sandbox_import_word`, `sandbox_word_templates`.
+- **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **Domande**: `sandbox_answer`.
 - **Le verifiche**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

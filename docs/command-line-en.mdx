@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Command line',
   description: 'A single self-contained executable for macOS, Linux and Windows. It turns a .postext book, a book folder or loose Markdown into PDF, HTML, EPUB, page images and Word, packs bundles, checks books, and gives JSON output for scripts and agents',
   lang: 'en',
-  lastUpdated: '2026-10-20',
-  readingTime: '12 min',
+  lastUpdated: '2026-11-04',
+  readingTime: '14 min',
   order: 49,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
 };
@@ -145,8 +145,8 @@ own configuration. A multilingual bundle is read in its own language unless
     <tr><td><code>epub</code></td><td>An EPUB 3 book, with fixed pages as printed or reflowable text.</td></tr>
     <tr><td><code>image</code></td><td>One page as a PNG, JPEG or WebP picture.</td></tr>
     <tr><td><code>images</code></td><td>Every page, or a range, as pictures in a folder.</td></tr>
-    <tr><td><code>docx</code></td><td>The chapters as a Word document that imports back unchanged.</td></tr>
-    <tr><td><code>import-docx</code></td><td>A Word document as a Postext book (a folder or a <code>.postext</code>).</td></tr>
+    <tr><td><code>docx</code></td><td>The chapters as a Word document: semantic (Word's own headings, lists, notes and tables) or formatted (the PDF's pages).</td></tr>
+    <tr><td><code>import-docx</code></td><td>The corrections made in an exported Word file, back into the book; any other Word document as a new book (a folder or a <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>A book folder or loose Markdown as one <code>.postext</code> file.</td></tr>
     <tr><td><code>unpack</code></td><td>A <code>.postext</code> file as a folder.</td></tr>
     <tr><td><code>info</code></td><td>The book's chapters, languages, resources and fonts, and with <code>--pages</code> its page count.</td></tr>
@@ -240,19 +240,61 @@ going through a PDF.
 
 ```bash
 postext docx book.postext -o book.docx
+postext docx book/ --variant formatted -o pages.docx
+postext import-docx book.docx book/ --dry-run
+postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
-postext import-docx manuscript.docx -o manuscript.postext
 ```
 
-`docx` writes the chapters with Word styles for headings, paragraphs, boxes,
-quotes, lists and notes. Whatever Word cannot express stays verbatim in the
-*Postext Markup* styles, and the import template travels inside the file, so
-the document imports back unchanged after an editor has worked on it.
-`import-docx` turns a Word document into a book: a chapter at each level-1
-heading (`--no-split` keeps one), pictures and tables as resources, and
-`--report` prints the quality report the Sandbox shows (styles in use, direct
-formatting, typed numbering…). `--template` takes an import template (a
-`.json` saved from the Sandbox or a `.docx` that carries one).
+`docx` writes either of the two Word documents the Sandbox exports (see
+[Sandbox › Word documents](/en/docs/sandbox-books-saving#word-documents)).
+`--variant semantic`, the default, builds an editable document from the
+Markdown, with Word's own headings, lists, footnotes, tables, equations and
+sections; what Word has no structure for travels as its source in *Postext
+Source* content controls. It needs no layout. `--variant formatted` lays the
+book out as `pdf` does and writes each page as a Word section, the text in
+text boxes placed line for line. Both embed the book's faces
+(`--no-embed-fonts` only names them). A family the book may not hand on
+(`redistributable: false` in `customFonts`) is left out and its open fallback
+goes in, as in the EPUB; a face whose licence forbids embedding, one with
+PostScript outlines and a variable font are reported and only named. In
+`build`, `--docx FILE` writes the same file, with `--docx-variant` and
+`--no-docx-fonts`. Since postext 1.68; `--template` no longer applies to
+`docx` or `build`.
+
+With a book after the file, `import-docx` brings back the corrections made in
+a document `docx` exported from that book. It reads the map the file carries,
+compares the text with the copy of the chapters made at the export, and merges
+each correction into the book as it is now: the chapter files of a folder, a
+`.postext` or loose Markdown, and the wording of the resources (captions,
+notes, alternative text, table cells) in `preset.json`, or in the
+`resources.json` of `--resources DIR` for loose Markdown. For a book in
+several languages, `--locale` names the edition the file was exported from,
+and a correction to a resource's wording goes into that edition's `localized`
+block. Every correction is reported on a line of its own:
+
+- `applied`, with the file and line it went to;
+- `conflict`: the text also changed in the book since the export, the chapter
+  or resource is gone, or two corrections overlap;
+- `rejected`: text the book makes itself (numbers, caption labels), or
+  formatting that crosses Postext markup.
+
+Tracked changes are taken as accepted, and comments are listed with their
+author and place but not written. The exit code is 3 when a correction was not
+applied. `--dry-run` (`-n`) prints the report and a unified diff of every file
+it would change, and writes nothing. Each file is written beside its target and
+renamed over it, so an interrupted run never leaves half a chapter; a chapter
+file that changed while the import ran is left alone with a `docx.fileChanged`
+warning. `-o` does not go with a book. With `--json` the answer has `variant`,
+`exportId`, `edits` (each with `status`, `reason`, `kind`, `before`, `after`
+and `at`), `comments`, `files` and, on a dry run, `diff`.
+
+Without a book, `import-docx` turns any Word document into a new book: a
+chapter at each level-1 heading (`--no-split` keeps one), pictures and tables
+as resources, and `--report` prints the quality report the Sandbox shows
+(styles in use, direct formatting, typed numbering…). `--template` takes an
+import template (a `.json` saved from the Sandbox, or a `.docx` that carries
+one).
 
 Character spacing is a property of a style, not of the text, so it is not in the
 Markdown. `docx` writes the `letterSpacing` of paragraph styles, heading styles
@@ -416,7 +458,8 @@ agents.
 ```
 
 - **Exit codes**: `0` done, `1` failed, `2` wrong usage (an unknown option, a
-  missing input), `3` `check` found errors (or warnings with `--strict`).
+  missing input), `3` `check` found errors (or warnings with `--strict`), or `import-docx`
+  left a Word correction out.
 - **No questions.** It never waits for input; a folder that is not empty is
   refused instead of asked about.
 - **Standard output**: `-o -` writes a PDF, an image or a bundle there, to be

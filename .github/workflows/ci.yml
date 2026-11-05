@@ -204,6 +204,15 @@ jobs:
       - name: Source size
         run: node scripts/source-size.mjs --check
 
+      # What the release would publish on JSR (#1417): a new dependency whose
+      # range JSR refuses, or a package past its 20 MB, fails here and not
+      # after the release.
+      - uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: 2.5.6
+      - name: JSR dry run
+        run: node .github/scripts/jsr-publish.mjs --dry-run
+
       # The command line as a self-contained executable: built for this
       # runner and run with nothing else (the release builds every platform).
       - name: CLI executable

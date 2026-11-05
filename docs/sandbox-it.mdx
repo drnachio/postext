@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'L’interfaccia della Sandbox: la barra delle attività, i pannelli Testo, Libri, Capitoli, Risorse e Font, e la disposizione sui telefoni',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '30 min',
   order: 40,
   plainSummary: "La Sandbox è uno strumento gratuito di questo sito per provare Postext senza installare nulla. Scrivi il testo da una parte e vedi le pagine finite dall’altra, e cambiano mentre scrivi. Questa pagina spiega le parti dello schermo e i pannelli in cui scrivi il testo, gestisci libri e capitoli, aggiungi immagini e scegli i font. Altre pagine trattano le impostazioni grafiche, le anteprime, il salvataggio e l’importazione, e l’inserimento della Sandbox nel tuo sito.",
@@ -95,8 +95,8 @@ L’intestazione del pannello è un **selettore di capitoli**: frecce precedente
 - **Reimposta** (chiede conferma): ricarica la **parte del documento** del libro di esempio aperto. Ogni capitolo e l’intero insieme di figure vengono sostituiti con quelli dell’esempio (per l’esempio integrato, il documento di esempio della lingua e le risorse di esempio). La grafica resta com’è, tranne i font propri dell’esempio. Vedi [Pannello Libri](#pannello-libri).
 - **Esporta**: scarica il capitolo attivo come semplice file `.md`, chiamato `<book>-<nn>-<chapter>.md` in un libro di più capitoli, e altrimenti come il libro aperto o `document.md`
 - **Importa**: sostituisce il capitolo attivo con il contenuto di un file `.md`
-- **Importa un documento Word**: apre un manoscritto `.docx` e fa corrispondere i suoi stili di Word agli stili di Postext prima che cambi qualunque cosa (vedi [Documenti Word](/it/docs/sandbox-books-saving#documenti-word))
-- **Esporta in Word**: scarica il capitolo o l’intero libro come un `.docx` che torna con ogni stile quando lo si importa di nuovo
+- **Importa un documento Word**: apre un manoscritto `.docx` e fa corrispondere i suoi stili di Word agli stili di Postext prima che cambi qualunque cosa, oppure riporta le correzioni fatte in un file esportato dal libro (vedi [Documenti Word](/it/docs/sandbox-books-saving#documenti-word))
+- **Esporta in Word**: scarica il capitolo o l’intero libro come `.docx`, semantico (titoli, elenchi, note e tabelle propri di Word) o impaginato (le pagine come le stampa il PDF); le correzioni fatte nel file tornano con **Importa un documento Word**
 
 #### Pannello Libri
 

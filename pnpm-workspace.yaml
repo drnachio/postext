@@ -14,6 +14,9 @@ overrides:
   # 4.1.4 pins @xmldom/xmldom 0.9.10 exactly; 0.9.12 is the same-minor fix.
   # Drop once speech-rule-engine ships xmldom >=0.9.12.
   "@xmldom/xmldom@<0.9.12": "^0.9.12"
+  # GHSA-g3hv-75wg-m249 (#1412): eslint and typescript-eslint ask for ^10;
+  # 11.0.1 is the fix. Drop once eslint moves to minimatch >=11.0.1.
+  "minimatch@>=7.0.0 <11.0.1": "^11.0.4"
 allowBuilds:
   # postext-cli's pinned Bun links its platform binary on install
   bun: true

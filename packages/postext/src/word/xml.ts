@@ -43,36 +43,88 @@ export function escapeAttr(s: string): string {
 /** The local part of a qualified name (`w:p` → `p`). */
 export const localName = (name: string): string => name.slice(name.indexOf(':') + 1);
 
+/** One piece of markup: `open` or `close` for a tag, `cdata` for a CDATA
+ *  section, none of them for a comment, declaration or instruction. */
+export interface XmlMarkup {
+  start: number;
+  end: number;
+  open?: string;
+  close?: string;
+  /** The attributes of an `open` tag as written. */
+  attrs?: string;
+  selfClose?: boolean;
+  cdata?: string;
+}
+
+// `<` stands in no name and no attribute value (it is not XML there), so a
+// tag that fails has read no further than the next `<`: linear in all.
+const XML_TAG = /<\/([^\s<>]+)\s*>|<([^\s/<>!?]+)((?:\s+[^\s=/<>]+\s*=\s*(?:"[^"<]*"|'[^'<]*'))*)\s*(\/?)>/y;
+
+/** The tag that opens at `at`, if one does. */
+export function readXmlTag(source: string, at: number): XmlMarkup | undefined {
+  XML_TAG.lastIndex = at;
+  const m = XML_TAG.exec(source);
+  if (!m) return undefined;
+  const [, close, open, attrs, self] = m;
+  return close !== undefined ? { start: at, end: XML_TAG.lastIndex, close } : { start: at, end: XML_TAG.lastIndex, open, attrs, selfClose: !!self };
+}
+
+/** Every piece of markup of `source`, in order. */
+export function scanXmlMarkup(source: string, visit: (markup: XmlMarkup) => void): void {
+  // A closing mark not found from one place is not there from any later one.
+  const absent = new Set<string>();
+  const past = (mark: string, from: number): number => {
+    if (absent.has(mark)) return -1;
+    const at = source.indexOf(mark, from);
+    if (at < 0) absent.add(mark);
+    return at < 0 ? -1 : at + mark.length;
+  };
+  for (let i = source.indexOf('<'); i >= 0;) {
+    let markup: XmlMarkup | undefined;
+    if (source[i + 1] === '!') {
+      let end = source.startsWith('<!--', i) ? past('-->', i + 4) : -1;
+      const cdataEnd = end < 0 && source.startsWith('<![CDATA[', i) ? past(']]>', i + 9) : -1;
+      if (cdataEnd >= 0) markup = { start: i, end: cdataEnd, cdata: source.slice(i + 9, cdataEnd - 3) };
+      else if (end < 0) end = past('>', i + 2);
+      if (end >= 0) markup = { start: i, end };
+    } else if (source[i + 1] === '?') {
+      const end = past('?>', i + 2);
+      if (end >= 0) markup = { start: i, end };
+    } else {
+      markup = readXmlTag(source, i);
+    }
+    if (markup) visit(markup);
+    i = source.indexOf('<', markup ? markup.end : i + 1);
+  }
+}
+
 /** Parse an XML document; returns its root element. */
 export function parseXml(source: string): XmlElement {
   const root: XmlElement = { name: '#document', attrs: {}, children: [] };
   const stack: XmlElement[] = [root];
-  const re = /<!--[\s\S]*?-->|<!\[CDATA\[([\s\S]*?)\]\]>|<![^>]*>|<\?[\s\S]*?\?>|<\/([^\s>]+)\s*>|<([^\s/>!?]+)((?:\s+[^\s=/>]+\s*=\s*(?:"[^"]*"|'[^']*'))*)\s*(\/?)>/g;
   let last = 0;
-  let m: RegExpExecArray | null;
   const top = (): XmlElement => stack[stack.length - 1]!;
   const text = (s: string): void => {
     if (s) top().children.push(decodeEntities(s));
   };
-  while ((m = re.exec(source))) {
-    text(source.slice(last, m.index));
-    last = re.lastIndex;
-    const [, cdata, endName, startName, attrSource, selfClose] = m;
-    if (cdata !== undefined) {
-      top().children.push(cdata);
-    } else if (endName !== undefined) {
-      const at = stack.map((e) => e.name).lastIndexOf(endName);
+  scanXmlMarkup(source, (m) => {
+    text(source.slice(last, m.start));
+    last = m.end;
+    if (m.cdata !== undefined) {
+      top().children.push(m.cdata);
+    } else if (m.close !== undefined) {
+      const at = stack.map((e) => e.name).lastIndexOf(m.close);
       if (at > 0) stack.length = at;
-    } else if (startName !== undefined) {
+    } else if (m.open !== undefined) {
       const attrs: Record<string, string> = {};
       const ar = /([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
       let a: RegExpExecArray | null;
-      while ((a = ar.exec(attrSource ?? ''))) attrs[a[1]!] = decodeEntities(a[2] ?? a[3] ?? '');
-      const el: XmlElement = { name: startName, attrs, children: [] };
+      while ((a = ar.exec(m.attrs ?? ''))) attrs[a[1]!] = decodeEntities(a[2] ?? a[3] ?? '');
+      const el: XmlElement = { name: m.open, attrs, children: [] };
       top().children.push(el);
-      if (!selfClose) stack.push(el);
+      if (!m.selfClose) stack.push(el);
     }
-  }
+  });
   text(source.slice(last));
   const first = root.children.find((c): c is XmlElement => typeof c !== 'string');
   if (!first) throw new Error('parseXml: no root element');

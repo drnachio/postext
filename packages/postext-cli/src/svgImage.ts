@@ -215,3 +215,18 @@ export function drawsSvgAtSize<T extends Canvas>(canvas: T): T {
   };
   return canvas;
 }
+
+/** SVG to PNG through Skia (resvg for an SVG Skia would leave a raster
+ *  out of, #771), at the raster's size, not stretched from the SVG's own
+ *  (#678): the pictures the PDF cannot draw as vectors, and the fallback
+ *  Word keeps beside an SVG. Null when the SVG cannot be drawn. */
+export async function rasterizeSvg(svgText: string, width: number, height: number): Promise<Uint8Array | null> {
+  try {
+    const image = await loadSvgImage(svgText);
+    const canvas = drawsSvgAtSize(createCanvas(Math.max(1, Math.round(width)), Math.max(1, Math.round(height))));
+    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+    return new Uint8Array(await canvas.encode('png'));
+  } catch {
+    return null;
+  }
+}

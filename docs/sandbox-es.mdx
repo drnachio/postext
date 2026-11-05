@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'La interfaz del Sandbox: la barra de actividades; los paneles Texto, Libros, Capítulos, Recursos y Fuentes, y cómo se organiza la pantalla en un móvil.',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '32 min',
   order: 40,
   plainSummary: "El Sandbox es una herramienta gratuita de esta web para probar Postext sin instalar nada. Escribes el texto a un lado y ves las páginas terminadas al otro, y cambian mientras escribes. Esta página explica las partes de la pantalla y los paneles donde escribes el texto, organizas libros y capítulos, añades imágenes y eliges tipografías. Otras páginas explican los ajustes de diseño, las vistas previas, cómo guardar e importar, y cómo poner el Sandbox en tu propia web.",
@@ -95,8 +95,8 @@ La cabecera del panel es un **selector de capítulos**: las flechas de anterior 
 - **Restablecer** (pide confirmación): vuelve a cargar la **parte de documento** del libro de ejemplo abierto. Todos los capítulos y todo el conjunto de figuras se sustituyen por los del ejemplo (en el ejemplo integrado, el documento de muestra del idioma y sus recursos de ejemplo). El diseño no se toca, salvo las fuentes propias del ejemplo. Véase [Panel de libros](#panel-de-libros).
 - **Exportar**: descarga el capítulo activo como archivo `.md`, con el nombre `<libro>-<nn>-<capítulo>.md` en un libro de varios capítulos y, si no, con el del libro abierto o `document.md`
 - **Importar**: sustituye el capítulo activo por el contenido de un archivo `.md`
-- **Importar un documento de Word**: abre un manuscrito `.docx` y asigna sus estilos de Word a estilos de Postext antes de cambiar nada (véase [Documentos de Word](/es/docs/sandbox-books-saving#documentos-de-word))
-- **Exportar a Word**: descarga el capítulo o el libro entero como un `.docx` que conserva todos sus estilos cuando se vuelve a importar
+- **Importar un documento de Word**: abre un manuscrito `.docx` y asigna sus estilos de Word a estilos de Postext antes de cambiar nada, o trae de vuelta las correcciones hechas en un archivo exportado desde el libro (véase [Documentos de Word](/es/docs/sandbox-books-saving#documentos-de-word))
+- **Exportar a Word**: descarga el capítulo o el libro entero como un `.docx`, semántico (encabezados, listas, notas y tablas propios de Word) o maquetado (las páginas tal como las imprime el PDF); las correcciones hechas en él vuelven con **Importar un documento de Word**
 
 #### Panel de libros
 

@@ -81,7 +81,11 @@ export async function undoChapterEdit(host: SandboxToolHost, redo: boolean, only
       : 'There is no edit to take back. The history holds the changes made since the book was opened: text typed in the editor, edits made on the previews, the edits of sandbox_write_text, sandbox_edit_text and sandbox_import_word (into a chapter), and changes to the design.');
   }
   if (step.kind !== 'text') {
-    const what = step.kind === 'resource' ? `to the marks of the picture ${JSON.stringify(step.resourceId)}` : `to the design (${step.paths.join(', ')})`;
+    const what = step.kind === 'resource'
+      ? `to the marks of the picture ${JSON.stringify(step.resourceId)}`
+      : step.kind === 'group'
+        ? 'the changes of an edited Word export, to several chapters at once'
+        : `to the design (${step.paths.join(', ')})`;
     throw new ToolError(`The last change ${redo ? 'taken back ' : ''}was ${what}, not to the text. Changes come back in the order they were made: sandbox_undo takes back the last one whatever it is.`);
   }
   const state = host.store.getSnapshot();

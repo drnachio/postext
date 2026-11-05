@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الاستخدام البرمجي',
   description: 'استعمال Postext من الشيفرة: buildDocument وتحذيراته، والقيم الافتراضية، والخطوط، والذاكرات المؤقتة، وWeb Worker',
   lang: 'ar',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-04',
   readingTime: '31 دقيقة',
   order: 21,
   parent: 'configuration',
@@ -616,10 +616,41 @@ const doc = buildDocument({ markdown }, config);
 
 ### مستندات Word (`postext/word`)
 
-يقرأ المسار الفرعي `postext/word` مستندات Word (`.docx`) ويكتبها دون DOM. وعليه يقوم استيراد Word وتصديره في Sandbox، والأمران `import-docx` و`docx` في سطر الأوامر (انظر [سطر الأوامر › docx وimport-docx](/ar/docs/command-line#docx-وimport-docx)).
+يكتب المسار الفرعي `postext/word` مستندات Word ‏(`.docx`) ويقرؤها دون DOM، في المتصفح أو في Worker أو في Node. وعليه تقوم نوافذ Word في Sandbox، والأمران `docx` و`import-docx` في سطر الأوامر (انظر [سطر الأوامر › docx وimport-docx](/ar/docs/command-line#docx-وimport-docx) و[Sandbox › مستندات Word](/ar/docs/sandbox-books-saving#مستندات-word)). منذ postext 1.68.
 
 ```ts
-import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext, postextToDocx } from 'postext/word';
+import { buildDocument } from 'postext';
+import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { decompressWoff2 } from 'postext-pdf';
+
+const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // المعرّفات نفسها عند التصدير والاستيراد
+
+// دلالي: بنى Word نفسه، من Markdown والإعدادات.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
+
+// منسَّق: الصفحات المخرَجة، مع تضمين خطوط الكتاب.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
+const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+
+// الملف المصحَّح، مدموجًا في الكتاب كما هو الآن.
+if (isExportedDocx(edited)) {
+  const result = applyDocxEdits(edited, { chapters: current, resources });
+  for (const e of result.edits) console.log(e.status, e.reason ?? '', e.before, '→', e.after);
+  if (result.changed) save(result.chapters, result.resources);
+}
+```
+
+- **`semanticDocx(options)`** تُرجع بايتات ملف `.docx` ‏(`Uint8Array`). وتأخذ `chapters` ‏(`{ id, title?, markdown }`) و`config` و`resources` مع `resourceBytes(fileId)` لبايتات صورها، و`rasterizeSvg(svg, width, height)` لصورة PNG التي يحتاجها Word بجانب SVG (ومن دونها يُستبعد SVG)، و`fonts` (خطة من `planWordFonts`)، و`title` و`author` و`date` (تاريخ ISO ثابت يجعل البايتات قابلة للتكرار)، و`onWarning` لما يصفّه Word على طريقته (`{ code, message, chapter? }`). وتحتاج الصيغ إلى محوّل من TeX إلى Word يُحمَّل عند أول استعمال؛ فإن تعذّر تحميله بقيت TeX مع تحذير `mathUnavailable`.
+- **`formattedDocx(options)`** تأخذ `docs`، أي `VDTDocument` لكل فصل بترتيب `chapters` (سلسلة الطباعة التي يُرسم منها PDF)، و`resources` و`resourceBytes` و`rasterizeSvg` و`fonts` و`title` و`author` و`date` و`onWarning` نفسها. ويعدّ `onProgress(done, total)` الصفحات المكتوبة.
+- **`planWordFonts(faces, options)`** تحوّل خطوط الكتاب (`{ family, weight, style, files }`: ‏WOFF2 أو sfnt، بأي عدد من شرائح unicode-range) إلى خطوط TrueType الثابتة التي يضمّنها Word. وتقرأ `decompressWoff2` (التي يصدّرها `postext-pdf`) صيغة WOFF2؛ ويستبعد `usedText` و`fontStrings` الشرائح والخطوط التي لا يستعملها التصدير؛ ويُضاف `familySuffix` (افتراضيًا `' PTX'`) إلى كل عائلة مضمَّنة. وتسمّي `warnings` الخطوط المستبعدة (`restricted` و`cff` و`variable` و`missing` و`merge-failed`) والمضمَّنة للمعاينة والطباعة فقط (`preview-print`).
+- **`isExportedDocx(bytes)`** تقول هل يحمل الملف خريطة التصدير، ولا ترمي خطأ أبدًا. وتقرأ `readExportMap(files)` الخريطة نفسها من الأجزاء المفكوكة (`unzipSync` من fflate): ‏`exportId` و`variant` و`engine` والفصول مع بصماتها ونسخة النص المصدَّر.
+- **`applyDocxEdits(bytes, { chapters, resources })`** متزامنة. تُرجع كل الفصول بعد تطبيق التصحيحات (`chapters`)، ونسخًا عميقة من الموارد التي تغيّر تعليقها التوضيحي أو حاشيتها أو نصها البديل أو خلايا جدولها (`resources`)، و`edits` و`comments` و`variant` و`exportId` و`changed`. ولكل تعديل `chapter`، أو `resourceId` و`field` ‏(`caption` و`note` و`alt` و`cell:<الصف>:<العمود>`)، و`start` و`end` في النص الحالي، و`before` و`after`، و`kind` ‏(`text` و`format` و`paragraph` و`tracked`)، و`status` مع `reason`: ‏`applied`، أو `conflict` ‏(`changed-since-export` و`target-missing` و`no-snapshot` و`overlap`)، أو `rejected` ‏(`generated` و`format-crosses-markup` و`format-partial` و`bookmarks-lost`). ولكل تعليق `author` و`text` وموضعه (`start` قيمته -1 لتعليق لا يقع على نص مصدَّر). والملف الذي ليس `.docx` مصدَّرًا يرمي `DocxReadError`. ويجب أن تكون معرّفات الفصول هي معرّفات التصدير: فالتعديل في فصل مجهول يُبلَّغ عنه ولا يُطبَّق.
+
+وأي ملف Word آخر يُقرأ Markdown بقالب أنماط:
+
+```ts
+import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext } from 'postext/word';
 
 const word = readDocx(bytes);                                    // Uint8Array أو ArrayBuffer
 const template = parseTemplate(word.embeddedTemplate) ?? emptyTemplate();
@@ -627,14 +658,11 @@ const report = analyzeDocx(word, template, config);              // report.verdi
 const { chapters, pictures, tables } = wordToPostext(word, {
   template, config, chapters: 'split', existingIds: new Set(), untitledChapter: 'Untitled',
 });
-
-const docx = postextToDocx(chapters, { template, config, book: chapters.length > 1, title: 'Field notes' });
 ```
 
-- **`readDocx(bytes)`** يقرأ الملف إلى نموذج Word: أنماطه وفقراته وحواشيه وصوره، و`title` المستند، وقالب الاستيراد الذي يحمله الملف الذي صدّره Postext (`embeddedTemplate`). والملف الذي ليس مستند Word يرمي `DocxReadError`.
+- **`readDocx(bytes)`** يقرأ الملف إلى نموذج Word: أنماطه وفقراته وحواشيه وصوره، و`title` المستند، وقالب الاستيراد الذي يحمله الملف (`embeddedTemplate`، الذي كانت تكتبه صادرات Word في postext 1.67 وما قبله). والملف الذي ليس مستند Word يرمي `DocxReadError`.
 - **`wordToPostext(word, settings)`** يحوّل النموذج إلى فصول (`{ title, markdown }`) وصور وجداول. ويربط القالب كل نمط من أنماط Word بعنوان أو نمط فقرة أو إطار أو اقتباس أو تعليق في الإعدادات. ويفتح `chapters: 'split'` فصلًا عند كل عنوان من المستوى 1، ويُبقي `'single'` فصلًا واحدًا. وعلى المضيف أن يخزّن الصور (`id`، `media.bytes`، `caption`، `alt`) والجداول (`id`، `model`، `caption`) بوصفها موارد؛ ويذكر `skippedPictures` صور EMF وWMF وTIFF التي تُركت.
 - **`analyzeDocx(word, template, config)`** هو تقرير الجودة الذي يعرضه Sandbox قبل الاستيراد: الأنماط المستعملة، وعدد الفقرات التي لها نمط، وملاحظات مثل `directFormatting` و`manualHeadings` و`typedNumbering`، لكل منها عدد وأمثلة.
-- **`postextToDocx(chapters, settings)`** يكتب الفصول ملفَّ `.docx` (`Uint8Array`) بأنماط Word للعناوين والفقرات والإطارات والاقتباسات والقوائم والحواشي. وما لا يستطيع Word التعبير عنه يُحفظ حرفيًا في أنماط *Postext Markup*، ويوضع القالب داخل الملف، فيعود المستند عند استيراده دون تغيير. ويفتح `book: true` كل فصل بفقرة `Postext Chapter`، يعيد منها الاستيراد بناء الفصول.
 - **`wordStyleTracking(word, template, config)`** و<strong>`applyStyleTracking(config, tracking)`</strong> ينقلان تباعد الحروف في أنماط Word إلى أنماط الإعدادات التي لا تحدّده.
 
 

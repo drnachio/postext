@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'アーキテクチャー',
   description: 'Postext組版エンジンの技術的なアーキテクチャー：基本概念、文書ツリー、垂直リズム、バックエンド、パフォーマンス',
   lang: 'ja',
-  lastUpdated: '2026-10-26',
+  lastUpdated: '2026-11-04',
   readingTime: '30分',
   order: 2,
   plainSummary: "このページでは、Postextが内部でどう動いているかを、プログラマー向けに説明します。Postextはまず、画面に何も描かずにすべての単語の幅を測るので、とても速く動きます。次に、すべての行、図、段をどこに置くかを決め、その計画をメモリーに保存します。最後に、できあがったページをWebページ、canvasの画像、PDFファイルとして描きます。単語を1つ変えると、ページを組み直し、変わっていない段落の計測結果を再利用します。行と図を置いていく手順は、次のページで順を追って説明します。",
@@ -518,7 +518,7 @@ renderToScorm(docs, options): Promise<Uint8Array>;
   </tbody>
 </table>
 
-4つのバックエンドとFolioビューアーは、すべて同じ`VDTDocument`を受け取ります。canvasとHTMLのバックエンドを公開する`postext`と、PDFバックエンドを公開する`postext-pdf`に分かれているのは、純粋に依存関係の都合です。PDFの経路は`pdf-lib`と`@pdf-lib/fontkit`を取り込みますが、Webへの組み込みの多くではこれらは必要ありません。`postext-pdf`は、実際にPDFのバイト列を出力したいときだけインストールしてください。`postext-epub`も同じ理由で独立したパッケージになっており、必要になるのは電子書籍を作るときだけです。`postext-scorm`は`postext-epub`の上に成り立ち、EPUBの書き出し機能が作る内容を学習プラットフォーム向けのパッケージにまとめます。そのため、独自のバックエンドではありません。コマンドラインは5つ目のバックエンドではありません。`postext-cli`は、ブラウザーのない環境でこれらと同じ書き出しを実行します。Wordファイルもバックエンドではありません。`postext/word`の`postextToDocx`は、Markdownの章とそのスタイルをレイアウトせずに`.docx`へ書き出し、`readDocx`と`wordToPostext`はそれをMarkdownとして読み戻します。
+4つのバックエンドとFolioビューアーは、すべて同じ`VDTDocument`を受け取ります。canvasとHTMLのバックエンドを公開する`postext`と、PDFバックエンドを公開する`postext-pdf`に分かれているのは、純粋に依存関係の都合です。PDFの経路は`pdf-lib`と`@pdf-lib/fontkit`を取り込みますが、Webへの組み込みの多くではこれらは必要ありません。`postext-pdf`は、実際にPDFのバイト列を出力したいときだけインストールしてください。`postext-epub`も同じ理由で独立したパッケージになっており、必要になるのは電子書籍を作るときだけです。`postext-scorm`は`postext-epub`の上に成り立ち、EPUBの書き出し機能が作る内容を学習プラットフォーム向けのパッケージにまとめます。そのため、独自のバックエンドではありません。コマンドラインは5つ目のバックエンドではありません。`postext-cli`は、ブラウザーのない環境でこれらと同じ書き出しを実行します。Wordファイルはバックエンドではなく、その横にあります（`postext/word`）。`semanticDocx`はMarkdownの章とそのスタイルをレイアウトせずに`.docx`へ書き出し、`formattedDocx`はPDFの元になるのと同じ`VDTDocument`のチェーンのページを書き出し、`applyDocxEdits`はどちらかに加えた校正をMarkdownに戻します。`readDocx`と`wordToPostext`は、それ以外のWordファイルをMarkdownとして読み込みます。
 
 **レイアウトを実行する場所**：エンジンはテキストをcanvasで計測するので、canvasが与えられる環境ならどこでも動きます。ブラウザーでは、パイプラインはメインスレッド上（`buildDocument`）でも、専用のWeb Worker内（`postext/worker`の`createLayoutWorker`）でも実行できます。UIを持つアプリにはワーカーでの実行を推奨します。計測と配置のパスをメインスレッドから外せること、`AbortSignal`による後勝ちのキャンセルに対応していること、独自の計測キャッシュと数式ラスターキャッシュを持つため再ビルドが続いても軽いままであることが理由です。組み込み方の全体は[設定 → Web Workerでレイアウトを実行する](/ja/docs/configuration-programmatic-usage#web-workerでレイアウトを実行する)を参照してください。ブラウザーの外では、[コマンドライン](/ja/docs/command-line)が、ブラウザーのcanvasの代わりにSkiaを使って同じパイプラインを実行します。そのため、ターミナルでも、スクリプトでも、ビルドサーバーでも、本は同じページに分かれます。
 

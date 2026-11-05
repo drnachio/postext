@@ -60,10 +60,10 @@ export { textDots, clearTextDots } from './paint/textDots.js';
 export type { TextDots, TextDotsRequest } from './paint/textDots.js';
 // The pieces of a word set as the word the layout measured (#770): the one
 // rule of the canvas, the HTML and the PDF.
-export { joinedWordPieces, lineWordSegments, lineWordSegmentsInOrder, cellsOf } from './paint/wordPieces.js';
-export type { WordPiece, SetLine } from './paint/wordPieces.js';
-export { applyCjkGrid, cjkGridGeometry, cjkGridCells, CHARACTER_GRID_COLOR } from './pipeline/text/cjkGrid.js';
-export type { CjkGridGeometry, CjkGridCells } from './pipeline/text/cjkGrid.js';
+export { joinedWordPieces, lineWordSegments, lineWordSegmentsInOrder, cellsOf, type WordPiece, type SetLine } from './paint/wordPieces.js';
+export { segmentPlainLength } from './paint/segmentPlainLength.js';
+export { pageDisplayList, documentDisplayList, type DisplayRect, type DisplaySource, type DisplayRun, type DisplayLine, type DisplayItem, type DisplayPage, type DisplayListOptions, type LineAlign, type DisplayAnnotation, type DisplayRuby, type DisplayKunten, type DisplayChipBox, type DisplaySwatch } from './paint/displayList/index.js';
+export { applyCjkGrid, cjkGridGeometry, cjkGridCells, CHARACTER_GRID_COLOR, type CjkGridGeometry, type CjkGridCells } from './pipeline/text/cjkGrid.js';
 export { balancingOnByDefault, avoidWidowsByDefault, avoidOrphansByDefault } from './pipeline/config.js';
 export { renderTemplateNumber } from './pipeline/resources/resourceNumbering.js';
 export type { ColumnRuleSegment } from './paint/columnRule.js';
