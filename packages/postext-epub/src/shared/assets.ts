@@ -21,10 +21,11 @@ export function slug(text: string, max = 48): string {
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    // Runs are one dash from here on, so the ends need no quantifier
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/^-|-$/g, '')
     .slice(0, max)
-    .replace(/-+$/, '');
+    .replace(/-$/, '');
   return s || 'x';
 }
 
