@@ -100,11 +100,12 @@ export function listItemSpacingPx(item: ContentBlock, resolved: ResolvedConfig):
 }
 
 /** Where a list marker is painted, from the item's first line: centred on
- *  the text's x-height (`bulletY` is the em-box midpoint, painted with
- *  `textBaseline = 'middle'`), and, for a marker set as text
- *  (`onBaseline`), also on the line's baseline (`bulletBaselineY`), which
- *  renderers prefer. `bulletY` keeps its meaning for every marker, so a
- *  renderer that predates `bulletBaselineY` paints as it did. */
+ *  the text's x-height (`bulletY` is the em-box midpoint; renderers set the
+ *  marker's baseline 0.3 em of its own size below it), and, for a marker
+ *  set as text (`onBaseline`), also on the line's baseline
+ *  (`bulletBaselineY`), which renderers prefer. `bulletY` keeps its meaning
+ *  for every marker, so a renderer that predates `bulletBaselineY` paints
+ *  as it did. */
 export function listBulletPosition(
   bullet: Pick<ListBulletStyle, 'textFontSizePx' | 'verticalOffsetPx' | 'onBaseline'>,
   firstLineBaseline: number,

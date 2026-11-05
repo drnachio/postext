@@ -53,4 +53,24 @@ describe('list bullets on the canvas', () => {
       expect(b.y).toBeCloseTo(items[i]!.bulletY! + fontSizePxOf(items[i]!.bulletFontString!) * 0.3, 6);
     }
   });
+
+  it('set a separator and a prefix on the same rule, at their own size', () => {
+    const pt = (value: number) => ({ value, unit: 'pt' as const });
+    const doc = buildDocument({ markdown: '1. First item\n2. Second item' }, {
+      page: { dpi: 72, width: pt(300), height: pt(200), margins: { top: pt(18), bottom: pt(18), left: pt(18), right: pt(18) } },
+      bodyText: { fontFamily: 'Lora', fontSize: pt(9) },
+      orderedLists: { prefix: '(', separator: ')', separatorFontFamily: 'Fira Sans', separatorColor: { hex: '#FF0000', model: 'hex' } },
+    });
+    const item = doc.blocks.find((b) => b.type === 'listItem')!;
+    expect(item.separatorFontString).toContain('Fira Sans');
+    const { canvas, texts } = recordingCanvas();
+    renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 1 });
+    const expected = item.bulletY! + fontSizePxOf(item.separatorFontString!) * 0.3;
+    for (const run of [item.separatorText!, item.prefixText!]) {
+      const painted = texts.find((t) => t.text === run)!;
+      expect(painted.baseline).toBe('alphabetic');
+      expect(painted.font).toBe(item.separatorFontString);
+      expect(painted.y).toBeCloseTo(expected, 6);
+    }
+  });
 });

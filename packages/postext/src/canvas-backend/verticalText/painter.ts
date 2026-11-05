@@ -177,12 +177,9 @@ function paintVertical(
   const { em, family, prefix } = parseFont(font);
   const central = (state.axes?.[family] ?? DEFAULT_CENTRAL_BASELINE) * em;
   const tracking = trackingArg ?? letterSpacingOf(ctx);
-  // A caller centring on `middle` (a list bullet) gives the axis itself.
-  const middle = ctx.textBaseline === 'middle';
-  const axis = middle ? y : y - central;
-  const baseline = axis + central;
+  const axis = y - central;
+  const baseline = y;
   const align = ctx.textAlign;
-  if (middle) ctx.textBaseline = 'alphabetic';
   if (align !== 'left' && align !== 'start') ctx.textAlign = 'left';
   // A feature family (a style's figures, #1237) paints its vertical forms
   // with its base family's twin.
@@ -211,7 +208,6 @@ function paintVertical(
     }
     cx += paintCell(ctx, run.text, run.glyph, cx, axis, em * run.cell, em, central, mode, twinFont) + tracking;
   }
-  if (middle) ctx.textBaseline = 'middle';
   if (align !== 'left' && align !== 'start') ctx.textAlign = align;
 }
 
