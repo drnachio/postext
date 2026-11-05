@@ -200,7 +200,9 @@ describe('a Latin note set in Amiri (#725)', () => {
       x += seg.width;
     }
     for (const text of ['1367)', '2016).']) {
-      const box = boxes.find((b) => b.text === text)!;
+      // The fixture lacks the note's letters: Poppler 26 joins the full stop
+      // of `(d.` to the next word (`.1367)`), at the same left edge.
+      const box = boxes.find((b) => b.text.endsWith(text))!;
       const place = places.get(text)!;
       expect(box, text).toBeDefined();
       expect(box.left).toBeCloseTo(place.left, 0);
