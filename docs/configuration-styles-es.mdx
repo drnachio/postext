@@ -1458,6 +1458,30 @@ El `config` de un estilo se fusiona sobre la configuración del libro igual que 
 
 La numeración de páginas, los contadores, las notas y el índice siguen corriendo a través del capítulo como en cualquier otro. Todas las salidas lo leen: el canvas, el PDF, el EPUB, el HTML y un paquete compuesto con `buildBundle`, y también un capítulo compuesto por separado con `buildDocument`, porque el motor aplica el estilo que nombra su texto. En un libro, solo el encabezado del primer capítulo es del libro; el de los siguientes se vacía salvo su línea `chapterStyle:`. El `{style="…"}` de un encabezado sigue sumándose al estilo del capítulo, para una sección.
 
+### Secciones dentro de un capítulo
+
+Dentro de un capítulo, un salto de sección en una línea propia compone lo que sigue con un estilo de capítulo, desde una página nueva, hasta el siguiente salto o el final del capítulo; `::section` solo vuelve a los ajustes del propio capítulo:
+
+```markdown
+# Resultados
+
+Los ajustes del propio capítulo.
+
+::section{style="appendix"}
+
+## Tablas de resultados
+
+Con el estilo del apéndice, desde una página nueva.
+
+::section
+
+## Discusión
+
+De vuelta a los ajustes del capítulo, desde una página nueva.
+```
+
+El estilo se fusiona sobre los ajustes del capítulo (su propio estilo de capítulo incluido), así que una sección solo cambia lo que su estilo nombra. La numeración de páginas, los contadores y las notas siguen corriendo a través de las secciones como a través de los capítulos. Un salto dentro de un bloque de código es texto.
+
 ## La sala de la lámpara
 
 …

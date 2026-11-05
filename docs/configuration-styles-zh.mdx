@@ -1458,6 +1458,30 @@ chapterStyle: appendix
 
 页码、计数器、注释和目录照常贯穿该章，与其他章无异。所有输出都会读取它：Canvas、PDF、EPUB、HTML、用`buildBundle`排出的文件包，以及用`buildDocument`单独排出的一章，因为引擎会应用正文所写的样式。在一本书中，只有第一章的前置元数据是全书的；后面各章的前置元数据会被清空，只留下其中的`chapterStyle:`行。标题的`{style="…"}`仍然叠加在章样式之上，作用于一个区段。
 
+### 章内的区段
+
+在一章之内，单独占一行的区段分隔符会让其后的内容按某种章样式、从新的一页起排，直到下一个分隔符或该章结束；单独的`::section`则回到该章自身的设置：
+
+```markdown
+# Results
+
+The chapter's own settings.
+
+::section{style="appendix"}
+
+## Tables of results
+
+Set in the appendix style, from a new page.
+
+::section
+
+## Discussion
+
+Back to the chapter's settings, from a new page.
+```
+
+样式合并到该章的设置（包括该章自身的章样式）之上，所以区段只改变其样式写到的部分。页码、计数器和注释贯穿各区段，与贯穿各章一样。代码块中的分隔符是文本。
+
 ## 灯室
 
 …

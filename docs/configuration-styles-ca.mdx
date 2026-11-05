@@ -1456,6 +1456,30 @@ El `config` d'un estil es combina sobre la configuració del llibre igual que la
 
 La numeració de pàgines, els comptadors, les notes i el sumari continuen corrent a través del capítol com en qualsevol altre. Totes les sortides el llegeixen: el canvas, el PDF, l'EPUB, l'HTML i un paquet compost amb `buildBundle`, i també un capítol compost per separat amb `buildDocument`, perquè el motor aplica l'estil que anomena el seu text. En un llibre, només el frontmatter del primer capítol és el del llibre; el dels capítols posteriors es deixa en blanc llevat de la seva línia `chapterStyle:`. El `{style="…"}` d'un encapçalament continua sumant-se a l'estil del capítol, per a una secció.
 
+### Seccions dins d'un capítol
+
+Dins d'un capítol, un salt de secció en una línia pròpia compon el que segueix amb un estil de capítol, des d'una pàgina nova, fins al salt següent o el final del capítol; `::section` sol torna als ajustos del mateix capítol:
+
+```markdown
+# Resultats
+
+Els ajustos del mateix capítol.
+
+::section{style="appendix"}
+
+## Taules de resultats
+
+Amb l'estil de l'apèndix, des d'una pàgina nova.
+
+::section
+
+## Discussió
+
+De tornada als ajustos del capítol, des d'una pàgina nova.
+```
+
+L'estil es combina sobre els ajustos del capítol (el seu propi estil de capítol inclòs), així que una secció només canvia el que el seu estil anomena. La numeració de pàgines, els comptadors i les notes continuen corrent a través de les seccions com a través dels capítols. Un salt dins d'un bloc de codi és text.
+
 ## La sala del llum
 
 …

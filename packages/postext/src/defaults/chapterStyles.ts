@@ -73,3 +73,66 @@ export function chapterConfig(config: PostextConfig, styleId: string | undefined
 export function chapterConfigOf(config: PostextConfig, markdown: string): PostextConfig {
   return config.chapterStyles?.length ? chapterConfig(config, chapterStyleOf(markdown)) : config;
 }
+
+/** A section break inside a chapter (`::section{style="…"}`, on a line of
+ *  its own): from it to the next break the chapter is set in that chapter
+ *  style, from a new page; `::section` alone returns to the chapter's own
+ *  settings. */
+export interface SectionBreak {
+  /** Source offsets of the break's line (its line break excluded). */
+  start: number;
+  end: number;
+  style?: string;
+}
+
+const SECTION_LINE = /^::section(?:\{\s*style\s*=\s*["']([^"']*)["']\s*\})?[ \t]*$/;
+const FENCE = /^(`{3,}|~{3,})/;
+
+/** The section breaks of a chapter's source, in order: outside code
+ *  fences and the front matter. */
+export function sectionBreaks(markdown: string): SectionBreak[] {
+  if (!markdown.includes('::section')) return [];
+  const out: SectionBreak[] = [];
+  let fence: string | undefined;
+  let pos = 0;
+  let inFrontmatter = markdown.startsWith('---');
+  let first = true;
+  while (pos <= markdown.length) {
+    const nl = markdown.indexOf('\n', pos);
+    const end = nl === -1 ? markdown.length : nl;
+    const line = markdown.slice(pos, end).replace(/\r$/, '');
+    if (inFrontmatter) {
+      if (!first && line === '---') inFrontmatter = false;
+    } else {
+      const f = FENCE.exec(line.trimStart());
+      if (f) {
+        if (!fence) fence = f[1]![0]!;
+        else if (f[1]![0] === fence) fence = undefined;
+      } else if (!fence) {
+        const m = SECTION_LINE.exec(line.trim());
+        if (m) out.push({ start: pos, end: pos + line.length, ...(m[1]?.trim() ? { style: m[1].trim() } : {}) });
+      }
+    }
+    first = false;
+    if (nl === -1) break;
+    pos = nl + 1;
+  }
+  return out;
+}
+
+const sectionMerged = new WeakMap<PostextConfig, Map<string, PostextConfig>>();
+
+/** The configuration of a section in style `styleId` of a chapter set with
+ *  `chapterCfg`: the style (from the book's `styles`) merged over the
+ *  chapter's settings, the book's page settings kept. */
+export function sectionConfig(chapterCfg: PostextConfig, styles: PostextConfig['chapterStyles'], styleId: string | undefined): PostextConfig {
+  const style = styleId ? styles?.find((s) => s.id === styleId) : undefined;
+  if (!style) return chapterCfg;
+  let perConfig = sectionMerged.get(chapterCfg);
+  if (!perConfig) sectionMerged.set(chapterCfg, (perConfig = new Map()));
+  const hit = perConfig.get(style.id);
+  if (hit) return hit;
+  const out = chapterConfig({ ...chapterCfg, chapterStyles: styles }, style.id);
+  perConfig.set(style.id, out);
+  return out;
+}

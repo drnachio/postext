@@ -1458,6 +1458,30 @@ A style's `config` is merged over the book's configuration the way a language's 
 
 The chapter's page numbers, counters, notes and contents run on through it like any other chapter. Every output reads it: the canvas, the PDF, the EPUB, the HTML and a bundle laid out with `buildBundle`, and a chapter laid out on its own with `buildDocument` too, since the engine applies the style its text names. In a book, only the first chapter's front matter is the book's; a later chapter's is blanked but for its `chapterStyle:` line. A heading's `{style="…"}` still layers on top of the chapter's style, for one section.
 
+### Sections in a chapter
+
+Inside a chapter, a section break on a line of its own sets what follows in a chapter style, from a new page, until the next break or the end of the chapter; `::section` alone returns to the chapter's own settings:
+
+```markdown
+# Results
+
+The chapter's own settings.
+
+::section{style="appendix"}
+
+## Tables of results
+
+Set in the appendix style, from a new page.
+
+::section
+
+## Discussion
+
+Back to the chapter's settings, from a new page.
+```
+
+The style is merged over the chapter's settings (its own chapter style included), so a section changes only what its style names. Page numbers, counters and notes run on through the sections as through chapters. A break inside a code block is text.
+
 ## The lamp room
 
 …

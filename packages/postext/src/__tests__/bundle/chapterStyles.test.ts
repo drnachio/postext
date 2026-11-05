@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildBundle } from '../../bundle/index.js';
-import { blankChapterFrontmatter, chapterConfig, chapterConfigOf, chapterStyleOf } from '../../defaults/chapterStyles.js';
+import { blankChapterFrontmatter, chapterConfig, chapterConfigOf, chapterStyleOf, sectionBreaks } from '../../defaults/chapterStyles.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { PostextConfig } from '../../types.js';
 
@@ -91,5 +91,33 @@ describe('chapter styles', () => {
     const last = (i: number) => docs[i]!.pages[docs[i]!.pages.length - 1]!.pageNumberValue;
     expect(docs[1]!.pages[0]!.pageNumberValue).toBe(last(0) + 1);
     expect(docs[2]!.pages[0]!.pageNumberValue).toBe(last(1) + 1);
+  });
+});
+
+describe('sections in a chapter style', () => {
+  const markdown = `# One\n\n${filler(8)}\n\n::section{style="appendix"}\n\n## Appendix\n\n${filler(8)}\n\n::section\n\n## Back\n\n${filler(3)}`;
+
+  it('are found outside code fences and the front matter', () => {
+    expect(sectionBreaks(markdown).map((b) => b.style ?? null)).toEqual(['appendix', null]);
+    expect(sectionBreaks('```\n::section{style="x"}\n```\n')).toEqual([]);
+  });
+
+  it('start a new page each, in their style, the chapter\'s pages and numbers running on', () => {
+    const doc = buildDocument({ markdown }, book);
+    const whole = buildDocument({ markdown: markdown.replace(/::section[^\n]*/g, '') }, book);
+    // The appendix section's blocks sit on pages of their own, two columns.
+    const appendix = doc.blocks.find((b) => b.lines.some((l) => l.text === 'Appendix'))!;
+    const back = doc.blocks.find((b) => b.lines.some((l) => l.text === 'Back'))!;
+    expect(appendix.pageIndex).toBeGreaterThan(0);
+    expect(doc.pages[appendix.pageIndex]!.columns.length).toBe(2);
+    expect(doc.pages[back.pageIndex]!.columns.length).toBe(1);
+    expect(back.pageIndex).toBeGreaterThan(appendix.pageIndex);
+    // Pages indexed and numbered in order.
+    expect(doc.pages.map((p) => p.index)).toEqual(doc.pages.map((_, i) => i));
+    expect(doc.pages.map((p) => p.pageNumberValue)).toEqual(doc.pages.map((_, i) => doc.pages[0]!.pageNumberValue + i));
+    expect(doc.pages.length).toBeGreaterThanOrEqual(whole.pages.length);
+    // The break lines print nothing and warn of nothing.
+    expect(doc.blocks.flatMap((b) => b.lines.map((l) => l.text)).some((t) => t.includes('::section'))).toBe(false);
+    expect((doc.contentWarnings ?? []).map((w) => w.kind)).not.toContain('malformedEmbed');
   });
 });
