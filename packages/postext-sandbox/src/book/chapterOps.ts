@@ -217,7 +217,7 @@ export function mergeWithPrevious(book: BookContent, id: string, now = Date.now(
   const cur = book.chapters[idx]!;
   const merged: Chapter = {
     ...prev,
-    markdown: `${prev.markdown.replace(/\s+$/, '')}${CHAPTER_SEPARATOR}${blankFrontmatter(cur.markdown).replace(/^\s+/, '')}`,
+    markdown: `${prev.markdown.replace(/\s+$/, '')}${CHAPTER_SEPARATOR}${blankFrontmatter(cur.markdown, false).replace(/^\s+/, '')}`,
     updatedAt: now,
   };
   const chapters = book.chapters.slice();

@@ -1,3 +1,5 @@
+import { blankChapterFrontmatter } from 'postext';
+
 // Front-matter detection that mirrors gray-matter's rule (used by the engine)
 // and the editor highlighter: the very first line is exactly `---`, and the
 // block closes at the next line that is exactly `---`.
@@ -29,10 +31,14 @@ export function frontmatterRange(markdown: string): FrontmatterRange | null {
 
 /** Same length and newline positions as `markdown`, with every other
  *  character of a leading front-matter block replaced by a space — the
- *  block becomes blank lines and offsets stay 1:1. */
-export function blankFrontmatter(markdown: string): string {
+ *  block becomes blank lines and offsets stay 1:1 — but for a
+ *  `chapterStyle:` line, kept inside its `---` lines so the chapter is
+ *  still laid out in its style (`blankChapterFrontmatter`). `keepStyle:
+ *  false` blanks that line too, for text that stops being a chapter of its
+ *  own (two chapters merged into one). */
+export function blankFrontmatter(markdown: string, keepStyle = true): string {
   const range = frontmatterRange(markdown);
   if (!range) return markdown;
-  const head = markdown.slice(0, range.end).replace(/[^\n\r]/g, ' ');
-  return head + markdown.slice(range.end);
+  const head = markdown.slice(0, range.end);
+  return (keepStyle ? blankChapterFrontmatter(head) : head.replace(/[^\n\r]/g, ' ')) + markdown.slice(range.end);
 }

@@ -1,4 +1,5 @@
 import type { FrameLookEntry, LabelStyle, PageTemplate } from '../composed/types.js';
+import type { ConfigOverride } from '../defaults/configLayers.js';
 import type { BodyTextConfig } from './text/bodyText.js';
 import type { IndexConfig } from './structure/bookIndex.js';
 import type { CalloutStyleConfig } from './boxes/callouts.js';
@@ -186,6 +187,14 @@ export interface PostextConfig {
    *  into, slot by slot. Validated (see `validatePageTemplates`): a
    *  template's warnings carry a JSON-pointer `path`. */
   pageTemplates?: PageTemplate[];
+  /** Chapter styles: named designs a chapter takes by naming one in its
+   *  front matter (`chapterStyle: appendix`). Each is an override of this
+   *  configuration, merged over it as a language's layer is
+   *  (`mergeConfigLayers`): columns and margins, typography and styles,
+   *  colours, running heads and folios may all differ from chapter to
+   *  chapter. The trim size, the resolution, the cut lines and the binding
+   *  stay the book's. */
+  chapterStyles?: ChapterStyleConfig[];
   /** Named styles of the labels set at a picture's anchors (`::label`,
    *  `ResourceAnchor.style`). */
   labelStyles?: LabelStyle[];
@@ -233,4 +242,14 @@ export interface PostextConfig {
    *  document language (`defaultResourceTypes(locale)`, where the language is
    *  {@link locale}, else `bodyText.hyphenation.locale`, else English). */
   resourceTypes?: ResourceType[];
+}
+
+/** One chapter style (`PostextConfig.chapterStyles`). */
+export interface ChapterStyleConfig {
+  /** What a chapter's front matter names (`chapterStyle: <id>`). */
+  id: string;
+  /** A name to show for it. */
+  name?: string;
+  /** The settings it changes, as a language's layer changes them. */
+  config: ConfigOverride;
 }

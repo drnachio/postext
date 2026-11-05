@@ -1420,6 +1420,44 @@ headingStyles: [
 ```md
 # El farero {style="cover"}
 
+## Estilos de capítulo
+
+Un libro cuyos capítulos no son todos iguales (apéndices a dos columnas y con letra más pequeña, una parte impresa en otro color, un glosario con sus propias cabeceras) declara **estilos de capítulo**, y un capítulo toma uno nombrándolo en su encabezado:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // Lo que nombra el encabezado de un capítulo.
+  name?: string;           // Un nombre para mostrarlo.
+  config: ConfigOverride;  // Los ajustes que cambia.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Apéndice',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Apéndice A
+```
+
+El `config` de un estilo se fusiona sobre la configuración del libro igual que la capa de un idioma (véase `mergeConfigLayers`): los objetos, clave a clave; un color o una medida, enteros; las listas de estilos, entrada a entrada por su `id`; y `null` quita un valor del libro. Así, las columnas y los márgenes, la tipografía y los estilos de párrafo, de encabezado y de caja, los colores y las tintas, las cabeceras y el formato de los folios pueden cambiar de un capítulo a otro, y lo que el estilo no nombra sigue siendo del libro. El tamaño de página, la resolución, las marcas de corte y la encuadernación son siempre del libro: un estilo que los nombre no los cambia.
+
+La numeración de páginas, los contadores, las notas y el índice siguen corriendo a través del capítulo como en cualquier otro. Todas las salidas lo leen: el canvas, el PDF, el EPUB, el HTML y un paquete compuesto con `buildBundle`, y también un capítulo compuesto por separado con `buildDocument`, porque el motor aplica el estilo que nombra su texto. En un libro, solo el encabezado del primer capítulo es del libro; el de los siguientes se vacía salvo su línea `chapterStyle:`. El `{style="…"}` de un encabezado sigue sumándose al estilo del capítulo, para una sección.
+
 ## La sala de la lámpara
 
 …

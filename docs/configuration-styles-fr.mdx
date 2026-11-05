@@ -1419,6 +1419,44 @@ headingStyles: [
 ```md
 # Le Gardien du phare {style="cover"}
 
+## Styles de chapitre
+
+Un livre dont les chapitres n’ont pas tous la même allure (des annexes sur deux colonnes en caractères plus petits, une partie imprimée dans une autre couleur, un glossaire avec ses propres titres courants) déclare des **styles de chapitre**, et un chapitre en prend un en le nommant dans son en-tête YAML :
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // What a chapter's front matter names.
+  name?: string;           // A name to show for it.
+  config: ConfigOverride;  // The settings it changes.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+Le `config` d’un style se fusionne sur la configuration du livre comme la couche d’une langue (voir `mergeConfigLayers`) : les objets clé par clé, une couleur ou une longueur en bloc, les listes de styles entrée par entrée sur leur `id`, et `null` retire une valeur du livre. Ainsi, les colonnes et les marges, la typographie et les styles de paragraphe, de titre et d’encadré, les couleurs et les encres, les titres courants et les formats de folio peuvent changer d’un chapitre à l’autre, tandis que ce que le style ne nomme pas reste au livre. Le format, la résolution, les traits de coupe et la reliure restent ceux du livre : un style qui les nomme est ignoré sur ces points.
+
+La numérotation des pages, les compteurs, les notes et la table des matières se poursuivent à travers le chapitre comme pour n’importe quel autre. Toutes les sorties le lisent : le canvas, le PDF, l’EPUB, le HTML et un paquet composé avec `buildBundle`, ainsi qu’un chapitre composé seul avec `buildDocument`, puisque le moteur applique le style que nomme son texte. Dans un livre, seul l’en-tête YAML du premier chapitre est celui du livre ; celui d’un chapitre ultérieur est effacé, sauf sa ligne `chapterStyle:`. Le `{style="…"}` d’un titre se superpose toujours au style du chapitre, pour une section.
+
 ## La chambre de la lanterne
 
 …

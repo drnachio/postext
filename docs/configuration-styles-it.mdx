@@ -1419,6 +1419,44 @@ headingStyles: [
 ```md
 # Il guardiano del faro {style="cover"}
 
+## Stili dei capitoli
+
+Un libro i cui capitoli non hanno tutti lo stesso aspetto (appendici su due colonne con un corpo più piccolo, una parte stampata in un altro colore, un glossario con le sue testatine) dichiara **stili dei capitoli**, e un capitolo ne prende uno nominandolo nel suo front matter:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // What a chapter's front matter names.
+  name?: string;           // A name to show for it.
+  config: ConfigOverride;  // The settings it changes.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+Il `config` di uno stile si unisce alla configurazione del libro come il livello di una lingua (vedi `mergeConfigLayers`): gli oggetti chiave per chiave, un colore o una lunghezza per intero, gli elenchi di stili voce per voce in base al loro `id`, e `null` toglie un valore del libro. Così le colonne e i margini, la tipografia e gli stili di paragrafo, di titolo e di riquadro, i colori e gli inchiostri, le testatine e i formati dei numeri di pagina possono cambiare da un capitolo all’altro, mentre ciò che lo stile non nomina resta del libro. Il formato, la risoluzione, i segni di taglio e la rilegatura restano del libro: uno stile che li nomina viene ignorato su questi punti.
+
+La numerazione delle pagine, i contatori, le note e l’indice continuano attraverso il capitolo come in qualsiasi altro. Tutte le uscite lo leggono: il canvas, il PDF, l’EPUB, l’HTML e un pacchetto impaginato con `buildBundle`, e anche un capitolo impaginato da solo con `buildDocument`, perché il motore applica lo stile che il suo testo nomina. In un libro solo il front matter del primo capitolo è quello del libro; quello di un capitolo successivo viene svuotato tranne la sua riga `chapterStyle:`. Lo `{style="…"}` di un titolo continua a sovrapporsi allo stile del capitolo, per una sezione.
+
 ## La stanza della lanterna
 
 …

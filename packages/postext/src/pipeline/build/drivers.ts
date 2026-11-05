@@ -38,6 +38,7 @@ import { buildDocumentBalanced } from './balanced.js';
 import { withIndexMarks } from './pageMarks.js';
 import { type CitingPageSlot, type BuildDocumentOptions, BuildCancelledError } from './passTypes.js';
 import { indexWarnings, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrinkWarningsByDoc, textWrapWarningsByDoc, compositionWarningsByDoc, composedWarningsByDoc, afterTextWarnings, unplacedByDoc } from './warnings.js';
+import { chapterConfigOf } from '../../defaults/chapterStyles.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -118,6 +119,9 @@ export function* buildDocumentGen(
   // their families, and a config changed in place resolves again (#629).
   const fontSet = options?.fontSet === undefined ? defaultFontSet() : options.fontSet;
   if (fontSet) syncFontSet(fontSet);
+  // A chapter in a style of the book's (`chapterStyle:` in its front
+  // matter) is laid out with that style over the book's settings.
+  if (config) config = chapterConfigOf(config, content.markdown);
   validateConfigCache(config);
   const doc = yield* buildDocumentRounds(content, config, cache, options);
   // Boxes printed upside down (#1229): their blocks learn the point they

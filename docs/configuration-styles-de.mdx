@@ -1419,6 +1419,44 @@ headingStyles: [
 ```md
 # Der Leuchtturmwärter {style="cover"}
 
+## Kapitelstile
+
+Ein Buch, dessen Kapitel nicht alle gleich aussehen (Anhänge zweispaltig in kleinerer Schrift, ein Teil in einer anderen Farbe gedruckt, ein Glossar mit eigenen Kolumnentiteln), deklariert **Kapitelstile**, und ein Kapitel übernimmt einen davon, indem es ihn in seinem Frontmatter nennt:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // What a chapter's front matter names.
+  name?: string;           // A name to show for it.
+  config: ConfigOverride;  // The settings it changes.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+Das `config` eines Stils wird über die Konfiguration des Buches gelegt wie die Ebene einer Sprache (siehe `mergeConfigLayers`): Objekte Schlüssel für Schlüssel, eine Farbe oder eine Länge als Ganzes, Listen von Stilen Eintrag für Eintrag über ihre `id`, und `null` nimmt einen Wert des Buches heraus. So können Spalten und Ränder, Typografie sowie Absatz-, Überschriften- und Kastenstile, Farben und Druckfarben, Kolumnentitel und Formate der Seitenzahlen von einem Kapitel zum nächsten wechseln, während alles, was der Stil nicht nennt, beim Buch bleibt. Format, Auflösung, Schnittmarken und Bindung bleiben beim Buch: Ein Stil, der sie nennt, wird darin ignoriert.
+
+Seitennummerierung, Zähler, Anmerkungen und Inhaltsverzeichnis laufen durch das Kapitel weiter wie durch jedes andere. Jede Ausgabe liest ihn: das Canvas, das PDF, das EPUB, das HTML und ein mit `buildBundle` gesetztes Paket, und auch ein einzeln mit `buildDocument` gesetztes Kapitel, denn die Engine wendet den Stil an, den sein Text nennt. In einem Buch ist nur das Frontmatter des ersten Kapitels das des Buches; das eines späteren Kapitels wird bis auf seine Zeile `chapterStyle:` geleert. Das `{style="…"}` einer Überschrift legt sich weiterhin über den Stil des Kapitels, für einen Abschnitt.
+
 ## Die Laternenstube
 
 …

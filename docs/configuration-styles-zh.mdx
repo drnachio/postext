@@ -1420,6 +1420,44 @@ headingStyles: [
 ```md
 # 守灯人 {style="cover"}
 
+## 章样式
+
+如果一本书的各章外观不尽相同（附录排成双栏、字号更小，某一篇用另一种颜色印刷，词汇表有自己的书眉），就声明**章样式**，各章在自己的前置元数据中写出样式名来选用其一：
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // 章的前置元数据所写的名称。
+  name?: string;           // 用于显示的名称。
+  config: ConfigOverride;  // 它所改变的设置。
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+样式的`config`像语言的层一样合并到全书的配置之上（见`mergeConfigLayers`）：对象逐键合并，颜色或长度整体取代，样式列表按`id`逐条合并，`null`去掉全书的某个值。因此，栏与页边距、排印以及段落、标题和方框样式、颜色与油墨、书眉与页码格式都可以逐章改变，而样式没有写到的部分仍沿用全书的设置。成品尺寸、分辨率、裁切线和装订始终沿用全书的设置：样式中写了这些也会被忽略。
+
+页码、计数器、注释和目录照常贯穿该章，与其他章无异。所有输出都会读取它：Canvas、PDF、EPUB、HTML、用`buildBundle`排出的文件包，以及用`buildDocument`单独排出的一章，因为引擎会应用正文所写的样式。在一本书中，只有第一章的前置元数据是全书的；后面各章的前置元数据会被清空，只留下其中的`chapterStyle:`行。标题的`{style="…"}`仍然叠加在章样式之上，作用于一个区段。
+
 ## 灯室
 
 …

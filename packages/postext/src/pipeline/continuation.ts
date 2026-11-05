@@ -25,6 +25,7 @@ import { numberStatements } from './text/statementNumbering.js';
 import { lastVerseLineNumber } from './text/lineNumbers.js';
 import { composedPages } from '../composed/document.js';
 import { isModuleTemplate, resolvePageTemplate } from '../composed/templates.js';
+import { chapterConfigOf } from '../defaults/chapterStyles.js';
 
 const NO_HEADINGS: HeadingCounters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
 
@@ -37,6 +38,7 @@ export function continuationAfter(
   config?: PostextConfig,
   before?: LayoutContinuation,
 ): LayoutContinuation {
+  if (config) config = chapterConfigOf(config, content.markdown);
   const body = extractFrontmatter(content.markdown).content;
   const resolved = resolveAllConfig(config);
   const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
@@ -125,6 +127,7 @@ export function contentOutline(
   config?: PostextConfig,
   before?: LayoutContinuation,
 ): { outline: OutlineEntry[]; hasToc: boolean; hasIndex: boolean; hasRefs: boolean } {
+  if (config) config = chapterConfigOf(config, content.markdown);
   const body = extractFrontmatter(content.markdown).content;
   const resolved = resolveAllConfig(config);
   const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
@@ -146,6 +149,7 @@ export function contentOutline(
  *  (see `laterPageIdsOf`). */
 export function pageFenceIds(markdown: string, config?: PostextConfig): string[] {
   if (!markdown.includes('id=')) return [];
+  if (config) config = chapterConfigOf(config, markdown);
   const resolved = resolveAllConfig(config);
   const source = { pageTemplates: resolved.pageTemplates, calloutStyles: resolved.calloutStyles };
   const blocks = parseMarkdownMemo(extractFrontmatter(markdown).content, codeParseOptions(resolved));

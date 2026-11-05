@@ -20,6 +20,7 @@ export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './pain
 export type { FootnoteRuleSegment, ColumnRuleSegment } from './paint/columnRule.js';
 export { cropMarkSegments } from './paint/cropMarks.js';
 export * from './color/index.js';
+export { CHAPTER_STYLE_KEY, blankChapterFrontmatter, chapterConfig, chapterConfigOf, chapterStyleOf } from './defaults/chapterStyles.js';
 export { preflightDocument, placedImageResolutions } from './checks/preflight.js';
 export type { PreflightIssue, PreflightKind, PreflightOptions, PreflightSeverity, PlacedImageResolution } from './checks/preflight.js';
 export {
@@ -245,6 +246,7 @@ export type {
   TableModel,
   PostextNote,
   PostextConfig,
+  ChapterStyleConfig,
   ColorModel,
   ColorValue,
   ColorPaletteEntry,

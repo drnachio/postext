@@ -1420,6 +1420,44 @@ headingStyles: [
 ```md
 # O faroleiro {style="cover"}
 
+## Estilos de capítulo
+
+Um livro cujos capítulos não são todos iguais (apêndices em duas colunas e com letra menor, uma parte impressa em outra cor, um glossário com os seus próprios cabeços) declara **estilos de capítulo**, e um capítulo adota um deles nomeando-o no seu front matter:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // O que o front matter de um capítulo nomeia.
+  name?: string;           // Um nome para exibi-lo.
+  config: ConfigOverride;  // Os ajustes que ele muda.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+O `config` de um estilo é combinado sobre a configuração do livro como a camada de um idioma (veja `mergeConfigLayers`): os objetos, chave a chave; uma cor ou uma medida, por inteiro; as listas de estilos, entrada a entrada pelo `id`; e `null` retira um valor do livro. Assim, as colunas e as margens, a tipografia e os estilos de parágrafo, de título e de caixa, as cores e as tintas, os cabeços e o formato dos fólios podem mudar de um capítulo para outro, e o que o estilo não nomeia continua sendo do livro. O tamanho da página, a resolução, as marcas de corte e a encadernação continuam sendo do livro: um estilo que os nomeie é ignorado nesses pontos.
+
+A numeração das páginas, os contadores, as notas e o sumário continuam correndo pelo capítulo como em qualquer outro. Todas as saídas o leem: o canvas, o PDF, o EPUB, o HTML e um pacote diagramado com `buildBundle`, e também um capítulo diagramado sozinho com `buildDocument`, porque o motor aplica o estilo que o texto dele nomeia. Num livro, só o front matter do primeiro capítulo é o do livro; o de um capítulo posterior é apagado, exceto a linha `chapterStyle:`. O `{style="…"}` de um título continua se somando ao estilo do capítulo, para uma seção.
+
 ## A sala da lanterna
 
 …

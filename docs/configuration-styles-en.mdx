@@ -1420,6 +1420,44 @@ headingStyles: [
 ```md
 # The Lighthouse Keeper {style="cover"}
 
+## Chapter styles
+
+A book whose chapters do not all look alike (appendices on two columns with narrower type, a part printed in another colour, a glossary with its own running heads) declares **chapter styles**, and a chapter takes one by naming it in its front matter:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // What a chapter's front matter names.
+  name?: string;           // A name to show for it.
+  config: ConfigOverride;  // The settings it changes.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+A style's `config` is merged over the book's configuration the way a language's layer is (see `mergeConfigLayers`): objects key by key, a colour or a length whole, lists of styles entry by entry on their `id`, and `null` takes a book value out. So columns and margins, typography and paragraph, heading and box styles, colours and inks, running heads and folio formats can all change from one chapter to the next, while what the style does not name stays the book's. The trim size, the resolution, the cut lines and the binding stay the book's: a style that names them is ignored there.
+
+The chapter's page numbers, counters, notes and contents run on through it like any other chapter. Every output reads it: the canvas, the PDF, the EPUB, the HTML and a bundle laid out with `buildBundle`, and a chapter laid out on its own with `buildDocument` too, since the engine applies the style its text names. In a book, only the first chapter's front matter is the book's; a later chapter's is blanked but for its `chapterStyle:` line. A heading's `{style="…"}` still layers on top of the chapter's style, for one section.
+
 ## The lamp room
 
 …

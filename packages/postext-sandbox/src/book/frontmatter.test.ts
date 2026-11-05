@@ -30,3 +30,11 @@ describe('blankFrontmatter', () => {
     expect(blankFrontmatter('# H')).toBe('# H');
   });
 });
+
+describe('blankFrontmatter and chapter styles', () => {
+  it('keeps a chapter style inside its rules, and blanks it when the chapter is merged away', () => {
+    const md = '---\ntitle: Two\nchapterStyle: appendix\n---\n# Two';
+    expect(blankFrontmatter(md)).toBe('---\n          \nchapterStyle: appendix\n---\n# Two');
+    expect(blankFrontmatter(md, false)).toBe(`${'   \n          \n                      \n   \n'}# Two`);
+  });
+});

@@ -18,6 +18,7 @@ import { createMeasurementCache } from '../measure/index.js';
 import type { MeasurementCache } from '../measure/index.js';
 import { extractFrontmatter } from '../parse/frontmatter.js';
 import { configUsesPlaceholder } from '../design/placeholders.js';
+import { blankChapterFrontmatter } from '../defaults/chapterStyles.js';
 import { bundleStart } from './manifest.js';
 import type { BundleChapter, BundleStart } from './types.js';
 import { beginLayoutBuild, createBundleLayoutCache, jsonKey } from './layoutCache.js';
@@ -70,7 +71,8 @@ export const hasComposedPage = (markdown: string): boolean => {
 
 /** `markdown` with a leading front-matter block blanked out — every
  *  character but the line breaks turned into a space, so source offsets
- *  stay as they were and the engine parses no metadata from it. The block
+ *  stay as they were and the engine parses no metadata from it but the
+ *  chapter's style (`chapterStyle:`, kept to lay the chapter out in). The block
  *  is found by its lines alone, never parsed (the Sandbox's rule, which
  *  mirrors gray-matter's): the first line is exactly `---`, and the block
  *  closes at the next line that is exactly `---`. */
@@ -83,7 +85,7 @@ function blankFrontmatter(markdown: string): string {
     const lineEnd = nl === -1 ? markdown.length : nl;
     if (markdown.slice(pos, lineEnd).replace(/\r$/, '') === '---') {
       const end = nl === -1 ? markdown.length : nl + 1;
-      return markdown.slice(0, end).replace(/[^\n\r]/g, ' ') + markdown.slice(end);
+      return blankChapterFrontmatter(markdown.slice(0, end)) + markdown.slice(end);
     }
     if (nl === -1) break;
     pos = nl + 1;
