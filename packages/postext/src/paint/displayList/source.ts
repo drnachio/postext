@@ -164,24 +164,53 @@ export function lineSource(block: SourceBlock, line: VDTLine): LineSource {
  *  source string (a reference, a formula, a note marker, a swatch). */
 export interface PaintedAtom { at: number; length: number; kind: string }
 
-/** The markup a placeholder of `kind` comes from in a source string. */
-function constructPattern(kind: string): RegExp {
+/** Past a `[…]` or `{…}` that opens at `p`; `p` when none closes there. */
+function pastGroup(source: string, p: number, open: string, close: string): number {
+  if (source[p] !== open) return p;
+  const at = source.indexOf(close, p + 1);
+  return at < 0 ? p : at + 1;
+}
+
+/** Where the markup a placeholder of `kind` comes from ends, when it opens
+ *  at `k`; -1 otherwise. Read by hand: a directive's brackets can hold
+ *  another directive, and a pattern would scan on from each. */
+function constructEnd(source: string, k: number, kind: string): number {
   switch (kind) {
-    case 'ref': return /:ref(?:\[[^\]]*\])?\{[^}]*\}/y;
-    case 'math': return /\$\$?[^$]+\$\$?/y;
-    case 'footnote': return /\[\^[^\]\s]+\]/y;
-    default: return /:[A-Za-z][\w-]*(?:\[[^\]]*\])?(?:\{[^}]*\})?/y;
+    case 'ref': {
+      if (!source.startsWith(':ref', k)) return -1;
+      const body = pastGroup(source, k + 4, '[', ']');
+      const end = pastGroup(source, body, '{', '}');
+      return end > body ? end : -1;
+    }
+    case 'math': {
+      const re = /\$\$?[^$]+\$\$?/y;
+      re.lastIndex = k;
+      const m = re.exec(source);
+      return m ? k + m[0].length : -1;
+    }
+    case 'footnote': {
+      if (!source.startsWith('[^', k)) return -1;
+      for (let p = k + 2; p < source.length; p++) {
+        if (source[p] === ']') return p > k + 2 ? p + 1 : -1;
+        if (/\s/.test(source[p]!)) return -1;
+      }
+      return -1;
+    }
+    default: {
+      if (source[k] !== ':' || !/[A-Za-z]/.test(source[k + 1] ?? '')) return -1;
+      let p = k + 2;
+      while (p < source.length && /[\w-]/.test(source[p]!)) p++;
+      return pastGroup(source, pastGroup(source, p, '[', ']'), '{', '}');
+    }
   }
 }
 
 /** Where the construct a placeholder stands for opens in `source`, from
  *  `from` within a short reach (markup before it skipped). */
 function findConstruct(source: string, from: number, kind: string): { start: number; end: number } | undefined {
-  const re = constructPattern(kind);
   for (let k = from; k < source.length && k - from < 32; k++) {
-    re.lastIndex = k;
-    const m = re.exec(source);
-    if (m) return { start: k, end: k + m[0].length };
+    const end = constructEnd(source, k, kind);
+    if (end >= 0) return { start: k, end };
   }
   return undefined;
 }

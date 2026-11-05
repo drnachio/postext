@@ -17,7 +17,9 @@ export function namedBookmark(ctx: WriterContext, id: string): string {
 }
 
 /** Text for a quoted field argument: backslashes and quotes escaped. */
-const fieldText = (s: string): string => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+const fieldText = (s: string): string => s.replace(/[\\"]/g, '\\$&');
+/** The same for a term of an XE path, whose subentries a `:` joins. */
+const xeTerm = (s: string): string => s.replace(/[\\":]/g, '\\$&');
 
 /** The "see" / "see also" words of the book's index (its own labels, else
  *  the built-in ones of its locale). */
@@ -31,7 +33,7 @@ export function seeLabels(ctx: WriterContext): { see: string; seeAlso: string } 
  *  colon inside a term is escaped (`\:`). */
 export function xeField(mark: NonNullable<ContentBlock['indexMarks']>[number], labels: { see: string; seeAlso: string }): string {
   if (!mark.path.length) return '';
-  let instr = `XE "${mark.path.map((p) => fieldText(p).replace(/:/g, '\\:')).join(':')}"`;
+  let instr = `XE "${mark.path.map(xeTerm).join(':')}"`;
   if (mark.main) instr += ' \\b';
   if (mark.see) instr += ` \\t "${fieldText(`${labels.see} ${mark.see}`)}"`;
   else if (mark.seeAlso) instr += ` \\t "${fieldText(`${labels.seeAlso} ${mark.seeAlso}`)}"`;

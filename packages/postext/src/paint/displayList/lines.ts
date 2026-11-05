@@ -8,6 +8,7 @@ import type { VDTBlock } from '../../vdt/blocks.js';
 import type { VDTLine } from '../../vdt/lines.js';
 import type { VDTAnnotationRun, VDTLineSegment } from '../../vdt/segments.js';
 import { lineTextAlign } from '../../vdt/flowFrames.js';
+import { findPxSize } from '../../measure/fontString.js';
 import { lineWordSegmentsInOrder } from '../wordPieces.js';
 import { lineTrailingTracking } from '../lineInk.js';
 import { lineSource, segmentShownText, type Atom, type SourceBlock } from './source.js';
@@ -62,8 +63,8 @@ interface Setting {
 }
 
 function sizeOf(fontString: string): number {
-  const m = /(\d+(?:\.\d+)?)px/.exec(fontString);
-  return m ? Number(m[1]) : 0;
+  const m = findPxSize(fontString, 0, true);
+  return m ? Number(m.value) : 0;
 }
 
 /** The segments a line is set from: word pieces joined, re-measured,

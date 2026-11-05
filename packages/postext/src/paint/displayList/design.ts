@@ -5,6 +5,7 @@
 // `renderHeaderFooterSlot` paints them.
 import type { VDTDesignSlot, VDTDesignTextBlock, VDTDesignTextLine } from '../../vdt/design.js';
 import { compose, mapRect, placeImage, placeShape, placeText, type Frame } from './frame.js';
+import { findPxSize } from '../../measure/fontString.js';
 import { alignToSource } from './source.js';
 import { chipRuns } from './inline.js';
 import type { DisplayItem, DisplayLine, DisplayRun, DisplaySource } from './types.js';
@@ -102,13 +103,13 @@ function textBlockItems(block: VDTDesignTextBlock, ctx: SlotContext): DisplayIte
     line.runs?.forEach((r, i) => {
       if (r.leader) for (let k = 0; k < runs[i]!.text.length; k++) leaders.add(all.length + runs[i]!.textStart + k);
     });
-    const sizeMatch = /(\d+(?:\.\d+)?)px/.exec(block.fontString);
+    const size = findPxSize(block.fontString, 0, true);
     const out: DisplayLine = {
       text,
       x: vertical ? line.xOffset : block.bbox.x + line.xOffset,
       width: line.width,
       baseline: line.baselineY,
-      lineHeight: sizeMatch ? Number(sizeMatch[1]) * 1.2 : 0,
+      lineHeight: size ? Number(size.value) * 1.2 : 0,
       align: line.wordSpacingPx !== undefined ? 'justify' : 'left',
       runs,
       map: [],

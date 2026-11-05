@@ -1,7 +1,7 @@
 // The XML of the package's fixed parts: settings, properties, notes and the
 // custom XML item properties.
 
-import { escapeAttr, escapeXml, localName } from '../xml.js';
+import { escapeAttr, escapeXml, localName, readXmlTag, scanXmlMarkup } from '../xml.js';
 import { EXPORT_MAP_NS } from '../anchors/types.js';
 import { W_NAMESPACES, WORDML_NAMESPACES, XML_DECL } from './constants.js';
 import type { DocxCoreProps, DocxSettings } from './types.js';
@@ -34,34 +34,31 @@ const ORDER_INDEX = new Map(SETTINGS_ORDER.map((n, i) => [n, i]));
 /** Split raw XML into its top-level elements (with their local names). */
 export function topLevelElements(xml: string): { name: string; xml: string }[] {
   const out: { name: string; xml: string }[] = [];
-  const re = /<!--[\s\S]*?-->|<\/([^\s>]+)\s*>|<([^\s/>!?]+)(?:\s+[^\s=/>]+\s*=\s*(?:"[^"]*"|'[^']*'))*\s*(\/?)>/g;
   let depth = 0;
   let start = 0;
   let name = '';
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(xml))) {
-    const [, end, open, self] = m;
-    if (open !== undefined) {
+  scanXmlMarkup(xml, (m) => {
+    if (m.open !== undefined) {
       if (depth === 0) {
-        start = m.index;
-        name = localName(open);
+        start = m.start;
+        name = localName(m.open);
       }
-      if (self) {
-        if (depth === 0) out.push({ name, xml: xml.slice(start, re.lastIndex) });
+      if (m.selfClose) {
+        if (depth === 0) out.push({ name, xml: xml.slice(start, m.end) });
       } else depth++;
-    } else if (end !== undefined) {
+    } else if (m.close !== undefined) {
       depth--;
-      if (depth === 0) out.push({ name, xml: xml.slice(start, re.lastIndex) });
+      if (depth === 0) out.push({ name, xml: xml.slice(start, m.end) });
     }
-  }
+  });
   return out;
 }
 
 /** The content between an element's start and end tags ('' when self-closing). */
 function innerXml(xml: string): string {
-  const start = /^<[^\s/>]+(?:\s+[^\s=/>]+\s*=\s*(?:"[^"]*"|'[^']*'))*\s*(\/?)>/.exec(xml);
-  if (!start || start[1]) return '';
-  return xml.slice(start[0].length, xml.lastIndexOf('</'));
+  const start = readXmlTag(xml, 0);
+  if (start?.open === undefined || start.selfClose) return '';
+  return xml.slice(start.end, xml.lastIndexOf('</'));
 }
 
 export interface SettingsContext {
