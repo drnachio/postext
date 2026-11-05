@@ -65,19 +65,28 @@ jobs:
   # has its own run, which releases everything up to it. Releasing the old
   # commit after it would publish older code under a newer patch version and
   # move npm's `latest` back (1.53.1 after 1.54.0, 2026-10-22).
+  #
+  # The exception: the tip is a release commit that an earlier run rebased onto
+  # this run's commit (release-push.sh, `Rebased-onto:`). It starts no run of
+  # its own and this commit is not released yet, so this run goes on, from the
+  # tip: its manifests carry the versions that release published.
   gate:
     name: Current commit
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'chore: release')"
     outputs:
       current: ${{ steps.tip.outputs.current }}
+      sha: ${{ steps.tip.outputs.sha }}
     steps:
       - id: tip
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tip=$(gh api "repos/${{ github.repository }}/commits/main" --jq .sha)
-          if [ "$tip" = "${{ github.sha }}" ]; then
+          commit=$(gh api "repos/${{ github.repository }}/commits/main")
+          tip=$(jq -r .sha <<< "$commit")
+          echo "sha=$tip" >> "$GITHUB_OUTPUT"
+          if [ "$tip" = "${{ github.sha }}" ] ||
+            jq -e --arg sha "${{ github.sha }}" '.parents[0].sha == $sha and (.commit.message | contains("Rebased-onto: " + $sha))' <<< "$commit" > /dev/null; then
             echo "current=true" >> "$GITHUB_OUTPUT"
           else
             echo "current=false" >> "$GITHUB_OUTPUT"
@@ -92,12 +101,17 @@ jobs:
     if: needs.gate.outputs.current == 'true'
     outputs:
       version: ${{ steps.version.outputs.version }}
+      published: ${{ steps.current.outputs.current }}
 
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.gate.outputs.sha }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      # A sha as `ref` leaves a bare commit; the push and the sync work on main
+      - run: git checkout -B main
 
       - uses: pnpm/action-setup@v4
 
@@ -130,7 +144,11 @@ jobs:
             );
 
             let bump = 'patch';
-            if (mergedPr) {
+            if (mergedPr?.user.login === 'dependabot[bot]') {
+              // Its major/minor labels size the dependency's update, not this
+              // release (zod's `minor` made 1.69.0).
+              core.info(`PR #${mergedPr.number}: Dependabot → patch`);
+            } else if (mergedPr) {
               const labels = mergedPr.labels.map(l => l.name.toLowerCase());
               if (labels.includes('major')) bump = 'major';
               else if (labels.includes('minor')) bump = 'minor';
@@ -207,26 +225,37 @@ jobs:
           path: packages/postext-cli/bin/
           retention-days: 7
 
+      # The build and the tests took minutes: if a newer commit has its own
+      # run by now, stop before spending a version. Past this point the run
+      # sees the release through (release-push.sh).
+      - name: Still the commit to release
+        id: current
+        run: echo "current=$(.github/scripts/release-current.sh)" >> "$GITHUB_OUTPUT"
+
       # Publish to npm
       - name: Publish postext to npm
+        if: steps.current.outputs.current == 'true'
         working-directory: packages/postext
         run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish postext-pdf to npm
+        if: steps.current.outputs.current == 'true'
         working-directory: packages/postext-pdf
         run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish postext-folio to npm
+        if: steps.current.outputs.current == 'true'
         working-directory: packages/postext-folio
         run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish postext-citeproc to npm
+        if: steps.current.outputs.current == 'true'
         working-directory: packages/postext-citeproc
         run: pnpm publish --access public --no-git-checks
         env:
@@ -234,6 +263,7 @@ jobs:
 
       # Last, the newest package (see the header)
       - name: Publish postext-epub to npm
+        if: steps.current.outputs.current == 'true'
         working-directory: packages/postext-epub
         run: pnpm publish --access public --no-git-checks
         env:
@@ -241,6 +271,7 @@ jobs:
 
       # A first publish the token may refuse (see the header): never blocks.
       - name: Publish postext-scorm to npm
+        if: steps.current.outputs.current == 'true'
         continue-on-error: true
         working-directory: packages/postext-scorm
         run: pnpm publish --access public --no-git-checks
@@ -253,6 +284,7 @@ jobs:
       # blocks a release: stale files only make visitors' browsers lay the
       # books out themselves.
       - name: Paginate the showcase bundles
+        if: steps.current.outputs.current == 'true'
         id: layouts
         continue-on-error: true
         timeout-minutes: 45
@@ -260,6 +292,7 @@ jobs:
 
       # Commit version bump, tag, and push
       - name: Commit & tag release
+        if: steps.current.outputs.current == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -275,25 +308,25 @@ jobs:
           else
             git commit -m "chore: release v${{ steps.version.outputs.version }} (postext-pdf v${{ steps.version_pdf.outputs.version }}, postext-folio v${{ steps.version_folio.outputs.version }}, postext-citeproc v${{ steps.version_citeproc.outputs.version }}, postext-epub v${{ steps.version_epub.outputs.version }}, postext-scorm v${{ steps.version_scorm.outputs.version }})"
           fi
-          # Annotated tags: --follow-tags only pushes annotated tags, not lightweight ones
+          # Annotated tags. They may move, with their annotation, if main has
+          # moved by the time of the push (see the script)
           git tag -a "v${{ steps.version.outputs.version }}" -m "v${{ steps.version.outputs.version }}"
           git tag -a "postext-pdf-v${{ steps.version_pdf.outputs.version }}" -m "postext-pdf v${{ steps.version_pdf.outputs.version }}"
           git tag -a "postext-folio-v${{ steps.version_folio.outputs.version }}" -m "postext-folio v${{ steps.version_folio.outputs.version }}"
           git tag -a "postext-citeproc-v${{ steps.version_citeproc.outputs.version }}" -m "postext-citeproc v${{ steps.version_citeproc.outputs.version }}"
           git tag -a "postext-epub-v${{ steps.version_epub.outputs.version }}" -m "postext-epub v${{ steps.version_epub.outputs.version }}"
           git tag -a "postext-scorm-v${{ steps.version_scorm.outputs.version }}" -m "postext-scorm v${{ steps.version_scorm.outputs.version }}"
-          # The packages are already on npm: a push lost now costs a version
-          # (release-version.sh syncs to npm, then bumps). Wait out a GitHub
-          # outage instead (`fatal error in commit_refs`, 1.68.0, 2026-11-04).
-          for wait in 60 120 240 480 0; do
-            git push origin main --follow-tags && break
-            [ "$wait" != 0 ] || exit 1
-            echo "::warning::Push refused; trying again in $wait s"
-            sleep "$wait"
-          done
+          .github/scripts/release-push.sh \
+            "v${{ steps.version.outputs.version }}" \
+            "postext-pdf-v${{ steps.version_pdf.outputs.version }}" \
+            "postext-folio-v${{ steps.version_folio.outputs.version }}" \
+            "postext-citeproc-v${{ steps.version_citeproc.outputs.version }}" \
+            "postext-epub-v${{ steps.version_epub.outputs.version }}" \
+            "postext-scorm-v${{ steps.version_scorm.outputs.version }}"
 
       # Keep develop in sync with the version bump
       - name: Sync version to develop
+        if: steps.current.outputs.current == 'true'
         run: |
           git fetch origin develop
           git checkout develop
@@ -305,6 +338,7 @@ jobs:
   cli-smoke:
     name: CLI smoke (${{ matrix.file }})
     needs: release
+    if: needs.release.outputs.published == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -400,6 +434,7 @@ jobs:
   discord:
     name: Announce on Discord
     needs: release
+    if: needs.release.outputs.published == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read

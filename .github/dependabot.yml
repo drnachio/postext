@@ -1,0 +1,19 @@
+# Security updates only, every package in one pull request. Merged one by one,
+# single-package pull requests each edit pnpm-lock.yaml from the same base: git
+# merged four of them into a duplicate key and a run published on the way
+# (#1412, #1416).
+#
+# Options set here also apply to Dependabot's security updates, as long as
+# target-branch is left out (those always go to the default branch).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Turns version updates off; security updates have no such limit
+    open-pull-requests-limit: 0
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ['*']

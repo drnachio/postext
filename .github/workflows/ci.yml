@@ -38,8 +38,38 @@ concurrency:
 # tests again.
 
 jobs:
+  # Git merges lockfile edits as text, so pull requests that pass one by one
+  # can leave a duplicate key on main, which stops pnpm in every job with the
+  # same error (#1412). One job says so, in seconds (nothing is installed),
+  # and the others do not start.
+  lockfile:
+    name: Lockfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: pnpm-lock.yaml parses and matches the manifests
+        run: |
+          pnpm install --frozen-lockfile --lockfile-only --ignore-scripts || {
+            echo "::error file=pnpm-lock.yaml::Broken or stale lockfile. Keep one side of a bad merge, then run pnpm install --lockfile-only and commit the result."
+            exit 1
+          }
+
+  # The release's push cannot be tried on main: these run it against a scratch
+  # bare repository, with main moved under it (#1416).
+  release-scripts:
+    name: Release scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash .github/scripts/release-push.test.sh
+
   test:
     name: Test ${{ matrix.name }}
+    needs: lockfile
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -100,6 +130,7 @@ jobs:
   # official release.
   epubcheck:
     name: EPUBCheck
+    needs: lockfile
     runs-on: ubuntu-latest
     env:
       EPUBCHECK: '1'
@@ -143,6 +174,7 @@ jobs:
   # Next's own cache (.next/cache) is kept between runs.
   web-build:
     name: Build site
+    needs: lockfile
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -186,6 +218,7 @@ jobs:
   # package and saves Turbo's cache for the next runs.
   checks:
     name: Types, lint & CLI
+    needs: lockfile
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -254,7 +287,7 @@ jobs:
   ci:
     name: Build & Check
     if: always()
-    needs: [test, epubcheck, web-build, checks, cli-windows]
+    needs: [lockfile, release-scripts, test, epubcheck, web-build, checks, cli-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Every job passed
