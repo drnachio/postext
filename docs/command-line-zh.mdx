@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '命令行',
   description: '适用于macOS、Linux和Windows的单个独立可执行文件。它能把.postext图书、图书文件夹或零散的Markdown文件转成PDF、HTML、EPUB、页面图像和Word文档，还能打包文件包、检查图书，并为脚本和智能体输出JSON',
   lang: 'zh',
-  lastUpdated: '2026-10-20',
-  readingTime: '9分钟',
+  lastUpdated: '2026-11-04',
+  readingTime: '10分钟',
   order: 49,
   plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你下载一个适合自己电脑的文件，直接运行，不用另装任何东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
 };
@@ -111,8 +111,8 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>epub</code></td><td>生成EPUB 3电子书，可以是与印刷版相同的固定页面，也可以是流式版式的文字。</td></tr>
     <tr><td><code>image</code></td><td>把一页生成为PNG、JPEG或WebP图片。</td></tr>
     <tr><td><code>images</code></td><td>把每一页或某个范围的页面生成为图片，放进一个文件夹。</td></tr>
-    <tr><td><code>docx</code></td><td>把各章生成为Word文档，再导入时内容不变。</td></tr>
-    <tr><td><code>import-docx</code></td><td>把Word文档转成Postext图书（文件夹或<code>.postext</code>文件）。</td></tr>
+    <tr><td><code>docx</code></td><td>把各章生成为Word文档：语义（Word自身的标题、列表、注释和表格）或版式（PDF的页面）。</td></tr>
+    <tr><td><code>import-docx</code></td><td>把在导出的Word文件中做的校改带回书中；其他Word文档则转成新书（文件夹或<code>.postext</code>文件）。</td></tr>
     <tr><td><code>pack</code></td><td>把图书文件夹或零散的Markdown打包成一个<code>.postext</code>文件。</td></tr>
     <tr><td><code>unpack</code></td><td>把<code>.postext</code>文件解包成文件夹。</td></tr>
     <tr><td><code>info</code></td><td>列出书的各章、语言、资源和字体，加上<code>--pages</code>时还给出页数。</td></tr>
@@ -179,11 +179,23 @@ postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}
 
 ```bash
 postext docx book.postext -o book.docx
+postext docx book/ --variant formatted -o pages.docx
+postext import-docx book.docx book/ --dry-run
+postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
-postext import-docx manuscript.docx -o manuscript.postext
 ```
 
-`docx`用Word样式写出各章的标题、段落、框、引用块、列表和注释。Word无法表达的内容以*Postext Markup*样式原样保留，导入模板也随文件一起保存，所以编辑改过的文档也能完整导回来。`import-docx`把Word文档转成一本书：每个一级标题开始一章（`--no-split`则只保留一章），图片和表格成为资源，`--report`打印沙盒显示的质量报告（使用中的样式、直接格式、手打的编号…）。`--template`接受一个导入模板（从沙盒保存的`.json`，或带有模板的`.docx`）。
+`docx`写出沙盒导出的两种Word文档之一（见[沙盒 › Word文档](/zh/docs/sandbox-books-saving#word文档)）。默认的`--variant semantic`由Markdown生成可编辑的文档，使用Word自身的标题、列表、脚注、表格、公式和节；Word中没有对应结构的内容，以源码形式放在*Postext Source*内容控件中。它不需要排版。`--variant formatted`像`pdf`一样给书排版，把每一页写成一个Word节，文字放在逐行定位的文本框中。两者都嵌入书中的字体（`--no-embed-fonts`只写字体名）。书不能转授的字体族（`customFonts`中的`redistributable: false`）不嵌入，改为嵌入它的开放替代字体，与EPUB相同；许可禁止嵌入的字体、使用PostScript轮廓的字体和可变字体会给出提示，只写字体名。在`build`中，`--docx FILE`写出同样的文件，可配合`--docx-variant`和`--no-docx-fonts`。postext 1.68起；`--template`不再用于`docx`和`build`。
+
+在文件后面指定一本书时，`import-docx`把在由`docx`从该书导出的文档中所做的校改带回来。它读取文件所带的对照表，把文字与导出时所存的各章副本比较，再把每一处校改合并到书的当前版本中：文件夹、`.postext`或零散Markdown中的章文件，以及`preset.json`中资源的文字（题注、说明、替代文字、表格单元格）；零散Markdown则写入`--resources DIR`的`resources.json`。对于有多种语言的书，`--locale`指明文件是从哪个版本导出的，对资源文字的校改写入该版本的`localized`块。每一处校改各占一行报告：
+
+- `applied`：附上它写入的文件和行；
+- `conflict`：导出后书中的这段文字也改过，章或资源已不存在，或者两处校改重叠；
+- `rejected`：书自己生成的文字（编号、题注标签），或跨越Postext标记的格式。
+
+修订按已接受处理，批注列出作者和位置，但不写入。有校改未能应用时，退出码为3。`--dry-run`（`-n`）输出报告，以及每个将要改动的文件的统一格式diff，不写入任何内容。每个文件先写在目标旁边，再改名覆盖目标，所以中途被打断也不会留下半个章；导入过程中发生变化的章文件保持原样，并给出`docx.fileChanged`警告。指定书时不能用`-o`。加上`--json`时，回答包含`variant`、`exportId`、`edits`（每项带`status`、`reason`、`kind`、`before`、`after`和`at`）、`comments`、`files`，试运行时还有`diff`。
+
+不指定书时，`import-docx`把任意Word文档转成一本新书：每个一级标题开始一章（`--no-split`保留为一章），图片和表格成为资源，`--report`输出沙盒显示的质量报告（使用的样式、直接格式、手打的编号……）。`--template`接受一个导入模板（从沙盒保存的`.json`，或带有模板的`.docx`）。
 
 字符间距属于样式，不属于文字，所以不在Markdown里。`docx`把段落样式、标题样式和各级标题的`letterSpacing`写成Word样式的字符间距，`import-docx`再以样式字号的em为单位把它读回来：书中没有设`letterSpacing`的样式（`--config`文件里与Word样式对应的段落样式和标题样式，以及各级标题）会设上这个值，书中已经设了的字距保持不变。加上`--json`时，`styleTracking`列出已设置的（`applied`）和跳过的（`skipped`）。自postext 1.39起。
 
@@ -288,7 +300,7 @@ postext build chapters/ --pdf book.pdf --watch
 }
 ```
 
-- **退出码**：`0`完成，`1`失败，`2`用法错误（未知选项、缺少输入），`3`表示`check`发现了错误（加上`--strict`时为警告）。
+- **退出码**：`0`完成，`1`失败，`2`用法错误（未知选项、缺少输入），`3`表示`check`发现了错误（加上`--strict`时为警告），或者`import-docx`有Word校改未能导入。
 - **不提问**。它从不等待输入；非空的文件夹直接拒绝，而不是询问。
 - **标准输出**：`-o -`把PDF、图像或文件包写到那里，以便通过管道交给下一个程序。
 - **速度**。可执行文件启动只需几百分之一秒。短书变成PDF或页面图像远不到一秒；长书所需的时间取决于它的排版（一本140页的插图小说，约十秒）。要查看长书中的几页，把`--chapters`与`image`或`images --pages`结合使用。要反复修改一本书时，让`postext build --watch`一直运行，读取它的输出即可。

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: '浏览器里的AI智能体借助沙盒的53个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
   lang: 'zh',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '9分钟',
   order: 50,
   plainSummary: "本页写给想让AI助手替自己在沙盒里处理一本书的人。沙盒打开时，会交给助手一套工具，用来查看任意一页、修改设计、编辑文字、添加图片和表格、找出问题和保存文件。你用自己的话提出要求，比如“把字稍微放大一点，再看看书是不是还能排在40页以内”，助手就去使用这些工具，并把页面给你看。一切都留在你的浏览器里。本页说明怎样接入助手、它能做什么，以及每个工具怎样调用。",
@@ -411,7 +411,7 @@ await browser.close();
 ### 书、文件和Word
 
 - **打开和保存书**。`sandbox_list_books`列出示例书和你的项目；`sandbox_open_book`打开其中一本（`{ "kind": "sample", "id": "postext-guide", "language": "es" }`）；`sandbox_save_book`加上`action: "copy_current"`把屏幕上的书保存为你自己的项目，加上`new_blank`则新建一本空书。对于项目，`add_language`加上`language`（`"fr"`、`"zh-Hant"`）会把屏幕上的语言复制成该语言的新版本并打开它，`rename`加上`thisLanguageOnly: true`只给屏幕上的语言命名；`set_cover`和`remove_cover`为它设置或去掉封面。
-- **导出**。`sandbox_export`写出`pdf`、`epub`、`postext`、`docx`、`markdown`或`config`。默认由浏览器下载文件；加上`deliver: "data"`时，PDF或EPUB以base64编码返回给智能体：
+- **导出**。`sandbox_export`写出`pdf`、`epub`、`postext`、`docx`、`markdown`或`config`。默认由浏览器下载文件；加上`deliver: "data"`时，PDF、EPUB或Word文件以base64编码返回给智能体。对于`docx`，`variant`选择`semantic`（默认：Word自身的标题、列表、注释和表格）或`formatted`（PDF印出的页面，嵌入字体）：
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -431,7 +431,9 @@ await browser.close();
 
   `characterSpacing`（有内容可采用时默认开启；postext 1.40起）会把所用Word样式的字符间距按em写入它们所对应的书中段落样式、标题样式、标题级别和标注框标题，书中已设间距的除外。试运行会在`characterSpacing`下列出。
 
-  `sandbox_word_templates`列出、读取、保存和删除已保存的对应关系，Word导出也会用到它们。
+  `sandbox_word_templates`列出、读取、保存和删除Word导入已保存的对应关系。
+
+- **带回校改**：在从书导出的Word文件中做的校改，用`sandbox_apply_word_edits`带回书中。加上`dryRun: true`时它不做任何改动，逐条列出找到的修改，标明`applied`、`conflict`（同一段文字导出后在书中也改过，或已不存在）或`rejected`（编号、标签等书自己生成的文字）并附原因，同时列出在Word中留下的批注。不加时，应用的修改作为一步写入各章和资源，`sandbox_undo`可整体撤销。`sandbox_import_word`会拒绝这样的文件，并指向这个工具。postext 1.68起。
 
 ### 询问与提示
 
@@ -485,7 +487,7 @@ await browser.close();
 - **资源和字体**：`sandbox_list_resources`、`sandbox_save_resource`、`sandbox_delete_resource`、`sandbox_list_fonts`、`sandbox_save_font`。
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
 - **书和文件**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
-- **Word**：`sandbox_import_word`、`sandbox_word_templates`。
+- **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
 - **询问**：`sandbox_answer`。
 - **检查**：`sandbox_get_warnings`、`sandbox_get_composed_checks`、`sandbox_apply_proposal`。
 

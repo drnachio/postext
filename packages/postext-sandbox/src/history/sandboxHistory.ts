@@ -58,13 +58,30 @@ type ConfigStep = {
   shared?: { before: PostextConfig; after: PostextConfig };
 };
 type ResourceStep = { kind: 'resource'; resourceId: string; before: Resource; after: Resource; at: number; open: boolean };
-type Step = TextStep | ConfigStep | ResourceStep;
+/** Steps of several chapters and resources taken back and put back as one
+ *  (#1397: the changes of an edited Word export). */
+type GroupStep = { kind: 'group'; source: HistoryGroupSource; steps: (TextStep | ResourceStep)[]; at: number };
+type Step = TextStep | ConfigStep | ResourceStep | GroupStep;
+
+/** What made a group of steps, for the words that name it. */
+export type HistoryGroupSource = 'word';
+
+/** A group being gathered: see {@link SandboxHistory.group}. */
+export interface HistoryGroup {
+  /** Stop gathering: the steps gathered so far become the group. */
+  close(): void;
+}
+
+/** How long a group waits for the steps it expects before it closes with
+ *  the ones it has (an edit the open editor takes a render later). */
+export const GROUP_WAIT_MS = 5000;
 
 /** A step as the toolbar, the announcements and the tools describe it. */
 export type HistoryStepInfo =
   | { kind: 'text'; chapterId: string }
   | { kind: 'config'; paths: string[]; keys: string[] }
-  | { kind: 'resource'; resourceId: string };
+  | { kind: 'resource'; resourceId: string }
+  | { kind: 'group'; source: HistoryGroupSource; chapterIds: string[]; resourceIds: string[] };
 
 /** The open editor of a chapter, as the history drives it. `run` undoes
  *  or redoes one step of its history, read only or not. */
@@ -110,6 +127,11 @@ export interface SandboxHistory {
   pruneChapters(live: ReadonlySet<string>): void;
   /** The next write starts a step of its own (a gesture ended). */
   seal(): void;
+  /** Gather the text steps of `expect.chapters` and the resource steps of
+   *  `expect.resources` recorded from now on into one step, undone and
+   *  redone as a whole. The group closes once every one has come, on
+   *  `close()`, or after `timeoutMs`; a group of one step is that step. */
+  group(source: HistoryGroupSource, expect: { chapters?: readonly string[]; resources?: readonly string[] }, timeoutMs?: number): HistoryGroup;
   clear(): void;
 }
 
@@ -168,18 +190,46 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
     const top = undoList[undoList.length - 1];
     if (top?.kind === 'config' || top?.kind === 'resource') top.open = false;
   };
+  /** The group being gathered, and the steps it still waits for. */
+  let gathering: { step: GroupStep; chapters: Set<string>; resources: Set<string>; timer: ReturnType<typeof setTimeout> | undefined } | null = null;
+  const finishGroup = () => {
+    const g = gathering;
+    if (!g) return;
+    gathering = null;
+    if (g.timer !== undefined) clearTimeout(g.timer);
+    if (g.step.steps.length === 0) return;
+    push(g.step.steps.length === 1 ? g.step.steps[0]! : g.step);
+    notify();
+  };
+  /** Whether `step` went into the group being gathered. */
+  const gathered = (step: Step): boolean => {
+    const g = gathering;
+    if (!g) return false;
+    if (step.kind === 'text' && g.chapters.delete(step.chapterId)) g.step.steps.push(step);
+    else if (step.kind === 'resource' && g.resources.delete(step.resourceId)) g.step.steps.push(step);
+    else return false;
+    redoList.length = 0;
+    if (g.chapters.size === 0 && g.resources.size === 0) finishGroup();
+    return true;
+  };
   const push = (step: Step) => {
+    if (gathered(step)) return;
     sealTop();
     undoList.push(step);
     if (undoList.length > MAX_STEPS) undoList.splice(0, undoList.length - MAX_STEPS);
     redoList.length = 0;
   };
 
-  const info = (step: Step): HistoryStepInfo => step.kind === 'text'
-    ? { kind: 'text', chapterId: step.chapterId }
-    : step.kind === 'resource'
-      ? { kind: 'resource', resourceId: step.resourceId }
-      : { kind: 'config', paths: patchSettingPaths(step.before, step.patch), keys: patchTopKeys(step.patch) };
+  const info = (step: Step): HistoryStepInfo => {
+    if (step.kind === 'text') return { kind: 'text', chapterId: step.chapterId };
+    if (step.kind === 'resource') return { kind: 'resource', resourceId: step.resourceId };
+    if (step.kind === 'group') {
+      const chapterIds = [...new Set(step.steps.flatMap((s) => (s.kind === 'text' ? [s.chapterId] : [])))];
+      const resourceIds = [...new Set(step.steps.flatMap((s) => (s.kind === 'resource' ? [s.resourceId] : [])))];
+      return { kind: 'group', source: step.source, chapterIds, resourceIds };
+    }
+    return { kind: 'config', paths: patchSettingPaths(step.before, step.patch), keys: patchTopKeys(step.patch) };
+  };
 
   // --- configuration -----------------------------------------------------
 
@@ -268,22 +318,34 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
 
   // --- text --------------------------------------------------------------
 
+  /** Whether a step holds a text step of `chapterId` (a group, a part). */
+  const hasText = (chapterId: string) => (s: Step): boolean =>
+    s.kind === 'text' ? s.chapterId === chapterId : s.kind === 'group' && s.steps.some((p) => p.kind === 'text' && p.chapterId === chapterId);
+  /** Take the text step of `chapterId` at `i` out of `list`: a group gives
+   *  up its part (the chapter's own history took it), and goes once empty. */
+  const takeText = (list: Step[], i: number, chapterId: string): Step => {
+    const found = list[i]!;
+    if (found.kind !== 'group') return list.splice(i, 1)[0]!;
+    const part = found.steps.splice(found.steps.findIndex((p) => p.kind === 'text' && p.chapterId === chapterId), 1)[0]!;
+    if (found.steps.length === 0) list.splice(i, 1);
+    return part;
+  };
   /** Steps of `chapterId` moved from one list to the other (its editor
    *  undid or redid by itself), latest first. */
   const moveText = (chapterId: string, from: Step[], to: Step[], count: number) => {
     for (let n = 0; n < count; n++) {
       let i = from.length - 1;
-      while (i >= 0 && !(from[i]!.kind === 'text' && (from[i] as TextStep).chapterId === chapterId)) i--;
+      while (i >= 0 && !hasText(chapterId)(from[i]!)) i--;
       if (i < 0) return;
-      to.push(from.splice(i, 1)[0]!);
+      to.push(takeText(from, i, chapterId));
     }
   };
   /** The oldest steps of `chapterId` dropped (its history let them go). */
   const dropOldestText = (chapterId: string, count: number) => {
     for (let n = 0; n < count; n++) {
-      const i = undoList.findIndex((s) => s.kind === 'text' && s.chapterId === chapterId);
+      const i = undoList.findIndex(hasText(chapterId));
       if (i < 0) return;
-      undoList.splice(i, 1);
+      takeText(undoList, i, chapterId);
     }
   };
   /** The history of `chapterId` went from `was` to `is` depths through a
@@ -356,9 +418,21 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
     return true;
   };
 
+  /** Run a group's steps, the last first for undo; false when none of
+   *  them could run (the group is then dropped). */
+  const runGroup = (step: GroupStep, dir: 'undo' | 'redo'): boolean => {
+    const order = dir === 'undo' ? [...step.steps].reverse() : step.steps;
+    let ran = false;
+    for (const s of order) {
+      if (s.kind === 'text' ? runText(s, dir, false) : runResource(s, dir)) ran = true;
+    }
+    return ran;
+  };
+
   // --- both --------------------------------------------------------------
 
   const run = (dir: 'undo' | 'redo', options: HistoryRunOptions = {}): HistoryStepInfo | null => {
+    finishGroup();
     const from = dir === 'undo' ? undoList : redoList;
     const to = dir === 'undo' ? redoList : undoList;
     sealTop();
@@ -374,6 +448,8 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
       } else if (step.kind === 'resource') {
         if (!runResource(step, dir)) continue;
         step.open = false;
+      } else if (step.kind === 'group') {
+        if (!runGroup(step, dir)) continue;
       } else if (!runText(step, dir, options.follow === true)) {
         continue;
       }
@@ -393,6 +469,8 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
   };
 
   const startSwitch = () => {
+    if (gathering?.timer !== undefined) clearTimeout(gathering.timer);
+    gathering = null;
     clearAll();
     eagerText.clear();
     switching = true;
@@ -463,17 +541,39 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
       else if (transactions.some((tr) => tr.isUserEvent('redo'))) noteDepths(chapterId, was, is, 'redo');
     },
     pruneChapters: (live) => {
-      const keep = (s: Step) => s.kind !== 'text' || live.has(s.chapterId);
+      const keep = (s: Step | TextStep | ResourceStep) => s.kind !== 'text' || live.has(s.chapterId);
+      let pruned = false;
+      const inGroups = (list: Step[]) => list.filter((s) => {
+        if (s.kind !== 'group') return keep(s);
+        const steps = s.steps.filter(keep);
+        if (steps.length !== s.steps.length) {
+          s.steps = steps;
+          pruned = true;
+        }
+        return steps.length > 0;
+      });
       const before = undoList.length + redoList.length;
-      const u = undoList.filter(keep);
-      const r = redoList.filter(keep);
+      const u = inGroups(undoList);
+      const r = inGroups(redoList);
       undoList.splice(0, undoList.length, ...u);
       redoList.splice(0, redoList.length, ...r);
       for (const id of [...depths.keys()]) if (!live.has(id)) depths.delete(id);
       for (const id of [...eagerText.keys()]) if (!live.has(id)) eagerText.delete(id);
-      if (undoList.length + redoList.length !== before) notify();
+      if (pruned || undoList.length + redoList.length !== before) notify();
     },
     seal: sealTop,
+    group: (source, expect, timeoutMs = GROUP_WAIT_MS) => {
+      finishGroup();
+      const g: NonNullable<typeof gathering> = {
+        step: { kind: 'group', source, steps: [], at: now() },
+        chapters: new Set(expect.chapters ?? []),
+        resources: new Set(expect.resources ?? []),
+        timer: undefined,
+      };
+      gathering = g;
+      g.timer = setTimeout(() => { if (gathering === g) finishGroup(); }, timeoutMs);
+      return { close: () => { if (gathering === g) finishGroup(); } };
+    },
     clear: () => {
       clearAll();
       eagerText.clear();

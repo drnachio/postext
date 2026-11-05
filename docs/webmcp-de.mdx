@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'Was ein KI-Agent im Browser mit den 53 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
   lang: 'de',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '12 min',
   order: 50,
   plainSummary: "Diese Seite ist für alle, die einen KI-Helfer für sich an einem Buch in der Sandbox arbeiten lassen möchten. Solange die Sandbox geöffnet ist, gibt sie dem Helfer eine Reihe von Werkzeugen: um jede Seite anzusehen, die Gestaltung zu ändern, den Text zu bearbeiten, Bilder und Tabellen hinzuzufügen, Probleme zu finden und Dateien zu speichern. Sie bitten mit Ihren eigenen Worten, zum Beispiel „mach die Schrift etwas größer und prüf, ob das Buch noch auf 40 Seiten passt“, und der Helfer setzt die Werkzeuge ein und zeigt Ihnen die Seiten. Alles bleibt in Ihrem Browser. Die Seite erklärt, wie Sie einen Helfer verbinden, was er tun kann und wie jedes Werkzeug aufgerufen wird.",
@@ -579,8 +579,11 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
   ein Titelbild oder nehmen es weg.
 - **Exportieren.** `sandbox_export` schreibt `pdf`, `epub`, `postext`, `docx`,
   `markdown` oder `config`. Standardmäßig lädt der Browser die Datei herunter;
-  mit `deliver: "data"` kommt ein PDF oder EPUB base64-kodiert an den Agenten
-  zurück:
+  mit `deliver: "data"` kommt ein PDF, ein EPUB oder eine Word-Datei
+  base64-kodiert an den Agenten zurück. Bei `docx` wählt `variant` zwischen
+  `semantic` (Voreinstellung: Überschriften, Listen, Anmerkungen und Tabellen
+  von Word selbst) und `formatted` (die Seiten, wie das PDF sie druckt, mit
+  eingebetteten Schriften):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -609,8 +612,19 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
   Buchs übertragen, denen sie zugeordnet sind, soweit das Buch keinen setzt. Der
   Probelauf listet ihn unter `characterSpacing` auf.
 
-  `sandbox_word_templates` listet die gespeicherten Zuordnungen auf, liest,
-  speichert und löscht sie; auch der Word-Export verwendet sie.
+  `sandbox_word_templates` listet die gespeicherten Zuordnungen des
+  Word-Imports auf, liest, speichert und löscht sie.
+
+- **Korrekturen zurückholen**, die in einer aus dem Buch exportierten
+  Word-Datei gemacht wurden, mit `sandbox_apply_word_edits`. Mit `dryRun: true`
+  ändert es nichts und führt jede gefundene Änderung auf, `applied`, `conflict`
+  (derselbe Text hat sich seit dem Export auch im Buch geändert oder ist weg)
+  oder `rejected` (eine Nummer, eine Bezeichnung oder anderer Text, den das
+  Buch selbst erzeugt), mit Grund, dazu die in Word hinterlassenen Kommentare.
+  Ohne diese Option gehen die übernommenen Änderungen in einem Schritt in
+  Kapitel und Ressourcen, den `sandbox_undo` ganz zurücknimmt.
+  `sandbox_import_word` lehnt eine solche Datei ab und nennt dieses Werkzeug.
+  Seit postext 1.68.
 
 ### Rückfragen und Hinweise
 
@@ -720,7 +734,7 @@ und das Schema jedes Werkzeugs liefert `postextWebMcp.listTools()`.
 - **Bücher und Dateien**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
-- **Word**: `sandbox_import_word`, `sandbox_word_templates`.
+- **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **Rückfragen**: `sandbox_answer`.
 - **Die Prüfungen**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

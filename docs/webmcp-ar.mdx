@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'ما يستطيع وكيل ذكاء اصطناعي في المتصفح أن يفعله في Sandbox بأدوات WebMCP، وعددها 53 أداة: أن ينظر إلى الصفحات، ويغيّر أي إعداد، ويحرّر النص، ويضيف الصور والجداول والخطوط، ويشغّل الفحوص، ويصدّر الكتاب، مع طريقة استدعاء كل أداة بوسائط وأجوبة حقيقية',
   lang: 'ar',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '12 دقيقة',
   order: 50,
   plainSummary: "هذه الصفحة لمن يريد أن يكلّف مساعدًا ذكيًا بالعمل على كتاب في Sandbox نيابةً عنه. ما دام Sandbox مفتوحًا، يضع بين يدي المساعد مجموعة من الأدوات: لينظر إلى أي صفحة، ويغيّر التصميم، ويحرّر النص، ويضيف الصور والجداول، ويجد المشكلات، ويحفظ الملفات. تطلب منه ما تريد بكلماتك، كأن تقول «كبّر الخط قليلًا وتأكّد أن الكتاب ما زال في 40 صفحة»، فيستعمل المساعد الأدوات ويريك الصفحات. ويبقى كل شيء في متصفحك. وتشرح الصفحة كيف تربط مساعدًا، وما يستطيع فعله، وكيف تُستدعى كل أداة.",
@@ -534,7 +534,9 @@ await browser.close();
   ويعطيه `set_cover` غلافًا ويزيله `remove_cover`.
 - **التصدير.** يكتب `sandbox_export` الصيغ `pdf` و`epub` و`postext` و`docx`
   و`markdown` و`config`. افتراضيًا ينزّل المتصفح الملف، ومع `deliver: "data"`
-  يعود ملف PDF أو EPUB إلى الوكيل مرمّزًا بـbase64:
+  يعود ملف PDF أو EPUB أو Word إلى الوكيل مرمّزًا بـbase64. ومع `docx` يختار
+  `variant` بين `semantic` (الافتراضي: عناوين Word وقوائمه وحواشيه وجداوله) و`formatted`
+  (الصفحات كما يطبعها PDF، مع تضمين الخطوط):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -560,8 +562,16 @@ await browser.close();
   أنماط الفقرات وأنماط العناوين ومستويات العناوين وعناوين الإطارات التي تقابلها في
   الكتاب، حيث لا يحدّد الكتاب تباعدًا. ويذكره التشغيل التجريبي تحت `characterSpacing`.
 
-  ويسرد `sandbox_word_templates` المطابقات المحفوظة ويقرؤها ويحفظها ويحذفها،
-  وهي المطابقات التي يستعملها تصدير Word أيضًا.
+  ويسرد `sandbox_word_templates` مطابقات استيراد Word المحفوظة ويقرؤها ويحفظها
+  ويحذفها.
+
+- **أعِد التصحيحات** التي أُجريت في ملف Word مصدَّر من الكتاب بـ`sandbox_apply_word_edits`.
+  فمع `dryRun: true` لا يغيّر شيئًا ويسرد كل تعديل وجده، `applied` أو `conflict`
+  (تغيّر النص نفسه في الكتاب أيضًا منذ التصدير، أو لم يعد موجودًا) أو `rejected`
+  (رقم أو تسمية أو نص آخر يولّده الكتاب نفسه)، مع السبب، ومعها تعليقات Word.
+  ومن دونه تذهب التعديلات المطبَّقة إلى الفصول والموارد في خطوة واحدة يلغيها
+  `sandbox_undo` كلها. ويرفض `sandbox_import_word` ملفًا كهذا ويشير إلى هذه
+  الأداة. منذ postext 1.68.
 
 ### الأسئلة والإشعارات
 
@@ -655,7 +665,7 @@ Sandbox، ويواصل العمل هناك بأدوات `sandbox_*`.
 - **الكتب والملفات**: `sandbox_list_books`، و`sandbox_open_book`،
   و`sandbox_save_book`، و`sandbox_delete_book`، و`sandbox_import_book`،
   و`sandbox_export`.
-- **Word**: `sandbox_import_word`، و`sandbox_word_templates`.
+- **Word**: `sandbox_import_word`، و`sandbox_apply_word_edits`، و`sandbox_word_templates`.
 - **الأسئلة**: `sandbox_answer`.
 - **الفحوص**: `sandbox_get_warnings`، و`sandbox_get_composed_checks`، و`sandbox_apply_proposal`.
 

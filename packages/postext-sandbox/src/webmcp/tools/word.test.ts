@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { emptyTemplate, postextToDocx } from 'postext/word';
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
+import { readFileSync } from 'node:fs';
 import { resetViewerEdits } from '../../editor/viewerEdits.js';
 import { runTool, type WebMcpTool } from '../modelContext.js';
 import { harness, state } from './testHarness.js';
@@ -33,13 +34,14 @@ const base64 = (bytes: Uint8Array): string => {
   return btoa(binary);
 };
 
-const MANUSCRIPT = '# The Harbour\n\nA first paragraph with *emphasis* in it.\n\n## Morning\n\nThe boats leave before light.\n\n# The Market\n\nFish is sold by the crate.\n';
-
-/** A .docx as the Sandbox exports it (it carries the template it was
- *  written with); `book` marks where each chapter starts. */
-function docx(chapters: { title: string; markdown: string }[], book = false): { base64: string; fileName: string } {
-  const bytes = postextToDocx(chapters, { template: emptyTemplate(), config: {}, book, title: 'Harbour' });
-  return { base64: base64(bytes), fileName: 'harbour.docx' };
+/** A .docx as earlier versions of the Sandbox exported it (it carries the
+ *  template it was written with), kept in ../../word/__fixtures__: the
+ *  manuscript '# The Harbour … # The Market' (old-harbour), a book of two
+ *  chapters with their markers (old-harbour-book), a tracked heading style
+ *  (old-lantern). */
+function fixture(name: string, fileName: string): { base64: string; fileName: string } {
+  const bytes = new Uint8Array(readFileSync(new URL(`../../word/__fixtures__/${name}.docx`, import.meta.url)));
+  return { base64: base64(bytes), fileName };
 }
 
 function tools(initial: Parameters<typeof harness>[0] = {}) {
@@ -50,7 +52,7 @@ function tools(initial: Parameters<typeof harness>[0] = {}) {
 }
 
 describe('sandbox_import_word', () => {
-  const file = docx([{ title: 'Harbour', markdown: MANUSCRIPT }]);
+  const file = fixture('old-harbour', 'harbour.docx');
 
   it('is described as a tool that replaces text', () => {
     const { byName } = tools();
@@ -134,7 +136,7 @@ describe('sandbox_import_word', () => {
 
   it('brings a whole book back as a book', async () => {
     const { word, get } = tools();
-    const book = docx([{ title: 'One', markdown: '# One\n\nFirst.\n' }, { title: 'Two', markdown: '# Two\n\nSecond.\n' }], true);
+    const book = fixture('old-harbour-book', 'harbour.docx');
     // The chapter markers of an export make the book the destination.
     const dry = await word('sandbox_import_word', { file: book, dryRun: true });
     expect(dry.destination).toBe('book');
@@ -203,10 +205,9 @@ describe('sandbox_word_templates', () => {
 
 describe('sandbox_import_word and the character spacing of the Word styles (#951)', () => {
   const em = (value: number) => ({ value, unit: 'em' as const });
-  const tracked = { headingStyles: [{ id: 'portada', name: 'Portada', letterSpacing: em(0.1) }] };
-  const md = '# One\n\n# The lantern {style="portada"}\n\nText.\n';
-  const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: tracked, book: false, title: 'Lantern' });
-  const file = { base64: base64(bytes), fileName: 'lantern.docx' };
+  // '# One\n\n# The lantern {style="portada"}\n\nText.\n', written by the
+  // earlier writer with the style Portada spaced 0.1 em.
+  const file = fixture('old-lantern', 'lantern.docx');
   const bare = { headingStyles: [{ id: 'portada', name: 'Portada' }] };
 
   it('says on a dry run which styles get spacing and which stay', async () => {

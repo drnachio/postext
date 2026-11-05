@@ -43,6 +43,8 @@ export function describeStep(step: HistoryStepInfo, state: Pick<SandboxState, 'c
   }
   // A picture's marks (#866): the resource by its id.
   if (step.kind === 'resource') return labels.historyStepResource.replace('__resource__', step.resourceId);
+  // The changes of an edited Word export (#1397), all at once.
+  if (step.kind === 'group') return labels.historyStepWordEdits;
   // The Design panel sections of the settings it touched, by their names.
   const names: string[] = [];
   for (const key of step.keys) {

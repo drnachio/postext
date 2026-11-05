@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'Qué puede hacer un agente de IA en el navegador con el Sandbox gracias a sus 53 herramientas WebMCP (mirar las páginas, cambiar cualquier ajuste, editar el texto, añadir imágenes, tablas y fuentes, pasar las comprobaciones, exportar) y cómo se invoca cada una, con argumentos y respuestas reales',
   lang: 'es',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '13 min',
   order: 50,
   plainSummary: "Esta página es para quien quiere que un asistente de inteligencia artificial trabaje por él en un libro del Sandbox. Mientras el Sandbox está abierto, le da al asistente un juego de herramientas para mirar cualquier página, cambiar el diseño, editar el texto, añadir imágenes y tablas, encontrar problemas y guardar archivos. Tú se lo pides con tus palabras, por ejemplo «sube un poco la letra y comprueba que el libro sigue cabiendo en 40 páginas», y el asistente usa las herramientas y te enseña las páginas. Todo se queda en tu navegador. La página explica cómo conectar un asistente, qué puede hacer y cómo se invoca cada herramienta.",
@@ -561,7 +561,10 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
   y `set_cover` y `remove_cover` le ponen o le quitan una portada.
 - **Exportar.** `sandbox_export` escribe `pdf`, `epub`, `postext`, `docx`,
   `markdown` o `config`. Por defecto el navegador descarga el archivo; con
-  `deliver: "data"`, un PDF o un EPUB vuelve al agente codificado en base64:
+  `deliver: "data"`, un PDF, un EPUB o un archivo de Word vuelve al agente
+  codificado en base64. Con `docx`, `variant` elige `semantic` (el valor por
+  defecto: encabezados, listas, notas y tablas propios de Word) o `formatted`
+  (las páginas tal como las imprime el PDF, con las fuentes incrustadas):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -591,7 +594,17 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
   La simulación lo enumera en `characterSpacing`.
 
   `sandbox_word_templates` enumera, lee, guarda y borra las asignaciones
-  guardadas, que también usa la exportación a Word.
+  guardadas de la importación de Word.
+
+- **Traer de vuelta las correcciones** hechas en un archivo de Word exportado
+  desde el libro, con `sandbox_apply_word_edits`. Con `dryRun: true` no cambia
+  nada y enumera cada cambio encontrado, `applied`, `conflict` (el mismo texto
+  también cambió en el libro desde la exportación, o ya no está) o `rejected`
+  (un número, una etiqueta u otro texto que genera el propio libro), con su
+  motivo, y los comentarios dejados en Word. Sin él, los cambios aplicados van a
+  los capítulos y los recursos en un solo paso, que `sandbox_undo` revierte
+  entero. `sandbox_import_word` rechaza un archivo así e indica esta
+  herramienta. Desde postext 1.68.
 
 ### Preguntas y avisos
 
@@ -697,7 +710,7 @@ de cada una se obtienen con `postextWebMcp.listTools()`.
 - **Libros y archivos**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
-- **Word**: `sandbox_import_word`, `sandbox_word_templates`.
+- **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **Preguntas**: `sandbox_answer`.
 - **La revisión**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

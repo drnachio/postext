@@ -144,5 +144,7 @@ Mapping a source's design:
   printed: they give the alt text. Put the title in a caption or the text.
 - The engraver loads only for books with music (about 3.7 MB compressed).
   Until it is ready the preview shows grey placeholder boxes.
-- Word export writes notation fences verbatim, as listings: the score
-  comes back from a round trip, but Word shows the notation as text.
+- The semantic Word export keeps notation fences verbatim in a *Postext
+  Source* content control: Word shows the notation as text and edits to
+  it come back on `import-docx`. The formatted export shows the engraved
+  score as a picture, which is display only.

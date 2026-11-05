@@ -1,21 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import type { PostextConfig } from 'postext';
-import { emptyTemplate, parseTemplate, postextToDocx, readDocx } from 'postext/word';
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
+import { readFileSync } from 'node:fs';
+import { emptyTemplate, parseTemplate, readDocx } from 'postext/word';
 import { DEFAULT_LABELS } from '../types/index.js';
 import { trackingText, wordImportActions, wordTrackingPlan } from './sandboxImport.js';
 
 const em = (value: number) => ({ value, unit: 'em' as const });
 
-/** A book that tracks its styles, written out as Word and read back. */
-const MD = ['# One', '', '# The lantern {style="portada"}', '', ':::paragraphs{style="firma"}', 'Signed', ':::', ''].join('\n');
-const TRACKED = {
-  headings: { levels: [{ level: 1, letterSpacing: em(0.02) }] },
-  headingStyles: [{ id: 'portada', name: 'Portada', letterSpacing: em(0.1) }],
-  paragraphStyles: [{ id: 'firma', name: 'Firma', letterSpacing: em(0.05) }],
-} as unknown as PostextConfig;
+/** A book that tracks its styles, as an earlier version of the Sandbox
+ *  wrote it out as Word: `# One`, `# The lantern {style="portada"}` and a
+ *  `:::paragraphs{style="firma"}` group, with heading level 1 tracked
+ *  0.02 em, the heading style portada 0.1 em and the paragraph style firma
+ *  0.05 em (__fixtures__/old-tracked.docx; old-untracked.docx is the same
+ *  text with no spacing). */
+const fixture = (name: string) => new Uint8Array(readFileSync(new URL(`./__fixtures__/${name}.docx`, import.meta.url)));
 
 function wordDoc() {
-  const doc = readDocx(postextToDocx([{ title: 'One', markdown: MD }], { template: emptyTemplate(), config: TRACKED, book: false }));
+  const doc = readDocx(fixture('old-tracked'));
   return { doc, template: parseTemplate(doc.embeddedTemplate)! };
 }
 
@@ -38,7 +40,7 @@ describe('the character spacing of Word styles in the Sandbox import (#951)', ()
   });
 
   it('plans nothing for a document whose styles carry no spacing', () => {
-    const doc = readDocx(postextToDocx([{ title: 'One', markdown: MD }], { template: emptyTemplate(), config: {}, book: false }));
+    const doc = readDocx(fixture('old-untracked'));
     expect(wordTrackingPlan(doc, emptyTemplate(), {})).toEqual({ applied: [], skipped: [], patch: {} });
   });
 

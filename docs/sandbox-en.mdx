@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: "The Sandbox's interface: the activity bar and the Text, Books, Chapters, Resources and Fonts panels, and the layout on phones",
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-04',
   readingTime: '28 min',
   order: 40,
   plainSummary: "The Sandbox is a free tool on this website for trying Postext without installing anything. You write your text on one side and see the finished pages on the other, and they change as you type. This page explains the parts of the screen and the panels where you write the text, manage books and chapters, add pictures and choose fonts. Other pages cover the design settings, the previews, saving and importing, and putting the Sandbox in your own website.",
@@ -95,8 +95,8 @@ The panel header is a **chapter switcher**: previous/next arrows, the chapter's 
 - **Reset** (asks for confirmation): reloads the **document part** of the open sample book. Every chapter and the whole figure set are replaced with the sample's (for the built-in sample, the locale's sample document and example resources). The design is left alone except for the sample's own fonts. See [Books panel](#books-panel).
 - **Export**: downloads the active chapter as a plain `.md` file, named `<book>-<nn>-<chapter>.md` in a multi-chapter book, and otherwise after the open book or `document.md`
 - **Import**: replaces the active chapter with the contents of a `.md` file
-- **Import a Word document**: opens a `.docx` manuscript and maps its Word styles to Postext styles before anything changes (see [Word documents](/en/docs/sandbox-books-saving#word-documents))
-- **Export to Word**: downloads the chapter or the whole book as a `.docx` that comes back with every style when it is imported again
+- **Import a Word document**: opens a `.docx` manuscript and maps its Word styles to Postext styles before anything changes, or brings back the corrections made in a file exported from the book (see [Word documents](/en/docs/sandbox-books-saving#word-documents))
+- **Export to Word**: downloads the chapter or the whole book as a `.docx`, semantic (Word's own headings, lists, notes and tables) or formatted (the pages as the PDF prints them); the corrections made in it come back through **Import a Word document**
 
 #### Books panel
 

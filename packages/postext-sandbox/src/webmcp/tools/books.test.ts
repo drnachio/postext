@@ -248,8 +248,8 @@ describe('the books', () => {
     expect((await call('sandbox_export', { format: 'postext', book: { kind: 'sample', id: 'atlas' } })).error).toBe('The book could not be exported: Preset not found');
     expect((await call('sandbox_export', { format: 'postext', book: { kind: 'project', id: 'nope' } })).error).toMatch(/No project with id "nope"\. The projects: p1 \(Mine\)/);
     expect((await call('sandbox_export', { format: 'markdown', book: { kind: 'project', id: 'p1' } })).error).toMatch(/"book" goes with format "postext"/);
-    expect((await call('sandbox_export', { format: 'postext', template: 'none' })).error).toMatch(/"template" goes with format "docx"/);
-    expect((await call('sandbox_export', { format: 'docx', template: 'wt-nope' })).error).toMatch(/No saved Word template with id "wt-nope"/);
+    expect((await call('sandbox_export', { format: 'postext', variant: 'semantic' })).error).toMatch(/"variant" goes with format "docx"/);
+    expect((await call('sandbox_export', { format: 'docx', variant: 'plain' })).error).toMatch(/variant/);
   });
 
   it('say which languages a .postext file carries, without importing it', async () => {

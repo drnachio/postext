@@ -1,0 +1,345 @@
+// Walk a WordprocessingML part in document order and flatten it into a
+// token stream: characters with their run formatting, paragraph ends,
+// bookmark and comment boundaries. Tracked insertions and moves-to are
+// read, deletions and moves-from are not; field codes are skipped and
+// their results kept; text boxes are read where their drawing stands
+// (`mc:Choice` only, so a text box with a VML fallback is read once).
+
+import { attr, child, children, localName, onOff, textOf, type XmlElement } from '../xml.js';
+import { fragmentIdOf } from '../anchors/bookmarks.js';
+import { ommlToTex } from '../omml.js';
+import { ommlHash } from '../anchors/ommlHash.js';
+
+/** Object replacement character: an equation or a note reference. */
+export const OBJECT_CHAR = '￼';
+/** A paragraph break inside a fragment (a paragraph the user split). */
+export const PARA_CHAR = ' ';
+
+/** Characters the formatted writer holds an atom's room with (U+2060 in
+ *  files written before #1406). */
+export const isHolderChar = (ch: string | undefined): boolean => ch === '\u00a0' || ch === '\u2060';
+
+export type Token =
+  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; para: number }
+  | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps }
+  | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number }
+  | { t: 'bmEnd'; wid: string; para: number }
+  | { t: 'del'; para: number }
+  | { t: 'cStart'; cid: string }
+  | { t: 'cEnd'; cid: string };
+
+/** What a paragraph's own properties say about its role, for paragraphs
+ *  the user adds outside every bookmark. */
+export interface ParaProps {
+  style?: string;
+  /** List numbering (`w:numPr`). */
+  numId?: string;
+  ilvl?: number;
+  /** `w:outlineLvl` (0 = heading 1). */
+  outline?: number;
+  /** The paragraph ends a section (`w:sectPr`): a chapter end in the
+   *  semantic writer. */
+  sect?: boolean;
+}
+
+function paraProps(p: XmlElement): ParaProps | undefined {
+  const pPr = child(p, 'pPr');
+  if (!pPr) return undefined;
+  const out: ParaProps = {};
+  const style = attr(child(pPr, 'pStyle'), 'val');
+  if (style) out.style = style;
+  const numPr = child(pPr, 'numPr');
+  const numId = attr(child(numPr, 'numId'), 'val');
+  if (numId && numId !== '0') {
+    out.numId = numId;
+    out.ilvl = Number(attr(child(numPr, 'ilvl'), 'val') ?? 0) || 0;
+  }
+  const outline = attr(child(pPr, 'outlineLvl'), 'val');
+  if (outline !== undefined && Number(outline) < 9) out.outline = Number(outline);
+  if (child(pPr, 'sectPr')) out.sect = true;
+  return out;
+}
+
+interface RunCtx {
+  href?: string;
+  tracked?: boolean;
+  deleted?: boolean;
+}
+
+interface WalkState {
+  out: Token[];
+  links: Record<string, string>;
+  /** Paragraph ordinal stack (paragraphs nest through text boxes). */
+  paras: number[];
+  nextPara: number;
+  /** Block container stack: the part's own (body, note) and each text box
+   *  inside it get an ordinal, so text in a box without any bookmark
+   *  (a list marker, a folio) is told apart from paragraphs the user added. */
+  boxes: number[];
+  nextBox: number;
+  /** Complex fields: whether each open field is still in its code part,
+   *  and whether its result is skipped (XE has none, but be safe). */
+  fields: { code: boolean; skip: boolean; instr: string; href?: string }[];
+  /** Ordinal of a paragraph whose mark a tracked change deleted. */
+  joinNext?: number;
+  /** A run marked w:noProof was seen (the mark survived the editor). */
+  noProof?: boolean;
+}
+
+const curPara = (s: WalkState): number => s.paras[s.paras.length - 1] ?? -1;
+const curBox = (s: WalkState): number => s.boxes[s.boxes.length - 1] ?? -1;
+
+/** Run flags in a fixed order: b i c p s k. */
+function runFlags(rPr: XmlElement | undefined): string {
+  if (!rPr) return '';
+  const style = (attr(child(rPr, 'rStyle'), 'val') ?? '').toLowerCase();
+  const on = (name: string, styleHint: RegExp): boolean => {
+    const v = onOff(child(rPr, name));
+    return v ?? styleHint.test(style);
+  };
+  let f = '';
+  if (on('b', /strong|bold/)) f += 'b';
+  if (on('i', /emphasis|italic/)) f += 'i';
+  if (on('smallCaps', /smallcaps/)) f += 'c';
+  // A character style named for it counts too (a writer that sets the
+  // raise and size itself, for exact placement, marks the run that way).
+  const va = attr(child(rPr, 'vertAlign'), 'val');
+  if (va === 'superscript' || (va === undefined && /superscript/.test(style))) f += 'p';
+  else if (va === 'subscript' || (va === undefined && /subscript/.test(style))) f += 's';
+  if (/code|verbatim/.test(style)) f += 'k';
+  return f;
+}
+
+/** `HYPERLINK "url"` (external, no `\\l` bookmark switch): the link. */
+function hyperlinkOf(instr: string): string | undefined {
+  const m = /^\s*HYPERLINK\s+"([^"]+)"/i.exec(instr);
+  return m && !/\\l\b/.test(instr) ? m[1] : undefined;
+}
+
+/** The link of the innermost HYPERLINK field whose result is being read. */
+function fieldHref(s: WalkState): string | undefined {
+  for (let k = s.fields.length - 1; k >= 0; k--) if (s.fields[k]!.href) return s.fields[k]!.href;
+  return undefined;
+}
+
+function emit(s: WalkState, ch: string, flags: string, ctx: RunCtx, tex?: string, mathHash?: string): void {
+  if (ctx.deleted) return;
+  const top = s.fields[s.fields.length - 1];
+  if (top && (top.code || top.skip)) return;
+  const tok: Token = { t: 'char', ch, flags, para: curPara(s) };
+  const href = ctx.href ?? fieldHref(s);
+  if (href) tok.href = href;
+  if (tex !== undefined) tok.tex = tex;
+  if (mathHash !== undefined) tok.mathHash = mathHash;
+  if (ctx.tracked) tok.tracked = true;
+  s.out.push(tok);
+}
+
+function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
+  const rPr = child(r, 'rPr');
+  const flags = runFlags(rPr);
+  // The formatted writer marks an atom's holder run w:noProof.
+  const held = rPr !== undefined && onOff(child(rPr, 'noProof')) === true;
+  if (held) s.noProof = true;
+  for (const c of children(r)) {
+    const name = localName(c.name);
+    switch (name) {
+      case 't':
+        for (const ch of textOf(c)) {
+          for (let i = 0; i < ch.length; i++) {
+            const n = s.out.length;
+            emit(s, ch[i]!, flags, ctx);
+            const tok = s.out[n];
+            if (held && tok?.t === 'char' && isHolderChar(tok.ch)) tok.holder = true;
+          }
+        }
+        break;
+      case 'tab':
+      case 'ptab':
+        emit(s, '\t', flags, ctx);
+        break;
+      case 'br': {
+        // A page or column break has no Markdown spelling: not an edit.
+        const type = attr(c, 'type');
+        if (type !== 'page' && type !== 'column') emit(s, '\n', flags, ctx);
+        break;
+      }
+      case 'cr':
+        emit(s, '\n', flags, ctx);
+        break;
+      case 'noBreakHyphen':
+        emit(s, '‑', flags, ctx);
+        break;
+      case 'sym': {
+        const code = parseInt(attr(c, 'char') ?? '', 16);
+        if (Number.isFinite(code)) emit(s, String.fromCharCode(code), flags, ctx);
+        break;
+      }
+      case 'footnoteReference':
+      case 'endnoteReference':
+        emit(s, OBJECT_CHAR, flags, ctx);
+        break;
+      case 'fldChar': {
+        const type = attr(c, 'fldCharType');
+        if (type === 'begin') s.fields.push({ code: true, skip: false, instr: '' });
+        else if (type === 'separate') {
+          const f = s.fields[s.fields.length - 1];
+          if (f) {
+            f.code = false;
+            f.skip = /^\s*XE\b/i.test(f.instr);
+            const href = hyperlinkOf(f.instr);
+            if (href) f.href = href;
+          }
+        } else if (type === 'end') s.fields.pop();
+        break;
+      }
+      case 'instrText': {
+        const f = s.fields[s.fields.length - 1];
+        if (f && !ctx.deleted) f.instr += textOf(c);
+        break;
+      }
+      case 'drawing':
+      case 'pict':
+      case 'AlternateContent':
+        walkObject(s, c, ctx);
+        break;
+      case 'ruby': {
+        // The base is the text; the reading (w:rt) comes from the source.
+        const base = child(c, 'rubyBase');
+        if (base) for (const br of children(base)) if (localName(br.name) === 'r') walkRun(s, br, ctx);
+        break;
+      }
+      // softHyphen, delText, lastRenderedPageBreak, footnoteRef, rPr …
+      default:
+        break;
+    }
+  }
+}
+
+/** Find the text boxes inside a drawing (or VML picture) and read them. */
+function walkObject(s: WalkState, el: XmlElement, ctx: RunCtx): void {
+  const name = localName(el.name);
+  if (name === 'txbxContent') {
+    s.boxes.push(s.nextBox++);
+    walkBlocks(s, el, { tracked: ctx.tracked, deleted: ctx.deleted });
+    s.boxes.pop();
+    return;
+  }
+  if (name === 'AlternateContent') {
+    const choice = child(el, 'Choice');
+    if (choice) walkObject(s, choice, ctx);
+    return;
+  }
+  for (const c of children(el)) walkObject(s, c, ctx);
+}
+
+/** Inline content of a paragraph (runs and their wrappers). */
+function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
+  for (const c of children(el)) {
+    const name = localName(c.name);
+    switch (name) {
+      case 'r':
+        walkRun(s, c, ctx);
+        break;
+      case 'hyperlink': {
+        const rid = attr(c, 'id');
+        const href = rid ? s.links[rid] : undefined;
+        walkInline(s, c, { ...ctx, href: href ?? ctx.href });
+        break;
+      }
+      case 'ins':
+      case 'moveTo':
+        walkInline(s, c, { ...ctx, tracked: true });
+        break;
+      case 'del':
+      case 'moveFrom':
+        if (!ctx.deleted) s.out.push({ t: 'del', para: curPara(s) });
+        walkInline(s, c, { ...ctx, deleted: true });
+        break;
+      case 'fldSimple':
+        if (/^\s*XE\b/i.test(attr(c, 'instr') ?? '')) break;
+        walkInline(s, c, { ...ctx, href: hyperlinkOf(attr(c, 'instr') ?? '') ?? ctx.href });
+        break;
+      case 'sdt':
+        walkInline(s, child(c, 'sdtContent') ?? c, ctx);
+        break;
+      case 'smartTag':
+      case 'customXml':
+      case 'dir':
+      case 'bdo':
+        walkInline(s, c, ctx);
+        break;
+      case 'oMathPara':
+        walkInline(s, c, ctx);
+        break;
+      case 'oMath':
+        emit(s, OBJECT_CHAR, '', ctx, ommlToTex(c), ommlHash(c));
+        break;
+      case 'bookmarkStart': {
+        const fid = fragmentIdOf(attr(c, 'name') ?? '');
+        if (fid !== undefined) s.out.push({ t: 'bmStart', wid: attr(c, 'id') ?? '', fid, para: curPara(s), depth: s.paras.length, box: curBox(s) });
+        break;
+      }
+      case 'bookmarkEnd':
+        s.out.push({ t: 'bmEnd', wid: attr(c, 'id') ?? '', para: curPara(s) });
+        break;
+      case 'commentRangeStart':
+        s.out.push({ t: 'cStart', cid: attr(c, 'id') ?? '' });
+        break;
+      case 'commentRangeEnd':
+        s.out.push({ t: 'cEnd', cid: attr(c, 'id') ?? '' });
+        break;
+      case 'AlternateContent':
+        walkObject(s, c, ctx);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
+  // After a paragraph whose mark was deleted (tracked), this one continues it.
+  const ord = s.joinNext ?? s.nextPara++;
+  s.joinNext = undefined;
+  s.paras.push(ord);
+  walkInline(s, p, ctx);
+  const depth = s.paras.length;
+  s.paras.pop();
+  if (child(child(child(p, 'pPr'), 'rPr'), 'del') !== undefined) s.joinNext = ord;
+  else if (!ctx.deleted) {
+    const props = paraProps(p);
+    s.out.push({ t: 'para', para: ord, depth, box: curBox(s), ...(props ? { props } : {}) });
+  }
+}
+
+/** Block content: paragraphs, tables, content controls. */
+function walkBlocks(s: WalkState, el: XmlElement, ctx: RunCtx): void {
+  for (const c of children(el)) {
+    const name = localName(c.name);
+    if (name === 'p') {
+      walkParagraph(s, c, ctx);
+    } else if (name === 'tbl') {
+      for (const tr of children(c, 'tr')) for (const tc of children(tr, 'tc')) walkBlocks(s, tc, ctx);
+    } else if (name === 'sdt') {
+      walkBlocks(s, child(c, 'sdtContent') ?? c, ctx);
+    } else if (name === 'customXml' || name === 'ins' || name === 'moveTo') {
+      walkBlocks(s, c, name === 'customXml' ? ctx : { ...ctx, tracked: true });
+    } else if (name === 'del' || name === 'moveFrom') {
+      walkBlocks(s, c, { ...ctx, deleted: true });
+    } else if (name === 'AlternateContent') {
+      const choice = child(c, 'Choice');
+      if (choice) walkBlocks(s, choice, ctx);
+    } else {
+      // Bookmarks and comment ranges between paragraphs.
+      walkInline(s, { name: 'w:wrap', attrs: {}, children: [c] }, ctx);
+    }
+  }
+}
+
+/** The token stream of a part's block container (`w:body`, a note). */
+export function walkPart(container: XmlElement, links: Record<string, string>, out: Token[] = [], start = 0, boxStart = 0): { tokens: Token[]; nextPara: number; nextBox: number; noProof: boolean } {
+  const s: WalkState = { out, links, paras: [], nextPara: start, boxes: [boxStart], nextBox: boxStart + 1, fields: [] };
+  walkBlocks(s, container, {});
+  return { tokens: out, nextPara: s.nextPara, nextBox: s.nextBox, noProof: s.noProof === true };
+}

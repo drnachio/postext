@@ -2,6 +2,7 @@
 // segments, the glyph and line under the point.
 import { type BoundingBox, type VDTPage, type VDTLineSegment, type VDTBlock, type VDTLine, lineTextAlign } from '../../vdt.js';
 import type { SourceMapOptions, SourceElement } from '../sourceMap.js';
+import { segmentPlainLength } from '../../paint/segmentPlainLength.js';
 
 /** The file a source reference names: its name and, for text of another
  *  chapter, which one. */
@@ -62,18 +63,6 @@ interface PlacedSegment {
   width: number;
   plainStart: number;
   plainLen: number;
-}
-
-/** The plain characters a segment stands for: none for what the layout
- *  added (a book title's brackets, a tab leader, the hyphen of a break),
- *  one for a reference, a swatch, a chip, a formula. */
-function segmentPlainLength(seg: VDTLineSegment, dropTrailingHyphen: boolean, dropLeadingHyphen: boolean): number {
-  if (seg.refContinues || seg.inserted || seg.leader !== undefined) return 0;
-  if (seg.refResourceId !== undefined || seg.kind === 'swatch') return 1;
-  let len = seg.text.length - (seg.kashida?.length ?? 0);
-  if (dropLeadingHyphen && seg.text.startsWith('-')) len--;
-  if (dropTrailingHyphen && seg.text.endsWith('-') && len > 0) len--;
-  return Math.max(0, len);
 }
 
 function placeSegments(block: VDTBlock, line: VDTLine): PlacedSegment[] {

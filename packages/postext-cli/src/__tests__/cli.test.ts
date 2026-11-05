@@ -8,6 +8,24 @@ import { join, resolve } from 'node:path';
 
 const MAIN = resolve(import.meta.dir, '..', 'main.ts');
 const cmd = process.env.POSTEXT_BIN ? [resolve(process.env.POSTEXT_BIN)] : [process.execPath, MAIN];
+const POSTEXT = resolve(import.meta.dir, '..', '..', '..', 'postext');
+
+/** A Word file with `from` replaced by `to` in its body, as an edit made
+ *  in Word that keeps the runs leaves it. */
+async function editDocx(src: string, out: string, from: string, to: string): Promise<void> {
+  // fflate, from postext (the CLI does not depend on it).
+  const { unzipSync, zipSync, strFromU8, strToU8 } = await import(Bun.resolveSync('fflate', POSTEXT)) as {
+    unzipSync: (b: Uint8Array) => Record<string, Uint8Array>;
+    zipSync: (f: Record<string, Uint8Array>) => Uint8Array;
+    strFromU8: (b: Uint8Array) => string;
+    strToU8: (s: string) => Uint8Array;
+  };
+  const files = unzipSync(new Uint8Array(readFileSync(src)));
+  const xml = strFromU8(files['word/document.xml']!);
+  expect(xml).toContain(`>${from}`);
+  files['word/document.xml'] = strToU8(xml.replace(`>${from}`, `>${to}`));
+  writeFileSync(out, zipSync(files));
+}
 
 function run(args: string[], cwd: string) {
   const r = Bun.spawnSync([...cmd, ...args], { cwd, env: { ...process.env, NO_COLOR: '1', POSTEXT_CACHE_DIR: join(cwd, '.cache') } });
@@ -38,7 +56,7 @@ describe('postext cli', () => {
 
   it('writes a PDF, HTML, EPUB, page images and Word from one layout', () => {
     const dir = book();
-    const r = run(['build', 'ch', '--pdf', 'out/b.pdf', '--html', 'out/b.html', '--epub', 'out/b.epub', '--images', 'out/p', '--dpi', '30', '--docx', 'out/b.docx', '--offline', '--json'], dir);
+    const r = run(['build', 'ch', '--pdf', 'out/b.pdf', '--html', 'out/b.html', '--epub', 'out/b.epub', '--images', 'out/p', '--dpi', '30', '--docx', 'out/b.docx', '--docx-variant', 'formatted', '--offline', '--json'], dir);
     expect(r.code).toBe(0);
     const report = JSON.parse(r.stdout);
     expect(report.ok).toBe(true);
@@ -114,28 +132,83 @@ describe('postext cli', () => {
     expect((await coverOf('m.postext', 'm'))?.path).toBe('thumbnail.png');
   }, 60_000);
 
-  it('round-trips the Markdown through Word', () => {
+  it('exports both Word variants of a book and applies the edits of a formatted file', async () => {
     const dir = book();
-    expect(run(['docx', 'ch', '-o', 'b.docx', '-q'], dir).code).toBe(0);
+    expect(run(['pack', 'ch', '--name', 'Test', '--no-auto-thumbnail', '-o', 'b.postext', '-q'], dir).code).toBe(0);
+    expect(run(['unpack', 'b.postext', '-o', 'proj', '-q'], dir).code).toBe(0);
+    const { isExportedDocx } = await import('postext/word');
+    const semantic = run(['docx', 'proj', '-o', 's.docx', '--offline', '--json'], dir);
+    expect(semantic.code).toBe(0);
+    expect(isExportedDocx(new Uint8Array(readFileSync(join(dir, 's.docx'))))).toBe(true);
+    const formatted = run(['docx', 'proj', '--variant', 'formatted', '-o', 'f.docx', '--offline', '--json'], dir);
+    expect(formatted.code).toBe(0);
+    expect(JSON.parse(formatted.stdout).outputs[0].pages).toBeGreaterThan(0);
+    expect(isExportedDocx(new Uint8Array(readFileSync(join(dir, 'f.docx'))))).toBe(true);
+    expect(run(['docx', 'proj', '--variant', 'pages', '-o', 'x.docx'], dir).code).toBe(2);
+    // Unedited: nothing to apply.
+    const none = run(['import-docx', 'f.docx', 'proj', '--dry-run', '--json'], dir);
+    expect(none.code).toBe(0);
+    expect(JSON.parse(none.stdout).edits).toEqual([]);
+    // A word changed in Word: the dry run prints the diff and writes nothing.
+    await editDocx(join(dir, 'f.docx'), join(dir, 'fe.docx'), 'More', 'Much');
+    const chapter = join(dir, 'proj', 'chapters', '02-two.md');
+    const before = readFileSync(chapter, 'utf8');
+    const dry = run(['import-docx', 'fe.docx', 'proj', '--dry-run'], dir);
+    expect(dry.code).toBe(0);
+    expect(dry.stdout).toContain('--- a/chapters/02-two.md');
+    expect(dry.stdout).toContain('-More text.\n+Much text.');
+    expect(dry.stderr).toContain('applied chapters/02-two.md:3');
+    expect(readFileSync(chapter, 'utf8')).toBe(before);
+    const real = run(['import-docx', 'fe.docx', 'proj', '--json'], dir);
+    expect(real.code).toBe(0);
+    const report = JSON.parse(real.stdout);
+    expect(report.variant).toBe('formatted');
+    expect(report.edits.map((e: { status: string; at: string }) => [e.status, e.at])).toEqual([['applied', 'chapters/02-two.md:3']]);
+    expect(report.files).toEqual(['chapters/02-two.md']);
+    expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));
+    // The same file again: the chapter changed since the export, so the
+    // edit is a conflict and the exit code says an edit was not applied.
+    expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(3);
+  }, 120_000);
+
+  it('applies the edits of a semantic file to loose Markdown, and converts it without a book', async () => {
+    const dir = book();
+    // Windows line ends and a byte-order mark stay as they were.
+    writeFileSync(join(dir, 'ch', '02.md'), '\uFEFF# Two\r\n\r\nMore text.\r\n\r\n- a\r\n- b\r\n');
+    expect(run(['docx', 'ch', '-o', 'b.docx', '--no-embed-fonts', '-q'], dir).code).toBe(0);
+    await editDocx(join(dir, 'b.docx'), join(dir, 'e.docx'), 'More', 'Less');
+    // A book named, -o (a new book) makes no sense.
+    expect(run(['import-docx', 'e.docx', 'ch', '-o', 'x', '-q'], dir).code).toBe(2);
+    // The chapters are found again from another folder, typed another way.
+    const r = run(['import-docx', join(dir, 'e.docx'), '.', '--json'], join(dir, 'ch'));
+    expect(r.code).toBe(0);
+    expect(JSON.parse(r.stdout).variant).toBe('semantic');
+    expect(JSON.parse(r.stdout).edits.map((e: { status: string; at: string }) => e.status)).toEqual(['applied']);
+    expect(readFileSync(join(dir, 'ch', '02.md'), 'utf8')).toBe('\uFEFF# Two\r\n\r\nLess text.\r\n\r\n- a\r\n- b\r\n');
+    expect(readdirSync(join(dir, 'ch')).filter((f) => f.endsWith('.tmp'))).toEqual([]);
+    // Without a book the file is converted into a new one, as any other.
     expect(run(['import-docx', 'b.docx', '-o', 'back', '-q'], dir).code).toBe(0);
-    const again = readFileSync(join(dir, 'back', 'chapters', '02-two.md'), 'utf8');
-    expect(again).toContain('More text.');
-  }, 60_000);
+    expect(readdirSync(join(dir, 'back', 'chapters')).some((f) => readFileSync(join(dir, 'back', 'chapters', f), 'utf8').includes('More text.'))).toBe(true);
+    // A Word file postext did not export has no edits to apply.
+    expect(run(['import-docx', join(POSTEXT, 'src', 'word', '__fixtures__', 'old-lantern.docx'), 'ch', '-q'], dir).code).toBe(1);
+    expect(run(['import-docx', 'b.docx', '--dry-run', '-q'], dir).code).toBe(2);
+  }, 120_000);
 
   // #932: the character spacing of Word's styles goes on the book's styles that set none.
   it('brings the character spacing of Word styles onto the book\'s styles that set none', () => {
     const dir = book();
-    writeFileSync(join(dir, 'ch', '03.md'), '# Three\n\n:::paragraphs{style="firma"}\nSigned\n:::\n');
-    const styled = { paragraphStyles: [{ id: 'firma', name: 'Firma', letterSpacing: { value: 0.05, unit: 'em' } }], headings: { levels: [{ level: 1, letterSpacing: { value: 0.02, unit: 'em' } }] } };
-    writeFileSync(join(dir, 'styled.json'), JSON.stringify(styled));
+    // A file the old exporter wrote with heading 1 at 0.02 em and the
+    // Firma paragraph style at 0.05 em.
+    writeFileSync(join(dir, 'b.docx'), readFileSync(join(POSTEXT, 'src', 'word', '__fixtures__', 'old-tracking.docx')));
     writeFileSync(join(dir, 'bare.json'), JSON.stringify({ paragraphStyles: [{ id: 'firma', name: 'Firma' }] }));
-    expect(run(['docx', 'ch', '-o', 'b.docx', '--config', 'styled.json', '-q'], dir).code).toBe(0);
     const r = run(['import-docx', 'b.docx', '--config', 'bare.json', '-o', 'back', '--json'], dir);
     expect(r.code).toBe(0);
-    expect(JSON.parse(r.stdout).styleTracking.applied.sort()).toEqual(['Firma 0.05 em', 'heading 1 0.02 em']);
-    const back = (JSON.parse(readFileSync(join(dir, 'back', 'preset.json'), 'utf8')) as { config: typeof styled }).config;
+    const applied = JSON.parse(r.stdout).styleTracking.applied as string[];
+    expect(applied).toContain('Firma 0.05 em');
+    expect(applied).toContain('heading 1 0.02 em');
+    const back = (JSON.parse(readFileSync(join(dir, 'back', 'preset.json'), 'utf8')) as { config: { paragraphStyles: { letterSpacing?: unknown }[]; headings: { levels: { level: number; letterSpacing?: unknown }[] } } }).config;
     expect(back.paragraphStyles[0]!.letterSpacing).toEqual({ value: 0.05, unit: 'em' });
-    expect(back.headings.levels[0]).toEqual({ level: 1, letterSpacing: { value: 0.02, unit: 'em' } });
+    expect(back.headings.levels.find((l) => l.level === 1)!.letterSpacing).toEqual({ value: 0.02, unit: 'em' });
   }, 60_000);
 
   it('renders one page to stdout', () => {

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'ブラウザーで動くAIエージェントが53のWebMCPツールでSandboxに対してできること（ページを見る、どの設定でも変える、本文を編集する、画像・表・フォントを加える、検査する、書き出す）と、実際の引数と応答で示す各ツールの呼び出し方',
   lang: 'ja',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '13分',
   order: 50,
   plainSummary: "このページは、Sandboxでの本の作業をAIアシスタントに任せたい人のためのものです。Sandboxを開いている間、アシスタントには、ページを見る、デザインを変える、本文を直す、画像や表を加える、問題を見つける、ファイルを保存するための道具が渡されます。たとえば「本文を少し大きくして、本が40ページに収まるか確かめて」と普段の言葉で頼むと、アシスタントが道具を使い、そのページを見せてくれます。作業はすべてお使いのブラウザーの中で行われます。このページでは、アシスタントのつなぎ方、アシスタントにできること、各ツールの呼び出し方を説明します。",
@@ -411,7 +411,7 @@ await browser.close();
 ### 本、ファイル、Word
 
 - **本を開いて保存する**：`sandbox_list_books`は見本の本とあなたのプロジェクトを一覧にし、`sandbox_open_book`はそのうちの1冊を開きます（`{ "kind": "sample", "id": "postext-guide", "language": "es" }`）。`sandbox_save_book`に`action: "copy_current"`を渡すと画面の本を自分のプロジェクトとして保存し、`new_blank`を渡すと空の本を始めます。プロジェクトでは、`language`（`"fr"`、`"zh-Hant"`）を付けた`add_language`が画面の言語をその言語の新しい版として複製して開き、`thisLanguageOnly: true`を付けた`rename`は画面の言語だけに名前を付けます。`set_cover`と`remove_cover`は表紙を付けたり外したりします。
-- **書き出す**：`sandbox_export`は`pdf`、`epub`、`postext`、`docx`、`markdown`、`config`を書き出します。既定ではブラウザーがファイルをダウンロードします。`deliver: "data"`を渡すと、PDFやEPUBがbase64でエンコードされてエージェントに返ります。
+- **書き出す**：`sandbox_export`は`pdf`、`epub`、`postext`、`docx`、`markdown`、`config`を書き出します。既定ではブラウザーがファイルをダウンロードします。`deliver: "data"`を渡すと、PDF、EPUB、Wordファイルがbase64でエンコードされてエージェントに返ります。`docx`では、`variant`で`semantic`（既定。Word自身の見出し、リスト、注、表）か`formatted`（PDFが印刷するとおりのページ。フォントを埋め込みます）を選びます。
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -431,7 +431,9 @@ await browser.close();
 
   `characterSpacing`（取り込めるものがあれば既定でオン、postext 1.40以降）を使うと、使われているWordスタイルの字間が、対応する本の段落スタイル、見出しスタイル、見出しレベル、囲みのタイトルにemで設定されます。本がすでに字間を設定しているものは変わりません。ドライランでは`characterSpacing`に一覧が出ます。
 
-  `sandbox_word_templates`は、保存した対応づけの一覧表示、読み取り、保存、削除を行います。この対応づけはWordへの書き出しでも使われます。
+  `sandbox_word_templates`は、Wordの読み込みで保存した対応づけの一覧表示、読み取り、保存、削除を行います。
+
+- **校正を戻す**：本から書き出したWordファイルに加えた校正は、`sandbox_apply_word_edits`で本に戻します。`dryRun: true`を渡すと何も変えずに、見つかった変更をひとつずつ、`applied`、`conflict`（同じテキストが書き出しのあと本の側でも変わった、またはもうない）、`rejected`（番号、ラベルなど、本が自動で付ける文字）のどれかと理由を添えて一覧にし、Wordに残されたコメントも並べます。渡さないと、適用した変更は章とリソースに1つのステップとして入り、`sandbox_undo`でまとめて取り消せます。`sandbox_import_word`はこのようなファイルを受け付けず、このツールを案内します（postext 1.68以降）。
 
 ### 確認と通知
 
@@ -485,7 +487,7 @@ Sandboxが登録するときのまとまりで並べています。各ツール�
 - **リソースとフォント**：`sandbox_list_resources`、`sandbox_save_resource`、`sandbox_delete_resource`、`sandbox_list_fonts`、`sandbox_save_font`。
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
 - **本とファイル**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
-- **Word**：`sandbox_import_word`、`sandbox_word_templates`。
+- **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
 - **確認**：`sandbox_answer`。
 - **検査**：`sandbox_get_warnings`、`sandbox_get_composed_checks`、`sandbox_apply_proposal`。
 

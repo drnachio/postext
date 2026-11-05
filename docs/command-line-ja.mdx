@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'コマンドライン',
   description: 'macOS、Linux、Windowsで動く、自己完結した1つの実行ファイル。.postextの本、本のフォルダー、ばらのMarkdownからのPDF、HTML、EPUB、ページ画像、Word文書の作成、バンドルの作成、本の検査、そしてスクリプトやエージェント向けのJSON出力',
   lang: 'ja',
-  lastUpdated: '2026-10-20',
-  readingTime: '13分',
+  lastUpdated: '2026-11-04',
+  readingTime: '14分',
   order: 49,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
 };
@@ -111,8 +111,8 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>epub</code></td><td>EPUB 3の本。印刷したとおりの固定ページか、リフローするテキストです。</td></tr>
     <tr><td><code>image</code></td><td>1ページをPNG、JPEG、WebPの画像にします。</td></tr>
     <tr><td><code>images</code></td><td>全ページ、または範囲を指定したページを、フォルダーの中の画像にします。</td></tr>
-    <tr><td><code>docx</code></td><td>章をWordの文書にします。読み込み直しても変わりません。</td></tr>
-    <tr><td><code>import-docx</code></td><td>Wordの文書をPostextの本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
+    <tr><td><code>docx</code></td><td>章をWordの文書にします。セマンティック（Word自身の見出し、リスト、注、表）か組版どおり（PDFのページ）です。</td></tr>
+    <tr><td><code>import-docx</code></td><td>書き出したWordファイルに加えた校正を本に戻します。それ以外のWord文書は新しい本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
     <tr><td><code>pack</code></td><td>本のフォルダーまたはばらのMarkdownを、1つの<code>.postext</code>ファイルにまとめます。</td></tr>
     <tr><td><code>unpack</code></td><td><code>.postext</code>ファイルをフォルダーに展開します。</td></tr>
     <tr><td><code>info</code></td><td>本の章、言語、リソース、フォント。<code>--pages</code>を付けるとページ数も示します。</td></tr>
@@ -179,11 +179,23 @@ postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}
 
 ```bash
 postext docx book.postext -o book.docx
+postext docx book/ --variant formatted -o pages.docx
+postext import-docx book.docx book/ --dry-run
+postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
-postext import-docx manuscript.docx -o manuscript.postext
 ```
 
-`docx`は、見出し、段落、囲み、引用、リスト、注にWordのスタイルを使って章を書き出します。Wordで表現できないものは*Postext Markup*のスタイルでそのまま残り、読み込み用のテンプレートがファイルの中に入るので、編集者が手を加えたあとでも、文書は変わらずに読み込み直せます。`import-docx`はWordの文書を本にします。レベル1の見出しごとに章を分け（`--no-split`なら1章のまま）、画像と表はリソースになります。`--report`は、Sandboxが表示する品質レポート（使われているスタイル、直接の書式、手入力の番号…）を出力します。`--template`は読み込み用のテンプレート（Sandboxから保存した`.json`、またはテンプレートを含む`.docx`）を受け付けます。
+`docx`は、Sandboxが書き出す2種類のWord文書のどちらかを書き出します（[Sandbox › Word文書](/ja/docs/sandbox-books-saving#word文書)を参照）。既定の`--variant semantic`は、Markdownから編集できる文書を組み立て、Word自身の見出し、リスト、脚注、表、数式、セクションを使います。Wordに対応する構造がないものは、*Postext Source*のコンテンツコントロールにソースのまま入ります。組版は必要ありません。`--variant formatted`は`pdf`と同じように本を組み、各ページをWordのセクションとして書き出します。テキストは1行ずつ配置したテキストボックスに入ります。どちらも本のフォントを埋め込みます（`--no-embed-fonts`なら名前だけを指定します）。本が配布できないファミリー（`customFonts`の`redistributable: false`）は外し、EPUBと同じく、そのオープンな代替フォントを入れます。ライセンスが埋め込みを禁じるフォント、PostScriptのアウトラインを持つフォント、可変フォントは、報告したうえで名前だけを指定します。`build`では、`--docx FILE`が同じファイルを書き出し、`--docx-variant`と`--no-docx-fonts`を使えます（postext 1.68以降）。`--template`は`docx`と`build`には効かなくなりました。
+
+ファイルのあとに本を指定すると、`import-docx`は、その本から`docx`で書き出した文書に加えた校正を本に戻します。ファイルが持つ対応表を読み、テキストを書き出し時の章のコピーと比べ、校正をひとつずつ今の本に統合します。対象は、フォルダー、`.postext`、単独のMarkdownの章ファイルと、`preset.json`（単独のMarkdownなら`--resources DIR`の`resources.json`）にあるリソースの文言（キャプション、注、代替テキスト、表のセル）です。複数の言語を持つ本では、`--locale`でファイルを書き出したときの版を指定します。リソースの文言への校正は、その版の`localized`ブロックに入ります。校正は1件ずつ1行で報告されます。
+
+- `applied`：入った先のファイルと行を示します。
+- `conflict`：書き出しのあとに本の側でもテキストが変わった、章やリソースがもうない、または2つの校正が重なっている。
+- `rejected`：本が自動で付ける文字（番号、キャプションのラベル）、またはPostextのマークアップをまたぐ書式。
+
+変更履歴は承諾したものとして扱い、コメントは作成者と位置を一覧にしますが、書き込みません。適用されなかった校正があると、終了コードは3になります。`--dry-run`（`-n`）は、報告と、変わるファイルそれぞれのunified diffを出力し、何も書き込みません。各ファイルは書き込み先の隣に書いてから上書きの名前に変えるので、途中で止まっても章が半分だけ残ることはありません。読み込みの最中に変わった章ファイルは、`docx.fileChanged`の警告を出してそのままにします。本を指定したときは`-o`を使えません。`--json`の答えには、`variant`、`exportId`、`edits`（それぞれ`status`、`reason`、`kind`、`before`、`after`、`at`を持つ）、`comments`、`files`、ドライランなら`diff`が入ります。
+
+本を指定しないと、`import-docx`は任意のWord文書を新しい本にします。レベル1の見出しごとに章を分け（`--no-split`なら1章のまま）、画像と表はリソースになります。`--report`は、Sandboxが表示する品質レポート（使われているスタイル、直接の書式、手入力の番号…）を出力します。`--template`は読み込み用のテンプレート（Sandboxから保存した`.json`、またはテンプレートを含む`.docx`）を受け付けます。
 
 字間はテキストではなくスタイルの性質なので、Markdownには入りません。`docx`は、段落スタイル、見出しスタイル、見出しのレベルの`letterSpacing`を、Wordのスタイルの字間として書き出します。`import-docx`はそれをスタイルの文字サイズに対するemとして読み戻し、`letterSpacing`が設定されていないスタイル（Wordのスタイルに対応する`--config`ファイルの段落スタイルと見出しスタイル、および見出しのレベル）に設定します。本がすでに指定している字間はそのままです。`--json`を付けると、`styleTracking`に、設定したもの（`applied`）と見送ったもの（`skipped`）が並びます（postext 1.39以降）。
 
@@ -288,7 +300,7 @@ postext build chapters/ --pdf book.pdf --watch
 }
 ```
 
-- **終了コード**：`0`は完了、`1`は失敗、`2`は使い方の誤り（不明なオプション、入力の指定漏れ）、`3`は`check`がエラー（`--strict`では警告）を見つけたことを示します。
+- **終了コード**：`0`は完了、`1`は失敗、`2`は使い方の誤り（不明なオプション、入力の指定漏れ）、`3`は`check`がエラー（`--strict`では警告）を見つけたこと、または`import-docx`がWordの校正を取り込めなかったことを示します。
 - **質問しません**。入力を待つことはありません。空でないフォルダーは、確認を求めずに拒否します。
 - **標準出力**：`-o -`は、PDF、画像、バンドルを標準出力に書き出し、パイプで先に渡せるようにします。
 - **速度**。実行ファイルは数百分の1秒で起動します。短い本なら、PDFやページ画像は1秒を大きく下回る時間でできます。長い本では、レイアウトにかかる分だけ時間がかかります（140ページの挿絵入りの小説で約10秒）。長い本の数ページを見るには、`--chapters`を`image`か`images --pages`と組み合わせます。多くの変更を重ねながら本に取り組むときは、`postext build --watch`を動かしたままにして、その出力を読みます。

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'What an AI agent in the browser can do with the Sandbox through its 53 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
   lang: 'en',
-  lastUpdated: '2026-10-23',
+  lastUpdated: '2026-11-04',
   readingTime: '12 min',
   order: 50,
   plainSummary: "This page is for people who want an AI helper to work on a book in the Sandbox for them. While the Sandbox is open, it gives the helper a set of tools: to look at any page, change the design, edit the text, add pictures and tables, find problems and save files. You ask in your own words, for example \"make the text a little larger and check the book still fits in 40 pages\", and the helper uses the tools and shows you the pages. Everything stays in your browser. The page explains how to connect a helper, what it can do and how each tool is called.",
@@ -550,7 +550,10 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
   `set_cover` and `remove_cover` give it a cover or take it away.
 - **Export.** `sandbox_export` writes `pdf`, `epub`, `postext`, `docx`,
   `markdown` or `config`. By default the browser downloads the file; with
-  `deliver: "data"` a PDF or an EPUB comes back base64-encoded to the agent:
+  `deliver: "data"` a PDF, an EPUB or a Word file comes back base64-encoded to
+  the agent. For `docx`, `variant` chooses `semantic` (the default, Word's own
+  headings, lists, notes and tables) or `formatted` (the pages as the PDF prints
+  them, fonts embedded):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
@@ -579,7 +582,16 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
   `characterSpacing`.
 
   `sandbox_word_templates` lists, reads, saves and deletes the saved
-  mappings, which the Word export uses too.
+  mappings of the Word import.
+
+- **Bring back the corrections** made in a Word file exported from the book
+  with `sandbox_apply_word_edits`. With `dryRun: true` it changes nothing and
+  lists every change found, `applied`, `conflict` (the same text also changed
+  in the book since the export, or is gone) or `rejected` (a number, a label or
+  other text the book makes itself) with its reason, and the comments left in
+  Word. Without it, the applied changes go into the chapters and resources as
+  one step that `sandbox_undo` takes back whole. `sandbox_import_word` refuses
+  such a file and names this tool. Since postext 1.68.
 
 ### Questions and notices
 
@@ -681,7 +693,7 @@ each one come with `postextWebMcp.listTools()`.
 - **Books and files**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
-- **Word**: `sandbox_import_word`, `sandbox_word_templates`.
+- **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **Questions**: `sandbox_answer`.
 - **The checks**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

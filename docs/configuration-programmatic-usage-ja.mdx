@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'プログラムからの利用',
   description: 'コードからPostextを呼び出す方法。buildDocumentとその警告、既定値、フォント、キャッシュ、そしてWeb Worker',
   lang: 'ja',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-04',
   readingTime: '32分',
   order: 21,
   parent: 'configuration',
@@ -616,10 +616,41 @@ Postextの状態の一部は、モジュールレベルの変数にあります�
 
 ### Word文書（`postext/word`）
 
-`postext/word`サブパスは、DOMを使わずにWord文書（`.docx`）を読み書きします。SandboxのWordの読み込みと書き出し、コマンドラインの`import-docx`と`docx`は、これを土台にしています（[コマンドライン › docxとimport-docx](/ja/docs/command-line#docxとimport-docx)を参照）。
+`postext/word`サブパスは、DOMを使わずに、ブラウザー、Worker、NodeでWord文書（`.docx`）を書き出し、読み込みます。SandboxのWordのダイアログ、コマンドラインの`docx`と`import-docx`は、これを土台にしています（[コマンドライン › docxとimport-docx](/ja/docs/command-line#docxとimport-docx)と[Sandbox › Word文書](/ja/docs/sandbox-books-saving#word文書)を参照）。postext 1.68以降。
 
 ```ts
-import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext, postextToDocx } from 'postext/word';
+import { buildDocument } from 'postext';
+import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { decompressWoff2 } from 'postext-pdf';
+
+const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // 書き出しと読み込みで同じid
+
+// セマンティック：Markdownと設定から、Word自身の構造で。
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
+
+// 組版どおり：組んだページを、本のフォントを埋め込んで。
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
+const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+
+// 校正したファイルを、今の本に統合する。
+if (isExportedDocx(edited)) {
+  const result = applyDocxEdits(edited, { chapters: current, resources });
+  for (const e of result.edits) console.log(e.status, e.reason ?? '', e.before, '→', e.after);
+  if (result.changed) save(result.chapters, result.resources);
+}
+```
+
+- **`semanticDocx(options)`**：`.docx`のバイト列（`Uint8Array`）を返すPromiseです。`chapters`（`{ id, title?, markdown }`）、`config`、画像のバイト列を返す`resourceBytes(fileId)`を伴う`resources`、SVGの横にWordが必要とするPNGを作る`rasterizeSvg(svg, width, height)`（ない場合、SVGは外されます）、`fonts`（`planWordFonts`のプラン）、`title`、`author`、`date`（固定のISO日付でバイト列が再現可能になります）、Wordが独自に組むものを知らせる`onWarning`（`{ code, message, chapter? }`）を受け取ります。数式にはTeXからWordへの変換器が必要で、初めて使うときに読み込まれます。読み込めない場合、数式はTeXのまま残り、`mathUnavailable`の警告が出ます。
+- **`formattedDocx(options)`**：`docs`（`chapters`の順に章ごと1つの`VDTDocument`で、PDFの元になる印刷用のチェーン）と、同じ`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`、`onWarning`を受け取ります。`onProgress(done, total)`は書き出したページを数えます。
+- **`planWordFonts(faces, options)`**：本のフォント（`{ family, weight, style, files }`。WOFF2またはsfnt、unicode-rangeの断片はいくつでも）を、Wordが埋め込む静的なTrueTypeフォントにします。`decompressWoff2`（`postext-pdf`が書き出すもの）でWOFF2を読みます。`usedText`と`fontStrings`は、書き出しで使わない断片とフォントを外します。`familySuffix`（既定は`' PTX'`）は埋め込む各ファミリーに付きます。`warnings`には、外したフォント（`restricted`、`cff`、`variable`、`missing`、`merge-failed`）と、プレビューと印刷だけのために埋め込んだフォント（`preview-print`）が並びます。
+- **`isExportedDocx(bytes)`**：ファイルが書き出しの対応表を持つかどうかを返し、例外は投げません。`readExportMap(files)`は、展開したパーツ（fflateの`unzipSync`）から対応表そのものを読みます。`exportId`、`variant`、`engine`、章とそのハッシュ、書き出したテキストのコピーが入っています。
+- **`applyDocxEdits(bytes, { chapters, resources })`**：同期関数です。校正を反映したすべての章（`chapters`）、キャプション、注、代替テキスト、表のセルが変わったリソースのディープコピー（`resources`）、`edits`、`comments`、`variant`、`exportId`、`changed`を返します。各編集は、`chapter`、または`resourceId`と`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`）、今のテキストでの`start`と`end`、`before`、`after`、`kind`（`text`、`format`、`paragraph`、`tracked`）、そして`status`とその`reason`を持ちます。`status`は`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）、`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`）のどれかです。各コメントは`author`、`text`、位置を持ちます（書き出したテキストの上にないコメントでは`start`が-1）。書き出した`.docx`でないファイルは`DocxReadError`を投げます。章のidは書き出したときと同じでなければなりません。知らない章への編集は報告されるだけで、適用されません。
+
+それ以外のWordファイルは、スタイルのテンプレートを使ってMarkdownとして読み込みます。
+
+```ts
+import { readDocx, parseTemplate, emptyTemplate, analyzeDocx, wordToPostext } from 'postext/word';
 
 const word = readDocx(bytes);                                    // Uint8ArrayかArrayBuffer
 const template = parseTemplate(word.embeddedTemplate) ?? emptyTemplate();
@@ -627,14 +658,11 @@ const report = analyzeDocx(word, template, config);              // report.verdi
 const { chapters, pictures, tables } = wordToPostext(word, {
   template, config, chapters: 'split', existingIds: new Set(), untitledChapter: 'Untitled',
 });
-
-const docx = postextToDocx(chapters, { template, config, book: chapters.length > 1, title: 'Field notes' });
 ```
 
-- **`readDocx(bytes)`**：ファイルを読んでWordのモデルにします。モデルには、スタイル、段落、注、画像、文書の`title`、Postextが書き出したファイルなら読み込み用のテンプレート（`embeddedTemplate`）が入ります。Word文書でないファイルでは`DocxReadError`を投げます。
+- **`readDocx(bytes)`**：ファイルを読んでWordのモデルにします。モデルには、スタイル、段落、注、画像、文書の`title`、読み込み用のテンプレートを含むファイルならそのテンプレート（`embeddedTemplate`。postext 1.67までのWordへの書き出しが書き込んでいたもの）が入ります。Word文書でないファイルでは`DocxReadError`を投げます。
 - **`wordToPostext(word, settings)`**：モデルを章（`{ title, markdown }`）、画像、表に変換します。テンプレートは、Wordの各スタイルを、設定の見出し、段落スタイル、囲み、引用、キャプションのどれかに対応づけます。`chapters: 'split'`はレベル1の見出しごとに章を始め、`'single'`は1つの章にまとめます。画像（`id`、`media.bytes`、`caption`、`alt`）と表（`id`、`model`、`caption`）は、ホストがリソースとして保存します。`skippedPictures`には、取り込まなかったEMF、WMF、TIFFの画像が並びます。
 - **`analyzeDocx(word, template, config)`**：Sandboxが読み込みの前に表示する品質レポートです。使われているスタイル、スタイルの付いた段落の数、`directFormatting`、`manualHeadings`、`typedNumbering`などの指摘を、それぞれ件数と例を添えて返します。
-- **`postextToDocx(chapters, settings)`**：章を`.docx`（`Uint8Array`）として書き出し、見出し、段落、囲み、引用、リスト、注にWordのスタイルを付けます。Wordで表せないものは*Postext Markup*のスタイルにそのまま残し、テンプレートをファイルの中に入れるので、この文書は元どおりに読み込み直せます。`book: true`は各章を`Postext Chapter`の段落で始め、読み込みではそこから章を組み立て直します。
 - <strong>`wordStyleTracking(word, template, config)`</strong>と<strong>`applyStyleTracking(config, tracking)`</strong>：Wordのスタイルの文字間隔を、文字間隔を指定していない設定のスタイルに引き継ぎます。
 
 
