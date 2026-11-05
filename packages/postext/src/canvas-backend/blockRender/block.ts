@@ -11,6 +11,7 @@ import { markerSetText } from '../../writing/bidi.js';
 import { paintLineHighlights, paintLineMarks } from '../annotations.js';
 import { paintLinkUnderlines } from './linkPaint.js';
 import { taskBoxTick } from '../../paint/taskBox.js';
+import { fontSizePxOf } from '../../measure/breakRules.js';
 import { saveContext, restoreContext, setLetterSpacing } from '../contextState.js';
 import { renderLine } from './lines.js';
 import { paintLineQr } from '../lineQr.js';
@@ -59,24 +60,32 @@ function renderBullet(ctx: CanvasRenderingContext2D, block: VDTBlock): void {
   saveContext(ctx);
   ctx.fillStyle = block.bulletColor ?? block.color;
   // A marker set as text (a contents number) sits on `bulletBaselineY` as
-  // its baseline; a list bullet is centred on `bulletY`.
+  // its baseline. A list bullet is centred on `bulletY` the way the PDF sets
+  // it (postext-pdf `markers.ts`): its alphabetic baseline 0.3 em of its own
+  // size below `bulletY`. `textBaseline = 'middle'` would centre the em box
+  // by the face's ascent and descent instead, which puts a bullet from a face
+  // with tall metrics (a symbol font) higher on screen than in the PDF.
   const onBaseline = block.bulletBaselineY !== undefined;
-  ctx.textBaseline = onBaseline ? 'alphabetic' : 'middle';
-  ctx.font = block.bulletFontString;
-  const y = block.bulletBaselineY ?? block.bulletY ?? firstLine.baseline;
+  ctx.textBaseline = 'alphabetic';
+  const midY = block.bulletY ?? firstLine.baseline;
+  const baselineOf = (fontString: string): number =>
+    onBaseline ? block.bulletBaselineY! : midY + fontSizePxOf(fontString) * 0.3;
   // A marker of a right-to-left item reads in its direction (#664).
-  const put = (text: string, x: number): void => {
+  const put = (text: string, x: number, y: number): void => {
     if (block.bulletDirection) fillMarkerRuns(ctx, text, x, y, block.bulletDirection);
     else fillFlowText(ctx, text, x, y);
   };
-  put(block.bulletText, block.bulletOffsetX);
+  ctx.font = block.bulletFontString;
+  put(block.bulletText, block.bulletOffsetX, baselineOf(block.bulletFontString));
   // Ordered-list separator styled apart from the number (own font/colour).
   if (block.separatorText && block.separatorX !== undefined) {
     ctx.fillStyle = block.separatorColor ?? block.bulletColor ?? block.color;
-    ctx.font = block.separatorFontString ?? block.bulletFontString;
-    put(block.separatorText, block.separatorX);
+    const separatorFont = block.separatorFontString ?? block.bulletFontString;
+    ctx.font = separatorFont;
+    const separatorY = baselineOf(separatorFont);
+    put(block.separatorText, block.separatorX, separatorY);
     // The prefix run before the number, in the separator's style.
-    if (block.prefixText && block.prefixX !== undefined) put(block.prefixText, block.prefixX);
+    if (block.prefixText && block.prefixX !== undefined) put(block.prefixText, block.prefixX, separatorY);
   }
   restoreContext(ctx);
 }
