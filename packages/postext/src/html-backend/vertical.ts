@@ -341,11 +341,10 @@ function renderVerticalMarker(cls: string, x: number, block: VDTBlock, v: Vertic
   const size = extractFontSizePx(fontString);
   const lineTop = line.bbox.y;
   const h = line.bbox.height;
-  // A marker set as text sits on its baseline; a bullet is centred on
-  // `bulletY` (its axis).
-  const axis = block.bulletBaselineY !== undefined
-    ? block.bulletBaselineY - lineTop - centralOf(v, fontString) * size
-    : (block.bulletY ?? line.baseline) - lineTop;
+  // A marker set as text sits on its baseline; any other has it 0.3 em of
+  // its own size past `bulletY`, as on the canvas and in the PDF.
+  const baseline = block.bulletBaselineY ?? (block.bulletY ?? line.baseline) + size * 0.3;
+  const axis = baseline - lineTop - centralOf(v, fontString) * size;
   const width = size * graphemesOf(text).length;
   const decl = `font:${quoteFontString(fontString)};color:${color};${hasCJK(text) ? CJK_TEXT_DECL : ''}`;
   return uprightBox(x, lineTop, width, h, decl, verticalSpan(0, axis, verticalTextHtml(text, v, undefined, fontString)), `class="${cls}" aria-hidden="true"`);

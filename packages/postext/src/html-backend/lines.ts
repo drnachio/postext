@@ -9,7 +9,7 @@ import { chipReadingsHtml, lineHighlightsHtml } from './htmlAnnotations.js';
 import { hasSwatchShape, swatchGeometry, type SwatchGeometry } from '../paint/swatchShape.js';
 import { inlineIconBox, iconLineDash } from '../measure/inlineIcon.js';
 import { taskBoxText, taskBoxSvgBody } from '../paint/taskBox.js';
-import { textDotsSvg } from './design.js';
+import { extractFontSizePx, textDotsSvg } from './design.js';
 import { imageUrl } from './images.js';
 import { ownShaping, type HtmlPaint } from './render.js';
 import { renderSegments } from './segments.js';
@@ -226,21 +226,27 @@ export function renderBullet(block: VDTBlock, rootDir: TextDirection = 'ltr'): s
   }
   const firstLine = block.lines[0];
   if (!firstLine) return '';
-  const bulletFont = quoteFontString(block.bulletFontString ?? block.fontString);
+  const bulletFont = block.bulletFontString ?? block.fontString;
   const bulletColor = block.bulletColor ?? block.color;
-  // Render the bullet with the same geometry as the first text line so the
-  // browser aligns the bullet glyph on the same baseline as the body text.
-  // Canvas uses `textBaseline='middle'` at `bulletY` to center the em square
-  // on the x-height; in HTML we get the equivalent alignment naturally when
-  // both bullet and line share top/height and font metrics.
   // A marker set on the line's baseline (a contents number, whatever its
-  // face and size): the box takes the line's own font, so its baseline is
-  // the text's, and the marker sits in an inner box of its face with no
-  // line height, which aligns on that baseline without moving it — the
-  // way a text segment in another face does (`renderTextSegment`).
+  // face and size): the box takes the line's own font and line height, so
+  // its baseline is the text's, and the marker sits in an inner box of its
+  // face with no line height, which aligns on that baseline without moving
+  // it — the way a text segment in another face does (`renderTextSegment`).
   const onBaseline = block.bulletBaselineY !== undefined;
   const lineFont = quoteFontString(block.fontString);
+  const lineLeading = onBaseline ? baselineLineHeightDecl(firstLine, block.fontString) : '';
   const baselineShift = onBaseline ? block.bulletBaselineY! - firstLine.baseline : 0;
+  // Any other marker has its baseline 0.3 em of its own size below
+  // `bulletY`, where the canvas and the PDF set it: a box with no line
+  // height sets its text `(ascent − descent) / 2` from its top. Where the
+  // measurer gives no face metrics the box stays at the line's top.
+  const midY = block.bulletY ?? firstLine.baseline;
+  const markerTop = (fontString: string): number => {
+    const box = onBaseline ? undefined : measureFontBox(fontString);
+    return box ? midY + extractFontSizePx(fontString) * 0.3 - (box.ascent - box.descent) / 2 : firstLine.bbox.y + baselineShift;
+  };
+  const markerLeading = (fontString: string): string => (onBaseline ? lineLeading : measureFontBox(fontString) ? 'line-height:0;' : '');
   // A marker reads in its item's direction: `١.` with its full stop on the
   // left in an Arabic list (#379).
   const markerDir = dirAttr(block.direction ?? rootDir, rootDir);
@@ -251,23 +257,26 @@ export function renderBullet(block: VDTBlock, rootDir: TextDirection = 'ltr'): s
   // an Arabic letter mark (U+061C) before it, which rule W2 reads as the
   // letter the number follows.
   const markerText = (text: string): string => (block.bulletDirection === 'rtl-arabic' && arabicMarkNeeded(text) ? '&#x61C;' : '') + esc(text);
-  const markerDiv = (cls: string, x: number, font: string, color: string, text: string): string =>
-    `<div class="${cls}" aria-hidden="true"${markerDir} style="` +
-    `position:absolute;` +
-    `left:${x}px;` +
-    `top:${firstLine.bbox.y + baselineShift}px;` +
-    `height:${firstLine.bbox.height}px;` +
-    `font:${onBaseline ? lineFont : font};` +
-    `color:${color};` +
-    `white-space:pre;` +
-    (hasCJK(text) ? CJK_TEXT_DECL : '') +
-    (onBaseline
-      ? `"><span style="font:${font};${hasCJK(text) ? CJK_FEATURES_DECL : ''}line-height:0;">${markerText(text)}</span></div>`
-      : `">${markerText(text)}</div>`);
+  const markerDiv = (cls: string, x: number, fontString: string, color: string, text: string): string => {
+    const font = quoteFontString(fontString);
+    return `<div class="${cls}" aria-hidden="true"${markerDir} style="` +
+      `position:absolute;` +
+      `left:${x}px;` +
+      `top:${markerTop(fontString)}px;` +
+      `height:${firstLine.bbox.height}px;` +
+      `font:${onBaseline ? lineFont : font};` +
+      markerLeading(fontString) +
+      `color:${color};` +
+      `white-space:pre;` +
+      (hasCJK(text) ? CJK_TEXT_DECL : '') +
+      (onBaseline
+        ? `"><span style="font:${font};${hasCJK(text) ? CJK_FEATURES_DECL : ''}line-height:0;">${markerText(text)}</span></div>`
+        : `">${markerText(text)}</div>`);
+  };
   let html = markerDiv('pt-bullet', block.bulletOffsetX, bulletFont, bulletColor, block.bulletText);
   // Ordered-list separator styled apart from the number (own font/colour).
   if (block.separatorText && block.separatorX !== undefined) {
-    const separatorFont = quoteFontString(block.separatorFontString ?? block.bulletFontString ?? block.fontString);
+    const separatorFont = block.separatorFontString ?? bulletFont;
     const separatorColor = block.separatorColor ?? bulletColor;
     // The prefix run before the number, in the separator's style, first in
     // the markup so a copy reads （一）.
