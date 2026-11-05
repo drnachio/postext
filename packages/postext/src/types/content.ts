@@ -24,6 +24,8 @@ export interface DocumentMetadata {
   [key: string]: unknown;
 }
 
+/** What a document lays out: its Markdown, metadata and resources, and what
+ *  it takes from the rest of its book. */
 export interface PostextContent {
   markdown: string;
   metadata?: DocumentMetadata;

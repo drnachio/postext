@@ -48,11 +48,14 @@ export interface TocEntryStyleConfig {
   marginBottom?: Dimension;
 }
 
+/** The look of the contents entries of one heading level. */
 export interface TocLevelConfig extends TocEntryStyleConfig {
   /** Heading level (1–6). */
   level: number;
 }
 
+/** The table of contents: its levels, page numbers, leaders, subtitles, parts
+ *  and groups. */
 export interface TocConfig {
   /** Heading levels listed, each with its entry typography. Default: level
    *  1 only. */
@@ -159,6 +162,8 @@ export interface TocGroupsConfig {
   };
 }
 
+/** How groups of contents entries hold together, with every default filled
+ *  in. */
 export interface ResolvedTocGroupsConfig {
   keepTogether: boolean;
   head: TocGroupHead;
@@ -166,6 +171,7 @@ export interface ResolvedTocGroupsConfig {
   continuation: { enabled: boolean; mark: string };
 }
 
+/** The look of a contents entry with every default filled in. */
 export interface ResolvedTocEntryStyleConfig {
   fontFamily: string;
   fontSize: Dimension;
@@ -184,10 +190,12 @@ export interface ResolvedTocEntryStyleConfig {
   marginBottom: Dimension;
 }
 
+/** `TocLevelConfig` with every default filled in. */
 export interface ResolvedTocLevelConfig extends ResolvedTocEntryStyleConfig {
   level: number;
 }
 
+/** `TocConfig` with every default filled in. */
 export interface ResolvedTocConfig {
   levels: ResolvedTocLevelConfig[];
   /** Overrides applied on top of the level's entry style for unnumbered headings. */

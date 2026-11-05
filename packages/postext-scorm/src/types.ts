@@ -45,6 +45,7 @@ export interface ScormItem {
   children?: ScormItem[];
 }
 
+/** How far `renderToScorm` has gone, passed to `onProgress`. */
 export interface ScormProgress {
   /** `documents` and `resources`: the content (as `renderToEpub` reports
    *  them); `package`: the launch pages, the manifest and the zip. */
@@ -53,6 +54,8 @@ export interface ScormProgress {
   total: number;
 }
 
+/** Options of `renderToScorm`: the SCORM version, the layout, the items, the
+ *  metadata, the passing score and progress. */
 export interface RenderToScormOptions {
   version: ScormVersion;
   layout: ScormLayout;

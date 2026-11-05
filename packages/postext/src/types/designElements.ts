@@ -2,6 +2,7 @@ import type { DesignTextAlign, DesignTextRepeat, DesignTextStroke, ElementBoxSty
 import type { FigureStyle } from './text/locale.js';
 import type { ColorValue, Dimension } from './page.js';
 
+/** A line of text in a design slot: a running head, a folio, a label. */
 export interface DesignTextElement {
   kind: 'text';
   /** Stable, unique within the slot. Anchors reference elements by `#id`. */
@@ -160,6 +161,7 @@ export interface DesignTextElement {
   writingMode?: 'horizontal-tb' | 'vertical-rl';
 }
 
+/** A rule in a design slot. */
 export interface DesignRuleElement {
   kind: 'rule';
   id: string;
@@ -198,6 +200,7 @@ export interface DesignRuleElement {
   thickness: Dimension;
 }
 
+/** A filled or bordered box in a design slot. */
 export interface DesignBoxElement {
   kind: 'box';
   id: string;
@@ -469,12 +472,15 @@ export interface DesignConnectorElement {
   over?: boolean;
 }
 
+/** Anything a design slot can draw. */
 export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement | DesignImageElement | DesignPathElement | DesignConnectorElement;
 
 /** A design element placed by an anchor (every kind but a connector, which
  *  is laid between the boxes it joins). */
 export type PlacedDesignElement = Exclude<DesignElement, DesignConnectorElement>;
 
+/** What a part of the page draws: a running head, a heading design, a part
+ *  page. */
 export interface DesignSlot {
   /** Array order = paint order: first = back, last = front. */
   elements: DesignElement[];
@@ -486,6 +492,7 @@ export interface DesignSlot {
 // layout time (see design/layout.ts).
 // ---------------------------------------------------------------------------
 
+/** `DesignTextElement` with every default filled in. */
 export interface ResolvedDesignTextElement extends Omit<DesignTextElement, 'fontFamily' | 'fontWeight' | 'italic' | 'color' | 'align' | 'verticalAlign' | 'lineHeight' | 'parity' | 'overflow'> {
   parity: PageParity;
   /** The element's own `overflow`, else its slot's default. */
@@ -506,26 +513,32 @@ export interface ResolvedDesignTextElement extends Omit<DesignTextElement, 'font
   lineHeightLength?: Dimension;
 }
 
+/** `DesignRuleElement` with every default filled in. */
 export interface ResolvedDesignRuleElement extends Omit<DesignRuleElement, 'parity'> {
   parity: PageParity;
 }
 
+/** `DesignBoxElement` with every default filled in. */
 export interface ResolvedDesignBoxElement extends Omit<DesignBoxElement, 'parity'> {
   parity: PageParity;
 }
 
+/** A design image element with every default filled in. */
 export interface ResolvedDesignImageElement extends Omit<DesignImageElement, 'parity'> {
   parity: PageParity;
 }
 
+/** A design path element with every default filled in. */
 export interface ResolvedDesignPathElement extends Omit<DesignPathElement, 'parity'> {
   parity: PageParity;
 }
 
+/** A design connector element with every default filled in. */
 export interface ResolvedDesignConnectorElement extends Omit<DesignConnectorElement, 'parity'> {
   parity: PageParity;
 }
 
+/** A `DesignElement` with every default filled in. */
 export type ResolvedDesignElement =
   | ResolvedDesignTextElement
   | ResolvedDesignRuleElement
@@ -538,6 +551,7 @@ export type ResolvedDesignElement =
  *  {@link PlacedDesignElement}). */
 export type ResolvedPlacedDesignElement = Exclude<ResolvedDesignElement, ResolvedDesignConnectorElement>;
 
+/** `DesignSlot` with every default filled in. */
 export interface ResolvedDesignSlot {
   elements: ResolvedDesignElement[];
 }

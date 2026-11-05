@@ -10,6 +10,8 @@ import type { ModuleWidth, PageTemplateGrid, LabelStyle } from './templates.js';
 /** The physical side of a page: its variant. */
 export type PageSide = 'recto' | 'verso';
 
+/** What resolving a page template depends on: the page's side, its spread and
+ *  its modules. */
 export interface ResolvePageTemplateOptions {
   /** The side of the page the template is laid on: picks
    *  `variants.recto` or `variants.verso`. */
@@ -63,6 +65,7 @@ export interface ResolvedModule extends ComposedModuleUse {
   decoration?: { start: number; end: number };
 }
 
+/** `FrameFitConfig` with every default filled in. */
 export interface ResolvedFrameFit {
   shrinkText: boolean;
   minScale: number;
@@ -71,6 +74,7 @@ export interface ResolvedFrameFit {
   preferContinue: boolean;
 }
 
+/** `FrameConfig` with every default filled in. */
 export interface ResolvedFrame {
   name: string;
   placement?: ElementPlacement;
@@ -123,6 +127,7 @@ export interface ResolvedFrame {
   fieldPaths: Record<string, string>;
 }
 
+/** `FrameGroupConfig` with every default filled in. */
 export interface ResolvedFrameGroup {
   name: string;
   kind: 'stack' | 'row' | 'grid';
@@ -157,6 +162,7 @@ export interface ResolvedFrameGroup {
   fieldPaths: Record<string, string>;
 }
 
+/** `PageTemplate` with every default filled in and its frames placed. */
 export interface ResolvedPageTemplate {
   id: string;
   name?: string;
@@ -198,6 +204,7 @@ export interface ResolvedPageTemplate {
   configPath: string;
 }
 
+/** `LabelStyle` with every default filled in. */
 export interface ResolvedLabelStyle extends LabelStyle {
   /** Left out when the style does not say: a borrowed paragraph style's
    *  slant holds then, while `'normal'` written overrides it (#955). */

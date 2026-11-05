@@ -23,6 +23,8 @@ export interface HeadingClaim {
   element?: string;
 }
 
+/** Options of a build: how to cancel it, how to follow it and which faces it
+ *  uses. */
 export interface BuildDocumentOptions {
   /**
    * Cooperative cancellation hook. Called once per top-level content block
@@ -67,6 +69,8 @@ export interface BuildPassInfo {
   pages: number;
 }
 
+/** How far a build has gone: its pass, the blocks placed and the pages so
+ *  far. */
 export interface BuildProgress {
   /** 1-based placement pass. */
   pass: number;
@@ -78,6 +82,7 @@ export interface BuildProgress {
   pages: number;
 }
 
+/** Thrown when `shouldCancel` stops a build. */
 export class BuildCancelledError extends Error {
   constructor() {
     super('Build cancelled');

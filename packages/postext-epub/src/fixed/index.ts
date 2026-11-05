@@ -154,6 +154,8 @@ export function epubVideoMarkup(html: string): string {
   return html.replace(/<video\b[^>]*>/g, (tag) => tag.replace(/\s(?:controlslist|disablepictureinpicture|disableremoteplayback)="[^"]*"/g, ''));
 }
 
+/** Build the publication of a fixed-layout EPUB: one content document per
+ *  printed page, with real text. */
 export async function buildFixedPublication(docs: EpubSource, options: RenderToEpubOptions): Promise<EpubPublication> {
   const { metadata, onWarning, onProgress, signal } = options;
   const strings = navStrings(metadata.language);

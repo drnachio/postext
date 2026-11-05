@@ -106,6 +106,7 @@ export interface ScoreSystem {
   textFont: string;
 }
 
+/** A music score engraved: its systems, title and composer, or the error. */
 export interface ScoreRender {
   systems: ScoreSystem[];
   /** The renderer's message when the source did not load. */

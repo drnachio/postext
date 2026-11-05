@@ -6,6 +6,7 @@ import { rasterScaleOf } from '../deviceScale.js';
 /** A decoded image the canvas backend can `drawImage`. */
 export type ResourceImageSource = CanvasImageSource;
 
+/** How a registered image paints: as a vector, and in a single ink. */
 export interface RegisterResourceImageOptions {
   /** The source is vector art (an SVG `<img>`): every `drawImage` of it
    *  re-rasterises the document, so the backend rasterises it once at each

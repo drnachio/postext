@@ -6,14 +6,17 @@
 
 import type { Channels, IccProfile, LutPipeline, PcsEncoding, XYZ } from './icc.js';
 
+/** How colours outside the output's gamut are mapped into it. */
 export type RenderingIntent = 'perceptual' | 'relative' | 'saturation' | 'absolute';
 
+/** A colour in CIE Lab. */
 export interface Lab {
   L: number;
   a: number;
   b: number;
 }
 
+/** A colour in CMYK, 0 to 1 per channel. */
 export interface Cmyk {
   /** 0..1 each. */
   c: number;
@@ -22,6 +25,7 @@ export interface Cmyk {
   k: number;
 }
 
+/** The D50 white point, the one ICC profiles connect through. */
 export const D50: XYZ = { X: 0.9642, Y: 1, Z: 0.8249 };
 
 // ---------------------------------------------------------------------------
@@ -36,6 +40,7 @@ function labFInv(t: number): number {
   return t3 > 216 / 24389 ? t3 : (116 * t - 16) / (24389 / 27);
 }
 
+/** CIE XYZ to CIE Lab, against the given white. */
 export function xyzToLab(v: XYZ, white: XYZ = D50): Lab {
   const fx = labF(v.X / white.X);
   const fy = labF(v.Y / white.Y);
@@ -43,6 +48,7 @@ export function xyzToLab(v: XYZ, white: XYZ = D50): Lab {
   return { L: 116 * fy - 16, a: 500 * (fx - fy), b: 200 * (fy - fz) };
 }
 
+/** CIE Lab to CIE XYZ, against the given white. */
 export function labToXyz(lab: Lab, white: XYZ = D50): XYZ {
   const fy = (lab.L + 16) / 116;
   const fx = fy + lab.a / 500;
@@ -103,15 +109,18 @@ const XYZ_D50_TO_SRGB = [
   0.0719453, -0.2289914, 1.4052427,
 ];
 
+/** An sRGB channel to linear light. */
 export function srgbToLinear(v: number): number {
   return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 }
 
+/** A channel in linear light to sRGB. */
 export function linearToSrgb(v: number): number {
   const c = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
   return clamp01(c);
 }
 
+/** sRGB, 0 to 1 per channel, to CIE XYZ. */
 export function srgbToXyz(r: number, g: number, b: number): XYZ {
   const R = srgbToLinear(r);
   const G = srgbToLinear(g);
@@ -124,6 +133,7 @@ export function srgbToXyz(r: number, g: number, b: number): XYZ {
   };
 }
 
+/** CIE XYZ to sRGB, 0 to 1 per channel. */
 export function xyzToSrgb(v: XYZ): [number, number, number] {
   const m = XYZ_D50_TO_SRGB;
   return [
@@ -133,10 +143,12 @@ export function xyzToSrgb(v: XYZ): [number, number, number] {
   ];
 }
 
+/** sRGB, 0 to 1 per channel, to CIE Lab. */
 export function srgbToLab(r: number, g: number, b: number): Lab {
   return xyzToLab(srgbToXyz(r, g, b));
 }
 
+/** CIE Lab to sRGB, 0 to 1 per channel. */
 export function labToSrgb(lab: Lab): [number, number, number] {
   return xyzToSrgb(labToXyz(lab));
 }
@@ -184,6 +196,8 @@ export function totalAreaCoverage(cmyk: Cmyk): number {
   return (cmyk.c + cmyk.m + cmyk.y + cmyk.k) * 100;
 }
 
+/** Options of `outputTransform`: the intent, black point compensation and
+ *  neutrals. */
 export interface OutputTransformOptions {
   intent?: RenderingIntent;
   /** Scale the source so sRGB black lands on the profile's darkest
@@ -193,6 +207,8 @@ export interface OutputTransformOptions {
   preserveNeutrals?: boolean;
 }
 
+/** The conversions of an output profile: to CMYK, to Lab and to the screen
+ *  for a soft proof. */
 export interface OutputTransform {
   profile: IccProfile;
   /** sRGB 0..1 → CMYK 0..1. */
@@ -300,6 +316,7 @@ export interface RgbLut {
   data: Float32Array;
 }
 
+/** A lookup table over the RGB cube, sampled from `fn`. */
 export function buildRgbLut(size: number, channels: number, fn: (r: number, g: number, b: number) => number[]): RgbLut {
   const data = new Float32Array(size * size * size * channels);
   const n = size - 1;

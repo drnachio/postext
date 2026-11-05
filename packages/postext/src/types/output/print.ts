@@ -1,5 +1,6 @@
 import type { Dimension } from '../page.js';
 
+/** The colour space a PDF is written in. */
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
 
 /** The PDF/X flavour postext-pdf writes: none (an ordinary PDF), PDF/X-1a
@@ -39,6 +40,7 @@ export interface PrintBlackConfig {
   richBlackMinSize?: Dimension;
 }
 
+/** How blacks print with every default filled in. */
 export interface ResolvedPrintBlackConfig {
   kOnlyNeutrals: boolean;
   overprint: boolean;
@@ -74,6 +76,7 @@ export interface PrintPreflightConfig {
   checkFonts?: boolean;
 }
 
+/** The preflight limits with every default filled in. */
 export interface ResolvedPrintPreflightConfig {
   enabled: boolean;
   minImageResolution: number;
@@ -111,6 +114,7 @@ export interface ContrastReversedTextConfig {
   lightWeight?: number;
 }
 
+/** The limits for reversed text with every default filled in. */
 export interface ResolvedContrastReversedTextConfig {
   enabled: boolean;
   minSize: Dimension;
@@ -155,6 +159,7 @@ export interface ContrastConfig {
   allow?: ContrastAllowEntry[];
 }
 
+/** The contrast check with every default filled in. */
 export interface ResolvedContrastConfig {
   enabled: boolean;
   level: ContrastLevel;
@@ -187,6 +192,8 @@ export interface ContentInConfigCheckConfig {
   maxChars?: number;
 }
 
+/** The check for reader-facing text kept in the configuration, with every
+ *  default filled in. */
 export interface ResolvedContentInConfigCheckConfig {
   enabled: boolean;
   allow: string[];
@@ -199,6 +206,7 @@ export interface ChecksConfig {
   contentInConfig?: ContentInConfigCheckConfig;
 }
 
+/** The checks on the configuration with every default filled in. */
 export interface ResolvedChecksConfig {
   contentInConfig: ResolvedContentInConfigCheckConfig;
 }
@@ -244,6 +252,7 @@ export interface PrintConfig {
   preflight?: PrintPreflightConfig;
 }
 
+/** Print production with every default filled in. */
 export interface ResolvedPrintConfig {
   standard: PdfXStandard;
   outputProfile: string;
@@ -277,6 +286,7 @@ export interface PdfGenerationConfig {
   accessible?: boolean;
 }
 
+/** What goes into a generated PDF with every default filled in. */
 export interface ResolvedPdfGenerationConfig {
   outlines: boolean;
   forceColorSpace: boolean;

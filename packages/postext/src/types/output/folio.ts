@@ -42,6 +42,8 @@ export type FolioSurfaceType = 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' |
  *  paper) paired with a key light that casts the shadows. */
 export type FolioEnvironment = 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
 
+/** The paper of the 3D book: its type, weight, finish and how much shows
+ *  through. */
 export interface FolioPaperConfig {
   /** The stock: its defaults for grammage, bulk, finish, texture and
    *  shade. Default `'uncoated'` (woodfree offset). `cardStock` is cover
@@ -75,6 +77,7 @@ export interface FolioPaperConfig {
  *  is a sheet a little heavier than the pages and turns as they do. */
 export type FolioCoverSource = 'case' | 'pages';
 
+/** The binding and cover of the 3D book. */
 export interface FolioBindingConfig {
   /** Default `'hardcover'`. */
   type?: FolioBindingType;
@@ -92,6 +95,7 @@ export interface FolioBindingConfig {
   spineImage?: string;
 }
 
+/** The surface the 3D book rests on. */
 export interface FolioSurfaceConfig {
   /** Default `'oak'`. */
   type?: FolioSurfaceType;
@@ -99,6 +103,7 @@ export interface FolioSurfaceConfig {
   color?: ColorValue;
 }
 
+/** The light over the 3D book. */
 export interface FolioLightingConfig {
   /** Default `'studio'`. */
   environment?: FolioEnvironment;
@@ -127,6 +132,7 @@ export interface FolioConfig {
   lighting?: FolioLightingConfig;
 }
 
+/** The 3D book's settings with every default filled in. */
 export interface ResolvedFolioConfig {
   tilt: number;
   yaw: number;

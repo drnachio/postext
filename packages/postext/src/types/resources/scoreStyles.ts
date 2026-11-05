@@ -37,6 +37,7 @@ export interface ScoreStyleConfig {
   minSystemsAtBreak?: number;
 }
 
+/** The engraving of music scores with every default filled in. */
 export interface ResolvedScoreStyleConfig {
   enabled: boolean;
   staffSize: Dimension;
@@ -59,6 +60,7 @@ export interface NamedScoreStyleConfig extends Omit<ScoreStyleConfig, 'enabled'>
   name?: string;
 }
 
+/** A named score style with every default filled in. */
 export interface ResolvedNamedScoreStyleConfig extends ResolvedScoreStyleConfig {
   id: string;
   name: string;

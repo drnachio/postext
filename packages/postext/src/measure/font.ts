@@ -123,6 +123,8 @@ export function evictFontFamilies(families: Iterable<string>): void {
   evictTextWidths(families);
 }
 
+/** A new, empty measurement cache, to share between the builds of one
+ *  document. */
 export function createMeasurementCache(): MeasurementCache {
   return { _blocks: new Map(), _generation: measurementGeneration() };
 }

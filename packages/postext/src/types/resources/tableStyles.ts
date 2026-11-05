@@ -147,6 +147,7 @@ export interface NamedTableStyleConfig extends TableStyleConfig {
   name?: string;
 }
 
+/** A named table style with every default filled in. */
 export interface ResolvedNamedTableStyleConfig extends ResolvedTableStyleConfig {
   id: string;
   name: string;
@@ -176,6 +177,7 @@ export type TableContinuedFootRule = 'bottom' | 'light' | 'none';
  *  the rest; `'hide'` leaves the table out entirely. */
 export type TableOverflow = 'split' | 'clip' | 'hide';
 
+/** The look of a table with every default filled in. */
 export interface ResolvedTableStyleConfig {
   bodyFontFamily: string;
   bodyFontSize: Dimension;
@@ -232,6 +234,7 @@ export interface CaptionNoteStyleConfig {
   align?: TextAlignKeyword;
 }
 
+/** The look of a caption's note with every default filled in. */
 export interface ResolvedCaptionNoteStyleConfig {
   fontSize: Dimension;
   color: ColorValue;
@@ -290,6 +293,7 @@ export interface CaptionStyleConfig {
   labelSeparator?: string;
 }
 
+/** The look of a caption with every default filled in. */
 export interface ResolvedCaptionStyleConfig {
   fontFamily: string;
   fontSize: Dimension;

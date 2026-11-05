@@ -1,5 +1,6 @@
 import type { Dimension } from '../page.js';
 
+/** The alignment of a text block. */
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
 /**
@@ -39,6 +40,7 @@ export type FigureStyle =
   | 'lining-tabular'
   | 'lining-proportional';
 
+/** The languages with hyphenation patterns. */
 export type HyphenationLocale =
   | 'en-us'
   | 'es'
@@ -75,6 +77,8 @@ export type DigitSystem = 'latn' | 'arab' | 'arabext';
  *  the one of the document language (`defaultNumeralsFor`). */
 export type NumeralsSetting = 'auto' | DigitSystem;
 
+/** Whether and how words are hyphenated: language, hyphenation zone,
+ *  compounds and exceptions. */
 export interface HyphenationConfig {
   enabled?: boolean;
   /** Language of the hyphenation patterns. Defaults to the top-level
@@ -132,6 +136,7 @@ export interface HyphenationConfig {
   capitalized?: boolean;
 }
 
+/** `HyphenationConfig` with every default filled in. */
 export interface ResolvedHyphenationConfig {
   enabled: boolean;
   /** The bundled patterns actually used (see {@link LocaleTag}). */

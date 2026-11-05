@@ -6,6 +6,8 @@ import { fontFormatFromFile, fileBasename, isVideoFile, BITMAP_FORMAT_BY_EXT, fi
 // ---------------------------------------------------------------------------
 // Manifest entries → engine objects
 
+/** A manifest's font entries read: the families, their files and any
+ *  warnings. */
 export interface BundleFontFiles {
   families: CustomFontFamily[];
   files: { fileId: string; fileName: string; format: CustomFontFormat; file: string; family: string; weight: number; style: 'normal' | 'italic' }[];

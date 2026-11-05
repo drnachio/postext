@@ -86,6 +86,7 @@ export interface LinkStyleConfig {
   outputs?: LinkStyleOutput[];
 }
 
+/** The colour and underline of links with every default filled in. */
 export interface ResolvedLinkStyleConfig {
   color?: ColorValue;
   underline: LinkUnderline;
@@ -93,6 +94,7 @@ export interface ResolvedLinkStyleConfig {
   outputs: LinkStyleOutput[];
 }
 
+/** The QR codes of printed links with every default filled in. */
 export interface ResolvedLinkQrConfig {
   size: Dimension;
   errorCorrection: 'L' | 'M' | 'Q' | 'H';
@@ -102,6 +104,7 @@ export interface ResolvedLinkQrConfig {
   gap: Dimension;
 }
 
+/** How links print and show with every default filled in. */
 export interface ResolvedLinksConfig {
   print: LinkPrintMode;
   show: LinkNoteContent;

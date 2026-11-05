@@ -2,11 +2,13 @@
 import type { BundleManifestV2, BundleLocaleOverrides } from '../types.js';
 import type { BundlePlan } from './plan.js';
 
+/** How the bytes of a bundle's files are read. */
 export interface BundleByteSources {
   readBlob: (fileId: string) => Promise<ArrayBuffer | Uint8Array | null | undefined>;
   readFont: (fileId: string) => Promise<ArrayBuffer | Uint8Array | null | undefined>;
 }
 
+/** A bundle's files with their bytes, ready to zip. */
 export interface ResolvedBundleFiles {
   /** Path → bytes, ready to zip (`preset.json` and chapters included). */
   files: Record<string, Uint8Array>;

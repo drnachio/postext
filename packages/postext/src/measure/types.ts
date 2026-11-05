@@ -136,6 +136,7 @@ export function maxLineIndent(options: MeasureBlockOptions | undefined): number 
   return Math.max(0, options?.firstLineIndentPx ?? 0);
 }
 
+/** A text block broken into lines, with its height. */
 export interface MeasuredBlock {
   lines: VDTLine[];
   totalHeight: number;
@@ -150,6 +151,8 @@ export interface MeasuredBlock {
   lastLineRunt?: boolean;
 }
 
+/** The text blocks already measured, so that the next build does not measure
+ *  them again. */
 export interface MeasurementCache {
   _blocks: Map<string, MeasuredBlock>;
   /** The measurement generation the blocks were measured under (#629):
@@ -158,6 +161,8 @@ export interface MeasurementCache {
   _generation?: number;
 }
 
+/** How a text block is broken into lines: alignment, hyphenation, indents and
+ *  line breaking. */
 export interface MeasureBlockOptions {
   textAlign?: TextAlign;
   hyphenate?: boolean;

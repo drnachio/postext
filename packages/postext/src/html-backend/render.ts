@@ -43,6 +43,8 @@ import type { VerticalHtml } from './vertical.js';
  */
 export let ownShaping = false;
 
+/** Options of `renderToHtml`: the mode, spacing, image and video addresses,
+ *  and warnings. */
 export interface RenderHtmlOptions {
   /** Layout mode: single vertical column or many columns laid out horizontally. */
   mode?: 'single' | 'multi';
@@ -222,6 +224,7 @@ function documentFontString(doc: VDTDocument): string | undefined {
   return undefined;
 }
 
+/** One page of an `HtmlRenderIndex`: its size and markup. */
 export interface HtmlRenderIndexPage {
   index: number;
   width: number;
@@ -235,6 +238,8 @@ export interface HtmlRenderIndexPage {
   comicHtml?: string;
 }
 
+/** A document written as HTML, with each page kept apart so that a viewer can
+ *  show only some. */
 export interface HtmlRenderIndex {
   html: string;
   mode: 'single' | 'multi';
@@ -400,6 +405,7 @@ function renderIndexed(doc: VDTDocument, options: RenderHtmlOptions): HtmlRender
   return { html, mode, pages: indexedPages, ...(exercises ? { exercises } : {}) };
 }
 
+/** Write a document as HTML, as its paged layout or as text that reflows. */
 export function renderToHtml(doc: VDTDocument, options: RenderHtmlOptions = {}): string {
   return renderToHtmlIndexed(doc, options).html;
 }

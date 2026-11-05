@@ -1,6 +1,9 @@
+/** The font file formats a custom font can be given in. */
 export type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+/** The style of a custom font's face. */
 export type CustomFontStyle = 'normal' | 'italic';
 
+/** A face of a custom font: its weight, style and file. */
 export interface CustomFontVariant {
   /** CSS font-weight (100..900). */
   weight: number;
@@ -15,6 +18,7 @@ export interface CustomFontVariant {
   fileName?: string;
 }
 
+/** A font family the document brings with it, and its faces. */
 export interface CustomFontFamily {
   /** Family name — used anywhere a Google Font family name would be used. */
   name: string;

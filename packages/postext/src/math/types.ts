@@ -1,11 +1,12 @@
-// Flat path with fill colour and a baked affine transform applied to its
-// coordinates. Coordinates are in "viewBox units" — renderers apply a single
-// outer scale to convert to target units (px / pt).
+/** Flat path with fill colour and a baked affine transform applied to its
+ *  coordinates. Coordinates are in "viewBox units" — renderers apply a single
+ *  outer scale to convert to target units (px / pt). */
 export interface MathPath {
   d: string;
   fill: string;
 }
 
+/** The coordinate box of a formula's paths. */
 export interface MathViewBox {
   minX: number;
   minY: number;
@@ -13,6 +14,7 @@ export interface MathViewBox {
   height: number;
 }
 
+/** A formula rendered: its SVG, its paths and its size and baseline. */
 export interface MathRender {
   tex: string;
   displayMode: boolean;

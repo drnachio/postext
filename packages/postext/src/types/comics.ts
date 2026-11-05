@@ -57,6 +57,7 @@ export interface NamedPanelStyleConfig extends PanelStyleConfig {
   name?: string;
 }
 
+/** The look of a comic panel with every default filled in. */
 export interface ResolvedPanelStyleConfig {
   borderWidth: Dimension;
   borderColor: ColorValue;
@@ -67,6 +68,7 @@ export interface ResolvedPanelStyleConfig {
   bleed: boolean;
 }
 
+/** A named comic panel style with every default filled in. */
 export interface ResolvedNamedPanelStyleConfig extends ResolvedPanelStyleConfig {
   id: string;
   name: string;
@@ -123,6 +125,7 @@ export interface LetteringConfig {
   strictPlacement?: boolean;
 }
 
+/** The comic lettering with every default filled in. */
 export interface ResolvedLetteringConfig {
   fontFamily: string;
   fontSize: Dimension;
@@ -214,6 +217,7 @@ export interface BalloonStyleConfig {
   skew?: number;
 }
 
+/** A balloon style with every default filled in. */
 export interface ResolvedBalloonStyleConfig {
   id: string;
   name: string;
@@ -331,6 +335,7 @@ export interface ComicViewerLeafConfig {
   fitHeight?: number;
 }
 
+/** The comics settings with every default filled in. */
 export interface ResolvedComicsConfig {
   readingDirection: ComicReadingDirection;
   artDirection: 'ltr' | 'rtl';

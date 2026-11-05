@@ -143,6 +143,8 @@ export interface VectorImage {
 
 export type VectorItem = VectorShape | VectorText | VectorImage;
 
+/** An SVG read as vector shapes the PDF can draw, with its view box and
+ *  aspect ratio. */
 export interface VectorDrawing {
   /** `[minX, minY, width, height]` of the root user space. */
   viewBox: [number, number, number, number];

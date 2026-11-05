@@ -3,8 +3,10 @@
 // numbering definitions, the notes and the pictures. The quality report and
 // the Markdown converter both read this model, never the XML.
 
+/** The types of a Word style. */
 export type WordStyleType = 'paragraph' | 'character' | 'table' | 'numbering';
 
+/** A style of a Word document. */
 export interface WordStyle {
   id: string;
   /** The style's name as stored (`heading 1`, `Quote`, `Box Title`). Built-in
@@ -43,6 +45,7 @@ export interface WordTabStop {
   leader?: string;
 }
 
+/** A run of text in a Word paragraph. */
 export interface WordTextRun {
   type: 'text';
   text: string;
@@ -62,6 +65,7 @@ export interface WordTextRun {
   hidden?: boolean;
 }
 
+/** Anything a Word paragraph holds: text, breaks, tabs, note references. */
 export type WordRun =
   | WordTextRun
   | { type: 'break'; kind: 'line' | 'page' | 'column' }
@@ -71,6 +75,7 @@ export type WordRun =
   | { type: 'image'; rId: string; name?: string; alt?: string; widthEmu?: number; heightEmu?: number }
   | { type: 'index'; term: string[]; main?: boolean; see?: string };
 
+/** A paragraph of a Word document. */
 export interface WordParagraph {
   type: 'paragraph';
   /** Paragraph style id ('' = the document's default). */
@@ -87,6 +92,7 @@ export interface WordParagraph {
   textBoxes?: WordBlock[];
 }
 
+/** A table cell of a Word document. */
 export interface WordCell {
   blocks: WordBlock[];
   colSpan: number;
@@ -95,6 +101,7 @@ export interface WordCell {
   shading?: string;
 }
 
+/** A table of a Word document. */
 export interface WordTable {
   type: 'table';
   rows: WordCell[][];
@@ -104,26 +111,31 @@ export interface WordTable {
   widths?: number[];
 }
 
+/** A block of a Word document. */
 export type WordBlock = WordParagraph | WordTable;
 
+/** A level of a Word list. */
 export interface WordNumberingLevel {
   /** `bullet`, `decimal`, `lowerLetter`, `upperRoman`… */
   format: string;
   start: number;
 }
 
+/** The numbering definitions of a Word document. */
 export interface WordNumbering {
   /** numId → abstract id and per-level start overrides. */
   nums: Map<string, { abstractId: string; starts: Map<number, number> }>;
   abstracts: Map<string, Map<number, WordNumberingLevel>>;
 }
 
+/** A media file of a Word document. */
 export interface WordMedia {
   path: string;
   bytes: Uint8Array;
   contentType: string;
 }
 
+/** A Word document read into a plain model. */
 export interface WordDocument {
   blocks: WordBlock[];
   styles: Map<string, WordStyle>;

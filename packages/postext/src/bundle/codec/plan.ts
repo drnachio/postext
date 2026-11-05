@@ -11,6 +11,7 @@ import type { BundleStart, BundleCanvasScope, BundleManifestV2, BundleBlob, Bund
 // ---------------------------------------------------------------------------
 // Writing
 
+/** A bundle's name, id, description and language. */
 export interface BundleMeta {
   id: string;
   name: string;
@@ -47,6 +48,7 @@ export interface BundleLocaleContent {
   start?: BundleStart;
 }
 
+/** What goes into a bundle: chapters, design, resources and translations. */
 export interface BundleContent {
   chapters: readonly { title: string; markdown: string }[];
   /** The primary edition's configuration. */
@@ -75,6 +77,7 @@ export interface BundleContent {
   localized?: Record<string, BundleLocaleContent>;
 }
 
+/** A file a bundle will hold: its path and where its bytes come from. */
 export interface PlannedFile {
   /** Path inside the bundle (`resources/x.png`, `fonts/y.ttf`). */
   path: string;
@@ -86,6 +89,8 @@ export interface PlannedFile {
   locale?: string;
 }
 
+/** A bundle before its bytes are read: the manifest, its files and its
+ *  chapters. */
 export interface BundlePlan {
   manifest: BundleManifestV2;
   files: PlannedFile[];

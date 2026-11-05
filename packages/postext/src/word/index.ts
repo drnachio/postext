@@ -1,10 +1,14 @@
-// Word documents in and out. Export (#1387): a semantic .docx with native
-// Word structures (`semanticDocx`) or a formatted one that reproduces the
-// PDF pages (`formattedDocx`); both embed an export map, so the edits made
-// in Word go back into the exact Markdown and resource positions
-// (`applyDocxEdits`). Import of any other .docx (#599): read it into
-// Postext Markdown with a style template and a quality report. Pure code
-// (fflate and a small XML reader): runs in the browser, a Worker and Node.
+/**
+ * `postext/word`: Word documents in and out. Export (#1387): a semantic .docx
+ * with native Word structures (`semanticDocx`) or a formatted one that
+ * reproduces the PDF pages (`formattedDocx`); both embed an export map, so the
+ * edits made in Word go back into the exact Markdown and resource positions
+ * (`applyDocxEdits`). Import of any other .docx (#599): read it into Postext
+ * Markdown with a style template and a quality report. Pure code (fflate and
+ * a small XML reader): runs in the browser, a Worker and Node.
+ *
+ * @module
+ */
 
 export { semanticDocx, SEMANTIC_ENGINE, SEMANTIC_STYLE } from './semantic/index.js';
 export type { SemanticDocxOptions, WordChapterInput, SemanticWarning } from './semantic/index.js';

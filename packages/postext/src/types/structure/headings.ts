@@ -17,6 +17,7 @@ import type { ParagraphDropCap } from '../text/paragraphStyles.js';
  *    Useful for books where every chapter must start a fresh spread. */
 export type HeadingBreakParity = 'any' | 'odd' | 'even' | 'always-odd' | 'always-even';
 
+/** Whether a heading starts a new page, and on which side. */
 export interface HeadingBreakBeforeConfig {
   /** When true, force a page break before every heading of this level. A
    *  `:::pagebreak` right before the heading does not replace it: the
@@ -31,6 +32,7 @@ export interface HeadingBreakBeforeConfig {
   parity?: HeadingBreakParity;
 }
 
+/** `HeadingBreakBeforeConfig` with every default filled in. */
 export interface ResolvedHeadingBreakBeforeConfig {
   enabled: boolean;
   parity: HeadingBreakParity;
@@ -65,6 +67,7 @@ export interface HeadingAdvancedDesignConfig {
   minHeight?: Dimension;
 }
 
+/** A heading's own design slot with every default filled in. */
 export interface ResolvedHeadingAdvancedDesignConfig {
   enabled: boolean;
   slot: ResolvedDesignSlot;
@@ -75,6 +78,7 @@ export interface ResolvedHeadingAdvancedDesignConfig {
  *  `HeadingLevelConfig.numberPosition`). */
 export type HeadingNumberPosition = 'before' | 'replace';
 
+/** The look of one heading level, over the settings shared by all of them. */
 export interface HeadingLevelConfig {
   level: number;
   fontSize?: Dimension;
@@ -209,8 +213,10 @@ export interface HeadingLevelConfig {
   dropCap?: ParagraphDropCap | false;
 }
 
+/** How a heading's text is cased. */
 export type HeadingTextTransform = 'none' | 'uppercase';
 
+/** `HeadingLevelConfig` with every default filled in. */
 export interface ResolvedHeadingLevelConfig {
   level: number;
   fontSize: Dimension;
@@ -260,6 +266,7 @@ export interface ResolvedHeadingLevelConfig {
   dropCap?: ParagraphDropCap;
 }
 
+/** The settings every heading level shares, and the levels themselves. */
 export interface HeadingsConfig {
   fontFamily?: string;
   /** The figures of every level (see {@link FigureStyle}); a level's own
@@ -349,6 +356,7 @@ export interface HeadingsConfig {
   levels?: HeadingLevelConfig[];
 }
 
+/** `HeadingsConfig` with every default filled in. */
 export interface ResolvedHeadingsConfig {
   fontFamily: string;
   lineHeight: Dimension;

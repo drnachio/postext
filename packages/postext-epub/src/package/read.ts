@@ -78,6 +78,8 @@ export function parseViewport(content: string): { width: number; height: number 
   return w && h ? { width: Number(w[1]), height: Number(h[1]) } : undefined;
 }
 
+/** Read an EPUB's bytes back: its metadata, manifest, spine, contents and
+ *  files. */
 export function readEpub(bytes: Uint8Array): ReadEpubResult {
   const files = new Map(Object.entries(unzipSync(bytes)));
   const container = parseXml(fileText(files, 'META-INF/container.xml'));

@@ -11,6 +11,8 @@ import { contentOutline, extractFrontmatter } from 'postext';
 import type { PostextConfig } from 'postext';
 import type { ScormItem, ScormRange } from './types.js';
 
+/** A chapter or section of the book, with the page range it covers and its
+ *  subsections, for picking what a package holds. */
 export interface ScormTreeNode {
   /** `c<chapter>` for a chapter, `c<chapter>:<offset>` for a heading. */
   id: string;

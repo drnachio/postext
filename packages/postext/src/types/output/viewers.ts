@@ -4,6 +4,8 @@ import type { PostextConfig } from '../config.js';
  *  `HtmlViewerConfig.overrides`). */
 export type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
 
+/** The reflowing HTML viewer: line length, column gap, line breaking and
+ *  overrides. */
 export interface HtmlViewerConfig {
   /** Target column width in characters — drives the measured width of the
    *  single or multi-column layout in the HTML viewer. */
@@ -30,6 +32,7 @@ export interface HtmlViewerConfig {
   overrides?: HtmlViewerOverrides;
 }
 
+/** `HtmlViewerConfig` with every default filled in. */
 export interface ResolvedHtmlViewerConfig {
   maxCharsPerLine: number;
   columnGap: number;
@@ -51,6 +54,7 @@ export interface CanvasViewerConfig {
   rowGap?: number;
 }
 
+/** The gaps between pages in the canvas viewer with every default filled in. */
 export interface ResolvedCanvasViewerConfig {
   pageGap: number;
   rowGap: number;

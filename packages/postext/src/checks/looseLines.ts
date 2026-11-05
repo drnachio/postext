@@ -51,6 +51,7 @@ export interface LooseLine {
   height: number;
 }
 
+/** Options for finding loose lines: how loose counts, and on which page. */
 export interface FindLooseLinesOptions {
   /** A line counts as loose when its ratio exceeds this. Default: 3, the
    *  default `debug.looseLineHighlight.threshold`; pass a config's own with
@@ -60,6 +61,7 @@ export interface FindLooseLinesOptions {
   pageIndex?: number;
 }
 
+/** Options for drawing loose lines over a page. */
 export interface DrawLooseLinesOptions {
   /** See {@link FindLooseLinesOptions.threshold}. */
   threshold?: number;

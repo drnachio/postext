@@ -3,6 +3,8 @@
 import type { PrintPreview, VDTDocument } from 'postext';
 import type { FolioOptions, FolioViewer, FolioAppearance, FolioPagePoint } from '../viewer.js';
 
+/** Options of a viewer over a Postext document: those of `createFolio`,
+ *  without what the document already says, plus how its pages paint. */
 export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firstPageRecto" | "binding" | "at" | "aspect"> {
   /** The page to open on (0-based). Default 0. */
   at?: number;
@@ -53,6 +55,8 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
   onVideo?: (event: { resourceId: string; page: number; state: "playing" | "paused" | "stopped" | "error" }) => void;
 }
 
+/** A viewer over a Postext document: swap the document, repaint its
+ *  decoration and play its videos. */
 export interface FolioDocumentViewer extends FolioViewer {
   /** Shows another layout of the book (after an edit), on the same page
    *  unless `at` says otherwise. A page that reads the same as before

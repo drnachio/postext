@@ -93,6 +93,8 @@ export type EpubResourceBytes = (
   fileId: string,
 ) => { bytes: Uint8Array; mediaType: string } | undefined | Promise<{ bytes: Uint8Array; mediaType: string } | undefined>;
 
+/** The cover of the book: its picture, its alternative text and whether it
+ *  also shows as the first page. */
 export interface EpubCover {
   bytes: Uint8Array;
   mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/svg+xml';
@@ -107,6 +109,7 @@ export interface EpubCover {
   showsFirstPage?: boolean;
 }
 
+/** How far `renderToEpub` has gone, passed to `onProgress`. */
 export interface EpubProgress {
   /** `documents`: content documents being written (pages for the fixed
    *  layout, chapters when reflowable); `resources`: fonts and pictures;
@@ -116,6 +119,8 @@ export interface EpubProgress {
   total: number;
 }
 
+/** Something the writer had to set differently from what was asked, passed to
+ *  `onWarning`. */
 export type EpubWarning =
   /** A picture the host gave no bytes for: set as a placeholder. */
   | { kind: 'missingImage'; fileId: string; resourceId?: string }
@@ -133,6 +138,8 @@ export type EpubWarning =
    *  redistributable: readers fall back. Once per family. */
   | { kind: 'fontWithheld'; family: string; fileId?: string };
 
+/** Options of `renderToEpub`: the layout, metadata, fonts, image bytes, cover
+ *  and progress. */
 export interface RenderToEpubOptions {
   layout: EpubLayout;
   metadata: EpubMetadata;
@@ -168,6 +175,7 @@ export type EpubSource = readonly VDTDocument[];
 // Every `href` is relative to the package document (`OEBPS/content.opf`).
 // ---------------------------------------------------------------------------
 
+/** A file of the publication, listed in the package manifest. */
 export interface EpubItem {
   /** Manifest id (an XML NCName). */
   id: string;
@@ -183,6 +191,8 @@ export interface EpubItem {
   remote?: true;
 }
 
+/** An entry of the reading order: which manifest item, and whether it is
+ *  linear. */
 export interface EpubSpineEntry {
   idref: string;
   linear?: boolean;
@@ -195,6 +205,7 @@ export interface EpubSpineEntry {
   doc?: number;
 }
 
+/** An entry of the table of contents, with the entries under it. */
 export interface EpubNavPoint {
   label: string;
   href: string;
@@ -207,6 +218,8 @@ export interface EpubPageTarget {
   href: string;
 }
 
+/** A landmark of the navigation document: the cover, the contents, the start
+ *  of the text. */
 export interface EpubLandmark {
   /** `epub:type` value: `cover`, `titlepage`, `toc`, `frontmatter`,
    *  `bodymatter`, `backmatter`, `index`, `bibliography`… */
@@ -227,6 +240,8 @@ export interface EpubAccessibility {
   conformsTo?: string;
 }
 
+/** A whole book before it is zipped: its files, reading order, navigation and
+ *  metadata. */
 export interface EpubPublication {
   layout: EpubLayout;
   metadata: EpubMetadata;
@@ -258,6 +273,7 @@ export interface EpubPublication {
 // Reading a generated file back (viewers).
 // ---------------------------------------------------------------------------
 
+/** What `readEpub` finds in an EPUB. */
 export interface ReadEpubResult {
   layout: EpubLayout;
   metadata: { title: string; language: string; identifier: string; creators: string[] };

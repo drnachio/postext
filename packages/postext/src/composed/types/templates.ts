@@ -3,6 +3,7 @@
 import type { Dimension, DesignElement, DesignSlot, ColorValue, LeaderStyle } from '../../types.js';
 import type { FrameConfig, FrameGroupConfig, FrameLookEntry } from './frames.js';
 
+/** The grid a page template places its frames on. */
 export interface PageTemplateGrid {
   columns: number;
   rows: number;
@@ -52,6 +53,8 @@ export interface PageTemplatePatch {
   palette?: string;
 }
 
+/** A page template: the frames of a composed page, which another template can
+ *  extend. */
 export interface PageTemplate extends PageTemplatePatch {
   /** Required, unique among `pageTemplates`. */
   id: string;
@@ -90,6 +93,7 @@ export interface PageTemplate extends PageTemplatePatch {
 /** A module's width in its group (#1088). */
 export type ModuleWidth = Dimension | { percent: number } | 'fill';
 
+/** A named style for the labels set over pictures. */
 export interface LabelStyle {
   id: string;
   name?: string;

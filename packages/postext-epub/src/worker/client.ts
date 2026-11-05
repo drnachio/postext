@@ -1,6 +1,11 @@
-// Write EPUB files on a worker: `createEpubWorker().render(docs, options)`
-// takes what `renderToEpub` takes and returns the same bytes, with the
-// page itself left free while the book is written.
+/**
+ * `postext-epub/worker`: write EPUB files on a worker.
+ * `createEpubWorker().render(docs, options)` takes what `renderToEpub` takes
+ * and returns the same bytes, with the page left free while the book is
+ * written.
+ *
+ * @module
+ */
 
 import type { VDTDocument } from 'postext';
 import { placedFileIds, svgAssetPreparer } from '../shared/assets.js';
@@ -11,6 +16,8 @@ import { cdnWorkerEntryUrl } from './entryUrl.js';
 export type { EpubResourcePayload } from './protocol.js';
 export type { EpubProgress, EpubWarning, EpubLayout, EpubMetadata, EpubFontFile, EpubSvgFontOptions, EpubCover } from '../types.js';
 
+/** Options of a render on the worker: those of `renderToEpub`, with image
+ *  bytes in the form that crosses to the worker. */
 export interface EpubWorkerRenderOptions extends Omit<RenderToEpubOptions, 'resourceBytes'> {
   /** Picture bytes: a map by `fileId`, or the provider `renderToEpub`
    *  takes, asked on this thread for every picture the pages place before
@@ -18,6 +25,7 @@ export interface EpubWorkerRenderOptions extends Omit<RenderToEpubOptions, 'reso
   resourceBytes?: EpubResourceBytes | ReadonlyMap<string, EpubResourcePayload>;
 }
 
+/** A running EPUB worker: `render` a book on it, `dispose` to end it. */
 export interface EpubWorkerHandle {
   /** Write the book on the worker. The buffers of the fonts, the pictures
    *  and the cover are transferred, not copied: the caller's views of them
@@ -27,6 +35,7 @@ export interface EpubWorkerHandle {
   dispose(): void;
 }
 
+/** Options of `createEpubWorker`. */
 export interface CreateEpubWorkerOptions {
   /** A worker of the caller's own (build tooling that controls the worker
    *  URL), or a function that makes one. With a function, an aborted render
@@ -130,6 +139,8 @@ function spawnEpubWorker(url: string | URL | undefined): { worker: Worker; objec
   return { worker: new Worker(new URL('./epub.worker.js', import.meta.url), { type: 'module' }) };
 }
 
+/** Start a worker that writes EPUB files, so that the page stays free while a
+ *  book is written. */
 export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerHandle {
   const given = options?.worker;
   /** The blob wrapper's URL, revoked once the worker has answered (it has

@@ -1,5 +1,13 @@
 /// <reference lib="webworker" />
 
+/**
+ * `postext/worker/entry`: the worker behind `createLayoutWorker`. Bundlers
+ * that resolve `new Worker(new URL(…, import.meta.url))` pick it up from the
+ * client; hosts that build their own worker import this module.
+ *
+ * @module
+ */
+
 import { buildDocumentAsync, BuildCancelledError } from '../pipeline/index.js';
 import type { BuildPassInfo } from '../pipeline/build.js';
 import { initMathEngine, isMathReady } from '../math/index.js';

@@ -6,6 +6,7 @@ import { initMathEngine, isMathReady } from '../math/index.js';
 import { contentHasScore, initMusicEngine, isMusicReady } from '../music/index.js';
 import { contentHasMath } from '../parse/inlineSnippet.js';
 
+/** The props of the component `createLayout` returns. */
 export interface PostextLayoutProps {
   /** Class of the container `<div>` the page canvases go into. */
   className?: string;

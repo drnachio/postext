@@ -56,6 +56,7 @@ export interface VideoPlayerOptions {
   privacy?: boolean;
 }
 
+/** The options of the video player with every default filled in. */
 export type ResolvedVideoPlayerOptions = Required<VideoPlayerOptions>;
 
 /** The picture printed for a video: a frame of it (the platform's poster
@@ -185,6 +186,7 @@ export interface VideoStyleConfig {
   player?: VideoPlayerOptions;
 }
 
+/** The play mark over a video's poster with every default filled in. */
 export interface ResolvedVideoPlayMarkConfig {
   enabled: boolean;
   shape: 'circle' | 'rounded' | 'triangle';
@@ -196,6 +198,8 @@ export interface ResolvedVideoPlayMarkConfig {
   backgroundOpacity: number;
 }
 
+/** The QR code that takes a printed poster to its video, with every default
+ *  filled in. */
 export interface ResolvedVideoQrConfig {
   enabled: boolean;
   position: VideoOverlayPosition;
@@ -208,6 +212,7 @@ export interface ResolvedVideoQrConfig {
   radius: Dimension;
 }
 
+/** How videos show on the page and in print, with every default filled in. */
 export interface ResolvedVideoStyleConfig {
   playMark: ResolvedVideoPlayMarkConfig;
   qr: ResolvedVideoQrConfig;

@@ -47,6 +47,7 @@ export interface VerseConfig {
   tighten?: boolean;
 }
 
+/** The setting of verse with every default filled in. */
 export interface ResolvedVerseConfig {
   layout: 'auto' | 'bayt';
   indentStep: Dimension;
@@ -132,6 +133,7 @@ export interface LineNumbersConfig {
   format?: string;
 }
 
+/** The numbering of lines with every default filled in. */
 export interface ResolvedLineNumbersConfig {
   enabled: boolean;
   count: LineNumbersCount;

@@ -1,3 +1,11 @@
+/**
+ * `postext-pdf/worker`: write PDFs on a worker.
+ * `createPdfWorker().render(doc, options)` takes what `renderToPdf` takes and
+ * returns the same bytes, with the page left free while the book renders.
+ *
+ * @module
+ */
+
 import type { VDTDocument } from 'postext';
 import { declarationOf, type PdfFontProvider } from '../fontCache.js';
 import type { RenderToPdfOptions } from '../pdf-backend/index.js';
@@ -15,6 +23,8 @@ export type {
   RenderProgress,
 } from '../pdf-backend/index.js';
 
+/** Options of a render on the worker: those of `renderToPdf`, with image
+ *  bytes, SVG rasterizing and fonts in the form that crosses to the worker. */
 export interface PdfWorkerRenderOptions extends Omit<RenderToPdfOptions, 'resourceBytes' | 'rasterizeSvg'> {
   /** Resource bytes by file id. Their buffers are transferred: pass copies
    *  if the caller keeps them. */
@@ -26,6 +36,7 @@ export interface PdfWorkerRenderOptions extends Omit<RenderToPdfOptions, 'resour
   fontProvider: PdfFontProvider;
 }
 
+/** A running PDF worker: `render` a document on it, `dispose` to end it. */
 export interface PdfWorkerHandle {
   /** Render on the worker. Fonts and SVG rasters are fetched on this
    *  thread when the worker asks (it cannot reach the document's fonts or
@@ -35,6 +46,7 @@ export interface PdfWorkerHandle {
   dispose(): void;
 }
 
+/** Options of `createPdfWorker`. */
 export interface CreatePdfWorkerOptions {
   /** A Worker of the caller's own, for build tooling that controls the
    *  worker URL. */
@@ -47,6 +59,8 @@ interface Pending {
   options: PdfWorkerRenderOptions;
 }
 
+/** Start a worker that writes PDFs, so that the page stays free while a book
+ *  renders. */
 export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHandle {
   const worker = options?.worker
     ?? new Worker(new URL('./pdf.worker.js', import.meta.url), { type: 'module' });

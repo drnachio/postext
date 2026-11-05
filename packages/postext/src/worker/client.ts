@@ -1,3 +1,11 @@
+/**
+ * `postext/worker`: lay out documents on a worker, so that the page stays
+ * free during a build. `createLayoutWorker().build(content, config)` takes
+ * what `buildDocument` takes.
+ *
+ * @module
+ */
+
 import type { PostextContent, PostextConfig } from '../types.js';
 import type { VDTDocument } from '../vdt.js';
 import type { BuildProgress } from '../pipeline/build.js';
@@ -16,6 +24,8 @@ export type { BuildPassInfo } from '../pipeline/build.js';
  *  a number (`700` as well as `'700'` or `'bold'`). */
 export type FontPayloadInput = Omit<FontPayload, 'weight'> & { weight: string | number };
 
+/** Options of a build on the worker: how to cancel it, how to follow it, and
+ *  the keys that save sending things again. */
 export interface BuildOptions {
   signal?: AbortSignal;
   /** Called as the worker's placement advances (throttled by the worker). */
@@ -32,6 +42,8 @@ export interface BuildOptions {
   wantDoc?: boolean;
 }
 
+/** A running layout worker: give it fonts, build documents on it, `dispose`
+ *  to end it. */
 export interface LayoutWorkerHandle {
   registerFonts(faces: FontPayloadInput[]): Promise<void>;
   /** Drop every face whose family matches one of `families` from the worker's
@@ -68,6 +80,7 @@ interface Pending {
   onStats?: (stats: BuildStats) => void;
 }
 
+/** Options of `createLayoutWorker`. */
 export interface CreateLayoutWorkerOptions {
   /**
    * Allows consumers to provide their own Worker instance. Useful for build
@@ -113,6 +126,8 @@ function spawnLayoutWorker(options?: CreateLayoutWorkerOptions): { worker: Worke
   return { worker: new Worker(new URL('./layout.worker.js', import.meta.url), { type: 'module' }) };
 }
 
+/** Start a worker that lays out documents, so that the page stays free during
+ *  a build. */
 export function createLayoutWorker(
   options?: CreateLayoutWorkerOptions,
 ): LayoutWorkerHandle {

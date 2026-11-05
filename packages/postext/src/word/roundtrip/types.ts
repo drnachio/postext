@@ -10,6 +10,8 @@ export interface DocxEditSource {
   resources?: Resource[];
 }
 
+/** An edit found in a `.docx` that came back from Word, and whether it
+ *  applied. */
 export interface DocxEdit {
   /** Chapter id of a Markdown edit. */
   chapter?: string;
@@ -28,6 +30,7 @@ export interface DocxEdit {
   reason?: string;
 }
 
+/** A Word comment, with the text it was made on. */
 export interface DocxComment {
   chapter?: string;
   resourceId?: string;
@@ -39,6 +42,8 @@ export interface DocxComment {
   text: string;
 }
 
+/** What `applyDocxEdits` returns: the chapters and resources with the edits
+ *  in, the edits and the comments. */
 export interface DocxEditResult {
   variant: 'semantic' | 'formatted';
   exportId: string;

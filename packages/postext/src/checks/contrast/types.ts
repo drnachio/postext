@@ -3,6 +3,7 @@ import type { ContrastLevel, ResolvedContrastConfig } from '../../types.js';
 import type { BoundingBox } from '../../vdt.js';
 import type { OutputTransform } from '../../color/transform.js';
 
+/** The medium a contrast is judged for. */
 export type ContrastMedium = 'screen' | 'print';
 
 /** What a piece of text is, for a host that words its findings. */
@@ -65,6 +66,8 @@ export interface ContrastAccepted {
   style?: string;
 }
 
+/** A pair of text and background with too little contrast, and where it first
+ *  appears. */
 export type ContrastIssue = {
   /** Book-absolute page index of the first occurrence. */
   pageIndex: number;
@@ -99,8 +102,11 @@ export type ContrastIssue = {
   | { kind: 'reversedText'; reasons: ReversedTextReason[]; minimumPt: number; inks: number }
 );
 
+/** The kinds of problem the contrast check reports. */
 export type ContrastKind = ContrastIssue['kind'];
 
+/** Options of `contrastDocument`: the settings, the media and the pairs to
+ *  look at. */
 export interface ContrastOptions {
   /** The settings to check against; the document's `config.contrast`
    *  (else the defaults) when omitted. */

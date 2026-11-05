@@ -2,6 +2,8 @@ import type { CompositionRule } from './text/bodyText.js';
 import type { ColorValue, ColumnRuleConfig, Dimension, LayoutType, SideColumnRole, SideColumnSide, WritingMode } from './page.js';
 import type { FloatShrinkMode, TextWrapConfig } from './resources/resourceTypes.js';
 
+/** The text area of the page: columns, gutter, side column and how floats
+ *  behave. */
 export interface LayoutConfig {
   layoutType?: LayoutType;
   /** `multiple` only: how many equal columns the body runs in, 3 to 8.
@@ -183,6 +185,7 @@ export interface ResolvedTextWrapConfig {
  *  `LayoutConfig.inlineResourceGap`). */
 export type InlineResourceGap = 'around' | 'above';
 
+/** `LayoutConfig` with every default filled in. */
 export interface ResolvedLayoutConfig {
   layoutType: LayoutType;
   /** As written (a `multiple` layout clamps it when it cuts the columns,

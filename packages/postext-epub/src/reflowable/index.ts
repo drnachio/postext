@@ -112,6 +112,8 @@ function coverDocument(imageHref: string, alt: string, title: string, lang: stri
 
 const COVER_EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/svg+xml': 'svg' };
 
+/** Build the publication of a reflowable EPUB: semantic XHTML styled from the
+ *  same configuration. */
 export async function buildReflowablePublication(docs: EpubSource, options: RenderToEpubOptions): Promise<EpubPublication> {
   const first = docs[0];
   if (!first) throw new Error('buildReflowablePublication: no documents');

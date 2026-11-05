@@ -25,10 +25,13 @@ let initPromise: Promise<void> | null = null;
 const initListeners = new Set<() => void>();
 let warnedWithoutEngine = false;
 
+/** Whether the music engine has finished loading. */
 export function isMusicReady(): boolean {
   return toolkit !== null;
 }
 
+/** Call `fn` when the music engine is ready. Returns the function that
+ *  cancels it. */
 export function onMusicReady(fn: () => void): () => void {
   if (toolkit !== null) {
     fn();
@@ -91,6 +94,7 @@ function cacheKey(source: string, format: ScoreFormat, widthPx: number, o: Score
   ].join('|');
 }
 
+/** Forget every score engraved so far. */
 export function clearMusicCache(): void {
   cache.clear();
 }
