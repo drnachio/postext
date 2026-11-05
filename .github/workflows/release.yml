@@ -30,6 +30,14 @@
 #    Click "New repository secret"
 #    Name:  NPM_TOKEN
 #    Value: the token from step 1
+#
+# JSR setup (one-time, no token: the jsr job signs in with GitHub OIDC):
+#
+# 1. Go to https://jsr.io/new and create the scope @postext and its packages:
+#    postext, pdf, epub, folio, citeproc and scorm.
+# 2. In each package's settings, link it to the drnachio/postext repository.
+#    Until then the jsr job fails on its own and blocks nothing; the next
+#    release publishes what is missing.
 # ──────────────────────────────────────────────────────────────────────────────
 
 name: Release
@@ -361,6 +369,27 @@ jobs:
         run: node scripts/npm-publish.mjs
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # The libraries on JSR (#1417), from the commit the release tagged, so that
+  # their provenance names it. After npm and never fails the release.
+  jsr:
+    name: Publish on JSR
+    needs: release
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+      - uses: ./.github/actions/setup
+      - run: pnpm turbo run build --filter=postext --filter=postext-pdf --filter=postext-epub --filter=postext-folio --filter=postext-citeproc --filter=postext-scorm
+      - uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: 2.5.6
+      - run: node .github/scripts/jsr-publish.mjs
 
   # The release notes (#releases) and the docs & translations notice
   # (#docs-and-translations) in the Postext Discord, minutes after the
