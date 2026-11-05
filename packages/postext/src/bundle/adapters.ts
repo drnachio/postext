@@ -293,6 +293,8 @@ export interface BundleFontRequest {
   codePoints: ReadonlySet<number>;
 }
 
+/** Options of the font provider over a bundle: the WOFF2 decoder and the
+ *  fallback faces. */
 export interface BundleFontProviderOptions<Fallback extends Uint8Array | Uint8Array[] = Uint8Array> {
   /** Turns WOFF2 into the TrueType/OpenType bytes a PDF embeds — pass
    *  `decompressWoff2` from `postext-pdf`. Required when the bundle carries

@@ -1,3 +1,10 @@
+/**
+ * `postext-citeproc/catalog`: the list of bundled styles, without the styles
+ * themselves, for a picker that loads nothing heavy.
+ *
+ * @module
+ */
+
 import type { CitationStyleInfo } from 'postext';
 
 /** The bundled styles, in the order a picker lists them: by citation

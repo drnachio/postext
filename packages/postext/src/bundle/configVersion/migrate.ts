@@ -15,6 +15,7 @@ function rulesOf(configVersion: unknown): number {
   return typeof configVersion === 'number' && Number.isFinite(configVersion) ? configVersion : 0;
 }
 
+/** Options for bringing a saved configuration up to the current version. */
 export interface MigrateConfigOptions {
   /**
    * The markdown the configuration lays out (a bundle's chapters, a book's),

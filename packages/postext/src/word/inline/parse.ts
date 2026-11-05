@@ -17,6 +17,8 @@ type Atom =
 const PH_BASE = 0xe800;
 const PH_END = 0xf8ff;
 
+/** Options of `parseInline`: which notes become Word notes, and whether the
+ *  text is a heading. */
 export interface ParseInlineOptions {
   /** Footnote ids to turn into Word notes (the rest stay verbatim). */
   notes?: ReadonlySet<string>;

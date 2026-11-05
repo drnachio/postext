@@ -194,6 +194,7 @@ export interface CalloutDesignConfig {
   setsContent?: boolean;
 }
 
+/** A box's own design slot with every default filled in. */
 export interface ResolvedCalloutDesignConfig {
   enabled: boolean;
   slot: ResolvedDesignSlot;
@@ -253,6 +254,7 @@ export interface ResolvedCalloutNumberingConfig {
 /** Alignment of a split callout's continuation marker. */
 export type CalloutMarkerTextAlign = 'left' | 'center' | 'right';
 
+/** A box style with every default filled in. */
 export interface ResolvedCalloutStyleConfig {
   id: string;
   name: string;

@@ -18,10 +18,13 @@ let initPromise: Promise<void> | null = null;
 const initListeners = new Set<() => void>();
 let warnedWithoutEngine = false;
 
+/** Whether the maths engine has finished loading. */
 export function isMathReady(): boolean {
   return handle !== null;
 }
 
+/** Call `fn` when the maths engine is ready. Returns the function that
+ *  cancels it. */
 export function onMathReady(fn: () => void): () => void {
   if (handle !== null) {
     fn();
@@ -565,9 +568,9 @@ function serializePaths(viewBox: MathViewBox, paths: MathPath[], texts: string[]
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}" width="${widthPx}" height="${heightPx}">${body}</svg>`;
 }
 
-// Provisional render used before MathJax finishes loading. Width heuristic is
-// deliberately rough — it exists only so layout doesn't shift by too much
-// once the real render arrives.
+/** Provisional render used before MathJax finishes loading. Width heuristic
+ *  is deliberately rough — it exists only so layout doesn't shift by too much
+ *  once the real render arrives. */
 export function placeholderRender(tex: string, displayMode: boolean, fontSizePx: number): MathRender {
   const widthPx = Math.max(fontSizePx, tex.length * fontSizePx * 0.55);
   const heightPx = displayMode ? fontSizePx * 1.6 : fontSizePx;
@@ -585,6 +588,7 @@ export function placeholderRender(tex: string, displayMode: boolean, fontSizePx:
   };
 }
 
+/** Forget every formula rendered so far. */
 export function clearMathCache(): void {
   cache.clear();
 }

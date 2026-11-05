@@ -15,11 +15,15 @@ import type { PartsBodyStyleConfig, ResolvedPartsBodyStyleConfig } from './parts
 /** Typography of the body blocks in a section opened by a styled heading.
  *  Same shape as a part's body style. */
 export type SectionBodyStyleConfig = PartsBodyStyleConfig;
+/** The body text of a section opened by a heading style, with every default
+ *  filled in. */
 export type ResolvedSectionBodyStyleConfig = ResolvedPartsBodyStyleConfig;
 
 /** See {@link HeadingStyleConfig.sectionEnd}. */
 export type HeadingStyleSectionEnd = 'level' | 'heading';
 
+/** A named heading style, set with `{style=…}`: a heading level's look plus
+ *  its own numbering, running heads, margins and page layout. */
 export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | 'numberingTemplate'> {
   /** Identifier referenced from `{style="…"}` on a heading line. */
   id: string;
@@ -114,6 +118,7 @@ export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | '
  *  instead. */
 export type ResolvedHeadingStyleOverrides = Partial<Omit<ResolvedHeadingLevelConfig, 'level' | 'numberingTemplate'>>;
 
+/** `HeadingStyleConfig` with every default filled in. */
 export interface ResolvedHeadingStyleConfig {
   id: string;
   name: string;

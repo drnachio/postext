@@ -7,7 +7,9 @@
 // so there is no second manifest to keep in sync:
 //   - a `deno.json` per package, from its `package.json`;
 //   - `@ts-self-types` at the top of each module, naming its `.d.ts`;
-//   - no `/// <reference lib>`, which JSR refuses.
+//   - no `/// <reference lib>`, which JSR refuses;
+//   - the module doc of an entry that only has side effects, which `tsc` leaves
+//     out of its empty declaration file.
 //
 // A version already on JSR is left alone, so a rerun is safe. Plain Node, no
 // dependencies, and `deno` on the PATH. `--dry-run` publishes nothing.
@@ -89,6 +91,10 @@ function prepare(file) {
   if (!/\.(js|d\.ts)$/.test(file)) return;
   let text = readFileSync(file, 'utf8').replace(/^\/\/\/ <reference lib="[^"]*" \/>\r?\n/m, '');
   text = text.replace(/^\/\/# sourceMappingURL=.*$/m, '');
+  if (file.endsWith('.d.ts') && /^export \{\};\s*$/.test(text)) {
+    const doc = readFileSync(file.replace(/\.d\.ts$/, '.js'), 'utf8').match(/\/\*\*(?:(?!\*\/)[\s\S])*@module\s*\*\//);
+    if (doc) text = `${doc[0]}\n${text}`;
+  }
   const types = file.replace(/\.js$/, '.d.ts');
   if (file.endsWith('.js') && existsSync(types)) {
     text = `/* @ts-self-types="./${basename(types)}" */\n${text}`;

@@ -24,6 +24,8 @@ import { type PdfWarning, fontFallbackWarning, fileIssueWarning, missingGlyphWar
 
 export type { PdfPrintWarning, PdfComplexShapingWarning, PdfFontFallbackWarning, PdfMissingGlyphWarning, PdfVariableFontWarning, PdfCffEmbeddedWholeWarning, PdfWarning, PdfFontWarning } from './renderToPdf/warnings.js';
 
+/** Options of `renderToPdf`: fonts, image bytes, colour, accessibility, print
+ *  production and progress. */
 export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
   pageNegative?: boolean;
@@ -121,6 +123,7 @@ function checkedDate(date: Date | number | string): Date {
   return out;
 }
 
+/** How far `renderToPdf` has gone, passed to `onProgress`. */
 export interface RenderProgress {
   phase: 'prepare' | 'pages' | 'save';
   /** Pages rendered so far, and how many there are. */
@@ -168,6 +171,8 @@ function setsComplexScript(fontText: FontText): boolean {
   return false;
 }
 
+/** Render a laid-out document, or the chapters of a book, to the bytes of a
+ *  PDF. */
 export async function renderToPdf(
   input: VDTDocument | VDTDocument[],
   options: RenderToPdfOptions,

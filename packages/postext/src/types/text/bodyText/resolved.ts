@@ -6,6 +6,7 @@ import type { TabStop } from '../paragraphStyles.js';
 import type { ResolvedVerseConfig } from '../verse.js';
 import type { ResolvedBlockquoteConfig, CompositionRule, ColonListRoom, ParagraphContainerSpacing, ParagraphStylesInBoxes, EmphasisStyle, TashkilMode } from './options.js';
 
+/** `BodyTextConfig` with every default filled in. */
 export interface ResolvedBodyTextConfig {
   fontFamily: string;
   fontSize: Dimension;

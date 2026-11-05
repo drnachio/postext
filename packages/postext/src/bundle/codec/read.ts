@@ -16,6 +16,8 @@ export function bundleBaseConfig(locale = 'en'): PostextConfig {
   return { colorPalette: cloneDefaultColorPalette(), resourceTypes: defaultResourceTypes(locale) };
 }
 
+/** Options for reading a bundle: the language, the ids, a base design, and
+ *  how pictures are measured. */
 export interface ReadBundleOptions {
   /** Locale to read a bilingual bundle in. Defaults to the manifest's own
    *  locale, else `en`. */
@@ -62,6 +64,7 @@ export interface ReadBundleOptions {
   decodeContour?: TraceContourOptions['decode'];
 }
 
+/** A bundle read: its manifest, chapters, design, resources, files and fonts. */
 export interface ReadBundleResult {
   manifest: BundleManifest;
   /** The locale the content was resolved for (the chapter-map key a

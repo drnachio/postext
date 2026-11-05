@@ -1,6 +1,7 @@
 import type { ArabicNumeralStyle, EastAsianNumeralStyle } from '../../numerals/numbering.js';
 import type { ColorValue, Dimension } from '../page.js';
 
+/** The bullet and indent of one level of unordered lists. */
 export interface UnorderedListLevelConfig {
   level: number;
   bulletChar?: string;
@@ -14,6 +15,7 @@ export interface UnorderedListLevelConfig {
   verticalOffset?: Dimension;
 }
 
+/** `UnorderedListLevelConfig` with every default filled in. */
 export interface ResolvedUnorderedListLevelConfig {
   level: number;
   bulletChar: string;
@@ -28,6 +30,7 @@ export interface ResolvedUnorderedListLevelConfig {
   verticalOffset: Dimension;
 }
 
+/** The look of unordered lists, and their levels. */
 export interface UnorderedListsConfig {
   fontFamily?: string;
   color?: ColorValue;
@@ -84,6 +87,7 @@ export interface UnorderedListsConfig {
   taskCompletedColor?: ColorValue;
 }
 
+/** `UnorderedListsConfig` with every default filled in. */
 export interface ResolvedUnorderedListsConfig {
   fontFamily: string;
   color: ColorValue;
@@ -110,6 +114,7 @@ export interface ResolvedUnorderedListsConfig {
   taskCompletedColor?: ColorValue;
 }
 
+/** How the numbers of an ordered list are written. */
 export type OrderedListNumberFormat =
   | 'arabic'
   | 'lower-alpha'
@@ -119,6 +124,7 @@ export type OrderedListNumberFormat =
   | EastAsianNumeralStyle
   | ArabicNumeralStyle;
 
+/** The number and indent of one level of ordered lists. */
 export interface OrderedListLevelConfig {
   level: number;
   /** Number style of this level (see `OrderedListsConfig.numberFormat`). */
@@ -142,6 +148,7 @@ export interface OrderedListLevelConfig {
   separatorGap?: Dimension;
 }
 
+/** `OrderedListLevelConfig` with every default filled in. */
 export interface ResolvedOrderedListLevelConfig {
   level: number;
   numberFormat: OrderedListNumberFormat;
@@ -162,6 +169,7 @@ export interface ResolvedOrderedListLevelConfig {
   separatorGap: Dimension;
 }
 
+/** The look of ordered lists, and their levels. */
 export interface OrderedListsConfig {
   fontFamily?: string;
   color?: ColorValue;
@@ -241,6 +249,7 @@ export type OrderedListNumberWidth = 'run' | 'level' | 'item';
  *  (`OrderedListsConfig.numberAlign`). */
 export type OrderedListNumberAlign = 'end' | 'start';
 
+/** `OrderedListsConfig` with every default filled in. */
 export interface ResolvedOrderedListsConfig {
   fontFamily: string;
   color: ColorValue;

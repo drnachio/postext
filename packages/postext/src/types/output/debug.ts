@@ -1,5 +1,7 @@
 import type { ColorValue } from '../page.js';
 
+/** A marker that follows the cursor or selection between the editor and the
+ *  page. */
 export interface SyncIndicatorConfig {
   enabled: boolean;
   color?: ColorValue;
@@ -13,6 +15,7 @@ export interface LooseLineHighlightConfig {
   threshold?: number;
 }
 
+/** Which warnings are reported. */
 export interface WarningsToggleConfig {
   missingFont?: boolean;
   looseLines?: boolean;
@@ -22,6 +25,7 @@ export interface WarningsToggleConfig {
   designIssues?: boolean;
 }
 
+/** `WarningsToggleConfig` with every default filled in. */
 export interface ResolvedWarningsToggleConfig {
   missingFont: boolean;
   looseLines: boolean;
@@ -31,6 +35,8 @@ export interface ResolvedWarningsToggleConfig {
   designIssues: boolean;
 }
 
+/** The aids drawn while editing: sync markers, loose lines, the page negative
+ *  and warnings. */
 export interface DebugConfig {
   cursorSync?: SyncIndicatorConfig;
   selectionSync?: SyncIndicatorConfig;
@@ -51,6 +57,7 @@ export interface DebugConfig {
 /** What the Sandbox canvas marks of how composed frames fit (#1160). */
 export type FitMarksMode = 'all' | 'problems' | 'none';
 
+/** `DebugConfig` with every default filled in. */
 export interface ResolvedDebugConfig {
   cursorSync: { enabled: boolean; color: ColorValue };
   selectionSync: { enabled: boolean; color: ColorValue };

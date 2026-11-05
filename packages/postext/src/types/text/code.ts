@@ -155,6 +155,7 @@ export interface CodeStyleConfig {
   inline?: InlineCodeStyleConfig;
 }
 
+/** The look of inline code with every default filled in. */
 export interface ResolvedInlineCodeStyleConfig {
   fontFamily: string;
   fontSize: Dimension;
@@ -170,6 +171,7 @@ export interface ResolvedInlineCodeStyleConfig {
   otherScripts: 'text' | 'code';
 }
 
+/** The look of code blocks with every default filled in. */
 export interface ResolvedCodeStyleConfig {
   blocks: boolean;
   indentedCode: boolean;

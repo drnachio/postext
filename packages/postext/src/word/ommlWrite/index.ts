@@ -46,6 +46,7 @@ export function setTexToOmmlConverter(c: MathJaxConverter | null): void {
   if (!c) starting = null;
 }
 
+/** Whether the converter from TeX to Word's equations has loaded. */
 export const isTexToOmmlReady = (): boolean => converter !== null;
 
 /** MathJax's MathML tree for `tex`, or null (no converter, or a TeX error). */

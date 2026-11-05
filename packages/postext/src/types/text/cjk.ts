@@ -376,12 +376,15 @@ export interface CjkKuntenConfig {
   placement?: CjkKuntenPlacement;
 }
 
+/** Kunten, the reading marks of classical Chinese, with every default filled
+ *  in. */
 export interface ResolvedCjkKuntenConfig {
   fontSize: Dimension;
   color?: ColorValue;
   placement: CjkKuntenPlacement;
 }
 
+/** Ruby with every default filled in. */
 export interface ResolvedCjkRubyConfig {
   fontFamily?: string;
   fontSize: Dimension;
@@ -397,6 +400,7 @@ export interface ResolvedCjkRubyConfig {
   smallKana?: 'full';
 }
 
+/** Warichu, the two-line inline notes, with every default filled in. */
 export interface ResolvedCjkWarichuConfig {
   fontSize: Dimension;
   color?: ColorValue;
@@ -496,6 +500,7 @@ export interface CjkGridConfig {
   fullLines?: boolean;
 }
 
+/** The character grid with every default filled in. */
 export interface ResolvedCjkGridConfig {
   enabled: boolean;
   /** The characters per line in use (after the pre-pass: what the
@@ -508,6 +513,7 @@ export interface ResolvedCjkGridConfig {
   fullLines: boolean;
 }
 
+/** Chinese, Japanese and Korean composition with every default filled in. */
 export interface ResolvedCjkConfig {
   region: CjkRegion;
   lineBreak: CjkLineBreak;

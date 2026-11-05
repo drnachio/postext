@@ -25,6 +25,7 @@ export interface WordFontRef {
   features?: readonly ('onum' | 'lnum' | 'pnum' | 'tnum')[];
 }
 
+/** A font a `.docx` could not embed, and why. */
 export interface FontWarning {
   family: string;
   /** `preview-print` is a note, not a refusal: the face is embedded, and
@@ -33,6 +34,8 @@ export interface FontWarning {
   detail?: string;
 }
 
+/** The faces a `.docx` embeds, and which Word family and slot each font maps
+ *  to. */
 export interface WordFontPlan {
   /** Faces to embed. */
   faces: EmbeddedFontFace[];
@@ -44,6 +47,8 @@ export interface WordFontPlan {
   altNames: Map<string, string>;
 }
 
+/** Options of the font plan: the text used, the font strings and the WOFF2
+ *  decoder. */
 export interface PlanWordFontsOptions {
   /** Code points the book sets per face (`${family}|${weight}|${style}`)
    *  or per family: unicode-range slices holding none of them (and not

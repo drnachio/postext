@@ -1,3 +1,5 @@
+/** How far the engine may stretch space and paragraphs so that a page's
+ *  columns end level. */
 export interface ColumnBalancingConfig {
   /** Default `true`, except in vertical text (`layout.writingMode:
    *  'vertical-rl'`) and on a character grid (`cjk.grid.enabled`, #632),

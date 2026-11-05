@@ -65,6 +65,7 @@ export type BundleResourceSpec = Omit<Resource, 'createdAt' | 'updatedAt' | 'bit
   note?: string;
 };
 
+/** A face of a font family as the manifest lists it. */
 export interface BundleFontVariantSpec {
   weight: number;
   style: 'normal' | 'italic';
@@ -72,6 +73,7 @@ export interface BundleFontVariantSpec {
   file: string;
 }
 
+/** A font family as the manifest lists it. */
 export interface BundleFontFamilySpec {
   name: string;
   variants: BundleFontVariantSpec[];
@@ -205,6 +207,7 @@ export interface BundleManifestV2 extends BundleManifestBase {
   chapters: BundleChapterSpec[] | Record<string, BundleChapterSpec[]>;
 }
 
+/** A bundle's `preset.json`, in either version of its format. */
 export type BundleManifest = BundleManifestV1 | BundleManifestV2;
 
 /** Reads one bundle file by its manifest-relative path; rejects when the
@@ -255,6 +258,7 @@ export interface BundleChapter {
   markdown: string;
 }
 
+/** A resource file of a bundle. */
 export interface BundleBlob {
   fileId: string;
   /** Path inside the bundle. */
@@ -263,6 +267,7 @@ export interface BundleBlob {
   mime: string;
 }
 
+/** A font file of a bundle, with the family and face it belongs to. */
 export interface BundleFontFile {
   fileId: string;
   /** Path inside the bundle. */

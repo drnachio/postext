@@ -9,6 +9,7 @@ import { paragraphStyleName, paragraphText } from './model.js';
 import type { WordTemplate } from './template.js';
 import { paragraphTargetOf } from './toMarkdown.js';
 
+/** A Word style in use: how often, with a sample. */
 export interface StyleUse {
   name: string;
   count: number;
@@ -16,6 +17,7 @@ export interface StyleUse {
   sample: string;
 }
 
+/** The problems the quality report looks for. */
 export type FindingId =
   | 'allNormal'
   | 'directFormatting'
@@ -32,6 +34,7 @@ export type FindingId =
   | 'equations'
   | 'hiddenText';
 
+/** A problem found in a `.docx`: how often it occurs, with examples. */
 export interface QualityFinding {
   id: FindingId;
   count: number;
@@ -40,8 +43,11 @@ export interface QualityFinding {
   severity: 'info' | 'warn';
 }
 
+/** How well structured a `.docx` is overall. */
 export type QualityVerdict = 'clean' | 'mixed' | 'plain';
 
+/** What `analyzeDocx` returns: the verdict, the styles in use, the counts and
+ *  the findings. */
 export interface QualityReport {
   verdict: QualityVerdict;
   /** Paragraphs with text (body and text boxes). */
@@ -97,6 +103,7 @@ function countTables(blocks: WordBlock[]): number {
   return n;
 }
 
+/** Report how well a `.docx` is structured, before importing it. */
 export function analyzeDocx(doc: WordDocument, template: WordTemplate, config: PostextConfig): QualityReport {
   const paraStyles = new Map<string, StyleUse>();
   const charStyles = new Map<string, StyleUse>();

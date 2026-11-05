@@ -75,6 +75,7 @@ export interface BlockquoteConfig {
   firstLineIndent?: Dimension;
 }
 
+/** The look of a block quotation with every default filled in. */
 export interface ResolvedBlockquoteConfig {
   color: ColorValue;
   italic: boolean;

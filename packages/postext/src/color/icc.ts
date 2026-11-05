@@ -22,6 +22,7 @@ export type Pipeline = (input: Channels) => Channels;
  *  0xFF. */
 export type PcsEncoding = 'lab-v2' | 'lab-v4' | 'lab-8' | 'xyz';
 
+/** A colour lookup of a profile, as a function with its channels. */
 export interface LutPipeline {
   run: Pipeline;
   inputChannels: number;
@@ -29,12 +30,14 @@ export interface LutPipeline {
   pcsEncoding: PcsEncoding;
 }
 
+/** A colour in CIE XYZ. */
 export interface XYZ {
   X: number;
   Y: number;
   Z: number;
 }
 
+/** An ICC profile read from its bytes. */
 export interface IccProfile {
   bytes: Uint8Array;
   /** Major.minor, e.g. 2.2 or 4.3. */
@@ -63,6 +66,7 @@ export interface IccProfile {
 
 export type Curve = (x: number) => number;
 
+/** Thrown when the bytes are not an ICC profile this engine can read. */
 export class IccParseError extends Error {}
 
 const D50: XYZ = { X: 0.9642, Y: 1, Z: 0.8249 };

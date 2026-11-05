@@ -45,6 +45,7 @@ export function ncName(s: string): string {
 
 const fmt = (n: number): string => String(Math.round(n * 10000) / 10000);
 
+/** The `imsmanifest.xml` of a package, for SCORM 1.2 or 2004. */
 export function manifestXml(input: ManifestInput): string {
   const v2004 = input.version === '2004';
   const scos: ManifestSco[] = [];

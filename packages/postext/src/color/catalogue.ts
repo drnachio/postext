@@ -6,6 +6,8 @@
 
 import { parseIccProfile, type IccProfile } from './icc.js';
 
+/** An entry of the profile catalogue: its names, printing condition, paper
+ *  and ink limit. */
 export interface OutputProfileInfo {
   id: string;
   /** Human name, as print buyers know the condition. */
@@ -20,6 +22,7 @@ export interface OutputProfileInfo {
   inkLimit: number;
 }
 
+/** The output profiles that come with Postext. */
 export const OUTPUT_PROFILES: readonly OutputProfileInfo[] = [
   { id: 'fogra39', name: 'Coated FOGRA39 (ISO Coated v2)', registryName: 'FOGRA39', condition: 'Offset commercial and specialty printing according to ISO 12647-2:2004 / Amd 1, OFCOM, paper type 1 or 2 = gloss or matt coated offset, 115 g/m2, screen ruling 60/cm', paper: 'coated', inkLimit: 300 },
   { id: 'fogra51', name: 'PSO Coated v3 (FOGRA51)', registryName: 'FOGRA51', condition: 'Offset printing according to ISO 12647-2:2013, OFCOM, print substrate 1 = premium coated, 115 g/m2, tone value increase curves A (CMYK)', paper: 'coated', inkLimit: 300 },
@@ -38,8 +41,10 @@ export const OUTPUT_PROFILES: readonly OutputProfileInfo[] = [
   { id: 'snap2007', name: 'SNAP 2007 Newsprint (CGATS TR 002)', registryName: 'CGATS TR 002', condition: 'Coldset offset newspaper printing, SNAP 2007', paper: 'newsprint', inkLimit: 320 },
 ];
 
+/** The output profile used when none is chosen. */
 export const DEFAULT_OUTPUT_PROFILE_ID = 'fogra39';
 
+/** The catalogue entry of an output profile, by its id. */
 export function outputProfileInfo(id: string): OutputProfileInfo | undefined {
   return OUTPUT_PROFILES.find((p) => p.id === id);
 }

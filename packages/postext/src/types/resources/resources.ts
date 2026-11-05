@@ -37,6 +37,7 @@ export interface TableCellImage {
   width?: number;
 }
 
+/** A cell of a table: its text or image, its spans, alignment and fill. */
 export interface TableCell {
   /** Cell content (plain text / inline markdown). A newline, or `\\` as in
    *  captions and notes, starts a new paragraph. A paragraph of ordinary
@@ -64,6 +65,8 @@ export interface TableCell {
   hiddenBy?: TableCellPos;
 }
 
+/** A table as data: its rows, how many are header rows, and its column
+ *  widths. */
 export interface TableModel {
   /** Row-major grid of cells. */
   rows: TableCell[][];

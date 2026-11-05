@@ -29,8 +29,10 @@ import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
 import { figureLabelLeaderPath } from '../composed/labels.js';
 
+/** How much a preflight problem matters. */
 export type PreflightSeverity = 'critical' | 'warning' | 'info';
 
+/** A problem preflight found, and where. */
 export type PreflightIssue = {
   severity: PreflightSeverity;
   /** Book-absolute page index (`pageIndexOffset` counted in). */
@@ -55,8 +57,11 @@ export type PreflightIssue = {
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
 );
 
+/** The kinds of problem preflight reports. */
 export type PreflightKind = PreflightIssue['kind'];
 
+/** Options of `preflightDocument`: the limits, the resources and how images
+ *  read. */
 export interface PreflightOptions {
   /** The print settings to check against; the document's `config.print`
    *  (else the defaults) when omitted. */
@@ -139,6 +144,7 @@ export function placedImageResolutions(doc: VDTDocument, options: Pick<Preflight
   return placed;
 }
 
+/** Check a laid-out document for what would print badly. */
 export function preflightDocument(doc: VDTDocument, options: PreflightOptions = {}): PreflightIssue[] {
   return runPreflight(doc, options);
 }

@@ -14,6 +14,8 @@ import type { ResolvedPrintConfig } from '../types.js';
 import { buildRgbLut, sampleRgbLut, type OutputTransform, type RgbLut } from './transform.js';
 import { dimensionToPx } from '../units.js';
 
+/** What a print preview paints with: the proofing lookup, the rich black
+ *  areas, and the guides. */
 export interface PrintPreview {
   /** sRGB → proofed sRGB (0..1, 3 channels). */
   lut: RgbLut;
@@ -28,6 +30,8 @@ export interface PrintPreview {
   marksFor?: (pageIndex: number) => readonly BoundingBox[];
 }
 
+/** Options of `createPrintPreview`: paper simulation, resolution and
+ *  grayscale. */
 export interface PrintPreviewOptions {
   /** Simulate the paper's white (absolute colorimetric), as the
    *  Sandbox's Canvas and Folio proofs do. Off: relative to the paper,

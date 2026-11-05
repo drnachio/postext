@@ -8,10 +8,14 @@ import type { ColorValue, Dimension } from '../page.js';
 // back-compat.
 // ---------------------------------------------------------------------------
 
+/** An element of a running head or foot. */
 export type HeaderFooterElement = DesignElement;
+/** What a running head or foot draws. */
 export type HeaderFooterSlot = DesignSlot;
 
+/** `HeaderFooterElement` with every default filled in. */
 export type ResolvedHeaderFooterElement = ResolvedDesignElement;
+/** `HeaderFooterSlot` with every default filled in. */
 export type ResolvedHeaderFooterSlot = ResolvedDesignSlot;
 
 // ---------------------------------------------------------------------------
@@ -19,6 +23,8 @@ export type ResolvedHeaderFooterSlot = ResolvedDesignSlot;
 // recognize pre-migration configs and convert them to DesignSlot.
 // ---------------------------------------------------------------------------
 
+/** A text element in the older form of running heads, which saved
+ *  configurations can still hold. */
 export interface LegacyHeaderFooterTextElement {
   kind: 'text';
   align: HeaderFooterHAlign;
@@ -40,6 +46,8 @@ export interface LegacyHeaderFooterTextElement {
   color?: ColorValue;
 }
 
+/** A rule in the older form of running heads, which saved configurations can
+ *  still hold. */
 export interface LegacyHeaderFooterRuleElement {
   kind: 'rule';
   color: ColorValue;
@@ -51,8 +59,10 @@ export interface LegacyHeaderFooterRuleElement {
   parity: PageParity;
 }
 
+/** An element in the older form of running heads. */
 export type LegacyHeaderFooterElement = LegacyHeaderFooterTextElement | LegacyHeaderFooterRuleElement;
 
+/** A running head in its older form. */
 export interface LegacyHeaderFooterSlot {
   elements: LegacyHeaderFooterElement[];
 }

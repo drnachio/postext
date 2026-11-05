@@ -52,6 +52,7 @@ export interface PostextBundle {
   warnings: string[];
 }
 
+/** Options of `openBundle`: the language to read when the bundle has several. */
 export interface OpenBundleOptions {
   /** Locale to read a bilingual bundle in (`es`, `en-GB`). Defaults to the
    *  bundle's own locale. */
@@ -164,6 +165,8 @@ function chapterTitle(markdown: string, n: number): string {
  *  string (an SVG's markup, a text file). */
 export type BundleFileData = Uint8Array | ArrayBuffer | Blob | string;
 
+/** What `createBundle` makes a bundle from: its text, design, resources and
+ *  fonts. */
 export interface CreateBundleInput {
   /** Display name (`preset.json`'s `name`). */
   name: string;
@@ -243,6 +246,8 @@ export interface CreateBundleLocale {
   start?: BundleStart;
 }
 
+/** What `createBundle` returns: the zip's bytes, its manifest and files, and
+ *  any warnings. */
 export interface CreatedBundle {
   /** The `.postext` file. */
   bytes: Uint8Array;

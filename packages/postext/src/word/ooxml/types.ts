@@ -5,6 +5,7 @@
 
 import type { ExportMap } from '../anchors/types.js';
 
+/** A `.docx`'s title, author, language and date. */
 export interface DocxCoreProps {
   title?: string;
   author?: string;
@@ -13,6 +14,7 @@ export interface DocxCoreProps {
   date?: string;
 }
 
+/** The settings part of a `.docx`. */
 export interface DocxSettings {
   /** Word's own hyphenation (off for the formatted variant). */
   autoHyphenation?: boolean;
@@ -29,6 +31,7 @@ export interface DocxSettings {
   extra?: string;
 }
 
+/** A font face embedded in a `.docx`. */
 export interface EmbeddedFontFace {
   /** Word family name (unique per embedded family). */
   family: string;
@@ -43,6 +46,8 @@ export interface EmbeddedFontFace {
   sig?: { usb0: string; usb1: string; usb2: string; usb3: string; csb0: string; csb1: string };
 }
 
+/** The parts of a `.docx`: body, styles, numbering, notes, headers, footers
+ *  and metadata. */
 export interface DocxPackageInput {
   /** Inner XML of `w:body` (paragraphs, tables, the final `w:sectPr`). */
   body: string;

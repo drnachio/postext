@@ -1,6 +1,8 @@
 import type { ColorValue, Dimension } from '../page.js';
 import type { ResourceCounterFormat, ResourceCounterReset } from '../resources/resourceTypes.js';
 
+/** Mathematics: whether it renders, its size and colour, and the spacing and
+ *  numbering of equations. */
 export interface MathConfig {
   /** Enable LaTeX rendering. When false, `$...$` / `$$...$$` spans are
    *  still parsed (so warnings track unclosed delimiters) but rendered as
@@ -76,6 +78,7 @@ export interface ResolvedEquationNumberingConfig {
   format: string;
 }
 
+/** `MathConfig` with every default filled in. */
 export interface ResolvedMathConfig {
   enabled: boolean;
   fontSizeScale: number;

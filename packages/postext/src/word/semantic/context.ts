@@ -13,6 +13,7 @@ import type { WordChapterInput } from './types.js';
 import type { Units } from './wml.js';
 import type { BookNumbers } from './engineNumbers.js';
 
+/** Something `semanticDocx` had to set differently from the book. */
 export interface SemanticWarning {
   code: string;
   message: string;

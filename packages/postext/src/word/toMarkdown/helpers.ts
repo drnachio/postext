@@ -4,8 +4,10 @@ import type { TableModel, PostextConfig, TableCell } from '../../types.js';
 import type { WordMedia, WordDocument, WordParagraph, WordTabStop, WordStyle, WordTable, WordBlock } from '../model.js';
 import { type WordTemplate, type ParagraphTarget, lookup, guessParagraphTarget, type CharacterTarget, guessCharacterTarget } from '../template.js';
 
+/** One chapter, or a new chapter at every level-1 heading. */
 export type ChapterMode = 'single' | 'split';
 
+/** A picture found in a `.docx`, with its alternative text, caption and size. */
 export interface ImportedPicture {
   id: string;
   media: WordMedia;
@@ -31,17 +33,20 @@ export function pictureResolution(pic: Pick<ImportedPicture, 'widthEmu'>, pixelW
   return Math.round((pixelWidth / (emu / EMU_PER_INCH)) * 100) / 100;
 }
 
+/** A table found in a `.docx`, as a table model. */
 export interface ImportedTable {
   id: string;
   model: TableModel;
   caption?: string;
 }
 
+/** A chapter read from a `.docx`, as Markdown. */
 export interface ImportedChapter {
   title: string;
   markdown: string;
 }
 
+/** A `.docx` read: its chapters, pictures and tables, and what was left out. */
 export interface ImportResult {
   chapters: ImportedChapter[];
   pictures: ImportedPicture[];
@@ -52,6 +57,8 @@ export interface ImportResult {
   droppedHeadingNotes: number;
 }
 
+/** How a `.docx` is read: the style template, the design and the chapter
+ *  split. */
 export interface ImportSettings {
   template: WordTemplate;
   config: PostextConfig;

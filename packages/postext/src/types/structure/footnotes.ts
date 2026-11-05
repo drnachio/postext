@@ -164,6 +164,7 @@ export interface FootnotesConfig {
   separator?: FootnoteSeparatorConfig;
 }
 
+/** The footnotes with every default filled in. */
 export interface ResolvedFootnotesConfig {
   placement: FootnotePlacement;
   numbering: FootnoteNumbering;

@@ -19,6 +19,8 @@ export interface DiagramStyleConfig {
   inlineFonts?: boolean;
 }
 
+/** How diagrams are recoloured and their fonts inlined, with every default
+ *  filled in. */
 export interface ResolvedDiagramStyleConfig {
   singleInk: boolean;
   inkColor: ColorValue;

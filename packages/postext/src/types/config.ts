@@ -33,6 +33,8 @@ import type { LineNumbersConfig } from './text/verse.js';
 import type { VideoStyleConfig } from './resources/video.js';
 import type { CanvasViewerConfig, HtmlViewerConfig } from './output/viewers.js';
 
+/** The whole design of a document. Every field is optional: what is left out
+ *  takes its default. */
 export interface PostextConfig {
   page?: PageConfig;
   layout?: LayoutConfig;

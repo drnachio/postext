@@ -23,6 +23,7 @@ export { baselineOffset, readFaceMetrics, FALLBACK_DESCENT } from './metrics.js'
  *  makes: writer and config versions, as the semantic writer stamps its. */
 export const FORMATTED_ENGINE = `postext-word-formatted/1 config/${CONFIG_VERSION}`;
 
+/** Write a laid-out book as a `.docx` that reproduces the pages of the PDF. */
 export async function formattedDocx(options: FormattedDocxOptions): Promise<Uint8Array> {
   const { docs, chapters } = options;
   if (chapters.length < docs.length) throw new Error(`formattedDocx: ${docs.length} documents but ${chapters.length} chapters`);

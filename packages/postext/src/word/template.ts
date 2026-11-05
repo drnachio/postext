@@ -8,6 +8,7 @@ import { DEFAULT_CHIP_STYLES } from '../defaults/text/chipStyles.js';
 import type { PostextConfig } from '../types.js';
 import type { WordDocument, WordStyle } from './model.js';
 
+/** What a Word paragraph style becomes in Postext. */
 export type ParagraphTarget =
   | { kind: 'body' }
   | { kind: 'heading'; level: number; style?: string }
@@ -25,6 +26,7 @@ export type ParagraphTarget =
   | { kind: 'chapter' }
   | { kind: 'drop' };
 
+/** What a Word character style becomes in Postext. */
 export type CharacterTarget =
   | { kind: 'text' }
   | { kind: 'bold' }
@@ -37,9 +39,13 @@ export type CharacterTarget =
   | { kind: 'markup' }
   | { kind: 'drop' };
 
+/** The kinds of `ParagraphTarget`. */
 export type ParagraphTargetKind = ParagraphTarget['kind'];
+/** The kinds of `CharacterTarget`. */
 export type CharacterTargetKind = CharacterTarget['kind'];
 
+/** What an import does with line breaks, direct formatting, manual headings,
+ *  page breaks, images and tables. */
 export interface WordImportOptions {
   /** Soft returns (Shift+Enter) inside a paragraph: a forced line break
    *  (#620, a backslash at the end of the Markdown line; `\\` in a list
@@ -61,6 +67,7 @@ export interface WordImportOptions {
   tables: boolean;
 }
 
+/** A style template: how the styles of a Word document map to Postext. */
 export interface WordTemplate {
   /** Stable id ('' for the unsaved working mapping). */
   id: string;
@@ -72,6 +79,7 @@ export interface WordTemplate {
   updatedAt: number;
 }
 
+/** The import options of a new style template. */
 export const DEFAULT_IMPORT_OPTIONS: WordImportOptions = {
   lineBreaks: 'break',
   directFormatting: 'keep',
@@ -83,9 +91,12 @@ export const DEFAULT_IMPORT_OPTIONS: WordImportOptions = {
 
 /** Word style names the Sandbox's own exports use. */
 export const MARKUP_STYLE = 'Postext Markup';
+/** The Word character style that marks Postext markup written in a `.docx`. */
 export const MARKUP_CHAR_STYLE = 'Postext Markup Inline';
+/** The Word paragraph style that opens a chapter in a Sandbox export. */
 export const CHAPTER_STYLE = 'Postext Chapter';
 
+/** A style template that maps nothing yet. */
 export function emptyTemplate(name = ''): WordTemplate {
   return { id: '', name, paragraphs: {}, characters: {}, options: { ...DEFAULT_IMPORT_OPTIONS }, updatedAt: 0 };
 }
@@ -366,6 +377,7 @@ export function templateFile(t: WordTemplate): string {
   return JSON.stringify({ postextWordTemplate: { version: 1, ...t } }, null, 2) + '\n';
 }
 
+/** A new id for a style template. */
 export function newTemplateId(): string {
   return `wt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }

@@ -6,8 +6,10 @@ import { type XmlElement, parseXml, children, attr, child, onOff } from '../xml.
 
 /** customXml item holding the template of a Postext export. */
 export const TEMPLATE_XML_ROOT = 'postextWordTemplate';
+/** The XML namespace of a style template embedded in a `.docx`. */
 export const TEMPLATE_XML_NS = 'https://postext.dev/word-template';
 
+/** Thrown when the bytes are not a `.docx` this reader can open. */
 export class DocxReadError extends Error {}
 
 export type Files = Record<string, Uint8Array>;

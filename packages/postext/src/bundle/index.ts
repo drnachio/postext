@@ -1,5 +1,9 @@
-// `postext/bundle`: create and open `.postext` files — the zipped book
-// bundles the Sandbox exports and imports — and feed them to the backends.
+/**
+ * `postext/bundle`: create and open `.postext` files, the zipped book
+ * bundles the Sandbox exports and imports, and feed them to the backends.
+ *
+ * @module
+ */
 
 export { openBundle, createBundle, bundleFileMime } from './api.js';
 export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData } from './api.js';

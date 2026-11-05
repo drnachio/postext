@@ -36,6 +36,7 @@ function docDefaultsXml(docDefaults: string | undefined): string {
   return docDefaults.trimStart().startsWith('<w:docDefaults') ? docDefaults : `<w:docDefaults>${docDefaults}</w:docDefaults>`;
 }
 
+/** Start a `.docx` package: add its media and parts, then write it. */
 export function createDocxPackage(): DocxPackageBuilder {
   const media: MediaEntry[] = [];
   const mediaByKey = new Map<string, MediaEntry[]>();

@@ -1,5 +1,7 @@
 // Word runs to Postext inline marks: escaping, run normalising and rendering.
 
+/** A run of Markdown inline text as Word needs it: its text and its
+ *  formatting. */
 export interface InlineRun {
   text: string;
   bold?: boolean;

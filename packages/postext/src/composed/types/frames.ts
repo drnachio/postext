@@ -11,6 +11,7 @@ import type { Dimension, ColorValue, ElementPlacement, CalloutPaddingConfig } fr
  *  is anchored to, as in design slots). */
 export type FrameSize = Dimension | { percent: number } | 'auto' | 'fill';
 
+/** The cell or cells of the page grid a frame takes. */
 export interface FrameGridCell {
   /** 1-based column and row of the template grid. */
   col: number;
@@ -20,6 +21,8 @@ export interface FrameGridCell {
   rows?: number;
 }
 
+/** How a frame makes its content fit: shrinking text and images, or going on
+ *  elsewhere. */
 export interface FrameFitConfig {
   /** Shrink the frame's text when nothing else makes it fit. Default true. */
   shrinkText?: boolean;
@@ -37,6 +40,8 @@ export interface FrameFitConfig {
   preferContinue?: boolean;
 }
 
+/** Where a frame's content goes when it does not fit, and the marks that say
+ *  so. */
 export interface FrameOverflowConfig {
   /** Where content that does not fit goes on: `'#frame'` (another frame of
    *  the same page, as `next`), `'next-page'` (the same frame on a page
@@ -75,6 +80,8 @@ export interface FrameRulesConfig {
   inset?: Dimension | { left?: Dimension; right?: Dimension };
 }
 
+/** A frame of a page template: where it goes, its size and style, and what
+ *  fills it. */
 export interface FrameConfig {
   /** The slot name. Unique per template. */
   name: string;
@@ -209,6 +216,7 @@ export interface FrameRepeatConfig {
   max?: number;
 }
 
+/** Frames set out together, as columns or repeated modules. */
 export interface FrameGroupConfig {
   /** Unique per template, and distinct from every frame name (anchors
    *  name both as `'#name'`). */

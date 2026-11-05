@@ -36,12 +36,14 @@ export function chapterFileName(index: number, title: string, taken: Set<string>
   return `chapters/${name}.md`;
 }
 
+/** A file name's extension, in lower case and without the dot. */
 export function fileExtension(file: string): string {
   const base = file.split('/').pop() ?? file;
   const dot = base.lastIndexOf('.');
   return dot === -1 ? '' : base.slice(dot + 1).toLowerCase();
 }
 
+/** A path's last segment. */
 export function fileBasename(file: string): string {
   return file.split('/').pop() ?? file;
 }
@@ -102,10 +104,12 @@ export function bitmapFormatOf(file: string): string | undefined {
   return BITMAP_FORMAT_BY_EXT[fileExtension(file)];
 }
 
+/** Whether a file name is an SVG's. */
 export function isSvgFile(file: string): boolean {
   return fileExtension(file) === 'svg';
 }
 
+/** Whether a file name is a PDF's. */
 export function isPdfFile(file: string): boolean {
   return fileExtension(file) === 'pdf';
 }

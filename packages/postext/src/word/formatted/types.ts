@@ -10,12 +10,15 @@ import type { WordChapterInput } from '../semantic/types.js';
 import type { MetricsCache } from './metrics.js';
 import type { CjkRegion } from '../../types/text/cjk.js';
 
+/** Something `formattedDocx` had to set differently from the page. */
 export interface FormattedWarning {
   code: string;
   message: string;
   chapter?: string;
 }
 
+/** Options of `formattedDocx`: the laid-out documents, chapters, resources,
+ *  fonts and metadata. */
 export interface FormattedDocxOptions {
   /** The print chain: one laid-out document per chapter, in order. */
   docs: VDTDocument[];

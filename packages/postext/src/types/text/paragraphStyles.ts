@@ -92,6 +92,8 @@ export interface ParagraphDropCap {
   each?: boolean;
 }
 
+/** A named paragraph style: what its paragraphs set differently from the
+ *  running text. */
 export interface ParagraphStyleConfig {
   /** Identifier referenced from `:::paragraphs{style="…"}`. */
   id: string;
@@ -262,8 +264,10 @@ export interface TabStop {
   decimalChar?: string;
 }
 
+/** How a paragraph's text is cased. */
 export type ParagraphTextTransform = 'none' | 'uppercase';
 
+/** `ParagraphStyleConfig` with every default filled in. */
 export interface ResolvedParagraphStyleConfig {
   id: string;
   name: string;

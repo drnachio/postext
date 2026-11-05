@@ -132,6 +132,7 @@ export interface MarkStyleConfig {
 /** `markStyles[].decorationBreak`. */
 export type MarkDecorationBreak = 'slice' | 'clone';
 
+/** A highlight style with every default filled in. */
 export interface ResolvedMarkStyleConfig {
   id: string;
   name: string;
@@ -148,6 +149,7 @@ export interface ResolvedMarkStyleConfig {
   decorationBreak: MarkDecorationBreak;
 }
 
+/** An inline chip style with every default filled in. */
 export interface ResolvedChipStyleConfig {
   id: string;
   name: string;

@@ -36,6 +36,8 @@ export interface IndexGroupsConfig {
   numbersLabel?: string;
 }
 
+/** The back-of-book index: type, indents, separators and how locators and
+ *  ranges are written. */
 export interface IndexConfig {
   /** Entry typography; every field inherits the body text when unset. */
   fontFamily?: string;
@@ -134,6 +136,7 @@ export interface IndexConfig {
 /** See {@link IndexConfig.groupBy}. */
 export type IndexGroupBy = 'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none';
 
+/** `IndexConfig` with every default filled in. */
 export interface ResolvedIndexConfig {
   fontFamily: string;
   fontSize: Dimension;

@@ -43,6 +43,7 @@ export type CalloutWidth = 'fill' | 'auto';
  *  set against the document's direction (`:::callout{dir=ltr}` in an
  *  Arabic book). */
 export type CalloutStripeSide = 'left' | 'right' | 'top' | 'start' | 'end';
+/** What a box's icon is made of. */
 export type CalloutIconKind = 'none' | 'glyph' | 'resource' | 'shape';
 /** A drawn icon (#1120, `kind: 'shape'`): a ring (a circle's outline) or
  *  a dot (a filled circle), drawn by the engine in every backend, no font
@@ -53,6 +54,7 @@ export type CalloutIconShape = 'ring' | 'dot';
  *  it in that one (a palette colour follows the palette), `false` as the
  *  picture is. */
 export type IconTint = boolean | ColorValue;
+/** Where a box's icon sits against its text. */
 export type CalloutIconAlign = 'top' | 'center';
 /** Where the in-box icon sits: `'inline'` (the default) in a column of its
  *  own left of the title and content (or centred on the side stripe);
@@ -74,6 +76,7 @@ export type CalloutIconCornerSide = 'right' | 'left' | 'outer' | 'inner' | 'star
 export type CalloutLabelPosition =
   | 'top-right' | 'top-left' | 'top-start' | 'top-end'
   | 'bottom-right' | 'bottom-left' | 'bottom-start' | 'bottom-end';
+/** How a box label's text is cased. */
 export type CalloutTextTransform = 'none' | 'uppercase';
 
 /** A side of a box, on the sheet. */
@@ -103,6 +106,7 @@ export interface BorderSides {
   left?: BorderSide;
 }
 
+/** The border of a box, and which sides have it. */
 export interface CalloutBorderConfig {
   enabled?: boolean;
   color?: ColorValue;
@@ -115,6 +119,7 @@ export interface CalloutBorderConfig {
   sides?: BorderSides;
 }
 
+/** The inner margins of a box. */
 export interface CalloutPaddingConfig {
   top?: Dimension;
   right?: Dimension;
@@ -217,6 +222,7 @@ export interface CalloutLabelIconConfig {
   color?: ColorValue;
 }
 
+/** The label of a box: its type, fill, position, icon and rule. */
 export interface CalloutLabelConfig {
   /** Defaults to the headings font family. */
   fontFamily?: string;
@@ -302,6 +308,7 @@ export interface CalloutMarkerConfig extends Omit<CalloutIconConfig, 'position' 
   rule?: CalloutMarkerRuleConfig;
 }
 
+/** The look of a box's title. */
 export interface CalloutTitleStyleConfig {
   /** Defaults to the headings font family. */
   fontFamily?: string;

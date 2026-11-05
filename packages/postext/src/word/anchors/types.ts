@@ -3,12 +3,17 @@
 // Stored deflated + base64 JSON in a custom XML part; every fragment is
 // wrapped in a hidden bookmark `_ptx_<id>` in the document.
 
+/** The XML namespace of the export map. */
 export const EXPORT_MAP_NS = 'https://postext.dev/ns/docx-map/1';
+/** The root element of the export map. */
 export const EXPORT_MAP_ROOT = 'postextExportMap';
+/** The prefix of the bookmarks the export map points at. */
 export const BOOKMARK_PREFIX = '_ptx_';
 
+/** Which kind of `.docx` was exported. */
 export type ExportVariant = 'semantic' | 'formatted';
 
+/** A chapter of the export map. */
 export interface MapChapter {
   /** Book chapter id (Sandbox) or file name (CLI). */
   id: string;
@@ -17,6 +22,7 @@ export interface MapChapter {
   hash: string;
 }
 
+/** What a fragment came from: a chapter's Markdown or a field of a resource. */
 export type FragmentTarget =
   | { kind: 'markdown'; chapter: number }
   | { kind: 'resource'; resourceId: string; field: 'caption' | 'note' | 'alt' | 'cell' | 'label'; row?: number; col?: number }
@@ -31,6 +37,7 @@ export interface MapFormat {
   href?: string;
 }
 
+/** A piece of text of the `.docx`, and what it came from. */
 export interface MapFragment {
   /** Bookmark suffix (base36, unique in the file). */
   id: string;
@@ -57,6 +64,7 @@ export interface MapFragment {
   role?: string;
 }
 
+/** The text and resources as they were at export, to compare against. */
 export interface ExportSnapshot {
   chapters: { id: string; markdown: string }[];
   /** Resources as JSON (only the ones the export references). */
@@ -64,6 +72,8 @@ export interface ExportSnapshot {
   configHash?: string;
 }
 
+/** What an exported `.docx` carries so that edits made in Word find their way
+ *  back to the Markdown. */
 export interface ExportMap {
   version: 1;
   exportId: string;

@@ -5,10 +5,14 @@
 import { unzipSync, zipSync } from 'fflate';
 import type { BundleFileReader } from './types.js';
 
+/** The file extension of a bundle. */
 export const POSTEXT_EXTENSION = '.postext';
+/** The media type of a bundle. */
 export const POSTEXT_MIME = 'application/zip';
+/** The name of a bundle's manifest. */
 export const MANIFEST_FILE = 'preset.json';
 
+/** A bundle unzipped: its manifest and a way to read its files. */
 export interface OpenedBundleZip {
   /** The parsed `preset.json` (not yet validated). */
   manifest: unknown;
@@ -91,6 +95,7 @@ export function openBundleZip(bytes: Uint8Array): OpenedBundleZip {
 
 const STORED_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'woff2', 'mp4', 'm4v', 'webm', 'ogv', 'mov']);
 
+/** Options for zipping a bundle: the date its files carry. */
 export interface ZipBundleOptions {
   /** Modification date written on every file of the archive. Unset: the
    *  time of the call, so two archives of the same files differ in those

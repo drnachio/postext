@@ -1,5 +1,13 @@
 /// <reference lib="webworker" />
 
+/**
+ * `postext-pdf/worker/entry`: the worker behind `createPdfWorker`. Bundlers
+ * that resolve `new Worker(new URL(…, import.meta.url))` pick it up from the
+ * client; hosts that build their own worker import this module.
+ *
+ * @module
+ */
+
 import { renderToPdf } from '../pdf-backend/index.js';
 import { declaredFontFile } from '../fontCache.js';
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol.js';

@@ -31,6 +31,7 @@ export type { ResourceImageSource, RegisterResourceImageOptions } from './render
 export { registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './verticalText.js';
 export type { VerticalAlternatesFace } from './verticalText.js';
 
+/** Options of a canvas paint: scale, overlays, ink, trim and print preview. */
 export interface RenderPageOptions {
   pageNegative?: boolean;
   /** Bitmap pixels per page pixel (1 = the page's own resolution, the
@@ -77,6 +78,7 @@ function trimInset(doc: VDTDocument, options?: RenderPageOptions): number {
   return options?.trim ? Math.max(0, doc.trimOffset) : 0;
 }
 
+/** Paint one page on a canvas the caller already has. */
 export function renderPageToCanvas(
   page: VDTPage,
   doc: VDTDocument,
@@ -458,12 +460,14 @@ const PREVIEW_SAFE_COLOR = '#2fa84f';
 const PREVIEW_MARK_COLOR = '#e5484d';
 const PREVIEW_MARK_FILL = 'rgba(229, 72, 77, 0.12)';
 
+/** Paint one page on a new canvas. */
 export function renderPage(page: VDTPage, doc: VDTDocument, options?: RenderPageOptions): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   renderPageToCanvas(page, doc, canvas, options);
   return canvas;
 }
 
+/** Paint every page of a document, each on a canvas of its own. */
 export function renderToCanvas(doc: VDTDocument, options?: RenderPageOptions): HTMLCanvasElement[] {
   // One report per `fileId` for the whole document, not per page.
   const onWarning = options?.onWarning;

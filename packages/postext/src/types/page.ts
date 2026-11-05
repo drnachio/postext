@@ -1,8 +1,11 @@
 import type { ArabicNumeralStyle, EastAsianNumeralStyle } from '../numerals/numbering.js';
 import type { CmykPercent } from './output/print.js';
 
+/** The colour model a colour was chosen in. */
 export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
 
+/** A colour: its hex value, the model it was chosen in, and its CMYK or
+ *  palette link when it has them. */
 export interface ColorValue {
   hex: string;
   model: ColorModel;
@@ -18,14 +21,17 @@ export interface ColorValue {
   paletteId?: string;
 }
 
+/** A named colour of the document's palette. */
 export interface ColorPaletteEntry {
   id: string;
   name: string;
   value: ColorValue;
 }
 
+/** The units a `Dimension` can be given in. */
 export type DimensionUnit = 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem';
 
+/** A length with its unit. */
 export interface Dimension {
   value: number;
   unit: DimensionUnit;
@@ -37,6 +43,7 @@ export interface Dimension {
  *  fold). */
 export type PageSizePreset = '11x17' | '12x19' | '17x24' | '21x28' | 'broadsheet' | 'berliner' | 'tabloid' | 'compact' | 'custom';
 
+/** The page margins, mirrored on facing pages when `mirror` is set. */
 export interface PageMargins {
   top?: Dimension;
   bottom?: Dimension;
@@ -89,6 +96,7 @@ export interface CutLinesConfig {
   color?: ColorValue;
 }
 
+/** How page numbers are written. */
 export type PageNumberFormat =
   | 'decimal'
   | 'lower-roman'
@@ -98,6 +106,7 @@ export type PageNumberFormat =
   | EastAsianNumeralStyle
   | ArabicNumeralStyle;
 
+/** The format and first number of the page numbering. */
 export interface PageNumberingConfig {
   /** Format for page labels. Default: `'decimal'`. The list and resource
    *  spellings of a format are read too (`'arabic'`, `'roman-lower'`,
@@ -110,6 +119,7 @@ export interface PageNumberingConfig {
   startAt?: number;
 }
 
+/** `PageNumberingConfig` with every default filled in. */
 export interface ResolvedPageNumberingConfig {
   format: PageNumberFormat;
   startAt: number;
@@ -118,6 +128,8 @@ export interface ResolvedPageNumberingConfig {
 /** The edge a book is bound on (see `PageConfig.binding`). */
 export type PageBinding = 'auto' | 'left' | 'right';
 
+/** The physical page: size, margins, background, resolution, cut lines,
+ *  baseline grid, numbering and binding. */
 export interface PageConfig {
   backgroundColor?: ColorValue;
   sizePreset?: PageSizePreset;
@@ -151,6 +163,7 @@ export interface PageConfig {
   binding?: PageBinding;
 }
 
+/** `PageConfig` with every default filled in. */
 export interface ResolvedPageConfig {
   backgroundColor: ColorValue;
   sizePreset: PageSizePreset;
@@ -192,6 +205,7 @@ export type SideColumnRole = 'text' | 'floats';
  *  is `'left'`. */
 export type SideColumnSide = 'right' | 'left' | 'outer' | 'inner';
 
+/** The rule drawn between columns. */
 export interface ColumnRuleConfig {
   enabled?: boolean;
   color?: ColorValue;

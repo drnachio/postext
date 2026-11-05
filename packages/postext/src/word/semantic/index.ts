@@ -31,6 +31,8 @@ export type { WordChapterInput } from './types.js';
 export type { SemanticWarning } from './context.js';
 export { STYLE as SEMANTIC_STYLE } from './styles.js';
 
+/** Options of `semanticDocx`: the chapters, design, resources, fonts and
+ *  metadata. */
 export interface SemanticDocxOptions {
   chapters: WordChapterInput[];
   config: PostextConfig;
@@ -49,6 +51,8 @@ export interface SemanticDocxOptions {
 /** The map's `engine`: the writer and the configuration version it reads. */
 export const SEMANTIC_ENGINE = `postext-word-semantic/1 config/${CONFIG_VERSION}`;
 
+/** Write a book as a `.docx` with native Word structures: styles, lists,
+ *  tables, notes and fields. */
 export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8Array> {
   const resolved = resolveAllConfig(options.config);
   const units: Units = { dpi: resolved.page.dpi || 96, basePx: 16 };

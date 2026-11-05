@@ -74,6 +74,8 @@ interface CacheState {
 
 const states = new WeakMap<BundleLayoutCache, CacheState>();
 
+/** A new cache of a book's layouts, so that an edit lays out only what it
+ *  moved. */
 export function createBundleLayoutCache(): BundleLayoutCache {
   const state: CacheState = { records: new Map(), derived: new Map(), stats: { layouts: 0, laidOut: [] } };
   const cache: BundleLayoutCache = {

@@ -23,6 +23,8 @@ import type { BundleChapter, BundleStart } from './types.js';
 import { beginLayoutBuild, createBundleLayoutCache, jsonKey } from './layoutCache.js';
 import type { BundleLayoutCache, ChapterRecord } from './layoutCache.js';
 
+/** Options of `buildBundle`: those of a build, plus a design override, caches
+ *  and per-chapter progress. */
 export interface BuildBundleOptions extends BuildDocumentOptions {
   /** Configuration to lay out with instead of the bundle's own. */
   config?: PostextConfig;

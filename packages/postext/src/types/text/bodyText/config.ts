@@ -6,6 +6,8 @@ import type { TabStop } from '../paragraphStyles.js';
 import type { VerseConfig } from '../verse.js';
 import type { BlockquoteConfig, CompositionRule, ColonListRoom, ParagraphContainerSpacing, ParagraphStylesInBoxes, EmphasisStyle, TashkilMode } from './options.js';
 
+/** The running text: its font, spacing, alignment, colours and how lines and
+ *  paragraphs are composed. */
 export interface BodyTextConfig {
   /** One family, as every `fontFamily` field: a CSS font stack is set in
    *  its first family (see `primaryFontFamily`) and reported by

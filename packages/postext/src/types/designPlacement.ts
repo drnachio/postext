@@ -1,7 +1,9 @@
 import type { BorderSides, CornerRadius } from './boxes/calloutParts.js';
 import type { ColorValue, Dimension } from './page.js';
 
+/** Which pages something applies to. */
 export type PageParity = 'all' | 'odd' | 'even';
+/** The horizontal alignment of a running head's element. */
 export type HeaderFooterHAlign = 'left' | 'center' | 'right';
 
 /** Classification of a laid-out page, computed after placement
@@ -27,13 +29,16 @@ export type PageRoleFilter = 'all' | PageRole;
 // Paint order is strictly array order (first = back, last = front).
 // ---------------------------------------------------------------------------
 
+/** A horizontal alignment. */
 export type HAlign = 'left' | 'center' | 'right';
 /** Alignment of a design text's lines: an {@link HAlign}, `'justify'`, or
  *  `'start'` / `'end'`, the sides its base direction reads from and to
  *  (see `DesignTextElement.align`). */
 export type DesignTextAlign = HAlign | 'justify' | 'start' | 'end';
+/** A vertical alignment. */
 export type VAlign = 'top' | 'middle' | 'bottom';
 
+/** The point of the anchor an element is placed against. */
 export type AnchorEdge =
   // Container-relative (nine-point grid)
   | 'top-left' | 'top' | 'top-right'
@@ -51,6 +56,7 @@ export type AnchorEdge =
   | 'align-top' | 'align-bottom' | 'align-left' | 'align-right'
   | 'align-start' | 'align-end';
 
+/** What a design element is placed against, and at which point of it. */
 export interface ElementAnchor {
   /** `'container'` (the slot's own container), `'page'` (the trim box),
    *  `'bleed'` (the trim box expanded by `cutLines.bleed` when cut lines are
@@ -103,8 +109,10 @@ export interface ElementSizeTo {
   edge: 'top' | 'bottom' | 'left' | 'right' | 'center';
 }
 
+/** How wide or tall a design element is. */
 export type ElementSize = 'auto' | 'fill' | Dimension | ElementSizeTo;
 
+/** Where a design element goes: its anchor, its offset and its size. */
 export interface ElementPlacement {
   anchor: ElementAnchor;
   offset?: { x?: Dimension; y?: Dimension };
@@ -125,6 +133,7 @@ export interface ElementPlacement {
   };
 }
 
+/** The fill, border and padding of a design element's box. */
 export interface ElementBoxStyle {
   backgroundColor?: ColorValue;
   borderColor?: ColorValue;

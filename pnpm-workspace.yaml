@@ -7,9 +7,6 @@ overrides:
   # GHSA-qx2v-qp2m-jg93 — next pins a vulnerable postcss; 8.5.x is a
   # compatible in-major upgrade. Drop once next ships postcss >=8.5.10.
   "postcss@<8.5.10": ">=8.5.10"
-  # GHSA-xjj6-f33q-929c, GHSA-4qv8-2p9j-2685, GHSA-f72v-6w45-q472 (#1156):
-  # shadcn → @dotenvx/dotenvx pins undici 7.29.1; 7.30.1 is the fix.
-  "undici@>=7.0.0 <7.30.1": "^7.30.1"
   # GHSA-6gmq-8vp8-gcm6 and 12 more (#1157): mathjax-full → speech-rule-engine
   # 4.1.4 pins @xmldom/xmldom 0.9.10 exactly; 0.9.12 is the same-minor fix.
   # Drop once speech-rule-engine ships xmldom >=0.9.12.

@@ -50,6 +50,8 @@ export interface CitingPageState {
   refused: Set<string>;
 }
 
+/** Lay out content into a document of pages, to paint with any of the
+ *  backends. */
 export function buildDocument(
   content: PostextContent,
   config?: PostextConfig,

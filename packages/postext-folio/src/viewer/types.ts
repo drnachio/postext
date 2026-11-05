@@ -85,6 +85,8 @@ export interface FolioPageVideo extends PageVideoFrame {
   element: HTMLVideoElement;
 }
 
+/** The viewer's words for assistive technology and its page count, in the
+ *  host's language. */
 export interface FolioLabels {
   /** The viewer's accessible name. */
   region: string;
@@ -95,6 +97,8 @@ export interface FolioLabels {
   count: (pages: number[], total: number) => string;
 }
 
+/** Options of `createFolio`: the pages, the binding, the opening spread, the
+ *  paper, the controls and the look. */
 export interface FolioOptions {
   pages: FolioPage[];
   /** Whether the first page is a recto (it opens alone, on the right of a
@@ -160,12 +164,15 @@ export interface FolioPageSize {
   deviceHeight: number;
 }
 
+/** Where the book is open: the current spread and the number of pages. */
 export interface FolioState {
   spread: number;
   /** The page indexes on show (one or two). */
   pages: number[];
 }
 
+/** A running viewer: turn its pages, change its content or look, read its
+ *  state. */
 export interface FolioViewer {
   /** The viewer's root element. */
   readonly element: HTMLElement;

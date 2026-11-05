@@ -16,6 +16,7 @@ export interface BuildStats {
   missingFonts?: string[];
 }
 
+/** A font face as it crosses to the layout worker. */
 export interface FontPayload {
   family: string;
   weight: string;
