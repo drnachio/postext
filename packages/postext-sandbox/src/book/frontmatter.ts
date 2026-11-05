@@ -42,3 +42,23 @@ export function blankFrontmatter(markdown: string, keepStyle = true): string {
   const head = markdown.slice(0, range.end);
   return (keepStyle ? blankChapterFrontmatter(head) : head.replace(/[^\n\r]/g, ' ')) + markdown.slice(range.end);
 }
+
+/**
+ * `markdown` with its chapter style (`chapterStyle:` in the front matter)
+ * set to `id`, or taken out when `id` is undefined: the line replaced or
+ * added inside the leading `---` block, a block made for it when there is
+ * none, and a block left with nothing in it removed.
+ */
+export function setChapterStyle(markdown: string, id: string | undefined): string {
+  const line = id ? `chapterStyle: ${id}` : undefined;
+  const range = frontmatterRange(markdown);
+  if (!range) return line ? `---\n${line}\n---\n${markdown}` : markdown;
+  const head = markdown.slice(0, range.end);
+  const body = markdown.slice(range.end);
+  const lines = head.replace(/\n$/, '').split('\n');
+  // Between the opening and the closing `---`.
+  const inner = lines.slice(1, -1).filter((l) => !/^chapterStyle\s*:/.test(l.replace(/\r$/, '')));
+  if (line) inner.push(line);
+  if (inner.every((l) => l.trim() === '')) return body;
+  return `${lines[0]}\n${inner.join('\n')}\n${lines[lines.length - 1]}\n${body}`;
+}

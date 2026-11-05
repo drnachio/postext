@@ -11,7 +11,8 @@ import { loadPresetEdition } from '../../editions/editionStore.js';
 import { BUILTIN_PRESET_ID } from '../../presets/builtin.js';
 import type { PresetProvider } from '../../presets/types.js';
 import type { PresetDraftSummary } from '../../storage/presetDrafts.js';
-import { ScopedDispatchContext, StateViewContext, capturedInto, scopedView } from '../../context/configScope.js';
+import { ScopedDispatchContext, StateViewContext, capturedInto, panelView, scopedView } from '../../context/configScope.js';
+import { chapterStyleView, writeChapterStyle } from '../../editions/chapterStyleEdit.js';
 import { FieldLayerContext, type FieldLayerValue } from '../../controls/fieldLayer.js';
 import { editionOverride, generalSettingsFrom, generalSettingsView, ownPathsAt, promoteFields, rebaseEdition, recordSharedConfig, withoutOwnFields } from '../../editions/configLayers.js';
 import { getProject, toSummary, updateProject } from '../../storage/projects.js';
@@ -71,6 +72,7 @@ function useAsideOverrides(projectId: string | null, active: boolean, locale: st
 export function ConfigScopeProvider({ children }: { children: ReactNode }) {
   const store = useSandboxStore();
   const layers = useSandboxSelector((s) => s.configLayers);
+  const editingStyle = useSandboxSelector((s) => s.editingChapterStyle);
   const config = useSandboxSelector((s) => s.config);
   const uiLocale = useSandboxSelector((s) => s.locale);
   const projectId = useSandboxSelector((s) => s.activeProjectId);
@@ -133,6 +135,30 @@ export function ConfigScopeProvider({ children }: { children: ReactNode }) {
     setShadowed(keptBy.length > 0 ? { paths, keptBy } : null);
   }, [store]);
 
+  // A chapter style edited (`editingChapterStyle`): a write is made over
+  // the style shown, and kept as the style's difference from the settings
+  // in scope, which then go the way a write of theirs goes.
+  const stylePending = useRef<{ base: PostextConfig; next: PostextConfig } | null>(null);
+  const panelDispatch = useCallback<Dispatch<SandboxAction>>((action) => {
+    const s = store.getSnapshot();
+    const id = s.editingChapterStyle;
+    if (capturedInto() || !id || (action.type !== 'UPDATE_CONFIG' && action.type !== 'SET_CONFIG') || (action.type === 'SET_CONFIG' && action.shared)) {
+      dispatch(action);
+      return;
+    }
+    const scoped = scopedView(s).config;
+    const p = stylePending.current;
+    const base = p && p.base === scoped ? p.next : scoped;
+    if (!base.chapterStyles?.some((st) => st.id === id)) {
+      dispatch(action);
+      return;
+    }
+    const after = action.type === 'SET_CONFIG' ? action.payload : { ...chapterStyleView(base, id), ...action.payload };
+    const next = writeChapterStyle(base, id, Object.fromEntries(Object.entries(after).filter(([, v]) => v !== undefined)) as PostextConfig);
+    stylePending.current = { base: scoped, next };
+    dispatch({ type: 'SET_CONFIG', payload: next, ...(action.history !== undefined ? { history: action.history } : {}) });
+  }, [store, dispatch]);
+
   // The scope or the book changed: an old notice no longer applies.
   useEffect(() => setShadowed(null), [layers?.scope, projectId, locale]);
 
@@ -186,11 +212,11 @@ export function ConfigScopeProvider({ children }: { children: ReactNode }) {
 
   const scope = useMemo<ConfigScopeValue>(() => ({ shadowed, dismissShadowed: () => setShadowed(null), layer }), [shadowed, layer]);
 
-  if (!layers) return <ConfigScopeContext value={scope}>{children}</ConfigScopeContext>;
+  if (!layers && !editingStyle) return <ConfigScopeContext value={scope}>{children}</ConfigScopeContext>;
   return (
     <ConfigScopeContext value={scope}>
-      <StateViewContext value={scopedView}>
-        <ScopedDispatchContext value={dispatch}>
+      <StateViewContext value={panelView}>
+        <ScopedDispatchContext value={panelDispatch}>
           <FieldLayerContext value={layer}>{children}</FieldLayerContext>
         </ScopedDispatchContext>
       </StateViewContext>

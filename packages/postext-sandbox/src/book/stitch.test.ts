@@ -62,3 +62,11 @@ describe('stitchDocuments', () => {
     expect(book.doc.contentWarnings!.map((w) => w.pageIndex)).toEqual([4, undefined]);
   });
 });
+
+describe('stitchDocuments and chapter styles', () => {
+  it('paints a chapter\'s own page ground on its pages, the first chapter\'s staying the document\'s', () => {
+    const withGround = (hex: string): VDTDocument => ({ ...docWith([[1]]), config: { page: { backgroundColor: { hex, model: 'hex' } } } } as unknown as VDTDocument);
+    const book = stitchDocuments([{ chapterId: 'a', doc: withGround('#ffffff') }, { chapterId: 'b', doc: withGround('#fdf5e6') }])!;
+    expect(book.doc.pages.map((p) => p.background)).toEqual([undefined, '#fdf5e6']);
+  });
+});

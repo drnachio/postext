@@ -1457,6 +1457,8 @@ Das `config` eines Stils wird über die Konfiguration des Buches gelegt wie die 
 
 Seitennummerierung, Zähler, Anmerkungen und Inhaltsverzeichnis laufen durch das Kapitel weiter wie durch jedes andere. Jede Ausgabe liest ihn: das Canvas, das PDF, das EPUB, das HTML und ein mit `buildBundle` gesetztes Paket, und auch ein einzeln mit `buildDocument` gesetztes Kapitel, denn die Engine wendet den Stil an, den sein Text nennt. In einem Buch ist nur das Frontmatter des ersten Kapitels das des Buches; das eines späteren Kapitels wird bis auf seine Zeile `chapterStyle:` geleert. Das `{style="…"}` einer Überschrift legt sich weiterhin über den Stil des Kapitels, für einen Abschnitt.
 
+In der Sandbox wählt die Leiste „Kapitelstil“ oben im Bedienfeld Gestaltung, was das Bedienfeld bearbeitet: das Buch oder einen seiner Stile. Ist ein Stil gewählt, zeigt das Bedienfeld ihn über dem Buch, und was Sie ändern, wird im Stil als sein Unterschied zum Buch gespeichert; die Leiste benennt den Stil um, löscht ihn und kehrt zum Buch zurück, und ihre Schaltfläche + legt einen neuen an. Ein Kapitel erhält einen Stil über sein Menü im Bedienfeld Kapitel, das die Zeile `chapterStyle:` für es schreibt; sein Eintrag zeigt den Namen des Stils.
+
 ### Abschnitte in einem Kapitel
 
 Innerhalb eines Kapitels setzt ein Abschnittswechsel in einer eigenen Zeile das Folgende in einem Kapitelstil, ab einer neuen Seite, bis zum nächsten Wechsel oder zum Ende des Kapitels; `::section` allein kehrt zu den eigenen Einstellungen des Kapitels zurück:

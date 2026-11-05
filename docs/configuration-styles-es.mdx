@@ -1458,6 +1458,8 @@ El `config` de un estilo se fusiona sobre la configuración del libro igual que 
 
 La numeración de páginas, los contadores, las notas y el índice siguen corriendo a través del capítulo como en cualquier otro. Todas las salidas lo leen: el canvas, el PDF, el EPUB, el HTML y un paquete compuesto con `buildBundle`, y también un capítulo compuesto por separado con `buildDocument`, porque el motor aplica el estilo que nombra su texto. En un libro, solo el encabezado del primer capítulo es del libro; el de los siguientes se vacía salvo su línea `chapterStyle:`. El `{style="…"}` de un encabezado sigue sumándose al estilo del capítulo, para una sección.
 
+En el Sandbox, la barra «Estilo de capítulo» de lo alto del panel Diseño elige qué edita el panel: el libro o uno de sus estilos. Con un estilo elegido, el panel lo muestra sobre el libro, y lo que cambias se guarda en el estilo como su diferencia con el libro; la barra cambia el nombre del estilo, lo borra y vuelve al libro, y su botón + crea uno nuevo. Un capítulo toma un estilo desde su menú en el panel Capítulos, que escribe por él la línea `chapterStyle:`; su fila muestra el nombre del estilo.
+
 ### Secciones dentro de un capítulo
 
 Dentro de un capítulo, un salto de sección en una línea propia compone lo que sigue con un estilo de capítulo, desde una página nueva, hasta el siguiente salto o el final del capítulo; `::section` solo vuelve a los ajustes del propio capítulo:

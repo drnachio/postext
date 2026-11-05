@@ -2392,6 +2392,17 @@ export interface SandboxLabels {
   chapterUntitled: string;
   chapterAdd: string;
   chapterRename: string;
+  chapterStyleBarLabel: string;
+  chapterStyleBook: string;
+  chapterStyleNew: string;
+  chapterStyleDefaultName: string;
+  chapterStyleEditing: string;
+  chapterStyleName: string;
+  chapterStyleDelete: string;
+  chapterStyleBack: string;
+  chapterStyleNone: string;
+  chapterStyleUse: string;
+  chapterStyleEditThis: string;
   chapterTitleLabel: string;
   chapterDelete: string;
   chapterDeleteConfirm: string;

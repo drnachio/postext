@@ -1458,6 +1458,8 @@ A style's `config` is merged over the book's configuration the way a language's 
 
 The chapter's page numbers, counters, notes and contents run on through it like any other chapter. Every output reads it: the canvas, the PDF, the EPUB, the HTML and a bundle laid out with `buildBundle`, and a chapter laid out on its own with `buildDocument` too, since the engine applies the style its text names. In a book, only the first chapter's front matter is the book's; a later chapter's is blanked but for its `chapterStyle:` line. A heading's `{style="…"}` still layers on top of the chapter's style, for one section.
 
+In the Sandbox, the "Chapter style" bar at the top of the Design panel chooses what the panel edits: the book, or one of its styles. While a style is chosen the panel shows it over the book, and what you change is kept in the style as its difference from the book; the bar renames the style, deletes it and goes back to the book, and its + button makes a new one. A chapter takes a style from its menu in the Chapters panel, which writes the `chapterStyle:` line for it; its row shows the style's name.
+
 ### Sections in a chapter
 
 Inside a chapter, a section break on a line of its own sets what follows in a chapter style, from a new page, until the next break or the end of the chapter; `::section` alone returns to the chapter's own settings:

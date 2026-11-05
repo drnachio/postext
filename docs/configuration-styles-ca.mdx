@@ -1456,6 +1456,8 @@ El `config` d'un estil es combina sobre la configuració del llibre igual que la
 
 La numeració de pàgines, els comptadors, les notes i el sumari continuen corrent a través del capítol com en qualsevol altre. Totes les sortides el llegeixen: el canvas, el PDF, l'EPUB, l'HTML i un paquet compost amb `buildBundle`, i també un capítol compost per separat amb `buildDocument`, perquè el motor aplica l'estil que anomena el seu text. En un llibre, només el frontmatter del primer capítol és el del llibre; el dels capítols posteriors es deixa en blanc llevat de la seva línia `chapterStyle:`. El `{style="…"}` d'un encapçalament continua sumant-se a l'estil del capítol, per a una secció.
 
+En el Sandbox, la barra «Estil de capítol» de la part superior del tauler Disseny tria què edita el tauler: el llibre o un dels seus estils. Amb un estil triat, el tauler el mostra sobre el llibre, i el que canvies es desa a l'estil com la seva diferència amb el llibre; la barra canvia el nom de l'estil, l'esborra i torna al llibre, i el seu botó + en crea un de nou. Un capítol pren un estil des del seu menú al tauler Capítols, que hi escriu la línia `chapterStyle:`; la seva fila mostra el nom de l'estil.
+
 ### Seccions dins d'un capítol
 
 Dins d'un capítol, un salt de secció en una línia pròpia compon el que segueix amb un estil de capítol, des d'una pàgina nova, fins al salt següent o el final del capítol; `::section` sol torna als ajustos del mateix capítol:

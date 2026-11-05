@@ -1457,6 +1457,8 @@ Il `config` di uno stile si unisce alla configurazione del libro come il livello
 
 La numerazione delle pagine, i contatori, le note e l’indice continuano attraverso il capitolo come in qualsiasi altro. Tutte le uscite lo leggono: il canvas, il PDF, l’EPUB, l’HTML e un pacchetto impaginato con `buildBundle`, e anche un capitolo impaginato da solo con `buildDocument`, perché il motore applica lo stile che il suo testo nomina. In un libro solo il front matter del primo capitolo è quello del libro; quello di un capitolo successivo viene svuotato tranne la sua riga `chapterStyle:`. Lo `{style="…"}` di un titolo continua a sovrapporsi allo stile del capitolo, per una sezione.
 
+Nel Sandbox, la barra «Stile del capitolo» in cima al pannello Grafica sceglie che cosa modifica il pannello: il libro o uno dei suoi stili. Con uno stile scelto, il pannello lo mostra sopra il libro, e ciò che cambi viene conservato nello stile come sua differenza rispetto al libro; la barra rinomina lo stile, lo elimina e torna al libro, e il suo pulsante + ne crea uno nuovo. Un capitolo prende uno stile dal suo menu nel pannello Capitoli, che scrive per lui la riga `chapterStyle:`; la sua voce mostra il nome dello stile.
+
 ### Sezioni all’interno di un capitolo
 
 All’interno di un capitolo, un’interruzione di sezione su una riga a sé impagina ciò che segue con uno stile dei capitoli, da una pagina nuova, fino all’interruzione successiva o alla fine del capitolo; `::section` da solo torna alle impostazioni proprie del capitolo:
