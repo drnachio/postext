@@ -271,9 +271,11 @@ export interface VDTBlock {
   bulletColor?: string;
   /** Absolute page X coordinate where the bullet is drawn */
   bulletOffsetX?: number;
-  /** Absolute page Y coordinate for the bullet's vertical midpoint (paired
-   *  with textBaseline='middle'): its em box centred on the text's
-   *  x-height. Every marker has it, a contents number included, as up to
+  /** Absolute page Y coordinate for the bullet's vertical midpoint: its em
+   *  box centred on the text's x-height. Renderers set the bullet with its
+   *  alphabetic baseline 0.3 em (of the bullet's own size) below this point,
+   *  the canvas as the PDF, so screen and print agree whatever the bullet's
+   *  face. Every marker has it, a contents number included, as up to
    *  postext 1.4; a renderer that knows `bulletBaselineY` prefers that. */
   bulletY?: number;
   /** Absolute page Y coordinate of the baseline a marker set as text sits

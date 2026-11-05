@@ -33,9 +33,9 @@ export function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache
   const colorHex = block.bulletColor ?? block.color;
   const color = colorFromHex(colorHex, ctx.colorSpace);
 
-  // Canvas uses `textBaseline='middle'` at bulletY; pdf-lib draws from the
-  // alphabetic baseline. Shift the baseline down by ~0.3em so the em-square
-  // midline aligns at bulletY, matching canvas placement within hinting tolerance.
+  // A list bullet's alphabetic baseline sits 0.3 em (of its own size) below
+  // bulletY, its em-square midline; the canvas sets it the same way, so the
+  // screen and the PDF agree whatever the bullet's face.
   // A marker set as text (a contents number) has its baseline at
   // `bulletBaselineY` (postext 1.5); `bulletY` stays its em-box midpoint.
   const baselineY = block.bulletBaselineY;

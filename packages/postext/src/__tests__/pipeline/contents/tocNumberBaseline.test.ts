@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { fontSizePxOf } from '../../../measure/breakRules.js';
 import { buildDocument } from '../../../pipeline/index.js';
 import { renderBlock } from '../../../canvas-backend/blockRender.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
@@ -87,7 +88,10 @@ describe('EF-58: contents numbers on the title baseline', () => {
     const item = doc.blocks.find((x) => x.type === 'listItem' && x.tocEntry === undefined)!;
     const rec = recordingCtx();
     renderBlock(rec.ctx, item, 300, item.bbox.x);
-    expect(rec.calls.find((c) => c.text === item.bulletText)!.baseline).toBe('middle');
+    // A list bullet sits on its alphabetic baseline 0.3 em below bulletY, as in the PDF.
+    const bullet = rec.calls.find((c) => c.text === item.bulletText)!;
+    expect(bullet.baseline).toBe('alphabetic');
+    expect(bullet.y).toBeCloseTo(item.bulletY! + fontSizePxOf(item.bulletFontString!) * 0.3, 6);
   });
 
   it('HTML sets the number in the title\'s line box, aligned on its baseline', () => {
