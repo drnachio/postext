@@ -194,3 +194,93 @@ describe('number fields painted for print (#1445)', () => {
     expect(js(price.acroField.dict, 'F')).toBe('AFNumber_Format(2, 0, 0, 0, " USD", false);');
   });
 });
+
+// A total over order lines, a check box with a fixed price and numbers in
+// the calculation: `sum(lines, product(box, price))`. A ticked box gives its
+// on value to the scripts, so `on="1"` makes it count 1, and `AFMakeNumber`
+// counts anything that is no number 0 (`Yes`, `Off`).
+describe('calculations with numbers and check boxes', () => {
+  const markdown = [
+    'Widget A :chip[ ]{style="field" field="order.a.qty" kind="number"} :chip[ ]{style="field" field="order.a.total" format="currency" calc="product(order.a.qty, 12.5)"}',
+    '',
+    'Service fee :chip[ ]{style="field" field="order.fee" kind="checkbox" on="1"}',
+    '',
+    'Gift wrap :chip[ ]{style="field" field="order.wrap" kind="checkbox"}',
+    '',
+    'Total :chip[ ]{style="field" field="order.total" format="currency" calc="sum(order.a.total, product(order.fee, 161.75), product(order.wrap, 5))"}',
+    '',
+    'Lines :chip[ ]{style="field" field="order.lines" kind="number" calc="sum(order.a.total, order.fee)"}',
+  ].join('\n');
+
+  /** `AFMakeNumber` as pdf.js has it: a number, or null for anything else. */
+  const AFMakeNumber = (v: unknown): number | null => {
+    if (typeof v === 'number') return v;
+    if (typeof v !== 'string') return null;
+    const n = parseFloat(v.trim().replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
+  };
+  /** Run a Calculate script with `this` the document, as a viewer does. */
+  const calculate = (script: string, values: Record<string, string>): unknown => {
+    const event: { value?: unknown } = {};
+    const doc = { getField: (n: string) => (n in values ? { value: values[n] } : null) };
+    new Function('event', 'AFMakeNumber', script).call(doc, event, AFMakeNumber);
+    return event.value;
+  };
+
+  let pdf: PDFDocument;
+  const warnings: PdfWarning[] = [];
+  beforeAll(async () => {
+    const bytes = await renderToPdf(buildDocument({ markdown }, config), { fontProvider, onWarning: (w) => warnings.push(w) });
+    if (process.env.POSTEXT_FORMS_CALC_OUT) fs.writeFileSync(process.env.POSTEXT_FORMS_CALC_OUT, bytes);
+    pdf = await PDFDocument.load(bytes);
+  });
+
+  it('names the on state of a check box after its on value', () => {
+    const fee = pdf.getForm().getCheckBox('order.fee');
+    for (const widget of fee.acroField.getWidgets()) {
+      const ap = widget.dict.lookup(PDFName.of('AP'), PDFDict);
+      for (const key of ['N', 'D']) {
+        expect(ap.lookup(PDFName.of(key), PDFDict).keys().map((k) => k.decodeText()).sort()).toEqual(['1', 'Off']);
+      }
+      expect(widget.getAppearanceState()).toBe(PDFName.of('Off'));
+    }
+    // Ticked, the box has the value 1. A box without `on` keeps `Yes`.
+    fee.check();
+    expect(fee.acroField.getValue()).toBe(PDFName.of('1'));
+    expect(pdf.getForm().getCheckBox('order.wrap').acroField.getOnValue()).toBe(PDFName.of('Yes'));
+  });
+
+  it('writes a calculation with numbers or nested calculations as a script of its own', () => {
+    const form = pdf.getForm();
+    const line = js(form.getTextField('order.a.total').acroField.dict, 'C')!;
+    expect(line).toBe('event.value = Math.round(1e6 * ((AFMakeNumber(this.getField("order.a.qty").value) || 0) * 12.5)) / 1e6;');
+    expect(calculate(line, { 'order.a.qty': '3' })).toBe(37.5);
+    // Empty fields count 0.
+    expect(calculate(line, { 'order.a.qty': '' })).toBe(0);
+    const total = js(form.getTextField('order.total').acroField.dict, 'C')!;
+    // The order line and the ticked service fee; the gift wrap is ticked
+    // too, but its value `Yes` is no number.
+    expect(calculate(total, { 'order.a.total': '37.5', 'order.fee': '1', 'order.wrap': 'Yes' })).toBe(199.25);
+    expect(calculate(total, { 'order.a.total': '37.5', 'order.fee': 'Off', 'order.wrap': 'Off' })).toBe(37.5);
+    // Rounded to six decimals (16.275000000000002 unrounded), as pdf.js
+    // rounds a simple calculation.
+    expect(calculate(total, { 'order.a.total': '0.1', 'order.fee': '0.1', 'order.wrap': 'Off' })).toBe(16.275);
+    // A calculation over fields alone stays Acrobat's simple calculate.
+    expect(js(form.getTextField('order.lines').acroField.dict, 'C')).toBe('AFSimple_Calculate("SUM", new Array ("order.a.total", "order.fee"));');
+  });
+
+  it('orders the calculations by every field they read, nested ones too', () => {
+    const acro = pdf.catalog.lookup(PDFName.of('AcroForm'), PDFDict);
+    const names = acro.lookup(PDFName.of('CO'), PDFArray).asArray().map((ref) => pdf.getForm().getFields().find((f) => f.acroField.ref === ref)?.getName());
+    expect(names).toEqual(['order.a.total', 'order.total', 'order.lines']);
+  });
+
+  it('warns about a check box in a calculation whose on value is no number', () => {
+    const messages = warnings.filter((w) => w.kind === 'formField').map((w) => (w as { message: string }).message);
+    expect(messages).toEqual([expect.stringMatching(/"order\.total" reads check box "order\.wrap", whose value "Yes" is no number/)]);
+  });
+
+  it('shows no default value in a calculated field', () => {
+    expect(pdf.getForm().getTextField('order.total').getText()).toBeUndefined();
+  });
+});

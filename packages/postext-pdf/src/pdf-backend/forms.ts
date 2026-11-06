@@ -7,15 +7,19 @@
  *
  * Formats and calculations use Acrobat's standard scripts
  * (`AFNumber_Format`, `AFNumber_Keystroke`, `AFSimple_Calculate`), which
- * Acrobat, Foxit, pdf.js and most viewers run; the calculation order
- * (`/CO`) follows the dependencies. A print standard (PDF/X) allows no
+ * Acrobat, Foxit, pdf.js and most viewers run; a calculation with numbers
+ * or nested calculations is a short script of its own that reads the
+ * fields the same way (`AFMakeNumber`, anything else counts 0). The
+ * calculation order (`/CO`) follows the dependencies. A check box with an
+ * `on` value names its on state so, and a calculation reads that value
+ * when it is ticked. A print standard (PDF/X) allows no
  * interactive fields: there the value is painted as text instead.
  *
  * A field shows its value in the face of its chip, embedded whole
  * (`formFonts.ts`), unless the options name another or Helvetica.
  */
-import { PDFName, PDFString, PDFArray, PDFDict, PDFHexString, TextAlignment, type PDFDocument, type PDFPage, type PDFField, type PDFFont } from 'pdf-lib';
-import { formatFieldNumber, type FormFieldSpec as FieldSpec, type FormNumberOptions, type FormNumberStyle } from 'postext';
+import { PDFName, PDFString, PDFArray, PDFDict, PDFHexString, TextAlignment, type PDFDocument, type PDFPage, type PDFField, type PDFFont, type PDFCheckBox } from 'pdf-lib';
+import { formatFieldNumber, type FormFieldCalc, type FormFieldCalcCall, type FormFieldSpec as FieldSpec, type FormNumberOptions, type FormNumberStyle } from 'postext';
 import type { FormFonts, PdfFormFont } from './formFonts.js';
 
 /** How form fields write numbers (Acrobat's separator style and the
@@ -123,6 +127,10 @@ export class FormFieldRegistry {
     }
 
     for (const { spec, field } of byName.values()) {
+      if (spec.kind === 'checkbox' && spec.on) {
+        if (spec.on === 'Off') this.warnings.push(`form field "${spec.name}" cannot name its on state "Off", the off state's name; it keeps "Yes"`);
+        else nameOnState(field as PDFCheckBox, spec.on);
+      }
       if (spec.readonly) field.enableReadOnly();
       if (spec.required) field.enableRequired();
       const dict = field.acroField.dict;
@@ -133,8 +141,13 @@ export class FormFieldRegistry {
       if (spec.calc) {
         const missing = spec.calc.fields.filter((n) => !byName.has(n));
         if (missing.length) this.warnings.push(`form field "${spec.name}" calculates from unknown field(s): ${missing.join(', ')}`);
-        const op = { sum: 'SUM', product: 'PRD', min: 'MIN', max: 'MAX', avg: 'AVG' }[spec.calc.op];
-        actions.C = `AFSimple_Calculate("${op}", new Array (${spec.calc.fields.map((n) => jsString(n)).join(', ')}));`;
+        for (const n of spec.calc.fields) {
+          const read = byName.get(n)?.spec;
+          if (read?.kind === 'checkbox' && !isNumber(onValue(read))) {
+            this.warnings.push(`form field "${spec.name}" reads check box "${n}", whose value "${onValue(read)}" is no number, so it always counts 0 (give the box on="1")`);
+          }
+        }
+        actions.C = calcScript(spec.calc, (n) => byName.has(n));
       }
       if (Object.keys(actions).length > 0) {
         const aa = pdfDoc.context.obj({});
@@ -176,6 +189,62 @@ export class FormFieldRegistry {
  *  (`€`): the script is a PDFDocEncoding string, which some viewers
  *  read without a euro sign. */
 const jsString = (s: string): string => JSON.stringify(s).replace(/[^\x20-\x7e]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+
+/** The value a ticked check box gives its scripts: the name of its on
+ *  state. */
+const onValue = (spec: FieldSpec): string => (spec.on && spec.on !== 'Off' ? spec.on : 'Yes');
+
+/** Whether `AFMakeNumber` reads `value` as a number. */
+const isNumber = (value: string): boolean => value.trim() !== '' && Number.isFinite(Number(value.trim().replace(',', '.')));
+
+/** Name the on state of every widget of `box` `on` (pdf-lib names it
+ *  `Yes`): the normal and the down appearance, and the state and value
+ *  when ticked. A viewer gives the name to scripts as the box's value. */
+function nameOnState(box: PDFCheckBox, on: string): void {
+  const yes = PDFName.of('Yes');
+  const to = PDFName.of(on);
+  for (const widget of box.acroField.getWidgets()) {
+    const ap = widget.dict.lookupMaybe(PDFName.of('AP'), PDFDict);
+    for (const key of ['N', 'D']) {
+      const states = ap?.lookupMaybe(PDFName.of(key), PDFDict);
+      const appearance = states?.get(yes);
+      if (!states || !appearance) continue;
+      states.delete(yes);
+      states.set(to, appearance);
+    }
+    if (widget.dict.get(PDFName.of('AS')) === yes) widget.dict.set(PDFName.of('AS'), to);
+  }
+  if (box.acroField.dict.get(PDFName.of('V')) === yes) box.acroField.dict.set(PDFName.of('V'), to);
+}
+
+const SIMPLE_OPS = { sum: 'SUM', product: 'PRD', min: 'MIN', max: 'MAX', avg: 'AVG' } as const;
+
+/**
+ * The Calculate script of `calc`. Over fields alone it is Acrobat's
+ * `AFSimple_Calculate`, which viewers with only the standard scripts run
+ * too. With numbers or nested calculations it is an expression that reads
+ * each field as `AFSimple_Calculate` does (`AFMakeNumber` of its value,
+ * anything that is no number 0; a field `known` does not hold is 0) and
+ * rounds to six decimals as pdf.js does.
+ */
+function calcScript(calc: FormFieldCalc, known: (name: string) => boolean): string {
+  if (calc.args.every((a) => typeof a === 'string')) {
+    return `AFSimple_Calculate("${SIMPLE_OPS[calc.op]}", new Array (${calc.args.map((n) => jsString(n as string)).join(', ')}));`;
+  }
+  const expr = (c: FormFieldCalcCall): string => {
+    const terms = c.args.map((a) => typeof a === 'number' ? String(a)
+      : typeof a === 'string' ? known(a) ? `(AFMakeNumber(this.getField(${jsString(a)}).value) || 0)` : '0'
+      : expr(a));
+    switch (c.op) {
+      case 'sum': return `(${terms.join(' + ')})`;
+      case 'product': return `(${terms.join(' * ')})`;
+      case 'min': return `Math.min(${terms.join(', ')})`;
+      case 'max': return `Math.max(${terms.join(', ')})`;
+      case 'avg': return `((${terms.join(' + ')}) / ${terms.length})`;
+    }
+  };
+  return `event.value = Math.round(1e6 * ${expr(calc)}) / 1e6;`;
+}
 
 /** The arguments of `AFNumber_Format` for a field, or undefined. */
 function numberFormat(spec: FieldSpec, sep: number, currency: string, before: boolean): string | undefined {

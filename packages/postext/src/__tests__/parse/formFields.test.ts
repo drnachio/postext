@@ -11,13 +11,41 @@ const en = formNumberStyle(undefined, 'en-US');
 describe('form field attributes (#1445)', () => {
   it('reads the kind, format, calculation and flags', () => {
     expect(formFieldFromAttrs({ field: 'order.total', format: 'currency', calc: 'sum(a, b)' })).toEqual({
-      name: 'order.total', kind: 'number', format: 'currency', calc: { op: 'sum', fields: ['a', 'b'] }, readonly: true,
+      name: 'order.total', kind: 'number', format: 'currency', calc: { op: 'sum', args: ['a', 'b'], fields: ['a', 'b'] }, readonly: true,
     });
     expect(formFieldFromAttrs({ field: 'size', kind: 'choice', options: 'S | M | L', required: '' })).toEqual({
       name: 'size', kind: 'choice', options: ['S', 'M', 'L'], required: true,
     });
     expect(formFieldFromAttrs({ style: 'field' })).toBeUndefined();
     expect(parseFieldCalc('divide(a, b)')).toBeUndefined();
+  });
+
+  it('reads numbers and nested calculations, and every field they read', () => {
+    expect(parseFieldCalc('sum(order.a.total, order.b.total, product(order.fee, 161.75), product(order.wrap, order.wrap.price))')).toEqual({
+      op: 'sum',
+      args: [
+        'order.a.total',
+        'order.b.total',
+        { op: 'product', args: ['order.fee', 161.75] },
+        { op: 'product', args: ['order.wrap', 'order.wrap.price'] },
+      ],
+      fields: ['order.a.total', 'order.b.total', 'order.fee', 'order.wrap', 'order.wrap.price'],
+    });
+    // A name that has digits stays a name; a bare number, also negative or
+    // with a leading point, is a number. A field read twice is listed once.
+    expect(parseFieldCalc('product(pkg.1, -2, .5, pkg.1)')).toEqual({ op: 'product', args: ['pkg.1', -2, 0.5, 'pkg.1'], fields: ['pkg.1'] });
+    expect(parseFieldCalc(' MAX( a ,min(b, 3) ) ')?.args).toEqual(['a', { op: 'min', args: ['b', 3] }]);
+    // An unknown or empty nested calculation, an unclosed one and trailing
+    // text are no calculation.
+    for (const bad of ['sum(a, divide(b, 2))', 'sum(a, product())', 'sum(a, product(b, 2)', 'sum(a) b', 'sum(a b(c))', '12.5']) {
+      expect(parseFieldCalc(bad)).toBeUndefined();
+    }
+  });
+
+  it('reads the on value of a check box, and of no other kind', () => {
+    expect(formFieldFromAttrs({ field: 'order.fee', kind: 'checkbox', on: ' 1 ' })).toEqual({ name: 'order.fee', kind: 'checkbox', on: '1' });
+    expect(formFieldFromAttrs({ field: 'order.fee', kind: 'checkbox' })).toEqual({ name: 'order.fee', kind: 'checkbox' });
+    expect(formFieldFromAttrs({ field: 'note', on: '1' })).toEqual({ name: 'note', kind: 'text' });
   });
 });
 

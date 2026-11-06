@@ -9,12 +9,30 @@
  *   :chip[ ]{style="field" field="pos.a.qty" kind="number"}
  *   :chip[120]{style="field" field="pos.a.price" format="currency"}
  *   :chip[ ]{style="field" field="pos.a.total" format="currency" calc="product(pos.a.qty, pos.a.price)" readonly}
- *   :chip[ ]{style="box" field="pkg.a" kind="checkbox"}
+ *   :chip[ ]{style="box" field="pkg.a" kind="checkbox" on="1"}
+ *   :chip[ ]{style="field" field="sum" format="currency" calc="sum(pos.a.total, product(pkg.a, 49.5))"}
  */
 import type { DirectiveAttrs } from './types.js';
 
 /** What a field computes from others (Acrobat's simple calculate). */
 export type FormFieldCalcOp = 'sum' | 'product' | 'min' | 'max' | 'avg';
+
+/** One argument of a calculation: a field by name, a number, or a nested
+ *  calculation. */
+export type FormFieldCalcArg = string | number | FormFieldCalcCall;
+
+/** A calculation: an operation over its arguments. */
+export interface FormFieldCalcCall {
+  op: FormFieldCalcOp;
+  args: FormFieldCalcArg[];
+}
+
+/** A field's calculation, with every field it reads. */
+export interface FormFieldCalc extends FormFieldCalcCall {
+  /** The fields the calculation reads, nested ones too, each once, in the
+   *  order they are written. */
+  fields: string[];
+}
 
 export interface FormFieldSpec {
   /** Unique per document; dots make a hierarchy (`pos.a.qty`). */
@@ -24,8 +42,13 @@ export interface FormFieldSpec {
   /** How a number is shown and typed: `currency` (the document's currency,
    *  two decimals), `decimal` (two decimals), `integer`, `percent`. */
   format?: 'currency' | 'decimal' | 'integer' | 'percent';
-  /** Computed from other fields, by name. */
-  calc?: { op: FormFieldCalcOp; fields: string[] };
+  /** Computed from other fields, by name, numbers and nested
+   *  calculations. */
+  calc?: FormFieldCalc;
+  /** Check box: the name of its on state, which is the value a script
+   *  reads when it is ticked (`1` makes it count as a number). Default
+   *  `Yes`. */
+  on?: string;
   /** Choice: the options, in order. */
   options?: string[];
   readonly?: true;
@@ -126,13 +149,53 @@ const FORMATS = new Set(['currency', 'decimal', 'integer', 'percent']);
 const OPS = new Set(['sum', 'product', 'min', 'max', 'avg']);
 const flag = (v: string | undefined): boolean => v !== undefined && v !== 'false';
 
-/** `product(a, b)` → `{ op: 'product', fields: ['a', 'b'] }`; anything else
- *  is not a calculation. */
-export function parseFieldCalc(text: string): FormFieldSpec['calc'] | undefined {
-  const m = /^\s*([a-z]+)\s*\(([^()]*)\)\s*$/i.exec(text);
-  if (!m || !OPS.has(m[1]!.toLowerCase())) return undefined;
-  const fields = m[2]!.split(',').map((f) => f.trim()).filter(Boolean);
-  return fields.length > 0 ? { op: m[1]!.toLowerCase() as FormFieldCalcOp, fields } : undefined;
+/** A number in a calculation: digits with a point as the decimal mark. */
+const CALC_NUMBER = /^-?(?:\d+(?:\.\d*)?|\.\d+)$/;
+
+/**
+ * `product(a, b)` → `{ op: 'product', args: ['a', 'b'], fields: ['a', 'b'] }`.
+ * An argument is a field by name, a number (`161.75`, a point as the
+ * decimal mark) or a nested calculation:
+ * `sum(a, product(b, 2.5))`. Anything else is not a calculation.
+ */
+export function parseFieldCalc(text: string): FormFieldCalc | undefined {
+  let at = 0;
+  const call = (): FormFieldCalcCall | undefined => {
+    const m = /^\s*([a-z]+)\s*\(/i.exec(text.slice(at));
+    const op = m?.[1]?.toLowerCase();
+    if (!m || !op || !OPS.has(op)) return undefined;
+    at += m[0].length;
+    const args: FormFieldCalcArg[] = [];
+    for (;;) {
+      const rest = text.slice(at);
+      if (/^\s*[a-z]+\s*\(/i.test(rest)) {
+        const inner = call();
+        if (!inner) return undefined;
+        args.push(inner);
+      } else {
+        // A field name or a number, up to the next comma or parenthesis.
+        const t = /^[^(),]*/.exec(rest)![0];
+        at += t.length;
+        const word = t.trim();
+        if (word) args.push(CALC_NUMBER.test(word) ? Number(word) : word);
+      }
+      const end = /^\s*([,)])/.exec(text.slice(at));
+      if (!end) return undefined;
+      at += end[0].length;
+      if (end[1] === ')') return args.length > 0 ? { op: op as FormFieldCalcOp, args } : undefined;
+    }
+  };
+  const top = call();
+  if (!top || text.slice(at).trim()) return undefined;
+  const fields: string[] = [];
+  const collect = (c: FormFieldCalcCall): void => {
+    for (const a of c.args) {
+      if (typeof a === 'object') collect(a);
+      else if (typeof a === 'string' && !fields.includes(a)) fields.push(a);
+    }
+  };
+  collect(top);
+  return { ...top, fields };
 }
 
 /** The field a chip's attributes describe, or undefined without `field`. */
@@ -149,6 +212,7 @@ export function formFieldFromAttrs(attrs: DirectiveAttrs): FormFieldSpec | undef
     ...(format ? { format } : {}),
     ...(calc ? { calc } : {}),
     ...(options && options.length > 0 ? { options } : {}),
+    ...(kind === 'checkbox' && attrs.on?.trim() ? { on: attrs.on.trim() } : {}),
     ...(flag(attrs.readonly) || calc ? { readonly: true as const } : {}),
     ...(flag(attrs.required) ? { required: true as const } : {}),
     ...(flag(attrs.multiline) ? { multiline: true as const } : {}),
