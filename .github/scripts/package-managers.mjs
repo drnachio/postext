@@ -77,6 +77,8 @@ end
 `;
 
 const windows = 'postext-windows-x64.exe';
+// Every regex metacharacter, the backslash included, stands for itself.
+const escapeRegExp = (text) => text.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 const manifest = {
   version,
   description: `${DESC}. One self-contained executable: the postext engine, its PDF, EPUB, HTML and Word writers, fonts and print profiles.`,
@@ -96,7 +98,7 @@ const manifest = {
         url: `https://github.com/drnachio/postext/releases/download/v$version/${windows}#/postext.exe`,
         hash: {
           url: 'https://github.com/drnachio/postext/releases/download/v$version/SHA256SUMS',
-          regex: `([a-fA-F0-9]{64})\\s+\\*?${windows.replace(/\./g, '\\.')}`,
+          regex: `([a-fA-F0-9]{64})\\s+\\*?${escapeRegExp(windows)}`,
         },
       },
     },
