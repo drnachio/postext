@@ -31,6 +31,7 @@ import { defaultFontSet, isGenericFamily, faceRequestKey, GLYPH_PROBE_FAMILY, ty
 import { intersectRanges, rangesHave, sfntCodePointRanges, unionRanges, type CodePointRanges } from './cmap.js';
 import { minimalFont } from './minimalFont.js';
 import { baseFontFamily, isFeatureFamily } from './figureStyle.js';
+import { forgetStrikeout, registerStrikeout } from './strikeout.js';
 
 /** Characters of one face that another face drew. */
 export interface GlyphFallback extends FontFaceRequest {
@@ -127,7 +128,8 @@ function weightRange(weight: number | string): [number, number] {
 /**
  * Register what a file of a face covers: its bytes (TrueType or OpenType,
  * whose `cmap` is read) or the code points as intervals, and, for a slice
- * of a family, its `unicode-range`. A face's files add up. Returns false
+ * of a family, its `unicode-range`. A face's files add up. The bytes'
+ * strikeout is read too (`fonts/strikeout.ts`). Returns false
  * when the bytes could not be read (a WOFF or WOFF2 file: pass the
  * decompressed bytes).
  */
@@ -142,6 +144,7 @@ export function registerFontCoverage(
     ? file as CodePointRanges
     : sfntCodePointRanges(file instanceof Uint8Array ? file : new Uint8Array(file as ArrayBuffer));
   if (!read) return false;
+  if (!Array.isArray(file)) registerStrikeout(family, weight, style, file instanceof Uint8Array ? file : new Uint8Array(file as ArrayBuffer));
   const slice = parseUnicodeRange(unicodeRange);
   const ranges = slice ? intersectRanges(read, slice) : read;
   // A feature family (#1237) covers what its base family's files cover.
@@ -151,6 +154,7 @@ export function registerFontCoverage(
 
 /** Forget the coverage registered for `families` (all of it without). */
 export function forgetFontCoverage(families?: Iterable<string>): void {
+  forgetStrikeout(families);
   if (!families) {
     coverage.length = 0;
     return;

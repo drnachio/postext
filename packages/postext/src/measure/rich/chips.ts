@@ -2,6 +2,8 @@
 // their margins (#1276: split out of rich.ts).
 import type { VDTChipRun, VDTChipStrike, VDTAnnotationRun } from '../../vdt.js';
 import { STRIKE_AT, STRIKE_STROKE } from '../../marks/strikeGeometry.js';
+import { strikeoutOf } from '../../fonts/strikeout.js';
+import { fontEm } from '../vertical.js';
 import { uprightFace } from '../../writing/uprightArabic.js';
 import type { InlineSpan } from '../../parse/index.js';
 import { measureTextWidth } from '../canvas.js';
@@ -127,7 +129,7 @@ export function chipToken(
     box?.direction,
   );
   const textWidth = (asPainted ? directed.runs : runs).reduce((sum, r) => sum + r.width, 0);
-  const strikes = chipStrikes(directed.order || directed.runs.length !== runs.length ? undefined : directed.runs, runStrikes, sizePx);
+  const strikes = chipStrikes(directed.order || directed.runs.length !== runs.length ? undefined : directed.runs, runStrikes, runBaseFonts);
   const ownPaddingX = box?.paddingXPx ?? 0;
   const paddingY = box?.paddingYPx ?? 0;
   // A style may pad the top and the bottom apart (EF-172).
@@ -194,19 +196,19 @@ export function chipToken(
 }
 
 /** The lines through a chip's struck-through words (`VDTChip.strikes`),
- *  set as `marks/strikethrough.ts` sets them in the text: over the
- *  baseline by the same share of the chip's size, one line per run of
- *  struck runs side by side. `runs` are the chip's runs in paint order,
- *  undefined when they are reordered or cut for their direction (no line
- *  is drawn then). */
-function chipStrikes(runs: readonly VDTChipRun[] | undefined, struck: readonly ({ id: number; from: number; to: number } | undefined)[], sizePx: number): VDTChipStrike[] {
+ *  set as `marks/strikethrough.ts` sets them in the text: where each run's
+ *  face puts its strikeout (`fonts/strikeout.ts`, else the fallback of
+ *  `marks/strikeGeometry.ts`), read from the run's face before a script
+ *  shrinks it (`baseFonts`), so a superscript does not move the line; one
+ *  line per stretch of struck runs side by side in one face. `runs` are the
+ *  chip's runs in paint order, undefined when they are reordered or cut for
+ *  their direction (no line is drawn then). */
+function chipStrikes(runs: readonly VDTChipRun[] | undefined, struck: readonly ({ id: number; from: number; to: number } | undefined)[], baseFonts: readonly string[]): VDTChipStrike[] {
   if (!runs || !struck.some((s) => s)) return [];
   const out: VDTChipStrike[] = [];
-  const y = -STRIKE_AT * sizePx;
-  const thickness = Math.max(0.5, STRIKE_STROKE * sizePx);
-  let open: { id: number; from: number; to: number } | undefined;
+  let open: { id: number; from: number; to: number; y: number; thickness: number } | undefined;
   const flush = (): void => {
-    if (open && open.to > open.from) out.push({ x: open.from, y, length: open.to - open.from, thickness });
+    if (open && open.to > open.from) out.push({ x: open.from, y: open.y, length: open.to - open.from, thickness: open.thickness });
     open = undefined;
   };
   let x = 0;
@@ -217,14 +219,19 @@ function chipStrikes(runs: readonly VDTChipRun[] | undefined, struck: readonly (
       x += run.width;
       return;
     }
+    const base = baseFonts[i] ?? run.fontString;
+    const em = fontEm(base);
+    const face = strikeoutOf(base);
+    const y = -(face?.position ?? STRIKE_AT) * em;
+    const thickness = Math.max(0.5, (face?.size ?? STRIKE_STROKE) * em);
     const whole = measureTextWidth(run.text, run.fontString);
     const k = whole > 0 ? run.width / whole : 1;
     const from = x + (s.from > 0 ? measureTextWidth(run.text.slice(0, s.from), run.fontString) * k : 0);
     const to = x + (s.to < run.text.length ? measureTextWidth(run.text.slice(0, s.to), run.fontString) * k : run.width);
-    if (open && open.id === s.id && Math.abs(open.to - from) < 0.01) open.to = to;
+    if (open && open.id === s.id && Math.abs(open.to - from) < 0.01 && Math.abs(open.y - y) < 1e-6 && Math.abs(open.thickness - thickness) < 1e-6) open.to = to;
     else {
       flush();
-      open = { id: s.id, from, to };
+      open = { id: s.id, from, to, y, thickness };
     }
     if (s.to < run.text.length) flush();
     x += run.width;

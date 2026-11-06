@@ -15,12 +15,16 @@
  * the line, with the spaces between them; a run broken over two lines gets
  * a line on each, and two runs side by side keep two lines. The line goes
  * through the struck characters only: a full stop glued to the run stays
- * out. It sits 0.28 em over the baseline (about the middle of the
- * lowercase letters, where fonts put their strikeout) in Latin, Greek,
- * Cyrillic or Arabic text, and on the central axis of the em box in
- * Chinese and Japanese text and on a vertical page; a superscript or
- * subscript inside the run does not move it. It is 0.05 em thick (at least
- * half a pixel), in the colour the run's text is painted in.
+ * out. It sits where the face puts its strikeout and is as thick as the
+ * face says (OS/2 `yStrikeoutPosition` and `yStrikeoutSize`, read from the
+ * face's files, `fonts/strikeout.ts`), each face of the run on its own: a
+ * run that changes face (a bold word, another family, another size) is
+ * drawn in pieces that meet. A face whose file the engine has not read
+ * takes 0.28 em over the baseline (about the middle of the lowercase
+ * letters) and 0.05 em. In Chinese and Japanese text and on a vertical page
+ * the line runs on the central axis of the em box. A superscript or
+ * subscript inside the run does not move it. It is at least half a pixel
+ * thick, in the colour the run's text is painted in.
  */
 
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineMark, VDTLineSegment } from '../vdt.js';
@@ -32,6 +36,7 @@ import { measureTextWidth } from '../measure/canvas.js';
 import { fontEm } from '../measure/vertical.js';
 
 import { STRIKE_AT, STRIKE_STROKE } from './strikeGeometry.js';
+import { strikeoutOf } from '../fonts/strikeout.js';
 
 type BlockLike = Parameters<typeof segmentPositions>[1] & Partial<Pick<VDTBlock, 'boldColor' | 'italicColor'>>;
 
@@ -45,6 +50,19 @@ function struckExtent(seg: VDTLineSegment, width: number, font: string): [number
   if (!(whole > 0)) return [0, width];
   const k = width / whole;
   return [measureTextWidth(seg.text.slice(0, s.from), font) * k, measureTextWidth(seg.text.slice(0, s.to), font) * k];
+}
+
+/** Where the line through a segment goes across the line (px from the
+ *  baseline, negative up) and how thick it is: from its face's strikeout
+ *  (OS/2, `fonts/strikeout.ts`) when a file of the face was read, else
+ *  {@link STRIKE_AT} and {@link STRIKE_STROKE}. Chinese and Japanese text
+ *  and a vertical page put it on the central axis of the em box. */
+function strikeGeometry(seg: VDTLineSegment, font: string, vertical: boolean): { y: number; thickness: number } {
+  const em = fontEm(font);
+  const face = strikeoutOf(font);
+  const central = vertical || (seg.kind === 'text' && hasCJK(seg.text));
+  const position = central ? CENTRAL : face?.position ?? STRIKE_AT;
+  return { y: -position * em + (seg.baselineShift ?? 0), thickness: Math.max(0.5, (face?.size ?? STRIKE_STROKE) * em) };
 }
 
 /** The colour a segment's text is painted in, when it is not the block's. */
@@ -71,19 +89,23 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
   }
   const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
   const out: VDTLineMark[] = [];
-  type Run = { id: number; from: number; to: number; em: number; shift: number; script: boolean; cjk: boolean; color?: string };
+  // A piece of a run: one face's line (where it sits across the line and
+  // how thick it is), from `from` to `to`.
+  type Run = { id: number; from: number; to: number; y: number; thickness: number; color?: string };
   let run: Run | undefined;
+  // The run's words go on after a space: a piece that starts there in
+  // another face takes the space into the piece before it.
+  let bridged = false;
   const flush = (): void => {
     const r = run;
     run = undefined;
     if (!r || !(r.to > r.from)) return;
-    const axis = vertical || r.cjk ? -CENTRAL * r.em : -STRIKE_AT * r.em;
     out.push({
       kind: 'line',
       x: r.from - line.bbox.x,
-      y: axis + r.shift,
+      y: r.y,
       length: r.to - r.from,
-      thickness: Math.max(0.5, STRIKE_STROKE * r.em),
+      thickness: r.thickness,
       ...(r.color !== undefined ? { color: r.color } : {}),
     });
   };
@@ -97,39 +119,45 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
         let j = k + 1;
         while (j < order.length && segments[order[j]!]!.kind === 'space' && !segments[order[j]!]!.strike) j++;
         const next = j < order.length ? segments[order[j]!] : undefined;
-        if (next?.strike?.id === run.id) continue;
+        if (next?.strike?.id === run.id) {
+          bridged = true;
+          continue;
+        }
       }
       flush();
+      bridged = false;
       continue;
     }
     const font = segmentFont(seg, block);
-    const em = fontEm(font);
     const [from, to] = struckExtent(seg, widths[i]!, font);
     // The tracking after the last letter is no part of the word.
     const trail = seg.kind === 'text' && (strike.to === undefined || strike.to >= seg.text.length) ? tracking + (seg.tracking ?? 0) : 0;
     const left = at[i]! + from;
     const right = at[i]! + Math.max(from, to - trail);
     const color = colorOf(seg, block);
+    const sameRun = run !== undefined && run.id === strike.id;
+    const continues = sameRun && run!.color === color;
     // A superscript or a subscript does not move the line: the run's text
     // around it decides where it goes.
-    const script = !!seg.script;
-    const shift = script ? 0 : seg.baselineShift ?? 0;
-    const cjk = seg.kind === 'text' && hasCJK(seg.text);
-    if (run && run.id === strike.id && run.color === color) {
-      run.from = Math.min(run.from, left);
-      run.to = Math.max(run.to, right);
-      if (run.script && !script) {
-        run.em = em;
-        run.shift = shift;
-        run.script = false;
-      } else if (script === run.script) {
-        run.em = Math.max(run.em, em);
-      }
-      run.cjk ||= cjk;
+    if (continues && seg.script) {
+      run!.to = Math.max(run!.to, right);
+      bridged = false;
       continue;
     }
+    const { y, thickness } = strikeGeometry(seg, font, vertical);
+    if (continues && Math.abs(run!.y - y) < 1e-6 && Math.abs(run!.thickness - thickness) < 1e-6) {
+      run!.from = Math.min(run!.from, left);
+      run!.to = Math.max(run!.to, right);
+      bridged = false;
+      continue;
+    }
+    // Another face (another cut, family or size) or colour of the same
+    // run: its own piece, the one before it reaching up to where this one
+    // starts.
+    if (sameRun && (bridged || Math.abs(run!.to - left) < 0.5)) run!.to = Math.max(run!.to, left);
     flush();
-    run = { id: strike.id, from: left, to: right, em, shift: script ? seg.baselineShift ?? 0 : shift, script, cjk, ...(color !== undefined ? { color } : {}) };
+    bridged = false;
+    run = { id: strike.id, from: left, to: right, y, thickness, ...(color !== undefined ? { color } : {}) };
   }
   flush();
   return out;
