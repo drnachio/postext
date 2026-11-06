@@ -184,14 +184,6 @@ By **Callum Reid**
 :::
 :::
 
-:::callout{type="data" span="page" placement="bottom"}
-:::columns{count=2 breaks="2"}
-::resource{id="results"}
-
-::resource{id="diary"}
-:::
-:::
-
 :::callout{type="ad" span="page" placement="bottom" title="Advertisement"}
 ## Corran Shipbuilders {style="ad"}
 
@@ -200,6 +192,14 @@ By **Callum Reid**
 :::space{lines=20}
 
 Four years, paid from the first day, with a job at the end. Applications close on 30 November.
+:::
+
+:::callout{type="data" span="page" placement="bottom"}
+:::columns{count=2 breaks="2"}
+::resource{id="results"}
+
+::resource{id="diary"}
+:::
 :::
 
 :::paragraphs{style="flush"}
