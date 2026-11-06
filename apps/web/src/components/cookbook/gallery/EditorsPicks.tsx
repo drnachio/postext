@@ -3,7 +3,7 @@ import type { CatalogRecipe, Locale } from "@/lib/cookbook/types";
 import type { GalleryChapter, GalleryData } from "./data";
 import { collectionHref } from "./links";
 import { PlateGrid } from "./PlateGrid";
-import { plateFacets, toPlate } from "./plates";
+import { PLATE_HREF_BASE, plateFacets, toPlate } from "./plates";
 
 function chapterOf(chapters: GalleryChapter[], recipe: CatalogRecipe) {
   const c = chapters.find((ch) => ch.id === recipe.chapter);
@@ -11,7 +11,10 @@ function chapterOf(chapters: GalleryChapter[], recipe: CatalogRecipe) {
 }
 
 /** The editor's picks (featured[1..3], large plates) and the row of
- *  collections with their counts. Either part hides when empty. */
+ *  collections with their counts. Either part hides when empty. The picks
+ *  load lazily: they sit below the frontispiece, and eager images are
+ *  preloaded in the head (React), where three plates took bandwidth from
+ *  the frontispiece's plate, the page's LCP (#1432). */
 export async function EditorsPicks({
   data,
   locale,
@@ -33,11 +36,11 @@ export async function EditorsPicks({
           </h2>
           <PlateGrid
             plates={plates}
+            hrefBase={PLATE_HREF_BASE}
             chapter={picks.map((recipe) => chapterOf(chapters, recipe))}
             facets={plateFacets(data.catalog.facets, plates)}
             className="cb-shelf-row mt-6 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
             size="lg"
-            eager
           />
         </section>
       )}

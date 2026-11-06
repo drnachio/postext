@@ -5,7 +5,7 @@ import type { Catalog, CatalogRecipe } from "@/lib/cookbook/types";
 import { cn } from "@/lib/utils";
 import type { GalleryChapter, GalleryData } from "./data";
 import { PlateGrid } from "./PlateGrid";
-import { plateFacets, toPlate } from "./plates";
+import { PLATE_HREF_BASE, plateFacets, toPlate } from "./plates";
 
 /** One chapter of the book view: its band in the part colour (kicker,
  *  title, intro, the chapter number huge at the outer edge, an ink foot)
@@ -59,6 +59,7 @@ function ChapterShelf({
 
       <PlateGrid
         plates={plates}
+        hrefBase={PLATE_HREF_BASE}
         chapter={{ title: chapter.title, color: chapter.color }}
         facets={plateFacets(facets, plates)}
         className="cb-shelf-row mt-7 grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
