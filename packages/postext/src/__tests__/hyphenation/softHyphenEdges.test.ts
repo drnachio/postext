@@ -54,6 +54,8 @@ describe('a typed soft hyphen is a break only between two letters or digits (#70
     expect(at(`12${SHY}b`)).toBe(true);
     expect(at(`é${SHY}a`)).toBe(true);
     expect(at(`\u{1D49C}${SHY}\u{1D49E}`)).toBe(true);
+    // An astral letter before it (#1438): CJK extension B Han.
+    expect(at(`\u{20000}${SHY}\u{20001}`)).toBe(true);
     expect(at(`${SHY}Alice`)).toBe(false);
     expect(at(`Alice${SHY}`)).toBe(false);
     expect(at(`(${SHY}Alice)`)).toBe(false);

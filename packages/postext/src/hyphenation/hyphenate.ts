@@ -429,7 +429,10 @@ function hyphenateCatalan(hyphenator: Hypher, word: string): string {
 
 const SOFT_HYPHEN = '­';
 
-const WORD_CHARACTER_END_RE = /[\p{L}\p{M}\p{N}]$/u;
+// Alternation, not a class: V8 in Node 26 fails `/[\p{L}…]$/u` on an
+// astral letter at the end of the string (`𝒜`, CJK extension Han), where
+// `/\p{L}$/u` matches (#1438).
+const WORD_CHARACTER_END_RE = /(?:\p{L}|\p{M}|\p{N})$/u;
 const WORD_CHARACTER_START_RE = /^[\p{L}\p{M}\p{N}]/u;
 
 /**
