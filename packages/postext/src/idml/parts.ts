@@ -146,6 +146,27 @@ export interface TextProps {
   baselineShift?: number;
 }
 
+/** A tab stop: pt from the text frame's text edge (InDesign measures tab
+ *  stops from there, whatever the paragraph's left indent). */
+export interface TabStopDef {
+  position: number;
+  alignment: 'LeftAlign' | 'RightAlign' | 'CenterAlign' | 'CharacterAlign';
+  /** The character a `CharacterAlign` stop aligns on. Default `.`. */
+  character?: string;
+  leader?: string;
+}
+
+/** A paragraph's indents, space after and tab stops (pt). */
+export interface ParagraphFormat {
+  leftIndent: number;
+  firstLineIndent: number;
+  rightIndent: number;
+  spaceAfter: number;
+  tabs: TabStopDef[];
+}
+
+export const NO_FORMAT: ParagraphFormat = { leftIndent: 0, firstLineIndent: 0, rightIndent: 0, spaceAfter: 0, tabs: [] };
+
 export interface ParagraphStyleDef {
   self: string;
   name: string;
@@ -153,6 +174,7 @@ export interface ParagraphStyleDef {
   /** pt */
   leading: number;
   justification: string;
+  format: ParagraphFormat;
 }
 
 /** `ParagraphStyle/<name>`: a colon in a name is written `%3a`, as InDesign does. */
@@ -170,12 +192,33 @@ export function textPropsAttrs(p: Partial<TextProps>): string {
   );
 }
 
+/** A paragraph's tab stops as a `TabList` property (empty: none, which
+ *  clears a style's stops on a paragraph). */
+export function tabListXml(tabs: readonly TabStopDef[]): string {
+  const items = tabs.map(
+    (t) =>
+      `<ListItem type="record"><Alignment type="enumeration">${t.alignment}</Alignment><AlignmentCharacter type="string">${escapeAttr(t.character ?? '.')}</AlignmentCharacter>` +
+      `<Leader type="string">${escapeAttr(t.leader ?? '')}</Leader><Position type="unit">${num(t.position)}</Position></ListItem>`,
+  );
+  return `<TabList type="list">${items.join('')}</TabList>`;
+}
+
+/** The indents and space after a paragraph or style sets (`f`'s fields
+ *  that are set; a style leaves zeros out). */
+export function paragraphFormatAttrs(f: Partial<ParagraphFormat>): string {
+  return attr('LeftIndent', f.leftIndent) + attr('FirstLineIndent', f.firstLineIndent) + attr('RightIndent', f.rightIndent) + attr('SpaceAfter', f.spaceAfter);
+}
+
+const nonZero = (n: number) => (Math.abs(n) >= 0.005 ? n : undefined);
+
 export function stylesXml(paragraphStyles: ParagraphStyleDef[]): string {
   const own = paragraphStyles
     .map(
       (s) =>
-        `<ParagraphStyle${attr('Self', s.self)}${attr('Name', s.name)} Imported="false" NextStyle="${escapeAttr(s.self)}" Hyphenation="false"${textPropsAttrs(s.props)}${attr('Justification', s.justification)}>` +
-        `<Properties><BasedOn type="object">ParagraphStyle/$ID/NormalParagraphStyle</BasedOn><AppliedFont type="string">${escapeAttr(s.props.font)}</AppliedFont><Leading type="unit">${num(s.leading)}</Leading></Properties></ParagraphStyle>`,
+        `<ParagraphStyle${attr('Self', s.self)}${attr('Name', s.name)} Imported="false" NextStyle="${escapeAttr(s.self)}" Hyphenation="false"${textPropsAttrs(s.props)}${attr('Justification', s.justification)}` +
+        `${paragraphFormatAttrs({ leftIndent: nonZero(s.format.leftIndent), firstLineIndent: nonZero(s.format.firstLineIndent), rightIndent: nonZero(s.format.rightIndent), spaceAfter: nonZero(s.format.spaceAfter) })}>` +
+        `<Properties><BasedOn type="object">ParagraphStyle/$ID/NormalParagraphStyle</BasedOn><AppliedFont type="string">${escapeAttr(s.props.font)}</AppliedFont><Leading type="unit">${num(s.leading)}</Leading>` +
+        `${s.format.tabs.length ? tabListXml(s.format.tabs) : ''}</Properties></ParagraphStyle>`,
     )
     .join('');
   return (

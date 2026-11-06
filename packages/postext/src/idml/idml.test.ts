@@ -238,6 +238,91 @@ describe('idmlDocument', () => {
     expect(contents(story)).toBe(`${LOREM}${LOREM}`);
   });
 
+  // 4.5 mm and 1 mm in pt.
+  const MM45 = (4.5 * 72) / 25.4;
+  const MM1 = 72 / 25.4;
+  const tabsOf = (el: XmlElement) =>
+    descendants(el, 'ListItem').map((li) => ({
+      align: descendants(li, 'Alignment')[0]!.children.join(''),
+      leader: descendants(li, 'Leader')[0]!.children.join(''),
+      at: Number(descendants(li, 'Position')[0]!.children.join('')),
+    }));
+  const storyNo = (path: string) => parseInt(/Story_u([0-9a-f]+)\.xml$/.exec(path)![1]!, 16);
+  const paraStyle = (f: Files, name: string) => descendants(xml(f, 'Resources/Styles.xml'), 'ParagraphStyle').find((s) => attr(s, 'Name') === name)!;
+
+  it('gives a frame style its tab stops and space after; its padding is the frame inset, not an indent', () => {
+    const notes = { ...plain('notes', 8, { tabStops: [{ position: mm(4.5) }], paragraphSpacing: mm(1) }), padding: { top: mm(0), right: mm(0), bottom: mm(0), left: mm(4.5) } };
+    const cfg = composedConfig([{ name: 'notes', style: 'notes', placement: top(10, 20), width: mm(120), height: mm(60) }], [notes]);
+    const f = idml(sheet(':::frame{slot="notes"}\n\\*\tNote\n\n\\*\\*\\*\\*\tNote\n:::'), cfg);
+    const style = paraStyle(f, 'notes');
+    expect(tabsOf(style)).toEqual([{ align: 'LeftAlign', leader: '', at: expect.closeTo(MM45, 3) }]);
+    expect(Number(attr(style, 'SpaceAfter'))).toBeCloseTo(MM1, 3);
+    // The engine sets the lines at the padding: that is the frame's inset.
+    expect(attr(style, 'LeftIndent')).toBeUndefined();
+    expect(attr(style, 'FirstLineIndent')).toBeUndefined();
+    const frame = descendants(xml(f, spreads(f)[0]!), 'TextFrame')[0]!;
+    expect(Number(attr(descendants(frame, 'TextFramePreference')[0]!, 'InsetSpacing')!.split(' ')[1])).toBeCloseTo(MM45, 3);
+    // Both notes follow the style: no indents, stops or spacing of their own.
+    const story = storyOf(f, frame);
+    const paras = descendants(parseXml(story), 'ParagraphStyleRange');
+    expect(paras).toHaveLength(2);
+    for (const p of paras) for (const a of ['LeftIndent', 'FirstLineIndent', 'RightIndent', 'SpaceBefore', 'SpaceAfter']) expect(attr(p, a), a).toBeUndefined();
+    expect(story).not.toContain('<TabList');
+    expect(contents(story)).toBe('*\tNote****\tNote');
+  });
+
+  it('keeps a forced line break as InDesign’s (U+2028)', () => {
+    const cfg = composedConfig([{ name: 'notes', style: 'notes', placement: top(10, 20), width: mm(120), height: mm(60) }], [plain('notes', 8, { tabStops: [{ position: mm(4.5) }] })]);
+    const f = idml(sheet(':::frame{slot="notes"}\n\\*\tNote\\\n\\*\\*\\*\\*\tNote\n:::'), cfg);
+    const story = storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame')[0]!);
+    expect(descendants(parseXml(story), 'ParagraphStyleRange')).toHaveLength(1);
+    expect(contents(story)).toBe('*\tNote ****\tNote');
+  });
+
+  it('writes a paragraph style’s hanging indent, first-line indent and stops (a leader the stop’s, not text)', () => {
+    const cfg = config({
+      paragraphStyles: [
+        { id: 'hang', name: 'Hang', hangingIndent: mm(4.5), tabStops: [{ position: mm(4.5) }, { position: 'end', align: 'end', leader: '.' }] },
+        { id: 'indented', name: 'Indented', indent: mm(3), firstLineIndent: mm(5) },
+      ],
+    } as unknown as Partial<PostextConfig>);
+    const md = `:::paragraphs{style="hang"}\n\\*\t${LOREM.slice(0, 160)}\tend\n\n\\*\\*\\*\\*\tShort.\n:::\n\n:::paragraphs{style="indented"}\n${LOREM}\n:::\n\nA plain paragraph.`;
+    const f = idml(md, cfg);
+    // The first paragraph names the style (`Body`): the hanging note's.
+    const style = paraStyle(f, 'Body');
+    expect(Number(attr(style, 'LeftIndent'))).toBeCloseTo(MM45, 3);
+    expect(Number(attr(style, 'FirstLineIndent'))).toBeCloseTo(-MM45, 3);
+    const measure = (120 * 72) / 25.4;
+    expect(tabsOf(style)).toEqual([
+      { align: 'LeftAlign', leader: '', at: expect.closeTo(MM45, 3) },
+      { align: 'RightAlign', leader: '.', at: expect.closeTo(measure, 2) },
+    ]);
+    const stories = Object.keys(f).filter((p) => p.startsWith('Stories/')).sort((a, b) => storyNo(a) - storyNo(b)).map((p) => text(f, p));
+    const [long, short, indented, plainText] = stories.map((s) => ({ story: s, para: descendants(parseXml(s), 'ParagraphStyleRange')[0]! }));
+    // The leader's dots are the stop's: the text holds only the tab.
+    expect(contents(long!.story)).toMatch(/^\*\tTypesetting .*\tend$/);
+    // A note of one line hangs as its style says, with nothing of its own.
+    expect(contents(short!.story)).toBe('****\tShort.');
+    expect(attr(short!.para, 'LeftIndent')).toBeUndefined();
+    expect(short!.story).not.toContain('<TabList');
+    // An indented paragraph: indent plus first-line indent, the stops cleared.
+    expect(Number(attr(indented!.para, 'LeftIndent'))).toBeCloseTo((3 * 72) / 25.4, 3);
+    expect(Number(attr(indented!.para, 'FirstLineIndent'))).toBeCloseTo((5 * 72) / 25.4, 3);
+    expect(indented!.story).toContain('<TabList type="list"></TabList>');
+    // A paragraph without indents takes none.
+    expect(Number(attr(plainText!.para, 'LeftIndent'))).toBe(0);
+    expect(Number(attr(plainText!.para, 'FirstLineIndent'))).toBe(0);
+  });
+
+  it('sets no indents, stops or spacing for paragraphs without them', () => {
+    const f = idml(MD, TITLE_BODY);
+    const styles = text(f, 'Resources/Styles.xml');
+    const own = [...styles.matchAll(/<ParagraphStyle Self="ParagraphStyle\/(?:title|text)"[^>]*>.*?<\/ParagraphStyle>/gs)].map((m) => m[0]);
+    expect(own).toHaveLength(2);
+    for (const s of own) expect(s).not.toMatch(/LeftIndent|FirstLineIndent|RightIndent|TabList/);
+    for (const p of Object.keys(f).filter((k) => k.startsWith('Stories/'))) expect(text(f, p)).not.toMatch(/LeftIndent|FirstLineIndent|RightIndent|TabList/);
+  });
+
   it('names text outside frames by role, with names the caller may set', () => {
     const cfg = config();
     const md = '# A heading\n\nSome body text.';

@@ -18,6 +18,10 @@ import { authoredCmykColors } from '../color/authored.js';
 import { bitmapInfo, svgSize } from '../bundle/manifest/sizes.js';
 import { CHIP_PLACEHOLDER } from '../parse/inlineFormatting/inlineDirectives.js';
 import { escapeXml } from '../word/xml.js';
+import { resolveBodyStyle, resolveParagraphStyle, type BlockStyle } from '../pipeline/styles.js';
+import { deriveCalloutResolvedConfig } from '../pipeline/callouts/calloutLayout/plan.js';
+import { resolvedLocale } from '../pipeline/config.js';
+import { resolveTabSettings } from '../defaults/text/tabStops.js';
 import { fieldXml } from './fields.js';
 import {
   attr,
@@ -29,15 +33,20 @@ import {
   graphicXml,
   IDML_MIMETYPE,
   masterSpreadXml,
+  NO_FORMAT,
   num,
+  paragraphFormatAttrs,
   PKG_NS,
   preferencesXml,
   styleSelf,
   stylesXml,
+  tabListXml,
   textPropsAttrs,
   XML_HEAD,
+  type ParagraphFormat,
   type ParagraphStyleDef,
   type Swatch,
+  type TabStopDef,
   type TextProps,
 } from './parts.js';
 
@@ -138,6 +147,10 @@ interface Writer {
   palette: Map<string, string>;
   fonts: Map<string, Set<string>>;
   paraStyles: Map<string, ParagraphStyleDef>;
+  /** The document being written, and the engine's block styles of its
+   *  paragraphs by frame style and paragraph style (`engineStyle`). */
+  doc: VDTDocument;
+  blockStyles: Map<string, BlockStyle>;
   stories: { id: string; xml: string }[];
   media: Map<string, { path: string; bytes: Uint8Array }>;
   opts: IdmlOptions;
@@ -492,8 +505,9 @@ const thinSpaces = (px: number | undefined, sizePx: number): string => ' '.rep
  *  hyphens dropped, the space a break swallowed put back. A chip's words
  *  join the text (its box is a rectangle of its own, `chipRects`), its
  *  gap, border and padding as thin spaces; an empty chip (a blank to fill
- *  in) is its box's width in thin spaces. */
-function paragraphRuns(w: Writer, item: TextItem): { text: string; props: TextProps }[] {
+ *  in) is its box's width in thin spaces. With `tabLeaders` the leaders
+ *  before tab stops are left to the stops (`TabList`), not set as text. */
+function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): { text: string; props: TextProps }[] {
   const out: { text: string; props: TextProps }[] = [];
   const push = (text: string, props: TextProps) => {
     if (!text) return;
@@ -512,6 +526,7 @@ function paragraphRuns(w: Writer, item: TextItem): { text: string; props: TextPr
         return true;
       }
       if (!r.inline && r.x < fieldEnd - 0.01) return false;
+      if (tabLeaders && r.leader) return false;
       return !r.inline || r.inline.kind === 'chip';
     });
     if (line.runs.some((r) => r.inline && r.inline.kind !== 'chip')) w.warn('text.inline', `Inline content (maths, music, swatches) is left out: "${line.text.slice(0, 40)}"`);
@@ -529,7 +544,8 @@ function paragraphRuns(w: Writer, item: TextItem): { text: string; props: TextPr
     const next = item.lines[li + 1];
     if (!next || !runs.length) return;
     const lastProps = out[out.length - 1]?.props ?? runProps(w, runs[0]!);
-    if (line.hardBreak) push(' ', lastProps);
+    // A forced break stays one: InDesign's forced line break (U+2028).
+    if (line.hardBreak) push(' ', lastProps);
     else if (!line.addedHyphen) {
       const end = [...line.map].reverse().find((m) => m >= 0);
       const start = next.map.find((m) => m >= 0);
@@ -559,50 +575,176 @@ function paragraphStyleName(w: Writer, item: TextItem, frame: VDTFrame | undefin
   return names[item.role] ?? item.role;
 }
 
-function paragraphStyle(w: Writer, name: string, first: TextProps, leading: number, justification: string): ParagraphStyleDef {
+function paragraphStyle(w: Writer, name: string, first: TextProps, leading: number, justification: string, format: ParagraphFormat): ParagraphStyleDef {
   let s = w.paraStyles.get(name);
-  if (!s) w.paraStyles.set(name, (s = { self: styleSelf('ParagraphStyle', name), name, props: first, leading, justification }));
+  if (!s) w.paraStyles.set(name, (s = { self: styleSelf('ParagraphStyle', name), name, props: first, leading, justification, format }));
   return s;
+}
+
+/** The block style the engine set a body paragraph in (its frame's callout
+ *  style's body, or its paragraph style in that body), for what its lines
+ *  do not show: its tab stops and the space after it. Undefined for other
+ *  text (headings, list items, notes). */
+function engineStyle(w: Writer, item: TextItem, frame: VDTFrame | undefined): BlockStyle | undefined {
+  if (item.role !== 'body') return undefined;
+  const key = `${frame?.styleId ?? ''}\u0000${item.paragraphStyle ?? ''}`;
+  let style = w.blockStyles.get(key);
+  if (!style) {
+    const config = w.doc.config;
+    const callout = frame?.styleId ? config.calloutStyles.find((s) => s.id === frame.styleId) : undefined;
+    const resolved = callout ? deriveCalloutResolvedConfig(config, callout) : config;
+    const para = item.paragraphStyle ? resolved.paragraphStyles.find((s) => s.id === item.paragraphStyle) : undefined;
+    style = para ? resolveParagraphStyle(para, resolved) : resolveBodyStyle(resolved);
+    w.blockStyles.set(key, style);
+  }
+  return style;
+}
+
+const TAB_ALIGN: Record<string, TabStopDef['alignment']> = { start: 'LeftAlign', end: 'RightAlign', center: 'CenterAlign', decimal: 'CharacterAlign' };
+
+/** A block style's tab stops (#622) as InDesign's. Postext measures a stop
+ *  from the start of the paragraph's measure (after a paragraph style's
+ *  indent), InDesign from the frame's text edge; `measurePx` is the frame's
+ *  text width on the sheet. A default interval becomes stops up to the
+ *  measure's end, a rule leader underscores. */
+function styleTabs(w: Writer, style: BlockStyle | undefined, measurePx: number, sc: number): TabStopDef[] {
+  if (!style) return [];
+  const tabs = resolveTabSettings(style.tabStops, style.tabInterval, w.doc.config.page.dpi, style.fontSizePx, resolvedLocale(w.doc.config));
+  if (!tabs) return [];
+  const indent = style.indentPx ?? 0;
+  const measure = Math.max(0, measurePx / sc - indent - (style.endIndentPx ?? 0));
+  const pt = (px: number) => (indent + px) * sc * w.k;
+  const out: TabStopDef[] = [];
+  let last = 0;
+  for (const s of tabs.stops) {
+    const px = s.at === 'end' ? measure : typeof s.at === 'number' ? s.at : (s.at.percent / 100) * measure;
+    last = Math.max(last, px);
+    out.push({ position: pt(px), alignment: TAB_ALIGN[s.align] ?? 'LeftAlign', ...(s.align === 'decimal' ? { character: s.decimalChar } : {}), ...(s.leader ? { leader: s.leader === 'rule' ? '_' : s.leader } : {}) });
+  }
+  const step = tabs.intervalPx;
+  if (step) for (let px = (Math.floor(last / step) + 1) * step; px <= measure + 0.01 && out.length < 64; px += step) out.push({ position: pt(px), alignment: 'LeftAlign' });
+  return out.sort((a, b) => a.position - b.position);
+}
+
+/** The text edges (sheet px) of each frame a story's items stand in, as
+ *  the text frame's insets put them: the union of its items' boxes. */
+function textEdges(items: readonly TextItem[]): Map<string, { left: number; right: number }> {
+  const out = new Map<string, { left: number; right: number }>();
+  for (const it of items) {
+    if (!it.lines.length) continue;
+    const key = it.frame ?? '';
+    const e = out.get(key);
+    const right = it.bbox.x + it.bbox.width;
+    out.set(key, e ? { left: Math.min(e.left, it.bbox.x), right: Math.max(e.right, right) } : { left: it.bbox.x, right });
+  }
+  return out;
+}
+
+/** A paragraph's indents (pt) from where the engine set its lines against
+ *  its frame's text edges: the turnover lines' start is the left indent,
+ *  the first line's start past it the first-line indent, the room every
+ *  line leaves before the right edge the right indent. A paragraph of one
+ *  line takes `basePx` (where its style starts a turnover line) as its
+ *  left indent, when known. Lines of right-to-left or vertical text are not read. */
+function lineIndents(w: Writer, item: TextItem, edge: { left: number; right: number }, basePx: number | undefined): { left: number; first: number; right: number } {
+  const lines = item.lines.filter((l) => !l.rtl && !l.vertical);
+  if (!lines.length) return { left: 0, first: 0, right: 0 };
+  const starts = lines.map((l) => l.x - edge.left);
+  const left = Math.max(0, lines.length > 1 ? Math.min(...starts.slice(1)) : (basePx ?? starts[0]!));
+  const first = Math.max(-left, starts[0]! - left);
+  const right = Math.max(0, Math.min(...lines.map((l) => edge.right - l.x - l.width)));
+  const pt = (px: number) => (Math.abs(px) < 0.01 ? 0 : px * w.k);
+  return { left: pt(left), first: pt(first), right: pt(right) };
+}
+
+/** A paragraph of a story, written once the next one has said how far
+ *  apart they stand. */
+interface StoryPara {
+  style: ParagraphStyleDef;
+  /** Leading, alignment, hyphenation the paragraph sets itself. */
+  attrs: string;
+  format: ParagraphFormat;
+  spaceBefore?: number;
+  ranges: string;
+}
+
+/** A paragraph's range: its style, what it sets beyond it, its text. */
+function paraXml(p: StoryPara): string {
+  const s = p.style.format;
+  const own = (a: number, b: number) => (Math.abs(a - b) >= 0.01 ? a : undefined);
+  const local = paragraphFormatAttrs({
+    leftIndent: own(p.format.leftIndent, s.leftIndent),
+    firstLineIndent: own(p.format.firstLineIndent, s.firstLineIndent),
+    rightIndent: own(p.format.rightIndent, s.rightIndent),
+    spaceAfter: own(p.format.spaceAfter, s.spaceAfter),
+  });
+  const tabs = tabListXml(p.format.tabs);
+  const props = tabs !== tabListXml(s.tabs) ? `<Properties>${tabs}</Properties>` : '';
+  return `<ParagraphStyleRange${attr('AppliedParagraphStyle', p.style.self)}${p.attrs}${local}${attr('SpaceBefore', p.spaceBefore)}>${props}${p.ranges}</ParagraphStyleRange>`;
 }
 
 /** A story: one paragraph per text item. A list item's marker joins its
  *  item's paragraph (marker, tab, text, hanging indent); the rest of a
  *  paragraph a frame break split joins its paragraph; sizes and leading
- *  follow the frame's text scale (`fit.shrinkText`). */
+ *  follow the frame's text scale (`fit.shrinkText`). Indents come from
+ *  where the lines stand, tab stops and the space after from the style
+ *  the engine set the paragraph in; the paragraph style takes those of
+ *  its first paragraph, a paragraph sets what differs. */
 function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | undefined): string {
-  const paras: string[] = [];
+  const paras: StoryPara[] = [];
   let prev: StoryItem | undefined;
   const sc = frame?.scale ?? 1;
   const scaled = (runs: { text: string; props: TextProps }[]) =>
     sc === 1 ? runs : runs.map((r) => ({ ...r, props: { ...r.props, size: r.props.size * sc, ...(r.props.baselineShift ? { baselineShift: r.props.baselineShift * sc } : {}) } }));
-  const textLeft = Math.min(...items.map((i) => i.bbox.x));
+  const edges = textEdges(items);
   let marker: { runs: { text: string; props: TextProps }[]; x: number } | undefined;
   items.forEach((item, i) => {
     if (item.role === 'marker') {
       marker = { runs: scaled(paragraphRuns(w, item)), x: item.lines[0]?.runs[0]?.x ?? item.bbox.x };
       return;
     }
-    let runs = scaled(paragraphRuns(w, item));
+    const edge = edges.get(item.frame ?? '') ?? { left: item.bbox.x, right: item.bbox.x + item.bbox.width };
+    // The style the engine set a body paragraph in (not a list item, which
+    // hangs on its own): its tab stops carry their leaders.
+    const engine = marker ? undefined : engineStyle(w, item, frame);
+    const tabs = styleTabs(w, engine, edge.right - edge.left, sc);
+    let runs = scaled(paragraphRuns(w, item, tabs.length > 0));
     let hang: { left: number; first: number } | undefined;
     if (marker) {
       runs = [...marker.runs.map((r) => ({ ...r, text: `${r.text}\t` })), ...runs];
       // The item's text starts where its lines do (the block's box takes in the marker).
       const textX = Math.min(...item.lines.map((l) => l.runs[0]?.x ?? item.bbox.x));
-      hang = { left: (textX - textLeft) * w.k, first: (marker.x - textX) * w.k };
+      hang = { left: (textX - edge.left) * w.k, first: (marker.x - textX) * w.k };
       marker = undefined;
     }
     if (!runs.length) return;
-    const joins = item.joinsPrevious && paras.length > 0;
+    const last = paras[paras.length - 1];
+    const joins = item.joinsPrevious && !!last;
     if (joins) {
       // No paragraph return between the two parts; the word space the
       // frame break swallowed comes back unless a hyphen split a word.
-      paras[paras.length - 1] = paras[paras.length - 1]!.replace(/<Br\/><\/CharacterStyleRange><\/ParagraphStyleRange>$/, '</CharacterStyleRange></ParagraphStyleRange>');
+      last.ranges = last.ranges.replace(/<Br\/><\/CharacterStyleRange>$/, '</CharacterStyleRange>');
       const before = prev?.lines[prev.lines.length - 1];
       if (before && !before.addedHyphen && !/\s$/.test(before.text) && !/^\s/.test(runs[0]!.text)) runs[0] = { ...runs[0]!, text: ` ${runs[0]!.text}` };
     }
     const lines = item.lines;
     const leading = (lines[0]?.lineHeight ?? 0) * w.k * sc;
     const justification = paragraphJustification(lines);
+    // What the style would carry: the paragraph's own indents and stops,
+    // or, for a list item, none. A paragraph of one line shows no turnover
+    // line: its style says where one would start.
+    const turnover = engine ? ((engine.indentPx ?? 0) + (engine.hangingIndent ? (engine.hangingIndentPx ?? engine.firstLineIndentPx) : 0)) * sc : undefined;
+    const indents = lineIndents(w, item, edge, turnover);
+    const base: ParagraphFormat = hang
+      ? { ...NO_FORMAT, rightIndent: indents.right }
+      : { leftIndent: indents.left, firstLineIndent: indents.first, rightIndent: indents.right, spaceAfter: engine ? engine.marginBottomPx * sc * w.k : 0, tabs };
+    // The tab after a list marker stops at the text's indent, not at
+    // InDesign's default stops.
+    const format: ParagraphFormat = joins
+      ? { ...last.format }
+      : hang
+        ? { ...base, leftIndent: hang.left, firstLineIndent: hang.first, tabs: [{ position: hang.left, alignment: 'LeftAlign' }] }
+        : base;
     // The style takes the look most of the paragraph's text has (a bold
     // lead-in does not make the style bold).
     const weight = new Map<TextProps, number>();
@@ -611,16 +753,20 @@ function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | u
       weight.set(same, (weight.get(same) ?? 0) + r.text.trim().length);
     }
     const dominant = [...weight].sort((a, b) => b[1] - a[1])[0]![0];
-    const style = paragraphStyle(w, paragraphStyleName(w, item, frame), dominant, leading, justification ?? 'LeftAlign');
+    const style = paragraphStyle(w, paragraphStyleName(w, item, frame), dominant, leading, justification ?? 'LeftAlign', base);
     let local = '';
     if (Math.abs(style.leading - leading) >= 0.01) local += attr('Leading', leading);
     if (justification && style.justification !== justification) local += attr('Justification', justification);
-    if (hang) local += attr('LeftIndent', hang.left) + attr('FirstLineIndent', hang.first);
+    let spaceBefore: number | undefined;
     const prevLast = prev?.lines[prev.lines.length - 1];
-    if (!joins && prevLast && lines[0] && prev?.frame === item.frame) {
-      // Baseline to baseline = leading + space before (InDesign).
-      const before = (lines[0].baseline - prevLast.baseline) * w.k - leading;
-      if (before > 0.05) local += attr('SpaceBefore', before);
+    if (!joins && last && prevLast && lines[0] && prev?.frame === item.frame) {
+      // Baseline to baseline = leading + the space after the paragraph
+      // before + the space before this one (InDesign). A gap narrower than
+      // the space after takes that space after down.
+      const gap = (lines[0].baseline - prevLast.baseline) * w.k - leading;
+      const before = gap - last.format.spaceAfter;
+      if (before > 0.05) spaceBefore = before;
+      else if (before < -0.05) last.format = { ...last.format, spaceAfter: Math.max(0, gap) };
     }
     prev = item;
     const ranges = runs.map((r, ri) => {
@@ -633,19 +779,14 @@ function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | u
     // Styles do not hyphenate (InDesign does by default); a paragraph the
     // composer hyphenated does.
     if (lines.some((l) => l.addedHyphen)) local += ' Hyphenation="true"';
-    // The tab after a list marker stops at the text's indent, not at
-    // InDesign's default stops.
-    const tabs = hang
-      ? `<Properties><TabList type="list"><ListItem type="record"><Alignment type="enumeration">LeftAlign</Alignment><AlignmentCharacter type="string">.</AlignmentCharacter><Leader type="string"></Leader><Position type="unit">${num(hang.left)}</Position></ListItem></TabList></Properties>`
-      : '';
-    paras.push(`<ParagraphStyleRange${attr('AppliedParagraphStyle', style.self)}${local}>${tabs}${ranges.join('')}</ParagraphStyleRange>`);
+    paras.push({ style, attrs: local, format, ranges: ranges.join(''), ...(spaceBefore !== undefined ? { spaceBefore } : {}) });
   });
   return (
     `${XML_HEAD}<idPkg:Story xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
     `<Story${attr('Self', id)} AppliedTOCStyle="n" TrackChanges="false" StoryTitle="$ID/" AppliedNamedGrid="n">` +
     '<StoryPreference OpticalMarginAlignment="false" OpticalMarginSize="12" FrameType="TextFrameType" StoryOrientation="Horizontal" StoryDirection="LeftToRightDirection"/>' +
     '<InCopyExportOption IncludeGraphicProxies="true" IncludeAllResources="false"/>' +
-    paras.join('') +
+    paras.map(paraXml).join('') +
     '</Story></idPkg:Story>'
   );
 }
@@ -824,6 +965,8 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
     palette,
     fonts: new Map(),
     paraStyles: new Map(),
+    doc: first,
+    blockStyles: new Map(),
     stories: [],
     media: new Map(),
     opts: options,
@@ -839,6 +982,8 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
   let geometry = { width: 0, height: 0, bleed: 0 };
   for (const doc of docs) {
     w.k = 72 / doc.config.page.dpi;
+    w.doc = doc;
+    w.blockStyles.clear();
     for (let p = 0; p < doc.pages.length; p++) {
       const page = pageDisplayList(doc, p);
       const trim = page.trim ?? { x: 0, y: 0, width: page.width, height: page.height };

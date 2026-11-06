@@ -57,6 +57,9 @@ export interface DisplayRun {
   refTarget?: { id: string; anchor?: boolean };
   /** Book page index the run links to (an index entry's page number). */
   pageLink?: number;
+  /** The leader before a tab stop (#622, a contents row's): its dots, or
+   *  the empty run a rule leader is drawn on. */
+  leader?: true;
   rtl?: boolean;
   /** Index of the run's first character in the line's `text`. */
   textStart: number;
@@ -206,6 +209,9 @@ export type DisplayItem = DisplayItemCommon & (
       rotate?: number;
       /** Engine block kind, for diagnostics. */
       blockType?: string;
+      /** The paragraph style the block is set in (`VDTBlock.paragraphStyleId`),
+       *  for writers that carry a paragraph's tab stops and spacing. */
+      paragraphStyle?: string;
       /** Clip rectangle the backend applies (columns clip their blocks). */
       clip?: DisplayRect;
     }
