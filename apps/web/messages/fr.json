@@ -73,6 +73,7 @@
     "testedWith": "testé avec postext {version}",
     "number": "Nº",
     "frontispiece": "Frontispice",
+    "_colon": "Les deux-points après une étiquette (« Trier : ») : le français met devant une espace insécable, les autres langues non.",
     "colon": " :",
     "searchBarRegion": "Rechercher et filtrer les recettes",
     "searchLabel": "Rechercher dans les recettes",

@@ -73,6 +73,7 @@
     "testedWith": "probado con postext {version}",
     "number": "N.º",
     "frontispiece": "Frontispicio",
+    "_colon": "Los dos puntos tras una etiqueta («Ordenar:»): el francés pone delante un espacio de no separación; el español, no.",
     "colon": ":",
     "searchBarRegion": "Buscar y filtrar recetas",
     "searchLabel": "Buscar en el Recetario",

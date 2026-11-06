@@ -73,6 +73,7 @@
     "testedWith": "testado com postext {version}",
     "number": "Nº",
     "frontispiece": "Frontispício",
+    "_colon": "Os dois-pontos depois de um rótulo (“Ordenar:”): o francês põe antes um espaço inseparável; o português, não.",
     "colon": ":",
     "searchBarRegion": "Buscar e filtrar receitas",
     "searchLabel": "Buscar nas Receitas",

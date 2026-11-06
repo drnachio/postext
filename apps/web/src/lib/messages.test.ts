@@ -55,7 +55,26 @@ describe("messages", () => {
       expect(enKeys.filter((k) => !keys.has(k))).toEqual([]);
     });
   }
+
+  // A note for translators ("_" key) goes with its string into every
+  // locale, so whoever revises that locale reads it too (#1439).
+  for (const [locale, messages] of Object.entries(TRANSLATIONS)) {
+    it(`${locale} carries every translator note of en`, () => {
+      const enNotes = noteKeys(en as unknown as Tree);
+      const notes = new Set(noteKeys(messages as unknown as Tree));
+      expect(enNotes.filter((k) => !notes.has(k))).toEqual([]);
+    });
+  }
 });
+
+/** Dotted paths of every "_" key: the notes for translators. */
+function noteKeys(tree: Tree, prefix = ""): string[] {
+  return Object.entries(tree).flatMap(([key, value]) => {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (key.startsWith("_")) return [path];
+    return typeof value === "string" ? [] : noteKeys(value, path);
+  });
+}
 
 /** Keys whose messages next-intl cannot parse: a `{` or `}` that is not an
  *  ICU argument must be quoted as `'{'` / `'}'`, or the UI shows the key. */

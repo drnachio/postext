@@ -73,6 +73,7 @@
     "testedWith": "已用postext {version}测试",
     "number": "Nº",
     "frontispiece": "卷首图",
+    "_colon": "标签后的冒号（“排序:”）。法语在冒号前加不换行空格。这里冒号后还跟一个空格（“难度: 初级”），所以用半角冒号。",
     "colon": ":",
     "searchBarRegion": "搜索和筛选食谱",
     "searchLabel": "搜索排版食谱",
