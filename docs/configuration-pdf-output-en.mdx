@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'PDF files',
   description: 'postext-pdf from code: installation, the API, font providers in the browser and in Node, CJK fonts, resource bytes, vertical text, workers and print-ready files',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-06',
   readingTime: '20 min',
   order: 22,
   parent: 'configuration',
@@ -74,7 +74,7 @@ window.open(url);
 
 ### Why a font provider?
 
-`pdf-lib` embeds real font files into the PDF — the browser's installed fonts are not available at render time, and a font you only loaded for on-screen measurement is not, on its own, enough to produce a self-contained PDF. `renderToPdf` scans the pages for every face they paint (one per `family|weight|style` combination — see [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for)) and calls your provider once per unique combination. The provider returns a `Uint8Array` of **TTF or OTF** bytes, or a list of them for a face served as several files (see [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts)); `pdf-lib` subsets TrueType outlines and embeds CFF (`.otf`) files whole. Faces the provider answers with the same file, such as a regular cut standing in for the bold a family lacks, share one embedded font. A face that no page ends up drawing with, such as the face of an SVG figure's text when the figure is drawn as a picture, is left out of the file.
+`pdf-lib` embeds real font files into the PDF — the browser's installed fonts are not available at render time, and a font you only loaded for on-screen measurement is not, on its own, enough to produce a self-contained PDF. `renderToPdf` scans the pages for every face they paint (one per `family|weight|style` combination — see [Which faces the provider is asked for](#which-faces-the-provider-is-asked-for)) and calls your provider once per unique combination. The provider returns a `Uint8Array` of **TTF or OTF** bytes, or a list of them for a face served as several files (see [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts)); `pdf-lib` subsets TrueType outlines and embeds CFF (`.otf`) files whole. A CFF face is declared as one: a `CIDFontType0` font with its CFF program in `FontFile3` (`CIDFontType0C`), which `pdffonts` lists as `CID Type 0C` and print preflights expect. A CID-keyed CFF face (Source Han, the `.otf` files of Noto CJK) keeps the TrueType declaration, because its glyph numbering does not match the one the text is written with; use the TrueType builds of those families for print. Faces the provider answers with the same file, such as a regular cut standing in for the bold a family lacks, share one embedded font. A face that no page ends up drawing with, such as the face of an SVG figure's text when the figure is drawn as a picture, is left out of the file.
 
 **Use per-weight static fonts, not a single variable font.** Google Fonts often serves one variable WOFF2 per family covering the whole weight axis. `pdf-lib` can only embed the default instance from a variable file, so a bold paragraph would render at regular weight. Fontsource publishes per-weight static WOFF2 files that solve this cleanly — this is the pattern the sandbox uses. A variable file asked for at a weight other than its default instance is reported as a `variableFontDefaultInstance` warning.
 
@@ -354,7 +354,7 @@ pdfWorker.dispose();
 ```
 
 - `render(docs, options)` takes one document or a book's array of chapter documents. It takes the options of `renderToPdf`, with two differences. `resourceBytes` is a `Map<string, Uint8Array>` whose buffers are transferred, so pass copies of bytes you keep. `rasterizeSvg`, when given, runs on the main thread; by default the page's own `Image` and canvas do the job.
-- One handle renders one document at a time. `dispose()` terminates the worker and rejects any render still pending.
+- One handle renders one document at a time. `dispose()` terminates the worker and rejects any render still pending with an `AbortError` (`DOMException`): treat it as a cancellation. A font or picture your provider answers after `dispose()` is dropped.
 - `createPdfWorker({ worker })` takes a `Worker` you create, for build tools that control worker URLs. That worker must run `postext-pdf/worker/entry`.
 
 **From a CDN.** By default the worker script is loaded from the package's own URL (`new URL('./pdf.worker.js', import.meta.url)`). A page on another origin may not start it: imported from `esm.sh`, `createPdfWorker()` throws `Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`. Start a same-origin module worker that imports the entry instead (when you pin a version, pin the same one in both URLs):

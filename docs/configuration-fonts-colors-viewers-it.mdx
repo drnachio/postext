@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Font, colori e output',
   description: 'Unità, colori e tavolozza; i font personalizzati; il visualizzatore HTML, il PDF e la produzione di stampa; il visualizzatore Folio e le sovrimpressioni di debug',
   lang: 'it',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '40 min',
   order: 20,
   parent: 'configuration',
@@ -134,7 +134,7 @@ Dietro le quinte:
 - Quando `customFonts` cambia, ogni famiglia dichiarata viene registrata automaticamente come voci `FontFace` su `document.fonts`: così il visualizzatore HTML, la vista Canvas (che misura tramite `document.fonts`) e qualsiasi riferimento CSS diretto prendono il carattere personalizzato senza che l’utente debba prima aprire il selettore di font.
 - Il worker di impaginazione riceve gli stessi ArrayBuffer attraverso il percorso di trasferimento dei font già esistente, quindi la misurazione (`buildFontString`, pretext) funziona come per una famiglia del catalogo.
 - Quando modifichi o rimuovi una variante, il worker scarta il carattere che teneva in cache per quella famiglia e lo registra di nuovo alla build successiva, così le anteprime restano allineate all’insieme di varianti corrente.
-- **Esportazione PDF**: i binari caricati passano per la stessa pipeline `PdfFontProvider`. I file `.woff2` vengono decompressi; `.ttf` e `.otf` passano così come sono. `.woff` viene rifiutato con un errore chiaro (pdf-lib non può incorporare WOFF grezzo: ricaricalo come `.woff2`/`.ttf`/`.otf`). L’OpenType con contorni CFF (`.otf` con il magic number `OTTO`) viene incorporato **senza sottoinsieme**, perché il generatore di sottoinsiemi CFF di pdf-lib percorre ogni glifo al momento di `save()` e su font reali può restare bloccato per minuti; rinunciare al sottoinsieme significa ottenere un PDF un po’ più grande in cambio di tempi di rendering costanti.
+- **Esportazione PDF**: i binari caricati passano per la stessa pipeline `PdfFontProvider`. I file `.woff2` vengono decompressi; `.ttf` e `.otf` passano così come sono. `.woff` viene rifiutato con un errore chiaro (pdf-lib non può incorporare WOFF grezzo: ricaricalo come `.woff2`/`.ttf`/`.otf`). L’OpenType con contorni CFF (`.otf` con il magic number `OTTO`) viene incorporato **senza sottoinsieme**, perché il generatore di sottoinsiemi CFF di pdf-lib percorre ogni glifo al momento di `save()` e su font reali può restare bloccato per minuti; rinunciare al sottoinsieme significa ottenere un PDF un po’ più grande in cambio di tempi di rendering costanti. Il font viene dichiarato come CFF (`CIDFontType0`, `FontFile3` / `CIDFontType0C`), così il preflight di stampa ne riconosce il formato; un font CFF con chiavi CID (Source Han, i `.otf` di Noto CJK) mantiene la dichiarazione TrueType.
 
 ### Avvisi di font mancanti
 

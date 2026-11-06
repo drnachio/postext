@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'File PDF',
   description: 'postext-pdf dal codice: installazione, API, provider di font nel browser e in Node, font CJK, byte delle risorse, testo verticale, worker e file pronti per la stampa',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-06',
   readingTime: '22 min',
   order: 22,
   parent: 'configuration',
@@ -74,7 +74,7 @@ window.open(url);
 
 ### Perché un provider di font?
 
-`pdf-lib` incorpora nel PDF file di font veri: i font installati nel browser non sono disponibili al momento del rendering, e un font che hai caricato solo per la misurazione a schermo non basta, da solo, a produrre un PDF autonomo. `renderToPdf` scorre le pagine alla ricerca di ogni font che usano (uno per combinazione `family|weight|style`; vedi [Quali font vengono chiesti al provider](#quali-font-vengono-chiesti-al-provider)) e chiama il tuo provider una volta per ogni combinazione distinta. Il provider restituisce un `Uint8Array` di byte **TTF o OTF**, o un elenco di essi per un font servito in più file (vedi [Font cinesi, giapponesi e coreani](#font-cinesi-giapponesi-e-coreani)); `pdf-lib` crea un sottoinsieme dei contorni TrueType e incorpora per intero i file CFF (`.otf`). I font a cui il provider risponde con lo stesso file, come una variante regular che fa le veci del grassetto che manca a una famiglia, condividono un unico font incorporato. Un font che alla fine nessuna pagina usa, come il font del testo di una figura SVG quando la figura è disegnata come immagine, viene lasciato fuori dal file.
+`pdf-lib` incorpora nel PDF file di font veri: i font installati nel browser non sono disponibili al momento del rendering, e un font che hai caricato solo per la misurazione a schermo non basta, da solo, a produrre un PDF autonomo. `renderToPdf` scorre le pagine alla ricerca di ogni font che usano (uno per combinazione `family|weight|style`; vedi [Quali font vengono chiesti al provider](#quali-font-vengono-chiesti-al-provider)) e chiama il tuo provider una volta per ogni combinazione distinta. Il provider restituisce un `Uint8Array` di byte **TTF o OTF**, o un elenco di essi per un font servito in più file (vedi [Font cinesi, giapponesi e coreani](#font-cinesi-giapponesi-e-coreani)); `pdf-lib` crea un sottoinsieme dei contorni TrueType e incorpora per intero i file CFF (`.otf`). Un font CFF viene dichiarato come tale, cioè come font `CIDFontType0` con il programma CFF in `FontFile3` (`CIDFontType0C`), che `pdffonts` elenca come `CID Type 0C` e che il preflight di stampa si aspetta. Un font CFF con chiavi CID (Source Han, i file `.otf` di Noto CJK) mantiene la dichiarazione TrueType, perché la sua numerazione dei glifi non corrisponde a quella con cui è scritto il testo; per la stampa usa le versioni TrueType di queste famiglie. I font a cui il provider risponde con lo stesso file, come una variante regular che fa le veci del grassetto che manca a una famiglia, condividono un unico font incorporato. Un font che alla fine nessuna pagina usa, come il font del testo di una figura SVG quando la figura è disegnata come immagine, viene lasciato fuori dal file.
 
 **Usa font statici per ogni peso, non un unico font variabile.** Google Fonts serve spesso un solo WOFF2 variabile per famiglia, che copre l’intero asse dei pesi. `pdf-lib` può incorporare da un file variabile solo l’istanza predefinita, quindi un paragrafo in grassetto uscirebbe con il peso regular. Fontsource pubblica file WOFF2 statici per ogni peso che risolvono il problema in modo pulito: è lo schema che usa la Sandbox. Un file variabile chiesto a un peso diverso dalla sua istanza predefinita viene segnalato con un avviso `variableFontDefaultInstance`.
 
@@ -354,7 +354,7 @@ pdfWorker.dispose();
 ```
 
 - `render(docs, options)` prende un documento o l’array dei documenti dei capitoli di un libro. Accetta le opzioni di `renderToPdf`, con due differenze. `resourceBytes` è una `Map<string, Uint8Array>` i cui buffer vengono trasferiti, quindi passa copie dei byte che vuoi conservare. `rasterizeSvg`, se è fornito, viene eseguito sul thread principale; per impostazione predefinita se ne occupano l’`Image` e il canvas della pagina stessa.
-- Un handle produce un documento alla volta. `dispose()` termina il worker e rifiuta qualsiasi rendering ancora in sospeso.
+- Un handle produce un documento alla volta. `dispose()` termina il worker e rifiuta qualsiasi rendering ancora in sospeso con un `AbortError` (`DOMException`), da trattare come un annullamento. Se il provider risponde con un font o un’immagine dopo `dispose()`, la risposta viene scartata.
 - `createPdfWorker({ worker })` accetta un `Worker` creato da te, per gli strumenti di build che controllano gli URL dei worker. Quel worker deve eseguire `postext-pdf/worker/entry`.
 
 **Da una CDN.** Per impostazione predefinita lo script del worker viene caricato dall’URL del pacchetto stesso (`new URL('./pdf.worker.js', import.meta.url)`). Una pagina su un’altra origine potrebbe non riuscire ad avviarlo: importato da `esm.sh`, `createPdfWorker()` solleva `Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`. Avvia invece un module worker della stessa origine che importa l’entry (se fissi una versione, fissa la stessa in entrambi gli URL):

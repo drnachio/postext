@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '预览',
   description: '主视口中的Canvas、PDF、书页、HTML、EPUB 3和SCORM标签页：各自显示什么，能做什么',
   lang: 'zh',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '10分钟',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Canvas视口顶部的工具栏提供：
 - **下载**（`Download`图标）——把当前PDF保存到磁盘。文件名取自文档的第一个H1标题（没有时为`document.pdf`）。
 - **打印**（`Printer`图标）——针对内嵌的PDF查看器打开浏览器的打印对话框，大多数浏览器在这里既可以打印，也可以再次另存为PDF。
 - **当前章 / 整本书**（标签栏左侧的选择器，只在多于一章的书中出现）——把所有章渲染为一个连续的PDF，而不是默认的当前章（接续其前各章）。更改它会重新生成PDF。Canvas有自己的选择器（见[书与章](/zh/docs/sandbox-books-saving#书与章)）。
+
+在生成PDF的过程中离开这个标签页或更改某项设置，这次渲染会被悄悄取消，不显示任何错误，下次打开该标签页时会重新开始渲染。
 
 在底层，沙盒使用一个`createPdfFontProvider()`辅助函数：它从Fontsource的jsdelivr CDN获取按字重区分的静态WOFF2文件（也就是预览测量时所用的文件），在浏览器中解压为TTF，再通过`renderToPdf`把字节交给`pdf-lib`。之所以需要按字重区分的静态字体（而不是一个可变字体），是为了让粗体文字真正以粗体字重嵌入。在沙盒之外使用同样做法的方式，见[生成PDF](/zh/docs/configuration-pdf-output#生成pdf)。
 

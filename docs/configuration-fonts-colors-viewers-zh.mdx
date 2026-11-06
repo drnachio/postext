@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '字体、颜色与输出',
   description: '单位、颜色和调色板，自定义字体，HTML阅读器，PDF与印刷输出，Folio书页查看器，以及调试用的叠加层',
   lang: 'zh',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '28分钟',
   order: 20,
   parent: 'configuration',
@@ -134,7 +134,7 @@ interface PostextConfig {
 - `customFonts`变化时，每个已声明的字体族都会自动以`FontFace`条目注册到`document.fonts`上。这样HTML阅读器、Canvas视口（它通过`document.fonts`测量）以及任何直接引用它的CSS都能用上自定义字体，用户无需先打开字体选择器。
 - 排版工作线程通过现有的字体数据传输通道接收同样的ArrayBuffer，因此测量（`buildFontString`、pretext）的方式与字体目录中的字体族相同。
 - 修改或删除某个变体时，工作线程会丢弃该字体族的缓存字体，并在下次构建时重新注册，使预览与当前的变体集合保持同步。
-- **PDF导出**：上传的二进制文件走同一条`PdfFontProvider`流程。`.woff2`文件会被解压；`.ttf`和`.otf`直接传入。`.woff`会被拒绝并给出明确的错误（pdf-lib无法嵌入原始WOFF，请改为上传`.woff2`/`.ttf`/`.otf`）。CFF风格的OpenType（带`OTTO`标识的`.otf`）**不做子集化**直接嵌入，因为pdf-lib的CFF子集化程序在`save()`时会遍历每个字形，对实际字体可能卡住好几分钟；跳过子集化，PDF会稍大一些，换来稳定的渲染时间。
+- **PDF导出**：上传的二进制文件走同一条`PdfFontProvider`流程。`.woff2`文件会被解压；`.ttf`和`.otf`直接传入。`.woff`会被拒绝并给出明确的错误（pdf-lib无法嵌入原始WOFF，请改为上传`.woff2`/`.ttf`/`.otf`）。CFF风格的OpenType（带`OTTO`标识的`.otf`）**不做子集化**直接嵌入，因为pdf-lib的CFF子集化程序在`save()`时会遍历每个字形，对实际字体可能卡住好几分钟；跳过子集化，PDF会稍大一些，换来稳定的渲染时间。这种字体按CFF声明（`CIDFontType0`、`FontFile3` / `CIDFontType0C`），印前检查能看出它的格式；以CID为键的CFF字体（Source Han、Noto CJK的`.otf`）保留TrueType声明。
 
 ### 缺失字体警告
 

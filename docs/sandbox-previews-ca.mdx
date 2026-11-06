@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Previsualitzacions',
   description: "Les pestanyes Canvas, PDF, Folio, HTML, EPUB 3 i SCORM de l'àrea de previsualització: què mostra cadascuna i què s'hi pot fer",
   lang: 'ca',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Una barra d'eines flotant a la cantonada inferior dreta de l'àrea ofereix:
 - **Baixar** (icona `Download`): desa el PDF actual al disc. El nom del fitxer surt del primer encapçalament H1 del document (amb `document.pdf` com a valor per defecte).
 - **Imprimir** (icona `Printer`): obre el diàleg d'impressió del navegador sobre el visor de PDF integrat, que en la majoria de navegadors permet imprimir o tornar a desar com a PDF.
 - **Capítol actual / Llibre complet** (selector a l'esquerra de la barra de pestanyes, en llibres amb més d'un capítol): genera tots els capítols com un únic PDF continu, en lloc del capítol actiu a continuació dels anteriors (l'opció per defecte). Si el canvies, el PDF es torna a generar. El canvas té el seu propi selector (consulta [Llibres i capítols](/ca/docs/sandbox-books-saving#llibres-i-capítols)).
+
+Si surts de la pestanya o canvies un paràmetre mentre es genera un PDF, aquella renderització es cancel·la sense mostrar cap error, i quan tornes a la pestanya en comença una de nova.
 
 Internament, el Sandbox fa servir una funció auxiliar, `createPdfFontProvider()`, que baixa els fitxers WOFF2 estàtics de cada pes des de la CDN de Fontsource a jsdelivr (els mateixos amb què es mesuren les previsualitzacions), els descomprimeix a TTF al navegador i passa els bytes a `pdf-lib` a través de `renderToPdf`. Es fan servir fonts estàtiques per pes (en lloc d'una única font variable) perquè el text en negreta s'incrusti realment amb el pes de la negreta. Consulta [Generació de PDF](/ca/docs/configuration-pdf-output#generació-de-pdf) per aplicar el mateix patró fora del Sandbox.
 

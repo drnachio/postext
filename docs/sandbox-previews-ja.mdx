@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'プレビュー',
   description: 'メインビューポートのCanvas、PDF、Folio、HTML、EPUB 3、SCORMタブ：それぞれが表示するものと、できること',
   lang: 'ja',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '15分',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Canvasのビューポートの上部にあるツールバーには、次の機�
 - **ダウンロード**（`Download`アイコン）：現在のPDFをディスクに保存します。ファイル名は文書の最初のH1見出しから作られます（なければ`document.pdf`）。
 - **印刷**（`Printer`アイコン）：埋め込まれたPDFビューアーに対してブラウザーの印刷ダイアログを開きます。ほとんどのブラウザーでは、そこから印刷するか、もう一度PDFとして保存できます。
 - **現在の章 / 本全体**（タブバーの左端の選択。章が2つ以上ある本の場合）：前の章に続けて組んだ表示中の章（既定）の代わりに、すべての章を1つの連続したPDFとして描画します。切り替えるとPDFが再生成されます。Canvasには専用の選択があります（[本と章](/ja/docs/sandbox-books-saving#本と章)を参照）。
+
+PDFの生成中にタブを離れたり設定を変えたりすると、その描画は静かに取り消されます。エラーは表示されず、次にタブを開いたときに新しい描画が始まります。
 
 内部では、Sandboxは`createPdfFontProvider()`ヘルパーを使います。これはFontsourceのjsdelivr CDNから、プレビューの計測に使うのと同じウェイトごとの静的なWOFF2ファイルを取得し、ブラウザー内でTTFに展開して、そのバイト列を`renderToPdf`経由で`pdf-lib`に渡します。太字の文字を実際に太字のウェイトで埋め込むには、（1つの可変フォントではなく）ウェイトごとの静的フォントが必要です。Sandboxの外で同じパターンを使う方法は、[PDFの生成](/ja/docs/configuration-pdf-output#pdfの生成)を参照してください。
 

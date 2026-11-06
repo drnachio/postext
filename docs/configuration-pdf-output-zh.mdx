@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'PDF文件',
   description: '用代码调用postext-pdf：安装、API、浏览器和Node中的字体提供函数、中日韩字体、资源字节、竖排文字、工作线程和可付印的文件',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-06',
   readingTime: '15分钟',
   order: 22,
   parent: 'configuration',
@@ -74,7 +74,7 @@ window.open(url);
 
 ### 为什么需要字体提供函数？
 
-`pdf-lib`把真实的字体文件嵌入PDF：渲染时无法使用浏览器已安装的字体，而仅为屏幕测量加载的字体，本身也不足以生成自包含的PDF。`renderToPdf`扫描页面中绘制用到的每一种字体（每个`family|weight|style`组合一种，见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)），每个不同的组合调用一次你的提供函数。提供函数返回一个包含**TTF或OTF**字节的`Uint8Array`；如果字体由多个文件提供，则返回它们组成的列表（见[中文、日文和韩文字体](#中文日文和韩文字体)）。`pdf-lib`对TrueType轮廓做子集化，CFF（`.otf`）文件则整体嵌入。提供函数用同一个文件回应的多种字体（例如某个家族缺少粗体，用常规体代替）共享一份嵌入字体。最终没有任何页面用来绘制的字体不会写进文件，例如SVG图作为图片绘制时，其中文字所用的字体。
+`pdf-lib`把真实的字体文件嵌入PDF：渲染时无法使用浏览器已安装的字体，而仅为屏幕测量加载的字体，本身也不足以生成自包含的PDF。`renderToPdf`扫描页面中绘制用到的每一种字体（每个`family|weight|style`组合一种，见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)），每个不同的组合调用一次你的提供函数。提供函数返回一个包含**TTF或OTF**字节的`Uint8Array`；如果字体由多个文件提供，则返回它们组成的列表（见[中文、日文和韩文字体](#中文日文和韩文字体)）。`pdf-lib`对TrueType轮廓做子集化，CFF（`.otf`）文件则整体嵌入。CFF字体按CFF声明，即一个`CIDFontType0`字体，CFF程序放在`FontFile3`（`CIDFontType0C`）中，`pdffonts`把它列为`CID Type 0C`，这也是印前检查所要求的形式。以CID为键的CFF字体（Source Han、Noto CJK的`.otf`文件）保留TrueType声明，因为它的字形编号与书写文本所用的编号不一致；用于印刷时，请使用这些家族的TrueType版本。提供函数用同一个文件回应的多种字体（例如某个家族缺少粗体，用常规体代替）共享一份嵌入字体。最终没有任何页面用来绘制的字体不会写进文件，例如SVG图作为图片绘制时，其中文字所用的字体。
 
 <strong>使用按字重分开的静态字体，而不是单个可变字体。</strong>Google Fonts通常为每个家族提供一个覆盖整个字重轴的可变WOFF2文件。`pdf-lib`只能嵌入可变文件的默认实例，于是粗体段落会以常规字重渲染。Fontsource发布按字重分开的静态WOFF2文件，可以干净地解决这个问题，沙盒用的就是这种方式。以默认实例之外的字重请求可变文件时，会报告`variableFontDefaultInstance`警告。
 
@@ -354,7 +354,7 @@ pdfWorker.dispose();
 ```
 
 - `render(docs, options)`接收一个文档，或一本书各章文档组成的数组。它接受`renderToPdf`的选项，有两处不同。`resourceBytes`是一个`Map<string, Uint8Array>`，其中的buffer会被转移，所以对你还要保留的字节，请传入副本。`rasterizeSvg`如果提供，在主线程上运行；默认由页面自己的`Image`和canvas完成这项工作。
-- 一个句柄一次渲染一个文档。`dispose()`终止工作线程，并拒绝所有仍在进行的渲染。
+- 一个句柄一次渲染一个文档。`dispose()`终止工作线程，并以`AbortError`（`DOMException`）拒绝所有仍在进行的渲染，应把它当作取消来处理。`dispose()`之后提供函数才返回的字体或图片会被丢弃。
 - `createPdfWorker({ worker })`接收你自己创建的`Worker`，适用于控制worker URL的构建工具。这个worker必须运行`postext-pdf/worker/entry`。
 
 **从CDN加载**。默认情况下，worker脚本从包自身的URL加载（`new URL('./pdf.worker.js', import.meta.url)`）。其他源上的页面可能无法启动它：从`esm.sh`导入时，`createPdfWorker()`会抛出`Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`。这时改为启动一个同源的模块worker，由它导入入口（如果固定了版本，两个URL要固定到同一个版本）：

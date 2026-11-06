@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquivos PDF',
   description: 'O postext-pdf a partir do código: instalação, a API, provedores de fontes no navegador e no Node, fontes CJK, bytes de recursos, texto vertical, workers e arquivos prontos para impressão',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-06',
   readingTime: '22 min',
   order: 22,
   parent: 'configuration',
@@ -74,7 +74,7 @@ window.open(url);
 
 ### Por que um provedor de fontes?
 
-`pdf-lib` incorpora arquivos de fonte reais ao PDF: as fontes instaladas no navegador não estão disponíveis na hora da renderização, e uma fonte que você carregou só para medir na tela não basta, sozinha, para produzir um PDF autossuficiente. `renderToPdf` percorre as páginas em busca de cada variante que elas pintam (uma por combinação `family|weight|style`; veja [Quais variantes são pedidas ao provedor](#quais-variantes-são-pedidas-ao-provedor)) e chama o seu provedor uma vez por combinação única. O provedor devolve um `Uint8Array` com bytes **TTF ou OTF**, ou uma lista deles para uma variante servida em vários arquivos (veja [Fontes chinesas, japonesas e coreanas](#fontes-chinesas-japonesas-e-coreanas)); `pdf-lib` gera subconjuntos dos contornos TrueType e incorpora inteiros os arquivos CFF (`.otf`). Variantes às quais o provedor responde com o mesmo arquivo, como um corte regular que substitui o negrito que falta a uma família, compartilham uma única fonte incorporada. Uma variante com que nenhuma página acaba desenhando, como a do texto de uma figura SVG quando a figura é desenhada como imagem, fica fora do arquivo.
+`pdf-lib` incorpora arquivos de fonte reais ao PDF: as fontes instaladas no navegador não estão disponíveis na hora da renderização, e uma fonte que você carregou só para medir na tela não basta, sozinha, para produzir um PDF autossuficiente. `renderToPdf` percorre as páginas em busca de cada variante que elas pintam (uma por combinação `family|weight|style`; veja [Quais variantes são pedidas ao provedor](#quais-variantes-são-pedidas-ao-provedor)) e chama o seu provedor uma vez por combinação única. O provedor devolve um `Uint8Array` com bytes **TTF ou OTF**, ou uma lista deles para uma variante servida em vários arquivos (veja [Fontes chinesas, japonesas e coreanas](#fontes-chinesas-japonesas-e-coreanas)); `pdf-lib` gera subconjuntos dos contornos TrueType e incorpora inteiros os arquivos CFF (`.otf`). Uma variante CFF é declarada como tal, como uma fonte `CIDFontType0` com o programa CFF em `FontFile3` (`CIDFontType0C`), que o `pdffonts` lista como `CID Type 0C` e que é o que o preflight de impressão espera. Uma variante CFF com chaves CID (Source Han, os arquivos `.otf` da Noto CJK) mantém a declaração TrueType, porque a numeração dos glifos dela não coincide com a usada pelo texto; para impressão, use as versões TrueType dessas famílias. Variantes às quais o provedor responde com o mesmo arquivo, como um corte regular que substitui o negrito que falta a uma família, compartilham uma única fonte incorporada. Uma variante com que nenhuma página acaba desenhando, como a do texto de uma figura SVG quando a figura é desenhada como imagem, fica fora do arquivo.
 
 **Use fontes estáticas por peso, não uma única fonte variável.** O Google Fonts muitas vezes serve um único WOFF2 variável por família, cobrindo todo o eixo de pesos. `pdf-lib` só consegue incorporar a instância padrão de um arquivo variável; por isso, um parágrafo em negrito sairia com peso regular. O Fontsource publica arquivos WOFF2 estáticos por peso, que resolvem isso de forma limpa; é o padrão que o Sandbox usa. Um arquivo variável pedido em um peso diferente da instância padrão é informado com um aviso `variableFontDefaultInstance`.
 
@@ -354,7 +354,7 @@ pdfWorker.dispose();
 ```
 
 - `render(docs, options)` recebe um documento ou a lista de documentos de capítulos de um livro. Aceita as opções de `renderToPdf`, com duas diferenças. `resourceBytes` é um `Map<string, Uint8Array>` cujos buffers são transferidos; por isso, passe cópias dos bytes que você quer manter. `rasterizeSvg`, quando informado, roda na thread principal; por padrão, o `Image` e o canvas da própria página fazem o trabalho.
-- Um handle renderiza um documento por vez. `dispose()` encerra o worker e rejeita qualquer renderização ainda pendente.
+- Um handle renderiza um documento por vez. `dispose()` encerra o worker e rejeita qualquer renderização ainda pendente com um `AbortError` (`DOMException`), que deve ser tratado como um cancelamento. Se o seu provedor responder com uma fonte ou uma imagem depois de `dispose()`, a resposta é descartada.
 - `createPdfWorker({ worker })` aceita um `Worker` criado por você, para ferramentas de build que controlam as URLs de workers. Esse worker precisa executar `postext-pdf/worker/entry`.
 
 **A partir de uma CDN.** Por padrão, o script do worker é carregado da URL do próprio pacote (`new URL('./pdf.worker.js', import.meta.url)`). Uma página em outra origem pode não conseguir iniciá-lo: importado do `esm.sh`, `createPdfWorker()` lança `Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`. Em vez disso, inicie um worker de módulo da mesma origem que importe o ponto de entrada (se fixar uma versão, fixe a mesma nas duas URLs):

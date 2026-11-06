@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fonts, colours and output',
   description: 'Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays',
   lang: 'en',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '36 min',
   order: 20,
   parent: 'configuration',
@@ -134,7 +134,7 @@ Under the hood:
 - When `customFonts` changes, every declared family is automatically registered as `FontFace` entries on `document.fonts` — so the HTML viewer, the Canvas viewport (which measures through `document.fonts`), and any direct CSS reference all pick up the custom face without requiring the user to first open the Font Picker.
 - The layout worker receives the same ArrayBuffers through the existing font payload transfer path, so measurement (`buildFontString`, pretext) works as it does for a family of the catalogue.
 - Changing or removing a variant drops the worker's cached face for that family and re-registers on the next build, so previews stay in sync with the current variant set.
-- **PDF export**: uploaded binaries flow through the same `PdfFontProvider` pipeline. `.woff2` files are decompressed; `.ttf` and `.otf` are passed through directly. `.woff` is rejected with a clear error (pdf-lib can't embed raw WOFF — re-upload as `.woff2`/`.ttf`/`.otf`). CFF-flavored OpenType (`.otf` with `OTTO` magic) is embedded **without subsetting**, because pdf-lib's CFF subsetter walks every glyph at `save()` time and can hang for minutes on real fonts; skipping the subset trades a somewhat larger PDF for consistent render times.
+- **PDF export**: uploaded binaries flow through the same `PdfFontProvider` pipeline. `.woff2` files are decompressed; `.ttf` and `.otf` are passed through directly. `.woff` is rejected with a clear error (pdf-lib can't embed raw WOFF — re-upload as `.woff2`/`.ttf`/`.otf`). CFF-flavored OpenType (`.otf` with `OTTO` magic) is embedded **without subsetting**, because pdf-lib's CFF subsetter walks every glyph at `save()` time and can hang for minutes on real fonts; skipping the subset trades a somewhat larger PDF for consistent render times. The face is declared as CFF (`CIDFontType0`, `FontFile3` / `CIDFontType0C`), so a print preflight sees what it is; a CID-keyed CFF face (Source Han, Noto CJK `.otf`) keeps the TrueType declaration.
 
 ### Missing-font warnings
 

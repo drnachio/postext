@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'フォント、色、出力',
   description: '単位、色とカラーパレット、カスタムフォント、HTMLビューアー、PDFと入稿データ、Folioビューアー、そしてデバッグ用の表示',
   lang: 'ja',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '40分',
   order: 20,
   parent: 'configuration',
@@ -134,7 +134,7 @@ interface PostextConfig {
 - `customFonts`が変わると、宣言されたすべてのファミリーが`document.fonts`に`FontFace`として自動で登録されます。そのため、HTMLビューアー、Canvasビューポート（`document.fonts`を通して測定します）、CSSからの直接の参照はいずれも、ユーザーが先にフォントピッカーを開かなくてもカスタムの書体を使えます。
 - レイアウトワーカーは、既存のフォントペイロードの転送経路で同じArrayBufferを受け取ります。そのため測定（`buildFontString`、pretext）は、カタログのファミリーと同じ方法でメトリクスを求めます。
 - バリアントを変更または削除すると、そのファミリーについてワーカーがキャッシュしていた書体が破棄され、次のビルドで再登録されます。これにより、プレビューは常に現在のバリアントの組に追従します。
-- **PDF書き出し**：アップロードしたバイナリは同じ`PdfFontProvider`のパイプラインを通ります。`.woff2`は展開され、`.ttf`と`.otf`はそのまま渡されます。`.woff`ははっきりしたエラーで拒否されます（pdf-libは生のWOFFを埋め込めないため、`.woff2`/`.ttf`/`.otf`でアップロードし直してください）。CFFベースのOpenType（`OTTO`のマジックナンバーで始まる`.otf`）は**サブセット化せずに**埋め込みます。pdf-libのCFFサブセッターは`save()`の時点ですべてのグリフを走査し、実際のフォントでは数分間止まることがあるためです。サブセット化を省くとPDFはやや大きくなりますが、描画時間が安定します。
+- **PDF書き出し**：アップロードしたバイナリは同じ`PdfFontProvider`のパイプラインを通ります。`.woff2`は展開され、`.ttf`と`.otf`はそのまま渡されます。`.woff`ははっきりしたエラーで拒否されます（pdf-libは生のWOFFを埋め込めないため、`.woff2`/`.ttf`/`.otf`でアップロードし直してください）。CFFベースのOpenType（`OTTO`のマジックナンバーで始まる`.otf`）は**サブセット化せずに**埋め込みます。pdf-libのCFFサブセッターは`save()`の時点ですべてのグリフを走査し、実際のフォントでは数分間止まることがあるためです。サブセット化を省くとPDFはやや大きくなりますが、描画時間が安定します。フォントはCFFとして宣言される（`CIDFontType0`、`FontFile3` / `CIDFontType0C`）ので、印刷のプリフライトでも形式がわかります。CIDキー方式のCFFフェイス（Source Han、Noto CJKの`.otf`）は、TrueTypeとしての宣言のままです。
 
 ### フォント欠落の警告
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'The layout pipeline',
   description: 'The placement pass and its rounds: how the engine places lines, floats, notes and columns, and repeats until the layout settles',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-06',
   readingTime: '26 min',
   order: 3,
   parent: 'architecture',
@@ -119,7 +119,7 @@ Before any content blocks land on a page, the pass reserves space for structural
 - **Deferred placement:** A float that fits in no slot of the current page waits for the next page the flow opens and, at a chapter boundary, is drained onto pages opened ahead of the boundary. A picture keeps its size unless `placement.shrink` (or the document's `layout.floatShrink`) lets it scale down to the room a slot has. A table too tall for a fresh page is cut between rows and continues on the following pages with its header rows repeated (`tableStyle.overflow: 'split'`, the default)
 - **Output:** Resources positioned in page bands (`page.floats`), with the affected columns' heights reduced so text flows around the bands
 
-Resource placement is where things get interesting, because floats do not just occupy space — they reshape the space around them. Once the block holding a reference has landed, the pending float is offered the free slots of the current page that come after it: the bottom of that column, then the top and bottom of the next empty column (for a page-span float, the page bottom, when every column still has room). A float that fits nowhere waits for the next page, where pending floats claim their bands before any text flows in. The columns shrink to fit between the bands, the text flows through the narrowed columns uninterrupted, and the reader sees the figure near (but not exactly at) the point where it is mentioned. This is standard practice in professional typesetting; books do it constantly.
+Resource placement is where things get interesting, because floats do not just occupy space — they reshape the space around them. Once the block holding a reference has landed, the pending float is offered the free slots of the current page that come after it: the bottom of that column, then the top and bottom of the next empty column (for a page-span float, the page bottom, when every column still has room). A float that fits nowhere waits for the next page, where pending floats claim their bands before any text flows in. Floats that end up at the foot of the same column stand in their order: when one joins the foot, the column's foot floats are laid out again from the foot, the latest lowest, so figure 1 stays above figure 2 (`pipeline/build/pass/floats/footStack.ts`). A band under a cap, beside a side column, with text wrapping round it, rotated, or a box anchored to a cap keeps its place. The columns shrink to fit between the bands, the text flows through the narrowed columns uninterrupted, and the reader sees the figure near (but not exactly at) the point where it is mentioned. This is standard practice in professional typesetting; books do it constantly.
 
 **Placement rules.** Beyond the placement dispatch, floats follow strict editorial constraints:
 

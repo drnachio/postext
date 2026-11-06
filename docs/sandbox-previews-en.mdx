@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Previews',
   description: 'The Canvas, PDF, Folio, HTML, EPUB 3 and SCORM tabs of the main viewport: what each shows and what it can do',
   lang: 'en',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '14 min',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ A floating toolbar at the bottom-right of the viewport provides:
 - **Download** (`Download` icon) — Saves the current PDF to disk. The filename is derived from the document's first H1 heading (falling back to `document.pdf`).
 - **Print** (`Printer` icon) — Opens the browser's print dialog against the embedded PDF viewer, which in most browsers lets you either print or save as PDF again.
 - **Current chapter / Whole book** (selector at the left of the tab bar, books with more than one chapter) — Renders every chapter as one continuous PDF instead of the active chapter continued after the ones before it (the default). Changing it regenerates the PDF. The canvas has a selector of its own (see [Books and chapters](/en/docs/sandbox-books-saving#books-and-chapters)).
+
+Leaving the tab, or changing a setting, while a PDF is being generated cancels that render quietly: no error is shown, and the next visit starts a new one.
 
 Under the hood the sandbox uses a `createPdfFontProvider()` helper that fetches per-weight static WOFF2 files from the Fontsource jsdelivr CDN, the files its previews are measured with, decompresses them to TTF in the browser, and hands the bytes to `pdf-lib` via `renderToPdf`. Per-weight static fonts (rather than a single variable font) are required so that bold text actually embeds at the bold weight. See [Generating PDFs](/en/docs/configuration-pdf-output#generating-pdfs) for the same pattern used outside the sandbox.
 
