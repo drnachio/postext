@@ -163,6 +163,7 @@ pida otro (`--locale en`).
     <tr><td><code>image</code></td><td>Una página como imagen PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Todas las páginas, o un intervalo, como imágenes en una carpeta.</td></tr>
     <tr><td><code>docx</code></td><td>Los capítulos como documento de Word: semántico (encabezados, listas, notas y tablas propios de Word) o maquetado (las páginas del PDF).</td></tr>
+    <tr><td><code>idml</code></td><td>Las páginas como paquete de InDesign (IDML), para terminarlas en InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Las correcciones hechas en un archivo de Word exportado, de vuelta en el libro; cualquier otro documento de Word, como libro nuevo (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de libro o Markdown suelto como un único archivo <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un archivo <code>.postext</code> como carpeta.</td></tr>
@@ -328,6 +329,26 @@ no tienen ninguno (los estilos de párrafo y de encabezado del archivo de `--con
 a los estilos de Word, y los niveles de encabezado), y deja como están los espaciados que el libro
 ya define. Con `--json`, `styleTracking` enumera lo que se aplicó (`applied`) y lo que se dejó como
 estaba (`skipped`). Desde postext 1.39.
+
+### idml
+
+```bash
+postext idml libro/ -o libro.idml
+postext idml libro.postext -o libro.idml --images link
+```
+
+`idml` maqueta el libro como lo hace `pdf` y escribe las páginas como un
+paquete de InDesign Markup, para terminarlo en InDesign: una página por
+pliego, filetes, recuadros, trazados e imágenes como elementos de página, el
+texto de cada marco de una página compuesta como un marco de texto con su
+propia historia (los marcos encadenados con `next` comparten una), los estilos
+de recuadro como estilos de párrafo y los colores CMYK de autor como muestras.
+InDesign vuelve a componer el texto, así que los cortes de línea pueden
+diferir de los del PDF. `--images link` deja las imágenes junto al archivo, en
+`Links/`, en lugar de dentro. Lo que el paquete todavía no puede llevar
+(tablas, fórmulas, música) se notifica como aviso `idml.*`. Véase
+[Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postextidml).
+Desde postext 1.71.
 
 ### pack y unpack
 

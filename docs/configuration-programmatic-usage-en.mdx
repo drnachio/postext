@@ -720,6 +720,23 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 - **`wordStyleTracking(word, template, config)`** and **`applyStyleTracking(config, tracking)`** carry the character spacing of Word's styles onto the styles of the configuration that set none.
 
 
+### InDesign packages (`postext/idml`)
+
+The `postext/idml` subpath writes the laid-out pages as an InDesign Markup package (`.idml`), for a designer to finish the book in InDesign. Like the formatted Word document, it is built on the page display list, without a DOM. The command line's `idml` is built on it (see [Command line › idml](/en/docs/command-line#idml)). Since postext 1.71.
+
+```ts
+import { buildDocument } from 'postext';
+import { idmlDocument } from 'postext/idml';
+
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const { bytes, links } = idmlDocument({ docs, resourceBytes, images: 'embed', title: 'Field notes' });
+```
+
+- **`idmlDocument(options)`** returns the package's bytes (`bytes`, a `Uint8Array`) and, with `images: 'link'`, the pictures to write beside it (`links`: `{ path, bytes }`, paths such as `Links/photo.jpg` relative to the `.idml`). It takes `docs` (one `VDTDocument` per chapter, in book order), `resourceBytes(fileId)` for the bytes of the pictures, `images` (`'embed'`, the default, or `'link'`), `title`, `fontStyleName(family, weight, italic)` for InDesign's name of a face (the default derives `Regular`, `Bold Italic`… from weight and slant; give the faces' own style names when they differ, such as `Roman`), `styleNames` for the paragraph styles of text outside composed frames (by role: `body`, `heading`, `list`…) and `onWarning` (`{ code, message }`).
+- Every page is a spread of one page at its trim size, with the bleed of the first page as the document's. Rules, boxes, paths and pictures become lines, rectangles, polygons and graphics frames; authored CMYK colours become process swatches, under their palette names when `colorPalette` names them.
+- The text of each composed-page frame is one text frame with one story, under a paragraph style named after the frame's callout style; frames chained by `next` share one story through linked text frames, and a paragraph a frame break split stays one paragraph. Text outside composed frames is one text frame per block, at the place Postext set it. A frame whose text the fit shrank (`fit.shrinkText`) keeps the shrunk sizes and leading. A list item's marker opens its paragraph, followed by a tab, with a hanging indent. A chip's words stay in the text, its box (fill and outline) is a rectangle behind it, and an empty chip is room in thin spaces.
+- InDesign sets the text again with its own composer: the frames, styles, words and first baselines are Postext's, the line breaks may differ. Tables, maths, music and inline swatches are not written yet; each case is a warning (`table`, `text.inline`). An SVG picture is placed as SVG, which InDesign 2020 and later read (`image.svg`).
+
 ## Running layout in a Web Worker
 
 **This is the recommended way to use Postext in the browser.** If you are building anything interactive — a live preview, an editor, a resize-aware viewer, or a sandbox-style playground — drive the pipeline through `createLayoutWorker()` from `postext/worker`. Do not call `buildDocument` directly on the main thread for UI code.
