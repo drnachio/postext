@@ -265,3 +265,23 @@ describe('pageDisplayList (#1388)', () => {
     expect(caption.bbox.y).toBeGreaterThanOrEqual(image.rect.y + image.rect.height - 0.5);
   });
 });
+
+describe('form fields in the display list (#1445)', () => {
+  it('carry the field on the chip run, with the size and padding the layout gave it', () => {
+    const md = 'Price :chip[120]{style="field" field="order.price" format="currency"} and :chip[ ]{style="field" field="order.ok" kind="checkbox"}';
+    const cfg = config({
+      chipStyles: [{ id: 'field', backgroundEnabled: false, borderColor: { hex: '#999999', model: 'hex' }, borderWidth: mm(0.2), paddingX: mm(1), minWidth: mm(20) }],
+    });
+    const runs = bodyItems(documentDisplayList(build(md, cfg))).flatMap((i) => i.lines.flatMap((l) => l.runs));
+    const fields = runs.filter((r) => r.inline?.kind === 'chip').map((r) => r.inline!.field);
+    expect(fields.map((f) => f?.name)).toEqual(['order.price', 'order.ok']);
+    expect(fields[0]).toMatchObject({ kind: 'number', format: 'currency' });
+    expect(fields[0]!.sizePx).toBeGreaterThan(0);
+    // The style's own padding (1 mm at 72 dpi), not the one a least width adds.
+    expect(fields[0]!.padPx).toBeCloseTo((1 / 25.4) * 72, 3);
+    expect(runs.find((r) => r.inline?.field?.name === 'order.price')!.text).toBe('120');
+    // A plain chip carries none.
+    const plain = bodyItems(documentDisplayList(build('A :chip[tag]', config()))).flatMap((i) => i.lines.flatMap((l) => l.runs));
+    expect(plain.some((r) => r.inline?.kind === 'chip' && r.inline.field)).toBe(false);
+  });
+});

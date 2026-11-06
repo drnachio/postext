@@ -24,6 +24,8 @@ export interface ResourceRenderContext {
   structure?: StructureFlow;
   /** Form fields (#1445); absent in a print standard (values as text). */
   forms?: import('../forms.js').FormFieldRegistry;
+  /** How number fields write their values (#1445). */
+  fieldNumbers?: import('postext').FormNumberStyle;
 }
 
 /** Annotation rectangle of a block's box, in PDF points, on the sheet. */

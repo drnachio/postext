@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import fs from 'node:fs';
-import { PDFArray, PDFDict, PDFDocument, PDFName, PDFString, PDFHexString, PDFBool } from 'pdf-lib';
+import os from 'node:os';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { PDFArray, PDFDict, PDFDocument, PDFName, PDFString, PDFHexString, PDFBool, PDFRawStream, decodePDFRawStream } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { buildDocument } from 'postext';
 import type { PostextConfig } from 'postext';
@@ -117,5 +120,77 @@ describe('form fields on chips (#1445)', () => {
     const bytes = await renderToPdf(doc, { fontProvider, print: { standard: 'pdfx4' }, outputProfile: new Uint8Array(fs.readFileSync(new URL('../../../postext/icc/fogra39.icc', import.meta.url))) });
     const printed = await PDFDocument.load(bytes);
     expect(printed.catalog.lookupMaybe(PDFName.of('AcroForm'), PDFDict)).toBeUndefined();
+  });
+});
+
+// #1445: a print standard has no form, so a number field's value is
+// painted: in the field's format and the document's number style (what the
+// form and the canvas preview show), set to the box's end inside the
+// style's own padding, in the chip's colour.
+describe('number fields painted for print (#1445)', () => {
+  const outputProfile = new Uint8Array(fs.readFileSync(new URL('../../../postext/icc/fogra39.icc', import.meta.url)));
+  const printConfig: PostextConfig = {
+    ...config,
+    chipStyles: [{ id: 'field', backgroundEnabled: false, borderColor: hex('#999999'), borderWidth: pt(0.5), borderRadius: pt(0), paddingX: pt(2), minWidth: pt(80), color: hex('#336699') }],
+  };
+
+  async function printed(markdown: string): Promise<string> {
+    const bytes = await renderToPdf(buildDocument({ markdown }, printConfig), { fontProvider, print: { standard: 'pdfx4' }, outputProfile });
+    const doc = await PDFDocument.load(bytes);
+    const contents = doc.getPage(0).node.Contents();
+    const refs = contents instanceof PDFArray ? contents.asArray() : [contents];
+    return refs.map((ref) => {
+      const s = doc.context.lookup(ref);
+      return s instanceof PDFRawStream ? new TextDecoder('latin1').decode(decodePDFRawStream(s).decode()) : '';
+    }).join('\n');
+  }
+
+  /** The text shows after the chip's outline: where each starts (pt), its
+   *  size and the fill colour it is set in. */
+  function shownAfterBox(content: string): { boxRight: number; shows: { x: number; size: number; fill: string }[] } {
+    const stroke = content.indexOf(' K\n');
+    const path = content.slice(stroke, content.indexOf('\nS\n', stroke));
+    const xs = [...path.matchAll(/^([\d.]+) [\d.]+ [ml]$/gm)].map((m) => Number(m[1]));
+    const shows = [...content.slice(stroke).matchAll(/BT\n(.+) k\n\S+ ([\d.]+) Tf\n1 0 0 1 ([\d.]+) [\d.]+ Tm/g)]
+      .map((m) => ({ fill: m[1]!, size: Number(m[2]), x: Number(m[3]) }));
+    // The outline is stroked half its width inside the box.
+    return { boxRight: Math.max(...xs) + 0.25, shows };
+  }
+
+  it('sets the formatted value to the box end, in the chip colour', async () => {
+    const content = await printed('Price :chip[1234.5]{style="field" field="price" format="currency"}');
+    const { boxRight, shows } = shownAfterBox(content);
+    expect(shows).toHaveLength(1);
+    const width = (face.layout('€ 1.234,50').advanceWidth / face.unitsPerEm) * shows[0]!.size;
+    // Border 0.5 pt and the style's padding 2 pt inside the box's end.
+    expect(shows[0]!.x + width).toBeCloseTo(boxRight - 0.5 - 2, 1);
+    // The colour a plain chip of the style paints its words in.
+    const plain = shownAfterBox(await printed('Price :chip[1234.5]{style="field"}'));
+    expect(shows[0]!.fill).toBe(plain.shows[0]!.fill);
+    // A plain chip stays centred in its least width.
+    expect(plain.shows[0]!.x).toBeLessThan(shows[0]!.x);
+  });
+
+  it.skipIf(!(() => { try { execFileSync('pdftotext', ['-v'], { stdio: 'ignore' }); return true; } catch { return false; } })())('prints the value as the form shows it, an unformatted number as typed', async () => {
+    const markdown = 'Price :chip[1234.5]{style="field" field="price" format="currency"} Qty :chip[3]{style="field" field="qty" kind="number"} Note :chip[n/a]{style="field" field="note"}';
+    const bytes = await renderToPdf(buildDocument({ markdown }, printConfig), { fontProvider, print: { standard: 'pdfx4' }, outputProfile });
+    const file = path.join(os.tmpdir(), `postext-forms-print-${process.pid}.pdf`);
+    fs.writeFileSync(file, bytes);
+    const text = execFileSync('pdftotext', ['-raw', file, '-'], { encoding: 'utf8' }).replace(/\s+/g, ' ');
+    fs.unlinkSync(file);
+    expect(text).toContain('€ 1.234,50');
+    expect(text).not.toContain('1234.5');
+    expect(text).toMatch(/Qty 3 Note n\/a/);
+  });
+
+  it('formats a screen form\'s values with the same rule and options', async () => {
+    const markdown = 'Price :chip[1234.5]{style="field" field="price" format="currency"}';
+    const bytes = await renderToPdf(buildDocument({ markdown }, config), { fontProvider, forms: { currency: 'USD', currencyBefore: false, separatorStyle: 0 } });
+    const form = (await PDFDocument.load(bytes)).getForm();
+    const price = form.getTextField('price');
+    // The field keeps the number its scripts read; the appearance shows it
+    // formatted (the PDF/X value and the canvas preview are the same text).
+    expect(price.getText()).toBe('1234.5');
+    expect(js(price.acroField.dict, 'F')).toBe('AFNumber_Format(2, 0, 0, 0, " USD", false);');
   });
 });

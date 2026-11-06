@@ -12,22 +12,11 @@
  * interactive fields: there the value is painted as text instead.
  */
 import { PDFName, PDFString, PDFArray, PDFDict, PDFHexString, StandardFonts, TextAlignment, type PDFDocument, type PDFPage, type PDFField } from 'pdf-lib';
-import type { VDTChip } from 'postext';
+import { formatFieldNumber, type FormFieldSpec as FieldSpec, type FormNumberOptions, type FormNumberStyle } from 'postext';
 
-type FieldSpec = NonNullable<VDTChip['field']>;
-
-/** How numbers are written: Acrobat's separator style and the currency. */
-export interface PdfFormOptions {
-  /** The currency symbol for `format="currency"`. Default `'€'`. */
-  currency?: string;
-  /** The symbol before the number (`€ 12,50`) or after it (`12,50 €`).
-   *  Default before. */
-  currencyBefore?: boolean;
-  /** `AFNumber_Format` separator style: 0 `1,234.56`, 1 `1234.56`, 2
-   *  `1.234,56`, 3 `1234,56`. Default from the document language (German,
-   *  French, Spanish and most of Europe: 2; else 0). */
-  separatorStyle?: 0 | 1 | 2 | 3;
-}
+/** How numbers are written: Acrobat's separator style and the currency
+ *  (`FormNumberOptions` of postext, which the canvas preview takes too). */
+export type PdfFormOptions = FormNumberOptions;
 
 interface Placement {
   page: PDFPage;
@@ -37,9 +26,6 @@ interface Placement {
   /** The chip's text size in points. */
   sizePt: number;
 }
-
-/** Languages that write `1.234,56`. */
-const COMMA_DECIMAL = /^(de|fr|es|it|pt|nl|da|sv|nb|nn|fi|pl|cs|sk|hu|ro|ru|uk|tr|el|hr|sl|bg|lt|lv|et|ca)\b/i;
 
 export class FormFieldRegistry {
   private placements: Placement[] = [];
@@ -57,14 +43,12 @@ export class FormFieldRegistry {
     return this.placements.length;
   }
 
-  /** Write the AcroForm. */
-  async finalize(pdfDoc: PDFDocument, options: PdfFormOptions, lang: string | undefined): Promise<void> {
+  /** Write the AcroForm, its numbers in `style`. */
+  async finalize(pdfDoc: PDFDocument, style: FormNumberStyle): Promise<void> {
     if (this.placements.length === 0) return;
     const form = pdfDoc.getForm();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const sep = options.separatorStyle ?? (lang && COMMA_DECIMAL.test(lang) ? 2 : 0);
-    const currency = options.currency ?? '€';
-    const before = options.currencyBefore ?? true;
+    const { separatorStyle: sep, currency, currencyBefore: before } = style;
     const byName = new Map<string, { spec: FieldSpec; field: PDFField; value: string }>();
 
     for (const p of this.placements) {
@@ -103,7 +87,7 @@ export class FormFieldRegistry {
       if (!known && p.value) {
         // The value as the viewer's format script would show it, drawn into
         // the appearance; the field keeps the plain number its scripts read.
-        const shown = formatValue(p.value, p.field, sep, currency, before);
+        const shown = formatFieldNumber(p.value, p.field.format, style) ?? p.value;
         tf.setText(shown);
         if (shown !== p.value) {
           tf.updateAppearances(font);
@@ -161,27 +145,6 @@ export class FormFieldRegistry {
     // Viewers draw values in their own format (the scripts above).
     acro.set(PDFName.of('NeedAppearances'), pdfDoc.context.obj(true));
   }
-}
-
-/** A value as `AFNumber_Format` shows it (separator style, two decimals or
- *  none, the currency on its side); text that is not a number stays. */
-export function formatValue(raw: string, spec: FieldSpec, sep: number, currency: string, before: boolean): string {
-  if (!spec.format || spec.format === 'percent') return raw;
-  const t = raw.trim().replace(/\s/g, '');
-  // A number written either way: the last comma or point with one or two
-  // digits after it is the decimal mark.
-  const m = /^(-?)([\d.,]*?)(?:[.,](\d{1,2}))?$/.exec(t);
-  if (!m || !/\d/.test(t)) return raw;
-  const n = Number(`${m[1]}${m[2]!.replace(/[.,]/g, '')}.${m[3] ?? '0'}`);
-  if (!Number.isFinite(n)) return raw;
-  const decimals = spec.format === 'integer' ? 0 : 2;
-  const [whole, frac] = Math.abs(n).toFixed(decimals).split('.');
-  const group = sep === 0 ? ',' : sep === 2 ? '.' : '';
-  const point = sep >= 2 ? ',' : '.';
-  const grouped = group ? whole!.replace(/\B(?=(\d{3})+(?!\d))/g, group) : whole!;
-  const num = `${n < 0 ? '-' : ''}${grouped}${frac ? point + frac : ''}`;
-  if (spec.format !== 'currency') return num;
-  return before ? `${currency} ${num}` : `${num} ${currency}`;
 }
 
 /** A JavaScript string literal in ASCII, other characters escaped

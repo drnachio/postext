@@ -15,6 +15,8 @@ export type {
   PdfCffEmbeddedWholeWarning,
   PdfComplexShapingWarning,
   PdfPrintWarning,
+  PdfFormFieldWarning,
+  PdfFormOptions,
   ResourceBytesProvider,
 } from './pdf-backend/index.js';
 export { inspectPrintMaster, type PrintMasterReport } from './print/inspectMaster.js';

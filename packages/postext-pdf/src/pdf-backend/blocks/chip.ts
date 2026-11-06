@@ -1,5 +1,5 @@
 import type { Color, PDFFont } from 'pdf-lib';
-import type { VDTChip, VDTChipRun } from 'postext';
+import { formNumberStyle, numberFieldText, type VDTChip, type VDTChipRun } from 'postext';
 import { parseFontString } from '../../fontString.js';
 import type { FontCache } from '../../fontCache.js';
 import { type PageCtx, drawChipBoxPx, drawTextDotsPx, drawTextPx, invisibleText } from '../primitives.js';
@@ -7,6 +7,7 @@ import { tagArtifact, tagContent, type StructElem } from '../structure/tagging.j
 import { drawRightToLeftRun } from '../text/rtlRun.js';
 import { paintChipReadings } from '../text/annotations.js';
 import { sheetRect } from './blockRender/segments.js';
+import { textAdvancePx } from '../primitives/shapedRuns.js';
 
 /**
  * Inline chip (`:chip[…]`): the box, flagged as a layout artifact in a
@@ -44,6 +45,17 @@ export function paintChip(
     return;
   }
   tagContent(ctx, elem);
+  // A number field painted for print (#1445): its value in the field's
+  // format, set to the box's end, as the form and the canvas show it.
+  const first = chip.runs[0];
+  const shown = first ? numberFieldText(chip.field, chip.runs.map((r) => r.text).join(''), ctx.fieldNumbers ?? formNumberStyle(undefined, undefined)) : undefined;
+  if (first && shown !== undefined) {
+    const font = fontCache.get(first.fontString) ?? fallbackFont;
+    const size = parseFontString(first.fontString)?.sizePx ?? fallbackSize;
+    const end = xPx + chip.marginLeft + chip.boxWidth - chip.borderWidth - (chip.field?.padPx ?? chip.paddingX);
+    drawTextPx(ctx, shown, end - textAdvancePx(font, shown, size).advance, baselinePx, font, size, colorFor(first));
+    return;
+  }
   paintChipRuns(ctx, chip, xPx, baselinePx, fontCache, fallbackFont, fallbackSize, colorFor);
 }
 

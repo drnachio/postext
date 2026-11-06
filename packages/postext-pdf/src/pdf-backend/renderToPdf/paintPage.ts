@@ -57,6 +57,7 @@ function paintPage(
     frameCjk: { region: doc.config.cjk?.region ?? 'mainland', uprightDigits: doc.config.cjk?.uprightDigits ?? 2 },
     ...(links ? { links } : {}),
     ...(resourceCtx.forms ? { forms: resourceCtx.forms } : {}),
+    ...(resourceCtx.fieldNumbers ? { fieldNumbers: resourceCtx.fieldNumbers } : {}),
   };
   const structure = resourceCtx.structure;
 

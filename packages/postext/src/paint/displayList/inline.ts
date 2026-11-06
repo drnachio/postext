@@ -29,7 +29,8 @@ export function chipBox(chip: VDTChip, inkOffset = 0): DisplayChipBox {
  * `inkFor` does); the segment's colour otherwise.
  */
 export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0, inkFor?: (r: VDTChipRun) => string): DisplayRun[] {
-  const inline = { kind: 'chip' as const, widthPx: run.width, heightPx: chip.ascent + chip.descent, ascentPx: chip.ascent, box: chipBox(chip, inkOffset) };
+  // A form field (#1445) goes with the box, for writers that make one.
+  const inline = { kind: 'chip' as const, widthPx: run.width, heightPx: chip.ascent + chip.descent, ascentPx: chip.ascent, box: chipBox(chip, inkOffset), ...(chip.field ? { field: chip.field } : {}) };
   const parts = chip.runs.filter((r) => r.text.length > 0);
   const joined = parts.map((r) => r.text).join('');
   if (parts.length === 0 || joined !== run.text) return [{ ...run, ...(chip.color ? { color: chip.color } : {}), inline }];
