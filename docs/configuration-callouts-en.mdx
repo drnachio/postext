@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Callout boxes',
   description: 'Named styles for :::callout boxes: frame, fill, stripe, title, icon, marker and label tab; box shapes with per-corner radii, per-side borders and joined tabs; numbered statements; typography inside the box; boxes split across pages; and designs drawn in a box',
   lang: 'en',
-  lastUpdated: '2026-10-20',
-  readingTime: '25 min',
+  lastUpdated: '2026-11-06',
+  readingTime: '26 min',
   order: 16,
   parent: 'configuration',
   plainSummary: "This page covers the boxes that set a note, a tip, a warning or a list of goals apart from the text. You give each kind of box a name and a look: its background, its border, a coloured stripe, a title and an icon. A box can carry a number, as a theorem or an example does in a textbook. You choose the fonts inside the box. When a long box goes on to the next page, you choose what marks the break.",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>inherits <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Typography of the paragraphs and list items inside the box. Every field inherits the body text when unset; <code>italicColor</code> sets the colour of italic runs (a pull quote in italics in the box's colour). <code>fontWeight</code> / <code>boldFontWeight</code> set the weights of the regular and bold runs; <code>italic</code> sets the box in italics, with <code>*…*</code> runs turning upright; <code>smallCaps</code> sets it in small capitals; <code>tabStops</code> and <code>tabInterval</code> replace the body's inside the box (see <a href="/en/docs/configuration-text#tab-stops">Tab stops</a>). See <a href="#typography-inside-a-box">Typography inside a box</a> for what else the box's text takes. Since postext 1.42, <code>letterSpacing</code> tracks the box's paragraphs and list items. In <code>em</code> it counts the body size and a negative value tightens. It is measured into the lines, so a box set a few per cent tight breaks where the source's lines do; a paragraph in a <code>:::paragraphs</code> fence keeps its style's own tracking. A frame of this style takes it too.</td>
+      <td>Typography of the paragraphs and list items inside the box. Every field inherits the body text when unset; <code>italicColor</code> sets the colour of italic runs (a pull quote in italics in the box's colour). <code>fontWeight</code> / <code>boldFontWeight</code> set the weights of the regular and bold runs; <code>italic</code> sets the box in italics, with <code>*…*</code> runs turning upright; <code>smallCaps</code> sets it in small capitals; <code>tabStops</code> and <code>tabInterval</code> replace the body's inside the box (see <a href="/en/docs/configuration-text#tab-stops">Tab stops</a>). See <a href="#typography-inside-a-box">Typography inside a box</a> for what else the box's text takes. Since postext 1.42, <code>letterSpacing</code> tracks the box's paragraphs and list items. In <code>em</code> it counts the body size and a negative value tightens. It is measured into the lines, so a box set a few per cent tight breaks where the source's lines do; a paragraph in a <code>:::paragraphs</code> fence keeps its style's own tracking. A frame of this style takes it too. Since postext 1.71, <code>hangingIndent</code> hangs the box's paragraphs (see <a href="#typography-inside-a-box">Typography inside a box</a>): a length sets the turnovers that far in, as a paragraph style's <code>hangingIndent</code>, and <code>true</code> reads <code>firstLineIndent</code> as the indent of every line but the first, as <code>bodyText.hangingIndent</code> does.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ A box sets its content with its own `body` and `lists` typography; everything el
 - **Chips** keep their chip style; an `em` size is read against the box's body size.
 - **`:::space`** is measured in the box's body lines (see [`:::space`](/en/docs/document-format-directives#space) for where it is dropped).
 - **A nested box** takes its own style in full; its `span`, `placement`, `floatBarrier` and `snapToGrid` are ignored.
+
+**Hanging notes.** Notes under a table, a numbered legend or a list of sources hang their marker in front of the text: the marker at the box's inner edge, the text and every turnover line a little further in. `body.hangingIndent` (since postext 1.71) does it for every paragraph of a box or a frame of that style:
+
+- **A length** sets every line but the first that far from the box's inner edge, as a paragraph style's `hangingIndent` (see [Paragraph styles](/en/docs/configuration-styles#paragraph-styles)). The first line starts at the edge, or at `body.firstLineIndent` when the style sets it itself; a first-line indent inherited from `bodyText` gives way.
+- **`true`** reads `body.firstLineIndent` as the indent of every line but the first, as `bodyText.hangingIndent` does in the running text; `false` sets the box unhung in a book whose body text hangs. Unset, the box takes `bodyText.hangingIndent`.
+
+A tab stop at the same length takes the text after the marker to the turnovers' edge, whatever the marker's width:
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	Prices include delivery within the city.
+
+\*\*	Members pay half; the reduction is not added to other offers and runs until the end of the season.
+:::
+```
+
+Each note is a paragraph of its own; the tab between marker and text can be a tab character or `:tab`. The asterisk is escaped, because `*` and a tab at the start of a line open a list item. The lines are measured that way, so the canvas, the PDF, the display list and the EPUB (as `padding-inline-start` with a negative `text-indent`) set them alike. List items keep their own hang (`lists.indent`, `lists.gap`), and a paragraph in a `:::paragraphs` fence keeps its style's. A negative `firstLineIndent` still counts as `0`: the first line cannot start in the box's padding.
 
 ### Marks on a split box
 
