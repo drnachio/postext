@@ -190,6 +190,31 @@ describe('the face of form fields (#1445)', () => {
     expect(fontkit.create(Buffer.from(program.bytes)).numGlyphs).toBe(face.numGlyphs);
   });
 
+  // An empty field has no run to take the face from: it takes the chip's
+  // (the style's family, the text's weight and style) all the same.
+  it('gives empty and calculated fields the chip face too', async () => {
+    const styled: PostextConfig = {
+      ...config,
+      chipStyles: [{ id: 'field', backgroundEnabled: false, borderColor: hex('#999999'), borderWidth: pt(0.5), minWidth: pt(80), fontFamily: 'Field Face' }],
+    };
+    const md = [
+      'Qty :chip[ ]{style="field" field="qty" kind="number"} Price :chip[12]{style="field" field="price" format="currency"}',
+      '',
+      'Name :chip[ ]{style="field" field="name"}',
+      '',
+      'Total :chip[ ]{style="field" field="total" format="currency" calc="product(qty, price)"}',
+    ].join('\n');
+    const asked: string[] = [];
+    const bytes = await renderToPdf(buildDocument({ markdown: md }, styled), { fontProvider: async (family) => { asked.push(family); return lora; } });
+    const pdf = await PDFDocument.load(bytes);
+    const names = ['qty', 'price', 'name', 'total'].map((n) => daFont(pdf, n));
+    for (const f of names) {
+      expect(f.fontName).toBe(names[1]!.fontName);
+      expect(f.font?.lookup(PDFName.of('BaseFont'))?.toString()).toMatch(/Lora/);
+    }
+    expect(asked).toContain('Field Face');
+  });
+
   it('keeps the field values readable as text', async () => {
     const { pdf } = await render();
     const form = pdf.getForm();

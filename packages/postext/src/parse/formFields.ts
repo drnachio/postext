@@ -41,6 +41,10 @@ export interface FormFieldSpec {
    *  where a number set to the box's end stops. A least width widens the
    *  painted padding evenly (`VDTChip.paddingX`); this one does not grow. */
   padPx?: number;
+  /** Set by the layout: the face of the chip (its style's family, the
+   *  text's weight and style, the chip's size), which an empty chip has no
+   *  run to tell. The face a form field shows and takes its value in. */
+  fontString?: string;
 }
 
 /** How form fields write numbers (#1445): the currency and the separators.

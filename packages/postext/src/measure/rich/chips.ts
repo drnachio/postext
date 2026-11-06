@@ -173,7 +173,8 @@ export function chipToken(
         }),
       } : {}),
       ...(chip.exercise ? { exercise: chip.exercise } : {}),
-      ...(chip.field ? { field: { ...chip.field, sizePx, padPx: ownPaddingX } } : {}),
+      // A field's face, also for an empty chip, which has no run (#1445).
+      ...(chip.field ? { field: { ...chip.field, sizePx, padPx: ownPaddingX, fontString: withFace(face(span.bold || !!box?.bold, !chip.upright && (span.italic || !!box?.italic)), box?.fontFamily, sizePx) } } : {}),
       ...(chip.joinNext ? { joinNext: true } : {}),
       // The words' source (#857), while the runs read as written.
       ...(chip.sourceOffsets && directed.runs.reduce((n, r) => n + r.text.length, 0) === chip.sourceOffsets.length ? { sourceOffsets: chip.sourceOffsets } : {}),
