@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Riga di comando',
   description: 'Un unico eseguibile autonomo per macOS, Linux e Windows. Trasforma un libro .postext, una cartella di libro o file Markdown sparsi in PDF, HTML, EPUB, immagini delle pagine e Word; crea pacchetti, controlla i libri e fornisce un output JSON per script e agenti',
   lang: 'it',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '14 min',
   order: 49,
   plainSummary: "Questa pagina è per chi vuole fare libri con Postext da un terminale invece che dal sito. Scarichi un solo file per il tuo computer e lo esegui, senza installare nulla. Gli dai il tuo libro, o qualche file di testo, e il programma produce un PDF, una pagina web, un e-book, immagini delle pagine o un documento Word. Può anche cercare problemi in un libro e riunire i suoi file in uno solo. Lo possono usare anche i programmi e gli assistenti di intelligenza artificiale, perché sa rispondere in un formato che leggono facilmente.",
@@ -495,6 +495,51 @@ di programmazione.
 
 La [skill per agenti](/it/docs/skill) usa la riga di comando per generare le pagine su cui
 sta lavorando e per verificare un porting.
+
+## Python
+
+`pip install postext` fa della riga di comando una libreria Python. Il
+pacchetto è Python puro, senza dipendenze, e la sua versione è quella di
+postext. La prima volta che esegue un comando scarica l’eseguibile del tuo
+sistema dalla GitHub Release di quella versione, lo verifica con `SHA256SUMS`
+e lo conserva nella cache descritta sopra, in `bin/<versione>/`. Se
+`POSTEXT_BIN` indica un eseguibile che hai già (da Homebrew, da Scoop o
+compilato da te), non viene scaricato nulla.
+
+```python
+import postext
+
+report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300}, locale="es")
+print(report.output.pages)
+for warning in report.warnings:
+    print(warning.kind, warning.at, warning.message)
+
+pdf = postext.pdf_bytes(open("book.postext", "rb").read())
+```
+
+- **Una funzione per comando**: `pdf`, `html`, `epub`, `image`, `images`,
+  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` e `build`. Le
+  opzioni mantengono il loro nome, con i trattini bassi (`color_space`,
+  `font_dirs`, `dry_run`). `set` riceve un dizionario, `config` un file o un
+  dizionario, `chapters` un numero, una lista, un `range` o `"1,3-5"`.
+- **Rapporti come oggetti.** Ogni funzione esegue il suo comando con `--json`
+  e restituisce il rapporto: `outputs`, `pages`, `timings` e `warnings`, ogni
+  avviso un `Diagnostic` con `kind`, `severity`, `message`, `at` e `page`.
+  `info` aggiunge `chapters`, `resources` e `fonts`; `check` aggiunge
+  `passed`, `error_count` e `warning_count`.
+- **Errori come eccezioni.** Un fallimento solleva `PostextError`, un’opzione
+  sbagliata `UsageError`. Quando `check` trova errori solleva `ProblemsFound`,
+  il cui `report` li elenca; con `raise_on_problems=False` restituisce il
+  rapporto.
+- **Byte.** Un libro può essere dato come i byte di un pacchetto `.postext`.
+  Con `out="-"` il file torna in `report.content`; `pdf_bytes`, `html_bytes`,
+  `epub_bytes`, `image_bytes`, `docx_bytes` e `pack_bytes` lo restituiscono
+  direttamente.
+- `postext.Postext(binary, cwd=…, timeout=…)` usa un eseguibile preciso, e
+  `python -m postext …` è la riga di comando stessa.
+
+Ogni chiamata avvia di nuovo l’eseguibile. Il [README](https://github.com/drnachio/postext/tree/main/packages/postext-python) del
+pacchetto elenca tutte le opzioni.
 
 ## Come è fatto
 

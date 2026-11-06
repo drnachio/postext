@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ligne de commande',
   description: 'Un exécutable autonome pour macOS, Linux et Windows qui transforme un livre .postext, un dossier de livre ou des fichiers Markdown isolés en PDF, HTML, EPUB, images de pages et Word, crée des paquets et vérifie des livres, avec une sortie JSON pour les scripts et les agents',
   lang: 'fr',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '14 min',
   order: 49,
   plainSummary: "Cette page s’adresse à ceux qui veulent faire des livres avec Postext depuis un terminal plutôt que depuis le site. Vous téléchargez un seul fichier pour votre ordinateur et vous le lancez, sans rien installer. Vous lui donnez votre livre, ou quelques fichiers texte, et il produit un PDF, une page web, un livre numérique, des images des pages ou un document Word. Il peut aussi vérifier qu’un livre n’a pas de problème et réunir ses fichiers en un seul. Les programmes et les assistants d’IA peuvent l’utiliser eux aussi, car il sait répondre dans un format qu’ils lisent facilement.",
@@ -518,6 +518,51 @@ compris des agents de programmation.
 
 Le [skill pour agents](/fr/docs/skill) utilise la ligne de commande pour rendre
 les pages sur lesquelles il travaille et pour vérifier un portage.
+
+## Python
+
+`pip install postext` fait de la ligne de commande une bibliothèque Python. Le
+paquet est en Python pur, sans dépendances, et sa version est celle de
+postext. La première fois qu’il lance une commande, il télécharge l’exécutable
+de votre système depuis la GitHub Release de cette version, le vérifie avec
+`SHA256SUMS` et le garde dans le cache décrit plus haut, sous
+`bin/<version>/`. Si `POSTEXT_BIN` désigne un exécutable que vous avez déjà
+(Homebrew, Scoop ou votre propre compilation), rien n’est téléchargé.
+
+```python
+import postext
+
+report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300}, locale="es")
+print(report.output.pages)
+for warning in report.warnings:
+    print(warning.kind, warning.at, warning.message)
+
+pdf = postext.pdf_bytes(open("book.postext", "rb").read())
+```
+
+- **Une fonction par commande** : `pdf`, `html`, `epub`, `image`, `images`,
+  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` et `build`. Les
+  options gardent leur nom, avec des tirets bas (`color_space`, `font_dirs`,
+  `dry_run`). `set` prend un dictionnaire, `config` un fichier ou un
+  dictionnaire, `chapters` un nombre, une liste, un `range` ou `"1,3-5"`.
+- **Des rapports en objets.** Chaque fonction lance sa commande avec `--json`
+  et renvoie le rapport : `outputs`, `pages`, `timings` et `warnings`, chaque
+  avertissement étant un `Diagnostic` avec `kind`, `severity`, `message`, `at`
+  et `page`. `info` y ajoute `chapters`, `resources` et `fonts` ; `check`,
+  `passed`, `error_count` et `warning_count`.
+- **Des erreurs en exceptions.** Un échec lève `PostextError`, une option
+  erronée `UsageError`. Quand `check` trouve des erreurs, il lève
+  `ProblemsFound`, dont le `report` les énumère ; avec
+  `raise_on_problems=False`, il renvoie le rapport.
+- **Des octets.** Un livre peut être donné sous forme des octets d’un paquet
+  `.postext`. Avec `out="-"`, le fichier revient dans `report.content` ;
+  `pdf_bytes`, `html_bytes`, `epub_bytes`, `image_bytes`, `docx_bytes` et
+  `pack_bytes` le renvoient directement.
+- `postext.Postext(binary, cwd=…, timeout=…)` utilise un exécutable donné, et
+  `python -m postext …` est la ligne de commande elle-même.
+
+Chaque appel relance l’exécutable. Le [README](https://github.com/drnachio/postext/tree/main/packages/postext-python) du paquet
+liste toutes les options.
 
 ## Comment elle est faite
 

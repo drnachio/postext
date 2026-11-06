@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: "Línia d'ordres",
   description: "Un sol executable autònom, per a macOS, Linux i Windows, que converteix un llibre .postext, una carpeta de llibre o fitxers Markdown solts en PDF, HTML, EPUB, imatges de pàgina i Word. També crea paquets i revisa llibres, i pot respondre en JSON per a scripts i agents",
   lang: 'ca',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '14 min',
   order: 49,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir tots els fitxers del llibre en un de sol. També el poden fer servir altres programes i els assistents d'intel·ligència artificial, perquè pot respondre en un format que llegeixen sense dificultat.",
@@ -512,6 +512,51 @@ els agents de programació.
 
 La [skill per a agents](/ca/docs/skill) fa servir la línia d'ordres per pintar
 les pàgines en què treballa i per revisar un port.
+
+## Python
+
+`pip install postext` converteix la línia d'ordres en una biblioteca de Python.
+El paquet és Python pur, sense dependències, i la seva versió és la de postext.
+La primera vegada que executa una ordre baixa l'executable del teu sistema de la
+GitHub Release d'aquesta versió, el comprova amb `SHA256SUMS` i el desa a la
+memòria cau de més amunt, a `bin/<versió>/`. Si `POSTEXT_BIN` apunta a un
+executable que ja tens (de Homebrew, d'Scoop o compilat per tu), no es baixa
+res.
+
+```python
+import postext
+
+report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300}, locale="es")
+print(report.output.pages)
+for warning in report.warnings:
+    print(warning.kind, warning.at, warning.message)
+
+pdf = postext.pdf_bytes(open("book.postext", "rb").read())
+```
+
+- **Una funció per ordre**: `pdf`, `html`, `epub`, `image`, `images`, `docx`,
+  `import_docx`, `pack`, `unpack`, `info`, `check` i `build`. Les opcions
+  conserven el nom, amb guions baixos (`color_space`, `font_dirs`, `dry_run`).
+  `set` rep un diccionari, `config` un fitxer o un diccionari, `chapters` un
+  número, una llista, un `range` o `"1,3-5"`.
+- **Informes com a objectes.** Cada funció executa la seva ordre amb `--json`
+  i retorna l'informe: `outputs`, `pages`, `timings` i `warnings`, cada avís un
+  `Diagnostic` amb `kind`, `severity`, `message`, `at` i `page`. `info` hi
+  afegeix `chapters`, `resources` i `fonts`; `check`, `passed`, `error_count` i
+  `warning_count`.
+- **Errors com a excepcions.** Una fallada llança `PostextError`; una opció
+  equivocada, `UsageError`. Quan `check` troba errors llança `ProblemsFound`,
+  el `report` del qual els enumera; amb `raise_on_problems=False` retorna
+  l'informe.
+- **Bytes.** Un llibre es pot donar com els bytes d'un paquet `.postext`. Amb
+  `out="-"` el fitxer torna a `report.content`; `pdf_bytes`, `html_bytes`,
+  `epub_bytes`, `image_bytes`, `docx_bytes` i `pack_bytes` el retornen
+  directament.
+- `postext.Postext(binary, cwd=…, timeout=…)` fa servir un executable concret,
+  i `python -m postext …` és la mateixa línia d'ordres.
+
+Cada crida torna a engegar l'executable. El
+[README](https://github.com/drnachio/postext/tree/main/packages/postext-python) del paquet recull totes les opcions.
 
 ## Com està fet
 

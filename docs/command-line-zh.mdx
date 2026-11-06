@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '命令行',
   description: '适用于macOS、Linux和Windows的单个独立可执行文件。它能把.postext图书、图书文件夹或零散的Markdown文件转成PDF、HTML、EPUB、页面图像和Word文档，还能打包文件包、检查图书，并为脚本和智能体输出JSON',
   lang: 'zh',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '10分钟',
   order: 49,
   plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你下载一个适合自己电脑的文件，直接运行，不用另装任何东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
@@ -321,6 +321,29 @@ postext build chapters/ --pdf book.pdf --watch
 - **速度**。可执行文件启动只需几百分之一秒。短书变成PDF或页面图像远不到一秒；长书所需的时间取决于它的排版（一本140页的插图小说，约十秒）。要查看长书中的几页，把`--chapters`与`image`或`images --pages`结合使用。要反复修改一本书时，让`postext build --watch`一直运行，读取它的输出即可。
 
 [智能体技能](/zh/docs/skill)用命令行渲染它正在处理的页面，并检查移植结果。
+
+## Python
+
+`pip install postext`把命令行变成一个Python库。这个包是纯Python的，没有任何依赖，版本号与postext相同。第一次执行命令时，它从该版本的GitHub Release下载适合你系统的可执行文件，用`SHA256SUMS`校验后存入上文所说的缓存目录，位于`bin/<版本>/`下。如果`POSTEXT_BIN`指向你已有的可执行文件（来自Homebrew、Scoop或你自己的构建），就不会下载任何东西。
+
+```python
+import postext
+
+report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300}, locale="es")
+print(report.output.pages)
+for warning in report.warnings:
+    print(warning.kind, warning.at, warning.message)
+
+pdf = postext.pdf_bytes(open("book.postext", "rb").read())
+```
+
+- **每个命令一个函数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`import_docx`、`pack`、`unpack`、`info`、`check`和`build`。选项沿用原名，改用下划线（`color_space`、`font_dirs`、`dry_run`）。`set`接受字典，`config`接受文件或字典，`chapters`接受数字、列表、`range`或`"1,3-5"`。
+- **报告即对象**。每个函数都用`--json`执行对应命令并返回报告：`outputs`、`pages`、`timings`和`warnings`，每条警告是一个`Diagnostic`，含`kind`、`severity`、`message`、`at`和`page`。`info`另有`chapters`、`resources`和`fonts`；`check`另有`passed`、`error_count`和`warning_count`。
+- **错误即异常**。执行失败抛出`PostextError`，选项有误抛出`UsageError`。`check`发现错误时抛出`ProblemsFound`，其`report`列出这些错误；传入`raise_on_problems=False`则改为返回报告。
+- **字节**。书可以直接以`.postext`包的字节给出。使用`out="-"`时，文件放在`report.content`中返回；`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`和`pack_bytes`直接返回这些字节。
+- `postext.Postext(binary, cwd=…, timeout=…)`使用指定的可执行文件，`python -m postext …`就是命令行本身。
+
+每次调用都会重新启动可执行文件。包的[README](https://github.com/drnachio/postext/tree/main/packages/postext-python)列出了全部选项。
 
 ## 构建方式
 
