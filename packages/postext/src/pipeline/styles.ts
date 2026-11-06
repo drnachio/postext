@@ -174,12 +174,18 @@ export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, !!body.italic, body.emphasis);
   const textAlign = body.textAlign;
   const hyphenation = hyphenationFor(body.hyphenation.enabled, textAlign, resolved, fontSizePx);
-  const firstLineIndentPx = dimensionToPx(body.firstLineIndent, dpi, fontSizePx);
-  const hangingIndent = body.hangingIndent;
+  // A box whose `body.hangingIndent` is a length (#1451) hangs as a
+  // paragraph style does: the turnovers at the length, the first line at
+  // the box's own first-line indent (paired, #620) or at the edge.
+  const hangPx = body.hangingIndentLength ? dimensionToPx(body.hangingIndentLength, dpi, fontSizePx) : 0;
+  const hangsLength = Number.isFinite(hangPx) && hangPx > 0;
+  const paired = hangsLength && body.ownFirstLineIndent === true;
+  const firstLineIndentPx = hangsLength && !paired ? hangPx : dimensionToPx(body.firstLineIndent, dpi, fontSizePx);
+  const hangingIndent = hangsLength || body.hangingIndent;
   const marginBottomPx = paragraphSpacingPx(body.paragraphSpacing, lineHeightPx, dpi, fontSizePx);
   // Tracking (#974): only a callout's derived config carries one.
   const trackingPx = body.letterSpacing ? dimensionToPx(body.letterSpacing, dpi, fontSizePx) : 0;
-  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}), ...(Number.isFinite(trackingPx) && trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}), ...tabFields(body.tabStops, body.tabInterval) };
+  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(paired ? { hangingIndentPx: hangPx } : {}), ...(body.smallCaps ? { smallCaps: true } : {}), ...(Number.isFinite(trackingPx) && trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}), ...tabFields(body.tabStops, body.tabInterval) };
 }
 
 export function resolveHeadingStyle(
