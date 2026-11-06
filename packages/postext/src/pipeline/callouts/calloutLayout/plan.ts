@@ -127,11 +127,23 @@ export function deriveCalloutResolvedConfig(
     : resolved.paragraphStyles.map((s) => (s.inheritsBody
       ? { ...s, ...Object.fromEntries(s.inheritsBody.map((f) => [f, boxBody[f]])) }
       : s));
+  // The box's hang (#1451): `true` / `false` as the body's own flag; a
+  // length as a paragraph style's `hangingIndent`. An enclosing box's
+  // length does not reach a nested box, as its first-line indent does not.
+  const { hangingIndentLength: _outerHang, ownFirstLineIndent: _outerOwn, ...outerBody } = resolved.bodyText;
+  void _outerHang; void _outerOwn;
+  const hang = body.hangingIndent;
+  const hangFields = typeof hang === 'boolean'
+    ? { hangingIndent: hang }
+    : hang
+      ? { hangingIndent: false, hangingIndentLength: hang, ...(body.ownFirstLineIndent ? { ownFirstLineIndent: true as const } : {}) }
+      : {};
   return {
     ...resolved,
     paragraphStyles,
     bodyText: {
-      ...resolved.bodyText,
+      ...outerBody,
+      ...hangFields,
       fontFamily: body.fontFamily,
       fontSize: body.fontSize,
       lineHeight: body.lineHeight,
