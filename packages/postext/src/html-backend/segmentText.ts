@@ -113,6 +113,14 @@ export function wordSegmentsOf(line: VDTLine, tracking: number, fontOf: (seg: VD
   return set.segments === line.segments ? { segments: line.segments, order: line.order } : set;
 }
 
+/** Struck-through text (`~~…~~`, `VDTLineSegment.strike`) inside `<s>`,
+ *  which tells assistive technology and a rich-text copy that it is struck;
+ *  the line itself is the line's mark (`VDTLine.marks`), drawn where the
+ *  canvas and the PDF draw it, so the element draws none. */
+export function struckHtml(seg: Pick<VDTLineSegment, 'strike'>, html: string): string {
+  return seg.strike ? `<s style="text-decoration:none;">${html}</s>` : html;
+}
+
 export function pickSegmentColor(
   seg: VDTLineSegment,
   block: VDTBlock,

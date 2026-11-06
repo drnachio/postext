@@ -1,6 +1,7 @@
 // Inline chips as tokens: their face, readings, the gaps beside them and
 // their margins (#1276: split out of rich.ts).
-import type { VDTChipRun, VDTAnnotationRun } from '../../vdt.js';
+import type { VDTChipRun, VDTChipStrike, VDTAnnotationRun } from '../../vdt.js';
+import { STRIKE_AT, STRIKE_STROKE } from '../../marks/strikeGeometry.js';
 import { uprightFace } from '../../writing/uprightArabic.js';
 import type { InlineSpan } from '../../parse/index.js';
 import { measureTextWidth } from '../canvas.js';
@@ -54,6 +55,9 @@ export function chipToken(
   const runBaseFonts: string[] = [];
   // The ruby of each run's span, for its reading (#1244).
   const runRubies: (InlineSpan['ruby'] | undefined)[] = [];
+  // The struck-through characters of each run (`~~…~~`): its run number
+  // and the characters `from`–`to` of the run's text.
+  const runStrikes: ({ id: number; from: number; to: number } | undefined)[] = [];
   // An upright chip (an exercise's number, #1244) takes the slant off the
   // text's faces too.
   const face = (bold: boolean, italic: boolean): string => {
@@ -79,7 +83,13 @@ export function chipToken(
     const pieces = smallCaps
       ? smallCapsRuns(s.text).map((r) => ({ text: r.text, font: r.small ? smallCapsFont(font) : font }))
       : [{ text: s.text, font }];
+    const strikes = s.links?.filter((l) => l.strike);
+    let offset = 0;
     for (const piece of pieces) {
+      const pieceStart = offset;
+      offset += piece.text.length;
+      const struck = strikes?.find((l) => l.start < offset && l.end > pieceStart);
+      runStrikes.push(struck ? { id: struck.strike!.id, from: Math.max(0, struck.start - pieceStart), to: Math.min(piece.text.length, struck.end - pieceStart) } : undefined);
       runs.push({
         text: piece.text,
         fontString: piece.font,
@@ -117,6 +127,7 @@ export function chipToken(
     box?.direction,
   );
   const textWidth = (asPainted ? directed.runs : runs).reduce((sum, r) => sum + r.width, 0);
+  const strikes = chipStrikes(directed.order || directed.runs.length !== runs.length ? undefined : directed.runs, runStrikes, sizePx);
   const ownPaddingX = box?.paddingXPx ?? 0;
   const paddingY = box?.paddingYPx ?? 0;
   // A style may pad the top and the bottom apart (EF-172).
@@ -160,6 +171,7 @@ export function chipToken(
       ...(box?.color ? { color: box.color } : {}),
       ...(box?.dotted ? { dotted: box.dotted } : {}),
       ...(box?.underline ? { underline: box.underline } : {}),
+      ...(strikes.length > 0 ? { strikes } : {}),
       ...(chip.blank ? { blank: true as const, ...(chip.blankLabel ? { blankLabel: chip.blankLabel } : {}) } : {}),
       // Across the line, each reading's em box clears the chip's own box
       // (its padding and border too, which a boxed blank has a lot of): over
@@ -179,6 +191,46 @@ export function chipToken(
     },
     chipGap: box?.gapPx ?? 0,
   };
+}
+
+/** The lines through a chip's struck-through words (`VDTChip.strikes`),
+ *  set as `marks/strikethrough.ts` sets them in the text: over the
+ *  baseline by the same share of the chip's size, one line per run of
+ *  struck runs side by side. `runs` are the chip's runs in paint order,
+ *  undefined when they are reordered or cut for their direction (no line
+ *  is drawn then). */
+function chipStrikes(runs: readonly VDTChipRun[] | undefined, struck: readonly ({ id: number; from: number; to: number } | undefined)[], sizePx: number): VDTChipStrike[] {
+  if (!runs || !struck.some((s) => s)) return [];
+  const out: VDTChipStrike[] = [];
+  const y = -STRIKE_AT * sizePx;
+  const thickness = Math.max(0.5, STRIKE_STROKE * sizePx);
+  let open: { id: number; from: number; to: number } | undefined;
+  const flush = (): void => {
+    if (open && open.to > open.from) out.push({ x: open.from, y, length: open.to - open.from, thickness });
+    open = undefined;
+  };
+  let x = 0;
+  runs.forEach((run, i) => {
+    const s = struck[i];
+    if (!s || s.to <= s.from) {
+      flush();
+      x += run.width;
+      return;
+    }
+    const whole = measureTextWidth(run.text, run.fontString);
+    const k = whole > 0 ? run.width / whole : 1;
+    const from = x + (s.from > 0 ? measureTextWidth(run.text.slice(0, s.from), run.fontString) * k : 0);
+    const to = x + (s.to < run.text.length ? measureTextWidth(run.text.slice(0, s.to), run.fontString) * k : run.width);
+    if (open && open.id === s.id && Math.abs(open.to - from) < 0.01) open.to = to;
+    else {
+      flush();
+      open = { id: s.id, from, to };
+    }
+    if (s.to < run.text.length) flush();
+    x += run.width;
+  });
+  flush();
+  return out;
 }
 
 /** The room between a chip's box and its readings, in ems of the chip. */

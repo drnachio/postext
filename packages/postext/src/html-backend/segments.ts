@@ -8,7 +8,7 @@ import { cellsOf } from '../paint/wordPieces.js';
 import { sideMarkerHtml, lineMarksHtml, warichuHtml, rubyHtml, kuntenHtml } from './htmlAnnotations.js';
 import { leaderHtml, renderSwatchSegment, renderChip } from './lines.js';
 import { type HtmlPaint, ownShaping } from './render.js';
-import { lineEndHtml, linkRuns, wordSegmentsOf, pickSegmentColor, renderWordTextSegment, segmentHref, copyTextHtml, renderMathSegmentSvg, scoreSegmentSvg, renderRefRuns, refLinks, refKey, renderTextSegment, rubyRuns } from './segmentText.js';
+import { lineEndHtml, linkRuns, wordSegmentsOf, pickSegmentColor, renderWordTextSegment, segmentHref, copyTextHtml, renderMathSegmentSvg, scoreSegmentSvg, renderRefRuns, refLinks, refKey, renderTextSegment, rubyRuns, struckHtml } from './segmentText.js';
 import { type TextDirection, dirAttr, pickSegmentFont, quoteFontString, ligaturesDecl, segmentBox, lineCjkDecl, segmentCjk, PLAIN_BOX } from './styles.js';
 import { wordsHtml } from './textRuns.js';
 import { lineLinkUnderlinesHtml } from './linkPaint.js';
@@ -105,7 +105,7 @@ export function renderSegments(
     const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};${tracking !== 0 ? ligaturesDecl() : ''}` : '';
     const colorDecl = color !== block.color ? `color:${color};` : '';
     const top = seg.baselineShift ? `${seg.baselineShift.toFixed(3)}px` : '0';
-    return renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, cjk && hasCJK(seg.text), segmentBox(seg, rootDir, rootLang, tracking, font, color, (probe) => ({ font: quoteFontString(pickSegmentFont(probe, block)), color: pickSegmentColor(probe, block) })));
+    return struckHtml(seg, renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, cjk && hasCJK(seg.text), segmentBox(seg, rootDir, rootLang, tracking, font, color, (probe) => ({ font: quoteFontString(pickSegmentFont(probe, block)), color: pickSegmentColor(probe, block) }))));
   };
   for (let i = 0; i < segs.length; i++) {
     const seg = segs[i]!;
@@ -261,7 +261,7 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
     const segTracking = lineTracking + (seg.tracking ?? 0);
     const tracked = ownShaping && segTracking !== 0 && !cellsOf(seg.text) && !joiningScriptIn(seg.text)
       ? { font, tracking: segTracking, ...(seg.lang !== undefined ? { lang: seg.lang } : {}) } : undefined;
-    return renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl), dir || tracked ? { attrs: dir, decl: '', ...(tracked ? { tracked } : {}) } : PLAIN_BOX);
+    return struckHtml(seg, renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, color, lineTracking, segmentCjk(seg, lineDecl), dir || tracked ? { attrs: dir, decl: '', ...(tracked ? { tracked } : {}) } : PLAIN_BOX));
   };
   // The `<ruby>` open across the bases of one annotation (#428).
   const ruby = rubyRuns();

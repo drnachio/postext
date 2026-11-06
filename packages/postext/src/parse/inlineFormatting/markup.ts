@@ -124,6 +124,31 @@ export function replaceMarkSyntax(text: string, replace: (inner: string, style: 
   return out + text.slice(pos);
 }
 
+/** Private-use marks bracketing struck-through text (`~~text~~`) while
+ *  the emphasis scanners run; they become a range of the spans
+ *  (`InlineSpan.links`, with `strike`), as a highlight mark does, and are
+ *  dropped. */
+export const STRIKE_OPEN = '';
+export const STRIKE_CLOSE = '';
+
+/** `~~text~~`: struck-through text (GitHub Flavored Markdown). Exactly two
+ *  tildes on each side (a third one beside them keeps the row literal),
+ *  and the text starts and ends with a character that is neither a space
+ *  nor a tilde; tildes that make no strikethrough are read as before (a
+ *  pair of single tildes is a subscript). The text may
+ *  hold other inline marks, single-tilde subscripts included
+ *  (`~~H~2~O~~`), and may run over a soft line break, not over a blank
+ *  line. A single `~` pair stays a subscript; `\~` sets a literal tilde. */
+export const STRIKE_RE = /(?<!~)~~(?=[^\s~])((?:[^~\n]|~(?!~)|\n(?!\n))+?)(?<=[^\s~])~~(?!~)/g;
+
+/** Every `~~text~~` of `text` replaced by its text between
+ *  {@link STRIKE_OPEN} and {@link STRIKE_CLOSE}, or by what `replace`
+ *  makes of it. */
+export function markStrikethrough(text: string, replace: (inner: string) => string = (inner) => STRIKE_OPEN + inner + STRIKE_CLOSE): string {
+  if (!text.includes('~~')) return text;
+  return text.replace(STRIKE_RE, (_, inner: string) => replace(inner));
+}
+
 /** Replace every `:smallcaps[…]` by its text between the private-use marks. */
 export function markSmallCaps(text: string): string {
   if (!text.includes(SMALLCAPS_OPENER)) return text;
@@ -219,7 +244,8 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
   return out;
 }
 
-/** `spans` set plain: bold, italic, scripts, small capitals, links and the
+/** `spans` set plain: bold, italic, scripts, small capitals, links,
+ *  strikethrough and the
  *  Chinese and Japanese marks (emphasis dots, proper-name and book-title
  *  marks, side lines) dropped,
  *  adjacent text spans merged — a heading's spans as they were built before
