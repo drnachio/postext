@@ -312,7 +312,9 @@ Talla :chip[M]{style="field" field="size" kind="choice" options="S|M|L"}
 - `calc`: `sum(…)`, `product(…)`, `min(…)`, `max(…)` o `avg(…)` sobre otros campos por su nombre, escrito como `AFSimple_Calculate`; un campo calculado es de solo lectura y el orden de cálculo sigue las dependencias. Un cálculo que lee un campo desconocido, un ciclo o un nombre usado para dos tipos dan un aviso `formField`.
 - `readonly`, `required`, `multiline` y `tooltip`, como dicen sus nombres.
 
-Acrobat, Foxit, pdf.js (Firefox) y la mayoría de los visores ejecutan estos scripts. Un estándar de impresión (PDF/X) no admite campos interactivos: allí los valores se pintan como texto.
+Acrobat, Foxit, pdf.js (Firefox) y la mayoría de los visores ejecutan estos scripts. Un estándar de impresión (PDF/X) no admite campos interactivos: allí los valores se pintan como texto, y el de un campo numérico tal como lo muestra el formulario (formateado, alineado al final de la caja dentro del `paddingX` propio del estilo, en el color del chip).
+
+El canvas pinta un campo numérico de la misma manera, así que la vista previa coincide con el PDF: pasa a `renderPageToCanvas` (o a `renderPage`, `renderToCanvas`) la misma opción `forms` que a `renderToPdf`; en ambos, los separadores salen por defecto del `locale` del documento (si no, de su idioma de separación silábica). Una sola regla escribe los números en todas partes, y postext la exporta para otros escritores: `formNumberStyle(forms, lang)` resuelve las opciones, `formatFieldNumber(value, format, style)` formatea un valor (undefined para un texto que no es un número) y `numberFieldText(field, words, style)` da lo que muestra un campo numérico pintado. La lista de visualización lleva el campo en el tramo del chip (`inline.field`, con el `sizePx` y el `padPx` de la composición).
 
 ### Enlaces en el PDF
 

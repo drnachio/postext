@@ -312,7 +312,9 @@ Size :chip[M]{style="field" field="size" kind="choice" options="S|M|L"}
 - `calc`: `sum(…)`, `product(…)`, `min(…)`, `max(…)` or `avg(…)` over other fields by name, written as `AFSimple_Calculate`; a calculated field is read-only, and the calculation order follows the dependencies. A calculation that reads an unknown field, a cycle or a name used for two kinds is a `formField` warning.
 - `readonly`, `required`, `multiline`, `tooltip` as their names say.
 
-Acrobat, Foxit, pdf.js (Firefox) and most viewers run these scripts. A print standard (PDF/X) allows no interactive fields: there the values are painted as text.
+Acrobat, Foxit, pdf.js (Firefox) and most viewers run these scripts. A print standard (PDF/X) allows no interactive fields: there the values are painted as text, a number field's value as the form shows it (formatted, set to the box's end inside the style's own `paddingX`, in the chip's colour).
+
+The canvas paints a number field the same way, so the preview matches the PDF: pass `renderPageToCanvas` (or `renderPage`, `renderToCanvas`) the same `forms` option as `renderToPdf`; the separators default from the document's `locale` (else its hyphenation language) in both. One rule writes the numbers everywhere, and postext exports it for other writers: `formNumberStyle(forms, lang)` resolves the options, `formatFieldNumber(value, format, style)` formats a value (undefined for text that is no number), and `numberFieldText(field, words, style)` gives what a painted number field shows. The display list carries the field on a chip run (`inline.field`, with the layout's `sizePx` and `padPx`).
 
 ### Links in the PDF
 
