@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Uso programático',
   description: 'Cómo usar Postext desde el código: buildDocument y sus avisos, los valores por defecto, las fuentes, las cachés y el Web Worker.',
   lang: 'es',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '32 min',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## Uso programático
 
 > **La opción recomendada: usa el Web Worker.** En el navegador, maqueta a través de `createLayoutWorker()` de `postext/worker` en lugar de llamar a `buildDocument` en el hilo principal. El worker mantiene la página receptiva durante la maquetación, conserva las medidas del texto entre una maquetación y la siguiente, y cancela la que esté en curso cuando empieza otra más reciente, de modo que una pulsación nunca espera a que se maquete un texto anterior. La receta está en [Ejecutar la composición en un Web Worker](#ejecutar-la-composición-en-un-web-worker). El resto de esta sección (`buildDocument` directo, resolvedores, funciones de limpieza, cachés) sigue valiendo: el worker recibe las mismas entradas y devuelve las mismas salidas. Llama a `buildDocument` en el hilo principal solo para exportaciones puntuales, renderizado en servidor (Node) o pruebas.
+
+### Instalación
+
+Las bibliotecas están en npm y en [JSR](https://jsr.io/@postext), con el mismo código y los mismos números de versión en los dos.
+
+<table>
+  <thead>
+    <tr>
+      <th>Biblioteca</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>El motor</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>El visor 3D del libro</td><td><code>postext-folio</code> (con <code>three</code>)</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>Citas</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# Desde npm
+npm install postext
+
+# Desde JSR
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9 o posterior
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+Desde JSR, los nombres que se importan son los de JSR: `import { buildDocument } from '@postext/postext'`, y `postext/worker` pasa a ser `@postext/postext/worker`. Los ejemplos de esta documentación usan los nombres de npm. Los perfiles ICC (`postext/icc/*`) solo están en npm.
+
+- **Citas con npm y Bun.** `npx jsr add` y `bunx jsr add` instalan `@postext/postext` como alias de `@jsr/postext__postext`, del que también depende `@postext/citeproc`, y los dos nombres acaban siendo dos copias del motor. `@postext/citeproc/register` registra el motor de citas en la copia que usa citeproc, así que un documento construido con la otra copia deja sus citas sin formatear. Ahí, importa el motor como `@jsr/postext__postext`. Deno y pnpm instalan una sola copia y no necesitan nada.
+- **Fuera del navegador.** El motor mide el texto sobre un `OffscreenCanvas`. Node, Bun y Deno no lo tienen, así que dales uno antes de la primera construcción, por ejemplo de `@napi-rs/canvas`, y registra las fuentes en que el libro compone su texto:
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+`postext-folio` se puede importar en Node, pero el visor 3D del libro necesita un navegador.
 
 ### Construir un documento
 

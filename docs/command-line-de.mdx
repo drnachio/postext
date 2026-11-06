@@ -30,6 +30,24 @@ bricht in dieselben Seiten um.
 
 ## Herunterladen
 
+Mit [Homebrew](https://brew.sh) unter macOS oder Linux:
+
+```bash
+brew install drnachio/postext/postext
+```
+
+Mit [Scoop](https://scoop.sh) unter Windows:
+
+```powershell
+scoop bucket add postext https://github.com/drnachio/scoop-postext
+scoop install postext
+```
+
+Beide installieren die ausführbare Datei des neuesten Release als Befehl
+`postext`, geprüft anhand ihrer Prüfsumme, und `brew upgrade postext` bzw.
+`scoop update postext` holt das nächste. Ohne Paketmanager laden Sie die
+Datei selbst herunter.
+
 Jedes Release von Postext veröffentlicht die ausführbaren Dateien in seinem
 [GitHub Release](https://github.com/drnachio/postext/releases/latest), zusammen mit
 ihren Prüfsummen (`SHA256SUMS`) und einer `readme.txt`:

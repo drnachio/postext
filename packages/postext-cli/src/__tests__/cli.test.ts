@@ -46,13 +46,15 @@ describe('postext cli', () => {
     expect(r.code).toBe(0);
     expect(r.stdout).toContain('Usage');
     for (const c of ['pdf', 'html', 'epub', 'image', 'images', 'pack', 'unpack', 'import-docx']) expect(r.stdout).toContain(c);
-  });
+  }, 30_000);
 
+  // `pdf` with no input loads the whole engine before it reports the usage
+  // error, which can take more than 5 s on a busy runner (#1429).
   it('exits 2 on wrong usage', () => {
     expect(run(['pfd'], tmpdir()).code).toBe(2);
     expect(run(['pdf', '--bogus'], tmpdir()).code).toBe(2);
     expect(run(['pdf'], tmpdir()).code).toBe(2);
-  });
+  }, 30_000);
 
   it('writes a PDF, HTML, EPUB, page images and Word from one layout', () => {
     const dir = book();

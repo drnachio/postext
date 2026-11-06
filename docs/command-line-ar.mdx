@@ -29,6 +29,23 @@ PDF وEPUB وHTML وWord، ورسّام الصفحات (Skia)، وHarfBuzz لل�
 
 ## الحصول عليه
 
+باستخدام [Homebrew](https://brew.sh) على macOS أو Linux:
+
+```bash
+brew install drnachio/postext/postext
+```
+
+باستخدام [Scoop](https://scoop.sh) على Windows:
+
+```powershell
+scoop bucket add postext https://github.com/drnachio/scoop-postext
+scoop install postext
+```
+
+كلاهما يثبّت الملف التنفيذي لأحدث إصدار أمرًا باسم `postext` بعد مطابقته
+مع مجموعه الاختباري، و`brew upgrade postext` أو `scoop update postext` يجلب
+الإصدار التالي. ومن دون مدير حزم، نزّل الملف بنفسك.
+
 ينشر كل إصدار من Postext الملفات التنفيذية في
 [إصدار GitHub](https://github.com/drnachio/postext/releases/latest) الخاص به، مع
 مجاميعها الاختبارية (`SHA256SUMS`) وملف `readme.txt`:

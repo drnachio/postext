@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ús programàtic',
   description: 'Com es fa servir Postext des del codi: buildDocument i els avisos que retorna, els valors per defecte, la càrrega de fonts, les memòries cau i el Web Worker',
   lang: 'ca',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '32 min',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## Ús programàtic
 
 > **Camí recomanat: fes servir el Web Worker.** Al navegador, compon a través de `createLayoutWorker()` de `postext/worker` en lloc de cridar `buildDocument` al fil principal. El worker manté la pàgina receptiva mentre compon, conserva les mesures del text d'una composició a la següent i cancel·la la que està en curs quan en comença una de més recent, de manera que una pulsació mai no espera que es compongui un text anterior. La recepta és a [Executar la composició en un Web Worker](#executar-la-composició-en-un-web-worker). La resta d'aquesta secció (`buildDocument` directe, resolutors, funcions de neteja, memòries cau) continua sent vàlida: el worker rep les mateixes entrades i retorna les mateixes sortides. Crida `buildDocument` al fil principal només per a exportacions puntuals, renderització al servidor (Node) o proves.
+
+### Instal·lació
+
+Les biblioteques són a npm i a [JSR](https://jsr.io/@postext), amb el mateix codi i els mateixos números de versió a tots dos.
+
+<table>
+  <thead>
+    <tr>
+      <th>Biblioteca</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>El motor</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>El visor 3D del llibre</td><td><code>postext-folio</code> (amb <code>three</code>)</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>Citacions</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# Des d'npm
+npm install postext
+
+# Des de JSR
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9 o posterior
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+Des de JSR, els noms que s'importen són els de JSR: `import { buildDocument } from '@postext/postext'`, i `postext/worker` passa a ser `@postext/postext/worker`. Els exemples d'aquesta documentació fan servir els noms d'npm. Els perfils ICC (`postext/icc/*`) només són a npm.
+
+- **Citacions amb npm i Bun.** `npx jsr add` i `bunx jsr add` instal·len `@postext/postext` com a àlies de `@jsr/postext__postext`, del qual també depèn `@postext/citeproc`, i els dos noms acaben sent dues còpies del motor. `@postext/citeproc/register` registra el motor de citacions a la còpia que fa servir citeproc, de manera que un document construït amb l'altra còpia deixa les citacions sense format. Allà, importa el motor com a `@jsr/postext__postext`. Deno i pnpm instal·len una sola còpia i no necessiten res.
+- **Fora del navegador.** El motor mesura el text sobre un `OffscreenCanvas`. Node, Bun i Deno no en tenen, així que dona'ls-en un abans de la primera construcció, per exemple de `@napi-rs/canvas`, i registra les fonts en què el llibre compon el text:
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+`postext-folio` es pot importar a Node, però el visor 3D del llibre necessita un navegador.
 
 ### Construir un document
 

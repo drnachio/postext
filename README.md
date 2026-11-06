@@ -265,6 +265,12 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 ### Command line
 
 - **`postext`** is one self-contained executable per system (macOS arm64 and x64, Linux x64, arm64 and musl, Windows x64): no installation, no runtime, no libraries. The engine, the PDF, EPUB, HTML and Word writers, the page painter (Skia), the default fonts and the ICC print profiles are inside. Every release attaches them to its [GitHub Release](https://github.com/drnachio/postext/releases/latest); [`readme.txt`](packages/postext-cli/bin/readme.txt) lists them, and `npx postext-cli` fetches the right one.
+
+  ```bash
+  brew install drnachio/postext/postext                               # macOS, Linux (Homebrew)
+  scoop bucket add postext https://github.com/drnachio/scoop-postext  # Windows (Scoop)
+  scoop install postext
+  ```
 - It reads a `.postext` bundle, an unpacked book folder or loose Markdown files, and writes a PDF (PDF/X and ICC profiles included), HTML, EPUB, one page or every page as PNG, JPEG or WebP, and Word; it also packs and unpacks bundles, imports `.docx`, describes a book and checks it. `postext build --watch` keeps the engine warm and rebuilds on every save.
 - Made for scripts and agents: `--json` prints one report (outputs, pages, warnings with file and line, timings), exit codes are stable, `-o -` writes to stdout, and fonts a book does not carry are fetched once from Google Fonts and cached (`--offline` never fetches). Run `postext` with no arguments for the help.
 
@@ -304,7 +310,7 @@ postext/
 | `packages/postext-epub` | The EPUB 3 writer: a laid-out book as a fixed-layout or reflowable EPUB, plus `readEpub` for viewers. Published to npm as `postext-epub`. |
 | `packages/postext-scorm` | The SCORM writer: a book, or the chapters and sections picked from it, as a SCORM 1.2 or 2004 package whose exercises report to the LMS (`renderToScorm`). Published to npm as `postext-scorm`. |
 | `packages/postext-citeproc` | The citation engine: formats Pandoc-syntax citations with citeproc-js and builds the bibliography, with 20 bundled CSL styles and 14 CSL locales. Published to npm as `postext-citeproc`. |
-| `packages/postext-cli` | The command line: `postext pdf`, `html`, `epub`, `image(s)`, `docx`, `import-docx`, `pack`, `unpack`, `info`, `check` and `build --watch`, compiled with Bun into a self-contained executable for each system (`pnpm --filter postext-cli build:bin` writes them to `bin/`). Released as GitHub Release assets and on npm as `postext-cli`. |
+| `packages/postext-cli` | The command line: `postext pdf`, `html`, `epub`, `image(s)`, `docx`, `import-docx`, `pack`, `unpack`, `info`, `check` and `build --watch`, compiled with Bun into a self-contained executable for each system (`pnpm --filter postext-cli build:bin` writes them to `bin/`). Released as GitHub Release assets, on npm as `postext-cli`, in the Homebrew tap [`drnachio/homebrew-postext`](https://github.com/drnachio/homebrew-postext) and in the Scoop bucket [`drnachio/scoop-postext`](https://github.com/drnachio/scoop-postext). |
 | `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports and the SCORM export — embedded by the web app. |
 | `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, hosted sandbox and cookbook at [postext.dev](https://postext.dev), in ten languages. |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |
@@ -358,6 +364,8 @@ npm install postext
 # or
 pnpm add postext
 ```
+
+The libraries are also on [JSR](https://jsr.io/@postext) as `@postext/postext`, `@postext/pdf`, `@postext/epub`, `@postext/folio`, `@postext/citeproc` and `@postext/scorm` (`deno add jsr:@postext/postext`, `pnpm add jsr:@postext/postext`, `npx jsr add @postext/postext`), and are imported under those names. With `npx jsr add` or `bunx jsr add`, a book that cites needs the engine imported as `@jsr/postext__postext`, or its citations stay unformatted. Outside a browser the engine needs an `OffscreenCanvas`, for instance from `@napi-rs/canvas`. See [Programmatic usage › Installing](https://postext.dev/en/docs/configuration-programmatic-usage#installing).
 
 `buildDocument` takes content plus a configuration object and returns the laid-out document — plain layout geometry, not framework components — which any backend can then render. The quickest path is the HTML string renderer:
 

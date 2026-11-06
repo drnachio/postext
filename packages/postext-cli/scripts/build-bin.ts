@@ -261,6 +261,17 @@ SHA256SUMS lists the checksum of each file.
 Install
 -------
 
+With Homebrew (macOS, Linux):
+
+  brew install drnachio/postext/postext
+
+With Scoop (Windows):
+
+  scoop bucket add postext https://github.com/drnachio/scoop-postext
+  scoop install postext
+
+Or download the file yourself.
+
 Linux and macOS:
 
   curl -fL -o postext ${base}/latest/download/postext-linux-x64

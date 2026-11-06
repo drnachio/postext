@@ -21,6 +21,21 @@ export const metadata = {
 
 ## 获取
 
+在macOS或Linux上用[Homebrew](https://brew.sh)：
+
+```bash
+brew install drnachio/postext/postext
+```
+
+在Windows上用[Scoop](https://scoop.sh)：
+
+```powershell
+scoop bucket add postext https://github.com/drnachio/scoop-postext
+scoop install postext
+```
+
+两者都会把最新版本的可执行文件安装为`postext`命令，并用它的校验和核对；`brew upgrade postext`或`scoop update postext`会换成下一个版本。不用包管理器时，自己下载文件。
+
 Postext的每个版本都会在其[GitHub Release](https://github.com/drnachio/postext/releases/latest)上发布这些可执行文件，连同它们的校验和（`SHA256SUMS`）和一份`readme.txt`：
 
 <table>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'プログラムからの利用',
   description: 'コードからPostextを呼び出す方法。buildDocumentとその警告、既定値、フォント、キャッシュ、そしてWeb Worker',
   lang: 'ja',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '32分',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## プログラムからの利用
 
 > **推奨する方法：Web Workerを使う**。ブラウザでは、メインスレッドで `buildDocument` を呼ぶのではなく、`postext/worker` の `createLayoutWorker()` を通してレイアウトします。ワーカーはレイアウト中もページの応答を保ち、再レイアウトの間も文字の計測をキャッシュし、新しいレイアウトが始まると実行中のものを取り消すので、キー入力が古いテキストのレイアウトを待つことはありません。手順は[Web Workerでレイアウトを実行する](#web-workerでレイアウトを実行する)にあります。この節の残り（`buildDocument` の直接呼び出し、リゾルバー、ストリッパー、キャッシュ）もそのまま使えます。ワーカーは同じ入力を受け取り、同じ出力を返します。メインスレッドで `buildDocument` を呼ぶのは、一回限りの書き出し、サーバー側のレンダリング（Node）、テストの場合だけにしてください。
+
+### インストール
+
+ライブラリはnpmと[JSR](https://jsr.io/@postext)の両方で公開しており、コードもバージョン番号も同じです。
+
+<table>
+  <thead>
+    <tr>
+      <th>ライブラリ</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>組版エンジン</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>3Dの本ビューア</td><td><code>postext-folio</code>（<code>three</code>と併用）</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>引用</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# npmから
+npm install postext
+
+# JSRから
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9以降
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+JSRから入れた場合、importする名前はJSRの名前になります：`import { buildDocument } from '@postext/postext'`。`postext/worker` は `@postext/postext/worker` になります。このドキュメントの例はnpmの名前を使っています。ICCプロファイル（`postext/icc/*`）はnpmにしかありません。
+
+- <strong>npmとBunでの引用。</strong>`npx jsr add` と `bunx jsr add` は `@postext/postext` を `@jsr/postext__postext` の別名としてインストールします。`@postext/citeproc` も `@jsr/postext__postext` に依存しているため、二つの名前がエンジンの二つのコピーになります。`@postext/citeproc/register` は引用エンジンをciteprocが使うコピーに登録するので、もう一方のコピーで組んだ文書では引用が整形されません。その場合はエンジンを `@jsr/postext__postext` としてimportしてください。Denoとpnpmはコピーを一つしか入れないので、何もする必要はありません。
+- <strong>ブラウザの外で。</strong>エンジンは `OffscreenCanvas` で文字を測ります。Node、Bun、Denoにはないので、最初の組版の前に、たとえば `@napi-rs/canvas` のものを用意し、本の文字を組む書体を登録します：
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+`postext-folio` はNodeでもimportできますが、3Dの本ビューアそのものにはブラウザが必要です。
 
 ### 文書のビルド
 

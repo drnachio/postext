@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Programmatische Nutzung',
   description: 'Postext aus Code aufrufen: buildDocument und seine Warnungen, Standardwerte, Schriften, Caches und der Web Worker',
   lang: 'de',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '28 min',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## Programmatische Nutzung
 
 > **Empfohlener Weg: Nutzen Sie den Web Worker.** Im Browser läuft das Layout über `createLayoutWorker()` aus `postext/worker`, nicht über einen Aufruf von `buildDocument` im Hauptthread. Der Worker hält die Seite während des Layouts bedienbar, behält die Textmessungen zwischen zwei Layouts im Cache und bricht ein laufendes Layout ab, sobald ein neueres beginnt, sodass ein Tastendruck nie auf das Layout eines älteren Textes wartet. Das Rezept steht unter [Layout in einem Web Worker ausführen](#layout-in-einem-web-worker-ausführen). Der Rest dieses Abschnitts (`buildDocument` direkt, Resolver, Strip-Funktionen, Caches) gilt weiter: Der Worker nimmt dieselben Eingaben und liefert dieselben Ergebnisse. Rufen Sie `buildDocument` im Hauptthread nur für einmalige Exporte, serverseitiges Rendern (Node) oder Tests auf.
+
+### Installation
+
+Die Bibliotheken liegen auf npm und auf [JSR](https://jsr.io/@postext), mit demselben Code und denselben Versionsnummern.
+
+<table>
+  <thead>
+    <tr>
+      <th>Bibliothek</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Die Engine</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>Der 3D-Buchbetrachter</td><td><code>postext-folio</code> (mit <code>three</code>)</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>Zitate</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# Von npm
+npm install postext
+
+# Von JSR
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9 oder neuer
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+Von JSR importiert man unter den JSR-Namen: `import { buildDocument } from '@postext/postext'`, und aus `postext/worker` wird `@postext/postext/worker`. Die Beispiele dieser Dokumentation verwenden die npm-Namen. Die ICC-Profile (`postext/icc/*`) gibt es nur auf npm.
+
+- **Zitate mit npm und Bun.** `npx jsr add` und `bunx jsr add` installieren `@postext/postext` als Alias von `@jsr/postext__postext`, von dem auch `@postext/citeproc` abhängt, und die beiden Namen werden zu zwei Kopien der Engine. `@postext/citeproc/register` registriert die Zitier-Engine in der Kopie, die citeproc verwendet; ein Dokument, das mit der anderen Kopie gebaut wird, behält seine Zitate unformatiert. Importieren Sie die Engine dort als `@jsr/postext__postext`. Deno und pnpm installieren nur eine Kopie und brauchen nichts davon.
+- **Außerhalb des Browsers.** Die Engine misst Text auf einem `OffscreenCanvas`. Node, Bun und Deno haben keines; geben Sie ihnen vor dem ersten Build eines, zum Beispiel aus `@napi-rs/canvas`, und registrieren Sie die Schriften, in denen das Buch seinen Text setzt:
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+`postext-folio` lässt sich in Node importieren, der 3D-Buchbetrachter selbst braucht aber einen Browser.
 
 ### Ein Dokument erzeugen
 

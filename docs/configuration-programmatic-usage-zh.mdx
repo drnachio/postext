@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '以编程方式使用',
   description: '用代码调用Postext：buildDocument及其报告的警告、默认值、字体、缓存，以及Web Worker',
   lang: 'zh',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '22分钟',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## 以编程方式使用
 
 > <strong>推荐做法：使用Web Worker。</strong>在浏览器中，请通过 `postext/worker` 的 `createLayoutWorker()` 排版，而不要在主线程上调用 `buildDocument`。worker 在排版期间保持页面可响应，在两次重排之间保留文字测量缓存，并在新的排版开始时取消正在进行的排版，因此一次按键不会等待旧文本的排版。具体做法见[在Web Worker中运行排版](#在web-worker中运行排版)。本节其余内容（直接调用 `buildDocument`、解析函数、剥离函数、缓存）依然适用：worker 接受相同的输入，返回相同的输出。只有一次性导出、服务器端渲染（Node）或测试才在主线程上调用 `buildDocument`。
+
+### 安装
+
+这些库同时发布在npm和[JSR](https://jsr.io/@postext)上，两边的代码和版本号相同。
+
+<table>
+  <thead>
+    <tr>
+      <th>库</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>排版引擎</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>3D书本查看器</td><td><code>postext-folio</code>（另需<code>three</code>）</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>引文</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# 从npm安装
+npm install postext
+
+# 从JSR安装
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9及以上
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+从JSR安装时，导入名就是JSR上的名称：`import { buildDocument } from '@postext/postext'`，`postext/worker` 则变为 `@postext/postext/worker`。本文档中的示例使用npm上的名称。ICC配置文件（`postext/icc/*`）只在npm上提供。
+
+- <strong>npm和Bun下的引文。</strong>`npx jsr add` 和 `bunx jsr add` 把 `@postext/postext` 安装为 `@jsr/postext__postext` 的别名，而 `@postext/citeproc` 也依赖 `@jsr/postext__postext`，于是两个名称成了引擎的两份副本。`@postext/citeproc/register` 把引文引擎注册到citeproc所用的那份副本里，用另一份副本构建的文档，其引文就不会被格式化。这种情况下请以 `@jsr/postext__postext` 导入引擎。Deno和pnpm只安装一份副本，无需处理。
+- <strong>浏览器之外。</strong>引擎在 `OffscreenCanvas` 上测量文字。Node、Bun和Deno都没有它，因此要在第一次构建之前提供一个，例如来自 `@napi-rs/canvas` 的，并注册书中排版所用的字体：
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+`postext-folio` 可以在Node中导入，但3D书本查看器本身需要浏览器。
 
 ### 构建文档
 
