@@ -640,7 +640,10 @@ the page images instead of claiming the port is visually verified.
 - `postext check my-book --preflight` (or the PREFLIGHT lines of
   `render.mjs`): low-resolution pictures, hairlines, small text in several
   inks, ink over the limit, text near the trim, page by page.
-- `pdffonts out.pdf`: every face embedded.
+- `pdffonts out.pdf`: every face embedded. A `.otf` (CFF) face reads `CID Type 0C`
+  (postext-pdf ≥ 1.70.5); `CID TrueType` for a CFF face means an older
+  postext-pdf, or a CID-keyed face (Source Han, Noto CJK `.otf`): use its
+  TrueType build when the file goes to a printer.
 - `pdfimages -list out.pdf`: resolution of the photos. PyMuPDF `get_xobjects()`
   confirms print masters are embedded as pages.
 - Tagged PDF/UA-1 is the default output. Validate it with

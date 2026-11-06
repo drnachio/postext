@@ -270,6 +270,10 @@ Geometry:
   horizontal on the sheet. `page.margins` keep their sheet names.
 - `hugClosingFloats: false` leaves a `position: 'bottom'` float at the foot of a chapter's closing
   page, as on every other page (default: it moves up to sit one float gap under the last text).
+- Floats at the foot of one column stand in their order, the first highest (postext ≥ 1.70.5). Up to
+  1.70.4 a later float took the foot above the earlier ones: figure 2 over figure 1.
+  Bands under a cap, beside a side column, with text wrapping round them or rotated keep
+  their place.
 
 ---------------------------------------------------------------------------------
 
@@ -2465,7 +2469,9 @@ text typed into its elements is content like any other design text.
   break otherwise than in the Sandbox): add the file, or run once online so it is cached.
 - `.woff` is rejected by the PDF backend and skipped by the preset loader — use woff2/ttf/otf.
 - Chinese faces: one static file per weight (a variable font embeds its default instance), TrueType
-  outlines (CFF files are embedded whole), subset to the book's characters with layout features and
+  outlines (CFF files are embedded whole; postext-pdf ≥ 1.70.5 declares a name-keyed CFF face as CFF,
+  `CIDFontType0` + `FontFile3`, but a CID-keyed one, as Source Han and Noto CJK are, keeps the TrueType
+  declaration a print preflight may reject), subset to the book's characters with layout features and
   vertical metrics kept (playbooks E6). No italic variants: a Chinese face has none; the missing-variant
   note for them is harmless. A face must cover every character: there is no fallback to another family.
 

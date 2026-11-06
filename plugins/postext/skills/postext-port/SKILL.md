@@ -371,7 +371,8 @@ Japanese traps (postext ≥ 1.16; playbooks E8, F9–F10; configuration.md §19c
   of 直 骨 角). A pan-CJK face (Source Han, Noto CJK) gets its Japanese forms
   in the PDF from `locale: 'ja'` (JAN `locl`). Prefer TrueType: those faces'
   CFF `.otf` files are embedded whole (`cffEmbeddedWhole`, well over 10 MB a
-  weight). Subset with `--ranges latin,latin-ext,punct,cjk-punct,kana`.
+  weight), and being CID-keyed they are still declared as TrueType, which a
+  print preflight may reject. Subset with `--ranges latin,latin-ext,punct,cjk-punct,kana`.
 - **Furigana**: one reading over a word is `{麦藁帽|むぎわらぼう}` (group
   ruby, what Aozora's 《》 means); one per character is `{東京|とう|きょう}`
   (jukugo: it may break between characters). Never leave `X《よみ》`,
