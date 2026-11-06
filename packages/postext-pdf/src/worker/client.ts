@@ -79,6 +79,9 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
   const answer = async (askId: number, job: () => Promise<Uint8Array | Uint8Array[] | null>): Promise<void> => {
     try {
       const bytes = await job();
+      // The handle was disposed while the job ran (the render cancelled, the
+      // viewer closed): nobody waits for this answer any more (#1433).
+      if (disposed) return;
       // Copies: the provider may keep the originals in a cache. What a
       // font file says of itself goes beside them, since a copy drops it.
       const copy = Array.isArray(bytes) ? bytes.map((b) => b.slice()) : bytes ? bytes.slice() : null;
@@ -86,6 +89,7 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
       const declared = (Array.isArray(bytes) ? bytes : bytes ? [bytes] : []).map((b) => declarationOf(b) ?? null);
       send({ kind: 'answer', askId, bytes: copy, ...(declared.some((d) => d !== null) ? { declared } : {}) }, buffers);
     } catch (err) {
+      if (disposed) return;
       send({ kind: 'answer', askId, bytes: null, error: err instanceof Error ? err.message : String(err) });
     }
   };
