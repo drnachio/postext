@@ -4,6 +4,7 @@ import { build, config, mm, LOREM } from '../word/formatted/formatted.test-helpe
 import { parseXml, descendants, attr, type XmlElement } from '../word/xml.js';
 import { idmlDocument, parseCssFont, defaultFontStyleName, type IdmlOptions } from './index.js';
 import type { PostextConfig } from '../index.js';
+import { pageDisplayList } from '../paint/displayList/page.js';
 
 const cmyk = (hex: string, [c, m, y, k]: number[]) => ({ hex, model: 'cmyk' as const, cmyk: { c: c!, m: m!, y: y!, k: k! } });
 const hex = (h: string) => ({ hex: h, model: 'hex' as const });
@@ -97,6 +98,37 @@ describe('idmlDocument', () => {
     expect(text(f, 'MasterSpreads/MasterSpread_umaster.xml')).toContain('Name="A-Master"');
   });
 
+  it('declares one page per document in the preferences, as InDesign does, however many spreads follow', () => {
+    // With the page count there InDesign adds that many pages less one, empty, before the spreads.
+    const f = idml(`${MD}\n# A flow page\n\nSome text.\n`, TITLE_BODY);
+    expect(spreads(f).length).toBeGreaterThan(1);
+    expect(text(f, 'Resources/Preferences.xml')).toContain('PagesPerDocument="1"');
+  });
+
+  it('hyphenates only the paragraphs the composer hyphenated', () => {
+    const doc = build(MD, TITLE_BODY);
+    const f = idml(MD, TITLE_BODY);
+    const styles = text(f, 'Resources/Styles.xml');
+    for (const m of styles.matchAll(/<ParagraphStyle Self="ParagraphStyle\/(title|text)"[^>]*>/g)) expect(m[0]).toContain('Hyphenation="false"');
+    const items = pageDisplayList(doc, 0).items.filter((i) => i.kind === 'text' && i.frame?.endsWith('body'));
+    const hyphenated = items.some((i) => i.kind === 'text' && i.source?.blockKey === (items[0] as { source?: { blockKey: string } }).source?.blockKey && i.lines.some((l) => l.addedHyphen));
+    expect(hyphenated).toBe(true);
+    const frames = descendants(xml(f, spreads(f)[0]!), 'TextFrame');
+    const body = descendants(parseXml(storyOf(f, frames[1]!)), 'ParagraphStyleRange');
+    const title = descendants(parseXml(storyOf(f, frames[0]!)), 'ParagraphStyleRange');
+    expect(attr(title[0]!, 'Hyphenation')).toBeUndefined();
+    expect(attr(body[0]!, 'Hyphenation')).toBe('true');
+    expect(attr(body[1]!, 'Hyphenation')).toBeUndefined();
+  });
+
+  it('leaves out characters that set nothing and show as a missing glyph (word joiner)', () => {
+    const f = idml('Wordjoined\u2060text and a zero-width\uFEFF no-break space.', config());
+    const story = Object.keys(f).filter((p) => p.startsWith('Stories/')).map((p) => text(f, p)).join('');
+    expect(contents(story)).toContain('Wordjoinedtext');
+    expect(contents(story)).not.toMatch(/[\u2060\uFEFF]/);
+    expect(contents(story)).toContain('zero-width no-break');
+  });
+
   it('turns each composed frame into one text frame and one story, styled by its callout style', () => {
     const f = idml(MD, TITLE_BODY);
     const spread = xml(f, spreads(f)[0]!);
@@ -163,7 +195,18 @@ describe('idmlDocument', () => {
     for (const p of paras) {
       expect(Number(attr(p, 'LeftIndent'))).toBeGreaterThan(0);
       expect(Number(attr(p, 'FirstLineIndent'))).toBeLessThan(0);
+      // An explicit tab stop at the text's indent, not InDesign's default stops.
+      const stop = descendants(p, 'Position')[0]!;
+      expect(Number(stop.children.join(''))).toBeCloseTo(Number(attr(p, 'LeftIndent')), 3);
     }
+  });
+
+  it('keeps a list marker with its item outside composed frames: one text frame, marker and tab first', () => {
+    const f = idml('Intro.\n\n- First point\n- Second point', config());
+    const frames = descendants(xml(f, spreads(f)[0]!), 'TextFrame');
+    expect(frames).toHaveLength(3);
+    const items = frames.slice(1).map((fr) => contents(storyOf(f, fr)));
+    expect(items).toEqual(['•\tFirst point', '•\tSecond point']);
   });
 
   it('writes frames chained by next as one story through linked text frames, a split paragraph whole', () => {

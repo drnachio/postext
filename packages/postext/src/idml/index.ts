@@ -486,6 +486,12 @@ function paragraphRuns(w: Writer, item: TextItem): { text: string; props: TextPr
   return out;
 }
 
+/** Characters InDesign shows as a missing glyph when the face lacks them
+ *  and that set nothing: the word joiner and the zero-width no-break
+ *  space. (A soft hyphen stays: InDesign reads it as a discretionary
+ *  hyphen.) */
+const NO_GLYPH = /[\u2060\uFEFF]/g;
+
 /** A frame's name in its template (`cp3:body` → `body`). */
 const frameName = (id: string) => id.replace(/^cp\d+:/, '');
 
@@ -566,10 +572,18 @@ function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | u
       const br = ri === runs.length - 1 && i < items.length - 1 ? '<Br/>' : '';
       const o = overrides(r.props, style.props);
       const font = r.props.font !== style.props.font ? `<Properties><AppliedFont type="string">${escapeXml(r.props.font)}</AppliedFont></Properties>` : '';
-      const content = r.text.split(' ').map((t) => (t ? `<Content>${escapeXml(t)}</Content>` : '')).join('<Content> </Content>');
+      const content = r.text.replace(NO_GLYPH, '').split(' ').map((t) => (t ? `<Content>${escapeXml(t)}</Content>` : '')).join('<Content> </Content>');
       return `<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]"${o}>${font}${content}${br}</CharacterStyleRange>`;
     });
-    paras.push(`<ParagraphStyleRange${attr('AppliedParagraphStyle', style.self)}${local}>${ranges.join('')}</ParagraphStyleRange>`);
+    // Styles do not hyphenate (InDesign does by default); a paragraph the
+    // composer hyphenated does.
+    if (lines.some((l) => l.addedHyphen)) local += ' Hyphenation="true"';
+    // The tab after a list marker stops at the text's indent, not at
+    // InDesign's default stops.
+    const tabs = hang
+      ? `<Properties><TabList type="list"><ListItem type="record"><Alignment type="enumeration">LeftAlign</Alignment><AlignmentCharacter type="string">.</AlignmentCharacter><Leader type="string"></Leader><Position type="unit">${num(hang.left)}</Position></ListItem></TabList></Properties>`
+      : '';
+    paras.push(`<ParagraphStyleRange${attr('AppliedParagraphStyle', style.self)}${local}>${tabs}${ranges.join('')}</ParagraphStyleRange>`);
   });
   return (
     `${XML_HEAD}<idPkg:Story xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
@@ -659,6 +673,17 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
   const byFrame = new Map<string, TextItem[]>();
   for (const it of page.items) if (it.kind === 'text' && it.frame && frames.has(it.frame)) byFrame.set(it.frame, [...(byFrame.get(it.frame) ?? []), it]);
   const done = new Set<string>();
+  // Outside frames a list item's marker shares its item's text frame.
+  const markerFor = new Map<TextItem, TextItem>();
+  const held = new Set<TextItem>();
+  page.items.forEach((it, i) => {
+    if (it.kind !== 'text' || it.role !== 'marker' || (it.frame && byFrame.has(it.frame))) return;
+    const item = page.items.slice(i + 1).find((x): x is TextItem => x.kind === 'text');
+    if (item && item.role !== 'marker' && !(item.frame && byFrame.has(item.frame)) && item.source?.blockKey === it.source?.blockKey) {
+      markerFor.set(item, it);
+      held.add(it);
+    }
+  });
   for (const it of page.items) {
     switch (it.kind) {
       case 'rect':
@@ -675,7 +700,9 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
         break;
       case 'text': {
         if (!it.frame || !byFrame.has(it.frame)) {
-          out.push(...chipRects(w, it), textFrameXml(w, [it], undefined));
+          if (held.has(it)) break;
+          const marker = markerFor.get(it);
+          out.push(...chipRects(w, it), textFrameXml(w, marker ? [marker, it] : [it], undefined));
           break;
         }
         if (done.has(it.frame)) break;

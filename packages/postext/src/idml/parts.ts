@@ -61,7 +61,7 @@ export function preferencesXml(g: DocumentGeometry): string {
   const b = num(g.bleed);
   return (
     `${XML_HEAD}<idPkg:Preferences xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
-    `<DocumentPreference${attr('PageHeight', g.height)}${attr('PageWidth', g.width)}${attr('PagesPerDocument', g.pages)} FacingPages="false"` +
+    `<DocumentPreference${attr('PageHeight', g.height)}${attr('PageWidth', g.width)} PagesPerDocument="1" FacingPages="false"` +
     ` DocumentBleedTopOffset="${b}" DocumentBleedBottomOffset="${b}" DocumentBleedInsideOrLeftOffset="${b}" DocumentBleedOutsideOrRightOffset="${b}" DocumentBleedUniformSize="true"` +
     ' PageBinding="LeftToRight" AllowPageShuffle="true" OverprintBlack="true" ColumnDirection="Horizontal" Intent="PrintIntent"/>' +
     '<ViewPreference HorizontalMeasurementUnits="Millimeters" VerticalMeasurementUnits="Millimeters" TypographicMeasurementUnits="Points" TextSizeMeasurementUnits="Points" LineMeasurementUnits="Points"/>' +
@@ -174,7 +174,7 @@ export function stylesXml(paragraphStyles: ParagraphStyleDef[]): string {
   const own = paragraphStyles
     .map(
       (s) =>
-        `<ParagraphStyle${attr('Self', s.self)}${attr('Name', s.name)} Imported="false" NextStyle="${escapeAttr(s.self)}"${textPropsAttrs(s.props)}${attr('Justification', s.justification)}>` +
+        `<ParagraphStyle${attr('Self', s.self)}${attr('Name', s.name)} Imported="false" NextStyle="${escapeAttr(s.self)}" Hyphenation="false"${textPropsAttrs(s.props)}${attr('Justification', s.justification)}>` +
         `<Properties><BasedOn type="object">ParagraphStyle/$ID/NormalParagraphStyle</BasedOn><AppliedFont type="string">${escapeAttr(s.props.font)}</AppliedFont><Leading type="unit">${num(s.leading)}</Leading></Properties></ParagraphStyle>`,
     )
     .join('');
