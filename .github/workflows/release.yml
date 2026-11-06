@@ -38,6 +38,16 @@
 # 2. In each package's settings, link it to the drnachio/postext repository.
 #    Until then the jsr job fails on its own and blocks nothing; the next
 #    release publishes what is missing.
+#
+# Homebrew and Scoop setup (one-time, done for #1430):
+#
+# The package-managers job pushes the formula to drnachio/homebrew-postext
+# and the manifest to drnachio/scoop-postext over SSH, with one deploy key
+# per repository (write access to that repository only). To replace a key:
+#   ssh-keygen -t ed25519 -N "" -f key
+#   gh repo deploy-key add key.pub --repo drnachio/homebrew-postext --allow-write
+#   gh secret set HOMEBREW_TAP_DEPLOY_KEY --repo drnachio/postext < key
+# (the same with scoop-postext and SCOOP_BUCKET_DEPLOY_KEY), then delete key.
 # ──────────────────────────────────────────────────────────────────────────────
 
 name: Release
@@ -403,6 +413,60 @@ jobs:
         run: node scripts/npm-publish.mjs
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # The command line in Homebrew and Scoop (#1430): the formula of
+  # drnachio/homebrew-postext and the manifest of drnachio/scoop-postext,
+  # written from the release's SHA256SUMS (.github/scripts/package-managers.mjs)
+  # and pushed with each repository's deploy key (see the header). Their own
+  # Test workflows then install them. Never fails the release.
+  package-managers:
+    name: Homebrew and Scoop
+    needs: [release, cli-release]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+          sparse-checkout: .github/scripts
+      - uses: actions/checkout@v4
+        with:
+          repository: drnachio/homebrew-postext
+          ssh-key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+          path: tap
+      - uses: actions/checkout@v4
+        with:
+          repository: drnachio/scoop-postext
+          ssh-key: ${{ secrets.SCOOP_BUCKET_DEPLOY_KEY }}
+          path: bucket
+      - name: Formula and manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          # A re-run of an older release never moves them back
+          current=$(jq -r .version bucket/bucket/postext.json)
+          if [ "$(printf '%s\n%s\n' "$current" "$VERSION" | sort -V | tail -1)" != "$VERSION" ]; then
+            echo "::notice::Homebrew and Scoop are at $current, newer than $VERSION: left alone."
+            exit 0
+          fi
+          gh release download "v$VERSION" --pattern SHA256SUMS --dir "$RUNNER_TEMP"
+          node .github/scripts/package-managers.mjs "$VERSION" "$RUNNER_TEMP/SHA256SUMS" tap bucket
+      - name: Push
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          for dir in tap bucket; do
+            git -C "$dir" add -A
+            if git -C "$dir" diff --cached --quiet; then
+              echo "$dir: already at $VERSION"
+              continue
+            fi
+            git -C "$dir" -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" commit -m "postext $VERSION"
+            git -C "$dir" push
+          done
 
   # The libraries on JSR (#1417), from the commit the release tagged, so that
   # their provenance names it. After npm and never fails the release.

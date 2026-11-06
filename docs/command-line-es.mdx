@@ -29,6 +29,24 @@ la misma que la del Sandbox: el mismo libro se reparte en las mismas páginas.
 
 ## Cómo conseguirlo
 
+Con [Homebrew](https://brew.sh), en macOS o Linux:
+
+```bash
+brew install drnachio/postext/postext
+```
+
+Con [Scoop](https://scoop.sh), en Windows:
+
+```powershell
+scoop bucket add postext https://github.com/drnachio/scoop-postext
+scoop install postext
+```
+
+Los dos instalan el ejecutable de la última versión como comando `postext`,
+comprobado con su suma de verificación, y `brew upgrade postext` o
+`scoop update postext` traen la siguiente. Sin gestor de paquetes, descarga
+tú el archivo.
+
 Cada versión de Postext publica los ejecutables en su
 [GitHub Release](https://github.com/drnachio/postext/releases/latest), con
 sus sumas de verificación (`SHA256SUMS`) y un `readme.txt`:

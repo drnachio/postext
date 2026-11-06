@@ -30,6 +30,24 @@ breaks into the same pages.
 
 ## Get it
 
+With [Homebrew](https://brew.sh), on macOS or Linux:
+
+```bash
+brew install drnachio/postext/postext
+```
+
+With [Scoop](https://scoop.sh), on Windows:
+
+```powershell
+scoop bucket add postext https://github.com/drnachio/scoop-postext
+scoop install postext
+```
+
+Both install the executable of the newest release as a `postext` command,
+checked against its checksum, and `brew upgrade postext` or
+`scoop update postext` brings the next one. Without a package manager,
+download the file yourself.
+
 Every release of Postext publishes the executables on its
 [GitHub Release](https://github.com/drnachio/postext/releases/latest), with
 their checksums (`SHA256SUMS`) and a `readme.txt`:

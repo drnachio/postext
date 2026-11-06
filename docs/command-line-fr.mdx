@@ -32,6 +32,24 @@ les mêmes pages.
 
 ## L’obtenir
 
+Avec [Homebrew](https://brew.sh), sous macOS ou Linux :
+
+```bash
+brew install drnachio/postext/postext
+```
+
+Avec [Scoop](https://scoop.sh), sous Windows :
+
+```powershell
+scoop bucket add postext https://github.com/drnachio/scoop-postext
+scoop install postext
+```
+
+Les deux installent l’exécutable de la dernière version comme commande
+`postext`, vérifié avec sa somme de contrôle, et `brew upgrade postext` ou
+`scoop update postext` apporte la suivante. Sans gestionnaire de paquets,
+téléchargez vous-même le fichier.
+
 Chaque version de Postext publie les exécutables sur sa
 [GitHub Release](https://github.com/drnachio/postext/releases/latest), avec
 leurs sommes de contrôle (`SHA256SUMS`) et un `readme.txt` :
