@@ -17,6 +17,7 @@ export type {
   PdfPrintWarning,
   PdfFormFieldWarning,
   PdfFormOptions,
+  PdfFormFont,
   ResourceBytesProvider,
 } from './pdf-backend/index.js';
 export { inspectPrintMaster, type PrintMasterReport } from './print/inspectMaster.js';

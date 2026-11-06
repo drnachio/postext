@@ -41,7 +41,7 @@ export function paintChip(
     const { scale, pageHeightPt } = ctx;
     const left = xPx + chip.marginLeft, top = baselinePx - chip.ascent;
     const rect = sheetRect(ctx, [left * scale, pageHeightPt - (baselinePx + chip.descent) * scale, (left + chip.boxWidth) * scale, pageHeightPt - top * scale]);
-    ctx.forms.add(ctx.page, rect, chip.field, chip.runs.map((r) => r.text).join('').trim(), (chip.field.sizePx ?? fallbackSize) * scale);
+    ctx.forms.add(ctx.page, rect, chip.field, chip.runs.map((r) => r.text).join('').trim(), (chip.field.sizePx ?? fallbackSize) * scale, chip.runs[0]?.fontString);
     return;
   }
   tagContent(ctx, elem);

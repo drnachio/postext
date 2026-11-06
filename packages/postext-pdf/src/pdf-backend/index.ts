@@ -1,5 +1,7 @@
 import { FormFieldRegistry, type PdfFormOptions } from './forms.js';
+import { FormFonts } from './formFonts.js';
 export type { PdfFormOptions } from './forms.js';
+export type { PdfFormFont } from './formFonts.js';
 import './text/shapedText.js';
 import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
@@ -32,8 +34,9 @@ export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
   /** How form fields (chips with a `field`, #1445) write numbers: the
    *  currency symbol and its side, and the separators (from the document
-   *  language when unset). The canvas takes the same option
-   *  (`RenderPageOptions.forms`), so its preview matches. */
+   *  language when unset), and the face fields show values in (`font`,
+   *  the chip's by default, embedded whole). The canvas takes the same
+   *  option (`RenderPageOptions.forms`), so its preview matches. */
   forms?: PdfFormOptions;
   pageNegative?: boolean;
   /** Emit a PDF outline tree (bookmarks) so readers can jump between
@@ -322,7 +325,7 @@ export async function renderToPdf(
   // the bleed box are not allowed.
   if (!pdfx) linkRegistry.finalize(pdfDoc, tree);
   if (forms) {
-    await forms.finalize(pdfDoc, fieldNumbers);
+    await forms.finalize(pdfDoc, fieldNumbers, new FormFonts(pdfDoc, fontCache, options.forms?.font, (message) => forms.warnings.push(message)));
     for (const message of forms.warnings) warn({ kind: 'formField', message: `postext-pdf: ${message}` });
   }
 

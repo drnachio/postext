@@ -10,13 +10,25 @@
  * Acrobat, Foxit, pdf.js and most viewers run; the calculation order
  * (`/CO`) follows the dependencies. A print standard (PDF/X) allows no
  * interactive fields: there the value is painted as text instead.
+ *
+ * A field shows its value in the face of its chip, embedded whole
+ * (`formFonts.ts`), unless the options name another or Helvetica.
  */
-import { PDFName, PDFString, PDFArray, PDFDict, PDFHexString, StandardFonts, TextAlignment, type PDFDocument, type PDFPage, type PDFField } from 'pdf-lib';
+import { PDFName, PDFString, PDFArray, PDFDict, PDFHexString, TextAlignment, type PDFDocument, type PDFPage, type PDFField, type PDFFont } from 'pdf-lib';
 import { formatFieldNumber, type FormFieldSpec as FieldSpec, type FormNumberOptions, type FormNumberStyle } from 'postext';
+import type { FormFonts, PdfFormFont } from './formFonts.js';
 
-/** How numbers are written: Acrobat's separator style and the currency
- *  (`FormNumberOptions` of postext, which the canvas preview takes too). */
-export type PdfFormOptions = FormNumberOptions;
+/** How form fields write numbers (Acrobat's separator style and the
+ *  currency: `FormNumberOptions` of postext, which the canvas preview takes
+ *  too) and the face they show values in. */
+export interface PdfFormOptions extends FormNumberOptions {
+  /** The face of the fields: `'chip'` (the default) the face each field's
+   *  chip is set in, or a face of the document's fonts by family, weight
+   *  and style; embedded whole, once per face, so any character typed in
+   *  has its glyph. `'helvetica'` embeds nothing. A face that cannot be
+   *  embedded whole falls back to Helvetica with a `formField` warning. */
+  font?: PdfFormFont;
+}
 
 interface Placement {
   page: PDFPage;
@@ -25,6 +37,8 @@ interface Placement {
   field: FieldSpec;
   /** The chip's text size in points. */
   sizePt: number;
+  /** The font string of the chip's words. */
+  fontString?: string;
 }
 
 export class FormFieldRegistry {
@@ -34,36 +48,41 @@ export class FormFieldRegistry {
   readonly warnings: string[] = [];
 
   /** Put the widget of `field` on `page` at `rect` (points, page space),
-   *  its value shown at `sizePt`. */
-  add(page: PDFPage, rect: [number, number, number, number], field: FieldSpec, value: string, sizePt: number): void {
-    this.placements.push({ page, rect, value, field, sizePt });
+   *  its value shown at `sizePt`, in the face of `fontString` (the chip's)
+   *  unless the options say otherwise. */
+  add(page: PDFPage, rect: [number, number, number, number], field: FieldSpec, value: string, sizePt: number, fontString?: string): void {
+    this.placements.push({ page, rect, value, field, sizePt, ...(fontString ? { fontString } : {}) });
   }
 
   get size(): number {
     return this.placements.length;
   }
 
-  /** Write the AcroForm, its numbers in `style`. */
-  async finalize(pdfDoc: PDFDocument, style: FormNumberStyle): Promise<void> {
+  /** Write the AcroForm, its numbers in `style`, its values in the faces
+   *  `fonts` gives. */
+  async finalize(pdfDoc: PDFDocument, style: FormNumberStyle, fonts: FormFonts): Promise<void> {
     if (this.placements.length === 0) return;
     const form = pdfDoc.getForm();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const { separatorStyle: sep, currency, currencyBefore: before } = style;
-    const byName = new Map<string, { spec: FieldSpec; field: PDFField; value: string }>();
+    const byName = new Map<string, { spec: FieldSpec; field: PDFField; value: string; font?: PDFFont }>();
 
     for (const p of this.placements) {
-      const [x1, y1, x2, y2] = p.rect;
-      const box = { x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1),
-        borderWidth: 0, borderColor: undefined, backgroundColor: undefined, font };
       const known = byName.get(p.field.name);
       if (known && known.spec.kind !== p.field.kind) {
         this.warnings.push(`form field "${p.field.name}" is used as ${known.spec.kind} and as ${p.field.kind}; the first wins`);
+        continue;
       }
+      // A field has one face, its first chip's: every widget shows it. A
+      // check box shows no text.
+      const font = known ? known.font : p.field.kind === 'checkbox' ? undefined : await fonts.fontFor(p.fontString);
+      const [x1, y1, x2, y2] = p.rect;
+      const box = { x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1),
+        borderWidth: 0, borderColor: undefined, backgroundColor: undefined, ...(font ? { font } : {}) };
       const size = Math.max(4, p.sizePt);
       if (p.field.kind === 'checkbox') {
         const cb = (known?.field as ReturnType<typeof form.createCheckBox>) ?? form.createCheckBox(p.field.name);
         cb.addToPage(p.page, { ...box, textColor: undefined });
-        if (!known) byName.set(p.field.name, { spec: p.field, field: cb, value: p.value });
+        if (!known) byName.set(p.field.name, { spec: p.field, field: cb, value: p.value, font });
         continue;
       }
       if (p.field.kind === 'choice') {
@@ -74,7 +93,7 @@ export class FormFieldRegistry {
         }
         dd.addToPage(p.page, box);
         dd.setFontSize(size);
-        if (!known) byName.set(p.field.name, { spec: p.field, field: dd, value: p.value });
+        if (!known) byName.set(p.field.name, { spec: p.field, field: dd, value: p.value, font });
         continue;
       }
       const tf = (known?.field as ReturnType<typeof form.createTextField>) ?? form.createTextField(p.field.name);
@@ -84,18 +103,23 @@ export class FormFieldRegistry {
       }
       tf.addToPage(p.page, box);
       tf.setFontSize(size);
-      if (!known && p.value) {
-        // The value as the viewer's format script would show it, drawn into
-        // the appearance; the field keeps the plain number its scripts read.
-        const shown = formatFieldNumber(p.value, p.field.format, style) ?? p.value;
-        tf.setText(shown);
-        if (shown !== p.value) {
-          tf.updateAppearances(font);
-          form.markFieldAsClean(tf.ref);
-          tf.acroField.setValue(PDFHexString.fromText(p.value));
-        }
+      if (!known) byName.set(p.field.name, { spec: p.field, field: tf, value: p.value, font });
+    }
+
+    // Every widget's appearance, in its field's face (so pdf-lib draws none
+    // in its default face on save): a value as the viewer's format script
+    // shows it, while the field keeps the plain number its scripts read.
+    for (const { spec, field, value, font } of byName.values()) {
+      if (!font) continue;
+      if (spec.kind === 'choice') {
+        (field as ReturnType<typeof form.createDropdown>).updateAppearances(font);
+        continue;
       }
-      if (!known) byName.set(p.field.name, { spec: p.field, field: tf, value: p.value });
+      const tf = field as ReturnType<typeof form.createTextField>;
+      const shown = value ? formatFieldNumber(value, spec.format, style) ?? value : '';
+      if (shown) tf.setText(shown);
+      tf.updateAppearances(font);
+      if (shown !== value) tf.acroField.setValue(PDFHexString.fromText(value));
     }
 
     for (const { spec, field } of byName.values()) {
@@ -136,6 +160,7 @@ export class FormFieldRegistry {
       order.push(name);
     };
     for (const f of calculated) visit(f.spec.name);
+    await fonts.register();
     const acro = pdfDoc.catalog.lookup(PDFName.of('AcroForm'), PDFDict);
     if (order.length > 0) {
       const co = PDFArray.withContext(pdfDoc.context);
