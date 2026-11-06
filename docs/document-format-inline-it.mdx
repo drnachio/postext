@@ -6,7 +6,7 @@ export const metadata = {
   description: 'La formattazione all’interno di una riga: enfasi, link, chip, maiuscoletto, tabulazioni, testo verticale, segni cinesi e giapponesi, direzione del testo e formule LaTeX',
   lang: 'it',
   lastUpdated: '2026-11-06',
-  readingTime: '27 min',
+  readingTime: '28 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Questa pagina riguarda i segni che usi dentro una riga di testo. Mettono le parole in grassetto o in corsivo, aggiungono link, disegnano piccole etichette, compongono il maiuscoletto e allineano il testo ai tabulatori. Altri segni servono ai libri cinesi e giapponesi, come le piccole indicazioni di pronuncia sopra un carattere, o a una frase scritta nell’altra direzione, come l’inglese in un libro arabo. L’ultima sezione mostra come scrivere le formule matematiche.",
@@ -54,6 +54,11 @@ Il markup in linea viene riconosciuto dentro qualsiasi blocco di testo (titoli, 
       <td>Pedice</td>
       <td><code>~text~</code></td>
       <td>Stesso corpo, abbassato di 0,15 del corpo del testo, così resta entro i discendenti: un indice chimico (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Una tilde con una cifra su ciascun lato è un intervallo e resta letterale: <code>3~5 days</code>, <code>需要3~5天</code>. Lo stesso vale per una tilde tra due parole cinesi, che non apre un pedice: <code>周一~周五</code>, <code>北京~上海</code>; un pedice si chiude comunque prima di un carattere cinese (<code>F~合~等于</code>). Si combina con grassetto e corsivo (<code>**H~2~O**</code>). Un pedice e un apice scritti insieme, senza nulla in mezzo, vengono impilati come in una formula: <code>*T*~0~^2^</code> mette il 2 sopra lo 0, qualunque dei due venga prima, con il pedice abbassato di 0,25 del corpo del testo per liberare l’apice, e la coppia prende la larghezza del più largo. Uno spazio o una lettera tra di essi li compone uno dopo l’altro; lo fa anche un word joiner (U+2060), senza nulla di visibile in mezzo. Una coppia impilata non si separa mai a un a capo: una parola troppo larga per la riga va a capo prima della coppia.</td>
+    </tr>
+    <tr>
+      <td>Barrato</td>
+      <td><code>~~testo~~</code></td>
+      <td>Una linea che attraversa il testo senza spostarlo: il prezzo vecchio accanto al nuovo (<code>~~165 €~~ 129 €</code>). Due tilde per lato; una sola coppia è un pedice. Vedi <a href="#barrato">Barrato</a> più avanti.</td>
     </tr>
     <tr>
       <td>Maiuscoletto</td>
@@ -200,6 +205,21 @@ Il sole scalda il mare e :mark[l’acqua sale nell’aria come vapore, dove si r
 - **Nessuno spazio occupato.** La fascia si disegna sotto il testo, da 0,8 em sopra a 0,25 em sotto la linea di base, più la spaziatura interna verticale, e la spaziatura interna orizzontale entra negli spazi accanto alla frase. Le righe vanno a capo esattamente come senza il segno, quindi segnare un libro già impaginato non sposta nessuna delle sue pagine.
 - **Testo.** Il testo segnato accetta i propri segni in linea (`:mark[la parola **chiave**]`), link, chip e rimandi. Le parentesi quadre vi si annidano (`:mark[vedi [la mappa]]`), `\]` scrive una parentesi letterale e il testo può attraversare un a capo semplice della sorgente. Un segno di punteggiatura attaccato alla frase fuori dalle parentesi (`:mark[terra].`) resta fuori dalla fascia; il colore del testo di uno stile arriva all’intera parola che lo contiene. Un segno dentro un altro si compone come il suo testo.
 - **Dove.** Paragrafi, titoli composti nel testo, voci di elenco, citazioni, riquadri, note a piè di pagina, celle di tabella, didascalie e note, in testo da sinistra a destra e da destra a sinistra e in cinese e giapponese. Il canvas, il PDF e l’HTML disegnano la fascia; in un PDF con tag è un artefatto di impaginazione e le parole appartengono al loro paragrafo. Un titolo disegnato da una grafica (un’apertura) stampa le parole senza fascia, come il visualizzatore HTML su una pagina verticale.
+
+### Barrato
+
+`~~testo~~` traccia una linea attraverso `testo`, come un listino barra il prezzo vecchio accanto al nuovo o un’edizione mostra una parola che l’autore ha cancellato. È la sintassi di GitHub Flavored Markdown.
+
+```markdown
+Widget A: ~~165 €~~ 129 €.
+
+La riunione passa ~~a martedì~~ a giovedì.
+```
+
+- **Sintassi.** Esattamente due tilde per lato, e il testo comincia e finisce con un carattere che non è né uno spazio né una tilde; le altre tilde si leggono come prima. Una sola coppia resta un pedice (`H~2~O`), anche dentro un barrato (`~~H~2~O~~`). Scrivi `\~\~` per due tilde letterali. Il testo accetta i propri segni in linea, link, chip e riferimenti, e può passare per un a capo semplice del sorgente, non per una riga vuota.
+- **Non occupa spazio.** La linea è dipinta sopra il testo e le righe vanno a capo esattamente come senza di essa. Un barrato spezzato a fine riga ha una linea su ogni riga, due barrati affiancati conservano due linee e un segno di punteggiatura attaccato al barrato (`~~165~~.`) ne resta fuori.
+- **La linea.** Sta 0,28 em sopra la linea di base, più o meno a metà altezza delle minuscole, è spessa 0,05 em e prende il colore del testo barrato. Nel testo cinese e giapponese, e su una pagina verticale, corre al centro dei caratteri. Un apice o un pedice dentro il barrato non la sposta.
+- **Dove.** Paragrafi, titoli (finché `headings.inlineMarks` è attivo), voci di elenco, citazioni, riquadri, note a piè di pagina, celle di tabella, didascalie e note, e le parole di un chip (`:chip[~~prima~~ dopo]`; `~~:chip[prima]~~` barra le parole del chip). Il canvas, il PDF e l’HTML disegnano la linea dalla composizione; in un PDF con tag è un artefatto di impaginazione, e le parole restano testo che si estrae e si legge così come è scritto. L’HTML e l’EPUB adattabile racchiudono inoltre le parole in `<s>`, e l’esportazione in Word le segna come barrate. Una voce di attività completata ha una linea propria (`taskCompletedStrikethrough`).
 
 ### Maiuscoletto
 
