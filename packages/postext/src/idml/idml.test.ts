@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { strFromU8, unzipSync } from 'fflate';
 import { build, config, mm, LOREM } from '../word/formatted/formatted.test-helper.js';
-import { parseXml, descendants, attr, type XmlElement } from '../word/xml.js';
+import { parseXml, children, descendants, attr, type XmlElement } from '../word/xml.js';
 import { idmlDocument, parseCssFont, defaultFontStyleName, type IdmlOptions } from './index.js';
 import type { PostextConfig } from '../index.js';
 import { pageDisplayList } from '../paint/displayList/page.js';
@@ -249,5 +249,75 @@ describe('idmlDocument', () => {
     expect(parseCssFont('italic 700 16px "EB Garamond", serif')).toEqual({ family: 'EB Garamond', weight: 700, italic: true, sizePx: 16 });
     expect(defaultFontStyleName('X', 700, true)).toBe('Bold Italic');
     expect(defaultFontStyleName('X', 400, false)).toBe('Regular');
+  });
+});
+
+describe('idmlDocument: form fields (#1445)', () => {
+  const cfg = composedConfig([{ name: 'body', style: 'text', placement: top(10, 20), width: mm(120), height: mm(120) }], [plain('text', 10)], {
+    chipStyles: [
+      { id: 'field', minWidth: { value: 40, unit: 'pt' }, paddingX: { value: 2, unit: 'pt' }, background: hex('#f4f4f4'), borderColor: hex('#333333'), borderWidth: { value: 0.5, unit: 'pt' } },
+      { id: 'box', minWidth: { value: 10, unit: 'pt' }, borderColor: hex('#333333'), borderWidth: { value: 0.5, unit: 'pt' } },
+    ],
+  });
+  const ORDER = sheet(`:::frame{slot="body"}
+Quantity :chip[ ]{style=field field="order.qty" kind="number"} at :chip[120]{style=field field="order.price" format="currency"} makes :chip[ ]{style=field field="order.total" format="currency" calc="product(order.qty, order.price)"}.
+
+Gift wrap :chip[x]{style=box field="order.gift" kind="checkbox"} in :chip[Blue]{style=field field="order.colour" kind="choice" options="Red|Blue|Light green"}, size :chip[M]{style=field field="order.size" kind="choice" options="S|M|L"}.
+
+Notes :chip[ ]{style=field field="order.notes" multiline tooltip="Anything else"}
+:::`);
+
+  it('writes a text, number, choice and check box field on each field chip’s box, over the text', () => {
+    const warnings: string[] = [];
+    const f = idml(ORDER, cfg, { onWarning: (w) => warnings.push(w.code) });
+    const source = text(f, spreads(f)[0]!);
+    const spread = parseXml(source);
+    const boxes = descendants(spread, 'TextBox');
+    expect(boxes.map((b) => attr(b, 'Name'))).toEqual(['order.qty', 'order.price', 'order.total', 'order.notes']);
+    expect(source.indexOf('<TextBox')).toBeGreaterThan(source.indexOf('<TextFrame'));
+    for (const b of boxes) {
+      expect(Number(attr(b, 'FontSize'))).toBeCloseTo(10, 1);
+      // Bounds about the field's own origin, its box a rectangle inside it.
+      const bounds = descendants(b, 'PathBoundingBox')[0]!;
+      expect(Number(attr(bounds, 'Left'))).toBeCloseTo(-Number(attr(bounds, 'Right')), 3);
+      const look = descendants(b, 'Rectangle');
+      expect(look).toHaveLength(1);
+      expect(attr(look[0]!, 'FillColor')).toBe('Color/R=244 G=244 B=244');
+      expect(attr(look[0]!, 'StrokeColor')).toBe('Color/R=51 G=51 B=51');
+    }
+    const byName = (n: string) => boxes.find((b) => attr(b, 'Name') === n)!;
+    expect(attr(byName('order.notes'), 'Multiline')).toBe('true');
+    expect(attr(byName('order.notes'), 'Description')).toBe('Anything else');
+    expect(attr(byName('order.total'), 'ReadOnly')).toBe('true');
+    const label = (b: XmlElement) => Object.fromEntries(descendants(b, 'KeyValuePair').map((p) => [attr(p, 'Key'), attr(p, 'Value')]));
+    expect(label(byName('order.price'))).toEqual({ 'postext:value': '120', 'postext:format': 'currency' });
+    expect(label(byName('order.total'))).toEqual({ 'postext:format': 'currency', 'postext:calc': 'product(order.qty, order.price)' });
+
+    const [gift] = descendants(spread, 'CheckBox');
+    expect(attr(gift!, 'Name')).toBe('order.gift');
+    expect(attr(gift!, 'CheckedByDefault')).toBe('true');
+    const states = descendants(gift!, 'State');
+    expect(states.map((st) => descendants(st, 'Statetype')[0]!.children.join(''))).toEqual(['UpOff', 'UpOn']);
+    expect(descendants(states[1]!, 'Polygon')).toHaveLength(1);
+
+    const combos = descendants(spread, 'ComboBox');
+    expect(combos.map((c) => attr(c, 'Name'))).toEqual(['order.colour', 'order.size']);
+    expect(descendants(combos[0]!, 'ListItem').map((li) => li.children.join(''))).toEqual(['Red', 'Blue', 'Light green']);
+    expect(attr(combos[1]!, 'ChoiceList')).toBe('S M L');
+
+    // The field chips' words are not in the text, their boxes no loose rectangles.
+    const words = contents(storyOf(f, descendants(spread, 'TextFrame')[0]!));
+    expect(words).toMatch(/^Quantity  + at  + makes  +\.Gift wrap  + in  +, size  +\.Notes  +$/);
+    expect(children(descendants(spread, 'Spread')[0], 'Rectangle')).toHaveLength(0);
+    expect(warnings).toEqual(expect.arrayContaining(['field.value', 'field.script']));
+  });
+
+  it('writes field chips as chips with forms: false', () => {
+    const f = idml(ORDER, cfg, { forms: false });
+    const source = text(f, spreads(f)[0]!);
+    expect(source).not.toMatch(/<(TextBox|CheckBox|ComboBox)/);
+    const words = contents(storyOf(f, descendants(parseXml(source), 'TextFrame')[0]!));
+    expect(words).toContain('120');
+    expect(words).toContain('Blue');
   });
 });

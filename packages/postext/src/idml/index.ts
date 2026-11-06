@@ -4,7 +4,8 @@
 // rules, boxes, paths and pictures become native page items; the text of
 // each composed-page frame becomes one text frame with one story (frames
 // chained by `next` share one story), with the frame's callout style as
-// paragraph style. InDesign sets the text again with its own composer:
+// paragraph style. Chips that carry a form field become InDesign form
+// fields (`fields.ts`). InDesign sets the text again with its own composer:
 // frames, styles, text and first baselines match, line breaks may not.
 
 import { strToU8, zipSync, type Zippable } from 'fflate';
@@ -17,6 +18,7 @@ import { authoredCmykColors } from '../color/authored.js';
 import { bitmapInfo, svgSize } from '../bundle/manifest/sizes.js';
 import { CHIP_PLACEHOLDER } from '../parse/inlineFormatting/inlineDirectives.js';
 import { escapeXml } from '../word/xml.js';
+import { fieldXml } from './fields.js';
 import {
   attr,
   BACKING_STORY_XML,
@@ -61,6 +63,10 @@ export interface IdmlOptions {
    *  level. Defaults: `Body`, `Heading`, `List`, `Quote`, `Caption`,
    *  `Footnote`, `Header`, `Footer`, `Design`; other roles keep the role. */
   styleNames?: Partial<Record<string, string>>;
+  /** Chips that carry a form field (`field="…"`) become InDesign form
+   *  fields (default `true`); `false` writes them as any chip, the value
+   *  as text. */
+  forms?: boolean;
   onWarning?: (w: IdmlWarning) => void;
 }
 
@@ -239,9 +245,47 @@ function chipRects(w: Writer, item: TextItem): string[] {
     for (const run of line.runs) {
       const b = run.inline?.kind === 'chip' ? run.inline.box : undefined;
       const rect = chipRect(run, line);
-      if (!b || !rect || (!b.fill && !(b.stroke && b.strokeWidthPx))) continue;
+      if (!b || !rect || (!b.fill && !(b.stroke && b.strokeWidthPx)) || isField(w, run)) continue;
       out.push(rectXml(w, { fill: b.fill, stroke: b.stroke, strokeWidthPx: b.strokeWidthPx, radius: b.radius, rect }));
     }
+  }
+  return out;
+}
+
+/** A chip that is written as a form field. */
+const isField = (w: Writer, run: DisplayRun): boolean => run.inline?.kind === 'chip' && !!run.inline.field && w.opts.forms !== false;
+
+/** The form fields of a text item's chips, over the text (#1445). The
+ *  field's value is the chip's words. */
+function chipFields(w: Writer, item: TextItem, frame: VDTFrame | undefined): string[] {
+  const out: string[] = [];
+  for (const line of item.lines) {
+    line.runs.forEach((run, i) => {
+      const field = run.inline?.kind === 'chip' ? run.inline.field : undefined;
+      const b = run.inline?.box;
+      const rect = chipRect(run, line);
+      if (!field || !b || !rect || !isField(w, run)) return;
+      if (item.rotate) w.warn('field.rotated', `Form field "${field.name}" stands in turned text; it is written unturned`);
+      const end = rect.x + rect.width;
+      const value = [run, ...line.runs.slice(i + 1).filter((r) => !r.inline && r.x < end - 0.01)].map((r) => r.text).join('').replaceAll(CHIP_PLACEHOLDER, '').trim();
+      if (value && field.kind !== 'checkbox') w.warn('field.value', 'InDesign form fields have no default value: a field\'s value is kept as its script label postext:value');
+      if (field.format || field.calc) w.warn('field.script', 'InDesign form fields have no number format or calculation: they are kept as the script labels postext:format and postext:calc');
+      const c = toSpread(w, rect.x + rect.width / 2, rect.y + rect.height / 2);
+      const fill = swatch(w, b.fill);
+      const stroke = b.strokeWidthPx ? swatch(w, b.stroke) : undefined;
+      const sizePx = field.sizePx ?? (parseCssFont(run.fontString).sizePx || 12);
+      out.push(
+        fieldXml(w.next, field, value, {
+          cx: c.x,
+          cy: c.y,
+          hw: (rect.width * w.k) / 2,
+          hh: (rect.height * w.k) / 2,
+          paint: paintAttrs(w, fill, stroke, b.strokeWidthPx, b.radius),
+          ink: swatch(w, run.color)?.ref ?? 'Color/Black',
+          sizePt: sizePx * w.k * (frame?.scale ?? 1),
+        }),
+      );
+    });
   }
   return out;
 }
@@ -458,14 +502,25 @@ function paragraphRuns(w: Writer, item: TextItem): { text: string; props: TextPr
     else out.push({ text, props });
   };
   item.lines.forEach((line, li) => {
-    const runs = line.runs.filter((r) => !r.inline || r.inline.kind === 'chip');
+    // A form field's chip is room for the field (`chipFields`): its box's
+    // width in thin spaces, its words left out.
+    let fieldEnd = -Infinity;
+    const runs = line.runs.filter((r) => {
+      if (isField(w, r)) {
+        const rect = chipRect(r, line);
+        fieldEnd = rect ? rect.x + rect.width : r.x + r.width;
+        return true;
+      }
+      if (!r.inline && r.x < fieldEnd - 0.01) return false;
+      return !r.inline || r.inline.kind === 'chip';
+    });
     if (line.runs.some((r) => r.inline && r.inline.kind !== 'chip')) w.warn('text.inline', `Inline content (maths, music, swatches) is left out: "${line.text.slice(0, 40)}"`);
     runs.forEach((run, ri) => {
       let text = run.text;
       if (run.inline?.kind === 'chip' || run.padStart || run.padEnd) {
         const sizePx = parseCssFont(run.fontString).sizePx || 12;
         const words = text.replaceAll(CHIP_PLACEHOLDER, '');
-        text = run.inline?.kind === 'chip' && !words.trim() ? thinSpaces(run.inline.box?.width, sizePx) : `${thinSpaces(run.padStart, sizePx)}${words}${thinSpaces(run.padEnd, sizePx)}`;
+        text = run.inline?.kind === 'chip' && (!words.trim() || isField(w, run)) ? thinSpaces(run.inline.box?.width, sizePx) : `${thinSpaces(run.padStart, sizePx)}${words}${thinSpaces(run.padEnd, sizePx)}`;
       }
       if (li > 0 && ri === 0 && line.repeatedHyphen) text = text.replace(/^[-‐]/, '');
       if (ri === runs.length - 1 && line.addedHyphen) text = text.replace(/[-‐­]$/, '');
@@ -702,7 +757,7 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
         if (!it.frame || !byFrame.has(it.frame)) {
           if (held.has(it)) break;
           const marker = markerFor.get(it);
-          out.push(...chipRects(w, it), textFrameXml(w, marker ? [marker, it] : [it], undefined));
+          out.push(...chipRects(w, it), textFrameXml(w, marker ? [marker, it] : [it], undefined), ...chipFields(w, it, undefined));
           break;
         }
         if (done.has(it.frame)) break;
@@ -711,8 +766,10 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
         for (const c of chain) done.add(c.id);
         // Chip boxes go behind all the chain's text.
         for (const items of own) for (const t of items) out.push(...chipRects(w, t));
+        // Form fields go over it, each at its frame's text scale.
+        const fields = () => chain.flatMap((c, k) => own[k]!.flatMap((t) => chipFields(w, t, c)));
         if (chain.length < 2) {
-          out.push(textFrameXml(w, own[0]!, chain[0]));
+          out.push(textFrameXml(w, own[0]!, chain[0]), ...fields());
           break;
         }
         const story = w.next();
@@ -727,6 +784,7 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
         chain.forEach((c, k) => {
           out.push(textFrameXml(w, own[k]!, c, { story, self: selfs[k]!, prev: selfs[k - 1], next: selfs[k + 1], write: k === 0, storyItems }));
         });
+        out.push(...fields());
         break;
       }
       case 'table':
