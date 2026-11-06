@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'O pipeline de layout',
   description: 'A passada de posicionamento e suas rodadas: como o motor posiciona linhas, flutuantes, notas e colunas, e repete o processo até a diagramação se estabilizar',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-06',
   readingTime: '29 min',
   order: 3,
   parent: 'architecture',
@@ -119,7 +119,7 @@ Antes que qualquer bloco de conteúdo entre em uma página, a passada reserva es
 - **Posicionamento adiado:** um flutuante que não cabe em nenhum espaço da página atual espera pela próxima página que o fluxo abrir e, em uma fronteira de capítulo, é escoado para páginas abertas antes da fronteira. Uma imagem mantém o tamanho, a menos que `placement.shrink` (ou `layout.floatShrink`, para o documento inteiro) permita reduzi-la para caber em um espaço. Uma tabela alta demais para uma página nova é cortada entre linhas e continua nas páginas seguintes, com as linhas de cabeçalho repetidas (`tableStyle.overflow: 'split'`, o padrão)
 - **Saída:** recursos posicionados em faixas da página (`page.floats`), com a altura das colunas afetadas reduzida para que o texto corra ao redor das faixas
 
-O posicionamento de recursos é onde a coisa fica interessante, porque os flutuantes não apenas ocupam espaço: eles remodelam o espaço ao redor. Depois que o bloco que contém uma referência foi posicionado, o flutuante pendente recebe a oferta dos espaços livres da página atual depois dele: o pé dessa coluna, depois o alto e o pé da próxima coluna vazia (para um flutuante de página inteira, o pé da página, quando todas as colunas ainda têm espaço). Um flutuante que não cabe em lugar nenhum espera pela página seguinte, onde os flutuantes pendentes ocupam suas faixas antes que qualquer texto entre. As colunas encolhem para caber entre as faixas, o texto corre sem interrupção pelas colunas estreitadas, e o leitor vê a figura perto (mas não exatamente no ponto) de onde ela é mencionada. É a prática comum da composição profissional; os livros fazem isso o tempo todo.
+O posicionamento de recursos é onde a coisa fica interessante, porque os flutuantes não apenas ocupam espaço: eles remodelam o espaço ao redor. Depois que o bloco que contém uma referência foi posicionado, o flutuante pendente recebe a oferta dos espaços livres da página atual depois dele: o pé dessa coluna, depois o alto e o pé da próxima coluna vazia (para um flutuante de página inteira, o pé da página, quando todas as colunas ainda têm espaço). Um flutuante que não cabe em lugar nenhum espera pela página seguinte, onde os flutuantes pendentes ocupam suas faixas antes que qualquer texto entre. Os flutuantes que terminam no pé da mesma coluna ficam na ordem deles. Quando mais um chega ao pé, os flutuantes do pé dessa coluna são dispostos de novo a partir de baixo, o último na posição mais baixa, de modo que a figura 1 fica acima da figura 2 (`pipeline/build/pass/floats/footStack.ts`). Mantêm o lugar uma faixa sob um limite de faixa, ao lado de uma coluna lateral, contornada pelo texto ou girada, e um boxe ancorado a um limite. As colunas encolhem para caber entre as faixas, o texto corre sem interrupção pelas colunas estreitadas, e o leitor vê a figura perto (mas não exatamente no ponto) de onde ela é mencionada. É a prática comum da composição profissional; os livros fazem isso o tempo todo.
 
 **Regras de posicionamento.** Além da escolha do posicionamento, os flutuantes seguem restrições editoriais estritas:
 

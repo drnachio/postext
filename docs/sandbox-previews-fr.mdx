@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Aperçus',
   description: 'Les onglets Canvas, PDF, Folio, HTML, EPUB 3 et SCORM de la zone d’aperçu principale : ce que chacun montre et ce qu’il permet de faire',
   lang: 'fr',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Une barre d’outils flottante en bas à droite de la zone d’aperçu offre :
 - **Télécharger** (icône `Download`) : enregistre le PDF courant sur le disque. Le nom du fichier est tiré du premier titre H1 du document (à défaut, `document.pdf`).
 - **Imprimer** (icône `Printer`) : ouvre la boîte de dialogue d’impression du navigateur sur la visionneuse PDF intégrée, ce qui, dans la plupart des navigateurs, permet d’imprimer ou d’enregistrer de nouveau en PDF.
 - **Chapitre courant / Livre entier** (sélecteur à gauche de la barre d’onglets, pour les livres de plus d’un chapitre) : produit tous les chapitres en un seul PDF continu au lieu du chapitre actif placé à la suite de ceux qui le précèdent (par défaut). Le changer régénère le PDF. Le canvas a son propre sélecteur (voir [Livres et chapitres](/fr/docs/sandbox-books-saving#livres-et-chapitres)).
+
+Quitter l’onglet ou modifier un réglage pendant la production d’un PDF annule ce rendu discrètement. Aucune erreur ne s’affiche, et le prochain passage sur l’onglet en lance un nouveau.
 
 En coulisse, le Sandbox utilise une fonction utilitaire `createPdfFontProvider()` qui récupère sur le CDN jsdelivr de Fontsource des fichiers WOFF2 statiques par graisse, ceux-là mêmes avec lesquels ses aperçus sont mesurés, les décompresse en TTF dans le navigateur et transmet les octets à `pdf-lib` via `renderToPdf`. Des polices statiques par graisse (plutôt qu’une seule police variable) sont nécessaires pour que le texte gras soit réellement incorporé dans la graisse grasse. Voir [Produire des PDF](/fr/docs/configuration-pdf-output#générer-des-pdf) pour le même schéma utilisé hors du Sandbox.
 

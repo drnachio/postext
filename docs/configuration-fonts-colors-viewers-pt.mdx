@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fontes, cores e saída',
   description: 'As unidades, as cores e a paleta, as fontes personalizadas, o visualizador HTML, o PDF e a produção gráfica, o visualizador Folio e a depuração',
   lang: 'pt',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -134,7 +134,7 @@ Por baixo dos panos:
 - Quando `customFonts` muda, cada família declarada é registrada automaticamente como entradas `FontFace` em `document.fonts`. Assim, o visualizador HTML, a área de visualização do canvas (que mede por meio de `document.fonts`) e qualquer referência CSS direta passam a usar a fonte personalizada sem que o usuário precise abrir antes o seletor de fontes.
 - O worker de layout recebe os mesmos ArrayBuffers pelo caminho já existente de transferência de fontes, de modo que a medição (`buildFontString`, pretext) funciona como com uma família do catálogo.
 - Alterar ou remover uma variante descarta a fonte que o worker tinha em cache para essa família e a registra de novo na diagramação seguinte, para que as visualizações acompanhem o conjunto atual de variantes.
-- **Exportação para PDF**: os binários enviados passam pelo mesmo pipeline de `PdfFontProvider`. Arquivos `.woff2` são descompactados; `.ttf` e `.otf` passam direto. `.woff` é recusado com um erro claro (o pdf-lib não consegue incorporar WOFF puro; envie de novo como `.woff2`/`.ttf`/`.otf`). OpenType com contornos CFF (`.otf` com o número mágico `OTTO`) é incorporado **sem subconjunto**, porque o gerador de subconjuntos CFF do pdf-lib percorre cada glifo no momento do `save()` e pode travar por minutos com fontes reais; abrir mão do subconjunto troca um PDF um pouco maior por tempos de renderização estáveis.
+- **Exportação para PDF**: os binários enviados passam pelo mesmo pipeline de `PdfFontProvider`. Arquivos `.woff2` são descompactados; `.ttf` e `.otf` passam direto. `.woff` é recusado com um erro claro (o pdf-lib não consegue incorporar WOFF puro; envie de novo como `.woff2`/`.ttf`/`.otf`). OpenType com contornos CFF (`.otf` com o número mágico `OTTO`) é incorporado **sem subconjunto**, porque o gerador de subconjuntos CFF do pdf-lib percorre cada glifo no momento do `save()` e pode travar por minutos com fontes reais; abrir mão do subconjunto troca um PDF um pouco maior por tempos de renderização estáveis. A fonte é declarada como CFF (`CIDFontType0`, `FontFile3` / `CIDFontType0C`), de modo que o preflight de impressão reconhece o formato; uma fonte CFF com chaves CID (Source Han, os `.otf` da Noto CJK) mantém a declaração TrueType.
 
 ### Avisos de fontes ausentes
 

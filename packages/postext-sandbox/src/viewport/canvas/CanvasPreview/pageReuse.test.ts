@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDocument } from 'postext';
 import type { PostextConfig, VDTDocument } from 'postext';
-import { createPaintedPages } from './pageReuse.js';
+import { createPaintedPages, pageToPaint } from './pageReuse.js';
 
 class StubCtx {
   font = '';
@@ -51,5 +51,18 @@ describe('composed pages keep their pixels across a relayout (#857)', () => {
     const doc = build('Plain text.');
     painted.painted(0, doc.pages[0]!, {});
     expect(painted.same(0, doc.pages[0]!, {})).toBe(false);
+  });
+});
+
+describe('pageToPaint (#1435)', () => {
+  const pages = [{ id: 'a' }, { id: 'b' }] as unknown as VDTDocument['pages'];
+  it('gives the page a slot paints', () => {
+    expect(pageToPaint({ pages }, 1)).toBe(pages[1]);
+  });
+  it('gives nothing for a slot of a longer document that was on screen before', () => {
+    expect(pageToPaint({ pages }, 2)).toBeUndefined();
+    expect(pageToPaint({ pages }, 40)).toBeUndefined();
+    expect(pageToPaint({ pages }, Number.NaN)).toBeUndefined();
+    expect(pageToPaint({ pages }, -1)).toBeUndefined();
   });
 });

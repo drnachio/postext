@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fonts, colors i sortida',
   description: 'Com s’escriuen les unitats i els colors, la paleta, les fonts personalitzades, el visor HTML, el PDF i la producció per a impremta, el visor Folio i les ajudes de depuració',
   lang: 'ca',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -133,7 +133,7 @@ Per dins:
 - Quan `customFonts` canvia, cada família declarada es registra automàticament com a `FontFace` a `document.fonts`, de manera que el visor HTML, la previsualització Canvas (que mesura amb `document.fonts`) i qualsevol referència CSS directa fan servir la variant personalitzada sense que calgui obrir abans el selector de fonts.
 - El worker de composició rep els mateixos `ArrayBuffer` pel mateix canal amb què es transfereixen les fonts, així que la mesura (`buildFontString`, pretext) funciona igual que amb una família del catàleg.
 - Si canvies o suprimeixes una variant, el worker descarta la variant que tenia a la memòria cau per a aquella família i la torna a registrar en la construcció següent, de manera que les previsualitzacions es mantenen sincronitzades amb el conjunt actual de variants.
-- **Exportació a PDF**: els fitxers pujats passen pel mateix `PdfFontProvider`. Els `.woff2` es descomprimeixen; els `.ttf` i `.otf` es passen tal com són. Els `.woff` es rebutgen amb un missatge d'error clar (pdf-lib no pot incrustar WOFF sense descomprimir: torna'l a pujar com a `.woff2`/`.ttf`/`.otf`). L'OpenType amb taules CFF (`.otf` amb la signatura `OTTO`) s'incrusta **sense subconjunt**, perquè el generador de subconjunts CFF de pdf-lib recorre tots els glifs en fer `save()` i es pot quedar encallat durant minuts amb fonts reals; si no es fa el subconjunt, el PDF és una mica més gran, però el temps de renderitzat és constant.
+- **Exportació a PDF**: els fitxers pujats passen pel mateix `PdfFontProvider`. Els `.woff2` es descomprimeixen; els `.ttf` i `.otf` es passen tal com són. Els `.woff` es rebutgen amb un missatge d'error clar (pdf-lib no pot incrustar WOFF sense descomprimir: torna'l a pujar com a `.woff2`/`.ttf`/`.otf`). L'OpenType amb taules CFF (`.otf` amb la signatura `OTTO`) s'incrusta **sense subconjunt**, perquè el generador de subconjunts CFF de pdf-lib recorre tots els glifs en fer `save()` i es pot quedar encallat durant minuts amb fonts reals; si no es fa el subconjunt, el PDF és una mica més gran, però el temps de renderitzat és constant. La font es declara com a CFF (`CIDFontType0`, `FontFile3` / `CIDFontType0C`), de manera que el preflight d'impremta en reconeix el format; una font CFF amb claus CID (Source Han, els `.otf` de Noto CJK) manté la declaració TrueType.
 
 ### Avisos de fonts que falten
 

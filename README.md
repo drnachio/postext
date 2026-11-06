@@ -273,6 +273,13 @@ Everything below ships today in `postext` and its companion packages (`postext-p
   ```
 - It reads a `.postext` bundle, an unpacked book folder or loose Markdown files, and writes a PDF (PDF/X and ICC profiles included), HTML, EPUB, one page or every page as PNG, JPEG or WebP, and Word; it also packs and unpacks bundles, imports `.docx`, describes a book and checks it. `postext build --watch` keeps the engine warm and rebuilds on every save.
 - Made for scripts and agents: `--json` prints one report (outputs, pages, warnings with file and line, timings), exit codes are stable, `-o -` writes to stdout, and fonts a book does not carry are fetched once from Google Fonts and cached (`--offline` never fetches). Run `postext` with no arguments for the help.
+- **From Python**: `pip install postext` ([`packages/postext-python`](packages/postext-python)) runs the same executable, downloaded on first use from the release of its version and checked against `SHA256SUMS` (`POSTEXT_BIN` points at one already installed). Every command is a function that returns the `--json` report as objects, warnings included, and raises on failure:
+
+  ```python
+  import postext
+  report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300})
+  pdf = postext.pdf_bytes(open("book.postext", "rb").read())
+  ```
 
 ---
 
@@ -290,6 +297,7 @@ postext/
 │   ├── postext-scorm/            # SCORM 1.2 / 2004 packages for learning platforms
 │   ├── postext-citeproc/         # CSL citations and bibliographies (citeproc-js)
 │   ├── postext-cli/              # Command line: self-contained executables (Bun)
+│   ├── postext-python/           # Python package: pip install postext, drives the command line
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
 ├── docs/                         # MDX documentation, <topic>-<locale>.mdx in ten locales
@@ -311,6 +319,7 @@ postext/
 | `packages/postext-scorm` | The SCORM writer: a book, or the chapters and sections picked from it, as a SCORM 1.2 or 2004 package whose exercises report to the LMS (`renderToScorm`). Published to npm as `postext-scorm`. |
 | `packages/postext-citeproc` | The citation engine: formats Pandoc-syntax citations with citeproc-js and builds the bibliography, with 20 bundled CSL styles and 14 CSL locales. Published to npm as `postext-citeproc`. |
 | `packages/postext-cli` | The command line: `postext pdf`, `html`, `epub`, `image(s)`, `docx`, `import-docx`, `pack`, `unpack`, `info`, `check` and `build --watch`, compiled with Bun into a self-contained executable for each system (`pnpm --filter postext-cli build:bin` writes them to `bin/`). Released as GitHub Release assets, on npm as `postext-cli`, in the Homebrew tap [`drnachio/homebrew-postext`](https://github.com/drnachio/homebrew-postext) and in the Scoop bucket [`drnachio/scoop-postext`](https://github.com/drnachio/scoop-postext). |
+| `packages/postext-python` | The Python package `postext` on PyPI: a pure-Python wheel with a typed function per command (`postext.pdf`, `check`, `info`…) that runs the command line with `--json` and returns its report as dataclasses. It downloads the executable of its version from the GitHub Release on first use. |
 | `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports and the SCORM export — embedded by the web app. |
 | `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, hosted sandbox and cookbook at [postext.dev](https://postext.dev), in ten languages. |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |

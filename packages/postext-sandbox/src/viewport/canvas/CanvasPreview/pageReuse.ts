@@ -59,3 +59,10 @@ export function createPaintedPages(): PaintedPages {
     },
   };
 }
+
+/** The page of `doc` a canvas slot at `index` paints, or `undefined` when
+ *  the slot outlived its document: an observer callback for the whole
+ *  book can land after the canvas switched to a shorter chapter (#1435). */
+export function pageToPaint(doc: { pages: readonly VDTPage[] }, index: number): VDTPage | undefined {
+  return Number.isInteger(index) && index >= 0 ? doc.pages[index] : undefined;
+}

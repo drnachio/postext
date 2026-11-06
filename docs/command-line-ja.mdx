@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'コマンドライン',
   description: 'macOS、Linux、Windowsで動く、自己完結した1つの実行ファイル。.postextの本、本のフォルダー、ばらのMarkdownからのPDF、HTML、EPUB、ページ画像、Word文書の作成、バンドルの作成、本の検査、そしてスクリプトやエージェント向けのJSON出力',
   lang: 'ja',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '14分',
   order: 49,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
@@ -321,6 +321,29 @@ postext build chapters/ --pdf book.pdf --watch
 - **速度**。実行ファイルは数百分の1秒で起動します。短い本なら、PDFやページ画像は1秒を大きく下回る時間でできます。長い本では、レイアウトにかかる分だけ時間がかかります（140ページの挿絵入りの小説で約10秒）。長い本の数ページを見るには、`--chapters`を`image`か`images --pages`と組み合わせます。多くの変更を重ねながら本に取り組むときは、`postext build --watch`を動かしたままにして、その出力を読みます。
 
 [エージェントスキル](/ja/docs/skill)は、作業中のページを描画したり、移植を検査したりするのにコマンドラインを使います。
+
+## Python
+
+`pip install postext`で、コマンドラインをPythonのライブラリとして使えます。パッケージは依存関係のない純粋なPythonで、バージョンはpostextと同じです。最初にコマンドを実行するとき、そのバージョンのGitHub Releaseからお使いのシステム用の実行ファイルをダウンロードし、`SHA256SUMS`で検証して、上で説明したキャッシュの`bin/<バージョン>/`に保存します。`POSTEXT_BIN`に手元の実行ファイル（Homebrew、Scoop、自分でビルドしたもの）を指定すれば、何もダウンロードしません。
+
+```python
+import postext
+
+report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300}, locale="es")
+print(report.output.pages)
+for warning in report.warnings:
+    print(warning.kind, warning.at, warning.message)
+
+pdf = postext.pdf_bytes(open("book.postext", "rb").read())
+```
+
+- **コマンドごとに1つの関数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`import_docx`、`pack`、`unpack`、`info`、`check`、`build`。オプションは同じ名前をアンダースコアで書きます（`color_space`、`font_dirs`、`dry_run`）。`set`は辞書、`config`はファイルか辞書、`chapters`は数値、リスト、`range`、`"1,3-5"`のいずれかを受け取ります。
+- **レポートはオブジェクト**。各関数はコマンドを`--json`付きで実行し、レポートを返します。`outputs`、`pages`、`timings`、そして`warnings`で、警告はそれぞれ`kind`、`severity`、`message`、`at`、`page`を持つ`Diagnostic`です。`info`は`chapters`、`resources`、`fonts`を、`check`は`passed`、`error_count`、`warning_count`を加えます。
+- **エラーは例外**。失敗すると`PostextError`、オプションの誤りは`UsageError`になります。`check`がエラーを見つけると`ProblemsFound`を送出し、その`report`に一覧があります。`raise_on_problems=False`を渡すとレポートを返します。
+- **バイト列**。本は`.postext`バンドルのバイト列でも渡せます。`out="-"`ではファイルが`report.content`に入って戻り、`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`、`pack_bytes`はそれを直接返します。
+- `postext.Postext(binary, cwd=…, timeout=…)`は指定した実行ファイルを使い、`python -m postext …`はコマンドラインそのものです。
+
+呼び出しのたびに実行ファイルを起動し直します。すべてのオプションはパッケージの[README](https://github.com/drnachio/postext/tree/main/packages/postext-python)にあります。
 
 ## しくみ
 

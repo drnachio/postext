@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Schriften, Farben und Ausgabe',
   description: 'Einheiten, Farben und die Palette, eigene Schriften, der HTML-Betrachter, PDF und Druckvorstufe, der Folio-Betrachter und die Debug-Überlagerungen',
   lang: 'de',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '36 min',
   order: 20,
   parent: 'configuration',
@@ -134,7 +134,7 @@ Unter der Haube:
 - Ändert sich `customFonts`, wird jede deklarierte Familie automatisch als Einträge `FontFace` in `document.fonts` registriert – so übernehmen der HTML-Betrachter, der Canvas-Viewport (der über `document.fonts` misst) und jeder direkte CSS-Verweis die eigene Schrift, ohne dass der Benutzer zuerst den Schriftwähler öffnen muss.
 - Der Layout-Worker erhält dieselben ArrayBuffers über den bestehenden Übertragungsweg für Schriftdaten, sodass die Messung (`buildFontString`, Pretext) genauso funktioniert wie bei einer Familie aus dem Katalog.
 - Wird eine Variante geändert oder entfernt, verwirft der Worker die zwischengespeicherte Schrift dieser Familie und registriert sie beim nächsten Build neu, sodass die Vorschauen mit dem aktuellen Variantensatz synchron bleiben.
-- **PDF-Export**: Hochgeladene Binärdateien laufen durch dieselbe Pipeline `PdfFontProvider`. Dateien `.woff2` werden dekomprimiert; `.ttf` und `.otf` werden direkt durchgereicht. `.woff` wird mit einer klaren Fehlermeldung abgewiesen (pdf-lib kann rohes WOFF nicht einbetten – laden Sie die Schrift als `.woff2`/`.ttf`/`.otf` erneut hoch). OpenType mit CFF-Konturen (`.otf` mit der Signatur `OTTO`) wird **ohne Teilmengenbildung** eingebettet, weil der CFF-Subsetter von pdf-lib beim `save()` jede Glyphe durchläuft und bei echten Schriften minutenlang hängen kann; der Verzicht auf die Teilmenge tauscht ein etwas größeres PDF gegen gleichmäßige Darstellungszeiten.
+- **PDF-Export**: Hochgeladene Binärdateien laufen durch dieselbe Pipeline `PdfFontProvider`. Dateien `.woff2` werden dekomprimiert; `.ttf` und `.otf` werden direkt durchgereicht. `.woff` wird mit einer klaren Fehlermeldung abgewiesen (pdf-lib kann rohes WOFF nicht einbetten – laden Sie die Schrift als `.woff2`/`.ttf`/`.otf` erneut hoch). OpenType mit CFF-Konturen (`.otf` mit der Signatur `OTTO`) wird **ohne Teilmengenbildung** eingebettet, weil der CFF-Subsetter von pdf-lib beim `save()` jede Glyphe durchläuft und bei echten Schriften minutenlang hängen kann; der Verzicht auf die Teilmenge tauscht ein etwas größeres PDF gegen gleichmäßige Darstellungszeiten. Die Schrift wird als CFF deklariert (`CIDFontType0`, `FontFile3` / `CIDFontType0C`), sodass ein Druck-Preflight ihr Format erkennt; ein CID-basierter CFF-Schnitt (Source Han, die `.otf`-Dateien von Noto CJK) behält die TrueType-Deklaration.
 
 ### Warnungen zu fehlenden Schriften
 

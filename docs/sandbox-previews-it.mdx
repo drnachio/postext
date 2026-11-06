@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Anteprime',
   description: 'Le schede Canvas, PDF, Folio, HTML, EPUB 3 e SCORM dell’area di visualizzazione principale: che cosa mostra ciascuna e che cosa permette di fare',
   lang: 'it',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '15 min',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Una barra degli strumenti fluttuante in basso a destra nell’area di visualizza
 - **Scarica** (icona `Download`): salva su disco il PDF corrente. Il nome del file deriva dal primo titolo H1 del documento (con `document.pdf` come ripiego).
 - **Stampa** (icona `Printer`): apre la finestra di stampa del browser sul visualizzatore PDF incorporato, che nella maggior parte dei browser permette di stampare o di salvare di nuovo come PDF.
 - **Capitolo corrente / Libro intero** (selettore a sinistra della barra delle schede, nei libri con più di un capitolo): produce tutti i capitoli come un unico PDF continuo, invece del solo capitolo attivo, che prosegue dopo i precedenti (il comportamento predefinito). Cambiarlo rigenera il PDF. Il canvas ha un selettore tutto suo (vedi [Libri e capitoli](/it/docs/sandbox-books-saving#libri-e-capitoli)).
+
+Se lasci la scheda o cambi un’impostazione mentre si genera un PDF, quel rendering viene annullato in silenzio, senza mostrare errori, e alla visita successiva della scheda ne parte uno nuovo.
 
 Dietro le quinte la Sandbox usa un helper `createPdfFontProvider()` che scarica file WOFF2 statici per peso dal CDN jsdelivr di Fontsource, gli stessi file con cui si misurano le sue anteprime, li decomprime in TTF nel browser e passa i byte a `pdf-lib` tramite `renderToPdf`. Servono font statici per peso (anziché un unico font variabile) perché il testo in grassetto venga davvero incorporato con il peso grassetto. Vedi [Generare PDF](/it/docs/configuration-pdf-output#generare-pdf) per lo stesso schema usato fuori dalla Sandbox.
 

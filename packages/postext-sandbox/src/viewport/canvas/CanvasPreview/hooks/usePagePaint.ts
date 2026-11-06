@@ -12,7 +12,7 @@ import type { PanelId } from '../../../../types/props.js';
 import type { SandboxLabels } from '../../../../types/labels.js';
 import type { ComposedBook } from '../../../../book/types.js';
 import type { PageNavigator } from '../interaction/types.js';
-import type { PaintedPages } from '../pageReuse.js';
+import { pageToPaint, type PaintedPages } from '../pageReuse.js';
 import type { PerfSpan } from '../../../../perf/marks.js';
 
 /** What usePagePaint takes from the canvas preview. */
@@ -301,10 +301,18 @@ export function usePagePaint(deps: UsePagePaintDeps) {
           visiblePagesRef.current.add(idx);
           if (renderedPagesRef.current.has(idx) && !stalePagesRef.current.has(idx)) continue;
           const canvas = canvasMapRef.current.get(idx);
-          if (!canvas || !docRef.current) continue;
+          const doc = docRef.current;
+          // The slot may belong to the document that was on screen before
+          // (the whole book, now a shorter chapter): a page the current
+          // document does not have is not painted (#1435).
+          const page = doc ? pageToPaint(doc, idx) : undefined;
+          if (!canvas || !doc || !page) {
+            if (doc && !page) visiblePagesRef.current.delete(idx);
+            continue;
+          }
           const opts = paintOptionsRef.current();
-          renderPageToCanvas(docRef.current.pages[idx]!, docRef.current, canvas, opts);
-          paintedPagesRef.current.painted(idx, docRef.current.pages[idx]!, opts);
+          renderPageToCanvas(page, doc, canvas, opts);
+          paintedPagesRef.current.painted(idx, page, opts);
           renderedPagesRef.current.add(idx);
           stalePagesRef.current.delete(idx);
           trimPaintedPages(idx);

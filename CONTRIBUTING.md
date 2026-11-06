@@ -142,6 +142,8 @@ Every new user-facing string in the sandbox UI must be wired in **thirteen place
 
 Dynamic strings use `__token__` placeholders (e.g. `"Page __current__ of __total__"`) rather than ICU message syntax.
 
+A key that starts with `_` (such as `Cookbook._colon`) is a note for translators, not a UI string. It goes into every locale, written in that locale's language, next to the key it explains; `apps/web/src/lib/messages.test.ts` fails when a locale lacks a note `en.json` has.
+
 ### Commit Messages
 
 Write clear, concise commit messages. Use the imperative mood in the subject line (e.g., "add column balancing algorithm", not "added column balancing algorithm").

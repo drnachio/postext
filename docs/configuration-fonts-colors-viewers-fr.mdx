@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Polices, couleurs et sortie',
   description: 'Unités, couleurs et palette, polices personnalisées, visionneuse HTML, PDF et production pour l’impression, visionneuse Folio et calques de débogage',
   lang: 'fr',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -134,7 +134,7 @@ En coulisse :
 - Quand `customFonts` change, chaque famille déclarée est automatiquement enregistrée sous forme d’entrées `FontFace` dans `document.fonts` ; la visionneuse HTML, la vue Canvas (qui mesure via `document.fonts`) et toute référence CSS directe utilisent ainsi le caractère personnalisé sans que l’utilisateur doive d’abord ouvrir le sélecteur de police.
 - Le worker de mise en page reçoit les mêmes ArrayBuffers par le chemin existant de transfert des polices, de sorte que la mesure (`buildFontString`, pretext) fonctionne comme pour une famille du catalogue.
 - Modifier ou supprimer une variante vide le cache du worker pour cette famille et la réenregistre à la composition suivante, ce qui garde les aperçus synchronisés avec le jeu de variantes courant.
-- **Export PDF** : les fichiers importés passent par le même pipeline `PdfFontProvider`. Les fichiers `.woff2` sont décompressés ; les `.ttf` et `.otf` sont transmis tels quels. Le `.woff` est refusé avec une erreur explicite (pdf-lib ne sait pas intégrer du WOFF brut : réimportez en `.woff2`/`.ttf`/`.otf`). L’OpenType à contours CFF (`.otf` avec la signature `OTTO`) est intégré **sans sous-ensemble**, car le découpage CFF de pdf-lib parcourt chaque glyphe au moment de `save()` et peut bloquer plusieurs minutes sur de vraies polices ; renoncer au sous-ensemble produit un PDF un peu plus lourd en échange de temps de rendu réguliers.
+- **Export PDF** : les fichiers importés passent par le même pipeline `PdfFontProvider`. Les fichiers `.woff2` sont décompressés ; les `.ttf` et `.otf` sont transmis tels quels. Le `.woff` est refusé avec une erreur explicite (pdf-lib ne sait pas intégrer du WOFF brut : réimportez en `.woff2`/`.ttf`/`.otf`). L’OpenType à contours CFF (`.otf` avec la signature `OTTO`) est intégré **sans sous-ensemble**, car le découpage CFF de pdf-lib parcourt chaque glyphe au moment de `save()` et peut bloquer plusieurs minutes sur de vraies polices ; renoncer au sous-ensemble produit un PDF un peu plus lourd en échange de temps de rendu réguliers. La police est déclarée en CFF (`CIDFontType0`, `FontFile3` / `CIDFontType0C`), si bien qu’un contrôle en amont d’imprimeur reconnaît son format ; une police CFF à clés CID (Source Han, les `.otf` de Noto CJK) garde la déclaration TrueType.
 
 ### Avertissements de police manquante
 

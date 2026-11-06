@@ -396,6 +396,7 @@ Unas pocas reglas mantienen honrados a los flotantes:
 
 - Un flotante nunca cae antes de su referencia y nunca se encoge para caber
 - Los flotantes de una misma secuencia de numeración conservan su orden, así que la figura 12 nunca aparece antes que la 11; una tabla que espera sitio no retiene a las figuras
+- Los flotantes que coinciden al pie de una misma columna se colocan en orden de lectura, con el primero más arriba
 - Los flotantes nunca escapan de su capítulo: las aperturas de capítulo, las portadillas de parte y el final del documento son barreras
 - Un flotante que dejaría menos de tres líneas de texto en una página nueva espera a la siguiente
 - Las bandas de cabeza y de pie se alinean con la rejilla de línea base, y el pie de un flotante inferior comparte la línea base de la última línea de texto
@@ -937,7 +938,7 @@ El renderizador recibe la maquetación de cada capítulo y escribe un único doc
 
 ## Las fuentes en el PDF
 
-Postext incrusta cada tipo que ha usado la maquetación —un archivo estático por peso y estilo—, de modo que una palabra en negrita se compone con la negrita real y una cursiva con la cursiva real, nunca con una imitación inclinada o engrosada. Los tipos TrueType se reducen a los glifos que el libro usa de verdad; los tipos OpenType con contornos PostScript se incrustan enteros, porque algunos visores no saben leer sus subconjuntos. Cada fuente incrustada lleva un mapa de los glifos a los caracteres, ligaduras incluidas, de modo que al copiar una frase del PDF se obtiene la frase que se escribió.
+Postext incrusta cada tipo que ha usado la maquetación —un archivo estático por peso y estilo—, de modo que una palabra en negrita se compone con la negrita real y una cursiva con la cursiva real, nunca con una imitación inclinada o engrosada. Los tipos TrueType se reducen a los glifos que el libro usa de verdad; los tipos OpenType con contornos PostScript se incrustan enteros, porque algunos visores no saben leer sus subconjuntos, y se declaran como lo que son, para que el preflight de una imprenta los lea como fuentes CFF. Cada fuente incrustada lleva un mapa de los glifos a los caracteres, ligaduras incluidas, de modo que al copiar una frase del PDF se obtiene la frase que se escribió.
 
 Una familia disponible solo en WOFF no se admite en el PDF, porque ese formato no se puede incrustar con garantías; WOFF2, TrueType y OpenType funcionan.
 

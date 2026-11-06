@@ -16,6 +16,7 @@ import type { TableOverflow } from '../../../../types/resources/tableStyles.js';
 import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types.js';
 import type { PassState, PassLate } from '../state.js';
+import { createFootStacks } from './footStack.js';
 
 /** What createFloatPlace takes from the pass. */
 export interface FloatPlaceDeps {
@@ -71,6 +72,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late
   } = deps;
+  /** The floats at each column's foot, kept in reading order (#1437). */
+  const footStacks = createFootStacks(baselineGrid, floatGapPx);
   const placeFloatInColumns = (
     page: VDTPage,
     f: PlannedFloat,
@@ -346,6 +349,9 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
         ? 'tooNarrow' as const
         : Math.round(need / bodyStyle.lineHeightPx) < resolved.layout.wrap.minLinesBeside ? 'fewLines' as const : undefined;
 
+    /** Each column's foot before this band: where a stack of foot floats
+     *  starts when it is laid out again in reading order. */
+    const feet = position === 'bottom' ? footStacks.feetOf(targetCols) : undefined;
     for (const col of targetCols) {
       if (openerHeads.has(col)) {
         // The band is taken from the flow under the opener: the column
@@ -428,7 +434,20 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
       }
     }
 
+    const floatsBefore = page.floats?.length ?? 0;
     commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
+    if (feet) {
+      // A plain foot band joins the stack of its columns, which is laid
+      // out again in reading order: this float under the earlier ones.
+      const stackable = !rotated && !aside && !anchorToCap && !galleryFill && !built.block.comic
+        && !(wraps && !wrapRefused)
+        && targetCols.every((c) => !uncappedBottoms.has(c) && !openerHeads.has(c));
+      const blocks = (page.floats ?? []).slice(floatsBefore);
+      const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y }, stackable);
+      for (const [col, more] of grown) {
+        if (more > 0) floatReserved.set(col, { ...reservedOf(col), bottom: reservedOf(col).bottom + more });
+      }
+    }
     noteOpenerFloat(page, f);
     state.floatsPlaced++;
     return rest ? { rest } : 'placed';

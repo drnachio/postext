@@ -54,11 +54,13 @@ export default async function CookbookPage({ params }: { params: Promise<{ local
         "@type": "ItemList",
         numberOfItems: published.length,
         itemListOrder: "https://schema.org/ItemListOrderAscending",
+        // Position and URL, as a summary page's list needs them: the
+        // titles are on the plates, and this block is in the page twice
+        // (HTML and RSC data, #1432).
         itemListElement: published.map((r, i) => ({
           "@type": "ListItem",
           position: i + 1,
           url: localizedUrl(locale, r.href),
-          name: r.title,
         })),
       },
     },

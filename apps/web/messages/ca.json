@@ -73,6 +73,7 @@
     "testedWith": "provat amb postext {version}",
     "number": "Núm.",
     "frontispiece": "Frontispici",
+    "_colon": "Els dos punts després d’una etiqueta («Ordena:»): el francès hi posa davant un espai indivisible; el català, no.",
     "colon": ":",
     "searchBarRegion": "Cercar i filtrar receptes",
     "searchLabel": "Cercar al Receptari",

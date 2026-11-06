@@ -394,6 +394,7 @@ Unes quantes regles mantenen honrats els flotants:
 
 - Un flotant no cau mai abans de la seva referència i no s'encongeix mai per cabre
 - Els flotants d'una mateixa seqüència de numeració conserven el seu ordre, de manera que la figura 12 no apareix mai abans que l'11; una taula que espera lloc no reté les figures
+- Els flotants que coincideixen al peu d'una mateixa columna es col·loquen en ordre de lectura, amb el primer més amunt
 - Els flotants no s'escapen mai del seu capítol: les obertures de capítol, les portadelles de part i el final del document són barreres
 - Un flotant que deixaria menys de tres línies de text en una pàgina nova espera a la següent
 - Les bandes de cap i de peu s'alineen amb la retícula de línia de base, i el peu d'un flotant inferior comparteix la línia de base de l'última línia de text
@@ -936,7 +937,7 @@ El PDF d'un llibre no és una concatenació de fitxers solts. El renderitzador r
 
 ## Les fonts al PDF
 
-Postext incrusta cada tipus que ha fet servir la maquetació —un fitxer estàtic per pes i estil—, de manera que una paraula en negreta es compon amb la negreta real i una cursiva amb la cursiva real, mai amb una imitació inclinada o engruixida. Els tipus TrueType es redueixen als glifs que el llibre fa servir de debò, cosa que manté els fitxers lleugers fins i tot amb quatre famílies; els tipus OpenType amb contorns PostScript s'incrusten sencers, perquè alguns visors no en saben llegir els subconjunts. Cada font incrustada porta un mapa dels glifs als caràcters, lligadures incloses, de manera que en copiar una frase del PDF s'obté la frase que es va escriure.
+Postext incrusta cada tipus que ha fet servir la maquetació —un fitxer estàtic per pes i estil—, de manera que una paraula en negreta es compon amb la negreta real i una cursiva amb la cursiva real, mai amb una imitació inclinada o engruixida. Els tipus TrueType es redueixen als glifs que el llibre fa servir de debò, cosa que manté els fitxers lleugers fins i tot amb quatre famílies; els tipus OpenType amb contorns PostScript s'incrusten sencers, perquè alguns visors no en saben llegir els subconjunts, i es declaren com el que són, així que el preflight d'una impremta els llegeix com a fonts CFF. Cada font incrustada porta un mapa dels glifs als caràcters, lligadures incloses, de manera que en copiar una frase del PDF s'obté la frase que es va escriure.
 
 Una família disponible només en WOFF no s'admet al PDF, perquè aquest format no es pot incrustar amb garanties; WOFF2, TrueType i OpenType funcionen.
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Visualizações',
   description: 'As abas Canvas, PDF, Folio, HTML, EPUB 3 e SCORM da área de visualização principal: o que cada uma mostra e o que permite fazer',
   lang: 'pt',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Uma barra de ferramentas flutuante no canto inferior direito da visualização o
 - **Baixar** (ícone `Download`): salva o PDF atual no disco. O nome do arquivo vem do primeiro título H1 do documento (ou, na falta dele, `document.pdf`).
 - **Imprimir** (ícone `Printer`): abre a caixa de diálogo de impressão do navegador sobre o visualizador de PDF integrado, que na maioria dos navegadores permite imprimir ou salvar outra vez como PDF.
 - **Capítulo atual / Livro inteiro** (seletor à esquerda da barra de abas, em livros com mais de um capítulo): renderiza todos os capítulos como um único PDF contínuo em vez do capítulo ativo continuado depois dos anteriores (o padrão). Mudá-lo gera o PDF de novo. O canvas tem um seletor próprio (veja [Livros e capítulos](/pt/docs/sandbox-books-saving#livros-e-capítulos)).
+
+Se você sair da aba ou mudar uma configuração enquanto um PDF está sendo gerado, essa renderização é cancelada sem mostrar nenhum erro, e a próxima visita à aba começa uma nova.
 
 Por baixo, o Sandbox usa um helper `createPdfFontProvider()` que busca arquivos WOFF2 estáticos, um por peso, na CDN jsdelivr da Fontsource, os mesmos com que as visualizações são medidas, descompacta-os para TTF no navegador e entrega os bytes ao `pdf-lib` via `renderToPdf`. Fontes estáticas por peso (em vez de uma única fonte variável) são necessárias para que o texto em negrito seja de fato incorporado com o peso negrito. Veja [Geração de PDF](/pt/docs/configuration-pdf-output#geração-de-pdf) para o mesmo padrão usado fora do Sandbox.
 

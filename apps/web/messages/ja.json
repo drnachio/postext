@@ -73,6 +73,7 @@
     "testedWith": "postext {version}で検証済み",
     "number": "No.",
     "frontispiece": "口絵",
+    "_colon": "ラベルの後のコロン（「並べ替え:」）。フランス語では前にノーブレークスペースを置く。ここでは「並べ替え: 難易度」のように後に空白が続くため、半角のコロンを使う。",
     "colon": ":",
     "searchBarRegion": "レシピの検索と絞り込み",
     "searchLabel": "レシピ集を検索",

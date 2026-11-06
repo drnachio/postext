@@ -394,6 +394,7 @@ Algumas regras mantêm os flutuantes na linha:
 
 - Um flutuante nunca cai antes da sua referência e nunca é reduzido para caber
 - Os flutuantes de uma mesma sequência de numeração mantêm a sua ordem, então a figura 12 nunca aparece antes da figura 11
+- Os flutuantes que se encontram no pé de uma mesma coluna ficam na ordem de leitura, com o primeiro mais acima
 - Os flutuantes nunca escapam do seu capítulo: aberturas de capítulo, folhas de rosto de parte e o fim do documento são barreiras
 - Um flutuante que deixaria menos de três linhas de texto numa página nova espera pela seguinte
 - As faixas de topo e de pé se alinham à grade de linhas de base, e a legenda de um flutuante de pé compartilha a linha de base da última linha de texto
@@ -937,7 +938,7 @@ O PDF de um livro não é uma concatenação de arquivos separados. O renderizad
 
 ## Fontes no PDF
 
-Um PDF vale o que valem as fontes que leva dentro. O Postext incorpora cada fonte que a diagramação usou (um arquivo estático por peso e estilo), de modo que uma palavra em negrito sai no negrito real e uma em itálico no itálico real, nunca numa imitação inclinada ou engrossada. As fontes TrueType são reduzidas aos glifos que o livro realmente usa, o que mantém os arquivos pequenos mesmo com quatro famílias; as fontes OpenType com contornos PostScript são incorporadas inteiras, porque alguns visualizadores não sabem ler os subconjuntos delas. Cada fonte incorporada leva um mapa dos glifos de volta para os caracteres, ligaduras incluídas, de modo que copiar uma frase do PDF devolve a frase que foi escrita.
+Um PDF vale o que valem as fontes que leva dentro. O Postext incorpora cada fonte que a diagramação usou (um arquivo estático por peso e estilo), de modo que uma palavra em negrito sai no negrito real e uma em itálico no itálico real, nunca numa imitação inclinada ou engrossada. As fontes TrueType são reduzidas aos glifos que o livro realmente usa, o que mantém os arquivos pequenos mesmo com quatro famílias; as fontes OpenType com contornos PostScript são incorporadas inteiras, porque alguns visualizadores não sabem ler os subconjuntos delas, e declaradas como o que são, para que o preflight de uma gráfica as leia como fontes CFF. Cada fonte incorporada leva um mapa dos glifos de volta para os caracteres, ligaduras incluídas, de modo que copiar uma frase do PDF devolve a frase que foi escrita.
 
 Uma família disponível só em WOFF não é aceita no PDF, porque esse formato não pode ser incorporado com segurança; arquivos WOFF2, TrueType e OpenType funcionam.
 

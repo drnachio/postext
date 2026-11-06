@@ -26,6 +26,7 @@ import { PREPAINT_SCRIPT } from "@/components/cookbook/gallery/prepaint";
 import { READING_PREPAINT_SCRIPT } from "@/components/reading/readingPrefs";
 import "../globals.css";
 import { htmlDir, htmlLang } from "@/i18n/locales";
+import { clientMessages } from "@/i18n/clientMessages";
 import { version } from "postext/package.json";
 
 // Only the faces of the first paint on most pages are preloaded: the UI
@@ -118,10 +119,10 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
   const messages = await getMessages();
-  // Client components get every namespace but the Sandbox's (three
-  // quarters of the messages): the sandbox layout provides it to its page.
-  // The docs' film titles are read on the server only.
-  const clientMessages = Object.fromEntries(Object.entries(messages).filter(([ns]) => ns !== "Sandbox" && ns !== "YouTubeVideos"));
+  // Client components get only the namespaces they read (the Sandbox's
+  // comes from the sandbox layout's provider): every namespace given here
+  // travels in each page's inline RSC data.
+  const messagesForClient = clientMessages(messages);
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
   const jsonLd = [
@@ -192,7 +193,7 @@ export default async function LocaleLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <ScriptFonts locale={locale} />
-        <NextIntlClientProvider messages={clientMessages}>
+        <NextIntlClientProvider messages={messagesForClient}>
           {/* Base UI's tabs, selects and popovers read the direction from
               here (arrow keys, sides), not from the document. */}
           <DirectionProvider direction={htmlDir(locale)}>

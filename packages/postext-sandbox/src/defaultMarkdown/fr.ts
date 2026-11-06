@@ -394,6 +394,7 @@ Quelques règles gardent les flottants dans le droit chemin :
 
 - Un flottant ne se place jamais avant son renvoi et n’est jamais réduit pour tenir
 - Les flottants d’une même séquence de numérotation gardent leur ordre : la figure 12 n’apparaît jamais avant la figure 11
+- Les flottants qui se retrouvent au pied d’une même colonne se rangent dans l’ordre de lecture, le premier le plus haut
 - Les flottants ne sortent jamais de leur chapitre : les ouvertures de chapitre, les pages de partie et la fin du document sont des barrières
 - Un flottant qui laisserait moins de trois lignes de texte sur une nouvelle page attend la suivante
 - Les bandes de tête et de pied sont alignées sur la grille de ligne de base, et la légende d’un flottant en pied partage la ligne de base de la dernière ligne de texte
@@ -934,7 +935,7 @@ Le PDF d’un livre n’est pas une concaténation de fichiers séparés. Le mot
 
 ## Les polices dans le PDF
 
-Postext incorpore chaque fonte employée par la mise en page (un fichier statique par graisse et par style). Les fontes TrueType sont réduites aux glyphes que le livre emploie réellement, ce qui garde des fichiers légers même avec quatre familles ; les fontes OpenType à contours PostScript sont incorporées entières, parce que certaines visionneuses ne savent pas lire leurs sous-ensembles. Chaque police incorporée porte une table de correspondance des glyphes vers les caractères, ligatures comprises : copier une phrase du PDF rend la phrase qui a été écrite.
+Postext incorpore chaque fonte employée par la mise en page (un fichier statique par graisse et par style). Les fontes TrueType sont réduites aux glyphes que le livre emploie réellement, ce qui garde des fichiers légers même avec quatre familles ; les fontes OpenType à contours PostScript sont incorporées entières, parce que certaines visionneuses ne savent pas lire leurs sous-ensembles, et déclarées pour ce qu’elles sont, si bien que le contrôle en amont d’un imprimeur les lit comme des polices CFF. Chaque police incorporée porte une table de correspondance des glyphes vers les caractères, ligatures comprises : copier une phrase du PDF rend la phrase qui a été écrite.
 
 Une famille disponible seulement en WOFF n’est pas acceptée par le PDF, parce que ce format ne peut pas être incorporé de façon fiable ; les fichiers WOFF2, TrueType et OpenType fonctionnent tous.
 

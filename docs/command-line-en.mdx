@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Command line',
   description: 'A single self-contained executable for macOS, Linux and Windows. It turns a .postext book, a book folder or loose Markdown into PDF, HTML, EPUB, page images and Word, packs bundles, checks books, and gives JSON output for scripts and agents',
   lang: 'en',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '14 min',
   order: 49,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
@@ -491,6 +491,50 @@ agents.
 
 The [agent skill](/en/docs/skill) uses the command line to render the pages it
 is working on and to check a port.
+
+## Python
+
+`pip install postext` makes the command line a Python library. The package is
+pure Python, with no dependencies, and its version is postext's. The first
+time it runs a command it downloads the executable of your system from the
+GitHub Release of that version, checks it against `SHA256SUMS` and keeps it in
+the cache folder above, under `bin/<version>/`. Set `POSTEXT_BIN` to an
+executable you already have (from Homebrew, Scoop or your own build) and
+nothing is downloaded.
+
+```python
+import postext
+
+report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300}, locale="es")
+print(report.output.pages)
+for warning in report.warnings:
+    print(warning.kind, warning.at, warning.message)
+
+pdf = postext.pdf_bytes(open("book.postext", "rb").read())
+```
+
+- **One function per command**: `pdf`, `html`, `epub`, `image`, `images`,
+  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` and `build`. The
+  options keep their names, with underscores (`color_space`, `font_dirs`,
+  `dry_run`). `set` takes a dict, `config` a file or a dict, `chapters` a
+  number, a list, a `range` or `"1,3-5"`.
+- **Reports as objects.** Each function runs its command with `--json` and
+  returns the report: `outputs`, `pages`, `timings` and `warnings`, each a
+  `Diagnostic` with `kind`, `severity`, `message`, `at` and `page`. `info` adds
+  `chapters`, `resources` and `fonts`; `check` adds `passed`, `error_count` and
+  `warning_count`.
+- **Errors as exceptions.** A failure raises `PostextError`, a wrong option
+  `UsageError`. When `check` finds errors it raises `ProblemsFound`, whose
+  `report` lists them; with `raise_on_problems=False` it returns the report.
+- **Bytes.** A book can be given as the bytes of a `.postext` bundle. With
+  `out="-"` the file comes back in `report.content`; `pdf_bytes`,
+  `html_bytes`, `epub_bytes`, `image_bytes`, `docx_bytes` and `pack_bytes`
+  return it directly.
+- `postext.Postext(binary, cwd=…, timeout=…)` runs a given executable, and
+  `python -m postext …` is the command line itself.
+
+Each call starts the executable again. The package's
+[README](https://github.com/drnachio/postext/tree/main/packages/postext-python) lists every option.
 
 ## How it is made
 

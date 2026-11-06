@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Vorschauen',
   description: 'Die Tabs Canvas, PDF, Folio, HTML, EPUB 3 und SCORM im Hauptansichtsbereich: was jeder zeigt und was er kann',
   lang: 'de',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '14 min',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Eine schwebende Werkzeugleiste unten rechts im Ansichtsbereich bietet:
 - **Herunterladen** (Symbol `Download`) – Speichert das aktuelle PDF auf der Festplatte. Der Dateiname wird aus der ersten H1-Überschrift des Dokuments abgeleitet (ersatzweise `document.pdf`).
 - **Drucken** (Symbol `Printer`) – Öffnet den Druckdialog des Browsers für den eingebetteten PDF-Betrachter, mit dem Sie in den meisten Browsern drucken oder erneut als PDF speichern können.
 - **Aktuelles Kapitel / Ganzes Buch** (Auswahl links in der Tab-Leiste, bei Büchern mit mehr als einem Kapitel) – Rendert alle Kapitel als ein durchgehendes PDF statt des aktiven Kapitels als Fortsetzung der vorhergehenden (der Standard). Eine Änderung erzeugt das PDF neu. Das Canvas hat eine eigene Auswahl (siehe [Bücher und Kapitel](/de/docs/sandbox-books-saving#bücher-und-kapitel)).
+
+Wenn Sie den Tab verlassen oder eine Einstellung ändern, während ein PDF erzeugt wird, wird dieses Rendering stillschweigend abgebrochen. Es erscheint kein Fehler, und beim nächsten Besuch des Tabs beginnt ein neues.
 
 Intern verwendet die Sandbox eine Hilfsfunktion `createPdfFontProvider()`, die statische WOFF2-Dateien je Schriftstärke vom jsDelivr-CDN von Fontsource abruft, die Dateien, mit denen ihre Vorschauen gemessen werden, sie im Browser zu TTF dekomprimiert und die Bytes über `renderToPdf` an `pdf-lib` übergibt. Statische Schriften je Stärke (statt einer einzigen variablen Schrift) sind nötig, damit fetter Text tatsächlich in der fetten Stärke eingebettet wird. Dasselbe Muster außerhalb der Sandbox beschreibt [PDFs erzeugen](/de/docs/configuration-pdf-output#pdfs-erzeugen).
 

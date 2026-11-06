@@ -8,6 +8,7 @@ import { verticalTwinRefOf } from './verticalFonts.js';
 import { shapeInCurrentLanguage } from './shapingLanguage.js';
 import { type FontFallback, type FontFileIssue, type LoadedFace, type PdfFontAnswer, type FaceSpec, type PdfFontProvider, CFF_WHOLE_WARN_BYTES, fontFilesOf, declarationOf, fallbackFaces, type FontMissingGlyphs } from './fontCache/fontFiles.js';
 import { isCffOpenType, coverAllGlyphWidths, coverAllGlyphUnicode, spaceGlyphForSpace } from './fontCache/glyphTables.js';
+import { declareCffProgram } from './fontCache/cffProgram.js';
 
 export { coverAllGlyphWidths, toUnicodeCmap, coverAllGlyphUnicode, spaceGlyphForSpace } from './fontCache/glyphTables.js';
 export { declaredFontFile, declarationOf, fontFilesOf, withBareFiles, inDeclarationOrder, CFF_WHOLE_WARN_BYTES, fallbackFaces } from './fontCache/fontFiles.js';
@@ -107,6 +108,8 @@ export class FontCache {
       // object it is handed, which pdf-lib hands it again for every run.
       const embedded = await this.pdfDoc.embedFont(embeddable, { subset, ...(features.length > 0 ? { features: [...features] as unknown as Record<string, boolean> } : {}) });
       if (!subset) {
+        // Declared as CFF, not TrueType (#1436).
+        declareCffProgram(embedded, bytes);
         coverAllGlyphWidths(embedded);
         coverAllGlyphUnicode(embedded);
         if (spec && bytes.length > this.cffWarnBytes) {

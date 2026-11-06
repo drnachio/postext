@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Vistas previas',
   description: 'Las pestañas Canvas, PDF, Folio, HTML, EPUB 3 y SCORM de la zona de vista previa: qué muestra cada una y qué se puede hacer en ella',
   lang: 'es',
-  lastUpdated: '2026-10-25',
+  lastUpdated: '2026-11-06',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
@@ -96,6 +96,8 @@ Una barra de herramientas flotante en la esquina inferior derecha de la vista of
 - **Descargar** (icono `Download`): guarda el PDF actual en el disco. El nombre del archivo se toma del primer encabezado H1 del documento (o, si no hay, `document.pdf`).
 - **Imprimir** (icono `Printer`): abre el diálogo de impresión del navegador sobre el visor de PDF integrado, que en la mayoría de los navegadores permite imprimir o volver a guardar como PDF.
 - **Capítulo actual / Libro completo** (selector a la izquierda de la barra de pestañas, en libros con más de un capítulo): genera todos los capítulos como un único PDF continuo, en lugar del capítulo activo como continuación de los anteriores (lo predeterminado). Al cambiarlo, el PDF se regenera. El canvas tiene su propio selector (consulta [Libros y capítulos](/es/docs/sandbox-books-saving#libros-y-capítulos)).
+
+Si sales de la pestaña o cambias un ajuste mientras se genera un PDF, esa generación se cancela sin mostrar ningún error, y al volver a la pestaña empieza una nueva.
 
 Internamente, el Sandbox usa una función auxiliar `createPdfFontProvider()` que descarga los archivos WOFF2 estáticos de cada peso desde la CDN de Fontsource en jsdelivr (los mismos con los que se miden sus vistas previas), los descomprime a TTF en el navegador y entrega los bytes a `pdf-lib` mediante `renderToPdf`. Hacen falta fuentes estáticas por peso (en lugar de una única fuente variable) para que el texto en negrita se incruste realmente con el peso de la negrita. Consulta en [Generación de PDF](/es/docs/configuration-pdf-output#generación-de-pdf) el mismo patrón fuera del Sandbox.
 
