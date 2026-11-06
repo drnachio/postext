@@ -144,11 +144,11 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
 function cellContent(ctx: WriterContext, cell: Cell, pending: Pending[]): string {
   const item = cell.item;
   if (!item || item.lines.length === 0) return TINY_P;
-  const plans = planLines(ctx, item.lines);
+  const plans = planLines(ctx, item.lines, false);
   const [chunk] = planChunks(item.lines, plans, false);
   if (!chunk) return TINY_P;
   const first = item.lines[0]!;
-  const top = first.baseline - baselineOffset(twipsToPx(plans[0]!.h, ctx.dpi), plans[0]!.d);
+  const top = first.baseline - baselineOffset(twipsToPx(plans[0]!.h, ctx.dpi));
   const slot = hasFragment(item) ? reserveFragment(ctx) : undefined;
   const out = emitGroups(ctx, item, chunk.groups, cell.rect.x, cell.rect.x + cell.rect.width, {
     offsets: lineOffsets(item),

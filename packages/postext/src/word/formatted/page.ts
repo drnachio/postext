@@ -43,6 +43,7 @@ function paintsBackground(css: string | undefined): boolean {
 /** The drawings of a page, in paint order. */
 export async function pageRuns(ctx: WriterContext, page: DisplayPage): Promise<string[]> {
   const runs: string[] = [];
+  ctx.front = [];
   if (paintsBackground(page.background)) {
     const rect = { x: 0, y: 0, width: page.width, height: page.height };
     runs.push(anchorRun(ctx, { rect, behind: true, name: 'ptx page' }, (_id, cx, cy) =>

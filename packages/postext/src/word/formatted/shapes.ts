@@ -52,7 +52,7 @@ export function ruleRun(ctx: WriterContext, item: RuleItem): string {
 /** A rect item: a filled and stroked rect or rounded rect; a box style
  *  whose sides differ gets its fill and one rule per side. */
 export function rectRuns(ctx: WriterContext, item: RectItem, opts: { behind?: boolean } = {}): string[] {
-  const behind = opts.behind === true;
+  const behind = opts.behind;
   const box = item.box;
   const fill = item.fill ?? box?.backgroundColor;
   const sides = box?.borderSides;
@@ -66,7 +66,7 @@ export function rectRuns(ctx: WriterContext, item: RectItem, opts: { behind?: bo
     ? `<a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val ${Math.min(50000, Math.round((radius / short) * 100000))}"/></a:avLst></a:prstGeom>`
     : '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>';
   const out = [
-    anchorRun(ctx, { rect: r, name: 'ptx box', behind, ...(item.rotate ? { rotate: item.rotate } : {}) }, (_id, cx, cy) =>
+    anchorRun(ctx, { rect: r, name: 'ptx box', ...(behind !== undefined ? { behind } : {}), ...(item.rotate ? { rotate: item.rotate } : {}) }, (_id, cx, cy) =>
       shapeGraphic(`${xfrm(cx, cy, item.rotate)}${geom}${solidFill(fill)}${lineXml(ctx, stroke, strokeW)}`),
     ),
   ];

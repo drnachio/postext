@@ -100,7 +100,7 @@ describe('formatted Word export review fixes (#1392)', () => {
     expect(chunks.map((c) => [c.from, c.to])).toEqual([[0, 1], [2, 3]]);
     for (const p of plans) expect(p.h).toBeLessThanOrEqual(MAX_PITCH);
     // A table cell keeps one chunk and clamps the pitch instead.
-    const cellPlans = planLines(ctx, lines);
+    const cellPlans = planLines(ctx, lines, false);
     expect(planChunks(lines, cellPlans, false).length).toBe(1);
     expect(Math.max(...cellPlans.map((p) => p.h))).toBe(MAX_PITCH);
   });

@@ -147,7 +147,7 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     }
   });
 
-  it('writes boxes as empty text boxes that read back with no edit (#1406)', async () => {
+  it('writes boxes as plain shapes behind the text that read back with no edit (#1406, #1444)', async () => {
     const md = `Before the box.\n\n:::callout{type="note"}\nBoxed text inside a note, a few words long.\n:::\n\nAfter the box.`;
     const b = await exportDoc(md, config());
     expectUnedited(b, md);
@@ -155,11 +155,10 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     expect(shapes.length).toBeGreaterThan(0);
     for (const a of shapes) {
       const wsp = els(a, 'wsp')[0]!;
-      expect(childNames(wsp)).toEqual(['cNvSpPr', 'spPr', 'txbx', 'bodyPr']);
-      expect(els(wsp, 'cNvSpPr')[0]!.attrs.txBox).toBe('1');
-      expect(childNames(els(wsp, 'txbxContent')[0]!)).toEqual(['p']);
-      expect(textOf(wsp)).toBe('');
+      expect(childNames(wsp)).toEqual(['cNvSpPr', 'spPr', 'bodyPr']);
+      expect(els(wsp, 'cNvSpPr')[0]!.attrs.txBox).toBeUndefined();
       expect(els(wsp, 'noAutofit')).toHaveLength(1);
+      expect(a.attrs.behindDoc).toBe('1');
     }
   });
 

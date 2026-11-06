@@ -43,23 +43,41 @@ export function turnedBox(rect: DisplayRect, c: { x: number; y: number }, deg: n
   return { x: centre.x - rect.width / 2, y: centre.y - rect.height / 2, width: rect.width, height: rect.height };
 }
 
+/** Whether two boxes share more than a pixel each way. */
+function overlaps(a: DisplayRect, b: DisplayRect): boolean {
+  return Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x) > 1 && Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y) > 1;
+}
+
 /** One `w:r` holding a page-anchored drawing around `graphic` (the
- *  `a:graphic` element). */
+ *  `a:graphic` element).
+ *
+ *  A shape with no text (a fill, a rule, a chip's ground) goes behind the
+ *  text layer unless something already in front of it on the page lies
+ *  under it (a picture's border, a mark over a figure): text boxes and
+ *  plain shapes are two kinds of frame to LibreOffice, which loses their
+ *  `relativeHeight` order and paints every plain shape in front, over the
+ *  text written on it (#1406); behind the text it stays under, and Word
+ *  keeps the paint order among the shapes behind (#1444). */
 export function anchorRun(ctx: WriterContext, box: AnchorBox, graphic: (id: number, cx: number, cy: number) => string): string {
   const id = ctx.pkg.nextDrawingId();
   const cx = Math.max(0, emu(box.rect.width, ctx.dpi));
   const cy = Math.max(0, emu(box.rect.height, ctx.dpi));
   const z = Z_BASE + ++ctx.z;
+  const body = graphic(id, cx, cy);
+  const plain = body.includes(WPS_URI) && !body.includes('txBox="1"');
+  const front = (ctx.front ??= []);
+  const behind = box.behind ?? (plain && !front.some((r) => overlaps(r, box.rect)));
+  if (!behind) front.push(box.rect);
   const descr = box.descr ? ` descr="${escapeAttr(box.descr)}"` : '';
   return (
     '<w:r><w:rPr><w:noProof/><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr><w:drawing>' +
-    `<wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0" relativeHeight="${z}" behindDoc="${box.behind ? 1 : 0}" locked="1" layoutInCell="1" allowOverlap="1">` +
+    `<wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0" relativeHeight="${z}" behindDoc="${behind ? 1 : 0}" locked="1" layoutInCell="1" allowOverlap="1">` +
     '<wp:simplePos x="0" y="0"/>' +
     `<wp:positionH relativeFrom="page"><wp:posOffset>${emu(box.rect.x, ctx.dpi)}</wp:posOffset></wp:positionH>` +
     `<wp:positionV relativeFrom="page"><wp:posOffset>${emu(box.rect.y, ctx.dpi)}</wp:posOffset></wp:positionV>` +
     `<wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:wrapNone/>` +
     `<wp:docPr id="${id}" name="${escapeAttr(box.name)} ${id}"${descr}/><wp:cNvGraphicFramePr/>` +
-    graphic(id, cx, cy) +
+    body +
     '</wp:anchor></w:drawing></w:r>'
   );
 }
@@ -69,20 +87,18 @@ export function xfrm(cx: number, cy: number, rotate?: number, flipH?: boolean, f
   return `<a:xfrm${rot}${flipH ? ' flipH="1"' : ''}${flipV ? ' flipV="1"' : ''}><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>`;
 }
 
-/** Body of a shape that holds no text: an empty text box. LibreOffice
- *  imports plain shapes and text boxes as two kinds of frame and loses
- *  their `relativeHeight` order once a document holds many text boxes
- *  (an opener band painted over its own text); one kind keeps it (#1406).
- *  Its paragraph is a twip tall, so even a chip's box holds it. */
-export const EMPTY_TXBX = '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>';
-
-/** A Word shape (`wps:wsp`) with its `spPr` children and its text box
- *  (empty when `text` is absent) and body properties. */
+/** A Word shape (`wps:wsp`) with its `spPr` children, and its text box
+ *  and body properties when it holds `text`. A shape with nothing to say
+ *  is a plain shape, not an empty text box: Word for the web and Word's
+ *  PDF export hand the text of the boxes on every page after the first to
+ *  the wrong boxes once empty ones sit among them (chips and callout fills
+ *  showed a body column's words, columns stood empty, #1444). */
 export function shapeGraphic(spPr: string, text?: { content: string; vert?: 'horz' | 'eaVert' }): string {
+  const box = text !== undefined;
   return (
     `<a:graphic><a:graphicData uri="${WPS_URI}"><wps:wsp>` +
-    `<wps:cNvSpPr txBox="1"/><wps:spPr>${spPr}</wps:spPr>` +
-    `<wps:txbx><w:txbxContent>${text?.content ?? EMPTY_TXBX}</w:txbxContent></wps:txbx>` +
+    `<wps:cNvSpPr${box ? ' txBox="1"' : ''}/><wps:spPr>${spPr}</wps:spPr>` +
+    (box ? `<wps:txbx><w:txbxContent>${text.content}</w:txbxContent></wps:txbx>` : '') +
     `<wps:bodyPr rot="0" vert="${text?.vert ?? 'horz'}" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="0"><a:noAutofit/></wps:bodyPr>` +
     '</wps:wsp></a:graphicData></a:graphic>'
   );

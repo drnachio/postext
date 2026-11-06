@@ -250,12 +250,8 @@ export function holderTwips(ctx: WriterContext, fontString: string): number {
   return FALLBACK_SPACE_EM * f.sz * 10 * ((f.scale ?? 100) / 100);
 }
 
-/** The font string a run is written in: a blank run's is the word's
- *  beside it on the line (before, else after), else its own. */
-export function writtenFace(run: DisplayRun, line: DisplayLine): string {
-  return BLANK.test(run.text) ? blankFace(run, line) : run.fontString;
-}
-
+/** The font string a blank run is written in: the word's beside it on
+ *  the line (before, else after), else its own. */
 function blankFace(run: DisplayRun, line: DisplayLine): string {
   const i = line.runs.indexOf(run);
   const word = (r: DisplayRun | undefined): boolean => r !== undefined && !r.inline && r.text.length > 0 && !/^\s+$/.test(r.text);
@@ -376,7 +372,8 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
       out.drawing = {
         kind: inl.kind,
         ...(inl.svg ? { svg: inl.svg } : {}),
-        ...(inl.kind === 'swatch' ? { color: inl.swatch?.color ?? run.color } : {}),
+        // A swatch's fill, or the ink an SVG's `currentColor` stands for.
+        ...(inl.kind === 'swatch' ? { color: inl.swatch?.color ?? run.color } : run.color ? { color: run.color } : {}),
         rect: { x: run.x, y: line.baseline - (run.baselineShift ?? 0) - ascent, width: inl.widthPx, height: inl.heightPx },
       };
     }

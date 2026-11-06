@@ -170,9 +170,23 @@ export function svgWithWordFonts(svg: string, plan: WordFontPlan | undefined): s
   return out.replace(/<[A-Za-z][^<>]*>/g, (tag) => (/\sfont|style\s*=/i.test(tag) ? wordFontTag(plan, tag) : tag));
 }
 
+/** An SVG with `currentColor` replaced by `ink`: Word's SVG renderer
+ *  paints a `currentColor` stroke or fill as nothing (a score lost its
+ *  staff lines and stems, #1444). `ink` is the colour of the text the
+ *  SVG sits in, as the canvas and the PDF paint it; the root's own
+ *  `color` wins when the SVG sets one. */
+export function svgWithInk(svg: string, ink = '#000000'): string {
+  if (!/currentColor/i.test(svg)) return svg;
+  const root = /<svg\b[^>]*>/i.exec(svg)?.[0] ?? '';
+  const own = /\scolor\s*=\s*["']([^"']+)["']/i.exec(root)?.[1] ?? /style\s*=\s*["'][^"']*(?:^|;|\s)color\s*:\s*([^;"']+)/i.exec(root)?.[1];
+  const colour = (own && !/currentColor|inherit/i.test(own) ? own : ink).trim();
+  return svg.replace(/currentColor/gi, colour);
+}
+
 /** Register an SVG with its PNG fallback (drawn from the SVG as the book
  *  has it: the rasteriser knows the web fonts). */
-async function svgRefs(ctx: WriterContext, svg: string, rect: DisplayRect, label: string): Promise<BlipRefs> {
+async function svgRefs(ctx: WriterContext, svg: string, rect: DisplayRect, label: string, ink?: string): Promise<BlipRefs> {
+  svg = svgWithInk(svg, ink);
   const svgRel = ctx.pkg.addMedia(strToU8(svgWithWordFonts(svg, ctx.plan)), 'svg');
   const { w, h } = fallbackSize(rect, ctx.dpi);
   let png: Uint8Array | undefined;
@@ -233,11 +247,11 @@ export async function imageRun(ctx: WriterContext, item: ImageItem): Promise<str
 }
 
 /** An inline SVG (maths, music) as a picture anchored over its run. */
-export async function inlineSvgRun(ctx: WriterContext, svg: string, rect: DisplayRect, rotate: number | undefined, kind: string): Promise<string> {
-  const key = `inline:${svg.length}:${svg}`;
+export async function inlineSvgRun(ctx: WriterContext, svg: string, rect: DisplayRect, rotate: number | undefined, kind: string, ink?: string): Promise<string> {
+  const key = `inline:${ink ?? ''}:${svg.length}:${svg}`;
   let refs = ctx.media.get(key);
   if (!ctx.media.has(key)) {
-    refs = await svgRefs(ctx, svg, rect, `inline ${kind}`);
+    refs = await svgRefs(ctx, svg, rect, `inline ${kind}`, ink);
     ctx.media.set(key, refs);
   }
   if (!refs) return '';

@@ -12,7 +12,7 @@ import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js'
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
 import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, unpadded, wordText, writtenFace, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, unpadded, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
 import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
@@ -41,8 +41,9 @@ type Jc = 'both' | 'left' | 'center' | 'right';
 export interface LinePlan {
   /** Exact line pitch, twips. */
   h: number;
-  /** Descent of the line's largest face, px. */
-  d: number;
+  /** The line cannot follow the one before at an exact pitch Word takes
+   *  (past 1584 pt, or not below it): it starts a new box. */
+  start?: boolean;
 }
 
 export interface Group {
@@ -63,14 +64,6 @@ export interface Chunk {
   from: number;
   to: number;
   groups: Group[];
-}
-
-/** Descent of a line: its largest face's (Word sizes the line by it),
- *  each run in the face it is written in (a space takes its word's). */
-export function lineDescent(ctx: WriterContext, line: DisplayLine): number {
-  let d = 0;
-  for (const r of line.runs) if (r.text.length > 0 && !r.inline) d = Math.max(d, ctx.metrics.descentPx(writtenFace(r, line)));
-  return d || line.lineHeight * 0.16;
 }
 
 /** Room before the next run of the same direction, per run (px; runs
@@ -106,14 +99,38 @@ function edges(l: DisplayLine): { L: number; R: number } {
   return { L: L < l.x - EPS ? L : l.x, R: R > l.x + l.width + EPS ? R : l.x + l.width };
 }
 
-/** Pitches and descents of an item's lines: line i's box is as tall as
- *  makes its baseline land `baselines[i] − baselines[i−1]` below the
- *  previous one (`h_i = Δ_i + d_i − d_{i−1}`). */
-export function planLines(ctx: WriterContext, lines: readonly DisplayLine[]): LinePlan[] {
-  const plans = lines.map((l) => ({ h: twips(l.lineHeight, ctx.dpi), d: lineDescent(ctx, l) }));
+const clampPitch = (h: number): number => Math.min(MAX_PITCH, Math.max(MIN_PITCH, h));
+
+/** Pitches of an item's lines. Word sets a line's baseline 4/5 of the way
+ *  down its box (`baselineOffset`), so each pitch depends on the one
+ *  before: line i's box is as tall as lands its baseline where the engine
+ *  set it, reckoned from the first line of its run so twips never drift.
+ *  A run's first line takes the gap to the next line (the two then share
+ *  a paragraph), else its own line height. A line no exact pitch reaches
+ *  starts a new run: a new box (`start`), or in a table cell (`boxes`
+ *  false), its clamped pitch, the lines after it keeping their spacing. */
+export function planLines(ctx: WriterContext, lines: readonly DisplayLine[], boxes = true): LinePlan[] {
+  const plans: LinePlan[] = lines.map((l) => ({ h: twips(l.lineHeight, ctx.dpi) }));
+  const rising = (i: number): boolean => lines[i]!.baseline > lines[i - 1]!.baseline;
+  const opening = (i: number): number => {
+    const next = i + 1 < lines.length && rising(i + 1) ? twips(lines[i + 1]!.baseline - lines[i]!.baseline, ctx.dpi) : 0;
+    return clampPitch(next >= MIN_PITCH && next <= MAX_PITCH ? next : plans[i]!.h);
+  };
+  if (plans.length === 0) return plans;
+  plans[0]!.h = opening(0);
+  let origin = 0;
+  let top = -(plans[0]!.h * 4) / 5;
   for (let i = 1; i < lines.length; i++) {
-    const delta = lines[i]!.baseline - lines[i - 1]!.baseline;
-    plans[i]!.h = twips(delta + plans[i]!.d - plans[i - 1]!.d, ctx.dpi);
+    top += plans[i - 1]!.h;
+    const h = Math.round(((twips(lines[i]!.baseline - lines[origin]!.baseline, ctx.dpi) - top) * 5) / 4);
+    if (rising(i) && h >= MIN_PITCH && h <= MAX_PITCH) {
+      plans[i]!.h = h;
+      continue;
+    }
+    plans[i]!.start = true;
+    plans[i]!.h = boxes ? opening(i) : clampPitch(h);
+    origin = i;
+    top = -(plans[i]!.h * 4) / 5;
   }
   return plans;
 }
@@ -137,11 +154,6 @@ export function planChunks(lines: readonly DisplayLine[], plans: LinePlan[], box
   let chunk: Chunk | undefined;
   let g: Group | undefined;
   const startChunk = (i: number): void => {
-    // A box's first line may take any pitch (its top follows from it):
-    // the next line's, so the two can share a paragraph.
-    const next = plans[i + 1];
-    if (next && next.h >= MIN_PITCH && next.h <= MAX_PITCH && lines[i + 1]!.baseline > lines[i]!.baseline) plans[i]!.h = next.h;
-    plans[i]!.h = Math.min(MAX_PITCH, Math.max(MIN_PITCH, plans[i]!.h));
     chunk = { from: i, to: i, groups: [] };
     chunks.push(chunk);
     g = undefined;
@@ -150,9 +162,7 @@ export function planChunks(lines: readonly DisplayLine[], plans: LinePlan[], box
     const line = lines[i]!;
     const { L, R } = edges(line);
     const rtl = line.rtl === true;
-    const broken = i > 0 && (plans[i]!.h < MIN_PITCH || plans[i]!.h > MAX_PITCH || line.baseline <= lines[i - 1]!.baseline);
-    if (!chunk || (boxes && broken)) startChunk(i);
-    if (broken && !boxes) plans[i]!.h = Math.min(MAX_PITCH, Math.max(MIN_PITCH, plans[i]!.h));
+    if (!chunk || (boxes && plans[i]!.start)) startChunk(i);
     let join = false;
     if (g && g.pitch === plans[i]!.h && g.rtl === rtl) {
       const pins = pinned(g.jc, rtl);
@@ -185,7 +195,7 @@ export function planChunks(lines: readonly DisplayLine[], plans: LinePlan[], box
   return chunks;
 }
 
-/** The px box of a chunk: its lines' measures plus slack on the free side. */
+/** The px box of a chunk: its lines' measures plus slack on both sides. */
 export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chunk: Chunk, plans: LinePlan[]): { x: number; y: number; width: number; height: number } {
   let L = Infinity;
   let R = -Infinity;
@@ -199,13 +209,15 @@ export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chun
     minPitch = Math.min(minPitch, plans[i]!.h);
   }
   height += Math.min(BOTTOM_ROOM, Math.floor(minPitch / 2) - 1);
+  // Slack on both sides: a pinned side keeps it as indent, so the line
+  // stays where the engine set it, and the free side keeps it as room
+  // (an end-aligned folio's free side is its start, #1444).
   const slack = (SLACK_PT * ctx.dpi) / 72;
-  const rtl = lines[chunk.from]!.rtl === true;
-  if (rtl) L -= slack;
-  else R += slack;
+  L -= slack;
+  R += slack;
   const first = lines[chunk.from]!;
   const p = plans[chunk.from]!;
-  const top = first.baseline - baselineOffset(twipsToPx(p.h, ctx.dpi), p.d);
+  const top = first.baseline - baselineOffset(twipsToPx(p.h, ctx.dpi));
   return { x: L, y: top, width: R - L, height: twipsToPx(height, ctx.dpi) };
 }
 
@@ -254,6 +266,13 @@ function groupProps(ctx: WriterContext, item: TextItem, g: Group, boxL: number, 
     start = pins.start ? twips(g.restL - boxL, ctx.dpi) : 0;
     first = pins.start ? twips(g.firstL - g.restL, ctx.dpi) : 0;
     end = pins.end ? twips(boxR - g.firstR, ctx.dpi) : 0;
+  }
+  // A centred group is pinned on both sides; equal room off both indents
+  // keeps its axis and lets a line Word sets a hair wider fit (#1444).
+  if (jc === 'center') {
+    const room = Math.max(0, Math.min(start, start + first, end));
+    start -= room;
+    end -= room;
   }
   const firstAttr = first >= 0 ? `w:firstLine="${first}"` : `w:hanging="${-first}"`;
   p.push(`<w:ind w:left="${start}" w:right="${end}" ${firstAttr}/>`);

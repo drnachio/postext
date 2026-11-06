@@ -156,13 +156,12 @@ describe('formattedDocx (#1392)', () => {
     const emu = (px: number): number => Math.round((px * 914400) / 72);
     const L = Math.min(...first.lines.map((l) => l.x));
     const R = Math.max(...first.lines.map((l) => l.x + l.width));
-    expect(Math.abs(posX - emu(L))).toBeLessThanOrEqual(1);
-    expect(Math.abs(cx - emu(R - L + SLACK_PT))).toBeLessThanOrEqual(1);
-    // Top = baseline − (pitch − descent), descent 0.2 em without metrics.
+    expect(Math.abs(posX - emu(L - SLACK_PT))).toBeLessThanOrEqual(1);
+    expect(Math.abs(cx - emu(R - L + 2 * SLACK_PT))).toBeLessThanOrEqual(1);
+    // Top = baseline − 4/5 of the pitch, whatever the face (#1444).
     const line = first.lines[0]!;
     const pitchTw = Math.round(((first.lines[1]!.baseline - line.baseline) * 1440) / 72);
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(line.runs[0]!.fontString)![1]);
-    const top = line.baseline - ((pitchTw * 72) / 1440 - 0.2 * size);
+    const top = line.baseline - (0.8 * pitchTw * 72) / 1440;
     expect(Math.abs(posY - emu(top))).toBeLessThanOrEqual(1);
     expect(b.xml).toContain(`w:line="${pitchTw}" w:lineRule="exact"`);
     // Locked, unwrapped, stacked in order.

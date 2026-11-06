@@ -38,7 +38,7 @@ export async function inlineDrawingRuns(ctx: WriterContext, out: TextOut, centre
   for (const d of out.drawings) {
     const rect: DisplayRect = turnedBox(d.rect, centre, rotate);
     if (d.svg) {
-      const r = await inlineSvgRun(ctx, d.svg, rect, rotate, d.kind);
+      const r = await inlineSvgRun(ctx, d.svg, rect, rotate, d.kind, d.color);
       if (r) runs.push(r);
     } else if (d.kind === 'swatch' && swatches) {
       runs.push(...rectRuns(ctx, { kind: 'rect', rect, ...(d.color ? { fill: d.color } : {}), ...(rotate ? { rotate } : {}) }));

@@ -51,9 +51,9 @@ describe('inline chips and swatches in the formatted writer (#1406)', () => {
     expect(box).toContain('val="999999"');
     // Inset by half the stroke: x = 50 + 1 + 0.5, y = 40 - 10 + 0.5.
     expect(offsets(box!)).toEqual([emu(51.5, 72), emu(30.5, 72)]);
-    // An empty text box: LibreOffice keeps it under the text written after.
-    expect(box).toContain('txBox="1"');
-    expect(box).toContain('behindDoc="0"');
+    // A plain shape behind the text layer (#1444).
+    expect(box).not.toContain('txBox="1"');
+    expect(box).toContain('behindDoc="1"');
     expect(xmlProblems(wrap(box!))).toEqual([]);
   });
 

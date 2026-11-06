@@ -46,8 +46,8 @@ describe('display-list content round-trips through the formatted export (#1406)'
     const enter = xml.match(/<w:r>(<w:rPr>(?:(?!<\/w:rPr>).)*<\/w:rPr>)<w:t xml:space="preserve">Ente/);
     expect(enter).not.toBeNull();
     expect(enter![1]).not.toContain('<w:b/>');
-    // Its box, an empty text box, and the room before its words.
-    expect(xml).toMatch(/txBox="1"\/><wps:spPr>(?:(?!<\/wps:spPr>).)*EEEEEE/);
+    // Its box, a plain shape (#1444), and the room before its words.
+    expect(xml).toMatch(/<wps:cNvSpPr\/><wps:spPr>(?:(?!<\/wps:spPr>).)*EEEEEE/);
     expect(xml).toMatch(/<w:spacing w:val="\d+"\/>(?:(?!<\/w:r>).)*<w:t xml:space="preserve"> <\/w:t><\/w:r><w:r><w:rPr>(?:(?!<\/w:rPr>).)*<\/w:rPr><w:t xml:space="preserve">Ente/);
   });
 

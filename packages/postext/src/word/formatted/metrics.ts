@@ -2,14 +2,17 @@
 // Word export (#1392). With exact line spacing Word gives every line a
 // box of exactly the pitch and sets the baseline at
 //
-//     baselineOffset = pitch − descent
+//     baselineOffset = 4/5 × pitch
 //
-// below the line box's top, `descent` being the line's largest font
-// descent at its size (Windows metrics: OS/2 usWinDescent, else hhea
-// descender, over head.unitsPerEm); the extra leading goes above the
-// text. A text box is therefore placed with its top at
-// `firstBaseline − baselineOffset`. This is the one place to recalibrate
-// against a renderer (Word, LibreOffice) if a font lands off its line.
+// below the line box's top, whatever the face (LibreOffice's fixed line
+// spacing does the same). For a text face with ordinary leading this is
+// within a fraction of a point of `pitch − descent`, which is why that
+// model looked right; a face with tall Windows metrics (Amiri: 0.91 em of
+// descent) or a display line set close (a 66 pt title on a 63 pt pitch)
+// tells them apart, and both renderers follow the 4/5 rule (#1444). A
+// text box is therefore placed with its top at `firstBaseline −
+// baselineOffset`. This is the one place to recalibrate against a
+// renderer if a font lands off its line.
 //
 // The same faces give the natural advances of a run's characters (cmap →
 // GSUB figure substitutions → hmtx, no kerning or shaping), so runs.ts can
@@ -31,8 +34,6 @@ export interface FaceMetrics {
   descent: number;
 }
 
-/** Descent of a font of unknown metrics, as a fraction of its size. */
-export const FALLBACK_DESCENT = 0.2;
 
 function u16(t: Uint8Array, at: number): number {
   return (t[at]! << 8) | t[at + 1]!;
@@ -138,8 +139,8 @@ export function fontSizePx(fontString: string): number {
 }
 
 /** Where Word sets the baseline below the top of an exact line box. */
-export function baselineOffset(pitchPx: number, descentPx: number): number {
-  return pitchPx - descentPx;
+export function baselineOffset(pitchPx: number): number {
+  return (pitchPx * 4) / 5;
 }
 
 interface ParsedFace {
@@ -147,10 +148,9 @@ interface ParsedFace {
   advances?: FaceAdvances;
 }
 
-/** Font descents and advances per font string, from the embedded faces of
+/** Font metrics and advances per font string, from the embedded faces of
  *  the plan (a feature family `Lora@onum` reads its base family's face). */
 export class MetricsCache {
-  private readonly byFont = new Map<string, number>();
   private readonly byFace = new Map<string, ParsedFace | undefined>();
 
   constructor(private readonly plan: WordFontPlan | undefined) {}
@@ -178,15 +178,4 @@ export class MetricsCache {
     return this.face(fontString)?.advances;
   }
 
-  /** Descent in px of a font string at its size. */
-  descentPx(fontString: string): number {
-    let d = this.byFont.get(fontString);
-    if (d === undefined) {
-      const size = fontSizePx(fontString);
-      const m = this.faceMetrics(fontString);
-      d = m ? (m.descent / m.unitsPerEm) * size : FALLBACK_DESCENT * size;
-      this.byFont.set(fontString, d);
-    }
-    return d;
-  }
 }
