@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "postext"
+dynamic = ["version"]
+description = "Typeset books from Python with Postext: PDF, HTML, EPUB, page images and Word from a .postext book or Markdown, through the self-contained postext command line."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [{ name = "Postext contributors" }]
+keywords = ["postext", "typesetting", "pdf", "epub", "markdown", "book", "layout"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Printing",
+    "Topic :: Text Processing :: Markup :: Markdown",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://postext.dev/"
+Documentation = "https://postext.dev/en/docs/command-line#python"
+Source = "https://github.com/drnachio/postext/tree/main/packages/postext-python"
+Issues = "https://github.com/drnachio/postext/issues"
+
+[tool.hatch.version]
+path = "src/postext/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/postext"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/postext", "tests", "README.md", "LICENSE", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["F", "E9", "B"]

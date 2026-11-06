@@ -39,6 +39,15 @@
 #    Until then the jsr job fails on its own and blocks nothing; the next
 #    release publishes what is missing.
 #
+# PyPI setup (one-time, no token: the pypi job signs in with GitHub OIDC):
+#
+# 1. On https://pypi.org/manage/account/publishing/ add a pending publisher
+#    for the project "postext": owner drnachio, repository postext,
+#    workflow release.yml, environment pypi. The first release then
+#    creates the project; later ones publish to it.
+# 2. Until then the pypi job fails on its own and blocks nothing; the next
+#    release publishes what is missing.
+#
 # Homebrew and Scoop setup (one-time, done for #1430):
 #
 # The package-managers job pushes the formula to drnachio/homebrew-postext
@@ -213,6 +222,12 @@ jobs:
         run: |
           node -e "const f='packages/postext-cli/package.json';const fs=require('fs');const p=JSON.parse(fs.readFileSync(f));p.version='${{ steps.version.outputs.version }}';fs.writeFileSync(f,JSON.stringify(p,null,2)+'\\n')"
 
+      # The Python package (#1443) downloads the executable of its own
+      # version from the GitHub Release: same version again.
+      - name: Set postext (Python) version
+        run: |
+          sed -i 's/^__version__ = .*/__version__ = "${{ steps.version.outputs.version }}"/' packages/postext-python/src/postext/_version.py
+
       # Build & test the packages (postext-pdf, postext-folio,
       # postext-citeproc and postext-epub build against the freshly bumped
       # workspace postext)
@@ -306,7 +321,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/postext/package.json packages/postext-pdf/package.json packages/postext-folio/package.json packages/postext-citeproc/package.json packages/postext-epub/package.json packages/postext-scorm/package.json packages/postext-cli/package.json packages/postext-cli/bin/readme.txt
+          git add packages/postext/package.json packages/postext-pdf/package.json packages/postext-folio/package.json packages/postext-citeproc/package.json packages/postext-epub/package.json packages/postext-scorm/package.json packages/postext-cli/package.json packages/postext-cli/bin/readme.txt packages/postext-python/src/postext/_version.py
           # The pagination, when the step above wrote and verified all of it
           if [ "${{ steps.layouts.outcome }}" = success ]; then
             git add apps/web/public/presets
@@ -488,6 +503,73 @@ jobs:
         with:
           deno-version: 2.5.6
       - run: node .github/scripts/jsr-publish.mjs
+
+  # The Python package on PyPI (#1443): a pure-Python wheel that downloads
+  # the executable of its version from the GitHub Release. Its tests run
+  # against that release first; trusted publishing (OIDC, see the header).
+  # Never fails the release.
+  pypi:
+    name: Publish on PyPI
+    needs: [release, cli-release]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: pypi
+      url: https://pypi.org/project/postext/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+          sparse-checkout: packages/postext-python
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Build and test
+        working-directory: packages/postext-python
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          POSTEXT_CACHE_DIR: ${{ runner.temp }}/postext-cache
+        run: |
+          grep -q "__version__ = \"$VERSION\"" src/postext/_version.py
+          python -m pip install --quiet build pytest
+          python -m build --outdir dist
+          python -m pip install --quiet dist/*.whl
+          python -m pytest -q -p no:cacheprovider --import-mode=importlib
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/postext-python/dist
+          skip-existing: true
+
+  # `pip install postext` and a PDF, from PyPI, on each system.
+  pypi-verify:
+    name: Verify PyPI (${{ matrix.os }})
+    needs: [release, pypi]
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: pip install postext and typeset a PDF
+        shell: bash
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          # The index can take a minute to list a new release
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            python -m pip install --quiet --no-cache-dir "postext==$VERSION" && break
+            sleep 30
+          done
+          mkdir -p book && printf '# Hello\n\nFrom Python.\n' > book/01.md
+          python -c "import postext; r = postext.pdf('book', out='book.pdf', offline=True); print(r.output); assert r.ok and r.output.pages == 1"
+          head -c 5 book.pdf | grep -q '%PDF-'
 
   # The release notes (#releases) and the docs & translations notice
   # (#docs-and-translations) in the Postext Discord, minutes after the
