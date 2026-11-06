@@ -33,6 +33,7 @@ import { isPdfFontCheck, pdfFontChecksSource, setPdfFontChecks, type PdfFontChec
 import { useFloatingToolbarShell } from '../useFloatingToolbarShell.js';
 import { useViewerControls } from '../viewerControls.js';
 import { announce } from '../../ui/announcer.js';
+import { isCancellation } from './cancellation.js';
 
 /** The PDF tab is the one place the whole book can be rendered as one
  *  continuous document; by default it shows the active chapter continued
@@ -262,6 +263,12 @@ export function PdfViewport() {
       renderedResourcesRef.current = snapshotResources;
       setDirty(false);
     } catch (err) {
+      // The worker was disposed (the tab left, the viewer closed) or the
+      // build aborted: a cancellation, not a failed render (#1434).
+      if (isCancellation(err)) {
+        total.end({ cancelled: true });
+        return;
+      }
       total.end({ error: true });
       console.error('[PdfViewport] Render error:', err);
       setError(err instanceof Error ? err.message : String(err));
