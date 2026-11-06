@@ -185,7 +185,13 @@ export interface DisplayLine {
   vertical?: boolean;
 }
 
-export type DisplayItem =
+/** What every item may carry: the composed-page frame (`VDTFrame.id`) it
+ *  is set in, absent outside frames. */
+export interface DisplayItemCommon {
+  frame?: string;
+}
+
+export type DisplayItem = DisplayItemCommon & (
   | {
       kind: 'text';
       /** What the text is, for writers that style by role. */
@@ -230,7 +236,8 @@ export type DisplayItem =
       cells: { row: number; col: number; rowSpan: number; colSpan: number; rect: DisplayRect; background?: string; align?: string; verticalAlign?: string; item: Extract<DisplayItem, { kind: 'text' }> | null; image?: Extract<DisplayItem, { kind: 'image' }> }[];
       borderColor?: string;
       borderWidthPx?: number;
-    };
+    }
+);
 
 export interface DisplayPage {
   index: number;
