@@ -8,11 +8,12 @@
 // What InDesign's fields cannot hold travels as the field's script labels
 // (`Label`, read with `extractLabel` in InDesign scripting): a default
 // value (`postext:value`), a number format (`postext:format`) and a
-// calculation (`postext:calc`). InDesign has no default value, number
-// format, calculation or text alignment on a form field; its PDF export
-// writes none of them.
+// calculation (`postext:calc`, written as the `calc` attribute writes it,
+// numbers and nested calculations included). InDesign has no default
+// value, number format, calculation or text alignment on a form field;
+// its PDF export writes none of them.
 
-import type { FormFieldSpec } from '../parse/formFields.js';
+import { formatFieldCalc, type FormFieldSpec } from '../parse/formFields.js';
 import { escapeXml } from '../word/xml.js';
 import { attr, num } from './parts.js';
 
@@ -67,7 +68,7 @@ function labels(field: FormFieldSpec, value: string): string {
   const pairs: [string, string][] = [];
   if (value && field.kind !== 'checkbox') pairs.push(['postext:value', value]);
   if (field.format) pairs.push(['postext:format', field.format]);
-  if (field.calc) pairs.push(['postext:calc', `${field.calc.op}(${field.calc.fields.join(', ')})`]);
+  if (field.calc) pairs.push(['postext:calc', formatFieldCalc(field.calc)]);
   return pairs.length ? `<Label>${pairs.map(([k, v]) => `<KeyValuePair${attr('Key', k)}${attr('Value', v)}/>`).join('')}</Label>` : '';
 }
 

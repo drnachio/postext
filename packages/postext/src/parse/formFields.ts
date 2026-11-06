@@ -198,6 +198,23 @@ export function parseFieldCalc(text: string): FormFieldCalc | undefined {
   return { ...top, fields };
 }
 
+/** A number as a calculation writes it: digits and a point, never an
+ *  exponent, which {@link parseFieldCalc} would not read. */
+const calcNumber = (n: number): string => {
+  const s = String(n);
+  return /e/i.test(s) ? n.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 }) : s;
+};
+
+/**
+ * A calculation as the `calc` attribute writes it, numbers and nested
+ * calculations included, which {@link parseFieldCalc} reads back:
+ * `sum(a, product(b, 2.5))`.
+ */
+export function formatFieldCalc(calc: FormFieldCalcCall): string {
+  const arg = (a: FormFieldCalcArg): string => (typeof a === 'object' ? formatFieldCalc(a) : typeof a === 'number' ? calcNumber(a) : a);
+  return `${calc.op}(${calc.args.map(arg).join(', ')})`;
+}
+
 /** The field a chip's attributes describe, or undefined without `field`. */
 export function formFieldFromAttrs(attrs: DirectiveAttrs): FormFieldSpec | undefined {
   const name = attrs.field?.trim();

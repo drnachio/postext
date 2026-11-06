@@ -270,7 +270,7 @@ const isField = (w: Writer, run: DisplayRun): boolean => run.inline?.kind === 'c
 
 /** The form fields of a text item's chips, over the text (#1445). The
  *  field's value is the chip's words. */
-function chipFields(w: Writer, item: TextItem, frame: VDTFrame | undefined): string[] {
+function chipFields(w: Writer, item: TextItem): string[] {
   const out: string[] = [];
   for (const line of item.lines) {
     line.runs.forEach((run, i) => {
@@ -295,7 +295,7 @@ function chipFields(w: Writer, item: TextItem, frame: VDTFrame | undefined): str
           hh: (rect.height * w.k) / 2,
           paint: paintAttrs(w, fill, stroke, b.strokeWidthPx, b.radius),
           ink: swatch(w, run.color)?.ref ?? 'Color/Black',
-          sizePt: sizePx * w.k * (frame?.scale ?? 1),
+          sizePt: sizePx * w.k,
         }),
       );
     });
@@ -450,6 +450,72 @@ type TextItem = Extract<DisplayItem, { kind: 'text' }>;
 /** A text item in a story: `joinsPrevious` when it is the rest of the
  *  paragraph the item before it holds (a paragraph a frame break split). */
 type StoryItem = TextItem & { joinsPrevious?: boolean };
+
+/** A frame's text scale (`fit.shrinkText`, #858), 1 when it has none. */
+const textScale = (frame: VDTFrame | undefined): number => {
+  const s = frame?.scale;
+  return s !== undefined && Number.isFinite(s) && s > 0 && Math.abs(s - 1) > 1e-9 ? s : 1;
+};
+
+/** A text item of a frame whose fit shrank its text (#858) as it is
+ *  painted. The display list puts the centre of such an item's box where
+ *  the frame's scale puts it, but keeps the item at the size it was laid
+ *  out in, `1 / scale` as large, for a painter that scales it about that
+ *  centre (`placeText`). The writer reads where lines stand (indents, the
+ *  frame's insets, the space between paragraphs) and sets sizes in pt, so
+ *  it takes the item as painted: positions scaled about the centre,
+ *  lengths, text sizes, tracking and shifts by the scale. */
+function asPainted(item: TextItem, s: number): TextItem {
+  if (s === 1) return item;
+  const cx = item.bbox.x + item.bbox.width / 2;
+  const cy = item.bbox.y + item.bbox.height / 2;
+  const x = (v: number) => cx + (v - cx) * s;
+  const y = (v: number) => cy + (v - cy) * s;
+  const rect = (r: DisplayRect): DisplayRect => ({ x: x(r.x), y: y(r.y), width: r.width * s, height: r.height * s });
+  const font = (f: string) => f.replace(/([\d.]+)px((?:\s*\/\s*\S+)?\s+.+)$/, (_, n: string, rest: string) => `${Number(n) * s}px${rest}`);
+  const run = (r: DisplayRun): DisplayRun => {
+    const out: DisplayRun = { ...r, x: x(r.x), width: r.width * s, fontString: font(r.fontString) };
+    if (r.tracking) out.tracking = r.tracking * s;
+    if (r.baselineShift) out.baselineShift = r.baselineShift * s;
+    if (r.padStart) out.padStart = r.padStart * s;
+    if (r.padEnd) out.padEnd = r.padEnd * s;
+    const inl = r.inline;
+    if (inl) {
+      const { box, field } = inl;
+      out.inline = {
+        ...inl,
+        widthPx: inl.widthPx * s,
+        heightPx: inl.heightPx * s,
+        ...(inl.ascentPx !== undefined ? { ascentPx: inl.ascentPx * s } : {}),
+        ...(box
+          ? {
+              box: {
+                ...box,
+                dx: box.dx * s,
+                width: box.width * s,
+                ascent: box.ascent * s,
+                descent: box.descent * s,
+                ...(box.strokeWidthPx !== undefined ? { strokeWidthPx: box.strokeWidthPx * s } : {}),
+                ...(box.radius !== undefined ? { radius: box.radius * s } : {}),
+              },
+            }
+          : {}),
+        ...(field?.sizePx !== undefined ? { field: { ...field, sizePx: field.sizePx * s } } : {}),
+      };
+    }
+    return out;
+  };
+  const lines = item.lines.map((l): DisplayLine => ({
+    ...l,
+    x: x(l.x),
+    width: l.width * s,
+    baseline: y(l.baseline),
+    lineHeight: l.lineHeight * s,
+    runs: l.runs.map(run),
+    ...(l.spaceWidth !== undefined ? { spaceWidth: l.spaceWidth * s } : {}),
+  }));
+  return { ...item, bbox: rect(item.bbox), lines, ...(item.clip ? { clip: rect(item.clip) } : {}) };
+}
 
 function runProps(w: Writer, run: DisplayRun): TextProps {
   const f = parseCssFont(run.fontString);
@@ -685,22 +751,22 @@ function paraXml(p: StoryPara): string {
 
 /** A story: one paragraph per text item. A list item's marker joins its
  *  item's paragraph (marker, tab, text, hanging indent); the rest of a
- *  paragraph a frame break split joins its paragraph; sizes and leading
- *  follow the frame's text scale (`fit.shrinkText`). Indents come from
+ *  paragraph a frame break split joins its paragraph. The items are as
+ *  painted (`asPainted`); what the engine's style gives (stops, the turnover
+ *  indent, the space after) follows the frame's text scale
+ *  (`fit.shrinkText`). Indents come from
  *  where the lines stand, tab stops and the space after from the style
  *  the engine set the paragraph in; the paragraph style takes those of
  *  its first paragraph, a paragraph sets what differs. */
 function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | undefined): string {
   const paras: StoryPara[] = [];
   let prev: StoryItem | undefined;
-  const sc = frame?.scale ?? 1;
-  const scaled = (runs: { text: string; props: TextProps }[]) =>
-    sc === 1 ? runs : runs.map((r) => ({ ...r, props: { ...r.props, size: r.props.size * sc, ...(r.props.baselineShift ? { baselineShift: r.props.baselineShift * sc } : {}) } }));
+  const sc = textScale(frame);
   const edges = textEdges(items);
   let marker: { runs: { text: string; props: TextProps }[]; x: number } | undefined;
   items.forEach((item, i) => {
     if (item.role === 'marker') {
-      marker = { runs: scaled(paragraphRuns(w, item)), x: item.lines[0]?.runs[0]?.x ?? item.bbox.x };
+      marker = { runs: paragraphRuns(w, item), x: item.lines[0]?.runs[0]?.x ?? item.bbox.x };
       return;
     }
     const edge = edges.get(item.frame ?? '') ?? { left: item.bbox.x, right: item.bbox.x + item.bbox.width };
@@ -708,7 +774,7 @@ function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | u
     // hangs on its own): its tab stops carry their leaders.
     const engine = marker ? undefined : engineStyle(w, item, frame);
     const tabs = styleTabs(w, engine, edge.right - edge.left, sc);
-    let runs = scaled(paragraphRuns(w, item, tabs.length > 0));
+    let runs = paragraphRuns(w, item, tabs.length > 0);
     let hang: { left: number; first: number } | undefined;
     if (marker) {
       runs = [...marker.runs.map((r) => ({ ...r, text: `${r.text}\t` })), ...runs];
@@ -728,7 +794,7 @@ function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | u
       if (before && !before.addedHyphen && !/\s$/.test(before.text) && !/^\s/.test(runs[0]!.text)) runs[0] = { ...runs[0]!, text: ` ${runs[0]!.text}` };
     }
     const lines = item.lines;
-    const leading = (lines[0]?.lineHeight ?? 0) * w.k * sc;
+    const leading = (lines[0]?.lineHeight ?? 0) * w.k;
     const justification = paragraphJustification(lines);
     // What the style would carry: the paragraph's own indents and stops,
     // or, for a list item, none. A paragraph of one line shows no turnover
@@ -867,7 +933,8 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
   // written where its first item paints; the rest of the items keep the
   // display list's order.
   const byFrame = new Map<string, TextItem[]>();
-  for (const it of page.items) if (it.kind === 'text' && it.frame && frames.has(it.frame)) byFrame.set(it.frame, [...(byFrame.get(it.frame) ?? []), it]);
+  // A frame's items as painted, at its text scale.
+  for (const it of page.items) if (it.kind === 'text' && it.frame && frames.has(it.frame)) byFrame.set(it.frame, [...(byFrame.get(it.frame) ?? []), asPainted(it, textScale(frames.get(it.frame)))]);
   const done = new Set<string>();
   // Outside frames a list item's marker shares its item's text frame.
   const markerFor = new Map<TextItem, TextItem>();
@@ -898,7 +965,7 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
         if (!it.frame || !byFrame.has(it.frame)) {
           if (held.has(it)) break;
           const marker = markerFor.get(it);
-          out.push(...chipRects(w, it), textFrameXml(w, marker ? [marker, it] : [it], undefined), ...chipFields(w, it, undefined));
+          out.push(...chipRects(w, it), textFrameXml(w, marker ? [marker, it] : [it], undefined), ...chipFields(w, it));
           break;
         }
         if (done.has(it.frame)) break;
@@ -907,8 +974,8 @@ function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string,
         for (const c of chain) done.add(c.id);
         // Chip boxes go behind all the chain's text.
         for (const items of own) for (const t of items) out.push(...chipRects(w, t));
-        // Form fields go over it, each at its frame's text scale.
-        const fields = () => chain.flatMap((c, k) => own[k]!.flatMap((t) => chipFields(w, t, c)));
+        // Form fields go over it.
+        const fields = () => own.flatMap((items) => items.flatMap((t) => chipFields(w, t)));
         if (chain.length < 2) {
           out.push(textFrameXml(w, own[0]!, chain[0]), ...fields());
           break;

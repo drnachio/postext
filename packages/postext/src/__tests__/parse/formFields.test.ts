@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { formatFieldNumber, formNumberStyle, numberFieldText, documentLanguageOf } from '../../index.js';
-import { formFieldFromAttrs, parseFieldCalc } from '../../parse/formFields.js';
+import { formFieldFromAttrs, formatFieldCalc, parseFieldCalc } from '../../parse/formFields.js';
 
 // #1445: the number rule every output shares (the PDF's printed values and
 // its widgets' appearance, the canvas preview, writers of the display list).
@@ -40,6 +40,14 @@ describe('form field attributes (#1445)', () => {
     for (const bad of ['sum(a, divide(b, 2))', 'sum(a, product())', 'sum(a, product(b, 2)', 'sum(a) b', 'sum(a b(c))', '12.5']) {
       expect(parseFieldCalc(bad)).toBeUndefined();
     }
+  });
+
+  it('writes a calculation back as the attribute reads it, numbers and nested calculations in place', () => {
+    const calc = parseFieldCalc(' sum( order.a , product(order.fee, 161.75), max(order.b, -2, .5) ) ')!;
+    expect(formatFieldCalc(calc)).toBe('sum(order.a, product(order.fee, 161.75), max(order.b, -2, 0.5))');
+    expect(parseFieldCalc(formatFieldCalc(calc))).toEqual(calc);
+    // A number JavaScript would write with an exponent is written in digits.
+    expect(formatFieldCalc({ op: 'product', args: ['a', 1e-7, 2e21] })).toBe('product(a, 0.0000001, 2000000000000000000000)');
   });
 
   it('reads the on value of a check box, and of no other kind', () => {

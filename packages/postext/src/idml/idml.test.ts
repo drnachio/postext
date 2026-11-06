@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { strFromU8, unzipSync } from 'fflate';
 import { build, config, mm, LOREM } from '../word/formatted/formatted.test-helper.js';
 import { parseXml, children, descendants, attr, type XmlElement } from '../word/xml.js';
+import { parseFieldCalc } from '../parse/formFields.js';
 import { idmlDocument, parseCssFont, defaultFontStyleName, type IdmlOptions } from './index.js';
 import type { PostextConfig } from '../index.js';
 import { pageDisplayList } from '../paint/displayList/page.js';
@@ -314,6 +315,55 @@ describe('idmlDocument', () => {
     expect(Number(attr(plainText!.para, 'FirstLineIndent'))).toBe(0);
   });
 
+  it('sets a frame its fit shrank as painted: indents, stops, spacing and first baseline at the scale, the padding as it stands', () => {
+    const over = { paragraphStyles: [{ id: 'hang', name: 'Hang', hangingIndent: mm(4.5), tabStops: [{ position: mm(4.5) }] }] };
+    const styles = [{ ...plain('text', 10, { lineHeight: { value: 14, unit: 'pt' }, paragraphSpacing: mm(2) }), padding: { top: mm(2), right: mm(2), bottom: mm(2), left: mm(3) } }];
+    const md = sheet(`:::frame{slot="body"}\n:::paragraphs{style="hang"}\n\\*\t${LOREM}\n\n\\*\t${LOREM}\n:::\n\n${LOREM}\n:::`);
+    const at = (height: number) => {
+      const cfg = composedConfig([{ name: 'body', style: 'text', placement: top(10, 20), width: mm(120), height: mm(height), minHeight: mm(height), maxHeight: mm(height) }], styles, over);
+      const scale = build(md, cfg).pages.find((p) => p.composed)!.composed!.frames[0]!.scale ?? 1;
+      const f = idml(md, cfg);
+      const style = paraStyle(f, 'text');
+      const frame = descendants(xml(f, spreads(f)[0]!), 'TextFrame')[0]!;
+      const pref = descendants(frame, 'TextFramePreference')[0]!;
+      const paras = descendants(parseXml(storyOf(f, frame)), 'ParagraphStyleRange');
+      const n = (el: XmlElement, a: string) => Number(attr(el, a) ?? 0);
+      return {
+        scale,
+        left: n(style, 'LeftIndent'),
+        first: n(style, 'FirstLineIndent'),
+        tab: tabsOf(style)[0]!.at,
+        leading: Number(descendants(style, 'Leading')[0]!.children.join('')),
+        inset: attr(pref, 'InsetSpacing'),
+        baseline: n(pref, 'MinimumFirstBaselineOffset'),
+        space: paras.map((p) => [n(p, 'SpaceBefore'), n(p, 'SpaceAfter')]),
+      };
+    };
+    const full = at(200);
+    const shrunk = at(40);
+    expect(full.scale).toBe(1);
+    const s = shrunk.scale;
+    expect(s).toBeLessThan(1);
+    // At full size the note hangs 4.5 mm, its stop where the turnover lines start.
+    expect(full.left).toBeCloseTo(MM45, 3);
+    expect(full.first).toBeCloseTo(-MM45, 3);
+    expect(full.tab).toBeCloseTo(MM45, 3);
+    // Shrunk, all of it scales alike: the stop still where the turnover lines start.
+    expect(shrunk.left).toBeCloseTo(MM45 * s, 3);
+    expect(shrunk.first).toBeCloseTo(-MM45 * s, 3);
+    expect(shrunk.tab).toBeCloseTo(shrunk.left, 3);
+    expect(shrunk.leading).toBeCloseTo(14 * s, 3);
+    expect(shrunk.baseline).toBeCloseTo(full.baseline * s, 2);
+    expect(shrunk.space).toHaveLength(full.space.length);
+    shrunk.space.forEach(([before, after], i) => {
+      expect(before).toBeCloseTo(full.space[i]![0]! * s, 2);
+      expect(after).toBeCloseTo(full.space[i]![1]! * s, 2);
+    });
+    // The frame's padding is its box's, not scaled: the same insets.
+    expect(shrunk.inset).toBe(full.inset);
+    expect(Number(full.inset!.split(' ')[1])).toBeCloseTo((3 * 72) / 25.4, 3);
+  });
+
   it('sets no indents, stops or spacing for paragraphs without them', () => {
     const f = idml(MD, TITLE_BODY);
     const styles = text(f, 'Resources/Styles.xml');
@@ -395,6 +445,15 @@ Notes :chip[ ]{style=field field="order.notes" multiline tooltip="Anything else"
     expect(words).toMatch(/^Quantity  + at  + makes  +\.Gift wrap  + in  +, size  +\.Notes  +$/);
     expect(children(descendants(spread, 'Spread')[0], 'Rectangle')).toHaveLength(0);
     expect(warnings).toEqual(expect.arrayContaining(['field.value', 'field.script']));
+  });
+
+  it('labels a calculation in full, numbers and nested calculations, as the calc attribute reads it', () => {
+    const calc = 'sum(order.total, product(order.gift, 4.5), max(order.fee, 2))';
+    const f = idml(sheet(`:::frame{slot="body"}\nTotal :chip[ ]{style=field field="order.sum" format="currency" calc="${calc}"}\n:::`), cfg);
+    const box = descendants(xml(f, spreads(f)[0]!), 'TextBox')[0]!;
+    const label = descendants(box, 'KeyValuePair').find((p) => attr(p, 'Key') === 'postext:calc')!;
+    expect(attr(label, 'Value')).toBe(calc);
+    expect(parseFieldCalc(attr(label, 'Value')!)).toEqual(parseFieldCalc(calc));
   });
 
   it('writes field chips as chips with forms: false', () => {
