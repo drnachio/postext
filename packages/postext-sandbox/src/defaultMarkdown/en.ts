@@ -395,6 +395,7 @@ A handful of rules keep floats honest:
 
 - A float never lands before its reference and is never shrunk to fit
 - Floats of one numbering sequence keep their order, so figure 12 never appears before figure 11; a table waiting for room does not hold figures back
+- Floats that meet at the foot of one column stand in reading order, the first one highest
 - Floats never escape their chapter: chapter openers, part dividers and the end of the document are barriers
 - A float that would leave less than three lines of text on a fresh page waits for the next one
 - Head and foot bands are aligned to the baseline grid, and a foot float's caption shares the last text line's baseline
@@ -937,7 +938,7 @@ The PDF of a book is not a concatenation of separate files. The renderer receive
 
 ## Fonts in the PDF
 
-A PDF is only as good as the fonts inside it. Postext embeds every face the layout used — one static file per weight and style, so a bold word is set in the real bold and an italic in the real italic, never a slanted or thickened imitation. TrueType faces are subset to the glyphs the book actually uses, which keeps files small even with four families; OpenType faces with PostScript outlines are embedded whole, because some viewers cannot read their subsets. Every embedded font carries a map from glyphs back to characters, including ligatures, so copying a sentence out of the PDF gives back the sentence that was written, and searching the document finds every word.
+A PDF is only as good as the fonts inside it. Postext embeds every face the layout used — one static file per weight and style, so a bold word is set in the real bold and an italic in the real italic, never a slanted or thickened imitation. TrueType faces are subset to the glyphs the book actually uses, which keeps files small even with four families; OpenType faces with PostScript outlines are embedded whole, because some viewers cannot read their subsets, and declared as what they are, so a printer's preflight reads them as CFF fonts. Every embedded font carries a map from glyphs back to characters, including ligatures, so copying a sentence out of the PDF gives back the sentence that was written, and searching the document finds every word.
 
 A family available only as WOFF is not accepted by the PDF, because the format cannot be embedded reliably; WOFF2, TrueType and OpenType files all work.
 

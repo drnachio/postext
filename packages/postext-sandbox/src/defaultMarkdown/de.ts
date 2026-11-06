@@ -396,6 +396,7 @@ Eine Handvoll Regeln sorgt dafür, dass Gleitobjekte sich anständig benehmen:
 
 - Ein Gleitobjekt landet nie vor seinem Verweis und wird nie verkleinert, damit es passt
 - Gleitobjekte einer Nummernfolge behalten ihre Reihenfolge, sodass Abbildung 12 nie vor Abbildung 11 erscheint; eine Tabelle, die auf Platz wartet, hält keine Abbildungen auf
+- Gleitobjekte, die am Fuß derselben Spalte zusammentreffen, stehen in Lesereihenfolge, das erste zuoberst
 - Gleitobjekte verlassen nie ihr Kapitel: Kapitelauftakte, Teiltitel und das Ende des Dokuments sind Schranken
 - Ein Gleitobjekt, das auf einer frischen Seite weniger als drei Zeilen Text übrig ließe, wartet auf die nächste
 - Kopf- und Fußstreifen werden am Grundlinienraster ausgerichtet, und die Legende eines Gleitobjekts am Fuß teilt die Grundlinie der letzten Textzeile
@@ -941,7 +942,7 @@ Das PDF eines Buches ist keine Aneinanderreihung einzelner Dateien. Der Renderer
 
 ## Schriften im PDF
 
-Postext bettet jeden Schnitt ein, den das Layout verwendet hat – eine statische Datei pro Stärke und Stil, sodass ein fettes Wort im echten fetten Schnitt und ein kursives im echten Kursiv steht, nie in einer schräg gestellten oder verdickten Nachahmung. TrueType-Schriften werden auf die Glyphen reduziert, die das Buch tatsächlich verwendet; OpenType-Schriften mit PostScript-Konturen werden vollständig eingebettet, weil manche Betrachter ihre Teilmengen nicht lesen können. Jede eingebettete Schrift trägt eine Zuordnung von den Glyphen zurück zu den Zeichen, Ligaturen eingeschlossen, sodass ein aus dem PDF kopierter Satz den Satz zurückgibt, der geschrieben wurde.
+Postext bettet jeden Schnitt ein, den das Layout verwendet hat – eine statische Datei pro Stärke und Stil, sodass ein fettes Wort im echten fetten Schnitt und ein kursives im echten Kursiv steht, nie in einer schräg gestellten oder verdickten Nachahmung. TrueType-Schriften werden auf die Glyphen reduziert, die das Buch tatsächlich verwendet; OpenType-Schriften mit PostScript-Konturen werden vollständig eingebettet, weil manche Betrachter ihre Teilmengen nicht lesen können, und als das ausgewiesen, was sie sind, sodass der Preflight einer Druckerei sie als CFF-Schriften liest. Jede eingebettete Schrift trägt eine Zuordnung von den Glyphen zurück zu den Zeichen, Ligaturen eingeschlossen, sodass ein aus dem PDF kopierter Satz den Satz zurückgibt, der geschrieben wurde.
 
 WOFF-Dateien akzeptiert das PDF nicht, weil sich das Format nicht zuverlässig einbetten lässt; WOFF2, TrueType und OpenType funktionieren.
 

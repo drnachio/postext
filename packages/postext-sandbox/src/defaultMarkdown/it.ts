@@ -396,6 +396,7 @@ Poche regole tengono in riga gli elementi flottanti:
 
 - Un elemento flottante non finisce mai prima del suo rimando e non viene mai rimpicciolito per entrare
 - Gli elementi flottanti di una stessa sequenza di numerazione mantengono il loro ordine, così la figura 12 non compare mai prima della figura 11
+- Gli elementi flottanti che si incontrano al piede di una stessa colonna stanno nell’ordine di lettura, il primo più in alto
 - Gli elementi flottanti non escono mai dal loro capitolo: aperture di capitolo, pagine di parte e fine del documento sono barriere
 - Un elemento flottante che lascerebbe meno di tre righe di testo su una pagina nuova aspetta la successiva
 - Le fasce di testa e di piede sono allineate alla griglia della linea di base, e la didascalia di un elemento flottante al piede condivide la linea di base dell’ultima riga di testo
@@ -939,7 +940,7 @@ Il PDF di un libro non è una concatenazione di file separati. Il renderer ricev
 
 ## I font nel PDF
 
-Postext incorpora ogni carattere usato dall’impaginazione (un file statico per peso e per stile), così una parola in grassetto è composta nel vero grassetto e una in corsivo nel vero corsivo, mai in un’imitazione inclinata o ingrossata. I font TrueType vengono ridotti ai soli glifi che il libro usa davvero, il che mantiene i file leggeri anche con quattro famiglie; i font OpenType con contorni PostScript si incorporano interi, perché alcuni visualizzatori non sanno leggerne i sottoinsiemi. Ogni font incorporato porta una mappa che riconduce i glifi ai caratteri, legature comprese, così copiando una frase dal PDF si ottiene la frase che era stata scritta.
+Postext incorpora ogni carattere usato dall’impaginazione (un file statico per peso e per stile), così una parola in grassetto è composta nel vero grassetto e una in corsivo nel vero corsivo, mai in un’imitazione inclinata o ingrossata. I font TrueType vengono ridotti ai soli glifi che il libro usa davvero, il che mantiene i file leggeri anche con quattro famiglie; i font OpenType con contorni PostScript si incorporano interi, perché alcuni visualizzatori non sanno leggerne i sottoinsiemi, e si dichiarano per quello che sono, in modo che il preflight di una tipografia li legga come font CFF. Ogni font incorporato porta una mappa che riconduce i glifi ai caratteri, legature comprese, così copiando una frase dal PDF si ottiene la frase che era stata scritta.
 
 Una famiglia disponibile solo in WOFF non è accettata dal PDF, perché quel formato non si può incorporare in modo affidabile; i file WOFF2, TrueType e OpenType funzionano tutti.
 
