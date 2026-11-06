@@ -185,6 +185,14 @@ export function renderChip(
     parts.push(renderTextSegment({ kind: 'text', text: run.text, width: run.width }, tx, top, fontDecl, colorDecl, color, 0, hasCJK(run.text) ? 'own' : false, dir ? { attrs: dir, decl: '' } : PLAIN_BOX));
     tx += run.width;
   }
+  // The lines through its struck-through words (`~~…~~`).
+  if (chip.strikes && chip.runs[0]) {
+    const textX = bx + chip.borderWidth + chip.paddingX;
+    const ink = chip.color ?? inkFor(chip.runs[0]);
+    for (const s of chip.strikes) {
+      parts.push(`<span aria-hidden="true" style="position:absolute;left:${(textX + s.x).toFixed(3)}px;top:${(baselineOffset + s.y - s.thickness / 2).toFixed(3)}px;width:${s.length.toFixed(3)}px;height:${s.thickness.toFixed(3)}px;background:${ink};"></span>`);
+    }
+  }
   return parts.join('');
 }
 

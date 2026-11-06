@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Les marques dans une ligne : emphase, liens, pastilles, petites capitales, tabulations, texte vertical, marques chinoises et japonaises, sens du texte, et formules LaTeX',
   lang: 'fr',
   lastUpdated: '2026-11-06',
-  readingTime: '29 min',
+  readingTime: '30 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Cette page traite des marques que vous utilisez dans une ligne de texte. Elles mettent des mots en gras ou en italique, ajoutent des liens, dessinent de petites étiquettes, composent des petites capitales et alignent le texte sur des taquets de tabulation. D’autres marques servent aux livres chinois et japonais, comme les petites indications de prononciation au-dessus d’un caractère, ou à une phrase écrite dans l’autre sens, comme de l’anglais dans un livre arabe. La dernière section montre comment écrire des formules mathématiques.",
@@ -54,6 +54,11 @@ Le balisage en ligne est reconnu dans tout bloc de texte (titres, paragraphes, c
       <td>Indice</td>
       <td><code>~text~</code></td>
       <td>Même taille, abaissé de 0,15 de la taille du texte, pour rester dans les descendantes : un indice chimique (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Un tilde encadré de deux chiffres est un intervalle et reste littéral : <code>3~5 days</code>, <code>需要3~5天</code>. De même pour un tilde entre deux mots chinois, qui n’ouvre aucun indice : <code>周一~周五</code>, <code>北京~上海</code> ; un indice se ferme néanmoins devant un caractère chinois (<code>F~合~等于</code>). Se combine avec le gras et l’italique (<code>**H~2~O**</code>). Un indice et un exposant écrits ensemble, sans rien entre eux, sont superposés comme dans une formule : <code>*T*~0~^2^</code> place le 2 au-dessus du 0, quel que soit l’ordre d’écriture, l’indice étant abaissé de 0,25 de la taille du texte pour dégager l’exposant, et la paire prend la largeur du plus large des deux. Une espace ou une lettre entre eux les compose l’un après l’autre ; un gluon de mots (U+2060) aussi, sans rien de visible entre eux. Une paire superposée n’est jamais séparée par un saut de ligne : un mot trop large pour la ligne est coupé avant la paire.</td>
+    </tr>
+    <tr>
+      <td>Texte barré</td>
+      <td><code>~~texte~~</code></td>
+      <td>Un trait qui traverse le texte sans le déplacer : l’ancien prix à côté du nouveau (<code>~~165 €~~ 129 €</code>). Deux tildes de chaque côté ; une seule paire fait un indice. Voir <a href="#texte-barré">Texte barré</a> plus bas.</td>
     </tr>
     <tr>
       <td>Petites capitales</td>
@@ -200,6 +205,21 @@ Le soleil chauffe la mer et :mark[l’eau monte dans l’air sous forme de vapeu
 - **Aucune place prise.** La bande est peinte sous le texte, de 0,8 em au-dessus à 0,25 em au-dessous de la ligne de base, agrandie de la marge verticale, et sa marge horizontale empiète sur les espaces voisins de la phrase. Les lignes se coupent exactement comme sans la marque : marquer un livre déjà composé ne déplace aucune de ses pages.
 - **Texte.** Le texte marqué accepte ses propres marques en ligne (`:mark[le mot **clé**]`), des liens, des pastilles et des renvois. Les crochets s’y imbriquent (`:mark[voir [la carte]]`), `\]` écrit un crochet littéral et le texte peut franchir un retour à la ligne simple de la source. Une ponctuation collée à la phrase hors des crochets (`:mark[terre].`) reste hors de la bande ; la couleur de texte d’un style s’étend au mot entier qui la porte. Une marque dans une autre est composée comme son texte.
 - **Où.** Paragraphes, titres composés dans le texte, éléments de liste, citations, encadrés, notes de bas de page, cellules de tableau, légendes et notes, en texte de gauche à droite et de droite à gauche, et en chinois et en japonais. Le canvas, le PDF et le HTML peignent la bande ; dans un PDF balisé, c’est un artefact de mise en page et les mots appartiennent à leur paragraphe. Un titre dessiné par une maquette (une ouverture) imprime les mots sans bande, comme la visionneuse HTML sur une page verticale.
+
+### Texte barré
+
+`~~texte~~` trace un trait à travers `texte`, comme une liste de prix barre l’ancien prix à côté du nouveau ou comme une édition montre un mot que l’auteur a supprimé. C’est la syntaxe de GitHub Flavored Markdown.
+
+```markdown
+Widget A : ~~165 €~~ 129 €.
+
+La réunion passe ~~à mardi~~ à jeudi.
+```
+
+- **Syntaxe.** Exactement deux tildes de chaque côté, et le texte commence et finit par un caractère qui n’est ni une espace ni un tilde ; les autres tildes se lisent comme avant. Une seule paire reste un indice (`H~2~O`), y compris dans un passage barré (`~~H~2~O~~`). Écrivez `\~\~` pour deux tildes littéraux. Le texte accepte ses propres marques en ligne, liens, pastilles et références, et peut passer un simple retour à la ligne de la source, pas une ligne vide.
+- **Aucune place prise.** Le trait est peint par-dessus le texte, et les lignes se coupent exactement comme sans lui. Un passage coupé en fin de ligne reçoit un trait sur chaque ligne, deux passages côte à côte gardent deux traits, et une ponctuation collée au passage (`~~165~~.`) reste en dehors.
+- **Le trait.** Il passe là où la fonte place son barré, avec l’épaisseur qu’elle indique (les valeurs `yStrikeoutPosition` et `yStrikeoutSize` de sa table OS/2, lues dans les fichiers de fonte que reçoit le moteur : `prepareFonts`, le worker de composition, la ligne de commande), dans la couleur du texte barré ; chaque fonte d’un passage pour son compte, si bien qu’un mot en gras ou une autre famille dans le passage reçoit son propre trait, qui rejoint le suivant. Une fonte dont le moteur n’a pas lu le fichier, ou qui n’indique pas de barré, prend 0,28 em au-dessus de la ligne de base, à peu près à mi-hauteur des minuscules, et 0,05 em. Dans un texte chinois ou japonais, et sur une page verticale, le trait suit le milieu des caractères. Un exposant ou un indice dans le passage ne le déplace pas.
+- **Où.** Paragraphes, titres (tant que `headings.inlineMarks` est actif), éléments de liste, citations, encadrés, notes de bas de page, cellules de tableau, légendes et notes, et les mots d’une pastille (`:chip[~~avant~~ après]` ; `~~:chip[avant]~~` barre les mots de la pastille). Le canvas, le PDF et le HTML dessinent le trait d’après la composition ; dans un PDF balisé, c’est un artefact de mise en page, et les mots restent du texte extrait et lu tel qu’il est écrit. Le HTML et l’EPUB recomposable placent en plus les mots dans un `<s>`, et l’export Word les marque comme barrés. Une tâche terminée a son propre trait (`taskCompletedStrikethrough`).
 
 ### Petites capitales
 

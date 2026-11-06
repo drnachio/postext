@@ -2,12 +2,24 @@ import type { InlineSpan } from './types.js';
 import { sliceLinks } from './links.js';
 import { annotationFields } from './annotations.js';
 
+/** `span` struck through as a whole when `strike` is set (`~~…~~` around
+ *  a formula, a swatch, a reference, a note marker): its text, or a chip's
+ *  words (a chip holds no character of the text itself). */
+function struckSpan(span: InlineSpan, strike: { id: number } | undefined): InlineSpan {
+  if (!strike) return span;
+  const whole = (s: InlineSpan): InlineSpan =>
+    s.text.length > 0 ? { ...s, links: [...(s.links ?? []), { start: 0, end: s.text.length, href: '', strike: { ...strike } }] } : s;
+  if (span.chip) return { ...span, chip: { ...span.chip, spans: span.chip.spans.map(whole) } };
+  return whole(span);
+}
+
 /**
  * Walk an InlineSpan list and replace each occurrence of `placeholder` with a
  * dedicated span produced by `makeSpan` (carrying the ambient bold/italic),
  * consuming `items` in order. Plain-text spans are split around the
  * placeholder (the pieces keep their share of the span's links; the new
- * span takes none). Shared by ref and math injection. A small-caps span
+ * span takes none, but stays struck through when the placeholder was: see
+ * {@link struckSpan}). Shared by ref and math injection. A small-caps span
  * keeps the flag on every piece, the placeholder's span included, and so
  * do the Chinese marks (see `annotationFields`); an orientation mark
  * (`:tcy`, `:upright`, `:sideways`) stays on the text pieces only.
@@ -52,7 +64,9 @@ export function injectPlaceholderSpans<T>(
     while (from >= 0) {
       if (from > last) out.push(piece(last, from));
       const item = items[idx++];
-      if (item) out.push({ ...makeSpan(item, span.bold, span.italic), ...sc, ...placeholderMarks });
+      const at = from;
+      const strike = span.links?.find((l) => l.strike && l.start <= at && l.end > at)?.strike;
+      if (item) out.push(struckSpan({ ...makeSpan(item, span.bold, span.italic), ...sc, ...placeholderMarks }, strike));
       last = from + placeholder.length;
       from = span.text.indexOf(placeholder, last);
     }

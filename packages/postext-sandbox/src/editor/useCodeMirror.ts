@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
 import { EditorView, lineNumbers, highlightActiveLine, keymap, type KeyBinding, type ViewUpdate } from '@codemirror/view';
 import { EditorState, Compartment, Transaction } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
+import { Strikethrough } from '@lezer/markdown';
 import { defaultKeymap, history, historyField, isolateHistory, redo, redoSelection, undo, undoSelection } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
 import { getEditorTheme } from './postextTheme.js';
@@ -138,7 +139,9 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       highlightActiveLine(),
       history(),
       bracketMatching(),
-      markdown({ extensions: [frontmatterParser] }),
+      // `~~text~~` is struck through (GitHub Flavored Markdown), as the
+      // engine sets it.
+      markdown({ extensions: [frontmatterParser, Strikethrough] }),
       frontmatterTheme,
       frontmatterHighlight,
       mathTheme,

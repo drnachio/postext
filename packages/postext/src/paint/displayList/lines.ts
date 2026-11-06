@@ -162,6 +162,7 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
     if (seg.script) run.script = seg.script;
     if (seg.baselineShift) run.baselineShift = -seg.baselineShift;
     if (seg.href !== undefined) run.href = seg.href;
+    if (seg.strike && seg.strike.from === undefined) run.strike = true;
     if (seg.footnoteId !== undefined) run.footnoteId = seg.footnoteId;
     if (seg.refResourceId !== undefined) run.refTarget = { id: seg.refResourceId, ...(seg.refAnchor ? { anchor: true } : {}) };
     if (seg.pageLink !== undefined) run.pageLink = seg.pageLink;

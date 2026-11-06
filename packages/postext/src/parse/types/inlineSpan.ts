@@ -47,6 +47,12 @@ export interface InlineLink {
    *  spans keeps it: the style id (`''` when the mark names none) and the
    *  mark's number in the text. Such a range is no link. */
   mark?: { style: string; id: number };
+  /** Present on struck-through text (`~~text~~`), which rides on the link
+   *  ranges as a highlight mark does: the layout is the one without it, and
+   *  the line through the text is drawn once the document is laid out
+   *  (`VDTLine.marks`): the run's number in its text, so that two runs side
+   *  by side keep two lines. Such a range is no link (`href` is `''`). */
+  strike?: { id: number };
 }
 
 /** An inline symbol (`:icon[alt]{…}`, #1058, DESIGN §12.5), read in the
@@ -213,7 +219,9 @@ export interface InlineSpan {
   /** Markdown links (`[text](url)`) inside this span, as ranges of its
    *  `text`. A link never splits a span — the spans are those of the text
    *  without the link syntax, so layout does not change — and a link whose
-   *  text crosses emphasis spreads over the spans it crosses. The measurer
+   *  text crosses emphasis spreads over the spans it crosses. Highlight
+   *  marks (`mark`) and struck-through text (`strike`) ride on these ranges
+   *  too; they are no links. The measurer
    *  stamps the target on the segments of the linked words
    *  (`VDTLineSegment.href`). Only safe targets are kept: `http:`,
    *  `https:`, `mailto:`, `tel:`, `ftp:` and relative URLs. */

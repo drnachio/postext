@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Marks inside a line: emphasis, links, chips, small capitals, tabs, vertical text, Chinese and Japanese marks, text direction, and LaTeX formulas',
   lang: 'en',
   lastUpdated: '2026-11-06',
-  readingTime: '25 min',
+  readingTime: '26 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "This page covers the marks you use inside a line of text. They make words bold or italic, add links, draw small labels, set small capitals and line text up at tab stops. Other marks are for Chinese and Japanese books, such as small readings above a character, or for a phrase in another direction, such as English in an Arabic book. The last section shows how to write mathematical formulas.",
@@ -54,6 +54,11 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Subscript</td>
       <td><code>~text~</code></td>
       <td>Same size, lowered 0.15 of the text size, so it stays within the descenders — a chemical index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). A tilde with a digit on each side is a range and stays literal: <code>3~5 days</code>, <code>需要3~5天</code>. So is one between two Chinese words, which opens no subscript: <code>周一~周五</code>, <code>北京~上海</code>; a subscript still closes before a Chinese character (<code>F~合~等于</code>). Combines with bold and italic (<code>**H~2~O**</code>). A subscript and a superscript written together, with nothing between them, are stacked as in a formula: <code>*T*~0~^2^</code> sets the 2 over the 0, whichever comes first, the subscript lowered 0.25 of the text size to clear the superscript, and the pair takes the width of the wider one. A space or a letter between them sets them one after the other; a word joiner (U+2060) does too, with nothing visible between them. A stacked pair never parts at a line break: a word too wide for the line breaks before the pair.</td>
+    </tr>
+    <tr>
+      <td>Strikethrough</td>
+      <td><code>~~text~~</code></td>
+      <td>A line through the text, which keeps its place: an old price beside the new one (<code>~~€ 165~~ € 129</code>). Two tildes on each side; a single pair is a subscript. See <a href="#strikethrough">Strikethrough</a> below.</td>
     </tr>
     <tr>
       <td>Small caps</td>
@@ -200,6 +205,21 @@ The sun warms the sea and :mark[water rises into the air as vapour, where it coo
 - **No room taken.** The band is painted under the text, 0.8 em above and 0.25 em below the baseline, grown by the vertical padding, and its horizontal padding reaches into the word spaces beside the phrase. The lines break exactly as they would without the mark, so marking a laid-out book moves none of its pages.
 - **Text.** The marked text takes its own inline marks (`:mark[the **key** word]`), links, chips and references. Brackets nest inside it (`:mark[see [the map]]`), `\]` writes a literal bracket, and the text may run over a soft line break of the source. A punctuation mark glued to the phrase outside the brackets (`:mark[land].`) stays out of the band; a style's text colour reaches the whole word that holds it. A mark inside another is set as its text.
 - **Where.** Paragraphs, headings set in the text, list items, blockquotes, callouts, footnotes, table cells, captions and notes, in left-to-right and right-to-left text and in Chinese and Japanese. The canvas, the PDF and the HTML paint the band; in a tagged PDF it is a layout artifact and the words belong to their paragraph. A heading drawn by a design (an opener) prints the words without the band, and so does the HTML viewer on a vertical page.
+
+### Strikethrough
+
+`~~text~~` draws a line through `text`, as a price list strikes the old price beside the new one or an edition shows a word the author deleted. It is the syntax of GitHub Flavored Markdown.
+
+```markdown
+Widget A: ~~€ 165~~ € 129.
+
+The meeting moves ~~to Tuesday~~ to Thursday.
+```
+
+- **Syntax.** Exactly two tildes on each side, and the text starts and ends with a character that is neither a space nor a tilde; other tildes are read as before. A single pair is still a subscript (`H~2~O`), also inside a struck run (`~~H~2~O~~`). Write `\~\~` for two literal tildes. The text takes its own inline marks, links, chips and references, and may run over a soft line break of the source, not over a blank line.
+- **No room taken.** The line is painted over the text, and the lines break exactly as they would without it. A run broken over a line end gets a line on each line, two runs side by side keep two lines, and a punctuation mark glued to the run (`~~165~~.`) stays out of it.
+- **The line.** It sits where the face puts its strikeout and is as thick as the face says (the `yStrikeoutPosition` and `yStrikeoutSize` of its OS/2 table, read from the font files the engine is given: `prepareFonts`, the layout worker, the command line), in the colour of the struck text; each face of a run on its own, so a bold word or another family in the run gets a line of its own that meets the next. A face whose file the engine has not read, or that sets no strikeout, takes 0.28 em above the baseline, about the middle of the lowercase letters, and 0.05 em. In Chinese and Japanese text, and on a vertical page, the line runs along the middle of the characters. A superscript or a subscript inside the run does not move it.
+- **Where.** Paragraphs, headings (while `headings.inlineMarks` is on), list items, blockquotes, callouts, footnotes, table cells, captions and notes, and the words of a chip (`:chip[~~old~~ new]`; `~~:chip[old]~~` strikes the chip's words). The canvas, the PDF and the HTML draw the line from the layout; in a tagged PDF it is a layout artifact, and the words stay text that is extracted and read as written. The HTML and the reflowable EPUB also wrap the words in `<s>`, and the Word export sets them struck through. A completed task item has a line of its own (`taskCompletedStrikethrough`).
 
 ### Small capitals
 

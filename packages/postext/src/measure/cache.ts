@@ -61,10 +61,17 @@ function buildPlainCacheKey(
   return `${text}\x00${font}\x00${maxWidthPx}\x00${lineHeightPx}\x00${optionsKey(options)}${cjkKey(text, options)}`;
 }
 
+/** The struck-through ranges of a chip's word (`~~…~~`), which draw lines
+ *  on the measured chip; empty when it has none. */
+function strikeKey(s: InlineSpan): string {
+  const ranges = s.links?.filter((l) => l.strike);
+  return ranges && ranges.length > 0 ? `~st${ranges.map((l) => `${l.start}-${l.end}:${l.strike!.id}`).join(',')}` : '';
+}
+
 /** A chip is one placeholder char in the span text: its words and resolved
  *  box decide its measure, so they join the key. */
 function chipCacheKey(chip: NonNullable<InlineSpan['chip']>): string {
-  const words = chip.spans.map((s) => `${s.text}~${s.bold}~${s.italic}~${s.script ?? ''}${s.smallCaps ? '~sc' : ''}${s.textFace ? '~tf' : ''}${s.ruby ? `~r${s.ruby.id}:${s.ruby.text}${s.ruby.group ? 'g' : ''}${s.ruby.position ?? ''}` : ''}`).join('~');
+  const words = chip.spans.map((s) => `${s.text}~${s.bold}~${s.italic}~${s.script ?? ''}${s.smallCaps ? '~sc' : ''}${s.textFace ? '~tf' : ''}${strikeKey(s)}${s.ruby ? `~r${s.ruby.id}:${s.ruby.text}${s.ruby.group ? 'g' : ''}${s.ruby.position ?? ''}` : ''}`).join('~');
   // An exercise's blank (#1227): its width text, that it is a blank and
   // the slot it answers ride on the measured chip.
   const exercise = chip.widthText !== undefined || chip.blank || chip.exercise || chip.upright

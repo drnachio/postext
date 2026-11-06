@@ -15,7 +15,7 @@ import { RT_OPEN, verticalKuntenTateHtml, verticalLineMarksHtml } from './htmlAn
 import { extractFontSizePx } from './design.js';
 import { renderSwatchSegment, renderChip, renderTaskBox } from './lines.js';
 import { shapedText, type HtmlPaint } from './render.js';
-import { rubyRuns, renderMathSegmentSvg, pickSegmentColor, segmentHref, refLinks, refKey, refAnchorHref, LINE_END_DECL, lineEndText } from './segmentText.js';
+import { rubyRuns, renderMathSegmentSvg, pickSegmentColor, segmentHref, refLinks, refKey, refAnchorHref, LINE_END_DECL, lineEndText, struckHtml } from './segmentText.js';
 import { DASH_FEATURES_DECL, quoteFontString, pickSegmentFont, ligaturesDecl, lineCjkDecl, cjkTextDecl, CJK_TEXT_DECL } from './styles.js';
 import { esc, trackedIn, trackedTextHtml } from './textRuns.js';
 
@@ -296,6 +296,8 @@ export function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHt
     // Text set with emphasis dots is emphasis (#193); the dots are the
     // line's marks.
     if (seg.cjkMarks?.dots) text = `<em style="font-style:inherit;">${text}</em>`;
+    // Struck-through text; the line is the line's mark too.
+    text = struckHtml(seg, text);
     const href = seg.refResourceId !== undefined
       ? (refLinks(refKey(seg), targets) ? refAnchorHref(refKey(seg)) : undefined)
       : segmentHref(seg);

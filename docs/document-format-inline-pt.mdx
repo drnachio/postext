@@ -6,7 +6,7 @@ export const metadata = {
   description: 'As marcas que se usam dentro da linha: ênfase, links, chips, versaletes, tabulações, texto vertical, marcas chinesas e japonesas, direção do texto e fórmulas LaTeX',
   lang: 'pt',
   lastUpdated: '2026-11-06',
-  readingTime: '28 min',
+  readingTime: '29 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Esta página trata das marcas que você usa dentro de uma linha de texto. Elas deixam palavras em negrito ou itálico, acrescentam links, desenham pequenas caixas com texto, compõem versaletes e alinham o texto em paradas de tabulação. Outras marcas são para livros em chinês e japonês, como as pequenas leituras sobre um caractere, ou para uma frase em outra direção, como um trecho em inglês num livro em árabe. A última seção mostra como escrever fórmulas matemáticas.",
@@ -54,6 +54,11 @@ A marcação em linha é reconhecida dentro de qualquer bloco de texto (títulos
       <td>Subscrito</td>
       <td><code>~texto~</code></td>
       <td>Mesmo tamanho, rebaixado 0,15 do tamanho do texto para ficar dentro das descendentes: o índice de uma fórmula química (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Um til com um dígito de cada lado é um intervalo e continua literal: <code>3~5 days</code>, <code>需要3~5天</code>. O mesmo vale para um til entre duas palavras chinesas, que não abre subscrito: <code>周一~周五</code>, <code>北京~上海</code>; um subscrito ainda se fecha antes de um caractere chinês (<code>F~合~等于</code>). Combina com negrito e itálico (<code>**H~2~O**</code>). Um subscrito e um sobrescrito escritos juntos, sem nada entre eles, ficam empilhados como numa fórmula: <code>*T*~0~^2^</code> põe o 2 sobre o 0, seja qual for o primeiro, com o subscrito rebaixado 0,25 do tamanho do texto para não bater no sobrescrito, e o par ocupa a largura do mais largo. Um espaço ou uma letra entre eles os compõe um depois do outro; um word joiner (U+2060) também, sem nada visível entre eles. Um par empilhado nunca se separa numa quebra de linha: uma palavra larga demais para a linha quebra antes do par.</td>
+    </tr>
+    <tr>
+      <td>Tachado</td>
+      <td><code>~~texto~~</code></td>
+      <td>Uma linha que atravessa o texto sem tirá-lo do lugar: o preço antigo ao lado do novo (<code>~~R$ 165~~ R$ 129</code>). Dois tis de cada lado; um só par é um subscrito. Veja <a href="#tachado">Tachado</a> mais abaixo.</td>
     </tr>
     <tr>
       <td>Versaletes</td>
@@ -200,6 +205,21 @@ O sol aquece o mar e :mark[a água sobe para o ar em forma de vapor, onde esfria
 - **Não ocupa espaço.** A faixa é pintada sob o texto, de 0,8 em acima a 0,25 em abaixo da linha de base, aumentada pelo espaçamento vertical, e o espaçamento horizontal avança pelos espaços ao lado da frase. As linhas quebram exatamente como sem a marca; por isso, marcar um livro já diagramado não move nenhuma de suas páginas.
 - **Texto.** O texto marcado aceita suas próprias marcações em linha (`:mark[a palavra **chave**]`), links, chips e referências. Os colchetes se aninham dentro dele (`:mark[veja [o mapa]]`), `\]` escreve um colchete literal e o texto pode atravessar uma quebra de linha simples do texto de origem. Um sinal de pontuação colado à frase fora dos colchetes (`:mark[terra].`) fica fora da faixa; a cor de texto de um estilo alcança a palavra inteira que o contém. Uma marca dentro de outra é composta como texto dela.
 - **Onde.** Parágrafos, títulos compostos no texto, itens de lista, citações, boxes, notas de rodapé, células de tabela, legendas e notas, em texto da esquerda para a direita e da direita para a esquerda e em chinês e japonês. O canvas, o PDF e o HTML pintam a faixa; num PDF marcado ela é um artefato de layout e as palavras pertencem ao parágrafo. Um título desenhado por um design (uma abertura) imprime as palavras sem a faixa, assim como o visualizador HTML numa página vertical.
+
+### Tachado
+
+`~~texto~~` traça uma linha através de `texto`, como uma tabela de preços risca o preço antigo ao lado do novo ou uma edição mostra uma palavra que o autor suprimiu. É a sintaxe do GitHub Flavored Markdown.
+
+```markdown
+Widget A: ~~R$ 165~~ R$ 129.
+
+A reunião passa ~~para terça~~ para quinta.
+```
+
+- **Sintaxe.** Exatamente dois tis de cada lado, e o texto começa e termina com um caractere que não é espaço nem til; os outros tis são lidos como antes. Um só par continua sendo subscrito (`H~2~O`), também dentro de um tachado (`~~H~2~O~~`). Escreva `\~\~` para dois tis literais. O texto aceita suas próprias marcas em linha, links, chips e referências, e pode passar por uma quebra de linha simples do original, não por uma linha em branco.
+- **Não ocupa espaço.** A linha é pintada sobre o texto, e as linhas quebram exatamente como sem ela. Um tachado partido no fim de uma linha recebe uma linha em cada linha, dois tachados lado a lado mantêm duas linhas, e um sinal de pontuação colado ao tachado (`~~165~~.`) fica de fora.
+- **A linha.** Fica onde a fonte põe o seu tachado e com a espessura que a fonte indica (os valores `yStrikeoutPosition` e `yStrikeoutSize` da sua tabela OS/2, lidos dos arquivos de fonte que o motor recebe: `prepareFonts`, o worker de composição, a linha de comando), na cor do texto tachado; cada fonte de um tachado por conta própria, de modo que uma palavra em negrito ou outra família dentro do tachado ganha uma linha própria, que emenda na seguinte. Uma fonte cujo arquivo o motor não leu, ou que não indica tachado, recebe 0,28 em acima da linha de base, mais ou menos na metade da altura das minúsculas, e 0,05 em. Em texto chinês e japonês, e numa página vertical, a linha corre pelo meio dos caracteres. Um sobrescrito ou subscrito dentro do tachado não a desloca.
+- **Onde.** Parágrafos, títulos (enquanto `headings.inlineMarks` estiver ativado), itens de lista, citações, boxes, notas de rodapé, células de tabela, legendas e notas, e as palavras de um chip (`:chip[~~antes~~ agora]`; `~~:chip[antes]~~` risca as palavras do chip). O canvas, o PDF e o HTML desenham a linha a partir da composição; num PDF com tags ela é um artefato de layout, e as palavras continuam sendo texto extraído e lido como foi escrito. O HTML e o EPUB refluível também envolvem as palavras em `<s>`, e a exportação para Word as marca como tachadas. Um item de tarefa concluído tem uma linha própria (`taskCompletedStrikethrough`).
 
 ### Versaletes
 

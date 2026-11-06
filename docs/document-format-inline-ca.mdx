@@ -6,7 +6,7 @@ export const metadata = {
   description: "Com es marca el text dins d'una línia: èmfasi, enllaços, xips, versaletes, tabuladors, text vertical, marques xineses i japoneses, direcció del text i fórmules LaTeX",
   lang: 'ca',
   lastUpdated: '2026-11-06',
-  readingTime: '28 min',
+  readingTime: '29 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Aquesta pàgina explica les marques que es fan servir dins d'una línia de text. Serveixen per posar paraules en negreta o en cursiva, afegir enllaços, dibuixar etiquetes petites, compondre versaletes i alinear el text a les tabulacions. Altres marques serveixen per als llibres en xinès i en japonès, com les lectures petites que van damunt d'un caràcter, o per a una frase que va en una altra direcció, com un text en anglès dins d'un llibre en àrab. L'última secció ensenya a escriure fórmules matemàtiques.",
@@ -54,6 +54,11 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
       <td>Subíndex</td>
       <td><code>~texto~</code></td>
       <td>La mateixa mida, baixat 0,15 del cos, de manera que no sobrepassa els descendents: un índex químic (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Una titlla amb una xifra a cada costat és un interval i es manté literal: <code>3~5 días</code>, <code>需要3~5天</code>. Tampoc no obre subíndex la que va entre dues paraules xineses: <code>周一~周五</code>, <code>北京~上海</code>; en canvi, un subíndex sí que es pot tancar davant d'un caràcter xinès (<code>F~合~等于</code>). Es combina amb negreta i cursiva (<code>**H~2~O**</code>). Un subíndex i un superíndex escrits junts, sense res entremig, s'apilen com en una fórmula: <code>*T*~0~^2^</code> compon el 2 sobre el 0, vagi primer el que vagi, amb el subíndex baixat 0,25 del cos per deixar lloc al superíndex, i el parell ocupa l'amplada del més ample dels dos. Un espai o una lletra entremig fan que es componguin l'un darrere l'altre; també un unidor de paraules (U+2060), sense que es vegi res entre ells. Un parell apilat no se separa mai en un canvi de línia: si una paraula no cap a la línia, es talla abans del parell.</td>
+    </tr>
+    <tr>
+      <td>Ratllat</td>
+      <td><code>~~text~~</code></td>
+      <td>Una línia que travessa el text sense moure’l del seu lloc: el preu antic al costat del nou (<code>~~165 €~~ 129 €</code>). Dues titlles a cada banda; un sol parell és un subíndex. Vegeu <a href="#ratllat">Ratllat</a> més avall.</td>
     </tr>
     <tr>
       <td>Versaletes</td>
@@ -200,6 +205,21 @@ El sol escalfa el mar i :mark[l'aigua puja a l'aire en forma de vapor, on es ref
 - **No ocupa lloc.** La franja es pinta sota el text, des de 0,8 em per sobre fins a 0,25 em per sota de la línia de base, més el farciment vertical, i el farciment horitzontal s'estén pels espais del costat de la frase. Les línies es tallen igual que sense la marca, de manera que marcar un llibre ja compost no en mou cap pàgina.
 - **Text.** El text marcat admet marques en línia pròpies (`:mark[la paraula **clau**]`), enllaços, xips i referències. Els claudàtors es poden niar (`:mark[vegeu [el mapa]]`), `\]` escriu un claudàtor literal i el text pot passar per sobre d'un salt de línia simple de l'original. Un signe de puntuació enganxat a la frase però fora dels claudàtors (`:mark[terra].`) queda fora de la franja; el color de text d'un estil s'aplica a tota la paraula que el té. Una marca dins d'una altra es compon com el text que la conté.
 - **On.** Paràgrafs, títols compostos dins del text, elements de llista, cites, requadres, notes a peu de pàgina, cel·les de taula, peus i notes, en text d'esquerra a dreta i de dreta a esquerra i en xinès i japonès. El canvas, el PDF i l'HTML pinten la franja; en un PDF etiquetat, és un artefacte de maquetació i les paraules pertanyen al paràgraf. Un títol que dibuixa un disseny (una portadella) imprimeix les paraules sense franja, igual que el visor HTML en una pàgina vertical.
+
+### Ratllat
+
+`~~text~~` traça una línia a través de `text`, com una llista de preus ratlla el preu antic al costat del nou o una edició mostra una paraula que l’autor va suprimir. És la sintaxi de GitHub Flavored Markdown.
+
+```markdown
+Widget A: ~~165 €~~ 129 €.
+
+La reunió passa ~~a dimarts~~ a dijous.
+```
+
+- **Sintaxi.** Exactament dues titlles a cada banda, i el text comença i acaba amb un caràcter que no és ni un espai ni una titlla; les altres titlles es llegeixen com fins ara. Un sol parell continua sent un subíndex (`H~2~O`), també dins d’un ratllat (`~~H~2~O~~`). Escriviu `\~\~` per a dues titlles literals. El text admet les seves pròpies marques en línia, enllaços, xips i referències, i pot passar per un salt de línia simple de l’original, no per una línia en blanc.
+- **No ocupa lloc.** La línia es pinta sobre el text i les línies es tallen exactament igual que sense ella. Un ratllat partit en un final de línia porta una línia a cada línia, dos ratllats seguits conserven dues línies, i un signe de puntuació enganxat al ratllat (`~~165~~.`) en queda fora.
+- **La línia.** Va on la font posa el seu ratllat i amb el gruix que la font indica (els valors `yStrikeoutPosition` i `yStrikeoutSize` de la seva taula OS/2, llegits dels fitxers de font que rep el motor: `prepareFonts`, el worker de composició, la línia d’ordres), en el color del text ratllat; cada font d’un ratllat pel seu compte, de manera que una paraula en negreta o una altra família dins del ratllat porta la seva pròpia línia, que enllaça amb la següent. Una font el fitxer de la qual el motor no ha llegit, o que no indica ratllat, pren 0,28 em per sobre de la línia de base, més o menys a mitja alçada de les minúscules, i 0,05 em. En text xinès i japonès, i en una pàgina vertical, la línia recorre el centre dels caràcters. Un superíndex o un subíndex dins del ratllat no la mou.
+- **On.** Paràgrafs, títols (mentre `headings.inlineMarks` estigui activat), elements de llista, cites, requadres, notes a peu de pàgina, cel·les de taula, peus i notes, i les paraules d’un xip (`:chip[~~abans~~ ara]`; `~~:chip[abans]~~` ratlla les paraules del xip). El llenç, el PDF i l’HTML dibuixen la línia a partir de la composició; en un PDF etiquetat és un artefacte de maquetació, i les paraules continuen sent text que s’extreu i es llegeix tal com està escrit. L’HTML i l’EPUB adaptable, a més, emboliquen les paraules en `<s>`, i l’exportació a Word les marca com a ratllades. Una tasca completada té la seva pròpia línia (`taskCompletedStrikethrough`).
 
 ### Versaletes
 
