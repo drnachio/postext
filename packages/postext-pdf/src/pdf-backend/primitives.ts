@@ -24,6 +24,9 @@ export type { LineTextState } from './primitives/actualText.js';
 
 export interface PageCtx {
   page: PDFPage;
+  /** Collects form fields (#1445); absent when fields are painted as text
+   *  (a print standard) or the document has none. */
+  forms?: import('./forms.js').FormFieldRegistry;
   /** Set while a figure label's halo is painted (#860): every text drawn
    *  without an outline of its own takes this one. */
   textOutline?: TextOutline;

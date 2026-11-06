@@ -1,3 +1,4 @@
+import { FormFieldRegistry, type PdfFormOptions } from './forms.js';
 import './text/shapedText.js';
 import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
@@ -22,12 +23,16 @@ import { metadataString, documentTitle, languageTag } from './renderToPdf/metada
 import { renderPage } from './renderToPdf/paintPage.js';
 import { type PdfWarning, fontFallbackWarning, fileIssueWarning, missingGlyphWarning } from './renderToPdf/warnings.js';
 
-export type { PdfPrintWarning, PdfComplexShapingWarning, PdfFontFallbackWarning, PdfMissingGlyphWarning, PdfVariableFontWarning, PdfCffEmbeddedWholeWarning, PdfWarning, PdfFontWarning } from './renderToPdf/warnings.js';
+export type { PdfFormFieldWarning, PdfPrintWarning, PdfComplexShapingWarning, PdfFontFallbackWarning, PdfMissingGlyphWarning, PdfVariableFontWarning, PdfCffEmbeddedWholeWarning, PdfWarning, PdfFontWarning } from './renderToPdf/warnings.js';
 
 /** Options of `renderToPdf`: fonts, image bytes, colour, accessibility, print
  *  production and progress. */
 export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
+  /** How form fields (chips with a `field`, #1445) write numbers: the
+   *  currency symbol and its side, and the separators (from the document
+   *  language when unset). */
+  forms?: PdfFormOptions;
   pageNegative?: boolean;
   /** Emit a PDF outline tree (bookmarks) so readers can jump between
    *  headings. When omitted, the first document's
@@ -273,6 +278,9 @@ export async function renderToPdf(
   // Contents links carry book-absolute page indices; the registry maps them
   // onto the PDF's pages from the first document's offset.
   const linkRegistry = new LinkRegistry(first.pageIndexOffset ?? 0);
+  // Form fields (#1445): interactive in a screen PDF; a print standard
+  // allows none, there the values are painted as text.
+  const forms = pdfx ? undefined : new FormFieldRegistry();
   let rendered = 0;
   // Placeholders are reported once per image for the whole file.
   const onWarning = options.onWarning;
@@ -283,6 +291,7 @@ export async function renderToPdf(
     const resourceCtx: ResourceRenderContext = {
       images: resourceImages,
       linkRegistry,
+      ...(forms ? { forms } : {}),
       structure: tree ? new StructureFlow(tree) : undefined,
     };
     linkRegistry.documentIndex = documentIndex;
@@ -306,6 +315,10 @@ export async function renderToPdf(
   // A PDF/X file carries none: it is for the press, and annotations inside
   // the bleed box are not allowed.
   if (!pdfx) linkRegistry.finalize(pdfDoc, tree);
+  if (forms) {
+    await forms.finalize(pdfDoc, options.forms ?? {}, languageTag(first.config));
+    for (const message of forms.warnings) warn({ kind: 'formField', message: `postext-pdf: ${message}` });
+  }
 
   if (settings.outlines) {
     addOutlines(pdfDoc, docs);

@@ -6,6 +6,7 @@ import { type PageCtx, drawChipBoxPx, drawTextDotsPx, drawTextPx, invisibleText 
 import { tagArtifact, tagContent, type StructElem } from '../structure/tagging.js';
 import { drawRightToLeftRun } from '../text/rtlRun.js';
 import { paintChipReadings } from '../text/annotations.js';
+import { sheetRect } from './blockRender/segments.js';
 
 /**
  * Inline chip (`:chip[…]`): the box, flagged as a layout artifact in a
@@ -33,6 +34,15 @@ export function paintChip(
   }
   // A blank's answer is laid out, never painted (#1227): the box alone.
   if (chip.blank) return;
+  // A form field (#1445): the box, and the field's widget on it holding the
+  // words as its value. In a print standard the words are painted.
+  if (chip.field && ctx.forms) {
+    const { scale, pageHeightPt } = ctx;
+    const left = xPx + chip.marginLeft, top = baselinePx - chip.ascent;
+    const rect = sheetRect(ctx, [left * scale, pageHeightPt - (baselinePx + chip.descent) * scale, (left + chip.boxWidth) * scale, pageHeightPt - top * scale]);
+    ctx.forms.add(ctx.page, rect, chip.field, chip.runs.map((r) => r.text).join('').trim(), (chip.field.sizePx ?? fallbackSize) * scale);
+    return;
+  }
   tagContent(ctx, elem);
   paintChipRuns(ctx, chip, xPx, baselinePx, fontCache, fallbackFont, fallbackSize, colorFor);
 }
