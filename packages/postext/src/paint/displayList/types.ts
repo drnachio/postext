@@ -66,8 +66,11 @@ export interface DisplayRun {
    *  border and padding), for writers that set the text themselves. */
   padStart?: number;
   padEnd?: number;
-  /** Embedded non-text content drawn in place of the run. */
-  inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch };
+  /** Embedded non-text content drawn in place of the run. A chip that is
+   *  a form field (#1445) carries the field: a writer that makes forms puts
+   *  one on the box, the run's text its value (`formatFieldNumber` shows a
+   *  number as the canvas and the PDF do). */
+  inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch; field?: import('../../parse/formFields.js').FormFieldSpec };
   /** The run is a ruby base (#1394, `VDTLineSegment.ruby`): its reading. */
   ruby?: DisplayRuby;
   /** Vertical text: one tate-chu-yoko cell set by `:tcy[…]` (short

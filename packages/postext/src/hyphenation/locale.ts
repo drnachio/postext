@@ -188,6 +188,15 @@ function sourceTag(config: LanguageSource | undefined): string | undefined {
   return presentTag(config?.locale) ?? presentTag(h?.tag) ?? presentTag(h?.locale);
 }
 
+/** The language a document is written in, whatever it is shaped in: its
+ *  `locale`, else the hyphenation tag, in canonical form when it is a tag.
+ *  What every output writes the document's numbers in (form fields,
+ *  #1445). */
+export function documentLanguageOf(config: LanguageSource | undefined): string | undefined {
+  const tag = sourceTag(config);
+  return tag === undefined ? undefined : canonicalLocaleTag(tag) ?? tag;
+}
+
 /** The `lang` a renderer declares for a resolved document (the HTML
  *  root): its language in canonical form (`zh-Hant-TW`, `ar-EG`, `ca`),
  *  from `locale`, else the hyphenation tag. The canvas declares nothing:

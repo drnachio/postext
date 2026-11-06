@@ -59,6 +59,8 @@ export {
   spaceDirectiveLines,
   MAX_SPACE_LINES,
 } from './blockParser.js';
+export { formatFieldNumber, formNumberStyle, numberFieldText } from './formFields.js';
+export type { FormFieldSpec, FormFieldCalcOp, FormFieldCalc, FormFieldCalcCall, FormFieldCalcArg, FormNumberOptions, FormNumberStyle } from './formFields.js';
 export { computeSourceMap } from './sourceMapping.js';
 export { orientationMarkAt } from './orientationMarks.js';
 export type { OrientationMark } from './orientationMarks.js';

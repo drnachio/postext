@@ -68,6 +68,8 @@ export class FontCache {
   private byLength = new Map<number, Array<{ bytes: Uint8Array; features: string; font: Promise<PDFFont> }>>();
   /** Every font this cache embedded. */
   private embedded = new Set<PDFFont>();
+  /** The file each embedded font was made from, as the provider gave it. */
+  private fileOf = new WeakMap<PDFFont, Uint8Array>();
   private onFallback?: (fallback: FontFallback) => void;
   private onFileIssue?: (issue: FontFileIssue) => void;
   private cffWarnBytes: number;
@@ -121,6 +123,7 @@ export class FontCache {
       shapeInCurrentLanguage(embedded);
       spaceGlyphForSpace(embedded);
       this.embedded.add(embedded);
+      this.fileOf.set(embedded, bytes);
       return embedded;
     })();
     same.push({ bytes, features: featureKey, font });
@@ -345,6 +348,21 @@ export class FontCache {
     return pool.find((f) => f.weight === weight)!.font;
   }
 
+  /** The file a font string is set from, for a use that embeds it whole
+   *  (form fields, #1445), loading its face when no page asked for it: the
+   *  face's one file, or `'sliced'` when the provider gives it in several
+   *  (each holds part of its characters); undefined when the face cannot
+   *  be had. */
+  async wholeFileOf(fontString: string): Promise<{ bytes: Uint8Array } | 'sliced' | undefined> {
+    if (!this.map.has(fontKeyOf(fontString))) await this.preloadFontStrings([fontString]);
+    const font = this.get(fontString);
+    if (!font) return undefined;
+    const face = this.faces.find((f) => f.primary === font);
+    if (face && (face.sliced || face.files.files.length > 1)) return 'sliced';
+    const bytes = this.fileOf.get(font);
+    return bytes ? { bytes } : undefined;
+  }
+
   missing(): string[] {
     return [...this.failed];
   }
@@ -374,6 +392,12 @@ export class FontCache {
  *  base family, whose files it embeds with its features. */
 function fileFamily(family: string): string {
   return featureFamilyParts(family).family;
+}
+
+/** The cache key of a font string, or `''` when it does not parse. */
+function fontKeyOf(fontString: string): string {
+  const parsed = parseFontString(fontString);
+  return parsed ? fontKey(parsed.family, parsed.weight, parsed.style) : '';
 }
 
 /** Whether two files hold the same bytes. */

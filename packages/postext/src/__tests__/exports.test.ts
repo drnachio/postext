@@ -192,6 +192,8 @@ describe("package exports", () => {
       "matchContentLocale",
       "canonicalLocaleTag",
       "renderLangOf",
+      // The language form fields write numbers in (#1445).
+      "documentLanguageOf",
       // The language a document's text is shaped in (#764).
       "shapingLanguageOf",
       "shapingTagOf",
@@ -704,6 +706,10 @@ describe("package exports", () => {
       "KNOWN_CONTAINERS",
       "spaceDirectiveLines",
       "MAX_SPACE_LINES",
+      // The number rule of form fields, for every writer (#1445).
+      "formatFieldNumber",
+      "formNumberStyle",
+      "numberFieldText",
       "composedPages",
       "checkComposedSlots",
       "checkFrameLookNames",
