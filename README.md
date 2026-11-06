@@ -359,6 +359,8 @@ npm install postext
 pnpm add postext
 ```
 
+The libraries are also on [JSR](https://jsr.io/@postext) as `@postext/postext`, `@postext/pdf`, `@postext/epub`, `@postext/folio`, `@postext/citeproc` and `@postext/scorm` (`deno add jsr:@postext/postext`, `pnpm add jsr:@postext/postext`, `npx jsr add @postext/postext`), and are imported under those names. With `npx jsr add` or `bunx jsr add`, a book that cites needs the engine imported as `@jsr/postext__postext`, or its citations stay unformatted. Outside a browser the engine needs an `OffscreenCanvas`, for instance from `@napi-rs/canvas`. See [Programmatic usage › Installing](https://postext.dev/en/docs/configuration-programmatic-usage#installing).
+
 `buildDocument` takes content plus a configuration object and returns the laid-out document — plain layout geometry, not framework components — which any backend can then render. The quickest path is the HTML string renderer:
 
 ```ts

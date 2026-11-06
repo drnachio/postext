@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Uso programmatico',
   description: 'Chiamare Postext dal codice: buildDocument e i suoi avvisi, i valori predefiniti, i font, le cache e il Web Worker',
   lang: 'it',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '31 min',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## Uso programmatico
 
 > **Percorso consigliato: usa il Web Worker.** Nel browser, impagina tramite `createLayoutWorker()` di `postext/worker` invece di chiamare `buildDocument` sul thread principale. Il worker mantiene la pagina reattiva durante l’impaginazione, conserva le misure del testo da un’impaginazione all’altra e annulla quella in corso quando ne parte una più recente, così un tasto premuto non aspetta mai l’impaginazione di un testo precedente. La ricetta è in [Eseguire l’impaginazione in un Web Worker](#eseguire-limpaginazione-in-un-web-worker). Il resto di questa sezione (`buildDocument` diretto, resolver, funzioni di pulizia, cache) resta valido: il worker riceve gli stessi input e restituisce gli stessi output. Chiama `buildDocument` sul thread principale solo per esportazioni occasionali, rendering lato server (Node) o test.
+
+### Installazione
+
+Le librerie sono su npm e su [JSR](https://jsr.io/@postext), con lo stesso codice e gli stessi numeri di versione in entrambi.
+
+<table>
+  <thead>
+    <tr>
+      <th>Libreria</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Il motore</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>Il visualizzatore 3D del libro</td><td><code>postext-folio</code> (con <code>three</code>)</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>Citazioni</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# Da npm
+npm install postext
+
+# Da JSR
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9 o successivo
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+Da JSR si importano i nomi di JSR: `import { buildDocument } from '@postext/postext'`, e `postext/worker` diventa `@postext/postext/worker`. Gli esempi di questa documentazione usano i nomi di npm. I profili ICC (`postext/icc/*`) sono solo su npm.
+
+- **Citazioni con npm e Bun.** `npx jsr add` e `bunx jsr add` installano `@postext/postext` come alias di `@jsr/postext__postext`, da cui dipende anche `@postext/citeproc`, e i due nomi diventano due copie del motore. `@postext/citeproc/register` registra il motore delle citazioni nella copia che usa citeproc, quindi un documento costruito con l'altra copia lascia le citazioni senza formattazione. In quel caso importa il motore come `@jsr/postext__postext`. Deno e pnpm installano una sola copia e non serve altro.
+- **Fuori dal browser.** Il motore misura il testo su un `OffscreenCanvas`. Node, Bun e Deno non ne hanno uno: forniscilo prima della prima costruzione, per esempio da `@napi-rs/canvas`, e registra i caratteri in cui il libro compone il testo:
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+`postext-folio` si può importare in Node, ma il visualizzatore 3D del libro ha bisogno di un browser.
 
 ### Costruire un documento
 

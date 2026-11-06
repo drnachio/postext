@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الاستخدام البرمجي',
   description: 'استعمال Postext من الشيفرة: buildDocument وتحذيراته، والقيم الافتراضية، والخطوط، والذاكرات المؤقتة، وWeb Worker',
   lang: 'ar',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '31 دقيقة',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## الاستخدام البرمجي
 
 > **المسار الموصى به: استخدم عامل الويب (Web Worker).** في المتصفح، شغّل الإخراج عبر `createLayoutWorker()` من `postext/worker` بدل استدعاء `buildDocument` في الخيط الرئيسي. يُبقي العامل الصفحة مستجيبة أثناء الإخراج، ويحتفظ بقياسات النص بين إعادة إخراج وأخرى، ويلغي الإخراج الجاري حين يبدأ إخراج أحدث، فلا تنتظر ضغطة مفتاح إخراج نص أقدم. الطريقة في [تشغيل الإخراج في Web Worker](#تشغيل-الإخراج-في-web-worker). وبقية هذا القسم (`buildDocument` مباشرةً، والمحلِّلات، ودوال التجريد، والذاكرات المؤقتة) تبقى صالحة: يأخذ العامل المدخلات نفسها ويعيد المخرجات نفسها. لا تستدعِ `buildDocument` في الخيط الرئيسي إلا للتصدير لمرة واحدة، أو للعرض على الخادم (Node)، أو للاختبارات.
+
+### التثبيت
+
+المكتبات منشورة على npm وعلى [JSR](https://jsr.io/@postext)، بالشيفرة نفسها وأرقام الإصدارات نفسها في الاثنين.
+
+<table>
+  <thead>
+    <tr>
+      <th>المكتبة</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>المحرّك</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>عارض الكتاب ثلاثي الأبعاد</td><td><code>postext-folio</code> (مع <code>three</code>)</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>الاستشهادات</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# من npm
+npm install postext
+
+# من JSR
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9 أو أحدث
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+عند التثبيت من JSR تكون أسماء الاستيراد هي أسماء JSR: `import { buildDocument } from '@postext/postext'`، ويصير `postext/worker` هو `@postext/postext/worker`. تستخدم الأمثلة في هذا التوثيق أسماء npm. ملفات تعريف ICC (`postext/icc/*`) موجودة على npm وحده.
+
+- **الاستشهادات مع npm وBun.** يثبّت `npx jsr add` و`bunx jsr add` الحزمة `@postext/postext` اسمًا بديلًا لـ`@jsr/postext__postext`، التي تعتمد عليها `@postext/citeproc` أيضًا، فيصير الاسمان نسختين من المحرّك. يسجّل `@postext/citeproc/register` محرّك الاستشهادات في النسخة التي تستخدمها citeproc، فيبقى المستند المبني بالنسخة الأخرى باستشهادات غير منسّقة. استورد المحرّك عندئذٍ باسم `@jsr/postext__postext`. أما Deno وpnpm فيثبّتان نسخة واحدة ولا يحتاجان إلى شيء.
+- **خارج المتصفح.** يقيس المحرّك النص على `OffscreenCanvas`. ولا يملكه Node وBun وDeno، فأعطها واحدًا قبل أول بناء، من `@napi-rs/canvas` مثلًا، وسجّل الخطوط التي يُصفّ بها نص الكتاب:
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+يمكن استيراد `postext-folio` في Node، لكن عارض الكتاب ثلاثي الأبعاد نفسه يحتاج إلى متصفح.
 
 ### بناء مستند
 

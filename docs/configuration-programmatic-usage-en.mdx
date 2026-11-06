@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Programmatic usage',
   description: 'Calling Postext from code: buildDocument and its warnings, defaults, fonts, caches and the Web Worker',
   lang: 'en',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-06',
   readingTime: '28 min',
   order: 21,
   parent: 'configuration',
@@ -18,6 +18,60 @@ export const metadata = {
 ## Programmatic Usage
 
 > **Recommended path: use the Web Worker.** In a browser, drive the layout through `createLayoutWorker()` from `postext/worker` rather than calling `buildDocument` on the main thread. The worker keeps the page responsive during a build, keeps text measurements cached between rebuilds, and cancels a build in flight when a newer one starts, so a keystroke never waits for the layout of older text. The recipe is in [Running layout in a Web Worker](#running-layout-in-a-web-worker). The rest of this section (direct `buildDocument`, resolvers, strippers, caches) still applies: the worker takes the same inputs and returns the same outputs. Call `buildDocument` on the main thread only for one-off exports, server-side rendering (Node) or tests.
+
+### Installing
+
+The libraries are on npm and on [JSR](https://jsr.io/@postext), with the same code and the same version numbers in both.
+
+<table>
+  <thead>
+    <tr>
+      <th>Library</th>
+      <th>npm</th>
+      <th>JSR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>The engine</td><td><code>postext</code></td><td><code>@postext/postext</code></td></tr>
+    <tr><td>PDF</td><td><code>postext-pdf</code></td><td><code>@postext/pdf</code></td></tr>
+    <tr><td>EPUB 3</td><td><code>postext-epub</code></td><td><code>@postext/epub</code></td></tr>
+    <tr><td>The 3D book viewer</td><td><code>postext-folio</code> (with <code>three</code>)</td><td><code>@postext/folio</code></td></tr>
+    <tr><td>Citations</td><td><code>postext-citeproc</code></td><td><code>@postext/citeproc</code></td></tr>
+    <tr><td>SCORM</td><td><code>postext-scorm</code></td><td><code>@postext/scorm</code></td></tr>
+  </tbody>
+</table>
+
+```bash
+# From npm
+npm install postext
+
+# From JSR
+deno add jsr:@postext/postext   # Deno
+pnpm add jsr:@postext/postext   # pnpm 10.9 or later
+npx jsr add @postext/postext    # npm
+bunx jsr add @postext/postext   # Bun
+```
+
+From JSR, the import names are the JSR names: `import { buildDocument } from '@postext/postext'`, and `postext/worker` becomes `@postext/postext/worker`. The examples in these docs use the npm names. The ICC profiles (`postext/icc/*`) are only on npm.
+
+- **Citations with npm and Bun.** `npx jsr add` and `bunx jsr add` install `@postext/postext` as an alias of `@jsr/postext__postext`, which `@postext/citeproc` also depends on, and the two names end up as two copies of the engine. `@postext/citeproc/register` registers the citation engine in the copy citeproc uses, so a document built with the other copy keeps its citations unformatted. Import the engine as `@jsr/postext__postext` there. Deno and pnpm install one copy and need nothing.
+- **Outside a browser.** The engine measures text on an `OffscreenCanvas`. Node, Bun and Deno have none, so give them one before the first build, for instance from `@napi-rs/canvas`, and register the fonts the book sets text in:
+
+```js
+import { createCanvas, DOMMatrix, GlobalFonts, ImageData, Path2D } from '@napi-rs/canvas';
+
+GlobalFonts.registerFromPath('fonts/EBGaramond-Regular.ttf', 'EB Garamond');
+globalThis.OffscreenCanvas = class {
+  constructor(width, height) {
+    return createCanvas(Math.max(1, Math.ceil(width)), Math.max(1, Math.ceil(height)));
+  }
+};
+globalThis.Path2D ??= Path2D;
+globalThis.DOMMatrix ??= DOMMatrix;
+globalThis.ImageData ??= ImageData;
+```
+
+`postext-folio` can be imported in Node, but the 3D book viewer itself needs a browser.
 
 ### Building a document
 
