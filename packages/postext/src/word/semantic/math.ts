@@ -28,7 +28,9 @@ function generated(ctx: WriterContext, text: string): string {
  *  when it has no OMML form. `widthTwips` is the width of the text it sits
  *  in, for the number's tab stop. */
 export function renderDisplayMath(ctx: WriterContext, b: ContentBlock, start: number, end: number, widthTwips: number): string {
-  const eq = b.tex !== undefined ? texToDisplayOmml(b.tex) : null;
+  // Every run at the equation paragraph's size (#1444), as inline maths
+  // takes its text's: a run without one is set at the document's default.
+  const eq = b.tex !== undefined ? texToDisplayOmml(b.tex, { size: ctx.styles.styleSize(STYLE.math) }) : null;
   if (!eq) return rawSdt(ctx, start, end, 'math');
   // Fragments are numbered in document order: the leading tab first.
   const lead = eq.tag === undefined ? '' : generated(ctx, '\t');

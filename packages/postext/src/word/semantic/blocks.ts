@@ -45,6 +45,9 @@ export interface BlockEnv {
   /** The paragraph is set flush, without its first-line indent
    *  (`prose/flush.ts`). */
   flush?: boolean;
+  /** The blocks open a `:::paragraphs` group whose first paragraph is
+   *  set flush (`prose/flush.ts`). */
+  leadFlush?: boolean;
   /** The blocks open a box: a heading first in it drops its space above,
    *  as the engine sets a heading at the top of a box (#1444). */
   boxTop?: boolean;
@@ -199,6 +202,8 @@ function renderList(ctx: WriterContext, items: ContentBlock[], env: BlockEnv): s
   // A list in a box takes the alignment of the box's text (a list
   // paragraph is based on Normal, which may be justified).
   const jc = env.paraStyle ? ctx.styles.jcOf(env.paraStyle) : undefined;
+  // Its items take the box's face, size and leading too (#1444).
+  const style = env.box && env.paraStyle ? ctx.styles.boxList(env.paraStyle) : STYLE.list;
   const out: string[] = [];
   let firstKind: ListLevelKind | undefined;
   const pending: ContentBlock[] = [];
@@ -212,6 +217,12 @@ function renderList(ctx: WriterContext, items: ContentBlock[], env: BlockEnv): s
     for (let d = 0; d < kinds.length; d++) kinds[d] ??= kinds[d - 1] ?? 'bullet';
     const run: ListRun = { numId: ctx.numbering.list(kinds, pending[0]!.startNumber, env.box), kinds };
     const spacing = listItemSpacing(ctx, pending, env.box);
+    // A list first in a box keeps no space above, as the engine sets it.
+    if (env.boxTop && !out.length) spacing[0]!.before = 0;
+    // A display number larger than the text holds the item's first line
+    // to the leading of the rest (#1444); an item with maths keeps its own.
+    const leading = kinds[0] === 'ordered' && ctx.numbering.numberOutgrows(env.box) ? ctx.styles.lineOf(style) : undefined;
+    const line = leading ? { twips: leading, rule: 'exact' as const } : undefined;
     pending.forEach((b, k) => {
       const ilvl = Math.min(9, Math.max(1, b.depth ?? 1)) - 1;
       let numId = run.numId;
@@ -219,7 +230,8 @@ function renderList(ctx: WriterContext, items: ContentBlock[], env: BlockEnv): s
         run.checkedId ??= ctx.numbering.list(run.kinds.map((kind) => (kind === 'task' ? 'checked' : kind)), undefined, env.box);
         numId = run.checkedId;
       }
-      out.push(textParagraph(ctx, b, { style: STYLE.list, numPr: { numId, ilvl }, ...spacing[k], tabs: bodyTabs(ctx, b, env.widthTwips ?? ctx.textTwips), jc }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
+      const exact = line && ilvl === 0 && !b.spans.some((s) => s.math) ? { line } : {};
+      out.push(textParagraph(ctx, b, { style, numPr: { numId, ilvl }, ...spacing[k], ...exact, tabs: bodyTabs(ctx, b, env.widthTwips ?? ctx.textTwips), jc }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
     });
     pending.length = 0;
   };
@@ -260,7 +272,8 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
     if (i === 1) env = below;
     const span = !!after && spansPage(ctx, n);
     if ('container' in n) {
-      add(renderContainer(ctx, n, span ? wide : env), span, n.container);
+      const leadFlush = n.container.containerName === 'paragraphs' && startsFlush(ctx, nodes, i, env.leadFlush);
+      add(renderContainer(ctx, n, { ...(span ? wide : env), leadFlush }), span, n.container);
       follow([n], span);
       continue;
     }
@@ -279,7 +292,7 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
       continue;
     }
     const start = after ? headingStart(ctx, n.block) : undefined;
-    const flush = n.block.type === 'paragraph' && startsFlush(ctx, nodes, i);
+    const flush = n.block.type === 'paragraph' && startsFlush(ctx, nodes, i, env.leadFlush);
     const xml = renderBlock(ctx, n.block, { ...(span ? wide : env), ...(flush ? { flush } : {}) });
     parts.push({ xml, block: n.block, ...(span ? { span } : {}), ...(start ? { start } : {}) });
     follow([n], span);

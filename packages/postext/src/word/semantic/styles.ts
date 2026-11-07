@@ -6,13 +6,14 @@
 
 import type { ResolvedConfig } from '../../vdt.js';
 import type { ColorValue } from '../../types.js';
-import type { ResolvedCalloutStyleConfig, ResolvedCaptionStyleConfig, ResolvedChipStyleConfig, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../../types.js';
+import type { ResolvedCalloutStyleConfig, ResolvedCaptionStyleConfig, ResolvedChipStyleConfig, ResolvedHeadingLevelConfig, TextAlign } from '../../types.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
 import { paleOnWhite } from './design/ink.js';
 import { captionLook, sameCaptionLook } from './prose/caption.js';
+import { paragraphStyleLook, tocLevelLook } from './prose/paragraphStyle.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
 
 /** Style ids the writer uses by name. */
@@ -415,13 +416,14 @@ export class StyleRegistry {
 
   /** Word's own style of a contents or index entry at `level` (1–9):
    *  `toc N` / `index N`, the names Word applies when it updates the
-   *  field, each level indented one step further. */
+   *  field. A contents level takes its entry's look from the config
+   *  (#1444); an index level is indented one step further. */
   listing(kind: 'toc' | 'index', level: number): string {
     const lv = Math.min(9, Math.max(1, level));
     const id = kind === 'toc' ? `TOC${lv}` : `Index${lv}`;
-    const step = 240;
-    const ind = kind === 'toc' ? { left: (lv - 1) * step, firstLine: 0 } : { left: lv * step, hanging: step };
-    return this.add(id, { type: 'paragraph', name: `${kind} ${lv}`, basedOn: STYLE.normal, next: STYLE.normal, pPr: { before: 0, after: kind === 'toc' && lv === 1 ? 60 : 0, ind, jc: 'left' } });
+    if (this.defs.has(id)) return id;
+    const look = kind === 'toc' ? tocLevelLook(this.resolved, this.units, (f, w, i) => this.font(f, w, i), lv) : { pPr: { before: 0, after: 0, ind: { left: lv * 240, hanging: 240 }, jc: 'left' as const } };
+    return this.add(id, { type: 'paragraph', name: `${kind} ${lv}`, basedOn: STYLE.normal, next: STYLE.normal, ...look });
   }
 
   /** Word's own style of an index letter head (`index heading`), bold and
@@ -435,46 +437,34 @@ export class StyleRegistry {
     const ps = this.resolved.paragraphStyles.find((s) => s.id === name || s.name === name);
     if (!ps) return undefined;
     const { id, fresh } = this.idFor(`para:${ps.id}`, 'PostextPara', ps.id);
-    if (fresh) this.add(this.ink(this.face(id, ps.fontFamily, ps.fontWeight, ps.italic), ps.color, ps.boldColor ?? this.resolved.bodyText.boldColor, ps.italicColor ?? this.resolved.bodyText.italicColor), this.paragraphDef(ps));
+    const look = (): StyleDef => ({ type: 'paragraph', name: ps.name || ps.id, custom: true, basedOn: STYLE.normal, ...paragraphStyleLook(this.units, this.bodyPx, (f, w, i) => this.font(f, w, i), ps) });
+    if (fresh) this.add(this.ink(this.face(id, ps.fontFamily, ps.fontWeight, ps.italic), ps.color, ps.boldColor ?? this.resolved.bodyText.boldColor, ps.italicColor ?? this.resolved.bodyText.italicColor), look());
     return id;
   }
 
-  private paragraphDef(ps: ResolvedParagraphStyleConfig): StyleDef {
-    const u = this.units;
-    const size = px(u, ps.fontSize, this.bodyPx);
-    // A hanging indent sets the lines after the first deeper, the first
-    // staying at the style's indent: Word pulls the first line out by
-    // `w:hanging` from `w:left`, so the left side takes both (#1444).
-    const hanging = twips(u, ps.hangingIndent, size);
-    const indent = twips(u, ps.indent, size);
-    // The style's margins hold above and below its group of paragraphs
-    // (an argument before its poem, #1444): with no space between the
-    // paragraphs, Word's contextual spacing drops them inside the group.
-    const between = twips(u, ps.spaceBetween, size);
-    const edges = between === 0 ? { after: twips(u, ps.marginBottom, size), contextualSpacing: true } : { after: between };
-    return {
-      type: 'paragraph',
-      name: ps.name || ps.id,
-      custom: true,
-      basedOn: STYLE.normal,
-      pPr: {
-        suppressAutoHyphens: !ps.hyphenation || undefined,
-        before: twips(u, ps.marginTop, size),
-        ...edges,
-        line: { twips: twips(u, ps.lineHeight, size), rule: 'atLeast' },
-        ind: { left: indent + Math.max(0, hanging), right: ps.endIndent ? twips(u, ps.endIndent, size) : undefined, firstLine: twips(u, ps.firstLineIndent, size), hanging: hanging > 0 ? hanging : undefined },
-        jc: JC[ps.textAlign],
-      },
-      rPr: {
-        ...this.font(ps.fontFamily, ps.fontWeight, ps.italic),
-        i: ps.italic,
-        smallCaps: ps.smallCaps || undefined,
-        caps: ps.textTransform === 'uppercase' || undefined,
-        color: hex(ps.color),
-        spacing: ps.letterSpacing ? twips(u, ps.letterSpacing, size) : undefined,
-        sz: halfPoints(u, ps.fontSize, this.bodyPx),
-      },
-    };
+  /** The list paragraph style of a box's text style (#1444): its items
+   *  set in the box's face, size, leading and colour, as the engine sets
+   *  a list in a box, not in the body's. */
+  boxList(body: string): string {
+    if (body === STYLE.normal || !this.defs.has(body)) return STYLE.list;
+    const { id, fresh } = this.idFor(`list:${body}`, 'PostextList', body.replace(/^Postext/, ''));
+    if (!fresh) return id;
+    const face = this.faces.get(body);
+    if (face) this.faces.set(id, face);
+    const ink = this.inks.get(body);
+    if (ink) this.inks.set(id, ink);
+    return this.add(id, { type: 'paragraph', name: `List: ${this.defs.get(body)!.name}`, custom: true, basedOn: body, pPr: { contextualSpacing: true, ind: { firstLine: 0 } } });
+  }
+
+  /** The leading of a paragraph style, twips: its own or the style's it is
+   *  based on (Normal's at the end of the chain). */
+  lineOf(style: string | undefined): number | undefined {
+    for (let id = style ?? STYLE.normal, n = 0; id && n < 8; n++) {
+      const def = this.defs.get(id);
+      if (def?.pPr?.line) return def.pPr.line.twips;
+      id = def?.basedOn ?? (id === STYLE.normal ? '' : STYLE.normal);
+    }
+    return undefined;
   }
 
   /** A paragraph style of the writer's own, made once per `key` (a heading
@@ -552,7 +542,11 @@ export class StyleRegistry {
 
   docDefaults(lang: string | undefined): string {
     const l = lang ? `<w:lang w:val="${escapeAttr(lang)}" w:eastAsia="${escapeAttr(lang)}" w:bidi="${escapeAttr(lang)}"/>` : '';
-    return `<w:docDefaults><w:rPrDefault><w:rPr>${l}</w:rPr></w:rPrDefault><w:pPrDefault><w:pPr/></w:pPrDefault></w:docDefaults>`;
+    // Vertical text keeps no widow or orphan control: Word applies none
+    // unless asked, while LibreOffice applies it by default and, in a
+    // tbRl section, drops the lines it moves to the next page (#1444).
+    const p = this.resolved.layout.writingMode === 'vertical-rl' ? '<w:pPr><w:widowControl w:val="0"/></w:pPr>' : '<w:pPr/>';
+    return `<w:docDefaults><w:rPrDefault><w:rPr>${l}</w:rPr></w:rPrDefault><w:pPrDefault>${p}</w:pPrDefault></w:docDefaults>`;
   }
 
   /** The `w:style` elements (after `w:docDefaults`). */

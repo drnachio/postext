@@ -119,15 +119,20 @@ function markLook(ctx: WriterContext, style: string): { fill?: string; ink?: str
  *  #1444): the reading at `cjk.ruby.fontSize` of the base, raised over a
  *  base of its paragraph style's size. The reader takes the base as the text
  *  and the reading from the source, so the round trip keeps both. */
-function rubyRun(ctx: WriterContext, ruby: NonNullable<Fmt['ruby']>, base: string, style: string | undefined): string {
+function rubyRun(ctx: WriterContext, ruby: NonNullable<Fmt['ruby']>, base: string, baseText: string, style: string | undefined): string {
   const u = ctx.units;
   // The base's size is its paragraph style's (a heading's, a caption's):
   // Word raises the reading by it.
   const hps = ctx.styles.styleSize(style);
   const rt = halfPoints(u, ctx.resolved.cjk.ruby.fontSize, (hps * u.dpi) / 144);
   const lid = escapeAttr(ctx.config.locale || 'ja-JP');
+  // A group reading is spread over its base; a reading wider than its
+  // base is centred over it instead, so Word and LibreOffice leave the
+  // room it needs at the base's ends rather than between its characters
+  // (#1444). Neither lets a reading overhang the kana beside it.
+  const wider = [...ruby.text].length * rt > [...baseText].length * hps;
   return (
-    `<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val="${ruby.group ? 'distributeSpace' : 'center'}"/><w:hps w:val="${rt}"/><w:hpsRaise w:val="${hps}"/><w:hpsBaseText w:val="${hps}"/><w:lid w:val="${lid}"/></w:rubyPr>` +
+    `<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val="${ruby.group && !wider ? 'distributeSpace' : 'center'}"/><w:hps w:val="${rt}"/><w:hpsRaise w:val="${hps}"/><w:hpsBaseText w:val="${hps}"/><w:lid w:val="${lid}"/></w:rubyPr>` +
     `<w:rt>${textRuns(ruby.text, rPr({ sz: rt }))}</w:rt><w:rubyBase>${base}</w:rubyBase></w:ruby></w:r>`
   );
 }
@@ -349,7 +354,7 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
     const font = u.fmt.k ? undefined : ctx.styles.runFont(s.style, !!u.fmt.b, !!u.fmt.i);
     const ink = u.fmt.k || u.fmt.href || u.fmt.mark ? undefined : ctx.styles.runInk(s.style, !!u.fmt.b, !!u.fmt.i);
     const plainRuns = textRuns(text, rPr({ ...runProps(u.fmt), ...(font ? { font } : {}), ...(ink ? { color: ink } : {}) }));
-    const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns, s.style) : plainRuns;
+    const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns, text, s.style) : plainRuns;
     // Code in right-to-left text: left-to-right marks either side keep its
     // end punctuation from being mirrored.
     const ltr = rtl && !!u.fmt.k && !u.fmt.href;

@@ -18,7 +18,8 @@ import { pageGeometry } from './sections.js';
 import type { HeadingCounters, OutlineEntry } from '../../types.js';
 import { seeLabels } from './marks.js';
 import type { WriterContext } from './context.js';
-import { blockSdt, fieldRuns, paragraph, rPr, textRuns } from './wml.js';
+import { blockSdt, fieldRuns, paragraph, rPr, textRuns, type ParaProps } from './wml.js';
+import { tocEntryParts } from './prose/tocEntry.js';
 import { escapeXml } from '../xml.js';
 
 /** The book's outline, chapter after chapter with the heading counters
@@ -63,8 +64,8 @@ export function tocMark(ctx: WriterContext, b: ContentBlock): string {
 interface ResultLine {
   style: string;
   runs: string;
-  /** A right tab with a dot leader for the page number. */
-  tab?: number;
+  /** Tabs and indents of the line (a contents entry's columns). */
+  props?: Pick<ParaProps, 'tabs' | 'ind'>;
 }
 
 /** A complex field whose result spans paragraphs: the field begins in the
@@ -74,7 +75,7 @@ function fieldParagraphs(instr: string, lines: readonly ResultLine[], emptyStyle
   const begin = `<w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> ${escapeXml(instr)} </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r>`;
   const end = '<w:r><w:fldChar w:fldCharType="end"/></w:r>';
   if (!lines.length) return paragraph({ style: emptyStyle }, begin + end);
-  return lines.map((l, i) => paragraph({ style: l.style, ...(l.tab ? { tabs: [{ val: 'right', pos: l.tab, leader: 'dot' }] } : {}) }, (i === 0 ? begin : '') + l.runs + (i === lines.length - 1 ? end : ''))).join('');
+  return lines.map((l, i) => paragraph({ style: l.style, ...l.props }, (i === 0 ? begin : '') + l.runs + (i === lines.length - 1 ? end : ''))).join('');
 }
 
 /** Runs of a title with its bold and italic spans. */
@@ -111,11 +112,13 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
       if (text) lines.push({ style: ctx.styles.listing('toc', 1), runs: textRuns(text, rPr({ b: true })) });
       continue;
     }
-    const number = info.number ? textRuns(`${info.number} `, '') : '';
+    // The number in its column and face, the title after it (#1444).
+    const entry = tocEntryParts(ctx, info, ctx.textTwips);
+    const number = entry.number || (info.number ? textRuns(`${info.number} `, '') : '');
     const runs = number + titleRuns(row.spans.length ? row.spans : [{ text: row.text }]);
     const bm = bookmarkOf(info.headingSource);
-    const linked = bm ? `<w:hyperlink w:anchor="${bm}" w:history="1">${runs}<w:r><w:tab/></w:r>${fieldRuns(`PAGEREF ${bm} \\h`)}</w:hyperlink>` : runs;
-    lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, ...(bm ? { tab: ctx.textTwips } : {}) });
+    const linked = bm ? `<w:hyperlink w:anchor="${bm}" w:history="1">${runs}<w:r>${entry.page}<w:tab/></w:r>${fieldRuns(`PAGEREF ${bm} \\h`, '', entry.page)}</w:hyperlink>` : runs;
+    lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, props: bm ? entry.props : { ind: entry.props.ind, tabs: entry.props.tabs?.slice(0, -1) } });
     if (info.subtitle) lines.push({ style: ctx.styles.listing('toc', info.level + 1), runs: textRuns(info.subtitle, rPr({ i: true })) });
   }
   const levels = [...(parseTocLevelsAttr(directive.directiveAttrs?.levels) ?? new Set(ctx.resolved.toc.levels.map((l) => l.level)))];
