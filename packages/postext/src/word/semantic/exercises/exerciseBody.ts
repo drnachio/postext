@@ -5,21 +5,21 @@
 // correction made in Word comes back; what the engine makes of the source
 // (blanks, a shuffled column, a word bank) is generated text.
 
-import type { ContentBlock, InlineSpan } from '../../parse/types.js';
-import type { DigitSystem } from '../../types.js';
-import type { ResolvedExerciseStyle } from '../../defaults/boxes/exercises.js';
-import type { ExerciseModel } from '../../exercises/types.js';
-import type { Run } from '../../exercises/text.js';
-import { runOf, trimRun } from '../../exercises/text.js';
-import { seededRandom, shuffledOrder } from '../../exercises/shuffle.js';
-import { counterStyleOf, formatCounter } from '../../numerals/numbering.js';
-import { inlineSourceOf } from './blocks.js';
-import { markInserts } from './marks.js';
-import { abs, blockId, type WriterContext } from './context.js';
-import { generatedRuns, spanPieces, spansText, type Piece } from './generated.js';
-import { renderInline, type InlineSource } from './inline.js';
-import { STYLE } from './styles.js';
-import { paragraph, type ParaProps } from './wml.js';
+import type { ContentBlock, InlineSpan } from '../../../parse/types.js';
+import type { DigitSystem } from '../../../types.js';
+import type { ResolvedExerciseStyle } from '../../../defaults/boxes/exercises.js';
+import type { ExerciseModel } from '../../../exercises/types.js';
+import type { Run } from '../../../exercises/text.js';
+import { runOf, trimRun } from '../../../exercises/text.js';
+import { seededRandom, shuffledOrder } from '../../../exercises/shuffle.js';
+import { counterStyleOf, formatCounter } from '../../../numerals/numbering.js';
+import { inlineSourceOf } from '../blocks.js';
+import { markInserts } from '../marks.js';
+import { abs, blockId, type WriterContext } from '../context.js';
+import { generatedRuns, spanPieces, spansText, type Piece } from '../generated.js';
+import { renderInline, type InlineSource } from '../inline.js';
+import { STYLE } from '../styles.js';
+import { paragraph, type ParaProps } from '../wml.js';
 
 /** What the body of one exercise is set from. */
 export interface ExerciseInput {

@@ -3,9 +3,9 @@
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import type { Resource } from '../../types.js';
-import { applyDocxEdits } from '../roundtrip/index.js';
-import { exportDocx, exportProblems } from './fixtures/harness.js';
+import type { Resource } from '../../../types.js';
+import { applyDocxEdits } from '../../roundtrip/index.js';
+import { exportDocx, exportProblems } from '../fixtures/harness.js';
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
 const at = { createdAt: 0, updatedAt: 0 };

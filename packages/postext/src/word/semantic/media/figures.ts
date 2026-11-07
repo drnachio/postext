@@ -4,17 +4,17 @@
 // words in the Markdown or to the resource's field).
 
 import { strFromU8 } from 'fflate';
-import type { ContentBlock } from '../../parse/types.js';
-import type { Resource } from '../../types.js';
-import { escapeAttr } from '../xml.js';
-import { abs, blockId, type PreparedPicture, type WriterContext } from './context.js';
-import { captionLabelParts, captionStyleOf } from './engineNumbers.js';
-import { FragmentBuilder } from './fragments.js';
-import { rawSdt } from './raw.js';
-import { snippetRuns } from './snippet.js';
-import { STYLE } from './styles.js';
-import { renderTable } from './tables.js';
-import { blockSdt, emu, fieldRuns, paragraph, rPr, textRuns } from './wml.js';
+import type { ContentBlock } from '../../../parse/types.js';
+import type { Resource } from '../../../types.js';
+import { escapeAttr } from '../../xml.js';
+import { abs, blockId, type PreparedPicture, type WriterContext } from '../context.js';
+import { captionLabelParts, captionStyleOf } from '../engineNumbers.js';
+import { FragmentBuilder } from '../fragments.js';
+import { rawSdt } from '../raw.js';
+import { snippetRuns } from '../snippet.js';
+import { STYLE } from '../styles.js';
+import { renderTable } from '../tables.js';
+import { blockSdt, emu, fieldRuns, paragraph, rPr, textRuns } from '../wml.js';
 
 const SVG_EXT = '{96DAC541-7B7A-43D3-8B79-37D633B846F1}';
 const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: 'jpeg', jpg: 'jpeg', gif: 'gif', 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/gif': 'gif' };

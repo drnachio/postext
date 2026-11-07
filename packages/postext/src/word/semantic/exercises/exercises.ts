@@ -6,21 +6,21 @@
 // Markdown: nothing written here maps to them, so the round trip leaves
 // them as they are.
 
-import type { ContentBlock } from '../../parse/types.js';
-import { resolvedLocale } from '../../pipeline/config.js';
-import { computeHeadingContext, type HeadingContext } from '../../pipeline/resources/resourceNumbering.js';
-import { headingIsNumbered } from '../../pipeline/sections/headingStyles.js';
-import { pickExerciseStyle, solutionsOf, type ExerciseSettings, type ResolvedExerciseStyle } from '../../defaults/boxes/exercises.js';
-import { exerciseSettingsFor } from '../../exercises/build.js';
-import { numberExercises, type ExpandContext } from '../../exercises/expand.js';
-import { readExercises } from '../../exercises/model.js';
-import { buildTree, renderNodes, type BlockEnv, type Node } from './blocks.js';
-import type { ParsedChapter } from './chapter.js';
-import type { WriterContext } from './context.js';
+import type { ContentBlock } from '../../../parse/types.js';
+import { resolvedLocale } from '../../../pipeline/config.js';
+import { computeHeadingContext, type HeadingContext } from '../../../pipeline/resources/resourceNumbering.js';
+import { headingIsNumbered } from '../../../pipeline/sections/headingStyles.js';
+import { pickExerciseStyle, solutionsOf, type ExerciseSettings, type ResolvedExerciseStyle } from '../../../defaults/boxes/exercises.js';
+import { exerciseSettingsFor } from '../../../exercises/build.js';
+import { numberExercises, type ExpandContext } from '../../../exercises/expand.js';
+import { readExercises } from '../../../exercises/model.js';
+import { buildTree, renderNodes, type BlockEnv, type Node } from '../blocks.js';
+import type { ParsedChapter } from '../chapter.js';
+import type { WriterContext } from '../context.js';
 import { exerciseBody, mappedParagraph } from './exerciseBody.js';
-import { generatedRuns, type Piece } from './generated.js';
-import { STYLE } from './styles.js';
-import { blockSdt, hex, paragraph } from './wml.js';
+import { generatedRuns, type Piece } from '../generated.js';
+import { STYLE } from '../styles.js';
+import { blockSdt, hex, paragraph } from '../wml.js';
 
 type ContainerNode = Extract<Node, { container: unknown }>;
 

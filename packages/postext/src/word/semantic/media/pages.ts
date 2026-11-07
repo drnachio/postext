@@ -6,15 +6,15 @@
 // fence stays in the Markdown as it is on the way back. A strip's caption,
 // which the reader sees in the text, stays mapped and editable.
 
-import { extractFrontmatter } from '../../parse/frontmatter.js';
-import { parseMarkdownWithIssues } from '../../parse/index.js';
-import type { ContentBlock } from '../../parse/types.js';
-import { abs, blockId, type WriterContext } from './context.js';
-import { FragmentBuilder } from './fragments.js';
-import { generatedRuns } from './generated.js';
-import { attrRange } from './marks.js';
-import { STYLE } from './styles.js';
-import { blockSdt, paragraph, textRuns } from './wml.js';
+import { extractFrontmatter } from '../../../parse/frontmatter.js';
+import { parseMarkdownWithIssues } from '../../../parse/index.js';
+import type { ContentBlock } from '../../../parse/types.js';
+import { abs, blockId, type WriterContext } from '../context.js';
+import { FragmentBuilder } from '../fragments.js';
+import { generatedRuns } from '../generated.js';
+import { attrRange } from '../marks.js';
+import { STYLE } from '../styles.js';
+import { blockSdt, paragraph, textRuns } from '../wml.js';
 
 export type PageKind = 'composedPage' | 'comicPage' | 'strip';
 

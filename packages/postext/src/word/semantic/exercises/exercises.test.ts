@@ -4,8 +4,8 @@
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { applyDocxEdits } from '../roundtrip/index.js';
-import { exportDocx, exportProblems } from './fixtures/harness.js';
+import { applyDocxEdits } from '../../roundtrip/index.js';
+import { exportDocx, exportProblems } from '../fixtures/harness.js';
 
 /** Unzip, change the document part, zip again. */
 function edit(bytes: Uint8Array, f: (xml: string) => string): Uint8Array {

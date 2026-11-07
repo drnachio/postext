@@ -8,12 +8,12 @@
 // the resource's fields, so re-importing an unchanged export changes
 // nothing.
 
-import type { ContentBlock } from '../../parse/types.js';
-import { resolveResourcePlacement } from '../../pipeline/floats/floatPlacement.js';
-import { resourceRefId } from '../../pipeline/references/crossRefs.js';
-import type { Resource, ResourceType } from '../../types.js';
-import type { Node } from './blocks.js';
-import type { WriterContext } from './context.js';
+import type { ContentBlock } from '../../../parse/types.js';
+import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
+import { resourceRefId } from '../../../pipeline/references/crossRefs.js';
+import type { Resource, ResourceType } from '../../../types.js';
+import type { Node } from '../blocks.js';
+import type { WriterContext } from '../context.js';
 import { renderFloatedResource } from './figures.js';
 
 /**

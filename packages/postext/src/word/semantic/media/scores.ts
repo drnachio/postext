@@ -5,14 +5,14 @@
 // leaves it as written. Without the engine or a rasterizer the fence is
 // kept as source, as before.
 
-import type { ContentBlock } from '../../parse/types.js';
-import { initMusicEngine, renderScore } from '../../music/engine.js';
-import { scoreRenderOptions, scoreStyleOf } from '../../pipeline/resources/scoreBlocks.js';
-import type { PreparedPicture, WriterContext } from './context.js';
+import type { ContentBlock } from '../../../parse/types.js';
+import { initMusicEngine, renderScore } from '../../../music/engine.js';
+import { scoreRenderOptions, scoreStyleOf } from '../../../pipeline/resources/scoreBlocks.js';
+import type { PreparedPicture, WriterContext } from '../context.js';
 import { pictureRun } from './figures.js';
-import { rawSdt } from './raw.js';
-import { STYLE } from './styles.js';
-import { blockSdt, paragraph } from './wml.js';
+import { rawSdt } from '../raw.js';
+import { STYLE } from '../styles.js';
+import { blockSdt, paragraph } from '../wml.js';
 
 const prepared = new WeakMap<WriterContext, Map<string, PreparedPicture[]>>();
 

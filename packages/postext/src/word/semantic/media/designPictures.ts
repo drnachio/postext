@@ -7,15 +7,15 @@
 // (an arrow pointing into a photograph): Word cannot stack them inline.
 // The pictures carry no text, so the importer reads nothing from them.
 
-import type { ContentBlock } from '../../parse/types.js';
-import { createHeadingLevelResolver, type HeadingLevelResolver } from '../../pipeline/sections/headingStyles.js';
-import type { Dimension, Resource } from '../../types.js';
-import type { ResolvedConfig } from '../../vdt.js';
-import type { Node } from './blocks.js';
-import type { WriterContext } from './context.js';
+import type { ContentBlock } from '../../../parse/types.js';
+import { createHeadingLevelResolver, type HeadingLevelResolver } from '../../../pipeline/sections/headingStyles.js';
+import type { Dimension, Resource } from '../../../types.js';
+import type { ResolvedConfig } from '../../../vdt.js';
+import type { Node } from '../blocks.js';
+import type { WriterContext } from '../context.js';
 import { pictureRun } from './figures.js';
-import { STYLE } from './styles.js';
-import { blockSdt, paragraph, px } from './wml.js';
+import { STYLE } from '../styles.js';
+import { blockSdt, paragraph, px } from '../wml.js';
 
 const resolvers = new WeakMap<ResolvedConfig, HeadingLevelResolver>();
 
