@@ -37,6 +37,8 @@ export interface SectionFurnitureInput {
   start: SectionStart;
   /** Read `{chapterTitle}` with a STYLEREF field to this style. */
   titleStyle?: string;
+  /** The first block of the continuous section that follows, if any. */
+  follow?: ContentBlock;
 }
 
 const slotsMemo = new WeakMap<ResolvedConfig, { any: boolean; parity: boolean }>();
@@ -106,6 +108,9 @@ function chapterHeading(ctx: WriterContext, chapter: number, at: number): Conten
   return undefined;
 }
 
+/** The first level-1 heading of chapter `chapter`, if it has one. */
+const firstChapterHeading = (ctx: WriterContext, chapter: number): ContentBlock | undefined => ctx.book[chapter]?.blocks.find((b) => b.type === 'heading' && (b.level ?? 1) === 1);
+
 /** The role of the first page of a section that starts with block `b`
  *  (the engine's page roles): a part page for a `:::part`, an opener for
  *  a heading that breaks the page or spans it, else none of its own. */
@@ -141,8 +146,10 @@ function chapterMetadata(ctx: WriterContext, chapter: number, base: Record<strin
 
 /** The placeholder values of a section's running heads. */
 function sectionValues(ctx: WriterContext, input: SectionFurnitureInput): DesignPlaceholderContext {
-  const at = Math.max(0, blockIndex(ctx, input.chapter, input.first));
-  const h1 = chapterHeading(ctx, input.chapter, at);
+  const at = blockIndex(ctx, input.chapter, input.first);
+  // A section with no block to place it reads its own chapter's title,
+  // never an earlier chapter's.
+  const h1 = at >= 0 ? chapterHeading(ctx, input.chapter, at) : (firstChapterHeading(ctx, input.chapter) ?? chapterHeading(ctx, input.chapter, 0));
   const page = { index: 0, pageLabel: PAGE_MARK } as unknown as VDTPage;
   const base = h1 ? designPlaceholders(ctx, h1) : undefined;
   const firstMeta = frontMatter(ctx, 0);
@@ -188,7 +195,7 @@ function prints(el: ResolvedDesignElement, role: Role, parity: Parity | undefine
 type SectionPage = PageBox & { textTwips: number; title?: { style: string; text: string } };
 
 /** The header and footer paragraphs one kind of page prints. */
-function variant(ctx: WriterContext, slots: { header: ResolvedDesignSlot; footer: ResolvedDesignSlot }, values: DesignPlaceholderContext, page: SectionPage, role: Role, parity: Parity | undefined): Record<Target, string> & { empty: boolean } {
+function variant(ctx: WriterContext, slots: { header: ResolvedDesignSlot; footer: ResolvedDesignSlot }, values: DesignPlaceholderContext, page: SectionPage, role: Role, parity: Parity | undefined): Record<Target, string> & { empty: boolean; blank: Record<Target, boolean> } {
   const items: Record<Target, Item[]> = { header: [], footer: [] };
   const rules: Record<Target, Rule[]> = { header: [], footer: [] };
   for (const own of ['header', 'footer'] as const) {
@@ -209,6 +216,7 @@ function variant(ctx: WriterContext, slots: { header: ResolvedDesignSlot; footer
   }
   return {
     empty: !items.header.length && !items.footer.length,
+    blank: { header: !items.header.length && !rules.header.length, footer: !items.footer.length && !rules.footer.length },
     header: furnitureParagraph(ctx, 'header', items.header, rules.header, page.rtl, page.textTwips),
     footer: furnitureParagraph(ctx, 'footer', items.footer, rules.footer, page.rtl, page.textTwips),
   };
@@ -255,10 +263,32 @@ export function sectionFurniture(ctx: WriterContext, geo: PageGeometry, input: S
     rightBound: r.page.binding === 'right',
   });
   type Kind = 'default' | 'even' | 'first';
-  const kinds: [Kind, Record<Target, string>][] = [['default', variant(ctx, slots, values, box(true), 'body', parity ? 'odd' : undefined)]];
-  if (parity) kinds.push(['even', variant(ctx, slots, values, box(false), 'body', 'even')]);
   const role = input.start !== 'continuous' && input.leads ? firstPageRole(ctx, input.first) : undefined;
   const titlePg = role !== undefined;
+  type Variant = ReturnType<typeof variant>;
+  const body = (s: typeof slots, v: DesignPlaceholderContext): [Kind, Variant][] => {
+    const out: [Kind, Variant][] = [['default', variant(ctx, s, v, box(true), 'body', parity ? 'odd' : undefined)]];
+    if (parity) out.push(['even', variant(ctx, s, v, box(false), 'body', 'even')]);
+    return out;
+  };
+  let kinds = body(slots, values);
+  // An opener whose styled section prints no running head (a masthead)
+  // and gives way to another styled section on its first page: the pages
+  // after it carry the heads of the section that follows, in each slot it
+  // leaves blank. Word reads those pages' heads from the following
+  // section; LibreOffice keeps the first section's page style.
+  const next = input.follow;
+  if (role && next) {
+    const after = sectionStyleAt(ctx, input.chapter, next);
+    if (after !== style) {
+      const own = { header: after?.header ?? r.header, footer: after?.footer ?? r.footer };
+      const later = body(own, sectionValues(ctx, { chapter: input.chapter, first: next, start: 'continuous' }));
+      for (const target of ['header', 'footer'] as const) {
+        if (!kinds.every(([, v]) => v.blank[target])) continue;
+        kinds = kinds.map(([k, v], i) => [k, { ...v, [target]: later[i]![1][target] }]);
+      }
+    }
+  }
   if (role) {
     // Word's first-page header serves either side: the opener's elements
     // for a right-hand page, or for a left-hand one when the design draws

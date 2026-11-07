@@ -89,8 +89,8 @@ const LEVEL_SECTION = /(?<=<\/w:sectPr><\/w:pPr><\/w:p>)<w:p><w:pPr><w:spacing w
 
 /** The document's sections, in order, leaving out those that only level
  *  the columns above them. */
-export function sectionsOf(doc: string): string[] {
-  return doc.replace(LEVEL_SECTION, '').match(/<w:sectPr>.*?<\/w:sectPr>/g) ?? [];
+export function sectionsOf(doc: string, all = false): string[] {
+  return (all ? doc : doc.replace(LEVEL_SECTION, '')).match(/<w:sectPr>.*?<\/w:sectPr>/g) ?? [];
 }
 
 /** How many sections only level the columns above them. */

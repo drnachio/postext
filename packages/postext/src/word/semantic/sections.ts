@@ -97,6 +97,8 @@ export interface SectionPart {
   /** The style name of the chapter's later titles, when the running heads
    *  read the chapter title with a STYLEREF field. */
   titleStyle?: string;
+  /** The first block of the continuous section that follows this one. */
+  follow?: ContentBlock;
 }
 
 /** One column across the text area, for page-spanning content. */
@@ -109,7 +111,7 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   const level1 = r.headings.levels.find((l) => l.level === 1);
   // The running heads the section's pages print, the opener's on its
   // first page when it opens with a heading that breaks the page.
-  const { refs, titlePg } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), start: part.start });
+  const { refs, titlePg } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), start: part.start });
   // A chapter starts on a new page; on a right-hand one only when the book
   // asks for recto starts. A verso start (a spread opener whose artwork
   // the document does not carry) would only leave a blank page, and

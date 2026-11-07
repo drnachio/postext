@@ -11,11 +11,24 @@ import { exportDocx, exportProblems, levelSections, sectionsOf, type Exported } 
 
 const cfg = (c: Record<string, unknown>): PostextConfig => c as unknown as PostextConfig;
 const cm = (value: number) => ({ value, unit: 'cm' });
+/** A text element at the head of the page. */
+const head = (content: string) => ({ elements: [{ kind: 'text', id: 'h', content, placement: { anchor: { to: 'page', edge: 'top-left' } } }] });
 
 function unchanged(e: Exported, md: string[]): void {
   const r = applyDocxEdits(e.bytes, { chapters: md.map((markdown, i) => ({ id: `ch${i + 1}`, markdown })) });
   expect(r.edits).toEqual([]);
   expect(r.chapters.map((c) => c.markdown)).toEqual(md);
+}
+
+/** The text of the default header each section of the export prints. */
+function defaultHeads(e: Exported): string[] {
+  const rels = e.part('word/_rels/document.xml.rels');
+  const target = (id: string): string => new RegExp(`Id="${id}"[^>]*Target="([^"]+)"|Target="([^"]+)"[^>]*Id="${id}"`).exec(rels)?.slice(1).find(Boolean) ?? '';
+  return sectionsOf(e.doc, true).map((s) => {
+    const id = /<w:headerReference w:type="default" r:id="([^"]+)"/.exec(s)?.[1];
+    const xml = id ? e.part(`word/${target(id)}`) : '';
+    return [...xml.matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)].map((m) => m[1]).join('');
+  });
 }
 
 describe('semantic docx: pages (#1444)', () => {
@@ -74,6 +87,51 @@ describe('semantic docx: pages (#1444)', () => {
     const md = ['# One\n\nText.\n', '# Two\n\nMore.\n'];
     const e = await exportDocx(md, { config: cfg({ layout: { layoutType: 'double' }, headings: { balancing: { trailing: false } } }) });
     expect(levelSections(e.doc)).toBe(0);
+    unchanged(e, md);
+  });
+
+  it('gives a section with no block of its own the running heads in force there', async () => {
+    // The page-width box opens a one-column section with no block; the
+    // chapter's first block comes before its title, so reading the heads
+    // from there would find the chapter before.
+    const md = ['# One\n\nText.\n', 'Before the title.\n\n# Two {style="s"}\n\nText.\n\n:::callout{span="page"}\nAcross the page.\n:::\n\nBack in columns.\n'];
+    const config = cfg({
+      layout: { layoutType: 'double' },
+      header: head('Book {chapterTitle}'),
+      headingStyles: [{ id: 's', name: 'S', header: head('Styled {chapterTitle}') }],
+    });
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, md)).toEqual([]);
+    const heads = defaultHeads(e);
+    const at = [...e.doc.matchAll(/<w:sectPr>/g)].map((m) => m.index);
+    const title = at.findIndex((i) => i > e.doc.indexOf('>Two<'));
+    const box = at.findIndex((i) => i > e.doc.indexOf('Across the page.'));
+    // One section for the box, one after it, and one that levels the end.
+    expect(heads.length - title).toBeGreaterThanOrEqual(3);
+    expect(box).toBeGreaterThan(title);
+    for (const h of heads.slice(title)) expect(h).toBe('Styled Two');
+    unchanged(e, md);
+  });
+
+  it('carries the heads that follow a masthead onto the pages after it', async () => {
+    const md = ['# The Courier {style="front"}\n\n## Lead story {style="lead"}\n\nText.\n'];
+    const config = cfg({
+      layout: { layoutType: 'double' },
+      header: head('The Courier {pageNumber}'),
+      headings: { levels: [{ level: 1, breakBefore: { enabled: true } }, { level: 2, span: 'page' }] },
+      headingStyles: [
+        { id: 'front', name: 'Front', header: { elements: [] } },
+        { id: 'lead', name: 'Lead' },
+      ],
+    });
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, md)).toEqual([]);
+    const first = sectionsOf(e.doc, true)[0]!;
+    // The masthead's page prints nothing; its default slot, which an
+    // application reading the first section for the pages after it uses,
+    // has the paper's head.
+    expect(first).toContain('<w:titlePg/>');
+    expect(defaultHeads(e)[0]).toBe('The Courier 1');
     unchanged(e, md);
   });
 

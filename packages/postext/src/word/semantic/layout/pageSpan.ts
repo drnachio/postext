@@ -133,10 +133,14 @@ function chapterTitleStyle(ctx: WriterContext, pieces: readonly Piece[]): string
  */
 export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: number, pieces: readonly Piece[], last: boolean): string {
   const columns = geo.cols.includes('w:num=');
-  // `block`: the section's first block (`leads`: written first in it).
-  type Section = { start: SectionStart; oneColumn: boolean; parts: string[]; block?: ContentBlock; leads?: boolean };
+  // `block`: the section's first block (`leads`: written first in it), or
+  // for one that opens with no block of its own (a page-width float set
+  // after its anchor) the last block before it, so its running heads are
+  // the ones in force there; `tail`: the last block written in it.
+  type Section = { start: SectionStart; oneColumn: boolean; parts: string[]; block?: ContentBlock; leads?: boolean; tail?: ContentBlock };
   const sections: Section[] = [];
   let after: Piece | undefined;
+  let seen: ContentBlock | undefined;
   for (const piece of pieces) {
     if (!piece.xml) continue;
     // What follows a heading that fills its page starts the next one.
@@ -144,17 +148,20 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     after = piece;
     const oneColumn = columns && !!p.span;
     const cur = sections[sections.length - 1];
-    const block = p.block ? { block: p.block, leads: true } : {};
+    const block = p.block ? { block: p.block, leads: true } : seen ? { block: seen, leads: false } : {};
+    seen = p.block ?? seen;
+    const tail = seen ? { tail: seen } : {};
     if (!cur) {
       // The chapter's own start already opens the page.
-      sections.push({ start: 'chapter', oneColumn, parts: [p.xml], ...block });
+      sections.push({ start: 'chapter', oneColumn, parts: [p.xml], ...block, ...tail });
       continue;
     }
-    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml], ...block });
-    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml], ...block });
+    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml], ...block, ...tail });
+    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml], ...block, ...tail });
     else {
       cur.parts.push(p.xml);
       if (!cur.block && p.block) cur.block = p.block;
+      if (seen) cur.tail = seen;
     }
   }
   if (!sections.length) sections.push({ start: 'chapter', oneColumn: false, parts: [] });
@@ -163,7 +170,8 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
   const levels = columns && balancing.enabled && balancing.trailing;
   let xml = '';
   sections.forEach((s, i) => {
-    const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}) });
+    const follow = sections[i + 1]?.start === 'continuous' ? sections[i + 1]!.block : undefined;
+    const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}), ...(follow ? { follow } : {}) });
     let body = joinBlocks(s.parts);
     // Columns that close before a new page (the chapter's end, or a heading
     // that opens one) end level, as the engine cuts a closing band: Word
@@ -172,7 +180,8 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     const next = sections[i + 1];
     if (levels && !s.oneColumn && (!next || next.start !== 'continuous')) {
       body += sectionBreak(sect);
-      const level = sectionXml(ctx, geo, index, { start: 'continuous', oneColumn: true, ...(titleStyle ? { titleStyle } : {}) });
+      // Its running heads are the ones in force where the columns end.
+      const level = sectionXml(ctx, geo, index, { start: 'continuous', oneColumn: true, ...(s.tail ? { block: s.tail, leads: false } : {}), ...(titleStyle ? { titleStyle } : {}) });
       if (next || !last) xml += body + sectionBreak(level);
       else xml += body + sectionBreak() + level;
       return;
