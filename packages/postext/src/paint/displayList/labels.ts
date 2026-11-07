@@ -54,7 +54,8 @@ export function markerPath(m: VDTPathMarker): PathItem {
   }
 }
 
-/** The items of a figure's drawn labels, its body's top-left corner at
+/** The items of a figure's drawn labels (a reference in a label in the
+ *  figure's link colour, as the canvas and the PDF paint it), its body's top-left corner at
  *  (`bx`, `by`) in `frame`. A label's words are the figure's own text in
  *  the Markdown but are drawn here as furniture (generated): only the
  *  semantic export carries them back. Vertical labels are left out. */
@@ -84,7 +85,7 @@ export function figureLabelItems(rb: ResolvedResourceBlock, bx: number, by: numb
         box,
       }));
     }
-    const style: LineStyle = { fontString: layout.fontString, boldFontString: layout.boldFontString, italicFontString: layout.italicFontString, boldItalicFontString: layout.boldItalicFontString, color: layout.color };
+    const style: LineStyle = { fontString: layout.fontString, boldFontString: layout.boldFontString, italicFontString: layout.italicFontString, boldItalicFontString: layout.boldItalicFontString, color: layout.color, refColor: rb.linkColor };
     const lines: DisplayLine[] = layout.lines.map((l) => placeResourceLine(l, style, false, ctx.options).line);
     if (lines.length === 0) continue;
     for (const line of lines) line.map = new Array<number>(line.text.length).fill(-1);

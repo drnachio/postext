@@ -7,7 +7,7 @@ import { MetricsCache, type FaceAdvances } from './metrics.js';
 import { chunkBox, emitGroups, italicRoom, planChunks, planLines } from './paragraphs.js';
 import { HOLDER, emitRun, wordText } from './runs.js';
 import { SYMBOL_FACE } from './symbols.js';
-import { measuredMarker } from './text.js';
+import { hasItalicRoom, measuredMarker } from './text.js';
 import type { WriterContext } from './types.js';
 
 // A face of 1000 units: letters 500, spaces 250.
@@ -89,6 +89,13 @@ describe('formatted Word display lines (#1444)', () => {
     // A body line keeps the 2 pt slack.
     const body = chunkBox(ctx, [italic], chunk!, plans);
     expect(body.width).toBe(304);
+  });
+
+  it('gives a figure label the italic room of a title, not a body line', () => {
+    expect(hasItalicRoom('label')).toBe(true);
+    expect(hasItalicRoom('heading')).toBe(true);
+    expect(hasItalicRoom('body')).toBe(false);
+    expect(hasItalicRoom('caption')).toBe(false);
   });
 
   it('writes an empty chip\'s placeholder as a no-break space, one for one', () => {

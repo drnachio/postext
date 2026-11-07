@@ -142,6 +142,15 @@ function fitLonePitch(ctx: WriterContext, line: DisplayLine, plan: LinePlan, gro
  *  renderer without them (Google Docs) replaces by a wider one. */
 const DISPLAY_ROLES = new Set<TextItem['role']>(['heading', 'opener', 'design']);
 
+/** Roles whose boxes get room for an italic line's overhang: the titles
+ *  and labels above, and the labels drawn on a picture or in a margin. */
+const ITALIC_ROOM_ROLES = new Set<TextItem['role']>([...DISPLAY_ROLES, 'label']);
+
+/** Whether a text item's boxes get room for an italic overhang. */
+export function hasItalicRoom(role: TextItem['role']): boolean {
+  return ITALIC_ROOM_ROLES.has(role);
+}
+
 /** Whether a chunk's box may grow down: a title or label box, unturned
  *  and ragged, whose words a wider fallback face sets on more lines than
  *  the engine's would be cut at the box's foot. The box is unfilled, so
@@ -200,7 +209,7 @@ export async function textItemRuns(ctx: WriterContext, input: TextItem, opts: Te
   const fragmented = hasFragment(item);
   const centre = { x: item.bbox.x + item.bbox.width / 2, y: item.bbox.y + item.bbox.height / 2 };
   const runs: string[] = [];
-  const boxes = chunks.map((c) => chunkBox(ctx, item.lines, c, plans, DISPLAY_ROLES.has(item.role)));
+  const boxes = chunks.map((c) => chunkBox(ctx, item.lines, c, plans, hasItalicRoom(item.role)));
   const floor = item.bbox.y + item.bbox.height + (opts.growRoom ?? Infinity);
   for (const [ci, chunk] of chunks.entries()) {
     const box = boxes[ci]!;

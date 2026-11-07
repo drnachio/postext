@@ -35,6 +35,21 @@ describe('figure labels in the display list (#1444)', () => {
     expect(page.items.findIndex((i) => i.kind === 'text' && i.role === 'label')).toBeGreaterThan(picture);
   });
 
+  it('paints a reference in a label in the figure\'s link colour', () => {
+    const f = mapPartsFixture('en');
+    const doc = buildDocument({ markdown: f.markdown, resources: f.resources }, f.config, createMeasurementCache());
+    const index = doc.pages.findIndex((p) => (p.floats ?? []).some((b) => b.resourceBlock?.labels?.length));
+    const rb = doc.pages[index]!.floats!.find((b) => b.resourceBlock?.labels?.length)!.resourceBlock!;
+    rb.linkColor = '#c00000';
+    const label = rb.labels!.find((l) => l.layout && !l.layout.vertical && l.layout.lines.length > 0)!;
+    const seg = label.layout!.lines[0]!.segments!.find((s) => s.text.trim())!;
+    seg.refResourceId = 'elsewhere';
+    const page = pageDisplayList(doc, index);
+    const runs = page.items.flatMap((i) => (i.kind === 'text' && i.role === 'label' ? i.lines.flatMap((l) => l.runs) : []));
+    expect(runs.some((r) => r.text.includes(seg.text.trim()) && r.color === '#c00000')).toBe(true);
+    expect(runs.some((r) => r.color !== '#c00000')).toBe(true);
+  });
+
   it('draws a leader\'s end marks as paths', () => {
     const dot = markerPath({ kind: 'dot', x: 10, y: 10, angle: 0, sizePx: 4, color: '#000' });
     expect(dot.fill).toBe('#000');
