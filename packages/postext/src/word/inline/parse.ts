@@ -1,5 +1,6 @@
 // Postext inline marks to runs Word can carry: protecting what has no Word
 // equivalent, then scripts, italics and emphasis.
+import { starsClose, starsOpen } from '../../parse/inlineFormatting/markup.js';
 import { LINE_BREAK, type InlineRun, sameFlags, UNDERSCORE_BLOCKER } from './render.js';
 
 // ---------------------------------------------------------------------------
@@ -265,7 +266,7 @@ function italics(text: string, bold: boolean, forced: boolean, out: Span[]): voi
     scripts(text, bold, true, out);
     return;
   }
-  const re = new RegExp(`\\*(.+?)\\*|${usOpen(1)}(.+?)${usClose(1)}`, 'gu');
+  const re = new RegExp(`${starsOpen(1)}(.+?)${starsClose(1)}|${usOpen(1)}(.+?)${usClose(1)}`, 'gu');
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
@@ -278,7 +279,7 @@ function italics(text: string, bold: boolean, forced: boolean, out: Span[]): voi
 
 /** The engine's emphasis scan (bold first, then italics, then scripts). */
 function emphasis(text: string): Span[] {
-  const re = new RegExp(`\\*\\*\\*(.+?)\\*\\*\\*|${usOpen(3)}(.+?)${usClose(3)}|\\*\\*(.+?)\\*\\*|${usOpen(2)}(.+?)${usClose(2)}`, 'gu');
+  const re = new RegExp(`${starsOpen(3)}(.+?)${starsClose(3)}|${usOpen(3)}(.+?)${usClose(3)}|${starsOpen(2)}(.+?)${starsClose(2)}|${usOpen(2)}(.+?)${usClose(2)}`, 'gu');
   const out: Span[] = [];
   let last = 0;
   let m: RegExpExecArray | null;

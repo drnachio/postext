@@ -167,6 +167,27 @@ const UNDERSCORE_CLOSE = `(?!${UNDERSCORE_BLOCKER})`;
 export const underscores = (n: number): string => `${UNDERSCORE_OPEN}${'_'.repeat(n)}(?!_)`;
 /** `n` underscores closing a run. */
 export const underscoresClose = (n: number): string => `(?<!_)${'_'.repeat(n)}${UNDERSCORE_CLOSE}`;
+/** What counts as punctuation beside a `*` (CommonMark's flanking rules):
+ *  Unicode punctuation and symbols, and the private-use marks the parser
+ *  leaves where markup was taken out. */
+const STAR_PUNCT = '\\p{P}\\p{S}\\p{Co}';
+/** Chinese, Japanese and Korean letters, written without spaces: beside
+ *  punctuation they stand where a space would (the CJK-friendly rule, #181),
+ *  so `粗体。**中文` closes. */
+const STAR_CJK = '\\p{sc=Han}\\p{sc=Hira}\\p{sc=Kana}\\p{sc=Hang}';
+/** Full-width CJK punctuation (`《》`, `。`, `「」`), which carries its own
+ *  space: a run beside it opens or closes whatever is on its other side,
+ *  so `**《**of` is a bold `《`. */
+const STAR_CJK_PUNCT = '\\u3000-\\u303f\\uff00-\\uff60';
+/** `n` asterisks that can open emphasis (a left-flanking run): not followed
+ *  by a space, and followed by punctuation only after a space or
+ *  punctuation. The `*` of `Sgr A* at` opens nothing (#1444). */
+export const starsOpen = (n: number): string =>
+  `(?:(?<=^|[\\s${STAR_PUNCT}${STAR_CJK}])\\*{${n}}(?!\\s)|\\*{${n}}(?![\\s${STAR_PUNCT}])|\\*{${n}}(?=[${STAR_CJK_PUNCT}]))`;
+/** `n` asterisks that can close emphasis (a right-flanking run): not after
+ *  a space, and after punctuation only before a space or punctuation. */
+export const starsClose = (n: number): string =>
+  `(?:(?<![\\s${STAR_PUNCT}])\\*{${n}}|(?<=[${STAR_PUNCT}])\\*{${n}}(?=$|[\\s${STAR_PUNCT}${STAR_CJK}])|(?<=[${STAR_CJK_PUNCT}])\\*{${n}})`;
 export const UNDERSCORE_BOLD_RE = new RegExp(`${underscores(2)}(.+?)${underscoresClose(2)}`, 'gu');
 export const UNDERSCORE_ITALIC_RE = new RegExp(`${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
 
