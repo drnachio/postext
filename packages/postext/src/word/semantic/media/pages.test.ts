@@ -45,7 +45,9 @@ describe('semantic docx: exercises', () => {
     for (const w of ['mention', 'whole', 'margin', 'column']) expect(e.frag(e.map.fragments.find((f) => f.role === 'exercise:bank')!.text).text).toContain(w);
     expect(text).toContain('1. PDF/X');
     expect(text).toContain('The printer');
-    expect(text).toContain('☐ T   ☐ F');
+    // Check boxes in a face that has them: the body face may not.
+    expect(text).toContain('☐| T   |☐| F');
+    expect(e.doc).toMatch(/<w:rFonts w:ascii="Segoe UI Symbol"[^>]*\/>(?:(?!<\/w:r>)[^])*<w:t[^>]*>☐<\/w:t>/);
     expect(e.doc.match(/<w:tag w:val="ptx:exercise"\/>/g)).toHaveLength(5);
     // The words written in the Markdown stay mapped to it.
     expect(e.frag('Which of these does the configuration decide?').target).toEqual({ kind: 'markdown', chapter: 0 });
@@ -104,7 +106,7 @@ describe('semantic docx: pages Word cannot hold', () => {
   const md =
     'Before.\n\n' +
     '::::page{template="sheet"}\n## On one page\n\n:::frame{slot="card" label="Write"}\nPlain Markdown.\n:::\n::::\n\n' +
-    ':::page{split="30 / *"}\n::panel{art=a}\ncaption: Every summer.\n::panel{art=b}\n:::\n\n' +
+    ':::page{split="30 / *"}\n::panel{art=a}\ncaption: Every summer.\n::panel{art=b}\nMaya: Hi there.\n:::\n\n' +
     ':::strip{split="* | *" caption="A strip *lettered* here" id=s1}\n::panel{art=a}\neditor: Hello.\n::panel{art=b}\n:::\n\n' +
     'After.\n';
 
@@ -121,21 +123,44 @@ describe('semantic docx: pages Word cannot hold', () => {
     expect(e.frag('On one page').target).toEqual({ kind: 'markdown', chapter: 0 });
     expect(e.frag('Write').role).toBe('attr:frame:label');
     expect(e.frag('Plain Markdown.').target).toEqual({ kind: 'markdown', chapter: 0 });
-    // The panels' script, a line each: the speaker's key mapped, the colon
+    // The panels' script, a line each: a key that is the speaker's name
+    // mapped, a lower-case key shown with a capital (generated), the colon
     // the engine's.
     expect(e.frag('Every summer.').role).toBe('comic:caption');
-    expect(e.frag('editor').role).toBe('comic:speaker');
+    expect(e.frag('Maya').target).toEqual({ kind: 'markdown', chapter: 0 });
+    expect(e.frag('Editor').target).toEqual({ kind: 'generated' });
+    expect(e.frag('Editor').role).toBe('comic:speaker');
     expect(e.frag(': ').target).toEqual({ kind: 'generated' });
     expect(e.frag('Hello.').role).toBe('comic:speech');
-    expect(text).toContain('editor|: |Hello.');
+    expect(text).toContain('Editor|: |Hello.');
+    // A comic page starts a page.
+    const beforePage = e.doc.slice(0, e.doc.indexOf('ptx:comicPage'));
+    expect(beforePage.lastIndexOf('<w:pageBreakBefore/>')).toBeGreaterThan(beforePage.lastIndexOf('ptx:composedPage'));
     const caption = e.frag('A strip *lettered* here');
     expect(md.slice(caption.range[0], caption.range[1])).toBe('A strip *lettered* here');
     const chapters = [{ id: 'ch1', markdown: md }];
     const same = applyDocxEdits(e.bytes, { chapters });
     expect(same.edits).toEqual([]);
     expect(same.chapters[0]!.markdown).toBe(md);
-    const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('lettered', 'drawn').replace('>Write<', '>Read<').replace('Hello.', 'Hello there.').replace('>editor<', '>writer<')), { chapters });
-    expect(r.chapters[0]!.markdown).toBe(md.replace('lettered', 'drawn').replace('label="Write"', 'label="Read"').replace('editor: Hello.', 'writer: Hello there.'));
+    const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('lettered', 'drawn').replace('>Write<', '>Read<').replace('Hello.', 'Hello there.').replace('>Maya<', '>Lena<')), { chapters });
+    expect(r.chapters[0]!.markdown).toBe(md.replace('lettered', 'drawn').replace('label="Write"', 'label="Read"').replace('editor: Hello.', 'editor: Hello there.').replace('Maya: Hi', 'Lena: Hi'));
+    // A name made from the key is not the key: renaming it changes nothing.
+    const renamed = applyDocxEdits(edit(e.bytes, (x) => x.replace('>Editor<', '>Writer<')), { chapters });
+    expect(renamed.chapters[0]!.markdown).toBe(md);
+  });
+
+  it('numbers a strip counted as a figure, and a :ref to it prints its label', async () => {
+    const strip = 'The strip in :ref{id="s2"} was lettered.\n\n:::strip{split="* | *" caption="A strip." type=figure id=s2}\n::panel{art=a}\nmaya: Hello.\n:::\n\nAfter.\n';
+    const e = await exportDocx(strip);
+    expect(exportProblems(e, [strip])).toEqual([]);
+    const text = words(e.doc);
+    expect(text).not.toContain('s2');
+    expect(text).toMatch(/The strip in \|?Fig\. 1\|? was lettered\./);
+    expect(e.frag('Figure 1. ').target).toEqual({ kind: 'generated' });
+    expect(text).toMatch(/Figure \|?1\|?\. \|A strip\./);
+    const same = applyDocxEdits(e.bytes, { chapters: [{ id: 'ch1', markdown: strip }] });
+    expect(same.edits).toEqual([]);
+    expect(same.chapters[0]!.markdown).toBe(strip);
   });
 
   it('stands in for a page with nothing to write, in the book language', async () => {

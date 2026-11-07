@@ -88,6 +88,9 @@ export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>
     ctx.usedResources.add(res.id);
     return { text: ref.text || resourceRefLabel({ ...ref, resourceId: res.id }, ctx.numbers, [res], ctx.resolved) };
   }
+  // A numbered comic strip is no resource, but the engine counts it in its
+  // type, and a `:ref` to it prints its label and number ("Fig. 10.1").
+  if (!ref.anchor && ctx.numbers.resources[ref.resourceId]?.typeId !== undefined) return { text: ref.text || resourceRefLabel(ref, ctx.numbers, [], ctx.resolved) };
   const target = anchorTarget(ctx, ref.resourceId);
   if (!target) return { text: ref.text || ref.resourceId };
   const bookmark = wordBookmarkName(target.id);

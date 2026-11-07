@@ -8,6 +8,7 @@ import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { renderDirective } from './directives.js';
 import { tocMark } from './fields.js';
+import { renderCodeListing } from './media/code.js';
 import { renderResource } from './media/figures.js';
 import { renderSolutions, solutionsBeforeHeading } from './exercises/exercises.js';
 import { pageKindOf, renderComicPage } from './media/pages.js';
@@ -291,7 +292,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     case 'blockquote':
       return textParagraph(ctx, b, { style: STYLE.quote }, 'quote');
     case 'code':
-      return textParagraph(ctx, b, { style: STYLE.code }, `code${b.code?.lang ? `:${b.code.lang}` : ''}`);
+      return renderCodeListing(ctx, b) ?? textParagraph(ctx, b, { style: STYLE.code }, `code${b.code?.lang ? `:${b.code.lang}` : ''}`);
     case 'mathDisplay':
       return renderDisplayMath(ctx, b, start, end, env.widthTwips ?? ctx.textTwips);
     case 'resourceBlock':

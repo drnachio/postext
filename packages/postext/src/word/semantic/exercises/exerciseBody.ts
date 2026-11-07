@@ -21,6 +21,12 @@ import { renderInline, type InlineSource } from '../inline.js';
 import { STYLE } from '../styles.js';
 import { paragraph, type ParaProps } from '../wml.js';
 
+/** An empty check box in a face that has it (#1444): the body face often
+ *  lacks ☐, and a reader that does not fall back draws a blank. Segoe UI
+ *  Symbol ships with Windows and Word for the web; elsewhere the reader
+ *  looks for the character in its own symbol faces. */
+const BOX: Piece = { text: '☐', font: 'Segoe UI Symbol' };
+
 /** What the body of one exercise is set from. */
 export interface ExerciseInput {
   ctx: WriterContext;
@@ -225,14 +231,14 @@ export function exerciseBody(input: ExerciseInput): ExerciseBody {
     }
     const opt = optionAt.get(k);
     if (opt && ex.kind === 'truefalse') {
-      const mark = input.teacher ? [{ text: `   ${opt.correct ? tf[0] : tf[1]}`, b: true }] : [{ text: `   ☐ ${tf[0]}   ☐ ${tf[1]}` }];
+      const mark = input.teacher ? [{ text: `   ${opt.correct ? tf[0] : tf[1]}`, b: true }] : [{ text: '   ' }, BOX, { text: ` ${tf[0]}   ` }, BOX, { text: ` ${tf[1]}` }];
       out.push(mappedParagraph(ctx, b, item, 'exercise:statement', [{ text: `${num(input, opt.q + 1)}. ` }], mark));
       key.push(`${num(input, opt.q + 1)} ${opt.correct ? tf[0] : tf[1]}`);
       continue;
     }
     if (opt) {
       const label = optionLabel(style, opt.k, input.locale, input.digits);
-      const lead: Piece[] = [{ text: `${label ? `${label} ` : '☐ '}` }];
+      const lead: Piece[] = label ? [{ text: `${label} ` }] : [BOX, { text: ' ' }];
       const tail: Piece[] = input.teacher && opt.correct ? [{ text: ' ✓', b: true }] : [];
       out.push(mappedParagraph(ctx, b, { ...item, ind: { left: INDENT * 2, firstLine: 0 } }, 'exercise:option', lead, tail));
       continue;
@@ -295,7 +301,7 @@ function itemGroup(input: ExerciseInput, key: string[]): string[] {
     }
     case 'order': {
       const order = shuffle(input, ex.sequence.length, 'order');
-      const out = order.map((k) => p([{ text: '☐ ' }, ...spanPieces(trimRun(runOf(input.flat[ex.sequence[k]!]!)).spans)], 'exercise:order'));
+      const out = order.map((k) => p([BOX, { text: ' ' }, ...spanPieces(trimRun(runOf(input.flat[ex.sequence[k]!]!)).spans)], 'exercise:order'));
       key.push(ex.sequence.map((_, k) => num(input, order.indexOf(k) + 1)).join(' '));
       return out;
     }

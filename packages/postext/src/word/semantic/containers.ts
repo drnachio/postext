@@ -96,7 +96,34 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
     const body = renderNodes(ctx, node.children, { ...env, paraStyle: style ?? env.paraStyle });
     return blockSdt(ctx.nextSdtId(), `ptx:paragraphs${attrs.style ? `:${attrs.style}` : ''}`, attrsLabel(attrs), body || '<w:p/>');
   }
+  if (name === 'columns' && env.box) return boxColumns(ctx, node, env);
   return blockSdt(ctx.nextSdtId(), `ptx:${name}`, attrsLabel(attrs), renderNodes(ctx, node.children, env) || '<w:p/>');
+}
+
+/** `:::columns` inside a box ("In numbers", "In brief", #1444): a table
+ *  with no rules and a cell per column, the blocks split where `breaks`
+ *  starts a column (1-based), else evenly. Word's own columns would break
+ *  the whole section. */
+function boxColumns(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
+  const attrs = node.container.containerAttrs ?? {};
+  const kids = node.children;
+  const count = Math.max(1, Math.min(kids.length, Number.parseInt(attrs.count ?? '', 10) || 2));
+  const breaks = (attrs.breaks ?? '').split(/[,\s]+/).map((x) => Number.parseInt(x, 10) - 1).filter((x) => x > 0 && x < kids.length);
+  const starts = breaks.length ? [0, ...new Set(breaks)].sort((a, b) => a - b) : Array.from({ length: count }, (_, k) => Math.round((k * kids.length) / count));
+  const width = Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips));
+  const cellW = Math.floor(width / starts.length);
+  let cells = '';
+  starts.forEach((from, k) => {
+    let cell = renderNodes(ctx, kids.slice(from, starts[k + 1] ?? kids.length), { ...env, widthTwips: cellW - 216 });
+    if (!cell || endsWithTable(cell)) cell += '<w:p/>';
+    cells += `<w:tc><w:tcPr><w:tcW w:w="${cellW}" w:type="dxa"/></w:tcPr>${cell}</w:tc>`;
+  });
+  const nil = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map((s) => `<w:${s} w:val="nil"/>`).join('');
+  const tbl =
+    `<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>${nil}</w:tblBorders><w:tblLayout w:type="fixed"/>` +
+    '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>' +
+    `<w:tblGrid>${starts.map(() => `<w:gridCol w:w="${cellW}"/>`).join('')}</w:tblGrid><w:tr><w:trPr><w:cantSplit/></w:trPr>${cells}</w:tr></w:tbl>`;
+  return blockSdt(ctx.nextSdtId(), 'ptx:columns', attrsLabel(attrs), tbl);
 }
 
 function boxBorders(ctx: WriterContext, s: ResolvedCalloutStyleConfig | undefined): Record<'top' | 'left' | 'bottom' | 'right', Border | undefined> {
@@ -193,9 +220,18 @@ function labelStyle(ctx: WriterContext, style: ResolvedCalloutStyleConfig): stri
   });
 }
 
-function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
+/** A composed page's frame set as a box (#1444): the box style its
+ *  template frame names, the title it shows when that style has no label
+ *  tab, and its content control's tag. */
+export interface FrameBox {
+  style: ResolvedCalloutStyleConfig;
+  head: () => string;
+  tag: string;
+}
+
+export function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv, frame?: FrameBox): string {
   const attrs = node.container.containerAttrs ?? {};
-  const style = ctx.styles.callout(attrs.type);
+  const style = frame ? frame.style : ctx.styles.callout(attrs.type);
   if (!style) ctx.warn('unknownBoxStyle', `No box style "${attrs.type ?? ''}": the box is set with the default look.`);
   const ids = ctx.styles.calloutStyles(style);
   const u = ctx.units;
@@ -210,7 +246,7 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
   }
   // A box style with a label tab prints the fence's `label` on it: here a
   // first line in the tab's face, colours and side.
-  const label = style?.label && attrs.label ? attrParagraph(ctx, node, 'label', labelStyle(ctx, style)) : '';
+  const label = style?.label && attrs.label ? attrParagraph(ctx, node, 'label', labelStyle(ctx, style)) : (frame?.head() ?? '');
   const title = label + attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
   // What the cell holds is as wide as the cell less its margins (Word's
   // default is 108 twips a side).
@@ -243,5 +279,5 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
     '</w:tbl>';
   const before = style ? spacer(twips(u, style.marginTop), true) : '';
   const after = style ? spacer(twips(u, style.marginBottom), false) : '';
-  return before + blockSdt(ctx.nextSdtId(), `ptx:box:${attrs.type ?? ''}`, attrsLabel(attrs), tbl) + after;
+  return before + blockSdt(ctx.nextSdtId(), frame?.tag ?? `ptx:box:${attrs.type ?? ''}`, attrsLabel(attrs), tbl) + after;
 }
