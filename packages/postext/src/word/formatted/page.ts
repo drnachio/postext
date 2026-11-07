@@ -2,13 +2,16 @@
 // (exact page size, no margins, no header or footer room) holding one
 // tiny anchor paragraph that carries every drawing of the page in paint
 // order: the page background behind the text, then text boxes, shapes,
-// pictures and tables.
+// pictures and tables. Unturned tables float in the body after it
+// (floats.ts, #1444), with the drawings under them sent behind the text.
 
-import type { DisplayPage } from '../../paint/displayList/types.js';
+import type { DisplayItem, DisplayPage } from '../../paint/displayList/types.js';
 import { anchorRun, shapeGraphic, xfrm } from './drawing.js';
+import { FLOW_LINE, floatingTables, floatsXml, flowParagraph, type PageFloat } from './floats.js';
+import { itemRect, layerRuns, type Layer } from './layers.js';
 import { imageRun } from './pictures.js';
 import { pathRun, rectRuns, ruleRun } from './shapes.js';
-import { tableRuns } from './tables.js';
+import { tableParts } from './tables.js';
 import { textItemRuns } from './text.js';
 import { solidFill, twips, wordColor } from './units.js';
 import type { WriterContext } from './types.js';
@@ -40,54 +43,82 @@ function paintsBackground(css: string | undefined): boolean {
   return c !== undefined && c.alpha > 0 && c.hex !== 'FFFFFF';
 }
 
-/** The drawings of a page, in paint order. */
+/** The drawings of a page and its floating tables. */
+export interface PageParts {
+  runs: string[];
+  floats: PageFloat[];
+}
+
+/** The drawings of a page, in paint order (every table in a text box). */
 export async function pageRuns(ctx: WriterContext, page: DisplayPage): Promise<string[]> {
-  const runs: string[] = [];
+  return (await pageParts(ctx, page, new Set())).runs;
+}
+
+/** The drawings of a page in paint order, the tables in `floating` set
+ *  apart as floating tables. */
+export async function pageParts(ctx: WriterContext, page: DisplayPage, floating: ReadonlySet<DisplayItem> = floatingTables(page)): Promise<PageParts> {
+  const layers: Layer[] = [];
+  const floats: PageFloat[] = [];
   if (paintsBackground(page.background)) {
     const rect = { x: 0, y: 0, width: page.width, height: page.height };
-    runs.push(anchorRun(ctx, { rect, behind: true, name: 'ptx page' }, (_id, cx, cy) =>
-      shapeGraphic(`${xfrm(cx, cy)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>${solidFill(page.background)}<a:ln><a:noFill/></a:ln>`),
-    ));
+    layers.push({
+      runs: [anchorRun(ctx, { rect, behind: true, name: 'ptx page' }, (_id, cx, cy) =>
+        shapeGraphic(`${xfrm(cx, cy)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>${solidFill(page.background)}<a:ln><a:noFill/></a:ln>`),
+      )],
+    });
   }
   for (const item of page.items) {
+    const rect = itemRect(item);
     switch (item.kind) {
       case 'text':
-        runs.push(...(await textItemRuns(ctx, item)));
+        layers.push({ runs: await textItemRuns(ctx, item), rect });
         break;
       case 'rule':
-        runs.push(ruleRun(ctx, item));
+        layers.push({ runs: [ruleRun(ctx, item)], rect });
         break;
       case 'rect':
-        runs.push(...rectRuns(ctx, item));
+        layers.push({ runs: rectRuns(ctx, item), rect });
         break;
       case 'path':
-        runs.push(pathRun(ctx, item));
+        layers.push({ runs: [pathRun(ctx, item)], rect });
         break;
       case 'image': {
         const r = await imageRun(ctx, item);
-        if (r) runs.push(r);
+        if (r) layers.push({ runs: [r], rect });
         break;
       }
-      case 'table':
-        runs.push(...(await tableRuns(ctx, item)));
+      case 'table': {
+        const parts = await tableParts(ctx, item, floating.has(item));
+        layers.push({ runs: parts.under, rect });
+        if (parts.float) {
+          layers.push({ runs: [], rect, table: true });
+          floats.push(parts.float);
+        } else if (parts.box) {
+          layers.push({ runs: [parts.box], rect });
+        }
+        layers.push({ runs: parts.over, rect });
         break;
+      }
     }
   }
-  return runs;
+  return { runs: layerRuns(layers), floats };
 }
 
-/** A page as body XML: its anchor paragraph, ending its section unless it
- *  is the document's last page (whose `sectPr` closes the body). */
+/** A page as body XML: its anchor paragraph (then its floating tables and
+ *  a closing empty paragraph), ending its section unless it is the
+ *  document's last page (whose `sectPr` closes the body). */
 export async function pageXml(ctx: WriterContext, page: DisplayPage, last: boolean): Promise<string> {
-  const runs = await pageRuns(ctx, page);
+  const { runs, floats } = await pageParts(ctx, page);
   const sect = sectPrXml(page);
   if (Math.max(twips(page.width, page.dpi), twips(page.height, page.dpi)) > MAX_PAGE_TWIPS) {
     ctx.warn('page-too-large', `a ${(page.width / page.dpi).toFixed(1)} × ${(page.height / page.dpi).toFixed(1)} in page is larger than Word's 22 in limit; Word shrinks the page and the drawings near its far edges fall off it`);
   }
+  const closing = last ? '' : sect;
   const pPr =
-    '<w:pPr><w:pStyle w:val="PostextAnchor"/><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/>' +
+    `<w:pPr><w:pStyle w:val="PostextAnchor"/><w:spacing w:before="0" w:after="0" w:line="${FLOW_LINE}" w:lineRule="exact"/>` +
     '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>' +
-    (last ? '' : sect) +
+    (floats.length ? '' : closing) +
     '</w:pPr>';
-  return `<w:p>${pPr}${runs.join('')}</w:p>${last ? sect : ''}`;
+  const tables = floats.length ? floatsXml(floats) + flowParagraph(FLOW_LINE, closing) : '';
+  return `<w:p>${pPr}${runs.join('')}</w:p>${tables}${last ? sect : ''}`;
 }

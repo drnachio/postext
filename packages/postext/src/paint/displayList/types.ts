@@ -66,6 +66,9 @@ export interface DisplayRun {
    *  border and padding), for writers that set the text themselves. */
   padStart?: number;
   padEnd?: number;
+  /** A blank's answer (`:chip` with `blank`, #1227): it takes its room
+   *  on the line but is never painted. */
+  blank?: true;
   /** Embedded non-text content drawn in place of the run. */
   inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch };
   /** The run is a ruby base (#1394, `VDTLineSegment.ruby`): its reading. */

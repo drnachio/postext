@@ -299,7 +299,7 @@ function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: Fi
 const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
 
 /** A run that may join its neighbour: plain text, no blank or tab. */
-const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.padStart && !r.padEnd && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
+const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.blank && !r.padStart && !r.padEnd && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
 
 /** Letters of the alphabetic scripts a word of which hyphenation splits
  *  into runs (CJK runs stay apart: compressed punctuation is its own). */
@@ -332,6 +332,28 @@ function piecesOut(pieces: RunPiece[]): Pick<EmittedRun, 'rPr' | 'text' | 'piece
   return pieces.length === 1 ? { rPr: pieces[0]!.rPr, text } : { rPr: pieces[0]!.rPr, text, pieces };
 }
 
+/** A gap between two runs kept as room, px. */
+const GAP_MIN = 0.5;
+
+/** Room before the next run of the same direction, per run (px; runs
+ *  set apart, a number flush right). Vertical runs go by x too, along
+ *  the line in the item's unturned frame. */
+export function runGaps(line: DisplayLine): number[] {
+  const gaps = line.runs.map(() => 0);
+  const rtl = line.rtl === true;
+  let prev = -1;
+  line.runs.forEach((r, i) => {
+    if (r.text.length === 0) return;
+    const p = line.runs[prev];
+    if (p && (p.rtl === true) === rtl && (r.rtl === true) === rtl) {
+      const gap = rtl ? p.x - (r.x + r.width) : r.x - (p.x + p.width);
+      if (gap > GAP_MIN) gaps[prev] = gap;
+    }
+    prev = i;
+  });
+  return gaps;
+}
+
 /** Px of a chip's padding that run `i` of `line` keeps out of its words:
  *  `before` is carried by the run before it, `after` by its own last
  *  character (left to right only; a chip that starts the line keeps it). */
@@ -342,11 +364,34 @@ export function padsOf(line: DisplayLine, i: number): { before: number; after: n
   return { before: prev ? (run.padStart ?? 0) : 0, after: run.padEnd ?? 0 };
 }
 
+/** The chip that opens a left-to-right line, when the line's measure can
+ *  leave its padding out (`edges` in paragraphs.ts) so that its words sit
+ *  inside its box, not at its edge (an answer bubble's letter): the
+ *  line's only run (`lone`, any alignment), or its first on a line set
+ *  flush left. */
+export function leadChip(line: DisplayLine): { run: DisplayRun; lone: boolean } | undefined {
+  if (line.vertical || line.rtl) return undefined;
+  const runs = line.runs.filter((r) => r.text.length > 0);
+  const run = runs[0];
+  if (!run || run.inline?.kind !== 'chip' || run.rtl) return undefined;
+  if (runs.length === 1) return run.padStart || run.padEnd ? { run, lone: true } : undefined;
+  return line.align === 'left' && run.padStart ? { run, lone: false } : undefined;
+}
+
 /** The line with each chip run's padding taken out of its width and added
  *  to the gap after the run that carries it (`gaps` per run). */
 export function unpadded(line: DisplayLine, gaps: readonly number[]): { line: DisplayLine; gaps: number[] } {
   const out = [...gaps];
+  const lead = leadChip(line);
   const runs = line.runs.map((r, i) => {
+    if (r === lead?.run) {
+      // The padding before it is outside its paragraph's measure; a lone
+      // chip's padding after it too (no gap to keep).
+      const before = r.padStart ?? 0;
+      const after = r.padEnd ?? 0;
+      if (!lead.lone) out[i] = (out[i] ?? 0) + after;
+      return { ...r, x: r.x + before, width: Math.max(0, r.width - before - after) };
+    }
     const { before, after } = padsOf(line, i);
     if (!before && !after) return r;
     out[i] = (out[i] ?? 0) + after;
@@ -365,6 +410,14 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   const n = run.text.length;
   if (n === 0) return { rPr: '', text: '' };
   const gapTw = gapPx > 0 ? Math.floor((gapPx * 1440) / ctx.dpi) : 0;
+  // A blank's answer is laid out, never painted (#1227): its room is
+  // written as no-break spaces, one per character so the export map still
+  // pairs each with the answer's source (a word typed over them replaces
+  // the answer). Not holders: no atom stands behind them.
+  if (run.blank) {
+    const text = HOLDER.repeat(n);
+    return { ...piecesOut(spacedPieces(ctx, run, text, fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n), gapTw, rtl)) };
+  }
   // Content with a width of its own: no-break spaces spaced out.
   const fixed = run.inline !== undefined && run.inline.kind !== 'chip' ? true : /^\t+$/.test(run.text);
   if (fixed) {
