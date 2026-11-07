@@ -94,6 +94,7 @@ export function figureLabelItems(rb: ResolvedResourceBlock, bx: number, by: numb
       bbox: { x: layout.box.x, y: layout.box.y, width: layout.box.width, height: layout.box.height },
       lines,
       source: { blockKey: key, map: lines.flatMap((l) => l.map), generated: true },
+      ...(layout.halo && layout.halo.widthPx > 0 ? { halo: { color: layout.halo.color, widthPx: layout.halo.widthPx } } : {}),
     };
     items.push(placeText(m, text));
   }

@@ -3,10 +3,12 @@
 // (label, SEQ number, then the caption text mapped to the figure's own
 // words in the Markdown or to the resource's field).
 
-import { strFromU8 } from 'fflate';
+import { strFromU8, strToU8 } from 'fflate';
 import type { ContentBlock } from '../../../parse/types.js';
 import type { Resource } from '../../../types.js';
 import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
+import { svgWithWordFonts } from '../../formatted/pictures.js';
+import { svgTextAsPaths } from '../../svg/text.js';
 import { escapeAttr } from '../../xml.js';
 import { abs, blockId, type PreparedPicture, type WriterContext } from '../context.js';
 import { captionLabelParts, captionStyleOf } from '../engineNumbers.js';
@@ -90,7 +92,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
         ctx.warn('svgWithoutFallback', `SVG "${id}" needs a bitmap fallback (rasterizeSvg) to be shown in Word: left out.`);
         continue;
       }
-      ctx.media.set(id, { rel: ctx.pkg.addMedia(png, 'png'), svgRel: ctx.pkg.addMedia(bytes, 'svg'), widthPx: size.w, heightPx: size.h });
+      ctx.media.set(id, { rel: ctx.pkg.addMedia(png, 'png'), svgRel: ctx.pkg.addMedia(strToU8(svgWithWordFonts(svgTextAsPaths(strFromU8(bytes), ctx.plan), ctx.plan)), 'svg'), widthPx: size.w, heightPx: size.h });
     }
   }
 }

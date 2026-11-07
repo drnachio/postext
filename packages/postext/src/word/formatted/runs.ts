@@ -225,12 +225,24 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOption
 export interface FitSpacing {
   each: number;
   extra: number;
+  /** Twips the floor left out, for the next run of the line. */
+  rest?: number;
 }
 
-export function fitSpacing(ctx: WriterContext, widthPx: number, naturalTw: number, count: number): FitSpacing {
-  const total = Math.floor((widthPx * 1440) / ctx.dpi - naturalTw + 1e-6);
+/** What the runs of a line fitted so far left out to whole twips. Each
+ *  run is floored on its own; carried on, the losses no longer add up
+ *  along a line (a line of thirty runs ended a point and a half short,
+ *  and answer bubbles placed by the engine overlapped the words after
+ *  them, #1444), and the line is still never wider than the engine's. */
+export interface FitCarry {
+  tw: number;
+}
+
+export function fitSpacing(ctx: WriterContext, widthPx: number, naturalTw: number, count: number, carry?: FitCarry): FitSpacing {
+  const exact = (widthPx * 1440) / ctx.dpi - naturalTw + (carry?.tw ?? 0);
+  const total = Math.floor(exact + 1e-6);
   const each = Math.floor(total / count);
-  return { each, extra: total - each * count };
+  return { each, extra: total - each * count, rest: Math.max(0, Math.min(1, exact - total)) };
 }
 
 /** Natural advance (twips) of `text` in the Word face and size of
@@ -377,16 +389,16 @@ export function padsOf(line: DisplayLine, i: number): { before: number; after: n
 
 /** The chip that opens a left-to-right line, when the line's measure can
  *  leave its padding out (`edges` in paragraphs.ts) so that its words sit
- *  inside its box, not at its edge (an answer bubble's letter): the
- *  line's only run (`lone`, any alignment), or its first on a line set
- *  flush left. */
+ *  inside its box, not at its edge (an answer bubble's letter, an
+ *  exercise number's badge): the line's only run (`lone`, any
+ *  alignment), or its first on a line set flush left or justified. */
 export function leadChip(line: DisplayLine): { run: DisplayRun; lone: boolean } | undefined {
   if (line.vertical || line.rtl) return undefined;
   const runs = line.runs.filter((r) => r.text.length > 0);
   const run = runs[0];
   if (!run || run.inline?.kind !== 'chip' || run.rtl) return undefined;
   if (runs.length === 1) return run.padStart || run.padEnd ? { run, lone: true } : undefined;
-  return line.align === 'left' && run.padStart ? { run, lone: false } : undefined;
+  return (line.align === 'left' || line.align === 'justify') && run.padStart ? { run, lone: false } : undefined;
 }
 
 /** The line with each chip run's padding taken out of its width and added
@@ -415,7 +427,7 @@ export function unpadded(line: DisplayLine, gaps: readonly number[]): { line: Di
 /** A run's properties, what it writes and anything to draw over it.
  *  `gapPx` is room after the run before the next one starts (a number set
  *  flush right): the last character carries it. */
-export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, gapPx = 0): EmittedRun {
+export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, gapPx = 0, carry?: FitCarry): EmittedRun {
   const justified = line.align === 'justify';
   const rtl = run.rtl === true;
   const n = run.text.length;
@@ -425,15 +437,19 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   // written as no-break spaces, one per character so the export map still
   // pairs each with the answer's source (a word typed over them replaces
   // the answer). Not holders: no atom stands behind them.
+  const commit = (fit: FitSpacing): FitSpacing => {
+    if (carry) carry.tw = fit.rest ?? 0;
+    return fit;
+  };
   if (run.blank) {
     const text = HOLDER.repeat(n);
-    return { ...piecesOut(spacedPieces(ctx, run, text, fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n), gapTw, rtl)) };
+    return { ...piecesOut(spacedPieces(ctx, run, text, commit(fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n, carry)), gapTw, rtl)) };
   }
   // Content with a width of its own: no-break spaces spaced out.
   const fixed = run.inline !== undefined && run.inline.kind !== 'chip' ? true : /^\t+$/.test(run.text);
   if (fixed) {
     const text = HOLDER.repeat(n);
-    const out: EmittedRun = { ...piecesOut(spacedPieces(ctx, run, text, fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n), gapTw, rtl, { holder: run.inline !== undefined })) };
+    const out: EmittedRun = { ...piecesOut(spacedPieces(ctx, run, text, commit(fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n, carry)), gapTw, rtl, { holder: run.inline !== undefined })) };
     const inl = run.inline;
     if (inl && (inl.svg || inl.kind === 'swatch')) {
       const ascent = inl.ascentPx ?? inl.heightPx * 0.8;
@@ -451,7 +467,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   // A blank run sets in its neighbour's face (its own emphasis flags stay).
   const r: DisplayRun = blank ? { ...run, fontString: blankFace(run, line) } : run;
   const text = wordText(run.text);
-  let fit = measurable(ctx, r, line, blank) ? fitOf(ctx, r, text, justified && !blank ? JUSTIFY_ROOM_TW : 0) : undefined;
+  let fit = measurable(ctx, r, line, blank) ? fitOf(ctx, r, text, justified && !blank ? JUSTIFY_ROOM_TW : 0, carry) : undefined;
   // A space squeezed below its natural advance narrows by w:w: LibreOffice
   // drops the spacing of blanks on a justified line, and neither renderer
   // shrinks a space on its own. So does compressed punctuation in vertical
@@ -462,8 +478,9 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     const own = resolveFont(ctx, r.fontString).scale ?? 100;
     const runTw = (run.width * 1440) / ctx.dpi;
     scale = Math.max(1, Math.min(600, Math.floor((own * runTw) / nat)));
-    fit = fitSpacing(ctx, run.width, (nat * scale) / own, Array.from(text).length);
+    fit = fitSpacing(ctx, run.width, (nat * scale) / own, Array.from(text).length, carry);
   }
+  if (fit) commit(fit);
   const tracking = run.tracking ? twips(run.tracking, ctx.dpi) : 0;
   const isSpace = run.space === true || blank;
   // Unknown advances: tracking as given, justified spaces a hair tighter.
@@ -517,11 +534,11 @@ function measurable(ctx: WriterContext, run: DisplayRun, line: DisplayLine, blan
   return blank || !COMPLEX.test(run.text);
 }
 
-function fitOf(ctx: WriterContext, run: DisplayRun, text: string, roomTw = 0): FitSpacing | undefined {
+function fitOf(ctx: WriterContext, run: DisplayRun, text: string, roomTw = 0, carry?: FitCarry): FitSpacing | undefined {
   const nat = naturalTwips(ctx, run.fontString, text, run.width);
   if (nat === undefined) return undefined;
   const count = Array.from(text).length;
-  return fitSpacing(ctx, run.width, nat + roomTw * count, count);
+  return fitSpacing(ctx, run.width, nat + roomTw * count, count, carry);
 }
 
 /** The `MapFormat` flags of a run (b, i, c, p, s). A code block's lines are

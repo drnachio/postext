@@ -9,6 +9,7 @@ import type { DisplayItem, DisplayRect } from '../../paint/displayList/types.js'
 import { base64Decode } from '../anchors/base64.js';
 import { wordFontFor } from '../fonts/plan.js';
 import type { WordFontPlan } from '../fonts/types.js';
+import { svgTextAsPaths } from '../svg/text.js';
 import { anchorRun, pictureGraphic, pictureShapeGraphic, type BlipRefs } from './drawing.js';
 import type { WriterContext } from './types.js';
 
@@ -187,7 +188,7 @@ export function svgWithInk(svg: string, ink = '#000000'): string {
  *  has it: the rasteriser knows the web fonts). */
 async function svgRefs(ctx: WriterContext, svg: string, rect: DisplayRect, label: string, ink?: string): Promise<BlipRefs> {
   svg = svgWithInk(svg, ink);
-  const svgRel = ctx.pkg.addMedia(strToU8(svgWithWordFonts(svg, ctx.plan)), 'svg');
+  const svgRel = ctx.pkg.addMedia(strToU8(svgWithWordFonts(svgTextAsPaths(svg, ctx.plan), ctx.plan)), 'svg');
   const { w, h } = fallbackSize(rect, ctx.dpi);
   let png: Uint8Array | undefined;
   if (ctx.rasterizeSvg) {

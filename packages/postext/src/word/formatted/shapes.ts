@@ -89,8 +89,8 @@ export function pathRun(ctx: WriterContext, item: PathItem): string {
   const W = Math.max(1, emu(b.width, ctx.dpi));
   const H = Math.max(1, emu(b.height, ctx.dpi));
   const pt = (x: number, y: number): string => `<a:pt x="${emu(x - b.x, ctx.dpi)}" y="${emu(y - b.y, ctx.dpi)}"/>`;
-  const cmds: string[] = [];
-  for (const sp of item.subpaths) {
+  const paths = item.subpaths.map((sp) => {
+    const cmds: string[] = [];
     for (const c of sp as VDTPathCommand[]) {
       if (c.op === 'M') cmds.push(`<a:moveTo>${pt(c.x, c.y)}</a:moveTo>`);
       else if (c.op === 'L') cmds.push(`<a:lnTo>${pt(c.x, c.y)}</a:lnTo>`);
@@ -98,14 +98,53 @@ export function pathRun(ctx: WriterContext, item: PathItem): string {
       else if (c.op === 'Q') cmds.push(`<a:quadBezTo>${pt(c.x1, c.y1)}${pt(c.x, c.y)}</a:quadBezTo>`);
       else cmds.push('<a:close/>');
     }
-  }
+    return cmds.join('');
+  });
+  // The book fills a path non-zero; Word and LibreOffice fill the
+  // subpaths of one `a:path` even-odd, so where a balloon's tail or a
+  // linked balloon overlaps another the overlap came out as a hole
+  // (#1444). Subpaths all turning the same way fill non-zero as their
+  // union, which is what separate `a:path`s draw (each is filled and
+  // stroked on its own); subpaths turning both ways (a ring and its
+  // hole) stay one path. A path the book fills even-odd (an icon ring
+  // drawn as two circles turning the same way) always stays one path,
+  // since that is the fill Word gives it.
+  const pathXml = (body: string): string => `<a:path w="${W}" h="${H}">${body}</a:path>`;
+  const union = item.fillRule !== 'evenodd' && sameTurn(item.subpaths);
+  const list = union ? paths.map(pathXml).join('') : pathXml(paths.join(''));
   // No `fill="none"` / `stroke="0"` on the path: the shape's own fill and
   // `a:ln` already say it, and Google Docs refuses to open a document
   // holding a single path with either attribute (#1444).
   const geom =
     '<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/><a:rect l="0" t="0" r="r" b="b"/>' +
-    `<a:pathLst><a:path w="${W}" h="${H}">${cmds.join('')}</a:path></a:pathLst></a:custGeom>`;
+    `<a:pathLst>${list}</a:pathLst></a:custGeom>`;
   const s = item.stroke;
   const ln = s ? lineXml(ctx, s.color, s.widthPx, { ...(s.dash ? { dash: s.dash } : {}), ...(s.cap ? { cap: s.cap } : {}), ...(s.join ? { join: s.join } : {}) }) : '<a:ln><a:noFill/></a:ln>';
   return anchorRun(ctx, { rect: b, name: 'ptx path' }, (_id, cx, cy) => shapeGraphic(`${xfrm(cx, cy)}${geom}${solidFill(item.fill)}${ln}`));
+}
+
+/** Twice the signed area of a subpath's polygon of on-curve points and
+ *  control points (enough to tell which way it turns). */
+function turn(sp: readonly VDTPathCommand[]): number {
+  const pts: [number, number][] = [];
+  for (const c of sp) {
+    if (c.op === 'C') pts.push([c.x1, c.y1], [c.x2, c.y2], [c.x, c.y]);
+    else if (c.op === 'Q') pts.push([c.x1, c.y1], [c.x, c.y]);
+    else if (c.op !== 'Z') pts.push([c.x, c.y]);
+  }
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i]!;
+    const [x2, y2] = pts[(i + 1) % pts.length]!;
+    a += x1 * y2 - x2 * y1;
+  }
+  return a;
+}
+
+/** Whether every subpath with an area turns the same way (more than one
+ *  subpath only). */
+export function sameTurn(subpaths: readonly (readonly VDTPathCommand[])[]): boolean {
+  if (subpaths.length < 2) return false;
+  const signs = new Set(subpaths.map(turn).filter((a) => Math.abs(a) > 1e-6).map(Math.sign));
+  return signs.size === 1;
 }

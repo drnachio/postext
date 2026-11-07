@@ -202,10 +202,14 @@ export type DisplayItem =
       blockType?: string;
       /** Clip rectangle the backend applies (columns clip their blocks). */
       clip?: DisplayRect;
+      /** A halo round the glyphs (a figure label on a busy picture, a
+       *  comic's sound effect): the glyphs stroked `widthPx` out from
+       *  their outline in `color`, under the text. */
+      halo?: { color: string; widthPx: number };
     }
   | { kind: 'rule'; x1: number; y1: number; x2: number; y2: number; color: string; widthPx: number; dash?: number[] }
   | { kind: 'rect'; rect: DisplayRect; fill?: string; stroke?: string; strokeWidthPx?: number; radius?: number; rotate?: number; box?: VDTDesignBoxStyle }
-  | { kind: 'path'; bbox: DisplayRect; subpaths: VDTPathCommand[][]; fill?: string; stroke?: VDTPathStroke }
+  | { kind: 'path'; bbox: DisplayRect; subpaths: VDTPathCommand[][]; fill?: string; fillRule?: 'nonzero' | 'evenodd'; stroke?: VDTPathStroke }
   | {
       kind: 'image';
       rect: DisplayRect;
@@ -234,6 +238,9 @@ export type DisplayItem =
        *  edge (`'grid'`, the default), the row edges (`'horizontal'`), the
        *  table's frame (`'outer'`) or none. */
       rules?: 'grid' | 'horizontal' | 'outer' | 'none';
+      /** Radii of a rounded frame (top left, top right, bottom right,
+       *  bottom left), px: the fills are clipped to it and it is stroked. */
+      frameRadii?: [number, number, number, number];
     };
 
 export interface DisplayPage {
