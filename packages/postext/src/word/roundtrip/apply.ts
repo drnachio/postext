@@ -87,6 +87,21 @@ function editsOfBlock(v: BlockView, base: string): BlockResult {
   return { edits, hunks };
 }
 
+/** The generated texts (label, video link line) that went with a figure
+ *  deleted whole: missing blocks in one run, in reading order, with a
+ *  removed resource field. The figure's own report covers them. */
+function removedLabels(blocks: readonly BlockView[], isRemoved: (v: BlockView) => boolean): Set<BlockView> {
+  const out = new Set<BlockView>();
+  for (let k = 0; k < blocks.length; ) {
+    let e = k;
+    while (e < blocks.length && blocks[e]!.missing && (blocks[e]!.target.kind === 'generated' || isRemoved(blocks[e]!))) e++;
+    const run = blocks.slice(k, e);
+    if (run.some(isRemoved)) for (const v of run) if (v.target.kind === 'generated') out.add(v);
+    k = Math.max(e, k + 1);
+  }
+  return out;
+}
+
 /** Index in the exported text of position `j` of the text read back. */
 function backThrough(hunks: readonly Hunk[], j: number): number {
   let delta = 0;
@@ -149,9 +164,27 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
       withLineSpaces(v, baseOf(v));
       if (v.target.kind === 'markdown') withMarker(v, baseOf(v));
     }
+    // A figure deleted whole in Word leaves every block of its resource
+    // without a bookmark. The resource still stands in the book (a :ref
+    // floats it, or a block the user did not touch shows it), so emptying
+    // its caption and cells would only print a blank figure: report one
+    // rejected edit per resource instead. A single field removed while the
+    // figure stays is still read as that field emptied.
+    const kept = new Set(blocks.filter((v) => v.target.kind === 'resource' && !v.missing).map((v) => (v.target as { resourceId: string }).resourceId));
+    const isRemoved = (v: BlockView): boolean => v.target.kind === 'resource' && v.missing && !kept.has(v.target.resourceId);
+    const withFigure = removedLabels(blocks, isRemoved);
+    const removed = new Set<string>();
     for (let k = 0; k < blocks.length; k++) {
       const v = blocks[k]!;
       const base = baseOf(v);
+      if (withFigure.has(v)) continue;
+      if (v.target.kind === 'resource' && isRemoved(v)) {
+        if (!removed.has(v.target.resourceId)) {
+          removed.add(v.target.resourceId);
+          add({ target: v.target, start: -1, end: -1, text: '', kind: 'paragraph', reject: 'resource-removed', before: v.O });
+        }
+        continue;
+      }
       const r = editsOfBlock(v, base);
       hunksOf.set(v, r.hunks);
       r.edits.forEach(add);

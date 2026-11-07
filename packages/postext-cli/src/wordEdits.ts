@@ -149,6 +149,7 @@ const clip = (text: string) => {
 const REASONS: Record<string, string> = {
   generated: 'generated text (numbers, labels) is written by postext',
   'bookmarks-lost': 'the file lost the bookmarks that place its text',
+  'resource-removed': 'a figure or table deleted in Word stays in the book (delete its reference in the Markdown)',
   'changed-since-export': 'the text was changed in the book since the export',
   'target-missing': 'the book no longer has this chapter or resource',
   'no-snapshot': 'the file carries no copy of the exported text to merge against',

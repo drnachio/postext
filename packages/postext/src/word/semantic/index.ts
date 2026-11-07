@@ -20,6 +20,8 @@ import { bookNumbers } from './engineNumbers.js';
 import { parseChapter, renderChapter } from './chapter.js';
 import type { SemanticWarning, WriterContext } from './context.js';
 import { prepareMedia } from './figures.js';
+import { floatedResources } from './floated.js';
+import { designPictureIds } from './designPictures.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
 import { pageGeometry } from './sections.js';
@@ -81,11 +83,18 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   // Numbers as the engine prints them (captions, `:ref`s, headings).
   const numbers = bookNumbers(parsed, options.config, resolved, options.resources ?? []);
   const resourceTypes = numbers.resourceTypes;
-  // Resources shown as blocks, whose pictures go into the package.
+  // Resources shown as blocks or floated by a `:ref`, whose pictures go
+  // into the package.
+  const floated = floatedResources(parsed, resources, resourceTypes);
   const shown = new Set<string>();
   for (const pc of parsed) {
-    for (const b of pc.blocks) if (b.type === 'resourceBlock' && b.resourceId && resources.has(b.resourceId)) shown.add(b.resourceId);
+    for (const b of pc.blocks) {
+      if (b.type !== 'resourceBlock' || !b.resourceId || !resources.has(b.resourceId)) continue;
+      shown.add(b.resourceId);
+    }
   }
+  for (const id of floated) shown.add(id);
+  for (const id of designPictureIds(parsed, resolved, resources)) shown.add(id);
   let sdtId = 0;
   let footnoteId = 0;
   const ctx: WriterContext = {
@@ -109,6 +118,8 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     headers: {},
     footers: {},
     bookmarkNames: new Set(),
+    floated,
+    floatedPlaced: new Set(),
     media: new Map(),
     warn,
     nextSdtId: () => ++sdtId,

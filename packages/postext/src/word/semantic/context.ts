@@ -68,6 +68,11 @@ export interface WriterContext {
   footers: Record<string, string>;
   /** Non-`_ptx_` bookmark names already used (anchors, chapters). */
   bookmarkNames: Set<string>;
+  /** Resources a `:ref` floats (cited, shown by no block): each is written
+   *  as a figure after the block holding its first reference. */
+  floated: ReadonlySet<string>;
+  /** Floated resources already written. */
+  floatedPlaced: Set<string>;
   /** Pictures prepared before the body is written, by resource id. */
   media: Map<string, PreparedPicture>;
   warn(code: string, message: string): void;
