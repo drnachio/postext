@@ -17,14 +17,17 @@ import { firstFamily, halfPoints, hex, px, twips, type RunProps, type Units } fr
  *  (through the export's font plan). */
 export type FontOf = (stack: string | undefined, weight?: number, italic?: boolean) => RunProps;
 
-/** The face of the ballot boxes of a task list (#1444): a symbol face
- *  Word has on every system and Word for the web serves; Word's own check
- *  boxes use MS Gothic, kept for the East Asian slot. Other renderers that
- *  have neither find the glyph in a fallback face, when they have one. */
-const BOX_FONT = 'Segoe UI Symbol';
+/** The face of the boxes of a task list (#1444): Arial, which every
+ *  system, Word for the web and Google Docs have, and LibreOffice stands
+ *  in for with Liberation Sans. The ballot boxes (☐ ☑ ☒) are only in
+ *  symbol faces some of them lack, where they draw a blank, so they are
+ *  set as the geometric shapes Arial has: □ for an open task, ■ for a
+ *  done one. A box character of the book's own choosing is kept, in Arial
+ *  too. */
+const BOX_FONT = 'Arial';
 
-/** The East Asian slot of the ballot boxes: Word's own check box face. */
-const BOX_FONT_EA = 'MS Gothic';
+/** Ballot boxes and the shapes Arial has in their place. */
+const BOX_GLYPH: Record<string, string> = { '\u2610': '\u25A1', '\u2611': '\u25A0', '\u2612': '\u25A0' };
 
 /** Rough advance of a number's characters, in ems (two digits, a roman
  *  numeral of three letters, one letter), for the width of the number
@@ -121,6 +124,7 @@ export class Numbering {
         fmt = 'bullet';
         const task = kind === 'task' || kind === 'checked';
         text = kind === 'task' ? ul.taskCheckboxChar || '\u2610' : kind === 'checked' ? ul.taskCheckedChar || '\u2611' : (level ? level.bulletChar : ul.bulletChar);
+        if (task) text = [...text].map((ch) => BOX_GLYPH[ch] ?? ch).join('');
         const size = level?.fontSize ?? ul.bulletFontSize;
         const sizePx = px(u, size, bodyPx) || bodyPx;
         run = { ...(task ? { font: BOX_FONT } : this.fontOf(level?.fontFamily ?? ul.fontFamily, level?.fontWeight ?? ul.fontWeight, level?.italic ?? ul.italic)), color: hex(level?.color ?? ul.color), sz: halfPoints(u, size, bodyPx) };
@@ -157,8 +161,7 @@ function levelRPr(p: RunProps): string {
   let x = '';
   if (p.font) {
     const f = escapeAttr(p.font);
-    const ea = p.font === BOX_FONT ? BOX_FONT_EA : f;
-    x += `<w:rFonts w:ascii="${f}" w:hAnsi="${f}" w:eastAsia="${ea}" w:cs="${f}"/>`;
+    x += `<w:rFonts w:ascii="${f}" w:hAnsi="${f}" w:eastAsia="${f}" w:cs="${f}"/>`;
   }
   // Explicit on and off: the number does not take the bold or italic of
   // the item's first word.

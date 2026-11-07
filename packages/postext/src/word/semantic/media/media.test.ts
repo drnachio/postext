@@ -72,8 +72,9 @@ describe('semantic docx: composed-page frames', () => {
     // A shaded one-cell table, in the page's own tint, its label first.
     expect(card).toMatch(/^[^]*?<w:tbl>[^]*?w:fill="FCEFD2"/);
     expect(e.frag('Try it').role).toBe('attr:frame:label');
-    // The photo the template sets over the card is inside it.
-    const cardEnd = card.indexOf('</w:tbl>');
+    // The photo the template sets over the card is inside it (after the
+    // label's own plate, a table of its own).
+    const cardEnd = card.indexOf('</w:tbl>', card.indexOf('</w:tbl>') + 1);
     expect(card.indexOf('name="p1"')).toBeGreaterThan(0);
     expect(card.indexOf('name="p1"')).toBeLessThan(cardEnd);
     // The module's empty ruled frame: three rows of 8 mm, ruled.

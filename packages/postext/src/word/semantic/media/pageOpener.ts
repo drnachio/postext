@@ -1,0 +1,165 @@
+// The head of a composed page in the semantic .docx (#1444): what its
+// template draws round the heading its title frame takes. The template's
+// pictures (a unit cover's painting) and texts filled from the page's
+// attributes (`::::page{unidad="Unit 4 · Social science"}`, the kicker over
+// the title) come first, in reading order, then the heading. A heading the
+// template sets on a band (the title frame drawn as a filled box, or a
+// filled box the decoration lays over it) is set on that band: a shaded
+// one-cell table, as the design writer sets a chapter opener's
+// (design/bands.ts), in the heading's own ink, its number (the template's
+// badge) before it. The kicker is the page's attribute, printed: generated
+// text, since the value stays in the fence, where an edit belongs.
+
+import type { ResolvedPageTemplate } from '../../../composed/types/resolved.js';
+import { resolveDesignSlot } from '../../../defaults/structure/headerFooter/resolve.js';
+import { resolveDesignText } from '../../../design/placeholders.js';
+import { parsePartPalette } from '../../../pipeline/sections/parts.js';
+import type { ContentBlock } from '../../../parse/types.js';
+import type { Resource, ResolvedDesignElement, ResolvedDesignTextElement } from '../../../types.js';
+import type { ResolvedConfig } from '../../../vdt.js';
+import type { HeadingLook } from '../design/heading.js';
+import { withBands } from '../design/bands.js';
+import { designImageId } from '../design/pictures.js';
+import { designTextStyle } from '../design/text.js';
+import { designPlaceholders, headingLevelOf } from '../design/values.js';
+import type { WriterContext } from '../context.js';
+import { generatedRuns } from '../generated.js';
+import { pageGeometry } from '../sections.js';
+import { STYLE } from '../styles.js';
+import { blockSdt, hex, paragraph } from '../wml.js';
+import { pictureRun } from './figures.js';
+import { frameBoxStyle, templateOf } from './frames.js';
+
+/** `elements` with each palette-linked colour the template's palette
+ *  names set to the palette's value. */
+function paletted(elements: readonly ResolvedDesignElement[], palette: string | undefined): ResolvedDesignElement[] {
+  const map = parsePartPalette(palette);
+  if (!Object.keys(map).length) return [...elements];
+  const walk = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(walk);
+    if (!v || typeof v !== 'object') return v;
+    const o = v as Record<string, unknown>;
+    if (typeof o.hex === 'string' && typeof o.paletteId === 'string' && map[o.paletteId]) return { ...o, hex: map[o.paletteId] };
+    return Object.fromEntries(Object.entries(o).map(([k, x]) => [k, walk(x)]));
+  };
+  return elements.map((e) => walk(e) as ResolvedDesignElement);
+}
+
+/** A template's decoration, resolved, in its palette. */
+function decoration(t: ResolvedPageTemplate): ResolvedDesignElement[] {
+  return paletted(resolveDesignSlot(t.decoration, 'header').elements, t.palette);
+}
+
+/** Where an element stands against the title frame `title`: above it
+ *  (anchored to the page's head, or to the frame with an offset upwards),
+ *  on it, or neither (the page's foot, another frame). */
+function side(el: ResolvedDesignElement, title: string): 'above' | 'on' | undefined {
+  if (el.kind === 'connector') return undefined;
+  const p = el.placement;
+  const to = p.anchor.to;
+  const dy = p.offset?.y && 'value' in p.offset.y ? p.offset.y.value : 0;
+  if (to === `#${title}`) return dy < 0 || String(p.anchor.edge) === 'above' ? 'above' : 'on';
+  if ((to === 'page' || to === 'bleed' || to === 'container') && String(p.anchor.edge).startsWith('top')) return 'above';
+  return undefined;
+}
+
+/** The pictures composed-page templates draw (their files go into the
+ *  package with the figures'). */
+export function composedMediaIds(chapters: readonly { blocks: readonly ContentBlock[] }[], resolved: ResolvedConfig, resources: ReadonlyMap<string, Resource>): Set<string> {
+  const out = new Set<string>();
+  for (const ch of chapters) {
+    for (const b of ch.blocks) {
+      if (b.type !== 'containerStart' || b.containerName !== 'composedPage') continue;
+      const id = b.composedPage?.template ?? b.containerAttrs?.template;
+      const t = id ? templateOfConfig(resolved, id) : undefined;
+      if (!t) continue;
+      for (const el of decoration(t)) {
+        if (el.kind !== 'image') continue;
+        const res = resources.get(designImageId(el.resourceId, b.containerAttrs) ?? '');
+        if (res && (res.kind === 'bitmap' || res.kind === 'svg')) out.add(res.id);
+      }
+    }
+  }
+  return out;
+}
+
+/** `templateOf` without a writer context. */
+function templateOfConfig(resolved: ResolvedConfig, id: string): ResolvedPageTemplate | undefined {
+  return templateOf({ resolved } as WriterContext, id);
+}
+
+/** A template's picture: as wide as the text area at most and no taller
+ *  than about half the page's text. */
+function picture(ctx: WriterContext, id: string): string {
+  const pic = ctx.media.get(id);
+  if (!pic) return '';
+  ctx.usedResources.add(id);
+  const geo = pageGeometry(ctx.resolved, ctx.units);
+  const maxH = (((geo.heightTw - geo.margins.top - geo.margins.bottom) * ctx.units.dpi) / 1440) * 0.45;
+  const w = Math.min(ctx.textAreaPx, pic.widthPx * Math.min(1, maxH / pic.heightPx), (maxH * pic.widthPx) / pic.heightPx);
+  const alt = ctx.resources.get(id)?.altText ?? '';
+  return blockSdt(ctx.nextSdtId(), `ptx:design:${id}`, undefined, paragraph({ style: STYLE.figure, keepNext: true, before: 0, after: 120 }, pictureRun(ctx, pic, id, alt, w)));
+}
+
+/** A text element's words with the page's attributes (`{attr.key}`) and
+ *  the heading's placeholders filled in. */
+function textOf(ctx: WriterContext, el: ResolvedDesignTextElement, heading: ContentBlock, attrs: Record<string, string>): string {
+  const content = el.content ?? '';
+  const sole = /^\s*\{attr\.([A-Za-z_][A-Za-z0-9_.-]*)\}\s*$/.exec(content)?.[1];
+  if (sole) return (attrs[sole] ?? '').trim();
+  return resolveDesignText(content, { ...designPlaceholders(ctx, heading), pageAttrs: attrs }).trim();
+}
+
+/** The fill of the band the template sets its title on, if any. */
+function titleBand(ctx: WriterContext, t: ResolvedPageTemplate, title: string, elements: readonly ResolvedDesignElement[]): string | undefined {
+  const box = frameBoxStyle(ctx, [t], title);
+  if (box?.backgroundEnabled && hex(box.background)) return hex(box.background);
+  let fill: string | undefined;
+  for (const el of elements) if (el.kind === 'box' && side(el, title) === 'on' && hex(el.style.backgroundColor)) fill = hex(el.style.backgroundColor);
+  return fill;
+}
+
+/** The paragraph style of a title set on a band: its heading style in the
+ *  heading's own ink (a white title on a coloured band). */
+function bandTitleStyle(ctx: WriterContext, heading: ContentBlock, fill: string): string {
+  const level = heading.level ?? 1;
+  const base = ctx.styles.heading(level, heading.attrs?.style);
+  const ink = hex(headingLevelOf(ctx.resolved, heading)?.color) ?? 'FFFFFF';
+  return ctx.styles.custom(`pageTitle:${base}:${ink}:${fill}`, `${base} on band`, () => ({ basedOn: base, pPr: { before: 0, after: 0, keepNext: true }, rPr: { color: ink } }));
+}
+
+/**
+ * The head of composed page `page` (template `t`) whose title frame takes
+ * `heading`, or undefined when the template draws nothing round it (the
+ * heading is then written as usual). `write` writes the heading paragraph
+ * with a look.
+ */
+export function pageOpener(ctx: WriterContext, page: ContentBlock, heading: ContentBlock, write: (look?: HeadingLook) => string): string | undefined {
+  const id = page.composedPage?.template ?? page.containerAttrs?.template;
+  const t = templateOf(ctx, id);
+  const title = t?.frames.find((f) => f.takes === `h${heading.level ?? 1}`)?.name;
+  if (!t || !title) return undefined;
+  const elements = decoration(t);
+  const attrs = page.containerAttrs ?? {};
+  let head = '';
+  for (const el of elements) {
+    if (side(el, title) !== 'above') continue;
+    if (el.kind === 'image') {
+      const res = designImageId(el.resourceId, attrs);
+      if (res) head += picture(ctx, res);
+    } else if (el.kind === 'text') {
+      const text = textOf(ctx, el, heading, attrs);
+      if (!/[\p{L}\p{N}]/u.test(text)) continue;
+      const style = designTextStyle(ctx, `page:${t.id}`, el, undefined, true, text);
+      head += paragraph({ style, jc: 'left' }, generatedRuns(ctx, [{ text }], `page:${el.id}`));
+    }
+  }
+  const fill = titleBand(ctx, t, title, elements);
+  if (!head && !fill) return undefined;
+  if (!fill) return head + write();
+  const xml = write({ style: bandTitleStyle(ctx, heading, fill) });
+  const u = ctx.units;
+  const widthTw = Math.round((ctx.textAreaPx * 1440) / u.dpi);
+  const box = { x: 0, y: 0, width: ctx.textAreaPx, height: u.dpi / 2 };
+  return head + withBands(ctx, [{ xml, band: { fill, box }, box }], box, widthTw);
+}

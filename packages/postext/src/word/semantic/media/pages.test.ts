@@ -45,9 +45,9 @@ describe('semantic docx: exercises', () => {
     for (const w of ['mention', 'whole', 'margin', 'column']) expect(e.frag(e.map.fragments.find((f) => f.role === 'exercise:bank')!.text).text).toContain(w);
     expect(text).toContain('1. PDF/X');
     expect(text).toContain('The printer');
-    // Check boxes in a face that has them: the body face may not.
-    expect(text).toContain('☐| T   |☐| F');
-    expect(e.doc).toMatch(/<w:rFonts w:ascii="Segoe UI Symbol"[^>]*\/>(?:(?!<\/w:r>)[^])*<w:t[^>]*>☐<\/w:t>/);
+    // Boxes in Arial, which every reader has: the body face may lack them.
+    expect(text).toContain('□| T   |□| F');
+    expect(e.doc).toMatch(/<w:rFonts w:ascii="Arial"[^>]*\/>(?:(?!<\/w:r>)[^])*<w:t[^>]*>□<\/w:t>/);
     expect(e.doc.match(/<w:tag w:val="ptx:exercise"\/>/g)).toHaveLength(5);
     // The words written in the Markdown stay mapped to it.
     expect(e.frag('Which of these does the configuration decide?').target).toEqual({ kind: 'markdown', chapter: 0 });

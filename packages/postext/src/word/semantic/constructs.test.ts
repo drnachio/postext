@@ -142,7 +142,9 @@ describe('semantic docx: structures', () => {
     expect(numbering).toContain('<w:numFmt w:val="bullet"/>');
     expect(numbering).toContain('<w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/>');
     expect(numbering).toContain('<w:startOverride w:val="3"/>');
-    expect(numbering).toContain('w:val="\u2611"');
+    // A done task is a filled square in Arial: the ballot box ☑ is only
+    // in symbol faces some readers lack.
+    expect(numbering).toContain('w:val="\u25A0"');
     expect(e.doc).toContain('<w:numPr><w:ilvl w:val="1"/><w:numId w:val="1"/></w:numPr>');
     expect(orderProblems(numbering)).toEqual([]);
     expect(e.frag('b').role).toBe('list:unordered:2');

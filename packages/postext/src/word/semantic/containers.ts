@@ -213,19 +213,54 @@ function scaleInsets(ctx: WriterContext, pad: { left: number; right: number }, w
   pad.right = Math.round(pad.right * scale);
 }
 
-/** The paragraph style of a box style's label line. */
-function labelStyle(ctx: WriterContext, style: ResolvedCalloutStyleConfig): string {
+/** Whether a label tab stands at the end side of its box. */
+function labelAtEnd(ctx: WriterContext, style: ResolvedCalloutStyleConfig): boolean {
+  const side = style.label!.position.split('-')[1];
+  const rtl = ctx.resolved.direction === 'rtl';
+  return side === 'end' || (side === 'right' && !rtl) || (side === 'left' && rtl);
+}
+
+/** The paragraph style of a box style's label line: on its own plate
+ *  (`labelPlate`) for a tab on the box's head, else a shaded run. */
+function labelStyle(ctx: WriterContext, style: ResolvedCalloutStyleConfig, plate: boolean): string {
   const lb = style.label!;
-  return ctx.styles.custom(`boxLabel:${style.id}`, `Box label ${style.id}`, () => {
+  return ctx.styles.custom(`boxLabel:${style.id}${plate ? ':plate' : ''}`, `Box label ${style.id}`, () => {
     const size = px(ctx.units, lb.fontSize) || ctx.units.basePx;
-    const rtl = ctx.resolved.direction === 'rtl';
-    const side = lb.position.split('-')[1];
-    const end = side === 'end' || (side === 'right' && !rtl) || (side === 'left' && rtl);
     return {
-      pPr: { keepNext: true, before: 0, after: 60, ind: { firstLine: 0 }, jc: end ? 'end' : 'start' },
-      rPr: { ...ctx.styles.font(lb.fontFamily, lb.fontWeight), b: lb.fontWeight >= 600, color: hex(lb.color), shd: hex(lb.background), sz: Math.max(2, Math.round((size * 144) / ctx.units.dpi)) },
+      pPr: { keepNext: true, before: 0, after: plate ? 0 : 60, ind: { firstLine: 0 }, jc: plate ? 'center' : labelAtEnd(ctx, style) ? 'end' : 'start' },
+      rPr: { ...ctx.styles.font(lb.fontFamily, lb.fontWeight), b: lb.fontWeight >= 600, color: hex(lb.color), ...(plate ? {} : { shd: hex(lb.background) }), sz: Math.max(2, Math.round((size * 144) / ctx.units.dpi)) },
     };
   });
+}
+
+/**
+ * A label tab on a box's head (#1444): a plate of the tab's fill, padded
+ * round the words, hanging from the box's top edge at its side and inset.
+ * A one-cell table as wide as the words (an estimate: about 0.62 em a
+ * character, the tab's padding each side) and as tall as the tab, set
+ * first in the box's cell, whose top inset goes under it instead (`gap`
+ * twips): inside the box, it never parts from it at a page's foot.
+ */
+function labelPlate(ctx: WriterContext, style: ResolvedCalloutStyleConfig, text: string, para: string, widthTw: number, gap: number): string {
+  const lb = style.label!;
+  const u = ctx.units;
+  const size = px(u, lb.fontSize) || u.basePx;
+  const padX = Math.max(60, twips(u, lb.paddingX, size));
+  const words = Math.round(([...text].length * 0.62 * size * 1440) / u.dpi);
+  const w = Math.min(widthTw, words + 2 * padX + 60);
+  const h = Math.max(200, twips(u, lb.height, size));
+  const fill = hex(lb.background) ?? '000000';
+  const end = labelAtEnd(ctx, style) !== (ctx.resolved.direction === 'rtl');
+  const inset = Math.max(0, Math.min(widthTw - w, twips(u, lb.inset, size)));
+  const shd = `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`;
+  const nil = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map((s) => `<w:${s} w:val="nil"/>`).join('');
+  return (
+    `<w:tbl><w:tblPr><w:tblW w:w="${w}" w:type="dxa"/><w:jc w:val="${end ? 'right' : 'left'}"/>${!end && inset ? `<w:tblInd w:w="${inset}" w:type="dxa"/>` : ''}<w:tblBorders>${nil}</w:tblBorders>${shd}<w:tblLayout w:type="fixed"/>` +
+    `<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="${padX}" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="${padX}" w:type="dxa"/></w:tblCellMar>` +
+    '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>' +
+    `<w:tblGrid><w:gridCol w:w="${w}"/></w:tblGrid><w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="${h}" w:hRule="atLeast"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${shd}<w:vAlign w:val="center"/></w:tcPr>${para}</w:tc></w:tr></w:tbl>` +
+    `<w:p><w:pPr><w:keepNext/><w:spacing w:before="0" w:after="0" w:line="${Math.max(20, gap)}" w:lineRule="exact"/><w:ind w:firstLine="0"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>`
+  );
 }
 
 /** A composed page's frame set as a box (#1444): the box style its
@@ -254,13 +289,17 @@ export function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv
   }
   // A box style with a label tab prints the fence's `label` on it: here a
   // first line in the tab's face, colours and side.
-  const label = style?.label && attrs.label ? attrParagraph(ctx, node, 'label', labelStyle(ctx, style)) : (frame?.head() ?? '');
-  const title = label + attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
+  const plate = !!style?.label && !!attrs.label && style.label.position.startsWith('top');
+  const label = style?.label && attrs.label ? attrParagraph(ctx, node, 'label', labelStyle(ctx, style, plate)) : (frame?.head() ?? '');
+  const title = (plate ? '' : label) + attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
   // What the cell holds is as wide as the cell less its margins (Word's
   // default is 108 twips a side).
   const inner = Math.max(240, width - (padTw ? padTw.left + padTw.right : 216));
   const body = renderNodes(ctx, node.children, { ...env, paraStyle: ids.body, widthTwips: inner, box: style ?? env.box, boxTop: true });
-  let cell = title + body;
+  // A tab on the head stands first in the cell, flush with its top edge.
+  const tab = plate && label ? labelPlate(ctx, style!, attrs.label!, label, inner, padTw?.top ?? 0) : '';
+  if (tab && padTw) padTw.top = 0;
+  let cell = tab + title + body;
   if (!cell || endsWithTable(cell)) cell += '<w:p/>';
   const borders = boxBorders(ctx, style);
   const bx = (side: string, b: Border | undefined): string => (b ? `<w:${side} w:val="single" w:sz="${b.sz}" w:space="0" w:color="${b.color}"/>` : `<w:${side} w:val="nil"/>`);

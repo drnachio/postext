@@ -195,7 +195,8 @@ describe('semantic docx: styling (#1444)', () => {
     // 12.5 pt, held to the 12 pt leading (8 pt × 1.5) so the number does
     // not open up its line.
     expect(numbering).toContain('<w:sz w:val="24"/>');
-    expect(numbering).toContain('w:ascii="Segoe UI Symbol" w:hAnsi="Segoe UI Symbol" w:eastAsia="MS Gothic"');
+    expect(numbering).toContain('<w:lvlText w:val="\u25A1"/>');
+    expect(numbering).toContain('w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial"');
     unchanged(e, [md]);
   });
 

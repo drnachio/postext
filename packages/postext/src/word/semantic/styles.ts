@@ -381,7 +381,9 @@ export class StyleRegistry {
     // the user adds there opens one too (#1444). The writer also starts a
     // section at each such heading, for the side and the opener's header;
     // a paragraph at the top of a new section's page breaks nothing more.
-    if (level.breakBefore.enabled) p.pageBreakBefore = true;
+    // The engine drops a heading's space above at the top of a page, where
+    // a heading that opens one always stands.
+    if (level.breakBefore.enabled) Object.assign(p, { pageBreakBefore: true, before: 0 });
     this.add(`Heading${level.level}`, { type: 'paragraph', name: `heading ${level.level}`, basedOn: STYLE.normal, next: STYLE.normal, pPr: p, rPr: r });
   }
 
@@ -407,6 +409,7 @@ export class StyleRegistry {
         // of the first) cancels its level's break.
         const breaks = hs.breakBefore?.enabled ?? levelConfig.breakBefore.enabled;
         if (breaks || levelConfig.breakBefore.enabled) p.pageBreakBefore = breaks;
+        if (breaks) p.before = 0;
         this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base, next: STYLE.normal, pPr: p, rPr: r });
       } else this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base });
     }

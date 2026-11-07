@@ -16,7 +16,7 @@ import { extractFrontmatter } from '../../../parse/frontmatter.js';
 import { parseMarkdownWithIssues } from '../../../parse/index.js';
 import type { ResolvedPageTemplate } from '../../../composed/types/resolved.js';
 import type { ContentBlock } from '../../../parse/types.js';
-import { renderNodes, type BlockEnv, type Node } from '../blocks.js';
+import { headingParagraph, renderNodes, type BlockEnv, type Node } from '../blocks.js';
 import { renderBox } from '../containers.js';
 import { abs, blockId, type WriterContext } from '../context.js';
 import { FragmentBuilder } from '../fragments.js';
@@ -26,6 +26,8 @@ import { STYLE } from '../styles.js';
 import { blockSdt, paragraph, textRuns } from '../wml.js';
 import { stripCaptionParagraph } from './captions.js';
 import { comicPanels, renderComic } from './comics.js';
+import { renderStrip } from './strip.js';
+import { pageOpener } from './pageOpener.js';
 import { frameBoxStyle, numberTemplateHeading, overFrame, ruledLines, templateOf } from './frames.js';
 
 export type PageKind = 'composedPage' | 'comicPage' | 'strip';
@@ -73,7 +75,7 @@ export function renderComicPage(ctx: WriterContext, fence: ContentBlock, kind: '
   const filled = comicPanels(fence).some((p) => (p.art && ctx.media.has(p.art)) || p.text || p.items.some((i) => i.role !== 'note' && i.text.trim()));
   // A comic page starts a page, as in print, so one page's panels do not
   // run into the next one's.
-  if (filled) return (kind === 'comicPage' ? PAGE_START : '') + renderComic(ctx, fence, kind, width, caption);
+  if (filled) return kind === 'comicPage' ? PAGE_START + renderComic(ctx, fence, kind, width, caption) : renderStrip(ctx, fence, width, caption);
   return renderPagePlaceholder(ctx, kind, width, caption);
 }
 
@@ -119,7 +121,7 @@ const slotOf = (n: Node): string | undefined => ('container' in n ? n.container.
 /** The nodes of a composed page (or of a frame or module in it): frames
  *  and modules opened here, everything else through the block writer.
  *  `templates` are the page's template and, inside a module, its own. */
-function pageNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, templates: readonly (ResolvedPageTemplate | undefined)[]): string {
+function pageNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, templates: readonly (ResolvedPageTemplate | undefined)[], title?: { block: ContentBlock; xml: () => string }): string {
   const template = templates[templates.length - 1];
   // A picture set over a frame (a photo in a box's corner) goes into it.
   const frames = new Map<string, ContainerNode>();
@@ -137,6 +139,12 @@ function pageNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, te
     run = [];
   };
   for (const n of rest) {
+    // The page's title, with what its template draws round it.
+    if (title && 'block' in n && n.block === title.block) {
+      flush();
+      out += title.xml();
+      continue;
+    }
     const name = 'container' in n ? n.container.containerName : undefined;
     if (name !== 'frame' && name !== 'module') {
       run.push(n);
@@ -187,7 +195,12 @@ export function renderComposedPage(ctx: WriterContext, node: ContainerNode, env:
   const id = node.container.composedPage?.template ?? node.container.containerAttrs?.template ?? '';
   const template = templateOf(ctx, id);
   numberTemplateHeading(ctx, template, firstHeading(node.children));
-  const body = pageNodes(ctx, node.children, env, [template]);
+  // The heading set on the page itself, not in a frame of it, is the
+  // title its template's head goes round.
+  const top = node.children.find((n): n is { block: ContentBlock } => 'block' in n && n.block.type === 'heading')?.block;
+  // Written where it stands, so the map lists its pieces in order.
+  const title = top ? { block: top, xml: () => pageOpener(ctx, node.container, top, (look) => headingParagraph(ctx, top, look)) ?? renderNodes(ctx, [{ block: top }], env) } : undefined;
+  const body = pageNodes(ctx, node.children, env, [template], title);
   if (!body) return renderPagePlaceholder(ctx, 'composedPage', Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips)));
   return blockSdt(ctx.nextSdtId(), `ptx:composedPage${id ? `:${id}` : ''}`, undefined, PAGE_START + body);
 }

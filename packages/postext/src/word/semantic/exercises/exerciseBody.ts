@@ -21,11 +21,15 @@ import { renderInline, type InlineSource } from '../inline.js';
 import { STYLE } from '../styles.js';
 import { paragraph, type ParaProps } from '../wml.js';
 
-/** An empty check box in a face that has it (#1444): the body face often
- *  lacks ☐, and a reader that does not fall back draws a blank. Segoe UI
- *  Symbol ships with Windows and Word for the web; elsewhere the reader
- *  looks for the character in its own symbol faces. */
-const BOX: Piece = { text: '☐', font: 'Segoe UI Symbol' };
+/** An empty box and an empty ring to tick (#1444), as the white square
+ *  and white circle of the geometric shapes in Arial: the ballot box ☐
+ *  lives only in symbol faces (Segoe UI Symbol, MS Gothic) that LibreOffice,
+ *  Word for Mac and Google Docs may not have, and they then draw a blank.
+ *  Arial has □ and ○ on every system, and LibreOffice's stand-in for it
+ *  (Liberation Sans) has them too. */
+export const MARK_FONT = 'Arial';
+const BOX: Piece = { text: '\u25A1', font: MARK_FONT };
+const RING: Piece = { text: '\u25CB', font: MARK_FONT };
 
 /** What the body of one exercise is set from. */
 export interface ExerciseInput {
@@ -213,8 +217,8 @@ export function exerciseBody(input: ExerciseInput): ExerciseBody {
   if (wantsBank && ex.banks.length === 0) placeBank();
   const groups = new Set<number>();
   let ordered = 0;
-  const optionAt = new Map<number, { q: number; k: number; correct: boolean }>();
-  ex.questions.forEach((q, qi) => q.options.forEach((o, k) => optionAt.set(o.block, { q: qi, k, correct: o.correct })));
+  const optionAt = new Map<number, { q: number; k: number; correct: boolean; multiple: boolean }>();
+  ex.questions.forEach((q, qi) => q.options.forEach((o, k) => optionAt.set(o.block, { q: qi, k, correct: o.correct, multiple: q.multiple })));
   const tf = style.trueFalse.labels;
 
   for (const k of ex.body) {
@@ -238,7 +242,12 @@ export function exerciseBody(input: ExerciseInput): ExerciseBody {
     }
     if (opt) {
       const label = optionLabel(style, opt.k, input.locale, input.digits);
-      const lead: Piece[] = label ? [{ text: `${label} ` }] : [BOX, { text: ' ' }];
+      // The style's marker (a box or a ring) before the label, as the
+      // engine prints it; an option with neither is ticked in a ring when
+      // the question has one answer, in a box when it has several.
+      const marker = style.options.marker;
+      const tick = marker === 'box' ? BOX : marker === 'circle' ? RING : label ? undefined : opt.multiple ? BOX : RING;
+      const lead: Piece[] = [...(tick ? [tick, { text: ' ' }] : []), ...(label ? [{ text: `${label} ` }] : [])];
       const tail: Piece[] = input.teacher && opt.correct ? [{ text: ' ✓', b: true }] : [];
       out.push(mappedParagraph(ctx, b, { ...item, ind: { left: INDENT * 2, firstLine: 0 } }, 'exercise:option', lead, tail));
       continue;
