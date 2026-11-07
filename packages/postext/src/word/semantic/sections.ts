@@ -44,7 +44,11 @@ export function pageGeometry(r: ResolvedConfig, u: Units): PageGeometry {
     // A side column that holds only floats takes no running text: Word
     // would pour the text into it as a second column. The text keeps the
     // main column's width, the side column's room going to the margin on
-    // its side (with mirrored margins Word's right margin is the outer one).
+    // its side. With mirrored margins Word's right margin is the outer one
+    // and its left the inner one, so 'outer' and 'inner' follow the page;
+    // an absolute 'right' or 'left' column cannot (Word mirrors every
+    // margin or none) and its room lands on the outer or inner side. The
+    // text keeps its width either way, and the side column is empty in Word.
     const side = Math.max(1, ((text - gutter) * Math.min(99, Math.max(1, r.layout.sideColumnPercent))) / 100);
     columnPx = Math.max(1, text - gutter - side);
     const sideLeft = r.layout.sideColumnSide === 'left' || r.layout.sideColumnSide === 'inner';

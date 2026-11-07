@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { applyDocxEdits } from '../roundtrip/index.js';
 import { exportDocx, exportProblems, looseMarkup } from './fixtures/harness.js';
+import { pageNumberFormat, pageNumberStart } from './directives.js';
 
 const BOOK = [
   '---\ntitle: "The Book"\nauthor: "Someone"\n---\n\n# Cover {style="cover"}\n\n# Title page {style="cover"}\n\n# Contents\n\n:::toc\n\n:::space{lines=2}\n\nA note.\n',
@@ -91,5 +92,72 @@ describe('semantic docx: directives', () => {
     files['word/document.xml'] = strToU8(strFromU8(files['word/document.xml']!).replace('>A note.<', '>A longer note.<'));
     const r = applyDocxEdits(zipSync(files), current());
     expect(r.chapters[0]!.markdown).toBe(BOOK[0]!.replace('A note.', 'A longer note.'));
+  });
+
+  it('reads :::numbering formats in every spelling the engine accepts', () => {
+    expect(pageNumberFormat('roman-lower', 'en')).toBe('lowerRoman');
+    expect(pageNumberFormat('I', 'en')).toBe('upperRoman');
+    expect(pageNumberFormat('Upper-Alpha', 'en')).toBe('upperLetter');
+    expect(pageNumberFormat('japanese-informal', 'ja')).toBe('japaneseCounting');
+    expect(pageNumberFormat('trad-chinese-informal', 'zh-Hant')).toBe('taiwaneseCountingThousand');
+    expect(pageNumberFormat('一', 'ja')).toBe('japaneseCounting');
+    expect(pageNumberFormat('一', 'zh-Hans')).toBe('chineseCountingThousand');
+    expect(pageNumberFormat('壹', 'zh-TW')).toBe('ideographLegalTraditional');
+    expect(pageNumberFormat('hiragana', 'ja')).toBe('aiueoFullWidth');
+    expect(pageNumberFormat('arabic-indic', 'ar')).toBe('hindiNumbers');
+    expect(pageNumberFormat('decimal-02', 'en')).toBeUndefined();
+    expect(pageNumberFormat('nonsense', 'en')).toBeUndefined();
+  });
+
+  it('starts page numbers only where the engine would', () => {
+    expect(pageNumberStart('3')).toBe(3);
+    expect(pageNumberStart('٣')).toBe(3);
+    expect(pageNumberStart('0')).toBeUndefined();
+    expect(pageNumberStart('2.5')).toBeUndefined();
+    expect(pageNumberStart(undefined)).toBeUndefined();
+  });
+
+  it('writes the section page numbers of a Japanese book and ignores lines=N', async () => {
+    const md = ['# One\n\nText.\n', ':::numbering{format="japanese-informal" startAt=1}\n\n# Two\n\nText.\n', ':::numbering{lines=1}\n\n# Three\n\nText.\n'];
+    const e = await exportDocx(md, { config: { locale: 'ja' } as never });
+    const sects = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/g)!;
+    expect(sects[1]).toContain('<w:pgNumType w:fmt="japaneseCounting" w:start="1"/>');
+    expect(sects[2]).not.toContain('pgNumType');
+    expect(e.doc).not.toContain('lines=1');
+    const r = applyDocxEdits(e.bytes, { chapters: md.map((markdown, i) => ({ id: `ch${i + 1}`, markdown })) });
+    expect(r.edits).toEqual([]);
+    expect(r.chapters.map((c) => c.markdown)).toEqual(md);
+  });
+
+  it('keeps :::references data out of view and in the source', async () => {
+    const md = ['# Notes\n\nBefore.\n\n:::references{format="bibtex"}\n@book{k, title={T}, year={2000}}\n:::\n\nAfter.\n'];
+    const e = await exportDocx(md);
+    expect(e.doc).not.toContain('@book');
+    expect(e.doc).not.toContain('PostextSource');
+    const r = applyDocxEdits(e.bytes, { chapters: [{ id: 'ch1', markdown: md[0]! }] });
+    expect(r.edits).toEqual([]);
+    expect(r.chapters[0]!.markdown).toBe(md[0]);
+    const files = unzipSync(e.bytes);
+    files['word/document.xml'] = strToU8(strFromU8(files['word/document.xml']!).replace('>After.<', '>Later.<'));
+    expect(applyDocxEdits(zipSync(files), { chapters: [{ id: 'ch1', markdown: md[0]! }] }).chapters[0]!.markdown).toBe(md[0]!.replace('After.', 'Later.'));
+  });
+});
+
+describe('semantic docx: float-only side column', () => {
+  const geometry = async (side: string) => {
+    const e = await exportDocx(['# One\n\nText.\n'], {
+      config: { layout: { layoutType: 'oneAndHalf', sideColumnRole: 'floats', sideColumnSide: side } } as never,
+    });
+    const sect = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/)![0];
+    const mar = sect.match(/<w:pgMar w:top="\d+" w:right="(\d+)" w:bottom="\d+" w:left="(\d+)"/)!;
+    return { sect, right: Number(mar[1]), left: Number(mar[2]) };
+  };
+
+  it('sets one column and gives the side column room to the margin on its side', async () => {
+    const outer = await geometry('outer');
+    expect(outer.sect).not.toContain('w:num="2"');
+    expect(outer.right).toBeGreaterThan(outer.left);
+    const inner = await geometry('inner');
+    expect(inner.left).toBeGreaterThan(inner.right);
   });
 });
