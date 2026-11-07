@@ -135,11 +135,17 @@ describe('semantic docx: what a title element prints around the title', () => {
     expect(r.chapters[0]!.markdown).toBe(md.replace('# Rivers', '# Lakes'));
   });
 
-  it('moves the page break from the heading up to the kicker above it', async () => {
-    const e = await exportDocx(md, { config: cfg('{titleText}') });
+  it('opens the page above the kicker with a section break, not a second page break', async () => {
+    const e = await exportDocx(`Intro.\n\n${md}`, { config: cfg('{titleText}') });
     const para = (s: string): string => new RegExp(`<w:p>(?:(?!<w:p>)[^])*?>${s}</w:t>`).exec(e.doc)?.[0] ?? '';
-    expect(para('Unit one')).toContain('<w:pageBreakBefore/>');
+    // The section that the kicker opens starts on a new page, and neither
+    // the kicker nor the title asks for one more (#1444).
+    const sect = e.doc.slice(0, e.doc.indexOf('>Unit one<')).match(/<w:sectPr>(?:(?!<\/w:sectPr>)[^])*<\/w:sectPr>/g) ?? [];
+    expect(sect.length).toBeGreaterThan(0);
+    expect(para('Unit one')).not.toContain('<w:pageBreakBefore/>');
     expect(para('Rivers')).not.toContain('<w:pageBreakBefore/>');
+    const after = e.doc.slice(e.doc.indexOf('>Unit one<')).match(/<w:sectPr>(?:(?!<\/w:sectPr>)[^])*<\/w:sectPr>/)?.[0] ?? '';
+    expect(after).toMatch(/<w:type w:val="(?:nextPage|oddPage)"\/>/);
   });
 
   it('gives two fitted sizes of one title element distinct style names', async () => {

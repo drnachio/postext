@@ -7,10 +7,10 @@ import type { ContentBlock } from '../../parse/types.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import { layoutColumnCount } from '../../defaults/layout.js';
 import type { WriterContext } from './context.js';
-import { resolvedLocale } from '../../pipeline/config.js';
-import { pageNumberFormat, pageNumberType } from './directives.js';
+import { documentNumerals, resolvedLocale } from '../../pipeline/config.js';
+import { pageNumberFormat } from './directives.js';
 import { headingStyleOf } from '../../pipeline/sections/headingStyles.js';
-import { sectionFurniture } from './page/furniture.js';
+import { sectionFurniture, sectionStyleAt } from './page/furniture.js';
 import { sectionFootnotePr } from './page/notes.js';
 import { px, type Units } from './wml.js';
 
@@ -111,7 +111,8 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   const level1 = r.headings.levels.find((l) => l.level === 1);
   // The running heads the section's pages print, the opener's on its
   // first page when it opens with a heading that breaks the page.
-  const { refs, titlePg } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), start: part.start });
+  const firstFolio = part.first ? (ctx.chapter.pageNumbers?.start ?? (index === 0 && !ctx.start ? 1 : undefined)) : undefined;
+  const { refs, titlePg } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), ...(firstFolio !== undefined ? { firstFolio } : {}), start: part.start });
   // A chapter starts on a new page; on a right-hand one only when the book
   // asks for recto starts. A verso start (a spread opener whose artwork
   // the document does not carry) would only leave a blank page, and
@@ -128,12 +129,38 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
     pageNumberType(ctx, !!part.first) +
-    (part.oneColumn ? ONE_COLUMN : geo.cols) +
+    (part.oneColumn ? ONE_COLUMN : styledGeometry(ctx, geo, index, part.block).cols) +
     (titlePg && refs ? '<w:titlePg/>' : '') +
     (r.layout.writingMode === 'vertical-rl' ? '<w:textDirection w:val="tbRl"/>' : '') +
     (r.direction === 'rtl' ? '<w:bidi/>' : '') +
     '<w:docGrid w:linePitch="360"/></w:sectPr>'
   );
+}
+
+/**
+ * The `w:pgNumType` of a section of the chapter ('' for none). Word keeps
+ * the number format per section, a section without one counting in
+ * decimal, so the format goes on every section; the first number only on
+ * the chapter's first, where the count restarts. Decimal folios take the
+ * document's digits, as the engine prints them: Arabic-Indic in an Arabic
+ * book (Word's `hindiNumbers`), unless a `:::numbering` sets another
+ * series (#1444).
+ */
+function pageNumberType(ctx: WriterContext, first: boolean): string {
+  const p = ctx.chapter.pageNumbers;
+  const start = first ? p?.start : undefined;
+  const digits = documentNumerals(ctx.resolved) !== 'latn';
+  const format = digits && (p?.format === undefined || p.format === 'decimal') ? 'hindiNumbers' : p?.format;
+  if (format === undefined && start === undefined) return '';
+  return `<w:pgNumType${format ? ` w:fmt="${format}"` : ''}${start !== undefined ? ` w:start="${start}"` : ''}/>`;
+}
+
+/** The page geometry of a section of chapter `chapter` that starts with
+ *  block `first`: the book's, or the one of the layout its styled section
+ *  sets (a contents page in one column in a book of two, #1444). */
+export function styledGeometry(ctx: WriterContext, geo: PageGeometry, chapter: number, first: ContentBlock | undefined): PageGeometry {
+  const layout = first ? sectionStyleAt(ctx, chapter, first)?.layout : undefined;
+  return layout ? pageGeometry({ ...ctx.resolved, layout }, ctx.units) : geo;
 }
 
 /** Whether heading `b` fills its page: its styled section's margins leave

@@ -30,12 +30,16 @@ function restart(r: ResolvedConfig): 'eachPage' | 'chapter' | undefined {
 }
 
 /** The `w:numFmt` and `w:numRestart` of a section (`first`: the chapter's
- *  first) or, without `first`, of the whole document. */
+ *  first) or, without `first`, of the whole document. A section writes
+ *  all three, its first number and how the count goes on included, so
+ *  every section says the same thing (LibreOffice numbered a note 0 in a
+ *  section that said nothing after one that restarts). */
 function noteProps(r: ResolvedConfig, first: boolean | undefined): string {
   const fmt = noteFormat(r);
   const again = restart(r);
-  const value = again === 'eachPage' ? 'eachPage' : again === 'chapter' && first ? 'eachSect' : '';
-  return (fmt ? `<w:numFmt w:val="${fmt}"/>` : '') + (value ? `<w:numRestart w:val="${value}"/>` : '');
+  const section = first !== undefined;
+  const value = again === 'eachPage' ? 'eachPage' : again === 'chapter' && first ? 'eachSect' : section ? 'continuous' : '';
+  return (fmt ? `<w:numFmt w:val="${fmt}"/>` : '') + (section ? '<w:numStart w:val="1"/>' : '') + (value ? `<w:numRestart w:val="${value}"/>` : '');
 }
 
 /** The `w:footnotePr` of `settings.xml` (its separator notes listed),

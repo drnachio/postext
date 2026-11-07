@@ -85,6 +85,10 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
     return rawSdt(ctx, start, end, name);
   }
   if (name === 'callout') return renderBox(ctx, node, env);
+  // A book without part pages (`parts.page: false`) prints nothing for the
+  // fence: the part only rules the running heads and the contents. Its
+  // source stays as it is on re-import (#1444).
+  if (name === 'part' && !ctx.resolved.parts.page) return '';
   if (name === 'part') {
     // The part's page break comes once: before its number, or before its
     // title when it has none.

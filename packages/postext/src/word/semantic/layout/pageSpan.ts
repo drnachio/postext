@@ -23,6 +23,8 @@ import type { WriterContext } from '../context.js';
 import { joinBlocks, type Node } from '../blocks.js';
 import { headingFillsPage, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
 import { pPr } from '../wml.js';
+import { dropRedundantBreaks, isBreak } from './breaks.js';
+import { headsChange, isComposedPage } from '../page/composed.js';
 
 /** A block's XML and what it asks of its section. */
 export interface Piece {
@@ -127,6 +129,14 @@ function chapterTitleStyle(ctx: WriterContext, pieces: readonly Piece[]): string
   return styles.size === 1 && only ? ctx.styles.nameOf(only) : undefined;
 }
 
+/** Whether a section ends with the contents or the index field. Its
+ *  columns are not levelled: LibreOffice cannot balance a field's result
+ *  and sends the empty levelling section to a page of its own (#1444). */
+function endsWithListing(parts: readonly string[]): boolean {
+  const last = [...parts].reverse().find((x) => x);
+  return !!last && (last.includes('<w:tag w:val="ptx:index"/>') || last.includes('<w:tag w:val="ptx:toc"/>'));
+}
+
 /**
  * The chapter's body as sections: pieces grouped by the column layout they
  * ask for and the page breaks of their headings. Every section but the
@@ -143,10 +153,16 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
   const sections: Section[] = [];
   let after: Piece | undefined;
   let seen: ContentBlock | undefined;
+  // The XML of the chapter's `:::pagebreak` and `:::columnbreak` pieces.
+  const breaks = new Set<string>();
   for (const piece of pieces) {
     if (!piece.xml) continue;
+    if (isBreak(piece.block)) breaks.add(piece.xml);
     // What follows a heading that fills its page starts the next one.
-    const p = !piece.start && headingFillsPage(ctx, after?.block) ? { ...piece, start: 'nextPage' as const } : piece;
+    // So does a composed page that prints other running heads than the
+    // page before it, and the page after it (see page/composed.ts).
+    const heads = (isComposedPage(piece.block) || isComposedPage(seen)) && headsChange(ctx, seen, piece.block);
+    const p = !piece.start && (headingFillsPage(ctx, after?.block) || heads) ? { ...piece, start: 'nextPage' as const } : piece;
     after = piece;
     const oneColumn = columns && !!p.span;
     const cur = sections[sections.length - 1];
@@ -167,6 +183,7 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     }
   }
   if (!sections.length) sections.push({ start: 'chapter', oneColumn: false, parts: [] });
+  dropRedundantBreaks(sections, breaks);
   const titleStyle = chapterTitleStyle(ctx, pieces);
   const balancing = ctx.resolved.headings.balancing;
   const levels = columns && balancing.enabled && balancing.trailing;
@@ -180,7 +197,7 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     // balances a section's columns only above a continuous break, so an
     // empty one-column section follows them on their page.
     const next = sections[i + 1];
-    if (levels && !s.oneColumn && (!next || next.start !== 'continuous')) {
+    if (levels && !s.oneColumn && (!next || next.start !== 'continuous') && !endsWithListing(s.parts)) {
       body += sectionBreak(sect);
       // Its running heads are the ones in force where the columns end.
       const level = sectionXml(ctx, geo, index, { start: 'continuous', oneColumn: true, ...(s.tail ? { block: s.tail, leads: false } : {}), ...(titleStyle ? { titleStyle } : {}) });

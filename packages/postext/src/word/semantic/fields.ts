@@ -14,7 +14,7 @@ import { computeHeadingContext } from '../../pipeline/resources/resourceNumberin
 import { headingIsNumbered } from '../../pipeline/sections/headingStyles.js';
 import { indexGrouping } from '../../pipeline/contents/indexGroups.js';
 import { indexLocale } from '../../pipeline/contents/indexDirective.js';
-import { pageGeometry } from './sections.js';
+import { pageGeometry, styledGeometry } from './sections.js';
 import type { HeadingCounters, OutlineEntry } from '../../types.js';
 import { seeLabels } from './marks.js';
 import type { WriterContext } from './context.js';
@@ -103,6 +103,11 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
     }
     return undefined;
   };
+  // The page numbers stand at the right edge of the column the contents
+  // are set in (one across the page in a book of columns, when its styled
+  // section sets one).
+  const column = styledGeometry(ctx, pageGeometry(ctx.resolved, ctx.units), ctx.chapter.index, directive).columnPx;
+  const tab = Math.round((column * 1440) / ctx.units.dpi);
   for (const row of rows) {
     const info = row.toc;
     if (!info) continue;
@@ -115,7 +120,7 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
     const runs = number + titleRuns(row.spans.length ? row.spans : [{ text: row.text }]);
     const bm = bookmarkOf(info.headingSource);
     const linked = bm ? `<w:hyperlink w:anchor="${bm}" w:history="1">${runs}<w:r><w:tab/></w:r>${fieldRuns(`PAGEREF ${bm} \\h`)}</w:hyperlink>` : runs;
-    lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, ...(bm ? { tab: ctx.textTwips } : {}) });
+    lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, ...(bm ? { tab } : {}) });
     if (info.subtitle) lines.push({ style: ctx.styles.listing('toc', info.level + 1), runs: textRuns(info.subtitle, rPr({ i: true })) });
   }
   const levels = [...(parseTocLevelsAttr(directive.directiveAttrs?.levels) ?? new Set(ctx.resolved.toc.levels.map((l) => l.level)))];
