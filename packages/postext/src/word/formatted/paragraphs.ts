@@ -340,8 +340,9 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
       };
       const flat = emittedRuns(line);
       const lineTabs = tabs.lines[i - g.from]!;
+      const carry = { tw: 0 };
       for (const [k, { run, gap }] of flat.runs.entries()) {
-        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, gap);
+        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, gap, carry);
         if (!emitted.text) continue;
         // The fallback line's style: the run's face and tracking, not the
         // spacing or scale fitted to that run alone.
@@ -403,9 +404,15 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (atom) out.atoms.push({ at: text.length, ...atom });
       }
       if (!lastOfGroup || g.endsWithBreak) {
-        xml.push('<w:r><w:br/></w:r>');
-        text += '\n';
-        out.map.push(-1);
+        // LibreOffice sets a ruby that opens a vertical line after a break
+        // twice over, in the gutter, with its base pushed down the column
+        // (#1444): a zero-width space after the break (generated) opens
+        // the line instead.
+        const next = item.lines[i + 1];
+        const rubyFirst = next?.vertical === true && next.runs.find((r) => r.text.length > 0)?.ruby !== undefined;
+        xml.push(rubyFirst ? '<w:r><w:br/><w:t>\u200b</w:t></w:r>' : '<w:r><w:br/></w:r>');
+        text += rubyFirst ? '\n\u200b' : '\n';
+        out.map.push(...(rubyFirst ? [-1, -1] : [-1]));
       }
       if (lastOfGroup && gi < groups.length - 1) {
         // The paragraph mark between two groups of one fragment.
