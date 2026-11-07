@@ -18,6 +18,7 @@ import type { WriterContext } from '../context.js';
 import { pictureRun } from '../media/figures.js';
 import { pageGeometry } from '../sections.js';
 import { STYLE } from '../styles.js';
+import { generatedRuns } from '../generated.js';
 import { blockSdt, hex, paragraph, px, type ParaProps } from '../wml.js';
 import { covers, estimateBoxes, readingOrder, type Box } from './geometry.js';
 import { hideRuns } from './hide.js';
@@ -25,6 +26,7 @@ import { designImageId, designPictures } from './pictures.js';
 import { paleOnWhite } from './ink.js';
 import { designTextLook, designTextParagraphs, designTextStyle, fittedSize } from './text.js';
 import { designPlaceholders, headingLevelOf } from './values.js';
+import type { DesignPlaceholderContext } from '../../../design/placeholders.js';
 
 /** How the heading paragraph itself is written under a design. */
 export interface HeadingLook {
@@ -32,6 +34,11 @@ export interface HeadingLook {
   style?: string;
   /** Leave the number prefix out: a design prints the number it shows. */
   noNumber?: boolean;
+  /** Generated runs the title element prints before and after the title
+   *  ("{number}. " in front, a closing ornament after). Functions, called
+   *  as the paragraph is written, so the map lists them in document order. */
+  before?: () => string;
+  after?: () => string;
   /** Paragraph properties over the style's. */
   props?: Partial<ParaProps>;
 }
@@ -146,13 +153,36 @@ export function renderDesignedHeading(ctx: WriterContext, b: ContentBlock, headi
   }
   const titleEl = elements.find((e): e is ResolvedDesignTextElement => e.kind === 'text' && printsTitle(e, b.level ?? 1));
   const look: HeadingLook = { noNumber: true, props: breaks ? { pageBreakBefore: false } : undefined };
-  if (titleEl) look.style = titleStyle(ctx, slot, b, titleEl, bandOf(boxes.get(titleEl.id) ?? page));
+  if (titleEl) {
+    look.style = titleStyle(ctx, slot, b, titleEl, bandOf(boxes.get(titleEl.id) ?? page));
+    Object.assign(look, aroundTitle(ctx, b, titleEl, placeholders));
+  }
   const head = at < 0 ? hideRuns(heading({ ...look, props: { ...look.props, ...HIDDEN } })) : heading(look);
   out.push(head);
   below.forEach((item) => {
     if (item.kind !== 'title') out.push(...write(item, false, undefined));
   });
   return out.join('');
+}
+
+/** A character no title holds, put where the title stands to find what the
+ *  element prints around it. */
+const MARK = '\uE000';
+
+/** What the title element prints before and after the title (its number,
+ *  a separator, a fixed word, an ornament), as generated runs: the
+ *  heading paragraph keeps only the title mapped to the source. */
+function aroundTitle(ctx: WriterContext, b: ContentBlock, el: ResolvedDesignTextElement, placeholders: DesignPlaceholderContext): Pick<HeadingLook, 'before' | 'after'> {
+  const h = placeholders.heading!;
+  const marked = { ...placeholders, heading: { ...h, titleText: MARK, chapterTitle: (b.level ?? 1) === 1 ? MARK : h.chapterTitle, ...(h.titleMarked !== undefined ? { titleMarked: MARK } : {}) } };
+  const raw = resolveDesignText(el.content ?? '', marked, !!el.inlineMarks);
+  const all = el.inlineMarks ? plainDesignText(raw) : raw;
+  const at = all.indexOf(MARK);
+  if (at < 0) return {};
+  const head = all.slice(0, at).replace(/^\s+/, '');
+  const tail = all.slice(at + MARK.length).split(MARK).join('').replace(/\s+$/, '');
+  const runs = (t: string): (() => string) | undefined => (/[^\s]/u.test(t) ? () => generatedRuns(ctx, [{ text: t }], `design:${el.id}`) : undefined);
+  return { before: runs(head), after: runs(tail) };
 }
 
 /** The heading paragraph's style under a design: its level's (or style's)

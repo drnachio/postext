@@ -103,7 +103,7 @@ export function inlineSourceOf(ctx: WriterContext, block: ContentBlock, notes = 
 }
 
 /** A text block as one paragraph holding one fragment. */
-export function textParagraph(ctx: WriterContext, block: ContentBlock, props: ParaProps, role: string, lead = ''): string {
+export function textParagraph(ctx: WriterContext, block: ContentBlock, props: ParaProps, role: string, lead = '', tail?: () => string): string {
   const { xml, frag } = renderInline(ctx, inlineSourceOf(ctx, block));
   const wrapped = ctx.log.wrap(xml, frag, {
     block: blockId(ctx),
@@ -111,7 +111,7 @@ export function textParagraph(ctx: WriterContext, block: ContentBlock, props: Pa
     range: [abs(ctx, block.sourceStart), abs(ctx, block.sourceEnd)],
     role,
   });
-  return paragraph(props, lead + wrapped);
+  return paragraph(props, lead + wrapped + (tail?.() ?? ''));
 }
 
 /** The number the engine prints before a numbered heading ("1.2 "), in a
@@ -132,8 +132,8 @@ function headingNumber(ctx: WriterContext, b: ContentBlock): string {
 function headingParagraph(ctx: WriterContext, b: ContentBlock, look?: HeadingLook): string {
   const level = b.level ?? 1;
   const style = look?.style ?? ctx.styles.heading(level, b.attrs?.style);
-  const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + (look?.noNumber ? '' : headingNumber(ctx, b));
-  return textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1), ...look?.props }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
+  const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + (look?.noNumber ? '' : headingNumber(ctx, b)) + (look?.before?.() ?? '');
+  return textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1), ...look?.props }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor, look?.after);
 }
 
 /** Set footnote `id`'s definition as a Word footnote; its Word id, or

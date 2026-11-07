@@ -113,3 +113,40 @@ describe('semantic docx: box labels', () => {
     expect(r.chapters[0]!.markdown).toBe(md.replace('SERVES 4', 'SERVES 6'));
   });
 });
+
+describe('semantic docx: what a title element prints around the title', () => {
+  const cfg = (content: string, extra: object = {}) =>
+    ({
+      headingStyles: [{ id: 'opener', breakBefore: { enabled: true }, advancedDesign: { enabled: true, slot: { elements: [text('kicker', '{attr.kicker}', 5), text('title', content, 20, extra)] } } }],
+    }) as never;
+  const md = '# Rivers {style="opener" kicker="Unit one"}\n\nThe text.\n';
+
+  it('keeps the number and words around {titleText} as generated text, the title mapped', async () => {
+    const e = await exportDocx(md, { config: cfg('Chapter {chapterNumber}: {titleText} ۞') });
+    expect(exportProblems(e, [md])).toEqual([]);
+    expect(e.doc).toMatch(/>Chapter 1: <\/w:t>(?:(?!<\/w:p>)[^])*>Rivers<\/w:t>(?:(?!<\/w:p>)[^])*> ۞<\/w:t>/);
+    expect(e.frag('Chapter 1: ').target).toEqual({ kind: 'generated' });
+    expect(e.frag('Rivers').target).toEqual({ kind: 'markdown', chapter: 0 });
+    const chapters = [{ id: 'ch1', markdown: md }];
+    const same = applyDocxEdits(e.bytes, { chapters });
+    expect(same.edits).toEqual([]);
+    expect(same.chapters[0]!.markdown).toBe(md);
+    const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('>Rivers<', '>Lakes<')), { chapters });
+    expect(r.chapters[0]!.markdown).toBe(md.replace('# Rivers', '# Lakes'));
+  });
+
+  it('moves the page break from the heading up to the kicker above it', async () => {
+    const e = await exportDocx(md, { config: cfg('{titleText}') });
+    const para = (s: string): string => new RegExp(`<w:p>(?:(?!<w:p>)[^])*?>${s}</w:t>`).exec(e.doc)?.[0] ?? '';
+    expect(para('Unit one')).toContain('<w:pageBreakBefore/>');
+    expect(para('Rivers')).not.toContain('<w:pageBreakBefore/>');
+  });
+
+  it('gives two fitted sizes of one title element distinct style names', async () => {
+    const two = '# Rivers {style="opener"}\n\nA.\n\n# Uncharacteristically {style="opener"}\n\nB.\n';
+    const e = await exportDocx(two, { config: cfg('{titleText}', { fontSize: { value: 60, unit: 'pt' } }) });
+    const names = [...e.part('word/styles.xml').matchAll(/<w:name w:val="(Postext Design opener title[^"]*)"\/>/g)].map((m) => m[1]);
+    expect(names.length).toBe(2);
+    expect(new Set(names).size).toBe(2);
+  });
+});

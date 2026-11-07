@@ -360,7 +360,11 @@ export class StyleRegistry {
    *  design's text, a box's label tab): `make` gives its look. */
   custom(key: string, name: string, make: () => { basedOn?: string; pPr?: ParaProps; rPr?: RunProps }): string {
     const { id, fresh } = this.idFor(`custom:${key}`, 'Postext', name);
-    if (fresh) this.add(id, { type: 'paragraph', name: `Postext ${name}`, custom: true, basedOn: STYLE.normal, next: STYLE.normal, ...make() });
+    // Two looks of one element (sizes fitted to different titles) get ids
+    // …title and …title2; the names differ the same way, since LibreOffice
+    // keys styles by name and would merge them.
+    const n = id.slice(`Postext${slug(name)}`.length);
+    if (fresh) this.add(id, { type: 'paragraph', name: `Postext ${name}${n ? ` ${n}` : ''}`, custom: true, basedOn: STYLE.normal, next: STYLE.normal, ...make() });
     return id;
   }
 
