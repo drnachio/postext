@@ -19,7 +19,7 @@ import type { HeadingCounters, OutlineEntry } from '../../types.js';
 import { seeLabels } from './marks.js';
 import type { WriterContext } from './context.js';
 import { blockSdt, fieldRuns, paragraph, rPr, textRuns, type ParaProps } from './wml.js';
-import { tocEntryParts } from './prose/tocEntry.js';
+import { tocEntryParts, tocSubtitleLine } from './prose/tocEntry.js';
 import { escapeXml } from '../xml.js';
 
 /** The book's outline, chapter after chapter with the heading counters
@@ -65,7 +65,7 @@ interface ResultLine {
   style: string;
   runs: string;
   /** Tabs and indents of the line (a contents entry's columns). */
-  props?: Pick<ParaProps, 'tabs' | 'ind'>;
+  props?: Pick<ParaProps, 'tabs' | 'ind' | 'after'>;
 }
 
 /** A complex field whose result spans paragraphs: the field begins in the
@@ -118,8 +118,11 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
     const runs = number + titleRuns(row.spans.length ? row.spans : [{ text: row.text }]);
     const bm = bookmarkOf(info.headingSource);
     const linked = bm ? `<w:hyperlink w:anchor="${bm}" w:history="1">${runs}<w:r>${entry.page}<w:tab/></w:r>${fieldRuns(`PAGEREF ${bm} \\h`, '', entry.page)}</w:hyperlink>` : runs;
-    lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, props: bm ? entry.props : { ind: entry.props.ind, tabs: entry.props.tabs?.slice(0, -1) } });
-    if (info.subtitle) lines.push({ style: ctx.styles.listing('toc', info.level + 1), runs: textRuns(info.subtitle, rPr({ i: true })) });
+    const props = bm ? entry.props : { ind: entry.props.ind, tabs: entry.props.tabs?.slice(0, -1) };
+    // A subtitle line under the title takes the space after the entry.
+    const sub = info.subtitle ? tocSubtitleLine(ctx, info, entry) : undefined;
+    lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, props: sub ? { ...props, after: 0 } : props });
+    if (sub) lines.push({ style: sub.style, runs: textRuns(info.subtitle!, ''), props: sub.props });
   }
   const levels = [...(parseTocLevelsAttr(directive.directiveAttrs?.levels) ?? new Set(ctx.resolved.toc.levels.map((l) => l.level)))];
   const lo = levels.length ? Math.min(...levels) : 1;

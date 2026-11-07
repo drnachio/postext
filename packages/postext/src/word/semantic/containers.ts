@@ -285,10 +285,12 @@ export function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv
     `<w:tblGrid><w:gridCol w:w="${width}"/></w:tblGrid>` +
     `<w:tr>${keep ? '<w:trPr><w:cantSplit/></w:trPr>' : ''}<w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/>${shd}</w:tcPr>${cell}</w:tc></w:tr>` +
     '</w:tbl>';
-  // A box drawn with a top rule or a fill keeps at least half a line from
-  // the text above it, or the rule reads as that text's underline and the
-  // fill starts on its last line (#1444).
-  const ruleGap = borders.top || fill ? twips(u, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx) / 2 : 0;
+  // A box drawn with a top rule keeps at least half a line from the text
+  // above it, or the rule reads as that text's underline; so does a filled
+  // box whose style keeps no space above it, or the fill starts on that
+  // text's last line (#1444).
+  const marginTop = style ? twips(u, style.marginTop) : 0;
+  const ruleGap = borders.top || (fill && marginTop === 0) ? twips(u, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx) / 2 : 0;
   const before = style ? spacer(Math.max(twips(u, style.marginTop), ruleGap), true) : '';
   const after = style ? spacer(twips(u, style.marginBottom), false) : '';
   return before + blockSdt(ctx.nextSdtId(), frame?.tag ?? `ptx:box:${attrs.type ?? ''}`, attrsLabel(attrs), tbl) + after;

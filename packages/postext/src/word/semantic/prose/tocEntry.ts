@@ -18,6 +18,23 @@ export interface TocEntryParts {
   page: string;
 }
 
+/** The line under an entry that holds its subtitle (`{author}`), in the
+ *  contents' subtitle face, under the entry's title: its style and the
+ *  space after it, which is the entry's (the entry's own line then keeps
+ *  none). */
+export function tocSubtitleLine(ctx: WriterContext, info: TocBlockInfo, entry: TocEntryParts): { style: string; props: Pick<ParaProps, 'ind' | 'after'> } {
+  const u = ctx.units;
+  const sub = ctx.resolved.toc.subtitle;
+  const size = px(u, sub.fontSize);
+  const style = ctx.styles.custom('toc:subtitle', 'TOC subtitle', () => ({
+    pPr: { keepLines: true, before: 0, after: 0, ind: { firstLine: 0 }, jc: 'left' },
+    rPr: { ...ctx.styles.font(sub.fontFamily, sub.fontWeight, sub.italic), i: sub.italic, color: hex(sub.color), sz: halfPoints(u, sub.fontSize) },
+  }));
+  const e = tocEntryStyle(ctx.resolved, info.level);
+  const left = (entry.props.ind?.left ?? (e ? twips(u, e.indent, px(u, e.fontSize)) : 0)) + twips(u, sub.indent, size);
+  return { style, props: { ind: { left, firstLine: 0 }, after: e ? twips(u, e.marginBottom, px(u, e.fontSize)) : 0 } };
+}
+
 /** The parts of a contents entry whose page number ends at `endTwips`. */
 export function tocEntryParts(ctx: WriterContext, info: TocBlockInfo, endTwips: number): TocEntryParts {
   const u = ctx.units;

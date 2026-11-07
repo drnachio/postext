@@ -91,12 +91,13 @@ describe('semantic docx: text after the fourth review (#1444)', () => {
   });
 
   it('sets contents entries in their columns: a right-aligned number in its face, the title in the level\'s', async () => {
-    const md = '# Contents {toc=false}\n\n:::toc\n\n# First poem\n\nText.\n';
+    const md = '# Contents {toc=false}\n\n:::toc\n\n# First poem {author="A. Poet"}\n\nText.\n';
     const config = cfg({
       headings: { levels: [{ level: 1, numbering: { enabled: true, template: '{1:upper-roman}' } }] },
       toc: {
         levels: [{ level: 1, italic: true, marginBottom: pt(15), numberColor: { hex: '#56673f', model: 'hex' }, numberWidth: mm(6), numberGap: mm(3) }],
         pageNumber: { color: { hex: '#746a60', model: 'hex' } },
+        subtitle: { enabled: true, italic: true, fontSize: pt(8) },
       },
     });
     const e = await exportDocx(md, { config });
@@ -109,6 +110,12 @@ describe('semantic docx: text after the fourth review (#1444)', () => {
     expect(entry).toContain('<w:ind w:left="510" w:hanging="510"/>');
     expect(entry).toMatch(/<w:r><w:tab\/><\/w:r><w:r><w:rPr>.*?<w:color w:val="56673F"\/>.*?<w:t xml:space="preserve">[^<]+<\/w:t><\/w:r><w:r><w:tab\/><\/w:r>/);
     expect(entry).toContain('<w:color w:val="746A60"/>');
+    // The subtitle line sits under the title and takes the entry's space after.
+    expect(entry).toContain('w:after="0"');
+    const sub = paraOf(e.doc, 'A. Poet');
+    expect(sub).toContain('<w:pStyle w:val="PostextTOCsubtitle"/>');
+    expect(sub).toContain('<w:spacing w:after="300"/><w:ind w:left="510" w:firstLine="0"/>');
+    expect(styleOf(e, 'PostextTOCsubtitle')).toContain('<w:sz w:val="16"/>');
     unchanged(e, [md]);
   });
 
