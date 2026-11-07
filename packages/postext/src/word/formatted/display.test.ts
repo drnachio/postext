@@ -5,7 +5,8 @@ import type { WordFontPlan } from '../fonts/types.js';
 import { createDocxPackage } from '../ooxml/package.js';
 import { MetricsCache, type FaceAdvances } from './metrics.js';
 import { chunkBox, emitGroups, italicRoom, planChunks, planLines } from './paragraphs.js';
-import { HOLDER, wordText } from './runs.js';
+import { HOLDER, emitRun, wordText } from './runs.js';
+import { SYMBOL_FACE } from './symbols.js';
 import { measuredMarker } from './text.js';
 import type { WriterContext } from './types.js';
 
@@ -93,5 +94,17 @@ describe('formatted Word display lines (#1444)', () => {
   it('writes an empty chip\'s placeholder as a no-break space, one for one', () => {
     expect(wordText(`end${CHIP_PLACEHOLDER}`)).toBe(`end${HOLDER}`);
     expect(wordText(`a\tb`)).toBe('a b');
+  });
+
+  it('sets a symbol the embedded face lacks in a symbol face', () => {
+    const ctx = context();
+    const r = run('\u2318 Z', 10, 30);
+    const out = emitRun(ctx, r, lineOf([r]));
+    expect(out.text).toBe('\u2318 Z');
+    expect(out.pieces?.map((p) => p.text)).toEqual(['\u2318', ' Z']);
+    expect(out.pieces![0]!.rPr).toContain(`w:ascii="${SYMBOL_FACE}"`);
+    expect(out.pieces![1]!.rPr).not.toContain(SYMBOL_FACE);
+    // Letters the face lacks are left to the renderer's own fallback.
+    expect(emitRun(ctx, run('\u00e9t\u00e9', 10, 30), lineOf([run('\u00e9t\u00e9', 10, 30)])).rPr).not.toContain(SYMBOL_FACE);
   });
 });

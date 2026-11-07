@@ -21,6 +21,7 @@ import { escapeAttr } from '../xml.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
+import { symbolPieces } from './symbols.js';
 import { eastAsianLayout, kuntenOf, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
 import type { WriterContext } from './types.js';
@@ -495,6 +496,10 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   } else if (gapTw) {
     Object.assign(out, piecesOut(spacedPieces(ctx, r, text, { each: flat, extra: 0 }, gapTw, rtl)));
   }
+  // Symbols the embedded face lacks (⌘ in Geist) in a symbol face.
+  const face = !out.xml && ctx.plan ? ctx.metrics.faceAdvances(r.fontString) : undefined;
+  const symbols = face ? symbolPieces(face, out.pieces ?? [{ rPr: out.rPr, text: out.text }]) : undefined;
+  if (symbols) Object.assign(out, piecesOut(symbols));
   return out;
 }
 
