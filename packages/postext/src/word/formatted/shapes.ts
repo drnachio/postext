@@ -106,9 +106,12 @@ export function pathRun(ctx: WriterContext, item: PathItem): string {
   // (#1444). Subpaths all turning the same way fill non-zero as their
   // union, which is what separate `a:path`s draw (each is filled and
   // stroked on its own); subpaths turning both ways (a ring and its
-  // hole) stay one path.
+  // hole) stay one path. A path the book fills even-odd (an icon ring
+  // drawn as two circles turning the same way) always stays one path,
+  // since that is the fill Word gives it.
   const pathXml = (body: string): string => `<a:path w="${W}" h="${H}">${body}</a:path>`;
-  const list = sameTurn(item.subpaths) ? paths.map(pathXml).join('') : pathXml(paths.join(''));
+  const union = item.fillRule !== 'evenodd' && sameTurn(item.subpaths);
+  const list = union ? paths.map(pathXml).join('') : pathXml(paths.join(''));
   // No `fill="none"` / `stroke="0"` on the path: the shape's own fill and
   // `a:ln` already say it, and Google Docs refuses to open a document
   // holding a single path with either attribute (#1444).

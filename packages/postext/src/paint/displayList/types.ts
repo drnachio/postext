@@ -209,7 +209,7 @@ export type DisplayItem =
     }
   | { kind: 'rule'; x1: number; y1: number; x2: number; y2: number; color: string; widthPx: number; dash?: number[] }
   | { kind: 'rect'; rect: DisplayRect; fill?: string; stroke?: string; strokeWidthPx?: number; radius?: number; rotate?: number; box?: VDTDesignBoxStyle }
-  | { kind: 'path'; bbox: DisplayRect; subpaths: VDTPathCommand[][]; fill?: string; stroke?: VDTPathStroke }
+  | { kind: 'path'; bbox: DisplayRect; subpaths: VDTPathCommand[][]; fill?: string; fillRule?: 'nonzero' | 'evenodd'; stroke?: VDTPathStroke }
   | {
       kind: 'image';
       rect: DisplayRect;

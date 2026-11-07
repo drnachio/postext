@@ -10,6 +10,9 @@ import { MetricsCache } from './metrics.js';
 import { emitGroups, planChunks, planLines } from './paragraphs.js';
 import { fitSpacing, leadChip, type FitCarry } from './runs.js';
 import { pathRun, sameTurn } from './shapes.js';
+import { iconShapeBlock } from '../../design/iconShape.js';
+import { slotItems } from '../../paint/displayList/design.js';
+import { IDENTITY } from '../../paint/displayList/frame.js';
 import { mergeBands, roundedOutline } from './tableFills.js';
 import { tableParts } from './tables.js';
 import type { WriterContext } from './types.js';
@@ -41,6 +44,17 @@ describe('formatted Word export, round three (#1444)', () => {
     const ring = pathRun(ctx, { kind: 'path', bbox, subpaths: [box(0, 0, 30, 30), box(10, 10, 10, 10, -1)], fill: '#000' });
     expect(pathsIn(ring)).toBe(1);
     expect(sameTurn([box(0, 0, 1, 1)])).toBe(false);
+  });
+
+  it('keeps an even-odd ring whose circles turn the same way as one path (a callout ring icon)', () => {
+    const ring = iconShapeBlock('ring', 50, 50, 20, '#cc0000');
+    expect(sameTurn(ring.subpaths)).toBe(true);
+    const items = slotItems({ bbox: { ...ring.bbox }, blocks: [ring] }, { frame: IDENTITY, uprightPictures: false, role: 'body', generated: true, blockKey: 'k' });
+    const item = items[0] as Extract<DisplayItem, { kind: 'path' }>;
+    expect(item.fillRule).toBe('evenodd');
+    expect(pathsIn(pathRun(context(), item))).toBe(1);
+    // The same circles filled non-zero are a disc either way: split.
+    expect(pathsIn(pathRun(context(), { ...item, fillRule: undefined }))).toBe(2);
   });
 
   it('merges the fills of cells side by side and stacked into bands', () => {
