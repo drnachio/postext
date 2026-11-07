@@ -16,9 +16,10 @@ import { halfPoints, hex, px, type RunProps } from '../wml.js';
  *  undefined when Unicode has none. */
 export function circled(ch: string, negative: boolean): string | undefined {
   const at = (base: number, k: number): string => String.fromCodePoint(base + k);
-  // The negative letters (U+1F150) are missing from most text faces, so a
-  // filled letter chip stays a shaded run.
-  if (negative && /^[A-Za-z]$/.test(ch)) return undefined;
+  // The negative letters (U+1F150) are missing from most text faces: a
+  // filled letter chip is its circled letter in the fill's ink, a ring
+  // rather than a disc, which reads as a bubble where a shaded run reads
+  // as a square.
   if (/^[A-Z]$/.test(ch)) return at(0x24b6, ch.charCodeAt(0) - 65);
   if (/^[a-z]$/.test(ch)) return at(0x24d0, ch.charCodeAt(0) - 97);
   const n = /^\d{1,2}$/.test(ch) ? Number(ch) : NaN;
