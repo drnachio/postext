@@ -56,6 +56,7 @@ interface StyleDef {
 export class StyleRegistry {
   private readonly defs = new Map<string, StyleDef>();
   private readonly byKey = new Map<string, string>();
+  private readonly chipIds = new Map<string, string>();
   readonly bodyPx: number;
 
   constructor(
@@ -127,7 +128,8 @@ export class StyleRegistry {
       name: 'caption',
       basedOn: STYLE.normal,
       next: STYLE.normal,
-      pPr: { before: twips(u, cap.gap, px(u, cap.fontSize)), ind: { firstLine: 0 }, jc: JC[cap.align] },
+      // A caption stays whole, and one set above its figure goes with it.
+      pPr: { keepNext: cap.position === 'above' || undefined, keepLines: true, before: twips(u, cap.gap, px(u, cap.fontSize)), ind: { firstLine: 0 }, jc: JC[cap.align] },
       rPr: { ...this.font(cap.fontFamily), color: hex(cap.color), sz: halfPoints(u, cap.fontSize) },
     });
     const lists = r.unorderedLists;
@@ -151,18 +153,24 @@ export class StyleRegistry {
     const small = { sz: Math.max(2, Math.round(halfPoints(u, body.fontSize) * 0.85)) };
     this.add(STYLE.header, { type: 'paragraph', name: 'header', basedOn: STYLE.normal, pPr: { ind: { firstLine: 0 }, jc: 'center' }, rPr: small });
     this.add(STYLE.footer, { type: 'paragraph', name: 'footer', basedOn: STYLE.normal, pPr: { ind: { firstLine: 0 }, jc: 'center' }, rPr: small });
-    const mono = { font: 'Consolas' };
+    // Source the writer could not convert: a monospace face that Word,
+    // LibreOffice and Google Docs all have (Consolas is Windows only, and
+    // LibreOffice elsewhere falls back to a serif).
+    const mono = { font: 'Courier New' };
     this.add(STYLE.source, {
       type: 'paragraph',
       name: 'Postext Source',
       custom: true,
       basedOn: STYLE.normal,
-      pPr: { shd: 'EDEDED', before: 0, after: 0, line: { twips: 240, rule: 'auto' }, ind: { firstLine: 0 }, jc: 'left' },
+      pPr: { shd: 'EDEDED', suppressAutoHyphens: true, bidi: r.direction === 'rtl' ? false : undefined, before: 0, after: 0, line: { twips: 240, rule: 'auto' }, ind: { firstLine: 0 }, jc: 'left' },
       rPr: { ...mono, color: '595959', sz: Math.max(16, small.sz) },
     });
     this.add(STYLE.sourceChar, { type: 'character', name: 'Postext Source Char', custom: true, rPr: { ...mono, color: '595959', shd: 'EDEDED' } });
     this.add(STYLE.reference, { type: 'character', name: 'Postext Reference', custom: true, rPr: { color: hex(body.referenceColor), b: body.referenceBold || undefined, i: body.referenceItalic || undefined } });
-    this.add(STYLE.mark, { type: 'character', name: 'Postext Mark', custom: true, rPr: { highlight: 'yellow' } });
+    // The band of a mark as run shading in the mark style's colour:
+    // LibreOffice drops a highlight set in a character style.
+    const mark = r.markStyles?.[0];
+    this.add(STYLE.mark, { type: 'character', name: 'Postext Mark', custom: true, rPr: { color: hex(mark?.color), shd: hex(mark?.background) ?? 'FFF0A0' } });
     this.add(STYLE.chip, { type: 'character', name: 'Postext Chip', custom: true, rPr: { shd: 'E7E6E6' } });
     const code = resolvedCodeStyle(r);
     const codePx = px(u, code.fontSize, bodyPx);
@@ -173,6 +181,8 @@ export class StyleRegistry {
       basedOn: STYLE.normal,
       pPr: {
         shd: code.backgroundEnabled ? hex(code.background) : undefined,
+        suppressAutoHyphens: true,
+        bidi: r.direction === 'rtl' ? false : undefined,
         before: twips(u, code.marginTop, bodyPx),
         after: twips(u, code.marginBottom, bodyPx),
         line: code.lineHeight ? { twips: twips(u, code.lineHeight, codePx), rule: 'atLeast' } : undefined,
@@ -188,6 +198,45 @@ export class StyleRegistry {
     this.add(STYLE.verse, { type: 'paragraph', name: 'Postext Verse', custom: true, basedOn: STYLE.normal, pPr: { ind: { left: twips(u, bq.indent, bodyPx), firstLine: 0 }, jc: 'left' } });
     this.add(STYLE.part, { type: 'paragraph', name: 'Postext Part', custom: true, basedOn: STYLE.normal, pPr: { pageBreakBefore: true, keepNext: true, ind: { firstLine: 0 }, jc: 'center', outlineLvl: 0 }, rPr: { b: true, sz: halfPoints(u, body.fontSize) * 2 } });
     this.add(STYLE.boxTitle, { type: 'paragraph', name: 'Postext Box Title', custom: true, basedOn: STYLE.normal, pPr: { keepNext: true, ind: { firstLine: 0 } }, rPr: { b: true } });
+  }
+
+  /** The alignment a paragraph style ends up with, through its `basedOn`
+   *  chain. */
+  jcOf(id: string | undefined): ParaProps['jc'] {
+    for (let k = 0, d = id ? this.defs.get(id) : undefined; d && k < 16; k++, d = d.basedOn ? this.defs.get(d.basedOn) : undefined) {
+      if (d.pPr?.jc) return d.pPr.jc;
+    }
+    return undefined;
+  }
+
+  /** The character style of a chip style: its fill, ink and face. Style
+   *  ids never contain a word the importer reads as run formatting
+   *  (`bold`, `code`…), so a chip does not come back as an edit. */
+  chip(styleId: string | undefined): string {
+    const styles = this.resolved.chipStyles ?? [];
+    const cs = (styleId ? styles.find((s) => s.id === styleId) : undefined) ?? styles[0];
+    if (!cs) return STYLE.chip;
+    const known = this.chipIds.get(cs.id);
+    if (known) return known;
+    let id = `${STYLE.chip}${slug(cs.id)}`;
+    if (/strong|bold|emphasis|italic|smallcaps|superscript|subscript|code|verbatim/i.test(id) || this.defs.has(id)) id = `${STYLE.chip}${this.chipIds.size + 1}`;
+    this.chipIds.set(cs.id, id);
+    const u = this.units;
+    this.add(id, {
+      type: 'character',
+      name: `Postext Chip: ${cs.name || cs.id}`,
+      custom: true,
+      basedOn: STYLE.chip,
+      rPr: {
+        ...(cs.fontFamily ? this.font(cs.fontFamily, cs.bold ? 700 : 400, cs.italic) : {}),
+        b: cs.bold || undefined,
+        i: cs.italic || undefined,
+        color: hex(cs.color),
+        sz: cs.fontSize ? halfPoints(u, cs.fontSize, this.bodyPx) : undefined,
+        shd: cs.backgroundEnabled ? hex(cs.background) : 'auto',
+      },
+    });
+    return id;
   }
 
   /** A paragraph style for table header cells: their bold and italic go
@@ -206,6 +255,7 @@ export class StyleRegistry {
       pPr: {
         keepNext: true,
         keepLines: true,
+        suppressAutoHyphens: true,
         before: twips(u, level.marginTop, size),
         after: twips(u, level.marginBottom, size),
         line: { twips: twips(u, level.lineHeight, size), rule: 'atLeast' },
@@ -269,6 +319,7 @@ export class StyleRegistry {
       custom: true,
       basedOn: STYLE.normal,
       pPr: {
+        suppressAutoHyphens: !ps.hyphenation || undefined,
         before: twips(u, ps.marginTop, size),
         after: twips(u, ps.spaceBetween, size),
         line: { twips: twips(u, ps.lineHeight, size), rule: 'atLeast' },
@@ -308,7 +359,13 @@ export class StyleRegistry {
         name: `Box: ${style.name || style.id}`,
         custom: true,
         basedOn: STYLE.normal,
-        pPr: { after, line: { twips: twips(u, b.lineHeight, size), rule: 'atLeast' }, ind: { firstLine: twips(u, b.firstLineIndent, size) }, jc: b.textAlign === 'justify' ? 'both' : 'left' },
+        pPr: {
+          suppressAutoHyphens: !b.hyphenation || undefined,
+          after,
+          line: { twips: twips(u, b.lineHeight, size), rule: 'atLeast' },
+          ind: { firstLine: twips(u, b.firstLineIndent, size) },
+          jc: b.textAlign === 'justify' ? 'both' : 'left',
+        },
         rPr: {
           ...this.font(b.fontFamily, b.fontWeight, b.italic),
           i: b.italic,
@@ -327,7 +384,7 @@ export class StyleRegistry {
         name: `Box title: ${style.name || style.id}`,
         custom: true,
         basedOn: STYLE.boxTitle,
-        pPr: { after: twips(u, t.gap, size), line: { twips: twips(u, t.lineHeight, size), rule: 'atLeast' }, ind: { left: twips(u, t.indent, size), firstLine: 0 } },
+        pPr: { suppressAutoHyphens: true, after: twips(u, t.gap, size), line: { twips: twips(u, t.lineHeight, size), rule: 'atLeast' }, ind: { left: twips(u, t.indent, size), firstLine: 0 } },
         rPr: {
           ...this.font(t.fontFamily, t.fontWeight, t.italic),
           b: t.fontWeight >= 600,

@@ -1,7 +1,10 @@
 // Table resources as Word tables (#1390): header rows repeated, column
 // spans (`w:gridSpan`), row spans (`w:vMerge`), cell fills and alignment
 // from the table model and the table style; each cell's text is a fragment
-// mapped to the resource cell it came from.
+// mapped to the resource cell it came from. The table takes the whole
+// width of its column as a percentage (#1444), so a narrower side column
+// does not clip it, and its columns keep their proportions as percentages;
+// a caption set below it stays with its last row.
 
 import type { Resource, TableCell } from '../../types.js';
 import type { WriterContext } from './context.js';
@@ -23,6 +26,9 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
   const width = Math.max(cols * 20, Math.round(widthTwips));
   const grid = weights.map((w) => Math.max(1, Math.round((width * w) / total)));
   const headerRows = Math.min(rows.length, model.headerRowCount ?? 0);
+  // Fiftieths of a percent of the table's width, per grid column.
+  const pct = weights.map((w) => Math.max(1, Math.round((5000 * w) / total)));
+  const keepWithCaption = ctx.resolved.captionStyle.position !== 'above' && !!res.caption;
 
   const color = hex(style.borderColor) ?? '000000';
   const line = (sz: number): string => `w:val="single" w:sz="${Math.max(2, Math.min(96, Math.round(sz)))}" w:space="0" w:color="${color}"`;
@@ -42,12 +48,12 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
       if (hidden && hidden.row === r) continue;
       const primary = hidden ? rows[hidden.row]?.[hidden.col] : cell;
       const span = Math.max(1, Math.min(cols - c, primary?.colSpan ?? 1));
-      const cellWidth = grid.slice(c, c + span).reduce((a, b) => a + b, 0);
+      const cellWidth = pct.slice(c, c + span).reduce((a, b) => a + b, 0);
       const continues = !!hidden;
       const restarts = !hidden && (cell?.rowSpan ?? 1) > 1;
       const isHeader = header || !!cell?.isHeader;
       const fill = hex(cell?.background) ?? (isHeader ? (style.headerBackgroundEnabled ? hex(style.headerBackground) : undefined) : style.bodyBackgroundEnabled ? hex(style.bodyBackground) : undefined);
-      let tcPr = `<w:tcW w:w="${cellWidth}" w:type="dxa"/>`;
+      let tcPr = `<w:tcW w:w="${cellWidth}" w:type="pct"/>`;
       if (span > 1) tcPr += `<w:gridSpan w:val="${span}"/>`;
       if (continues) tcPr += '<w:vMerge/>';
       else if (restarts) tcPr += '<w:vMerge w:val="restart"/>';
@@ -57,13 +63,23 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
       let content = '';
       if (!continues && cell) {
         const runs = snippetRuns(ctx, cell.content, cell.content, 0, { kind: 'resource', resourceId: res.id, field: 'cell', row: r, col: c }, 'cell');
-        const props: ParaProps = { style: isHeader ? ctx.styles.tableHeader(!!style.headerBold, !!style.headerItalic) : STYLE.normal, before: 0, after: 0, ind: { firstLine: 0 }, jc: JC[cell.align ?? 'left'] ?? 'left' };
+        const props: ParaProps = {
+          style: isHeader ? ctx.styles.tableHeader(!!style.headerBold, !!style.headerItalic) : STYLE.normal,
+          keepNext: (keepWithCaption && r === rows.length - 1) || undefined,
+          // Narrow cells are not hyphenated (the engine sets a cell's
+          // words whole).
+          suppressAutoHyphens: true,
+          before: 0,
+          after: 0,
+          ind: { firstLine: 0 },
+          jc: JC[cell.align ?? 'left'] ?? 'left',
+        };
         const runProps = isHeader
           ? rPr({ color: hex(style.headerColor), sz: halfPoints(u, style.headerFontSize) })
           : rPr({ color: hex(style.bodyColor), sz: halfPoints(u, style.bodyFontSize) });
         props.markRPr = runProps;
         content = paragraph(props, injectRunProps(runs, runProps));
-      } else content = '<w:p/>';
+      } else content = keepWithCaption && r === rows.length - 1 ? '<w:p><w:pPr><w:keepNext/></w:pPr></w:p>' : '<w:p/>';
       tcs += `<w:tc><w:tcPr>${tcPr}</w:tcPr>${content}</w:tc>`;
       c += span - 1;
     }
@@ -72,9 +88,9 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
   });
   return (
     '<w:tbl><w:tblPr>' +
-    `<w:tblW w:w="${width}" w:type="dxa"/><w:jc w:val="center"/>` +
+    '<w:tblW w:w="5000" w:type="pct"/><w:jc w:val="center"/>' +
     `<w:tblBorders>${borders}</w:tblBorders>` +
-    '<w:tblLayout w:type="fixed"/>' +
+    '<w:tblLayout w:type="autofit"/>' +
     '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/>' +
     '</w:tblPr>' +
     `<w:tblGrid>${grid.map((g) => `<w:gridCol w:w="${g}"/>`).join('')}</w:tblGrid>` +

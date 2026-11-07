@@ -3,6 +3,7 @@
 // every text block a paragraph wrapped in its fragment's bookmark.
 
 import type { ContentBlock } from '../../parse/types.js';
+import type { ResolvedCalloutStyleConfig } from '../../types.js';
 import { texToOmml } from '../ommlWrite/index.js';
 import { ommlHash } from '../anchors/ommlHash.js';
 import { renderContainer } from './containers.js';
@@ -14,6 +15,7 @@ import { markInserts, namedBookmark } from './marks.js';
 import type { ListLevelKind } from './numbering.js';
 import { lineStart, rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
+import { renderVerse } from './verse.js';
 import { blockSdt, paragraph, pPr, rPr, textRuns, type ParaProps } from './wml.js';
 
 export type Node = { block: ContentBlock } | { container: ContentBlock; end?: ContentBlock; children: Node[] };
@@ -25,6 +27,9 @@ export interface BlockEnv {
   /** Width available to tables, boxes and pictures, twips (inside a box
    *  cell: the cell less its margins). Default: the text column. */
   widthTwips?: number;
+  /** The box style of the box the blocks stand in: its lists' bullets
+   *  and indents. */
+  box?: ResolvedCalloutStyleConfig;
 }
 
 /** Rebuild the container tree from the flat list. */
@@ -161,7 +166,10 @@ function levelKind(b: ContentBlock): ListLevelKind {
 
 /** Group consecutive list items into runs (a new run when the first
  *  level changes kind) and render them with Word numbering. */
-function renderList(ctx: WriterContext, items: ContentBlock[]): string[] {
+function renderList(ctx: WriterContext, items: ContentBlock[], env: BlockEnv): string[] {
+  // A list in a box takes the alignment of the box's text (a list
+  // paragraph is based on Normal, which may be justified).
+  const jc = env.paraStyle ? ctx.styles.jcOf(env.paraStyle) : undefined;
   const out: string[] = [];
   let firstKind: ListLevelKind | undefined;
   const pending: ContentBlock[] = [];
@@ -173,15 +181,15 @@ function renderList(ctx: WriterContext, items: ContentBlock[]): string[] {
       if (kinds[d] === undefined) kinds[d] = levelKind(b);
     }
     for (let d = 0; d < kinds.length; d++) kinds[d] ??= kinds[d - 1] ?? 'bullet';
-    const run: ListRun = { numId: ctx.numbering.list(kinds, pending[0]!.startNumber), kinds };
+    const run: ListRun = { numId: ctx.numbering.list(kinds, pending[0]!.startNumber, env.box), kinds };
     for (const b of pending) {
       const ilvl = Math.min(9, Math.max(1, b.depth ?? 1)) - 1;
       let numId = run.numId;
       if (b.listKind === 'task' && b.checked) {
-        run.checkedId ??= ctx.numbering.list(run.kinds.map((k) => (k === 'task' ? 'checked' : k)));
+        run.checkedId ??= ctx.numbering.list(run.kinds.map((k) => (k === 'task' ? 'checked' : k)), undefined, env.box);
         numId = run.checkedId;
       }
-      out.push(textParagraph(ctx, b, { style: STYLE.list, numPr: { numId, ilvl } }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
+      out.push(textParagraph(ctx, b, { style: STYLE.list, numPr: { numId, ilvl }, jc }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
     }
     pending.length = 0;
   };
@@ -215,7 +223,7 @@ export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: Blo
         i++;
       }
       i--;
-      parts.push(...renderList(ctx, items));
+      parts.push(...renderList(ctx, items, env));
       continue;
     }
     parts.push(renderBlock(ctx, n.block, env));
@@ -239,10 +247,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     case 'paragraph': {
       if (b.footnoteDef !== undefined) return ctx.chapter.cited.has(b.footnoteDef) ? '' : rawSdt(ctx, lineStart(ctx.chapter.markdown, start), end, 'footnote');
       if (b.toc || b.index) return '';
-      if (b.verse) {
-        const style = (b.verse.attrs.style && ctx.styles.paragraphStyle(b.verse.attrs.style)) || STYLE.verse;
-        return textParagraph(ctx, b, { style }, 'verse');
-      }
+      if (b.verse) return renderVerse(ctx, b, env);
       const style = env.paraStyle ?? STYLE.normal;
       return textParagraph(ctx, b, { style, ind: b.continuesParagraph ? { firstLine: 0 } : undefined }, env.paraStyle ? `para:${env.paraStyle}` : 'body');
     }

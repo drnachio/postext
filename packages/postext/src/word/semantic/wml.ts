@@ -110,6 +110,11 @@ export interface ParaProps {
   numPr?: { numId: number; ilvl: number };
   border?: { top?: Border; left?: Border; bottom?: Border; right?: Border };
   shd?: string;
+  /** Tab stops: alignment (`left`/`right` read as start/end in a bidi
+   *  paragraph) and position in twips from the start margin. */
+  tabs?: { val: 'left' | 'right' | 'center'; pos: number }[];
+  /** Keep Word and LibreOffice from hyphenating the paragraph. */
+  suppressAutoHyphens?: boolean;
   /** Twips. */
   before?: number;
   after?: number;
@@ -118,6 +123,8 @@ export interface ParaProps {
   contextualSpacing?: boolean;
   jc?: 'left' | 'center' | 'right' | 'both' | 'start' | 'end';
   outlineLvl?: number;
+  /** `false` writes an explicit left-to-right paragraph (code in an RTL
+   *  book). */
   bidi?: boolean;
   /** `w:rPr` of the paragraph mark (already serialized). */
   markRPr?: string;
@@ -142,7 +149,9 @@ export function pPr(p: ParaProps): string {
     if (inner) x += `<w:pBdr>${inner}</w:pBdr>`;
   }
   if (p.shd) x += `<w:shd w:val="clear" w:color="auto" w:fill="${p.shd}"/>`;
-  if (p.bidi) x += '<w:bidi/>';
+  if (p.tabs?.length) x += `<w:tabs>${p.tabs.map((t) => `<w:tab w:val="${t.val}" w:pos="${Math.max(0, Math.round(t.pos))}"/>`).join('')}</w:tabs>`;
+  if (p.suppressAutoHyphens) x += '<w:suppressAutoHyphens/>';
+  if (p.bidi !== undefined) x += p.bidi ? '<w:bidi/>' : '<w:bidi w:val="0"/>';
   if (p.before !== undefined || p.after !== undefined || p.line) {
     let s = '';
     if (p.before !== undefined) s += ` w:before="${Math.max(0, Math.round(p.before))}"`;

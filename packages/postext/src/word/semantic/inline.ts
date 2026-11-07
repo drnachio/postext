@@ -38,6 +38,10 @@ export interface InlineSource {
   /** Write links as HYPERLINK fields (in parts without relationships of
    *  their own: footnotes). */
   linkFields?: boolean;
+  /** Text set at the start of each line of the block (index = line, the
+   *  first before the first character): the indent of a line of verse,
+   *  held by an atom over the source's leading spaces. */
+  lineLeads?: string[];
 }
 
 interface Fmt {
@@ -48,10 +52,12 @@ interface Fmt {
   k?: boolean;
   href?: string;
   mark?: boolean;
+  /** Fill of a mark whose style is not the first mark style's. */
+  markFill?: string;
 }
 
 const flagsOf = (f: Fmt): string => `${f.b ? 'b' : ''}${f.i ? 'i' : ''}${f.c ? 'c' : ''}${f.script === 'sup' ? 'p' : ''}${f.script === 'sub' ? 's' : ''}${f.k ? 'k' : ''}`;
-const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}`;
+const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}`;
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
@@ -62,8 +68,30 @@ function runProps(f: Fmt, style?: string): RunProps {
     b: f.b || undefined,
     i: f.i || undefined,
     smallCaps: f.c || undefined,
+    shd: f.mark && !f.k && !f.href ? f.markFill : undefined,
     vertAlign: f.script === 'sup' ? 'superscript' : f.script === 'sub' ? 'subscript' : undefined,
   };
+}
+
+/** No-break spaces either side of a chip's words stand for its padding, so
+ *  two chips side by side stay two shaded boxes; a chip with no words (an
+ *  end mark drawn as a filled box) is three of them, filled. */
+function chipLabel(chip: NonNullable<InlineSpan['chip']>): string {
+  // The words never break inside a chip: it is one unit in the engine too.
+  const words = chipText(chip).trim().replace(/ /g, '\u00a0');
+  return words ? `\u00a0${words}\u00a0` : '\u00a0\u00a0\u00a0';
+}
+
+/** Left-to-right mark: keeps the punctuation at the ends of code from
+ *  taking the direction of right-to-left text around it. */
+const LRM = '\u200e';
+
+/** The band colour of a mark whose style is not the first one (the first
+ *  is the mark character style's own shading). */
+function markFill(ctx: WriterContext, style: string): string | undefined {
+  const styles = ctx.resolved.markStyles ?? [];
+  const ms = style ? styles.find((m) => m.id === style) : undefined;
+  return ms && ms !== styles[0] ? hex(ms.background) : undefined;
 }
 
 function hyperlink(ctx: WriterContext, href: string, runs: string, field?: boolean): string {
@@ -108,6 +136,15 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     }
     return false;
   };
+  // The indent of the first line of verse, over the spaces before it.
+  const firstLead = s.lineLeads?.[0];
+  const first = s.sourceMap[0] ?? -1;
+  if (firstLead && first > 0) {
+    let ws = first;
+    while (ws > 0 && /[ \t\u3000]/.test(s.src[ws - 1]!)) ws--;
+    if (ws < first) units.push({ kind: 'obj', p: 0, xml: textRuns(firstLead, ''), fmt: {}, text: firstLead, atom: { start: ws, end: first, kind: 'indent' } });
+  }
+  let line = 0;
   let p = 0;
   for (const span of s.spans) {
     const len = span.text.length;
@@ -134,7 +171,7 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       const end = s.src.startsWith(raw, at) ? at + raw.length : atomEnd(s.src, at, limit);
       units.push(atomUnit(p, raw, base, STYLE.reference, at, end, 'citation'));
     } else if (span.chip) {
-      units.push(atomUnit(p, chipText(span.chip) || OBJECT_CHAR, base, STYLE.chip, at, atomEnd(s.src, at, limit), span.chip.gap ? 'gap' : 'chip'));
+      units.push(atomUnit(p, chipLabel(span.chip), base, ctx.styles.chip(span.chip.style), at, atomEnd(s.src, at, limit), span.chip.gap ? 'gap' : 'chip'));
     } else if (span.swatch) {
       const icon = span.swatch.icon;
       const text = icon ? icon.alt || icon.glyph || '\u25A0' : '\u25A0';
@@ -149,14 +186,23 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
         const src = s.sourceMap[p + k] ?? -1;
         const fmt: Fmt = { ...base, k: src >= 0 && inCode(src) };
         const link = span.links?.find((l) => k >= l.start && k < l.end);
-        if (link?.mark) fmt.mark = true;
-        else if (link?.href) fmt.href = link.href;
+        if (link?.mark) {
+          fmt.mark = true;
+          const fill = markFill(ctx, link.mark.style);
+          if (fill) fmt.markFill = fill;
+        } else if (link?.href) fmt.href = link.href;
         if (ch === BREAK) {
           let end = src >= 0 && s.src[src] === '\\' ? (s.src[src + 1] === '\\' ? src + 2 : src + 1) : src + 1;
           // The atom takes the source line end too: deleting the break in
           // Word then leaves no stray newline behind.
           if (src >= 0 && s.src[end] === '\n') end++;
           units.push({ kind: 'obj', p: p + k, xml: '<w:r><w:br/></w:r>', fmt: {}, text: '\n', atom: { start: src, end, kind: 'break' } });
+        } else if (ch === '\n' && s.lineLeads && src >= 0 && s.src[src] === '\n') {
+          // A line of verse: the break and the next line's indent, over the
+          // line end and the spaces that follow it.
+          const lead = s.lineLeads[++line] ?? '';
+          const next = nextMapped(p + k);
+          units.push({ kind: 'obj', p: p + k, xml: '<w:r><w:br/></w:r>' + textRuns(lead, ''), fmt: {}, text: '\n' + lead, atom: { start: src, end: next > src ? next : src + 1, kind: 'line' } });
         } else if (src < 0 || s.src[src] === ch || (/\s/.test(ch) && /\s/.test(s.src[src] ?? ''))) {
           units.push({ kind: 'char', p: p + k, ch, src, fmt });
         } else {
@@ -188,6 +234,13 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
   const frag = new FragmentBuilder();
   let xml = '';
   let i = 0;
+  const rtl = ctx.resolved.direction === 'rtl';
+  // A generated mark: written and logged as text no source character
+  // stands for.
+  const ltrMark = (): void => {
+    xml += textRuns(LRM, '');
+    frag.push(LRM, [-1]);
+  };
   const insertAt = (p: number): string => {
     const x = s.inserts?.get(p);
     if (x) s.inserts!.delete(p);
@@ -204,8 +257,10 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
       continue;
     }
     if (u.kind === 'mapped') {
+      if (rtl) ltrMark();
       xml += textRuns(u.text, rPr({ style: u.style }));
       frag.push(u.text, u.map);
+      if (rtl) ltrMark();
       i++;
       continue;
     }
@@ -222,8 +277,13 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
       j++;
     }
     const runs = textRuns(text, rPr(runProps(u.fmt)));
+    // Code in right-to-left text: left-to-right marks either side keep its
+    // end punctuation from being mirrored.
+    const ltr = rtl && !!u.fmt.k && !u.fmt.href;
+    if (ltr) ltrMark();
     xml += u.fmt.href ? hyperlink(ctx, u.fmt.href, runs, s.linkFields) : runs;
     frag.push(text, map, flagsOf(u.fmt), u.fmt.href);
+    if (ltr) ltrMark();
     i = j;
   }
   // Marks anchored past the last character.

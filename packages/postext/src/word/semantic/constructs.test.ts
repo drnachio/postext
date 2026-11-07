@@ -84,7 +84,7 @@ describe('semantic docx: text', () => {
       ['swatch', ':swatch{color="#f00"}'],
       ['tab', ':tab{at="4cm"}'],
     ]);
-    expect(f.text).toBe('See Fig.\u00a01, @smith, [@smith, p. 3], Hi, \u25A0 and\tx.');
+    expect(f.text).toBe('See Fig.\u00a01, @smith, [@smith, p. 3], \u00a0Hi\u00a0, \u25A0 and\tx.');
     expect(e.doc).toContain('<w:rStyle w:val="PostextReference"/>');
     expect(e.doc).toContain('<w:color w:val="FF0000"/>');
   });
