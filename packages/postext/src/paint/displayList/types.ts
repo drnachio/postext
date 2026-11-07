@@ -230,6 +230,10 @@ export type DisplayItem =
       cells: { row: number; col: number; rowSpan: number; colSpan: number; rect: DisplayRect; background?: string; align?: string; verticalAlign?: string; item: Extract<DisplayItem, { kind: 'text' }> | null; image?: Extract<DisplayItem, { kind: 'image' }> }[];
       borderColor?: string;
       borderWidthPx?: number;
+      /** Which edges the border strokes, as the PDF draws them: every cell
+       *  edge (`'grid'`, the default), the row edges (`'horizontal'`), the
+       *  table's frame (`'outer'`) or none. */
+      rules?: 'grid' | 'horizontal' | 'outer' | 'none';
     };
 
 export interface DisplayPage {

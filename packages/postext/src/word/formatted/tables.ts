@@ -47,13 +47,25 @@ function nearest(edges: readonly number[], v: number): number {
   return best;
 }
 
-function bordersXml(ctx: WriterContext, item: TableItem): string {
+/** Which outer edges of the table a cell's sides lie on. */
+interface CellEdges {
+  top: boolean;
+  left: boolean;
+  bottom: boolean;
+  right: boolean;
+}
+
+const NO_BORDERS = '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>';
+
+/** A cell's borders: the sides the table's rules stroke (every cell edge,
+ *  the row edges, or the frame), as the PDF draws them. */
+export function bordersXml(ctx: WriterContext, item: Pick<TableItem, 'borderColor' | 'borderWidthPx' | 'rules'>, edges: CellEdges): string {
   const c = wordColor(item.borderColor);
-  if (!c || !item.borderWidthPx || item.borderWidthPx <= 0) {
-    return '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/></w:tcBorders>';
-  }
+  const rules = item.rules ?? 'grid';
+  if (!c || !item.borderWidthPx || item.borderWidthPx <= 0 || rules === 'none') return NO_BORDERS;
   const sz = Math.min(96, Math.max(2, eighths(item.borderWidthPx, ctx.dpi)));
-  const b = (side: string): string => `<w:${side} w:val="single" w:sz="${sz}" w:space="0" w:color="${c.hex}"/>`;
+  const ruled = (side: keyof CellEdges): boolean => rules === 'grid' || (rules === 'horizontal' ? side === 'top' || side === 'bottom' : edges[side]);
+  const b = (side: keyof CellEdges): string => (ruled(side) ? `<w:${side} w:val="single" w:sz="${sz}" w:space="0" w:color="${c.hex}"/>` : `<w:${side} w:val="nil"/>`);
   return `<w:tcBorders>${b('top')}${b('left')}${b('bottom')}${b('right')}</w:tcBorders>`;
 }
 
@@ -114,7 +126,8 @@ export async function tableParts(ctx: WriterContext, item: TableItem, floating: 
   const nCols = Math.max(1, cols.length - 1);
   const nRows = Math.max(1, rows.length - 1);
   const centre = { x: item.rect.x + item.rect.width / 2, y: item.rect.y + item.rect.height / 2 };
-  const borders = bordersXml(ctx, item);
+  const borders = (c: number, r: number, span: number, rowSpan: number): string =>
+    bordersXml(ctx, item, { top: r === 0, left: c === 0, bottom: r + rowSpan >= nRows, right: c + span >= nCols });
   const pending: Pending[] = [];
 
   // A shaded cell that holds chips is filled by a shape under their boxes:
@@ -163,15 +176,15 @@ export async function tableParts(ctx: WriterContext, item: TableItem, floating: 
       const cont = covered.get(`${r}:${c}`);
       if (placed) {
         const { cell, span, rowSpan } = placed;
-        xml.push(`<w:tc>${cellProps(width(span), span, rowSpan > 1 ? 'restart' : '', borders, shading(cell))}`);
+        xml.push(`<w:tc>${cellProps(width(span), span, rowSpan > 1 ? 'restart' : '', borders(c, r, span, rowSpan), shading(cell))}`);
         xml.push(cellContent(ctx, cell, pending));
         xml.push('</w:tc>');
         c += span;
       } else if (cont) {
-        xml.push(`<w:tc>${cellProps(width(cont.span), cont.span, 'continue', borders, cont.fill)}${TINY_P}</w:tc>`);
+        xml.push(`<w:tc>${cellProps(width(cont.span), cont.span, 'continue', borders(c, r, cont.span, 1), cont.fill)}${TINY_P}</w:tc>`);
         c += cont.span;
       } else {
-        xml.push(`<w:tc>${cellProps(width(1), 1, '', borders, undefined)}${TINY_P}</w:tc>`);
+        xml.push(`<w:tc>${cellProps(width(1), 1, '', borders(c, r, 1, 1), undefined)}${TINY_P}</w:tc>`);
         c += 1;
       }
     }

@@ -125,6 +125,7 @@ function tableItem(rb: ResolvedResourceBlock, bx: number, by: number, ctx: Block
     borderColor: t.borderColor,
     borderWidthPx: t.strokes ? 0 : t.borderWidthPx,
   };
+  if (t.rules && t.rules !== 'booktabs' && t.rules !== 'grid') table.rules = t.rules;
   // Cell highlight bands under the grid (a cell's own fill comes with the
   // table item), then the table.
   const items: DisplayItem[] = [...t.cells.flatMap((c) => highlightItems(c.lines, frame)), placeTable(frame, table)];
