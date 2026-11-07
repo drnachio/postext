@@ -197,28 +197,33 @@ function renderList(ctx: WriterContext, items: ContentBlock[]): string[] {
   return out;
 }
 
-/** Render sibling nodes. */
-export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv): string {
+/** Render sibling nodes. `after` (the chapter's top level only) gives
+ *  what follows each block, list or box: the figures its `:ref`s float. */
+export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, after?: (nodes: readonly Node[]) => string[]): string {
   const parts: string[] = [];
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i]!;
     if ('container' in n) {
       parts.push(renderContainer(ctx, n, env));
+      if (after) parts.push(...after([n]));
       continue;
     }
     if (n.block.type === 'listItem') {
       const items: ContentBlock[] = [];
+      const from = i;
       while (i < nodes.length) {
         const m = nodes[i]!;
         if ('container' in m || m.block.type !== 'listItem') break;
         items.push(m.block);
         i++;
       }
-      i--;
       parts.push(...renderList(ctx, items));
+      if (after) parts.push(...after(nodes.slice(from, i)));
+      i--;
       continue;
     }
     parts.push(renderBlock(ctx, n.block, env));
+    if (after) parts.push(...after([n]));
   }
   return joinBlocks(parts);
 }

@@ -14,7 +14,7 @@ import { rawSdt } from './raw.js';
 import { snippetRuns } from './snippet.js';
 import { STYLE } from './styles.js';
 import { renderTable } from './tables.js';
-import { blockSdt, emu, fieldRuns, paragraph, textRuns } from './wml.js';
+import { blockSdt, emu, fieldRuns, paragraph, rPr, textRuns } from './wml.js';
 
 const SVG_EXT = '{96DAC541-7B7A-43D3-8B79-37D633B846F1}';
 const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: 'jpeg', jpg: 'jpeg', gif: 'gif', 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/gif': 'gif' };
@@ -29,6 +29,13 @@ function displaySize(ctx: WriterContext, w: number, h: number, resolution?: numb
     dw = ctx.columnPx;
   }
   return { w: Math.max(1, dw), h: Math.max(1, dh) };
+}
+
+/** Size of a vector picture or a video poster: the column's width, as the
+ *  engine sets them, and the picture's ratio. */
+function columnSize(ctx: WriterContext, w: number, h: number): { w: number; h: number } {
+  const ratio = w > 0 && h > 0 ? h / w : 0.75;
+  return { w: ctx.columnPx, h: Math.max(1, ctx.columnPx * ratio) };
 }
 
 /** Embed the pictures of the resources shown (bitmaps as they are, SVGs
@@ -47,6 +54,14 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       }
       const size = displaySize(ctx, res.bitmap.width, res.bitmap.height, res.bitmap.resolution);
       ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
+    } else if (res.kind === 'video' && res.video?.poster) {
+      // A video prints as its poster frame.
+      const poster = res.video.poster;
+      const ext = BITMAP_EXT[poster.format.toLowerCase()];
+      const bytes = ctx.resourceBytes?.(poster.fileId);
+      if (!bytes || !ext) continue;
+      const size = columnSize(ctx, poster.width, poster.height);
+      ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
     } else if (res.kind === 'svg' && res.svg) {
       const bytes = ctx.resourceBytes?.(res.svg.fileId);
       if (!bytes) {
@@ -55,7 +70,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       }
       const w = res.svg.width ?? 800;
       const h = res.svg.height ?? (res.svg.width ? res.svg.width * 0.75 : 600);
-      const size = displaySize(ctx, w, h);
+      const size = columnSize(ctx, w, h);
       const scale = 300 / ctx.units.dpi;
       const png = ctx.rasterizeSvg ? await ctx.rasterizeSvg(strFromU8(bytes), Math.round(size.w * scale), Math.round(size.h * scale)) : undefined;
       if (!png) {
@@ -69,7 +84,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
 
 /** The picture as an inline drawing, scaled down to `maxPx` (the width
  *  available where it stands: a box cell is narrower than the column). */
-function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: string, alt: string, maxPx: number): string {
+export function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: string, alt: string, maxPx: number): string {
   const id = ctx.pkg.nextDrawingId();
   const scale = maxPx > 0 && pic.widthPx > maxPx ? maxPx / pic.widthPx : 1;
   const cx = Math.max(1, emu(ctx.units, pic.widthPx * scale));
@@ -90,9 +105,9 @@ function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: string, alt:
 
 /** A figure's own word (`caption`, `note`, `alt`) with its absolute
  *  range, checked against the Markdown. */
-function ownWord(ctx: WriterContext, b: ContentBlock, kind: 'caption' | 'note' | 'alt'): { text: string; start: number } | undefined {
-  const w = b.figure?.words?.[kind];
-  if (!w) return undefined;
+function ownWord(ctx: WriterContext, b: ContentBlock | undefined, kind: 'caption' | 'note' | 'alt'): { text: string; start: number } | undefined {
+  const w = b?.figure?.words?.[kind];
+  if (!b || !w) return undefined;
   const md = ctx.chapter.markdown;
   const start = abs(ctx, w.sourceStart);
   if (md.startsWith(w.text, start)) return { text: w.text, start };
@@ -102,7 +117,7 @@ function ownWord(ctx: WriterContext, b: ContentBlock, kind: 'caption' | 'note' |
 }
 
 /** A caption-style paragraph for a figure's caption or note. */
-function captionParagraph(ctx: WriterContext, b: ContentBlock, res: Resource, field: 'caption' | 'note', label: string): string {
+function captionParagraph(ctx: WriterContext, b: ContentBlock | undefined, res: Resource, field: 'caption' | 'note', label: string): string {
   const own = ownWord(ctx, b, field);
   const role = field === 'caption' ? 'caption' : 'note';
   let runs: string;
@@ -140,22 +155,52 @@ function captionLabel(ctx: WriterContext, res: Resource): string {
   return ctx.log.wrap(runs, frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'label' });
 }
 
+/** What a video without a poster shows: a line with its address (a
+ *  link), in a fragment of generated text so it never reads back as an
+ *  added paragraph. */
+function videoPlaceholder(ctx: WriterContext, res: Resource): string {
+  const url = res.video?.url;
+  const text = url ? `\u25B6 ${url}` : '\u25B6';
+  const frag = new FragmentBuilder();
+  frag.push(text, new Array<number>(text.length).fill(-1), '', url);
+  const runs = textRuns(text, url ? rPr({ style: STYLE.hyperlink }) : '');
+  const linked = url ? `<w:hyperlink r:id="${ctx.pkg.addLink(url)}">${runs}</w:hyperlink>` : runs;
+  return paragraph({ style: STYLE.figure }, ctx.log.wrap(linked, frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'video' }));
+}
+
 /** A `::resource` / `:::figure` block: picture or table, and caption. */
 export function renderResource(ctx: WriterContext, b: ContentBlock, start: number, end: number, widthTwips: number): string {
-  const id = b.resourceId ?? '';
+  return resourceFigure(ctx, b.resourceId ?? '', b, start, end, widthTwips);
+}
+
+/** A resource a `:ref` floats, written where the text first cites it. */
+export function renderFloatedResource(ctx: WriterContext, id: string, widthTwips: number): string {
+  return resourceFigure(ctx, id, undefined, -1, -1, widthTwips);
+}
+
+/**
+ * A resource as a figure: picture, video poster or table, and caption. `b`
+ * is the block that shows it, with `[start, end)` its source; a resource a
+ * `:ref` floats has no block (`b` undefined), and then what Word cannot
+ * show leaves only its caption, never raw source.
+ */
+function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefined, start: number, end: number, widthTwips: number): string {
   const res = ctx.resources.get(id);
   if (!res) {
+    if (!b) return '';
     ctx.warn('resourceMissing', `Resource "${id}" is not in the export: kept as source.`);
     return rawSdt(ctx, start, end, 'resource');
   }
   ctx.usedResources.add(id);
-  if (res.kind !== 'table' && res.kind !== 'bitmap' && res.kind !== 'svg') return rawSdt(ctx, start, end, res.kind);
-  if (res.kind === 'table' && !res.table) return rawSdt(ctx, start, end, res.kind);
+  const shown = res.kind === 'bitmap' || res.kind === 'svg' || res.kind === 'video' || (res.kind === 'table' && !!res.table);
+  if (!shown && b) return rawSdt(ctx, start, end, res.kind);
   const renderBody = (): string => {
+    if (!shown) return '';
     if (res.kind === 'table') return renderTable(ctx, res, widthTwips);
     const pic = ctx.media.get(id);
     const alt = ownWord(ctx, b, 'alt')?.text ?? res.altText ?? '';
-    return pic ? paragraph({ style: STYLE.figure }, pictureRun(ctx, pic, id, alt, (widthTwips * ctx.units.dpi) / 1440)) : '';
+    if (pic) return paragraph({ style: STYLE.figure }, pictureRun(ctx, pic, id, alt, (widthTwips * ctx.units.dpi) / 1440));
+    return res.kind === 'video' ? videoPlaceholder(ctx, res) : '';
   };
   // Fragments are logged as they are written, so in the document's order:
   // a caption set above the table or picture is rendered first.
