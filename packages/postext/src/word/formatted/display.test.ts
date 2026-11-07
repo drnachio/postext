@@ -104,6 +104,8 @@ describe('formatted Word display lines (#1444)', () => {
     expect(out.pieces?.map((p) => p.text)).toEqual(['\u2318', ' Z']);
     expect(out.pieces![0]!.rPr).toContain(`w:ascii="${SYMBOL_FACE}"`);
     expect(out.pieces![1]!.rPr).not.toContain(SYMBOL_FACE);
+    // Fitted from the face's advances: no pair kerning on top of the fit.
+    expect(out.pieces![1]!.rPr).toContain('<w:kern w:val="0"/>');
     // Letters the face lacks are left to the renderer's own fallback.
     expect(emitRun(ctx, run('\u00e9t\u00e9', 10, 30), lineOf([run('\u00e9t\u00e9', 10, 30)])).rPr).not.toContain(SYMBOL_FACE);
   });

@@ -153,6 +153,11 @@ export interface RunPropsOptions {
   /** An atom's holder: marked w:noProof, which the importer reads to tell
    *  it from a typed no-break space (both are U+00A0). */
   holder?: boolean;
+  /** The run's spacing is fitted from its face's advances, which leave
+   *  kerning out: pair kerning stays off (`w:kern` 0), else Word and
+   *  LibreOffice kern a pair the fit already closed up and set the line
+   *  short of the engine's (answer bubbles left behind their letters). */
+  fitted?: boolean;
 }
 
 /** `w:rPr` of a run (CT_RPr child order), cached per distinct style. */
@@ -162,7 +167,7 @@ export function runProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOpti
   let cache = propsCache.get(ctx);
   if (!cache) propsCache.set(ctx, (cache = new Map()));
   // The font string carries a feature family's features (numForm).
-  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
+  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}${opts.fitted ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
   let props = cache.get(key);
   if (props === undefined) {
     props = buildRunProps(ctx, run, opts);
@@ -191,7 +196,7 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOption
   if (opts.spacing) p.push(`<w:spacing w:val="${opts.spacing}"/>`);
   const scale = opts.scale ?? f.scale;
   if (scale && scale !== 100) p.push(`<w:w w:val="${scale}"/>`);
-  p.push('<w:kern w:val="1"/>');
+  p.push(`<w:kern w:val="${opts.fitted ? 0 : 1}"/>`);
   // A shifted run carries its own (already reduced) size: raise it by the
   // shift; a bare script asks Word for its super/subscript.
   const shift = run.baselineShift ? Math.round(halfPoints(run.baselineShift, ctx.dpi)) : 0;
@@ -273,7 +278,7 @@ function blankFace(run: DisplayRun, line: DisplayLine): string {
 const clampSpacing = (tw: number): number => Math.max(-MAX_SPACING, Math.min(MAX_SPACING, tw));
 
 /** Pieces of `text` spaced by `fit`, the last character `gapTw` wider. */
-function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: FitSpacing, gapTw: number, rtl: boolean, more: Pick<RunPropsOptions, 'scale' | 'holder'> = {}): RunPiece[] {
+function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: FitSpacing, gapTw: number, rtl: boolean, more: Pick<RunPropsOptions, 'scale' | 'holder' | 'fitted'> = {}): RunPiece[] {
   const chars = Array.from(text);
   const out: RunPiece[] = [];
   const push = (from: number, to: number, spacing: number): void => {
@@ -464,7 +469,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   // Unknown advances: tracking as given, justified spaces a hair tighter.
   const flat = tracking + (justified && isSpace ? SPACE_SPACING : 0);
   const spacing = fit ? fit.each : flat;
-  const rPr = runProps(ctx, r, { spacing, rtl, ...(scale ? { scale } : {}) });
+  const rPr = runProps(ctx, r, { spacing, rtl, ...(scale ? { scale } : {}), ...(fit ? { fitted: true } : {}) });
   const out: EmittedRun = { rPr, text };
   if (run.kunten) {
     const k = kuntenOf(run, line);
@@ -492,7 +497,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     const flatPr = runProps(ctx, r, { spacing: flat, rtl });
     out.xml = verticalPieces(ctx, run, text).map((piece) => textRun(piece.tcy ? runProps(ctx, run, { spacing: flat, rtl, ea: eastAsianLayout(ctx, 'vert') }) : flatPr, piece.text)).join('');
   } else if (fit && (fit.extra > 0 || gapTw)) {
-    Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, scale ? { scale } : {})));
+    Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true, ...(scale ? { scale } : {}) })));
   } else if (gapTw) {
     Object.assign(out, piecesOut(spacedPieces(ctx, r, text, { each: flat, extra: 0 }, gapTw, rtl)));
   }
