@@ -2,13 +2,16 @@
 // control tagged `ptx:box:<type>` around a one-cell table shaded and
 // bordered like the box style, its title paragraph first; a `:::part`,
 // `:::paragraphs`, `:::columns` or `:::paper` group is a content control
-// around its blocks; exercises, composed pages, modules and frames go raw.
+// around its blocks; an exercise is set by exercises.ts and a composed
+// page stands as a placeholder (#1444); stray modules and frames go raw.
 
 import type { ResolvedCalloutStyleConfig } from '../../types.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
+import { renderExercise } from './exercises.js';
 import { attrRange } from './marks.js';
+import { renderPagePlaceholder } from './pages.js';
 import { rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
 import { blockSdt, eighths, hex, paragraph, px, textRuns, twips, type Border, type ParaProps } from './wml.js';
@@ -66,6 +69,8 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
   const c = node.container;
   const name = c.containerName ?? 'container';
   const attrs = c.containerAttrs ?? {};
+  if (name === 'exercise') return renderExercise(ctx, node, env);
+  if (name === 'composedPage') return renderPagePlaceholder(ctx, c, 'composedPage');
   if (RAW_CONTAINERS.has(name)) {
     const [start, end] = rangeOf(ctx, node);
     return rawSdt(ctx, start, end, name);

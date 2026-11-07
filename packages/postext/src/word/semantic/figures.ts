@@ -69,7 +69,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
 
 /** The picture as an inline drawing, scaled down to `maxPx` (the width
  *  available where it stands: a box cell is narrower than the column). */
-function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: string, alt: string, maxPx: number): string {
+export function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: string, alt: string, maxPx: number): string {
   const id = ctx.pkg.nextDrawingId();
   const scale = maxPx > 0 && pic.widthPx > maxPx ? maxPx / pic.widthPx : 1;
   const cx = Math.max(1, emu(ctx.units, pic.widthPx * scale));

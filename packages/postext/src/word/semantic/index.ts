@@ -20,6 +20,7 @@ import { bookNumbers } from './engineNumbers.js';
 import { parseChapter, renderChapter } from './chapter.js';
 import type { SemanticWarning, WriterContext } from './context.js';
 import { prepareMedia } from './figures.js';
+import { prepareScores } from './scores.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
 import { pageGeometry } from './sections.js';
@@ -30,6 +31,7 @@ import { px, type Units } from './wml.js';
 export type { WordChapterInput } from './types.js';
 export type { SemanticWarning } from './context.js';
 export { STYLE as SEMANTIC_STYLE } from './styles.js';
+export { preferredWordVariant } from './pages.js';
 
 /** Options of `semanticDocx`: the chapters, design, resources, fonts and
  *  metadata. */
@@ -116,6 +118,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), headingNumbers: new Map(), blockCounter: 0 },
   };
   await prepareMedia(ctx, shown);
+  await prepareScores(ctx, parsed);
 
   let body = '';
   parsed.forEach((pc, i) => {

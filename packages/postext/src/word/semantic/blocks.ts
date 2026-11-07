@@ -8,6 +8,9 @@ import { ommlHash } from '../anchors/ommlHash.js';
 import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { renderResource } from './figures.js';
+import { renderSolutions } from './exercises.js';
+import { pageKindOf, renderPagePlaceholder } from './pages.js';
+import { renderScoreBlock } from './scores.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
 import { renderInline, type InlineSource } from './inline.js';
 import { markInserts, namedBookmark } from './marks.js';
@@ -263,10 +266,13 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     case 'directive': {
       const br = b.directiveName ? BREAKS[b.directiveName] : undefined;
       if (br) return blockSdt(ctx.nextSdtId(), `ptx:${b.directiveName}`, undefined, `<w:p><w:r><w:br w:type="${br}"/></w:r></w:p>`);
+      if (b.directiveName === 'solutions') return renderSolutions(ctx, b, env);
+      const page = pageKindOf(b);
+      if (page) return renderPagePlaceholder(ctx, b, page);
       return rawSdt(ctx, start, end, b.directiveName ?? 'directive');
     }
     case 'score':
-      return rawSdt(ctx, start, end, 'score');
+      return renderScoreBlock(ctx, b, start, end, env.widthTwips ?? ctx.textTwips);
     default:
       return rawSdt(ctx, start, end, b.type);
   }

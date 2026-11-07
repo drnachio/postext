@@ -193,8 +193,9 @@ describe('semantic docx: structures', () => {
     expect(exportProblems(e, [md])).toEqual([]);
     expect(e.frag('---\ntitle: "T"\n---').role).toBe('raw:frontmatter');
     expect(e.frag(':::toc').role).toBe('raw:toc');
-    expect(e.frag(':::exercise{type="choice"}\nPick one.\n:::').role).toBe('raw:exercise');
-    expect(e.doc).toContain('<w:tag w:val="ptx:raw:exercise"/>');
+    // An exercise is set natively (#1444): its instruction stays mapped.
+    expect(e.frag('Pick one.').role).toBe('exercise:instruction');
+    expect(e.doc).toContain('<w:tag w:val="ptx:exercise"/>');
     expect(e.doc).toContain('<w:pStyle w:val="PostextSource"/>');
     expect(e.doc).toContain('<w:tag w:val="ptx:pagebreak"/>');
     expect(e.doc).toContain('<w:br w:type="page"/>');
