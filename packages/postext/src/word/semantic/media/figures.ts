@@ -15,7 +15,7 @@ import { rawSdt } from '../raw.js';
 import { snippetRuns } from '../snippet.js';
 import { STYLE } from '../styles.js';
 import { renderTable } from '../tables.js';
-import { blockSdt, emu, fieldRuns, paragraph, rPr, textRuns } from '../wml.js';
+import { blockSdt, emu, fieldRuns, paragraph, rPr, textRuns, type ParaProps } from '../wml.js';
 
 const SVG_EXT = '{96DAC541-7B7A-43D3-8B79-37D633B846F1}';
 const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: 'jpeg', jpg: 'jpeg', gif: 'gif', 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/gif': 'gif' };
@@ -130,18 +130,27 @@ function ownWord(ctx: WriterContext, b: ContentBlock | undefined, kind: 'caption
 }
 
 /** A caption-style paragraph for a figure's caption or note. */
-function captionParagraph(ctx: WriterContext, b: ContentBlock | undefined, res: Resource, field: 'caption' | 'note', label: string): string {
+function captionParagraph(ctx: WriterContext, b: ContentBlock | undefined, res: Resource, field: 'caption' | 'note', label: string, props: ParaProps = { style: STYLE.caption }): string {
   const own = ownWord(ctx, b, field);
   const role = field === 'caption' ? 'caption' : 'note';
+  const style = props.style ?? STYLE.caption;
   let runs: string;
-  if (own && own.start >= 0) runs = snippetRuns(ctx, own.text, ctx.chapter.markdown, own.start, { kind: 'markdown', chapter: ctx.chapter.index }, role, STYLE.caption);
+  if (own && own.start >= 0) runs = snippetRuns(ctx, own.text, ctx.chapter.markdown, own.start, { kind: 'markdown', chapter: ctx.chapter.index }, role, style);
   else if (own) runs = textRuns(own.text, '');
   else {
     const text = res[field] ?? '';
-    runs = snippetRuns(ctx, text, text, 0, { kind: 'resource', resourceId: res.id, field }, role, STYLE.caption);
+    runs = snippetRuns(ctx, text, text, 0, { kind: 'resource', resourceId: res.id, field }, role, style);
   }
   if (!runs && !label) return '';
-  return paragraph({ style: STYLE.caption }, label + runs);
+  return paragraph(props, label + runs);
+}
+
+/** The caption style of a resource's type (#1444): above or below its
+ *  figure, and the paragraph style that sets it. */
+export function captionPlace(ctx: WriterContext, res: Resource): { above: boolean; style: string } {
+  const type = ctx.resourceTypes.find((t) => t.id === res.typeId);
+  const cap = captionStyleOf(ctx.resolved, type);
+  return { above: cap.position === 'above', style: ctx.styles.caption(cap, type?.id ?? res.typeId) };
 }
 
 /** The caption's label and number, in a fragment of generated text: the
@@ -221,8 +230,8 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
   };
   // Fragments are logged as they are written, so in the document's order:
   // a caption set above the table or picture is rendered first.
-  const above = ctx.resolved.captionStyle.position === 'above';
-  const caption = (): string => captionParagraph(ctx, b, res, 'caption', captionLabel(ctx, res));
+  const { above, style } = captionPlace(ctx, res);
+  const caption = (): string => captionParagraph(ctx, b, res, 'caption', captionLabel(ctx, res), { style });
   let content: string;
   if (above) {
     const cap = caption();
@@ -231,6 +240,7 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
     const body = renderBody();
     content = body + caption();
   }
-  const note = captionParagraph(ctx, b, res, 'note', '');
+  // The note is set under the figure even when the caption is above it.
+  const note = captionParagraph(ctx, b, res, 'note', '', above ? { style, keepNext: false, before: 60 } : { style });
   return blockSdt(ctx.nextSdtId(), `ptx:figure:${id}`, undefined, content + note || '<w:p/>');
 }

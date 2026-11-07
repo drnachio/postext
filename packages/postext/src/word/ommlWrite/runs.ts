@@ -22,6 +22,12 @@ export interface RunOptions {
   /** Display style (set by the writer as it descends: false inside
    *  scripts, fractions and matrices). */
   display?: boolean;
+  /** Text size of every run, half-points (`w:sz`): the size of the text
+   *  an inline equation sits in. Omitted: the document's math size. */
+  size?: number;
+  /** Fractions set on one line (`2/5`), as an equation inside a line of
+   *  text sets them so they do not open up its leading. */
+  linearFractions?: boolean;
 }
 
 /** mathvariant → run style. */
@@ -55,7 +61,9 @@ export function mathRun(text: string, style: RunStyle = {}, options: RunOptions 
     if (style.sty) pr += `<m:sty m:val="${style.sty}"/>`;
   }
   const rPr = pr ? `<m:rPr>${pr}</m:rPr>` : '';
-  const font = options.font ? `<w:rPr><w:rFonts w:ascii="${escapeAttr(options.font)}" w:hAnsi="${escapeAttr(options.font)}"/></w:rPr>` : '';
+  const face = options.font ? `<w:rFonts w:ascii="${escapeAttr(options.font)}" w:hAnsi="${escapeAttr(options.font)}"/>` : '';
+  const size = options.size ? `<w:sz w:val="${options.size}"/><w:szCs w:val="${options.size}"/>` : '';
+  const font = face || size ? `<w:rPr>${face}${size}</w:rPr>` : '';
   return `<m:r>${rPr}${font}<m:t xml:space="preserve">${escapeXml(text)}</m:t></m:r>`;
 }
 

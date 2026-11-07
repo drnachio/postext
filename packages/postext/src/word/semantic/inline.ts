@@ -6,11 +6,13 @@
 // references.
 
 import type { InlineSpan } from '../../parse/types.js';
+import { resolveSwatchSpans } from '../../pipeline/resources/resourceLayout/refSpans.js';
 import { texToOmml } from '../ommlWrite/index.js';
 import { ommlHash } from '../anchors/ommlHash.js';
 import { atomEnd, chipText, refLabel } from './atoms.js';
 import type { WriterContext } from './context.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
+import { chipGlyph } from './prose/chips.js';
 import { STYLE } from './styles.js';
 import { fieldRuns, halfPoints, hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
 import { escapeAttr, escapeXml } from '../xml.js';
@@ -190,7 +192,8 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     if (span.math) {
       const start = s.toSrc(span.math.sourceStart);
       const end = s.toSrc(span.math.sourceEnd);
-      const omml = texToOmml(span.math.tex, false);
+      // At the size of the text around it, its fractions on the line.
+      const omml = texToOmml(span.math.tex, false, { size: ctx.styles.styleSize(s.style), linearFractions: true });
       if (omml) units.push({ kind: 'obj', p, xml: omml, fmt: base, text: OBJECT_CHAR, atom: { start, end, kind: 'math', hash: ommlHash(omml) } });
       else units.push(sourceUnit(s, p, start, end));
     } else if (span.footnote) {
@@ -215,12 +218,17 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       const raw = span.citation.raw;
       const end = s.src.startsWith(raw, at) ? at + raw.length : atomEnd(s.src, at, limit);
       units.push(atomUnit(p, raw, base, STYLE.reference, at, end, 'citation'));
+    } else if (span.chip && !span.chip.gap && chipGlyph(ctx, span.chip)) {
+      const glyph = chipGlyph(ctx, span.chip)!;
+      const xml = textRuns(glyph.text, rPr(glyph.props));
+      units.push({ kind: 'obj', p, xml, fmt: base, text: glyph.text, atom: { start: at, end: atomEnd(s.src, at, limit), kind: 'chip' } });
     } else if (span.chip) {
       units.push(atomUnit(p, chipLabel(span.chip), base, ctx.styles.chip(span.chip.style), at, atomEnd(s.src, at, limit), span.chip.gap ? 'gap' : 'chip'));
     } else if (span.swatch) {
       const icon = span.swatch.icon;
       const text = icon ? icon.alt || icon.glyph || '\u25A0' : '\u25A0';
-      const color = icon ? undefined : hex(span.swatch.color);
+      // A palette colour by its id, as the engine fills it (#1444).
+      const color = icon ? undefined : hex(resolveSwatchSpans([span], ctx.resolved.colorPalette)[0]!.swatch!.color);
       const xml = textRuns(text, rPr({ ...runProps(base, STYLE.reference), color }));
       units.push({ kind: 'obj', p, xml, fmt: base, text, atom: { start: at, end: atomEnd(s.src, at, limit), kind: icon ? 'icon' : 'swatch' } });
     } else if (span.tab && s.src[at] !== '\t') {
@@ -337,7 +345,8 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
       j++;
     }
     const font = u.fmt.k ? undefined : ctx.styles.runFont(s.style, !!u.fmt.b, !!u.fmt.i);
-    const plainRuns = textRuns(text, rPr({ ...runProps(u.fmt), ...(font ? { font } : {}) }));
+    const ink = u.fmt.k || u.fmt.href || u.fmt.mark ? undefined : ctx.styles.runInk(s.style, !!u.fmt.b, !!u.fmt.i);
+    const plainRuns = textRuns(text, rPr({ ...runProps(u.fmt), ...(font ? { font } : {}), ...(ink ? { color: ink } : {}) }));
     const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns, s.style) : plainRuns;
     // Code in right-to-left text: left-to-right marks either side keep its
     // end punctuation from being mirrored.

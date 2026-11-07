@@ -145,23 +145,31 @@ describe('semantic docx: page layout (#1444)', () => {
     expect(exportProblems(e, [md])).toEqual([]);
     expect(styleOf(e, 'Normal')).toContain('w:ascii="Merri Light PTX"');
     const body = paraOf(e.doc, 'Light text');
-    expect(body).toMatch(/<w:rFonts w:ascii="Merri PTX"[^>]*\/><w:i\/><w:iCs\/><\/w:rPr><w:t[^>]*>italic/);
-    expect(body).toMatch(/<w:rFonts w:ascii="Merri PTX"[^>]*\/><w:b\/><w:bCs\/><\/w:rPr><w:t[^>]*>bold/);
+    expect(body).toMatch(/<w:rFonts w:ascii="Merri PTX"[^>]*\/><w:i\/><w:iCs\/>(?:<w:color [^>]*\/>)?<\/w:rPr><w:t[^>]*>italic/);
+    expect(body).toMatch(/<w:rFonts w:ascii="Merri PTX"[^>]*\/><w:b\/><w:bCs\/>(?:<w:color [^>]*\/>)?<\/w:rPr><w:t[^>]*>bold/);
     // The heading's own family holds its italic: no family on the run.
     expect(paraOf(e.doc, 'slanted')).not.toContain('Merri');
     unchanged(e, [md]);
   });
 
   it('outlines a chip as its style does and leaves a white fill out', async () => {
-    const md = 'Pick :chip[A]{style="bubble"} or :chip[B]{style="line"}.\n';
+    const md = 'Pick :chip[A]{style="bubble"} or :chip[B]{style="line"}, :chip[AB]{style="bubble"}, :chip[c]{style="filled"} or :chip[7]{style="filled"}.\n';
     const config = cfg({
       chipStyles: [
         { id: 'bubble', background: { hex: '#ffffff', model: 'hex' }, borderColor: { hex: '#333333', model: 'hex' }, borderWidth: { value: 1, unit: 'pt' }, borderRadius: { value: 1, unit: 'em' } },
         { id: 'line', backgroundEnabled: false, underline: 'dashed' },
+        { id: 'filled', background: { hex: '#111111', model: 'hex' }, borderRadius: { value: 1, unit: 'em' } },
       ],
     });
     const e = await exportDocx(md, { config });
     expect(exportProblems(e, [md])).toEqual([]);
+    // A round chip of one letter is the circled letter, in the outline's
+    // ink with no border; a filled one the negative form where Unicode has
+    // one. Two letters keep the outlined run.
+    expect(e.doc).toMatch(/<w:color w:val="333333"\/><\/w:rPr><w:t[^>]*>\u24b6<\/w:t>/);
+    expect(e.doc).toMatch(/<w:color w:val="111111"\/><\/w:rPr><w:t[^>]*>\u277c<\/w:t>/);
+    expect(e.doc).toContain('\u00a0c\u00a0');
+    expect(e.frag('Pick \u24b6 or \u00a0B\u00a0, \u00a0AB\u00a0, \u00a0c\u00a0 or \u277c.')).toBeDefined();
     const bubble = styleOf(e, 'PostextChipbubble');
     expect(bubble).toContain('<w:bdr w:val="single" w:sz="8" w:space="0" w:color="333333"/>');
     expect(bubble).toContain('w:fill="auto"');

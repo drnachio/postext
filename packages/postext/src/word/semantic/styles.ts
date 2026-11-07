@@ -5,12 +5,14 @@
 // export embeds fonts.
 
 import type { ResolvedConfig } from '../../vdt.js';
-import type { ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../../types.js';
+import type { ColorValue } from '../../types.js';
+import type { ResolvedCalloutStyleConfig, ResolvedCaptionStyleConfig, ResolvedChipStyleConfig, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../../types.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
 import { paleOnWhite } from './design/ink.js';
+import { captionLook, sameCaptionLook } from './prose/caption.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
 
 /** Style ids the writer uses by name. */
@@ -60,6 +62,7 @@ export class StyleRegistry {
   private readonly chipIds = new Map<string, string>();
   /** The face each paragraph style sets its text in (#1444). */
   private readonly faces = new Map<string, { stack: string | undefined; weight: number; italic: boolean }>();
+  private readonly inks = new Map<string, { bold?: string; italic?: string }>();
   readonly bodyPx: number;
 
   constructor(
@@ -96,6 +99,23 @@ export class StyleRegistry {
     const weight = bold ? Math.max(face.weight, this.resolved.bodyText.boldFontWeight) : face.weight;
     const styled = this.font(face.stack, weight, italic || face.italic).font;
     return styled && styled !== own ? styled : undefined;
+  }
+
+  /** The colour a bold or italic run of a paragraph style takes when the
+   *  style sets one apart from its text (#1444): a key term in a box's
+   *  colour, as the engine paints `boldColor` and `italicColor`. */
+  runInk(style: string | undefined, bold: boolean, italic: boolean): string | undefined {
+    const ink = this.inks.get(style ?? STYLE.normal);
+    return (bold && ink?.bold) || (italic && ink?.italic) || undefined;
+  }
+
+  /** Record the emphasis colours of a style that differ from its text's. */
+  private ink(id: string, color: ColorValue | undefined, bold: ColorValue | undefined, italic: ColorValue | undefined): string {
+    const text = hex(color);
+    const differs = (c: ColorValue | undefined): string | undefined => (hex(c) && hex(c) !== text ? hex(c) : undefined);
+    const ink = { bold: differs(bold), italic: differs(italic) };
+    if (ink.bold || ink.italic) this.inks.set(id, ink);
+    return id;
   }
 
   /** The text size of a style, half-points: its own or the style's it is
@@ -136,7 +156,7 @@ export class StyleRegistry {
     const bodyPx = px(u, body.fontSize);
     const line = twips(u, body.lineHeight, bodyPx);
     const after = body.paragraphSpacing === false ? 0 : body.paragraphSpacing === true ? line : twips(u, body.paragraphSpacing, bodyPx);
-    this.add(this.face(STYLE.normal, body.fontFamily, body.fontWeight), {
+    this.add(this.ink(this.face(STYLE.normal, body.fontFamily, body.fontWeight), body.color, body.boldColor, body.italicColor), {
       type: 'paragraph',
       name: 'Normal',
       isDefault: true,
@@ -165,12 +185,12 @@ export class StyleRegistry {
       name: 'caption',
       basedOn: STYLE.normal,
       next: STYLE.normal,
-      // A caption stays whole, and one set above its figure goes with it.
-      pPr: { keepNext: cap.position === 'above' || undefined, keepLines: true, before: twips(u, cap.gap, px(u, cap.fontSize)), ind: { firstLine: 0 }, jc: JC[cap.align] },
-      rPr: { ...this.font(cap.fontFamily), color: hex(cap.color), sz: halfPoints(u, cap.fontSize) },
+      ...captionLook(u, cap, line, this.font(cap.fontFamily)),
     });
     const lists = r.unorderedLists;
-    this.add(STYLE.list, {
+    // A list item's text is the body's: its italic and bold runs take the
+    // body's faces (#1444).
+    this.add(this.ink(this.face(STYLE.list, body.fontFamily, body.fontWeight), body.color, body.boldColor, body.italicColor), {
       type: 'paragraph',
       name: 'List Paragraph',
       basedOn: STYLE.normal,
@@ -178,7 +198,7 @@ export class StyleRegistry {
     });
     const fn = r.footnotes;
     const fnPx = px(u, fn.fontSize);
-    this.add(STYLE.footnoteText, {
+    this.add(this.ink(this.face(STYLE.footnoteText, body.fontFamily, body.fontWeight), fn.color, body.boldColor, body.italicColor), {
       type: 'paragraph',
       name: 'footnote text',
       basedOn: STYLE.normal,
@@ -244,6 +264,28 @@ export class StyleRegistry {
       if (d.pPr?.jc) return d.pPr.jc;
     }
     return undefined;
+  }
+
+  /** Whether a paragraph style hangs its lines after the first (through
+   *  its `basedOn` chain). */
+  hangs(id: string | undefined): boolean {
+    for (let k = 0, d = id ? this.defs.get(id) : undefined; d && k < 16; k++, d = d.basedOn ? this.defs.get(d.basedOn) : undefined) {
+      if (d.pPr?.ind?.hanging !== undefined) return d.pPr.ind.hanging > 0;
+      if (d.pPr?.ind?.firstLine !== undefined) return false;
+    }
+    return false;
+  }
+
+  /** The caption style of a resource type whose caption style is not the
+   *  document's (a table captioned above, in its own size): one based on
+   *  `Caption`, made once per type. */
+  caption(cap: ResolvedCaptionStyleConfig, typeId: string): string {
+    if (sameCaptionLook(cap, this.resolved.captionStyle)) return STYLE.caption;
+    const u = this.units;
+    const line = twips(u, this.resolved.bodyText.lineHeight, px(u, this.resolved.bodyText.fontSize));
+    const look = captionLook(u, cap, line, this.font(cap.fontFamily));
+    const id = this.define(`caption:${typeId}`, 'PostextCaption', typeId, () => ({ type: 'paragraph', name: `Caption: ${typeId}`, custom: true, basedOn: STYLE.caption, next: STYLE.normal, ...look }));
+    return this.face(id, cap.fontFamily || this.resolved.bodyText.fontFamily, cap.fontFamily ? 400 : this.resolved.bodyText.fontWeight);
   }
 
   /** The character style of a chip style: its fill, ink and face. Style
@@ -382,7 +424,7 @@ export class StyleRegistry {
     const ps = this.resolved.paragraphStyles.find((s) => s.id === name || s.name === name);
     if (!ps) return undefined;
     const { id, fresh } = this.idFor(`para:${ps.id}`, 'PostextPara', ps.id);
-    if (fresh) this.add(this.face(id, ps.fontFamily, ps.fontWeight, ps.italic), this.paragraphDef(ps));
+    if (fresh) this.add(this.ink(this.face(id, ps.fontFamily, ps.fontWeight, ps.italic), ps.color, ps.boldColor ?? this.resolved.bodyText.boldColor, ps.italicColor ?? this.resolved.bodyText.italicColor), this.paragraphDef(ps));
     return id;
   }
 
@@ -394,6 +436,11 @@ export class StyleRegistry {
     // `w:hanging` from `w:left`, so the left side takes both (#1444).
     const hanging = twips(u, ps.hangingIndent, size);
     const indent = twips(u, ps.indent, size);
+    // The style's margins hold above and below its group of paragraphs
+    // (an argument before its poem, #1444): with no space between the
+    // paragraphs, Word's contextual spacing drops them inside the group.
+    const between = twips(u, ps.spaceBetween, size);
+    const edges = between === 0 ? { after: twips(u, ps.marginBottom, size), contextualSpacing: true } : { after: between };
     return {
       type: 'paragraph',
       name: ps.name || ps.id,
@@ -402,7 +449,7 @@ export class StyleRegistry {
       pPr: {
         suppressAutoHyphens: !ps.hyphenation || undefined,
         before: twips(u, ps.marginTop, size),
-        after: twips(u, ps.spaceBetween, size),
+        ...edges,
         line: { twips: twips(u, ps.lineHeight, size), rule: 'atLeast' },
         ind: { left: indent + Math.max(0, hanging), right: ps.endIndent ? twips(u, ps.endIndent, size) : undefined, firstLine: twips(u, ps.firstLineIndent, size), hanging: hanging > 0 ? hanging : undefined },
         jc: JC[ps.textAlign],
@@ -447,7 +494,7 @@ export class StyleRegistry {
     if (body.fresh) {
       const size = px(u, b.fontSize, this.bodyPx);
       const after = b.paragraphSpacing === false ? 0 : b.paragraphSpacing === true ? twips(u, b.lineHeight, size) : twips(u, b.paragraphSpacing, size);
-      this.add(this.face(body.id, b.fontFamily, b.fontWeight, b.italic), {
+      this.add(this.ink(this.face(body.id, b.fontFamily, b.fontWeight, b.italic), b.color, b.boldColor ?? this.resolved.bodyText.boldColor, b.italicColor ?? this.resolved.bodyText.italicColor), {
         type: 'paragraph',
         name: `Box: ${style.name || style.id}`,
         custom: true,

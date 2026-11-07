@@ -17,9 +17,14 @@ import { firstFamily, halfPoints, hex, px, twips, type RunProps, type Units } fr
  *  (through the export's font plan). */
 export type FontOf = (stack: string | undefined, weight?: number, italic?: boolean) => RunProps;
 
-/** Word's own face for the ballot boxes of its check boxes: Word has it
- *  everywhere, and the other renderers find the glyph in a fallback. */
-const BOX_FONT = 'MS Gothic';
+/** The face of the ballot boxes of a task list (#1444): a symbol face
+ *  Word has on every system and Word for the web serves; Word's own check
+ *  boxes use MS Gothic, kept for the East Asian slot. Other renderers that
+ *  have neither find the glyph in a fallback face, when they have one. */
+const BOX_FONT = 'Segoe UI Symbol';
+
+/** The East Asian slot of the ballot boxes: Word's own check box face. */
+const BOX_FONT_EA = 'MS Gothic';
 
 /** Rough advance of a number's characters, in ems (two digits, a roman
  *  numeral of three letters, one letter), for the width of the number
@@ -84,6 +89,11 @@ export class Numbering {
     const ol = r.orderedLists;
     const tw = (pxValue: number): number => Math.round((pxValue * 1440) / u.dpi);
     let levels = '';
+    // A number no larger than the item's leading (#1444): Word sets a line
+    // as tall as its tallest character, so a display number twice the
+    // text's size would double the leading of every item it opens; at the
+    // leading's size it opens it by a fifth at most.
+    const numberCap = Math.max(2, Math.round(twips(u, r.bodyText.lineHeight, bodyPx) / 10));
     // Where the previous level's text starts: a deeper level's marker
     // stands there unless the level sets its own indent.
     let prevText: number | undefined;
@@ -101,7 +111,7 @@ export class Numbering {
         text = `${(level?.prefix ?? ol.prefix).replace(/%/g, '')}%${lvl + 1}${(level?.separator ?? ol.separator).replace(/%/g, '')}`;
         const size = level?.fontSize ?? ol.numberFontSize;
         const sizePx = px(u, size, bodyPx) || bodyPx;
-        run = { ...this.fontOf(level?.fontFamily ?? ol.fontFamily, level?.fontWeight ?? ol.fontWeight, level?.italic ?? ol.italic), color: hex(level?.color ?? ol.color), sz: halfPoints(u, size, bodyPx) };
+        run = { ...this.fontOf(level?.fontFamily ?? ol.fontFamily, level?.fontWeight ?? ol.fontWeight, level?.italic ?? ol.italic), color: hex(level?.color ?? ol.color), sz: Math.min(halfPoints(u, size, bodyPx), numberCap) };
         indent = level?.indent ? twips(u, level.indent, bodyPx) : lvl === 0 || prevText === undefined ? twips(u, ol.indent, bodyPx) : prevText;
         marker = tw(sizePx * ((NUMBER_EM[fmt] ?? 1.1) + 0.3));
         gap = twips(u, ol.gap, bodyPx);
@@ -147,7 +157,8 @@ function levelRPr(p: RunProps): string {
   let x = '';
   if (p.font) {
     const f = escapeAttr(p.font);
-    x += `<w:rFonts w:ascii="${f}" w:hAnsi="${f}" w:eastAsia="${f}" w:cs="${f}"/>`;
+    const ea = p.font === BOX_FONT ? BOX_FONT_EA : f;
+    x += `<w:rFonts w:ascii="${f}" w:hAnsi="${f}" w:eastAsia="${ea}" w:cs="${f}"/>`;
   }
   // Explicit on and off: the number does not take the bold or italic of
   // the item's first word.

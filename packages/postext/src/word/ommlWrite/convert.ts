@@ -128,7 +128,7 @@ function convertFrac(node: MmlNode, opts: RunOptions): string {
   const thickness = explicitAttr(node, 'linethickness');
   const noBar = thickness !== undefined && /^0(\.0*)?([a-z]+)?$/.test(thickness.trim());
   const bevelled = explicitAttr(node, 'bevelled') === 'true';
-  const type = noBar ? 'noBar' : bevelled ? 'skw' : undefined;
+  const type = noBar ? 'noBar' : bevelled ? 'skw' : opts.linearFractions ? 'lin' : undefined;
   const pr = type ? `<m:fPr>${val('type', type)}</m:fPr>` : '';
   return wrap('f', `${pr}${slot('num', argAt(node, 0), small(opts))}${slot('den', argAt(node, 1), small(opts))}`);
 }
