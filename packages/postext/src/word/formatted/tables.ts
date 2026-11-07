@@ -14,6 +14,7 @@ import { imageRun } from './pictures.js';
 import { inlineDrawingRuns, lineOffsets } from './text.js';
 import { chipBoxRuns, hasChipBoxes, swatchShapeRuns } from './inlineShapes.js';
 import { rectRuns } from './shapes.js';
+import { roundedTable, tableFillRuns } from './tableFills.js';
 import { eighths, twips, twipsToPx, wordColor } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -59,12 +60,14 @@ const NO_BORDERS = '<w:tcBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bot
 
 /** A cell's borders: the sides the table's rules stroke (every cell edge,
  *  the row edges, or the frame), as the PDF draws them. */
-export function bordersXml(ctx: WriterContext, item: Pick<TableItem, 'borderColor' | 'borderWidthPx' | 'rules'>, edges: CellEdges): string {
+export function bordersXml(ctx: WriterContext, item: Pick<TableItem, 'borderColor' | 'borderWidthPx' | 'rules'>, edges: CellEdges, frameless = false): string {
   const c = wordColor(item.borderColor);
   const rules = item.rules ?? 'grid';
   if (!c || !item.borderWidthPx || item.borderWidthPx <= 0 || rules === 'none') return NO_BORDERS;
   const sz = Math.min(96, Math.max(2, eighths(item.borderWidthPx, ctx.dpi)));
-  const ruled = (side: keyof CellEdges): boolean => rules === 'grid' || (rules === 'horizontal' ? side === 'top' || side === 'bottom' : edges[side]);
+  // A rounded frame is drawn as a shape (tableFills.ts): the cells keep
+  // only the inner rules.
+  const ruled = (side: keyof CellEdges): boolean => !(frameless && edges[side]) && (rules === 'grid' || (rules === 'horizontal' ? side === 'top' || side === 'bottom' : edges[side]));
   const b = (side: keyof CellEdges): string => (ruled(side) ? `<w:${side} w:val="single" w:sz="${sz}" w:space="0" w:color="${c.hex}"/>` : `<w:${side} w:val="nil"/>`);
   return `<w:tcBorders>${b('top')}${b('left')}${b('bottom')}${b('right')}</w:tcBorders>`;
 }
@@ -126,14 +129,16 @@ export async function tableParts(ctx: WriterContext, item: TableItem, floating: 
   const nCols = Math.max(1, cols.length - 1);
   const nRows = Math.max(1, rows.length - 1);
   const centre = { x: item.rect.x + item.rect.width / 2, y: item.rect.y + item.rect.height / 2 };
+  // A rounded table's fills and frame are shapes, rounded at its corners.
+  const rounded = roundedTable(item);
   const borders = (c: number, r: number, span: number, rowSpan: number): string =>
-    bordersXml(ctx, item, { top: r === 0, left: c === 0, bottom: r + rowSpan >= nRows, right: c + span >= nCols });
+    bordersXml(ctx, item, { top: r === 0, left: c === 0, bottom: r + rowSpan >= nRows, right: c + span >= nCols }, rounded && (item.rules ?? 'grid') !== 'horizontal');
   const pending: Pending[] = [];
 
   // A shaded cell that holds chips is filled by a shape under their boxes:
   // its own shading would cover them (answer bubbles on a tinted grid).
   const shapeFilled = new Set(item.cells.filter((cell) => wordColor(cell.background) !== undefined && cell.item !== null && hasChipBoxes(cell.item.lines)));
-  const shading = (cell: Cell): string | undefined => (shapeFilled.has(cell) ? undefined : cell.background);
+  const shading = (cell: Cell): string | undefined => (rounded || shapeFilled.has(cell) ? undefined : cell.background);
 
   // Where each cell sits in the grid.
   const at = new Map<string, { cell: Cell; c: number; r: number; span: number; rowSpan: number }>();
@@ -191,10 +196,11 @@ export async function tableParts(ctx: WriterContext, item: TableItem, floating: 
     xml.push('</w:tr>');
   }
   xml.push('</w:tbl>');
-  // Chip boxes under the table, on the fills of the cells that hold them.
-  const under = [...shapeFilled].flatMap((cell) =>
-    rectRuns(ctx, { kind: 'rect', rect: turnedBox(cell.rect, centre, item.rotate), fill: cell.background!, ...(item.rotate ? { rotate: item.rotate } : {}) }),
-  );
+  // Fill bands under the table (a turned table: the fills of the cells
+  // that hold chips, one by one), then the chip boxes on them.
+  const under = item.rotate
+    ? [...shapeFilled].flatMap((cell) => rectRuns(ctx, { kind: 'rect', rect: turnedBox(cell.rect, centre, item.rotate), fill: cell.background!, rotate: item.rotate! }))
+    : tableFillRuns(ctx, item, shapeFilled);
   for (const cell of item.cells) if (cell.item) under.push(...chipBoxRuns(ctx, cell.item.lines, centre, item.rotate));
   const parts: TableParts = { under, over: [] };
   if (floating) parts.float = { xml: xml.join(''), x, y, height: rows[rows.length - 1]! };
