@@ -12,6 +12,9 @@ import { computeOutline } from '../../pipeline/contents/outline.js';
 import { expandTocDirectives, parseTocLevelsAttr } from '../../pipeline/contents/toc.js';
 import { computeHeadingContext } from '../../pipeline/resources/resourceNumbering.js';
 import { headingIsNumbered } from '../../pipeline/sections/headingStyles.js';
+import { indexGrouping } from '../../pipeline/contents/indexGroups.js';
+import { indexLocale } from '../../pipeline/contents/indexDirective.js';
+import { pageGeometry } from './sections.js';
 import type { HeadingCounters, OutlineEntry } from '../../types.js';
 import { seeLabels } from './marks.js';
 import type { WriterContext } from './context.js';
@@ -122,6 +125,17 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
   return blockSdt(ctx.nextSdtId(), 'ptx:toc', 'Table of contents', fieldParagraphs(instr, lines, ctx.styles.listing('toc', 1)));
 }
 
+/** The letter an index entry files under: its first letter in capitals,
+ *  an accented one under its plain letter when the language sorts them
+ *  together; none for an entry starting with a digit or a symbol. */
+function letterOf(text: string, locale: string, collator: Intl.Collator): string {
+  const first = [...text.trim()][0] ?? '';
+  if (!/\p{L}/u.test(first)) return '';
+  const upper = first.toLocaleUpperCase(locale);
+  const plain = upper.normalize('NFD').replace(/\p{M}/gu, '');
+  return plain && collator.compare(plain, upper) === 0 ? plain : upper;
+}
+
 interface IndexEntry {
   text: string;
   see: string[];
@@ -151,11 +165,20 @@ export function indexField(ctx: WriterContext, directive: ContentBlock): string 
       }
     }
   }
-  const collator = new Intl.Collator(ctx.config.locale || undefined, { sensitivity: 'base', numeric: true });
+  const locale = indexLocale(ctx.resolved);
+  const collator = new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
   const labels = seeLabels(ctx);
   const lines: ResultLine[] = [];
+  // Letter heads, as Word sets them with `\h "A"`: the entry's first
+  // letter, an accented one under its plain letter (Word's own heads cover
+  // the Latin letters only, so other groupings print none).
+  const cfg = ctx.resolved.index;
+  const heads = cfg.groups.enabled && indexGrouping(cfg.groupBy, locale) === 'letter';
+  let head = '';
   const walk = (level: Map<string, IndexEntry>, depth: number): void => {
     for (const e of [...level.values()].sort((a, b) => collator.compare(a.text, b.text))) {
+      const letter = depth === 1 && heads ? letterOf(e.text, locale, collator) : '';
+      if (letter && letter !== head) lines.push({ style: ctx.styles.indexHeading(), runs: textRuns((head = letter), '') });
       let text = e.text;
       if (e.see.length) text += `. ${labels.see} ${e.see.join('; ')}`;
       if (e.seeAlso.length) text += `. ${labels.seeAlso} ${e.seeAlso.join('; ')}`;
@@ -164,6 +187,8 @@ export function indexField(ctx: WriterContext, directive: ContentBlock): string 
     }
   };
   walk(root, 1);
-  const instr = `INDEX${name ? ` \\f "${name.replace(/[\\"]/g, '\\$&')}"` : ''}`;
+  // The columns the index is set in, which Word keeps when it updates it.
+  const cols = /w:num="(\d+)"/.exec(pageGeometry(ctx.resolved, ctx.units).cols)?.[1];
+  const instr = `INDEX${heads ? ' \\h "A"' : ''}${cols ? ` \\c "${cols}"` : ''}${name ? ` \\f "${name.replace(/[\\"]/g, '\\$&')}"` : ''}`;
   return blockSdt(ctx.nextSdtId(), 'ptx:index', 'Index', fieldParagraphs(instr, lines, ctx.styles.listing('index', 1)));
 }

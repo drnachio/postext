@@ -27,6 +27,7 @@ import { floatedResources } from './media/floated.js';
 import { prepareScores } from './media/scores.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
+import { pageSettings } from './page/settings.js';
 import { multiColumn, pageGeometry } from './sections.js';
 import { StyleRegistry } from './styles.js';
 import { tablePictureIds } from './tables.js';
@@ -173,19 +174,23 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
       ...(Object.keys(snapshotResources).length ? { resources: snapshotResources } : {}),
     },
   };
-  const extra = (geo.mirror ? '<w:mirrorMargins/>' : '') + '<w:doNotAutoCompressPictures/>';
+  const page = pageSettings(ctx, body);
+  const extra = (geo.mirror ? '<w:mirrorMargins/>' : '') + '<w:doNotAutoCompressPictures/>' + page.extra;
   return pkg.build({
     body,
     styles: ctx.styles.xml(),
     docDefaults: ctx.styles.docDefaults(options.config.locale),
     ...(ctx.numbering.empty ? {} : { numbering: ctx.numbering.xml() }),
     ...(ctx.footnotes.length ? { footnotes: ctx.footnotes } : {}),
+    ...(page.footnoteSeparator ? { footnoteSeparator: page.footnoteSeparator } : {}),
+    ...(page.background ? { background: page.background } : {}),
     headers: ctx.headers,
     footers: ctx.footers,
     core: { title: options.title, author: options.author, language: options.config.locale, date: createdAt },
     settings: {
       autoHyphenation: resolved.bodyText.hyphenation.enabled,
       embedFonts: (options.fonts?.faces.length ?? 0) > 0,
+      evenAndOddHeaders: page.evenAndOddHeaders,
       extra,
     },
     fonts: options.fonts?.faces,

@@ -49,7 +49,9 @@ describe('paragraphs typed outside every bookmark', () => {
   });
 
   it('goes at the end of a chapter typed before its section break', async () => {
-    const { md } = await run((x) => x.replace('<w:p><w:pPr><w:sectPr', `${para('The end.')}<w:p><w:pPr><w:sectPr`));
+    // Typed before the first section-break paragraph (the chapter's
+    // columns, then the empty section that levels them).
+    const { md } = await run((x) => x.replace(/<w:p><w:pPr>(?:(?!<\/w:p>).)*?<w:sectPr>/, (m) => `${para('The end.')}${m}`));
     expect(md).toEqual([CH1.replace('Last para.\n', 'Last para.\n\nThe end.\n'), CH2]);
   });
 

@@ -70,5 +70,5 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
   const first = pieces.find((p) => p.xml);
   if (first) first.xml = mark + first.xml;
   else pieces.push({ xml: mark });
-  return chapterSections(ctx, geo, index, pc.input.title, pieces, last);
+  return chapterSections(ctx, geo, index, pieces, last);
 }

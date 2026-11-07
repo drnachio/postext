@@ -160,11 +160,14 @@ export function customPropsXml(props: readonly [string, string][]): string {
   return `${XML_DECL}<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">${items}</Properties>`;
 }
 
-/** Footnotes or endnotes part: separators (ids -1 and 0) then the notes. */
-export function notesXml(kind: 'footnote' | 'endnote', notes: readonly string[]): string {
+/** Footnotes or endnotes part: separators (ids -1 and 0) then the notes.
+ *  `separator`: the separator note's own paragraphs (a book's short rule)
+ *  in place of Word's line. */
+export function notesXml(kind: 'footnote' | 'endnote', notes: readonly string[], separator?: string): string {
   const sep = (type: string, id: number, mark: string): string =>
     `<w:${kind} w:type="${type}" w:id="${id}"><w:p><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:${mark}/></w:r></w:p></w:${kind}>`;
-  return `${XML_DECL}<w:${kind}s ${WORDML_NAMESPACES}>${sep('separator', -1, 'separator')}${sep('continuationSeparator', 0, 'continuationSeparator')}${notes.join('')}</w:${kind}s>`;
+  const first = separator ? `<w:${kind} w:type="separator" w:id="-1">${separator}</w:${kind}>` : sep('separator', -1, 'separator');
+  return `${XML_DECL}<w:${kind}s ${WORDML_NAMESPACES}>${first}${sep('continuationSeparator', 0, 'continuationSeparator')}${notes.join('')}</w:${kind}s>`;
 }
 
 /** A WordprocessingML part whose root holds caller XML (`w:hdr`, `w:ftr`, `w:comments`, …). */

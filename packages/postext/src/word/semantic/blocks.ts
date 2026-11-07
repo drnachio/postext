@@ -230,8 +230,8 @@ export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: Blo
  *  whether it opens a page (see `layout/pageSpan.ts`). */
 export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, after?: (nodes: readonly Node[]) => Piece[]): Piece[] {
   const parts: Piece[] = [];
-  const add = (xml: string | string[], span = false): void => {
-    for (const x of Array.isArray(xml) ? xml : [xml]) parts.push({ xml: x, ...(span ? { span } : {}) });
+  const add = (xml: string | string[], span = false, block?: ContentBlock): void => {
+    for (const x of Array.isArray(xml) ? xml : [xml]) parts.push({ xml: x, ...(span ? { span } : {}), ...(block ? { block } : {}) });
   };
   const follow = (ns: readonly Node[], span: boolean): void => {
     if (after) for (const p of after(ns)) parts.push(p.span === undefined && span ? { ...p, span } : p);
@@ -242,7 +242,7 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
     const n = nodes[i]!;
     const span = !!after && spansPage(ctx, n);
     if ('container' in n) {
-      add(renderContainer(ctx, n, span ? wide : env), span);
+      add(renderContainer(ctx, n, span ? wide : env), span, n.container);
       follow([n], span);
       continue;
     }
@@ -262,7 +262,7 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
     }
     const start = after ? headingStart(ctx, n.block) : undefined;
     const xml = renderBlock(ctx, n.block, span ? wide : env);
-    parts.push({ xml, ...(span ? { span } : {}), ...(start ? { start } : {}) });
+    parts.push({ xml, block: n.block, ...(span ? { span } : {}), ...(start ? { start } : {}) });
     follow([n], span);
   }
   return parts;

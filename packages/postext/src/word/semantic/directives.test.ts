@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { applyDocxEdits } from '../roundtrip/index.js';
-import { exportDocx, exportProblems, looseMarkup } from './fixtures/harness.js';
+import { exportDocx, exportProblems, looseMarkup, sectionsOf } from './fixtures/harness.js';
 import { pageNumberFormat, pageNumberStart } from './directives.js';
 
 const BOOK = [
@@ -39,8 +39,12 @@ describe('semantic docx: directives', () => {
   it('writes the index as an INDEX field listing the marked terms in order', async () => {
     const e = await exportDocx(BOOK, { config: CONFIG });
     expect(e.doc).toContain('<w:tag w:val="ptx:index"/>');
-    expect(e.doc).toContain(' INDEX </w:instrText>');
+    // Letter heads and the book's two columns, which Word keeps when it
+    // updates the field.
+    expect(e.doc).toContain(' INDEX \\h "A" \\c "2" </w:instrText>');
     const result = e.doc.slice(e.doc.indexOf(' INDEX '));
+    expect(e.doc).toMatch(/<w:pStyle w:val="IndexHeading"\/>.*? INDEX .*?>A<\/w:t>.*?Alpha.*?IndexHeading.*?>B<\/w:t>.*?Beta/);
+    expect(e.part('word/styles.xml')).toContain('<w:name w:val="index heading"/>');
     const at = (s: string): number => result.indexOf(`>${s}</w:t>`);
     expect(at('Alpha')).toBeGreaterThan(0);
     expect(at('Beta')).toBeGreaterThan(at('Alpha'));
@@ -52,7 +56,7 @@ describe('semantic docx: directives', () => {
     const e = await exportDocx(BOOK, { config: CONFIG });
     expect(e.doc).toContain('<w:tag w:val="ptx:space"/>');
     expect(e.doc).toMatch(/<w:spacing w:before="0" w:after="0" w:line="\d+" w:lineRule="exact"\/>/);
-    const sects = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/g)!;
+    const sects = sectionsOf(e.doc);
     // The first chapter's three headings each open a section (a recto, by
     // default); the numbering starts on the second chapter's first one,
     // and its format goes on in every section after it (Word counts a
@@ -125,7 +129,7 @@ describe('semantic docx: directives', () => {
   it('writes the section page numbers of a Japanese book and ignores lines=N', async () => {
     const md = ['# One\n\nText.\n', ':::numbering{format="japanese-informal" startAt=1}\n\n# Two\n\nText.\n', ':::numbering{lines=1}\n\n# Three\n\nText.\n'];
     const e = await exportDocx(md, { config: { locale: 'ja' } as never });
-    const sects = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/g)!;
+    const sects = sectionsOf(e.doc);
     expect(sects[1]).toContain('<w:pgNumType w:fmt="japaneseCounting" w:start="1"/>');
     // The format goes on into the next chapter; lines=N changes nothing.
     expect(sects[2]).toContain('<w:pgNumType w:fmt="japaneseCounting"/>');

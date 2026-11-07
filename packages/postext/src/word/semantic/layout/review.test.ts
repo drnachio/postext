@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from '../../../types.js';
 import { applyDocxEdits } from '../../roundtrip/index.js';
 import { editDocx } from '../../roundtrip/fixture.test-helper.js';
-import { exportDocx, exportProblems, type Exported } from '../fixtures/harness.js';
+import { exportDocx, exportProblems, type Exported, sectionsOf } from '../fixtures/harness.js';
 
 const cfg = (c: Record<string, unknown>): PostextConfig => c as unknown as PostextConfig;
 const chapters = (md: string[]): { chapters: { id: string; markdown: string }[] } => ({ chapters: md.map((markdown, i) => ({ id: `ch${i + 1}`, markdown })) });
@@ -18,7 +18,6 @@ function unchanged(e: Exported, md: string[], bytes = e.bytes): void {
   expect(r.chapters.map((c) => c.markdown)).toEqual(md);
 }
 
-const sectionsOf = (doc: string): string[] => doc.match(/<w:sectPr>.*?<\/w:sectPr>/g) ?? [];
 
 /** The paragraph properties of the paragraph holding `text`. */
 function pPrOf(doc: string, text: string): string {

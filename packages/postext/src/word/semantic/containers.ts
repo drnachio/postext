@@ -154,7 +154,12 @@ function keepBox(ctx: WriterContext, cell: string, keepTogether: boolean): boole
   const geo = pageGeometry(ctx.resolved, ctx.units);
   const page = geo.heightTw - geo.margins.top - geo.margins.bottom;
   const h = boxHeight(cell, lineTw);
-  return h <= page * 0.8 && (keepTogether || h <= 14 * lineTw);
+  // Columns the book sets side by side come one after the other in Word:
+  // the box is taller than the one the style keeps on a page, and kept
+  // whole it would leave the page before it half empty (a recipe card
+  // under its photograph, #1444).
+  const stacked = cell.includes('<w:tag w:val="ptx:columns"/>');
+  return h <= page * 0.8 && ((keepTogether && !stacked) || h <= 14 * lineTw);
 }
 
 /** Most of a box's width its side insets may take together: what is left

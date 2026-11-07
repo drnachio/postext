@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Resource } from '../../types.js';
-import { exportDocx, exportProblems, looseMarkup } from './fixtures/harness.js';
+import { exportDocx, exportProblems, looseMarkup, sectionsOf } from './fixtures/harness.js';
 import { orderProblems } from './inspect.js';
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
@@ -267,7 +267,7 @@ describe('semantic docx: book', () => {
     } as never;
     const e = await exportDocx(['# One\n\nText.\n', '# Two\n\nMore.\n'], { config });
     expect(exportProblems(e, ['# One\n\nText.\n', '# Two\n\nMore.\n'])).toEqual([]);
-    const sects = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/g)!;
+    const sects = sectionsOf(e.doc);
     expect(sects).toHaveLength(2);
     expect(sects[0]).toContain('<w:pgSz w:w="11906" w:h="15874"/>');
     expect(sects[0]).toContain('w:top="1134" w:right="850" w:bottom="1134" w:left="1417"');
@@ -275,7 +275,11 @@ describe('semantic docx: book', () => {
     expect(sects[0]).toContain('<w:titlePg/>');
     expect(sects[1]).toContain('<w:type w:val="oddPage"/>');
     expect(e.part('word/settings.xml')).toContain('<w:mirrorMargins/>');
-    expect(e.part('word/header1.xml')).toContain('Chapter 1');
+    // The default design: the book's title on odd pages, the chapter's on
+    // even ones (#1444).
+    expect(e.part('word/settings.xml')).toContain('<w:evenAndOddHeaders/>');
+    expect(sects[1]).toMatch(/<w:headerReference w:type="even" r:id="rIdHdr\d+"\/>/);
+    expect(e.part('word/header2.xml')).toContain('>One<');
     expect(e.doc).toContain('w:name="chapter_ch2"');
     expect(e.map.chapters.map((c) => c.id)).toEqual(['ch1', 'ch2']);
     expect(e.frag('More.').target).toEqual({ kind: 'markdown', chapter: 1 });

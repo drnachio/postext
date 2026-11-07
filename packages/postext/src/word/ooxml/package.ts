@@ -108,7 +108,8 @@ export function assemble(input: DocxPackageInput, c: Collected): Map<string, Uin
   const docRels: Rel[] = [];
   const rel = (id: string, type: string, target: string, external = false): void => void docRels.push({ id, type, target, external });
 
-  put('word/document.xml', `${XML_DECL}<w:document ${WORDML_NAMESPACES}><w:body>${input.body}</w:body></w:document>`, CONTENT_TYPE.document);
+  const background = input.background ? `<w:background w:color="${input.background}"/>` : '';
+  put('word/document.xml', `${XML_DECL}<w:document ${WORDML_NAMESPACES}>${background}<w:body>${input.body}</w:body></w:document>`, CONTENT_TYPE.document);
 
   put('word/styles.xml', input.stylesXml ?? `${XML_DECL}<w:styles ${WORDML_NAMESPACES}>${docDefaultsXml(input.docDefaults)}${input.styles}</w:styles>`, CONTENT_TYPE.styles);
   rel('rIdStyles', REL.styles, 'styles.xml');
@@ -133,7 +134,7 @@ export function assemble(input: DocxPackageInput, c: Collected): Map<string, Uin
     rel('rIdNumbering', REL.numbering, 'numbering.xml');
   }
   if (hasFootnotes) {
-    put('word/footnotes.xml', notesXml('footnote', input.footnotes!), CONTENT_TYPE.footnotes);
+    put('word/footnotes.xml', notesXml('footnote', input.footnotes!, input.footnoteSeparator), CONTENT_TYPE.footnotes);
     rel('rIdFootnotes', REL.footnotes, 'footnotes.xml');
   }
   if (hasEndnotes) {

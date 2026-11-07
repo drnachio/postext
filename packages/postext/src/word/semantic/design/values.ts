@@ -33,7 +33,8 @@ function bookValues(ctx: WriterContext): BookValues {
   const first = ctx.book[0] as { input?: { markdown: string } } | undefined;
   const metadata = first?.input ? extractFrontmatter(first.input.markdown).metadata : {};
   const byBlock = new Map<ContentBlock, HeadingValues>();
-  let ordinal = 0;
+  // A book that continues a longer one counts its chapters on from there.
+  let ordinal = ctx.start?.headings?.h1 ?? 0;
   let chapterNumber = '';
   let chapterTitle = '';
   let partTitle = '';
