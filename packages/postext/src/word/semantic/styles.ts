@@ -97,6 +97,17 @@ export class StyleRegistry {
     return styled && styled !== own ? styled : undefined;
   }
 
+  /** The text size of a style, half-points: its own or the style's it is
+   *  based on, else the body's. */
+  styleSize(style: string | undefined): number {
+    for (let id = style, n = 0; id && n < 8; n++) {
+      const def = this.defs.get(id);
+      if (def?.rPr?.sz) return def.rPr.sz;
+      id = def?.basedOn;
+    }
+    return halfPoints(this.units, this.resolved.bodyText.fontSize);
+  }
+
   private face(id: string, stack: string | undefined, weight = 400, italic = false): string {
     this.faces.set(id, { stack, weight, italic });
     return id;

@@ -133,7 +133,7 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
     `<w:sectPr>${refs}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
-    (part.first ? pageNumberType(ctx) : '') +
+    pageNumberType(ctx, !!part.first) +
     (part.oneColumn ? ONE_COLUMN : geo.cols) +
     (titlePg && refs ? '<w:titlePg/>' : '') +
     (r.layout.writingMode === 'vertical-rl' ? '<w:textDirection w:val="tbRl"/>' : '') +

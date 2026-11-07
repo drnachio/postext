@@ -14,6 +14,7 @@
 // of the section it stands in, then grouped into sections, each closed by
 // an empty paragraph carrying its `w:sectPr` (the reader passes over it).
 
+import { layoutColumnCount } from '../../../defaults/layout.js';
 import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
 import { createHeadingLevelResolver, type HeadingLevelResolver } from '../../../pipeline/sections/headingStyles.js';
 import type { ContentBlock } from '../../../parse/types.js';
@@ -41,16 +42,26 @@ function headingLevel(ctx: WriterContext, b: ContentBlock): ReturnType<HeadingLe
   return r.forBlock(b);
 }
 
+/** The text columns of the book's layout (a side column takes no text). */
+function textColumns(r: ResolvedConfig): number {
+  const type = r.layout.layoutType;
+  return type === 'double' ? 2 : type === 'multiple' ? Math.max(1, layoutColumnCount(r.layout)) : 1;
+}
+
 /** Whether resource `id` is set across the page (its placement, its
- *  type's default, or a quarter turn, which always takes the page). */
+ *  type's default, or a quarter turn, which always takes the page), or
+ *  across as many columns as the text has, which the engine sets as one. */
 export function resourceSpansPage(ctx: WriterContext, id: string | undefined): boolean {
   const res = id ? ctx.resources.get(id) : undefined;
   if (!res) return false;
-  return resolveResourcePlacement(res, ctx.resourceTypes.find((t) => t.id === res.typeId)).span === 'page';
+  const placement = resolveResourcePlacement(res, ctx.resourceTypes.find((t) => t.id === res.typeId));
+  if (placement.span === 'page') return true;
+  const cols = textColumns(ctx.resolved);
+  return placement.span === 'column' && cols > 1 && Math.min(placement.columns, cols) === cols;
 }
 
 /** Whether a top-level node is set across the page: a `span: 'page'`
- *  heading, box (its style's span or the fence's `span`), group or
+ *  heading or one with an advanced design, box (its style's span or the fence's `span`), group or
  *  resource. */
 export function spansPage(ctx: WriterContext, node: Node): boolean {
   if ('container' in node) {
@@ -60,7 +71,11 @@ export function spansPage(ctx: WriterContext, node: Node): boolean {
     return ctx.styles.callout(attrs.type)?.span === 'page';
   }
   const b = node.block;
-  if (b.type === 'heading') return headingLevel(ctx, b)?.span === 'page';
+  if (b.type === 'heading') {
+    // A heading painted from its design takes the band across the page too.
+    const lvl = headingLevel(ctx, b);
+    return !!lvl && (lvl.span === 'page' || lvl.advancedDesign.enabled);
+  }
   if (b.type === 'resourceBlock') return resourceSpansPage(ctx, b.resourceId);
   return false;
 }

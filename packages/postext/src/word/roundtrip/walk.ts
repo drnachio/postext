@@ -82,7 +82,7 @@ interface WalkState {
   nextBox: number;
   /** Complex fields: whether each open field is still in its code part,
    *  and whether its result is skipped (see `GENERATED_FIELD`). */
-  fields: { code: boolean; skip: boolean; instr: string; href?: string }[];
+  fields: { code: boolean; skip: boolean; instr: string; href?: string; page?: boolean }[];
   /** A generated field was open in the paragraph being read, or began or
    *  ended in it: its paragraph mark may belong to the field result alone. */
   touched?: boolean;
@@ -121,6 +121,11 @@ function runFlags(rPr: XmlElement | undefined): string {
  *  contents and an index. Their results, and every field nested in them
  *  (a PAGEREF, a HYPERLINK), read as nothing. */
 const GENERATED_FIELD = /^\s*(?:XE|TOC|INDEX)\b/i;
+
+/** A page reference: Word's page number, which no source character holds.
+ *  The field reads as one object whatever its result (the semantic writer
+ *  logs a `:ref` that prints a page so, #1444). */
+const PAGE_FIELD = /^\s*PAGEREF\b/i;
 
 /** Whether characters at this point are dropped: inside a field code, or
  *  anywhere inside the result of a generated field. */
@@ -204,7 +209,11 @@ function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
           const f = s.fields[s.fields.length - 1];
           if (f) {
             f.code = false;
-            f.skip = GENERATED_FIELD.test(f.instr);
+            if (PAGE_FIELD.test(f.instr)) {
+              emit(s, OBJECT_CHAR, flags, ctx);
+              f.page = true;
+            }
+            f.skip = f.page === true || GENERATED_FIELD.test(f.instr);
             if (f.skip) s.touched = true;
             const href = hyperlinkOf(f.instr);
             if (href) f.href = href;
@@ -214,6 +223,8 @@ function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
           // still marks its paragraph.
           const f = s.fields.pop();
           if (f && GENERATED_FIELD.test(f.instr)) s.touched = true;
+          // A page reference never updated has no result: the object here.
+          else if (f && !f.page && PAGE_FIELD.test(f.instr)) emit(s, OBJECT_CHAR, flags, ctx);
         }
         break;
       }
@@ -283,6 +294,10 @@ function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
       case 'fldSimple':
         if (GENERATED_FIELD.test(attr(c, 'instr') ?? '')) {
           s.touched = true;
+          break;
+        }
+        if (PAGE_FIELD.test(attr(c, 'instr') ?? '')) {
+          emit(s, OBJECT_CHAR, '', ctx);
           break;
         }
         walkInline(s, c, { ...ctx, href: hyperlinkOf(attr(c, 'instr') ?? '') ?? ctx.href });

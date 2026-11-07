@@ -134,11 +134,11 @@ function captionParagraph(ctx: WriterContext, b: ContentBlock | undefined, res: 
   const own = ownWord(ctx, b, field);
   const role = field === 'caption' ? 'caption' : 'note';
   let runs: string;
-  if (own && own.start >= 0) runs = snippetRuns(ctx, own.text, ctx.chapter.markdown, own.start, { kind: 'markdown', chapter: ctx.chapter.index }, role);
+  if (own && own.start >= 0) runs = snippetRuns(ctx, own.text, ctx.chapter.markdown, own.start, { kind: 'markdown', chapter: ctx.chapter.index }, role, STYLE.caption);
   else if (own) runs = textRuns(own.text, '');
   else {
     const text = res[field] ?? '';
-    runs = snippetRuns(ctx, text, text, 0, { kind: 'resource', resourceId: res.id, field }, role);
+    runs = snippetRuns(ctx, text, text, 0, { kind: 'resource', resourceId: res.id, field }, role, STYLE.caption);
   }
   if (!runs && !label) return '';
   return paragraph({ style: STYLE.caption }, label + runs);

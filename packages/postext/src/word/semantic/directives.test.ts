@@ -54,10 +54,12 @@ describe('semantic docx: directives', () => {
     expect(e.doc).toMatch(/<w:spacing w:before="0" w:after="0" w:line="\d+" w:lineRule="exact"\/>/);
     const sects = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/g)!;
     // The first chapter's three headings each open a section (a recto, by
-    // default); the numbering goes on the second chapter's first one only.
+    // default); the numbering starts on the second chapter's first one,
+    // and its format goes on in every section after it (Word counts a
+    // section without one in decimal), the start only there.
     expect(sects.slice(0, 3).some((s) => s.includes('pgNumType'))).toBe(false);
     expect(sects[3]).toContain('<w:pgNumType w:fmt="lowerRoman" w:start="3"/>');
-    expect(sects.slice(4).some((s) => s.includes('pgNumType'))).toBe(false);
+    expect(sects.slice(4).every((s) => s.includes('<w:pgNumType w:fmt="lowerRoman"/>'))).toBe(true);
   });
 
   it('gives each page-opening heading style its own page', async () => {
@@ -125,7 +127,8 @@ describe('semantic docx: directives', () => {
     const e = await exportDocx(md, { config: { locale: 'ja' } as never });
     const sects = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/g)!;
     expect(sects[1]).toContain('<w:pgNumType w:fmt="japaneseCounting" w:start="1"/>');
-    expect(sects[2]).not.toContain('pgNumType');
+    // The format goes on into the next chapter; lines=N changes nothing.
+    expect(sects[2]).toContain('<w:pgNumType w:fmt="japaneseCounting"/>');
     expect(e.doc).not.toContain('lines=1');
     const r = applyDocxEdits(e.bytes, { chapters: md.map((markdown, i) => ({ id: `ch${i + 1}`, markdown })) });
     expect(r.edits).toEqual([]);

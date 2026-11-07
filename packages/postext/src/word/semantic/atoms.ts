@@ -82,7 +82,7 @@ function anchorTarget(ctx: WriterContext, id: string): AnchorTarget | undefined 
  *  as the engine prints it ("chapter 2", "section 4.1", the title, per
  *  the reference's style and `crossRefs`), linked to the anchor's
  *  bookmark (#1444); the id itself only when it names nothing. */
-export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>): { text: string; bookmark?: string } {
+export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>): RefText {
   const res = ref.anchor ? undefined : ctx.resources.get(resourceRefId(ref.resourceId, (id) => ctx.resources.has(id)));
   if (res) {
     ctx.usedResources.add(res.id);
@@ -91,8 +91,27 @@ export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>
   const target = anchorTarget(ctx, ref.resourceId);
   if (!target) return { text: ref.text || ref.resourceId };
   const bookmark = wordBookmarkName(target.id);
-  return { text: anchorRefLabel(ref, target, ctx.resolved.crossRefs).text, ...(bookmark ? { bookmark } : {}) };
+  if (!bookmark) return { text: anchorRefLabel(ref, target, ctx.resolved.crossRefs).text };
+  // A label that prints the target's page: the page is the Word layout's,
+  // a PAGEREF to the bookmark (the engine's own page would be wrong in
+  // Word, and before layout it is only a "?").
+  const label = anchorRefLabel(ref, { ...target, pageLabel: PAGE_SLOT }, ctx.resolved.crossRefs).text;
+  const at = label.indexOf(PAGE_SLOT);
+  if (at >= 0) return { text: label.slice(0, at) + label.slice(at + 1), bookmark, page: { before: label.slice(0, at), after: label.slice(at + 1) } };
+  return { text: label, bookmark };
 }
+
+/** What a reference shows: its text, the bookmark it links to, and, for a
+ *  label that prints a page, the words around the page number. */
+export interface RefText {
+  text: string;
+  bookmark?: string;
+  page?: { before: string; after: string };
+}
+
+/** Stands for the page number while the label is built (a private-use
+ *  character no case rule changes). */
+const PAGE_SLOT = '\uE000';
 
 /** The text a chip shows: its words. */
 export function chipText(chip: NonNullable<InlineSpan['chip']>): string {

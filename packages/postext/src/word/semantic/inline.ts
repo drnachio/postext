@@ -12,7 +12,7 @@ import { atomEnd, chipText, refLabel } from './atoms.js';
 import type { WriterContext } from './context.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
 import { STYLE } from './styles.js';
-import { halfPoints, hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
+import { fieldRuns, halfPoints, hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
 import { escapeAttr, escapeXml } from '../xml.js';
 
 const BREAK = '\u2028';
@@ -114,13 +114,15 @@ function markLook(ctx: WriterContext, style: string): { fill?: string; ink?: str
 }
 
 /** Base runs under their reading, as a Word ruby (furigana, pinyin,
- *  #1444): the reading at `cjk.ruby.fontSize` of the body text, raised
- *  over a base of the body's size. The reader takes the base as the text
+ *  #1444): the reading at `cjk.ruby.fontSize` of the base, raised over a
+ *  base of its paragraph style's size. The reader takes the base as the text
  *  and the reading from the source, so the round trip keeps both. */
-function rubyRun(ctx: WriterContext, ruby: NonNullable<Fmt['ruby']>, base: string): string {
+function rubyRun(ctx: WriterContext, ruby: NonNullable<Fmt['ruby']>, base: string, style: string | undefined): string {
   const u = ctx.units;
-  const hps = halfPoints(u, ctx.resolved.bodyText.fontSize);
-  const rt = halfPoints(u, ctx.resolved.cjk.ruby.fontSize, ctx.styles.bodyPx);
+  // The base's size is its paragraph style's (a heading's, a caption's):
+  // Word raises the reading by it.
+  const hps = ctx.styles.styleSize(style);
+  const rt = halfPoints(u, ctx.resolved.cjk.ruby.fontSize, (hps * u.dpi) / 144);
   const lid = escapeAttr(ctx.config.locale || 'ja-JP');
   return (
     `<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val="${ruby.group ? 'distributeSpace' : 'center'}"/><w:hps w:val="${rt}"/><w:hpsRaise w:val="${hps}"/><w:hpsBaseText w:val="${hps}"/><w:lid w:val="${lid}"/></w:rubyPr>` +
@@ -200,6 +202,12 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     } else if (span.ref) {
       const label = refLabel(ctx, span.ref);
       const unit = atomUnit(p, label.text, base, STYLE.reference, at, atomEnd(s.src, at, limit), 'ref');
+      if (label.page && label.bookmark && unit.kind === 'obj') {
+        // The page as a PAGEREF Word fills in, read back as one object.
+        const props = rPr(runProps(base, STYLE.reference));
+        unit.xml = textRuns(label.page.before, props) + pageRef(label.bookmark, props) + textRuns(label.page.after, props);
+        unit.text = label.page.before + OBJECT_CHAR + label.page.after;
+      }
       // A reference to a heading or an anchor jumps to it.
       if (label.bookmark && unit.kind === 'obj') unit.xml = s.linkFields ? hyperlink(ctx, `#${label.bookmark}`, unit.xml, true) : `<w:hyperlink w:anchor="${label.bookmark}" w:history="1">${unit.xml}</w:hyperlink>`;
       units.push(unit);
@@ -258,6 +266,11 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
   return emit(ctx, s, units);
 }
 
+/** A PAGEREF field with no result yet, marked for Word to update. */
+function pageRef(bookmark: string, props: string): string {
+  return fieldRuns(`PAGEREF ${bookmark} \\h`, '', props).replace('w:fldCharType="begin"/>', 'w:fldCharType="begin" w:dirty="true"/>');
+}
+
 function atomUnit(p: number, text: string, fmt: Fmt, style: string | undefined, start: number, end: number, kind: string): Unit {
   const xml = textRuns(text, rPr(runProps(fmt, style)));
   return { kind: 'obj', p, xml, fmt, text, atom: { start, end, kind } };
@@ -305,20 +318,27 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
       continue;
     }
     // A run of plain characters with one format and no insertion inside.
+    // A ruby base stays whole (a split one would show its reading twice):
+    // what is anchored inside it goes after it.
     const key = fmtKey(u.fmt);
     let text = '';
+    let after = '';
     const map: number[] = [];
     let j = i;
     while (j < units.length) {
       const v = units[j]!;
-      if (v.kind !== 'char' || fmtKey(v.fmt) !== key || (j > i && s.inserts?.has(v.p))) break;
+      if (v.kind !== 'char' || fmtKey(v.fmt) !== key) break;
+      if (j > i && s.inserts?.has(v.p)) {
+        if (!u.fmt.ruby) break;
+        after += insertAt(v.p);
+      }
       text += v.ch;
       map.push(v.src);
       j++;
     }
     const font = u.fmt.k ? undefined : ctx.styles.runFont(s.style, !!u.fmt.b, !!u.fmt.i);
     const plainRuns = textRuns(text, rPr({ ...runProps(u.fmt), ...(font ? { font } : {}) }));
-    const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns) : plainRuns;
+    const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns, s.style) : plainRuns;
     // Code in right-to-left text: left-to-right marks either side keep its
     // end punctuation from being mirrored.
     const ltr = rtl && !!u.fmt.k && !u.fmt.href;
@@ -326,6 +346,7 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
     xml += u.fmt.href ? hyperlink(ctx, u.fmt.href, runs, s.linkFields) : runs;
     frag.push(text, map, flagsOf(u.fmt), u.fmt.href);
     if (ltr) ltrMark();
+    xml += after;
     i = j;
   }
   // Marks anchored past the last character.

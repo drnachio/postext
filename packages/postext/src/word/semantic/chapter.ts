@@ -42,6 +42,9 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
     if (prefixes[i] !== undefined) headingNumbers.set(b, prefixes[i]!);
   });
   for (const b of pc.blocks) if (b.footnoteDef !== undefined && !defs.has(b.footnoteDef)) defs.set(b.footnoteDef, b);
+  // The number format goes on from the chapter before (the engine keeps
+  // the current format until a `:::numbering` changes it); a start does not.
+  const carried = index > 0 ? ctx.chapter?.pageNumbers?.format : undefined;
   ctx.chapter = {
     index,
     input: pc.input,
@@ -54,7 +57,7 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
     blockCounter: 0,
   };
   for (const issue of pc.issues) ctx.warn(`parse:${issue.kind}`, `Unclosed or stray ${issue.delimiter} at offset ${issue.sourceStart + pc.offset}.`);
-  ctx.chapter.pageNumbers = index === 0 ? bookPageNumbers(ctx) : undefined;
+  ctx.chapter.pageNumbers = index === 0 ? bookPageNumbers(ctx) : carried ? { format: carried } : undefined;
   const mark = namedBookmark(ctx, `chapter_${pc.input.id}`);
   // The front matter is not shown: its title and author go to the
   // document properties, and source no fragment covers is kept as it is
