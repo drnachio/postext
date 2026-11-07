@@ -13,7 +13,7 @@ import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
 import { paleOnWhite } from './design/ink.js';
 import { captionLook, sameCaptionLook } from './prose/caption.js';
-import { paragraphStyleLook, tocLevelLook } from './prose/paragraphStyle.js';
+import { paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
 
 /** Style ids the writer uses by name. */
@@ -417,12 +417,14 @@ export class StyleRegistry {
   /** Word's own style of a contents or index entry at `level` (1–9):
    *  `toc N` / `index N`, the names Word applies when it updates the
    *  field. A contents level takes its entry's look from the config
-   *  (#1444); an index level is indented one step further. */
-  listing(kind: 'toc' | 'index', level: number): string {
+   *  (#1444), its page-number tab (`endTwips`) and, by how its entries
+   *  are numbered, its number column; an index level is indented one step
+   *  further. */
+  listing(kind: 'toc' | 'index', level: number, endTwips?: number, numbering?: TocLevelNumbering): string {
     const lv = Math.min(9, Math.max(1, level));
     const id = kind === 'toc' ? `TOC${lv}` : `Index${lv}`;
     if (this.defs.has(id)) return id;
-    const look = kind === 'toc' ? tocLevelLook(this.resolved, this.units, (f, w, i) => this.font(f, w, i), lv) : { pPr: { before: 0, after: 0, ind: { left: lv * 240, hanging: 240 }, jc: 'left' as const } };
+    const look = kind === 'toc' ? tocLevelLook(this.resolved, this.units, (f, w, i) => this.font(f, w, i), lv, endTwips, numbering) : { pPr: { before: 0, after: 0, ind: { left: lv * 240, hanging: 240 }, jc: 'left' as const } };
     return this.add(id, { type: 'paragraph', name: `${kind} ${lv}`, basedOn: STYLE.normal, next: STYLE.normal, ...look });
   }
 

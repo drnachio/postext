@@ -119,6 +119,44 @@ describe('semantic docx: text after the fourth review (#1444)', () => {
     unchanged(e, [md]);
   });
 
+  it('keeps the contents columns and the leader setting in the level styles, which a field update keeps', async () => {
+    const md = '# Contents {toc=false}\n\n:::toc\n\n# First poem\n\nText.\n\n# Second poem\n\nText.\n';
+    const config = cfg({
+      headings: { levels: [{ level: 1, numbering: { enabled: true, template: '{1:upper-roman}' } }] },
+      toc: { levels: [{ level: 1, italic: true, numberWidth: mm(6), numberGap: mm(3) }], leader: { enabled: false } },
+    });
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, [md])).toEqual([]);
+    // Word rebuilds the entries from TOC1 on an update: the style holds
+    // the number column, the hanging indent and a page tab with no leader.
+    const toc1 = styleOf(e, 'TOC1');
+    expect(toc1).toMatch(/<w:tab w:val="right" w:pos="340"\/><w:tab w:val="left" w:pos="510"\/><w:tab w:val="right" w:pos="\d+"\/>/);
+    expect(toc1).toContain('<w:ind w:left="510" w:hanging="510"/>');
+    expect(toc1).not.toContain('w:leader');
+    expect(paraOf(e.doc, 'Second poem')).not.toContain('w:leader');
+    unchanged(e, [md]);
+  });
+
+  it('sets unnumbered contents entries in the unnumbered look', async () => {
+    const md = '# Contents {toc=false}\n\n:::toc\n\n# Editorial {style="plain"}\n\nText.\n\n# Comets\n\nText.\n';
+    const config = cfg({
+      headings: { levels: [{ level: 1, numbering: { enabled: true, template: '{1}' } }] },
+      headingStyles: [{ id: 'plain', name: 'Plain', numbered: false }],
+      toc: { levels: [{ level: 1, fontWeight: 700, italic: false }], unnumbered: { fontWeight: 400, italic: true } },
+    });
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, [md])).toEqual([]);
+    // A level with numbered and unnumbered entries keeps no number column
+    // in its style; each entry carries its own.
+    const toc1 = styleOf(e, 'TOC1');
+    expect(toc1).toContain('<w:b/>');
+    expect(toc1).not.toContain('w:hanging');
+    const plain = paraOf(e.doc, "Editorial");
+    expect(plain).toMatch(/<w:rPr>[^]*?<w:b w:val="0"\/>[^]*?<w:i\/>[^]*?<\/w:rPr><w:t[^>]*>Editorial/);
+    expect(paraOf(e.doc, 'Comets')).not.toContain('<w:i/>');
+    unchanged(e, [md]);
+  });
+
   it('centres a reading wider than its base, and spreads one that fits', async () => {
     const md = ':ruby[差支]{rt="さしつかえ"}ない。:ruby[東京都]{rt="とうきょうと"}。\n';
     const e = await exportDocx(md, { config: cfg({ locale: 'ja' }) });

@@ -18,8 +18,9 @@ import { pageGeometry } from './sections.js';
 import type { HeadingCounters, OutlineEntry } from '../../types.js';
 import { seeLabels } from './marks.js';
 import type { WriterContext } from './context.js';
-import { blockSdt, fieldRuns, paragraph, rPr, textRuns, type ParaProps } from './wml.js';
-import { tocEntryParts, tocSubtitleLine } from './prose/tocEntry.js';
+import { blockSdt, fieldRuns, paragraph, rPr, textRuns, type ParaProps, type RunProps } from './wml.js';
+import { tocEntryParts, tocPartStyle, tocSubtitleLine } from './prose/tocEntry.js';
+import type { TocLevelNumbering } from './prose/paragraphStyle.js';
 import { escapeXml } from '../xml.js';
 
 /** The book's outline, chapter after chapter with the heading counters
@@ -79,8 +80,8 @@ function fieldParagraphs(instr: string, lines: readonly ResultLine[], emptyStyle
 }
 
 /** Runs of a title with its bold and italic spans. */
-function titleRuns(spans: readonly { text: string; bold?: boolean; italic?: boolean }[]): string {
-  return spans.map((s) => textRuns(s.text, rPr({ ...(s.bold ? { b: true } : {}), ...(s.italic ? { i: true } : {}) }))).join('');
+function titleRuns(spans: readonly { text: string; bold?: boolean; italic?: boolean }[], look?: RunProps): string {
+  return spans.map((s) => textRuns(s.text, rPr({ ...look, ...(s.bold ? { b: true } : {}), ...(s.italic ? { i: true } : {}) }))).join('');
 }
 
 /** A `:::toc` directive as a TOC field listing the book's headings. */
@@ -104,21 +105,33 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
     }
     return undefined;
   };
+  // Each level's TOC N style holds the tabs Word keeps when it updates
+  // the field: the number column's too where every entry has a number.
+  const numbering = new Map<number, TocLevelNumbering>();
+  for (const row of rows) {
+    const info = row.toc;
+    if (!info || info.kind === 'part') continue;
+    const lv = Math.min(9, Math.max(1, info.level));
+    const own: TocLevelNumbering = info.numbered && info.number ? 'numbered' : 'unnumbered';
+    const seen = numbering.get(lv);
+    numbering.set(lv, seen === undefined || seen === own ? own : 'mixed');
+  }
+  for (const [lv, n] of numbering) ctx.styles.listing('toc', lv, ctx.textTwips, n);
   for (const row of rows) {
     const info = row.toc;
     if (!info) continue;
     if (info.kind === 'part') {
       const text = [info.number, info.title].filter(Boolean).join(' ');
-      if (text) lines.push({ style: ctx.styles.listing('toc', 1), runs: textRuns(text, rPr({ b: true })) });
+      if (text) lines.push({ style: tocPartStyle(ctx), runs: textRuns(text, rPr({ b: true })) });
       continue;
     }
     // The number in its column and face, the title after it (#1444).
     const entry = tocEntryParts(ctx, info, ctx.textTwips);
     const number = entry.number || (info.number ? textRuns(`${info.number} `, '') : '');
-    const runs = number + titleRuns(row.spans.length ? row.spans : [{ text: row.text }]);
+    const runs = number + titleRuns(row.spans.length ? row.spans : [{ text: row.text }], entry.title);
     const bm = bookmarkOf(info.headingSource);
     const linked = bm ? `<w:hyperlink w:anchor="${bm}" w:history="1">${runs}<w:r>${entry.page}<w:tab/></w:r>${fieldRuns(`PAGEREF ${bm} \\h`, '', entry.page)}</w:hyperlink>` : runs;
-    const props = bm ? entry.props : { ind: entry.props.ind, tabs: entry.props.tabs?.slice(0, -1) };
+    const props = { ...(bm ? entry.props : { ind: entry.props.ind, tabs: entry.props.tabs?.slice(0, -1) }), ...entry.space };
     // A subtitle line under the title takes the space after the entry.
     const sub = info.subtitle ? tocSubtitleLine(ctx, info, entry) : undefined;
     lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, props: sub ? { ...props, after: 0 } : props });
