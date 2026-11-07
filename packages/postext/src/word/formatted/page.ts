@@ -8,6 +8,7 @@
 import type { DisplayItem, DisplayPage } from '../../paint/displayList/types.js';
 import { anchorRun, shapeGraphic, shapesOverPictures, xfrm } from './drawing.js';
 import { FLOW_LINE, floatingTables, floatsXml, flowParagraph, type PageFloat } from './floats.js';
+import { haloRun } from './halo.js';
 import { itemRect, layerRuns, roomBelow, type Layer } from './layers.js';
 import { imageRun } from './pictures.js';
 import { pathRun, rectRuns, ruleRun } from './shapes.js';
@@ -73,9 +74,13 @@ export async function pageParts(ctx: WriterContext, page: DisplayPage, floating:
   for (const [i, item] of page.items.entries()) {
     const rect = rects[i]!;
     switch (item.kind) {
-      case 'text':
+      case 'text': {
+        // A halo goes under its text (halo.ts).
+        const halo = haloRun(ctx, item);
+        if (halo) layers.push({ runs: [halo], rect });
         layers.push({ runs: await textItemRuns(ctx, item, { growRoom: roomBelow(rect, rects, page.height) }), rect, text: true });
         break;
+      }
       case 'rule':
         layers.push({ runs: [ruleRun(ctx, item)], rect });
         break;
