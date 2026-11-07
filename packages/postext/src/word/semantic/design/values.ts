@@ -30,6 +30,8 @@ interface BookValues {
   byBlock: Map<ContentBlock, HeadingValues>;
   /** Each `:::part` fence's own palette overrides. */
   parts: Map<ContentBlock, Record<string, string>>;
+  /** The overrides in force at every other fence (a box, an exercise). */
+  fences: Map<ContentBlock, Record<string, string>>;
 }
 
 const memo = new WeakMap<object, BookValues>();
@@ -41,6 +43,7 @@ function bookValues(ctx: WriterContext): BookValues {
   const metadata = first?.input ? extractFrontmatter(first.input.markdown).metadata : {};
   const byBlock = new Map<ContentBlock, HeadingValues>();
   const parts = new Map<ContentBlock, Record<string, string>>();
+  const fences = new Map<ContentBlock, Record<string, string>>();
   let chapterNumber = '';
   let chapterTitle = '';
   let partTitle = '';
@@ -64,6 +67,7 @@ function bookValues(ctx: WriterContext): BookValues {
         parts.set(b, palette);
         return;
       }
+      if (b.type === 'containerStart') fences.set(b, palette);
       if (b.type !== 'heading') return;
       const number = (prefixes[bi] ?? '').trim();
       if ((b.level ?? 1) === 1) {
@@ -75,7 +79,7 @@ function bookValues(ctx: WriterContext): BookValues {
       byBlock.set(b, { chapterNumber, chapterTitle, partTitle, partNumber, number, palette });
     });
   });
-  const out = { metadata, byBlock, parts };
+  const out = { metadata, byBlock, parts, fences };
   memo.set(ctx.book, out);
   return out;
 }
@@ -84,7 +88,7 @@ function bookValues(ctx: WriterContext): BookValues {
  *  fence, its own): palette id → hex, empty when nothing recolours. */
 export function partPaletteAt(ctx: WriterContext, b: ContentBlock): Record<string, string> {
   const v = bookValues(ctx);
-  return v.byBlock.get(b)?.palette ?? v.parts.get(b) ?? {};
+  return v.byBlock.get(b)?.palette ?? v.parts.get(b) ?? v.fences.get(b) ?? {};
 }
 
 /** The placeholder context of heading `b`'s design. */

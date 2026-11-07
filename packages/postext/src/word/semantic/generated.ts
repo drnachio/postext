@@ -19,6 +19,8 @@ export interface Piece {
   color?: string;
   /** A face that holds the characters (a check box). */
   font?: string;
+  /** A fill behind the characters (a number badge). */
+  shd?: string;
 }
 
 /** Pieces as runs wrapped in one fragment of generated text. */
@@ -33,6 +35,7 @@ export function generatedRuns(ctx: WriterContext, pieces: readonly Piece[], role
     if (p.u) props.u = true;
     if (p.color) props.color = p.color;
     if (p.font) props.font = p.font;
+    if (p.shd) props.shd = p.shd;
     runs += textRuns(p.text, rPr(props));
     f.push(p.text, new Array<number>(p.text.length).fill(-1), (p.b ? 'b' : '') + (p.i ? 'i' : ''));
   }
