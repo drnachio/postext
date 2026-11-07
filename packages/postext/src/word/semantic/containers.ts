@@ -3,6 +3,9 @@
 // bordered like the box style, its title paragraph first; a `:::part`,
 // `:::paragraphs`, `:::columns` or `:::paper` group is a content control
 // around its blocks; exercises, composed pages, modules and frames go raw.
+// A box is as wide as the column it stands in (a percentage width, so a
+// narrow side column does not clip it), keeps its margins as spacer
+// paragraphs around it, and stays on one page when it is short.
 
 import type { ResolvedCalloutStyleConfig } from '../../types.js';
 import { abs, blockId, type WriterContext } from './context.js';
@@ -10,6 +13,7 @@ import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
 import { attrRange } from './marks.js';
 import { rawSdt } from './raw.js';
+import { pageGeometry } from './sections.js';
 import { STYLE } from './styles.js';
 import { blockSdt, eighths, hex, paragraph, px, textRuns, twips, type Border, type ParaProps } from './wml.js';
 
@@ -90,6 +94,9 @@ function boxBorders(ctx: WriterContext, s: ResolvedCalloutStyleConfig | undefine
   const out: Record<'top' | 'left' | 'bottom' | 'right', Border | undefined> = { top: undefined, left: undefined, bottom: undefined, right: undefined };
   if (!s) return out;
   const u = ctx.units;
+  const rtl = ctx.resolved.direction === 'rtl';
+  const startSide = rtl ? 'right' : 'left';
+  const endSide = rtl ? 'left' : 'right';
   if (s.border.enabled) {
     for (const side of ['top', 'left', 'bottom', 'right'] as const) {
       const own = s.border.sides?.[side as keyof NonNullable<typeof s.border.sides>];
@@ -98,10 +105,47 @@ function boxBorders(ctx: WriterContext, s: ResolvedCalloutStyleConfig | undefine
     }
   }
   if (s.stripe.enabled) {
-    const side = s.stripe.side === 'right' || s.stripe.side === 'end' ? 'right' : s.stripe.side === 'top' ? 'top' : 'left';
+    const side = s.stripe.side === 'top' ? 'top' : s.stripe.side === 'left' ? 'left' : s.stripe.side === 'right' ? 'right' : s.stripe.side === 'end' ? endSide : startSide;
     out[side] = { color: hex(s.stripe.color) ?? '000000', sz: eighths(u, s.stripe.width), space: 0 };
   }
+  // A marker column (an icon over a rule, outside the box) keeps its rule,
+  // as a border on the start side: without it a box with no fill and no
+  // border would read as plain text.
+  if (hasMarkerRule(s) && !out[startSide]) out[startSide] = { color: hex(s.marker.rule.color) ?? '000000', sz: eighths(u, s.marker.rule.width), space: 0 };
   return out;
+}
+
+const hasMarkerRule = (s: ResolvedCalloutStyleConfig): boolean => s.marker.kind !== 'none' && s.marker.rule.enabled && s.marker.rule.width.value > 0;
+
+/** A paragraph as tall as a box's margin, with no text (the importer
+ *  passes over blank paragraphs). */
+function spacer(height: number, keepNext: boolean): string {
+  if (height < 20) return '';
+  return `<w:p><w:pPr>${keepNext ? '<w:keepNext/>' : ''}<w:spacing w:before="0" w:after="0" w:line="${height}" w:lineRule="exact"/><w:ind w:firstLine="0"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>`;
+}
+
+/** A box's estimated height, twips: its text at about 70 letters a line,
+ *  its pictures at their drawn size and a line for each row of a table
+ *  inside it. */
+function boxHeight(cell: string, lineTw: number): number {
+  const paras = (cell.match(/<w:p[ >/]/g) ?? []).length;
+  const rows = (cell.match(/<w:tr[ >]/g) ?? []).length;
+  const chars = cell.replace(/<[^>]*>/g, '').length;
+  let drawn = 0;
+  for (const m of cell.matchAll(/<wp:extent cx="\d+" cy="(\d+)"/g)) drawn += Number(m[1]) / 635;
+  return (paras + rows + chars / 70) * lineTw + drawn;
+}
+
+/** Whether Word may not split a box: one whose style keeps it together,
+ *  or a short one (about a dozen lines), but never one that might outgrow
+ *  a page: Word clips a row it may not split, where the engine splits a
+ *  keep-together box taller than its column. */
+function keepBox(ctx: WriterContext, cell: string, keepTogether: boolean): boolean {
+  const lineTw = Math.max(200, twips(ctx.units, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx));
+  const geo = pageGeometry(ctx.resolved, ctx.units);
+  const page = geo.heightTw - geo.margins.top - geo.margins.bottom;
+  const h = boxHeight(cell, lineTw);
+  return h <= page * 0.8 && (keepTogether || h <= 14 * lineTw);
 }
 
 function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
@@ -113,11 +157,16 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
   const width = Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips));
   const pad = style?.padding;
   const padTw = pad ? { top: twips(u, pad.top), left: twips(u, pad.left), bottom: twips(u, pad.bottom), right: twips(u, pad.right) } : undefined;
+  // The gap between a marker's rule and the box's text.
+  if (padTw && style && hasMarkerRule(style)) {
+    const side = ctx.resolved.direction === 'rtl' ? 'right' : 'left';
+    padTw[side] = Math.max(padTw[side], twips(u, style.marker.gap));
+  }
   const title = attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
   // What the cell holds is as wide as the cell less its margins (Word's
   // default is 108 twips a side).
   const inner = Math.max(240, width - (padTw ? padTw.left + padTw.right : 216));
-  const body = renderNodes(ctx, node.children, { ...env, paraStyle: ids.body, widthTwips: inner });
+  const body = renderNodes(ctx, node.children, { ...env, paraStyle: ids.body, widthTwips: inner, box: style ?? env.box });
   let cell = title + body;
   if (!cell || endsWithTable(cell)) cell += '<w:p/>';
   const borders = boxBorders(ctx, style);
@@ -127,17 +176,23 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
   const mar = padTw
     ? `<w:tblCellMar><w:top w:w="${padTw.top}" w:type="dxa"/><w:left w:w="${padTw.left}" w:type="dxa"/><w:bottom w:w="${padTw.bottom}" w:type="dxa"/><w:right w:w="${padTw.right}" w:type="dxa"/></w:tblCellMar>`
     : '';
+  // The whole width of the column or cell the box stands in, whatever its
+  // width in twips there turns out to be (a side column is narrower than
+  // the main one); Word and LibreOffice fit the cell to it.
+  const keep = keepBox(ctx, cell, !!style?.keepTogether);
   const tbl =
     '<w:tbl><w:tblPr>' +
-    `<w:tblW w:w="${width}" w:type="dxa"/>` +
+    '<w:tblW w:w="5000" w:type="pct"/>' +
     `<w:tblBorders>${bx('top', borders.top)}${bx('left', borders.left)}${bx('bottom', borders.bottom)}${bx('right', borders.right)}<w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>` +
     shd +
-    '<w:tblLayout w:type="fixed"/>' +
+    '<w:tblLayout w:type="autofit"/>' +
     mar +
     '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/>' +
     '</w:tblPr>' +
     `<w:tblGrid><w:gridCol w:w="${width}"/></w:tblGrid>` +
-    `<w:tr><w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/>${shd}</w:tcPr>${cell}</w:tc></w:tr>` +
+    `<w:tr>${keep ? '<w:trPr><w:cantSplit/></w:trPr>' : ''}<w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/>${shd}</w:tcPr>${cell}</w:tc></w:tr>` +
     '</w:tbl>';
-  return blockSdt(ctx.nextSdtId(), `ptx:box:${attrs.type ?? ''}`, attrsLabel(attrs), tbl);
+  const before = style ? spacer(twips(u, style.marginTop), true) : '';
+  const after = style ? spacer(twips(u, style.marginBottom), false) : '';
+  return before + blockSdt(ctx.nextSdtId(), `ptx:box:${attrs.type ?? ''}`, attrsLabel(attrs), tbl) + after;
 }

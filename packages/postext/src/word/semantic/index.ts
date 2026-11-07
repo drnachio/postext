@@ -97,14 +97,15 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   for (const id of designPictureIds(parsed, resolved, resources)) shown.add(id);
   let sdtId = 0;
   let footnoteId = 0;
+  const styles = new StyleRegistry(resolved, units, options.fonts);
   const ctx: WriterContext = {
     pkg,
     log: new FragmentLog(pkg),
     config: options.config,
     resolved,
     units,
-    styles: new StyleRegistry(resolved, units, options.fonts),
-    numbering: new Numbering(resolved, units),
+    styles,
+    numbering: new Numbering(resolved, units, (stack, weight, italic) => styles.font(stack, weight, italic)),
     plan: options.fonts,
     resources,
     resourceTypes,

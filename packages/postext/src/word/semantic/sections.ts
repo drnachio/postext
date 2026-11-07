@@ -97,8 +97,12 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
       refs += `<w:footerReference w:type="first" r:id="${ctx.pkg.footerRel('first')}"/>`;
     }
   }
+  // A chapter starts on a new page; on a right-hand one only when the book
+  // asks for recto starts. A verso start (a spread opener whose artwork
+  // the document does not carry) would only leave a blank page, and
+  // LibreOffice skips the folio of every blank page a section break makes.
   const parity = level1?.breakBefore.parity ?? 'any';
-  const start = index === 0 ? '' : `<w:type w:val="${parity === 'odd' || parity === 'always-odd' ? 'oddPage' : parity === 'even' || parity === 'always-even' ? 'evenPage' : 'nextPage'}"/>`;
+  const start = index === 0 ? '' : `<w:type w:val="${parity === 'odd' || parity === 'always-odd' ? 'oddPage' : 'nextPage'}"/>`;
   const orient = geo.widthTw > geo.heightTw ? ' w:orient="landscape"' : '';
   const m = geo.margins;
   const header = Math.round(m.top / 2);
