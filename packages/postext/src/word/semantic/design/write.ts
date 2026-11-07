@@ -6,12 +6,13 @@
 
 import type { ResolvedDesignElement, ResolvedDesignImageElement, ResolvedDesignRuleElement, ResolvedDesignTextElement } from '../../../types.js';
 import type { WriterContext } from '../context.js';
-import { pictureRun } from '../media/figures.js';
 import { pageGeometry } from '../sections.js';
-import { STYLE } from '../styles.js';
 import type { Dimension } from '../../../types.js';
-import { blockSdt, hex, paragraph, px, type ParaProps } from '../wml.js';
-import { bandInnerTwips, drawnRule, ruleParagraph, thinParagraph, withBands, type Chunk } from './bands.js';
+import { hex, paragraph, px, type ParaProps } from '../wml.js';
+import { backdropPicture, fillsPage, inlinePicture } from './placedPicture.js';
+import { columnSets, columnTable, type ColumnText } from './columns.js';
+import { partBodyChunks } from './partBody.js';
+import { bandInnerTwips, drawnRule, ruleParagraph, thinParagraph, withBands, type BandFoot, type Chunk } from './bands.js';
 import { covers, estimateBoxes, readingOrder, type Box } from './geometry.js';
 import { paleOnWhite } from './ink.js';
 import { rowParagraph, sameLine, type RowPart } from './rows.js';
@@ -40,6 +41,10 @@ export interface DesignSpec {
   title: (el: ResolvedDesignTextElement | undefined, band: string | undefined, props: Partial<ParaProps>, shown: boolean) => string;
   /** Whether the design opens a page. */
   breakBefore: boolean;
+  /** A part page's body (its list of chapters), written when called: on
+   *  the band that holds the body area, `top` px down the page, in `ink`
+   *  (see partBody.ts). Left uncalled when no band holds it. */
+  body?: { write: () => string; top: number; ink?: string };
 }
 
 type Item =
@@ -103,6 +108,12 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     } else if (el.kind === 'rule' && inText(box) && drawnRule(ctx, el, box, !!bandOf(box))) items.push({ box, kind: 'rule', el });
   }
   const order = titleColumnFirst(readingOrder(items, rtl, u), u.dpi);
+  const textHeight = page.height - toPx(geo.margins.top + geo.margins.bottom);
+  // A picture that fills the page, printed on no band, is drawn behind
+  // the text; a pale text over it keeps its ink (the picture is its
+  // ground, as a band would be).
+  const backdrop = order.find((i): i is Extract<Item, { kind: 'image' }> => i.kind === 'image' && !bandOf(i.box) && fillsPage(i.box, page));
+  const onBackdrop = (box: Box): string | undefined => (backdrop && covers(backdrop.box, box) ? BACKDROP : undefined);
   const at = order.findIndex((i) => i.kind === 'title');
   const titleBand = at >= 0 ? bandOf(order[at]!.box) : undefined;
   // A design spans the text area (see layout/pageSpan.ts).
@@ -117,12 +128,25 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   // half-title a third of the way down keeps the space above it (a
   // piece on a band takes its table's inset instead).
   let placed = false;
+  // On a page of its own with no band (a title page), the last piece
+  // standing well below the others (an imprint at the foot of the page)
+  // keeps the space above it, with room to spare so that it stays on the
+  // page. `flowY` is roughly where Word has got to.
+  const freePage = spec.breakBefore && !bands.length && ctx.resolved.layout.writingMode !== 'vertical-rl';
+  let flowY = container.y;
+  const footPiece = order[order.length - 1];
   const drop = (band: Chunk['band'], box: Box | undefined): ParaProps | undefined => {
+    if (freePage && box && placed && box === footPiece?.box && footPiece.kind !== 'image') {
+      const gap = box.y - flowY;
+      const room = textBottom - MM(u, 30) - box.height - flowY;
+      const before = gap >= MM(u, 40) ? Math.max(0, Math.min(gap, room)) : 0;
+      return before > 0 ? { before: Math.round((before * 1440) / u.dpi) } : undefined;
+    }
+    if (box) flowY = Math.max(flowY, box.y) + box.height;
     if (placed) return undefined;
     placed = true;
     if (!spec.breakBefore || band || !box) return undefined;
     const gap = box.y - container.y;
-    const textHeight = page.height - toPx(geo.margins.top + geo.margins.bottom);
     if (gap < (20 * u.dpi) / 25.4) return undefined;
     return { before: Math.round((Math.min(gap, textHeight * 0.4) * 1440) / u.dpi) };
   };
@@ -135,19 +159,50 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     return undefined;
   };
   const textStyle = (item: TextItem, band: Chunk['band'], keepNext: boolean): string => {
-    const fill = band?.fill;
+    const fill = band?.fill ?? onBackdrop(item.box);
     const shade = fill && (paleOnWhite(hex(item.el.color)) || fill !== 'FFFFFF') ? fill : undefined;
     return designTextStyle(ctx, spec.slot, item.el, shade, keepNext, item.text);
   };
   const last = order.length - 1;
   // Every piece but the last keeps with what follows.
   const keeps = (i: number): boolean => i < last;
+  // Blocks of text set side by side off any band (see columns.ts).
+  const sideBySide = !rtl && ctx.resolved.layout.writingMode !== 'vertical-rl';
+  const columnTexts = order.map((it): ColumnText | undefined => {
+    if (!sideBySide || bandOf(it.box) || onBackdrop(it.box)) return undefined;
+    if (it.kind === 'text') return { el: it.el, text: it.text, box: it.box };
+    return it.kind === 'title' && titleEl ? { el: titleEl, text: spec.texts.get(titleEl.id) ?? '', box: it.box } : undefined;
+  });
+  const sets = columnSets(ctx, columnTexts);
+  const inSet = new Set(sets.flatMap((c) => c.columns.flat()));
   for (let i = 0; i < order.length; i++) {
     const item = order[i]!;
     const band = bandOf(item.box);
+    if (inSet.has(i)) {
+      const set = sets.find((c) => Math.min(...c.columns.flat()) === i);
+      if (!set) continue;
+      // A page break or a drop goes on a paragraph before the table (one
+      // always stands there: LibreOffice loses a section's page numbers
+      // when its first page opens with a table).
+      const first = firstProps(undefined, item.box);
+      chunks.push({ xml: paragraph({ ...first, keepNext: true, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: THIN_MARK }, '') });
+      const cells = set.columns.map((col) =>
+        col
+          .map((k) => {
+            const piece = order[k]!;
+            if (piece.kind === 'title') return spec.title(titleEl, undefined, moves ? { pageBreakBefore: false } : {}, true);
+            const t = piece as TextItem;
+            return spec.textParagraphs(t.el, t.text, textStyle(t, undefined, false)).join('');
+          })
+          .join(''),
+      );
+      // Word joins tables that touch: a thin paragraph keeps the next apart.
+      chunks.push({ xml: columnTable(ctx, set, columnTexts, container, widthTw, cells) + thinParagraph({ keepNext: true }), box: item.box });
+      continue;
+    }
     if (item.kind === 'title') {
       const props: Partial<ParaProps> = { ...(moves ? { pageBreakBefore: false } : {}), ...firstProps(band, item.box) };
-      chunks.push({ xml: spec.title(titleEl, band?.fill, props, true), band, box: item.box });
+      chunks.push({ xml: spec.title(titleEl, band?.fill ?? onBackdrop(item.box), props, true), band, box: item.box });
       continue;
     }
     if (item.kind === 'rule') {
@@ -158,8 +213,31 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
       continue;
     }
     if (item.kind === 'image') {
+      if (!band && item === backdrop) {
+        // Drawn behind what the page prints: the first piece over it
+        // still drops to where it stands.
+        const was: boolean = placed;
+        placed = true;
+        const first = firstProps(band);
+        placed = was;
+        chunks.push({ xml: backdropPicture(ctx, item.id, item.box, first) });
+        continue;
+      }
       const first = firstProps(band, item.box);
-      chunks.push({ xml: picture(ctx, item.id, item.box, first, keeps(i), geo.heightTw - geo.margins.top - geo.margins.bottom), band, box: item.box });
+      // As wide as the band's cell or the text area; as tall as the page
+      // leaves it once what follows has its room.
+      const maxW = band ? (bandInnerTwips(ctx, widthTw) * u.dpi) / 1440 : textW;
+      const below = order.slice(i + 1).reduce((h, o) => h + (o.box.y < textBottom ? o.box.height + MM(u, 3) : 0), 0);
+      // Vertical lines stand side by side, not under the picture: there
+      // it keeps to about half the page.
+      const vertical = ctx.resolved.layout.writingMode === 'vertical-rl';
+      const maxH = vertical ? textHeight * 0.55 : Math.max(textHeight * 0.55, textHeight - below - MM(u, 15));
+      // The space the print leaves under it (a cover photo above its
+      // kicker), a centimetre at most.
+      const next = order[i + 1];
+      const under = next ? Math.min(MM(u, 10), next.box.y - (item.box.y + item.box.height)) : 0;
+      const after = under > MM(u, 1) ? { after: Math.round((under * 1440) / u.dpi) } : {};
+      chunks.push({ xml: inlinePicture(ctx, item.id, item.box, { ...first, ...after }, keeps(i), maxW, maxH), band, box: item.box });
       continue;
     }
     // Texts that share a line with this one (same band, same top) share
@@ -176,13 +254,21 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     // pieces in that order).
     const parts: RowPart[] = row.map((r) => {
       const style = textStyle(r, band, keeps(j - 1));
-      return { el: r.el, box: r.box, text: r.text, style, band: band?.fill, write: (first) => spec.textParagraphs(r.el, r.text, style, first) };
+      return { el: r.el, box: r.box, text: r.text, style, band: band?.fill ?? onBackdrop(r.box), write: (first) => spec.textParagraphs(r.el, r.text, style, first) };
     });
     if (row.length > 1) {
       const frame = band ? clip(band.box, container) : container;
       chunks.push({ xml: rowParagraph(ctx, parts, frame, band ? bandInnerTwips(ctx, widthTw) : widthTw, rtl, { ...first }), band, box: row[0]!.box });
     } else chunks.push({ xml: parts[0]!.write(first).join(''), band, box: row[0]!.box });
     i = j - 1;
+  }
+  if (spec.body) {
+    const band = bandOf({ x: container.x + 1, y: spec.body.top, width: 1, height: 1 });
+    const tail = chunks[chunks.length - 1];
+    if (band && tail?.band?.box === band.box) {
+      const above = Math.max(...chunks.filter((c) => c.band?.box === band.box && c.box).map((c) => c.box!.y + c.box!.height));
+      chunks.push(...partBodyChunks(ctx, spec.body.write(), { band, above, top: spec.body.top, textBottom }, spec.body.ink));
+    }
   }
   if (at < 0) {
     // A title the design never prints: its paragraph goes last, hidden,
@@ -191,7 +277,61 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     const props = { ...(moves ? { pageBreakBefore: false } : {}), ...firstProps(undefined) };
     chunks.push({ xml: spec.title(titleEl, tail?.band?.fill, props, false), band: tail?.band, box: tail?.box });
   }
-  return withBands(ctx, chunks, container, widthTw);
+  const feet = bandFeet(ctx, elements, boxes);
+  const tail = chunks[chunks.length - 1]?.band;
+  return withBands(ctx, chunks, container, widthTw, feet, tail ? gapAfterBand(ctx, tail.box, feet.get(tail.box), elements, boxes, container, textBottom, px(u, spec.minHeight)) : 0);
+}
+
+/** The ground of a text printed over a page-filling picture: dark, so a
+ *  pale ink is kept. */
+const BACKDROP = '000000';
+
+const THIN_MARK = '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>';
+
+const MM = (u: { dpi: number }, mm: number): number => (mm * u.dpi) / 25.4;
+
+/** The thin filled strips right under the design's bands (a foot rule as
+ *  wide as its band, a few millimetres high at most), by band box: Word
+ *  draws each as its band table's bottom border. */
+function bandFeet(ctx: WriterContext, elements: readonly ResolvedDesignElement[], boxes: ReadonlyMap<string, Box>): Map<Box, BandFoot> {
+  const u = ctx.units;
+  const out = new Map<Box, BandFoot>();
+  const filled = elements.filter((e): e is Extract<ResolvedDesignElement, { kind: 'box' }> => e.kind === 'box' && !!hex(e.style.backgroundColor));
+  for (const band of filled) {
+    const bb = boxes.get(band.id);
+    if (!bb) continue;
+    for (const e of filled) {
+      const fb = boxes.get(e.id);
+      if (e === band || !fb || fb.height <= 0 || fb.height > MM(u, 4)) continue;
+      const under = Math.abs(fb.y - (bb.y + bb.height)) <= MM(u, 1);
+      if (!under || fb.width < bb.width * 0.8 || fb.x > bb.x + MM(u, 1)) continue;
+      // Word's widest border is 6 pt (48 eighths).
+      out.set(bb, { color: hex(e.style.backgroundColor)!, sz: Math.min(48, Math.max(4, Math.round((fb.height * 72 * 8) / u.dpi))) });
+      break;
+    }
+  }
+  return out;
+}
+
+/**
+ * The room a design ending in a band leaves before the text that follows
+ * it (an opener band, #1444): down to the slot's foot or to the lowest
+ * piece it draws below the band (a pad under its foot rule), and a body
+ * line at least, as the print starts its text on the line after the
+ * band. Twips; none for a band that reaches the foot of the page.
+ */
+function gapAfterBand(ctx: WriterContext, band: Box, foot: BandFoot | undefined, elements: readonly ResolvedDesignElement[], boxes: ReadonlyMap<string, Box>, container: Box, textBottom: number, minHeight: number): number {
+  const u = ctx.units;
+  const bottom = band.y + band.height + (foot ? (foot.sz / 8 / 72) * u.dpi : 0);
+  if (bottom > textBottom - MM(u, 20)) return 0;
+  let end = minHeight > 0 ? container.y + minHeight : bottom;
+  for (const e of elements) {
+    const b = boxes.get(e.id);
+    if (e.kind === 'box' && b && b.y >= bottom - MM(u, 1) && b.y <= bottom + MM(u, 4)) end = Math.max(end, b.y + b.height);
+  }
+  const line = px(u, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx) || u.basePx * 1.4;
+  const gap = Math.min(MM(u, 12), Math.max(end - bottom, line));
+  return Math.round((gap * 1440) / u.dpi);
 }
 
 /** Boxes side by side: no common stretch across the page. */
@@ -226,15 +366,3 @@ function clip(box: Box, frame: Box): Box {
   return { ...box, x, width: Math.max(1, Math.min(box.x + box.width, frame.x + frame.width) - x) };
 }
 
-/** A design's picture, as wide as the design draws it (the column at
- *  most) and no taller than about half the text area. */
-function picture(ctx: WriterContext, id: string, box: Box, first: ParaProps | undefined, keepNext: boolean, textHeightTw: number): string {
-  const pic = ctx.media.get(id)!;
-  ctx.usedResources.add(id);
-  let w = Math.min(ctx.columnPx, box.width > 1 ? box.width : pic.widthPx);
-  const maxH = ((textHeightTw * ctx.units.dpi) / 1440) * 0.55;
-  if ((w * pic.heightPx) / pic.widthPx > maxH) w = (maxH * pic.widthPx) / pic.heightPx;
-  const scaled = { ...pic, widthPx: w, heightPx: (w * pic.heightPx) / pic.widthPx };
-  const alt = ctx.resources.get(id)?.altText ?? '';
-  return blockSdt(ctx.nextSdtId(), `ptx:design:${id}`, undefined, paragraph({ style: STYLE.figure, keepNext: keepNext || undefined, ...first }, pictureRun(ctx, scaled, id, alt, 0)));
-}

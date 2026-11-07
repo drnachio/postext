@@ -15,6 +15,7 @@ import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
 import { renderExercise } from './exercises/exercises.js';
 import { renderPartDesign } from './design/part.js';
+import { inPartStyle } from './design/partColor.js';
 import { attrRange } from './marks.js';
 import { renderComposedPage } from './media/pages.js';
 import { rawSdt } from './raw.js';
@@ -89,10 +90,13 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
     // The part's page break comes once: before its number, or before its
     // title when it has none.
     // The book's part design draws it when it has one (#1444).
-    const designed = renderPartDesign(ctx, c, (key, style, props) => attrParagraph(ctx, node, key, style, undefined, props));
+    // The design may set the part's body on its band (its chapter list).
+    let body: string | undefined;
+    const write = (): string => (body = renderNodes(ctx, node.children, env));
+    const designed = renderPartDesign(ctx, c, (key, style, props) => attrParagraph(ctx, node, key, style, undefined, props), write);
     const number = designed === undefined ? attrParagraph(ctx, node, 'number', STYLE.part) : '';
     const head = designed ?? number + attrParagraph(ctx, node, 'title', STYLE.part, undefined, number ? { pageBreakBefore: false } : undefined);
-    return blockSdt(ctx.nextSdtId(), 'ptx:part', attrsLabel(attrs), head + renderNodes(ctx, node.children, env) || '<w:p/>');
+    return blockSdt(ctx.nextSdtId(), 'ptx:part', attrsLabel(attrs), head + (body === undefined ? write() : '') || '<w:p/>');
   }
   if (name === 'paragraphs') {
     const style = attrs.style ? ctx.styles.paragraphStyle(attrs.style) : undefined;
@@ -239,7 +243,9 @@ export interface FrameBox {
 
 export function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv, frame?: FrameBox): string {
   const attrs = node.container.containerAttrs ?? {};
-  const style = frame ? frame.style : ctx.styles.callout(attrs.type);
+  const own = frame ? frame.style : ctx.styles.callout(attrs.type);
+  // In the colours of the part the box stands in.
+  const style = inPartStyle(ctx, node.container, own);
   if (!style) ctx.warn('unknownBoxStyle', `No box style "${attrs.type ?? ''}": the box is set with the default look.`);
   const ids = ctx.styles.calloutStyles(style);
   const u = ctx.units;
