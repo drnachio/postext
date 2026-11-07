@@ -1,9 +1,10 @@
 // `:::verse` poems in the semantic .docx (#1444). A stanza (line layout)
-// or a whole poem (bayt layout) is one paragraph whose lines end in line
-// breaks, so the paragraph is never justified: Word and LibreOffice would
-// stretch every line that ends in a break. A line's indent, which the
-// source writes as leading spaces, comes back as en spaces held by the
-// atom of the line break before it. A bayt poem is set as the engine sets
+// is a paragraph per line (see stanzaLineProps); a whole poem (bayt
+// layout) is one paragraph whose lines end in line breaks, so it is never
+// justified: Word and LibreOffice would stretch every line that ends in a
+// break. A line's indent, which the source writes as leading spaces, is
+// its paragraph's indent; the spaces are held by the atom of the line end
+// before them. A bayt poem is set as the engine sets
 // it: a block twice its widest hemistich plus the gap, centred in the
 // measure (or flush with the start under `align=start`). The paragraph's
 // indents frame that block; the first hemistich sits flush with its start
@@ -20,19 +21,14 @@ import { renderInline, type InlineSource } from './inline.js';
 import { STYLE } from './styles.js';
 import { paragraph, pPr, px, twips, type ParaProps } from './wml.js';
 
-/** An en space: half an em, the default width of one leading space of a
- *  line of verse (`bodyText.verse.indentStep`). */
-const EN_SPACE = ' ';
+/** A zero-width space: the invisible text of an atom over the leading
+ *  spaces of a stanza's first line. */
+const ZWSP = '\u200b';
 
-/** The en spaces of each line's indent (index = line of the block). */
-function lineLeads(ctx: WriterContext, b: ContentBlock): string[] | undefined {
-  const lines = b.verse?.stanza?.lines;
-  if (!lines?.some((l) => l.indent > 0)) return undefined;
-  const u = ctx.units;
+/** The width of one step of a line's indent (one leading space), px. */
+function indentStepPx(ctx: WriterContext, b: ContentBlock): number {
   const em = ctx.styles.bodyPx;
-  const stepPx = lengthAttr(b.verse!.attrs.indentStep, u.dpi, em) ?? px(u, ctx.resolved.bodyText.verse.indentStep, em);
-  const perSpace = em > 0 ? stepPx / (em / 2) : 1;
-  return lines.map((l) => EN_SPACE.repeat(Math.max(0, Math.min(40, Math.round(l.indent * perSpace)))));
+  return lengthAttr(b.verse!.attrs.indentStep, ctx.units.dpi, em) ?? px(ctx.units, ctx.resolved.bodyText.verse.indentStep, em);
 }
 
 /** Average advance of a character, in em, used to size a hemistich: joined
@@ -97,11 +93,13 @@ export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     props.ind = { left: side, right: side, firstLine: 0 };
     props.tabs = [{ val: 'right', pos: Math.max(side + 360, block.end) }];
   }
-  const source: InlineSource = { ...inlineSourceOf(ctx, b), lineLeads: lineLeads(ctx, b), ...(style ? { style } : {}) };
+  const source: InlineSource = { ...inlineSourceOf(ctx, b), ...(style ? { style } : {}) };
   let first = props;
   if (verse.stanza) {
-    const lineProps = stanzaLineProps(ctx, verse, props, ps, size);
-    source.lineLeads ??= verse.stanza.lines.map(() => '');
+    const lineProps = stanzaLineProps(ctx, b, props, ps, size);
+    // No leading spaces: each line's paragraph holds its indent. The first
+    // line's leading spaces stay with it as an invisible atom.
+    source.lineLeads = verse.stanza.lines.map((l, i) => (i === 0 && l.indent > 0 ? ZWSP : ''));
     source.lineParagraph = (line) => `</w:p><w:p>${pPr(lineProps(line))}`;
     first = lineProps(0);
   }
@@ -126,17 +124,25 @@ export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
  * last, none between; a stanza short enough to keep whole
  * (`keepStanzas`) keeps its lines together.
  */
-function stanzaLineProps(ctx: WriterContext, verse: NonNullable<ContentBlock['verse']>, props: ParaProps, ps: ResolvedParagraphStyleConfig | undefined, size: number): (i: number) => ParaProps {
+function stanzaLineProps(ctx: WriterContext, b: ContentBlock, props: ParaProps, ps: ResolvedParagraphStyleConfig | undefined, size: number): (i: number) => ParaProps {
+  const verse = b.verse!;
   const body = ctx.resolved.bodyText;
   const lineHeightPx = px(ctx.units, ps?.lineHeight ?? body.lineHeight, size);
   const hangPx = verseLinesSettings(verse.attrs, { fontSizePx: size, lineHeightPx }, ctx.resolved, false).hangPx;
   const hang = Math.round((hangPx * 1440) / ctx.units.dpi);
   const left = ps ? twips(ctx.units, ps.indent, size) : twips(ctx.units, body.blockquote.indent, ctx.styles.bodyPx);
-  const count = verse.stanza?.lines.length ?? 1;
+  const lines = verse.stanza?.lines ?? [];
+  const step = (indentStepPx(ctx, b) * 1440) / ctx.units.dpi;
+  const count = lines.length || 1;
   const keep = count <= body.verse.keepStanzas;
   return (i) => ({
     ...props,
-    ind: { left: left + hang, hanging: hang },
+    // The line's own indent, then the hang: its turnovers sit a step
+    // deeper than the line, never level with it.
+    ind: { left: left + Math.round((lines[i]?.indent ?? 0) * step) + hang, hanging: hang },
+    // The stanza's spacing is set on its lines; the style's contextual
+    // spacing would drop it between two stanzas.
+    contextualSpacing: false,
     ...(i > 0 ? { before: 0 } : {}),
     ...(i < count - 1 ? { after: 0, ...(keep ? { keepNext: true } : {}) } : {}),
   });

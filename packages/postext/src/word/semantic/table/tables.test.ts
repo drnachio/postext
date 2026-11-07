@@ -256,12 +256,16 @@ describe('semantic docx: table column widths (#1444)', () => {
     const m = (): { charEm: number; fontPx: number } => ({ charEm: 0.6, fontPx: 10 });
     const f = columnFractions(model, 4, 300, 4, m);
     expect(f.reduce((a, b) => a + b, 0)).toBeCloseTo(1);
-    // "Amplitude": 9 × 6 px and 8 px of padding.
-    expect(f[0]! * 300).toBeCloseTo(62);
+    // "Amplitude": 9 × 6 px with its slack, and 8 px of padding.
+    expect(f[0]! * 300).toBeCloseTo(9 * 6 * 1.12 + 8);
     expect(f[1]).toBeCloseTo(f[2]!);
-    // Weights from the text when the model has none: the longer column wider.
-    const g = columnFractions({ rows: [[{ content: 'x' }, { content: 'a much longer piece of text' }]] }, 2, 600, 0, m);
-    expect(g[1]!).toBeGreaterThan(g[0]! * 3);
+    // Equal columns when the model has none, as the engine splits them,
+    // a column of a long word given room for it (a code word set wider).
+    const g = columnFractions({ rows: [[{ content: 'x' }, { content: 'a much longer piece of text' }, { content: 'y' }]] }, 3, 600, 0, m);
+    expect(g[0]).toBeCloseTo(1 / 3);
+    expect(g[1]).toBeCloseTo(1 / 3);
+    const h = columnFractions({ rows: [['`captionSide`', 'x', 'y', 'z', 'w', 'v', 'u', 't'].map((content) => ({ content }))] }, 8, 600, 4, m);
+    expect(h[0]! * 600).toBeCloseTo(11 * 0.62 * 10 * 1.12 + 8);
   });
 
   it('writes the widths as percentages of the table and grid columns of its width', async () => {

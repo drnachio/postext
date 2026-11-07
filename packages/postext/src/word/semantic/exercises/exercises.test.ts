@@ -66,7 +66,7 @@ describe('semantic docx: exercise keys', () => {
     expect(words(pupil.doc)).toContain('She (go / goes) home.');
     const teacher = await exportDocx(md, { config: { exercises: { edition: 'teacher' } } as never });
     // Only the right option is bold; the other stays plain beside it.
-    expect(teacher.doc).toMatch(/She \(go \/ <\/w:t><\/w:r><w:r><w:rPr><w:b\/><w:bCs\/><\/w:rPr><w:t[^>]*>goes<\/w:t>/);
+    expect(teacher.doc).toMatch(/She \(go \/ <\/w:t><\/w:r><w:r><w:rPr><w:b\/><w:bCs\/>(?:<w:color [^>]*\/>)?<\/w:rPr><w:t[^>]*>goes<\/w:t>/);
   });
 });
 

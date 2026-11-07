@@ -1,6 +1,6 @@
 // Column widths of a table in the semantic .docx (#1444). The model's
 // weights (`columnWidths`) when it has them, as the engine reads them;
-// else weights from the cells' text, longer text wider. Either way no
+// else equal columns, as the engine splits them. Either way no
 // column is left narrower than its longest word and the cell padding:
 // Word and LibreOffice would break the word inside (a header "Amplitude"
 // set as "Amplitud/e").
@@ -23,25 +23,22 @@ export function visibleText(content: string): string {
     .replace(/[*_~^`\\]/g, '');
 }
 
-/** Width of the longest word of a cell, px. */
+/** Advance of a monospace character (code in a cell), in em. */
+const CODE_EM = 0.62;
+
+/** What the estimate leaves for faces wider than the average: a word cut
+ *  in two costs more than a column a little wide. */
+const SLACK = 1.12;
+
+/** Width of the longest word of a cell, px. A word in code (`` `…` ``)
+ *  is set in a monospace face, wider than prose. */
 export function longestWordPx(content: string, m: WordMeasure): number {
   let longest = 0;
-  for (const w of visibleText(content).split(/[\s ]+/)) longest = Math.max(longest, [...w].length);
-  return longest * m.charEm * m.fontPx;
-}
-
-/** Weights from the cells' text: each column's longest line, with a floor
- *  so a short column keeps some room. */
-function contentWeights(model: TableModel, cols: number): number[] {
-  const out = new Array<number>(cols).fill(3);
-  for (const row of model.rows) {
-    row.forEach((cell, c) => {
-      if (c >= cols || cell.hiddenBy || (cell.colSpan ?? 1) > 1) return;
-      const len = Math.max(0, ...visibleText(cell.content).split(/\n|\\\\/).map((l) => [...l.trim()].length));
-      out[c] = Math.max(out[c]!, len + (cell.image ? 12 : 0));
-    });
-  }
-  return out;
+  content.split(/(`[^`]*`)/).forEach((piece, k) => {
+    const em = k % 2 === 1 ? Math.max(CODE_EM, m.charEm) : m.charEm;
+    for (const w of visibleText(piece).split(/\s+/)) longest = Math.max(longest, [...w].length * em);
+  });
+  return longest * m.fontPx * SLACK;
 }
 
 /**
@@ -51,7 +48,8 @@ function contentWeights(model: TableModel, cols: number): number[] {
  */
 export function columnFractions(model: TableModel, cols: number, totalPx: number, padPx: number, measure: (cell: TableCell, row: number) => WordMeasure): number[] {
   const given = model.columnWidths;
-  const weights = given?.length === cols && given.every((w) => Number.isFinite(w) && w > 0) ? given : contentWeights(model, cols);
+  // The engine splits a table with no weights into equal columns.
+  const weights = given?.length === cols && given.every((w) => Number.isFinite(w) && w > 0) ? given : new Array<number>(cols).fill(1);
   const sum = weights.reduce((a, b) => a + b, 0);
   const natural = weights.map((w) => (totalPx * w) / sum);
   const min = new Array<number>(cols).fill(0);

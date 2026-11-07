@@ -11,6 +11,9 @@ import { tocMark } from './fields.js';
 import { renderResource } from './media/figures.js';
 import { renderSolutions, solutionsBeforeHeading } from './exercises/exercises.js';
 import { pageKindOf, renderComicPage } from './media/pages.js';
+import { startsFlush } from './prose/flush.js';
+import { listItemSpacing } from './prose/listSpacing.js';
+import { bodyTabs } from './prose/tabs.js';
 import { renderDesignedHeading, type HeadingLook } from './design/heading.js';
 import { renderScoreBlock } from './media/scores.js';
 import { FragmentBuilder } from './fragments.js';
@@ -36,6 +39,9 @@ export interface BlockEnv {
   /** The box style of the box the blocks stand in: its lists' bullets
    *  and indents. */
   box?: ResolvedCalloutStyleConfig;
+  /** The paragraph is set flush, without its first-line indent
+   *  (`prose/flush.ts`). */
+  flush?: boolean;
 }
 
 /** Rebuild the container tree from the flat list. */
@@ -196,15 +202,16 @@ function renderList(ctx: WriterContext, items: ContentBlock[], env: BlockEnv): s
     }
     for (let d = 0; d < kinds.length; d++) kinds[d] ??= kinds[d - 1] ?? 'bullet';
     const run: ListRun = { numId: ctx.numbering.list(kinds, pending[0]!.startNumber, env.box), kinds };
-    for (const b of pending) {
+    const spacing = listItemSpacing(ctx, pending, env.box);
+    pending.forEach((b, k) => {
       const ilvl = Math.min(9, Math.max(1, b.depth ?? 1)) - 1;
       let numId = run.numId;
       if (b.listKind === 'task' && b.checked) {
-        run.checkedId ??= ctx.numbering.list(run.kinds.map((k) => (k === 'task' ? 'checked' : k)), undefined, env.box);
+        run.checkedId ??= ctx.numbering.list(run.kinds.map((kind) => (kind === 'task' ? 'checked' : kind)), undefined, env.box);
         numId = run.checkedId;
       }
-      out.push(textParagraph(ctx, b, { style: STYLE.list, numPr: { numId, ilvl }, jc }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
-    }
+      out.push(textParagraph(ctx, b, { style: STYLE.list, numPr: { numId, ilvl }, ...spacing[k], tabs: bodyTabs(ctx, b, env.widthTwips ?? ctx.textTwips), jc }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
+    });
     pending.length = 0;
   };
   for (const b of items) {
@@ -261,7 +268,8 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
       continue;
     }
     const start = after ? headingStart(ctx, n.block) : undefined;
-    const xml = renderBlock(ctx, n.block, span ? wide : env);
+    const flush = n.block.type === 'paragraph' && startsFlush(ctx, nodes, i);
+    const xml = renderBlock(ctx, n.block, { ...(span ? wide : env), ...(flush ? { flush } : {}) });
     parts.push({ xml, ...(span ? { span } : {}), ...(start ? { start } : {}) });
     follow([n], span);
   }
@@ -286,7 +294,8 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
       if (b.toc || b.index) return '';
       if (b.verse) return renderVerse(ctx, b, env);
       const style = env.paraStyle ?? STYLE.normal;
-      return textParagraph(ctx, b, { style, ind: b.continuesParagraph ? { firstLine: 0 } : undefined }, env.paraStyle ? `para:${env.paraStyle}` : 'body');
+      const flush = b.continuesParagraph || (env.flush && !ctx.styles.hangs(style));
+      return textParagraph(ctx, b, { style, tabs: bodyTabs(ctx, b, env.widthTwips ?? ctx.textTwips), ind: flush ? { firstLine: 0 } : undefined }, env.paraStyle ? `para:${env.paraStyle}` : 'body');
     }
     case 'blockquote':
       return textParagraph(ctx, b, { style: STYLE.quote }, 'quote');

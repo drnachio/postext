@@ -241,7 +241,10 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
     `<w:tblGrid><w:gridCol w:w="${width}"/></w:tblGrid>` +
     `<w:tr>${keep ? '<w:trPr><w:cantSplit/></w:trPr>' : ''}<w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/>${shd}</w:tcPr>${cell}</w:tc></w:tr>` +
     '</w:tbl>';
-  const before = style ? spacer(twips(u, style.marginTop), true) : '';
+  // A box drawn with a top rule keeps at least half a line from the text
+  // above it, or the rule reads as that text's underline (#1444).
+  const ruleGap = borders.top ? twips(u, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx) / 2 : 0;
+  const before = style ? spacer(Math.max(twips(u, style.marginTop), ruleGap), true) : '';
   const after = style ? spacer(twips(u, style.marginBottom), false) : '';
   return before + blockSdt(ctx.nextSdtId(), `ptx:box:${attrs.type ?? ''}`, attrsLabel(attrs), tbl) + after;
 }

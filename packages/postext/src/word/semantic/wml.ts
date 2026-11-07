@@ -175,7 +175,7 @@ export function pPr(p: ParaProps): string {
     else if (firstLine !== undefined) s += Math.round(firstLine) < 0 ? ` w:hanging="${-Math.round(firstLine)}"` : ` w:firstLine="${Math.round(firstLine)}"`;
     if (s) x += `<w:ind${s}/>`;
   }
-  if (p.contextualSpacing) x += '<w:contextualSpacing/>';
+  if (p.contextualSpacing !== undefined) x += p.contextualSpacing ? '<w:contextualSpacing/>' : '<w:contextualSpacing w:val="0"/>';
   if (p.jc) x += `<w:jc w:val="${p.jc}"/>`;
   if (p.outlineLvl !== undefined) x += `<w:outlineLvl w:val="${p.outlineLvl}"/>`;
   if (p.markRPr) x += p.markRPr;

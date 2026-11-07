@@ -42,25 +42,31 @@ const styleOf = (e: Exported, id: string): string => {
 };
 
 describe('semantic docx: styling (#1444)', () => {
-  it('sets verse flush, with its indents as en spaces and space between stanzas', async () => {
-    const md = 'Before.\n\n:::verse{style="verse" align=start}\nThe world is charged\n    It will flame out\nCrushed.\n\nAnd for all this\n  There lives\n:::\n';
+  it('sets verse a paragraph per line, each indented by its own indent with its turnovers hung deeper', async () => {
+    const md = 'Before.\n\n:::verse{style="verse" align=start}\nThe world is charged\n    It will flame out\nCrushed.\n\nAnd for all this\n  There lives\n\n  Opens indented\nand back\n:::\n';
     const config = cfg({ paragraphStyles: [{ id: 'verse', textAlign: 'justify', hangingIndent: { value: 2, unit: 'em' } }] });
     const e = await exportDocx(md, { config });
     expect(exportProblems(e, [md])).toEqual([]);
     // A paragraph per line, flush with the start, its turnovers hung by the
     // style's 2 em (320 twips at 16 px), never out into the margin.
     const first = paraOf(e.doc, 'The world is charged');
-    expect(first).toContain('<w:spacing w:after="0"/><w:ind w:left="320" w:hanging="320"/><w:jc w:val="left"/>');
+    expect(first).toContain('<w:spacing w:after="0"/><w:ind w:left="320" w:hanging="320"/><w:contextualSpacing w:val="0"/><w:jc w:val="left"/>');
     expect(first).toContain('<w:suppressAutoHyphens/>');
-    expect(paraOf(e.doc, 'It will flame out')).toContain('<w:spacing w:before="0" w:after="0"/><w:ind w:left="320" w:hanging="320"/>');
+    // Four leading spaces at the default step (half an em each, 80
+    // twips) set the line 320 twips in, and its turnovers 320 further.
+    expect(paraOf(e.doc, 'It will flame out')).toContain('<w:spacing w:before="0" w:after="0"/><w:ind w:left="640" w:hanging="320"/>');
     expect(paraOf(e.doc, 'Crushed.')).toContain('<w:spacing w:before="0"/><w:ind w:left="320" w:hanging="320"/>');
-    // Four leading spaces at the default step (half an em each) are four en
-    // spaces, held with the line end by one atom over the source; the
-    // stanza stays one fragment, its line ends read as paragraph marks.
-    const en = '\u2002'.repeat(4);
-    const stanza = e.frag(`The world is charged\u2029${en}It will flame out\u2029Crushed.`);
+    expect(paraOf(e.doc, 'There lives')).toContain('<w:ind w:left="480" w:hanging="320"/>');
+    // No spaces are written: the line end and the spaces after it are one
+    // atom over the source; the stanza stays one fragment, its line ends
+    // read as paragraph marks.
+    const stanza = e.frag('The world is charged It will flame out Crushed.');
     const atom = stanza.atoms!.find((a) => a.kind === 'line')!;
     expect(md.slice(atom.start, atom.end)).toBe('\n    ');
+    expect(e.doc).not.toContain(' ');
+    // A stanza whose first line is indented keeps its leading spaces in an
+    // invisible atom.
+    expect(paraOf(e.doc, 'Opens indented')).toContain('<w:ind w:left="480" w:hanging="320"/>');
     // The style's hanging indent keeps the first line at its indent.
     expect(styleOf(e, 'PostextParaverse')).toContain('<w:ind w:left="320" w:hanging="320"/>');
     // The second stanza opens a line below the first.
@@ -69,6 +75,8 @@ describe('semantic docx: styling (#1444)', () => {
     // A word edited on an indented line keeps the indent in the source.
     const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('flame out', 'flame up')), { chapters: [{ id: 'ch1', markdown: md }] });
     expect(r.chapters[0]!.markdown).toBe(md.replace('flame out', 'flame up'));
+    const s = applyDocxEdits(edit(e.bytes, (x) => x.replace('Opens indented', 'Opens moved')), { chapters: [{ id: 'ch1', markdown: md }] });
+    expect(s.chapters[0]!.markdown).toBe(md.replace('Opens indented', 'Opens moved'));
   });
 
   it('sets a bayt poem as the engine\'s block: centred, two hemistichs and the gap wide', async () => {
@@ -111,7 +119,7 @@ describe('semantic docx: styling (#1444)', () => {
     unchanged(e, [md]);
   });
 
-  it('shades chips by their own style, padded, and an empty chip as a filled box', async () => {
+  it('shades chips by their own style, padded, and an empty chip as a square', async () => {
     const md = 'Tags :chip[Vegetarian]{style="tag"} :chip[Gluten free]{style="tag"} and :chip[x]{style="code"} end :chip[ ]{style="end"}\n';
     const config = cfg({
       chipStyles: [
@@ -122,10 +130,11 @@ describe('semantic docx: styling (#1444)', () => {
     });
     const e = await exportDocx(md, { config });
     expect(exportProblems(e, [md])).toEqual([]);
-    expect(e.frag(`Tags  Vegetarian   Gluten free  and  x  end    `)).toBeDefined();
+    expect(e.frag(`Tags  Vegetarian   Gluten free  and  x  end \u25a0`)).toBeDefined();
+    // The empty chip is an end mark: a square in its fill, not a shaded run.
+    expect(e.doc).toMatch(/<w:color w:val="1D5470"\/><\/w:rPr><w:t[^>]*>\u25a0</);
     expect(styleOf(e, 'PostextChiptag')).toContain('<w:b/>');
     expect(styleOf(e, 'PostextChiptag')).toContain('w:fill="F6E3C0"');
-    expect(styleOf(e, 'PostextChipend')).toContain('w:fill="1D5470"');
     // A style id the importer would read as code is not used.
     expect(e.part('word/styles.xml')).not.toContain('PostextChipcode');
     unchanged(e, [md]);
@@ -183,8 +192,10 @@ describe('semantic docx: styling (#1444)', () => {
     expect(numbering).toContain('<w:numFmt w:val="none"/><w:suff w:val="nothing"/><w:lvlText w:val=""/>');
     expect(numbering).toMatch(/<w:numFmt w:val="decimal"\/><w:lvlText w:val="%1\."\/><w:lvlJc w:val="right"\/>/);
     expect(numbering).toContain('<w:b/><w:bCs/><w:i w:val="0"/><w:iCs w:val="0"/>');
-    expect(numbering).toContain('<w:sz w:val="25"/>');
-    expect(numbering).toContain('w:ascii="MS Gothic"');
+    // 12.5 pt, held to the 12 pt leading (8 pt × 1.5) so the number does
+    // not open up its line.
+    expect(numbering).toContain('<w:sz w:val="24"/>');
+    expect(numbering).toContain('w:ascii="Segoe UI Symbol" w:hAnsi="Segoe UI Symbol" w:eastAsia="MS Gothic"');
     unchanged(e, [md]);
   });
 
@@ -247,8 +258,37 @@ describe('semantic docx: styling (#1444)', () => {
     expect(e.doc).toContain('<w:tcW w:w="1250" w:type="pct"/>');
     expect(e.doc).toContain('<w:tcW w:w="3750" w:type="pct"/>');
     expect(paraOf(e.doc, '>d<')).toContain('<w:keepNext/>');
-    expect(paraOf(e.doc, '>a<')).not.toContain('<w:keepNext/>');
+    // A short table stays whole: its first row keeps with the next too.
+    expect(paraOf(e.doc, '>a<')).toContain('<w:keepNext/>');
     expect(styleOf(e, 'Caption')).toContain('<w:keepLines/>');
+    // A long one may break between its rows, its last row still kept with
+    // the caption under it.
+    const rows = Array.from({ length: 20 }, (_, i) => [{ content: `r${i}` }, { content: `s${i}` }]);
+    const long = await exportDocx(md, { resources: [{ ...resources[0]!, table: { model: { rows, columnWidths: [1, 3] } } }] });
+    expect(paraOf(long.doc, '>r0<')).not.toContain('<w:keepNext/>');
+    expect(paraOf(long.doc, '>s19<')).toContain('<w:keepNext/>');
+  });
+
+  it('sets a type\'s caption above its table in a caption style of its own, with room after a caption below', async () => {
+    const md = '::resource{id="t1"}\n\nAfter.\n\n::resource{id="f1"}\n\nMore.\n';
+    const table = { id: 't1', typeId: 'table', kind: 'table' as const, caption: 'Cap', createdAt: 0, updatedAt: 0, table: { model: { rows: [[{ content: 'a' }, { content: 'b' }]] } } };
+    const figure = { id: 'f1', typeId: 'figure', kind: 'table' as const, caption: 'Fig cap', createdAt: 0, updatedAt: 0, table: { model: { rows: [[{ content: 'x' }]] } } };
+    const config = cfg({ resourceTypes: [{ id: 'table', name: 'Table', captionStyle: { position: 'above', fontSize: { value: 9, unit: 'pt' } } }] } as never);
+    const e = await exportDocx(md, { resources: [table, figure], config });
+    expect(exportProblems(e, [md])).toEqual([]);
+    // The table's caption comes first, in its own style that keeps with
+    // the table; the figure's stays below, in Word's Caption.
+    expect(e.doc.indexOf('Cap<')).toBeLessThan(e.doc.indexOf('>a<'));
+    expect(paraOf(e.doc, 'Cap<')).toContain('<w:pStyle w:val="PostextCaptiontable"/>');
+    expect(styleOf(e, 'PostextCaptiontable')).toContain('<w:keepNext/>');
+    expect(styleOf(e, 'PostextCaptiontable')).toContain('<w:sz w:val="18"/>');
+    expect(e.doc.indexOf('Fig cap<')).toBeGreaterThan(e.doc.indexOf('>x<'));
+    expect(paraOf(e.doc, 'Fig cap<')).toContain('<w:pStyle w:val="Caption"/>');
+    // A caption below its figure leaves a body line before the next text.
+    expect(styleOf(e, 'Caption')).toMatch(/<w:spacing w:before="\d+" w:after="[1-9]\d*"/);
+    const back = applyDocxEdits(e.bytes, { chapters: [{ id: 'ch1', markdown: md }], resources: [table, figure] });
+    expect(back.edits).toEqual([]);
+    expect(back.chapters[0]!.markdown).toBe(md);
   });
 
   it('stops headings hyphenating and starts chapters on a recto only when asked', async () => {

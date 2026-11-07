@@ -17,7 +17,7 @@
 import { tableHeaderRowCount } from '../../pipeline/resources/resourceLayout/tableSlices.js';
 import type { Resource, ResourceKind, TableCell } from '../../types.js';
 import type { WriterContext } from './context.js';
-import { pictureRun } from './media/figures.js';
+import { captionPlace, pictureRun } from './media/figures.js';
 import { snippetRuns } from './snippet.js';
 import { tableRules } from './table/rules.js';
 import { cellStyles } from './table/styles.js';
@@ -27,6 +27,8 @@ import { hex, paragraph, px, type ParaProps } from './wml.js';
 const JC: Record<string, ParaProps['jc']> = { left: 'left', start: 'left', center: 'center', right: 'right', end: 'right' };
 const VALIGN: Record<string, string> = { top: 'top', middle: 'center', bottom: 'bottom' };
 const PICTURE_KINDS: ReadonlySet<ResourceKind> = new Set(['bitmap', 'svg']);
+/** Rows of a table short enough to keep on one page. */
+const KEEP_WHOLE_ROWS = 12;
 
 /** The pictures the cells of the tables `ids` show (their files go into
  *  the package with the other pictures). */
@@ -69,7 +71,11 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
   const grid = fractions.map((f) => Math.max(1, Math.round(width * f)));
   // Fiftieths of a percent of the table's width, per grid column.
   const pct = fractions.map((f) => Math.max(1, Math.round(5000 * f)));
-  const keepWithCaption = ctx.resolved.captionStyle.position !== 'above' && !!res.caption;
+  // Its last row keeps with what is set under it: a caption below, a note.
+  const keepWithCaption = (!captionPlace(ctx, res).above && !!res.caption) || !!res.note;
+  // A short table (a form, an answer grid) stays on one page, as the
+  // engine sets it whole: every row but the last keeps with the next.
+  const whole = rows.length <= KEEP_WHOLE_ROWS;
   const rules = tableRules(u, style, cs.bodyPx);
   const zebra = style.bodyAlternateBackgroundEnabled ? hex(style.bodyAlternateBackground) : undefined;
   const fillOf = (cell: TableCell | undefined, r: number): string | undefined => {
@@ -115,9 +121,11 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
       if (fill) tcPr += `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`;
       const va = primary?.verticalAlign ? VALIGN[primary.verticalAlign] : undefined;
       if (va) tcPr += `<w:vAlign w:val="${va}"/>`;
-      const last = keepWithCaption && r === rows.length - 1;
+      const last = (keepWithCaption && r === rows.length - 1) || (whole && r < rows.length - 1);
+      const tall = !continues && !!cell && (/\$/.test(cell.content) || !!cell.image);
       const props: ParaProps = {
         style: isHeader ? cs.header : cs.body,
+        ...(tall ? { line: { twips: isHeader ? cs.headerLine : cs.bodyLine, rule: 'atLeast' as const } } : {}),
         keepNext: last || undefined,
         jc: JC[(continues ? primary : cell)?.align ?? 'left'] ?? 'left',
       };
