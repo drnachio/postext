@@ -18,9 +18,11 @@ import { headingStyleOf } from '../../../pipeline/sections/headingStyles.js';
 import type { ResolvedDesignElement, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingStyleConfig } from '../../../types.js';
 import type { ResolvedConfig, VDTPage } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
-import { designPlaceholders, headingLevelOf } from '../design/values.js';
+import { designPlaceholders, headingLevelOf, partInForce } from '../design/values.js';
 import type { PageGeometry, SectionStart } from '../sections.js';
-import { furnitureParagraph, PAGE_MARK, PAGES_MARK, TITLE_MARK, type Item, type Rule } from './paragraph.js';
+import { furnitureParagraph, itemRuns, PAGE_MARK, PAGES_MARK, TITLE_MARK, type Item, type Rule } from './paragraph.js';
+import { marginText, verticalRule } from './margin.js';
+import { headsShown } from './composed.js';
 import { placeElement, type PageBox, type Target } from './place.js';
 
 type Role = 'opener' | 'body' | 'part';
@@ -39,6 +41,8 @@ export interface SectionFurnitureInput {
   titleStyle?: string;
   /** The first block of the continuous section that follows, if any. */
   follow?: ContentBlock;
+  /** The section's first folio, when it restarts the count. */
+  firstFolio?: number;
 }
 
 const slotsMemo = new WeakMap<ResolvedConfig, { any: boolean; parity: boolean }>();
@@ -156,6 +160,11 @@ function sectionValues(ctx: WriterContext, input: SectionFurnitureInput): Design
   // A forced break in a title reads as a space in a running head.
   const title = [flattenTitleBreaks(base?.chapterTitleByPageIndex[0] ?? '')];
   const number = base?.chapterNumberByPageIndex ?? [''];
+  // The part in force where the section starts: the last `:::part` fence
+  // before its first block (a book whose articles are lower headings has
+  // no level-1 heading inside its parts).
+  const where = at >= 0 ? input.first : ctx.book[input.chapter]?.blocks[0];
+  const part = where ? partInForce(ctx, where) : undefined;
   return {
     kind: 'header',
     page,
@@ -166,8 +175,8 @@ function sectionValues(ctx: WriterContext, input: SectionFurnitureInput): Design
     chapterNumberByPageIndex: number,
     chapterNumberAtTopByPageIndex: number,
     chapterAttrsByPageIndex: [h1?.attrs ?? {}],
-    partTitleByPageIndex: base?.partTitleByPageIndex ?? [''],
-    partNumberByPageIndex: base?.partNumberByPageIndex ?? [''],
+    partTitleByPageIndex: [part?.title ?? base?.partTitleByPageIndex?.[0] ?? ''],
+    partNumberByPageIndex: [part?.number ?? base?.partNumberByPageIndex?.[0] ?? ''],
     numerals: ctx.resolved.numerals,
   };
 }
@@ -192,12 +201,14 @@ function prints(el: ResolvedDesignElement, role: Role, parity: Parity | undefine
 /** A section's page: its box, its text width (twips), and the style a
  *  STYLEREF field reads the chapter title from (with the title in force
  *  where the section starts, as the field's result). */
-type SectionPage = PageBox & { textTwips: number; title?: { style: string; text: string } };
+type SectionPage = PageBox & { height: number; textTwips: number; title?: { style: string; text: string } };
 
 /** The header and footer paragraphs one kind of page prints. */
 function variant(ctx: WriterContext, slots: { header: ResolvedDesignSlot; footer: ResolvedDesignSlot }, values: DesignPlaceholderContext, page: SectionPage, role: Role, parity: Parity | undefined): Record<Target, string> & { empty: boolean; blank: Record<Target, boolean> } {
   const items: Record<Target, Item[]> = { header: [], footer: [] };
   const rules: Record<Target, Rule[]> = { header: [], footer: [] };
+  // Elements set in a page margin, each in a frame of its own.
+  const frames: Record<Target, string[]> = { header: [], footer: [] };
   for (const own of ['header', 'footer'] as const) {
     const all = slots[own].elements;
     for (const el of all) {
@@ -205,20 +216,27 @@ function variant(ctx: WriterContext, slots: { header: ResolvedDesignSlot; footer
       const placed = placeElement(el, all, page, ctx.units);
       const target = placed.target ?? own;
       if (el.kind === 'rule') {
-        if (el.direction === 'horizontal') rules[target].push({ el });
+        if (el.direction === 'vertical') {
+          const frame = verticalRule(ctx, target, el, page);
+          if (frame) frames[target].push(frame);
+        } else rules[target].push({ el });
         continue;
       }
       if (el.kind !== 'text') continue;
       const text = resolveDesignText(withFieldMarks(el.content ?? '', !!page.title), { ...values, kind: own }).trim();
       if (!text || !/[\p{L}\p{N}\uE0F1-\uE0F3]/u.test(text)) continue;
-      items[target].push({ el: el as ResolvedDesignTextElement, text, zone: placed.zone, x: placed.x, ...(page.title ? { title: page.title } : {}) });
+      const item: Item = { el: el as ResolvedDesignTextElement, text, zone: placed.zone, x: placed.x, ...(page.title ? { title: page.title } : {}) };
+      const frame = marginText(ctx, target, el, page, () => itemRuns(ctx, item));
+      if (frame) frames[target].push(frame);
+      else items[target].push(item);
     }
   }
+  const none = (t: Target): boolean => !items[t].length && !frames[t].length;
   return {
-    empty: !items.header.length && !items.footer.length,
-    blank: { header: !items.header.length && !rules.header.length, footer: !items.footer.length && !rules.footer.length },
-    header: furnitureParagraph(ctx, 'header', items.header, rules.header, page.rtl, page.textTwips),
-    footer: furnitureParagraph(ctx, 'footer', items.footer, rules.footer, page.rtl, page.textTwips),
+    empty: none('header') && none('footer'),
+    blank: { header: none('header') && !rules.header.length, footer: none('footer') && !rules.footer.length },
+    header: frames.header.join('') + furnitureParagraph(ctx, 'header', items.header, rules.header, page.rtl, page.textTwips),
+    footer: frames.footer.join('') + furnitureParagraph(ctx, 'footer', items.footer, rules.footer, page.rtl, page.textTwips),
   };
 }
 
@@ -239,6 +257,13 @@ function partId(ctx: WriterContext, kind: Target, xml: string): string {
   return id;
 }
 
+/** The side the section's first page falls on, when the export knows
+ *  it: by its first folio, or by a right-hand start. */
+function firstSide(input: SectionFurnitureInput): Parity | undefined {
+  if (input.firstFolio !== undefined) return input.firstFolio % 2 === 0 ? 'even' : 'odd';
+  return input.start === 'oddPage' ? 'odd' : undefined;
+}
+
 /**
  * The header and footer references of a section (`w:headerReference`,
  * `w:footerReference`) and whether its first page takes its own
@@ -248,13 +273,19 @@ export function sectionFurniture(ctx: WriterContext, geo: PageGeometry, input: S
   const r = ctx.resolved;
   if (!bookSlots(r).any) return { refs: '', titlePg: false };
   const style = sectionStyleAt(ctx, input.chapter, input.first);
-  const slots = { header: style?.header ?? r.header, footer: style?.footer ?? r.footer };
+  // A composed page whose template prints no header or footer (#1444).
+  const shown = input.leads ? headsShown(ctx, input.first) : undefined;
+  const slots = {
+    header: shown?.header === false ? { ...r.header, elements: [] } : (style?.header ?? r.header),
+    footer: shown?.footer === false ? { ...r.footer, elements: [] } : (style?.footer ?? r.footer),
+  };
   const values = sectionValues(ctx, input);
   const parity = usesEvenAndOdd(r);
   const toPx = (tw: number): number => (tw * ctx.units.dpi) / 1440;
   const title = input.titleStyle ? { style: input.titleStyle, text: values.chapterTitleByPageIndex[0] ?? '' } : undefined;
   const box = (recto: boolean): SectionPage => ({
     textTwips: geo.textTwips,
+    height: toPx(geo.heightTw),
     ...(title ? { title } : {}),
     width: toPx(geo.widthTw),
     margins: { left: toPx(geo.margins.left), right: toPx(geo.margins.right) },
@@ -290,11 +321,14 @@ export function sectionFurniture(ctx: WriterContext, geo: PageGeometry, input: S
     }
   }
   if (role) {
-    // Word's first-page header serves either side: the opener's elements
-    // for a right-hand page, or for a left-hand one when the design draws
-    // nothing on a right-hand opener.
-    const odd = variant(ctx, slots, values, box(true), role, parity ? 'odd' : undefined);
-    kinds.push(['first', parity && odd.empty ? variant(ctx, slots, values, box(false), role, 'even') : odd]);
+    // Word's first-page header serves either side. When the section's
+    // first folio is known (a chapter that sets its first number, or one
+    // that opens a right-hand page), the side it falls on (#1444); else
+    // the opener's elements for a right-hand page, or for a left-hand one
+    // when the design draws nothing on a right-hand opener.
+    const side = firstSide(input);
+    const odd = variant(ctx, slots, values, box(side !== 'even'), role, parity ? (side ?? 'odd') : undefined);
+    kinds.push(['first', parity && !side && odd.empty ? variant(ctx, slots, values, box(false), role, 'even') : odd]);
   }
   let refs = '';
   for (const kind of ['header', 'footer'] as const) {
