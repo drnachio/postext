@@ -3,7 +3,8 @@
 // bordered like the box style, its title paragraph first; a `:::part`,
 // `:::paragraphs`, `:::columns` or `:::paper` group is a content control
 // around its blocks; an exercise is set by exercises.ts and a composed
-// page stands as a placeholder (#1444); stray modules and frames go raw.
+// page stands as a placeholder, a stray solution or hint prints nothing
+// (#1444); stray modules and frames go raw.
 
 import type { ResolvedCalloutStyleConfig } from '../../types.js';
 import { abs, blockId, type WriterContext } from './context.js';
@@ -18,7 +19,7 @@ import { blockSdt, eighths, hex, paragraph, px, textRuns, twips, type Border, ty
 
 type ContainerNode = Extract<Node, { container: unknown }>;
 
-const RAW_CONTAINERS = new Set(['exercise', 'solution', 'hint', 'module', 'composedPage', 'frame', 'figure']);
+const RAW_CONTAINERS = new Set(['module', 'frame', 'figure']);
 
 /** Attributes as a short JSON label for the content control. */
 function attrsLabel(attrs: Record<string, string> | undefined): string | undefined {
@@ -70,7 +71,10 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
   const name = c.containerName ?? 'container';
   const attrs = c.containerAttrs ?? {};
   if (name === 'exercise') return renderExercise(ctx, node, env);
-  if (name === 'composedPage') return renderPagePlaceholder(ctx, c, 'composedPage');
+  if (name === 'composedPage') return renderPagePlaceholder(ctx, c, 'composedPage', env.widthTwips);
+  // A solution or hint outside an exercise prints nothing (as in the
+  // engine); its source stays as it is.
+  if (name === 'solution' || name === 'hint') return '';
   if (RAW_CONTAINERS.has(name)) {
     const [start, end] = rangeOf(ctx, node);
     return rawSdt(ctx, start, end, name);

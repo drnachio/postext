@@ -8,7 +8,7 @@ import { ommlHash } from '../anchors/ommlHash.js';
 import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { renderResource } from './figures.js';
-import { renderSolutions } from './exercises.js';
+import { renderSolutions, solutionsBeforeHeading } from './exercises.js';
 import { pageKindOf, renderPagePlaceholder } from './pages.js';
 import { renderScoreBlock } from './scores.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
@@ -237,7 +237,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
       const level = b.level ?? 1;
       const style = ctx.styles.heading(level, b.attrs?.style);
       const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + headingNumber(ctx, b);
-      return textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1) }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
+      return solutionsBeforeHeading(ctx, b) + textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1) }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
     }
     case 'paragraph': {
       if (b.footnoteDef !== undefined) return ctx.chapter.cited.has(b.footnoteDef) ? '' : rawSdt(ctx, lineStart(ctx.chapter.markdown, start), end, 'footnote');
@@ -268,7 +268,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
       if (br) return blockSdt(ctx.nextSdtId(), `ptx:${b.directiveName}`, undefined, `<w:p><w:r><w:br w:type="${br}"/></w:r></w:p>`);
       if (b.directiveName === 'solutions') return renderSolutions(ctx, b, env);
       const page = pageKindOf(b);
-      if (page) return renderPagePlaceholder(ctx, b, page);
+      if (page) return renderPagePlaceholder(ctx, b, page, env.widthTwips);
       return rawSdt(ctx, start, end, b.directiveName ?? 'directive');
     }
     case 'score':

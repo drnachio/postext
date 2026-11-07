@@ -53,14 +53,15 @@ export function pageKindOf(b: ContentBlock): PageKind | undefined {
   return undefined;
 }
 
-/** The placeholder of a page. `fence` is the block that opens it. */
-export function renderPagePlaceholder(ctx: WriterContext, fence: ContentBlock, kind: PageKind): string {
+/** The placeholder of a page. `fence` is the block that opens it;
+ *  `widthTwips` the width it stands in (a box's, a column's). */
+export function renderPagePlaceholder(ctx: WriterContext, fence: ContentBlock, kind: PageKind, widthTwips?: number): string {
   const w = pageWords(ctx.config.locale);
   const text = `${w[kind]} \u2014 ${w.see}`;
   const note = paragraph({ style: STYLE.normal, jc: 'center', ind: { firstLine: 0 }, before: 60, after: 60 }, generatedRuns(ctx, [{ text, i: true, color: '595959' }], `placeholder:${kind}`));
   // A one-cell table, not a bordered paragraph: Word and LibreOffice join
   // the borders of paragraphs in a row into one box.
-  let xml = framed(note, ctx.textTwips);
+  let xml = framed(note, Math.max(240, Math.round(widthTwips ?? ctx.textTwips)));
   if (kind === 'strip') xml += stripCaption(ctx, fence);
   return blockSdt(ctx.nextSdtId(), `ptx:${kind}`, w[kind], xml);
 }

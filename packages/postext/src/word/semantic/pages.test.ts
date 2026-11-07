@@ -41,7 +41,7 @@ describe('semantic docx: exercises', () => {
     expect(text).toContain('1. ');
     expect(text).toContain('●○○');
     expect(text).toMatch(/a\) \|The words of a heading/);
-    expect(text).toMatch(/A figure floats after its \|_{6,}\|\./);
+    expect(text).toMatch(/A figure floats after its _{6,}\./);
     for (const w of ['mention', 'whole', 'margin', 'column']) expect(e.frag(e.map.fragments.find((f) => f.role === 'exercise:bank')!.text).text).toContain(w);
     expect(text).toContain('1. PDF/X');
     expect(text).toContain('The printer');
@@ -70,20 +70,25 @@ describe('semantic docx: exercises', () => {
   it('prints the key where the book puts its solutions', async () => {
     const after = await exportDocx(EXERCISES, { config: { exercises: { solutions: { placement: 'after' } } } as never });
     expect(exportProblems(after, [EXERCISES])).toEqual([]);
-    expect(after.map.fragments.filter((f) => f.role === 'exercise:key').map((f) => f.text)).toEqual(['1. b)', '2. 1 mention · 2 whole', expect.stringMatching(/^3\. 1 [abc]\) · 2 [abc]\) · 3 [abc]\)$/), '4. 1 T · 2 F', '5. ']);
+    // Right after the exercise, no number: the box says which it is.
+    expect(after.map.fragments.filter((f) => f.role === 'exercise:key').map((f) => f.text)).toEqual(['b)', '1 mention · 2 whole', expect.stringMatching(/^1 [abc]\) · 2 [abc]\) · 3 [abc]\)$/), '1 T · 2 F']);
     // The worked solution is the Markdown's own text.
     expect(after.frag('To hold the text and the thumbs.').target).toEqual({ kind: 'markdown', chapter: 0 });
     const chapterEnd = await exportDocx(EXERCISES, { config: { exercises: { solutions: { placement: 'chapterEnd' } } } as never });
     expect(exportProblems(chapterEnd, [EXERCISES])).toEqual([]);
     expect(chapterEnd.doc).toContain('<w:tag w:val="ptx:solutions"/>');
     expect(chapterEnd.frag('Solutions').role).toBe('exercise:solutions');
+    // Listed at the end, each key under its number; the open question has
+    // no key, so its worked solution takes the number's line.
+    expect(chapterEnd.map.fragments.filter((f) => f.role === 'exercise:key').map((f) => f.text)).toEqual(['1. b)', '2. 1 mention · 2 whole', expect.stringMatching(/^3\. 1 [abc]\) · 2 [abc]\) · 3 [abc]\)$/), '4. 1 T · 2 F']);
+    expect(chapterEnd.map.fragments.filter((f) => f.role === 'exercise:worked:label').map((f) => f.text)).toEqual(['5. ']);
     expect(applyDocxEdits(chapterEnd.bytes, { chapters: [{ id: 'ch1', markdown: EXERCISES }] }).edits).toEqual([]);
   });
 
   it("fills the slots in a teacher's edition", async () => {
     const e = await exportDocx(EXERCISES, { config: { exercises: { edition: 'teacher' } } as never });
     expect(exportProblems(e, [EXERCISES])).toEqual([]);
-    expect(e.map.fragments.find((f) => f.role === 'exercise:gaps')!.text).toBe('1. A figure floats after its mention.');
+    expect(e.map.fragments.find((f) => f.role === 'exercise:gaps')!.text).toBe('A figure floats after its mention.');
     expect(words(e.doc)).toContain(' ✓');
   });
 

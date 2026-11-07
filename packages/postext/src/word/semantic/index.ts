@@ -20,6 +20,7 @@ import { bookNumbers } from './engineNumbers.js';
 import { parseChapter, renderChapter } from './chapter.js';
 import type { SemanticWarning, WriterContext } from './context.js';
 import { prepareMedia } from './figures.js';
+import { prepareExercises } from './exercises.js';
 import { prepareScores } from './scores.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
@@ -119,6 +120,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   };
   await prepareMedia(ctx, shown);
   await prepareScores(ctx, parsed);
+  prepareExercises(ctx, parsed);
 
   let body = '';
   parsed.forEach((pc, i) => {

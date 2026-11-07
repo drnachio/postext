@@ -7,12 +7,15 @@
 // them as they are.
 
 import type { ContentBlock } from '../../parse/types.js';
-import { parseMarkdownWithIssues } from '../../parse/index.js';
+import { resolvedLocale } from '../../pipeline/config.js';
+import { computeHeadingContext, type HeadingContext } from '../../pipeline/resources/resourceNumbering.js';
+import { headingIsNumbered } from '../../pipeline/sections/headingStyles.js';
 import { pickExerciseStyle, solutionsOf, type ExerciseSettings, type ResolvedExerciseStyle } from '../../defaults/boxes/exercises.js';
 import { exerciseSettingsFor } from '../../exercises/build.js';
 import { numberExercises, type ExpandContext } from '../../exercises/expand.js';
 import { readExercises } from '../../exercises/model.js';
 import { buildTree, renderNodes, type BlockEnv, type Node } from './blocks.js';
+import type { ParsedChapter } from './chapter.js';
 import type { WriterContext } from './context.js';
 import { exerciseBody, mappedParagraph } from './exerciseBody.js';
 import { generatedRuns, type Piece } from './generated.js';
@@ -31,13 +34,16 @@ interface KeyEntry {
   style: ResolvedExerciseStyle;
 }
 
+type Placed = Map<number, { number: string; ordinal: number }>;
+
 interface ExerciseState {
   settings: ExerciseSettings;
-  counters: Record<string, number>;
-  headings: { h1: number; h2: number };
+  locale?: string;
   chapter: number;
-  /** This chapter's exercises by source start: number and ordinal. */
-  numbers: Map<number, { number: string; ordinal: number }>;
+  /** Every chapter's exercises by source start: number and ordinal. */
+  byChapter: Placed[];
+  /** This chapter's. */
+  numbers: Placed;
   /** Keys waiting for the end of the chapter or a `:::solutions` line. */
   pending: KeyEntry[];
   /** Every key so far (`:::solutions{scope="book"}`). */
@@ -49,30 +55,51 @@ const states = new WeakMap<WriterContext, ExerciseState>();
 function stateOf(ctx: WriterContext): ExerciseState {
   let s = states.get(ctx);
   if (!s) {
-    s = { settings: exerciseSettingsFor(ctx.resolved), counters: {}, headings: { h1: 0, h2: 0 }, chapter: -1, numbers: new Map(), pending: [], book: [] };
+    const locale = resolvedLocale(ctx.resolved);
+    s = { settings: exerciseSettingsFor(ctx.resolved), ...(locale ? { locale } : {}), chapter: -1, byChapter: [], numbers: new Map(), pending: [], book: [] };
     states.set(ctx, s);
   }
-  if (s.chapter !== ctx.chapter.index) numberChapter(ctx, s);
+  if (s.chapter !== ctx.chapter.index) {
+    s.chapter = ctx.chapter.index;
+    s.numbers = s.byChapter[ctx.chapter.index] ?? new Map();
+    s.pending = [];
+  }
   return s;
 }
 
-/** Number the chapter's exercises as the engine does, its counters
- *  carried from the chapters before. */
-function numberChapter(ctx: WriterContext, s: ExerciseState): void {
-  s.chapter = ctx.chapter.index;
-  s.numbers = new Map();
-  s.pending = [];
-  const { blocks } = parseMarkdownWithIssues(ctx.chapter.markdown.slice(ctx.chapter.offset));
-  const { exercises } = readExercises(blocks);
-  const expand = { settings: s.settings, locale: ctx.config.locale, counters: s.counters, headings: { h1: s.headings.h1, h2: s.headings.h2, h3: 0, h4: 0, h5: 0, h6: 0 } } as unknown as ExpandContext;
-  const { numbers, counters } = numberExercises(blocks, exercises, expand);
-  s.counters = counters;
-  for (const ex of exercises) s.numbers.set(ex.sourceStart, { number: numbers.get(ex.id) ?? '', ordinal: ex.ordinal });
-  for (const b of blocks) {
-    if (b.type !== 'heading') continue;
-    if (b.level === 1) s.headings = { h1: s.headings.h1 + 1, h2: 0 };
-    else if (b.level === 2) s.headings.h2++;
-  }
+const NO_HEADINGS: HeadingContext = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
+
+/**
+ * Number every chapter's exercises before the body is written, as the
+ * engine numbers a book laid out chapter after chapter: each chapter
+ * starts from the numbered headings of the chapters before it and carries
+ * their exercise counters on, in the book's digits.
+ */
+export function prepareExercises(ctx: WriterContext, chapters: readonly ParsedChapter[]): void {
+  const s = stateOf(ctx);
+  const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, ctx.resolved);
+  let headings = NO_HEADINGS;
+  let counters: Record<string, number> = {};
+  chapters.forEach((pc, i) => {
+    const placed: Placed = new Map();
+    const { exercises } = readExercises(pc.blocks);
+    if (exercises.length) {
+      const expand = {
+        settings: s.settings,
+        ...(s.locale ? { locale: s.locale } : {}),
+        ...(ctx.resolved.numerals ? { digits: ctx.resolved.numerals } : {}),
+        headings,
+        counters,
+      } as unknown as ExpandContext;
+      const out = numberExercises(pc.blocks, exercises, expand);
+      counters = out.counters;
+      for (const ex of exercises) placed.set(ex.sourceStart, { number: out.numbers.get(ex.id) ?? '', ordinal: ex.ordinal });
+    }
+    s.byChapter[i] = placed;
+    const context = computeHeadingContext(pc.blocks, headings, isNumbered);
+    if (context.length) headings = context[context.length - 1]!;
+  });
+  s.chapter = -1;
 }
 
 /** The container's blocks back in a flat list, its markers included. */
@@ -118,13 +145,29 @@ function headPieces(style: ResolvedExerciseStyle, number: string, attrs: Record<
   return out;
 }
 
-/** The answers of the exercises in `entries`, one paragraph each. */
-function keyParagraphs(ctx: WriterContext, entries: readonly KeyEntry[], env: BlockEnv, heading?: string): string {
+/** The answers of the exercises in `entries`, one paragraph each, as the
+ *  engine prints them (`solutionBlocks`): the number when `listed` among
+ *  others, the key, then a `full` layout's worked solution. An exercise
+ *  with neither key nor worked solution prints nothing. */
+function keyParagraphs(ctx: WriterContext, entries: readonly KeyEntry[], env: BlockEnv, listed: boolean, heading?: string): string {
+  const s = stateOf(ctx);
+  const props = { style: STYLE.normal, ind: { firstLine: 0 } };
+  const workedOf = (e: KeyEntry): Node[] => (solutionsOf(e.style, s.settings.exercises).layout === 'full' && e.chapter === ctx.chapter.index ? e.worked.flat() : []);
+  const printed = entries.filter((e) => e.key || workedOf(e).length);
+  if (!printed.length) return '';
+  // The heading first: fragments are logged in reading order.
   let xml = heading ? paragraph({ style: STYLE.boxTitle, keepNext: true }, generatedRuns(ctx, [{ text: heading, b: true }], 'exercise:solutions')) : '';
-  for (const e of entries) {
-    if (e.key || e.number) xml += paragraph({ style: STYLE.normal, ind: { firstLine: 0 } }, generatedRuns(ctx, [{ text: e.number ? `${e.number}${e.style.number.suffix} ` : '', b: true }, { text: e.key }], 'exercise:key'));
-    const full = solutionsOf(e.style, stateOf(ctx).settings.exercises).layout === 'full';
-    if (full && e.chapter === ctx.chapter.index) for (const nodes of e.worked) xml += renderNodes(ctx, nodes, env);
+  for (const e of printed) {
+    const worked = workedOf(e);
+    const lead: Piece[] = listed && e.number ? [{ text: `${e.number}${e.style.number.suffix || '.'} `, b: true }] : [];
+    const first = worked[0];
+    // No key (an open question): the worked solution's first paragraph
+    // goes on the number's line.
+    if (!e.key && first && 'block' in first && first.block.type === 'paragraph') {
+      xml += mappedParagraph(ctx, first.block, props, 'exercise:worked', lead);
+      worked.shift();
+    } else if (e.key || lead.length) xml += paragraph(props, generatedRuns(ctx, [...lead, { text: e.key }], 'exercise:key'));
+    if (worked.length) xml += renderNodes(ctx, worked, env);
   }
   return xml;
 }
@@ -149,7 +192,7 @@ export function renderExercise(ctx: WriterContext, node: ContainerNode, env: Blo
       cell += mappedParagraph(ctx, flat[k]!, { style: STYLE.normal, ind: { firstLine: 0 }, keepNext: true }, 'exercise:instruction', i === 0 ? head : []);
     });
   } else if (head.length) cell += paragraph({ style: STYLE.normal, keepNext: true }, generatedRuns(ctx, head, 'exercise:number'));
-  const body = exerciseBody({ ctx, flat, ex, style, teacher: book.edition === 'teacher', seed: book.seed, ordinal: placed.ordinal, locale: ctx.config.locale, widthTwips: width, rule });
+  const body = exerciseBody({ ctx, flat, ex, style, teacher: book.edition === 'teacher', seed: book.seed, ordinal: placed.ordinal, ...(s.locale ? { locale: s.locale } : {}), ...(ctx.resolved.numerals ? { digits: ctx.resolved.numerals } : {}), widthTwips: width, rule });
   for (const part of body.xml) {
     // Word joins two tables in a row; a paragraph keeps them apart.
     if (part.startsWith('<w:tbl>') && cell.endsWith('</w:tbl>')) cell += '<w:p/>';
@@ -159,7 +202,7 @@ export function renderExercise(ctx: WriterContext, node: ContainerNode, env: Blo
   const entry: KeyEntry = { number: placed.number, key: body.key, worked, chapter: ctx.chapter.index, style };
   s.book.push(entry);
   const placement = solutionsOf(style, book).placement;
-  if (placement === 'after' || placement === 'inverted') cell += keyParagraphs(ctx, [entry], { ...env, widthTwips: width });
+  if (placement === 'after' || placement === 'inverted') cell += keyParagraphs(ctx, [entry], { ...env, widthTwips: width }, false);
   else if (placement === 'chapterEnd' || placement === 'directive') s.pending.push(entry);
   if (!cell || cell.endsWith('</w:tbl>')) cell += '<w:p/>';
   return blockSdt(ctx.nextSdtId(), 'ptx:exercise', ex.attrs.type ? `exercise: ${ex.attrs.type}` : `exercise: ${ex.kind}`, boxTable(cell, env.widthTwips ?? ctx.textTwips, rule));
@@ -171,17 +214,31 @@ export function renderSolutions(ctx: WriterContext, b: ContentBlock, env: BlockE
   const s = stateOf(ctx);
   const entries = b.directiveAttrs?.scope === 'book' ? s.book : s.pending;
   const heading = b.directiveAttrs?.title ?? (entries[0] ? solutionsOf(entries[0].style, s.settings.exercises).heading : s.settings.exercises.solutions.heading);
-  const xml = entries.length ? keyParagraphs(ctx, entries, env, heading || undefined) : '';
+  const xml = entries.length ? keyParagraphs(ctx, entries, env, true, heading || undefined) : '';
   s.pending = [];
   return xml ? blockSdt(ctx.nextSdtId(), 'ptx:solutions', undefined, xml) : '';
 }
 
-/** The end of a chapter: the keys printed at the end of it. */
-export function chapterSolutions(ctx: WriterContext): string {
+/** The keys waiting when one of them goes at the end of the chapter: all
+ *  of them, as the engine flushes them where a chapter ends. */
+function flushChapterEnd(ctx: WriterContext): string {
   const s = states.get(ctx);
   if (!s || s.chapter !== ctx.chapter.index) return '';
-  const end = s.pending.filter((e) => solutionsOf(e.style, s.settings.exercises).placement === 'chapterEnd');
+  const book = s.settings.exercises;
+  if (!s.pending.some((e) => solutionsOf(e.style, book).placement === 'chapterEnd')) return '';
+  const entries = s.pending;
   s.pending = [];
-  if (!end.length) return '';
-  return blockSdt(ctx.nextSdtId(), 'ptx:solutions', undefined, keyParagraphs(ctx, end, {}, solutionsOf(end[0]!.style, s.settings.exercises).heading || undefined));
+  const xml = keyParagraphs(ctx, entries, {}, true, solutionsOf(entries[0]!.style, book).heading || undefined);
+  return xml ? blockSdt(ctx.nextSdtId(), 'ptx:solutions', undefined, xml) : '';
+}
+
+/** Before a level-1 heading: a chapter ends there, and its keys print
+ *  before the next one opens (a file holding several chapters). */
+export function solutionsBeforeHeading(ctx: WriterContext, b: ContentBlock): string {
+  return b.level === 1 ? flushChapterEnd(ctx) : '';
+}
+
+/** The end of a chapter file: the keys printed at the end of it. */
+export function chapterSolutions(ctx: WriterContext): string {
+  return flushChapterEnd(ctx);
 }
