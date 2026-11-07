@@ -5941,6 +5941,7 @@
     "wordExportSemanticHint": "Stili di Word, elenchi, note e tabelle ricavati dal testo: per scrivere e correggere.",
     "wordExportFormatted": "Impaginato",
     "wordExportFormattedHint": "Ogni pagina come la stampa il PDF, con i caratteri del libro: per controllare l’impaginazione.",
+    "wordExportPagesSuggested": "Quasi tutto ciò che esporti è fatto di pagine composte o a fumetti, che il documento semantico può solo segnalare: Impaginato le mantiene come stampate.",
     "wordExportLaying": "Impaginazione del capitolo __current__ di __total__…",
     "wordExportFonts": "Preparazione del carattere __current__ di __total__…",
     "wordExportPages": "Scrittura della pagina __current__ di __total__…",

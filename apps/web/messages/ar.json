@@ -5941,6 +5941,7 @@
     "wordExportSemanticHint": "أنماط Word وقوائم وحواشٍ وجداول مبنية من النص: للكتابة والتصحيح.",
     "wordExportFormatted": "مُنسَّق",
     "wordExportFormattedHint": "كل صفحة كما يطبعها ملف PDF، بخطوط الكتاب: لمراجعة التنضيد.",
+    "wordExportPagesSuggested": "معظم ما تصدّره صفحات مركّبة أو صفحات قصص مصوّرة، لا يستطيع المستند الدلالي إلا الإشارة إليها: يحتفظ بها «مُنسَّق» كما تُطبع.",
     "wordExportLaying": "يجري تنضيد الفصل __current__ من __total__…",
     "wordExportFonts": "يجري تجهيز الخط __current__ من __total__…",
     "wordExportPages": "تجري كتابة الصفحة __current__ من __total__…",

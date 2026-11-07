@@ -14,9 +14,9 @@ export interface Session {
   fonts: FontSet;
 }
 
-export async function openBook(ctx: CommandContext): Promise<Session> {
+export async function openBook(ctx: CommandContext, loaded?: Book): Promise<Session> {
   const { opts, reporter } = ctx;
-  const book = await reporter.time('read', () => loadBook(ctx.inputs, opts, reporter));
+  const book = loaded ?? await reporter.time('read', () => loadBook(ctx.inputs, opts, reporter));
   reporter.data.book = { name: book.name, id: book.id, locale: book.locale, chapters: book.chapters.length };
   reporter.detail(`${book.name} (${book.locale}): ${book.chapters.length} chapters, ${book.resources.length} resources`);
   const fonts = await reporter.time('fonts', () => resolveFonts(book, {
@@ -27,8 +27,8 @@ export async function openBook(ctx: CommandContext): Promise<Session> {
   return { book, fonts };
 }
 
-export async function openAndLayOut(ctx: CommandContext, cache?: MeasurementCache): Promise<Session & { layout: Layout }> {
-  const session = await openBook(ctx);
+export async function openAndLayOut(ctx: CommandContext, cache?: MeasurementCache, loaded?: Book): Promise<Session & { layout: Layout }> {
+  const session = await openBook(ctx, loaded);
   const layout = await layOut(session.book, ctx.opts, ctx.reporter, cache, session.fonts);
   ctx.reporter.info(`${session.book.name}: ${layout.pageCount} pages in ${layout.chapters.length} chapter${layout.chapters.length === 1 ? '' : 's'} (${Math.round(ctx.reporter.timings.layout ?? 0)} ms)`);
   return { ...session, layout };

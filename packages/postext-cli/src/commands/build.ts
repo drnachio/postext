@@ -56,7 +56,7 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
   const { opts, reporter } = ctx;
   const book = await reporter.time('read', () => loadBook(ctx.inputs, opts, reporter));
   const docx = opts.string('docx');
-  const variant = docxVariant(opts, 'docx-variant');
+  const variant = docxVariant(opts, 'docx-variant', selectChapters(book, opts));
   // The formatted Word file is written from the layout the others share;
   // the semantic one needs none, only the faces it embeds.
   const needsLayout = TARGETS.some((t) => opts.string(t) && (t !== 'docx' || variant === 'formatted'));
