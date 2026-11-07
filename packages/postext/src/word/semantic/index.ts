@@ -28,6 +28,7 @@ import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
 import { pageGeometry } from './sections.js';
 import { StyleRegistry } from './styles.js';
+import { tablePictureIds } from './tables.js';
 import type { WordChapterInput } from './types.js';
 import { px, type Units } from './wml.js';
 
@@ -98,6 +99,8 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   }
   for (const id of floated) shown.add(id);
   for (const id of designPictureIds(parsed, resolved, resources)) shown.add(id);
+  // Pictures set inside table cells (a bar chart in a results table).
+  for (const id of tablePictureIds(resources, [...shown])) shown.add(id);
   let sdtId = 0;
   let footnoteId = 0;
   const styles = new StyleRegistry(resolved, units, options.fonts);
