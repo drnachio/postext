@@ -7,6 +7,7 @@ import { texToOmml } from '../ommlWrite/index.js';
 import { ommlHash } from '../anchors/ommlHash.js';
 import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
+import { renderDirective } from './directives.js';
 import { renderResource } from './figures.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
 import { renderInline, type InlineSource } from './inline.js';
@@ -268,7 +269,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     case 'directive': {
       const br = b.directiveName ? BREAKS[b.directiveName] : undefined;
       if (br) return blockSdt(ctx.nextSdtId(), `ptx:${b.directiveName}`, undefined, `<w:p><w:r><w:br w:type="${br}"/></w:r></w:p>`);
-      return rawSdt(ctx, start, end, b.directiveName ?? 'directive');
+      return renderDirective(ctx, b) ?? rawSdt(ctx, start, end, b.directiveName ?? 'directive');
     }
     case 'score':
       return rawSdt(ctx, start, end, 'score');

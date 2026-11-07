@@ -6,6 +6,7 @@
 import type { ResolvedConfig } from '../../vdt.js';
 import { layoutColumnCount } from '../../defaults/layout.js';
 import type { WriterContext } from './context.js';
+import { pageNumberType } from './directives.js';
 import { STYLE } from './styles.js';
 import { fieldRuns, pPr, px, textRuns, type Units } from './wml.js';
 
@@ -39,6 +40,20 @@ export function pageGeometry(r: ResolvedConfig, u: Units): PageGeometry {
       columnPx = (text - gutter * (n - 1)) / n;
       cols = `<w:cols w:num="${n}" w:space="${tw(gutter)}"/>`;
     }
+  } else if (type === 'oneAndHalf' && r.layout.sideColumnRole === 'floats') {
+    // A side column that holds only floats takes no running text: Word
+    // would pour the text into it as a second column. The text keeps the
+    // main column's width, the side column's room going to the margin on
+    // its side. With mirrored margins Word's right margin is the outer one
+    // and its left the inner one, so 'outer' and 'inner' follow the page;
+    // an absolute 'right' or 'left' column cannot (Word mirrors every
+    // margin or none) and its room lands on the outer or inner side. The
+    // text keeps its width either way, and the side column is empty in Word.
+    const side = Math.max(1, ((text - gutter) * Math.min(99, Math.max(1, r.layout.sideColumnPercent))) / 100);
+    columnPx = Math.max(1, text - gutter - side);
+    const sideLeft = r.layout.sideColumnSide === 'left' || r.layout.sideColumnSide === 'inner';
+    if (sideLeft) m.left += side + gutter;
+    else m.right += side + gutter;
   } else if (type === 'oneAndHalf') {
     const side = Math.max(1, ((text - gutter) * Math.min(99, Math.max(1, r.layout.sideColumnPercent))) / 100);
     const main = Math.max(1, text - gutter - side);
@@ -52,7 +67,7 @@ export function pageGeometry(r: ResolvedConfig, u: Units): PageGeometry {
     heightTw: tw(H),
     margins: { top: tw(m.top), right: tw(m.right), bottom: tw(m.bottom), left: tw(m.left) },
     cols,
-    textTwips: tw(text),
+    textTwips: tw(Math.max(1, W - m.left - m.right)),
     columnPx,
     mirror: !!page.margins.mirror,
   };
@@ -92,6 +107,7 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
     `<w:sectPr>${refs}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
+    pageNumberType(ctx) +
     geo.cols +
     (titlePg && refs ? '<w:titlePg/>' : '') +
     (r.layout.writingMode === 'vertical-rl' ? '<w:textDirection w:val="tbRl"/>' : '') +
