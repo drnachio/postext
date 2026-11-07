@@ -10,13 +10,13 @@ import type { DisplayItem, DisplayLine, DisplayRect, DisplayRun } from '../../pa
 import { textBoxRun, turnedBox, turnPoint } from './drawing.js';
 import { annotationRect, smallTextBox, textRun } from './eastAsian.js';
 import { fontSizePx } from './metrics.js';
-import { runProps, wordText, writtenFace } from './runs.js';
+import { naturalTwips, runProps, wordText, writtenFace } from './runs.js';
 import { rectRuns, ruleRun } from './shapes.js';
 import { hasFragment, recordFragment, reserveFragment } from './fragments.js';
 import { chunkBox, emitGroups, MAX_PITCH, MIN_PITCH, planChunks, planLines, type Chunk, type Group, type LinePlan, type TextOut } from './paragraphs.js';
 import { inlineSvgRun } from './pictures.js';
 import { chipBoxRuns, swatchShapeRuns } from './inlineShapes.js';
-import { twips } from './units.js';
+import { twips, twipsToPx } from './units.js';
 import type { WriterContext } from './types.js';
 
 type TextItem = Extract<DisplayItem, { kind: 'text' }>;
@@ -87,6 +87,32 @@ function markRuns(ctx: WriterContext, out: TextOut, centre: { x: number; y: numb
   return runs;
 }
 
+/** Share of the font size above the baseline that counts as a line's
+ *  ink for paint order: the x-height band, not the leading or the
+ *  ascenders a chip's padding may brush. */
+const INK_RISE = 0.6;
+
+/** The inked bands of `lines` in the item's unturned frame: from the
+ *  start of each line's first visible run to the end of its last, the
+ *  x-height band above the baseline. */
+export function inkRects(lines: readonly DisplayLine[]): DisplayRect[] {
+  const out: DisplayRect[] = [];
+  for (const l of lines) {
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let size = 0;
+    for (const r of l.runs) {
+      if (!r.text.trim()) continue;
+      x0 = Math.min(x0, r.x);
+      x1 = Math.max(x1, r.x + r.width);
+      size = Math.max(size, fontSizePx(r.fontString));
+    }
+    if (x1 <= x0 || size <= 0) continue;
+    out.push({ x: x0, y: l.baseline - INK_RISE * size, width: x1 - x0, height: INK_RISE * size });
+  }
+  return out;
+}
+
 /** A box of one line sets it at its faces' own height (ascent plus
  *  descent) instead of the engine's line pitch: its baseline lands where
  *  it did in Word, whose exact line puts the extra leading above the
@@ -116,6 +142,15 @@ function fitLonePitch(ctx: WriterContext, line: DisplayLine, plan: LinePlan, gro
  *  renderer without them (Google Docs) replaces by a wider one. */
 const DISPLAY_ROLES = new Set<TextItem['role']>(['heading', 'opener', 'design']);
 
+/** Roles whose boxes get room for an italic line's overhang: the titles
+ *  and labels above, and the labels drawn on a picture or in a margin. */
+const ITALIC_ROOM_ROLES = new Set<TextItem['role']>([...DISPLAY_ROLES, 'label']);
+
+/** Whether a text item's boxes get room for an italic overhang. */
+export function hasItalicRoom(role: TextItem['role']): boolean {
+  return ITALIC_ROOM_ROLES.has(role);
+}
+
 /** Whether a chunk's box may grow down: a title or label box, unturned
  *  and ragged, whose words a wider fallback face sets on more lines than
  *  the engine's would be cut at the box's foot. The box is unfilled, so
@@ -136,9 +171,35 @@ export interface TextItemOptions {
   growRoom?: number;
 }
 
+/** A list marker with its runs as wide as the face sets them. The display
+ *  list places a marker's parts (prefix, number, separator) where the PDF
+ *  draws them but, unmeasured, gives each a width of 0.55 em a character:
+ *  spread over the characters as spacing, that letter-spaced a numeral
+ *  ("i i", "1 .") and pushed a separator past the end of its box. */
+export function measuredMarker(ctx: WriterContext, item: TextItem): TextItem {
+  if (item.role !== 'marker' || item.rotate) return item;
+  const lines = item.lines.map((l) => {
+    if (l.vertical) return l;
+    const runs = l.runs.map((r) => {
+      const nat = r.text ? naturalTwips(ctx, r.fontString, wordText(r.text)) : undefined;
+      if (nat === undefined) return r;
+      const tracking = (r.tracking ?? 0) * Array.from(r.text).length;
+      return { ...r, width: twipsToPx(nat, ctx.dpi) + tracking };
+    });
+    if (runs.length === 0) return l;
+    const left = Math.min(...runs.map((r) => r.x));
+    const right = Math.max(...runs.map((r) => r.x + r.width));
+    return { ...l, runs, x: left, width: right - left };
+  });
+  const left = Math.min(...lines.map((l) => l.x));
+  const right = Math.max(...lines.map((l) => l.x + l.width));
+  return { ...item, lines, bbox: { ...item.bbox, x: left, width: right - left } };
+}
+
 /** A text item's text boxes and the drawings over them. */
-export async function textItemRuns(ctx: WriterContext, item: TextItem, opts: TextItemOptions = {}): Promise<string[]> {
-  if (item.lines.length === 0) return [];
+export async function textItemRuns(ctx: WriterContext, input: TextItem, opts: TextItemOptions = {}): Promise<string[]> {
+  if (input.lines.length === 0) return [];
+  const item = measuredMarker(ctx, input);
   const vertical = item.lines.some((l) => l.vertical);
   if (vertical) ctx.warn('vertical-text', 'vertical text is set in East Asian (eaVert) text boxes; Word centres the glyphs on its own line axis, so positions across a column are approximate');
   const plans = planLines(ctx, item.lines);
@@ -148,7 +209,7 @@ export async function textItemRuns(ctx: WriterContext, item: TextItem, opts: Tex
   const fragmented = hasFragment(item);
   const centre = { x: item.bbox.x + item.bbox.width / 2, y: item.bbox.y + item.bbox.height / 2 };
   const runs: string[] = [];
-  const boxes = chunks.map((c) => chunkBox(ctx, item.lines, c, plans));
+  const boxes = chunks.map((c) => chunkBox(ctx, item.lines, c, plans, hasItalicRoom(item.role)));
   const floor = item.bbox.y + item.bbox.height + (opts.growRoom ?? Infinity);
   for (const [ci, chunk] of chunks.entries()) {
     const box = boxes[ci]!;
@@ -161,7 +222,9 @@ export async function textItemRuns(ctx: WriterContext, item: TextItem, opts: Tex
     // Chip boxes under their words; swatches in their real shape over the
     // holders (a vertical item keeps the holder's square).
     runs.push(...chipBoxRuns(ctx, lines, centre, item.rotate));
-    runs.push(textBoxRun(ctx, { rect: placed.rect, name: `ptx ${item.role}`, ...(placed.rotate ? { rotate: placed.rotate } : {}) }, out.xml, vertical ? 'eaVert' : undefined));
+    // A turned or vertical box's ink is its box.
+    const ink = vertical || item.rotate ? undefined : inkRects(lines);
+    runs.push(textBoxRun(ctx, { rect: placed.rect, name: `ptx ${item.role}`, ...(placed.rotate ? { rotate: placed.rotate } : {}), ...(ink ? { ink } : {}) }, out.xml, vertical ? 'eaVert' : undefined));
     runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate, vertical)));
     if (!vertical) runs.push(...swatchShapeRuns(ctx, lines, centre, item.rotate));
     runs.push(...markRuns(ctx, out, centre, item.rotate));
