@@ -131,6 +131,16 @@ describe('semantic docx: code listings', () => {
     expect(e.map.fragments.filter((f) => f.role === 'code:number').map((f) => f.text.trim())).toEqual(['1', '2', '3', '4']);
     expect(e.frag('const b = 2;').target).toEqual({ kind: 'markdown', chapter: 0 });
     expect(e.doc).toMatch(/<w:shd w:val="clear" w:color="auto" w:fill="[0-9A-F]{6}"\/>(?:(?!<\/w:p>)[^])*const b = 2;/);
+    // The numbers keep a column of their own: each numbered line hangs by
+    // the number's width, and a tab after the number reaches the code, so
+    // a wrapped line starts under the code, not under its number.
+    const lines = e.doc.split('<w:p>').filter((p) => p.includes('const a = 1;') || p.includes('export { a, b };'));
+    expect(lines).toHaveLength(2);
+    for (const p of lines) {
+      const m = /<w:ind w:left="(\d+)" w:hanging="(\d+)"\/>/.exec(p);
+      expect(m && Number(m[1]) > 0 && m[1] === m[2]).toBe(true);
+      expect(p).toContain('<w:tab/>');
+    }
     readsBack(e.bytes, md);
     const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('const b = 2;', 'const b = 3;').replace('>chapter.js<', '>book.js<')), { chapters: [{ id: 'ch1', markdown: md }] });
     expect(r.chapters[0]!.markdown).toBe(md.replace('const b = 2;', 'const b = 3;').replace('chapter.js', 'book.js'));

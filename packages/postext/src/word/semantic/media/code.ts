@@ -16,7 +16,7 @@ import { FragmentBuilder } from '../fragments.js';
 import { generatedRuns } from '../generated.js';
 import { renderInline } from '../inline.js';
 import { STYLE } from '../styles.js';
-import { blockSdt, hex, paragraph, textRuns } from '../wml.js';
+import { blockSdt, hex, paragraph, px, textRuns, twips } from '../wml.js';
 
 /** The fence's title, mapped to where the fence line writes it. */
 function titleParagraph(ctx: WriterContext, b: ContentBlock, title: string): string {
@@ -46,10 +46,17 @@ export function renderCodeListing(ctx: WriterContext, b: ContentBlock): string |
   const width = Math.max(String(set.start).length, String(last).length);
   const tint = hex(cs.highlightBackground);
   const numberColor = hex(cs.lineNumberColor);
+  // Numbers keep a column of their own, as in the print listing: the line
+  // hangs by the number's width plus the gap, and a tab after the number
+  // reaches that indent, so a long line that wraps starts under the code,
+  // not under its number. A code face's figures run about 0.6 em; 0.65
+  // leaves room for a face a little wider.
+  const codePx = px(ctx.units, cs.fontSize, px(ctx.units, ctx.resolved.bodyText.fontSize));
+  const hang = set.lineNumbers ? twips(ctx.units, { value: width * 0.65, unit: 'em' }, codePx) + Math.max(twips(ctx.units, cs.lineNumberGap, codePx), twips(ctx.units, { value: 0.5, unit: 'em' }, codePx)) : 0;
   let out = title ? titleParagraph(ctx, b, title) : '';
   let offset = 0;
   code.lines.forEach((line, k) => {
-    const lead = set.lineNumbers ? generatedRuns(ctx, [{ text: `${String(set.start + k).padStart(width, ' ')}  `, ...(numberColor ? { color: numberColor } : {}) }], 'code:number') : '';
+    const lead = set.lineNumbers ? generatedRuns(ctx, [{ text: `${String(set.start + k).padStart(width, ' ')}\t`, ...(numberColor ? { color: numberColor } : {}) }], 'code:number') : '';
     let words = '';
     if (line) {
       const sourceMap = b.sourceMap.slice(offset, offset + line.length).map((o) => abs(ctx, o));
@@ -63,7 +70,7 @@ export function renderCodeListing(ctx: WriterContext, b: ContentBlock): string |
     const lastLine = k === code.lines.length - 1;
     // The lines sit solid, as in the listing: only the block's own space
     // before and after it.
-    out += paragraph({ style: STYLE.code, ...(first ? {} : { before: 0 }), ...(lastLine ? {} : { after: 0, keepNext: code.lines.length <= 12 }), ...(lit ? { shd: tint } : {}) }, lead + words);
+    out += paragraph({ style: STYLE.code, ...(first ? {} : { before: 0 }), ...(lastLine ? {} : { after: 0, keepNext: code.lines.length <= 12 }), ...(lit ? { shd: tint } : {}), ...(hang ? { ind: { left: hang, hanging: hang } } : {}) }, lead + words);
   });
   return blockSdt(ctx.nextSdtId(), 'ptx:code', code.lang, out);
 }
