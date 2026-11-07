@@ -5941,6 +5941,7 @@
     "wordExportSemanticHint": "本文から作るWordのスタイル、リスト、注、表。執筆と校正に。",
     "wordExportFormatted": "組版どおり",
     "wordExportFormattedHint": "PDFで印刷されるとおりの各ページを本のフォントで。組版の確認に。",
+    "wordExportPagesSuggested": "書き出す内容の大半が組版ページやマンガのページで、セマンティックな文書では代わりの注記しか置けません。「組版どおり」なら印刷どおりに残せます。",
     "wordExportLaying": "章を組版しています（__current__／__total__）…",
     "wordExportFonts": "フォントを準備しています（__current__／__total__）…",
     "wordExportPages": "ページを書き出しています（__current__／__total__）…",

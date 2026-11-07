@@ -2,7 +2,9 @@
 // control tagged `ptx:box:<type>` around a one-cell table shaded and
 // bordered like the box style, its title paragraph first; a `:::part`,
 // `:::paragraphs`, `:::columns` or `:::paper` group is a content control
-// around its blocks; exercises, composed pages, modules and frames go raw.
+// around its blocks; an exercise is set by exercises.ts and a composed
+// page stands as a placeholder, a stray solution or hint prints nothing
+// (#1444); stray modules and frames go raw.
 // A box is as wide as the column it stands in (a percentage width, so a
 // narrow side column does not clip it), keeps its margins as spacer
 // paragraphs around it, and stays on one page when it is short.
@@ -11,7 +13,9 @@ import type { ResolvedCalloutStyleConfig } from '../../types.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
+import { renderExercise } from './exercises.js';
 import { attrRange } from './marks.js';
+import { renderPagePlaceholder } from './pages.js';
 import { rawSdt } from './raw.js';
 import { pageGeometry } from './sections.js';
 import { STYLE } from './styles.js';
@@ -19,7 +23,7 @@ import { blockSdt, eighths, hex, paragraph, px, textRuns, twips, type Border, ty
 
 type ContainerNode = Extract<Node, { container: unknown }>;
 
-const RAW_CONTAINERS = new Set(['exercise', 'solution', 'hint', 'module', 'composedPage', 'frame', 'figure']);
+const RAW_CONTAINERS = new Set(['module', 'frame', 'figure']);
 
 /** Attributes as a short JSON label for the content control. */
 function attrsLabel(attrs: Record<string, string> | undefined): string | undefined {
@@ -70,6 +74,11 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
   const c = node.container;
   const name = c.containerName ?? 'container';
   const attrs = c.containerAttrs ?? {};
+  if (name === 'exercise') return renderExercise(ctx, node, env);
+  if (name === 'composedPage') return renderPagePlaceholder(ctx, c, 'composedPage', env.widthTwips);
+  // A solution or hint outside an exercise prints nothing (as in the
+  // engine); its source stays as it is.
+  if (name === 'solution' || name === 'hint') return '';
   if (RAW_CONTAINERS.has(name)) {
     const [start, end] = rangeOf(ctx, node);
     return rawSdt(ctx, start, end, name);

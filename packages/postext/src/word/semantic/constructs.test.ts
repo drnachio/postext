@@ -201,14 +201,17 @@ describe('semantic docx: structures', () => {
   });
 
   it('keeps what Word cannot express as exact source in raw content controls', async () => {
-    const md = '---\ntitle: "T"\n---\n\n:::toc\n\n:::exercise{type="choice"}\nPick one.\n:::\n\n:::pagebreak\n\nAfter.\n';
+    const md = '---\ntitle: "T"\n---\n\n:::toc\n\n:::exercise{type="choice"}\nPick one.\n:::\n\n:::module{id="m"}\nKept.\n:::\n\n:::pagebreak\n\nAfter.\n';
     const e = await exportDocx(md);
     expect(exportProblems(e, [md])).toEqual([]);
     // Front matter and the contents are no source text in Word (#1444).
     expect(e.map.fragments.some((f) => f.role === 'raw:frontmatter' || f.role === 'raw:toc')).toBe(false);
     expect(e.doc).toContain('<w:tag w:val="ptx:toc"/>');
-    expect(e.frag(':::exercise{type="choice"}\nPick one.\n:::').role).toBe('raw:exercise');
-    expect(e.doc).toContain('<w:tag w:val="ptx:raw:exercise"/>');
+    // An exercise is set natively (#1444): its instruction stays mapped.
+    expect(e.frag('Pick one.').role).toBe('exercise:instruction');
+    expect(e.doc).toContain('<w:tag w:val="ptx:exercise"/>');
+    // A stray module is still kept as exact source.
+    expect(e.frag(':::module{id="m"}\nKept.\n:::').role).toBe('raw:module');
     expect(e.doc).toContain('<w:pStyle w:val="PostextSource"/>');
     expect(e.doc).toContain('<w:tag w:val="ptx:pagebreak"/>');
     expect(e.doc).toContain('<w:br w:type="page"/>');

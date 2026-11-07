@@ -12,6 +12,7 @@ import {
   formattedDocx,
   parseTemplate,
   planWordFonts,
+  preferredWordVariant,
   readDocx,
   semanticDocx,
   type FontWarning,
@@ -31,9 +32,12 @@ import { rasterizeSvg } from '../svgImage';
 export const DOCX_VARIANTS = ['semantic', 'formatted'] as const;
 export type DocxVariant = (typeof DOCX_VARIANTS)[number];
 
-/** `postext docx --variant` (`build --docx-variant`), semantic by default. */
-export function docxVariant(opts: Options, option = 'variant'): DocxVariant {
-  return opts.choice(option, DOCX_VARIANTS) ?? 'semantic';
+/** `postext docx --variant` (`build --docx-variant`) as given, else the
+ *  one that suits the chapters (#1444): formatted when most of their text
+ *  is in composed or comic pages, which the semantic file can only stand
+ *  in for; semantic otherwise. */
+export function docxVariant(opts: Options, option = 'variant', chapters?: ReadonlyArray<{ markdown: string }>): DocxVariant {
+  return opts.choice(option, DOCX_VARIANTS) ?? (chapters ? preferredWordVariant(chapters) : 'semantic');
 }
 
 /** Whether the export embeds the book's faces (`--no-embed-fonts`,

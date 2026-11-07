@@ -173,6 +173,19 @@ describe('postext cli', () => {
     expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(3);
   }, 120_000);
 
+  it('exports a book of comic pages as its pages unless told otherwise (#1444)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'postext-cli-'));
+    mkdirSync(join(dir, 'ch'));
+    const page = ':::page{split="40 / *"}\n::panel\ncaption: The lighthouse keeper climbs the stairs every evening.\n::panel\nmaya: Grandpa! I am here, and the boat is late again.\n:::\n';
+    writeFileSync(join(dir, 'ch', '01.md'), `# Pages\n\n${page}\n${page}`);
+    const picked = run(['docx', 'ch', '-o', 'p.docx', '--offline', '--json'], dir);
+    expect(picked.code).toBe(0);
+    expect(JSON.parse(picked.stdout).outputs[0].pages).toBeGreaterThan(0);
+    const asked = run(['docx', 'ch', '--variant', 'semantic', '-o', 's.docx', '--offline', '--json'], dir);
+    expect(asked.code).toBe(0);
+    expect(JSON.parse(asked.stdout).outputs[0].pages).toBeUndefined();
+  }, 120_000);
+
   it('applies the edits of a semantic file to loose Markdown, and converts it without a book', async () => {
     const dir = book();
     // Windows line ends and a byte-order mark stay as they were.

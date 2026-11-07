@@ -8,6 +8,7 @@ import type { ContentBlock, ParseIssue, ParseOptions } from '../../parse/types.j
 import { buildTree, citedNotes, renderNodes } from './blocks.js';
 import type { WriterContext } from './context.js';
 import { designPicturesAfter } from './designPictures.js';
+import { chapterSolutions } from './exercises.js';
 import { floatedAfter } from './floated.js';
 import { namedBookmark } from './marks.js';
 import { lineStart, rawSdt } from './raw.js';
@@ -58,6 +59,7 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
   // document properties, and source no fragment covers is kept as it is
   // on re-import.
   xml += renderNodes(ctx, buildTree(pc.blocks), {}, (nodes) => [...designPicturesAfter(ctx, nodes), ...floatedAfter(ctx, nodes)]);
+  xml += chapterSolutions(ctx);
   // Notes cited only from text kept as source: their definitions too.
   for (const [id, def] of defs) {
     if (ctx.chapter.cited.has(id) && !ctx.chapter.usedDefs.has(id)) xml += rawSdt(ctx, lineStart(pc.input.markdown, def.sourceStart + pc.offset), def.sourceEnd + pc.offset, 'footnote');

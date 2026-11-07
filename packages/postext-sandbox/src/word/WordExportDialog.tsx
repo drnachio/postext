@@ -5,9 +5,10 @@
 // the layout on), what to export, then the file, with the progress of a
 // formatted export and what Word will show differently.
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { AlertTriangle, X } from 'lucide-react';
+import { preferredWordVariant } from 'postext/word';
 import { useBookPlan, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
 import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { downloadBytes } from '../storage/persistence.js';
@@ -18,7 +19,7 @@ import { createPdfFontProvider } from '../viewport/pdf/pdfFontProvider.js';
 import { useLayoutService } from '../worker/LayoutServiceContext.js';
 import { counted } from './sandboxImport.js';
 import { isolate } from './WordImportDialog.js';
-import { DOCX_MIME, buildWordExport, docxFileName, type WordExportNote, type WordExportProgress, type WordScope, type WordVariant } from './wordExport.js';
+import { DOCX_MIME, buildWordExport, docxFileName, wordChapters, type WordExportNote, type WordExportProgress, type WordScope, type WordVariant } from './wordExport.js';
 
 export interface WordExportDialogProps {
   open: boolean;
@@ -84,7 +85,12 @@ function WordExportPopup({ onClose, bookTitle }: WordExportDialogProps) {
   const downloadRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [scope, setScope] = useState<WordScope>(chapters.length > 1 ? 'chapter' : 'book');
-  const [variant, setVariant] = useState<WordVariant>('semantic');
+  // The variant the reader picked; until then the one that suits what is
+  // exported: Formatted when it is mostly composed or comic pages, which
+  // the semantic document only stands in for (#1444).
+  const [picked, setVariant] = useState<WordVariant | null>(null);
+  const suggested = useMemo(() => preferredWordVariant(wordChapters(chapters, scope, activeChapterId)), [chapters, scope, activeChapterId]);
+  const variant = picked ?? suggested;
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<WordExportProgress | null>(null);
   const [notes, setNotes] = useState<WordExportNote[] | null>(null);
@@ -205,6 +211,9 @@ function WordExportPopup({ onClose, bookTitle }: WordExportDialogProps) {
               </span>
             </label>
           ))}
+          {picked === null && suggested === 'formatted' && (
+            <p className="m-0 text-xs text-(--slate)">{labels.wordExportPagesSuggested}</p>
+          )}
         </fieldset>
 
         {chapters.length > 1 && (

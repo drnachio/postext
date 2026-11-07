@@ -5941,6 +5941,7 @@
     "wordExportSemanticHint": "Word-Formatvorlagen, Listen, Anmerkungen und Tabellen aus dem Text: zum Schreiben und Korrigieren.",
     "wordExportFormatted": "Gesetzt",
     "wordExportFormattedHint": "Jede Seite so, wie das PDF sie druckt, mit den Schriften des Buchs: zum Prüfen des Satzes.",
+    "wordExportPagesSuggested": "Das Exportierte besteht großteils aus gestalteten Seiten oder Comicseiten, die ein semantisches Dokument nur durch einen Hinweis ersetzen kann: Gesetzt behält sie wie gedruckt.",
     "wordExportLaying": "Kapitel __current__ von __total__ wird gesetzt…",
     "wordExportFonts": "Schrift __current__ von __total__ wird vorbereitet…",
     "wordExportPages": "Seite __current__ von __total__ wird geschrieben…",
