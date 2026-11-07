@@ -25,6 +25,9 @@ export interface SourceEdit {
   before?: string;
 }
 
+/** The space the writer indents a line of verse with. */
+const EN_SPACE = '\u2002';
+
 const isSpace = (ch: string | undefined): boolean => ch !== undefined && /\s/.test(ch) && ch !== PARA_CHAR;
 
 /** Hunks of the block, atoms widened to whole atoms and changed equations
@@ -205,9 +208,14 @@ export function equalPairs(v: BlockView, hunks: readonly Hunk[]): Map<number, nu
   return out;
 }
 
-/** What a paragraph break typed in this block writes: a blank line, or a
- *  new item of the same list. */
+/** A block of verse: its lines are paragraphs in Word (#1444), so a
+ *  paragraph mark typed in it starts a new line of the poem. */
+const isVerse = (v: BlockView): boolean => v.frags.some((f) => f.role === 'verse');
+
+/** What a paragraph break typed in this block writes: a blank line, a new
+ *  item of the same list, or a new line of verse. */
 function paragraphBreak(v: BlockView, base: string): string {
+  if (isVerse(v)) return '\n';
   const head = base.slice(v.range[0], v.range[0] + 40);
   const m = /^([ \t]*)(?:([-*+])|(\d+)([.)]))[ \t]+/.exec(head);
   if (m) return `\n${m[1]}${m[2] ?? `${Number(m[3]) + 1}${m[4]}`} `;
@@ -263,6 +271,12 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     if (ch === PARA_CHAR) {
       piece = paragraphBreak(v, base);
       plain = false;
+      // A new line of verse indented in Word with en spaces (as the writer
+      // sets a line's indent): one source space each.
+      if (isVerse(v)) while (v.N[j + 1] === EN_SPACE && j + 1 < h.b1) {
+        piece += ' ';
+        j++;
+      }
     } else if (ch === '\n') {
       if (newlines > 0) {
         newlines--;
@@ -297,7 +311,7 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
 function hunkKind(v: BlockView, h: Hunk): SourceEdit['kind'] {
   for (let j = h.b0; j < h.b1; j++) if (v.NTracked[j]) return 'tracked';
   if (v.dels.some((d) => d >= h.b0 && d <= h.b1)) return 'tracked';
-  for (let j = h.b0; j < h.b1; j++) if (v.N[j] === PARA_CHAR) return 'paragraph';
+  if (!isVerse(v)) for (let j = h.b0; j < h.b1; j++) if (v.N[j] === PARA_CHAR) return 'paragraph';
   return 'text';
 }
 

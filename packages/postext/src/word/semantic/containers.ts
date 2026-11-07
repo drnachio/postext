@@ -157,6 +157,27 @@ function keepBox(ctx: WriterContext, cell: string, keepTogether: boolean): boole
   return h <= page * 0.8 && (keepTogether || h <= 14 * lineTw);
 }
 
+/** Most of a box's width its side insets may take together: what is left
+ *  holds the text. */
+const MAX_INSETS = 0.25;
+
+/** Fit a box's side insets to the width it has in Word (#1444): the
+ *  print's insets belong to the width the box takes there (the whole text
+ *  area for a page-spanning box), so a box set narrower in Word keeps them
+ *  in proportion, and never lets them take more than a quarter of its
+ *  width. A box inside another box is as narrow in print as here: only
+ *  the cap applies to it. */
+function scaleInsets(ctx: WriterContext, pad: { left: number; right: number }, widthTw: number, spans: boolean, nested: boolean): void {
+  const printPx = spans ? ctx.textAreaPx : ctx.columnPx;
+  const printTw = (printPx * 1440) / ctx.units.dpi;
+  let scale = !nested && printTw > widthTw ? widthTw / printTw : 1;
+  const sides = (pad.left + pad.right) * scale;
+  if (sides > widthTw * MAX_INSETS) scale *= (widthTw * MAX_INSETS) / sides;
+  if (scale >= 1) return;
+  pad.left = Math.round(pad.left * scale);
+  pad.right = Math.round(pad.right * scale);
+}
+
 function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
   const attrs = node.container.containerAttrs ?? {};
   const style = ctx.styles.callout(attrs.type);
@@ -166,6 +187,7 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
   const width = Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips));
   const pad = style?.padding;
   const padTw = pad ? { top: twips(u, pad.top), left: twips(u, pad.left), bottom: twips(u, pad.bottom), right: twips(u, pad.right) } : undefined;
+  if (padTw) scaleInsets(ctx, padTw, width, (attrs.span ?? style?.span) === 'page', env.box !== undefined);
   // The gap between a marker's rule and the box's text.
   if (padTw && style && hasMarkerRule(style)) {
     const side = ctx.resolved.direction === 'rtl' ? 'right' : 'left';

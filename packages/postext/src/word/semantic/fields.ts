@@ -15,7 +15,7 @@ import { headingIsNumbered } from '../../pipeline/sections/headingStyles.js';
 import type { HeadingCounters, OutlineEntry } from '../../types.js';
 import { seeLabels } from './marks.js';
 import type { WriterContext } from './context.js';
-import { blockSdt, paragraph, rPr, textRuns } from './wml.js';
+import { blockSdt, fieldRuns, paragraph, rPr, textRuns } from './wml.js';
 import { escapeXml } from '../xml.js';
 
 /** The book's outline, chapter after chapter with the heading counters
@@ -24,9 +24,11 @@ export function bookOutline(ctx: WriterContext): OutlineEntry[] {
   if (ctx.outline) return ctx.outline;
   const out: OutlineEntry[] = [];
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, ctx.resolved);
-  let before: HeadingCounters | undefined;
-  for (const ch of ctx.book) {
-    out.push(...computeOutline(ch.blocks, ctx.resolved, before));
+  let before: HeadingCounters | undefined = ctx.start?.headings;
+  for (const [index, ch] of ctx.book.entries()) {
+    const entries = computeOutline(ch.blocks, ctx.resolved, before);
+    for (const e of entries) entryChapter.set(e, index);
+    out.push(...entries);
     const context = computeHeadingContext(ch.blocks, before, isNumbered);
     if (context.length) before = context[context.length - 1];
   }
@@ -34,10 +36,32 @@ export function bookOutline(ctx: WriterContext): OutlineEntry[] {
   return out;
 }
 
+/** The chapter each outline entry comes from. */
+const entryChapter = new WeakMap<OutlineEntry, number>();
+/** Whether a book prints its contents. */
+const withContents = new WeakMap<WriterContext['book'], boolean>();
+
+/** The hidden bookmark a contents entry links to (#1444): one per heading,
+ *  named after its chapter and its place there. A leading underscore
+ *  keeps it out of Word's list of bookmarks, as Word's own `_Toc` ones. */
+const tocBookmarkName = (chapter: number, source: number): string => `_Toc${chapter}_${source}`;
+
+/** The bookmark a heading carries for the contents to link to and count
+ *  its page from; nothing in a book without contents. */
+export function tocMark(ctx: WriterContext, b: ContentBlock): string {
+  let has = withContents.get(ctx.book);
+  if (has === undefined) withContents.set(ctx.book, (has = ctx.book.some((ch) => ch.blocks.some((x) => x.type === 'directive' && x.directiveName === 'toc'))));
+  if (!has) return '';
+  const n = ctx.pkg.nextBookmarkId();
+  return `<w:bookmarkStart w:id="${n}" w:name="${tocBookmarkName(ctx.chapter.index, b.sourceStart)}"/><w:bookmarkEnd w:id="${n}"/>`;
+}
+
 /** One line of a field result: its text runs and paragraph style. */
 interface ResultLine {
   style: string;
   runs: string;
+  /** A right tab with a dot leader for the page number. */
+  tab?: number;
 }
 
 /** A complex field whose result spans paragraphs: the field begins in the
@@ -47,7 +71,7 @@ function fieldParagraphs(instr: string, lines: readonly ResultLine[], emptyStyle
   const begin = `<w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> ${escapeXml(instr)} </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r>`;
   const end = '<w:r><w:fldChar w:fldCharType="end"/></w:r>';
   if (!lines.length) return paragraph({ style: emptyStyle }, begin + end);
-  return lines.map((l, i) => paragraph({ style: l.style }, (i === 0 ? begin : '') + l.runs + (i === lines.length - 1 ? end : ''))).join('');
+  return lines.map((l, i) => paragraph({ style: l.style, ...(l.tab ? { tabs: [{ val: 'right', pos: l.tab, leader: 'dot' }] } : {}) }, (i === 0 ? begin : '') + l.runs + (i === lines.length - 1 ? end : ''))).join('');
 }
 
 /** Runs of a title with its bold and italic spans. */
@@ -59,8 +83,23 @@ function titleRuns(spans: readonly { text: string; bold?: boolean; italic?: bool
 export function tocField(ctx: WriterContext, directive: ContentBlock): string {
   // Groups kept together on a page would repeat their part rows ("(cont.)").
   const flat = { ...directive, directiveAttrs: { ...directive.directiveAttrs, keep: 'none' } };
-  const rows = expandTocDirectives([flat], bookOutline(ctx), ctx.resolved);
+  const outline = bookOutline(ctx);
+  const rows = expandTocDirectives([flat], outline, ctx.resolved);
   const lines: ResultLine[] = [];
+  // Each entry links to its heading, and a PAGEREF to the same bookmark
+  // takes the page number when Word updates the fields (the result shows
+  // none before: only Word's layout knows it). Rows come in outline order.
+  const headings = outline.filter((e) => e.kind === 'heading');
+  let next = 0;
+  const bookmarkOf = (source: number | undefined): string | undefined => {
+    if (source === undefined) return undefined;
+    for (let j = next; j < headings.length; j++) {
+      if (headings[j]!.headingSource !== source) continue;
+      next = j + 1;
+      return tocBookmarkName(entryChapter.get(headings[j]!) ?? 0, source);
+    }
+    return undefined;
+  };
   for (const row of rows) {
     const info = row.toc;
     if (!info) continue;
@@ -70,7 +109,10 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
       continue;
     }
     const number = info.number ? textRuns(`${info.number} `, '') : '';
-    lines.push({ style: ctx.styles.listing('toc', info.level), runs: number + titleRuns(row.spans.length ? row.spans : [{ text: row.text }]) });
+    const runs = number + titleRuns(row.spans.length ? row.spans : [{ text: row.text }]);
+    const bm = bookmarkOf(info.headingSource);
+    const linked = bm ? `<w:hyperlink w:anchor="${bm}" w:history="1">${runs}<w:r><w:tab/></w:r>${fieldRuns(`PAGEREF ${bm} \\h`)}</w:hyperlink>` : runs;
+    lines.push({ style: ctx.styles.listing('toc', info.level), runs: linked, ...(bm ? { tab: ctx.textTwips } : {}) });
     if (info.subtitle) lines.push({ style: ctx.styles.listing('toc', info.level + 1), runs: textRuns(info.subtitle, rPr({ i: true })) });
   }
   const levels = [...(parseTocLevelsAttr(directive.directiveAttrs?.levels) ?? new Set(ctx.resolved.toc.levels.map((l) => l.level)))];

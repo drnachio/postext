@@ -15,6 +15,7 @@ import type { Resource, ResourceType } from '../../../types.js';
 import type { Node } from '../blocks.js';
 import type { WriterContext } from '../context.js';
 import { renderFloatedResource } from './figures.js';
+import { resourceSpansPage, type Piece } from '../layout/pageSpan.js';
 
 /**
  * The resources a `:ref` floats in the book: cited by one, shown by no
@@ -58,18 +59,20 @@ function collect(nodes: readonly Node[], into: ContentBlock[]): void {
 }
 
 /** The figures of the floated resources first cited inside `nodes` (a
- *  top-level block, list or box), each written once in the book. */
-export function floatedAfter(ctx: WriterContext, nodes: readonly Node[]): string[] {
+ *  top-level block, list or box), each written once in the book; one set
+ *  across the page takes the whole text area. */
+export function floatedAfter(ctx: WriterContext, nodes: readonly Node[]): Piece[] {
   if (!ctx.floated.size) return [];
   const blocks: ContentBlock[] = [];
   collect(nodes, blocks);
-  const out: string[] = [];
+  const out: Piece[] = [];
   const isResource = (id: string): boolean => ctx.resources.has(id);
   for (const b of blocks) {
     for (const id of refIds(b, isResource)) {
       if (!ctx.floated.has(id) || ctx.floatedPlaced.has(id)) continue;
       ctx.floatedPlaced.add(id);
-      out.push(renderFloatedResource(ctx, id, ctx.textTwips));
+      const span = resourceSpansPage(ctx, id);
+      out.push({ xml: renderFloatedResource(ctx, id, span ? Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) : ctx.textTwips), span });
     }
   }
   return out;

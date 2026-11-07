@@ -95,9 +95,11 @@ describe('semantic docx: text', () => {
     expect(exportProblems(e, [md])).toEqual([]);
     const f = e.frag('First line\nsecond line.');
     expect(f.atoms).toEqual([{ at: 10, start: 10, end: 12, kind: 'break' }]);
-    const verse = e.frag('One line\nanother line');
-    expect(verse.map[8]).toBe(md.indexOf('\nanother'));
-    expect(e.doc).toContain('<w:pStyle w:val="PostextVerse"/>');
+    // A paragraph per line of verse, the line end an atom read back as the
+    // paragraph mark.
+    const verse = e.frag('One line another line');
+    expect(verse.atoms).toEqual([{ at: 8, start: md.indexOf('\nanother'), end: md.indexOf('another'), kind: 'line' }]);
+    expect(e.doc.match(/<w:pStyle w:val="PostextVerse"\/>/g)).toHaveLength(2);
     expect(looseMarkup(e.doc)).toEqual([]);
   });
 

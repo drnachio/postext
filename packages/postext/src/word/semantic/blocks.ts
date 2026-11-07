@@ -7,6 +7,7 @@ import type { ResolvedCalloutStyleConfig } from '../../types.js';
 import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { renderDirective } from './directives.js';
+import { tocMark } from './fields.js';
 import { renderResource } from './media/figures.js';
 import { renderSolutions, solutionsBeforeHeading } from './exercises/exercises.js';
 import { pageKindOf, renderPagePlaceholder } from './media/pages.js';
@@ -19,6 +20,7 @@ import type { ListLevelKind } from './numbering.js';
 import { lineStart, rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
 import { renderVerse } from './verse.js';
+import { headingStart, spansPage, type Piece } from './layout/pageSpan.js';
 import { blockSdt, paragraph, pPr, rPr, textRuns, type ParaProps } from './wml.js';
 
 export type Node = { block: ContentBlock } | { container: ContentBlock; end?: ContentBlock; children: Node[] };
@@ -103,7 +105,7 @@ export function inlineSourceOf(ctx: WriterContext, block: ContentBlock, notes = 
 
 /** A text block as one paragraph holding one fragment. */
 export function textParagraph(ctx: WriterContext, block: ContentBlock, props: ParaProps, role: string, lead = ''): string {
-  const { xml, frag } = renderInline(ctx, inlineSourceOf(ctx, block));
+  const { xml, frag } = renderInline(ctx, { ...inlineSourceOf(ctx, block), ...(props.style ? { style: props.style } : {}) });
   const wrapped = ctx.log.wrap(xml, frag, {
     block: blockId(ctx),
     target: { kind: 'markdown', chapter: ctx.chapter.index },
@@ -208,15 +210,31 @@ function renderList(ctx: WriterContext, items: ContentBlock[], env: BlockEnv): s
   return out;
 }
 
-/** Render sibling nodes. `after` (the chapter's top level only) gives
- *  what follows each block, list or box: the figures its `:ref`s float. */
-export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, after?: (nodes: readonly Node[]) => string[]): string {
-  const parts: string[] = [];
+/** Render sibling nodes. */
+export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv): string {
+  return joinBlocks(renderPieces(ctx, nodes, env).map((p) => p.xml));
+}
+
+/** Render sibling nodes as pieces. `after` (the chapter's top level only)
+ *  gives what follows each block, list or box: the figures its `:ref`s
+ *  float; there each piece also says whether it spans the page and
+ *  whether it opens a page (see `layout/pageSpan.ts`). */
+export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, after?: (nodes: readonly Node[]) => Piece[]): Piece[] {
+  const parts: Piece[] = [];
+  const add = (xml: string | string[], span = false): void => {
+    for (const x of Array.isArray(xml) ? xml : [xml]) parts.push({ xml: x, ...(span ? { span } : {}) });
+  };
+  const follow = (ns: readonly Node[], span: boolean): void => {
+    if (after) for (const p of after(ns)) parts.push(p.span === undefined && span ? { ...p, span } : p);
+  };
+  // Page-spanning content takes the whole text area.
+  const wide: BlockEnv = { ...env, widthTwips: Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) };
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i]!;
+    const span = !!after && spansPage(ctx, n);
     if ('container' in n) {
-      parts.push(renderContainer(ctx, n, env));
-      if (after) parts.push(...after([n]));
+      add(renderContainer(ctx, n, span ? wide : env), span);
+      follow([n], span);
       continue;
     }
     if (n.block.type === 'listItem') {
@@ -228,15 +246,17 @@ export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: Blo
         items.push(m.block);
         i++;
       }
-      parts.push(...renderList(ctx, items, env));
-      if (after) parts.push(...after(nodes.slice(from, i)));
+      add(renderList(ctx, items, env));
+      follow(nodes.slice(from, i), false);
       i--;
       continue;
     }
-    parts.push(renderBlock(ctx, n.block, env));
-    if (after) parts.push(...after([n]));
+    const start = after ? headingStart(ctx, n.block) : undefined;
+    const xml = renderBlock(ctx, n.block, span ? wide : env);
+    parts.push({ xml, ...(span ? { span } : {}), ...(start ? { start } : {}) });
+    follow([n], span);
   }
-  return joinBlocks(parts);
+  return parts;
 }
 
 const BREAKS: Record<string, string> = { pagebreak: 'page', columnbreak: 'column' };
@@ -249,7 +269,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     case 'heading': {
       const level = b.level ?? 1;
       const style = ctx.styles.heading(level, b.attrs?.style);
-      const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + headingNumber(ctx, b);
+      const anchor = tocMark(ctx, b) + (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + headingNumber(ctx, b);
       return solutionsBeforeHeading(ctx, b) + textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1) }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
     }
     case 'paragraph': {

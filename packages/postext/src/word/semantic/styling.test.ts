@@ -47,16 +47,24 @@ describe('semantic docx: styling (#1444)', () => {
     const config = cfg({ paragraphStyles: [{ id: 'verse', textAlign: 'justify', hangingIndent: { value: 2, unit: 'em' } }] });
     const e = await exportDocx(md, { config });
     expect(exportProblems(e, [md])).toEqual([]);
+    // A paragraph per line, flush with the start, its turnovers hung by the
+    // style's 2 em (320 twips at 16 px), never out into the margin.
     const first = paraOf(e.doc, 'The world is charged');
-    expect(first).toContain('<w:ind w:firstLine="0"/><w:jc w:val="left"/>');
+    expect(first).toContain('<w:spacing w:after="0"/><w:ind w:left="320" w:hanging="320"/><w:jc w:val="left"/>');
     expect(first).toContain('<w:suppressAutoHyphens/>');
+    expect(paraOf(e.doc, 'It will flame out')).toContain('<w:spacing w:before="0" w:after="0"/><w:ind w:left="320" w:hanging="320"/>');
+    expect(paraOf(e.doc, 'Crushed.')).toContain('<w:spacing w:before="0"/><w:ind w:left="320" w:hanging="320"/>');
     // Four leading spaces at the default step (half an em each) are four en
-    // spaces, held with the line break by one atom over the source.
-    const stanza = e.frag('The world is charged\n    It will flame out\nCrushed.');
+    // spaces, held with the line end by one atom over the source; the
+    // stanza stays one fragment, its line ends read as paragraph marks.
+    const en = '\u2002'.repeat(4);
+    const stanza = e.frag(`The world is charged\u2029${en}It will flame out\u2029Crushed.`);
     const atom = stanza.atoms!.find((a) => a.kind === 'line')!;
     expect(md.slice(atom.start, atom.end)).toBe('\n    ');
+    // The style's hanging indent keeps the first line at its indent.
+    expect(styleOf(e, 'PostextParaverse')).toContain('<w:ind w:left="320" w:hanging="320"/>');
     // The second stanza opens a line below the first.
-    expect(paraOf(e.doc, 'And for all this')).toMatch(/<w:spacing w:before="\d+"\/>/);
+    expect(paraOf(e.doc, 'And for all this')).toMatch(/<w:spacing w:before="[1-9]\d*" w:after="0"\/>/);
     unchanged(e, [md]);
     // A word edited on an indented line keeps the indent in the source.
     const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('flame out', 'flame up')), { chapters: [{ id: 'ch1', markdown: md }] });

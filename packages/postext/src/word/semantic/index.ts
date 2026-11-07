@@ -11,6 +11,7 @@ import { resolveAllConfig } from '../../pipeline/config.js';
 import { CONFIG_VERSION } from '../../bundle/configVersion/rules.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { PostextConfig, Resource } from '../../types.js';
+import type { BookStart } from './context.js';
 import { hashText } from '../anchors/hash.js';
 import type { ExportMap } from '../anchors/types.js';
 import type { WordFontPlan } from '../fonts/types.js';
@@ -26,7 +27,7 @@ import { floatedResources } from './media/floated.js';
 import { prepareScores } from './media/scores.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
-import { pageGeometry } from './sections.js';
+import { multiColumn, pageGeometry } from './sections.js';
 import { StyleRegistry } from './styles.js';
 import { tablePictureIds } from './tables.js';
 import type { WordChapterInput } from './types.js';
@@ -51,6 +52,10 @@ export interface SemanticDocxOptions {
   /** ISO timestamp: a fixed value makes the output byte-identical. */
   date?: string;
   exportId?: string;
+  /** Where the book starts when it continues a longer one (`preset.json`'s
+   *  `start`): the heading counters its first chapter counts on from and
+   *  the page numbering in effect. */
+  start?: BookStart;
   onWarning?: (w: SemanticWarning) => void;
 }
 
@@ -85,7 +90,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   const geo = pageGeometry(resolved, units);
   const resources = new Map((options.resources ?? []).map((r) => [r.id, r]));
   // Numbers as the engine prints them (captions, `:ref`s, headings).
-  const numbers = bookNumbers(parsed, options.config, resolved, options.resources ?? []);
+  const numbers = bookNumbers(parsed, options.config, resolved, options.resources ?? [], options.start?.headings);
   const resourceTypes = numbers.resourceTypes;
   // Resources shown as blocks or floated by a `:ref`, whose pictures go
   // into the package.
@@ -119,6 +124,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     rasterizeSvg: options.rasterizeSvg,
     columnPx: geo.columnPx,
     textTwips: Math.round((geo.columnPx * 1440) / units.dpi),
+    textAreaPx: multiColumn(geo) ? (geo.textTwips * units.dpi) / 1440 : geo.columnPx,
     usedResources: new Set(),
     numbers,
     footnotes: [],
@@ -132,6 +138,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     nextSdtId: () => ++sdtId,
     nextFootnoteId: () => ++footnoteId,
     book: parsed,
+    ...(options.start ? { start: options.start } : {}),
     chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), headingNumbers: new Map(), blockCounter: 0 },
   };
   await prepareMedia(ctx, shown);

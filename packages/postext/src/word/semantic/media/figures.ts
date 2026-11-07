@@ -6,6 +6,7 @@
 import { strFromU8 } from 'fflate';
 import type { ContentBlock } from '../../../parse/types.js';
 import type { Resource } from '../../../types.js';
+import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
 import { escapeAttr } from '../../xml.js';
 import { abs, blockId, type PreparedPicture, type WriterContext } from '../context.js';
 import { captionLabelParts, captionStyleOf } from '../engineNumbers.js';
@@ -19,23 +20,34 @@ import { blockSdt, emu, fieldRuns, paragraph, rPr, textRuns } from '../wml.js';
 const SVG_EXT = '{96DAC541-7B7A-43D3-8B79-37D633B846F1}';
 const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: 'jpeg', jpg: 'jpeg', gif: 'gif', 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/gif': 'gif' };
 
-/** Display size of a picture in px at the book's dpi, fitted to the column. */
-function displaySize(ctx: WriterContext, w: number, h: number, resolution?: number): { w: number; h: number } {
+/** The width a resource's picture may take, px, and where it stands: its
+ *  slot (the column, or the whole text area when it spans the page) times
+ *  its placement's width (`placement.width`, else its type's default: an
+ *  ornament a fifth of the column wide), as the engine sizes it (#1444). */
+export function pictureSlot(ctx: WriterContext, res: Resource): { px: number; align: 'left' | 'center' | 'right'; fraction: number } {
+  const place = resolveResourcePlacement(res, ctx.resourceTypes.find((t) => t.id === res.typeId));
+  const slot = place.span === 'page' ? ctx.textAreaPx : ctx.columnPx;
+  return { px: Math.max(1, slot * place.widthFraction), align: place.align, fraction: place.widthFraction };
+}
+
+/** Display size of a picture in px at the book's dpi: its pixels at its
+ *  own resolution, fitted to `maxPx` (a smaller picture keeps its size). */
+function displaySize(ctx: WriterContext, w: number, h: number, maxPx: number, resolution?: number): { w: number; h: number } {
   const scale = resolution && resolution > 0 ? ctx.units.dpi / resolution : 1;
   let dw = w * scale;
   let dh = h * scale;
-  if (dw > ctx.columnPx) {
-    dh *= ctx.columnPx / dw;
-    dw = ctx.columnPx;
+  if (dw > maxPx) {
+    dh *= maxPx / dw;
+    dw = maxPx;
   }
   return { w: Math.max(1, dw), h: Math.max(1, dh) };
 }
 
-/** Size of a vector picture or a video poster: the column's width, as the
+/** Size of a vector picture or a video poster: the slot's width, as the
  *  engine sets them, and the picture's ratio. */
-function columnSize(ctx: WriterContext, w: number, h: number): { w: number; h: number } {
+function columnSize(widthPx: number, w: number, h: number): { w: number; h: number } {
   const ratio = w > 0 && h > 0 ? h / w : 0.75;
-  return { w: ctx.columnPx, h: Math.max(1, ctx.columnPx * ratio) };
+  return { w: widthPx, h: Math.max(1, widthPx * ratio) };
 }
 
 /** Embed the pictures of the resources shown (bitmaps as they are, SVGs
@@ -45,6 +57,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
     if (ctx.media.has(id)) continue;
     const res = ctx.resources.get(id);
     if (!res) continue;
+    const slot = pictureSlot(ctx, res).px;
     if (res.kind === 'bitmap' && res.bitmap) {
       const ext = BITMAP_EXT[res.bitmap.format.toLowerCase()];
       const bytes = ctx.resourceBytes?.(res.bitmap.fileId);
@@ -52,7 +65,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
         ctx.warn('pictureMissing', `Picture "${id}" ${bytes ? `is ${res.bitmap.format}, which Word cannot show` : 'has no file'}: left out.`);
         continue;
       }
-      const size = displaySize(ctx, res.bitmap.width, res.bitmap.height, res.bitmap.resolution);
+      const size = displaySize(ctx, res.bitmap.width, res.bitmap.height, slot, res.bitmap.resolution);
       ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
     } else if (res.kind === 'video' && res.video?.poster) {
       // A video prints as its poster frame.
@@ -60,7 +73,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       const ext = BITMAP_EXT[poster.format.toLowerCase()];
       const bytes = ctx.resourceBytes?.(poster.fileId);
       if (!bytes || !ext) continue;
-      const size = columnSize(ctx, poster.width, poster.height);
+      const size = columnSize(slot, poster.width, poster.height);
       ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
     } else if (res.kind === 'svg' && res.svg) {
       const bytes = ctx.resourceBytes?.(res.svg.fileId);
@@ -70,7 +83,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       }
       const w = res.svg.width ?? 800;
       const h = res.svg.height ?? (res.svg.width ? res.svg.width * 0.75 : 600);
-      const size = columnSize(ctx, w, h);
+      const size = columnSize(slot, w, h);
       const scale = 300 / ctx.units.dpi;
       const png = ctx.rasterizeSvg ? await ctx.rasterizeSvg(strFromU8(bytes), Math.round(size.w * scale), Math.round(size.h * scale)) : undefined;
       if (!png) {
@@ -121,11 +134,11 @@ function captionParagraph(ctx: WriterContext, b: ContentBlock | undefined, res: 
   const own = ownWord(ctx, b, field);
   const role = field === 'caption' ? 'caption' : 'note';
   let runs: string;
-  if (own && own.start >= 0) runs = snippetRuns(ctx, own.text, ctx.chapter.markdown, own.start, { kind: 'markdown', chapter: ctx.chapter.index }, role);
+  if (own && own.start >= 0) runs = snippetRuns(ctx, own.text, ctx.chapter.markdown, own.start, { kind: 'markdown', chapter: ctx.chapter.index }, role, STYLE.caption);
   else if (own) runs = textRuns(own.text, '');
   else {
     const text = res[field] ?? '';
-    runs = snippetRuns(ctx, text, text, 0, { kind: 'resource', resourceId: res.id, field }, role);
+    runs = snippetRuns(ctx, text, text, 0, { kind: 'resource', resourceId: res.id, field }, role, STYLE.caption);
   }
   if (!runs && !label) return '';
   return paragraph({ style: STYLE.caption }, label + runs);
@@ -199,7 +212,11 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
     if (res.kind === 'table') return renderTable(ctx, res, widthTwips);
     const pic = ctx.media.get(id);
     const alt = ownWord(ctx, b, 'alt')?.text ?? res.altText ?? '';
-    if (pic) return paragraph({ style: STYLE.figure }, pictureRun(ctx, pic, id, alt, (widthTwips * ctx.units.dpi) / 1440));
+    // A picture narrower than its slot stands where its placement puts it
+    // (an ornament centred, a figure flush left).
+    const slot = pictureSlot(ctx, res);
+    const jc = slot.fraction < 1 ? slot.align : undefined;
+    if (pic) return paragraph({ style: STYLE.figure, ...(jc ? { jc } : {}) }, pictureRun(ctx, pic, id, alt, (widthTwips * ctx.units.dpi) / 1440));
     return res.kind === 'video' ? videoPlaceholder(ctx, res) : '';
   };
   // Fragments are logged as they are written, so in the document's order:

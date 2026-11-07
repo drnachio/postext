@@ -5,7 +5,7 @@
 // export embeds fonts.
 
 import type { ResolvedConfig } from '../../vdt.js';
-import type { ResolvedCalloutStyleConfig, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../../types.js';
+import type { ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../../types.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
@@ -57,6 +57,8 @@ export class StyleRegistry {
   private readonly defs = new Map<string, StyleDef>();
   private readonly byKey = new Map<string, string>();
   private readonly chipIds = new Map<string, string>();
+  /** The face each paragraph style sets its text in (#1444). */
+  private readonly faces = new Map<string, { stack: string | undefined; weight: number; italic: boolean }>();
   readonly bodyPx: number;
 
   constructor(
@@ -75,6 +77,40 @@ export class StyleRegistry {
     if (!this.plan) return { font: family, ...(weight >= 600 ? { b: true } : {}), ...(italic ? { i: true } : {}) };
     const ref = wordFontFor(this.plan, `${italic ? 'italic ' : ''}${weight} 16px "${family}"`);
     return { font: ref.family, ...(ref.bold ? { b: true } : {}), ...(ref.italic ? { i: true } : {}) };
+  }
+
+  /**
+   * The family a bold or italic run of a paragraph style takes when its
+   * face lies in another Word family than the style's own (#1444): a Light
+   * body's italic is the 400 italic, filed under the regular family, as a
+   * browser picks it. Word would otherwise slant the Light upright or, in
+   * LibreOffice, set another family's italic. Nothing when the slot of the
+   * style's own family serves.
+   */
+  runFont(style: string | undefined, bold: boolean, italic: boolean): string | undefined {
+    if (!this.plan || (!bold && !italic)) return undefined;
+    const face = this.faces.get(style ?? STYLE.normal);
+    if (!face) return undefined;
+    const own = this.font(face.stack, face.weight, face.italic).font;
+    const weight = bold ? Math.max(face.weight, this.resolved.bodyText.boldFontWeight) : face.weight;
+    const styled = this.font(face.stack, weight, italic || face.italic).font;
+    return styled && styled !== own ? styled : undefined;
+  }
+
+  /** The text size of a style, half-points: its own or the style's it is
+   *  based on, else the body's. */
+  styleSize(style: string | undefined): number {
+    for (let id = style, n = 0; id && n < 8; n++) {
+      const def = this.defs.get(id);
+      if (def?.rPr?.sz) return def.rPr.sz;
+      id = def?.basedOn;
+    }
+    return halfPoints(this.units, this.resolved.bodyText.fontSize);
+  }
+
+  private face(id: string, stack: string | undefined, weight = 400, italic = false): string {
+    this.faces.set(id, { stack, weight, italic });
+    return id;
   }
 
   private add(id: string, def: StyleDef): string {
@@ -99,7 +135,7 @@ export class StyleRegistry {
     const bodyPx = px(u, body.fontSize);
     const line = twips(u, body.lineHeight, bodyPx);
     const after = body.paragraphSpacing === false ? 0 : body.paragraphSpacing === true ? line : twips(u, body.paragraphSpacing, bodyPx);
-    this.add(STYLE.normal, {
+    this.add(this.face(STYLE.normal, body.fontFamily, body.fontWeight), {
       type: 'paragraph',
       name: 'Normal',
       isDefault: true,
@@ -115,7 +151,7 @@ export class StyleRegistry {
     });
     for (const level of r.headings.levels) this.headingLevel(level);
     const bq = body.blockquote;
-    this.add(STYLE.quote, {
+    this.add(this.face(STYLE.quote, body.fontFamily, body.fontWeight, bq.italic), {
       type: 'paragraph',
       name: 'Quote',
       basedOn: STYLE.normal,
@@ -123,7 +159,7 @@ export class StyleRegistry {
       rPr: { i: bq.italic, color: hex(bq.color) },
     });
     const cap = r.captionStyle;
-    this.add(STYLE.caption, {
+    this.add(this.face(STYLE.caption, cap.fontFamily ?? body.fontFamily, cap.fontFamily ? 400 : body.fontWeight), {
       type: 'paragraph',
       name: 'caption',
       basedOn: STYLE.normal,
@@ -233,7 +269,10 @@ export class StyleRegistry {
         i: cs.italic || undefined,
         color: hex(cs.color),
         sz: cs.fontSize ? halfPoints(u, cs.fontSize, this.bodyPx) : undefined,
-        shd: cs.backgroundEnabled ? hex(cs.background) : 'auto',
+        ...this.chipLine(cs),
+        // A white fill is the paper's: as run shading it would only show
+        // as a box over a shaded cell or band (#1444).
+        shd: cs.backgroundEnabled && hex(cs.background) !== 'FFFFFF' ? hex(cs.background) : 'auto',
       },
     });
     return id;
@@ -245,6 +284,18 @@ export class StyleRegistry {
     const { id, fresh } = this.idFor(key, prefix, name);
     if (fresh) this.add(id, make());
     return id;
+  }
+
+  /** A chip's outline as Word draws a run's (#1444): a line round its
+   *  characters (Word has no rounded or circled run, so a round chip is a
+   *  square one), or the line under them of an underline chip. */
+  private chipLine(cs: ResolvedChipStyleConfig): Pick<RunProps, 'bdr' | 'u'> {
+    const u = this.units;
+    const pt = (px(u, cs.borderWidth, this.bodyPx) * 72) / u.dpi;
+    if (!(pt > 0)) return {};
+    if (cs.underline) return { u: cs.underline === 'solid' ? true : cs.underline === 'dashed' ? 'dash' : 'dotted' };
+    // Eighths of a point, in the range Word reads (2 to 96).
+    return { bdr: { color: hex(cs.borderColor) ?? 'auto', sz: Math.min(96, Math.max(2, Math.round(pt * 8))) } };
   }
 
   private headingProps(level: ResolvedHeadingLevelConfig, align: TextAlign): { pPr: ParaProps; rPr: RunProps } {
@@ -277,6 +328,11 @@ export class StyleRegistry {
   private headingLevel(level: ResolvedHeadingLevelConfig): void {
     if (level.level < 1 || level.level > 6) return;
     const { pPr: p, rPr: r } = this.headingProps(level, this.resolved.headings.textAlign);
+    // A level that opens a page (chapters) keeps it in Word, so a heading
+    // the user adds there opens one too (#1444). The writer also starts a
+    // section at each such heading, for the side and the opener's header;
+    // a paragraph at the top of a new section's page breaks nothing more.
+    if (level.breakBefore.enabled) p.pageBreakBefore = true;
     this.add(`Heading${level.level}`, { type: 'paragraph', name: `heading ${level.level}`, basedOn: STYLE.normal, next: STYLE.normal, pPr: p, rPr: r });
   }
 
@@ -298,7 +354,10 @@ export class StyleRegistry {
         // keeps it in Word, so a run of such headings in one chapter does
         // not pile up on one page (#1444). A chapter's first heading is at
         // the top of its section's page already, where the break adds none.
-        if (hs.breakBefore?.enabled ?? levelConfig.breakBefore.enabled) p.pageBreakBefore = true;
+        // A style that does not break (a second article set under the end
+        // of the first) cancels its level's break.
+        const breaks = hs.breakBefore?.enabled ?? levelConfig.breakBefore.enabled;
+        if (breaks || levelConfig.breakBefore.enabled) p.pageBreakBefore = breaks;
         this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base, next: STYLE.normal, pPr: p, rPr: r });
       } else this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base });
     }
@@ -321,13 +380,18 @@ export class StyleRegistry {
     const ps = this.resolved.paragraphStyles.find((s) => s.id === name || s.name === name);
     if (!ps) return undefined;
     const { id, fresh } = this.idFor(`para:${ps.id}`, 'PostextPara', ps.id);
-    if (fresh) this.add(id, this.paragraphDef(ps));
+    if (fresh) this.add(this.face(id, ps.fontFamily, ps.fontWeight, ps.italic), this.paragraphDef(ps));
     return id;
   }
 
   private paragraphDef(ps: ResolvedParagraphStyleConfig): StyleDef {
     const u = this.units;
     const size = px(u, ps.fontSize, this.bodyPx);
+    // A hanging indent sets the lines after the first deeper, the first
+    // staying at the style's indent: Word pulls the first line out by
+    // `w:hanging` from `w:left`, so the left side takes both (#1444).
+    const hanging = twips(u, ps.hangingIndent, size);
+    const indent = twips(u, ps.indent, size);
     return {
       type: 'paragraph',
       name: ps.name || ps.id,
@@ -338,7 +402,7 @@ export class StyleRegistry {
         before: twips(u, ps.marginTop, size),
         after: twips(u, ps.spaceBetween, size),
         line: { twips: twips(u, ps.lineHeight, size), rule: 'atLeast' },
-        ind: { left: twips(u, ps.indent, size), right: ps.endIndent ? twips(u, ps.endIndent, size) : undefined, firstLine: twips(u, ps.firstLineIndent, size), hanging: twips(u, ps.hangingIndent, size) || undefined },
+        ind: { left: indent + Math.max(0, hanging), right: ps.endIndent ? twips(u, ps.endIndent, size) : undefined, firstLine: twips(u, ps.firstLineIndent, size), hanging: hanging > 0 ? hanging : undefined },
         jc: JC[ps.textAlign],
       },
       rPr: {
@@ -369,7 +433,7 @@ export class StyleRegistry {
     if (body.fresh) {
       const size = px(u, b.fontSize, this.bodyPx);
       const after = b.paragraphSpacing === false ? 0 : b.paragraphSpacing === true ? twips(u, b.lineHeight, size) : twips(u, b.paragraphSpacing, size);
-      this.add(body.id, {
+      this.add(this.face(body.id, b.fontFamily, b.fontWeight, b.italic), {
         type: 'paragraph',
         name: `Box: ${style.name || style.id}`,
         custom: true,

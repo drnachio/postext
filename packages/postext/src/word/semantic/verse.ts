@@ -11,12 +11,14 @@
 // end, so neither renderer pulls them apart or runs them together.
 
 import type { ContentBlock } from '../../parse/types.js';
+import type { ResolvedParagraphStyleConfig } from '../../types.js';
 import { lengthAttr, verseSettings } from '../../pipeline/text/verse.js';
+import { verseLinesSettings } from '../../pipeline/text/verseLines.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { inlineSourceOf, type BlockEnv } from './blocks.js';
-import { renderInline } from './inline.js';
+import { renderInline, type InlineSource } from './inline.js';
 import { STYLE } from './styles.js';
-import { paragraph, px, twips, type ParaProps } from './wml.js';
+import { paragraph, pPr, px, twips, type ParaProps } from './wml.js';
 
 /** An en space: half an em, the default width of one leading space of a
  *  line of verse (`bodyText.verse.indentStep`). */
@@ -74,10 +76,9 @@ export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
   const name = verse.attrs.style;
   const style = (name && ctx.styles.paragraphStyle(name)) || STYLE.verse;
   const ps = name ? ctx.resolved.paragraphStyles.find((s) => s.id === name || s.name === name) : undefined;
-  // Lines flush with the start, with no first-line or hanging indent: each
-  // line after a break would take it. (A poem the engine centres as a
-  // block on its longest line is set flush too: Word cannot centre a block
-  // whose lines stay flush with one another.)
+  // Lines flush with the start. (A poem the engine centres as a block on
+  // its longest line is set flush too: Word cannot centre a block whose
+  // lines stay flush with one another.)
   const props: ParaProps = { style, ind: { firstLine: 0 }, jc: 'left', suppressAutoHyphens: true };
   const size = (ps && px(ctx.units, ps.fontSize, ctx.styles.bodyPx)) || ctx.styles.bodyPx;
   // The space between two stanzas, in lines of the poem's leading.
@@ -96,7 +97,14 @@ export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     props.ind = { left: side, right: side, firstLine: 0 };
     props.tabs = [{ val: 'right', pos: Math.max(side + 360, block.end) }];
   }
-  const source = { ...inlineSourceOf(ctx, b), lineLeads: lineLeads(ctx, b) };
+  const source: InlineSource = { ...inlineSourceOf(ctx, b), lineLeads: lineLeads(ctx, b), ...(style ? { style } : {}) };
+  let first = props;
+  if (verse.stanza) {
+    const lineProps = stanzaLineProps(ctx, verse, props, ps, size);
+    source.lineLeads ??= verse.stanza.lines.map(() => '');
+    source.lineParagraph = (line) => `</w:p><w:p>${pPr(lineProps(line))}`;
+    first = lineProps(0);
+  }
   const { xml, frag } = renderInline(ctx, source);
   const wrapped = ctx.log.wrap(xml, frag, {
     block: blockId(ctx),
@@ -104,5 +112,32 @@ export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     range: [abs(ctx, b.sourceStart), abs(ctx, b.sourceEnd)],
     role: 'verse',
   });
-  return paragraph(props, wrapped);
+  return paragraph(first, wrapped);
+}
+
+/**
+ * A stanza is set a paragraph per line of verse (#1444), each line's
+ * turnovers hung deeper than its start as the engine hangs them (the
+ * poem's `hang`, its paragraph style's `hangingIndent`, else
+ * `bodyText.verse.hang`): a line ended by a line break would send its
+ * turnover back to the margin. The stanza stays one fragment, its line
+ * ends read back as paragraph marks. The properties of line `i`: the
+ * stanza's space before it on the first, the style's after it on the
+ * last, none between; a stanza short enough to keep whole
+ * (`keepStanzas`) keeps its lines together.
+ */
+function stanzaLineProps(ctx: WriterContext, verse: NonNullable<ContentBlock['verse']>, props: ParaProps, ps: ResolvedParagraphStyleConfig | undefined, size: number): (i: number) => ParaProps {
+  const body = ctx.resolved.bodyText;
+  const lineHeightPx = px(ctx.units, ps?.lineHeight ?? body.lineHeight, size);
+  const hangPx = verseLinesSettings(verse.attrs, { fontSizePx: size, lineHeightPx }, ctx.resolved, false).hangPx;
+  const hang = Math.round((hangPx * 1440) / ctx.units.dpi);
+  const left = ps ? twips(ctx.units, ps.indent, size) : twips(ctx.units, body.blockquote.indent, ctx.styles.bodyPx);
+  const count = verse.stanza?.lines.length ?? 1;
+  const keep = count <= body.verse.keepStanzas;
+  return (i) => ({
+    ...props,
+    ind: { left: left + hang, hanging: hang },
+    ...(i > 0 ? { before: 0 } : {}),
+    ...(i < count - 1 ? { after: 0, ...(keep ? { keepNext: true } : {}) } : {}),
+  });
 }
