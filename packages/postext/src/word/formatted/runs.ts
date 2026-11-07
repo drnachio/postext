@@ -15,6 +15,7 @@
 // East Asian runs (eastAsian.ts, #1394).
 
 import { parseFontString } from '../../measure/fontString.js';
+import { CHIP_PLACEHOLDER } from '../../parse/inlineFormatting.js';
 import type { DisplayLine, DisplayRun } from '../../paint/displayList/types.js';
 import { escapeAttr } from '../xml.js';
 import { wordFontFor } from '../fonts/plan.js';
@@ -54,11 +55,15 @@ export const MAX_SZ = 3276;
 
 /** Text as Word can hold it, one UTF-16 unit for one: characters XML 1.0
  *  forbids (C0 controls, U+FFFE/U+FFFF) and unpaired surrogates become
- *  U+FFFD, line ends and tabs spaces. `escapeXml` would drop the first
+ *  U+FFFD, line ends and tabs spaces, and the engine's stand-in for an
+ *  empty chip (`CHIP_PLACEHOLDER`, a private-use character no face draws)
+ *  a no-break space, its box drawn under it. `escapeXml` would drop the first
  *  ones, and a '\n' in the text would read as an engine break, so the
  *  fragment text would no longer match what the bookmark holds. */
 export function wordText(text: string): string {
-  return text.replace(/[\t\n\r]|[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, (c) => (c === '\t' || c === '\n' || c === '\r' ? ' ' : '\ufffd'));
+  return text.replace(/[\t\n\r\ue1a0]|[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, (c) =>
+    c === '\t' || c === '\n' || c === '\r' ? ' ' : c === CHIP_PLACEHOLDER ? HOLDER : '\ufffd',
+  );
 }
 
 export interface ResolvedFont {

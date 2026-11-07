@@ -10,13 +10,13 @@ import type { DisplayItem, DisplayLine, DisplayRect, DisplayRun } from '../../pa
 import { textBoxRun, turnedBox, turnPoint } from './drawing.js';
 import { annotationRect, smallTextBox, textRun } from './eastAsian.js';
 import { fontSizePx } from './metrics.js';
-import { runProps, wordText, writtenFace } from './runs.js';
+import { naturalTwips, runProps, wordText, writtenFace } from './runs.js';
 import { rectRuns, ruleRun } from './shapes.js';
 import { hasFragment, recordFragment, reserveFragment } from './fragments.js';
 import { chunkBox, emitGroups, MAX_PITCH, MIN_PITCH, planChunks, planLines, type Chunk, type Group, type LinePlan, type TextOut } from './paragraphs.js';
 import { inlineSvgRun } from './pictures.js';
 import { chipBoxRuns, swatchShapeRuns } from './inlineShapes.js';
-import { twips } from './units.js';
+import { twips, twipsToPx } from './units.js';
 import type { WriterContext } from './types.js';
 
 type TextItem = Extract<DisplayItem, { kind: 'text' }>;
@@ -162,9 +162,35 @@ export interface TextItemOptions {
   growRoom?: number;
 }
 
+/** A list marker with its runs as wide as the face sets them. The display
+ *  list places a marker's parts (prefix, number, separator) where the PDF
+ *  draws them but, unmeasured, gives each a width of 0.55 em a character:
+ *  spread over the characters as spacing, that letter-spaced a numeral
+ *  ("i i", "1 .") and pushed a separator past the end of its box. */
+export function measuredMarker(ctx: WriterContext, item: TextItem): TextItem {
+  if (item.role !== 'marker' || item.rotate) return item;
+  const lines = item.lines.map((l) => {
+    if (l.vertical) return l;
+    const runs = l.runs.map((r) => {
+      const nat = r.text ? naturalTwips(ctx, r.fontString, wordText(r.text)) : undefined;
+      if (nat === undefined) return r;
+      const tracking = (r.tracking ?? 0) * Array.from(r.text).length;
+      return { ...r, width: twipsToPx(nat, ctx.dpi) + tracking };
+    });
+    if (runs.length === 0) return l;
+    const left = Math.min(...runs.map((r) => r.x));
+    const right = Math.max(...runs.map((r) => r.x + r.width));
+    return { ...l, runs, x: left, width: right - left };
+  });
+  const left = Math.min(...lines.map((l) => l.x));
+  const right = Math.max(...lines.map((l) => l.x + l.width));
+  return { ...item, lines, bbox: { ...item.bbox, x: left, width: right - left } };
+}
+
 /** A text item's text boxes and the drawings over them. */
-export async function textItemRuns(ctx: WriterContext, item: TextItem, opts: TextItemOptions = {}): Promise<string[]> {
-  if (item.lines.length === 0) return [];
+export async function textItemRuns(ctx: WriterContext, input: TextItem, opts: TextItemOptions = {}): Promise<string[]> {
+  if (input.lines.length === 0) return [];
+  const item = measuredMarker(ctx, input);
   const vertical = item.lines.some((l) => l.vertical);
   if (vertical) ctx.warn('vertical-text', 'vertical text is set in East Asian (eaVert) text boxes; Word centres the glyphs on its own line axis, so positions across a column are approximate');
   const plans = planLines(ctx, item.lines);
@@ -174,7 +200,7 @@ export async function textItemRuns(ctx: WriterContext, item: TextItem, opts: Tex
   const fragmented = hasFragment(item);
   const centre = { x: item.bbox.x + item.bbox.width / 2, y: item.bbox.y + item.bbox.height / 2 };
   const runs: string[] = [];
-  const boxes = chunks.map((c) => chunkBox(ctx, item.lines, c, plans));
+  const boxes = chunks.map((c) => chunkBox(ctx, item.lines, c, plans, DISPLAY_ROLES.has(item.role)));
   const floor = item.bbox.y + item.bbox.height + (opts.growRoom ?? Infinity);
   for (const [ci, chunk] of chunks.entries()) {
     const box = boxes[ci]!;

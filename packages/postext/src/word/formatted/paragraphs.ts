@@ -11,7 +11,7 @@
 import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js';
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
-import { baselineOffset } from './metrics.js';
+import { baselineOffset, fontSizePx } from './metrics.js';
 import { emitRun, formatFlags, leadChip, linkTarget, runProps, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
 import { emittedRuns, paragraphTabs, tabRun } from './tabs.js';
 import type { Annotation } from './eastAsian.js';
@@ -26,6 +26,12 @@ const EPS = 0.05;
 /** Room on a box's free side so a ragged line Word sets a hair wider
  *  than the engine does not wrap (pt). */
 export const SLACK_PT = 2;
+/** Room an italic display line needs past its measure, em of its size:
+ *  LibreOffice widens the end of an italic portion by its overhang (about
+ *  a twelfth of the font height), and a display face's last swash can
+ *  reach further, so a title box with only the slack wrapped its last
+ *  word onto a hidden second line ("The" of "The Awakening"). */
+export const ITALIC_ROOM_EM = 0.25;
 /** Word's exact line spacing runs from 1 pt to 1584 pt (twips). */
 export const MIN_PITCH = 20;
 export const MAX_PITCH = 31680;
@@ -189,8 +195,22 @@ export function planChunks(lines: readonly DisplayLine[], plans: LinePlan[], box
   return chunks;
 }
 
-/** The px box of a chunk: its lines' measures plus slack on both sides. */
-export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chunk: Chunk, plans: LinePlan[]): { x: number; y: number; width: number; height: number } {
+/** The room past an italic display line's measure, px (0 without
+ *  italics). */
+export function italicRoom(lines: readonly DisplayLine[]): number {
+  let room = 0;
+  for (const l of lines) {
+    for (const r of l.runs) {
+      if (!r.text.trim() || !(r.italic || /\bitalic\b/.test(r.fontString))) continue;
+      room = Math.max(room, ITALIC_ROOM_EM * fontSizePx(r.fontString));
+    }
+  }
+  return room;
+}
+
+/** The px box of a chunk: its lines' measures plus slack on both sides
+ *  (`display`: a title's or label's, room for italic overhang). */
+export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chunk: Chunk, plans: LinePlan[], display = false): { x: number; y: number; width: number; height: number } {
   let L = Infinity;
   let R = -Infinity;
   let height = 0;
@@ -206,7 +226,7 @@ export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chun
   // Slack on both sides: a pinned side keeps it as indent, so the line
   // stays where the engine set it, and the free side keeps it as room
   // (an end-aligned folio's free side is its start, #1444).
-  const slack = (SLACK_PT * ctx.dpi) / 72;
+  const slack = Math.max((SLACK_PT * ctx.dpi) / 72, display ? italicRoom(lines.slice(chunk.from, chunk.to + 1)) : 0);
   L -= slack;
   R += slack;
   const first = lines[chunk.from]!;
