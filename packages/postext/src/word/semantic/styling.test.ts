@@ -63,14 +63,43 @@ describe('semantic docx: styling (#1444)', () => {
     expect(r.chapters[0]!.markdown).toBe(md.replace('flame out', 'flame up'));
   });
 
-  it('sets a bayt on a tab pair across the measure, in right-to-left text', async () => {
-    const md = ':::verse\nأشرقت في الدجى || واستنارت بنورها\nمن سناها الشموس || تتبدى وتنجلي\n:::\n';
+  it('sets a bayt poem as the engine\'s block: centred, two hemistichs and the gap wide', async () => {
+    const md = ':::verse\nأشرقت || واستنارت\nمن سناها || تتبدى\n:::\n';
     const e = await exportDocx(md, { config: cfg({ direction: 'rtl' }) });
     expect(exportProblems(e, [md])).toEqual([]);
     const p = paraOf(e.doc, 'أشرقت');
-    expect(p).toMatch(/<w:tabs><w:tab w:val="right" w:pos="\d+"\/><\/w:tabs>/);
     expect(p).toContain('<w:jc w:val="left"/>');
     expect(p).not.toContain('w:val="both"');
+    // Equal indents frame the block in the middle of the measure, and the
+    // end tab closes it: the halves sit a gap apart, not at the column's
+    // two edges.
+    const ind = /<w:ind w:left="(\d+)" w:right="(\d+)" w:firstLine="0"\/>/.exec(p)!;
+    const tab = Number(/<w:tab w:val="right" w:pos="(\d+)"\/>/.exec(p)![1]);
+    const left = Number(ind[1]);
+    expect(Number(ind[2])).toBe(left);
+    expect(left).toBeGreaterThan(1000);
+    const blockWidth = tab - left;
+    // About twice the wider hemistich (7 letters) plus a 2 em gap.
+    expect(blockWidth).toBeGreaterThan(1200);
+    expect(blockWidth).toBeLessThan(3000);
+    unchanged(e, [md]);
+  });
+
+  it('sets a bayt poem flush with the start under align=start', async () => {
+    const md = ':::verse{align=start}\nأشرقت || واستنارت\n:::\n';
+    const e = await exportDocx(md, { config: cfg({ direction: 'rtl' }) });
+    const p = paraOf(e.doc, 'أشرقت');
+    expect(p).toContain('<w:ind w:left="0" w:right="0" w:firstLine="0"/>');
+    expect(Number(/<w:tab w:val="right" w:pos="(\d+)"\/>/.exec(p)![1])).toBeLessThan(3000);
+    unchanged(e, [md]);
+  });
+
+  it('keeps a long hemistich poem to the measure', async () => {
+    const long = 'كلمة '.repeat(30).trim();
+    const md = `:::verse\n${long} || ${long}\n:::\n`;
+    const e = await exportDocx(md, { config: cfg({ direction: 'rtl' }) });
+    const p = paraOf(e.doc, 'كلمة');
+    expect(p).toContain('<w:ind w:left="0" w:right="0" w:firstLine="0"/>');
     unchanged(e, [md]);
   });
 
@@ -102,6 +131,24 @@ describe('semantic docx: styling (#1444)', () => {
     expect(styleOf(e, 'PostextMark')).toContain('w:fill="FFF0A0"');
     expect(styleOf(e, 'PostextMark')).not.toContain('w:highlight');
     expect(e.doc).toContain('<w:rStyle w:val="PostextMark"/><w:shd w:val="clear" w:color="auto" w:fill="CCE0FF"/>');
+    unchanged(e, [md]);
+  });
+
+  it('gives a second mark style its own ink, or none when the first has one', async () => {
+    const md = 'A :mark[first]{style="red"} and :mark[blue]{style="blue"} and :mark[plain]{style="plain"} here.\n';
+    const config = cfg({ markStyles: [
+      { id: 'red', background: { hex: '#fff0a0', model: 'hex' }, color: { hex: '#aa0000', model: 'hex' } },
+      { id: 'blue', background: { hex: '#cce0ff', model: 'hex' }, color: { hex: '#003399', model: 'hex' } },
+      { id: 'plain', background: { hex: '#eeeeee', model: 'hex' } },
+    ] });
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, [md])).toEqual([]);
+    expect(styleOf(e, 'PostextMark')).toContain('<w:color w:val="AA0000"/>');
+    expect(paraOf(e.doc, '>blue<')).toMatch(/<w:color w:val="003399"\/><w:shd w:val="clear" w:color="auto" w:fill="CCE0FF"\/>|<w:shd w:val="clear" w:color="auto" w:fill="CCE0FF"\/>.*<w:color w:val="003399"\/>/);
+    const runOf = (word: string): string => { const x = e.doc; const at = x.indexOf(`>${word}<`); return x.slice(x.lastIndexOf('<w:r>', at), at); };
+    expect(runOf('blue')).toContain('<w:color w:val="003399"/>');
+    expect(runOf('plain')).toContain('<w:color w:val="auto"/>');
+    expect(runOf('first')).not.toContain('<w:color');
     unchanged(e, [md]);
   });
 
@@ -166,6 +213,23 @@ describe('semantic docx: styling (#1444)', () => {
     // Spacer paragraphs as tall as the margins (6 pt = 120 twips).
     expect(e.doc.match(/<w:spacing w:before="0" w:after="0" w:line="120" w:lineRule="exact"\/>/g)).toHaveLength(2);
     unchanged(e, [md]);
+  });
+
+  it('lets a keep-together box split when a tall picture would outgrow the page', async () => {
+    const md = ':::callout{type="info"}\nA line.\n\n::resource{id="p1"}\n:::\n';
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
+    const pic = (height: number) => [{ id: 'p1', typeId: 'figure', kind: 'bitmap' as const, createdAt: 0, updatedAt: 0, bitmap: { fileId: 'p', format: 'png' as const, width: 1000, height } }];
+    // The box's own row (its grid is one column as wide as the measure).
+    const boxRow = /<w:tblGrid><w:gridCol w:w="\d+"\/><\/w:tblGrid><w:tr>(<w:trPr><w:cantSplit\/><\/w:trPr>)?/;
+    const config = cfg({ calloutStyles: [{ id: 'info', keepTogether: true }] });
+    const small = await exportDocx(md, { config, resources: pic(300), resourceBytes: () => png });
+    expect(small.doc).toContain('<w:drawing>');
+    expect(boxRow.exec(small.doc)![1]).toBeDefined();
+    const tall = await exportDocx(md, { config, resources: pic(3000), resourceBytes: () => png });
+    expect(boxRow.exec(tall.doc)![1]).toBeUndefined();
+    // A long box whose style lets it split is not held either.
+    const long = await exportDocx(`:::callout{type="info"}\n${'Words in a long box. '.repeat(80)}\n:::\n`, { config: cfg({ calloutStyles: [{ id: 'info', keepTogether: false }] }) });
+    expect(boxRow.exec(long.doc)![1]).toBeUndefined();
   });
 
   it('keeps a table with the caption below it and sizes it in percentages', async () => {

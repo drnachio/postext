@@ -13,6 +13,7 @@ import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
 import { attrRange } from './marks.js';
 import { rawSdt } from './raw.js';
+import { pageGeometry } from './sections.js';
 import { STYLE } from './styles.js';
 import { blockSdt, eighths, hex, paragraph, px, textRuns, twips, type Border, type ParaProps } from './wml.js';
 
@@ -123,12 +124,28 @@ function spacer(height: number, keepNext: boolean): string {
   return `<w:p><w:pPr>${keepNext ? '<w:keepNext/>' : ''}<w:spacing w:before="0" w:after="0" w:line="${height}" w:lineRule="exact"/><w:ind w:firstLine="0"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>`;
 }
 
-/** Whether a box's content is short enough to keep on one page: about a
- *  dozen lines of text. */
-function shortBox(cell: string): boolean {
+/** A box's estimated height, twips: its text at about 70 letters a line,
+ *  its pictures at their drawn size and a line for each row of a table
+ *  inside it. */
+function boxHeight(cell: string, lineTw: number): number {
   const paras = (cell.match(/<w:p[ >/]/g) ?? []).length;
+  const rows = (cell.match(/<w:tr[ >]/g) ?? []).length;
   const chars = cell.replace(/<[^>]*>/g, '').length;
-  return paras + chars / 70 <= 14;
+  let drawn = 0;
+  for (const m of cell.matchAll(/<wp:extent cx="\d+" cy="(\d+)"/g)) drawn += Number(m[1]) / 635;
+  return (paras + rows + chars / 70) * lineTw + drawn;
+}
+
+/** Whether Word may not split a box: one whose style keeps it together,
+ *  or a short one (about a dozen lines), but never one that might outgrow
+ *  a page: Word clips a row it may not split, where the engine splits a
+ *  keep-together box taller than its column. */
+function keepBox(ctx: WriterContext, cell: string, keepTogether: boolean): boolean {
+  const lineTw = Math.max(200, twips(ctx.units, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx));
+  const geo = pageGeometry(ctx.resolved, ctx.units);
+  const page = geo.heightTw - geo.margins.top - geo.margins.bottom;
+  const h = boxHeight(cell, lineTw);
+  return h <= page * 0.8 && (keepTogether || h <= 14 * lineTw);
 }
 
 function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
@@ -162,7 +179,7 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
   // The whole width of the column or cell the box stands in, whatever its
   // width in twips there turns out to be (a side column is narrower than
   // the main one); Word and LibreOffice fit the cell to it.
-  const keep = style?.keepTogether || shortBox(cell);
+  const keep = keepBox(ctx, cell, !!style?.keepTogether);
   const tbl =
     '<w:tbl><w:tblPr>' +
     '<w:tblW w:w="5000" w:type="pct"/>' +

@@ -3,13 +3,15 @@
 // breaks, so the paragraph is never justified: Word and LibreOffice would
 // stretch every line that ends in a break. A line's indent, which the
 // source writes as leading spaces, comes back as en spaces held by the
-// atom of the line break before it. A bayt's two hemistichs sit at the two
-// ends of the measure: the first flush with the start, the tab between them
-// reaching an end-aligned tab stop, so neither renderer pulls them apart
-// or runs them together.
+// atom of the line break before it. A bayt poem is set as the engine sets
+// it: a block twice its widest hemistich plus the gap, centred in the
+// measure (or flush with the start under `align=start`). The paragraph's
+// indents frame that block; the first hemistich sits flush with its start
+// and the tab between the halves reaches an end-aligned tab stop on its
+// end, so neither renderer pulls them apart or runs them together.
 
 import type { ContentBlock } from '../../parse/types.js';
-import { lengthAttr } from '../../pipeline/text/verse.js';
+import { lengthAttr, verseSettings } from '../../pipeline/text/verse.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { inlineSourceOf, type BlockEnv } from './blocks.js';
 import { renderInline } from './inline.js';
@@ -31,6 +33,41 @@ function lineLeads(ctx: WriterContext, b: ContentBlock): string[] | undefined {
   return lines.map((l) => EN_SPACE.repeat(Math.max(0, Math.min(40, Math.round(l.indent * perSpace)))));
 }
 
+/** Average advance of a character, in em, used to size a hemistich: joined
+ *  Arabic and Hebrew letters run narrower than Latin ones (a vocalised
+ *  Amiri hemistich averages about 0.36 em a character, spaces included). Word cannot stretch a hemistich to
+ *  the poem's common width as the engine does, so the estimate leans wide:
+ *  a block a little too wide leaves a larger gap, one too narrow would
+ *  push the second half past its stop. */
+const ADVANCE_EM = 0.55;
+const ADVANCE_EM_RTL = 0.4;
+
+/** A hemistich's estimated width, px: its characters without combining
+ *  marks (harakat, shadda), which take no advance of their own. */
+function hemistichPx(text: string, em: number): number {
+  const chars = [...text.trim().replace(/\p{M}/gu, '')];
+  const rtl = chars.filter((c) => /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}]/u.test(c)).length;
+  return (rtl * ADVANCE_EM_RTL + (chars.length - rtl) * ADVANCE_EM) * em;
+}
+
+/** The bayt block in twips from the start margin: where it starts and
+ *  ends within `measureTwips`, as the engine places it. */
+export function baytBlock(text: string, attrs: Parameters<typeof verseSettings>[0], dpi: number, em: number, measureTwips: number): { start: number; end: number } {
+  const settings = verseSettings(attrs, dpi, em);
+  const toTwips = (v: number): number => (v * 1440) / dpi;
+  const measure = (measureTwips * dpi) / 1440;
+  let widest = 0;
+  for (const line of text.split('\n')) {
+    const halves = line.split('\t');
+    if (halves.length === 2) for (const h of halves) widest = Math.max(widest, hemistichPx(h, em));
+  }
+  const half = Math.max(0, (measure - settings.gapPx) / 2);
+  const w = Math.min(settings.widthPx ?? widest, half);
+  const total = 2 * w + settings.gapPx;
+  const x = settings.align === 'start' ? 0 : Math.max(0, (measure - total) / 2);
+  return { start: Math.round(toTwips(x)), end: Math.round(toTwips(Math.min(measure, x + total))) };
+}
+
 /** The paragraph of a verse block. */
 export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv): string {
   const verse = b.verse!;
@@ -42,7 +79,7 @@ export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
   // block on its longest line is set flush too: Word cannot centre a block
   // whose lines stay flush with one another.)
   const props: ParaProps = { style, ind: { firstLine: 0 }, jc: 'left', suppressAutoHyphens: true };
-  const size = ps ? px(ctx.units, ps.fontSize, ctx.styles.bodyPx) : ctx.styles.bodyPx;
+  const size = (ps && px(ctx.units, ps.fontSize, ctx.styles.bodyPx)) || ctx.styles.bodyPx;
   // The space between two stanzas, in lines of the poem's leading.
   if (verse.stanza && verse.stanza.index > 0) {
     const lines = Number(verse.attrs.stanzaSpace);
@@ -52,7 +89,12 @@ export function renderVerse(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
   if (!verse.stanza && b.text.includes('\t')) {
     const end = ps?.endIndent ? twips(ctx.units, ps.endIndent, size) : 0;
     const width = Math.round(env.widthTwips ?? ctx.textTwips);
-    props.tabs = [{ val: 'right', pos: Math.max(720, width - end) }];
+    const block = baytBlock(b.text, verse.attrs, ctx.units.dpi, size, Math.max(720, width - end));
+    // Equal indents on both sides (0 under `align=start`) hold in either
+    // writing direction; the end tab then closes the block.
+    const side = block.start;
+    props.ind = { left: side, right: side, firstLine: 0 };
+    props.tabs = [{ val: 'right', pos: Math.max(side + 360, block.end) }];
   }
   const source = { ...inlineSourceOf(ctx, b), lineLeads: lineLeads(ctx, b) };
   const { xml, frag } = renderInline(ctx, source);

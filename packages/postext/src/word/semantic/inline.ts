@@ -54,10 +54,12 @@ interface Fmt {
   mark?: boolean;
   /** Fill of a mark whose style is not the first mark style's. */
   markFill?: string;
+  /** Ink of such a mark (`auto` when it has none and the first style has). */
+  markInk?: string;
 }
 
 const flagsOf = (f: Fmt): string => `${f.b ? 'b' : ''}${f.i ? 'i' : ''}${f.c ? 'c' : ''}${f.script === 'sup' ? 'p' : ''}${f.script === 'sub' ? 's' : ''}${f.k ? 'k' : ''}`;
-const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}`;
+const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}`;
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
@@ -69,6 +71,7 @@ function runProps(f: Fmt, style?: string): RunProps {
     i: f.i || undefined,
     smallCaps: f.c || undefined,
     shd: f.mark && !f.k && !f.href ? f.markFill : undefined,
+    color: f.mark && !f.k && !f.href ? f.markInk : undefined,
     vertAlign: f.script === 'sup' ? 'superscript' : f.script === 'sub' ? 'subscript' : undefined,
   };
 }
@@ -86,12 +89,15 @@ function chipLabel(chip: NonNullable<InlineSpan['chip']>): string {
  *  taking the direction of right-to-left text around it. */
 const LRM = '\u200e';
 
-/** The band colour of a mark whose style is not the first one (the first
- *  is the mark character style's own shading). */
-function markFill(ctx: WriterContext, style: string): string | undefined {
+/** The band and ink of a mark whose style is not the first one (the first
+ *  is the mark character style's own shading and colour, which the run
+ *  overrides here). */
+function markLook(ctx: WriterContext, style: string): { fill?: string; ink?: string } {
   const styles = ctx.resolved.markStyles ?? [];
   const ms = style ? styles.find((m) => m.id === style) : undefined;
-  return ms && ms !== styles[0] ? hex(ms.background) : undefined;
+  if (!ms || ms === styles[0]) return {};
+  const ink = hex(ms.color) ?? (hex(styles[0]?.color) ? 'auto' : undefined);
+  return { fill: hex(ms.background), ink };
 }
 
 function hyperlink(ctx: WriterContext, href: string, runs: string, field?: boolean): string {
@@ -188,8 +194,9 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
         const link = span.links?.find((l) => k >= l.start && k < l.end);
         if (link?.mark) {
           fmt.mark = true;
-          const fill = markFill(ctx, link.mark.style);
-          if (fill) fmt.markFill = fill;
+          const look = markLook(ctx, link.mark.style);
+          if (look.fill) fmt.markFill = look.fill;
+          if (look.ink) fmt.markInk = look.ink;
         } else if (link?.href) fmt.href = link.href;
         if (ch === BREAK) {
           let end = src >= 0 && s.src[src] === '\\' ? (s.src[src + 1] === '\\' ? src + 2 : src + 1) : src + 1;
