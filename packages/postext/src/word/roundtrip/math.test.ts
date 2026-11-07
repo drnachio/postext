@@ -9,6 +9,10 @@ import { semanticDocx } from '../semantic/index.js';
 import { readExportMap } from '../anchors/exportMap.js';
 import { ommlHash } from '../anchors/ommlHash.js';
 import { applyDocxEdits } from './index.js';
+import { readDocx } from '../docxRead.js';
+import { emptyTemplate, parseTemplate } from '../template.js';
+import { wordToPostext } from '../toMarkdown.js';
+import { numberedEquation } from '../docxRead/equations.js';
 
 const DATE = '2026-11-04T00:00:00Z';
 
@@ -103,5 +107,33 @@ describe('numbered equations round trip (#1444)', () => {
     expect(out).toContain('2τ');
     expect(out).toMatch(/\\tag\{1\}\$\$/);
     expect(out.match(/\\tag/g)).toHaveLength(1);
+  });
+
+  it('imports as a display equation with its tag through the generic importer', async () => {
+    const tagged = 'Before.\n\n$$T_0 = 2\\pi\\sqrt{\\frac{L}{g}} \\tag{1}$$\n\n$$x = y \\tag*{A}$$\n\nAfter.\n';
+    const bytes = await semanticDocx({ chapters: [{ id: 'c', markdown: tagged }], config: {}, date: DATE });
+    const doc = readDocx(bytes);
+    const template = parseTemplate(doc.embeddedTemplate) ?? emptyTemplate();
+    const out = wordToPostext(doc, { template, config: {}, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    expect(out).toMatch(/\$\$T_\{0\}\s*=\s*2.*\\tag\{1\}\$\$/);
+    expect(out).toContain('\\tag*{A}$$');
+    expect(out).not.toContain(':tab');
+    expect(out).not.toMatch(/^\(1\)|\s\(1\)\s*$/m);
+  });
+
+  it('recognises only a tab-numbered single equation', () => {
+    const m = { type: 'math' as const, tex: 'x=1', display: false };
+    const tab = { type: 'tab' as const };
+    const t = (text: string) => ({ type: 'text' as const, text });
+    expect(numberedEquation([tab, m, tab, t('(2.1a)')], '')).toEqual([{ type: 'math', tex: 'x=1 \\tag{2.1a}', display: true }]);
+    expect(numberedEquation([m, tab, t('('), t('3)')], 'Normal')).toEqual([{ type: 'math', tex: 'x=1 \\tag{3}', display: true }]);
+    // A bare label only in a Postext equation paragraph.
+    expect(numberedEquation([tab, m, tab, t('A')], '')).toBeUndefined();
+    expect(numberedEquation([tab, m, tab, t('A')], 'PostextEquation')?.[0]).toMatchObject({ tex: 'x=1 \\tag*{A}' });
+    // Prose around the equation, no tab before the number, two equations.
+    expect(numberedEquation([t('Let '), m, tab, t('(1)')], '')).toBeUndefined();
+    expect(numberedEquation([m, t(' (1)')], '')).toBeUndefined();
+    expect(numberedEquation([m, tab, m, tab, t('(1)')], '')).toBeUndefined();
+    expect(numberedEquation([m, tab, t('(1)'), tab, t('x')], '')).toBeUndefined();
   });
 });
