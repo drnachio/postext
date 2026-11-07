@@ -40,6 +40,21 @@ function background(el: Extract<ResolvedDesignElement, { kind: 'image' }>): bool
   return el.placement.anchor.to === 'bleed' || w >= 150 || h >= 150;
 }
 
+/** The elements of a design the semantic document reads: those every
+ *  opener prints (one side's when the design has odd and even ones). A
+ *  design with elements of its own for the opener page draws its body
+ *  pages' (a running head, a folio) elsewhere. */
+export function printed(elements: readonly ResolvedDesignElement[]): ResolvedDesignElement[] {
+  const hasOdd = elements.some((e) => e.parity === 'odd');
+  const pagesOf = (e: ResolvedDesignElement): string | undefined => ('pages' in e ? e.pages : undefined);
+  const opener = elements.some((e) => pagesOf(e) === 'opener');
+  return elements.filter((e) => {
+    if (e.parity === 'even' && hasOdd) return false;
+    const pages = pagesOf(e);
+    return !pages || pages === 'all' || pages === 'opener' || (pages === 'body' && !opener);
+  });
+}
+
 /** The pictures of a design's `elements` heading `b` draws: element id
  *  and resource id. */
 export function designPictures(b: ContentBlock, elements: readonly ResolvedDesignElement[], resources: ReadonlyMap<string, Resource>): { elementId: string; id: string }[] {
@@ -68,13 +83,13 @@ export function designMediaIds(chapters: readonly { blocks: readonly ContentBloc
     for (const b of ch.blocks) {
       for (const panel of comicPanels(b)) if (panel.art && resources.has(panel.art)) out.add(panel.art);
       if (b.type === 'containerStart' && b.containerName === 'part') {
-        for (const p of designPictures(b, resolved.parts.design.elements, resources)) out.add(p.id);
+        for (const p of designPictures(b, printed(resolved.parts.design.elements), resources)) out.add(p.id);
         continue;
       }
       if (b.type !== 'heading') continue;
       const design = headingLevelOf(resolved, b)?.advancedDesign;
       if (!design?.enabled) continue;
-      for (const p of designPictures(b, design.slot.elements, resources)) out.add(p.id);
+      for (const p of designPictures(b, printed(design.slot.elements), resources)) out.add(p.id);
     }
   }
   return out;

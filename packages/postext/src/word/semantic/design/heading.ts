@@ -13,12 +13,12 @@ import type { ContentBlock } from '../../../parse/types.js';
 import { headingIsHidden, headingIsListed } from '../../../pipeline/sections/headingStyles.js';
 import { resolveDesignText } from '../../../design/placeholders.js';
 import { plainDesignText } from '../../../design/richText.js';
-import type { ResolvedDesignElement, ResolvedDesignTextElement } from '../../../types.js';
+import type { ResolvedDesignTextElement } from '../../../types.js';
 import type { WriterContext } from '../context.js';
 import { generatedRuns } from '../generated.js';
 import { hex, type ParaProps } from '../wml.js';
 import { hideRuns } from './hide.js';
-import { designImageId, designPictures } from './pictures.js';
+import { designImageId, designPictures, printed } from './pictures.js';
 import { inPartColors } from './partColor.js';
 import { designTextLook, designTextParagraphs, fittedSize } from './text.js';
 import { designPlaceholders, headingLevelOf } from './values.js';
@@ -44,20 +44,6 @@ export interface HeadingLook {
  *  point high, but its text kept (mapped) for the way back. */
 const HIDDEN: Partial<ParaProps> = { outlineLvl: 9, before: 0, after: 0, line: { twips: 20, rule: 'exact' }, keepNext: true };
 
-/** The elements of a design the semantic document reads: those every
- *  opener prints (one side's when the design has odd and even ones). A
- *  design with elements of its own for the opener page draws its body
- *  pages' (a running head, a folio) elsewhere. */
-export function printed(elements: readonly ResolvedDesignElement[]): ResolvedDesignElement[] {
-  const hasOdd = elements.some((e) => e.parity === 'odd');
-  const pagesOf = (e: ResolvedDesignElement): string | undefined => ('pages' in e ? e.pages : undefined);
-  const opener = elements.some((e) => pagesOf(e) === 'opener');
-  return elements.filter((e) => {
-    if (e.parity === 'even' && hasOdd) return false;
-    const pages = pagesOf(e);
-    return !pages || pages === 'all' || pages === 'opener' || (pages === 'body' && !opener);
-  });
-}
 
 /** Whether a text element prints the heading's own title. */
 function printsTitle(el: ResolvedDesignTextElement, level: number): boolean {
@@ -111,7 +97,7 @@ export function renderDesignedHeading(ctx: WriterContext, b: ContentBlock, headi
 
 /** A character no title holds, put where the title stands to find what the
  *  element prints around it. */
-const MARK = '';
+const MARK = '\uE000';
 
 /** What the title element prints before and after the title (its number,
  *  a separator, a fixed word, an ornament), as generated runs: the

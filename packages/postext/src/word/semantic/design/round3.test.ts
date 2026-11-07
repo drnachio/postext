@@ -9,7 +9,7 @@ import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { applyDocxEdits } from '../../roundtrip/index.js';
 import { exportDocx, exportProblems, looseMarkup } from '../fixtures/harness.js';
-import { designPictures } from './pictures.js';
+import { designMediaIds, designPictures } from './pictures.js';
 
 function edit(bytes: Uint8Array, f: (xml: string) => string): Uint8Array {
   const files = unzipSync(bytes);
@@ -212,5 +212,52 @@ describe('semantic docx: decorative pictures', () => {
   it('keeps the art of a design that prints nothing else (an endpaper)', () => {
     const els = [img('paper', { anchor: { to: 'bleed', edge: 'top-left' }, size: { width: mm(188) } })] as never;
     expect(designPictures(b, els, resources).map((p) => p.id)).toEqual(['paper']);
+  });
+
+  it('packages the pictures the opener prints, judged on the same elements the writer draws', () => {
+    // The text is printed on even pages only, so the odd opener prints
+    // the background alone: the writer draws it, and the package holds it.
+    const els = [img('paper', { anchor: { to: 'bleed', edge: 'top-left' }, size: { width: 'fill', height: 'fill' } }), text('t', '{title}', 40)].map((e, i) => ({ ...e, parity: i ? 'even' : 'odd' }));
+    const part = { type: 'containerStart', containerName: 'part', attrs: {} } as never;
+    const resolved = { parts: { design: { elements: els } } } as never;
+    expect([...designMediaIds([{ blocks: [part] }], resolved, resources)]).toEqual(['paper']);
+  });
+});
+
+describe('semantic docx: a line that just fits is not read as two', () => {
+  it('pairs the third line of two columns when the second line of one is a shade too long', async () => {
+    const col = (side: 'left' | 'right', id: string, content: string, under?: string) => ({
+      kind: 'text',
+      id,
+      content,
+      align: side,
+      fontSize: pt(9),
+      placement: under ? { anchor: { to: `#${under}`, edge: 'below' }, offset: { x: mm(0), y: mm(1) }, size: { width: mm(31) } } : { anchor: { to: 'container', edge: side === 'left' ? 'top-left' : 'top-right' }, offset: { x: mm(0), y: mm(2) }, size: { width: mm(31) } },
+    });
+    const config = {
+      headingStyles: [
+        {
+          id: 'front',
+          advancedDesign: {
+            enabled: true,
+            slot: {
+              elements: [
+                col('left', 'outlook', '{attr.outlook}'),
+                { ...col('left', 'temps', '{attr.temps}', 'outlook'), fontSize: pt(15) },
+                col('right', 'day', '{attr.day}'),
+                { ...col('right', 'price', '{attr.price}', 'day'), fontSize: pt(15) },
+                text('name', '{titleText}', 30, { align: 'center' }),
+              ],
+            },
+          },
+        },
+      ],
+    } as never;
+    const md = '# The Courier {style="front" outlook="Bright spells, breezy" temps="16°" day="Every Thursday" price="90p"}\n\nNews.\n';
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, [md])).toEqual([]);
+    expect(para(e.doc, '90p')).toContain('>16°<');
+    expect(para(e.doc, 'Every Thursday')).toContain('>Bright spells, breezy<');
+    readsBack(e.bytes, md);
   });
 });
