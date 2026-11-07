@@ -104,6 +104,93 @@ describe('semantic docx: table rules (#1444)', () => {
   });
 });
 
+/** The `w:tcPr` of each cell of each row of the first table. */
+function cellProps(e: Exported): string[][] {
+  const tbl = /<w:tbl>[^]*?<\/w:tbl>/.exec(e.doc)![0];
+  return [...tbl.matchAll(/<w:tr>([^]*?)<\/w:tr>/g)].map((tr) => [...tr[1]!.matchAll(/<w:tcPr>([^]*?)<\/w:tcPr>/g)].map((m) => m[1]!));
+}
+
+describe('semantic docx: merged cells in a booktabs table (#1444)', () => {
+  const hid = (row: number, col: number): TableCell => ({ content: '', hiddenBy: { row, col } });
+
+  it('rules a spanning header cell where it ends, and not when it reaches the header rule', async () => {
+    // "Wide" spans two columns and the first two of three header rows; "Deep"
+    // spans two columns and all three, so the header rule is its only one.
+    const t = table(
+      [
+        [{ content: 'Wide', colSpan: 2, rowSpan: 2 }, hid(0, 0), { content: 'Deep', colSpan: 2, rowSpan: 3 }, hid(0, 2)],
+        [hid(0, 0), hid(0, 0), hid(0, 2), hid(0, 2)],
+        [{ content: 'a' }, { content: 'b' }, hid(0, 2), hid(0, 2)],
+        [{ content: '1' }, { content: '2' }, { content: '3' }, { content: '4' }],
+      ],
+      { headerRowCount: 3 },
+    );
+    const e = await exportDocx(MD, { resources: [t], config: cfg({ tableStyle: { rules: 'booktabs', spanRules: 'full' } }) });
+    expect(exportProblems(e, [MD], fields([t]))).toEqual([]);
+    const [r0, r1, r2, r3] = cellProps(e);
+    // Row 0: the two merged regions open, neither with a rule of its own.
+    expect(r0!.map((p) => p.includes('<w:tcBorders>'))).toEqual([false, false]);
+    expect(r0![0]).toContain('<w:vMerge w:val="restart"/>');
+    // Row 1: "Wide" ends here and carries the span rule; "Deep" goes on.
+    expect(r1![0]).toContain('<w:vMerge/>');
+    expect(r1![0]).toMatch(/<w:tcBorders><w:bottom w:val="single"/);
+    expect(r1![1]).not.toContain('<w:tcBorders>');
+    // Row 2, the last header row: the header rule under every cell, "Deep"
+    // continuation included, and nothing more.
+    expect(r2!).toHaveLength(3);
+    for (const p of r2!) expect(p.match(/<w:bottom /g)).toHaveLength(1);
+    expect(r3!.some((p) => p.includes('<w:tcBorders>'))).toBe(false);
+    unchanged(e, [t]);
+  });
+
+  it('carries a merged cell fill and header style into its continuation', async () => {
+    const t = table(
+      [
+        [{ content: 'Head', rowSpan: 2 }, { content: 'H1' }],
+        [hid(0, 0), { content: 'H2' }],
+        [{ content: 'Tint', rowSpan: 2, background: { hex: '#ddeeff', model: 'hex' } }, { content: 'x' }],
+        [hid(2, 0), { content: 'y' }],
+      ],
+      { headerRowCount: 2 },
+    );
+    const e = await exportDocx(MD, { resources: [t], config: cfg({ tableStyle: { headerBackgroundEnabled: true, headerBackground: { hex: '#112233', model: 'hex' } } }) });
+    expect(exportProblems(e, [MD], fields([t]))).toEqual([]);
+    const rows = cellProps(e);
+    expect(rows[1]![0]).toContain('<w:vMerge/>');
+    expect(rows[1]![0]).toContain('w:fill="112233"');
+    expect(rows[3]![0]).toContain('<w:vMerge/>');
+    expect(rows[3]![0]).toContain('w:fill="DDEEFF"');
+    expect(rows[3]![1]).not.toContain('w:fill=');
+    // The header continuation's paragraph is in the header style.
+    const tbl = /<w:tbl>[^]*?<\/w:tbl>/.exec(e.doc)![0];
+    const row1 = [...tbl.matchAll(/<w:tr>([^]*?)<\/w:tr>/g)][1]![1]!;
+    expect(row1.match(/<w:pStyle w:val="PostextTableHeaderDefault"\/>/g)).toHaveLength(2);
+    unchanged(e, [t]);
+  });
+
+  it('rules a group head that spans rows once, and not a row of continuations', async () => {
+    const t = table(
+      [
+        [{ content: 'A' }, { content: 'B' }],
+        [{ content: '1' }, { content: '2' }],
+        [{ content: 'Group', colSpan: 2, rowSpan: 2 }, hid(2, 0)],
+        [hid(2, 0), hid(2, 0)],
+        [{ content: 'Tall', rowSpan: 2 }, { content: '3' }],
+        [hid(4, 0), { content: '4' }],
+      ],
+      { headerRowCount: 1 },
+    );
+    const e = await exportDocx(MD, { resources: [t], config: cfg({ tableStyle: { rules: 'booktabs', groupRules: true } }) });
+    expect(exportProblems(e, [MD], fields([t]))).toEqual([]);
+    const rows = cellProps(e);
+    const topped = rows.map((r) => r.some((p) => /<w:tcBorders><w:top /.test(p)));
+    // Only the group head; not the row its cell runs into, nor a row whose
+    // one visible cell sits beside a continuation.
+    expect(topped).toEqual([false, false, true, false, false, false]);
+    unchanged(e, [t]);
+  });
+});
+
 describe('semantic docx: table cells (#1444)', () => {
   it('sets cells in their table style faces, sizes and colours, header bold in the style', async () => {
     const config = cfg({

@@ -103,9 +103,14 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
       if (continues) tcPr += '<w:vMerge/>';
       else if (restarts) tcPr += '<w:vMerge w:val="restart"/>';
       // A booktabs table's own rules: above a group row, under the header
-      // and under a spanning header cell above its last row.
+      // and under a header cell spanning columns that ends above the last
+      // header row (as the engine draws it). Word strokes a merged cell's
+      // bottom from the row it ends in, so the span rule goes there.
+      const startRow = hidden ? hidden.row : r;
+      const endRow = startRow + Math.max(1, primary?.rowSpan ?? 1) - 1;
+      const spanRule = startRow < headerRows && span > 1 && r === endRow && endRow < headerRows - 1;
       const top = groupRow ? (rules.groupRule ?? '') : '';
-      const bottom = lastHeader ? (rules.headerRule ?? '') : header && r < headerRows - 1 && span > 1 ? (rules.spanRule ?? '') : '';
+      const bottom = lastHeader ? (rules.headerRule ?? '') : spanRule ? (rules.spanRule ?? '') : '';
       if (top || bottom) tcPr += `<w:tcBorders>${top}${bottom}</w:tcBorders>`;
       if (fill) tcPr += `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`;
       const va = primary?.verticalAlign ? VALIGN[primary.verticalAlign] : undefined;
