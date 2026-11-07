@@ -12,7 +12,8 @@ import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js'
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
 import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, unpadded, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emitRun, formatFlags, leadChip, linkTarget, runProps, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emittedRuns, paragraphTabs, tabRun } from './tabs.js';
 import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
@@ -22,8 +23,6 @@ type TextItem = Extract<DisplayItem, { kind: 'text' }>;
 
 /** Measure edges equal within this many px. */
 const EPS = 0.05;
-/** A gap between two runs kept as room, px. */
-const GAP_MIN = 0.5;
 /** Room on a box's free side so a ragged line Word sets a hair wider
  *  than the engine does not wrap (pt). */
 export const SLACK_PT = 2;
@@ -66,29 +65,24 @@ export interface Chunk {
   groups: Group[];
 }
 
-/** Room before the next run of the same direction, per run (px; runs
- *  set apart, a number flush right). Vertical runs go by x too, along
- *  the line in the item's unturned frame. */
-export function runGaps(line: DisplayLine): number[] {
-  const gaps = line.runs.map(() => 0);
-  const rtl = line.rtl === true;
-  let prev = -1;
-  line.runs.forEach((r, i) => {
-    if (r.text.length === 0) return;
-    const p = line.runs[prev];
-    if (p && (p.rtl === true) === rtl && (r.rtl === true) === rtl) {
-      const gap = rtl ? p.x - (r.x + r.width) : r.x - (p.x + p.width);
-      if (gap > GAP_MIN) gaps[prev] = gap;
-    }
-    prev = i;
-  });
-  return gaps;
-}
+export { runGaps } from './runs.js';
 
 /** A line's measure, its end side taken out to its runs where they
  *  hang past it (CJK punctuation hung at the line end): Word, without
  *  kinsoku, would move what hangs to the next line. */
 function edges(l: DisplayLine): { L: number; R: number } {
+  // A chip that opens the line: its words where its padding puts them, on
+  // the side the alignment pins (centred, they stay centred).
+  const lead = leadChip(l);
+  if (lead?.lone && l.align === 'right') return { L: l.x, R: lead.run.x + lead.run.width - (lead.run.padEnd ?? 0) };
+  if (lead && l.align !== 'center' && l.align !== 'right') {
+    const e = edgesOf(l);
+    return { L: lead.run.x + (lead.run.padStart ?? 0), R: e.R };
+  }
+  return edgesOf(l);
+}
+
+function edgesOf(l: DisplayLine): { L: number; R: number } {
   let L = l.x;
   let R = l.x + l.width;
   for (const r of l.runs) {
@@ -247,8 +241,8 @@ export interface EmitOptions {
 }
 
 /** `w:pPr` of a group inside the box [boxL, boxR]. */
-function groupProps(ctx: WriterContext, item: TextItem, g: Group, boxL: number, boxR: number, spaceBefore: number): string {
-  const p: string[] = [`<w:pStyle w:val="${styleIdOf(item)}"/>`, '<w:widowControl w:val="0"/>', '<w:suppressAutoHyphens/>', '<w:kinsoku w:val="0"/>', '<w:overflowPunct w:val="0"/>', '<w:autoSpaceDE w:val="0"/>', '<w:autoSpaceDN w:val="0"/>'];
+function groupProps(ctx: WriterContext, item: TextItem, g: Group, boxL: number, boxR: number, spaceBefore: number, tabs = ''): string {
+  const p: string[] = [`<w:pStyle w:val="${styleIdOf(item)}"/>`, '<w:widowControl w:val="0"/>', tabs, '<w:suppressAutoHyphens/>', '<w:kinsoku w:val="0"/>', '<w:overflowPunct w:val="0"/>', '<w:autoSpaceDE w:val="0"/>', '<w:autoSpaceDN w:val="0"/>'];
   if (g.rtl) p.push('<w:bidi/>');
   p.push('<w:adjustRightInd w:val="0"/>', '<w:snapToGrid w:val="0"/>');
   p.push(`<w:spacing w:before="${Math.max(0, spaceBefore)}" w:after="0" w:line="${g.pitch}" w:lineRule="exact"/>`);
@@ -303,7 +297,8 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
     else out.formats.push({ start, end, flags, ...(href ? { href } : {}) });
   };
   groups.forEach((g, gi) => {
-    xml.push('<w:p>', groupProps(ctx, item, g, boxL, boxR, gi === 0 ? (opts.spaceBefore ?? 0) : 0));
+    const tabs = paragraphTabs(ctx, item.lines.slice(g.from, g.to + 1), boxL, g.rtl ? 0 : twips(g.restL - boxL, ctx.dpi));
+    xml.push('<w:p>', groupProps(ctx, item, g, boxL, boxR, gi === 0 ? (opts.spaceBefore ?? 0) : 0, tabs.xml));
     if (gi === 0 && opts.bookmarkStart) xml.push(opts.bookmarkStart);
     for (let i = g.from; i <= g.to; i++) {
       const line = item.lines[i]!;
@@ -323,9 +318,10 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (pendingText) lx.push(`<w:r>${pendingProps}<w:t xml:space="preserve">${escapeXml(pendingText)}</w:t></w:r>`);
         pendingText = '';
       };
-      const flat = unpadded(line, runGaps(line));
-      for (const { run, gap } of joinWordRuns(flat.line, flat.gaps)) {
-        const emitted = emitRun(ctx, run, flat.line, gap);
+      const flat = emittedRuns(line);
+      const lineTabs = tabs.lines[i - g.from]!;
+      for (const [k, { run, gap }] of flat.runs.entries()) {
+        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, gap);
         if (!emitted.text) continue;
         // The fallback line's style: the run's face and tracking, not the
         // spacing or scale fitted to that run alone.

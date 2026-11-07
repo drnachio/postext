@@ -178,4 +178,18 @@ export class MetricsCache {
     return this.face(fontString)?.advances;
   }
 
+  /** Ascent in px of a font string at its size, undefined when its face
+   *  is not embedded. */
+  ascentPx(fontString: string): number | undefined {
+    const m = this.faceMetrics(fontString);
+    return m ? (m.ascent / m.unitsPerEm) * fontSizePx(fontString) : undefined;
+  }
+
+  /** Descent in px of a font string at its size, undefined when its face
+   *  is not embedded. */
+  descentPx(fontString: string): number | undefined {
+    const m = this.faceMetrics(fontString);
+    return m ? (m.descent / m.unitsPerEm) * fontSizePx(fontString) : undefined;
+  }
+
 }

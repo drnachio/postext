@@ -1,8 +1,9 @@
-// Tables as fixed-layout Word tables inside a text box (#1392): grid
-// columns from the column edges, exact row heights from the row edges,
-// zero cell margins, cell fills and borders, each cell's lines placed by
-// its paragraphs' indents and a spacing before the first one. Cell
-// pictures are anchored on the page over their cell.
+// Tables as fixed-layout Word tables (#1392): grid columns from the
+// column edges, exact row heights from the row edges, zero cell margins,
+// cell fills and borders, each cell's lines placed by its paragraphs'
+// indents and a spacing before the first one. Cell pictures are anchored
+// on the page over their cell. An unturned table floats on its page
+// (`w:tblpPr`, floats.ts, #1444); a turned one stays in a text box.
 
 import type { DisplayItem } from '../../paint/displayList/types.js';
 import { textBoxRun, turnedBox } from './drawing.js';
@@ -11,7 +12,8 @@ import { baselineOffset } from './metrics.js';
 import { emitGroups, planChunks, planLines, type TextOut } from './paragraphs.js';
 import { imageRun } from './pictures.js';
 import { inlineDrawingRuns, lineOffsets } from './text.js';
-import { chipBoxRuns, swatchShapeRuns } from './inlineShapes.js';
+import { chipBoxRuns, hasChipBoxes, swatchShapeRuns } from './inlineShapes.js';
+import { rectRuns } from './shapes.js';
 import { eighths, twips, twipsToPx, wordColor } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -68,8 +70,42 @@ function cellProps(width: number, span: number, vMerge: '' | 'restart' | 'contin
   );
 }
 
+/** Where a table goes on its page: `float`, a floating Word table
+ *  (`w:tblpPr`) in the body after the page's anchor paragraph, its x and y
+ *  in twips from the page's top left corner; `under`, drawings painted
+ *  before it (chip boxes) and `over`, drawings painted after it (cell
+ *  pictures, inline drawings); or, for a turned table, `box`, a text box
+ *  holding it. */
+export interface TableParts {
+  under: string[];
+  box?: string;
+  float?: { xml: string; x: number; y: number; height: number };
+  over: string[];
+}
+
 /** A table item: its text box, and the pictures and inline drawings over it. */
 export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<string[]> {
+  const parts = await tableParts(ctx, item, false);
+  return [...parts.under, ...(parts.box ? [parts.box] : []), ...parts.over];
+}
+
+/** Whether a table can float on its page: an unturned table inside the
+ *  page. A floating table's anchor paragraph comes after it in the flow;
+ *  a table that reaches the foot of the page would push that paragraph
+ *  onto a page of its own. */
+export function floatsOnPage(item: TableItem, pageWidth: number, pageHeight: number, dpi: number): boolean {
+  if (item.rotate) return false;
+  const r = item.rect;
+  const room = (FLOAT_FOOT_TW * dpi) / 1440;
+  return r.x >= 0 && r.y >= 0 && r.x + r.width <= pageWidth + 0.5 && r.y + r.height <= pageHeight - room;
+}
+
+/** Room a floating table leaves under it at the foot of the page, twips:
+ *  the anchor paragraph after it and the page's last paragraph. */
+export const FLOAT_FOOT_TW = 80;
+
+/** A table item as a text box (`floating` false) or as a floating table. */
+export async function tableParts(ctx: WriterContext, item: TableItem, floating: boolean): Promise<TableParts> {
   const dpi = ctx.dpi;
   const cols = edgeTwips(item.columnEdges, dpi, item.rect.width);
   const rows = edgeTwips(item.rowEdges, dpi, item.rect.height);
@@ -81,6 +117,11 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
   const borders = bordersXml(ctx, item);
   const pending: Pending[] = [];
 
+  // A shaded cell that holds chips is filled by a shape under their boxes:
+  // its own shading would cover them (answer bubbles on a tinted grid).
+  const shapeFilled = new Set(item.cells.filter((cell) => wordColor(cell.background) !== undefined && cell.item !== null && hasChipBoxes(cell.item.lines)));
+  const shading = (cell: Cell): string | undefined => (shapeFilled.has(cell) ? undefined : cell.background);
+
   // Where each cell sits in the grid.
   const at = new Map<string, { cell: Cell; c: number; r: number; span: number; rowSpan: number }>();
   const covered = new Map<string, { span: number; fill: string | undefined }>();
@@ -91,11 +132,24 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
     const r2 = Math.max(r + 1, nearest(rowPx, cell.rect.y + cell.rect.height - item.rect.y));
     if (at.has(`${r}:${c}`)) continue;
     at.set(`${r}:${c}`, { cell, c, r, span: c2 - c, rowSpan: r2 - r });
-    for (let rr = r + 1; rr < r2; rr++) covered.set(`${rr}:${c}`, { span: c2 - c, fill: cell.background });
+    for (let rr = r + 1; rr < r2; rr++) covered.set(`${rr}:${c}`, { span: c2 - c, fill: shading(cell) });
   }
 
+  // A floating table is placed on the page by its tblpPr in Word and
+  // LibreOffice, which ignore its indent; Google Docs has no floating
+  // tables and sets it in the flow, where the indent puts it at its x.
+  const x = twips(item.rect.x, dpi);
+  const y = twips(item.rect.y, dpi);
+  // A floating table's indent is its x for Google Docs, which has no
+  // floating tables. LibreOffice's DOCX import zeroes the indent of a
+  // floating table and places it by tblpX alone, following Word, whose
+  // Table Properties leave "Indent from left" unavailable for a table
+  // with text wrapping around it. Not yet checked in a Word render.
+  const float = floating
+    ? `<w:tblpPr w:leftFromText="0" w:rightFromText="0" w:topFromText="0" w:bottomFromText="0" w:vertAnchor="page" w:horzAnchor="page" w:tblpX="${x}" w:tblpY="${y}"/><w:tblOverlap w:val="overlap"/>`
+    : '';
   const xml: string[] = [
-    `<w:tbl><w:tblPr><w:tblW w:w="${cols[cols.length - 1]! - cols[0]!}" w:type="dxa"/><w:tblInd w:w="0" w:type="dxa"/>`,
+    `<w:tbl><w:tblPr>${float}<w:tblW w:w="${cols[cols.length - 1]! - cols[0]!}" w:type="dxa"/><w:tblInd w:w="${floating ? x : 0}" w:type="dxa"/>`,
     '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>',
     '<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tblCellMar><w:tblLook w:val="0000"/></w:tblPr>',
     `<w:tblGrid>${cols.slice(1).map((v, i) => `<w:gridCol w:w="${v - cols[i]!}"/>`).join('')}</w:tblGrid>`,
@@ -109,7 +163,7 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
       const cont = covered.get(`${r}:${c}`);
       if (placed) {
         const { cell, span, rowSpan } = placed;
-        xml.push(`<w:tc>${cellProps(width(span), span, rowSpan > 1 ? 'restart' : '', borders, cell.background)}`);
+        xml.push(`<w:tc>${cellProps(width(span), span, rowSpan > 1 ? 'restart' : '', borders, shading(cell))}`);
         xml.push(cellContent(ctx, cell, pending));
         xml.push('</w:tc>');
         c += span;
@@ -123,10 +177,16 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
     }
     xml.push('</w:tr>');
   }
-  xml.push('</w:tbl>', TINY_P);
-  // Chip boxes under the table (a shaded cell covers them).
-  const runs = item.cells.flatMap((cell) => (cell.item ? chipBoxRuns(ctx, cell.item.lines, centre, item.rotate) : []));
-  runs.push(textBoxRun(ctx, { rect: item.rect, name: 'ptx table', ...(item.rotate ? { rotate: item.rotate } : {}) }, xml.join('')));
+  xml.push('</w:tbl>');
+  // Chip boxes under the table, on the fills of the cells that hold them.
+  const under = [...shapeFilled].flatMap((cell) =>
+    rectRuns(ctx, { kind: 'rect', rect: turnedBox(cell.rect, centre, item.rotate), fill: cell.background!, ...(item.rotate ? { rotate: item.rotate } : {}) }),
+  );
+  for (const cell of item.cells) if (cell.item) under.push(...chipBoxRuns(ctx, cell.item.lines, centre, item.rotate));
+  const parts: TableParts = { under, over: [] };
+  if (floating) parts.float = { xml: xml.join(''), x, y, height: rows[rows.length - 1]! };
+  else parts.box = textBoxRun(ctx, { rect: item.rect, name: 'ptx table', ...(item.rotate ? { rotate: item.rotate } : {}) }, xml.join('') + TINY_P);
+  const runs = parts.over;
   for (const cell of item.cells) {
     if (!cell.image) continue;
     const img = { ...cell.image, rect: turnedBox(cell.image.rect, centre, item.rotate), ...(item.rotate ? { rotate: item.rotate } : {}) };
@@ -136,7 +196,7 @@ export async function tableRuns(ctx: WriterContext, item: TableItem): Promise<st
   // Inline drawings of the cells, collected while their text was written.
   for (const p of pending) runs.push(...(await inlineDrawingRuns(ctx, p.out, centre, item.rotate, p.vertical)));
   for (const cell of item.cells) if (cell.item) runs.push(...swatchShapeRuns(ctx, cell.item.lines, centre, item.rotate));
-  return runs;
+  return parts;
 }
 
 /** The paragraphs of a cell (bookmarked when importable); a cell with
