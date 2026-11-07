@@ -83,6 +83,19 @@ export function exportProblems(e: Exported, markdown: string[], fields?: (f: Map
   return out;
 }
 
+/** The empty one-column section after columns that close before a new
+ *  page, which lets Word end them level (see `chapterSections`). */
+const LEVEL_SECTION = /(?<=<\/w:sectPr><\/w:pPr><\/w:p>)<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"\/><w:ind w:firstLine="0"\/><w:rPr><w:sz w:val="2"\/><w:szCs w:val="2"\/><\/w:rPr>(?:<w:sectPr>(?:(?!<\/w:sectPr>).)*<\/w:sectPr><\/w:pPr><\/w:p>|<\/w:pPr><\/w:p><w:sectPr>(?:(?!<\/w:sectPr>).)*<\/w:sectPr>(?=<\/w:body>))/g;
+
+/** The document's sections, in order, leaving out those that only level
+ *  the columns above them. */
+export function sectionsOf(doc: string, all = false): string[] {
+  return (all ? doc : doc.replace(LEVEL_SECTION, '')).match(/<w:sectPr>.*?<\/w:sectPr>/g) ?? [];
+}
+
+/** How many sections only level the columns above them. */
+export const levelSections = (doc: string): number => doc.match(LEVEL_SECTION)?.length ?? 0;
+
 /** `w:t` text containing `:::` outside raw content controls and code. */
 export function looseMarkup(doc: string): string[] {
   const stripped = doc

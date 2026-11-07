@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from '../../../types.js';
 import type { WordFontPlan } from '../../fonts/types.js';
 import { applyDocxEdits } from '../../roundtrip/index.js';
-import { exportDocx, exportProblems, type Exported } from '../fixtures/harness.js';
+import { exportDocx, exportProblems, type Exported, sectionsOf } from '../fixtures/harness.js';
 
 const cfg = (c: Record<string, unknown>): PostextConfig => c as unknown as PostextConfig;
 
@@ -31,7 +31,6 @@ const styleOf = (e: Exported, id: string): string => {
   return at < 0 ? '' : xml.slice(at, xml.indexOf('</w:style>', at));
 };
 
-const sectionsOf = (doc: string): string[] => doc.match(/<w:sectPr>.*?<\/w:sectPr>/g) ?? [];
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
 

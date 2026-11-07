@@ -139,6 +139,11 @@ export class StyleRegistry {
     return id;
   }
 
+  /** The name of style `id` (what a STYLEREF field names). */
+  nameOf(id: string): string | undefined {
+    return this.defs.get(id)?.name;
+  }
+
   /** A unique style id for a key (config ids may collide once slugged). */
   private idFor(key: string, prefix: string, name: string): { id: string; fresh: boolean } {
     const known = this.byKey.get(key);
@@ -417,6 +422,12 @@ export class StyleRegistry {
     const step = 240;
     const ind = kind === 'toc' ? { left: (lv - 1) * step, firstLine: 0 } : { left: lv * step, hanging: step };
     return this.add(id, { type: 'paragraph', name: `${kind} ${lv}`, basedOn: STYLE.normal, next: STYLE.normal, pPr: { before: 0, after: kind === 'toc' && lv === 1 ? 60 : 0, ind, jc: 'left' } });
+  }
+
+  /** Word's own style of an index letter head (`index heading`), bold and
+   *  a line above, set apart from the entries before. */
+  indexHeading(): string {
+    return this.add('IndexHeading', { type: 'paragraph', name: 'index heading', basedOn: STYLE.normal, next: 'Index1', pPr: { before: 240, after: 0, keepNext: true, ind: { firstLine: 0 }, jc: 'left' }, rPr: { b: true } });
   }
 
   /** The Word style of a named paragraph style (`:::paragraphs{style}`). */

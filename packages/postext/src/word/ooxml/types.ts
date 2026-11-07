@@ -61,6 +61,12 @@ export interface DocxPackageInput {
   numbering?: string;
   /** `w:footnote` elements with ids ≥ 1 (separators are added). */
   footnotes?: string[];
+  /** The separator note's content (paragraphs) in place of Word's own
+   *  line. */
+  footnoteSeparator?: string;
+  /** Page colour, `RRGGBB` (`w:background`; Word shows it with the
+   *  `w:displayBackgroundShape` setting). */
+  background?: string;
   endnotes?: string[];
   /** Header/footer parts: id → inner XML of `w:hdr`/`w:ftr`. Referenced from
    *  `sectPr` with `r:id` = the returned relationship ids (see `rels`). */

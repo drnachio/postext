@@ -21,7 +21,7 @@ import type { ContentBlock } from '../../../parse/types.js';
 import type { ResolvedConfig } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
 import { joinBlocks, type Node } from '../blocks.js';
-import { sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
+import { headingFillsPage, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
 import { pPr } from '../wml.js';
 
 /** A block's XML and what it asks of its section. */
@@ -31,6 +31,9 @@ export interface Piece {
   span?: boolean;
   /** Opens a new section starting this way (a heading's page break). */
   start?: Exclude<SectionStart, 'chapter' | 'continuous'>;
+  /** The top-level block written (a heading tells the section's running
+   *  heads and whether it opens on an opener page). */
+  block?: ContentBlock;
 }
 
 const resolvers = new WeakMap<ResolvedConfig, HeadingLevelResolver>();
@@ -92,8 +95,34 @@ export function headingStart(ctx: WriterContext, b: ContentBlock): Piece['start'
 
 /** A paragraph that only closes a section: no room of its own to speak
  *  of, so it adds no blank line where the columns change. */
-function sectionBreak(sect: string): string {
-  return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>', sectPr: sect })}</w:p>`;
+function sectionBreak(sect?: string): string {
+  return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>', ...(sect ? { sectPr: sect } : {}) })}</w:p>`;
+}
+
+/** The paragraph style a heading's XML sets its title in: the paragraph
+ *  that carries the outline level 1 (Word's Heading 1 carries it in the
+ *  style). */
+function titleParagraphStyle(xml: string): string | undefined {
+  for (const m of xml.matchAll(/<w:pPr><w:pStyle w:val="([^"]+)"\/>(.*?)<\/w:pPr>/g)) {
+    if (m[2]!.includes('<w:outlineLvl w:val="0"/>') || (m[1] === 'Heading1' && !m[2]!.includes('<w:outlineLvl'))) return m[1];
+  }
+  return undefined;
+}
+
+/**
+ * The name of the paragraph style a running head's `{chapterTitle}` can
+ * read with a STYLEREF field (the title of the last chapter heading on the
+ * page): when a level-1 heading after the chapter's first goes on down a
+ * page (one that opens a section of its own has its own running heads)
+ * and every one after the first is set in that same style. Undefined when
+ * the sections' own titles serve, or Word could not find them by style.
+ */
+function chapterTitleStyle(ctx: WriterContext, pieces: readonly Piece[]): string | undefined {
+  const titles = pieces.filter((p) => p.block?.type === 'heading' && (p.block.level ?? 1) === 1).slice(1);
+  if (!titles.some((p) => !p.start)) return undefined;
+  const styles = new Set(titles.map((p) => titleParagraphStyle(p.xml)));
+  const [only] = styles;
+  return styles.size === 1 && only ? ctx.styles.nameOf(only) : undefined;
 }
 
 /**
@@ -102,29 +131,62 @@ function sectionBreak(sect: string): string {
  * last is closed by a section-break paragraph; the last by `w:sectPr` at
  * the end of the body (`last`) or by a paragraph carrying it.
  */
-export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: number, title: string | undefined, pieces: readonly Piece[], last: boolean): string {
+export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: number, pieces: readonly Piece[], last: boolean): string {
   const columns = geo.cols.includes('w:num=');
-  type Section = { start: SectionStart; oneColumn: boolean; parts: string[] };
+  // `block`: the section's first block (`leads`: written first in it), or
+  // for one that opens with no block of its own (a page-width float set
+  // after its anchor) the last block before it, so its running heads are
+  // the ones in force there; `tail`: the last block written in it.
+  type Section = { start: SectionStart; oneColumn: boolean; parts: string[]; block?: ContentBlock; leads?: boolean; tail?: ContentBlock };
   const sections: Section[] = [];
-  for (const p of pieces) {
-    if (!p.xml) continue;
+  let after: Piece | undefined;
+  let seen: ContentBlock | undefined;
+  for (const piece of pieces) {
+    if (!piece.xml) continue;
+    // What follows a heading that fills its page starts the next one.
+    const p = !piece.start && headingFillsPage(ctx, after?.block) ? { ...piece, start: 'nextPage' as const } : piece;
+    after = piece;
     const oneColumn = columns && !!p.span;
     const cur = sections[sections.length - 1];
+    const block = p.block ? { block: p.block, leads: true } : seen ? { block: seen, leads: false } : {};
+    seen = p.block ?? seen;
+    const tail = seen ? { tail: seen } : {};
     if (!cur) {
       // The chapter's own start already opens the page.
-      sections.push({ start: 'chapter', oneColumn, parts: [p.xml] });
+      sections.push({ start: 'chapter', oneColumn, parts: [p.xml], ...block, ...tail });
       continue;
     }
-    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml] });
-    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml] });
-    else cur.parts.push(p.xml);
+    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml], ...block, ...tail });
+    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml], ...block, ...tail });
+    else {
+      cur.parts.push(p.xml);
+      if (!cur.block && p.block) cur.block = p.block;
+      if (seen) cur.tail = seen;
+    }
   }
   if (!sections.length) sections.push({ start: 'chapter', oneColumn: false, parts: [] });
+  const titleStyle = chapterTitleStyle(ctx, pieces);
+  const balancing = ctx.resolved.headings.balancing;
+  const levels = columns && balancing.enabled && balancing.trailing;
   let xml = '';
   sections.forEach((s, i) => {
-    const sect = sectionXml(ctx, geo, index, title, { start: s.start, oneColumn: s.oneColumn, first: i === 0 });
-    const body = joinBlocks(s.parts);
-    if (i < sections.length - 1) xml += body + sectionBreak(sect);
+    const follow = sections[i + 1]?.start === 'continuous' ? sections[i + 1]!.block : undefined;
+    const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}), ...(follow ? { follow } : {}) });
+    let body = joinBlocks(s.parts);
+    // Columns that close before a new page (the chapter's end, or a heading
+    // that opens one) end level, as the engine cuts a closing band: Word
+    // balances a section's columns only above a continuous break, so an
+    // empty one-column section follows them on their page.
+    const next = sections[i + 1];
+    if (levels && !s.oneColumn && (!next || next.start !== 'continuous')) {
+      body += sectionBreak(sect);
+      // Its running heads are the ones in force where the columns end.
+      const level = sectionXml(ctx, geo, index, { start: 'continuous', oneColumn: true, ...(s.tail ? { block: s.tail, leads: false } : {}), ...(titleStyle ? { titleStyle } : {}) });
+      if (next || !last) xml += body + sectionBreak(level);
+      else xml += body + sectionBreak() + level;
+      return;
+    }
+    if (next) xml += body + sectionBreak(sect);
     else xml += last ? body + sect : `${body}<w:p>${pPr({ sectPr: sect })}</w:p>`;
   });
   return xml;

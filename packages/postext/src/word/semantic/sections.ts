@@ -1,15 +1,18 @@
 // Sections of the semantic .docx (#1390): page size and margins from the
 // config, the column layout (`w:cols`, unequal widths for column-and-a-
-// half), one section per chapter starting on a new (or odd) page, and a
-// running head and page number when the book's design has them.
+// half), one section per chapter starting on a new (or odd) page, and the
+// running heads and folios of the book's design (page/furniture.ts).
 
+import type { ContentBlock } from '../../parse/types.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import { layoutColumnCount } from '../../defaults/layout.js';
 import type { WriterContext } from './context.js';
 import { resolvedLocale } from '../../pipeline/config.js';
 import { pageNumberFormat, pageNumberType } from './directives.js';
-import { STYLE } from './styles.js';
-import { fieldRuns, pPr, px, textRuns, type Units } from './wml.js';
+import { headingStyleOf } from '../../pipeline/sections/headingStyles.js';
+import { sectionFurniture } from './page/furniture.js';
+import { sectionFootnotePr } from './page/notes.js';
+import { px, type Units } from './wml.js';
 
 export interface PageGeometry {
   widthTw: number;
@@ -86,6 +89,16 @@ export interface SectionPart {
   start: SectionStart;
   oneColumn?: boolean;
   first?: boolean;
+  /** The section's first block: the running heads in force there, and,
+   *  when it is written first (`leads`), whether the section's first page
+   *  is an opener. */
+  block?: ContentBlock;
+  leads?: boolean;
+  /** The style name of the chapter's later titles, when the running heads
+   *  read the chapter title with a STYLEREF field. */
+  titleStyle?: string;
+  /** The first block of the continuous section that follows this one. */
+  follow?: ContentBlock;
 }
 
 /** One column across the text area, for page-spanning content. */
@@ -93,31 +106,12 @@ const ONE_COLUMN = '<w:cols w:space="720"/>';
 
 /** The `w:sectPr` that closes a section of chapter `index` (its headers
  *  and footers registered in the context). */
-export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number, title: string | undefined, part: SectionPart = { start: 'chapter', first: true }): string {
+export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number, part: SectionPart = { start: 'chapter', first: true }): string {
   const r = ctx.resolved;
   const level1 = r.headings.levels.find((l) => l.level === 1);
-  // A section that opens a page (a chapter, a heading's page break) shows
-  // the first-page header and footer; one that goes on down the page
-  // keeps the running ones.
-  const titlePg = !!level1?.breakBefore.enabled && part.start !== 'continuous';
-  let refs = '';
-  if (r.header.elements.length) {
-    const id = `h${index}`;
-    ctx.headers[id] = `<w:p>${pPr({ style: STYLE.header })}${textRuns(title ?? '', '')}</w:p>`;
-    refs += `<w:headerReference w:type="default" r:id="${ctx.pkg.headerRel(id)}"/>`;
-    if (titlePg) {
-      ctx.headers.first = `<w:p>${pPr({ style: STYLE.header })}</w:p>`;
-      refs += `<w:headerReference w:type="first" r:id="${ctx.pkg.headerRel('first')}"/>`;
-    }
-  }
-  if (r.footer.elements.length) {
-    ctx.footers.page = `<w:p>${pPr({ style: STYLE.footer })}${fieldRuns('PAGE', '1')}</w:p>`;
-    refs += `<w:footerReference w:type="default" r:id="${ctx.pkg.footerRel('page')}"/>`;
-    if (titlePg) {
-      ctx.footers.first = `<w:p>${pPr({ style: STYLE.footer })}</w:p>`;
-      refs += `<w:footerReference w:type="first" r:id="${ctx.pkg.footerRel('first')}"/>`;
-    }
-  }
+  // The running heads the section's pages print, the opener's on its
+  // first page when it opens with a heading that breaks the page.
+  const { refs, titlePg } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), start: part.start });
   // A chapter starts on a new page; on a right-hand one only when the book
   // asks for recto starts. A verso start (a spread opener whose artwork
   // the document does not carry) would only leave a blank page, and
@@ -130,7 +124,7 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   const header = Math.round(m.top / 2);
   const footer = Math.round(m.bottom / 2);
   return (
-    `<w:sectPr>${refs}${start}` +
+    `<w:sectPr>${refs}${bookHasNotes(ctx) ? sectionFootnotePr(r, !!part.first) : ''}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
     pageNumberType(ctx, !!part.first) +
@@ -140,6 +134,29 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
     (r.direction === 'rtl' ? '<w:bidi/>' : '') +
     '<w:docGrid w:linePitch="360"/></w:sectPr>'
   );
+}
+
+/** Whether heading `b` fills its page: its styled section's margins leave
+ *  a body area under a quarter of the page (a cover whose title stands
+ *  low), which the title takes, so what follows it in the section goes to
+ *  the next page, as the engine sets it (#1444). The document keeps the
+ *  book's margins (the heading's design is written in the flow). */
+export function headingFillsPage(ctx: WriterContext, b: ContentBlock | undefined): boolean {
+  if (b?.type !== 'heading') return false;
+  const m = headingStyleOf(b, ctx.resolved)?.margins;
+  if (!m) return false;
+  const height = px(ctx.units, ctx.resolved.page.height);
+  return height - px(ctx.units, m.top) - px(ctx.units, m.bottom) < height / 4;
+}
+
+const notesMemo = new WeakMap<object, boolean>();
+
+/** Whether the book has footnotes (each section then says how Word
+ *  numbers them). */
+function bookHasNotes(ctx: WriterContext): boolean {
+  let has = notesMemo.get(ctx.book);
+  if (has === undefined) notesMemo.set(ctx.book, (has = ctx.book.some((ch) => ch.blocks.some((b) => b.footnoteDef !== undefined))));
+  return has;
 }
 
 /** Whether the book's text runs in two or more columns (page-spanning
