@@ -411,7 +411,9 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         // (#1444): a zero-width space after the break (generated) opens
         // the line instead.
         const next = item.lines[i + 1];
-        const rubyFirst = next?.vertical === true && next.runs.find((r) => r.text.length > 0)?.ruby !== undefined;
+        // (Only a `w:ruby`: a reading the engine placed is drawn apart.)
+        const ruby = next?.runs.find((r) => r.text.length > 0)?.ruby;
+        const rubyFirst = next?.vertical === true && ruby !== undefined && !ruby.runs?.length;
         xml.push(rubyFirst ? '<w:r><w:br/><w:t>\u200b</w:t></w:r>' : '<w:r><w:br/></w:r>');
         text += rubyFirst ? '\n\u200b' : '\n';
         out.map.push(...(rubyFirst ? [-1, -1] : [-1]));

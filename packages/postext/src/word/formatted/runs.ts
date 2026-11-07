@@ -23,7 +23,7 @@ import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
 import { symbolPieces } from './symbols.js';
 import { hasLigature, LIGATURE, LIGATURE_MIN_PT, ligaturePieces } from './ligatures.js';
-import { eastAsianLayout, kuntenOf, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
+import { eastAsianLayout, kuntenOf, rubyAnnotations, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -491,7 +491,10 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     if (k.annotations.length) out.annotations = k.annotations;
     if (k.rules.length) out.rules = k.rules;
   }
-  if (run.ruby) {
+  // A vertical line's reading is drawn beside its base (eastAsian.ts).
+  const readings = rubyAnnotations(run, line);
+  if (readings) out.annotations = [...(out.annotations ?? []), ...readings];
+  if (run.ruby && !readings) {
     const rt: DisplayRun = { text: run.ruby.text, x: run.x, width: 0, fontString: run.ruby.fontString, color: run.ruby.color ?? run.color, textStart: 0 };
     const sizes = { base: resolveFont(ctx, run.fontString).sz, rt: resolveFont(ctx, run.ruby.fontString).sz };
     // The base is not spaced out: LibreOffice lengthens the ruby cell by a

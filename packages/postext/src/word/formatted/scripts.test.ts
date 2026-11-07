@@ -120,15 +120,14 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
       const ext = els(w, 'ext').find((e) => e.attrs.cx !== undefined)!;
       expect(Number(ext.attrs.cy)).toBeGreaterThan(Number(ext.attrs.cx));
     }
-    // Ruby: reading over its base, sizes in half-points, in schema order.
-    const rubies = els(b.root, 'ruby');
-    expect(rubies.map((r) => textOf(els(r, 'rubyBase')[0]!))).toEqual(['猫', '東京']);
-    expect(rubies.map((r) => textOf(els(r, 'rt')[0]!))).toEqual(['ねこ', 'とう きょう']);
-    for (const r of rubies) {
-      expect(childNames(r)).toEqual(['rubyPr', 'rt', 'rubyBase']);
-      expect(childNames(els(r, 'rubyPr')[0]!)).toEqual(['rubyAlign', 'hps', 'hpsRaise', 'hpsBaseText', 'lid']);
-    }
-    expect(els(rubies[1]!, 'rubyAlign')[0]!.attrs['w:val']).toBe('distributeSpace');
+    // Ruby: LibreOffice moves a vertical ruby base off its column, so the
+    // readings are drawn where the engine placed them, as the kanbun marks
+    // are, and the bases stay plain text in the line (#1444).
+    expect(els(b.root, 'ruby')).toHaveLength(0);
+    const readings = els(b.root, 'anchor').filter((a) => els(a, 'docPr')[0]!.attrs.name!.startsWith('ptx mark')).map((m) => textOf(m));
+    expect(readings.join('')).toContain('ねこ');
+    expect(readings.join('').replace(/ /g, '')).toContain('とうきょう');
+    expect(b.map.fragments.map((f) => f.text).join('')).not.toContain('ねこ');
     // Tate-chu-yoko and two lines in one.
     const layouts = els(b.root, 'eastAsianLayout');
     const tcy = layouts.find((l) => l.attrs['w:vert'] === '1')!;
@@ -137,7 +136,7 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     expect(textOf(textRuns(b.root).find((r) => els(r, 'eastAsianLayout').includes(combine))!)).toBe('甲乙丙丁');
     // Kanbun marks: small vertical boxes outside every bookmark.
     const marks = els(b.root, 'anchor').filter((a) => els(a, 'docPr')[0]!.attrs.name!.startsWith('ptx mark'));
-    expect(marks.map((m) => textOf(m)).sort()).toEqual(['ビテ', 'フ', 'レ']);
+    expect(marks.map((m) => textOf(m)).filter((t) => /[ビテフレ]/.test(t)).sort()).toEqual(['ビテ', 'フ', 'レ']);
     for (const m of marks) expect(els(m, 'bodyPr')[0]!.attrs.vert).toBe('eaVert');
     expect(b.map.fragments.map((f) => f.text).join('')).not.toContain('ビテ');
     // Word's own CJK spacing is off, the engine's kept.

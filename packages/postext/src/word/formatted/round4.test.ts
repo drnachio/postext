@@ -133,3 +133,41 @@ describe.runIf(existsSync(loraPath))('formatted Word export, round four (#1444)'
     expect(ligaturePieces('fi', -3, 5, props)).toBeUndefined();
   });
 });
+
+describe('vertical text and scores in the formatted export, round four (#1444)', () => {
+  const MINCHO = '400 10px "Shippori Mincho B1"';
+  const vline = (runs: DisplayRun[], baseline = 40): DisplayLine => {
+    const text = runs.map((r) => r.text).join('');
+    return { text, x: 0, width: 10 * text.length, baseline, lineHeight: 17, align: 'left', runs, map: [...text].map((_, i) => i), vertical: true };
+  };
+
+  it('keeps a vertical ruby’s base in the line and draws its reading where the engine placed it', () => {
+    const ruby = { text: 'だけ', fontString: '400 5px "Shippori Mincho B1"', position: 'over' as const, raise: 7.5, runs: [{ text: 'だ', dx: 0, dy: -7.5, fontString: '400 5px "Shippori Mincho B1"' }, { text: 'け', dx: 5, dy: -7.5, fontString: '400 5px "Shippori Mincho B1"' }] };
+    const base = run('丈', 20, 10, { fontString: MINCHO, ruby });
+    const line = vline([run('一篇', 0, 20, { fontString: MINCHO }), base, run('を', 30, 10, { fontString: MINCHO })]);
+    const out = emitRun(context(), base, line);
+    expect(out.xml ?? '').not.toContain('<w:ruby>');
+    expect(out.text).toBe('丈');
+    expect(out.annotations?.map((a) => [a.text, a.x, a.baseline, a.vertical])).toEqual([['だ', 20, 32.5, true], ['け', 25, 32.5, true]]);
+    // A ruby the engine gave no placed reading stays a Word ruby, as does
+    // one on a horizontal line.
+    const bare = { ...base, ruby: { text: 'だけ', fontString: ruby.fontString, position: 'over' as const } };
+    expect(emitRun(context(), bare, vline([bare])).xml).toContain('<w:ruby>');
+    expect(emitRun(context(), base, { ...line, vertical: false }).xml).toContain('<w:ruby>');
+  });
+
+  it('sets a lone vertical line at 1.87 em, a vertical column at its own pitch', async () => {
+    const title: TextItem = { kind: 'text', role: 'heading', bbox: { x: 0, y: 0, width: 40, height: 20 }, rotate: 90, lines: [vline([run('目次', 0, 40, { fontString: '400 20px "Shippori Mincho B1"' })], 16)] };
+    const xml = (await textItemRuns(context(), title)).join('');
+    expect(xml).toContain('vert="eaVert"');
+    expect(xml).toContain('w:line="748" w:lineRule="exact"');
+    const column: TextItem = { ...title, lines: [vline([run('一', 0, 10, { fontString: MINCHO })], 16), vline([run('二', 0, 10, { fontString: MINCHO })], 33)] };
+    expect((await textItemRuns(context(), column)).join('')).toContain('w:line="340" w:lineRule="exact"');
+  });
+
+  it('stands an inline score wholly on its baseline, as the painters draw it', () => {
+    const score = run(' ', 10, 120, { inline: { kind: 'score', svg: '<svg xmlns="http://www.w3.org/2000/svg"/>', widthPx: 120, heightPx: 40, ascentPx: 40 } });
+    const out = emitRun(context(), score, lineOf([score], { baseline: 60 }));
+    expect(out.drawing?.rect).toEqual({ x: 10, y: 20, width: 120, height: 40 });
+  });
+});
