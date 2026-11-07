@@ -155,7 +155,7 @@ describe('semantic docx: pictures a heading design draws', () => {
             elements: [
               { kind: 'image', id: 'photo', resourceId: '{attr.art}', placement: at0 },
               { kind: 'image', id: 'over', resourceId: 'fig2', placement: at0 },
-              { kind: 'image', id: 'orn', resourceId: 'h1', decorative: true, placement: { ...at0, offset: { x: { value: 5, unit: 'mm' } } } },
+              { kind: 'image', id: 'orn', resourceId: 'h1', decorative: true, placement: { ...at0, anchor: { to: 'bleed', edge: 'top-left' }, offset: { x: { value: 5, unit: 'mm' } } } },
               { kind: 'text', id: 'title', content: '{titleText}', placement: { anchor: { to: 'container', edge: 'top-left' } } },
             ],
           },
@@ -164,7 +164,7 @@ describe('semantic docx: pictures a heading design draws', () => {
     ],
   } as never;
 
-  it('writes the picture in reading order (above the title it stands over), without overlays or ornaments, and reads back unchanged', async () => {
+  it('writes the picture in reading order (above the title it stands over), without overlays or decorative backgrounds, and reads back unchanged', async () => {
     const md = '# Soup {style="dish" art="fig1"}\n\nStir well.\n';
     const e = await exportDocx(md, { resources, resourceBytes: bytes, config });
     expect(exportProblems(e, [md])).toEqual([]);

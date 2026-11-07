@@ -67,6 +67,8 @@ export function spansPage(ctx: WriterContext, node: Node): boolean {
   if ('container' in node) {
     const attrs = node.container.containerAttrs ?? {};
     if (attrs.span === 'page') return true;
+    // A part drawn by the book's part design takes its page whole (#1444).
+    if (node.container.containerName === 'part') return ctx.resolved.parts.design.elements.length > 0;
     if (attrs.span !== undefined || node.container.containerName !== 'callout') return false;
     return ctx.styles.callout(attrs.type)?.span === 'page';
   }

@@ -12,6 +12,8 @@ import { renderResource } from './media/figures.js';
 import { renderSolutions, solutionsBeforeHeading } from './exercises/exercises.js';
 import { pageKindOf, renderComicPage } from './media/pages.js';
 import { renderDesignedHeading, type HeadingLook } from './design/heading.js';
+import { partHeadingStyle } from './design/partColor.js';
+import { headingIsListed } from '../../pipeline/sections/headingStyles.js';
 import { renderScoreBlock } from './media/scores.js';
 import { FragmentBuilder } from './fragments.js';
 import { renderInline, type InlineSource } from './inline.js';
@@ -36,6 +38,9 @@ export interface BlockEnv {
   /** The box style of the box the blocks stand in: its lists' bullets
    *  and indents. */
   box?: ResolvedCalloutStyleConfig;
+  /** The blocks open a box: a heading first in it drops its space above,
+   *  as the engine sets a heading at the top of a box (#1444). */
+  boxTop?: boolean;
 }
 
 /** Rebuild the container tree from the flat list. */
@@ -133,9 +138,12 @@ function headingNumber(ctx: WriterContext, b: ContentBlock): string {
 /** A heading paragraph, its anchor and number first. */
 function headingParagraph(ctx: WriterContext, b: ContentBlock, look?: HeadingLook): string {
   const level = b.level ?? 1;
-  const style = look?.style ?? ctx.styles.heading(level, b.attrs?.style);
+  const style = look?.style ?? partHeadingStyle(ctx, b, ctx.styles.heading(level, b.attrs?.style));
   const anchor = tocMark(ctx, b) + (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + (look?.noNumber ? '' : headingNumber(ctx, b)) + (look?.before?.() ?? '');
-  return textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1), ...look?.props }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor, look?.after);
+  // A heading the contents leave out (`toc=false`) stays out of Word's
+  // outline too, so an updated contents field leaves it out as well.
+  const outlineLvl = headingIsListed(b, ctx.resolved) ? Math.min(8, level - 1) : 9;
+  return textParagraph(ctx, b, { style, outlineLvl, ...look?.props }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor, look?.after);
 }
 
 /** Set footnote `id`'s definition as a Word footnote; its Word id, or
@@ -238,8 +246,10 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
   };
   // Page-spanning content takes the whole text area.
   const wide: BlockEnv = { ...env, widthTwips: Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) };
+  const below: BlockEnv = env.boxTop ? { ...env, boxTop: undefined } : env;
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i]!;
+    if (i === 1) env = below;
     const span = !!after && spansPage(ctx, n);
     if ('container' in n) {
       add(renderContainer(ctx, n, span ? wide : env), span);
@@ -278,7 +288,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
     case 'heading': {
       // A heading style's design writes what it prints around the heading
       // (#1444); `look` is the heading paragraph's under it.
-      const write = (look?: HeadingLook): string => headingParagraph(ctx, b, look);
+      const write = (look?: HeadingLook): string => headingParagraph(ctx, b, env.boxTop ? { ...look, props: { before: 0, ...look?.props } } : look);
       return solutionsBeforeHeading(ctx, b) + (renderDesignedHeading(ctx, b, write) ?? write());
     }
     case 'paragraph': {

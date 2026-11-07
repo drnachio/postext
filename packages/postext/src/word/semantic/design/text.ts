@@ -13,17 +13,18 @@ import { abs, blockId, type WriterContext } from '../context.js';
 import { FragmentBuilder } from '../fragments.js';
 import { generatedRuns } from '../generated.js';
 import { attrRange } from '../marks.js';
-import { paleOnWhite } from './ink.js';
+import { luminance, paleOnWhite } from './ink.js';
 import { hex, paragraph, px, textRuns, twips, type ParaProps, type RunProps } from '../wml.js';
 
 const JC: Record<string, ParaProps['jc']> = { left: 'left', right: 'right', center: 'center', justify: 'both', start: 'start', end: 'end' };
 
 /** The paragraph style of a design text element. `slot` names the design
  *  (its heading style, or its level); `band` is the fill of the box the
- *  text is printed on, if any (a pale text on a dark band keeps both). */
+ *  text is printed on, if any (a pale text on a dark band keeps its ink;
+ *  the band itself is the table the paragraph stands in, see bands.ts). */
 export function designTextStyle(ctx: WriterContext, slot: string, el: ResolvedDesignTextElement, band: string | undefined, keepNext: boolean, text: string): string {
   const size = fittedSize(ctx, el, text);
-  const key = `design:${slot}:${el.id}:${band ?? ''}:${keepNext ? 'k' : ''}:${Math.round(size)}`;
+  const key = `design:${slot}:${el.id}:${band ?? ''}:${hex(el.color) ?? ''}:${keepNext ? 'k' : ''}:${Math.round(size)}`;
   return ctx.styles.custom(key, `Design ${slot} ${el.id}`, () => designTextLook(ctx, el, band, keepNext, size));
 }
 
@@ -47,7 +48,9 @@ export function fittedSize(ctx: WriterContext, el: ResolvedDesignTextElement, te
 export function designTextLook(ctx: WriterContext, el: ResolvedDesignTextElement, band: string | undefined, keepNext: boolean, size: number): { pPr: ParaProps; rPr: RunProps } {
   const u = ctx.units;
   const color = hex(el.color);
-  const ink = paleOnWhite(color) && !band ? undefined : color;
+  // Pale ink stays on a band or on the text's own shaded box.
+  const box = pill(ctx, el);
+  const ink = paleOnWhite(color) && !band && !box.shd ? undefined : color;
   const lineH = el.lineHeightLength ? px(u, el.lineHeightLength, size) : size * (el.lineHeight || 1.2);
   const rPr: RunProps = {
     ...ctx.styles.font(el.fontFamily, el.fontWeight, el.italic),
@@ -57,6 +60,7 @@ export function designTextLook(ctx: WriterContext, el: ResolvedDesignTextElement
     color: ink,
     spacing: el.letterSpacing ? twips(u, el.letterSpacing, size) || undefined : undefined,
     sz: Math.max(2, Math.round((size * 144) / u.dpi)),
+    ...box,
   };
   const pPr: ParaProps = {
     keepNext: keepNext || undefined,
@@ -66,10 +70,23 @@ export function designTextLook(ctx: WriterContext, el: ResolvedDesignTextElement
     line: { twips: Math.max(240, Math.round((lineH * 1440) / u.dpi)), rule: 'atLeast' },
     ind: { firstLine: 0 },
     jc: JC[el.align] ?? 'center',
-    shd: band,
     suppressAutoHyphens: true,
   };
   return { pPr, rPr };
+}
+
+/** The box a text is set in (a chip, a pill, a label tab), as Word draws
+ *  a run's: its fill as run shading, its outline as a line round the
+ *  characters. A fill as pale as the paper is left out (on white it shows
+ *  nothing but an edge). */
+function pill(ctx: WriterContext, el: ResolvedDesignTextElement): Pick<RunProps, 'shd' | 'bdr'> {
+  const fill = hex(el.box?.backgroundColor);
+  const line = hex(el.box?.borderColor);
+  const width = el.box?.borderWidth ? px(ctx.units, el.box.borderWidth) : 0;
+  return {
+    ...(fill && luminance(fill) < 0.85 ? { shd: fill } : {}),
+    ...(line && width > 0 ? { bdr: { color: line, sz: Math.min(96, Math.max(2, Math.round((width * 72 * 8) / ctx.units.dpi))), space: 1 } } : {}),
+  };
 }
 
 /** Source range (absolute) of heading `b`'s attribute `key`, when the
@@ -123,7 +140,7 @@ export function designTextParagraphs(ctx: WriterContext, b: ContentBlock, el: Re
     return out;
   }
   for (const line of text.split('\n')) {
-    if (!/[\p{L}\p{N}]/u.test(line)) continue;
+    if (!/[\p{L}\p{N}\p{So}]/u.test(line)) continue;
     out.push(paragraph({ style, ...(out.length ? {} : first) }, generatedRuns(ctx, [{ text: line.trim() }], `design:${el.id}`)));
   }
   return out;
