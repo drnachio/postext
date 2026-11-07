@@ -1,20 +1,26 @@
-// Pages Word cannot hold as text (#1444): a composed page (`::::page`), a
-// comic page (`:::page`) and a comic strip (`:::strip`) are drawn from
-// templates, frames and panels the semantic document has no place for.
-// Each is written as a short labelled placeholder pointing to the PDF and
-// the formatted .docx, generated text that never maps to the source: the
-// fence stays in the Markdown as it is on the way back. A strip's caption,
-// which the reader sees in the text, stays mapped and editable.
+// Pages drawn from templates and panels (#1444): a composed page
+// (`::::page`), a comic page (`:::page`) and a comic strip (`:::strip`).
+// Word has no place for a template's frames or a panel's balloons, so the
+// semantic document writes what fills them as flowing text: a composed
+// page's blocks in the order the Markdown gives them (a frame's label as
+// its title, a module's frames one after another), starting a new page as
+// the book does; a comic's panels as pictures followed by their script
+// (see comics.ts). The text stays mapped to the Markdown. A page with
+// nothing to write (no panel has art or words) is a short labelled
+// placeholder pointing to the PDF and the formatted .docx, generated text
+// the importer leaves out. A strip's caption stays mapped and editable.
 
 import { extractFrontmatter } from '../../../parse/frontmatter.js';
 import { parseMarkdownWithIssues } from '../../../parse/index.js';
 import type { ContentBlock } from '../../../parse/types.js';
+import { renderNodes, type BlockEnv, type Node } from '../blocks.js';
 import { abs, blockId, type WriterContext } from '../context.js';
 import { FragmentBuilder } from '../fragments.js';
 import { generatedRuns } from '../generated.js';
 import { attrRange } from '../marks.js';
 import { STYLE } from '../styles.js';
 import { blockSdt, paragraph, textRuns } from '../wml.js';
+import { comicPanels, renderComic } from './comics.js';
 
 export type PageKind = 'composedPage' | 'comicPage' | 'strip';
 
@@ -53,17 +59,83 @@ export function pageKindOf(b: ContentBlock): PageKind | undefined {
   return undefined;
 }
 
-/** The placeholder of a page. `fence` is the block that opens it;
- *  `widthTwips` the width it stands in (a box's, a column's). */
-export function renderPagePlaceholder(ctx: WriterContext, fence: ContentBlock, kind: PageKind, widthTwips?: number): string {
+/** A comic page or strip: its panels, or a placeholder when none has
+ *  art or words. `widthTwips` is the width it stands in. */
+export function renderComicPage(ctx: WriterContext, fence: ContentBlock, kind: 'comicPage' | 'strip', widthTwips?: number): string {
+  const width = Math.max(240, Math.round(widthTwips ?? ctx.textTwips));
+  const caption = (): string => (kind === 'strip' ? stripCaption(ctx, fence) : '');
+  const filled = comicPanels(fence).some((p) => (p.art && ctx.media.has(p.art)) || p.text || p.items.some((i) => i.role !== 'note' && i.text.trim()));
+  if (filled) return renderComic(ctx, fence, kind, width, caption);
+  return renderPagePlaceholder(ctx, kind, width, caption);
+}
+
+/** The placeholder of a page with nothing Word can hold. */
+function renderPagePlaceholder(ctx: WriterContext, kind: PageKind, width: number, caption = (): string => ''): string {
   const w = pageWords(ctx.config.locale);
   const text = `${w[kind]} \u2014 ${w.see}`;
   const note = paragraph({ style: STYLE.normal, jc: 'center', ind: { firstLine: 0 }, before: 60, after: 60 }, generatedRuns(ctx, [{ text, i: true, color: '595959' }], `placeholder:${kind}`));
   // A one-cell table, not a bordered paragraph: Word and LibreOffice join
   // the borders of paragraphs in a row into one box.
-  let xml = framed(note, Math.max(240, Math.round(widthTwips ?? ctx.textTwips)));
-  if (kind === 'strip') xml += stripCaption(ctx, fence);
-  return blockSdt(ctx.nextSdtId(), `ptx:${kind}`, w[kind], xml);
+  return blockSdt(ctx.nextSdtId(), `ptx:${kind}`, w[kind], framed(note, width) + caption());
+}
+
+type ContainerNode = Extract<Node, { container: unknown }>;
+
+/** A paragraph that starts a new page and takes no room (a page break
+ *  before it at the top of a page adds none). */
+const PAGE_START = '<w:p><w:pPr><w:pageBreakBefore/><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:ind w:firstLine="0"/></w:pPr></w:p>';
+
+/** A frame's `label`, mapped to the attribute's value (generated text
+ *  when the value cannot be found as written). */
+function frameLabel(ctx: WriterContext, c: ContentBlock): string {
+  const md = ctx.chapter.markdown;
+  const label = c.containerAttrs?.label;
+  if (!label) return '';
+  const own = c.containerAttrSources?.label;
+  // The parser's range first, else the fence line read again (a range
+  // that does not hold the value is not used).
+  const range = [own ? { start: abs(ctx, own.sourceStart), end: abs(ctx, own.sourceEnd) } : undefined, attrRange(md, abs(ctx, c.sourceStart), 'label')].find(
+    (r) => r && r.end > r.start && md.slice(r.start, r.end) === label,
+  );
+  if (!range) return paragraph({ style: STYLE.boxTitle }, generatedRuns(ctx, [{ text: label }], 'frame:label'));
+  const text = md.slice(range.start, range.end);
+  const f = new FragmentBuilder();
+  f.push(text, Array.from({ length: text.length }, (_, k) => range.start + k));
+  const runs = ctx.log.wrap(textRuns(text, ''), f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [range.start, range.end], role: 'attr:frame:label' });
+  return paragraph({ style: STYLE.boxTitle }, runs);
+}
+
+/** The nodes of a composed page (or of a frame or module in it): frames
+ *  and modules opened here, everything else through the block writer. */
+function pageNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv): string {
+  let out = '';
+  let run: Node[] = [];
+  const flush = (): void => {
+    if (run.length) out += renderNodes(ctx, run, env);
+    run = [];
+  };
+  for (const n of nodes) {
+    const name = 'container' in n ? n.container.containerName : undefined;
+    if (name !== 'frame' && name !== 'module') {
+      run.push(n);
+      continue;
+    }
+    flush();
+    const c = (n as ContainerNode).container;
+    const body = (name === 'frame' ? frameLabel(ctx, c) : '') + pageNodes(ctx, (n as ContainerNode).children, env);
+    const slot = c.containerAttrs?.slot ?? c.containerAttrs?.template ?? '';
+    out += blockSdt(ctx.nextSdtId(), `ptx:${name}${slot ? `:${slot}` : ''}`, undefined, body || '<w:p/>');
+  }
+  flush();
+  return out;
+}
+
+/** A composed page: its content in Markdown order, on a page of its own. */
+export function renderComposedPage(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
+  const body = pageNodes(ctx, node.children, env);
+  if (!body) return renderPagePlaceholder(ctx, 'composedPage', Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips)));
+  const template = node.container.composedPage?.template ?? node.container.containerAttrs?.template ?? '';
+  return blockSdt(ctx.nextSdtId(), `ptx:composedPage${template ? `:${template}` : ''}`, undefined, PAGE_START + body);
 }
 
 /** `content` in a grey framed cell `width` twips wide. */
@@ -90,8 +162,9 @@ function stripCaption(ctx: WriterContext, fence: ContentBlock): string {
 
 /**
  * The Word variant that suits a book (#1444): `formatted` when most of its
- * text is in composed or comic pages, which the semantic document can only
- * stand in for with placeholders; `semantic` otherwise. A book with a
+ * text is in composed or comic pages, whose design only the formatted
+ * document keeps (the semantic one writes their text as flowing text);
+ * `semantic` otherwise. A book with a
  * single composed page or strip among its chapters stays semantic.
  */
 export function preferredWordVariant(chapters: ReadonlyArray<{ markdown: string }>): 'semantic' | 'formatted' {

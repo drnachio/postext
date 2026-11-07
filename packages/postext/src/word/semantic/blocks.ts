@@ -9,7 +9,8 @@ import { abs, blockId, type WriterContext } from './context.js';
 import { renderDirective } from './directives.js';
 import { renderResource } from './media/figures.js';
 import { renderSolutions, solutionsBeforeHeading } from './exercises/exercises.js';
-import { pageKindOf, renderPagePlaceholder } from './media/pages.js';
+import { pageKindOf, renderComicPage } from './media/pages.js';
+import { renderDesignedHeading, type HeadingLook } from './design/heading.js';
 import { renderScoreBlock } from './media/scores.js';
 import { FragmentBuilder } from './fragments.js';
 import { renderInline, type InlineSource } from './inline.js';
@@ -125,6 +126,14 @@ function headingNumber(ctx: WriterContext, b: ContentBlock): string {
   const frag = new FragmentBuilder();
   frag.push(text, new Array<number>(text.length).fill(-1));
   return ctx.log.wrap(textRuns(text, ''), frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'number' });
+}
+
+/** A heading paragraph, its anchor and number first. */
+function headingParagraph(ctx: WriterContext, b: ContentBlock, look?: HeadingLook): string {
+  const level = b.level ?? 1;
+  const style = look?.style ?? ctx.styles.heading(level, b.attrs?.style);
+  const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + (look?.noNumber ? '' : headingNumber(ctx, b));
+  return textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1), ...look?.props }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
 }
 
 /** Set footnote `id`'s definition as a Word footnote; its Word id, or
@@ -247,10 +256,10 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
   const end = abs(ctx, b.sourceEnd);
   switch (b.type) {
     case 'heading': {
-      const level = b.level ?? 1;
-      const style = ctx.styles.heading(level, b.attrs?.style);
-      const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + headingNumber(ctx, b);
-      return solutionsBeforeHeading(ctx, b) + textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1) }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
+      // A heading style's design writes what it prints around the heading
+      // (#1444); `look` is the heading paragraph's under it.
+      const write = (look?: HeadingLook): string => headingParagraph(ctx, b, look);
+      return solutionsBeforeHeading(ctx, b) + (renderDesignedHeading(ctx, b, write) ?? write());
     }
     case 'paragraph': {
       if (b.footnoteDef !== undefined) return ctx.chapter.cited.has(b.footnoteDef) ? '' : rawSdt(ctx, lineStart(ctx.chapter.markdown, start), end, 'footnote');
@@ -272,7 +281,7 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
       if (br) return blockSdt(ctx.nextSdtId(), `ptx:${b.directiveName}`, undefined, `<w:p><w:r><w:br w:type="${br}"/></w:r></w:p>`);
       if (b.directiveName === 'solutions') return renderSolutions(ctx, b, env);
       const page = pageKindOf(b);
-      if (page) return renderPagePlaceholder(ctx, b, page, env.widthTwips);
+      if (page === 'comicPage' || page === 'strip') return renderComicPage(ctx, b, page, env.widthTwips);
       return renderDirective(ctx, b) ?? rawSdt(ctx, start, end, b.directiveName ?? 'directive');
     }
     case 'score':

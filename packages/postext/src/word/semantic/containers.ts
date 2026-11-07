@@ -1,9 +1,9 @@
 // `:::` containers in Word (#1390). A box (`:::callout`) is a content
 // control tagged `ptx:box:<type>` around a one-cell table shaded and
-// bordered like the box style, its title paragraph first; a `:::part`,
+// bordered like the box style, its label and title paragraphs first; a `:::part`,
 // `:::paragraphs`, `:::columns` or `:::paper` group is a content control
 // around its blocks; an exercise is set by exercises.ts and a composed
-// page stands as a placeholder, a stray solution or hint prints nothing
+// page by media/pages.ts, a stray solution or hint prints nothing
 // (#1444); stray modules and frames go raw.
 // A box is as wide as the column it stands in (a percentage width, so a
 // narrow side column does not clip it), keeps its margins as spacer
@@ -15,7 +15,7 @@ import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
 import { renderExercise } from './exercises/exercises.js';
 import { attrRange } from './marks.js';
-import { renderPagePlaceholder } from './media/pages.js';
+import { renderComposedPage } from './media/pages.js';
 import { rawSdt } from './raw.js';
 import { pageGeometry } from './sections.js';
 import { STYLE } from './styles.js';
@@ -75,7 +75,7 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
   const name = c.containerName ?? 'container';
   const attrs = c.containerAttrs ?? {};
   if (name === 'exercise') return renderExercise(ctx, node, env);
-  if (name === 'composedPage') return renderPagePlaceholder(ctx, c, 'composedPage', env.widthTwips);
+  if (name === 'composedPage') return renderComposedPage(ctx, node, env);
   // A solution or hint outside an exercise prints nothing (as in the
   // engine); its source stays as it is.
   if (name === 'solution' || name === 'hint') return '';
@@ -157,6 +157,21 @@ function keepBox(ctx: WriterContext, cell: string, keepTogether: boolean): boole
   return h <= page * 0.8 && (keepTogether || h <= 14 * lineTw);
 }
 
+/** The paragraph style of a box style's label line. */
+function labelStyle(ctx: WriterContext, style: ResolvedCalloutStyleConfig): string {
+  const lb = style.label!;
+  return ctx.styles.custom(`boxLabel:${style.id}`, `Box label ${style.id}`, () => {
+    const size = px(ctx.units, lb.fontSize) || ctx.units.basePx;
+    const rtl = ctx.resolved.direction === 'rtl';
+    const side = lb.position.split('-')[1];
+    const end = side === 'end' || (side === 'right' && !rtl) || (side === 'left' && rtl);
+    return {
+      pPr: { keepNext: true, before: 0, after: 60, ind: { firstLine: 0 }, jc: end ? 'end' : 'start' },
+      rPr: { ...ctx.styles.font(lb.fontFamily, lb.fontWeight), b: lb.fontWeight >= 600, color: hex(lb.color), shd: hex(lb.background), sz: Math.max(2, Math.round((size * 144) / ctx.units.dpi)) },
+    };
+  });
+}
+
 function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
   const attrs = node.container.containerAttrs ?? {};
   const style = ctx.styles.callout(attrs.type);
@@ -171,7 +186,10 @@ function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv): stri
     const side = ctx.resolved.direction === 'rtl' ? 'right' : 'left';
     padTw[side] = Math.max(padTw[side], twips(u, style.marker.gap));
   }
-  const title = attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
+  // A box style with a label tab prints the fence's `label` on it: here a
+  // first line in the tab's face, colours and side.
+  const label = style?.label && attrs.label ? attrParagraph(ctx, node, 'label', labelStyle(ctx, style)) : '';
+  const title = label + attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
   // What the cell holds is as wide as the cell less its margins (Word's
   // default is 108 twips a side).
   const inner = Math.max(240, width - (padTw ? padTw.left + padTw.right : 216));
