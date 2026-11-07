@@ -191,8 +191,9 @@ describe('semantic docx: structures', () => {
     const md = '---\ntitle: "T"\n---\n\n:::toc\n\n:::exercise{type="choice"}\nPick one.\n:::\n\n:::pagebreak\n\nAfter.\n';
     const e = await exportDocx(md);
     expect(exportProblems(e, [md])).toEqual([]);
-    expect(e.frag('---\ntitle: "T"\n---').role).toBe('raw:frontmatter');
-    expect(e.frag(':::toc').role).toBe('raw:toc');
+    // Front matter and the contents are no source text in Word (#1444).
+    expect(e.map.fragments.some((f) => f.role === 'raw:frontmatter' || f.role === 'raw:toc')).toBe(false);
+    expect(e.doc).toContain('<w:tag w:val="ptx:toc"/>');
     expect(e.frag(':::exercise{type="choice"}\nPick one.\n:::').role).toBe('raw:exercise');
     expect(e.doc).toContain('<w:tag w:val="ptx:raw:exercise"/>');
     expect(e.doc).toContain('<w:pStyle w:val="PostextSource"/>');

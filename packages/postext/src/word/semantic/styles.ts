@@ -245,10 +245,26 @@ export class StyleRegistry {
       if (levelConfig) {
         const merged = { ...levelConfig, ...hs.overrides } as ResolvedHeadingLevelConfig;
         const { pPr: p, rPr: r } = this.headingProps(merged, this.resolved.headings.textAlign);
+        // A style that opens a page (a cover, a half-title, a title page)
+        // keeps it in Word, so a run of such headings in one chapter does
+        // not pile up on one page (#1444). A chapter's first heading is at
+        // the top of its section's page already, where the break adds none.
+        if (hs.breakBefore?.enabled ?? levelConfig.breakBefore.enabled) p.pageBreakBefore = true;
         this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base, next: STYLE.normal, pPr: p, rPr: r });
       } else this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base });
     }
     return id;
+  }
+
+  /** Word's own style of a contents or index entry at `level` (1–9):
+   *  `toc N` / `index N`, the names Word applies when it updates the
+   *  field, each level indented one step further. */
+  listing(kind: 'toc' | 'index', level: number): string {
+    const lv = Math.min(9, Math.max(1, level));
+    const id = kind === 'toc' ? `TOC${lv}` : `Index${lv}`;
+    const step = 240;
+    const ind = kind === 'toc' ? { left: (lv - 1) * step, firstLine: 0 } : { left: lv * step, hanging: step };
+    return this.add(id, { type: 'paragraph', name: `${kind} ${lv}`, basedOn: STYLE.normal, next: STYLE.normal, pPr: { before: 0, after: kind === 'toc' && lv === 1 ? 60 : 0, ind, jc: 'left' } });
   }
 
   /** The Word style of a named paragraph style (`:::paragraphs{style}`). */

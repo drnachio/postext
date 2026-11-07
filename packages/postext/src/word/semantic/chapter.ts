@@ -1,5 +1,5 @@
-// One chapter of the semantic .docx (#1390): front matter kept as source,
-// the body parsed by the engine parser and written block by block, and the
+// One chapter of the semantic .docx (#1390): the front matter left out
+// (#1444), the body parsed by the engine parser and written block by block, and the
 // section break that ends it.
 
 import { extractFrontmatter } from '../../parse/frontmatter.js';
@@ -52,7 +52,9 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
   };
   for (const issue of pc.issues) ctx.warn(`parse:${issue.kind}`, `Unclosed or stray ${issue.delimiter} at offset ${issue.sourceStart + pc.offset}.`);
   let xml = namedBookmark(ctx, `chapter_${pc.input.id}`);
-  if (pc.offset > 0) xml += rawSdt(ctx, 0, pc.offset, 'frontmatter');
+  // The front matter is not shown: its title and author go to the
+  // document properties, and source no fragment covers is kept as it is
+  // on re-import.
   xml += renderNodes(ctx, buildTree(pc.blocks), {});
   // Notes cited only from text kept as source: their definitions too.
   for (const [id, def] of defs) {

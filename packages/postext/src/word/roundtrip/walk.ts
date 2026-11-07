@@ -2,7 +2,10 @@
 // token stream: characters with their run formatting, paragraph ends,
 // bookmark and comment boundaries. Tracked insertions and moves-to are
 // read, deletions and moves-from are not; field codes are skipped and
-// their results kept; text boxes are read where their drawing stands
+// their results kept, except the results Word builds from the document
+// itself (an index entry, a table of contents, an index), which read as
+// nothing, along with the paragraphs that hold only them; text boxes are
+// read where their drawing stands
 // (`mc:Choice` only, so a text box with a VML fallback is read once).
 
 import { attr, child, children, localName, onOff, textOf, type XmlElement } from '../xml.js';
@@ -78,8 +81,11 @@ interface WalkState {
   boxes: number[];
   nextBox: number;
   /** Complex fields: whether each open field is still in its code part,
-   *  and whether its result is skipped (XE has none, but be safe). */
+   *  and whether its result is skipped (see `GENERATED_FIELD`). */
   fields: { code: boolean; skip: boolean; instr: string; href?: string }[];
+  /** A generated field was open in the paragraph being read, or began or
+   *  ended in it: its paragraph mark may belong to the field result alone. */
+  touched?: boolean;
   /** Ordinal of a paragraph whose mark a tracked change deleted. */
   joinNext?: number;
   /** A run marked w:noProof was seen (the mark survived the editor). */
@@ -110,6 +116,19 @@ function runFlags(rPr: XmlElement | undefined): string {
   return f;
 }
 
+/** Fields whose result Word builds from the document rather than from
+ *  text the source holds: an index entry (no result at all), a table of
+ *  contents and an index. Their results, and every field nested in them
+ *  (a PAGEREF, a HYPERLINK), read as nothing. */
+const GENERATED_FIELD = /^\s*(?:XE|TOC|INDEX)\b/i;
+
+/** Whether characters at this point are dropped: inside a field code, or
+ *  anywhere inside the result of a generated field. */
+function fieldHidden(s: WalkState): boolean {
+  if (s.fields[s.fields.length - 1]?.code) return true;
+  return s.fields.some((f) => f.skip);
+}
+
 /** `HYPERLINK "url"` (external, no `\\l` bookmark switch): the link. */
 function hyperlinkOf(instr: string): string | undefined {
   const m = /^\s*HYPERLINK\s+"([^"]+)"/i.exec(instr);
@@ -124,8 +143,7 @@ function fieldHref(s: WalkState): string | undefined {
 
 function emit(s: WalkState, ch: string, flags: string, ctx: RunCtx, tex?: string, mathHash?: string): void {
   if (ctx.deleted) return;
-  const top = s.fields[s.fields.length - 1];
-  if (top && (top.code || top.skip)) return;
+  if (fieldHidden(s)) return;
   const tok: Token = { t: 'char', ch, flags, para: curPara(s) };
   const href = ctx.href ?? fieldHref(s);
   if (href) tok.href = href;
@@ -186,11 +204,17 @@ function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
           const f = s.fields[s.fields.length - 1];
           if (f) {
             f.code = false;
-            f.skip = /^\s*XE\b/i.test(f.instr);
+            f.skip = GENERATED_FIELD.test(f.instr);
+            if (f.skip) s.touched = true;
             const href = hyperlinkOf(f.instr);
             if (href) f.href = href;
           }
-        } else if (type === 'end') s.fields.pop();
+        } else if (type === 'end') {
+          // A generated field with no separator (an XE, an un-updated TOC)
+          // still marks its paragraph.
+          const f = s.fields.pop();
+          if (f && GENERATED_FIELD.test(f.instr)) s.touched = true;
+        }
         break;
       }
       case 'instrText': {
@@ -257,7 +281,10 @@ function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
         walkInline(s, c, { ...ctx, deleted: true });
         break;
       case 'fldSimple':
-        if (/^\s*XE\b/i.test(attr(c, 'instr') ?? '')) break;
+        if (GENERATED_FIELD.test(attr(c, 'instr') ?? '')) {
+          s.touched = true;
+          break;
+        }
         walkInline(s, c, { ...ctx, href: hyperlinkOf(attr(c, 'instr') ?? '') ?? ctx.href });
         break;
       case 'sdt':
@@ -303,9 +330,21 @@ function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
   const ord = s.joinNext ?? s.nextPara++;
   s.joinNext = undefined;
   s.paras.push(ord);
+  // A paragraph that opens inside a generated field's result, or holds
+  // one, and adds no character of its own belongs to that result: its
+  // mark is no paragraph of the text (one holding a fragment's bookmark
+  // is, even when empty).
+  const outerTouched = s.touched;
+  s.touched = s.fields.some((f) => f.skip);
+  const before = s.out.length;
   walkInline(s, p, ctx);
+  let own = false;
+  for (let k = before; k < s.out.length && !own; k++) own = s.out[k]!.t !== 'cStart' && s.out[k]!.t !== 'cEnd';
+  const generatedOnly = s.touched === true && !own;
+  s.touched = outerTouched;
   const depth = s.paras.length;
   s.paras.pop();
+  if (generatedOnly) return;
   if (child(child(child(p, 'pPr'), 'rPr'), 'del') !== undefined) s.joinNext = ord;
   else if (!ctx.deleted) {
     const props = paraProps(p);

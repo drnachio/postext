@@ -113,6 +113,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     warn,
     nextSdtId: () => ++sdtId,
     nextFootnoteId: () => ++footnoteId,
+    book: parsed,
     chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), headingNumbers: new Map(), blockCounter: 0 },
   };
   await prepareMedia(ctx, shown);

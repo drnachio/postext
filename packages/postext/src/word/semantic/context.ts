@@ -2,7 +2,7 @@
 // fragment log, styles, numbering, notes, and the chapter being written.
 
 import type { ContentBlock } from '../../parse/types.js';
-import type { PostextConfig, Resource, ResourceType } from '../../types.js';
+import type { OutlineEntry, PostextConfig, Resource, ResourceType } from '../../types.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import type { DocxPackageBuilder } from '../ooxml/types.js';
@@ -38,6 +38,9 @@ export interface ChapterState {
   /** The number prefix the engine prints before each numbered heading. */
   headingNumbers: Map<ContentBlock, string>;
   blockCounter: number;
+  /** Page numbering a `:::numbering` directive sets for the chapter's
+   *  section (Word format name, first number). */
+  pageNumbers?: { format?: string; start?: number };
 }
 
 export interface WriterContext {
@@ -74,6 +77,11 @@ export interface WriterContext {
   nextSdtId(): number;
   nextFootnoteId(): number;
   chapter: ChapterState;
+  /** Every chapter's parsed blocks, in book order (what a contents or an
+   *  index lists). */
+  book: readonly { blocks: ContentBlock[] }[];
+  /** The book's outline, computed on first use (see `fields.ts`). */
+  outline?: OutlineEntry[];
 }
 
 export interface PreparedPicture {
