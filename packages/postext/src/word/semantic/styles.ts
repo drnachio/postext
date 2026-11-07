@@ -41,7 +41,7 @@ const JC: Record<TextAlign, ParaProps['jc']> = { left: 'left', justify: 'both', 
 
 const slug = (s: string): string => s.replace(/[^A-Za-z0-9]/g, '') || 'X';
 
-interface StyleDef {
+export interface StyleDef {
   type: 'paragraph' | 'character';
   name: string;
   basedOn?: string;
@@ -239,12 +239,11 @@ export class StyleRegistry {
     return id;
   }
 
-  /** A paragraph style for table header cells: their bold and italic go
-   *  in a style, not on the runs, so the importer does not read them as
-   *  emphasis the user added. */
-  tableHeader(bold: boolean, italic: boolean): string {
-    const { id, fresh } = this.idFor(`th:${bold ? 'b' : ''}${italic ? 'i' : ''}`, 'PostextTableHeader', `${bold ? 'B' : ''}${italic ? 'I' : ''}`);
-    if (fresh) this.add(id, { type: 'paragraph', name: `Postext Table Header${id.slice('PostextTableHeader'.length)}`, custom: true, basedOn: STYLE.normal, rPr: { b: bold || undefined, i: italic || undefined } });
+  /** A style another module defines (the table styles, #1444): made once
+   *  per key, under a unique id of `prefix` and `name`. */
+  define(key: string, prefix: string, name: string, make: () => StyleDef): string {
+    const { id, fresh } = this.idFor(key, prefix, name);
+    if (fresh) this.add(id, make());
     return id;
   }
 
