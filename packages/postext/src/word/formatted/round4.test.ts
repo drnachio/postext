@@ -9,6 +9,7 @@ import { MetricsCache } from './metrics.js';
 import { emitGroups, planChunks, planLines } from './paragraphs.js';
 import { pageRuns } from './page.js';
 import { emitRun } from './runs.js';
+import { paragraphTabs } from './tabs.js';
 import { textItemRuns } from './text.js';
 import type { WriterContext } from './types.js';
 
@@ -117,6 +118,21 @@ describe.runIf(existsSync(loraPath))('formatted Word export, round four (#1444)'
     expect(xml).not.toContain('<w:tab/>');
   });
 
+  it('keeps a wide space’s tab when a chip’s resetting tab would clash with it', () => {
+    const chip = run('C', 44, 17, { padStart: 4, padEnd: 4, inline: { kind: 'chip', widthPx: 17, heightPx: 14, box: { dx: 0, width: 17, ascent: 10, descent: 4 } } });
+    // A label set apart from its value: a tab from 30 px to 180 px.
+    const label = lineOf([run('Label', 10, 30), run(' ', 40, 150, { space: true }), run('value', 190, 30), run(' ', 220, 3, { space: true }), run('more', 223, 25)]);
+    // A chip whose resetting tab would stop at 54 px, inside that tab's way.
+    const keys = lineOf([run('Press', 10, 30), run(' ', 40, 4, { space: true }), chip, run(' ', 61, 3, { space: true }), run('now', 64, 20), run(' ', 84, 3, { space: true }), run('ok', 87, 12)]);
+    const ctx = context(plan);
+    // Alone, the chip's line gets its reset.
+    expect(paragraphTabs(ctx, [keys], 10, 0).xml).toBe('<w:tabs><w:tab w:val="left" w:pos="1080"/></w:tabs>');
+    // Together, the reset gives way and the label keeps its tab.
+    const both = paragraphTabs(ctx, [label, keys], 10, 0);
+    expect(both.xml).toBe('<w:tabs><w:tab w:val="left" w:pos="3600"/></w:tabs>');
+    expect(both.lines.map((l) => [...l])).toEqual([[1], []]);
+  });
+
   it('keeps a display run’s ligature unspaced, the others carrying its fit', () => {
     const ctx = context(plan);
     const r = run('fine ', 10, 90, { fontString: '400 40px "Lora"' });
@@ -157,6 +173,10 @@ describe.runIf(existsSync(loraPath))('formatted Word export, round four (#1444)'
     expect(ligaturePieces('fit', pair, -3, 4, props)).toEqual([{ rPr: '[0]', text: 'fi' }, { rPr: '[1]', text: 't' }]);
     expect(ligaturePieces('fi', pair, -3, 0, props)).toEqual([{ rPr: '[0]', text: 'fi' }]);
     expect(ligaturePieces('fi', pair, -3, 5, props)).toBeUndefined();
+    // A gap after a run that ends in a ligature would open inside the
+    // word ("a" before "ff"): the run falls back to the usual pieces.
+    expect(ligaturePieces('Staff', [{ start: 3, end: 5 }], 0, 100, props)).toBeUndefined();
+    expect(ligaturePieces('Staff', [{ start: 3, end: 5 }], 6, 0, props)).toEqual([{ rPr: '[2]', text: 'Sta' }, { rPr: '[0]', text: 'ff' }]);
     expect(ligaturePieces('office', [{ start: 1, end: 4 }], 6, 0, props)).toEqual([{ rPr: '[2]', text: 'o' }, { rPr: '[0]', text: 'ffi' }, { rPr: '[2]', text: 'ce' }]);
   });
 });

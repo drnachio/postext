@@ -65,10 +65,10 @@ export interface HaloFrame {
  *  An unturned item's halo is laid on the sheet as its glyphs are. A
  *  turned item's halo is drawn per text box (`frame`, with that box's
  *  `lines`): the outlines in the box's own frame, in a shape the size and
- *  place of the box, turned the same. Renderers place the text of a
- *  turned box each in their own way (LibreOffice set a comic sound effect
- *  a few points up and right of an outline turned on the page, #1444); a
- *  shape with the box's geometry and turn goes where the box goes. */
+ *  place of the box, turned the same, so it goes where Word draws the
+ *  box's text. LibreOffice (26.8) does not turn the text of a turned text
+ *  box at all: it sets it level in the box's bounding rectangle, so there
+ *  the halo, which it does turn, lies off the letters (#1444). */
 export function haloRun(ctx: WriterContext, item: TextItem, frame?: HaloFrame, lines: readonly DisplayLine[] = item.lines): string {
   const halo = item.halo;
   if (!halo || halo.widthPx <= 0) return '';

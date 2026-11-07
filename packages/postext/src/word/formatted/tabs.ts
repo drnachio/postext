@@ -74,7 +74,7 @@ function afterChip(ctx: WriterContext, runs: readonly { run: DisplayRun; gap: nu
  *  Only flush-left lines: in a centred or right-aligned paragraph a
  *  renderer moves the whole line by its alignment and lays out tab stops
  *  in its own way, so the text after the tab would not land on its x. */
-function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<number, TabStop> {
+function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number, resets: boolean): Map<number, TabStop> {
   const out = new Map<number, TabStop>();
   if (line.rtl || line.vertical || line.align !== 'left') return out;
   const { line: flat, runs } = emittedRuns(line);
@@ -84,7 +84,7 @@ function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<numb
     const nat = naturalTwips(ctx, face, run.text) ?? Math.round((fontSizePx(face) * 1440) / ctx.dpi / 4);
     const width = twips(run.width, ctx.dpi);
     const wide = width >= TAB_FACTOR * nat && width - nat >= TAB_MIN_TW;
-    if (!wide && !afterChip(ctx, runs, k)) return;
+    if (!wide && !(resets && afterChip(ctx, runs, k))) return;
     const rest = runs.slice(k + 1).filter((r) => r.run.text.length > 0);
     const next = rest[0]?.run;
     if (!next) return;
@@ -101,19 +101,25 @@ function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<numb
 /** The tabs of a paragraph's lines (`lines`, each its runs' indices that
  *  are tabs) and the `w:tabs` its pPr holds; none when a tab would stop
  *  short at a stop meant for another line (or at the hanging indent,
- *  which Word takes for a stop), so each one lands on its own. */
+ *  which Word takes for a stop), so each one lands on its own. The tabs
+ *  after chips and fallback characters (afterChip) only reset the line,
+ *  so when they clash with a stop, the paragraph keeps its wide spaces'
+ *  tabs without them rather than losing every tab. */
 export function paragraphTabs(ctx: WriterContext, lines: readonly DisplayLine[], boxL: number, indentTw: number): { lines: Set<number>[]; xml: string } {
-  const per = lines.map((l) => lineTabs(ctx, l, boxL));
-  const none = { lines: lines.map(() => new Set<number>()), xml: '' };
+  return settledTabs(ctx, lines, boxL, indentTw, true) ?? settledTabs(ctx, lines, boxL, indentTw, false) ?? { lines: lines.map(() => new Set<number>()), xml: '' };
+}
+
+function settledTabs(ctx: WriterContext, lines: readonly DisplayLine[], boxL: number, indentTw: number, resets: boolean): { lines: Set<number>[]; xml: string } | undefined {
+  const per = lines.map((l) => lineTabs(ctx, l, boxL, resets));
   const stops = new Map<number, TabStop>();
   for (const m of per) for (const s of m.values()) stops.set(s.pos, s);
-  if (stops.size === 0) return none;
+  if (stops.size === 0) return undefined;
   const positions = [...stops.keys(), indentTw];
   for (let i = 0; i < lines.length; i++) {
     const { runs } = emittedRuns(lines[i]!);
     for (const [k, s] of per[i]!) {
       const from = twips(runs[k]!.run.x - boxL, ctx.dpi);
-      if (s.pos <= from || positions.some((p) => p > from && p < s.pos)) return none;
+      if (s.pos <= from || positions.some((p) => p > from && p < s.pos)) return undefined;
     }
   }
   const sorted = [...stops.values()].sort((a, b) => a.pos - b.pos);

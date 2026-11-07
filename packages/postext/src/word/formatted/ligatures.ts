@@ -124,9 +124,9 @@ export function ligatureSpans(face: FaceAdvances | undefined, text: string): Lig
 /** `text` in pieces whose spacing adds up to `fitTw` plus `gapTw` (the
  *  run's fitted spacing and the room after it), none on the letters of a
  *  ligature (`spans`): the fit spread over the other characters, the gap
- *  on the last of them. When every character is in a ligature, the fit is
- *  dropped and a gap, which has nowhere to go, leaves the run to the usual
- *  pieces (undefined). The room a ligature saves over its letters is left
+ *  on the last character. When every character is in a ligature the fit is
+ *  dropped; a gap after a ligature that ends the run has nowhere to go,
+ *  and leaves the run to the usual pieces (undefined). The room a ligature saves over its letters is left
  *  as it is: LibreOffice draws some of them as wide as their letters (an
  *  f and i its kerning already drew together), and making up for what the
  *  face's advances say they save pushed the words after them further off
@@ -136,6 +136,10 @@ export function ligaturePieces(text: string, spans: readonly LigatureSpan[], fit
   const mask = chars.map((_, i) => spans.some((s) => i >= s.start && i < s.end));
   const carriers = chars.flatMap((_, i) => (mask[i] ? [] : [i]));
   const spacing = chars.map(() => 0);
+  // The gap opens after the run's last character: when that character is
+  // a ligature's, no unspaced piece can carry it (spacing on an earlier
+  // letter opens the gap inside the word), so the run is spaced as usual.
+  if (gapTw && mask[chars.length - 1]) return undefined;
   if (carriers.length) {
     const each = Math.floor(fitTw / carriers.length);
     const extra = fitTw - each * carriers.length;
