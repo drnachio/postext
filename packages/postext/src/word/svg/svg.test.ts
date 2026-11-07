@@ -4,7 +4,7 @@ import { existsSync as exists, readFileSync as readFile } from 'node:fs';
 import type { WordFontPlan } from '../fonts/types.js';
 import { svgWithWordFonts } from '../formatted/pictures.js';
 import { readOutlineFace } from './glyphs.js';
-import { svgTextAsPaths } from './text.js';
+import { hasStyleRules, svgTextAsPaths } from './text.js';
 
 const existsSync = exists as (path: URL) => boolean;
 const readFileSync = readFile as (path: URL) => Uint8Array;
@@ -57,5 +57,16 @@ describe.runIf(existsSync(loraPath))('SVG text drawn as outlines for Word (#1444
     expect(svgTextAsPaths(other, plan)).toBe(other);
     // Live text still names the embedded family for Word.
     expect(svgWithWordFonts(svgTextAsPaths(han, plan), plan)).toContain('Lora PTX');
+  });
+
+  it('leaves text live when a style sheet may size or paint it, not for @font-face alone', () => {
+    const text = '<text class="big" x="0" y="40" font-family="Lora">abc</text>';
+    const ruled = `<svg xmlns="http://www.w3.org/2000/svg"><style>.big{font-size:40px}</style>${text}</svg>`;
+    expect(svgTextAsPaths(ruled, plan)).toBe(ruled);
+    const element = `<svg xmlns="http://www.w3.org/2000/svg"><style><![CDATA[ text { fill: #c00 } ]]></style>${text}</svg>`;
+    expect(svgTextAsPaths(element, plan)).toBe(element);
+    const fonts = `<svg xmlns="http://www.w3.org/2000/svg"><style>/* face */ @font-face { font-family: Lora; src: url(data:font/ttf;base64,AA) }</style>${text}</svg>`;
+    expect(hasStyleRules(fonts)).toBe(false);
+    expect(svgTextAsPaths(fonts, plan)).not.toContain('<text');
   });
 });

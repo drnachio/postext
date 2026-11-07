@@ -7,7 +7,10 @@
 // keeps the text's paint (fill, stroke, opacity, transform, class). Text
 // the face cannot draw (a missing glyph, right-to-left or per-glyph
 // positioning, tspans) stays live text, and the fonts helper names the
-// embedded family for it.
+// embedded family for it. So does all the text of an SVG whose `<style>`
+// holds rules other than `@font-face`: a selector may set a text's size,
+// weight or paint, which the outline would not see, and a rule for
+// `text` would stop applying once the element is a group.
 
 import { wordFontFor } from '../fonts/plan.js';
 import type { WordFontPlan } from '../fonts/types.js';
@@ -139,6 +142,19 @@ function outline(plan: WordFontPlan, props: Props, content: string): string | un
   return d;
 }
 
+/** Whether a `<style>` element of the SVG holds a rule other than
+ *  `@font-face` (comments and CDATA markers aside). */
+export function hasStyleRules(svg: string): boolean {
+  for (const m of svg.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style\s*>/gi)) {
+    const css = m[1]!
+      .replace(/<!\[CDATA\[|\]\]>/g, '')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/@font-face\s*\{[^}]*\}/gi, '');
+    if (css.includes('{')) return true;
+  }
+  return false;
+}
+
 const escapeAttr = (s: string): string => s.replace(/&(?![#\w]+;)/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 /**
@@ -147,7 +163,7 @@ const escapeAttr = (s: string): string => s.replace(/&(?![#\w]+;)/g, '&amp;').re
  * outlined; the rest is left as it is.
  */
 export function svgTextAsPaths(svg: string, plan: WordFontPlan | undefined): string {
-  if (!plan || !plan.faces.length || !/<text\b/i.test(svg)) return svg;
+  if (!plan || !plan.faces.length || !/<text\b/i.test(svg) || hasStyleRules(svg)) return svg;
   const stack: Props[] = [];
   let out = '';
   let last = 0;
