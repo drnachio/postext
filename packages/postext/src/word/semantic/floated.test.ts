@@ -98,7 +98,49 @@ describe('semantic docx: resources a :ref floats', () => {
     expect(edited.chapters[0]!.markdown).toBe(md);
     expect(edited.resources?.find((r) => r.id === 'fig1')?.caption).toBe('A *red* square');
   });
+
+  it('keeps the data of a figure deleted whole in Word and reports it once', async () => {
+    const md = 'See :ref{id="fig1"} and :ref{id="t1"}.\n\nWatch :ref{id="v2"}.\n';
+    const e = await exportDocx(md, { resources, resourceBytes: bytes });
+    const current = { chapters: [{ id: 'ch1', markdown: md }], resources };
+    const r = applyDocxEdits(editDoc(e.bytes, (x) => ['fig1', 't1', 'v2'].reduce((acc, id) => dropSdt(acc, `ptx:figure:${id}`), x)), current);
+    expect(r.changed).toBe(false);
+    expect(r.resources).toBeUndefined();
+    expect(r.chapters[0]!.markdown).toBe(md);
+    expect(r.edits.map((x) => [x.resourceId, x.status, x.reason])).toEqual([
+      ['fig1', 'rejected', 'resource-removed'],
+      ['t1', 'rejected', 'resource-removed'],
+      ['v2', 'rejected', 'resource-removed'],
+    ]);
+
+    // Removing only the caption paragraph, with the picture kept, still
+    // empties the caption.
+    const caption = applyDocxEdits(editDoc(e.bytes, (x) => dropParagraph(x, '> dot</w:t>')), current);
+    expect(caption.resources?.find((x) => x.id === 'fig1')?.caption).toBe('');
+  });
 });
+
+/** Remove the paragraph holding `text`. */
+function dropParagraph(xml: string, text: string): string {
+  const at = xml.indexOf(text);
+  const start = Math.max(xml.lastIndexOf('<w:p>', at), xml.lastIndexOf('<w:p ', at));
+  const end = xml.indexOf('</w:p>', at) + '</w:p>'.length;
+  return xml.slice(0, start) + xml.slice(end);
+}
+
+/** Remove the content control tagged `tag` (with what it nests). */
+function dropSdt(xml: string, tag: string): string {
+  const at = xml.indexOf(`w:val="${tag}"`);
+  const start = xml.lastIndexOf('<w:sdt>', at);
+  let depth = 0;
+  const re = /<w:sdt>|<\/w:sdt>/g;
+  re.lastIndex = start;
+  for (let m = re.exec(xml); m; m = re.exec(xml)) {
+    depth += m[0] === '<w:sdt>' ? 1 : -1;
+    if (depth === 0) return xml.slice(0, start) + xml.slice(re.lastIndex);
+  }
+  throw new Error(`no end for ${tag}`);
+}
 
 describe('semantic docx: pictures a heading design draws', () => {
   const size = { width: { value: 40, unit: 'mm' }, height: { value: 20, unit: 'mm' } };
