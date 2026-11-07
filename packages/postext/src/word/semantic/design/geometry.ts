@@ -79,7 +79,10 @@ export function estimateBoxes(
       const longest = Math.max(1, ...text.split('\n').map((l) => l.length));
       width ??= Math.min(frame.width, longest * fontPx * 0.5);
       const w = Math.max(fontPx, width);
-      const lines = text.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil((l.length * fontPx * 0.5) / w)), 0);
+      // Wrapping counts a little under half an em a character (spaces and
+      // lower case are narrow): a line that just fits in print must not
+      // read as two here, or the texts level with it fall a line lower.
+      const lines = text.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil((l.length * fontPx * 0.45) / w)), 0);
       height ??= lines * lineH;
     } else if (el.kind === 'image') {
       const id = imageId(el);

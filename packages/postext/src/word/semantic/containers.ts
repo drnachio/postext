@@ -14,6 +14,7 @@ import { abs, blockId, type WriterContext } from './context.js';
 import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
 import { renderExercise } from './exercises/exercises.js';
+import { renderPartDesign } from './design/part.js';
 import { attrRange } from './marks.js';
 import { renderComposedPage } from './media/pages.js';
 import { rawSdt } from './raw.js';
@@ -87,8 +88,10 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
   if (name === 'part') {
     // The part's page break comes once: before its number, or before its
     // title when it has none.
-    const number = attrParagraph(ctx, node, 'number', STYLE.part);
-    const head = number + attrParagraph(ctx, node, 'title', STYLE.part, undefined, number ? { pageBreakBefore: false } : undefined);
+    // The book's part design draws it when it has one (#1444).
+    const designed = renderPartDesign(ctx, c, (key, style, props) => attrParagraph(ctx, node, key, style, undefined, props));
+    const number = designed === undefined ? attrParagraph(ctx, node, 'number', STYLE.part) : '';
+    const head = designed ?? number + attrParagraph(ctx, node, 'title', STYLE.part, undefined, number ? { pageBreakBefore: false } : undefined);
     return blockSdt(ctx.nextSdtId(), 'ptx:part', attrsLabel(attrs), head + renderNodes(ctx, node.children, env) || '<w:p/>');
   }
   if (name === 'paragraphs') {
@@ -256,7 +259,7 @@ export function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv
   // What the cell holds is as wide as the cell less its margins (Word's
   // default is 108 twips a side).
   const inner = Math.max(240, width - (padTw ? padTw.left + padTw.right : 216));
-  const body = renderNodes(ctx, node.children, { ...env, paraStyle: ids.body, widthTwips: inner, box: style ?? env.box });
+  const body = renderNodes(ctx, node.children, { ...env, paraStyle: ids.body, widthTwips: inner, box: style ?? env.box, boxTop: true });
   let cell = title + body;
   if (!cell || endsWithTable(cell)) cell += '<w:p/>';
   const borders = boxBorders(ctx, style);
