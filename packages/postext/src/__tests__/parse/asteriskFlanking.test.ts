@@ -44,6 +44,22 @@ describe('asterisks open and close by CommonMark flanking', () => {
     expect(spans.filter((s) => s.bold && s.italic).map((s) => s.text)).toEqual(['both']);
   });
 
+  it('judges a run of stars as a whole', () => {
+    // Neither star of a `**` before a space opens, so no italic starts
+    // inside a bold marker that failed to open.
+    for (const src of ['** foo**', 'foo ** bar', 'a **']) {
+      const spans = parseInlineFormatting(src);
+      expect(text(spans)).toBe(src);
+      expect(spans.some((s) => s.italic || s.bold)).toBe(false);
+    }
+    const nested = parseInlineFormatting('**bold *it***');
+    expect(bolds(nested)).toEqual(['bold ', 'it']);
+    expect(italics(nested)).toEqual(['it']);
+    const run = parseInlineFormatting('***Abstract***—Text');
+    expect(run.filter((s) => s.bold && s.italic).map((s) => s.text)).toEqual(['Abstract']);
+    expect(text(run)).toBe('Abstract—Text');
+  });
+
   it('keeps emphasis between CJK letters and punctuation', () => {
     expect(bolds(parseInlineFormatting('中文**粗体。**中文'))).toEqual(['粗体。']);
     expect(italics(parseInlineFormatting('中文*强调*中文'))).toEqual(['强调']);

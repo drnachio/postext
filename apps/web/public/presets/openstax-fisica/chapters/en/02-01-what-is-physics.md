@@ -625,7 +625,7 @@ $$
 
 Equation of line: $y=(2.0\,\text{ km/min})x+0$
 
-Because the *x*axis is time in minutes, we would actually be more likely to use the time *t*as the independent (*x-*axis) variable and write the equation as
+Because the *x*axis is time in minutes, we would actually be more likely to use the time *t*as the independent (*x*-axis) variable and write the equation as
 
 $$
 y=(2.0\,\text{ km/min})t+0.
@@ -767,7 +767,7 @@ In this simulation you will examine how changing the slope and *y*-intercept of 
 
 **significant figures** when writing a number, the digits, or number of digits, that express the precision of a measuring tool used to measure the number
 
-**slope** the ratio of the change of a graph on the *y*axis to the change along the *x-*axis, the value of *m*in the equation of a line, $y=mx+b$
+**slope** the ratio of the change of a graph on the *y*axis to the change along the *x*-axis, the value of *m*in the equation of a line, $y=mx+b$
 
 **uncertainty** a quantitative measure of how much measured values deviate from a standard or expected value
 

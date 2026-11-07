@@ -179,15 +179,18 @@ const STAR_CJK = '\\p{sc=Han}\\p{sc=Hira}\\p{sc=Kana}\\p{sc=Hang}';
  *  space: a run beside it opens or closes whatever is on its other side,
  *  so `**《**of` is a bold `《`. */
 const STAR_CJK_PUNCT = '\\u3000-\\u303f\\uff00-\\uff60';
-/** `n` asterisks that can open emphasis (a left-flanking run): not followed
- *  by a space, and followed by punctuation only after a space or
- *  punctuation. The `*` of `Sgr A* at` opens nothing (#1444). */
+/** `n` asterisks that can open emphasis: the first `n` of a run of stars
+ *  that is left-flanking. The run as a whole decides (CommonMark): it is
+ *  not followed by a space, and is followed by punctuation only after a
+ *  space or punctuation. The `*` of `Sgr A* at` opens nothing (#1444), and
+ *  neither does either star of `** foo`. */
 export const starsOpen = (n: number): string =>
-  `(?:(?<=^|[\\s${STAR_PUNCT}${STAR_CJK}])\\*{${n}}(?!\\s)|\\*{${n}}(?![\\s${STAR_PUNCT}])|\\*{${n}}(?=[${STAR_CJK_PUNCT}]))`;
-/** `n` asterisks that can close emphasis (a right-flanking run): not after
- *  a space, and after punctuation only before a space or punctuation. */
+  `(?<!\\*)(?:(?<=^|[\\s${STAR_PUNCT}${STAR_CJK}])\\*{${n}}(?=\\**[^\\s*])|\\*{${n}}(?=\\**[^\\s${STAR_PUNCT}])|\\*{${n}}(?=\\**[${STAR_CJK_PUNCT}]))`;
+/** `n` asterisks that can close emphasis: the last `n` of a run of stars
+ *  that is right-flanking, not after a space, and after punctuation only
+ *  before a space or punctuation. */
 export const starsClose = (n: number): string =>
-  `(?:(?<![\\s${STAR_PUNCT}])\\*{${n}}|(?<=[${STAR_PUNCT}])\\*{${n}}(?=$|[\\s${STAR_PUNCT}${STAR_CJK}])|(?<=[${STAR_CJK_PUNCT}])\\*{${n}})`;
+  `(?:(?<=[^\\s${STAR_PUNCT}]\\**)\\*{${n}}|(?<=(?!\\*)[${STAR_PUNCT}]\\**)\\*{${n}}(?=$|[\\s${STAR_PUNCT}${STAR_CJK}])|(?<=[${STAR_CJK_PUNCT}]\\**)\\*{${n}})(?!\\*)`;
 export const UNDERSCORE_BOLD_RE = new RegExp(`${underscores(2)}(.+?)${underscoresClose(2)}`, 'gu');
 export const UNDERSCORE_ITALIC_RE = new RegExp(`${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
 

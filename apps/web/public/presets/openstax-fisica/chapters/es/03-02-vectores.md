@@ -308,7 +308,7 @@ $$
 \{\begin{array}{l} {\vec{A}}_{x}={A}_{x}\hat{i} \\ {\vec{A}}_{y}={A}_{y}\hat{j}. \end{array}
 $$
 
-Los vectores ${\vec{A}}_{x}$ y ${\vec{A}}_{y}$ definidos por la aquí son los *componentes vectoriales* del vector $\vec{A}$. Las cifras ${A}_{x}$ y ${A}_{y}$ que definen los componentes vectoriales en la aquí son los componentes** escalares** del vector $\vec{A}$. Combinando la aquí con la aquí, obtenemos **la forma en componentes de un vector**:
+Los vectores ${\vec{A}}_{x}$ y ${\vec{A}}_{y}$ definidos por la aquí son los *componentes vectoriales* del vector $\vec{A}$. Las cifras ${A}_{x}$ y ${A}_{y}$ que definen los componentes vectoriales en la aquí son los componentes **escalares** del vector $\vec{A}$. Combinando la aquí con la aquí, obtenemos **la forma en componentes de un vector**:
 
 :::callout{type="nota" title="Nota"}
 $$

@@ -19,7 +19,7 @@ Utilizando el Very Large Telescope (VLT de ESO) del Observatorio Europeo Austral
 **Distancia** 11 millones de años luz
 :::
 
-"*Las galaxias son sistemas increíblemente complejos que todavía estamos tratando de entender*", afirma el investigador de ESO, Enrico Congiu, quien dirigió un nuevo estudio de *Sculptor*, publicado en* Astronomy & Astrophysics*. Con cientos de miles de años luz de diámetro, las galaxias son extremadamente grandes, pero su evolución depende de lo que sucede a escalas mucho más pequeñas. "*La Galaxia del Escultor está en un momento óptimo*", declara Congiu. "*Está lo suficientemente cerca como para que podamos resolver su estructura interna y estudiar sus componentes básicos con un detalle increíble, pero al mismo tiempo, es lo suficientemente grande como para que aún podamos verlo como un sistema completo*". (:ref{id="eso2510b" case="lower"})
+"*Las galaxias son sistemas increíblemente complejos que todavía estamos tratando de entender*", afirma el investigador de ESO, Enrico Congiu, quien dirigió un nuevo estudio de *Sculptor*, publicado en *Astronomy & Astrophysics*. Con cientos de miles de años luz de diámetro, las galaxias son extremadamente grandes, pero su evolución depende de lo que sucede a escalas mucho más pequeñas. "*La Galaxia del Escultor está en un momento óptimo*", declara Congiu. "*Está lo suficientemente cerca como para que podamos resolver su estructura interna y estudiar sus componentes básicos con un detalle increíble, pero al mismo tiempo, es lo suficientemente grande como para que aún podamos verlo como un sistema completo*". (:ref{id="eso2510b" case="lower"})
 
 :::callout{type="cita"}
 «Las galaxias son sistemas increíblemente complejos que todavía estamos tratando de entender»
