@@ -79,7 +79,12 @@ describe('semantic docx: resources a :ref floats', () => {
     expect(exportProblems(e, [md])).toEqual([]);
     expect(e.doc).toContain('ptx:figure:v1');
     expect(e.doc).toMatch(/ptx:figure:v1.*<w:drawing>/);
-    expect(e.frag('▶ https://youtu.be/xyz').target).toEqual({ kind: 'generated' });
+    // The label the engine gives it, linked to the address, which stays
+    // out of the text.
+    const link = e.frag('▶ Video\u00A02');
+    expect(link.target).toEqual({ kind: 'generated' });
+    expect(e.doc).not.toContain('>▶ https://youtu.be/xyz<');
+    expect(e.doc).toMatch(/<w:hyperlink r:id="[^"]+">(?:(?!<\/w:hyperlink>)[^])*▶ Video 2/);
     expect(e.part('word/_rels/document.xml.rels')).toContain('Target="https://youtu.be/xyz"');
     expect(e.doc).not.toContain('ptx:raw');
   });

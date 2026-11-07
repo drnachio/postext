@@ -4,20 +4,24 @@
 // words in the Markdown or to the resource's field).
 
 import { strFromU8, strToU8 } from 'fflate';
-import type { ContentBlock } from '../../../parse/types.js';
+import type { ContentBlock, InlineSpan } from '../../../parse/types.js';
 import type { Resource } from '../../../types.js';
 import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
 import { svgWithWordFonts } from '../../formatted/pictures.js';
 import { svgTextAsPaths } from '../../svg/text.js';
 import { escapeAttr } from '../../xml.js';
-import { abs, blockId, type PreparedPicture, type WriterContext } from '../context.js';
-import { captionLabelParts, captionStyleOf } from '../engineNumbers.js';
+import { blockId, type PreparedPicture, type WriterContext } from '../context.js';
+import { resourceRefLabel } from '../engineNumbers.js';
 import { FragmentBuilder } from '../fragments.js';
 import { rawSdt } from '../raw.js';
-import { snippetRuns } from '../snippet.js';
 import { STYLE } from '../styles.js';
 import { renderTable } from '../tables.js';
-import { blockSdt, emu, fieldRuns, paragraph, rPr, textRuns, type ParaProps } from '../wml.js';
+import { blockSdt, emu, paragraph, px, rPr, textRuns, twips } from '../wml.js';
+import { captionLabel, captionParagraph, captionPlace, figureLabels, ownWord } from './captions.js';
+
+export { captionPlace };
+
+type RefSpan = NonNullable<InlineSpan['ref']>;
 
 const SVG_EXT = '{96DAC541-7B7A-43D3-8B79-37D633B846F1}';
 const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: 'jpeg', jpg: 'jpeg', gif: 'gif', 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/gif': 'gif' };
@@ -26,10 +30,28 @@ const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: '
  *  slot (the column, or the whole text area when it spans the page) times
  *  its placement's width (`placement.width`, else its type's default: an
  *  ornament a fifth of the column wide), as the engine sizes it (#1444). */
-export function pictureSlot(ctx: WriterContext, res: Resource): { px: number; align: 'left' | 'center' | 'right'; fraction: number } {
+export function pictureSlot(ctx: WriterContext, res: Resource): { px: number; align: 'left' | 'center' | 'right'; fraction: number; side: boolean } {
   const place = resolveResourcePlacement(res, ctx.resourceTypes.find((t) => t.id === res.typeId));
-  const slot = place.span === 'page' ? ctx.textAreaPx : ctx.columnPx;
-  return { px: Math.max(1, slot * place.widthFraction), align: place.align, fraction: place.widthFraction };
+  const side = place.span === 'side' && ctx.resolved.layout.layoutType === 'oneAndHalf';
+  const slot = place.span === 'page' ? ctx.textAreaPx : side ? sideColumnPx(ctx) : ctx.columnPx;
+  return { px: Math.max(1, slot * place.widthFraction), align: place.align, fraction: place.widthFraction, side };
+}
+
+/** The width of a column-and-a-half layout's side column, px: a picture
+ *  set there (`span: 'side'`, a margin diagram) is that wide in print. */
+function sideColumnPx(ctx: WriterContext): number {
+  const r = ctx.resolved;
+  const text = px(ctx.units, r.page.width) - px(ctx.units, r.page.margins.left) - px(ctx.units, r.page.margins.right);
+  // As the page geometry splits the text area (`pageGeometry`).
+  return Math.max(1, ((text - px(ctx.units, r.layout.gutterWidth)) * Math.min(99, Math.max(1, r.layout.sideColumnPercent))) / 100);
+}
+
+/** The most a picture is prepared at: as wide as the widest place it can
+ *  stand (a figure in a box or band set across the page takes the whole
+ *  text area); where it stands fits it down (`pictureRun`). */
+function preparedPx(ctx: WriterContext, res: Resource): number {
+  const slot = pictureSlot(ctx, res);
+  return slot.side ? slot.px : Math.max(1, ctx.textAreaPx * slot.fraction);
 }
 
 /** Display size of a picture in px at the book's dpi: its pixels at its
@@ -59,7 +81,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
     if (ctx.media.has(id)) continue;
     const res = ctx.resources.get(id);
     if (!res) continue;
-    const slot = pictureSlot(ctx, res).px;
+    const slot = preparedPx(ctx, res);
     if (res.kind === 'bitmap' && res.bitmap) {
       const ext = BITMAP_EXT[res.bitmap.format.toLowerCase()];
       const bytes = ctx.resourceBytes?.(res.bitmap.fileId);
@@ -118,73 +140,16 @@ export function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: strin
   );
 }
 
-/** A figure's own word (`caption`, `note`, `alt`) with its absolute
- *  range, checked against the Markdown. */
-function ownWord(ctx: WriterContext, b: ContentBlock | undefined, kind: 'caption' | 'note' | 'alt'): { text: string; start: number } | undefined {
-  const w = b?.figure?.words?.[kind];
-  if (!b || !w) return undefined;
-  const md = ctx.chapter.markdown;
-  const start = abs(ctx, w.sourceStart);
-  if (md.startsWith(w.text, start)) return { text: w.text, start };
-  // Offsets read before marks were taken out: find the text in the block.
-  const at = md.indexOf(w.text, abs(ctx, b.sourceStart));
-  return at >= 0 && at < abs(ctx, b.sourceEnd) ? { text: w.text, start: at } : { text: w.text, start: -1 };
-}
-
-/** A caption-style paragraph for a figure's caption or note. */
-function captionParagraph(ctx: WriterContext, b: ContentBlock | undefined, res: Resource, field: 'caption' | 'note', label: string, props: ParaProps = { style: STYLE.caption }): string {
-  const own = ownWord(ctx, b, field);
-  const role = field === 'caption' ? 'caption' : 'note';
-  const style = props.style ?? STYLE.caption;
-  let runs: string;
-  if (own && own.start >= 0) runs = snippetRuns(ctx, own.text, ctx.chapter.markdown, own.start, { kind: 'markdown', chapter: ctx.chapter.index }, role, style);
-  else if (own) runs = textRuns(own.text, '');
-  else {
-    const text = res[field] ?? '';
-    runs = snippetRuns(ctx, text, text, 0, { kind: 'resource', resourceId: res.id, field }, role, style);
-  }
-  if (!runs && !label) return '';
-  return paragraph(props, label + runs);
-}
-
-/** The caption style of a resource's type (#1444): above or below its
- *  figure, and the paragraph style that sets it. */
-export function captionPlace(ctx: WriterContext, res: Resource): { above: boolean; style: string } {
-  const type = ctx.resourceTypes.find((t) => t.id === res.typeId);
-  const cap = captionStyleOf(ctx.resolved, type);
-  return { above: cap.position === 'above', style: ctx.styles.caption(cap, type?.id ?? res.typeId) };
-}
-
-/** The caption's label and number, in a fragment of generated text: the
- *  importer reads text beside a bookmark into it, so the label needs its
- *  own (edits to it are rejected, not written into the caption). */
-function captionLabel(ctx: WriterContext, res: Resource): string {
-  const type = ctx.resourceTypes.find((t) => t.id === res.typeId);
-  const entry = ctx.numbers.resources[res.id];
-  // The label and number the engine prints ("Figure 1.7. ").
-  const label = type && entry ? captionLabelParts(ctx.resolved, type, entry.number) : undefined;
-  if (!type || !label) return '';
-  const cap = captionStyleOf(ctx.resolved, type);
-  const props = `<w:rPr>${cap.labelBold ? '<w:b/>' : ''}${cap.labelItalic ? '<w:i/>' : ''}</w:rPr>`;
-  // A number that is the plain count of its type stays a SEQ field (Word
-  // lists the figures with it); a chapter number ("1.7") is text, which a
-  // field update would turn into the count.
-  const seq = `SEQ ${type.id.replace(/[^A-Za-z0-9_]/g, '_') || 'Figure'} \\* ARABIC`;
-  const plain = label.number !== '' && label.number === String(ctx.numbers.ordinals.get(res.id));
-  const num = !label.number ? '' : plain ? fieldRuns(seq, label.number, props) : textRuns(label.number, props);
-  const runs = textRuns(label.head, props) + num + textRuns(label.tail, props);
-  const text = label.head + label.number + label.tail;
-  const frag = new FragmentBuilder();
-  frag.push(text, new Array<number>(text.length).fill(-1), (cap.labelBold ? 'b' : '') + (cap.labelItalic ? 'i' : ''));
-  return ctx.log.wrap(runs, frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'label' });
-}
-
-/** What a video without a poster shows: a line with its address (a
- *  link), in a fragment of generated text so it never reads back as an
+/** What a video without a poster shows: a play mark and the label the
+ *  engine gives it ("\u25B6 Video 1.1"), linked to its address, which stays out
+ *  of sight behind the words. Generated text, so it never reads back as an
  *  added paragraph. */
 function videoPlaceholder(ctx: WriterContext, res: Resource): string {
   const url = res.video?.url;
-  const text = url ? `\u25B6 ${url}` : '\u25B6';
+  const type = ctx.resourceTypes.find((t) => t.id === res.typeId);
+  const name = ctx.numbers.resources[res.id] ? resourceRefLabel({ resourceId: res.id, style: 'full' } as RefSpan, ctx.numbers, [res], ctx.resolved) : (type?.name ?? '');
+  const words = name || url || '';
+  const text = words ? `\u25B6 ${words}` : '\u25B6';
   const frag = new FragmentBuilder();
   frag.push(text, new Array<number>(text.length).fill(-1), '', url);
   const runs = textRuns(text, url ? rPr({ style: STYLE.hyperlink }) : '');
@@ -227,13 +192,17 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
     // (an ornament centred, a figure flush left).
     const slot = pictureSlot(ctx, res);
     const jc = slot.fraction < 1 ? slot.align : undefined;
-    if (pic) return paragraph({ style: STYLE.figure, ...(jc ? { jc } : {}) }, pictureRun(ctx, pic, id, alt, (widthTwips * ctx.units.dpi) / 1440));
+    // As wide as its share of where it stands (a side figure keeps the
+    // side column's width); it keeps its labels and caption with it.
+    const room = (widthTwips * ctx.units.dpi) / 1440;
+    const max = slot.side ? Math.min(room, slot.px) : room * slot.fraction;
+    if (pic) return paragraph({ style: STYLE.figure, keepNext: true, ...(jc ? { jc } : {}) }, pictureRun(ctx, pic, id, alt, max)) + figureLabels(ctx, b);
     return res.kind === 'video' ? videoPlaceholder(ctx, res) : '';
   };
   // Fragments are logged as they are written, so in the document's order:
   // a caption set above the table or picture is rendered first.
-  const { above, style } = captionPlace(ctx, res);
-  const caption = (): string => captionParagraph(ctx, b, res, 'caption', captionLabel(ctx, res), { style });
+  const { above } = captionPlace(ctx, res);
+  const caption = (): string => captionParagraph(ctx, b, res, 'caption', captionLabel(ctx, res));
   let content: string;
   if (above) {
     const cap = caption();
@@ -243,6 +212,16 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
     content = body + caption();
   }
   // The note is set under the figure even when the caption is above it.
-  const note = captionParagraph(ctx, b, res, 'note', '', above ? { style, keepNext: false, before: 60 } : { style });
-  return blockSdt(ctx.nextSdtId(), `ptx:figure:${id}`, undefined, content + note || '<w:p/>');
+  const note = captionParagraph(ctx, b, res, 'note', '', above ? { keepNext: false } : {});
+  return blockSdt(ctx.nextSdtId(), `ptx:figure:${id}`, undefined, content + note || '<w:p/>') + figureGap(ctx, !!b);
+}
+
+/** The room the engine keeps between a figure and the text after it (the
+ *  float gap, a body line): an empty paragraph that tall, which the
+ *  importer passes over. Only for a figure its own block shows (`own`): a
+ *  floated one stands between paragraphs that keep their own spacing. */
+function figureGap(ctx: WriterContext, own: boolean): string {
+  if (!own) return '';
+  const line = Math.max(120, twips(ctx.units, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx));
+  return `<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="${line}" w:lineRule="exact"/><w:ind w:firstLine="0"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>`;
 }

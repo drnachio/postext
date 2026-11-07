@@ -2,9 +2,11 @@
 // (`::::page`), a comic page (`:::page`) and a comic strip (`:::strip`).
 // Word has no place for a template's frames or a panel's balloons, so the
 // semantic document writes what fills them as flowing text: a composed
-// page's blocks in the order the Markdown gives them (a frame's label as
-// its title, a module's frames one after another), starting a new page as
-// the book does; a comic's panels as pictures followed by their script
+// page's blocks in the order the Markdown gives them (a frame its template
+// draws as a box as a box in that style, else with its label as a title; a
+// module's frames one after another, then the answer lines of its empty
+// ruled frames; a picture set over a frame inside it, see frames.ts),
+// starting a new page as the book does; a comic's panels as pictures followed by their script
 // (see comics.ts). The text stays mapped to the Markdown. A page with
 // nothing to write (no panel has art or words) is a short labelled
 // placeholder pointing to the PDF and the formatted .docx, generated text
@@ -12,15 +14,19 @@
 
 import { extractFrontmatter } from '../../../parse/frontmatter.js';
 import { parseMarkdownWithIssues } from '../../../parse/index.js';
+import type { ResolvedPageTemplate } from '../../../composed/types/resolved.js';
 import type { ContentBlock } from '../../../parse/types.js';
 import { renderNodes, type BlockEnv, type Node } from '../blocks.js';
+import { renderBox } from '../containers.js';
 import { abs, blockId, type WriterContext } from '../context.js';
 import { FragmentBuilder } from '../fragments.js';
 import { generatedRuns } from '../generated.js';
 import { attrRange } from '../marks.js';
 import { STYLE } from '../styles.js';
 import { blockSdt, paragraph, textRuns } from '../wml.js';
+import { stripCaptionParagraph } from './captions.js';
 import { comicPanels, renderComic } from './comics.js';
+import { frameBoxStyle, numberTemplateHeading, overFrame, ruledLines, templateOf } from './frames.js';
 
 export type PageKind = 'composedPage' | 'comicPage' | 'strip';
 
@@ -65,7 +71,9 @@ export function renderComicPage(ctx: WriterContext, fence: ContentBlock, kind: '
   const width = Math.max(240, Math.round(widthTwips ?? ctx.textTwips));
   const caption = (): string => (kind === 'strip' ? stripCaption(ctx, fence) : '');
   const filled = comicPanels(fence).some((p) => (p.art && ctx.media.has(p.art)) || p.text || p.items.some((i) => i.role !== 'note' && i.text.trim()));
-  if (filled) return renderComic(ctx, fence, kind, width, caption);
+  // A comic page starts a page, as in print, so one page's panels do not
+  // run into the next one's.
+  if (filled) return (kind === 'comicPage' ? PAGE_START : '') + renderComic(ctx, fence, kind, width, caption);
   return renderPagePlaceholder(ctx, kind, width, caption);
 }
 
@@ -105,37 +113,83 @@ function frameLabel(ctx: WriterContext, c: ContentBlock): string {
   return paragraph({ style: STYLE.boxTitle }, runs);
 }
 
+/** The slot a block or a frame fills. */
+const slotOf = (n: Node): string | undefined => ('container' in n ? n.container.containerAttrs?.slot : n.block.slot?.name);
+
 /** The nodes of a composed page (or of a frame or module in it): frames
- *  and modules opened here, everything else through the block writer. */
-function pageNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv): string {
+ *  and modules opened here, everything else through the block writer.
+ *  `templates` are the page's template and, inside a module, its own. */
+function pageNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, templates: readonly (ResolvedPageTemplate | undefined)[]): string {
+  const template = templates[templates.length - 1];
+  // A picture set over a frame (a photo in a box's corner) goes into it.
+  const frames = new Map<string, ContainerNode>();
+  for (const n of nodes) if ('container' in n && n.container.containerName === 'frame' && slotOf(n)) frames.set(slotOf(n)!, n);
+  const moved = new Map<ContainerNode, Node[]>();
+  const rest = nodes.filter((n) => {
+    const host = 'block' in n ? frames.get(overFrame(template, slotOf(n)) ?? '') : undefined;
+    if (host) moved.set(host, [...(moved.get(host) ?? []), n]);
+    return !host;
+  });
   let out = '';
   let run: Node[] = [];
   const flush = (): void => {
     if (run.length) out += renderNodes(ctx, run, env);
     run = [];
   };
-  for (const n of nodes) {
+  for (const n of rest) {
     const name = 'container' in n ? n.container.containerName : undefined;
     if (name !== 'frame' && name !== 'module') {
       run.push(n);
       continue;
     }
     flush();
-    const c = (n as ContainerNode).container;
-    const body = (name === 'frame' ? frameLabel(ctx, c) : '') + pageNodes(ctx, (n as ContainerNode).children, env);
+    const node = n as ContainerNode;
+    const c = node.container;
     const slot = c.containerAttrs?.slot ?? c.containerAttrs?.template ?? '';
-    out += blockSdt(ctx.nextSdtId(), `ptx:${name}${slot ? `:${slot}` : ''}`, undefined, body || '<w:p/>');
+    const tag = `ptx:${name}${slot ? `:${slot}` : ''}`;
+    const children = [...node.children, ...(moved.get(node) ?? [])];
+    if (name === 'module') {
+      // A module's frames, then the answer lines of its empty ruled ones.
+      const own = templateOf(ctx, c.containerAttrs?.template);
+      const inner = [...templates, own];
+      const body = pageNodes(ctx, children, env, inner) + ruledLines(ctx, own, new Set(children.map(slotOf).filter((s): s is string => !!s)));
+      out += blockSdt(ctx.nextSdtId(), tag, undefined, body || '<w:p/>');
+      continue;
+    }
+    // A frame drawn as a box in print is a box here too, in its style.
+    const style = frameBoxStyle(ctx, templates, c.containerAttrs?.slot);
+    if (style) {
+      out += renderBox(ctx, { ...node, children }, env, { style, head: () => frameLabel(ctx, c), tag });
+      continue;
+    }
+    const body = frameLabel(ctx, c) + pageNodes(ctx, children, env, templates);
+    out += blockSdt(ctx.nextSdtId(), tag, undefined, body || '<w:p/>');
   }
   flush();
   return out;
 }
 
+/** The first heading among `nodes`, frames and modules included. */
+function firstHeading(nodes: readonly Node[]): ContentBlock | undefined {
+  for (const n of nodes) {
+    if ('block' in n) {
+      if (n.block.type === 'heading') return n.block;
+    } else {
+      const h = firstHeading(n.children);
+      if (h) return h;
+    }
+  }
+  return undefined;
+}
+
 /** A composed page: its content in Markdown order, on a page of its own. */
 export function renderComposedPage(ctx: WriterContext, node: ContainerNode, env: BlockEnv): string {
-  const body = pageNodes(ctx, node.children, env);
+  const id = node.container.composedPage?.template ?? node.container.containerAttrs?.template ?? '';
+  const template = templateOf(ctx, id);
+  numberTemplateHeading(ctx, template, firstHeading(node.children));
+  const body = pageNodes(ctx, node.children, env, [template]);
   if (!body) return renderPagePlaceholder(ctx, 'composedPage', Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips)));
-  const template = node.container.composedPage?.template ?? node.container.containerAttrs?.template ?? '';
-  return blockSdt(ctx.nextSdtId(), `ptx:composedPage${template ? `:${template}` : ''}`, undefined, PAGE_START + body);
+  return blockSdt(ctx.nextSdtId(), `ptx:composedPage${id ? `:${id}` : ''}`, undefined, PAGE_START + body);
 }
 
 /** `content` in a grey framed cell `width` twips wide. */
@@ -156,8 +210,8 @@ function stripCaption(ctx: WriterContext, fence: ContentBlock): string {
   const text = md.slice(range.start, range.end);
   const f = new FragmentBuilder();
   f.push(text, Array.from({ length: text.length }, (_, k) => range.start + k));
-  const runs = ctx.log.wrap(textRuns(text, ''), f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [range.start, range.end], role: 'attr:strip:caption' });
-  return paragraph({ style: STYLE.caption }, runs);
+  // The label and number go first, so their fragment is logged first.
+  return stripCaptionParagraph(ctx, fence, () => ctx.log.wrap(textRuns(text, ''), f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [range.start, range.end], role: 'attr:strip:caption' }));
 }
 
 /**
