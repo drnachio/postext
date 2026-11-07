@@ -164,15 +164,15 @@ describe('semantic docx: pictures a heading design draws', () => {
     ],
   } as never;
 
-  it('writes the picture after its heading, without overlays or ornaments, and reads back unchanged', async () => {
+  it('writes the picture in reading order (above the title it stands over), without overlays or ornaments, and reads back unchanged', async () => {
     const md = '# Soup {style="dish" art="fig1"}\n\nStir well.\n';
     const e = await exportDocx(md, { resources, resourceBytes: bytes, config });
     expect(exportProblems(e, [md])).toEqual([]);
     expect(e.doc).toContain('ptx:design:fig1');
     expect(e.doc).not.toContain('ptx:design:fig2');
     expect(e.doc).not.toContain('ptx:design:h1');
-    expect(e.doc.indexOf('Soup')).toBeLessThan(e.doc.indexOf('ptx:design:fig1'));
-    expect(e.doc.indexOf('ptx:design:fig1')).toBeLessThan(e.doc.indexOf('Stir well.'));
+    expect(e.doc.indexOf('ptx:design:fig1')).toBeLessThan(e.doc.indexOf('Soup'));
+    expect(e.doc.indexOf('Soup')).toBeLessThan(e.doc.indexOf('Stir well.'));
     // 40 mm wide at most, not the column.
     const cx = Number(/ptx:design:fig1.*?<wp:extent cx="(\d+)"/.exec(e.doc)?.[1]);
     expect(cx).toBeGreaterThan(0);

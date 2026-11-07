@@ -108,26 +108,44 @@ describe('semantic docx: pages Word cannot hold', () => {
     ':::strip{split="* | *" caption="A strip *lettered* here" id=s1}\n::panel{art=a}\neditor: Hello.\n::panel{art=b}\n:::\n\n' +
     'After.\n';
 
-  it('stands in for them with a labelled placeholder, not their source', async () => {
+  it('writes what fills them as flowing text, mapped to the Markdown, not their source', async () => {
     const e = await exportDocx(md);
     expect(exportProblems(e, [md])).toEqual([]);
     expect(looseMarkup(e.doc)).toEqual([]);
     const text = words(e.doc);
-    for (const raw of ['::::page', ':::page', ':::strip', '::panel', 'caption:', 'On one page']) expect(text).not.toContain(raw);
-    expect(e.frag('Composed page — see the PDF or the formatted .docx').role).toBe('placeholder:composedPage');
-    expect(e.frag('Comic page — see the PDF or the formatted .docx').role).toBe('placeholder:comicPage');
-    expect(e.frag('Comic strip — see the PDF or the formatted .docx').role).toBe('placeholder:strip');
+    for (const raw of ['::::page', ':::page', ':::strip', '::panel', 'caption:', '— see the PDF']) expect(text).not.toContain(raw);
+    // The composed page starts a page of its own, its frame's label a title.
+    expect(e.doc).toContain('<w:tag w:val="ptx:composedPage:sheet"/>');
+    expect(e.doc).toContain('<w:tag w:val="ptx:frame:card"/>');
+    expect(e.doc.slice(e.doc.indexOf('ptx:composedPage:sheet'))).toMatch(/^[^]*?<w:pageBreakBefore\/>/);
+    expect(e.frag('On one page').target).toEqual({ kind: 'markdown', chapter: 0 });
+    expect(e.frag('Write').role).toBe('attr:frame:label');
+    expect(e.frag('Plain Markdown.').target).toEqual({ kind: 'markdown', chapter: 0 });
+    // The panels' script, a line each: the speaker's key mapped, the colon
+    // the engine's.
+    expect(e.frag('Every summer.').role).toBe('comic:caption');
+    expect(e.frag('editor').role).toBe('comic:speaker');
+    expect(e.frag(': ').target).toEqual({ kind: 'generated' });
+    expect(e.frag('Hello.').role).toBe('comic:speech');
+    expect(text).toContain('editor|: |Hello.');
     const caption = e.frag('A strip *lettered* here');
     expect(md.slice(caption.range[0], caption.range[1])).toBe('A strip *lettered* here');
     const chapters = [{ id: 'ch1', markdown: md }];
-    expect(applyDocxEdits(e.bytes, { chapters }).edits).toEqual([]);
-    const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('Comic page — see', 'Comic page - see').replace('lettered', 'drawn')), { chapters });
-    expect(r.chapters[0]!.markdown).toBe(md.replace('lettered', 'drawn'));
+    const same = applyDocxEdits(e.bytes, { chapters });
+    expect(same.edits).toEqual([]);
+    expect(same.chapters[0]!.markdown).toBe(md);
+    const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('lettered', 'drawn').replace('>Write<', '>Read<').replace('Hello.', 'Hello there.').replace('>editor<', '>writer<')), { chapters });
+    expect(r.chapters[0]!.markdown).toBe(md.replace('lettered', 'drawn').replace('label="Write"', 'label="Read"').replace('editor: Hello.', 'writer: Hello there.'));
   });
 
-  it('speaks the book language', async () => {
-    const e = await exportDocx(md, { config: { locale: 'es' } as never });
-    expect(e.frag('Página compuesta — véase el PDF o el .docx maquetado').role).toBe('placeholder:composedPage');
+  it('stands in for a page with nothing to write, in the book language', async () => {
+    const empty = 'Before.\n\n:::page{split="*"}\n::panel\n:::\n\nAfter.\n';
+    const e = await exportDocx(empty);
+    expect(exportProblems(e, [empty])).toEqual([]);
+    expect(e.frag('Comic page — see the PDF or the formatted .docx').role).toBe('placeholder:comicPage');
+    expect(applyDocxEdits(e.bytes, { chapters: [{ id: 'ch1', markdown: empty }] }).chapters[0]!.markdown).toBe(empty);
+    const es = await exportDocx(empty, { config: { locale: 'es' } as never });
+    expect(es.frag('Página de cómic — véase el PDF o el .docx maquetado').role).toBe('placeholder:comicPage');
   });
 
   it('suggests the formatted variant when pages are most of the book', () => {

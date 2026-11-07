@@ -21,7 +21,7 @@ import { bookNumbers } from './engineNumbers.js';
 import { parseChapter, renderChapter } from './chapter.js';
 import type { SemanticWarning, WriterContext } from './context.js';
 import { prepareMedia } from './media/figures.js';
-import { designPictureIds } from './media/designPictures.js';
+import { designMediaIds } from './design/pictures.js';
 import { prepareExercises } from './exercises/exercises.js';
 import { floatedResources } from './media/floated.js';
 import { prepareScores } from './media/scores.js';
@@ -103,7 +103,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     }
   }
   for (const id of floated) shown.add(id);
-  for (const id of designPictureIds(parsed, resolved, resources)) shown.add(id);
+  for (const id of designMediaIds(parsed, resolved, resources)) shown.add(id);
   // Pictures set inside table cells (a bar chart in a results table).
   for (const id of tablePictureIds(resources, [...shown])) shown.add(id);
   let sdtId = 0;

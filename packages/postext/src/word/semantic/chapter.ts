@@ -7,7 +7,6 @@ import { parseMarkdownWithIssues } from '../../parse/index.js';
 import type { ContentBlock, ParseIssue, ParseOptions } from '../../parse/types.js';
 import { buildTree, citedNotes, renderPieces } from './blocks.js';
 import type { WriterContext } from './context.js';
-import { designPicturesAfter } from './media/designPictures.js';
 import { chapterSolutions } from './exercises/exercises.js';
 import { floatedAfter } from './media/floated.js';
 import { namedBookmark } from './marks.js';
@@ -62,7 +61,7 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
   // The front matter is not shown: its title and author go to the
   // document properties, and source no fragment covers is kept as it is
   // on re-import.
-  const pieces: Piece[] = renderPieces(ctx, buildTree(pc.blocks), {}, (nodes) => [...designPicturesAfter(ctx, nodes).map((xml) => ({ xml })), ...floatedAfter(ctx, nodes)]);
+  const pieces: Piece[] = renderPieces(ctx, buildTree(pc.blocks), {}, (nodes) => floatedAfter(ctx, nodes));
   pieces.push({ xml: chapterSolutions(ctx) });
   // Notes cited only from text kept as source: their definitions too.
   for (const [id, def] of defs) {

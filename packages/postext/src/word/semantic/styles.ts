@@ -10,6 +10,7 @@ import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
+import { paleOnWhite } from './design/ink.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
 
 /** Style ids the writer uses by name. */
@@ -318,7 +319,8 @@ export class StyleRegistry {
         b: level.fontWeight >= 600,
         i: level.italic,
         caps: level.textTransform === 'uppercase' || undefined,
-        color: hex(level.color),
+        // A heading the design sets in white on a band keeps the paper's ink.
+        color: paleOnWhite(hex(level.color)) ? undefined : hex(level.color),
         spacing: level.letterSpacing.value ? twips(u, level.letterSpacing, size) : undefined,
         sz: halfPoints(u, level.fontSize, this.bodyPx),
       },
@@ -415,6 +417,18 @@ export class StyleRegistry {
         sz: halfPoints(u, ps.fontSize, this.bodyPx),
       },
     };
+  }
+
+  /** A paragraph style of the writer's own, made once per `key` (a heading
+   *  design's text, a box's label tab): `make` gives its look. */
+  custom(key: string, name: string, make: () => { basedOn?: string; pPr?: ParaProps; rPr?: RunProps }): string {
+    const { id, fresh } = this.idFor(`custom:${key}`, 'Postext', name);
+    // Two looks of one element (sizes fitted to different titles) get ids
+    // …title and …title2; the names differ the same way, since LibreOffice
+    // keys styles by name and would merge them.
+    const n = id.slice(`Postext${slug(name)}`.length);
+    if (fresh) this.add(id, { type: 'paragraph', name: `Postext ${name}${n ? ` ${n}` : ''}`, custom: true, basedOn: STYLE.normal, next: STYLE.normal, ...make() });
+    return id;
   }
 
   /** The box style named by a callout's `type`. */
