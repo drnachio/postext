@@ -5,16 +5,16 @@
 import { extractFrontmatter } from '../../parse/frontmatter.js';
 import { parseMarkdownWithIssues } from '../../parse/index.js';
 import type { ContentBlock, ParseIssue, ParseOptions } from '../../parse/types.js';
-import { buildTree, citedNotes, renderNodes } from './blocks.js';
+import { buildTree, citedNotes, renderPieces } from './blocks.js';
 import type { WriterContext } from './context.js';
 import { designPicturesAfter } from './media/designPictures.js';
 import { chapterSolutions } from './exercises/exercises.js';
 import { floatedAfter } from './media/floated.js';
 import { namedBookmark } from './marks.js';
 import { lineStart, rawSdt } from './raw.js';
-import { sectionXml, type PageGeometry } from './sections.js';
+import { bookPageNumbers, type PageGeometry } from './sections.js';
+import { chapterSections, type Piece } from './layout/pageSpan.js';
 import type { WordChapterInput } from './types.js';
-import { pPr } from './wml.js';
 
 export interface ParsedChapter {
   input: WordChapterInput;
@@ -54,16 +54,19 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
     blockCounter: 0,
   };
   for (const issue of pc.issues) ctx.warn(`parse:${issue.kind}`, `Unclosed or stray ${issue.delimiter} at offset ${issue.sourceStart + pc.offset}.`);
-  let xml = namedBookmark(ctx, `chapter_${pc.input.id}`);
+  ctx.chapter.pageNumbers = index === 0 ? bookPageNumbers(ctx) : undefined;
+  const mark = namedBookmark(ctx, `chapter_${pc.input.id}`);
   // The front matter is not shown: its title and author go to the
   // document properties, and source no fragment covers is kept as it is
   // on re-import.
-  xml += renderNodes(ctx, buildTree(pc.blocks), {}, (nodes) => [...designPicturesAfter(ctx, nodes), ...floatedAfter(ctx, nodes)]);
-  xml += chapterSolutions(ctx);
+  const pieces: Piece[] = renderPieces(ctx, buildTree(pc.blocks), {}, (nodes) => [...designPicturesAfter(ctx, nodes).map((xml) => ({ xml })), ...floatedAfter(ctx, nodes)]);
+  pieces.push({ xml: chapterSolutions(ctx) });
   // Notes cited only from text kept as source: their definitions too.
   for (const [id, def] of defs) {
-    if (ctx.chapter.cited.has(id) && !ctx.chapter.usedDefs.has(id)) xml += rawSdt(ctx, lineStart(pc.input.markdown, def.sourceStart + pc.offset), def.sourceEnd + pc.offset, 'footnote');
+    if (ctx.chapter.cited.has(id) && !ctx.chapter.usedDefs.has(id)) pieces.push({ xml: rawSdt(ctx, lineStart(pc.input.markdown, def.sourceStart + pc.offset), def.sourceEnd + pc.offset, 'footnote') });
   }
-  const sect = sectionXml(ctx, geo, index, pc.input.title);
-  return last ? xml + sect : `${xml}<w:p>${pPr({ sectPr: sect })}</w:p>`;
+  const first = pieces.find((p) => p.xml);
+  if (first) first.xml = mark + first.xml;
+  else pieces.push({ xml: mark });
+  return chapterSections(ctx, geo, index, pc.input.title, pieces, last);
 }

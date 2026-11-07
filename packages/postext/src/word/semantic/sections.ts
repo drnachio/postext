@@ -6,7 +6,8 @@
 import type { ResolvedConfig } from '../../vdt.js';
 import { layoutColumnCount } from '../../defaults/layout.js';
 import type { WriterContext } from './context.js';
-import { pageNumberType } from './directives.js';
+import { resolvedLocale } from '../../pipeline/config.js';
+import { pageNumberFormat, pageNumberType } from './directives.js';
 import { STYLE } from './styles.js';
 import { fieldRuns, pPr, px, textRuns, type Units } from './wml.js';
 
@@ -73,12 +74,32 @@ export function pageGeometry(r: ResolvedConfig, u: Units): PageGeometry {
   };
 }
 
-/** The `w:sectPr` that closes chapter `index` (its headers and footers
- *  registered in the context). */
-export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number, title: string | undefined): string {
+/** How a section starts: `chapter` is a chapter's first section (a new
+ *  page, or a right-hand one when the book asks for recto starts), the
+ *  others the section breaks inside a chapter (#1444). */
+export type SectionStart = 'chapter' | 'continuous' | 'nextPage' | 'oddPage';
+
+/** One section of a chapter: how it starts, whether it is set in one
+ *  column (page-spanning content in a book of columns), and whether it is
+ *  the chapter's first (the page numbering a chapter sets goes there). */
+export interface SectionPart {
+  start: SectionStart;
+  oneColumn?: boolean;
+  first?: boolean;
+}
+
+/** One column across the text area, for page-spanning content. */
+const ONE_COLUMN = '<w:cols w:space="720"/>';
+
+/** The `w:sectPr` that closes a section of chapter `index` (its headers
+ *  and footers registered in the context). */
+export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number, title: string | undefined, part: SectionPart = { start: 'chapter', first: true }): string {
   const r = ctx.resolved;
   const level1 = r.headings.levels.find((l) => l.level === 1);
-  const titlePg = !!level1?.breakBefore.enabled;
+  // A section that opens a page (a chapter, a heading's page break) shows
+  // the first-page header and footer; one that goes on down the page
+  // keeps the running ones.
+  const titlePg = !!level1?.breakBefore.enabled && part.start !== 'continuous';
   let refs = '';
   if (r.header.elements.length) {
     const id = `h${index}`;
@@ -102,7 +123,8 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   // the document does not carry) would only leave a blank page, and
   // LibreOffice skips the folio of every blank page a section break makes.
   const parity = level1?.breakBefore.parity ?? 'any';
-  const start = index === 0 ? '' : `<w:type w:val="${parity === 'odd' || parity === 'always-odd' ? 'oddPage' : 'nextPage'}"/>`;
+  const type = part.start !== 'chapter' ? part.start : index === 0 ? undefined : parity === 'odd' || parity === 'always-odd' ? 'oddPage' : 'nextPage';
+  const start = type ? `<w:type w:val="${type}"/>` : '';
   const orient = geo.widthTw > geo.heightTw ? ' w:orient="landscape"' : '';
   const m = geo.margins;
   const header = Math.round(m.top / 2);
@@ -111,11 +133,28 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
     `<w:sectPr>${refs}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
-    pageNumberType(ctx) +
-    geo.cols +
+    (part.first ? pageNumberType(ctx) : '') +
+    (part.oneColumn ? ONE_COLUMN : geo.cols) +
     (titlePg && refs ? '<w:titlePg/>' : '') +
     (r.layout.writingMode === 'vertical-rl' ? '<w:textDirection w:val="tbRl"/>' : '') +
     (r.direction === 'rtl' ? '<w:bidi/>' : '') +
     '<w:docGrid w:linePitch="360"/></w:sectPr>'
   );
+}
+
+/** Whether the book's text runs in two or more columns (page-spanning
+ *  content then needs a section of its own). */
+export const multiColumn = (geo: PageGeometry): boolean => geo.cols.includes('w:num=');
+
+/** The page numbering the book's first chapter starts with: the format
+ *  and first number of `page.pageNumbering`, or of the `start` of a book
+ *  that continues a longer one; nothing for Word's own default (decimal
+ *  from 1). A `:::numbering` in the chapter is read over it. */
+export function bookPageNumbers(ctx: WriterContext): { format?: string; start?: number } | undefined {
+  const p = { ...ctx.resolved.page.pageNumbering, ...(ctx.start?.pageNumbering ?? {}) };
+  const word = p.format !== undefined ? pageNumberFormat(String(p.format), resolvedLocale(ctx.resolved)) : undefined;
+  const format = word && word !== 'decimal' ? word : undefined;
+  const start = p.startAt !== undefined && Number.isInteger(p.startAt) && p.startAt >= 0 && p.startAt !== 1 ? p.startAt : undefined;
+  if (format === undefined && start === undefined) return undefined;
+  return { ...(format ? { format } : {}), ...(start !== undefined ? { start } : {}) };
 }

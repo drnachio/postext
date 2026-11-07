@@ -4,7 +4,11 @@
 
 import type { InlineSpan } from '../../parse/types.js';
 import type { WriterContext } from './context.js';
+import type { OutlineEntry } from '../../types.js';
+import { anchorRefLabel, anchorTargetsOf, findAnchorTarget, resourceRefId, type AnchorTarget, type AnchorTargets } from '../../pipeline/references/crossRefs.js';
 import { resourceRefLabel } from './engineNumbers.js';
+import { bookOutline } from './fields.js';
+import { wordBookmarkName } from './wml.js';
 
 /** Index just past a balanced `open … close` group starting at `i`
  *  (backslash escapes and quoted strings inside braces skipped), or `i`
@@ -61,14 +65,33 @@ export function atomEnd(md: string, start: number, limit: number): number {
   return Math.min(i, lim);
 }
 
-/** The text a `:ref` shows: its own `text=`, else the resource's label
- *  and number, else the anchor's id. */
-export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>): string {
-  if (ref.text) return ref.text;
-  const res = ref.anchor ? undefined : ctx.resources.get(ref.resourceId);
-  if (!res) return ref.resourceId;
-  ctx.usedResources.add(res.id);
-  return resourceRefLabel(ref, ctx.numbers, [res], ctx.resolved);
+const targetsOf = new WeakMap<readonly OutlineEntry[], AnchorTargets>();
+
+/** The anchor a reference names (a heading's `{#id}`, an anchor set in
+ *  the text), from the book's outline, as the engine finds it: with or
+ *  without a pandoc-crossref prefix. */
+function anchorTarget(ctx: WriterContext, id: string): AnchorTarget | undefined {
+  const outline = bookOutline(ctx);
+  let targets = targetsOf.get(outline);
+  if (!targets) targetsOf.set(outline, (targets = anchorTargetsOf(outline)));
+  return findAnchorTarget(targets, id);
+}
+
+/** The text a `:ref` shows and the bookmark it links to: its own
+ *  `text=`, else the resource's label and number, else the anchor's label
+ *  as the engine prints it ("chapter 2", "section 4.1", the title, per
+ *  the reference's style and `crossRefs`), linked to the anchor's
+ *  bookmark (#1444); the id itself only when it names nothing. */
+export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>): { text: string; bookmark?: string } {
+  const res = ref.anchor ? undefined : ctx.resources.get(resourceRefId(ref.resourceId, (id) => ctx.resources.has(id)));
+  if (res) {
+    ctx.usedResources.add(res.id);
+    return { text: ref.text || resourceRefLabel({ ...ref, resourceId: res.id }, ctx.numbers, [res], ctx.resolved) };
+  }
+  const target = anchorTarget(ctx, ref.resourceId);
+  if (!target) return { text: ref.text || ref.resourceId };
+  const bookmark = wordBookmarkName(target.id);
+  return { text: anchorRefLabel(ref, target, ctx.resolved.crossRefs).text, ...(bookmark ? { bookmark } : {}) };
 }
 
 /** The text a chip shows: its words. */

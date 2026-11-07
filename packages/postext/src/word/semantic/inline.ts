@@ -12,7 +12,7 @@ import { atomEnd, chipText, refLabel } from './atoms.js';
 import type { WriterContext } from './context.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
 import { STYLE } from './styles.js';
-import { hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
+import { halfPoints, hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
 import { escapeAttr, escapeXml } from '../xml.js';
 
 const BREAK = '\u2028';
@@ -42,7 +42,17 @@ export interface InlineSource {
    *  first before the first character): the indent of a line of verse,
    *  held by an atom over the source's leading spaces. */
   lineLeads?: string[];
+  /** Verse set a paragraph per line: the XML that ends a line's
+   *  paragraph and opens the next one's (`line` is the next line's
+   *  index). The line end is then read back as a paragraph mark. */
+  lineParagraph?: (line: number) => string;
+  /** The paragraph style the text is set in (Normal when absent): its
+   *  bold and italic runs take the family that holds those faces. */
+  style?: string;
 }
+
+/** What the reader makes of a paragraph mark inside a fragment. */
+const PARA_MARK = ' ';
 
 interface Fmt {
   b?: boolean;
@@ -56,10 +66,13 @@ interface Fmt {
   markFill?: string;
   /** Ink of such a mark (`auto` when it has none and the first style has). */
   markInk?: string;
+  /** A ruby: the reading set over these characters, and which span of
+   *  the ruby they are (each span is a ruby of its own). */
+  ruby?: { key: string; text: string; group?: boolean };
 }
 
 const flagsOf = (f: Fmt): string => `${f.b ? 'b' : ''}${f.i ? 'i' : ''}${f.c ? 'c' : ''}${f.script === 'sup' ? 'p' : ''}${f.script === 'sub' ? 's' : ''}${f.k ? 'k' : ''}`;
-const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}`;
+const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}|${f.ruby?.key ?? ''}`;
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
@@ -98,6 +111,21 @@ function markLook(ctx: WriterContext, style: string): { fill?: string; ink?: str
   if (!ms || ms === styles[0]) return {};
   const ink = hex(ms.color) ?? (hex(styles[0]?.color) ? 'auto' : undefined);
   return { fill: hex(ms.background), ink };
+}
+
+/** Base runs under their reading, as a Word ruby (furigana, pinyin,
+ *  #1444): the reading at `cjk.ruby.fontSize` of the body text, raised
+ *  over a base of the body's size. The reader takes the base as the text
+ *  and the reading from the source, so the round trip keeps both. */
+function rubyRun(ctx: WriterContext, ruby: NonNullable<Fmt['ruby']>, base: string): string {
+  const u = ctx.units;
+  const hps = halfPoints(u, ctx.resolved.bodyText.fontSize);
+  const rt = halfPoints(u, ctx.resolved.cjk.ruby.fontSize, ctx.styles.bodyPx);
+  const lid = escapeAttr(ctx.config.locale || 'ja-JP');
+  return (
+    `<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val="${ruby.group ? 'distributeSpace' : 'center'}"/><w:hps w:val="${rt}"/><w:hpsRaise w:val="${hps}"/><w:hpsBaseText w:val="${hps}"/><w:lid w:val="${lid}"/></w:rubyPr>` +
+    `<w:rt>${textRuns(ruby.text, rPr({ sz: rt }))}</w:rt><w:rubyBase>${base}</w:rubyBase></w:ruby></w:r>`
+  );
 }
 
 function hyperlink(ctx: WriterContext, href: string, runs: string, field?: boolean): string {
@@ -154,7 +182,7 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
   let p = 0;
   for (const span of s.spans) {
     const len = span.text.length;
-    const base: Fmt = { b: span.bold, i: span.italic, c: span.smallCaps, script: span.script };
+    const base: Fmt = { b: span.bold, i: span.italic, c: span.smallCaps, script: span.script, ...(span.ruby ? { ruby: { key: `${span.ruby.id}:${p}`, text: span.ruby.text, ...(span.ruby.group ? { group: true } : {}) } } : {}) };
     const at = s.sourceMap[p] ?? -1;
     const limit = nextMapped(p + len - 1);
     if (span.math) {
@@ -171,7 +199,10 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       } else units.push(sourceUnit(s, p, at, end));
     } else if (span.ref) {
       const label = refLabel(ctx, span.ref);
-      units.push(atomUnit(p, label, base, STYLE.reference, at, atomEnd(s.src, at, limit), 'ref'));
+      const unit = atomUnit(p, label.text, base, STYLE.reference, at, atomEnd(s.src, at, limit), 'ref');
+      // A reference to a heading or an anchor jumps to it.
+      if (label.bookmark && unit.kind === 'obj') unit.xml = s.linkFields ? hyperlink(ctx, `#${label.bookmark}`, unit.xml, true) : `<w:hyperlink w:anchor="${label.bookmark}" w:history="1">${unit.xml}</w:hyperlink>`;
+      units.push(unit);
     } else if (span.citation) {
       const raw = span.citation.raw;
       const end = s.src.startsWith(raw, at) ? at + raw.length : atomEnd(s.src, at, limit);
@@ -209,7 +240,9 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
           // line end and the spaces that follow it.
           const lead = s.lineLeads[++line] ?? '';
           const next = nextMapped(p + k);
-          units.push({ kind: 'obj', p: p + k, xml: '<w:r><w:br/></w:r>' + textRuns(lead, ''), fmt: {}, text: '\n' + lead, atom: { start: src, end: next > src ? next : src + 1, kind: 'line' } });
+          const brk = s.lineParagraph ? s.lineParagraph(line) : '<w:r><w:br/></w:r>';
+          const mark = s.lineParagraph ? PARA_MARK : '\n';
+          units.push({ kind: 'obj', p: p + k, xml: brk + textRuns(lead, ''), fmt: {}, text: mark + lead, atom: { start: src, end: next > src ? next : src + 1, kind: 'line' } });
         } else if (src < 0 || s.src[src] === ch || (/\s/.test(ch) && /\s/.test(s.src[src] ?? ''))) {
           units.push({ kind: 'char', p: p + k, ch, src, fmt });
         } else {
@@ -283,7 +316,9 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
       map.push(v.src);
       j++;
     }
-    const runs = textRuns(text, rPr(runProps(u.fmt)));
+    const font = u.fmt.k ? undefined : ctx.styles.runFont(s.style, !!u.fmt.b, !!u.fmt.i);
+    const plainRuns = textRuns(text, rPr({ ...runProps(u.fmt), ...(font ? { font } : {}) }));
+    const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns) : plainRuns;
     // Code in right-to-left text: left-to-right marks either side keep its
     // end punctuation from being mirrored.
     const ltr = rtl && !!u.fmt.k && !u.fmt.href;

@@ -60,7 +60,10 @@ export interface RunProps {
   /** Size in half-points. */
   sz?: number;
   highlight?: string;
-  u?: boolean;
+  /** Underline: single, or a dotted or dashed line. */
+  u?: boolean | 'dotted' | 'dash';
+  /** A line round the run's characters. */
+  bdr?: Border;
   shd?: string;
   vertAlign?: 'superscript' | 'subscript';
   rtl?: boolean;
@@ -85,7 +88,8 @@ export function rPr(p: RunProps): string {
   if (p.spacing) x += `<w:spacing w:val="${Math.round(p.spacing)}"/>`;
   if (p.sz) x += `<w:sz w:val="${p.sz}"/><w:szCs w:val="${p.sz}"/>`;
   if (p.highlight) x += `<w:highlight w:val="${p.highlight}"/>`;
-  if (p.u) x += '<w:u w:val="single"/>';
+  if (p.u) x += `<w:u w:val="${p.u === true ? 'single' : p.u}"/>`;
+  if (p.bdr) x += `<w:bdr w:val="single" w:sz="${p.bdr.sz}" w:space="${p.bdr.space ?? 0}" w:color="${p.bdr.color}"/>`;
   if (p.shd) x += `<w:shd w:val="clear" w:color="auto" w:fill="${p.shd}"/>`;
   if (p.vertAlign) x += `<w:vertAlign w:val="${p.vertAlign}"/>`;
   if (p.rtl) x += '<w:rtl/>';
@@ -112,7 +116,7 @@ export interface ParaProps {
   shd?: string;
   /** Tab stops: alignment (`left`/`right` read as start/end in a bidi
    *  paragraph) and position in twips from the start margin. */
-  tabs?: { val: 'left' | 'right' | 'center'; pos: number }[];
+  tabs?: { val: 'left' | 'right' | 'center'; pos: number; leader?: 'dot' }[];
   /** Keep Word and LibreOffice from hyphenating the paragraph. */
   suppressAutoHyphens?: boolean;
   /** Twips. */
@@ -149,7 +153,7 @@ export function pPr(p: ParaProps): string {
     if (inner) x += `<w:pBdr>${inner}</w:pBdr>`;
   }
   if (p.shd) x += `<w:shd w:val="clear" w:color="auto" w:fill="${p.shd}"/>`;
-  if (p.tabs?.length) x += `<w:tabs>${p.tabs.map((t) => `<w:tab w:val="${t.val}" w:pos="${Math.max(0, Math.round(t.pos))}"/>`).join('')}</w:tabs>`;
+  if (p.tabs?.length) x += `<w:tabs>${p.tabs.map((t) => `<w:tab w:val="${t.val}"${t.leader ? ` w:leader="${t.leader}"` : ''} w:pos="${Math.max(0, Math.round(t.pos))}"/>`).join('')}</w:tabs>`;
   if (p.suppressAutoHyphens) x += '<w:suppressAutoHyphens/>';
   if (p.bidi !== undefined) x += p.bidi ? '<w:bidi/>' : '<w:bidi w:val="0"/>';
   if (p.before !== undefined || p.after !== undefined || p.line) {

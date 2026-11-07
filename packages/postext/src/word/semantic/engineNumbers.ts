@@ -19,7 +19,7 @@ import { documentLocale, effectiveResourceTypes } from '../../defaults/resources
 import { computeHeadingNumbering } from '../../numerals/numbering.js';
 import type { InlineSpan } from '../../parse/index.js';
 import type { ContentBlock } from '../../parse/types.js';
-import type { PostextConfig, Resource, ResourceType, ResolvedCaptionStyleConfig } from '../../types.js';
+import type { HeadingCounters, PostextConfig, Resource, ResourceType, ResolvedCaptionStyleConfig } from '../../types.js';
 import type { ResolvedConfig } from '../../vdt.js';
 
 export interface BookNumbers {
@@ -33,14 +33,16 @@ export interface BookNumbers {
   headings: (string | undefined)[][];
 }
 
-/** Number the headings and resources of every chapter in book order. */
-export function bookNumbers(chapters: readonly { blocks: ContentBlock[] }[], config: PostextConfig, resolved: ResolvedConfig, resources: Resource[]): BookNumbers {
+/** Number the headings and resources of every chapter in book order,
+ *  from `startHeadings`: the counters a book that continues a longer one
+ *  starts from (`preset.json`'s `start.headings`, #1444). */
+export function bookNumbers(chapters: readonly { blocks: ContentBlock[] }[], config: PostextConfig, resolved: ResolvedConfig, resources: Resource[], startHeadings?: HeadingCounters): BookNumbers {
   const resourceTypes = effectiveResourceTypes(config, resources);
   const locale = documentLocale(config);
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
   const templates = headingTemplatesOf(resolved);
   const options = headingNumberingOptions(resolved);
-  let heading: HeadingContext | undefined;
+  let heading: HeadingContext | undefined = startHeadings ? { ...startHeadings } : undefined;
   let counters: ResourceCounterState | undefined;
   let numbered: ResourceNumberingMap = {};
   const headings: (string | undefined)[][] = [];

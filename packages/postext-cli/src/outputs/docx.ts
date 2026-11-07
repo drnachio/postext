@@ -193,6 +193,9 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
     const chapter = w.chapter !== undefined ? chapters.find((c) => ids.get(c) === w.chapter) : undefined;
     reporter.warn({ kind: `docx.${w.code}`, severity: 'warning', message: w.message, ...(chapter ? { at: chapter.file ?? chapter.title } : {}) });
   };
+  // Where the book starts (`preset.json`'s `start`): the heading numbers
+  // and page numbers its first chapter counts on from, as in the layout.
+  const semanticStart = job.variant === 'semantic' && chapters[0] === book.chapters[0] ? book.start : undefined;
   const bytes = await reporter.time('docx', () => job.variant === 'formatted'
     ? formattedDocx({
       ...common,
@@ -202,7 +205,7 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
         if (done % 50 === 0) reporter.detail(`  docx: ${done}/${total} pages`);
       },
     })
-    : semanticDocx({ ...common, config: book.config, onWarning: warn }));
+    : semanticDocx({ ...common, config: book.config, ...(semanticStart ? { start: semanticStart } : {}), onWarning: warn }));
   await writeOut(out, bytes);
   reporter.output({ kind: 'docx', path: out, bytes: byteLength(bytes), ...(job.variant === 'formatted' ? { pages: job.layout!.pageCount } : {}) });
 }
