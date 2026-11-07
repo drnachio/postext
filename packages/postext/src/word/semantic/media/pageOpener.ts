@@ -7,7 +7,9 @@
 // filled box the decoration lays over it) is set on that band: a shaded
 // one-cell table, as the design writer sets a chapter opener's
 // (design/bands.ts), in the heading's own ink, its number (the template's
-// badge) before it. The kicker is the page's attribute, printed: generated
+// badge) before it, on a plate of the badge's fill in its ink: Word has
+// no disc, and a shaded run is what Word, LibreOffice and Google Docs all
+// draw. The kicker is the page's attribute, printed: generated
 // text, since the value stays in the fence, where an edit belongs.
 
 import type { ResolvedPageTemplate } from '../../../composed/types/resolved.js';
@@ -22,11 +24,12 @@ import { withBands } from '../design/bands.js';
 import { designImageId } from '../design/pictures.js';
 import { designTextStyle } from '../design/text.js';
 import { designPlaceholders, headingLevelOf } from '../design/values.js';
-import type { WriterContext } from '../context.js';
+import { blockId, type WriterContext } from '../context.js';
 import { generatedRuns } from '../generated.js';
 import { pageGeometry } from '../sections.js';
 import { STYLE } from '../styles.js';
-import { blockSdt, hex, paragraph } from '../wml.js';
+import { FragmentBuilder } from '../fragments.js';
+import { blockSdt, hex, paragraph, px, rPr, textRuns } from '../wml.js';
 import { pictureRun } from './figures.js';
 import { frameBoxStyle, templateOf } from './frames.js';
 
@@ -128,6 +131,36 @@ function bandTitleStyle(ctx: WriterContext, heading: ContentBlock, fill: string)
   return ctx.styles.custom(`pageTitle:${base}:${ink}:${fill}`, `${base} on band`, () => ({ basedOn: base, pPr: { before: 0, after: 0, keepNext: true }, rPr: { color: ink } }));
 }
 
+/** The number badge a template draws on its title frame (a text element
+ *  printing `{headingNumber}`), if any. */
+function badgeOf(elements: readonly ResolvedDesignElement[], title: string): ResolvedDesignTextElement | undefined {
+  return elements.find((el): el is ResolvedDesignTextElement => el.kind === 'text' && side(el, title) === 'on' && (el.content ?? '').includes('{headingNumber'));
+}
+
+/** The heading's number as the badge prints it: in the badge's face and
+ *  ink on a plate of its fill, padded with a space each side, then a
+ *  space. Generated text, as the heading's number always is. */
+function badgeRuns(ctx: WriterContext, el: ResolvedDesignTextElement, number: string): string {
+  const u = ctx.units;
+  const fill = hex(el.box?.backgroundColor);
+  const size = Math.min(px(u, el.fontSize) || u.basePx, (40 * u.dpi) / 72);
+  const bold = (el.fontWeight ?? 400) >= 600;
+  const look = rPr({
+    ...ctx.styles.font(el.fontFamily, el.fontWeight ?? 400),
+    b: bold,
+    color: hex(el.color),
+    sz: Math.max(2, Math.round((size * 144) / u.dpi)),
+    ...(fill ? { shd: fill, bdr: { color: fill, sz: 4, space: 1 } } : {}),
+  });
+  const plate = `\u00a0${number}\u00a0`;
+  const f = new FragmentBuilder();
+  // Marked bold as it is set, so a reading of it finds it unchanged.
+  f.push(plate, new Array<number>(plate.length).fill(-1), bold ? 'b' : '');
+  f.push(' ', [-1]);
+  const xml = textRuns(plate, look) + textRuns(' ', '');
+  return ctx.log.wrap(xml, f, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'number' });
+}
+
 /**
  * The head of composed page `page` (template `t`) whose title frame takes
  * `heading`, or undefined when the template draws nothing round it (the
@@ -157,7 +190,10 @@ export function pageOpener(ctx: WriterContext, page: ContentBlock, heading: Cont
   const fill = titleBand(ctx, t, title, elements);
   if (!head && !fill) return undefined;
   if (!fill) return head + write();
-  const xml = write({ style: bandTitleStyle(ctx, heading, fill) });
+  const badge = badgeOf(elements, title);
+  const number = badge ? ctx.chapter.headingNumbers.get(heading) : undefined;
+  const look = number && !heading.numberIsTitle ? { noNumber: true, before: () => badgeRuns(ctx, badge!, number) } : {};
+  const xml = write({ style: bandTitleStyle(ctx, heading, fill), ...look });
   const u = ctx.units;
   const widthTw = Math.round((ctx.textAreaPx * 1440) / u.dpi);
   const box = { x: 0, y: 0, width: ctx.textAreaPx, height: u.dpi / 2 };

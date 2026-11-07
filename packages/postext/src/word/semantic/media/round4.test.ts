@@ -72,6 +72,21 @@ describe('semantic docx round four: composed-page heads', () => {
     expect(e.part('word/styles.xml')).toMatch(/on band[^]*?<w:color w:val="FFFFFF"\/>/);
     unchanged(e, [md], resources);
   });
+
+  it("prints a template's number badge on a plate of its fill before the title", async () => {
+    const badge = { kind: 'text', id: 'number', content: '{headingNumber}', fontSize: { value: 22, unit: 'pt' }, fontWeight: 700, color: hex('#1b6aa0'), box: { backgroundColor: hex('#ffffff') }, placement: { anchor: { to: '#title', edge: 'top-left' }, offset: { y: { value: 2, unit: 'mm' } } } };
+    const tab = { kind: 'box', id: 'tab', style: { backgroundColor: hex('#1b6aa0') }, placement: { anchor: { to: '#title', edge: 'top-left' }, size: { width: { to: '#title', edge: 'right' }, height: { to: '#title', edge: 'bottom' } } } };
+    const cfg = { headings: { levels: [{ level: 1, color: hex('#ffffff') }] }, pageTemplates: [{ id: 'topic', decoration: { elements: [tab, badge] }, frames: [{ name: 'title', takes: 'h1' }, { name: 'text', flow: true }] }] } as unknown as PostextConfig;
+    const src = '::::page{template="topic"}\n# Where a river is born\n\nRain falls.\n::::\n\n::::page{template="topic"}\n# From the mountains\n\nIt runs.\n::::\n';
+    const e = await exportDocx(src, { config: cfg });
+    expect(exportProblems(e, [src])).toEqual([]);
+    const title = e.doc.indexOf('>From the mountains<');
+    const para = e.doc.slice(e.doc.lastIndexOf('<w:p>', title), title);
+    // The number in the badge's ink on its white plate, then the title.
+    expect(para).toMatch(/<w:color w:val="1B6AA0"\/>[^]*<w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"\/>[^]*\u00a02\u00a0/);
+    expect(e.frag('\u00a02\u00a0 ').target).toEqual({ kind: 'generated' });
+    unchanged(e, [src]);
+  });
 });
 
 describe('semantic docx round four: strips and sound effects', () => {
@@ -87,6 +102,10 @@ describe('semantic docx round four: strips and sound effects', () => {
     expect(strip).toContain('<w:gridSpan w:val="3"/>');
     expect(strip.indexOf('A strip in three panels.')).toBeGreaterThan(strip.indexOf('flip'));
     expect(e.frag('The line runs over.').role).toBe('comic:speech');
+    // In a narrow panel a speaker's words run on under the name, with no
+    // hanging indent.
+    expect(e.part('word/styles.xml')).toMatch(/Comic speech in a panel[^]*?<w:ind w:left="0" w:firstLine="0"\/>/);
+    expect(strip).not.toContain('w:hanging');
     // The sound in the sfx style's colour, larger than the lettering.
     expect(e.part('word/styles.xml')).toMatch(/Comic sound[^]*?<w:caps\/>[^]*?<w:color w:val="B8322A"\/>/);
     unchanged(e, [md]);
@@ -135,10 +154,17 @@ describe('semantic docx round four: boxes', () => {
     const e = await exportDocx(md, { config });
     expect(exportProblems(e, [md])).toEqual([]);
     const box = e.doc.slice(e.doc.indexOf('ptx:box:try'));
-    // The plate is a table of its own inside the box's cell, shaded.
-    const plate = box.slice(box.indexOf('<w:tbl>', box.indexOf('<w:tc>')));
-    expect(plate.indexOf('Try it')).toBeLessThan(plate.indexOf('</w:tbl>'));
-    expect(plate.slice(0, plate.indexOf('Try it'))).toContain('w:fill="1B6AA0"');
+    // The plate is the cell's first paragraph, shaded, padded by borders
+    // of its fill, narrowed by indents and kept with the text after it
+    // (no nested table, which LibreOffice left behind at a page foot).
+    const cell = box.slice(box.indexOf('<w:tc>'));
+    const plate = cell.slice(cell.indexOf('<w:p>'), cell.indexOf('</w:p>'));
+    expect(plate).toContain('Try it');
+    expect(cell.slice(0, cell.indexOf('Try it'))).not.toContain('<w:tbl>');
+    expect(plate).toContain('<w:keepNext/>');
+    expect(plate).toContain('<w:shd w:val="clear" w:color="auto" w:fill="1B6AA0"/>');
+    expect(plate).toMatch(/<w:top w:val="single" w:sz="4" w:space="\d+" w:color="1B6AA0"\/>/);
+    expect(plate).toMatch(/<w:ind w:left="\d+" w:right="[1-9]\d*" w:firstLine="0"\/>/);
     expect(e.frag('Try it').role).toBe('attr:callout:label');
     unchanged(e, [md]);
   });

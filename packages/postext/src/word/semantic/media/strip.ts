@@ -62,7 +62,7 @@ export function renderStrip(ctx: WriterContext, b: ContentBlock, widthTwips: num
     if (panel.text) body += textPanel(ctx, panel.text);
     const lines = panel.items.filter((i) => i.role !== 'note' && i.text.trim());
     // Every line keeps with what follows: the panels with their caption.
-    lines.forEach((item) => (body += scriptLine(ctx, item, true)));
+    lines.forEach((item) => (body += scriptLine(ctx, item, true, 200, true)));
     if (!body) body = '<w:p><w:pPr><w:keepNext/></w:pPr></w:p>';
     cells += `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/><w:tcBorders><w:top ${line}/><w:left ${line}/><w:bottom ${line}/><w:right ${line}/></w:tcBorders>${paper ? `<w:shd w:val="clear" w:color="auto" w:fill="${paper}"/>` : ''}<w:vAlign w:val="center"/></w:tcPr>${body}</w:tc>`;
   });

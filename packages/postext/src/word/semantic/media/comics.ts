@@ -29,7 +29,10 @@ export function comicPanels(b: ContentBlock): (ComicPanelSource & { art?: string
   return b.comic.panels.map((p) => ({ ...p, art: p.attrs.art?.trim() || undefined }));
 }
 
-function lineStyle(ctx: WriterContext, role: ComicScriptItem['role']): string {
+function lineStyle(ctx: WriterContext, role: ComicScriptItem['role'], narrow = false): string {
+  // In a strip's narrow panel a hanging speaker line leaves a word or two
+  // a line: the words run on under the name instead.
+  if (narrow && role === 'speech') return ctx.styles.custom('comic:speech:panel', 'Comic speech in a panel', () => ({ pPr: { ind: { left: 0, firstLine: 0 }, before: 0, after: 60, jc: 'left' } }));
   // Lettering is ragged: a justified line in a narrow panel opens up.
   if (role === 'caption') return ctx.styles.custom('comic:caption', 'Comic caption', () => ({ pPr: { ind: { firstLine: 0 }, before: 0, after: 60, jc: 'left' }, rPr: { i: true } }));
   if (role === 'sfx') return ctx.styles.custom('comic:sfx', 'Comic sound', () => sfxLook(ctx));
@@ -92,7 +95,7 @@ function speaker(ctx: WriterContext, item: ComicScriptItem): string {
 }
 
 /** One line of a panel's script; `keep` holds it with the line after it. */
-export function scriptLine(ctx: WriterContext, item: ComicScriptItem, keep: boolean, after = 200): string {
+export function scriptLine(ctx: WriterContext, item: ComicScriptItem, keep: boolean, after = 200, narrow = false): string {
   if (item.role === 'note' || !item.text.trim()) return '';
   // Fragments are logged in document order: the key before the words.
   const lead = item.role === 'speech' ? speaker(ctx, item) + generatedRuns(ctx, [{ text: ': ' }], 'comic:colon') : '';
@@ -107,7 +110,7 @@ export function scriptLine(ctx: WriterContext, item: ComicScriptItem, keep: bool
   });
   const words = ctx.log.wrap(xml, frag, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [abs(ctx, item.textStart), abs(ctx, item.textEnd)], role: `comic:${item.role}` });
   // The panel's last line leaves room before the next panel.
-  return paragraph({ style: lineStyle(ctx, item.role), ...(keep ? { keepNext: true } : { after }) }, lead + words);
+  return paragraph({ style: lineStyle(ctx, item.role, narrow), ...(keep ? { keepNext: true } : { after }) }, lead + words);
 }
 
 /** A text panel's body: a paragraph per run of lines. */

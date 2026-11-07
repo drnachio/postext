@@ -6,8 +6,10 @@
 // draws as a box as a box in that style, else with its label as a title; a
 // module's frames one after another, then the answer lines of its empty
 // ruled frames; a picture set over a frame inside it, see frames.ts),
-// starting a new page as the book does; a comic's panels as pictures followed by their script
-// (see comics.ts). The text stays mapped to the Markdown. A page with
+// starting a new page as the book does; a comic page's panels as pictures
+// followed by their script (see comics.ts); a strip as a row of bordered
+// panels, each with its picture and script, the caption in a row under
+// them (see strip.ts). The text stays mapped to the Markdown. A page with
 // nothing to write (no panel has art or words) is a short labelled
 // placeholder pointing to the PDF and the formatted .docx, generated text
 // the importer leaves out. A strip's caption stays mapped and editable.
