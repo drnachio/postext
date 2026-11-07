@@ -192,8 +192,10 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     if (span.math) {
       const start = s.toSrc(span.math.sourceStart);
       const end = s.toSrc(span.math.sourceEnd);
-      // At the size of the text around it, its fractions on the line.
-      const omml = texToOmml(span.math.tex, false, { size: ctx.styles.styleSize(s.style), linearFractions: true });
+      // At the size of the text around it. Fractions stay stacked, as
+      // print sets them: a linear one loses its grouping and comes back
+      // from an edit as a slash.
+      const omml = texToOmml(span.math.tex, false, { size: ctx.styles.styleSize(s.style) });
       if (omml) units.push({ kind: 'obj', p, xml: omml, fmt: base, text: OBJECT_CHAR, atom: { start, end, kind: 'math', hash: ommlHash(omml) } });
       else units.push(sourceUnit(s, p, start, end));
     } else if (span.footnote) {

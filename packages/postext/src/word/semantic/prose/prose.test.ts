@@ -5,6 +5,7 @@
 // unchanged.
 
 import { describe, expect, it } from 'vitest';
+import { strToU8, unzipSync, zipSync } from 'fflate';
 import type { PostextConfig } from '../../../types.js';
 import { applyDocxEdits } from '../../roundtrip/index.js';
 import { exportDocx, exportProblems, type Exported } from '../fixtures/harness.js';
@@ -107,13 +108,21 @@ describe('semantic docx: text after the third review (#1444)', () => {
     unchanged(e, [md]);
   });
 
-  it('sets inline maths at the text\'s size, its fractions on the line', async () => {
-    const md = 'Length $L(1+\\tfrac{2}{5})$ here.\n';
+  it('sets inline maths at the text\'s size, its fractions stacked as in print', async () => {
+    const md = 'Length $L(1+\\tfrac{2}{5})$ and $\\frac{a+b}{c+d}$ here.\n';
     const e = await exportDocx(md, { config: cfg({ bodyText: { fontSize: { value: 9.5, unit: 'pt' } } }) });
     expect(exportProblems(e, [md])).toEqual([]);
     expect(e.doc).toContain('<m:r><w:rPr><w:sz w:val="19"/><w:szCs w:val="19"/></w:rPr><m:t xml:space="preserve">L</m:t></m:r>');
-    expect(e.doc).toContain('<m:fPr><m:type m:val="lin"/></m:fPr>');
+    expect(e.doc).toContain('<m:f><m:num>');
+    expect(e.doc).not.toContain('m:val="lin"');
     unchanged(e, [md]);
+    // An edited fraction comes back as a fraction, not as a slash.
+    const files = unzipSync(e.bytes);
+    files['word/document.xml'] = strToU8(e.doc.replace('>5</m:t>', '>7</m:t>'));
+    const r = applyDocxEdits(zipSync(files), { chapters: [{ id: 'ch1', markdown: md }] });
+    expect(r.edits).toHaveLength(1);
+    expect(r.chapters[0]!.markdown).toMatch(/\\frac\{2\}\{7\}/);
+    expect(r.chapters[0]!.markdown).not.toMatch(/2\/7/);
   });
 
   it('knows the circled forms of letters and numbers', () => {

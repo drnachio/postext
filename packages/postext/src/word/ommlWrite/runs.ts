@@ -25,9 +25,6 @@ export interface RunOptions {
   /** Text size of every run, half-points (`w:sz`): the size of the text
    *  an inline equation sits in. Omitted: the document's math size. */
   size?: number;
-  /** Fractions set on one line (`2/5`), as an equation inside a line of
-   *  text sets them so they do not open up its leading. */
-  linearFractions?: boolean;
 }
 
 /** mathvariant → run style. */
