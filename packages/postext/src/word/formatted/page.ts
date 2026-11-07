@@ -8,7 +8,7 @@
 import type { DisplayItem, DisplayPage } from '../../paint/displayList/types.js';
 import { anchorRun, shapeGraphic, xfrm } from './drawing.js';
 import { FLOW_LINE, floatingTables, floatsXml, flowParagraph, type PageFloat } from './floats.js';
-import { itemRect, layerRuns, type Layer } from './layers.js';
+import { itemRect, layerRuns, roomBelow, type Layer } from './layers.js';
 import { imageRun } from './pictures.js';
 import { pathRun, rectRuns, ruleRun } from './shapes.js';
 import { tableParts } from './tables.js';
@@ -67,11 +67,12 @@ export async function pageParts(ctx: WriterContext, page: DisplayPage, floating:
       )],
     });
   }
-  for (const item of page.items) {
-    const rect = itemRect(item);
+  const rects = page.items.map(itemRect);
+  for (const [i, item] of page.items.entries()) {
+    const rect = rects[i]!;
     switch (item.kind) {
       case 'text':
-        layers.push({ runs: await textItemRuns(ctx, item), rect });
+        layers.push({ runs: await textItemRuns(ctx, item, { growRoom: roomBelow(rect, rects, page.height) }), rect, text: true });
         break;
       case 'rule':
         layers.push({ runs: [ruleRun(ctx, item)], rect });

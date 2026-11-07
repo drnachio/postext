@@ -112,16 +112,28 @@ function fitLonePitch(ctx: WriterContext, line: DisplayLine, plan: LinePlan, gro
  *  renderer without them (Google Docs) replaces by a wider one. */
 const DISPLAY_ROLES = new Set<TextItem['role']>(['heading', 'opener', 'design']);
 
-/** Whether a chunk's box gets twice its height: a title or label box,
- *  unturned and ragged, whose words a wider fallback face sets on more
- *  lines than the engine's would be cut at the box's foot. The box is
- *  unfilled, so the room under its lines shows nothing in Word. */
+/** Whether a chunk's box may grow down: a title or label box, unturned
+ *  and ragged, whose words a wider fallback face sets on more lines than
+ *  the engine's would be cut at the box's foot. The box is unfilled, so
+ *  the room under its lines shows nothing in Word. */
 function growsDown(item: TextItem, chunk: Chunk): boolean {
   return DISPLAY_ROLES.has(item.role) && !item.rotate && chunk.groups.every((g) => g.jc !== 'both');
 }
 
+/** How far a growing box goes down, px: up to its own height, never past
+ *  `limit` (the next box of its item, or the free room under the item),
+ *  so it does not lie over a box or table below it and take its clicks. */
+export function growth(box: { y: number; height: number }, limit: number): number {
+  return Math.max(0, Math.min(box.height, limit - (box.y + box.height)));
+}
+
+export interface TextItemOptions {
+  /** Free room under the item on its page, px (none given: unbounded). */
+  growRoom?: number;
+}
+
 /** A text item's text boxes and the drawings over them. */
-export async function textItemRuns(ctx: WriterContext, item: TextItem): Promise<string[]> {
+export async function textItemRuns(ctx: WriterContext, item: TextItem, opts: TextItemOptions = {}): Promise<string[]> {
   if (item.lines.length === 0) return [];
   const vertical = item.lines.some((l) => l.vertical);
   if (vertical) ctx.warn('vertical-text', 'vertical text is set in East Asian (eaVert) text boxes; Word centres the glyphs on its own line axis, so positions across a column are approximate');
@@ -132,9 +144,11 @@ export async function textItemRuns(ctx: WriterContext, item: TextItem): Promise<
   const fragmented = hasFragment(item);
   const centre = { x: item.bbox.x + item.bbox.width / 2, y: item.bbox.y + item.bbox.height / 2 };
   const runs: string[] = [];
-  for (const chunk of chunks) {
-    const box = chunkBox(ctx, item.lines, chunk, plans);
-    if (!vertical && growsDown(item, chunk)) box.height *= 2;
+  const boxes = chunks.map((c) => chunkBox(ctx, item.lines, c, plans));
+  const floor = item.bbox.y + item.bbox.height + (opts.growRoom ?? Infinity);
+  for (const [ci, chunk] of chunks.entries()) {
+    const box = boxes[ci]!;
+    if (!vertical && growsDown(item, chunk)) box.height += growth(box, boxes[ci + 1]?.y ?? floor);
     const slot = fragmented ? reserveFragment(ctx) : undefined;
     const out = emitGroups(ctx, item, chunk.groups, box.x, box.x + box.width, { offsets, ...(slot ? { bookmarkStart: slot.start, bookmarkEnd: slot.end } : {}) });
     if (slot && fragmented) recordFragment(ctx, slot, item, out);

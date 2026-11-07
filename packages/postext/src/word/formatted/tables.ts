@@ -140,6 +140,11 @@ export async function tableParts(ctx: WriterContext, item: TableItem, floating: 
   // tables and sets it in the flow, where the indent puts it at its x.
   const x = twips(item.rect.x, dpi);
   const y = twips(item.rect.y, dpi);
+  // A floating table's indent is its x for Google Docs, which has no
+  // floating tables. LibreOffice's DOCX import zeroes the indent of a
+  // floating table and places it by tblpX alone, following Word, whose
+  // Table Properties leave "Indent from left" unavailable for a table
+  // with text wrapping around it. Not yet checked in a Word render.
   const float = floating
     ? `<w:tblpPr w:leftFromText="0" w:rightFromText="0" w:topFromText="0" w:bottomFromText="0" w:vertAnchor="page" w:horzAnchor="page" w:tblpX="${x}" w:tblpY="${y}"/><w:tblOverlap w:val="overlap"/>`
     : '';

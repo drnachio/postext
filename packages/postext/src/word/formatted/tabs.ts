@@ -40,10 +40,13 @@ export function tabRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine): 
   return { rPr, text: '\t', xml: `<w:r>${rPr}<w:tab/></w:r>` };
 }
 
-/** The tab stops of a line's wide spaces, by index into its emitted runs. */
+/** The tab stops of a line's wide spaces, by index into its emitted runs.
+ *  Only flush-left lines: in a centred or right-aligned paragraph a
+ *  renderer moves the whole line by its alignment and lays out tab stops
+ *  in its own way, so the text after the tab would not land on its x. */
 function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<number, TabStop> {
   const out = new Map<number, TabStop>();
-  if (line.rtl || line.vertical || line.align === 'justify') return out;
+  if (line.rtl || line.vertical || line.align !== 'left') return out;
   const { line: flat, runs } = emittedRuns(line);
   runs.forEach(({ run }, k) => {
     if (!SPACE.test(run.text) || run.inline || run.rtl) return;

@@ -4,7 +4,10 @@
 // paint order among themselves (`relativeHeight`), and the ones painted
 // before a table that they overlap go behind the text, as does anything
 // painted before one of those that it overlaps, so nothing that was under
-// the table, or under something under it, comes out over it.
+// the table, or under something under it, comes out over it. Text boxes
+// stay in front: they are unfilled, so their place in the order shows
+// only where their letters would cross the table's, and a text box behind
+// the text cannot be clicked into under the page's spacer paragraphs.
 
 import type { DisplayItem, DisplayRect } from '../../paint/displayList/types.js';
 
@@ -15,6 +18,8 @@ export interface Layer {
   runs: string[];
   rect?: DisplayRect;
   table?: boolean;
+  /** A text item's boxes, which stay in front of the text. */
+  text?: boolean;
 }
 
 /** Overlap below this many px is a shared edge, not an overlap. */
@@ -42,6 +47,22 @@ export function itemRect(item: DisplayItem): DisplayRect {
   }
 }
 
+/** The free room under `rect` on a page of `height`, px: down to the top
+ *  of the nearest item below it that shares some of its width. An item
+ *  that starts above `rect` and reaches past its foot leaves none, unless
+ *  it starts at or above `rect`'s own top (a fill or band it sits on). */
+export function roomBelow(rect: DisplayRect, others: readonly DisplayRect[], height: number): number {
+  const foot = rect.y + rect.height;
+  let room = Math.max(0, height - foot);
+  for (const o of others) {
+    if (o === rect || o.y <= rect.y + EPS) continue;
+    if (Math.min(rect.x + rect.width, o.x + o.width) - Math.max(rect.x, o.x) <= EPS) continue;
+    if (o.y + o.height <= foot + EPS) continue;
+    room = Math.min(room, Math.max(0, o.y - foot));
+  }
+  return room;
+}
+
 /** A drawing run sent behind the text. */
 export function behindText(run: string): string {
   return run.replaceAll('behindDoc="0"', 'behindDoc="1"');
@@ -54,7 +75,7 @@ export function layerRuns(layers: readonly Layer[]): string[] {
   const barriers: DisplayRect[] = [];
   for (let i = layers.length - 1; i >= 0; i--) {
     const l = layers[i]!;
-    if (!l.rect) continue;
+    if (!l.rect || l.text) continue;
     if (l.table) {
       barriers.push(l.rect);
     } else if (barriers.some((b) => overlaps(l.rect!, b))) {

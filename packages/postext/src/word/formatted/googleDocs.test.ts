@@ -5,10 +5,10 @@ import { xmlProblems } from '../ooxml/wellFormed.js';
 import { WORDML_NAMESPACES } from '../ooxml/constants.js';
 import { MetricsCache } from './metrics.js';
 import { HOLDER, emitRun, leadChip } from './runs.js';
-import { textItemRuns } from './text.js';
+import { growth, textItemRuns } from './text.js';
 import { pageXml } from './page.js';
 import { tableRuns } from './tables.js';
-import { layerRuns } from './layers.js';
+import { layerRuns, roomBelow } from './layers.js';
 import { floatingTables, floatsXml, FLOW_LINE } from './floats.js';
 import type { WriterContext } from './types.js';
 
@@ -59,6 +59,12 @@ describe('Google Docs fidelity of the formatted writer (#1444)', () => {
     const plain = lineOf([run('Chapter', 10, 50), run(' ', 60, 4, { space: true }), run('12', 64, 14)]);
     const px = (await textItemRuns(context(), textItem([plain]))).find((r) => r.includes('name="ptx body'))!;
     expect(px).not.toContain('<w:tab/>');
+    // A centred or right-aligned line keeps its wide space as spacing.
+    for (const align of ['center', 'right'] as const) {
+      const xml = (await textItemRuns(context(), textItem([{ ...line, align }]))).find((r) => r.includes('name="ptx body'))!;
+      expect(xml).not.toContain('<w:tab/>');
+      expect(xml).not.toContain('<w:tabs>');
+    }
   });
 
   it('gives title boxes room to grow, body boxes none (F3)', async () => {
@@ -68,6 +74,29 @@ describe('Google Docs fidelity of the formatted writer (#1444)', () => {
       return Number(/<wp:extent cx="\d+" cy="(\d+)"/.exec(xml)![1]);
     };
     expect(await cy('heading')).toBe(2 * (await cy('body')));
+  });
+
+  it('grows a title box only into the free room under it (F3)', async () => {
+    const line = lineOf([run('Title', 10, 50)]);
+    const cy = async (growRoom?: number): Promise<number> => {
+      const xml = (await textItemRuns(context(), textItem([line], 'heading'), growRoom === undefined ? {} : { growRoom })).find((r) => r.includes('name="ptx heading'))!;
+      return Number(/<wp:extent cx="\d+" cy="(\d+)"/.exec(xml)![1]);
+    };
+    const free = await cy();
+    expect(await cy(0)).toBeLessThan(free);
+    expect(await cy(0)).toBeGreaterThan(free / 2 - 2);
+    expect(growth({ y: 10, height: 20 }, 100)).toBe(20);
+    expect(growth({ y: 10, height: 20 }, 35)).toBe(5);
+    expect(growth({ y: 10, height: 20 }, 20)).toBe(0);
+    // The room ends at the next item below that shares the width; a band
+    // the title sits on and an item beside it do not count.
+    const title = { x: 10, y: 10, width: 100, height: 20 };
+    const below = { x: 50, y: 45, width: 100, height: 20 };
+    const band = { x: 0, y: 0, width: 400, height: 300 };
+    const beside = { x: 200, y: 35, width: 50, height: 50 };
+    expect(roomBelow(title, [title, band, beside, below], 600)).toBe(15);
+    expect(roomBelow(title, [title, band, beside], 600)).toBe(570);
+    expect(roomBelow(title, [title, { x: 50, y: 20, width: 20, height: 40 }], 600)).toBe(0);
   });
 
   it('measures a line from inside the chip that opens it', () => {
@@ -134,5 +163,15 @@ describe('Google Docs fidelity of the formatted writer (#1444)', () => {
       { runs: [r('apart')], rect: { x: 200, y: 200, width: 5, height: 5 } },
     ]);
     expect(out.map((x) => x.includes('behindDoc="1"'))).toEqual([true, true, true, false, false]);
+  });
+
+  it('keeps text boxes in front, and does not chain through them', () => {
+    const r = (id: string): string => `<wp:anchor behindDoc="0">${id}</wp:anchor>`;
+    const out = layerRuns([
+      { runs: [r('before-text')], rect: { x: 0, y: 0, width: 20, height: 10 } },
+      { runs: [r('text')], rect: { x: 10, y: 5, width: 40, height: 30 }, text: true },
+      { runs: [], rect: { x: 40, y: 20, width: 50, height: 50 }, table: true },
+    ]);
+    expect(out.map((x) => x.includes('behindDoc="1"'))).toEqual([false, false]);
   });
 });
