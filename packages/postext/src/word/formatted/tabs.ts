@@ -89,8 +89,10 @@ function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<numb
     const next = rest[0]?.run;
     if (!next) return;
     // The last run of the line: flush to its end, whatever its width in
-    // the renderer's face.
-    const stop: TabStop = rest.length === 1 ? { val: 'right', pos: twips(next.x + next.width - boxL, ctx.dpi) } : { val: 'left', pos: twips(next.x - boxL, ctx.dpi) };
+    // the renderer's face. A chip's last letter carries its padding as
+    // spacing, which the renderer counts in the run's width.
+    const end = next.x + next.width + rest[0]!.gap;
+    const stop: TabStop = rest.length === 1 ? { val: 'right', pos: twips(end - boxL, ctx.dpi) } : { val: 'left', pos: twips(next.x - boxL, ctx.dpi) };
     out.set(k, stop);
   });
   return out;

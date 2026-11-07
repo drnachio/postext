@@ -22,7 +22,7 @@ import { wordFontFor } from '../fonts/plan.js';
 import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
 import { symbolPieces } from './symbols.js';
-import { hasLigature, LIGATURE, LIGATURE_MIN_PT, ligaturePieces } from './ligatures.js';
+import { LIGATURE, LIGATURE_MIN_PT, ligaturePieces, ligatureSpans } from './ligatures.js';
 import { eastAsianLayout, kuntenOf, rubyAnnotations, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
 import type { WriterContext } from './types.js';
@@ -486,6 +486,8 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   const spacing = fit ? fit.each : flat;
   const rPr = runProps(ctx, r, { spacing, rtl, ...(scale ? { scale } : {}), ...(fit ? { fitted: true } : {}) });
   const out: EmittedRun = { rPr, text };
+  const display = fit && !scale && (fit.each || fit.extra) && (fontSizePx(r.fontString) * 72) / ctx.dpi >= LIGATURE_MIN_PT;
+  const ligs = display ? ligatureSpans(ctx.metrics.faceAdvances(r.fontString), text) : [];
   if (run.kunten) {
     const k = kuntenOf(run, line);
     if (k.annotations.length) out.annotations = k.annotations;
@@ -514,10 +516,10 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     // Tate-chu-yoko cells: Word sets them across the line, unmeasured.
     const flatPr = runProps(ctx, r, { spacing: flat, rtl });
     out.xml = verticalPieces(ctx, run, text).map((piece) => textRun(piece.tcy ? runProps(ctx, run, { spacing: flat, rtl, ea: eastAsianLayout(ctx, 'vert') }) : flatPr, piece.text)).join('');
-  } else if (fit && !scale && (fit.each || fit.extra) && hasLigature(text) && (fontSizePx(r.fontString) * 72) / ctx.dpi >= LIGATURE_MIN_PT) {
+  } else if (fit && ligs.length) {
     // A display run keeps its ligatures unspaced (ligatures.ts).
     const total = fit.each * Array.from(text).length + fit.extra;
-    const pieces = ligaturePieces(text, total, gapTw, (spacing) => runProps(ctx, r, { spacing: clampSpacing(spacing), rtl, fitted: true }));
+    const pieces = ligaturePieces(text, ligs, total, gapTw, (spacing) => runProps(ctx, r, { spacing: clampSpacing(spacing), rtl, fitted: true }));
     if (pieces) Object.assign(out, piecesOut(pieces));
     else Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true })));
   } else if (fit && (fit.extra > 0 || gapTw)) {

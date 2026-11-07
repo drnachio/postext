@@ -4,7 +4,7 @@ import { existsSync as exists, readFileSync as readFile } from 'node:fs';
 import type { DisplayItem, DisplayLine, DisplayPage, DisplayRun } from '../../paint/displayList/types.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { createDocxPackage } from '../ooxml/package.js';
-import { ligaturePieces } from './ligatures.js';
+import { ligaturePieces, ligatureSpans } from './ligatures.js';
 import { MetricsCache } from './metrics.js';
 import { emitGroups, planChunks, planLines } from './paragraphs.js';
 import { pageRuns } from './page.js';
@@ -17,6 +17,7 @@ type TextItem = Extract<DisplayItem, { kind: 'text' }>;
 const existsSync = exists as (path: URL) => boolean;
 const readFileSync = readFile as (path: URL) => Uint8Array;
 const loraPath = new URL('../../../../../apps/web/public/fonts/Lora-Regular.ttf', import.meta.url);
+const cormorantPath = new URL('../../../../../apps/web/public/fonts/CormorantGaramond.ttf', import.meta.url);
 
 function context(plan?: WordFontPlan): WriterContext {
   return {
@@ -98,6 +99,13 @@ describe.runIf(existsSync(loraPath))('formatted Word export, round four (#1444)'
     const letter = /<w:r><w:rPr>(?:(?!<\/w:rPr>).)*<\/w:rPr><w:t xml:space="preserve">C<\/w:t><\/w:r>/.exec(out.xml)![0];
     const gap = /<w:spacing w:val="(-?\d+)"/.exec(letter);
     expect(Math.abs(Number(gap?.[1] ?? 0))).toBeLessThan(20);
+    // A chip closing the line: the right stop takes in the padding its last
+    // letter carries, so the chip's letters end where the engine set them
+    // (chip at 60–77 px, letter 64–73: the stop at 77 - 10 px from the box).
+    const tag = run('D', 60, 17, { padStart: 4, padEnd: 4, inline: { kind: 'chip', widthPx: 17, heightPx: 14, box: { dx: 0, width: 17, ascent: 10, descent: 4 } } });
+    const two = lineOf([run('Pick', 10, 26), run(' ', 36, 4, { space: true }), { ...chip, x: 40, width: 17 }, run(' ', 57, 3, { space: true }), tag]);
+    const closing = emitGroups(ctx, { ...item, lines: [two], source: { blockKey: 'b', map: two.map } }, planChunks([two], planLines(ctx, [two]))[0]!.groups, 10, 310, { offsets: [0] });
+    expect(closing.xml).toContain('<w:tabs><w:tab w:val="right" w:pos="1340"/></w:tabs>');
   });
 
   it('keeps a plain space after a chip when the next word starts too close for a tab', async () => {
@@ -109,28 +117,47 @@ describe.runIf(existsSync(loraPath))('formatted Word export, round four (#1444)'
     expect(xml).not.toContain('<w:tab/>');
   });
 
-  it('keeps a display run’s ligature pair unspaced, the others carrying its fit', () => {
+  it('keeps a display run’s ligature unspaced, the others carrying its fit', () => {
     const ctx = context(plan);
-    const r = run('The ', 10, 70, { fontString: '400 40px "Lora"' });
-    const line = lineOf([r]);
-    const out = emitRun(ctx, r, line);
+    const r = run('fine ', 10, 90, { fontString: '400 40px "Lora"' });
+    const out = emitRun(ctx, r, lineOf([r]));
     const pieces = out.pieces ?? [{ rPr: out.rPr, text: out.text }];
-    const th = pieces.find((p) => p.text.startsWith('Th'));
-    expect(th).toBeDefined();
-    expect(th!.rPr).not.toContain('<w:spacing');
-    expect(pieces.map((p) => p.text).join('')).toBe('The ');
+    const fi = pieces.find((p) => p.text.startsWith('fi'));
+    expect(fi).toBeDefined();
+    expect(fi!.rPr).not.toContain('<w:spacing');
+    expect(pieces.map((p) => p.text).join('')).toBe('fine ');
     // Body text keeps its spacing on every letter.
-    const small = run('The ', 10, 20, { fontString: SERIF });
+    const small = run('fine ', 10, 24, { fontString: SERIF });
     const body = emitRun(ctx, small, lineOf([small]));
-    expect(body.pieces?.some((p) => p.text.startsWith('Th') && !p.rPr.includes('<w:spacing'))).not.toBe(true);
+    expect(body.pieces?.some((p) => p.text.startsWith('fi') && !p.rPr.includes('<w:spacing'))).not.toBe(true);
+    // A pair the face has no ligature for is spaced like any other.
+    const th = run('The ', 10, 70, { fontString: '400 40px "Lora"' });
+    const plain = emitRun(ctx, th, lineOf([th]));
+    expect((plain.pieces ?? []).some((p) => p.text.startsWith('Th') && !p.rPr.includes('<w:spacing'))).toBe(false);
   });
 
-  it('spreads a fit over the letters outside ligature pairs, the gap on the last', () => {
+  it.runIf(existsSync(cormorantPath))('finds the ligatures a face’s liga feature forms, longest first', () => {
+    const ctx = context({
+      ...plan,
+      faces: [...plan.faces, { family: 'Cormorant PTX', slot: 'regular', bytes: new Uint8Array(readFileSync(cormorantPath)) }],
+      map: new Map([...plan.map, ['Cormorant Garamond|400|normal', { family: 'Cormorant PTX', bold: false, italic: false }]]),
+    });
+    const font = '400 40px "Cormorant Garamond"';
+    expect(ligatureSpans(ctx.metrics.faceAdvances(font), 'The office')).toEqual([{ start: 0, end: 2 }, { start: 5, end: 8 }]);
+    expect(ligatureSpans(ctx.metrics.faceAdvances(SERIF), 'The')).toEqual([]);
+    const r = run('The ', 10, 64, { fontString: font });
+    const pieces = emitRun(ctx, r, lineOf([r])).pieces ?? [];
+    expect(pieces.find((p) => p.text.startsWith('Th'))?.rPr).not.toContain('<w:spacing');
+  });
+
+  it('spreads a fit over the letters outside ligatures, the gap on the last', () => {
     const props = (s: number): string => `[${s}]`;
-    expect(ligaturePieces('The ', -10, 0, props)).toEqual([{ rPr: '[0]', text: 'Th' }, { rPr: '[-5]', text: 'e ' }]);
-    expect(ligaturePieces('fit', -3, 4, props)).toEqual([{ rPr: '[0]', text: 'fi' }, { rPr: '[1]', text: 't' }]);
-    expect(ligaturePieces('fi', -3, 0, props)).toEqual([{ rPr: '[0]', text: 'fi' }]);
-    expect(ligaturePieces('fi', -3, 5, props)).toBeUndefined();
+    const pair = [{ start: 0, end: 2 }];
+    expect(ligaturePieces('The ', pair, -10, 0, props)).toEqual([{ rPr: '[0]', text: 'Th' }, { rPr: '[-5]', text: 'e ' }]);
+    expect(ligaturePieces('fit', pair, -3, 4, props)).toEqual([{ rPr: '[0]', text: 'fi' }, { rPr: '[1]', text: 't' }]);
+    expect(ligaturePieces('fi', pair, -3, 0, props)).toEqual([{ rPr: '[0]', text: 'fi' }]);
+    expect(ligaturePieces('fi', pair, -3, 5, props)).toBeUndefined();
+    expect(ligaturePieces('office', [{ start: 1, end: 4 }], 6, 0, props)).toEqual([{ rPr: '[2]', text: 'o' }, { rPr: '[0]', text: 'ffi' }, { rPr: '[2]', text: 'ce' }]);
   });
 });
 
