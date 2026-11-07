@@ -110,7 +110,15 @@ export interface PdfCffEmbeddedWholeWarning {
  *  one of the engine's
  *  render warnings (`RenderWarning`: an image painted as a placeholder,
  *  `formatWarning` describes it). Narrow on `kind`. */
+/** A form field that cannot work as written (#1445): a name used for two
+ *  kinds, a calculation reading an unknown field, a cycle. */
+export interface PdfFormFieldWarning {
+  kind: 'formField';
+  message: string;
+}
+
 export type PdfWarning =
+  | PdfFormFieldWarning
   | PdfFontFallbackWarning
   | PdfMissingGlyphWarning
   | PdfVariableFontWarning

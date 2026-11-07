@@ -70,7 +70,7 @@ function chipCacheKey(chip: NonNullable<InlineSpan['chip']>): string {
   const exercise = chip.widthText !== undefined || chip.blank || chip.exercise || chip.upright
     ? `|ex:${chip.widthText ?? ''}${chip.blank ? `~b~${chip.blankLabel ?? ''}` : ''}${chip.exercise ? `~${chip.exercise.ex}:${chip.exercise.slot}` : ''}${chip.upright ? '~up' : ''}`
     : '';
-  return `|chip:${words}|${chip.box ? JSON.stringify(chip.box) : ''}${chip.joinNext ? '|jn' : ''}${exercise}`;
+  return `|chip:${words}|${chip.box ? JSON.stringify(chip.box) : ''}${chip.joinNext ? '|jn' : ''}${exercise}${chip.field ? `|f:${JSON.stringify(chip.field)}` : ''}`;
 }
 
 /** A formula is one placeholder char in the span text too: its TeX decides
