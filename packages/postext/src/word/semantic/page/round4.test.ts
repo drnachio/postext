@@ -171,4 +171,46 @@ describe('semantic docx: pages, fourth review (#1444)', () => {
     expect(e.doc).not.toContain('>The river<');
     unchanged(e, md);
   });
+
+  it('leaves the side of a later chapter first page to Word when its folio is unknown', async () => {
+    const md = ['# Tortilla\n\nText.\n', '# Gazpacho\n\nMore text.\n'];
+    const config = cfg({
+      layout: { layoutType: 'single' },
+      page: { pageNumbering: { startAt: 58 } },
+      headings: { levels: [{ level: 1, breakBefore: { enabled: true } }] },
+      footer: { elements: [head('{pageNumber} Verso', { parity: 'even', placement: { anchor: { to: 'page', edge: 'bottom-left' } } }), head('{chapterTitle} {pageNumber}', { parity: 'odd', placement: { anchor: { to: 'page', edge: 'bottom-right' } } })] },
+    });
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, md)).toEqual([]);
+    const second = sectionsOf(e.doc, true).find((s) => e.doc.indexOf(s) > e.doc.indexOf('>Gazpacho<'))!;
+    // Its opener prints what any page of its side prints: no first-page
+    // footer, so Word picks the odd or even one by folio.
+    expect(second).not.toContain('<w:titlePg/>');
+    expect(second).not.toContain('w:type="first"');
+    expect(textOf(partOf(e, second, 'footer', 'even'))).toContain('Verso');
+    unchanged(e, md);
+  });
+
+  it('sets the page after a cover title with the cover margins, its text at the foot', async () => {
+    const md = ['# The Book {style="cover"}\n\n:::pagebreak\n\nPublished by someone.\n\n# One\n\nText.\n'];
+    const config = cfg({
+      page: { width: cm(20), height: cm(30), margins: { top: cm(2), bottom: cm(2), left: cm(2), right: cm(2) } },
+      layout: { layoutType: 'double', gutterWidth: mm(6) },
+      headings: { levels: [{ level: 1, breakBefore: { enabled: true } }] },
+      headingStyles: [{ id: 'cover', name: 'Cover', breakBefore: { enabled: true }, layout: { layoutType: 'single' }, margins: { top: cm(24), bottom: cm(2), left: cm(12), right: cm(2) } }],
+    });
+    const e = await exportDocx(md, { config });
+    expect(exportProblems(e, md)).toEqual([]);
+    const sects = sectionsOf(e.doc, true);
+    const colophon = sects.find((s) => e.doc.indexOf(s) > e.doc.indexOf('>Published by someone.<'))!;
+    // Left 12 cm, one column; the top margin gives the text twice its 4 cm.
+    expect(colophon).toContain('w:left="6803"');
+    expect(colophon).toContain('w:top="11338"');
+    expect(colophon).toContain('<w:cols w:space="720"/><w:vAlign w:val="bottom"/>');
+    // The cover's own page and the chapter after it keep the book's.
+    expect(sects[0]).toContain('w:left="1134"');
+    expect(sects.at(-1)).toContain('w:left="1134"');
+    expect(sects.at(-1)).not.toContain('vAlign');
+    unchanged(e, md);
+  });
 });

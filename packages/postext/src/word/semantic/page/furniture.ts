@@ -294,8 +294,7 @@ export function sectionFurniture(ctx: WriterContext, geo: PageGeometry, input: S
     rightBound: r.page.binding === 'right',
   });
   type Kind = 'default' | 'even' | 'first';
-  const role = input.start !== 'continuous' && input.leads ? firstPageRole(ctx, input.first) : undefined;
-  const titlePg = role !== undefined;
+  let role = input.start !== 'continuous' && input.leads ? firstPageRole(ctx, input.first) : undefined;
   type Variant = ReturnType<typeof variant>;
   const body = (s: typeof slots, v: DesignPlaceholderContext): [Kind, Variant][] => {
     const out: [Kind, Variant][] = [['default', variant(ctx, s, v, box(true), 'body', parity ? 'odd' : undefined)]];
@@ -320,6 +319,21 @@ export function sectionFurniture(ctx: WriterContext, geo: PageGeometry, input: S
       }
     }
   }
+  // An opener whose side the export cannot know (a recipe card that
+  // starts on whatever page the one before it ends) and that prints what
+  // any other page of that side prints needs no first-page header: Word
+  // then picks the odd or even one by folio (#1444). A known side keeps
+  // its first-page header, which LibreOffice needs to draw it right.
+  if (role && !firstSide(input)) {
+    const own = role;
+    const same = (side: Parity | undefined, i: number): boolean => {
+      const v = variant(ctx, slots, values, box(side !== 'even'), own, side);
+      const b = kinds[i]![1];
+      return v.header === b.header && v.footer === b.footer;
+    };
+    if (parity ? same('odd', 0) && same('even', 1) : same(undefined, 0)) role = undefined;
+  }
+  const titlePg = role !== undefined;
   if (role) {
     // Word's first-page header serves either side. When the section's
     // first folio is known (a chapter that sets its first number, or one

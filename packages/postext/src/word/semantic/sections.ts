@@ -9,7 +9,7 @@ import { layoutColumnCount } from '../../defaults/layout.js';
 import type { WriterContext } from './context.js';
 import { documentNumerals, resolvedLocale } from '../../pipeline/config.js';
 import { pageNumberFormat } from './directives.js';
-import { headingStyleOf } from '../../pipeline/sections/headingStyles.js';
+import { deriveSectionGeometryConfig, headingStyleOf } from '../../pipeline/sections/headingStyles.js';
 import { sectionFurniture, sectionStyleAt } from './page/furniture.js';
 import { sectionFootnotePr } from './page/notes.js';
 import { px, type Units } from './wml.js';
@@ -121,15 +121,25 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   const type = part.start !== 'chapter' ? part.start : index === 0 ? undefined : parity === 'odd' || parity === 'always-odd' ? 'oddPage' : 'nextPage';
   const start = type ? `<w:type w:val="${type}"/>` : '';
   const orient = geo.widthTw > geo.heightTw ? ' w:orient="landscape"' : '';
-  const m = geo.margins;
-  const header = Math.round(m.top / 2);
-  const footer = Math.round(m.bottom / 2);
+  // The running heads keep the book's distances from the page edge.
+  const header = Math.round(geo.margins.top / 2);
+  const footer = Math.round(geo.margins.bottom / 2);
+  const own = part.oneColumn ? undefined : styledGeometry(ctx, geo, index, part.block, pageOfStyle(part));
+  // A styled page whose text stands low (a colophon under a cover's top
+  // margin) gets twice the room the design gives it, its text set at the
+  // foot of the page: Word's fonts need not fit the engine's measure, and
+  // an overflowing line would add a page. Word honours the alignment;
+  // LibreOffice and Google Docs start the text at the top margin.
+  const low = !!own && own !== geo && own.margins.top > Math.max(geo.margins.top, own.heightTw / 2);
+  const room = low ? own.heightTw - own.margins.top - own.margins.bottom : 0;
+  const m = low ? { ...own.margins, top: Math.max(geo.margins.top, own.margins.top - room) } : (own?.margins ?? geo.margins);
   return (
     `<w:sectPr>${refs}${bookHasNotes(ctx) ? sectionFootnotePr(r, !!part.first) : ''}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
     pageNumberType(ctx, !!part.first) +
-    (part.oneColumn ? ONE_COLUMN : styledGeometry(ctx, geo, index, part.block).cols) +
+    (own ? own.cols : ONE_COLUMN) +
+    (low ? '<w:vAlign w:val="bottom"/>' : '') +
     (titlePg && refs ? '<w:titlePg/>' : '') +
     (r.layout.writingMode === 'vertical-rl' ? '<w:textDirection w:val="tbRl"/>' : '') +
     (r.direction === 'rtl' ? '<w:bidi/>' : '') +
@@ -155,12 +165,23 @@ function pageNumberType(ctx: WriterContext, first: boolean): string {
   return `<w:pgNumType${format ? ` w:fmt="${format}"` : ''}${start !== undefined ? ` w:start="${start}"` : ''}/>`;
 }
 
+/** Whether a section opens a page of its styled section after the
+ *  heading that starts it (what follows a cover title that fills its
+ *  page). Such a page takes the styled section's margins too; the page of
+ *  the heading itself keeps the book's, as its design is written in the
+ *  flow (#1444). */
+const pageOfStyle = (part: SectionPart): boolean => (part.start === 'nextPage' || part.start === 'oddPage') && !(part.leads && part.block?.type === 'heading');
+
 /** The page geometry of a section of chapter `chapter` that starts with
  *  block `first`: the book's, or the one of the layout its styled section
- *  sets (a contents page in one column in a book of two, #1444). */
-export function styledGeometry(ctx: WriterContext, geo: PageGeometry, chapter: number, first: ContentBlock | undefined): PageGeometry {
-  const layout = first ? sectionStyleAt(ctx, chapter, first)?.layout : undefined;
-  return layout ? pageGeometry({ ...ctx.resolved, layout }, ctx.units) : geo;
+ *  sets (a contents page in one column in a book of two, #1444), with its
+ *  margins on a page of its own (`margins`). */
+export function styledGeometry(ctx: WriterContext, geo: PageGeometry, chapter: number, first: ContentBlock | undefined, margins = false): PageGeometry {
+  const style = first ? sectionStyleAt(ctx, chapter, first) : undefined;
+  if (!style) return geo;
+  const r = ctx.resolved;
+  if (margins && style.margins) return pageGeometry(deriveSectionGeometryConfig(r, style), ctx.units);
+  return style.layout ? pageGeometry({ ...r, layout: style.layout }, ctx.units) : geo;
 }
 
 /** Whether heading `b` fills its page: its styled section's margins leave
