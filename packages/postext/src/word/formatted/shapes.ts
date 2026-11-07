@@ -83,8 +83,9 @@ export function rectRuns(ctx: WriterContext, item: RectItem, opts: { behind?: bo
   return out;
 }
 
-/** A path as custom geometry in EMU relative to its box. */
-export function pathRun(ctx: WriterContext, item: PathItem): string {
+/** A path as custom geometry in EMU relative to its box, turned `rotate`
+ *  degrees clockwise about the box's centre. */
+export function pathRun(ctx: WriterContext, item: PathItem, rotate?: number): string {
   const b = item.bbox;
   const W = Math.max(1, emu(b.width, ctx.dpi));
   const H = Math.max(1, emu(b.height, ctx.dpi));
@@ -120,7 +121,7 @@ export function pathRun(ctx: WriterContext, item: PathItem): string {
     `<a:pathLst>${list}</a:pathLst></a:custGeom>`;
   const s = item.stroke;
   const ln = s ? lineXml(ctx, s.color, s.widthPx, { ...(s.dash ? { dash: s.dash } : {}), ...(s.cap ? { cap: s.cap } : {}), ...(s.join ? { join: s.join } : {}) }) : '<a:ln><a:noFill/></a:ln>';
-  return anchorRun(ctx, { rect: b, name: 'ptx path' }, (_id, cx, cy) => shapeGraphic(`${xfrm(cx, cy)}${geom}${solidFill(item.fill)}${ln}`));
+  return anchorRun(ctx, { rect: b, name: 'ptx path', ...(rotate ? { rotate } : {}) }, (_id, cx, cy) => shapeGraphic(`${xfrm(cx, cy, rotate)}${geom}${solidFill(item.fill)}${ln}`));
 }
 
 /** Twice the signed area of a subpath's polygon of on-curve points and

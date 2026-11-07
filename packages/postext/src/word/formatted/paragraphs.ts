@@ -342,7 +342,9 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
       const lineTabs = tabs.lines[i - g.from]!;
       const carry = { tw: 0 };
       for (const [k, { run, gap }] of flat.runs.entries()) {
-        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, gap, carry);
+        // A tab after a run takes it to the next run's start: the run
+        // keeps no gap of its own (a chip's padding after its words).
+        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, lineTabs.has(k + 1) ? 0 : gap, carry);
         if (!emitted.text) continue;
         // The fallback line's style: the run's face and tracking, not the
         // spacing or scale fitted to that run alone.

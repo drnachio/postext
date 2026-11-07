@@ -9,6 +9,7 @@
 import type { DisplayItem, DisplayLine, DisplayRect, DisplayRun } from '../../paint/displayList/types.js';
 import { textBoxRun, turnedBox, turnPoint } from './drawing.js';
 import { annotationRect, smallTextBox, textRun } from './eastAsian.js';
+import { haloRun } from './halo.js';
 import { fontSizePx } from './metrics.js';
 import { naturalTwips, runProps, wordText, writtenFace } from './runs.js';
 import { rectRuns, ruleRun } from './shapes.js';
@@ -219,6 +220,11 @@ export async function textItemRuns(ctx: WriterContext, input: TextItem, opts: Te
     if (slot && fragmented) recordFragment(ctx, slot, item, out);
     const placed = sheetBox(box, centre, item.rotate, vertical);
     const lines = item.lines.slice(chunk.from, chunk.to + 1);
+    // A turned item's halo under each box, turned with it (halo.ts).
+    if (item.rotate && !vertical) {
+      const halo = haloRun(ctx, item, { box, rect: placed.rect, rotate: item.rotate }, lines);
+      if (halo) runs.push(halo);
+    }
     // Chip boxes under their words; swatches in their real shape over the
     // holders (a vertical item keeps the holder's square).
     runs.push(...chipBoxRuns(ctx, lines, centre, item.rotate));

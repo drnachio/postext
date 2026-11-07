@@ -22,6 +22,7 @@ import { wordFontFor } from '../fonts/plan.js';
 import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
 import { symbolPieces } from './symbols.js';
+import { hasLigature, LIGATURE, LIGATURE_MIN_PT, ligaturePieces } from './ligatures.js';
 import { eastAsianLayout, kuntenOf, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
 import type { WriterContext } from './types.js';
@@ -47,9 +48,6 @@ const JUSTIFY_ROOM_TW = 1;
  *  marks): their runs are not measured. */
 const COMPLEX = /[\u0600-\u08ff\ufb50-\ufdff\ufe70-\ufeff\u0900-\u0dff\u0f00-\u0fff\u1000-\u109f\u1780-\u17ff\u1800-\u18af\p{M}\u200c\u200d]/u;
 const BLANK = /^[ \u00a0\u2000-\u200a\u202f\u205f\u3000]+$/;
-/** Pairs a face may set as one ligature: a run boundary between them
- *  makes LibreOffice draw the ligature and the second letter again. */
-const LIGATURE = /^(?:f\p{L}|Th)$/u;
 /** Word's font size range, half-points (1 pt to 1638 pt). */
 export const MIN_SZ = 2;
 export const MAX_SZ = 3276;
@@ -513,6 +511,12 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     // Tate-chu-yoko cells: Word sets them across the line, unmeasured.
     const flatPr = runProps(ctx, r, { spacing: flat, rtl });
     out.xml = verticalPieces(ctx, run, text).map((piece) => textRun(piece.tcy ? runProps(ctx, run, { spacing: flat, rtl, ea: eastAsianLayout(ctx, 'vert') }) : flatPr, piece.text)).join('');
+  } else if (fit && !scale && (fit.each || fit.extra) && hasLigature(text) && (fontSizePx(r.fontString) * 72) / ctx.dpi >= LIGATURE_MIN_PT) {
+    // A display run keeps its ligatures unspaced (ligatures.ts).
+    const total = fit.each * Array.from(text).length + fit.extra;
+    const pieces = ligaturePieces(text, total, gapTw, (spacing) => runProps(ctx, r, { spacing: clampSpacing(spacing), rtl, fitted: true }));
+    if (pieces) Object.assign(out, piecesOut(pieces));
+    else Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true })));
   } else if (fit && (fit.extra > 0 || gapTw)) {
     Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true, ...(scale ? { scale } : {}) })));
   } else if (gapTw) {

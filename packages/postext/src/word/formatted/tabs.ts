@@ -7,8 +7,8 @@
 // number on after the title.
 
 import type { DisplayLine, DisplayRun } from '../../paint/displayList/types.js';
-import { fontSizePx } from './metrics.js';
-import { joinWordRuns, naturalTwips, runGaps, runProps, unpadded, writtenFace, type EmittedRun } from './runs.js';
+import { fontSizePx, measureEms } from './metrics.js';
+import { joinWordRuns, naturalTwips, runGaps, runProps, unpadded, wordText, writtenFace, type EmittedRun } from './runs.js';
 import { twips } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -40,6 +40,36 @@ export function tabRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine): 
   return { rPr, text: '\t', xml: `<w:r>${rPr}<w:tab/></w:r>` };
 }
 
+/** Twips a run before a resetting tab may set wider than its natural
+ *  width (its missing characters an em) before the tab would overshoot. */
+const RESET_MARGIN_TW = 20;
+
+/** Whether the space at `k` follows a chip, or a run with characters its
+ *  face lacks, with room to the next run for what that run may overrun.
+ *  A character the face lacks is drawn from a face of the renderer's own
+ *  (Segoe UI Symbol in Word, DejaVu Sans in LibreOffice) whose advance
+ *  the writer cannot know, and LibreOffice ignores the spacing of the
+ *  fallback run and of the space after it: a keyboard chip's ⌘ pushed
+ *  every word after it on. A chip's padding is carried as spacing on its
+ *  last letter, and the half points each renderer rounds add up over a
+ *  line of answer bubbles until the words after them touch them (#1444).
+ *  A tab to the next run's start puts the line back where the engine set
+ *  it. */
+function afterChip(ctx: WriterContext, runs: readonly { run: DisplayRun; gap: number }[], k: number): boolean {
+  const prev = runs.slice(0, k).reverse().find((r) => r.run.text.length > 0);
+  if (!prev || prev.run.rtl) return false;
+  const p = prev.run;
+  const face = ctx.metrics.faceAdvances(p.fontString);
+  if (!face) return false;
+  if (p.inline?.kind !== 'chip' && measureEms(face, p.text).missing === 0) return false;
+  // Its natural width with every missing character an em wide (at least).
+  const nat = naturalTwips(ctx, p.fontString, wordText(p.text), p.width);
+  const next = runs.slice(k + 1).find((r) => r.run.text.length > 0)?.run;
+  if (nat === undefined || !next) return false;
+  const room = twips(next.x - p.x, ctx.dpi);
+  return room - nat >= RESET_MARGIN_TW;
+}
+
 /** The tab stops of a line's wide spaces, by index into its emitted runs.
  *  Only flush-left lines: in a centred or right-aligned paragraph a
  *  renderer moves the whole line by its alignment and lays out tab stops
@@ -53,7 +83,8 @@ function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<numb
     const face = writtenFace(run, flat);
     const nat = naturalTwips(ctx, face, run.text) ?? Math.round((fontSizePx(face) * 1440) / ctx.dpi / 4);
     const width = twips(run.width, ctx.dpi);
-    if (width < TAB_FACTOR * nat || width - nat < TAB_MIN_TW) return;
+    const wide = width >= TAB_FACTOR * nat && width - nat >= TAB_MIN_TW;
+    if (!wide && !afterChip(ctx, runs, k)) return;
     const rest = runs.slice(k + 1).filter((r) => r.run.text.length > 0);
     const next = rest[0]?.run;
     if (!next) return;
