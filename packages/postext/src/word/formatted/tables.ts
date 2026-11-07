@@ -186,6 +186,10 @@ export async function tableParts(ctx: WriterContext, item: TableItem, floating: 
   const parts: TableParts = { under, over: [] };
   if (floating) parts.float = { xml: xml.join(''), x, y, height: rows[rows.length - 1]! };
   else parts.box = textBoxRun(ctx, { rect: item.rect, name: 'ptx table', ...(item.rotate ? { rotate: item.rotate } : {}) }, xml.join('') + TINY_P);
+  // What is drawn over a floating table (cell pictures, formulas) stays in
+  // front of it: the table is in the text layer, its cell fills over
+  // anything behind the text.
+  if (floating) (ctx.front ??= []).push(item.rect);
   const runs = parts.over;
   for (const cell of item.cells) {
     if (!cell.image) continue;

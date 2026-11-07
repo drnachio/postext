@@ -59,9 +59,13 @@ export interface WriterContext {
   referenced: Set<string>;
   /** Z-order counter (`wp:anchor relativeHeight`). */
   z: number;
-  /** Boxes of the current page's drawings in front of the text layer
-   *  (text boxes, pictures, shapes kept over them), px. */
+  /** What a later drawing without text must stay in front of on the
+   *  current page, px: the inked lines of its text boxes, its floating
+   *  tables and the drawings kept in front over them. */
   front?: DisplayRect[];
+  /** The current page's pictures behind the text, in both forms, and
+   *  whether a shape behind the text covers them (`shapesOverPictures`). */
+  pictures?: { rect: DisplayRect; pic: string; shape: string; covered?: boolean }[];
   warn: (code: string, message: string) => void;
   resourceBytes: FormattedDocxOptions['resourceBytes'];
   rasterizeSvg: FormattedDocxOptions['rasterizeSvg'];

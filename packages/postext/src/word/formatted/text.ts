@@ -87,6 +87,32 @@ function markRuns(ctx: WriterContext, out: TextOut, centre: { x: number; y: numb
   return runs;
 }
 
+/** Share of the font size above the baseline that counts as a line's
+ *  ink for paint order: the x-height band, not the leading or the
+ *  ascenders a chip's padding may brush. */
+const INK_RISE = 0.6;
+
+/** The inked bands of `lines` in the item's unturned frame: from the
+ *  start of each line's first visible run to the end of its last, the
+ *  x-height band above the baseline. */
+export function inkRects(lines: readonly DisplayLine[]): DisplayRect[] {
+  const out: DisplayRect[] = [];
+  for (const l of lines) {
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let size = 0;
+    for (const r of l.runs) {
+      if (!r.text.trim()) continue;
+      x0 = Math.min(x0, r.x);
+      x1 = Math.max(x1, r.x + r.width);
+      size = Math.max(size, fontSizePx(r.fontString));
+    }
+    if (x1 <= x0 || size <= 0) continue;
+    out.push({ x: x0, y: l.baseline - INK_RISE * size, width: x1 - x0, height: INK_RISE * size });
+  }
+  return out;
+}
+
 /** A box of one line sets it at its faces' own height (ascent plus
  *  descent) instead of the engine's line pitch: its baseline lands where
  *  it did in Word, whose exact line puts the extra leading above the
@@ -161,7 +187,9 @@ export async function textItemRuns(ctx: WriterContext, item: TextItem, opts: Tex
     // Chip boxes under their words; swatches in their real shape over the
     // holders (a vertical item keeps the holder's square).
     runs.push(...chipBoxRuns(ctx, lines, centre, item.rotate));
-    runs.push(textBoxRun(ctx, { rect: placed.rect, name: `ptx ${item.role}`, ...(placed.rotate ? { rotate: placed.rotate } : {}) }, out.xml, vertical ? 'eaVert' : undefined));
+    // A turned or vertical box's ink is its box.
+    const ink = vertical || item.rotate ? undefined : inkRects(lines);
+    runs.push(textBoxRun(ctx, { rect: placed.rect, name: `ptx ${item.role}`, ...(placed.rotate ? { rotate: placed.rotate } : {}), ...(ink ? { ink } : {}) }, out.xml, vertical ? 'eaVert' : undefined));
     runs.push(...(await inlineDrawingRuns(ctx, out, centre, item.rotate, vertical)));
     if (!vertical) runs.push(...swatchShapeRuns(ctx, lines, centre, item.rotate));
     runs.push(...markRuns(ctx, out, centre, item.rotate));

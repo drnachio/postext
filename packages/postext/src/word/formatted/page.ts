@@ -6,7 +6,7 @@
 // (floats.ts, #1444), with the drawings under them sent behind the text.
 
 import type { DisplayItem, DisplayPage } from '../../paint/displayList/types.js';
-import { anchorRun, shapeGraphic, xfrm } from './drawing.js';
+import { anchorRun, shapeGraphic, shapesOverPictures, xfrm } from './drawing.js';
 import { FLOW_LINE, floatingTables, floatsXml, flowParagraph, type PageFloat } from './floats.js';
 import { itemRect, layerRuns, roomBelow, type Layer } from './layers.js';
 import { imageRun } from './pictures.js';
@@ -58,6 +58,7 @@ export async function pageRuns(ctx: WriterContext, page: DisplayPage): Promise<s
  *  apart as floating tables. */
 export async function pageParts(ctx: WriterContext, page: DisplayPage, floating: ReadonlySet<DisplayItem> = floatingTables(page)): Promise<PageParts> {
   ctx.front = [];
+  ctx.pictures = [];
   const layers: Layer[] = [];
   const floats: PageFloat[] = [];
   if (paintsBackground(page.background)) {
@@ -103,7 +104,7 @@ export async function pageParts(ctx: WriterContext, page: DisplayPage, floating:
       }
     }
   }
-  return { runs: layerRuns(layers), floats };
+  return { runs: shapesOverPictures(ctx, layerRuns(layers)), floats };
 }
 
 /** A page as body XML: its anchor paragraph (then its floating tables and

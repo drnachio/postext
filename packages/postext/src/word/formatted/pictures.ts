@@ -9,7 +9,7 @@ import type { DisplayItem, DisplayRect } from '../../paint/displayList/types.js'
 import { base64Decode } from '../anchors/base64.js';
 import { wordFontFor } from '../fonts/plan.js';
 import type { WordFontPlan } from '../fonts/types.js';
-import { anchorRun, pictureGraphic, type BlipRefs } from './drawing.js';
+import { anchorRun, pictureGraphic, pictureShapeGraphic, type BlipRefs } from './drawing.js';
 import type { WriterContext } from './types.js';
 
 type ImageItem = Extract<DisplayItem, { kind: 'image' }>;
@@ -235,13 +235,29 @@ export function srcRect(crop: ImageItem['crop']): string {
   return `<a:srcRect l="${l}" t="${t}" r="${r}" b="${b}"/>`;
 }
 
+/** `a:fillRect` of a safe-area crop for a shape filled with the
+ *  picture: the whole picture's rectangle relative to the shape. */
+export function cropFillRect(crop: ImageItem['crop']): string {
+  if (!crop || crop.width <= 0 || crop.height <= 0) return '';
+  const pc = (v: number): number => Math.round(v * 100000);
+  const l = pc(-crop.x / crop.width);
+  const t = pc(-crop.y / crop.height);
+  const r = pc(-(1 - crop.x - crop.width) / crop.width);
+  const b = pc(-(1 - crop.y - crop.height) / crop.height);
+  if (!l && !t && !r && !b) return '';
+  return `<a:fillRect l="${l}" t="${t}" r="${r}" b="${b}"/>`;
+}
+
 /** An image item as an anchored picture ('' when it cannot be embedded). */
 export async function imageRun(ctx: WriterContext, item: ImageItem): Promise<string> {
   const refs = await fileRefs(ctx, item);
   if (!refs) return '';
   if (item.tint) ctx.warn('picture-tint', `picture ${item.fileId}: its tint is not carried into Word`);
   const crop = srcRect(item.crop);
-  return anchorRun(ctx, { rect: item.rect, name: 'ptx picture', ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.alt ? { descr: item.alt } : {}) }, (id, cx, cy) =>
+  const fill = cropFillRect(item.crop);
+  const asShape = (_id: number, cx: number, cy: number): string =>
+    pictureShapeGraphic(cx, cy, refs, { ...(fill ? { fillRect: fill } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.flipH ? { flipH: true } : {}) });
+  return anchorRun(ctx, { rect: item.rect, name: 'ptx picture', asShape, ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.alt ? { descr: item.alt } : {}) }, (id, cx, cy) =>
     pictureGraphic(id, cx, cy, refs, { name: item.fileId, ...(item.alt ? { descr: item.alt } : {}), ...(crop ? { srcRect: crop } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.flipH ? { flipH: true } : {}) }),
   );
 }

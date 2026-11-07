@@ -189,12 +189,26 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     const b = await exportDoc(md, { ...config(), page: { sizePreset: '17x24', dpi: 72 } } as PostextConfig, resources);
     expect(b.doc.pages.some((p) => p.comic)).toBe(true);
     expectMapped(b, md);
-    // Panel art: both pictures, cropped to their panels.
-    const pics = els(b.root, 'pic');
-    expect(pics).toHaveLength(2);
-    expect(pics.every((p) => els(p, 'srcRect').length === 1)).toBe(true);
+    // Panel art: both pictures, cropped to their panels. Art a border or a
+    // balloon lies on is a shape filled with the picture (its crop a fill
+    // rectangle past the shape), which LibreOffice keeps under them.
+    const arts = els(b.root, 'anchor').filter((a) => els(a, 'docPr')[0]!.attrs.name!.startsWith('ptx picture'));
+    expect(arts).toHaveLength(2);
+    const filled = arts.filter((a) => els(a, 'blipFill').some((f) => localName(f.name) === 'blipFill' && f.name.startsWith('a:')));
+    expect(filled).toHaveLength(2);
+    // The wide art's crop takes from both sides: its fill reaches past.
+    const wide = els(filled[0]!, 'fillRect')[0]!.attrs;
+    expect(Number(wide.l)).toBeLessThan(0);
+    expect(Number(wide.r)).toBeLessThan(0);
+    expect(els(filled[0]!, 'srcRect')).toHaveLength(0);
+    expect(els(b.root, 'pic')).toHaveLength(0);
+    // Everything without text behind the text, the lettering in front.
+    for (const a of els(b.root, 'anchor')) {
+      const text = els(a, 'txbx').length > 0;
+      expect(a.attrs.behindDoc).toBe(text ? '0' : '1');
+    }
     // Paint order on the comic page: art, then balloon outlines, then text.
-    const page = kids(els(b.root, 'body')[0]!).filter((p) => localName(p.name) === 'p').find((p) => els(p, 'pic').length > 0)!;
+    const page = kids(els(b.root, 'body')[0]!).filter((p) => localName(p.name) === 'p').find((p) => els(p, 'blipFill').length > 0)!;
     const names = docPrNames(page);
     // (Panel: background, art, border; then per balloon group the
     // outline strokes, the fills, the lettering.)
