@@ -69,6 +69,44 @@ describe('formatted Word paint order (#1444)', () => {
     expect(xmlProblems(`<w:document ${WORDML_NAMESPACES}><w:body><w:p>${runs.join('')}</w:p></w:body></w:document>`)).toEqual([]);
   });
 
+  it('keeps a turned or flipped picture a picture under the shapes on it', async () => {
+    const page: DisplayPage = {
+      index: 0, width: 400, height: 600, dpi: 72,
+      items: [
+        { kind: 'image', rect: { x: 0, y: 0, width: 300, height: 200 }, fileId: 'map', rotate: -90 },
+        { kind: 'image', rect: { x: 0, y: 300, width: 300, height: 200 }, fileId: 'mirror', flipH: true },
+        // A label plate on each.
+        { kind: 'rect', rect: { x: 40, y: 40, width: 60, height: 20 }, fill: '#ffffff' },
+        { kind: 'rect', rect: { x: 40, y: 340, width: 60, height: 20 }, fill: '#eeeeee' },
+      ],
+    };
+    const { runs } = await pageParts(context(), page);
+    const pictures = anchors(runs).filter((a) => a.xml.includes('ptx picture'));
+    expect(pictures).toHaveLength(2);
+    for (const p of pictures) expect(p.xml).toContain('<pic:pic>');
+    expect(pictures[0]!.xml).toContain('rot="-5400000"');
+    expect(pictures[1]!.xml).toContain('flipH="1"');
+  });
+
+  it('writes an earlier picture under a covered one as a shape too', async () => {
+    const page: DisplayPage = {
+      index: 0, width: 400, height: 600, dpi: 72,
+      items: [
+        { kind: 'image', rect: { x: 0, y: 0, width: 300, height: 300 }, fileId: 'under' },
+        { kind: 'image', rect: { x: 150, y: 150, width: 100, height: 100 }, fileId: 'inset' },
+        // A plate on the inset only.
+        { kind: 'rect', rect: { x: 160, y: 160, width: 40, height: 10 }, fill: '#ffffff' },
+        // A picture apart from both stays a picture.
+        { kind: 'image', rect: { x: 0, y: 400, width: 100, height: 100 }, fileId: 'apart' },
+      ],
+    };
+    const { runs } = await pageParts(context(), page);
+    const pictures = anchors(runs).filter((a) => a.xml.includes('ptx picture'));
+    expect(pictures).toHaveLength(3);
+    expect(pictures.map((p) => p.xml.includes('<pic:pic>'))).toEqual([false, false, true]);
+    expect(pictures[0]!.z).toBeLessThan(pictures[1]!.z);
+  });
+
   it('writes a crop as the picture rectangle past the shape', () => {
     expect(cropFillRect(undefined)).toBe('');
     expect(cropFillRect({ x: 0, y: 0, width: 1, height: 1 })).toBe('');

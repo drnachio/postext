@@ -255,9 +255,11 @@ export async function imageRun(ctx: WriterContext, item: ImageItem): Promise<str
   if (item.tint) ctx.warn('picture-tint', `picture ${item.fileId}: its tint is not carried into Word`);
   const crop = srcRect(item.crop);
   const fill = cropFillRect(item.crop);
-  const asShape = (_id: number, cx: number, cy: number): string =>
-    pictureShapeGraphic(cx, cy, refs, { ...(fill ? { fillRect: fill } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.flipH ? { flipH: true } : {}) });
-  return anchorRun(ctx, { rect: item.rect, name: 'ptx picture', asShape, ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.alt ? { descr: item.alt } : {}) }, (id, cx, cy) =>
+  // A turned or flipped picture stays a picture: LibreOffice draws a
+  // shape's picture fill unturned and stretched into the turned frame (an
+  // atlas map turned a quarter came out upright under its grid, #1444).
+  const asShape = item.rotate || item.flipH ? undefined : (_id: number, cx: number, cy: number): string => pictureShapeGraphic(cx, cy, refs, fill ? { fillRect: fill } : {});
+  return anchorRun(ctx, { rect: item.rect, name: 'ptx picture', ...(asShape ? { asShape } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.alt ? { descr: item.alt } : {}) }, (id, cx, cy) =>
     pictureGraphic(id, cx, cy, refs, { name: item.fileId, ...(item.alt ? { descr: item.alt } : {}), ...(crop ? { srcRect: crop } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.flipH ? { flipH: true } : {}) }),
   );
 }

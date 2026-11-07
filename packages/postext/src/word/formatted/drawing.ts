@@ -27,7 +27,8 @@ export interface AnchorBox {
   ink?: DisplayRect[];
   /** A picture's graphic as a shape filled with it, written instead when
    *  a shape is later drawn over the picture behind the text
-   *  (`shapesOverPictures`). */
+   *  (`shapesOverPictures`). Absent for a turned or flipped picture,
+   *  whose fill LibreOffice would not turn. */
   asShape?: (id: number, cx: number, cy: number) => string;
 }
 
@@ -131,8 +132,15 @@ export function textBoxRun(ctx: WriterContext, box: AnchorBox, content: string, 
  *  panel); a shape filled with a picture keeps the order. Pictures nothing
  *  covers stay pictures, which every reader takes. */
 export function shapesOverPictures(ctx: WriterContext, runs: string[]): string[] {
-  const covered = (ctx.pictures ?? []).filter((p) => p.covered);
+  const all = ctx.pictures ?? [];
   ctx.pictures = [];
+  // A picture written as a shape would sink under any earlier picture it
+  // lies on, so those are written as shapes too, down the stack.
+  for (let i = all.length - 1; i >= 0; i--) {
+    if (!all[i]!.covered) continue;
+    for (let j = 0; j < i; j++) if (overlaps(all[j]!.rect, all[i]!.rect)) all[j]!.covered = true;
+  }
+  const covered = all.filter((p) => p.covered);
   if (covered.length === 0) return runs;
   return runs.map((r) => {
     for (const p of covered) if (r.includes(p.pic)) return r.replace(p.pic, p.shape);
@@ -155,10 +163,10 @@ function blipXml(refs: BlipRefs): string {
 /** A shape filled with a picture: the crop is a fill rectangle reaching
  *  past the shape (`fillRect`, 1/1000 % of the shape per side), which
  *  LibreOffice honours in a shape's fill where it drops `srcRect`. */
-export function pictureShapeGraphic(cx: number, cy: number, refs: BlipRefs, opts: { fillRect?: string; rotate?: number; flipH?: boolean }): string {
+export function pictureShapeGraphic(cx: number, cy: number, refs: BlipRefs, opts: { fillRect?: string }): string {
   return (
     `<a:graphic><a:graphicData uri="${WPS_URI}"><wps:wsp><wps:cNvSpPr/><wps:spPr>` +
-    `${xfrm(cx, cy, opts.rotate, opts.flipH)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>` +
+    `${xfrm(cx, cy)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>` +
     `<a:blipFill rotWithShape="1">${blipXml(refs)}<a:stretch>${opts.fillRect ?? '<a:fillRect/>'}</a:stretch></a:blipFill><a:ln><a:noFill/></a:ln></wps:spPr>` +
     '<wps:bodyPr rot="0" vert="horz" wrap="square" lIns="0" tIns="0" rIns="0" bIns="0" anchor="t" anchorCtr="0" upright="0"><a:noAutofit/></wps:bodyPr>' +
     '</wps:wsp></a:graphicData></a:graphic>'
