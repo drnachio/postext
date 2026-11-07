@@ -12,6 +12,8 @@ import type { MathJaxConverter } from '../../math/mathjax.js';
 import type { MmlNode } from './mml.js';
 import type { RunOptions } from './runs.js';
 import { convertNode } from './convert.js';
+import { convertRow } from './rows.js';
+import { splitTag } from './tags.js';
 
 export { UnsupportedMath } from './mml.js';
 export type { MmlNode } from './mml.js';
@@ -87,4 +89,29 @@ export function texToOmml(tex: string, display: boolean, options: RunOptions = {
   }
   const oMath = `<m:oMath>${content}</m:oMath>`;
   return display ? `<m:oMathPara>${oMath}</m:oMathPara>` : oMath;
+}
+
+export interface DisplayOmml {
+  /** `m:oMathPara` for an equation without a number; a bare `m:oMath`
+   *  for a numbered one, which shares its paragraph with the number. */
+  omml: string;
+  /** The equation number (`(1)` for `\tag{1}`), set beside the equation. */
+  tag?: string;
+}
+
+/** A display equation for `tex`, its `\tag` split off as a number for the
+ *  caller to set at the right of the line. Null as for texToOmml. */
+export function texToDisplayOmml(tex: string, options: RunOptions = {}): DisplayOmml | null {
+  const root = texToMml(tex, true);
+  if (!root) return null;
+  const tagged = splitTag(root);
+  if (!tagged) {
+    const omml = texToOmml(tex, true, options);
+    return omml === null ? null : { omml };
+  }
+  try {
+    return { omml: `<m:oMath>${convertRow(tagged.body, { ...options, display: true })}</m:oMath>`, tag: tagged.tag };
+  } catch {
+    return null;
+  }
 }

@@ -5,7 +5,10 @@ import type { InlineSpan, InlineLink } from '../types.js';
 import { stripAnnotations, type QueuedAnnotation, markAnnotations, applyAnnotationMarks } from '../annotations.js';
 import { dataRanges } from './breaks.js';
 import { replaceLinkSyntax, LINK_OPEN, LINK_CLOSE, stripNonEmphasisFormatting } from './links.js';
-import { MARKUP_BOUNDARY, restoreEscapes, replaceMarkSyntax, protectEscapes, INLINE_SMALLCAPS_RE, unescapeBrackets, UNDERSCORE_BOLD_RE, UNDERSCORE_ITALIC_RE, SUPERSCRIPT_RE, SUBSCRIPT_RE, ESCAPE_BASE, MARK_OPEN, MARK_CLOSE, splitScriptSpans, underscores, underscoresClose, markSmallCaps, ESCAPED_RE, applySmallCapsMarks, dropMarkupBoundaries } from './markup.js';
+import { MARKUP_BOUNDARY, restoreEscapes, replaceMarkSyntax, protectEscapes, INLINE_SMALLCAPS_RE, unescapeBrackets, UNDERSCORE_BOLD_RE, UNDERSCORE_ITALIC_RE, SUPERSCRIPT_RE, SUBSCRIPT_RE, ESCAPE_BASE, MARK_OPEN, MARK_CLOSE, splitScriptSpans, underscores, underscoresClose, markSmallCaps, ESCAPED_RE, applySmallCapsMarks, dropMarkupBoundaries, starsOpen, starsClose } from './markup.js';
+
+const STAR_BOLD_RE = new RegExp(`${starsOpen(2)}(.+?)${starsClose(2)}`, 'gu');
+const STAR_ITALIC_RE = new RegExp(`${starsOpen(1)}(.+?)${starsClose(1)}`, 'gu');
 
 /** The text {@link parseInlineFormatting} sets, without its spans: each
  *  mark taken out leaves a {@link MARKUP_BOUNDARY}, as the parser's own
@@ -17,9 +20,9 @@ export function stripInlineFormatting(text: string): string {
   return restoreEscapes(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(replaceMarkSyntax(protectEscapes(text), (inner) => b + inner + b), b), true, () => b), false, (label) => b + label + b), b)
     .replace(INLINE_SMALLCAPS_RE, (_, inner: string) => b + unescapeBrackets(inner) + b) // small caps
     .replace(/`(.+?)`/g, wrap)               // inline code
-    .replace(/\*\*(.+?)\*\*/g, wrap)          // bold
+    .replace(STAR_BOLD_RE, wrap)              // bold
     .replace(UNDERSCORE_BOLD_RE, wrap)        // bold alt
-    .replace(/\*(.+?)\*/g, wrap)              // italic
+    .replace(STAR_ITALIC_RE, wrap)            // italic
     .replace(UNDERSCORE_ITALIC_RE, wrap)      // italic alt
     .replace(SUPERSCRIPT_RE, '$1')           // superscript
     .replace(SUBSCRIPT_RE, '$1')             // subscript
@@ -102,7 +105,7 @@ function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, ou
     if (text.length > 0) splitScriptSpans(text, bold, true, out);
     return;
   }
-  const italicRe = new RegExp(`\\*(.+?)\\*|${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
+  const italicRe = new RegExp(`${starsOpen(1)}(.+?)${starsClose(1)}|${underscores(1)}(.+?)${underscoresClose(1)}`, 'gu');
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = italicRe.exec(text)) !== null) {
@@ -148,7 +151,7 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.
   const boldRe = new RegExp(
-    `\\*\\*\\*(.+?)\\*\\*\\*|${underscores(3)}(.+?)${underscoresClose(3)}|\\*\\*(.+?)\\*\\*|${underscores(2)}(.+?)${underscoresClose(2)}`,
+    `${starsOpen(3)}(.+?)${starsClose(3)}|${underscores(3)}(.+?)${underscoresClose(3)}|${starsOpen(2)}(.+?)${starsClose(2)}|${underscores(2)}(.+?)${underscoresClose(2)}`,
     'gu',
   );
   let lastIndex = 0;

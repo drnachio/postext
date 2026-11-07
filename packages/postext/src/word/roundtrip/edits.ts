@@ -9,7 +9,7 @@ import type { FragmentTarget } from '../anchors/types.js';
 import { diffText, type Hunk } from './diff.js';
 import type { BlockView } from './blocks.js';
 import { escapeTyped, markupDeletable, splitKey, widenOverDelimiters, wrapFlags } from './markup.js';
-import { mathUnchanged, mathSource } from './math.js';
+import { keepTag, mathUnchanged, mathSource } from './math.js';
 import { isHolderChar, OBJECT_CHAR, PARA_CHAR } from './walk.js';
 
 export interface SourceEdit {
@@ -238,6 +238,9 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     else if (v.O[i] === '-' || v.O[i] === '‐') hyphens++;
   }
   const ctx = splitKey(contextKey);
+  // An equation the hunk replaces keeps its number (`\tag`) in the source.
+  const at = h.a1 - h.a0 === 1 && v.O[h.a0] === OBJECT_CHAR ? v.atomOf[h.a0]! : -1;
+  const replaced = at >= 0 ? base.slice(v.atoms[at]!.start, v.atoms[at]!.end) : undefined;
   let out = '';
   let run = '';
   let runKey: string | undefined;
@@ -273,7 +276,7 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     } else if (ch === OBJECT_CHAR) {
       const tex = v.NT[j];
       if (tex === undefined) continue;
-      piece = mathSource(tex, display);
+      piece = mathSource(replaced !== undefined ? keepTag(replaced, tex) : tex, display);
       plain = false;
     } else piece = escapeTyped(ch);
     if (!plain) {
