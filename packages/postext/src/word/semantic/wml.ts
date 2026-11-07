@@ -205,13 +205,24 @@ export function fieldRuns(instr: string, result = '', props = ''): string {
   );
 }
 
+/** LibreOffice (26.8) refuses to load a document whose block content
+ *  control opens with a paragraph holding a footnote or endnote
+ *  reference; marked as a document part the same control loads (#1444). */
+const DOC_PART = '<w:docPartObj><w:docPartGallery w:val="Postext"/></w:docPartObj>';
+
+function notedFirstParagraph(content: string): boolean {
+  const end = content.indexOf('</w:p>');
+  const first = end < 0 ? content : content.slice(0, end);
+  return first.includes('<w:footnoteReference') || first.includes('<w:endnoteReference');
+}
+
 /** A content control around block content. `alias` is a short label; the
  *  tag carries the kind (Word keeps both, LibreOffice 7.5+ too). */
 export function blockSdt(id: number, tag: string, alias: string | undefined, content: string): string {
   const aliasXml = alias ? `<w:alias w:val="${escapeAttr(writable(alias).slice(0, 255))}"/>` : '';
   return (
     `<w:sdt><w:sdtPr>${aliasXml}<w:tag w:val="${escapeAttr(writable(tag).slice(0, 64))}"/><w:id w:val="${id}"/>` +
-    '<w15:appearance w15:val="hidden"/></w:sdtPr>' +
+    `<w15:appearance w15:val="hidden"/>${notedFirstParagraph(content) ? DOC_PART : ''}</w:sdtPr>` +
     `<w:sdtContent>${content}</w:sdtContent></w:sdt>`
   );
 }

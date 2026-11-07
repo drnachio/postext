@@ -72,7 +72,11 @@ describe('formatted Word graphics and helpers (#1392)', () => {
     expect(path).toContain('<a:moveTo><a:pt x="0" y="0"/></a:moveTo>');
     expect(path).toContain('<a:cubicBezTo>');
     expect(path).toContain('<a:quadBezTo>');
-    expect(path).toContain('stroke="0"');
+    // The shape's fill and line say it: Google Docs refuses a document
+    // whose path carries `stroke` or `fill` (#1444).
+    expect(path).toContain('<a:path w="254000" h="254000">');
+    expect(path).not.toMatch(/<a:path [^>]*(stroke|fill)=/);
+    expect(path).toContain('<a:ln><a:noFill/></a:ln>');
     for (const x of [rule, box!, path]) {
       expect(xmlProblems(wrap(x))).toEqual([]);
       // A plain shape, not an empty text box: Word hands the text of the

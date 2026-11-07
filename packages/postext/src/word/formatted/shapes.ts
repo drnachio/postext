@@ -99,10 +99,12 @@ export function pathRun(ctx: WriterContext, item: PathItem): string {
       else cmds.push('<a:close/>');
     }
   }
-  const filled = wordColor(item.fill) !== undefined;
+  // No `fill="none"` / `stroke="0"` on the path: the shape's own fill and
+  // `a:ln` already say it, and Google Docs refuses to open a document
+  // holding a single path with either attribute (#1444).
   const geom =
     '<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/><a:rect l="0" t="0" r="r" b="b"/>' +
-    `<a:pathLst><a:path w="${W}" h="${H}"${filled ? '' : ' fill="none"'}${item.stroke ? '' : ' stroke="0"'}>${cmds.join('')}</a:path></a:pathLst></a:custGeom>`;
+    `<a:pathLst><a:path w="${W}" h="${H}">${cmds.join('')}</a:path></a:pathLst></a:custGeom>`;
   const s = item.stroke;
   const ln = s ? lineXml(ctx, s.color, s.widthPx, { ...(s.dash ? { dash: s.dash } : {}), ...(s.cap ? { cap: s.cap } : {}), ...(s.join ? { join: s.join } : {}) }) : '<a:ln><a:noFill/></a:ln>';
   return anchorRun(ctx, { rect: b, name: 'ptx path' }, (_id, cx, cy) => shapeGraphic(`${xfrm(cx, cy)}${geom}${solidFill(item.fill)}${ln}`));

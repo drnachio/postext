@@ -160,6 +160,19 @@ describe('semantic docx: structures', () => {
     expect(e.frag('[^b]: Orphan.').role).toBe('raw:footnote');
   });
 
+  it('marks a content control that opens on a noted paragraph as a document part (#1444)', async () => {
+    // LibreOffice refuses the whole file when a plain block control's
+    // first paragraph holds a footnote reference; the second one loads.
+    const md = ':::paragraphs{style="verse"}\nFirst line[^a]\n\nSecond line[^b]\n:::\n\n:::paragraphs{style="verse"}\nPlain line\n\nNoted line[^b]\n:::\n\n[^a]: One.\n\n[^b]: Two.\n';
+    const e = await exportDocx(md);
+    expect(exportProblems(e, [md])).toEqual([]);
+    const sdts = e.doc.match(/<w:sdt><w:sdtPr>(?:(?!<\/w:sdtPr>).)*<\/w:sdtPr>/g) ?? [];
+    const verse = sdts.filter((s) => s.includes('ptx:paragraphs:verse'));
+    expect(verse).toHaveLength(2);
+    expect(verse[0]).toContain('<w:docPartObj><w:docPartGallery w:val="Postext"/></w:docPartObj></w:sdtPr>');
+    expect(verse[1]).not.toContain('docPartObj');
+  });
+
   it('sets a box as a content control around a shaded one-cell table', async () => {
     const md = ':::callout{type="note" title="My **title**"}\nInside the box.\n\n- item\n:::\n';
     const e = await exportDocx(md, {
