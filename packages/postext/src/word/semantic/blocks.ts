@@ -3,14 +3,13 @@
 // every text block a paragraph wrapped in its fragment's bookmark.
 
 import type { ContentBlock } from '../../parse/types.js';
-import { texToOmml } from '../ommlWrite/index.js';
-import { ommlHash } from '../anchors/ommlHash.js';
 import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
 import { renderResource } from './figures.js';
-import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
+import { FragmentBuilder } from './fragments.js';
 import { renderInline, type InlineSource } from './inline.js';
 import { markInserts, namedBookmark } from './marks.js';
+import { renderDisplayMath } from './math.js';
 import type { ListLevelKind } from './numbering.js';
 import { lineStart, rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
@@ -250,14 +249,8 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
       return textParagraph(ctx, b, { style: STYLE.quote }, 'quote');
     case 'code':
       return textParagraph(ctx, b, { style: STYLE.code }, `code${b.code?.lang ? `:${b.code.lang}` : ''}`);
-    case 'mathDisplay': {
-      const omml = b.tex !== undefined ? texToOmml(b.tex, true) : null;
-      if (!omml) return rawSdt(ctx, start, end, 'math');
-      const f = new FragmentBuilder();
-      f.atom(OBJECT_CHAR, start, end, 'math', '', ommlHash(omml));
-      const xml = ctx.log.wrap(omml, f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [start, end], role: 'math' });
-      return paragraph({ style: STYLE.math }, xml);
-    }
+    case 'mathDisplay':
+      return renderDisplayMath(ctx, b, start, end, env.widthTwips ?? ctx.textTwips);
     case 'resourceBlock':
       return renderResource(ctx, b, start, end, env.widthTwips ?? ctx.textTwips);
     case 'directive': {
