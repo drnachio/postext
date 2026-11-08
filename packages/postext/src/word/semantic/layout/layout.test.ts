@@ -164,11 +164,12 @@ describe('semantic docx: page layout (#1444)', () => {
     expect(exportProblems(e, [md])).toEqual([]);
     // A round chip of one letter is the circled letter, in the outline's
     // ink with no border; a filled one the negative form where Unicode has
-    // one. Two letters keep the outlined run.
+    // one, and the circled letter in the fill colour where it has none (a
+    // letter on an answer sheet's bubble). Two letters keep the outlined run.
     expect(e.doc).toMatch(/<w:color w:val="333333"\/><\/w:rPr><w:t[^>]*>\u24b6<\/w:t>/);
     expect(e.doc).toMatch(/<w:color w:val="111111"\/><\/w:rPr><w:t[^>]*>\u277c<\/w:t>/);
-    expect(e.doc).toContain('\u00a0c\u00a0');
-    expect(e.frag('Pick \u24b6 or \u00a0B\u00a0, \u00a0AB\u00a0, \u00a0c\u00a0 or \u277c.')).toBeDefined();
+    expect(e.doc).toMatch(/<w:color w:val="111111"\/><\/w:rPr><w:t[^>]*>\u24d2<\/w:t>/);
+    expect(e.frag('Pick \u24b6 or \u00a0B\u00a0, \u00a0AB\u00a0, \u24d2 or \u277c.')).toBeDefined();
     const bubble = styleOf(e, 'PostextChipbubble');
     expect(bubble).toContain('<w:bdr w:val="single" w:sz="8" w:space="0" w:color="333333"/>');
     expect(bubble).toContain('w:fill="auto"');

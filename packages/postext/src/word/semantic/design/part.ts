@@ -11,12 +11,12 @@ import { plainDesignText } from '../../../design/richText.js';
 import type { ResolvedDesignTextElement } from '../../../types.js';
 import type { WriterContext } from '../context.js';
 import { STYLE } from '../styles.js';
-import { hex, type ParaProps } from '../wml.js';
+import { hex, px, type ParaProps } from '../wml.js';
 import { hideRuns } from './hide.js';
-import { inPartColors } from './partColor.js';
+import { inPartColors, recolored } from './partColor.js';
 import { designImageId, designPictures, printed } from './pictures.js';
 import { designTextLook, designTextParagraphs, fittedSize } from './text.js';
-import { partPlaceholders } from './values.js';
+import { partPaletteAt, partPlaceholders } from './values.js';
 import { writeDesign } from './write.js';
 
 /** Writes one of the fence's attributes (`number`, `title`) as a mapped
@@ -31,7 +31,7 @@ const isNumber = (el: ResolvedDesignTextElement): boolean => /^\s*\{number\}\s*$
  * undefined when the book has no part design (the caller writes the
  * number and title plainly).
  */
-export function renderPartDesign(ctx: WriterContext, part: ContentBlock, attr: PartAttrParagraph): string | undefined {
+export function renderPartDesign(ctx: WriterContext, part: ContentBlock, attr: PartAttrParagraph, body?: () => string): string | undefined {
   const design = ctx.resolved.parts.design;
   if (!design.elements.length) return undefined;
   const placeholders = partPlaceholders(ctx, part);
@@ -58,6 +58,7 @@ export function renderPartDesign(ctx: WriterContext, part: ContentBlock, attr: P
       return designTextParagraphs(ctx, part, el, text, style, first);
     },
     breakBefore: true,
+    ...(body ? { body: { write: body, top: px(ctx.units, ctx.resolved.parts.margins.top), ink: hex(recolored(ctx.resolved.parts.bodyStyle.color, partPaletteAt(ctx, part), ctx.resolved.colorPalette ?? [])) } } : {}),
     title: (el, band, props, shown) => {
       const style = el ? titleStyle(ctx, el, band, title) : STYLE.part;
       const xml = attr('title', style, shown ? props : { ...props, before: 0, after: 0, line: { twips: 20, rule: 'exact' }, outlineLvl: 9 });

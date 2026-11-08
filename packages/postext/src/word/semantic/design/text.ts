@@ -67,7 +67,7 @@ export function designTextLook(ctx: WriterContext, el: ResolvedDesignTextElement
     keepLines: true,
     before: 0,
     after: Math.round(size * 0.35 * (1440 / u.dpi)),
-    line: { twips: Math.max(240, Math.round((lineH * 1440) / u.dpi)), rule: 'atLeast' },
+    line: lineOf(u, size, lineH),
     ind: { firstLine: 0 },
     jc: JC[el.align] ?? 'center',
     suppressAutoHyphens: true,
@@ -75,16 +75,66 @@ export function designTextLook(ctx: WriterContext, el: ResolvedDesignTextElement
   return { pPr, rPr };
 }
 
+/** A display size (a cover or opener title), px: 18 pt and up. */
+const DISPLAY_PT = 18;
+
+/**
+ * The line spacing of a design text set at `size` px with lines `lineH`
+ * px apart. A display title's lines are exactly the design's distance
+ * apart (with "at least", the face's own line height wins, close to a
+ * blank line between the lines of a two-line title), but no tighter than
+ * 1.1 em, below which Word clips the tops of the letters. Smaller text
+ * keeps "at least": a fallback face taller than the design's still fits.
+ */
+function lineOf(u: WriterContext['units'], size: number, lineH: number): NonNullable<ParaProps['line']> {
+  const tw = (v: number): number => Math.round((v * 1440) / u.dpi);
+  if ((size * 72) / u.dpi >= DISPLAY_PT) return { twips: tw(Math.max(lineH, size * 1.1)), rule: 'exact' };
+  return { twips: Math.max(240, tw(lineH)), rule: 'atLeast' };
+}
+
+/** The fill a text's box shows on the page: none when the box has none,
+ *  or when it is as pale as a white page (it would show nothing but an
+ *  edge). On a tinted paper a white pill still shows. */
+function pillFill(ctx: WriterContext, el: ResolvedDesignTextElement): string | undefined {
+  const fill = hex(el.box?.backgroundColor);
+  if (!fill) return undefined;
+  const c = ctx.resolved.page.backgroundColor;
+  const paper = (c && c.hex !== 'transparent' ? hex(c) : undefined) ?? 'FFFFFF';
+  const own = luminance(fill);
+  return own < 0.85 || Math.abs(own - luminance(paper)) > 0.04 ? fill : undefined;
+}
+
+/**
+ * A pill printed over a page-filling picture as the paragraph's shading,
+ * cut to the words' width by the paragraph's indents (`frameTw` twips
+ * wide): LibreOffice draws no run shading over a picture behind the text,
+ * a paragraph's it does. Undefined for a text with no fill.
+ */
+export function pillOnPicture(ctx: WriterContext, el: ResolvedDesignTextElement, text: string, frameTw: number): Partial<ParaProps> | undefined {
+  const fill = pillFill(ctx, el);
+  if (!fill) return undefined;
+  const u = ctx.units;
+  const size = fittedSize(ctx, el, text);
+  const chars = Math.max(1, ...text.split('\n').map((l) => [...l].length));
+  const em = el.textTransform === 'uppercase' ? 0.55 : 0.48;
+  const track = el.letterSpacing ? px(u, el.letterSpacing, size) : 0;
+  // The words, a space of fill each side and a little to spare.
+  const width = Math.round((((chars * (size * em + track)) + size * 1.2) * 1440) / u.dpi);
+  const room = Math.max(0, frameTw - width);
+  const jc = JC[el.align] ?? 'center';
+  const ind = jc === 'center' ? { left: Math.round(room / 2), right: Math.round(room / 2) } : jc === 'right' || jc === 'end' ? { left: room } : { right: room };
+  return { shd: fill, ind: { ...ind, firstLine: 0 } };
+}
+
 /** The box a text is set in (a chip, a pill, a label tab), as Word draws
  *  a run's: its fill as run shading, its outline as a line round the
- *  characters. A fill as pale as the paper is left out (on white it shows
- *  nothing but an edge). */
+ *  characters. */
 function pill(ctx: WriterContext, el: ResolvedDesignTextElement): Pick<RunProps, 'shd' | 'bdr'> {
-  const fill = hex(el.box?.backgroundColor);
+  const fill = pillFill(ctx, el);
   const line = hex(el.box?.borderColor);
   const width = el.box?.borderWidth ? px(ctx.units, el.box.borderWidth) : 0;
   return {
-    ...(fill && luminance(fill) < 0.85 ? { shd: fill } : {}),
+    ...(fill ? { shd: fill } : {}),
     ...(line && width > 0 ? { bdr: { color: line, sz: Math.min(96, Math.max(2, Math.round((width * 72 * 8) / ctx.units.dpi))), space: 1 } } : {}),
   };
 }
@@ -117,6 +167,15 @@ export function designTextParagraphs(ctx: WriterContext, b: ContentBlock, el: Re
   const out: string[] = [];
   const key = soleAttr(el.content ?? '');
   const range = key && !el.inlineMarks ? attrSource(ctx, b, key) : undefined;
+  // A pill's words keep a space of its fill each side (generated).
+  const space = (): string => generatedRuns(ctx, [{ text: '\u00a0' }], 'design:pill');
+  // Written in document order, so the map lists the pieces in that order.
+  const pad = (make: () => string): string => {
+    if (!pillFill(ctx, el)) return make();
+    const before = space();
+    const runs = make();
+    return before + runs + space();
+  };
   if (range) {
     const md = ctx.chapter.markdown;
     // A value's `\n` (backslash, n) starts a new line where it is printed.
@@ -134,14 +193,14 @@ export function designTextParagraphs(ctx: WriterContext, b: ContentBlock, el: Re
       if (!piece.trim()) continue;
       const f = new FragmentBuilder();
       f.push(piece, Array.from({ length: piece.length }, (_, i) => a + i));
-      const runs = ctx.log.wrap(textRuns(piece, ''), f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [a, z], role: `attr:heading:${key}` });
+      const runs = pad(() => ctx.log.wrap(textRuns(piece, ''), f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [a, z], role: `attr:heading:${key}` }));
       out.push(paragraph({ style, ...(out.length ? {} : first) }, runs));
     }
     return out;
   }
   for (const line of text.split('\n')) {
     if (!/[\p{L}\p{N}\p{So}]/u.test(line)) continue;
-    out.push(paragraph({ style, ...(out.length ? {} : first) }, generatedRuns(ctx, [{ text: line.trim() }], `design:${el.id}`)));
+    out.push(paragraph({ style, ...(out.length ? {} : first) }, pad(() => generatedRuns(ctx, [{ text: line.trim() }], `design:${el.id}`))));
   }
   return out;
 }

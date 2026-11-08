@@ -128,7 +128,7 @@ describe('semantic docx: text after the third review (#1444)', () => {
   it('knows the circled forms of letters and numbers', () => {
     expect(circled('A', false)).toBe('Ⓐ');
     expect(circled('z', false)).toBe('ⓩ');
-    expect(circled('C', true)).toBeUndefined();
+    expect(circled('C', true)).toBe('Ⓒ');
     expect(circled('7', true)).toBe('❼');
     expect(circled('12', false)).toBe('⑫');
     expect(circled('12', true)).toBe('⓬');

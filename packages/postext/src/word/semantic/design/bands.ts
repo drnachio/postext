@@ -59,18 +59,33 @@ export function bandInnerTwips(ctx: WriterContext, widthTw: number): number {
   return widthTw - 2 * mmTw(4);
 }
 
-/** A one-cell table shaded `fill` around `cell`, with insets. */
-function bandTable(fill: string, cell: string, pad: { top: number; bottom: number; side: number }, widthTw: number): string {
+/** A thin filled strip the design draws right under a band (a dark foot
+ *  rule under an opener band): its colour and Word border width. */
+export interface BandFoot {
+  color: string;
+  sz: number;
+}
+
+/** A one-cell table shaded `fill` around `cell`, with insets, and the
+ *  band's foot strip as its cell's bottom border. `gapTw` adds an unshaded
+ *  row that tall under the band: the room the print leaves before the text
+ *  that follows (a paragraph there instead costs the page its running
+ *  head in LibreOffice). */
+function bandTable(fill: string, cell: string, pad: { top: number; bottom: number; side: number }, widthTw: number, foot?: BandFoot, gapTw = 0): string {
   const shd = `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`;
+  const bottom = foot ? `<w:tcBorders><w:bottom w:val="single" w:sz="${foot.sz}" w:space="0" w:color="${foot.color}"/></w:tcBorders>` : '';
+  const gap =
+    gapTw > 0
+      ? `<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="${gapTw}" w:hRule="exact"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/><w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/></w:tcMar></w:tcPr>${thinParagraph()}</w:tc></w:tr>`
+      : '';
   return (
     '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>' +
     '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>' +
-    shd +
     '<w:tblLayout w:type="autofit"/>' +
     `<w:tblCellMar><w:top w:w="${pad.top}" w:type="dxa"/><w:left w:w="${pad.side}" w:type="dxa"/><w:bottom w:w="${pad.bottom}" w:type="dxa"/><w:right w:w="${pad.side}" w:type="dxa"/></w:tblCellMar>` +
     '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>' +
     `<w:tblGrid><w:gridCol w:w="${widthTw}"/></w:tblGrid>` +
-    `<w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/>${shd}</w:tcPr>${cell}</w:tc></w:tr></w:tbl>`
+    `<w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/>${bottom}${shd}</w:tcPr>${cell}</w:tc></w:tr>${gap}</w:tbl>`
   );
 }
 
@@ -79,7 +94,7 @@ function bandTable(fill: string, cell: string, pad: { top: number; bottom: numbe
  * that band's table. `container` is the text area, px; `widthTw` the
  * width the tables take.
  */
-export function withBands(ctx: WriterContext, chunks: readonly Chunk[], container: Box, widthTw: number): string {
+export function withBands(ctx: WriterContext, chunks: readonly Chunk[], container: Box, widthTw: number, feet?: ReadonlyMap<Box, BandFoot>, tailGapTw = 0): string {
   let out = '';
   let lastTable = false;
   for (let i = 0; i < chunks.length; ) {
@@ -96,7 +111,7 @@ export function withBands(ctx: WriterContext, chunks: readonly Chunk[], containe
     const boxes = run.map((r) => r.box).filter((b): b is Box => !!b);
     const pad = insets(ctx, c.band.box, boxes.length ? boxes : [c.band.box], container);
     if (lastTable) out += thinParagraph({ keepNext: true });
-    out += bandTable(c.band.fill, run.map((r) => r.xml).join(''), pad, widthTw);
+    out += bandTable(c.band.fill, run.map((r) => r.xml).join(''), pad, widthTw, feet?.get(c.band.box), j === chunks.length ? tailGapTw : 0);
     lastTable = true;
     i = j;
   }

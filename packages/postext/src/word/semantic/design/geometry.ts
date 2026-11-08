@@ -48,6 +48,11 @@ export function estimateBoxes(
   resources: ReadonlyMap<string, Resource>,
   imageId: (el: Extract<ResolvedDesignElement, { kind: 'image' }>) => string | undefined,
   startRight: boolean,
+  /** A vertical flow's design: the frames are the flow's (the sheet turned
+   *  a quarter, its height running along x) and a picture stands upright
+   *  on the sheet, so its box takes the picture's height as its width (as
+   *  the engine's `layoutImageElement` does). */
+  upright = false,
 ): Map<string, Box> {
   const placed = elements.filter((e): e is ResolvedPlacedDesignElement => e.kind !== 'connector');
   const out = new Map<string, Box>();
@@ -88,7 +93,8 @@ export function estimateBoxes(
       const id = imageId(el);
       const res = id ? resources.get(id) : undefined;
       const natural = res?.bitmap ?? res?.svg;
-      const ratio = natural?.width && natural.height ? natural.height / natural.width : 0.66;
+      const own = natural?.width && natural.height ? natural.height / natural.width : 0.66;
+      const ratio = upright ? 1 / own : own;
       width ??= height !== undefined ? height / ratio : frame.width;
       height ??= width * ratio;
     } else if (el.kind === 'rule') {
@@ -126,4 +132,10 @@ export function covers(outer: Box, inner: Box): boolean {
   const cx = inner.x + inner.width / 2;
   const cy = inner.y + inner.height / 2;
   return cx >= outer.x && cx <= outer.x + outer.width && cy >= outer.y && cy <= outer.y + outer.height;
+}
+
+/** A box of a vertical flow's frame (x down the sheet, y across it from
+ *  its right edge) on the sheet `sheetWidth` px wide. */
+export function onSheet(box: Box, sheetWidth: number): Box {
+  return { x: sheetWidth - (box.y + box.height), y: box.x, width: box.height, height: box.width };
 }

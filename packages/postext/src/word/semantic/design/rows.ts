@@ -35,7 +35,14 @@ function runsOf(paragraphs: readonly string[]): string {
 export function sameLine(ctx: WriterContext, a: { el: ResolvedDesignTextElement; box: Box; text: string }, b: { el: ResolvedDesignTextElement; box: Box; text: string }, lineWidth: number): boolean {
   const u = ctx.units;
   const tol = (2 * u.dpi) / 25.4;
-  if (Math.abs(a.box.y - b.box.y) > tol) return false;
+  // Tops level, or the smaller text standing within the taller one's
+  // height (a journal's name beside its larger title word).
+  const shared = Math.min(a.box.y + a.box.height, b.box.y + b.box.height) - Math.max(a.box.y, b.box.y);
+  // A display figure many times the size of the text beside it (an
+  // opener's chapter number) is not on its line.
+  const sizes = [fittedSize(ctx, a.el, a.text), fittedSize(ctx, b.el, b.text)];
+  const near = Math.max(...sizes) <= 3 * Math.min(...sizes);
+  if (Math.abs(a.box.y - b.box.y) > tol && !(near && shared >= 0.6 * Math.min(a.box.height, b.box.height))) return false;
   if (a.text.includes('\n') || b.text.includes('\n')) return false;
   const single = (p: typeof a): boolean => [...p.text].length * fittedSize(ctx, p.el, p.text) * 0.55 <= lineWidth * 0.45;
   if (!single(a) || !single(b)) return false;
@@ -100,12 +107,23 @@ export function rowParagraph(ctx: WriterContext, parts: readonly RowPart[], fram
   const tabs: NonNullable<ParaProps['tabs']> = [];
   let runs = '';
   parts.forEach((p, i) => {
-    const side = sideOf(p.el, rtl);
+    // An end-aligned text short of the line's end (a journal's name set
+    // right after its title word) keeps its start: its width here is a
+    // guess, and a right tab would pull it back over the text before it.
+    const asked = sideOf(p.el, rtl);
+    const side = asked === 'end' && fromStart(p.box, 'end') < frame.width - (2 * ctx.units.dpi) / 25.4 && i > 0 ? 'start' : asked;
     const pos = Math.min(widthTw, Math.max(0, side === 'end' && fromStart(p.box, side) >= frame.width - 2 ? widthTw : toTw(fromStart(p.box, side))));
-    // A text that does not start the line goes to its tab stop.
-    if (i > 0 || side !== 'start' || pos > 0) {
+    // A text the design sets right after the one before it (a chip after
+    // a chip, a journal's name after its title word) follows it after a
+    // space: a tab stop from its guessed width could fall short of the
+    // text before it. Any other that does not start the line goes to its
+    // tab stop. Neither gap takes the shading of a pill before it.
+    const anchor = p.el.placement.anchor;
+    if (i > 0 && anchor.edge === 'right-of' && anchor.to === `#${parts[i - 1]!.el.id}`) {
+      runs += generatedRuns(ctx, [{ text: ' ', shd: 'auto' }], 'design:gap');
+    } else if (i > 0 || side !== 'start' || pos > 0) {
       tabs.push({ val: side === 'start' ? 'left' : side === 'end' ? 'right' : 'center', pos: side === 'end' ? Math.max(pos, 1) : pos });
-      runs += generatedRuns(ctx, [{ text: '\t' }], 'design:tab');
+      runs += generatedRuns(ctx, [{ text: '\t', shd: 'auto' }], 'design:tab');
     }
     const own = runsOf(p.write());
     runs += i === 0 ? own : styled(own, runStyle(ctx, p, parts[0]!));

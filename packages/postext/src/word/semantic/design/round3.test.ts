@@ -224,8 +224,8 @@ describe('semantic docx: decorative pictures', () => {
   });
 });
 
-describe('semantic docx: a line that just fits is not read as two', () => {
-  it('pairs the third line of two columns when the second line of one is a shade too long', async () => {
+describe('semantic docx: two stacked columns beside each other', () => {
+  it('sets each column in a cell of one borderless table, side by side', async () => {
     const col = (side: 'left' | 'right', id: string, content: string, under?: string) => ({
       kind: 'text',
       id,
@@ -256,8 +256,13 @@ describe('semantic docx: a line that just fits is not read as two', () => {
     const md = '# The Courier {style="front" outlook="Bright spells, breezy" temps="16°" day="Every Thursday" price="90p"}\n\nNews.\n';
     const e = await exportDocx(md, { config });
     expect(exportProblems(e, [md])).toEqual([]);
-    expect(para(e.doc, '90p')).toContain('>16°<');
-    expect(para(e.doc, 'Every Thursday')).toContain('>Bright spells, breezy<');
+    // One row, two cells: the left column's two lines in the first, the
+    // right column's in the second (the ears of a newspaper nameplate).
+    const cells = /<w:tbl>(?:(?!<\/w:tbl>)[^])*<\/w:tbl>/.exec(e.doc)?.[0].split('<w:tc>').slice(1) ?? [];
+    expect(cells).toHaveLength(2);
+    expect(cells[0]).toMatch(/>Bright spells, breezy<(?:(?!<\/w:tc>)[^])*>16°</);
+    expect(cells[1]).toMatch(/>Every Thursday<(?:(?!<\/w:tc>)[^])*>90p</);
+    expect(e.doc).toContain('<w:tblLayout w:type="fixed"/>');
     readsBack(e.bytes, md);
   });
 });

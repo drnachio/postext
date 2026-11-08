@@ -20,7 +20,9 @@ import type { WriterContext } from '../context.js';
 import { exerciseBody, mappedParagraph } from './exerciseBody.js';
 import { generatedRuns, type Piece } from '../generated.js';
 import { STYLE } from '../styles.js';
-import { blockSdt, hex, paragraph } from '../wml.js';
+import { blockSdt, hex, paragraph, px, twips } from '../wml.js';
+import { inPartStyle } from '../design/partColor.js';
+import type { ResolvedCalloutStyleConfig } from '../../../types.js';
 
 type ContainerNode = Extract<Node, { container: unknown }>;
 
@@ -120,26 +122,59 @@ function flatten(node: ContainerNode): ContentBlock[] {
   return out;
 }
 
-/** A one-cell table bordered in `color` around `content`. */
-function boxTable(content: string, widthTwips: number, color: string): string {
+/** How an exercise's box is drawn: its fill, its rule (none when the
+ *  box style draws none) and its insets, twips. */
+interface BoxLook {
+  fill?: string;
+  border?: string;
+  pad: { top: number; left: number; bottom: number; right: number };
+}
+
+/** The look of the box style an exercise style names (#1444), or a thin
+ *  rule in `color` round the exercise when it names none. */
+function boxLook(ctx: WriterContext, box: ResolvedCalloutStyleConfig | undefined, color: string): BoxLook {
+  if (!box) return { border: color, pad: { top: 100, left: 140, bottom: 100, right: 140 } };
+  const u = ctx.units;
+  const p = box.padding;
+  const ink = box.border.enabled && px(u, box.border.width) > 0 ? hex(box.border.color) : undefined;
+  return {
+    fill: box.backgroundEnabled ? hex(box.background) : undefined,
+    border: ink,
+    pad: { top: twips(u, p.top), left: twips(u, p.left), bottom: twips(u, p.bottom), right: twips(u, p.right) },
+  };
+}
+
+/** A one-cell table drawn as `look` around `content`. */
+function boxTable(content: string, widthTwips: number, look: BoxLook): string {
   const w = Math.max(240, Math.round(widthTwips));
-  const b = `w:val="single" w:sz="6" w:space="0" w:color="${color}"`;
+  const side = (name: string): string => (look.border ? `<w:${name} w:val="single" w:sz="6" w:space="0" w:color="${look.border}"/>` : `<w:${name} w:val="nil"/>`);
+  const shd = look.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${look.fill}"/>` : '';
+  const { top, left, bottom, right } = look.pad;
   return (
-    `<w:tbl><w:tblPr><w:tblW w:w="${w}" w:type="dxa"/><w:tblBorders><w:top ${b}/><w:left ${b}/><w:bottom ${b}/><w:right ${b}/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>` +
-    '<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="100" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:bottom w:w="100" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tblCellMar>' +
+    `<w:tbl><w:tblPr><w:tblW w:w="${w}" w:type="dxa"/><w:tblBorders>${side('top')}${side('left')}${side('bottom')}${side('right')}<w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>${shd}` +
+    `<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="${top}" w:type="dxa"/><w:left w:w="${left}" w:type="dxa"/><w:bottom w:w="${bottom}" w:type="dxa"/><w:right w:w="${right}" w:type="dxa"/></w:tblCellMar>` +
     '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>' +
-    `<w:tblGrid><w:gridCol w:w="${w}"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/></w:tcPr>${content}</w:tc></w:tr></w:tbl>`
+    `<w:tblGrid><w:gridCol w:w="${w}"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${shd}</w:tcPr>${content}</w:tc></w:tr></w:tbl>`
   );
 }
 
-/** The number, difficulty and title before the instruction. */
+/** The number, difficulty and title before the instruction. A number
+ *  the style sets on a shape is a badge: the shape's colour shades it,
+ *  in the number's own colour (white unless set), a space each side. */
 function headPieces(style: ResolvedExerciseStyle, number: string, attrs: Record<string, string>): Piece[] {
   const out: Piece[] = [];
-  if (style.number.show && number) out.push({ text: `${style.number.label ? `${style.number.label} ` : ''}${number}${style.number.suffix} `, b: true });
+  const n = style.number;
+  if (n.show && number) {
+    const text = `${n.label ? `${n.label} ` : ''}${number}${n.suffix}`;
+    const badge = n.shape !== 'none' ? hex(n.background) : undefined;
+    if (badge) out.push({ text: `\u00a0${text}\u00a0`, b: true, shd: badge, color: hex(n.color) ?? 'FFFFFF' }, { text: ' ' });
+    else out.push({ text: `${text} `, b: true });
+  }
   const level = Number.parseInt(attrs.level ?? '', 10);
   if (Number.isFinite(level) && level > 0) {
     const max = Math.max(style.level.max, level);
-    out.push({ text: `${style.level.glyph.repeat(Math.min(level, max))}${style.level.empty.repeat(Math.max(0, max - level))} ` });
+    const ink = hex(style.level.color);
+    out.push({ text: `${style.level.glyph.repeat(Math.min(level, max))}${style.level.empty.repeat(Math.max(0, max - level))} `, ...(ink ? { color: ink } : {}) });
   }
   if (attrs.title) out.push({ text: `${attrs.title} `, b: true });
   return out;
@@ -179,7 +214,8 @@ export function renderExercise(ctx: WriterContext, node: ContainerNode, env: Blo
   const { exercises } = readExercises(flat);
   const ex = exercises[0];
   if (!ex) return '';
-  const style = pickExerciseStyle(s.settings.styles, ex.attrs.style);
+  // In the colours of the part the exercise stands in.
+  const style = inPartStyle(ctx, node.container, pickExerciseStyle(s.settings.styles, ex.attrs.style));
   const book = s.settings.exercises;
   const placed = s.numbers.get(node.container.sourceStart) ?? { number: '', ordinal: 0 };
   const rule = hex(style.number.background) ?? '808080';
@@ -205,7 +241,7 @@ export function renderExercise(ctx: WriterContext, node: ContainerNode, env: Blo
   if (placement === 'after' || placement === 'inverted') cell += keyParagraphs(ctx, [entry], { ...env, widthTwips: width }, false);
   else if (placement === 'chapterEnd' || placement === 'directive') s.pending.push(entry);
   if (!cell || cell.endsWith('</w:tbl>')) cell += '<w:p/>';
-  return blockSdt(ctx.nextSdtId(), 'ptx:exercise', ex.attrs.type ? `exercise: ${ex.attrs.type}` : `exercise: ${ex.kind}`, boxTable(cell, env.widthTwips ?? ctx.textTwips, rule));
+  return blockSdt(ctx.nextSdtId(), 'ptx:exercise', ex.attrs.type ? `exercise: ${ex.attrs.type}` : `exercise: ${ex.kind}`, boxTable(cell, env.widthTwips ?? ctx.textTwips, boxLook(ctx, inPartStyle(ctx, node.container, style.box ? ctx.styles.callout(style.box) : undefined), rule)));
 }
 
 /** A `:::solutions` line: the keys waiting in the chapter, or the whole

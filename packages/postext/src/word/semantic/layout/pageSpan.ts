@@ -22,7 +22,7 @@ import type { ResolvedConfig } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
 import { joinBlocks, type Node } from '../blocks.js';
 import { headingFillsPage, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
-import { pPr } from '../wml.js';
+import { pPr, twips } from '../wml.js';
 import { dropRedundantBreaks, isBreak } from './breaks.js';
 import { headsChange, isComposedPage } from '../page/composed.js';
 
@@ -101,6 +101,18 @@ export function headingStart(ctx: WriterContext, b: ContentBlock): Piece['start'
  *  of, so it adds no blank line where the columns change. */
 function sectionBreak(sect?: string): string {
   return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>', ...(sect ? { sectPr: sect } : {}) })}</w:p>`;
+}
+
+/** Whether `xml` opens with a table (inside content controls or not). */
+function startsWithTable(xml: string): boolean {
+  return xml.replace(/^(?:<w:sdt><w:sdtPr>(?:(?!<\/w:sdtPr>)[\s\S])*<\/w:sdtPr><w:sdtContent>)+/, '').startsWith('<w:tbl>');
+}
+
+/** An empty paragraph half a body line tall (the importer passes over
+ *  empty paragraphs). */
+function gapParagraph(ctx: WriterContext): string {
+  const line = Math.max(120, Math.round(twips(ctx.units, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx) / 2));
+  return `<w:p>${pPr({ before: 0, after: 0, line: { twips: line, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>' })}</w:p>`;
 }
 
 /** The paragraph style a heading's XML sets its title in: the paragraph
@@ -192,6 +204,9 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     const follow = sections[i + 1]?.start === 'continuous' ? sections[i + 1]!.block : undefined;
     const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}), ...(follow ? { follow } : {}) });
     let body = joinBlocks(s.parts);
+    // A page-wide table set where the columns stop keeps half a line from
+    // the text above it, as the print does, instead of touching it.
+    if (s.start === 'continuous' && s.oneColumn && startsWithTable(body)) body = gapParagraph(ctx) + body;
     // Columns that close before a new page (the chapter's end, or a heading
     // that opens one) end level, as the engine cuts a closing band: Word
     // balances a section's columns only above a continuous break, so an
