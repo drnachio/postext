@@ -146,6 +146,35 @@ export class Numbering {
     return `<w:abstractNum w:abstractNumId="${id}"><w:multiLevelType w:val="hybridMultilevel"/>${levels}</w:abstractNum>`;
   }
 
+  /** List instance `numId` with every level's number or bullet in ink
+   *  `color` (a part's chapter list on its coloured band, #1444): Word
+   *  gives a number its level's colour over the paragraph mark's, so the
+   *  ink needs a definition of its own. Counts restart as `numId`'s do. */
+  inked(numId: number, color: string): number {
+    const num = this.nums[numId - 1];
+    const absId = num ? /<w:abstractNumId w:val="(\d+)"\/>/.exec(num)?.[1] : undefined;
+    const src = absId === undefined ? undefined : [...this.abstracts.values()].find((a) => a.id === Number(absId));
+    if (!num || !src) return numId;
+    const signature = `ink:${src.id}:${color}`;
+    let abs = this.abstracts.get(signature);
+    if (!abs) {
+      const id = this.abstracts.size;
+      const own = `<w:color w:val="${color}"/>`;
+      const xml = src.xml
+        .replace(/w:abstractNumId="\d+"/, `w:abstractNumId="${id}"`)
+        .replace(/<w:rPr>((?:(?!<\/w:rPr>)[\s\S])*)<\/w:rPr>/g, (_m, inner: string) => {
+          if (/<w:color [^>]*\/>/.test(inner)) return `<w:rPr>${inner.replace(/<w:color [^>]*\/>/, own)}</w:rPr>`;
+          const at = inner.search(/<w:sz[ />]/);
+          return `<w:rPr>${at < 0 ? inner + own : inner.slice(0, at) + own + inner.slice(at)}</w:rPr>`;
+        });
+      abs = { id, xml };
+      this.abstracts.set(signature, abs);
+    }
+    const id = this.nums.length + 1;
+    this.nums.push(num.replace(/w:numId="\d+"/, `w:numId="${id}"`).replace(/<w:abstractNumId w:val="\d+"\/>/, `<w:abstractNumId w:val="${abs.id}"/>`));
+    return id;
+  }
+
   /** Inner XML of `w:numbering`: abstract definitions, then instances. */
   xml(): string {
     return [...this.abstracts.values()].map((a) => a.xml).join('') + this.nums.join('');
