@@ -53,7 +53,7 @@ describe('semantic docx: pages (#1444)', () => {
     expect(exportProblems(e, md)).toEqual([]);
     const settings = e.part('word/settings.xml');
     expect(settings).toMatch(/<w:footnotePr><w:numFmt w:val="lowerLetter"\/><w:numRestart w:val="eachPage"\/><w:footnote w:id="-1"\/>/);
-    expect(sectionsOf(e.doc)[0]).toContain('<w:footnotePr><w:numFmt w:val="lowerLetter"/><w:numRestart w:val="eachPage"/></w:footnotePr>');
+    expect(sectionsOf(e.doc)[0]).toContain('<w:footnotePr><w:numFmt w:val="lowerLetter"/><w:numStart w:val="1"/><w:numRestart w:val="eachPage"/></w:footnotePr>');
     // The separator note: a top border three quarters short of the text.
     const separator = /<w:footnote w:type="separator" w:id="-1">(.*?)<\/w:footnote>/.exec(e.part('word/footnotes.xml'))?.[1] ?? '';
     expect(separator).toContain('<w:top ');

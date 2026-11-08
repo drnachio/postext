@@ -66,17 +66,6 @@ export function pageNumberStart(value: string | undefined): number | undefined {
   return Number.isInteger(n) && n >= 1 ? n : undefined;
 }
 
-/** The `w:pgNumType` of a section of the chapter ('' for none). Word
- *  keeps the number format per section, a section without one counting in
- *  decimal, so the format goes on every section; the first number only on
- *  the chapter's first, where the count restarts. */
-export function pageNumberType(ctx: WriterContext, first: boolean): string {
-  const p = ctx.chapter.pageNumbers;
-  const start = first ? p?.start : undefined;
-  if (!p || (p.format === undefined && start === undefined)) return '';
-  return `<w:pgNumType${p.format ? ` w:fmt="${p.format}"` : ''}${start !== undefined ? ` w:start="${start}"` : ''}/>`;
-}
-
 /** Blank room `lines` body lines tall: an empty paragraph of exact line
  *  height, which the reader passes over like any empty paragraph. */
 function space(ctx: WriterContext, lines: number): string {

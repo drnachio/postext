@@ -106,10 +106,10 @@ describe('semantic docx: a part page drawn by the part design', () => {
     expect(e.frag('Part').target).toEqual({ kind: 'generated' });
     expect(e.frag('II').role).toBe('attr:part:number');
     expect(e.frag('The craft').role).toBe('attr:part:title');
-    // The rule: an empty paragraph, a top border 30 mm long, the page
-    // break on the kicker that opens the page.
+    // The rule: an empty paragraph, a top border 30 mm long. The kicker
+    // opens the document: it asks for no page break of its own (#1444).
     expect(e.doc).toMatch(/<w:p><w:pPr><w:keepNext\/><w:pBdr><w:top w:val="single" w:sz="16" w:space="0" w:color="AA0000"\/><\/w:pBdr>(?:(?!<\/w:p>)[^])*<w:ind w:left="0" w:right="\d+"/);
-    expect(para(e.doc, 'Part')).toContain('<w:pageBreakBefore/>');
+    expect(para(e.doc, 'Part')).not.toContain('<w:pageBreakBefore/>');
     expect(para(e.doc, 'The craft')).toContain('<w:pageBreakBefore w:val="0"/>');
     readsBack(e.bytes, md);
     const r = applyDocxEdits(edit(e.bytes, (x) => x.replace('>The craft<', '>The art<')), { chapters: [{ id: 'ch1', markdown: md }] });

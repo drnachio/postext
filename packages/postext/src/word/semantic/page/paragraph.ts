@@ -40,7 +40,7 @@ const RTL_TEXT = /[֐-ࣿיִ-﷿ﹰ-﻿]/u;
 const smallCapsFace = (family: string | undefined): boolean => !!family && /\bS(?:C|mall ?Caps)\b/i.test(family.split(',')[0]!);
 
 /** The runs of one text: its words and its fields, in its look. */
-function itemRuns(ctx: WriterContext, item: Item): string {
+export function itemRuns(ctx: WriterContext, item: Item): string {
   const el = item.el;
   const u = ctx.units;
   const size = px(u, el.fontSize) || u.basePx;
@@ -71,8 +71,8 @@ function itemRuns(ctx: WriterContext, item: Item): string {
 
 /**
  * The paragraph of a header or footer: `items` laid out in their zones,
- * `rules` as its border. `rtl`: the paragraph runs right to left (its start
- * is the right-hand zone). `width` is the text area's, twips.
+ * `rules` as its border. `rtl`: the book is set right to left. `width` is
+ * the text area's, twips.
  */
 export function furnitureParagraph(ctx: WriterContext, kind: Target, items: readonly Item[], rules: readonly Rule[], rtl: boolean, width: number): string {
   const style = kind === 'header' ? STYLE.header : STYLE.footer;
@@ -82,13 +82,20 @@ export function furnitureParagraph(ctx: WriterContext, kind: Target, items: read
     const border = { color: hex(rule.color) ?? '000000', sz: eighths(ctx.units, rule.thickness), space: 4 };
     props.border = kind === 'header' ? { bottom: border } : { top: border };
   }
-  // The zones in reading order: start, middle, end.
-  const order: Zone[] = rtl ? ['right', 'center', 'left'] : ['left', 'center', 'right'];
-  const sep = textRuns(' ', '');
+  // A book set right to left writes its running heads as left-to-right
+  // paragraphs (its Normal style is right to left): each zone then stands
+  // where the engine puts its text on the page, the folio at the outer
+  // edge of a verso or a recto, whichever way a reader mirrors the
+  // alignment and tabs of a right-to-left paragraph (#1444). The texts of
+  // one zone are kept apart by left-to-right marks, so two right-to-left
+  // texts do not swap places.
+  if (rtl) props.bidi = false;
+  const order: Zone[] = ['left', 'center', 'right'];
+  const sep = textRuns(rtl ? '\u200E\u2003\u200E' : '\u2003', '');
   const zones = order.map((z) =>
     items
       .filter((i) => i.zone === z)
-      .sort((a, b) => (rtl ? b.x - a.x : a.x - b.x))
+      .sort((a, b) => a.x - b.x)
       .map((i) => itemRuns(ctx, i))
       .join(sep),
   );
@@ -96,8 +103,8 @@ export function furnitureParagraph(ctx: WriterContext, kind: Target, items: read
   const count = used.filter(Boolean).length;
   if (count === 0) return paragraph(props, '');
   if (count === 1) {
-    // One place: the paragraph aligned there (start and end as `left` and
-    // `right`, which a right-to-left paragraph reads as its start and end).
+    // One place: the paragraph aligned there, on the side of the page
+    // the zone names.
     const at = used.indexOf(true);
     return paragraph({ ...props, jc: at === 0 ? 'left' : at === 1 ? 'center' : 'right' }, zones[at]!);
   }
