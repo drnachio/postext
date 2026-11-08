@@ -221,19 +221,68 @@ function scaleInsets(ctx: WriterContext, pad: { left: number; right: number }, w
   pad.right = Math.round(pad.right * scale);
 }
 
-/** The paragraph style of a box style's label line. */
-function labelStyle(ctx: WriterContext, style: ResolvedCalloutStyleConfig): string {
+/** Whether a label tab stands at the end side of its box. */
+function labelAtEnd(ctx: WriterContext, style: ResolvedCalloutStyleConfig): boolean {
+  const side = style.label!.position.split('-')[1];
+  const rtl = ctx.resolved.direction === 'rtl';
+  return side === 'end' || (side === 'right' && !rtl) || (side === 'left' && rtl);
+}
+
+/** The paragraph style of a box style's label line: on its own plate
+ *  (`labelPlate`) for a tab on the box's head, else a shaded run. */
+function labelStyle(ctx: WriterContext, style: ResolvedCalloutStyleConfig, plate: boolean): string {
   const lb = style.label!;
-  return ctx.styles.custom(`boxLabel:${style.id}`, `Box label ${style.id}`, () => {
+  return ctx.styles.custom(`boxLabel:${style.id}${plate ? ':plate' : ''}`, `Box label ${style.id}`, () => {
     const size = px(ctx.units, lb.fontSize) || ctx.units.basePx;
-    const rtl = ctx.resolved.direction === 'rtl';
-    const side = lb.position.split('-')[1];
-    const end = side === 'end' || (side === 'right' && !rtl) || (side === 'left' && rtl);
     return {
-      pPr: { keepNext: true, before: 0, after: 60, ind: { firstLine: 0 }, jc: end ? 'end' : 'start' },
-      rPr: { ...ctx.styles.font(lb.fontFamily, lb.fontWeight), b: lb.fontWeight >= 600, color: hex(lb.color), shd: hex(lb.background), sz: Math.max(2, Math.round((size * 144) / ctx.units.dpi)) },
+      pPr: { keepNext: true, before: 0, after: plate ? 0 : 60, ind: { firstLine: 0 }, jc: plate ? 'center' : labelAtEnd(ctx, style) ? 'end' : 'start' },
+      rPr: { ...ctx.styles.font(lb.fontFamily, lb.fontWeight), b: lb.fontWeight >= 600, color: hex(lb.color), ...(plate ? {} : { shd: hex(lb.background) }), sz: Math.max(2, Math.round((size * 144) / ctx.units.dpi)) },
     };
   });
+}
+
+/** Ems a label character takes, about: wide (CJK, full-width) ones a
+ *  whole em, the rest 0.62. */
+function labelEms(text: string): number {
+  let ems = 0;
+  for (const ch of text) ems += /[\u1100-\u11ff\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]|[\u{20000}-\u{3ffff}]/u.test(ch) ? 1 : 0.62;
+  return ems;
+}
+
+/**
+ * A label tab on a box's head (#1444): a plate of the tab's fill, padded
+ * round the words, at the tab's side and inset. A shaded paragraph as
+ * wide as the words (an estimate, with the tab's padding each side) set
+ * first in the box's cell: its indents narrow the shading to the plate,
+ * and borders of the fill's colour pad it to the tab's height. Kept with
+ * what follows it in the box, it never parts from it at a page's foot (a
+ * nested table did, in LibreOffice). The box's top inset (`gap` twips)
+ * goes under it, less half the plate, which in print hangs over the box's
+ * top edge.
+ */
+function labelPlate(ctx: WriterContext, style: ResolvedCalloutStyleConfig, text: string, widthTw: number, gap: number): ParaProps {
+  const lb = style.label!;
+  const u = ctx.units;
+  const size = px(u, lb.fontSize) || u.basePx;
+  const padX = Math.max(60, twips(u, lb.paddingX, size));
+  const words = Math.round((labelEms(text) * size * 1440) / u.dpi);
+  const w = Math.min(widthTw, words + 2 * padX + 60);
+  const h = Math.max(200, twips(u, lb.height, size));
+  const fill = hex(lb.background) ?? '000000';
+  const lineTw = Math.round((size * 1.2 * 1440) / u.dpi);
+  const padY = Math.max(0, Math.min(31, Math.round((h - lineTw) / 40)));
+  const edge = { color: fill, sz: 4, space: padY };
+  const inset = Math.max(0, Math.min(widthTw - w, twips(u, lb.inset, size)));
+  const rest = Math.max(0, widthTw - w - inset);
+  const atEnd = labelAtEnd(ctx, style);
+  return {
+    keepNext: true,
+    shd: fill,
+    border: { top: edge, bottom: edge },
+    ind: atEnd ? { left: rest, right: inset, firstLine: 0 } : { left: inset, right: rest, firstLine: 0 },
+    before: 0,
+    after: Math.max(0, gap - Math.round(h / 2)),
+  };
 }
 
 /** A composed page's frame set as a box (#1444): the box style its
@@ -264,13 +313,16 @@ export function renderBox(ctx: WriterContext, node: ContainerNode, env: BlockEnv
   }
   // A box style with a label tab prints the fence's `label` on it: here a
   // first line in the tab's face, colours and side.
-  const label = style?.label && attrs.label ? attrParagraph(ctx, node, 'label', labelStyle(ctx, style)) : (frame?.head() ?? '');
-  const title = label + attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
   // What the cell holds is as wide as the cell less its margins (Word's
   // default is 108 twips a side).
   const inner = Math.max(240, width - (padTw ? padTw.left + padTw.right : 216));
+  // A tab on the head stands first in the cell, flush with its top edge.
+  const plate = style?.label && attrs.label && style.label.position.startsWith('top') ? labelPlate(ctx, style, attrs.label, inner, padTw?.top ?? 0) : undefined;
+  const label = style?.label && attrs.label ? attrParagraph(ctx, node, 'label', labelStyle(ctx, style, !!plate), undefined, plate) : (frame?.head() ?? '');
+  if (plate && label && padTw) padTw.top = 0;
+  const title = (plate ? '' : label) + attrParagraph(ctx, node, 'title', ids.title, style?.title || undefined);
   const body = renderNodes(ctx, node.children, { ...env, paraStyle: ids.body, widthTwips: inner, box: style ?? env.box, boxTop: true });
-  let cell = title + body;
+  let cell = (plate ? label : '') + title + body;
   if (!cell || endsWithTable(cell)) cell += '<w:p/>';
   const borders = boxBorders(ctx, style);
   const bx = (side: string, b: Border | undefined): string => (b ? `<w:${side} w:val="single" w:sz="${b.sz}" w:space="0" w:color="${b.color}"/>` : `<w:${side} w:val="nil"/>`);

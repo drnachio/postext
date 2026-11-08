@@ -11,6 +11,7 @@
 // no taller than a third of the page.
 
 import { comicSpeakerName } from '../../../comics/paint.js';
+import { resolveComicsConfig } from '../../../defaults/comics.js';
 import type { ComicPanelSource, ComicScriptItem } from '../../../comics/types.js';
 import type { ContentBlock } from '../../../parse/types.js';
 import { abs, blockId, type WriterContext } from '../context.js';
@@ -19,7 +20,7 @@ import { generatedRuns } from '../generated.js';
 import { renderInline } from '../inline.js';
 import { pageGeometry } from '../sections.js';
 import { STYLE } from '../styles.js';
-import { blockSdt, paragraph, textRuns } from '../wml.js';
+import { blockSdt, hex, paragraph, px, textRuns, type ParaProps, type RunProps } from '../wml.js';
 import { pictureRun } from './figures.js';
 
 /** A comic block's panels, each with the resource its `art` names. */
@@ -28,10 +29,40 @@ export function comicPanels(b: ContentBlock): (ComicPanelSource & { art?: string
   return b.comic.panels.map((p) => ({ ...p, art: p.attrs.art?.trim() || undefined }));
 }
 
-function lineStyle(ctx: WriterContext, role: ComicScriptItem['role']): string {
-  if (role === 'caption') return ctx.styles.custom('comic:caption', 'Comic caption', () => ({ pPr: { ind: { firstLine: 0 }, before: 0, after: 60 }, rPr: { i: true } }));
-  if (role === 'sfx') return ctx.styles.custom('comic:sfx', 'Comic sound', () => ({ pPr: { ind: { firstLine: 0 }, before: 0, after: 60 }, rPr: { b: true, caps: true } }));
-  return ctx.styles.custom('comic:speech', 'Comic speech', () => ({ pPr: { ind: { left: 360, hanging: 360, firstLine: undefined }, before: 0, after: 60 } }));
+function lineStyle(ctx: WriterContext, role: ComicScriptItem['role'], narrow = false): string {
+  // In a strip's narrow panel a hanging speaker line leaves a word or two
+  // a line: the words run on under the name instead.
+  if (narrow && role === 'speech') return ctx.styles.custom('comic:speech:panel', 'Comic speech in a panel', () => ({ pPr: { ind: { left: 0, firstLine: 0 }, before: 0, after: 60, jc: 'left' } }));
+  // Lettering is ragged: a justified line in a narrow panel opens up.
+  if (role === 'caption') return ctx.styles.custom('comic:caption', 'Comic caption', () => ({ pPr: { ind: { firstLine: 0 }, before: 0, after: 60, jc: 'left' }, rPr: { i: true } }));
+  if (role === 'sfx') return ctx.styles.custom('comic:sfx', 'Comic sound', () => sfxLook(ctx));
+  return ctx.styles.custom('comic:speech', 'Comic speech', () => ({ pPr: { ind: { left: 360, hanging: 360, firstLine: undefined }, before: 0, after: 60, jc: 'left' } }));
+}
+
+/** A sound effect as the book letters it (#1444): the `sfx` balloon
+ *  style's face, weight, colour and case, at its scale of the lettering
+ *  size (24 pt at most, so a sound does not take a page's width), set
+ *  under its panel's picture. Its halo outlines the letters on the art;
+ *  on the paper under the picture it would show nothing. */
+function sfxLook(ctx: WriterContext): { pPr: ParaProps; rPr: RunProps } {
+  const comics = resolveComicsConfig(ctx.config.comics, ctx.config.locale);
+  const sfx = comics.balloonStyles.find((b) => b.id === 'sfx');
+  const lt = comics.lettering;
+  const u = ctx.units;
+  const sizePx = Math.min((24 * u.dpi) / 72, (px(u, lt.fontSize) || u.basePx) * (sfx?.fontScale ?? 1));
+  const bold = sfx?.bold ?? lt.bold;
+  return {
+    pPr: { ind: { firstLine: 0 }, before: 0, after: 60, jc: 'center', keepLines: true },
+    rPr: {
+      ...ctx.styles.font(sfx?.fontFamily ?? lt.fontFamily, bold ? 700 : 400, sfx?.italic ?? lt.italic),
+      b: bold,
+      i: sfx?.italic ?? lt.italic,
+      // In capitals, as before, unless the style says otherwise.
+      caps: sfx?.textTransform === 'none' ? undefined : true,
+      color: hex(sfx?.color ?? lt.color),
+      sz: Math.max(2, Math.round((sizePx * 144) / u.dpi)),
+    },
+  };
 }
 
 /** Source text `[start, end)` (absolute) as mapped runs. */
@@ -64,7 +95,7 @@ function speaker(ctx: WriterContext, item: ComicScriptItem): string {
 }
 
 /** One line of a panel's script; `keep` holds it with the line after it. */
-function scriptLine(ctx: WriterContext, item: ComicScriptItem, keep: boolean): string {
+export function scriptLine(ctx: WriterContext, item: ComicScriptItem, keep: boolean, after = 200, narrow = false): string {
   if (item.role === 'note' || !item.text.trim()) return '';
   // Fragments are logged in document order: the key before the words.
   const lead = item.role === 'speech' ? speaker(ctx, item) + generatedRuns(ctx, [{ text: ': ' }], 'comic:colon') : '';
@@ -79,11 +110,11 @@ function scriptLine(ctx: WriterContext, item: ComicScriptItem, keep: boolean): s
   });
   const words = ctx.log.wrap(xml, frag, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [abs(ctx, item.textStart), abs(ctx, item.textEnd)], role: `comic:${item.role}` });
   // The panel's last line leaves room before the next panel.
-  return paragraph({ style: lineStyle(ctx, item.role), ...(keep ? { keepNext: true } : { after: 200 }) }, lead + words);
+  return paragraph({ style: lineStyle(ctx, item.role, narrow), ...(keep ? { keepNext: true } : { after }) }, lead + words);
 }
 
 /** A text panel's body: a paragraph per run of lines. */
-function textPanel(ctx: WriterContext, range: { start: number; end: number }): string {
+export function textPanel(ctx: WriterContext, range: { start: number; end: number }): string {
   const md = ctx.chapter.markdown;
   const start = abs(ctx, range.start);
   const end = abs(ctx, range.end);

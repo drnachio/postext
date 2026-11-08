@@ -146,7 +146,7 @@ function headingNumber(ctx: WriterContext, b: ContentBlock): string {
 }
 
 /** A heading paragraph, its anchor and number first. */
-function headingParagraph(ctx: WriterContext, b: ContentBlock, look?: HeadingLook): string {
+export function headingParagraph(ctx: WriterContext, b: ContentBlock, look?: HeadingLook): string {
   const level = b.level ?? 1;
   const style = look?.style ?? partHeadingStyle(ctx, b, ctx.styles.heading(level, b.attrs?.style));
   const anchor = tocMark(ctx, b) + (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + (look?.noNumber ? '' : headingNumber(ctx, b)) + (look?.before?.() ?? '');

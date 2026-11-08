@@ -18,6 +18,7 @@ import { STYLE } from '../styles.js';
 import { renderTable } from '../tables.js';
 import { blockSdt, emu, paragraph, px, rPr, textRuns, twips } from '../wml.js';
 import { captionLabel, captionParagraph, captionPlace, figureLabels, ownWord } from './captions.js';
+import { videoLink, videoPosterSvg } from './video.js';
 
 export { captionPlace };
 
@@ -99,6 +100,15 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       if (!bytes || !ext) continue;
       const size = columnSize(slot, poster.width, poster.height);
       ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
+    } else if (res.kind === 'video') {
+      // A video with no poster: the dark frame, play mark and QR code the
+      // print sets in its place.
+      const size = columnSize(slot, res.video?.width ?? 16, res.video?.height ?? 9);
+      const svg = videoPosterSvg(res, ctx.resolved, size.w, size.h);
+      const scale = 300 / ctx.units.dpi;
+      const png = ctx.rasterizeSvg ? await ctx.rasterizeSvg(svg, Math.round(size.w * scale), Math.round(size.h * scale)) : undefined;
+      if (!png) continue;
+      ctx.media.set(id, { rel: ctx.pkg.addMedia(png, 'png'), svgRel: ctx.pkg.addMedia(strToU8(svg), 'svg'), widthPx: size.w, heightPx: size.h });
     } else if (res.kind === 'svg' && res.svg) {
       const bytes = ctx.resourceBytes?.(res.svg.fileId);
       if (!bytes) {
@@ -121,7 +131,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
 
 /** The picture as an inline drawing, scaled down to `maxPx` (the width
  *  available where it stands: a box cell is narrower than the column). */
-export function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: string, alt: string, maxPx: number): string {
+export function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: string, alt: string, maxPx: number, link?: string): string {
   const id = ctx.pkg.nextDrawingId();
   const scale = maxPx > 0 && pic.widthPx > maxPx ? maxPx / pic.widthPx : 1;
   const cx = Math.max(1, emu(ctx.units, pic.widthPx * scale));
@@ -130,7 +140,7 @@ export function pictureRun(ctx: WriterContext, pic: PreparedPicture, name: strin
   return (
     '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">' +
     `<wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/>` +
-    `<wp:docPr id="${id}" name="${escapeAttr(name)}"${alt ? ` descr="${escapeAttr(alt)}"` : ''}/>` +
+    `<wp:docPr id="${id}" name="${escapeAttr(name)}"${alt ? ` descr="${escapeAttr(alt)}"` : ''}${link ? `><a:hlinkClick r:id="${ctx.pkg.addLink(link)}"/></wp:docPr>` : '/>'}` +
     '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
     '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic>' +
     `<pic:nvPicPr><pic:cNvPr id="${id}" name="${escapeAttr(name)}"/><pic:cNvPicPr/></pic:nvPicPr>` +
@@ -196,13 +206,24 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
     // side column's width); it keeps its labels and caption with it.
     const room = (widthTwips * ctx.units.dpi) / 1440;
     const max = slot.side ? Math.min(room, slot.px) : room * slot.fraction;
-    if (pic) return paragraph({ style: STYLE.figure, keepNext: true, ...(jc ? { jc } : {}) }, pictureRun(ctx, pic, id, alt, max)) + figureLabels(ctx, b);
+    // The room the engine keeps above a figure (a body line), so the
+    // picture does not touch the line before it; a caption set above
+    // takes it instead. A small ornament (a fleuron closing a chapter)
+    // keeps the space its paragraphs give it.
+    const space = above || slot.fraction < 0.5 ? {} : { before: gapTwips(ctx) };
+    // A video's picture (its poster, or the frame drawn in its place)
+    // opens the video, as its QR code does in print.
+    const link = res.kind === 'video' ? videoLink(res) : undefined;
+    if (pic) return paragraph({ style: STYLE.figure, keepNext: true, ...space, ...(jc ? { jc } : {}) }, pictureRun(ctx, pic, id, alt, max, link)) + figureLabels(ctx, b);
     return res.kind === 'video' ? videoPlaceholder(ctx, res) : '';
   };
   // Fragments are logged as they are written, so in the document's order:
   // a caption set above the table or picture is rendered first.
   const { above } = captionPlace(ctx, res);
-  const caption = (): string => captionParagraph(ctx, b, res, 'caption', captionLabel(ctx, res));
+  // A note under a caption follows it directly and on the same page: the
+  // caption keeps with it and leaves the space after the figure to it.
+  const noted = !above && !!(ownWord(ctx, b, 'note')?.text.trim() || res.note?.trim());
+  const caption = (): string => captionParagraph(ctx, b, res, 'caption', captionLabel(ctx, res), { ...(above ? { before: gapTwips(ctx) } : {}), ...(noted ? { keepNext: true, after: 0 } : {}) });
   let content: string;
   if (above) {
     const cap = caption();
@@ -222,6 +243,11 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
  *  floated one stands between paragraphs that keep their own spacing. */
 function figureGap(ctx: WriterContext, own: boolean): string {
   if (!own) return '';
-  const line = Math.max(120, twips(ctx.units, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx));
+  const line = gapTwips(ctx);
   return `<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="${line}" w:lineRule="exact"/><w:ind w:firstLine="0"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>`;
+}
+
+/** The float gap, twips: a body line (a sixth of an inch at least). */
+function gapTwips(ctx: WriterContext): number {
+  return Math.max(120, twips(ctx.units, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx));
 }

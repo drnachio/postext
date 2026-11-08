@@ -9,6 +9,7 @@ import { buildTree, citedNotes, renderPieces } from './blocks.js';
 import type { WriterContext } from './context.js';
 import { chapterSolutions } from './exercises/exercises.js';
 import { floatedAfter } from './media/floated.js';
+import { bottomBoxesLast } from './media/bottomBoxes.js';
 import { namedBookmark } from './marks.js';
 import { lineStart, rawSdt } from './raw.js';
 import { bookPageNumbers, type PageGeometry } from './sections.js';
@@ -61,7 +62,7 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
   // The front matter is not shown: its title and author go to the
   // document properties, and source no fragment covers is kept as it is
   // on re-import.
-  const pieces: Piece[] = renderPieces(ctx, buildTree(pc.blocks), {}, (nodes) => floatedAfter(ctx, nodes));
+  const pieces: Piece[] = renderPieces(ctx, bottomBoxesLast(buildTree(pc.blocks), ctx.resolved.calloutStyles), {}, (nodes) => floatedAfter(ctx, nodes));
   pieces.push({ xml: chapterSolutions(ctx) });
   // Notes cited only from text kept as source: their definitions too.
   for (const [id, def] of defs) {
