@@ -142,6 +142,9 @@ export interface DisplayRuby {
   /** Distance from the base's baseline to the reading's, px (positive:
    *  over the base, the right of vertical text). */
   raise?: number;
+  /** The reading as painted, placed from the run (a Japanese reading
+   *  spread one run per character). */
+  runs?: DisplayAnnotation[];
 }
 
 export interface DisplayKunten {

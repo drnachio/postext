@@ -342,7 +342,9 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
       const lineTabs = tabs.lines[i - g.from]!;
       const carry = { tw: 0 };
       for (const [k, { run, gap }] of flat.runs.entries()) {
-        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, gap, carry);
+        // A tab after a run takes it to the next run's start: the run
+        // keeps no gap of its own (a chip's padding after its words).
+        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, lineTabs.has(k + 1) ? 0 : gap, carry);
         if (!emitted.text) continue;
         // The fallback line's style: the run's face and tracking, not the
         // spacing or scale fitted to that run alone.
@@ -409,7 +411,9 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         // (#1444): a zero-width space after the break (generated) opens
         // the line instead.
         const next = item.lines[i + 1];
-        const rubyFirst = next?.vertical === true && next.runs.find((r) => r.text.length > 0)?.ruby !== undefined;
+        // (Only a `w:ruby`: a reading the engine placed is drawn apart.)
+        const ruby = next?.runs.find((r) => r.text.length > 0)?.ruby;
+        const rubyFirst = next?.vertical === true && ruby !== undefined && !ruby.runs?.length;
         xml.push(rubyFirst ? '<w:r><w:br/><w:t>\u200b</w:t></w:r>' : '<w:r><w:br/></w:r>');
         text += rubyFirst ? '\n\u200b' : '\n';
         out.map.push(...(rubyFirst ? [-1, -1] : [-1]));

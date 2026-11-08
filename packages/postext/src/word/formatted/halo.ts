@@ -8,7 +8,7 @@
 // the halo's width with round joins. It is a drawing, not text, so it
 // adds nothing to what a reader or the importer reads.
 
-import type { DisplayItem, DisplayRun } from '../../paint/displayList/types.js';
+import type { DisplayItem, DisplayLine, DisplayRect, DisplayRun } from '../../paint/displayList/types.js';
 import type { VDTPathCommand } from '../../vdt/design.js';
 import { contourCommands } from '../svg/glyphs.js';
 import { outlineFaceOf, SLANT } from '../svg/text.js';
@@ -48,25 +48,54 @@ function runOutlines(ctx: WriterContext, run: DisplayRun, baseline: number, map:
   return out;
 }
 
+/** Where a turned item's halo is drawn: the text box of the lines it
+ *  rings, turned as that box turns. */
+export interface HaloFrame {
+  /** The box in the item's unturned frame, where its lines are laid. */
+  box: DisplayRect;
+  /** The same box where it stands on the sheet, before its turn. */
+  rect: DisplayRect;
+  /** Degrees clockwise about the box's centre. */
+  rotate: number;
+}
+
 /** The halo of a text item as a shape ('' when it has none or its face
- *  has no outlines to draw: vertical lines, a face not embedded). */
-export function haloRun(ctx: WriterContext, item: TextItem): string {
+ *  has no outlines to draw: vertical lines, a face not embedded).
+ *
+ *  An unturned item's halo is laid on the sheet as its glyphs are. A
+ *  turned item's halo is drawn per text box (`frame`, with that box's
+ *  `lines`): the outlines in the box's own frame, in a shape the size and
+ *  place of the box, turned the same, so it goes where Word draws the
+ *  box's text. LibreOffice (26.8) does not turn the text of a turned text
+ *  box at all: it sets it level in the box's bounding rectangle, so there
+ *  the halo, which it does turn, lies off the letters (#1444). */
+export function haloRun(ctx: WriterContext, item: TextItem, frame?: HaloFrame, lines: readonly DisplayLine[] = item.lines): string {
   const halo = item.halo;
   if (!halo || halo.widthPx <= 0) return '';
-  const b = item.bbox;
-  const cx = b.x + b.width / 2;
-  const cy = b.y + b.height / 2;
-  const turn = ((item.rotate ?? 0) * Math.PI) / 180;
-  const cos = Math.cos(turn);
-  const sin = Math.sin(turn);
-  // Clockwise about the item's centre, as the item turns.
-  const map = (x: number, y: number): [number, number] => [cx + (x - cx) * cos - (y - cy) * sin, cy + (x - cx) * sin + (y - cy) * cos];
+  let map: (x: number, y: number) => [number, number];
+  if (frame) {
+    // Box-relative points, moved onto the box where it stands.
+    const dx = frame.rect.x - frame.box.x;
+    const dy = frame.rect.y - frame.box.y;
+    map = (x, y) => [x + dx, y + dy];
+  } else {
+    const b = item.bbox;
+    const cx = b.x + b.width / 2;
+    const cy = b.y + b.height / 2;
+    const turn = ((item.rotate ?? 0) * Math.PI) / 180;
+    const cos = Math.cos(turn);
+    const sin = Math.sin(turn);
+    // Clockwise about the item's centre, as the item turns.
+    map = (x, y) => [cx + (x - cx) * cos - (y - cy) * sin, cy + (x - cx) * sin + (y - cy) * cos];
+  }
   const subpaths: VDTPathCommand[][] = [];
-  for (const line of item.lines) {
+  for (const line of lines) {
     if (line.vertical) continue;
     for (const run of line.runs) subpaths.push(...runOutlines(ctx, run, line.baseline, map));
   }
   if (!subpaths.length) return '';
+  const stroke = { color: halo.color, widthPx: 2 * halo.widthPx, join: 'round', cap: 'round' } as const;
+  if (frame) return pathRun(ctx, { kind: 'path', bbox: frame.rect, subpaths, stroke }, frame.rotate);
   let x0 = Infinity;
   let y0 = Infinity;
   let x1 = -Infinity;
@@ -83,5 +112,5 @@ export function haloRun(ctx: WriterContext, item: TextItem): string {
     }
   }
   const bbox = { x: x0, y: y0, width: Math.max(0.01, x1 - x0), height: Math.max(0.01, y1 - y0) };
-  return pathRun(ctx, { kind: 'path', bbox, subpaths, stroke: { color: halo.color, widthPx: 2 * halo.widthPx, join: 'round', cap: 'round' } });
+  return pathRun(ctx, { kind: 'path', bbox, subpaths, stroke });
 }

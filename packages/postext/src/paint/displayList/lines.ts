@@ -120,7 +120,7 @@ function annotate(run: DisplayRun, seg: VDTLineSegment): void {
   const ann = (a: VDTAnnotationRun): DisplayAnnotation => ({ text: a.text, dx: a.dx, dy: a.dy, fontString: a.fontString, ...(a.color ? { color: a.color } : {}) });
   if (seg.ruby) {
     const r = seg.ruby;
-    run.ruby = { text: r.text, fontString: r.fontString, position: r.position, ...(r.group ? { group: true } : {}), ...(r.id !== undefined ? { id: r.id } : {}), ...(r.color ? { color: r.color } : {}), ...(r.runs[0] ? { raise: -r.runs[0].dy } : {}) };
+    run.ruby = { text: r.text, fontString: r.fontString, position: r.position, ...(r.group ? { group: true } : {}), ...(r.id !== undefined ? { id: r.id } : {}), ...(r.color ? { color: r.color } : {}), ...(r.runs[0] ? { raise: -r.runs[0].dy, runs: r.runs.map(ann) } : {}) };
   }
   if (seg.tcy) run.tcy = true;
   if (seg.orientation) run.orientation = seg.orientation;
@@ -174,7 +174,10 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
       run.inline = { kind: 'math', ...(m.svg ? { svg: m.svg } : {}), widthPx: seg.width, heightPx: m.heightPx, ascentPx: m.ascentPx };
     } else if (seg.kind === 'score' && seg.scoreSystem) {
       const s = seg.scoreSystem;
-      run.inline = { kind: 'score', ...(s.svg ? { svg: s.svg } : {}), widthPx: seg.width, heightPx: s.heightPx };
+      // Scaled to the segment's width and standing wholly on the baseline,
+      // as the painters draw a system (canvas-backend/scoreRender.ts).
+      const k = s.widthPx > 0 ? seg.width / s.widthPx : 1;
+      run.inline = { kind: 'score', ...(s.svg ? { svg: s.svg } : {}), widthPx: seg.width, heightPx: s.heightPx * k, ascentPx: s.heightPx * k };
     } else if (seg.kind === 'swatch') {
       // The ink is the block's text colour, as the painters outline it.
       run.inline = { kind: 'swatch', widthPx: seg.width, heightPx: seg.swatch?.side ?? seg.width, swatch: swatchPaint(seg.swatch, style.color) };

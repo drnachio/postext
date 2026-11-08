@@ -75,8 +75,9 @@ export async function pageParts(ctx: WriterContext, page: DisplayPage, floating:
     const rect = rects[i]!;
     switch (item.kind) {
       case 'text': {
-        // A halo goes under its text (halo.ts).
-        const halo = haloRun(ctx, item);
+        // A halo goes under its text (halo.ts); a turned item draws its
+        // halo with its boxes (text.ts).
+        const halo = item.rotate ? '' : haloRun(ctx, item);
         if (halo) layers.push({ runs: [halo], rect });
         layers.push({ runs: await textItemRuns(ctx, item, { growRoom: roomBelow(rect, rects, page.height) }), rect, text: true });
         break;

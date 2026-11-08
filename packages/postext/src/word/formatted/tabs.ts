@@ -7,8 +7,8 @@
 // number on after the title.
 
 import type { DisplayLine, DisplayRun } from '../../paint/displayList/types.js';
-import { fontSizePx } from './metrics.js';
-import { joinWordRuns, naturalTwips, runGaps, runProps, unpadded, writtenFace, type EmittedRun } from './runs.js';
+import { fontSizePx, measureEms } from './metrics.js';
+import { joinWordRuns, naturalTwips, runGaps, runProps, unpadded, wordText, writtenFace, type EmittedRun } from './runs.js';
 import { twips } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -40,11 +40,41 @@ export function tabRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine): 
   return { rPr, text: '\t', xml: `<w:r>${rPr}<w:tab/></w:r>` };
 }
 
+/** Twips a run before a resetting tab may set wider than its natural
+ *  width (its missing characters an em) before the tab would overshoot. */
+const RESET_MARGIN_TW = 20;
+
+/** Whether the space at `k` follows a chip, or a run with characters its
+ *  face lacks, with room to the next run for what that run may overrun.
+ *  A character the face lacks is drawn from a face of the renderer's own
+ *  (Segoe UI Symbol in Word, DejaVu Sans in LibreOffice) whose advance
+ *  the writer cannot know, and LibreOffice ignores the spacing of the
+ *  fallback run and of the space after it: a keyboard chip's ⌘ pushed
+ *  every word after it on. A chip's padding is carried as spacing on its
+ *  last letter, and the half points each renderer rounds add up over a
+ *  line of answer bubbles until the words after them touch them (#1444).
+ *  A tab to the next run's start puts the line back where the engine set
+ *  it. */
+function afterChip(ctx: WriterContext, runs: readonly { run: DisplayRun; gap: number }[], k: number): boolean {
+  const prev = runs.slice(0, k).reverse().find((r) => r.run.text.length > 0);
+  if (!prev || prev.run.rtl) return false;
+  const p = prev.run;
+  const face = ctx.metrics.faceAdvances(p.fontString);
+  if (!face) return false;
+  if (p.inline?.kind !== 'chip' && measureEms(face, p.text).missing === 0) return false;
+  // Its natural width with every missing character an em wide (at least).
+  const nat = naturalTwips(ctx, p.fontString, wordText(p.text), p.width);
+  const next = runs.slice(k + 1).find((r) => r.run.text.length > 0)?.run;
+  if (nat === undefined || !next) return false;
+  const room = twips(next.x - p.x, ctx.dpi);
+  return room - nat >= RESET_MARGIN_TW;
+}
+
 /** The tab stops of a line's wide spaces, by index into its emitted runs.
  *  Only flush-left lines: in a centred or right-aligned paragraph a
  *  renderer moves the whole line by its alignment and lays out tab stops
  *  in its own way, so the text after the tab would not land on its x. */
-function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<number, TabStop> {
+function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number, resets: boolean): Map<number, TabStop> {
   const out = new Map<number, TabStop>();
   if (line.rtl || line.vertical || line.align !== 'left') return out;
   const { line: flat, runs } = emittedRuns(line);
@@ -53,13 +83,16 @@ function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<numb
     const face = writtenFace(run, flat);
     const nat = naturalTwips(ctx, face, run.text) ?? Math.round((fontSizePx(face) * 1440) / ctx.dpi / 4);
     const width = twips(run.width, ctx.dpi);
-    if (width < TAB_FACTOR * nat || width - nat < TAB_MIN_TW) return;
+    const wide = width >= TAB_FACTOR * nat && width - nat >= TAB_MIN_TW;
+    if (!wide && !(resets && afterChip(ctx, runs, k))) return;
     const rest = runs.slice(k + 1).filter((r) => r.run.text.length > 0);
     const next = rest[0]?.run;
     if (!next) return;
     // The last run of the line: flush to its end, whatever its width in
-    // the renderer's face.
-    const stop: TabStop = rest.length === 1 ? { val: 'right', pos: twips(next.x + next.width - boxL, ctx.dpi) } : { val: 'left', pos: twips(next.x - boxL, ctx.dpi) };
+    // the renderer's face. A chip's last letter carries its padding as
+    // spacing, which the renderer counts in the run's width.
+    const end = next.x + next.width + rest[0]!.gap;
+    const stop: TabStop = rest.length === 1 ? { val: 'right', pos: twips(end - boxL, ctx.dpi) } : { val: 'left', pos: twips(next.x - boxL, ctx.dpi) };
     out.set(k, stop);
   });
   return out;
@@ -68,19 +101,25 @@ function lineTabs(ctx: WriterContext, line: DisplayLine, boxL: number): Map<numb
 /** The tabs of a paragraph's lines (`lines`, each its runs' indices that
  *  are tabs) and the `w:tabs` its pPr holds; none when a tab would stop
  *  short at a stop meant for another line (or at the hanging indent,
- *  which Word takes for a stop), so each one lands on its own. */
+ *  which Word takes for a stop), so each one lands on its own. The tabs
+ *  after chips and fallback characters (afterChip) only reset the line,
+ *  so when they clash with a stop, the paragraph keeps its wide spaces'
+ *  tabs without them rather than losing every tab. */
 export function paragraphTabs(ctx: WriterContext, lines: readonly DisplayLine[], boxL: number, indentTw: number): { lines: Set<number>[]; xml: string } {
-  const per = lines.map((l) => lineTabs(ctx, l, boxL));
-  const none = { lines: lines.map(() => new Set<number>()), xml: '' };
+  return settledTabs(ctx, lines, boxL, indentTw, true) ?? settledTabs(ctx, lines, boxL, indentTw, false) ?? { lines: lines.map(() => new Set<number>()), xml: '' };
+}
+
+function settledTabs(ctx: WriterContext, lines: readonly DisplayLine[], boxL: number, indentTw: number, resets: boolean): { lines: Set<number>[]; xml: string } | undefined {
+  const per = lines.map((l) => lineTabs(ctx, l, boxL, resets));
   const stops = new Map<number, TabStop>();
   for (const m of per) for (const s of m.values()) stops.set(s.pos, s);
-  if (stops.size === 0) return none;
+  if (stops.size === 0) return undefined;
   const positions = [...stops.keys(), indentTw];
   for (let i = 0; i < lines.length; i++) {
     const { runs } = emittedRuns(lines[i]!);
     for (const [k, s] of per[i]!) {
       const from = twips(runs[k]!.run.x - boxL, ctx.dpi);
-      if (s.pos <= from || positions.some((p) => p > from && p < s.pos)) return none;
+      if (s.pos <= from || positions.some((p) => p > from && p < s.pos)) return undefined;
     }
   }
   const sorted = [...stops.values()].sort((a, b) => a.pos - b.pos);

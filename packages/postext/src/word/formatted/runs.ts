@@ -22,7 +22,8 @@ import { wordFontFor } from '../fonts/plan.js';
 import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
 import { symbolPieces } from './symbols.js';
-import { eastAsianLayout, kuntenOf, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
+import { LIGATURE, LIGATURE_MIN_PT, ligaturePieces, ligatureSpans } from './ligatures.js';
+import { eastAsianLayout, kuntenOf, rubyAnnotations, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -47,9 +48,6 @@ const JUSTIFY_ROOM_TW = 1;
  *  marks): their runs are not measured. */
 const COMPLEX = /[\u0600-\u08ff\ufb50-\ufdff\ufe70-\ufeff\u0900-\u0dff\u0f00-\u0fff\u1000-\u109f\u1780-\u17ff\u1800-\u18af\p{M}\u200c\u200d]/u;
 const BLANK = /^[ \u00a0\u2000-\u200a\u202f\u205f\u3000]+$/;
-/** Pairs a face may set as one ligature: a run boundary between them
- *  makes LibreOffice draw the ligature and the second letter again. */
-const LIGATURE = /^(?:f\p{L}|Th)$/u;
 /** Word's font size range, half-points (1 pt to 1638 pt). */
 export const MIN_SZ = 2;
 export const MAX_SZ = 3276;
@@ -488,12 +486,17 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   const spacing = fit ? fit.each : flat;
   const rPr = runProps(ctx, r, { spacing, rtl, ...(scale ? { scale } : {}), ...(fit ? { fitted: true } : {}) });
   const out: EmittedRun = { rPr, text };
+  const display = fit && !scale && (fit.each || fit.extra) && (fontSizePx(r.fontString) * 72) / ctx.dpi >= LIGATURE_MIN_PT;
+  const ligs = display ? ligatureSpans(ctx.metrics.faceAdvances(r.fontString), text) : [];
   if (run.kunten) {
     const k = kuntenOf(run, line);
     if (k.annotations.length) out.annotations = k.annotations;
     if (k.rules.length) out.rules = k.rules;
   }
-  if (run.ruby) {
+  // A vertical line's reading is drawn beside its base (eastAsian.ts).
+  const readings = rubyAnnotations(run, line);
+  if (readings) out.annotations = [...(out.annotations ?? []), ...readings];
+  if (run.ruby && !readings) {
     const rt: DisplayRun = { text: run.ruby.text, x: run.x, width: 0, fontString: run.ruby.fontString, color: run.ruby.color ?? run.color, textStart: 0 };
     const sizes = { base: resolveFont(ctx, run.fontString).sz, rt: resolveFont(ctx, run.ruby.fontString).sz };
     // The base is not spaced out: LibreOffice lengthens the ruby cell by a
@@ -513,6 +516,12 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     // Tate-chu-yoko cells: Word sets them across the line, unmeasured.
     const flatPr = runProps(ctx, r, { spacing: flat, rtl });
     out.xml = verticalPieces(ctx, run, text).map((piece) => textRun(piece.tcy ? runProps(ctx, run, { spacing: flat, rtl, ea: eastAsianLayout(ctx, 'vert') }) : flatPr, piece.text)).join('');
+  } else if (fit && ligs.length) {
+    // A display run keeps its ligatures unspaced (ligatures.ts).
+    const total = fit.each * Array.from(text).length + fit.extra;
+    const pieces = ligaturePieces(text, ligs, total, gapTw, (spacing) => runProps(ctx, r, { spacing: clampSpacing(spacing), rtl, fitted: true }));
+    if (pieces) Object.assign(out, piecesOut(pieces));
+    else Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true })));
   } else if (fit && (fit.extra > 0 || gapTw)) {
     Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true, ...(scale ? { scale } : {}) })));
   } else if (gapTw) {

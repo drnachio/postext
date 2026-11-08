@@ -9,6 +9,7 @@
 import type { DisplayItem, DisplayLine, DisplayRect, DisplayRun } from '../../paint/displayList/types.js';
 import { textBoxRun, turnedBox, turnPoint } from './drawing.js';
 import { annotationRect, smallTextBox, textRun } from './eastAsian.js';
+import { haloRun } from './halo.js';
 import { fontSizePx } from './metrics.js';
 import { naturalTwips, runProps, wordText, writtenFace } from './runs.js';
 import { rectRuns, ruleRun } from './shapes.js';
@@ -138,6 +139,25 @@ function fitLonePitch(ctx: WriterContext, line: DisplayLine, plan: LinePlan, gro
   group.pitch = h;
 }
 
+/** The pitch of a lone vertical line, in ems of its largest size. An
+ *  `eaVert` box sets the glyphs of an exact line centred across it (about
+ *  a fifth of an em right of the line's middle), while the box is placed
+ *  by the 4/5 rule from the engine's baseline, which lies some 0.37 em
+ *  left of the glyphs' centre: the two agree at a pitch of about 1.87 em,
+ *  near the column pitch of vertical body text, which lands on its
+ *  columns. At the engine's 1.2 em a title, a name or a contents heading
+ *  stood 2.5 to 4.3 pt off its place, toward the next column (#1444). */
+const LONE_VERTICAL_EMS = 1.87;
+
+/** A box of one vertical line set at `LONE_VERTICAL_EMS`. */
+function fitLoneVertical(ctx: WriterContext, line: DisplayLine, plan: LinePlan, group: Group): void {
+  const size = Math.max(0, ...line.runs.filter((r) => r.text.length > 0 && !r.inline).map((r) => fontSizePx(r.fontString)));
+  if (size <= 0) return;
+  const h = Math.min(MAX_PITCH, Math.max(MIN_PITCH, twips(LONE_VERTICAL_EMS * size, ctx.dpi)));
+  plan.h = h;
+  group.pitch = h;
+}
+
 /** Roles whose boxes are titles and labels, set in display faces that a
  *  renderer without them (Google Docs) replaces by a wider one. */
 const DISPLAY_ROLES = new Set<TextItem['role']>(['heading', 'opener', 'design']);
@@ -204,7 +224,11 @@ export async function textItemRuns(ctx: WriterContext, input: TextItem, opts: Te
   if (vertical) ctx.warn('vertical-text', 'vertical text is set in East Asian (eaVert) text boxes; Word centres the glyphs on its own line axis, so positions across a column are approximate');
   const plans = planLines(ctx, item.lines);
   const chunks = planChunks(item.lines, plans);
-  if (!vertical) for (const c of chunks) if (c.from === c.to) fitLonePitch(ctx, item.lines[c.from]!, plans[c.from]!, c.groups[0]!);
+  for (const c of chunks) {
+    if (c.from !== c.to) continue;
+    if (vertical) fitLoneVertical(ctx, item.lines[c.from]!, plans[c.from]!, c.groups[0]!);
+    else fitLonePitch(ctx, item.lines[c.from]!, plans[c.from]!, c.groups[0]!);
+  }
   const offsets = lineOffsets(item);
   const fragmented = hasFragment(item);
   const centre = { x: item.bbox.x + item.bbox.width / 2, y: item.bbox.y + item.bbox.height / 2 };
@@ -219,6 +243,11 @@ export async function textItemRuns(ctx: WriterContext, input: TextItem, opts: Te
     if (slot && fragmented) recordFragment(ctx, slot, item, out);
     const placed = sheetBox(box, centre, item.rotate, vertical);
     const lines = item.lines.slice(chunk.from, chunk.to + 1);
+    // A turned item's halo under each box, turned with it (halo.ts).
+    if (item.rotate && !vertical) {
+      const halo = haloRun(ctx, item, { box, rect: placed.rect, rotate: item.rotate }, lines);
+      if (halo) runs.push(halo);
+    }
     // Chip boxes under their words; swatches in their real shape over the
     // holders (a vertical item keeps the holder's square).
     runs.push(...chipBoxRuns(ctx, lines, centre, item.rotate));
