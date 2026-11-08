@@ -82,6 +82,19 @@ export class Numbering {
     return numId;
   }
 
+  /** Whether the first level's number of an ordered list (in a box: the
+   *  box's lists) is set larger than the text of its item (#1444): a
+   *  display number, which would open the leading of its item's first
+   *  line in Word and LibreOffice. */
+  numberOutgrows(box?: ResolvedCalloutStyleConfig): boolean {
+    const r = box ? deriveCalloutResolvedConfig(this.resolved, box) : this.resolved;
+    const u = this.units;
+    const bodyPx = px(u, r.bodyText.fontSize);
+    const ol = r.orderedLists;
+    const size = ol.levels.find((l) => l.level === 1)?.fontSize ?? ol.numberFontSize;
+    return px(u, size, bodyPx) > bodyPx * 1.05;
+  }
+
   private abstractXml(id: number, kinds: ListLevelKind[], r: ResolvedConfig): string {
     const u = this.units;
     const bodyPx = px(u, r.bodyText.fontSize);

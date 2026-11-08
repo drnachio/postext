@@ -12,8 +12,11 @@ import type { WriterContext } from '../context.js';
 
 type Sibling = { block: ContentBlock } | { container: ContentBlock };
 
-/** Whether the paragraph at `i` of `nodes` is set flush. */
-export function startsFlush(ctx: WriterContext, nodes: readonly Sibling[], i: number): boolean {
+/** Whether the paragraph at `i` of `nodes` is set flush. `lead` says
+ *  whether the first of `nodes` would be: they open a `:::paragraphs`
+ *  group that itself stands where a flush paragraph would (#1444), which
+ *  the engine looks through as it does through directives. */
+export function startsFlush(ctx: WriterContext, nodes: readonly Sibling[], i: number, lead = false): boolean {
   const afterHeading = !ctx.resolved.bodyText.indentAfterHeading;
   const afterDisplay = !ctx.resolved.math.indentAfterDisplay;
   if (!afterHeading && !afterDisplay) return false;
@@ -26,5 +29,5 @@ export function startsFlush(ctx: WriterContext, nodes: readonly Sibling[], i: nu
     if (b.type !== 'directive') return false;
     if (b.directiveName === 'space') return afterHeading;
   }
-  return false;
+  return lead;
 }
