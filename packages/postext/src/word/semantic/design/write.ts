@@ -13,10 +13,10 @@ import { backdropPicture, fillsPage, inlinePicture } from './placedPicture.js';
 import { columnSets, columnTable, type ColumnText } from './columns.js';
 import { partBodyChunks } from './partBody.js';
 import { bandInnerTwips, drawnRule, ruleParagraph, thinParagraph, withBands, type BandFoot, type Chunk } from './bands.js';
-import { covers, estimateBoxes, readingOrder, type Box } from './geometry.js';
+import { covers, estimateBoxes, onSheet, readingOrder, type Box } from './geometry.js';
 import { paleOnWhite } from './ink.js';
 import { rowParagraph, sameLine, type RowPart } from './rows.js';
-import { designTextStyle } from './text.js';
+import { designTextStyle, pillOnPicture } from './text.js';
 
 /** What a design is written from and how its own pieces are written. */
 export interface DesignSpec {
@@ -67,7 +67,12 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   const textW = page.width - toPx(geo.margins.left + geo.margins.right);
   const container = { x: toPx(geo.margins.left), y: toPx(geo.margins.top), width: textW, height: px(u, spec.minHeight) || (u.dpi / 25.4) * 40 };
   const { elements, texts } = spec;
-  const boxes = estimateBoxes(elements, { page, container }, u, (id) => texts.get(id) ?? '', ctx.resources, spec.imageId, rtl);
+  // A vertical flow places its design in the flow's frame: the sheet
+  // turned a quarter, x running down it and y across it from the right.
+  const vertical = ctx.resolved.layout.writingMode === 'vertical-rl';
+  const flowPage = vertical ? { x: 0, y: 0, width: page.height, height: page.width } : page;
+  const frames = vertical ? { page: flowPage, container: { x: toPx(geo.margins.top), y: toPx(geo.margins.right), width: page.height - toPx(geo.margins.top + geo.margins.bottom), height: container.height } } : { page, container };
+  const boxes = estimateBoxes(elements, frames, u, (id) => texts.get(id) ?? '', ctx.resources, spec.imageId, rtl, vertical);
   // The fill under a piece: the last box painted under it.
   const bands = elements.filter((e) => e.kind === 'box' && hex(e.style.backgroundColor));
   const bandOf = (box: Box): Chunk['band'] => {
@@ -109,10 +114,15 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   }
   const order = titleColumnFirst(readingOrder(items, rtl, u), u.dpi);
   const textHeight = page.height - toPx(geo.margins.top + geo.margins.bottom);
-  // A picture that fills the page, printed on no band, is drawn behind
-  // the text; a pale text over it keeps its ink (the picture is its
-  // ground, as a band would be).
-  const backdrop = order.find((i): i is Extract<Item, { kind: 'image' }> => i.kind === 'image' && !bandOf(i.box) && fillsPage(i.box, page));
+  // A picture that fills the page, printed on no band, with every text
+  // the page prints standing on it inside the text area (a cover under
+  // its title, an endpaper), is drawn behind the text; a pale text over it
+  // keeps its ink (the picture is its ground, as a band would be). A plate
+  // whose caption is printed lower, in the page's foot margin where Word
+  // sets no text, stays in the flow with its caption under it.
+  const over = (pic: Box): boolean =>
+    order.every((i) => (i.kind !== 'text' && i.kind !== 'title') || (covers(pic, i.box) && (vertical || i.box.y + i.box.height <= textBottom + MM(u, 2))));
+  const backdrop = order.find((i): i is Extract<Item, { kind: 'image' }> => i.kind === 'image' && !bandOf(i.box) && fillsPage(i.box, flowPage) && over(i.box));
   const onBackdrop = (box: Box): string | undefined => (backdrop && covers(backdrop.box, box) ? BACKDROP : undefined);
   const at = order.findIndex((i) => i.kind === 'title');
   const titleBand = at >= 0 ? bandOf(order[at]!.box) : undefined;
@@ -132,7 +142,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   // standing well below the others (an imprint at the foot of the page)
   // keeps the space above it, with room to spare so that it stays on the
   // page. `flowY` is roughly where Word has got to.
-  const freePage = spec.breakBefore && !bands.length && ctx.resolved.layout.writingMode !== 'vertical-rl';
+  const freePage = spec.breakBefore && !bands.length && !vertical;
   let flowY = container.y;
   const footPiece = order[order.length - 1];
   const drop = (band: Chunk['band'], box: Box | undefined): ParaProps | undefined => {
@@ -148,7 +158,17 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     if (!spec.breakBefore || band || !box) return undefined;
     const gap = box.y - container.y;
     if (gap < (20 * u.dpi) / 25.4) return undefined;
-    return { before: Math.round((Math.min(gap, textHeight * 0.4) * 1440) / u.dpi) };
+    // Over a page-filling picture the pieces stand where the print sets
+    // them on it (a caption on the plate's paper foot, a headline low on a
+    // cover photo), as long as they and what follows them still fit.
+    const cap = backdrop ? textBottom - container.y - MM(u, 10) - restHeight(box) : textHeight * 0.4;
+    return { before: Math.round((Math.max(0, Math.min(gap, cap)) * 1440) / u.dpi) };
+  };
+  // The height of the pieces from the one at `box` on, with a little air
+  // between them.
+  const restHeight = (box: Box): number => {
+    const from = order.findIndex((i) => i.box === box);
+    return order.slice(Math.max(0, from)).reduce((h, i) => h + (i === backdrop ? 0 : i.box.height + MM(u, 2)), 0);
   };
   const firstProps = (band: Chunk['band'], box?: Box): ParaProps | undefined => {
     const space = drop(band, box);
@@ -167,7 +187,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   // Every piece but the last keeps with what follows.
   const keeps = (i: number): boolean => i < last;
   // Blocks of text set side by side off any band (see columns.ts).
-  const sideBySide = !rtl && ctx.resolved.layout.writingMode !== 'vertical-rl';
+  const sideBySide = !rtl && !vertical;
   const columnTexts = order.map((it): ColumnText | undefined => {
     if (!sideBySide || bandOf(it.box) || onBackdrop(it.box)) return undefined;
     if (it.kind === 'text') return { el: it.el, text: it.text, box: it.box };
@@ -220,7 +240,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
         placed = true;
         const first = firstProps(band);
         placed = was;
-        chunks.push({ xml: backdropPicture(ctx, item.id, item.box, first) });
+        chunks.push({ xml: backdropPicture(ctx, item.id, vertical ? onSheet(item.box, page.width) : item.box, first) });
         continue;
       }
       const first = firstProps(band, item.box);
@@ -230,7 +250,6 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
       const below = order.slice(i + 1).reduce((h, o) => h + (o.box.y < textBottom ? o.box.height + MM(u, 3) : 0), 0);
       // Vertical lines stand side by side, not under the picture: there
       // it keeps to about half the page.
-      const vertical = ctx.resolved.layout.writingMode === 'vertical-rl';
       const maxH = vertical ? textHeight * 0.55 : Math.max(textHeight * 0.55, textHeight - below - MM(u, 15));
       // The space the print leaves under it (a cover photo above its
       // kicker), a centimetre at most.
@@ -259,7 +278,10 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     if (row.length > 1) {
       const frame = band ? clip(band.box, container) : container;
       chunks.push({ xml: rowParagraph(ctx, parts, frame, band ? bandInnerTwips(ctx, widthTw) : widthTw, rtl, { ...first }), band, box: row[0]!.box });
-    } else chunks.push({ xml: parts[0]!.write(first).join(''), band, box: row[0]!.box });
+    } else {
+      const own = !band && onBackdrop(item.box) ? pillOnPicture(ctx, row[0]!.el, row[0]!.text, widthTw) : undefined;
+      chunks.push({ xml: parts[0]!.write(own ? { ...first, ...own } : first).join(''), band, box: row[0]!.box });
+    }
     i = j - 1;
   }
   if (spec.body) {

@@ -104,6 +104,28 @@ function pillFill(ctx: WriterContext, el: ResolvedDesignTextElement): string | u
   return own < 0.85 || Math.abs(own - luminance(paper)) > 0.04 ? fill : undefined;
 }
 
+/**
+ * A pill printed over a page-filling picture as the paragraph's shading,
+ * cut to the words' width by the paragraph's indents (`frameTw` twips
+ * wide): LibreOffice draws no run shading over a picture behind the text,
+ * a paragraph's it does. Undefined for a text with no fill.
+ */
+export function pillOnPicture(ctx: WriterContext, el: ResolvedDesignTextElement, text: string, frameTw: number): Partial<ParaProps> | undefined {
+  const fill = pillFill(ctx, el);
+  if (!fill) return undefined;
+  const u = ctx.units;
+  const size = fittedSize(ctx, el, text);
+  const chars = Math.max(1, ...text.split('\n').map((l) => [...l].length));
+  const em = el.textTransform === 'uppercase' ? 0.55 : 0.48;
+  const track = el.letterSpacing ? px(u, el.letterSpacing, size) : 0;
+  // The words, a space of fill each side and a little to spare.
+  const width = Math.round((((chars * (size * em + track)) + size * 1.2) * 1440) / u.dpi);
+  const room = Math.max(0, frameTw - width);
+  const jc = JC[el.align] ?? 'center';
+  const ind = jc === 'center' ? { left: Math.round(room / 2), right: Math.round(room / 2) } : jc === 'right' || jc === 'end' ? { left: room } : { right: room };
+  return { shd: fill, ind: { ...ind, firstLine: 0 } };
+}
+
 /** The box a text is set in (a chip, a pill, a label tab), as Word draws
  *  a run's: its fill as run shading, its outline as a line round the
  *  characters. */
