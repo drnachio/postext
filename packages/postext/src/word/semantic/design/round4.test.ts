@@ -78,13 +78,17 @@ describe('semantic docx: an opener band, its foot rule and the room under it', (
     readsBack(e.bytes, md);
   });
 
-  it('sets a large title on an exact line a little taller than its size', async () => {
+  it('never sets a large title on an exact line (Google Docs makes it a page tall)', async () => {
     const e = await exportDocx(md, { config });
-    const line = /<w:spacing [^>]*w:line="(\d+)" w:lineRule="exact"/.exec(styleOf(e, para(e.doc, 'How it works')));
+    const style = styleOf(e, para(e.doc, 'How it works'));
+    expect(style).not.toMatch(/w:lineRule="exact"/);
+    // The line is "at least" the design's: Docs and LibreOffice break on
+    // exact lines and on lines under one line (#1444).
+    const line = /<w:spacing [^>]*w:line="(\d+)" w:lineRule="atLeast"/.exec(style);
     expect(line).not.toBeNull();
-    // 30 pt is 600 twips; the line is at least 1.1 times that.
-    expect(Number(line![1])).toBeGreaterThanOrEqual(660);
+    expect(Number(line![1])).toBeGreaterThanOrEqual(600);
   });
+
 });
 
 describe('semantic docx: a picture that fills the page', () => {

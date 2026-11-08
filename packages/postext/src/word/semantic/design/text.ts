@@ -67,7 +67,7 @@ export function designTextLook(ctx: WriterContext, el: ResolvedDesignTextElement
     keepLines: true,
     before: 0,
     after: Math.round(size * 0.35 * (1440 / u.dpi)),
-    line: lineOf(u, size, lineH),
+    line: lineOf(u, lineH),
     ind: { firstLine: 0 },
     jc: JC[el.align] ?? 'center',
     suppressAutoHyphens: true,
@@ -75,21 +75,19 @@ export function designTextLook(ctx: WriterContext, el: ResolvedDesignTextElement
   return { pPr, rPr };
 }
 
-/** A display size (a cover or opener title), px: 18 pt and up. */
-const DISPLAY_PT = 18;
-
 /**
  * The line spacing of a design text set at `size` px with lines `lineH`
- * px apart. A display title's lines are exactly the design's distance
- * apart (with "at least", the face's own line height wins, close to a
- * blank line between the lines of a two-line title), but no tighter than
- * 1.1 em, below which Word clips the tops of the letters. Smaller text
- * keeps "at least": a fallback face taller than the design's still fits.
+ * px apart: "at least" the design's distance, so a fallback face taller
+ * than the design's still fits. A display title cannot be set tighter
+ * than its face's own line in a way every reader honours (#1444): Google
+ * Docs has no exact spacing and turns it into a multiple of the text's
+ * line (a 72 pt opener numeral became a page tall), and LibreOffice drops
+ * the fill of a table cell holding a line set below one line ("auto"
+ * under 240), the opener bands. A two-line display title therefore keeps
+ * its face's leading.
  */
-function lineOf(u: WriterContext['units'], size: number, lineH: number): NonNullable<ParaProps['line']> {
-  const tw = (v: number): number => Math.round((v * 1440) / u.dpi);
-  if ((size * 72) / u.dpi >= DISPLAY_PT) return { twips: tw(Math.max(lineH, size * 1.1)), rule: 'exact' };
-  return { twips: Math.max(240, tw(lineH)), rule: 'atLeast' };
+function lineOf(u: WriterContext['units'], lineH: number): NonNullable<ParaProps['line']> {
+  return { twips: Math.max(240, Math.round((lineH * 1440) / u.dpi)), rule: 'atLeast' };
 }
 
 /** The fill a text's box shows on the page: none when the box has none,
