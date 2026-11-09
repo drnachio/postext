@@ -50,17 +50,19 @@ interface Fmt {
   mark?: boolean;
   /** Struck through (`~~…~~`). */
   strike?: boolean;
+  /** Underlined (`++…++`). */
+  under?: boolean;
 }
 
 const flagsOf = (f: Fmt): string => `${f.b ? 'b' : ''}${f.i ? 'i' : ''}${f.c ? 'c' : ''}${f.script === 'sup' ? 'p' : ''}${f.script === 'sub' ? 's' : ''}${f.k ? 'k' : ''}`;
-const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}|${f.strike ? 'x' : ''}`;
+const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}|${f.strike ? 'x' : ''}${f.under ? 'u' : ''}`;
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
     // Code in a link keeps the code style (it is what marks the run as
     // code on the way back), underlined like the link.
     style: style ?? (f.k ? STYLE.codeChar : f.href ? STYLE.hyperlink : f.mark ? STYLE.mark : undefined),
-    u: (f.k && f.href !== undefined) || undefined,
+    u: (f.k && f.href !== undefined) || f.under || undefined,
     b: f.b || undefined,
     i: f.i || undefined,
     smallCaps: f.c || undefined,
@@ -151,8 +153,9 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
         const ch = span.text[k]!;
         const src = s.sourceMap[p + k] ?? -1;
         const fmt: Fmt = { ...base, k: src >= 0 && inCode(src) };
-        const link = span.links?.find((l) => !l.strike && k >= l.start && k < l.end);
+        const link = span.links?.find((l) => !l.strike && !l.underline && k >= l.start && k < l.end);
         if (span.links?.some((l) => l.strike && k >= l.start && k < l.end)) fmt.strike = true;
+        if (span.links?.some((l) => l.underline && k >= l.start && k < l.end)) fmt.under = true;
         if (link?.mark) fmt.mark = true;
         else if (link?.href) fmt.href = link.href;
         if (ch === BREAK) {

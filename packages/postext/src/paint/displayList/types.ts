@@ -56,6 +56,8 @@ export interface DisplayRun {
    *  (`~~old~~.`) is not flagged; its line is the layout's
    *  (`VDTLine.marks`). */
   strike?: boolean;
+  /** Underlined (`++…++`), as {@link strike}. */
+  underline?: boolean;
   footnoteId?: string;
   /** A `:ref` run's target: a resource id, or an anchor's id (`anchor`). */
   refTarget?: { id: string; anchor?: boolean };

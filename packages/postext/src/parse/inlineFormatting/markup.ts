@@ -9,11 +9,11 @@ import { parseDirectiveAttrs } from '../attrs.js';
  * Strip inline markdown formatting for plain-text extraction.
  * Handles bold, italic, code, links, and images.
  */
-/** Backslash escapes (CommonMark): `\*`, `\_`, `\^`, `\~` and `` \` `` set
+/** Backslash escapes (CommonMark): `\*`, `\_`, `\^`, `\~`, `\+` and `` \` `` set
  *  the character itself instead of opening a marker — a footnote asterisk
  *  in a table note, a literal caret. Protected behind private-use
  *  placeholders while the marker regexes run, restored in the spans. */
-const ESCAPE_RE = /\\([*_^~`@])/g;
+const ESCAPE_RE = /\\([*_^~+`@])/g;
 export const ESCAPE_BASE = 0xe100;
 export const ESCAPED_RE = /[\ue100-\ue17f]/g;
 /** The faces `^_^` and `^o^` (#181) stay text, protected like escapes so
@@ -37,7 +37,7 @@ export function restoreEscapes(text: string): string {
  *  instead of resolving a reference. Length-preserving, so source offsets
  *  hold. Runs first, before any inline pre-pass. */
 export const CODE_SPAN_RE = /(?<!\\)`([^`\n]+?)`/g;
-const CODE_LITERAL_RE = /[:$*_^~[\]{}\\@]/g;
+const CODE_LITERAL_RE = /[:$*_^~+[\]{}\\@]/g;
 export function protectCodeSpans(text: string): string {
   if (!text.includes('`')) return text;
   return text.replace(CODE_SPAN_RE, (_, inner: string) =>
@@ -149,6 +149,32 @@ export function markStrikethrough(text: string, replace: (inner: string) => stri
   return text.replace(STRIKE_RE, (_, inner: string) => replace(inner));
 }
 
+/** Private-use marks bracketing underlined text (`++text++`) while the
+ *  emphasis scanners run; they become a range of the spans
+ *  (`InlineSpan.links`, with `underline`), as struck-through text does, and
+ *  are dropped. */
+export const UNDERLINE_OPEN = '\uE1B9';
+export const UNDERLINE_CLOSE = '\uE1BA';
+
+/** `++text++`: underlined text (the inserted text of Pandoc and
+ *  markdown-it-ins, set as an underline as word processors do). Read like
+ *  `~~text~~`: exactly two plus signs on each side (a third one beside them
+ *  keeps the row literal: `C+++`), and the text starts and ends with a
+ *  character that is neither a space nor a plus sign; a letter or digit
+ *  right before the opening or after the closing pair keeps them literal,
+ *  so `C++ and C++`, `C++-Kurs und C++-Buch` and `1 ++ 2` stay text. The text may hold other inline marks, single plus
+ *  signs included, and may run over a soft line break, not over a blank
+ *  line. `\+` sets a literal plus sign. */
+export const UNDERLINE_RE = /(?<![+\p{L}\p{N}])\+\+(?=[^\s+])((?:[^+\n]|\+(?!\+)|\n(?!\n))+?)(?<=[^\s+])\+\+(?![+\p{L}\p{N}])/gu;
+
+/** Every `++text++` of `text` replaced by its text between
+ *  {@link UNDERLINE_OPEN} and {@link UNDERLINE_CLOSE}, or by what `replace`
+ *  makes of it. */
+export function markUnderline(text: string, replace: (inner: string) => string = (inner) => UNDERLINE_OPEN + inner + UNDERLINE_CLOSE): string {
+  if (!text.includes('++')) return text;
+  return text.replace(UNDERLINE_RE, (_, inner: string) => replace(inner));
+}
+
 /** Replace every `:smallcaps[…]` by its text between the private-use marks. */
 export function markSmallCaps(text: string): string {
   if (!text.includes(SMALLCAPS_OPENER)) return text;
@@ -245,7 +271,7 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
 }
 
 /** `spans` set plain: bold, italic, scripts, small capitals, links,
- *  strikethrough and the
+ *  strikethrough, underline and the
  *  Chinese and Japanese marks (emphasis dots, proper-name and book-title
  *  marks, side lines) dropped,
  *  adjacent text spans merged — a heading's spans as they were built before

@@ -6,3 +6,9 @@
  *  (`VDTChip.strikes`). */
 export const STRIKE_AT = 0.28;
 export const STRIKE_STROKE = 0.05;
+
+/** The same for the line under underlined text (`++…++`) of a face whose
+ *  own underline is not known: its middle 0.12 em under the baseline, clear
+ *  of the letters' feet, 0.05 em thick. */
+export const UNDERLINE_AT = -0.12;
+export const UNDERLINE_STROKE = 0.05;

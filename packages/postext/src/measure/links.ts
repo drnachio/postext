@@ -6,8 +6,9 @@
 // its segments are walked against the text they were cut from and the
 // target is stamped on every segment holding a linked character
 // (`VDTLineSegment.href`), for the HTML and PDF backends to make live.
-// Highlight marks (`VDTLineSegment.mark`) and struck-through text
-// (`VDTLineSegment.strike`) ride on the same ranges and are stamped here.
+// Highlight marks (`VDTLineSegment.mark`), struck-through text
+// (`VDTLineSegment.strike`) and underlined text (`VDTLineSegment.underline`)
+// ride on the same ranges and are stamped here.
 
 import type { VDTLine, VDTLineSegment, VDTSegmentMark, VDTSegmentStrike } from '../vdt.js';
 import type { InlineSpan } from '../parse/index.js';
@@ -28,13 +29,13 @@ const INVISIBLE = new RegExp(`[${SOFT_HYPHEN}\\u200B-\\u200D\\u2060\\uFEFF]`);
  *  span carries a link. The spans hold no `inserted` one (see
  *  {@link linkSegments}). */
 function hrefsByChar(spans: readonly InlineSpan[]): (string | undefined)[] | null {
-  if (!spans.some((s) => s.links?.some((l) => !l.mark && !l.strike))) return null;
+  if (!spans.some((s) => s.links?.some((l) => !l.mark && !l.strike && !l.underline))) return null;
   const out: (string | undefined)[] = [];
   for (const span of spans) {
     const base = out.length;
     for (let i = 0; i < span.text.length; i++) out.push(undefined);
     for (const link of span.links ?? []) {
-      if (link.mark || link.strike) continue;
+      if (link.mark || link.strike || link.underline) continue;
       for (let i = Math.max(0, link.start); i < Math.min(span.text.length, link.end); i++) out[base + i] = link.href;
     }
   }
@@ -57,17 +58,19 @@ function marksByChar(spans: readonly InlineSpan[]): ({ style: string; id: number
   return out;
 }
 
-/** The struck-through run (`~~…~~`) of each character of the spans'
- *  joined text, by number; null when none is struck. */
-function strikesByChar(spans: readonly InlineSpan[]): (number | undefined)[] | null {
-  if (!spans.some((s) => s.links?.some((l) => l.strike))) return null;
+/** The struck-through (`~~…~~`, `key` `strike`) or underlined run
+ *  (`++…++`, `underline`) of each character of the spans' joined text, by
+ *  number; null when none is. */
+function strikesByChar(spans: readonly InlineSpan[], key: 'strike' | 'underline' = 'strike'): (number | undefined)[] | null {
+  if (!spans.some((s) => s.links?.some((l) => l[key]))) return null;
   const out: (number | undefined)[] = [];
   for (const span of spans) {
     const base = out.length;
     for (let i = 0; i < span.text.length; i++) out.push(undefined);
     for (const link of span.links ?? []) {
-      if (!link.strike) continue;
-      for (let i = Math.max(0, link.start); i < Math.min(span.text.length, link.end); i++) out[base + i] = link.strike.id;
+      const run = link[key];
+      if (!run) continue;
+      for (let i = Math.max(0, link.start); i < Math.min(span.text.length, link.end); i++) out[base + i] = run.id;
     }
   }
   return out;
@@ -96,7 +99,9 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
   const marks = marksByChar(written);
   // So does struck-through text (`VDTLineSegment.strike`).
   const strikes = strikesByChar(written);
-  if (hrefs.length === 0 && !marks && !strikes) return lines;
+  // And underlined text (`VDTLineSegment.underline`).
+  const unders = strikesByChar(written, 'underline');
+  if (hrefs.length === 0 && !marks && !strikes && !unders) return lines;
   const text = written.map((s) => s.text).join('');
   // Each mark's first and last character in the text.
   const markEdges = new Map<number, { first: number; last: number }>();
@@ -110,8 +115,32 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
   const same = (a: string, b: string) => a === b || a.toLowerCase() === b.toLowerCase();
   /** The mark of the chunk last consumed (see {@link consume}). */
   let chunkMark: VDTSegmentMark | undefined;
-  /** The struck-through characters of the chunk last consumed. */
+  /** The struck-through and the underlined characters of the chunk last
+   *  consumed. */
   let chunkStrike: VDTSegmentStrike | undefined;
+  let chunkUnder: VDTSegmentStrike | undefined;
+  /** The first run of a chunk's characters of `byChar` (struck through or
+   *  underlined): fed each matched character, it gives the chunk's
+   *  {@link VDTSegmentStrike}. */
+  const runOf = (byChar: readonly (number | undefined)[] | null) => {
+    let from = -1;
+    let to = -1;
+    let id = -1;
+    return {
+      add(at: number, i: number): void {
+        const s = byChar?.[at];
+        if (s === undefined || (id >= 0 && (s !== id || to !== i))) return;
+        if (id < 0) {
+          id = s;
+          from = i;
+        }
+        to = i + 1;
+      },
+      done(length: number): VDTSegmentStrike | undefined {
+        return id >= 0 ? { id, ...(from > 0 || to < length ? { from, to } : {}) } : undefined;
+      },
+    };
+  };
 
   /** Consume `chunk` from the text; its first link target, `null` when it
    *  does not match. Sets {@link chunkMark} to the chunk's highlight mark:
@@ -121,10 +150,10 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
     let href: string | undefined;
     chunkMark = undefined;
     chunkStrike = undefined;
-    // The first run of struck characters of the chunk.
-    let strikeFrom = -1;
-    let strikeTo = -1;
-    let strikeId = -1;
+    chunkUnder = undefined;
+    // The first run of struck and of underlined characters of the chunk.
+    const struck = runOf(strikes);
+    const underlined = runOf(unders);
     let markFrom = -1;
     let markTo = -1;
     let markId = -1;
@@ -133,14 +162,8 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
       while (p < text.length && INVISIBLE.test(text[p]!) && text[p] !== c) p++;
       if (p < text.length && same(text[p]!, c)) {
         href ??= hrefs[p];
-        const s = strikes?.[p];
-        if (s !== undefined && (strikeId < 0 || (s === strikeId && strikeTo === i))) {
-          if (strikeId < 0) {
-            strikeId = s;
-            strikeFrom = i;
-          }
-          strikeTo = i + 1;
-        }
+        struck.add(p, i);
+        underlined.add(p, i);
         const m = marks?.[p];
         if (m && (markId < 0 || m.id === markId)) {
           if (markId < 0) {
@@ -170,7 +193,8 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
       chunkMark.from = markFrom;
       chunkMark.to = markTo;
     }
-    if (strikeId >= 0) chunkStrike = { id: strikeId, ...(strikeFrom > 0 || strikeTo < chunk.length ? { from: strikeFrom, to: strikeTo } : {}) };
+    chunkStrike = struck.done(chunk.length);
+    chunkUnder = underlined.done(chunk.length);
     return href;
   };
 
@@ -205,11 +229,12 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
       if (href === null) return lines;
       const mark = chunkMark ? markOf(chunkMark, skip, written === seg.text) : undefined;
       const strike = chunkStrike ? markOf(chunkStrike, skip, written === seg.text) : undefined;
-      if (href === undefined && !mark && !strike) {
+      const underline = chunkUnder ? markOf(chunkUnder, skip, written === seg.text) : undefined;
+      if (href === undefined && !mark && !strike && !underline) {
         segments.push(seg);
         continue;
       }
-      segments.push({ ...seg, ...(href !== undefined ? { href } : {}), ...(mark ? { mark } : {}), ...(strike ? { strike } : {}) });
+      segments.push({ ...seg, ...(href !== undefined ? { href } : {}), ...(mark ? { mark } : {}), ...(strike ? { strike } : {}), ...(underline ? { underline } : {}) });
       lineChanged = true;
     }
     out.push(lineChanged ? { ...line, segments } : line);
