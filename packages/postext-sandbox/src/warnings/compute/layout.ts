@@ -163,6 +163,19 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       });
       return;
     }
+    if (w.kind === 'hyphenLadder' || w.kind === 'lastWordDivided') {
+      // The hyphen rules (#1466): a ladder of hyphens, a last word divided,
+      // by book page.
+      const page = (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0);
+      out.push({
+        id: `layout-${w.kind}-${w.sourceStart ?? 'x'}-${i}`,
+        payload: w.kind === 'hyphenLadder' ? { kind: 'hyphenLadder', page, lines: w.lines, max: w.max } : { kind: 'lastWordDivided', page, word: w.word },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     if (w.kind === 'shortListSplit' || w.kind === 'openerFloat' || w.kind === 'tocGroupSplit') {
       // The composition rules (#749): a short list cut between columns, a
       // float on an opener page, a contents block cut (#850), each by its

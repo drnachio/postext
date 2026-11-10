@@ -1,22 +1,22 @@
 'use client';
 
-import { DEFAULT_BODY_TEXT_CONFIG, DEFAULT_HYPHENATION_CONFIG, hyphenationLanguageLimits } from 'postext';
-import type { BodyTextConfig, HyphenationConfig, ResolvedBodyTextConfig } from 'postext';
-import { NestedGroup, NumberInput, ToggleSwitch } from '../../../../controls/index.js';
+import { DEFAULT_HYPHENATION_CONFIG, hyphenationLanguageLimits } from 'postext';
+import type { BodyTextConfig, CompositionRule, HyphenationConfig, ResolvedBodyTextConfig } from 'postext';
+import { NestedGroup, NumberInput, SelectInput } from '../../../../controls/index.js';
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
 import { resetHyphenationField } from './HyphenationFields.js';
+
+const D = DEFAULT_HYPHENATION_CONFIG;
 
 interface HyphenRulesProps {
   bodyText: ResolvedBodyTextConfig;
   raw: BodyTextConfig | undefined;
   updateBodyText: (partial: Partial<BodyTextConfig>) => void;
   updateHyphenation: (partial: Partial<HyphenationConfig>) => void;
-  resetField: (field: keyof BodyTextConfig) => void;
   labels: ReturnType<typeof useSandboxLabels>;
 }
 
-/** The dictionary's limits, as InDesign's hyphenation settings: unset,
- *  each shows the language's own. */
+/** The dictionary's limits (#1466): unset, each shows the language's own. */
 export function HyphenationLimitsFields({ bodyText, raw, updateBodyText, updateHyphenation, labels }: HyphenRulesProps) {
   const h = bodyText.hyphenation;
   const own = hyphenationLanguageLimits(h.locale);
@@ -59,75 +59,91 @@ export function HyphenationLimitsFields({ bodyText, raw, updateBodyText, updateH
   );
 }
 
-/** Where hyphens may fall on the page (optimal line breaking only): how
- *  dear each one is, how many in a row, the last word, the strict rule and
- *  the lines between them. All off by default. */
-export function HyphenDistributionFields({ bodyText, raw, updateBodyText, updateHyphenation, resetField, labels }: HyphenRulesProps) {
-  const D = DEFAULT_BODY_TEXT_CONFIG;
+/** A penalty in demerits, on the scale of two hyphenated lines in a row
+ *  (3000). */
+const PENALTY = { min: 0, max: 1000000, step: 1000, widthCh: 8 } as const;
+
+/** Where hyphens may fall (#1466, optimal line breaking only): how dear
+ *  each one is, the ladders and the last word. Each rule has its level,
+ *  then what it measures (under Warn and Avoid) and what a fault costs the
+ *  line breaker (under Avoid). */
+export function HyphenDistributionFields({
+  bodyText,
+  raw,
+  updateBodyText,
+  updateHyphenation,
+  options,
+  labels,
+}: HyphenRulesProps & { options: { value: string; label: string }[] }) {
   const h = bodyText.hyphenation;
+  const reset = (field: keyof HyphenationConfig) => resetHyphenationField(raw, field, updateBodyText);
   return (
     <>
       <NumberInput
         label={labels.bodyFewerHyphens}
-        value={bodyText.fewerHyphens}
-        onChange={(v) => updateBodyText({ fewerHyphens: v })}
+        value={h.fewerHyphens}
+        onChange={(fewerHyphens) => updateHyphenation({ fewerHyphens })}
         min={0}
         max={10}
         step={1}
         tooltip={labels.bodyFewerHyphensTooltip}
-        isDefault={bodyText.fewerHyphens === D.fewerHyphens}
-        onReset={() => resetField('fewerHyphens')}
+        isDefault={h.fewerHyphens === D.fewerHyphens}
+        onReset={() => reset('fewerHyphens')}
       />
-      <NumberInput
-        label={labels.bodyHyphenationMaxConsecutive}
-        value={h.maxConsecutive}
-        onChange={(maxConsecutive) => updateHyphenation({ maxConsecutive })}
-        min={0}
-        max={10}
-        step={1}
-        tooltip={labels.bodyHyphenationMaxConsecutiveTooltip}
-        isDefault={raw?.hyphenation?.maxConsecutive === undefined}
-        onReset={() => resetHyphenationField(raw, 'maxConsecutive', updateBodyText)}
+      <SelectInput
+        label={labels.bodyHyphenLadders}
+        value={h.ladders}
+        options={options}
+        onChange={(value) => updateHyphenation({ ladders: value as CompositionRule })}
+        tooltip={labels.bodyHyphenLaddersTooltip}
+        isDefault={h.ladders === D.ladders}
+        onReset={() => reset('ladders')}
       />
-      <ToggleSwitch
-        label={labels.bodyHyphenationLastWord}
-        checked={h.lastWord}
-        onChange={(lastWord) => updateHyphenation({ lastWord })}
-        tooltip={labels.bodyHyphenationLastWordTooltip}
-        isDefault={h.lastWord === DEFAULT_HYPHENATION_CONFIG.lastWord}
-        onReset={() => resetHyphenationField(raw, 'lastWord', updateBodyText)}
-      />
-      <ToggleSwitch
-        label={labels.bodyStrictHyphenation}
-        checked={bodyText.strictHyphenation}
-        onChange={(checked) => updateBodyText({ strictHyphenation: checked })}
-        tooltip={labels.bodyStrictHyphenationTooltip}
-        isDefault={bodyText.strictHyphenation === D.strictHyphenation}
-        onReset={() => resetField('strictHyphenation')}
-      />
-      <NumberInput
-        label={labels.bodyMinLinesBetweenHyphens}
-        value={bodyText.minLinesBetweenHyphens}
-        onChange={(v) => updateBodyText({ minLinesBetweenHyphens: v })}
-        min={0}
-        max={4}
-        step={1}
-        tooltip={labels.bodyMinLinesBetweenHyphensTooltip}
-        isDefault={bodyText.minLinesBetweenHyphens === D.minLinesBetweenHyphens}
-        onReset={() => resetField('minLinesBetweenHyphens')}
-      />
-      {bodyText.minLinesBetweenHyphens > 0 && (
+      {h.ladders !== 'allow' && (
         <NestedGroup>
           <NumberInput
-            label={labels.bodyHyphenSpacingPenalty}
-            value={bodyText.hyphenSpacingPenalty}
-            onChange={(v) => updateBodyText({ hyphenSpacingPenalty: v })}
-            min={0}
-            max={5000}
-            step={50}
-            tooltip={labels.bodyHyphenSpacingPenaltyTooltip}
-            isDefault={bodyText.hyphenSpacingPenalty === D.hyphenSpacingPenalty}
-            onReset={() => resetField('hyphenSpacingPenalty')}
+            label={labels.bodyHyphenationMaxConsecutive}
+            value={h.maxConsecutive}
+            onChange={(maxConsecutive) => updateHyphenation({ maxConsecutive })}
+            min={1}
+            max={10}
+            step={1}
+            tooltip={labels.bodyHyphenationMaxConsecutiveTooltip}
+            isDefault={h.maxConsecutive === D.maxConsecutive}
+            onReset={() => reset('maxConsecutive')}
+          />
+          {h.ladders === 'avoid' && (
+            <NumberInput
+              label={labels.bodyHyphenLadderPenalty}
+              value={h.ladderPenalty}
+              onChange={(ladderPenalty) => updateHyphenation({ ladderPenalty })}
+              {...PENALTY}
+              tooltip={labels.bodyHyphenLadderPenaltyTooltip}
+              isDefault={h.ladderPenalty === D.ladderPenalty}
+              onReset={() => reset('ladderPenalty')}
+            />
+          )}
+        </NestedGroup>
+      )}
+      <SelectInput
+        label={labels.bodyHyphenationLastWord}
+        value={h.lastWord}
+        options={options}
+        onChange={(value) => updateHyphenation({ lastWord: value as CompositionRule })}
+        tooltip={labels.bodyHyphenationLastWordTooltip}
+        isDefault={h.lastWord === D.lastWord}
+        onReset={() => reset('lastWord')}
+      />
+      {h.lastWord === 'avoid' && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.bodyHyphenLastWordPenalty}
+            value={h.lastWordPenalty}
+            onChange={(lastWordPenalty) => updateHyphenation({ lastWordPenalty })}
+            {...PENALTY}
+            tooltip={labels.bodyHyphenLastWordPenaltyTooltip}
+            isDefault={h.lastWordPenalty === D.lastWordPenalty}
+            onReset={() => reset('lastWordPenalty')}
           />
         </NestedGroup>
       )}

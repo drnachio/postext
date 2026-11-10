@@ -128,7 +128,13 @@ export function JustificationSubsection({
   resetField,
   labels,
 }: Props) {
-  const ruleProps = { bodyText, raw, updateBodyText, updateHyphenation, resetField, labels };
+  const ruleProps = { bodyText, raw, updateBodyText, updateHyphenation, labels };
+  // The three levels of a composition rule (#749).
+  const ruleOptions = [
+    { value: 'allow', label: labels.compositionRuleAllow },
+    { value: 'warn', label: labels.compositionRuleWarn },
+    { value: 'avoid', label: labels.compositionRuleAvoid },
+  ];
   return (
     <NestedGroup>
       <ToggleSwitch
@@ -178,7 +184,7 @@ export function JustificationSubsection({
             labels={labels}
           />
           {/* Where hyphens may fall: optimal line breaking only. */}
-          {bodyText.optimalLineBreaking && <HyphenDistributionFields {...ruleProps} />}
+          {bodyText.optimalLineBreaking && <HyphenDistributionFields {...ruleProps} options={ruleOptions} />}
           <RaggedHyphenationFields
             bodyText={bodyText}
             raw={raw}
