@@ -10,7 +10,7 @@ import { clipToOutline, imageUrl, renderFittedImage, renderVideoHtml } from './i
 import { renderSwatchSegment, renderChip, baselineLineHeightDecl } from './lines.js';
 import type { HtmlPaint } from './render.js';
 import { orderedOffsets } from './segments.js';
-import { wordSegmentsOf, renderTextSegment, renderWordTextSegment, linkRuns, segmentHref, copyTextHtml, mathSegmentSvg, renderRefRuns, refLinks, refKey, lineEndHtml, lineEndText, resourceAnchorId, renderScoreBodyHtml } from './segmentText.js';
+import { wordSegmentsOf, renderTextSegment, renderWordTextSegment, linkRuns, segmentHref, copyTextHtml, mathSegmentSvg, renderRefRuns, refLinks, refKey, lineEndHtml, lineEndText, resourceAnchorId, renderScoreBodyHtml, struckHtml } from './segmentText.js';
 import { type TextDirection, quoteFontString, lineCjkDecl, ligaturesDecl, segmentBox, segmentCjk, cjkTextDecl } from './styles.js';
 import { wordsHtml, esc } from './textRuns.js';
 import { htmlLinkFill, lineLinkUnderlinesHtml } from './linkPaint.js';
@@ -86,9 +86,9 @@ function renderResourceLine(
       const box = segmentBox(seg, rootDir, rootLang, tracking, font, segColor, (probe) => ({ font: quoteFontString(pickResourceFont(probe, fonts)), color: segColor }));
       // A line set word by word as every line was before the CJK
       // features (see `renderSegments`).
-      return composed
+      return struckHtml(seg, composed
         ? renderTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, line.letterSpacing ?? 0, segmentCjk(seg, lineDecl), box)
-        : renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, cjk && hasCJK(seg.text), box);
+        : renderWordTextSegment(inLink ? { ...seg, refResourceId: undefined } : seg, at, top, fontDecl, colorDecl, segColor, cjk && hasCJK(seg.text), box));
     };
     const links = linkRuns();
     let x = 0;

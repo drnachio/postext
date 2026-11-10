@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Auszeichnungen innerhalb einer Zeile: Hervorhebung, Links, Chips, Kapitälchen, Tabulatoren, senkrechter Text, chinesische und japanische Zeichen, Schreibrichtung und LaTeX-Formeln',
   lang: 'de',
   lastUpdated: '2026-11-06',
-  readingTime: '24 min',
+  readingTime: '25 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Diese Seite behandelt die Auszeichnungen, die Sie innerhalb einer Textzeile verwenden. Sie machen Wörter fett oder kursiv, fügen Links ein, zeichnen kleine Etiketten, setzen Kapitälchen und richten Text an Tabstopps aus. Andere Auszeichnungen sind für chinesische und japanische Bücher gedacht, etwa kleine Aussprachehilfen über einem Schriftzeichen, oder für eine Wendung in der anderen Schreibrichtung, etwa Englisch in einem arabischen Buch. Der letzte Abschnitt zeigt, wie Sie mathematische Formeln schreiben.",
@@ -54,6 +54,11 @@ Inline-Auszeichnungen werden in jedem Textblock erkannt (Überschriften, Absätz
       <td>Tiefgestellt</td>
       <td><code>~text~</code></td>
       <td>Gleiche Größe, um 0,15 der Textgröße abgesenkt, sodass es innerhalb der Unterlängen bleibt – ein chemischer Index (<code>H~2~O</code>, <code>p<em>K</em>~a~</code>). Eine Tilde mit einer Ziffer auf jeder Seite ist ein Bereich und bleibt wörtlich stehen: <code>3~5 days</code>, <code>需要3~5天</code>. Ebenso eine zwischen zwei chinesischen Wörtern, die keine Tiefstellung öffnet: <code>周一~周五</code>, <code>北京~上海</code>; eine Tiefstellung schließt aber weiterhin vor einem chinesischen Zeichen (<code>F~合~等于</code>). Lässt sich mit fett und kursiv kombinieren (<code>**H~2~O**</code>). Eine Tiefstellung und eine Hochstellung, die ohne etwas dazwischen zusammen geschrieben sind, werden wie in einer Formel gestapelt: <code>*T*~0~^2^</code> setzt die 2 über die 0, gleich welche zuerst kommt, die Tiefstellung um 0,25 der Textgröße abgesenkt, damit sie der Hochstellung ausweicht, und das Paar nimmt die Breite des breiteren Teils ein. Ein Leerzeichen oder ein Buchstabe dazwischen setzt sie nacheinander; ein Wortverbinder (U+2060) ebenso, ohne dass dazwischen etwas sichtbar ist. Ein gestapeltes Paar wird nie an einem Zeilenumbruch getrennt: Ein für die Zeile zu breites Wort bricht vor dem Paar um.</td>
+    </tr>
+    <tr>
+      <td>Durchgestrichen</td>
+      <td><code>~~Text~~</code></td>
+      <td>Eine Linie durch den Text, der an seinem Platz bleibt: der alte Preis neben dem neuen (<code>~~165 €~~ 129 €</code>). Zwei Tilden auf jeder Seite; ein einzelnes Paar ist eine Tiefstellung. Siehe <a href="#durchgestrichener-text">Durchgestrichener Text</a> weiter unten.</td>
     </tr>
     <tr>
       <td>Kapitälchen</td>
@@ -200,6 +205,21 @@ Die Sonne erwärmt das Meer, und :mark[das Wasser steigt als Dampf in die Luft, 
 - **Kein Platzbedarf.** Das Band wird unter den Text gezeichnet, von 0,8 em über bis 0,25 em unter der Grundlinie, vergrößert um den senkrechten Innenabstand, und sein waagrechter Innenabstand reicht in die Wortzwischenräume neben der Wendung. Die Zeilen brechen genau wie ohne Markierung um; ein bereits gesetztes Buch zu markieren verschiebt keine seiner Seiten.
 - **Text.** Der markierte Text nimmt eigene Inline-Auszeichnungen (`:mark[das **Schlüssel**wort]`), Links, Chips und Verweise auf. Eckige Klammern lassen sich darin verschachteln (`:mark[siehe [die Karte]]`), `\]` schreibt eine wörtliche Klammer, und der Text darf über einen einfachen Zeilenumbruch der Quelle laufen. Ein Satzzeichen, das außerhalb der Klammern an der Wendung hängt (`:mark[Land].`), bleibt außerhalb des Bandes; die Textfarbe eines Stils erfasst das ganze Wort, zu dem es gehört. Eine Markierung in einer anderen wird als deren Text gesetzt.
 - **Wo.** Absätze, im Text gesetzte Überschriften, Listenpunkte, Zitate, Kästen, Fußnoten, Tabellenzellen, Legenden und Anmerkungen, in Text von links nach rechts und von rechts nach links sowie in Chinesisch und Japanisch. Canvas, PDF und HTML zeichnen das Band; in einem getaggten PDF ist es ein Layout-Artefakt, und die Wörter gehören zu ihrem Absatz. Eine Überschrift, die eine Gestaltung zeichnet (ein Kapitelauftakt), zeigt die Wörter ohne Band, ebenso der HTML-Betrachter auf einer Seite im senkrechten Satz.
+
+### Durchgestrichener Text
+
+`~~Text~~` zieht eine Linie durch `Text`, so wie eine Preisliste den alten Preis neben dem neuen durchstreicht oder eine Edition ein Wort zeigt, das der Autor gestrichen hat. Es ist die Syntax von GitHub Flavored Markdown.
+
+```markdown
+Widget A: ~~165 €~~ 129 €.
+
+Das Treffen wird ~~auf Dienstag~~ auf Donnerstag verlegt.
+```
+
+- **Syntax.** Genau zwei Tilden auf jeder Seite, und der Text beginnt und endet mit einem Zeichen, das weder ein Leerzeichen noch eine Tilde ist; andere Tilden werden gelesen wie bisher. Ein einzelnes Paar ist weiterhin eine Tiefstellung (`H~2~O`), auch innerhalb einer Durchstreichung (`~~H~2~O~~`). Für zwei wörtliche Tilden schreiben Sie `\~\~`. Der Text nimmt eigene Inline-Auszeichnungen, Links, Chips und Verweise auf und darf über einen einfachen Zeilenumbruch der Quelle laufen, nicht über eine Leerzeile.
+- **Kein Platzbedarf.** Die Linie wird über den Text gemalt, und die Zeilen brechen genau so um wie ohne sie. Eine Durchstreichung, die über ein Zeilenende läuft, bekommt auf jeder Zeile eine Linie, zwei Durchstreichungen nebeneinander behalten zwei Linien, und ein Satzzeichen, das an der Durchstreichung klebt (`~~165~~.`), bleibt draußen.
+- **Die Linie.** Sie liegt dort, wo die Schrift ihre Durchstreichung vorsieht, und ist so dick, wie die Schrift angibt (`yStrikeoutPosition` und `yStrikeoutSize` ihrer OS/2-Tabelle, gelesen aus den Schriftdateien, die die Engine bekommt: `prepareFonts`, der Layout-Worker, die Kommandozeile), in der Farbe des durchgestrichenen Textes; jeder Schriftschnitt einer Durchstreichung für sich, sodass ein fettes Wort oder eine andere Schriftfamilie darin eine eigene Linie bekommt, die an die nächste anschließt. Ein Schnitt, dessen Datei die Engine nicht gelesen hat oder der keine Durchstreichung angibt, bekommt 0,28 em über der Grundlinie, etwa die halbe Höhe der Kleinbuchstaben, und 0,05 em. In chinesischem und japanischem Text und auf einer senkrechten Seite läuft die Linie durch die Mitte der Zeichen. Eine Hoch- oder Tiefstellung in der Durchstreichung verschiebt sie nicht.
+- **Wo.** Absätze, Überschriften (solange `headings.inlineMarks` eingeschaltet ist), Listenpunkte, Zitate, Kästen, Fußnoten, Tabellenzellen, Bildunterschriften und Anmerkungen sowie die Wörter eines Chips (`:chip[~~alt~~ neu]`; `~~:chip[alt]~~` streicht die Wörter des Chips durch). Canvas, PDF und HTML zeichnen die Linie aus dem Satz; in einem getaggten PDF ist sie ein Layout-Artefakt, und die Wörter bleiben Text, der so extrahiert und vorgelesen wird, wie er geschrieben ist. HTML und das umfließende EPUB setzen die Wörter zusätzlich in `<s>`, und der Word-Export markiert sie als durchgestrichen. Ein erledigter Aufgabenpunkt hat eine eigene Linie (`taskCompletedStrikethrough`).
 
 ### Kapitälchen
 

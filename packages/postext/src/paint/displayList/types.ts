@@ -52,6 +52,10 @@ export interface DisplayRun {
   /** Baseline shift in px, positive = up. */
   baselineShift?: number;
   href?: string;
+  /** Struck through (`~~…~~`): the whole run. A word struck only in part
+   *  (`~~old~~.`) is not flagged; its line is the layout's
+   *  (`VDTLine.marks`). */
+  strike?: boolean;
   footnoteId?: string;
   /** A `:ref` run's target: a resource id, or an anchor's id (`anchor`). */
   refTarget?: { id: string; anchor?: boolean };

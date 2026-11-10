@@ -28,6 +28,7 @@ import { collectContentWarnings, locateContentWarnings, cjkLooseLineWarnings, ra
 import { annotateDocument } from '../../marks/cjkMarks.js';
 import { annotateArabicMarks } from '../../marks/arabicMarks.js';
 import { overlineEmphasis } from '../../marks/emphasisOverline.js';
+import { strikeDocument } from '../../marks/strikethrough.js';
 import { highlightDocument } from '../../marks/highlightMarks.js';
 import { underlineDocumentLinks } from '../../marks/linkUnderline.js';
 import { buildDocumentBalanced } from './balanced.js';
@@ -162,6 +163,8 @@ export function* buildDocumentGen(
   const harakat = annotateArabicMarks(doc);
   // The rules over `*…*` runs under `bodyText.emphasis: 'overline'`.
   overlineEmphasis(doc);
+  // The lines through struck-through text (`~~…~~`).
+  strikeDocument(doc);
   // The bands of the highlight marks (`:mark[…]`, #888).
   highlightDocument(doc);
   // The lines under the links (`links.style`, #1402).

@@ -2,7 +2,7 @@ import type { Color, PDFFont } from 'pdf-lib';
 import { formNumberStyle, numberFieldText, type VDTChip, type VDTChipRun } from 'postext';
 import { parseFontString } from '../../fontString.js';
 import type { FontCache } from '../../fontCache.js';
-import { type PageCtx, drawChipBoxPx, drawTextDotsPx, drawTextPx, invisibleText } from '../primitives.js';
+import { type PageCtx, drawChipBoxPx, drawLinePx, drawTextDotsPx, drawTextPx, invisibleText } from '../primitives.js';
 import { tagArtifact, tagContent, type StructElem } from '../structure/tagging.js';
 import { drawRightToLeftRun } from '../text/rtlRun.js';
 import { paintChipReadings } from '../text/annotations.js';
@@ -28,6 +28,9 @@ export function paintChip(
 ): void {
   if (elem) tagArtifact(ctx, { type: 'Layout' });
   drawChipBoxPx(ctx, chip, xPx, baselinePx);
+  // The lines through its struck-through words (`~~…~~`), drawn with the
+  // box: a layout artifact, the words stay plain text.
+  if (!chip.blank) drawChipStrikesPx(ctx, chip, xPx, baselinePx, colorFor);
   // The readings of its ruby words, over a blank too (#1244).
   if (chip.readings && chip.runs[0]) {
     tagContent(ctx, elem);
@@ -57,6 +60,15 @@ export function paintChip(
     return;
   }
   paintChipRuns(ctx, chip, xPx, baselinePx, fontCache, fallbackFont, fallbackSize, colorFor);
+}
+
+/** The lines through a chip's struck-through words (`VDTChip.strikes`),
+ *  in the colour of its first run. */
+export function drawChipStrikesPx(ctx: PageCtx, chip: VDTChip, xPx: number, baselinePx: number, colorFor: (run: VDTChipRun) => Color): void {
+  if (!chip.strikes || !chip.runs[0]) return;
+  const textX = xPx + chip.marginLeft + chip.borderWidth + chip.paddingX;
+  const color = colorFor(chip.runs[0]);
+  for (const s of chip.strikes) drawLinePx(ctx, textX + s.x, baselinePx + s.y, textX + s.x + s.length, baselinePx + s.y, color, s.thickness);
 }
 
 /**

@@ -71,10 +71,12 @@ interface Fmt {
   /** A ruby: the reading set over these characters, and which span of
    *  the ruby they are (each span is a ruby of its own). */
   ruby?: { key: string; text: string; group?: boolean };
+  /** Struck through (`~~…~~`). */
+  strike?: boolean;
 }
 
 const flagsOf = (f: Fmt): string => `${f.b ? 'b' : ''}${f.i ? 'i' : ''}${f.c ? 'c' : ''}${f.script === 'sup' ? 'p' : ''}${f.script === 'sub' ? 's' : ''}${f.k ? 'k' : ''}`;
-const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}|${f.ruby?.key ?? ''}`;
+const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}|${f.ruby?.key ?? ''}|${f.strike ? 'x' : ''}`;
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
@@ -88,6 +90,7 @@ function runProps(f: Fmt, style?: string): RunProps {
     shd: f.mark && !f.k && !f.href ? f.markFill : undefined,
     color: f.mark && !f.k && !f.href ? f.markInk : undefined,
     vertAlign: f.script === 'sup' ? 'superscript' : f.script === 'sub' ? 'subscript' : undefined,
+    strike: f.strike || undefined,
   };
 }
 
@@ -245,7 +248,8 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
         const ch = span.text[k]!;
         const src = s.sourceMap[p + k] ?? -1;
         const fmt: Fmt = { ...base, k: src >= 0 && inCode(src) };
-        const link = span.links?.find((l) => k >= l.start && k < l.end);
+        const link = span.links?.find((l) => !l.strike && k >= l.start && k < l.end);
+        if (span.links?.some((l) => l.strike && k >= l.start && k < l.end)) fmt.strike = true;
         if (link?.mark) {
           fmt.mark = true;
           const look = markLook(ctx, link.mark.style);

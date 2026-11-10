@@ -8,6 +8,24 @@ import type { VDTTextDots } from './design.js';
 // Resolved config aggregate (all sub-configs fully resolved to non-optional)
 // ---------------------------------------------------------------------------
 
+/** See {@link VDTLineSegment.strike}: the struck-through run's number in
+ *  its text (two runs side by side keep two lines), and the characters of
+ *  the segment's `text` the line goes through when it does not go through
+ *  all of them (`from` inclusive, `to` exclusive). */
+export interface VDTSegmentStrike {
+  id: number;
+  from?: number;
+  to?: number;
+}
+
+/** See {@link VDTChip.strikes}. */
+export interface VDTChipStrike {
+  x: number;
+  y: number;
+  length: number;
+  thickness: number;
+}
+
 /** See {@link VDTLineSegment.mark}. */
 export interface VDTSegmentMark {
   style: string;
@@ -73,6 +91,12 @@ export interface VDTChip {
   /** Box extent above / below the baseline, padding and border included. */
   ascent: number;
   descent: number;
+  /** Lines through the chip's struck-through words (`~~…~~` in its
+   *  text): from `x` px past where its text starts (after its border and
+   *  padding), `y` px from the baseline (negative up), `length` px long and
+   *  `thickness` px thick, in the colour of its text. Absent when none is
+   *  struck. */
+  strikes?: VDTChipStrike[];
   paddingX: number;
   borderWidth: number;
   /** Corner radius, already clamped to half the box. */
@@ -179,6 +203,12 @@ export interface VDTLineSegment {
    *  closing full stop glued to the phrase). The band itself is
    *  `VDTLine.highlights`. */
   mark?: VDTSegmentMark;
+  /** Struck-through text (`~~text~~`): the segment holds characters the
+   *  line goes through, all of them or `from`–`to` (a full stop glued to the
+   *  run stays out). Paint only: the layout draws the line as
+   *  `VDTLine.marks` (`marks/strikethrough.ts`); the HTML outputs also wrap
+   *  the words in `<s>`, the Word export sets them struck. */
+  strike?: VDTSegmentStrike;
   /** Present when `kind === 'math'`. The rendered formula. */
   mathRender?: MathRender;
   /** Present when `kind === 'score'` (#1172): the engraved system, drawn

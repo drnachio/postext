@@ -583,7 +583,7 @@ export type {
   VDTWarichu,
   VDTLineMark,
   VDTLineHighlight, VDTLinkUnderline,
-  VDTSegmentMark,
+  VDTSegmentMark, VDTSegmentStrike, VDTChipStrike,
   VDTChip,
   VDTSwatch,
   VDTChipRun,

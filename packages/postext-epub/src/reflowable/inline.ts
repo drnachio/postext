@@ -327,6 +327,7 @@ export function wrapFormat(inner: string, fmt: Format): string {
   if (fmt.note === 'side') out = `<span class="pt-note-side"><span>${out}</span></span>`;
   else if (fmt.note === 'right') out = `<span class="pt-note-right">${out}</span>`;
   if (fmt.script) out = `<${fmt.script}>${out}</${fmt.script}>`;
+  if (fmt.strike) out = `<s>${out}</s>`;
   if (fmt.italic) out = `<em>${out}</em>`;
   if (fmt.bold) out = `<strong>${out}</strong>`;
   if (fmt.lang) out = `<span lang="${xmlAttr(fmt.lang)}" xml:lang="${xmlAttr(fmt.lang)}">${out}</span>`;
@@ -345,6 +346,21 @@ function dropOffsets(text: string, offsets: readonly number[], start: number): s
     last = i + 1;
   }
   return out + text.slice(last);
+}
+
+/** Whether the space at `i` lies between two words of one struck-through
+ *  run (`VDTLineSegment.strike`). */
+function struckSpace(segs: readonly VDTLineSegment[], i: number): boolean {
+  let a = i - 1;
+  while (a >= 0 && segs[a]!.kind === 'space') a--;
+  let b = i + 1;
+  while (b < segs.length && segs[b]!.kind === 'space') b++;
+  const before = segs[a]?.strike;
+  const after = segs[b]?.strike;
+  if (!before || !after || before.id !== after.id) return false;
+  // The run goes on through the end of the word before and from the start
+  // of the word after.
+  return (before.to === undefined || before.to >= segs[a]!.text.length) && !after.from;
 }
 
 /** The text items of one line, in logical order. */
@@ -399,7 +415,10 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
       // spacing, which a reading system makes itself.
       const aki = ctx.spaceAfterQuestion === true && seg.autospace === true && afterQuestion(segs, i) ? '\u3000' : '';
       const text = seg.labelTab ? ' ' : seg.text.length > 0 ? seg.text : seg.autospace ? aki : ' ';
-      if (text) out.push({ t: 'text', text, fmt: {}, ...(link ? { link } : {}), ...lvlOf(seg) });
+      // A space between two words of one struck-through run is struck
+      // with them: the run stays one `<s>`.
+      const fmt: Format = struckSpace(segs, i) ? { strike: true } : {};
+      if (text) out.push({ t: 'text', text, fmt, ...(link ? { link } : {}), ...lvlOf(seg) });
       continue;
     }
     if (seg.kind !== 'text') continue;
@@ -421,6 +440,19 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
       first = false;
       if (!text) continue;
       const fmt = formatOf(run, seg, ctx);
+      // Struck-through characters (`~~…~~`): all of the segment's, or
+      // `from`–`to` of them (a full stop glued to the run stays out).
+      if (seg.strike) {
+        const from = Math.max(0, (seg.strike.from ?? 0) - start);
+        const to = Math.min(run.text.length, (seg.strike.to ?? seg.text.length) - start);
+        if (from <= 0 && to >= run.text.length && text === run.text) {
+          fmt.strike = true;
+        } else if (from < to && text === run.text) {
+          const pieces: [string, Format][] = [[text.slice(0, from), fmt], [text.slice(from, to), { ...fmt, strike: true }], [text.slice(to), fmt]];
+          for (const [part, f] of pieces) if (part) out.push({ t: 'text', text: part, fmt: f, ...(link ? { link } : {}), ...lvlOf(seg) });
+          continue;
+        }
+      }
       if (ctx.tcy && !fmt.tcy && !fmt.orientation) {
         for (const [part, cell] of tcyRuns(text, ctx.tcy)) {
           out.push({ t: 'text', text: part, fmt: cell ? { ...fmt, tcy: true } : fmt, ...(link ? { link } : {}), ...lvlOf(seg) });
@@ -550,6 +582,6 @@ export function formatKey(fmt: Format): string {
   return [
     fmt.bold ? 'b' : '', fmt.italic ? 'i' : '', fmt.script ?? '', fmt.smallCaps ? 'c' : '', fmt.label ? 'l' : '',
     fmt.dots ? `d${fmt.dotsStyle ?? ''}` : '', fmt.proper ? 'p' : '', fmt.book ? 'k' : '', fmt.side ? `s${fmt.side.style}${fmt.side.position}` : '', fmt.tcy ? 't' : '', fmt.orientation ?? '',
-    fmt.warichu ? 'w' : '', fmt.done ? 'x' : '', fmt.lang ?? '',
+    fmt.warichu ? 'w' : '', fmt.done ? 'x' : '', fmt.lang ?? '', fmt.strike ? 's' : '',
   ].join('|');
 }

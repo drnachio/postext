@@ -63,7 +63,7 @@ function joinSpans(a: InlineSpan, b: InlineSpan): InlineSpan {
   for (const l of [...(a.links ?? []), ...(b.links ?? []).map((l) => ({ ...l, start: l.start + a.text.length, end: l.end + a.text.length }))]) {
     // A link the tab cut in two is one again, its space included.
     const prev = links[links.length - 1];
-    if (prev && prev.href === l.href && prev.mark?.id === l.mark?.id && l.start <= prev.end + 1) prev.end = Math.max(prev.end, l.end);
+    if (prev && prev.href === l.href && prev.mark?.id === l.mark?.id && prev.strike?.id === l.strike?.id && l.start <= prev.end + 1) prev.end = Math.max(prev.end, l.end);
     else links.push({ ...l });
   }
   const joined: InlineSpan = { ...a, text: a.text + b.text };

@@ -129,5 +129,12 @@ export function paintChip(
     if (untracked) setLetterSpacing(ctx, spacing);
     tx += run.width;
   }
+  // The lines through its struck-through words (`~~…~~`).
+  if (chip.strikes && chip.runs[0]) {
+    const textX = bx + chip.borderWidth + chip.paddingX;
+    // Filled as the line's own marks are (`paintLineMarks`).
+    ctx.fillStyle = chip.color ?? inkFor(chip.runs[0]);
+    for (const s of chip.strikes) ctx.fillRect(textX + s.x, baseline + s.y - s.thickness / 2, s.length, s.thickness);
+  }
   restoreContext(ctx);
 }
