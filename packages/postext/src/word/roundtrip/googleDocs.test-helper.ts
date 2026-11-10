@@ -13,9 +13,10 @@
 // - a bookmark that starts where its paragraph starts has its start
 //   written between the paragraphs, with `w:colFirst`/`w:colLast`; one
 //   that starts further in stays where it was; every end stays;
-// - index entries (XE) go; an index (INDEX) becomes plain paragraphs, and
-//   so does a contents list (one of the two files kept it as a field of
-//   Google's own, the other did not);
+// - index entries (XE) go and an index (INDEX) becomes plain paragraphs;
+//   the contents list stays a field, Google's own (`toc: 'plain'` is an
+//   editor that turns it into plain paragraphs too, which neither file
+//   showed);
 // - every bookmark keeps its name, and Google adds bookmarks of its own.
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
@@ -53,8 +54,8 @@ function flatten(xml: string, looks: StyleLooks, toc: 'field' | 'plain'): string
   let out = xml;
   // Content controls unwrapped.
   out = out.replace(/<w:sdtPr>(?:(?!<\/w:sdtPr>).)*<\/w:sdtPr>|<\/?w:sdt>|<\/?w:sdtContent>|<w:sdtEndPr\/>/gs, '');
-  // Index entries gone; an index as the text it showed, and a contents
-  // list too unless it stayed a field (`toc`).
+  // Index entries gone; an index as the text it showed, and with `toc:
+  // 'plain'` the contents list too.
   const R = '<w:r>(?:<w:rPr>(?:(?!<\\/w:rPr>).)*<\\/w:rPr>)?';
   out = out.replace(new RegExp(`${R}<w:fldChar w:fldCharType="begin"\\/><\\/w:r>${R}<w:instrText[^>]*>\\s*XE [^<]*<\\/w:instrText><\\/w:r>${R}<w:fldChar w:fldCharType="end"\\/><\\/w:r>`, 'gs'), '');
   const open: boolean[] = [];
@@ -101,8 +102,8 @@ function flatten(xml: string, looks: StyleLooks, toc: 'field' | 'plain'): string
 }
 
 export interface GoogleDocsOptions {
-  /** `plain` (default): the contents list comes back as plain paragraphs;
-   *  `field`: as a field. */
+  /** `field` (default, as measured): the contents list stays a field;
+   *  `plain`: it comes back as plain paragraphs, like the index. */
   toc?: 'field' | 'plain';
   /** Leave out the properties written since #1458 (design, digest,
    *  chapters): a file exported before them. */
@@ -116,7 +117,7 @@ export function savedByGoogleDocs(bytes: Uint8Array, options: GoogleDocsOptions 
   const looks = styleLooks(parseXml(strFromU8(files['word/styles.xml']!)));
   for (const [path, data] of Object.entries(files)) {
     if (path.startsWith('customXml/') || path === 'docProps/app.xml' || path === 'docProps/core.xml') continue;
-    if (path === 'word/document.xml' || path === 'word/footnotes.xml') out[path] = strToU8(flatten(strFromU8(data), looks, options.toc ?? 'plain'));
+    if (path === 'word/document.xml' || path === 'word/footnotes.xml') out[path] = strToU8(flatten(strFromU8(data), looks, options.toc ?? 'field'));
     else if (path === 'word/styles.xml') {
       // Google's own styles: the headings by name, nothing of the book's.
       const heads = [1, 2, 3, 4, 5, 6].map((n) => `<w:style w:type="paragraph" w:styleId="Heading${n}"><w:name w:val="heading ${n}"/><w:basedOn w:val="Normal"/><w:pPr><w:outlineLvl w:val="${n - 1}"/></w:pPr><w:rPr><w:b w:val="1"/></w:rPr></w:style>`).join('');

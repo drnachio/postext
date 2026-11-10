@@ -12,7 +12,7 @@ import { formatEdits } from './formats.js';
 import { mergeText, type PlacedEdit } from './merge.js';
 import { readExportedDocx, type ReadComment } from './read.js';
 import type { RebuiltMap } from './rebuild.js';
-import { looseText } from './align.js';
+import { furnitureKey } from './selfRead.js';
 import { settleLooks, writtenHidden } from './settle.js';
 import { fieldName, setField, targetKey, textsOf, type TextTarget } from './targets.js';
 import type { DocxComment, DocxEdit, DocxEditResult, DocxEditSource } from './types.js';
@@ -160,7 +160,7 @@ function bookmarksLost(blocks: readonly BlockView[], read: { strays: readonly st
 function dropFurniture(added: { chars: readonly { ch: string }[] }[], furniture: ReadonlyMap<string, number>): void {
   const left = new Map(furniture);
   for (let i = 0; i < added.length; i++) {
-    const key = looseText(added[i]!.chars.map((c) => c.ch).join(''));
+    const key = furnitureKey(added[i]!.chars.map((c) => c.ch).join(''));
     const n = left.get(key) ?? 0;
     if (n <= 0) continue;
     left.set(key, n - 1);

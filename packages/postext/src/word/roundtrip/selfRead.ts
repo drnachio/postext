@@ -12,7 +12,7 @@ import { parseXml } from '../xml.js';
 import { looseText } from './align.js';
 import { styleLooks } from './looks.js';
 import { assign } from './read.js';
-import { PARA_CHAR, walkPart, type Token } from './walk.js';
+import { OBJECT_CHAR, PARA_CHAR, walkPart, type Token } from './walk.js';
 
 /** The XML of a written file's text parts, as `semanticExportMap` gives
  *  them: the body's content, each note, the style definitions. */
@@ -29,6 +29,11 @@ export interface SelfRead {
    *  how many times each stands in the file. */
   furniture: Map<string, number>;
 }
+
+/** A paragraph set outside the fragments, as it is compared: its words,
+ *  whatever objects stand among them (a page number that is a field in
+ *  one file and nothing in another). */
+export const furnitureKey = (text: string): string => looseText(text.replaceAll(OBJECT_CHAR, ' '));
 
 export function selfRead(map: ExportMap, parts: WrittenParts): SelfRead {
   const out: SelfRead = { looks: new Map(), furniture: new Map() };
@@ -55,7 +60,7 @@ export function selfRead(map: ExportMap, parts: WrittenParts): SelfRead {
     if (chars.map((c) => c.ch).join('') === f.text) out.looks.set(f.id, chars.map((c) => c.look ?? ''));
   }
   for (const text of [...read.strays, ...generated]) {
-    const key = looseText(text);
+    const key = furnitureKey(text);
     if (key) out.furniture.set(key, (out.furniture.get(key) ?? 0) + 1);
   }
   return out;

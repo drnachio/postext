@@ -38,6 +38,7 @@ const MD =
   'Last paragraph of the chapter.\n';
 
 const INDEX = '# Index\n\n:::index\n';
+const CONTENTS = '# Contents\n\n:::toc\n';
 
 const book = (chapters: string[], config: never = CONFIG) => ({
   chapters: chapters.map((markdown, i) => ({ id: `ch${i + 1}`, title: `Chapter ${i + 1}`, markdown })),
@@ -84,11 +85,11 @@ describe('a flow export saved by Google Docs', () => {
   for (const design of ['book', 'plain'] as const) {
     for (const toc of ['plain', 'field'] as const) {
       it(`comes back with no edit (${design}, contents as ${toc})`, async () => {
-        const r = await roundTrip([MD, INDEX], design, { docs: { toc } });
+        const r = await roundTrip([CONTENTS, MD, INDEX], design, { docs: { toc } });
         expect(r.edits).toEqual([]);
         expect(r.changed).toBe(false);
         expect(r.notes).toEqual([{ code: 'map-rebuilt' }]);
-        expect(r.chapters.map((c) => c.markdown)).toEqual([MD, INDEX]);
+        expect(r.chapters.map((c) => c.markdown)).toEqual([CONTENTS, MD, INDEX]);
       });
     }
   }
