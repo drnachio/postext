@@ -327,9 +327,9 @@ per-resource `placement`:
 | Picture with the text running beside it (newsletter, magazine, a portrait in a profile) | `position: "here"`, `wrap: "right"`, `width: 0.4` + `::resource{id}` before the paragraph (≥ 1.24) |
 | Picture at the head of a column, the column's first lines beside it | `position: "top"`, `span: "column"`, `wrap: "left"`, `width: 0.5` (≥ 1.24) |
 | Landscape table on its own page | `span: "page"`, `rotate: "ccw"` |
-| Full-page plate, alone on its page with its caption | `plate: true` (#1461); a bitmap enlarged past the preflight's minimum is reported |
-| Full-bleed picture page, no running head or folio | `plate: "bleed"` (with `page.cutLines`) or `"trim"` (#1461) |
-| Figure widths given in millimetres | `width: { "value": 80, "unit": "mm" }` (#1461), measured against its slot |
+| Full-page plate, alone on its page with its caption | `plate: true` (≥ 1.73, #1461); a bitmap enlarged past the preflight's minimum is reported |
+| Full-bleed picture page, no running head or folio | `plate: "bleed"` (with `page.cutLines`) or `"trim"` (≥ 1.73, #1461) |
+| Figure widths given in millimetres | `width: { "value": 80, "unit": "mm" }` (≥ 1.73, #1461), measured against its slot |
 | Tall plate that must fit the page | `shrink: "page"` (≥ 1.24; `minScale` default 0.7), `captionMeasure: "body"`, `align: "center"` |
 | Figure that should stay on the page that cites it, a little smaller, rather than move on | `shrink: "slot"`, `minScale: 0.8` (≥ 1.24) |
 | Figure at the head of the page that cites it, the text above the reference set under it (LaTeX `[t]`) | `position: "top"`, `citingPage: true` (≥ 1.25); `layout.floatsAtCitingPage` for every float |
