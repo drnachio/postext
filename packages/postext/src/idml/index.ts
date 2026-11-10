@@ -107,3 +107,7 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
   const bytes = zipSync(z, { level: 6, mtime: new Date(1980, 0, 1, 0, 0, 0) });
   return { bytes, links: [...w.media.values()] };
 }
+
+// IDML into Postext: an InDesign document as a new book (`import/`).
+export { importIdml, readIdml, analyzeIdml, idmlToPostext, guessParagraphRole, guessCharacterRole, linkName, PARAGRAPH_ROLES, CHARACTER_ROLES } from './import/index.js';
+export type { IdmlDocument, IdmlAnalysis, ParagraphRole, CharacterRole, StyleUse, IdmlImportOptions, IdmlImportResult, IdmlNote, IdmlNoteId } from './import/index.js';

@@ -5679,4 +5679,46 @@ export interface SandboxLabels {
   taskBoxDrawn: string;
   taskBoxCharacter: string;
   taskBoxTooltip: string;
+
+  // InDesign (IDML) import. The note labels take `__count__`.
+  projectImportIdmlShort: string;
+  idmlImportIntro: string;
+  idmlImportInvalid: string;
+  idmlSummaryHeading: string;
+  /** `__pages__`, `__paragraphs__`, `__tables__`, `__pictures__`, `__notes__`: the counts. */
+  idmlSummaryCounts: string;
+  idmlLanguage: string;
+  idmlDesign: string;
+  idmlLinksHeading: string;
+  /** `__found__` of `__total__` pictures. */
+  idmlLinksFound: string;
+  idmlLinksNone: string;
+  idmlLinksHelp: string;
+  idmlLinksFolder: string;
+  idmlLinksZip: string;
+  idmlLinksZipInvalid: string;
+  idmlRoleStyle: string;
+  idmlRoleList: string;
+  idmlRoleOrdered: string;
+  idmlCharAuto: string;
+  idmlNotesHeading: string;
+  idmlNoteMissingLinks: string;
+  idmlNoteUnsupportedPictures: string;
+  idmlNoteLoosePictures: string;
+  idmlNoteAnchoredFrames: string;
+  idmlNoteOtherObjects: string;
+  idmlNoteMarginFrames: string;
+  idmlNoteMasterItems: string;
+  idmlNoteOtherMasters: string;
+  idmlNoteIndexMarks: string;
+  idmlNoteVerticalText: string;
+  idmlNoteCharacterStyles: string;
+  idmlNoteSpotSwatches: string;
+  idmlNoteFonts: string;
+  idmlCreate: string;
+  idmlCreating: string;
+  /** `__name__`: the new book. */
+  idmlCreated: string;
+  /** `__error__`: what failed. */
+  idmlCreateError: string;
 }

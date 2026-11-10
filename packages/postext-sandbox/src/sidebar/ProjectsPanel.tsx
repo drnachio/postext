@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, ChevronDown, Copy, FilePlus, Upload, X, Files, ChevronRight } from 'lucide-react';
+import { Plus, ChevronDown, Copy, FilePlus, Upload, X, Files, ChevronRight, BookImage } from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
 import { pickBundleMeta } from 'postext/bundle';
 import { sameContentLocale } from 'postext';
@@ -16,6 +16,8 @@ import { presetCoverFor } from '../covers/autoCover.js';
 import { openBookThenShowChapters } from './openBook.js';
 import { openTextMigration } from '../migrate/migrationRequest.js';
 import { PresetRow, ProjectRow } from './ProjectsPanel/rows.js';
+import { readIdml } from 'postext/idml';
+import { IdmlImportDialog, type IdmlImportFile } from '../idml/IdmlImportDialog.js';
 
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
@@ -65,6 +67,9 @@ export function ProjectsPanel() {
     void openBookThenShowChapters(open, { getPanel: () => activePanelRef.current, showChapters });
   };
   const importRef = useRef<HTMLInputElement>(null);
+  const idmlRef = useRef<HTMLInputElement>(null);
+  // An InDesign document being imported as a new book.
+  const [idmlFile, setIdmlFile] = useState<IdmlImportFile | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{ bytes: Uint8Array; fileName: string; locales: string[]; own: string } | null>(null);
@@ -122,6 +127,18 @@ export function ProjectsPanel() {
     await importBytes(bytes, file.name, choice.own ?? undefined);
   };
 
+  const handleIdml = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setImportError(null);
+    try {
+      setIdmlFile({ name: file.name, doc: readIdml(new Uint8Array(await file.arrayBuffer())) });
+    } catch {
+      setImportError(labels.idmlImportInvalid);
+    }
+  };
+
   const presetRow = (preset: PresetSummary, hidden: boolean) => {
     const isActive = inPresetMode && preset.id === activePresetId;
     const presetDrafts = drafts.filter((d) => d.presetId === preset.id);
@@ -174,6 +191,7 @@ export function ProjectsPanel() {
               <MenuItem icon={<FilePlus size={13} />} onClick={() => { void create({ from: 'blank' }); }}>{labels.projectNewBlankShort}</MenuItem>
               <MenuSeparator />
               <MenuItem icon={<Upload size={13} />} onClick={() => importRef.current?.click()}>{labels.projectImportShort}</MenuItem>
+              <MenuItem icon={<BookImage size={13} />} onClick={() => idmlRef.current?.click()}>{labels.projectImportIdmlShort}</MenuItem>
             </Menu>
             {/* No `accept` filter (#1183): macOS gives `.postext` only a
                 dynamic type, and the picker greys the files out now and
@@ -186,6 +204,10 @@ export function ProjectsPanel() {
               className="hidden"
               aria-hidden="true"
             />
+            {/* No `accept` either: `.idml` too is a dynamic type on a Mac
+                without InDesign. */}
+            <input ref={idmlRef} type="file" onChange={(e) => void handleIdml(e)} className="hidden" aria-hidden="true" />
+            <IdmlImportDialog file={idmlFile} onClose={() => setIdmlFile(null)} />
           </>
         }
       />
