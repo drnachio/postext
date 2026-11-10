@@ -1,8 +1,10 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { BookDown, Download, FileInput, FileOutput, Upload, RotateCcw } from 'lucide-react';
+import { BookDown, Download, FileInput, FileOutput, Upload, RotateCcw, Search } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor.js';
+import { FindBar } from '../editor/FindBar.js';
+import { closeFind, openFind, searchableSelection, useFindState } from '../editor/findStore.js';
 import { ChapterSwitcher } from '../editor/ChapterSwitcher.js';
 import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/SandboxContext.js';
 import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence.js';
@@ -35,6 +37,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
   const chapterIndex = Math.max(0, state.chapters.findIndex((c) => c.id === state.activeChapterId));
   const chapter = state.chapters[chapterIndex];
   const multiChapter = state.chapters.length > 1;
+  const findOpen = useFindState().open;
 
   // Import/export act on the active chapter; the whole book travels as a
   // `.postext` bundle from the Projects panel.
@@ -92,6 +95,15 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
         title={<ChapterSwitcher />}
         actions={
           <>
+            <IconButton
+              label={state.labels.findOpen}
+              icon={<Search size={14} />}
+              active={findOpen}
+              onClick={() => {
+                if (findOpen) closeFind();
+                else openFind({ query: searchableSelection(state.markdown.slice(state.selection.from, state.selection.to)) });
+              }}
+            />
             {hasResetBaseline && (
               <ConfirmPopover message={state.labels.resetMarkdownConfirm} onConfirm={handleReset}>
                 {({ open }) => (
@@ -142,6 +154,9 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
           </>
         }
       />
+      {/* Outside the keyed editor: it stays (and keeps the focus) while
+          going to a match in another chapter switches the editor. */}
+      <FindBar />
       <div style={{ flex: '1 1 0%', minHeight: 0, display: 'flex', flexDirection: 'column' as const }}>
         {/* Keyed by chapter: each chapter gets its own CodeMirror instance,
             undo history and caret (persisted per id in the store). */}

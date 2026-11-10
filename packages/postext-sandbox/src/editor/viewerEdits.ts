@@ -39,6 +39,18 @@ export function applyViewerEdit(dispatch: Dispatch<SandboxAction>, chapterId: st
   dispatch({ type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId, changes, baseLength } });
 }
 
+/** Apply the edits of one action on several chapters (the find bar's
+ *  replace-all over the book): one step of the history, undone and
+ *  redone at once. The open editor takes its chapter's changes as they
+ *  are only when they are the last ones sent (`takeViewerChanges`), so
+ *  its edit goes last. */
+export function applyViewerEdits(dispatch: Dispatch<SandboxAction>, edits: readonly { chapterId: string; changes: TextChange[]; baseLength: number }[], openChapterId?: string): void {
+  const live = edits.filter((e) => e.changes.length > 0);
+  const ordered = [...live].sort((a, b) => Number(a.chapterId === openChapterId) - Number(b.chapterId === openChapterId));
+  if (ordered.length > 1) activeHistory()?.group('find', { chapters: ordered.map((e) => e.chapterId) });
+  for (const e of ordered) applyViewerEdit(dispatch, e.chapterId, e.changes, e.baseLength);
+}
+
 /** Undo the latest change of the Sandbox's history (text or design);
  *  false when there is none. */
 export function undoViewerEdit(): boolean {
