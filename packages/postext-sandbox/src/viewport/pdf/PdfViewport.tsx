@@ -12,7 +12,7 @@ import {
   type VDTDocument,
 } from 'postext';
 import { loadPrintProfile, outputProfileBaseUrl } from '../../print/printSetup.js';
-import { createPdfWorker, type PdfWorkerHandle, type RenderProgress } from 'postext-pdf/worker';
+import { createPdfWorker, type PdfWorkerHandle, type PrintPdfReport, type RenderProgress } from 'postext-pdf/worker';
 import { useBookPages, useBookPlan, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../../context/SandboxContext.js';
 import { composeBookMemo } from '../../book/compose.js';
 import { chapterLayoutFromDoc } from '../../book/pagination.js';
@@ -34,6 +34,8 @@ import { useFloatingToolbarShell } from '../useFloatingToolbarShell.js';
 import { useViewerControls } from '../viewerControls.js';
 import { announce } from '../../ui/announcer.js';
 import { isCancellation } from './cancellation.js';
+import { PdfCheckDialog } from './PdfCheckDialog.js';
+import { usePdfCheck } from './usePdfCheck.js';
 
 /** The PDF tab is the one place the whole book can be rendered as one
  *  continuous document; by default it shows the active chapter continued
@@ -63,6 +65,12 @@ export function PdfViewport() {
   // so the toolbar needs to announce that the preview is out of date.
   const [dirty, setDirty] = useState(false);
   const bytesRef = useRef<Uint8Array | null>(null);
+  // The check (the PDF read back, set against what a printer asks for):
+  // the file is read on the worker when the check opens, once per file.
+  const [checkOpen, setCheckOpen] = useState(false);
+  const [report, setReport] = useState<{ bytes: Uint8Array; report: PrintPdfReport | undefined } | null>(null);
+  const renderedDocsRef = useRef<VDTDocument[]>([]);
+  const renderedFontChecksRef = useRef<PdfFontCheck[]>([]);
   // Pages of the PDF on screen, for the status the tools read.
   const pageCountRef = useRef<number | null>(null);
   const providerRef = useRef(createPdfFontProvider());
@@ -250,6 +258,8 @@ export function PdfViewport() {
       setPdfFontChecks(fontChecks, checksSource);
       total.end({ pages: pageCount, kb: Math.round(bytes.byteLength / 1024) });
       bytesRef.current = bytes;
+      renderedDocsRef.current = docs;
+      renderedFontChecksRef.current = fontChecks;
       pageCountRef.current = pageCount;
       const copy = bytes.slice();
       const blob = new Blob([copy.buffer], { type: 'application/pdf' });
@@ -378,6 +388,33 @@ export function PdfViewport() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, [fileName]);
 
+  const handleCheck = useCallback(() => {
+    if (bytesRef.current) setCheckOpen(true);
+  }, []);
+
+  // The file on screen read back while the check is open: again when a
+  // new one replaces it.
+  useEffect(() => {
+    const bytes = bytesRef.current;
+    if (!checkOpen || !bytes || report?.bytes === bytes) return;
+    let live = true;
+    const settle = (read: PrintPdfReport | undefined) => {
+      if (live) setReport({ bytes, report: read });
+    };
+    pdfWorker().inspect(bytes).then(settle, () => settle(undefined));
+    return () => {
+      live = false;
+    };
+  }, [checkOpen, bytesUrl, report]);
+
+  const check = usePdfCheck(
+    checkOpen,
+    renderedConfigRef.current ?? effectiveConfig,
+    renderedResourcesRef.current ?? resources,
+    renderedDocsRef.current,
+    renderedFontChecksRef.current,
+  );
+
   const handlePrint = useCallback(() => {
     if (!bytesUrl) return;
     const iframe = document.querySelector<HTMLIFrameElement>('iframe[data-postext-pdf="true"]');
@@ -423,6 +460,25 @@ export function PdfViewport() {
 
   return (
     <div className="relative h-full w-full" {...shell.containerProps}>
+      {check && (
+        <PdfCheckDialog
+          open={checkOpen}
+          onClose={() => setCheckOpen(false)}
+          onDownload={() => { setCheckOpen(false); handleDownload(); }}
+          onRegenerate={() => { setCheckOpen(false); void regenerate(); }}
+          onOpenReview={() => { setCheckOpen(false); dispatch({ type: 'SET_PANEL', payload: 'warnings' }); }}
+          report={report?.bytes === bytesRef.current ? report.report : undefined}
+          reading={report?.bytes !== bytesRef.current}
+          print={check.print}
+          colorSpace={check.colorSpace}
+          bookSpotInks={check.bookSpotInks}
+          cutLines={check.cutLines}
+          stale={dirty}
+          chapterOnly={scope === 'chapter'}
+          findings={check.findings}
+          preflightRan={check.preflightRan}
+        />
+      )}
       <PdfPreview
         bytesUrl={bytesUrl}
         openPage={openPage}
@@ -436,6 +492,7 @@ export function PdfViewport() {
       <PdfToolbar
         onRegenerate={regenerate}
         onDownload={handleDownload}
+        onCheck={handleCheck}
         onPrint={handlePrint}
         onTogglePin={shell.togglePin}
         canDownload={!!bytesUrl && !generating}

@@ -169,6 +169,20 @@ describe('createPdfWorker (EF-52)', () => {
     expect(files.map((f) => f.length)).toEqual(lengths);
   });
 
+  it('reads a finished PDF back on demand, and keeps the caller\'s bytes', async () => {
+    const doc = buildDocument({ markdown: '# Title\n\nBody text.' }, config);
+    const bytes = await pdf.render(doc, { fontProvider: async () => new Uint8Array(fontBytes) });
+    const report = await pdf.inspect(bytes);
+    expect(report?.pageCount).toBe(1);
+    expect(report?.fonts.map((f) => [f.name, f.embedded])).toEqual([['Lora-Regular', true]]);
+    // The bytes went over as a copy: the caller's are still whole.
+    expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe('%PDF-');
+  });
+
+  it('answers undefined for bytes that are not a PDF', async () => {
+    expect(await pdf.inspect(new TextEncoder().encode('not a PDF'))).toBeUndefined();
+  });
+
   it('rejects when a family cannot be had at all', async () => {
     const doc = buildDocument({ markdown: 'Body.' }, config);
     await expect(pdf.render(doc, {

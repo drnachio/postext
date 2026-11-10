@@ -12,6 +12,9 @@ import type { RenderToPdfOptions } from '../pdf-backend/index.js';
 import { sourceBase } from '../harfbuzz.js';
 import { rasterizeSvgWithDom, type SvgRasterizer } from '../pdf-backend/blocks/renderResourceBlock.js';
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol.js';
+import type { PrintPdfReport } from '../print/inspectPdf.js';
+
+export type { PrintPdfReport, PrintPdfFont } from '../print/inspectPdf.js';
 
 export type {
   PdfWarning,
@@ -43,6 +46,10 @@ export interface PdfWorkerHandle {
    *  decode SVG); everything else — text, vector figures, the structure
    *  tree, the file itself — is written off the main thread. */
   render(docs: VDTDocument | VDTDocument[], options: PdfWorkerRenderOptions): Promise<Uint8Array>;
+  /** Read a finished PDF back on the worker (`inspectPrintPdf`: boxes,
+   *  fonts, inks, PDF/X); undefined when it cannot be read. The bytes are
+   *  copied, so the caller keeps its own. */
+  inspect(bytes: Uint8Array): Promise<PrintPdfReport | undefined>;
   dispose(): void;
 }
 
@@ -69,6 +76,7 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
   const pending = new Map<number, Pending>();
   // One render at a time: the worker's questions go to the render in flight.
   let current: Pending | null = null;
+  const inspections = new Map<number, { resolve: (report: PrintPdfReport | undefined) => void; reject: (err: unknown) => void }>();
 
   const send = (msg: PdfRequestMessage, transfer?: Transferable[]): void => {
     if (disposed) throw new Error('PDF worker has been disposed');
@@ -126,6 +134,12 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
         entry?.resolve(msg.bytes);
         return;
       }
+      case 'inspected': {
+        const entry = inspections.get(msg.id);
+        inspections.delete(msg.id);
+        entry?.resolve(msg.report);
+        return;
+      }
       case 'error': {
         const entry = pending.get(msg.id);
         pending.delete(msg.id);
@@ -137,8 +151,9 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
   });
 
   worker.addEventListener('error', (event) => {
-    for (const entry of pending.values()) entry.reject(new Error(event.message || 'PDF worker error'));
+    for (const entry of [...pending.values(), ...inspections.values()]) entry.reject(new Error(event.message || 'PDF worker error'));
     pending.clear();
+    inspections.clear();
     current = null;
   });
 
@@ -183,13 +198,27 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
         }
       });
     },
+    inspect(bytes) {
+      const id = nextId++;
+      return new Promise<PrintPdfReport | undefined>((resolve, reject) => {
+        inspections.set(id, { resolve, reject });
+        const copy = bytes.slice();
+        try {
+          send({ kind: 'inspect', id, bytes: copy }, [copy.buffer]);
+        } catch (err) {
+          inspections.delete(id);
+          reject(err);
+        }
+      });
+    },
     dispose() {
       if (disposed) return;
       disposed = true;
       try { worker.postMessage({ kind: 'dispose' } satisfies PdfRequestMessage); } catch { /* ignore */ }
       worker.terminate();
-      for (const entry of pending.values()) entry.reject(new DOMException('Worker disposed', 'AbortError'));
+      for (const entry of [...pending.values(), ...inspections.values()]) entry.reject(new DOMException('Worker disposed', 'AbortError'));
       pending.clear();
+      inspections.clear();
       current = null;
     },
   };
