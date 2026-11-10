@@ -142,6 +142,8 @@ export function lintPen(
   const pdfImport = imports.find((imp) => imp.url === POSTEXT_PDF_URL);
   const pdfOutput = meta.outputs?.includes("pdf") ?? false;
   const pdfKit = meta.kit?.includes("pdf") ?? false;
+  // A config that names a symbolFont (#1460): the faces' missing characters are its.
+  const symbolFont = /\bsymbolFont\s*:\s*(?!['"]{2}|undefined\b|null\b)\S/.test(ownCode);
   if (pdfOutput !== Boolean(pdfImport) || pdfOutput !== pdfKit) {
     fails.push(
       `script.js: a "pdf" output, an import from ${POSTEXT_PDF_URL} and the "pdf" kit block go together ` +
@@ -401,8 +403,10 @@ export function lintPen(
     // The kit's PDF providers add a face's latin-ext file for the letters only
     // it has (ō ǎ č †), and fontsourceProvider its greek file (α χ), so those
     // reach the PDF as they reach the screen; the capture's C25 names any
-    // face that ships no such file.
-    const beyond = odd.other.filter((ch) => {
+    // face that ships no such file. A config with a symbolFont (#1460) sets
+    // what the faces lack in that family: the capture's C36 and postext-pdf's
+    // missingGlyph say whether it holds them.
+    const beyond = symbolFont ? [] : odd.other.filter((ch) => {
       const code = ch.codePointAt(0) ?? 0;
       return !isLatinExtOnly(code) && (cjkKit || !isGreek(code));
     });
