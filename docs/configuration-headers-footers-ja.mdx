@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '柱とノンブル',
   description: '各ページの上下に印刷するものの設定。プレースホルダーを含むテキスト、罫線、ボックス、画像、ベクターのパス、奇偶ページごとの指定、そして各要素の配置',
   lang: 'ja',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '31分',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ export const metadata = {
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>要素を表示するページの<em>役割</em>。<code>parity</code>と組み合わせて使います。配置が終わると、各ページは<code>'blank'</code>（奇偶合わせや区切りのための埋め、または内容なし）、<code>'part'</code>（部扉のページ）、<code>'opener'</code>（最初のブロックが、ページ全幅にわたる、または直前で改ページを強制するレベルの見出しであるページ。章の最初のページ）、<code>'comic'</code>（漫画のページ、<code>:::page</code>）、<code>'composed'</code>（テンプレートページ、またはそのテンプレートの<code>role</code>が示す役割）、<code>'body'</code>（それ以外すべて）のいずれかに分類されます。<code>pages: 'body'</code>は章扉で柱を隠し、<code>pages: 'opener'</code>はそこにだけノンブルを表示します。</td>
+      <td>要素を表示するページの<em>役割</em>。<code>parity</code>と組み合わせて使います。配置が終わると、各ページは<code>'blank'</code>（奇偶合わせや区切りのための埋め、または内容なし）、<code>'part'</code>（部扉のページ）、<code>'opener'</code>（最初のブロックが、ページ全幅にわたる、または直前で改ページを強制するレベルの見出しであるページ。章の最初のページ）、<code>'comic'</code>（漫画のページ、<code>:::page</code>）、<code>'composed'</code>（テンプレートページ、またはそのテンプレートの<code>role</code>が示す役割）、<code>'body'</code>（それ以外すべて）のいずれかに分類されます。<code>pages: 'body'</code>は章扉で柱を隠し、<code>pages: 'opener'</code>はそこにだけノンブルを表示します。全面図版が仕上がり線や塗り足しまで覆うページ（<code>placement.plate: 'trim' | 'bleed'</code>）は <code>'plate'</code> になり、<code>pages</code> でこの役割を指定した要素だけが描かれます（<code>'all'</code> の要素は描かれません）。</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ VDTでは、縦組みのブロックに`vertical`が付きます（`VDTDesignTex
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>罫線を表示するページの役割（テキスト要素の<code>pages</code>フィールドを参照）。</td>
     </tr>
@@ -622,7 +622,7 @@ VDTでは、縦組みのブロックに`vertical`が付きます（`VDTDesignTex
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>ボックスを表示するページの役割（テキスト要素の<code>pages</code>フィールドを参照）。</td>
     </tr>

@@ -885,7 +885,7 @@ placement: {
 
 ### 7.3 Element kinds
 Common: `id` (string, unique in slot; referenced as `'#id'`), `parity: 'all'|'odd'|'even'`
-(default 'all'; page 1 odd), `pages: 'all'|'body'|'opener'|'part'|'blank'|'comic'|'composed'` (page role filter;
+(default 'all'; page 1 odd), `pages: 'all'|'body'|'opener'|'part'|'blank'|'comic'|'composed'|'plate'` (page role filter;
 `comic` = a `:::page` (≥ 1.20), `composed` = a `::::page` (≥ 1.34.1); a page template's `role` (default 'composed',
 inherited through `extends`, ≥ 1.37) is the role its pages report, so `role: 'opener'` gives a unit-opening template
 the folio the flow's openers get;
@@ -1497,7 +1497,10 @@ span:     'column' (default) | 'page' | 'side' (float-only side column; else beh
                          it is set across the content width, and the text goes on in every column under it; on a
                          one-column page it is an ordinary inline embed. `columns` does nothing for an inline embed
 rotate?:  'ccw' | 'cw'   (landscape: page-span float on its own page)
-width?:   0 < w < 1 fraction of column/page width (default whole)
+width?:   0 < w < 1 fraction of column/page width (default whole), or a length {value, unit} in mm|cm|in|pt
+                         (#1461), measured against the slot it is set in (column, a column float's columns and gutters,
+                         content width, side column, a styled section's or a box's columns); ≥ the slot = whole slot;
+                         a turned float is laid out at most that wide before turning. px/em are not read as a length
 align?:   'left' (default) | 'center' | 'right' | 'start' | 'end'   (start/end ≥ 1.15: logical sides; left/right are
                          flow sides, so in an RTL book 'left' is the sheet's right)
 captionSide?: boolean    caption in the float-only side column, level with the figure (oneAndHalf+floats): column floats and,
@@ -1546,6 +1549,15 @@ citingPage?: boolean     ≥ 1.25, position top/auto, span column/page, not rota
                          break opens the page (chapter's first page, part, :::pagebreak), nothing page-wide stands above
                          the citing line, and the citing line stays on that page; else its usual slot. Falls back to
                          layout.floatsAtCitingPage. Read after its citation in tagged PDF / HTML
+plate?:   boolean | 'content' | 'trim' | 'bleed'   (#1461) full-page plate, pictures only (bitmap, svg, video poster),
+                         not 'here' or a vertical page: alone on a fresh page after its citation, scaled up or down to the
+                         largest size the content area holds with caption + note, centred unless align. Waits for a page it
+                         can have whole (no opener, other float or text yet), 3 pages at most, then takes the next as it is.
+                         position/span/width/shrink/rotate/captionSide/wrap/citingPage not read. true = 'content'; 'trim' /
+                         'bleed' cover the page (bleed needs page.cutLines, else = trim), cropped about the centre, caption
+                         at the content-area foot on a paper-colour band; that page has role 'plate' (no running heads,
+                         folio or design elements unless pages:'plate'). false on a resource turns off its type's plate.
+                         An enlarged bitmap under print.preflight.minImageResolution = lowImageResolution (crop counted)
 ```
 A type may leave fields out (≥ 1.38): the built-in type of the same id (`figure`, `table`, `video`, in the document's
 language) fills them, else `name` is the id, `shortLabel` and `captionPrefix` the `name`, `numberingTemplate`

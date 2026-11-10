@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '页眉与页脚',
   description: '页眉和页脚里印什么、放在哪里：带占位符的文字、线条、方框、图像和矢量路径，可以按奇偶页分别设置，每个元素的位置也可以单独指定',
   lang: 'zh',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '21分钟',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ export const metadata = {
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>元素出现在哪类页面（页面<em>角色</em>）上，与<code>parity</code>组合使用。排版完成后，每一页都归入以下一类：<code>'blank'</code>（为奇偶补的页、分隔用的空白页，或没有内容的页）、<code>'part'</code>（篇名页）、<code>'opener'</code>（第一个块是标题，且这一级标题通栏排或在前面强制分页，也就是一章的第一页）、<code>'comic'</code>（漫画页，<code>:::page</code>）、<code>'composed'</code>（模板页，或其模板<code>role</code>指定的角色）或<code>'body'</code>（其余所有页）。<code>pages: 'body'</code>在章首页上隐藏书眉；<code>pages: 'opener'</code>只在章首页显示页码。</td>
+      <td>元素出现在哪类页面（页面<em>角色</em>）上，与<code>parity</code>组合使用。排版完成后，每一页都归入以下一类：<code>'blank'</code>（为奇偶补的页、分隔用的空白页，或没有内容的页）、<code>'part'</code>（篇名页）、<code>'opener'</code>（第一个块是标题，且这一级标题通栏排或在前面强制分页，也就是一章的第一页）、<code>'comic'</code>（漫画页，<code>:::page</code>）、<code>'composed'</code>（模板页，或其模板<code>role</code>指定的角色）或<code>'body'</code>（其余所有页）。<code>pages: 'body'</code>在章首页上隐藏书眉；<code>pages: 'opener'</code>只在章首页显示页码。整页插图铺到裁切线或出血的页面（<code>placement.plate: 'trim' | 'bleed'</code>）为 <code>'plate'</code>：只绘制 <code>pages</code> 指定此角色的元素，<code>'all'</code> 的元素也不绘制。</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ header: {
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>线条出现在哪些页面角色上（见文本元素的<code>pages</code>字段）。</td>
     </tr>
@@ -622,7 +622,7 @@ header: {
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>方框出现在哪些页面角色上（见文本元素的<code>pages</code>字段）。</td>
     </tr>

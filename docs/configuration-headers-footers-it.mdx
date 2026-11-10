@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Intestazioni e piè di pagina',
   description: 'Che cosa si stampa in cima e in fondo a ogni pagina: testi con segnaposto, filetti, riquadri, immagini e tracciati vettoriali, diversi per le pagine pari e dispari; e dove si colloca ogni elemento',
   lang: 'it',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '32 min',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ I valori predefiniti della tabella qui sotto sono quelli di un elemento di testo
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>Su quali <em>ruoli</em> di pagina compare l’elemento, in combinazione con <code>parity</code>. Dopo la collocazione ogni pagina viene classificata come <code>'blank'</code> (riempimento di parità o di separazione, o nessun contenuto), <code>'part'</code> (una pagina di parte), <code>'opener'</code> (il suo primo blocco è un titolo il cui livello occupa tutta la pagina o forza un’interruzione di pagina prima di sé: la prima pagina di un capitolo), <code>'comic'</code> (una pagina di fumetto, <code>:::page</code>), <code>'composed'</code> (una pagina composta, o il <code>role</code> indicato dal suo modello) o <code>'body'</code> (tutto il resto). <code>pages: 'body'</code> nasconde una testatina sulle aperture di capitolo; <code>pages: 'opener'</code> mostra un numero di pagina solo lì.</td>
+      <td>Su quali <em>ruoli</em> di pagina compare l’elemento, in combinazione con <code>parity</code>. Dopo la collocazione ogni pagina viene classificata come <code>'blank'</code> (riempimento di parità o di separazione, o nessun contenuto), <code>'part'</code> (una pagina di parte), <code>'opener'</code> (il suo primo blocco è un titolo il cui livello occupa tutta la pagina o forza un’interruzione di pagina prima di sé: la prima pagina di un capitolo), <code>'comic'</code> (una pagina di fumetto, <code>:::page</code>), <code>'composed'</code> (una pagina composta, o il <code>role</code> indicato dal suo modello) o <code>'body'</code> (tutto il resto). <code>pages: 'body'</code> nasconde una testatina sulle aperture di capitolo; <code>pages: 'opener'</code> mostra un numero di pagina solo lì. Una pagina che una tavola copre fino al taglio o all'abbondanza (<code>placement.plate: 'trim' | 'bleed'</code>) è <code>'plate'</code>: vi si disegna solo un elemento il cui <code>pages</code> nomina quel ruolo, non quelli con <code>'all'</code>.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ Gli elementi filetto disegnano una linea: orizzontale attraverso lo spazio, o ve
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Ruoli di pagina su cui compare il filetto (vedi il campo <code>pages</code> degli elementi di testo).</td>
     </tr>
@@ -622,7 +622,7 @@ Gli elementi riquadro dipingono un rettangolo arrotondato dentro lo spazio: util
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Ruoli di pagina su cui compare il riquadro (vedi il campo <code>pages</code> degli elementi di testo).</td>
     </tr>

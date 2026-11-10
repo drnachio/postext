@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الموارد والجداول',
   description: 'أنواع الموارد وترقيمها، وأنماط الجداول والتعليقات، والمخططات بحبر واحد، والفيديو المطبوع',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '42 دقيقة',
   order: 14,
   parent: 'configuration',
@@ -49,7 +49,7 @@ interface ResourcePlacement {
   position?: 'auto' | 'top' | 'bottom' | 'here'; // which free slot a float may take; 'here' = inline embed at the ::resource directive
   span?: 'column' | 'page' | 'side';             // one column, the full content width, or the float-only side column
   rotate?: 'ccw' | 'cw';                         // a quarter turn: a landscape table on a page of its own
-  width?: number;                                // fraction (0 < width < 1) of the column or page width; default: the whole width
+  width?: number | Dimension;                    // كسر (0 < width < 1) من الحيّز، أو طول بـ mm أو cm أو in أو pt؛ الافتراضي: العرض كلّه
   align?: 'left' | 'center' | 'right' | 'start' | 'end'; // where a float narrower than its column sits; default 'left'
   captionSide?: boolean | 'inside';              // caption beside the figure, in the side column of a oneAndHalf layout (column floats and resources set in the text); 'inside': beside the picture, within its own slot
   columns?: number;                              // عدد الأعمدة المتجاورة التي يمتد عليها عنصر 'column' العائم (منذ 1.18)
@@ -59,6 +59,7 @@ interface ResourcePlacement {
   minScale?: number;                             // أصغر مقياس يصغّرها إليه shrink؛ الافتراضي 0.7
   captionMeasure?: 'slot' | 'body';              // التعليق والملاحظة بعرض الموضع أو بعرض الصورة
   citingPage?: boolean;                          // يجوز للعائم top أو auto أن يتصدّر الصفحة أو العمود الذي يُستشهد به فيه
+  plate?: boolean | 'content' | 'trim' | 'bleed'; // لوحة بصفحة كاملة: في منطقة النص (true)، أو حتى حدّ القصّ أو النزف
 }
 
 interface ResourceType {
@@ -78,6 +79,8 @@ interface ResourceType {
 يجوز أن يُغفل النوع بعض الحقول (منذ postext 1.38): يكملها النوع المدمج الذي له المعرّف نفسه (`figure` و`table` و`video`، بلغة المستند)، فإن لم يوجد أخذ `name` المعرّف، وأخذ `shortLabel` و`captionPrefix` قيمة `name`، وصار `numberingTemplate` هو `{'{h1}.{n}'}` (و`{'{h1}-{n}'}` في الصينية واليابانية والعربية)، و`resetOn` هو `'h1'`، و`counterFormat` هو `'decimal'`. وقيمة `resetOn` التي لا تحدّد مستوى تُعامَل بوصفها `'h1'`، ويصدر عنها التحذير `unknownConfigValue`. النوع الذي يحدّد `name` خاصًا به ولا يحدّد `shortLabel` يُشار إليه بذلك الاسم، كما كان قبل 1.38، لا بالتسمية المختصرة للنوع المدمج: في مستند إنجليزي يظهر `{ id: 'table', name: 'Table' }` بصيغة «Table 1» لا «Tab. 1».
 
 `ResourcePlacement` هو الشكل نفسه الذي يضبطه المورد في `placement` الخاص به. يختار `position` نوع الموضع الشاغر الذي يجوز للعنصر العائم أن يشغله — `auto` (الافتراضي) يأخذ أول موضع بعد الإحالة الأولى، و`top` / `bottom` يقصرانه على هذا النوع من الأشرطة، و`here` يضمّن المورد في مكانه داخل النص. ويحدّد `span` امتداد العنصر العائم: عمود واحد، أو عرض المحتوى كاملًا، أو العمود الجانبي المخصص للعناصر العائمة في تخطيط العمود ونصف العمود. ويدير `rotate` المورد ربع دورة ويجعله عنصرًا عائمًا بعرض الصفحة في صفحة مستقلة. ويضيّق `width` العنصر العائم إلى كسر من عموده (أو من الصفحة للعنصر العائم بعرض الصفحة) — جدول صغير في عمود عريض مثلًا. ويحدّد `align` موضع هذا العنصر العائم الأضيق — إلى اليسار افتراضيًا، أو في الوسط، أو إلى اليمين — وموضع الصورة الأضيق من موضعها داخله: صورة نقطية أصغر من العمود، أو صورة صغّرها `layout.fitFiguresToPage`. ويحتفظ التعليق والملاحظة بعرض الموضع. (حتى postext 1.4 كانت هذه الصورة تُنضَّد دائمًا ملاصقة لليسار.) و`left` و`right` جانبا اتجاه النص، فيتبادلان موضعيهما في صفحات المستند المكتوب من اليمين إلى اليسار؛ ويسمّي `start` و`end` الجانبين نفسيهما. ويضع `captionSide` التعليق بجانب الشكل في العمود الجانبي المخصص للعناصر العائمة في تخطيط العمود ونصف العمود (`layout.sideColumnRole: 'floats'`)، بمحاذاة أعلى الشكل (أو أسفله للعنصر العائم في أسفل الصفحة)؛ وينطبق على العناصر العائمة بعرض العمود، ومنذ postext 1.28 على المورد الموضوع في النص (`position: 'here'`، بعرض عمود واحد، من غير نص يلتف حوله)، فيقف تعليقه وملاحظته في العمود الجانبي بمحاذاة أعلى جسمه حيث يكون ذلك العمود خاليًا بجواره، وتحت الجسم حيث لا يكون (`layout.inlineCaptionSide`، مفعّل افتراضيًا؛ و`false` يقصر التعليقات الجانبية على العناصر العائمة بعرض العمود)؛ والصفحة التي ليس فيها عمود كهذا تُبقي التعليق تحت الشكل. وحين لا يضبط المورد ولا نوعه موضعًا، يكون الافتراضي المدمج `auto` / `column`. ويصغّر `shrink` (`'never'`، `'page'`، `'slot'`) و`minScale` (0.7 إن لم يُضبط) الصورةَ العائمة إلى حيّز موضعها بدل نقلها إلى ما بعده، وينضّد `captionMeasure: 'body'` تعليق الصورة الأضيق من موضعها وملاحظتها بعرض الصورة (انظر [صيغة المستند › الموضع](/ar/docs/document-format-resources#الموضع))؛ ويعطي `layout.floatShrink` القيمة الافتراضية للمستند للخاصيتين الأوليين. ويضع `wrap` المورد المضمَّن في النص أو العنصر العائم بعرض عمود واحد في أحد جانبي عموده، والنص يُنضَّد بجانبه على بُعد `wrapGap`؛ وفي `layout.wrap` القيم الافتراضية (انظر [صيغة المستند › التفاف النص](/ar/docs/document-format-resources#التفاف-النص)). والقيمة `wrap: 'contour'` تلفّ النص حول شكل الصورة، كما يُقرأ من `contour` في المورد (`points` و`alpha` و`threshold` و`margin`، و`traced` الذي يصنعه المضيف؛ انظر [صيغة المستند › الالتفاف حول المحيط](/ar/docs/document-format-resources#الالتفاف-حول-المحيط)). ويجعل `citingPage` الشكلَ العائم `top` أو `auto` في رأس الصفحة أو العمود حيث يقع سطر الإحالة بدلًا من أول موضع شاغر بعده؛ ويعطي `layout.floatsAtCitingPage` القيمة الافتراضية للمستند و`layout.maxTopFraction` النسبة التي يجوز أن يأخذها من العمود (انظر [صيغة المستند › الموضع](/ar/docs/document-format-resources#الموضع)).
+
+ويمكن أن يكون `width` طولًا أيضًا (`{ value: 80, unit: 'mm' }`، أو بـ`cm` أو `in` أو `pt`) يُقاس على الحيّز الذي يوضع فيه المورد، و`plate` يضع الصورة وحدها على صفحة خاصة بها، في منطقة النص أو على الصفحة كلّها؛ و`plate: false` على مورد يُلغي لوحة نوعه. انظر [صيغة المستند › الموضع](/ar/docs/document-format-resources#الموضع).
 
 يضع `columns` (منذ postext 1.18) عنصرًا عائمًا `span: 'column'` على هذا العدد من الأعمدة المتجاورة في صفحة ذات أعمدة عدة: صورة تمتد على عمودين من أعمدة الجريدة الخمسة. وعرضه هو عرض تلك الأعمدة والفواصل التي بينها. ويأخذ رأس سلسلة من الأعمدة الفارغة التي تبدأ على مستوى واحد، أو أسفل العمود الذي يشير إليه والأعمدة الفارغة التي تليه؛ وإذا بلغ عدد الأعمدة عدد أعمدة الصفحة أو زاد عليه صار عنصرًا عائمًا بعرض الصفحة. ويُتجاهل مع `span` بالقيمتين `'page'` و`'side'`، ومع المورد المدوَّر (`rotate`)، ومع المورد المضمَّن داخل السطر (`here`)، ولا يسري `captionSide` إلا على عنصر عائم بعرض عمود واحد.
 
@@ -135,7 +138,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code> (اختياري)</td>
-      <td>الموضع الذي تستخدمه موارد هذا النوع التي لا تضبط <code>placement</code> الخاص بها: كل حقول <code>ResourcePlacement</code> (<code>position</code> و<code>span</code> و<code>rotate</code> و<code>width</code> و<code>align</code> و<code>captionSide</code> و<code>columns</code> و<code>shrink</code> و<code>minScale</code> و<code>captionMeasure</code> و<code>wrap</code> و<code>wrapGap</code> و<code>citingPage</code>)، وتُحدَّد قيمة كل منها على حدة. وحين لا يضبط المورد ولا النوع حقلًا ما، ينطبق الافتراضي المدمج: <code>auto</code> / <code>column</code>، قائمًا، بالعرض الكامل، محاذيًا لليسار، والتعليق تحت الشكل. انظر <a href="#الترقيم-والإحالات">الترقيم والإحالات</a> أدناه لترتيب تحديد القيم، و<a href="/ar/docs/document-format-resources#الموارد">صيغة المستند › الموارد</a> لما تفعله كل قيمة، بما فيها الموارد المُدارة.</td>
+      <td>الموضع الذي تستخدمه موارد هذا النوع التي لا تضبط <code>placement</code> الخاص بها: كل حقول <code>ResourcePlacement</code> (<code>position</code> و<code>span</code> و<code>rotate</code> و<code>width</code> و<code>align</code> و<code>captionSide</code> و<code>columns</code> و<code>shrink</code> و<code>minScale</code> و<code>captionMeasure</code> و<code>wrap</code> و<code>wrapGap</code> و<code>citingPage</code>, <code>plate</code>)، وتُحدَّد قيمة كل منها على حدة. وحين لا يضبط المورد ولا النوع حقلًا ما، ينطبق الافتراضي المدمج: <code>auto</code> / <code>column</code>، قائمًا، بالعرض الكامل، محاذيًا لليسار، والتعليق تحت الشكل. انظر <a href="#الترقيم-والإحالات">الترقيم والإحالات</a> أدناه لترتيب تحديد القيم، و<a href="/ar/docs/document-format-resources#الموارد">صيغة المستند › الموارد</a> لما تفعله كل قيمة، بما فيها الموارد المُدارة.</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>

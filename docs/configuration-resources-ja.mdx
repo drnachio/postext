@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'リソースと表',
   description: 'リソースの種類とその番号付け、表とキャプションのスタイル、単色のダイアグラム、紙面上の動画',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '44分',
   order: 14,
   parent: 'configuration',
@@ -49,7 +49,7 @@ interface ResourcePlacement {
   position?: 'auto' | 'top' | 'bottom' | 'here'; // which free slot a float may take; 'here' = inline embed at the ::resource directive
   span?: 'column' | 'page' | 'side';             // one column, the full content width, or the float-only side column
   rotate?: 'ccw' | 'cw';                         // a quarter turn: a landscape table on a page of its own
-  width?: number;                                // fraction (0 < width < 1) of the column or page width; default: the whole width
+  width?: number | Dimension;                    // 枠に対する割合（0 < width < 1）、または mm・cm・in・pt の長さ。既定は全幅
   align?: 'left' | 'center' | 'right' | 'start' | 'end'; // where a float narrower than its column sits; default 'left'
   captionSide?: boolean | 'inside';              // caption beside the figure, in the side column of a oneAndHalf layout (column floats and resources set in the text); 'inside': beside the picture, within its own slot
   columns?: number;                              // 'column'フロートがまたがる隣り合う段の数（1.18以降）
@@ -59,6 +59,7 @@ interface ResourcePlacement {
   minScale?: number;                             // shrinkで縮小する最小の倍率。既定値0.7
   captionMeasure?: 'slot' | 'body';              // キャプションと注を空き位置の幅にするか画像の幅にするか
   citingPage?: boolean;                          // top・autoのフロートが参照されたページや段の先頭に置ける
+  plate?: boolean | 'content' | 'trim' | 'bleed'; // 全面図版。版面内（true）、仕上がり線まで、または塗り足しまで
 }
 
 interface ResourceType {
@@ -78,6 +79,8 @@ interface ResourceType {
 種類の項目は省略できます（postext 1.38以降）。省いた項目は同じidの組み込みの種類（`figure`・`table`・`video`の、文書の言語のもの）が補います。該当する種類がなければ、`name`はid、`shortLabel`と`captionPrefix`は`name`、`numberingTemplate`は`{'{h1}.{n}'}`（中国語・日本語・アラビア語では`{'{h1}-{n}'}`）、`resetOn`は`'h1'`、`counterFormat`は`'decimal'`になります。どの見出しレベルも指さない`resetOn`は`'h1'`として扱い、`unknownConfigValue`の警告を出します。独自の`name`を持ち`shortLabel`を持たない種類は、1.38より前と同じくその名前で参照され、組み込みの種類の短いラベルは使われません。英語の文書では`{ id: 'table', name: 'Table' }`は「Tab. 1」ではなく「Table 1」になります。
 
 `ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、版面の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`left`と`right`は本文の流れに対する左右で、右から左に書く文書のページでは入れ替わります。`start`と`end`は同じ側を指します。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートに適用され、postext 1.28以降は本文中に置いたリソース（`position: 'here'`、1段幅、回り込みなし）にも適用されます。その横でサイド段が空いていればキャプションと注を本体の上端の高さでサイド段に置き、空いていなければ本体の下に置きます（`layout.inlineCaptionSide`、既定でオン。`false`ではサイド段のキャプションは段幅のフロートだけになります）。そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図のキャプションと注を図の幅で組みます（[文書形式 › 配置](/ja/docs/document-format-resources#配置)を参照）。前の2つの文書全体の既定値は`layout.floatShrink`で決めます。`wrap`は本文中の埋め込みや1段幅のフロートを段の片側に置き、`wrapGap`だけ離して本文をその横に回り込ませます。既定値は`layout.wrap`にあります（[文書形式 › 回り込み](/ja/docs/document-format-resources#回り込み)を参照）。`wrap: 'contour'`は、リソースの`contour`（`points`、`alpha`、`threshold`、`margin`、ホストが作る`traced`）から読んだ画像の形に沿って本文を回り込ませます（[文書形式 › 輪郭に沿った回り込み](/ja/docs/document-format-resources#輪郭に沿った回り込み)を参照）。`citingPage`は、`top`または`auto`のフロートを、参照行の後の最初の空き位置ではなく、参照行のあるページまたは段の先頭に置きます。`layout.floatsAtCitingPage`が文書の既定値、`layout.maxTopFraction`がそのフロートの占めてよい段の割合です（[文書形式 › 配置](/ja/docs/document-format-resources#配置)を参照）。
+
+`width` には長さ（`{ value: 80, unit: 'mm' }`、または `cm`・`in`・`pt`）も指定でき、リソースが置かれる枠で測ります。`plate` は画像を専用のページに単独で、版面内またはページ全体に置きます。リソースの `plate: false` は種類の図版設定を解除します。[文書形式 › 配置](/ja/docs/document-format-resources#配置)を参照してください。
 
 `columns`（postext 1.18以降）は、複数の段があるページで、`span: 'column'`のフロートを指定した数の隣り合う段にまたがって置きます。新聞の5段のうち2段にまたがる写真などです。幅はそれらの段とその間の段間を合わせたものです。上端のそろった空の段の並びの頭か、引用した段とその後の空の段の足に置かれます。ページの段数以上を指定すると、ページ幅のフロートになります。`'page'`と`'side'`のspan、回転したリソース（`rotate`）、インラインの埋め込み（`here`）では無視され、`captionSide`は1段幅のフロートにだけ効きます。
 
@@ -135,7 +138,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code>（省略可）</td>
-      <td>自身の<code>placement</code>を設定しない、この種類のリソースが使う配置です。<code>ResourcePlacement</code>のすべてのフィールド（<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>、<code>columns</code>、<code>shrink</code>、<code>minScale</code>、<code>captionMeasure</code>、<code>wrap</code>、<code>wrapGap</code>、<code>citingPage</code>）がそれぞれ個別に決まります。リソースも種類もあるフィールドを設定しない場合は、組み込みの既定値が適用されます。<code>auto</code>／<code>column</code>、回転なし、全幅、左そろえ、キャプションは図の下です。決まる順序は下の<a href="#番号付けと参照">番号付けと参照</a>を、回転したリソースを含む各値の動作は<a href="/ja/docs/document-format-resources#リソース">文書形式 › リソース</a>を参照してください。</td>
+      <td>自身の<code>placement</code>を設定しない、この種類のリソースが使う配置です。<code>ResourcePlacement</code>のすべてのフィールド（<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>、<code>columns</code>、<code>shrink</code>、<code>minScale</code>、<code>captionMeasure</code>、<code>wrap</code>、<code>wrapGap</code>、<code>citingPage</code>, <code>plate</code>）がそれぞれ個別に決まります。リソースも種類もあるフィールドを設定しない場合は、組み込みの既定値が適用されます。<code>auto</code>／<code>column</code>、回転なし、全幅、左そろえ、キャプションは図の下です。決まる順序は下の<a href="#番号付けと参照">番号付けと参照</a>を、回転したリソースを含む各値の動作は<a href="/ja/docs/document-format-resources#リソース">文書形式 › リソース</a>を参照してください。</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>

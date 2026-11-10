@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'En-têtes et pieds de page',
   description: 'Ce qui s’imprime en haut et en bas de chaque page : texte avec variables, filets, boîtes, images et tracés vectoriels, selon la parité de la page, et la place de chaque élément',
   lang: 'fr',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '34 min',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ Les valeurs par défaut du tableau ci-dessous sont celles d’un élément de te
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>Les <em>rôles</em> de page sur lesquels l’élément apparaît, combinés avec <code>parity</code>. Après le placement, chaque page est classée comme <code>'blank'</code> (remplissage de parité ou séparateur, ou page sans contenu), <code>'part'</code> (une page de partie), <code>'opener'</code> (son premier bloc est un titre dont le niveau s’étend sur toute la page ou force un saut de page avant lui : la première page d’un chapitre), <code>'comic'</code> (une page de bande dessinée, <code>:::page</code>), <code>'composed'</code> (une page composée, ou le <code>role</code> que nomme son gabarit) ou <code>'body'</code> (tout le reste). <code>pages: 'body'</code> masque un titre courant sur les ouvertures de chapitre ; <code>pages: 'opener'</code> n’affiche un folio que là.</td>
+      <td>Les <em>rôles</em> de page sur lesquels l’élément apparaît, combinés avec <code>parity</code>. Après le placement, chaque page est classée comme <code>'blank'</code> (remplissage de parité ou séparateur, ou page sans contenu), <code>'part'</code> (une page de partie), <code>'opener'</code> (son premier bloc est un titre dont le niveau s’étend sur toute la page ou force un saut de page avant lui : la première page d’un chapitre), <code>'comic'</code> (une page de bande dessinée, <code>:::page</code>), <code>'composed'</code> (une page composée, ou le <code>role</code> que nomme son gabarit) ou <code>'body'</code> (tout le reste). <code>pages: 'body'</code> masque un titre courant sur les ouvertures de chapitre ; <code>pages: 'opener'</code> n’affiche un folio que là. Une page qu’une planche couvre jusqu’à la coupe ou au fond perdu (<code>placement.plate: 'trim' | 'bleed'</code>) est <code>'plate'</code> : seul un élément dont <code>pages</code> nomme ce rôle y est dessiné, pas ceux en <code>'all'</code>.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ Les éléments filet tracent une ligne : horizontale en travers de la zone, ou 
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Rôles de page sur lesquels le filet apparaît (voir le champ <code>pages</code> des éléments de texte).</td>
     </tr>
@@ -622,7 +622,7 @@ Les éléments boîte peignent un rectangle aux coins arrondis dans la zone : u
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Rôles de page sur lesquels la boîte apparaît (voir le champ <code>pages</code> des éléments de texte).</td>
     </tr>
