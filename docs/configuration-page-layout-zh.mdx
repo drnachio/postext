@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '页面与版式',
   description: '页面尺寸、页边距和基线网格，页码的编排，以及分栏和栏间距',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '22分钟',
   order: 5,
   parent: 'configuration',
@@ -446,6 +446,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>在章（以及文档）的最后一页，排在最后一段文字下方的整页宽图和表会上移，按原顺序叠放在文字下方，只隔一个浮动体间距，因为后面已没有别的内容。设为<code>false</code>则让它们留在原来的位置，于是<code>position: 'bottom'</code>浮动体在最后一页也像在其他各页一样止于页脚，比如数据手册的每页轮廓都要在同一高度结束。带侧栏的页面从不移动它们。</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把错过引用页、落到下一页的图或表拉回引用它的那一页：有安全区的图片在安全区内裁切以留在该页；否则在字距允许处把引用页的段落各排短一行。只有当该图因此落在那一页、且不多出一页、不推后其他图时，才保留这一版面。在 Sandbox 中为“版面”下的<em>把图拉回引用页</em>。</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

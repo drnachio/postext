@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Página y disposición',
   description: 'El tamaño de página, los márgenes y la rejilla base; la numeración de las páginas, y las columnas y sus medianiles.',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '36 min',
   order: 5,
   parent: 'configuration',
@@ -446,6 +446,12 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>En la última página de un capítulo (y del documento), las figuras y tablas a ancho de página que quedan por debajo de la última banda de texto suben hasta quedar a un hueco de flotante de ella, apiladas por orden: allí no las sigue nada. Con <code>false</code>, se quedan donde las puso su colocación, de modo que un flotante <code>position: 'bottom'</code> termina al pie de la última página igual que en todas las demás; por ejemplo, en una ficha técnica cuyo contorno termina a la misma altura en todas las páginas. En las páginas con columna lateral nunca se mueven.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Devuelve a la página que la cita una figura o tabla que se ha ido a la siguiente: una imagen con zona segura se recorta dentro de ella para quedarse, y si no, los párrafos de la página de la cita se componen una línea más cortos donde el espaciado lo permite. Solo se conserva si la figura acaba en esa página, sin una página más y sin retrasar otra figura. En el Sandbox, <em>Atraer las figuras a la página de su cita</em>, en Maquetación.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

@@ -5384,6 +5384,8 @@
     "textWrapDefaultWidthTooltip": "La quota della colonna che occupa una risorsa o un riquadro con testo attorno quando non imposta una larghezza propria.",
     "hugClosingFloats": "Flottanti finali vicini al testo",
     "hugClosingFloatsTooltip": "Nell’ultima pagina di un capitolo, sposta in alto le figure e le tabelle a tutta larghezza sotto il testo, fino a una riga sotto di esso. Disattivato: restano nella posizione assegnata, cioè un flottante in basso resta al piede della pagina.",
+    "pullFloatsToCitation": "Porta le figure nella pagina del richiamo",
+    "pullFloatsToCitationTooltip": "Una figura o una tabella che manca per poche righe la pagina che la richiama vi viene riportata: i paragrafi sopra il richiamo si compongono di una riga più corti dove la spaziatura tra le parole lo permette, e un’immagine con zona sicura si ritaglia al suo interno. Si mantiene solo se la figura finisce allora in quella pagina, senza una pagina in più né altre figure ritardate.",
     "inlineResourceGap": "Spazio attorno alle figure in linea",
     "inlineResourceGapTooltip": "Dove una figura o una tabella composta in linea nel testo lascia una riga di spazio: sopra e sotto (il valore predefinito), o solo sopra, con il testo che segue alla riga di griglia successiva, come la componeva postext 1.4. I libri salvati prima della 1.5 si leggono con «Solo sopra».",
     "inlineResourceGapAround": "Sopra e sotto",

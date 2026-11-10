@@ -213,6 +213,7 @@ layout
 ├─ floatsAtCitingPage boolean                                default false  ≥ 1.25 document default of placement.citingPage (see §ResourcePlacement)
 ├─ maxTopFraction     number                                 default 0.7    ≥ 1.25 largest share of the column a float heading its citing page takes (with the floats already there)
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
+├─ pullFloatsToCitation boolean                              default false  a float that missed its citing page by a few lines comes back (safe-area crop, citing page set a line shorter)
 ├─ floatsUnderOpener  boolean                                default true   ≥ 1.25 under a span:'page' opener over 2+ text columns, the head of column 1 is a top slot; false = floats land from column 2, as ≤ 1.24 (a preset below configVersion 11 that sets a page-span heading reads false)
 ├─ openerFloats       'allow' | 'warn' | 'avoid'             default 'allow'  ≥ 1.28 floats on an opener page (a part's page, the page a heading opens with breakBefore or span:'page', the first page of a document that starts with a heading): 'warn' = same layout + one `openerFloat` warning per float; 'avoid' = the page takes no float, each goes to the first slot after it (inline 'here' resources, 'fixed' and span:'side' boxes stay)
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
@@ -1499,6 +1500,7 @@ answers stay in the chapters (playbooks.md C7).
 ResourcePlacement, resolved field-by-field: resource.placement → type.defaultPlacement → built-in:
 ```
 position: 'auto' (default) | 'top' | 'bottom' | 'here' (inline at ::resource directive)
+          | 'paragraph' (inline right after the paragraph that first cites it; no ::resource needed)
 span:     'column' (default) | 'page' | 'side' (float-only side column; else behaves as 'column')
           span 'page' + position 'here' (≥ 1.19): on a multi-column page the ::resource line cuts the band like a
                          page-span box: the columns above close level (or the resource moves to the next page's head),

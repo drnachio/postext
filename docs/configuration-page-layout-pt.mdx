@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Página e diagramação',
   description: 'O tamanho da página, as margens e a grade de linhas de base, a numeração das páginas, e as colunas e as medianizes entre elas',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '35 min',
   order: 5,
   parent: 'configuration',
@@ -446,6 +446,12 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Na página que fecha um capítulo (e o documento), as figuras e tabelas na largura da página compostas abaixo da última faixa de texto sobem até ficar a um vão de flutuante dela, empilhadas na ordem delas: nada vem depois delas ali. <code>false</code> as deixa onde o posicionamento as colocou, de modo que um flutuante <code>position: 'bottom'</code> termina no pé da página também na página de fechamento, como em todas as outras (numa ficha técnica cujo contorno termina na mesma altura em todas as páginas, por exemplo). Páginas com coluna lateral nunca os movem.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Traz de volta para a página que a cita uma figura ou tabela que foi para a seguinte: uma imagem com área segura é recortada dentro dela para ficar ali e, se não, os parágrafos da página da citação são compostos uma linha mais curtos onde o espaçamento permite. O layout só é mantido se a figura então cair nessa página, sem uma página a mais e sem atrasar outra figura. No Sandbox, <em>Trazer as figuras para a página da citação</em>, em Layout.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

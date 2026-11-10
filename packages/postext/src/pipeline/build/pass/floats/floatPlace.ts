@@ -64,6 +64,11 @@ export interface FloatPlaceDeps {
   openerHeadFloats: Map<VDTColumn, number>;
   state: PassState;
   late: PassLate;
+  bodyCropDelta: Map<string, number>;
+  naturalFloats: Map<string, ResolvedResourceBlock | null>;
+  citeCropTried: Set<string>;
+  layoutFloat: (resourceId: string, width: number) => { block: ResolvedResourceBlock } | null;
+  pullShortfalls: Map<string, { page: number; px: number }>;
 }
 
 export function createFloatPlace(deps: FloatPlaceDeps) {
@@ -74,7 +79,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     tableOverflow, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved, reservedOf,
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
-    uncappedBottoms, openerHeadFloats, state, late
+    uncappedBottoms, openerHeadFloats, state, late,
+    bodyCropDelta, naturalFloats, citeCropTried, layoutFloat, pullShortfalls
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
@@ -106,7 +112,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     state.plateWaits++;
     return true;
   };
-  const placeFloatInColumns = (
+  const placeFloatInColumnsAt = (
     page: VDTPage,
     f: PlannedFloat,
     targetCols: readonly VDTColumn[],
@@ -486,6 +492,61 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     noteOpenerFloat(page, f);
     state.floatsPlaced++;
     return rest ? { rest } : 'placed';
+  };
+
+  /** {@link placeFloatInColumnsAt}, with a picture that misses the page
+   *  citing it (`layout.pullFloatsToCitation`) cropped within its safe area
+   *  (`Resource.safeArea`) to stay there, no more than it needs, and its
+   *  shortfall recorded for the driver (`pullShortfalls`). */
+  const placeFloatInColumns = (
+    page: VDTPage,
+    f: PlannedFloat,
+    targetCols: readonly VDTColumn[],
+    position: FloatSlotPosition,
+    pageSpan: boolean,
+    mode: 'fresh' | 'strict',
+    anchorToCap = false,
+    side = false,
+    refY?: number,
+  ): PlaceResult => {
+    const place = () => placeFloatInColumnsAt(page, f, targetCols, position, pageSpan, mode, anchorToCap, side, refY);
+    const first = targetCols[0];
+    if (!resolved.layout.pullFloatsToCitation || !first || f.callout || f.rotate || f.plate || side || bodyCropDelta.has(f.resourceId)) return place();
+    const r = place();
+    if (r !== 'defer' || mode !== 'strict' || f.refPageIndex !== page.index) return r;
+    // The page that cites it, a little short: cropped within its safe area
+    // to stay there (a quarter of what the safe area allows at a time),
+    // once per slot (the next slot offered has less room still).
+    const tryKey = `${f.resourceId}:${page.index}:${first.index}:${position}`;
+    if (!citeCropTried.has(tryKey)) {
+      citeCropTried.add(tryKey);
+      const key = `${f.resourceId}:${first.bbox.width.toFixed(2)}`;
+      let natural = naturalFloats.get(key);
+      if (natural === undefined) {
+        natural = layoutFloat(f.resourceId, first.bbox.width)?.block ?? null;
+        naturalFloats.set(key, natural);
+      }
+      const shrink = natural?.bodyFlex && !natural.rotation ? natural.bodyFlex.shrink : 0;
+      if (shrink > 0.5) {
+        for (const share of [0.25, 0.5, 0.75, 1]) {
+          bodyCropDelta.set(f.resourceId, -shrink * share);
+          const cropped = place();
+          if (cropped !== 'defer' && cropped !== 'skip') return cropped;
+          bodyCropDelta.delete(f.resourceId);
+        }
+      }
+    }
+    // What the citing page lacked for it, at its best slot: the driver
+    // tries to win that back only when it is little. (The band takes its
+    // gaps and grid rounding on top of the float's height: a float that
+    // seems to fit and was refused lacked less than a line.)
+    const m = measureFloat(f.resourceId, first.bbox.width);
+    if (m) {
+      const short = Math.max(1, m.height + floatGapPx - first.availableHeight);
+      const known = pullShortfalls.get(f.resourceId);
+      if (!known || known.page !== page.index || short < known.px) pullShortfalls.set(f.resourceId, { page: page.index, px: short });
+    }
+    return r;
   };
 
   /** Apply a slot outcome to the queue at `i`: drop a placed float, keep a

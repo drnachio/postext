@@ -5384,6 +5384,8 @@
     "textWrapDefaultWidthTooltip": "绕排的资源或框未设宽度时所占栏宽的比例。",
     "hugClosingFloats": "章末浮动体紧贴正文",
     "hugClosingFloatsTooltip": "在一章的最后一页，把位于正文下方、整页宽的图和表上移，排在正文下一行处。关闭时，它们留在位置设置安排的地方，底部浮动体仍在页脚。",
+    "pullFloatsToCitation": "将图拉回引用所在页",
+    "pullFloatsToCitationTooltip": "差几行就能放进引用页的图或表会被拉回该页：在间距允许处把引用之前的段落排短一行，带安全区的图片在其内部裁剪。只有当图因此落在该页、且不增加页数、不使其他图后移时才保留。",
     "inlineResourceGap": "行内图的上下间距",
     "inlineResourceGapTooltip": "在正文中行内排的图或表留一行空白的位置：上下都留（默认），或只在上方留，后面的文字从下一条网格线开始，这是postext 1.4的排法。1.5之前保存的书按“仅上方”读取。",
     "inlineResourceGapAround": "上方和下方",

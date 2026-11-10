@@ -4800,6 +4800,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     textWrapDefaultWidthTooltip: t("textWrapDefaultWidthTooltip"),
     hugClosingFloats: t("hugClosingFloats"),
     hugClosingFloatsTooltip: t("hugClosingFloatsTooltip"),
+    pullFloatsToCitation: t("pullFloatsToCitation"),
+    pullFloatsToCitationTooltip: t("pullFloatsToCitationTooltip"),
     inlineResourceGap: t("inlineResourceGap"),
     inlineResourceGapTooltip: t("inlineResourceGapTooltip"),
     inlineResourceGapAround: t("inlineResourceGapAround"),

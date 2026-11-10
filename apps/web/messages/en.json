@@ -5384,6 +5384,8 @@
     "textWrapDefaultWidthTooltip": "The share of the column a wrapped resource or box takes when it sets no width of its own.",
     "hugClosingFloats": "Closing floats hug the text",
     "hugClosingFloatsTooltip": "On the last page of a chapter, move the page-wide figures and tables below the text up to sit a line under it. Off: they stay where their placement put them, a bottom float at the page foot.",
+    "pullFloatsToCitation": "Pull figures to their citation's page",
+    "pullFloatsToCitationTooltip": "A figure or table that misses the page citing it by a few lines is brought back: the paragraphs above the citation are set a line shorter where the word spacing allows, and a picture with a safe area is cropped within it. Kept only when the figure then lands on that page, with no page more and no other figure later.",
     "inlineResourceGap": "Space around inline figures",
     "inlineResourceGapTooltip": "Where a figure or table set inline in the text keeps a line of space: above and below it (the default), or above only, with the text after it at the next grid line, as postext 1.4 set it. Books saved before 1.5 are read with “Above only”.",
     "inlineResourceGapAround": "Above and below",

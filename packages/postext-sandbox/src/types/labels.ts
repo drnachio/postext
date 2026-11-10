@@ -4962,6 +4962,8 @@ export interface SandboxLabels {
   textWrapDefaultWidthTooltip: string;
   hugClosingFloats: string;
   hugClosingFloatsTooltip: string;
+  pullFloatsToCitation: string;
+  pullFloatsToCitationTooltip: string;
   inlineResourceGap: string;
   inlineResourceGapTooltip: string;
   inlineResourceGapAround: string;

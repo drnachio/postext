@@ -9,6 +9,7 @@ import { resolveBandCapsGen, resolveTrailingCapsGen } from '../columns/bandCaps.
 import { type CitingPageState, now, MAX_CITING_PAGE_ROUNDS } from './drivers.js';
 import { buildDocumentPass } from './pass.js';
 import { floatPagesOf } from './passHelpers.js';
+import { pullFloatsToCitation, pulledLooseness } from './floatPull.js';
 import { type BuildDocumentOptions, type PassHints, type PassResult, BOX_ROOM_EPS_PX } from './passTypes.js';
 import { unplacedByDoc, SPLICED_WARNING_MAPS } from './warnings.js';
 
@@ -119,7 +120,7 @@ export function* buildDocumentBalanced(
   let best = bands.result;
   const bandCaps = bands.bandCaps;
   let passCount = bands.passCount;
-  best.doc.iterationCount = passCount;
+  const pulled = yield* pullFloatsToCitation(best, bandCaps, runPass, (r, n) => { best = r; passCount += n; best.doc.iterationCount = passCount; });
 
   // --- Column balancing (vertical justification) ------------------------
   // Iteratively re-place the document with extra grid lines above headings
@@ -207,7 +208,7 @@ export function* buildDocumentBalanced(
     for (const [idx, n] of lines) if (n > 0) extraPx.set(idx, n * best.doc.baselineGrid);
     return {
       balanceExtraPx: extraPx,
-      balanceLooseness: loose,
+      ...pulledLooseness(pulled, loose),
       ...(looseBudget ? { balanceLooseBudget: looseBudget } : {}),
       bandCaps,
     };
