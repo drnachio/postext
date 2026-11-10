@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '本文',
   description: '本文の文字組み：フォント、サイズと行送り、色、インデント、引用ブロック、詩、タブ位置、ドロップキャップ',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
-  readingTime: '26分',
+  lastUpdated: '2026-11-10',
+  readingTime: '27分',
   order: 7,
   parent: 'configuration',
   plainSummary: "このページでは、本の本文の設定を説明します。本文のフォント、文字の大きさ、行の間隔と、太字やイタリックの語の色を選びます。行の初めの字下げと、段落と段落のあいだの空きを決めます。本文から離して組む引用、詩、列をそろえて並べる文字のためのタブ位置、章の初めに置く大きな最初の文字も扱います。ハイフネーション、見出し、リストは、それぞれ別のページで説明します。",
@@ -230,6 +230,24 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>複合語のハイフンで改行したとき、次の行の頭にもハイフンを置きます。ポルトガル語の正書法が求める<code>vencer-</code> · <code>-se</code>や、2010年以降のスペイン王立アカデミーの規則が求める<code>léxico-</code> · <code>-semántico</code>の形です。繰り返したハイフンはその行の一部として計測・描画され、行はそれを<code>repeatedHyphen</code>として記録します。行の<code>plainStart</code>と<code>sourceStart</code>はハイフンの後を指すので、リンク、柱、Sandboxは語を書かれたとおりに読みます。PDFはこのハイフンを、それを除いた<code>/ActualText</code>の下で描画するので、PDFからコピーまたは抽出したテキストでは語は1回だけ現れます。Webアドレスには付けません。本文テキスト、見出し、リスト、引用ブロック、囲みに適用されます。複合語を含む書式なしの段落は、このとき書式付きのテキストを組む改行処理で改行されます。</td>
+    </tr>
+    <tr>
+      <td><code>avoidStacks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>重複を避けます。重複とは、段落の連続する2行が同じ語で終わる、または同じ末尾の<code>stackMinCharacters</code>文字（スペースを含む）で終わること（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>）、あるいは同じ語や同じ先頭の文字で始まること（<code>of the</code> / <code>of a</code>）です。語間が許す範囲で段落を組み直して避けます。重複の重さは<code>stackPenalty</code>で決まります。<code>optimalLineBreaking</code>が必要です。 アクセント記号の有無は区別しません（「sól」と「sol」は同じ）。また、同じ単音節語（「a」「y」「de」「la」など）が連続する2行の端に来ることは、ペナルティの値にかかわらず認めません。図版キャプション、注、表のセルにも適用されます。既定ではオフなので、以前に組んだ文書の行は変わりません。</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>連続する2行の同じ側の端が、重複とみなされる（<code>avoidStacks</code>）ために共有する文字数（スペースを含む）。端にある約物は数えません。同じ語は常に重複とみなします。</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>100000</code></td>
+      <td>重複（連続する2行が同じ語や同じ文字で終わる、または始まること。<code>avoidStacks</code>がこれを避けます）のコストを、等価な悪さで表します。100は語間の限度ちょうどの行、1000は限度内のどの行よりも重くなります。既定値の100000では重複は上限として働きます。限度を超えて広がった行よりも重いため、重複が残るのは段落のどの組み方でも避けられない場合だけです。 単音節語の繰り返しは、この値にかかわらず常に禁止されます。</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

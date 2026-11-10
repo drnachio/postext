@@ -1,8 +1,10 @@
 // The Knuth-Plass dynamic programme: active nodes, fitness classes, badness
-// and the search for a paragraph's breaks.
+// and the search for a paragraph's breaks, under the document's limits
+// (stacks).
 import type { KPItem, KPOptions, KPPenalty } from '../types.js';
-import { BADNESS_CAP, DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT, DEFAULT_FITNESS_CLASS_DEMERIT, KP_INFINITY, OVER_STRETCH_BADNESS, COLUMN_END_HYPHEN_BADNESS, TRACKING_BADNESS, RAGGED_SPACE_RATIO } from '../constants.js';
+import { BADNESS_CAP, DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT, DEFAULT_FITNESS_CLASS_DEMERIT, KP_INFINITY, OVER_STRETCH_BADNESS, COLUMN_END_HYPHEN_BADNESS, TRACKING_BADNESS, RAGGED_SPACE_RATIO, HARD_RULE_BADNESS } from '../constants.js';
 import { adjustLine } from './adjust.js';
+import { LineEdges, edgesStack, isMonosyllable } from './edges.js';
 
 // ---------------------------------------------------------------------------
 // Active-node structure for the DP
@@ -39,6 +41,10 @@ interface ActiveNode {
    *  width up to the start of the next line, for `loosest`. */
   totalWordSpaces: number;
   totalWordSpaceWidth: number;
+  /** Limits the chain breaks (a stack at {@link HARD_RULE_BADNESS}, a
+   *  repeated monosyllable): a looser or tighter setting (`looseness`) may
+   *  not break more of them than the natural one. */
+  hard: number;
   /** Pointer for traceback. */
   previous: ActiveNode | null;
 }
@@ -64,13 +70,34 @@ function traceBreaks(node: ActiveNode): number[] {
 }
 
 /**
+ * {@link search} under the document's limits. Merging nodes by line and
+ * fitness alone forgets what a stack's cost depends on (the edge a node's
+ * line starts on), so a chain may break a limit another one keeps. Most
+ * paragraphs keep their limits that way; one that does not is set again
+ * with that state kept apart, which is exact but dearer.
+ */
+export function limited(items: KPItem[], options: KPOptions, longerTo?: number, maxHard = Infinity): SearchResult | null {
+  const first = search(items, options, false, longerTo, maxHard);
+  if (first === null || first.hard === 0 || !options.stacks) return first;
+  const exact = search(items, options, true, longerTo, maxHard);
+  return exact !== null && exact.hard <= first.hard ? exact : first;
+}
+
+/** A search's breaks, and how many limits they break (`ActiveNode.hard`). */
+export interface SearchResult {
+  breaks: number[];
+  hard: number;
+}
+
+/**
  * The dynamic programme. Without `longerTo`: the natural breaks, or for a
  * negative looseness the shorter setting when it passes its gates (null
  * only when nothing could be set). With `longerTo`: the cheapest setting
- * of exactly that many lines with no very loose line, or null
- * when there is none.
+ * of exactly that many lines with no very loose line and no more than
+ * `maxHard` limits broken, or null when there is none. `exactLimits` keys
+ * the nodes by the state the limits' costs depend on (see {@link limited}).
  */
-export function search(items: KPItem[], options: KPOptions, longerTo?: number): number[] | null {
+function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longerTo?: number, maxHard = Infinity): SearchResult | null {
   const longer = longerTo !== undefined;
   const {
     lineWidth,
@@ -178,6 +205,11 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
     }
   }
 
+  // Stacks: the words and characters at the edges of each line (only
+  // with the boxes' text).
+  const stacks = options.stacks;
+  const edges = stacks ? new LineEdges(items, stacks.minChars) : undefined;
+
   // Seed active node list with a "start of paragraph" sentinel
   let activeNodes: ActiveNode[] = [{
     position: -1,
@@ -194,6 +226,7 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
     ragged: 0,
     totalWordSpaces: 0,
     totalWordSpaceWidth: 0,
+    hard: 0,
     previous: null,
   }];
 
@@ -202,7 +235,11 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
   // Nodes at different breakpoint positions are never merged — every entry
   // here shares the current position `i`. Hoisted out of the loop and
   // cleared per breakpoint to avoid one Map allocation per legal break.
-  const bestNewNodeByKey = new Map<number, ActiveNode>();
+  // With stacks, the exact pass keys nodes also by the edge their line
+  // starts on, which the next line's cost depends on (else a cheaper node
+  // that starts as the next line would stack on takes the place of one
+  // that keeps the rule, and the rule breaks where it need not).
+  const bestNewNodeByKey = new Map<number | string, ActiveNode>();
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i]!;
@@ -327,7 +364,29 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
       const runtCost = isRunt ? (runtGraded ? runtPenalty * (1 - contentWidth / runtMinWidth) : runtPenalty) : 0;
       // A hyphen ending a line that closes a column or a page (EF-86).
       const columnEndHyphen = isFlagged && avoidHyphenAt?.has(a.line + 1) ? COLUMN_END_HYPHEN_BADNESS : 0;
-      const effectiveBadness = badness + overStretch + runtCost + columnEndHyphen
+      // Stacks: this line and the one before end, or start, alike.
+      let stackCost = 0;
+      let hard = 0;
+      if (edges && stacks && a.position >= 0 && a.previous) {
+        const stackHard = stacks.badness >= HARD_RULE_BADNESS ? 1 : 0;
+        // A repeated monosyllable is a limit whatever the stack penalty.
+        const charge = (word: string, other: string) => {
+          if (word === other && isMonosyllable(word)) {
+            stackCost += Math.max(stacks.badness, HARD_RULE_BADNESS);
+            hard++;
+          } else {
+            stackCost += stacks.badness;
+            hard += stackHard;
+          }
+        };
+        const endA = edges.endWord(i);
+        const endB = edges.endWord(a.position);
+        if (edgesStack(endA, endB, edges.endChars(i), edges.endChars(a.position))) charge(endA, endB);
+        const startA = edges.startWord(a.position);
+        const startB = edges.startWord(a.previous.position);
+        if (edgesStack(startA, startB, edges.startChars(a.position), edges.startChars(a.previous.position))) charge(startA, startB);
+      }
+      const effectiveBadness = badness + overStretch + runtCost + columnEndHyphen + stackCost
         + (trackingShare > 0 ? TRACKING_BADNESS * trackingShare * trackingShare : 0);
 
       let d: number;
@@ -378,7 +437,8 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
 
       // Keys of merged nodes (fc alone, 0–3) never collide with the
       // per-line keys, which start at 4.
-      const key = uniformFrom !== undefined && a.line + 1 >= uniformFrom ? fc : (a.line + 1) * 4 + fc;
+      const baseKey = uniformFrom !== undefined && a.line + 1 >= uniformFrom ? fc : (a.line + 1) * 4 + fc;
+      const key = exactLimits && edges ? `${baseKey}|${edges.startWord(a.position)}\u0001${edges.startChars(a.position)}` : baseKey;
       const existing = bestNewNodeByKey.get(key);
       if (existing && existing.totalDemerits <= totalDemerits) {
         continue;
@@ -405,6 +465,7 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
         ragged,
         totalWordSpaces: gateShort ? sumWordSpacesAt[i + 1]! : 0,
         totalWordSpaceWidth: gateShort ? sumWordSpaceWidthAt[i + 1]! : 0,
+        hard: a.hard + hard,
         previous: a,
       });
     }
@@ -439,6 +500,7 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
         ragged: 0,
         totalWordSpaces: gateShort ? sumWordSpacesAt[i + 1]! : 0,
         totalWordSpaceWidth: gateShort ? sumWordSpaceWidthAt[i + 1]! : 0,
+        hard: 0,
         previous: null,
       });
     }
@@ -451,12 +513,12 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
   let best: ActiveNode | null = null;
   for (const a of activeNodes) {
     if (a.position !== lastBreakPosition) continue;
-    if (longer && a.line !== longerTo) continue;
+    if (longer && (a.line !== longerTo || a.hard > maxHard)) continue;
     if (best === null || a.totalDemerits < best.totalDemerits) {
       best = a;
     }
   }
-  if (longer) return best ? traceBreaks(best) : null;
+  if (longer) return best ? { breaks: traceBreaks(best), hard: best.hard } : null;
 
   // A shorter setting (TeX \looseness < 0: one line short, to pull up a
   // runt last line or take a line out of a column that runs over): among
@@ -482,6 +544,8 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
     for (const a of activeNodes) {
       if (a.position !== lastBreakPosition || a.line !== targetLine) continue;
       if (gateShort && (a.loosest > loosestAllowed || a.ragged > best.ragged)) continue;
+      // Nor a limit the natural setting keeps (a stack).
+      if (a.hard > best.hard) continue;
       if (alternative === null || a.totalDemerits < alternative.totalDemerits) alternative = a;
     }
     if (alternative) best = alternative;
@@ -498,5 +562,5 @@ export function search(items: KPItem[], options: KPOptions, longerTo?: number): 
     }
   }
 
-  return best ? traceBreaks(best) : [];
+  return best ? { breaks: traceBreaks(best), hard: best.hard } : { breaks: [], hard: 0 };
 }

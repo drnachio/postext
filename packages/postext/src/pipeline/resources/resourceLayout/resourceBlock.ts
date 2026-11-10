@@ -18,7 +18,7 @@ import { resolveBodyStyle } from '../../styles.js';
 import { FIT_EPS } from '../../blocks/placement.js';
 import { captionInsideShare } from '../captionInside.js';
 import type { ResourceLayoutInput, TableRowMetrics } from './input.js';
-import { withSnippetCache, fitWidth, alignFactor, shiftLines } from './snippets.js';
+import { withSnippetCache, fitWidth, alignFactor, shiftLines, snippetStackBreaking } from './snippets.js';
 import { type TableLayoutStyle, layoutTable } from './tableLayout.js';
 import { rulePx, MIN_BORDER_PX, tableSliceRows, tableHeaderRowCount } from './tableSlices.js';
 import { createCaptionNotes } from './resourceBlock/captionNotes.js';
@@ -215,6 +215,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       ...(resolved.codeStyle?.inline ? { inlineCode: resolved.codeStyle.inline } : {}),
       annotations: { cjk: resolved.cjk, dpi },
       math: resolved.math,
+      breaking: snippetStackBreaking('left', resolved),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,

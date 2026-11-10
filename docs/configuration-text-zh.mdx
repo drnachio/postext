@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '正文',
   description: '正文的字体排印：字体、字号与行距、颜色、缩进、引用块、诗歌、制表位和首字下沉',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
-  readingTime: '18分钟',
+  lastUpdated: '2026-11-10',
+  readingTime: '19分钟',
   order: 7,
   parent: 'configuration',
   plainSummary: "本页讲一本书正文的设置。你可以选择正文的字体、字号和行距，以及粗体和斜体文字的颜色。你可以设定首行缩进和段落之间的距离。本页还讲与正文分开排的引文、诗歌、按列对齐文字用的制表位，以及有些章开头那个放大的首字。断词、标题和列表另有页面说明。",
@@ -230,6 +230,24 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>在复合词的连字符处断行后，下一行也以连字符开头：<code>vencer-</code> · <code>-se</code>，这是葡萄牙语拼写的要求；<code>léxico-</code> · <code>-semántico</code>，这是西班牙皇家学院自2010年起的规则。重复的连字符随所在的行一起测量和绘制，行把它记录为<code>repeatedHyphen</code>；行的<code>plainStart</code>和<code>sourceStart</code>指向它之后的位置，因此链接、书眉和沙盒读到的是原样的词。PDF在一个不包含它的<code>/ActualText</code>下绘制它，所以从PDF复制或提取的文字里这个词只出现一次。网址从不添加重复连字符。它作用于连续正文、标题、列表、引用块和框；含有复合词的无格式段落，这时改由处理带格式文字的断行器来断行。</td>
+    </tr>
+    <tr>
+      <td><code>avoidStacks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>避免重复：段落中相邻两行以同一个词结尾，或以相同的最后<code>stackMinCharacters</code>个字符（含空格）结尾（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>），或以同一个词或相同的开头字符开头（<code>of the</code> / <code>of a</code>）。断行器在词距允许的范围内重新排段落以避免重复；重复的分量由<code>stackPenalty</code>决定。需要开启<code>optimalLineBreaking</code>。 重音符号不作区分（“sól”即“sol”）；同一个单音节词（如“a”“y”“de”“la”）出现在相邻两行的同一端时，无论惩罚值多少都不允许。图注、注释和表格单元格同样适用。默认关闭，因此此前排好的文档行不变。</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>相邻两行的同一侧边缘须共有多少个字符（含空格）才算重复（<code>avoidStacks</code>）。紧贴边缘的标点不计，同一个词总是算重复。</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>100000</code></td>
+      <td>重复（相邻两行以同一个词或相同的字符结尾或开头，<code>avoidStacks</code>会避免它）的代价，以等效劣度表示：100相当于词距达到上限的一行；1000超过限度内的任何一行。默认值100000使重复成为硬性限制：它甚至超过词距超出上限的行，因此只有在段落的任何排法都无法避免时才保留重复。 单音节词的重复无论此值多少都一律禁止。</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

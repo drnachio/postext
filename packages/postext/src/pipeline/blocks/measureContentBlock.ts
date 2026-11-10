@@ -42,6 +42,21 @@ import { linkQrSetting, hangLinkQr } from './measureContentBlock/linkQr.js';
 export type { BlockMeasureContext, DropCapNote, MeasuredContentBlock, MeasureContentBlockOptions } from './measureContentBlock/types.js';
 export { wordSpacingProfile } from './measureContentBlock/helpers.js';
 
+/** The measure context a composed page's frame (#855) sets its story
+ *  with: `ctx` without stack avoidance (`bodyText.avoidStacks`). A short
+ *  frame held to its box often has no break that keeps that rule, and its
+ *  reflow ladder measures what fits. */
+const composedFrameCtxs = new WeakMap<BlockMeasureContext, BlockMeasureContext>();
+export function composedFrameMeasureContext(ctx: BlockMeasureContext): BlockMeasureContext {
+  if (!ctx.resolved.bodyText.avoidStacks) return ctx;
+  let out = composedFrameCtxs.get(ctx);
+  if (!out) {
+    out = { ...ctx, resolved: { ...ctx.resolved, bodyText: { ...ctx.resolved.bodyText, avoidStacks: false } } };
+    composedFrameCtxs.set(ctx, out);
+  }
+  return out;
+}
+
 /**
  * Resolve and measure one content block at `columnWidth`. Returns `null` when
  * there is nothing to place inline: empty text, an unknown resource id, or a

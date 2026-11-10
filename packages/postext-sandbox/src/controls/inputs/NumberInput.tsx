@@ -14,13 +14,15 @@ interface NumberInputProps {
   isDefault?: boolean;
   onReset?: () => void;
   suffix?: string;
+  /** Width of the value, in characters (5 by default). */
+  widthCh?: number;
 }
 
-export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset, suffix }: NumberInputProps) {
+export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset, suffix, widthCh }: NumberInputProps) {
   const muted = isDefault ?? false;
   return (
     <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={suffix ? [suffix] : undefined}>
-      <NumberControl value={value} onChange={onChange} min={min} max={max} step={step} muted={muted} />
+      <NumberControl value={value} onChange={onChange} min={min} max={max} step={step} muted={muted} {...(widthCh !== undefined ? { widthCh } : {})} />
       {suffix && (
         <span className="min-w-[1.5ch] text-xs text-(--slate)">
           {suffix}

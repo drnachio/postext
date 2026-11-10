@@ -116,7 +116,7 @@ export function pretextSegmentsToItems(
 
     switch (kind) {
       case 'text': {
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!), text: segments[i]! });
         const seg = segments[i]!;
         const last = seg[seg.length - 1];
         if (kinds[i + 1] !== 'text') break;
@@ -182,7 +182,7 @@ export function pretextSegmentsToItems(
         items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
         break;
       default:
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
+        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!), text: segments[i]! });
         break;
     }
   }

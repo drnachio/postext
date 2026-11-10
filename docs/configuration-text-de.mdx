@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Fließtext',
   description: 'Die Typografie des Fließtexts: Schrift, Größe und Zeilenabstand, Farben, Einzüge, Zitate, Verse, Tabulatoren und Initialen',
   lang: 'de',
-  lastUpdated: '2026-10-19',
-  readingTime: '23 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '24 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen für den Haupttext eines Buchs. Sie wählen seine Schrift, seine Größe und den Abstand zwischen seinen Zeilen sowie die Farben fetter und kursiver Wörter. Sie legen den Einzug der ersten Zeile und den Abstand zwischen Absätzen fest. Die Seite behandelt außerdem abgesetzte Zitate, Gedichte, Tabulatoren für Text in Spalten und den großen Anfangsbuchstaben, mit dem manche Kapitel beginnen. Silbentrennung, Überschriften und Listen haben eigene Seiten.",
@@ -229,6 +229,24 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Beginnt die Zeile nach einem Umbruch am Bindestrich eines Kompositums ebenfalls mit einem Bindestrich: <code>vencer-</code> · <code>-se</code>, wie es die portugiesische Rechtschreibung verlangt, und <code>léxico-</code> · <code>-semántico</code>, wie es die Regeln der Spanischen Akademie seit 2010 verlangen. Der wiederholte Bindestrich wird mit seiner Zeile gemessen und gezeichnet, die ihn als <code>repeatedHyphen</code> speichert; ihre Werte <code>plainStart</code> und <code>sourceStart</code> zeigen hinter ihn, sodass Links, lebende Kolumnentitel und die Sandbox das Wort so lesen, wie es geschrieben ist. Das PDF zeichnet ihn unter einem <code>/ActualText</code>, das ihn auslässt, sodass aus dem PDF kopierter oder extrahierter Text das Wort einmal enthält. Eine Webadresse erhält nie einen. Gilt für laufenden Text, Überschriften, Listen, Zitate und Kästen; ein Absatz ohne Formatierung, der ein Kompositum enthält, wird dann von dem Umbruchverfahren umbrochen, das formatierten Text setzt.</td>
+    </tr>
+    <tr>
+      <td><code>avoidStacks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Vermeidet Stapel: zwei aufeinanderfolgende Zeilen eines Absatzes, die auf dasselbe Wort oder auf dieselben letzten <code>stackMinCharacters</code> Zeichen enden, Leerzeichen eingeschlossen (<code>-ung</code> / <code>-ung</code>, <code>in der</code> / <code>von der</code>), oder die mit demselben Wort oder denselben ersten Zeichen beginnen (<code>in der</code> / <code>in den</code>). Der Umbruch setzt den Absatz neu, um sie zu vermeiden, wo der Wortabstand es erlaubt; wie schwer ein Stapel wiegt, bestimmt <code>stackPenalty</code>. Braucht <code>optimalLineBreaking</code>. Akzente zählen nicht („sól“ ist „sol“), und dasselbe einsilbige Wort („a“, „und“, „in“, „der“) am Rand zweier aufeinanderfolgender Zeilen wird nie zugelassen, gleich wie hoch die Strafe ist. Auch Bildunterschriften, Anmerkungen und Tabellenzellen vermeiden sie. Standardmäßig aus, damit ein früher gesetztes Dokument seine Zeilen behält.</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Zeichen, Leerzeichen eingeschlossen, die derselbe Rand zweier aufeinanderfolgender Zeilen teilen muss, damit ein Stapel vorliegt (<code>avoidStacks</code>). Satzzeichen ganz am Rand zählen nicht, und dasselbe Wort ist immer ein Stapel.</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>100000</code></td>
+      <td>Kosten eines Stapels (zwei aufeinanderfolgende Zeilen, die mit demselben Wort oder denselben Zeichen enden oder beginnen, was <code>avoidStacks</code> vermeidet), als äquivalente Badness: 100 ist eine Zeile an der Grenze des Wortabstands; 1000 wiegt mehr als jede Zeile innerhalb davon. Der Standardwert 100000 macht Stapel zu einer Grenze: Er wiegt sogar mehr als eine über die Abstandsgrenzen gedehnte Zeile, sodass ein Stapel nur bleibt, wo kein Umbruch des Absatzes ihn vermeidet. Ein wiederholtes einsilbiges Wort ist unabhängig von diesem Wert eine Grenze.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

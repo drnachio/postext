@@ -31,6 +31,24 @@ pub struct Options {
     /// Right-hand glue every line gets in a ragged setting (0: justified).
     pub ragged_stretch: f64,
     pub hyphenation_zone: Option<f64>,
+    /// The composition rules (`KPOptions.stacks`).
+    pub rules: Rules,
+}
+
+/// The composition rules: stacks.
+#[derive(Clone, Debug, Default)]
+pub struct Rules {
+    /// Two lines ending or starting alike cost this much (a repeated
+    /// monosyllable is always a limit); `None`: stacks are not looked at.
+    pub stack_badness: Option<f64>,
+    /// The line edges stacks compare, as ids (0: none; a word id's low bit
+    /// says it is a monosyllable): `end_word[k]`, `end_chars[k]` of the line
+    /// ending at break `k`, `start_word[k + 1]`, `start_chars[k + 1]` of the
+    /// line after it (`[0]`: the paragraph's first line).
+    pub end_word: Vec<u32>,
+    pub end_chars: Vec<u32>,
+    pub start_word: Vec<u32>,
+    pub start_chars: Vec<u32>,
 }
 
 impl Default for Options {
@@ -52,6 +70,7 @@ impl Default for Options {
             tracking_per_char: 0.0,
             ragged_stretch: 0.0,
             hyphenation_zone: None,
+            rules: Rules::default(),
         }
     }
 }

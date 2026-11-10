@@ -7,6 +7,7 @@ use crate::items::{ItemKind, Items, flag};
 use crate::node::{Arena, NONE, Node};
 use crate::options::Options;
 use crate::prefix::Prefix;
+use std::collections::HashMap;
 
 /// One search's settings, derived from the options.
 #[derive(Clone, Copy)]
@@ -16,6 +17,9 @@ pub(crate) struct Pass {
     /// only when it is empty); a search that runs out of nodes gives up
     /// instead of forcing a break.
     pub constrained: bool,
+    /// Keys the nodes also by what a stack's next cost depends on: the
+    /// edge a node's line starts on (see `looseness::limited`).
+    pub exact_limits: bool,
 }
 
 /// Every buffer a search uses, kept between searches.
@@ -29,6 +33,9 @@ pub(crate) struct Search {
     candidates: Vec<Node>,
     slot_by_key: Vec<u32>,
     keys: Vec<u32>,
+    /// The exact pass's keys: base key, start word and start characters
+    /// of the line.
+    slot_by_exact: HashMap<(u32, u32, u32), u32>,
     avoid: Vec<bool>,
 }
 
@@ -52,7 +59,10 @@ impl Search {
             _ => None,
         };
         self.prefix.fill(items, tracking, gate_short, o.hyphenation_zone.is_some());
-        let Search { prefix: p, arena, active, candidates, slot_by_key, keys, avoid } = self;
+        let rules = &o.rules;
+        let stacks = rules.stack_badness;
+        let exact = pass.exact_limits && stacks.is_some();
+        let Search { prefix: p, arena, active, candidates, slot_by_key, keys, slot_by_exact, avoid } = self;
         arena.clear();
         active.clear();
         let start = arena.push(Node::start());
@@ -132,7 +142,39 @@ impl Search {
                 };
                 let tracking_cost =
                     if tracking_share > 0.0 { TRACKING_BADNESS * tracking_share * tracking_share } else { 0.0 };
-                let eff = badness(r) + over_stretch + runt_cost + column_end + tracking_cost;
+                // Stacks: this line and the one before end, or start, alike.
+                let mut stack_cost = 0.0;
+                let mut hard = 0;
+                if let Some(sb) = stacks
+                    && a.position >= 0
+                    && a.previous != NONE
+                {
+                    let stack_hard = if sb >= HARD_RULE_BADNESS { 1 } else { 0 };
+                    let mut charge = |word: u32, other: u32| {
+                        // A repeated monosyllable is a limit whatever the
+                        // stack penalty.
+                        if word == other && word & 1 != 0 {
+                            stack_cost += sb.max(HARD_RULE_BADNESS);
+                            hard += 1;
+                        } else {
+                            stack_cost += sb;
+                            hard += stack_hard;
+                        }
+                    };
+                    let pos = a.position as usize;
+                    let end_a = rules.end_word[i];
+                    let end_b = rules.end_word[pos];
+                    if edges_stack(end_a, end_b, rules.end_chars[i], rules.end_chars[pos]) {
+                        charge(end_a, end_b);
+                    }
+                    let before = (arena.get(a.previous).position + 1) as usize;
+                    let start_a = rules.start_word[pos + 1];
+                    let start_b = rules.start_word[before];
+                    if edges_stack(start_a, start_b, rules.start_chars[pos + 1], rules.start_chars[before]) {
+                        charge(start_a, start_b);
+                    }
+                }
+                let eff = badness(r) + over_stretch + runt_cost + column_end + stack_cost + tracking_cost;
                 let mut d = if pen >= 0.0 {
                     (1.0 + eff + pen) * (1.0 + eff + pen)
                 } else if pen > -KP_INFINITY {
@@ -186,11 +228,23 @@ impl Search {
                     ragged: ragged_lines,
                     total_word_spaces: if gate_short { p.word_spaces[i + 1] } else { 0.0 },
                     total_word_space_width: if gate_short { p.word_space_width[i + 1] } else { 0.0 },
+                    hard: a.hard + hard,
                     previous: id,
                 };
-                offer(candidates, slot_by_key, keys, key, node);
+                if exact {
+                    let start = (a.position + 1) as usize;
+                    offer_exact(
+                        candidates,
+                        slot_by_exact,
+                        (key, rules.start_word[start], rules.start_chars[start]),
+                        node,
+                    );
+                } else {
+                    offer(candidates, slot_by_key, keys, key, node);
+                }
             }
             active.truncate(keep);
+            slot_by_exact.clear();
             commit(arena, active, candidates, slot_by_key, keys);
 
             // A forced break: no line may run past it.
@@ -239,7 +293,7 @@ impl Search {
 }
 
 /// Moves the candidates into the arena and the active list, in the order
-/// their keys were first offered.
+/// their keys were first offered (the order they were pushed in).
 fn commit(
     arena: &mut Arena,
     active: &mut Vec<u32>,
@@ -248,9 +302,10 @@ fn commit(
     keys: &mut Vec<u32>,
 ) {
     for &key in keys.iter() {
-        let slot = slot_by_key[key as usize];
         slot_by_key[key as usize] = NONE;
-        active.push(arena.push(candidates[slot as usize]));
+    }
+    for c in candidates.iter() {
+        active.push(arena.push(*c));
     }
     keys.clear();
     candidates.clear();
@@ -271,6 +326,34 @@ fn offer(candidates: &mut Vec<Node>, slot_by_key: &mut Vec<u32>, keys: &mut Vec<
     } else if candidates[slot as usize].total_demerits > node.total_demerits {
         candidates[slot as usize] = node;
     }
+}
+
+/// [`offer`] under an exact pass's composite key.
+#[inline]
+fn offer_exact(
+    candidates: &mut Vec<Node>,
+    slot_by_exact: &mut HashMap<(u32, u32, u32), u32>,
+    key: (u32, u32, u32),
+    node: Node,
+) {
+    match slot_by_exact.get(&key) {
+        None => {
+            slot_by_exact.insert(key, candidates.len() as u32);
+            candidates.push(node);
+        }
+        Some(&slot) => {
+            if candidates[slot as usize].total_demerits > node.total_demerits {
+                candidates[slot as usize] = node;
+            }
+        }
+    }
+}
+
+/// Whether the same edge of two consecutive lines stacks: the same word,
+/// or the same characters (`edgesStack`).
+#[inline]
+fn edges_stack(word_a: u32, word_b: u32, chars_a: u32, chars_b: u32) -> bool {
+    (word_a != 0 && word_a == word_b) || (chars_a != 0 && chars_a == chars_b)
 }
 
 /// A zoned syllable only breaks a word that does not fit the rest of the

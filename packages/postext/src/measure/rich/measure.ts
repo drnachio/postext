@@ -214,6 +214,7 @@ function measureRichText(
       runtPenalty,
       runtMinWidth,
       runtGraded: options.runtGraded === true,
+      ...(options.stacks ? { stacks: options.stacks } : {}),
       ...(options.avoidHyphenAtLines ? { avoidHyphenAtLines: options.avoidHyphenAtLines } : {}),
       ...(options.keepBreaks?.path === 'rich' ? { fixedBreaks: options.keepBreaks.at } : {}),
       looseness: options.looseness ?? 0,

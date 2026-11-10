@@ -369,6 +369,26 @@ export interface BodyTextConfig {
    *  than a one-word one and the breaker takes it when a line above can
    *  give a word up. Off by default (every runt costs the same). */
   gradedRuntPenalty?: boolean;
+  /** Avoid stacks: two consecutive lines of a paragraph that end on the same
+   *  word, or on the same last {@link stackMinCharacters} characters,
+   *  spaces included (`-mente` / `-mente`, `en la` / `de la`), or that start
+   *  on the same word or the same first ones (`de la` / `de un`). The
+   *  breaker sets the paragraph again to avoid them where the word spacing
+   *  allows. Accents do not count (`sól` is `sol`), and the same
+   *  monosyllable (`a`, `y`, `de`) is never let stack, whatever
+   *  `stackPenalty` says. Captions, notes and table cells avoid them too.
+   *  Needs `optimalLineBreaking`. Default `false`, so documents set before
+   *  it keep their lines. */
+  avoidStacks?: boolean;
+  /** Characters, spaces included, the same edge of two consecutive lines
+   *  must share to stack (`avoidStacks`); the punctuation at the very edge
+   *  is not counted, and the same word always stacks. Default 3. */
+  stackMinCharacters?: number;
+  /** Cost of a stack, as equivalent badness: 100 is a line at the word
+   *  spacing limit; 1000 outweighs any line within it. Default 100000, a
+   *  limit: a stack is kept only where no setting of the paragraph avoids
+   *  it. A repeated monosyllable is a limit whatever this says. */
+  stackPenalty?: number;
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */
   avoidRuntsInLists?: boolean;

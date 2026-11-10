@@ -6,7 +6,7 @@ import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../../../m
 import type { InlineSpan } from '../../../parse/index.js';
 import type { TableRules, ColorPaletteEntry, ResolvedInlineCodeStyleConfig, ResolvedMathConfig, TableCellAlign, TableCell, Resource, TableCellAlignKeyword, TableCellVerticalAlign, TableModel, ResourceType } from '../../../types.js';
 import { type VDTLine, type VDTLineSegment, createBoundingBox, type VDTResourceTableLayout, type VDTResourceTableCell, type VDTResourceTableCellImage } from '../../../vdt.js';
-import { measureTextWidth } from '../../../measure/index.js';
+import { measureTextWidth, type MeasureBlockOptions } from '../../../measure/index.js';
 import { linkSegments } from '../../../measure/links.js';
 import { graphemeCount } from '../../../measure/graphemes.js';
 import { parseInlineSnippetSpans } from '../../../parse/inlineSnippet.js';
@@ -72,6 +72,8 @@ export interface TableLayoutStyle {
   annotations: AnnotationScope;
   /** The document's maths settings, for the formulas of cells (#541). */
   math?: ResolvedMathConfig;
+  /** How cell text is broken (see `snippetStackBreaking`). */
+  breaking?: MeasureBlockOptions;
 }
 
 /**
@@ -89,6 +91,7 @@ function measureCellContent(
   width: number,
   textAlign: TableCellAlign,
   listGapPx: number,
+  breaking: MeasureBlockOptions = {},
 ): { lines: VDTLine[]; totalHeight: number } {
   const paragraphs = splitCellParagraphs(spans);
   const lines: VDTLine[] = [];
@@ -97,7 +100,7 @@ function measureCellContent(
   const measure = (ps: InlineSpan[], w: number) => {
     const m = measureSnippet(
       ps, set.fontString, set.boldFontString, set.italicFontString, set.boldItalicFontString,
-      Math.max(1, w), set.lineHeightPx, tracking !== 0 ? { textAlign: 'left', letterSpacingPx: tracking } : { textAlign: 'left' },
+      Math.max(1, w), set.lineHeightPx, tracking !== 0 ? { ...breaking, textAlign: 'left', letterSpacingPx: tracking } : { ...breaking, textAlign: 'left' },
     );
     const linked = linkSegments(m.lines, ps);
     return { ...m, lines: tracking !== 0 ? linked.map((line) => ({ ...line, letterSpacing: tracking })) : linked };
@@ -373,6 +376,7 @@ function layoutTableIn(
         Math.max(1, cellWidth),
         align,
         style.listGapPx,
+        style.breaking,
       );
       // An embedded image sits at the top of the cell; the text (when
       // there is any) runs under it, a padding's worth below.

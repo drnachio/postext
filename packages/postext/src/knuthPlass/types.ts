@@ -17,6 +17,9 @@ export interface KPBox {
    *  stretch: an Arabic word's kashida capacity (`measure/rtl/kashida.ts`).
    *  Absent: rigid. */
   stretch?: number;
+  /** The characters the box paints, when the adapter knows them: the words
+   *  at a line's edges are compared for stacks (`KPOptions.stacks`). */
+  text?: string;
 }
 
 export interface KPGlue {
@@ -71,6 +74,13 @@ export interface KPOptions {
   minShrinkRatio: number;
   /** Penalty for two consecutive hyphenated lines. */
   consecutiveHyphenDemerit?: number;
+  /** Stacks: two consecutive lines that end on the same word, or on words
+   *  sharing their last `stacks.minChars` letters, or that start on the
+   *  same word or on words sharing their first `stacks.minChars` letters.
+   *  Each costs `stacks.badness` as equivalent badness; a repeated
+   *  monosyllable is always a limit (`HARD_RULE_BADNESS`). Needs the
+   *  boxes' `text`. Absent: off. */
+  stacks?: { minChars: number; badness: number };
   /** Penalty for adjacent lines of very different tightness. */
   fitnessClassDemerit?: number;
   /** Equivalent-badness added to the final line when it is shorter than
