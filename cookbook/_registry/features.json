@@ -4771,6 +4771,107 @@
       ]
     }
   },
+  "underline": {
+    "label": {
+      "en": "Underline",
+      "es": "Subrayado",
+      "ca": "Subratllat",
+      "zh": "下划线",
+      "ar": "التسطير",
+      "ja": "下線",
+      "pt": "Sublinhado",
+      "fr": "Texte souligné",
+      "de": "Unterstrichener Text",
+      "it": "Sottolineato"
+    },
+    "definition": {
+      "en": "A line under a phrase written as ++text++, as a form underlines an instruction that must not be missed: the words stay ordinary text and break across lines, the line follows each piece.",
+      "es": "Una línea bajo una frase escrita como ++texto++, como un formulario subraya una indicación que no debe pasarse por alto: las palabras siguen siendo texto corriente y pasan de línea, la línea acompaña cada trozo.",
+      "ca": "Una línia sota una frase escrita com ++text++, com un formulari subratlla una indicació que no s’ha de passar per alt: les paraules continuen sent text corrent i passen de línia, la línia acompanya cada tros.",
+      "zh": "用 ++text++ 写出的画在短语下面的线，就像表格给不能漏看的提示加下划线：文字仍是普通正文，可以跨行，线跟着每一行上的那一段。",
+      "ar": "خط تحت عبارة مكتوبة بالصيغة ++text++، كما تسطّر استمارة تنبيهًا لا يجوز أن يفوت القارئ: تبقى الكلمات نصًّا عاديًّا وتنتقل بين الأسطر، ويتبع الخط كل قطعة منها.",
+      "ja": "++text++ と書いた語句の下に引く線。申込書で見落とせない指示に引く線のように使います。語はふつうの本文のまま行をまたぎ、線は行ごとの部分に付きます。",
+      "pt": "Uma linha sob uma frase escrita como ++texto++, como um formulário sublinha uma instrução que não pode passar despercebida: as palavras continuam sendo texto comum e passam de linha, a linha acompanha cada pedaço.",
+      "fr": "Un trait sous une phrase écrite ++texte++, comme un formulaire souligne une consigne à ne pas manquer : les mots restent du texte ordinaire et passent à la ligne, le trait suit chaque morceau.",
+      "de": "Eine Linie unter einer als ++Text++ geschriebenen Wendung, wie ein Formular einen Hinweis unterstreicht, der nicht übersehen werden darf: Die Wörter bleiben gewöhnlicher Text und brechen um, die Linie folgt jedem Stück.",
+      "it": "Una linea sotto una frase scritta come ++testo++, come un modulo sottolinea un’indicazione da non perdere: le parole restano testo normale e vanno a capo, la linea segue ogni pezzo."
+    },
+    "aliases": {
+      "en": [
+        "underline",
+        "underlined",
+        "++text++",
+        "inserted text"
+      ],
+      "es": [
+        "subrayado",
+        "subrayar",
+        "++texto++"
+      ],
+      "ca": [
+        "subratllat",
+        "subratllar",
+        "++text++"
+      ],
+      "zh": [
+        "下划线",
+        "底线",
+        "++text++",
+        "underline"
+      ],
+      "ar": [
+        "تسطير",
+        "نص مسطَّر",
+        "++text++"
+      ],
+      "ja": [
+        "下線",
+        "アンダーライン",
+        "++text++"
+      ],
+      "pt": [
+        "sublinhado",
+        "sublinhar",
+        "++texto++"
+      ],
+      "fr": [
+        "souligné",
+        "soulignement",
+        "++texte++"
+      ],
+      "de": [
+        "unterstrichen",
+        "Unterstreichung",
+        "++Text++"
+      ],
+      "it": [
+        "sottolineato",
+        "sottolineatura",
+        "++testo++"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format-inline",
+      "heading": {
+        "en": "Underline",
+        "es": "Subrayado",
+        "ca": "Subratllat",
+        "zh": "下划线",
+        "ar": "التسطير",
+        "ja": "下線",
+        "pt": "Sublinhado",
+        "fr": "Texte souligné",
+        "de": "Unterstrichener Text",
+        "it": "Sottolineato"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "(?<![+A-Za-z0-9])\\+\\+[^\\s+](?:[^+\\n]|\\+(?!\\+))*?\\+\\+(?![+A-Za-z0-9])"
+      ]
+    }
+  },
   "footnotes": {
     "label": {
       "en": "Footnotes",

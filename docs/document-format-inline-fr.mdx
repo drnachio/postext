@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Mise en forme en ligne et formules',
   description: 'Les marques dans une ligne : emphase, liens, pastilles, petites capitales, tabulations, texte vertical, marques chinoises et japonaises, sens du texte, et formules LaTeX',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
-  readingTime: '30 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '31 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Cette page traite des marques que vous utilisez dans une ligne de texte. Elles mettent des mots en gras ou en italique, ajoutent des liens, dessinent de petites étiquettes, composent des petites capitales et alignent le texte sur des taquets de tabulation. D’autres marques servent aux livres chinois et japonais, comme les petites indications de prononciation au-dessus d’un caractère, ou à une phrase écrite dans l’autre sens, comme de l’anglais dans un livre arabe. La dernière section montre comment écrire des formules mathématiques.",
@@ -59,6 +59,11 @@ Le balisage en ligne est reconnu dans tout bloc de texte (titres, paragraphes, c
       <td>Texte barré</td>
       <td><code>~~texte~~</code></td>
       <td>Un trait qui traverse le texte sans le déplacer : l’ancien prix à côté du nouveau (<code>~~165 €~~ 129 €</code>). Deux tildes de chaque côté ; une seule paire fait un indice. Voir <a href="#texte-barré">Texte barré</a> plus bas.</td>
+    </tr>
+    <tr>
+      <td>Texte souligné</td>
+      <td><code>++texte++</code></td>
+      <td>Un trait sous le texte, qui reste à sa place : une consigne sur un formulaire (<code>Merci de ++signer toutes les pages++.</code>). Deux signes plus de chaque côté ; <code>C++</code> et <code>i++</code> restent tels quels. Voir <a href="#texte-souligné">Texte souligné</a> plus bas.</td>
     </tr>
     <tr>
       <td>Petites capitales</td>
@@ -220,6 +225,22 @@ La réunion passe ~~à mardi~~ à jeudi.
 - **Aucune place prise.** Le trait est peint par-dessus le texte, et les lignes se coupent exactement comme sans lui. Un passage coupé en fin de ligne reçoit un trait sur chaque ligne, deux passages côte à côte gardent deux traits, et une ponctuation collée au passage (`~~165~~.`) reste en dehors.
 - **Le trait.** Il passe là où la fonte place son barré, avec l’épaisseur qu’elle indique (les valeurs `yStrikeoutPosition` et `yStrikeoutSize` de sa table OS/2, lues dans les fichiers de fonte que reçoit le moteur : `prepareFonts`, le worker de composition, la ligne de commande), dans la couleur du texte barré ; chaque fonte d’un passage pour son compte, si bien qu’un mot en gras ou une autre famille dans le passage reçoit son propre trait, qui rejoint le suivant. Une fonte dont le moteur n’a pas lu le fichier, ou qui n’indique pas de barré, prend 0,28 em au-dessus de la ligne de base, à peu près à mi-hauteur des minuscules, et 0,05 em. Dans un texte chinois ou japonais, et sur une page verticale, le trait suit le milieu des caractères. Un exposant ou un indice dans le passage ne le déplace pas.
 - **Où.** Paragraphes, titres (tant que `headings.inlineMarks` est actif), éléments de liste, citations, encadrés, notes de bas de page, cellules de tableau, légendes et notes, et les mots d’une pastille (`:chip[~~avant~~ après]` ; `~~:chip[avant]~~` barre les mots de la pastille). Le canvas, le PDF et le HTML dessinent le trait d’après la composition ; dans un PDF balisé, c’est un artefact de mise en page, et les mots restent du texte extrait et lu tel qu’il est écrit. Le HTML et l’EPUB recomposable placent en plus les mots dans un `<s>`, et l’export Word les marque comme barrés. Une tâche terminée a son propre trait (`taskCompletedStrikethrough`).
+
+### Texte souligné
+
+`++texte++` trace un trait sous `texte`, comme un formulaire souligne une consigne à ne pas manquer, ou une lettre un délai que son modèle exige. C’est l’écriture du texte inséré de Pandoc et de markdown-it-ins, composée comme le soulignement d’un traitement de texte.
+
+```markdown
+Merci de ++signer toutes les pages++ et de renvoyer le formulaire.
+
+L’offre est valable ++jusqu’au 30 juin++.
+```
+
+- **Syntaxe.** Exactement deux signes plus de chaque côté, et le texte commence et finit par un caractère qui n’est ni une espace ni un signe plus. Une lettre ou un chiffre juste avant la paire ouvrante ou juste après la paire fermante les laisse tels quels : `C++`, `g++`, `Notepad++` et `1 ++ 2` restent du texte ; de même une paire dont le texte commence et finit par un mot d’un seul caractère, l’opérateur d’incrémentation sur une variable (`use ++i rather than i++ here`). Un caractère chinois ou japonais à côté d’une paire ne la laisse pas telle quelle, ces écritures ne mettant pas d’espaces. Écrivez `\+` pour un signe plus littéral. Le texte accepte ses propres marques en ligne, liens, pastilles et références, et peut passer un simple retour à la ligne de la source, pas une ligne vide.
+- **Aucune place prise.** Comme pour le texte barré, le trait est peint sous le texte, et les lignes se coupent exactement comme sans lui. Un passage coupé en fin de ligne reçoit un trait sur chaque ligne, et une ponctuation collée au passage (`++vendredi++.`) reste en dehors.
+- **Le trait.** Il passe là où la fonte place son soulignement, avec l’épaisseur qu’elle indique (les valeurs `underlinePosition` et `underlineThickness` de sa table `post`, lues dans les mêmes fichiers de fonte que le barré), dans la couleur du texte souligné, chaque fonte d’un passage pour son compte. Une fonte dont le moteur n’a pas lu le fichier, ou qui n’indique pas de soulignement, prend 0,12 em sous la ligne de base et 0,05 em. Dans un texte chinois ou japonais, et sur une page verticale, le trait suit le pied du cadratin. Un texte à la fois barré et souligné (`~~++texte++~~`) reçoit les deux traits.
+- **Liens.** Quand `links.style` souligne les liens, un lien souligné (`++[le formulaire](https://example.org)++`) reçoit un seul trait, celui du lien, dans chaque sortie que le style liste ; le soulignement s’efface devant lui et reste dessiné dans les autres sorties.
+- **Où.** Aux mêmes endroits que le texte barré, mots d’une pastille compris (`:chip[++nouveau++]`). Le canvas, le PDF et le HTML dessinent le trait d’après la composition ; dans un PDF balisé, c’est un artefact de mise en page, et les mots restent du texte. Le HTML et l’EPUB recomposable placent en plus les mots dans un `<u>`, et l’export Word les marque comme soulignés.
 
 ### Petites capitales
 

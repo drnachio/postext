@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Format en línia i fórmules',
   description: "Com es marca el text dins d'una línia: èmfasi, enllaços, xips, versaletes, tabuladors, text vertical, marques xineses i japoneses, direcció del text i fórmules LaTeX",
   lang: 'ca',
-  lastUpdated: '2026-11-06',
-  readingTime: '29 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '30 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Aquesta pàgina explica les marques que es fan servir dins d'una línia de text. Serveixen per posar paraules en negreta o en cursiva, afegir enllaços, dibuixar etiquetes petites, compondre versaletes i alinear el text a les tabulacions. Altres marques serveixen per als llibres en xinès i en japonès, com les lectures petites que van damunt d'un caràcter, o per a una frase que va en una altra direcció, com un text en anglès dins d'un llibre en àrab. L'última secció ensenya a escriure fórmules matemàtiques.",
@@ -59,6 +59,11 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
       <td>Ratllat</td>
       <td><code>~~text~~</code></td>
       <td>Una línia que travessa el text sense moure’l del seu lloc: el preu antic al costat del nou (<code>~~165 €~~ 129 €</code>). Dues titlles a cada banda; un sol parell és un subíndex. Vegeu <a href="#ratllat">Ratllat</a> més avall.</td>
+    </tr>
+    <tr>
+      <td>Subratllat</td>
+      <td><code>++text++</code></td>
+      <td>Una línia sota el text, que no es mou del seu lloc: una indicació en un formulari (<code>Si us plau, ++signeu totes les pàgines++.</code>). Dos signes més a cada banda; <code>C++</code> i <code>i++</code> es queden com són. Vegeu <a href="#subratllat">Subratllat</a> més avall.</td>
     </tr>
     <tr>
       <td>Versaletes</td>
@@ -220,6 +225,22 @@ La reunió passa ~~a dimarts~~ a dijous.
 - **No ocupa lloc.** La línia es pinta sobre el text i les línies es tallen exactament igual que sense ella. Un ratllat partit en un final de línia porta una línia a cada línia, dos ratllats seguits conserven dues línies, i un signe de puntuació enganxat al ratllat (`~~165~~.`) en queda fora.
 - **La línia.** Va on la font posa el seu ratllat i amb el gruix que la font indica (els valors `yStrikeoutPosition` i `yStrikeoutSize` de la seva taula OS/2, llegits dels fitxers de font que rep el motor: `prepareFonts`, el worker de composició, la línia d’ordres), en el color del text ratllat; cada font d’un ratllat pel seu compte, de manera que una paraula en negreta o una altra família dins del ratllat porta la seva pròpia línia, que enllaça amb la següent. Una font el fitxer de la qual el motor no ha llegit, o que no indica ratllat, pren 0,28 em per sobre de la línia de base, més o menys a mitja alçada de les minúscules, i 0,05 em. En text xinès i japonès, i en una pàgina vertical, la línia recorre el centre dels caràcters. Un superíndex o un subíndex dins del ratllat no la mou.
 - **On.** Paràgrafs, títols (mentre `headings.inlineMarks` estigui activat), elements de llista, cites, requadres, notes a peu de pàgina, cel·les de taula, peus i notes, i les paraules d’un xip (`:chip[~~abans~~ ara]`; `~~:chip[abans]~~` ratlla les paraules del xip). El llenç, el PDF i l’HTML dibuixen la línia a partir de la composició; en un PDF etiquetat és un artefacte de maquetació, i les paraules continuen sent text que s’extreu i es llegeix tal com està escrit. L’HTML i l’EPUB adaptable, a més, emboliquen les paraules en `<s>`, i l’exportació a Word les marca com a ratllades. Una tasca completada té la seva pròpia línia (`taskCompletedStrikethrough`).
+
+### Subratllat
+
+`++text++` traça una línia sota `text`, com un formulari subratlla una indicació que no s’ha de passar per alt, o una carta un termini que demana la seva plantilla. És l’escriptura del text inserit de Pandoc i markdown-it-ins, composta com el subratllat d’un processador de textos.
+
+```markdown
+Si us plau, ++signeu totes les pàgines++ i retorneu el formulari.
+
+L’oferta és vàlida ++fins al 30 de juny++.
+```
+
+- **Sintaxi.** Exactament dos signes més a cada banda, i el text comença i acaba amb un caràcter que no és ni un espai ni un signe més. Una lletra o una xifra just abans del parell d’obertura o just després del de tancament els deixa tal com són, de manera que `C++`, `g++`, `Notepad++` i `1 ++ 2` continuen sent text; també un parell el text del qual comença i acaba amb una paraula d’un sol caràcter, l’operador d’increment sobre una variable (`use ++i rather than i++ here`). Un caràcter xinès o japonès al costat d’un parell no el deixa tal com és, perquè aquestes escriptures no posen espais. Escriviu `\+` per a un signe més literal. El text admet les seves pròpies marques en línia, enllaços, xips i referències, i pot passar per un salt de línia simple de l’original, no per una línia en blanc.
+- **No ocupa lloc.** Com en el ratllat, la línia es pinta sota el text i les línies es tallen exactament igual que sense ella. Un subratllat partit en un final de línia porta una línia a cada línia, i un signe de puntuació enganxat a ell (`++divendres++.`) es queda fora.
+- **La línia.** Va on la font posa el seu subratllat i amb el gruix que la font indica (els valors `underlinePosition` i `underlineThickness` de la seva taula `post`, llegits dels mateixos fitxers de font que el ratllat), en el color del text subratllat, cada font pel seu compte. Una font el fitxer de la qual el motor no ha llegit, o que no indica subratllat, pren 0,12 em per sota de la línia de base i 0,05 em. En text xinès i japonès, i en una pàgina vertical, la línia va al peu del quadratí. Un text ratllat i subratllat alhora (`~~++text++~~`) porta les dues línies.
+- **Enllaços.** Quan `links.style` subratlla els enllaços, un enllaç subratllat (`++[el formulari](https://example.org)++`) porta una sola línia, la de l’enllaç, a cada sortida que llista l’estil; el subratllat li cedeix el lloc allà i es dibuixa a les altres sortides.
+- **On.** Als mateixos llocs que el ratllat, incloses les paraules d’un xip (`:chip[++nou++]`). El llenç, el PDF i l’HTML dibuixen la línia a partir de la composició; en un PDF etiquetat és un artefacte de maquetació, i les paraules continuen sent text. L’HTML i l’EPUB adaptable posen a més les paraules dins `<u>`, i l’exportació a Word les marca com a subratllades.
 
 ### Versaletes
 

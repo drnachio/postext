@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Inline-Formatierung und Formeln',
   description: 'Auszeichnungen innerhalb einer Zeile: Hervorhebung, Links, Chips, Kapitälchen, Tabulatoren, senkrechter Text, chinesische und japanische Zeichen, Schreibrichtung und LaTeX-Formeln',
   lang: 'de',
-  lastUpdated: '2026-11-06',
-  readingTime: '25 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '26 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Diese Seite behandelt die Auszeichnungen, die Sie innerhalb einer Textzeile verwenden. Sie machen Wörter fett oder kursiv, fügen Links ein, zeichnen kleine Etiketten, setzen Kapitälchen und richten Text an Tabstopps aus. Andere Auszeichnungen sind für chinesische und japanische Bücher gedacht, etwa kleine Aussprachehilfen über einem Schriftzeichen, oder für eine Wendung in der anderen Schreibrichtung, etwa Englisch in einem arabischen Buch. Der letzte Abschnitt zeigt, wie Sie mathematische Formeln schreiben.",
@@ -59,6 +59,11 @@ Inline-Auszeichnungen werden in jedem Textblock erkannt (Überschriften, Absätz
       <td>Durchgestrichen</td>
       <td><code>~~Text~~</code></td>
       <td>Eine Linie durch den Text, der an seinem Platz bleibt: der alte Preis neben dem neuen (<code>~~165 €~~ 129 €</code>). Zwei Tilden auf jeder Seite; ein einzelnes Paar ist eine Tiefstellung. Siehe <a href="#durchgestrichener-text">Durchgestrichener Text</a> weiter unten.</td>
+    </tr>
+    <tr>
+      <td>Unterstrichen</td>
+      <td><code>++Text++</code></td>
+      <td>Eine Linie unter dem Text, der an seinem Platz bleibt: ein Hinweis auf einem Formular (<code>Bitte ++alle Seiten unterschreiben++.</code>). Zwei Pluszeichen auf jeder Seite; <code>C++</code> und <code>i++</code> bleiben, wie sie sind. Siehe <a href="#unterstrichener-text">Unterstrichener Text</a> weiter unten.</td>
     </tr>
     <tr>
       <td>Kapitälchen</td>
@@ -220,6 +225,22 @@ Das Treffen wird ~~auf Dienstag~~ auf Donnerstag verlegt.
 - **Kein Platzbedarf.** Die Linie wird über den Text gemalt, und die Zeilen brechen genau so um wie ohne sie. Eine Durchstreichung, die über ein Zeilenende läuft, bekommt auf jeder Zeile eine Linie, zwei Durchstreichungen nebeneinander behalten zwei Linien, und ein Satzzeichen, das an der Durchstreichung klebt (`~~165~~.`), bleibt draußen.
 - **Die Linie.** Sie liegt dort, wo die Schrift ihre Durchstreichung vorsieht, und ist so dick, wie die Schrift angibt (`yStrikeoutPosition` und `yStrikeoutSize` ihrer OS/2-Tabelle, gelesen aus den Schriftdateien, die die Engine bekommt: `prepareFonts`, der Layout-Worker, die Kommandozeile), in der Farbe des durchgestrichenen Textes; jeder Schriftschnitt einer Durchstreichung für sich, sodass ein fettes Wort oder eine andere Schriftfamilie darin eine eigene Linie bekommt, die an die nächste anschließt. Ein Schnitt, dessen Datei die Engine nicht gelesen hat oder der keine Durchstreichung angibt, bekommt 0,28 em über der Grundlinie, etwa die halbe Höhe der Kleinbuchstaben, und 0,05 em. In chinesischem und japanischem Text und auf einer senkrechten Seite läuft die Linie durch die Mitte der Zeichen. Eine Hoch- oder Tiefstellung in der Durchstreichung verschiebt sie nicht.
 - **Wo.** Absätze, Überschriften (solange `headings.inlineMarks` eingeschaltet ist), Listenpunkte, Zitate, Kästen, Fußnoten, Tabellenzellen, Bildunterschriften und Anmerkungen sowie die Wörter eines Chips (`:chip[~~alt~~ neu]`; `~~:chip[alt]~~` streicht die Wörter des Chips durch). Canvas, PDF und HTML zeichnen die Linie aus dem Satz; in einem getaggten PDF ist sie ein Layout-Artefakt, und die Wörter bleiben Text, der so extrahiert und vorgelesen wird, wie er geschrieben ist. HTML und das umfließende EPUB setzen die Wörter zusätzlich in `<s>`, und der Word-Export markiert sie als durchgestrichen. Ein erledigter Aufgabenpunkt hat eine eigene Linie (`taskCompletedStrikethrough`).
+
+### Unterstrichener Text
+
+`++Text++` zieht eine Linie unter `Text`, so wie ein Formular einen Hinweis unterstreicht, der nicht übersehen werden darf, oder ein Brief eine Frist, weil seine Vorlage es verlangt. Es ist die Schreibweise für eingefügten Text in Pandoc und markdown-it-ins, gesetzt als die Unterstreichung, die eine Textverarbeitung zeichnet.
+
+```markdown
+Bitte ++alle Seiten unterschreiben++ und das Formular zurücksenden.
+
+Das Angebot gilt ++bis zum 30. Juni++.
+```
+
+- **Syntax.** Genau zwei Pluszeichen auf jeder Seite, und der Text beginnt und endet mit einem Zeichen, das weder ein Leerzeichen noch ein Pluszeichen ist. Ein Buchstabe oder eine Ziffer direkt vor dem öffnenden oder direkt nach dem schließenden Paar lässt die Zeichen stehen, sodass `C++`, `g++`, `Notepad++` und `1 ++ 2` Text bleiben; ebenso ein Paar, dessen Text mit einem Wort aus einem Zeichen beginnt und endet, der Inkrement-Operator an einer Variablen (`use ++i rather than i++ here`). Ein chinesisches oder japanisches Zeichen neben einem Paar lässt es nicht stehen, da diese Schriften keine Leerzeichen setzen. Für ein wörtliches Pluszeichen schreiben Sie `\+`. Der Text nimmt eigene Inline-Auszeichnungen, Links, Chips und Verweise auf und darf über einen einfachen Zeilenumbruch der Quelle laufen, nicht über eine Leerzeile.
+- **Kein Platzbedarf.** Wie bei der Durchstreichung wird die Linie unter den Text gemalt, und die Zeilen brechen genau so um wie ohne sie. Eine Unterstreichung, die über ein Zeilenende läuft, bekommt auf jeder Zeile eine Linie, und ein Satzzeichen, das an ihr klebt (`++Freitag++.`), bleibt draußen.
+- **Die Linie.** Sie liegt dort, wo die Schrift ihre Unterstreichung vorsieht, und ist so dick, wie die Schrift angibt (`underlinePosition` und `underlineThickness` ihrer `post`-Tabelle, gelesen aus denselben Schriftdateien wie die Durchstreichung), in der Farbe des unterstrichenen Textes, jeder Schriftschnitt für sich. Ein Schnitt, dessen Datei die Engine nicht gelesen hat oder der keine Unterstreichung angibt, bekommt 0,12 em unter der Grundlinie und 0,05 em. In chinesischem und japanischem Text und auf einer senkrechten Seite läuft die Linie am Fuß des Geviertes. Durchgestrichener und zugleich unterstrichener Text (`~~++Text++~~`) bekommt beide Linien.
+- **Links.** Unterstreicht `links.style` die Links, bekommt ein unterstrichener Link (`++[das Formular](https://example.org)++`) in jeder Ausgabe, die der Stil nennt, eine Linie, die des Links; die Unterstreichung weicht ihr dort und wird in den anderen Ausgaben gezeichnet.
+- **Wo.** An denselben Stellen wie die Durchstreichung, die Wörter eines Chips eingeschlossen (`:chip[++neu++]`). Canvas, PDF und HTML zeichnen die Linie aus dem Satz; in einem getaggten PDF ist sie ein Layout-Artefakt, und die Wörter bleiben Text. HTML und das umfließende EPUB setzen die Wörter zusätzlich in `<u>`, und der Word-Export markiert sie als unterstrichen.
 
 ### Kapitälchen
 

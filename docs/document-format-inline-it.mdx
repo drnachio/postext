@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Formattazione in linea e formule',
   description: 'La formattazione all’interno di una riga: enfasi, link, chip, maiuscoletto, tabulazioni, testo verticale, segni cinesi e giapponesi, direzione del testo e formule LaTeX',
   lang: 'it',
-  lastUpdated: '2026-11-06',
-  readingTime: '28 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '29 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Questa pagina riguarda i segni che usi dentro una riga di testo. Mettono le parole in grassetto o in corsivo, aggiungono link, disegnano piccole etichette, compongono il maiuscoletto e allineano il testo ai tabulatori. Altri segni servono ai libri cinesi e giapponesi, come le piccole indicazioni di pronuncia sopra un carattere, o a una frase scritta nell’altra direzione, come l’inglese in un libro arabo. L’ultima sezione mostra come scrivere le formule matematiche.",
@@ -59,6 +59,11 @@ Il markup in linea viene riconosciuto dentro qualsiasi blocco di testo (titoli, 
       <td>Barrato</td>
       <td><code>~~testo~~</code></td>
       <td>Una linea che attraversa il testo senza spostarlo: il prezzo vecchio accanto al nuovo (<code>~~165 €~~ 129 €</code>). Due tilde per lato; una sola coppia è un pedice. Vedi <a href="#barrato">Barrato</a> più avanti.</td>
+    </tr>
+    <tr>
+      <td>Sottolineato</td>
+      <td><code>++testo++</code></td>
+      <td>Una linea sotto il testo, che resta al suo posto: un’indicazione su un modulo (<code>Si prega di ++firmare tutte le pagine++.</code>). Due segni più per lato; <code>C++</code> e <code>i++</code> restano come sono. Vedi <a href="#sottolineato">Sottolineato</a> più avanti.</td>
     </tr>
     <tr>
       <td>Maiuscoletto</td>
@@ -220,6 +225,22 @@ La riunione passa ~~a martedì~~ a giovedì.
 - **Non occupa spazio.** La linea è dipinta sopra il testo e le righe vanno a capo esattamente come senza di essa. Un barrato spezzato a fine riga ha una linea su ogni riga, due barrati affiancati conservano due linee e un segno di punteggiatura attaccato al barrato (`~~165~~.`) ne resta fuori.
 - **La linea.** Sta dove il carattere mette il suo barrato e ha lo spessore che il carattere indica (i valori `yStrikeoutPosition` e `yStrikeoutSize` della sua tabella OS/2, letti dai file di font che il motore riceve: `prepareFonts`, il worker di impaginazione, la riga di comando), nel colore del testo barrato; ogni carattere di un barrato per conto suo, così una parola in grassetto o un’altra famiglia nel barrato ha una linea propria, che si raccorda alla successiva. Un carattere di cui il motore non ha letto il file, o che non indica un barrato, prende 0,28 em sopra la linea di base, più o meno a metà altezza delle minuscole, e 0,05 em. Nel testo cinese e giapponese, e su una pagina verticale, la linea corre al centro dei caratteri. Un apice o un pedice dentro il barrato non la sposta.
 - **Dove.** Paragrafi, titoli (finché `headings.inlineMarks` è attivo), voci di elenco, citazioni, riquadri, note a piè di pagina, celle di tabella, didascalie e note, e le parole di un chip (`:chip[~~prima~~ dopo]`; `~~:chip[prima]~~` barra le parole del chip). Il canvas, il PDF e l’HTML disegnano la linea dalla composizione; in un PDF con tag è un artefatto di impaginazione, e le parole restano testo che si estrae e si legge così come è scritto. L’HTML e l’EPUB adattabile racchiudono inoltre le parole in `<s>`, e l’esportazione in Word le segna come barrate. Una voce di attività completata ha una linea propria (`taskCompletedStrikethrough`).
+
+### Sottolineato
+
+`++testo++` traccia una linea sotto `testo`, come un modulo sottolinea un’indicazione da non perdere, o una lettera una scadenza richiesta dal suo modello. È la scrittura del testo inserito di Pandoc e markdown-it-ins, composta come la sottolineatura di un elaboratore di testi.
+
+```markdown
+Si prega di ++firmare tutte le pagine++ e di restituire il modulo.
+
+L’offerta è valida ++fino al 30 giugno++.
+```
+
+- **Sintassi.** Esattamente due segni più per lato, e il testo inizia e finisce con un carattere che non è né uno spazio né un segno più. Una lettera o una cifra subito prima della coppia di apertura o subito dopo quella di chiusura li lascia come sono, così `C++`, `g++`, `Notepad++` e `1 ++ 2` restano testo; anche una coppia il cui testo inizia e finisce con una parola di un solo carattere, l’operatore di incremento su una variabile (`use ++i rather than i++ here`). Un carattere cinese o giapponese accanto a una coppia non la lascia com’è, perché quelle scritture non mettono spazi. Scrivi `\+` per un segno più letterale. Il testo accetta i propri segni in linea, link, chip e riferimenti, e può attraversare un semplice a capo del sorgente, non una riga vuota.
+- **Non occupa spazio.** Come per il barrato, la linea è dipinta sotto il testo e le righe vanno a capo esattamente come senza di essa. Un sottolineato spezzato a fine riga ha una linea su ogni riga, e un segno di punteggiatura attaccato (`++venerdì++.`) resta fuori.
+- **La linea.** Sta dove il carattere mette la sua sottolineatura e ha lo spessore che il carattere indica (i valori `underlinePosition` e `underlineThickness` della sua tabella `post`, letti dagli stessi file di font del barrato), nel colore del testo sottolineato, ogni font per conto suo. Un font di cui il motore non ha letto il file, o che non indica sottolineatura, prende 0,12 em sotto la linea di base e 0,05 em. Nel testo cinese e giapponese, e su una pagina verticale, la linea corre al piede del quadratone. Un testo insieme barrato e sottolineato (`~~++testo++~~`) ha entrambe le linee.
+- **Link.** Quando `links.style` sottolinea i link, un link sottolineato (`++[il modulo](https://example.org)++`) ha una sola linea, quella del link, in ogni output che lo stile elenca; lì la sottolineatura le cede il posto, negli altri output viene disegnata.
+- **Dove.** Negli stessi punti del barrato, comprese le parole di un chip (`:chip[++nuovo++]`). Il canvas, il PDF e l’HTML disegnano la linea dalla composizione; in un PDF taggato è un artefatto di impaginazione, e le parole restano testo. L’HTML e l’EPUB riflowable mettono inoltre le parole in `<u>`, e l’esportazione in Word le segna come sottolineate.
 
 ### Maiuscoletto
 
