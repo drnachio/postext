@@ -1053,8 +1053,8 @@ outputs would ship too (`--exclude GLOB` leaves more out).
 
 When the brief asks for other files, write them from the delivered bundle:
 `postext epub` (fixed or reflowable, checked with EPUBCheck), `postext html`, a press
-`postext pdf` (`--pdfx`, `--profile`) and `postext docx` for an editor who works in
-Word; a SCORM package for a learning platform comes from the Sandbox's SCORM tab or
+`postext pdf` (`--pdfx`, `--profile`), `postext docx` for an editor who works in
+Word, and `postext idml` (postext ≥ 1.71) for a designer who finishes the pages in InDesign; a SCORM package for a learning platform comes from the Sandbox's SCORM tab or
 `postext-scorm` (configuration.md §21, "Delivering EPUB, HTML and PDF files"; sources.md § Word).
 
 Import it at https://postext.dev/en/sandbox (Books → New → Open a .postext file…). A

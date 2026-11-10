@@ -188,6 +188,15 @@ export interface BodyTextConfig {
    *  `pinLegacyHardBreaks`). Titles (`\\` in a heading), captions, notes
    *  and table cells break at `\\` either way. */
   hardLineBreaks?: boolean;
+  /** Read `++text++` as underlined text, beside `:underline[text]`, which
+   *  is always read (#1465). Every pair of two plus signs on each side
+   *  underlines, `use ++i rather than i++` too; `\+\+` sets a literal pair,
+   *  a letter or digit glued to a pair keeps it literal (`C++`, `g++`) and
+   *  inline code and code blocks never underline. It applies wherever
+   *  inline marks are read: the running text, headings, lists, captions,
+   *  table cells, notes, chips and design text. Default `false`: the plus
+   *  signs are text. */
+  plusUnderline?: boolean;
   /** Shape a word with no letter (`46.`, `1367)`, `».`: digits,
    *  punctuation or symbols alone) in the script of the text around it
    *  (#725). Such a word has no script of its own, and a face may draw its

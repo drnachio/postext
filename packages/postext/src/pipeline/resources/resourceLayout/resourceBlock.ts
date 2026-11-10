@@ -213,6 +213,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       palette,
       chips: chipContextOf(resolved),
       ...(resolved.codeStyle?.inline ? { inlineCode: resolved.codeStyle.inline } : {}),
+      ...(resolved.bodyText.plusUnderline ? { plusUnderline: true } : {}),
       annotations: { cjk: resolved.cjk, dpi },
       math: resolved.math,
     };

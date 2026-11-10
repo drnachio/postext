@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Mise en forme en ligne et formules',
   description: 'Les marques dans une ligne : emphase, liens, pastilles, petites capitales, tabulations, texte vertical, marques chinoises et japonaises, sens du texte, et formules LaTeX',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
-  readingTime: '30 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '31 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Cette page traite des marques que vous utilisez dans une ligne de texte. Elles mettent des mots en gras ou en italique, ajoutent des liens, dessinent de petites étiquettes, composent des petites capitales et alignent le texte sur des taquets de tabulation. D’autres marques servent aux livres chinois et japonais, comme les petites indications de prononciation au-dessus d’un caractère, ou à une phrase écrite dans l’autre sens, comme de l’anglais dans un livre arabe. La dernière section montre comment écrire des formules mathématiques.",
@@ -59,6 +59,11 @@ Le balisage en ligne est reconnu dans tout bloc de texte (titres, paragraphes, c
       <td>Texte barré</td>
       <td><code>~~texte~~</code></td>
       <td>Un trait qui traverse le texte sans le déplacer : l’ancien prix à côté du nouveau (<code>~~165 €~~ 129 €</code>). Deux tildes de chaque côté ; une seule paire fait un indice. Voir <a href="#texte-barré">Texte barré</a> plus bas.</td>
+    </tr>
+    <tr>
+      <td>Texte souligné</td>
+      <td><code>:underline[texte]</code></td>
+      <td>Un trait sous le texte, qui reste à sa place : une consigne sur un formulaire (<code>Merci de :underline[signer toutes les pages].</code>). <code>++texte++</code> fait de même quand <code>bodyText.plusUnderline</code> est activé. Voir <a href="#texte-souligné">Texte souligné</a> plus bas.</td>
     </tr>
     <tr>
       <td>Petites capitales</td>
@@ -191,6 +196,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Où.** Paragraphes, éléments de liste, citations, encadrés, cellules de tableau, légendes et notes. Les titres composent aussi la pastille (`## :chip[///]{style="mark"} Titre`, depuis postext 1.52) : la table des matières, les titres courants, les signets du PDF et la navigation de l'EPUB lisent le titre sans elle. L'ouverture ou le design de titre qui imprime `{titleText}` compose aussi la pastille : l'ouverture par défaut le fait, comme tout élément de texte qui lit les marques en ligne (`inlineMarks: true`), dans les styles de pastille du document et à la taille de l'élément. Un élément sans marques en ligne imprime le titre sans elle.
 - **Sortie.** Le canvas, le HTML et le PDF peignent la boîte et composent les mots comme du vrai texte : sélectionnable dans le HTML, extractible et dans l’ordre de lecture dans le PDF (dans un PDF balisé, la boîte est un artefact de mise en page et les mots appartiennent au paragraphe).
 
+Une pastille avec `field` devient un champ de formulaire à remplir dans le PDF (voir [Sortie PDF › Champs de formulaire](/fr/docs/configuration-pdf-output#champs-de-formulaire)).
+
 ### Surlignages
 
 `:mark[texte]` pose une bande de couleur derrière `texte`, comme un manuel scolaire surligne ses mots clés. Contrairement à une pastille, les mots marqués restent du texte ordinaire : ils se coupent en fin de ligne, se divisent et se justifient comme les mots voisins, et la bande suit chaque morceau de la phrase sur sa ligne. `:mark[texte]{style="cle"}` choisit un style nommé de `markStyles` (voir la référence de configuration) ; sans `style`, ou avec un identifiant qu’aucun style ne déclare, la marque prend le premier style (un `mark` jaune pâle intégré quand la configuration n’en a aucun ; le Sandbox signale un identifiant inconnu).
@@ -220,6 +227,23 @@ La réunion passe ~~à mardi~~ à jeudi.
 - **Aucune place prise.** Le trait est peint par-dessus le texte, et les lignes se coupent exactement comme sans lui. Un passage coupé en fin de ligne reçoit un trait sur chaque ligne, deux passages côte à côte gardent deux traits, et une ponctuation collée au passage (`~~165~~.`) reste en dehors.
 - **Le trait.** Il passe là où la fonte place son barré, avec l’épaisseur qu’elle indique (les valeurs `yStrikeoutPosition` et `yStrikeoutSize` de sa table OS/2, lues dans les fichiers de fonte que reçoit le moteur : `prepareFonts`, le worker de composition, la ligne de commande), dans la couleur du texte barré ; chaque fonte d’un passage pour son compte, si bien qu’un mot en gras ou une autre famille dans le passage reçoit son propre trait, qui rejoint le suivant. Une fonte dont le moteur n’a pas lu le fichier, ou qui n’indique pas de barré, prend 0,28 em au-dessus de la ligne de base, à peu près à mi-hauteur des minuscules, et 0,05 em. Dans un texte chinois ou japonais, et sur une page verticale, le trait suit le milieu des caractères. Un exposant ou un indice dans le passage ne le déplace pas.
 - **Où.** Paragraphes, titres (tant que `headings.inlineMarks` est actif), éléments de liste, citations, encadrés, notes de bas de page, cellules de tableau, légendes et notes, et les mots d’une pastille (`:chip[~~avant~~ après]` ; `~~:chip[avant]~~` barre les mots de la pastille). Le canvas, le PDF et le HTML dessinent le trait d’après la composition ; dans un PDF balisé, c’est un artefact de mise en page, et les mots restent du texte extrait et lu tel qu’il est écrit. Le HTML et l’EPUB recomposable placent en plus les mots dans un `<s>`, et l’export Word les marque comme barrés. Une tâche terminée a son propre trait (`taskCompletedStrikethrough`).
+
+### Texte souligné
+
+`:underline[texte]` trace un trait sous `texte`, comme un formulaire souligne une consigne à ne pas manquer, ou une lettre une échéance que son modèle demande.
+
+```markdown
+Merci de :underline[signer toutes les pages] et de renvoyer le formulaire.
+
+L’offre est valable :underline[jusqu’au 30 juin].
+```
+
+- **Syntaxe.** Le texte entre les crochets est souligné. Il accepte ses propres marques en ligne, liens, pastilles et références (`:underline[**maintenant**, avec [le formulaire](https://example.org)]`), peut passer un saut de ligne simple de la source mais pas une ligne vide, et ne peut pas être vide. Écrivez `\]` pour un crochet littéral à l’intérieur. Dans le code en ligne, la directive reste du texte.
+- **L’abréviation `++texte++`.** Avec `bodyText.plusUnderline` activé (voir [Texte courant](/fr/docs/configuration-text#texte-courant)), `++texte++` souligne aussi, selon l’écriture du texte inséré de Pandoc et de markdown-it-ins. Il est désactivé par défaut, et les signes plus sont alors toujours du texte. Activé, chaque paire souligne : exactement deux signes plus de chaque côté, autour d’un texte qui commence et finit par un caractère qui n’est ni une espace ni un signe plus, si bien que `use ++i rather than i++ here` souligne `i rather than i`. Écrivez `\+\+` (ou `\++`) pour une paire littérale. Il n’y a pas non plus d’exception pour le code écrit dans le texte : `C++-Kurs und C++-Buch` souligne `-Kurs und C` ; écrivez donc `C\+\+` dès qu’une deuxième paire suit. Une paire suivie d’une espace n’ouvre rien (`C++ et`, `1 ++ 2`). Le code en ligne et les blocs de code ne sont jamais soulignés. L’éditeur du Sandbox marque `++texte++` seulement tant que le réglage est activé.
+- **Aucune place prise.** Comme pour le texte barré, le trait est peint sous le texte, et les lignes se coupent exactement comme sans lui. Un passage coupé en fin de ligne reçoit un trait sur chaque ligne, et une ponctuation collée au passage (`:underline[vendredi].`) reste en dehors.
+- **Le trait.** Il passe là où la fonte place son soulignement, avec l’épaisseur qu’elle indique (les valeurs `underlinePosition` et `underlineThickness` de sa table `post`, lues dans les mêmes fichiers de fonte que le barré), dans la couleur du texte souligné, chaque fonte d’un passage pour son compte. Une fonte dont le moteur n’a pas lu le fichier, ou qui n’indique pas de soulignement, prend 0,12 em sous la ligne de base et 0,05 em. Dans un texte chinois ou japonais, il est dessiné comme une ligne latérale pleine (`:sideline[…]`) à sa place par défaut : sous les caractères, et à leur droite sur une page verticale. Un texte à la fois barré et souligné (`~~:underline[texte]~~`) reçoit les deux traits.
+- **Liens.** Quand `links.style` souligne les liens, un lien souligné (`:underline[[le formulaire](https://example.org)]`) reçoit un seul trait, celui du lien, dans chaque sortie que le style liste ; le soulignement s’efface devant lui et reste dessiné dans les autres sorties.
+- **Où.** Aux mêmes endroits que le texte barré, mots d’une pastille compris (`:chip[:underline[nouveau]]`). Le canvas, le PDF et le HTML dessinent le trait d’après la composition ; dans un PDF balisé, c’est un artefact de mise en page, et les mots restent du texte. Le HTML et l’EPUB recomposable placent en plus les mots dans un `<u>`, et l’export Word les marque comme soulignés.
 
 ### Petites capitales
 

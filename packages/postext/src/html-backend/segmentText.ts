@@ -117,8 +117,9 @@ export function wordSegmentsOf(line: VDTLine, tracking: number, fontOf: (seg: VD
  *  which tells assistive technology and a rich-text copy that it is struck;
  *  the line itself is the line's mark (`VDTLine.marks`), drawn where the
  *  canvas and the PDF draw it, so the element draws none. */
-export function struckHtml(seg: Pick<VDTLineSegment, 'strike'>, html: string): string {
-  return seg.strike ? `<s style="text-decoration:none;">${html}</s>` : html;
+export function struckHtml(seg: Pick<VDTLineSegment, 'strike' | 'underline'>, html: string): string {
+  const under = seg.underline ? `<u style="text-decoration:none;">${html}</u>` : html;
+  return seg.strike ? `<s style="text-decoration:none;">${under}</s>` : under;
 }
 
 export function pickSegmentColor(

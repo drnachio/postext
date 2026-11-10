@@ -9,7 +9,7 @@ import type { Dimension, TabStop } from '../../types.js';
 import { parseLengthText, tabStopFromAttrs } from '../../defaults/text/tabStops.js';
 import { bracketTextEnd, dataRanges } from './breaks.js';
 import { nextBraced } from './crossRefs.js';
-import { CODE_SPAN_RE } from './markup.js';
+import { CODE_SPAN_RE, type InlineFormatOptions } from './markup.js';
 import { parseInlineFormatting, protectDollarEscapes } from './parse.js';
 
 /** Atomic plain-text placeholder for an inline colour swatch span
@@ -373,7 +373,7 @@ export function extractInlineChips(
  *  span is its own entry carrying the ambient bold / italic, and its words
  *  are parsed for their own inline marks. A chip's label is not parsed for
  *  maths, so its `\$` is unescaped here, as in the running text. */
-export function injectChipSpans(spans: InlineSpan[], chips: ChipMeta[]): InlineSpan[] {
+export function injectChipSpans(spans: InlineSpan[], chips: ChipMeta[], inline?: InlineFormatOptions): InlineSpan[] {
   return injectPlaceholderSpans(spans, chips, CHIP_PLACEHOLDER, (meta, bold, italic) => ({
     text: CHIP_PLACEHOLDER,
     bold,
@@ -381,7 +381,7 @@ export function injectChipSpans(spans: InlineSpan[], chips: ChipMeta[]): InlineS
     chip: {
       ...(meta.style ? { style: meta.style } : {}),
       ...(meta.field ? { field: meta.field } : {}),
-      spans: parseInlineFormatting(protectDollarEscapes(meta.text)),
+      spans: parseInlineFormatting(protectDollarEscapes(meta.text), inline),
     },
   }));
 }

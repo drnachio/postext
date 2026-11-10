@@ -92,7 +92,7 @@ export interface VDTChip {
   ascent: number;
   descent: number;
   /** Lines through the chip's struck-through words (`~~…~~` in its
-   *  text): from `x` px past where its text starts (after its border and
+   *  text) and under its underlined ones (`++…++`): from `x` px past where its text starts (after its border and
    *  padding), `y` px from the baseline (negative up), `length` px long and
    *  `thickness` px thick, in the colour of its text. Absent when none is
    *  struck. */
@@ -209,6 +209,9 @@ export interface VDTLineSegment {
    *  `VDTLine.marks` (`marks/strikethrough.ts`); the HTML outputs also wrap
    *  the words in `<s>`, the Word export sets them struck. */
   strike?: VDTSegmentStrike;
+  /** Underlined text (`++text++`), as {@link strike}: the line is drawn
+   *  under the characters as `VDTLine.marks`. */
+  underline?: VDTSegmentStrike;
   /** Present when `kind === 'math'`. The rendered formula. */
   mathRender?: MathRender;
   /** Present when `kind === 'score'` (#1172): the engraved system, drawn

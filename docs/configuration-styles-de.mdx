@@ -476,6 +476,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 Em-Längen des Kästchens (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) beziehen sich auf die eigene Schriftgröße des Chips. Das Kästchen ist ein Band 0,8 em über und 0,25 em unter der Grundlinie, vergrößert um `paddingY` und die Umrisslinie; es wird außerhalb des Zeilenkastens gezeichnet und ändert nie den Zeilenabstand, sodass das Grundlinienraster hält. Wird das Kästchen höher als der Zeilenabstand, kann ein Chip in einen Chip auf der Zeile darüber oder darunter hineinragen – die Sandbox zeigt die Warnung „Chips berühren die nächste Zeile“, wenn sich zwei Chips auf verschiedenen Zeilen überlappen, mit der Überlappung in Punkt, sodass sich `paddingY`, die Umrisslinie oder `fontSize` verringern lassen. Ein hoher Chip ohne Chip darüber oder darunter wird nicht gemeldet.
 
+Ein Chip mit dem Attribut `field` ist im PDF ein ausfüllbares Formularfeld und im IDML-Export ein InDesign-Formularfeld. Sein Stil gibt dem Feld das Aussehen, `minWidth` den Platz zum Eintippen (siehe [PDF-Ausgabe › Formularfelder](/de/docs/configuration-pdf-output#formularfelder)).
+
 Im VDT ist ein Chip ein Zeilensegment mit `kind: 'chip'`, dessen Feld `chip` die Textläufe (jeder mit seiner Schriftangabe und Breite), die Geometrie des Kästchens (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, die Abstandsränder) und seine Farben enthält; der `text` des Segments ist ein Platzhalter aus einem Zeichen, sodass Klartext-Offsets und Quellenzuordnungen einen Chip als ein Zeichen zählen.
 
 ```ts

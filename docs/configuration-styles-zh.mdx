@@ -476,6 +476,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 框的以em为单位的长度（`paddingX`、`paddingY`、`borderRadius`、`borderWidth`、`gap`）相对于行内标签自身的字号。框是从基线上方0.8 em到基线下方0.25 em的一条带，再向外加上`paddingY`和轮廓；它画在行框之外，从不改变行距，所以基线网格保持不变。框比行距还高时，可能碰到上一行或下一行的行内标签：不同行上的两个行内标签重叠时，沙盒会列出“行内标签碰到相邻行”警告，并以pt为单位给出重叠量，你可以据此减小`paddingY`、轮廓或`fontSize`。行内标签再高，只要上下行没有行内标签，就不会被标出。
 
+带`field`属性的行内标签在PDF中是可填写的表单域，在IDML导出中是InDesign表单域。表单域的外观由标签样式决定，`minWidth`给填写留出宽度（见[PDF输出 › 表单域](/zh/docs/configuration-pdf-output#表单域)）。
+
 在VDT中，行内标签是`kind: 'chip'`的行片段，其`chip`字段包含各段文字（每段带字体字符串和宽度）、框的几何数据（`boxWidth`、`ascent`、`descent`、`paddingX`、`borderWidth`、`borderRadius`、`gap`留出的外边距）和颜色；片段的`text`是一个单字符占位符，所以纯文本偏移量和源映射把一个行内标签算作一个字符。
 
 ```ts

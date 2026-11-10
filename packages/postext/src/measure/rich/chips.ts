@@ -1,8 +1,8 @@
 // Inline chips as tokens: their face, readings, the gaps beside them and
 // their margins (#1276: split out of rich.ts).
 import type { VDTChipRun, VDTChipStrike, VDTAnnotationRun } from '../../vdt.js';
-import { STRIKE_AT, STRIKE_STROKE } from '../../marks/strikeGeometry.js';
-import { strikeoutOf } from '../../fonts/strikeout.js';
+import { STRIKE_AT, STRIKE_STROKE, UNDERLINE_AT, UNDERLINE_STROKE } from '../../marks/strikeGeometry.js';
+import { strikeoutOf, underlineOf } from '../../fonts/strikeout.js';
 import { fontEm } from '../vertical.js';
 import { uprightFace } from '../../writing/uprightArabic.js';
 import type { InlineSpan } from '../../parse/index.js';
@@ -60,6 +60,8 @@ export function chipToken(
   // The struck-through characters of each run (`~~…~~`): its run number
   // and the characters `from`–`to` of the run's text.
   const runStrikes: ({ id: number; from: number; to: number } | undefined)[] = [];
+  // The same for its underlined characters (`++…++`).
+  const runUnders: ({ id: number; from: number; to: number } | undefined)[] = [];
   // An upright chip (an exercise's number, #1244) takes the slant off the
   // text's faces too.
   const face = (bold: boolean, italic: boolean): string => {
@@ -86,12 +88,15 @@ export function chipToken(
       ? smallCapsRuns(s.text).map((r) => ({ text: r.text, font: r.small ? smallCapsFont(font) : font }))
       : [{ text: s.text, font }];
     const strikes = s.links?.filter((l) => l.strike);
+    const unders = s.links?.filter((l) => l.underline);
     let offset = 0;
     for (const piece of pieces) {
       const pieceStart = offset;
       offset += piece.text.length;
       const struck = strikes?.find((l) => l.start < offset && l.end > pieceStart);
       runStrikes.push(struck ? { id: struck.strike!.id, from: Math.max(0, struck.start - pieceStart), to: Math.min(piece.text.length, struck.end - pieceStart) } : undefined);
+      const under = unders?.find((l) => l.start < offset && l.end > pieceStart);
+      runUnders.push(under ? { id: under.underline!.id, from: Math.max(0, under.start - pieceStart), to: Math.min(piece.text.length, under.end - pieceStart) } : undefined);
       runs.push({
         text: piece.text,
         fontString: piece.font,
@@ -129,7 +134,8 @@ export function chipToken(
     box?.direction,
   );
   const textWidth = (asPainted ? directed.runs : runs).reduce((sum, r) => sum + r.width, 0);
-  const strikes = chipStrikes(directed.order || directed.runs.length !== runs.length ? undefined : directed.runs, runStrikes, runBaseFonts);
+  const painted = directed.order || directed.runs.length !== runs.length ? undefined : directed.runs;
+  const strikes = [...chipStrikes(painted, runStrikes, runBaseFonts), ...chipStrikes(painted, runUnders, runBaseFonts, true)];
   const ownPaddingX = box?.paddingXPx ?? 0;
   const paddingY = box?.paddingYPx ?? 0;
   // A style may pad the top and the bottom apart (EF-172).
@@ -205,7 +211,7 @@ export function chipToken(
  *  line per stretch of struck runs side by side in one face. `runs` are the
  *  chip's runs in paint order, undefined when they are reordered or cut for
  *  their direction (no line is drawn then). */
-function chipStrikes(runs: readonly VDTChipRun[] | undefined, struck: readonly ({ id: number; from: number; to: number } | undefined)[], baseFonts: readonly string[]): VDTChipStrike[] {
+function chipStrikes(runs: readonly VDTChipRun[] | undefined, struck: readonly ({ id: number; from: number; to: number } | undefined)[], baseFonts: readonly string[], under = false): VDTChipStrike[] {
   if (!runs || !struck.some((s) => s)) return [];
   const out: VDTChipStrike[] = [];
   let open: { id: number; from: number; to: number; y: number; thickness: number } | undefined;
@@ -223,9 +229,9 @@ function chipStrikes(runs: readonly VDTChipRun[] | undefined, struck: readonly (
     }
     const base = baseFonts[i] ?? run.fontString;
     const em = fontEm(base);
-    const face = strikeoutOf(base);
-    const y = -(face?.position ?? STRIKE_AT) * em;
-    const thickness = Math.max(0.5, (face?.size ?? STRIKE_STROKE) * em);
+    const face = under ? underlineOf(base) : strikeoutOf(base);
+    const y = -(face?.position ?? (under ? UNDERLINE_AT : STRIKE_AT)) * em;
+    const thickness = Math.max(0.5, (face?.size ?? (under ? UNDERLINE_STROKE : STRIKE_STROKE)) * em);
     const whole = measureTextWidth(run.text, run.fontString);
     const k = whole > 0 ? run.width / whole : 1;
     const from = x + (s.from > 0 ? measureTextWidth(run.text.slice(0, s.from), run.fontString) * k : 0);

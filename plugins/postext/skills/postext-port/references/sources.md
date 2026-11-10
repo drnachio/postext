@@ -288,11 +288,20 @@ Gotchas:
 ## InDesign (IDML)
 
 - Export IDML and a print PDF from the same document.
+- The other way round, `postext idml my-book -o book.idml` (postext ≥ 1.71; `idmlDocument` from
+  `postext/idml` in code) writes the laid-out pages as an InDesign package: one page per spread, page
+  items for rules, boxes and pictures, one story per composed-page frame (`next` chains share one),
+  callout styles as paragraph styles, authored CMYK colours as swatches, form-field chips as InDesign
+  form fields. InDesign sets the text again, so line breaks can differ; tables, maths, music and
+  inline swatches are not written yet (`idml.*` warnings), and right-to-left or vertical text comes
+  out as horizontal left-to-right stories. Use it when the brief hands the port back to an InDesign
+  studio, not as a way to check the port.
 - `idml_extract.py roles book.idml > map.json` lists the paragraph styles in
   use (resolved font, size, colour, sample) and the stories in page order.
   Map style names to roles; prefer the style names over geometry.
 - `idml_extract.py markdown book.idml --map map.json --out draft`. You get
-  text in story order with bold, italic, superscript and subscript runs,
+  text in story order with bold, italic, superscript and subscript runs
+  (underlined and struck runs come out plain: add `:underline[…]` and `~~…~~` by hand),
   tables with spans and header rows as table resources, anchored images as
   stubs with their link, footnotes as endnotes, and index page references as
   `:index` marks (See / See also cross-references in `index-crossrefs.md`).

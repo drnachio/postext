@@ -698,7 +698,7 @@ export type { ParsedComposedPage, HeadingTake } from './composed/document.js';
 export { checkComposedSlots, checkFrameLookNames } from './composed/slotChecks.js';
 export type { ComposedSlotWarning } from './composed/slotChecks.js';
 export type { ComposedPageFence, BlockSlot, FigureInfo, FigureLabel, FigureWord, FigureWordKind } from './parse/index.js';
-export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt, contentHasMath, resourceHasMath } from './parse/index.js';
+export { computeSourceMap, parseInlineSnippetSpans, mapInlineSnippet, orientationMarkAt, underlineRanges, contentHasMath, resourceHasMath, type InlineFormatOptions } from './parse/index.js';
 export type { OrientationMark } from './parse/index.js';
 export type { InlineSnippetMapping } from './parse/index.js';
 export { buildPageLabels, collectPageLabelRuns, formatNumeral, documentNumeralStyle, parseNumberFormat, chineseInformalStyle, hanInformalStyle, EAST_ASIAN_NUMERAL_STYLES, ARABIC_NUMERAL_STYLES } from './numerals/numbering.js';

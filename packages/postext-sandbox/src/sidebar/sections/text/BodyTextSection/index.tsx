@@ -318,6 +318,16 @@ export const BodyTextSection = memo(function BodyTextSection() {
           isDefault={bodyText.hardLineBreaks === D.hardLineBreaks}
           onReset={() => resetField('hardLineBreaks')}
         />
+        {/* `++text++` as underlined text (#1465): off unless the
+            configuration turns it on; `:underline[…]` is always read. */}
+        <ToggleSwitch
+          label={labels.bodyPlusUnderline}
+          checked={bodyText.plusUnderline === true}
+          onChange={(checked) => updateBodyText({ plusUnderline: checked })}
+          tooltip={labels.bodyPlusUnderlineTooltip}
+          isDefault={bodyText.plusUnderline !== true}
+          onReset={() => resetField('plusUnderline')}
+        />
         {/* A word with no letter takes the script of the text around it
             (#725): on unless the configuration says no (a stored one from
             before the rule is read with it off). */}

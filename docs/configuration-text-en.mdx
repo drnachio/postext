@@ -238,6 +238,12 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Read a backslash that ends a source line, and <code>{'\\\\'}</code> before a space, as a forced line break inside a paragraph, a quotation or a list item (CommonMark's hard break): the next words start a new line of the same paragraph, and the line before is set at its natural width, as a last line is. A backslash ending the paragraph prints, and two spaces at the end of a line are not a break (see <a href="/en/docs/document-format-directives#line-breaks">Document format › Line breaks</a>). <code>false</code> keeps the 1.22 reading: the backslashes print and the lines join with a space; configurations stored earlier whose text has such a backslash read with it (see <a href="/en/docs/configuration-bundles#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>). Titles, captions, notes and table cells break at <code>{'\\\\'}</code> either way.</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Read <code>++text++</code> as underlined text, beside <code>:underline[text]</code>, which is always read. Every pair of two plus signs on each side underlines, <code>use ++i rather than i++</code> included; <code>{'\\+\\+'}</code> sets a literal pair, a letter or digit glued to the signs keeps them as text (<code>C++</code>, <code>g++</code>), and inline code and code blocks never underline. It applies wherever inline marks are read: the running text, headings, lists, captions, table cells, notes and chips. <code>false</code>: the plus signs print. See <a href="/en/docs/document-format-inline#underline">Document format › Underline</a>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

@@ -44,6 +44,9 @@ export interface ResolvedBodyTextConfig {
   breakAfterDashes: boolean;
   breakAfterHyphens: boolean;
   hardLineBreaks: boolean;
+  /** Present only when switched on (see
+   *  {@link BodyTextConfig.plusUnderline}). */
+  plusUnderline?: true;
   /** Present only when switched off (see
    *  {@link BodyTextConfig.breakAfterSlashes}). */
   breakAfterSlashes?: false;

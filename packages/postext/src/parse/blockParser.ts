@@ -206,7 +206,8 @@ function optionsKey(options: ParseOptions | undefined): string {
   const fences = options?.fences !== false;
   const indented = options?.indentedCode === true;
   const scores = options?.scores !== false;
-  return fences && !indented && scores ? '' : `${fences ? 'f' : 'n'}${indented ? 'i' : ''}${scores ? '' : 'c'}`;
+  const plus = options?.plusUnderline === true;
+  return fences && !indented && scores && !plus ? '' : `${fences ? 'f' : 'n'}${indented ? 'i' : ''}${scores ? '' : 'c'}${plus ? 'u' : ''}`;
 }
 
 function parseMemoLookup(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
@@ -426,6 +427,8 @@ export function parseBlocks(markdown: string, options?: ParseOptions): { blocks:
   const fences = options?.fences !== false;
   const indentedCode = options?.indentedCode === true;
   const scores = options?.scores !== false;
+  // How inline marks are read (#1465): `++text++` underlines only when on.
+  const inline = options?.plusUnderline ? { plusUnderline: true } : undefined;
   const blocks: ContentBlock[] = [];
   const issues: ParseIssue[] = [];
   const rawLines = markdown.split('\n');
@@ -459,7 +462,7 @@ export function parseBlocks(markdown: string, options?: ParseOptions): { blocks:
   const {
     inlineRun, breakingRun, parseVerse, containerStack
   } = createVerseParsing({
-    markdown, issues, rawLines, lineOffsets, lineEndOffset, inExerciseText, parse
+    markdown, issues, rawLines, lineOffsets, lineEndOffset, inExerciseText, parse, inline
   });
 
   const {
@@ -484,7 +487,7 @@ export function parseBlocks(markdown: string, options?: ParseOptions): { blocks:
     openModule, scopeSlot, parseFigure
   });
   const { parseHeadingLine } = createHeadingLines({
-    markdown, parse, blocks, issues, lineOffsets, lineEndOffset, scopeSlot
+    markdown, parse, blocks, issues, lineOffsets, lineEndOffset, scopeSlot, inline
   });
   const { parseListOrQuote } = createListLines({
     parse, blocks, rawLines, lineOffsets, lineEndOffset, breakingRun

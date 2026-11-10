@@ -1842,6 +1842,8 @@
     "bodyBreakAfterSlashesTooltip": "允许带格式的文字、图注、表格单元格或注释在两个词之间的斜杠后断行（ACC/ | AHA、input/ | output），放不进一行的词也先从这里拆开。单位、短词组、分数和日期（km/h、and/or、1/2）保持完整。关闭：与postext 1.51及以前一样，只在网址里的斜杠后断行。用postext 1.51或更早版本保存的书打开时此项为关闭。",
     "bodyHardLineBreaks": "强制换行",
     "bodyHardLineBreaksTooltip": "把Markdown行末的反斜杠，或后跟空格的\\\\，读作段落、引文或列表项内部的换行：后面的文字另起一行，换行前的一行按自然宽度排，不两端对齐。关闭：反斜杠照样印出，与postext 1.22及以前相同。postext 1.23之前保存、含这种反斜杠的书，打开时此项为关闭。",
+    "bodyPlusUnderline": "用 ++ 加下划线",
+    "bodyPlusUnderlineTooltip": "把 ++文字++ 读作加下划线的文字；:underline[文字] 始终有效。每一对都加下划线，++i … i++ 也是；要原样印出一对加号，写 \\+\\+。紧贴加号的字母或数字使其保持为文字（C++），行内代码和代码块从不加下划线。关闭：加号照样印出。",
     "bodyScriptContext": "无字母词的书写系统",
     "bodyScriptContextTooltip": "只由数字或标点组成的词（46.、1367)、».）按周围文字的书写系统成形：拉丁文的注文中用拉丁字形，阿拉伯文句子里用阿拉伯字形。只对按书写系统绘制标点的字体（如Amiri）起作用，其他字体照旧排版。关闭后，这类词单独成形，与postext 1.27及更早版本相同，各浏览器和PDF可能各选一种字形。",
     "tabStops": "制表位",

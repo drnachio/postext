@@ -76,10 +76,12 @@ export function computeDocumentWarnings(params: {
   // when other toggles are off.
   // Code fences as the configuration reads them (#624): a book stored
   // before them reads their lines as Markdown.
+  // `++text++` underlines with `bodyText.plusUnderline` on (#1465).
   const code = config.codeStyle;
+  const plus = config.bodyText?.plusUnderline === true ? { plusUnderline: true } : {};
   const { blocks, issues } = parseMarkdownWithIssues(markdown, code && (code.blocks === false || code.indentedCode === true)
-    ? { fences: code.blocks !== false, indentedCode: code.indentedCode === true }
-    : undefined);
+    ? { fences: code.blocks !== false, indentedCode: code.indentedCode === true, ...plus }
+    : (plus.plusUnderline ? plus : undefined));
 
   if (toggles.missingFont) {
     // Duplicate (weight, style) slots apply to every declared custom

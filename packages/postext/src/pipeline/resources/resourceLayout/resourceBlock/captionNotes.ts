@@ -92,7 +92,7 @@ export function createCaptionNotes(deps: CaptionNotesDeps) {
     const noteSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       snippetMathSpans(
         resolveCitationSpans(
-          withSnippetInlineCode(parseInlineSnippetSpans(noteText, { citations: true }), noteText, resolved.codeStyle?.inline, dpi, noteFontPx),
+          withSnippetInlineCode(parseInlineSnippetSpans(noteText, { citations: true, plusUnderline: resolved.bodyText.plusUnderline === true }), noteText, resolved.codeStyle?.inline, dpi, noteFontPx),
           input.captionCitations?.get(resource.id)?.note,
         ),
         noteFontPx,

@@ -87,6 +87,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     rtl,
     lang,
     readOnly,
+    plusUnderline: state.config.bodyText?.plusUnderline === true,
     // One history for the text and the design (#899).
     historyCommands: {
       undo: () => runHistoryFromUi(store.history, 'undo', store.getSnapshot) !== null,
