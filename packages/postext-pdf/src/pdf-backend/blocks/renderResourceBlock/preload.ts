@@ -28,7 +28,7 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
     // A cropped picture is drawn at its uncropped size.
     if (rb?.fileId) note(rb.fileId, rb.bodyRect.width / (rb.bodySource?.width ?? 1), rb.bodyRect.height / (rb.bodySource?.height ?? 1));
     for (const cell of rb?.table?.cells ?? []) {
-      if (cell.image) note(cell.image.fileId, cell.image.rect.width, cell.image.rect.height);
+      if (cell.image) note(cell.image.fileId, cell.image.rect.width / (cell.image.crop?.width ?? 1), cell.image.rect.height / (cell.image.crop?.height ?? 1));
     }
     const overlay = block.designOverlay;
     if (overlay) {

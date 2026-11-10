@@ -265,7 +265,7 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
     if (!img) continue;
     const url = imageUrl(options, img.fileId, img.resourceId);
     const { x, y, width, height } = img.rect;
-    parts.push(renderFittedImage(url, '', img.kind === 'svg' ? 'SVG' : 'Image', x, y, width, height, options, img.kind === 'svg'));
+    parts.push(renderFittedImage(url, '', img.kind === 'svg' ? 'SVG' : 'Image', x, y, width, height, options, img.kind === 'svg', img.crop));
   }
   for (const cell of t.cells) {
     const fonts = cell.isHeader ? headerFonts : bodyFonts;

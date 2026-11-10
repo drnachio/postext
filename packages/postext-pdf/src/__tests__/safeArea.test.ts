@@ -88,3 +88,36 @@ describe('safe area in the PDF', () => {
     expect(ops).not.toMatch(/\/Figure <<\s*\/MCID \d+\s*>> BDC\s*EMC/);
   });
 });
+
+describe('a manual crop in a table cell (Resource.crop, #1494)', () => {
+  const picture: Resource = { ...plate, id: 'pic', placement: undefined, safeArea: undefined, crop: { x: 0, y: 0.25, width: 1, height: 0.5 } };
+  const table: Resource = {
+    id: 'tab', typeId: 'table', kind: 'table', caption: 'Plates.', createdAt: 0, updatedAt: 0,
+    placement: { position: 'here' },
+    table: { model: { headerRowCount: 1, rows: [[{ content: 'Plate' }], [{ content: '', image: { resourceId: 'pic', width: 0.5 } }]] } },
+  };
+
+  it('clips the picture to the cell image’s rect and draws it whole around it', async () => {
+    const doc = buildDocument({ markdown: `${para}\n\n::resource{id="tab"}\n\n${para}`, resources: [table, picture] }, config);
+    let block: VDTBlock | undefined;
+    for (const page of doc.pages) for (const col of page.columns) for (const b of col.blocks) if (b.resourceBlock?.table) block = b;
+    const img = block!.resourceBlock!.table!.cells.find((c) => c.image)!.image!;
+    expect(img.crop).toEqual({ x: 0, y: 0.25, width: 1, height: 0.5 });
+    // The crop's ratio: half the picture's height over its whole width.
+    expect(img.rect.height / img.rect.width).toBeCloseTo((633 * 0.5) / 480, 3);
+
+    const bytes = await renderToPdf(doc, { fontProvider, resourceBytes: () => new Uint8Array(photo) });
+    const ops = contentOps(await PDFDocument.load(bytes), block!.pageIndex);
+    // The cell image's rect (page px once the table is placed) as the
+    // clip, the picture inside it at twice its height.
+    const m = /q\s+([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+) re\s+W\s+n\s+\/Figure[\s\S]*?([\d.]{2,}) 0 0 ([\d.]{2,}) 0 0 cm[\s\S]*?Do\s+Q/.exec(ops);
+    expect(m).not.toBeNull();
+    const [cx, cy, cw, ch, iw, ih] = m!.slice(1).map(Number);
+    expect(cx).toBeCloseTo(img.rect.x, 2);
+    expect(cy).toBeCloseTo(560 - img.rect.y - img.rect.height, 2);
+    expect(cw).toBeCloseTo(img.rect.width, 2);
+    expect(ch).toBeCloseTo(img.rect.height, 2);
+    expect(iw).toBeCloseTo(img.rect.width, 2);
+    expect(ih).toBeCloseTo(img.rect.height * 2, 2);
+  });
+});
