@@ -19,6 +19,7 @@ import { wrapComposedPages, frameBoxStyle } from '../../../../composed/wrap.js';
 import { wrapComicTextPanels, comicTextPanelsSupported, planComicTextPanels } from '../../../../comics/textPanels.js';
 import { wrapFlowColumns, flowColumnsStyles } from '../../../columns/flowColumns.js';
 import { wrapPageSpanEmbeds, spanEmbedStyle } from '../../../floats/spanEmbeds.js';
+import { insertParagraphEmbeds } from '../../../floats/paragraphEmbeds.js';
 import { effectiveResourceTypes, documentLocale } from '../../../../defaults/resources/resourceTypes.js';
 import { expandScoreBlocks } from '../../../resources/scoreBlocks.js';
 import { wrapCodeBlocks, codeBoxStyle } from '../../../code/codeBlocks.js';
@@ -167,6 +168,13 @@ export function createContentSetup(deps: ContentSetupDeps) {
   // An inline `::resource` placed `here` with `span: 'page'` spans the
   // page where it stands (#535): each goes in a frameless page-span box,
   // set by the span-block path like any other.
+  // A resource placed after the paragraph that cites it gets its inline
+  // block there (`paragraphEmbeds.ts`), before the page-span embeds are
+  // wrapped (a page-wide one spans the page after its paragraph).
+  const paragraphEmbedded = insertParagraphEmbeds(
+    numberedBlocks, content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []),
+    new Set(Object.keys(continuation?.resourceNumbers ?? {})),
+  );
   // A `:::columns` group in the running text (#634): each in a frameless
   // box the callout machinery places, cuts and splits.
   // Composed pages (#855): each page's content regrouped into the stories
@@ -174,7 +182,7 @@ export function createContentSetup(deps: ContentSetupDeps) {
   // page's template, below). Before the main-flow groups: a `:::columns`
   // in a frame is a group of its box.
   const templateSource = { pageTemplates: setup.resolved.pageTemplates, calloutStyles: setup.resolved.calloutStyles };
-  const composedWrap = wrapComposedPages(numberedBlocks, templateSource);
+  const composedWrap = wrapComposedPages(paragraphEmbedded, templateSource);
   // A comic page's text panels (#885): each panel's Markdown in a story
   // box of the same kind, set in the panel's frame (below).
   const comicText = wrapComicTextPanels(composedWrap.blocks, comicTextPanelsSupported(setup.resolved));

@@ -179,7 +179,7 @@ export function resolveResourcePlacement(
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
   const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
   // A full-page plate (#1461): a top, page-span, upright picture.
-  const plate = picture && !noRotation && position !== 'here'
+  const plate = picture && !noRotation && position !== 'here' && position !== 'paragraph'
     && plateAreaOf(resource.placement, type?.defaultPlacement) !== undefined;
   if (plate) {
     const own = resource.placement?.align ?? type?.defaultPlacement?.align;
@@ -188,7 +188,7 @@ export function resolveResourcePlacement(
       captionSide: false, columns: 1, shrink: 'never', minScale: DEFAULT_FLOAT_MIN_SCALE, citingPage: false, plate: true,
     };
   }
-  const rotate = position === 'here' || noRotation
+  const rotate = position === 'here' || position === 'paragraph' || noRotation
     ? undefined
     : (resource.placement?.rotate ?? type?.defaultPlacement?.rotate);
   const span = rotate ? 'page' : (resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column');
@@ -202,7 +202,7 @@ export function resolveResourcePlacement(
   const align = startEndAsLeftRight(resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left');
   const captionSide = (resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide) === true;
   const columns = floatColumnCount(resource.placement?.columns ?? type?.defaultPlacement?.columns);
-  const shrink = picture && !rotate && position !== 'here'
+  const shrink = picture && !rotate && position !== 'here' && position !== 'paragraph'
     ? floatShrinkModeOf(resource.placement?.shrink) ?? floatShrinkModeOf(type?.defaultPlacement?.shrink) ?? shrinkDefault?.mode ?? 'never'
     : 'never';
   const minScale = floatMinScaleOf(resource.placement?.minScale) ?? floatMinScaleOf(type?.defaultPlacement?.minScale)
@@ -259,7 +259,7 @@ export function computeFloatPlan(
     const type = typeById.get(resource.typeId);
     const upright = noRotationAt(blockIdx);
     const { position, span, rotate, widthFraction, widthLength, align, captionSide, columns, shrink, minScale, citingPage, plate } = resolveResourcePlacement(resource, type, upright, shrinkDefault, citingPageDefault);
-    if (position === 'here') return;
+    if (position === 'here' || position === 'paragraph') return;
     // A full-page plate takes a page of its own (#1461).
     if (plate) {
       plan.push({ resourceId, firstBlockIdx: blockIdx, position: 'top', span: 'page', plate: true, align });
@@ -324,7 +324,8 @@ export function floatedResourceIds(
     const typeById = new Map(resourceTypes.map((t) => [t.id, t]));
     for (const r of resources) {
       if (!incorporated.has(r.id)) continue;
-      if (resolveResourcePlacement(r, typeById.get(r.typeId)).position !== 'here') ids.add(r.id);
+      const { position } = resolveResourcePlacement(r, typeById.get(r.typeId));
+      if (position !== 'here' && position !== 'paragraph') ids.add(r.id);
     }
   }
   return ids;

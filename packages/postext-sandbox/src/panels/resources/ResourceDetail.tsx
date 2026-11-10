@@ -193,7 +193,7 @@ export function ResourceDetail({
             </div>
             <div className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate)">
               {placementInline
-                ? labels.resourcePlacementHintHere
+                ? placementPosition === 'paragraph' ? labels.resourcePlacementHintParagraph : labels.resourcePlacementHintHere
                 : placementPlate
                   ? labels.resourcePlacementHintPlate
                 : placementRotated
@@ -212,6 +212,7 @@ export function ResourceDetail({
               { value: 'top', label: labels.resourcePositionTop },
               { value: 'bottom', label: labels.resourcePositionBottom },
               { value: 'here', label: labels.resourcePositionHere },
+              { value: 'paragraph', label: labels.resourcePositionParagraph },
             ]}
             onChange={(v) => setPlacementKey('position', v as PlacementPosition)}
             isDefault={currentPlacement.position === undefined}

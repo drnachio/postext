@@ -45,8 +45,10 @@ export type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 
  *  bottom of the next empty column on the same page, then the bands of the
  *  next page. `'top'` / `'bottom'` restrict the search to top or bottom
  *  slots. `'here'` opts out of floating and embeds the resource inline at
- *  the exact `::resource` directive position. */
-export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here';
+ *  the exact `::resource` directive position. `'paragraph'` embeds it inline
+ *  right after the paragraph that first cites it, no directive needed (after
+ *  the rest of a list, or the box, the citation sits in). */
+export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here' | 'paragraph';
 
 /** How wide a floated resource is. `'column'` keeps it within a single column;
  *  `'page'` spans the full content width across all columns (a full-width
@@ -120,7 +122,8 @@ export interface ResourcePlacement {
    *  figure's top (its bottom for a bottom float). A page without such a
    *  column keeps the caption under the figure. For a column float, and
    *  for a resource set where its `::resource` line stands (`position:
-   *  'here'`, #729, `layout.inlineCaptionSide`): there the caption stands
+   *  'here'`, #729, `layout.inlineCaptionSide`) or after its citing
+   *  paragraph (`'paragraph'`): there the caption stands
    *  level with the body's top when the side column is free over its
    *  band, else under the body. Not for a page-span or rotated resource,
    *  one inside a box, or one text wraps round.
@@ -148,7 +151,7 @@ export interface ResourcePlacement {
    *  already stands is passed over, three at most, and the next one is
    *  taken as it is. Its `position`, `span`, `width`, `shrink`, `rotate`,
    *  `captionSide`, `wrap` and `citingPage` are not read; a resource set
-   *  in the text (`'here'`) or on a vertical page is no plate. `true` is
+   *  in the text (`'here'`, `'paragraph'`) or on a vertical page is no plate. `true` is
    *  `'content'`; `'trim'` and `'bleed'` set the picture over the whole
    *  page instead, to the trim or out to the bleed: it is enlarged to
    *  cover it and cropped about its centre, the caption and note stay at
@@ -195,7 +198,8 @@ export interface ResourcePlacement {
    *  pages `'left'` is the sheet's right); `'start'` / `'end'` are the
    *  same sides by their logical names. Applies to an inline embed
    *  (`position: 'here'`, the text after the `::resource` line runs beside
-   *  it) and to a `span: 'column'` float at the head or foot of one column
+   *  it; `'paragraph'` alike, the text after the citing paragraph) and to
+   *  a `span: 'column'` float at the head or foot of one column
    *  (the column's first or last lines run beside it); a page-span float,
    *  a float across several columns, a side-column float, a rotated one
    *  and anything in vertical text keep their whole band. The resource

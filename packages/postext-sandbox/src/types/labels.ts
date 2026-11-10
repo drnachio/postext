@@ -2862,11 +2862,13 @@ export interface SandboxLabels {
   resourceAltHint: string;
   resourcePlacementLabel: string;
   resourcePlacementHintHere: string;
+  resourcePlacementHintParagraph: string;
   resourcePlacementHintPage: string;
   resourcePlacementHintColumn: string;
   resourcePositionTop: string;
   resourcePositionBottom: string;
   resourcePositionHere: string;
+  resourcePositionParagraph: string;
   resourcePositionAuto: string;
   resourceSpanColumn: string;
   resourceSpanPage: string;
@@ -4226,6 +4228,7 @@ export interface SandboxLabels {
   resourceTypePlacementPositionTop: string;
   resourceTypePlacementPositionBottom: string;
   resourceTypePlacementPositionHere: string;
+  resourceTypePlacementPositionParagraph: string;
   resourceTypePlacementSpan: string;
   resourceTypePlacementSpanPage: string;
   resourceTypePlacementRotate: string;

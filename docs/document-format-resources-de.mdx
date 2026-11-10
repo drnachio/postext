@@ -142,8 +142,8 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (der Standard) nimmt den ersten freien Platz nach dem Verweis, oben oder unten; <code>"top"</code> / <code>"bottom"</code> nehmen nur Plätze dieser Art an; <code>"here"</code> schaltet das Gleiten ab und bettet die Ressource an der Direktive <code>::resource</code> im Text ein (eine dort platzierte Tabelle wird zwischen Zeilen geteilt, wenn sie nicht in den Rest ihrer Spalte passt, siehe <a href="/de/docs/configuration-resources#tabellen-die-höher-als-die-seite-sind">Tabellen, die höher als die Seite sind</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (der Standard) nimmt den ersten freien Platz nach dem Verweis, oben oder unten; <code>"top"</code> / <code>"bottom"</code> nehmen nur Plätze dieser Art an; <code>"here"</code> schaltet das Gleiten ab und bettet die Ressource an der Direktive <code>::resource</code> im Text ein (eine dort platzierte Tabelle wird zwischen Zeilen geteilt, wenn sie nicht in den Rest ihrer Spalte passt, siehe <a href="/de/docs/configuration-resources#tabellen-die-höher-als-die-seite-sind">Tabellen, die höher als die Seite sind</a>). <code>"paragraph"</code> (dieser Kopie) setzt die Ressource ebenfalls in den Text, direkt nach dem Absatz, der sie zuerst zitiert, ohne <code>::resource</code>-Zeile: nach dem Rest einer Liste oder nach dem Kasten, in dem das Zitat steht. Sie wird genau wie ein <code>"here"</code> nach diesem Absatz gesetzt, einschließlich Textumfluss, Bildunterschrift in der Seitenspalte und Bildunterschrift daneben im eigenen Platz.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

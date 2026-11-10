@@ -320,6 +320,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       <option value="top">{labels.resourceTypePlacementPositionTop}</option>
                       <option value="bottom">{labels.resourceTypePlacementPositionBottom}</option>
                       <option value="here">{labels.resourceTypePlacementPositionHere}</option>
+                      <option value="paragraph">{labels.resourceTypePlacementPositionParagraph}</option>
                     </select>
                   </Field>
                   <Field label={labels.resourceTypePlacementSpan} tooltip={labels.resourceTypePlacementSpanTooltip}>
@@ -351,7 +352,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   )}
                   {/* Resources of this type may head the page (column) that
                       cites them (#633); the document's default otherwise. */}
-                  {type.defaultPlacement?.position !== 'bottom' && type.defaultPlacement?.position !== 'here' && type.defaultPlacement?.span !== 'side' && !type.defaultPlacement?.rotate && (
+                  {type.defaultPlacement?.position !== 'bottom' && type.defaultPlacement?.position !== 'here' && type.defaultPlacement?.position !== 'paragraph' && type.defaultPlacement?.span !== 'side' && !type.defaultPlacement?.rotate && (
                     <ToggleSwitch
                       label={labels.resourceTypePlacementCitingPage}
                       checked={type.defaultPlacement?.citingPage ?? config.layout?.floatsAtCitingPage ?? false}

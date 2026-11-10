@@ -142,8 +142,8 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code> (uma tabela posicionada aí é cortada entre linhas quando não cabe no resto da coluna; veja <a href="/pt/docs/configuration-resources#tabelas-mais-altas-que-a-página">Tabelas mais altas que a página</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code> (uma tabela posicionada aí é cortada entre linhas quando não cabe no resto da coluna; veja <a href="/pt/docs/configuration-resources#tabelas-mais-altas-que-a-página">Tabelas mais altas que a página</a>). <code>"paragraph"</code> (desta cópia) também o insere no texto, logo depois do parágrafo que o cita pela primeira vez, sem linha <code>::resource</code>: depois do resto de uma lista, ou depois da caixa onde está a citação. É composto exatamente como um <code>"here"</code> posto depois desse parágrafo, com o texto que o contorna, a legenda na coluna lateral e a legenda ao lado dentro do seu espaço.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

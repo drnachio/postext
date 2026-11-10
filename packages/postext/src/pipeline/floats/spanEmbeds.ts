@@ -70,7 +70,7 @@ function spansPage(
   const resource = resourceById.get(block.resourceId);
   if (!resource) return false;
   const placement = resolveResourcePlacement(resource, typeById.get(resource.typeId));
-  return placement.position === 'here' && placement.span === 'page';
+  return (placement.position === 'here' || placement.position === 'paragraph') && placement.span === 'page';
 }
 
 /**

@@ -57,7 +57,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   // wrap or rotation of its own. A resource's `false` turns off its
   // type's plate.
   const plateAsked = currentPlacement.plate ?? typePlacement.plate;
-  const placementPlate = plateAsked !== undefined && plateAsked !== false && placementPosition !== 'here';
+  const placementPlate = plateAsked !== undefined && plateAsked !== false && placementPosition !== 'here' && placementPosition !== 'paragraph';
   const typePlate = typePlacement.plate !== undefined && typePlacement.plate !== false;
   /** What the plate switch writes: nothing where the type already says
    *  the same, `true` to ask for a plate, `false` to turn the type's off. */
@@ -66,7 +66,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   // Where it is set: the text block, the trim or the bleed.
   const placementPlateArea: ResourcePlateArea = plateAsked === 'trim' || plateAsked === 'bleed' ? plateAsked : 'content';
   // An inline embed is never turned; a turned resource is a page-span float.
-  const placementInline = placementPosition === 'here';
+  const placementInline = placementPosition === 'here' || placementPosition === 'paragraph';
   const placementRotated = !placementInline && placementRotate !== 'none';
   // The alignment places a resource narrower than its slot: one narrowed by
   // Width, or a picture (bitmap or SVG) narrower than the column — smaller
