@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'File PDF',
   description: 'postext-pdf dal codice: installazione, API, provider di font nel browser e in Node, font CJK, byte delle risorse, testo verticale, worker e file pronti per la stampa',
   lang: 'it',
-  lastUpdated: '2026-11-06',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '26 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Questa pagina è per chi scrive codice e vuole un file PDF. Mostra come installare il pacchetto PDF e trasformare un libro impaginato in un file con poche righe. Il pacchetto ha bisogno dei file dei font, quindi la pagina spiega come fornirglieli, in un browser o su un server. Tratta i font per cinese, giapponese e coreano, le immagini, il testo scritto dall’alto in basso e i link. Si chiude con un esempio completo e con file pronti per la tipografia.",
@@ -408,6 +408,56 @@ Per i flussi di lavoro di stampa in produzione, regola queste opzioni di configu
 - **`page.dpi: 300`**: i px per pollice dell’impaginazione: una bitmap senza una risoluzione propria viene stampata a questa risoluzione alla sua dimensione naturale. Il [preflight](/it/docs/configuration-fonts-colors-viewers#preflight) segnala le immagini sotto i 300 ppi alla dimensione di stampa.
 - **`ColorValue.cmyk`**: un colore definito in CMYK viene stampato con i suoi valori esatti.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions`: inverte l’area del formato rifilato con un metodo di fusione Differenza (i segni di taglio restano non invertiti). Utile per i controlli di preflight sul testo scuro su fondo chiaro.
+
+### Tinte piatte
+
+Una tinta piatta (un Pantone, un inchiostro aziendale, una vernice) si stampa su una propria lastra. Un colore con `model: 'spot'` porta il suo inchiostro in `ColorValue.spot`: `name` è il nome della lastra come lo conosce lo stampatore, `cmyk` l’aspetto dell’inchiostro al 100 % (il sostituto che il PDF dà a chi non ha l’inchiostro), `tint` la forza in percentuale (100 per impostazione predefinita), e `overprint` fa sovrastampare l’inchiostro su ciò che sta sotto invece di risparmiarlo, come una vernice. `hex` è la sua resa a schermo.
+
+Un PDF CMYK o PDF/X scrive ogni inchiostro come uno spazio colore `Separation` con il suo nome, e dipinge ogni colore di quell’inchiostro alla sua tinta: i colori con lo stesso `name` condividono una lastra. Questo copre i lavori abituali: due colori (il nero e una tinta piatta), la quadricromia con alcuni elementi in una tinta piatta, e una vernice sovrastampata su aree scelte. Quando `diagramStyle.singleInk` usa una tinta piatta, i diagrammi SVG si stampano in tinte di quella lastra. Un PDF RGB e lo schermo dipingono l’`hex` del colore.
+
+**Tinte piatte dentro un SVG.** Vedi [Come funziona l’inchiostro unico](/it/docs/configuration-resources#come-funziona-linchiostro-unico).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+Il preflight conta una tinta piatta come un solo inchiostro, la tiene fuori dal limite di copertura, elenca le tinte piatte del lavoro e avverte quando uno stesso inchiostro è definito due volte con valori diversi (il PDF usa il primo), quando il nome di una lastra è uno di quelli che il PDF riserva (`All`, `None`) o supera i 127 byte, e quando due nomi di lastra differiscono solo per maiuscole o spazi (`PANTONE 185 C` e `Pantone  185 C` sarebbero due lastre).
+
+**Nomi delle lastre.** Il nome si scrive così come lo si digita: gli accenti, i simboli e `#` arrivano al PDF in UTF-8 (`Rojo Médica` è `/Rojo#20M#C3#A9dica`), che è come lo leggono Acrobat, un RIP e il preflight dello stampatore.
+
+**Un inchiostro per colore.** Un render di stampa riconosce un colore dal suo hex a schermo, quindi due colori che fissano i propri valori di stampa (due inchiostri, oppure un inchiostro e un colore definito in CMYK) non possono condividerlo. Se lo condividono, il secondo passa all’hex libero più vicino, a un passo di distanza e invisibile a schermo, e ciascuno si stampa sulla propria lastra. Un semplice colore a schermo (`model: 'hex'`) con l’hex di una tinta piatta si stampa come quella tinta piatta; collegalo alla voce della tavolozza per renderlo esplicito.
+
+#### La tabella degli inchiostri
+
+`print.inks` dice come gli inchiostri del lavoro arrivano allo stampatore, comunque li chiamino i colori, gli SVG e i file importati. Un inchiostro che la tabella non elenca si stampa come lo definiscono i suoi colori.
+
+```ts
+interface PrintInk {
+  name: string;                    // L’inchiostro come lo nomina spot.name o un SVG.
+  aliases?: string[];              // Altri nomi dello stesso inchiostro: si stampano su questa lastra.
+  pdfName?: string;                // Il nome della lastra nel PDF. Predefinito: name.
+  output?: 'spot' | 'process';     // 'process' stampa l’inchiostro in CMYK, dal suo sostituto.
+  cmyk?: CmykPercent;              // Il sostituto al 100 %, prevale su quello dei colori.
+  overprint?: boolean;             // Prevale su quello dei colori.
+}
+```
+
+Nomi e alias si confrontano ignorando le maiuscole e gli spazi ripetuti. Rinominare richiede una riga, per quanti colori usino l’inchiostro; un alias riunisce su una lastra i nomi che un campione del grafico, un SVG (`data-spot`, `icc-named-color`) o una tavolozza precedente davano allo stesso inchiostro; e `output: 'process'` stampa un inchiostro in CMYK quando la macchina non ha un gruppo per esso, tutte le sue tinte comprese.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### Implementazione di riferimento
 

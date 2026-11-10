@@ -6,7 +6,7 @@ export const metadata = {
   description: 'リソースの種類とその番号付け、表とキャプションのスタイル、単色のダイアグラム、紙面上の動画',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '44分',
+  readingTime: '45分',
   order: 14,
   parent: 'configuration',
   plainSummary: "このページでは、図、表、ダイアグラム、動画の設定を説明します。Postextはこれらをリソースと呼び、種類ごとに番号を付けます。罫線、塗り、文字、ページをまたぐときの分け方など、表の見た目を決めます。図や表に付けるキャプションの書き方を決めます。ダイアグラムを1色のインキで刷ることや、動画を紙の上でどう見せるかも選べます。",
@@ -856,6 +856,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**SVG内の特色。** 印刷用PDFでは、ベクターSVGの色が自分でインキを見つけます。`icc-named-color(…, "PANTONE 185 C")` が続く色や、`data-spot="PANTONE 185 C"`（およびパーセントの `data-spot-tint="40"`）を持つ要素は、そのインキの版に刷られます。パレットに同じ名前の特色があればその代替色を、なければその色自体のCMYKを使います。パレットの特色と同じ色、または白地に対するその濃淡（デザインソフトがスウォッチの濃淡を書き出す形）は、見えている濃度でそのインキに刷られます。色はひとつずつ判定されるので、ひとつの図版で複数のインキとプロセスカラーを混ぜられます。`diagramStyle.singleInk` が優先されるのは変わりません。多くのソフトはスウォッチを名前のない普通のRGB色として書き出します。その `hex` の特色をパレットに加えるか、要素に `data-spot` を付けてください。
 
 ### CanvasとHTMLでの単色刷り
 

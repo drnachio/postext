@@ -9,12 +9,14 @@
 
 import {
   outputTransform,
+  spotsThroughInkTable,
   type CmykPercent,
   type IccProfile,
   type OutputTransform,
   type PdfColorSpace,
   type PdfXStandard,
   type ResolvedPrintConfig,
+  type SpotColor,
 } from 'postext';
 
 export interface PrintColorMode {
@@ -34,6 +36,9 @@ export interface PrintColorMode {
   convertImages: boolean;
   /** Colours authored in CMYK, by screen hex (`#rrggbb`): set as they are. */
   authored: ReadonlyMap<string, CmykPercent>;
+  /** Spot colours, by screen hex (`#rrggbb`): painted on their ink's
+   *  own plate (see `spot.ts`). */
+  spots: ReadonlyMap<string, Required<SpotColor>>;
 }
 
 export type ColorMode = PdfColorSpace | PrintColorMode;
@@ -57,6 +62,7 @@ export function createPrintColorMode(
   config: ResolvedPrintConfig,
   condition: PrintColorMode['condition'],
   authored: ReadonlyMap<string, CmykPercent> = new Map(),
+  spots: ReadonlyMap<string, Required<SpotColor>> = new Map(),
 ): PrintColorMode {
   const transform = outputTransform(profile, {
     intent: config.renderingIntent,
@@ -64,9 +70,12 @@ export function createPrintColorMode(
     preserveNeutrals: config.black.kOnlyNeutrals,
   });
   const flattenTransparency = config.standard === 'pdfx1a';
+  // The ink table renames, merges and sends inks to process.
+  if (config.inks.length > 0) ({ spots, authored } = spotsThroughInkTable(spots, authored, config.inks));
+  spots = onePlatePerInk(spots);
   return {
     kind: 'print',
-    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}`,
+    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}`,
     standard: config.standard,
     profile,
     transform,
@@ -75,7 +84,12 @@ export function createPrintColorMode(
     flattenTransparency,
     convertImages: config.standard === 'pdfx1a' || config.convertImages,
     authored,
+    spots,
   };
+}
+
+function spotsKey(spots: ReadonlyMap<string, Required<SpotColor>>): string {
+  return [...spots].map(([hex, s]) => `${hex}=${s.name}/${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}/${s.tint}/${s.overprint}`).join(';');
 }
 
 function authoredKey(authored: ReadonlyMap<string, CmykPercent>): string {
@@ -86,4 +100,17 @@ function authoredKey(authored: ReadonlyMap<string, CmykPercent>): string {
 export function overPaper(r: number, g: number, b: number, alpha: number): [number, number, number] {
   const a = Math.max(0, Math.min(1, alpha));
   return [r * a + (1 - a), g * a + (1 - a), b * a + (1 - a)];
+}
+
+/** Spot colours with every ink as its first colour defines it: one ink
+ *  name is one plate, whatever CMYK or overprint a later colour gives it
+ *  (the preflight reports those). */
+function onePlatePerInk(spots: ReadonlyMap<string, Required<SpotColor>>): ReadonlyMap<string, Required<SpotColor>> {
+  const first = new Map<string, Required<SpotColor>>();
+  const out = new Map<string, Required<SpotColor>>();
+  for (const [hex, s] of spots) {
+    const ink = first.get(s.name) ?? (first.set(s.name, s), s);
+    out.set(hex, ink === s ? s : { ...s, cmyk: ink.cmyk, overprint: ink.overprint });
+  }
+  return out;
 }

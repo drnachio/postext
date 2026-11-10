@@ -151,7 +151,7 @@ export type {
   ChipUnderline,
   FigureStyle,
 } from './types.js';
-export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, stripPrintDefaults, profileInkLimit } from './defaults/index.js';
+export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, stripPrintDefaults, profileInkLimit } from './defaults/index.js';
 export { DEFAULT_CHECKS_CONFIG, DEFAULT_CONTENT_IN_CONFIG_CHECK, resolveChecksConfig, resolveContentInConfigCheck, stripChecksDefaults } from './defaults/index.js';
 export { DEFAULT_CONTRAST_CONFIG, DEFAULT_CONTRAST_REVERSED_TEXT_CONFIG, CONTRAST_LEVELS, CONTRAST_MODES, resolveContrastConfig, resolveContrastReversedTextConfig, stripContrastDefaults } from './defaults/index.js';
 export type { FolioPaperStock } from './defaults/index.js';
@@ -477,9 +477,9 @@ export type {
   ResolvedPdfGenerationConfig,
   PdfXStandard,
   PrintRenderingIntent,
-  CmykPercent,
+  CmykPercent, SpotColor,
   PrintBlackConfig,
-  ResolvedPrintBlackConfig,
+  ResolvedPrintBlackConfig, PrintInk, ResolvedPrintInk,
   PrintPreflightConfig,
   ResolvedPrintPreflightConfig,
   CustomOutputProfile,
@@ -794,7 +794,7 @@ export { initMusicEngine, isMusicReady, onMusicReady, renderScore, clearMusicCac
 // the TypeScript one, faster; started on its own, `initLineBreaker` starts
 // it early.
 export { initLineBreaker, useWasmLineBreaker } from './knuthPlass/index.js';
-export { applySingleInkToSvg } from './svg/singleInk.js';
+export { applySingleInkToSvg, screenSvgColors } from './svg/singleInk.js';
 // The document's fonts inside SVG pictures (#630).
 export { svgFontRequests, svgDeclaredFontFamilies, inlineSvgFonts, inlineSvgFontsSync, inlineSvgFontsDetailed, inlineSvgFontsDetailedSync, chainSvgFontProviders, injectSvgStyle, fontFaceRule, sniffFontFormat, parseFontFamilyList, isFontFaceOnlyStyleSheet, DEFAULT_SVG_FONT_MAX_BYTES } from './svg/fonts.js';
 export type { SvgFontRequest, SvgFontProvider, SvgFontSyncProvider, SvgFontProviderRequest, SvgFontStyle, SvgFontFormat, SvgFontStatus, SvgFontFaceReport, SvgFontWarning, InlineSvgFontsOptions, SvgFontInlining } from './svg/fonts.js';

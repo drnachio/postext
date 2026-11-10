@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, type ReactNode, type RefObject } from 'react';
-import type { ColorPaletteEntry } from 'postext';
+import { useState, useEffect, useCallback, useMemo, type ReactNode, type RefObject } from 'react';
+import { authoredSpotColors, spotColorCmyk, spotInks, type ColorPaletteEntry, type SpotColor } from 'postext';
 import { Popover, type PopoverCloseReason } from '../../../ui/index.js';
-import { useSandboxLabels } from '../../../context/SandboxContext.js';
+import { useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
 import { useLargeTargets } from '../../../ui/largeTargets.js';
 import { SaturationValueArea } from '../SaturationValueArea.js';
 import { HueSlider } from '../HueSlider.js';
@@ -27,6 +27,12 @@ interface ColorPopoverBodyProps {
    *  hex the output profile shows them as. Without it, CMYK edits go
    *  through `onChange` as hex. */
   onCmykChange?: (cmyk: CMYK, hex: string) => void;
+  /** The ink of a spot colour (`ColorValue.spot`). */
+  spot?: SpotColor;
+  /** Told when the colour is set in the spot tab: the ink and the screen
+   *  hex its CMYK at the tint shows as. Without it the spot tab is not
+   *  offered. */
+  onSpotChange?: (spot: SpotColor, hex: string) => void;
   initialMode?: ColorMode;
   onModeChange?: (mode: ColorMode) => void;
   palette?: ColorPaletteEntry[];
@@ -46,11 +52,13 @@ interface ColorPopoverProps extends ColorPopoverBodyProps {
 }
 
 // Each notation is an abbreviation, expanded in its title (WCAG 3.1.4).
-const TABS: { id: ColorMode; label: string; titleKey: 'colorModeHex' | 'colorModeRgb' | 'colorModeCmyk' | 'colorModeHsl' }[] = [
+// The spot tab's label is a word, from the labels.
+const TABS: { id: ColorMode; label?: string; titleKey: 'colorModeHex' | 'colorModeRgb' | 'colorModeCmyk' | 'colorModeHsl' | 'colorModeSpot' }[] = [
   { id: 'hex', label: 'HEX', titleKey: 'colorModeHex' },
   { id: 'rgb', label: 'RGB', titleKey: 'colorModeRgb' },
   { id: 'cmyk', label: 'CMYK', titleKey: 'colorModeCmyk' },
   { id: 'hsl', label: 'HSL', titleKey: 'colorModeHsl' },
+  { id: 'spot', titleKey: 'colorModeSpot' },
 ];
 
 const POPOVER_WIDTH = 260;
@@ -74,7 +82,7 @@ export function ColorPopover({ open, onOpenChange, anchor, ariaLabel, ...body }:
   );
 }
 
-function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel, footer }: ColorPopoverBodyProps) {
+function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, spot: authoredSpot, onSpotChange, initialMode = 'hex', onModeChange, palette, linkedPaletteId, onLinkPalette, onUnlinkPalette, unlinkLabel, footer }: ColorPopoverBodyProps) {
   const { large } = useLargeTargets();
   const labels = useSandboxLabels();
   const [hsv, setHsv] = useState<HSV>(() => hexToHsv(hexWithoutAlpha(hex)));
@@ -86,6 +94,11 @@ function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, ini
   // The CMYK the colour was typed in, kept while no other notation edits it.
   const [authored, setAuthored] = useState<CMYK | undefined>(authoredCmyk);
   const separation = useSeparation();
+  // The ink of a spot colour, kept while no other notation edits it.
+  const [spot, setSpot] = useState<SpotColor | undefined>(authoredSpot);
+  const config = useSandboxSelector((s) => s.config);
+  const knownInks = useMemo(() => spotInks(authoredSpotColors(config).values()).inks, [config]);
+  const tabs = onSpotChange ? TABS : TABS.filter((t) => t.id !== 'spot');
 
   // Sync from external hex changes (e.g., reset)
   useEffect(() => {
@@ -110,6 +123,7 @@ function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, ini
   const updateHsv = useCallback((next: HSV) => {
     setHsv(next);
     setAuthored(undefined);
+    setSpot(undefined);
     emitColor(next, alpha);
   }, [alpha, emitColor]);
 
@@ -147,8 +161,19 @@ function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, ini
     const nextHsv = hexToHsv(nextHex);
     setHsv(nextHsv);
     setAuthored(next);
+    setSpot(undefined);
     if (onCmykChange) onCmykChange(next, hexWithAlpha(nextHex, alpha));
     else emitColor(nextHsv, alpha);
+  };
+
+  // A spot colour shows as its ink's CMYK at the tint, soft-proofed; it
+  // becomes one once its ink has a name.
+  const handleSpotChange = (next: SpotColor) => {
+    setSpot(next);
+    setAuthored(undefined);
+    const nextHex = separation.toHex(spotColorCmyk(next));
+    setHsv(hexToHsv(nextHex));
+    if (next.name.trim() && onSpotChange) onSpotChange(next, hexWithAlpha(nextHex, alpha));
   };
 
   const handleHexSubmit = () => {
@@ -224,7 +249,7 @@ function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, ini
       </div>
 
       <div role="tablist" aria-label={labels.colorModes} style={{ display: 'flex', marginTop: 8, borderBottom: '1px solid var(--rule)' }}>
-        {TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
@@ -247,7 +272,9 @@ function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, ini
               transition: 'color 150ms, border-color 150ms',
             }}
           >
-            <abbr title={labels[tab.titleKey]} style={{ textDecoration: 'none' }}>{tab.label}</abbr>
+            {tab.label
+              ? <abbr title={labels[tab.titleKey]} style={{ textDecoration: 'none' }}>{tab.label}</abbr>
+              : <span title={labels[tab.titleKey]}>{labels.colorModeSpotShort}</span>}
           </button>
         ))}
       </div>
@@ -265,6 +292,9 @@ function ColorPopoverBody({ hex, onChange, cmyk: authoredCmyk, onCmykChange, ini
         handleCmykChange={handleCmykChange}
         hexLabel={labels.colorHexField}
         hexError={hexError ? labels.colorHexInvalid : null}
+        spot={spot}
+        knownInks={knownInks}
+        handleSpotChange={handleSpotChange}
       />
       {footer}
     </>

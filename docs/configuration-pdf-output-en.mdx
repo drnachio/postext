@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'PDF files',
   description: 'postext-pdf from code: installation, the API, font providers in the browser and in Node, CJK fonts, resource bytes, vertical text, workers and print-ready files',
   lang: 'en',
-  lastUpdated: '2026-11-06',
-  readingTime: '20 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '24 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "This page is for people who write code and want a PDF file. It shows how to install the PDF package and turn a laid-out book into a file in a few lines. The package needs the font files, so the page explains how to give them to it, in a browser or on a server. It covers fonts for Chinese, Japanese and Korean, pictures, text set from top to bottom and links. It ends with a complete example and with files ready for a printer.",
@@ -408,6 +408,56 @@ For production print workflows, tune these configuration options before renderin
 - **`page.dpi: 300`** — the layout's px per inch: a bitmap with no resolution of its own prints at this resolution at its natural size. The [preflight](/en/docs/configuration-fonts-colors-viewers#preflight) reports pictures under 300 ppi at their printed size.
 - **`ColorValue.cmyk`** — a colour authored in CMYK prints with its exact values.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` — inverts the trim area using a Difference blend mode (cut marks stay un-inverted). Useful for preflight checks on dark-on-light typography.
+
+### Spot colours
+
+A spot colour (a Pantone, a corporate ink, a varnish) prints on its own plate. A colour with `model: 'spot'` carries its ink in `ColorValue.spot`: `name` is the plate's name as the printer knows it, `cmyk` is what the ink looks like at 100 % (the alternate the PDF gives anyone without the ink), `tint` is the strength in percent (100 by default), and `overprint` makes the ink overprint what is under it instead of knocking it out, like a varnish. `hex` is its screen rendering.
+
+A CMYK or PDF/X PDF writes each ink as a `Separation` colour space named after it, and paints every colour of that ink at its tint: colours with the same `name` share a plate. That covers the usual jobs: two colours (black and a spot), process with a few elements in a spot ink, and a varnish overprinted on chosen areas. When `diagramStyle.singleInk` uses a spot ink, SVG diagrams print in tints of that plate. An RGB PDF and the screen paint the colour's `hex`.
+
+**Spot inks inside an SVG.** See [How single ink works](/en/docs/configuration-resources#how-single-ink-works).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+The preflight counts a spot colour as one ink, keeps it off the coverage limit, lists the job's spot inks, and warns when one ink is defined twice with different values (the PDF uses the first), when a plate name is one a PDF reserves (`All`, `None`) or longer than 127 bytes, and when two plate names differ only in case or spacing (`PANTONE 185 C` and `Pantone  185 C` would be two plates).
+
+**Plate names.** The name is written as typed: accents, symbols and `#` reach the PDF in UTF-8 (`Rojo Médica` is `/Rojo#20M#C3#A9dica`), which is how Acrobat, a RIP and the printer's preflight read it.
+
+**One ink per colour.** A print render knows a colour by its screen hex, so two colours that state their print values — two inks, or an ink and a colour authored in CMYK — must not share one. When they do, the later one moves to the nearest free hex, a step away and invisible on screen, and each prints on its own plate. A plain screen colour (`model: 'hex'`) with the hex of a spot colour prints as that spot colour; link it to the palette entry to make it explicit.
+
+#### The ink table
+
+`print.inks` says how the job's inks reach the printer, whatever the colours, the SVGs and the imported files call them. An ink it does not list prints as its colours define it.
+
+```ts
+interface PrintInk {
+  name: string;                    // The ink as a colour's spot.name or an SVG names it.
+  aliases?: string[];              // Other names of the same ink: they print on this plate.
+  pdfName?: string;                // The plate's name in the PDF. Defaults to name.
+  output?: 'spot' | 'process';     // 'process' prints the ink in CMYK, from its alternate.
+  cmyk?: CmykPercent;              // The alternate at 100 %, over the colours' own.
+  overprint?: boolean;             // Over the colours' own.
+}
+```
+
+Names and aliases are matched ignoring case and runs of spaces. Renaming takes one line however many colours use the ink; an alias merges the names a designer's swatch, an SVG (`data-spot`, `icc-named-color`) or an older palette gave the same ink onto one plate; and `output: 'process'` prints an ink in CMYK when the press has no unit for it, every tint included.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### Reference implementation
 

@@ -40,5 +40,6 @@ export {
   type OutputProfileInfo,
 } from './catalogue.js';
 export { srgbProfileBytes } from './srgbProfile.js';
-export { authoredCmykColors } from './authored.js';
+export { authoredCmykColors, authoredSpotColors, normalizeSpotColor, spotColorCmyk, spotInks, type SpotInk } from './authored.js';
+export { inkEntry, inkKey, inkNameProblem, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames, spotsThroughInkTable, type InkNameProblem } from './inks.js';
 export { createPrintPreview, proofPixels, type PrintPreview, type PrintPreviewOptions } from './softProof.js';

@@ -6,7 +6,7 @@ export const metadata = {
   description: '资源类型及其编号，表格样式与题注样式，单色图示和印在纸上的视频',
   lang: 'zh',
   lastUpdated: '2026-11-10',
-  readingTime: '30分钟',
+  readingTime: '31分钟',
   order: 14,
   parent: 'configuration',
   plainSummary: "本页讲图、表格、图示和视频的设置。Postext把它们称为资源，每一类各自编号。你可以设定表格的样子：线条、底色、字体，以及跨页时怎样拆分。你可以设定图和表格的题注怎样写。你还可以用一种油墨颜色印图示，并选择视频在纸上的呈现方式。",
@@ -856,6 +856,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => 全部与默认值相同时为undefined
 ```
+
+**SVG中的专色。** 在印刷用PDF中，矢量SVG的颜色会自行找到各自的油墨。颜色后跟 `icc-named-color(…, "PANTONE 185 C")`，或元素带有 `data-spot="PANTONE 185 C"`（以及百分比的 `data-spot-tint="40"`）时，印在该油墨的印版上：若调色板中有同名专色，则使用其替代色，否则使用该颜色自身的CMYK。与调色板中某个专色相同的颜色，或该专色在白底上的浓淡（设计软件导出色板浓淡的方式），按其显示的浓度印在该油墨上。每个颜色单独判定，因此一张图表可以混用多种油墨和四色；`diagramStyle.singleInk` 仍然优先。许多软件把色板导出为普通RGB颜色并丢失其名称：请在调色板中加入该 `hex` 的专色，或用 `data-spot` 标记元素。
 
 ### Canvas与HTML中的单色模式
 

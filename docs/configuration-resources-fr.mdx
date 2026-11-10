@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Les types de ressources et leur numérotation, les styles de tableau et de légende, les diagrammes en une seule encre et les vidéos imprimées',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '45 min',
+  readingTime: '46 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Cette page présente les réglages des figures, des tableaux, des diagrammes et des vidéos. Postext les appelle des ressources et numérote chaque genre séparément. Vous choisissez l’aspect des tableaux : leurs filets, leurs fonds, leur typographie et la façon dont ils se coupent d’une page à l’autre. Vous choisissez comment s’écrit la légende d’une figure ou d’un tableau. Vous pouvez aussi imprimer les diagrammes en une seule encre et décider de l’aspect d’une vidéo sur le papier.",
@@ -855,6 +855,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**Tons directs dans un SVG.** Dans un PDF d’impression, les couleurs d’un SVG vectoriel trouvent leur encre toutes seules. Une couleur suivie de `icc-named-color(…, "PANTONE 185 C")`, ou un élément avec `data-spot="PANTONE 185 C"` (et `data-spot-tint="40"`, en pourcentage), s’imprime sur la plaque de cette encre : avec la couleur de substitution de la palette quand la palette a un ton direct de ce nom, sinon avec le CMJN propre à la couleur. Une couleur égale à un ton direct de la palette, ou à une teinte de celui-ci sur blanc (la façon dont les logiciels de mise en page exportent une teinte d’une nuance), s’imprime sur cette encre à la teinte qu’elle montre. Chaque couleur est résolue séparément, si bien qu’un diagramme peut mêler plusieurs encres et des couleurs quadri ; `diagramStyle.singleInk` garde la priorité. Beaucoup de logiciels exportent une nuance comme une simple couleur RVB et perdent son nom : donnez à la palette le ton direct avec ce `hex`, ou marquez les éléments avec `data-spot`.
 
 ### Encre unique sur le canvas et en HTML
 

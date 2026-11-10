@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Resource types and their numbering, table and caption styles, single-ink diagrams and printed videos',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '40 min',
+  readingTime: '41 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "This page covers the settings for figures, tables, diagrams and videos. Postext calls them resources and numbers each kind on its own. You set how tables look: their rules, their fills, their type and how they split across pages. You set how the caption of a figure or a table is written. You can also print diagrams in one ink colour and choose how a video appears on paper.",
@@ -856,6 +856,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**Spot inks inside an SVG.** In a print PDF the colours of a vector SVG find their inks on their own. A colour followed by `icc-named-color(…, "PANTONE 185 C")`, or an element with `data-spot="PANTONE 185 C"` (and `data-spot-tint="40"`, percent), prints on that ink's plate: with the palette's alternate when the palette has a spot colour of that name, else with the colour's own CMYK. A colour equal to a palette spot colour, or to a tint of one over white (the way design programs export a tint of a swatch), prints on that ink at the tint it shows. Each colour is resolved on its own, so a diagram may mix several inks and process colours; `diagramStyle.singleInk` still takes precedence. Many programs export a swatch as a plain RGB colour and drop its name: give the palette the spot colour with that `hex`, or mark the elements with `data-spot`.
 
 ### Single ink on canvas and in HTML
 

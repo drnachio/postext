@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useRef, useState } from 'react';
-import type { ColorValue } from 'postext';
+import type { ColorValue, SpotColor } from 'postext';
 import { useSandbox } from '../../context/SandboxContext.js';
 import { FieldRow } from '../FieldRow.js';
 import { useFieldIds } from '../fieldContext.js';
@@ -58,12 +58,24 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   };
 
   const handleHexChange = (hex: string) => {
-    onChange({ hex, model: value.model });
+    // A colour picked another way is no longer an ink.
+    onChange({ hex, model: value.model === 'spot' ? 'hex' : value.model });
   };
 
   const handleModeChange = (newMode: ColorMode) => {
-    // The authored CMYK stays with a colour shown in CMYK.
-    onChange({ hex: value.hex, model: newMode, ...(newMode === 'cmyk' && value.cmyk ? { cmyk: value.cmyk } : {}) });
+    // The authored CMYK stays with a colour shown in CMYK, the ink with a
+    // spot colour.
+    onChange({
+      hex: value.hex,
+      model: newMode === 'spot' && !value.spot ? value.model : newMode,
+      ...(newMode === 'cmyk' && value.cmyk ? { cmyk: value.cmyk } : {}),
+      ...(value.spot ? { spot: value.spot } : {}),
+    });
+  };
+
+  // A spot colour: an ink of its own, on its own plate.
+  const handleSpotChange = (spot: SpotColor, hex: string) => {
+    onChange({ hex, model: 'spot', spot });
   };
 
   // A colour set in the CMYK tab keeps its exact values (#604).
@@ -81,15 +93,17 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
   // stored beside the link (which may predate a change of the entry).
   const unlink = () => {
     const source = linkedEntry ? linkedEntry.value : value;
-    onChange({ hex: source.hex, model: source.model, ...(source.cmyk ? { cmyk: source.cmyk } : {}) });
+    onChange({ hex: source.hex, model: source.model, ...(source.cmyk ? { cmyk: source.cmyk } : {}), ...(source.spot ? { spot: source.spot } : {}) });
   };
 
   const displayText = isLinked
     ? linkedEntry!.name
     : mode === 'cmyk' && value.cmyk
       ? `${value.cmyk.c} ${value.cmyk.m} ${value.cmyk.y} ${value.cmyk.k}`
-      : formatColor(value.hex, mode);
-  const modeLabel = isLinked ? '' : mode.toUpperCase();
+      : mode === 'spot' && value.spot
+        ? `${value.spot.name}${(value.spot.tint ?? 100) < 100 ? ` ${value.spot.tint} %` : ''}`
+        : formatColor(value.hex, mode);
+  const modeLabel = isLinked ? '' : mode === 'spot' ? state.labels.colorModeSpotShort : mode.toUpperCase();
   const swatchHex = isLinked ? linkedEntry!.value.hex : value.hex;
   const alpha = hexAlpha(swatchHex);
   const hex6 = hexWithoutAlpha(swatchHex);
@@ -122,6 +136,8 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
         onChange={handleHexChange}
         {...(value.model === 'cmyk' && value.cmyk ? { cmyk: value.cmyk } : {})}
         onCmykChange={handleCmykChange}
+        {...(value.model === 'spot' && value.spot ? { spot: value.spot } : {})}
+        onSpotChange={handleSpotChange}
         initialMode={mode}
         onModeChange={handleModeChange}
         palette={disablePalette ? undefined : palette}

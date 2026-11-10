@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Fichiers PDF',
   description: 'postext-pdf depuis le code : installation, API, fournisseurs de polices dans le navigateur et dans Node, polices CJK, octets des ressources, texte vertical, workers et fichiers prêts pour l’impression',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '26 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Cette page s’adresse aux personnes qui écrivent du code et veulent un fichier PDF. Elle montre comment installer le paquet PDF et transformer en quelques lignes un livre mis en page en fichier. Le paquet a besoin des fichiers de police : la page explique comment les lui fournir, dans un navigateur ou sur un serveur. Elle traite des polices pour le chinois, le japonais et le coréen, des images, du texte écrit de haut en bas et des liens. Elle se termine par un exemple complet et par des fichiers prêts pour un imprimeur.",
@@ -408,6 +408,56 @@ Pour une chaîne de production imprimée, réglez ces options de configuration a
 - **`page.dpi: 300`** : les px par pouce de la mise en page ; un bitmap sans résolution propre s’imprime à cette résolution à sa taille naturelle. Le [contrôle en amont](/fr/docs/configuration-fonts-colors-viewers#contrôle-en-amont) signale les images de moins de 300 ppp à leur taille imprimée.
 - **`ColorValue.cmyk`** : une couleur définie en CMJN s’imprime avec ses valeurs exactes.
 - **`{ pageNegative: true }`** dans `RenderToPdfOptions` : inverse la zone rognée au moyen d’un mode de fusion Différence (les traits de coupe ne sont pas inversés). Utile pour les contrôles en amont d’une typographie sombre sur fond clair.
+
+### Tons directs
+
+Un ton direct (un Pantone, une encre d’entreprise, un vernis) s’imprime sur sa propre plaque. Une couleur avec `model: 'spot'` porte son encre dans `ColorValue.spot` : `name` est le nom de la plaque tel que l’imprimeur le connaît, `cmyk` l’aspect de l’encre à 100 % (la couleur de substitution que le PDF donne à qui n’a pas l’encre), `tint` la force en pourcentage (100 par défaut), et `overprint` fait surimprimer l’encre sur ce qui est dessous au lieu de le défoncer, comme un vernis. `hex` est son rendu à l’écran.
+
+Un PDF CMJN ou PDF/X écrit chaque encre comme un espace colorimétrique `Separation` qui porte son nom, et peint chaque couleur de cette encre à sa teinte : les couleurs de même `name` partagent une plaque. Cela couvre les travaux habituels : deux couleurs (le noir et un ton direct), la quadrichromie avec quelques éléments dans un ton direct, et un vernis surimprimé sur des zones choisies. Quand `diagramStyle.singleInk` utilise un ton direct, les diagrammes SVG s’impriment en teintes de cette plaque. Un PDF RVB et l’écran peignent le `hex` de la couleur.
+
+**Tons directs dans un SVG.** Voir [Fonctionnement de l’encre unique](/fr/docs/configuration-resources#fonctionnement-de-lencre-unique).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+Le contrôle en amont compte un ton direct comme une seule encre, le laisse hors de la limite d’encrage, énumère les tons directs du travail et avertit quand une même encre est définie deux fois avec des valeurs différentes (le PDF utilise la première), quand un nom de plaque est l’un de ceux que le PDF réserve (`All`, `None`) ou dépasse 127 octets, et quand deux noms de plaque ne diffèrent que par la casse ou les espaces (`PANTONE 185 C` et `Pantone  185 C` feraient deux plaques).
+
+**Noms de plaque.** Le nom est écrit tel qu’il est saisi : les accents, les symboles et `#` arrivent dans le PDF en UTF-8 (`Rojo Médica` devient `/Rojo#20M#C3#A9dica`), et c’est ainsi que le lisent Acrobat, un RIP et le contrôle en amont de l’imprimeur.
+
+**Une encre par couleur.** Un rendu pour l’impression reconnaît une couleur à son hex d’écran : deux couleurs qui fixent leurs valeurs d’impression (deux encres, ou une encre et une couleur définie en CMJN) ne peuvent donc pas le partager. Si elles le partagent, la seconde passe au hex libre le plus proche, à un pas de distance et invisible à l’écran, et chacune s’imprime sur sa propre plaque. Une simple couleur d’écran (`model: 'hex'`) qui a le hex d’un ton direct s’imprime comme ce ton direct ; liez-la à l’entrée de la palette pour le rendre explicite.
+
+#### La table des encres
+
+`print.inks` indique comment les encres du travail arrivent chez l’imprimeur, quel que soit le nom que leur donnent les couleurs, les SVG et les fichiers importés. Une encre absente de la table s’imprime comme ses couleurs la définissent.
+
+```ts
+interface PrintInk {
+  name: string;                    // L’encre telle que la nomme spot.name ou un SVG.
+  aliases?: string[];              // Autres noms de la même encre : ils s’impriment sur cette plaque.
+  pdfName?: string;                // Le nom de la plaque dans le PDF. Par défaut, name.
+  output?: 'spot' | 'process';     // 'process' imprime l’encre en CMJN, d’après sa substitution.
+  cmyk?: CmykPercent;              // La substitution à 100 %, prioritaire sur celle des couleurs.
+  overprint?: boolean;             // Prioritaire sur celui des couleurs.
+}
+```
+
+Les noms et les alias sont comparés sans tenir compte de la casse ni des espaces répétés. Renommer tient en une ligne, quel que soit le nombre de couleurs qui utilisent l’encre ; un alias réunit sur une seule plaque les noms qu’un nuancier du graphiste, un SVG (`data-spot`, `icc-named-color`) ou une palette antérieure donnaient à la même encre ; et `output: 'process'` imprime une encre en CMJN quand la presse n’a pas de groupe pour elle, toutes ses teintes comprises.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### Implémentation de référence
 

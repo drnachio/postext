@@ -58,13 +58,20 @@ Conversion at `page.dpi` (default 300):
 
 ### ColorValue
 ```ts
-{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl', cmyk?: { c, m, y, k }, paletteId?: string }
+{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, paletteId?: string }
 ```
 - `hex`: `#rrggbb`, `#rgb`, `#rgba`, `#rrggbbaa`, `rgb()` / `rgba()` (comma or space syntax, alpha as number or %), or `'transparent'`. Translucent colours paint the same on canvas, HTML and PDF (ExtGState alpha); PDF/X-1a flattens them.
 - `model` says how the colour was specified; screens draw `hex`.
 - `cmyk` (percent, postext ≥ 1.22): the exact process values of a colour authored in CMYK (an
   InDesign CMYK swatch, a brand colour). A CMYK print render (`print`, §21) sets them as they
   are; `hex` is their screen rendering. Put them on the palette entry: every linked use follows.
+- `spot` (with `model: 'spot'`): a spot ink (a Pantone, a corporate ink, a varnish),
+  `{ name, cmyk, tint?, overprint? }`: `name` is the plate, `cmyk` the ink at 100 % (the PDF's
+  alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process.
+  A CMYK or PDF/X PDF prints it on its own plate (a `Separation` colour space); screens draw `hex`
+  (the ink at its tint). Colours naming the same ink share a plate. A source's spot swatches map
+  here, on the palette entry; an SVG's `icc-named-color(…, "PANTONE 185 C")` or `data-spot` paints
+  find their ink in the print PDF on their own.
 - `paletteId`: link to `colorPalette[].id`. When the id exists, the palette entry's hex/model win;
   otherwise the inline hex is the fallback. Palette links are what `:::part{palette=…}` and
   `headingStyles[].palette` recolour (§14, §16). **Always write a sensible `hex` too.**
@@ -2646,7 +2653,11 @@ as a change. Left out, the file is stamped with the time of the call.
              "richBlackColor": { "c": 60, "m": 40, "y": 40, "k": 100 }, "richBlackMinSize": { "value": 6, "unit": "mm" } },
   "preflight": { "enabled": true, "minImageResolution": 300, "criticalImageResolution": 150,
                  "minRuleWidth": { "value": 0.25, "unit": "pt" }, "smallTextSize": { "value": 9, "unit": "pt" },
-                 "safeZone": { "value": 5, "unit": "mm" }, "bleedSnap": { "value": 3, "unit": "mm" }, "checkFonts": true }
+                 "safeZone": { "value": 5, "unit": "mm" }, "bleedSnap": { "value": 3, "unit": "mm" }, "checkFonts": true },
+  "inks": [                        // the ink table: spot inks as the printer gets them
+    { "name": "Azul corporativo", "pdfName": "PANTONE 286 C", "aliases": ["Pantone 286C"] },
+    { "name": "Varnish", "output": "process" }    // process: printed in CMYK from its alternate
+  ]                                // also "cmyk" (the alternate) and "overprint", over the colours' own
 }
 ```
 - A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output
@@ -2662,7 +2673,9 @@ as a change. Left out, the file is stamped with the time of the call.
   critical under `criticalImageResolution`), `declaredPixelsMismatch` (≥ 1.24: declared width/height ≠ the file's),
   `rgbImage`, `thinRule` (< `minRuleWidth`), `smallProcessText` (< `smallTextSize` in more than one ink; K-only black
   never counts), `inkLimit` (TAC over the limit), `safeZone` (text within `safeZone` of the trim; figure labels
-  count), `nearTrim` (a box or picture ending within `bleedSnap` of the trim without bleeding). Fix the critical ones.
+  count), `nearTrim` (a box or picture ending within `bleedSnap` of the trim without bleeding), `spotInks` (info:
+  the job's spot inks), `spotInkConflict` (one ink with two alternates), `spotInkName` (`All`/`None` or over 127
+  bytes), `spotInkSimilar` (names that differ only in case or spacing: merge them with `aliases`). Fix the critical ones.
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
 `contrast` (postext ≥ 1.28; layout ignores it, out of the layout key) is the check that the text reads on its ground:

@@ -277,6 +277,7 @@ const PANEL_NOTED = [
   [/^PageTemplateGrid\./, 'PageTemplatesSection: the grid is written whole'],
   [/^ComicsConfig\.(balloonStyles|panelStyles)$/, "comics sections, setComicsField(raw, '…')"],
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],
+  [/^(PrintConfig\.inks|PrintInk\.)/, 'ink table: written in the configuration; a colour gets its ink in the colour picker\'s spot tab'],
 ];
 const rows = fields.map((f) => ({
   key: `${f.owner}.${f.field}`,

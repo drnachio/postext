@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'PDF文件',
   description: '用代码调用postext-pdf：安装、API、浏览器和Node中的字体提供函数、中日韩字体、资源字节、竖排文字、工作线程和可付印的文件',
   lang: 'zh',
-  lastUpdated: '2026-11-06',
-  readingTime: '15分钟',
+  lastUpdated: '2026-11-10',
+  readingTime: '21分钟',
   order: 22,
   parent: 'configuration',
   plainSummary: "本页写给写代码、想得到PDF文件的人。它说明怎样安装PDF包，并用几行代码把排好的书变成文件。这个包需要字体文件，所以本页说明在浏览器或服务器上怎样把字体交给它。本页还讲中文、日文和韩文字体，图片，从上往下排的文字，以及链接。最后给出一个完整的例子，以及可以直接交给印刷厂的文件。",
@@ -408,6 +408,56 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)会报告印刷尺寸下不足300 ppi的图片。
 - **`ColorValue.cmyk`**：以CMYK定义的颜色按其准确数值印刷。
 - `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切线不反转）。适合对浅底深字的排版做印前检查。
+
+### 专色
+
+专色（Pantone、企业专用油墨、光油等）在单独的印版上印刷。`model: 'spot'` 的颜色在 `ColorValue.spot` 中携带其油墨：`name` 是印刷厂所用的印版名称，`cmyk` 是油墨在100 %时的外观（没有该油墨时PDF使用的替代值），`tint` 是百分比网点浓度（默认100），`overprint` 让油墨像光油一样叠印在下方内容上而不是镂空。`hex` 是其屏幕显示色。
+
+CMYK或PDF/X格式的PDF会把每种油墨写成以其命名的 `Separation` 色彩空间，并按各自的浓度绘制该油墨的每个颜色：`name` 相同的颜色共用一块印版。由此可覆盖常见的作业：双色（黑色加一种专色）、四色印刷中部分元素使用专色，以及在选定区域叠印光油。当 `diagramStyle.singleInk` 使用专色时，SVG图表以该印版的浓淡印刷。RGB格式的PDF和屏幕则以 `hex` 绘制。
+
+**SVG中的专色。** 见[单色模式的工作原理](/zh/docs/configuration-resources#单色模式的工作原理)。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+印前检查把专色计为一种油墨，不计入总墨量上限，列出作业中使用的专色，并在以下情况发出警告：同一油墨以不同数值定义两次（PDF使用第一个定义）；印版名称是PDF保留的名称（`All`、`None`）或超过127字节；两个印版名称仅在大小写或空格上不同（`PANTONE 185 C` 和 `Pantone  185 C` 会成为两块印版）。
+
+**印版名称。** 名称按输入原样写出：重音符号、符号和 `#` 以UTF-8写入PDF（`Rojo Médica` 写作 `/Rojo#20M#C3#A9dica`），Acrobat、RIP和印刷厂的印前检查都按此读取。
+
+**一色一墨。** 印刷渲染以屏幕hex识别颜色，因此两个指定了印刷数值的颜色（两种油墨，或一种油墨和一个以CMYK定义的颜色）不能共用同一个hex。若共用，后一个会移到最近的空闲hex，只差一步，屏幕上看不出，各自印在自己的印版上。普通屏幕色（`model: 'hex'`）若与某专色hex相同，会按该专色印刷；将其链接到调色板条目即可明确这一点。
+
+#### 油墨表
+
+`print.inks` 规定作业中的油墨如何送到印刷厂，无论颜色、SVG和导入的文件如何称呼它们。表中未列出的油墨按其颜色的定义印刷。
+
+```ts
+interface PrintInk {
+  name: string;                    // spot.name或SVG所用的油墨名称。
+  aliases?: string[];              // 同一油墨的其他名称：印在此印版上。
+  pdfName?: string;                // PDF中的印版名称。默认为name。
+  output?: 'spot' | 'process';     // 'process'按替代值以CMYK印刷该油墨。
+  cmyk?: CmykPercent;              // 100 %时的替代值，优先于颜色自身的值。
+  overprint?: boolean;             // 优先于颜色自身的设置。
+}
+```
+
+名称和别名在比较时不区分大小写，也忽略连续的空格。无论多少颜色使用该油墨，重命名只需一行；别名把设计师色板、SVG（`data-spot`、`icc-named-color`）或旧调色板给同一油墨起的名称合并到一块印版上；当印刷机没有该油墨的色组时，`output: 'process'` 以CMYK印刷该油墨，所有网点浓度都包括在内。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### 参考实现
 

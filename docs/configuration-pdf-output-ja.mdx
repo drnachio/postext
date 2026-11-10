@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'PDFファイル',
   description: 'コードから使うpostext-pdf：インストール、API、ブラウザーとNodeのフォントプロバイダー、CJKフォント、リソースのバイト列、縦組み、ワーカー、印刷入稿用のファイル',
   lang: 'ja',
-  lastUpdated: '2026-11-06',
-  readingTime: '23分',
+  lastUpdated: '2026-11-10',
+  readingTime: '29分',
   order: 22,
   parent: 'configuration',
   plainSummary: "このページは、プログラムを書いてPDFファイルを作りたい人向けです。PDFのパッケージをインストールし、組み上がった本を数行でファイルにする方法を示します。このパッケージにはフォントのファイルが必要なので、ブラウザーでもサーバーでも、それを渡す方法を説明します。中国語、日本語、韓国語のフォント、画像、縦組みの文章、リンクも扱います。最後に、全体を通した例と、印刷所に渡せるファイルを示します。",
@@ -408,6 +408,56 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。自身の解像度を持たないビットマップは、原寸ではこの解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](/ja/docs/configuration-fonts-colors-viewers#プリフライト)が報告します。
 - **`ColorValue.cmyk`** — CMYKで指定した色は、その値のまま印刷されます。
 - **`{ pageNegative: true }`**（`RenderToPdfOptions`のオプション） — Differenceブレンドモードで仕上がり領域を反転します（トンボは反転しません）。明るい地に暗い文字の組版を、プリフライトで確認するのに便利です。
+
+### 特色
+
+特色（Pantone、コーポレートインキ、ニスなど）は専用の版で刷られます。`model: 'spot'` の色は `ColorValue.spot` にインキを持ちます。`name` は印刷所が使う版の名前、`cmyk` は100 %のインキの見え方（インキがない環境でPDFが代わりに使う値）、`tint` はパーセントでの網点濃度（既定は100）、`overprint` はニスのように下の色をノックアウトせずオーバープリントさせます。`hex` は画面上の表示色です。
+
+CMYKまたはPDF/XのPDFでは、各インキがその名前の `Separation` 色空間として書き出され、そのインキの色はそれぞれの濃度で塗られます。同じ `name` の色は同じ版を共有します。2色刷り（墨と特色1色）、一部の要素だけ特色を使うプロセス印刷、選んだ部分へのオーバープリントのニスといった一般的な仕事に対応します。`diagramStyle.singleInk` に特色を使うと、SVG図版はその版の濃淡で刷られます。RGBのPDFと画面では `hex` で塗られます。
+
+**SVG内の特色。** [単色刷りの仕組み](/ja/docs/configuration-resources#単色刷りの仕組み)を参照してください。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+プリフライトは特色を1インキとして数え、総インキ量の上限から除外し、作業で使う特色を一覧にします。また、同じインキが異なる値で2回定義されているとき（PDFは最初の定義を使います）、版名がPDFの予約名（`All`、`None`）であるか127バイトを超えるとき、2つの版名が大文字小文字やスペースの違いしかないとき（`PANTONE 185 C` と `Pantone  185 C` は2つの版になります）に警告します。
+
+**版名。** 名前は入力したとおりに書き出されます。アクセント、記号、`#` はUTF-8でPDFに入り（`Rojo Médica` は `/Rojo#20M#C3#A9dica`）、Acrobat、RIP、印刷所のプリフライトもそのように読みます。
+
+**1色に1インキ。** 印刷用のレンダリングは色を画面上のhexで識別するため、印刷値を指定する2つの色（2つのインキ、またはインキとCMYKで定義した色）は同じhexを共有できません。共有している場合、後の色は1段階離れた最も近い空きhexへ移され（画面上では見分けられません）、それぞれが自分の版で刷られます。特色と同じhexを持つ通常の画面色（`model: 'hex'`）はその特色として刷られます。明示するには、パレットのエントリーにリンクしてください。
+
+#### インキ表
+
+`print.inks` は、色、SVG、読み込んだファイルがどう呼んでいても、作業のインキをどのように印刷所へ渡すかを指定します。表にないインキは、その色の定義どおりに刷られます。
+
+```ts
+interface PrintInk {
+  name: string;                    // spot.nameまたはSVGが呼ぶインキ名。
+  aliases?: string[];              // 同じインキの別名。この版で刷られる。
+  pdfName?: string;                // PDF内の版名。既定はname。
+  output?: 'spot' | 'process';     // 'process'はインキを代替値からCMYKで刷る。
+  cmyk?: CmykPercent;              // 100 %での代替値。色側の値より優先。
+  overprint?: boolean;             // 色側の値より優先。
+}
+```
+
+名前と別名は、大文字小文字と連続するスペースを区別せずに照合されます。インキを使う色がいくつあっても、名前の変更は1行で済みます。別名は、デザイナーのスウォッチ、SVG（`data-spot`、`icc-named-color`）、以前のパレットが同じインキに付けていた名前を1つの版にまとめます。`output: 'process'` は、印刷機にそのインキのユニットがないとき、すべての濃度を含めてインキをCMYKで刷ります。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### リファレンス実装
 

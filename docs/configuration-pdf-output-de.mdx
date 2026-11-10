@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'PDF-Dateien',
   description: 'postext-pdf aus Code: Installation, API, Font-Provider im Browser und in Node, CJK-Schriften, Ressourcenbytes, vertikaler Text, Worker und druckfertige Dateien',
   lang: 'de',
-  lastUpdated: '2026-11-06',
-  readingTime: '20 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '23 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Diese Seite richtet sich an Menschen, die Code schreiben und eine PDF-Datei brauchen. Sie zeigt, wie Sie das PDF-Paket installieren und ein gesetztes Buch mit wenigen Zeilen in eine Datei verwandeln. Das Paket braucht die Schriftdateien, deshalb erklärt die Seite, wie Sie sie ihm übergeben, im Browser oder auf einem Server. Sie behandelt Schriften für Chinesisch, Japanisch und Koreanisch, Bilder, Text, der von oben nach unten läuft, und Links. Am Ende stehen ein vollständiges Beispiel und Dateien, die eine Druckerei übernehmen kann.",
@@ -408,6 +408,56 @@ Für produktive Druckabläufe stimmen Sie vor dem Rendern diese Konfigurationsop
 - **`page.dpi: 300`** – die px pro Zoll des Layouts: Eine Bitmap ohne eigene Auflösung wird in ihrer natürlichen Größe mit dieser Auflösung gedruckt. Der [Preflight](/de/docs/configuration-fonts-colors-viewers#preflight) meldet Bilder unter 300 ppi in ihrer gedruckten Größe.
 - **`ColorValue.cmyk`** – eine in CMYK angelegte Farbe wird mit ihren genauen Werten gedruckt.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` – kehrt den Bereich des Endformats mit dem Mischmodus Differenz um (Schnittmarken bleiben unverändert). Nützlich für Preflight-Prüfungen bei dunkler Typografie auf hellem Grund.
+
+### Sonderfarben
+
+Eine Sonderfarbe (ein Pantone-Ton, eine Hausfarbe, ein Lack) druckt auf einer eigenen Platte. Eine Farbe mit `model: 'spot'` trägt ihre Druckfarbe in `ColorValue.spot`: `name` ist der Name der Platte, wie die Druckerei ihn kennt, `cmyk` das Aussehen der Druckfarbe bei 100 % (der Ersatzwert, den das PDF jedem gibt, der die Druckfarbe nicht hat), `tint` die Stärke in Prozent (Standard 100), und `overprint` lässt die Druckfarbe das Darunterliegende überdrucken, statt es auszusparen, wie ein Lack. `hex` ist ihre Bildschirmdarstellung.
+
+Ein CMYK- oder PDF/X-PDF schreibt jede Druckfarbe als Farbraum `Separation` mit ihrem Namen und malt jede Farbe dieser Druckfarbe in ihrem Tonwert: Farben mit demselben `name` teilen sich eine Platte. Das deckt die üblichen Aufträge ab: zweifarbig (Schwarz und eine Sonderfarbe), Vierfarbdruck mit einigen Elementen in einer Sonderfarbe und ein Lack, der auf ausgewählte Flächen überdruckt wird. Verwendet `diagramStyle.singleInk` eine Sonderfarbe, drucken SVG-Diagramme in Tonwerten dieser Platte. Ein RGB-PDF und der Bildschirm malen den `hex`-Wert der Farbe.
+
+**Sonderfarben in einem SVG.** Siehe [Wie der Einfarbmodus arbeitet](/de/docs/configuration-resources#wie-der-einfarbmodus-arbeitet).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+Der Preflight zählt eine Sonderfarbe als eine Druckfarbe, nimmt sie von der Flächendeckungsgrenze aus, listet die Sonderfarben des Auftrags auf und warnt, wenn eine Druckfarbe zweimal mit verschiedenen Werten definiert ist (das PDF verwendet die erste), wenn ein Plattenname einer der Namen ist, die PDF reserviert (`All`, `None`), oder länger als 127 Byte ist, und wenn sich zwei Plattennamen nur in Groß- und Kleinschreibung oder Leerzeichen unterscheiden (`PANTONE 185 C` und `Pantone  185 C` wären zwei Platten).
+
+**Plattennamen.** Der Name wird so geschrieben, wie er eingegeben wird: Akzente, Symbole und `#` gelangen in UTF-8 ins PDF (`Rojo Médica` wird zu `/Rojo#20M#C3#A9dica`), und so lesen ihn Acrobat, ein RIP und der Preflight der Druckerei.
+
+**Eine Druckfarbe pro Farbe.** Ein Druck-Rendering erkennt eine Farbe an ihrem Bildschirm-Hex-Wert; zwei Farben, die ihre Druckwerte festlegen – zwei Druckfarben oder eine Druckfarbe und eine in CMYK angelegte Farbe –, dürfen sich daher keinen teilen. Tun sie es doch, rückt die spätere auf den nächsten freien Hex-Wert, einen Schritt entfernt und auf dem Bildschirm unsichtbar, und jede druckt auf ihrer eigenen Platte. Eine reine Bildschirmfarbe (`model: 'hex'`) mit dem Hex-Wert einer Sonderfarbe druckt als diese Sonderfarbe; verknüpfen Sie sie mit dem Paletteneintrag, um das ausdrücklich zu machen.
+
+#### Die Druckfarbentabelle
+
+`print.inks` legt fest, wie die Druckfarben des Auftrags in die Druckerei gelangen, gleich wie die Farben, die SVGs und die importierten Dateien sie nennen. Eine Druckfarbe, die nicht in der Tabelle steht, druckt so, wie ihre Farben sie definieren.
+
+```ts
+interface PrintInk {
+  name: string;                    // Die Druckfarbe, wie spot.name oder ein SVG sie nennt.
+  aliases?: string[];              // Andere Namen derselben Druckfarbe: Sie drucken auf dieser Platte.
+  pdfName?: string;                // Der Name der Platte im PDF. Standard: name.
+  output?: 'spot' | 'process';     // 'process' druckt die Druckfarbe in CMYK, aus ihrem Ersatzwert.
+  cmyk?: CmykPercent;              // Der Ersatzwert bei 100 %, vor dem der Farben.
+  overprint?: boolean;             // Vor dem der Farben.
+}
+```
+
+Namen und Aliasse werden ohne Rücksicht auf Groß- und Kleinschreibung und mehrfache Leerzeichen verglichen. Umbenennen ist eine Zeile, gleich wie viele Farben die Druckfarbe verwenden; ein Alias führt die Namen, die ein Farbfeld des Gestalters, ein SVG (`data-spot`, `icc-named-color`) oder eine ältere Palette derselben Druckfarbe gaben, auf einer Platte zusammen; und `output: 'process'` druckt eine Druckfarbe in CMYK, wenn die Druckmaschine kein Druckwerk für sie hat, alle Tonwerte eingeschlossen.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### Referenzimplementierung
 

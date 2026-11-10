@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Fitxers PDF',
   description: "postext-pdf des del codi: instal·lació, l'API, els proveïdors de fonts al navegador i a Node, les fonts CJK, els bytes de recursos, el text vertical, els workers i els fitxers a punt per a impremta",
   lang: 'ca',
-  lastUpdated: '2026-11-06',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '26 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina és per a qui escriu codi i vol un fitxer PDF. Explica com instal·lar el paquet de PDF i com convertir un llibre compost en un fitxer amb unes quantes línies de codi. El paquet necessita els fitxers de les fonts, i la pàgina explica d'on els pot treure, en un navegador o en un servidor. Tracta les fonts per al xinès, el japonès i el coreà, les imatges, el text que va de dalt a baix i els enllaços. Acaba amb un exemple complet i amb fitxers a punt per a la impremta.",
@@ -408,6 +408,56 @@ Per a la producció d'impremta, fixa aquestes opcions de configuració abans de 
 - **`page.dpi: 300`**: els píxels per polzada de la maquetació. Un mapa de bits sense resolució pròpia s'imprimeix a aquesta resolució a la seva mida natural. El [preflight](/ca/docs/configuration-fonts-colors-viewers#preflight) avisa de les imatges per sota de 300 ppp a la seva mida impresa.
 - **`ColorValue.cmyk`**: un color definit en CMYK s'imprimeix amb els seus valors exactes.
 - **`{ pageNegative: true }`** a `RenderToPdfOptions`: inverteix l'àrea del format final amb un mode de fusió Difference (les marques de tall no s'inverteixen). És útil per fer comprovacions de preflight sobre text fosc en fons clar.
+
+### Tintes planes
+
+Una tinta plana (un Pantone, una tinta corporativa, un vernís) s’imprimeix en la seva pròpia planxa. Un color amb `model: 'spot'` porta la seva tinta a `ColorValue.spot`: `name` és el nom de la planxa tal com el coneix la impremta, `cmyk` és l’aspecte de la tinta al 100 % (l’equivalent que el PDF dona a qui no tingui la tinta), `tint` és el to en percentatge (100 per defecte) i `overprint` fa que la tinta sobreimprimeixi el que té a sota en lloc de buidar-ho, com un vernís. `hex` és la seva representació en pantalla.
+
+Un PDF CMYK o PDF/X escriu cada tinta com un espai de color `Separation` amb el seu nom, i cada color d’aquesta tinta es pinta al seu to: els colors amb el mateix `name` comparteixen planxa. Hi caben les feines habituals: dues tintes (negre i una plana), quadricromia amb alguns elements en plana i un vernís sobreimprès en zones concretes. Si `diagramStyle.singleInk` fa servir una tinta plana, els diagrames SVG s’imprimeixen en tons d’aquesta planxa. En un PDF RGB i en pantalla, el color es pinta amb el seu `hex`.
+
+**Tintes planes dins d’un SVG.** Vegeu [Com funciona la tinta única](/ca/docs/configuration-resources#com-funciona-la-tinta-única).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+El preflight compta una tinta plana com una sola tinta, la deixa fora del límit de cobertura, enumera les tintes planes del treball i avisa si una tinta es defineix dues vegades amb valors diferents (el PDF fa servir la primera), si el nom d’una planxa és un dels que el PDF reserva (`All`, `None`) o passa de 127 bytes, i si dos noms de planxa només es diferencien en majúscules o espais (`PANTONE 185 C` i `Pantone  185 C` serien dues planxes).
+
+**Noms de planxa.** El nom s’escriu tal com es tecleja: els accents, els símbols i `#` arriben al PDF en UTF-8 (`Rojo Médica` és `/Rojo#20M#C3#A9dica`), que és com el llegeixen Acrobat, un RIP i el preflight de la impremta.
+
+**Una tinta per color.** Un render d’impressió reconeix un color pel seu hex de pantalla, de manera que dos colors que fixen els seus valors d’impressió —dues tintes, o una tinta i un color definit en CMYK— no el poden compartir. Si el comparteixen, el segon passa a l’hex lliure més proper, a un pas i invisible en pantalla, i cadascun surt a la seva planxa. Un color de pantalla (`model: 'hex'`) amb l’hex d’una tinta plana s’imprimeix com aquesta tinta; enllaça’l a l’entrada de la paleta per deixar-ho explícit.
+
+#### La taula de tintes
+
+`print.inks` diu com arriben a la impremta les tintes del treball, les anomenin com les anomenin els colors, els SVG i els fitxers importats. Una tinta que no és a la taula s’imprimeix tal com la defineixen els seus colors.
+
+```ts
+interface PrintInk {
+  name: string;                    // La tinta tal com l'anomena spot.name o un SVG.
+  aliases?: string[];              // Altres noms de la mateixa tinta: surten en aquesta planxa.
+  pdfName?: string;                // El nom de la planxa al PDF. Per defecte, name.
+  output?: 'spot' | 'process';     // 'process' imprimeix la tinta en CMYK, amb el seu equivalent.
+  cmyk?: CmykPercent;              // L'equivalent al 100 %, per sobre del dels colors.
+  overprint?: boolean;             // Per sobre del dels colors.
+}
+```
+
+Els noms i els àlies es comparen sense distingir majúscules ni espais repetits. Canviar el nom és una línia, la facin servir tants colors com vulguin; un àlies ajunta en una planxa els noms que una mostra del dissenyador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior donaven a la mateixa tinta; i `output: 'process'` imprimeix una tinta en CMYK quan la màquina no té cos per a ella, amb tots els seus tons.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### Implementació de referència
 
