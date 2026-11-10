@@ -2,7 +2,7 @@ import { cssWeightOrder, featureFamilyParts } from 'postext';
 import { padTrueTypeGlyphs } from './trueTypePadding.js';
 import { type PDFFont, type PDFDocument, PDFDict, PDFName, PDFRef, PDFStream } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString.js';
-import { type FileDeclaration, registerFaceFiles, wantsGlyph, missingGlyphsOf } from './faceFiles.js';
+import { type FileDeclaration, registerFaceFiles, wantsGlyph, missingGlyphsOf, setSymbolFont } from './faceFiles.js';
 import { registerFontFamily } from './fontFamilies.js';
 import { verticalTwinRefOf } from './verticalFonts.js';
 import { shapeInCurrentLanguage } from './shapingLanguage.js';
@@ -226,6 +226,22 @@ export class FontCache {
     return face.growing;
   }
 
+  /** Load the family a face falls back to (`symbolFont`) in
+   *  the face's weight and slant, else the nearest the provider has, and
+   *  set it to draw what the face's files lack. A provider that has none
+   *  leaves the face as it is: those characters are reported missing. */
+  private async attachSymbolFont(key: string, spec: FaceSpec, family: string, codePoints: ReadonlySet<number>): Promise<void> {
+    const primary = this.map.get(key);
+    if (!primary) return;
+    const want: FaceSpec = { family, weight: spec.weight, style: spec.style };
+    for (const candidate of [want, ...fallbackFaces(want)]) {
+      const face = await this.loadFace(candidate, codePoints);
+      if (!face) continue;
+      setSymbolFont(primary, face.primary);
+      return;
+    }
+  }
+
   /** Report a variable font asked for at a weight other than its default
    *  instance, the one pdf-lib embeds. */
   private checkVariableWeight(face: LoadedFace): void {
@@ -243,7 +259,7 @@ export class FontCache {
    * asked again, except a sliced one for characters its files lack.
    */
   async preloadFontStrings(fontStrings: Iterable<string | undefined> | ReadonlyMap<string, ReadonlySet<number>>): Promise<void> {
-    const jobs = new Map<string, { spec: FaceSpec; codePoints: Set<number> }>();
+    const jobs = new Map<string, { spec: FaceSpec; codePoints: Set<number>; symbols?: string }>();
     const entries: Iterable<[string | undefined, ReadonlySet<number> | undefined]> = fontStrings instanceof Map
       ? (fontStrings as ReadonlyMap<string, ReadonlySet<number>>).entries()
       : Array.from(fontStrings as Iterable<string | undefined>, (fs): [string | undefined, undefined] => [fs, undefined]);
@@ -258,6 +274,9 @@ export class FontCache {
         jobs.set(key, job);
       }
       for (const cp of codePoints ?? []) job.codePoints.add(cp);
+      // The family the face falls back to (`symbolFont`).
+      const symbols = parsed.fallbacks?.find((f) => f.toLowerCase() !== parsed.family.toLowerCase());
+      if (symbols) job.symbols = symbols;
     }
 
     // Every face is asked of the provider at once, but embedded one after
@@ -272,7 +291,7 @@ export class FontCache {
       answer.catch(() => {});
       this.prefetched.set(key, answer);
     }
-    for (const [key, { spec, codePoints }] of jobs) {
+    for (const [key, { spec, codePoints, symbols }] of jobs) {
       await (async () => {
         if (this.map.has(key)) {
           // Loaded before (another chapter, a picture's text): a sliced
@@ -303,6 +322,7 @@ export class FontCache {
         this.failed.add(`${spec.family} ${spec.weight}${spec.style === 'italic' ? ' italic' : ''}`);
         this.map.set(key, null);
       })();
+      if (symbols) await this.attachSymbolFont(key, spec, symbols, codePoints);
     }
   }
 

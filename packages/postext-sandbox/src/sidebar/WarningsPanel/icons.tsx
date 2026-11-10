@@ -16,6 +16,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'missingFontVariant':
     case 'fontFallback':
     case 'glyphFallback':
+    case 'glyphFallbackAt':
     case 'duplicateFontVariant':
       return Type;
     case 'looseLine':

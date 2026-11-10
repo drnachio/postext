@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '以编程方式使用',
   description: '用代码调用Postext：buildDocument及其报告的警告、默认值、字体、缓存，以及Web Worker',
   lang: 'zh',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '22分钟',
   order: 21,
   parent: 'configuration',
@@ -397,6 +397,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>glyphFallback</code></td>
       <td>文本用某个字体（<code>family</code>、<code>weight</code>、<code>style</code>）排的字符中，有该字体没有字形的：<code>characters</code>列出前24个（每个只列一次），<code>count</code>给出总数，<code>supplier</code>给出实际绘制它们的字体族（如<code>serif</code>这样的通用字体族）；若由系统选定的字体绘制，则没有这一项。每个字体一条。在浏览器或worker中，引擎向它在字体集中声明的探测字体发问（<code>installGlyphProbe</code>，由<code>prepareFonts</code>和排版worker调用）；在其他环境中，它读取用<code>registerFontCoverage</code>登记的文件的<code>cmap</code>表，命令行就是这样做的。受<code>debug.warnings.missingFont</code>控制。没有页码，也没有源码范围。postext 1.52起提供。</td>
       <td>这些字符由另一个字体绘制，其字形设计和宽度可能与正文字体不一致。请选择包含这些字符的字体族。</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>含有其字体缺字形字符的块：<code>glyphFallback</code> 未给出的位置。每个块、字体、页面和绘制字体族各一条（每个文档最多 200 条）：<code>characters</code> 列出这些字符，<code>supplier</code> 为字体列表中绘制它们的字体族（<code>symbolFont</code>），无字体族具有时省略。指向该块。</td>
+      <td>用 <code>supplier</code> 绘制；没有时 PDF 将其印成空框。请指定包含它们的 <code>symbolFont</code>。</td>
     </tr>
   </tbody>
 </table>

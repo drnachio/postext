@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Polices, couleurs et sortie',
   description: 'Unités, couleurs et palette, polices personnalisées, visionneuse HTML, PDF et production pour l’impression, visionneuse Folio et calques de débogage',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -149,6 +149,12 @@ Un clic sur l’un de ces avertissements ouvre le panneau Polices pour que vous 
 Dès qu’une mise en page existe, le panneau liste aussi le **Remplacement de police dans la mise en page** (`fontFallback`) relevé par le moteur : un caractère sans lequel les pages ont été mesurées, soit absent, soit dessiné par le navigateur à partir d’une autre graisse ou d’une autre inclinaison. Une famille déjà signalée comme inconnue ou incomplète n’est pas listée deux fois. Avant la première mise en page, une vérification sur `document.fonts` en tient lieu.
 
 Le panneau liste aussi les **Caractères pris dans une autre police** (`glyphFallback`) : des caractères que le texte compose dans une police qui n’a pas de glyphe pour eux, une fois par police, avec la famille générique qui les a dessinés (`serif`, `sans-serif`, `monospace`) quand la vérification peut le dire.
+
+### Police des symboles
+
+Une police de texte a rarement les lettres et les opérateurs mathématiques (∪, ℵ, ∀), le grec ou les flèches que l’auteur tape dans un paragraphe. `symbolFont` nomme une famille qui les compose : chaque police du document la place après la sienne, si bien que le canevas, le PDF, le HTML et l’EPUB dessinent ces caractères avec elle au lieu d’une case vide. `'Noto Sans Math'` couvre presque toutes les mathématiques. Dans le Sandbox, c’est **Texte courant → Police des symboles**.
+
+La mise en page signale chaque paragraphe qui contient de tels caractères par `glyphFallbackAt`, avec la famille qui les dessine, ou aucune : le PDF les imprime alors comme des cases vides. Le Sandbox les marque sur la page, en violet ceux que dessine la police des symboles et en rouge ceux que rien ne dessine.
 
 ## Styles de chiffres
 

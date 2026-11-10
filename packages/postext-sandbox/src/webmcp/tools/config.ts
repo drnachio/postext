@@ -42,7 +42,7 @@ const CONFIG_KEYS = [
   'paragraphStyles', 'calloutStyles', 'chipStyles', 'markStyles', 'parts', 'headingStyles', 'toc', 'index', 'unorderedLists',
   'orderedLists', 'math', 'footnotes', 'links', 'crossRefs', 'citations', 'cjk', 'lineNumbers', 'codeStyle', 'header', 'footer',
   'locale', 'direction', 'numerals', 'debug', 'htmlViewer', 'canvasViewer', 'folio', 'comics', 'pdfGeneration', 'print', 'contrast', 'checks',
-  'colorPalette', 'customFonts', 'resourceTypes', 'pageTemplates', 'labelStyles', 'frameLooks', 'exerciseStyles', 'exercises',
+  'colorPalette', 'customFonts', 'symbolFont', 'resourceTypes', 'pageTemplates', 'labelStyles', 'frameLooks', 'exerciseStyles', 'exercises',
 ] as const satisfies readonly (keyof PostextConfig)[];
 
 /** Keys a host sets for one layout and a book never stores: the leaf the

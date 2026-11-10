@@ -257,6 +257,14 @@ export function documentFontFaces(doc: VDTDocument): FontFaceRequest[] {
     const key = faceRequestKey(face);
     if (!out.has(key)) out.set(key, face);
   }
+  // The family the text falls back to (`symbolFont`): its
+  // regular face, which draws for every weight of the text.
+  const symbols = doc.config?.symbolFont;
+  if (symbols && !isGenericFamily(symbols)) {
+    const face: FontFaceRequest = { family: symbols, weight: 400, style: 'normal' };
+    const key = faceRequestKey(face);
+    if (!out.has(key)) out.set(key, face);
+  }
   return [...out.values()];
 }
 

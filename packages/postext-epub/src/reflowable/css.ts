@@ -22,13 +22,16 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   const body = config.bodyText;
   const bodyPx = dimensionToPx(body.fontSize, dpi);
   const families = new Set<string>();
+  // The family that sets what the text's fonts lack is
+  // embedded with them.
+  if (config.symbolFont) families.add(familyName(config.symbolFont));
   // A style's figures (#1237) go with its family: `font-variant-numeric`
   // inherits, so where any style sets them every family states its own.
   const figures = setsFigures(config);
   const fam = (f: string) => {
     families.add(familyName(f));
     const numeric = fontVariantNumeric(featureFamilyParts(primaryFontFamily(f)).features);
-    return `font-family: ${familyStack(f)}${figures ? `;\n  font-variant-numeric: ${numeric || 'normal'}` : ''}`;
+    return `font-family: ${familyStack(f, config.symbolFont)}${figures ? `;\n  font-variant-numeric: ${numeric || 'normal'}` : ''}`;
   };
   /** A length in ems of `basePx` (the body size unless given). */
   const em = (d: Dimension, basePx = bodyPx) => `${round(dimensionToPx(d, dpi, basePx) / basePx)}em`;

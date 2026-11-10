@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Schriften, Farben und Ausgabe',
   description: 'Einheiten, Farben und die Palette, eigene Schriften, der HTML-Betrachter, PDF und Druckvorstufe, der Folio-Betrachter und die Debug-Überlagerungen',
   lang: 'de',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '36 min',
   order: 20,
   parent: 'configuration',
@@ -149,6 +149,12 @@ Ein Klick auf eine dieser Warnungen öffnet das Bedienfeld Schriften, damit Sie 
 Sobald ein Layout existiert, listet das Bedienfeld auch die Warnung **Ersatzschrift im Layout** der Engine (`fontFallback`): eine Schrift, ohne die die Seiten gemessen wurden, weil sie fehlt oder weil der Browser sie aus einer anderen Schriftstärke oder Neigung gezeichnet hat. Eine Familie, die bereits als unbekannt oder als unvollständig gemeldet ist, wird nicht doppelt aufgeführt. Vor dem ersten Layout vertritt eine Prüfung gegen `document.fonts` diese Meldung.
 
 Das Panel listet außerdem **Zeichen aus einer anderen Schrift** (`glyphFallback`): Zeichen, die der Text in einer Schrift ohne passende Glyphe setzt, einmal je Schrift, mit der generischen Familie, aus der sie stammen (`serif`, `sans-serif`, `monospace`), sofern die Prüfung das feststellen kann.
+
+### Symbolschrift
+
+Eine Textschrift hat selten die mathematischen Buchstaben und Operatoren (∪, ℵ, ∀), das Griechische oder die Pfeile, die ein Autor in einen Absatz tippt. `symbolFont` nennt eine Familie, die sie setzt: Jede Schrift des Dokuments führt sie nach ihrer eigenen, sodass Canvas, PDF, HTML und EPUB diese Zeichen mit ihr zeichnen statt als leeres Kästchen. `'Noto Sans Math'` deckt fast die ganze Mathematik ab. Im Sandbox steht sie unter **Grundtext → Symbolschrift**.
+
+Der Umbruch meldet jeden Absatz mit solchen Zeichen als `glyphFallbackAt`, mit der Familie, die sie zeichnet, oder keiner: Das PDF druckt sie dann als leere Kästchen. Der Sandbox markiert diese Zeichen auf der Seite, violett die von der Symbolschrift gezeichneten und rot die, die keine zeichnet.
 
 ## Ziffernarten
 

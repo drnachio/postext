@@ -13,7 +13,7 @@
 // of sight, as before.
 
 import type { ResolvedResourceBlock, VDTDesignPathBlock, VDTFigureLabelLayout, VDTLine, VDTLineSegment } from 'postext';
-import { figureLabelLeaderPath, figureLabelMatrix, labelLayoutOnSheet, markerSvgElement, parseFontString, pathSvgData, uncroppedPictureBox } from 'postext';
+import { figureLabelLeaderPath, figureLabelMatrix, labelLayoutOnSheet, markerSvgElement, parseFontString, fontStringFamilies, pathSvgData, uncroppedPictureBox } from 'postext';
 import { familyStack } from './css.js';
 import { fontPx, xmlAttr, xmlText } from './inline.js';
 
@@ -46,7 +46,7 @@ function fontAttrs(font: string): string {
   const face = parseFontString(font);
   const parts = [`font-size="${n(fontPx(font))}"`];
   if (face) {
-    parts.push(`font-family="${xmlAttr(familyStack(face.family))}"`);
+    parts.push(`font-family="${xmlAttr(familyStack(face.family, fontStringFamilies(font)[1]))}"`);
     if (face.weight !== 400) parts.push(`font-weight="${face.weight}"`);
     if (face.style === 'italic') parts.push('font-style="italic"');
   }

@@ -83,6 +83,11 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
         .replace('__chars__', chars)
         .replace('__supplier__', payload.supplier ?? '');
     }
+    case 'glyphFallbackAt':
+      return (payload.supplier ? labels.warningsGlyphFallbackAtDetail : labels.warningsGlyphFallbackAtMissingDetail)
+        .replace('__face__', `"${payload.family}"`)
+        .replace('__chars__', payload.characters.join(' '))
+        .replace('__supplier__', payload.supplier ?? '');
     case 'duplicateFontVariant': {
       const slots = payload.variants
         .map((v) => `${v.weight}${v.style === 'italic' ? ' italic' : ''} ×${v.count}`)

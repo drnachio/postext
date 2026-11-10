@@ -10,6 +10,7 @@ export type WarningKind =
   | 'missingFontVariant'
   | 'fontFallback'
   | 'glyphFallback'
+  | 'glyphFallbackAt'
   | 'duplicateFontVariant'
   | 'looseLine'
   | 'cjkLooseLine'

@@ -13,7 +13,7 @@ import { hasExercises } from '../../exercises/model.js';
 import { validateConfigCache, resolveAllConfig } from '../config.js';
 import { resolveDebugConfig } from '../../defaults/output/debug.js';
 import { defaultFontSet, fontFallbacks, documentFontFaces, faceRequestKey } from '../../fonts/faces.js';
-import { glyphFallbacks } from '../../fonts/glyphFallback.js';
+import { glyphFallbacks, glyphFallbackPlaces } from '../../fonts/glyphFallback.js';
 import { syncFontSet } from '../../fonts/fontSet.js';
 import { hasAnchorRefs, printsAnchorPages, anchorTargetsOf } from '../references/crossRefs.js';
 import { anchorOutline, hasTocDirective, hasIndexDirective, outlineFromDoc, sameOutline, computeOutline } from '../contents/outline.js';
@@ -179,6 +179,8 @@ export function* buildDocumentGen(
   if (checkFonts) {
     const skip = new Set(fallbacks.flatMap((f) => (f.kind === 'fontFallback' && f.reason === 'missing' ? [faceRequestKey(f)] : [])));
     for (const g of glyphFallbacks(doc, { skip })) fallbacks.push({ kind: 'glyphFallback', ...g });
+    // And where: the paragraph each is set in.
+    for (const g of glyphFallbackPlaces(doc, { skip })) fallbacks.push({ kind: 'glyphFallbackAt', ...g });
   }
   if (located.length > 0 || loose.length > 0 || annotations.length > 0 || harakat.length > 0 || fallbacks.length > 0) {
     doc.contentWarnings = [...located, ...loose, ...annotations, ...harakat, ...fallbacks];

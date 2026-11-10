@@ -27,6 +27,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.bodyText);
+  const symbolFont = useSandboxSelector((s) => s.config.symbolFont);
   const locale = useSandboxSelector((s) => s.locale);
   const documentLocale = useSandboxSelector((s) => s.config.locale);
   const defaultLocale = defaultDocumentLocale(locale);
@@ -158,6 +159,16 @@ export const BodyTextSection = memo(function BodyTextSection() {
           tooltip={labels.bodyFontTooltip}
           isDefault={isFontDefault}
           onReset={() => resetField('fontFamily')}
+          searchPlaceholder={labels.bodyFontSearch}
+          noResultsLabel={labels.bodyFontNoResults}
+        />
+        <FontPicker
+          label={labels.symbolFont}
+          value={symbolFont ?? ''}
+          onChange={(font) => dispatch({ type: 'UPDATE_CONFIG', payload: { symbolFont: font || undefined } })}
+          tooltip={labels.symbolFontTooltip}
+          isDefault={!symbolFont}
+          onReset={() => dispatch({ type: 'UPDATE_CONFIG', payload: { symbolFont: undefined } })}
           searchPlaceholder={labels.bodyFontSearch}
           noResultsLabel={labels.bodyFontNoResults}
         />

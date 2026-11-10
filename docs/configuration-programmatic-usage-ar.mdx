@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الاستخدام البرمجي',
   description: 'استعمال Postext من الشيفرة: buildDocument وتحذيراته، والقيم الافتراضية، والخطوط، والذاكرات المؤقتة، وWeb Worker',
   lang: 'ar',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '31 دقيقة',
   order: 21,
   parent: 'configuration',
@@ -397,6 +397,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>glyphFallback</code></td>
       <td>محارف يجعلها النص في خط (<code>family</code> و<code>weight</code> و<code>style</code>) ليس فيه شكل لها: يذكر <code>characters</code> أول 24 منها، كلًّا مرة واحدة، ويذكر <code>count</code> عددها كله، ويسمّي <code>supplier</code> العائلة التي رسمتها (عائلة عامة مثل <code>serif</code>)، ويغيب حين يرسمها خط يختاره النظام. تحذير واحد لكل خط. في المتصفح أو في worker يسأل المحرك خطًّا مسبارًا يعلنه في مجموعة الخطوط (<code>installGlyphProbe</code>، وتستدعيه <code>prepareFonts</code> وworker التخطيط)؛ وفي غيرهما يقرأ جدول <code>cmap</code> من الملفات المسجلة بـ<code>registerFontCoverage</code>، كما يفعل سطر الأوامر. يخضع لـ<code>debug.warnings.missingFont</code>. بلا صفحة ولا نطاق في المصدر. منذ postext 1.52.</td>
       <td>تُرسم المحارف بخط آخر قد لا يوافق تصميمه وعروضه خط النص. اختر عائلة تغطيها.</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>كتلة فيها محارف لا يملكها خطها: الموضع الذي لا يذكره <code>glyphFallback</code>. واحد لكل كتلة وخط وصفحة وعائلة ترسمها (200 على الأكثر في المستند): <code>characters</code> يعدّها، و<code>supplier</code> عائلة القائمة التي ترسمها (<code>symbolFont</code>)، ويغيب لما لا تملكه أي عائلة. يشير إلى الكتلة.</td>
+      <td>تُرسم بـ <code>supplier</code>؛ وبدونها يطبعها PDF مربعات فارغة. حدّد <code>symbolFont</code> تحويها.</td>
     </tr>
   </tbody>
 </table>

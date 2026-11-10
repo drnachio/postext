@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fuentes, colores y salida',
   description: 'Las unidades, los colores y la paleta; las fuentes personalizadas; el visor HTML, el PDF y la producción para imprenta; el visor Folio, y las ayudas de depuración.',
   lang: 'es',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -149,6 +149,12 @@ Al hacer clic en cualquiera de estos avisos se abre el panel **Fuentes**, para q
 Cuando ya hay una maquetación, el panel muestra también el aviso del motor **Fuente sustituida en la composición** (`fontFallback`): un estilo con el que no se han podido medir las páginas, bien porque falta, bien porque el navegador lo dibuja a partir de otro peso o de otra inclinación. Una familia que ya aparece como desconocida o con un estilo que falta no se muestra dos veces. Antes de la primera maquetación, se hace en su lugar una comprobación con `document.fonts`.
 
 El panel también muestra **Caracteres tomados de otra fuente** (`glyphFallback`): caracteres que el texto pone en una fuente que no tiene glifo para ellos, una vez por fuente, con la familia genérica que los dibujó (`serif`, `sans-serif`, `monospace`) cuando la comprobación puede saberlo.
+
+### Fuente de símbolos
+
+Una fuente de texto rara vez tiene las letras y los operadores matemáticos (∪, ℵ, ∀), el griego o las flechas que el autor escribe en un párrafo. `symbolFont` nombra una familia que los compone: todas las fuentes del documento la llevan detrás de la suya, así que el lienzo, el PDF, el HTML y el EPUB dibujan esos caracteres con ella en lugar de una caja vacía. `'Noto Sans Math'` cubre casi toda la matemática. En el Sandbox está en **Texto base → Fuente de símbolos**.
+
+La maquetación avisa de cada párrafo que lleva esos caracteres con `glyphFallbackAt`, con la familia que los dibuja, o sin ninguna: el PDF los imprime entonces como cajas vacías. El Sandbox los marca en la página, en violeta los que dibuja la fuente de símbolos y en rojo los que no dibuja ninguna.
 
 ## Estilos de cifras
 

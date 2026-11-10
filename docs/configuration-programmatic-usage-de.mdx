@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Programmatische Nutzung',
   description: 'Postext aus Code aufrufen: buildDocument und seine Warnungen, Standardwerte, Schriften, Caches und der Web Worker',
   lang: 'de',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '28 min',
   order: 21,
   parent: 'configuration',
@@ -397,6 +397,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>glyphFallback</code></td>
       <td>Zeichen, die der Text in einer Schrift setzt (<code>family</code>, <code>weight</code>, <code>style</code>), die keine Glyphe für sie hat: <code>characters</code> nennt die ersten 24, jedes einmal, <code>count</code> ihre Gesamtzahl und <code>supplier</code> die Familie, aus der sie stammen (eine generische Familie wie <code>serif</code>); fehlt, wenn eine vom System gewählte Schrift sie gezeichnet hat. Eine Meldung je Schrift. Im Browser oder in einem Worker fragt die Engine eine Prüfschrift ab, die sie im Font-Set anmeldet (<code>installGlyphProbe</code>, aufgerufen von <code>prepareFonts</code> und vom Layout-Worker); anderswo liest sie die <code>cmap</code>-Tabelle der mit <code>registerFontCoverage</code> registrierten Dateien, wie die Kommandozeile. Hinter <code>debug.warnings.missingFont</code>. Ohne Seite und ohne Quellbereich. Seit postext 1.52.</td>
       <td>Die Zeichen werden aus einer anderen Schrift gezeichnet, deren Form und Breiten nicht zur Textschrift passen müssen. Wählen Sie eine Schriftfamilie, die sie abdeckt.</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>Ein Block mit Zeichen, die seiner Schrift fehlen: der Ort, den <code>glyphFallback</code> nicht nennt. Einer je Block, Schrift, Seite und zeichnender Familie (höchstens 200 je Dokument): <code>characters</code> listet sie, <code>supplier</code> ist die Familie der Liste, die sie zeichnet (die <code>symbolFont</code>), fehlt für die, die keine hat. Zeigt auf den Block.</td>
+      <td>Sie werden mit <code>supplier</code> gezeichnet; ohne sie druckt das PDF leere Kästchen. Eine <code>symbolFont</code> angeben, die sie enthält.</td>
     </tr>
   </tbody>
 </table>

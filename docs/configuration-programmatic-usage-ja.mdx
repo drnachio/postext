@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'プログラムからの利用',
   description: 'コードからPostextを呼び出す方法。buildDocumentとその警告、既定値、フォント、キャッシュ、そしてWeb Worker',
   lang: 'ja',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '32分',
   order: 21,
   parent: 'configuration',
@@ -397,6 +397,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>glyphFallback</code></td>
       <td>テキストがあるフェイス（<code>family</code>、<code>weight</code>、<code>style</code>）で組んだ文字のうち、そのフェイスにグリフがないもの。<code>characters</code>は最初の24字（各1回）、<code>count</code>は総数、<code>supplier</code>は実際に描いたファミリー（<code>serif</code>のような総称ファミリー）で、システムが選んだフォントで描かれた場合はありません。フェイスごとに1件です。ブラウザーやworkerでは、エンジンがフォントセットに登録するプローブ用のフェイス（<code>installGlyphProbe</code>。<code>prepareFonts</code>とレイアウトworkerが呼びます）に問い合わせます。それ以外の環境では、コマンドラインと同じく<code>registerFontCoverage</code>で登録したファイルの<code>cmap</code>表を読みます。<code>debug.warnings.missingFont</code>で切り替えます。ページもソース範囲もありません。postext 1.52から。</td>
       <td>文字は別のフォントで描かれ、本文のフェイスとデザインや字幅が合わないことがあります。これらの文字を含むファミリーを選んでください。</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>フォントにないグリフの文字を含むブロック。<code>glyphFallback</code> が示さない場所です。ブロック・フォント・ページ・描くファミリーごとに 1 つ（1 文書最大 200）。<code>characters</code> は文字、<code>supplier</code> はそれを描くフォントリストのファミリー（<code>symbolFont</code>）で、どのファミリーにもないものでは省略されます。ブロックを指します。</td>
+      <td><code>supplier</code> で描かれます。ない場合、PDF では空の四角として印刷されます。それを含む <code>symbolFont</code> を指定してください。</td>
     </tr>
   </tbody>
 </table>
