@@ -320,6 +320,8 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 
 ويرسم Canvas الحقل الرقمي بالطريقة نفسها، فتطابق المعاينةُ ملف PDF: مرّر إلى `renderPageToCanvas` (أو `renderPage` أو `renderToCanvas`) خيار `forms` نفسه الذي تمرّره إلى `renderToPdf`؛ وفي الحالتين تُؤخذ الفواصل افتراضيًا من `locale` المستند (وإلا فمن لغة تقطيع كلماته). وقاعدة واحدة تكتب الأرقام في كل مكان، ويصدّرها postext لمولّدات الإخراج الأخرى: يحلّ `formNumberStyle(forms, lang)` الخيارات، وينسّق `formatFieldNumber(value, format, style)` قيمةً (ويعيد undefined لنص ليس رقمًا)، ويعطي `numberFieldText(field, words, style)` ما يعرضه حقل رقمي مرسوم. وتحمل قائمة العرض الحقلَ على مقطع الشارة (`inline.field`، مع `sizePx` و`padPx` من التخطيط).
 
+ويكتب تصدير IDML الحقول نفسها حقولَ نماذج في InDesign (انظر [الاستخدام البرمجي › حزم InDesign](/ar/docs/configuration-programmatic-usage#حزم-indesign-postextidml)).
+
 ### الروابط في ملف PDF
 
 تصبح كلمات رابط Markdown (انظر [صيغة المستند › الروابط](/ar/docs/document-format-inline#الروابط)) تعليقات روابط توضيحية (annotations) من نوع URI، واحدًا لكل سلسلة من الكلمات المرتبطة في السطر. يغطي كل منها مستطيل السطر، ولا حدود له. وفي الإنتاج الميسَّر الوصول، تكون كل سلسلة عنصر `Link` قيمة `/Contents` فيه هي نصه. لا تُربط إلا الوجهات المطلقة `http:` و`https:` و`mailto:` و`tel:` و`ftp:`، لأن عنوان URL النسبي لا أساس له داخل ملف PDF. وتُرمَّز الحروف الواقعة خارج ASCII القابل للطباعة بترميز النسبة المئوية. وتحتفظ استشهادات `:ref` وصفوف جدول المحتويات بروابطها داخل المستند.

@@ -320,6 +320,8 @@ Acrobat, Foxit, pdf.js (Firefox) e a maioria dos visualizadores executam esses s
 
 O canvas pinta um campo numérico da mesma forma, então a prévia coincide com o PDF: passe para `renderPageToCanvas` (ou `renderPage`, `renderToCanvas`) a mesma opção `forms` que você passa para `renderToPdf`; nos dois, os separadores vêm por padrão do `locale` do documento (na falta dele, do idioma de hifenização). Uma única regra escreve os números em todo lugar, e o postext a exporta para outros geradores de saída: `formNumberStyle(forms, lang)` resolve as opções, `formatFieldNumber(value, format, style)` formata um valor (undefined para um texto que não é número) e `numberFieldText(field, words, style)` dá o que um campo numérico pintado mostra. A lista de exibição leva o campo no trecho do chip (`inline.field`, com o `sizePx` e o `padPx` da composição).
 
+A exportação IDML grava os mesmos campos como campos de formulário do InDesign (veja [Uso programático › Pacotes do InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postextidml)).
+
 ### Links no PDF
 
 As palavras de um link Markdown (veja [Formato do documento › Links](/pt/docs/document-format-inline#links)) viram anotações de link URI, uma por trecho de palavras com link em uma linha. Cada uma cobre a caixa da linha e não tem borda. Em uma renderização acessível, cada trecho é um elemento `Link` cujo `/Contents` é o texto do trecho. Só recebem link os destinos absolutos `http:`, `https:`, `mailto:`, `tel:` e `ftp:`, porque uma URL relativa não tem base dentro de um PDF. Os caracteres fora do ASCII imprimível são codificados com porcentagem. As citações `:ref` e as linhas do sumário mantêm os links dentro do documento.

@@ -233,6 +233,16 @@ describe('postext cli', () => {
     expect(r.stdout.subarray(1, 4).toString()).toBe('PNG');
   }, 60_000);
 
+  it('writes an IDML package, and refuses linked pictures on stdout', () => {
+    const dir = book();
+    const r = run(['idml', 'ch', '-o', 'b.idml', '--offline', '-q'], dir);
+    expect(r.code).toBe(0);
+    expect(readFileSync(join(dir, 'b.idml')).subarray(0, 2).toString()).toBe('PK');
+    const stdout = run(['idml', 'ch', '--images', 'link', '-o', '-', '--offline'], dir);
+    expect(stdout.code).toBe(2);
+    expect(stdout.stderr).toContain('--images link');
+  }, 60_000);
+
   // #695: `preset.json`'s `start` says where a book that is part of a longer
   // one starts; every command lays the book out from there.
   it('lays a book out from where its preset.json says it starts', () => {

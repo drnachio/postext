@@ -3,9 +3,11 @@ import { strFromU8, unzipSync } from 'fflate';
 import { build, config, mm, LOREM } from '../word/formatted/formatted.test-helper.js';
 import { parseXml, children, descendants, attr, type XmlElement } from '../word/xml.js';
 import { parseFieldCalc } from '../parse/formFields.js';
-import { idmlDocument, parseCssFont, defaultFontStyleName, type IdmlOptions } from './index.js';
+import { idmlDocument, type IdmlOptions } from './index.js';
+import { parseCssFont, defaultFontStyleName } from './fonts.js';
 import type { PostextConfig } from '../index.js';
 import { pageDisplayList } from '../paint/displayList/page.js';
+import { initMathEngine } from '../math/engine.js';
 
 const cmyk = (hex: string, [c, m, y, k]: number[]) => ({ hex, model: 'cmyk' as const, cmyk: { c: c!, m: m!, y: y!, k: k! } });
 const hex = (h: string) => ({ hex: h, model: 'hex' as const });
@@ -384,6 +386,72 @@ describe('idmlDocument', () => {
     expect(parseCssFont('italic 700 16px "EB Garamond", serif')).toEqual({ family: 'EB Garamond', weight: 700, italic: true, sizePx: 16 });
     expect(defaultFontStyleName('X', 700, true)).toBe('Bold Italic');
     expect(defaultFontStyleName('X', 400, false)).toBe('Regular');
+    expect(parseCssFont('16px Times')).toEqual({ family: 'Times', weight: 400, italic: false, sizePx: 16 });
+    expect(parseCssFont('oblique bold 12.5px \'Source Serif 4\', serif')).toEqual({ family: 'Source Serif 4', weight: 700, italic: true, sizePx: 12.5 });
+  });
+
+  it('gives each swatch its own id and name, none taking one of InDesign’s own', () => {
+    const red = cmyk('#c00000', [0, 100, 100, 0]);
+    const green = hex('#00a000');
+    const orange = hex('#ffaa00');
+    const grey = hex('#123456');
+    const colours = [BLUE, red, green, orange, grey];
+    const cfg = composedConfig(
+      [{ name: 'body', style: 'text', placement: top(10, 120), width: mm(120), height: mm(40) }],
+      [plain('text', 10)],
+      {
+        colorPalette: [
+          { id: 'a', name: 'House blue', value: BLUE },
+          { id: 'b', name: 'Black', value: red },
+          { id: 'c', name: 'Paper', value: green },
+          { id: 'd', name: 'House blue', value: orange },
+          { id: 'e', name: 'None', value: grey },
+        ],
+      },
+      { elements: colours.map((c, i) => ({ kind: 'box', id: `b${i}`, style: { backgroundColor: c }, placement: { ...top(10, 10 + i * 20), size: { width: mm(20), height: mm(10) } } })) },
+    );
+    const graphic = xml(idml(sheet(':::frame{slot="body"}\nText.\n:::'), cfg), 'Resources/Graphic.xml');
+    const swatches = descendants(graphic, 'Color').concat(descendants(graphic, 'Swatch'));
+    const names = swatches.map((s) => attr(s, 'Name')!);
+    expect(names.filter((n, i) => names.indexOf(n) !== i)).toEqual([]);
+    expect(names).toEqual(expect.arrayContaining(['Black', 'Paper', 'Registration', 'None', 'House blue', 'House blue 2', 'Black 2', 'Paper 2', 'None 2']));
+    const byName = (n: string) => swatches.find((s) => attr(s, 'Name') === n)!;
+    expect(attr(byName('Black 2'), 'ColorValue')).toBe('0 100 100 0');
+    expect(attr(byName('Black 2'), 'Self')).toBe('Color/Black 2');
+    expect(attr(byName('Paper 2'), 'ColorValue')).toBe('0 160 0');
+  });
+
+  it('ends a story with its last paragraph that holds text, with no empty paragraph after it', async () => {
+    // The last paragraph is maths alone, which the package leaves out.
+    await initMathEngine();
+    const md = sheet(':::frame{slot="body"}\nFirst paragraph.\n\nSecond paragraph.\n\n$a^2 + b^2$\n:::');
+    const warnings: string[] = [];
+    const f = idml(md, TITLE_BODY, { onWarning: (w) => warnings.push(w.code) });
+    expect(warnings).toContain('text.inline');
+    const body = storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame').find((fr) => attr(fr, 'Name') === 'body')!);
+    expect(descendants(parseXml(body), 'ParagraphStyleRange')).toHaveLength(2);
+    expect(body.match(/<Br\/>/g)).toHaveLength(1);
+    expect(body).not.toMatch(/<Br\/><\/CharacterStyleRange><\/ParagraphStyleRange><\/Story>/);
+  });
+
+  it('warns that right-to-left text is written left to right', () => {
+    const ar = 'قال إن كلمة يهتم مسعد كتاب جميلة وكانت المدينة عامرة بالناس والكتب والعلماء.';
+    const warnings: { code: string; message: string }[] = [];
+    idml(`${ar}\n\n${ar}`, config({ locale: 'ar', direction: 'rtl' } as Partial<PostextConfig>), { onWarning: (w) => warnings.push(w) });
+    expect(warnings.filter((w) => w.code === 'text.rtl')).toHaveLength(1);
+    expect(warnings.find((w) => w.code === 'text.rtl')!.message).toMatch(/left to right/);
+    const latin: string[] = [];
+    idml('Some text.', config(), { onWarning: (w) => latin.push(w.code) });
+    expect(latin).not.toContain('text.rtl');
+    expect(latin).not.toContain('text.vertical');
+  });
+
+  it('warns that vertical text is written horizontally', () => {
+    const warnings: { code: string; message: string }[] = [];
+    const cfg = { ...config(), locale: 'ja', layout: { layoutType: 'single', writingMode: 'vertical-rl' } } as unknown as PostextConfig;
+    idml('吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。', cfg, { onWarning: (w) => warnings.push(w) });
+    expect(warnings.filter((w) => w.code === 'text.vertical')).toHaveLength(1);
+    expect(warnings.find((w) => w.code === 'text.vertical')!.message).toMatch(/horizontal/);
   });
 });
 

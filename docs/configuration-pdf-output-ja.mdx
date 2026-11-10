@@ -320,6 +320,8 @@ Acrobat、Foxit、pdf.js（Firefox）をはじめ、多くのビューアーが�
 
 canvasも数値フィールドを同じように描くので、プレビューはPDFと一致します。`renderPageToCanvas`（または`renderPage`、`renderToCanvas`）に、`renderToPdf`と同じ`forms`オプションを渡してください。どちらでも、区切り記号は既定で文書の`locale`（なければハイフネーションの言語）から決まります。数値の書き方を決めるルールは1つで、postextはほかの出力形式のためにそれをエクスポートしています。`formNumberStyle(forms, lang)`はオプションを解決し、`formatFieldNumber(value, format, style)`は値に書式を適用し（数値でないテキストにはundefinedを返します）、`numberFieldText(field, words, style)`は描かれた数値フィールドに表示される文字列を返します。ディスプレイリストでは、フィールドはチップのランに載ります（`inline.field`。レイアウトの`sizePx`と`padPx`を含みます）。
 
+IDMLの書き出しは、同じフィールドをInDesignのフォームフィールドとして書き出します（[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostextidml)を参照）。
+
 ### PDFのリンク
 
 Markdownのリンク（[文書形式 › リンク](/ja/docs/document-format-inline#リンク)を参照）の語は、URIリンク注釈になります。行ごとに、リンクされた語のひと続きにつき1つです。各注釈は行の矩形を覆い、枠線はありません。アクセシブルな描画では、ひと続きごとに`Link`要素になり、その`/Contents`はそのテキストです。リンクになるのは、絶対URLの`http:`、`https:`、`mailto:`、`tel:`、`ftp:`のターゲットだけです。相対URLはPDFの中では基準となるURLを持たないためです。印字可能なASCII以外の文字はパーセントエンコードされます。`:ref`による参照と目次の行は、ドキュメント内へのリンクのままです。

@@ -320,6 +320,8 @@ Acrobat, Foxit, pdf.js (Firefox) und die meisten Viewer führen diese Skripte au
 
 Das Canvas malt ein Zahlenfeld genauso, sodass die Vorschau dem PDF entspricht: Übergeben Sie `renderPageToCanvas` (oder `renderPage`, `renderToCanvas`) dieselbe Option `forms` wie `renderToPdf`; in beiden Fällen richten sich die Trennzeichen standardmäßig nach dem `locale` des Dokuments (sonst nach seiner Silbentrennungssprache). Eine einzige Regel schreibt die Zahlen überall, und postext exportiert sie für andere Ausgabeformate: `formNumberStyle(forms, lang)` löst die Optionen auf, `formatFieldNumber(value, format, style)` formatiert einen Wert (undefined für Text, der keine Zahl ist), und `numberFieldText(field, words, style)` liefert, was ein gemaltes Zahlenfeld zeigt. Die Display-Liste trägt das Feld am Textlauf des Chips (`inline.field`, mit `sizePx` und `padPx` aus dem Layout).
 
+Der IDML-Export schreibt dieselben Felder als InDesign-Formularfelder (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postextidml)).
+
 ### Links im PDF
 
 Die Wörter eines Markdown-Links (siehe [Dokumentformat › Links](/de/docs/document-format-inline#links)) werden zu URI-Link-Annotationen, eine pro Folge verlinkter Wörter in einer Zeile. Jede deckt den Zeilenkasten ab und hat keinen Rahmen. In einem barrierefreien Rendering ist jede Folge ein Element `Link`, dessen `/Contents` sein Text ist. Verlinkt werden nur absolute Ziele mit `http:`, `https:`, `mailto:`, `tel:` und `ftp:`, weil eine relative URL innerhalb eines PDFs keine Basis hat. Zeichen außerhalb des druckbaren ASCII werden prozentkodiert. Verweise mit `:ref` und Zeilen des Inhaltsverzeichnisses behalten ihre Links innerhalb des Dokuments.

@@ -320,6 +320,8 @@ Acrobat、Foxit、pdf.js（Firefox）和大多数阅读器都会运行这些脚�
 
 canvas以同样方式绘制数字表单域，因此预览与PDF一致：向`renderPageToCanvas`（或`renderPage`、`renderToCanvas`）传入与`renderToPdf`相同的`forms`选项；两者的分隔符默认都取自文档的`locale`（没有时取其断词语言）。数字在各处都按同一套规则书写，postext把它导出给其他输出格式使用：`formNumberStyle(forms, lang)`解析选项，`formatFieldNumber(value, format, style)`格式化一个值（不是数字的文本返回undefined），`numberFieldText(field, words, style)`给出绘制出的数字表单域显示的内容。显示列表把表单域放在行内标签的文字段上（`inline.field`，带有排版得出的`sizePx`和`padPx`）。
 
+IDML导出把同样的表单域写成InDesign表单域（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postextidml)）。
+
 ### PDF中的链接
 
 Markdown链接中的词（见[文档格式 › 链接](/zh/docs/document-format-inline#链接)）成为URI链接注释，一行中每一串相连的链接词对应一个注释。每个注释覆盖行框，没有边框。在无障碍渲染中，每一串是一个`Link`元素，其`/Contents`为该串文字。只有绝对的`http:`、`https:`、`mailto:`、`tel:`和`ftp:`目标会生成链接，因为在PDF中相对URL没有基准地址。可打印ASCII以外的字符会做百分号编码。`:ref`引用和目录行保留指向文档内部的链接。

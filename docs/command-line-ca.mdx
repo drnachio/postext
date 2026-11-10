@@ -167,6 +167,7 @@ es llegeix en la llengua principal, tret que `--locale` en demani una altra (`--
     <tr><td><code>image</code></td><td>Una pàgina com a imatge PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Totes les pàgines, o un interval, com a imatges en una carpeta.</td></tr>
     <tr><td><code>docx</code></td><td>Els capítols com un document de Word: semàntic (títols, llistes, notes i taules propis de Word) o maquetat (les pàgines del PDF).</td></tr>
+    <tr><td><code>idml</code></td><td>Les pàgines com un paquet d'InDesign (IDML), per acabar-les a InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Les correccions fetes en un fitxer de Word exportat, de tornada al llibre; qualsevol altre document de Word, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de llibre o Markdown solt com un sol fitxer <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fitxer <code>.postext</code> com a carpeta.</td></tr>
@@ -334,6 +335,27 @@ que encara no en tenen (els estils de paràgraf i de títol del fitxer de `--con
 corresponen els estils de Word, i els nivells de títol), i no toca els espaiats que el
 llibre ja defineix. Amb `--json`, `styleTracking` enumera el que s'ha aplicat (`applied`) i el que
 s'ha deixat (`skipped`). Des de postext 1.39.
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+`idml` compon el llibre com ho fa `pdf` i escriu les pàgines com un paquet
+d'InDesign Markup, per acabar-lo a InDesign: una pàgina per plec, filets,
+requadres, traçats i imatges com a elements de pàgina, el text de cada marc
+d'una pàgina composta com un marc de text amb la seva pròpia història (els
+marcs encadenats amb `next` en comparteixen una), els estils de requadre com a
+estils de paràgraf i els colors CMYK d'autor com a mostres. Els xips amb camp
+de formulari passen a ser camps de formulari d'InDesign. InDesign torna a
+compondre el text, així que els salts de línia poden diferir dels del PDF.
+`--images link` deixa les imatges al costat del fitxer, a `Links/`, en lloc de
+dins. El que el paquet encara no pot portar (taules, fórmules, música) es
+notifica com a avís `idml.*`. Vegeu [Ús programàtic › Paquets
+d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postextidml).
+Des de postext 1.71.
 
 ### pack i unpack
 
