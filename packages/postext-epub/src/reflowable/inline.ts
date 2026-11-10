@@ -8,6 +8,7 @@
 import type { CjkRegion, MathRender, VDTLine, VDTLineSegment, VDTRuby, VDTSwatch } from 'postext';
 import { graphemesOf, hasSwatchShape, verticalRuns } from 'postext';
 import type { Format, InlineItem, LinkTarget } from './model.js';
+import { RULES, ruledPieces, ruledSpace } from './ruled.js';
 import { escapeAttr, escapeXml, stripInvalidXmlChars } from '../shared/xml.js';
 
 /** What turning lines into items needs to know about their document. */
@@ -349,26 +350,6 @@ function dropOffsets(text: string, offsets: readonly number[], start: number): s
   return out + text.slice(last);
 }
 
-/** The lines a segment's characters may carry: through them (`~~…~~`)
- *  and under them (`++…++`). */
-const RULES = ['strike', 'underline'] as const;
-type Rule = (typeof RULES)[number];
-
-/** Whether the space at `i` lies between two words of one struck-through
- *  (`VDTLineSegment.strike`) or underlined run (`underline`). */
-function ruledSpace(segs: readonly VDTLineSegment[], i: number, key: Rule): boolean {
-  let a = i - 1;
-  while (a >= 0 && segs[a]!.kind === 'space') a--;
-  let b = i + 1;
-  while (b < segs.length && segs[b]!.kind === 'space') b++;
-  const before = segs[a]?.[key];
-  const after = segs[b]?.[key];
-  if (!before || !after || before.id !== after.id) return false;
-  // The run goes on through the end of the word before and from the start
-  // of the word after.
-  return (before.to === undefined || before.to >= segs[a]!.text.length) && !after.from;
-}
-
 /** The text items of one line, in logical order. */
 export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.segments): InlineItem[] {
   const out: InlineItem[] = [];
@@ -447,28 +428,11 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
       first = false;
       if (!text) continue;
       const fmt = formatOf(run, seg, ctx);
-      // Struck-through (`~~…~~`) and underlined (`++…++`) characters: all
-      // of the segment's, or `from`–`to` of them (a full stop glued to the
-      // run stays out).
-      const ruled = text === run.text
-        ? RULES.flatMap((key) => {
-          const r = seg[key];
-          return r ? [{ key, from: Math.max(0, (r.from ?? 0) - start), to: Math.min(text.length, (r.to ?? seg.text.length) - start) }] : [];
-        })
-        : [];
-      if (ruled.length > 0) {
-        if (ruled.every((r) => r.from <= 0 && r.to >= text.length)) {
-          for (const r of ruled) fmt[r.key] = true;
-        } else {
-          const cuts = [...new Set([0, text.length, ...ruled.flatMap((r) => [r.from, r.to]).filter((c) => c > 0 && c < text.length)])].sort((a, b) => a - b);
-          for (let c = 0; c + 1 < cuts.length; c++) {
-            const [a, b] = [cuts[c]!, cuts[c + 1]!];
-            const f: Format = { ...fmt };
-            for (const r of ruled) if (r.from <= a && b <= r.to) f[r.key] = true;
-            out.push({ t: 'text', text: text.slice(a, b), fmt: f, ...(link ? { link } : {}), ...lvlOf(seg) });
-          }
-          continue;
-        }
+      // Struck-through (`~~…~~`) and underlined (`++…++`) characters.
+      const pieces = text === run.text ? ruledPieces(seg, text, start, fmt) : undefined;
+      if (pieces) {
+        for (const [part, f] of pieces) out.push({ t: 'text', text: part, fmt: f, ...(link ? { link } : {}), ...lvlOf(seg) });
+        continue;
       }
       if (ctx.tcy && !fmt.tcy && !fmt.orientation) {
         for (const [part, cell] of tcyRuns(text, ctx.tcy)) {
