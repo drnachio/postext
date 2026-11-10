@@ -167,10 +167,10 @@ describe('semantic docx: pages Word cannot hold', () => {
     const empty = 'Before.\n\n:::page{split="*"}\n::panel\n:::\n\nAfter.\n';
     const e = await exportDocx(empty);
     expect(exportProblems(e, [empty])).toEqual([]);
-    expect(e.frag('Comic page — see the PDF or the formatted .docx').role).toBe('placeholder:comicPage');
+    expect(e.frag('Comic page — see the PDF').role).toBe('placeholder:comicPage');
     expect(applyDocxEdits(e.bytes, { chapters: [{ id: 'ch1', markdown: empty }] }).chapters[0]!.markdown).toBe(empty);
     const es = await exportDocx(empty, { config: { locale: 'es' } as never });
-    expect(es.frag('Página de cómic — véase el PDF o el .docx maquetado').role).toBe('placeholder:comicPage');
+    expect(es.frag('Página de cómic — véase el PDF').role).toBe('placeholder:comicPage');
   });
 
   it('suggests the formatted variant when pages are most of the book', () => {

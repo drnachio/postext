@@ -47,11 +47,27 @@ export interface ChapterState {
   pageNumbers?: { format?: string; start?: number };
 }
 
+/** What the plain design keeps of the book's own (#1458): its resolved
+ *  config, for the words of the Markdown a design prints (a kicker the
+ *  heading's design reads from an attribute), and the widths its pictures
+ *  take in print, which they never outgrow. */
+export interface PlainBook {
+  book: ResolvedConfig;
+  /** Width of the book's text column and of its whole text area, px. */
+  columnPx: number;
+  textAreaPx: number;
+}
+
 export interface WriterContext {
   pkg: DocxPackageBuilder;
   log: FragmentLog;
   config: PostextConfig;
+  /** The config the document is set from: the book's, or in the plain
+   *  design its neutral one (`plain/config.ts`). */
   resolved: ResolvedConfig;
+  /** Set in the plain design (`design: 'plain'`): content only. The
+   *  modules that write the book's design check it where they start. */
+  plain?: PlainBook;
   units: Units;
   styles: StyleRegistry;
   numbering: Numbering;

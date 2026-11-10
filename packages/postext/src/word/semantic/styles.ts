@@ -12,6 +12,7 @@ import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
 import { paleOnWhite } from './design/ink.js';
+import { plainStyleDef } from './plain/styles.js';
 import { captionLook, sameCaptionLook } from './prose/caption.js';
 import { boxBodyIndent, paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
@@ -70,6 +71,8 @@ export class StyleRegistry {
     readonly resolved: ResolvedConfig,
     private readonly units: Units,
     private readonly plan?: WordFontPlan,
+    /** The plain design (#1458): each style as `plainStyleDef` sets it. */
+    private readonly plain = false,
   ) {
     this.bodyPx = units.basePx;
     this.builtins();
@@ -136,7 +139,7 @@ export class StyleRegistry {
   }
 
   private add(id: string, def: StyleDef): string {
-    if (!this.defs.has(id)) this.defs.set(id, def);
+    if (!this.defs.has(id)) this.defs.set(id, this.plain ? plainStyleDef(id, def) : def);
     return id;
   }
 

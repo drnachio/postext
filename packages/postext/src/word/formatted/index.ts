@@ -1,9 +1,11 @@
-// The formatted (page-faithful) Word export (#1392): the print chain's
-// pages, through the shared page display list, as one Word section per
-// page whose text sits in exactly placed text boxes with the engine's
-// line breaks, and whose rules, boxes, paths, pictures and tables are
-// native drawings. Every importable fragment is bookmarked and described
-// in the export map, so edits made in Word re-import (#1395).
+// The page facsimile (#1392): the print chain's pages, through the shared
+// page display list, as one Word section per page whose text sits in
+// exactly placed text boxes with the engine's line breaks, and whose
+// rules, boxes, paths, pictures and tables are native drawings. Every
+// importable fragment is bookmarked and described in the export map, so
+// edits made in Word re-import (#1395). It was the "formatted" export
+// until #1458, when that name went to the flow writer set with the book's
+// design; the map still says `variant: 'formatted'`.
 
 import { CONFIG_VERSION } from '../../bundle/configVersion/rules.js';
 import { pageDisplayList } from '../../paint/displayList/page.js';
@@ -14,19 +16,33 @@ import { createDocxPackage } from '../ooxml/package.js';
 import { MetricsCache } from './metrics.js';
 import { pageXml } from './page.js';
 import { docDefaultsXml, stylesXml } from './styles.js';
-import type { FormattedDocxOptions, WriterContext } from './types.js';
+import type { FormattedDocxOptions, FormattedWarning, WriterContext } from './types.js';
 
 export type { FormattedDocxOptions, FormattedWarning } from './types.js';
+/** Options of `facsimileDocx`. */
+export type FacsimileDocxOptions = FormattedDocxOptions;
+/** Something `facsimileDocx` had to set differently from the page. */
+export type FacsimileWarning = FormattedWarning;
 export { baselineOffset, readFaceMetrics } from './metrics.js';
 
 /** `ExportMap.engine` (and `postext.version`) of the files this writer
  *  makes: writer and config versions, as the semantic writer stamps its. */
-export const FORMATTED_ENGINE = `postext-word-formatted/1 config/${CONFIG_VERSION}`;
+export const FACSIMILE_ENGINE = `postext-word-formatted/1 config/${CONFIG_VERSION}`;
 
-/** Write a laid-out book as a `.docx` that reproduces the pages of the PDF. */
-export async function formattedDocx(options: FormattedDocxOptions): Promise<Uint8Array> {
+/** @deprecated The name this writer had when it was the formatted route
+ *  (#1458): use `FACSIMILE_ENGINE`. */
+export const FORMATTED_ENGINE = FACSIMILE_ENGINE;
+
+/** @deprecated The name this writer had when it was the formatted route
+ *  (#1458): use `facsimileDocx`. The formatted document is now
+ *  `semanticDocx` with the book's design. */
+export const formattedDocx = (options: FormattedDocxOptions): Promise<Uint8Array> => facsimileDocx(options);
+
+/** Write a laid-out book as a `.docx` that reproduces the pages of the
+ *  PDF: the page facsimile, every line in a placed text box. */
+export async function facsimileDocx(options: FacsimileDocxOptions): Promise<Uint8Array> {
   const { docs, chapters } = options;
-  if (chapters.length < docs.length) throw new Error(`formattedDocx: ${docs.length} documents but ${chapters.length} chapters`);
+  if (chapters.length < docs.length) throw new Error(`facsimileDocx: ${docs.length} documents but ${chapters.length} chapters`);
   const pkg = createDocxPackage();
   const seen = new Set<string>();
   const ctx: WriterContext = {
@@ -81,7 +97,7 @@ export async function formattedDocx(options: FormattedDocxOptions): Promise<Uint
     version: 1,
     exportId,
     variant: 'formatted',
-    engine: FORMATTED_ENGINE,
+    engine: FACSIMILE_ENGINE,
     createdAt,
     chapters: chapters.map((c) => ({ id: c.id, ...(c.title !== undefined ? { title: c.title } : {}), hash: hashText(c.markdown) })),
     fragments: ctx.fragments,

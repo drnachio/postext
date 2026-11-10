@@ -77,6 +77,8 @@ function space(ctx: WriterContext, lines: number): string {
 
 /** Record a `:::numbering{format startAt}` for the chapter's section. */
 function numbering(ctx: WriterContext, b: ContentBlock): void {
+  // The plain design counts its pages straight through.
+  if (ctx.plain) return;
   const attrs = b.directiveAttrs ?? {};
   // Same reading as the engine's: a format or start it ignores changes
   // nothing. `lines=N` restarts line numbers, which Word sets apart.

@@ -6,6 +6,7 @@
 import { strFromU8, strToU8 } from 'fflate';
 import type { ContentBlock, InlineSpan } from '../../../parse/types.js';
 import type { Resource } from '../../../types.js';
+import type { ResolvedConfig } from '../../../vdt.js';
 import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
 import { svgWithWordFonts } from '../../formatted/pictures.js';
 import { svgTextAsPaths } from '../../svg/text.js';
@@ -33,15 +34,19 @@ const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: '
  *  ornament a fifth of the column wide), as the engine sizes it (#1444). */
 export function pictureSlot(ctx: WriterContext, res: Resource): { px: number; align: 'left' | 'center' | 'right'; fraction: number; side: boolean } {
   const place = resolveResourcePlacement(res, ctx.resourceTypes.find((t) => t.id === res.typeId));
-  const side = place.span === 'side' && ctx.resolved.layout.layoutType === 'oneAndHalf';
-  const slot = place.span === 'page' ? ctx.textAreaPx : side ? sideColumnPx(ctx) : ctx.columnPx;
+  const r = ctx.plain?.book ?? ctx.resolved;
+  const side = place.span === 'side' && r.layout.layoutType === 'oneAndHalf';
+  const slot = place.span === 'page' ? (ctx.plain ?? ctx).textAreaPx : side ? sideColumnPx(ctx, r) : (ctx.plain ?? ctx).columnPx;
+  // The plain design centres every picture, as wide as the book prints it
+  // and no wider than the text: a width of its own, as a side figure's is,
+  // not a share of where it stands.
+  if (ctx.plain) return { px: Math.max(1, Math.min(ctx.columnPx, slot * place.widthFraction)), align: 'center', fraction: 1, side: true };
   return { px: Math.max(1, slot * place.widthFraction), align: place.align, fraction: place.widthFraction, side };
 }
 
 /** The width of a column-and-a-half layout's side column, px: a picture
  *  set there (`span: 'side'`, a margin diagram) is that wide in print. */
-function sideColumnPx(ctx: WriterContext): number {
-  const r = ctx.resolved;
+function sideColumnPx(ctx: WriterContext, r: ResolvedConfig): number {
   const text = px(ctx.units, r.page.width) - px(ctx.units, r.page.margins.left) - px(ctx.units, r.page.margins.right);
   // As the page geometry splits the text area (`pageGeometry`).
   return Math.max(1, ((text - px(ctx.units, r.layout.gutterWidth)) * Math.min(99, Math.max(1, r.layout.sideColumnPercent))) / 100);
@@ -102,7 +107,9 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
     } else if (res.kind === 'video') {
       // A video with no poster: the dark frame, play mark and QR code the
-      // print sets in its place.
+      // print sets in its place. The plain design draws none: the video's
+      // name and address stand there as text.
+      if (ctx.plain) continue;
       const size = columnSize(slot, res.video?.width ?? 16, res.video?.height ?? 9);
       const svg = videoPosterSvg(res, ctx.resolved, size.w, size.h);
       const scale = 300 / ctx.units.dpi;
@@ -158,13 +165,23 @@ function videoPlaceholder(ctx: WriterContext, res: Resource): string {
   const url = res.video?.url;
   const type = ctx.resourceTypes.find((t) => t.id === res.typeId);
   const name = ctx.numbers.resources[res.id] ? resourceRefLabel({ resourceId: res.id, style: 'full' } as RefSpan, ctx.numbers, [res], ctx.resolved) : (type?.name ?? '');
-  const words = name || url || '';
+  // The plain design shows the address too.
+  const words = ctx.plain && name && url ? `${name} \u00b7 ${url}` : name || url || '';
   const text = words ? `\u25B6 ${words}` : '\u25B6';
   const frag = new FragmentBuilder();
   frag.push(text, new Array<number>(text.length).fill(-1), '', url);
   const runs = textRuns(text, url ? rPr({ style: STYLE.hyperlink }) : '');
   const linked = url ? `<w:hyperlink r:id="${ctx.pkg.addLink(url)}">${runs}</w:hyperlink>` : runs;
   return paragraph({ style: STYLE.figure }, ctx.log.wrap(linked, frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'video' }));
+}
+
+/** A video's address as a line of text under its poster (the plain
+ *  design): generated, linked, kept with the caption. */
+function videoAddress(ctx: WriterContext, url: string): string {
+  const frag = new FragmentBuilder();
+  frag.push(url, new Array<number>(url.length).fill(-1), '', url);
+  const linked = `<w:hyperlink r:id="${ctx.pkg.addLink(url)}">${textRuns(url, rPr({ style: STYLE.hyperlink }))}</w:hyperlink>`;
+  return paragraph({ style: STYLE.figure, keepNext: true }, ctx.log.wrap(linked, frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'video' }));
 }
 
 /** A `::resource` / `:::figure` block: picture or table, and caption. */
@@ -214,7 +231,7 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
     // A video's picture (its poster, or the frame drawn in its place)
     // opens the video, as its QR code does in print.
     const link = res.kind === 'video' ? videoLink(res) : undefined;
-    if (pic) return paragraph({ style: STYLE.figure, keepNext: true, ...space, ...(jc ? { jc } : {}) }, pictureRun(ctx, pic, id, alt, max, link)) + figureLabels(ctx, b);
+    if (pic) return paragraph({ style: STYLE.figure, keepNext: true, ...space, ...(jc ? { jc } : {}) }, pictureRun(ctx, pic, id, alt, max, link)) + (ctx.plain && link ? videoAddress(ctx, link) : '') + figureLabels(ctx, b);
     return res.kind === 'video' ? videoPlaceholder(ctx, res) : '';
   };
   // Fragments are logged as they are written, so in the document's order:

@@ -23,6 +23,7 @@ import type { PageGeometry, SectionStart } from '../sections.js';
 import { furnitureParagraph, itemRuns, PAGE_MARK, PAGES_MARK, TITLE_MARK, type Item, type Rule } from './paragraph.js';
 import { marginText, verticalRule } from './margin.js';
 import { headsShown } from './composed.js';
+import { plainFooter } from '../plain/design.js';
 import { placeElement, type PageBox, type Target } from './place.js';
 
 type Role = 'opener' | 'body' | 'part';
@@ -271,6 +272,8 @@ function firstSide(input: SectionFurnitureInput): Parity | undefined {
  */
 export function sectionFurniture(ctx: WriterContext, geo: PageGeometry, input: SectionFurnitureInput): { refs: string; titlePg: boolean } {
   const r = ctx.resolved;
+  // The plain design: no running heads, the page number in the footer.
+  if (ctx.plain) return { refs: `<w:footerReference w:type="default" r:id="${ctx.pkg.footerRel(partId(ctx, 'footer', plainFooter()))}"/>`, titlePg: false };
   if (!bookSlots(r).any) return { refs: '', titlePg: false };
   const style = sectionStyleAt(ctx, input.chapter, input.first);
   // A composed page whose template prints no header or footer (#1444).

@@ -91,7 +91,9 @@ export function spansPage(ctx: WriterContext, node: Node): boolean {
  *  one (a left-hand start leaves a blank page in Word, as at a chapter's
  *  start); none when the heading does not break the page. */
 export function headingStart(ctx: WriterContext, b: ContentBlock): Piece['start'] {
-  if (b.type !== 'heading') return undefined;
+  // The plain design has one section a chapter: a chapter title opens its
+  // page by its style alone.
+  if (ctx.plain || b.type !== 'heading') return undefined;
   const bb = headingLevel(ctx, b)?.breakBefore;
   if (!bb?.enabled) return undefined;
   return bb.parity === 'odd' || bb.parity === 'always-odd' ? 'oddPage' : 'nextPage';

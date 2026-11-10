@@ -6,6 +6,12 @@
 // made in Word re-import into the exact Markdown and resource positions
 // (#1395). What Word cannot express travels as exact source text in
 // `ptx:raw` content controls.
+//
+// Two designs (#1458). `book`: the book's own, as far as flowing text
+// holds it. `plain`: content only, on an A4 page in Arial, the same parts
+// in the same styles and the same map; the writer is the same, set from a
+// neutral config (`plain/config.ts`), and the modules that draw a design
+// check `WriterContext.plain` where they start.
 
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { CONFIG_VERSION } from '../../bundle/configVersion/rules.js';
@@ -29,6 +35,7 @@ import { prepareScores } from './media/scores.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
 import { pageSettings } from './page/settings.js';
+import { plainConfig, plainResourceTypes } from './plain/config.js';
 import { multiColumn, pageGeometry } from './sections.js';
 import { StyleRegistry } from './styles.js';
 import { tablePictureIds } from './tables.js';
@@ -75,7 +82,14 @@ export const SEMANTIC_ENGINE = `postext-word-semantic/1 config/${CONFIG_VERSION}
 /** Write a book as a `.docx` with native Word structures: styles, lists,
  *  tables, notes and fields. */
 export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8Array> {
-  const resolved = resolveAllConfig(options.config);
+  // The book's own config, and the one the document is set from: the same,
+  // or in the plain design a neutral one that keeps what names and numbers
+  // the content.
+  const book = resolveAllConfig(options.config);
+  const plain = options.design === 'plain';
+  const resolved = plain ? plainConfig(book) : book;
+  // A plain document names system faces and embeds none.
+  const fonts = plain ? undefined : options.fonts;
   const units: Units = { dpi: resolved.page.dpi || 96, basePx: 16 };
   units.basePx = px(units, resolved.bodyText.fontSize) || 16;
   let chapterId: string | undefined;
@@ -100,8 +114,8 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   const geo = pageGeometry(resolved, units);
   const resources = new Map((options.resources ?? []).map((r) => [r.id, r]));
   // Numbers as the engine prints them (captions, `:ref`s, headings).
-  const numbers = bookNumbers(parsed, options.config, resolved, options.resources ?? [], options.start?.headings);
-  const resourceTypes = numbers.resourceTypes;
+  const numbers = bookNumbers(parsed, options.config, book, options.resources ?? [], options.start?.headings);
+  const resourceTypes = plain ? plainResourceTypes(numbers.resourceTypes) : numbers.resourceTypes;
   // Resources shown as blocks or floated by a `:ref`, whose pictures go
   // into the package.
   const floated = floatedResources(parsed, resources, resourceTypes);
@@ -113,13 +127,18 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     }
   }
   for (const id of floated) shown.add(id);
-  for (const id of designMediaIds(parsed, resolved, resources)) shown.add(id);
-  for (const id of composedMediaIds(parsed, resolved, resources)) shown.add(id);
+  // Of the pictures a design places, the plain design keeps the ones the
+  // Markdown names.
+  for (const id of designMediaIds(parsed, book, resources, plain)) shown.add(id);
+  for (const id of composedMediaIds(parsed, book, resources, plain)) shown.add(id);
   // Pictures set inside table cells (a bar chart in a results table).
   for (const id of tablePictureIds(resources, [...shown])) shown.add(id);
   let sdtId = 0;
   let footnoteId = 0;
-  const styles = new StyleRegistry(resolved, units, options.fonts);
+  const styles = new StyleRegistry(resolved, units, fonts, plain);
+  const bookGeo = plain ? pageGeometry(book, units) : geo;
+  // A plain document counts its pages from 1, whatever book it continues.
+  const start = plain ? (options.start?.headings ? { headings: options.start.headings } : undefined) : options.start;
   const ctx: WriterContext = {
     pkg,
     log: new FragmentLog(pkg),
@@ -128,7 +147,8 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     units,
     styles,
     numbering: new Numbering(resolved, units, (stack, weight, italic) => styles.font(stack, weight, italic)),
-    plan: options.fonts,
+    plan: fonts,
+    ...(plain ? { plain: { book, columnPx: bookGeo.columnPx, textAreaPx: multiColumn(bookGeo) ? (bookGeo.textTwips * units.dpi) / 1440 : bookGeo.columnPx } } : {}),
     resources,
     resourceTypes,
     resourceBytes: options.resourceBytes,
@@ -149,7 +169,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     nextSdtId: () => ++sdtId,
     nextFootnoteId: () => ++footnoteId,
     book: parsed,
-    ...(options.start ? { start: options.start } : {}),
+    ...(start ? { start } : {}),
     chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), headingNumbers: new Map(), blockCounter: 0 },
   };
   await prepareMedia(ctx, shown);
@@ -175,6 +195,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     version: 1,
     exportId,
     variant: 'semantic',
+    design: plain ? 'plain' : 'book',
     engine: SEMANTIC_ENGINE,
     createdAt,
     chapters: options.chapters.map((c) => ({ id: c.id, ...(c.title !== undefined ? { title: c.title } : {}), hash: hashText(c.markdown) })),
@@ -199,11 +220,11 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     core: { title: options.title, author: options.author, language: options.config.locale, date: createdAt },
     settings: {
       autoHyphenation: resolved.bodyText.hyphenation.enabled,
-      embedFonts: (options.fonts?.faces.length ?? 0) > 0,
+      embedFonts: (fonts?.faces.length ?? 0) > 0,
       evenAndOddHeaders: page.evenAndOddHeaders,
       extra,
     },
-    fonts: options.fonts?.faces,
+    fonts: fonts?.faces,
     exportMap: map,
   });
 }

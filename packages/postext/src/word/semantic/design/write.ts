@@ -6,14 +6,15 @@
 
 import type { ResolvedDesignElement, ResolvedDesignImageElement, ResolvedDesignRuleElement, ResolvedDesignTextElement } from '../../../types.js';
 import type { WriterContext } from '../context.js';
-import { pageGeometry } from '../sections.js';
+import { pageGeometry, type PageGeometry } from '../sections.js';
+import type { ResolvedConfig } from '../../../vdt.js';
 import type { Dimension } from '../../../types.js';
-import { hex, paragraph, px, type ParaProps } from '../wml.js';
+import { hex, paragraph, px, type ParaProps, type Units } from '../wml.js';
 import { backdropPicture, fillsPage, inlinePicture } from './placedPicture.js';
 import { columnSets, columnTable, type ColumnText } from './columns.js';
 import { partBodyChunks } from './partBody.js';
 import { bandInnerTwips, drawnRule, ruleParagraph, thinParagraph, withBands, type BandFoot, type Chunk } from './bands.js';
-import { covers, estimateBoxes, onSheet, readingOrder, type Box } from './geometry.js';
+import { covers, estimateBoxes, onSheet, readingOrder, type Box, type DesignFrames } from './geometry.js';
 import { paleOnWhite } from './ink.js';
 import { rowParagraph, sameLine, type RowPart } from './rows.js';
 import { designTextStyle, pillOnPicture } from './text.js';
@@ -55,23 +56,32 @@ type Item =
 
 type TextItem = Extract<Item, { kind: 'text' }>;
 
+/**
+ * The frames a design of a book set from `r` is placed against: the page,
+ * and the slot's container at the top of the text area (an opener) or
+ * wherever the heading stands, `minHeight` high. A vertical flow places
+ * its design in the flow's frame: the sheet turned a quarter, x running
+ * down it and y across it from the right.
+ */
+export function designFrames(r: ResolvedConfig, u: Units, minHeight: Dimension | undefined): { geo: PageGeometry; page: Box; textW: number; container: Box; vertical: boolean; flowPage: Box; frames: DesignFrames } {
+  const geo = pageGeometry(r, u);
+  const toPx = (tw: number): number => (tw * u.dpi) / 1440;
+  const page = { x: 0, y: 0, width: toPx(geo.widthTw), height: toPx(geo.heightTw) };
+  const textW = page.width - toPx(geo.margins.left + geo.margins.right);
+  const container = { x: toPx(geo.margins.left), y: toPx(geo.margins.top), width: textW, height: px(u, minHeight) || (u.dpi / 25.4) * 40 };
+  const vertical = r.layout.writingMode === 'vertical-rl';
+  const flowPage = vertical ? { x: 0, y: 0, width: page.height, height: page.width } : page;
+  const frames = vertical ? { page: flowPage, container: { x: toPx(geo.margins.top), y: toPx(geo.margins.right), width: page.height - toPx(geo.margins.top + geo.margins.bottom), height: container.height } } : { page, container };
+  return { geo, page, textW, container, vertical, flowPage, frames };
+}
+
 /** A design as Word blocks. */
 export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   const u = ctx.units;
   const rtl = ctx.resolved.direction === 'rtl';
-  // The frames: the page, and the slot's container at the top of the
-  // text area (an opener) or wherever the heading stands.
-  const geo = pageGeometry(ctx.resolved, u);
   const toPx = (tw: number): number => (tw * u.dpi) / 1440;
-  const page = { x: 0, y: 0, width: toPx(geo.widthTw), height: toPx(geo.heightTw) };
-  const textW = page.width - toPx(geo.margins.left + geo.margins.right);
-  const container = { x: toPx(geo.margins.left), y: toPx(geo.margins.top), width: textW, height: px(u, spec.minHeight) || (u.dpi / 25.4) * 40 };
+  const { geo, page, textW, container, vertical, flowPage, frames } = designFrames(ctx.resolved, u, spec.minHeight);
   const { elements, texts } = spec;
-  // A vertical flow places its design in the flow's frame: the sheet
-  // turned a quarter, x running down it and y across it from the right.
-  const vertical = ctx.resolved.layout.writingMode === 'vertical-rl';
-  const flowPage = vertical ? { x: 0, y: 0, width: page.height, height: page.width } : page;
-  const frames = vertical ? { page: flowPage, container: { x: toPx(geo.margins.top), y: toPx(geo.margins.right), width: page.height - toPx(geo.margins.top + geo.margins.bottom), height: container.height } } : { page, container };
   const boxes = estimateBoxes(elements, frames, u, (id) => texts.get(id) ?? '', ctx.resources, spec.imageId, rtl, vertical);
   // The fill under a piece: the last box painted under it.
   const bands = elements.filter((e) => e.kind === 'box' && hex(e.style.backgroundColor));
@@ -264,7 +274,8 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     let j = i + 1;
     while (j < order.length) {
       const next = order[j]!;
-      if (next.kind !== 'text' || bandOf(next.box)?.box !== band?.box || !sameLine(ctx, order[j - 1] as TextItem, next, container.width)) break;
+      // A text already set in a table of columns is not written again.
+      if (next.kind !== 'text' || inSet.has(j) || bandOf(next.box)?.box !== band?.box || !sameLine(ctx, order[j - 1] as TextItem, next, container.width)) break;
       j++;
     }
     const row = order.slice(i, j) as TextItem[];
@@ -366,14 +377,14 @@ const apart = (a: Box, b: Box): boolean => a.x + a.width <= b.x || b.x + b.width
  * under it in its column (the byline), not before them as top-to-bottom
  * order would have it.
  */
-function titleColumnFirst(order: Item[], dpi: number): Item[] {
+export function titleColumnFirst<T extends { box: Box; kind: string }>(order: T[], dpi: number): T[] {
   const at = order.findIndex((i) => i.kind === 'title');
   if (at < 0) return order;
   const title = order[at]!.box;
   const tol = (2 * dpi) / 25.4;
   // A column block: a text several lines (of about 5 mm) tall.
   const line = (5 * dpi) / 25.4;
-  const beside = (i: Item): boolean => i.kind === 'text' && apart(i.box, title) && Math.abs(i.box.y - title.y) <= tol && i.box.height > 3 * line;
+  const beside = (i: T): boolean => i.kind === 'text' && apart(i.box, title) && Math.abs(i.box.y - title.y) <= tol && i.box.height > 3 * line;
   const moved = order.slice(0, at).filter(beside);
   if (!moved.length) return order;
   const rest = order.filter((i) => !moved.includes(i));

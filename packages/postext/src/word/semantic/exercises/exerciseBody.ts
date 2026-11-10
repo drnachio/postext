@@ -348,14 +348,14 @@ function gridNote(input: ExerciseInput): string {
 }
 
 const GRID_NOTE: Record<string, string> = {
-  en: 'The grid is printed in the PDF and in the formatted .docx.',
-  es: 'La cuadrícula está en el PDF y en el .docx maquetado.',
-  ca: 'La quadrícula és al PDF i al .docx maquetat.',
-  fr: 'La grille figure dans le PDF et dans le .docx mis en page.',
-  de: 'Das Gitter steht im PDF und in der gesetzten .docx.',
-  it: 'La griglia è nel PDF e nel .docx impaginato.',
-  pt: 'A grade está no PDF e no .docx diagramado.',
-  zh: '方格见 PDF 和版式 .docx。',
-  ja: 'マス目は PDF と組版どおりの .docx にあります。',
-  ar: 'الشبكة في ملف PDF وفي ملف ‎.docx المُنسَّق.',
+  en: 'The grid is printed in the PDF.',
+  es: 'La cuadrícula está en el PDF.',
+  ca: 'La quadrícula és al PDF.',
+  fr: 'La grille figure dans le PDF.',
+  de: 'Das Gitter steht im PDF.',
+  it: 'La griglia è nel PDF.',
+  pt: 'A grade está no PDF.',
+  zh: '方格见 PDF。',
+  ja: 'マス目は PDF にあります。',
+  ar: 'الشبكة في ملف PDF.',
 };

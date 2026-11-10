@@ -21,7 +21,7 @@ import type { Resource, ResolvedDesignElement, ResolvedDesignTextElement } from 
 import type { ResolvedConfig } from '../../../vdt.js';
 import type { HeadingLook } from '../design/heading.js';
 import { withBands } from '../design/bands.js';
-import { designImageId } from '../design/pictures.js';
+import { designImageId, fromMarkdown } from '../design/pictures.js';
 import { designTextStyle } from '../design/text.js';
 import { designPlaceholders, headingLevelOf } from '../design/values.js';
 import { blockId, type WriterContext } from '../context.js';
@@ -68,7 +68,7 @@ function side(el: ResolvedDesignElement, title: string): 'above' | 'on' | undefi
 
 /** The pictures composed-page templates draw (their files go into the
  *  package with the figures'). */
-export function composedMediaIds(chapters: readonly { blocks: readonly ContentBlock[] }[], resolved: ResolvedConfig, resources: ReadonlyMap<string, Resource>): Set<string> {
+export function composedMediaIds(chapters: readonly { blocks: readonly ContentBlock[] }[], resolved: ResolvedConfig, resources: ReadonlyMap<string, Resource>, namedOnly = false): Set<string> {
   const out = new Set<string>();
   for (const ch of chapters) {
     for (const b of ch.blocks) {
@@ -77,7 +77,7 @@ export function composedMediaIds(chapters: readonly { blocks: readonly ContentBl
       const t = id ? templateOfConfig(resolved, id) : undefined;
       if (!t) continue;
       for (const el of decoration(t)) {
-        if (el.kind !== 'image') continue;
+        if (el.kind !== 'image' || (namedOnly && !fromMarkdown(el.resourceId))) continue;
         const res = resources.get(designImageId(el.resourceId, b.containerAttrs) ?? '');
         if (res && (res.kind === 'bitmap' || res.kind === 'svg')) out.add(res.id);
       }
@@ -177,17 +177,20 @@ export function pageOpener(ctx: WriterContext, page: ContentBlock, heading: Cont
   let head = '';
   for (const el of elements) {
     if (side(el, title) !== 'above') continue;
+    // The plain design keeps what the page's own attributes fill in.
+    if (ctx.plain && !fromMarkdown(el.kind === 'image' ? el.resourceId : el.kind === 'text' ? (el.content ?? '') : '')) continue;
     if (el.kind === 'image') {
       const res = designImageId(el.resourceId, attrs);
       if (res) head += picture(ctx, res);
     } else if (el.kind === 'text') {
       const text = textOf(ctx, el, heading, attrs);
       if (!/[\p{L}\p{N}]/u.test(text)) continue;
-      const style = designTextStyle(ctx, `page:${t.id}`, el, undefined, true, text);
+      const style = ctx.plain ? ctx.styles.custom(`design:page:${t.id}:${el.id}`, `Design page:${t.id} ${el.id}`, () => ({ pPr: { keepNext: true, ind: { firstLine: 0 } } })) : designTextStyle(ctx, `page:${t.id}`, el, undefined, true, text);
       head += paragraph({ style, jc: 'left' }, generatedRuns(ctx, [{ text }], `page:${el.id}`));
     }
   }
-  const fill = titleBand(ctx, t, title, elements);
+  // No band and no badge in the plain design: the heading as usual.
+  const fill = ctx.plain ? undefined : titleBand(ctx, t, title, elements);
   if (!head && !fill) return undefined;
   if (!fill) return head + write();
   const badge = badgeOf(elements, title);

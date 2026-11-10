@@ -127,12 +127,16 @@ function flatten(node: ContainerNode): ContentBlock[] {
 interface BoxLook {
   fill?: string;
   border?: string;
+  /** The one side the rule is drawn on, when not all round. */
+  startOnly?: 'left' | 'right';
   pad: { top: number; left: number; bottom: number; right: number };
 }
 
 /** The look of the box style an exercise style names (#1444), or a thin
  *  rule in `color` round the exercise when it names none. */
 function boxLook(ctx: WriterContext, box: ResolvedCalloutStyleConfig | undefined, color: string): BoxLook {
+  // The plain design: a thin rule beside the exercise, as beside a box.
+  if (ctx.plain) return { border: '000000', startOnly: ctx.resolved.direction === 'rtl' ? 'right' : 'left', pad: { top: 20, left: 160, bottom: 20, right: 0 } };
   if (!box) return { border: color, pad: { top: 100, left: 140, bottom: 100, right: 140 } };
   const u = ctx.units;
   const p = box.padding;
@@ -147,7 +151,7 @@ function boxLook(ctx: WriterContext, box: ResolvedCalloutStyleConfig | undefined
 /** A one-cell table drawn as `look` around `content`. */
 function boxTable(content: string, widthTwips: number, look: BoxLook): string {
   const w = Math.max(240, Math.round(widthTwips));
-  const side = (name: string): string => (look.border ? `<w:${name} w:val="single" w:sz="6" w:space="0" w:color="${look.border}"/>` : `<w:${name} w:val="nil"/>`);
+  const side = (name: string): string => (look.border && (!look.startOnly || look.startOnly === name) ? `<w:${name} w:val="single" w:sz="6" w:space="0" w:color="${look.border}"/>` : `<w:${name} w:val="nil"/>`);
   const shd = look.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${look.fill}"/>` : '';
   const { top, left, bottom, right } = look.pad;
   return (
@@ -218,7 +222,7 @@ export function renderExercise(ctx: WriterContext, node: ContainerNode, env: Blo
   const style = inPartStyle(ctx, node.container, pickExerciseStyle(s.settings.styles, ex.attrs.style));
   const book = s.settings.exercises;
   const placed = s.numbers.get(node.container.sourceStart) ?? { number: '', ordinal: 0 };
-  const rule = hex(style.number.background) ?? '808080';
+  const rule = ctx.plain ? '000000' : (hex(style.number.background) ?? '808080');
   const width = (env.widthTwips ?? ctx.textTwips) - 280;
   let cell = '';
   // The number leads the first paragraph of the instruction.

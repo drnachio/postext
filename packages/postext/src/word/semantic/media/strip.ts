@@ -43,9 +43,10 @@ export function renderStrip(ctx: WriterContext, b: ContentBlock, widthTwips: num
   const panels = comicPanels(b);
   const comics = resolveComicsConfig(ctx.config.comics, ctx.config.locale);
   const frame = comics.panel;
-  const ink = hex(frame.borderColor) ?? '000000';
-  const paper = hex(frame.background);
-  const line = `w:val="single" w:sz="${Math.min(96, Math.max(4, eighths(ctx.units, frame.borderWidth)))}" w:space="0" w:color="${ink}"`;
+  // The plain design frames each panel with a thin black rule.
+  const ink = ctx.plain ? '000000' : (hex(frame.borderColor) ?? '000000');
+  const paper = ctx.plain ? undefined : hex(frame.background);
+  const line = `w:val="single" w:sz="${ctx.plain ? 4 : Math.min(96, Math.max(4, eighths(ctx.units, frame.borderWidth)))}" w:space="0" w:color="${ink}"`;
   const shares = panelShares(b.comic?.attrs.split, Math.max(1, panels.length));
   const widths = shares.map((s) => Math.max(240, Math.floor(widthTwips * s)));
   let cells = '';

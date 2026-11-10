@@ -78,6 +78,9 @@ export interface ExportMap {
   version: 1;
   exportId: string;
   variant: ExportVariant;
+  /** The look of a flow document (#1458): the book's design, or content
+   *  only. Absent in files written before, and in the page facsimile. */
+  design?: 'book' | 'plain';
   /** postext version that wrote the file. */
   engine: string;
   createdAt: string;

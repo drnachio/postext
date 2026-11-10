@@ -238,7 +238,7 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       const icon = span.swatch.icon;
       const text = icon ? icon.alt || icon.glyph || '\u25A0' : '\u25A0';
       // A palette colour by its id, as the engine fills it (#1444).
-      const color = icon ? undefined : hex(resolveSwatchSpans([span], ctx.resolved.colorPalette)[0]!.swatch!.color);
+      const color = icon || ctx.plain ? undefined : hex(resolveSwatchSpans([span], ctx.resolved.colorPalette)[0]!.swatch!.color);
       const xml = textRuns(text, rPr({ ...runProps(base, STYLE.reference), color }));
       units.push({ kind: 'obj', p, xml, fmt: base, text, atom: { start: at, end: atomEnd(s.src, at, limit), kind: icon ? 'icon' : 'swatch' } });
     } else if (span.tab && s.src[at] !== '\t') {
