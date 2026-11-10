@@ -70,8 +70,18 @@ Conversion at `page.dpi` (default 300):
   alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process.
   A CMYK or PDF/X PDF prints it on its own plate (a `Separation` colour space); screens draw `hex`
   (the ink at its tint). Colours naming the same ink share a plate. A source's spot swatches map
-  here, on the palette entry; an SVG's `icc-named-color(…, "PANTONE 185 C")` or `data-spot` paints
-  find their ink in the print PDF on their own.
+  here, on the palette entry. In the print PDF an SVG colour prints on an ink only when it names
+  it (`icc-named-color(…, "PANTONE 185 C")`, or `data-spot="NAME"` with optional
+  `data-spot-tint="40"`) or when its hex is exactly a palette spot colour's (that ink at that
+  colour's tint); any other colour stays in process, a grey that looks like a tint included.
+  A source SVG exported without swatch names: give the palette one spot colour per tint it uses,
+  with exactly that hex, or add `data-spot` to the elements. `diagramStyle.singleInk` with a spot `inkColor` still prints the
+  recoloured drawing in tints of that plate. An ink an SVG names that no palette colour (nor an
+  `inks` entry with `cmyk`) defines prints on a plate of its own, alternate = the SVG colour's
+  CMYK, one plate per name, and the preflight warns (`spotInkUndefined`).
+- Screen hex of a spot colour: a print render knows colours by hex, so a spot colour that shares
+  its hex with another ink or a CMYK colour moves one step (1/255, blue channel first) on every
+  output; the stored config does not change. Give distinct inks distinct hexes anyway.
 - `paletteId`: link to `colorPalette[].id`. When the id exists, the palette entry's hex/model win;
   otherwise the inline hex is the fallback. Palette links are what `:::part{palette=…}` and
   `headingStyles[].palette` recolour (§14, §16). **Always write a sensible `hex` too.**
@@ -2674,8 +2684,14 @@ as a change. Left out, the file is stamped with the time of the call.
   `rgbImage`, `thinRule` (< `minRuleWidth`), `smallProcessText` (< `smallTextSize` in more than one ink; K-only black
   never counts), `inkLimit` (TAC over the limit), `safeZone` (text within `safeZone` of the trim; figure labels
   count), `nearTrim` (a box or picture ending within `bleedSnap` of the trim without bleeding), `spotInks` (info:
-  the job's spot inks), `spotInkConflict` (one ink with two alternates), `spotInkName` (`All`/`None` or over 127
-  bytes), `spotInkSimilar` (names that differ only in case or spacing: merge them with `aliases`). Fix the critical ones.
+  the job's spot inks, those the SVGs name included), `spotInkConflict` (one ink with two alternates),
+  `spotInkUndefined` (an ink only an SVG names, with no palette colour or `inks` entry with `cmyk`:
+  add one, or alias it to the palette's ink), `spotInkName` (`All`/`None`, a process plate name
+  `Cyan`/`Magenta`/`Yellow`/`Black` in any case, control characters, or over 127 UTF-8 bytes; `written` is the
+  name the PDF uses instead: `All ink`, control characters dropped, a long name cut with a short hash; set
+  `pdfName` in `inks` to choose it), `spotInkSimilar` (names that differ only in case or spacing: merge them
+  with `aliases`). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
 `contrast` (postext ≥ 1.28; layout ignores it, out of the layout key) is the check that the text reads on its ground:

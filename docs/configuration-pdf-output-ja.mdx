@@ -6,7 +6,7 @@ export const metadata = {
   description: 'コードから使うpostext-pdf：インストール、API、ブラウザーとNodeのフォントプロバイダー、CJKフォント、リソースのバイト列、縦組み、ワーカー、印刷入稿用のファイル',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '29分',
+  readingTime: '30分',
   order: 22,
   parent: 'configuration',
   plainSummary: "このページは、プログラムを書いてPDFファイルを作りたい人向けです。PDFのパッケージをインストールし、組み上がった本を数行でファイルにする方法を示します。このパッケージにはフォントのファイルが必要なので、ブラウザーでもサーバーでも、それを渡す方法を説明します。中国語、日本語、韓国語のフォント、画像、縦組みの文章、リンクも扱います。最後に、全体を通した例と、印刷所に渡せるファイルを示します。",
@@ -37,7 +37,7 @@ npm install postext postext-pdf
 - **`PdfFontProvider`** — `renderToPdf`が新しいファミリー・ウェイト・スタイルの組み合わせを埋め込む必要があるときに、フォントのバイト列を要求するために使うコールバックのシグネチャ`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`です。`request.codePoints`には、ページがそのフェイスで組む文字が入ります。返すのは1つのファイルか、合わせて1つのフェイスになる複数のファイルです（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照）。
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** — ページでの宣言のしかたを記録したフェイスのファイルです。記録するのは、`@font-face`規則の`unicode-range`と、宣言順での位置です。`PdfFontFile`は、この2つの省略可能なプロパティを加えた`Uint8Array`です（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照。postext-pdf 1.30以降）。
 - **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`は、フォームフィールドでの数値の書き方（通貨、その位置、区切り記号）と、値を表示するフェイス（`font`）を指定します（[フォームフィールド](#フォームフィールド)を参照）。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。`date`（`Date`、ミリ秒の時刻、または日付の文字列。`createBundle`の`mtime`と同じ型）は、ファイルの作成日と更新日になります。PDF/XではXMPパケットの日付にもなり、文書IDもここから求めます。同じ文書を同じ`date`で2回書き出すと、バイト列は一致します。省略時は呼び出した時刻が入ります。無効な日付はエラーになります。
-- **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
+- **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'spotTintsExhausted'`（`PdfPrintWarning`）は、レンダリングが特色の濃度を区別するコード（約2,500万）を使い切り、残りをプロセスカラーで刷ったことを示します。`'spotInkRenamed'`（`PdfPrintWarning`）は、インキの版を別の名前で書き出したことを示します（[特色](#特色)を参照）。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — PDFの印刷用マスターの1ページ目を読み、埋め込まずに使っているフォント（`nonEmbeddedFonts`）、RGBで描いているか（`rgb`）、透明効果を使っているか（`transparency`）を報告します。[プリフライト](/ja/docs/configuration-fonts-colors-viewers#プリフライト)が使います。
 - **`decompressWoff2(bytes): Uint8Array`** — WOFF2ファイルを、`pdf-lib`がそのまま埋め込める形式であるTTFのバイト列に変換するヘルパーです。
 - **`createPdfWorker(options?)`**（`postext-pdf/worker`から） — 同じ描画をWeb Workerで行います。[ワーカーでPDFを描画する](#ワーカーでpdfを描画する)を参照してください。
@@ -426,11 +426,11 @@ colorPalette: [
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
 
-プリフライトは特色を1インキとして数え、総インキ量の上限から除外し、作業で使う特色を一覧にします。また、同じインキが異なる値で2回定義されているとき（PDFは最初の定義を使います）、版名がPDFの予約名（`All`、`None`）であるか127バイトを超えるとき、2つの版名が大文字小文字やスペースの違いしかないとき（`PANTONE 185 C` と `Pantone  185 C` は2つの版になります）に警告します。
+プリフライトは特色を1インキとして数え、総インキ量の上限から除外し、作業で使う特色を一覧にします（`spotInks`）。SVG画像が名前で指定するインキも含みます。また、次の場合に警告します。同じインキが異なる値で2回定義されているとき（`spotInkConflict`。PDFは最初の定義を使います）、SVGが指定するインキをパレットの色も `cmyk` を持つインキ表のエントリーも定義していないとき（`spotInkUndefined`。そのインキは専用の版に刷られ、SVGの色のCMYKが代替値になります。版は名前ごとに1つです）、PDFが版名を書き換える必要があるとき（`spotInkName`。下記参照）、2つの版名が大文字小文字やスペースの違いしかないとき（`spotInkSimilar`。`PANTONE 185 C` と `Pantone  185 C` は2つの版になります）。`preflightDocument` は、SVGがどのインキを指定しているかを `svgInks(fileId)` から知ります。これは `svgSpotInks(markup)` がファイル内で見つけた名前を返す関数で、Sandboxの**検査**パネルと `postext check` が渡します。
 
-**版名。** 名前は入力したとおりに書き出されます。アクセント、記号、`#` はUTF-8でPDFに入り（`Rojo Médica` は `/Rojo#20M#C3#A9dica`）、Acrobat、RIP、印刷所のプリフライトもそのように読みます。
+**版名。** 名前は入力したとおりに書き出されます。アクセント、記号、`#` はUTF-8でPDFに入り（`Rojo Médica` は `/Rojo#20M#C3#A9dica`）、Acrobat、RIP、印刷所のプリフライトもそのように読みます。版が持てない名前は、別の名前で書き出されます。`All`、`None`、`Cyan`、`Magenta`、`Yellow`、`Black`（大文字小文字を問わず）には後ろに ink という語が付き（`All ink`）、制御文字は取り除かれ、UTF-8で127バイトを超える名前は文字の境目で切られて短いハッシュで終わります。そのため、先頭が同じ2つの長い名前も2つの版のままです。プリフライトの `spotInkName` は理由（`problem`：`reserved`、`process`、`control`、`tooLong`）とPDFが書き出す名前（`written`）を示し、レンダリングは名前を変えるたびに `onWarning` で知らせます（`spotInkRenamed`）。名前を自分で決めるには、インキ表でそのインキに `pdfName` を指定します。
 
-**1色に1インキ。** 印刷用のレンダリングは色を画面上のhexで識別するため、印刷値を指定する2つの色（2つのインキ、またはインキとCMYKで定義した色）は同じhexを共有できません。共有している場合、後の色は1段階離れた最も近い空きhexへ移され（画面上では見分けられません）、それぞれが自分の版で刷られます。特色と同じhexを持つ通常の画面色（`model: 'hex'`）はその特色として刷られます。明示するには、パレットのエントリーにリンクしてください。
+**1色に1インキ。** 印刷用のレンダリングは色を画面上のhexで識別するため、印刷値を指定する2つの色（2つのインキ、またはインキとCMYKで定義した色）は同じhexを共有できません。共有している場合、後の色は1段階離れた最も近い空きhexへ移され（画面上では見分けられません）、それぞれが自分の版で刷られます。特色と同じhexを持つ通常の画面色（`model: 'hex'`）はその特色として刷られます。明示するには、パレットのエントリーにリンクしてください。移された色は画面上でも変わります。1つのチャンネルで1段階（1/255）、まず青のチャンネルから、すべての出力（Canvas、HTML、EPUB、RGBのPDF）で変わります。目で見分けられる差よりはるかに小さく、印刷用のレンダリングが塗られたhexからインキを読み取るための代償です。保存された設定は変わりません。
 
 #### インキ表
 
@@ -448,6 +448,8 @@ interface PrintInk {
 ```
 
 名前と別名は、大文字小文字と連続するスペースを区別せずに照合されます。インキを使う色がいくつあっても、名前の変更は1行で済みます。別名は、デザイナーのスウォッチ、SVG（`data-spot`、`icc-named-color`）、以前のパレットが同じインキに付けていた名前を1つの版にまとめます。`output: 'process'` は、印刷機にそのインキのユニットがないとき、すべての濃度を含めてインキをCMYKで刷ります。
+
+Sandboxでは、この表は**デザイン › 書き出し › 印刷の準備 › インキ表**にあります。インキごとにカードが1枚あり、**インキ名**、**別名**、**PDFでの版名**、**刷り方**、**代替CMYK**、**オーバープリント**を設定します。**色が使っているインキ**には、本の色が使っていて表にないインキが並び、それぞれのボタンで表に加えられます。
 
 ```ts
 print: {
