@@ -284,3 +284,26 @@ describe('calculations with numbers and check boxes', () => {
     expect(pdf.getForm().getTextField('order.total').getText()).toBeUndefined();
   });
 });
+
+describe('field names the PDF cannot hold', () => {
+  it('drops the field with a warning and still writes the document', async () => {
+    const md = [
+      'A :chip[ ]{style="field" field="order"}',
+      '',
+      'B :chip[ ]{style="field" field="order.qty" kind="number"}',
+      '',
+      'C :chip[ ]{style="field" field="a..b"}',
+      '',
+      'D :chip[ ]{style="field" field="ok"}',
+    ].join('\n');
+    const warnings: PdfWarning[] = [];
+    const bytes = await renderToPdf(buildDocument({ markdown: md }, config), { fontProvider, onWarning: (w) => warnings.push(w) });
+    const names = (await PDFDocument.load(bytes)).getForm().getFields().map((f) => f.getName());
+    expect(names).toContain('order');
+    expect(names).toContain('ok');
+    expect(names).not.toContain('a..b');
+    const messages = warnings.filter((w) => w.kind === 'formField').map((w) => (w as { message: string }).message);
+    expect(messages.some((m) => m.includes('"order.qty" cannot be written'))).toBe(true);
+    expect(messages.some((m) => m.includes('"a..b" cannot be written'))).toBe(true);
+  });
+});

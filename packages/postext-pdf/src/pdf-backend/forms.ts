@@ -67,7 +67,12 @@ export class FormFieldRegistry {
   async finalize(pdfDoc: PDFDocument, style: FormNumberStyle, fonts: FormFonts): Promise<void> {
     if (this.placements.length === 0) return;
     const form = pdfDoc.getForm();
-    const { separatorStyle: sep, currency, currencyBefore: before } = style;
+    // The style is the caller's, not the document's, but it is written into
+    // the format scripts: a separator style is one of Acrobat's 0–4, the
+    // currency's side a boolean.
+    const sep = Math.min(4, Math.max(0, Math.trunc(Number(style.separatorStyle)) || 0));
+    const before = style.currencyBefore === true;
+    const { currency } = style;
     const byName = new Map<string, { spec: FieldSpec; field: PDFField; value: string; font?: PDFFont }>();
 
     for (const p of this.placements) {
@@ -79,35 +84,41 @@ export class FormFieldRegistry {
       // A field has one face, its first chip's: every widget shows it. A
       // check box shows no text.
       const font = known ? known.font : p.field.kind === 'checkbox' ? undefined : await fonts.fontFor(p.fontString);
-      const [x1, y1, x2, y2] = p.rect;
-      const box = { x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1),
-        borderWidth: 0, borderColor: undefined, backgroundColor: undefined, ...(font ? { font } : {}) };
-      const size = Math.max(4, p.sizePt);
-      if (p.field.kind === 'checkbox') {
-        const cb = (known?.field as ReturnType<typeof form.createCheckBox>) ?? form.createCheckBox(p.field.name);
-        cb.addToPage(p.page, { ...box, textColor: undefined });
-        if (!known) byName.set(p.field.name, { spec: p.field, field: cb, value: p.value, font });
-        continue;
-      }
-      if (p.field.kind === 'choice') {
-        const dd = (known?.field as ReturnType<typeof form.createDropdown>) ?? form.createDropdown(p.field.name);
-        if (!known) {
-          dd.setOptions(p.field.options ?? []);
-          if (p.value && (p.field.options ?? []).includes(p.value)) dd.select(p.value);
+      try {
+        const [x1, y1, x2, y2] = p.rect;
+        const box = { x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1),
+          borderWidth: 0, borderColor: undefined, backgroundColor: undefined, ...(font ? { font } : {}) };
+        const size = Math.max(4, p.sizePt);
+        if (p.field.kind === 'checkbox') {
+          const cb = (known?.field as ReturnType<typeof form.createCheckBox>) ?? form.createCheckBox(p.field.name);
+          cb.addToPage(p.page, { ...box, textColor: undefined });
+          if (!known) byName.set(p.field.name, { spec: p.field, field: cb, value: p.value, font });
+          continue;
         }
-        dd.addToPage(p.page, box);
-        dd.setFontSize(size);
-        if (!known) byName.set(p.field.name, { spec: p.field, field: dd, value: p.value, font });
-        continue;
+        if (p.field.kind === 'choice') {
+          const dd = (known?.field as ReturnType<typeof form.createDropdown>) ?? form.createDropdown(p.field.name);
+          if (!known) {
+            dd.setOptions(p.field.options ?? []);
+            if (p.value && (p.field.options ?? []).includes(p.value)) dd.select(p.value);
+          }
+          dd.addToPage(p.page, box);
+          dd.setFontSize(size);
+          if (!known) byName.set(p.field.name, { spec: p.field, field: dd, value: p.value, font });
+          continue;
+        }
+        const tf = (known?.field as ReturnType<typeof form.createTextField>) ?? form.createTextField(p.field.name);
+        if (!known) {
+          if (p.field.multiline) tf.enableMultiline();
+          tf.setAlignment(p.field.kind === 'number' ? TextAlignment.Right : TextAlignment.Left);
+        }
+        tf.addToPage(p.page, box);
+        tf.setFontSize(size);
+        if (!known) byName.set(p.field.name, { spec: p.field, field: tf, value: p.value, font });
+      } catch (err) {
+        // A name the PDF cannot hold (`a..b`, or `order` beside `order.qty`)
+        // loses its field, not the whole document.
+        this.warnings.push(`form field "${p.field.name}" cannot be written: ${err instanceof Error ? err.message : String(err)}`);
       }
-      const tf = (known?.field as ReturnType<typeof form.createTextField>) ?? form.createTextField(p.field.name);
-      if (!known) {
-        if (p.field.multiline) tf.enableMultiline();
-        tf.setAlignment(p.field.kind === 'number' ? TextAlignment.Right : TextAlignment.Left);
-      }
-      tf.addToPage(p.page, box);
-      tf.setFontSize(size);
-      if (!known) byName.set(p.field.name, { spec: p.field, field: tf, value: p.value, font });
     }
 
     // Every widget's appearance, in its field's face (so pdf-lib draws none

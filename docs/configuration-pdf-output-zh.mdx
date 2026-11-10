@@ -36,7 +36,7 @@ npm install postext postext-pdf
 - **`renderToPdf(doc, options): Promise<Uint8Array>`**：接收一个`VDTDocument`（或一本书各章组成的数组），返回原始的PDF字节。
 - **`PdfFontProvider`**：回调签名`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`，`renderToPdf`需要嵌入新的family/weight/style组合时，用它请求字体字节。`request.codePoints`包含页面中用该字体排出的字符；返回值是一个文件，或者合起来构成该字体的多个文件（见[中文、日文和韩文字体](#中文日文和韩文字体)）。
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`**：一种字体的一个文件，并说明页面怎样声明它：它的`@font-face`规则的`unicode-range`，以及这条规则在声明顺序里的位置。`PdfFontFile`是带这两个可选属性的`Uint8Array`（见[中文、日文和韩文字体](#中文日文和韩文字体)）。postext-pdf 1.30起。
-- **`RenderToPdfOptions`**：`{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](/zh/docs/configuration-fonts-colors-viewers#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](/zh/docs/configuration-east-asian#字格)）。`harfbuzzWasm`指定含从右向左或连写文字的文档从哪里加载HarfBuzz的`harfbuzz.wasm`（URL，相对于页面；或文件字节）；省略时先找postext-pdf模块旁的副本，再依次找jsDelivr和esm.sh上同一版本的harfbuzzjs。`print`接收印刷输出设置（PDF/X标准、输出特性文件、黑色处理、印前检查），省略时取文档的`print`；设定PDF/X标准或`colorSpace: 'cmyk'`时，所有颜色都经ICC输出特性文件分色，其字节由`outputProfile`给出（否则从`profileBaseUrl`下载，默认是npm CDN上postext的`icc/`文件夹）。`date`（`Date`、毫秒时间戳或日期字符串，与`createBundle`的`mtime`同类型）是文件的创建日期和修改日期；在PDF/X文件中，它还是XMP数据包里的日期，文档标识也由它算出：同一份文档用同一个`date`生成两次，得到的字节完全相同。省略时，文件记下调用时的时间。日期无效时抛出错误。
+- **`RenderToPdfOptions`**：`{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`设定表单域怎样书写数字（货币符号、它放在哪一侧、分隔符），以及显示值所用的字体（`font`；见[表单域](#表单域)）。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](/zh/docs/configuration-fonts-colors-viewers#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](/zh/docs/configuration-east-asian#字格)）。`harfbuzzWasm`指定含从右向左或连写文字的文档从哪里加载HarfBuzz的`harfbuzz.wasm`（URL，相对于页面；或文件字节）；省略时先找postext-pdf模块旁的副本，再依次找jsDelivr和esm.sh上同一版本的harfbuzzjs。`print`接收印刷输出设置（PDF/X标准、输出特性文件、黑色处理、印前检查），省略时取文档的`print`；设定PDF/X标准或`colorSpace: 'cmyk'`时，所有颜色都经ICC输出特性文件分色，其字节由`outputProfile`给出（否则从`profileBaseUrl`下载，默认是npm CDN上postext的`icc/`文件夹）。`date`（`Date`、毫秒时间戳或日期字符串，与`createBundle`的`mtime`同类型）是文件的创建日期和修改日期；在PDF/X文件中，它还是XMP数据包里的日期，文档标识也由它算出：同一份文档用同一个`date`生成两次，得到的字节完全相同。省略时，文件记下调用时的时间。日期无效时抛出错误。
 - **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；`'complexShapingUnavailable'`（`PdfComplexShapingWarning`），HarfBuzz未能加载（`reason`列出查找过的位置），从右向左或连写的文字没有经它成形，阿拉伯文的标音符号位置不对；`'outputProfileUnavailable'`（`PdfPrintWarning`），CMYK渲染无法加载输出特性文件，改用教科书公式换算；`'pageNegativeIgnored'`（`PdfPrintWarning`），PDF/X-1a文件中略去了页面负片；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**：读取PDF印刷母版的第一页，报告它用到但没有嵌入的字体（`nonEmbeddedFonts`）、它是否用RGB绘制（`rgb`），以及是否使用透明（`transparency`），供[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)使用。
 - **`decompressWoff2(bytes): Uint8Array`**：辅助函数，把WOFF2文件转成TTF字节，`pdf-lib`可以直接嵌入这种格式。
@@ -294,6 +294,31 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 - **阅读器**：Acrobat、Preview、Chrome（PDFium）、pdf.js和Poppler都能渲染竖排字体。右翻（右侧装订）的书（`page.binding`）还会请求阅读器从右向左排列跨页（`/Direction /R2L`、`/PageLayout /TwoPageRight`）；Acrobat和Foxit照办，Chrome不会。
 
 一个用Noto Serif TC（书中用到的字符，TrueType）排的43页章节约为820 KB，其中大部分是两个字体子集。
+
+### 表单域
+
+带`field`属性的行内标签就是一个可填写的表单域（AcroForm）。它和其他行内标签一样排版、绘制底框：样式决定外观和最小宽度（`minWidth`），标签里的文字是表单域的默认值。PDF在底框上放一个交互式表单域；同一个名称用两次，就是一个表单域带两个控件（widget）。
+
+```md
+数量 :chip[ ]{style="field" field="pos.a.qty" kind="number"}
+单价 :chip[120]{style="field" field="pos.a.price" format="currency"}
+小计 :chip[ ]{style="field" field="pos.a.total" format="currency" calc="product(pos.a.qty, pos.a.price)"}
+服务 :chip[ ]{style="box" field="pkg.a" kind="checkbox" on="1"}
+订单总额 :chip[ ]{style="field" field="order.total" format="currency" calc="sum(pos.a.total, product(pkg.a, 161.75))"}
+尺码 :chip[M]{style="field" field="size" kind="choice" options="S|M|L"}
+```
+
+- `kind`：`text`（默认）、`number`、`checkbox`、`choice`（配合`options`，选项之间用`|`分隔）。
+- `on`（复选框）：复选框选中状态的名称，也就是选中时脚本读到的值。设为`on="1"`时，选中的复选框在计算中算作1，所以`product(pkg.a, 161.75)`会在选中时加上一笔固定价格。默认值是`Yes`，计算时算作0。
+- `format`：`currency`、`decimal`（两位小数）、`integer`。写成Acrobat的`AFNumber_Format`和`AFNumber_Keystroke`，使用文档语言的分隔符（德语为`1.234,56`），除非`RenderToPdfOptions.forms.separatorStyle`另行指定；货币符号取`forms.currency`（默认`€`），放在数字前面，除非`forms.currencyBefore`为`false`。默认值绘制时已经过格式化。
+- `calc`：`sum(…)`、`product(…)`、`min(…)`、`max(…)`或`avg(…)`。参数可以是按名称引用的其他表单域、数字（小数点用英文句点，如`161.75`）和嵌套计算，例如`sum(pos.a.total, pos.b.total, product(pkg.a, 161.75))`。只涉及表单域的计算写成`AFSimple_Calculate`。含数字或嵌套计算的，则单独写成一段简短的Calculate脚本，它以同样的方式读取每个表单域（对其值调用`AFMakeNumber`；不是数字的算作0），并把结果舍入到六位小数。计算得出的表单域是只读的，计算顺序会照顾到它读取的所有表单域，嵌套计算里读取的也算在内。以下情况会给出`formField`警告：计算读取了未知的表单域（算作0）、循环引用、同一名称用于两种类型，以及计算中的复选框的`on`值不是数字（始终算作0）。
+- `readonly`、`required`、`multiline`、`tooltip`：含义如其名称。
+
+表单域用其行内标签的字体（`forms.font: 'chip'`，默认）显示自己的值和用户输入的内容，也可以用`forms.font`指定的文档字体（`{ family, weight?, style? }`，和其他字体一样向`fontProvider`请求）。这个字体**整体**嵌入，而不是嵌入子集，因为子集里没有之后输入的字符的字形；不论多少个表单域使用它，都只嵌入一次，在表单的默认资源（`/DR`）和每个表单域的默认外观（`/DA`）中按名称引用，默认值也用它绘制。整体嵌入的字体会把完整文件加进PDF（拉丁文正文字体通常为50–300 KB，CJK字体为数MB），页面文字所用的子集另算。字体提供函数可以返回TrueType、OpenType或WOFF2（嵌入前解压）。字体无法整体嵌入时，表单域改用Helvetica，并给出`formField`警告。这包括：许可禁止嵌入（OS/2的`fsType`为受限或仅限位图）、提供函数把它分成多个文件返回（切片字体），或者格式是WOFF或字体集合。设为`forms.font: 'helvetica'`时使用Helvetica，不嵌入任何字体。有些阅读器（例如macOS的“预览”）用自己的字体绘制正在输入的文字；值本身不变。
+
+Acrobat、Foxit、pdf.js（Firefox）和大多数阅读器都会运行这些脚本。印刷标准（PDF/X）不允许交互式表单域，因此值作为文字绘制，数字表单域的值按表单中的显示方式绘制（已格式化，在样式自身的`paddingX`之内对齐到底框末端，使用行内标签的颜色）。
+
+canvas以同样方式绘制数字表单域，因此预览与PDF一致：向`renderPageToCanvas`（或`renderPage`、`renderToCanvas`）传入与`renderToPdf`相同的`forms`选项；两者的分隔符默认都取自文档的`locale`（没有时取其断词语言）。数字在各处都按同一套规则书写，postext把它导出给其他输出格式使用：`formNumberStyle(forms, lang)`解析选项，`formatFieldNumber(value, format, style)`格式化一个值（不是数字的文本返回undefined），`numberFieldText(field, words, style)`给出绘制出的数字表单域显示的内容。显示列表把表单域放在行内标签的文字段上（`inline.field`，带有排版得出的`sizePx`和`padPx`）。
 
 ### PDF中的链接
 
