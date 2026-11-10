@@ -8,7 +8,9 @@ import { cjkGridCells } from '../pipeline/text/cjkGrid.js';
 import { renderBlock } from './blockRender.js';
 import { renderHeaderFooterSlot } from './headerFooter.js';
 import { documentInkHex } from '../svg/singleInk.js';
-import { shapingLanguageOf } from '../hyphenation/locale.js';
+import { documentLanguageOf, shapingLanguageOf } from '../hyphenation/locale.js';
+import { setFieldNumberStyle } from './chip.js';
+import { formNumberStyle, type FormNumberOptions } from '../parse/formFields.js';
 import { setSegmentLanguages } from './wordRuns.js';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock.js';
 import { restoreLinkPaint, setLinkPaint } from './blockRender/linkPaint.js';
@@ -70,6 +72,10 @@ export interface RenderPageOptions {
   /** The output the page is painted for, which decides whether its links
    *  take `links.style` (#1402): `'canvas'` (the default) or `'folio'`. */
   output?: 'canvas' | 'folio';
+  /** How form fields write numbers (#1445): the same option as
+   *  `renderToPdf`'s `forms`, so the preview shows what the PDF's form
+   *  does. Separators default from the document language. */
+  forms?: FormNumberOptions;
 }
 
 /** How far the painted area sits inside the sheet: the trim offset when
@@ -87,6 +93,7 @@ export function renderPageToCanvas(
 ): void {
   const previousTint = setTintUnflagged(options?.singleInk === true);
   const previousLinks = setLinkPaint(doc.config?.links, options?.output ?? 'canvas');
+  const previousFields = setFieldNumberStyle(formNumberStyle(options?.forms, documentLanguageOf(doc.config)));
   try {
     const onWarning = options?.onWarning;
     if (!onWarning) {
@@ -107,6 +114,7 @@ export function renderPageToCanvas(
   } finally {
     setTintUnflagged(previousTint);
     restoreLinkPaint(previousLinks);
+    setFieldNumberStyle(previousFields);
   }
 }
 

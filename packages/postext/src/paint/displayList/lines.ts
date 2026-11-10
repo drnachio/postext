@@ -120,7 +120,7 @@ function annotate(run: DisplayRun, seg: VDTLineSegment): void {
   const ann = (a: VDTAnnotationRun): DisplayAnnotation => ({ text: a.text, dx: a.dx, dy: a.dy, fontString: a.fontString, ...(a.color ? { color: a.color } : {}) });
   if (seg.ruby) {
     const r = seg.ruby;
-    run.ruby = { text: r.text, fontString: r.fontString, position: r.position, ...(r.group ? { group: true } : {}), ...(r.id !== undefined ? { id: r.id } : {}), ...(r.color ? { color: r.color } : {}), ...(r.runs[0] ? { raise: -r.runs[0].dy } : {}) };
+    run.ruby = { text: r.text, fontString: r.fontString, position: r.position, ...(r.group ? { group: true } : {}), ...(r.id !== undefined ? { id: r.id } : {}), ...(r.color ? { color: r.color } : {}), ...(r.runs[0] ? { raise: -r.runs[0].dy, runs: r.runs.map(ann) } : {}) };
   }
   if (seg.tcy) run.tcy = true;
   if (seg.orientation) run.orientation = seg.orientation;
@@ -132,6 +132,20 @@ function annotate(run: DisplayRun, seg: VDTLineSegment): void {
     const k = seg.kunten;
     run.kunten = { runs: k.runs.map((r) => ({ ...ann(r), role: r.role })), ...(k.tate ? { tate: { ...k.tate } } : {}), ...(k.color ? { color: k.color } : {}) };
   }
+}
+
+/** A space between two words of one struck or underlined run
+ *  (`~~old price~~`, `++sign here++`): the measurer stamps only the words,
+ *  and a writer that sets the line as runs (Word) would break the line at
+ *  the space. */
+function markedSpace(segs: readonly VDTLineSegment[], i: number, key: 'strike' | 'underline'): boolean {
+  const seg = segs[i]!;
+  if (seg.kind !== 'space') return false;
+  const before = segs[i - 1]?.[key];
+  const after = segs[i + 1]?.[key];
+  if (!before || !after || before.id !== after.id) return false;
+  const reachesEnd = before.to === undefined || before.to >= segmentShownText(segs[i - 1]!).length;
+  return reachesEnd && (after.from === undefined || after.from === 0);
 }
 
 /** The runs of a line set from `setting`: x per segment (in `order` when
@@ -162,12 +176,13 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
     if (seg.script) run.script = seg.script;
     if (seg.baselineShift) run.baselineShift = -seg.baselineShift;
     if (seg.href !== undefined) run.href = seg.href;
-    if (seg.strike && seg.strike.from === undefined) run.strike = true;
-    if (seg.underline && seg.underline.from === undefined) run.underline = true;
+    if ((seg.strike && seg.strike.from === undefined) || markedSpace(segs, i, 'strike')) run.strike = true;
+    if ((seg.underline && seg.underline.from === undefined) || markedSpace(segs, i, 'underline')) run.underline = true;
     if (seg.footnoteId !== undefined) run.footnoteId = seg.footnoteId;
     if (seg.refResourceId !== undefined) run.refTarget = { id: seg.refResourceId, ...(seg.refAnchor ? { anchor: true } : {}) };
     if (seg.pageLink !== undefined) run.pageLink = seg.pageLink;
     if (seg.rtl) run.rtl = true;
+    if (seg.leader) run.leader = true;
     annotate(run, seg);
     if (seg.kind === 'space') {
       if (setting.spaceWidth !== undefined && !(composed && seg.autospace)) run.space = true;
@@ -176,7 +191,10 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
       run.inline = { kind: 'math', ...(m.svg ? { svg: m.svg } : {}), widthPx: seg.width, heightPx: m.heightPx, ascentPx: m.ascentPx };
     } else if (seg.kind === 'score' && seg.scoreSystem) {
       const s = seg.scoreSystem;
-      run.inline = { kind: 'score', ...(s.svg ? { svg: s.svg } : {}), widthPx: seg.width, heightPx: s.heightPx };
+      // Scaled to the segment's width and standing wholly on the baseline,
+      // as the painters draw a system (canvas-backend/scoreRender.ts).
+      const k = s.widthPx > 0 ? seg.width / s.widthPx : 1;
+      run.inline = { kind: 'score', ...(s.svg ? { svg: s.svg } : {}), widthPx: seg.width, heightPx: s.heightPx * k, ascentPx: s.heightPx * k };
     } else if (seg.kind === 'swatch') {
       // The ink is the block's text colour, as the painters outline it.
       run.inline = { kind: 'swatch', widthPx: seg.width, heightPx: seg.swatch?.side ?? seg.width, swatch: swatchPaint(seg.swatch, style.color) };

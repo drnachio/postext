@@ -7,7 +7,7 @@
 // running, when both write the same OMML. Only a changed equation replaces
 // its source.
 
-import { isTexToOmmlReady, texToOmml } from '../ommlWrite/index.js';
+import { isTexToOmmlReady, texToDisplayOmml, texToOmml } from '../ommlWrite/index.js';
 
 /** The TeX inside a source equation (`$…$`, `$$…$$`, `\(…\)`, `\[…\]`). */
 export function texOfSource(source: string): { tex: string; display: boolean } {
@@ -31,12 +31,31 @@ export function normalizeTex(tex: string): string {
   return t.replace(/\u0001/g, ' ');
 }
 
+/** An equation number in TeX (`\tag{1}`, `\tag*{A}`), braces nested one
+ *  level deep. */
+const TAG = /\\tag\*?\s*\{(?:[^{}]|\{[^{}]*\})*\}/;
+
+/** `tex` without its equation number. The writer sets the number beside
+ *  the equation, outside the OMML, so the TeX Word gives back has none. */
+export const stripTag = (tex: string): string => tex.replace(TAG, '');
+
+const omml = (tex: string, display: boolean): string | null =>
+  display ? (texToDisplayOmml(stripTag(tex))?.omml ?? null) : texToOmml(tex, false);
+
 export function mathUnchanged(source: string, tex: string): boolean {
   const orig = texOfSource(source);
-  if (normalizeTex(orig.tex) === normalizeTex(tex)) return true;
+  if (normalizeTex(stripTag(orig.tex)) === normalizeTex(stripTag(tex))) return true;
   if (!isTexToOmmlReady()) return false;
-  const a = texToOmml(orig.tex, orig.display);
-  return a !== null && a === texToOmml(tex, orig.display);
+  const a = omml(orig.tex, orig.display);
+  return a !== null && a === omml(tex, orig.display);
+}
+
+/** The TeX of an equation edited in Word, given back the number its source
+ *  had (`\tag{2}`): Word never saw it, so its TeX lacks it. */
+export function keepTag(source: string, tex: string): string {
+  if (TAG.test(tex)) return tex;
+  const tag = TAG.exec(texOfSource(source).tex);
+  return tag ? `${tex.trimEnd()} ${tag[0]}` : tex;
 }
 
 /** Markdown for an equation typed or changed in Word. */

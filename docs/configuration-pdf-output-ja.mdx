@@ -36,7 +36,7 @@ npm install postext postext-pdf
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — `VDTDocument`（または本の章を並べたその配列）を受け取り、PDFの生のバイト列を返します。
 - **`PdfFontProvider`** — `renderToPdf`が新しいファミリー・ウェイト・スタイルの組み合わせを埋め込む必要があるときに、フォントのバイト列を要求するために使うコールバックのシグネチャ`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`です。`request.codePoints`には、ページがそのフェイスで組む文字が入ります。返すのは1つのファイルか、合わせて1つのフェイスになる複数のファイルです（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照）。
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** — ページでの宣言のしかたを記録したフェイスのファイルです。記録するのは、`@font-face`規則の`unicode-range`と、宣言順での位置です。`PdfFontFile`は、この2つの省略可能なプロパティを加えた`Uint8Array`です（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照。postext-pdf 1.30以降）。
-- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。`date`（`Date`、ミリ秒の時刻、または日付の文字列。`createBundle`の`mtime`と同じ型）は、ファイルの作成日と更新日になります。PDF/XではXMPパケットの日付にもなり、文書IDもここから求めます。同じ文書を同じ`date`で2回書き出すと、バイト列は一致します。省略時は呼び出した時刻が入ります。無効な日付はエラーになります。
+- **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`は、フォームフィールドでの数値の書き方（通貨、その位置、区切り記号）と、値を表示するフェイス（`font`）を指定します（[フォームフィールド](#フォームフィールド)を参照）。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。`date`（`Date`、ミリ秒の時刻、または日付の文字列。`createBundle`の`mtime`と同じ型）は、ファイルの作成日と更新日になります。PDF/XではXMPパケットの日付にもなり、文書IDもここから求めます。同じ文書を同じ`date`で2回書き出すと、バイト列は一致します。省略時は呼び出した時刻が入ります。無効な日付はエラーになります。
 - **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — PDFの印刷用マスターの1ページ目を読み、埋め込まずに使っているフォント（`nonEmbeddedFonts`）、RGBで描いているか（`rgb`）、透明効果を使っているか（`transparency`）を報告します。[プリフライト](/ja/docs/configuration-fonts-colors-viewers#プリフライト)が使います。
 - **`decompressWoff2(bytes): Uint8Array`** — WOFF2ファイルを、`pdf-lib`がそのまま埋め込める形式であるTTFのバイト列に変換するヘルパーです。
@@ -294,6 +294,33 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 - **ビューアー**：Acrobat、Preview、Chrome（PDFium）、pdf.js、Popplerは縦組み用のフォントを表示できます。右綴じの本（`page.binding`）は、見開きを右から左に並べるようビューアーにも求めます（`/Direction /R2L`、`/PageLayout /TwoPageRight`）。AcrobatとFoxitはこれに従いますが、Chromeは従いません。
 
 Noto Serif TC（本で使う文字だけ、TrueType）で組んだ43ページの章は約820 KBで、その大半を2つのフォントサブセットが占めます。
+
+### フォームフィールド
+
+`field`属性を持つチップは、入力できるフォームフィールド（AcroForm）になります。チップはほかのチップと同じように組まれ、ボックスを描きます。外観と最小幅（`minWidth`）はスタイルで決まり、チップの語がフィールドの初期値になります。PDFではボックスの上に対話型のフィールドが置かれます。同じ名前を2回使うと、ウィジェットを2つ持つ1つのフィールドになります。
+
+```md
+数量 :chip[ ]{style="field" field="pos.a.qty" kind="number"}
+単価 :chip[120]{style="field" field="pos.a.price" format="currency"}
+小計 :chip[ ]{style="field" field="pos.a.total" format="currency" calc="product(pos.a.qty, pos.a.price)"}
+サービス :chip[ ]{style="box" field="pkg.a" kind="checkbox" on="1"}
+注文合計 :chip[ ]{style="field" field="order.total" format="currency" calc="sum(pos.a.total, product(pkg.a, 161.75))"}
+サイズ :chip[M]{style="field" field="size" kind="choice" options="S|M|L"}
+```
+
+- `kind`：`text`（既定）、`number`、`checkbox`、`choice`（選択肢は`options`に`|`区切りで書きます）。
+- `on`（チェックボックス）：チェックボックスのオン状態の名前です。チェックが入っているとき、スクリプトはこの値を読みます。`on="1"`にすると、チェックの入ったボックスは計算で1と数えられるので、`product(pkg.a, 161.75)`はチェックが入ったときに固定の価格を加えます。既定は`Yes`で、計算では0と数えられます。
+- `format`：`currency`、`decimal`（小数2桁）、`integer`。Acrobatの`AFNumber_Format`と`AFNumber_Keystroke`で書かれ、区切り記号は文書の言語に従います（ドイツ語なら`1.234,56`）。`RenderToPdfOptions.forms.separatorStyle`で別の書き方を指定することもできます。通貨は`forms.currency`（既定は`€`）で、`forms.currencyBefore`が`false`でなければ数値の前に付きます。初期値も書式を適用して描かれます。
+- `calc`：`sum(…)`、`product(…)`、`min(…)`、`max(…)`、`avg(…)`。引数には、名前で指すほかのフィールド、数値（小数点はピリオド。例：`161.75`）、入れ子の計算を書けます（例：`sum(pos.a.total, pos.b.total, product(pkg.a, 161.75))`）。フィールドだけを使う計算は`AFSimple_Calculate`として書かれます。数値や入れ子の計算を含むものは、専用の短いCalculateスクリプトになります。このスクリプトも各フィールドを同じように読み（値に`AFMakeNumber`を適用し、数値でないものは0と数えます）、結果を小数6桁に丸めます。計算されるフィールドは読み取り専用になり、計算順序は、入れ子の計算の中も含め、読み取るすべてのフィールドに合わせて決まります。次の場合は`formField`警告が出ます。未知のフィールドを読む計算（0と数えます）、循環、2種類のフィールドに使われた名前、`on`の値が数値でないチェックボックスを含む計算（常に0と数えます）です。
+- `readonly`、`required`、`multiline`、`tooltip`：名前のとおりです。
+
+フィールドは、値と入力された文字を、チップのフェイス（`forms.font: 'chip'`、既定）か、`forms.font`で指定した文書のフォントのフェイス（`{ family, weight?, style? }`。ほかのフェイスと同じく`fontProvider`に要求されます）で表示します。このフェイスはサブセットではなく**丸ごと**埋め込まれます。サブセットには、あとから入力される文字のグリフがないためです。使うフィールドがいくつあっても埋め込みは1回だけで、フォームの既定リソース（`/DR`）と各フィールドの既定の外観（`/DA`）で名前が参照され、初期値もこのフェイスで描かれます。丸ごと埋め込んだフェイスは、ページの本文が使うサブセットとは別に、ファイル全体がPDFに入ります（ラテン文字の本文用フェイスで通常50〜300 KB、CJKのフェイスでは数MB）。プロバイダーはTrueType、OpenType、WOFF2（埋め込み前に展開されます）のどれで返してもかまいません。フェイスを丸ごと埋め込めない場合、フィールドは`formField`警告とともにHelveticaで表示されます。該当するのは、ライセンスが埋め込みを禁じている場合（OS/2の`fsType`が制限付きまたはビットマップのみ）、プロバイダーが複数のファイルに分けて返す場合（分割されたフェイス）、形式がWOFFかコレクションの場合です。`forms.font: 'helvetica'`にすると、何も埋め込まずにHelveticaを使います。ビューアーによっては（macOSのプレビューなど）、入力中の文字を独自のフォントで描きますが、値は変わりません。
+
+Acrobat、Foxit、pdf.js（Firefox）をはじめ、多くのビューアーがこれらのスクリプトを実行します。印刷用の規格（PDF/X）では対話型フィールドを使えないため、値はテキストとして描かれます。数値フィールドの値は、フォームでの表示と同じく、書式を適用し、スタイルの`paddingX`の内側でボックスの末尾にそろえて、チップの色で描かれます。
+
+canvasも数値フィールドを同じように描くので、プレビューはPDFと一致します。`renderPageToCanvas`（または`renderPage`、`renderToCanvas`）に、`renderToPdf`と同じ`forms`オプションを渡してください。どちらでも、区切り記号は既定で文書の`locale`（なければハイフネーションの言語）から決まります。数値の書き方を決めるルールは1つで、postextはほかの出力形式のためにそれをエクスポートしています。`formNumberStyle(forms, lang)`はオプションを解決し、`formatFieldNumber(value, format, style)`は値に書式を適用し（数値でないテキストにはundefinedを返します）、`numberFieldText(field, words, style)`は描かれた数値フィールドに表示される文字列を返します。ディスプレイリストでは、フィールドはチップのランに載ります（`inline.field`。レイアウトの`sizePx`と`padPx`を含みます）。
+
+IDMLの書き出しは、同じフィールドをInDesignのフォームフィールドとして書き出します（[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostextidml)を参照）。
 
 ### PDFのリンク
 

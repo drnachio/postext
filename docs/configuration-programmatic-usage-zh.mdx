@@ -699,7 +699,7 @@ if (isExportedDocx(edited)) {
 - <strong>`formattedDocx(options)`</strong>接受`docs`（按`chapters`的顺序，每章一个`VDTDocument`，即生成PDF的印刷链），以及同样的`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`和`onWarning`。`onProgress(done, total)`按写出的页数计数。
 - <strong>`planWordFonts(faces, options)`</strong>把书中的字体（`{ family, weight, style, files }`：WOFF2或sfnt，unicode-range分片数量不限）转成Word嵌入用的静态TrueType字体。`decompressWoff2`（`postext-pdf`导出的那个）用来读取WOFF2；`usedText`和`fontStrings`去掉导出用不到的分片和字体；`familySuffix`（默认`' PTX'`）加在每个嵌入的字体族名后。它的`warnings`列出未嵌入的字体（`restricted`、`cff`、`variable`、`missing`、`merge-failed`），以及只为预览和打印而嵌入的字体（`preview-print`）。
 - <strong>`isExportedDocx(bytes)`</strong>判断文件是否带有导出对照表，从不抛出异常。`readExportMap(files)`从解压后的部件（fflate的`unzipSync`）读取对照表本身：`exportId`、`variant`、`engine`、各章及其哈希，以及导出文字的副本。
-- <strong>`applyDocxEdits(bytes, { chapters, resources })`</strong>是同步函数。它返回应用了校改的全部章节（`chapters`）、题注、说明、替代文字或表格单元格有变化的资源的深拷贝（`resources`），以及`edits`、`comments`、`variant`、`exportId`和`changed`。每项修改带有`chapter`，或`resourceId`和`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`），当前文字中的`start`和`end`，`before`、`after`，`kind`（`text`、`format`、`paragraph`、`tracked`），以及`status`和对应的`reason`：`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）或`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`）。每条批注带有`author`、`text`和位置（不在导出文字上的批注，`start`为-1）。不是导出的`.docx`的文件会抛出`DocxReadError`。章的id必须与导出时相同：针对未知章的修改只报告，不应用。
+- <strong>`applyDocxEdits(bytes, { chapters, resources })`</strong>是同步函数。它返回应用了校改的全部章节（`chapters`）、题注、说明、替代文字或表格单元格有变化的资源的深拷贝（`resources`），以及`edits`、`comments`、`variant`、`exportId`和`changed`。每项修改带有`chapter`，或`resourceId`和`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`），当前文字中的`start`和`end`，`before`、`after`，`kind`（`text`、`format`、`paragraph`、`tracked`），以及`status`和对应的`reason`：`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）或`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`、`resource-removed`）。每条批注带有`author`、`text`和位置（不在导出文字上的批注，`start`为-1）。不是导出的`.docx`的文件会抛出`DocxReadError`。章的id必须与导出时相同：针对未知章的修改只报告，不应用。
 
 其他任何Word文件，都借助样式模板读成Markdown：
 
@@ -719,6 +719,24 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 - <strong>`analyzeDocx(word, template, config)`</strong>是沙盒在导入前显示的质量报告：用到的样式、有多少段落套用了样式，以及`directFormatting`、`manualHeadings`、`typedNumbering`等发现，每项都附有数量和示例。
 - <strong>`wordStyleTracking(word, template, config)`</strong>和<strong>`applyStyleTracking(config, tracking)`</strong>把Word样式的字间距带到配置中没有设置字间距的样式上。
 
+
+### InDesign包（`postext/idml`）
+
+`postext/idml`子路径把排好的页面写成InDesign Markup包（`.idml`），供设计人员在InDesign中完成全书。它和版式Word文档一样建立在页面的显示列表上，不需要DOM。命令行的`idml`就建立在它上面（见[命令行 › idml](/zh/docs/command-line#idml)）。postext 1.71起。
+
+```ts
+import { buildDocument } from 'postext';
+import { idmlDocument } from 'postext/idml';
+
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const { bytes, links } = idmlDocument({ docs, resourceBytes, images: 'embed', title: '野外笔记' });
+```
+
+- <strong>`idmlDocument(options)`</strong>返回包的字节（`bytes`，一个`Uint8Array`），使用`images: 'link'`时还返回要写在它旁边的图片（`links`：`{ path, bytes }`，路径如`Links/photo.jpg`，相对于`.idml`）。它接受`docs`（每章一个`VDTDocument`，按书中顺序）、提供图片字节的`resourceBytes(fileId)`、`images`（默认`'embed'`，或`'link'`）、`title`、给出InDesign字体样式名的`fontStyleName(family, weight, italic)`（默认由字重和倾斜推出`Regular`、`Bold Italic`……；字体自己的样式名不同时，例如`Roman`，请返回这些名称）、按角色为模板页框以外的文字指定段落样式的`styleNames`（`body`、`heading`、`list`……）、`forms`（默认`true`：带表单域的行内标签成为InDesign表单域）和`onWarning`（`{ code, message }`）。
+- 每一页是一个只有一页的跨页，尺寸为成品尺寸，第一页的出血作为文档的出血。线条、方框、路径和图片成为直线、矩形、多边形和图形框；作者定义的CMYK颜色成为印刷色色板，`colorPalette`为其命名时沿用调色板中的名称。
+- 模板页每个框的文字是一个文本框和一篇文章，套用以该框的标注框样式命名的段落样式；用`next`串接的框通过串接的文本框共用一篇文章，被换框截断的段落仍是一个段落。模板页框以外的文字每个块一个文本框，放在Postext排定的位置。经适配缩小了文字的框（`fit.shrinkText`）保留缩小后的字号和行距，缩进、制表位和段落间距随之缩小（框的内边距不变）。列表项的标记放在段落开头，后接一个制表符，并使用悬挂缩进。段落保留缩进（左缩进、首行缩进和右缩进，按Postext排定各行的位置读出）、带对齐方式和前导符的制表位，以及段后间距；段落样式取第一个段落的这些值，框的内边距成为文本框的内边距。强制换行仍是强制换行。行内标签的文字留在正文中，它的底框（填色和描边）是文字后面的一个矩形，空的行内标签用细空格占位。
+- 带表单域的行内标签（`field="…"`，见[PDF输出 › 表单域](/zh/docs/configuration-pdf-output#表单域)）成为放在其底框上的InDesign表单域，用行内标签的填色和描边绘制：文字和数字用文本字段（以表单域命名，采用行内标签文字的字号，带`multiline`、`readonly`、`required`和`tooltip`），选项用组合框（带选项），复选框带两种外观（值表明选中时默认勾选）。表单域的文字不放进正文，正文保留它的位置。InDesign的表单域不支持默认值、数字格式、计算和对齐：这些信息由表单域的脚本标签携带（`postext:value`、`postext:format`，以及与`calc`属性写法相同的`postext:calc`，包括数字和嵌套计算），并给出`field.value`或`field.script`警告。设`forms: false`时，这些行内标签按普通行内标签写出，值作为文字。
+- InDesign用自己的排版器重新排文字：框、样式、文字和首行基线来自Postext，换行可能不同。表格、公式、乐谱和行内色块暂不写出，每种情况给出警告（`table`、`text.inline`）。从右到左的文字和竖排文字写成从左到右的横排文章，并给出`text.rtl`或`text.vertical`警告。SVG图片按SVG置入，InDesign 2020及以后的版本可以读取（`image.svg`）。
 
 ## 在Web Worker中运行排版
 

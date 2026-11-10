@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Resource } from '../../types.js';
-import { exportDocx, exportProblems, looseMarkup } from './fixtures/harness.js';
+import { exportDocx, exportProblems, looseMarkup, sectionsOf } from './fixtures/harness.js';
 import { orderProblems } from './inspect.js';
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
@@ -84,7 +84,7 @@ describe('semantic docx: text', () => {
       ['swatch', ':swatch{color="#f00"}'],
       ['tab', ':tab{at="4cm"}'],
     ]);
-    expect(f.text).toBe('See Fig.\u00a01, @smith, [@smith, p. 3], Hi, \u25A0 and\tx.');
+    expect(f.text).toBe('See Fig.\u00a01, @smith, [@smith, p. 3], \u00a0Hi\u00a0, \u25A0 and\tx.');
     expect(e.doc).toContain('<w:rStyle w:val="PostextReference"/>');
     expect(e.doc).toContain('<w:color w:val="FF0000"/>');
   });
@@ -95,9 +95,11 @@ describe('semantic docx: text', () => {
     expect(exportProblems(e, [md])).toEqual([]);
     const f = e.frag('First line\nsecond line.');
     expect(f.atoms).toEqual([{ at: 10, start: 10, end: 12, kind: 'break' }]);
-    const verse = e.frag('One line\nanother line');
-    expect(verse.map[8]).toBe(md.indexOf('\nanother'));
-    expect(e.doc).toContain('<w:pStyle w:val="PostextVerse"/>');
+    // A paragraph per line of verse, the line end an atom read back as the
+    // paragraph mark.
+    const verse = e.frag('One line another line');
+    expect(verse.atoms).toEqual([{ at: 8, start: md.indexOf('\nanother'), end: md.indexOf('another'), kind: 'line' }]);
+    expect(e.doc.match(/<w:pStyle w:val="PostextVerse"\/>/g)).toHaveLength(2);
     expect(looseMarkup(e.doc)).toEqual([]);
   });
 
@@ -140,7 +142,9 @@ describe('semantic docx: structures', () => {
     expect(numbering).toContain('<w:numFmt w:val="bullet"/>');
     expect(numbering).toContain('<w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/>');
     expect(numbering).toContain('<w:startOverride w:val="3"/>');
-    expect(numbering).toContain('w:val="\u2611"');
+    // A done task is a filled square in Arial: the ballot box ☑ is only
+    // in symbol faces some readers lack.
+    expect(numbering).toContain('w:val="\u25A0"');
     expect(e.doc).toContain('<w:numPr><w:ilvl w:val="1"/><w:numId w:val="1"/></w:numPr>');
     expect(orderProblems(numbering)).toEqual([]);
     expect(e.frag('b').role).toBe('list:unordered:2');
@@ -158,6 +162,19 @@ describe('semantic docx: structures', () => {
     expect(fragments[fragments.length - 1]!.role).toBe('footnote');
     expect(e.frag('Text\uFFFC and more.').atoms).toEqual([{ at: 4, start: 4, end: 8, kind: 'footnote' }]);
     expect(e.frag('[^b]: Orphan.').role).toBe('raw:footnote');
+  });
+
+  it('marks a content control that opens on a noted paragraph as a document part (#1444)', async () => {
+    // LibreOffice refuses the whole file when a plain block control's
+    // first paragraph holds a footnote reference; the second one loads.
+    const md = ':::paragraphs{style="verse"}\nFirst line[^a]\n\nSecond line[^b]\n:::\n\n:::paragraphs{style="verse"}\nPlain line\n\nNoted line[^b]\n:::\n\n[^a]: One.\n\n[^b]: Two.\n';
+    const e = await exportDocx(md);
+    expect(exportProblems(e, [md])).toEqual([]);
+    const sdts = e.doc.match(/<w:sdt><w:sdtPr>(?:(?!<\/w:sdtPr>).)*<\/w:sdtPr>/g) ?? [];
+    const verse = sdts.filter((s) => s.includes('ptx:paragraphs:verse'));
+    expect(verse).toHaveLength(2);
+    expect(verse[0]).toContain('<w:docPartObj><w:docPartGallery w:val="Postext"/></w:docPartObj></w:sdtPr>');
+    expect(verse[1]).not.toContain('docPartObj');
   });
 
   it('sets a box as a content control around a shaded one-cell table', async () => {
@@ -188,13 +205,17 @@ describe('semantic docx: structures', () => {
   });
 
   it('keeps what Word cannot express as exact source in raw content controls', async () => {
-    const md = '---\ntitle: "T"\n---\n\n:::toc\n\n:::exercise{type="choice"}\nPick one.\n:::\n\n:::pagebreak\n\nAfter.\n';
+    const md = '---\ntitle: "T"\n---\n\n:::toc\n\n:::exercise{type="choice"}\nPick one.\n:::\n\n:::module{id="m"}\nKept.\n:::\n\n:::pagebreak\n\nAfter.\n';
     const e = await exportDocx(md);
     expect(exportProblems(e, [md])).toEqual([]);
-    expect(e.frag('---\ntitle: "T"\n---').role).toBe('raw:frontmatter');
-    expect(e.frag(':::toc').role).toBe('raw:toc');
-    expect(e.frag(':::exercise{type="choice"}\nPick one.\n:::').role).toBe('raw:exercise');
-    expect(e.doc).toContain('<w:tag w:val="ptx:raw:exercise"/>');
+    // Front matter and the contents are no source text in Word (#1444).
+    expect(e.map.fragments.some((f) => f.role === 'raw:frontmatter' || f.role === 'raw:toc')).toBe(false);
+    expect(e.doc).toContain('<w:tag w:val="ptx:toc"/>');
+    // An exercise is set natively (#1444): its instruction stays mapped.
+    expect(e.frag('Pick one.').role).toBe('exercise:instruction');
+    expect(e.doc).toContain('<w:tag w:val="ptx:exercise"/>');
+    // A stray module is still kept as exact source.
+    expect(e.frag(':::module{id="m"}\nKept.\n:::').role).toBe('raw:module');
     expect(e.doc).toContain('<w:pStyle w:val="PostextSource"/>');
     expect(e.doc).toContain('<w:tag w:val="ptx:pagebreak"/>');
     expect(e.doc).toContain('<w:br w:type="page"/>');
@@ -248,7 +269,7 @@ describe('semantic docx: book', () => {
     } as never;
     const e = await exportDocx(['# One\n\nText.\n', '# Two\n\nMore.\n'], { config });
     expect(exportProblems(e, ['# One\n\nText.\n', '# Two\n\nMore.\n'])).toEqual([]);
-    const sects = e.doc.match(/<w:sectPr>.*?<\/w:sectPr>/g)!;
+    const sects = sectionsOf(e.doc);
     expect(sects).toHaveLength(2);
     expect(sects[0]).toContain('<w:pgSz w:w="11906" w:h="15874"/>');
     expect(sects[0]).toContain('w:top="1134" w:right="850" w:bottom="1134" w:left="1417"');
@@ -256,7 +277,11 @@ describe('semantic docx: book', () => {
     expect(sects[0]).toContain('<w:titlePg/>');
     expect(sects[1]).toContain('<w:type w:val="oddPage"/>');
     expect(e.part('word/settings.xml')).toContain('<w:mirrorMargins/>');
-    expect(e.part('word/header1.xml')).toContain('Chapter 1');
+    // The default design: the book's title on odd pages, the chapter's on
+    // even ones (#1444).
+    expect(e.part('word/settings.xml')).toContain('<w:evenAndOddHeaders/>');
+    expect(sects[1]).toMatch(/<w:headerReference w:type="even" r:id="rIdHdr\d+"\/>/);
+    expect(e.part('word/header2.xml')).toContain('>One<');
     expect(e.doc).toContain('w:name="chapter_ch2"');
     expect(e.map.chapters.map((c) => c.id)).toEqual(['ch1', 'ch2']);
     expect(e.frag('More.').target).toEqual({ kind: 'markdown', chapter: 1 });

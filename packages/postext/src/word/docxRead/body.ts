@@ -3,6 +3,7 @@ import type { WordStyle, WordDocument, WordRun, WordTextRun, WordBlock, WordPara
 import { ommlToTex } from '../omml.js';
 import { type XmlElement, child, attr, onOff, children, localName, textOf, descendants } from '../xml.js';
 import { type Relationship, runFlags, readTabs, type Files, readXml, readRels } from './parts.js';
+import { numberedEquation } from './equations.js';
 
 // ---------------------------------------------------------------------------
 // Body
@@ -255,14 +256,17 @@ function readParagraph(p: XmlElement, ctx: ReadContext): WordParagraph[] {
   const runs: WordRun[] = [];
   const boxes: WordBlock[] = [];
   readParagraphContent(p, ctx, runs, undefined, false, boxes);
+  // An equation numbered at a tab stop is a display equation with a \tag:
+  // its tabs and alignment only placed the number.
+  const equation = numberedEquation(runs, styleId);
   const para: WordParagraph = {
     type: 'paragraph',
     styleId,
-    runs,
+    runs: equation ?? runs,
     ...(list ? { list } : {}),
     ...(onOff(child(pPr, 'pageBreakBefore')) ? { pageBreakBefore: true } : {}),
-    ...(manualLayout ? { manualLayout } : {}),
-    ...(child(pPr, 'tabs') ? { tabs: readTabs(pPr) } : {}),
+    ...(manualLayout && !equation ? { manualLayout } : {}),
+    ...(child(pPr, 'tabs') && !equation ? { tabs: readTabs(pPr) } : {}),
     ...(boxes.length ? { textBoxes: boxes } : {}),
   };
   // A paragraph whose mark is a tracked deletion merges into the next one;

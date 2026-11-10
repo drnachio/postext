@@ -164,6 +164,7 @@ Konfiguration des Buchs gelegt. Ein mehrsprachiges Paket wird in seiner eigenen 
     <tr><td><code>image</code></td><td>Eine Seite als PNG-, JPEG- oder WebP-Bild.</td></tr>
     <tr><td><code>images</code></td><td>Alle Seiten oder einen Bereich als Bilder in einem Ordner.</td></tr>
     <tr><td><code>docx</code></td><td>Die Kapitel als Word-Dokument: semantisch (Überschriften, Listen, Anmerkungen und Tabellen von Word selbst) oder gesetzt (die Seiten des PDF).</td></tr>
+    <tr><td><code>idml</code></td><td>Die Seiten als InDesign-Paket (IDML), zur Fertigstellung in InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Die Korrekturen aus einer exportierten Word-Datei zurück ins Buch; jedes andere Word-Dokument als neues Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
     <tr><td><code>pack</code></td><td>Einen Buchordner oder lose Markdown-Dateien als eine einzige <code>.postext</code>-Datei.</td></tr>
     <tr><td><code>unpack</code></td><td>Eine <code>.postext</code>-Datei als Ordner.</td></tr>
@@ -328,6 +329,27 @@ des Buchs gesetzt, die keinen eigenen haben (den Absatzformaten und Überschrift
 `--config`-Datei, denen die Word-Formatvorlagen entsprechen, und den Überschriftenebenen);
 einen Zeichenabstand, den das Buch schon festlegt, lässt er unverändert. Mit `--json` führt
 `styleTracking` auf, was gesetzt wurde (`applied`) und was übrig blieb (`skipped`). Seit postext 1.39.
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+`idml` setzt das Buch wie `pdf` und schreibt die Seiten als
+InDesign-Markup-Paket, zur Fertigstellung in InDesign: eine Seite je
+Druckbogen, Linien, Kästen, Pfade und Bilder als Seitenobjekte, der Text jedes
+Rahmens einer zusammengesetzten Seite als Textrahmen mit eigenem Textabschnitt
+(mit `next` verkettete Rahmen teilen sich einen), Kastenstile als
+Absatzformate und vom Autor angelegte CMYK-Farben als Farbfelder. Chips mit
+einem Formularfeld werden zu InDesign-Formularfeldern. InDesign setzt den Text
+neu, daher können die Zeilenumbrüche von denen des PDF abweichen. `--images
+link` legt die Bilder neben der Datei in `Links/` ab, statt sie in die Datei
+zu packen. Was das Paket noch nicht tragen kann (Tabellen, Formeln, Noten),
+wird als Warnung `idml.*` gemeldet. Siehe [Programmatische Nutzung ›
+InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postextidml).
+Seit postext 1.71.
 
 ### pack und unpack
 

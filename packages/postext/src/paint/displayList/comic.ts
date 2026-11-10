@@ -126,14 +126,15 @@ export function comicLetteringItems(comic: VDTComicPage, key: string): DisplayIt
       // Lettering turns with a sound effect; its lean has no Word or
       // display-list form (the outline keeps it).
       const frame = (comicBalloonMatrix({ bbox: balloon.bbox, ...(balloon.rotate ? { rotate: balloon.rotate } : {}) }) as Frame | undefined) ?? IDENTITY;
-      items.push(...slotItems({ bbox: balloon.bbox, blocks: balloon.text }, {
+      const halo = balloon.halo && balloon.halo.width > 0 ? { color: balloon.halo.color, widthPx: balloon.halo.width } : undefined;
+      items.push(...(slotItems({ bbox: balloon.bbox, blocks: balloon.text }, {
         frame,
         uprightPictures: false,
         role: 'balloon',
         generated: false,
         blockKey: `${key}:${balloon.elementId ?? balloon.id}`,
         blockType: balloon.kind,
-      }));
+      })).map((it) => (halo && it.kind === 'text' ? { ...it, halo } : it)));
     }
   }
   return items;

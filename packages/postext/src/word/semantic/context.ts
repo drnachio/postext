@@ -2,7 +2,7 @@
 // fragment log, styles, numbering, notes, and the chapter being written.
 
 import type { ContentBlock } from '../../parse/types.js';
-import type { PostextConfig, Resource, ResourceType } from '../../types.js';
+import type { LayoutContinuation, OutlineEntry, PostextConfig, Resource, ResourceType } from '../../types.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import type { DocxPackageBuilder } from '../ooxml/types.js';
@@ -12,6 +12,10 @@ import type { StyleRegistry } from './styles.js';
 import type { WordChapterInput } from './types.js';
 import type { Units } from './wml.js';
 import type { BookNumbers } from './engineNumbers.js';
+
+/** Where a book that continues a longer one starts: its heading counters
+ *  and page numbering. */
+export type BookStart = Pick<LayoutContinuation, 'headings' | 'pageNumbering'>;
 
 /** Something `semanticDocx` had to set differently from the book. */
 export interface SemanticWarning {
@@ -38,6 +42,9 @@ export interface ChapterState {
   /** The number prefix the engine prints before each numbered heading. */
   headingNumbers: Map<ContentBlock, string>;
   blockCounter: number;
+  /** Page numbering a `:::numbering` directive sets for the chapter's
+   *  section (Word format name, first number). */
+  pageNumbers?: { format?: string; start?: number };
 }
 
 export interface WriterContext {
@@ -57,6 +64,9 @@ export interface WriterContext {
   columnPx: number;
   /** Width of the text column, twips (box and table width). */
   textTwips: number;
+  /** Width of the whole text area, px: what page-spanning content takes
+   *  in a book of columns (the column's width in a book of one). */
+  textAreaPx: number;
   /** Resources the export shows or references (for the snapshot). */
   usedResources: Set<string>;
   /** The numbers the engine prints: resources (captions, `:ref`s) and
@@ -68,12 +78,24 @@ export interface WriterContext {
   footers: Record<string, string>;
   /** Non-`_ptx_` bookmark names already used (anchors, chapters). */
   bookmarkNames: Set<string>;
+  /** Resources a `:ref` floats (cited, shown by no block): each is written
+   *  as a figure after the block holding its first reference. */
+  floated: ReadonlySet<string>;
+  /** Floated resources already written. */
+  floatedPlaced: Set<string>;
   /** Pictures prepared before the body is written, by resource id. */
   media: Map<string, PreparedPicture>;
   warn(code: string, message: string): void;
   nextSdtId(): number;
   nextFootnoteId(): number;
   chapter: ChapterState;
+  /** Every chapter's parsed blocks, in book order (what a contents or an
+   *  index lists). */
+  book: readonly { blocks: ContentBlock[] }[];
+  /** Where the book starts (`semanticDocx`'s `start`). */
+  start?: BookStart;
+  /** The book's outline, computed on first use (see `fields.ts`). */
+  outline?: OutlineEntry[];
 }
 
 export interface PreparedPicture {

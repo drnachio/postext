@@ -194,6 +194,7 @@ function linesItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
   if (chapter !== undefined) source.chapter = chapter;
   const item: TextItem = { kind: 'text', role: roleOf(block), bbox: { ...block.bbox }, lines, source, blockType: block.type };
   if (block.headingLevel !== undefined) item.level = block.headingLevel;
+  if (block.paragraphStyleId !== undefined) item.paragraphStyle = block.paragraphStyleId;
   if (ctx.clip) item.clip = ctx.clip;
   return [...before, placeText(ctx.frame, item), ...after];
 }

@@ -3,17 +3,31 @@
 // every text block a paragraph wrapped in its fragment's bookmark.
 
 import type { ContentBlock } from '../../parse/types.js';
-import { texToOmml } from '../ommlWrite/index.js';
-import { ommlHash } from '../anchors/ommlHash.js';
+import type { ResolvedCalloutStyleConfig } from '../../types.js';
 import { renderContainer } from './containers.js';
 import { abs, blockId, type WriterContext } from './context.js';
-import { renderResource } from './figures.js';
-import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
+import { renderDirective } from './directives.js';
+import { tocMark } from './fields.js';
+import { renderCodeListing } from './media/code.js';
+import { renderResource } from './media/figures.js';
+import { renderSolutions, solutionsBeforeHeading } from './exercises/exercises.js';
+import { pageKindOf, renderComicPage } from './media/pages.js';
+import { startsFlush } from './prose/flush.js';
+import { listItemSpacing } from './prose/listSpacing.js';
+import { bodyTabs } from './prose/tabs.js';
+import { renderDesignedHeading, type HeadingLook } from './design/heading.js';
+import { partHeadingStyle } from './design/partColor.js';
+import { headingIsListed } from '../../pipeline/sections/headingStyles.js';
+import { renderScoreBlock } from './media/scores.js';
+import { FragmentBuilder } from './fragments.js';
 import { renderInline, type InlineSource } from './inline.js';
 import { markInserts, namedBookmark } from './marks.js';
+import { renderDisplayMath } from './math.js';
 import type { ListLevelKind } from './numbering.js';
 import { lineStart, rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
+import { renderVerse } from './verse.js';
+import { headingStart, spansPage, type Piece } from './layout/pageSpan.js';
 import { blockSdt, paragraph, pPr, rPr, textRuns, type ParaProps } from './wml.js';
 
 export type Node = { block: ContentBlock } | { container: ContentBlock; end?: ContentBlock; children: Node[] };
@@ -25,6 +39,18 @@ export interface BlockEnv {
   /** Width available to tables, boxes and pictures, twips (inside a box
    *  cell: the cell less its margins). Default: the text column. */
   widthTwips?: number;
+  /** The box style of the box the blocks stand in: its lists' bullets
+   *  and indents. */
+  box?: ResolvedCalloutStyleConfig;
+  /** The paragraph is set flush, without its first-line indent
+   *  (`prose/flush.ts`). */
+  flush?: boolean;
+  /** The blocks open a `:::paragraphs` group whose first paragraph is
+   *  set flush (`prose/flush.ts`). */
+  leadFlush?: boolean;
+  /** The blocks open a box: a heading first in it drops its space above,
+   *  as the engine sets a heading at the top of a box (#1444). */
+  boxTop?: boolean;
 }
 
 /** Rebuild the container tree from the flat list. */
@@ -94,15 +120,15 @@ export function inlineSourceOf(ctx: WriterContext, block: ContentBlock, notes = 
 }
 
 /** A text block as one paragraph holding one fragment. */
-export function textParagraph(ctx: WriterContext, block: ContentBlock, props: ParaProps, role: string, lead = ''): string {
-  const { xml, frag } = renderInline(ctx, inlineSourceOf(ctx, block));
+export function textParagraph(ctx: WriterContext, block: ContentBlock, props: ParaProps, role: string, lead = '', tail?: () => string): string {
+  const { xml, frag } = renderInline(ctx, { ...inlineSourceOf(ctx, block), ...(props.style ? { style: props.style } : {}) });
   const wrapped = ctx.log.wrap(xml, frag, {
     block: blockId(ctx),
     target: { kind: 'markdown', chapter: ctx.chapter.index },
     range: [abs(ctx, block.sourceStart), abs(ctx, block.sourceEnd)],
     role,
   });
-  return paragraph(props, lead + wrapped);
+  return paragraph(props, lead + wrapped + (tail?.() ?? ''));
 }
 
 /** The number the engine prints before a numbered heading ("1.2 "), in a
@@ -117,6 +143,17 @@ function headingNumber(ctx: WriterContext, b: ContentBlock): string {
   const frag = new FragmentBuilder();
   frag.push(text, new Array<number>(text.length).fill(-1));
   return ctx.log.wrap(textRuns(text, ''), frag, { block: blockId(ctx), target: { kind: 'generated' }, range: [0, 0], role: 'number' });
+}
+
+/** A heading paragraph, its anchor and number first. */
+export function headingParagraph(ctx: WriterContext, b: ContentBlock, look?: HeadingLook): string {
+  const level = b.level ?? 1;
+  const style = look?.style ?? partHeadingStyle(ctx, b, ctx.styles.heading(level, b.attrs?.style));
+  const anchor = tocMark(ctx, b) + (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + (look?.noNumber ? '' : headingNumber(ctx, b)) + (look?.before?.() ?? '');
+  // A heading the contents leave out (`toc=false`) stays out of Word's
+  // outline too, so an updated contents field leaves it out as well.
+  const outlineLvl = headingIsListed(b, ctx.resolved) ? Math.min(8, level - 1) : 9;
+  return textParagraph(ctx, b, { style, outlineLvl, ...look?.props }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor, look?.after);
 }
 
 /** Set footnote `id`'s definition as a Word footnote; its Word id, or
@@ -161,7 +198,12 @@ function levelKind(b: ContentBlock): ListLevelKind {
 
 /** Group consecutive list items into runs (a new run when the first
  *  level changes kind) and render them with Word numbering. */
-function renderList(ctx: WriterContext, items: ContentBlock[]): string[] {
+function renderList(ctx: WriterContext, items: ContentBlock[], env: BlockEnv): string[] {
+  // A list in a box takes the alignment of the box's text (a list
+  // paragraph is based on Normal, which may be justified).
+  const jc = env.paraStyle ? ctx.styles.jcOf(env.paraStyle) : undefined;
+  // Its items take the box's face, size and leading too (#1444).
+  const style = env.box && env.paraStyle ? ctx.styles.boxList(env.paraStyle) : STYLE.list;
   const out: string[] = [];
   let firstKind: ListLevelKind | undefined;
   const pending: ContentBlock[] = [];
@@ -173,16 +215,24 @@ function renderList(ctx: WriterContext, items: ContentBlock[]): string[] {
       if (kinds[d] === undefined) kinds[d] = levelKind(b);
     }
     for (let d = 0; d < kinds.length; d++) kinds[d] ??= kinds[d - 1] ?? 'bullet';
-    const run: ListRun = { numId: ctx.numbering.list(kinds, pending[0]!.startNumber), kinds };
-    for (const b of pending) {
+    const run: ListRun = { numId: ctx.numbering.list(kinds, pending[0]!.startNumber, env.box), kinds };
+    const spacing = listItemSpacing(ctx, pending, env.box);
+    // A list first in a box keeps no space above, as the engine sets it.
+    if (env.boxTop && !out.length) spacing[0]!.before = 0;
+    // A display number larger than the text holds the item's first line
+    // to the leading of the rest (#1444); an item with maths keeps its own.
+    const leading = kinds[0] === 'ordered' && ctx.numbering.numberOutgrows(env.box) ? ctx.styles.lineOf(style) : undefined;
+    const line = leading ? { twips: leading, rule: 'exact' as const } : undefined;
+    pending.forEach((b, k) => {
       const ilvl = Math.min(9, Math.max(1, b.depth ?? 1)) - 1;
       let numId = run.numId;
       if (b.listKind === 'task' && b.checked) {
-        run.checkedId ??= ctx.numbering.list(run.kinds.map((k) => (k === 'task' ? 'checked' : k)));
+        run.checkedId ??= ctx.numbering.list(run.kinds.map((kind) => (kind === 'task' ? 'checked' : kind)), undefined, env.box);
         numId = run.checkedId;
       }
-      out.push(textParagraph(ctx, b, { style: STYLE.list, numPr: { numId, ilvl } }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
-    }
+      const exact = line && ilvl === 0 && !b.spans.some((s) => s.math) ? { line } : {};
+      out.push(textParagraph(ctx, b, { style, numPr: { numId, ilvl }, ...spacing[k], ...exact, tabs: bodyTabs(ctx, b, env.widthTwips ?? ctx.textTwips), jc }, `list:${b.listKind ?? 'unordered'}:${ilvl + 1}`));
+    });
     pending.length = 0;
   };
   for (const b of items) {
@@ -199,28 +249,55 @@ function renderList(ctx: WriterContext, items: ContentBlock[]): string[] {
 
 /** Render sibling nodes. */
 export function renderNodes(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv): string {
-  const parts: string[] = [];
+  return joinBlocks(renderPieces(ctx, nodes, env).map((p) => p.xml));
+}
+
+/** Render sibling nodes as pieces. `after` (the chapter's top level only)
+ *  gives what follows each block, list or box: the figures its `:ref`s
+ *  float; there each piece also says whether it spans the page and
+ *  whether it opens a page (see `layout/pageSpan.ts`). */
+export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: BlockEnv, after?: (nodes: readonly Node[]) => Piece[]): Piece[] {
+  const parts: Piece[] = [];
+  const add = (xml: string | string[], span = false, block?: ContentBlock): void => {
+    for (const x of Array.isArray(xml) ? xml : [xml]) parts.push({ xml: x, ...(span ? { span } : {}), ...(block ? { block } : {}) });
+  };
+  const follow = (ns: readonly Node[], span: boolean): void => {
+    if (after) for (const p of after(ns)) parts.push(p.span === undefined && span ? { ...p, span } : p);
+  };
+  // Page-spanning content takes the whole text area.
+  const wide: BlockEnv = { ...env, widthTwips: Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) };
+  const below: BlockEnv = env.boxTop ? { ...env, boxTop: undefined } : env;
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i]!;
+    if (i === 1) env = below;
+    const span = !!after && spansPage(ctx, n);
     if ('container' in n) {
-      parts.push(renderContainer(ctx, n, env));
+      const leadFlush = n.container.containerName === 'paragraphs' && startsFlush(ctx, nodes, i, env.leadFlush);
+      add(renderContainer(ctx, n, { ...(span ? wide : env), leadFlush }), span, n.container);
+      follow([n], span);
       continue;
     }
     if (n.block.type === 'listItem') {
       const items: ContentBlock[] = [];
+      const from = i;
       while (i < nodes.length) {
         const m = nodes[i]!;
         if ('container' in m || m.block.type !== 'listItem') break;
         items.push(m.block);
         i++;
       }
+      add(renderList(ctx, items, env));
+      follow(nodes.slice(from, i), false);
       i--;
-      parts.push(...renderList(ctx, items));
       continue;
     }
-    parts.push(renderBlock(ctx, n.block, env));
+    const start = after ? headingStart(ctx, n.block) : undefined;
+    const flush = n.block.type === 'paragraph' && startsFlush(ctx, nodes, i, env.leadFlush);
+    const xml = renderBlock(ctx, n.block, { ...(span ? wide : env), ...(flush ? { flush } : {}) });
+    parts.push({ xml, block: n.block, ...(span ? { span } : {}), ...(start ? { start } : {}) });
+    follow([n], span);
   }
-  return joinBlocks(parts);
+  return parts;
 }
 
 const BREAKS: Record<string, string> = { pagebreak: 'page', columnbreak: 'column' };
@@ -231,42 +308,37 @@ export function renderBlock(ctx: WriterContext, b: ContentBlock, env: BlockEnv):
   const end = abs(ctx, b.sourceEnd);
   switch (b.type) {
     case 'heading': {
-      const level = b.level ?? 1;
-      const style = ctx.styles.heading(level, b.attrs?.style);
-      const anchor = (b.attrs?.id ? namedBookmark(ctx, b.attrs.id) : '') + headingNumber(ctx, b);
-      return textParagraph(ctx, b, { style, outlineLvl: Math.min(8, level - 1) }, `heading:${level}${b.attrs?.style ? `:${b.attrs.style}` : ''}`, anchor);
+      // A heading style's design writes what it prints around the heading
+      // (#1444); `look` is the heading paragraph's under it.
+      const write = (look?: HeadingLook): string => headingParagraph(ctx, b, env.boxTop ? { ...look, props: { before: 0, ...look?.props } } : look);
+      return solutionsBeforeHeading(ctx, b) + (renderDesignedHeading(ctx, b, write) ?? write());
     }
     case 'paragraph': {
       if (b.footnoteDef !== undefined) return ctx.chapter.cited.has(b.footnoteDef) ? '' : rawSdt(ctx, lineStart(ctx.chapter.markdown, start), end, 'footnote');
       if (b.toc || b.index) return '';
-      if (b.verse) {
-        const style = (b.verse.attrs.style && ctx.styles.paragraphStyle(b.verse.attrs.style)) || STYLE.verse;
-        return textParagraph(ctx, b, { style }, 'verse');
-      }
+      if (b.verse) return renderVerse(ctx, b, env);
       const style = env.paraStyle ?? STYLE.normal;
-      return textParagraph(ctx, b, { style, ind: b.continuesParagraph ? { firstLine: 0 } : undefined }, env.paraStyle ? `para:${env.paraStyle}` : 'body');
+      const flush = b.continuesParagraph || (env.flush && !ctx.styles.hangs(style));
+      return textParagraph(ctx, b, { style, tabs: bodyTabs(ctx, b, env.widthTwips ?? ctx.textTwips), ind: flush ? { firstLine: 0 } : undefined }, env.paraStyle ? `para:${env.paraStyle}` : 'body');
     }
     case 'blockquote':
       return textParagraph(ctx, b, { style: STYLE.quote }, 'quote');
     case 'code':
-      return textParagraph(ctx, b, { style: STYLE.code }, `code${b.code?.lang ? `:${b.code.lang}` : ''}`);
-    case 'mathDisplay': {
-      const omml = b.tex !== undefined ? texToOmml(b.tex, true) : null;
-      if (!omml) return rawSdt(ctx, start, end, 'math');
-      const f = new FragmentBuilder();
-      f.atom(OBJECT_CHAR, start, end, 'math', '', ommlHash(omml));
-      const xml = ctx.log.wrap(omml, f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [start, end], role: 'math' });
-      return paragraph({ style: STYLE.math }, xml);
-    }
+      return renderCodeListing(ctx, b) ?? textParagraph(ctx, b, { style: STYLE.code }, `code${b.code?.lang ? `:${b.code.lang}` : ''}`);
+    case 'mathDisplay':
+      return renderDisplayMath(ctx, b, start, end, env.widthTwips ?? ctx.textTwips);
     case 'resourceBlock':
       return renderResource(ctx, b, start, end, env.widthTwips ?? ctx.textTwips);
     case 'directive': {
       const br = b.directiveName ? BREAKS[b.directiveName] : undefined;
       if (br) return blockSdt(ctx.nextSdtId(), `ptx:${b.directiveName}`, undefined, `<w:p><w:r><w:br w:type="${br}"/></w:r></w:p>`);
-      return rawSdt(ctx, start, end, b.directiveName ?? 'directive');
+      if (b.directiveName === 'solutions') return renderSolutions(ctx, b, env);
+      const page = pageKindOf(b);
+      if (page === 'comicPage' || page === 'strip') return renderComicPage(ctx, b, page, env.widthTwips);
+      return renderDirective(ctx, b) ?? rawSdt(ctx, start, end, b.directiveName ?? 'directive');
     }
     case 'score':
-      return rawSdt(ctx, start, end, 'score');
+      return renderScoreBlock(ctx, b, start, end, env.widthTwips ?? ctx.textTwips);
     default:
       return rawSdt(ctx, start, end, b.type);
   }

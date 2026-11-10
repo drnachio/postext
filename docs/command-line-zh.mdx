@@ -127,6 +127,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>image</code></td><td>把一页生成为PNG、JPEG或WebP图片。</td></tr>
     <tr><td><code>images</code></td><td>把每一页或某个范围的页面生成为图片，放进一个文件夹。</td></tr>
     <tr><td><code>docx</code></td><td>把各章生成为Word文档：语义（Word自身的标题、列表、注释和表格）或版式（PDF的页面）。</td></tr>
+    <tr><td><code>idml</code></td><td>把页面生成为InDesign包（IDML），供在InDesign中完成后续制作。</td></tr>
     <tr><td><code>import-docx</code></td><td>把在导出的Word文件中做的校改带回书中；其他Word文档则转成新书（文件夹或<code>.postext</code>文件）。</td></tr>
     <tr><td><code>pack</code></td><td>把图书文件夹或零散的Markdown打包成一个<code>.postext</code>文件。</td></tr>
     <tr><td><code>unpack</code></td><td>把<code>.postext</code>文件解包成文件夹。</td></tr>
@@ -213,6 +214,15 @@ postext import-docx manuscript.docx -o manuscript/ --locale es --report
 不指定书时，`import-docx`把任意Word文档转成一本新书：每个一级标题开始一章（`--no-split`保留为一章），图片和表格成为资源，`--report`输出沙盒显示的质量报告（使用的样式、直接格式、手打的编号……）。`--template`接受一个导入模板（从沙盒保存的`.json`，或带有模板的`.docx`）。
 
 字符间距属于样式，不属于文字，所以不在Markdown里。`docx`把段落样式、标题样式和各级标题的`letterSpacing`写成Word样式的字符间距，`import-docx`再以样式字号的em为单位把它读回来：书中没有设`letterSpacing`的样式（`--config`文件里与Word样式对应的段落样式和标题样式，以及各级标题）会设上这个值，书中已经设了的字距保持不变。加上`--json`时，`styleTracking`列出已设置的（`applied`）和跳过的（`skipped`）。自postext 1.39起。
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+`idml`像`pdf`一样给书排版，把页面写成InDesign Markup包，供在InDesign中完成后续制作：每个跨页放一页，线条、方框、路径和图片成为页面项目，模板页每个框的文字成为一个带有独立文章的文本框（用`next`串接的框共用一篇文章），标注框样式成为段落样式，作者定义的CMYK颜色成为色板。带表单域的行内标签成为InDesign表单域。InDesign会重新排文字，所以换行位置可能与PDF不同。`--images link`把图片放在文件旁边的`Links/`中，而不放进文件。包里暂时无法携带的内容（表格、公式、乐谱）以`idml.*`警告报告。见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postextidml)。自postext 1.71起。
 
 ### pack和unpack
 

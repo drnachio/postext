@@ -173,6 +173,19 @@ describe('postext cli', () => {
     expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(3);
   }, 120_000);
 
+  it('exports a book of comic pages as its pages unless told otherwise (#1444)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'postext-cli-'));
+    mkdirSync(join(dir, 'ch'));
+    const page = ':::page{split="40 / *"}\n::panel\ncaption: The lighthouse keeper climbs the stairs every evening.\n::panel\nmaya: Grandpa! I am here, and the boat is late again.\n:::\n';
+    writeFileSync(join(dir, 'ch', '01.md'), `# Pages\n\n${page}\n${page}`);
+    const picked = run(['docx', 'ch', '-o', 'p.docx', '--offline', '--json'], dir);
+    expect(picked.code).toBe(0);
+    expect(JSON.parse(picked.stdout).outputs[0].pages).toBeGreaterThan(0);
+    const asked = run(['docx', 'ch', '--variant', 'semantic', '-o', 's.docx', '--offline', '--json'], dir);
+    expect(asked.code).toBe(0);
+    expect(JSON.parse(asked.stdout).outputs[0].pages).toBeUndefined();
+  }, 120_000);
+
   it('applies the edits of a semantic file to loose Markdown, and converts it without a book', async () => {
     const dir = book();
     // Windows line ends and a byte-order mark stay as they were.
@@ -218,6 +231,16 @@ describe('postext cli', () => {
     const r = Bun.spawnSync([...cmd, 'image', 'ch', '--page', '#1', '-o', '-', '--dpi', '20', '--offline', '-q'], { cwd: dir, env: { ...process.env, POSTEXT_CACHE_DIR: join(dir, '.cache') } });
     expect(r.exitCode).toBe(0);
     expect(r.stdout.subarray(1, 4).toString()).toBe('PNG');
+  }, 60_000);
+
+  it('writes an IDML package, and refuses linked pictures on stdout', () => {
+    const dir = book();
+    const r = run(['idml', 'ch', '-o', 'b.idml', '--offline', '-q'], dir);
+    expect(r.code).toBe(0);
+    expect(readFileSync(join(dir, 'b.idml')).subarray(0, 2).toString()).toBe('PK');
+    const stdout = run(['idml', 'ch', '--images', 'link', '-o', '-', '--offline'], dir);
+    expect(stdout.code).toBe(2);
+    expect(stdout.stderr).toContain('--images link');
   }, 60_000);
 
   // #695: `preset.json`'s `start` says where a book that is part of a longer

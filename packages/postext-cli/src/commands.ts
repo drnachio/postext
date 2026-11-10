@@ -130,12 +130,25 @@ export const COMMANDS: CommandSpec[] = [
     description: 'semantic (default): native Word headings, lists, tables, notes and equations, built from the Markdown with the book\'s styles. formatted: the PDF\'s pages, each line where the layout set it, in text boxes. Both embed the book\'s fonts and an export map: give the edited file back to `postext import-docx file.docx <book>` and the edits go into the chapters and resources.',
     options: [
       OUT,
-      { name: 'variant', kind: 'string', arg: 'semantic|formatted', help: 'Native Word structures (semantic, default) or the PDF\'s pages (formatted, lays the book out)' },
+      { name: 'variant', kind: 'string', arg: 'semantic|formatted', help: 'Native Word structures (semantic) or the PDF\'s pages (formatted, lays the book out); by default semantic, formatted for a book mostly of composed or comic pages' },
       { name: 'embed-fonts', kind: 'boolean', help: 'Embed the book\'s faces (default on; --no-embed-fonts names them only)' },
     ],
     examples: ['postext docx book.postext -o book.docx', 'postext docx book/ --variant formatted -o pages.docx'],
     canvas: true,
     run: () => import('./commands/docx'),
+  },
+  {
+    name: 'idml',
+    summary: 'The laid-out pages as an InDesign package (IDML)',
+    usage: 'postext idml <input…> [-o book.idml] [--images embed|link]',
+    description: 'The PDF\'s pages as an InDesign Markup package: one page per spread, rules, boxes, paths and pictures as page items, each composed frame\'s text as a text frame with its own story, callout styles as paragraph styles, authored CMYK colours as swatches. InDesign sets the text again: frames, styles and first baselines match, line breaks may differ.',
+    options: [
+      OUT,
+      { name: 'images', kind: 'string', arg: 'embed|link', help: 'Pictures inside the file (embed, default) or beside it in Links/ (link)' },
+    ],
+    examples: ['postext idml book/ -o book.idml'],
+    canvas: true,
+    run: () => import('./commands/idml'),
   },
   {
     name: 'import-docx',
@@ -214,7 +227,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: 'epub', kind: 'string', arg: 'FILE', help: 'Write the EPUB here' },
       { name: 'images', kind: 'string', arg: 'DIR', help: 'Write page images here' },
       { name: 'docx', kind: 'string', arg: 'FILE', help: 'Write the Word file here' },
-      { name: 'docx-variant', kind: 'string', arg: 'semantic|formatted', help: 'With --docx: native Word structures (default) or the laid-out pages' },
+      { name: 'docx-variant', kind: 'string', arg: 'semantic|formatted', help: 'With --docx: native Word structures or the laid-out pages; by default semantic, formatted for a book mostly of composed or comic pages' },
       { name: 'docx-fonts', kind: 'boolean', help: 'With --docx: embed the book\'s faces (default on)' },
       { name: 'pages', short: 'p', kind: 'string', arg: 'LIST', help: `With --images: ${PAGES_HELP}` },
       { name: 'pattern', kind: 'string', arg: 'NAME', help: 'With --images: file name pattern (default "page-{n:03}")' },
@@ -232,7 +245,7 @@ export const COMMANDS: CommandSpec[] = [
 ];
 
 /** Commands that read a book (and take BOOK_OPTIONS). */
-export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'pack', 'info', 'check', 'build']);
+export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'info', 'check', 'build']);
 
 export function findCommand(name: string): CommandSpec | undefined {
   return COMMANDS.find((c) => c.name === name);

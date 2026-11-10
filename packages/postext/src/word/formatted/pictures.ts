@@ -9,7 +9,8 @@ import type { DisplayItem, DisplayRect } from '../../paint/displayList/types.js'
 import { base64Decode } from '../anchors/base64.js';
 import { wordFontFor } from '../fonts/plan.js';
 import type { WordFontPlan } from '../fonts/types.js';
-import { anchorRun, pictureGraphic, type BlipRefs } from './drawing.js';
+import { svgTextAsPaths } from '../svg/text.js';
+import { anchorRun, pictureGraphic, pictureShapeGraphic, type BlipRefs } from './drawing.js';
 import type { WriterContext } from './types.js';
 
 type ImageItem = Extract<DisplayItem, { kind: 'image' }>;
@@ -170,10 +171,24 @@ export function svgWithWordFonts(svg: string, plan: WordFontPlan | undefined): s
   return out.replace(/<[A-Za-z][^<>]*>/g, (tag) => (/\sfont|style\s*=/i.test(tag) ? wordFontTag(plan, tag) : tag));
 }
 
+/** An SVG with `currentColor` replaced by `ink`: Word's SVG renderer
+ *  paints a `currentColor` stroke or fill as nothing (a score lost its
+ *  staff lines and stems, #1444). `ink` is the colour of the text the
+ *  SVG sits in, as the canvas and the PDF paint it; the root's own
+ *  `color` wins when the SVG sets one. */
+export function svgWithInk(svg: string, ink = '#000000'): string {
+  if (!/currentColor/i.test(svg)) return svg;
+  const root = /<svg\b[^>]*>/i.exec(svg)?.[0] ?? '';
+  const own = /\scolor\s*=\s*["']([^"']+)["']/i.exec(root)?.[1] ?? /style\s*=\s*["'][^"']*(?:^|;|\s)color\s*:\s*([^;"']+)/i.exec(root)?.[1];
+  const colour = (own && !/currentColor|inherit/i.test(own) ? own : ink).trim();
+  return svg.replace(/currentColor/gi, colour);
+}
+
 /** Register an SVG with its PNG fallback (drawn from the SVG as the book
  *  has it: the rasteriser knows the web fonts). */
-async function svgRefs(ctx: WriterContext, svg: string, rect: DisplayRect, label: string): Promise<BlipRefs> {
-  const svgRel = ctx.pkg.addMedia(strToU8(svgWithWordFonts(svg, ctx.plan)), 'svg');
+async function svgRefs(ctx: WriterContext, svg: string, rect: DisplayRect, label: string, ink?: string): Promise<BlipRefs> {
+  svg = svgWithInk(svg, ink);
+  const svgRel = ctx.pkg.addMedia(strToU8(svgWithWordFonts(svgTextAsPaths(svg, ctx.plan), ctx.plan)), 'svg');
   const { w, h } = fallbackSize(rect, ctx.dpi);
   let png: Uint8Array | undefined;
   if (ctx.rasterizeSvg) {
@@ -221,23 +236,41 @@ export function srcRect(crop: ImageItem['crop']): string {
   return `<a:srcRect l="${l}" t="${t}" r="${r}" b="${b}"/>`;
 }
 
+/** `a:fillRect` of a safe-area crop for a shape filled with the
+ *  picture: the whole picture's rectangle relative to the shape. */
+export function cropFillRect(crop: ImageItem['crop']): string {
+  if (!crop || crop.width <= 0 || crop.height <= 0) return '';
+  const pc = (v: number): number => Math.round(v * 100000);
+  const l = pc(-crop.x / crop.width);
+  const t = pc(-crop.y / crop.height);
+  const r = pc(-(1 - crop.x - crop.width) / crop.width);
+  const b = pc(-(1 - crop.y - crop.height) / crop.height);
+  if (!l && !t && !r && !b) return '';
+  return `<a:fillRect l="${l}" t="${t}" r="${r}" b="${b}"/>`;
+}
+
 /** An image item as an anchored picture ('' when it cannot be embedded). */
 export async function imageRun(ctx: WriterContext, item: ImageItem): Promise<string> {
   const refs = await fileRefs(ctx, item);
   if (!refs) return '';
   if (item.tint) ctx.warn('picture-tint', `picture ${item.fileId}: its tint is not carried into Word`);
   const crop = srcRect(item.crop);
-  return anchorRun(ctx, { rect: item.rect, name: 'ptx picture', ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.alt ? { descr: item.alt } : {}) }, (id, cx, cy) =>
+  const fill = cropFillRect(item.crop);
+  // A turned or flipped picture stays a picture: LibreOffice draws a
+  // shape's picture fill unturned and stretched into the turned frame (an
+  // atlas map turned a quarter came out upright under its grid, #1444).
+  const asShape = item.rotate || item.flipH ? undefined : (_id: number, cx: number, cy: number): string => pictureShapeGraphic(cx, cy, refs, fill ? { fillRect: fill } : {});
+  return anchorRun(ctx, { rect: item.rect, name: 'ptx picture', ...(asShape ? { asShape } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.alt ? { descr: item.alt } : {}) }, (id, cx, cy) =>
     pictureGraphic(id, cx, cy, refs, { name: item.fileId, ...(item.alt ? { descr: item.alt } : {}), ...(crop ? { srcRect: crop } : {}), ...(item.rotate ? { rotate: item.rotate } : {}), ...(item.flipH ? { flipH: true } : {}) }),
   );
 }
 
 /** An inline SVG (maths, music) as a picture anchored over its run. */
-export async function inlineSvgRun(ctx: WriterContext, svg: string, rect: DisplayRect, rotate: number | undefined, kind: string): Promise<string> {
-  const key = `inline:${svg.length}:${svg}`;
+export async function inlineSvgRun(ctx: WriterContext, svg: string, rect: DisplayRect, rotate: number | undefined, kind: string, ink?: string): Promise<string> {
+  const key = `inline:${ink ?? ''}:${svg.length}:${svg}`;
   let refs = ctx.media.get(key);
   if (!ctx.media.has(key)) {
-    refs = await svgRefs(ctx, svg, rect, `inline ${kind}`);
+    refs = await svgRefs(ctx, svg, rect, `inline ${kind}`, ink);
     ctx.media.set(key, refs);
   }
   if (!refs) return '';

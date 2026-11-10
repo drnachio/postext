@@ -122,6 +122,9 @@ export interface VDTChip {
    *  text colour: painted on a blank too, so a pupil writes the characters
    *  of 看拼音写词语 under their pinyin. */
   readings?: VDTAnnotationRun[];
+  /** A fillable form field on the box (#1445): the PDF puts an interactive
+   *  field there, the canvas paints the value. */
+  field?: import('../parse/formFields.js').FormFieldSpec;
   /** The exercise slot the chip stands for (#1230). */
   exercise?: import('../parse/types.js').ExerciseHit;
   /** The order in which renderers advance through `runs` from the box's

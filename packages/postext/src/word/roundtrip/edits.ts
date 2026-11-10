@@ -9,7 +9,7 @@ import type { FragmentTarget } from '../anchors/types.js';
 import { diffText, type Hunk } from './diff.js';
 import type { BlockView } from './blocks.js';
 import { escapeTyped, markupDeletable, splitKey, widenOverDelimiters, wrapFlags } from './markup.js';
-import { mathUnchanged, mathSource } from './math.js';
+import { keepTag, mathUnchanged, mathSource } from './math.js';
 import { isHolderChar, OBJECT_CHAR, PARA_CHAR } from './walk.js';
 
 export interface SourceEdit {
@@ -24,6 +24,9 @@ export interface SourceEdit {
   /** For a rejected edit to text without a source: what Word holds. */
   before?: string;
 }
+
+/** The space the writer indents a line of verse with. */
+const EN_SPACE = '\u2002';
 
 const isSpace = (ch: string | undefined): boolean => ch !== undefined && /\s/.test(ch) && ch !== PARA_CHAR;
 
@@ -205,9 +208,14 @@ export function equalPairs(v: BlockView, hunks: readonly Hunk[]): Map<number, nu
   return out;
 }
 
-/** What a paragraph break typed in this block writes: a blank line, or a
- *  new item of the same list. */
+/** A block of verse: its lines are paragraphs in Word (#1444), so a
+ *  paragraph mark typed in it starts a new line of the poem. */
+const isVerse = (v: BlockView): boolean => v.frags.some((f) => f.role === 'verse');
+
+/** What a paragraph break typed in this block writes: a blank line, a new
+ *  item of the same list, or a new line of verse. */
 function paragraphBreak(v: BlockView, base: string): string {
+  if (isVerse(v)) return '\n';
   const head = base.slice(v.range[0], v.range[0] + 40);
   const m = /^([ \t]*)(?:([-*+])|(\d+)([.)]))[ \t]+/.exec(head);
   if (m) return `\n${m[1]}${m[2] ?? `${Number(m[3]) + 1}${m[4]}`} `;
@@ -238,6 +246,9 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     else if (v.O[i] === '-' || v.O[i] === '‐') hyphens++;
   }
   const ctx = splitKey(contextKey);
+  // An equation the hunk replaces keeps its number (`\tag`) in the source.
+  const at = h.a1 - h.a0 === 1 && v.O[h.a0] === OBJECT_CHAR ? v.atomOf[h.a0]! : -1;
+  const replaced = at >= 0 ? base.slice(v.atoms[at]!.start, v.atoms[at]!.end) : undefined;
   let out = '';
   let run = '';
   let runKey: string | undefined;
@@ -260,6 +271,12 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     if (ch === PARA_CHAR) {
       piece = paragraphBreak(v, base);
       plain = false;
+      // A new line of verse indented in Word with en spaces (as the writer
+      // sets a line's indent): one source space each.
+      if (isVerse(v)) while (v.N[j + 1] === EN_SPACE && j + 1 < h.b1) {
+        piece += ' ';
+        j++;
+      }
     } else if (ch === '\n') {
       if (newlines > 0) {
         newlines--;
@@ -273,7 +290,7 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     } else if (ch === OBJECT_CHAR) {
       const tex = v.NT[j];
       if (tex === undefined) continue;
-      piece = mathSource(tex, display);
+      piece = mathSource(replaced !== undefined ? keepTag(replaced, tex) : tex, display);
       plain = false;
     } else piece = escapeTyped(ch);
     if (!plain) {
@@ -294,7 +311,7 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
 function hunkKind(v: BlockView, h: Hunk): SourceEdit['kind'] {
   for (let j = h.b0; j < h.b1; j++) if (v.NTracked[j]) return 'tracked';
   if (v.dels.some((d) => d >= h.b0 && d <= h.b1)) return 'tracked';
-  for (let j = h.b0; j < h.b1; j++) if (v.N[j] === PARA_CHAR) return 'paragraph';
+  if (!isVerse(v)) for (let j = h.b0; j < h.b1; j++) if (v.N[j] === PARA_CHAR) return 'paragraph';
   return 'text';
 }
 

@@ -1,17 +1,20 @@
-// One chapter of the semantic .docx (#1390): front matter kept as source,
-// the body parsed by the engine parser and written block by block, and the
+// One chapter of the semantic .docx (#1390): the front matter left out
+// (#1444), the body parsed by the engine parser and written block by block, and the
 // section break that ends it.
 
 import { extractFrontmatter } from '../../parse/frontmatter.js';
 import { parseMarkdownWithIssues } from '../../parse/index.js';
 import type { ContentBlock, ParseIssue, ParseOptions } from '../../parse/types.js';
-import { buildTree, citedNotes, renderNodes } from './blocks.js';
+import { buildTree, citedNotes, renderPieces } from './blocks.js';
 import type { WriterContext } from './context.js';
+import { chapterSolutions } from './exercises/exercises.js';
+import { floatedAfter } from './media/floated.js';
+import { bottomBoxesLast } from './media/bottomBoxes.js';
 import { namedBookmark } from './marks.js';
 import { lineStart, rawSdt } from './raw.js';
-import { sectionXml, type PageGeometry } from './sections.js';
+import { bookPageNumbers, type PageGeometry } from './sections.js';
+import { chapterSections, type Piece } from './layout/pageSpan.js';
 import type { WordChapterInput } from './types.js';
-import { pPr } from './wml.js';
 
 export interface ParsedChapter {
   input: WordChapterInput;
@@ -39,6 +42,9 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
     if (prefixes[i] !== undefined) headingNumbers.set(b, prefixes[i]!);
   });
   for (const b of pc.blocks) if (b.footnoteDef !== undefined && !defs.has(b.footnoteDef)) defs.set(b.footnoteDef, b);
+  // The number format goes on from the chapter before (the engine keeps
+  // the current format until a `:::numbering` changes it); a start does not.
+  const carried = index > 0 ? ctx.chapter?.pageNumbers?.format : undefined;
   ctx.chapter = {
     index,
     input: pc.input,
@@ -51,13 +57,19 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
     blockCounter: 0,
   };
   for (const issue of pc.issues) ctx.warn(`parse:${issue.kind}`, `Unclosed or stray ${issue.delimiter} at offset ${issue.sourceStart + pc.offset}.`);
-  let xml = namedBookmark(ctx, `chapter_${pc.input.id}`);
-  if (pc.offset > 0) xml += rawSdt(ctx, 0, pc.offset, 'frontmatter');
-  xml += renderNodes(ctx, buildTree(pc.blocks), {});
+  ctx.chapter.pageNumbers = index === 0 ? bookPageNumbers(ctx) : carried ? { format: carried } : undefined;
+  const mark = namedBookmark(ctx, `chapter_${pc.input.id}`);
+  // The front matter is not shown: its title and author go to the
+  // document properties, and source no fragment covers is kept as it is
+  // on re-import.
+  const pieces: Piece[] = renderPieces(ctx, bottomBoxesLast(buildTree(pc.blocks), ctx.resolved.calloutStyles), {}, (nodes) => floatedAfter(ctx, nodes));
+  pieces.push({ xml: chapterSolutions(ctx) });
   // Notes cited only from text kept as source: their definitions too.
   for (const [id, def] of defs) {
-    if (ctx.chapter.cited.has(id) && !ctx.chapter.usedDefs.has(id)) xml += rawSdt(ctx, lineStart(pc.input.markdown, def.sourceStart + pc.offset), def.sourceEnd + pc.offset, 'footnote');
+    if (ctx.chapter.cited.has(id) && !ctx.chapter.usedDefs.has(id)) pieces.push({ xml: rawSdt(ctx, lineStart(pc.input.markdown, def.sourceStart + pc.offset), def.sourceEnd + pc.offset, 'footnote') });
   }
-  const sect = sectionXml(ctx, geo, index, pc.input.title);
-  return last ? xml + sect : `${xml}<w:p>${pPr({ sectPr: sect })}</w:p>`;
+  const first = pieces.find((p) => p.xml);
+  if (first) first.xml = mark + first.xml;
+  else pieces.push({ xml: mark });
+  return chapterSections(ctx, geo, index, pieces, last);
 }

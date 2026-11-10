@@ -5,7 +5,7 @@ import { xmlProblems } from '../ooxml/wellFormed.js';
 import { WORDML_NAMESPACES } from '../ooxml/constants.js';
 import { baselineOffset, faceMetricsOf, MetricsCache } from './metrics.js';
 import { planChunks, planLines } from './paragraphs.js';
-import { imageRun, sniffPicture, srcRect, svgWithWordFonts } from './pictures.js';
+import { imageRun, sniffPicture, srcRect, svgWithInk, svgWithWordFonts } from './pictures.js';
 import { condensedReading, readingEms, rubyXml } from './eastAsian.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { HOLDER, emitRun } from './runs.js';
@@ -47,7 +47,7 @@ describe('formatted Word graphics and helpers (#1392)', () => {
     expect(sniffPicture(new Uint8Array([0x52, 0x49, 0x46, 0x46]))).toBeUndefined();
   });
 
-  it('places the baseline by the face descent', () => {
+  it('reads Windows metrics and sets the baseline 4/5 down the line (#1444)', () => {
     const head = new Uint8Array(54);
     head[18] = 0x03; head[19] = 0xe8; // 1000 units
     const os2 = new Uint8Array(96);
@@ -55,8 +55,7 @@ describe('formatted Word graphics and helpers (#1392)', () => {
     os2[76] = 0x01; os2[77] = 0x2c; // win descent 300
     const m = faceMetricsOf({ flavor: 0x00010000, tables: new Map([['head', head], ['OS/2', os2]]) })!;
     expect(m).toEqual({ unitsPerEm: 1000, ascent: 900, descent: 300 });
-    expect(baselineOffset(14, 12 * 0.3)).toBeCloseTo(10.4, 6);
-    expect(new MetricsCache(undefined).descentPx('16px "X"')).toBeCloseTo(3.2, 6);
+    expect(baselineOffset(14)).toBeCloseTo(11.2, 6);
   });
 
   it('draws rules, rounded boxes and paths as shapes', () => {
@@ -73,13 +72,37 @@ describe('formatted Word graphics and helpers (#1392)', () => {
     expect(path).toContain('<a:moveTo><a:pt x="0" y="0"/></a:moveTo>');
     expect(path).toContain('<a:cubicBezTo>');
     expect(path).toContain('<a:quadBezTo>');
-    expect(path).toContain('stroke="0"');
+    // The shape's fill and line say it: Google Docs refuses a document
+    // whose path carries `stroke` or `fill` (#1444).
+    expect(path).toContain('<a:path w="254000" h="254000">');
+    expect(path).not.toMatch(/<a:path [^>]*(stroke|fill)=/);
+    expect(path).toContain('<a:ln><a:noFill/></a:ln>');
     for (const x of [rule, box!, path]) {
       expect(xmlProblems(wrap(x))).toEqual([]);
-      // One frame kind for every object (LibreOffice keeps their order).
-      expect(x).toContain('<wps:cNvSpPr txBox="1"/>');
-      expect(x).toMatch(/<\/wps:spPr><wps:txbx><w:txbxContent><w:p><w:pPr>[^]*?<\/w:pPr><\/w:p><\/w:txbxContent><\/wps:txbx><wps:bodyPr [^>]*lIns="0"[^>]*><a:noAutofit\/><\/wps:bodyPr><\/wps:wsp>/);
+      // A plain shape, not an empty text box: Word hands the text of the
+      // boxes on later pages to the wrong boxes otherwise (#1444).
+      expect(x).toContain('<wps:cNvSpPr/>');
+      expect(x).not.toContain('<wps:txbx>');
+      expect(x).toMatch(/<\/wps:spPr><wps:bodyPr [^>]*lIns="0"[^>]*><a:noAutofit\/><\/wps:bodyPr><\/wps:wsp>/);
+      // Behind the text layer, where LibreOffice keeps it under the text.
+      expect(x).toContain('behindDoc="1"');
     }
+    // Over something already in front (a picture's border): in front.
+    ctx.front = [{ x: 0, y: 0, width: 40, height: 20 }];
+    const [over] = rectRuns(ctx, { kind: 'rect', rect: { x: 0, y: 0, width: 40, height: 20 }, stroke: '#000', strokeWidthPx: 1 });
+    expect(over).toContain('behindDoc="0"');
+  });
+
+  it('paints an SVG\'s currentColor in the ink of its text (#1444)', () => {
+    // Word draws a currentColor stroke as nothing: a score lost its staves.
+    const staff = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 5L10 5" stroke="currentColor"/><g fill="currentColor"/></svg>';
+    expect(svgWithInk(staff, '#15171c')).toBe(staff.replace(/currentColor/g, '#15171c'));
+    expect(svgWithInk(staff)).not.toContain('currentColor');
+    // The SVG's own colour wins.
+    const own = staff.replace('viewBox', 'color="#aa0000" viewBox');
+    expect(svgWithInk(own, '#15171c')).toContain('stroke="#aa0000"');
+    const plain = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" stroke="#000"/></svg>';
+    expect(svgWithInk(plain, '#fff')).toBe(plain);
   });
 
   it('names the embedded fonts in an SVG\'s text (#1406)', async () => {

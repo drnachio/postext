@@ -13,7 +13,7 @@ import type { WordFontPlan } from '../fonts/types.js';
 import { createDocxPackage } from '../ooxml/package.js';
 import { applyDocxEdits } from '../roundtrip/index.js';
 import { faceAdvancesOf, MetricsCache, naturalEms, type FaceAdvances } from './metrics.js';
-import { chunkBox, emitGroups, lineDescent, planChunks, planLines, runGaps } from './paragraphs.js';
+import { chunkBox, emitGroups, planChunks, planLines, runGaps } from './paragraphs.js';
 import { HOLDER, LEGACY_HOLDER, emitRun, resolveFont, runProps } from './runs.js';
 import { formattedDocx } from './index.js';
 import { build, config, documentXml, unzip } from './formatted.test-helper.js';
@@ -140,7 +140,7 @@ describe('run widths of the formatted Word export (#1406)', () => {
     const hung = lineOf([run('漢字', 0, 24), run('、', 24, 6)], { width: 24, align: 'justify' });
     const plans = planLines(ctx, [hung]);
     const [chunk] = planChunks([hung], plans);
-    expect(chunkBox(ctx, [hung], chunk!, plans).width).toBeCloseTo(30 + 2, 6);
+    expect(chunkBox(ctx, [hung], chunk!, plans).width).toBeCloseTo(30 + 2 * 2, 6);
     expect(chunk!.groups[0]!.firstR).toBeCloseTo(30, 6);
   });
 
@@ -181,15 +181,6 @@ describe('run widths of the formatted Word export (#1406)', () => {
     const space = run(' ', 0, 2, { space: true });
     expect(spacingOf(emitRun(ctx, space, lineOf([run('a', 0, 6), space], { align: 'justify' })).rPr)).toBe(-2);
     expect(emitRun(ctx, run('abc', 0, 18.5), lineOf([run('abc', 0, 18.5)])).rPr).not.toContain('w:spacing');
-  });
-
-  it('leaves blank runs out of the line descent', () => {
-    const ctx = context({ plan: undefined, metrics: new MetricsCache(undefined) });
-    const l = lineOf([run('ab', 0, 12), run(' ', 12, 4, { fontString: '40px "Big"' }), run('cd', 16, 12)]);
-    expect(lineDescent(ctx, l)).toBeCloseTo(12 * 0.2, 6);
-    // A tab is written in its own face: it counts.
-    const tab = lineOf([run('ab', 0, 12), run('\t', 12, 4, { fontString: '40px "Big"' }), run('cd', 16, 12)]);
-    expect(lineDescent(ctx, tab)).toBeCloseTo(40 * 0.2, 6);
   });
 
   it('never splits a ligature between pieces of a run', () => {

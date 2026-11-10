@@ -46,9 +46,18 @@ describe('display-list content round-trips through the formatted export (#1406)'
     const enter = xml.match(/<w:r>(<w:rPr>(?:(?!<\/w:rPr>).)*<\/w:rPr>)<w:t xml:space="preserve">Ente/);
     expect(enter).not.toBeNull();
     expect(enter![1]).not.toContain('<w:b/>');
-    // Its box, an empty text box, and the room before its words.
-    expect(xml).toMatch(/txBox="1"\/><wps:spPr>(?:(?!<\/wps:spPr>).)*EEEEEE/);
+    // Its box, a plain shape (#1444), and the room before its words.
+    expect(xml).toMatch(/<wps:cNvSpPr\/><wps:spPr>(?:(?!<\/wps:spPr>).)*EEEEEE/);
     expect(xml).toMatch(/<w:spacing w:val="\d+"\/>(?:(?!<\/w:r>).)*<w:t xml:space="preserve"> <\/w:t><\/w:r><w:r><w:rPr>(?:(?!<\/w:rPr>).)*<\/w:rPr><w:t xml:space="preserve">Ente/);
+  });
+
+  it('an empty chip (an end mark) as a no-break space over its box (#1444)', async () => {
+    const cfg = config({ chipStyles: [{ id: 'end', paddingX: pt(4), background: { hex: '#1d5470', model: 'hex' } }] } as Partial<PostextConfig>);
+    const md = `${LOREM} :chip[ ]{style="end"}\n`;
+    const xml = await roundTrip(md, cfg);
+    // The engine's private-use stand-in never reaches a run.
+    expect(xml).not.toContain('\ue1a0');
+    expect(xml).toContain('1D5470');
   });
 
   it('a word retyped in a chip stays inside its brackets', async () => {

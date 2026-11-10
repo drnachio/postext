@@ -1,6 +1,7 @@
 // The formatted (page-faithful) Word export (#1392): options and the
 // state a page writer shares while the body is written.
 
+import type { DisplayRect } from '../../paint/displayList/types.js';
 import type { VDTDocument } from '../../vdt/document.js';
 import type { Resource } from '../../types/resources/resources.js';
 import type { MapFragment } from '../anchors/types.js';
@@ -58,6 +59,13 @@ export interface WriterContext {
   referenced: Set<string>;
   /** Z-order counter (`wp:anchor relativeHeight`). */
   z: number;
+  /** What a later drawing without text must stay in front of on the
+   *  current page, px: the inked lines of its text boxes, its floating
+   *  tables and the drawings kept in front over them. */
+  front?: DisplayRect[];
+  /** The current page's pictures behind the text, in both forms, and
+   *  whether a shape behind the text covers them (`shapesOverPictures`). */
+  pictures?: { rect: DisplayRect; pic: string; shape: string; covered?: boolean }[];
   warn: (code: string, message: string) => void;
   resourceBytes: FormattedDocxOptions['resourceBytes'];
   rasterizeSvg: FormattedDocxOptions['rasterizeSvg'];

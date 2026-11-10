@@ -169,6 +169,7 @@ sa propre langue, sauf si `--locale` en demande une autre (`--locale en`).
     <tr><td><code>image</code></td><td>Une page sous forme d’image PNG, JPEG ou WebP.</td></tr>
     <tr><td><code>images</code></td><td>Toutes les pages, ou une plage, sous forme d’images dans un dossier.</td></tr>
     <tr><td><code>docx</code></td><td>Les chapitres en document Word : sémantique (titres, listes, notes et tableaux propres à Word) ou mis en page (les pages du PDF).</td></tr>
+    <tr><td><code>idml</code></td><td>Les pages en paquet InDesign (IDML), à finir dans InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Les corrections faites dans un fichier Word exporté, rapportées dans le livre ; tout autre document Word, en nouveau livre (un dossier ou un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Un dossier de livre ou des fichiers Markdown isolés réunis en un seul fichier <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fichier <code>.postext</code> décompressé dans un dossier.</td></tr>
@@ -336,6 +337,28 @@ qui n’en ont aucun (les styles de paragraphe et de titre du fichier `--config`
 correspondent les styles Word, et les niveaux de titre), et laisse tel quel tout espacement
 que le livre définit déjà. Avec `--json`, `styleTracking` énumère ce qui a été posé (`applied`)
 et ce qui a été laissé (`skipped`). Depuis postext 1.39.
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+`idml` met le livre en page comme `pdf` et écrit les pages en paquet InDesign
+Markup, à finir dans InDesign : une page par planche, filets, encadrés, tracés
+et images comme objets de page, le texte de chaque bloc d’une page composée
+comme un bloc de texte avec son propre article (les blocs chaînés par `next`
+en partagent un), les styles d’encadré comme styles de paragraphe et les
+couleurs CMJN définies par l’auteur comme nuances. Les pastilles qui portent
+un champ de formulaire deviennent des champs de formulaire InDesign. InDesign
+recompose le texte, si bien que les fins de ligne peuvent différer de celles
+du PDF. `--images link` place les images à côté du fichier, dans `Links/`, au
+lieu de les y inclure. Ce que le paquet ne sait pas encore porter (tableaux,
+formules, musique) est signalé par un avertissement `idml.*`. Voir
+[Utilisation programmatique › Paquets
+InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postextidml).
+Depuis postext 1.71.
 
 ### pack et unpack
 

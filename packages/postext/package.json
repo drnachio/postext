@@ -32,7 +32,7 @@
     "react",
     "web-worker"
   ],
-  "version": "1.70.5",
+  "version": "1.70.6",
   "type": "module",
   "license": "MIT",
   "homepage": "https://postext.dev/",
@@ -57,6 +57,10 @@
     "./word": {
       "types": "./dist/word/index.d.ts",
       "default": "./dist/word/index.js"
+    },
+    "./idml": {
+      "types": "./dist/idml/index.d.ts",
+      "default": "./dist/idml/index.js"
     },
     "./react": {
       "types": "./dist/react/index.d.ts",

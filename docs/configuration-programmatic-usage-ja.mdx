@@ -699,7 +699,7 @@ if (isExportedDocx(edited)) {
 - **`formattedDocx(options)`**：`docs`（`chapters`の順に章ごと1つの`VDTDocument`で、PDFの元になる印刷用のチェーン）と、同じ`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`、`onWarning`を受け取ります。`onProgress(done, total)`は書き出したページを数えます。
 - **`planWordFonts(faces, options)`**：本のフォント（`{ family, weight, style, files }`。WOFF2またはsfnt、unicode-rangeの断片はいくつでも）を、Wordが埋め込む静的なTrueTypeフォントにします。`decompressWoff2`（`postext-pdf`が書き出すもの）でWOFF2を読みます。`usedText`と`fontStrings`は、書き出しで使わない断片とフォントを外します。`familySuffix`（既定は`' PTX'`）は埋め込む各ファミリーに付きます。`warnings`には、外したフォント（`restricted`、`cff`、`variable`、`missing`、`merge-failed`）と、プレビューと印刷だけのために埋め込んだフォント（`preview-print`）が並びます。
 - **`isExportedDocx(bytes)`**：ファイルが書き出しの対応表を持つかどうかを返し、例外は投げません。`readExportMap(files)`は、展開したパーツ（fflateの`unzipSync`）から対応表そのものを読みます。`exportId`、`variant`、`engine`、章とそのハッシュ、書き出したテキストのコピーが入っています。
-- **`applyDocxEdits(bytes, { chapters, resources })`**：同期関数です。校正を反映したすべての章（`chapters`）、キャプション、注、代替テキスト、表のセルが変わったリソースのディープコピー（`resources`）、`edits`、`comments`、`variant`、`exportId`、`changed`を返します。各編集は、`chapter`、または`resourceId`と`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`）、今のテキストでの`start`と`end`、`before`、`after`、`kind`（`text`、`format`、`paragraph`、`tracked`）、そして`status`とその`reason`を持ちます。`status`は`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）、`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`）のどれかです。各コメントは`author`、`text`、位置を持ちます（書き出したテキストの上にないコメントでは`start`が-1）。書き出した`.docx`でないファイルは`DocxReadError`を投げます。章のidは書き出したときと同じでなければなりません。知らない章への編集は報告されるだけで、適用されません。
+- **`applyDocxEdits(bytes, { chapters, resources })`**：同期関数です。校正を反映したすべての章（`chapters`）、キャプション、注、代替テキスト、表のセルが変わったリソースのディープコピー（`resources`）、`edits`、`comments`、`variant`、`exportId`、`changed`を返します。各編集は、`chapter`、または`resourceId`と`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`）、今のテキストでの`start`と`end`、`before`、`after`、`kind`（`text`、`format`、`paragraph`、`tracked`）、そして`status`とその`reason`を持ちます。`status`は`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）、`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`、`resource-removed`）のどれかです。各コメントは`author`、`text`、位置を持ちます（書き出したテキストの上にないコメントでは`start`が-1）。書き出した`.docx`でないファイルは`DocxReadError`を投げます。章のidは書き出したときと同じでなければなりません。知らない章への編集は報告されるだけで、適用されません。
 
 それ以外のWordファイルは、スタイルのテンプレートを使ってMarkdownとして読み込みます。
 
@@ -719,6 +719,24 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 - **`analyzeDocx(word, template, config)`**：Sandboxが読み込みの前に表示する品質レポートです。使われているスタイル、スタイルの付いた段落の数、`directFormatting`、`manualHeadings`、`typedNumbering`などの指摘を、それぞれ件数と例を添えて返します。
 - <strong>`wordStyleTracking(word, template, config)`</strong>と<strong>`applyStyleTracking(config, tracking)`</strong>：Wordのスタイルの文字間隔を、文字間隔を指定していない設定のスタイルに引き継ぎます。
 
+
+### InDesignパッケージ（`postext/idml`）
+
+`postext/idml`サブパスは、組み上がったページをInDesign Markupのパッケージ（`.idml`）として書き出し、デザイナーがInDesignで本を仕上げられるようにします。組版どおりのWord文書と同じく、ページのディスプレイリストをもとに作り、DOMを使いません。コマンドラインの`idml`は、これを土台にしています（[コマンドライン › idml](/ja/docs/command-line#idml)を参照）。postext 1.71以降。
+
+```ts
+import { buildDocument } from 'postext';
+import { idmlDocument } from 'postext/idml';
+
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const { bytes, links } = idmlDocument({ docs, resourceBytes, images: 'embed', title: 'フィールドノート' });
+```
+
+- **`idmlDocument(options)`**：パッケージのバイト列（`bytes`。`Uint8Array`）と、`images: 'link'`のときは隣に書き出す画像（`links`：`{ path, bytes }`。パスは`Links/photo.jpg`のような`.idml`からの相対パス）を返します。受け取るのは、`docs`（本の順に章ごと1つの`VDTDocument`）、画像のバイト列を返す`resourceBytes(fileId)`、`images`（既定の`'embed'`か`'link'`）、`title`、InDesignでの書体のスタイル名を返す`fontStyleName(family, weight, italic)`（既定ではウェイトと傾きから`Regular`、`Bold Italic`…を導きます。`Roman`のようにフォント自身のスタイル名が違う場合は、その名前を返してください）、テンプレートページの枠の外にあるテキストの段落スタイルを役割ごとに指定する`styleNames`（`body`、`heading`、`list`…）、`forms`（既定は`true`で、フォームフィールドを持つチップをInDesignのフォームフィールドにします）、`onWarning`（`{ code, message }`）です。
+- 各ページは仕上がりサイズの1ページだけの見開きになり、最初のページの裁ち落としが文書の裁ち落としになります。罫線、ボックス、パス、画像は、線、長方形、多角形、グラフィックフレームになります。作者が指定したCMYKの色はプロセスカラーのスウォッチになり、`colorPalette`が名前を付けていればパレットの名前を使います。
+- テンプレートページの各枠のテキストは、1つのストーリーを持つ1つのテキストフレームになり、枠の囲みスタイルの名前を持つ段落スタイルが付きます。`next`でつないだ枠は、連結したテキストフレームで1つのストーリーを共有し、枠の区切りで分かれた段落も1つの段落のままです。テンプレートページの枠の外にあるテキストは、ブロックごとに1つのテキストフレームになり、Postextが置いた位置に置かれます。フィットでテキストを縮めた枠（`fit.shrinkText`）は、縮めた文字サイズと行送りを保ち、インデント、タブ位置、段落間のアキもそれに合わせて縮みます（枠のパディングは縮みません）。リスト項目のマーカーは段落の先頭に置き、タブを続け、ぶら下げインデントにします。段落は、インデント（左、1行目、右。Postextが行を置いた位置から読み取ります）、揃えとリーダーを含むタブ位置、段落後のアキを保ちます。段落スタイルには最初の段落のこれらの値が入り、枠のパディングはテキストフレームのフレーム内マージンになります。強制改行は強制改行のままです。チップの文字はテキストに残り、チップの箱（塗りと線）はその後ろの長方形になります。空のチップは細いスペースで場所を空けます。
+- フォームフィールドを持つチップ（`field="…"`。[PDF出力 › フォームフィールド](/ja/docs/configuration-pdf-output#フォームフィールド)を参照）は、チップの箱の上に置くInDesignのフォームフィールドになり、チップの塗りと線で描かれます。テキストと数値はテキストフィールド（フィールドの名前、チップの文字サイズ、`multiline`、`readonly`、`required`、`tooltip`を持ちます）、選択肢はコンボボックス（選択肢付き）、チェックボックスは2つの表示状態を持つチェックボックス（値がそう示していれば、初期状態でチェックが入ります）になります。フィールドの文字はテキストに入れず、その場所は空けたままにします。InDesignのフォームフィールドには初期値、数値の書式、計算、揃えがないため、これらはフィールドのスクリプトラベル（`postext:value`、`postext:format`、そして`calc`属性と同じ書き方の`postext:calc`。数値や入れ子の計算も含みます）に入れ、`field.value`または`field.script`の警告を出します。`forms: false`にすると、こうしたチップもほかのチップと同じように書き出し、値はテキストになります。
+- InDesignは自身のコンポーザーでテキストを組み直します。枠、スタイル、文字、最初のベースラインはPostextのものですが、改行位置は変わることがあります。表、数式、楽譜、行内の色見本はまだ書き出しません。それぞれ警告になります（`table`、`text.inline`）。右から左へ書く文字と縦組みのテキストは、左から右への横組みのストーリーとして書き出し、`text.rtl`または`text.vertical`の警告を出します。SVG画像はSVGのまま配置します。InDesign 2020以降で読み込めます（`image.svg`）。
 
 ## Web Workerでレイアウトを実行する
 

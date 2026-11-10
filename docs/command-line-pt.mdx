@@ -166,6 +166,7 @@ próprio idioma, a menos que `--locale` peça outro (`--locale en`).
     <tr><td><code>image</code></td><td>Uma página como imagem PNG, JPEG ou WebP.</td></tr>
     <tr><td><code>images</code></td><td>Todas as páginas, ou um intervalo, como imagens em uma pasta.</td></tr>
     <tr><td><code>docx</code></td><td>Os capítulos como documento do Word: semântico (títulos, listas, notas e tabelas próprios do Word) ou diagramado (as páginas do PDF).</td></tr>
+    <tr><td><code>idml</code></td><td>As páginas como pacote do InDesign (IDML), para finalizar no InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>As correções feitas num arquivo do Word exportado, de volta no livro; qualquer outro documento do Word, como livro novo (uma pasta ou um <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Uma pasta de livro ou Markdown solto como um único arquivo <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Um arquivo <code>.postext</code> como pasta.</td></tr>
@@ -328,6 +329,27 @@ que não têm nenhum (os estilos de parágrafo e de título do arquivo de `--con
 os estilos do Word correspondem, e os níveis de título) e deixa como está qualquer tracking
 que o livro já define. Com `--json`, `styleTracking` lista o que foi aplicado (`applied`) e o que
 ficou de fora (`skipped`). Desde o postext 1.39.
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+`idml` diagrama o livro como o `pdf` faz e grava as páginas como um pacote
+InDesign Markup, para finalizar no InDesign: um spread por página, fios,
+boxes, traçados e imagens como itens de página, o texto de cada bloco de uma
+página composta como um quadro de texto com a sua própria matéria (os blocos
+encadeados por `next` compartilham uma), os estilos de boxe como estilos de
+parágrafo e as cores CMYK definidas pelo autor como amostras. Os chips com
+campo de formulário viram campos de formulário do InDesign. O InDesign compõe
+o texto de novo, então as quebras de linha podem ser diferentes das do PDF.
+`--images link` deixa as imagens ao lado do arquivo, em `Links/`, em vez de
+dentro dele. O que o pacote ainda não consegue levar (tabelas, fórmulas,
+música) é avisado como `idml.*`. Veja [Uso programático › Pacotes do
+InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postextidml).
+Desde o postext 1.71.
 
 ### pack e unpack
 

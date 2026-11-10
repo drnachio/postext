@@ -100,4 +100,11 @@ describe('~~strikethrough~~', () => {
     const blocks = parseMarkdown('# A ~~struck~~ heading\n\n| Item | Price |\n| --- | --- |\n| Widget A | ~~€ 165~~ € 129 |\n');
     expect(struck(blocks[0]!.spans)).toEqual(['struck']);
   });
+
+  it('reads two subscripts written together as a strikethrough, as GFM does; a word joiner keeps them subscripts', () => {
+    expect(struck(parseInlineFormatting('x~i~~j~ and y~k~~l~'))).toEqual(['j and yk']);
+    const spans = parseInlineFormatting('x~i~\u2060~j~ and y~k~\u2060~l~');
+    expect(struck(spans)).toEqual([]);
+    expect(spans.filter((s) => s.script === 'sub').map((s) => s.text)).toEqual(['i', 'j', 'k', 'l']);
+  });
 });

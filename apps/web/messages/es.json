@@ -5941,6 +5941,7 @@
     "wordExportSemanticHint": "Estilos de Word, listas, notas y tablas a partir del texto: para escribir y corregir.",
     "wordExportFormatted": "Maquetado",
     "wordExportFormattedHint": "Cada página tal como la imprime el PDF, con las fuentes del libro: para revisar la maqueta.",
+    "wordExportPagesSuggested": "Casi todo lo que exportas son páginas compuestas o de cómic, que el documento semántico solo puede sustituir por un aviso: Maquetado las conserva tal como se imprimen.",
     "wordExportLaying": "Componiendo el capítulo __current__ de __total__…",
     "wordExportFonts": "Preparando la fuente __current__ de __total__…",
     "wordExportPages": "Escribiendo la página __current__ de __total__…",

@@ -34,12 +34,16 @@ export function convertTable(node: MmlNode, opts: RunOptions): string {
   // CT_M needs at least one row: an empty environment is one empty row.
   if (rows.length === 0) rows.push([]);
   const aligns = (explicitAttr(node, 'columnalign') ?? '').split(/\s+/).filter(Boolean);
-  let mcs = '';
+  // One `m:mc` per run of columns aligned alike, as Word writes them.
+  const runs: { jc: string; count: number }[] = [];
   for (let i = 0; i < cols; i++) {
     // MathML repeats the last value for the remaining columns.
-    const a = aligns[Math.min(i, aligns.length - 1)] ?? 'center';
-    mcs += `<m:mc><m:mcPr><m:count m:val="1"/><m:mcJc m:val="${JC[a] ?? 'center'}"/></m:mcPr></m:mc>`;
+    const jc = JC[aligns[Math.min(i, aligns.length - 1)] ?? 'center'] ?? 'center';
+    const last = runs[runs.length - 1];
+    if (last && last.jc === jc) last.count++;
+    else runs.push({ jc, count: 1 });
   }
+  const mcs = runs.map((r) => `<m:mc><m:mcPr><m:count m:val="${r.count}"/><m:mcJc m:val="${r.jc}"/></m:mcPr></m:mc>`).join('');
   const body = rows.map((cells) => {
     let r = '';
     for (let i = 0; i < cols; i++) r += wrap('e', cells[i] ? cellContent(cells[i]!, opts) : '');

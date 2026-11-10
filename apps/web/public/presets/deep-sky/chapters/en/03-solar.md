@@ -75,7 +75,7 @@ What remains unknown is how the comet will behave as it leaves the Sun's vicinit
 
 This collaboration with Shadow the Scientists builds on NOIRLab’s tradition of combining cutting-edge science with public engagement, ensuring that remarkable cosmic events are shared as widely as possible. By involving learners directly in observing sessions and data collection, programs like this one not only advance knowledge but also inspire the next generation of explorers.
 
-*“Sharing an observing experience in some of the best conditions available gives the public a truly front-row view of our interstellar visitor,”* says Bolin.* “Allowing the public to see what we do as astronomers and how we do it also helps demystify the scientific and data collection process, adding transparency to our study of this fascinating object.”*
+*“Sharing an observing experience in some of the best conditions available gives the public a truly front-row view of our interstellar visitor,”* says Bolin. *“Allowing the public to see what we do as astronomers and how we do it also helps demystify the scientific and data collection process, adding transparency to our study of this fascinating object.”*
 
 :::paragraphs{style="fuente"}
 [Press release noirlab2532](https://noirlab.edu/public/news/noirlab2532/) by NSF NOIRLab, 12 December 2025. Text and images licensed CC BY 4.0.
