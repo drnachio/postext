@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Césure et langue',
   description: 'Les motifs de césure et les exceptions, le texte en drapeau, la langue du document avec ses chiffres et son sens d’écriture, et les écritures que compose Postext',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '23 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Cette page explique comment les mots sont coupés en fin de ligne et comment Postext connaît la langue d’un livre. Vous activez ou désactivez la césure, et vous listez les mots qui ne doivent jamais être coupés. Vous pouvez laisser le bord droit du texte irrégulier au lieu de l’aligner. La langue du document décide des règles de césure, du nom des figures et des tableaux, des chiffres et du sens du texte. Les dernières sections indiquent les systèmes d’écriture que Postext sait composer et la façon dont il traite l’arabe.",
@@ -70,6 +70,60 @@ Quand l’alignement du texte vaut `'justify'`, la césure évite un espacement 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Coupe les mots à majuscule initiale comme les autres. <code>false</code> garde entier tout mot qui commence par une capitale (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), y compris le premier mot d’une phrase. Voir <a href="#mots-gardés-entiers">Mots gardés entiers</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>celle de la langue</td>
+      <td>Le mot le plus court qui soit coupé, en lettres. Non défini : celui de la langue de césure, que renvoie <code>hyphenationLanguageLimits(locale)</code>.</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>celle de la langue</td>
+      <td>Lettres laissées au moins avant une coupure, au début du mot. Non défini : celles de la langue.</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>celle de la langue</td>
+      <td>Lettres reportées au moins après une coupure, à la ligne suivante. Non défini : celles de la langue. Les trois limites valent aussi pour les mots avec une apostrophe (les élisions du français, de l’italien et du catalan).</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>D’un meilleur espacement (<code>0</code>) à moins de césures (<code>10</code>) : chaque cran ajoute 50 à la pénalité de chaque césure, le trait d’union propre d’un mot compris, si bien que la coupure des lignes ne coupe un mot que là où cela épargne davantage d’espacement. À <code>0</code>, les césures pèsent comme avant. Avec la coupure optimale des lignes seulement.</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Échelles de césures : plus de <code>maxConsecutive</code> lignes de suite d’un paragraphe qui finissent sur un trait d’union. <code>'allow'</code> compose les lignes comme la coupure les trouve. <code>'warn'</code> les compose de même et signale chaque échelle par un avertissement de contenu <code>hyphenLadder</code>, que le Sandbox liste dans Révision. <code>'avoid'</code> ajoute <code>ladderPenalty</code> aux démérites de chaque ligne au-delà de la limite, si bien que la coupure recompose le paragraphe là où l’espacement le permet, et signale les échelles qu’elle garde. Texte courant, listes et citations ; les légendes et les cellules de tableau n’en relèvent pas. Avec la coupure optimale des lignes seulement.</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Nombre maximal de lignes de suite pouvant finir sur un trait d’union, pour <code>ladders</code>. À <code>1</code>, deux lignes coupées ne se suivent jamais.</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Ce que coûte à la coupure des lignes chaque ligne au-delà de <code>maxConsecutive</code> avec <code>ladders: 'avoid'</code>, en démérites ajoutés à ceux du paragraphe, en plus de <code>consecutiveHyphenDemerit</code> (3000 pour deux lignes coupées de suite). La valeur par défaut l’emporte sur toute composition dans l’espacement ; une valeur plus basse laisse passer des échelles pour des lignes plus serrées ; à <code>0</code>, toutes restent.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Le dernier mot d’un paragraphe coupé : l’avant-dernière ligne finit sur un trait d’union et la dernière ne porte que la fin de ce mot, sans aucune espace. <code>'warn'</code> signale chaque cas par un avertissement de contenu <code>lastWordDivided</code>. <code>'avoid'</code> ajoute <code>lastWordPenalty</code> aux démérites du paragraphe, si bien que la coupure garde le mot entier là où l’espacement le permet, et signale ceux qu’elle laisse coupés. Une dernière ligne courte en général relève de <code>bodyText.avoidRunts</code>. Avec la coupure optimale des lignes seulement.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Ce que coûte à la coupure des lignes un dernier mot coupé avec <code>lastWord: 'avoid'</code>, en démérites ajoutés à ceux du paragraphe. À <code>0</code>, tous restent.</td>
     </tr>
   </tbody>
 </table>

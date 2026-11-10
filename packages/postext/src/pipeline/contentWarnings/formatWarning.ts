@@ -337,6 +337,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'tocGroupSplit':
       text = `The contents block "${w.title}" is cut between ${w.columns} columns — it is taller than a full column, or its column is too short to hold it; list fewer levels (:::toc{levels="1"}), head the blocks with a lower level (toc.groups.head) or make the rows smaller`;
       break;
+    case 'hyphenLadder':
+      text = `${w.lines} lines in a row end on a hyphen, more than ${w.max} — with bodyText.hyphenation.ladders: "avoid" the line breaker sets the paragraph otherwise where the word spacing allows`;
+      break;
+    case 'lastWordDivided':
+      text = `The last word of a paragraph is divided ("${w.word}") — with bodyText.hyphenation.lastWord: "avoid" the line breaker keeps it whole where the word spacing allows`;
+      break;
     case 'stack':
       text = `Two lines in a row ${w.edge === 'end' ? 'end' : 'start'} on "${w.text}", a stack. With bodyText.stacks: "avoid" the line breaker sets the paragraph otherwise where the word spacing allows`;
       break;

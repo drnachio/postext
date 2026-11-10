@@ -8,6 +8,7 @@ import type { VDTDocument, ContentWarning, VDTDesignSlot } from '../../vdt.js';
 import { composedFrameBlockIds } from '../../composed/paint.js';
 import { bitmapResolutionFor, bitmapLayoutSize } from '../../bitmapResolution.js';
 import { findStacks } from '../../checks/stacks.js';
+import { findHyphenFaults } from '../../checks/hyphenRules.js';
 
 /**
  * The page each content warning's construct was placed on: the first placed
@@ -122,6 +123,27 @@ export function stackWarnings(doc: VDTDocument): ContentWarning[] {
       ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
       ...(s.block.pageIndex >= 0 ? { pageIndex: s.block.pageIndex } : {}),
     };
+  });
+}
+
+/** A `hyphenLadder` or `lastWordDivided` warning for each fault of the
+ *  hyphen rules in the running text (#1466, `findHyphenFaults`), on the
+ *  page it starts on, under `hyphenation.ladders` / `lastWord` at `'warn'`
+ *  or `'avoid'`; none under `'allow'`. */
+export function hyphenRuleWarnings(doc: VDTDocument): ContentWarning[] {
+  const h = doc.config.bodyText.hyphenation;
+  if (h.ladders === 'allow' && h.lastWord === 'allow') return [];
+  return findHyphenFaults(doc).map((f) => {
+    const first = f.lines[0]!;
+    const last = f.lines[f.lines.length - 1]!;
+    const where = {
+      ...(first.sourceStart !== undefined ? { sourceStart: first.sourceStart } : {}),
+      ...(last.sourceEnd !== undefined ? { sourceEnd: last.sourceEnd } : {}),
+      ...(f.block.pageIndex >= 0 ? { pageIndex: f.block.pageIndex } : {}),
+    };
+    if (f.kind === 'ladder') return { kind: 'hyphenLadder', lines: f.lines.length, max: h.maxConsecutive, text: f.lines.map((l) => l.text), ...where };
+    const head = first.text.trimEnd().split(/\s+/u).pop() ?? '';
+    return { kind: 'lastWordDivided', word: `${head}${last.text.trim()}`, ...where };
   });
 }
 

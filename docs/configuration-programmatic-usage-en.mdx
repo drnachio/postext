@@ -379,6 +379,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>The lines are set as they are.</td>
     </tr>
     <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>More than <code>max</code> lines in a row of a paragraph ending on a hyphen (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> is how many, <code>text</code> the lines. Under <code>bodyText.hyphenation.ladders: 'warn'</code> every ladder is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per ladder; points at its lines, with the page of the first. Since postext 1.74.</td>
+      <td>The lines are set as they are.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>The last line of a paragraph holds only the rest of a word divided on the line before: <code>word</code> is the word as the two lines print it, hyphen included. Under <code>bodyText.hyphenation.lastWord: 'warn'</code> every one is reported; under <code>'avoid'</code>, the ones the line breaker kept. Points at the last two lines, with their page. Since postext 1.74.</td>
+      <td>The lines are set as they are.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>A block of the contents kept together (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), headed by <code>title</code>, set in <code>columns</code> columns: it is taller than a full column, or the column it starts in is short (under a page-span box, beside a float). One per block; points at the <code>:::toc</code> directive, with the page the block starts on. To clear it, list fewer levels (<code>levels="1"</code>), head the blocks with a lower level (<code>toc.groups.head: 2</code>), or make the entries smaller or tighter. Since postext 1.34.</td>
       <td>The block is cut; with <code>toc.groups.continuation</code> each column it goes on in opens with its head row and the continuation mark.</td>
