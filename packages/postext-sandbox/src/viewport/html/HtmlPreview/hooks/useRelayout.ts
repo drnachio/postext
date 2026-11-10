@@ -191,6 +191,7 @@ export function useRelayout(deps: UseRelayoutDeps) {
       scaledBodyPx,
       bodyFontWeight,
       configShapingLanguage(currentConfig, currentLocale),
+      currentConfig.symbolFont,
     );
 
     // Decide page geometry. Single-scroll mode flattens to one continuous

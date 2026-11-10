@@ -324,10 +324,12 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       return;
     }
     if (w.kind === 'glyphFallbackAt') {
-      // Where the characters a face lacks are: the paragraph.
+      // Where the characters a face lacks are: the paragraph. Its id names
+      // the block, which every place has (#1460): two blocks with no
+      // source range on one page (cells, floats) are two warnings.
       out.push({
-        id: `glyph-fallback-at-${w.pageIndex ?? 'x'}-${w.sourceStart ?? 'x'}-${w.family}-${w.weight}-${w.style}-${w.supplier ?? ''}`,
-        payload: { kind: 'glyphFallbackAt', family: w.family, weight: w.weight, style: w.style, characters: [...w.characters], ...(w.supplier ? { supplier: w.supplier } : {}) },
+        id: `glyph-fallback-at-${w.pageIndex ?? 'x'}-${w.blockId}-${w.family}-${w.weight}-${w.style}-${w.supplier ?? ''}`,
+        payload: { kind: 'glyphFallbackAt', family: w.family, weight: w.weight, style: w.style, characters: [...w.characters], ...(w.supplier ? { supplier: w.supplier } : {}), blockId: w.blockId },
         sourceStart: w.sourceStart,
         sourceEnd: w.sourceEnd,
         line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
