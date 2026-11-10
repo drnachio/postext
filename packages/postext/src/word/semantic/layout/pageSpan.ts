@@ -144,17 +144,13 @@ export function widenedTwips(ctx: WriterContext, block: ContentBlock | undefined
 }
 
 /** A paragraph that only closes a section: no room of its own to speak
- *  of, so it adds no blank line where the columns change. `last`: what
- *  follows it starts a new page. Its mark is then hidden, so it takes no
- *  room at all: a point of height is one too many under columns that
- *  fill their page, or under a table that ends at the foot of one, and
- *  the paragraph went alone to a page of its own, a blank page under the
- *  running head before the next chapter (#1458). Word and LibreOffice
- *  give a hidden empty paragraph no line; a reader that knows no hidden
- *  text sets it one point tall, as before. */
-function sectionBreak(sect?: string, last = false): string {
-  const mark = `<w:rPr>${last ? '<w:vanish/>' : ''}<w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>`;
-  return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: mark, ...(sect ? { sectPr: sect } : {}) })}</w:p>`;
+ *  of, so it adds no blank line where the columns change, and a chapter
+ *  that ends at the foot of a page sends no empty line to the next one.
+ *  Its mark is not hidden to take even that point away: LibreOffice then
+ *  loses the page break of the section after it and sets the next chapter
+ *  on the same page (#1458). */
+function sectionBreak(sect?: string): string {
+  return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>', ...(sect ? { sectPr: sect } : {}) })}</w:p>`;
 }
 
 /** Whether `xml` opens with a table (inside content controls or not). */
@@ -294,12 +290,12 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
       body += sectionBreak(sect);
       // Its running heads are the ones in force where the columns end.
       const level = sectionXml(ctx, geo, index, { start: 'continuous', oneColumn: true, ...(s.tail ? { block: s.tail, leads: false } : {}), ...(titleStyle ? { titleStyle } : {}) });
-      if (next || !last) xml += body + sectionBreak(level, true);
+      if (next || !last) xml += body + sectionBreak(level);
       else xml += body + sectionBreak() + level;
       return;
     }
-    if (next) xml += body + sectionBreak(sect, closes);
-    else xml += last ? body + sect : body + sectionBreak(sect, true);
+    if (next) xml += body + sectionBreak(sect);
+    else xml += last ? body + sect : body + sectionBreak(sect);
   });
   return xml;
 }
