@@ -10,6 +10,7 @@ import { asPainted, textScale } from './paragraphs.js';
 import { attr, DOM_VERSION, num, PKG_NS, XML_HEAD } from './parts.js';
 import { chipFields, chipRects, pathXml, rectXml, ruleXml } from './shapes.js';
 import { storyXml } from './story.js';
+import { tableXml } from './tables.js';
 import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
 /** A frame of a chain: its own id, its neighbours', the chain's story
@@ -84,7 +85,8 @@ function chainOf(f: VDTFrame, frames: Map<string, VDTFrame>): VDTFrame[] {
   return chain;
 }
 
-export function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<string, VDTFrame>, index: number, gap: number): string {
+/** The items of one page, in its spread's frame (`w.px`, `w.ox`, `w.oy`). */
+export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, VDTFrame>): string {
   const out: string[] = [];
   // Stories are written horizontal and left to right (`storyXml`), once
   // said for the whole package.
@@ -158,18 +160,45 @@ export function spreadXml(w: Writer, id: string, page: DisplayPage, frames: Map<
         break;
       }
       case 'table':
-        w.warn('table', `Page ${page.index + 1}: tables are not written yet`);
+        out.push(tableXml(w, it, page.index));
         break;
     }
   }
-  const pageW = (page.trim?.width ?? page.width) * w.k;
+  return out.join('');
+}
+
+/** A page of a spread: its id, its folio, its box (pt) and the margins
+ *  its content area leaves (`inside` is the spine side). */
+export interface SpreadPage {
+  self: string;
+  name: string;
+  width: number;
+  height: number;
+  /** Left of the spine. */
+  left: boolean;
+  margins?: { top: number; bottom: number; inside: number; outside: number };
+  items: string;
+}
+
+/** A spread: its pages about the spine (x = 0), then their items. */
+export function spreadXml(id: string, pages: SpreadPage[], index: number, gap: number): string {
+  const height = Math.max(...pages.map((p) => p.height));
+  const binding = pages.filter((p) => p.left).length;
+  const pageXml = (p: SpreadPage) => {
+    const m = p.margins ?? { top: 0, bottom: 0, inside: 0, outside: 0 };
+    // `Left` is the inside margin of a page of a facing-pages document.
+    const text = Math.max(0, p.width - m.inside - m.outside);
+    return (
+      `<Page${attr('Self', p.self)}${attr('Name', p.name)} AppliedMaster="n"${attr('GeometricBounds', `0 0 ${num(p.height)} ${num(p.width)}`)}${attr('ItemTransform', `1 0 0 1 ${num(p.left ? -p.width : 0)} ${num(-p.height / 2)}`)} OverrideList="" TabOrder="" GridStartingPoint="TopOutside" UseMasterGrid="true">` +
+      `<MarginPreference ColumnCount="1" ColumnGutter="12"${attr('Top', m.top)}${attr('Bottom', m.bottom)}${attr('Left', m.inside)}${attr('Right', m.outside)} ColumnDirection="Horizontal"${attr('ColumnsPositions', `0 ${num(text)}`)}/>` +
+      '</Page>'
+    );
+  };
   return (
     `${XML_HEAD}<idPkg:Spread xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
-    `<Spread${attr('Self', id)} PageTransitionType="None" ShowMasterItems="true" PageCount="1" BindingLocation="0" AllowPageShuffle="true"${attr('ItemTransform', `1 0 0 1 0 ${num(index * (w.pageH + gap))}`)} FlattenerOverride="Default">` +
-    `<Page${attr('Self', `${id}p`)}${attr('Name', page.label ?? String(index + 1))} AppliedMaster="n"${attr('GeometricBounds', `0 0 ${num(w.pageH)} ${num(pageW)}`)}${attr('ItemTransform', `1 0 0 1 0 ${num(-w.pageH / 2)}`)} OverrideList="" TabOrder="" GridStartingPoint="TopOutside" UseMasterGrid="true">` +
-    `<MarginPreference ColumnCount="1" ColumnGutter="12" Top="0" Bottom="0" Left="0" Right="0" ColumnDirection="Horizontal"${attr('ColumnsPositions', `0 ${num(pageW)}`)}/>` +
-    '</Page>' +
-    out.join('') +
+    `<Spread${attr('Self', id)} PageTransitionType="None" ShowMasterItems="true"${attr('PageCount', pages.length)}${attr('BindingLocation', binding)} AllowPageShuffle="false"${attr('ItemTransform', `1 0 0 1 0 ${num(index * (height + gap))}`)} FlattenerOverride="Default">` +
+    pages.map(pageXml).join('') +
+    pages.map((p) => p.items).join('') +
     '</Spread></idPkg:Spread>'
   );
 }

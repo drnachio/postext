@@ -30,7 +30,12 @@ export const leadingXml = (pt: number): string => `<Leading type="unit">${num(pt
 /** One run as a character range: what it sets beyond its paragraph style,
  *  its font when it is another family's, its words, and its line's
  *  leading when that is its own. */
-export function rangeXml(r: TextRun, style: TextProps, leading?: number, noBreak = false): string {
+export function rangeXml(r: TextRun, style: TextProps, leading?: number, noBreak = false, w?: Writer): string {
+  if (r.link && w) {
+    const source = w.next();
+    w.links.push({ source, ...(r.link.url !== undefined ? { url: r.link.url } : { page: w.pageBase + r.link.page! }) });
+    return `<HyperlinkTextSource${attr('Self', source)}${attr('Name', `Link ${w.links.length}`)} Hidden="false" AppliedCharacterStyle="n">${rangeXml({ text: r.text, props: r.props }, style, leading, noBreak)}</HyperlinkTextSource>`;
+  }
   const o = overrides(r.props, style) + (noBreak ? ' NoBreak="true"' : '');
   const props = (r.props.font !== style.font ? `<AppliedFont type="string">${escapeXml(r.props.font)}</AppliedFont>` : '') + (leading !== undefined ? leadingXml(leading) : '');
   const font = props ? `<Properties>${props}</Properties>` : '';
@@ -72,7 +77,9 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
   const irregular = !c.hang && lines.length > 1 && (ownStops || spread(lines.slice(1).map(start)) > 0.75 || spread(lines.map(room)) > 0.75);
   const cuts: number[] = [];
   lines.forEach((_, i) => {
-    if (i === 0 || irregular || (justified && lines[i - 1]!.hardBreak)) cuts.push(i);
+    // A line that ends a paragraph inside the item (a table cell's
+    // paragraphs), or one the author broke in justified text.
+    if (i === 0 || irregular || lines[i - 1]!.last || (justified && lines[i - 1]!.hardBreak)) cuts.push(i);
   });
   const out: StoryPara[] = [];
   cuts.forEach((a, g) => {
@@ -118,7 +125,7 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
       const last = i < b;
       // A line cannot break but where Postext broke it: InDesign's
       // composer, left a choice, ends a tightly set line a word early.
-      for (const r of runs) ranges += rangeXml(r, style.props, extra, true);
+      for (const r of runs) ranges += rangeXml(r, style.props, extra, true, w);
       // The break is a range of its own (it must stay a place to break),
       // at its line's leading and size: an empty line still takes its room.
       if (last) ranges += rangeXml({ text: FORCED_LINE_BREAK, props: runs[runs.length - 1]?.props ?? style.props }, style.props, extra);

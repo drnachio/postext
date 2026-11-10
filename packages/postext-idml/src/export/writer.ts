@@ -40,6 +40,10 @@ export interface IdmlOptions {
    *  composer, for a book that will be set again there: frames, styles,
    *  text and first baselines match, line breaks may not. */
   lineBreaks?: 'keep' | 'reflow';
+  /** `facing`: the pages two to a spread about the spine, the first one
+   *  alone, as a book is made up in InDesign; `single`: a page a spread.
+   *  Default: `facing` for a book with mirrored margins, else `single`. */
+  spreads?: 'facing' | 'single';
   /** The font file of a face (TrueType or OpenType bytes; a WOFF2 decoded
    *  first). With it a face is named as the file names it, which is how
    *  InDesign finds it, and the files come back in `fonts`. */
@@ -63,6 +67,9 @@ export interface Writer {
   ox: number;
   oy: number;
   pageH: number;
+  /** Where the page's left edge stands in its spread, pt: 0 for a page at
+   *  the right of the spine (or alone), minus its width at the left. */
+  px: number;
   swatches: Map<string, Swatch>;
   /** Swatch names taken, lower-cased: InDesign's own and those written. */
   swatchNames: Set<string>;
@@ -74,6 +81,10 @@ export interface Writer {
   /** A CSS face (`family|weight|italic`) as InDesign names it. */
   faces: Map<string, { family: string; style: string }>;
   fontFiles: Map<string, { path: string; bytes: Uint8Array }>;
+  /** Hyperlinks: the text source of each and where it goes. */
+  links: { source: string; url?: string; page?: number }[];
+  /** Pages of the documents before the one being written. */
+  pageBase: number;
   paraStyles: Map<string, ParagraphStyleDef>;
   /** The document being written, and the engine's block styles of its
    *  paragraphs by frame style and paragraph style (`engineStyle`). */

@@ -20,6 +20,9 @@ export interface DesignMapInput {
   masterId: string;
   spreads: string[];
   stories: string[];
+  /** Sections, hyperlinks and their destinations, written as they are. */
+  sections?: string;
+  links?: string;
 }
 
 export function designMapXml(d: DesignMapInput): string {
@@ -34,8 +37,10 @@ export function designMapXml(d: DesignMapInput): string {
     `<Layer${attr('Self', d.layerId)} Name="Postext" Visible="true" Locked="false" IgnoreWrap="false" ShowGuides="true" LockGuides="false" UI="true" Expendable="true" Printable="true"><Properties><LayerColor type="enumeration">LightBlue</LayerColor></Properties></Layer>` +
     `<idPkg:MasterSpread src="MasterSpreads/MasterSpread_${d.masterId}.xml"/>` +
     d.spreads.map((id) => `<idPkg:Spread src="Spreads/Spread_${id}.xml"/>`).join('') +
+    (d.sections ?? '') +
     '<idPkg:BackingStory src="XML/BackingStory.xml"/>' +
     d.stories.map((id) => `<idPkg:Story src="Stories/Story_${id}.xml"/>`).join('') +
+    (d.links ?? '') +
     '</Document>'
   );
 }
@@ -47,15 +52,21 @@ export interface DocumentGeometry {
   /** Bleed on every side, pt. */
   bleed: number;
   pages: number;
+  /** Pages two to a spread, and the edge the book is bound on. */
+  facing?: boolean;
+  rightBound?: boolean;
+  /** Margins of the first page (pt), for the document setup. */
+  margins?: { top: number; bottom: number; inside: number; outside: number };
 }
 
 export function preferencesXml(g: DocumentGeometry): string {
   const b = num(g.bleed);
   return (
     `${XML_HEAD}<idPkg:Preferences xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
-    `<DocumentPreference${attr('PageHeight', g.height)}${attr('PageWidth', g.width)} PagesPerDocument="1" FacingPages="false"` +
+    `<DocumentPreference${attr('PageHeight', g.height)}${attr('PageWidth', g.width)} PagesPerDocument="1" FacingPages="${g.facing ? 'true' : 'false'}"` +
     ` DocumentBleedTopOffset="${b}" DocumentBleedBottomOffset="${b}" DocumentBleedInsideOrLeftOffset="${b}" DocumentBleedOutsideOrRightOffset="${b}" DocumentBleedUniformSize="true"` +
-    ' PageBinding="LeftToRight" AllowPageShuffle="true" OverprintBlack="true" ColumnDirection="Horizontal" Intent="PrintIntent"/>' +
+    ` PageBinding="${g.rightBound ? 'RightToLeft' : 'LeftToRight'}" AllowPageShuffle="false" OverprintBlack="true" ColumnDirection="Horizontal" Intent="PrintIntent"/>` +
+    (g.margins ? `<MarginPreference ColumnCount="1" ColumnGutter="12"${attr('Top', g.margins.top)}${attr('Bottom', g.margins.bottom)}${attr('Left', g.margins.inside)}${attr('Right', g.margins.outside)} ColumnDirection="Horizontal"/>` : '') +
     '<ViewPreference HorizontalMeasurementUnits="Millimeters" VerticalMeasurementUnits="Millimeters" TypographicMeasurementUnits="Points" TextSizeMeasurementUnits="Points" LineMeasurementUnits="Points"/>' +
     '</idPkg:Preferences>'
   );
@@ -140,6 +151,8 @@ export interface TextProps {
   position?: 'Superscript' | 'Subscript';
   /** pt, positive up. */
   baselineShift?: number;
+  underline?: boolean;
+  strike?: boolean;
 }
 
 /** A tab stop: pt from the text frame's text edge (InDesign measures tab
@@ -184,7 +197,9 @@ export function textPropsAttrs(p: Partial<TextProps>): string {
     attr('Tracking', p.tracking) +
     attr('Capitalization', p.capitalization) +
     attr('Position', p.position) +
-    attr('BaselineShift', p.baselineShift)
+    attr('BaselineShift', p.baselineShift) +
+    attr('Underline', p.underline) +
+    attr('StrikeThru', p.strike)
   );
 }
 

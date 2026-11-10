@@ -54,9 +54,11 @@ describe('lines kept as Postext broke them (the default)', () => {
     }
   });
 
-  it('justifies a paragraph whose lines are justified and leaves nothing to the composer', () => {
+  it('aligns a paragraph as its lines were set and leaves nothing to the composer', () => {
     const body = /<ParagraphStyle Self="ParagraphStyle\/Body"[^>]*>/.exec(styles)![0];
-    expect(para.attrs.Justification ?? /Justification="([^"]+)"/.exec(body)?.[1]).toBe('LeftJustified');
+    // As the lines were set: spread to the measure, or ragged.
+    const set = first.lines.some((l) => l.align === 'justify') ? 'LeftJustified' : 'LeftAlign';
+    expect(para.attrs.Justification ?? / Justification="([^"]+)"/.exec(body)?.[1]).toBe(set);
     expect(body).toContain('Hyphenation="false"');
     expect(body).toContain('Composer="$ID/HL Single"');
     expect(body).toContain('MinimumWordSpacing="0"');

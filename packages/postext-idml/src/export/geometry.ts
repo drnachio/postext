@@ -10,7 +10,7 @@ export interface Pt {
   y: number;
 }
 
-export const toSpread = (w: Writer, x: number, y: number): Pt => ({ x: (x - w.ox) * w.k, y: (y - w.oy) * w.k - w.pageH / 2 });
+export const toSpread = (w: Writer, x: number, y: number): Pt => ({ x: (x - w.ox) * w.k + w.px, y: (y - w.oy) * w.k - w.pageH / 2 });
 
 export const pp = (a: Pt, l: Pt = a, r: Pt = a): string =>
   `<PathPointType Anchor="${num(a.x)} ${num(a.y)}" LeftDirection="${num(l.x)} ${num(l.y)}" RightDirection="${num(r.x)} ${num(r.y)}"/>`;

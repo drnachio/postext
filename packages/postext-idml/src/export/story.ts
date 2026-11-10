@@ -150,7 +150,9 @@ function paraXml(p: StoryPara, end: boolean): string {
     ? p.ranges
     : p.frameBreak
       ? `${p.ranges}<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]" ParagraphBreakType="NextFrame"><Br/></CharacterStyleRange>`
-      : p.ranges.replace(/<\/CharacterStyleRange>$/, '<Br/></CharacterStyleRange>');
+      : p.ranges.endsWith('</CharacterStyleRange>')
+        ? p.ranges.replace(/<\/CharacterStyleRange>$/, '<Br/></CharacterStyleRange>')
+        : `${p.ranges}<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]"><Br/></CharacterStyleRange>`;
   return `<ParagraphStyleRange${attr('AppliedParagraphStyle', p.style.self)}${p.attrs}${local}${attr('SpaceBefore', p.spaceBefore)}>${props}${ranges}</ParagraphStyleRange>`;
 }
 
@@ -170,6 +172,23 @@ function paraXml(p: StoryPara, end: boolean): string {
  *  paragraph a frame break split joins its paragraph and the story runs
  *  through the chain as InDesign breaks it. */
 export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | undefined): string {
+  return storyPartXml(id, paragraphsXml(w, items, frame));
+}
+
+/** A story part around its paragraphs. */
+export function storyPartXml(id: string, paragraphs: string): string {
+  return (
+    `${XML_HEAD}<idPkg:Story xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
+    `<Story${attr('Self', id)} AppliedTOCStyle="n" TrackChanges="false" StoryTitle="$ID/" AppliedNamedGrid="n">` +
+    '<StoryPreference OpticalMarginAlignment="false" OpticalMarginSize="12" FrameType="TextFrameType" StoryOrientation="Horizontal" StoryDirection="LeftToRightDirection"/>' +
+    '<InCopyExportOption IncludeGraphicProxies="true" IncludeAllResources="false"/>' +
+    paragraphs +
+    '</Story></idPkg:Story>'
+  );
+}
+
+/** The paragraphs of a story, or of a table cell: `storyXml`'s rules. */
+export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | undefined): string {
   const keep = keepsLines(w);
   const paras: StoryPara[] = [];
   let prev: StoryItem | undefined;
@@ -263,18 +282,11 @@ export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFr
     if (justification && style.justification !== justification) local += attr('Justification', justification);
     // Leading is a character's: every range says the paragraph's own.
     const ownLeading = Math.abs(style.leading - leading) >= 0.01 ? leading : undefined;
-    const ranges = runs.map((r) => rangeXml(r, style.props, ownLeading));
+    const ranges = runs.map((r) => rangeXml(r, style.props, ownLeading, false, w));
     // Styles do not hyphenate (InDesign does by default); a paragraph the
     // composer hyphenated does.
     if (lines.some((l) => l.addedHyphen)) local += ' Hyphenation="true"';
     paras.push({ style, attrs: local, format, ranges: ranges.join(''), ...(joins ? { joins } : {}), ...(spaceBefore !== undefined ? { spaceBefore } : {}) });
   });
-  return (
-    `${XML_HEAD}<idPkg:Story xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
-    `<Story${attr('Self', id)} AppliedTOCStyle="n" TrackChanges="false" StoryTitle="$ID/" AppliedNamedGrid="n">` +
-    '<StoryPreference OpticalMarginAlignment="false" OpticalMarginSize="12" FrameType="TextFrameType" StoryOrientation="Horizontal" StoryDirection="LeftToRightDirection"/>' +
-    '<InCopyExportOption IncludeGraphicProxies="true" IncludeAllResources="false"/>' +
-    paras.map((p, i) => paraXml(p, i === paras.length - 1 || !!paras[i + 1]!.joins)).join('') +
-    '</Story></idPkg:Story>'
-  );
+  return paras.map((p, i) => paraXml(p, i === paras.length - 1 || !!paras[i + 1]!.joins)).join('');
 }

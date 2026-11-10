@@ -1,6 +1,7 @@
 // IDML export: the laid-out pages as an InDesign Markup package, for
 // finishing in InDesign. Built on the page display list (#1388), as the
-// formatted Word export is: every page becomes a spread of one page;
+// formatted Word export is: the pages stand in spreads (two about the
+// spine for a book with mirrored margins, else one each);
 // rules, boxes, paths and pictures become native page items; the text of
 // each composed-page frame becomes one text frame with one story (frames
 // chained by `next` share one story), with the frame's callout style as
@@ -27,8 +28,10 @@ import {
   masterSpreadXml,
   preferencesXml,
   stylesXml,
+  type DocumentGeometry,
 } from './parts.js';
-import { spreadXml } from './spreads.js';
+import { linksXml, sectionsXml } from './document.js';
+import { pageItemsXml, spreadXml, type SpreadPage } from './spreads.js';
 import { keepsLines, type IdmlOptions, type IdmlResult, type Writer } from './writer.js';
 
 export type { IdmlOptions, IdmlResult, IdmlWarning } from './writer.js';
@@ -48,6 +51,9 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
     ox: 0,
     oy: 0,
     pageH: 0,
+    px: 0,
+    links: [],
+    pageBase: 0,
     swatches: new Map(),
     swatchNames: new Set(RESERVED_SWATCH_NAMES.map((n) => n.toLowerCase())),
     cmyk: authoredCmykColors(first.config),
@@ -69,8 +75,15 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
     },
   };
 
-  const spreads: { id: string; xml: string }[] = [];
-  let geometry = { width: 0, height: 0, bleed: 0 };
+  // The pages, each written in the frame of the spread it will stand in.
+  const facing = options.spreads ? options.spreads === 'facing' : !!(first.config.page as { margins?: { mirror?: boolean } }).margins?.mirror;
+  const rightBound = first.binding === 'right';
+  // The book's first page may be an even one (a bundle that holds part of
+  // a longer book): page indices say which side each page is.
+  const start = first.pages[0]?.index ?? 0;
+  w.pageBase = -start;
+  const laid: (SpreadPage & { label?: string; recto: boolean })[] = [];
+  let geometry: DocumentGeometry = { width: 0, height: 0, bleed: 0, pages: 0 };
   for (const doc of docs) {
     w.k = 72 / doc.config.page.dpi;
     w.doc = doc;
@@ -78,21 +91,46 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
     for (let p = 0; p < doc.pages.length; p++) {
       const page = pageDisplayList(doc, p);
       const trim = page.trim ?? { x: 0, y: 0, width: page.width, height: page.height };
+      const n = laid.length;
+      const recto = (start + n) % 2 === 0;
+      const left = facing && (rightBound ? recto : !recto);
+      const width = trim.width * w.k;
       w.ox = trim.x;
       w.oy = trim.y;
       w.pageH = trim.height * w.k;
-      if (!spreads.length) geometry = { width: trim.width * w.k, height: trim.height * w.k, bleed: trim.x * w.k };
-      else if (Math.abs(trim.width * w.k - geometry.width) > 0.5 || Math.abs(w.pageH - geometry.height) > 0.5) w.warn('page.size', `Page ${p + 1} has its own size; IDML pages keep it, the document setup shows the first page's`);
-      const frames = new Map((doc.pages[p]!.composed?.frames ?? []).map((f) => [f.id, f] as const));
-      const id = w.next();
-      spreads.push({ id, xml: spreadXml(w, id, page, frames, spreads.length, 36) });
+      w.px = left ? -width : 0;
+      // The margins the page's content area leaves (a page laid out in a
+      // turned or mirrored flow says them in that flow: left out).
+      const vdt = doc.pages[p]!;
+      const area = vdt.flow ? undefined : vdt.contentArea;
+      const l = area ? Math.max(0, (area.x - trim.x) * w.k) : 0;
+      const r = area ? Math.max(0, (trim.x + trim.width - area.x - area.width) * w.k) : 0;
+      const margins = area
+        ? { top: Math.max(0, (area.y - trim.y) * w.k), bottom: Math.max(0, (trim.y + trim.height - area.y - area.height) * w.k), inside: left ? r : l, outside: left ? l : r }
+        : undefined;
+      if (!n) geometry = { width, height: w.pageH, bleed: trim.x * w.k, pages: 0, facing, rightBound, ...(margins ? { margins } : {}) };
+      else if (Math.abs(width - geometry.width) > 0.5 || Math.abs(w.pageH - geometry.height) > 0.5) w.warn('page.size', `Page ${n + 1} has its own size; IDML pages keep it, the document setup shows the first page's`);
+      const frames = new Map((vdt.composed?.frames ?? []).map((f) => [f.id, f] as const));
+      const items = pageItemsXml(w, page, frames);
+      laid.push({ self: `pg${n}`, name: page.label ?? String(n + 1), ...(page.label !== undefined ? { label: page.label } : {}), width, height: w.pageH, left, ...(margins ? { margins } : {}), items, recto });
     }
   }
+  // A verso and the recto after it share a spread; a page a spread otherwise.
+  const groups: (typeof laid)[] = [];
+  for (const page of laid) {
+    const last = groups[groups.length - 1];
+    if (facing && last && last.length === 1 && !last[0]!.recto && page.recto) last.push(page);
+    else groups.push([page]);
+  }
+  const spreads = groups.map((pages, i) => {
+    const id = w.next();
+    return { id, xml: spreadXml(id, pages, i, 36) };
+  });
 
-  const g = { ...geometry, pages: spreads.length };
+  const g = { ...geometry, pages: laid.length };
   const parts = new Map<string, Uint8Array>();
   parts.set('mimetype', strToU8(IDML_MIMETYPE));
-  parts.set('designmap.xml', strToU8(designMapXml({ title: options.title ?? 'Postext', layerId: 'ulayer', masterId: 'umaster', spreads: spreads.map((s) => s.id), stories: w.stories.map((s) => s.id) })));
+  parts.set('designmap.xml', strToU8(designMapXml({ title: options.title ?? 'Postext', layerId: 'ulayer', masterId: 'umaster', spreads: spreads.map((s) => s.id), stories: w.stories.map((s) => s.id), sections: sectionsXml(w, laid), links: linksXml(w, laid.map((p) => p.self)) })));
   parts.set('META-INF/container.xml', strToU8(CONTAINER_XML));
   parts.set('Resources/Graphic.xml', strToU8(graphicXml([...w.swatches.values()])));
   parts.set('Resources/Fonts.xml', strToU8(fontsXml(w.fonts)));

@@ -93,11 +93,13 @@ export function runProps(w: Writer, run: DisplayRun): TextProps {
   if (run.script === 'sup') p.position = 'Superscript';
   if (run.script === 'sub') p.position = 'Subscript';
   if (run.baselineShift) p.baselineShift = run.baselineShift * w.k;
+  if (run.underline) p.underline = true;
+  if (run.strike) p.strike = true;
   return p;
 }
 
 export const sameProps = (a: TextProps, b: TextProps) =>
-  a.font === b.font && a.fontStyle === b.fontStyle && Math.abs(a.size - b.size) < 0.01 && a.color === b.color && a.tracking === b.tracking && a.capitalization === b.capitalization && a.position === b.position && a.baselineShift === b.baselineShift;
+  a.font === b.font && a.fontStyle === b.fontStyle && Math.abs(a.size - b.size) < 0.01 && a.color === b.color && a.tracking === b.tracking && a.capitalization === b.capitalization && a.position === b.position && a.baselineShift === b.baselineShift && !a.underline === !b.underline && !a.strike === !b.strike;
 
 /** What a range sets beyond its paragraph style. */
 export function overrides(p: TextProps, style: TextProps): string {
@@ -109,6 +111,8 @@ export function overrides(p: TextProps, style: TextProps): string {
   if (p.capitalization !== style.capitalization) d.capitalization = p.capitalization;
   if (p.position !== style.position) d.position = p.position;
   if (p.baselineShift !== style.baselineShift) d.baselineShift = p.baselineShift;
+  if (!p.underline !== !style.underline) d.underline = !!p.underline;
+  if (!p.strike !== !style.strike) d.strike = !!p.strike;
   return textPropsAttrs(d);
 }
 
@@ -164,10 +168,21 @@ export interface LineStop {
   leader?: string;
 }
 
+/** Where a run links to: a web address, or a page of the book (its index
+ *  in the documents written). */
+export interface RunLink {
+  url?: string;
+  page?: number;
+}
+
 export interface TextRun {
   text: string;
   props: TextProps;
+  link?: RunLink;
 }
+
+export const runLink = (run: DisplayRun): RunLink | undefined => (run.href ? { url: run.href } : run.pageLink !== undefined ? { page: run.pageLink } : undefined);
+export const sameLink = (a: RunLink | undefined, b: RunLink | undefined): boolean => a?.url === b?.url && a?.page === b?.page;
 
 /** The runs of a text item line by line, as painted: a hyphen a break
  *  added or repeated stays, nothing is put back between lines. For lines
@@ -192,9 +207,10 @@ export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?:
       }
       if (!text) return;
       const props = runProps(w, run);
+      const link = text === '\t' ? undefined : runLink(run);
       const last = out[out.length - 1];
-      if (last && sameProps(last.props, props)) last.text += text;
-      else out.push({ text, props });
+      if (last && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
+      else out.push({ text, props, ...(link ? { link } : {}) });
     });
     // A space at a line's end would take part in its justification.
     const tail = out[out.length - 1];
@@ -211,11 +227,11 @@ export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?:
  *  left to InDesign's composer. */
 export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): TextRun[] {
   const out: TextRun[] = [];
-  const push = (text: string, props: TextProps) => {
+  const push = (text: string, props: TextProps, link?: RunLink) => {
     if (!text) return;
     const last = out[out.length - 1];
-    if (last && sameProps(last.props, props)) last.text += text;
-    else out.push({ text, props });
+    if (last && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
+    else out.push({ text, props, ...(link ? { link } : {}) });
   };
   item.lines.forEach((line, li) => {
     const runs = paintedRuns(w, line, tabLeaders);
@@ -223,7 +239,7 @@ export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): Te
       let text = painted;
       if (li > 0 && ri === 0 && line.repeatedHyphen) text = text.replace(/^[-‐]/, '');
       if (ri === runs.length - 1 && line.addedHyphen) text = text.replace(/[-‐­]$/, '');
-      push(text, runProps(w, run));
+      push(text, runProps(w, run), runLink(run));
     });
     const next = item.lines[li + 1];
     if (!next || !runs.length) return;
