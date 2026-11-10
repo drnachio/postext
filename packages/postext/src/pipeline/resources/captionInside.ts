@@ -1,4 +1,5 @@
 import type { Resource, ResourceType } from '../../types.js';
+import { isWidthShare, placementWidthOf, widthShareIn } from '../floats/placementLength.js';
 
 /** The picture's share of its slot when `placement.width` does not give
  *  one, for a caption set beside it inside the column. */
@@ -14,13 +15,21 @@ export const DEFAULT_CAPTION_INSIDE_WIDTH = 0.5;
  * slot's whole width for such a resource (they do not narrow it by
  * `placement.width`); the resource layout narrows the picture itself. A
  * turned resource, and one set upright on a vertical page, keep their
- * caption under them and their usual width.
+ * caption under them and their usual width. A width given as a length
+ * (#1461) is measured against the slot when its width `slotPx` (and the
+ * `dpi`) are given; without them the default share stands in, which is
+ * enough to tell whether the caption goes inside.
  */
-export function captionInsideShare(resource: Resource | undefined, type: ResourceType | undefined): number | undefined {
+export function captionInsideShare(resource: Resource | undefined, type: ResourceType | undefined, slotPx?: number, dpi?: number): number | undefined {
   if (!resource) return undefined;
   const side = resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide;
   if (side !== 'inside') return undefined;
   if (resource.kind !== 'bitmap' && resource.kind !== 'svg' && resource.kind !== 'video') return undefined;
-  const raw = resource.placement?.width ?? type?.defaultPlacement?.width;
-  return typeof raw === 'number' && raw > 0 && raw < 1 ? raw : DEFAULT_CAPTION_INSIDE_WIDTH;
+  const raw = placementWidthOf(resource.placement, type?.defaultPlacement);
+  if (isWidthShare(raw)) return raw;
+  if (slotPx !== undefined && dpi !== undefined) {
+    const share = widthShareIn(raw, slotPx, dpi);
+    if (share < 1) return share;
+  }
+  return DEFAULT_CAPTION_INSIDE_WIDTH;
 }

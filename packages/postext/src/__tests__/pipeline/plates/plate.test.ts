@@ -1,23 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/build.js';
 import { createMeasurementCache } from '../../../measure/index.js';
+import { placedImageResolutions, preflightDocument } from '../../../checks/preflight.js';
+import { resolvePrintConfig } from '../../../defaults/output/print.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument, VDTPage } from '../../../index.js';
+import './fixture.js';
 
-// A full-page plate (`placement.plate`): the picture alone on a
+// A full-page plate (`placement.plate`, #1461): the picture alone on a
 // page of its own, as large as the content area holds with its caption,
 // enlarged or reduced, the text running on before and after it.
-
-class StubCtx {
-  font = '';
-  measureText(s: string): { width: number } {
-    return { width: s.length * 7 };
-  }
-}
-(globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = class {
-  getContext(): StubCtx {
-    return new StubCtx();
-  }
-};
 
 const mm = (value: number) => ({ value, unit: 'mm' as const });
 const config: PostextConfig = {
@@ -102,12 +93,48 @@ describe('a full-page plate', () => {
     expect(body(here)).toEqual(body(plain));
   });
 
-  it('reports a bitmap enlarged under 300 ppi', () => {
-    const doc = build(bitmap(100, 140));
-    const w = (doc.contentWarnings ?? []).find((x) => x.kind === 'plateLowResolution');
-    expect(w).toBeDefined();
-    const hi = build(bitmap(4000, 6000));
-    expect((hi.contentWarnings ?? []).some((x) => x.kind === 'plateLowResolution')).toBe(false);
+  // The resolution a plate prints at is the print preflight's to report
+  // (`lowImageResolution`), against `print.preflight.minImageResolution`.
+  describe('in the print preflight', () => {
+    const printOn = (min = 300) => {
+      const base = resolvePrintConfig();
+      return { ...base, preflight: { ...base.preflight, enabled: true, minImageResolution: min, criticalImageResolution: Math.min(min, base.preflight.criticalImageResolution) } };
+    };
+    const lowOf = (doc: VDTDocument, min?: number) => preflightDocument(doc, { print: printOn(min) }).filter((i) => i.kind === 'lowImageResolution');
+
+    it('reports a bitmap enlarged under the minimum resolution', () => {
+      const doc = build(bitmap(100, 140));
+      const { block } = plateOf(doc);
+      const low = lowOf(doc);
+      expect(low).toHaveLength(1);
+      expect(low[0]).toMatchObject({ resourceId: 'fig', fileId: 'fig.png' });
+      // Its pixels over the inches it prints across.
+      const ppi = 100 / (block.resourceBlock!.bodyRect.width / 72);
+      expect((low[0] as { ppi: number }).ppi).toBe(Math.round(ppi));
+      expect(placedImageResolutions(doc)[0]!.ppi).toBeCloseTo(ppi, 6);
+      // A large original passes; a lower minimum passes the small one.
+      expect(lowOf(build(bitmap(4000, 6000)))).toEqual([]);
+      expect(lowOf(doc, Math.floor(ppi) - 1)).toEqual([]);
+    });
+
+    it('counts the crop of a plate to the bleed', () => {
+      const cut: PostextConfig = { ...config, page: { ...config.page, cutLines: { enabled: true, bleed: mm(3) } } };
+      const r = bitmap(1600, 800, { plate: 'bleed' });
+      const doc = buildDocument({ markdown: MD, resources: [r] }, cut, createMeasurementCache());
+      const { block } = plateOf(doc);
+      const rb = block.resourceBlock!;
+      // A wide picture on a tall page: its sides are cut off, so fewer of
+      // its pixels go across the printed width than the whole picture has.
+      expect(rb.bodySource!.width).toBeLessThan(1);
+      const shown = 1600 * rb.bodySource!.width;
+      const ppi = placedImageResolutions(doc)[0]!.ppi;
+      expect(ppi).toBeCloseTo(Math.min(shown / (rb.bodyRect.width / 72), (800 * rb.bodySource!.height) / (rb.bodyRect.height / 72)), 6);
+      expect(ppi).toBeLessThan(1600 / (rb.bodyRect.width / 72));
+      // Under the minimum only once the crop is counted.
+      const uncropped = 1600 / (rb.bodyRect.width / 72);
+      const min = Math.round((ppi + uncropped) / 2);
+      expect(lowOf(doc, min)).toHaveLength(1);
+    });
   });
 
   describe('to the trim or the bleed', () => {

@@ -15,6 +15,9 @@ export interface PassState {
   geomResolved: ResolvedConfig;
   drainingAfterText: boolean;
   floatsPlaced: number;
+  /** Fresh pages a full-page plate waited past (#1461): progress for the
+   *  chapter's drain loop, bounded by `PLATE_MAX_WAIT` per plate. */
+  plateWaits: number;
   freshPageHold: { col: VDTColumn; px: number } | null;
   currentSection: ResolvedHeadingStyleConfig | undefined;
   blockIdCounter: number;

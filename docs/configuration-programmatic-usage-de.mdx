@@ -339,11 +339,6 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Das Bild wird in Spaltenbreite ausgegeben. Ein Bild im Fluss ist nie breiter als seine Spalte, und die Standardseite hat zwei (<code>layout.layoutType: 'double'</code>): Setzen Sie die Seite einspaltig, lassen Sie das Bild als seitenbreites Gleitobjekt setzen (<code>placement.span: 'page'</code>) oder erhöhen Sie seine Auflösung, wenn diese Größe gewollt ist.</td>
     </tr>
     <tr>
-      <td><code>plateLowResolution</code></td>
-      <td>Eine als ganzseitige Tafel gesetzte Bitmap (<code>placement.plate</code>) wurde so vergrößert, dass sie unter 300 ppi gedruckt wird. <code>resourceId</code> nennt sie, <code>scale</code> gibt die Vergrößerung an, <code>ppi</code> die Druckauflösung. Zeigt auf den Absatz, der sie zuerst zitiert.</td>
-      <td>Die Tafel wird in dieser Größe gedruckt. Ein größeres Original verwenden, oder die Tafel abschalten und das Bild kleiner setzen.</td>
-    </tr>
-    <tr>
       <td><code>emptyCaption</code></td>
       <td>Eine Ressource eines Typs mit Legendenpräfix hat keine eigene Legende, also druckt ihre Legendenzeile nur Bezeichnung und Nummer. <code>resourceId</code> nennt sie, <code>label</code> ist die gedruckte Zeile. Information: einmal je Ressource gemeldet, am Absatz, der sie zitiert, oder an ihrer Einbettung. Seit postext 1.52.</td>
       <td>Die Bezeichnung wird gedruckt. Schreib die Legende, oder lass die Bezeichnung allein, wenn eine nummerierte Tafel gemeint ist.</td>

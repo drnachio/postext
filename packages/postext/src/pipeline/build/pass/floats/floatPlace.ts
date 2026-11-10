@@ -14,9 +14,13 @@ import type { PlannedCallout } from '../../../callouts/calloutLayout.js';
 import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { TableOverflow } from '../../../../types/resources/tableStyles.js';
 import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
-import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types.js';
+import type { FloatRotation, CaptionAside, BodyCap, PlaceResult, FloatSizing } from '../types.js';
 import type { PassState, PassLate } from '../state.js';
 import { createFootStacks } from './footStack.js';
+
+/** The fresh pages a full-page plate waits past for one it can have
+ *  whole before it takes the next as it is (#1461). */
+export const PLATE_MAX_WAIT = 3;
 
 /** What createFloatPlace takes from the pass. */
 export interface FloatPlaceDeps {
@@ -41,7 +45,7 @@ export interface FloatPlaceDeps {
   minTextPx: number;
   tableOverflow: (resourceId: string) => TableOverflow;
   measureFloat: (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap) => FloatMeasure | null;
-  buildFloatBlock: (resourceId: string, x: number, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, flushEnd?: boolean | number, aside?: CaptionAside, mirrored?: boolean, cap?: BodyCap) => { block: VDTBlock; height: number; } | null;
+  buildFloatBlock: (resourceId: string, x: number, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, flushEnd?: boolean | number, aside?: CaptionAside, mirrored?: boolean, cap?: BodyCap, sizing?: FloatSizing) => { block: VDTBlock; height: number; } | null;
   rotatedFlushEnd: (page: VDTPage) => boolean;
   floatReserved: Map<VDTColumn, { top: number; bottom: number; }>;
   reservedOf: (col: VDTColumn) => { top: number; bottom: number; };
@@ -52,7 +56,7 @@ export interface FloatPlaceDeps {
   topFloatRefOf: Map<VDTColumn, number>;
   splitTableFloat: (f: PlannedFloat, width: number, position: FloatSlotPosition, targetCols: readonly VDTColumn[], contentArea: BoundingBox, avail: number, mode: "fresh" | "strict", rotated?: FloatRotation) => { slice: TableSliceSpec; rest?: PlannedFloat; } | "skip" | "none" | null;
   sideObstacles: WeakMap<VDTColumn, (SideObstacle & { owner: VDTBlock; })[]>;
-  probeFloatBand: (page: VDTPage, f: PlannedFloat, targetCols: readonly VDTColumn[], position: FloatSlotPosition, pageSpan: boolean, anchorToCap: boolean, side?: boolean, refY?: number) => { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined; aside?: CaptionAside; sideCol?: VDTColumn; } | null;
+  probeFloatBand: (page: VDTPage, f: PlannedFloat, targetCols: readonly VDTColumn[], position: FloatSlotPosition, pageSpan: boolean, anchorToCap: boolean, side?: boolean, refY?: number) => { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined; sizing?: FloatSizing; aside?: CaptionAside; sideCol?: VDTColumn; } | null;
   availableAfterBand: (col: VDTColumn, position: FloatSlotPosition, probe: { need: number; y: number; measure: FloatMeasure; }, anchorToCap: boolean) => number;
   commitFloatBlock: (page: VDTPage, col: VDTColumn, built: { block: VDTBlock; height: number; }, x: number, y: number, width: number, anchorIdx: number) => void;
   shrinkToRoom: (f: PlannedFloat, width: number, aside: CaptionAside | undefined, full: FloatMeasure, room: number, topBand: boolean, bandOf: (m: FloatMeasure) => { need: number; y: number; }) => { measure: FloatMeasure; need: number; y: number; cap: BodyCap; fits: boolean; } | null;
@@ -74,6 +78,34 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
+  /** The fresh pages each full-page plate waited past (#1461). */
+  const plateWaitPages = new Map<string, Set<number>>();
+  /**
+   * Whether full-page plate `f` waits for a later page instead of taking
+   * fresh page `page` (#1461). It takes a page it can have whole: nothing
+   * set on it yet (no float band, no block, no opener, no part title, no
+   * block that opened the page and waits for its room), each of `cols`
+   * keeping all of its height. Set on a page shortened by any of these,
+   * it would shrink to what is left. It waits past at most
+   * {@link PLATE_MAX_WAIT} such pages and then takes the next one as it
+   * is, sized to its room, so it is never put off for good. Notes do not
+   * shorten a fresh page here: a note is set at the foot of the column
+   * where text cites it, and a plate's page sets no text.
+   */
+  const plateWaits = (page: VDTPage, f: PlannedFloat, cols: readonly VDTColumn[]): boolean => {
+    const whole = !state.freshPageHold && !page.openerBand && !page.partInfo && !openerPages.has(page)
+      && (page.floats?.length ?? 0) === 0
+      && cols.every((c) => c.blocks.length === 0 && reservedOf(c).top === 0 && reservedOf(c).bottom === 0
+        && c.availableHeight >= c.bbox.height - 0.5);
+    if (whole) return false;
+    const waited = plateWaitPages.get(f.resourceId) ?? new Set<number>();
+    if (waited.has(page.index)) return true;
+    if (waited.size >= PLATE_MAX_WAIT) return false;
+    waited.add(page.index);
+    plateWaitPages.set(f.resourceId, waited);
+    state.plateWaits++;
+    return true;
+  };
   const placeFloatInColumns = (
     page: VDTPage,
     f: PlannedFloat,
@@ -88,10 +120,12 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     // An opener page takes no float (`layout.openerFloats: 'avoid'`, #749):
     // it waits for the page the flow opens next.
     if (openerFloatRule === 'avoid' && openerPages.has(page)) return 'defer';
+    // A full-page plate waits for a page it can have whole (#1461).
+    if (f.plate && mode === 'fresh' && plateWaits(page, f, targetCols)) return 'defer';
     const first = targetCols[0]!;
     const probe = probeFloatBand(page, f, targetCols, position, pageSpan, anchorToCap, side, refY);
     if (!probe) return 'skip';
-    const { width, xLeft, rotated, aside, sideCol } = probe;
+    const { width, xLeft, rotated, sizing, aside, sideCol } = probe;
     let { slice, measure, need, y } = probe;
     let rest: PlannedFloat | undefined;
     /** A picture scaled to this slot (`placement.shrink`, #626). */
@@ -155,7 +189,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
           if (cutBy !== undefined) captionUnderProposals.add(cutBy);
         }
       }
-      const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, false, undefined, false, cap);
+      const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, false, undefined, false, cap, sizing);
       if (!built) return 'skip';
       first.availableHeight = Math.max(0, first.availableHeight - need);
       commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
@@ -195,7 +229,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
         const r = reservedOf(c);
         if (r.top > 0 || r.bottom > 0) anyReserved = true;
       }
-      if (need > minAvail - minTextPx && anyReserved) {
+      // A plate set here after waiting (#1461) takes the room left whole.
+      if (need > minAvail - minTextPx && anyReserved && !f.plate) {
         // Gallery page: a float cited on an earlier page that arrives
         // under a floated box heading this page takes the rest of the
         // page — the compositor's box-plus-figure page — rather than
@@ -243,7 +278,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     } else {
       // A rotated block takes a page of its own: it never shares the
       // current page's foot, and waits for a fresh page to be cut to when
-      // too wide. So does a full-page plate .
+      // too wide. So does a full-page plate (#1461).
       if (f.rotate || f.plate || tooWide(measure)) return 'defer';
       // A picture that scales to any slot (#626) takes this one when it
       // holds it at its smallest scale or more (the text room kept next
@@ -314,7 +349,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     // An upright figure of a vertical page stands at the head of its tier
     // (`placement.align`: `left` the top, `center`, `right` the foot).
     const flush = rotated?.upright ? (f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0) : rotated ? rotatedFlushEnd(page) : false;
-    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, flush, aside, late.mirroredOf(page), cap);
+    const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, flush, aside, late.mirroredOf(page), cap, sizing);
     if (!built) return 'skip';
     // Under an opener in its own column the band starts at that column's
     // head, the grid line the heads beside it stand on.
@@ -484,7 +519,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     return false;
   };
 
-  /** A rotated float, and a full-page plate, take their page from the top. */
+  /** A rotated float, and a full-page plate (#1461), take their page from
+   *  the top. */
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
     f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {

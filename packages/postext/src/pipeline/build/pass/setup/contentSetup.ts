@@ -19,7 +19,6 @@ import { wrapComposedPages, frameBoxStyle } from '../../../../composed/wrap.js';
 import { wrapComicTextPanels, comicTextPanelsSupported, planComicTextPanels } from '../../../../comics/textPanels.js';
 import { wrapFlowColumns, flowColumnsStyles } from '../../../columns/flowColumns.js';
 import { wrapPageSpanEmbeds, spanEmbedStyle } from '../../../floats/spanEmbeds.js';
-import { withPlacementLengths } from '../../../floats/placementLength.js';
 import { effectiveResourceTypes, documentLocale } from '../../../../defaults/resources/resourceTypes.js';
 import { expandScoreBlocks } from '../../../resources/scoreBlocks.js';
 import { wrapCodeBlocks, codeBoxStyle } from '../../../code/codeBlocks.js';
@@ -216,9 +215,8 @@ export function createContentSetup(deps: ContentSetupDeps) {
   // captions and inline `:ref`s can resolve their rendered number strings
   // before measurement. Numbering follows order of first reference in the
   // document.
-  // A width given as a length is made its share of the slot
-  // from here on (`placementLength.ts`).
-  const { resources, resourceTypes } = withPlacementLengths(content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []), setup.resolved);
+  const resources: Resource[] = content.resources ?? [];
+  const resourceTypes: ResourceType[] = effectiveResourceTypes(config, resources);
   const headingContext = computeHeadingContext(contentBlocks, headingStart, isNumbered);
   const numberingState = computeResourceNumberingState(
     contentBlocks,

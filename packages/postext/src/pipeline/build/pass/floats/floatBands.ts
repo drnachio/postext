@@ -8,7 +8,8 @@ import { type TableSliceSpec, chooseTableSlice, type TableRowMetrics } from '../
 import { sideColumnOf, sideUsedBottom } from '../../../blocks/placement.js';
 import { offsetCalloutToAbsolute, type CalloutLayoutResult, type PlannedCallout } from '../../../callouts/calloutLayout.js';
 import { DEFAULT_FLOAT_MIN_SCALE } from '../../../../defaults/layout.js';
-import type { FloatRotation, CaptionAside, BodyCap } from '../types.js';
+import type { FloatRotation, CaptionAside, BodyCap, FloatSizing } from '../types.js';
+import { floatWidthIn } from '../../../floats/placementLength.js';
 import type { TableOverflow } from '../../../../types/resources/tableStyles.js';
 import type { PassState, PassLate } from '../state.js';
 
@@ -24,11 +25,13 @@ export interface FloatBandsDeps {
   offsetResourceBlockToAbsolute: (rb: ResolvedResourceBlock, ox: number, oy: number) => void;
   layoutFloat: (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap) => { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics; asideHeight?: number; } | null;
   rotationFor: (f: PlannedFloat, avail: number, page?: VDTPage) => FloatRotation | undefined;
+  sizingFor: (f: PlannedFloat, avail: number, rotated: FloatRotation | undefined) => FloatSizing | undefined;
+  dpi: number;
   tableRowCount: (resourceId: string) => number;
   tableOverflow: (resourceId: string) => TableOverflow;
   sliceOf: (f: PlannedFloat) => TableSliceSpec | undefined;
   tableMetrics: (resourceId: string, width: number, rotated?: FloatRotation) => TableRowMetrics | null;
-  measureFloat: (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap) => FloatMeasure | null;
+  measureFloat: (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap, sizing?: FloatSizing) => FloatMeasure | null;
   uncappedBottoms: Map<VDTColumn, number>;
   state: PassState;
   late: PassLate;
@@ -37,12 +40,13 @@ export interface FloatBandsDeps {
 export function createFloatBands(deps: FloatBandsDeps) {
   const {
     captionUnder, baselineGrid, doc, shiftStripLines, calloutFloatResults, calloutBandPages,
-    floatGapPx, offsetResourceBlockToAbsolute, layoutFloat, rotationFor, tableRowCount,
+    floatGapPx, offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, dpi, tableRowCount,
     tableOverflow, sliceOf, tableMetrics, measureFloat, uncappedBottoms, state, late
   } = deps;
   /** Floats (or slices) placed so far — the progress signal of the drain
    *  loop, which a split does not shorten the queue for. */
   state.floatsPlaced = 0;
+  state.plateWaits = 0;
 
   /**
    * The slice of a table float that fits a fresh band of `avail` px, when
@@ -141,20 +145,26 @@ export function createFloatBands(deps: FloatBandsDeps) {
     anchorToCap: boolean,
     side = false,
     refY?: number,
-  ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined; aside?: CaptionAside; sideCol?: VDTColumn } | null => {
+  ): { need: number; y: number; measure: FloatMeasure; slice: TableSliceSpec | undefined; width: number; xLeft: number; rotated: FloatRotation | undefined; sizing?: FloatSizing; aside?: CaptionAside; sideCol?: VDTColumn } | null => {
     const first = targetCols[0]!;
     const last = targetCols[targetCols.length - 1]!;
     // A float across several columns takes their measure, gutters included.
     const slotWidth = pageSpan ? page.contentArea.width : side ? first.bbox.width : last.bbox.x + last.bbox.width - first.bbox.x;
     const slotX = pageSpan ? page.contentArea.x : first.bbox.x;
-    // A narrower float (`placement.width`) sits in its slot per `align`.
-    const width = f.widthFraction && f.widthFraction < 1 ? slotWidth * f.widthFraction : slotWidth;
+    // A narrower float (`placement.width`) sits in its slot per `align`;
+    // a width given as a length is measured against this slot (#1461). A
+    // turned float keeps the band whole (its length narrows the picture).
+    const width = f.rotate ? slotWidth : floatWidthIn(f, slotWidth, dpi);
     const alignK = f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0;
     const xLeft = slotX + (slotWidth - width) * alignK;
     const slice = sliceOf(f);
     // A side float never turns: it stacks upright in the side column (on a
     // vertical page it is counter-rotated to stand upright there too).
-    const rotated = side && !pageIsVertical(page) ? undefined : rotationFor(f, Math.min(...targetCols.map((c) => c.availableHeight)), page);
+    const avail = Math.min(...targetCols.map((c) => c.availableHeight));
+    const rotated = side && !pageIsVertical(page) ? undefined : rotationFor(f, avail, page);
+    // A full-page plate's height, a turned picture's widest (#1461).
+    const sizing = sizingFor(f, avail, rotated);
+    const sz = sizing ? { sizing } : {};
     // The caption beside the figure, in the band's side column.
     let aside: CaptionAside | undefined;
     let sideCol: VDTColumn | undefined;
@@ -165,12 +175,12 @@ export function createFloatBands(deps: FloatBandsDeps) {
         aside = { dx: sc.bbox.x - xLeft, width: sc.bbox.width, alignBottom: position === 'bottom' };
       }
     }
-    const measure = measureFloat(f.resourceId, width, slice, rotated, aside);
+    const measure = measureFloat(f.resourceId, width, slice, rotated, aside, undefined, sizing);
     if (!measure) return null;
     // A side float stacks in the side column beside the citing text.
     if (side) {
       const { need, y } = measureSideStack(measure, first, refY, page.contentArea, baselineGrid, floatGapPx, sideObstacles.get(first));
-      return { need, y, measure, slice, width, xLeft, rotated };
+      return { need, y, measure, slice, width, xLeft, rotated, ...sz };
     }
     // A bottom band normally anchors to the column's true foot (under a
     // trailing cap, the page bottom — the closing-page figure). Before a
@@ -187,11 +197,11 @@ export function createFloatBands(deps: FloatBandsDeps) {
       const used = sideUsedBottom(sideCol);
       if (used > y + 0.5) {
         const shifted: CaptionAside = { ...aside, offsetY: used - y };
-        const m2 = measureFloat(f.resourceId, width, slice, rotated, shifted);
+        const m2 = measureFloat(f.resourceId, width, slice, rotated, shifted, undefined, sizing);
         if (m2) {
           aside = shifted;
           ({ need, y } = measureFloatBand(position, m2, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf));
-          return { need, y, measure: m2, slice, width, xLeft, rotated, aside, sideCol };
+          return { need, y, measure: m2, slice, width, xLeft, rotated, ...sz, aside, sideCol };
         }
       }
     }
@@ -203,14 +213,14 @@ export function createFloatBands(deps: FloatBandsDeps) {
       const captionTop = y + measure.height - measure.asideHeight - floatGapPx;
       const standsInBand = (sideObstacles.get(sideCol) ?? []).some((o) => o.bottom > captionTop + 0.5);
       if (sideUsedBottom(sideCol) > captionTop + 0.5 || standsInBand) {
-        const plain = measureFloat(f.resourceId, width, slice, rotated);
+        const plain = measureFloat(f.resourceId, width, slice, rotated, undefined, undefined, sizing);
         if (plain) {
           ({ need, y } = measureFloatBand(position, plain, targetCols, page.contentArea, baselineGrid, floatGapPx, bottomOf));
-          return { need, y, measure: plain, slice, width, xLeft, rotated };
+          return { need, y, measure: plain, slice, width, xLeft, rotated, ...sz };
         }
       }
     }
-    return { need, y, measure, slice, width, xLeft, rotated, ...(aside ? { aside, sideCol } : {}) };
+    return { need, y, measure, slice, width, xLeft, rotated, ...sz, ...(aside ? { aside, sideCol } : {}) };
   };
 
   /** Free height `col` keeps for the flow once a float band `probe` is

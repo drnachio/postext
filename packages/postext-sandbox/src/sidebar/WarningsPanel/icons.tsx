@@ -136,7 +136,6 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'bitmapTooSmall':
     case 'floatShrunk':
     case 'pictureBelowPrintSize':
-    case 'plateLowResolution':
     case 'emptyCaption':
     case 'resourceMoved':
     case 'textWrap':

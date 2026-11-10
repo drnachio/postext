@@ -38,6 +38,7 @@ import { resolveInlineSpans, poemStanzaIndices } from './measureContentBlock/inl
 import type { BlockMeasureContext, MeasureContentBlockOptions, MeasuredContentBlock } from './measureContentBlock/types.js';
 import { createMeasureOptions } from './measureContentBlock/measureOptions.js';
 import { linkQrSetting, hangLinkQr } from './measureContentBlock/linkQr.js';
+import { placementWidthOf, widthShareIn } from '../floats/placementLength.js';
 
 export type { BlockMeasureContext, DropCapNote, MeasuredContentBlock, MeasureContentBlockOptions } from './measureContentBlock/types.js';
 export { wordSpacingProfile } from './measureContentBlock/helpers.js';
@@ -143,8 +144,10 @@ export function measureContentBlock(
     const inside = !measuringVertically() && opts?.uprightMaxLength === undefined
       && captionInsideShare(kind.resource, kind.resourceType) !== undefined;
     const wrap = measuringVertically() ? undefined : resolveResourceWrap(kind.resource, kind.resourceType, resolved.layout.wrap);
-    const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
-    const frac = wrap ? wrap.width : !inside && typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
+    // A width given as a length (#1461) is measured against this column.
+    const dpi = resolved.page.dpi;
+    const rawFrac = placementWidthOf(kind.resource.placement, kind.resourceType?.defaultPlacement);
+    const frac = wrap ? (wrap.length ? widthShareIn(wrap.length, columnWidth, dpi) : wrap.width) : !inside ? widthShareIn(rawFrac, columnWidth, dpi) : 1;
     const align = wrap ? wrap.side : startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
     const embedWidth = columnWidth * frac;
     // Where a narrower embed starts in its column (`placement.align`).

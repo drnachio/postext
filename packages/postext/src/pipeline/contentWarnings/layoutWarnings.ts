@@ -324,46 +324,6 @@ export function pictureBelowPrintSizeWarnings(
   return out;
 }
 
-/** Under this resolution, at the size it prints at, an enlarged plate is
- *  reported: the resolution printers ask of a picture. */
-export const PLATE_MIN_PPI = 300;
-
-/** A `plateLowResolution` warning for each full-page plate
- *  (`placement.plate`) of a bitmap the layout enlarged to the content
- *  area so far that it prints under {@link PLATE_MIN_PPI}: its pixels
- *  across over its printed width in inches.
- *  Once per picture; `sourceRangeOf` gives the range of the citing block. */
-export function plateLowResolutionWarnings(
-  doc: VDTDocument,
-  sourceRangeOf?: (contentIndex: number) => { start: number; end: number } | undefined,
-): ContentWarning[] {
-  const dpi = doc.config.page.dpi;
-  const out: ContentWarning[] = [];
-  const seen = new Set<string>();
-  for (const page of doc.pages) {
-    for (const block of page.floats ?? []) {
-      const rb = block.resourceBlock;
-      if (!rb || rb.kind !== 'bitmap' || rb.plateScale === undefined || !(rb.plateScale > 1)) continue;
-      const id = rb.resource.id;
-      const bitmap = rb.resource.bitmap;
-      if (seen.has(id) || !bitmap || !(bitmap.width > 0) || !(rb.bodyRect.width > 0)) continue;
-      const ppi = bitmap.width / (rb.bodyRect.width / dpi);
-      if (ppi >= PLATE_MIN_PPI) continue;
-      seen.add(id);
-      const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;
-      out.push({
-        kind: 'plateLowResolution',
-        resourceId: id,
-        ppi: Math.round(ppi),
-        scale: Math.round(rb.plateScale * 1000) / 1000,
-        ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
-        pageIndex: page.index,
-      });
-    }
-  }
-  return out;
-}
-
 /** An `emptyCaption` warning (#1151) for each resource whose type gives a
  *  caption prefix and whose own caption is empty: its caption line prints
  *  the label and number alone. Once per resource, where it is first
