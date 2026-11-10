@@ -169,11 +169,15 @@ const U = UNDERLINE_SIGN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  *  keeps the row literal: `C+++`), and the text starts and ends with a
  *  character that is neither a space nor a plus sign; a letter or digit
  *  right before the opening or after the closing pair keeps them literal,
- *  so `C++ and C++`, `C++-Kurs und C++-Buch` and `1 ++ 2` stay text. The text may hold other inline marks, single plus
+ *  so `C++ and C++`, `C++-Kurs und C++-Buch` and `1 ++ 2` stay text (a
+ *  Chinese or Japanese character beside them does not: `请++签名++。`). The text may hold other inline marks, single plus
  *  signs included, and may run over a soft line break, not over a blank
  *  line. `\+` sets a literal plus sign. */
+/** A letter or digit glued to a pair keeps it literal (`C++`); a Chinese
+ *  or Japanese character does not, as those scripts set no spaces. */
+const GLUED = `[${U}\\p{N}]|[^\\P{L}\\p{sc=Han}\\p{sc=Hiragana}\\p{sc=Katakana}]`;
 export const UNDERLINE_RE = new RegExp(
-  `(?<![${U}\\p{L}\\p{N}])${U}${U}(?=[^\\s${U}])((?:[^${U}\\n]|${U}(?!${U})|\\n(?!\\n))+?)(?<=[^\\s${U}])${U}${U}(?![${U}\\p{L}\\p{N}])`,
+  `(?<!${GLUED})${U}${U}(?=[^\\s${U}])((?:[^${U}\\n]|${U}(?!${U})|\\n(?!\\n))+?)(?<=[^\\s${U}])${U}${U}(?!${GLUED})`,
   'gu',
 );
 

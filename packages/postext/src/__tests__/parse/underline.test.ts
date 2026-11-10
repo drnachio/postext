@@ -61,8 +61,14 @@ describe('++underline++', () => {
     expect(underlined(parseInlineFormatting('i++ and ++j then ++sign here++'))).toEqual(['sign here']);
   });
 
+  it('opens and closes beside a Chinese or Japanese character', () => {
+    expect(underlined(parseInlineFormatting('请++在每一页签名++，然后寄回。'))).toEqual(['在每一页签名']);
+    expect(underlined(parseInlineFormatting('++すべてのページに署名++のうえ'))).toEqual(['すべてのページに署名']);
+    expect(underlined(parseInlineFormatting('用C++编程'))).toEqual([]);
+  });
+
   it('scans long hostile rows in linear time', () => {
-    const rows = ['++a '.repeat(50_000), 'a++ '.repeat(50_000), '++i x i++ '.repeat(20_000), `++${'+a'.repeat(50_000)}`, `++a${' b'.repeat(100_000)}`, '+'.repeat(200_000)];
+    const rows = ['++a '.repeat(50_000), '字++'.repeat(50_000), 'a++ '.repeat(50_000), '++i x i++ '.repeat(20_000), `++${'+a'.repeat(50_000)}`, `++a${' b'.repeat(100_000)}`, '+'.repeat(200_000)];
     const t0 = performance.now();
     for (const r of rows) parseInlineFormatting(r);
     expect(performance.now() - t0).toBeLessThan(2000);
