@@ -2,6 +2,7 @@
 // :::verse block.
 // Part of parseBlocks (blockParser.ts), split out of it in #1276.
 import type { ContentBlock, DirectiveAttrs, VerseLineInfo, VerseStanza, ContainerName, ParseIssue } from '../types.js';
+import type { InlineFormatOptions } from '../inlineFormatting.js';
 import { extractExerciseGaps, injectGapSpans, settleGapPlaceholders } from '../exerciseGaps.js';
 import { protectCodeSpans, extractInlineChips, extractInlineFootnotes, extractInlineRefs, extractInlineSwatches, extractInlineTabs, bodyBreakSpans, parseInlineFormatting, replaceBodyBreaks, BODY_BREAK_MARK, injectChipSpans, injectFootnoteSpans, injectRefSpans, injectSwatchSpans, injectTabSpans, BREAK_PLACEHOLDER } from '../inlineFormatting.js';
 import { extractInlineCitations, injectCitationSpans } from '../citations.js';
@@ -20,11 +21,13 @@ export interface VerseParsingDeps {
   lineEndOffset: (k: number) => number;
   inExerciseText: () => boolean;
   parse: ParseState;
+  /** How inline marks are read (`ParseOptions.plusUnderline`). */
+  inline: InlineFormatOptions | undefined;
 }
 
 export function createVerseParsing(deps: VerseParsingDeps) {
   const {
-    markdown, issues, rawLines, lineOffsets, lineEndOffset, inExerciseText, parse
+    markdown, issues, rawLines, lineOffsets, lineEndOffset, inExerciseText, parse, inline
   } = deps;
   /** The spans, plain text and source map of a run of inline Markdown
    *  (`raw`, whose source runs from `srcStart` to `srcEnd`): chips,
@@ -50,13 +53,13 @@ export function createVerseParsing(deps: VerseParsingDeps) {
     // Tabs (#622): `:tab` and tab characters, outside code and maths.
     const tabExtract = extractInlineTabs(mathExtract.cleaned);
     const formatted = hardBreaks
-      ? bodyBreakSpans(parseInlineFormatting(replaceBodyBreaks(tabExtract.cleaned, BODY_BREAK_MARK)))
-      : parseInlineFormatting(tabExtract.cleaned);
+      ? bodyBreakSpans(parseInlineFormatting(replaceBodyBreaks(tabExtract.cleaned, BODY_BREAK_MARK), inline))
+      : parseInlineFormatting(tabExtract.cleaned, inline);
     const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
       injectMathSpans(injectTabSpans(formatted, tabExtract.tabs), mathExtract.maths), swExtract.swatches), citeExtract.citations),
       refExtract.refs,
-    ), fnExtract.markers), chipExtract.chips);
-    const spans = gapExtract && gapExtract.gaps.length > 0 ? injectGapSpans(rawSpans, gapExtract.gaps) : rawSpans;
+    ), fnExtract.markers), chipExtract.chips, inline);
+    const spans = gapExtract && gapExtract.gaps.length > 0 ? injectGapSpans(rawSpans, gapExtract.gaps, inline) : rawSpans;
     return settleGapPlaceholders(withChipSources(markdown, joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, spans))));
   };
 

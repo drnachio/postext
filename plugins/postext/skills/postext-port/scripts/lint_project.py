@@ -2297,8 +2297,10 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
             rep.warn(where, "HTML tags/entities print literally: write the Unicode characters")
         if re.search(r"!\[[^\]]*\]\([^)]*\)", line):
             rep.error(where, "inline images are removed: make the picture a resource and cite it")
-        if "~~" in line:
-            rep.warn(where, "~~strike~~ is not strikethrough in Postext (it becomes a subscript)")
+        if "~~" in line and engine is not None and engine < (1, 71, 0):
+            rep.warn(where, "~~strike~~ is a strikethrough only since postext 1.71; this engine reads it as a subscript")
+        if ":underline[" in line and engine is not None and engine < (1, 72, 0):
+            rep.warn(where, ":underline[…] needs postext 1.72; this engine prints it as written")
         # math blocks
         if line == "$$":
             # A fence closed before the next blank line interrupts the

@@ -1,4 +1,4 @@
-// Underlined text (`++…++`) in the reflowable rendition: the underlined
+// Underlined text (`:underline[…]`) in the reflowable rendition: the underlined
 // words, and the spaces between them, inside one `<u>`; a full stop glued
 // to the run stays out.
 
@@ -19,17 +19,17 @@ async function chapterOf(markdown: string): Promise<string> {
 
 describe('underline in the reflowable EPUB', () => {
   it('writes an underlined run as one <u>, spaces included', async () => {
-    const body = await chapterOf('Please ++sign all pages++ and return them.');
+    const body = await chapterOf('Please :underline[sign all pages] and return them.');
     expect(body).toContain('Please <u>sign all pages</u> and');
   });
 
   it('keeps a full stop glued to the run out of it', async () => {
-    const body = await chapterOf('Return it by ++Friday++. Thank you.');
+    const body = await chapterOf('Return it by :underline[Friday]. Thank you.');
     expect(body).toContain('<u>Friday</u>.');
   });
 
   it('goes with a strikethrough and with emphasis', async () => {
-    expect(await chapterOf('Now ~~++both++~~ lines.')).toContain('<u><s>both</s></u>');
-    expect(await chapterOf('Plain **++bold under++** text.')).toContain('Plain <strong><u>bold</u></strong><u> </u><strong><u>under</u></strong> text.');
+    expect(await chapterOf('Now ~~:underline[both]~~ lines.')).toContain('<u><s>both</s></u>');
+    expect(await chapterOf('Plain **:underline[bold under]** text.')).toContain('Plain <strong><u>bold</u></strong><u> </u><strong><u>under</u></strong> text.');
   });
 });

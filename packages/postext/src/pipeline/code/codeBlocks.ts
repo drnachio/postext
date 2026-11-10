@@ -27,14 +27,17 @@ const CODE_CONTAINER_BASE = 1_500_000_000;
 
 /** How the configuration reads a text's code (#624): fences unless
  *  `codeStyle.blocks` is off (a document stored before #624), indented code
- *  when `codeStyle.indentedCode` asks for it. Undefined for the default
- *  reading, so the parse memo keeps one entry per text. */
+ *  when `codeStyle.indentedCode` asks for it; and `++text++` as underlined
+ *  text when `bodyText.plusUnderline` is on (#1465). Undefined for the
+ *  default reading, so the parse memo keeps one entry per text. */
 export function codeParseOptions(resolved: ResolvedConfig): ParseOptions | undefined {
   const cs = resolved.codeStyle;
   // Notation fences are scores (#1172) unless `scoreStyle.enabled` is off.
   const scores = resolved.scoreStyle?.enabled === false ? { scores: false } : {};
-  if (!cs || (cs.blocks && !cs.indentedCode)) return 'scores' in scores ? scores : undefined;
-  return { fences: cs.blocks, indentedCode: cs.indentedCode, ...scores };
+  const plus = resolved.bodyText?.plusUnderline ? { plusUnderline: true } : {};
+  const extra = { ...scores, ...plus };
+  if (!cs || (cs.blocks && !cs.indentedCode)) return Object.keys(extra).length > 0 ? extra : undefined;
+  return { fences: cs.blocks, indentedCode: cs.indentedCode, ...extra };
 }
 
 const px = (value: number): Dimension => ({ value, unit: 'px' });

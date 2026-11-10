@@ -149,62 +149,123 @@ export function markStrikethrough(text: string, replace: (inner: string) => stri
   return text.replace(STRIKE_RE, (_, inner: string) => replace(inner));
 }
 
-/** Private-use marks bracketing underlined text (`++text++`) while the
- *  emphasis scanners run; they become a range of the spans
- *  (`InlineSpan.links`, with `underline`), as struck-through text does, and
- *  are dropped. */
+/** How a run of inline Markdown is read beyond the marks every text takes
+ *  (`ParseOptions` carries the same switches for a whole document). */
+export interface InlineFormatOptions {
+  /** Read `++text++` as underlined text (`bodyText.plusUnderline`, #1465).
+   *  Default `false`: the plus signs are text and `:underline[text]` is the
+   *  one way to underline. */
+  plusUnderline?: boolean;
+}
+
+/** Private-use marks bracketing underlined text (`:underline[text]`, or
+ *  `++text++` when that is on) while the emphasis scanners run; they
+ *  become a range of the spans (`InlineSpan.links`, with `underline`), as
+ *  struck-through text does, and are dropped. */
 export const UNDERLINE_OPEN = '\uE1B9';
 export const UNDERLINE_CLOSE = '\uE1BA';
 
-/** The sign written twice on each side of underlined text (`++text++`).
- *  The one place the spelling lives: {@link UNDERLINE_RE} and
- *  {@link markUnderline} are built from it. */
+/** Opening of a `:underline[` run in the source (see `computeSourceMap`). */
+export const UNDERLINE_OPENER = ':underline[';
+
+/** Where the `:underline[` at `at` ends: past its closing `]`, with the
+ *  text between the brackets. The text may hold other inline marks, links
+ *  included (brackets nest), may run over a soft line break and takes `\]`
+ *  for a literal bracket; it may not be empty. Undefined when the bracket
+ *  does not close before a blank line or the end. */
+export function readUnderlineAt(text: string, at: number): { end: number; inner: string } | undefined {
+  if (!text.startsWith(UNDERLINE_OPENER, at)) return undefined;
+  const from = at + UNDERLINE_OPENER.length;
+  let depth = 0;
+  let i = from;
+  for (; i < text.length; i++) {
+    const c = text[i]!;
+    if (c === '\\') { i++; continue; }
+    if (c === '\n' && text[i + 1] === '\n') return undefined;
+    if (c === '[') depth++;
+    else if (c === ']') {
+      if (depth === 0) break;
+      depth--;
+    }
+  }
+  if (i >= text.length || i === from) return undefined;
+  return { end: i + 1, inner: text.slice(from, i) };
+}
+
+/** Every `:underline[…]` of `text` replaced by its text between
+ *  {@link UNDERLINE_OPEN} and {@link UNDERLINE_CLOSE}, or by what `replace`
+ *  makes of it; one inside another is read too (the text is underlined
+ *  once). */
+export function markUnderlineDirective(text: string, replace: (inner: string) => string = (inner) => UNDERLINE_OPEN + inner + UNDERLINE_CLOSE): string {
+  if (!text.includes(UNDERLINE_OPENER)) return text;
+  let out = '';
+  let pos = 0;
+  for (let at = text.indexOf(UNDERLINE_OPENER); at >= 0; ) {
+    const read = readUnderlineAt(text, at);
+    if (!read) {
+      at = text.indexOf(UNDERLINE_OPENER, at + 1);
+      continue;
+    }
+    out += text.slice(pos, at) + replace(unescapeBrackets(markUnderlineDirective(read.inner, replace)));
+    pos = read.end;
+    at = text.indexOf(UNDERLINE_OPENER, read.end);
+  }
+  return out + text.slice(pos);
+}
+
+/** The sign written twice on each side of the underline shorthand
+ *  (`++text++`, on with `bodyText.plusUnderline`). The one place the
+ *  spelling lives: {@link UNDERLINE_RE} and {@link markUnderline} are built
+ *  from it. */
 export const UNDERLINE_SIGN = '+';
 const UNDERLINE_PAIR = UNDERLINE_SIGN + UNDERLINE_SIGN;
 const U = UNDERLINE_SIGN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** `++text++`: underlined text (the inserted text of Pandoc and
- *  markdown-it-ins, set as an underline as word processors do). Read like
- *  `~~text~~`: exactly two plus signs on each side (a third one beside them
- *  keeps the row literal: `C+++`), and the text starts and ends with a
- *  character that is neither a space nor a plus sign; a letter or digit
- *  right before the opening or after the closing pair keeps them literal,
- *  so `C++ and C++`, `C++-Kurs und C++-Buch` and `1 ++ 2` stay text (a
- *  Chinese or Japanese character beside them does not: `请++签名++。`). The text may hold other inline marks, single plus
- *  signs included, and may run over a soft line break, not over a blank
- *  line. `\+` sets a literal plus sign. */
-/** A letter or digit glued to a pair keeps it literal (`C++`); a Chinese
- *  or Japanese character does not, as those scripts set no spaces. */
-const GLUED = `[${U}\\p{N}]|[^\\P{L}\\p{sc=Han}\\p{sc=Hiragana}\\p{sc=Katakana}]`;
+ *  markdown-it-ins, set as an underline as word processors do), read only
+ *  with `bodyText.plusUnderline` on. Read like `~~text~~`: exactly two plus
+ *  signs on each side (a third one beside them keeps the row literal:
+ *  `C+++`), and the text starts and ends with a character that is neither a
+ *  space nor a plus sign. Every such pair underlines, with no exception for
+ *  code in prose (`use ++i rather than i++ here`, `x++y++`): `\+\+` (or
+ *  `\++`) sets a literal pair. A pair opened by a space (`C++ and`,
+ *  `1 ++ 2`) opens nothing. The text may hold other inline marks, single
+ *  plus signs included, and may run over a soft line break, not over a
+ *  blank line. */
 export const UNDERLINE_RE = new RegExp(
-  `(?<!${GLUED})${U}${U}(?=[^\\s${U}])((?:[^${U}\\n]|${U}(?!${U})|\\n(?!\\n))+?)(?<=[^\\s${U}])${U}${U}(?!${GLUED})`,
+  `(?<!${U})${U}${U}(?=[^\\s${U}])((?:[^${U}\\n]|${U}(?!${U})|\\n(?!\\n))+?)(?<=[^\\s${U}])${U}${U}(?!${U})`,
   'gu',
 );
 
-/** A pair that only looks like an underline: its text begins and ends
- *  with a one-character word, the increment operator written at a
- *  variable on both sides (`use ++i rather than i++ here`). */
-const OPERATOR_FIRST = /^[\p{L}\p{N}_](?![\p{L}\p{N}_])/u;
-const OPERATOR_LAST = /(?<![\p{L}\p{N}_])[\p{L}\p{N}_]$/u;
-const operatorPair = (inner: string): boolean => /\s/u.test(inner) && OPERATOR_FIRST.test(inner) && OPERATOR_LAST.test(inner);
-
 /** Every `++text++` of `text` replaced by its text between
  *  {@link UNDERLINE_OPEN} and {@link UNDERLINE_CLOSE}, or by what `replace`
- *  makes of it; an increment operator's pair stays as written. */
+ *  makes of it. */
 export function markUnderline(text: string, replace: (inner: string) => string = (inner) => UNDERLINE_OPEN + inner + UNDERLINE_CLOSE): string {
   if (!text.includes(UNDERLINE_PAIR)) return text;
-  return text.replace(UNDERLINE_RE, (whole, inner: string) => (operatorPair(inner) ? whole : replace(inner)));
+  return text.replace(UNDERLINE_RE, (_, inner: string) => replace(inner));
 }
 
-/** Where each `++text++` of `text` is, as the engine reads it (the
- *  Sandbox editor marks them): `from`–`to` the whole of it, the text
- *  `UNDERLINE_SIGN.length * 2` in from either end. */
-export function underlineRanges(text: string): Array<{ from: number; to: number; marker: number }> {
-  const out: Array<{ from: number; to: number; marker: number }> = [];
-  if (!text.includes(UNDERLINE_PAIR)) return out;
-  for (const m of text.matchAll(UNDERLINE_RE)) {
-    // `\++`: an escaped sign opens nothing.
-    if (!operatorPair(m[1]!) && text[m.index - 1] !== '\\') out.push({ from: m.index, to: m.index + m[0].length, marker: UNDERLINE_PAIR.length });
+/** Where each underlined run of a line of `text` is, as the engine reads it
+ *  (the Sandbox editor marks them): `from`–`to` the whole of it, `open`
+ *  and `close` the lengths of its markers. `:underline[…]` always, and
+ *  `++…++` when `options.plusUnderline` is on. */
+export function underlineRanges(text: string, options?: InlineFormatOptions): Array<{ from: number; to: number; open: number; close: number }> {
+  const out: Array<{ from: number; to: number; open: number; close: number }> = [];
+  for (let at = text.indexOf(UNDERLINE_OPENER); at >= 0; ) {
+    const read = readUnderlineAt(text, at);
+    if (!read) {
+      at = text.indexOf(UNDERLINE_OPENER, at + 1);
+      continue;
+    }
+    out.push({ from: at, to: read.end, open: UNDERLINE_OPENER.length, close: 1 });
+    at = text.indexOf(UNDERLINE_OPENER, read.end);
+  }
+  if (options?.plusUnderline && text.includes(UNDERLINE_PAIR)) {
+    for (const m of text.matchAll(UNDERLINE_RE)) {
+      // `\++`: an escaped sign opens nothing.
+      if (text[m.index - 1] !== '\\') out.push({ from: m.index, to: m.index + m[0].length, open: UNDERLINE_PAIR.length, close: UNDERLINE_PAIR.length });
+    }
+    out.sort((a, b) => a.from - b.from);
   }
   return out;
 }

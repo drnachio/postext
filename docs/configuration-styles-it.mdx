@@ -476,6 +476,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 Le lunghezze in em della casella (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) sono relative al corpo proprio del chip. La casella è una fascia che va da 0,8 em sopra a 0,25 em sotto la linea di base, ingrandita da `paddingY` e dal contorno; si disegna fuori dal riquadro della riga e non cambia mai l’interlinea, quindi la griglia della linea di base resta intatta. Quando la casella risulta più alta del passo di riga, un chip può urtare un chip della riga sopra o sotto: la Sandbox mostra un avviso «Chip che toccano la riga successiva» quando due chip su righe diverse si sovrappongono, con la sovrapposizione in punti, così puoi ridurre `paddingY`, il contorno o `fontSize`. Un chip alto senza chip sopra o sotto non viene segnalato.
 
+Un chip con l’attributo `field` è un campo di modulo compilabile nel PDF e un campo di modulo di InDesign nell’esportazione IDML. Il suo stile dà al campo l’aspetto, e `minWidth` lo spazio per scrivere (vedi [Output PDF › Campi dei moduli](/it/docs/configuration-pdf-output#campi-dei-moduli)).
+
 Nel VDT un chip è un segmento di riga di `kind: 'chip'` il cui campo `chip` porta i tratti di testo (ciascuno con la sua stringa di font e la sua larghezza), la geometria della casella (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, i margini di distanza) e i suoi colori; il `text` del segmento è un segnaposto di un carattere, quindi gli offset del testo semplice e le mappe del sorgente contano un chip come un carattere.
 
 ```ts

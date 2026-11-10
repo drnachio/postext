@@ -238,6 +238,12 @@ export const metadata = {
       <td>把源文本行末的反斜杠，以及后跟空格的<code>{'\\\\'}</code>，读作段落、引文或列表项内部的强制换行（CommonMark的硬换行）：后面的文字在同一段落中另起一行，换行前的一行按自然宽度排，与末行相同。段落末尾的反斜杠照样印出，行末两个空格不算换行（见<a href="/zh/docs/document-format-directives#段落内的换行">文档格式 › 段落内的换行</a>）。<code>false</code>保留1.22的读法：反斜杠照样印出，各行用空格连接；更早保存、文字中有这种反斜杠的配置按此读取（见<a href="/zh/docs/configuration-bundles#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。标题、题注、注释和表格单元格在两种设置下都在<code>{'\\\\'}</code>处换行。</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把 <code>++text++</code> 读作加下划线的文字；<code>:underline[text]</code> 始终有效。两边各两个加号的每一对都加下划线，<code>use ++i rather than i++</code> 也是；写 <code>{'\\+\\+'}</code> 原样印出一对加号，紧贴加号的字母或数字使其保持为文字（<code>C++</code>、<code>g++</code>），行内代码和代码块从不加下划线。凡是读取行内标记的地方都适用：正文、标题、列表、图注、表格单元格、注释和标签。<code>false</code>：加号照样印出。见<a href="/zh/docs/document-format-inline#下划线">文档格式 › 下划线</a>。</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

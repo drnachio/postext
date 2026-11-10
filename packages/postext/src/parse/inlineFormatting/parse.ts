@@ -5,7 +5,7 @@ import type { InlineSpan, InlineLink } from '../types.js';
 import { stripAnnotations, type QueuedAnnotation, markAnnotations, applyAnnotationMarks } from '../annotations.js';
 import { dataRanges } from './breaks.js';
 import { replaceLinkSyntax, LINK_OPEN, LINK_CLOSE, stripNonEmphasisFormatting } from './links.js';
-import { MARKUP_BOUNDARY, restoreEscapes, replaceMarkSyntax, protectEscapes, INLINE_SMALLCAPS_RE, unescapeBrackets, UNDERSCORE_BOLD_RE, UNDERSCORE_ITALIC_RE, SUPERSCRIPT_RE, SUBSCRIPT_RE, ESCAPE_BASE, MARK_OPEN, MARK_CLOSE, splitScriptSpans, underscores, underscoresClose, markSmallCaps, ESCAPED_RE, applySmallCapsMarks, dropMarkupBoundaries, starsOpen, starsClose, STRIKE_OPEN, STRIKE_CLOSE, markStrikethrough, UNDERLINE_OPEN, UNDERLINE_CLOSE, markUnderline } from './markup.js';
+import { MARKUP_BOUNDARY, restoreEscapes, replaceMarkSyntax, protectEscapes, INLINE_SMALLCAPS_RE, unescapeBrackets, UNDERSCORE_BOLD_RE, UNDERSCORE_ITALIC_RE, SUPERSCRIPT_RE, SUBSCRIPT_RE, ESCAPE_BASE, MARK_OPEN, MARK_CLOSE, splitScriptSpans, underscores, underscoresClose, markSmallCaps, ESCAPED_RE, applySmallCapsMarks, dropMarkupBoundaries, starsOpen, starsClose, STRIKE_OPEN, STRIKE_CLOSE, markStrikethrough, UNDERLINE_OPEN, UNDERLINE_CLOSE, markUnderline, markUnderlineDirective, type InlineFormatOptions } from './markup.js';
 
 const STAR_BOLD_RE = new RegExp(`${starsOpen(2)}(.+?)${starsClose(2)}`, 'gu');
 const STAR_ITALIC_RE = new RegExp(`${starsOpen(1)}(.+?)${starsClose(1)}`, 'gu');
@@ -13,11 +13,14 @@ const STAR_ITALIC_RE = new RegExp(`${starsOpen(1)}(.+?)${starsClose(1)}`, 'gu');
 /** The text {@link parseInlineFormatting} sets, without its spans: each
  *  mark taken out leaves a {@link MARKUP_BOUNDARY}, as the parser's own
  *  marks and span splits do, so an `_` next to bold, a link or code opens
- *  emphasis in a heading as it does in a paragraph. */
-export function stripInlineFormatting(text: string): string {
+ *  emphasis in a heading as it does in a paragraph. `options` as
+ *  {@link parseInlineFormatting} takes them. */
+export function stripInlineFormatting(text: string, options?: InlineFormatOptions): string {
   const b = MARKUP_BOUNDARY;
   const wrap = (_: string, inner: string): string => b + inner + b;
-  return restoreEscapes(markUnderline(markStrikethrough(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(replaceMarkSyntax(protectEscapes(text), (inner) => b + inner + b), b), true, () => b), false, (label) => b + label + b), b), (inner) => b + inner + b), (inner) => b + inner + b) // strikethrough (before the subscripts) and underline
+  const around = (inner: string): string => b + inner + b;
+  const struck = markStrikethrough(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(replaceMarkSyntax(markUnderlineDirective(protectEscapes(text), around), around), b), true, () => b), false, (label) => b + label + b), b), around);
+  return restoreEscapes((options?.plusUnderline ? markUnderline(struck, around) : struck) // strikethrough (before the subscripts) and underline
     .replace(INLINE_SMALLCAPS_RE, (_, inner: string) => b + unescapeBrackets(inner) + b) // small caps
     .replace(/`(.+?)`/g, wrap)               // inline code
     .replace(STAR_BOLD_RE, wrap)              // bold
@@ -63,7 +66,7 @@ function takeLinkMarks(spans: InlineSpan[], hrefs: readonly string[], markStyles
   let strike = 0;
   let nextStrike = 0;
   let strikeId = 0;
-  // The same for the underlined runs (`++…++`).
+  // The same for the underlined runs (`:underline[…]`, `++…++`).
   let under = 0;
   let nextUnder = 0;
   let underId = 0;
@@ -165,9 +168,11 @@ function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, ou
 /**
  * Parse inline formatting to produce spans with bold and italic flags.
  * Recognizes ***bold italic***, **bold**, *italic* (and underscore equivalents),
- * `^sup^` / `~sub~`, `~~strikethrough~~`, `++underline++` and `:smallcaps[…]`.
+ * `^sup^` / `~sub~`, `~~strikethrough~~`, `:underline[…]` and `:smallcaps[…]`;
+ * `++underline++` too with `options.plusUnderline` (`bodyText.plusUnderline`,
+ * #1465).
  */
-export function parseInlineFormatting(text: string): InlineSpan[] {
+export function parseInlineFormatting(text: string, options?: InlineFormatOptions): InlineSpan[] {
   // Links keep their text between two marks while the emphasis scanners
   // run — so a link inside, across or around emphasis never changes how
   // the text splits into spans — and become ranges once the spans exist.
@@ -181,22 +186,24 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   // of vertical text (`:tcy[…]`, `:upright[…]`, `:sideways[…]`, #190),
   // which may sit inside an annotation.
   const annotations: QueuedAnnotation[] = [];
-  const highlighted = replaceMarkSyntax(protectEscapes(text), (inner, style) => {
+  // Underlined text (`:underline[…]`, and `++…++` when it is on) keeps its
+  // text between two marks too, and becomes a range the same way.
+  let struck = false;
+  const underline = (inner: string): string => {
+    struck = true;
+    return UNDERLINE_OPEN + inner + UNDERLINE_CLOSE;
+  };
+  const highlighted = replaceMarkSyntax(markUnderlineDirective(protectEscapes(text), underline), (inner, style) => {
     markStyles.push(style);
     return MARK_OPEN + inner + MARK_CLOSE;
   });
-  // Struck-through text (`~~…~~`) keeps its text between two marks too,
-  // and becomes a range the same way; read before the single-tilde
+  // Struck-through text (`~~…~~`) likewise; read before the single-tilde
   // subscripts, once link destinations are out of the text.
-  // Underlined text (`++…++`) likewise.
-  let struck = false;
-  const cleaned = markUnderline(markStrikethrough(stripNonEmphasisFormatting(markAnnotations(markOrientation(markSmallCaps(highlighted)), annotations, restoreEscapes), hrefs), (inner) => {
+  const strikes = markStrikethrough(stripNonEmphasisFormatting(markAnnotations(markOrientation(markSmallCaps(highlighted)), annotations, restoreEscapes), hrefs), (inner) => {
     struck = true;
     return STRIKE_OPEN + inner + STRIKE_CLOSE;
-  }), (inner) => {
-    struck = true;
-    return UNDERLINE_OPEN + inner + UNDERLINE_CLOSE;
   });
+  const cleaned = options?.plusUnderline ? markUnderline(strikes, underline) : strikes;
   const spans: InlineSpan[] = [];
 
   // Triple markers (bold+italic) first, then double (bold) — longest first.

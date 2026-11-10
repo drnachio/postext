@@ -62,8 +62,8 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     </tr>
     <tr>
       <td>Underline</td>
-      <td><code>++text++</code></td>
-      <td>A line under the text, which keeps its place: an instruction on a form (<code>Please ++sign all pages++.</code>). Two plus signs on each side; <code>C++</code> and <code>i++</code> stay as written. See <a href="#underline">Underline</a> below.</td>
+      <td><code>:underline[text]</code></td>
+      <td>A line under the text, which keeps its place: an instruction on a form (<code>Please :underline[sign all pages].</code>). <code>++text++</code> does the same when <code>bodyText.plusUnderline</code> is on. See <a href="#underline">Underline</a> below.</td>
     </tr>
     <tr>
       <td>Small caps</td>
@@ -196,6 +196,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes. Headings set the chip too (`## :chip[///]{style="mark"} Title`, since postext 1.52): the contents, the running heads, the PDF bookmarks and the EPUB navigation read the title without it. An opener or heading design that prints `{titleText}` sets the chip too: the default opener does, and so does a design text element that reads inline marks (`inlineMarks: true`), in the document's chip styles at the element's size. An element without inline marks prints the plain title.
 - **Output.** Canvas, HTML and PDF paint the box and set the words as real text: selectable in the HTML, extractable and in reading order in the PDF (in a tagged PDF the box is a layout artifact and the words belong to the paragraph).
 
+A chip with `field` becomes a fillable form field in the PDF (see [PDF output › Form fields](/en/docs/configuration-pdf-output#form-fields)).
+
 ### Highlight marks
 
 `:mark[text]` lays a coloured band behind `text`, the way a textbook highlights its key words. Unlike a chip, the marked words stay ordinary text: they break at line ends, hyphenate and justify like the words around them, and the band follows each piece of the phrase on its line. `:mark[text]{style="key"}` picks a named style from `markStyles` (see the configuration reference); without `style`, or with an id no style declares, the mark takes the first style (a built-in pale yellow `mark` when the configuration has none; the sandbox warns about an unknown id).
@@ -228,19 +230,20 @@ The meeting moves ~~to Tuesday~~ to Thursday.
 
 ### Underline
 
-`++text++` draws a line under `text`, as a form underlines an instruction that must not be missed, or a letter a deadline its template asks for. It is the spelling of the inserted text of Pandoc and markdown-it-ins, set as the underline a word processor draws.
+`:underline[text]` draws a line under `text`, as a form underlines an instruction that must not be missed, or a letter a deadline its template asks for.
 
 ```markdown
-Please ++sign all pages++ and return the form.
+Please :underline[sign all pages] and return the form.
 
-The offer is valid ++until 30 June++.
+The offer is valid :underline[until 30 June].
 ```
 
-- **Syntax.** Exactly two plus signs on each side, and the text starts and ends with a character that is neither a space nor a plus sign. A letter or digit right before the opening pair or right after the closing one keeps them literal, so `C++`, `g++`, `Notepad++` and `1 ++ 2` stay text; so does a pair whose text begins and ends with a one-character word, the increment operator at a variable (`use ++i rather than i++ here`). A Chinese or Japanese character beside a pair does not keep it literal, as those scripts set no spaces. Write `\+` for a literal plus sign. The text takes its own inline marks, links, chips and references, and may run over a soft line break of the source, not over a blank line.
-- **No room taken.** As with a strikethrough, the line is painted under the text and the lines break exactly as they would without it. A run broken over a line end gets a line on each line, and a punctuation mark glued to the run (`++Friday++.`) stays out of it.
-- **The line.** It sits where the face puts its underline and is as thick as the face says (the `underlinePosition` and `underlineThickness` of its `post` table, read from the same font files as the strikeout), in the colour of the underlined text, each face of a run on its own. A face whose file the engine has not read, or that sets no underline, takes 0.12 em under the baseline and 0.05 em. In Chinese and Japanese text it is drawn as a solid side line (`:sideline[…]`) in its default place: under the characters, and on their right on a vertical page. Text both struck through and underlined (`~~++text++~~`) gets both lines.
-- **Links.** When `links.style` underlines links, an underlined link (`++[the form](https://example.org)++`) gets one line, the link's, in every output the style lists; the underline gives way to it there and is drawn in the other outputs.
-- **Where.** The same places as a strikethrough, the words of a chip included (`:chip[++new++]`). The canvas, the PDF and the HTML draw the line from the layout; in a tagged PDF it is a layout artifact, and the words stay text. The HTML and the reflowable EPUB also wrap the words in `<u>`, and the Word export sets them underlined.
+- **Syntax.** The text between the brackets is underlined. It takes its own inline marks, links, chips and references (`:underline[**now**, with [the form](https://example.org)]`), may run over a soft line break of the source but not over a blank line, and may not be empty. Write `\]` for a literal bracket inside. In inline code the directive stays text.
+- **The `++text++` shorthand.** With `bodyText.plusUnderline` on (see [Body text](/en/docs/configuration-text#body-text)), `++text++` underlines too, the spelling of the inserted text of Pandoc and markdown-it-ins. It is off by default, and plus signs are then always text. When it is on, every pair underlines: exactly two plus signs on each side, around text that starts and ends with a character that is neither a space nor a plus sign, so `use ++i rather than i++ here` underlines `i rather than i`. Write `\+\+` (or `\++`) for a literal pair. There is no exception for code written in prose either: `C++-Kurs und C++-Buch` underlines `-Kurs und C`, so write `C\+\+` wherever a second pair follows. A pair followed by a space opens nothing (`C++ and`, `1 ++ 2`). Inline code and code blocks never underline. The Sandbox editor marks `++text++` only while the setting is on.
+- **No room taken.** As with a strikethrough, the line is painted under the text and the lines break exactly as they would without it. A run broken over a line end gets a line on each line, and a punctuation mark glued to the run (`:underline[Friday].`) stays out of it.
+- **The line.** It sits where the face puts its underline and is as thick as the face says (the `underlinePosition` and `underlineThickness` of its `post` table, read from the same font files as the strikeout), in the colour of the underlined text, each face of a run on its own. A face whose file the engine has not read, or that sets no underline, takes 0.12 em under the baseline and 0.05 em. In Chinese and Japanese text it is drawn as a solid side line (`:sideline[…]`) in its default place: under the characters, and on their right on a vertical page. Text both struck through and underlined (`~~:underline[text]~~`) gets both lines.
+- **Links.** When `links.style` underlines links, an underlined link (`:underline[[the form](https://example.org)]`) gets one line, the link's, in every output the style lists; the underline gives way to it there and is drawn in the other outputs.
+- **Where.** The same places as a strikethrough, the words of a chip included (`:chip[:underline[new]]`). The canvas, the PDF and the HTML draw the line from the layout; in a tagged PDF it is a layout artifact, and the words stay text. The HTML and the reflowable EPUB also wrap the words in `<u>`, and the Word export sets them underlined.
 
 ### Small capitals
 

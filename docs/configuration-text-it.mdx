@@ -237,6 +237,12 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td>Legge una barra rovesciata che chiude una riga della sorgente, e <code>{'\\\\'}</code> prima di uno spazio, come un a capo forzato dentro un paragrafo, una citazione o una voce di elenco (l’a capo forzato di CommonMark): le parole successive cominciano una nuova riga dello stesso paragrafo, e la riga precedente si compone alla sua larghezza naturale, come un’ultima riga di paragrafo. Una barra rovesciata che chiude il paragrafo viene stampata, e due spazi alla fine di una riga non sono un a capo (vedi <a href="/it/docs/document-format-directives#a-capo">Formato del documento › A capo</a>). <code>false</code> mantiene la lettura della 1.22: le barre rovesciate vengono stampate e le righe si uniscono con uno spazio; le configurazioni salvate in precedenza il cui testo contiene una barra rovesciata del genere vengono lette con questo valore (vedi <a href="/it/docs/configuration-bundles#pacchetti-scritti-da-postext-14-o-precedenti">Pacchetti scritti da postext 1.4 o precedenti</a>). Titoli, didascalie, note e celle di tabella vanno a capo a <code>{'\\\\'}</code> in ogni caso.</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Leggi <code>++testo++</code> come testo sottolineato, oltre a <code>:underline[testo]</code>, che si legge sempre. Ogni coppia di due segni più per lato sottolinea, anche <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> scrive una coppia letterale, una lettera o una cifra attaccata ai segni li lascia come testo (<code>C++</code>, <code>g++</code>), e il codice in linea e i blocchi di codice non si sottolineano mai. Vale ovunque si leggano i segni in linea: il testo corrente, i titoli, gli elenchi, le didascalie, le celle di tabella, le note e i chip. <code>false</code>: i segni più si stampano. Vedi <a href="/it/docs/document-format-inline#sottolineato">Formato del documento › Sottolineato</a>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

@@ -5,7 +5,7 @@ import { buildDocument } from 'postext';
 import type { PostextConfig } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
 
-// An underlined link (`++[text](url)++`) under a link style that underlines
+// An underlined link (`:underline[[text](url)]`) under a link style that underlines
 // links: the PDF draws one line under the link, the link's, when the style
 // lists the PDF, and the whole underline when it does not.
 
@@ -32,7 +32,7 @@ async function strokeWidths(outputs: ('pdf' | 'html')[]): Promise<string[]> {
     bodyText: { textAlign: 'left' },
     links: { style: { underline: 'solid', outputs } },
   };
-  const doc = buildDocument({ markdown: 'Please ++sign [here](https://example.org) now++.' }, config);
+  const doc = buildDocument({ markdown: 'Please :underline[sign [here](https://example.org) now].' }, config);
   const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider }));
   const contents = pdf.getPage(0).node.Contents();
   const refs = contents instanceof PDFArray ? contents.asArray() : [contents];

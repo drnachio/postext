@@ -4785,21 +4785,22 @@
       "it": "Sottolineato"
     },
     "definition": {
-      "en": "A line under a phrase written as ++text++, as a form underlines an instruction that must not be missed: the words stay ordinary text and break across lines, the line follows each piece.",
-      "es": "Una línea bajo una frase escrita como ++texto++, como un formulario subraya una indicación que no debe pasarse por alto: las palabras siguen siendo texto corriente y pasan de línea, la línea acompaña cada trozo.",
-      "ca": "Una línia sota una frase escrita com ++text++, com un formulari subratlla una indicació que no s’ha de passar per alt: les paraules continuen sent text corrent i passen de línia, la línia acompanya cada tros.",
-      "zh": "用 ++text++ 写出的画在短语下面的线，就像表格给不能漏看的提示加下划线：文字仍是普通正文，可以跨行，线跟着每一行上的那一段。",
-      "ar": "خط تحت عبارة مكتوبة بالصيغة ++text++، كما تسطّر استمارة تنبيهًا لا يجوز أن يفوت القارئ: تبقى الكلمات نصًّا عاديًّا وتنتقل بين الأسطر، ويتبع الخط كل قطعة منها.",
-      "ja": "++text++ と書いた語句の下に引く線。申込書で見落とせない指示に引く線のように使います。語はふつうの本文のまま行をまたぎ、線は行ごとの部分に付きます。",
-      "pt": "Uma linha sob uma frase escrita como ++texto++, como um formulário sublinha uma instrução que não pode passar despercebida: as palavras continuam sendo texto comum e passam de linha, a linha acompanha cada pedaço.",
-      "fr": "Un trait sous une phrase écrite ++texte++, comme un formulaire souligne une consigne à ne pas manquer : les mots restent du texte ordinaire et passent à la ligne, le trait suit chaque morceau.",
-      "de": "Eine Linie unter einer als ++Text++ geschriebenen Wendung, wie ein Formular einen Hinweis unterstreicht, der nicht übersehen werden darf: Die Wörter bleiben gewöhnlicher Text und brechen um, die Linie folgt jedem Stück.",
-      "it": "Una linea sotto una frase scritta come ++testo++, come un modulo sottolinea un’indicazione da non perdere: le parole restano testo normale e vanno a capo, la linea segue ogni pezzo."
+      "en": "A line under a phrase written as :underline[text] (or ++text++ with bodyText.plusUnderline on), as a form underlines an instruction that must not be missed: the words stay ordinary text and break across lines, the line follows each piece.",
+      "es": "Una línea bajo una frase escrita como :underline[texto] (o ++texto++ con bodyText.plusUnderline activado), como un formulario subraya una indicación que no debe pasarse por alto: las palabras siguen siendo texto corriente y pasan de línea, la línea acompaña cada trozo.",
+      "ca": "Una línia sota una frase escrita com :underline[text] (o ++text++ amb bodyText.plusUnderline activat), com un formulari subratlla una indicació que no s’ha de passar per alt: les paraules continuen sent text corrent i passen de línia, la línia acompanya cada tros.",
+      "zh": "用 :underline[text] 写出的画在短语下面的线（打开 bodyText.plusUnderline 后也可写 ++text++），就像表格给不能漏看的提示加下划线：文字仍是普通正文，可以跨行，线跟着每一行上的那一段。",
+      "ar": "خط تحت عبارة مكتوبة بالصيغة :underline[text] (أو ++text++ عند تفعيل bodyText.plusUnderline)، كما تسطّر استمارة تنبيهًا لا يجوز أن يفوت القارئ: تبقى الكلمات نصًّا عاديًّا وتنتقل بين الأسطر، ويتبع الخط كل قطعة منها.",
+      "ja": ":underline[text] と書いた語句の下に引く線（bodyText.plusUnderline がオンなら ++text++ でも書けます）。申込書で見落とせない指示に引く線のように使います。語はふつうの本文のまま行をまたぎ、線は行ごとの部分に付きます。",
+      "pt": "Uma linha sob uma frase escrita como :underline[texto] (ou ++texto++ com bodyText.plusUnderline ativado), como um formulário sublinha uma instrução que não pode passar despercebida: as palavras continuam sendo texto comum e passam de linha, a linha acompanha cada pedaço.",
+      "fr": "Un trait sous une phrase écrite :underline[texte] (ou ++texte++ avec bodyText.plusUnderline activé), comme un formulaire souligne une consigne à ne pas manquer : les mots restent du texte ordinaire et passent à la ligne, le trait suit chaque morceau.",
+      "de": "Eine Linie unter einer als :underline[Text] (oder mit eingeschaltetem bodyText.plusUnderline als ++Text++) geschriebenen Wendung, wie ein Formular einen Hinweis unterstreicht, der nicht übersehen werden darf: Die Wörter bleiben gewöhnlicher Text und brechen um, die Linie folgt jedem Stück.",
+      "it": "Una linea sotto una frase scritta come :underline[testo] (o ++testo++ con bodyText.plusUnderline attivo), come un modulo sottolinea un’indicazione da non perdere: le parole restano testo normale e vanno a capo, la linea segue ogni pezzo."
     },
     "aliases": {
       "en": [
         "underline",
         "underlined",
+        ":underline",
         "++text++",
         "inserted text"
       ],
@@ -4868,6 +4869,7 @@
     },
     "detect": {
       "markdown": [
+        ":underline\\[",
         "(?<![+A-Za-z0-9])\\+\\+[^\\s+](?:[^+\\n]|\\+(?!\\+))*?\\+\\+(?![+A-Za-z0-9])"
       ]
     }

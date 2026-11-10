@@ -114,7 +114,7 @@ function layoutCaptionTextIn(input: CaptionTextInput): CaptionTextLayout {
     const resolvedSpans = annotatedSpans(resolveChipSpans(resolveSwatchSpans(resolveRefSpans(
       snippetMathSpans(
         resolveCitationSpans(
-          withSnippetInlineCode(parseInlineSnippetSpans(captionText, { citations: true }), captionText, resolved.codeStyle?.inline, dpi, captionFontPx),
+          withSnippetInlineCode(parseInlineSnippetSpans(captionText, { citations: true, plusUnderline: resolved.bodyText.plusUnderline === true }), captionText, resolved.codeStyle?.inline, dpi, captionFontPx),
           input.citations,
         ),
         captionFontPx,

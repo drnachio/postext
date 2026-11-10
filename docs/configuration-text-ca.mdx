@@ -238,6 +238,12 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td>Llegeix una barra inversa al final d'una línia del text, i <code>{'\\\\'}</code> davant d'un espai, com un salt de línia forçat dins d'un paràgraf, una cita o un element de llista (el salt forçat de CommonMark): les paraules següents comencen una línia nova del mateix paràgraf, i la línia anterior es compon amb la seva amplada natural, com una última línia. Una barra inversa al final del paràgraf s'imprimeix, i dos espais al final d'una línia no són un salt (vegeu <a href="/ca/docs/document-format-directives#salts-de-línia">Format del document › Salts de línia</a>). <code>false</code> conserva la lectura de la 1.22: les barres s'imprimeixen i les línies s'uneixen amb un espai; les configuracions desades abans amb una barra així al text es llegeixen amb aquest valor (vegeu <a href="/ca/docs/configuration-bundles#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>). Els títols, els peus, les notes i les cel·les de taula es parteixen a <code>{'\\\\'}</code> en tots dos casos.</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Llegeix <code>++text++</code> com a text subratllat, a més de <code>:underline[text]</code>, que es llegeix sempre. Cada parell de dos signes més a cada banda subratlla, també <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> escriu un parell literal, una lletra o una xifra enganxada als signes els deixa com a text (<code>C++</code>, <code>g++</code>), i el codi en línia i els blocs de codi no se subratllen mai. S'aplica on es llegeixen les marques en línia: el text corregut, els títols, les llistes, els peus, les cel·les de taula, les notes i els xips. <code>false</code>: els signes més s'imprimeixen. Vegeu <a href="/ca/docs/document-format-inline#subratllat">Format del document › Subratllat</a>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

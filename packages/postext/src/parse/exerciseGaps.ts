@@ -15,7 +15,7 @@
 import type { DirectiveAttrs, ExerciseGap, InlineSpan } from './types.js';
 import { parseDirectiveAttrs } from './attrs.js';
 import { injectPlaceholderSpans } from './injectSpans.js';
-import { CHIP_PLACEHOLDER, parseInlineFormatting } from './inlineFormatting.js';
+import { CHIP_PLACEHOLDER, parseInlineFormatting, type InlineFormatOptions } from './inlineFormatting.js';
 
 /** Stands for a `[[…]]` while the source is mapped (see `buildBlockMapping`). */
 export const GAP_PLACEHOLDER = '\uE1AC';
@@ -104,15 +104,15 @@ function inParens(s: string): boolean {
 /** What a gap asks: the options read for their inline Markdown, the right
  *  ones, whether it is a choice. With two options or more and at least
  *  one in parentheses it is an inline choice; otherwise every option is
- *  an accepted answer. */
-export function gapOf(meta: GapMeta): ExerciseGap {
+ *  an accepted answer. `inline` as `parseInlineFormatting` takes it. */
+export function gapOf(meta: GapMeta, inline?: InlineFormatOptions): ExerciseGap {
   const raw = meta.raw;
   const choice = raw.length > 1 && raw.some(inParens);
   const texts = raw.map((s) => (choice && inParens(s) ? s.slice(1, -1).trim() : s));
   const correct = choice ? raw.flatMap((s, k) => (inParens(s) ? [k] : [])) : raw.map((_, k) => k);
   return {
-    options: texts.map((t) => parseInlineFormatting(t)),
-    texts: texts.map((t) => parseInlineFormatting(t).map((s) => s.text).join('')),
+    options: texts.map((t) => parseInlineFormatting(t, inline)),
+    texts: texts.map((t) => parseInlineFormatting(t, inline).map((s) => s.text).join('')),
     correct,
     choice,
     ...(meta.attrs ? { attrs: meta.attrs } : {}),
@@ -121,9 +121,9 @@ export function gapOf(meta: GapMeta): ExerciseGap {
 
 /** Put a chip span with its `gap` at each {@link GAP_PLACEHOLDER}. The
  *  chip's words are the first right answer. */
-export function injectGapSpans(spans: InlineSpan[], gaps: GapMeta[]): InlineSpan[] {
+export function injectGapSpans(spans: InlineSpan[], gaps: GapMeta[], inline?: InlineFormatOptions): InlineSpan[] {
   return injectPlaceholderSpans(spans, gaps, GAP_PLACEHOLDER, (meta, bold, italic) => {
-    const gap = gapOf(meta);
+    const gap = gapOf(meta, inline);
     return {
       text: GAP_PLACEHOLDER,
       bold,

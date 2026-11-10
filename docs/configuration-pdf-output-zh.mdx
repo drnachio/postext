@@ -308,7 +308,7 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 尺码 :chip[M]{style="field" field="size" kind="choice" options="S|M|L"}
 ```
 
-- `kind`：`text`（默认）、`number`、`checkbox`、`choice`（配合`options`，选项之间用`|`分隔）。
+- `kind`：`text`（默认）、`number`、`checkbox`、`choice`（配合`options`，选项之间用`|`分隔）。没有`kind`而带`format`或`calc`的行内标签是数字域。
 - `on`（复选框）：复选框选中状态的名称，也就是选中时脚本读到的值。设为`on="1"`时，选中的复选框在计算中算作1，所以`product(pkg.a, 161.75)`会在选中时加上一笔固定价格。默认值是`Yes`，计算时算作0。
 - `format`：`currency`、`decimal`（两位小数）、`integer`。写成Acrobat的`AFNumber_Format`和`AFNumber_Keystroke`，使用文档语言的分隔符（德语为`1.234,56`），除非`RenderToPdfOptions.forms.separatorStyle`另行指定；货币符号取`forms.currency`（默认`€`），放在数字前面，除非`forms.currencyBefore`为`false`。默认值绘制时已经过格式化。
 - `calc`：`sum(…)`、`product(…)`、`min(…)`、`max(…)`或`avg(…)`。参数可以是按名称引用的其他表单域、数字（小数点用英文句点，如`161.75`）和嵌套计算，例如`sum(pos.a.total, pos.b.total, product(pkg.a, 161.75))`。只涉及表单域的计算写成`AFSimple_Calculate`。含数字或嵌套计算的，则单独写成一段简短的Calculate脚本，它以同样的方式读取每个表单域（对其值调用`AFMakeNumber`；不是数字的算作0），并把结果舍入到六位小数。计算得出的表单域是只读的，计算顺序会照顾到它读取的所有表单域，嵌套计算里读取的也算在内。以下情况会给出`formField`警告：计算读取了未知的表单域（算作0）、循环引用、同一名称用于两种类型，以及计算中的复选框的`on`值不是数字（始终算作0）。

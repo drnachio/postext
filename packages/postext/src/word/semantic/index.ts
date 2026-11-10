@@ -79,7 +79,7 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     options.onWarning?.({ code, message, ...(chapterId ? { chapter: chapterId } : {}) });
   };
   const code = resolvedCodeStyle(resolved);
-  const parsed = options.chapters.map((c) => parseChapter(c, { fences: code.blocks, indentedCode: code.indentedCode }));
+  const parsed = options.chapters.map((c) => parseChapter(c, { fences: code.blocks, indentedCode: code.indentedCode, ...(resolved.bodyText.plusUnderline ? { plusUnderline: true } : {}) }));
   const needsMath = options.chapters.some((c) => c.markdown.includes('$')) || (options.resources ?? []).some((r) => r.caption?.includes('$') || r.table?.model.rows.some((row) => row.some((cell) => cell.content.includes('$'))));
   if (needsMath) {
     try {

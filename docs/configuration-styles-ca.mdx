@@ -476,6 +476,8 @@ Prem :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 Les longituds en em de la caixa (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) són relatives al cos del mateix xip. La caixa és una banda de 0,8 em per sobre i 0,25 em per sota de la línia de base, que creix amb `paddingY` i amb el contorn; es pinta fora de la caixa de línia i no canvia mai l'interlineat, així que la retícula es manté. Quan la caixa és més alta que l'interlineat, un xip pot envair un xip de la línia de sobre o de sota: el Sandbox mostra l'avís «Els xips toquen la línia següent» quan dos xips de línies diferents se superposen, amb la superposició en punts, perquè redueixis `paddingY`, el contorn o `fontSize`. Un xip alt sense cap xip a sobre ni a sota no genera cap avís.
 
+Un xip amb l'atribut `field` és un camp de formulari emplenable al PDF i un camp de formulari d'InDesign a l'exportació IDML. El seu estil dona al camp l'aspecte, i `minWidth` l'espai per escriure-hi (vegeu [Sortida PDF › Camps de formulari](/ca/docs/configuration-pdf-output#camps-de-formulari)).
+
 Al VDT, un xip és un segment de línia de `kind: 'chip'`, amb un camp `chip` que conté els trams de text (cadascun amb la cadena de font i l'amplada), la geometria de la caixa (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, els marges del `gap`) i els colors; el `text` del segment és un marcador d'un caràcter, de manera que els desplaçaments de text pla i els mapes de font compten un xip com un caràcter.
 
 ```ts

@@ -64,6 +64,7 @@ export type { FormFieldSpec, FormFieldCalcOp, FormFieldCalc, FormFieldCalcCall, 
 export { computeSourceMap } from './sourceMapping.js';
 export { orientationMarkAt } from './orientationMarks.js';
 export { underlineRanges } from './inlineFormatting/markup.js';
+export type { InlineFormatOptions } from './inlineFormatting/markup.js';
 export type { OrientationMark } from './orientationMarks.js';
 export { parseInlineSnippetSpans, mapInlineSnippet, contentHasMath, resourceHasMath } from './inlineSnippet.js';
 export type { InlineSnippetMapping } from './inlineSnippet.js';

@@ -12,7 +12,7 @@ import { renderToHtml } from '../../html-backend/html-backend.js';
 import { documentDisplayList } from '../../paint/displayList/index.js';
 import type { PostextConfig, VDTDocument, VDTLine, VDTLineMark } from '../../index.js';
 
-// Underlined text (`++…++`): the layout is the one without the line, and
+// Underlined text (`:underline[…]`, `++…++` with `bodyText.plusUnderline`): the layout is the one without the line, and
 // each line holding underlined words gets a `VDTLine.marks` line under them,
 // where the face puts its underline (`post`), else the fallback.
 
@@ -36,7 +36,8 @@ const pt = (value: number) => ({ value, unit: 'pt' as const });
 const config = (fontFamily: string): PostextConfig => ({
   page: { dpi: 72, width: pt(400), height: pt(300), margins: { top: pt(20), bottom: pt(20), left: pt(20), right: pt(20) } },
   layout: { layoutType: 'single' },
-  bodyText: { fontFamily, fontSize: pt(20), lineHeight: pt(26), textAlign: 'left' },
+  // `++…++` reads with `bodyText.plusUnderline` on (#1465).
+  bodyText: { fontFamily, fontSize: pt(20), lineHeight: pt(26), textAlign: 'left', plusUnderline: true },
   header: { elements: [] },
   footer: { elements: [] },
 });
@@ -47,6 +48,16 @@ const rules = (line: VDTLine): VDTLineMark[] => (line.marks ?? []).filter((m) =>
 afterEach(() => forgetFontCoverage(['Test Serif']));
 
 describe('underline lines', () => {
+  it('draws the same line for :underline[…], and none for ++…++ with the shorthand off (#1465)', () => {
+    const plus = rules(firstLine(build('a ++b c++ d')));
+    const directive = rules(firstLine(build('a :underline[b c] d')));
+    expect(directive.length).toBeGreaterThan(0);
+    expect(directive).toEqual(plus);
+    const off = build('a ++b c++ d', 'Test Serif', { bodyText: { ...config('Test Serif').bodyText, plusUnderline: false } });
+    expect(rules(firstLine(off))).toEqual([]);
+    expect(off.blocks[0]!.lines.map((l) => l.text).join('')).toContain('++b c++');
+  });
+
   it('reads the face’s underline from the post table, as the middle of the line', () => {
     // Lora: top of the line 100 units under the baseline, 50 thick.
     expect(readUnderline(LORA)).toEqual({ position: -0.125, size: 0.05 });
@@ -136,7 +147,7 @@ describe('underline lines', () => {
     const markOf = (doc: VDTDocument): VDTLineMark => rules(doc.blocks.flatMap((b) => b.lines).find((l) => l.segments?.some((s) => s.underline))!)[0]!;
     const flat = build('请++在每一页签名++，然后寄回。');
     expect(markOf(flat).y).toBeCloseTo((-CENTRAL + 0.5 + LINE_AT) * em(flat), 3);
-    const tall = buildDocument({ markdown: '请++在每一页签名++，然后寄回。' }, { page: { width: pt(300), height: pt(420) }, layout: { writingMode: 'vertical-rl' }, locale: 'zh-Hans', bodyText: { fontSize: pt(12), lineHeight: pt(20) } }, createMeasurementCache());
+    const tall = buildDocument({ markdown: '请++在每一页签名++，然后寄回。' }, { page: { width: pt(300), height: pt(420) }, layout: { writingMode: 'vertical-rl' }, locale: 'zh-Hans', bodyText: { fontSize: pt(12), lineHeight: pt(20), plusUnderline: true } }, createMeasurementCache());
     expect(markOf(tall).y).toBeCloseTo((-CENTRAL - 0.5 - LINE_AT) * em(tall), 3);
     expect(markOf(tall).y).toBeLessThan(0);
   });

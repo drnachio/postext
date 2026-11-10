@@ -62,8 +62,8 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     </tr>
     <tr>
       <td>Subrayado</td>
-      <td><code>++texto++</code></td>
-      <td>Una línea bajo el texto, que no se mueve de su sitio: una indicación en un formulario (<code>Por favor, ++firme todas las páginas++.</code>). Dos signos más a cada lado; <code>C++</code> e <code>i++</code> se quedan como están. Consulta <a href="#subrayado">Subrayado</a> más abajo.</td>
+      <td><code>:underline[texto]</code></td>
+      <td>Una línea bajo el texto, que no se mueve de su sitio: una indicación en un formulario (<code>Por favor, :underline[firme todas las páginas].</code>). <code>++texto++</code> hace lo mismo cuando <code>bodyText.plusUnderline</code> está activado. Consulta <a href="#subrayado">Subrayado</a> más abajo.</td>
     </tr>
     <tr>
       <td>Versalitas</td>
@@ -196,6 +196,8 @@ Pulsa :chip[Ctrl]{style="tecla"} + :chip[C]{style="tecla"} para copiar.
 - **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, pies y notas. Los encabezados también componen el chip (`## :chip[///]{style="mark"} Título`, desde postext 1.52): el índice, los titulillos, los marcadores del PDF y la navegación del EPUB leen el título sin él. La portadilla o el diseño de encabezado que imprime `{titleText}` compone también el chip: lo hace la portadilla por defecto y cualquier elemento de texto que lea marcas en línea (`inlineMarks: true`), con los estilos de chip del documento al tamaño del elemento. Un elemento sin marcas en línea imprime el título sin él.
 - **Salida.** Canvas, HTML y PDF pintan la caja y componen las palabras como texto real: seleccionable en el HTML, extraíble y en orden de lectura en el PDF (en un PDF etiquetado la caja es un artefacto de maquetación y las palabras pertenecen al párrafo).
 
+Un chip con `field` se convierte en un campo de formulario rellenable en el PDF (consulta [Salida PDF › Campos de formulario](/es/docs/configuration-pdf-output#campos-de-formulario)).
+
 ### Marcas de resaltado
 
 `:mark[texto]` pone una franja de color detrás de `texto`, igual que un libro de texto resalta sus palabras clave. A diferencia de un chip, las palabras marcadas siguen siendo texto corriente: se cortan al final de la línea, se dividen con guion y se justifican como las que las rodean, y la franja acompaña cada trozo de la frase en su línea. `:mark[texto]{style="clave"}` elige un estilo con nombre de `markStyles` (véase la referencia de configuración); sin `style`, o con un id que ningún estilo declara, la marca toma el primer estilo (un `mark` amarillo pálido integrado si la configuración no tiene ninguno; el Sandbox avisa de un id desconocido).
@@ -228,19 +230,20 @@ La reunión pasa ~~al martes~~ al jueves.
 
 ### Subrayado
 
-`++texto++` traza una línea bajo `texto`, como un formulario subraya una indicación que no debe pasarse por alto, o una carta un plazo que exige su plantilla. Es la escritura del texto insertado de Pandoc y markdown-it-ins, compuesta como el subrayado de un procesador de textos.
+`:underline[texto]` traza una línea bajo `texto`, como un formulario subraya una indicación que no debe pasarse por alto, o una carta un plazo que exige su plantilla.
 
 ```markdown
-Por favor, ++firme todas las páginas++ y devuelva el formulario.
+Por favor, :underline[firme todas las páginas] y devuelva el formulario.
 
-La oferta es válida ++hasta el 30 de junio++.
+La oferta es válida :underline[hasta el 30 de junio].
 ```
 
-- **Sintaxis.** Exactamente dos signos más a cada lado, y el texto empieza y acaba con un carácter que no es ni un espacio ni un signo más. Una letra o una cifra justo antes del par de apertura o justo después del de cierre los deja tal cual, así que `C++`, `g++`, `Notepad++` y `1 ++ 2` siguen siendo texto; también un par cuyo texto empieza y acaba con una palabra de un solo carácter, el operador de incremento sobre una variable (`use ++i rather than i++ here`). Un carácter chino o japonés junto a un par no lo deja tal cual, porque esas escrituras no ponen espacios. Escribe `\+` para un signo más literal. El texto admite sus propias marcas en línea, enlaces, chips y referencias, y puede pasar por un salto de línea simple del original, no por una línea en blanco.
-- **No ocupa sitio.** Como en el tachado, la línea se pinta bajo el texto y las líneas se cortan exactamente igual que sin ella. Un subrayado partido en un final de línea lleva una línea en cada renglón, y un signo de puntuación pegado a él (`++viernes++.`) se queda fuera.
-- **La línea.** Va donde la fuente pone su subrayado y con el grosor que la fuente indica (los valores `underlinePosition` y `underlineThickness` de su tabla `post`, leídos de los mismos archivos de fuente que el tachado), en el color del texto subrayado, cada fuente por su cuenta. Una fuente cuyo archivo el motor no ha leído, o que no indica subrayado, toma 0,12 em por debajo de la línea de base y 0,05 em. En texto chino y japonés se dibuja como una línea lateral continua (`:sideline[…]`) en su lugar por defecto: bajo los caracteres, y a su derecha en una página vertical. Un texto tachado y subrayado a la vez (`~~++texto++~~`) lleva las dos líneas.
-- **Enlaces.** Cuando `links.style` subraya los enlaces, un enlace subrayado (`++[el formulario](https://example.org)++`) lleva una sola línea, la del enlace, en cada salida que lista el estilo; el subrayado le cede el sitio allí y se dibuja en las demás salidas.
-- **Dónde.** En los mismos lugares que el tachado, incluidas las palabras de un chip (`:chip[++nuevo++]`). El lienzo, el PDF y el HTML dibujan la línea a partir de la composición; en un PDF etiquetado es un artefacto de maquetación, y las palabras siguen siendo texto. El HTML y el EPUB adaptable envuelven además las palabras en `<u>`, y la exportación a Word las marca como subrayadas.
+- **Sintaxis.** Se subraya el texto entre los corchetes. Admite sus propias marcas en línea, enlaces, chips y referencias (`:underline[**ahora**, con [el formulario](https://example.org)]`), puede pasar por un salto de línea simple del original pero no por una línea en blanco, y no puede estar vacío. Escribe `\]` para un corchete literal dentro. En el código en línea la directiva se queda como texto.
+- **La abreviatura `++texto++`.** Con `bodyText.plusUnderline` activado (consulta [Texto base](/es/docs/configuration-text#texto-base)), `++texto++` también subraya, con la escritura del texto insertado de Pandoc y markdown-it-ins. Está desactivado por defecto, y entonces los signos más son siempre texto. Activado, cada par subraya: exactamente dos signos más a cada lado, alrededor de un texto que empieza y acaba con un carácter que no es ni un espacio ni un signo más, así que `use ++i rather than i++ here` subraya `i rather than i`. Escribe `\+\+` (o `\++`) para un par literal. Tampoco hay excepción para el código escrito en la prosa: `C++-Kurs und C++-Buch` subraya `-Kurs und C`, así que escribe `C\+\+` siempre que le siga otro par. Un par seguido de un espacio no abre nada (`C++ y`, `1 ++ 2`). El código en línea y los bloques de código nunca se subrayan. El editor del Sandbox marca `++texto++` solo mientras el ajuste está activado.
+- **No ocupa sitio.** Como en el tachado, la línea se pinta bajo el texto y las líneas se cortan exactamente igual que sin ella. Un subrayado partido en un final de línea lleva una línea en cada renglón, y un signo de puntuación pegado a él (`:underline[viernes].`) se queda fuera.
+- **La línea.** Va donde la fuente pone su subrayado y con el grosor que la fuente indica (los valores `underlinePosition` y `underlineThickness` de su tabla `post`, leídos de los mismos archivos de fuente que el tachado), en el color del texto subrayado, cada fuente por su cuenta. Una fuente cuyo archivo el motor no ha leído, o que no indica subrayado, toma 0,12 em por debajo de la línea de base y 0,05 em. En texto chino y japonés se dibuja como una línea lateral continua (`:sideline[…]`) en su lugar por defecto: bajo los caracteres, y a su derecha en una página vertical. Un texto tachado y subrayado a la vez (`~~:underline[texto]~~`) lleva las dos líneas.
+- **Enlaces.** Cuando `links.style` subraya los enlaces, un enlace subrayado (`:underline[[el formulario](https://example.org)]`) lleva una sola línea, la del enlace, en cada salida que lista el estilo; el subrayado le cede el sitio allí y se dibuja en las demás salidas.
+- **Dónde.** En los mismos lugares que el tachado, incluidas las palabras de un chip (`:chip[:underline[nuevo]]`). El lienzo, el PDF y el HTML dibujan la línea a partir de la composición; en un PDF etiquetado es un artefacto de maquetación, y las palabras siguen siendo texto. El HTML y el EPUB adaptable envuelven además las palabras en `<u>`, y la exportación a Word las marca como subrayadas.
 
 ### Versalitas
 
