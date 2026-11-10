@@ -353,13 +353,19 @@ export class StyleRegistry {
   private headingProps(level: ResolvedHeadingLevelConfig, align: TextAlign): { pPr: ParaProps; rPr: RunProps } {
     const u = this.units;
     const size = px(u, level.fontSize, this.bodyPx);
+    // A line much taller than its letters (a section title on two body
+    // lines): the engine sets the letters in the middle of the line, Word
+    // at its foot, against the text below. Half of the room the line has
+    // to spare moves from above the title to under it (#1458).
+    const spare = px(u, level.lineHeight, size) - size * 1.25;
+    const shift = spare > size * 0.25 ? Math.round(((spare / 2) * 1440) / u.dpi) : 0;
     return {
       pPr: {
         keepNext: true,
         keepLines: true,
         suppressAutoHyphens: true,
-        before: twips(u, level.marginTop, size),
-        after: twips(u, level.marginBottom, size),
+        before: Math.max(0, twips(u, level.marginTop, size) - shift),
+        after: twips(u, level.marginBottom, size) + shift,
         line: { twips: twips(u, level.lineHeight, size), rule: 'atLeast' },
         ind: { left: level.indent ? twips(u, level.indent, size) : undefined, firstLine: level.firstLineIndent ? twips(u, level.firstLineIndent, size) : 0 },
         jc: JC[align],

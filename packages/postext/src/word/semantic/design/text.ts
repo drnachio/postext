@@ -40,7 +40,9 @@ export function fittedSize(ctx: WriterContext, el: ResolvedDesignTextElement, te
   const u = ctx.units;
   const size = px(u, el.fontSize) || u.basePx;
   const ems = Math.max(1, ...text.split(/\s+/).map((w) => [...w].reduce((n, ch) => n + charEm(ch), 0)));
-  return Math.max(1, Math.min(size, (ctx.columnPx * 0.95) / ems, (72 * u.dpi) / 72));
+  // A design spans the text area (layout/pageSpan.ts), whatever columns
+  // the text under it runs in.
+  return Math.max(1, Math.min(size, (Math.max(ctx.columnPx, ctx.textAreaPx) * 0.95) / ems, (72 * u.dpi) / 72));
 }
 
 /** The paragraph and run look of a design text element set at `size`
