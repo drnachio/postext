@@ -55,6 +55,7 @@ export function renderPartDesign(ctx: WriterContext, part: ContentBlock, attr: P
   }
   const title = part.containerAttrs?.title ?? '';
   return writeDesign(ctx, {
+    owner: part,
     elements,
     texts,
     slot: 'part',

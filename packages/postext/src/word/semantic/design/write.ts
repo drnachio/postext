@@ -4,6 +4,7 @@
 // title element stands, and the pieces printed on a filled box set in that
 // box's shaded table.
 
+import type { ContentBlock } from '../../../parse/types.js';
 import type { ResolvedDesignElement, ResolvedDesignImageElement, ResolvedDesignRuleElement, ResolvedDesignTextElement } from '../../../types.js';
 import type { WriterContext } from '../context.js';
 import { pageGeometry, type PageGeometry } from '../sections.js';
@@ -16,12 +17,17 @@ import { columnSets, columnTable, type ColumnText } from './columns.js';
 import { bodyHeight, inked, partBodyChunks } from './partBody.js';
 import { bandInnerTwips, drawnRule, ruleParagraph, thinParagraph, withBands, type BandFoot, type Chunk } from './bands.js';
 import { covers, estimateBoxes, onSheet, readingOrder, type Box, type DesignFrames } from './geometry.js';
+import { setPageFoot, type FootPiece } from './foot.js';
 import { paleOnWhite } from './ink.js';
 import { rowParagraph, sameLine, type RowPart } from './rows.js';
-import { designTextStyle, pillOnPicture } from './text.js';
+import { sideFigure, type Side } from './side.js';
+import { designTextStyle, fittedSize, pillOnPicture } from './text.js';
 
 /** What a design is written from and how its own pieces are written. */
 export interface DesignSpec {
+  /** The block the design belongs to (a heading, a part): the foot of a
+   *  page it fills is filed under it (foot.ts). */
+  owner?: ContentBlock;
   /** The elements printed (palette overrides applied). */
   elements: readonly ResolvedDesignElement[];
   /** Each text element's resolved text. */
@@ -90,16 +96,17 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   // part page in its colour) is the page's ground: drawn behind the text
   // edge to edge, what is printed on it flowing over it (see ground.ts).
   const groundEl = vertical ? undefined : filled.find((e) => fillsPage(boxes.get(e.id) ?? { x: 0, y: 0, width: 0, height: 0 }, flowPage));
-  const ground: Ground | undefined = groundEl && groundEl.kind === 'box' ? { fill: hex(groundEl.style.backgroundColor)!, box: page } : undefined;
+  let ground: Ground | undefined = groundEl && groundEl.kind === 'box' ? { fill: hex(groundEl.style.backgroundColor)!, box: page } : undefined;
   const bands = filled.filter((e) => e !== groundEl);
-  // On a page with a ground, a band across the foot of the sheet is set
-  // at its place (bands.ts).
+  // On a page with a ground, a band across the foot of the sheet is part
+  // of the ground too: no table is made for it, and what it prints goes
+  // to the page's footer when it can (foot.ts).
   const atFoot = (bb: Box): boolean => !!ground && bb.y + bb.height >= page.height - MM(u, 1) && bb.x <= MM(u, 1) && bb.width >= page.width * 0.98 && bb.y > page.height * 0.5;
   const bandOf = (box: Box): Chunk['band'] => {
     let band: Chunk['band'];
     for (const e of bands) {
       const bb = boxes.get(e.id);
-      if (bb && e.kind === 'box' && covers(bb, box)) band = { fill: hex(e.style.backgroundColor)!, box: bb, ...(atFoot(bb) ? { foot: true } : {}) };
+      if (bb && e.kind === 'box' && !atFoot(bb) && covers(bb, box)) band = { fill: hex(e.style.backgroundColor)!, box: bb };
     }
     return band;
   };
@@ -132,7 +139,44 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
       if (id && ctx.media.has(id)) items.push({ box, kind: 'image', el, id });
     } else if (el.kind === 'rule' && inText(box) && drawnRule(ctx, el, box, !!bandOf(box) || !!ground)) items.push({ box, kind: 'rule', el });
   }
-  const order = titleColumnFirst(readingOrder(items, rtl, u), u.dpi);
+  let order = titleColumnFirst(readingOrder(items, rtl, u), u.dpi);
+  // A design spans the text area (see layout/pageSpan.ts).
+  const widthTw = Math.round((ctx.textAreaPx * 1440) / u.dpi);
+  // The texts and rules printed on the band at the page's foot go to the
+  // footer of the page's section, the band's fill with them; the ground
+  // stops where the band starts.
+  const footEl = spec.owner ? bands.find((e) => atFoot(boxes.get(e.id) ?? page)) : undefined;
+  const footBox = footEl ? boxes.get(footEl.id) : undefined;
+  const onFoot = footBox ? order.filter((i) => covers(footBox, i.box)) : [];
+  const footFill = footEl?.kind === 'box' ? hex(footEl.style.backgroundColor) : undefined;
+  const footed = !!ground && !!footBox && !!footFill && onFoot.length > 0 && onFoot.every((i) => i.kind === 'text' || i.kind === 'rule');
+  if (ground && footBox && footFill && footed) {
+    const moved = new Set<Item>(onFoot);
+    order = order.filter((i) => !moved.has(i));
+    ground = { fill: ground.fill, box: { ...page, height: footBox.y } };
+    setPageFoot(ctx, spec.owner!, { fill: footFill, box: footBox }, onFoot as FootPiece[], page, container, widthTw, spec.slot, rtl);
+  }
+  // A display figure a band prints beside its other pieces (an opener's
+  // number) takes a cell of its own at its side of the band's table
+  // (side.ts): written after the others at their right, before them at
+  // their left, as the cells read.
+  const sides = new Map<Item, Side>();
+  const sideOn = new Map<Box, Side>();
+  for (const bandBox of vertical ? [] : new Set(order.map((i) => bandOf(i.box)?.box))) {
+    if (!bandBox) continue;
+    const run = order.filter((i) => bandOf(i.box)?.box === bandBox);
+    const sized = (i: Item): number | undefined => (i.kind === 'text' ? fittedSize(ctx, i.el, i.text) : i.kind === 'title' && titleEl ? fittedSize(ctx, titleEl, texts.get(titleEl.id) ?? '') : undefined);
+    const found = sideFigure(ctx, run.map((item) => ({ item, box: item.box, ...(item.kind === 'text' ? { text: { el: item.el, text: item.text } } : {}), size: sized(item) })), bandInnerTwips(ctx, widthTw), rtl);
+    if (!found) continue;
+    const figure = found.piece.item;
+    const rest = run.filter((i) => i !== figure);
+    order = order.filter((i) => i !== figure);
+    order.splice(found.side.right ? order.indexOf(rest[rest.length - 1]!) + 1 : order.indexOf(rest[0]!), 0, figure);
+    sides.set(figure, found.side);
+    sideOn.set(bandBox, found.side);
+  }
+  /** The width a band leaves the pieces in its (main) cell, twips. */
+  const innerTw = (band: NonNullable<Chunk['band']>): number => bandInnerTwips(ctx, widthTw - (sideOn.get(band.box)?.widthTw ?? 0));
   const textHeight = page.height - toPx(geo.margins.top + geo.margins.bottom);
   // A picture that fills the page, printed on no band, with every text
   // the page prints standing on it inside the text area (a cover under
@@ -148,8 +192,6 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   const textBands = bands.filter((e) => order.some((i) => covers(boxes.get(e.id) ?? page, i.box)));
   const at = order.findIndex((i) => i.kind === 'title');
   const titleBand = at >= 0 ? bandOf(order[at]!.box) : undefined;
-  // A design spans the text area (see layout/pageSpan.ts).
-  const widthTw = Math.round((ctx.textAreaPx * 1440) / u.dpi);
   // A design that opens a page keeps the page with what it prints above
   // its title: the break moves to the first piece, or to a thin paragraph
   // before a band that comes first (a table cell cannot break a page).
@@ -218,16 +260,16 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   const sets = columnSets(ctx, columnTexts);
   const inSet = new Set(sets.flatMap((c) => c.columns.flat()));
   if (ground) {
-    // The ground first, with the page break; then the band across the
-    // foot of the sheet (its table, set at the same place, holds its text:
-    // the fill under it reaches the edge of the paper where a table may
-    // not) and the small fills the print draws above its first piece (a
-    // row of colour bars), at their places on the page.
+    // The ground first, with the page break; then a band across the foot
+    // of the sheet whose text stays in the flow (one the footer takes is
+    // drawn there) and the small fills the print draws above its first
+    // piece (a row of colour bars), at their places on the page.
     const top = order[0]?.box.y ?? page.height;
     const extra: Ground[] = [];
     for (const e of bands) {
       const bb = boxes.get(e.id);
       if (!bb || e.kind !== 'box' || bb.height <= 0 || bb.width <= 0) continue;
+      if (footed && e === footEl) continue;
       if (atFoot(bb) || (!textBands.includes(e) && bb.y + bb.height <= top)) extra.push({ fill: hex(e.style.backgroundColor)!, box: bb });
     }
     const was: boolean = placed;
@@ -288,7 +330,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     if (item.kind === 'rule') {
       const frame = band ? clip(band.box, container) : container;
       const first = firstProps(band, item.box);
-      const xml = ruleParagraph(ctx, item.el, item.box, frame, band ? bandInnerTwips(ctx, widthTw) : widthTw, rtl, keeps(i), first);
+      const xml = ruleParagraph(ctx, item.el, item.box, frame, band ? innerTw(band) : widthTw, rtl, keeps(i), first);
       chunks.push({ xml, band, box: item.box });
       continue;
     }
@@ -306,7 +348,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
       const first = firstProps(band, item.box);
       // As wide as the band's cell or the text area; as tall as the page
       // leaves it once what follows has its room.
-      const maxW = band ? (bandInnerTwips(ctx, widthTw) * u.dpi) / 1440 : textW;
+      const maxW = band ? (innerTw(band) * u.dpi) / 1440 : textW;
       const below = order.slice(i + 1).reduce((h, o) => h + (o.box.y < textBottom ? o.box.height + MM(u, 3) : 0), 0);
       // Vertical lines stand side by side, not under the picture: there
       // it keeps to about half the page.
@@ -325,7 +367,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     while (j < order.length) {
       const next = order[j]!;
       // A text already set in a table of columns is not written again.
-      if (next.kind !== 'text' || inSet.has(j) || bandOf(next.box)?.box !== band?.box || !sameLine(ctx, order[j - 1] as TextItem, next, container.width)) break;
+      if (next.kind !== 'text' || inSet.has(j) || sides.has(item) || sides.has(next) || bandOf(next.box)?.box !== band?.box || !sameLine(ctx, order[j - 1] as TextItem, next, container.width)) break;
       j++;
     }
     const row = order.slice(i, j) as TextItem[];
@@ -338,10 +380,12 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     });
     if (row.length > 1) {
       const frame = band ? clip(band.box, container) : container;
-      chunks.push({ xml: rowParagraph(ctx, parts, frame, band ? bandInnerTwips(ctx, widthTw) : widthTw, rtl, { ...first }), band, box: row[0]!.box });
+      chunks.push({ xml: rowParagraph(ctx, parts, frame, band ? innerTw(band) : widthTw, rtl, { ...first }), band, box: row[0]!.box });
     } else {
       const own = !band && onBackdrop(item.box) ? pillOnPicture(ctx, row[0]!.el, row[0]!.text, widthTw) : undefined;
-      chunks.push({ xml: parts[0]!.write(own ? { ...first, ...own } : first).join(''), band, box: row[0]!.box });
+      // A figure in a cell of its own asks for no room under it.
+      const figure = sides.get(item);
+      chunks.push({ xml: parts[0]!.write(own ? { ...first, ...own } : figure ? { ...first, after: 0 } : first).join(''), band, box: row[0]!.box, ...(figure ? { side: figure } : {}) });
     }
     i = j - 1;
   }

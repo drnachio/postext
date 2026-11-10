@@ -84,8 +84,9 @@ export function exportProblems(e: Exported, markdown: string[], fields?: (f: Map
 }
 
 /** The empty one-column section after columns that close before a new
- *  page, which lets Word end them level (see `chapterSections`). */
-const LEVEL_SECTION = /(?<=<\/w:sectPr><\/w:pPr><\/w:p>)<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"\/><w:ind w:firstLine="0"\/><w:rPr><w:sz w:val="2"\/><w:szCs w:val="2"\/><\/w:rPr>(?:<w:sectPr>(?:(?!<\/w:sectPr>).)*<\/w:sectPr><\/w:pPr><\/w:p>|<\/w:pPr><\/w:p><w:sectPr>(?:(?!<\/w:sectPr>).)*<\/w:sectPr>(?=<\/w:body>))/g;
+ *  page, which lets Word end them level (see `chapterSections`); its
+ *  paragraph's mark is hidden when another section follows it. */
+const LEVEL_SECTION = /(?<=<\/w:sectPr><\/w:pPr><\/w:p>)<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"\/><w:ind w:firstLine="0"\/><w:rPr>(?:<w:vanish\/>)?<w:sz w:val="2"\/><w:szCs w:val="2"\/><\/w:rPr>(?:<w:sectPr>(?:(?!<\/w:sectPr>).)*<\/w:sectPr><\/w:pPr><\/w:p>|<\/w:pPr><\/w:p><w:sectPr>(?:(?!<\/w:sectPr>).)*<\/w:sectPr>(?=<\/w:body>))/g;
 
 /** The document's sections, in order, leaving out those that only level
  *  the columns above them. */

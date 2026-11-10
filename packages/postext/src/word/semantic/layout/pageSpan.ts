@@ -26,6 +26,7 @@ import { styledSectionAt } from '../page/furniture.js';
 import { pPr, twips } from '../wml.js';
 import { dropRedundantBreaks, isBreak } from './breaks.js';
 import { headsChange, isComposedPage } from '../page/composed.js';
+import { pageFootOf } from '../design/foot.js';
 
 /** A block's XML and what it asks of its section. */
 export interface Piece {
@@ -143,9 +144,17 @@ export function widenedTwips(ctx: WriterContext, block: ContentBlock | undefined
 }
 
 /** A paragraph that only closes a section: no room of its own to speak
- *  of, so it adds no blank line where the columns change. */
-function sectionBreak(sect?: string): string {
-  return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>', ...(sect ? { sectPr: sect } : {}) })}</w:p>`;
+ *  of, so it adds no blank line where the columns change. `last`: what
+ *  follows it starts a new page. Its mark is then hidden, so it takes no
+ *  room at all: a point of height is one too many under columns that
+ *  fill their page, or under a table that ends at the foot of one, and
+ *  the paragraph went alone to a page of its own, a blank page under the
+ *  running head before the next chapter (#1458). Word and LibreOffice
+ *  give a hidden empty paragraph no line; a reader that knows no hidden
+ *  text sets it one point tall, as before. */
+function sectionBreak(sect?: string, last = false): string {
+  const mark = `<w:rPr>${last ? '<w:vanish/>' : ''}<w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>`;
+  return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: mark, ...(sect ? { sectPr: sect } : {}) })}</w:p>`;
 }
 
 /** Whether `xml` opens with a table (inside content controls or not). */
@@ -227,7 +236,10 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     // So does a composed page that prints other running heads than the
     // page before it, and the page after it (see page/composed.ts).
     const heads = (isComposedPage(piece.block) || isComposedPage(seen)) && headsChange(ctx, seen, piece.block);
-    const p = !piece.start && (headingFillsPage(ctx, after?.block) || heads) ? { ...piece, start: 'nextPage' as const } : piece;
+    // A page whose design sets a band at its foot is a section of its
+    // own: the band's text stands in its footer (design/foot.ts).
+    const footed = !!pageFootOf(ctx, piece.block) || !!pageFootOf(ctx, after?.block);
+    const p = !piece.start && (headingFillsPage(ctx, after?.block) || heads || footed) ? { ...piece, start: 'nextPage' as const } : piece;
     after = piece;
     const oneColumn = columns && !!p.span;
     const cur = sections[sections.length - 1];
@@ -273,16 +285,21 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     // balances a section's columns only above a continuous break, so an
     // empty one-column section follows them on their page.
     const next = sections[i + 1];
-    if (levels && !s.oneColumn && (!next || next.start !== 'continuous') && !endsWithListing(s.parts)) {
+    // What follows the section starts a new page: the room a box leaves
+    // under it would only be room at the foot of the page, or a line on
+    // the next one when the box ends where the page does.
+    const closes = !next || next.start !== 'continuous';
+    if (closes) body = body.replace(EMPTY_TAIL, '');
+    if (levels && !s.oneColumn && closes && !endsWithListing(s.parts)) {
       body += sectionBreak(sect);
       // Its running heads are the ones in force where the columns end.
       const level = sectionXml(ctx, geo, index, { start: 'continuous', oneColumn: true, ...(s.tail ? { block: s.tail, leads: false } : {}), ...(titleStyle ? { titleStyle } : {}) });
-      if (next || !last) xml += body + sectionBreak(level);
+      if (next || !last) xml += body + sectionBreak(level, true);
       else xml += body + sectionBreak() + level;
       return;
     }
-    if (next) xml += body + sectionBreak(sect);
-    else xml += last ? body + sect : `${body}<w:p>${pPr({ sectPr: sect })}</w:p>`;
+    if (next) xml += body + sectionBreak(sect, closes);
+    else xml += last ? body + sect : body + sectionBreak(sect, true);
   });
   return xml;
 }

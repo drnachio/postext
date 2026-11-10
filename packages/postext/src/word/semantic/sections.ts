@@ -115,7 +115,7 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   // The running heads the section's pages print, the opener's on its
   // first page when it opens with a heading that breaks the page.
   const firstFolio = part.first ? (ctx.chapter.pageNumbers?.start ?? (index === 0 && !ctx.start ? 1 : undefined)) : undefined;
-  const { refs, titlePg } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), ...(firstFolio !== undefined ? { firstFolio } : {}), start: part.start });
+  const { refs, titlePg, footer: footDistance } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), ...(firstFolio !== undefined ? { firstFolio } : {}), start: part.start });
   // A chapter starts on a new page; on a right-hand one only when the book
   // asks for recto starts. A verso start (a spread opener whose artwork
   // the document does not carry) would only leave a blank page, and
@@ -126,7 +126,9 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   const orient = geo.widthTw > geo.heightTw ? ' w:orient="landscape"' : '';
   // The running heads keep the book's distances from the page edge.
   const header = Math.round(geo.margins.top / 2);
-  const footer = Math.round(geo.margins.bottom / 2);
+  // A page whose design sets a band at its foot keeps the band's text at
+  // its height on the sheet (design/foot.ts).
+  const footer = footDistance ?? Math.round(geo.margins.bottom / 2);
   const own = part.oneColumn ? undefined : styledGeometry(ctx, geo, index, part.block, pageOfStyle(part));
   // A styled page whose text stands low (a colophon under a cover's top
   // margin) gets twice the room the design gives it, its text set at the

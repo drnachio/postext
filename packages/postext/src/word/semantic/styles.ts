@@ -15,6 +15,7 @@ import { paleOnWhite } from './design/ink.js';
 import { plainStyleDef } from './plain/styles.js';
 import { captionLook, sameCaptionLook } from './prose/caption.js';
 import { boxBodyIndent, paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
+import { styleLeadings } from './prose/leading.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
 
 /** Style ids the writer uses by name. */
@@ -566,7 +567,12 @@ export class StyleRegistry {
   /** The `w:style` elements (after `w:docDefaults`). */
   xml(): string {
     let out = '';
-    for (const [id, d] of this.defs) {
+    // Each style's leading as every reader sets it (prose/leading.ts).
+    const upright = this.resolved.layout.writingMode !== 'vertical-rl';
+    const leadings = this.plain || !upright ? undefined : styleLeadings(this.defs, this.plan);
+    for (const [id, def] of this.defs) {
+      const line = leadings?.get(id);
+      const d = line ? { ...def, pPr: { ...def.pPr, line } } : def;
       const attrs = `w:type="${d.type}"${d.isDefault ? ' w:default="1"' : ''} w:styleId="${escapeAttr(id)}"${d.custom ? ' w:customStyle="1"' : ''}`;
       let inner = `<w:name w:val="${escapeAttr(d.name)}"/>`;
       if (d.basedOn) inner += `<w:basedOn w:val="${d.basedOn}"/>`;

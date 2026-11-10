@@ -80,7 +80,7 @@ function fillRel(ctx: WriterContext, fill: string): string {
 const emu = (ctx: WriterContext, v: number): number => Math.round((v * 914400) / ctx.units.dpi);
 
 /** One ground as a picture anchored to the page, behind the text. */
-function groundRun(ctx: WriterContext, g: Ground): string {
+export function groundRun(ctx: WriterContext, g: Ground): string {
   const id = ctx.pkg.nextDrawingId();
   const cx = Math.max(1, emu(ctx, g.box.width));
   const cy = Math.max(1, emu(ctx, g.box.height));

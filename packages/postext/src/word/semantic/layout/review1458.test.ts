@@ -66,6 +66,31 @@ describe('semantic docx: notes and sections', () => {
     // levelled only when it ends with text.
     expect(levelSections(plainEnd.doc) - levelSections(boxed.doc)).toBe(1);
   });
+
+  it('gives the paragraph that closes a section before a new page no room', async () => {
+    const box = ':::callout{title="Try"}\nInside.\n:::\n';
+    const text = '# One\n\nText of the chapter.\n\n';
+    const hidden = /<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"\/><w:ind w:firstLine="0"\/><w:rPr><w:vanish\/><w:sz w:val="2"\/><w:szCs w:val="2"\/><\/w:rPr><w:sectPr>/g;
+    const closing = (doc: string): string[] => doc.match(/<w:p><w:pPr>(?:(?!<\/w:p>|<w:sectPr>).)*<w:sectPr>/g) ?? [];
+    // Columns that end with text: the levelling section's paragraph is
+    // hidden; the ones that close the columns above it, and the last
+    // chapter's, keep their point (a continuous break follows them).
+    const levelled = await exportDocx([`${text}Its last words.\n`, '# Two\n\nMore.\n']);
+    expect(levelled.doc.match(hidden)).toHaveLength(1);
+    expect(closing(levelled.doc)).toHaveLength(3);
+    // A chapter that ends with a box: the paragraph after its table is
+    // hidden too, one point tall at most, and the room the box keeps
+    // under it is left out before the page ends.
+    const boxed = await exportDocx([`${text}${box}`, '# Two\n\nMore.\n']);
+    expect(boxed.doc.match(hidden)).toHaveLength(1);
+    expect(closing(boxed.doc)).toHaveLength(2);
+    const end = boxed.doc.indexOf('<w:vanish/>');
+    expect(boxed.doc.slice(0, end)).toMatch(/<\/w:tbl>(?:<\/w:sdtContent><\/w:sdt>)*<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"\/><w:ind w:firstLine="0"\/><w:rPr>$/);
+    // The same box in the middle of the chapter keeps its room.
+    const inside = await exportDocx([`${text}${box}\nAfter the box.\n`, '# Two\n\nMore.\n']);
+    expect(inside.doc).toMatch(/<\/w:tbl>(?:<\/w:sdtContent><\/w:sdt>)*<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="\d{2,}" w:lineRule="exact"\/>/);
+    for (const e of [levelled, boxed, inside]) expect(exportProblems(e, e === levelled ? [`${text}Its last words.\n`, '# Two\n\nMore.\n'] : e === boxed ? [`${text}${box}`, '# Two\n\nMore.\n'] : [`${text}${box}\nAfter the box.\n`, '# Two\n\nMore.\n'])).toEqual([]);
+  });
 });
 
 describe('semantic docx: exercises and the plain design', () => {

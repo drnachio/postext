@@ -152,6 +152,25 @@ describe('createDocxPackage', () => {
     expect(() => readDocx(bytes)).not.toThrow();
   });
 
+  it('gives a footer that draws a picture its own relationships', () => {
+    const pkg = createDocxPackage();
+    const img = pkg.addMedia(PNG, 'png');
+    const rel = pkg.footerRel('f1');
+    const plain = pkg.headerRel('h1');
+    const bytes = pkg.build({
+      body: `<w:p/><w:sectPr><w:headerReference w:type="default" r:id="${plain}"/><w:footerReference w:type="default" r:id="${rel}"/></w:sectPr>`,
+      styles: '',
+      headers: { h1: '<w:p/>' },
+      footers: { f1: `<w:p><w:r><w:drawing><a:blip r:embed="${img}"/></w:drawing></w:r></w:p>` },
+    });
+    const files = unzipSync(bytes);
+    const rels = strFromU8(files['word/_rels/footer1.xml.rels']!);
+    expect(rels).toContain(`Id="${img}"`);
+    expect(rels).toContain('Target="media/image1.png"');
+    expect(files['word/_rels/header1.xml.rels']).toBeUndefined();
+    expect(validateDocxPackage(files)).toEqual([]);
+  });
+
   it('rejects a referenced header without content', () => {
     const pkg = createDocxPackage();
     pkg.headerRel('first');

@@ -91,6 +91,7 @@ export function renderDesignedHeading(ctx: WriterContext, b: ContentBlock, headi
   const slot = b.attrs?.style ?? `L${b.level ?? 1}`;
   const listed = headingIsListed(b, ctx.resolved);
   return writeDesign(ctx, {
+    owner: b,
     elements,
     texts,
     minHeight: design.minHeight,

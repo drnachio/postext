@@ -156,6 +156,11 @@ export function assemble(input: DocxPackageInput, c: Collected): Map<string, Uin
       n++;
       put(`word/${kind}${n}.xml`, wordPart(kind === 'header' ? 'hdr' : 'ftr', inner), CONTENT_TYPE[kind]);
       rel(relId, REL[kind], `${kind}${n}.xml`);
+      // A picture the part draws (a band's fill behind a page's foot
+      // line, #1458): a part reads its relationships from its own file.
+      const used = new Set([...inner.matchAll(/r:embed="([^"]+)"/g)].map((m) => m[1]!));
+      const pictures = c.media.filter((m) => used.has(m.relId));
+      if (pictures.length) put(`word/_rels/${kind}${n}.xml.rels`, relsXml(pictures.map((m) => ({ id: m.relId, type: REL.image, target: m.path }))));
     }
   };
   headerFooter('header', c.headers, input.headers);

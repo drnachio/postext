@@ -149,18 +149,35 @@ describe('semantic docx: pages, fourth review (#1444)', () => {
     unchanged(e, md);
   });
 
-  it('sets a note in the margin and a vertical rule as frames on the page', async () => {
+  it('sets a note in the margin in a frame and draws a vertical rule down the page', async () => {
     const md = ['# One\n\nText.\n'];
     const note = { kind: 'text', id: 'note', content: 'Do not write in this margin', placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: mm(175), y: mm(22) }, size: { width: mm(28) } } };
     const rule = { kind: 'rule', id: 'rule', direction: 'vertical', color: { hex: '#888888' }, thickness: { value: 0.75, unit: 'pt' }, placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: mm(172), y: mm(22) }, size: { height: mm(200) } } };
     const config = cfg({ page: { width: mm(210), height: mm(297), margins: { left: mm(25), right: mm(45), top: mm(25), bottom: mm(25) } }, layout: { layoutType: 'single' }, header: { elements: [head('Paper 2'), note, rule] } });
     const e = await exportDocx(md, { config });
     const xml = partOf(e, sectionsOf(e.doc, true)[0]!, 'header', 'default');
+    // The note in a frame at its place on the page.
     const frames = xml.match(/<w:framePr [^>]*\/>/g) ?? [];
-    expect(frames.length).toBe(2);
-    for (const f of frames) expect(f).toContain('w:hAnchor="page"');
-    expect(xml).toMatch(/<w:framePr[^>]*w:hRule="exact"[^>]*\/>(?:(?!<\/w:p>).)*<w:left w:val="single"/);
+    expect(frames.length).toBe(1);
+    expect(frames[0]).toContain('w:hAnchor="page"');
     expect(textOf(xml)).toContain('Do not write in this margin');
+    // The rule: a picture behind the text, 172 mm in and 22 mm down the
+    // sheet, 200 mm tall and under a point wide. No paragraph of the
+    // header is as tall as the rule: a reader without frames or placed
+    // pictures loses the line, not the page.
+    expect(xml).toMatch(/<wp:anchor [^>]*behindDoc="1"/);
+    expect(xml).toMatch(/<wp:positionH relativeFrom="page"><wp:posOffset>619\d{4}<\/wp:posOffset>/);
+    expect(xml).toMatch(/<wp:positionV relativeFrom="page"><wp:posOffset>79\d{4}<\/wp:posOffset>/);
+    const [, cx, cy] = /<wp:extent cx="(\d+)" cy="(\d+)"\/>/.exec(xml) ?? [];
+    expect(Number(cx)).toBeLessThan(12700);
+    expect(Number(cy)).toBeGreaterThan(7190000);
+    expect(Number(cy)).toBeLessThan(7210000);
+    expect(xml).not.toMatch(/w:hRule="exact"/);
+    expect(xml).not.toMatch(/w:line="\d{4,}"/);
+    // Drawn from the running head's own paragraph, which reads its
+    // picture from the header's relationships.
+    expect(xml.match(/<w:p>/g)).toHaveLength(2);
+    expect(exportProblems(e, md)).toEqual([]);
     unchanged(e, md);
   });
 
