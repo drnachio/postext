@@ -12,7 +12,7 @@
 
 import { LOCALE_TAGS, STYLE_CATALOG } from 'postext-citeproc/catalog';
 import type { PostextConfig, Resource } from 'postext';
-import { OUTPUT_PROFILES } from 'postext';
+import { DEFAULT_CHARACTER_STYLES, OUTPUT_PROFILES } from 'postext';
 import {
   DEFAULT_BALLOON_STYLES,
   DEFAULT_BODY_TEXT_CONFIG,
@@ -63,6 +63,7 @@ const DIMENSION_UNITS = ['cm', 'mm', 'in', 'pt', 'px', 'em', 'rem'];
 const DEFAULT_SLICES: Partial<Record<keyof PostextConfig, unknown>> = {
   calloutStyles: DEFAULT_CALLOUT_STYLES,
   chipStyles: DEFAULT_CHIP_STYLES,
+  characterStyles: DEFAULT_CHARACTER_STYLES,
   markStyles: DEFAULT_MARK_STYLES,
   exerciseStyles: DEFAULT_EXERCISE_STYLES,
   paragraphStyles: DEFAULT_PARAGRAPH_STYLES,

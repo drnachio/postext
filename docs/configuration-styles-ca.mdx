@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Estils i parts',
   description: 'Com es defineixen estils amb nom per a paràgrafs, xips, ressaltats, llistats de codi i encapçalaments, i com es dissenyen les pàgines que obren cada part del llibre',
   lang: 'ca',
-  lastUpdated: '2026-10-19',
-  readingTime: '37 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '46 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els estils amb nom, que defineixes una vegada i fas servir tantes vegades com vulguis. Un estil de paràgraf dona aspecte a una classe de text, com ara una bibliografia o un glossari. Un estil de xip dibuixa una etiqueta petita dins de la línia, i un estil de ressaltat, una banda de color darrere d'una frase. Els llistats de codi tenen una lletra, una caixa i uns colors propis. La pàgina també explica les pàgines que obren cada part del llibre i els estils dels títols especials. Els requadres tenen una pàgina pròpia.",
@@ -491,6 +491,273 @@ const style = pickChipStyle(resolved, 'key');
 // => l'estil `key`, o el primer
 ```
 
+
+## Estils de caràcter
+
+La propietat `characterStyles` declara els estils amb nom d'un grup de paraules, que al text s'escriu `[unes paraules]|id|`: una lletra (família, cos, pes, inclinació), un color, un espaiat entre lletres, majúscules o versaletes, i tres decoracions — un subratllat, una taca de retolador pintada darrere de les paraules com si fos un marcador fluorescent, i un ratllat. A diferència d'un xip, un grup amb estil es parteix entre línies i es divideix amb guionet com el text que l'envolta; una decoració partida entre dues línies es dibuixa a cadascuna. Ve amb un estil per defecte, `marker` (una taca groga sobre la meitat inferior de les lletres, amb les vores fetes a mà), així que `[…]|marker|` funciona sense configurar res (un subratllat sense més és `:underline[…]`, i un ressaltat sense més, `:mark[…]`); declarar `characterStyles` substitueix aquesta llista, i una llista buida deixa el llibre sense cap estil. Un grup amb un id que cap estil no declara es compon com el text que l'envolta, i el Tauler de revisió en dona avís (*Estil de caràcter desconegut*).
+
+```ts
+const config: PostextConfig = {
+  characterStyles: [
+    {
+      id: 'marker',
+      name: 'Retolador',
+      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+    },
+    {
+      id: 'drug',
+      name: 'Nom de fàrmac',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Resposta errònia', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+};
+```
+
+```md
+La [primera línia de tractament]|marker| és [la metformina]|drug|, mai [la insulina d'entrada]|wrong|.
+```
+
+Propietats del text (les que no es fixen conserven les del text):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatori</td>
+      <td>Identificador que s'escriu entre les barres: <code>[…]|id|</code>. Lletres, xifres, <code>-</code> i <code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nom llegible, només per a interfícies d'edició.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>la del text</td>
+      <td>Família del grup.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>el del text</td>
+      <td>Cos del grup; <code>em</code> és relatiu al text que l'envolta. Un cos més gran no canvia mai l'interlineat: les línies mantenen la retícula, de manera que un cos molt més gran pot tocar la línia de sobre.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>el del text</td>
+      <td>Pes de les paraules redones del grup (100–900, arrodonit a la centena); les seves paraules en negreta conserven la negreta.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compon el grup en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del text</td>
+      <td>Color del grup, també el de les paraules en negreta i en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>cap</td>
+      <td>Tracking que s'afegeix després de cada caràcter del grup (<code>em</code> del text que l'envolta; negatiu, l'estreny). Es mesura amb el grup, de manera que la línia es parteix allà on es pinta.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code> compon el grup en majúscules; el text conserva les seves lletres, de manera que la cerca i el mapa de font el continuen llegint tal com està escrit.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compon el grup en versaletes, com fa <code>:smallcaps[…]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>underline</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>desactivat</td>
+      <td>Una línia sota el grup (vegeu més avall).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>CharacterStyleHighlightConfig</code></td>
+      <td>desactivat</td>
+      <td>Una taca de retolador darrere del grup (vegeu més avall).</td>
+    </tr>
+    <tr>
+      <td><code>strike</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>desactivat</td>
+      <td>Una línia que travessa el grup (vegeu més avall).</td>
+    </tr>
+  </tbody>
+</table>
+
+`underline` i `strike` (les longituds en em són relatives al cos del mateix grup):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Dibuixa la línia.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el color del grup</td>
+      <td>Color de la línia.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Percentatge, 0–100.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Gruix del traç.</td>
+    </tr>
+    <tr>
+      <td><code>offset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.12em</code> (subratllat), <code>0.28em</code> (ratllat)</td>
+      <td>Per on passa el centre de la línia: per sota de la línia de base en un subratllat, per sobre en un ratllat.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Com es dibuixa la línia.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>La dibuixa paraula a paraula i deixa en blanc els espais; desactivat, continua sota els espais del grup (mai sota els espais que l'envolten).</td>
+    </tr>
+  </tbody>
+</table>
+
+`highlight` (les vores es mesuren des de la línia de base, positives cap amunt, en em del cos del mateix grup):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pinta la taca.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffe14d</code></td>
+      <td>Color de la taca. Una entrada de la paleta que sigui una tinta plana imprimeix la taca a la planxa de la seva tinta.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Percentatge, 0–100. La taca es pinta darrere del text, de manera que les lletres conserven el color.</td>
+    </tr>
+    <tr>
+      <td><code>bottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>-0.2em</code></td>
+      <td>On comença la taca (negatiu: per sota de la línia de base, entre els descendents).</td>
+    </tr>
+    <tr>
+      <td><code>top</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>On acaba la taca: uns <code>0.45em</code> cobreixen la meitat inferior de les lletres (un traç de retolador), <code>0.8em</code> les paraules senceres, i <code>0.05em</code> amb <code>bottom: -0.15em</code> fan un subratllat gruixut.</td>
+    </tr>
+    <tr>
+      <td><code>overhang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Quant sobresurt la taca més enllà de la primera i l'última lletra del grup.</td>
+    </tr>
+    <tr>
+      <td><code>radius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Radi de les cantonades, limitat a la meitat de l'alçada de la taca.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code>, una banda neta; amb valors més alts les vores superior i inferior ondulen, la taca deriva una mica al llarg de la línia i els extrems es tallen en diagonal, com un retolador passat a mà. L'ondulació segueix una llavor presa del grup, de manera que és la mateixa a cada composició, al llenç, al PDF i a l'HTML.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Una taca per paraula.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Imbricació.** Un grup pot contenir altres marques en línia (`[una paraula **negreta**]|marker|`, un enllaç, una referència, una fórmula) i altres grups: guanya l'estil més intern (`[a [b]|drug| c]|marker|`). Un grup no pot travessar un paràgraf.
+
+**On.** Paràgrafs, elements de llista, cites, avisos, notes a peu de pàgina, peus, notes i cel·les de taula, i encapçalaments mentre `headings.inlineMarks` estigui activat. Les capçaleres, l'índex de continguts i les entrades de l'índex alfabètic prenen les paraules sense l'estil.
+
+**Sortida.** El llenç, el PDF i l'HTML dibuixen les decoracions a partir de la mateixa geometria (`VDTLine.marks`, de les classes `band`, `line`, `double`, `dotted`, `dashed`, `wavy`): la taca abans del text de la línia, les línies després. En un PDF digital, una taca o una línia translúcida es dibuixa amb transparència; en un PDF d'impremta (`pdfGeneration.colorSpace` amb un perfil d'impremta) es compon tal com s'imprimeix sobre paper blanc — una trama del seu color, a la planxa de la seva tinta si és una tinta plana — sense transparència, de manera que un fitxer PDF/X no en porta mai. L'EPUB refluïble compon cada estil com una classe (`pt-cs-<id>`) amb CSS: lletra, color, `text-decoration` per a les línies i un fons en degradat per a la taca. Una exportació a Word converteix cada estil en un estil de caràcter de Word (`Estil de caràcter: <name>`), i la taca en un ombrejat del seu color, i una importació de Word fa correspondre a un estil del llibre l'estil de caràcter que es diu com ell — o que es va exportar com a `Estil de caràcter: <name>`.
+
+Al VDT un segment amb estil porta `charStyle: { id, style }` (el grup i l'id de l'estil); la seva lletra, el seu color i el seu tracking ja són a `fontString`, `color` i `tracking`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles);
+// => l'estil integrat `marker` si no se'n declara cap; tots els camps plens
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => undefined per al valor integrat; s'eliminen els valors per defecte estàtics; [] es conserva
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => l'estil `drug`, o undefined si cap estil no té aquest id
+```
 
 ## Estils de ressaltat
 

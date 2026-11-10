@@ -11,7 +11,9 @@ import { inFencedCode } from './codeFences.js';
  * #421, #430): `:dots[…]`, `:name[…]`, `:book[…]`, `:sideline[…]{…}`,
  * `:ruby[…]{rt="…"}`, the compact ruby `{紅樓|hóng|lóu}`,
  * `:warichu[…]{…}` and the kanbun marks `:kunten[…]{kaeri okuri}`; and
- * the directional isolates `:rtl[…]` / `:ltr[…]` (#367). The highlighter
+ * the directional isolates `:rtl[…]` / `:ltr[…]` (#367); and the
+ * character styles `[some words]|id|` (their commands and completion are
+ * in `charStyleSyntax.ts`). The highlighter
  * marks each directive's brackets and attributes and shows its text the
  * way the mark reads (dots under it, a straight or wavy line, a note in a
  * smaller size); the completion source offers the directives after `:do`,
@@ -29,10 +31,11 @@ const TEXT_MARKS: Record<AnnotationName, Decoration> = {
   rtl: Decoration.mark({ class: 'cm-annotation-isolate' }),
   sideline: Decoration.mark({ class: 'cm-annotation-sideline' }),
   kunten: Decoration.mark({ class: 'cm-annotation-kunten' }),
+  charstyle: Decoration.mark({ class: 'cm-annotation-charstyle' }),
 };
 
 /** Openers the highlighter looks for before reading a line. */
-const HINT_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[|\{[^{}\n|]*\|/;
+const HINT_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[|\{[^{}\n|]*\||\]\|/;
 
 /** The decoration ranges of every annotation on a line, relative to it and
  *  sorted: the opener and closer (`delim`) and the text between. A nested
@@ -127,6 +130,10 @@ export const annotationTheme = Prec.highest(
     '.cm-annotation-kunten': {
       backgroundColor: 'color-mix(in srgb, var(--brand) 10%, transparent)',
       borderBottom: '1px solid var(--brand)',
+    },
+    '.cm-annotation-charstyle': {
+      backgroundColor: 'color-mix(in srgb, #ffe14d 45%, transparent)',
+      borderRadius: '2px',
     },
     '.cm-annotation-isolate': {
       textDecoration: 'underline dotted',

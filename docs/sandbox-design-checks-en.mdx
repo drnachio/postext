@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Design and Checks panels',
   description: "The Design panel's groups, pages, search and summary, and the Checks panel's live warnings, grouped by kind",
   lang: 'en',
-  lastUpdated: '2026-10-23',
-  readingTime: '38 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '39 min',
   order: 41,
   parent: 'sandbox',
   plainSummary: "This page covers two panels of the Sandbox. The Design panel holds every setting of the book, such as the page size, the fonts and the colours, sorted into groups with a search box. The Checks panel lists the problems Postext finds while you work, such as a missing picture or a line that is too loose. Each problem says where it is and takes you there when you click it.",
@@ -80,6 +80,7 @@ The groups, in browsing order:
   - *Inline labels* (`chipStyles`): named styles for the inline `:chip[text]{style="…"}`. The built-in `chip` style is shown while the configuration has none. You can add, remove and rename ids, then set:
     - **Text**: font, size, colour, bold and italic. Each inherits the surrounding text until you set it. **Dots to trace** (`dotted`) paints the letters as rows of dots along their strokes, with their **Dot spacing** and **Dot size**, for a child to trace (since postext 1.46).
     - **Box**: fill, outline width and colour, corner radius, horizontal and vertical padding (with **Top padding** and **Bottom padding** to pad them apart, which centres a capital in a round chip), and the minimum gap to the neighbouring words.
+  - *Character styles* (`characterStyles`): named styles for a run of words written `[some words]|id|`. One card per style, with its id and name and four groups: *Text* (family, size, weight, italic, colour, letter spacing, capitals, small caps), *Highlighter band* (colour, opacity, bottom and top edges, overhang, corner radius, hand-drawn edges, and three quick shapes: *Marker stroke*, *Cover the words*, *Thick underline*), *Underline* and *Strike-through* (line, colour, opacity, thickness, distance, leave the spaces out). The built-in `marker` style is shown while the book stores none.
   - *Highlights* (`markStyles`): named styles for `:mark[text]{style="…"}`, a band of colour behind the words that breaks with the lines. You can add, remove and rename ids, then set the **Band colour**, the text colour, the corner radius and the padding. With no style declared, a built-in one applies to every `:mark[…]`.
   - *Code* (`codeStyle`): **Code fences** and **Indented code** (how listings are read); the **Code face**, size, leading, **Snap to grid**, colour and **Tab width**; the **Box** (page span, background, border, corner radius, padding, space above and below); **Long lines** (**A line wider than the box**: *Turn over*, *Set smaller* with its **Smallest size**, or *Cut*; the **Turnover indent** and **Turnover mark**); **Numbers and highlighted lines** (**Number the lines**, the numbers' colour and the room after them, the tint of the lines a fence highlights); the split **Across columns and pages** (keep together, lines on each side, repeat the title, the continued mark); **Syntax colours** (*Built-in* or *None*, and a colour and a style per kind of token, palette colours included); and **Inline code** in a code face with its fill. See [Code listings](/en/docs/configuration-styles#code-listings).
   - *Formulas* (`math`), with **Indent after a display** (`math.indentAfterDisplay`) and **Keep with its lead-in line** (`math.keepWithLeadIn`).
@@ -228,6 +229,7 @@ Live diagnostics, recomputed from the text, the design, the figures and the last
   - unknown directive names (every name the parser knows is accepted: `pagebreak`, `columnbreak`, `space`, `numbering`, `toc`, `callout`, `paragraphs`, `part` and `columns`), invalid numbering or parity attributes, and a `:::space{lines=N}` outside 0–20 lines;
   - a `:::` container fence left unclosed at the end of the document (clicking it focuses its opening line);
   - a `:::paragraphs{style="…"}`, `:::callout{type="…"}`, `:chip[…]{style="…"}`, `:mark[…]{style="…"}` or heading `{style="…"}` whose style is not configured;
+  - *Unknown character style*: a `[…]|id|` that names no style of `characterStyles`; the words are set as the text around them. Define the style or correct the id (`unknownCharacterStyle`);
   - a `::resource` line that prints as text — malformed, or glued under a paragraph without a blank line;
   - *Fullwidth markup*: markup typed with a Chinese or Japanese input method (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊…＊＊`), which prints as text; the entry shows the ASCII form to type;
   - *Attribute key not read*: an attribute key written outside ASCII (`作者=曹雪芹`), which the parser ignores;

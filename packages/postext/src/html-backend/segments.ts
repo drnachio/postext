@@ -168,6 +168,8 @@ export function renderSegments(
   parts.push(links.end());
   parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
+  // A highlighter band goes under the text, the other marks over it.
+  if (line.marks) parts.unshift(lineMarksHtml(line, block.color, 'behind'));
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
   // The lines under the links (#1402).
   if (line.linkUnderlines) parts.push(lineLinkUnderlinesHtml(line, block.color));
@@ -342,6 +344,8 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   parts.push(ruby.end(), links.end());
   parts.push(lineEndHtml(end, x));
   // Emphasis dots, proper-name and book-title lines (#193).
+  // A highlighter band goes under the text, the other marks over it.
+  if (line.marks) parts.unshift(lineMarksHtml(line, block.color, 'behind'));
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
   // The lines under the links (#1402).
   if (line.linkUnderlines) parts.push(lineLinkUnderlinesHtml(line, block.color));

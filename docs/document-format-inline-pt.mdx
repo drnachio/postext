@@ -6,7 +6,7 @@ export const metadata = {
   description: 'As marcas que se usam dentro da linha: ênfase, links, chips, versaletes, tabulações, texto vertical, marcas chinesas e japonesas, direção do texto e fórmulas LaTeX',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '30 min',
+  readingTime: '32 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Esta página trata das marcas que você usa dentro de uma linha de texto. Elas deixam palavras em negrito ou itálico, acrescentam links, desenham pequenas caixas com texto, compõem versaletes e alinham o texto em paradas de tabulação. Outras marcas são para livros em chinês e japonês, como as pequenas leituras sobre um caractere, ou para uma frase em outra direção, como um trecho em inglês num livro em árabe. A última seção mostra como escrever fórmulas matemáticas.",
@@ -141,6 +141,11 @@ A marcação em linha é reconhecida dentro de qualquer bloco de texto (títulos
       <td>Uma faixa colorida atrás de palavras que continuam sendo texto comum: quebram, são hifenizadas e justificadas como sempre. O estilo vem de <code>markStyles</code>; veja <a href="#destaques">Destaques</a>.</td>
     </tr>
     <tr>
+      <td>Estilo de caractere</td>
+      <td><code>[algumas palavras]|id|</code></td>
+      <td>As palavras num estilo nomeado de <code>characterStyles</code>: uma fonte, uma cor e um sublinhado, uma faixa de marca-texto ou um tachado. Ao contrário de um chip, quebra e é hifenizado como o texto em volta. Veja <a href="#estilos-de-caractere">Estilos de caractere</a>.</td>
+    </tr>
+    <tr>
       <td>Tabulação</td>
       <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
       <td>Leva as palavras que vêm depois dela até a próxima parada de tabulação: uma das paradas do estilo do parágrafo, ou a que os atributos dela definem. Um caractere de tabulação digitado no texto só é uma tabulação onde o estilo define paradas. Veja <a href="#tabulações-e-paradas-de-tabulação">Tabulações e paradas de tabulação</a>.</td>
@@ -197,6 +202,24 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Saída.** Canvas, HTML e PDF pintam a caixa e compõem as palavras como texto real: selecionável no HTML, extraível e na ordem de leitura no PDF (num PDF marcado, a caixa é um artefato de layout e as palavras pertencem ao parágrafo).
 
 Um chip com `field` vira um campo de formulário preenchível no PDF (veja [Saída PDF › Campos de formulário](/pt/docs/configuration-pdf-output#campos-de-formulário)).
+
+### Estilos de caractere
+
+`[algumas palavras]|id|` compõe as palavras entre os colchetes no estilo de caractere `id` de `characterStyles` (veja [Configuração › Estilos de caractere](/pt/docs/configuration-styles#estilos-de-caractere)): uma fonte, uma cor, um sublinhado, uma faixa de marca-texto, um tachado.
+
+```markdown
+The [first line of treatment]|marker| is [metformin]|drug|.
+
+A [run with **bold** and a [nested style]|accent|]|marker| inside.
+```
+
+- **Texto, não caixa.** As palavras ficam na linha: quebram entre linhas, são hifenizadas e justificadas como o texto em volta. Uma decoração partida em duas linhas é desenhada em cada uma; numa mesma linha, ela continua sob os espaços entre as palavras do trecho, nunca sob os espaços em volta dele.
+- **As barras.** O id vem logo depois do colchete de fechamento, entre duas barras: letras, algarismos, `-` e `_`. Um espaço entre `]` e `|`, a falta da segunda barra ou um colchete vazio deixam o texto como foi escrito. `\[a]|b|` imprime `[a]|b|`.
+- **Colchetes que são outra coisa.** Um marcador de nota de rodapé (`[^1]`), uma citação (`[@key]`) e um link (`[text](url)`) são lidos antes e nunca são um estilo.
+- **Aninhamento.** As palavras admitem as outras marcas em linha e outros trechos; vale o estilo mais interno. Um id desconhecido compõe as palavras como o texto em volta e é assinalado (`unknownCharacterStyle`).
+- **Onde.** Parágrafos, itens de lista, citações, boxes, notas de rodapé, legendas, notas e células de tabela, e títulos enquanto `headings.inlineMarks` estiver ativado (desativado, as palavras saem sem estilo).
+- **Texto simples.** Os colchetes, as barras e o id não imprimem nada: a busca, o sumário, os cabeços, as âncoras do índice remissivo e o texto copiado leem só as palavras.
+- **Sublinhado e realce sozinhos.** Um sublinhado simples é `:underline[…]`, e um realce simples, `:mark[…]`; um estilo de caractere serve para uma aparência própria (uma fonte, uma cor, uma faixa traçada à mão, uma linha tracejada ou ondulada). O sublinhado e o tachado dele ficam, por padrão, onde ficam os de `:underline[…]` e `~~…~~`.
 
 ### Destaques
 

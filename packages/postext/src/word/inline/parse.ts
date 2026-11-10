@@ -13,6 +13,7 @@ type Atom =
   | { kind: 'note'; id: string }
   | { kind: 'link'; inner: string; dest: string }
   | { kind: 'chip'; inner: string; style: string }
+  | { kind: 'charStyle'; inner: string; style: string }
   | { kind: 'smallcaps'; inner: string };
 
 const PH_BASE = 0xe800;
@@ -159,6 +160,13 @@ function protect(text: string, opts: ParseInlineOptions): { s: string; atoms: At
       continue;
     }
     if (c === '[') {
+      // A character style: `[words]|id|`, its words with no bracket.
+      const styled = text[i - 1] !== '\\' ? /^\[([^[\]\n]+)\]\|([\p{L}\p{N}_-]+)\|/u.exec(rest) : null;
+      if (styled && styled[1]![0] !== '^' && styled[1]![0] !== '@') {
+        add({ kind: 'charStyle', inner: styled[1]!, style: styled[2]! });
+        i += styled[0].length;
+        continue;
+      }
       const note = /^\[\^([\p{L}\p{N}_.:-]+)\]/u.exec(rest);
       if (note) {
         const id = note[1]!;
@@ -331,6 +339,9 @@ export function parseInline(text: string, opts: ParseInlineOptions = {}): Inline
           case 'smallcaps':
             for (const r of parseInline(atom.inner.replace(/\\([[\]])/g, '$1'), opts)) push({ ...r, bold: r.bold || base.bold || undefined, italic: r.italic || base.italic || undefined, smallCaps: true });
             return;
+          case 'charStyle':
+            for (const r of parseInline(atom.inner, opts)) push({ ...r, bold: r.bold || base.bold || undefined, italic: r.italic || base.italic || undefined, charStyle: atom.style });
+            return;
         }
       }
       // A marker character the scan left: verbatim, unless re-importing
@@ -359,6 +370,7 @@ export function parseInline(text: string, opts: ParseInlineOptions = {}): Inline
     if (r.raw) clean.raw = true;
     if (r.href !== undefined) clean.href = r.href;
     if (r.chip !== undefined) clean.chip = r.chip;
+    if (r.charStyle !== undefined) clean.charStyle = r.charStyle;
     if (r.note !== undefined) clean.note = r.note;
     return clean;
   });

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'La interfaz del Sandbox: la barra de actividades; los paneles Texto, Libros, Capítulos, Recursos y Fuentes, y cómo se organiza la pantalla en un móvil.',
   lang: 'es',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '32 min',
   order: 40,
   plainSummary: "El Sandbox es una herramienta gratuita de esta web para probar Postext sin instalar nada. Escribes el texto a un lado y ves las páginas terminadas al otro, y cambian mientras escribes. Esta página explica las partes de la pantalla y los paneles donde escribes el texto, organizas libros y capítulos, añades imágenes y eliges tipografías. Otras páginas explican los ajustes de diseño, las vistas previas, cómo guardar e importar, y cómo poner el Sandbox en tu propia web.",
@@ -81,7 +81,7 @@ Un editor CodeMirror 6 para el Markdown del capítulo. Los lectores de pantalla 
 - **Números de línea** y resaltado de la línea activa
 - **Ajuste de línea** en los párrafos largos
 - **Líneas de derecha a izquierda**: una línea cuyo texto empieza por una letra árabe o hebrea va de derecha a izquierda, y el cursor y las flechas siguen esa dirección. El marcado que contiene (atributos `{…}`, etiquetas `[^id]`, el nombre de una directiva, un `:ref[fig-1]` completo, fórmulas, código, destinos de enlace) sigue yendo de izquierda a derecha, así que se lee tal como se escribió. Los delimitadores, el frontmatter y las líneas que empiezan por una palabra latina siguen de izquierda a derecha, como antes.
-- **Barra de herramientas**: empieza con **Deshacer / Rehacer**, seguidos de negrita, cursiva, encabezados de nivel 1 a 3, enlace, código en línea, **chip** (envuelve la selección en `:chip[…]`), **versalitas** (la envuelve en `:smallcaps[…]`), en un libro en chino, japonés o coreano **Lectura ruby** (`:ruby[…]`) y **Horizontal en texto vertical** (`:tcy[…]`), cita y listas numeradas y con viñetas, además de cinco botones de inserción:
+- **Barra de herramientas**: empieza con **Deshacer / Rehacer**, seguidos de negrita, cursiva, encabezados de nivel 1 a 3, enlace, código en línea, **chip** (envuelve la selección en `:chip[…]`), **versalitas** (la envuelve en `:smallcaps[…]`), **Estilo de carácter** (`[…]|id|`, un icono de rotulador: un menú con los estilos de carácter del libro; al elegir uno se aplica a la selección o, con la selección dentro de un grupo, cambia el estilo de ese grupo, y **Quitar estilo de carácter** devuelve el grupo a palabras sin estilo; al escribir `]|` tras un grupo entre corchetes se ofrecen los ids de los estilos), en un libro en chino, japonés o coreano **Lectura ruby** (`:ruby[…]`) y **Horizontal en texto vertical** (`:tcy[…]`), cita y listas numeradas y con viñetas, además de cinco botones de inserción:
   - `:::pagebreak`
   - `:::space`: una línea de espacio vertical (`:::space{lines=N}` para más)
   - **Columnas**: un grupo `:::columns{count=2}` de dos columnas, con el cursor en su primera línea, en el texto o en un recuadro (desde postext 1.25)

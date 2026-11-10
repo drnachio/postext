@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: "The Sandbox's interface: the activity bar and the Text, Books, Chapters, Resources and Fonts panels, and the layout on phones",
   lang: 'en',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '28 min',
   order: 40,
   plainSummary: "The Sandbox is a free tool on this website for trying Postext without installing anything. You write your text on one side and see the finished pages on the other, and they change as you type. This page explains the parts of the screen and the panels where you write the text, manage books and chapters, add pictures and choose fonts. Other pages cover the design settings, the previews, saving and importing, and putting the Sandbox in your own website.",
@@ -81,7 +81,7 @@ A CodeMirror 6 editor for the chapter's Markdown. Screen readers announce it as 
 - **Line numbers** and active-line highlighting
 - **Line wrapping** for long paragraphs
 - **Right-to-left lines**: a line whose text starts with an Arabic or Hebrew letter runs right to left, and the caret and the arrow keys follow it. The markup inside it (`{…}` attributes, `[^id]` labels, the name of a directive, a whole `:ref[fig-1]`, maths, code, link targets) stays left to right, so it reads as typed. Fences, front matter and lines that start in a Latin word are left to right as before.
-- **Toolbar**: starts with **Undo / Redo**, followed by bold, italic, heading levels 1–3, link, inline code, **chip** (wraps the selection in `:chip[…]`), **small caps** (wraps it in `:smallcaps[…]`), in a Chinese, Japanese or Korean book **Ruby reading** (`:ruby[…]`) and **Across in vertical text** (`:tcy[…]`), blockquote, ordered and unordered lists, plus five inserters:
+- **Toolbar**: starts with **Undo / Redo**, followed by bold, italic, heading levels 1–3, link, inline code, **chip** (wraps the selection in `:chip[…]`), **small caps** (wraps it in `:smallcaps[…]`), **Character style** (`[…]|id|`, a highlighter icon: a menu of the book's character styles; picking one sets the selection in it or, with the selection inside a run, changes that run's style, and **Remove character style** turns the run back into plain words; typing `]|` after a bracketed run offers the styles' ids), in a Chinese, Japanese or Korean book **Ruby reading** (`:ruby[…]`) and **Across in vertical text** (`:tcy[…]`), blockquote, ordered and unordered lists, plus five inserters:
   - `:::pagebreak`
   - `:::space`: one line of vertical space (`:::space{lines=N}` for more)
   - **Columns**: a two-column `:::columns{count=2}` group, the caret on its first line, in the text or in a box (since postext 1.25)

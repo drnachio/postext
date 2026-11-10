@@ -523,3 +523,17 @@ describe('details found in the browser', () => {
     expect(displayStyleName('Box Text')).toBe('Box Text');
   });
 });
+
+describe('character styles in Word', () => {
+  const styled = { ...config, characterStyles: [{ id: 'rotulador', name: 'Rotulador', highlight: { enabled: true, opacity: 50 } }, { id: 'sub', name: 'Subrayado', underline: { enabled: true, style: 'wavy' } }] } as unknown as PostextConfig;
+  it('maps a Word character style named like a book style to it', () => {
+    expect(guessCharacterTarget('Rotulador', styled)).toEqual({ kind: 'charStyle', style: 'rotulador' });
+    expect(guessCharacterTarget('Estilo de carácter: Subrayado', styled)).toEqual({ kind: 'charStyle', style: 'sub' });
+  });
+
+  it('reads and writes the syntax in inline runs', () => {
+    const runs = parseInline('a [b *c*]|x| d');
+    expect(runs.filter((r) => r.charStyle === 'x').map((r) => [r.text, !!r.italic])).toEqual([['b ', false], ['c', true]]);
+    expect(renderInline(runs)).toBe('a [b *c*]|x| d');
+  });
+});

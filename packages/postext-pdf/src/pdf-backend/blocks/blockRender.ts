@@ -61,6 +61,7 @@ export function renderStripCaption(
     fillRectPx(ctx, block.bbox.x + rect.x, block.bbox.y + rect.y, rect.width, rect.height, colorFromHex(background, ctx.colorSpace));
   }
   for (const line of block.lines.slice(caption.firstLine, caption.firstLine + caption.lineCount)) {
+    if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace), 'behind');
     if (line.highlights) paintLineHighlights(ctx, line);
     renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem);
     if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
@@ -175,6 +176,8 @@ function renderBlockUpright(
   void columnWidth;
   void columnX;
   block.lines.forEach((line, i) => {
+    // A highlighter band (a character style's) goes under the text.
+    if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace), 'behind');
     // Highlight bands (`:mark[…]`, #888), under the text.
     if (line.highlights) paintLineHighlights(ctx, line);
     renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem, i === 0 ? capLead : undefined);

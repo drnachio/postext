@@ -401,8 +401,8 @@ export function plainSpans(spans: readonly InlineSpan[]): InlineSpan[] {
   const out: InlineSpan[] = [];
   let changed = false;
   for (const span of spans) {
-    const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, sideline, ...rest } = span;
-    if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle || sideline) changed = true;
+    const { script, smallCaps, links, bold, italic, emphasisMark, properName, bookTitle, sideline, charStyle, ...rest } = span;
+    if (script || smallCaps || links || bold || italic || emphasisMark || properName !== undefined || bookTitle || sideline || charStyle) changed = true;
     const plain: InlineSpan = { ...rest, bold: false, italic: false };
     // A run set upright or sideways in vertical text keeps its span: the
     // mark is about how it stands, not a style. So does a directional

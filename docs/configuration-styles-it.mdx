@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Stili e parti',
   description: 'Stili con nome per paragrafi, chip, evidenziazioni, listati di codice e titoli, e le pagine che aprono ogni parte',
   lang: 'it',
-  lastUpdated: '2026-10-19',
-  readingTime: '36 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '44 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Questa pagina tratta gli stili con nome che definisci una volta e usi molte volte. Uno stile di paragrafo imposta un tipo di testo, come una bibliografia o un glossario. Uno stile di chip disegna una piccola etichetta dentro una riga, e uno stile di evidenziazione una fascia di colore dietro una frase. I listati di codice hanno un proprio carattere, un proprio riquadro e propri colori. La pagina tratta anche le pagine che aprono ogni parte di un libro e gli stili per i titoli speciali. I riquadri hanno una pagina a parte.",
@@ -491,6 +491,273 @@ const style = pickChipStyle(resolved, 'key');
 // => the `key` style, else the first one
 ```
 
+
+## Stili di carattere
+
+La proprietà `characterStyles` dichiara gli stili con nome di una sequenza di parole, scritta `[alcune parole]|id|` nel testo: un carattere (famiglia, corpo, peso, inclinazione), un colore, una spaziatura, maiuscole o maiuscoletto, e tre decorazioni — una sottolineatura, una fascia di evidenziatore dipinta dietro le parole come con un pennarello, e un barrato. A differenza di un chip, una sequenza con stile va a capo e si sillaba come il testo che la circonda; una decorazione spezzata su due righe viene tracciata su ciascuna. Uno stile è predefinito — `marker`, un evidenziatore giallo sulla metà inferiore delle lettere, con i bordi tracciati a mano —, così `[…]|marker|` funziona senza alcuna configurazione (una semplice sottolineatura è `:underline[…]`, una semplice evidenziazione `:mark[…]`); dichiarare `characterStyles` sostituisce questo elenco, e un elenco vuoto lascia il libro senza stili. Una sequenza il cui id non è dichiarato da nessuno stile viene composta come il testo che la circonda, e il pannello Revisione la segnala (*Stile di carattere sconosciuto*).
+
+```ts
+const config: PostextConfig = {
+  characterStyles: [
+    {
+      id: 'marker',
+      name: 'Marker',
+      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+    },
+    {
+      id: 'drug',
+      name: 'Drug name',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+};
+```
+
+```md
+Il [trattamento di prima linea]|marker| è la [metformina]|drug|, mai [l’insulina come primo passo]|wrong|.
+```
+
+Proprietà del testo (quelle non indicate restano quelle del testo):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Proprietà</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Predefinito</th>
+      <th>Descrizione</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obbligatorio</td>
+      <td>Identificatore scritto tra le barre: <code>[…]|id|</code>. Lettere, cifre, <code>-</code> e <code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nome leggibile, solo per le interfacce dell’editor.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>quello del testo</td>
+      <td>Famiglia della sequenza.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>quello del testo</td>
+      <td>Corpo della sequenza; <code>em</code> è relativo al testo che la circonda. Un corpo maggiore non cambia mai l’interlinea: le righe restano sulla loro griglia, quindi un corpo molto maggiore può toccare la riga sopra.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>quello del testo</td>
+      <td>Peso delle parole in tondo della sequenza (100–900, arrotondato al centinaio); le sue parole in grassetto restano in grassetto.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone la sequenza in corsivo.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>quello del testo</td>
+      <td>Colore della sequenza, parole in grassetto e in corsivo comprese.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>nessuna</td>
+      <td>Spaziatura aggiunta dopo ogni carattere della sequenza (in <code>em</code> del testo che la circonda; negativa, stringe). Misurata con la sequenza, così la riga va a capo dove viene dipinta.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code> compone la sequenza in maiuscolo; il testo conserva le sue lettere, così la ricerca e la mappa della sorgente lo leggono ancora com’è scritto.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone la sequenza in maiuscoletto, come <code>:smallcaps[…]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>underline</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>disattivato</td>
+      <td>Una linea sotto la sequenza (vedi sotto).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>CharacterStyleHighlightConfig</code></td>
+      <td>disattivato</td>
+      <td>Una fascia di evidenziatore dietro la sequenza (vedi sotto).</td>
+    </tr>
+    <tr>
+      <td><code>strike</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>disattivato</td>
+      <td>Una linea attraverso la sequenza (vedi sotto).</td>
+    </tr>
+  </tbody>
+</table>
+
+`underline` e `strike` (le lunghezze in em si riferiscono al corpo della sequenza):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Proprietà</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Predefinito</th>
+      <th>Descrizione</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Traccia la linea.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>il colore della sequenza</td>
+      <td>Colore della linea.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Percentuale, 0–100.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Spessore del tratto.</td>
+    </tr>
+    <tr>
+      <td><code>offset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.12em</code> (sottolineatura), <code>0.28em</code> (barrato)</td>
+      <td>Dove passa il centro della linea: sotto la linea di base per una sottolineatura, sopra per un barrato.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Come viene tracciata la linea.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>La traccia parola per parola, lasciando vuoti gli spazi; disattivato, prosegue sotto gli spazi della sequenza (mai sotto gli spazi che la circondano).</td>
+    </tr>
+  </tbody>
+</table>
+
+`highlight` (bordi misurati dalla linea di base, positivi verso l’alto, in em del corpo della sequenza):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Proprietà</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Predefinito</th>
+      <th>Descrizione</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Dipinge la fascia.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffe14d</code></td>
+      <td>Colore della fascia. Una voce della tavolozza che è una tinta piatta stampa la fascia sulla lastra del suo inchiostro.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Percentuale, 0–100. La fascia è dipinta dietro il testo, così le lettere conservano il loro colore.</td>
+    </tr>
+    <tr>
+      <td><code>bottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>-0.2em</code></td>
+      <td>Dove inizia la fascia (negativo: sotto la linea di base, tra i discendenti).</td>
+    </tr>
+    <tr>
+      <td><code>top</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Dove finisce la fascia: circa <code>0.45em</code> copre la metà inferiore delle lettere (un tratto di pennarello), <code>0.8em</code> le parole intere, <code>0.05em</code> con <code>bottom: -0.15em</code> una sottolineatura spessa.</td>
+    </tr>
+    <tr>
+      <td><code>overhang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Quanto la fascia sporge oltre la prima e l’ultima lettera della sequenza.</td>
+    </tr>
+    <tr>
+      <td><code>radius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Raggio degli angoli, limitato a metà dell’altezza della fascia.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code> una fascia netta; valori più alti fanno ondeggiare i bordi superiore e inferiore, la fanno scivolare leggermente lungo la riga e ne tagliano le estremità in obliquo, come un pennarello passato a mano. L’ondeggiamento segue un seme tratto dalla sequenza, quindi è lo stesso a ogni rendering, nel canvas, nel PDF e nell’HTML.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Una fascia per parola.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Annidamento.** Una sequenza può contenere altri segni in linea (`[una parola in **grassetto**]|marker|`, un link, un riferimento, una formula) e altre sequenze: vince lo stile più interno (`[a [b]|drug| c]|marker|`). Una sequenza non può attraversare un paragrafo.
+
+**Dove.** Paragrafi, voci di elenco, citazioni, riquadri, note a piè di pagina, didascalie, note e celle di tabella, e titoli finché `headings.inlineMarks` è attivo. Le testatine, l’indice generale e le voci dell’indice analitico prendono le parole senza lo stile.
+
+**Output.** Il canvas, il PDF e l’HTML tracciano le decorazioni dalla stessa geometria (`VDTLine.marks`, tipi `band`, `line`, `double`, `dotted`, `dashed`, `wavy`): la fascia prima del testo della riga, le linee dopo. In un PDF digitale una fascia o una linea traslucida è tracciata con trasparenza; in un PDF di stampa (`pdfGeneration.colorSpace` un profilo di stampa) è composta come si stampa su carta bianca — una tinta del suo colore, sulla lastra del suo inchiostro quando è una tinta piatta — senza trasparenza, quindi un file PDF/X non ne contiene mai. L’EPUB reflowable imposta ogni stile come classe (`pt-cs-<id>`) con CSS: carattere, colore, `text-decoration` per le linee e uno sfondo sfumato per la fascia. Un’esportazione Word fa di ogni stile uno stile di carattere Word (`Character style: <name>`), la fascia come ombreggiatura del suo colore, e un’importazione Word riconduce a esso uno stile di carattere che porta il nome di uno stile del libro — o esportato come `Character style: <name>`.
+
+Nel VDT un segmento con stile porta `charStyle: { id, style }` (la sequenza e l’id dello stile); carattere, colore e spaziatura sono già in `fontString`, `color` e `tracking`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles);
+// => the built-in `marker` when unset; every field filled
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => undefined for the built-in default; static defaults dropped; [] kept
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => the `drug` style, or undefined when no style has that id
+```
 
 ## Stili di evidenziazione
 

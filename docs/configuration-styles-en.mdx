@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Configuration: styles and parts',
   sidebarTitle: 'Styles and parts',
-  description: 'Named styles for paragraphs, chips, highlights, code listings and headings, and the pages that open each part',
+  description: 'Named styles for paragraphs, chips, character styles, highlights, code listings and headings, and the pages that open each part',
   lang: 'en',
-  lastUpdated: '2026-10-19',
-  readingTime: '33 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '41 min',
   order: 15,
   parent: 'configuration',
-  plainSummary: "This page covers the named styles you define once and use many times. A paragraph style sets a kind of text, such as a bibliography or a glossary. A chip style draws a small label inside a line, and a highlight style a coloured band behind a phrase. Code listings have their own font, box and colours. The page also covers the pages that open each part of a book, and the styles for special headings. Callout boxes have a page of their own.",
+  plainSummary: "This page covers the named styles you define once and use many times. A paragraph style sets a kind of text, such as a bibliography or a glossary. A chip style draws a small label inside a line, and a highlight style a coloured band behind a phrase; a character style sets a few words in another face or colour, or underlines, highlights or strikes them through. Code listings have their own font, box and colours. The page also covers the pages that open each part of a book, and the styles for special headings. Callout boxes have a page of their own.",
 };
 
 # Configuration: styles and parts
@@ -491,6 +491,273 @@ const style = pickChipStyle(resolved, 'key');
 // => the `key` style, else the first one
 ```
 
+
+## Character styles
+
+The `characterStyles` property declares the named styles of a run of words, written `[some words]|id|` in the text: a face (family, size, weight, slant), a colour, tracking, capitals or small capitals, and three decorations — an underline, a highlighter band painted behind the words like a marker pen, and a strike-through. Unlike a chip, a styled run breaks across lines and hyphenates like the text around it; a decoration broken over two lines is drawn on each. One style ships by default — `marker`, a yellow highlighter over the lower half of the letters, with hand-drawn edges — so `[…]|marker|` works without any configuration (a plain underline is `:underline[…]`, a plain highlight `:mark[…]`); declaring `characterStyles` replaces that list, and an empty list leaves a book with none. A run whose id no style declares is set as the text around it, and the Review panel reports it (*Unknown character style*).
+
+```ts
+const config: PostextConfig = {
+  characterStyles: [
+    {
+      id: 'marker',
+      name: 'Marker',
+      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+    },
+    {
+      id: 'drug',
+      name: 'Drug name',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+};
+```
+
+```md
+The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first]|wrong|.
+```
+
+Text properties (unset ones keep the text's):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Identifier written between the bars: <code>[…]|id|</code>. Letters, digits, <code>-</code> and <code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>the text's</td>
+      <td>Family of the run.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>the text's</td>
+      <td>Size of the run; <code>em</code> is relative to the text around it. A larger size never changes the leading: the lines keep their grid, so a much larger size may touch the line above.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>the text's</td>
+      <td>Weight of the run's regular words (100–900, rounded to a hundred); its bold words keep the bold.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the run in italic.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the text's</td>
+      <td>Colour of the run, bold and italic words included.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>none</td>
+      <td>Tracking added after every character of the run (<code>em</code> of the text around it; negative tightens). Measured with the run, so the line breaks where it is painted.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code> sets the run in capitals; the text keeps its letters, so search and the source map still read it as written.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the run in small capitals, as <code>:smallcaps[…]</code> does.</td>
+    </tr>
+    <tr>
+      <td><code>underline</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>off</td>
+      <td>A line under the run (below).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>CharacterStyleHighlightConfig</code></td>
+      <td>off</td>
+      <td>A highlighter band behind the run (below).</td>
+    </tr>
+    <tr>
+      <td><code>strike</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>off</td>
+      <td>A line through the run (below).</td>
+    </tr>
+  </tbody>
+</table>
+
+`underline` and `strike` (em lengths are of the run's own size):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Draw the line.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the run's colour</td>
+      <td>Line colour.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Percent, 0–100.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Stroke width.</td>
+    </tr>
+    <tr>
+      <td><code>offset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.12em</code> (underline), <code>0.28em</code> (strike)</td>
+      <td>Where the line's middle runs: below the baseline for an underline, above it for a strike-through.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>How the line is drawn.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Draw it word by word, the spaces left blank; off, it runs on under the spaces of the run (never under the spaces around it).</td>
+    </tr>
+  </tbody>
+</table>
+
+`highlight` (edges measured from the baseline, positive up, in em of the run's own size):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Paint the band.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffe14d</code></td>
+      <td>Band colour. A palette entry that is a spot colour prints the band on its ink's plate.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Percent, 0–100. The band is painted behind the text, so the letters keep their colour.</td>
+    </tr>
+    <tr>
+      <td><code>bottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>-0.2em</code></td>
+      <td>Where the band starts (negative: below the baseline, among the descenders).</td>
+    </tr>
+    <tr>
+      <td><code>top</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Where the band ends: about <code>0.45em</code> covers the lower half of the letters (a marker stroke), <code>0.8em</code> the whole words, <code>0.05em</code> with <code>bottom: -0.15em</code> a thick underline.</td>
+    </tr>
+    <tr>
+      <td><code>overhang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>How far the band reaches past the run's first and last letters.</td>
+    </tr>
+    <tr>
+      <td><code>radius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Corner radius, clamped to half the band's height.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code> a clean band; higher values wobble its top and bottom edges, drift it slightly across the line and cut its ends on a slant, like a marker drawn by hand. The wobble follows a seed taken from the run, so it is the same on every render, in the canvas, the PDF and the HTML.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>One band per word.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Nesting.** A run may hold other inline marks (`[a **bold** word]|marker|`, a link, a reference, a formula), and other runs: the innermost style wins (`[a [b]|drug| c]|marker|`). A run cannot cross a paragraph.
+
+**Where.** Paragraphs, list items, quotations, callouts, footnotes, captions, notes and table cells, and headings while `headings.inlineMarks` is on. Running heads, the contents and index entries take the words without the style.
+
+**Output.** The canvas, the PDF and the HTML draw the decorations from the same geometry (`VDTLine.marks`, kinds `band`, `line`, `double`, `dotted`, `dashed`, `wavy`): the band before the line's text, the lines after it. In a digital PDF a translucent band or line is drawn with transparency; in a print PDF (`pdfGeneration.colorSpace` a print profile) it is set as it prints over white paper — a tint of its colour, on its ink's own plate when it is a spot colour — with no transparency, so a PDF/X file never carries it. The reflowable EPUB sets each style as a class (`pt-cs-<id>`) with CSS: font, colour, `text-decoration` for the lines and a gradient background for the band. A Word export makes each style a Word character style (`Character style: <name>`), the band as a shading of its colour, and a Word import maps a character style named like a book style — or exported as `Character style: <name>` — back to it.
+
+In the VDT a styled segment carries `charStyle: { id, style }` (the run and the style's id); its face, colour and tracking are already in `fontString`, `color` and `tracking`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles);
+// => the built-in `marker` when unset; every field filled
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => undefined for the built-in default; static defaults dropped; [] kept
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => the `drug` style, or undefined when no style has that id
+```
 
 ## Highlight styles
 

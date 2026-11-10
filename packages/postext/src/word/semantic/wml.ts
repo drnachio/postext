@@ -61,7 +61,10 @@ export interface RunProps {
   sz?: number;
   highlight?: string;
   /** Underline: single, or a dotted or dashed line. */
-  u?: boolean | 'dotted' | 'dash';
+  /** `true` a single underline, or a Word underline kind (`dotted`, `wave`, `double`…). */
+  u?: boolean | string;
+  /** The underline's colour (`RRGGBB`). */
+  uColor?: string;
   /** A line round the run's characters. */
   bdr?: Border;
   shd?: string;
@@ -88,7 +91,7 @@ export function rPr(p: RunProps): string {
   if (p.spacing) x += `<w:spacing w:val="${Math.round(p.spacing)}"/>`;
   if (p.sz) x += `<w:sz w:val="${p.sz}"/><w:szCs w:val="${p.sz}"/>`;
   if (p.highlight) x += `<w:highlight w:val="${p.highlight}"/>`;
-  if (p.u) x += `<w:u w:val="${p.u === true ? 'single' : p.u}"/>`;
+  if (p.u) x += `<w:u w:val="${p.u === true ? 'single' : escapeAttr(p.u)}"${p.uColor ? ` w:color="${p.uColor}"` : ''}/>`;
   if (p.bdr) x += `<w:bdr w:val="single" w:sz="${p.bdr.sz}" w:space="${p.bdr.space ?? 0}" w:color="${p.bdr.color}"/>`;
   if (p.shd) x += `<w:shd w:val="clear" w:color="auto" w:fill="${p.shd}"/>`;
   if (p.vertAlign) x += `<w:vertAlign w:val="${p.vertAlign}"/>`;

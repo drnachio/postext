@@ -93,7 +93,7 @@ function mathCacheKey(span: InlineSpan): string {
  *  measure. A directional isolate (#367) changes the order of its line.
  *  Empty for a span without any, so its key is unchanged. */
 function annotationCacheKey(s: InlineSpan): string {
-  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction && !s.sideline && !s.kunten) return '';
+  if (!s.emphasisMark && s.properName === undefined && !s.bookTitle && !s.ruby && !s.warichu && !s.inserted && !s.direction && !s.sideline && !s.kunten && !s.charStyle) return '';
   let key = '';
   if (s.emphasisMark) key += `|em:${s.emphasisMark.style ?? ''}:${s.emphasisMark.fill ?? ''}:${s.emphasisMark.position ?? ''}`;
   if (s.properName !== undefined) key += `|pn:${s.properName}`;
@@ -108,6 +108,9 @@ function annotationCacheKey(s: InlineSpan): string {
   if (s.inserted) key += '|ins';
   for (let d = s.direction; d; d = d.outer) key += `|dir:${d.dir}${d.id}${d.lang ? `:${d.lang}` : ''}`;
   if (s.sideline) key += `|sl:${s.sideline.id}:${s.sideline.style ?? ''}:${s.sideline.position ?? ''}`;
+  // A character style: its run (the decorations it gets) and the face it
+  // sets the text in.
+  if (s.charStyle) key += `|cs:${s.charStyle.id}:${s.charStyle.style}:${s.charStyle.look ? JSON.stringify(s.charStyle.look) : ''}`;
   if (s.kunten) key += `|kt:${s.kunten.id}:${s.kunten.kaeri ?? ''}:${s.kunten.okuri ?? ''}:${s.kunten.tate ? 't' : ''}:${s.kunten.fontString ?? ''}:${s.kunten.color ?? ''}:${s.kunten.placement ?? ''}`;
   return key;
 }

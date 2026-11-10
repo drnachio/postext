@@ -12,6 +12,7 @@ import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
 import { paleOnWhite } from './design/ink.js';
+import { characterStyleRun } from './prose/characterStyle.js';
 import { captionLook, sameCaptionLook } from './prose/caption.js';
 import { boxBodyIndent, paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
@@ -481,6 +482,18 @@ export class StyleRegistry {
     // keys styles by name and would merge them.
     const n = id.slice(`Postext${slug(name)}`.length);
     if (fresh) this.add(id, { type: 'paragraph', name: `Postext ${name}${n ? ` ${n}` : ''}`, custom: true, basedOn: STYLE.normal, next: STYLE.normal, ...make() });
+    return id;
+  }
+
+  /** The Word character style of a character style (`[…]|id|`), named
+   *  `Character style: <name>` as the importer reads it back; undefined
+   *  when the book has no style of that id (the run sets as the text
+   *  around it, as on the page). */
+  characterStyle(styleId: string): string | undefined {
+    const cs = this.resolved.characterStyles?.find((s) => s.id === styleId);
+    if (!cs) return undefined;
+    const { id, fresh } = this.idFor(`char:${cs.id}`, 'PostextCharStyle', cs.id);
+    if (fresh) this.add(id, { type: 'character', name: `Character style: ${cs.name || cs.id}`, custom: true, rPr: characterStyleRun(cs, this.units, this.bodyPx, (f, w, i) => this.font(f, w, i)) });
     return id;
   }
 

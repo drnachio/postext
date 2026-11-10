@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Estilos e partes',
   description: 'Como definir estilos nomeados para parágrafos, chips, destaques, listagens de código e títulos, e como configurar as páginas que abrem cada parte',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
-  readingTime: '37 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '45 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Esta página reúne os estilos nomeados, que você define uma vez e usa muitas. Um estilo de parágrafo define um tipo de texto, como uma bibliografia ou um glossário. Um estilo de chip desenha uma pequena caixa com texto dentro da linha, e um estilo de destaque, uma faixa de cor atrás de uma frase. As listagens de código têm fonte, caixa e cores próprias. A página também explica as páginas que abrem cada parte do livro e os estilos dos títulos especiais. Os boxes têm uma página própria.",
@@ -491,6 +491,273 @@ const style = pickChipStyle(resolved, 'key');
 // => o estilo `key`, senão o primeiro
 ```
 
+
+## Estilos de caractere
+
+A propriedade `characterStyles` declara os estilos nomeados de um trecho de palavras, escrito `[algumas palavras]|id|` no texto: uma fonte (família, corpo, peso, inclinação), uma cor, um espaçamento entre letras, maiúsculas ou versaletes, e três decorações — um sublinhado, uma faixa de marca-texto pintada por trás das palavras como um marcador fluorescente, e um tachado. Ao contrário de um chip, um trecho com estilo quebra entre linhas e é hifenizado como o texto em volta; uma decoração partida em duas linhas é desenhada em cada uma. Um estilo vem por padrão — `marker`, um marca-texto amarelo sobre a metade inferior das letras, com bordas feitas à mão —, então `[…]|marker|` funciona sem nenhuma configuração (um sublinhado simples é `:underline[…]`, e um realce simples, `:mark[…]`); declarar `characterStyles` substitui essa lista, e uma lista vazia deixa o livro sem nenhum. Um trecho cujo id nenhum estilo declara é composto como o texto em volta, e o painel Verificações o assinala (*Estilo de caractere desconhecido*).
+
+```ts
+const config: PostextConfig = {
+  characterStyles: [
+    {
+      id: 'marker',
+      name: 'Marker',
+      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+    },
+    {
+      id: 'drug',
+      name: 'Drug name',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+};
+```
+
+```md
+The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first]|wrong|.
+```
+
+Propriedades do texto (as não definidas mantêm as do texto):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obrigatório</td>
+      <td>Identificador escrito entre as barras: <code>[…]|id|</code>. Letras, algarismos, <code>-</code> e <code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nome legível, só para interfaces de edição.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>a do texto</td>
+      <td>Família do trecho.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>o do texto</td>
+      <td>Corpo do trecho; <code>em</code> é relativo ao texto em volta. Um corpo maior nunca muda a entrelinha: as linhas mantêm a sua grade, então um corpo muito maior pode encostar na linha de cima.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>o do texto</td>
+      <td>Peso das palavras regulares do trecho (100–900, arredondado à centena); as palavras em negrito mantêm o negrito.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compõe o trecho em itálico.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>a do texto</td>
+      <td>Cor do trecho, incluindo as palavras em negrito e itálico.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>nenhum</td>
+      <td>Espaçamento acrescentado depois de cada caractere do trecho (<code>em</code> do texto em volta; negativo aperta). É medido com o trecho, então a linha quebra onde ele é pintado.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code> compõe o trecho em maiúsculas; o texto mantém as suas letras, então a busca e o mapa de origem continuam a lê-lo como foi escrito.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compõe o trecho em versaletes, como faz <code>:smallcaps[…]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>underline</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>desativado</td>
+      <td>Uma linha sob o trecho (abaixo).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>CharacterStyleHighlightConfig</code></td>
+      <td>desativado</td>
+      <td>Uma faixa de marca-texto por trás do trecho (abaixo).</td>
+    </tr>
+    <tr>
+      <td><code>strike</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>desativado</td>
+      <td>Uma linha que atravessa o trecho (abaixo).</td>
+    </tr>
+  </tbody>
+</table>
+
+`underline` e `strike` (as medidas em em são do corpo do próprio trecho):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Desenha a linha.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>a cor do trecho</td>
+      <td>Cor da linha.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Porcentagem, 0–100.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Espessura do traço.</td>
+    </tr>
+    <tr>
+      <td><code>offset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.12em</code> (sublinhado), <code>0.28em</code> (tachado)</td>
+      <td>Por onde passa o meio da linha: abaixo da linha de base num sublinhado, acima dela num tachado.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Como a linha é desenhada.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Desenha palavra por palavra, deixando os espaços em branco; desativado, a linha continua sob os espaços do trecho (nunca sob os espaços em volta dele).</td>
+    </tr>
+  </tbody>
+</table>
+
+`highlight` (bordas medidas a partir da linha de base, positivas para cima, em em do corpo do próprio trecho):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pinta a faixa.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffe14d</code></td>
+      <td>Cor da faixa. Uma entrada da paleta que seja uma cor especial imprime a faixa na chapa da sua tinta.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Porcentagem, 0–100. A faixa é pintada por trás do texto, então as letras mantêm a sua cor.</td>
+    </tr>
+    <tr>
+      <td><code>bottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>-0.2em</code></td>
+      <td>Onde a faixa começa (negativo: abaixo da linha de base, entre as descendentes).</td>
+    </tr>
+    <tr>
+      <td><code>top</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Onde a faixa termina: cerca de <code>0.45em</code> cobre a metade inferior das letras (um traço de marcador), <code>0.8em</code> as palavras inteiras, <code>0.05em</code> com <code>bottom: -0.15em</code> um sublinhado grosso.</td>
+    </tr>
+    <tr>
+      <td><code>overhang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Quanto a faixa passa da primeira e da última letra do trecho.</td>
+    </tr>
+    <tr>
+      <td><code>radius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Raio dos cantos, limitado à metade da altura da faixa.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code>, uma faixa limpa; valores mais altos fazem ondular as bordas superior e inferior, desviam-na um pouco ao longo da linha e cortam as suas pontas na diagonal, como um marcador passado à mão. A ondulação segue uma semente tirada do trecho, então é a mesma em cada renderização, no canvas, no PDF e no HTML.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Uma faixa por palavra.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Aninhamento.** Um trecho pode conter outras marcas em linha (`[a **bold** word]|marker|`, um link, uma referência, uma fórmula) e outros trechos: vale o estilo mais interno (`[a [b]|drug| c]|marker|`). Um trecho não pode atravessar um parágrafo.
+
+**Onde.** Parágrafos, itens de lista, citações, boxes, notas de rodapé, legendas, notas e células de tabela, e títulos enquanto `headings.inlineMarks` estiver ativado. Os cabeços, o sumário e as entradas do índice remissivo recebem as palavras sem o estilo.
+
+**Saída.** O canvas, o PDF e o HTML desenham as decorações a partir da mesma geometria (`VDTLine.marks`, de tipos `band`, `line`, `double`, `dotted`, `dashed`, `wavy`): a faixa antes do texto da linha, as linhas depois dele. Num PDF digital, uma faixa ou linha translúcida é desenhada com transparência; num PDF de impressão (`pdfGeneration.colorSpace` com um perfil de impressão) ela é composta como sai impressa sobre papel branco — uma retícula da sua cor, na chapa da sua própria tinta quando é uma cor especial — sem transparência, de modo que um arquivo PDF/X nunca a contém. O EPUB refluível compõe cada estilo como uma classe (`pt-cs-<id>`) com CSS: fonte, cor, `text-decoration` para as linhas e um fundo em gradiente para a faixa. Uma exportação para Word transforma cada estilo num estilo de caractere do Word (`Estilo de caractere: <name>`), a faixa num sombreamento da sua cor, e uma importação do Word associa de volta a ele um estilo de caractere com o mesmo nome de um estilo do livro — ou exportado como `Estilo de caractere: <name>`.
+
+Na VDT, um segmento com estilo leva `charStyle: { id, style }` (o trecho e o id do estilo); a sua fonte, cor e espaçamento entre letras já estão em `fontString`, `color` e `tracking`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles);
+// => o estilo embutido `marker` quando não definido; todos os campos preenchidos
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => undefined para o padrão embutido; padrões estáticos descartados; [] é mantido
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => o estilo `drug`, ou undefined quando nenhum estilo tem esse id
+```
 
 ## Estilos de destaque
 

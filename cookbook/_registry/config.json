@@ -180,6 +180,21 @@
       "it": "Stili di evidenziazione"
     }
   },
+  "characterStyles": {
+    "slug": "configuration-styles",
+    "heading": {
+      "en": "Character styles",
+      "es": "Estilos de carácter",
+      "ca": "Estils de caràcter",
+      "zh": "字符样式",
+      "ar": "أنماط الحروف",
+      "ja": "文字スタイル",
+      "pt": "Estilos de caractere",
+      "fr": "Styles de caractère",
+      "de": "Zeichenformate",
+      "it": "Stili di carattere"
+    }
+  },
   "parts": {
     "slug": "configuration-styles",
     "heading": {

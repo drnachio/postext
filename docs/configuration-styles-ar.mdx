@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'الأنماط والأجزاء',
   description: 'الأنماط المسمّاة للفقرات والشارات والتظليل وقوائم الشيفرة والعناوين، والصفحات التي تفتتح كل جزء',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
-  readingTime: '34 دقيقة',
+  lastUpdated: '2026-11-10',
+  readingTime: '42 دقيقة',
   order: 15,
   parent: 'configuration',
   plainSummary: "تتناول هذه الصفحة الأنماط المسمّاة التي تعرّفها مرة واحدة وتستعملها مرات كثيرة. يضبط نمط الفقرة نوعًا من النص، مثل قائمة المراجع أو المسرد. ويرسم نمط الشارة ملصقًا صغيرًا داخل السطر، ونمط التظليل شريطًا ملوّنًا خلف عبارة. ولقوائم الشيفرة خطها وإطارها وألوانها. وتتناول الصفحة أيضًا الصفحات التي تفتتح كل جزء من الكتاب، وأنماط العناوين الخاصة. وللإطارات صفحة خاصة بها.",
@@ -491,6 +491,273 @@ const style = pickChipStyle(resolved, 'key');
 // => the `key` style, else the first one
 ```
 
+
+## أنماط الحروف
+
+تعلن الخاصية `characterStyles` الأنماط المسمّاة لمقطع من الكلمات يُكتب في النص `[some words]|id|`: خط (العائلة والحجم والوزن والميل)، ولون، وتباعد حروف (tracking)، وحروف كبيرة أو حروف كبيرة مصغّرة، وثلاث زخارف — تسطير، وشريط قلم تمييز يُرسم خلف الكلمات كضربة قلم التمييز، وخط شطب. وخلافًا للشارة، ينكسر المقطع المنسَّق عبر الأسطر ويُقسَم بالواصلة كالنص المحيط به؛ والزخرفة التي تنقسم على سطرين تُرسم على كلٍّ منهما. يأتي نمط واحد افتراضيًا — `marker`، قلم تمييز أصفر فوق النصف السفلي من الحروف، بحواف مرسومة باليد — فتعمل `[…]|marker|` دون أي إعداد (التسطير البسيط هو `:underline[…]`، والتظليل البسيط `:mark[…]`)؛ وإعلان `characterStyles` يستبدل تلك القائمة، والقائمة الفارغة تترك الكتاب بلا أي نمط. والمقطع الذي لا يعلن أي نمط معرّفه يُنضَّد كالنص المحيط به، وتبلّغ عنه لوحة الفحوص (*نمط حروف غير معروف*).
+
+```ts
+const config: PostextConfig = {
+  characterStyles: [
+    {
+      id: 'marker',
+      name: 'Marker',
+      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+    },
+    {
+      id: 'drug',
+      name: 'Drug name',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+};
+```
+
+```md
+The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first]|wrong|.
+```
+
+خصائص النص (وما لا يُحدَّد منها يأخذ قيمة النص):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>إلزامي</td>
+      <td>المعرّف الذي يُكتب بين الخطين العموديين: <code>[…]|id|</code>. حروف وأرقام و<code>-</code> و<code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>اسم مقروء للبشر، لواجهات المحرّرات فقط.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>النص المحيط</td>
+      <td>عائلة خط المقطع.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>النص المحيط</td>
+      <td>حجم المقطع؛ ووحدة <code>em</code> نسبية إلى النص المحيط به. ولا يغيّر الحجم الأكبر تباعد الأسطر أبدًا: تحتفظ الأسطر بشبكتها، فقد يلامس الحجم الأكبر بكثير السطرَ الذي فوقه.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>النص المحيط</td>
+      <td>وزن الكلمات العادية في المقطع (100–900، مقرَّبًا إلى أقرب مئة)؛ وتحتفظ كلماته الغامقة بالغامق.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>نضّد المقطع بخط مائل.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>النص المحيط</td>
+      <td>لون المقطع، بما فيه الكلمات الغامقة والمائلة.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>لا شيء</td>
+      <td>تباعد حروف يُضاف بعد كل حرف من المقطع (<code>em</code> من النص المحيط به؛ والقيمة السالبة تضيّق). ويُقاس مع المقطع، فينكسر السطر حيث يُرسم.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>تنضّد <code>uppercase</code> المقطع بحروف كبيرة؛ ويحتفظ النص بحروفه، فيقرؤه البحث وخريطة المصدر كما كُتب.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>نضّد المقطع بالحروف الكبيرة المصغّرة، كما تفعل <code>:smallcaps[…]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>underline</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>معطّل</td>
+      <td>خط تحت المقطع (انظر أدناه).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>CharacterStyleHighlightConfig</code></td>
+      <td>معطّل</td>
+      <td>شريط قلم تمييز خلف المقطع (انظر أدناه).</td>
+    </tr>
+    <tr>
+      <td><code>strike</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>معطّل</td>
+      <td>خط يمرّ عبر المقطع (انظر أدناه).</td>
+    </tr>
+  </tbody>
+</table>
+
+`underline` و`strike` (أطوال em بحجم المقطع نفسه):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ارسم الخط.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون المقطع</td>
+      <td>لون الخط.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>نسبة مئوية، 0–100.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>سُمك الخط.</td>
+    </tr>
+    <tr>
+      <td><code>offset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.12em</code> (التسطير)، <code>0.28em</code> (الشطب)</td>
+      <td>موضع منتصف الخط: تحت خط الأساس في التسطير، وفوقه في الشطب.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>طريقة رسم الخط.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ارسمه كلمةً كلمة واترك المسافات فارغة؛ وإذا أُوقف امتدّ تحت مسافات المقطع (لا تحت المسافات المحيطة به أبدًا).</td>
+    </tr>
+  </tbody>
+</table>
+
+`highlight` (الحواف مقيسة من خط الأساس، والموجب إلى الأعلى، بوحدة em من حجم المقطع نفسه):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ارسم الشريط.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffe14d</code></td>
+      <td>لون الشريط. ومدخل لوحة الألوان الذي هو لون خاص يطبع الشريط على لوح حبره.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>نسبة مئوية، 0–100. يُرسم الشريط خلف النص، فتحتفظ الحروف بلونها.</td>
+    </tr>
+    <tr>
+      <td><code>bottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>-0.2em</code></td>
+      <td>موضع بداية الشريط (السالب: تحت خط الأساس، بين النوازل).</td>
+    </tr>
+    <tr>
+      <td><code>top</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>موضع نهاية الشريط: نحو <code>0.45em</code> يغطي النصف السفلي من الحروف (ضربة قلم تمييز)، و<code>0.8em</code> الكلمات كاملة، و<code>0.05em</code> مع <code>bottom: -0.15em</code> يعطي تسطيرًا سميكًا.</td>
+    </tr>
+    <tr>
+      <td><code>overhang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>مقدار امتداد الشريط وراء الحرف الأول والحرف الأخير من المقطع.</td>
+    </tr>
+    <tr>
+      <td><code>radius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>نصف قطر الزوايا، لا يتجاوز نصف ارتفاع الشريط.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code> شريط نظيف؛ والقيم الأعلى تموّج حافتيه العليا والسفلى، وتزيحه قليلًا على امتداد السطر، وتقطع طرفيه مائلين، كقلم تمييز مرسوم باليد. ويتبع التموّج بذرةً مأخوذة من المقطع، فيبقى هو نفسه في كل إخراج، في Canvas وPDF وHTML.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>شريط لكل كلمة.</td>
+    </tr>
+  </tbody>
+</table>
+
+**التداخل.** يجوز أن يحوي المقطع علامات مضمّنة أخرى (`[a **bold** word]|marker|`، أو رابطًا، أو إحالة، أو صيغة رياضية)، ومقاطع أخرى: والغلبة للنمط الأعمق (`[a [b]|drug| c]|marker|`). ولا يجوز أن يتخطّى المقطع حدود الفقرة.
+
+**المواضع.** الفقرات، وعناصر القوائم، والاقتباسات، والإطارات، والحواشي، والتعليقات، والملاحظات، وخلايا الجداول، والعناوين ما دام `headings.inlineMarks` مفعّلًا. أما الترويسات وجدول المحتويات ومداخل الفهرس فتأخذ الكلمات دون النمط.
+
+**المخرجات.** ترسم Canvas وPDF وHTML الزخارف من الهندسة نفسها (`VDTLine.marks`، بالأنواع `band`، `line`، `double`، `dotted`، `dashed`، `wavy`): الشريط قبل نص السطر، والخطوط بعده. وفي ملف PDF الرقمي يُرسم الشريط أو الخط نصف الشفاف بالشفافية؛ أما في ملف PDF للطباعة (حين يكون `pdfGeneration.colorSpace` ملف تعريف للطباعة) فيُنضَّد كما سيُطبع فوق الورق الأبيض — درجةً من لونه، على لوح حبره الخاص حين يكون لونًا خاصًا — بلا شفافية، فلا يحملها ملف PDF/X أبدًا. ويُنضّد EPUB المرن كل نمط صنفًا (`pt-cs-<id>`) بـ CSS: الخط، واللون، و`text-decoration` للخطوط، وخلفية متدرّجة للشريط. ويجعل التصدير إلى Word كل نمط نمطَ أحرف في Word (`نمط الحروف: <name>`)، والشريطَ تظليلًا بلونه، ويطابق الاستيراد من Word نمطَ الأحرف الذي يحمل اسم نمط في الكتاب — أو الذي صُدِّر باسم `نمط الحروف: <name>` — مع ذلك النمط.
+
+في الـ VDT يحمل المقطع المنسَّق `charStyle: { id, style }` (المقطع ومعرّف نمطه)؛ وخطه ولونه وتباعد حروفه موجودة أصلًا في `fontString` و`color` و`tracking`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles);
+// => the built-in `marker` when unset; every field filled
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => undefined for the built-in default; static defaults dropped; [] kept
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => the `drug` style, or undefined when no style has that id
+```
 
 ## أنماط التظليل
 

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Painéis Design e Verificações',
   description: 'Os grupos, as páginas, a busca e a visão geral do painel Design, e os avisos ao vivo do painel Verificações, agrupados por tipo',
   lang: 'pt',
-  lastUpdated: '2026-10-23',
-  readingTime: '42 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '43 min',
   order: 41,
   parent: 'sandbox',
   plainSummary: "Esta página trata de dois painéis do Sandbox. O painel Design reúne todos os ajustes do livro, como o tamanho da página, as fontes e as cores, organizados em grupos e com uma caixa de busca. O painel Verificações lista os problemas que o Postext encontra enquanto você trabalha, como uma imagem que falta ou uma linha frouxa demais. Cada problema diz onde está e leva você até lá quando você clica nele.",
@@ -80,6 +80,7 @@ Os grupos, na ordem de navegação:
   - *Rótulos no texto* (`chipStyles`): estilos com nome para o `:chip[text]{style="…"}` na linha. O estilo embutido `chip` aparece enquanto a configuração não tem nenhum. Você pode acrescentar, remover e renomear ids, e depois definir:
     - **Texto**: fonte, corpo, cor, negrito e itálico. Cada um herda do texto em volta até você defini-lo. **Pontos para cobrir** (`dotted`) pinta as letras como fileiras de pontos ao longo dos traços, com o **Espaçamento dos pontos** e o **Tamanho do ponto**, para uma criança cobrir (desde o postext 1.46).
     - **Caixa**: preenchimento, espessura e cor do contorno, raio dos cantos, espaçamento interno horizontal e vertical (com **Espaçamento superior** e **Espaçamento inferior** para separá-los, o que centraliza uma maiúscula num chip redondo) e a distância mínima até as palavras vizinhas.
+  - *Estilos de caractere* (`characterStyles`): estilos com nome para um trecho de palavras escrito `[algumas palavras]|id|`. Um cartão por estilo, com o seu id e o seu nome e quatro grupos: *Texto* (família, corpo, peso, itálico, cor, espaçamento entre letras, maiúsculas, versaletes), *Faixa de marca-texto* (cor, opacidade, bordas inferior e superior, excesso pelos lados, raio dos cantos, bordas à mão, e três formas rápidas: *Traço de marca-texto*, *Cobrir as palavras*, *Sublinhado grosso*), *Sublinhado* e *Tachado* (linha, cor, opacidade, espessura, distância, saltar os espaços). O estilo embutido `marker` aparece enquanto o livro não guarda nenhum.
   - *Destaques* (`markStyles`): estilos com nome para `:mark[text]{style="…"}`, uma faixa de cor atrás das palavras que quebra junto com as linhas. Você pode acrescentar, remover e renomear ids, e depois definir a **Cor da faixa**, a cor do texto, o raio dos cantos e o espaçamento interno. Sem nenhum estilo declarado, um estilo embutido vale para todo `:mark[…]`.
   - *Código* (`codeStyle`): **Blocos de código** e **Código recuado** (como as listagens são lidas); a **Fonte do código**, o tamanho, a entrelinha, **Ajustar à grade**, a cor e a **Largura da tabulação**; a **Caixa** (extensão de página, fundo, borda, raio dos cantos, espaçamento interno, espaço acima e abaixo); **Linhas longas** (**Uma linha mais larga que a caixa**: *Quebrar*, *Reduzir* com o **Tamanho mínimo**, ou *Cortar*; o **Recuo da continuação** e a **Marca de continuação**); **Números e linhas destacadas** (**Numerar as linhas**, a cor dos números e o espaço depois deles, o fundo das linhas que a abertura do bloco de código destaca); a divisão **Entre colunas e páginas** (manter junto, linhas de cada lado, repetir o título, o indicador “Continua”); **Cores de sintaxe** (*Integrado* ou *Nenhum*, e uma cor e um estilo por tipo de elemento, cores da paleta incluídas); e o **Código em linha** numa fonte de código, com o fundo. Veja [Listagens de código](/pt/docs/configuration-styles#listagens-de-código).
   - *Fórmulas* (`math`), com **Recuo após fórmula em destaque** (`math.indentAfterDisplay`) e **Manter com a linha anterior** (`math.keepWithLeadIn`).
@@ -228,6 +229,7 @@ Diagnósticos ao vivo, recalculados a partir do texto, do design, das figuras e 
   - nomes de diretiva desconhecidos (todo nome que o analisador conhece é aceito: `pagebreak`, `columnbreak`, `space`, `numbering`, `toc`, `callout`, `paragraphs`, `part` e `columns`), atributos de numeração ou de paridade inválidos, e um `:::space{lines=N}` fora do intervalo de 0 a 20 linhas;
   - um contêiner `:::` não fechado no fim do documento (clicar na entrada dá foco à linha de abertura);
   - um `:::paragraphs{style="…"}`, `:::callout{type="…"}`, `:chip[…]{style="…"}`, `:mark[…]{style="…"}` ou `{style="…"}` de título cujo estilo não está configurado;
+  - *Estilo de caractere desconhecido*: um `[…]|id|` que não nomeia nenhum estilo de `characterStyles`; as palavras são compostas como o texto em volta. Defina o estilo ou corrija o id (`unknownCharacterStyle`);
   - uma linha `::resource` que é impressa como texto, por estar malformada ou colada sob um parágrafo sem uma linha em branco;
   - *Marcação de largura total*: marcação digitada com um método de entrada chinês ou japonês (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊…＊＊`), que é impressa como texto; a entrada mostra a forma ASCII que deve ser digitada;
   - *Chave de atributo não lida*: uma chave de atributo escrita fora do ASCII (`作者=曹雪芹`), que o analisador ignora;

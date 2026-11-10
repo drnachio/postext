@@ -368,6 +368,12 @@ export interface VDTLineSegment {
    *  this to give the text its meaning (HTML wraps dotted text in `<em>`).
    *  Absent on unmarked text. */
   cjkMarks?: VDTSegmentMarks;
+  /** The character style run (`[some words]|id|`) the segment's text
+   *  belongs to: its decorations (underline, highlighter band,
+   *  strike-through) are set on the line as `VDTLine.marks` once the
+   *  document is laid out. Its face, colour and tracking are already in
+   *  {@link fontString}, {@link color} and {@link tracking}. */
+  charStyle?: VDTSegmentCharStyle;
   /** The segment is a ruby base (#194): its `text` is the base, painted at
    *  `x + inkOffset` when the reading is wider than it, and the reading's
    *  runs follow. Absent otherwise. */
@@ -435,6 +441,14 @@ export interface VDTLineSegment {
    *  them out (`writtenText` in `measure/rtl/kashida.ts`). A tatweel the author
    *  typed is not listed. Absent when none was inserted. */
   kashida?: number[];
+}
+
+/** The character style run of a segment (see {@link VDTLineSegment.charStyle}). */
+export interface VDTSegmentCharStyle {
+  /** Tells runs apart: two runs side by side get two decorations. */
+  id: number;
+  /** The style's id (`characterStyles`). */
+  style: string;
 }
 
 /** The marks of a segment (see {@link VDTLineSegment.cjkMarks}). */

@@ -6,7 +6,7 @@ export const metadata = {
   description: "Com es marca el text dins d'una línia: èmfasi, enllaços, xips, versaletes, tabuladors, text vertical, marques xineses i japoneses, direcció del text i fórmules LaTeX",
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '30 min',
+  readingTime: '32 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Aquesta pàgina explica les marques que es fan servir dins d'una línia de text. Serveixen per posar paraules en negreta o en cursiva, afegir enllaços, dibuixar etiquetes petites, compondre versaletes i alinear el text a les tabulacions. Altres marques serveixen per als llibres en xinès i en japonès, com les lectures petites que van damunt d'un caràcter, o per a una frase que va en una altra direcció, com un text en anglès dins d'un llibre en àrab. L'última secció ensenya a escriure fórmules matemàtiques.",
@@ -141,6 +141,11 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
       <td>Una banda de color darrere de paraules que continuen sent text normal: es tallen, es divideixen i es justifiquen com sempre. L'estil el dona <code>markStyles</code>; vegeu <a href="#marques-de-ressaltat">Marques de ressaltat</a>.</td>
     </tr>
     <tr>
+      <td>Estil de caràcter</td>
+      <td><code>[unes paraules]|id|</code></td>
+      <td>Les paraules en un estil amb nom de <code>characterStyles</code>: una lletra, un color i un subratllat, una taca de retolador o un ratllat. A diferència d'un xip, es parteix i es divideix amb guionet com el text que l'envolta. Vegeu <a href="#estils-de-caràcter">Estils de caràcter</a>.</td>
+    </tr>
+    <tr>
       <td>Tabulador</td>
       <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
       <td>Porta les paraules que el segueixen fins a la tabulació següent: una de les tabulacions de l'estil del paràgraf, o la que fixen els seus atributs. Un caràcter de tabulació escrit al text només funciona com a tabulador on l'estil fixa tabulacions. Vegeu <a href="#tabuladors-i-tabulacions">Tabuladors i tabulacions</a>.</td>
@@ -197,6 +202,24 @@ Prem :chip[Ctrl]{style="tecla"} + :chip[C]{style="tecla"} per copiar.
 - **Sortida.** Canvas, HTML i PDF pinten la caixa i componen les paraules com a text real: seleccionable a l'HTML, extraïble i en ordre de lectura al PDF (en un PDF etiquetat la caixa és un artefacte de maquetació i les paraules pertanyen al paràgraf).
 
 Un xip amb `field` es converteix en un camp de formulari emplenable al PDF (vegeu [Sortida PDF › Camps de formulari](/ca/docs/configuration-pdf-output#camps-de-formulari)).
+
+### Estils de caràcter
+
+`[unes paraules]|id|` compon les paraules d'entre els claudàtors en l'estil de caràcter `id` de `characterStyles` (vegeu [Configuració › Estils de caràcter](/ca/docs/configuration-styles#estils-de-caràcter)): una lletra, un color, un subratllat, una taca de retolador, un ratllat.
+
+```markdown
+La [primera línia de tractament]|marker| és [la metformina]|drug|.
+
+Un [grup amb **negreta** i un [estil niat]|accent|]|marker| a dins.
+```
+
+- **Text, no una caixa.** Les paraules es queden a la línia: es parteixen entre línies, es divideixen amb guionet i es justifiquen com el text que les envolta. Una decoració partida entre dues línies es dibuixa a cadascuna; dins d'una mateixa línia continua sota els espais entre les paraules del grup, mai sota els espais que l'envolten.
+- **Les barres.** L'id va just després del claudàtor de tancament, entre dues barres: lletres, xifres, `-` i `_`. Un espai entre `]` i `|`, una segona barra que falta o uns claudàtors buits deixen el text tal com està escrit. `\[a]|b|` imprimeix `[a]|b|`.
+- **Claudàtors que són una altra cosa.** Una crida de nota (`[^1]`), una cita (`[@key]`) i un enllaç (`[text](url)`) es llegeixen primer i mai no són un estil.
+- **Imbricació.** Les paraules admeten les altres marques en línia i altres grups; guanya l'estil més intern. Un id desconegut compon les paraules com el text que les envolta i se n'avisa (`unknownCharacterStyle`).
+- **On.** Paràgrafs, elements de llista, cites, avisos, notes a peu de pàgina, peus, notes i cel·les de taula, i encapçalaments mentre `headings.inlineMarks` estigui activat (desactivat, les paraules es componen sense estil).
+- **Text pla.** Els claudàtors, les barres i l'id no imprimeixen res: la cerca, l'índex de continguts, les capçaleres, les àncores de l'índex alfabètic i el text copiat només llegeixen les paraules.
+- **Subratllat i ressaltat sols.** Un subratllat sense més és `:underline[…]`, i un ressaltat sense més, `:mark[…]`; un estil de caràcter és per a un aspecte propi (una lletra, un color, una taca traçada a mà, una línia discontínua o ondulada). El seu subratllat i el seu ratllat se situen, per defecte, on els de `:underline[…]` i `~~…~~`.
 
 ### Marques de ressaltat
 

@@ -39,6 +39,7 @@ export {
   emptyTemplate,
   calloutStylesOf,
   chipStylesOf,
+  characterStylesOf,
   displayStyleName,
   lookup,
   guessParagraphTarget,

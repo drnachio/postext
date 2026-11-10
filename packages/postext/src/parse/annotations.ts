@@ -6,7 +6,9 @@
  * (`:ruby[…]{rt="…" mode align}` and the compact `{紅樓|hóng|lóu}`) and
  * warichu notes (`:warichu[…]{open close}`); and the directional isolates
  * (`:rtl[…]`, `:ltr[…]`, with an optional `{lang=…}`, #367), which set a
- * run in its own direction inside text of the other.
+ * run in its own direction inside text of the other; and the named
+ * character styles (`[some words]|style|`), which set a run in a face, a
+ * colour and decorations of the design's `characterStyles`.
  *
  * They preserve their text, as `:smallcaps[…]` does: the characters between
  * the brackets stay in the paragraph's plain text (search, the contents,

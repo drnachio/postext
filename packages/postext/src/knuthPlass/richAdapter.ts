@@ -5,7 +5,7 @@
  */
 
 import { justifiedSpaceRatios } from '../measure/spaceRatios.js';
-import type { VDTAnnotationRun, VDTChip, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTSwatch } from '../vdt.js';
+import type { VDTAnnotationRun, VDTChip, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTSwatch, VDTSegmentCharStyle } from '../vdt.js';
 import { createBoundingBox } from '../vdt.js';
 import type { TextAlign } from '../types.js';
 import type { KPItem, RichTokenMeta } from './types.js';
@@ -88,6 +88,10 @@ interface RichToken {
   chip?: VDTChip;
   /** Chinese marks on the token's text (#193). */
   cjkMarks?: VDTSegmentMarks;
+  /** A character style run, its colour and tracking (see `measure/rich.ts`). */
+  charStyle?: VDTSegmentCharStyle;
+  charColor?: string;
+  charTracking?: number;
   /** Characters the layout added (a book title's 《》). */
   inserted?: boolean;
   /** Bare break points (URL joints): no hyphen is appended at the break. */
@@ -402,6 +406,9 @@ export function reconstructRichLines(
           ...(token.tcy ? { tcy: true as const } : {}),
           ...(token.orientation ? { orientation: token.orientation } : {}),
           ...(token.cjkMarks ? { cjkMarks: token.cjkMarks } : {}),
+          ...(token.charStyle ? { charStyle: token.charStyle } : {}),
+          ...(token.charColor !== undefined ? { color: token.charColor } : {}),
+          ...(token.charTracking !== undefined ? { tracking: token.charTracking } : {}),
           ...(token.inserted ? { inserted: true } : {}),
           ...(token.runs ? { runs: token.runs } : {}),
           ...(pieceScript ? { scriptContext: pieceScript } : {}),

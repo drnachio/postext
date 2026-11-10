@@ -33,6 +33,8 @@ import { parseFontString } from '../../fontString.js';
 import type { FontCache } from '../../fontCache.js';
 import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, drawTextPx, fillOutlinePx } from '../primitives.js';
 import { tagArtifact, tagContent, type StructElem } from '../structure/tagging.js';
+import { bandOutline, dashedPieces } from 'postext';
+import { isPrintMode } from '../../print/colorMode.js';
 
 /** A sesame dot (﹅): a lens `size` long and 0.3 of it wide,
  *  leaning a third of a right angle (as the canvas draws it). Two
@@ -93,6 +95,33 @@ function markOps(ctx: PageCtx, m: VDTLineMark, xPx: number, yPx: number): { ops:
     }
     case 'line':
       return { ops: [moveTo(X(cx), Y(cy)), lineTo(X(cx + (m.length ?? 0)), Y(cy))], filled: false };
+    case 'band': {
+      // The outline the canvas traces (`bandOutline`), its quadratic
+      // curves raised to cubic ones.
+      const ops: PDFOperator[] = [];
+      let at = { x: 0, y: 0 };
+      for (const c of bandOutline(m, xPx, yPx)) {
+        if (c.op === 'Z') ops.push(closePath());
+        else if (c.op === 'Q') {
+          const c1 = { x: at.x + (2 / 3) * (c.cx - at.x), y: at.y + (2 / 3) * (c.cy - at.y) };
+          const c2 = { x: c.x + (2 / 3) * (c.cx - c.x), y: c.y + (2 / 3) * (c.cy - c.y) };
+          ops.push(appendBezierCurve(X(c1.x), Y(c1.y), X(c2.x), Y(c2.y), X(c.x), Y(c.y)));
+          at = { x: c.x, y: c.y };
+        } else {
+          ops.push(c.op === 'M' ? moveTo(X(c.x), Y(c.y)) : lineTo(X(c.x), Y(c.y)));
+          at = { x: c.x, y: c.y };
+        }
+      }
+      return { ops, filled: true };
+    }
+    case 'dashed': {
+      const half = m.thickness / 2;
+      const ops: PDFOperator[] = [];
+      for (const p of dashedPieces(m, xPx)) {
+        ops.push(moveTo(X(p.x), Y(cy - half)), lineTo(X(p.x + p.length), Y(cy - half)), lineTo(X(p.x + p.length), Y(cy + half)), lineTo(X(p.x), Y(cy + half)), closePath());
+      }
+      return { ops, filled: true };
+    }
     case 'double': {
       const half = (m.gap ?? 0) / 2;
       const end = cx + (m.length ?? 0);
@@ -150,17 +179,38 @@ export function paintLineHighlights(ctx: PageCtx, line: VDTLine): void {
 }
 
 /** Draw the marks of a line (`VDTLine.marks`) as artifacts, in `ink`
- *  unless a mark has its own colour. */
-export function paintLineMarks(ctx: PageCtx, line: VDTLine, ink: Color): void {
-  const marks = line.marks;
+ *  unless a mark has its own colour. `layer` picks the marks painted under
+ *  the text (`'behind'`: a highlighter band, before the text) or over it. */
+export function paintLineMarks(ctx: PageCtx, line: VDTLine, ink: Color, layer: 'over' | 'behind' = 'over'): void {
+  const marks = line.marks?.filter((m) => (layer === 'behind') === !!m.behind);
   if (!marks || marks.length === 0) return;
   // An underline's piece under a link gives way to the link's own line.
   const linkLines = ctx.links !== undefined && ctx.links.underline !== 'none';
   tagArtifact(ctx, { type: 'Layout' });
   for (const m of marks) {
     if (m.underLink && linkLines) continue;
-    paintMark(ctx, m, line.bbox.x, line.baseline, m.color ? colorFromHex(m.color, ctx.colorSpace) : ink);
+    paintMark(ctx, m, line.bbox.x, line.baseline, markColor(ctx, m, ink));
   }
+}
+
+/** The colour a mark is painted in. A translucent mark of its own colour
+ *  (a character style's band or line) carries its opacity in the colour:
+ *  on screen and in a digital PDF it is drawn translucent; in a print PDF
+ *  it is set as it prints over the paper — a tint of its colour, on its
+ *  ink's own plate when that is a spot colour — with no transparency. */
+function markColor(ctx: PageCtx, m: VDTLineMark, ink: Color): Color {
+  const opacity = m.opacity !== undefined && m.opacity < 1 ? Math.max(0, m.opacity) : 1;
+  if (!m.color) return opacity < 1 ? withAlpha(ink, opacity) : ink;
+  if (opacity === 1) return colorFromHex(m.color, ctx.colorSpace);
+  const hex = `${m.color.slice(0, 7)}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
+  const cs = ctx.colorSpace;
+  const flat = isPrintMode(cs) && !cs.flattenTransparency ? { ...cs, flattenTransparency: true, key: `${cs.key}:flat` } : cs;
+  return colorFromHex(hex, flat);
+}
+
+/** `color` with an opacity of its own (see `alphaOf`). */
+function withAlpha(color: Color, alpha: number): Color {
+  return { ...color, alpha } as unknown as Color;
 }
 
 /** Draw one mark from `(xPx, yPx)` (px, flow frame) in `color`. */

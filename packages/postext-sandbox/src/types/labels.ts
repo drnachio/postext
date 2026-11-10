@@ -5022,6 +5022,75 @@ export interface SandboxLabels {
   calloutStyleBodyItalicColor: string;
   calloutStyleBodyItalicColorTooltip: string;
   smallCapsInline: string;
+  characterStylesSection: string;
+  characterStylesIntro: string;
+  characterStylesEmpty: string;
+  characterStylesResetConfirm: string;
+  charStyleAdd: string;
+  charStyleNewName: string;
+  charStyleDelete: string;
+  charStyleDeleteConfirm: string;
+  charStyleIdAria: string;
+  charStyleIdHintDuplicate: string;
+  charStyleUsageHint: string;
+  charStyleNameLabel: string;
+  charStyleNameAria: string;
+  charStyleTextGroup: string;
+  charStyleHighlightGroup: string;
+  charStyleUnderlineGroup: string;
+  charStyleStrikeGroup: string;
+  charStyleFontSizeTooltip: string;
+  charStyleColorTooltip: string;
+  charStyleWeight: string;
+  charStyleWeightTooltip: string;
+  charStyleLetterSpacing: string;
+  charStyleLetterSpacingTooltip: string;
+  charStyleUppercase: string;
+  charStyleUppercaseTooltip: string;
+  charStyleSmallCaps: string;
+  charStyleSmallCapsTooltip: string;
+  charStyleLineEnabled: string;
+  charStyleUnderlineEnabledTooltip: string;
+  charStyleStrikeEnabledTooltip: string;
+  charStyleHighlightEnabledTooltip: string;
+  charStyleLineStyle: string;
+  charStyleLineSolid: string;
+  charStyleLineDouble: string;
+  charStyleLineDotted: string;
+  charStyleLineDashed: string;
+  charStyleLineWavy: string;
+  charStyleLineColorTooltip: string;
+  charStyleOpacity: string;
+  charStyleOpacityTooltip: string;
+  charStyleThickness: string;
+  charStyleUnderlineOffset: string;
+  charStyleUnderlineOffsetTooltip: string;
+  charStyleStrikeOffset: string;
+  charStyleStrikeOffsetTooltip: string;
+  charStyleSkipSpaces: string;
+  charStyleSkipSpacesTooltip: string;
+  charStyleHighlightPresetLow: string;
+  charStyleHighlightPresetFull: string;
+  charStyleHighlightPresetUnder: string;
+  charStyleHighlightOpacityTooltip: string;
+  charStyleHighlightBottom: string;
+  charStyleHighlightBottomTooltip: string;
+  charStyleHighlightTop: string;
+  charStyleHighlightTopTooltip: string;
+  charStyleHighlightOverhang: string;
+  charStyleHighlightOverhangTooltip: string;
+  charStyleHighlightRadius: string;
+  charStyleHighlightRough: string;
+  charStyleHighlightRoughTooltip: string;
+  charStyleInline: string;
+  charStyleMenuHeader: string;
+  charStyleRemove: string;
+  charStyleMenuEmpty: string;
+  warningsUnknownCharacterStyleTitle: string;
+  warningsUnknownCharacterStyleDetail: string;
+  wordCharCharStyle: string;
+  wordCharCharStyleStyle: string;
+  wordStyleCharStyle: string;
   rubyInline: string;
   tcyInline: string;
   textStyleFontWeightTooltip: string;
@@ -5707,4 +5776,10 @@ export interface SandboxLabels {
   taskBoxDrawn: string;
   taskBoxCharacter: string;
   taskBoxTooltip: string;
+
+  // InDesign (IDML) import . The note labels take `__count__`.
+  /** `__pages__`, `__paragraphs__`, `__tables__`, `__pictures__`, `__notes__`: the counts. */
+  /** `__found__` of `__total__` pictures. */
+  /** `__name__`: the new book. */
+  /** `__error__`: what failed. */
 }

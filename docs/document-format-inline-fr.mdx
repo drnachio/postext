@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Les marques dans une ligne : emphase, liens, pastilles, petites capitales, tabulations, texte vertical, marques chinoises et japonaises, sens du texte, et formules LaTeX',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '31 min',
+  readingTime: '33 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Cette page traite des marques que vous utilisez dans une ligne de texte. Elles mettent des mots en gras ou en italique, ajoutent des liens, dessinent de petites étiquettes, composent des petites capitales et alignent le texte sur des taquets de tabulation. D’autres marques servent aux livres chinois et japonais, comme les petites indications de prononciation au-dessus d’un caractère, ou à une phrase écrite dans l’autre sens, comme de l’anglais dans un livre arabe. La dernière section montre comment écrire des formules mathématiques.",
@@ -197,6 +197,24 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Sortie.** Le canvas, le HTML et le PDF peignent la boîte et composent les mots comme du vrai texte : sélectionnable dans le HTML, extractible et dans l’ordre de lecture dans le PDF (dans un PDF balisé, la boîte est un artefact de mise en page et les mots appartiennent au paragraphe).
 
 Une pastille avec `field` devient un champ de formulaire à remplir dans le PDF (voir [Sortie PDF › Champs de formulaire](/fr/docs/configuration-pdf-output#champs-de-formulaire)).
+
+### Styles de caractère
+
+`[quelques mots]|id|` compose les mots entre les crochets dans le style de caractère `id` de `characterStyles` (voir [Configuration → Styles de caractère](/fr/docs/configuration-styles#styles-de-caractère)) : une police, une couleur, un soulignement, une bande de surligneur, un barré.
+
+```markdown
+Le [traitement de première ligne]|marker| est la [metformine]|drug|.
+
+Une [suite avec du **gras** et un [style imbriqué]|accent|]|marker| à l’intérieur.
+```
+
+- **Du texte, pas une boîte.** Les mots restent dans la ligne : ils passent à la ligne, se coupent et se justifient comme le texte qui les entoure. Une décoration coupée sur deux lignes est tracée sur chacune ; sur une même ligne, elle continue sous les espaces entre les mots de la suite, jamais sous les espaces qui l’entourent.
+- **Les barres.** L’id suit immédiatement le crochet fermant, entre deux barres : lettres, chiffres, `-` et `_`. Une espace entre `]` et `|`, une seconde barre manquante ou des crochets vides laissent le texte tel qu’il est écrit. `\[a]|b|` imprime `[a]|b|`.
+- **Des crochets qui sont autre chose.** Un appel de note (`[^1]`), une citation (`[@clé]`) et un lien (`[texte](url)`) sont lus en premier et ne sont jamais un style.
+- **Imbrication.** Les mots admettent les autres marques en ligne et d’autres suites ; le style le plus intérieur l’emporte. Un id inconnu compose les mots comme le texte qui les entoure et est signalé (`unknownCharacterStyle`).
+- **Où.** Paragraphes, éléments de liste, citations, encadrés, notes de bas de page, légendes, notes et cellules de tableau, et titres tant que `headings.inlineMarks` est activé (désactivé, les mots sont composés sans style).
+- **Texte brut.** Les crochets, les barres et l’id n’impriment rien : la recherche, la table des matières, les titres courants, les ancres d’index et le texte copié ne lisent que les mots.
+- **Soulignement et surlignage seuls.** Un simple soulignement s’écrit `:underline[…]`, et un simple surlignage `:mark[…]` ; un style de caractère sert à un aspect propre (une police, une couleur, une bande tracée à la main, un trait tireté ou ondulé). Son soulignement et son barré se placent, par défaut, là où se placent ceux de `:underline[…]` et `~~…~~`.
 
 ### Surlignages
 

@@ -1,6 +1,6 @@
 // Turning annotation marks into span fields (#1278: split out of
 // annotations.ts).
-import type { InlineWarichu, InlineDirection, InlineSideline, InlineKunten, DirectiveAttrs, EmphasisMark, InlineRuby, InlineSpan } from '../types.js';
+import type { InlineWarichu, InlineDirection, InlineSideline, InlineKunten, DirectiveAttrs, EmphasisMark, InlineRuby, InlineSpan, InlineCharStyle } from '../types.js';
 import { graphemesOf } from '../../measure/graphemes.js';
 import { type AnnotationName, type QueuedAnnotation, MARK_RE, innermostRuby, KIND_OF_OPEN, CLOSE } from './scan.js';
 
@@ -17,6 +17,8 @@ export interface Frame {
   sideline?: InlineSideline;
   /** The object every span of a kanbun mark shares. */
   kunten?: InlineKunten;
+  /** The object every span of a character style shares. */
+  charStyle?: InlineCharStyle;
   /** Indices (in the output) of the spans a ruby holds. */
   pieces?: number[];
 }
@@ -165,6 +167,10 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
         case 'kunten':
           fields.kunten = f.kunten!;
           break;
+        case 'charstyle':
+          // The innermost style: a span takes one.
+          fields.charStyle = f.charStyle!;
+          break;
         case 'ruby':
           break;
       }
@@ -206,6 +212,7 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
         }
         if (kind === 'sideline') frame.sideline = sidelineOf(frame.id, entry.attrs);
         if (kind === 'kunten') frame.kunten = kuntenOf(frame.id, entry.attrs);
+        if (kind === 'charstyle') frame.charStyle = { id: frame.id, style: entry.attrs.style ?? '' };
         if (kind === 'ltr' || kind === 'rtl') {
           let outer: InlineDirection | undefined;
           for (let i = stack.length - 1; i >= 0 && !outer; i--) outer = stack[i]!.direction;
@@ -286,6 +293,7 @@ export function annotationFields(span: InlineSpan, withRuby = true): Partial<Inl
   if (span.direction) out.direction = span.direction;
   if (span.sideline) out.sideline = span.sideline;
   if (span.kunten) out.kunten = span.kunten;
+  if (span.charStyle) out.charStyle = span.charStyle;
   if (withRuby && span.ruby) out.ruby = span.ruby;
   if (span.inserted) out.inserted = true;
   return out;

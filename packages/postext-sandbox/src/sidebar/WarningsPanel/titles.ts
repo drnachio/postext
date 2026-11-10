@@ -148,6 +148,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsFigureWordsSharedTitle;
     case 'unknownChipStyle':
       return labels.warningsUnknownChipStyleTitle;
+    case 'unknownCharacterStyle':
+      return labels.warningsUnknownCharacterStyleTitle;
     case 'unknownMarkStyle':
       return labels.warningsUnknownMarkStyleTitle;
     case 'duplicateAnchor':

@@ -72,6 +72,7 @@ export type WarningKind =
   | 'labelOverlap'
   | 'figureWordsShared'
   | 'unknownChipStyle'
+  | 'unknownCharacterStyle'
   | 'unknownMarkStyle'
   | 'duplicateAnchor'
   | 'unknownCitationKey'
