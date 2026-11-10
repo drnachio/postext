@@ -323,6 +323,17 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       });
       return;
     }
+    if (w.kind === 'glyphFallbackAt') {
+      // Where the characters a face lacks are: the paragraph.
+      out.push({
+        id: `glyph-fallback-at-${w.pageIndex ?? 'x'}-${w.sourceStart ?? 'x'}-${w.family}-${w.weight}-${w.style}-${w.supplier ?? ''}`,
+        payload: { kind: 'glyphFallbackAt', family: w.family, weight: w.weight, style: w.style, characters: [...w.characters], ...(w.supplier ? { supplier: w.supplier } : {}) },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     // A text panel's text clipped (#885) is the layout's; the panel frame's
     // other reasons are read from the source.
     if (!LAYOUT_CONTENT_KINDS.has(w.kind) && !(w.kind === 'comicPanelFrame' && w.reason === 'textOverflow')) return;

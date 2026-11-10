@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fonts, colors i sortida',
   description: 'Com s’escriuen les unitats i els colors, la paleta, les fonts personalitzades, el visor HTML, el PDF i la producció per a impremta, el visor Folio i les ajudes de depuració',
   lang: 'ca',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -148,6 +148,12 @@ Si fas clic en qualsevol d'aquests avisos, s'obre el tauler **Fonts** perquè hi
 Quan ja hi ha una maquetació, el tauler també mostra l'avís del motor **Font substituïda a la composició** (`fontFallback`): una variant que les pàgines no han pogut fer servir en mesurar el text, perquè falta o perquè el navegador la dibuixa a partir d'un altre pes o d'una altra inclinació. Una família que ja surt com a desconeguda o amb una variant que falta no hi apareix dues vegades. Abans de la primera composició, n'ocupa el lloc una comprovació contra `document.fonts`.
 
 El quadre també mostra **Caràcters presos d'una altra font** (`glyphFallback`): caràcters que el text posa en una font que no té glif per a ells, un cop per font, amb la família genèrica que els ha dibuixat (`serif`, `sans-serif`, `monospace`) quan la comprovació ho pot saber.
+
+### Font de símbols
+
+Una font de text poques vegades té les lletres i els operadors matemàtics (∪, ℵ, ∀), el grec o les fletxes que l'autor escriu en un paràgraf. `symbolFont` anomena una família que els compon: totes les fonts del document la porten darrere de la seva, de manera que el llenç, el PDF, l'HTML i l'EPUB dibuixen aquests caràcters amb ella en lloc d'una caixa buida. `'Noto Sans Math'` cobreix gairebé tota la matemàtica. Al Sandbox és a **Text de cos → Font de símbols**.
+
+La maquetació avisa de cada paràgraf que porta aquests caràcters amb `glyphFallbackAt`, amb la família que els dibuixa, o sense cap: el PDF els imprimeix llavors com a caixes buides. El Sandbox els marca a la pàgina, en violeta els que dibuixa la font de símbols i en vermell els que no dibuixa cap.
 
 ## Estils de xifres
 

@@ -7,6 +7,7 @@ import { SVG_NS } from './dom.js';
 import { plainRangeInLine, sourceToPlainIndex, xForPlainInLine } from './geometry.js';
 import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, bandTitleOwner, isHiddenUnderBand } from './bandTitle.js';
 import { blockFrameMatrix, type FrameAffine } from '../../composed/frameHit.js';
+import { glyphMarks } from './glyphMarks.js';
 import { documentShapingLanguage } from '../../../controls/language/measureLanguage.js';
 import { balloonTextRangeRects } from '../../comics/balloonText.js';
 import {
@@ -321,6 +322,11 @@ export function drawOverlay(
     for (const loose of findLooseLines(doc, { threshold: debug.looseLineHighlight.threshold, pageIndex })) {
       appendRect(looseLineGroup, loose.x, loose.y, loose.width, loose.height, fill, matrixOf(loose.block.id));
     }
+  }
+
+  // The characters the text's face lacks: always marked.
+  if (looseLineGroup && !carried?.only) {
+    for (const m of glyphMarks(doc, pageIndex, mirrored)) appendRect(looseLineGroup, m.x, m.y, m.width, m.height, m.fill, matrixOf(m.block.id));
   }
 
   const { from, to, head } = selection;

@@ -275,6 +275,9 @@ export interface SandboxLabels {
   warningsGlyphFallbackTitle: string;
   warningsGlyphFallbackDetail: string;
   warningsGlyphFallbackSystemDetail: string;
+  warningsGlyphFallbackAtTitle: string;
+  warningsGlyphFallbackAtDetail: string;
+  warningsGlyphFallbackAtMissingDetail: string;
   warningsLooseLineTitle: string;
   warningsRaggedLineTitle: string;
   warningsRaggedLineDetail: string;
@@ -1198,6 +1201,8 @@ export interface SandboxLabels {
   bodyText: string;
   bodyFont: string;
   bodyFontTooltip: string;
+  symbolFont: string;
+  symbolFontTooltip: string;
   bodyFontSearch: string;
   bodyFontNoResults: string;
   bodyFontSize: string;

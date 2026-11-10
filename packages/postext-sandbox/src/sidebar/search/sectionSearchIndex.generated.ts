@@ -1659,6 +1659,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'resetSectionConfirm',
       'settingsGroupWriting',
       'settingsOpenGroup',
+      'symbolFont',
+      'symbolFontTooltip',
       'tabInterval',
       'tabIntervalTooltip',
       'tabStopAlign',

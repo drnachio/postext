@@ -403,6 +403,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Characters the text sets in a face (<code>family</code>, <code>weight</code>, <code>style</code>) that has no glyph for them: <code>characters</code> lists the first 24, each once, <code>count</code> says how many there are in all, and <code>supplier</code> names the family that drew them (a generic family such as <code>serif</code>), absent when a face the system picked drew them. One per face. In a browser or a worker the engine asks a probe face it declares in the font set (<code>installGlyphProbe</code>, which <code>prepareFonts</code> and the layout worker call); elsewhere it reads the <code>cmap</code> of the files registered with <code>registerFontCoverage</code>, as the command line does. Behind <code>debug.warnings.missingFont</code>. No page and no source range. Since postext 1.52.</td>
       <td>The characters are drawn from another face, whose design and widths may not match the text face. Choose a family that covers them.</td>
     </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>A block that sets characters its face has no glyph for: the place a <code>glyphFallback</code> does not give. One per block, face, page and family that draws them (at most 200 a document): <code>characters</code> lists them, <code>supplier</code> the family of the font list that draws them (the <code>symbolFont</code>), absent for those no family has. Points at the block.</td>
+      <td>They are drawn from <code>supplier</code>; without it the PDF prints them as empty boxes. Name a <code>symbolFont</code> that covers them.</td>
+    </tr>
   </tbody>
 </table>
 

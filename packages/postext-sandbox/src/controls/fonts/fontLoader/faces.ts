@@ -179,6 +179,12 @@ export const FONT_RETRY_MS = FAMILY_FACES_RETRY_MS;
  * failed style sheet is one family without faces, not a build without
  * fonts (#689).
  */
+/** Families whose Fontsource package leaves out glyphs Google's file has
+ * : Noto Sans Math comes as a `latin` file alone, with no
+ *  operator, letterlike symbol or Greek, so it is taken from Google's
+ *  style sheet whole — the family a `symbolFont` is most often set to. */
+const WHOLE_ON_GOOGLE = new Set(['Noto Sans Math']);
+
 export function familyFiles(family: string): Promise<FamilyFiles> {
   const cached = familyFilesCache.get(family);
   const failedAt = familyFacesFailedAt.get(family);
@@ -190,7 +196,7 @@ export function familyFiles(family: string): Promise<FamilyFiles> {
     try {
       meta = await fetchFontMetadata(family);
       if (meta) {
-        const cuts = (await packageFaces(family, meta)) ?? meta.fontsource;
+        const cuts = WHOLE_ON_GOOGLE.has(family) ? undefined : (await packageFaces(family, meta)) ?? meta.fontsource;
         if (cuts && cuts.length > 0) return { faces: cuts, cuts: facesByCut(cuts), meta };
         // Not on Google Fonts and no file to be had: nothing to ask Google.
         if (!meta.google) return { faces: [], meta };

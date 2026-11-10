@@ -18,8 +18,30 @@ export function buildFontString(
   if (style !== 'normal') parts.push(style);
   if (weight !== 'normal') parts.push(weight);
   parts.push(`${fontSizePx}px`);
-  parts.push(quoteFamily(fontFamily));
+  const family = quoteFamily(fontFamily);
+  parts.push(symbolFamily && symbolFamily !== family ? `${family}, ${symbolFamily}` : family);
   return parts.join(' ');
+}
+
+/** The family every font string lists after its own
+ *  (`symbolFont`), quoted; undefined when there is none. */
+let symbolFamily: string | undefined;
+
+/**
+ * Set (or clear) the family the text's fonts fall back to for the
+ * characters they lack (`symbolFont`): every font string built
+ * after the call lists it after its own family, so canvas measures and
+ * paints those characters in it, and the PDF, HTML and EPUB read it from
+ * the string. Each build sets it, as it sets the hyphenator.
+ */
+export function setSymbolFont(family: string | undefined): void {
+  const f = family?.trim();
+  symbolFamily = f ? quoteFamily(f) : undefined;
+}
+
+/** The family {@link setSymbolFont} set, unquoted; undefined when none. */
+export function symbolFont(): string | undefined {
+  return symbolFamily?.replace(/^"(.*)"$/, '$1').replace(/\\(["\\])/g, '$1');
 }
 
 /** The families of a CSS font stack, split at the commas outside quotes,

@@ -32,6 +32,8 @@
 import type { PDFFont } from 'pdf-lib';
 import { mirroredCodePoint } from 'postext';
 import { isDefaultIgnorable, isFallbackHandled, substituteGlyph } from './pdf-backend/text/fallbackSpaces.js';
+import { fontHas, symbolFontOf, withSymbolRuns } from './symbolRuns.js';
+export { setSymbolFont } from './symbolRuns.js';
 import { besideLetterOf, shapesAsCanvas, shapingScript, shapingScriptLetter, withBesideLetter, withinWideText } from './shapingLanguage.js';
 import { canvasWords } from './canvasWords.js';
 import { parseUnicodeRange, rangesHold, type CodePointRanges } from './unicodeRange.js';
@@ -258,6 +260,15 @@ export interface FileRun {
  * and none of the rules above that guess at the browser's file apply.
  */
 export function fileRuns(font: PDFFont, text: string, rtl = false): FileRun[] {
+  const runs = faceRuns(font, text, rtl);
+  const symbols = symbolFontOf(font);
+  if (!symbols) return runs;
+  // The symbol font (`symbolFont`) sets what no file of the face has.
+  const list = faceFilesOf(font);
+  return withSymbolRuns(runs, symbols, (cp) => (list ? list.fileFor(cp) !== null : fontHas(font, cp)));
+}
+
+function faceRuns(font: PDFFont, text: string, rtl: boolean): FileRun[] {
   const list = faceFilesOf(font);
   if (!list) return [{ font, text }];
   if (setsAsDeclared(list)) return besideLetters(declaredRuns(list, font, text, rtl), text, font);

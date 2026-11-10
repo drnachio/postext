@@ -70,7 +70,7 @@ export type { ColumnRuleSegment } from './paint/columnRule.js';
 export { findLooseLines, drawLooseLines, lineLooseness, lineWordSpacing } from './checks/looseLines.js';
 export type { LooseLine, FindLooseLinesOptions, DrawLooseLinesOptions } from './checks/looseLines.js';
 export { primaryFontFamily } from './measure/font.js';
-export { buildFontString, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock, setCjkLineBreak, getCjkLineBreak, setCjkComposition, getCjkComposition, cjkCompositionOf, punctuationAdvance, punctuationSide, PLAIN_CJK_COMPOSITION } from './measure/index.js';
+export { buildFontString, setSymbolFont, symbolFont, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock, setCjkLineBreak, getCjkLineBreak, setCjkComposition, getCjkComposition, cjkCompositionOf, punctuationAdvance, punctuationSide, PLAIN_CJK_COMPOSITION } from './measure/index.js';
 export type { CjkComposition, PunctuationSide } from './measure/index.js';
 export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure/index.js';
 export { hyphenateText, hyphenateByDictionary, setHyphenationLocale, setHyphenationRules, normalizeHyphenationExceptions, HYPHENATION_LOCALES, matchHyphenationLocale } from './hyphenation/hyphenate.js';
@@ -812,8 +812,8 @@ export { documentFontFaces, documentFontFamilies, fontFallbacks, defaultFontSet,
 export type { FontFaceLike, FontFaceSetLike, FontFallback, FontFallbackReason, FontFallbackOptions, FontFaceRequest } from './fonts/faces.js';
 export { exportStandInOf, fontFallbackOf, fontFallbackFamilies, hasOwnStyle } from './fonts/fallback.js';
 // Characters a face lacks, drawn from another face (#1105).
-export { glyphFallbacks, documentFontTexts, registerFontCoverage, forgetFontCoverage, installGlyphProbe, GLYPH_PROBE_FAMILY, GLYPH_FALLBACK_LISTED } from './fonts/glyphFallback.js';
-export type { GlyphFallback, GlyphFallbackOptions } from './fonts/glyphFallback.js';
+export { glyphFallbacks, glyphFallbackPlaces, documentFontTexts, registerFontCoverage, forgetFontCoverage, installGlyphProbe, GLYPH_PROBE_FAMILY, GLYPH_FALLBACK_LISTED } from './fonts/glyphFallback.js';
+export type { GlyphFallback, GlyphFallbackOptions, GlyphFallbackPlace } from './fonts/glyphFallback.js';
 export { sfntCodePointRanges } from './fonts/cmap.js';
 export { FIGURE_STYLES, isFigureStyle, figureFeatures, withFigureStyle, featureFamily, featureFamilyParts, isFeatureFamily, baseFontFamily, fontFeatureSettings, fontVariantNumeric, setFigureStyleFamilies } from './fonts/figureStyle.js';
 export type { FigureFeature, FeatureFamilyParts } from './fonts/figureStyle.js';
@@ -823,7 +823,7 @@ export type { FaceSource } from './fonts/featureFaces.js';
 export type { CodePointRanges } from './fonts/cmap.js';
 export { evictFontFamilies } from './measure/font.js';
 export { measurementGeneration } from './measure/canvas.js';
-export { parseFontString } from './measure/fontString.js';
+export { parseFontString, fontStringFamilies } from './measure/fontString.js';
 export { invalidateConfig } from './pipeline/config.js';
 export { stableStringify, stableHash, hashString, hashStringWide } from './util/stableHash.js';
 export { registerSvgImage, prepareSvgMarkup, decodeSvgImage } from './svg/image.js';

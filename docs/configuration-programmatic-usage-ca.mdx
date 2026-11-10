@@ -403,6 +403,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Caràcters que el text posa en una font (<code>family</code>, <code>weight</code>, <code>style</code>) que no té glif per a ells: <code>characters</code> en dona els 24 primers, un cop cadascun, <code>count</code> quants n'hi ha en total i <code>supplier</code> la família que els ha dibuixat (una família genèrica com <code>serif</code>), absent quan els ha dibuixat una font que ha triat el sistema. Un per font. En un navegador o en un worker el motor pregunta a una font sonda que declara al conjunt de fonts (<code>installGlyphProbe</code>, que criden <code>prepareFonts</code> i el worker de compaginació); fora d'aquests llegeix la taula <code>cmap</code> dels fitxers registrats amb <code>registerFontCoverage</code>, com fa la línia d'ordres. Subjecte a <code>debug.warnings.missingFont</code>. Sense pàgina ni rang d'origen. Des de postext 1.52.</td>
       <td>Els caràcters es dibuixen amb una altra font, que pot no casar en disseny i amplades amb la del text. Tria una família que els inclogui.</td>
     </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>Un bloc que porta caràcters que la seva font no té: el lloc que no dona <code>glyphFallback</code>. Un per bloc, font, pàgina i família que els dibuixa (200 com a màxim per document): <code>characters</code> els enumera i <code>supplier</code> és la família de la llista que els dibuixa (la <code>symbolFont</code>), absent per als que no té cap. Assenyala el bloc.</td>
+      <td>Es dibuixen amb <code>supplier</code>; sense, el PDF els imprimeix com a caixes buides. Indica una <code>symbolFont</code> que els tingui.</td>
+    </tr>
   </tbody>
 </table>
 

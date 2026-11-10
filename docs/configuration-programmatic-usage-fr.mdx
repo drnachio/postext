@@ -403,6 +403,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Des caractères que le texte compose dans une police (<code>family</code>, <code>weight</code>, <code>style</code>) qui n’a pas de glyphe pour eux : <code>characters</code> donne les 24 premiers, une fois chacun, <code>count</code> leur nombre total et <code>supplier</code> la famille qui les a dessinés (une famille générique comme <code>serif</code>), absent quand c’est une police choisie par le système. Un par police. Dans un navigateur ou un worker, le moteur interroge une police sonde qu’il déclare dans le jeu de polices (<code>installGlyphProbe</code>, qu’appellent <code>prepareFonts</code> et le worker de mise en page) ; ailleurs, il lit la table <code>cmap</code> des fichiers enregistrés avec <code>registerFontCoverage</code>, comme le fait la ligne de commande. Soumis à <code>debug.warnings.missingFont</code>. Sans page ni plage source. Depuis postext 1.52.</td>
       <td>Les caractères sont dessinés avec une autre police, dont le dessin et les chasses peuvent ne pas s’accorder avec la police du texte. Choisissez une famille qui les couvre.</td>
     </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>Un bloc qui contient des caractères absents de sa police : l’endroit que <code>glyphFallback</code> ne donne pas. Un par bloc, police, page et famille qui les dessine (200 au plus par document) : <code>characters</code> les liste, <code>supplier</code> est la famille de la liste qui les dessine (la <code>symbolFont</code>), absente pour ceux qu’aucune n’a. Pointe vers le bloc.</td>
+      <td>Ils sont dessinés avec <code>supplier</code> ; sans elle, le PDF les imprime comme des cases vides. Indiquez une <code>symbolFont</code> qui les contient.</td>
+    </tr>
   </tbody>
 </table>
 

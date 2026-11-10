@@ -67,6 +67,9 @@ export interface ResolvedConfig {
   /** External links in print (#1302); present only when they print
    *  something (`print` other than `'none'`). */
   links?: ResolvedLinksConfig;
+  /** The family set where the text's fonts lack a glyph
+   *  (`symbolFont`); present only when the config names one. */
+  symbolFont?: string;
   /** East Asian typography (`cjk`), with `'auto'` resolved from the
    *  document language. */
   cjk: ResolvedCjkConfig;

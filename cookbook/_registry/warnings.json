@@ -8481,6 +8481,60 @@
       }
     }
   },
+  "glyphFallbackAt": {
+    "source": "engine",
+    "label": {
+      "en": "Characters the font lacks, here",
+      "es": "Caracteres que la fuente no tiene, aquí",
+      "ca": "Caràcters que la font no té, aquí",
+      "zh": "此处字体缺少的字符",
+      "ar": "محارف لا يملكها الخط هنا",
+      "ja": "ここでフォントにない文字",
+      "pt": "Caracteres que a fonte não tem, aqui",
+      "fr": "Caractères absents de la police, ici",
+      "de": "Zeichen, die der Schrift hier fehlen",
+      "it": "Caratteri che il font non ha, qui"
+    },
+    "cause": {
+      "en": "A paragraph sets characters its text face has no glyph for: mathematical letters and operators (∪, ℵ), Greek in a Latin face, arrows (glyphFallback names the face, this the paragraph). supplier names the family that draws them, usually the symbolFont; without one, the PDF prints them as empty boxes.",
+      "es": "Un párrafo lleva caracteres que la fuente de su texto no tiene: letras y operadores matemáticos (∪, ℵ), griego en una fuente latina, flechas (glyphFallback nombra la fuente, este el párrafo). supplier es la familia que los dibuja, normalmente la symbolFont; sin ella, el PDF los imprime como cajas vacías.",
+      "ca": "Un paràgraf porta caràcters que la font del seu text no té: lletres i operadors matemàtics (∪, ℵ), grec en una font llatina, fletxes (glyphFallback anomena la font, aquest el paràgraf). supplier és la família que els dibuixa, normalment la symbolFont; sense, el PDF els imprimeix com a caixes buides.",
+      "zh": "段落含有其正文字体缺字形的字符：数学字母和运算符（∪、ℵ）、拉丁字体中的希腊字母、箭头（glyphFallback 指明字体，此警告指明段落）。supplier 为绘制它们的字体族，通常是 symbolFont；没有时 PDF 将其印成空框。",
+      "ar": "فقرة فيها محارف لا يملكها خط نصها: حروف ومؤثرات رياضية (∪، ℵ)، يونانية في خط لاتيني، أسهم (glyphFallback يسمّي الخط، وهذا الفقرة). supplier العائلة التي ترسمها، وعادةً symbolFont؛ وبدونها يطبعها PDF مربعات فارغة.",
+      "ja": "段落に本文フォントにないグリフの文字（数学の文字と演算子 ∪・ℵ、ラテン書体の中のギリシャ文字、矢印）があります（glyphFallback はフォントを、これは段落を示します）。supplier はそれを描くファミリーで、通常は symbolFont です。ない場合、PDF では空の四角として印刷されます。",
+      "pt": "Um parágrafo tem caracteres que a fonte do seu texto não tem: letras e operadores matemáticos (∪, ℵ), grego numa fonte latina, setas (glyphFallback nomeia a fonte, este o parágrafo). supplier é a família que os desenha, normalmente a symbolFont; sem ela, o PDF imprime-os como caixas vazias.",
+      "fr": "Un paragraphe contient des caractères absents de la police de son texte : lettres et opérateurs mathématiques (∪, ℵ), grec dans une police latine, flèches (glyphFallback nomme la police, celui-ci le paragraphe). supplier est la famille qui les dessine, en général la symbolFont ; sans elle, le PDF les imprime comme des cases vides.",
+      "de": "Ein Absatz enthält Zeichen, die seiner Textschrift fehlen: mathematische Buchstaben und Operatoren (∪, ℵ), Griechisch in einer lateinischen Schrift, Pfeile (glyphFallback nennt die Schrift, dies den Absatz). supplier ist die Familie, die sie zeichnet, meist die symbolFont; ohne sie druckt das PDF leere Kästchen.",
+      "it": "Un paragrafo contiene caratteri che il font del suo testo non ha: lettere e operatori matematici (∪, ℵ), greco in un font latino, frecce (glyphFallback nomina il font, questo il paragrafo). supplier è la famiglia che li disegna, di solito la symbolFont; senza, il PDF li stampa come caselle vuote."
+    },
+    "fix": {
+      "en": "Name a symbolFont that has them (Noto Sans Math covers most mathematics), or choose a text family that does. If a character is wrong (a Hebrew alef where the author meant a complement), correct the text.",
+      "es": "Indica una symbolFont que los tenga (Noto Sans Math cubre casi toda la matemática) o elige una familia de texto que los tenga. Si el carácter está mal (una alef hebrea donde el autor quería un complemento), corrige el texto.",
+      "ca": "Indica una symbolFont que els tingui (Noto Sans Math cobreix gairebé tota la matemàtica) o tria una família de text que els tingui. Si el caràcter és erroni (una àlef hebrea on l'autor volia un complement), corregeix el text.",
+      "zh": "指定包含它们的 symbolFont（Noto Sans Math 覆盖大部分数学符号），或选择包含它们的正文字体族。如果字符本身有误（作者想写补集却成了希伯来字母 alef），请改正文本。",
+      "ar": "حدّد symbolFont تحويها (يغطي Noto Sans Math معظم الرياضيات)، أو اختر عائلة نص تحويها. وإن كان المحرف خاطئًا (ألف عبرية حيث أراد المؤلف المتمِّمة)، فصحّح النص.",
+      "ja": "それを含む symbolFont（Noto Sans Math で数学のほとんどをカバー）を指定するか、それを含む本文ファミリーを選んでください。文字自体が誤り（補集合のつもりがヘブライ文字のアレフ）なら、本文を直してください。",
+      "pt": "Indique uma symbolFont que os tenha (Noto Sans Math cobre quase toda a matemática) ou escolha uma família de texto que os tenha. Se o caractere estiver errado (um álef hebraico onde o autor queria um complemento), corrija o texto.",
+      "fr": "Indiquez une symbolFont qui les contient (Noto Sans Math couvre presque toutes les mathématiques), ou choisissez une famille de texte qui les a. Si le caractère est faux (un aleph hébreu là où l’auteur voulait un complémentaire), corrigez le texte.",
+      "de": "Eine symbolFont angeben, die sie enthält (Noto Sans Math deckt fast die ganze Mathematik ab), oder eine Textfamilie wählen, die sie hat. Ist das Zeichen falsch (ein hebräisches Aleph, wo der Autor ein Komplement meinte), den Text korrigieren.",
+      "it": "Indica una symbolFont che li contenga (Noto Sans Math copre quasi tutta la matematica) o scegli una famiglia di testo che li abbia. Se il carattere è sbagliato (un aleph ebraico dove l’autore voleva un complementare), correggi il testo."
+    },
+    "docs": {
+      "slug": "configuration-programmatic-usage",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento",
+        "ca": "Avisos del document",
+        "zh": "文档中的警告",
+        "ar": "التحذيرات في المستند",
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento",
+        "fr": "Avertissements dans le document",
+        "de": "Warnungen im Dokument",
+        "it": "Avvisi nel documento"
+      }
+    }
+  },
   "wordDividedByCharacter": {
     "source": "engine",
     "label": {

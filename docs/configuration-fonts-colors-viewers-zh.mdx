@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '字体、颜色与输出',
   description: '单位、颜色和调色板，自定义字体，HTML阅读器，PDF与印刷输出，Folio书页查看器，以及调试用的叠加层',
   lang: 'zh',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '28分钟',
   order: 20,
   parent: 'configuration',
@@ -149,6 +149,12 @@ interface PostextConfig {
 有了排版结果之后，面板还会列出引擎报告的**排版时使用了后备字体**（`fontFallback`）：页面测量时没有用上的字体，要么根本没有，要么是浏览器借同一字体族的另一个字重或倾斜画出来的。已经作为未知字体族或缺少变体列出的字体族不会重复列出。在第一次排版之前，由针对`document.fonts`的检查代替它。
 
 面板还会列出**字符取自其他字体**（`glyphFallback`）：文本用某字体排、而该字体没有字形的字符，每个字体一条；检查能判断时，还会给出绘制它们的通用字体族（`serif`、`sans-serif`、`monospace`）。
+
+### 符号字体
+
+正文字体很少包含作者在段落中输入的数学字母和运算符（∪、ℵ、∀）、希腊字母或箭头。`symbolFont`指定排这些字符的字体族：文档的每个字体都会把它列在自己的字体族之后，因此画布、PDF、HTML 和 EPUB 都用它绘制这些字符，而不是空框。`'Noto Sans Math'` 覆盖大部分数学符号。在 Sandbox 中位于 **正文 → 符号字体**。
+
+排版会对每个含有此类字符的段落报告 `glyphFallbackAt`，并给出绘制它们的字体族，或没有：此时 PDF 会将其印成空框。Sandbox 在页面上标出这些字符：由符号字体绘制的为紫色，无字体绘制的为红色。
 
 ## 数字样式
 

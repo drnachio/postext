@@ -18,6 +18,10 @@ export type WarningPayload =
    *  the font list or a generic one) or, without it, from a face the
    *  system picks. `characters` are the first of them, `count` all. */
   | { kind: 'glyphFallback'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; count: number; supplier?: string }
+  /** The engine's `glyphFallbackAt`: the paragraph that sets
+   *  characters its face lacks, drawn from `supplier` (the `symbolFont`)
+   *  or, without it, printed as empty boxes in the PDF. */
+  | { kind: 'glyphFallbackAt'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; supplier?: string }
   /** Referenced family is neither a loaded Google Font nor a custom
    *  family in `customFonts`. Silently falls back to a system font at
    *  render time; this warning makes the fall-through visible. */

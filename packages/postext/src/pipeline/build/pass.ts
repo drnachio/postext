@@ -5,6 +5,7 @@ import type { PostextContent, PostextConfig, Resource } from '../../types.js';
 import { type VDTColumn, type VDTPage } from '../../vdt.js';
 import { withFigureWords } from '../resources/figureWords.js';
 import { type MeasurementCache, initHyphenator } from '../../measure/index.js';
+import { setSymbolFont } from '../../measure/font.js';
 import { getCjkLineBreak, setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
 import { getSlashBreaks, setSlashBreaks } from '../../measure/breakRules.js';
 import { getCjkComposition, setCjkComposition, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
@@ -114,6 +115,9 @@ function placeDocumentPass(
   // Rebound once the content is read when it holds exercises (#1227): the
   // config then also carries their chip and paragraph styles.
   setup.resolved = resolveAllConfig(config);
+  // The family the text's fonts fall back to, set or cleared
+  // before any font string of this build is made.
+  setSymbolFont(setup.resolved.symbolFont);
   // Bitmaps sized by the document's `layout.bitmapResolution` carry it as
   // their own `resolution` from here on (#631); under the default policy
   // the content is untouched.

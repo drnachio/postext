@@ -2,6 +2,7 @@
 // ligatures, the dir attribute and box of a word segment, and the font
 // strings a segment is written in (#1276: split out of html-backend.ts).
 import type { VDTLine, VDTLineSegment, VDTBlock } from '../vdt.js';
+import { fontStringFamilies } from '../measure/fontString.js';
 import { hasCJK } from '../measure/cjk/cjk.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { scriptContextUntracked } from '../measure/script.js';
@@ -193,6 +194,12 @@ function splitFontSize(font: string): [prefix: string, size: string, family: str
   return null;
 }
 
+/** One family of a CSS family list, in single quotes when it has a space
+ *  (see {@link quoteFontString}); a generic family bare. */
+function quoteCssFamily(family: string): string {
+  return /\s/.test(family) ? `'${family.replace(/'/g, "\\'")}'` : family;
+}
+
 export function quoteFontString(fontString: string): string {
   // Canvas accepts unquoted multi-word families; CSS is stricter. Wrap family in
   // single quotes (double quotes would collide with the outer HTML attribute
@@ -201,6 +208,10 @@ export function quoteFontString(fontString: string): string {
   const match = splitFontSize(fontString);
   if (!match) return fontString;
   const [prefix, size, family] = match;
+  // A list (`symbolFont` after the family): each family
+  // quoted on its own.
+  const listed = fontStringFamilies(fontString);
+  if (listed.length > 1) return `${prefix}${size} ${listed.map(quoteCssFamily).join(', ')}`.trim();
   const trimmed = (family ?? '').trim();
   let quoted: string;
   if (trimmed.startsWith("'")) {

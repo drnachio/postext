@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fontes, cores e saída',
   description: 'As unidades, as cores e a paleta, as fontes personalizadas, o visualizador HTML, o PDF e a produção gráfica, o visualizador Folio e a depuração',
   lang: 'pt',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -149,6 +149,12 @@ Clicar em qualquer um desses avisos abre o painel Fontes, para você enviar a va
 Quando já existe uma diagramação, o painel também lista o aviso do motor **Fonte substituta na diagramação** (`fontFallback`): uma face sem a qual as páginas foram medidas, seja porque falta, seja porque o navegador a desenha a partir de outro peso ou de outra inclinação. Uma família que já aparece como desconhecida ou com variante ausente não é listada duas vezes. Antes da primeira diagramação, uma verificação contra `document.fonts` ocupa o lugar desse aviso.
 
 O painel também lista **Caracteres tirados de outra fonte** (`glyphFallback`): caracteres que o texto põe numa fonte que não tem glifo para eles, uma vez por fonte, com a família genérica que os desenhou (`serif`, `sans-serif`, `monospace`) quando a verificação consegue saber.
+
+### Fonte de símbolos
+
+Uma fonte de texto raramente tem as letras e os operadores matemáticos (∪, ℵ, ∀), o grego ou as setas que o autor escreve num parágrafo. `symbolFont` nomeia uma família que os compõe: todas as fontes do documento a levam depois da sua, de modo que a tela, o PDF, o HTML e o EPUB desenham esses caracteres com ela em vez de uma caixa vazia. `'Noto Sans Math'` cobre quase toda a matemática. No Sandbox fica em **Texto do corpo → Fonte de símbolos**.
+
+A paginação avisa de cada parágrafo que tem esses caracteres com `glyphFallbackAt`, com a família que os desenha, ou sem nenhuma: o PDF imprime-os então como caixas vazias. O Sandbox marca-os na página, a violeta os que a fonte de símbolos desenha e a vermelho os que nenhuma desenha.
 
 ## Estilos de algarismos
 

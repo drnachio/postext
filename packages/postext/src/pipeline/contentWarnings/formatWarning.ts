@@ -276,6 +276,13 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       text = `The face ${face} has no glyph for ${w.count === 1 ? '1 character' : `${w.count} characters`} (${w.characters.join(' ')}${more}); ${by} draws them instead — choose a family that covers them or name one after it`;
       break;
     }
+    case 'glyphFallbackAt': {
+      const face = `"${w.family}" ${w.weight}${w.style === 'italic' ? ' italic' : ''}`;
+      text = w.supplier
+        ? `This paragraph sets ${w.characters.join(' ')}, which the face ${face} has no glyph for; "${w.supplier}" draws them`
+        : `This paragraph sets ${w.characters.join(' ')}, which the face ${face} has no glyph for and no family of its list has — the PDF prints them as empty boxes; name a symbolFont that covers them`;
+      break;
+    }
     case 'designTextTruncated':
       text = w.mode === 'clip'
         ? `The ${w.slot} text "${w.text}" (element "${w.elementId}") is wider than its box and clipped`

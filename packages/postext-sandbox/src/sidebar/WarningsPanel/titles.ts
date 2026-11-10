@@ -24,6 +24,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsFontFallbackTitle;
     case 'glyphFallback':
       return labels.warningsGlyphFallbackTitle;
+    case 'glyphFallbackAt':
+      return labels.warningsGlyphFallbackAtTitle;
     case 'duplicateFontVariant':
       return labels.warningsDuplicateFontVariantTitle;
     case 'looseLine':

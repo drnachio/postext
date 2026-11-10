@@ -62,6 +62,8 @@ export function configFontFamilies(config: PostextConfig, markdown?: FontContent
   const ordered = resolveOrderedListsConfig(config.orderedLists, body);
   const families = new Set<string>();
   families.add(body.fontFamily);
+  // The family the text falls back to: loaded with the others.
+  if (config.symbolFont?.trim()) families.add(config.symbolFont.trim());
   families.add(headings.fontFamily);
   for (const level of headings.levels) families.add(level.fontFamily);
   families.add(lists.fontFamily);
@@ -400,6 +402,9 @@ export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument)
       style: c.italic === true ? 'italic' : 'normal',
     });
   };
+  // The family the text falls back to (`symbolFont`): its
+  // regular face, which the browser and the PDF take for every weight.
+  if (config.symbolFont?.trim()) add(primaryFontFamily(config.symbolFont.trim()), { weight: 400, style: 'normal' });
   // Code (#624): the regular and bold weights of the code face, upright
   // and slanted (tokens may be bold or italic: a comment, a prompt).
   const codeFamilies = codeFontFamilies(config, doc?.markdown);

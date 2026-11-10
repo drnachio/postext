@@ -403,6 +403,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Caracteres que o texto põe numa fonte (<code>family</code>, <code>weight</code>, <code>style</code>) que não tem glifo para eles: <code>characters</code> traz os 24 primeiros, uma vez cada, <code>count</code> diz quantos são ao todo e <code>supplier</code> nomeia a família que os desenhou (uma família genérica como <code>serif</code>), ausente quando foi uma fonte escolhida pelo sistema. Um por fonte. No navegador ou num worker, o motor consulta uma fonte sonda que declara no conjunto de fontes (<code>installGlyphProbe</code>, chamada por <code>prepareFonts</code> e pelo worker de diagramação); fora deles lê a tabela <code>cmap</code> dos arquivos registrados com <code>registerFontCoverage</code>, como faz a linha de comando. Sujeito a <code>debug.warnings.missingFont</code>. Sem página nem intervalo de origem. Desde o postext 1.52.</td>
       <td>Os caracteres são desenhados com outra fonte, cujo desenho e larguras podem não combinar com a fonte do texto. Escolha uma família que os inclua.</td>
     </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>Um bloco que tem caracteres que a sua fonte não tem: o lugar que <code>glyphFallback</code> não dá. Um por bloco, fonte, página e família que os desenha (no máximo 200 por documento): <code>characters</code> enumera-os e <code>supplier</code> é a família da lista que os desenha (a <code>symbolFont</code>), ausente para os que nenhuma tem. Aponta para o bloco.</td>
+      <td>São desenhados com <code>supplier</code>; sem ela, o PDF imprime-os como caixas vazias. Indique uma <code>symbolFont</code> que os tenha.</td>
+    </tr>
   </tbody>
 </table>
 
