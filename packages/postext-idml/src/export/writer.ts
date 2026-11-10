@@ -6,6 +6,7 @@ import type { DisplayItem, DisplayRun } from 'postext';
 import type { VDTDocument } from 'postext/writer';
 import type { BlockStyle } from 'postext/writer';
 import type { ParagraphStyleDef, Swatch } from './parts.js';
+import type { FontNames } from './sfnt.js';
 
 export interface IdmlWarning {
   code: string;
@@ -33,6 +34,16 @@ export interface IdmlOptions {
    *  fields (default `true`); `false` writes them as any chip, the value
    *  as text. */
   forms?: boolean;
+  /** `keep` (default): every line ends where Postext ended it (a forced
+   *  line break), on the baseline Postext set it on, so InDesign shows the
+   *  pages as the PDF does. `reflow`: paragraphs are left to InDesign's
+   *  composer, for a book that will be set again there: frames, styles,
+   *  text and first baselines match, line breaks may not. */
+  lineBreaks?: 'keep' | 'reflow';
+  /** The font file of a face (TrueType or OpenType bytes; a WOFF2 decoded
+   *  first). With it a face is named as the file names it, which is how
+   *  InDesign finds it, and the files come back in `fonts`. */
+  fontFile?: (family: string, weight: number, italic: boolean) => Uint8Array | undefined;
   onWarning?: (w: IdmlWarning) => void;
 }
 
@@ -40,6 +51,9 @@ export interface IdmlResult {
   bytes: Uint8Array;
   /** Linked pictures (`images: 'link'`): path relative to the IDML file. */
   links: { path: string; bytes: Uint8Array }[];
+  /** The font files of the faces used (`fontFile`), as `Document fonts/<file>`:
+   *  beside the document they serve whoever opens it without the fonts. */
+  fonts: { path: string; bytes: Uint8Array }[];
 }
 
 export interface Writer {
@@ -54,7 +68,12 @@ export interface Writer {
   swatchNames: Set<string>;
   cmyk: Map<string, { c: number; m: number; y: number; k: number }>;
   palette: Map<string, string>;
-  fonts: Map<string, Set<string>>;
+  /** Faces written, by InDesign family then style name; the file's names
+   *  when the face has a file. */
+  fonts: Map<string, Map<string, FontNames | undefined>>;
+  /** A CSS face (`family|weight|italic`) as InDesign names it. */
+  faces: Map<string, { family: string; style: string }>;
+  fontFiles: Map<string, { path: string; bytes: Uint8Array }>;
   paraStyles: Map<string, ParagraphStyleDef>;
   /** The document being written, and the engine's block styles of its
    *  paragraphs by frame style and paragraph style (`engineStyle`). */
@@ -75,4 +94,7 @@ export type StoryItem = TextItem & { joinsPrevious?: boolean };
 export const frameName = (id: string) => id.replace(/^cp\d+:/, '');
 
 /** A chip that is written as a form field. */
+/** Lines are kept as Postext broke them (the default). */
+export const keepsLines = (w: Writer): boolean => w.opts.lineBreaks !== 'reflow';
+
 export const isField = (w: Writer, run: DisplayRun): boolean => run.inline?.kind === 'chip' && !!run.inline.field && w.opts.forms !== false;

@@ -72,3 +72,27 @@ export function findAll(el: XmlElement, match: (e: XmlElement) => boolean, out: 
   }
   return out;
 }
+
+/** A reference attribute: `n` and the empty string mean none. */
+export const refOf = (v: string | undefined): string | undefined => (v && v !== 'n' ? v : undefined);
+
+/** A name without the `$ID/` mark InDesign puts before its own strings
+ *  (`$ID/[No paragraph style]`, and `$ID/` alone for an empty one). */
+export const plainName = (v: string | undefined): string => (v === undefined ? '' : v.startsWith('$ID/') ? v.slice(4) : v);
+
+/** The items of a list property, each a record of named children
+ *  (`<ListItem type="record"><Position type="unit">120</Position>…`). */
+export function listRecords(prop: XmlElement | undefined): Record<string, XmlElement>[] {
+  const out: Record<string, XmlElement>[] = [];
+  for (const item of children(prop, 'ListItem')) {
+    const record: Record<string, XmlElement> = {};
+    for (const field of children(item)) record[localName(field.name)] = field;
+    out.push(record);
+  }
+  return out;
+}
+
+/** The items of a list property as text (`<ListItem type="object">…`). */
+export function listTexts(prop: XmlElement | undefined): string[] {
+  return children(prop, 'ListItem').map((i) => textOf(i));
+}

@@ -69,6 +69,9 @@ function idml(md: string, cfg: PostextConfig, opts: Partial<IdmlOptions> = {}): 
   return f;
 }
 
+/** The paragraphs left to InDesign's composer (`lineBreaks: 'reflow'`). */
+const reflow = (md: string, cfg: PostextConfig, opts: Partial<IdmlOptions> = {}): Files => idml(md, cfg, { lineBreaks: 'reflow', ...opts });
+
 const TITLE_BODY = composedConfig(
   [
     { name: 'title', style: 'title', placement: top(10, 15), width: mm(120), height: mm(15) },
@@ -110,7 +113,7 @@ describe('idmlDocument', () => {
 
   it('hyphenates only the paragraphs the composer hyphenated', () => {
     const doc = build(MD, TITLE_BODY);
-    const f = idml(MD, TITLE_BODY);
+    const f = reflow(MD, TITLE_BODY);
     const styles = text(f, 'Resources/Styles.xml');
     for (const m of styles.matchAll(/<ParagraphStyle Self="ParagraphStyle\/(title|text)"[^>]*>/g)) expect(m[0]).toContain('Hyphenation="false"');
     const items = pageDisplayList(doc, 0).items.filter((i) => i.kind === 'text' && i.frame?.endsWith('body'));
@@ -133,7 +136,7 @@ describe('idmlDocument', () => {
   });
 
   it('turns each composed frame into one text frame and one story, styled by its callout style', () => {
-    const f = idml(MD, TITLE_BODY);
+    const f = reflow(MD, TITLE_BODY);
     const spread = xml(f, spreads(f)[0]!);
     const frames = descendants(spread, 'TextFrame');
     expect(frames.map((fr) => attr(fr, 'Name'))).toEqual(['title', 'body']);
@@ -224,7 +227,7 @@ describe('idmlDocument', () => {
     const doc = build(md, cfg);
     const vframes = doc.pages.find((p) => p.composed)!.composed!.frames;
     expect(vframes.find((x) => x.name === 'a')!.continuesTo).toBeDefined();
-    const f = idml(md, cfg);
+    const f = reflow(md, cfg);
     const frames = descendants(xml(f, spreads(f)[0]!), 'TextFrame');
     expect(frames.map((x) => attr(x, 'Name'))).toEqual(['a', 'b']);
     const [a, b] = frames as [XmlElement, XmlElement];
@@ -256,7 +259,7 @@ describe('idmlDocument', () => {
   it('gives a frame style its tab stops and space after; its padding is the frame inset, not an indent', () => {
     const notes = { ...plain('notes', 8, { tabStops: [{ position: mm(4.5) }], paragraphSpacing: mm(1) }), padding: { top: mm(0), right: mm(0), bottom: mm(0), left: mm(4.5) } };
     const cfg = composedConfig([{ name: 'notes', style: 'notes', placement: top(10, 20), width: mm(120), height: mm(60) }], [notes]);
-    const f = idml(sheet(':::frame{slot="notes"}\n\\*\tNote\n\n\\*\\*\\*\\*\tNote\n:::'), cfg);
+    const f = reflow(sheet(':::frame{slot="notes"}\n\\*\tNote\n\n\\*\\*\\*\\*\tNote\n:::'), cfg);
     const style = paraStyle(f, 'notes');
     expect(tabsOf(style)).toEqual([{ align: 'LeftAlign', leader: '', at: expect.closeTo(MM45, 3) }]);
     expect(Number(attr(style, 'SpaceAfter'))).toBeCloseTo(MM1, 3);
@@ -276,7 +279,7 @@ describe('idmlDocument', () => {
 
   it('keeps a forced line break as InDesign’s (U+2028)', () => {
     const cfg = composedConfig([{ name: 'notes', style: 'notes', placement: top(10, 20), width: mm(120), height: mm(60) }], [plain('notes', 8, { tabStops: [{ position: mm(4.5) }] })]);
-    const f = idml(sheet(':::frame{slot="notes"}\n\\*\tNote\\\n\\*\\*\\*\\*\tNote\n:::'), cfg);
+    const f = reflow(sheet(':::frame{slot="notes"}\n\\*\tNote\\\n\\*\\*\\*\\*\tNote\n:::'), cfg);
     const story = storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame')[0]!);
     expect(descendants(parseXml(story), 'ParagraphStyleRange')).toHaveLength(1);
     expect(contents(story)).toBe('*\tNote ****\tNote');
@@ -290,7 +293,7 @@ describe('idmlDocument', () => {
       ],
     } as unknown as Partial<PostextConfig>);
     const md = `:::paragraphs{style="hang"}\n\\*\t${LOREM.slice(0, 160)}\tend\n\n\\*\\*\\*\\*\tShort.\n:::\n\n:::paragraphs{style="indented"}\n${LOREM}\n:::\n\nA plain paragraph.`;
-    const f = idml(md, cfg);
+    const f = reflow(md, cfg);
     // The first paragraph names the style (`Body`): the hanging note's.
     const style = paraStyle(f, 'Body');
     expect(Number(attr(style, 'LeftIndent'))).toBeCloseTo(MM45, 3);

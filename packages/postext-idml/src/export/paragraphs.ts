@@ -7,7 +7,7 @@ import type { VDTFrame } from 'postext/writer';
 import { withPxSize } from 'postext/writer';
 import { CHIP_PLACEHOLDER } from 'postext/writer';
 import { swatch } from './colours.js';
-import { defaultFontStyleName, parseCssFont } from './fonts.js';
+import { faceOf, parseCssFont } from './fonts.js';
 import { chipRect } from './geometry.js';
 import { textPropsAttrs, type TextProps } from './parts.js';
 import { isField, type TextItem, type Writer } from './writer.js';
@@ -80,17 +80,14 @@ export function asPainted(item: TextItem, s: number): TextItem {
 
 export function runProps(w: Writer, run: DisplayRun): TextProps {
   const f = parseCssFont(run.fontString);
-  const fontStyle = (w.opts.fontStyleName ?? defaultFontStyleName)(f.family, run.bold && f.weight < 600 ? 700 : f.weight, run.italic || f.italic);
-  let styles = w.fonts.get(f.family);
-  if (!styles) w.fonts.set(f.family, (styles = new Set()));
-  styles.add(fontStyle);
+  const face = faceOf(w, f.family, run.bold && f.weight < 600 ? 700 : f.weight, run.italic || f.italic);
   const sizePt = f.sizePx * w.k;
   const p: TextProps = {
-    font: f.family,
-    fontStyle,
+    font: face.family,
+    fontStyle: face.style,
     size: sizePt,
     color: swatch(w, run.color)?.ref ?? 'Color/Black',
-    tracking: run.tracking && f.sizePx ? Math.round((run.tracking / f.sizePx) * 1000) : 0,
+    tracking: run.tracking && f.sizePx ? Math.round((run.tracking / f.sizePx) * 10000) / 10 : 0,
   };
   if (run.smallCaps) p.capitalization = 'SmallCaps';
   if (run.script === 'sup') p.position = 'Superscript';
@@ -128,14 +125,92 @@ export function paragraphJustification(lines: DisplayLine[]): string | undefined
 /** Thin spaces (U+2009, about a fifth of an em) filling `px` at `sizePx`. */
 const thinSpaces = (px: number | undefined, sizePx: number): string => ' '.repeat(Math.max(0, Math.round((px ?? 0) / (sizePx * 0.2))));
 
+/** The runs of one line that set text, each with its words as the
+ *  export writes them: a chip's words join the text (its box is a
+ *  rectangle of its own, `chipRects`), its gap, border and padding as thin
+ *  spaces; an empty chip (a blank to fill in) and a form field's chip are
+ *  their box's width in thin spaces. With `tabLeaders` the leaders before
+ *  tab stops are left to the stops (`TabList`), not set as text. */
+function paintedRuns(w: Writer, line: DisplayLine, tabLeaders: boolean): { run: DisplayRun; text: string }[] {
+  // A form field's chip is room for the field (`chipFields`): its words
+  // are left out.
+  let fieldEnd = -Infinity;
+  const runs = line.runs.filter((r) => {
+    if (isField(w, r)) {
+      const rect = chipRect(r, line);
+      fieldEnd = rect ? rect.x + rect.width : r.x + r.width;
+      return true;
+    }
+    if (!r.inline && r.x < fieldEnd - 0.01) return false;
+    if (tabLeaders && r.leader) return false;
+    return !r.inline || r.inline.kind === 'chip';
+  });
+  if (line.runs.some((r) => r.inline && r.inline.kind !== 'chip')) w.warn('text.inline', `Inline content (maths, music, swatches) is left out: "${line.text.slice(0, 40)}"`);
+  return runs.map((run) => {
+    let text = run.text;
+    if (run.inline?.kind === 'chip' || run.padStart || run.padEnd) {
+      const sizePx = parseCssFont(run.fontString).sizePx || 12;
+      const words = text.replaceAll(CHIP_PLACEHOLDER, '');
+      text = run.inline?.kind === 'chip' && (!words.trim() || isField(w, run)) ? thinSpaces(run.inline.box?.width, sizePx) : `${thinSpaces(run.padStart, sizePx)}${words}${thinSpaces(run.padEnd, sizePx)}`;
+    }
+    return { run, text };
+  });
+}
+
+/** A tab stop a line needs: where the text after the tab starts (sheet
+ *  px), and the leader that fills the way there. */
+export interface LineStop {
+  x: number;
+  leader?: string;
+}
+
+export interface TextRun {
+  text: string;
+  props: TextProps;
+}
+
+/** The runs of a text item line by line, as painted: a hyphen a break
+ *  added or repeated stays, nothing is put back between lines. For lines
+ *  kept as Postext broke them. */
+export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?: LineStop[][]): TextRun[][] {
+  return item.lines.map((line, li) => {
+    const out: TextRun[] = [];
+    const painted = paintedRuns(w, line, tabLeaders);
+    painted.forEach(({ run, text: words }, ri) => {
+      let text = words;
+      // A leader, or a tab, with no stops from the paragraph's style (a
+      // contents row): a tab to where it ends, filled with the leader's
+      // mark. The space Postext leaves on either side of a leader is room,
+      // not a word space: a tab of its own, to where the next run starts.
+      if (stops && !tabLeaders) {
+        const beside = !words.trim() && words !== '\t' && (painted[ri - 1]?.run.leader || painted[ri + 1]?.run.leader);
+        if (run.leader || text === '\t' || beside) {
+          const mark = run.leader ? text.trim().charAt(0) : '';
+          (stops[li] ??= []).push({ x: run.x + run.width, ...(mark ? { leader: mark } : {}) });
+          text = '\t';
+        }
+      }
+      if (!text) return;
+      const props = runProps(w, run);
+      const last = out[out.length - 1];
+      if (last && sameProps(last.props, props)) last.text += text;
+      else out.push({ text, props });
+    });
+    // A space at a line's end would take part in its justification.
+    const tail = out[out.length - 1];
+    if (tail) {
+      tail.text = tail.text.replace(/ +$/, '');
+      if (!tail.text) out.pop();
+    }
+    return out;
+  });
+}
+
 /** The runs of a text item as the paragraph reads: added and repeated
- *  hyphens dropped, the space a break swallowed put back. A chip's words
- *  join the text (its box is a rectangle of its own, `chipRects`), its
- *  gap, border and padding as thin spaces; an empty chip (a blank to fill
- *  in) is its box's width in thin spaces. With `tabLeaders` the leaders
- *  before tab stops are left to the stops (`TabList`), not set as text. */
-export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): { text: string; props: TextProps }[] {
-  const out: { text: string; props: TextProps }[] = [];
+ *  hyphens dropped, the space a break swallowed put back. For paragraphs
+ *  left to InDesign's composer. */
+export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): TextRun[] {
+  const out: TextRun[] = [];
   const push = (text: string, props: TextProps) => {
     if (!text) return;
     const last = out[out.length - 1];
@@ -143,36 +218,18 @@ export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): { 
     else out.push({ text, props });
   };
   item.lines.forEach((line, li) => {
-    // A form field's chip is room for the field (`chipFields`): its box's
-    // width in thin spaces, its words left out.
-    let fieldEnd = -Infinity;
-    const runs = line.runs.filter((r) => {
-      if (isField(w, r)) {
-        const rect = chipRect(r, line);
-        fieldEnd = rect ? rect.x + rect.width : r.x + r.width;
-        return true;
-      }
-      if (!r.inline && r.x < fieldEnd - 0.01) return false;
-      if (tabLeaders && r.leader) return false;
-      return !r.inline || r.inline.kind === 'chip';
-    });
-    if (line.runs.some((r) => r.inline && r.inline.kind !== 'chip')) w.warn('text.inline', `Inline content (maths, music, swatches) is left out: "${line.text.slice(0, 40)}"`);
-    runs.forEach((run, ri) => {
-      let text = run.text;
-      if (run.inline?.kind === 'chip' || run.padStart || run.padEnd) {
-        const sizePx = parseCssFont(run.fontString).sizePx || 12;
-        const words = text.replaceAll(CHIP_PLACEHOLDER, '');
-        text = run.inline?.kind === 'chip' && (!words.trim() || isField(w, run)) ? thinSpaces(run.inline.box?.width, sizePx) : `${thinSpaces(run.padStart, sizePx)}${words}${thinSpaces(run.padEnd, sizePx)}`;
-      }
+    const runs = paintedRuns(w, line, tabLeaders);
+    runs.forEach(({ run, text: painted }, ri) => {
+      let text = painted;
       if (li > 0 && ri === 0 && line.repeatedHyphen) text = text.replace(/^[-‐]/, '');
       if (ri === runs.length - 1 && line.addedHyphen) text = text.replace(/[-‐­]$/, '');
       push(text, runProps(w, run));
     });
     const next = item.lines[li + 1];
     if (!next || !runs.length) return;
-    const lastProps = out[out.length - 1]?.props ?? runProps(w, runs[0]!);
+    const lastProps = out[out.length - 1]?.props ?? runProps(w, runs[0]!.run);
     // A forced break stays one: InDesign's forced line break (U+2028).
-    if (line.hardBreak) push(' ', lastProps);
+    if (line.hardBreak) push('\u2028', lastProps);
     else if (!line.addedHyphen) {
       const end = [...line.map].reverse().find((m) => m >= 0);
       const start = next.map.find((m) => m >= 0);

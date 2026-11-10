@@ -140,13 +140,15 @@ export const COMMANDS: CommandSpec[] = [
   {
     name: 'idml',
     summary: 'The laid-out pages as an InDesign package (IDML)',
-    usage: 'postext idml <input…> [-o book.idml] [--images embed|link]',
+    usage: 'postext idml <input…> [-o book.idml] [--images embed|link] [--lines keep|reflow] [--fonts]',
     description: 'The PDF\'s pages as an InDesign Markup package: one page per spread, rules, boxes, paths and pictures as page items, each composed frame\'s text as a text frame with its own story, callout styles as paragraph styles, authored CMYK colours as swatches. InDesign sets the text again: frames, styles and first baselines match, line breaks may differ.',
     options: [
       OUT,
       { name: 'images', kind: 'string', arg: 'embed|link', help: 'Pictures inside the file (embed, default) or beside it in Links/ (link)' },
+      { name: 'lines', kind: 'string', arg: 'keep|reflow', help: 'Lines as Postext broke them (keep, default) or left to InDesign\'s composer (reflow)' },
+      { name: 'fonts', kind: 'boolean', help: 'Write the font files beside the package, in Document fonts/' },
     ],
-    examples: ['postext idml book/ -o book.idml'],
+    examples: ['postext idml book/ -o book.idml', 'postext idml book/ -o out/book.idml --images link --fonts'],
     canvas: true,
     run: () => import('./commands/idml'),
   },

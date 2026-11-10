@@ -3,24 +3,16 @@
 // InDesign expects in every file. Written for DOMVersion 8.0 (CS6), which
 // every later InDesign opens.
 
-import { escapeAttr } from '../xml/write.js';
+import { attr, escapeAttr, num, XML_HEAD } from '../xml/write.js';
+import type { FontNames } from './sfnt.js';
+
+export { attr, num, XML_HEAD };
 
 export const IDML_MIMETYPE = 'application/vnd.adobe.indesign-idml-package';
 export const DOM_VERSION = '8.0';
 export const PKG_NS = 'http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging';
-export const XML_HEAD = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
 
 export const CONTAINER_XML = `${XML_HEAD}<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="designmap.xml" media-type="text/xml"/></rootfiles></container>`;
-
-/** A number as IDML writes it: up to four decimals, no trailing zeros. */
-export function num(n: number): string {
-  if (!Number.isFinite(n)) return '0';
-  const r = Math.round(n * 10000) / 10000;
-  return Object.is(r, -0) ? '0' : String(r);
-}
-
-export const attr = (name: string, value: string | number | boolean | undefined): string =>
-  value === undefined ? '' : ` ${name}="${escapeAttr(typeof value === 'number' ? num(value) : String(value))}"`;
 
 export interface DesignMapInput {
   title: string;
@@ -117,13 +109,17 @@ export function graphicXml(swatches: Swatch[]): string {
   );
 }
 
-export function fontsXml(families: Map<string, Set<string>>): string {
+export function fontsXml(families: Map<string, Map<string, FontNames | undefined>>): string {
   let i = 0;
   const body = [...families]
     .map(([family, styles]) => {
       const id = `di${(++i).toString(16)}`;
       const faces = [...styles]
-        .map((style) => `<Font${attr('Self', `${id}Fontn${family} ${style}`)}${attr('FontFamily', family)}${attr('Name', `${family} ${style}`)} PostScriptName="$ID/" Status="NotAvailable"${attr('FontStyleName', style)} FontType="OpenTypeTT" WritingScript="0" FullName="" FullNameNative="" FontStyleNameNative="" PlatformName="$ID/" Version=""/>`)
+        .map(
+          ([style, names]) =>
+            `<Font${attr('Self', `${id}Fontn${family} ${style}`)}${attr('FontFamily', family)}${attr('Name', `${family} ${style}`)}${attr('PostScriptName', names?.postScriptName ?? '$ID/')} Status="${names ? 'Installed' : 'NotAvailable'}"` +
+            `${attr('FontStyleName', style)}${attr('FontType', names?.type ?? 'OpenTypeTT')} WritingScript="0"${attr('FullName', names?.fullName ?? '')} FullNameNative="" FontStyleNameNative="" PlatformName="$ID/" Version=""/>`,
+        )
         .join('');
       return `<FontFamily${attr('Self', id)}${attr('Name', family)}>${faces}</FontFamily>`;
     })
@@ -211,11 +207,21 @@ export function paragraphFormatAttrs(f: Partial<ParagraphFormat>): string {
 
 const nonZero = (n: number) => (Math.abs(n) >= 0.005 ? n : undefined);
 
-export function stylesXml(paragraphStyles: ParagraphStyleDef[]): string {
+/** What a paragraph style says when its lines are kept as Postext broke
+ *  them: nothing left to InDesign's composer. No hyphenation (a hyphen a
+ *  break added is in the text), the single-line composer, word spaces free
+ *  to take the width Postext gave them, letters and glyphs at their own
+ *  width, no keeps, no grid. */
+export const KEPT_LINES =
+  ' Composer="$ID/HL Single" MinimumWordSpacing="0" DesiredWordSpacing="100" MaximumWordSpacing="1000" MinimumLetterSpacing="0" DesiredLetterSpacing="0" MaximumLetterSpacing="0"' +
+  ' MinimumGlyphScaling="100" DesiredGlyphScaling="100" MaximumGlyphScaling="100" SingleWordJustification="LeftAlign" KeepLinesTogether="false" KeepAllLinesTogether="false" KeepWithNext="0"' +
+  ' KerningMethod="$ID/Metrics" Ligatures="true" AlignToBaseline="false" BalanceRaggedLines="NoBalancing" LastLineIndent="0"';
+
+export function stylesXml(paragraphStyles: ParagraphStyleDef[], keptLines = false): string {
   const own = paragraphStyles
     .map(
       (s) =>
-        `<ParagraphStyle${attr('Self', s.self)}${attr('Name', s.name)} Imported="false" NextStyle="${escapeAttr(s.self)}" Hyphenation="false"${textPropsAttrs(s.props)}${attr('Justification', s.justification)}` +
+        `<ParagraphStyle${attr('Self', s.self)}${attr('Name', s.name)} Imported="false" NextStyle="${escapeAttr(s.self)}" Hyphenation="false"${keptLines ? KEPT_LINES : ''}${textPropsAttrs(s.props)}${attr('Justification', s.justification)}` +
         `${paragraphFormatAttrs({ leftIndent: nonZero(s.format.leftIndent), firstLineIndent: nonZero(s.format.firstLineIndent), rightIndent: nonZero(s.format.rightIndent), spaceAfter: nonZero(s.format.spaceAfter) })}>` +
         `<Properties><BasedOn type="object">ParagraphStyle/$ID/NormalParagraphStyle</BasedOn><AppliedFont type="string">${escapeAttr(s.props.font)}</AppliedFont><Leading type="unit">${num(s.leading)}</Leading>` +
         `${s.format.tabs.length ? tabListXml(s.format.tabs) : ''}</Properties></ParagraphStyle>`,

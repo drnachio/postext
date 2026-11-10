@@ -255,6 +255,8 @@ export interface IdmlSpread {
   hidden: boolean;
   showMasterItems: boolean;
   bindingLocation: number;
+  /** Part of the package it was read from. */
+  part?: string;
 }
 
 // ── Stories ───────────────────────────────────────────────────────────
@@ -269,7 +271,7 @@ export type SpecialCharacter =
 export type Inline =
   | { kind: 'text'; text: string }
   | { kind: 'special'; char: SpecialCharacter; code?: string }
-  | { kind: 'footnote' | 'endnote'; paragraphs: IdmlParagraph[] }
+  | { kind: 'footnote' | 'endnote'; paragraphs: IdmlParagraph[]; /** `Self` of an endnote, when written. */ self?: string }
   | { kind: 'note'; paragraphs: IdmlParagraph[] }
   | { kind: 'table'; table: IdmlTable }
   | { kind: 'item'; item: IdmlPageItem }
@@ -290,6 +292,9 @@ export interface IdmlRun extends Props {
   change?: 'inserted' | 'deleted' | 'moved';
   /** XML tags the run stands in, outermost first. */
   tags: string[];
+  /** The run stands in a `HiddenText`: conditional text whose condition
+   *  is switched off. */
+  hidden?: boolean;
 }
 
 export interface IdmlParagraph extends Props {
@@ -297,6 +302,8 @@ export interface IdmlParagraph extends Props {
   runs: IdmlRun[];
   /** The break that ends it (`NextColumn`, `NextFrame`, `NextPage`…). */
   breakAfter?: string;
+  /** `EndnoteRange` of an endnote story the paragraph stands in. */
+  endnoteRange?: string;
 }
 
 export interface IdmlCell extends Props {
@@ -334,6 +341,8 @@ export interface IdmlStory {
   endnotes: boolean;
   trackChanges: boolean;
   opticalMargin: boolean;
+  /** Part of the package it was read from. */
+  part?: string;
 }
 
 // ── Document ──────────────────────────────────────────────────────────
@@ -373,6 +382,11 @@ export interface IdmlDestination {
   kind: 'url' | 'page' | 'text' | 'paragraph' | 'external';
   url?: string;
   page?: string;
+  /** Story a text or paragraph destination stands in. */
+  story?: string;
+  /** Document an external page destination points into, and its page. */
+  documentPath?: string;
+  pageIndex?: number;
 }
 
 export interface IdmlTopic {
@@ -403,6 +417,29 @@ export interface IdmlDocumentPreferences {
   columnDirection: 'Horizontal' | 'Vertical';
   baselineGrid: { start: number; division: number; relativeTo: string; shown: boolean };
   margins?: IdmlMargins;
+  /** Every preference element of the part by its name (`FootnoteOption`,
+   *  `TextPreference`, `TextDefault`…), as written. */
+  all?: Record<string, Props>;
+}
+
+/** The parts the designmap names, by their path in the package. */
+export interface IdmlParts {
+  graphic?: string;
+  fonts?: string;
+  styles?: string;
+  preferences?: string;
+  tags?: string;
+  backingStory?: string;
+  masterSpreads: string[];
+  spreads: string[];
+  stories: string[];
+}
+
+export interface IdmlNumberingList {
+  self: string;
+  name: string;
+  continueAcrossStories: boolean;
+  continueAcrossDocuments: boolean;
 }
 
 export interface IdmlDocument {
@@ -434,6 +471,10 @@ export interface IdmlDocument {
   conditions: Map<string, IdmlCondition>;
   textVariables: Map<string, { name: string; type: string }>;
   crossReferenceFormats: Map<string, { name: string; blocks: { type: string; text?: string }[] }>;
+  numberingLists: Map<string, IdmlNumberingList>;
+  /** `StoryList` of the document: every story it holds, by `Self`. */
+  storyList: string[];
+  parts: IdmlParts;
   /** `Links/…` and other files the package carries beside its parts. */
   files: Map<string, Uint8Array>;
   /** What the reader met and could not read as written. */

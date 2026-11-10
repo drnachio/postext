@@ -29,7 +29,7 @@ import {
   stylesXml,
 } from './parts.js';
 import { spreadXml } from './spreads.js';
-import type { IdmlOptions, IdmlResult, Writer } from './writer.js';
+import { keepsLines, type IdmlOptions, type IdmlResult, type Writer } from './writer.js';
 
 export type { IdmlOptions, IdmlResult, IdmlWarning } from './writer.js';
 
@@ -53,6 +53,8 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
     cmyk: authoredCmykColors(first.config),
     palette,
     fonts: new Map(),
+    faces: new Map(),
+    fontFiles: new Map(),
     paraStyles: new Map(),
     doc: first,
     blockStyles: new Map(),
@@ -94,7 +96,7 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
   parts.set('META-INF/container.xml', strToU8(CONTAINER_XML));
   parts.set('Resources/Graphic.xml', strToU8(graphicXml([...w.swatches.values()])));
   parts.set('Resources/Fonts.xml', strToU8(fontsXml(w.fonts)));
-  parts.set('Resources/Styles.xml', strToU8(stylesXml([...w.paraStyles.values()])));
+  parts.set('Resources/Styles.xml', strToU8(stylesXml([...w.paraStyles.values()], keepsLines(w))));
   parts.set('Resources/Preferences.xml', strToU8(preferencesXml(g)));
   parts.set('MasterSpreads/MasterSpread_umaster.xml', strToU8(masterSpreadXml('umaster', g)));
   for (const s of spreads) parts.set(`Spreads/Spread_${s.id}.xml`, strToU8(s.xml));
@@ -105,5 +107,5 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
   const z: Zippable = {};
   for (const [path, bytes] of parts) z[path] = path === 'mimetype' ? [bytes, { level: 0 }] : bytes;
   const bytes = zipSync(z, { level: 6, mtime: new Date(1980, 0, 1, 0, 0, 0) });
-  return { bytes, links: [...w.media.values()] };
+  return { bytes, links: [...w.media.values()], fonts: [...w.fontFiles.values()] };
 }

@@ -3,12 +3,12 @@
 // set them with.
 
 import type { VDTFrame } from 'postext/writer';
-import { escapeXml } from '../xml/write.js';
 import { resolveBodyStyle, resolveParagraphStyle, type BlockStyle } from 'postext/writer';
 import { deriveCalloutResolvedConfig } from 'postext/writer';
 import { resolvedLocale } from 'postext/writer';
 import { resolveTabSettings } from 'postext/writer';
-import { overrides, paragraphJustification, paragraphRuns, sameProps, textScale } from './paragraphs.js';
+import { linesRuns, type LineStop, paragraphJustification, paragraphRuns, sameProps, textScale, type TextRun } from './paragraphs.js';
+import { keptParagraphs, rangeXml } from './keptLines.js';
 import {
   attr,
   DOM_VERSION,
@@ -23,13 +23,7 @@ import {
   type TabStopDef,
   type TextProps,
 } from './parts.js';
-import { frameName, type StoryItem, type TextItem, type Writer } from './writer.js';
-
-/** Characters InDesign shows as a missing glyph when the face lacks them
- *  and that set nothing: the word joiner and the zero-width no-break
- *  space. (A soft hyphen stays: InDesign reads it as a discretionary
- *  hyphen.) */
-const NO_GLYPH = /[\u2060\uFEFF]/g;
+import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
 const STYLE_NAMES: Record<string, string> = { body: 'Body', heading: 'Heading', list: 'List', quote: 'Quote', caption: 'Caption', footnote: 'Footnote', header: 'Header', footer: 'Footer', design: 'Design' };
 
@@ -124,7 +118,7 @@ function lineIndents(w: Writer, item: TextItem, edge: { left: number; right: num
 
 /** A paragraph of a story, written once the next one has said how far
  *  apart they stand. */
-interface StoryPara {
+export interface StoryPara {
   style: ParagraphStyleDef;
   /** Leading, alignment, hyphenation the paragraph sets itself. */
   attrs: string;
@@ -133,6 +127,9 @@ interface StoryPara {
   ranges: string;
   /** The rest of the paragraph before it (a paragraph a frame break split). */
   joins?: boolean;
+  /** The text after it starts in the next frame of the chain. */
+  frameBreak?: boolean;
+
 }
 
 /** A paragraph's range: its style, what it sets beyond it, its text, and
@@ -149,25 +146,36 @@ function paraXml(p: StoryPara, end: boolean): string {
   });
   const tabs = tabListXml(p.format.tabs);
   const props = tabs !== tabListXml(s.tabs) ? `<Properties>${tabs}</Properties>` : '';
-  const ranges = end ? p.ranges : p.ranges.replace(/<\/CharacterStyleRange>$/, '<Br/></CharacterStyleRange>');
+  const ranges = end
+    ? p.ranges
+    : p.frameBreak
+      ? `${p.ranges}<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]" ParagraphBreakType="NextFrame"><Br/></CharacterStyleRange>`
+      : p.ranges.replace(/<\/CharacterStyleRange>$/, '<Br/></CharacterStyleRange>');
   return `<ParagraphStyleRange${attr('AppliedParagraphStyle', p.style.self)}${p.attrs}${local}${attr('SpaceBefore', p.spaceBefore)}>${props}${ranges}</ParagraphStyleRange>`;
 }
 
 /** A story: one paragraph per text item. A list item's marker joins its
- *  item's paragraph (marker, tab, text, hanging indent); the rest of a
- *  paragraph a frame break split joins its paragraph. The items are as
+ *  item's paragraph (marker, tab, text, hanging indent). The items are as
  *  painted (`asPainted`); what the engine's style gives (stops, the turnover
  *  indent, the space after) follows the frame's text scale
- *  (`fit.shrinkText`). Indents come from
- *  where the lines stand, tab stops and the space after from the style
- *  the engine set the paragraph in; the paragraph style takes those of
- *  its first paragraph, a paragraph sets what differs. */
+ *  (`fit.shrinkText`). Indents come from where the lines stand, tab stops
+ *  and the space after from the style the engine set the paragraph in; the
+ *  paragraph style takes those of its first paragraph, a paragraph sets
+ *  what differs.
+ *
+ *  With lines kept (the default) every line ends in a forced line break
+ *  on its own baseline (`keptLines.ts`), and the text of each frame of a
+ *  chain ends in a frame break, so nothing moves from where Postext set
+ *  it. Left to InDesign's composer (`lineBreaks: 'reflow'`), the rest of a
+ *  paragraph a frame break split joins its paragraph and the story runs
+ *  through the chain as InDesign breaks it. */
 export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | undefined): string {
+  const keep = keepsLines(w);
   const paras: StoryPara[] = [];
   let prev: StoryItem | undefined;
   const sc = textScale(frame);
   const edges = textEdges(items);
-  let marker: { runs: { text: string; props: TextProps }[]; x: number } | undefined;
+  let marker: { runs: TextRun[]; x: number } | undefined;
   items.forEach((item) => {
     if (item.role === 'marker') {
       marker = { runs: paragraphRuns(w, item), x: item.lines[0]?.runs[0]?.x ?? item.bbox.x };
@@ -178,10 +186,14 @@ export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFr
     // hangs on its own): its tab stops carry their leaders.
     const engine = marker ? undefined : engineStyle(w, item, frame);
     const tabs = styleTabs(w, engine, edge.right - edge.left, sc);
-    let runs = paragraphRuns(w, item, tabs.length > 0);
+    const stops: LineStop[][] = [];
+    const perLine = keep ? linesRuns(w, item, tabs.length > 0, stops) : undefined;
+    let runs = perLine ? perLine.flat() : paragraphRuns(w, item, tabs.length > 0);
     let hang: { left: number; first: number } | undefined;
     if (marker) {
-      runs = [...marker.runs.map((r) => ({ ...r, text: `${r.text}\t` })), ...runs];
+      const lead = marker.runs.map((r) => ({ ...r, text: `${r.text}\t` }));
+      runs = [...lead, ...runs];
+      if (perLine) perLine[0] = [...lead, ...(perLine[0] ?? [])];
       // The item's text starts where its lines do (the block's box takes in the marker).
       const textX = Math.min(...item.lines.map((l) => l.runs[0]?.x ?? item.bbox.x));
       hang = { left: (textX - edge.left) * w.k, first: (marker.x - textX) * w.k };
@@ -189,7 +201,7 @@ export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFr
     }
     if (!runs.length) return;
     const last = paras[paras.length - 1];
-    const joins = item.joinsPrevious && !!last;
+    const joins = !keep && item.joinsPrevious && !!last;
     if (joins) {
       // No paragraph return between the two parts (`paraXml`); the word
       // space the frame break swallowed comes back unless a hyphen split a
@@ -224,10 +236,10 @@ export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFr
     }
     const dominant = [...weight].sort((a, b) => b[1] - a[1])[0]![0];
     const style = paragraphStyle(w, paragraphStyleName(w, item, frame), dominant, leading, justification ?? 'LeftAlign', base);
-    let local = '';
-    if (Math.abs(style.leading - leading) >= 0.01) local += attr('Leading', leading);
-    if (justification && style.justification !== justification) local += attr('Justification', justification);
     let spaceBefore: number | undefined;
+    // With lines kept, the first line's own leading when it stands closer
+    // to the line before than its leading says.
+    let firstLeading = leading;
     const prevLast = prev?.lines[prev.lines.length - 1];
     if (!joins && last && prevLast && lines[0] && prev?.frame === item.frame) {
       // Baseline to baseline = leading + the space after the paragraph
@@ -236,15 +248,22 @@ export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFr
       const gap = (lines[0].baseline - prevLast.baseline) * w.k - leading;
       const before = gap - last.format.spaceAfter;
       if (before > 0.05) spaceBefore = before;
-      else if (before < -0.05) last.format = { ...last.format, spaceAfter: Math.max(0, gap) };
+      else if (before < -0.05) {
+        last.format = { ...last.format, spaceAfter: Math.max(0, gap) };
+        if (keep && gap < -0.05) firstLeading = Math.max(0.1, leading + gap);
+      }
     }
+    if (keep && last && prev && prev.frame !== item.frame) last.frameBreak = true;
     prev = item;
-    const ranges = runs.map((r) => {
-      const o = overrides(r.props, style.props);
-      const font = r.props.font !== style.props.font ? `<Properties><AppliedFont type="string">${escapeXml(r.props.font)}</AppliedFont></Properties>` : '';
-      const content = r.text.replace(NO_GLYPH, '').split(' ').map((t) => (t ? `<Content>${escapeXml(t)}</Content>` : '')).join('<Content> </Content>');
-      return `<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]"${o}>${font}${content}</CharacterStyleRange>`;
-    });
+    if (keep) {
+      paras.push(...keptParagraphs(w, item, perLine!, { style, edge, format, hang: !!hang, firstLeading, spaceBefore, stops }));
+      return;
+    }
+    let local = '';
+    if (justification && style.justification !== justification) local += attr('Justification', justification);
+    // Leading is a character's: every range says the paragraph's own.
+    const ownLeading = Math.abs(style.leading - leading) >= 0.01 ? leading : undefined;
+    const ranges = runs.map((r) => rangeXml(r, style.props, ownLeading));
     // Styles do not hyphenate (InDesign does by default); a paragraph the
     // composer hyphenated does.
     if (lines.some((l) => l.addedHyphen)) local += ' Hyphenation="true"';

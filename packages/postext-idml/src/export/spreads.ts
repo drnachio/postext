@@ -10,7 +10,7 @@ import { asPainted, textScale } from './paragraphs.js';
 import { attr, DOM_VERSION, num, PKG_NS, XML_HEAD } from './parts.js';
 import { chipFields, chipRects, pathXml, rectXml, ruleXml } from './shapes.js';
 import { storyXml } from './story.js';
-import { frameName, type StoryItem, type TextItem, type Writer } from './writer.js';
+import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
 /** A frame of a chain: its own id, its neighbours', the chain's story
  *  (written with the chain's first frame on the page) and its items. */
@@ -35,8 +35,22 @@ function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined,
   const text = union(measured.map((i) => i.bbox));
   const box = frame ? { ...frame.rect } : { ...text };
   const rotate = frame?.rotate ?? measured[0]!.rotate ?? 0;
-  // Room below for InDesign's own composer.
-  if (!frame) box.height += (measured[0]!.lines[0]?.lineHeight ?? 0) * 0.5;
+  if (keepsLines(w) && !rotate && withLines.length) {
+    // The text frame is not painted (a frame's box is a rectangle of its
+    // own), so it may be larger than the text: room under the last
+    // baseline for the line's descent as InDesign counts it, and, for text
+    // set ragged from the left, room at the right for a line InDesign
+    // measures a hair wider than Postext did. A line that did not fit
+    // would go to the next line and push the rest out of the frame.
+    const lastItem = withLines[withLines.length - 1]!;
+    const tail = lastItem.lines[lastItem.lines.length - 1]!;
+    const need = tail.baseline + tail.lineHeight * 0.75;
+    if (need > box.y + box.height) box.height = need - box.y;
+    if (withLines.every((i) => i.lines.every((l) => l.align === 'left' && !l.rtl && !l.vertical))) box.width += 6 / w.k;
+  } else if (!frame) {
+    // Room below for InDesign's own composer.
+    box.height += (measured[0]!.lines[0]?.lineHeight ?? 0) * 0.5;
+  }
   const g = boxGeometry(w, box, rotate);
   const left = Math.max(0, (text.x - box.x) * w.k);
   const right = Math.max(0, (box.x + box.width - (text.x + text.width)) * w.k);
