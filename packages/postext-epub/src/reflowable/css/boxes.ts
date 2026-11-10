@@ -92,8 +92,18 @@ export function createBoxRules(deps: BoxRulesDeps) {
       s.body.smallCaps && 'font-variant: small-caps',
       `text-align: ${ALIGN[s.body.textAlign] ?? 'start'}`,
     ]));
+    // A hanging box (#1451): its paragraphs' turnovers padded in, the first
+    // line taken back to the edge (or to the style's own first-line indent
+    // beside a length); `true` hangs by the first-line indent.
+    const hang = s.body.hangingIndent === true
+      ? px(s.body.firstLineIndent, bPx)
+      : typeof s.body.hangingIndent === 'object' ? px(s.body.hangingIndent, bPx) : 0;
+    const first = hang > 0
+      ? (typeof s.body.hangingIndent === 'object' && s.body.ownFirstLineIndent ? px(s.body.firstLineIndent, bPx) : 0) - hang
+      : px(s.body.firstLineIndent, bPx);
     out.push(rule(under('p'), [
-      `text-indent: ${round(px(s.body.firstLineIndent, bPx) / bPx)}em`,
+      hang > 0 && `padding-inline-start: ${round(hang / bPx)}em`,
+      `text-indent: ${round(first / bPx)}em`,
       spacingEm(s.body.paragraphSpacing, s.body.lineHeight, bPx) > 0 && `margin-block-end: ${spacingEm(s.body.paragraphSpacing, s.body.lineHeight, bPx)}em`,
       lh(s.body.lineHeight, bPx),
     ]));

@@ -95,4 +95,10 @@ export interface ResolvedBodyTextConfig {
   /** Set only in the derived config of a callout whose `body.letterSpacing`
    *  is not zero (#974). */
   letterSpacing?: Dimension;
+  /** Set only in the derived config of a callout whose `body.hangingIndent`
+   *  is a length (#1451): the indent of every line but the first, as a
+   *  paragraph style's `hangingIndent`. {@link ownFirstLineIndent} pairs
+   *  the first line's own indent with it. */
+  hangingIndentLength?: Dimension;
+  ownFirstLineIndent?: true;
 }

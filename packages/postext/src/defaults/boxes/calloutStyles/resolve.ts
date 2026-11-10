@@ -158,6 +158,10 @@ function resolveCalloutStyleConfig(
       hyphenation: partial.body?.hyphenation ?? bodyText.hyphenation.enabled,
       paragraphSpacing: partial.body?.paragraphSpacing ?? bodyText.paragraphSpacing,
       firstLineIndent: partial.body?.firstLineIndent ?? bodyText.firstLineIndent,
+      // Absent unless set: the box takes the body's hang (#1451). A first
+      // line indent the style sets itself pairs with a hanging length.
+      ...(partial.body?.hangingIndent !== undefined ? { hangingIndent: partial.body.hangingIndent } : {}),
+      ...(typeof partial.body?.hangingIndent === 'object' && partial.body.firstLineIndent !== undefined ? { ownFirstLineIndent: true as const } : {}),
       // Absent unless set: the box takes the body's tab stops (#622).
       ...(Array.isArray(partial.body?.tabStops) ? { tabStops: partial.body.tabStops } : {}),
       ...(partial.body?.tabInterval ? { tabInterval: partial.body.tabInterval } : {}),

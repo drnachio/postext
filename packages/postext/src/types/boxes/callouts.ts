@@ -383,6 +383,12 @@ export interface ResolvedCalloutStyleConfig {
     hyphenation: boolean;
     paragraphSpacing: boolean | Dimension;
     firstLineIndent: Dimension;
+    /** Absent unless the style sets it (#1451): the body's then. */
+    hangingIndent?: boolean | Dimension;
+    /** `true` when the style sets `body.firstLineIndent` itself beside a
+     *  `hangingIndent` length: the first line then starts there (see
+     *  `CalloutBodyStyleConfig.hangingIndent`). Absent otherwise. */
+    ownFirstLineIndent?: true;
     /** Absent when the style sets none. */
     tabStops?: TabStop[];
     tabInterval?: Dimension;
