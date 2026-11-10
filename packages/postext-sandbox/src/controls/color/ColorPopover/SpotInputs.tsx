@@ -3,8 +3,10 @@
 import { useId } from 'react';
 import type { SpotColor, SpotInk } from 'postext';
 import { useSandboxLabels } from '../../../context/SandboxContext.js';
+import { NumberField, Switch } from '../../../ui/index.js';
+import { FieldIdsContext } from '../../fieldContext.js';
+import { TextControl } from '../../inputs/TextInput.js';
 import type { CMYK } from '../color-utils.js';
-import { SmallInput } from './SmallInput.js';
 
 interface Props {
   /** The spot colour being edited; undefined while it has no ink name. */
@@ -16,25 +18,19 @@ interface Props {
   onChange: (spot: SpotColor) => void;
 }
 
-const fieldStyle = {
-  width: '100%',
-  padding: '4px 6px',
-  fontSize: 11,
-  borderRadius: 3,
-  border: '1px solid var(--pt-control-border)',
-  backgroundColor: 'var(--background)',
-  color: 'var(--foreground)',
-  boxSizing: 'border-box' as const,
-};
-
-const captionStyle = { margin: '6px 0 2px', fontSize: 10, color: 'var(--slate)' };
+const CAPTION = 'block text-xs text-(--slate)';
 
 /** The spot colour tab: the ink's name (a known one fills in its values),
- *  its look at 100 % in CMYK, the tint, and whether it overprints. */
+ *  its look at 100 % in CMYK, the tint, and whether it overprints. Its
+ *  fields are the Sandbox's own (28 px, 44 px with large targets on), so
+ *  they fit the 260 px popover four abreast. */
 export function SpotInputs({ spot, fallbackCmyk, knownInks, onChange }: Props) {
   const labels = useSandboxLabels();
   const listId = useId();
   const nameId = useId();
+  const cmykId = useId();
+  const overprintId = useId();
+  const overprintLabelId = useId();
   const cmyk = spot?.cmyk ?? fallbackCmyk;
   const tint = spot?.tint ?? 100;
   const overprint = spot?.overprint ?? false;
@@ -54,44 +50,71 @@ export function SpotInputs({ spot, fallbackCmyk, knownInks, onChange }: Props) {
   };
 
   return (
-    <div>
-      <label htmlFor={nameId} style={{ ...captionStyle, display: 'block', marginTop: 0 }}>{labels.colorSpotName}</label>
-      <input
-        id={nameId}
-        type="text"
-        list={knownInks.length > 0 ? listId : undefined}
-        value={spot?.name ?? ''}
-        placeholder="PANTONE 286 C"
-        onChange={(e) => setName(e.target.value)}
-        style={fieldStyle}
-      />
-      {knownInks.length > 0 && (
-        <datalist id={listId}>
-          {knownInks.map((i) => <option key={i.name} value={i.name} />)}
-        </datalist>
-      )}
-
-      <fieldset disabled={!named} style={{ border: 'none', margin: 0, padding: 0, opacity: named ? 1 : 0.5 }}>
-        <legend style={captionStyle}>{labels.colorSpotCmyk}</legend>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 6 }}>
-          {(['c', 'm', 'y', 'k'] as const).map((ch) => (
-            <SmallInput key={ch} value={cmyk[ch]} onChange={(v) => emit({ cmyk: { ...cmyk, [ch]: v } })} label={ch.toUpperCase()} max={100} />
-          ))}
+    // The popover sits inside the colour's field row: its ids name the
+    // swatch, not these fields.
+    <FieldIdsContext.Provider value={null}>
+      <div className="flex flex-col gap-2">
+        <div>
+          <label htmlFor={nameId} className={`${CAPTION} mb-1`}>{labels.colorSpotName}</label>
+          <TextControl
+            id={nameId}
+            list={knownInks.length > 0 ? listId : undefined}
+            value={spot?.name ?? ''}
+            placeholder="PANTONE 286 C"
+            onChange={setName}
+            className="w-full"
+          />
+          {knownInks.length > 0 && (
+            <datalist id={listId}>
+              {knownInks.map((i) => <option key={i.name} value={i.name} />)}
+            </datalist>
+          )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <SmallInput value={tint} onChange={(v) => emit({ tint: v })} label={labels.colorSpotTint} max={100} />
-            <span aria-hidden="true" style={{ fontSize: 10, color: 'var(--slate)', alignSelf: 'flex-start', marginTop: 4 }}>%</span>
+        <fieldset disabled={!named} className="m-0 flex flex-col gap-2 border-0 p-0 disabled:opacity-50">
+          <div role="group" aria-labelledby={cmykId}>
+            <div id={cmykId} className={`${CAPTION} mb-1`}>{labels.colorSpotCmyk}</div>
+            <div className="flex justify-between gap-1.5">
+              {(['c', 'm', 'y', 'k'] as const).map((ch) => (
+                <div key={ch} className="flex flex-col items-center gap-0.5">
+                  <NumberField
+                    value={cmyk[ch]}
+                    onValueChange={(v) => emit({ cmyk: { ...cmyk, [ch]: v } })}
+                    min={0}
+                    max={100}
+                    steppers={false}
+                    widthCh={4}
+                    ariaLabel={ch.toUpperCase()}
+                  />
+                  <span aria-hidden="true" className="text-xs text-(--slate)">{ch.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--foreground)', cursor: 'pointer' }}>
-            <input type="checkbox" checked={overprint} onChange={(e) => emit({ overprint: e.target.checked })} />
-            {labels.colorSpotOverprint}
-          </label>
-        </div>
-      </fieldset>
 
-      <p style={{ margin: '6px 0 0', fontSize: 10, lineHeight: 1.35, color: 'var(--slate)' }}>{labels.colorSpotHint}</p>
-    </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <span aria-hidden="true" className="text-xs text-(--slate)">{labels.colorSpotTint}</span>
+              <NumberField
+                value={tint}
+                onValueChange={(v) => emit({ tint: v })}
+                min={0}
+                max={100}
+                steppers={false}
+                widthCh={4}
+                ariaLabel={labels.colorSpotTint}
+              />
+              <span aria-hidden="true" className="text-xs text-(--slate)">%</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Switch id={overprintId} checked={overprint} onCheckedChange={(v) => emit({ overprint: v })} disabled={!named} ariaLabelledBy={overprintLabelId} />
+              <label id={overprintLabelId} htmlFor={overprintId} className="cursor-pointer text-xs text-(--foreground)">{labels.colorSpotOverprint}</label>
+            </div>
+          </div>
+        </fieldset>
+
+        <p className="m-0 text-xs text-(--slate) [text-wrap:pretty]">{labels.colorSpotHint}</p>
+      </div>
+    </FieldIdsContext.Provider>
   );
 }

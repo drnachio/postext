@@ -268,3 +268,33 @@ describe('a text style\'s figures', () => {
     expect(String(done.error)).toContain('"oldstyle"');
   });
 });
+
+// #1469: the ink table (`print.inks`), which the Print section's ink cards
+// write, is a setting like any other: written whole, one ink's field by its
+// place in the table, read back, and cleared.
+describe('the ink table', () => {
+  it('is written, changed and cleared through the config tools', async () => {
+    const { call } = harness(book());
+    const inks = [{ name: 'PANTONE 286 C', aliases: ['Corporate blue'] }, { name: 'Varnish', output: 'spot', overprint: true }];
+    const done = await call('sandbox_set_config', { changes: [{ path: 'print.inks', value: inks }], wait: false });
+    expect(done.ok, text(done)).toBe(true);
+    expect((await call('sandbox_get_config', { path: 'print.inks', effective: false })).set).toEqual(inks);
+    const resolved = await call('sandbox_get_config', { path: 'print.inks' });
+    expect(resolved.effective).toEqual([
+      { name: 'PANTONE 286 C', aliases: ['Corporate blue'], pdfName: 'PANTONE 286 C', output: 'spot' },
+      { name: 'Varnish', aliases: [], pdfName: 'Varnish', output: 'spot', overprint: true },
+    ]);
+    const changed = await call('sandbox_set_config', { changes: [
+      { path: 'print.inks[0].pdfName', value: 'P 286' },
+      { path: 'print.inks[1].output', value: 'process' },
+      { path: 'print.inks[1].cmyk', value: { c: 0, m: 0, y: 0, k: 20 } },
+    ], wait: false });
+    expect(changed.ok, text(changed)).toBe(true);
+    expect((await call('sandbox_get_config', { path: 'print.inks[0].pdfName' })).effective).toBe('P 286');
+    expect((await call('sandbox_get_config', { path: 'print.inks[1].output' })).effective).toBe('process');
+    expect((await call('sandbox_get_config', { path: 'print.inks[1].cmyk' })).effective).toEqual({ c: 0, m: 0, y: 0, k: 20 });
+    const cleared = await call('sandbox_set_config', { changes: [{ path: 'print.inks', value: null }], wait: false });
+    expect(cleared.ok, text(cleared)).toBe(true);
+    expect((await call('sandbox_get_config', { path: 'print.inks' })).effective).toEqual([]);
+  });
+});
