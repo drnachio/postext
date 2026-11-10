@@ -1,0 +1,56 @@
+---
+title: "Signes de lògica i de conjunts amb una font de símbols"
+summary: "Una cartilla de lògica en fonts sense ∀, ∈ ni ℵ: symbolFont anomena Noto Sans Math, que dibuixa aquests signes i el grec al llenç i al PDF."
+plain: "Un capítol breu que ensenya a llegir els signes de la lògica i de la teoria de conjunts. Les fonts del llibre no tenen aquests signes, així que una segona font els posa, en pantalla i al PDF imprès."
+description: "Una cartilla de lògica en Postext amb symbolFont: Noto Sans Math dibuixa ∀, ∃, ∈, ℵ i el grec en totes les fonts, al llenç i al PDF, sense caixes buides."
+question: "Com imprimeixo signes de lògica i conjunts (∀, ∈, ℵ) i el grec que no té la meva font, sense caixes buides?"
+aliases: ["font de símbols", "symbolFont", "font de reserva", "glifs que falten", "caixes buides al PDF", "signes lògics", "notació de conjunts", "lògica de predicats", "Noto Sans Math", "glyphFallbackAt"]
+---
+
+## Què compondràs
+
+El primer capítol d'una cartilla de lògica de butxaca, en una pàgina de 155 × 235 mm: una banda granat amb els signes del capítol en gran i després quatre seccions que llegeixen en veu alta ∀, ∃, ∈, ∪, ∅ i ℵ, amb les fórmules dins del text i destacades entre paràgrafs. El llibre va en Crimson Pro, els títols en Cormorant Garamond i els rètols en IBM Plex Sans Condensed. Cap de les tres no té ∀, ∈ ni cap lletra grega als fitxers que serveix Fontsource. Un sol ajust, `symbolFont`, posa Noto Sans Math darrere de cadascuna, de manera que tots els signes surten de la mateixa font al cos, als títols, a les capçaleres i a les cel·les de les taules, i el PDF els imprimeix tots.
+
+## Elaboració
+
+### 1 · Una font de símbols darrere de totes
+
+El codi d'aquest pas és la resposta curta, més amunt. `symbolFont: 'Noto Sans Math'` ([font de símbols](/ca/docs/configuration-fonts-colors-viewers#font-de-símbols)) col·loca aquesta família darrere de totes les que anomena la configuració: un caràcter que la font no té es dibuixa amb Noto Sans Math, a la mida i en el color de la font, i la resta de la línia continua en la seva. Fontsource serveix Noto Sans Math sencera al fitxer `latin`, amb 3.033 caràcters, però el kit declara aquest fitxer només per al rang llatí, i el navegador no li demanaria ∀. El `resolve` i el `pdfFonts` de la recepta lliuren el mateix fitxer sense rang, en pantalla i a `renderToPdf`. Només canvien de font els caràcters que falten: Crimson Pro té ¬, així que la negació del text continua en Crimson Pro.
+
+### 2 · Una primera composició sense ella mostra el que falta
+
+<Excerpt region="without" />
+
+La primera composició deixa `symbolFont` buit i imprimeix els avisos `glyphFallbackAt`, un per cada paràgraf, títol o taula que porta caràcters per als quals la seva font no té glif, amb la pàgina i els caràcters. L'edició anglesa en dona divuit: catorze paràgrafs en Crimson Pro, tres títols en Cormorant Garamond i la fila de capçalera de la taula 1.1 en IBM Plex Sans Condensed negreta. Sense una família que els dibuixi, el llenç pren els signes d'una font del sistema del lector i el PDF imprimeix una caixa buida per a cadascun. La segona composició, amb la font de símbols, és la que es veu a la pàgina; els seus avisos anomenen `"Noto Sans Math"` com la família que els dibuixa.
+
+### 3 · Els signes de l'obertura són text
+
+<Excerpt region="opener" />
+
+La línia de set signes sota el títol és un text de disseny en Cormorant Garamond a 30 pt, que pren el contingut de l'atribut `signs` del títol. Cormorant Garamond no en té cap, així que tots set surten de la font de símbols, en el blanc de la banda. Un espaiat de 9 pt els reparteix a l'amplada de la caixa.
+
+### 4 · Les cel·les i les capçaleres fan servir la mateixa font
+
+<Excerpt region="tables" />
+
+La taula de veritat es construeix amb les mateixes connectives: la capçalera de cada columna és la fórmula, i cada cel·la, el que la fórmula dona en aquella fila. Les cel·les de capçalera van en IBM Plex Sans Condensed negreta cursiva i les del cos en Crimson Pro; la font de símbols serveix totes dues. La seva única variant rodona dibuixa per a tots els pesos i inclinacions, de manera que el ∧ de la capçalera en negreta i el ∈ d'una fórmula en cursiva són el mateix signe dret. La capçalera de la pàgina senar imprimeix la secció en curs, `{firstMark.h2}`, i *CONJUNTOS: ∈, ∪, ∩ Y ∅*, a la pàgina 3, també pren els signes de Noto Sans Math.
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="Pàgina 3: les fórmules de conjunts, en Crimson Pro cursiva, amb tots els signes de Noto Sans Math." />
+
+## Variants
+
+### Treu la primera composició
+
+Un cop llegits els avisos, n'hi ha prou amb una composició.
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## Errors freqüents
+
+- Una font els fitxers de Fontsource de la qual inclouen el grec (Source Serif 4, Alegreya) compon φ i Γ per si mateixa, i el kit carrega aquest fitxer quan el text porta grec: aleshores només els signes passen a la font de símbols. Crimson Pro no té fitxer grec, així que el seu grec surt de Noto Sans Math.
+- La font de símbols té una sola variant, rodona i regular. Un títol en negreta o una fórmula en cursiva compon els signes en aquesta variant, que és com els imprimeixen les matemàtiques.

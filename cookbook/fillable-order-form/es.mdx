@@ -1,0 +1,68 @@
+---
+title: "Una hoja de pedido impresa que es también un PDF rellenable"
+summary: "Una lista de semillas cuyas casillas de cantidad son campos de PDF: el total de cada línea, los subtotales y el importe a pagar se suman solos en el lector."
+description: "Una lista de semillas tradicionales en Postext cuyos chips son campos AcroForm: casillas numéricas, de marcar, una lista de opciones y totales calculados."
+plain: "Un catálogo de semillas de cuatro páginas con hoja de pedido. Impreso, tiene casillas para escribir; abierto en un lector de PDF, escribes el número de sobres y los totales se suman solos."
+question: "¿Cómo hago un formulario PDF que el lector pueda rellenar y que sume sus totales?"
+aliases: ["PDF rellenable", "formulario PDF", "AcroForm", "campos de formulario", "hoja de pedido", "lista de precios", "campos calculados", "AFSimple_Calculate", "casilla de verificación", "lista desplegable", "catálogo de semillas", "venta por correo"]
+pageNotes: { "1": "La portada: una pintura de hortalizas tradicionales sobre una mesa de madera ocupa la mitad superior de la página (tomates acostillados, una sandía Luna y Estrellas, una calabaza azul, pimientos, remolachas, maíz de colores y dos bolsas de papel con judías pintas). Debajo, el antetítulo verde Primavera de 2027 · Semilla de polinización abierta, el título Lista de semillas y hoja de pedido en Caslon grande con una entradilla en cursiva al lado, y una introducción a dos columnas.", "2": "Página 2: La lista de 2027. Un párrafo breve y la lista de precios en una tabla con la fila de cabecera en verde oscuro (Ref., Variedad, Semillas, Precio, Uds., Total). Cada grupo de variedades empieza con una fila verde pálido (Tomates, Pimientos, Judías); cada variedad tiene una casilla blanca con borde gris bajo Uds. y una casilla color kraft bajo Total, y cada grupo acaba con una fila de subtotal cuya casilla lleva borde verde.", "3": "Página 3: la lista sigue con la última judía, Calabazas y melones, y Hojas y raíces, cada grupo con su subtotal. Bajo el ladillo Lo que pagas, una tabla de cinco filas: las semillas, el círculo de guardianes con una casilla de marcar, el envío de 3,90 € impreso en un chip kraft, una casilla blanca para un donativo y Total a pagar con una casilla verde maciza.", "4": "Página 4: Tus datos. Nombre, Dirección, Localidad y Provincia, Código postal y Teléfono, y Correo, cada uno con una línea para escribir; Cómo pagas, con una casilla de opciones en Transferencia, una línea de Fecha y dos casillas de marcar; Cómo nos la mandas, con las direcciones postal y de correo; dos columnas de notas y un colofón de una línea." }
+---
+
+## Lo que vas a componer
+
+*Semillas El Surco Largo* es la lista de semillas de la primavera de 2027, cuatro páginas de 210 × 270 mm de una casa de semillas inventada que vende veinticinco variedades reales de polinización abierta. Una pintura de la cosecha ocupa la mitad superior de la portada. La lista de precios es una sola tabla repartida entre las páginas 2 y 3, con una casilla de cantidad y el total de la línea en cada fila y un subtotal al final de cada grupo. Los datos del cliente y el pago van en la página 4. Impresa, es una hoja de pedido corriente que se rellena a bolígrafo. Cada casilla es además un chip con el atributo `field`, así que el PDF que escribe `renderToPdf` es un AcroForm: escribes el número de sobres en el lector de PDF y los totales se calculan solos, en euros en español y en dólares en inglés.
+
+## Elaboración
+
+### 1 · Un estilo de chip por cada clase de casilla
+
+<Excerpt region="chips" />
+
+El estilo da al campo su aspecto y su anchura mínima, y el PDF coloca el widget del campo justo sobre la caja que pinta el chip. Las casillas que rellena el lector son blancas con borde gris; las que calcula el formulario son de color kraft y sin borde, para que se vea cuáles se escriben a mano. Las líneas de la dirección son chips con solo un filete inferior, de 145,5 mm para el nombre y de 64 o 59,5 mm para las medias líneas, y así sus extremos coinciden con los tabuladores del estilo de párrafo `field`. La casilla de marcar conserva su anchura mínima de 3,9 mm sin relleno, y en el PDF el campo es una casilla de verificación.
+
+### 2 · El TSV de una hoja de cálculo; las casillas, de la mano del script
+
+<Excerpt region="tables" />
+
+Las variedades llegan como una hoja: una referencia, el nombre con su nota, las semillas del sobre y el precio. `priceList()` añade a cada fila los dos chips de campo y, al final de cada grupo, una fila de subtotal. La celda del precio imprime `formatFieldNumber(price, 'currency', style)`, la misma función que da formato a los totales, de modo que el precio impreso y el total calculado usan los mismos separadores: coma decimal y el euro detrás. La fila que abre cada grupo es una sola celda que cruza las seis columnas, y al partir la tabla nunca queda sola al pie de una página. La tabla de la página 3 toma sus cinco filas del Markdown de `content.summary.es.md`, con los chips escritos en las celdas.
+
+### 3 · La portada: primero la pintura, luego el título
+
+<Excerpt region="cover" />
+
+El elemento de imagen se ancla a la página, a 210 × 134 mm, y sangra por tres lados. El antetítulo queda a 120 mm del arranque del contenedor, y el título y la entradilla cuelgan de él. La altura mínima del estilo, 164 mm, deja la introducción a dos columnas por debajo del título, sea cual sea su longitud.
+
+### 4 · Cabeceras que no tocan la portada
+
+<Excerpt region="running-heads" />
+
+La página par lleva el nombre de la casa de semillas y la impar la sección, cada uno junto a su folio. El estilo de título de la portada tiene la cabecera y el pie vacíos, así que la página 1 no lleva cabecera.
+
+### 5 · Una paleta con un color para los importes calculados
+
+<Excerpt region="palette" />
+
+El verde hoja marca lo que es de la casa: la fila de cabecera, los antetítulos, los bordes de los subtotales y la casilla maciza del total a pagar. El kraft se reserva para las casillas que calcula el PDF, de modo que en papel se leen como las casillas que dejas en blanco.
+
+## Variantes
+
+### Pide los gastos de envío como campo
+
+Convierte el envío impreso en un campo que escribe el lector y súmalo al total en lugar del importe fijo.
+
+```diff
+-Envío y embalaje, sea cual sea el pedido	:chip[3,90 €]{style="amount"}
++Envío y embalaje, sea cual sea el pedido	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total a pagar**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 3.90, order.gift)"}
++**Total a pagar**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## Errores frecuentes
+
+Las páginas capturadas muestran las casillas vacías, porque las palabras de un campo son su valor inicial y aquí todos empiezan en blanco. El envío es texto impreso en un chip sin `field`, y el total lo suma como el número `3.90` dentro del cálculo (con punto decimal, como cualquier número de un `calc`), así que el lector no puede cambiarlo.
+
+Los totales son scripts (`AFSimple_Calculate` y expresiones breves) que ejecutan Acrobat, Foxit, Chrome y Firefox. Vista Previa de macOS muestra los campos y guarda lo que escribes, pero no ejecuta scripts, así que allí los totales se quedan vacíos.
+
+La casilla del círculo lleva `on="1"`, el valor que lee un cálculo cuando está marcada. Con el valor por defecto, `Yes`, `product(order.circle, 10)` daría siempre 0, y postext-pdf avisa de ello.
+
+La receta importa `https://esm.sh/postext-pdf?bundle`. La compilación por defecto de pdf-lib en esm.sh deja sus clases de anotación en un módulo aparte, y entonces pdf-lib rechaza el widget de cada campo: el PDF conserva las casillas, pero sin formato de número, sin totales y sin campos de solo lectura, con un aviso `formField` en la consola. `?bundle` compila pdf-lib en un solo módulo y deja `postext` fuera, compartido con el resto de la página.

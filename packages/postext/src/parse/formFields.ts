@@ -101,6 +101,17 @@ export function formNumberStyle(options: FormNumberOptions | undefined, lang: st
   };
 }
 
+/** The form options a render uses: the host's own (`renderToPdf`'s or the
+ *  canvas's `forms`) field by field, else the document's
+ *  `pdfGeneration.forms`. Undefined when neither sets anything. */
+export function formOptionsOf<T extends object>(host: T | undefined, configured: T | undefined): T | undefined {
+  if (!host) return configured;
+  if (!configured) return host;
+  const out = { ...configured } as Record<string, unknown>;
+  for (const [k, v] of Object.entries(host)) if (v !== undefined) out[k] = v;
+  return out as T;
+}
+
 /**
  * A field's value as its number format shows it (what Acrobat's
  * `AFNumber_Format` draws): two decimals or none, grouped and pointed in

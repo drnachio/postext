@@ -1,0 +1,68 @@
+---
+title: "Ein gedruckter Bestellschein als ausfüllbares PDF"
+summary: "Eine Saatgutliste, deren Mengenfelder PDF-Formularfelder sind: Zeilensummen, Zwischensummen und der Gesamtbetrag rechnen sich im PDF-Reader von selbst aus."
+description: "Eine Liste alter Gemüsesorten in Postext, deren Chips AcroForm-Felder sind: Zahlenfelder, Kontrollkästchen, eine Auswahlliste und berechnete Summen."
+plain: "Ein vierseitiger Saatgutkatalog mit Bestellschein. Gedruckt hat er Kästchen zum Ausfüllen; im PDF-Reader tippt man die Zahl der Tütchen ein, und die Summen rechnen sich selbst aus."
+question: "Wie mache ich ein PDF-Formular, das Leser ausfüllen können und das seine Summen selbst ausrechnet?"
+aliases: ["ausfüllbares PDF", "PDF-Formular", "AcroForm", "Formularfelder", "Bestellschein", "Preisliste", "berechnete Felder", "AFSimple_Calculate", "Kontrollkästchen", "Auswahlliste", "Saatgutkatalog", "Versandhandel"]
+pageNotes: { "1": "Der Umschlag: Ein Gemälde alter Gemüsesorten auf einem Holztisch füllt die obere Hälfte der Seite (gerippte Tomaten, eine Wassermelone Moon and Stars, ein blauer Kürbis, Paprika, Rote Bete, bunter Mais und zwei Papiertüten mit gesprenkelten Bohnen). Darunter die grüne Dachzeile, der Titel Seed List and Order Form in großer Caslon auf zwei Zeilen mit einem kursiven Vorspann daneben und eine zweispaltige Einleitung.", "2": "Seite 2: The 2027 List. Ein kurzer Absatz, dann die Preisliste als Tabelle mit dunkelgrüner Kopfzeile (Code, Variety, Seeds, Price, Qty, Total). Jede Gruppe beginnt mit einer blassgrünen Zeile; jede Sorte hat unter Qty ein weißes Kästchen mit grauem Rand und unter Total ein kraftfarbenes Kästchen, und jede Gruppe endet mit einer Zwischensumme in einem grün umrandeten Kästchen.", "3": "Seite 3: Die Liste geht weiter mit der letzten Bohne, Squash and melons und Greens and roots, jede Gruppe mit ihrer Zwischensumme. Unter der Zwischenüberschrift What you owe eine fünfzeilige Tabelle: das Saatgut, der Kreis der Saatgutbewahrer mit einem Kontrollkästchen, das Porto von $ 4.50 in einem kraftfarbenen Chip, ein weißes Kästchen für eine Spende und Total to pay in einem vollgrünen Kästchen.", "4": "Seite 4: Your Details. Name, Adresse, Ort und Bundesstaat, Postleitzahl und Telefon, E-Mail, jeweils mit einer Schreiblinie; How you pay mit einem Auswahlfeld auf Check, einer Datumszeile und zwei Kontrollkästchen; Post- und E-Mail-Adresse; zwei Spalten mit Hinweisen und ein einzeiliges Impressum." }
+---
+
+## Was Sie setzen
+
+*Long Furrow Heritage Seeds* ist die Saatgutliste für das Frühjahr 2027: vier Seiten im Format 210 × 270 mm von einem erfundenen Saatguthaus, das fünfundzwanzig echte samenfeste Sorten verkauft. Ein Gemälde der Ernte nimmt die obere Hälfte des Umschlags ein. Die Preisliste läuft als eine einzige Tabelle über die Seiten 2 und 3, mit einem Mengenfeld und einer Zeilensumme in jeder Zeile und einer Zwischensumme am Ende jeder Gruppe. Kundendaten und Zahlung folgen auf Seite 4. Gedruckt ist das Blatt ein gewöhnlicher Bestellschein zum Ausfüllen mit dem Stift. Jedes Kästchen ist zugleich ein Chip mit dem Attribut `field`, daher ist das PDF, das `renderToPdf` schreibt, ein AcroForm: Man tippt im PDF-Reader die Zahl der Tütchen ein, und die Summen rechnen sich aus, auf Englisch in Dollar, auf Spanisch in Euro.
+
+## Zubereitung
+
+### 1 · Ein Chip-Stil für jede Art von Kästchen
+
+<Excerpt region="chips" />
+
+Der Stil gibt dem Feld sein Aussehen und seine Mindestbreite, und das PDF legt das Widget des Felds genau auf das Kästchen, das der Chip malt. Kästchen zum Ausfüllen sind weiß mit grauem Rand, berechnete Kästchen kraftfarben ohne Rand, damit man sieht, wo der Stift hingehört. Die Adresszeilen sind Chips mit einer Linie nur unten, 145,5 mm breit für den Namen und 64 oder 59,5 mm für die halben Zeilen; so treffen ihre Enden die Tabulatoren des Absatzstils `field`. Das Kontrollkästchen behält seine Mindestbreite von 3,9 mm ohne Innenabstand, und im PDF wird das Feld zu einem Kontrollkästchen.
+
+### 2 · Das TSV einer Tabellenkalkulation, die Kästchen vom Skript
+
+<Excerpt region="tables" />
+
+Die Sorten kommen als Tabelle: ein Code, der Name mit seiner Notiz, die Samen pro Tütchen und ein Preis. `priceList()` fügt jeder Zeile die beiden Feld-Chips hinzu und am Ende jeder Gruppe eine Zwischensummenzeile. Die Preiszelle druckt `formatFieldNumber(price, 'currency', style)`, dieselbe Funktion, die die Summen formatiert; so haben gedruckter Preis und berechnete Summe dieselben Trennzeichen. Die Kopfzeile jeder Gruppe ist eine einzige Zelle über alle sechs Spalten, und ein Tabellenumbruch lässt sie nie allein am Seitenfuß stehen. Die Tabelle auf Seite 3 nimmt ihre fünf Zeilen aus dem Markdown von `content.summary.en.md`, die Chips stehen in den Zellen.
+
+### 3 · Der Umschlag: erst das Gemälde, dann der Titel
+
+<Excerpt region="cover" />
+
+Das Bildelement ist an der Seite verankert, 210 × 134 mm groß, und läuft an drei Kanten in den Anschnitt. Die Dachzeile steht 120 mm unter dem Anfang des Containers, Titel und Vorspann hängen an ihr. Die Mindesthöhe des Stils von 164 mm hält die zweispaltige Einleitung unter dem Titel, wie lang er auch ist.
+
+### 4 · Kolumnentitel, die den Umschlag frei lassen
+
+<Excerpt region="running-heads" />
+
+Die gerade Seite trägt den Namen des Saatguthauses, die ungerade den Abschnitt, jeweils neben der Seitenzahl. Der Überschriftenstil des Umschlags hat leere Kopf- und Fußzeilen, daher hat Seite 1 keinen Kolumnentitel.
+
+### 5 · Eine Palette mit eigener Farbe für berechnete Beträge
+
+<Excerpt region="palette" />
+
+Blattgrün kennzeichnet, was zum Haus gehört: die Kopfzeile, die Dachzeilen, die Ränder der Zwischensummen und das volle Kästchen des Gesamtbetrags. Kraft bleibt den Kästchen vorbehalten, die das PDF berechnet; auf Papier liest man sie als die Kästchen, die man frei lässt.
+
+## Varianten
+
+### Das Porto als Feld abfragen
+
+Machen Sie aus dem gedruckten Porto ein Feld, das der Leser ausfüllt, und addieren Sie es statt des festen Betrags zur Summe.
+
+```diff
+-Postage and packing, any size of order	:chip[$ 4.50]{style="amount"}
++Postage and packing, any size of order	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 4.50, order.gift)"}
++**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## Häufige Fehler
+
+Die erfassten Seiten zeigen die Kästchen leer, denn die Wörter eines Felds sind sein Vorgabewert, und hier beginnen alle Felder leer. Das Porto ist gedruckter Text in einem Chip ohne `field`, und die Summe addiert es als die Zahl `4.50` in ihrer Berechnung, deshalb kann der Leser es nicht ändern.
+
+Die Summen sind Skripte (`AFSimple_Calculate` und kurze Ausdrücke), die Acrobat, Foxit, Chrome und Firefox ausführen. Vorschau unter macOS zeigt die Felder und speichert, was man eintippt, führt aber keine Skripte aus; dort bleiben die Summen leer.
+
+Das Kästchen für den Kreis hat `on="1"`, den Wert, den eine Berechnung liest, wenn es angekreuzt ist. Mit dem Standardwert `Yes` ergäbe `product(order.circle, 12)` immer 0, und postext-pdf warnt davor.
+
+Das Rezept importiert `https://esm.sh/postext-pdf?bundle`. Der Standard-Build von pdf-lib auf esm.sh legt die Annotationsklassen in ein eigenes Modul, und pdf-lib weist dann das Widget jedes Felds zurück: Das PDF behält die Kästchen, aber ohne Zahlenformat, ohne Summen und ohne schreibgeschützte Felder, mit einer `formField`-Warnung in der Konsole. `?bundle` baut pdf-lib als ein Modul und lässt `postext` draußen, geteilt mit dem Rest der Seite.

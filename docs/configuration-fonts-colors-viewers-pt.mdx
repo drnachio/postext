@@ -443,11 +443,11 @@ Um valor que não seja um inteiro de 0 a 200 é lido como o inteiro mais próxim
 
 ## Geração de PDF (configuração)
 
-A propriedade `pdfGeneration` controla como o renderizador de PDF gera o documento final. Esses ajustes são lidos pelo pacote `postext-pdf` no momento da exportação; os visualizadores de canvas e HTML os ignoram.
+A propriedade `pdfGeneration` controla como o renderizador de PDF gera o documento final. Esses ajustes são lidos pelo pacote `postext-pdf` no momento da exportação; os visualizadores de canvas e HTML os ignoram. `forms` é a exceção: o canvas também o lê, então os campos de formulário dele coincidem com os do PDF.
 
 `buildDocument` os leva na VDT, como `doc.config.pdfGeneration`, e `renderToPdf` toma cada ajuste do primeiro lugar que o fornece:
 
-1. suas próprias opções passadas a ele (`outlines`, `accessible`, `colorSpace`, `baselineGrid`);
+1. as opções passadas a ele (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. o `pdfGeneration` do primeiro documento que renderiza (num livro, os ajustes do primeiro capítulo valem para o arquivo inteiro);
 3. os valores padrão: marcadores e marcação de estrutura ligados, cor RGB.
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   colorSpace?: PdfColorSpace;  // Espaço de destino usado quando `forceColorSpace` é true.
   accessible?: boolean;        // Saída marcada, orientada a PDF/UA (árvore de estrutura, texto alternativo, idioma).
   baselineGrid?: boolean;      // Desenhar também no PDF a grade de `page.baselineGrid`.
+  forms?: PdfFormsConfig;      // Campos de formulário: moeda, separadores, fonte.
 }
 ```
 
@@ -504,6 +505,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Desenha no PDF a grade de linhas de base enquanto <code>page.baselineGrid</code> está ligada. Ligado por padrão, como até agora; com <code>false</code> a grade fica como guia para conferir a página na tela, fora do PDF, e o canvas e o visualizador HTML continuam a mostrá-la. No Sandbox é <strong>Grade de linhas de base no PDF</strong>, na seção PDF.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Como os campos de formulário escrevem números e em que fonte mostram os valores: `currency` (padrão `€`), `currencyBefore` (padrão `true`), `separatorStyle` (de `0` a `3`; sem definição, pelo idioma do documento) e `font` (`'chip'`, o padrão, `'helvetica'` ou `{ family, weight?, style? }`). A opção `forms` de `renderToPdf` e do canvas tem prioridade campo a campo. Só afeta a saída: não muda a diagramação. Veja [Campos de formulário](/pt/docs/configuration-pdf-output#campos-de-formulário).</td>
     </tr>
   </tbody>
 </table>

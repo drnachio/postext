@@ -1,0 +1,56 @@
+---
+title: "Sinais de lógica e de conjuntos com uma fonte de símbolos"
+summary: "Uma cartilha de lógica em fontes sem ∀, ∈ nem ℵ: symbolFont nomeia Noto Sans Math, que desenha esses sinais e o grego na tela e no PDF."
+plain: "Um capítulo curto que ensina a ler os sinais da lógica e da teoria dos conjuntos. As fontes do livro não têm esses sinais, então uma segunda fonte os fornece, na tela e no PDF impresso."
+description: "Uma cartilha de lógica no Postext com symbolFont: Noto Sans Math desenha ∀, ∃, ∈, ℵ e o grego em todas as fontes, na tela e no PDF, sem caixas vazias."
+question: "Como imprimo os sinais de lógica e conjuntos (∀, ∈, ℵ) e o grego que minha fonte não tem, sem caixas vazias?"
+aliases: ["fonte de símbolos", "symbolFont", "fonte de reserva", "glifos ausentes", "caixas vazias no PDF", "tofu", "símbolos lógicos", "notação de conjuntos", "lógica de predicados", "Noto Sans Math", "glyphFallbackAt"]
+---
+
+## O que você vai compor
+
+O primeiro capítulo de uma cartilha de lógica de bolso, numa página de 155 × 235 mm: uma faixa grená com os sinais do capítulo em corpo grande e depois quatro seções que leem em voz alta ∀, ∃, ∈, ∪, ∅ e ℵ, com as fórmulas no texto corrido e destacadas entre os parágrafos. O livro é composto em Crimson Pro, os títulos em Cormorant Garamond e os rótulos em IBM Plex Sans Condensed. Nenhuma das três tem ∀, ∈ ou letra grega nos arquivos que a Fontsource serve. Um único ajuste, `symbolFont`, coloca a Noto Sans Math atrás de cada uma, e assim todos os sinais saem da mesma fonte no texto, nos títulos, nos cabeços e nas células das tabelas, e o PDF imprime todos.
+
+## Preparo
+
+### 1 · Uma fonte de símbolos atrás de todas
+
+O código deste passo é a resposta curta, mais acima. `symbolFont: 'Noto Sans Math'` ([fonte de símbolos](/pt/docs/configuration-fonts-colors-viewers#fonte-de-símbolos)) põe essa família atrás de todas as que a configuração nomeia: um caractere que a fonte não tem é desenhado com a Noto Sans Math, no corpo e na cor da fonte, e o resto da linha continua na dela. A Fontsource serve a Noto Sans Math inteira no arquivo `latin`, com 3.033 caracteres, mas o kit declara esse arquivo só para a faixa latina, e o navegador não pediria ∀ a ele. O `resolve` e o `pdfFonts` da receita entregam o mesmo arquivo sem faixa, na tela e ao `renderToPdf`. Só mudam de fonte os caracteres que faltam: a Crimson Pro tem ¬, então a negação no texto continua em Crimson Pro.
+
+### 2 · Uma primeira composição sem ela mostra o que falta
+
+<Excerpt region="without" />
+
+A primeira composição deixa `symbolFont` vazio e imprime seus avisos `glyphFallbackAt`, um para cada parágrafo, título ou tabela que traz caracteres para os quais sua fonte não tem glifo, com a página e os caracteres. A edição em inglês dá dezoito: catorze parágrafos em Crimson Pro, três títulos em Cormorant Garamond e a linha de cabeçalho da tabela 1.1 em IBM Plex Sans Condensed negrito. Sem uma família que os desenhe, a tela toma os sinais de uma fonte do sistema do leitor e o PDF imprime uma caixa vazia para cada um. A segunda composição, com a fonte de símbolos, é a que aparece na página; seus avisos nomeiam `"Noto Sans Math"` como a família que os desenha.
+
+### 3 · Os sinais da abertura são texto
+
+<Excerpt region="opener" />
+
+A linha de sete sinais sob o título é um texto de design em Cormorant Garamond a 30 pt, alimentado pelo atributo `signs` do título. A Cormorant Garamond não tem nenhum deles, então os sete saem da fonte de símbolos, no branco da faixa. Um espacejamento de 9 pt os distribui pela largura da mancha.
+
+### 4 · Células e cabeços usam a mesma fonte
+
+<Excerpt region="tables" />
+
+A tabela-verdade é construída com os próprios conectivos: o cabeçalho de cada coluna é a fórmula, e cada célula, o que a fórmula dá naquela linha. As células de cabeçalho vão em IBM Plex Sans Condensed negrito itálico e as do corpo em Crimson Pro; a fonte de símbolos atende às duas. Seu único estilo redondo desenha para todos os pesos e inclinações, de modo que o ∧ do cabeçalho em negrito e o ∈ de uma fórmula em itálico são o mesmo sinal reto. O cabeço da página ímpar imprime a seção em curso, `{firstMark.h2}`, e *SETS: ∈, ∪, ∩ AND ∅*, na página 3, também tira seus sinais da Noto Sans Math.
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="Página 3: as fórmulas de conjuntos, em Crimson Pro itálico, com todos os sinais da Noto Sans Math." />
+
+## Variações
+
+### Tire a primeira composição
+
+Lidos os avisos, uma composição basta.
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## Erros comuns
+
+- Uma fonte cujos arquivos da Fontsource incluem o grego (Source Serif 4, Alegreya) compõe φ e Γ por conta própria, e o kit carrega esse arquivo quando o texto tem grego: nesse caso só os sinais vão para a fonte de símbolos. A Crimson Pro não tem arquivo grego, então o grego dela sai da Noto Sans Math.
+- A fonte de símbolos tem um único estilo, redondo e regular. Um título em negrito ou uma fórmula em itálico compõe seus sinais nesse estilo, que é como a matemática os imprime.

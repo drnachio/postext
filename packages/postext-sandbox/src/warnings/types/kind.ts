@@ -133,6 +133,8 @@ export type WarningKind =
   | 'hereNotEmbedded'
   | 'shortListSplit'
   | 'stack'
+  | 'hyphenLadder'
+  | 'lastWordDivided'
   | 'openerFloat'
   | 'tocGroupSplit'
   | 'codeOverflow'

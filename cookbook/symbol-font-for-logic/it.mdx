@@ -1,0 +1,56 @@
+---
+title: "Segni di logica e di insiemi da un font dei simboli"
+summary: "Un manualetto di logica in font senza ∀, ∈ né ℵ: symbolFont indica Noto Sans Math, che disegna quei segni e il greco sul canvas e nel PDF."
+plain: "Un breve capitolo che insegna a leggere i segni della logica e della teoria degli insiemi. I font del libro non hanno quei segni, così un secondo font li fornisce, a schermo e nel PDF stampato."
+description: "Un manualetto di logica in Postext con symbolFont: Noto Sans Math disegna ∀, ∃, ∈, ℵ e il greco in ogni font, sul canvas e nel PDF, senza riquadri vuoti."
+question: "Come stampo i segni di logica e insiemi (∀, ∈, ℵ) e il greco che il mio font non ha, senza riquadri vuoti?"
+aliases: ["font dei simboli", "symbolFont", "font di riserva", "glifi mancanti", "riquadri vuoti nel PDF", "tofu", "simboli logici", "notazione insiemistica", "logica dei predicati", "Noto Sans Math", "glyphFallbackAt"]
+---
+
+## Che cosa comporrai
+
+Il primo capitolo di un manualetto tascabile di logica, su una pagina di 155 × 235 mm: una fascia granata con i segni del capitolo in grande, poi quattro sezioni che leggono ad alta voce ∀, ∃, ∈, ∪, ∅ e ℵ, con le formule nel testo corrente e in evidenza fra i paragrafi. Il libro è composto in Crimson Pro, i titoli in Cormorant Garamond e le etichette in IBM Plex Sans Condensed. Nessuno dei tre ha ∀, ∈ o una lettera greca nei file che serve Fontsource. Una sola impostazione, `symbolFont`, mette Noto Sans Math dietro a ciascuno: tutti i segni vengono dallo stesso font nel testo, nei titoli, nelle testatine e nelle celle delle tabelle, e il PDF li stampa tutti.
+
+## Preparazione
+
+### 1 · Un font dei simboli dietro a tutti gli altri
+
+Il codice di questo passo è la risposta breve, più sopra. `symbolFont: 'Noto Sans Math'` ([font dei simboli](/it/docs/configuration-fonts-colors-viewers#font-dei-simboli)) mette quella famiglia dietro a tutte quelle che la configurazione nomina: un carattere che il font non ha viene disegnato in Noto Sans Math, al corpo e nel colore del font, e il resto della riga resta nel suo. Fontsource serve Noto Sans Math intero nel file `latin`, 3033 caratteri, ma il kit dichiara quel file solo per l’intervallo latino, e il browser non gli chiederebbe ∀. Il `resolve` e il `pdfFonts` della ricetta passano lo stesso file senza intervallo, a schermo e a `renderToPdf`. Cambiano font solo i caratteri che mancano: Crimson Pro ha ¬, quindi la negazione nel testo resta in Crimson Pro.
+
+### 2 · Una prima composizione senza mostra che cosa manca
+
+<Excerpt region="without" />
+
+La prima composizione lascia `symbolFont` vuoto e stampa i suoi avvisi `glyphFallbackAt`, uno per ogni paragrafo, titolo o tabella che contiene caratteri per cui il suo font non ha glifo, con la pagina e i caratteri. L’edizione inglese ne conta diciotto: quattordici paragrafi in Crimson Pro, tre titoli in Cormorant Garamond e la riga d’intestazione della tabella 1.1 in IBM Plex Sans Condensed neretto. Senza una famiglia che li disegni, il canvas prende i segni da un font di sistema del lettore e il PDF stampa un riquadro vuoto per ciascuno. La seconda composizione, con il font dei simboli, è quella che si vede sulla pagina; i suoi avvisi nominano `"Noto Sans Math"` come la famiglia che li disegna.
+
+### 3 · I segni dell’apertura sono testo
+
+<Excerpt region="opener" />
+
+La riga di sette segni sotto il titolo è un testo di design in Cormorant Garamond a 30 pt, alimentato dall’attributo `signs` del titolo. Cormorant Garamond non ne ha nessuno, così tutti e sette vengono dal font dei simboli, nel bianco della fascia. Una spaziatura di 9 pt li distribuisce sulla giustezza.
+
+### 4 · Celle e testatine usano lo stesso font
+
+<Excerpt region="tables" />
+
+La tavola di verità si costruisce con i connettivi stessi: l’intestazione di ogni colonna è la formula, e ogni cella ciò che la formula dà in quella riga. Le celle d’intestazione sono in IBM Plex Sans Condensed neretto corsivo e quelle del corpo in Crimson Pro; il font dei simboli serve entrambe. Il suo unico stile tondo disegna per ogni peso e inclinazione, così il ∧ dell’intestazione in neretto e il ∈ di una formula in corsivo sono lo stesso segno diritto. La testatina della pagina dispari stampa la sezione in corso, `{firstMark.h2}`, e *SETS: ∈, ∪, ∩ AND ∅*, a pagina 3, prende anch’essa i segni da Noto Sans Math.
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="Pagina 3: le formule degli insiemi, in Crimson Pro corsivo, con ogni segno da Noto Sans Math." />
+
+## Varianti
+
+### Togli la prima composizione
+
+Letti gli avvisi, basta una composizione.
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## Errori frequenti
+
+- Un font i cui file Fontsource comprendono il greco (Source Serif 4, Alegreya) compone da sé φ e Γ, e il kit carica quel file quando il testo contiene greco: allora passano al font dei simboli solo i segni. Crimson Pro non ha un file greco, quindi il suo greco viene da Noto Sans Math.
+- Il font dei simboli ha un solo stile, tondo e normale. Un titolo in neretto o una formula in corsivo compone i segni in quello stile, come li stampa la matematica.

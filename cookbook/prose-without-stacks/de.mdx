@@ -1,0 +1,80 @@
+---
+title: "Blocksatz ohne Wortwiederholungen am Zeilenrand"
+summary: "Eine Seite Dickens, zweimal in schmaler Satzbreite gesetzt: Die erste Korrektur meldet und markiert jede Wiederholung, die zweite gewichtet sie im Umbruch."
+plain: "Wenn zwei Zeilen hintereinander mit demselben Wort enden oder beginnen, kann das Auge in die falsche Zeile springen. Das Buch wird zweimal gesetzt: einmal mit den Stellen markiert, einmal so umbrochen, dass es nicht passiert."
+description: "bodyText.stacks in zwei Korrekturen einer Taschenbuchseite: 'warn' listet und markiert jede Wiederholung, 'avoid' erhöht die Knuth–Plass-Kosten um stackPenalty."
+question: "Wie verhindere ich, dass zwei Zeilen hintereinander mit demselben Wort enden oder beginnen?"
+aliases: ["Wiederholungen", "Wortwiederholung am Zeilenende", "gleiche Zeilenanfänge", "Treppen", "Leitern", "stacks", "stackPenalty", "stackMinCharacters", "Korrekturfahne", "Korrekturabzug", "Dickens", "Clarín"]
+pageNotes: { "2": "Erste Korrektur, Seite 2: blassrote Bänder unter sole und sole am Ende zweier Zeilen, unter even und event am Anfang der nächsten beiden und unter The über the am Anfang eines Absatzes.", "4": "Die letzte Seite der ersten Korrektur: das Kolophon und ein Zettel mit dem Titel FIRST PROOF, der fünf Wiederholungen nach Seiten auflistet.", "6": "Zweite Korrektur, Seite 2: derselbe Text, anders umbrochen; nur even über event ist noch markiert.", "8": "Der Zettel der zweiten Korrektur: eine Wiederholung bleibt." }
+---
+
+## Was Sie setzen
+
+Zwei Korrekturabzüge einer Taschenbuchseite von 115 × 180 mm mit dem Anfang von *A Christmas Carol*, im Blocksatz aus der Spectral auf 83 mm Satzbreite. Eine schmale Satzbreite lässt dem Zeilenumbruch wenig Spielraum, und an fünf Stellen enden oder beginnen zwei Zeilen hintereinander mit demselben Wort: *sole* über *sole*, *his* über *his*, *No* über *No*. Die erste Korrektur wird mit `stacks: 'warn'` gesetzt. Sie ändert keinen Umbruch, meldet jede Wiederholung, markiert beide Wörter mit einem blassroten Band und listet sie auf einem Zettel nach dem Kolophon. Die zweite wird mit `'avoid'` gesetzt, und vier der fünf verschwinden. Die spanische Ausgabe setzt den Anfang von Claríns *¡Adiós, Cordera!* auf dieselbe Weise.
+
+## Zubereitung
+
+### 1 · Erst melden, dann gewichten
+
+<Excerpt region="answer" />
+
+Eine Wiederholung liegt vor, wenn zwei Zeilen hintereinander mit demselben Wort oder denselben letzten Zeichen enden oder gleich beginnen. `stackMinCharacters` legt fest, wie viele Zeichen dafür nötig sind: drei in der Voreinstellung, Leerzeichen mitgezählt, Akzente und Groß- und Kleinschreibung nicht, sodass *The* über *the* zählt. `'warn'` meldet nur, so sieht der Setzer zuerst, wo sich ein Text wiederholt. `'avoid'` schlägt `stackPenalty` auf die Kosten jedes Umbruchs, der eine Wiederholung erzeugen würde, und der Knuth–Plass-Umbruch sucht einen anderen Weg durch den Absatz. Dafür braucht es `optimalLineBreaking`: Der zeilenweise Umbruch hat keine Kosten, auf die sich etwas aufschlagen ließe.
+
+Spanische Satzhandbücher zählen die Wiederholung zu den Satzfehlern, neben Gießbächen und Trennstrichtreppen. Wenn das Auge an den linken Rand zurückkehrt, kann es sich am wiederholten Wort in der falschen Zeile festhalten und eine Zeile zweimal lesen oder eine überspringen; am rechten Rand klingt die Wiederholung wie ein Echo. Die spanische Regel erfasst auch eine wiederholte Silbe, nicht nur ein Wort, deshalb setzt die spanische Ausgabe `stackMinCharacters` auf 2.
+
+Die voreingestellte Strafe, 3000, entspricht den Kosten zweier Trennstriche hintereinander, und ein wiederholtes einsilbiges Wort kostet das Doppelte. In dieser Satzbreite ließ 3000 in jeder Ausgabe zwei Wiederholungen stehen, weil die Alternative eine Zeile gewesen wäre, die lockerer ist, als der Umbruch sie annimmt. Bei 10000 nimmt er diese Zeilen in Kauf. `maxWordSpacing` bleibt auf dem Standardwert 2: Mit einer engeren Grenze hatte der Umbruch keinen anderen Umbruch zur Wahl, und `'avoid'` änderte nichts.
+
+### 2 · Die Wiederholungen im Text markieren
+
+<Excerpt region="marks" />
+
+Jede Warnung nennt die Position ihrer ersten Zeile im Quelltext. Das Skript sucht diese Zeile und die folgende im gesetzten Dokument, nimmt jeweils den wiederholten Rand und umschließt das ganze Wort mit `:mark[…]`. Eine Markierung malt ein Band unter gewöhnlichen Text und lässt die Umbrüche unberührt. Markiert werden nur ganze Wörter: Eine Markierung um einen Wortteil ändert, wie das Wort getrennt wird, und dann brechen die Zeilen nicht mehr dort, wo die Warnung gefunden wurde.
+
+<PageShot page={2} crop="0,0.04,1,0.32" caption="Erste Korrektur, Seite 2: sole über sole am Zeilenende, dann even über event und The über the am Zeilenanfang." />
+
+### 3 · Zwei Korrekturen aus einem Text
+
+<Excerpt region="proofs" />
+
+Jede Korrektur wird zweimal gesetzt. Der erste Durchgang findet die Wiederholungen. Der zweite setzt denselben Text mit den Markierungen und einem Zettel nach dem Kolophon, der so auf die letzte Seite fällt. Der Pen hält den ersten Durchgang jeder Korrektur, den unmarkierten Text, aus den veröffentlichten Seiten heraus: `capture.doc` listet die beiden markierten Durchgänge, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.04,1,0.32" caption="Zweite Korrektur, Seite 2: dieselben Absätze, anders umbrochen. Nur even über event bleibt." />
+
+Die Wiederholung, die in der englischen Ausgabe bleibt, ist *even* über *event*: Beide Wörter teilen die ersten drei Buchstaben, und jeder andere Umbruch dieses Absatzes kostete mehr. Im Spanischen findet die erste Korrektur mit zwei Zeichen fünf Wiederholungen, darunter *co* in *con* über *como* und *ar* in *levantar* über *vacilar*, und die zweite keine.
+
+### 4 · Der Auftakt über dem Text
+
+<Excerpt region="opener" />
+
+Das Attribut `art` der Überschrift nennt das Gemälde, sodass ein Stil für beide Ausgaben reicht. `minHeight` hält sechzehn Zeilen frei, und der Text beginnt auf der siebzehnten, im selben Raster wie die folgenden Seiten.
+
+### 5 · Kolumnentitel und Fußpagina
+
+<Excerpt region="heads" />
+
+Der Autor steht auf der linken Seite, der Titel auf der rechten, jeweils neben der Seitenzahl. Auf der Auftaktseite entfallen die Kolumnentitel, und die Seitenzahl wandert an den Fuß.
+
+## Varianten
+
+### Nur längere Wörter zählen
+
+Drei Zeichen sind die Voreinstellung. Bei fünf zählen kurze Wörter wie *his* und *No* nicht mehr als Wiederholung, und der Umbruch behält um sie herum die engeren Zeilen.
+
+```diff
+-  stackMinCharacters: t({ en: 3, es: 2 }),
++  stackMinCharacters: 5,
+```
+
+### Das Buch mit der voreingestellten Strafe setzen
+
+Die Voreinstellung hält den Satz enger und lässt zwei Wiederholungen je Ausgabe stehen, wo ihre Vermeidung eine Zeile weiter öffnen würde.
+
+```diff
+-  stackPenalty: 10000,
++  stackPenalty: 3000,
+```
+
+## Häufige Fehler
+
+- Wiederholungen werden in den fertig umbrochenen Zeilen gesucht. Ändern Sie Format, Schriftgrad oder Text, findet die erste Korrektur andere. Lesen Sie die Warnungen jedes Durchgangs und übernehmen Sie keine Positionen aus einem früheren.
+- Wiederholungen zählen nur innerhalb eines Absatzes und nur in Schriften, die Wörter durch Leerzeichen trennen: Zwei Absätze, die beide mit *Scrooge* beginnen, ergeben keine Wiederholung, und chinesischer oder japanischer Text meldet nie eine.

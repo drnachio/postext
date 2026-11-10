@@ -1,0 +1,56 @@
+---
+title: "用符号字体排逻辑与集合符号"
+summary: "一本逻辑小册子，所用字体都没有 ∀、∈、ℵ：symbolFont 指定 Noto Sans Math，由它在画布和 PDF 上画出这些符号和希腊字母。"
+plain: "一个短章，教人读懂逻辑和集合论的符号。书里的字体没有这些符号，于是由第二种字体补上，屏幕上和打印的 PDF 里都一样。"
+description: "用 Postext 的 symbolFont 排一本逻辑小册子：Noto Sans Math 在每种字体里画出 ∀、∃、∈、ℵ 和希腊字母，画布和 PDF 上都没有空框。"
+question: "字体里没有逻辑与集合符号（∀、∈、ℵ）和希腊字母，怎样打印出来而不出现空框？"
+aliases: ["符号字体", "symbolFont", "后备字体", "缺字", "PDF 空框", "豆腐块", "逻辑符号", "集合符号", "谓词逻辑", "Noto Sans Math", "glyphFallbackAt"]
+---
+
+## 成品一览
+
+一本袖珍逻辑入门的第一章，页面 155 × 235 毫米：一条酒红色色带，上面用大字号排出本章的符号；接着四节逐个读出 ∀、∃、∈、∪、∅ 和 ℵ，公式既嵌在正文里，也在段落之间单独成行。正文用 Crimson Pro，标题用 Cormorant Garamond，标签用 IBM Plex Sans Condensed。Fontsource 提供的这三种字体文件里都没有 ∀、∈，也没有希腊字母。只需一项设置 `symbolFont`，就把 Noto Sans Math 放到每种字体后面：正文、标题、书眉和表格单元格里的符号都出自同一种字体，PDF 也把它们全部印出来。
+
+## 做法
+
+### 1 · 所有字体后面的一种符号字体
+
+这一步的代码就是上面的简短回答。`symbolFont: 'Noto Sans Math'`（[符号字体](/zh/docs/configuration-fonts-colors-viewers#符号字体)）把这个字族放到配置里提到的每个字族后面：字体缺的字符改用 Noto Sans Math 画，字号和颜色跟随原字体，这一行其余部分仍用原字体。Fontsource 把完整的 Noto Sans Math 放在 `latin` 文件里，共 3033 个字符，但工具包只为拉丁范围声明这个文件，浏览器不会向它要 ∀。本配方的 `resolve` 和 `pdfFonts` 把同一个文件不带范围地交出去，屏幕上交给画布，打印时交给 `renderToPdf`。只有缺的字符才换字体：Crimson Pro 有 ¬，所以正文里的否定号仍是 Crimson Pro。
+
+### 2 · 先不用它排一遍，看看缺什么
+
+<Excerpt region="without" />
+
+第一遍排版把 `symbolFont` 留空，打印出 `glyphFallbackAt` 警告：每个含有其字体缺字的段落、标题或表格各一条，写明页码和字符。英文版共十八条：十四个 Crimson Pro 段落、三个 Cormorant Garamond 标题，以及表 1.1 中 IBM Plex Sans Condensed 粗体的表头行。没有字族来画，画布会从读者系统里的某种字体借来这些符号，PDF 则每个都印成空框。第二遍用了符号字体，页面上看到的就是它；它的警告写明由 `"Noto Sans Math"` 来画这些字符。
+
+### 3 · 开篇的符号是文字
+
+<Excerpt region="opener" />
+
+标题下那行七个符号是一段设计文字，用 30 pt 的 Cormorant Garamond，内容来自标题的 `signs` 属性。Cormorant Garamond 一个都没有，所以七个都出自符号字体，在色带上以白色印出。9 pt 的字距把它们铺满版心宽度。
+
+### 4 · 单元格和书眉用同一种字体
+
+<Excerpt region="tables" />
+
+真值表由联结词本身生成：每列表头是公式，每个单元格是该公式在这一行的结果。表头单元格用 IBM Plex Sans Condensed 粗斜体，表身用 Crimson Pro，符号字体为两者供字。它只有一个正体，为所有字重和倾斜供字，所以粗体表头里的 ∧ 和斜体公式里的 ∈ 是同样的直立符号。奇数页书眉印出当前一节 `{firstMark.h2}`，第 3 页的 *SETS: ∈, ∪, ∩ AND ∅* 也从 Noto Sans Math 取符号。
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="第 3 页：集合公式用 Crimson Pro 斜体，每个符号都来自 Noto Sans Math。" />
+
+## 变化
+
+### 去掉第一遍排版
+
+读过警告之后，排一遍就够了。
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## 常见问题
+
+- 有些字体的 Fontsource 文件含希腊字母（Source Serif 4、Alegreya），会自己排 φ 和 Γ，正文有希腊字母时工具包会加载那个文件，这时只有符号交给符号字体。Crimson Pro 没有希腊文件，所以它的希腊字母来自 Noto Sans Math。
+- 符号字体只有一个正体常规字重。粗体标题或斜体公式里的符号都用这个字重排，数学书一向就是这样印的。

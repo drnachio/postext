@@ -1,0 +1,163 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 184,
+  "status": "published",
+  "chapter": "type",
+  "order": 400,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "stacks",
+      "knuth-plass"
+    ],
+    "also": [
+      "hyphenation-languages",
+      "widows-orphans-runts",
+      "body-typography",
+      "opener-design",
+      "design-images",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "callout-styles",
+      "paragraph-styles",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q217"
+  ],
+  "gotchas": [],
+  "explainsWarnings": [
+    "stack"
+  ],
+  "engine": {
+    "postext": "1.73.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "doc": [
+      1,
+      3
+    ],
+    "sandbox": "first",
+    "expect": {
+      "imageMb": 1.25
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "A Christmas Carol (1843), the opening of Stave One, from Project Gutenberg eBook #46, with typographic quotes and dashes",
+          "es": "Cuento de Navidad (A Christmas Carol, 1843), el comienzo de la primera estrofa, del eBook n.º 46 de Project Gutenberg, con comillas y rayas tipográficas"
+        },
+        "who": "Charles Dickens",
+        "source": "https://www.gutenberg.org/ebooks/46",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "¡Adiós, Cordera!, the opening of the story, from El Señor y lo demás son cuentos (Madrid, 1919), with « » quotation marks",
+          "es": "¡Adiós, Cordera!, el comienzo del cuento, de El Señor y lo demás son cuentos (Madrid, 1919), con comillas « »"
+        },
+        "who": "Leopoldo Alas, Clarín",
+        "source": "https://es.wikisource.org/wiki/%C2%A1Adi%C3%B3s,_Cordera!",
+        "license": "PD"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Painting: Scrooge's counting-house on a foggy Christmas Eve",
+          "es": "Pintura: el despacho de Scrooge en una Nochebuena de niebla"
+        },
+        "file": "carol-1100.jpg",
+        "who": "Generated With Diffusion Models",
+        "license": "original"
+      },
+      {
+        "what": {
+          "en": "Painting: Rosa, Pinín and the Cordera by the telegraph pole",
+          "es": "Pintura: Rosa, Pinín y la Cordera junto al poste del telégrafo"
+        },
+        "file": "cordera-1100.jpg",
+        "who": "Generated With Diffusion Models",
+        "license": "original"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Spectral",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Spectral SC",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-10",
+  "updated": "2026-11-10",
+  "related": [
+    "catalan-pocket-novella",
+    "spanish-pocket-novel",
+    "colour-coded-study-highlights",
+    "filling-short-columns"
+  ],
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 70,
+      "texture": "vellum",
+      "shade": "#fbf9f3"
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#8e2f1d"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "lamp"
+    }
+  }
+}

@@ -443,11 +443,11 @@ Un valore che non è un intero da 0 a 200 viene letto come l’intero più vicin
 
 ## Generazione del PDF (configurazione)
 
-La proprietà `pdfGeneration` controlla come il backend PDF produce il documento finale. Queste impostazioni le usa il pacchetto `postext-pdf` al momento dell’esportazione; i visualizzatori canvas e HTML le ignorano.
+La proprietà `pdfGeneration` controlla come il backend PDF produce il documento finale. Queste impostazioni le usa il pacchetto `postext-pdf` al momento dell’esportazione; i visualizzatori canvas e HTML le ignorano. `forms` è l’eccezione: il canvas lo legge anch’esso, così i suoi campi modulo corrispondono a quelli del PDF.
 
 `buildDocument` le porta nel VDT, come `doc.config.pdfGeneration`, e `renderToPdf` prende ogni impostazione dal primo punto che la fornisce:
 
-1. le sue opzioni (`outlines`, `accessible`, `colorSpace`, `baselineGrid`);
+1. le sue opzioni (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. il `pdfGeneration` del primo documento di cui fa il rendering (in un libro, le impostazioni del primo capitolo valgono per l’intero file);
 3. i valori predefiniti: segnalibri e tag attivi, colore RGB.
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
   baselineGrid?: boolean;      // Draw the `page.baselineGrid` grid in the PDF as well.
+  forms?: PdfFormsConfig;      // Campi modulo: valuta, separatori, carattere.
 }
 ```
 
@@ -504,6 +505,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Disegna anche nel PDF la griglia della linea di base finché <code>page.baselineGrid</code> è attiva. Attivo per impostazione predefinita, come finora; <code>false</code> lascia la griglia come guida per controllare la pagina a schermo, fuori dal PDF, mentre il canvas e il visualizzatore HTML continuano a mostrarla. Nel Sandbox: <strong>Griglia della linea di base nel PDF</strong>, nella sezione PDF.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Come i campi modulo scrivono i numeri e in quale carattere mostrano i valori: `currency` (predefinito `€`), `currencyBefore` (predefinito `true`), `separatorStyle` (da `0` a `3`; se non impostato, secondo la lingua del documento) e `font` (`'chip'`, il predefinito, `'helvetica'` o `{ family, weight?, style? }`). L’opzione `forms` di `renderToPdf` e del canvas ha la precedenza campo per campo. Solo per l’uscita: l’impaginazione non cambia. Vedi [Campi dei moduli](/it/docs/configuration-pdf-output#campi-dei-moduli).</td>
     </tr>
   </tbody>
 </table>

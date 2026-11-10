@@ -1,0 +1,60 @@
+---
+title: "Una reforma con lo suprimido tachado y lo nuevo subrayado"
+summary: "Un texto comparado de la Constitución: lo suprimido va tachado, lo añadido subrayado, y el artículo vigente cierra en un recuadro con sus apartados colgados."
+plain: "Un cuaderno legislativo breve. Muestra la redacción antigua de unos artículos con las palabras suprimidas tachadas y las nuevas subrayadas, y después el artículo entero ya reformado en un recuadro gris."
+description: "Un texto comparado compuesto en Postext: la redacción antigua con lo suprimido tachado y lo añadido subrayado, y el artículo vigente con sangría francesa."
+question: "¿Cómo muestro una modificación con lo suprimido tachado y lo añadido subrayado?"
+aliases: ["texto comparado", "control de cambios", "modificación", "reforma constitucional", "ley", "BOE", "fe de erratas", "tachado", "subrayado", "sangría francesa", "apartados colgados", "Constitución Española", "artículo 135"]
+pageNotes: { "1": "La apertura: una banda azul marino con el antetítulo CONSTITUCIÓN ESPAÑOLA · REFORMAS DE 1992, 2011 Y 2024, el título Texto comparado y una entradilla en cursiva; debajo, una clave con filete rojo al costado, en la que la palabra tachadas va tachada y la palabra subrayadas va subrayada, la nota del editor y el apartado 2 del artículo 13 con «y pasivo» subrayado.", "2": "El artículo 135 comparado: los apartados nuevos 1 y 2 subrayados enteros, y en el apartado 3 «El Gobierno habrá» tachado junto a «El Estado y las Comunidades Autónomas habrán» subrayado, «Deuda Pública» tachado junto a «deuda pública» subrayado.", "3": "El artículo 49 de 1978 tachado entero y sus dos apartados de 2024 subrayados; debajo, el recuadro gris del artículo 135 vigente, con cada número de apartado en el borde y el texto colgado 7 mm." }
+---
+
+## Lo que vas a componer
+
+Un cuaderno de texto comparado como los que preparan los servicios de las Cámaras: cinco páginas con las tres reformas de la Constitución Española publicadas en el BOE, la del artículo 13.2 en 1992, la del 135 en 2011 y la del 49 en 2024. Cada ley de reforma copia el artículo nuevo entero y no dice qué cambia; aquí la redacción de 1978 y la vigente van en un solo texto, con lo suprimido tachado y lo añadido subrayado, bajo una clave que explica la convención. Al final, el artículo 135 vigente se lee en un recuadro tintado, cada número de apartado en el borde y su texto colgado. La edición inglesa hace lo mismo con la ley estadounidense de 1998 que alargó veinte años los plazos del derecho de autor.
+
+## Elaboración
+
+### 1 · El cambio se marca donde ocurre
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las marcas están en el Markdown: `~~El Gobierno habrá~~ :underline[El Estado y las Comunidades Autónomas habrán]` tacha lo antiguo y subraya lo nuevo ([tachado](/es/docs/document-format-inline#tachado), [subrayado](/es/docs/document-format-inline#subrayado)). Ninguna de las dos líneas ocupa sitio, así que el artículo 49 de 1978, tachado entero en la página 3, se justifica y se divide como el texto que lo rodea. Cada línea sale de las medidas de tachado y subrayado de la propia fuente, en el color de las palabras.
+
+### 2 · Los apartados cuelgan dentro del recuadro
+
+`body.hangingIndent` en un estilo de recuadro cuelga todos sus párrafos ([tipografía dentro de un recuadro](/es/docs/configuration-callouts#tipografía-dentro-de-un-recuadro)): la primera línea empieza en el borde interior y las siguientes 7 mm más adentro. Un tabulador a esos mismos 7 mm lleva el texto que sigue al número hasta ese borde, sea cual sea el ancho del número, así que en el Markdown escribes `1.:tab Todas las Administraciones…`. Los párrafos sin número de un apartado empiezan por `:tab` y quedan alineados con el texto colgado. Los dos recuadros comparten la tipografía y solo cambia el marco: un filete rojo sobre el texto de la ley de reforma, una tinta detrás del texto vigente.
+
+### 3 · Una banda para la apertura
+
+<Excerpt region="opener" />
+
+La banda azul marino sale a sangre por arriba y por los lados, y el antetítulo y la entradilla vienen de atributos en la línea del título ([atributos de título](/es/docs/document-format#atributos-de-encabezado)). `minHeight` fija dónde empieza la clave, unos milímetros bajo la banda.
+
+### 4 · Cabeceras según la paridad
+
+<Excerpt region="running-heads" />
+
+La página par lleva el título del cuaderno y la impar la parte en la que se abre, leída del primer título de segundo nivel de la página. `pages: 'body'` las deja fuera de la apertura, que lleva un folio al pie.
+
+## Variantes
+
+### Escribe lo añadido como `++texto++`
+
+Con `plusUnderline` activado, `++y pasivo++` subraya igual que `:underline[y pasivo]`, la grafía que Pandoc y markdown-it usan para el texto insertado.
+
+```diff
+     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
++    plusUnderline: true, // ++texto++ subraya; C++ en el texto se escribe entonces C\+\+
+```
+
+### Mantén entero el recuadro de la ley de reforma
+
+Sin `keepTogether: false` el recuadro pasa entero a la página siguiente cuando no cabe, y la página anterior acaba en la línea que lo presenta.
+
+```diff
+-    padding: pad(2.5, 0), body: clauses, keepTogether: false, // it may run on to the next page
++    padding: pad(2.5, 0), body: clauses,
+```
+
+## Errores frecuentes
+
+- Un párrafo que empieza por un número y un punto (`2. Solamente…`) se lee como un elemento de lista, y una barra invertida delante del punto se imprime. Esta edición pone un unidor de palabras (U+2060) entre la cifra y el punto en el texto corrido, y en el recuadro escribe el tabulador justo detrás del punto, `1.:tab`, que no abre ninguna lista.
+- El color solo no sobrevive a una fotocopia, que es como suelen circular estos cuadernos; el tachado y el subrayado se leen en blanco y negro, y por eso los eligieron los redactores.

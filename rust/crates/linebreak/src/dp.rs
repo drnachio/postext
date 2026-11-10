@@ -4,7 +4,7 @@
 use crate::adjust::{adjust_line, badness, fitness_class, ratio};
 use crate::constants::*;
 use crate::items::{ItemKind, Items, flag};
-use crate::node::{Arena, NONE, Node};
+use crate::node::{Arena, MAX_RUN, NONE, Node};
 use crate::options::{Edge, Options, stack_weight};
 use crate::prefix::Prefix;
 use std::collections::HashMap;
@@ -35,7 +35,8 @@ pub(crate) struct Search {
     slot_by_key: Vec<u32>,
     keys: Vec<u32>,
     /// The exact pass's keys: base key, start word and start characters
-    /// of the line, and the bits of its end edge it holds.
+    /// of the line, and the bits of its end edge it holds with the hyphen
+    /// run it ends on above them.
     slot_by_exact: HashMap<(u32, u32, u32, u32), u32>,
     avoid: Vec<bool>,
 }
@@ -63,7 +64,24 @@ impl Search {
         self.prefix.fill(items, tracking, gate_short, o.hyphenation_zone.is_some());
         let rules = &o.rules;
         let stacks = rules.stack_demerits;
-        let exact = pass.exact_limits && stacks.is_some();
+        // The hyphen rules (#1466), read once.
+        let ladder_run = if rules.ladder_demerits > 0.0 { rules.ladder_run.clamp(1, MAX_RUN - 1) } else { 0 };
+        let last_word = rules.last_word_demerits.max(0.0);
+        let extra_hyphen = rules.extra_hyphen_penalty.max(0.0);
+        // A ladder of more than one line depends on the chain: the exact
+        // pass keys nodes by the run they end on too.
+        let key_run = pass.exact_limits && ladder_run > 1;
+        let exact = pass.exact_limits && (stacks.is_some() || key_run);
+        // The last word space: a last line that starts past it holds only
+        // the end of a word.
+        let last_word_space: i32 = if last_word > 0.0 {
+            (0..n)
+                .rev()
+                .find(|&k| items.kind[k] == ItemKind::Glue && items.flags[k] & flag::WORD_SPACE != 0)
+                .map_or(-1, |k| k as i32)
+        } else {
+            -1
+        };
         let Search { prefix: p, arena, active, candidates, slot_by_key, keys, slot_by_exact, avoid } = self;
         arena.clear();
         active.clear();
@@ -86,7 +104,14 @@ impl Search {
             let is_flagged = items.is_flagged_penalty(i);
             let post_width = if is_penalty { items.post_width[i] } else { 0.0 };
             let post_chars = if is_penalty { items.post_chars[i] } else { 0.0 };
-            let pen = if is_penalty { items.penalty[i] } else { 0.0 };
+            // `fewerHyphens`: every hyphen's penalty raised alike.
+            let pen = if !is_penalty {
+                0.0
+            } else if is_flagged {
+                items.penalty[i] + extra_hyphen
+            } else {
+                items.penalty[i]
+            };
 
             let mut keep = 0;
             for ai in 0..active.len() {
@@ -171,10 +196,23 @@ impl Search {
                 } else {
                     (1.0 + eff) * (1.0 + eff)
                 };
-                if is_flagged && a.position >= 0 && items.is_flagged_penalty(a.position as usize) {
+                // The line before ends on a hyphen too.
+                let run = if is_flagged { (a.run + 1).min(MAX_RUN) } else { 0 };
+                if run > 1 {
                     d += o.consecutive_hyphen_demerit;
                 }
                 d += stack_demerits;
+                let mut faults = stacked;
+                // A hyphen ladder past its limit (#1466).
+                if ladder_run > 0 && run > ladder_run {
+                    d += rules.ladder_demerits;
+                    faults += 1;
+                }
+                // The last word divided (#1466).
+                if last_word > 0.0 && i == terminal && a.run > 0 && last_word_space < a.position {
+                    d += last_word;
+                    faults += 1;
+                }
                 let fc = fitness_class(r);
                 if (fc as i32 - a.fitness as i32).abs() > 1 {
                     d += o.fitness_class_demerit;
@@ -218,14 +256,20 @@ impl Search {
                     ragged: ragged_lines,
                     total_word_spaces: if gate_short { p.word_spaces[i + 1] } else { 0.0 },
                     total_word_space_width: if gate_short { p.word_space_width[i + 1] } else { 0.0 },
-                    stacks: a.stacks + stacked,
+                    faults: a.faults + faults,
+                    run,
                     previous: id,
                 };
                 if exact {
                     offer_exact(
                         candidates,
                         slot_by_exact,
-                        (key, line_start.word, line_start.chars, line_end.bits()),
+                        (
+                            key,
+                            line_start.word,
+                            line_start.chars,
+                            line_end.bits() | (if key_run { run.min(ladder_run) << 2 } else { 0 }),
+                        ),
                         node,
                     );
                 } else {
@@ -262,6 +306,7 @@ impl Search {
                     total_no_tracking: if tracking { p.no_tracking[i + 1] } else { 0.0 },
                     total_word_spaces: if gate_short { p.word_spaces[i + 1] } else { 0.0 },
                     total_word_space_width: if gate_short { p.word_space_width[i + 1] } else { 0.0 },
+                    run: u32::from(is_flagged),
                     previous: NONE,
                     ..Node::default()
                 };

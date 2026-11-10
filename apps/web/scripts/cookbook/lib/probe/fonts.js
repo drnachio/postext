@@ -40,12 +40,17 @@ export function lineOf(text, offset) {
   return line;
 }
 
-/** '700 37.5px "Open Sans"' → { family, weight, style, px }. */
+/** '700 37.5px "Open Sans"' → { family, weight, style, px }. A font list
+ *  ('400 15px "Crimson Pro", "Noto Sans Math"': the engine puts the
+ *  document's `symbolFont` after every family, #1460) gives its first family
+ *  as `family` and the others as `fallbacks`. */
 export function parseFont(font) {
   const m = /^(?:(italic|oblique)\s+)?(?:small-caps\s+)?(?:(\d+|bold|normal)\s+)?([\d.]+)px\s+(.+)$/.exec(String(font).trim());
   if (!m) return null;
   const weight = m[2] === 'bold' ? 700 : !m[2] || m[2] === 'normal' ? 400 : Number(m[2]);
-  return { family: m[4].replace(/^["']|["']$/g, ''), weight, style: m[1] ? 'italic' : 'normal', px: Number(m[3]) };
+  const [family, ...fallbacks] = (m[4].match(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|[^,]+/g) ?? [m[4]])
+    .map((f) => f.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+  return { family, weight, style: m[1] ? 'italic' : 'normal', px: Number(m[3]), ...(fallbacks.length ? { fallbacks } : {}) };
 }
 
 export function loadedFaces() {
@@ -253,8 +258,9 @@ export function textOfFaces(pages, skip = new Set()) {
   const note = (font, text, where) => {
     const face = font ? parseFont(font) : null;
     if (!face) return;
-    const key = `${face.family}|${face.weight}|${face.style}`;
-    const entry = faces.get(key) ?? { family: face.family, weight: face.weight, style: face.style, chars: new Map() };
+    const key = `${face.family}|${face.weight}|${face.style}|${(face.fallbacks ?? []).join(',')}`;
+    const entry = faces.get(key) ?? { family: face.family, weight: face.weight, style: face.style,
+      ...(face.fallbacks ? { fallbacks: face.fallbacks } : {}), chars: new Map() };
     // A combining mark is kept with the letter it stands on.
     let base = '';
     for (const ch of text) {
@@ -309,7 +315,9 @@ export async function charsInNoFace(faces) {
     const ctx = canvas.getContext('2d');
     const codeOf = (ch) => `U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')}`;
     for (const face of faces) {
-      const head = `${face.style === 'italic' ? 'italic ' : ''}${face.weight} 100px "${face.family}"`;
+      // The families after the face (the symbol font) draw what it lacks: a
+      // character one of them holds is in a loaded file too.
+      const head = `${face.style === 'italic' ? 'italic ' : ''}${face.weight} 100px ${[face.family, ...(face.fallbacks ?? [])].map((f) => `"${f}"`).join(', ')}`;
       // The files of a family served in slices load when a text asks for them.
       await fonts.load(head, face.chars.map(([ch]) => ch).join('')).catch(() => {});
       // A text set wholly in the family's files is as wide before one

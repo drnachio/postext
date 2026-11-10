@@ -203,16 +203,19 @@ export async function renderToPdf(input, options = {}) {
       throw error;
     }
   });
-  // A PDF shaped without HarfBuzz reaches the console (check C14) even
-  // when the pen keeps its warnings to itself.
-  const onWarning = options.onWarning && ((w) => {
-    if (w.kind === 'complexShapingUnavailable') console.warn(w.message);
-    options.onWarning(w);
-  });
+  // A PDF shaped without HarfBuzz, or a form field pdf-lib could not
+  // write (#1498), reaches the console (check C14) even when the pen keeps
+  // its warnings to itself; the form field with a mark of its own.
+  const onWarning = (w) => {
+    if (w.kind === 'formField') console.warn('postext-pdf formField: ' + String(w.message).replace(/^postext-pdf: /, ''));
+    else if (w.kind === 'complexShapingUnavailable' && options.onWarning) console.warn(w.message);
+    if (options.onWarning) options.onWarning(w);
+    else if (w.kind !== 'formField' && 'message' in w) console.warn(w.message);
+  };
   const t0 = performance.now();
   try {
     const dated = DATE && options.date === undefined ? { date: DATE } : {};
-    const bytes = await real.renderToPdf(input, { ...dated, ...options, fontProvider, ...(onWarning ? { onWarning } : {}) });
+    const bytes = await real.renderToPdf(input, { ...dated, ...options, fontProvider, onWarning });
     cb.pdf = bytes;
     cb.pdfMs = performance.now() - t0;
     return bytes;

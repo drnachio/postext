@@ -169,7 +169,7 @@ page
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY (pdfGeneration.baselineGrid=false keeps it out of the PDF)
 │               The grid is only defined here. Whether a block OPENS on a grid line is its style's
-│               snapTopToGrid (> 1.73, all default false): headings / levels[] / headingStyles[], bodyText
+│               snapTopToGrid (≥ 1.75, all default false): headings / levels[] / headingStyles[], bodyText
 │               (body paragraphs + blockquotes), paragraphStyles[], calloutStyles[], math, resourceTypes[], lists
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
 └─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl', the document is right to left, or its comics section reads right to left: a manga, a ja/zh-Hant edition, postext > 1.20.2)   postext ≥ 1.9
@@ -303,7 +303,7 @@ bodyText
 ├─ tashkil           'keep'|'strip'|'strip-vowels'   'keep'      Arabic vowel marks out of the set text (strip-vowels keeps shadda)
 ├─ textAlign         'left'|'justify'|'center'|'right'|'start'|'end'   'justify'   left = the side a line STARTS on (the right of an Arabic paragraph); start/end are synonyms
 ├─ paragraphSpacing  boolean|Dimension  false        true = one full grid line between paragraphs; a length (≥ 1.52, #1115: {2,'mm'}, {0.33,'em'}) = exactly that, in the flow, boxes and frames; off-grid until the next heading/list tail snaps back. Same slot as paragraphStyles[].spaceBetween (which wins inside :::paragraphs); boxes: calloutStyles[].body.paragraphSpacing
-├─ snapTopToGrid     boolean         false        (> 1.73) every body paragraph and blockquote opens on a grid line, whatever ended before (an off-grid heading, an exact-margin box); :::paragraphs follow their style's, verse its paragraph style's (else this). Only under an off-grid heading: headings.regainGrid
+├─ snapTopToGrid     boolean         false        (≥ 1.75) every body paragraph and blockquote opens on a grid line, whatever ended before (an off-grid heading, an exact-margin box); :::paragraphs follow their style's, verse its paragraph style's (else this). Only under an off-grid heading: headings.regainGrid
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ plusUnderline     boolean         false           (≥ 1.72) `++…++` underlines, as `:underline[…]` does; when on, EVERY pair does (`i++ … ++j` too), `\+\+` is a literal pair, code never underlines. Off: `++` is text
@@ -320,6 +320,18 @@ bodyText
                       prefixes (vos-altres), l·l breaks il- | lusió (the dot dropped, the line measured without it).
                       Type the dot as U+00B7 `·`: a PDF's `l.l`, `l•l`, `l∙l` (U+2219) or `ŀl` (U+0140) splits or
                       misses the word; normalise it when porting
+                      minWordLength / leftMin / rightMin (≥ 1.74): shortest word divided and letters kept before / carried after a
+                      break; unset = the language's own (hyphenationLanguageLimits(locale)); apostrophe words (fr, it, ca) obey them
+                      too. Port the source's "words with at least / after first / before last" settings here
+                      fewerHyphens 0–10 (≥ 1.74): + 50 penalty per step on every hyphen (a word's own hyphen too); 0 = as before
+                      ladders 'allow'|'warn'|'avoid' ('allow'), maxConsecutive 1, ladderPenalty 30000 (≥ 1.74): more than
+                      maxConsecutive hyphenated lines in a row; 'warn' = same layout + `hyphenLadder` warning; 'avoid' = ladderPenalty
+                      demerits per line past the limit (on top of consecutiveHyphenDemerit 3000), the ladders kept are reported.
+                      Port the source's "hyphen limit" (consecutive hyphens) as maxConsecutive with 'avoid'
+                      lastWord 'allow'|'warn'|'avoid' ('allow'), lastWordPenalty 30000 (≥ 1.74): the last line holds only the rest of
+                      a word divided on the line before; 'warn' = `lastWordDivided` warning; 'avoid' = lastWordPenalty demerits.
+                      Port "hyphenate last word" off as 'avoid'. All three: soft (demerits, never a hard limit), body text, lists
+                      and quotations only (not captions or cells), need optimalLineBreaking
 ```
 H&J / Knuth–Plass
 ```
@@ -574,7 +586,7 @@ headings
 ├─ regainGrid    false             with snapToGrid=false: exact margins, the block after (text, list, inline figure
 │                                  or box) starts on the next grid line; keepWithNext counts the rounding, balancing
 │                                  levers still apply; levels[] and heading styles may set it
-├─ snapTopToGrid false             (> 1.73) round the space above up so the heading opens on a grid line, whatever
+├─ snapTopToGrid false             (≥ 1.75) round the space above up so the heading opens on a grid line, whatever
 │                                  ended before it (marginTop = minimum); levels[] and heading styles may set it
 ├─ columnHeadSpace 'none'          ('none' | 'remainder', ≥ 1.28) a snapping heading that opens a column: 'none' sets it on
 │                                  the column's first line and the snap adds the part of a line under it (its text then stands
@@ -1190,7 +1202,7 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
                                  indent + hangingIndent); an inherited one gives way and line 1 starts at indent)
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
-  snapTopToGrid = false          (> 1.73) the container's first paragraph opens on a grid line, whatever ended before
+  snapTopToGrid = false          (≥ 1.75) the container's first paragraph opens on a grid line, whatever ended before
   containerSpacing?: 'collapse'|'add' (≥ 1.28; unset = bodyText.paragraphContainerSpacing; the rule under THIS
                                  style's containers, in the text and in a box: 'add' on a big figure or a
                                  reference list ends its groups on the style's own space, no paragraph-spacing
@@ -1283,7 +1295,7 @@ All em values = the callout body font size.
   columnGap = 1.5em                  for :::columns{count=N} groups inside the box (a fence `gap=` overrides it)
   marginTop = 0.75em, marginBottom = 0.75em (minimum; grid-snapped after)
   snapToGrid = true                  false = exact marginBottom (stacked-box worksheets)
-  snapTopToGrid = false              (> 1.73) an in-flow box opens on a grid line (space counted when fitting the column)
+  snapTopToGrid = false              (≥ 1.75) an in-flow box opens on a grid line (space counted when fitting the column)
   keepTogether = true                false = may split between children / lines; continuation drops icon (its column stays, empty) (+ title unless repeatTitle)
   splitMinLines = 2                  fewest text lines on each side of a cut; a cut inside a paragraph or
                                      list item also keeps ≥ layout.boxChildSplitMinLines (2) of its lines
@@ -1384,7 +1396,9 @@ Inline `:chip[text]{style="id"}` (word banks, keys, tags). Chip without style �
 ```
 A chip with a `field` attribute (≥ 1.71) is a fillable PDF form field on its box: its style is the field's
 look, `minWidth` the room to type in (document-format.md §10.1). A chip style with `underline` draws a
-writing line, which is not the `:underline[…]` text mark.
+writing line, which is not the `:underline[…]` text mark. How number fields write numbers is
+`pdfGeneration.forms` (≥ 1.74): `{ currency?: '€', currencyBefore?: true, separatorStyle?: 0|1|2|3 (from the
+locale), font?: 'chip'|'helvetica'|{ family, weight?, style? } }`; set it from the source's currency and separators.
 
 ---------------------------------------------------------------------------------
 
@@ -1507,7 +1521,7 @@ answers stay in the chapters (playbooks.md C7).
   defaultPlacement?: ResourcePlacement
   captionStyle?: CaptionStyleConfig   partial override merged over the global captionStyle
   snapToGrid?: boolean                default true: an inline figure/table of the type puts the flow back on the grid
-  snapTopToGrid?: boolean             (> 1.73) default false: an inline figure/table (not wrapped, not at a column top)
+  snapTopToGrid?: boolean             (≥ 1.75) default false: an inline figure/table (not wrapped, not at a column top)
                                       opens on a grid line }
 ```
 ResourcePlacement, resolved field-by-field: resource.placement → type.defaultPlacement → built-in:
@@ -1520,7 +1534,7 @@ span:     'column' (default) | 'page' | 'side' (float-only side column; else beh
                          one-column page it is an ordinary inline embed. `columns` does nothing for an inline embed
 rotate?:  'ccw' | 'cw'   (landscape: page-span float on its own page)
 width?:   0 < w < 1 fraction of column/page width (default whole), or a length {value, unit} in mm|cm|in|pt
-                         (#1461), measured against the slot it is set in (column, a column float's columns and gutters,
+                         (≥ 1.73, #1461), measured against the slot it is set in (column, a column float's columns and gutters,
                          content width, side column, a styled section's or a box's columns); ≥ the slot = whole slot;
                          a turned float is laid out at most that wide before turning. px/em are not read as a length
 align?:   'left' (default) | 'center' | 'right' | 'start' | 'end'   (start/end ≥ 1.15: logical sides; left/right are
@@ -1571,7 +1585,7 @@ citingPage?: boolean     ≥ 1.25, position top/auto, span column/page, not rota
                          break opens the page (chapter's first page, part, :::pagebreak), nothing page-wide stands above
                          the citing line, and the citing line stays on that page; else its usual slot. Falls back to
                          layout.floatsAtCitingPage. Read after its citation in tagged PDF / HTML
-plate?:   boolean | 'content' | 'trim' | 'bleed'   (#1461) full-page plate, pictures only (bitmap, svg, video poster),
+plate?:   boolean | 'content' | 'trim' | 'bleed'   (≥ 1.73, #1461) full-page plate, pictures only (bitmap, svg, video poster),
                          not 'here' or a vertical page: alone on a fresh page after its citation, scaled up or down to the
                          largest size the content area holds with caption + note, centred unless align. Waits for a page it
                          can have whole (no opener, other float or text yet), 3 pages at most, then takes the next as it is.
@@ -1579,7 +1593,8 @@ plate?:   boolean | 'content' | 'trim' | 'bleed'   (#1461) full-page plate, pict
                          'bleed' cover the page (bleed needs page.cutLines, else = trim), cropped about the centre, caption
                          at the content-area foot on a paper-colour band; that page has role 'plate' (no running heads,
                          folio or design elements unless pages:'plate'). false on a resource turns off its type's plate.
-                         An enlarged bitmap under print.preflight.minImageResolution = lowImageResolution (crop counted)
+                         An enlarged bitmap under print.preflight.minImageResolution (default 300 ppi) = preflight
+                         lowImageResolution (crop counted; books set up for print only); no plate warning of its own
 ```
 A type may leave fields out (≥ 1.38): the built-in type of the same id (`figure`, `table`, `video`, in the document's
 language) fills them, else `name` is the id, `shortLabel` and `captionPrefix` the `name`, `numberingTemplate`
@@ -1742,7 +1757,7 @@ video; a self-hosted file is packed under `media/` and plays in `<video>`.
 `{ enabled = true, fontSizeScale = 1.0, color? (= body), marginTop = 0.8em, marginBottom = 0.8em,
 indentAfterDisplay = true, keepWithLeadIn = false, snapToGrid = true, snapTopToGrid = false, equationNumbering }`
 (MathJax SVG). `snapToGrid: false` keeps a display formula's exact margins (the flow stays off the grid after it);
-`snapTopToGrid: true` (> 1.73) opens it on a grid line.
+`snapTopToGrid: true` (≥ 1.75) opens it on a grid line.
 - `equationNumbering` (postext ≥ 1.19) `{ enabled = true, numberingTemplate = '{n}', resetOn = 'never',
   counterFormat = 'decimal', format = '({n})' }` numbers the formulas (rows) that carry `\label`;
   `'{h1}.{n}'` + `resetOn: 'h1'` gives (2.1). Counters carry across chapters in

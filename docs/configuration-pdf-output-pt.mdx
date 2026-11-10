@@ -320,6 +320,16 @@ Acrobat, Foxit, pdf.js (Firefox) e a maioria dos visualizadores executam esses s
 
 O canvas pinta um campo numérico da mesma forma, então a prévia coincide com o PDF: passe para `renderPageToCanvas` (ou `renderPage`, `renderToCanvas`) a mesma opção `forms` que você passa para `renderToPdf`; nos dois, os separadores vêm por padrão do `locale` do documento (na falta dele, do idioma de hifenização). Uma única regra escreve os números em todo lugar, e o postext a exporta para outros geradores de saída: `formNumberStyle(forms, lang)` resolve as opções, `formatFieldNumber(value, format, style)` formata um valor (undefined para um texto que não é número) e `numberFieldText(field, words, style)` dá o que um campo numérico pintado mostra. A lista de exibição leva o campo no trecho do chip (`inline.field`, com o `sizePx` e o `padPx` da composição).
 
+Um livro pode guardar essas opções na configuração: `pdfGeneration.forms` aceita os mesmos campos (`currency`, `currencyBefore`, `separatorStyle`, `font`). `renderToPdf` e o canvas tomam cada um primeiro da própria opção `forms`, depois do `pdfGeneration.forms` do primeiro documento e, por fim, dos valores padrão. Não muda a diagramação, só como os campos são escritos e pintados. No Sandbox é o grupo **Campos de formulário** da seção PDF.
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
+**Pelo esm.sh num navegador**, importe `https://esm.sh/postext-pdf?bundle`. O build padrão do pdf-lib no esm.sh coloca as classes de anotação num módulo à parte, e o pdf-lib então recusa o widget de cada campo: o PDF mantém as caixas, mas perde formatos, cálculos e atributos, com um aviso `formField` por campo. `?bundle` compila o pdf-lib num só módulo e deixa o `postext` de fora, compartilhado com a página. Um bundler (Vite, webpack, Next.js) e o Node não são afetados.
+
 A exportação IDML grava os mesmos campos como campos de formulário do InDesign (veja [Uso programático › Pacotes do InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postextidml)).
 
 ### Links no PDF

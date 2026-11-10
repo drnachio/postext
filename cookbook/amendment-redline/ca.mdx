@@ -1,0 +1,59 @@
+---
+title: "Una reforma amb el suprimit ratllat i el nou subratllat"
+summary: "Un text comparat de la Constitució: el que se suprimeix va ratllat, el que s'afegeix subratllat, i l'article vigent tanca en un requadre amb apartats penjats."
+plain: "Un quadern legislatiu breu. Mostra la redacció antiga d'uns articles amb les paraules suprimides ratllades i les noves subratllades, i després l'article sencer ja reformat en un requadre gris."
+description: "Un text comparat compost amb Postext: la redacció antiga amb el que se suprimeix ratllat i el que s'afegeix subratllat, i l'article vigent amb sagnat francès."
+question: "Com mostro una reforma amb el que se suprimeix ratllat i el que s'afegeix subratllat?"
+aliases: ["text comparat", "control de canvis", "modificació", "reforma constitucional", "llei", "BOE", "fe d'errades", "ratllat", "subratllat", "sagnat francès", "apartats penjats", "Constitució Espanyola", "article 135"]
+---
+
+## Què compondràs
+
+Un quadern de text comparat com els que preparen els serveis de les Cambres: cinc pàgines amb les tres reformes de la Constitució Espanyola publicades al BOE, la de l'article 13.2 el 1992, la del 135 el 2011 i la del 49 el 2024. Cada llei de reforma copia l'article nou sencer i no diu què canvia; aquí la redacció de 1978 i la vigent van en un sol text, amb el que se suprimeix ratllat i el que s'afegeix subratllat, sota una clau que explica la convenció. Al final, l'article 135 vigent es llegeix en un requadre tintat, cada número d'apartat a la vora i el seu text penjat. L'edició anglesa fa el mateix amb la llei nord-americana de 1998 que va allargar vint anys els terminis del dret d'autor.
+
+## Elaboració
+
+### 1 · El canvi es marca on passa
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Les marques són al Markdown: `~~El Gobierno habrá~~ :underline[El Estado y las Comunidades Autónomas habrán]` ratlla l'antic i subratlla el nou ([ratllat](/ca/docs/document-format-inline#ratllat), [subratllat](/ca/docs/document-format-inline#subratllat)). Cap de les dues línies no ocupa lloc, així que l'article 49 de 1978, ratllat sencer a la pàgina 3, es justifica i es divideix com el text que l'envolta. Cada línia surt de les mesures de ratllat i subratllat de la mateixa font, en el color de les paraules.
+
+### 2 · Els apartats pengen dins del requadre
+
+`body.hangingIndent` en un estil de requadre penja tots els seus paràgrafs ([tipografia dins d'un requadre](/ca/docs/configuration-callouts#tipografia-dins-dun-requadre)): la primera línia comença a la vora interior i les següents 7 mm més endins. Un tabulador a aquests mateixos 7 mm porta el text que segueix el número fins a aquesta vora, sigui quina sigui l'amplada del número, així que al Markdown escrius `1.:tab Todas las Administraciones…`. Els paràgrafs sense número d'un apartat comencen per `:tab` i queden alineats amb el text penjat. Els dos requadres comparteixen la tipografia i només canvia el marc: un filet vermell sobre el text de la llei de reforma, una tinta darrere del text vigent.
+
+### 3 · Una banda per a l'obertura
+
+<Excerpt region="opener" />
+
+La banda blau marí surt a sang per dalt i pels costats, i l'avanttítol i l'entradeta surten d'atributs de la línia del títol ([atributs de títol](/ca/docs/document-format#atributs-dencapçalament)). `minHeight` fixa on comença la clau, uns mil·límetres sota la banda.
+
+### 4 · Capçaleres segons la paritat
+
+<Excerpt region="running-heads" />
+
+La pàgina parella porta el títol del quadern i la senar la part en què s'obre, llegida del primer títol de segon nivell de la pàgina. `pages: 'body'` les deixa fora de l'obertura, que porta un foli al peu.
+
+## Variants
+
+### Escriu el que s'afegeix com `++text++`
+
+Amb `plusUnderline` activat, `++y pasivo++` subratlla igual que `:underline[y pasivo]`, la grafia que Pandoc i markdown-it fan servir per al text inserit.
+
+```diff
+     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
++    plusUnderline: true, // ++text++ subratlla; C++ al text s'escriu llavors C\+\+
+```
+
+### Mantén sencer el requadre de la llei de reforma
+
+Sense `keepTogether: false` el requadre passa sencer a la pàgina següent quan no hi cap, i la pàgina anterior acaba a la línia que el presenta.
+
+```diff
+-    padding: pad(2.5, 0), body: clauses, keepTogether: false, // it may run on to the next page
++    padding: pad(2.5, 0), body: clauses,
+```
+
+## Errors freqüents
+
+- Un paràgraf que comença per un número i un punt (`2. Solamente…`) es llegeix com un element de llista, i una barra inversa davant del punt s'imprimeix. Aquesta edició posa un unidor de paraules (U+2060) entre la xifra i el punt al text corregut, i al requadre escriu el tabulador just darrere del punt, `1.:tab`, que no obre cap llista.
+- El color sol no sobreviu a una fotocòpia, que és com solen circular aquests quaderns; el ratllat i el subratllat es llegeixen en blanc i negre, i per això els van triar els redactors.

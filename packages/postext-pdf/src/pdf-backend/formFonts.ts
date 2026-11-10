@@ -9,6 +9,7 @@
  * pdf-lib cannot write whole), with a warning.
  */
 import { type PDFDocument, type PDFFont, PDFDict, PDFName, StandardFonts } from 'pdf-lib';
+import type { PdfFormFieldFont } from 'postext';
 import type { FontCache } from '../fontCache.js';
 import { parseFontString } from '../fontString.js';
 import { isCffOpenType, coverAllGlyphWidths } from '../fontCache/glyphTables.js';
@@ -16,8 +17,8 @@ import { declareCffProgram } from '../fontCache/cffProgram.js';
 import { decompressWoff2 } from '../woff2.js';
 
 /** The face form fields use: the chip's own (the default), Helvetica, or a
- *  face of the document's fonts. */
-export type PdfFormFont = 'chip' | 'helvetica' | { family: string; weight?: number; style?: 'normal' | 'italic' };
+ *  face of the document's fonts (`pdfGeneration.forms.font` of postext). */
+export type PdfFormFont = PdfFormFieldFont;
 
 /** The OS/2 `fsType` bits that forbid embedding the outlines: a restricted
  *  licence (bit 1), or bitmaps only (bit 9). */

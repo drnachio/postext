@@ -23,6 +23,8 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'cjkLooseLine':
     case 'raggedLine':
     case 'stack':
+    case 'hyphenLadder':
+    case 'lastWordDivided':
     case 'unbreakableWordOverflow':
     case 'wordDividedByCharacter':
     case 'wordDividedBySyllable':

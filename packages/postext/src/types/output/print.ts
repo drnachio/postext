@@ -289,6 +289,31 @@ export interface PdfGenerationConfig {
    *  screen guide for checking the page, out of a file meant for print.
    *  Defaults to true. */
   baselineGrid?: boolean;
+  /** How form fields (chips with a `field`) write numbers and the face
+   *  they show values in. Output only: the layout does not read it. The
+   *  host's own `forms` option of `renderToPdf` and of the canvas
+   *  (`RenderPageOptions.forms`) wins field by field. */
+  forms?: PdfFormsConfig;
+}
+
+/** The face form fields show their values in: `'chip'` the face each
+ *  field's chip is set in, `'helvetica'` (nothing embedded), or a face of
+ *  the document's fonts. */
+export type PdfFormFieldFont = 'chip' | 'helvetica' | { family: string; weight?: number; style?: 'normal' | 'italic' };
+
+/** `pdfGeneration.forms`: the number style of form fields (as
+ *  `FormNumberOptions`) and their face. */
+export interface PdfFormsConfig {
+  /** The currency symbol for `format="currency"`. Default `'€'`. */
+  currency?: string;
+  /** The symbol before the number (`€ 12,50`), else after it. Default
+   *  true. */
+  currencyBefore?: boolean;
+  /** Acrobat's separator style: 0 `1,234.56`, 1 `1234.56`, 2 `1.234,56`,
+   *  3 `1234,56`. Default from the document language. */
+  separatorStyle?: 0 | 1 | 2 | 3;
+  /** The face of the fields in the PDF. Default `'chip'`. */
+  font?: PdfFormFieldFont;
 }
 
 /** What goes into a generated PDF with every default filled in. */
@@ -298,4 +323,6 @@ export interface ResolvedPdfGenerationConfig {
   colorSpace: PdfColorSpace;
   accessible: boolean;
   baselineGrid: boolean;
+  /** As set (its defaults depend on the document language). */
+  forms?: PdfFormsConfig;
 }

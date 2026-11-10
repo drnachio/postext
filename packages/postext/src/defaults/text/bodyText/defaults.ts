@@ -13,6 +13,12 @@ export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] =
   zone: { value: 3, unit: 'em' },
   compounds: true,
   capitalized: true,
+  fewerHyphens: 0,
+  ladders: 'allow',
+  maxConsecutive: 1,
+  ladderPenalty: 30000,
+  lastWord: 'allow',
+  lastWordPenalty: 30000,
 };
 
 /**
@@ -133,6 +139,13 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
     && dimensionsEqual(a.zone ?? D.zone, b.zone ?? D.zone)
     && (a.compounds ?? D.compounds) === (b.compounds ?? D.compounds)
     && (a.capitalized ?? D.capitalized) === (b.capitalized ?? D.capitalized)
+    && a.minWordLength === b.minWordLength && a.leftMin === b.leftMin && a.rightMin === b.rightMin
+    && (a.fewerHyphens ?? D.fewerHyphens) === (b.fewerHyphens ?? D.fewerHyphens)
+    && (a.ladders ?? D.ladders) === (b.ladders ?? D.ladders)
+    && (a.maxConsecutive ?? D.maxConsecutive) === (b.maxConsecutive ?? D.maxConsecutive)
+    && (a.ladderPenalty ?? D.ladderPenalty) === (b.ladderPenalty ?? D.ladderPenalty)
+    && (a.lastWord ?? D.lastWord) === (b.lastWord ?? D.lastWord)
+    && (a.lastWordPenalty ?? D.lastWordPenalty) === (b.lastWordPenalty ?? D.lastWordPenalty)
     // A list that names no valid word is no list.
     && (normalizeHyphenationExceptions(a.exceptions) ?? []).join('\x00') === (normalizeHyphenationExceptions(b.exceptions) ?? []).join('\x00');
 }

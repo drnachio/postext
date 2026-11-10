@@ -443,11 +443,11 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 ## PDF生成（設定）
 
-`pdfGeneration`プロパティは、PDFバックエンドが最終的な文書をどう出力するかを制御します。これらの設定は書き出し時に`postext-pdf`パッケージが使い、canvasとHTMLのビューアーは無視します。
+`pdfGeneration`プロパティは、PDFバックエンドが最終的な文書をどう出力するかを制御します。これらの設定は書き出し時に`postext-pdf`パッケージが使い、canvasとHTMLのビューアーは無視します。ただし`forms`は例外で、canvasもこれを読むため、フォームフィールドがPDFと一致します。
 
 `buildDocument`はこれをVDTの中に`doc.config.pdfGeneration`として保持し、`renderToPdf`は各設定を、最初に値を与える場所から取ります：
 
-1. 自身のオプション（`outlines`、`accessible`、`colorSpace`、`baselineGrid`）
+1. 自身のオプション（`outlines`、`accessible`、`colorSpace`、`baselineGrid`、`forms`）
 2. 最初に描画する文書の`pdfGeneration`（本では、最初の章の設定がファイル全体に適用されます）
 3. 既定値：しおりとタグ付けはオン、色はRGB
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
   baselineGrid?: boolean;      // `page.baselineGrid`のグリッドをPDFにも描く。
+  forms?: PdfFormsConfig;      // フォームフィールド：通貨、区切り記号、書体。
 }
 ```
 
@@ -504,6 +505,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td><code>page.baselineGrid</code>がオンのあいだ、ベースライングリッドをPDFにも描きます。既定はオンで、これまでどおりです。<code>false</code>にするとグリッドは画面でページを確認するための目安としてPDFから外れ、CanvasとHTMLビューアーには引き続き表示されます。Sandboxでは「PDF」セクションの<strong>PDFにベースライングリッド</strong>です。</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>フォームフィールドが数値をどう書くか、また値をどの書体で表示するか：`currency`（既定は`€`）、`currencyBefore`（既定は`true`）、`separatorStyle`（`0`〜`3`。指定しなければ文書の言語に従う）、`font`（既定の`'chip'`、`'helvetica'`、または`{ family, weight?, style? }`）。`renderToPdf`とcanvasの`forms`オプションがフィールドごとに優先されます。出力だけに関わり、組版は変わりません。[フォームフィールド](/ja/docs/configuration-pdf-output#フォームフィールド)を参照。</td>
     </tr>
   </tbody>
 </table>

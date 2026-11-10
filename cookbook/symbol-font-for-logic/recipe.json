@@ -1,0 +1,67 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 185,
+  "status": "published",
+  "chapter": "type",
+  "order": 410,
+  "level": 2,
+  "genres": ["textbook"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["symbol-font", "pdf-fonts"],
+    "also": [
+      "font-loading",
+      "super-subscripts",
+      "paragraph-styles",
+      "table-model",
+      "table-style",
+      "opener-design",
+      "heading-attributes",
+      "running-heads",
+      "mirrored-margins",
+      "color-palette",
+      "pdf-export"
+    ]
+  },
+  "answers": ["Q218"],
+  "gotchas": [],
+  "explainsWarnings": ["glyphFallbackAt"],
+  "engine": { "postext": "1.73.0", "postextPdf": "1.73.0" },
+  "kit": ["core", "fonts", "viewer", "pdf"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "crop", "focus": { "page": 1, "x": 0, "y": 0, "w": 1, "h": 0.55 } },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": { "en": "The primer of logical notation, in English and Spanish", "es": "La cartilla de notación lógica, en inglés y en español" },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Crimson Pro", "license": "OFL-1.1" },
+      { "family": "Cormorant Garamond", "license": "OFL-1.1" },
+      { "family": "IBM Plex Sans Condensed", "license": "OFL-1.1" },
+      { "family": "Noto Sans Math", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-11-10",
+  "updated": "2026-11-10",
+  "downloads": { "pdf": true },
+  "workarounds": [
+    {
+      "package": "postext",
+      "note": "Fontsource ships Noto Sans Math whole in its latin file (5.3.0); the kit declares that file for the Latin unicode-range, so the pen resolves the symbol family itself with no range, on screen and in the PDF."
+    }
+  ],
+  "folio": {
+    "paper": { "type": "bookWove", "grammage": 90 },
+    "binding": { "type": "sewn", "cover": "case", "coverMaterial": "cloth", "coverColor": "#7b2a3b" },
+    "surface": { "type": "walnut" },
+    "lighting": { "environment": "lamp" }
+  }
+}

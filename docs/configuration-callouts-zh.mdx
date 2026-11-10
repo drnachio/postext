@@ -416,7 +416,7 @@ calloutStyles: [
 - 子块中的`:::columns{count=N}`…`:::`组在框内把这些子块排成`N`个等宽的栏，间距为`columnGap`：这一串内容在最能让各栏平齐的块边界或行边界处切开（在中途切开的段落或列表项在下一栏开头继续，不带项目符号），每一栏都从组的顶部开始，组的高度等于最高的一栏；组之后的子块恢复全宽。拆分的框（`keepTogether: false`，或比一栏还高的框）也会在组内部、各栏之间切开：蛇形组依次填满各栏，接到下一个片段；平行组（`breaks`）则逐个流接续（postext 1.25起；见[文档格式 › `:::columns`](/zh/docs/document-format-directives#columns)）。块上的`gap`为该组替代`columnGap`，`rule`在每条栏间空白中画一条竖线。可用来排两栏的要点小结，或让宽框中的几张表并排。
 - 块的第六个属性`label`印在样式的页签上（见上文`label`）：`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`；样式没有`label`时忽略该属性。
 
-在VDT中，框是一个`type: 'callout'`的框形块，其装饰（底色、色条、图标、标题）放在`designOverlay`上，后面在同一栏中跟着它的子块；框形和每个子块都带有块的`containerId`。嵌套框是子块中一个独立的`type: 'callout'`框形，后面跟着它自己的块；这些块保留顶层块的`containerId`（排布和各栏齐底仍把它们看作一个单元），并加上`calloutPath`，即包围它们的各层嵌套块的容器id，由外到内排列（嵌套框形自己的id是最后一项）。带标签的PDF为每个嵌套框在其父框的`Div`内生成一个`Div`。图标图片与资源图片的解析方式相同：canvas图片注册表、HTML的`resourceImageUrl`选项和PDF的`resourceBytes`提供器。
+在VDT中，框是一个`type: 'callout'`的框形块，其装饰（底色、色条、图标、标题）放在`designOverlay`上，后面在同一栏中跟着它的子块；框形和每个子块都带有块的`containerId`。嵌套框是子块中一个独立的`type: 'callout'`框形，后面跟着它自己的块；这些块保留顶层块的`containerId`（排布和各栏齐底仍把它们看作一个单元），并加上`calloutPath`，即包围它们的各层嵌套块的容器id，由外到内排列（嵌套框形自己的id是最后一项）。带标签的PDF为每个嵌套框在其父框的`Div`内生成一个`Div`。图标图片与资源图片的解析方式相同：canvas图片注册表、HTML的`resourceImageUrl`选项和PDF的`resourceBytes`提供器。流式EPUB把图标写在框的最前面，对辅助技术隐藏，并按页面绘制的位置浮动：压在侧边色条上、占一栏自己的位置，或挂在上方的角上；竖排的书沿着行的方向放置它。用一种颜色绘制的图片（`tint`，`#rrggbb`颜色）以该颜色的一份SVG副本放进书中；位图在这里保留它自己的颜色。
 
 ```ts
 const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyText, resolvedHeadings, resolvedUnorderedLists, config.locale);

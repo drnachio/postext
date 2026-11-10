@@ -1,0 +1,80 @@
+---
+title: "Justified prose without stacked words at the line edges"
+summary: "One page of Dickens set twice in a narrow measure: the first proof reports and marks every stack, the second weighs them in the line breaker."
+plain: "When two lines in a row end or start with the same word, the eye can slip to the wrong line. The book is set twice: once showing where that happens, once with the lines broken so it doesn't."
+description: "bodyText.stacks in two proofs of a pocket page: 'warn' lists and marks each stack, 'avoid' adds stackPenalty to the Knuth–Plass demerits and breaks around them."
+question: "How do I keep two lines in a row from ending or starting on the same word?"
+aliases: ["stacks", "stacked words", "repeated words at line ends", "line-end repetition", "repetición", "repeticiones", "ladders", "same word two lines", "eye skip", "stackPenalty", "stackMinCharacters", "proofreading", "Dickens", "Clarín"]
+pageNotes: { "2": "First proof, page 2: pale red bands under sole and sole at the ends of two lines, even and event, at the starts of the next two, and The over the at the start of a paragraph.", "4": "The first proof's last page: the colophon and a slip titled FIRST PROOF listing five stacks by page.", "6": "Second proof, page 2: the same text broken another way; only even over event is still marked.", "8": "The second proof's slip: one stack left." }
+---
+
+## What you'll build
+
+Two proofs of a pocket page, 115 × 180 mm, with the opening of *A Christmas Carol* justified in Spectral on an 83 mm measure. A narrow measure leaves the line breaker few choices, and in five places two lines in a row end or begin on the same word: *sole* over *sole*, *his* over *his*, *No* over *No*. The first proof is set with `stacks: 'warn'`. It changes nothing in the breaks, reports each stack, marks both words with a pale red band and lists them on a slip after the colophon. The second proof is set with `'avoid'`, and four of the five are gone. The Spanish edition sets the opening of Clarín's *¡Adiós, Cordera!* the same way.
+
+## Method
+
+### 1 · Report first, then weigh
+
+<Excerpt region="answer" />
+
+A stack is two lines in a row that end on the same word or the same last characters, or that start alike. `stackMinCharacters` sets how many characters make a stack: three by default, spaces included, with accents and case left out, so *The* over *the* counts. `'warn'` only reports, which is how a typesetter first sees where a text stacks. `'avoid'` adds `stackPenalty` to the demerits of every break that would make one, and the Knuth–Plass breaker looks for another way to break the paragraph. It needs `optimalLineBreaking`: the greedy breaker has no demerits to add to.
+
+Spanish typesetting manuals count a stack as a fault of composition, beside rivers and runs of hyphens. Coming back to the left edge, the eye can catch the repeated word on the wrong line and read a line twice or skip one; at the right edge the repetition reads as an echo. The Spanish rule covers a repeated syllable as well as a word, so the Spanish edition sets `stackMinCharacters` to 2.
+
+The default penalty, 3000, is what two hyphens in a row cost, and a repeated word of one syllable costs twice. In this measure 3000 left two stacks in each edition, because the alternative was a line looser than the breaker would accept. At 10000 it takes the looser lines. `maxWordSpacing` stays at its default of 2: a tighter limit gave the breaker no other break to choose, and `'avoid'` changed nothing.
+
+### 2 · Mark the stacks in the text
+
+<Excerpt region="marks" />
+
+Each warning gives the source position of its first line, so the script finds that line and the next one in the built document, takes the repeated edge of each and wraps the whole word in `:mark[…]`. A mark paints a band under ordinary text and leaves the line breaks alone. Only whole words are marked: a mark around part of a word changes how that word is hyphenated, and then the lines no longer break where the warning was found.
+
+<PageShot page={2} crop="0,0.04,1,0.32" caption="First proof, page 2: sole over sole at the line ends, then even over event and The over the at the starts." />
+
+### 3 · Two proofs from one text
+
+<Excerpt region="proofs" />
+
+Each proof is built twice. The first build finds the stacks. The second sets the same text with the marks and a slip appended after the colophon, so the slip falls on the last page. The pen keeps the first build of each proof, the plain text, out of the published pages: `capture.doc` lists the two marked builds, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.04,1,0.32" caption="Second proof, page 2: the same paragraphs broken another way. Only even over event is left." />
+
+The stack left in the English edition is *even* over *event*: the two words share their first three letters, and every other break of that paragraph cost more. In Spanish, with two characters, the first proof finds five stacks, including *co* in *con* over *como* and *ar* in *levantar* over *vacilar*, and the second proof has none.
+
+### 4 · The opener over the text
+
+<Excerpt region="opener" />
+
+The heading's `art` attribute names the painting, so one style serves both editions. `minHeight` holds sixteen lines and the text starts on the seventeenth, on the same grid as the pages that follow.
+
+### 5 · Running heads and a drop folio
+
+<Excerpt region="heads" />
+
+The author goes on the verso and the title on the recto, each beside its folio. On the opener the heads are off and the folio drops to the foot.
+
+## Variations
+
+### Count only whole short words
+
+Three characters is the default. With five, short words such as *his* and *No* no longer count as stacks, and the breaker keeps the tighter breaks around them.
+
+```diff
+-  stackMinCharacters: t({ en: 3, es: 2 }),
++  stackMinCharacters: 5,
+```
+
+### Set the book with the default penalty
+
+The default keeps the spacing tighter and accepts two stacks per edition where breaking around them would open a line further.
+
+```diff
+-  stackPenalty: 10000,
++  stackPenalty: 3000,
+```
+
+## Pitfalls
+
+- Stacks are found in the lines as broken. Change the trim, the font size or the text and the first proof finds different ones, so read the warnings of every build and don't copy positions from an earlier one.
+- Stacks are counted inside a paragraph, and only in scripts that put spaces between words: two paragraphs that both open with *Scrooge* make no stack, and Chinese or Japanese text never reports one.

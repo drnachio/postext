@@ -1,0 +1,68 @@
+---
+title: "Un modulo d'ordine stampato che è anche un PDF compilabile"
+summary: "Un listino di sementi con le caselle delle quantità come campi PDF: il totale di ogni riga, i subtotali e l'importo da pagare si calcolano da soli nel lettore."
+description: "Un listino di sementi antiche in Postext con chip che diventano campi AcroForm: caselle numeriche, caselle di spunta, un elenco di scelte e totali calcolati."
+plain: "Un catalogo di sementi di quattro pagine con modulo d'ordine. Stampato, ha caselle da scrivere; aperto in un lettore PDF, si digita il numero di bustine e i totali si sommano da soli."
+question: "Come faccio un modulo PDF che il lettore possa compilare e che sommi da solo i totali?"
+aliases: ["PDF compilabile", "modulo PDF", "AcroForm", "campi modulo", "modulo d'ordine", "listino prezzi", "campi calcolati", "AFSimple_Calculate", "casella di spunta", "menu a tendina", "catalogo di sementi", "vendita per corrispondenza"]
+pageNotes: { "1": "La copertina: un dipinto di ortaggi antichi su un tavolo di legno occupa la metà superiore della pagina (pomodori costoluti, un'anguria Moon and Stars, una zucca blu, peperoni, barbabietole, mais colorato e due sacchetti di carta di fagioli screziati). Sotto, l'occhiello verde, il titolo Seed List and Order Form in Caslon grande su due righe con un sommario in corsivo accanto e un'introduzione su due colonne.", "2": "Pagina 2: The 2027 List. Un breve paragrafo, poi il listino in una tabella con la riga d'intestazione verde scuro (Code, Variety, Seeds, Price, Qty, Total). Ogni gruppo si apre con una riga verde chiaro; ogni varietà ha una casella bianca bordata di grigio sotto Qty e una casella color kraft sotto Total, e ogni gruppo si chiude con una riga di subtotale dalla casella bordata di verde.", "3": "Pagina 3: il listino prosegue con l'ultimo fagiolo, Squash and melons e Greens and roots, ciascuno con il suo subtotale. Sotto il titoletto What you owe, una tabella di cinque righe: le sementi, il circolo dei custodi dei semi con una casella di spunta, la spedizione di $ 4.50 stampata in un chip kraft, una casella bianca per una donazione e Total to pay in una casella verde piena.", "4": "Pagina 4: Your Details. Nome, indirizzo, città e stato, codice postale e telefono, e-mail, ciascuno con una riga su cui scrivere; How you pay, con una casella di scelta su Check, una riga per la data e due caselle di spunta; gli indirizzi postale ed e-mail; due colonne di note e un colophon di una riga." }
+---
+
+## Che cosa comporrai
+
+*Long Furrow Heritage Seeds* è il listino di sementi della primavera 2027: quattro pagine di 210 × 270 mm di una ditta sementiera inventata che vende venticinque varietà vere a impollinazione libera. Un dipinto del raccolto occupa la metà superiore della copertina. Il listino è un'unica tabella distribuita sulle pagine 2 e 3, con una casella per la quantità e il totale di riga a ogni varietà e un subtotale alla fine di ogni gruppo. I dati del cliente e il pagamento sono a pagina 4. Stampato, è un comune modulo d'ordine da compilare a penna. Ogni casella è anche un chip con l'attributo `field`, quindi il PDF che scrive `renderToPdf` è un AcroForm: si digita il numero di bustine nel lettore PDF e i totali si calcolano, in dollari in inglese e in euro in spagnolo.
+
+## Preparazione
+
+### 1 · Uno stile di chip per ogni tipo di casella
+
+<Excerpt region="chips" />
+
+Lo stile dà al campo l'aspetto e la larghezza minima, e il PDF mette il widget del campo esattamente sul riquadro che il chip dipinge. Le caselle che compila il lettore sono bianche con il bordo grigio; quelle che calcola il modulo sono color kraft e senza bordo, così si vede quali vanno scritte a mano. Le righe dell'indirizzo sono chip con il solo filetto inferiore, larghi 145,5 mm per il nome e 64 o 59,5 mm per le mezze righe, e le loro estremità coincidono con le tabulazioni dello stile di paragrafo `field`. La casella di spunta conserva la larghezza minima di 3,9 mm senza margine interno, e nel PDF il campo diventa una casella di spunta.
+
+### 2 · Il TSV di un foglio di calcolo, le caselle aggiunte dallo script
+
+<Excerpt region="tables" />
+
+Le varietà arrivano come un foglio: un codice, il nome con la sua nota, i semi per bustina e un prezzo. `priceList()` aggiunge a ogni riga i due chip di campo e, alla fine di ogni gruppo, una riga di subtotale. La cella del prezzo stampa `formatFieldNumber(price, 'currency', style)`, la stessa funzione che formatta i totali, così prezzo stampato e totale calcolato usano gli stessi separatori. La riga che apre ogni gruppo è un'unica cella sulle sei colonne, e quando la tabella si spezza non resta mai sola a piè di pagina. La tabella di pagina 3 prende le sue cinque righe dal Markdown di `content.summary.en.md`, con i chip scritti nelle celle.
+
+### 3 · La copertina: prima il dipinto, poi il titolo
+
+<Excerpt region="cover" />
+
+L'elemento immagine è ancorato alla pagina, a 210 × 134 mm, e va al vivo su tre lati. L'occhiello sta a 120 mm dall'inizio del contenitore, e titolo e sommario sono agganciati a lui. L'altezza minima dello stile, 164 mm, tiene l'introduzione su due colonne sotto il titolo, qualunque sia la sua lunghezza.
+
+### 4 · Testatine che lasciano libera la copertina
+
+<Excerpt region="running-heads" />
+
+La pagina pari porta il nome della ditta, la dispari la sezione, ciascuno accanto al folio. Lo stile di titolo della copertina ha testatina e piede vuoti, così la pagina 1 non ha testatina.
+
+### 5 · Una tavolozza con un colore per gli importi calcolati
+
+<Excerpt region="palette" />
+
+Il verde foglia segna ciò che appartiene alla ditta: la riga d'intestazione, gli occhielli, i bordi dei subtotali e la casella piena dell'importo da pagare. Il kraft è riservato alle caselle che calcola il PDF; sulla carta si leggono come le caselle da lasciare vuote.
+
+## Varianti
+
+### Chiedi le spese di spedizione con un campo
+
+Trasforma la spedizione stampata in un campo che compila il lettore e sommalo al totale al posto dell'importo fisso.
+
+```diff
+-Postage and packing, any size of order	:chip[$ 4.50]{style="amount"}
++Postage and packing, any size of order	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 4.50, order.gift)"}
++**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## Errori frequenti
+
+Le pagine catturate mostrano le caselle vuote, perché le parole di un campo sono il suo valore iniziale e qui tutti i campi partono vuoti. La spedizione è testo stampato in un chip senza `field`, e il totale la somma come il numero `4.50` nel suo calcolo, quindi il lettore non può cambiarla.
+
+I totali sono script (`AFSimple_Calculate` ed espressioni brevi) che Acrobat, Foxit, Chrome e Firefox eseguono. Anteprima su macOS mostra i campi e salva ciò che si digita, ma non esegue script, e lì i totali restano vuoti.
+
+La casella del circolo ha `on="1"`, il valore che un calcolo legge quando è spuntata. Con il valore predefinito, `Yes`, `product(order.circle, 12)` darebbe sempre 0, e postext-pdf lo segnala.
+
+La ricetta importa `https://esm.sh/postext-pdf?bundle`. La build predefinita di pdf-lib su esm.sh mette le classi delle annotazioni in un modulo a parte, e pdf-lib rifiuta allora il widget di ogni campo: il PDF conserva le caselle, ma senza formato numerico, senza totali e senza campi di sola lettura, con un avviso `formField` nella console. `?bundle` compila pdf-lib in un solo modulo e lascia fuori `postext`, condiviso con il resto della pagina.

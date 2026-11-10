@@ -1,0 +1,740 @@
+{
+  "schemaVersion": 1,
+  "slug": "amendment-redline",
+  "sourceHash": "cdaaaf27ce70bd8d34278f4f5b6adea624da49058dd5753c1382b04498f6af32",
+  "engine": {
+    "postext": "1.73.0",
+    "postextPdf": "1.73.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.50",
+  "capturedAt": "2026-11-10T20:33:17.164Z",
+  "variants": {
+    "en": {
+      "hash8": "7991e2d7",
+      "vdtHash": "4a2db6c2affa716af76103097941e3400864c3be",
+      "timings": {
+        "importMs": 1612,
+        "fontsMs": 34,
+        "buildMs": 123,
+        "totalMs": 2717,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          152,
+          229
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 5,
+        "ownLines": 138
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1507,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 113198,
+          "alt": "Opening page 1: Changes in Existing Law."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 144794,
+          "alt": "Page 2: TITLE 17, UNITED STATES CODE."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 159740,
+          "alt": "Page 3: § 303. Duration of copyright: Works created but not published or copyrighted before January 1, 1978."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 142074,
+          "alt": "Page 4: SECTION 302 AS AMENDED."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 84776,
+          "alt": "Page 5."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "amendment-redline.pdf",
+        "bytes": 75522,
+        "pages": 5
+      },
+      "sandbox": {
+        "file": "amendment-redline.postext",
+        "bytes": 24037,
+        "folio": "8332f5d2",
+        "chapters": [
+          {
+            "pages": 5,
+            "hash": "bb5380f32ce46f53",
+            "lines": "daebd7dc6886c902"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.hangingIndent",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.tabStops",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 285,
+        "designElements": 9,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":tab"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "box-hanging-indent",
+          "callout-splitting",
+          "callout-styles",
+          "heading-attributes",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "strikethrough",
+          "tab-stops",
+          "underline"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.93
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "042efecf",
+      "vdtHash": "3c2f851106c6d48b5a7c43362cec9e924726bfbc",
+      "timings": {
+        "importMs": 1608,
+        "fontsMs": 30,
+        "buildMs": 93,
+        "totalMs": 2692,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          152,
+          229
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10,
+          "leadingPt": 14
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 5,
+        "ownLines": 138
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1507,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 120688,
+          "alt": "Página de apertura 1: Texto comparado."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 148658,
+          "alt": "Página 2: ARTÍCULO 135."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 148578,
+          "alt": "Página 3: EL ARTÍCULO 135 VIGENTE."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 137264,
+          "alt": "Página 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "body",
+          "w": 1000,
+          "h": 1507,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 52972,
+          "alt": "Página 5."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "loupe"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "amendment-redline.pdf",
+        "bytes": 66813,
+        "pages": 5
+      },
+      "sandbox": {
+        "file": "amendment-redline.postext",
+        "bytes": 23946,
+        "folio": "8332f5d2",
+        "chapters": [
+          {
+            "pages": 5,
+            "hash": "6f12fe3bb001ed63",
+            "lines": "d33545169b121206"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].backgroundEnabled",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.hangingIndent",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.tabStops",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 285,
+        "designElements": 9,
+        "directives": [
+          ":::callout",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":tab"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "box-hanging-indent",
+          "callout-splitting",
+          "callout-styles",
+          "heading-attributes",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "strikethrough",
+          "tab-stops",
+          "underline"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.83
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

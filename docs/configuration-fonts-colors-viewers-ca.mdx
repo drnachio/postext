@@ -442,11 +442,11 @@ Un valor que no sigui un enter de 0 a 200 es llegeix com l'enter més proper d'a
 
 ## Generació de PDF (configuració)
 
-La propietat `pdfGeneration` controla com genera el PDF final el generador de PDF. Aquests paràmetres els fa servir el paquet `postext-pdf` en el moment d'exportar; els visors canvas i HTML els ignoren.
+La propietat `pdfGeneration` controla com genera el PDF final el generador de PDF. Aquests paràmetres els fa servir el paquet `postext-pdf` en el moment d'exportar; els visors canvas i HTML els ignoren. `forms` és l'excepció: el canvas també el llegeix, de manera que els seus camps de formulari coincideixen amb els del PDF.
 
 `buildDocument` els passa al VDT, com a `doc.config.pdfGeneration`, i `renderToPdf` pren cada paràmetre del primer d'aquests llocs que el defineixi:
 
-1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`, `baselineGrid`);
+1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. el `pdfGeneration` del primer document que rep (en un llibre, els paràmetres del primer capítol valen per a tot el fitxer);
 3. els valors per defecte: marcadors i etiquetatge activats, color RGB.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   colorSpace?: PdfColorSpace;  // Espai de destinació quan `forceColorSpace` és true.
   accessible?: boolean;        // Sortida etiquetada orientada a PDF/UA (arbre d'estructura, text alternatiu, llengua).
   baselineGrid?: boolean;      // Dibuixar també al PDF la retícula de base de `page.baselineGrid`.
+  forms?: PdfFormsConfig;      // Camps de formulari: moneda, separadors, lletra.
 }
 ```
 
@@ -503,6 +504,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Dibuixa al PDF la retícula de base mentre <code>page.baselineGrid</code> està activada. Activat per defecte, com fins ara; amb <code>false</code> la retícula queda com a guia per comprovar la pàgina a la pantalla, fora del PDF, i el llenç i el visor HTML la continuen mostrant. Al Sandbox és <strong>Retícula de base al PDF</strong>, a la secció PDF.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Com escriuen els nombres els camps de formulari i en quina lletra mostren els valors: `currency` (per defecte `€`), `currencyBefore` (per defecte `true`), `separatorStyle` (de `0` a `3`; si no es fixa, segons l'idioma del document) i `font` (`'chip'`, el valor per defecte, `'helvetica'` o `{ family, weight?, style? }`). L'opció `forms` de `renderToPdf` i del canvas té prioritat camp a camp. Només afecta la sortida: no canvia la composició. Vegeu [Camps de formulari](/ca/docs/configuration-pdf-output#camps-de-formulari).</td>
     </tr>
   </tbody>
 </table>

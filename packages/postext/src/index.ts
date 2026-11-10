@@ -10,7 +10,7 @@ export { formatFootnoteNumber, footnoteFormatOf, footnoteSymbol, DEFAULT_FOOTNOT
 export type { FootnoteFormat } from './pipeline/references/footnotes.js';
 export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage, registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './canvas-backend/index.js';
 export type { RenderPageOptions, ResourceImageSource, RegisterResourceImageOptions, VerticalAlternatesFace } from './canvas-backend/index.js';
-export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET } from './html-backend/html-backend.js';
+export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET, tintHex, tintFilterElement } from './html-backend/html-backend.js';
 export { renderComicHtml, comicPanelSvg } from './html-backend/htmlComic.js';
 export type { ComicHtmlPaint, ComicPanelSvgOptions } from './html-backend/htmlComic.js';
 export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage } from './html-backend/html-backend.js';
@@ -68,12 +68,12 @@ export { balancingOnByDefault, avoidWidowsByDefault, avoidOrphansByDefault } fro
 export { renderTemplateNumber } from './pipeline/resources/resourceNumbering.js';
 export type { ColumnRuleSegment } from './paint/columnRule.js';
 export { findLooseLines, drawLooseLines, lineLooseness, lineWordSpacing, type LooseLine, type FindLooseLinesOptions, type DrawLooseLinesOptions } from './checks/looseLines.js';
-export { findStacks, type Stack, type StackRange, type FindStacksOptions } from './checks/stacks.js';
+export { findStacks, findHyphenFaults, type Stack, type StackRange, type FindStacksOptions, type HyphenFault, type FindHyphenFaultsOptions } from './checks/compositionRules.js';
 export { primaryFontFamily } from './measure/font.js';
 export { buildFontString, setSymbolFont, symbolFont, withSymbolFont, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock, setCjkLineBreak, getCjkLineBreak, setCjkComposition, getCjkComposition, cjkCompositionOf, punctuationAdvance, punctuationSide, PLAIN_CJK_COMPOSITION } from './measure/index.js';
 export type { CjkComposition, PunctuationSide } from './measure/index.js';
 export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure/index.js';
-export { hyphenateText, hyphenateByDictionary, setHyphenationLocale, setHyphenationRules, normalizeHyphenationExceptions, HYPHENATION_LOCALES, matchHyphenationLocale } from './hyphenation/hyphenate.js';
+export { hyphenateText, hyphenateByDictionary, setHyphenationLocale, setHyphenationRules, normalizeHyphenationExceptions, HYPHENATION_LOCALES, matchHyphenationLocale, setHyphenationLimits, hyphenationLanguageLimits } from './hyphenation/hyphenate.js';
 export type { HyphenationRules } from './hyphenation/hyphenate.js';
 export { DOCUMENT_LANGUAGES, isCjkLanguage, isJapaneseLanguage, isUnhyphenatedLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, documentLanguageOf, shapingLanguageOf, shapingTagOf, stringsFor, directionOf, comicsLocaleDirection, defaultNumeralsFor } from './hyphenation/locale.js';
 export type { DocumentLanguage } from './hyphenation/locale.js';
@@ -296,7 +296,7 @@ export type {
   DigitSystem,
   NumeralsSetting,
   HyphenationConfig,
-  ResolvedHyphenationConfig,
+  ResolvedHyphenationConfig, HyphenationLimits,
   BodyTextConfig,
   ResolvedBodyTextConfig,
   KashidaSetting,
@@ -473,7 +473,7 @@ export type {
   FootnoteMarkerPosition,
   FootnoteSeparatorConfig,
   PdfColorSpace,
-  PdfGenerationConfig,
+  PdfGenerationConfig, PdfFormsConfig, PdfFormFieldFont,
   ResolvedPdfGenerationConfig,
   PdfXStandard,
   PrintRenderingIntent,
@@ -690,7 +690,7 @@ export { computeColumnEdges } from './pipeline/resources/resourceLayout.js';
 export { findAnnotations } from './parse/annotations.js';
 export type { FoundAnnotation, AnnotationName } from './parse/annotations.js';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, VerseInfo, VerseStanza, VerseLineInfo, DirectiveName, ContainerName, RefCase, InlineSpan, InlineIcon, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, UnclosedCodeBlockIssue, CodeBlockInfo, ParseOptions, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, SwatchShape, SwatchBox, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection, InlineSideline, InlineKunten, FormFieldSpec, FormFieldCalcOp, FormFieldCalc, FormFieldCalcCall, FormFieldCalcArg, FormNumberOptions, FormNumberStyle } from './parse/index.js';
-export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES, formatFieldNumber, formNumberStyle, numberFieldText } from './parse/index.js';
+export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES, formatFieldNumber, formNumberStyle, formOptionsOf, numberFieldText } from './parse/index.js';
 // Composed pages in the document (#854): each `::::page` fence's content by
 // slot, and the slot checks the content warnings run.
 export { composedPages } from './composed/document.js';

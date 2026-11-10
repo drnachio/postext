@@ -443,11 +443,11 @@ Ein Wert, der keine ganze Zahl von 0 bis 200 ist, wird als nächstgelegene Zahl 
 
 ## PDF-Erzeugung (Konfiguration)
 
-Die Eigenschaft `pdfGeneration` steuert, wie das PDF-Backend das fertige Dokument ausgibt. Diese Einstellungen liest das Paket `postext-pdf` beim Export; Canvas- und HTML-Betrachter ignorieren sie.
+Die Eigenschaft `pdfGeneration` steuert, wie das PDF-Backend das fertige Dokument ausgibt. Diese Einstellungen liest das Paket `postext-pdf` beim Export; Canvas- und HTML-Betrachter ignorieren sie. `forms` ist die Ausnahme: Das Canvas liest es auch, sodass seine Formularfelder denen des PDF entsprechen.
 
 `buildDocument` übernimmt sie in den VDT als `doc.config.pdfGeneration`, und `renderToPdf` nimmt jede Einstellung von der ersten Stelle, die sie angibt:
 
-1. aus seinen eigenen Optionen (`outlines`, `accessible`, `colorSpace`, `baselineGrid`);
+1. aus seinen eigenen Optionen (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. aus `pdfGeneration` des ersten Dokuments, das es rendert (in einem Buch gelten die Einstellungen des ersten Kapitels für die ganze Datei);
 3. aus den Voreinstellungen: Lesezeichen und Tagging an, RGB-Farbe.
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
   baselineGrid?: boolean;      // Draw the `page.baselineGrid` grid in the PDF as well.
+  forms?: PdfFormsConfig;      // Formularfelder: Währung, Trennzeichen, Schrift.
 }
 ```
 
@@ -504,6 +505,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Zeichnet das Grundlinienraster auch ins PDF, solange <code>page.baselineGrid</code> eingeschaltet ist. Standardmäßig an, wie bisher; <code>false</code> lässt das Raster eine Hilfe zum Prüfen der Seite am Bildschirm sein, außerhalb des PDF, während Canvas und HTML-Viewer es weiter zeigen. Im Sandbox: <strong>Grundlinienraster im PDF</strong>, im Abschnitt PDF.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Wie Formularfelder Zahlen schreiben und in welcher Schrift sie Werte zeigen: `currency` (Standard `€`), `currencyBefore` (Standard `true`), `separatorStyle` (`0` bis `3`; ohne Angabe nach der Sprache des Dokuments) und `font` (`'chip'`, der Standard, `'helvetica'` oder `{ family, weight?, style? }`). Die Option `forms` von `renderToPdf` und des Canvas hat Feld für Feld Vorrang. Nur für die Ausgabe: Der Satz ändert sich nicht. Siehe [Formularfelder](/de/docs/configuration-pdf-output#formularfelder).</td>
     </tr>
   </tbody>
 </table>

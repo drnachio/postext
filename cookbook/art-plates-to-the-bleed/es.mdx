@@ -1,0 +1,55 @@
+---
+title: "Láminas de arte a los márgenes, al corte y a sangre"
+summary: "Ensayo de exposición sobre cuatro interiores de Vermeer: cada cuadro, una lámina a página completa en la caja, al corte o a sangre, y un detalle a 60 mm."
+description: "Ensayo de libro de arte de 160 × 195 mm: cuatro láminas de Vermeer con placement.plate (caja, corte, sangre), un detalle a 60 mm y un PDF con marcas de corte."
+plain: "Di hasta dónde llega cada cuadro en su página, dentro de los márgenes, hasta el corte o más allá, y da al detalle su ancho en milímetros. Las páginas salen solas."
+question: "¿Cómo imprimo un cuadro como lámina a página completa, dentro de los márgenes, al corte o a sangre?"
+aliases: ["libro de arte", "catálogo de exposición", "lámina a página completa", "cuadro a sangre", "detalle a tamaño fijo", "ancho en milímetros"]
+---
+
+## Lo que vas a componer
+
+Siete páginas de un catálogo de exposición pequeño, de 160 × 195 mm, sobre cuatro interiores de Johannes Vermeer del Rijksmuseum, el Met y la National Gallery of Art. El ensayo abre en página impar con el título hundido. Cada cuadro que cita ocupa solo la siguiente página entera que encuentra: *La lechera*, en la <PageRef page={2}>página 2</PageRef>, dentro de los márgenes y bajo su cabecera; la *Joven con una jarra de agua* y la *Mujer leyendo una carta* se miran en las <PageRef page={4}>páginas 4 y 5</PageRef>, una cortada al ras del corte y la otra metida en la sangre, más allá de las marcas, las dos sin cabecera ni folio. Un detalle de la balanza se imprime a 60 mm en la <PageRef page={7}>página 7</PageRef>, con el pie al lado. El PDF lleva las marcas, un TrimBox y un BleedBox.
+
+## Elaboración
+
+### 1 · Un tipo para las láminas y un alcance por cuadro
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El tipo de las láminas pone `plate: true` en su colocación por defecto, así que el cuadro que cita el ensayo pasa a la primera página que puede ocupar entera y crece hasta la caja, con el pie debajo. `REACH` lo cambia cuadro a cuadro: `'trim'` y `'bleed'` cubren la página y recortan la imagen alrededor de su centro, de modo que conviene elegir cuadros de proporción cercana a la de la página (estos miden de 0,85 a 0,89 de ancho por cada alto, y la página 0,82). `captionMeasure: 'body'` da al pie de una lámina interior el ancho de la imagen.
+
+### 2 · Cada archivo, a la medida de donde se imprime
+
+<Excerpt region="paintings" />
+
+La comprobación de imprenta cuenta el recorte: una lámina a sangre mide aquí 201 mm de alto con la sangre, así que su archivo necesita 2400 px para llegar a 300 ppp, y las dos láminas dentro de los márgenes necesitan menos. Estas salen a entre 303 y 348 ppp. `page.cutLines` da al pliego sus 3 mm de sangre; sin él, `'bleed'` se queda en el corte, igual que `'trim'`.
+
+### 3 · Cabeceras que respetan las láminas completas
+
+<Excerpt region="running-heads" />
+
+Una lámina al corte o a sangre da a su página el papel `'plate'`. Estas cabeceras piden `pages: 'body'`, así que se imprimen sobre las láminas interiores y desaparecen en las páginas 4 y 5. Un elemento que deba salir también allí, por ejemplo un crédito pequeño en la esquina, nombra `'plate'` en su `pages`.
+
+### 4 · Un detalle de tamaño conocido
+
+El tipo del detalle pone `width: { value: 60, unit: 'mm' }` con `captionSide: 'inside'`. Una longitud se mide contra su hueco en lugar de repartirlo, así que los 48 mm de lienzo que muestra el recorte se imprimen a 60 mm, 1,25 veces su tamaño, en cualquier columna y en cualquier edición, y el pie puede decirlo.
+
+## Variantes
+
+### Todas las láminas a sangre
+
+Da a todos los cuadros el mismo alcance: cada lámina cubre entonces su página, sin cabecera ni folio, y solo cambia el recorte.
+
+```diff
+-const REACH = { milkmaid: 'content', pitcher: 'trim', letter: 'bleed', balance: 'content' };
++const REACH = { milkmaid: 'bleed', pitcher: 'bleed', letter: 'bleed', balance: 'bleed' };
+```
+
+### El detalle a tamaño real
+
+Recorta 60 mm de lienzo del archivo del museo y deja el ancho como está: el pie dirá entonces 1:1. El original de este cuadro tiene 1666 ppp, así que cualquier detalle de unos pocos milímetros sigue pasando de 300 ppp.
+
+## Errores frecuentes
+
+- Una lámina citada en el mismo párrafo que otra espera a la página siguiente, porque se salta la página que ya tiene un flotante, tres como mucho.
+- Los anchos en `pt` y `mm` funcionan; `px` y `em` no se leen como longitud y la figura ocupa todo su hueco.
+- Un cuadro mucho más ancho que la página pierde los lados en una lámina al corte o a sangre. Deja los apaisados dentro de los márgenes, donde la imagen se ve entera.

@@ -443,11 +443,11 @@ Un valor que no sea un número entero de 0 a 200 se lee como el número válido 
 
 ## Generación de PDF (configuración)
 
-La propiedad `pdfGeneration` controla cómo genera el documento final el backend de PDF. Estos ajustes los usa el paquete `postext-pdf` al exportar; el canvas y el visor HTML los ignoran.
+La propiedad `pdfGeneration` controla cómo genera el documento final el backend de PDF. Estos ajustes los usa el paquete `postext-pdf` al exportar; el canvas y el visor HTML los ignoran. `forms` es la excepción: el canvas también lo lee, así que sus campos de formulario coinciden con los del PDF.
 
 `buildDocument` los incluye en el VDT, como `doc.config.pdfGeneration`, y `renderToPdf` toma cada ajuste del primer sitio en el que lo encuentra:
 
-1. sus propias opciones (`outlines`, `accessible`, `colorSpace`, `baselineGrid`);
+1. sus propias opciones (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. el `pdfGeneration` del primer documento que recibe (en un libro, los ajustes del primer capítulo valen para todo el archivo);
 3. los valores por defecto: marcadores y etiquetado activados, color RGB.
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   colorSpace?: PdfColorSpace;  // Espacio destino cuando `forceColorSpace` es true.
   accessible?: boolean;        // Salida etiquetada orientada a PDF/UA (árbol de estructura, texto alternativo, idioma).
   baselineGrid?: boolean;      // Dibujar también en el PDF la rejilla base de `page.baselineGrid`.
+  forms?: PdfFormsConfig;      // Campos de formulario: moneda, separadores, letra.
 }
 ```
 
@@ -504,6 +505,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Dibuja en el PDF la rejilla base mientras <code>page.baselineGrid</code> está activada. Activado por defecto, como hasta ahora; con <code>false</code> la rejilla queda como guía para comprobar la página en pantalla, fuera del PDF, y el lienzo y el visor HTML la siguen mostrando. En el Sandbox es <strong>Rejilla base en el PDF</strong>, en la sección PDF.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Cómo escriben los números los campos de formulario y en qué letra muestran los valores: `currency` (por defecto `€`), `currencyBefore` (por defecto `true`), `separatorStyle` (de `0` a `3`; si no se fija, según el idioma del documento) y `font` (`'chip'`, el valor por defecto, `'helvetica'` o `{ family, weight?, style? }`). La opción `forms` de `renderToPdf` y del canvas tiene prioridad campo a campo. Solo afecta a la salida: no cambia la maquetación. Véase [Campos de formulario](/es/docs/configuration-pdf-output#campos-de-formulario).</td>
     </tr>
   </tbody>
 </table>

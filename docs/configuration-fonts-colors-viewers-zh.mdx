@@ -443,11 +443,11 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 ## PDF生成（配置）
 
-`pdfGeneration`属性控制PDF后端如何输出最终文档。这些设置由`postext-pdf`包在导出时使用；Canvas和HTML阅读器会忽略它们。
+`pdfGeneration`属性控制PDF后端如何输出最终文档。这些设置由`postext-pdf`包在导出时使用；Canvas和HTML阅读器会忽略它们。`forms`是例外：canvas也读取它，因此其中的表单域与PDF一致。
 
 `buildDocument`把它们以`doc.config.pdfGeneration`的形式放进VDT；`renderToPdf`对每项设置，从下列来源中第一个给出该设置的地方取值：
 
-1. 它自己的选项（`outlines`、`accessible`、`colorSpace`、`baselineGrid`）；
+1. 它自己的选项（`outlines`、`accessible`、`colorSpace`、`baselineGrid`、`forms`）；
 2. 它渲染的第一个文档的`pdfGeneration`（对于一本书，第一章的设置作用于整个文件）；
 3. 默认值：开启书签和标签，RGB颜色。
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   colorSpace?: PdfColorSpace;  // `forceColorSpace`为true时使用的目标色彩空间。
   accessible?: boolean;        // 带标签、面向PDF/UA的输出（结构树、替代文字、语言）。
   baselineGrid?: boolean;      // 在PDF中也画出`page.baselineGrid`的网格。
+  forms?: PdfFormsConfig;      // 表单域：货币、分隔符、字体。
 }
 ```
 
@@ -504,6 +505,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>在<code>page.baselineGrid</code>开启时，把基线网格也画进PDF。默认开启，与以往相同；设为<code>false</code>时网格只作为在屏幕上检查页面的参照，不进入PDF，Canvas和HTML查看器仍会显示它。在Sandbox中是PDF部分的<strong>在PDF中显示基线网格</strong>。</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>表单域如何书写数字，以及显示数值所用的字体：`currency`（默认`€`）、`currencyBefore`（默认`true`）、`separatorStyle`（`0`到`3`；未设置时随文档语言）和`font`（默认的`'chip'`、`'helvetica'`或`{ family, weight?, style? }`）。`renderToPdf`和canvas的`forms`选项逐个字段优先。只影响输出，不改变排版。见[表单域](/zh/docs/configuration-pdf-output#表单域)。</td>
     </tr>
   </tbody>
 </table>

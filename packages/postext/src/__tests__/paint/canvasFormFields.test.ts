@@ -82,6 +82,17 @@ describe('number fields on the canvas (#1445)', () => {
     expect(custom.texts.some((t) => t.text === '1234.50 CHF')).toBe(true);
   });
 
+  it('takes pdfGeneration.forms when the host passes no forms option (#1491)', () => {
+    const md = 'Total :chip[1234.5]{style="field" field="total" format="currency"}';
+    const doc = buildDocument({ markdown: md }, { ...config('en'), pdfGeneration: { forms: { currency: 'USD', currencyBefore: false, separatorStyle: 2 } } });
+    const plain = recordingCanvas();
+    renderPageToCanvas(doc.pages[0]!, doc, plain.canvas, { scale: 1 });
+    expect(plain.texts.some((t) => t.text === '1.234,50 USD')).toBe(true);
+    const host = recordingCanvas();
+    renderPageToCanvas(doc.pages[0]!, doc, host.canvas, { scale: 1, forms: { currency: 'CHF' } });
+    expect(host.texts.some((t) => t.text === '1.234,50 CHF')).toBe(true);
+  });
+
   it('sets an unformatted number to the end too, and leaves text fields as chips', () => {
     const number = paint('Qty :chip[3]{style="field" field="qty" kind="number"}', 'en');
     const qty = number.texts.find((t) => t.text === '3')!;
