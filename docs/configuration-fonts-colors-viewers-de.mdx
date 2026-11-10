@@ -152,7 +152,7 @@ Das Panel listet außerdem **Zeichen aus einer anderen Schrift** (`glyphFallback
 
 ### Symbolschrift
 
-Eine Textschrift hat selten die mathematischen Buchstaben und Operatoren (∪, ℵ, ∀), das Griechische oder die Pfeile, die ein Autor in einen Absatz tippt. `symbolFont` nennt eine Familie, die sie setzt: Jede Schrift des Dokuments führt sie nach ihrer eigenen, sodass Canvas, PDF, HTML und EPUB diese Zeichen mit ihr zeichnen statt als leeres Kästchen. `'Noto Sans Math'` deckt fast die ganze Mathematik ab. Im Sandbox steht sie unter **Grundtext → Symbolschrift**.
+Eine Textschrift hat selten die mathematischen Buchstaben und Operatoren (∪, ℵ, ∀), das Griechische oder die Pfeile, die ein Autor in einen Absatz tippt. `symbolFont` nennt eine Familie, die sie setzt: Jede Schrift des Dokuments führt sie nach ihrer eigenen, sodass Canvas, PDF, HTML und EPUB diese Zeichen mit ihr zeichnen statt als leeres Kästchen. `'Noto Sans Math'` deckt fast die ganze Mathematik ab. Im Sandbox steht sie unter **Grundtext → Symbolschrift**. Die formatierte Word-Datei setzt diese Zeichen ebenfalls in Läufen dieser Schrift. Ihr normaler aufrechter Schnitt zeichnet sie für jede Strichstärke und Neigung des Textes.
 
 Der Umbruch meldet jeden Absatz mit solchen Zeichen als `glyphFallbackAt`, mit der Familie, die sie zeichnet, oder keiner: Das PDF druckt sie dann als leere Kästchen. Der Sandbox markiert diese Zeichen auf der Seite, violett die von der Symbolschrift gezeichneten und rot die, die keine zeichnet.
 

@@ -171,9 +171,11 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     footnotes: resolveFootnotesConfig(config?.footnotes, documentLocale, layout.writingMode),
     crossRefs: resolveCrossRefsConfig(config?.crossRefs, documentLocale),
     citations: resolveCitationsConfig(config?.citations),
+    // Only a config that names a symbol font carries it (#1460): every
+    // other one resolves (and hashes) as before.
+    ...(config?.symbolFont?.trim() ? { symbolFont: config.symbolFont.trim() } : {}),
     // Only a config that prints its links or styles them carries them: every
     // other one resolves (and hashes) as it did before #1302.
-    ...(config?.symbolFont?.trim() ? { symbolFont: config.symbolFont.trim() } : {}),
     ...(config?.links?.print === 'inline' || config?.links?.print === 'notes' || config?.links?.style ? { links: resolveLinksConfig(config.links) } : {}),
     cjk: resolveCjkConfig(config?.cjk, documentLocale),
     ...(config?.locale ? { locale: config.locale } : {}),

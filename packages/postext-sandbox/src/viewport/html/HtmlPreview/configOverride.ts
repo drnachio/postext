@@ -1,4 +1,4 @@
-import { type PostextConfig, type LayoutType, resolveHeadingsConfig, resolvePageConfig, type PageMargins, type Dimension, dimensionToPx, resolveLayoutConfig, buildFontString, parseMarkdown } from 'postext';
+import { type PostextConfig, type LayoutType, resolveHeadingsConfig, resolvePageConfig, type PageMargins, type Dimension, dimensionToPx, resolveLayoutConfig, buildFontString, withSymbolFont, parseMarkdown } from 'postext';
 import { type ColumnMode, htmlViewerDpi, PADDING_PX } from './constants.js';
 import { viewerLayoutType } from './pageGeometry.js';
 import { defaultDocumentLocale } from '../../../controls/language/hyphenation.js';
@@ -135,12 +135,13 @@ export function buildHtmlConfigOverride(
   // the H1 face as the longest title wraps to (two when the titles are not
   // known) plus half a line of air before the part's content.
   const partFace = partTitleFace(resolvedHeadings, dpi);
-  const partFont = buildFontString(
+  // In the document's symbol font, as the build sets its own (#1460).
+  const partFont = withSymbolFont(base.symbolFont, () => buildFontString(
     partFace.h1.fontFamily,
     partFace.fontSizePx,
     String(partFace.h1.fontWeight),
     partFace.h1.italic ? 'italic' : 'normal',
-  );
+  ));
   // Measured in the language the layout sets them in (#770), so the band
   // does not depend on the language of the page that hosts the Sandbox.
   const shapedIn = configShapingLanguage(base, locale);
@@ -297,15 +298,18 @@ export function comicsViewerLeaf(
 /** The width of `sample` in the body face, px: the viewer's column. `lang`
  *  is the language the layout measures the text in
  *  (`configShapingLanguage`; undefined: the host's), so the column does
- *  not depend on the language of the page that hosts the Sandbox (#770). */
+ *  not depend on the language of the page that hosts the Sandbox (#770).
+ *  `symbolFont` is the document's (#1460): the font string is the one the
+ *  build will measure the body in. */
 export function measureColumnWidthPx(
   sample: string,
   fontFamily: string,
   fontSizePx: number,
   fontWeight: number,
   lang?: string,
+  symbolFont?: string,
 ): number {
-  const font = buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal');
+  const font = withSymbolFont(symbolFont, () => buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal'));
   return widthIn(lang, sample, font);
 }
 

@@ -5,7 +5,7 @@
 // `sandbox_export` tool share it. Both files carry the export map, so the
 // edited document comes back through `applyDocxEdits` (./wordEdits).
 
-import { documentDisplayList, parseFontString, type PostextConfig, type Resource, type VDTDocument } from 'postext';
+import { buildFontString, documentDisplayList, fontStringFamilies, parseFontString, withSymbolFont, type PostextConfig, type Resource, type VDTDocument } from 'postext';
 import {
   formattedDocx,
   planWordFonts,
@@ -17,6 +17,7 @@ import {
 } from 'postext/word';
 import { decompressWoff2, rasterizeSvgWithDom, type PdfFontProvider } from 'postext-pdf';
 import { composeBookMemo } from '../book/compose.js';
+import { isGenericFontFamily } from '../controls/fonts/systemFonts.js';
 import { planContent } from '../book/jumps.js';
 import { layoutCacheKey } from '../book/layoutKeys.js';
 import { layOutBookPrint } from '../book/printChain.js';
@@ -101,6 +102,12 @@ export function fontUse(docs: readonly VDTDocument[]): { fontStrings: string[]; 
     let set = usedText.get(key);
     if (!set) usedText.set(key, (set = new Set()));
     for (const ch of text) set.add(ch.codePointAt(0)!);
+    // The symbol font the string lists after its family (#1460): its
+    // regular face goes into the file too, for the characters the run's
+    // face lacks (which ones is known only once the faces are read, so
+    // the run's text is noted for it whole).
+    const symbol = fontStringFamilies(fontString)[1];
+    if (symbol && !isGenericFontFamily(symbol)) note(withSymbolFont(undefined, () => buildFontString(symbol, 16, '400')), text);
   };
   type Item = ReturnType<typeof documentDisplayList>[number]['items'][number];
   const visit = (item: Item | null | undefined) => {

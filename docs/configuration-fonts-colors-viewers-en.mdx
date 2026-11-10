@@ -152,7 +152,7 @@ The panel also lists **Characters drawn from another face** (`glyphFallback`): c
 
 ### Symbol font
 
-A text font rarely has the mathematical letters and operators (∪, ℵ, ∀), the Greek or the arrows an author types in a paragraph. `symbolFont` names a family that sets them: every font of the document lists it after its own, so the canvas, the PDF, the HTML and the EPUB draw those characters in it instead of an empty box. `'Noto Sans Math'` covers most mathematics. In the Sandbox it is **Body text → Symbol font**.
+A text font rarely has the mathematical letters and operators (∪, ℵ, ∀), the Greek or the arrows an author types in a paragraph. `symbolFont` names a family that sets them: every font of the document lists it after its own, so the canvas, the PDF, the HTML and the EPUB draw those characters in it instead of an empty box. `'Noto Sans Math'` covers most mathematics. In the Sandbox it is **Body text → Symbol font**. The formatted Word file sets those characters in runs of it too. Its regular face draws for every weight and slant of the text.
 
 The layout reports each paragraph that sets such characters as `glyphFallbackAt`, with the family that draws them, or none: the PDF then prints them as empty boxes. The Sandbox marks those characters on the page, violet where the symbol font draws them and red where nothing does.
 

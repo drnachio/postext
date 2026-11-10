@@ -175,5 +175,8 @@ export type LayoutWarning =
    *  document), pointing at the block: `characters` lists them (each once,
    *  at most 24), `supplier` the family of the font list that draws them
    *  (the `symbolFont`), absent for those no family has: the PDF prints
-   *  them as empty boxes. Same checks and switch as `glyphFallback`. */
-  | { kind: 'glyphFallbackAt'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; supplier?: string };
+   *  them as empty boxes. `blockId` is the block's (`VDTBlock.id`), so a
+   *  place with no source range (a float, a margin note) is told
+   *  apart and marked in its block only (#1460). Same checks and switch as
+   *  `glyphFallback`. */
+  | { kind: 'glyphFallbackAt'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; supplier?: string; blockId: string };

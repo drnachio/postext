@@ -152,7 +152,7 @@ O painel também lista **Caracteres tirados de outra fonte** (`glyphFallback`): 
 
 ### Fonte de símbolos
 
-Uma fonte de texto raramente tem as letras e os operadores matemáticos (∪, ℵ, ∀), o grego ou as setas que o autor escreve num parágrafo. `symbolFont` nomeia uma família que os compõe: todas as fontes do documento a levam depois da sua, de modo que a tela, o PDF, o HTML e o EPUB desenham esses caracteres com ela em vez de uma caixa vazia. `'Noto Sans Math'` cobre quase toda a matemática. No Sandbox fica em **Texto do corpo → Fonte de símbolos**.
+Uma fonte de texto raramente tem as letras e os operadores matemáticos (∪, ℵ, ∀), o grego ou as setas que o autor escreve num parágrafo. `symbolFont` nomeia uma família que os compõe: todas as fontes do documento a levam depois da sua, de modo que a tela, o PDF, o HTML e o EPUB desenham esses caracteres com ela em vez de uma caixa vazia. `'Noto Sans Math'` cobre quase toda a matemática. No Sandbox fica em **Texto do corpo → Fonte de símbolos**. O arquivo do Word formatado também põe esses caracteres em trechos dela. A sua face regular desenha-os em todos os pesos e inclinações do texto.
 
 A paginação avisa de cada parágrafo que tem esses caracteres com `glyphFallbackAt`, com a família que os desenha, ou sem nenhuma: o PDF imprime-os então como caixas vazias. O Sandbox marca-os na página, a violeta os que a fonte de símbolos desenha e a vermelho os que nenhuma desenha.
 

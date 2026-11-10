@@ -20,6 +20,7 @@ import { TabStopsField } from '../../../settings/TabStopsField.js';
 import { ParagraphSpacingField } from '../../../settings/ParagraphSpacingField.js';
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
 import { DocumentLocalePointer } from './DocumentLocalePointer.js';
+import { SymbolFontField } from './SymbolFontField.js';
 import { createBodyTextWriters } from './writers.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
@@ -28,7 +29,6 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.bodyText);
-  const symbolFont = useSandboxSelector((s) => s.config.symbolFont);
   const locale = useSandboxSelector((s) => s.locale);
   const documentLocale = useSandboxSelector((s) => s.config.locale);
   const defaultLocale = defaultDocumentLocale(locale);
@@ -163,16 +163,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
           searchPlaceholder={labels.bodyFontSearch}
           noResultsLabel={labels.bodyFontNoResults}
         />
-        <FontPicker
-          label={labels.symbolFont}
-          value={symbolFont ?? ''}
-          onChange={(font) => dispatch({ type: 'UPDATE_CONFIG', payload: { symbolFont: font || undefined } })}
-          tooltip={labels.symbolFontTooltip}
-          isDefault={!symbolFont}
-          onReset={() => dispatch({ type: 'UPDATE_CONFIG', payload: { symbolFont: undefined } })}
-          searchPlaceholder={labels.bodyFontSearch}
-          noResultsLabel={labels.bodyFontNoResults}
-        />
+        <SymbolFontField />
         <FigureStyleField
           value={raw?.figureStyle}
           onChange={(v) => updateBodyText({ figureStyle: v })}

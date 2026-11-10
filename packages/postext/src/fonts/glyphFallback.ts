@@ -186,11 +186,11 @@ function registeredCoverage(family: string, weight: number, style: 'normal' | 'i
 /** A character no face is asked for: spaces, controls, format characters
  *  (joiners, soft hyphens, bidi marks), combining marks and variation
  *  selectors, which go with the letter before them. */
-const SKIPPED = /^[\p{Z}\p{Cc}\p{Cf}\p{M}\p{Cs}]$/u;
+export const SKIPPED = /^[\p{Z}\p{Cc}\p{Cf}\p{M}\p{Cs}]$/u;
 
-type Add = (font: string | undefined, text: string | undefined) => void;
+export type Add = (font: string | undefined, text: string | undefined) => void;
 
-function addLines(lines: readonly VDTLine[] | undefined, normal: string | undefined, bold: string | undefined, italic: string | undefined, boldItalic: string | undefined, add: Add): void {
+export function addLines(lines: readonly VDTLine[] | undefined, normal: string | undefined, bold: string | undefined, italic: string | undefined, boldItalic: string | undefined, add: Add): void {
   if (!lines) return;
   for (const line of lines) {
     const segments = line.segments;
@@ -264,7 +264,7 @@ export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
 
 // --- The check -------------------------------------------------------------
 
-type HasGlyph = (family: string, weight: number, style: 'normal' | 'italic', ch: string) => boolean | undefined;
+export type HasGlyph = (family: string, weight: number, style: 'normal' | 'italic', ch: string) => boolean | undefined;
 type SupplierOf = (face: FontFaceRequest, ch: string) => string | undefined;
 
 export interface GlyphFallbackOptions {
@@ -280,6 +280,17 @@ export interface GlyphFallbackOptions {
   /** Faces left out (a face the font set could not give at all is
    *  reported as a `fontFallback`, not character by character). */
   skip?: ReadonlySet<string>;
+  /** The document's `symbolFont` (#1460): the characters it draws are
+   *  drawn where the document asked, so no family is advised for them
+   *  (`glyphFallbackAt` still says where they are). */
+  symbolFont?: string;
+}
+
+/** Whether `symbolFont` draws `ch` for a face of `weight` and `style`: in
+ *  that cut, or in its regular face, the one every output loads (#1460). */
+export function symbolFontHas(hasGlyph: HasGlyph, symbolFont: string | undefined, weight: number, style: 'normal' | 'italic', ch: string): boolean {
+  if (!symbolFont) return false;
+  return hasGlyph(symbolFont, weight, style, ch) === true || hasGlyph(symbolFont, 400, 'normal', ch) === true;
 }
 
 const GENERIC_SUPPLIERS = ['serif', 'sans-serif', 'monospace'] as const;
@@ -289,7 +300,7 @@ const faceFont = (face: FontFaceRequest, family: string): string =>
 
 /** The default sources (see the module comment): the probe where it is
  *  declared, else the registered files; undefined when there is neither. */
-function defaultSources(): { hasGlyph: HasGlyph; supplierOf?: SupplierOf } | undefined {
+export function defaultSources(): { hasGlyph: HasGlyph; supplierOf?: SupplierOf } | undefined {
   if (probeReady()) {
     return {
       hasGlyph: probeHas,
@@ -342,6 +353,8 @@ export function glyphFallbacks(docs: VDTDocument | readonly VDTDocument[], optio
         let e = found.get(key);
         if (e?.seen.has(ch)) continue;
         if (hasGlyph(face.family, face.weight, face.style, ch) !== false) continue;
+        // Set in the symbol font, as the document asked: nothing to advise.
+        if (symbolFontHas(hasGlyph, options.symbolFont, face.weight, face.style, ch)) continue;
         if (!e) {
           found.set(key, (e = { face, chars: [], seen: new Set(), suppliers: new Set() }));
           order.push(key);
@@ -364,103 +377,4 @@ export function glyphFallbacks(docs: VDTDocument | readonly VDTDocument[], optio
       ...(only ? { supplier: only } : {}),
     };
   });
-}
-
-// --- Where the characters are -----------------------------------
-
-/** Characters a face lacks, in one block of one page: where a
- *  `glyphFallback` names a face, this says which paragraph sets them. The
- *  characters one family draws come apart from those no family has. */
-export interface GlyphFallbackPlace extends FontFaceRequest {
-  /** The characters, each once, in the order the block sets them. */
-  characters: string[];
-  /** The family of the font list that draws them (the `symbolFont`,
-   *  say); undefined for the characters no family of the list has. */
-  supplier?: string;
-  /** The source range of the block, when it has one. */
-  sourceStart?: number;
-  sourceEnd?: number;
-  pageIndex: number;
-}
-
-/** How many places a document reports at most. */
-export const GLYPH_FALLBACK_PLACES = 200;
-
-/**
- * The blocks of `doc` that set characters their face lacks, one entry per
- * block, face, page and family that draws them, in page order, at most {@link GLYPH_FALLBACK_PLACES}.
- * Read from the same sources as {@link glyphFallbacks}; empty when there is
- * neither a probe nor registered coverage.
- */
-export function glyphFallbackPlaces(doc: VDTDocument, options: Pick<GlyphFallbackOptions, 'hasGlyph' | 'skip'> = {}): GlyphFallbackPlace[] {
-  const sources = options.hasGlyph ? { hasGlyph: options.hasGlyph } : defaultSources();
-  if (!sources) return [];
-  const { hasGlyph } = sources;
-  const lacks = new Map<string, boolean>();
-  const lacking = (face: FontFaceRequest, key: string, ch: string): boolean => {
-    const k = `${key}|${ch}`;
-    let v = lacks.get(k);
-    if (v === undefined) lacks.set(k, (v = hasGlyph(face.family, face.weight, face.style, ch) === false));
-    return v;
-  };
-  const out: GlyphFallbackPlace[] = [];
-  for (let pageIndex = 0; pageIndex < doc.pages.length && out.length < GLYPH_FALLBACK_PLACES; pageIndex++) {
-    const page = doc.pages[pageIndex]!;
-    const blocks = [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? []), ...(page.marginNotes ?? [])];
-    for (const block of blocks) {
-      interface Found { face: FontFaceRequest; chars: string[]; rest: string[] }
-      const found = new Map<string, Found>();
-      const add: Add = (font, text) => {
-        if (!font || !text) return;
-        const face = parseFontString(font);
-        if (!face || isGenericFamily(face.family) || face.family === GLYPH_PROBE_FAMILY) return;
-        const key = faceRequestKey(face);
-        if (options.skip?.has(key)) return;
-        for (const ch of text) {
-          if (SKIPPED.test(ch) || !lacking(face, key, ch)) continue;
-          let e = found.get(key);
-          if (!e) found.set(key, (e = { face, chars: [], rest: fontStringFamilies(font).slice(1).filter((f) => f.toLowerCase() !== face.family.toLowerCase()) }));
-          if (!e.chars.includes(ch)) e.chars.push(ch);
-        }
-      };
-      addLines(block.lines, block.fontString, block.boldFontString, block.italicFontString, block.boldItalicFontString, add);
-      const rb = block.resourceBlock;
-      if (rb) {
-        addLines(rb.captionLines, rb.captionFontString, rb.captionBoldFontString, rb.captionItalicFontString, rb.captionBoldItalicFontString, add);
-        addLines(rb.noteLines, rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString, add);
-        const t = rb.table;
-        if (t) {
-          for (const cell of t.cells) {
-            if (cell.isHeader) addLines(cell.lines, t.headerFontString, t.headerBoldFontString, t.headerItalicFontString, t.headerBoldItalicFontString, add);
-            else addLines(cell.lines, t.fontString, t.boldFontString, t.italicFontString, t.boldItalicFontString, add);
-          }
-        }
-      }
-      for (const e of found.values()) {
-        // The characters by the family that draws them: those no family of
-        // the list has (the PDF's empty boxes) apart from the others.
-        const bySupplier = new Map<string, string[]>();
-        for (const ch of e.chars) {
-          const supplier = e.rest.find((f) => hasGlyph(f, e.face.weight, e.face.style, ch) === true) ?? '';
-          const list = bySupplier.get(supplier) ?? [];
-          list.push(ch);
-          bySupplier.set(supplier, list);
-        }
-        for (const [supplier, chars] of bySupplier) {
-          out.push({
-            family: e.face.family,
-            weight: e.face.weight,
-            style: e.face.style,
-            characters: chars.slice(0, GLYPH_FALLBACK_LISTED),
-            ...(supplier ? { supplier } : {}),
-            ...(block.sourceStart !== undefined ? { sourceStart: block.sourceStart } : {}),
-            ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
-            pageIndex,
-          });
-          if (out.length >= GLYPH_FALLBACK_PLACES) return out;
-        }
-      }
-    }
-  }
-  return out;
 }

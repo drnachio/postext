@@ -5,7 +5,7 @@ import type { PostextContent, PostextConfig, Resource } from '../../types.js';
 import { type VDTColumn, type VDTPage } from '../../vdt.js';
 import { withFigureWords } from '../resources/figureWords.js';
 import { type MeasurementCache, initHyphenator } from '../../measure/index.js';
-import { setSymbolFont } from '../../measure/font.js';
+import { setSymbolFont, symbolFont } from '../../measure/font.js';
 import { getCjkLineBreak, setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
 import { getSlashBreaks, setSlashBreaks } from '../../measure/breakRules.js';
 import { getCjkComposition, setCjkComposition, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
@@ -66,7 +66,8 @@ export function buildDocumentPass(
   hints: PassHints = {},
 ): PassResult {
   // A pass sets the CJK line-break level, the CJK composition and the
-  // writing mode text is measured in for its own measuring; what the caller had in force is put
+  // writing mode text is measured in for its own measuring, and the symbol
+  // font every font string lists (#1460); what the caller had in force is put
   // back when it ends, also when it throws (a cancelled build), so text
   // measured outside a build reads as it did before it.
   const lineBreak = getCjkLineBreak();
@@ -79,9 +80,11 @@ export function buildDocumentPass(
   const scriptContext = getMeasureScriptContext();
   const language = getMeasureLanguage();
   const slashBreaks = getSlashBreaks();
+  const symbols = symbolFont();
   try {
     return placeDocumentPass(content, config, cache, options, hints);
   } finally {
+    setSymbolFont(symbols);
     setSlashBreaks(slashBreaks);
     setMeasureLanguage(language);
     setMeasureScriptContext(scriptContext);

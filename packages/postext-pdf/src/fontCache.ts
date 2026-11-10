@@ -2,7 +2,8 @@ import { cssWeightOrder, featureFamilyParts } from 'postext';
 import { padTrueTypeGlyphs } from './trueTypePadding.js';
 import { type PDFFont, type PDFDocument, PDFDict, PDFName, PDFRef, PDFStream } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString.js';
-import { type FileDeclaration, registerFaceFiles, wantsGlyph, missingGlyphsOf, setSymbolFont } from './faceFiles.js';
+import { type FileDeclaration, registerFaceFiles, wantsGlyph, missingGlyphsOf, linkSymbolFace } from './faceFiles.js';
+import { symbolFaceCandidates } from './symbolRuns.js';
 import { registerFontFamily } from './fontFamilies.js';
 import { verticalTwinRefOf } from './verticalFonts.js';
 import { shapeInCurrentLanguage } from './shapingLanguage.js';
@@ -226,18 +227,25 @@ export class FontCache {
     return face.growing;
   }
 
-  /** Load the family a face falls back to (`symbolFont`) in
-   *  the face's weight and slant, else the nearest the provider has, and
-   *  set it to draw what the face's files lack. A provider that has none
-   *  leaves the face as it is: those characters are reported missing. */
-  private async attachSymbolFont(key: string, spec: FaceSpec, family: string, codePoints: ReadonlySet<number>): Promise<void> {
+  /** Load the family a face falls back to (`symbolFont`, #1460) and set
+   *  it to draw what the face's files lack: its regular face, the one the
+   *  canvas loads (`collectFontUsage`), for every weight and slant of the
+   *  text, so screen and PDF set those characters from the same file. At
+   *  most {@link symbolFaceCandidates} are asked, once a document (a load
+   *  is kept, a rejection too); a provider that has none leaves the face as
+   *  it is and those characters are reported missing. */
+  private async attachSymbolFont(key: string, family: string, codePoints: ReadonlySet<number>): Promise<void> {
     const primary = this.map.get(key);
     if (!primary) return;
-    const want: FaceSpec = { family, weight: spec.weight, style: spec.style };
-    for (const candidate of [want, ...fallbackFaces(want)]) {
-      const face = await this.loadFace(candidate, codePoints);
+    // Only the characters no file of the text face has: the symbol face
+    // is not fetched (or grown) for the rest, nor at all when it sets none.
+    const files = this.faces.find((f) => f.primary === primary)?.files;
+    const lacking = new Set([...codePoints].filter((cp) => wantsGlyph(cp) && !(files ? files.fileFor(cp) : null)));
+    if (lacking.size === 0 && codePoints.size > 0) return;
+    for (const candidate of symbolFaceCandidates(family)) {
+      const face = await this.loadFace(candidate, lacking);
       if (!face) continue;
-      setSymbolFont(primary, face.primary);
+      linkSymbolFace(primary, face.primary);
       return;
     }
   }
@@ -322,7 +330,7 @@ export class FontCache {
         this.failed.add(`${spec.family} ${spec.weight}${spec.style === 'italic' ? ' italic' : ''}`);
         this.map.set(key, null);
       })();
-      if (symbols) await this.attachSymbolFont(key, spec, symbols, codePoints);
+      if (symbols) await this.attachSymbolFont(key, symbols, codePoints);
     }
   }
 

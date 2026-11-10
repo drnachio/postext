@@ -44,6 +44,22 @@ export function symbolFont(): string | undefined {
   return symbolFamily?.replace(/^"(.*)"$/, '$1').replace(/\\(["\\])/g, '$1');
 }
 
+/**
+ * `make()` run with `family` as the symbol font, the one in force before
+ * put back after it, also when it throws (#1460). For font strings made
+ * outside a build that must match the build's own: a host measuring a
+ * column for the layout it is about to run, say.
+ */
+export function withSymbolFont<T>(family: string | undefined, make: () => T): T {
+  const before = symbolFont();
+  setSymbolFont(family);
+  try {
+    return make();
+  } finally {
+    setSymbolFont(before);
+  }
+}
+
 /** The families of a CSS font stack, split at the commas outside quotes,
  *  trimmed and unquoted, empty entries dropped — or `undefined` when the
  *  value has no comma outside quotes (it names one family). */
