@@ -6,7 +6,11 @@
 // so the columns outlast a field update where every entry of the level is
 // numbered; the page-number tab and its leader outlast it always.
 
-import type { TocBlockInfo } from '../../../parse/types.js';
+import type { ContentBlock, TocBlockInfo } from '../../../parse/types.js';
+import type { ResolvedDesignTextElement } from '../../../types.js';
+import { paleOnWhite } from '../design/ink.js';
+import { inPartColors } from '../design/partColor.js';
+import { designTextLook } from '../design/text.js';
 import type { WriterContext } from '../context.js';
 import { halfPoints, hex, px, rPr, textRuns, twips, type ParaProps, type RunProps } from '../wml.js';
 import { tocColumns, tocEntryLook, tocEntryStyle, tocPageTab, tocTitleOverride } from './paragraphStyle.js';
@@ -82,4 +86,38 @@ export function tocPartStyle(ctx: WriterContext): string {
       pPr: { keepNext: true, keepLines: true, before: twips(u, p.marginTop, ctx.styles.bodyPx), after: twips(u, p.marginBottom, ctx.styles.bodyPx), ind: { left: 0, firstLine: 0 }, jc: 'left' },
     };
   });
+}
+
+/**
+ * A part row of the contents as its design prints it (#1458): the words of
+ * the row's text element ("Part I · Foundations") in its face, case,
+ * tracking and colour, after a square of the row's small filled box, both
+ * in the part's own palette. Undefined when the row has no design: the
+ * caller sets the number and the title in bold.
+ */
+export function tocPartRuns(ctx: WriterContext, number: string, title: string): string | undefined {
+  if (ctx.plain) return undefined;
+  const design = ctx.resolved.toc.parts.design;
+  const text = design?.elements.find((el): el is ResolvedDesignTextElement => el.kind === 'text' && /\{(?:titleText|number)/.test(el.content ?? ''));
+  if (!design || !text) return undefined;
+  // The part's palette: its fence's, found by its number and title.
+  let fence: ContentBlock | undefined;
+  for (const ch of ctx.book) fence ??= ch.blocks.find((b) => b.type === 'containerStart' && b.containerName === 'part' && (b.containerAttrs?.number ?? '') === number && (b.containerAttrs?.title ?? '') === title);
+  const elements = fence ? inPartColors(ctx, fence, [...design.elements]) : design.elements;
+  const el = elements.find((e) => e.id === text.id) as ResolvedDesignTextElement;
+  const words = (el.content ?? '')
+    .replace(/\{number[A-Za-z]*\}/g, number)
+    .replace(/\{titleText\}/g, title)
+    .replace(/\{[^{}]*\}/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!words) return undefined;
+  const u = ctx.units;
+  const size = px(u, el.fontSize) || ctx.styles.bodyPx;
+  const look = designTextLook(ctx, el, undefined, false, size).rPr;
+  // A small filled box before the text: a square in its colour.
+  const box = elements.find((e) => e.kind === 'box' && hex(e.style.backgroundColor));
+  const fill = box && box.kind === 'box' ? hex(box.style.backgroundColor) : undefined;
+  const square = fill && !paleOnWhite(fill) ? textRuns('\u25A0\u2002', rPr({ color: fill, sz: look.sz })) : '';
+  return square + textRuns(words, rPr(look));
 }

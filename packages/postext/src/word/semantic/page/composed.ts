@@ -20,7 +20,8 @@ const ALL: HeadsShown = { header: true, footer: true };
 /** The running heads a composed page `b` prints (its template's); every
  *  head for any other block. */
 export function headsShown(ctx: WriterContext, b: ContentBlock | undefined): HeadsShown {
-  if (b?.type !== 'containerStart' || b.containerName !== 'composedPage') return ALL;
+  // The plain design prints the same footer on every page.
+  if (ctx.plain || b?.type !== 'containerStart' || b.containerName !== 'composedPage') return ALL;
   const template = templateOf(ctx, b.composedPage?.template ?? b.containerAttrs?.template);
   if (!template) return ALL;
   return { header: template.header !== false, footer: template.footer !== false };

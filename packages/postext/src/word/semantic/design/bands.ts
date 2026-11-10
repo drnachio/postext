@@ -14,6 +14,7 @@ import type { WriterContext } from '../context.js';
 import { hex, paragraph, px, type ParaProps } from '../wml.js';
 import type { Box } from './geometry.js';
 import { paleOnWhite } from './ink.js';
+import type { Side } from './side.js';
 
 /** A piece of a design's Word output: paragraphs (or a table) and the
  *  band they are printed on. */
@@ -23,6 +24,9 @@ export interface Chunk {
   band?: { fill: string; box: Box };
   /** Where the piece stands on the page, px. */
   box?: Box;
+  /** A figure set beside the band's other pieces, in a cell of its own
+   *  at that side of the band's table (side.ts). */
+  side?: Side;
 }
 
 /** A paragraph one point high that holds nothing: what keeps two tables
@@ -67,23 +71,42 @@ export interface BandFoot {
 }
 
 /** A one-cell table shaded `fill` around `cell`, with insets, and the
- *  band's foot strip as its cell's bottom border. `gapTw` adds an unshaded
+ *  band's foot strip as its cell's bottom border; with a figure `beside`
+ *  the texts, a second cell at its side. `gapTw` adds an unshaded
  *  row that tall under the band: the room the print leaves before the text
  *  that follows (a paragraph there instead costs the page its running
  *  head in LibreOffice). */
-function bandTable(fill: string, cell: string, pad: { top: number; bottom: number; side: number }, widthTw: number, foot?: BandFoot, gapTw = 0): string {
+function bandTable(fill: string, cell: string, pad: { top: number; bottom: number; side: number }, widthTw: number, foot?: BandFoot, gapTw = 0, beside?: { xml: string; side: Side }): string {
   const shd = `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`;
   const bottom = foot ? `<w:tcBorders><w:bottom w:val="single" w:sz="${foot.sz}" w:space="0" w:color="${foot.color}"/></w:tcBorders>` : '';
+  const span = beside ? '<w:gridSpan w:val="2"/>' : '';
   const gap =
     gapTw > 0
-      ? `<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="${gapTw}" w:hRule="exact"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/><w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/></w:tcMar></w:tcPr>${thinParagraph()}</w:tc></w:tr>`
+      ? `<w:tr><w:trPr><w:cantSplit/><w:trHeight w:val="${gapTw}" w:hRule="exact"/></w:trPr><w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/>${span}<w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/></w:tcMar></w:tcPr>${thinParagraph()}</w:tc></w:tr>`
       : '';
-  return (
+  const head = (layout: string): string =>
     '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>' +
     '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>' +
-    '<w:tblLayout w:type="autofit"/>' +
+    `<w:tblLayout w:type="${layout}"/>` +
     `<w:tblCellMar><w:top w:w="${pad.top}" w:type="dxa"/><w:left w:w="${pad.side}" w:type="dxa"/><w:bottom w:w="${pad.bottom}" w:type="dxa"/><w:right w:w="${pad.side}" w:type="dxa"/></w:tblCellMar>` +
-    '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>' +
+    '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>';
+  if (beside) {
+    // Two cells of one fill: the texts, and the figure at its side with
+    // no inset towards them.
+    const sideTw = Math.min(beside.side.widthTw, Math.round(widthTw / 2));
+    const mainTw = widthTw - sideTw;
+    const inner = beside.side.right ? 'left' : 'right';
+    const main = `<w:tc><w:tcPr><w:tcW w:w="${mainTw}" w:type="dxa"/>${bottom}${shd}</w:tcPr>${cell}</w:tc>`;
+    const figure = `<w:tc><w:tcPr><w:tcW w:w="${sideTw}" w:type="dxa"/>${bottom}${shd}<w:tcMar><w:${inner} w:w="0" w:type="dxa"/></w:tcMar></w:tcPr>${beside.xml}</w:tc>`;
+    const cols = beside.side.right ? [mainTw, sideTw] : [sideTw, mainTw];
+    return (
+      head('fixed') +
+      `<w:tblGrid>${cols.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>` +
+      `<w:tr><w:trPr><w:cantSplit/></w:trPr>${beside.side.right ? main + figure : figure + main}</w:tr>${gap}</w:tbl>`
+    );
+  }
+  return (
+    head('autofit') +
     `<w:tblGrid><w:gridCol w:w="${widthTw}"/></w:tblGrid>` +
     `<w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="5000" w:type="pct"/>${bottom}${shd}</w:tcPr>${cell}</w:tc></w:tr>${gap}</w:tbl>`
   );
@@ -111,7 +134,9 @@ export function withBands(ctx: WriterContext, chunks: readonly Chunk[], containe
     const boxes = run.map((r) => r.box).filter((b): b is Box => !!b);
     const pad = insets(ctx, c.band.box, boxes.length ? boxes : [c.band.box], container);
     if (lastTable) out += thinParagraph({ keepNext: true });
-    out += bandTable(c.band.fill, run.map((r) => r.xml).join(''), pad, widthTw, feet?.get(c.band.box), j === chunks.length ? tailGapTw : 0);
+    const figure = run.find((r) => r.side);
+    const beside = figure?.side ? { xml: figure.xml, side: figure.side } : undefined;
+    out += bandTable(c.band.fill, run.filter((r) => r !== figure).map((r) => r.xml).join(''), pad, widthTw, feet?.get(c.band.box), j === chunks.length ? tailGapTw : 0, beside);
     lastTable = true;
     i = j;
   }

@@ -68,7 +68,10 @@ export function frameBoxStyle(ctx: WriterContext, templates: readonly (ResolvedP
   for (const t of templates) frame = frameOf(t, slot) ?? frame;
   if (!frame?.style) return undefined;
   const style = ctx.resolved.calloutStyles.find((s) => s.id === frame.style);
-  if (!style || !drawsBox(style)) return undefined;
+  // In the plain design every box style draws a rule: whether the frame is
+  // a box is what the book's own style says.
+  const drawn = ctx.plain ? ctx.plain.book.calloutStyles.find((s) => s.id === frame.style) : style;
+  if (!style || !drawn || !drawsBox(drawn)) return undefined;
   return recolor(ctx, style, templates.map((t) => t?.palette));
 }
 
@@ -87,6 +90,8 @@ function frameHeightPx(ctx: WriterContext, f: ResolvedFrame): number {
  * back as nothing.
  */
 export function ruledLines(ctx: WriterContext, template: ResolvedPageTemplate | undefined, filled: ReadonlySet<string>): string {
+  // Lines to write on hold no words: the plain design leaves them out.
+  if (ctx.plain) return '';
   let out = '';
   for (const f of template?.frames ?? []) {
     if (!f.rules || filled.has(f.name)) continue;

@@ -182,7 +182,7 @@ export function computeDocumentWarnings(params: {
     // A family the Sandbox already names as unknown or short of files is
     // not reported again as a fallback.
     const named = new Set(warnings.flatMap((w) => (w.payload.kind === 'missingFontFamily' || w.payload.kind === 'missingFontVariant' ? [w.payload.family.toLowerCase()] : [])));
-    warnings.push(...collectLayoutWarnings(doc, markdown).filter((w) => (w.payload.kind === 'glyphFallback'
+    warnings.push(...collectLayoutWarnings(doc, markdown).filter((w) => (w.payload.kind === 'glyphFallback' || w.payload.kind === 'glyphFallbackAt'
       ? toggles.missingFont && !named.has(w.payload.family.toLowerCase())
       : w.payload.kind !== 'fontFallback'
         || (toggles.missingFont && !(w.payload.reason === 'missing' && named.has(w.payload.family.toLowerCase()))))));

@@ -21,7 +21,7 @@ import { escapeAttr } from '../xml.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
-import { symbolPieces } from './symbols.js';
+import { runFaceLacks, runSymbolFont, symbolPieces } from './symbols.js';
 import { LIGATURE, LIGATURE_MIN_PT, ligaturePieces, ligatureSpans } from './ligatures.js';
 import { eastAsianLayout, kuntenOf, rubyAnnotations, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
@@ -529,9 +529,13 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   } else if (gapTw) {
     Object.assign(out, piecesOut(spacedPieces(ctx, r, text, { each: flat, extra: 0 }, gapTw, rtl)));
   }
-  // Symbols the embedded face lacks (⌘ in Geist) in a symbol face.
+  // What the run's face lacks: in the document's symbol font when it has
+  // it (#1460), else a symbol (⌘ in Geist) in a symbol face.
   const face = !out.xml && ctx.plan ? ctx.metrics.faceAdvances(r.fontString) : undefined;
-  const symbols = face ? symbolPieces(face, out.pieces ?? [{ rPr: out.rPr, text: out.text }]) : undefined;
+  const symbolFont = out.xml ? undefined : runSymbolFont(ctx, r.fontString);
+  const symbols = face || symbolFont
+    ? symbolPieces(face, out.pieces ?? [{ rPr: out.rPr, text: out.text }], symbolFont, runFaceLacks(face, r.fontString))
+    : undefined;
   if (symbols) Object.assign(out, piecesOut(symbols));
   return out;
 }

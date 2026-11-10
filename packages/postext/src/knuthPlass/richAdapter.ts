@@ -32,6 +32,8 @@ interface RichBreakPoint {
   author?: boolean;
   /** A free break next to a CJK character: the line is not hyphenated. */
   cjk?: boolean;
+  /** A free break at a zero-width space the author typed. */
+  zeroWidth?: boolean;
   /** Inside a Catalan `l·l`: the hyphen replaces the middle dot, this wide. */
   replacesWidth?: number;
   /** What the rest of the word, opening the next line as a text of its
@@ -118,6 +120,9 @@ export function richTokensToItems(
    *  too (`MeasureBlockOptions.repeatHyphen`): its penalty carries that
    *  hyphen as post-break width. */
   repeatHyphen = false,
+  /** Give each box the text it paints (`KPBox.text`), for stacks (#1463):
+   *  only while they are avoided, so the common path allocates nothing. */
+  withText = false,
 ): KPItem[] {
   const items: KPItem[] = [];
   const stretchPerSpace = normalSpaceWidth * (maxStretchRatio - 1);
@@ -157,6 +162,13 @@ export function richTokensToItems(
     const tracking = (from: number, to: number): { chars: number; noTracking?: true } => (
       token.chip ? { chars: 0, noTracking: true } : { chars: atomic ? 0 : stackedChars ?? graphemeCount(token.text.slice(from, to)) }
     );
+    // What stacks compare (#1463): no text for a formula, a swatch or a
+    // chip (an edge reaching one is not compared, nor read by its TeX
+    // source), nothing for a footnote marker.
+    const opaque = token.mathRender !== undefined || token.swatch !== undefined || token.chip !== undefined;
+    const textOf = (from: number, to?: number): { text?: string } => (
+      !withText || opaque ? {} : { text: token.footnoteId !== undefined ? '' : token.text.slice(from, to) }
+    );
 
     // Text token — may have soft-hyphen break points (the greedy breaker's
     // own ones left out: Knuth–Plass breaks there on neither path)
@@ -177,6 +189,7 @@ export function richTokensToItems(
           sourceIndex: t,
           meta: { ...meta, subStart: prevCharIndex, subEnd: breakPoint.charIndex },
           ...tracking(prevCharIndex, breakPoint.charIndex),
+          ...textOf(prevCharIndex, breakPoint.charIndex),
         });
 
         // Penalty at the break: a soft hyphen adds one, a hard hyphen the
@@ -185,7 +198,12 @@ export function richTokensToItems(
         // The rest of the word as the text that opens the next line (#770).
         const rest = breakPoint.restShift !== undefined ? { postShift: breakPoint.restShift } : {};
         items.push(breakPoint.free
-          ? { type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: t, meta: { ...meta, free: true, ...(breakPoint.cjk ? { cjk: true } : {}) }, ...rest }
+          ? {
+            type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: t, meta: { ...meta, free: true, ...(breakPoint.cjk ? { cjk: true } : {}) }, ...rest,
+            // A zero-width space the author typed: stacks read the words on
+            // either side apart (#1463).
+            ...(withText && breakPoint.zeroWidth ? { separates: true } : {}),
+          }
           : {
             type: 'penalty',
             width: breakPoint.bare ? 0 : hyphenW - (token.bareBreaks ? 0 : breakPoint.replacesWidth ?? 0),
@@ -219,6 +237,7 @@ export function richTokensToItems(
         sourceIndex: t,
         meta: { ...meta, subStart: prevCharIndex, subEnd: token.text.length },
         ...tracking(prevCharIndex, token.text.length),
+        ...textOf(prevCharIndex),
       });
     } else {
       // Simple text token without break points (an Arabic word has none:
@@ -229,6 +248,7 @@ export function richTokensToItems(
         sourceIndex: t,
         meta: { ...meta, subStart: 0, subEnd: token.text.length },
         ...tracking(0, token.text.length),
+        ...textOf(0),
         ...(token.kashida ? { stretch: token.kashida } : {}),
       });
     }

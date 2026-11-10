@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '画像、表、動画',
   description: '本文の中のリソース：参照と埋め込み、番号付け、配置とフロートが置かれる場所、回り込み、ビットマップのサイズ、セーフエリア、漫画のアンカー、動画',
   lang: 'ja',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '40分',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ SVGのリソースは、さらに`diagramStyle.singleInk`（既定値は`false`�
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>位置より幅の狭いリソースに使います。<code>width</code>は段（またはページ）の幅に対して占める割合、<code>align</code>は位置の中での置き場所です（段の中央に置く小さな表、1段分の幅の写真を載せるページ幅の帯など）。位置より幅の狭い画像（段より小さいビットマップや、<code>layout.fitFiguresToPage</code>で縮小されたもの）も<code>align</code>に従って置かれ、その下のキャプションは位置の行長を保ちます。フロートにもインラインの<code>::resource</code>埋め込みにも適用されます。</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; mm・cm・in・pt の長さ</td>
+      <td>位置より幅の狭いリソースに使います。<code>width</code>は段（またはページ）の幅に対して占める割合、<code>align</code>は位置の中での置き場所です（段の中央に置く小さな表、1段分の幅の写真を載せるページ幅の帯など）。位置より幅の狭い画像（段より小さいビットマップや、<code>layout.fitFiguresToPage</code>で縮小されたもの）も<code>align</code>に従って置かれ、その下のキャプションは位置の行長を保ちます。フロートにもインラインの<code>::resource</code>埋め込みにも適用されます。割合の代わりに長さ（<code>&#123; "value": 80, "unit": "mm" &#125;</code>、または <code>cm</code>・<code>in</code>・<code>pt</code>）を指定すると、その幅で組まれます。幅は置かれる枠で測ります。挿入なら段、段フロートならそれが占める段と段間、ページ幅フロートなら版面の幅、サイドフロートならサイド段、スタイル付きセクションやボックスの中ならその段です。枠と同じかそれより広い長さは枠全体を占め、回転するフロートは回転する前にその幅以下で組まれます。ほかの単位（<code>px</code>、<code>em</code>）は長さとして読まれず、リソースは枠全体を占めます。</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>全面図版: 画像（ビットマップ、SVG、または動画のポスター）を参照の後の新しいページに単独で置き、キャプションと注記とともに版面に収まる最大の大きさまで拡大・縮小します。<code>align</code> で指定しない限り中央に置きます。本文はその前後に続きます。図版はページを丸ごと使えるまで待ちます。章扉、別のフロート、本文がすでにあるページは最大3ページまで飛ばし、その次のページはそのまま使います。<code>position</code>、<code>span</code>、<code>width</code>、<code>shrink</code>、<code>rotate</code>、<code>captionSide</code>、<code>wrap</code>、<code>citingPage</code> は読まれず、本文中に置く画像（<code>"here"</code>）は図版になりません。リソースに <code>false</code> を設定すると、種類が設定した図版を解除します。最低解像度を下回って拡大されたビットマップは、トリミングを含めて印刷のプリフライトが報告します（<code>lowImageResolution</code>）。<code>"trim"</code> または <code>"bleed"</code> はページ全体に、仕上がり線まで、または塗り足しまで置きます（トンボがある場合。ない場合は塗り足しが仕上がり線になります）。覆うように拡大して中央でトリミングし、キャプションと注記は版面の下端に紙の色の帯に載せます。そのページは <code>'plate'</code> の役割になり、<code>pages</code> でこの役割を指定した要素を除いて、柱・ノンブル・デザイン要素は付きません。IDML 書き出しでは版面の大きさで本文に固定し、Word 書き出しでは専用のページに置きます。</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

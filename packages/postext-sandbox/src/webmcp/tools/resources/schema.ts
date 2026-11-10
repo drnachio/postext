@@ -29,6 +29,9 @@ const nullable = (schema: JsonSchema): JsonSchema => ({
   ...(schema.enum ? { enum: [...schema.enum, null] } : {}),
 });
 
+/** The units a width length is read in (#1461). */
+const WIDTH_UNITS: readonly string[] = ['mm', 'cm', 'in', 'pt'];
+
 export const PLACEMENT_SCHEMA: JsonSchema = {
   type: 'object',
   description: 'Where it goes on the page, merged into its placement key by key. A key set to null goes back to its resource type\'s default.',
@@ -36,7 +39,7 @@ export const PLACEMENT_SCHEMA: JsonSchema = {
     position: nullable({ type: 'string', enum: ['auto', 'top', 'bottom', 'here'], description: 'A float at the head or the foot of a page or column near its first reference (auto lets the layout choose), or here: set in the text where its ::resource line stands.' }),
     span: nullable({ type: 'string', enum: ['column', 'page', 'side'], description: 'A float as wide as its column, as the page, or in the side column of a column-and-a-half layout.' }),
     rotate: nullable({ type: 'string', enum: ['none', 'ccw', 'cw'], description: 'Turned a quarter turn on a page of its own (a landscape table in a portrait book).' }),
-    width: nullable({ type: 'number', description: 'The share of the column (or page) it takes, above 0 and up to 1.' }),
+    width: nullable({ type: ['number', 'object'], description: 'How wide it is set: the share of its slot (column, columns, page or side column) it takes, above 0 and up to 1; or a length { value, unit } in mm, cm, in or pt, measured against the slot it lands in (as wide as the slot or wider takes the whole slot).' }),
     align: nullable({ type: 'string', enum: ['left', 'center', 'right', 'start', 'end'], description: 'Where a resource narrower than its slot sits.' }),
     columns: nullable({ type: 'integer', minimum: 1, description: 'How many adjacent columns a column float takes.' }),
     citingPage: nullable({ type: 'boolean', description: 'Head the page or column where the line that first cites it lands.' }),
@@ -45,6 +48,7 @@ export const PLACEMENT_SCHEMA: JsonSchema = {
     wrapGap: nullable({ type: 'object', description: 'The space between it and the text beside it, as { value, unit }.' }),
     shrink: nullable({ type: 'string', enum: ['never', 'page', 'slot'], description: 'Scale a floated picture down to the room of its slot instead of moving it on.' }),
     minScale: nullable({ type: 'number', description: 'The smallest scale shrink sets it at, above 0 and up to 1.' }),
+    plate: nullable({ type: ['boolean', 'string'], enum: [true, false, 'content', 'trim', 'bleed'], description: 'A full-page plate (pictures and video posters): alone on a page of its own, as large as the content area holds with its caption ("content" or true), or covering the page to the trim or the bleed, cropped about its centre. false turns off a plate its resource type sets.' }),
     captionMeasure: nullable({ type: 'string', enum: ['slot', 'body'], description: 'A narrower picture\'s caption at the slot\'s measure, or as wide as the picture.' }),
   },
   additionalProperties: false,
@@ -58,8 +62,14 @@ export function withPlacement(placement: ResourcePlacement | undefined, patch: R
     const key = name as keyof ResourcePlacement;
     let value = given;
     if (value === null || (key === 'rotate' && value === 'none')) value = undefined;
-    if ((key === 'width' || key === 'minScale') && value !== undefined && !((value as number) > 0 && (value as number) <= 1)) {
-      throw new ToolError(`placement.${key} is a share, above 0 and up to 1 (0.5 for a half), not ${JSON.stringify(given)}.`);
+    if (key === 'width' && value !== undefined && typeof value === 'object') {
+      // A width given as a length (#1461): physical units only.
+      const len = value as { value?: unknown; unit?: unknown };
+      if (typeof len.value !== 'number' || !(len.value > 0) || !WIDTH_UNITS.includes(len.unit as string)) {
+        throw new ToolError(`placement.width as a length is { value, unit } with a value above 0 and a unit among ${WIDTH_UNITS.join(', ')}, not ${JSON.stringify(given)}.`);
+      }
+    } else if ((key === 'width' || key === 'minScale') && value !== undefined && !((value as number) > 0 && (value as number) <= 1)) {
+      throw new ToolError(`placement.${key} is a share, above 0 and up to 1 (0.5 for a half)${key === 'width' ? ', or a length { value, unit } in mm, cm, in or pt' : ''}, not ${JSON.stringify(given)}.`);
     }
     if (key === 'wrapGap' && value !== undefined) {
       const gap = value as { value?: unknown; unit?: unknown };

@@ -34,6 +34,8 @@ interface BookValues {
   partAt: Map<ContentBlock, PartValues>;
   /** The overrides in force at every other fence (a box, an exercise). */
   fences: Map<ContentBlock, Record<string, string>>;
+  /** The overrides in force at every block of the book. */
+  paletteAt: Map<ContentBlock, Record<string, string>>;
 }
 
 interface PartValues {
@@ -53,6 +55,7 @@ function bookValues(ctx: WriterContext): BookValues {
   const partAt = new Map<ContentBlock, PartValues>();
   let part: PartValues = { title: '', number: '' };
   const fences = new Map<ContentBlock, Record<string, string>>();
+  const paletteAt = new Map<ContentBlock, Record<string, string>>();
   let chapterNumber = '';
   let chapterTitle = '';
   let partTitle = '';
@@ -74,11 +77,13 @@ function bookValues(ctx: WriterContext): BookValues {
         partNumber = b.containerAttrs?.number ?? '';
         palette = parsePartPalette(b.containerAttrs?.palette);
         parts.set(b, palette);
+        paletteAt.set(b, palette);
         part = { title: partTitle, number: partNumber };
         partAt.set(b, part);
         return;
       }
       partAt.set(b, part);
+      paletteAt.set(b, palette);
       if (b.type === 'containerStart') fences.set(b, palette);
       if (b.type !== 'heading') return;
       const number = (prefixes[bi] ?? '').trim();
@@ -91,16 +96,16 @@ function bookValues(ctx: WriterContext): BookValues {
       byBlock.set(b, { chapterNumber, chapterTitle, partTitle, partNumber, number, palette });
     });
   });
-  const out = { metadata, byBlock, parts, partAt, fences };
+  const out = { metadata, byBlock, parts, partAt, fences, paletteAt };
   memo.set(ctx.book, out);
   return out;
 }
 
-/** The palette overrides in force at heading `b` (or at a `:::part`
- *  fence, its own): palette id → hex, empty when nothing recolours. */
+/** The palette overrides in force at block `b` (at a `:::part` fence,
+ *  its own): palette id → hex, empty when nothing recolours. */
 export function partPaletteAt(ctx: WriterContext, b: ContentBlock): Record<string, string> {
   const v = bookValues(ctx);
-  return v.byBlock.get(b)?.palette ?? v.parts.get(b) ?? v.fences.get(b) ?? {};
+  return v.byBlock.get(b)?.palette ?? v.parts.get(b) ?? v.fences.get(b) ?? v.paletteAt.get(b) ?? {};
 }
 
 /** The part in force at block `b` (the last `:::part` fence before it,

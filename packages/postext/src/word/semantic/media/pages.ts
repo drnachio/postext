@@ -11,8 +11,9 @@
 // panels, each with its picture and script, the caption in a row under
 // them (see strip.ts). The text stays mapped to the Markdown. A page with
 // nothing to write (no panel has art or words) is a short labelled
-// placeholder pointing to the PDF and the formatted .docx, generated text
-// the importer leaves out. A strip's caption stays mapped and editable.
+// placeholder pointing to the PDF, generated text the importer leaves
+// out. A strip's caption stays mapped and editable. The plain design
+// (#1458) writes the same, without the page starts.
 
 import { extractFrontmatter } from '../../../parse/frontmatter.js';
 import { parseMarkdownWithIssues } from '../../../parse/index.js';
@@ -29,7 +30,9 @@ import { blockSdt, paragraph, textRuns } from '../wml.js';
 import { stripCaptionParagraph } from './captions.js';
 import { comicPanels, renderComic } from './comics.js';
 import { renderStrip } from './strip.js';
-import { pageOpener } from './pageOpener.js';
+import { pageOpener, pageTint } from './pageOpener.js';
+import { groundParagraph } from '../design/ground.js';
+import { pageGeometry } from '../sections.js';
 import { frameBoxStyle, numberTemplateHeading, overFrame, ruledLines, templateOf } from './frames.js';
 
 export type PageKind = 'composedPage' | 'comicPage' | 'strip';
@@ -38,21 +41,21 @@ interface PageWords {
   composedPage: string;
   comicPage: string;
   strip: string;
-  /** Where the page is: in the PDF and the formatted .docx. */
+  /** Where the page is: in the PDF. */
   see: string;
 }
 
 const WORDS: Record<string, PageWords> = {
-  en: { composedPage: 'Composed page', comicPage: 'Comic page', strip: 'Comic strip', see: 'see the PDF or the formatted .docx' },
-  es: { composedPage: 'Página compuesta', comicPage: 'Página de cómic', strip: 'Tira de cómic', see: 'véase el PDF o el .docx maquetado' },
-  ca: { composedPage: 'Pàgina composta', comicPage: 'Pàgina de còmic', strip: 'Tira de còmic', see: 'vegeu el PDF o el .docx maquetat' },
-  fr: { composedPage: 'Page composée', comicPage: 'Planche de bande dessinée', strip: 'Strip de bande dessinée', see: 'voir le PDF ou le .docx mis en page' },
-  de: { composedPage: 'Gestaltete Seite', comicPage: 'Comicseite', strip: 'Comicstreifen', see: 'siehe das PDF oder die gesetzte .docx' },
-  it: { composedPage: 'Pagina composta', comicPage: 'Tavola a fumetti', strip: 'Striscia a fumetti', see: 'vedi il PDF o il .docx impaginato' },
-  pt: { composedPage: 'Página composta', comicPage: 'Página de quadrinhos', strip: 'Tirinha', see: 'veja o PDF ou o .docx diagramado' },
-  zh: { composedPage: '版式页', comicPage: '漫画页', strip: '条漫', see: '见 PDF 或版式 .docx' },
-  ja: { composedPage: '組版ページ', comicPage: 'マンガのページ', strip: 'コマ漫画', see: 'PDF または組版どおりの .docx を参照' },
-  ar: { composedPage: 'صفحة مركّبة', comicPage: 'صفحة قصص مصوّرة', strip: 'شريط مصوّر', see: 'انظر ملف PDF أو ملف ‎.docx المُنسَّق' },
+  en: { composedPage: 'Composed page', comicPage: 'Comic page', strip: 'Comic strip', see: 'see the PDF' },
+  es: { composedPage: 'Página compuesta', comicPage: 'Página de cómic', strip: 'Tira de cómic', see: 'véase el PDF' },
+  ca: { composedPage: 'Pàgina composta', comicPage: 'Pàgina de còmic', strip: 'Tira de còmic', see: 'vegeu el PDF' },
+  fr: { composedPage: 'Page composée', comicPage: 'Planche de bande dessinée', strip: 'Strip de bande dessinée', see: 'voir le PDF' },
+  de: { composedPage: 'Gestaltete Seite', comicPage: 'Comicseite', strip: 'Comicstreifen', see: 'siehe das PDF' },
+  it: { composedPage: 'Pagina composta', comicPage: 'Tavola a fumetti', strip: 'Striscia a fumetti', see: 'vedi il PDF' },
+  pt: { composedPage: 'Página composta', comicPage: 'Página de quadrinhos', strip: 'Tirinha', see: 'veja o PDF' },
+  zh: { composedPage: '版式页', comicPage: '漫画页', strip: '条漫', see: '见 PDF' },
+  ja: { composedPage: '組版ページ', comicPage: 'マンガのページ', strip: 'コマ漫画', see: 'PDF を参照' },
+  ar: { composedPage: 'صفحة مركّبة', comicPage: 'صفحة قصص مصوّرة', strip: 'شريط مصوّر', see: 'انظر ملف PDF' },
 };
 
 /** The placeholder's words in the book's language (English for one the
@@ -77,7 +80,7 @@ export function renderComicPage(ctx: WriterContext, fence: ContentBlock, kind: '
   const filled = comicPanels(fence).some((p) => (p.art && ctx.media.has(p.art)) || p.text || p.items.some((i) => i.role !== 'note' && i.text.trim()));
   // A comic page starts a page, as in print, so one page's panels do not
   // run into the next one's.
-  if (filled) return kind === 'comicPage' ? PAGE_START + renderComic(ctx, fence, kind, width, caption) : renderStrip(ctx, fence, width, caption);
+  if (filled) return kind === 'comicPage' ? pageStart(ctx) + renderComic(ctx, fence, kind, width, caption) : renderStrip(ctx, fence, width, caption);
   return renderPagePlaceholder(ctx, kind, width, caption);
 }
 
@@ -95,7 +98,11 @@ type ContainerNode = Extract<Node, { container: unknown }>;
 
 /** A paragraph that starts a new page and takes no room (a page break
  *  before it at the top of a page adds none). */
-const PAGE_START = '<w:p><w:pPr><w:pageBreakBefore/><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:ind w:firstLine="0"/></w:pPr></w:p>';
+const PAGE_START_XML = '<w:p><w:pPr><w:pageBreakBefore/><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:ind w:firstLine="0"/></w:pPr></w:p>';
+
+/** The start of a composed or comic page: a new page, as the book sets
+ *  it; in the plain design the text runs on. */
+const pageStart = (ctx: WriterContext): string => (ctx.plain ? '' : PAGE_START_XML);
 
 /** A frame's `label`, mapped to the attribute's value (generated text
  *  when the value cannot be found as written). */
@@ -204,7 +211,16 @@ export function renderComposedPage(ctx: WriterContext, node: ContainerNode, env:
   const title = top ? { block: top, xml: () => pageOpener(ctx, node.container, top, (look) => headingParagraph(ctx, top, look)) ?? renderNodes(ctx, [{ block: top }], env) } : undefined;
   const body = pageNodes(ctx, node.children, env, [template], title);
   if (!body) return renderPagePlaceholder(ctx, 'composedPage', Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips)));
-  return blockSdt(ctx.nextSdtId(), `ptx:composedPage${id ? `:${id}` : ''}`, undefined, PAGE_START + body);
+  // A template that tints its whole page: the tint drawn behind the page,
+  // edge to edge, in the paragraph that opens it (design/ground.ts).
+  const tint = ctx.plain ? undefined : pageTint(template);
+  let start = pageStart(ctx);
+  if (tint) {
+    const geo = pageGeometry(ctx.resolved, ctx.units);
+    const toPx = (tw: number): number => (tw * ctx.units.dpi) / 1440;
+    start = groundParagraph(ctx, [{ fill: tint, box: { x: 0, y: 0, width: toPx(geo.widthTw), height: toPx(geo.heightTw) } }], { pageBreakBefore: true });
+  }
+  return blockSdt(ctx.nextSdtId(), `ptx:composedPage${id ? `:${id}` : ''}`, undefined, start + body);
 }
 
 /** `content` in a grey framed cell `width` twips wide. */

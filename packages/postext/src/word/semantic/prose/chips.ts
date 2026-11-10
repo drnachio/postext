@@ -32,23 +32,27 @@ export function circled(ch: string, negative: boolean): string | undefined {
 /** A chip as a glyph: its text and run properties, or undefined when the
  *  chip stays a bordered or shaded run. */
 export function chipGlyph(ctx: WriterContext, chip: NonNullable<InlineSpan['chip']>): { text: string; props: RunProps } | undefined {
-  const styles = ctx.resolved.chipStyles ?? [];
+  // The plain design writes the character the book's chip style gives
+  // (the same text in both documents), in the text's own face and ink.
+  const styles = (ctx.plain?.book ?? ctx.resolved).chipStyles ?? [];
   const cs: ResolvedChipStyleConfig | undefined = (chip.style ? styles.find((s) => s.id === chip.style) : undefined) ?? styles[0];
   if (!cs) return undefined;
   const u = ctx.units;
+  const bodyPx = ctx.plain ? px(u, ctx.plain.book.bodyText.fontSize, 16) || ctx.styles.bodyPx : ctx.styles.bodyPx;
   const words = chipText(chip).trim();
   const fill = cs.backgroundEnabled ? hex(cs.background) : undefined;
   const filled = !!fill && fill !== 'FFFFFF';
   if (!words) {
     // An end mark: the square the engine draws, in its fill.
     if (!filled) return undefined;
-    return { text: '■', props: { color: fill, sz: cs.fontSize ? halfPoints(u, cs.fontSize, ctx.styles.bodyPx) : undefined } };
+    return { text: '■', props: ctx.plain ? {} : { color: fill, sz: cs.fontSize ? halfPoints(u, cs.fontSize, bodyPx) : undefined } };
   }
-  const sizePx = px(u, cs.fontSize, ctx.styles.bodyPx) || ctx.styles.bodyPx;
+  const sizePx = px(u, cs.fontSize, bodyPx) || bodyPx;
   // Round: corners at least nearly half the chip's height.
   if (px(u, cs.borderRadius, sizePx) < 0.45 * sizePx) return undefined;
   const glyph = circled(words, filled);
   if (!glyph) return undefined;
+  if (ctx.plain) return { text: glyph, props: {} };
   const face = cs.fontFamily ? ctx.styles.font(cs.fontFamily, cs.bold ? 700 : 400, cs.italic) : {};
   // A plain bubble's ring is its outline's colour; a filled one's disc
   // its fill.

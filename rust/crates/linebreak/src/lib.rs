@@ -19,12 +19,14 @@ mod looseness;
 mod node;
 mod options;
 mod prefix;
+#[cfg(test)]
+mod stacks_tests;
 
 pub use adjust::{LineAdjustment, adjust_line};
 pub use constants::*;
 pub use items::{ItemKind, Items};
 pub use looseness::LoosenessMode;
-pub use options::Options;
+pub use options::{Options, Rules};
 
 use dp::Search;
 

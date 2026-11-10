@@ -275,6 +275,9 @@ export interface SandboxLabels {
   warningsGlyphFallbackTitle: string;
   warningsGlyphFallbackDetail: string;
   warningsGlyphFallbackSystemDetail: string;
+  warningsGlyphFallbackAtTitle: string;
+  warningsGlyphFallbackAtDetail: string;
+  warningsGlyphFallbackAtMissingDetail: string;
   warningsLooseLineTitle: string;
   warningsRaggedLineTitle: string;
   warningsRaggedLineDetail: string;
@@ -1198,6 +1201,8 @@ export interface SandboxLabels {
   bodyText: string;
   bodyFont: string;
   bodyFontTooltip: string;
+  symbolFont: string;
+  symbolFontTooltip: string;
   bodyFontSearch: string;
   bodyFontNoResults: string;
   bodyFontSize: string;
@@ -1438,6 +1443,12 @@ export interface SandboxLabels {
   bodyRuntPenaltyTooltip: string;
   bodyGradedRuntPenalty: string;
   bodyGradedRuntPenaltyTooltip: string;
+  bodyStacks: string;
+  bodyStacksTooltip: string;
+  bodyStackMinCharacters: string;
+  bodyStackMinCharactersTooltip: string;
+  bodyStackPenalty: string;
+  bodyStackPenaltyTooltip: string;
   bodyAvoidRuntsInLists: string;
   bodyAvoidRuntsInListsTooltip: string;
   bodyAvoidOrphansInLists: string;
@@ -2317,6 +2328,9 @@ export interface SandboxLabels {
   warningsHereNotEmbeddedDetail: string;
   warningsShortListSplitTitle: string;
   warningsShortListSplitDetail: string;
+  warningsStackTitle: string;
+  warningsStackEndDetail: string;
+  warningsStackStartDetail: string;
   warningsTocGroupSplitTitle: string;
   warningsTocGroupSplitDetail: string;
   warningsOpenerFloatTitle: string;
@@ -2539,6 +2553,7 @@ export interface SandboxLabels {
   headerFooterElementPagesOpener: string;
   headerFooterElementPagesPart: string;
   headerFooterElementPagesBlank: string;
+  headerFooterElementPagesPlate: string;
   headerFooterAnchorToPage: string;
   headerFooterAnchorToBleed: string;
   headerFooterAnchorToOuter: string;
@@ -2859,6 +2874,19 @@ export interface SandboxLabels {
   resourceRotateCcw: string;
   resourceRotateCw: string;
   resourcePlacementHintRotated: string;
+  resourcePlacementHintPlate: string;
+  resourcePlacementPlate: string;
+  resourcePlacementPlateTooltip: string;
+  resourcePlacementPlateArea: string;
+  resourcePlacementPlateAreaTooltip: string;
+  resourcePlateAreaContent: string;
+  resourcePlateAreaTrim: string;
+  resourcePlateAreaBleed: string;
+  resourcePlacementWidthKind: string;
+  resourcePlacementWidthKindTooltip: string;
+  resourcePlacementWidthShare: string;
+  resourcePlacementWidthLength: string;
+  resourcePlacementWidthLengthTooltip: string;
   resourceSpanSide: string;
   resourceImageLabel: string;
   resourceBitmapSizeLabel: string;
@@ -5546,12 +5574,7 @@ export interface SandboxLabels {
   wordExportSemanticHint: string;
   wordExportFormatted: string;
   wordExportFormattedHint: string;
-  /** Under the variants, when Formatted is chosen for a book mostly of
-   *  composed or comic pages (#1444). */
-  wordExportPagesSuggested: string;
-  wordExportLaying: string;
   wordExportFonts: string;
-  wordExportPages: string;
   wordExportWriting: string;
   wordExportFailed: string;
   wordExportNotes: string;
@@ -5605,6 +5628,13 @@ export interface SandboxLabels {
   wordEditsApply: string;
   wordEditsDone: string;
   wordEditsFailed: string;
+  wordEditsReading: string;
+  wordEditsNotThisBook: string;
+  wordEditsNoteRebuilt: string;
+  wordEditsNoteBookChanged: string;
+  wordEditsNoteUnverified: string;
+  wordEditsNoteWriterChanged: string;
+  wordEditsNoteChaptersMissing: string;
   /** Word style name of a callout type in an export (`__name__`). */
   // Named frame looks (#1089).
   frameLooksSection: string;

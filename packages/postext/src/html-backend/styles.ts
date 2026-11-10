@@ -2,6 +2,8 @@
 // ligatures, the dir attribute and box of a word segment, and the font
 // strings a segment is written in (#1276: split out of html-backend.ts).
 import type { VDTLine, VDTLineSegment, VDTBlock } from '../vdt.js';
+import { fontStringFamilies } from '../measure/fontString.js';
+import { isGenericFamily } from '../fonts/faces.js';
 import { hasCJK } from '../measure/cjk/cjk.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { scriptContextUntracked } from '../measure/script.js';
@@ -193,26 +195,49 @@ function splitFontSize(font: string): [prefix: string, size: string, family: str
   return null;
 }
 
+/** A character a CSS string in single quotes inside a double-quoted HTML
+ *  `style` attribute cannot hold as it is, and its CSS escape: the quote
+ *  and the backslash of the CSS string, and what would end or open
+ *  something in the HTML around it (#1460). A hex escape takes the space
+ *  after it as its end. */
+const CSS_STRING_ESCAPES: Readonly<Record<string, string>> = {
+  '\\': '\\\\', "'": "\\'", '"': '\\22 ', '<': '\\3c ', '>': '\\3e ', '&': '\\26 ', '\n': '\\a ', '\r': '\\d ', '\f': '\\c ',
+};
+
+/** One family of a CSS family list as a CSS value: a generic family
+ *  (`serif`, `math`) bare, as the keyword it is; any other in single
+ *  quotes, escaped (#1460). A bare name is read as identifiers: one with
+ *  a dot, a digit after a space or an `@` (a figure-style family, #1237,
+ *  `Lora@onum`) is not one, and the browser drops the whole `font`
+ *  declaration. */
+export function quoteCssFamily(family: string): string {
+  if (isGenericFamily(family)) return family.trim();
+  return `'${family.replace(/[\\'"<>&\n\r\f]/g, (c) => CSS_STRING_ESCAPES[c] ?? c)}'`;
+}
+
+/**
+ * A font string as the value of a CSS `font` declaration written into a
+ * double-quoted `style` attribute. Canvas accepts unquoted multi-word
+ * families; CSS is stricter. Each family of the list (the face's, then the
+ * `symbolFont`) is quoted on its own by {@link quoteCssFamily}, in single
+ * quotes, so the value needs no further escaping in the attribute: every
+ * place the HTML backend (and the fixed-layout EPUB, which is its output)
+ * writes `font:…` takes it as it is.
+ */
 export function quoteFontString(fontString: string): string {
-  // Canvas accepts unquoted multi-word families; CSS is stricter. Wrap family in
-  // single quotes (double quotes would collide with the outer HTML attribute
-  // delimiter) if it contains a space and isn't already quoted. If the family
-  // arrives already wrapped in double quotes, rewrite them to single quotes.
   const match = splitFontSize(fontString);
-  if (!match) return fontString;
+  if (!match) return fontString.replace(/["<>&]/g, '');
   const [prefix, size, family] = match;
-  const trimmed = (family ?? '').trim();
-  let quoted: string;
-  if (trimmed.startsWith("'")) {
-    quoted = trimmed;
-  } else if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
-    quoted = `'${trimmed.slice(1, -1)}'`;
-  } else if (/\s/.test(trimmed)) {
-    quoted = `'${trimmed}'`;
-  } else {
-    quoted = trimmed;
-  }
-  return `${prefix}${size} ${quoted}`.trim();
+  const listed = fontStringFamilies(fontString);
+  const families = listed.length > 0 ? listed : [unquoted(family.trim())];
+  // The prefix is style and weight words; nothing in it is escaped by the
+  // engine, so what an attribute cannot hold is dropped.
+  return `${prefix.replace(/["<>&]/g, '')}${size} ${families.map(quoteCssFamily).join(', ')}`.trim();
+}
+
+/** A family without the quotes around it. */
+function unquoted(family: string): string {
+  return /^(["']).*\1$/.test(family) ? family.slice(1, -1).replace(/\\(["'\\])/g, '$1') : family;
 }
 
 export function pickSegmentFont(

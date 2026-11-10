@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Texto base',
   description: 'Cómo se configura la tipografía del texto corrido: la fuente, el cuerpo y el interlineado, los colores, las sangrías, las citas, la poesía, las tabulaciones y las letras capitulares',
   lang: 'es',
-  lastUpdated: '2026-10-19',
-  readingTime: '27 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '28 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes del texto principal de un libro. Eliges su tipo de letra, su tamaño y el espacio entre sus líneas, y el color de las palabras en negrita y en cursiva. Fijas la sangría de la primera línea y el espacio entre párrafos. La página también explica las citas que se separan del texto, los poemas, las tabulaciones para el texto en columnas y la letra grande con la que empiezan algunos capítulos. La separación silábica, los encabezados y las listas tienen páginas propias.",
@@ -230,6 +230,24 @@ La propiedad `bodyText` controla la tipografía de todo el texto de los párrafo
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Empieza también con un guion la línea que sigue a un corte en el guion de un compuesto: <code>léxico-</code> · <code>-semántico</code>, como piden las normas de la Real Academia Española desde 2010, y <code>vencer-</code> · <code>-se</code>, como pide la ortografía portuguesa. El guion repetido se mide y se pinta con su línea, que lo anota como <code>repeatedHyphen</code>; su <code>plainStart</code> y su <code>sourceStart</code> apuntan detrás de él, de modo que los enlaces, los titulillos y el Sandbox leen la palabra tal como está escrita. El PDF lo pinta bajo un <code>/ActualText</code> que lo omite, así que el texto que se copia o se extrae del PDF lee la palabra una sola vez. Una dirección web nunca lo lleva. Se aplica al texto corrido, los encabezados, las listas, las citas y los recuadros; un párrafo sin formato que contiene un compuesto se corta entonces con el divisor del texto con formato.</td>
+    </tr>
+    <tr>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Repeticiones: dos líneas seguidas de un párrafo, en una misma columna, que terminan en la misma palabra, o en los mismos <code>stackMinCharacters</code> últimos caracteres, espacios incluidos (<code>-mente</code> / <code>-mente</code>, <code>en la</code> / <code>de la</code>), o que empiezan con la misma palabra o los mismos primeros caracteres (<code>de la</code> / <code>de un</code>). <code>'allow'</code> compone las líneas como las encuentra el algoritmo y no informa de nada. <code>'warn'</code> las compone igual e informa de cada repetición con un aviso de contenido <code>stack</code>, que el Sandbox lista en Revisión y marca en la página. <code>'avoid'</code> suma <code>stackPenalty</code> a los deméritos de cada repetición, de modo que el algoritmo compone el párrafo de otra forma donde el espaciado entre palabras lo permite, e informa de las repeticiones que mantiene. No cuentan las tildes ni las mayúsculas («sól» es «sol»). Las palabras solo se comparan en las escrituras que las separan con espacios: el texto en chino, japonés, tailandés, lao, jemer, birmano o tibetano no tiene repeticiones. Una fórmula, un chip o una muestra de color en el borde de una línea nunca se compara. Con <code>'avoid'</code>, los pies de figura, las notas y las celdas de tabla, justificados o en bandera, se cortan enteros con Knuth–Plass para seguir la regla; el marco de una página compuesta compone su texto sin ella. Necesita <code>optimalLineBreaking</code>. Al portar un libro, déjala en <code>'allow'</code> o usa <code>'warn'</code> para las pruebas: el port reproduce los cortes del original.</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Caracteres, espacios incluidos, que el mismo borde de dos líneas seguidas debe compartir para que haya repetición (<code>stacks</code>). La puntuación del extremo no cuenta, y la misma palabra siempre es repetición.</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>3000</code></td>
+      <td>Lo que cuesta una repetición al algoritmo con <code>stacks: 'avoid'</code>, en deméritos que se suman a los del párrafo, en la escala de <code>consecutiveHyphenDemerit</code> (dos líneas seguidas con guion cuestan 3000). Un monosílabo repetido («a», «y», «de», con las vocales de las escrituras latina, griega y cirílica) cuesta el doble. Un valor más alto evita más repeticiones a cambio de líneas más sueltas; con 0 se mantienen todas.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

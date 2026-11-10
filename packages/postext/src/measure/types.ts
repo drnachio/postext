@@ -220,6 +220,9 @@ export interface MeasureBlockOptions {
    *  threshold (`BodyTextConfig.gradedRuntPenalty`). Joins the cache key
    *  only when set. */
   runtGraded?: boolean;
+  /** Stacks avoided (`KPOptions.stacks`, `bodyText.stacks: 'avoid'`,
+   *  #1463). Joins the cache key only when set. */
+  stacks?: { minChars: number; demerits: number };
   /** Line numbers (1-based) that should not end on a hyphen: the lines a
    *  column or a page ends on (`BodyTextConfig.hyphenateAcrossColumns`).
    *  Knuth–Plass path only. Joins the cache key only when set. */

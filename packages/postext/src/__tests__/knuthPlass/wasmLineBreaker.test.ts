@@ -2,7 +2,7 @@
  * The WebAssembly line breaker (#779) against the TypeScript one: the same
  * breaks on every paragraph, whatever the options. Random paragraphs cover
  * the options a book's corpus does not (tracking, zones, fixed breaks,
- * lines that avoid a hyphen, ragged settings, kashida boxes).
+ * lines that avoid a hyphen, ragged settings, kashida boxes, stacks).
  */
 import { describe, expect, it } from 'vitest';
 import { computeBreakpoints, computeBreakpointsTs, type KPItem, type KPOptions } from '../../knuthPlass/index.js';
@@ -17,19 +17,32 @@ function rng(seed: number): () => number {
   };
 }
 
+/** Syllables the boxes' text is drawn from, few enough that line edges
+ *  repeat (stacks), monosyllables and accents among them. */
+const SYLLABLES = ['de', 'la', 'y', 'a', 'que', 'men', 'te', 'cla', 'ra', 'sól', 'sol', 'en', 'el', 'gen', 'ción'];
+
 function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
   const r = rng(seed);
+  // The text and the stacks come from a generator of their own, so the
+  // paragraphs of every other option stay as they were.
+  const t = rng(seed ^ 0x5eed);
   const words = 3 + Math.floor(r() * 120);
   const items: KPItem[] = [];
   const kashida = r() < 0.15;
   for (let w = 0; w < words; w++) {
     const syllables = r() < 0.3 ? 2 + Math.floor(r() * 3) : 1;
     for (let s = 0; s < syllables; s++) {
+      // Now and then a box with no text (a formula), one with nothing to
+      // compare (a footnote marker), and a zero-width break between two
+      // words (#1463).
+      const kind = t();
+      if (kind < 0.02 && s === 0 && w > 0) items.push({ type: 'penalty', width: 0, penalty: 0, flagged: false, sourceIndex: -1, separates: true });
       items.push({
         type: 'box',
         width: 8 + r() * 50,
         sourceIndex: w,
         chars: 1 + Math.floor(r() * 6),
+        ...(kind > 0.97 ? {} : { text: kind > 0.95 ? '' : SYLLABLES[Math.floor(t() * SYLLABLES.length)]! }),
         ...(r() < 0.05 ? { noTracking: true } : {}),
         ...(kashida && r() < 0.4 ? { stretch: r() * 12 } : {}),
       });
@@ -69,6 +82,7 @@ function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
     ...(r() < 0.15 ? { raggedStretch: 30 } : {}),
     ...(r() < 0.2 ? { hyphenationZone: 25 } : {}),
     ...(r() < 0.15 ? { avoidHyphenAtLines: [2, 4] } : {}),
+    ...(t() < 0.4 ? { stacks: { minChars: 1 + Math.floor(t() * 4), demerits: [0, 500, 3000, 100000, 1e7][Math.floor(t() * 5)]! } } : {}),
   };
   return { items, options };
 }
@@ -86,6 +100,28 @@ describe('the WebAssembly line breaker', () => {
     }
     expect(differ).toEqual([]);
   }, 120_000);
+
+  it('gives up the exact stacks search at the same cap as the TypeScript breaker', () => {
+    // A paragraph long enough, in a measure wide enough, for the exact
+    // search to pass EXACT_MAX_ACTIVE nodes (#1463).
+    const items: KPItem[] = [];
+    const r = rng(7);
+    for (let w = 0; w < 3000; w++) {
+      items.push({ type: 'box', width: 8 + r() * 40, sourceIndex: w, chars: 3, text: SYLLABLES[Math.floor(r() * SYLLABLES.length)]! });
+      items.push({ type: 'glue', width: 10, stretch: 8, shrink: 4, sourceIndex: w });
+    }
+    items.push({ type: 'glue', width: 0, stretch: Number.MAX_SAFE_INTEGER, shrink: 0, sourceIndex: -1 });
+    items.push({ type: 'penalty', width: 0, penalty: -10000, flagged: false, sourceIndex: -1 });
+    // A shorter setting keeps every line count apart, whatever the rule:
+    // quadratic on a paragraph this long, and left out.
+    for (const looseness of [0, 1]) {
+      const options: KPOptions = {
+        lineWidth: () => 900, lineWidthUniformFrom: 0, normalSpaceWidth: 10, maxStretchRatio: 2, minShrinkRatio: 0.6,
+        looseness, stacks: { minChars: 2, demerits: 3000 },
+      };
+      expect(computeBreakpoints(items, options), `${looseness}`).toEqual(computeBreakpointsTs(items, options));
+    }
+  }, 60_000);
 
   it('keeps fixed breaks as the TypeScript breaker does', () => {
     for (let seed = 1; seed <= 300; seed++) {

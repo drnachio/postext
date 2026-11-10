@@ -178,7 +178,7 @@ export function measureBlock(
     const hardHyphens = ragged || options.breakAfterHyphens === true || keepCompounds;
     const dotWidth = geminateDotWidth(text, font);
     const hyphenWidth = getHyphenWidth(font);
-    const items = pretextSegmentsToItems(prepared, hyphenWidth, spaceWidth, maxStretchRatio, minShrinkRatio, options.breakAfterDashes === true, hardHyphens, ragged || keepCompounds ? 1 : 2, dotWidth);
+    const items = pretextSegmentsToItems(prepared, hyphenWidth, spaceWidth, maxStretchRatio, minShrinkRatio, options.breakAfterDashes === true, hardHyphens, ragged || keepCompounds ? 1 : 2, dotWidth, options.stacks !== undefined);
     const lineWidthFn = lineWidthFunction(maxWidthPx, options);
     const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
@@ -194,6 +194,7 @@ export function measureBlock(
       runtPenalty,
       runtMinWidth,
       runtGraded: options.runtGraded === true,
+      ...(options.stacks ? { stacks: options.stacks } : {}),
       ...(options.avoidHyphenAtLines ? { avoidHyphenAtLines: options.avoidHyphenAtLines } : {}),
       ...(options.keepBreaks?.path === 'plain' ? { fixedBreaks: options.keepBreaks.at } : {}),
       looseness: options.looseness ?? 0,

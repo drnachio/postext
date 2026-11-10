@@ -314,8 +314,11 @@ export function pageMatchesParity(pageIndex: number, parity: PageParity): boolea
 }
 
 /** Whether an element with page filter `filter` renders on a page of role
- *  `role`. An unknown role (not yet classified) admits everything. */
+ *  `role`. An unknown role (not yet classified) admits everything. A page
+ *  a plate covers to its edge (`'plate'`, #1461) admits only the elements
+ *  that name it. */
 export function pageMatchesRole(filter: PageRoleFilter | undefined, role: PageRole | undefined): boolean {
+  if (role === 'plate') return filter === 'plate';
   if (filter === undefined || filter === 'all') return true;
   if (role === undefined) return true;
   return filter === role;

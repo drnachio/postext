@@ -5,8 +5,9 @@ use crate::adjust::{adjust_line, badness, fitness_class, ratio};
 use crate::constants::*;
 use crate::items::{ItemKind, Items, flag};
 use crate::node::{Arena, NONE, Node};
-use crate::options::Options;
+use crate::options::{Edge, Options, stack_weight};
 use crate::prefix::Prefix;
+use std::collections::HashMap;
 
 /// One search's settings, derived from the options.
 #[derive(Clone, Copy)]
@@ -16,6 +17,10 @@ pub(crate) struct Pass {
     /// only when it is empty); a search that runs out of nodes gives up
     /// instead of forcing a break.
     pub constrained: bool,
+    /// Keys the nodes also by what a stack's next cost depends on: the
+    /// edges of a node's line (see `looseness::limited`). Gives up past
+    /// [`EXACT_MAX_ACTIVE`] active nodes.
+    pub exact_limits: bool,
 }
 
 /// Every buffer a search uses, kept between searches.
@@ -29,6 +34,9 @@ pub(crate) struct Search {
     candidates: Vec<Node>,
     slot_by_key: Vec<u32>,
     keys: Vec<u32>,
+    /// The exact pass's keys: base key, start word and start characters
+    /// of the line, and the bits of its end edge it holds.
+    slot_by_exact: HashMap<(u32, u32, u32, u32), u32>,
     avoid: Vec<bool>,
 }
 
@@ -39,7 +47,8 @@ pub(crate) fn gates_short(o: &Options, looseness: i32) -> bool {
 
 impl Search {
     /// Runs the search over `items`. Leaves the surviving nodes in
-    /// `active`; false when a constrained search ran out of nodes.
+    /// `active`; false when a constrained search ran out of nodes, or an
+    /// exact one passed [`EXACT_MAX_ACTIVE`] active nodes.
     pub fn run(&mut self, items: &Items, o: &Options, pass: Pass) -> bool {
         let n = items.len();
         let tracking = o.tracking_per_char > 0.0;
@@ -52,7 +61,10 @@ impl Search {
             _ => None,
         };
         self.prefix.fill(items, tracking, gate_short, o.hyphenation_zone.is_some());
-        let Search { prefix: p, arena, active, candidates, slot_by_key, keys, avoid } = self;
+        let rules = &o.rules;
+        let stacks = rules.stack_demerits;
+        let exact = pass.exact_limits && stacks.is_some();
+        let Search { prefix: p, arena, active, candidates, slot_by_key, keys, slot_by_exact, avoid } = self;
         arena.clear();
         active.clear();
         let start = arena.push(Node::start());
@@ -132,6 +144,25 @@ impl Search {
                 };
                 let tracking_cost =
                     if tracking_share > 0.0 { TRACKING_BADNESS * tracking_share * tracking_share } else { 0.0 };
+                // Stacks (#1463): this line and the one before end, or start,
+                // alike, as far as each line holds its edges; demerits added
+                // as two hyphens in a row are.
+                let mut stack_demerits = 0.0;
+                let mut stacked = 0;
+                let mut line_start = Edge::default();
+                let mut line_end = Edge::default();
+                if let Some(sd) = stacks {
+                    line_start = rules.line_start(a.position, i);
+                    line_end = rules.line_end(a.position, i);
+                    if a.position >= 0 && a.previous != NONE {
+                        let before = arena.get(a.previous).position;
+                        let pos = a.position as usize;
+                        let at_end = stack_weight(line_end, rules.line_end(before, pos));
+                        let at_start = stack_weight(line_start, rules.line_start(before, pos));
+                        stack_demerits = sd * f64::from(at_end + at_start);
+                        stacked = u32::from(at_end > 0) + u32::from(at_start > 0);
+                    }
+                }
                 let eff = badness(r) + over_stretch + runt_cost + column_end + tracking_cost;
                 let mut d = if pen >= 0.0 {
                     (1.0 + eff + pen) * (1.0 + eff + pen)
@@ -143,6 +174,7 @@ impl Search {
                 if is_flagged && a.position >= 0 && items.is_flagged_penalty(a.position as usize) {
                     d += o.consecutive_hyphen_demerit;
                 }
+                d += stack_demerits;
                 let fc = fitness_class(r);
                 if (fc as i32 - a.fitness as i32).abs() > 1 {
                     d += o.fitness_class_demerit;
@@ -186,12 +218,28 @@ impl Search {
                     ragged: ragged_lines,
                     total_word_spaces: if gate_short { p.word_spaces[i + 1] } else { 0.0 },
                     total_word_space_width: if gate_short { p.word_space_width[i + 1] } else { 0.0 },
+                    stacks: a.stacks + stacked,
                     previous: id,
                 };
-                offer(candidates, slot_by_key, keys, key, node);
+                if exact {
+                    offer_exact(
+                        candidates,
+                        slot_by_exact,
+                        (key, line_start.word, line_start.chars, line_end.bits()),
+                        node,
+                    );
+                } else {
+                    offer(candidates, slot_by_key, keys, key, node);
+                }
             }
             active.truncate(keep);
+            slot_by_exact.clear();
             commit(arena, active, candidates, slot_by_key, keys);
+            // The exact search gives up past its cap: the merged setting
+            // stands (#1463).
+            if exact && active.len() > EXACT_MAX_ACTIVE {
+                return false;
+            }
 
             // A forced break: no line may run past it.
             if is_penalty && pen <= -KP_INFINITY {
@@ -239,7 +287,7 @@ impl Search {
 }
 
 /// Moves the candidates into the arena and the active list, in the order
-/// their keys were first offered.
+/// their keys were first offered (the order they were pushed in).
 fn commit(
     arena: &mut Arena,
     active: &mut Vec<u32>,
@@ -248,9 +296,10 @@ fn commit(
     keys: &mut Vec<u32>,
 ) {
     for &key in keys.iter() {
-        let slot = slot_by_key[key as usize];
         slot_by_key[key as usize] = NONE;
-        active.push(arena.push(candidates[slot as usize]));
+    }
+    for c in candidates.iter() {
+        active.push(arena.push(*c));
     }
     keys.clear();
     candidates.clear();
@@ -270,6 +319,27 @@ fn offer(candidates: &mut Vec<Node>, slot_by_key: &mut Vec<u32>, keys: &mut Vec<
         keys.push(key);
     } else if candidates[slot as usize].total_demerits > node.total_demerits {
         candidates[slot as usize] = node;
+    }
+}
+
+/// [`offer`] under an exact pass's composite key.
+#[inline]
+fn offer_exact(
+    candidates: &mut Vec<Node>,
+    slot_by_exact: &mut HashMap<(u32, u32, u32, u32), u32>,
+    key: (u32, u32, u32, u32),
+    node: Node,
+) {
+    match slot_by_exact.get(&key) {
+        None => {
+            slot_by_exact.insert(key, candidates.len() as u32);
+            candidates.push(node);
+        }
+        Some(&slot) => {
+            if candidates[slot as usize].total_demerits > node.total_demerits {
+                candidates[slot as usize] = node;
+            }
+        }
     }
 }
 

@@ -163,4 +163,15 @@ export type LayoutWarning =
    *  (`installGlyphProbe`), else against the `cmap` of the files
    *  registered with `registerFontCoverage`; behind
    *  `debug.warnings.missingFont`. No page and no source range. */
-  | { kind: 'glyphFallback'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; count: number; supplier?: string };
+  | { kind: 'glyphFallback'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; count: number; supplier?: string }
+  /** `glyphFallbackAt`: a block that sets characters its face
+   *  has no glyph for — the place a `glyphFallback` does not give. One per
+   *  block, face, page and family that draws them (at most 200 a
+   *  document), pointing at the block: `characters` lists them (each once,
+   *  at most 24), `supplier` the family of the font list that draws them
+   *  (the `symbolFont`), absent for those no family has: the PDF prints
+   *  them as empty boxes. `blockId` is the block's (`VDTBlock.id`), so a
+   *  place with no source range (a float, a margin note) is told
+   *  apart and marked in its block only (#1460). Same checks and switch as
+   *  `glyphFallback`. */
+  | { kind: 'glyphFallbackAt'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; supplier?: string; blockId: string };

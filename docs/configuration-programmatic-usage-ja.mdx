@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'プログラムからの利用',
   description: 'コードからPostextを呼び出す方法。buildDocumentとその警告、既定値、フォント、キャッシュ、そしてWeb Worker',
   lang: 'ja',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '32分',
   order: 21,
   parent: 'configuration',
@@ -374,6 +374,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>リストは段の終わりで切られます。</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>段落の同じ段にある連続した2行が、同じ語または同じ<code>bodyText.stackMinCharacters</code>文字で終わる（<code>edge: 'end'</code>）か始まる（<code>'start'</code>）場合です。<code>text</code>は繰り返された文字列（1行目の表記どおり）、<code>lines</code>は2行の文字列です。<code>bodyText.stacks: 'warn'</code>ではすべての重複を、<code>'avoid'</code>では改行処理が残したものを報告します。重複ごとに1件。2行を指し、そのページが付きます。postext 1.73以降。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>まとめて組むよう指定した目次のグループ（<code>toc.groups.keepTogether</code>、<code>:::toc{'{keep="…"}'}</code>）です。先頭は<code>title</code>で、<code>columns</code>段に組まれています。1段の高さを超えているか、グループが始まる段が短い場合です（ページ幅の囲みの下、フロートの横）。グループごとに1件。<code>:::toc</code>ディレクティブを指し、グループが始まるページが付きます。解消するには、載せるレベルを減らす（<code>levels="1"</code>）、もっと下位のレベルを先頭にする（<code>toc.groups.head: 2</code>）、項目を小さくするか詰めて組む、のいずれかを行います。postext 1.34以降。</td>
       <td>グループは分割されます。<code>toc.groups.continuation</code>が有効なら、続きが入る各段の頭に先頭行と続きの印を組みます。</td>
@@ -397,6 +402,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>glyphFallback</code></td>
       <td>テキストがあるフェイス（<code>family</code>、<code>weight</code>、<code>style</code>）で組んだ文字のうち、そのフェイスにグリフがないもの。<code>characters</code>は最初の24字（各1回）、<code>count</code>は総数、<code>supplier</code>は実際に描いたファミリー（<code>serif</code>のような総称ファミリー）で、システムが選んだフォントで描かれた場合はありません。フェイスごとに1件です。ブラウザーやworkerでは、エンジンがフォントセットに登録するプローブ用のフェイス（<code>installGlyphProbe</code>。<code>prepareFonts</code>とレイアウトworkerが呼びます）に問い合わせます。それ以外の環境では、コマンドラインと同じく<code>registerFontCoverage</code>で登録したファイルの<code>cmap</code>表を読みます。<code>debug.warnings.missingFont</code>で切り替えます。ページもソース範囲もありません。postext 1.52から。</td>
       <td>文字は別のフォントで描かれ、本文のフェイスとデザインや字幅が合わないことがあります。これらの文字を含むファミリーを選んでください。</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>フォントにないグリフの文字を含むブロック。<code>glyphFallback</code> が示さない場所です。ブロック・フォント・ページ・描くファミリーごとに 1 つ（1 文書最大 200）。<code>characters</code> は文字、<code>supplier</code> はそれを描くフォントリストのファミリー（<code>symbolFont</code>）で、どのファミリーにもないものでは省略されます。<code>blockId</code> で示すブロックを指します。<code>symbolFont</code> が描く文字は <code>glyphFallback</code> として報告されません。</td>
+      <td><code>supplier</code> で描かれます。ない場合、PDF では空の四角として印刷されます。それを含む <code>symbolFont</code> を指定してください。</td>
     </tr>
   </tbody>
 </table>
@@ -674,18 +684,21 @@ Postextの状態の一部は、モジュールレベルの変数にあります�
 
 ```ts
 import { buildDocument } from 'postext';
-import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { semanticDocx, facsimileDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
 import { decompressWoff2 } from 'postext-pdf';
 
 const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // 書き出しと読み込みで同じid
 
-// セマンティック：Markdownと設定から、Word自身の構造で。
-const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
-
-// 組版どおり：組んだページを、本のフォントを埋め込んで。
-const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+// 組版どおり：流し込みのテキストを本のデザインで、本のフォントを埋め込んで。
 const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
-const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+const formatted = await semanticDocx({ chapters, config, resources, resourceBytes, fonts, title: 'Field notes' });
+
+// セマンティック：同じテキストを内容だけ、簡素なWordのスタイルで。
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, design: 'plain', title: 'Field notes' });
+
+// ページの複製：組んだページを、各行を固定のテキストボックスに入れて。
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const facsimile = await facsimileDocx({ docs, chapters, resources, resourceBytes, fonts });
 
 // 校正したファイルを、今の本に統合する。
 if (isExportedDocx(edited)) {
@@ -695,8 +708,8 @@ if (isExportedDocx(edited)) {
 }
 ```
 
-- **`semanticDocx(options)`**：`.docx`のバイト列（`Uint8Array`）を返すPromiseです。`chapters`（`{ id, title?, markdown }`）、`config`、画像のバイト列を返す`resourceBytes(fileId)`を伴う`resources`、SVGの横にWordが必要とするPNGを作る`rasterizeSvg(svg, width, height)`（ない場合、SVGは外されます）、`fonts`（`planWordFonts`のプラン）、`title`、`author`、`date`（固定のISO日付でバイト列が再現可能になります）、Wordが独自に組むものを知らせる`onWarning`（`{ code, message, chapter? }`）を受け取ります。数式にはTeXからWordへの変換器が必要で、初めて使うときに読み込まれます。読み込めない場合、数式はTeXのまま残り、`mathUnavailable`の警告が出ます。
-- **`formattedDocx(options)`**：`docs`（`chapters`の順に章ごと1つの`VDTDocument`で、PDFの元になる印刷用のチェーン）と、同じ`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`、`onWarning`を受け取ります。`onProgress(done, total)`は書き出したページを数えます。
+- **`semanticDocx(options)`**：`.docx`のバイト列（`Uint8Array`）を返すPromiseです。`chapters`（`{ id, title?, markdown }`）、`config`、画像のバイト列を返す`resourceBytes(fileId)`を伴う`resources`、SVGの横にWordが必要とするPNGを作る`rasterizeSvg(svg, width, height)`（ない場合、SVGは外されます）、`fonts`（`planWordFonts`のプラン）、`title`、`author`、`date`（固定のISO日付でバイト列が再現可能になります）、Wordが独自に組むものを知らせる`onWarning`（`{ code, message, chapter? }`）を受け取ります。数式にはTeXからWordへの変換器が必要で、初めて使うときに読み込まれます。読み込めない場合、数式はTeXのまま残り、`mathUnavailable`の警告が出ます。`design`は見た目を選びます。`'book'`（既定）はWordでできる範囲で本のデザインどおりに組み、`'plain'`は内容だけを、A4のページ、1段組、Arialで、各部分が何であるかを示すWordのスタイルを使って書き出します。
+- **`facsimileDocx(options)`**：`docs`（`chapters`の順に章ごと1つの`VDTDocument`で、PDFの元になる印刷用のチェーン）と、同じ`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`、`onWarning`を受け取ります。`onProgress(done, total)`は書き出したページを数えます。ページの複製を書き出します。各行をPDFが印刷するとおりに固定のテキストボックスに入れたもので、デスクトップ版のWordでレイアウトを見るためのものです。`formattedDocx`は以前の名前で、そのまま使えます。
 - **`planWordFonts(faces, options)`**：本のフォント（`{ family, weight, style, files }`。WOFF2またはsfnt、unicode-rangeの断片はいくつでも）を、Wordが埋め込む静的なTrueTypeフォントにします。`decompressWoff2`（`postext-pdf`が書き出すもの）でWOFF2を読みます。`usedText`と`fontStrings`は、書き出しで使わない断片とフォントを外します。`familySuffix`（既定は`' PTX'`）は埋め込む各ファミリーに付きます。`warnings`には、外したフォント（`restricted`、`cff`、`variable`、`missing`、`merge-failed`）と、プレビューと印刷だけのために埋め込んだフォント（`preview-print`）が並びます。
 - **`isExportedDocx(bytes)`**：ファイルが書き出しの対応表を持つかどうかを返し、例外は投げません。`readExportMap(files)`は、展開したパーツ（fflateの`unzipSync`）から対応表そのものを読みます。`exportId`、`variant`、`engine`、章とそのハッシュ、書き出したテキストのコピーが入っています。
 - **`applyDocxEdits(bytes, { chapters, resources })`**：同期関数です。校正を反映したすべての章（`chapters`）、キャプション、注、代替テキスト、表のセルが変わったリソースのディープコピー（`resources`）、`edits`、`comments`、`variant`、`exportId`、`changed`を返します。各編集は、`chapter`、または`resourceId`と`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`）、今のテキストでの`start`と`end`、`before`、`after`、`kind`（`text`、`format`、`paragraph`、`tracked`）、そして`status`とその`reason`を持ちます。`status`は`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）、`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`、`resource-removed`）のどれかです。各コメントは`author`、`text`、位置を持ちます（書き出したテキストの上にないコメントでは`start`が-1）。書き出した`.docx`でないファイルは`DocxReadError`を投げます。章のidは書き出したときと同じでなければなりません。知らない章への編集は報告されるだけで、適用されません。
@@ -722,7 +735,7 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 
 ### InDesignパッケージ（`postext/idml`）
 
-`postext/idml`サブパスは、組み上がったページをInDesign Markupのパッケージ（`.idml`）として書き出し、デザイナーがInDesignで本を仕上げられるようにします。組版どおりのWord文書と同じく、ページのディスプレイリストをもとに作り、DOMを使いません。コマンドラインの`idml`は、これを土台にしています（[コマンドライン › idml](/ja/docs/command-line#idml)を参照）。postext 1.71以降。
+`postext/idml`サブパスは、組み上がったページをInDesign Markupのパッケージ（`.idml`）として書き出し、デザイナーがInDesignで本を仕上げられるようにします。Word向けのページの複製と同じく、ページのディスプレイリストをもとに作り、DOMを使いません。コマンドラインの`idml`は、これを土台にしています（[コマンドライン › idml](/ja/docs/command-line#idml)を参照）。postext 1.71以降。
 
 ```ts
 import { buildDocument } from 'postext';

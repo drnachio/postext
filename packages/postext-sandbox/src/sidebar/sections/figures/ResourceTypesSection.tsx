@@ -27,6 +27,7 @@ import { counterFormatOptions, resetOnOptions } from '../../settings/counterOpti
 import { CollapsibleSection, DimensionInput, ItemCard, ItemCardListActions, openCard, NumberInput, SelectInput, ToggleSwitch } from '../../../controls/index.js';
 import { wrapChoiceOf } from '../../settings/textWrap.js';
 import { captionSideOf, captionSideValue } from '../../settings/captionSide.js';
+import { PlacementWidthField } from '../../../panels/resources/PlacementWidthField.js';
 import { Button, ConfirmPopover, IconButton } from '../../../ui/index.js';
 import { FieldRow } from '../../../controls/FieldRow.js';
 import { SearchScope } from '../../search/SearchScope.js';
@@ -360,16 +361,36 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       onReset={() => updateTypePlacement(type, { citingPage: undefined })}
                     />
                   )}
-                  <NumberInput
-                    label={labels.resourceTypePlacementWidth}
-                    value={Math.round((type.defaultPlacement?.width ?? 1) * 100)}
-                    onChange={(v) => updateTypePlacement(type, { width: v >= 100 ? undefined : Math.max(1, v) / 100 })}
-                    min={10}
-                    max={100}
-                    step={5}
-                    suffix="%"
-                    tooltip={labels.resourceTypePlacementWidthTooltip}
+                  {/* A full-page plate (#1461). */}
+                  <ToggleSwitch
+                    label={labels.resourcePlacementPlate}
+                    checked={type.defaultPlacement?.plate !== undefined && type.defaultPlacement.plate !== false}
+                    onChange={(v) => updateTypePlacement(type, { plate: v || undefined })}
+                    tooltip={labels.resourcePlacementPlateTooltip}
+                    isDefault={type.defaultPlacement?.plate === undefined}
+                    onReset={() => updateTypePlacement(type, { plate: undefined })}
+                  />
+                  {type.defaultPlacement?.plate !== undefined && type.defaultPlacement.plate !== false && (
+                    <SelectInput
+                      stacked
+                      label={labels.resourcePlacementPlateArea}
+                      tooltip={labels.resourcePlacementPlateAreaTooltip}
+                      value={(type.defaultPlacement?.plate === 'trim' || type.defaultPlacement?.plate === 'bleed' ? type.defaultPlacement.plate : 'content')}
+                      options={[
+                        { value: 'content', label: labels.resourcePlateAreaContent },
+                        { value: 'trim', label: labels.resourcePlateAreaTrim },
+                        { value: 'bleed', label: labels.resourcePlateAreaBleed },
+                      ]}
+                      onChange={(v) => updateTypePlacement(type, { plate: v === 'trim' || v === 'bleed' ? v : true })}
+                      isDefault={type.defaultPlacement.plate === true}
+                      onReset={() => updateTypePlacement(type, { plate: true })}
+                    />
+                  )}
+                  <PlacementWidthField
+                    value={type.defaultPlacement?.width}
+                    clearAtWhole
                     isDefault={type.defaultPlacement?.width === undefined}
+                    onChange={(w) => updateTypePlacement(type, { width: w })}
                     onReset={() => updateTypePlacement(type, { width: undefined })}
                   />
                   <SelectInput

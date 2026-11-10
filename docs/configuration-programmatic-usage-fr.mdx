@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Utilisation programmatique',
   description: 'Appeler Postext depuis le code : buildDocument et ses avertissements, les valeurs par défaut, les polices, les caches et le Web Worker',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '33 min',
   order: 21,
   parent: 'configuration',
@@ -374,6 +374,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>La liste est coupée là où la colonne se termine.</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>Deux lignes de suite d'un paragraphe, dans une même colonne, qui finissent (<code>edge: 'end'</code>) ou commencent (<code>'start'</code>) par le même mot ou les mêmes <code>bodyText.stackMinCharacters</code> caractères : <code>text</code> est ce qu'elles répètent, tel que la première ligne l'imprime, et <code>lines</code> les deux lignes. Sous <code>bodyText.stacks: 'warn'</code>, chaque répétition est signalée ; sous <code>'avoid'</code>, celles que l'algorithme a gardées. Un par répétition ; pointe sur les deux lignes, avec leur page. Depuis postext 1.73.</td>
+      <td>Les lignes sont composées telles quelles.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Un bloc de la table des matières à garder entier (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), ouvert par <code>title</code>, composé sur <code>columns</code> colonnes : il est plus haut qu’une colonne entière, ou la colonne où il commence est courte (sous un encadré sur toute la largeur de la page, à côté d’un flottant). Un par bloc ; pointe sur la directive <code>:::toc</code>, avec la page où commence le bloc. Pour le faire disparaître, listez moins de niveaux (<code>levels="1"</code>), ouvrez les blocs par un niveau inférieur (<code>toc.groups.head: 2</code>), ou rendez les entrées plus petites ou plus serrées. Depuis postext 1.34.</td>
       <td>Le bloc est coupé ; avec <code>toc.groups.continuation</code>, chaque colonne où il se poursuit s’ouvre sur sa tête et la marque de continuation.</td>
@@ -397,6 +402,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>glyphFallback</code></td>
       <td>Des caractères que le texte compose dans une police (<code>family</code>, <code>weight</code>, <code>style</code>) qui n’a pas de glyphe pour eux : <code>characters</code> donne les 24 premiers, une fois chacun, <code>count</code> leur nombre total et <code>supplier</code> la famille qui les a dessinés (une famille générique comme <code>serif</code>), absent quand c’est une police choisie par le système. Un par police. Dans un navigateur ou un worker, le moteur interroge une police sonde qu’il déclare dans le jeu de polices (<code>installGlyphProbe</code>, qu’appellent <code>prepareFonts</code> et le worker de mise en page) ; ailleurs, il lit la table <code>cmap</code> des fichiers enregistrés avec <code>registerFontCoverage</code>, comme le fait la ligne de commande. Soumis à <code>debug.warnings.missingFont</code>. Sans page ni plage source. Depuis postext 1.52.</td>
       <td>Les caractères sont dessinés avec une autre police, dont le dessin et les chasses peuvent ne pas s’accorder avec la police du texte. Choisissez une famille qui les couvre.</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>Un bloc qui contient des caractères absents de sa police : l’endroit que <code>glyphFallback</code> ne donne pas. Un par bloc, police, page et famille qui les dessine (200 au plus par document) : <code>characters</code> les liste, <code>supplier</code> est la famille de la liste qui les dessine (la <code>symbolFont</code>), absente pour ceux qu’aucune n’a. Pointe vers le bloc, que nomme <code>blockId</code>. Les caractères que dessine la <code>symbolFont</code> ne sont pas signalés comme <code>glyphFallback</code>.</td>
+      <td>Ils sont dessinés avec <code>supplier</code> ; sans elle, le PDF les imprime comme des cases vides. Indiquez une <code>symbolFont</code> qui les contient.</td>
     </tr>
   </tbody>
 </table>
@@ -674,18 +684,21 @@ Le sous-chemin `postext/word` écrit et lit des documents Word (`.docx`) sans DO
 
 ```ts
 import { buildDocument } from 'postext';
-import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { semanticDocx, facsimileDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
 import { decompressWoff2 } from 'postext-pdf';
 
 const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // les mêmes ids à l’export et à l’import
 
-// Sémantique : les structures propres à Word, à partir du Markdown et de la configuration.
-const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
-
-// Mis en page : les pages mises en page, avec les polices du livre incorporées.
-const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+// Mis en page : du texte continu avec la maquette du livre, polices incorporées.
 const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
-const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+const formatted = await semanticDocx({ chapters, config, resources, resourceBytes, fonts, title: 'Field notes' });
+
+// Sémantique : le même texte en contenu seul, dans des styles Word simples.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, design: 'plain', title: 'Field notes' });
+
+// Fac-similé des pages : les pages mises en page, chaque ligne dans une zone de texte fixe.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const facsimile = await facsimileDocx({ docs, chapters, resources, resourceBytes, fonts });
 
 // Le fichier corrigé, fusionné avec le livre tel qu’il est maintenant.
 if (isExportedDocx(edited)) {
@@ -695,8 +708,8 @@ if (isExportedDocx(edited)) {
 }
 ```
 
-- **`semanticDocx(options)`** se résout en octets du `.docx` (un `Uint8Array`). Elle reçoit `chapters` (`{ id, title?, markdown }`), `config`, `resources` avec `resourceBytes(fileId)` pour les octets de leurs images, `rasterizeSvg(svg, width, height)` pour le PNG dont Word a besoin à côté d’un SVG (sans elle, un SVG est laissé de côté), `fonts` (un plan de `planWordFonts`), `title`, `author`, `date` (une date ISO fixe rend les octets reproductibles) et `onWarning` pour ce que Word compose à sa façon (`{ code, message, chapter? }`). Les formules ont besoin du convertisseur TeX vers Word, chargé à la première utilisation ; s’il ne peut pas se charger, elles restent en TeX, avec un avertissement `mathUnavailable`.
-- **`formattedDocx(options)`** reçoit `docs`, un `VDTDocument` par chapitre dans l’ordre de `chapters` (la chaîne d’impression dont sort le PDF), et les mêmes `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` et `onWarning`. `onProgress(done, total)` compte les pages écrites.
+- **`semanticDocx(options)`** se résout en octets du `.docx` (un `Uint8Array`). Elle reçoit `chapters` (`{ id, title?, markdown }`), `config`, `resources` avec `resourceBytes(fileId)` pour les octets de leurs images, `rasterizeSvg(svg, width, height)` pour le PNG dont Word a besoin à côté d’un SVG (sans elle, un SVG est laissé de côté), `fonts` (un plan de `planWordFonts`), `title`, `author`, `date` (une date ISO fixe rend les octets reproductibles) et `onWarning` pour ce que Word compose à sa façon (`{ code, message, chapter? }`). Les formules ont besoin du convertisseur TeX vers Word, chargé à la première utilisation ; s’il ne peut pas se charger, elles restent en TeX, avec un avertissement `mathUnavailable`. `design` choisit l’aspect : `'book'` (par défaut) compose le texte avec la maquette du livre autant que Word le permet, et `'plain'` écrit le contenu seul, sur une page A4 à une colonne et en Arial, dans des styles Word qui disent ce qu’est chaque partie.
+- **`facsimileDocx(options)`** reçoit `docs`, un `VDTDocument` par chapitre dans l’ordre de `chapters` (la chaîne d’impression dont sort le PDF), et les mêmes `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` et `onWarning`. `onProgress(done, total)` compte les pages écrites. Elle écrit le fac-similé des pages : chaque ligne dans une zone de texte fixe, telle que le PDF l’imprime, pour regarder la mise en page dans Word pour ordinateur. `formattedDocx` est son ancien nom, conservé.
 - **`planWordFonts(faces, options)`** transforme les polices du livre (`{ family, weight, style, files }` : WOFF2 ou sfnt, en autant de tranches unicode-range qu’il y en a) en polices TrueType statiques que Word incorpore. `decompressWoff2` (celui qu’exporte `postext-pdf`) lit le WOFF2 ; `usedText` et `fontStrings` laissent de côté les tranches et les polices que l’export n’utilise pas ; `familySuffix` (par défaut `' PTX'`) est ajouté à chaque famille incorporée. Ses `warnings` nomment les polices laissées de côté (`restricted`, `cff`, `variable`, `missing`, `merge-failed`) et celles incorporées pour l’aperçu et l’impression seulement (`preview-print`).
 - **`isExportedDocx(bytes)`** dit si un fichier porte la carte d’export, et ne lève jamais d’erreur. `readExportMap(files)` lit la carte elle-même dans les parties décompressées (`unzipSync` de fflate) : `exportId`, `variant`, `engine`, les chapitres avec leurs empreintes et la copie du texte exporté.
 - **`applyDocxEdits(bytes, { chapters, resources })`** est synchrone. Elle renvoie tous les chapitres, corrections appliquées (`chapters`), des copies profondes des ressources dont la légende, la note, le texte alternatif ou les cellules de tableau ont changé (`resources`), `edits`, `comments`, `variant`, `exportId` et `changed`. Chaque modification a `chapter`, ou `resourceId` et `field` (`caption`, `note`, `alt`, `cell:<ligne>:<colonne>`) ; `start` et `end` dans le texte actuel ; `before`, `after` ; `kind` (`text`, `format`, `paragraph`, `tracked`) ; et `status` avec sa `reason` : `applied`, `conflict` (`changed-since-export`, `target-missing`, `no-snapshot`, `overlap`) ou `rejected` (`generated`, `format-crosses-markup`, `format-partial`, `bookmarks-lost`, `resource-removed`). Chaque commentaire a son `author`, son `text` et sa place (`start` vaut -1 pour un commentaire qui ne porte sur aucun texte exporté). Un fichier qui n’est pas un `.docx` exporté lève une `DocxReadError`. Les ids de chapitre doivent être ceux de l’export : une modification d’un chapitre inconnu est signalée, pas appliquée.
@@ -722,7 +735,7 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 
 ### Paquets InDesign (`postext/idml`)
 
-Le sous-chemin `postext/idml` écrit les pages mises en page en paquet InDesign Markup (`.idml`), pour qu’un graphiste finisse le livre dans InDesign. Comme le document Word mis en page, il repose sur la liste d’affichage de la page, sans DOM. La commande `idml` de la ligne de commande repose sur lui (voir [Ligne de commande › idml](/fr/docs/command-line#idml)). Depuis postext 1.71.
+Le sous-chemin `postext/idml` écrit les pages mises en page en paquet InDesign Markup (`.idml`), pour qu’un graphiste finisse le livre dans InDesign. Comme le fac-similé des pages pour Word, il repose sur la liste d’affichage de la page, sans DOM. La commande `idml` de la ligne de commande repose sur lui (voir [Ligne de commande › idml](/fr/docs/command-line#idml)). Depuis postext 1.71.
 
 ```ts
 import { buildDocument } from 'postext';

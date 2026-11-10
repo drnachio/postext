@@ -42,6 +42,8 @@ export interface OutputRecord {
   path: string;
   bytes?: number;
   pages?: number;
+  /** The Word file's variant (`docx`). */
+  variant?: string;
 }
 
 export type LogLevel = 'quiet' | 'normal' | 'verbose';

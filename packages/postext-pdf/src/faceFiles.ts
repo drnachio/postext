@@ -32,6 +32,8 @@
 import type { PDFFont } from 'pdf-lib';
 import { mirroredCodePoint } from 'postext';
 import { isDefaultIgnorable, isFallbackHandled, substituteGlyph } from './pdf-backend/text/fallbackSpaces.js';
+import { fontHas, symbolFaceOf, withSymbolRuns } from './symbolRuns.js';
+export { linkSymbolFace } from './symbolRuns.js';
 import { besideLetterOf, shapesAsCanvas, shapingScript, shapingScriptLetter, withBesideLetter, withinWideText } from './shapingLanguage.js';
 import { canvasWords } from './canvasWords.js';
 import { parseUnicodeRange, rangesHold, type CodePointRanges } from './unicodeRange.js';
@@ -258,6 +260,21 @@ export interface FileRun {
  * and none of the rules above that guess at the browser's file apply.
  */
 export function fileRuns(font: PDFFont, text: string, rtl = false): FileRun[] {
+  const runs = faceRuns(font, text, rtl);
+  const symbols = symbolFaceOf(font);
+  if (!symbols) return runs;
+  // The symbol font (`symbolFont`, #1460) sets what no file of the face
+  // has, each character from the file of the symbol face that has it.
+  const list = faceFilesOf(font);
+  const symbolList = faceFilesOf(symbols);
+  return withSymbolRuns(runs, {
+    faceHas: (cp) => (list ? list.fileFor(cp) !== null : fontHas(font, cp)),
+    symbolsHave: (cp) => (symbolList ? symbolList.fileFor(cp) !== null : fontHas(symbols, cp)),
+    split: (piece) => faceRuns(symbols, piece, rtl),
+  });
+}
+
+function faceRuns(font: PDFFont, text: string, rtl: boolean): FileRun[] {
   const list = faceFilesOf(font);
   if (!list) return [{ font, text }];
   if (setsAsDeclared(list)) return besideLetters(declaredRuns(list, font, text, rtl), text, font);

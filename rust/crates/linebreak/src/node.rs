@@ -26,6 +26,8 @@ pub(crate) struct Node {
     pub ragged: u32,
     pub total_word_spaces: f64,
     pub total_word_space_width: f64,
+    /// Stacks the chain sets (#1463).
+    pub stacks: u32,
     pub previous: u32,
 }
 

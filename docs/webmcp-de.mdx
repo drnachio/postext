@@ -581,9 +581,9 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
   `markdown` oder `config`. Standardmäßig lädt der Browser die Datei herunter;
   mit `deliver: "data"` kommt ein PDF, ein EPUB oder eine Word-Datei
   base64-kodiert an den Agenten zurück. Bei `docx` wählt `variant` zwischen
-  `semantic` (Voreinstellung: Überschriften, Listen, Anmerkungen und Tabellen
-  von Word selbst) und `formatted` (die Seiten, wie das PDF sie druckt, mit
-  eingebetteten Schriften):
+  `formatted` (Voreinstellung: bearbeitbarer Text im Design des Buchs, mit
+  eingebetteten Schriften) und `semantic` (der Inhalt allein, in schlichten
+  Word-Formatvorlagen):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

@@ -16,15 +16,17 @@
 
 import { layoutColumnCount } from '../../../defaults/layout.js';
 import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
-import { createHeadingLevelResolver, type HeadingLevelResolver } from '../../../pipeline/sections/headingStyles.js';
+import { createHeadingLevelResolver, deriveSectionGeometryConfig, type HeadingLevelResolver } from '../../../pipeline/sections/headingStyles.js';
 import type { ContentBlock } from '../../../parse/types.js';
 import type { ResolvedConfig } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
 import { joinBlocks, type Node } from '../blocks.js';
-import { headingFillsPage, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
+import { headingFillsPage, multiColumn, pageGeometry, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
+import { styledSectionAt } from '../page/furniture.js';
 import { pPr, twips } from '../wml.js';
 import { dropRedundantBreaks, isBreak } from './breaks.js';
 import { headsChange, isComposedPage } from '../page/composed.js';
+import { pageFootOf } from '../design/foot.js';
 
 /** A block's XML and what it asks of its section. */
 export interface Piece {
@@ -91,14 +93,62 @@ export function spansPage(ctx: WriterContext, node: Node): boolean {
  *  one (a left-hand start leaves a blank page in Word, as at a chapter's
  *  start); none when the heading does not break the page. */
 export function headingStart(ctx: WriterContext, b: ContentBlock): Piece['start'] {
-  if (b.type !== 'heading') return undefined;
+  // The plain design has one section a chapter: a chapter title opens its
+  // page by its style alone.
+  if (ctx.plain || b.type !== 'heading') return undefined;
   const bb = headingLevel(ctx, b)?.breakBefore;
   if (!bb?.enabled) return undefined;
   return bb.parity === 'odd' || bb.parity === 'always-odd' ? 'oddPage' : 'nextPage';
 }
 
+/** Left and right page margins, twips. */
+export interface Sides {
+  left: number;
+  right: number;
+}
+
+const bookGeometry = new WeakMap<WriterContext, PageGeometry>();
+
+/**
+ * The left and right margins of the pages block `block` stands on, when
+ * its styled section sets them inside the book's and so widens the
+ * measure: an exam's cover across the whole sheet, in a paper whose other
+ * pages keep a margin free for the marker. Only where the style's heading
+ * opens a page (the chapter's first block, or a heading that breaks the
+ * page), in a book of one column. A style that narrows the measure keeps
+ * the book's: its heading's design is written in the flow and needs the
+ * room (#1458).
+ */
+export function sideMargins(ctx: WriterContext, chapter: number, block: ContentBlock | undefined): Sides | undefined {
+  if (ctx.plain || !block) return undefined;
+  const at = styledSectionAt(ctx, chapter, block);
+  if (!at?.style.margins) return undefined;
+  let geo = bookGeometry.get(ctx);
+  if (!geo) bookGeometry.set(ctx, (geo = pageGeometry(ctx.resolved, ctx.units)));
+  if (multiColumn(geo)) return undefined;
+  const before = ctx.book[chapter]?.blocks.slice(0, at.index) ?? [];
+  const opens = before.every((b) => b.type === 'directive') || headingStart(ctx, at.heading) !== undefined;
+  if (!opens) return undefined;
+  const own = pageGeometry(deriveSectionGeometryConfig(ctx.resolved, at.style), ctx.units).margins;
+  const sides = { left: Math.min(geo.margins.left, own.left), right: Math.min(geo.margins.right, own.right) };
+  return sides.left === geo.margins.left && sides.right === geo.margins.right ? undefined : sides;
+}
+
+/** The width of the text column where block `block` stands, twips, when
+ *  its styled section widens it (see {@link sideMargins}). */
+export function widenedTwips(ctx: WriterContext, block: ContentBlock | undefined): number | undefined {
+  const sides = sideMargins(ctx, ctx.chapter.index, block);
+  if (!sides) return undefined;
+  const geo = bookGeometry.get(ctx)!;
+  return geo.textTwips + (geo.margins.left - sides.left) + (geo.margins.right - sides.right);
+}
+
 /** A paragraph that only closes a section: no room of its own to speak
- *  of, so it adds no blank line where the columns change. */
+ *  of, so it adds no blank line where the columns change, and a chapter
+ *  that ends at the foot of a page sends no empty line to the next one.
+ *  Its mark is not hidden to take even that point away: LibreOffice then
+ *  loses the page break of the section after it and sets the next chapter
+ *  on the same page (#1458). */
 function sectionBreak(sect?: string): string {
   return `<w:p>${pPr({ before: 0, after: 0, line: { twips: 20, rule: 'exact' }, ind: { firstLine: 0 }, markRPr: '<w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr>', ...(sect ? { sectPr: sect } : {}) })}</w:p>`;
 }
@@ -141,13 +191,37 @@ function chapterTitleStyle(ctx: WriterContext, pieces: readonly Piece[]): string
   return styles.size === 1 && only ? ctx.styles.nameOf(only) : undefined;
 }
 
-/** Whether a section ends with the contents or the index field. Its
- *  columns are not levelled: LibreOffice cannot balance a field's result
- *  and sends the empty levelling section to a page of its own (#1444). */
+/** Whether a section ends with the contents or the index field, or with a
+ *  table (a box, a table of figures). Its columns are not levelled:
+ *  LibreOffice cannot balance a field's result or a row that does not
+ *  split, and sends the empty levelling section to a page of its own, a
+ *  blank page under the running head (#1444, #1458). */
 function endsWithListing(parts: readonly string[]): boolean {
   const last = [...parts].reverse().find((x) => x);
-  return !!last && (last.includes('<w:tag w:val="ptx:index"/>') || last.includes('<w:tag w:val="ptx:toc"/>'));
+  return !!last && (last.includes('<w:tag w:val="ptx:index"/>') || last.includes('<w:tag w:val="ptx:toc"/>') || endsInTable(last));
 }
+
+const SDT_END = '</w:sdtContent></w:sdt>';
+
+/** Whether a piece ends in a table once the empty paragraphs after it
+ *  and the content controls around it are set aside, however they nest
+ *  (a composed page's last box, with its room under it, inside the
+ *  page's own control). */
+export function endsInTable(xml: string): boolean {
+  let tail = xml.slice(-8000);
+  for (;;) {
+    if (tail.endsWith(SDT_END)) tail = tail.slice(0, -SDT_END.length);
+    else {
+      const bare = tail.replace(EMPTY_TAIL, '');
+      if (bare === tail) break;
+      tail = bare;
+    }
+  }
+  return tail.endsWith('</w:tbl>');
+}
+
+/** The empty paragraphs a piece ends with (the room under a box). */
+const EMPTY_TAIL = /(?:<w:p>(?:<w:pPr>(?:(?!<\/w:pPr>)[\s\S])*<\/w:pPr>)?<\/w:p>)+$/;
 
 /**
  * The chapter's body as sections: pieces grouped by the column layout they
@@ -161,7 +235,10 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
   // for one that opens with no block of its own (a page-width float set
   // after its anchor) the last block before it, so its running heads are
   // the ones in force there; `tail`: the last block written in it.
-  type Section = { start: SectionStart; oneColumn: boolean; parts: string[]; block?: ContentBlock; leads?: boolean; tail?: ContentBlock };
+  type Section = { start: SectionStart; oneColumn: boolean; parts: string[]; block?: ContentBlock; leads?: boolean; tail?: ContentBlock; sides?: Sides };
+  const sidesKey = (s: Sides | undefined): string => (s ? `${s.left}/${s.right}` : '');
+  /** The last piece written was a `:::pagebreak`. */
+  let broke = false;
   const sections: Section[] = [];
   let after: Piece | undefined;
   let seen: ContentBlock | undefined;
@@ -174,20 +251,31 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     // So does a composed page that prints other running heads than the
     // page before it, and the page after it (see page/composed.ts).
     const heads = (isComposedPage(piece.block) || isComposedPage(seen)) && headsChange(ctx, seen, piece.block);
-    const p = !piece.start && (headingFillsPage(ctx, after?.block) || heads) ? { ...piece, start: 'nextPage' as const } : piece;
+    // A page whose design sets a band at its foot is a section of its
+    // own: the band's text stands in its footer (design/foot.ts).
+    const footed = !!pageFootOf(ctx, piece.block) || !!pageFootOf(ctx, after?.block);
+    const p = !piece.start && (headingFillsPage(ctx, after?.block) || heads || footed) ? { ...piece, start: 'nextPage' as const } : piece;
     after = piece;
     const oneColumn = columns && !!p.span;
     const cur = sections[sections.length - 1];
+    // The side margins of the piece's pages (a styled section that widens
+    // the measure): where they change, a section of its own.
+    const sides = p.block ? sideMargins(ctx, index, p.block) : cur?.sides;
+    const turned = !!cur && sidesKey(sides) !== sidesKey(cur.sides);
+    const afterBreak = broke;
+    broke = piece.block?.type === 'directive' && piece.block.directiveName === 'pagebreak';
     const block = p.block ? { block: p.block, leads: true } : seen ? { block: seen, leads: false } : {};
     seen = p.block ?? seen;
     const tail = seen ? { tail: seen } : {};
     if (!cur) {
       // The chapter's own start already opens the page.
-      sections.push({ start: 'chapter', oneColumn, parts: [p.xml], ...block, ...tail });
+      sections.push({ start: 'chapter', oneColumn, parts: [p.xml], ...block, ...tail, ...(sides ? { sides } : {}) });
       continue;
     }
-    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml], ...block, ...tail });
-    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml], ...block, ...tail });
+    const own = sides ? { sides } : {};
+    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml], ...block, ...tail, ...own });
+    else if (turned) sections.push({ start: afterBreak ? 'nextPage' : 'continuous', oneColumn, parts: [p.xml], ...block, ...tail, ...own });
+    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml], ...block, ...tail, ...own });
     else {
       cur.parts.push(p.xml);
       if (!cur.block && p.block) cur.block = p.block;
@@ -202,7 +290,7 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
   let xml = '';
   sections.forEach((s, i) => {
     const follow = sections[i + 1]?.start === 'continuous' ? sections[i + 1]!.block : undefined;
-    const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}), ...(follow ? { follow } : {}) });
+    const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}), ...(follow ? { follow } : {}), ...(s.sides ? { sides: s.sides } : {}) });
     let body = joinBlocks(s.parts);
     // A page-wide table set where the columns stop keeps half a line from
     // the text above it, as the print does, instead of touching it.
@@ -212,7 +300,12 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     // balances a section's columns only above a continuous break, so an
     // empty one-column section follows them on their page.
     const next = sections[i + 1];
-    if (levels && !s.oneColumn && (!next || next.start !== 'continuous') && !endsWithListing(s.parts)) {
+    // What follows the section starts a new page: the room a box leaves
+    // under it would only be room at the foot of the page, or a line on
+    // the next one when the box ends where the page does.
+    const closes = !next || next.start !== 'continuous';
+    if (closes) body = body.replace(EMPTY_TAIL, '');
+    if (levels && !s.oneColumn && closes && !endsWithListing(s.parts)) {
       body += sectionBreak(sect);
       // Its running heads are the ones in force where the columns end.
       const level = sectionXml(ctx, geo, index, { start: 'continuous', oneColumn: true, ...(s.tail ? { block: s.tail, leads: false } : {}), ...(titleStyle ? { titleStyle } : {}) });
@@ -221,7 +314,7 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
       return;
     }
     if (next) xml += body + sectionBreak(sect);
-    else xml += last ? body + sect : `${body}<w:p>${pPr({ sectPr: sect })}</w:p>`;
+    else xml += last ? body + sect : body + sectionBreak(sect);
   });
   return xml;
 }

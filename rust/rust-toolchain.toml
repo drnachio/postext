@@ -1,0 +1,9 @@
+# The toolchain the WebAssembly line breaker is built with (#1463):
+# packages/postext/src/knuthPlass/wasm/bytes.generated.ts is rebuilt with
+# it, and CI rebuilds it with it and fails when the bytes differ. Change it
+# only together with a rebuild (node rust/scripts/build-wasm.mjs).
+[toolchain]
+channel = "1.99.0"
+targets = ["wasm32-unknown-unknown"]
+components = ["clippy", "rustfmt"]
+profile = "minimal"

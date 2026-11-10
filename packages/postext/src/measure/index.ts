@@ -7,7 +7,7 @@ import { hasCompound } from './breakRules.js';
 
 export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types.js';
 export { lineIndentAt, maxLineIndent } from './types.js';
-export { buildFontString, initHyphenator, clearMeasurementCache, createMeasurementCache, evictFontFamilies } from './font.js';
+export { buildFontString, setSymbolFont, symbolFont, withSymbolFont, initHyphenator, clearMeasurementCache, createMeasurementCache, evictFontFamilies } from './font.js';
 export { measurementGeneration } from './canvas.js';
 export { parseFontString, fontStringFamily } from './fontString.js';
 export type { FontFaceRequest } from './fontString.js';

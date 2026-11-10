@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Capçaleres i peus de pàgina',
   description: "Què s'imprimeix a dalt i a baix de cada pàgina (text amb marcadors, filets, caixes, imatges i traçats vectorials), com canvia segons si la pàgina és parella o senar, i on es col·loca cada element",
   lang: 'ca',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '33 min',
   order: 6,
   parent: 'configuration',
@@ -104,9 +104,9 @@ Els valors per defecte de la taula següent són els d'un element de text que af
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>En quins <em>rols</em> de pàgina apareix l'element, combinat amb <code>parity</code>. Després de la col·locació, cada pàgina es classifica com a <code>'blank'</code> (pàgina afegida per paritat o com a separador, o sense contingut), <code>'part'</code> (pàgina divisòria de part), <code>'opener'</code> (el primer bloc és un encapçalament amb un nivell que ocupa l'amplada de la pàgina o que força un salt de pàgina abans: la primera pàgina d'un capítol), <code>'comic'</code> (una pàgina de còmic, <code>:::page</code>), <code>'composed'</code> (una pàgina composta, o el <code>role</code> que indica la seva plantilla) o <code>'body'</code> (la resta). <code>pages: 'body'</code> amaga una capçalera a les obertures de capítol; <code>pages: 'opener'</code> mostra un foli només allà.</td>
+      <td>En quins <em>rols</em> de pàgina apareix l'element, combinat amb <code>parity</code>. Després de la col·locació, cada pàgina es classifica com a <code>'blank'</code> (pàgina afegida per paritat o com a separador, o sense contingut), <code>'part'</code> (pàgina divisòria de part), <code>'opener'</code> (el primer bloc és un encapçalament amb un nivell que ocupa l'amplada de la pàgina o que força un salt de pàgina abans: la primera pàgina d'un capítol), <code>'comic'</code> (una pàgina de còmic, <code>:::page</code>), <code>'composed'</code> (una pàgina composta, o el <code>role</code> que indica la seva plantilla) o <code>'body'</code> (la resta). <code>pages: 'body'</code> amaga una capçalera a les obertures de capítol; <code>pages: 'opener'</code> mostra un foli només allà. Una pàgina que una làmina cobreix a tall o a sang (<code>placement.plate: 'trim' | 'bleed'</code>) és <code>'plate'</code>: només s'hi dibuixa un element el <code>pages</code> del qual anomena aquest rol, i no els de <code>'all'</code>.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -531,7 +531,7 @@ Els elements de filet dibuixen una línia: horitzontal, al llarg de l'amplada de
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Rols de pàgina en què apareix el filet (vegeu el camp <code>pages</code> dels elements de text).</td>
     </tr>
@@ -620,7 +620,7 @@ Els elements de caixa pinten un rectangle arrodonit dins de la zona, útil com a
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Rols de pàgina en què apareix la caixa (vegeu el camp <code>pages</code> dels elements de text).</td>
     </tr>

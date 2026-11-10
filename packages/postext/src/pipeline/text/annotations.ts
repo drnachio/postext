@@ -50,9 +50,14 @@ const CJK_EMPHASIS_RE = /^[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Bopomof
 
 /** `font` at `sizePx`, its style, weight and family kept. */
 export function fontAtSize(font: string, sizePx: number): string {
-  const m = /^(.*?)(\d*\.?\d+)px(\s*\/\s*[^\s]+)?\s+(.+)$/.exec(font);
+  // The first size in the string (a match starts only where a number
+  // starts), its line height dropped; read in linear time, unlike a lazy
+  // prefix before an unanchored number (CodeQL polynomial ReDoS).
+  const m = /(?<![\d.])(?:\d+(?:\.\d+)?|\.\d+)px(?:\s*\/\s*\S+)?\s+/.exec(font);
   if (!m) return font;
-  return `${m[1]}${sizePx}px ${m[4]}`;
+  const family = font.slice(m.index + m[0].length);
+  if (family === '') return font;
+  return `${font.slice(0, m.index)}${sizePx}px ${family}`;
 }
 
 /** What `cjk.emphasisMark` fills in on an emphasis mark that leaves it

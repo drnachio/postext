@@ -119,6 +119,12 @@ function tokenDiff(a: string, b: string, lines: boolean, maxD: number): Hunk[] |
   return out;
 }
 
+/** The hunks that turn one list of token ids into another (one hunk for
+ *  the whole when they differ past any use). */
+export function diffTokens(a: ArrayLike<number>, b: ArrayLike<number>): Hunk[] {
+  return myers(a, b, 20000) ?? [{ a0: 0, a1: a.length, b0: 0, b1: b.length }];
+}
+
 /** The hunks that turn `a` into `b`, in order. Empty when equal. */
 export function diffText(a: string, b: string): Hunk[] {
   if (a === b) return [];

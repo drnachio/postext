@@ -186,11 +186,11 @@ function registeredCoverage(family: string, weight: number, style: 'normal' | 'i
 /** A character no face is asked for: spaces, controls, format characters
  *  (joiners, soft hyphens, bidi marks), combining marks and variation
  *  selectors, which go with the letter before them. */
-const SKIPPED = /^[\p{Z}\p{Cc}\p{Cf}\p{M}\p{Cs}]$/u;
+export const SKIPPED = /^[\p{Z}\p{Cc}\p{Cf}\p{M}\p{Cs}]$/u;
 
-type Add = (font: string | undefined, text: string | undefined) => void;
+export type Add = (font: string | undefined, text: string | undefined) => void;
 
-function addLines(lines: readonly VDTLine[] | undefined, normal: string | undefined, bold: string | undefined, italic: string | undefined, boldItalic: string | undefined, add: Add): void {
+export function addLines(lines: readonly VDTLine[] | undefined, normal: string | undefined, bold: string | undefined, italic: string | undefined, boldItalic: string | undefined, add: Add): void {
   if (!lines) return;
   for (const line of lines) {
     const segments = line.segments;
@@ -264,7 +264,7 @@ export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
 
 // --- The check -------------------------------------------------------------
 
-type HasGlyph = (family: string, weight: number, style: 'normal' | 'italic', ch: string) => boolean | undefined;
+export type HasGlyph = (family: string, weight: number, style: 'normal' | 'italic', ch: string) => boolean | undefined;
 type SupplierOf = (face: FontFaceRequest, ch: string) => string | undefined;
 
 export interface GlyphFallbackOptions {
@@ -280,6 +280,17 @@ export interface GlyphFallbackOptions {
   /** Faces left out (a face the font set could not give at all is
    *  reported as a `fontFallback`, not character by character). */
   skip?: ReadonlySet<string>;
+  /** The document's `symbolFont` (#1460): the characters it draws are
+   *  drawn where the document asked, so no family is advised for them
+   *  (`glyphFallbackAt` still says where they are). */
+  symbolFont?: string;
+}
+
+/** Whether `symbolFont` draws `ch` for a face of `weight` and `style`: in
+ *  that cut, or in its regular face, the one every output loads (#1460). */
+export function symbolFontHas(hasGlyph: HasGlyph, symbolFont: string | undefined, weight: number, style: 'normal' | 'italic', ch: string): boolean {
+  if (!symbolFont) return false;
+  return hasGlyph(symbolFont, weight, style, ch) === true || hasGlyph(symbolFont, 400, 'normal', ch) === true;
 }
 
 const GENERIC_SUPPLIERS = ['serif', 'sans-serif', 'monospace'] as const;
@@ -289,7 +300,7 @@ const faceFont = (face: FontFaceRequest, family: string): string =>
 
 /** The default sources (see the module comment): the probe where it is
  *  declared, else the registered files; undefined when there is neither. */
-function defaultSources(): { hasGlyph: HasGlyph; supplierOf?: SupplierOf } | undefined {
+export function defaultSources(): { hasGlyph: HasGlyph; supplierOf?: SupplierOf } | undefined {
   if (probeReady()) {
     return {
       hasGlyph: probeHas,
@@ -342,6 +353,8 @@ export function glyphFallbacks(docs: VDTDocument | readonly VDTDocument[], optio
         let e = found.get(key);
         if (e?.seen.has(ch)) continue;
         if (hasGlyph(face.family, face.weight, face.style, ch) !== false) continue;
+        // Set in the symbol font, as the document asked: nothing to advise.
+        if (symbolFontHas(hasGlyph, options.symbolFont, face.weight, face.style, ch)) continue;
         if (!e) {
           found.set(key, (e = { face, chars: [], seen: new Set(), suppliers: new Set() }));
           order.push(key);

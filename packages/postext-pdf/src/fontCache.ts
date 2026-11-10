@@ -2,7 +2,8 @@ import { cssWeightOrder, featureFamilyParts } from 'postext';
 import { padTrueTypeGlyphs } from './trueTypePadding.js';
 import { type PDFFont, type PDFDocument, PDFDict, PDFName, PDFRef, PDFStream } from 'pdf-lib';
 import { fontKey, parseFontString } from './fontString.js';
-import { type FileDeclaration, registerFaceFiles, wantsGlyph, missingGlyphsOf } from './faceFiles.js';
+import { type FileDeclaration, registerFaceFiles, wantsGlyph, missingGlyphsOf, linkSymbolFace } from './faceFiles.js';
+import { symbolFaceCandidates } from './symbolRuns.js';
 import { registerFontFamily } from './fontFamilies.js';
 import { verticalTwinRefOf } from './verticalFonts.js';
 import { shapeInCurrentLanguage } from './shapingLanguage.js';
@@ -226,6 +227,29 @@ export class FontCache {
     return face.growing;
   }
 
+  /** Load the family a face falls back to (`symbolFont`, #1460) and set
+   *  it to draw what the face's files lack: its regular face, the one the
+   *  canvas loads (`collectFontUsage`), for every weight and slant of the
+   *  text, so screen and PDF set those characters from the same file. At
+   *  most {@link symbolFaceCandidates} are asked, once a document (a load
+   *  is kept, a rejection too); a provider that has none leaves the face as
+   *  it is and those characters are reported missing. */
+  private async attachSymbolFont(key: string, family: string, codePoints: ReadonlySet<number>): Promise<void> {
+    const primary = this.map.get(key);
+    if (!primary) return;
+    // Only the characters no file of the text face has: the symbol face
+    // is not fetched (or grown) for the rest, nor at all when it sets none.
+    const files = this.faces.find((f) => f.primary === primary)?.files;
+    const lacking = new Set([...codePoints].filter((cp) => wantsGlyph(cp) && !(files ? files.fileFor(cp) : null)));
+    if (lacking.size === 0 && codePoints.size > 0) return;
+    for (const candidate of symbolFaceCandidates(family)) {
+      const face = await this.loadFace(candidate, lacking);
+      if (!face) continue;
+      linkSymbolFace(primary, face.primary);
+      return;
+    }
+  }
+
   /** Report a variable font asked for at a weight other than its default
    *  instance, the one pdf-lib embeds. */
   private checkVariableWeight(face: LoadedFace): void {
@@ -243,7 +267,7 @@ export class FontCache {
    * asked again, except a sliced one for characters its files lack.
    */
   async preloadFontStrings(fontStrings: Iterable<string | undefined> | ReadonlyMap<string, ReadonlySet<number>>): Promise<void> {
-    const jobs = new Map<string, { spec: FaceSpec; codePoints: Set<number> }>();
+    const jobs = new Map<string, { spec: FaceSpec; codePoints: Set<number>; symbols?: string }>();
     const entries: Iterable<[string | undefined, ReadonlySet<number> | undefined]> = fontStrings instanceof Map
       ? (fontStrings as ReadonlyMap<string, ReadonlySet<number>>).entries()
       : Array.from(fontStrings as Iterable<string | undefined>, (fs): [string | undefined, undefined] => [fs, undefined]);
@@ -258,6 +282,9 @@ export class FontCache {
         jobs.set(key, job);
       }
       for (const cp of codePoints ?? []) job.codePoints.add(cp);
+      // The family the face falls back to (`symbolFont`).
+      const symbols = parsed.fallbacks?.find((f) => f.toLowerCase() !== parsed.family.toLowerCase());
+      if (symbols) job.symbols = symbols;
     }
 
     // Every face is asked of the provider at once, but embedded one after
@@ -272,7 +299,7 @@ export class FontCache {
       answer.catch(() => {});
       this.prefetched.set(key, answer);
     }
-    for (const [key, { spec, codePoints }] of jobs) {
+    for (const [key, { spec, codePoints, symbols }] of jobs) {
       await (async () => {
         if (this.map.has(key)) {
           // Loaded before (another chapter, a picture's text): a sliced
@@ -303,6 +330,7 @@ export class FontCache {
         this.failed.add(`${spec.family} ${spec.weight}${spec.style === 'italic' ? ' italic' : ''}`);
         this.map.set(key, null);
       })();
+      if (symbols) await this.attachSymbolFont(key, symbols, codePoints);
     }
   }
 

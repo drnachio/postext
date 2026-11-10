@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Cabeceras y pies de página',
   description: 'Qué se imprime en la cabecera y al pie de cada página: textos con marcadores, filetes, cajas, imágenes y trazados vectoriales, según la página sea par o impar, y dónde se coloca cada elemento.',
   lang: 'es',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '33 min',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ Los valores por defecto de la tabla siguiente son los de un elemento de texto qu
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>En qué <em>tipos</em> de página aparece el elemento, en combinación con <code>parity</code>. Tras la colocación, cada página se clasifica como <code>'blank'</code> (página de relleno para la paridad o separadora, o sin contenido), <code>'part'</code> (una página de parte), <code>'opener'</code> (su primer bloque es un encabezado cuyo nivel ocupa toda la página o fuerza un salto de página antes de él: la primera página de un capítulo), <code>'comic'</code> (una página de cómic, <code>:::page</code>), <code>'composed'</code> (una página compuesta, o el <code>role</code> que nombra su plantilla) o <code>'body'</code> (todas las demás). <code>pages: 'body'</code> oculta un titulillo en las aperturas de capítulo; <code>pages: 'opener'</code> muestra un folio solo en ellas.</td>
+      <td>En qué <em>tipos</em> de página aparece el elemento, en combinación con <code>parity</code>. Tras la colocación, cada página se clasifica como <code>'blank'</code> (página de relleno para la paridad o separadora, o sin contenido), <code>'part'</code> (una página de parte), <code>'opener'</code> (su primer bloque es un encabezado cuyo nivel ocupa toda la página o fuerza un salto de página antes de él: la primera página de un capítulo), <code>'comic'</code> (una página de cómic, <code>:::page</code>), <code>'composed'</code> (una página compuesta, o el <code>role</code> que nombra su plantilla) o <code>'body'</code> (todas las demás). <code>pages: 'body'</code> oculta un titulillo en las aperturas de capítulo; <code>pages: 'opener'</code> muestra un folio solo en ellas. Una página que una lámina cubre a corte o a sangre (<code>placement.plate: 'trim' | 'bleed'</code>) es <code>'plate'</code>: en ella solo se dibuja un elemento cuyo <code>pages</code> nombra ese rol, y no los de <code>'all'</code>.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ Los elementos de línea dibujan un filete: horizontal, a lo ancho de la zona, o 
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Tipos de página en los que aparece el filete (véase el campo <code>pages</code> de los elementos de texto).</td>
     </tr>
@@ -622,7 +622,7 @@ Los elementos de caja pintan un rectángulo redondeado dentro de la zona; sirven
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Tipos de página en los que aparece la caja (véase el campo <code>pages</code> de los elementos de texto).</td>
     </tr>

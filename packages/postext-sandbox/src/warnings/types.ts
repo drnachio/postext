@@ -18,6 +18,10 @@ export type WarningPayload =
    *  the font list or a generic one) or, without it, from a face the
    *  system picks. `characters` are the first of them, `count` all. */
   | { kind: 'glyphFallback'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; count: number; supplier?: string }
+  /** The engine's `glyphFallbackAt`: the paragraph that sets
+   *  characters its face lacks, drawn from `supplier` (the `symbolFont`)
+   *  or, without it, printed as empty boxes in the PDF. */
+  | { kind: 'glyphFallbackAt'; family: string; weight: number; style: 'normal' | 'italic'; characters: string[]; supplier?: string; blockId?: string }
   /** Referenced family is neither a loaded Google Font nor a custom
    *  family in `customFonts`. Silently falls back to a system font at
    *  render time; this warning makes the fall-through visible. */
@@ -439,6 +443,10 @@ export type WarningPayload =
    *  (`bodyText.shortListSplit`, #749), its first item on book page
    *  `page`. */
   | { kind: 'shortListSplit'; page: number; items: number }
+  /** Two lines in a row of a paragraph that end (`edge: 'end'`) or start
+   *  on the same word or characters, `text` (`bodyText.stacks: 'warn' |
+   *  'avoid'`, #1463), on book page `page`; `lines` are the two lines. */
+  | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
   /** A figure, a table (`resourceId`) or a floated box set on an opener
    *  page, book page `page` (`layout.openerFloats: 'warn'`, #749). */
   | { kind: 'openerFloat'; page: number; resourceId?: string }

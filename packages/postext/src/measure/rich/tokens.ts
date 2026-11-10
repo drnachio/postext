@@ -34,6 +34,9 @@ export interface RichBreakPoint {
   /** A `free` break next to a CJK character: the line it ends is not
    *  `hyphenated`, so the column-end hyphen rules leave it alone. */
   cjk?: boolean;
+  /** A `free` break at a zero-width space the author typed: stacks
+   *  (#1463) read the words on either side apart. */
+  zeroWidth?: boolean;
   /** A syllable break inside a Catalan `l·l`: the hyphen takes the place of
    *  the middle dot (`il-` | `lusió`), whose width, here, the line ending
    *  at this break gives back. In a document shaped in its own language

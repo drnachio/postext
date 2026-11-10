@@ -153,7 +153,7 @@ Gotchas:
   chip, reports the quality of the original and saves the mapping as a
   reusable template. **Export to Word** writes the chapter or book back
   as a semantic or a formatted document (below), and a file exported that
-  way, corrected in Word, reopens through the same button as a list of
+  way, corrected in Word or Google Docs, reopens through the same button as a list of
   edits to apply (docs: Sandbox → Word documents). Point them there; use the scripts below for the original's
   layout rules, batches of files, or what the dialog does not read.
 - **Draft with the engine's own importer** before reaching for pandoc: `postext import-docx manuscript.docx -o
@@ -193,26 +193,33 @@ Gotchas:
   of that level; 0 = off); `pageBreaks` `drop` (default) | `keep` (`:::pagebreak`); `images`, `tables` (default
   true). A bare `{ "paragraphs": …, "characters": … }` object is read too.
 - `postext docx my-book -o book.docx` (or `build --docx F --docx-variant …`; postext ≥ 1.68, `--template` gone)
-  writes one of two documents. `--variant semantic` (default) is built from the Markdown with Word's own structures:
-  heading styles (*Heading 2: Name* per heading style), paragraph styles named after the design's, Word lists,
-  footnotes, hyperlinks, XE index fields, bookmarks for anchors, boxes as `ptx:box:<type>` content controls around a
-  shaded one-cell table (*Box: …* styles), figures and tables with captions (label and number are generated text),
-  OMML equations, sections with the design's trim, margins and columns. What Word has no structure for (frontmatter,
-  exercises, modules, composed pages, `:::figure`, comics, scores, other directives, maths that do not convert)
-  travels verbatim in `ptx:raw:<kind>` content controls in the grey *Postext Source* style (*Postext Source Char*
-  inline). `--variant formatted` lays the book out as for `pdf` and writes each page as a Word section of its exact
-  size with one text box per column, a break at every engine line end; running heads, folios, bullets and maths
-  (pictures) are display only. Fonts are embedded by default (static TrueType, obfuscated, family suffix *PTX*;
-  `fsType`-restricted, CFF and variable faces are reported and only named; `--no-embed-fonts` names them all;
-  `customFonts` with `redistributable: false` falls back to the open fallback). Both carry an export map and a
-  snapshot of the exported chapters.
+  writes one of three documents. Two are flowing text, editable in Word and in Google Docs, built from the Markdown
+  with Word's own structures: heading styles (*Heading 2: Name* per heading style), paragraph styles named after the
+  design's, Word lists, footnotes, hyperlinks, XE index fields, bookmarks for anchors, boxes as `ptx:box:<type>`
+  content controls around a shaded one-cell table (*Box: …* styles), figures and tables with captions (label and
+  number are generated text), OMML equations. What Word has no structure for (frontmatter, exercises, modules,
+  composed pages, `:::figure`, comics, scores, other directives, maths that do not convert) travels verbatim in
+  `ptx:raw:<kind>` content controls in the grey *Postext Source* style (*Postext Source Char* inline).
+  `--variant formatted` (default) sets that text with the book's design as far as Word allows (sections with the
+  design's trim, margins and columns, running heads, the styles' fonts and sizes, openers, boxes) and embeds the
+  fonts (static TrueType, obfuscated, family suffix *PTX*; `fsType`-restricted, CFF and variable faces are reported
+  and only named; `--no-embed-fonts` names them all; `customFonts` with `redistributable: false` falls back to the
+  open fallback; Google Docs reads no embedded font and uses its own copy of a family when it has one).
+  `--variant semantic` is the content alone, for a proofreader: a plain document (A4, one column, Arial) in the same
+  Word styles, which name each part, with no page design and no fonts. `--variant facsimile` lays the book out as
+  for `pdf` and writes each page as a Word section of its exact size with every line in a fixed text box; running
+  heads, folios, bullets and maths (pictures) are display only. It is for looking at the layout in desktop Word, not
+  for editing and not for Google Docs, and comes only from the command line and the API (`facsimileDocx`;
+  `formattedDocx` is its old name). All three carry an export map and a snapshot of the exported chapters. Up to
+  postext 1.70 there were two variants: `semantic` (the default) wrote today's formatted document, and `formatted`
+  wrote the text boxes.
 - `postext import-docx book.docx my-book [--dry-run] [--locale es] [--json]` brings the corrections made in Word
   in such a file back: a three-way merge against the snapshot, each edit `applied`, `conflict`
   (changed-since-export, target-missing, no-snapshot, overlap) or `rejected` (generated text such as caption labels
   and numbers, formatting that crosses Postext markup). Tracked changes count as accepted, comments are listed and
   not written, caption/note/alt/cell edits go to `preset.json` (or `localized.<lang>` with `--locale`). Exit 3 when
   an edit is left out; `--dry-run` prints a unified diff and writes nothing. Text added outside the exported
-  paragraphs (before the first one, new footnotes, outside the formatted text boxes) is dropped. Use it when an
+  paragraphs (before the first one, new footnotes, outside the facsimile's text boxes) is dropped. Use it when an
   editor corrects a ported book in Word; never as the porting path itself.
 - `postext import-docx` (postext ≥ 1.39) sets the character spacing of Word paragraph and heading styles as
   `letterSpacing` (em of the style's size) on the bundle's config styles that set none (`styleTracking` in

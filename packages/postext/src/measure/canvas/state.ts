@@ -1,6 +1,6 @@
 // The canvas measurers and the measuring state: the language measured in,
 // the width caches per language, and their clearing and eviction.
-import { fontStringFamily } from '../fontString.js';
+import { fontStringFamily, fontStringFamilies } from '../fontString.js';
 
 export type Context2D = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
@@ -281,11 +281,15 @@ export function evictionsSince(generation: number): { all: boolean; families: Se
   return { all: false, families };
 }
 
+/** Drop the widths of the font strings that list one of `families`
+ *  (lower case), the first family or any after it: a `symbolFont`
+ *  (#1460) listed after the face's draws the characters the face lacks,
+ *  so widths measured with the system's stand-in before it loaded are
+ *  stale once it does. */
 function dropFamilies(caches: Map<string, Map<string, number>>, families: ReadonlySet<string>): number {
   let dropped = 0;
   for (const [font, byText] of caches) {
-    const family = fontStringFamily(font);
-    if (family !== null && families.has(family.toLowerCase())) {
+    if (fontStringFamilies(font).some((family) => families.has(family.toLowerCase()))) {
       dropped += byText.size;
       caches.delete(font);
     }

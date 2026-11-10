@@ -275,6 +275,18 @@ export function stripBodyTextDefaults(
     result.gradedRuntPenalty = bodyText.gradedRuntPenalty;
     hasOverride = true;
   }
+  if (bodyText.stacks !== undefined && bodyText.stacks !== DEFAULT_BODY_TEXT_CONFIG.stacks) {
+    result.stacks = bodyText.stacks;
+    hasOverride = true;
+  }
+  if (bodyText.stackMinCharacters !== undefined && bodyText.stackMinCharacters !== DEFAULT_BODY_TEXT_CONFIG.stackMinCharacters) {
+    result.stackMinCharacters = bodyText.stackMinCharacters;
+    hasOverride = true;
+  }
+  if (bodyText.stackPenalty !== undefined && bodyText.stackPenalty !== DEFAULT_BODY_TEXT_CONFIG.stackPenalty) {
+    result.stackPenalty = bodyText.stackPenalty;
+    hasOverride = true;
+  }
   if (bodyText.avoidRuntsInLists !== undefined && bodyText.avoidRuntsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists) {
     result.avoidRuntsInLists = bodyText.avoidRuntsInLists;
     hasOverride = true;

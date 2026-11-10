@@ -5,23 +5,28 @@
 // book since, or not importable, with why), the comments left in Word, and
 // one Apply that writes them as one change Cmd/Ctrl+Z takes back.
 
-import { type ReactNode, type RefObject, useId, useMemo, useRef, useState } from 'react';
+import { type ReactNode, type RefObject, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
-import { AlertTriangle, CheckCircle2, ChevronRight, MessageSquare, XCircle, X } from 'lucide-react';
-import type { DocxComment, DocxEdit } from 'postext/word';
+import { AlertTriangle, CheckCircle2, ChevronRight, Info, MessageSquare, XCircle, X } from 'lucide-react';
+import { isExportedDocx, type DocxComment, type DocxEdit, type RebuiltMap } from 'postext/word';
+import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, useSandboxStore } from '../context/SandboxContext.js';
 import type { SandboxLabels } from '../types/index.js';
 import { Button, Collapsible, IconButton, announce, usePortalContainer } from '../ui/index.js';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import { counted } from './sandboxImport.js';
 import { isolate } from './WordImportDialog.js';
-import { editFieldText, editReasonText, editSnippet, reviewChanges, reviewWordEdits, writeWordEdits, type WordEditGroup, type WordEditsReview } from './wordEdits.js';
+import { editFieldText, editReasonText, editSnippet, importNoteText, rebuildWordMap, reviewChanges, reviewWordEdits, writeWordEdits, type WordEditGroup, type WordEditsReview } from './wordEdits.js';
 
 /** An exported .docx picked in the Manuscript panel. */
 export interface WordEditsFile {
   name: string;
   bytes: Uint8Array;
 }
+
+/** What the dialog shows once the file is read: its changes, or why it
+ *  could not be read against this book. */
+type Loaded = { review: WordEditsReview; rebuilt?: RebuiltMap } | { error: 'failed' | 'not-this-book' };
 
 export function WordEditsDialog({ file, onClose }: { file: WordEditsFile | null; onClose: () => void }) {
   return (
@@ -123,26 +128,62 @@ function WordEditsPopup({ file, onClose }: { file: WordEditsFile; onClose: () =>
   const titleId = useId();
   const applyRef = useRef<HTMLButtonElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
-  // Read once against the book as it stood when the file was picked.
-  const review = useMemo((): WordEditsReview | { error: true } => {
+  // Read once against the book as it stood when the file was picked. A
+  // file that came back without its export map (Google Docs leaves it
+  // out) first has the map written again from the book, which takes a
+  // moment: the dialog says it is reading meanwhile.
+  const sync = useMemo((): Loaded | null => {
+    const s = store.getSnapshot();
     try {
-      return reviewWordEdits(file.bytes, store.getSnapshot());
+      if (!isExportedDocx(file.bytes)) return null;
+      return { review: reviewWordEdits(file.bytes, s) };
     } catch (err) {
       console.error(err);
-      return { error: true };
+      return { error: 'failed' };
     }
   }, [file, store]);
+  const [late, setLate] = useState<{ file: WordEditsFile; loaded: Loaded } | null>(null);
+  useEffect(() => {
+    if (sync) return;
+    let live = true;
+    const s = store.getSnapshot();
+    rebuildWordMap(file.bytes, { ...s, config: withHyphenationLocale(s.config, s.locale) })
+      .then((rebuilt): Loaded => (rebuilt ? { review: reviewWordEdits(file.bytes, s, rebuilt), rebuilt } : { error: 'not-this-book' }))
+      .catch((err: unknown): Loaded => {
+        console.error(err);
+        return { error: 'failed' };
+      })
+      .then((loaded) => {
+        if (live) setLate({ file, loaded });
+      });
+    return () => {
+      live = false;
+    };
+  }, [file, store, sync]);
+  const loaded = sync ?? (late?.file === file ? late.loaded : null);
 
-  if ('error' in review) {
+  if (loaded === null) {
     return (
       <Shell titleId={titleId} container={container} initialFocus={cancelRef} labels={labels} onClose={onClose}>
-        <p role="alert" className="m-0 text-xs">{labels.wordEditsFailed.replace('__file__', isolate(file.name))}</p>
+        <p role="status" className="m-0 text-xs">{labels.wordEditsReading.replace('__file__', isolate(file.name))}</p>
+        <div className="flex justify-end">
+          <Button ref={cancelRef} variant="outline" size="sm" onClick={onClose}>{labels.wordCancel}</Button>
+        </div>
+      </Shell>
+    );
+  }
+  if ('error' in loaded) {
+    const message = loaded.error === 'not-this-book' ? labels.wordEditsNotThisBook : labels.wordEditsFailed;
+    return (
+      <Shell titleId={titleId} container={container} initialFocus={cancelRef} labels={labels} onClose={onClose}>
+        <p role="alert" className="m-0 text-xs">{message.replace('__file__', isolate(file.name))}</p>
         <div className="flex justify-end">
           <Button ref={cancelRef} variant="primary" size="sm" onClick={onClose}>{labels.wordExportClose}</Button>
         </div>
       </Shell>
     );
   }
+  const { review, rebuilt } = loaded;
 
   const changes = reviewChanges(review);
   const apply = () => {
@@ -150,8 +191,9 @@ function WordEditsPopup({ file, onClose }: { file: WordEditsFile; onClose: () =>
     let written: ReturnType<typeof writeWordEdits>;
     try {
       // Read again against the book as it is now: a change made while the
-      // dialog was open is merged, not overwritten.
-      written = writeWordEdits(dispatch, store.history, s, reviewWordEdits(file.bytes, s));
+      // dialog was open is merged, not overwritten (a map written again
+      // from the book holds the book as it stood then).
+      written = writeWordEdits(dispatch, store.history, s, reviewWordEdits(file.bytes, s, rebuilt));
     } catch (err) {
       console.error(err);
       announce(labels.wordEditsFailed.replace('__file__', isolate(file.name)));
@@ -171,6 +213,14 @@ function WordEditsPopup({ file, onClose }: { file: WordEditsFile; onClose: () =>
       <Dialog.Description className="text-xs text-(--slate)" style={{ margin: 0 }}>
         {labels.wordEditsIntro.replace('__file__', isolate(file.name))}
       </Dialog.Description>
+      {review.notes.map((n) => (
+        <p key={n.code} className="m-0 flex items-start gap-2 text-xs">
+          {n.code === 'map-rebuilt'
+            ? <Info size={13} aria-hidden="true" className="mt-0.5 shrink-0 text-(--slate)" />
+            : <AlertTriangle size={13} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: STATUS_COLOR.conflict }} />}
+          <span>{importNoteText(labels, n)}</span>
+        </p>
+      ))}
       {review.lost && (
         <p role="alert" className="m-0 flex items-start gap-2 text-xs">
           <XCircle size={13} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: STATUS_COLOR.rejected }} />

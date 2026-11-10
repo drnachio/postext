@@ -242,8 +242,9 @@ test('leaves the other files of the --out folder alone', { skip: !poppler && 'po
 
 test('the fixture exporter refuses a missing value and unknown fixtures', () => {
   assert.equal(fixtureArgs(['--only', 'rtl,guide']).only.size, 2);
+  assert.equal(fixtureArgs(['--flow']).flow, true);
   assert.throws(() => fixtureArgs(['--out']), /needs a value/);
-  assert.throws(() => fixtureArgs(['--out', '--semantic']), /needs a value/);
+  assert.throws(() => fixtureArgs(['--out', '--flow']), /needs a value/);
   assert.throws(() => fixtureArgs(['--only', 'rlt']), /no fixture rlt/);
   assert.throws(() => fixtureArgs(['--bogus']), /unknown argument/);
   assert.deepEqual(FIXTURES.map((f) => f.name), ['guide', 'two-column', 'column-and-a-half', 'footnotes', 'rtl', 'vertical-cjk']);

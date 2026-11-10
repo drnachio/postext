@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Pictures, tables and videos',
   description: 'Resources in the text: references and embeds, numbering, placement and where a float lands, text wrap, bitmap size, safe areas, comic anchors and videos',
   lang: 'en',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '39 min',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ Each resource has a **placement** that decides where its float lands, resolved p
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). A picture narrower than its slot — a bitmap smaller than the column, or one <code>layout.fitFiguresToPage</code> shrank — also sits there per <code>align</code>, under a caption that keeps the slot's measure. Floats and inline <code>::resource</code> embeds alike.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; a length in mm, cm, in or pt</td>
+      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). A picture narrower than its slot — a bitmap smaller than the column, or one <code>layout.fitFiguresToPage</code> shrank — also sits there per <code>align</code>, under a caption that keeps the slot's measure. Floats and inline <code>::resource</code> embeds alike. A length instead of a fraction (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, or in <code>cm</code>, <code>in</code> or <code>pt</code>) sets it that wide, measured against the slot it is set in: the column for an embed, the columns and gutters a column float takes, the content width for a page-span float, the side column for a side float, and the columns of a styled section or of a box where it stands there. A length as wide as the slot or wider takes the whole slot, and a turned float is laid out at most that wide before it is turned. Other units (<code>px</code>, <code>em</code>) are not read as a length: the resource takes its whole slot.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>A full-page plate: the picture (a bitmap, an SVG, or a video's poster) stands alone on a fresh page after its citation, enlarged or reduced to the largest size the content area holds with its caption and note, centred unless <code>align</code> says otherwise; the text runs on before and after it. It waits for a page it can have whole: a page an opener, another float or a running block already holds is passed over, three at most, and the next one is taken as it is. Its <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> are not read, and one set in the text (<code>"here"</code>) is no plate. <code>false</code> on a resource turns off a plate its type sets. A bitmap enlarged under the minimum image resolution is reported by the print preflight (<code>lowImageResolution</code>), its crop counted. <code>"trim"</code> or <code>"bleed"</code> set it over the whole page instead, to the trim or out to the bleed (with cut lines; without them the bleed is the trim): enlarged to cover it and cropped about its centre, its caption and note at the foot of the content area on a band of the paper colour. That page takes the <code>'plate'</code> role: running heads, folio and design elements are left off it unless they name that role in <code>pages</code>. The IDML export anchors it in the story at its content-area size, the Word export on a page of its own.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

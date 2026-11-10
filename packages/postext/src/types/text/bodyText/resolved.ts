@@ -78,6 +78,9 @@ export interface ResolvedBodyTextConfig {
   runtMinCharacters: number;
   runtPenalty: number;
   gradedRuntPenalty: boolean;
+  stacks: CompositionRule;
+  stackMinCharacters: number;
+  stackPenalty: number;
   avoidRuntsInLists: boolean;
   tightenRunts: boolean;
   maxRuntTracking: number;

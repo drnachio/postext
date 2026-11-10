@@ -45,12 +45,14 @@ export function dotsRule(cls: string): CssRule | '' {
 const SANS = /\b(sans|grotesk|grotesque|gothic|helvetica|arial|inter|roboto|lato|montserrat|open sans|source sans|fira sans|heiti|hei\b|黑)/i;
 const MONO = /\b(mono|code|courier|consol)/i;
 
-/** A family as a CSS value: the family quoted, then a generic fallback. A
- *  feature family (#1237, `Lora@onum`) is its base family's. */
-export function familyStack(family: string): string {
+/** A family as a CSS value: the family quoted, then the family that
+ *  sets what it lacks (`symbolFont`), then a generic fallback.
+ *  A feature family (#1237, `Lora@onum`) is its base family's. */
+export function familyStack(family: string, symbolFont?: string): string {
   const name = familyName(family);
   const generic = MONO.test(name) ? 'monospace' : SANS.test(name) ? 'sans-serif' : 'serif';
-  return `${cssString(name)}, ${generic}`;
+  const symbols = symbolFont?.trim();
+  return symbols && symbols !== name ? `${cssString(name)}, ${cssString(symbols)}, ${generic}` : `${cssString(name)}, ${generic}`;
 }
 
 /** The family names the stylesheet asks for (to warn about missing

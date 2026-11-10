@@ -83,6 +83,11 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
         .replace('__chars__', chars)
         .replace('__supplier__', payload.supplier ?? '');
     }
+    case 'glyphFallbackAt':
+      return (payload.supplier ? labels.warningsGlyphFallbackAtDetail : labels.warningsGlyphFallbackAtMissingDetail)
+        .replace('__face__', `"${payload.family}"`)
+        .replace('__chars__', payload.characters.join(' '))
+        .replace('__supplier__', payload.supplier ?? '');
     case 'duplicateFontVariant': {
       const slots = payload.variants
         .map((v) => `${v.weight}${v.style === 'italic' ? ' italic' : ''} ×${v.count}`)
@@ -427,6 +432,10 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsUnplacedDetail}`;
     case 'hereNotEmbedded':
       return `#${payload.resourceId} — ${labels.warningsHereNotEmbeddedDetail}`;
+    case 'stack':
+      return (payload.edge === 'end' ? labels.warningsStackEndDetail : labels.warningsStackStartDetail)
+        .replace('__page__', String(payload.page))
+        .replace('__text__', payload.text);
     case 'shortListSplit':
       return labels.warningsShortListSplitDetail.replace('__page__', String(payload.page)).replace('__items__', String(payload.items));
     case 'openerFloat':

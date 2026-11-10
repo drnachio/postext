@@ -2,11 +2,12 @@
 // spans, cell paragraphs and item markers, the measurement cache of the
 // call, justified snippet lines (#1276: split out of resourceLayout.ts).
 import type { InlineSpan } from '../../../parse/index.js';
-import type { ResolvedMathConfig } from '../../../types.js';
-import { type VDTLine, createBoundingBox } from '../../../vdt.js';
+import type { ResolvedMathConfig, TextAlign } from '../../../types.js';
+import { type ResolvedConfig, type VDTLine, createBoundingBox } from '../../../vdt.js';
 import { type MeasurementCache, type MeasureBlockOptions, cachedMeasureRichSnippet } from '../../../measure/index.js';
 import { measureRichSnippet } from '../../../measure/rich.js';
 import { isBlankText } from '../../../measure/spaces.js';
+import { stackBreaking } from '../../text/stacks.js';
 import { linkSegments } from '../../../measure/links.js';
 import { sliceSpan } from '../../../parse/links.js';
 import { indentColumn } from '../../../parse/listNesting.js';
@@ -112,6 +113,23 @@ export function takeCellItemMarker(spans: InlineSpan[]): { marker: CellItemMarke
   const rest = first.text.slice(whole.length);
   const stripped = rest.length > 0 ? [first.links ? sliceSpan(first, whole.length) : { ...first, text: rest }, ...spans.slice(1)] : spans.slice(1);
   return { marker: { text, ws, column: indentColumn(indent) }, spans: stripped };
+}
+
+/**
+ * How a caption, a note or a table cell set in `align` is broken while
+ * stacks are avoided (`bodyText.stacks: 'avoid'`, #1463): the line-by-line
+ * breaker cannot look back to avoid one, so the text is broken whole on
+ * Knuth–Plass, justified within the word-spacing limits, ragged with the
+ * right-hand glue ragged running text gets (`optimalRagged`, whether or not
+ * the body text asks for it). Empty, line by line as before, under any
+ * other level of the rule or without `optimalLineBreaking`.
+ */
+export function snippetStackBreaking(align: TextAlign, resolved: ResolvedConfig): MeasureBlockOptions {
+  const body = resolved.bodyText;
+  const stacks = stackBreaking(body);
+  if (!stacks || !body.optimalLineBreaking) return {};
+  if (align === 'justify') return { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing, stacks };
+  return { optimal: true, optimalRagged: true, stacks };
 }
 
 /** The measurement cache of the resource block being laid out, if its

@@ -5,6 +5,7 @@ import type { PostextContent, PostextConfig, Resource } from '../../types.js';
 import { type VDTColumn, type VDTPage } from '../../vdt.js';
 import { withFigureWords } from '../resources/figureWords.js';
 import { type MeasurementCache, initHyphenator } from '../../measure/index.js';
+import { setSymbolFont, symbolFont } from '../../measure/font.js';
 import { getCjkLineBreak, setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
 import { getSlashBreaks, setSlashBreaks } from '../../measure/breakRules.js';
 import { getCjkComposition, setCjkComposition, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
@@ -65,7 +66,8 @@ export function buildDocumentPass(
   hints: PassHints = {},
 ): PassResult {
   // A pass sets the CJK line-break level, the CJK composition and the
-  // writing mode text is measured in for its own measuring; what the caller had in force is put
+  // writing mode text is measured in for its own measuring, and the symbol
+  // font every font string lists (#1460); what the caller had in force is put
   // back when it ends, also when it throws (a cancelled build), so text
   // measured outside a build reads as it did before it.
   const lineBreak = getCjkLineBreak();
@@ -78,9 +80,11 @@ export function buildDocumentPass(
   const scriptContext = getMeasureScriptContext();
   const language = getMeasureLanguage();
   const slashBreaks = getSlashBreaks();
+  const symbols = symbolFont();
   try {
     return placeDocumentPass(content, config, cache, options, hints);
   } finally {
+    setSymbolFont(symbols);
     setSlashBreaks(slashBreaks);
     setMeasureLanguage(language);
     setMeasureScriptContext(scriptContext);
@@ -114,6 +118,9 @@ function placeDocumentPass(
   // Rebound once the content is read when it holds exercises (#1227): the
   // config then also carries their chip and paragraph styles.
   setup.resolved = resolveAllConfig(config);
+  // The family the text's fonts fall back to, set or cleared
+  // before any font string of this build is made.
+  setSymbolFont(setup.resolved.symbolFont);
   // Bitmaps sized by the document's `layout.bitmapResolution` carry it as
   // their own `resolution` from here on (#631); under the default policy
   // the content is untouched.
@@ -232,7 +239,7 @@ function placeDocumentPass(
 
   const {
     calloutFloatResults, calloutBandPages, enqueueCalloutFloat, acrossWidth, floatGapPx, minTextPx,
-    offsetResourceBlockToAbsolute, layoutFloat, rotationFor, uprightOn, tableRowCount, tableOverflow,
+    offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, uprightOn, tableRowCount, tableOverflow,
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
     floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf
@@ -249,7 +256,7 @@ function placeDocumentPass(
     shrinkToRoom
   } = createFloatBands({
     captionUnder, baselineGrid, doc, shiftStripLines, calloutFloatResults, calloutBandPages,
-    floatGapPx, offsetResourceBlockToAbsolute, layoutFloat, rotationFor, tableRowCount,
+    floatGapPx, offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, dpi, tableRowCount,
     tableOverflow, sliceOf, tableMetrics, measureFloat, uncappedBottoms, state, late
   });
 
@@ -271,7 +278,7 @@ function placeDocumentPass(
   } = createFloatFlush({
     citingPageFloats, resolved: setup.resolved, doc, pageWidthPx, pageHeightPx, contentBlocks, resourceById,
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
-    enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
+    dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
     positionsFor, cursor, forcedBreakPages, state, late
   });

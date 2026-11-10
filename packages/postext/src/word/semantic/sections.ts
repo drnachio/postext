@@ -94,6 +94,9 @@ export interface SectionPart {
    *  is an opener. */
   block?: ContentBlock;
   leads?: boolean;
+  /** Left and right page margins of the section, when its styled section
+   *  widens the book's measure (see `sideMargins`, layout/pageSpan.ts). */
+  sides?: { left: number; right: number };
   /** The style name of the chapter's later titles, when the running heads
    *  read the chapter title with a STYLEREF field. */
   titleStyle?: string;
@@ -112,7 +115,7 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   // The running heads the section's pages print, the opener's on its
   // first page when it opens with a heading that breaks the page.
   const firstFolio = part.first ? (ctx.chapter.pageNumbers?.start ?? (index === 0 && !ctx.start ? 1 : undefined)) : undefined;
-  const { refs, titlePg } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), ...(firstFolio !== undefined ? { firstFolio } : {}), start: part.start });
+  const { refs, titlePg, footer: footDistance } = sectionFurniture(ctx, geo, { chapter: index, ...(part.block ? { first: part.block, leads: !!part.leads } : {}), ...(part.titleStyle ? { titleStyle: part.titleStyle } : {}), ...(part.follow ? { follow: part.follow } : {}), ...(firstFolio !== undefined ? { firstFolio } : {}), start: part.start });
   // A chapter starts on a new page; on a right-hand one only when the book
   // asks for recto starts. A verso start (a spread opener whose artwork
   // the document does not carry) would only leave a blank page, and
@@ -123,7 +126,9 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   const orient = geo.widthTw > geo.heightTw ? ' w:orient="landscape"' : '';
   // The running heads keep the book's distances from the page edge.
   const header = Math.round(geo.margins.top / 2);
-  const footer = Math.round(geo.margins.bottom / 2);
+  // A page whose design sets a band at its foot keeps the band's text at
+  // its height on the sheet (design/foot.ts).
+  const footer = footDistance ?? Math.round(geo.margins.bottom / 2);
   const own = part.oneColumn ? undefined : styledGeometry(ctx, geo, index, part.block, pageOfStyle(part));
   // A styled page whose text stands low (a colophon under a cover's top
   // margin) gets twice the room the design gives it, its text set at the
@@ -132,9 +137,10 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   // LibreOffice and Google Docs start the text at the top margin.
   const low = !!own && own !== geo && own.margins.top > Math.max(geo.margins.top, own.heightTw / 2);
   const room = low ? own.heightTw - own.margins.top - own.margins.bottom : 0;
-  const m = low ? { ...own.margins, top: Math.max(geo.margins.top, own.margins.top - room) } : (own?.margins ?? geo.margins);
+  const base = low ? { ...own.margins, top: Math.max(geo.margins.top, own.margins.top - room) } : (own?.margins ?? geo.margins);
+  const m = part.sides && !low ? { ...base, ...part.sides } : base;
   return (
-    `<w:sectPr>${refs}${bookHasNotes(ctx) ? sectionFootnotePr(r, !!part.first) : ''}${start}` +
+    `<w:sectPr>${refs}${bookHasNotes(ctx) ? sectionFootnotePr(r, !!part.first || opensChapter(part)) : ''}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
     pageNumberType(ctx, !!part.first) +
@@ -196,6 +202,11 @@ export function headingFillsPage(ctx: WriterContext, b: ContentBlock | undefined
   const height = px(ctx.units, ctx.resolved.page.height);
   return height - px(ctx.units, m.top) - px(ctx.units, m.bottom) < height / 4;
 }
+
+/** Whether a section opens with a chapter title on a page of its own: the
+ *  notes count from 1 there, as at the start of a chapter file (the
+ *  engine starts them again at each level-1 heading). */
+const opensChapter = (part: SectionPart): boolean => part.start !== 'continuous' && !!part.leads && part.block?.type === 'heading' && (part.block.level ?? 1) === 1;
 
 const notesMemo = new WeakMap<object, boolean>();
 

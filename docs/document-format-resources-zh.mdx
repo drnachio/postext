@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '图片、表格与视频',
   description: '正文中的资源：引用与嵌入、编号、位置与浮动体落在哪里、文字绕排、位图尺寸、安全区、漫画锚点和视频',
   lang: 'zh',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '28分钟',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>用于比所在位置窄的资源：<code>width</code>是它所占栏宽（或页宽）的比例，<code>align</code>是它在该位置中的摆放方式（在栏中居中的小表格；占满页宽的横带中只跨一栏的图片）。比所在位置窄的图片（比栏窄的位图，或被<code>layout.fitFiguresToPage</code>缩小的图）同样按<code>align</code>摆放，下方的题注仍保持该位置的行长。浮动体和行内<code>::resource</code>嵌入都适用。</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; 以 mm、cm、in 或 pt 表示的长度</td>
+      <td>用于比所在位置窄的资源：<code>width</code>是它所占栏宽（或页宽）的比例，<code>align</code>是它在该位置中的摆放方式（在栏中居中的小表格；占满页宽的横带中只跨一栏的图片）。比所在位置窄的图片（比栏窄的位图，或被<code>layout.fitFiguresToPage</code>缩小的图）同样按<code>align</code>摆放，下方的题注仍保持该位置的行长。浮动体和行内<code>::resource</code>嵌入都适用。用长度代替比例（<code>&#123; "value": 80, "unit": "mm" &#125;</code>，或以 <code>cm</code>、<code>in</code>、<code>pt</code> 表示）时，资源按该宽度排出，宽度在它所在的栏位中量取：插入为所在栏，栏浮动体为它占据的栏和栏间距，跨页浮动体为版心宽度，侧栏浮动体为侧栏，位于带样式的章节或方框中时为其中的栏。长度等于或大于栏位时占满整个栏位；旋转的浮动体在旋转前最多按该宽度排出。其他单位（<code>px</code>、<code>em</code>）不按长度读取，资源占满整个栏位。</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>整页插图：图片（位图、SVG 或视频的封面图）单独放在引用之后的新页上，连同图注和附注放大或缩小到版心能容纳的最大尺寸，除非 <code>align</code> 另有指定，否则居中；正文在它前后继续。插图会等待一个能完整占用的页面：已有开篇、其他浮动体或正文的页面会被跳过，最多三页，之后的一页按原样使用。不读取 <code>position</code>、<code>span</code>、<code>width</code>、<code>shrink</code>、<code>rotate</code>、<code>captionSide</code>、<code>wrap</code>、<code>citingPage</code>，放在正文中的图片（<code>"here"</code>）不算整页插图。资源上的 <code>false</code> 取消其类型设定的整页插图。放大后低于最低图像分辨率的位图由印前检查报告（<code>lowImageResolution</code>），裁切计算在内。<code>"trim"</code> 或 <code>"bleed"</code> 将其铺满整页，到裁切线或出血（有裁切标记时；没有时出血即裁切线）：放大到覆盖页面并以中心裁切，图注和附注放在版心底部的纸色色带上。该页取得 <code>'plate'</code> 角色：除了在 <code>pages</code> 中指定此角色的元素外，不印页眉、页码和设计元素。IDML 导出以版心尺寸将其锚定在正文中，Word 导出将其放在单独的一页上。</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

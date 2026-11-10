@@ -1,25 +1,23 @@
 'use client';
 
-// The Manuscript panel's Export to Word (#1397): the kind of document
-// (semantic: Word styles to write in; formatted: the printed pages to check
-// the layout on), what to export, then the file, with the progress of a
-// formatted export and what Word will show differently.
+// The Manuscript panel's Export to Word (#1397, #1458): the kind of
+// document (semantic: content only, in plain Word styles; formatted: the
+// same editable text with the book's design and fonts), what to export,
+// then the file, with its progress and what Word will show differently.
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { AlertTriangle, X } from 'lucide-react';
-import { preferredWordVariant } from 'postext/word';
-import { useBookPlan, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
+import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
 import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { downloadBytes } from '../storage/persistence.js';
 import type { SandboxLabels } from '../types/index.js';
 import { Button, IconButton, Select, announce, usePortalContainer, type SelectOption } from '../ui/index.js';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import { createPdfFontProvider } from '../viewport/pdf/pdfFontProvider.js';
-import { useLayoutService } from '../worker/LayoutServiceContext.js';
 import { counted } from './sandboxImport.js';
 import { isolate } from './WordImportDialog.js';
-import { DOCX_MIME, buildWordExport, docxFileName, wordChapters, type WordExportNote, type WordExportProgress, type WordScope, type WordVariant } from './wordExport.js';
+import { DOCX_MIME, buildWordExport, docxFileName, type WordExportNote, type WordExportProgress, type WordScope, type WordVariant } from './wordExport.js';
 
 export interface WordExportDialogProps {
   open: boolean;
@@ -51,24 +49,16 @@ export function fontNoteText(labels: SandboxLabels, note: Extract<WordExportNote
 /** Where a running export stands, in words. */
 function progressText(labels: SandboxLabels, p: WordExportProgress | null): string {
   if (!p) return labels.wordExportWriting;
-  const fill = (s: string) => s.replace('__current__', String(Math.min(p.total, p.done + (p.phase === 'layout' ? 1 : 0)))).replace('__total__', String(p.total));
-  if (p.phase === 'layout') return fill(labels.wordExportLaying);
-  if (p.phase === 'fonts') return fill(labels.wordExportFonts);
-  if (p.phase === 'pages') return fill(labels.wordExportPages);
+  if (p.phase === 'fonts') return labels.wordExportFonts.replace('__current__', String(Math.min(p.total, p.done))).replace('__total__', String(p.total));
   return labels.wordExportWriting;
 }
 
-/** The share of the export done: layout first, then fonts, then pages. */
+/** The share of the export done: the fonts first, then the document. */
 function progressFraction(p: WordExportProgress | null): number {
   if (!p || p.total <= 0) return 0;
-  const part = Math.min(1, p.done / p.total);
-  if (p.phase === 'layout') return part * 0.5;
-  if (p.phase === 'fonts') return 0.5 + part * 0.15;
-  if (p.phase === 'pages') return 0.65 + part * 0.35;
-  return 0.9;
+  if (p.phase === 'fonts') return Math.min(1, p.done / p.total) * 0.7;
+  return 0.85;
 }
-
-let exports = 0;
 
 function WordExportPopup({ onClose, bookTitle }: WordExportDialogProps) {
   const labels = useSandboxLabels();
@@ -77,36 +67,25 @@ function WordExportPopup({ onClose, bookTitle }: WordExportDialogProps) {
   const chapters = useSandboxSelector((s) => s.chapters);
   const resources = useSandboxSelector((s) => s.resources);
   const activeChapterId = useSandboxSelector((s) => s.activeChapterId);
-  const plan = useBookPlan();
-  const service = useLayoutService();
   const container = usePortalContainer();
   const titleId = useId();
   const variantId = useId();
   const downloadRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [scope, setScope] = useState<WordScope>(chapters.length > 1 ? 'chapter' : 'book');
-  // The variant the reader picked; until then the one that suits what is
-  // exported: Formatted when it is mostly composed or comic pages, which
-  // the semantic document only stands in for (#1444).
-  const [picked, setVariant] = useState<WordVariant | null>(null);
-  const suggested = useMemo(() => preferredWordVariant(wordChapters(chapters, scope, activeChapterId)), [chapters, scope, activeChapterId]);
-  const variant = picked ?? suggested;
+  const [variant, setVariant] = useState<WordVariant>('formatted');
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<WordExportProgress | null>(null);
   const [notes, setNotes] = useState<WordExportNote[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // One layout client per dialog: closing it drops the layout under way.
-  const clientRef = useRef(`word-export:${++exports}`);
   const closedRef = useRef(false);
   useEffect(() => {
-    const clientId = clientRef.current;
     // Mounted again (React's development double mount): open once more.
     closedRef.current = false;
     return () => {
       closedRef.current = true;
-      service.cancel(clientId);
     };
-  }, [service]);
+  }, []);
   useEffect(() => {
     if (notes) closeRef.current?.focus();
   }, [notes]);
@@ -123,13 +102,10 @@ function WordExportPopup({ onClose, bookTitle }: WordExportDialogProps) {
       const bytes = await buildWordExport({
         variant,
         scope,
-        service,
-        clientId: clientRef.current,
         chapters,
         activeChapterId,
         resources,
         config: withHyphenationLocale(config, locale),
-        plan,
         title: bookTitle,
         fontProvider: variant === 'formatted' ? createPdfFontProvider() : undefined,
         onProgress: (p) => { if (!closedRef.current) setProgress(p); },
@@ -211,9 +187,6 @@ function WordExportPopup({ onClose, bookTitle }: WordExportDialogProps) {
               </span>
             </label>
           ))}
-          {picked === null && suggested === 'formatted' && (
-            <p className="m-0 text-xs text-(--slate)">{labels.wordExportPagesSuggested}</p>
-          )}
         </fieldset>
 
         {chapters.length > 1 && (

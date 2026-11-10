@@ -20,7 +20,7 @@ export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
   "diagramStyle", "scoreStyle", "scoreStyles", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "markStyles", "parts", "headingStyles", "toc",
   "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "links", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
-  "htmlViewer", "canvasViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "resourceTypes", "comics", "print", "lineNumbers", "codeStyle", "contrast", "checks",
+  "htmlViewer", "canvasViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "symbolFont", "resourceTypes", "comics", "print", "lineNumbers", "codeStyle", "contrast", "checks",
   "pageTemplates", "labelStyles", "frameLooks", "composedViewerLeaf", "exerciseStyles", "exercises",
 ];
 

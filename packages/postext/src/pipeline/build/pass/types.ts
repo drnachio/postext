@@ -32,6 +32,13 @@ export interface StripGeometry {
  *  `ResourceLayoutInput.upright`). */
 export type FloatRotation = { direction: ResourceRotation; length: number; upright?: boolean };
 
+/** How a float's picture is sized besides its slot's width (#1461):
+ *  `plateHeight`, a full-page plate filling that many px of height with
+ *  its caption (`ResourceLayoutInput.plateHeight`); `maxBodyWidth`, the
+ *  widest a turned picture with a width given as a length is set before
+ *  the turn. */
+export type FloatSizing = { plateHeight?: number; maxBodyWidth?: number };
+
 /** A caption set beside the figure (`placement.captionSide`): the band
  *  in the side column, relative to the float's left edge. */
 export type CaptionAside = { dx: number; width: number; alignBottom: boolean; offsetY?: number };

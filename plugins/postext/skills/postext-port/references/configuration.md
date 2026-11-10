@@ -124,6 +124,7 @@ Conversion at `page.dpi` (default 300):
 | `direction` | `'auto'`\|`'ltr'`\|`'rtl'` | `'auto'` | base direction (postext ≥ 1.15): `auto` = `rtl` when the `locale` script is written right to left (ar, fa, ur, he…). An RTL document is laid out in a **mirrored frame**: first column on the right, indents/list markers/floats/notes on the right, `page.binding: 'auto'` → right. Body-flow `left`/`right` keywords are flow-relative (a preset converted LTR→RTL keeps working); header/footer slots stay physical. Blocks: `{dir=ltr\|rtl}` on headings and `:::` containers; inline `:ltr[…]`/`:rtl[…]` isolates. Never set `'rtl'` with a non-RTL locale |
 | `numerals` | `'auto'`\|`'latn'`\|`'arab'`\|`'arabext'` | `'auto'` | digits of every engine-generated decimal number (pages, lists, notes, counters, `{h1}`/`{n}`, `{totalPages}`): `auto` = `arab` ٠–٩ for `ar` (Maghreb `ar-MA/DZ/TN/LY/MR/EH` → `latn`), `arabext` ۰–۹ for `fa`/`ps`/`ur-IN`, else `latn`; named formats print as named |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
+| `symbolFont` | string | — | §20 (postext ≥ 1.73): the family that sets the characters the text's fonts lack (∪, ℵ, ∀, Greek in a Latin face, arrows) on the canvas, in the PDF, HTML, EPUB and the formatted Word file; `'Noto Sans Math'` for most mathematics |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `canvasViewer` | `{ pageGap?, rowGap? }` | `24` / `24` | §21 Sandbox Canvas page spacing (≥ 1.43); `pageGap: 0` for art across the spine |
 | `composedViewerLeaf` | `{ width, height, margins? }` | — | host only (≥ 1.47): the Sandbox's HTML viewer lays composed pages on this print leaf, as `comics.viewerLeaf` does comic pages; **do not write in preset.json config** |
@@ -372,6 +373,12 @@ H&J / Knuth–Plass
 ├─ gradedRuntPenalty    false  true = a runt costs runtPenalty × (1 − width/threshold): a two-word ending costs less than one word
 ├─ tightenRunts         true   re-set a runt paragraph one line shorter (tighter spaces, ≤ maxRuntTracking; refused if a justified line passes max(maxWordSpacing, the paragraph's loosest justified line) or more lines go ragged)
 ├─ maxRuntTracking      10     thousandths of an em (10 = 0.01em), applied negatively
+├─ stacks             'allow'; stackMinCharacters 3;  stackPenalty 3000   ≥ 1.73 two lines in a row of a paragraph, in one column, ending or
+│                        starting on the same word or the same last/first stackMinCharacters characters (spaces included, accents and case
+│                        ignored; none in Chinese, Japanese, Thai, Lao, Khmer, Myanmar, Tibetan): 'warn' = same layout + a `stack` warning per
+│                        stack; 'avoid' = stackPenalty demerits per stack (scale: consecutiveHyphenDemerit 3000; a repeated monosyllable twice),
+│                        the stacks kept are reported. Captions, notes, table cells too; needs optimalLineBreaking. A port leaves it 'allow'
+│                        (the original's breaks are what it reproduces); 'warn' lists the stacks in proofs without moving a line
 ├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out
 ├─ kashidaPatterns    'auto'|'naskh'|'simple'|'nastaliq'   'auto' (from the body font: Ruqʿa/Dīwānī e.g. Aref Ruqaa → none, Nastaʿlīq → nastaliq, else naskh)
 ├─ kashidaPerWord     1       elongations per word
@@ -882,7 +889,7 @@ placement: {
 
 ### 7.3 Element kinds
 Common: `id` (string, unique in slot; referenced as `'#id'`), `parity: 'all'|'odd'|'even'`
-(default 'all'; page 1 odd), `pages: 'all'|'body'|'opener'|'part'|'blank'|'comic'|'composed'` (page role filter;
+(default 'all'; page 1 odd), `pages: 'all'|'body'|'opener'|'part'|'blank'|'comic'|'composed'|'plate'` (page role filter;
 `comic` = a `:::page` (≥ 1.20), `composed` = a `::::page` (≥ 1.34.1); a page template's `role` (default 'composed',
 inherited through `extends`, ≥ 1.37) is the role its pages report, so `role: 'opener'` gives a unit-opening template
 the folio the flow's openers get;
@@ -1498,7 +1505,10 @@ span:     'column' (default) | 'page' | 'side' (float-only side column; else beh
                          it is set across the content width, and the text goes on in every column under it; on a
                          one-column page it is an ordinary inline embed. `columns` does nothing for an inline embed
 rotate?:  'ccw' | 'cw'   (landscape: page-span float on its own page)
-width?:   0 < w < 1 fraction of column/page width (default whole)
+width?:   0 < w < 1 fraction of column/page width (default whole), or a length {value, unit} in mm|cm|in|pt
+                         (#1461), measured against the slot it is set in (column, a column float's columns and gutters,
+                         content width, side column, a styled section's or a box's columns); ≥ the slot = whole slot;
+                         a turned float is laid out at most that wide before turning. px/em are not read as a length
 align?:   'left' (default) | 'center' | 'right' | 'start' | 'end'   (start/end ≥ 1.15: logical sides; left/right are
                          flow sides, so in an RTL book 'left' is the sheet's right)
 captionSide?: boolean    caption in the float-only side column, level with the figure (oneAndHalf+floats): column floats and,
@@ -1547,6 +1557,15 @@ citingPage?: boolean     ≥ 1.25, position top/auto, span column/page, not rota
                          break opens the page (chapter's first page, part, :::pagebreak), nothing page-wide stands above
                          the citing line, and the citing line stays on that page; else its usual slot. Falls back to
                          layout.floatsAtCitingPage. Read after its citation in tagged PDF / HTML
+plate?:   boolean | 'content' | 'trim' | 'bleed'   (#1461) full-page plate, pictures only (bitmap, svg, video poster),
+                         not 'here' or a vertical page: alone on a fresh page after its citation, scaled up or down to the
+                         largest size the content area holds with caption + note, centred unless align. Waits for a page it
+                         can have whole (no opener, other float or text yet), 3 pages at most, then takes the next as it is.
+                         position/span/width/shrink/rotate/captionSide/wrap/citingPage not read. true = 'content'; 'trim' /
+                         'bleed' cover the page (bleed needs page.cutLines, else = trim), cropped about the centre, caption
+                         at the content-area foot on a paper-colour band; that page has role 'plate' (no running heads,
+                         folio or design elements unless pages:'plate'). false on a resource turns off its type's plate.
+                         An enlarged bitmap under print.preflight.minImageResolution = lowImageResolution (crop counted)
 ```
 A type may leave fields out (≥ 1.38): the built-in type of the same id (`figure`, `table`, `video`, in the document's
 language) fills them, else `name` is the id, `shortLabel` and `captionPrefix` the `name`, `numberingTemplate`
@@ -2465,6 +2484,16 @@ text typed into its elements is content like any other design text.
   it lacks from the fallback. Not a general substitution table: Google and system families stay `missingFont`.
   Manifest: `fonts[].fallback` (project-format.md §4). From 1.43 the fallback's faces are
   embedded in EPUB and HTML exports and in SVG pictures set in the family, under its name.
+- `symbolFont` (postext ≥ 1.73, #1460): one family listed after every font of the document, for the
+  characters the text's own faces have no glyph for. Without it the browser draws them in a face the
+  system picks and the PDF prints an empty box. Every output reads it: the canvas measures and paints in
+  it, the PDF cuts those characters into runs of it (each from the file of the face that has it, so a
+  family served in `unicode-range` slices prints whole), HTML and EPUB list it in `font-family`, and the
+  formatted Word file sets them in runs of it. Its regular face (400, upright) draws for every weight and
+  slant of the text. Set it when the source sets mathematics, logic or Greek inside running text in a face
+  that lacks them: `'Noto Sans Math'` (Google, taken whole by the Sandbox) or `'STIX Two Math'` as a
+  custom font. Unset changes nothing: the layout is the same as without the key. It is form, not
+  content: the Markdown keeps the characters as they are.
 - Any `fontFamily` string resolves against customFonts first, then Google Fonts, then Fontsource
   for a family Google Fonts does not have (Commit Mono, FiraGO). The Sandbox and the `postext`
   command line fetch them; `render.mjs` does not, and measures an unbundled family with a stand-in face.
@@ -2837,6 +2866,12 @@ It gates `glyphFallback` too (≥ 1.52): characters the text sets in a face with
 another face drew (an arrow or a Greek letter from a fallback serif beside a sans text face), one warning per
 face with the characters. The command line reads the `cmap` of every face it loads; browser and worker builds
 ask a probe face that `prepareFonts` and the layout worker declare (`installGlyphProbe`).
+With a `symbolFont` (≥ 1.73) the characters it draws are not reported there: no other family is advised for
+them. `glyphFallbackAt` (≥ 1.73, same switch) gives the place: one warning per block, face, page and family
+that draws them, with the block's source range and `blockId`, `characters`, and `supplier` (the family of the
+font list that draws them, usually the `symbolFont`). No `supplier` means no family of the list has them and
+the PDF prints empty boxes: name a `symbolFont` that covers them. The Sandbox lists it in Review and marks
+the characters on the canvas (violet: the symbol font draws them; red: nothing does).
 
 **Fonts and caches in browser code (≥ 1.25).** Build with `buildDocumentWithFonts(content, config,
 { resolve })`, or call `prepareFonts(content, config, { resolve })` before `buildDocument`: it loads

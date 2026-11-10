@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Texte courant',
   description: 'La typographie du texte courant : police, corps et interlignage, couleurs, retraits, citations, vers, taquets de tabulation et lettrines',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
-  readingTime: '27 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '28 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Cette page réunit les réglages du texte principal d’un livre. Vous choisissez sa police, sa taille et l’espace entre ses lignes, ainsi que la couleur des mots en gras et en italique. Vous réglez le retrait de première ligne et l’espace entre les paragraphes. La page traite aussi des citations mises à part du texte, des poèmes, des taquets de tabulation pour le texte en colonnes, et de la grande lettre qui ouvre certains chapitres. La césure, les titres et les listes ont leurs propres pages.",
@@ -229,6 +229,24 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Commence aussi par un trait d’union la ligne qui suit une coupure au trait d’union d’un mot composé : <code>vencer-</code> · <code>-se</code>, comme le veut l’orthographe portugaise, et <code>léxico-</code> · <code>-semántico</code>, comme le demandent les règles de l’Académie espagnole depuis 2010. Le trait d’union répété est mesuré et peint avec sa ligne, qui l’enregistre comme <code>repeatedHyphen</code> ; ses <code>plainStart</code> et <code>sourceStart</code> pointent après lui : les liens, les titres courants et le Sandbox voient donc le mot tel qu’il est écrit. Le PDF le dessine sous un <code>/ActualText</code> qui l’omet : le texte copié ou extrait du PDF ne contient le mot qu’une fois. Une adresse web n’en reçoit jamais. S’applique au texte courant, aux titres, aux listes, aux citations et aux encadrés ; un paragraphe sans mise en forme qui contient un mot composé est alors coupé par le moteur de coupure du texte enrichi.</td>
+    </tr>
+    <tr>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Répétitions : deux lignes de suite d'un paragraphe, dans une même colonne, qui finissent sur le même mot, ou sur les mêmes <code>stackMinCharacters</code> derniers caractères, espaces compris (<code>-ment</code> / <code>-ment</code>, <code>de la</code> / <code>à la</code>), ou qui commencent par le même mot ou les mêmes premiers caractères (<code>de la</code> / <code>de l’</code>). <code>'allow'</code> compose les lignes comme l'algorithme les trouve et ne signale rien. <code>'warn'</code> les compose de même et signale chaque répétition par un avertissement de contenu <code>stack</code>, que le Sandbox liste dans Révision et marque sur la page. <code>'avoid'</code> ajoute <code>stackPenalty</code> aux démérites de chaque répétition, si bien que l'algorithme compose le paragraphe autrement là où l'espacement des mots le permet, et signale les répétitions qu'il garde. Les accents et la casse ne comptent pas (« sól » est « sol »). Les mots ne sont comparés que dans les écritures qui les séparent par des espaces : un texte chinois, japonais, thaï, lao, khmer, birman ou tibétain n'a pas de répétitions. Une formule, une puce ou une pastille de couleur au bord d'une ligne n'est jamais comparée. Sous <code>'avoid'</code>, les légendes, les notes et les cellules de tableau, justifiées ou en drapeau, sont coupées d'un tenant avec Knuth–Plass pour suivre la règle ; le cadre d'une page composée compose son texte sans elle. Demande <code>optimalLineBreaking</code>. Pour le portage d'un livre, laissez <code>'allow'</code> ou utilisez <code>'warn'</code> pour les épreuves : le portage reproduit les coupures de l'original.</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Caractères, espaces compris, que le même bord de deux lignes de suite doit partager pour qu'il y ait répétition (<code>stacks</code>). La ponctuation à l'extrémité ne compte pas, et le même mot est toujours une répétition.</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>3000</code></td>
+      <td>Ce que coûte une répétition à l'algorithme sous <code>stacks: 'avoid'</code>, en démérites ajoutés à ceux du paragraphe, à l'échelle de <code>consecutiveHyphenDemerit</code> (deux lignes de suite coupées par un trait d'union coûtent 3000). Un monosyllabe répété (« à », « et », « de », avec les voyelles des écritures latine, grecque et cyrillique) coûte le double. Une valeur plus haute évite plus de répétitions au prix de lignes plus lâches ; 0 les garde toutes.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

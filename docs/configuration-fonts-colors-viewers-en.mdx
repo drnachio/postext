@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fonts, colours and output',
   description: 'Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays',
   lang: 'en',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '36 min',
   order: 20,
   parent: 'configuration',
@@ -149,6 +149,12 @@ Clicking any of these warnings opens the Fonts panel so you can upload the missi
 Once a layout exists, the panel also lists the engine's **Font fallback in the layout** (`fontFallback`): a face the pages were measured without, either missing or drawn by the browser from another weight or slant. A family already named as unknown or short of a variant is not listed twice. Before the first layout, a check against `document.fonts` stands in for it.
 
 The panel also lists **Characters drawn from another face** (`glyphFallback`): characters the text sets in a face that has no glyph for them, once per face, with the generic family that drew them (`serif`, `sans-serif`, `monospace`) when the check can tell.
+
+### Symbol font
+
+A text font rarely has the mathematical letters and operators (∪, ℵ, ∀), the Greek or the arrows an author types in a paragraph. `symbolFont` names a family that sets them: every font of the document lists it after its own, so the canvas, the PDF, the HTML and the EPUB draw those characters in it instead of an empty box. `'Noto Sans Math'` covers most mathematics. In the Sandbox it is **Body text → Symbol font**. The formatted Word file sets those characters in runs of it too. Its regular face draws for every weight and slant of the text.
+
+The layout reports each paragraph that sets such characters as `glyphFallbackAt`, with the family that draws them, or none: the PDF then prints them as empty boxes. The Sandbox marks those characters on the page, violet where the symbol font draws them and red where nothing does.
 
 ## Figure styles
 

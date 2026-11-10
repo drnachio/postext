@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Bilder, Tabellen und Videos',
   description: 'Ressourcen im Text: Verweise und Einbettungen, Nummerierung, Platzierung und wohin ein Gleitobjekt kommt, Textumfluss, Bitmap-Größe, Sicherheitsbereiche, Anker für Comics und Videos',
   lang: 'de',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '38 min',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>Eine Ressource, die schmaler ist als ihr Platz: <code>width</code> ist der Anteil der Spalten- (oder Seiten-)breite, den sie einnimmt, <code>align</code>, wo sie im Platz steht (eine kleine Tabelle mittig in ihrer Spalte; ein seitenbreiter Bereich, dessen Bild eine Spalte breit ist). Ein Bild, das schmaler ist als sein Platz – eine Bitmap, die kleiner ist als die Spalte, oder eine, die <code>layout.fitFiguresToPage</code> verkleinert hat –, steht ebenfalls gemäß <code>align</code> dort, unter einer Legende, die die Satzbreite des Platzes behält. Gilt für Gleitobjekte und für Einbettungen mit <code>::resource</code> im Text gleichermaßen.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; eine Länge in mm, cm, in oder pt</td>
+      <td>Eine Ressource, die schmaler ist als ihr Platz: <code>width</code> ist der Anteil der Spalten- (oder Seiten-)breite, den sie einnimmt, <code>align</code>, wo sie im Platz steht (eine kleine Tabelle mittig in ihrer Spalte; ein seitenbreiter Bereich, dessen Bild eine Spalte breit ist). Ein Bild, das schmaler ist als sein Platz – eine Bitmap, die kleiner ist als die Spalte, oder eine, die <code>layout.fitFiguresToPage</code> verkleinert hat –, steht ebenfalls gemäß <code>align</code> dort, unter einer Legende, die die Satzbreite des Platzes behält. Gilt für Gleitobjekte und für Einbettungen mit <code>::resource</code> im Text gleichermaßen. Eine Länge statt eines Anteils (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, oder in <code>cm</code>, <code>in</code> oder <code>pt</code>) setzt sie so breit, gemessen am Platz, an dem sie steht: die Spalte für eine Einbettung, die Spalten und Zwischenräume eines Spaltenfloats, die Breite des Satzspiegels für ein seitenbreites Float, die Seitenspalte für ein seitliches Float und die Spalten eines Abschnitts mit Stil oder eines Kastens, wenn sie darin steht. Eine Länge, so breit wie der Platz oder breiter, nimmt den ganzen Platz ein, und ein gedrehtes Float wird vor dem Drehen höchstens so breit gesetzt. Andere Einheiten (<code>px</code>, <code>em</code>) gelten nicht als Länge: die Ressource nimmt ihren ganzen Platz ein.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Ganzseitige Tafel: Das Bild (ein Pixelbild, ein SVG oder das Standbild eines Videos) steht allein auf einer neuen Seite nach seinem Verweis, vergrößert oder verkleinert auf das größte Maß, das der Satzspiegel mit Legende und Anmerkung fasst, und mittig, sofern <code>align</code> nichts anderes sagt; der Text läuft davor und danach weiter. Die Tafel wartet auf eine Seite, die sie ganz haben kann: Eine Seite, auf der schon ein Kapitelanfang, ein anderes Float oder Fließtext steht, wird übersprungen, höchstens drei, und die nächste wird genommen, wie sie ist. <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> werden nicht gelesen, und ein Bild im Text (<code>"here"</code>) ist keine Tafel. <code>false</code> an einer Ressource schaltet die Tafel ab, die ihr Typ setzt. Ein Pixelbild, das unter die Mindestauflösung für Bilder vergrößert wurde, meldet der Druck-Preflight (<code>lowImageResolution</code>), den Beschnitt eingerechnet. <code>"trim"</code> oder <code>"bleed"</code> setzen es über die ganze Seite, bis zum Endformat oder in den Anschnitt (mit Schnittmarken; ohne sie ist der Anschnitt das Endformat): vergrößert, bis es sie deckt, und um die Mitte beschnitten, Legende und Anmerkung am Fuß des Satzspiegels auf einem Band in Papierfarbe. Diese Seite bekommt die Rolle <code>'plate'</code>: Kolumnentitel, Seitenzahl und Gestaltungselemente fallen dort weg, außer denen, die diese Rolle in <code>pages</code> nennen. Der IDML-Export verankert es im Text in Satzspiegelgröße, der Word-Export setzt es auf eine eigene Seite.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

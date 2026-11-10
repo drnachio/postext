@@ -11,6 +11,8 @@ import { abs, blockId, type WriterContext } from '../context.js';
 import { captionLabelParts, captionStyleOf } from '../engineNumbers.js';
 import { FragmentBuilder } from '../fragments.js';
 import { generatedRuns } from '../generated.js';
+import { paleOnWhite } from '../design/ink.js';
+import { partInk } from '../design/partColor.js';
 import { renderInline } from '../inline.js';
 import { snippetRuns } from '../snippet.js';
 import { STYLE } from '../styles.js';
@@ -111,7 +113,10 @@ function numberedLabel(ctx: WriterContext, typeId: string | undefined, number: s
   const cap = captionStyleOf(ctx.resolved, type);
   // An italic caption style slants the description: the label says its own.
   const italic = cap.labelItalic ? '<w:i/>' : cap.descriptionItalic ? '<w:i w:val="0"/>' : '';
-  const props = `<w:rPr>${cap.labelBold ? '<w:b/>' : ''}${italic}</w:rPr>`;
+  // The label's own colour, in the part's palette where a part recolours.
+  const own = ctx.plain ? undefined : (partInk(ctx, cap.labelColor) ?? hex(cap.labelColor));
+  const ink = own && own !== hex(cap.color) && !paleOnWhite(own) ? `<w:color w:val="${own}"/>` : '';
+  const props = `<w:rPr>${cap.labelBold ? '<w:b/>' : ''}${italic}${ink}</w:rPr>`;
   // A number that is the plain count of its type stays a SEQ field (Word
   // lists the figures with it); a chapter number ("1.7") is text, which a
   // field update would turn into the count.

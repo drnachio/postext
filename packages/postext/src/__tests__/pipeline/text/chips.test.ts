@@ -144,7 +144,7 @@ describe('chip layout', () => {
     const doc = buildDocument({ markdown: `A ${chipsMd} Z` }, cfg);
     const plain = buildDocument({ markdown: 'A pila cable interruptor Z' }, cfg);
     const p = firstParagraph(doc);
-    const fontPx = Number(/(\d*\.?\d+)px/.exec(p.fontString)![1]);
+    const fontPx = Number(/(?<![\d.])(\d+(?:\.\d+)?|\.\d+)px/.exec(p.fontString)![1]);
     const [pila] = chipSegs(doc);
     const c = pila!.chip!;
     const textW = 4 * fontPx * 0.5;
@@ -169,7 +169,7 @@ describe('chip layout', () => {
     expect(p.lines.map((l) => l.text).join(' ')).not.toContain(':chip');
     const segs = chipSegs(doc);
     expect(segs).toHaveLength(2);
-    const fontPx = Number(/(\d*\.?\d+)px/.exec(p.fontString)![1]);
+    const fontPx = Number(/(?<![\d.])(\d+(?:\.\d+)?|\.\d+)px/.exec(p.fontString)![1]);
     for (const seg of segs) {
       const c = seg.chip!;
       expect(c.runs).toEqual([]);
@@ -241,7 +241,7 @@ describe('chip layout', () => {
     const chipsOf = (lines: { segments?: VDTLineSegment[] }[]) => lines.flatMap((l) => (l.segments ?? []).filter((s) => s.chip));
     expect(chipsOf(block.captionLines)).toHaveLength(1);
     const [note] = chipsOf(block.noteLines);
-    const noteFontPx = Number(/(\d*\.?\d+)px/.exec(block.noteFontString)![1]);
+    const noteFontPx = Number(/(?<![\d.])(\d+(?:\.\d+)?|\.\d+)px/.exec(block.noteFontString)![1]);
     expect(note!.chip!.runs[0]!.fontString).toContain(`${noteFontPx * 0.5}px`);
     expect(chipsOf(block.table!.cells.flatMap((c) => c.lines))).toHaveLength(2);
 

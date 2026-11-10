@@ -378,6 +378,32 @@ export interface BodyTextConfig {
    *  than a one-word one and the breaker takes it when a line above can
    *  give a word up. Off by default (every runt costs the same). */
   gradedRuntPenalty?: boolean;
+  /** Stacks (#1463): two consecutive lines of a paragraph that end on the
+   *  same word, or on the same last {@link stackMinCharacters} characters,
+   *  spaces included (`-mente` / `-mente`, `en la` / `de la`), or that
+   *  start on the same word or the same first ones (`de la` / `de un`).
+   *  Accents and case do not count (`sól` is `sol`). Words are compared
+   *  only in scripts that separate them with spaces; Chinese, Japanese,
+   *  Korean, Thai and the like have no stacks. `'allow'` (the default)
+   *  leaves the lines as the breaker sets them and reports nothing.
+   *  `'warn'` leaves them too and reports each stack (a `stack` content
+   *  warning). `'avoid'` makes each stack cost {@link stackPenalty} in the
+   *  line breaker, which sets the paragraph otherwise where the word
+   *  spacing allows, and reports the stacks it kept. Captions, notes and
+   *  table cells follow the rule too. Needs `optimalLineBreaking`. A
+   *  composed page's frame sets its story without it. */
+  stacks?: CompositionRule;
+  /** Characters, spaces included, the same edge of two consecutive lines
+   *  must share to stack (`stacks`); the punctuation at the very edge is
+   *  not counted, and the same word always stacks. Default 3. */
+  stackMinCharacters?: number;
+  /** Cost of a stack under `stacks: 'avoid'`, in demerits added to the
+   *  paragraph's, the scale of the cost of two hyphenated lines in a row
+   *  (3000): at the default a stack weighs as much as a hyphen ladder of
+   *  two, and a repeated monosyllable (`de` / `de`) twice as much. 0 weighs
+   *  none. Default 3000, chosen on the Spanish showcase books and Cookbook
+   *  recipes (#1463). */
+  stackPenalty?: number;
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */
   avoidRuntsInLists?: boolean;

@@ -56,6 +56,7 @@ export function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
     }
   };
   rule('bodyText.shortListSplit', config.bodyText?.shortListSplit);
+  rule('bodyText.stacks', config.bodyText?.stacks);
   rule('layout.openerFloats', config.layout?.openerFloats);
   // The figures of a style (#1237): read as unset, the family's own.
   const figures = (path: string, value: unknown) => {

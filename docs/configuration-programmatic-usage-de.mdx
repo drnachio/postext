@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Programmatische Nutzung',
   description: 'Postext aus Code aufrufen: buildDocument und seine Warnungen, Standardwerte, Schriften, Caches und der Web Worker',
   lang: 'de',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '28 min',
   order: 21,
   parent: 'configuration',
@@ -374,6 +374,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Die Liste wird geteilt, wo die Spalte endet.</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>Zwei Zeilen hintereinander eines Absatzes in derselben Spalte, die auf dasselbe Wort oder dieselben <code>bodyText.stackMinCharacters</code> Zeichen enden (<code>edge: 'end'</code>) oder damit beginnen (<code>'start'</code>): <code>text</code> ist, was sie wiederholen, wie die erste Zeile es druckt, und <code>lines</code> sind die beiden Zeilen. Unter <code>bodyText.stacks: 'warn'</code> wird jede gemeldet; unter <code>'avoid'</code> die, die der Algorithmus behielt. Eine pro Wiederholung; verweist auf die beiden Zeilen, mit ihrer Seite. Seit postext 1.73.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Ein zusammenzuhaltender Block des Inhaltsverzeichnisses (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), angeführt von <code>title</code>, gesetzt in <code>columns</code> Spalten: Er ist höher als eine ganze Spalte, oder die Spalte, in der er beginnt, ist kurz (unter einem seitenbreiten Kasten, neben einem Gleitobjekt). Eine pro Block; verweist auf die Direktive <code>:::toc</code>, mit der Seite, auf der der Block beginnt. Um sie zu beheben, führen Sie weniger Ebenen auf (<code>levels="1"</code>), lassen Sie die Blöcke von einer tieferen Ebene anführen (<code>toc.groups.head: 2</code>) oder setzen Sie die Einträge kleiner oder enger. Seit postext 1.34.</td>
       <td>Der Block wird geteilt; mit <code>toc.groups.continuation</code> beginnt jede Spalte, in der er weiterläuft, mit seiner Kopfzeile und dem Fortsetzungsvermerk.</td>
@@ -397,6 +402,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>glyphFallback</code></td>
       <td>Zeichen, die der Text in einer Schrift setzt (<code>family</code>, <code>weight</code>, <code>style</code>), die keine Glyphe für sie hat: <code>characters</code> nennt die ersten 24, jedes einmal, <code>count</code> ihre Gesamtzahl und <code>supplier</code> die Familie, aus der sie stammen (eine generische Familie wie <code>serif</code>); fehlt, wenn eine vom System gewählte Schrift sie gezeichnet hat. Eine Meldung je Schrift. Im Browser oder in einem Worker fragt die Engine eine Prüfschrift ab, die sie im Font-Set anmeldet (<code>installGlyphProbe</code>, aufgerufen von <code>prepareFonts</code> und vom Layout-Worker); anderswo liest sie die <code>cmap</code>-Tabelle der mit <code>registerFontCoverage</code> registrierten Dateien, wie die Kommandozeile. Hinter <code>debug.warnings.missingFont</code>. Ohne Seite und ohne Quellbereich. Seit postext 1.52.</td>
       <td>Die Zeichen werden aus einer anderen Schrift gezeichnet, deren Form und Breiten nicht zur Textschrift passen müssen. Wählen Sie eine Schriftfamilie, die sie abdeckt.</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>Ein Block mit Zeichen, die seiner Schrift fehlen: der Ort, den <code>glyphFallback</code> nicht nennt. Einer je Block, Schrift, Seite und zeichnender Familie (höchstens 200 je Dokument): <code>characters</code> listet sie, <code>supplier</code> ist die Familie der Liste, die sie zeichnet (die <code>symbolFont</code>), fehlt für die, die keine hat. Zeigt auf den Block, den <code>blockId</code> nennt. Zeichen, die die <code>symbolFont</code> zeichnet, meldet <code>glyphFallback</code> nicht.</td>
+      <td>Sie werden mit <code>supplier</code> gezeichnet; ohne sie druckt das PDF leere Kästchen. Eine <code>symbolFont</code> angeben, die sie enthält.</td>
     </tr>
   </tbody>
 </table>
@@ -674,18 +684,21 @@ Der Unterpfad `postext/word` schreibt und liest Word-Dokumente (`.docx`) ohne DO
 
 ```ts
 import { buildDocument } from 'postext';
-import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { semanticDocx, facsimileDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
 import { decompressWoff2 } from 'postext-pdf';
 
 const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // dieselben ids bei Export und Import
 
-// Semantisch: die Strukturen von Word selbst, aus dem Markdown und der Konfiguration.
-const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
-
-// Gesetzt: die gesetzten Seiten, mit den eingebetteten Schriften des Buchs.
-const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+// Gesetzt: Fließtext im Design des Buchs, mit dessen eingebetteten Schriften.
 const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
-const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+const formatted = await semanticDocx({ chapters, config, resources, resourceBytes, fonts, title: 'Field notes' });
+
+// Semantisch: derselbe Text als reiner Inhalt, in schlichten Word-Formatvorlagen.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, design: 'plain', title: 'Field notes' });
+
+// Seitenfaksimile: die gesetzten Seiten, jede Zeile in einem festen Textfeld.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const facsimile = await facsimileDocx({ docs, chapters, resources, resourceBytes, fonts });
 
 // Die korrigierte Datei, mit dem Buch zusammengeführt, wie es jetzt ist.
 if (isExportedDocx(edited)) {
@@ -695,8 +708,8 @@ if (isExportedDocx(edited)) {
 }
 ```
 
-- **`semanticDocx(options)`** liefert die Bytes der `.docx` (ein `Uint8Array`). Sie nimmt `chapters` (`{ id, title?, markdown }`), `config`, `resources` mit `resourceBytes(fileId)` für die Bytes ihrer Bilder, `rasterizeSvg(svg, width, height)` für das PNG, das Word neben einem SVG braucht (ohne sie bleibt ein SVG draußen), `fonts` (ein Plan aus `planWordFonts`), `title`, `author`, `date` (ein festes ISO-Datum macht die Bytes reproduzierbar) und `onWarning` für das, was Word auf seine Art setzt (`{ code, message, chapter? }`). Formeln brauchen den Konverter von TeX nach Word, der beim ersten Gebrauch lädt; lädt er nicht, bleiben sie TeX, mit einer Warnung `mathUnavailable`.
-- **`formattedDocx(options)`** nimmt `docs`, ein `VDTDocument` je Kapitel in der Reihenfolge von `chapters` (die Druckkette, aus der das PDF entsteht), und dieselben `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` und `onWarning`. `onProgress(done, total)` zählt die geschriebenen Seiten.
+- **`semanticDocx(options)`** liefert die Bytes der `.docx` (ein `Uint8Array`). Sie nimmt `chapters` (`{ id, title?, markdown }`), `config`, `resources` mit `resourceBytes(fileId)` für die Bytes ihrer Bilder, `rasterizeSvg(svg, width, height)` für das PNG, das Word neben einem SVG braucht (ohne sie bleibt ein SVG draußen), `fonts` (ein Plan aus `planWordFonts`), `title`, `author`, `date` (ein festes ISO-Datum macht die Bytes reproduzierbar) und `onWarning` für das, was Word auf seine Art setzt (`{ code, message, chapter? }`). Formeln brauchen den Konverter von TeX nach Word, der beim ersten Gebrauch lädt; lädt er nicht, bleiben sie TeX, mit einer Warnung `mathUnavailable`. `design` wählt das Aussehen: `'book'` (die Voreinstellung) setzt den Text im Design des Buchs, so weit Word es zulässt, und `'plain'` schreibt den Inhalt allein, auf einer A4-Seite in einer Spalte und in Arial, in Word-Formatvorlagen, die jeden Teil benennen.
+- **`facsimileDocx(options)`** nimmt `docs`, ein `VDTDocument` je Kapitel in der Reihenfolge von `chapters` (die Druckkette, aus der das PDF entsteht), und dieselben `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` und `onWarning`. `onProgress(done, total)` zählt die geschriebenen Seiten. Sie schreibt das Seitenfaksimile: jede Zeile in einem festen Textfeld, wie das PDF sie druckt, um das Layout in Word auf dem Desktop anzusehen. `formattedDocx` ist ihr alter Name, der bleibt.
 - **`planWordFonts(faces, options)`** macht aus den Schriften des Buchs (`{ family, weight, style, files }`: WOFF2 oder sfnt, beliebig viele unicode-range-Teile) die statischen TrueType-Schriften, die Word einbettet. `decompressWoff2` (der aus `postext-pdf`) liest WOFF2; `usedText` und `fontStrings` lassen Teile und Schnitte weg, die der Export nicht nutzt; `familySuffix` (Voreinstellung `' PTX'`) wird an jede eingebettete Familie angehängt. Seine `warnings` nennen die weggelassenen Schriften (`restricted`, `cff`, `variable`, `missing`, `merge-failed`) und die nur für Vorschau und Druck eingebetteten (`preview-print`).
 - **`isExportedDocx(bytes)`** sagt, ob eine Datei die Exportkarte mitführt, und wirft nie. `readExportMap(files)` liest die Karte selbst aus den entpackten Teilen (`unzipSync` von fflate): `exportId`, `variant`, `engine`, die Kapitel mit ihren Hashes und die Kopie des exportierten Texts.
 - **`applyDocxEdits(bytes, { chapters, resources })`** arbeitet synchron. Sie liefert alle Kapitel mit den Korrekturen (`chapters`), tiefe Kopien der Ressourcen, deren Legende, Anmerkung, Alternativtext oder Tabellenzellen sich geändert haben (`resources`), `edits`, `comments`, `variant`, `exportId` und `changed`. Jede Bearbeitung hat `chapter` oder `resourceId` und `field` (`caption`, `note`, `alt`, `cell:<Zeile>:<Spalte>`), `start` und `end` im aktuellen Text, `before`, `after`, `kind` (`text`, `format`, `paragraph`, `tracked`) und `status` mit seinem `reason`: `applied`, `conflict` (`changed-since-export`, `target-missing`, `no-snapshot`, `overlap`) oder `rejected` (`generated`, `format-crosses-markup`, `format-partial`, `bookmarks-lost`, `resource-removed`). Jeder Kommentar hat `author`, `text` und seine Stelle (`start` ist -1 bei einem Kommentar, der an keinem exportierten Text steht). Eine Datei, die keine exportierte `.docx` ist, löst einen `DocxReadError` aus. Die Kapitel-ids müssen die des Exports sein: Eine Bearbeitung in einem unbekannten Kapitel wird gemeldet, nicht übernommen.
@@ -722,7 +735,7 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 
 ### InDesign-Pakete (`postext/idml`)
 
-Der Unterpfad `postext/idml` schreibt die gesetzten Seiten als InDesign-Markup-Paket (`.idml`), damit ein Gestalter das Buch in InDesign fertigstellt. Wie das gesetzte Word-Dokument beruht es auf der Display-Liste der Seite und braucht kein DOM. Der Befehl `idml` der Kommandozeile beruht darauf (siehe [Kommandozeile › idml](/de/docs/command-line#idml)). Seit postext 1.71.
+Der Unterpfad `postext/idml` schreibt die gesetzten Seiten als InDesign-Markup-Paket (`.idml`), damit ein Gestalter das Buch in InDesign fertigstellt. Wie das Seitenfaksimile für Word beruht es auf der Display-Liste der Seite und braucht kein DOM. Der Befehl `idml` der Kommandozeile beruht darauf (siehe [Kommandozeile › idml](/de/docs/command-line#idml)). Seit postext 1.71.
 
 ```ts
 import { buildDocument } from 'postext';

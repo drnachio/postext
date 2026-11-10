@@ -103,6 +103,9 @@ export function pretextSegmentsToItems(
    *  own language, #770: a face may set the dot after an `l` otherwise
    *  than alone). */
   geminateDotWidth: number | ((piece: string) => number) = 0,
+  /** Give each box the text it paints (`KPBox.text`), for stacks (#1463):
+   *  only while they are avoided, so the common path allocates nothing. */
+  withText = false,
 ): KPItem[] {
   const items: KPItem[] = [];
   const { segments, widths, kinds } = prepared;
@@ -116,7 +119,9 @@ export function pretextSegmentsToItems(
 
     switch (kind) {
       case 'text': {
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
+        items.push(withText
+          ? { type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!), text: segments[i]! }
+          : { type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
         const seg = segments[i]!;
         const last = seg[seg.length - 1];
         if (kinds[i + 1] !== 'text') break;
@@ -175,14 +180,21 @@ export function pretextSegmentsToItems(
           penalty: 0,
           flagged: false,
           sourceIndex: i,
+          // Stacks read the words on either side apart (#1463).
+          ...(withText ? { separates: true } : {}),
         });
         break;
       case 'preserved-space':
       case 'tab':
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
+        // A space to stacks (#1463).
+        items.push(withText
+          ? { type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!), text: ' ' }
+          : { type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
         break;
       default:
-        items.push({ type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
+        items.push(withText
+          ? { type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!), text: segments[i]! }
+          : { type: 'box', width: w, sourceIndex: i, chars: trackedChars(segments[i]!) });
         break;
     }
   }

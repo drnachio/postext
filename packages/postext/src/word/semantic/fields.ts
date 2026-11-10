@@ -19,7 +19,7 @@ import type { HeadingCounters, OutlineEntry } from '../../types.js';
 import { seeLabels } from './marks.js';
 import type { WriterContext } from './context.js';
 import { blockSdt, fieldRuns, paragraph, rPr, textRuns, type ParaProps, type RunProps } from './wml.js';
-import { tocEntryParts, tocPartStyle, tocSubtitleLine } from './prose/tocEntry.js';
+import { tocEntryParts, tocPartRuns, tocPartStyle, tocSubtitleLine } from './prose/tocEntry.js';
 import type { TocLevelNumbering } from './prose/paragraphStyle.js';
 import { escapeXml } from '../xml.js';
 
@@ -127,7 +127,8 @@ export function tocField(ctx: WriterContext, directive: ContentBlock): string {
     if (!info) continue;
     if (info.kind === 'part') {
       const text = [info.number, info.title].filter(Boolean).join(' ');
-      if (text) lines.push({ style: tocPartStyle(ctx), runs: textRuns(text, rPr({ b: true })) });
+      const designed = tocPartRuns(ctx, info.number ?? '', info.title ?? '');
+      if (text) lines.push({ style: tocPartStyle(ctx), runs: designed ?? textRuns(text, rPr({ b: true })) });
       continue;
     }
     // The number in its column and face, the title after it (#1444).

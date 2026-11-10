@@ -101,6 +101,15 @@ export interface PostextConfig {
   /** External links in print: the address of each link printed as a note
    *  (its URL, a QR code, or both) or in parentheses (#1302). */
   links?: LinksConfig;
+  /** A family that sets the characters the text's own fonts have no glyph
+   *  for: mathematical letters and operators (∪, ℵ, ∀), Greek
+   *  in a Latin face, arrows. Every font of the document lists it after
+   *  its own family, so the canvas, the PDF and the HTML and EPUB draw
+   *  those characters in it rather than in a face the system picks, or
+   *  as an empty box in the PDF. `'Noto Sans Math'` covers most
+   *  mathematics. The family is loaded with the text's; it draws for
+   *  every weight and slant. Unset: no such family. */
+  symbolFont?: string;
   /** East Asian typography: line breaking and justification of Chinese,
    *  Japanese and Korean text (see {@link CjkConfig}). */
   cjk?: CjkConfig;

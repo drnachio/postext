@@ -52,6 +52,12 @@ export interface ResourceLayoutInput {
    *  are not counted: the caller takes them off the slot's room. Ignored
    *  for tables and turned blocks. */
   maxBodyHeight?: number;
+  /** A full-page plate (`placement.plate`, #1461): set the picture as
+   *  large as `columnWidth` across and this many px tall (its caption and
+   *  note included) hold, its proportions kept, enlarged or reduced; the
+   *  result records the scale (`plateScale`). Ignored for tables and
+   *  turned blocks. */
+  plateHeight?: number;
   /** The smallest scale `maxBodyHeight` sets the picture at (0–1); the
    *  body then stands taller than the cap. Default 0. */
   minBodyScale?: number;

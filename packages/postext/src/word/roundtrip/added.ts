@@ -94,7 +94,7 @@ export function roleOf(props: ParaProps | undefined, ps: ParaStyles): ParaRole {
 
 /** The paragraph's text as Markdown: typed text escaped, formatting and
  *  links as inline markup, equations as `$…$`. */
-function markdownOf(chars: readonly ReadChar[]): string {
+export function markdownOf(chars: readonly ReadChar[]): string {
   let out = '';
   let run = '';
   let key: string | undefined;
@@ -157,18 +157,28 @@ export function addedEdits(added: readonly AddedParagraph[], blocks: readonly Bl
     for (const fid of b.starts.keys()) blockOf.set(fid, k);
   });
   const groups = new Map<string, { v: BlockView; side: 'after' | 'before'; texts: { role: ParaRole; text: string }[] }>();
+  const rejected: SourceEdit[] = [];
   for (const a of added) {
     const k = blockOf.get(a.fid);
     if (k === undefined) continue;
-    const at = anchorBlock(blocks, k, a.side);
     const text = markdownOf(a.chars);
+    // A paragraph typed in a table of the book, beside one of its cells:
+    // a row or a line added to the table. The table is a resource, whose
+    // rows the import does not write, and the words are no paragraph of
+    // the chapter either.
+    const beside = blocks[k]!.target;
+    if (a.cell && text && beside.kind === 'resource' && beside.field === 'cell') {
+      rejected.push({ target: beside, start: -1, end: -1, text, kind: 'paragraph', reject: 'table-row', before: '' });
+      continue;
+    }
+    const at = anchorBlock(blocks, k, a.side);
     if (!at || !text) continue;
     const key = `${at.v.id}|${at.side}`;
     let g = groups.get(key);
     if (!g) groups.set(key, (g = { v: at.v, side: at.side, texts: [] }));
     g.texts.push({ role: roleOf(a.props, ps), text });
   }
-  const out: SourceEdit[] = [];
+  const out: SourceEdit[] = [...rejected];
   for (const { v, side, texts } of groups.values()) {
     const base = baseOf(v);
     if (side === 'after') {

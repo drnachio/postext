@@ -5,7 +5,10 @@
 import type { KPItem, KPOptions } from './types.js';
 import type { Breaker } from './wasm/abi.js';
 import { readyWasmBreaker } from './wasm/engine.js';
-import { search } from './breakpoints/search.js';
+import { limited, lineEdgesFor } from './breakpoints/search.js';
+
+export { foldEdge, isMonosyllable, edgesStack, textEdges, LineEdges } from './breakpoints/edges.js';
+export type { Edge } from './breakpoints/edges.js';
 
 export { adjustLine } from './breakpoints/adjust.js';
 export type { LineAdjustment } from './breakpoints/adjust.js';
@@ -28,6 +31,8 @@ interface BreakpointsHooks {
  */
 export function computeBreakpoints(items: KPItem[], options: KPOptions): number[] {
   const hooks = globalThis as BreakpointsHooks;
+  // The WebAssembly breaker weighs stacks too, over the line edges worked
+  // out here (`wasm/abi.ts`).
   const breaks = (hooks.__postextKpImpl ?? readyWasmBreaker() ?? breakpoints)(items, options);
   hooks.__postextKpTap?.(items, options, breaks);
   return breaks;
@@ -41,7 +46,9 @@ export function computeBreakpointsTs(items: KPItem[], options: KPOptions): numbe
 
 function breakpoints(items: KPItem[], options: KPOptions): number[] {
   const looseness = options.looseness ?? 0;
-  if (looseness <= 0) return search(items, options) ?? [];
+  // The edges stacks compare, worked out once for every search below.
+  const edges = lineEdgesFor(items, options);
+  if (looseness <= 0) return limited(items, options, edges)?.breaks ?? [];
   // A longer setting (TeX \looseness > 0: one line more, to fill a short
   // column) takes two searches (#780). The natural one, whose nodes merge by
   // fitness class and so stay few. Then one that keeps every line count
@@ -50,8 +57,9 @@ function breakpoints(items: KPItem[], options: KPOptions): number[] {
   // it was what made a single search quadratic (25 000 active nodes on one
   // paragraph, 39 % of a whole book's layout). It also made that search
   // lose settings: a cheaper chain with a very loose line could take the
-  // key of the only acceptable one. None found: the natural setting.
-  const natural = search(items, { ...options, looseness: 0 }) ?? [];
-  if (natural.length === 0) return natural;
-  return search(items, options, natural.length + looseness) ?? natural;
+  // key of the only acceptable one. None found: the natural setting. Nor
+  // may the longer setting set more stacks than the natural one.
+  const natural = limited(items, { ...options, looseness: 0 }, edges);
+  if (!natural || natural.breaks.length === 0) return natural?.breaks ?? [];
+  return limited(items, options, edges, natural.breaks.length + looseness, natural.stacks)?.breaks ?? natural.breaks;
 }

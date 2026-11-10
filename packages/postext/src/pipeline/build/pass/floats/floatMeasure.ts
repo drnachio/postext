@@ -23,7 +23,7 @@ import type { ResourceNumberingMap } from '../../../resources/resourceNumbering.
 import type { ContentBlock } from '../../../../parse/index.js';
 import type { BlockStyle } from '../../../styles.js';
 import type { ComicPageSource } from '../../../../comics/types.js';
-import type { StripGeometry, FloatRotation, CaptionAside, BodyCap } from '../types.js';
+import type { StripGeometry, FloatRotation, CaptionAside, BodyCap, FloatSizing } from '../types.js';
 import type { PassState } from '../state.js';
 
 /** What createFloatMeasure takes from the pass. */
@@ -154,6 +154,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     rotated ? `:${rotated.direction}${rotated.length.toFixed(2)}${rotated.upright ? 'u' : ''}` : '';
   const asideKey = (a?: CaptionAside): string => (a ? `:aside${a.dx.toFixed(1)}x${a.width.toFixed(1)}${a.alignBottom ? 'b' : 't'}${(a.offsetY ?? 0).toFixed(1)}` : '');
   const capKey = (cap?: BodyCap): string => (cap ? `:cap${cap.maxBodyHeight.toFixed(2)}@${cap.minScale}` : '');
+  const sizingKey = (z?: FloatSizing): string =>
+    (z?.plateHeight !== undefined ? `:plate${z.plateHeight.toFixed(2)}` : '') + (z?.maxBodyWidth !== undefined ? `:max${z.maxBodyWidth.toFixed(2)}` : '');
   const layoutFloat = (
     resourceId: string,
     width: number,
@@ -161,13 +163,14 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     rotated?: FloatRotation,
     aside?: CaptionAside,
     cap?: BodyCap,
+    sizing?: FloatSizing,
   ): { block: ResolvedResourceBlock; totalHeight: number; tableRows?: TableRowMetrics; asideHeight?: number } | null => {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
     // Column balancing: a picture with a safe area grown by whole lines
     // (`flexFigure`, #442).
     const flexPx = balanceExtraPx?.get(flexFloatKey(resourceId)) ?? 0;
-    return layoutResourceBlock({
+    const laid = layoutResourceBlock({
       ...(cache ? { cache } : {}),
       resource,
       resourceType: resourceTypeById.get(resource.typeId),
@@ -183,7 +186,13 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       ...(aside ? { captionAside: aside } : {}),
       ...(flexPx > 0 ? { bodyHeightDelta: flexPx } : {}),
       ...(cap && !rotated ? { maxBodyHeight: cap.maxBodyHeight, minBodyScale: cap.minScale } : {}),
+      ...(sizing?.plateHeight !== undefined && !rotated ? { plateHeight: sizing.plateHeight } : {}),
+      ...(sizing?.maxBodyWidth !== undefined ? { maxBodyWidth: sizing.maxBodyWidth } : {}),
     });
+    // A full-page plate (#1461) takes the whole room it was measured for,
+    // so no text comes under it on its page.
+    if (laid && sizing?.plateHeight !== undefined && !rotated) return { ...laid, totalHeight: Math.max(laid.totalHeight, sizing.plateHeight) };
+    return laid;
   };
 
   /** The rotation of a pending float on a band whose columns keep `avail`
@@ -193,8 +202,20 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     page && pageIsVertical(page)
       ? uprightOn(page)
       : f.rotate
-        ? { direction: flowRotation(f.rotate, page), length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
+        ? { direction: flowRotation(f.rotate, page), length: bandRoom(avail) }
         : undefined;
+  /** The grid multiple within `avail` px less the float gap: the longest
+   *  a block is set for a band to take `avail` at most. */
+  const bandRoom = (avail: number): number => Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx);
+  /** How a float is sized beyond its slot's width (#1461) on a band whose
+   *  columns keep `avail` px: a full-page plate fills that room (the float
+   *  gap kept); a turned picture with a width given as a length is set at
+   *  most that wide before the turn. Undefined for any other float. */
+  const sizingFor = (f: PlannedFloat, avail: number, rotated: FloatRotation | undefined): FloatSizing | undefined => {
+    if (f.plate && !rotated) return { plateHeight: bandRoom(avail) };
+    if (f.widthLength && rotated && !rotated.upright) return { maxBodyWidth: Math.min(rotated.length, dimensionToPx(f.widthLength, dpi)) };
+    return undefined;
+  };
   /** `placement.rotate` keeps its meaning on the sheet: `'ccw'` turns the
    *  picture's top to the sheet's left. A right-to-left page's flow is the
    *  sheet mirrored, where the same turn on the sheet is the opposite one,
@@ -245,8 +266,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
   /** Height (and caption baseline) of a float at a given width, memoised —
    *  fit checks run for every pending float on every loop iteration. */
   const floatMeasureMemo = new Map<string, FloatMeasure | null>();
-  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap): FloatMeasure | null => {
-    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}`;
+  const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap, sizing?: FloatSizing): FloatMeasure | null => {
+    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}${sizingKey(sizing)}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
     const strip = comicStripOf(resourceId);
@@ -279,7 +300,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       floatMeasureMemo.set(key, mc);
       return mc;
     }
-    const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap);
+    const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap, sizing);
     let m: FloatMeasure | null = null;
     if (laid && laid.block.rotation) {
       // A rotated block takes its band whole: no caption baseline to align,
@@ -328,6 +349,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     mirrored = false,
     /** A picture scaled to its slot (`placement.shrink`). */
     cap?: BodyCap,
+    sizing?: FloatSizing,
   ): { block: VDTBlock; height: number } | null => {
     const strip = comicStripOf(resourceId);
     if (strip) {
@@ -341,7 +363,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       calloutFloatResults.set(result.frame, { result, startIdx, plan: cf.plan });
       return { block: result.frame, height: result.totalHeight };
     }
-    const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap);
+    const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap, sizing);
     if (!laid) return null;
     const { block: rb, totalHeight } = laid;
     const id = slice && slice.startRow > 0 ? `float-${resourceId}-cont-${slice.startRow}` : `float-${resourceId}`;
@@ -486,7 +508,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
   };
   return {
     calloutFloatResults, calloutBandPages, enqueueCalloutFloat, acrossWidth, floatGapPx, minTextPx,
-    offsetResourceBlockToAbsolute, layoutFloat, rotationFor, uprightOn, tableRowCount, tableOverflow,
+    offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, uprightOn, tableRowCount, tableOverflow,
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
     floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf

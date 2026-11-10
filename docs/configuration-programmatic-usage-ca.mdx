@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ús programàtic',
   description: 'Com es fa servir Postext des del codi: buildDocument i els avisos que retorna, els valors per defecte, la càrrega de fonts, les memòries cau i el Web Worker',
   lang: 'ca',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '32 min',
   order: 21,
   parent: 'configuration',
@@ -374,6 +374,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>La llista es parteix on s'acaba la columna.</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>Dues línies seguides d'un paràgraf, en una mateixa columna, que acaben (<code>edge: 'end'</code>) o comencen (<code>'start'</code>) amb la mateixa paraula o els mateixos <code>bodyText.stackMinCharacters</code> caràcters: <code>text</code> és el que repeteixen, tal com l'imprimeix la primera línia, i <code>lines</code> les dues línies. Amb <code>bodyText.stacks: 'warn'</code> s'informa de totes; amb <code>'avoid'</code>, de les que va mantenir l'algorisme. Un per repetició; apunta a les dues línies, amb la seva pàgina. Des de postext 1.73.</td>
+      <td>Les línies es componen tal com són.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Un bloc de l'índex que ha d'anar junt (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), encapçalat per <code>title</code> i compost en <code>columns</code> columnes: és més alt que una columna sencera, o la columna on comença és curta (sota un bloc d'amplada de pàgina, al costat d'un flotant). Un per bloc; l'avís indica la directiva <code>:::toc</code>, amb la pàgina on comença el bloc. Per eliminar-lo, llista menys nivells (<code>levels="1"</code>), encapçala els blocs amb un nivell inferior (<code>toc.groups.head: 2</code>) o fes les entrades més petites o més atapeïdes. Des de postext 1.34.</td>
       <td>El bloc es parteix; amb <code>toc.groups.continuation</code>, cada columna on continua s'obre amb la seva fila de capçalera i la marca de continuació.</td>
@@ -397,6 +402,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td><code>glyphFallback</code></td>
       <td>Caràcters que el text posa en una font (<code>family</code>, <code>weight</code>, <code>style</code>) que no té glif per a ells: <code>characters</code> en dona els 24 primers, un cop cadascun, <code>count</code> quants n'hi ha en total i <code>supplier</code> la família que els ha dibuixat (una família genèrica com <code>serif</code>), absent quan els ha dibuixat una font que ha triat el sistema. Un per font. En un navegador o en un worker el motor pregunta a una font sonda que declara al conjunt de fonts (<code>installGlyphProbe</code>, que criden <code>prepareFonts</code> i el worker de compaginació); fora d'aquests llegeix la taula <code>cmap</code> dels fitxers registrats amb <code>registerFontCoverage</code>, com fa la línia d'ordres. Subjecte a <code>debug.warnings.missingFont</code>. Sense pàgina ni rang d'origen. Des de postext 1.52.</td>
       <td>Els caràcters es dibuixen amb una altra font, que pot no casar en disseny i amplades amb la del text. Tria una família que els inclogui.</td>
+    </tr>
+    <tr>
+      <td><code>glyphFallbackAt</code></td>
+      <td>Un bloc que porta caràcters que la seva font no té: el lloc que no dona <code>glyphFallback</code>. Un per bloc, font, pàgina i família que els dibuixa (200 com a màxim per document): <code>characters</code> els enumera i <code>supplier</code> és la família de la llista que els dibuixa (la <code>symbolFont</code>), absent per als que no té cap. Assenyala el bloc, que anomena <code>blockId</code>. Els caràcters que dibuixa la <code>symbolFont</code> no s'avisen com a <code>glyphFallback</code>.</td>
+      <td>Es dibuixen amb <code>supplier</code>; sense, el PDF els imprimeix com a caixes buides. Indica una <code>symbolFont</code> que els tingui.</td>
     </tr>
   </tbody>
 </table>
@@ -673,18 +683,21 @@ El subcamí `postext/word` escriu i llegeix documents de Word (`.docx`) sense DO
 
 ```ts
 import { buildDocument } from 'postext';
-import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { semanticDocx, facsimileDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
 import { decompressWoff2 } from 'postext-pdf';
 
 const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // els mateixos ids a l'exportació i a la importació
 
-// Semàntic: les estructures pròpies de Word, a partir del Markdown i la configuració.
-const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
-
-// Maquetat: les pàgines compostes, amb les fonts del llibre incrustades.
-const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+// Maquetat: text seguit amb el disseny del llibre i les seves fonts incrustades.
 const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
-const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+const formatted = await semanticDocx({ chapters, config, resources, resourceBytes, fonts, title: 'Field notes' });
+
+// Semàntic: el mateix text com a contingut sol, en estils de Word senzills.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, design: 'plain', title: 'Field notes' });
+
+// Facsímil de pàgines: les pàgines compostes, cada línia en un quadre de text fix.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const facsimile = await facsimileDocx({ docs, chapters, resources, resourceBytes, fonts });
 
 // El fitxer corregit, combinat amb el llibre tal com és ara.
 if (isExportedDocx(edited)) {
@@ -694,8 +707,8 @@ if (isExportedDocx(edited)) {
 }
 ```
 
-- **`semanticDocx(options)`** es resol en els bytes del `.docx` (un `Uint8Array`). Rep `chapters` (`{ id, title?, markdown }`), `config`, `resources` amb `resourceBytes(fileId)` per als bytes de les seves imatges, `rasterizeSvg(svg, width, height)` per al PNG que Word necessita al costat d'un SVG (sense aquesta funció, un SVG es deixa fora), `fonts` (un pla de `planWordFonts`), `title`, `author`, `date` (una data ISO fixa fa els bytes reproduïbles) i `onWarning` per al que Word compon a la seva manera (`{ code, message, chapter? }`). Les fórmules necessiten el convertidor de TeX a Word, que es carrega la primera vegada que es fa servir; si no es pot carregar, es queden en TeX, amb un avís `mathUnavailable`.
-- **`formattedDocx(options)`** rep `docs`, un `VDTDocument` per capítol en l'ordre de `chapters` (la cadena d'impressió d'on surt el PDF), i els mateixos `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` i `onWarning`. `onProgress(done, total)` compta les pàgines escrites.
+- **`semanticDocx(options)`** es resol en els bytes del `.docx` (un `Uint8Array`). Rep `chapters` (`{ id, title?, markdown }`), `config`, `resources` amb `resourceBytes(fileId)` per als bytes de les seves imatges, `rasterizeSvg(svg, width, height)` per al PNG que Word necessita al costat d'un SVG (sense aquesta funció, un SVG es deixa fora), `fonts` (un pla de `planWordFonts`), `title`, `author`, `date` (una data ISO fixa fa els bytes reproduïbles) i `onWarning` per al que Word compon a la seva manera (`{ code, message, chapter? }`). Les fórmules necessiten el convertidor de TeX a Word, que es carrega la primera vegada que es fa servir; si no es pot carregar, es queden en TeX, amb un avís `mathUnavailable`. `design` tria l'aspecte: `'book'` (per defecte) compon el text amb el disseny del llibre fins on Word ho permet, i `'plain'` escriu només el contingut, en una pàgina A4 a una columna i en Arial, amb estils de Word que diuen què és cada part.
+- **`facsimileDocx(options)`** rep `docs`, un `VDTDocument` per capítol en l'ordre de `chapters` (la cadena d'impressió d'on surt el PDF), i els mateixos `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` i `onWarning`. `onProgress(done, total)` compta les pàgines escrites. Escriu el facsímil de pàgines: cada línia en un quadre de text fix, tal com la imprimeix el PDF, per mirar la composició al Word d'escriptori. `formattedDocx` n'és el nom anterior, que es conserva.
 - **`planWordFonts(faces, options)`** converteix les fonts del llibre (`{ family, weight, style, files }`: WOFF2 o sfnt, amb qualsevol nombre de fragments unicode-range) en les fonts TrueType estàtiques que Word incrusta. `decompressWoff2` (el que exporta `postext-pdf`) llegeix WOFF2; `usedText` i `fontStrings` deixen fora els fragments i les fonts que l'exportació no fa servir; `familySuffix` (per defecte `' PTX'`) s'afegeix a cada família incrustada. Els seus `warnings` anomenen les fonts que es deixen fora (`restricted`, `cff`, `variable`, `missing`, `merge-failed`) i les incrustades només per a previsualització i impressió (`preview-print`).
 - **`isExportedDocx(bytes)`** diu si un fitxer porta el mapa d'exportació, i no llança mai errors. `readExportMap(files)` llegeix el mapa mateix de les parts descomprimides (`unzipSync` de fflate): `exportId`, `variant`, `engine`, els capítols amb els seus hash i la còpia del text exportat.
 - **`applyDocxEdits(bytes, { chapters, resources })`** és síncrona. Retorna tots els capítols amb les correccions aplicades (`chapters`), còpies profundes dels recursos el peu, la nota, el text alternatiu o les cel·les de taula dels quals han canviat (`resources`), `edits`, `comments`, `variant`, `exportId` i `changed`. Cada edició porta `chapter`, o `resourceId` i `field` (`caption`, `note`, `alt`, `cell:<fila>:<columna>`); `start` i `end` al text actual; `before`, `after`; `kind` (`text`, `format`, `paragraph`, `tracked`), i `status` amb el seu `reason`: `applied`, `conflict` (`changed-since-export`, `target-missing`, `no-snapshot`, `overlap`) o `rejected` (`generated`, `format-crosses-markup`, `format-partial`, `bookmarks-lost`, `resource-removed`). Cada comentari porta el seu `author`, el seu `text` i el seu lloc (`start` val -1 en un comentari que no és sobre text exportat). Un fitxer que no és un `.docx` exportat llança un `DocxReadError`. Els ids de capítol han de ser els de l'exportació: una edició en un capítol desconegut es notifica, no s'aplica.
@@ -721,7 +734,7 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 
 ### Paquets d'InDesign (`postext/idml`)
 
-El subcamí `postext/idml` escriu les pàgines maquetades com un paquet d'InDesign Markup (`.idml`), perquè un dissenyador acabi el llibre a InDesign. Com el document de Word maquetat, es construeix sobre la llista de visualització de la pàgina, sense DOM. L'ordre `idml` de la línia d'ordres s'hi basa (vegeu [Línia d'ordres › idml](/ca/docs/command-line#idml)). Des de postext 1.71.
+El subcamí `postext/idml` escriu les pàgines maquetades com un paquet d'InDesign Markup (`.idml`), perquè un dissenyador acabi el llibre a InDesign. Com el facsímil de pàgines per a Word, es construeix sobre la llista de visualització de la pàgina, sense DOM. L'ordre `idml` de la línia d'ordres s'hi basa (vegeu [Línia d'ordres › idml](/ca/docs/command-line#idml)). Des de postext 1.71.
 
 ```ts
 import { buildDocument } from 'postext';

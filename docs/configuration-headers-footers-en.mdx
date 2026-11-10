@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Headers and footers',
   description: 'What prints at the top and the foot of every page: text with placeholders, rules, boxes, images and vector paths, by page parity, and where each element sits',
   lang: 'en',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '29 min',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ The defaults in the table below are those of a text element you add yourself. Th
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>Which page <em>roles</em> the element appears on, combined with <code>parity</code>. After placement every page is classified as <code>'blank'</code> (parity / separator padding, or no content), <code>'part'</code> (a part-divider page), <code>'opener'</code> (its first block is a heading whose level spans the page or forces a page break before it — the first page of a chapter), <code>'comic'</code> (a comic page, <code>:::page</code>), <code>'composed'</code> (a composed page, or the <code>role</code> its template names) or <code>'body'</code> (everything else). <code>pages: 'body'</code> hides a running head on chapter openers; <code>pages: 'opener'</code> shows a folio only there.</td>
+      <td>Which page <em>roles</em> the element appears on, combined with <code>parity</code>. After placement every page is classified as <code>'blank'</code> (parity / separator padding, or no content), <code>'part'</code> (a part-divider page), <code>'opener'</code> (its first block is a heading whose level spans the page or forces a page break before it — the first page of a chapter), <code>'comic'</code> (a comic page, <code>:::page</code>), <code>'composed'</code> (a composed page, or the <code>role</code> its template names) or <code>'body'</code> (everything else). <code>pages: 'body'</code> hides a running head on chapter openers; <code>pages: 'opener'</code> shows a folio only there. A page a full-page plate covers to the trim or the bleed (<code>placement.plate: 'trim' | 'bleed'</code>) is <code>'plate'</code>: only an element whose <code>pages</code> names that role is drawn there, <code>'all'</code> included.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ Rule elements render a line: horizontal across the slot, or vertical down it.
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Page roles the rule appears on (see the text-element <code>pages</code> field).</td>
     </tr>
@@ -622,7 +622,7 @@ Box elements paint a rounded rectangle inside the slot — useful as a backdrop 
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Page roles the box appears on (see the text-element <code>pages</code> field).</td>
     </tr>

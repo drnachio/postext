@@ -27,6 +27,26 @@ async function editDocx(src: string, out: string, from: string, to: string): Pro
   writeFileSync(out, zipSync(files));
 }
 
+/** A Word file as Google Docs saves it in what matters to the import:
+ *  no custom XML part, so no export map; the properties and the bookmarks
+ *  stay. `from`/`to`: a word changed there. */
+async function withoutMap(src: string, out: string, from?: string, to?: string): Promise<void> {
+  const { unzipSync, zipSync, strFromU8, strToU8 } = await import(Bun.resolveSync('fflate', POSTEXT)) as {
+    unzipSync: (b: Uint8Array) => Record<string, Uint8Array>;
+    zipSync: (f: Record<string, Uint8Array>) => Uint8Array;
+    strFromU8: (b: Uint8Array) => string;
+    strToU8: (s: string) => Uint8Array;
+  };
+  const files = unzipSync(new Uint8Array(readFileSync(src)));
+  for (const path of Object.keys(files)) if (path.startsWith('customXml/')) delete files[path];
+  if (from !== undefined) {
+    const xml = strFromU8(files['word/document.xml']!);
+    expect(xml).toContain(`>${from}`);
+    files['word/document.xml'] = strToU8(xml.replace(`>${from}`, `>${to}`));
+  }
+  writeFileSync(out, zipSync(files));
+}
+
 function run(args: string[], cwd: string) {
   const r = Bun.spawnSync([...cmd, ...args], { cwd, env: { ...process.env, NO_COLOR: '1', POSTEXT_CACHE_DIR: join(cwd, '.cache') } });
   return { code: r.exitCode, stdout: r.stdout.toString(), stderr: r.stderr.toString() };
@@ -58,7 +78,7 @@ describe('postext cli', () => {
 
   it('writes a PDF, HTML, EPUB, page images and Word from one layout', () => {
     const dir = book();
-    const r = run(['build', 'ch', '--pdf', 'out/b.pdf', '--html', 'out/b.html', '--epub', 'out/b.epub', '--images', 'out/p', '--dpi', '30', '--docx', 'out/b.docx', '--docx-variant', 'formatted', '--offline', '--json'], dir);
+    const r = run(['build', 'ch', '--pdf', 'out/b.pdf', '--html', 'out/b.html', '--epub', 'out/b.epub', '--images', 'out/p', '--dpi', '30', '--docx', 'out/b.docx', '--docx-variant', 'facsimile', '--offline', '--json'], dir);
     expect(r.code).toBe(0);
     const report = JSON.parse(r.stdout);
     expect(report.ok).toBe(true);
@@ -134,18 +154,43 @@ describe('postext cli', () => {
     expect((await coverOf('m.postext', 'm'))?.path).toBe('thumbnail.png');
   }, 60_000);
 
-  it('exports both Word variants of a book and applies the edits of a formatted file', async () => {
+  it('exports the three Word variants of a book and applies the edits of a facsimile file', async () => {
     const dir = book();
     expect(run(['pack', 'ch', '--name', 'Test', '--no-auto-thumbnail', '-o', 'b.postext', '-q'], dir).code).toBe(0);
     expect(run(['unpack', 'b.postext', '-o', 'proj', '-q'], dir).code).toBe(0);
     const { isExportedDocx } = await import('postext/word');
-    const semantic = run(['docx', 'proj', '-o', 's.docx', '--offline', '--json'], dir);
-    expect(semantic.code).toBe(0);
-    expect(isExportedDocx(new Uint8Array(readFileSync(join(dir, 's.docx'))))).toBe(true);
-    const formatted = run(['docx', 'proj', '--variant', 'formatted', '-o', 'f.docx', '--offline', '--json'], dir);
+    const { unzipSync } = await import(Bun.resolveSync('fflate', POSTEXT)) as { unzipSync: (b: Uint8Array) => Record<string, Uint8Array> };
+    const entries = (file: string) => unzipSync(new Uint8Array(readFileSync(join(dir, file))));
+    const boxed = (file: string) => new TextDecoder().decode(entries(file)['word/document.xml']).includes('<w:txbxContent>');
+    const embedded = (file: string) => Object.keys(entries(file)).some((f) => f.startsWith('word/fonts/'));
+    // No --variant: the formatted file, flowing text with the book's faces.
+    const formatted = run(['docx', 'proj', '-o', 'd.docx', '--offline', '--json'], dir);
     expect(formatted.code).toBe(0);
-    expect(JSON.parse(formatted.stdout).outputs[0].pages).toBeGreaterThan(0);
+    expect(JSON.parse(formatted.stdout).outputs[0]).toMatchObject({ variant: 'formatted' });
+    expect(JSON.parse(formatted.stdout).outputs[0].pages).toBeUndefined();
+    expect(isExportedDocx(new Uint8Array(readFileSync(join(dir, 'd.docx'))))).toBe(true);
+    expect(boxed('d.docx')).toBe(false);
+    expect(embedded('d.docx')).toBe(true);
+    expect(run(['docx', 'proj', '--variant', 'formatted', '--no-embed-fonts', '-o', 'n.docx', '--offline', '-q'], dir).code).toBe(0);
+    expect(embedded('n.docx')).toBe(false);
+    // Content only: flowing text, no face embedded.
+    const semantic = run(['docx', 'proj', '--variant', 'semantic', '-o', 's.docx', '--offline', '--json'], dir);
+    expect(semantic.code).toBe(0);
+    expect(JSON.parse(semantic.stdout).outputs[0]).toMatchObject({ variant: 'semantic' });
+    expect(boxed('s.docx')).toBe(false);
+    expect(embedded('s.docx')).toBe(false);
+    // Neither flow file, unedited, has anything to apply.
+    for (const file of ['d.docx', 's.docx']) {
+      const same = run(['import-docx', file, 'proj', '--dry-run', '--json'], dir);
+      expect(same.code).toBe(0);
+      expect(JSON.parse(same.stdout).edits).toEqual([]);
+    }
+    // The PDF's pages in text boxes.
+    const facsimile = run(['docx', 'proj', '--variant', 'facsimile', '-o', 'f.docx', '--offline', '--json'], dir);
+    expect(facsimile.code).toBe(0);
+    expect(JSON.parse(facsimile.stdout).outputs[0].pages).toBeGreaterThan(0);
     expect(isExportedDocx(new Uint8Array(readFileSync(join(dir, 'f.docx'))))).toBe(true);
+    expect(boxed('f.docx')).toBe(true);
     expect(run(['docx', 'proj', '--variant', 'pages', '-o', 'x.docx'], dir).code).toBe(2);
     // Unedited: nothing to apply.
     const none = run(['import-docx', 'f.docx', 'proj', '--dry-run', '--json'], dir);
@@ -168,29 +213,84 @@ describe('postext cli', () => {
     expect(report.edits.map((e: { status: string; at: string }) => [e.status, e.at])).toEqual([['applied', 'chapters/02-two.md:3']]);
     expect(report.files).toEqual(['chapters/02-two.md']);
     expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));
-    // The same file again: the chapter changed since the export, so the
-    // edit is a conflict and the exit code says an edit was not applied.
+    // The same file again: the book already holds its edit, nothing to bring.
+    expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(0);
+    expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));
+    // The chapter changed another way since the export: the edit is a
+    // conflict and the exit code says an edit was not applied.
+    writeFileSync(chapter, before.replace('More text.', 'Other text.'));
     expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(3);
+    expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Other text.'));
   }, 120_000);
 
-  it('exports a book of comic pages as its pages unless told otherwise (#1444)', () => {
+  it('brings back a flow file that lost its export map, as Google Docs saves it (#1458)', async () => {
+    const dir = book();
+    expect(run(['pack', 'ch', '--name', 'Test', '--no-auto-thumbnail', '-o', 'b.postext', '-q'], dir).code).toBe(0);
+    expect(run(['unpack', 'b.postext', '-o', 'proj', '-q'], dir).code).toBe(0);
+    const { isExportedDocx, exportMapLost } = await import('postext/word');
+    const chapter = join(dir, 'proj', 'chapters', '02-two.md');
+    const before = readFileSync(chapter, 'utf8');
+    for (const variant of ['semantic', 'formatted']) {
+      expect(run(['docx', 'proj', '--variant', variant, '--no-embed-fonts', '-o', `${variant}.docx`, '--offline', '-q'], dir).code).toBe(0);
+      // Unedited: the map is written again from the book, nothing to apply.
+      await withoutMap(join(dir, `${variant}.docx`), join(dir, `${variant}-g.docx`));
+      const bytes = new Uint8Array(readFileSync(join(dir, `${variant}-g.docx`)));
+      expect(isExportedDocx(bytes)).toBe(false);
+      expect(exportMapLost(bytes)).toBe(true);
+      const same = run(['import-docx', `${variant}-g.docx`, 'proj', '--dry-run', '--json'], dir);
+      expect(same.code).toBe(0);
+      const report = JSON.parse(same.stdout);
+      expect(report.edits).toEqual([]);
+      expect(report.notes).toEqual([{ code: 'map-rebuilt' }]);
+      // A word changed there lands in its chapter.
+      await withoutMap(join(dir, `${variant}.docx`), join(dir, `${variant}-e.docx`), 'More', 'Much');
+      const dry = run(['import-docx', `${variant}-e.docx`, 'proj', '--dry-run'], dir);
+      expect(dry.code).toBe(0);
+      expect(dry.stdout).toContain('-More text.\n+Much text.');
+      expect(dry.stderr).toContain('came back without its export map');
+      expect(readFileSync(chapter, 'utf8')).toBe(before);
+    }
+    // The book changed since the export: the edit still lands, and the
+    // report says what the file was compared with.
+    writeFileSync(join(dir, 'proj', 'chapters', '01-one.md'), readFileSync(join(dir, 'proj', 'chapters', '01-one.md'), 'utf8').replace('# One\n', '# One\n\nA paragraph written since.\n'));
+    const later = run(['import-docx', 'semantic-e.docx', 'proj', '--json'], dir);
+    expect(later.code).toBe(0);
+    const report = JSON.parse(later.stdout);
+    expect(report.notes.map((n: { code: string }) => n.code)).toEqual(['map-rebuilt', 'book-changed']);
+    expect(report.notes[1].chapters).toEqual(['chapters/01-one.md']);
+    expect(report.edits.map((e: { status: string; at: string }) => [e.status, e.at])).toEqual([['applied', 'chapters/02-two.md:3']]);
+    expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));
+    expect(readFileSync(join(dir, 'proj', 'chapters', '01-one.md'), 'utf8')).toContain('A paragraph written since.');
+    // A file from another book has nothing this book can place.
+    const other = mkdtempSync(join(tmpdir(), 'postext-cli-'));
+    mkdirSync(join(other, 'ch'));
+    writeFileSync(join(other, 'ch', '01.md'), '# Elsewhere\n\nNothing shared between the two.\n');
+    expect(run(['docx', 'ch', '--variant', 'semantic', '-o', 'o.docx', '--offline', '-q'], other).code).toBe(0);
+    await withoutMap(join(other, 'o.docx'), join(dir, 'o-g.docx'));
+    const foreign = run(['import-docx', 'o-g.docx', 'proj', '--dry-run'], dir);
+    expect(foreign.code).toBe(1);
+    expect(foreign.stderr).toContain('cannot be written again from this book');
+  }, 180_000);
+
+  it('never picks the Word variant from the content: comic pages go out formatted too (#1458)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'postext-cli-'));
     mkdirSync(join(dir, 'ch'));
     const page = ':::page{split="40 / *"}\n::panel\ncaption: The lighthouse keeper climbs the stairs every evening.\n::panel\nmaya: Grandpa! I am here, and the boat is late again.\n:::\n';
     writeFileSync(join(dir, 'ch', '01.md'), `# Pages\n\n${page}\n${page}`);
     const picked = run(['docx', 'ch', '-o', 'p.docx', '--offline', '--json'], dir);
     expect(picked.code).toBe(0);
-    expect(JSON.parse(picked.stdout).outputs[0].pages).toBeGreaterThan(0);
-    const asked = run(['docx', 'ch', '--variant', 'semantic', '-o', 's.docx', '--offline', '--json'], dir);
+    expect(JSON.parse(picked.stdout).outputs[0]).toMatchObject({ variant: 'formatted' });
+    expect(JSON.parse(picked.stdout).outputs[0].pages).toBeUndefined();
+    const asked = run(['docx', 'ch', '--variant', 'facsimile', '-o', 's.docx', '--offline', '--json'], dir);
     expect(asked.code).toBe(0);
-    expect(JSON.parse(asked.stdout).outputs[0].pages).toBeUndefined();
+    expect(JSON.parse(asked.stdout).outputs[0].pages).toBeGreaterThan(0);
   }, 120_000);
 
   it('applies the edits of a semantic file to loose Markdown, and converts it without a book', async () => {
     const dir = book();
     // Windows line ends and a byte-order mark stay as they were.
     writeFileSync(join(dir, 'ch', '02.md'), '\uFEFF# Two\r\n\r\nMore text.\r\n\r\n- a\r\n- b\r\n');
-    expect(run(['docx', 'ch', '-o', 'b.docx', '--no-embed-fonts', '-q'], dir).code).toBe(0);
+    expect(run(['docx', 'ch', '--variant', 'semantic', '-o', 'b.docx', '-q'], dir).code).toBe(0);
     await editDocx(join(dir, 'b.docx'), join(dir, 'e.docx'), 'More', 'Less');
     // A book named, -o (a new book) makes no sense.
     expect(run(['import-docx', 'e.docx', 'ch', '-o', 'x', '-q'], dir).code).toBe(2);

@@ -17,6 +17,12 @@ export interface KPBox {
    *  stretch: an Arabic word's kashida capacity (`measure/rtl/kashida.ts`).
    *  Absent: rigid. */
   stretch?: number;
+  /** The characters the box paints, for stacks (`KPOptions.stacks`,
+   *  #1463): set by the adapters only while stacks are compared. Absent
+   *  then: a box that paints no letters (a formula, a chip, a swatch),
+   *  whose line edge is not compared. `''`: nothing to compare (a
+   *  footnote marker); a space or a tab: a word space. */
+  text?: string;
 }
 
 export interface KPGlue {
@@ -52,6 +58,10 @@ export interface KPPenalty {
    *  starts here counts it with its content. It adds no character. Set in
    *  a document shaped in its own language only. */
   postShift?: number;
+  /** The break stands between two words with nothing painted (a
+   *  zero-width space the author typed): stacks (#1463) read the words on
+   *  either side apart. Set only while stacks are compared. */
+  separates?: boolean;
 }
 
 export type KPItem = KPBox | KPGlue | KPPenalty;
@@ -71,6 +81,15 @@ export interface KPOptions {
   minShrinkRatio: number;
   /** Penalty for two consecutive hyphenated lines. */
   consecutiveHyphenDemerit?: number;
+  /** Stacks (#1463, `bodyText.stacks: 'avoid'`): two consecutive lines
+   *  that end on the same word or the same last `stacks.minChars`
+   *  characters, or that start on the same word or the same first ones
+   *  (`breakpoints/edges.ts`). Each costs `stacks.demerits`, added to the
+   *  line's demerits as `consecutiveHyphenDemerit` is; a repeated
+   *  monosyllable twice that. Needs the boxes' `text`
+   *  (a box without it is a formula or a chip, never compared). Absent:
+   *  off. */
+  stacks?: { minChars: number; demerits: number };
   /** Penalty for adjacent lines of very different tightness. */
   fitnessClassDemerit?: number;
   /** Equivalent-badness added to the final line when it is shorter than

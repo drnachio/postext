@@ -2,14 +2,15 @@
 // finds in it, grouped as the review dialog and the tool list them, and
 // written into the book as one change of the Sandbox's history.
 
-import type { Resource } from 'postext';
-import { applyDocxEdits, type DocxComment, type DocxEdit, type DocxEditResult } from 'postext/word';
+import type { PostextConfig, Resource } from 'postext';
+import { applyDocxEdits, exportMapLost, isExportedDocx, rebuildExportMap, type DocxComment, type DocxEdit, type DocxEditResult, type DocxImportNote, type RebuiltMap } from 'postext/word';
 import { minimalChange } from '../book/textChanges.js';
 import type { Chapter } from '../book/types.js';
 import type { SandboxAction } from '../context/SandboxContext.js';
 import { applyViewerEdit } from '../editor/viewerEdits.js';
 import type { HistoryGroup, SandboxHistory } from '../history/sandboxHistory.js';
 import type { SandboxLabels } from '../types/index.js';
+import { rasterizeSvg, wordResourceBytes } from './wordExport.js';
 
 /** The edits of one chapter, one resource, or the text the book makes
  *  itself (numbers, labels: `generated`); the comments left on no text
@@ -30,6 +31,9 @@ export interface WordEditsReview {
   /** Word dropped the hidden marks: none of the file's changes can be
    *  placed (the one edit saying so is counted, not grouped). */
   lost: boolean;
+  /** What the import says about the file as a whole (`DocxImportNote`):
+   *  its map written again from the book, a book that changed since. */
+  notes: DocxImportNote[];
   /** Chapters whose text the applied edits change: id → new text. */
   chapterTexts: Map<string, string>;
   /** Resources the applied edits change, as they should be written. */
@@ -50,13 +54,44 @@ function chapterText(s: WordEditsSource, id: string): string | undefined {
   return s.chapters.find((c) => c.id === id)?.markdown;
 }
 
+/** Whether `bytes` is a Word document this book may take changes from: a
+ *  postext export, with its export map or (as Google Docs saves it)
+ *  without. */
+export function isWordExport(bytes: Uint8Array): boolean {
+  return isExportedDocx(bytes) || exportMapLost(bytes);
+}
+
+/**
+ * The export map of a file that came back without it, written again from
+ * the book as it stands (#1458): Google Docs drops the map and keeps the
+ * marks, and the same book gives the same marks again. Undefined for a
+ * file that carries its map; `null` when the map is gone and this book
+ * cannot give it back (the file was exported from another book). The
+ * map holds the book as it was read here, so a change made to the book
+ * afterwards is merged by `reviewWordEdits` like any other.
+ */
+export async function rebuildWordMap(bytes: Uint8Array, s: WordEditsSource & { config: PostextConfig }): Promise<RebuiltMap | null | undefined> {
+  if (!exportMapLost(bytes)) return undefined;
+  const files = await wordResourceBytes(s.resources);
+  const rebuilt = await rebuildExportMap(bytes, {
+    chapters: s.chapters.map((c) => ({ id: c.id, title: c.title, markdown: chapterText(s, c.id) ?? c.markdown })),
+    config: s.config,
+    resources: [...s.resources],
+    resourceBytes: (id) => files.get(id),
+    rasterizeSvg,
+  });
+  return rebuilt ?? null;
+}
+
 /** Read an exported .docx against the book as it stands now (throws
- *  `DocxReadError` for a file that is not one). Nothing changes. */
-export function reviewWordEdits(bytes: Uint8Array, s: WordEditsSource): WordEditsReview {
+ *  `DocxReadError` for a file that is not one). Nothing changes.
+ *  `rebuilt`: the map of a file that came back without one
+ *  (`rebuildWordMap`). */
+export function reviewWordEdits(bytes: Uint8Array, s: WordEditsSource, rebuilt?: RebuiltMap): WordEditsReview {
   const result = applyDocxEdits(bytes, {
     chapters: s.chapters.map((c) => ({ id: c.id, title: c.title, markdown: chapterText(s, c.id) ?? c.markdown })),
     resources: [...s.resources],
-  });
+  }, rebuilt ? { rebuilt } : {});
   const groups: WordEditGroup[] = [];
   const groupOf = (e: { chapter?: string; resourceId?: string }, loose: 'generated' | 'comments'): WordEditGroup => {
     const kind = e.chapter !== undefined ? 'chapter' : e.resourceId !== undefined ? 'resource' : loose;
@@ -98,7 +133,7 @@ export function reviewWordEdits(bytes: Uint8Array, s: WordEditsSource): WordEdit
     const old = before.get(r.id);
     return old !== undefined && JSON.stringify(old) !== JSON.stringify(r);
   });
-  return { result, groups, counts, lost, chapterTexts, resources };
+  return { result, groups, counts, lost, notes: result.notes ?? [], chapterTexts, resources };
 }
 
 /** Whether applying the review changes the book. */
@@ -128,6 +163,17 @@ export function editReasonText(labels: SandboxLabels, reason: string | undefined
     case 'changed-since-export': return labels.wordEditReasonChangedSinceExport;
     case 'overlap': return labels.wordEditReasonOverlap;
     default: return labels.wordEditReasonOther;
+  }
+}
+
+/** What the import says about the file as a whole, in words. */
+export function importNoteText(labels: SandboxLabels, note: DocxImportNote): string {
+  switch (note.code) {
+    case 'map-rebuilt': return labels.wordEditsNoteRebuilt;
+    case 'book-changed': return labels.wordEditsNoteBookChanged;
+    case 'book-unverified': return labels.wordEditsNoteUnverified;
+    case 'writer-changed': return labels.wordEditsNoteWriterChanged;
+    case 'chapters-missing': return labels.wordEditsNoteChaptersMissing;
   }
 }
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Images, tableaux et vidéos',
   description: 'Les ressources dans le texte : renvois et insertions, numérotation, placement des flottants et endroit où ils arrivent, habillage du texte, taille des bitmaps, zones de sécurité, ancres des personnages et vidéos',
   lang: 'fr',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '45 min',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ Chaque ressource a un **placement** qui décide où arrive son flottant. Il se r
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>Une ressource plus étroite que son emplacement : <code>width</code> est la fraction de la largeur de la colonne (ou de la page) qu’elle occupe, <code>align</code> l’endroit où elle se tient dans l’emplacement (un petit tableau centré dans sa colonne ; une bande sur toute la largeur de la page dont l’image couvre une colonne). Une image plus étroite que son emplacement (un bitmap plus petit que la colonne, ou une image que <code>layout.fitFiguresToPage</code> a réduite) s’y place aussi selon <code>align</code>, sous une légende qui garde la justification de l’emplacement. Vaut pour les flottants comme pour les insertions <code>::resource</code> dans le texte.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; une longueur en mm, cm, in ou pt</td>
+      <td>Une ressource plus étroite que son emplacement : <code>width</code> est la fraction de la largeur de la colonne (ou de la page) qu’elle occupe, <code>align</code> l’endroit où elle se tient dans l’emplacement (un petit tableau centré dans sa colonne ; une bande sur toute la largeur de la page dont l’image couvre une colonne). Une image plus étroite que son emplacement (un bitmap plus petit que la colonne, ou une image que <code>layout.fitFiguresToPage</code> a réduite) s’y place aussi selon <code>align</code>, sous une légende qui garde la justification de l’emplacement. Vaut pour les flottants comme pour les insertions <code>::resource</code> dans le texte. Une longueur au lieu d’une fraction (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, ou en <code>cm</code>, <code>in</code> ou <code>pt</code>) le compose à cette largeur, mesurée dans l’emplacement où il est placé : la colonne pour une insertion, les colonnes et gouttières qu’occupe un flottant de colonne, la largeur de la zone de texte pour un flottant sur toute la page, la colonne latérale pour un flottant latéral, et les colonnes d’une section stylée ou d’un encadré quand il s’y trouve. Une longueur égale ou supérieure à l’emplacement l’occupe tout entier, et un flottant tourné est composé au plus à cette largeur avant d’être tourné. Les autres unités (<code>px</code>, <code>em</code>) ne sont pas lues comme une longueur : la ressource occupe tout son emplacement.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Planche pleine page : l’image (une image matricielle, un SVG ou l’affiche d’une vidéo) est seule sur une nouvelle page après son appel, agrandie ou réduite à la plus grande taille que la zone de texte contient avec sa légende et sa note, centrée sauf si <code>align</code> dit autrement ; le texte continue avant et après. Elle attend une page qu’elle peut occuper entière : une page où se trouvent déjà une ouverture, un autre flottant ou du texte courant est sautée, trois au plus, et la suivante est prise telle quelle. Ses <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> ne sont pas lus, et une image placée dans le texte (<code>"here"</code>) n’est pas une planche. <code>false</code> sur une ressource désactive la planche que fixe son type. Le contrôle en amont signale une image matricielle agrandie sous la résolution minimale des images (<code>lowImageResolution</code>), recadrage compris. <code>"trim"</code> ou <code>"bleed"</code> la placent sur toute la page, jusqu’à la coupe ou jusqu’au fond perdu (avec traits de coupe ; sans eux, le fond perdu est la coupe) : agrandie pour la couvrir et recadrée sur son centre, la légende et la note au pied de la zone de texte sur une bande de la couleur du papier. Cette page prend le rôle <code>'plate'</code> : elle ne porte ni titres courants, ni folio, ni éléments de design, sauf ceux qui nomment ce rôle dans <code>pages</code>. L’export IDML l’ancre dans le texte à la taille de la zone de texte, l’export Word la place sur une page à elle.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

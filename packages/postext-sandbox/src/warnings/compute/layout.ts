@@ -152,6 +152,17 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       });
       return;
     }
+    if (w.kind === 'stack') {
+      // Two lines in a row that end or start alike (#1463), by book page.
+      out.push({
+        id: `layout-stack-${w.sourceStart ?? 'x'}-${w.edge}-${i}`,
+        payload: { kind: 'stack', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), edge: w.edge, text: w.text, lines: w.lines },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     if (w.kind === 'shortListSplit' || w.kind === 'openerFloat' || w.kind === 'tocGroupSplit') {
       // The composition rules (#749): a short list cut between columns, a
       // float on an opener page, a contents block cut (#850), each by its
@@ -309,6 +320,19 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       out.push({
         id: `glyph-fallback-${w.family}-${w.weight}-${w.style}`,
         payload: { kind: 'glyphFallback', family: w.family, weight: w.weight, style: w.style, characters: [...w.characters], count: w.count, ...(w.supplier ? { supplier: w.supplier } : {}) },
+      });
+      return;
+    }
+    if (w.kind === 'glyphFallbackAt') {
+      // Where the characters a face lacks are: the paragraph. Its id names
+      // the block, which every place has (#1460): two blocks with no
+      // source range on one page (cells, floats) are two warnings.
+      out.push({
+        id: `glyph-fallback-at-${w.pageIndex ?? 'x'}-${w.blockId}-${w.family}-${w.weight}-${w.style}-${w.supplier ?? ''}`,
+        payload: { kind: 'glyphFallbackAt', family: w.family, weight: w.weight, style: w.style, characters: [...w.characters], ...(w.supplier ? { supplier: w.supplier } : {}), blockId: w.blockId },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
       });
       return;
     }

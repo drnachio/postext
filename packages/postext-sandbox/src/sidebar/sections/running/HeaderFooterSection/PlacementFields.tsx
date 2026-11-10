@@ -234,6 +234,8 @@ export function PagesSelect({ value, onChange }: PagesSelectProps) {
     { value: 'opener', label: labels.headerFooterElementPagesOpener },
     { value: 'part', label: labels.headerFooterElementPagesPart },
     { value: 'blank', label: labels.headerFooterElementPagesBlank },
+    // A page a plate covers to its edge (#1461).
+    { value: 'plate', label: labels.headerFooterElementPagesPlate },
   ];
   return (
     <SelectInput

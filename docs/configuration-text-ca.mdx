@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Text de cos',
   description: "La tipografia del text corregut: la font, la mida i l'interlineat, els colors, els sagnats, les cites, el vers, les tabulacions i les caplletres",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
-  readingTime: '27 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '28 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els paràmetres del text principal d'un llibre. Hi tries la font, la mida i l'espai entre les línies, i el color de les paraules en negreta i en cursiva. També hi fixes el sagnat de la primera línia i l'espai entre paràgrafs. La pàgina també explica les cites separades del text, els poemes, les tabulacions per al text en columnes i la lletra gran amb què comencen alguns capítols. La partició de mots, els encapçalaments i les llistes tenen pàgines pròpies.",
@@ -230,6 +230,24 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Comença també amb un guionet la línia que segueix un tall al guionet d'un compost: <code>léxico-</code> · <code>-semántico</code>, com demanen les normes de la Real Academia Española des del 2010, i <code>vencer-</code> · <code>-se</code>, com demana l'ortografia portuguesa. El guionet repetit es mesura i es pinta amb la línia, que l'anota com a <code>repeatedHyphen</code>; el <code>plainStart</code> i el <code>sourceStart</code> de la línia apunten darrere del guionet, de manera que els enllaços, les capçaleres i el Sandbox llegeixen la paraula tal com està escrita. El PDF el pinta sota un <code>/ActualText</code> que l'omet, així que el text que es copia o s'extreu del PDF llegeix la paraula una sola vegada. Una adreça web mai no el porta. S'aplica al text corregut, els títols, les llistes, les cites i els requadres; un paràgraf sense format que conté un compost es talla llavors amb el divisor del text amb format.</td>
+    </tr>
+    <tr>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Repeticions: dues línies seguides d'un paràgraf, en una mateixa columna, que acaben en la mateixa paraula, o en els mateixos <code>stackMinCharacters</code> últims caràcters, espais inclosos (<code>-ment</code> / <code>-ment</code>, <code>de la</code> / <code>a la</code>), o que comencen amb la mateixa paraula o els mateixos primers caràcters (<code>de la</code> / <code>de les</code>). <code>'allow'</code> compon les línies tal com les troba l'algorisme i no informa de res. <code>'warn'</code> les compon igual i informa de cada repetició amb un avís de contingut <code>stack</code>, que el Sandbox llista a Revisió i marca a la pàgina. <code>'avoid'</code> suma <code>stackPenalty</code> als demèrits de cada repetició, de manera que l'algorisme compon el paràgraf d'una altra manera on l'espaiat entre paraules ho permet, i informa de les repeticions que manté. No compten els accents ni les majúscules («sól» és «sol»). Les paraules només es comparen en les escriptures que les separen amb espais: el text en xinès, japonès, tai, lao, khmer, birmà o tibetà no té repeticions. Una fórmula, un xip o una mostra de color a la vora d'una línia no es compara mai. Amb <code>'avoid'</code>, els peus de figura, les notes i les cel·les de taula, justificats o en bandera, es tallen sencers amb Knuth–Plass per seguir la regla; el marc d'una pàgina composta compon el seu text sense ella. Necessita <code>optimalLineBreaking</code>. En portar un llibre, deixa-la a <code>'allow'</code> o fes servir <code>'warn'</code> per a les proves: el port reprodueix els talls de l'original.</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Caràcters, espais inclosos, que la mateixa vora de dues línies seguides ha de compartir perquè hi hagi repetició (<code>stacks</code>). La puntuació de l'extrem no compta, i la mateixa paraula sempre és repetició.</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>3000</code></td>
+      <td>El que costa una repetició a l'algorisme amb <code>stacks: 'avoid'</code>, en demèrits que se sumen als del paràgraf, en l'escala de <code>consecutiveHyphenDemerit</code> (dues línies seguides amb guionet costen 3000). Un monosíl·lab repetit («a», «i», «de», amb les vocals de les escriptures llatina, grega i ciríl·lica) costa el doble. Un valor més alt evita més repeticions a canvi de línies més soltes; amb 0 es mantenen totes.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

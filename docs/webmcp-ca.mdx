@@ -560,9 +560,9 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
 - **Exportar.** `sandbox_export` escriu `pdf`, `epub`, `postext`, `docx`,
   `markdown` o `config`. Per defecte, el navegador baixa el fitxer; amb
   `deliver: "data"`, un PDF, un EPUB o un fitxer de Word torna a l'agent
-  codificat en base64. Amb `docx`, `variant` tria `semantic` (el valor per
-  defecte: títols, llistes, notes i taules propis de Word) o `formatted` (les
-  pàgines tal com les imprimeix el PDF, amb les fonts incrustades):
+  codificat en base64. Amb `docx`, `variant` tria `formatted` (el valor per
+  defecte: text editable amb el disseny del llibre i les fonts incrustades) o
+  `semantic` (només el contingut, en estils de Word senzills):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

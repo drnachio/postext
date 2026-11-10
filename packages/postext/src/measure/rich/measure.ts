@@ -198,7 +198,7 @@ function measureRichText(
     const spaceWidth = ragged ? normalSpaceWidthFor(normalFont) + letterSpacingPx : normalSpaceWidth;
     // The rest of a word broken at a line end, as the text painted (#770).
     if (ownTokens) markRestShifts(tokens, fontOfToken, repeatHyphen);
-    const items = richTokensToItems(tokens, spaceWidth, maxStretchRatio, minShrinkRatio, repeatHyphen);
+    const items = richTokensToItems(tokens, spaceWidth, maxStretchRatio, minShrinkRatio, repeatHyphen, options.stacks !== undefined);
     const lineWidthFn = lineWidthFunction(maxWidthPx, options);
     const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
@@ -214,6 +214,7 @@ function measureRichText(
       runtPenalty,
       runtMinWidth,
       runtGraded: options.runtGraded === true,
+      ...(options.stacks ? { stacks: options.stacks } : {}),
       ...(options.avoidHyphenAtLines ? { avoidHyphenAtLines: options.avoidHyphenAtLines } : {}),
       ...(options.keepBreaks?.path === 'rich' ? { fixedBreaks: options.keepBreaks.at } : {}),
       looseness: options.looseness ?? 0,

@@ -12,8 +12,12 @@ A Cargo workspace beside the pnpm one. The engine crates do one thing each and h
 
 ```sh
 brew install rustup binaryen
-rustup default stable
-rustup target add wasm32-unknown-unknown
+```
+
+`rust-toolchain.toml` pins the compiler (1.99.0, with the wasm32 target, clippy and rustfmt); rustup installs it on the first `cargo` call in this directory. The module is built with binaryen 133 (`wasm-opt --version`). The build is reproducible: CI's WebAssembly job rebuilds `packages/postext/src/knuthPlass/wasm/bytes.generated.ts` with the same versions and fails when the bytes differ, and a test of the engine fails when the Rust sources changed without a rebuild (`scripts/sourcesHash.mjs`, #1463). After any change here:
+
+```sh
+node rust/scripts/build-wasm.mjs
 ```
 
 ## Build and test

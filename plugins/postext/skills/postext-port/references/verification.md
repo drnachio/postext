@@ -125,7 +125,7 @@ postext images my-book --pages 40 --set bodyText.fontSize.value=10.5 --set headi
 postext check my-book --locale es --strict --json   # exit 3 on any warning too
 postext image my-book --page 12 --print-preview -o /tmp/p12-print.png   # through the output profile, trim and bleed drawn
 postext pdf my-book --color-space grayscale --no-outlines --no-accessible -o /tmp/gray.pdf
-postext docx my-book -o /tmp/my-book.docx            # Word for an editor; `import-docx` brings corrections back (sources.md § Word)
+postext docx my-book -o /tmp/my-book.docx            # Word for an editor (`--variant semantic`: the words alone); `import-docx` brings corrections back (sources.md § Word)
 ```
 
 - `--set PATH=VALUE` (repeatable) works on every command that reads a book. It applies after
@@ -247,6 +247,12 @@ those lines, or run the script.
   opener page (`layout.openerFloats`). Set the rule to `"avoid"` to have
   the engine keep the list whole or move the float past the opener page;
   a `shortListSplit` left under `"avoid"` is a list taller than a column.
+- `WARN stack` (postext ≥ 1.73, only with `bodyText.stacks: "warn"` or
+  `"avoid"`): two lines in a row of a paragraph end or start on the same
+  word or the same `stackMinCharacters` characters (`edge`, `text`). In a
+  port it is a note for proofs, not a defect: the original's breaks are
+  what the port reproduces, so leave the rule on `"warn"` (or `"allow"`)
+  and do not switch it to `"avoid"` to clear the list.
 - `WARN unknownResourceId|unknownDirective|malformedEmbed|unknown…Style|raggedTableGrid`
   (releases with engine content warnings): a reference, `:::` line, `::resource`
   line or style id the engine could not resolve, or a table whose merged cells

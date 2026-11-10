@@ -26,12 +26,24 @@ import type {
   ResourceType,
   ResourceFloatPosition,
   ResourceFloatSpan,
+  ResourcePlacement,
+  ResourcePlateArea,
   ResourceRotation,
 } from '../../types.js';
 import { floatColumnCount, startEndAsLeftRight } from '../../defaults/shared.js';
 import { DEFAULT_FLOAT_MIN_SCALE, floatMinScaleOf, floatShrinkModeOf } from '../../defaults/layout.js';
 import { resolveResourceWrap } from './textWrap.js';
 import { captionInsideShare } from '../resources/captionInside.js';
+import { isWidthLength, isWidthShare, placementWidthOf } from './placementLength.js';
+
+/** The area a resource's placement sets it as a full-page plate in
+ *  (`placement.plate`, #1461): its own `plate`, else its type's; a
+ *  resource that writes `false` turns its type's plate off. Undefined when
+ *  it is no plate. */
+export function plateAreaOf(placement: ResourcePlacement | undefined, typePlacement: ResourcePlacement | undefined): ResourcePlateArea | undefined {
+  const plate = placement?.plate ?? typePlacement?.plate;
+  return plate === true ? 'content' : plate === false || plate === undefined ? undefined : plate;
+}
 
 export { floatColumnCount };
 
@@ -43,6 +55,11 @@ export interface ResolvedPlacement {
   rotate?: ResourceRotation;
   /** Fraction of the slot width the float takes (`1` = the whole width). */
   widthFraction: number;
+  /** A width given as a length (#1461), measured against the slot where
+   *  the layout sets the resource (`floatWidthIn`, `widthShareIn`);
+   *  `widthFraction` is then 1. A turned picture is set at most this wide
+   *  before it is turned. */
+  widthLength?: Dimension;
   align: 'left' | 'center' | 'right';
   /** The caption in the side column (`placement.captionSide: true`). A
    *  caption beside the picture inside its slot (`'inside'`, #1106) is not
@@ -60,6 +77,9 @@ export interface ResolvedPlacement {
    *  (`placement.citingPage`, #633): a `'top'` or `'auto'` float of a
    *  column or page span, not turned. */
   citingPage: boolean;
+  /** A full-page plate (`placement.plate`, #1461): a page-span, top,
+   *  upright picture alone on a page of its own. */
+  plate: boolean;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -82,9 +102,17 @@ export interface PlannedFloat {
   /** Set turned a quarter turn on the page (always page-span; takes a
    *  whole page). */
   rotate?: ResourceRotation;
+  /** A full-page plate (`placement.plate`, #1461): it waits for a
+   *  fresh page it can have whole and fills its content area (see
+   *  `plateWaits` in floatPlace.ts and `ResourceLayoutInput.plateHeight`). */
+  plate?: true;
   /** Width fraction, alignment and side caption of the placement (see
    *  `ResourcePlacement`). */
   widthFraction?: number;
+  /** A width given as a length (#1461): measured against the slot the
+   *  float is set in (`floatWidthIn`); for a turned float, the widest its
+   *  picture is set before the turn. */
+  widthLength?: Dimension;
   align?: 'left' | 'center' | 'right';
   captionSide?: boolean;
   /** A `span: 'column'` float across this many adjacent columns (absent
@@ -149,19 +177,31 @@ export function resolveResourcePlacement(
 ): ResolvedPlacement {
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
+  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
+  // A full-page plate (#1461): a top, page-span, upright picture.
+  const plate = picture && !noRotation && position !== 'here'
+    && plateAreaOf(resource.placement, type?.defaultPlacement) !== undefined;
+  if (plate) {
+    const own = resource.placement?.align ?? type?.defaultPlacement?.align;
+    return {
+      position: 'top', span: 'page', widthFraction: 1, align: own ? startEndAsLeftRight(own) : 'center',
+      captionSide: false, columns: 1, shrink: 'never', minScale: DEFAULT_FLOAT_MIN_SCALE, citingPage: false, plate: true,
+    };
+  }
   const rotate = position === 'here' || noRotation
     ? undefined
     : (resource.placement?.rotate ?? type?.defaultPlacement?.rotate);
   const span = rotate ? 'page' : (resource.placement?.span ?? type?.defaultPlacement?.span ?? 'column');
-  const rawWidth = resource.placement?.width ?? type?.defaultPlacement?.width;
+  const rawWidth = placementWidthOf(resource.placement, type?.defaultPlacement);
   // A caption inside the slot beside an upright picture (#1106): the slot
   // keeps its width, the picture takes its share of it.
   const inside = !rotate && !noRotation && captionInsideShare(resource, type) !== undefined;
-  const widthFraction = !inside && typeof rawWidth === 'number' && rawWidth > 0 && rawWidth < 1 ? rawWidth : 1;
+  const widthFraction = !inside && isWidthShare(rawWidth) ? rawWidth : 1;
+  // A length (#1461) stays a length until the slot is known.
+  const widthLength = !inside && isWidthLength(rawWidth) ? rawWidth : undefined;
   const align = startEndAsLeftRight(resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left');
   const captionSide = (resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide) === true;
   const columns = floatColumnCount(resource.placement?.columns ?? type?.defaultPlacement?.columns);
-  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
   const shrink = picture && !rotate && position !== 'here'
     ? floatShrinkModeOf(resource.placement?.shrink) ?? floatShrinkModeOf(type?.defaultPlacement?.shrink) ?? shrinkDefault?.mode ?? 'never'
     : 'never';
@@ -169,7 +209,7 @@ export function resolveResourcePlacement(
     ?? shrinkDefault?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
   const citingPage = (position === 'top' || position === 'auto') && !rotate && span !== 'side'
     && (resource.placement?.citingPage ?? type?.defaultPlacement?.citingPage ?? citingPageDefault) === true;
-  return { position, span, widthFraction, align, captionSide, columns, shrink, minScale, citingPage, ...(rotate ? { rotate } : {}) };
+  return { position, span, widthFraction, ...(widthLength ? { widthLength } : {}), align, captionSide, columns, shrink, minScale, citingPage, plate: false, ...(rotate ? { rotate } : {}) };
 }
 
 /**
@@ -218,8 +258,13 @@ export function computeFloatPlan(
     if (!resource) return;
     const type = typeById.get(resource.typeId);
     const upright = noRotationAt(blockIdx);
-    const { position, span, rotate, widthFraction, align, captionSide, columns, shrink, minScale, citingPage } = resolveResourcePlacement(resource, type, upright, shrinkDefault, citingPageDefault);
+    const { position, span, rotate, widthFraction, widthLength, align, captionSide, columns, shrink, minScale, citingPage, plate } = resolveResourcePlacement(resource, type, upright, shrinkDefault, citingPageDefault);
     if (position === 'here') return;
+    // A full-page plate takes a page of its own (#1461).
+    if (plate) {
+      plan.push({ resourceId, firstBlockIdx: blockIdx, position: 'top', span: 'page', plate: true, align });
+      return;
+    }
     // Text wrap (#627): a one-column float of horizontal text, upright,
     // its caption under it; any other keeps its band whole.
     const wrap = wrapSettings && !upright && !rotate && span === 'column' && columns === 1 && !captionSide
@@ -228,7 +273,7 @@ export function computeFloatPlan(
     if (wrap) {
       plan.push({
         resourceId, firstBlockIdx: blockIdx, position, span,
-        widthFraction: wrap.width, align: wrap.side, wrap: wrap.side,
+        widthFraction: wrap.width, ...(wrap.length ? { widthLength: wrap.length } : {}), align: wrap.side, wrap: wrap.side,
         ...(wrap.gap ? { wrapGap: wrap.gap } : {}),
         ...(wrap.contour ? { contour: true as const } : {}),
         ...(shrink !== 'never' ? { shrink, minScale } : {}),
@@ -241,6 +286,9 @@ export function computeFloatPlan(
       ...(rotate ? { rotate } : {}),
       ...(widthFraction < 1 && !rotate
         ? { widthFraction, align }
+        // A length (#1461) is measured where the slot is known; a turned
+        // picture is set at most that wide before the turn.
+        : widthLength ? { widthLength, ...(rotate ? {} : { align }) }
         // A vertical flow's upright figure keeps its alignment along the tier.
         : upright && align !== 'left' ? { align } : {}),
       ...(captionSide && span === 'column' && columns === 1 ? { captionSide } : {}),

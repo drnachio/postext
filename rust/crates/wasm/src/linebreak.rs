@@ -4,7 +4,8 @@
 //! 1 glue, 2 penalty), width, stretch, shrink, penalty, flags, chars,
 //! post width (`postWidth + postShift`), post chars. Line widths as f64,
 //! lines to avoid a hyphen at and fixed breaks as u32. Scalar options go
-//! through `lb_set_options`.
+//! through `lb_set_options`, stacks through `lb_set_stacks`, and the line
+//! edges stacks compare through `lb_edges` (#1463).
 
 use postext_linebreak::{Breaker, ItemKind, Items, LoosenessMode, Options};
 
@@ -18,6 +19,7 @@ pub struct LineBreakContext {
     staged_items: Vec<f64>,
     staged_avoid: Vec<u32>,
     staged_fixed: Vec<u32>,
+    staged_edges: Vec<u32>,
     breaks: Vec<u32>,
 }
 
@@ -30,6 +32,7 @@ pub extern "C" fn lb_new() -> *mut LineBreakContext {
         staged_items: Vec::new(),
         staged_avoid: Vec::new(),
         staged_fixed: Vec::new(),
+        staged_edges: Vec::new(),
         breaks: Vec::new(),
     }))
 }
@@ -113,6 +116,27 @@ pub extern "C" fn lb_set_options(
     o.hyphenation_zone = (hyphenation_zone >= 0.0).then_some(hyphenation_zone);
 }
 
+/// Stacks (#1463): each costs `demerits` (a repeated monosyllable twice)
+/// when `on` is not 0.
+#[unsafe(no_mangle)]
+pub extern "C" fn lb_set_stacks(ptr: *mut LineBreakContext, on: u32, demerits: f64) {
+    ctx(ptr).options.rules.stack_demerits = (on != 0).then_some(demerits);
+}
+
+/// Rows of `count + 1` the line edges take (see `Rules`).
+const EDGE_ROWS: usize = 9;
+
+/// Room for the line edges of a paragraph of `count` items, as nine rows of
+/// `count + 1`: end words, end characters and their reaches, start words,
+/// start characters and their reaches, and each item's offset in the
+/// paragraph's text (see `Rules`). Written only while stacks are on.
+#[unsafe(no_mangle)]
+pub extern "C" fn lb_edges(ptr: *mut LineBreakContext, count: usize) -> *mut u32 {
+    let c = ctx(ptr);
+    c.staged_edges.resize(EDGE_ROWS * (count + 1), 0);
+    c.staged_edges.as_mut_ptr()
+}
+
 /// Breaks the staged paragraph; returns how many breaks `lb_breaks` holds.
 #[unsafe(no_mangle)]
 pub extern "C" fn lb_break(ptr: *mut LineBreakContext) -> usize {
@@ -120,6 +144,26 @@ pub extern "C" fn lb_break(ptr: *mut LineBreakContext) -> usize {
     unstage(&c.staged_items, &mut c.items);
     c.options.avoid_hyphen_at_lines.clone_from(&c.staged_avoid);
     c.options.fixed_breaks.clone_from(&c.staged_fixed);
+    if c.options.rules.stack_demerits.is_some() {
+        let row = c.items.len() + 1;
+        let e = &c.staged_edges;
+        let r = &mut c.options.rules;
+        let rows = [
+            &mut r.end_word,
+            &mut r.end_chars,
+            &mut r.end_word_reach,
+            &mut r.end_chars_reach,
+            &mut r.start_word,
+            &mut r.start_chars,
+            &mut r.start_word_reach,
+            &mut r.start_chars_reach,
+            &mut r.offset,
+        ];
+        for (k, dst) in rows.into_iter().enumerate() {
+            dst.clear();
+            dst.extend_from_slice(&e[k * row..(k + 1) * row]);
+        }
+    }
     let breaks = c.breaker.breakpoints(&c.items, &c.options);
     c.breaks.clear();
     c.breaks.extend_from_slice(breaks);

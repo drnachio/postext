@@ -18,7 +18,7 @@ import { markInserts } from '../marks.js';
 import { abs, blockId, type WriterContext } from '../context.js';
 import { generatedRuns, spanPieces, spansText, type Piece } from '../generated.js';
 import { renderInline, type InlineSource } from '../inline.js';
-import { STYLE } from '../styles.js';
+import { exerciseStyles } from './exerciseStyles.js';
 import { paragraph, type ParaProps } from '../wml.js';
 
 /** An empty box and an empty ring to tick (#1444), as the white square
@@ -59,6 +59,9 @@ export interface ExerciseBody {
 }
 
 const INDENT = 360;
+
+/** The paragraph style of the exercise's text. */
+const textStyle = (input: ExerciseInput): string => exerciseStyles(input.ctx, input.style).text;
 
 /** Between two answers of a key: a middle dot, but `؛` in Arabic, where a
  *  dot beside Arabic-Indic digits reads as a zero. */
@@ -197,7 +200,7 @@ function bank(input: ExerciseInput): string {
   if (!words.length) return '';
   const border = { color: input.rule, sz: 6, space: 4 };
   const sep = input.style.bank.separator || ' ';
-  return genParagraph(input.ctx, [{ text: words.join(sep) }], { style: STYLE.normal, jc: 'center', ind: { firstLine: 0 }, border: { top: border, left: border, bottom: border, right: border }, before: 120, after: 120 }, 'exercise:bank');
+  return genParagraph(input.ctx, [{ text: words.join(sep) }], { style: textStyle(input), jc: 'center', ind: { firstLine: 0 }, border: { top: border, left: border, bottom: border, right: border }, before: 120, after: 120 }, 'exercise:bank');
 }
 
 /** The body, item by item, and the key. */
@@ -205,7 +208,7 @@ export function exerciseBody(input: ExerciseInput): ExerciseBody {
   const { ctx, flat, ex, style } = input;
   const out: string[] = [];
   const key: string[] = [];
-  const item: ParaProps = { style: STYLE.normal, ind: { left: INDENT, firstLine: 0 } };
+  const item: ParaProps = { style: textStyle(input), ind: { left: INDENT, firstLine: 0 } };
   const wantsBank = (ex.attrs.bank !== undefined && ex.attrs.bank !== 'false') || ex.banks.length > 0 || ex.kind === 'sort';
   let bankDone = !wantsBank;
   const placeBank = (): void => {
@@ -260,8 +263,8 @@ export function exerciseBody(input: ExerciseInput): ExerciseBody {
         lead.push({ text: `${num(input, ordered)}. ` });
       } else lead.push({ text: '• ' });
     }
-    if (hasGap(b)) out.push(mappedParagraph(ctx, b, b.type === 'listItem' ? item : { style: STYLE.normal }, 'exercise:gaps', lead, [], gapSource(input, b)));
-    else if (b.type === 'paragraph' || b.type === 'listItem') out.push(mappedParagraph(ctx, b, b.type === 'listItem' ? item : { style: STYLE.normal }, 'exercise:text', lead));
+    if (hasGap(b)) out.push(mappedParagraph(ctx, b, b.type === 'listItem' ? item : { style: textStyle(input) }, 'exercise:gaps', lead, [], gapSource(input, b)));
+    else if (b.type === 'paragraph' || b.type === 'listItem') out.push(mappedParagraph(ctx, b, b.type === 'listItem' ? item : { style: textStyle(input) }, 'exercise:text', lead));
   }
   placeBank();
   if (ex.kind === 'choice') {
@@ -277,7 +280,7 @@ export function exerciseBody(input: ExerciseInput): ExerciseBody {
     const lines = Number.parseInt(ex.attrs.lines ?? '', 10);
     const n = Number.isFinite(lines) ? Math.max(0, Math.min(40, lines)) : style.area.kind === 'none' ? 0 : style.area.lines;
     const rule = { color: 'A6A6A6', sz: 4, space: 1 };
-    for (let i = 0; i < n; i++) out.push(paragraph({ style: STYLE.normal, ind: { firstLine: 0 }, border: { bottom: rule }, before: 0, after: 0, line: { twips: 440, rule: 'exact' } }, ''));
+    for (let i = 0; i < n; i++) out.push(paragraph({ style: textStyle(input), ind: { firstLine: 0 }, border: { bottom: rule }, before: 0, after: 0, line: { twips: 440, rule: 'exact' } }, ''));
   }
   return { xml: out, key: key.join(keySep(input)) };
 }
@@ -290,7 +293,7 @@ const letter = (input: ExerciseInput, k: number): string => optionLabel(input.st
  *  arithmetic exercises, set together; their key pushed on `key`. */
 function itemGroup(input: ExerciseInput, key: string[]): string[] {
   const { ctx, ex } = input;
-  const p = (pieces: Piece[], role: string, props: ParaProps = { style: STYLE.normal, ind: { left: INDENT, firstLine: 0 } }): string => genParagraph(ctx, pieces, props, role);
+  const p = (pieces: Piece[], role: string, props: ParaProps = { style: textStyle(input), ind: { left: INDENT, firstLine: 0 } }): string => genParagraph(ctx, pieces, props, role);
   switch (ex.kind) {
     case 'match': {
       const lefts = ex.pairs.filter((x) => x.left.text !== '');
@@ -300,7 +303,7 @@ function itemGroup(input: ExerciseInput, key: string[]): string[] {
       for (let i = 0; i < count; i++) {
         const l = lefts[i];
         const r = order[i] !== undefined ? ex.pairs[order[i]!] : undefined;
-        rows.push([l ? p([{ text: `${num(input, i + 1)}. ${runText(l.left)}` }], 'exercise:match', { style: STYLE.normal }) : '', r ? p([{ text: `${letter(input, i)} ${runText(r.right)}` }], 'exercise:match', { style: STYLE.normal }) : '']);
+        rows.push([l ? p([{ text: `${num(input, i + 1)}. ${runText(l.left)}` }], 'exercise:match', { style: textStyle(input) }) : '', r ? p([{ text: `${letter(input, i)} ${runText(r.right)}` }], 'exercise:match', { style: textStyle(input) }) : '']);
       }
       lefts.forEach((l, i) => {
         const at = order.indexOf(ex.pairs.indexOf(l));
@@ -322,7 +325,7 @@ function itemGroup(input: ExerciseInput, key: string[]): string[] {
       });
     case 'sort':
       for (const c of ex.categories) key.push(`${runText(c.name)}: ${c.items.map(runText).join(', ')}`);
-      return [table(input, [ex.categories.map((c) => p([{ text: runText(c.name), b: true }], 'exercise:sort', { style: STYLE.normal, jc: 'center' })), ex.categories.map(() => '')], true)];
+      return [table(input, [ex.categories.map((c) => p([{ text: runText(c.name), b: true }], 'exercise:sort', { style: textStyle(input), jc: 'center' })), ex.categories.map(() => '')], true)];
     case 'wordsearch':
     case 'crossword': {
       key.push(ex.entries.map((e) => e.word).join(', '));
@@ -348,14 +351,14 @@ function gridNote(input: ExerciseInput): string {
 }
 
 const GRID_NOTE: Record<string, string> = {
-  en: 'The grid is printed in the PDF and in the formatted .docx.',
-  es: 'La cuadrícula está en el PDF y en el .docx maquetado.',
-  ca: 'La quadrícula és al PDF i al .docx maquetat.',
-  fr: 'La grille figure dans le PDF et dans le .docx mis en page.',
-  de: 'Das Gitter steht im PDF und in der gesetzten .docx.',
-  it: 'La griglia è nel PDF e nel .docx impaginato.',
-  pt: 'A grade está no PDF e no .docx diagramado.',
-  zh: '方格见 PDF 和版式 .docx。',
-  ja: 'マス目は PDF と組版どおりの .docx にあります。',
-  ar: 'الشبكة في ملف PDF وفي ملف ‎.docx المُنسَّق.',
+  en: 'The grid is printed in the PDF.',
+  es: 'La cuadrícula está en el PDF.',
+  ca: 'La quadrícula és al PDF.',
+  fr: 'La grille figure dans le PDF.',
+  de: 'Das Gitter steht im PDF.',
+  it: 'La griglia è nel PDF.',
+  pt: 'A grade está no PDF.',
+  zh: '方格见 PDF。',
+  ja: 'マス目は PDF にあります。',
+  ar: 'الشبكة في ملف PDF.',
 };

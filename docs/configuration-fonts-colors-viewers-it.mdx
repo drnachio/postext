@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Font, colori e output',
   description: 'Unità, colori e tavolozza; i font personalizzati; il visualizzatore HTML, il PDF e la produzione di stampa; il visualizzatore Folio e le sovrimpressioni di debug',
   lang: 'it',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '40 min',
   order: 20,
   parent: 'configuration',
@@ -149,6 +149,12 @@ Un clic su uno qualsiasi di questi avvisi apre il pannello Font, così puoi cari
 Quando esiste un’impaginazione, il pannello elenca anche il **Font di ripiego nell’impaginazione** del motore (`fontFallback`): un carattere senza il quale sono state misurate le pagine, mancante oppure disegnato dal browser a partire da un altro peso o da un’altra inclinazione. Una famiglia già indicata come sconosciuta o priva di una variante non viene elencata due volte. Prima della prima impaginazione, la sostituisce un controllo su `document.fonts`.
 
 Il pannello elenca anche i **Caratteri presi da un altro font** (`glyphFallback`): caratteri che il testo compone in un font privo di glifi per loro, una volta per font, con la famiglia generica che li ha disegnati (`serif`, `sans-serif`, `monospace`) quando il controllo può dirlo.
+
+### Font dei simboli
+
+Un font di testo ha di rado le lettere e gli operatori matematici (∪, ℵ, ∀), il greco o le frecce che l’autore scrive in un paragrafo. `symbolFont` nomina una famiglia che li compone: ogni font del documento la mette dopo la propria, così il canvas, il PDF, l’HTML e l’EPUB disegnano quei caratteri con essa invece di una casella vuota. `'Noto Sans Math'` copre quasi tutta la matematica. Nel Sandbox si trova in **Testo corrente → Font dei simboli**. Anche il file Word impaginato compone quei caratteri in tratti di questo font. Il suo stile normale tondo li disegna per tutti i pesi e le inclinazioni del testo.
+
+L’impaginazione segnala ogni paragrafo che contiene quei caratteri con `glyphFallbackAt`, con la famiglia che li disegna, o nessuna: il PDF li stampa allora come caselle vuote. Il Sandbox li segna sulla pagina, in viola quelli che disegna il font dei simboli e in rosso quelli che nessuno disegna.
 
 ## Stili delle cifre
 

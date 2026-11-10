@@ -82,6 +82,9 @@ fn convert(raw: RawCall) -> Call {
         tracking_per_char: o.tracking_per_char.unwrap_or(0.0),
         ragged_stretch: o.ragged_stretch.unwrap_or(0.0),
         hyphenation_zone: o.hyphenation_zone,
+        // A corpus does not record the line edges stacks compare: replayed
+        // without them.
+        rules: Default::default(),
     };
     Call { items, options, breaks: raw.breaks }
 }

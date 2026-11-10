@@ -13,6 +13,7 @@ import { atomEnd, chipText, refLabel } from './atoms.js';
 import type { WriterContext } from './context.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
 import { chipGlyph } from './prose/chips.js';
+import { partInk } from './design/partColor.js';
 import { STYLE } from './styles.js';
 import { fieldRuns, halfPoints, hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
 import { escapeAttr, escapeXml } from '../xml.js';
@@ -37,6 +38,9 @@ export interface InlineSource {
   /** Footnote id → Word footnote id (creates the note); undefined when the
    *  marker cannot become a footnote. */
   noteRef?: (id: string) => number | undefined;
+  /** Sets a note holding a citation's text (a note style) and gives its
+   *  Word footnote id; absent where a note cannot stand (inside a note). */
+  citationNote?: (text: string) => number | undefined;
   /** Write links as HYPERLINK fields (in parts without relationships of
    *  their own: footnotes). */
   linkFields?: boolean;
@@ -184,6 +188,8 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     }
     return false;
   };
+  // References and links in the colour of the part being written.
+  const refInk = partInk(ctx, ctx.resolved.bodyText.referenceColor);
   // The indent of the first line of verse, over the spaces before it.
   const firstLead = s.lineLeads?.[0];
   const first = s.sourceMap[0] ?? -1;
@@ -216,10 +222,10 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       } else units.push(sourceUnit(s, p, at, end));
     } else if (span.ref) {
       const label = refLabel(ctx, span.ref);
-      const unit = atomUnit(p, label.text, base, STYLE.reference, at, atomEnd(s.src, at, limit), 'ref');
+      const unit = atomUnit(p, label.text, base, STYLE.reference, at, atomEnd(s.src, at, limit), 'ref', refInk);
       if (label.page && label.bookmark && unit.kind === 'obj') {
         // The page as a PAGEREF Word fills in, read back as one object.
-        const props = rPr(runProps(base, STYLE.reference));
+        const props = rPr({ ...runProps(base, STYLE.reference), ...(refInk ? { color: refInk } : {}) });
         unit.xml = textRuns(label.page.before, props) + pageRef(label.bookmark, props) + textRuns(label.page.after, props);
         unit.text = label.page.before + OBJECT_CHAR + label.page.after;
       }
@@ -229,7 +235,17 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     } else if (span.citation) {
       const raw = span.citation.raw;
       const end = s.src.startsWith(raw, at) ? at + raw.length : atomEnd(s.src, at, limit);
-      units.push(atomUnit(p, raw, base, STYLE.reference, at, end, 'citation'));
+      // As the citation processor prints it ("[1,2]"); as written when no
+      // reference defines its keys.
+      const cited = ctx.citations?.label(span);
+      const noteId = cited?.note ? s.citationNote?.(cited.text) : undefined;
+      if (cited?.note && noteId !== undefined) {
+        // A note style: the citation in a note of its own, the author's
+        // name kept in the sentence.
+        const name = cited.note.name;
+        const ref = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteReference w:id="${noteId}"/></w:r>`;
+        units.push({ kind: 'obj', p, xml: textRuns(name, rPr(runProps(base))) + ref, fmt: base, text: name + OBJECT_CHAR, atom: { start: at, end, kind: 'citation' } });
+      } else units.push(atomUnit(p, cited?.text ?? raw, base, STYLE.reference, at, end, 'citation', refInk));
     } else if (span.chip && !span.chip.gap && chipGlyph(ctx, span.chip)) {
       const glyph = chipGlyph(ctx, span.chip)!;
       const xml = textRuns(glyph.text, rPr(glyph.props));
@@ -240,7 +256,7 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       const icon = span.swatch.icon;
       const text = icon ? icon.alt || icon.glyph || '\u25A0' : '\u25A0';
       // A palette colour by its id, as the engine fills it (#1444).
-      const color = icon ? undefined : hex(resolveSwatchSpans([span], ctx.resolved.colorPalette)[0]!.swatch!.color);
+      const color = icon || ctx.plain ? undefined : hex(resolveSwatchSpans([span], ctx.resolved.colorPalette)[0]!.swatch!.color);
       const xml = textRuns(text, rPr({ ...runProps(base, STYLE.reference), color }));
       units.push({ kind: 'obj', p, xml, fmt: base, text, atom: { start: at, end: atomEnd(s.src, at, limit), kind: icon ? 'icon' : 'swatch' } });
     } else if (span.tab && s.src[at] !== '\t') {
@@ -293,8 +309,8 @@ function pageRef(bookmark: string, props: string): string {
   return fieldRuns(`PAGEREF ${bookmark} \\h`, '', props).replace('w:fldCharType="begin"/>', 'w:fldCharType="begin" w:dirty="true"/>');
 }
 
-function atomUnit(p: number, text: string, fmt: Fmt, style: string | undefined, start: number, end: number, kind: string): Unit {
-  const xml = textRuns(text, rPr(runProps(fmt, style)));
+function atomUnit(p: number, text: string, fmt: Fmt, style: string | undefined, start: number, end: number, kind: string, ink?: string): Unit {
+  const xml = textRuns(text, rPr({ ...runProps(fmt, style), ...(ink ? { color: ink } : {}) }));
   return { kind: 'obj', p, xml, fmt, text, atom: { start, end, kind } };
 }
 
@@ -359,7 +375,7 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
       j++;
     }
     const font = u.fmt.k ? undefined : ctx.styles.runFont(s.style, !!u.fmt.b, !!u.fmt.i);
-    const ink = u.fmt.k || u.fmt.href || u.fmt.mark ? undefined : ctx.styles.runInk(s.style, !!u.fmt.b, !!u.fmt.i);
+    const ink = u.fmt.href && !u.fmt.mark ? partInk(ctx, ctx.resolved.bodyText.referenceColor) : u.fmt.k || u.fmt.mark ? undefined : ctx.styles.runInk(s.style, !!u.fmt.b, !!u.fmt.i);
     const plainRuns = textRuns(text, rPr({ ...runProps(u.fmt), ...(font ? { font } : {}), ...(ink ? { color: ink } : {}) }));
     const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns, text, s.style) : plainRuns;
     // Code in right-to-left text: left-to-right marks either side keep its

@@ -17,8 +17,9 @@ import { startEndAsLeftRight } from '../../../defaults/shared.js';
 import { resolveBodyStyle } from '../../styles.js';
 import { FIT_EPS } from '../../blocks/placement.js';
 import { captionInsideShare } from '../captionInside.js';
+import { plateAreaOf } from '../../floats/floatPlacement.js';
 import type { ResourceLayoutInput, TableRowMetrics } from './input.js';
-import { withSnippetCache, fitWidth, alignFactor, shiftLines } from './snippets.js';
+import { withSnippetCache, fitWidth, alignFactor, shiftLines, snippetStackBreaking } from './snippets.js';
 import { type TableLayoutStyle, layoutTable } from './tableLayout.js';
 import { rulePx, MIN_BORDER_PX, tableSliceRows, tableHeaderRowCount } from './tableSlices.js';
 import { createCaptionNotes } from './resourceBlock/captionNotes.js';
@@ -97,7 +98,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
   // `align` side, the caption and note the rest after the gutter. A band
   // too narrow to read goes back under the picture.
   const inside = (() => {
-    const share = !rotate && !input.captionAside ? captionInsideShare(resource, resourceType) : undefined;
+    const share = !rotate && !input.captionAside ? captionInsideShare(resource, resourceType, columnWidth, resolved.page.dpi) : undefined;
     if (share === undefined) return undefined;
     const gapPx = Math.max(0, dimensionToPx(resolved.layout.gutterWidth, dpi, bodyStyle.fontSizePx));
     const bodyMax = columnWidth * share;
@@ -216,6 +217,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       ...(resolved.bodyText.plusUnderline ? { plusUnderline: true } : {}),
       annotations: { cjk: resolved.cjk, dpi },
       math: resolved.math,
+      breaking: snippetStackBreaking('left', resolved),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,
@@ -288,12 +290,24 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       bodyHeight *= k;
     }
   }
+  // A full-page plate (#1461): the picture as large as the room holds
+  // with its caption and note under it, its proportions kept — enlarged
+  // when smaller, reduced when larger.
+  let plateScale: number | undefined;
+  const plateArea = plateAreaOf(resource.placement, resourceType?.defaultPlacement);
+  if (input.plateHeight !== undefined && picture && !rotate && bodyWidth > 0 && bodyHeight > 0) {
+    const room = Math.max(1, input.plateHeight - captionHeight - noteHeight - continuesHeight);
+    const k = Math.min(pictureMaxWidth / bodyWidth, room / bodyHeight);
+    bodyWidth *= k;
+    bodyHeight *= k;
+    plateScale = k;
+  }
   // Likewise a figure that would stand taller than the content area, when
   // the document asks for it (`layout.fitFiguresToPage`): the image shrinks
   // so image, caption and note fit one page with a line of air to spare.
   if (
     !rotate && !input.captionAside && resolved.layout.fitFiguresToPage
-    && picture
+    && picture && plateScale === undefined
   ) {
     const m = resolved.page.margins;
     const areaHeight = dimensionToPx(resolved.page.height, dpi)
@@ -393,7 +407,8 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
   const bodyX = inside
     ? (inside.right ? columnWidth - bodyWidth : 0)
     : !rotate && !aside && picture && bodyWidth < columnWidth
-    ? (columnWidth - bodyWidth) * alignFactor(resource.placement?.align ?? resourceType?.defaultPlacement?.align)
+    // A full-page plate stands centred unless it names its side.
+    ? (columnWidth - bodyWidth) * alignFactor(resource.placement?.align ?? resourceType?.defaultPlacement?.align ?? (plateScale !== undefined ? 'center' : undefined))
     : 0;
   const bodyRect = createBoundingBox(bodyX, bodyY, bodyWidth, bodyHeight);
   // Table cells were laid out with the table's top at y = 0; when the caption
@@ -447,6 +462,8 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
     ...(bodySource ? { bodySource } : {}),
     ...(bodyFlex ? { bodyFlex } : {}),
     ...(shrinkScale !== undefined ? { shrinkScale } : {}),
+    ...(plateScale !== undefined ? { plateScale } : {}),
+    ...(plateScale !== undefined && plateArea && plateArea !== 'content' ? { plateArea } : {}),
     fileId,
     format,
     captionLines,

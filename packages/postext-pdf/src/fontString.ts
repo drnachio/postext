@@ -1,5 +1,10 @@
+import { fontStringFamilies } from 'postext';
+
 export interface ParsedFontString {
   family: string;
+  /** The families listed after it (`symbolFont`), unquoted;
+   *  absent when the string names one family. */
+  fallbacks?: string[];
   weight: number;
   style: 'normal' | 'italic';
   sizePx: number;
@@ -27,7 +32,10 @@ function parseFontStringUncached(fs: string): ParsedFontString | null {
   if (!m) return null;
   const prefix = (m[1] ?? '').trim();
   const sizePx = parseFloat(m[2]!);
-  const family = (m[3] ?? '').trim().replace(/^['"]|['"]$/g, '');
+  // A list (`Minion Pro, "STIX Two Math"`, `symbolFont`): the face is the
+  // first family's, the others draw what it lacks. Read by the engine's
+  // own parser of the strings it writes (#1460).
+  const [family = '', ...fallbacks] = fontStringFamilies(fs);
   let style: 'normal' | 'italic' = 'normal';
   let weight = 400;
   for (const token of prefix.split(/\s+/).filter(Boolean)) {
@@ -37,7 +45,7 @@ function parseFontStringUncached(fs: string): ParsedFontString | null {
     else if (/^\d+$/.test(token)) weight = parseInt(token, 10);
   }
   if (!Number.isFinite(sizePx) || !family) return null;
-  return { family, weight, style, sizePx };
+  return { family, weight, style, sizePx, ...(fallbacks.length > 0 ? { fallbacks } : {}) };
 }
 
 export function fontKey(family: string, weight: number, style: 'normal' | 'italic'): string {

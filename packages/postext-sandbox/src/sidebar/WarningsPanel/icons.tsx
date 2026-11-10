@@ -16,11 +16,13 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'missingFontVariant':
     case 'fontFallback':
     case 'glyphFallback':
+    case 'glyphFallbackAt':
     case 'duplicateFontVariant':
       return Type;
     case 'looseLine':
     case 'cjkLooseLine':
     case 'raggedLine':
+    case 'stack':
     case 'unbreakableWordOverflow':
     case 'wordDividedByCharacter':
     case 'wordDividedBySyllable':

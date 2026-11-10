@@ -79,7 +79,8 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
   const rules = tableRules(u, style, cs.bodyPx);
   const zebra = style.bodyAlternateBackgroundEnabled ? hex(style.bodyAlternateBackground) : undefined;
   const fillOf = (cell: TableCell | undefined, r: number): string | undefined => {
-    const own = hex(cell?.background);
+    // The plain design sets no fill, a cell's own included.
+    const own = ctx.plain ? undefined : hex(cell?.background);
     if (own) return own;
     if (isHeaderCell(cell, r)) return style.headerBackgroundEnabled ? hex(style.headerBackground) : undefined;
     if (zebra && (r - headerRows) % 2 === 1) return zebra;
