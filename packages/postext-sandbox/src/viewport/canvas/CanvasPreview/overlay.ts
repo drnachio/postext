@@ -8,6 +8,7 @@ import { plainRangeInLine, sourceToPlainIndex, xForPlainInLine } from './geometr
 import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, bandTitleOwner, isHiddenUnderBand } from './bandTitle.js';
 import { blockFrameMatrix, type FrameAffine } from '../../composed/frameHit.js';
 import { glyphMarks } from './glyphMarks.js';
+import { stackMarks } from './stackMarks.js';
 import { documentShapingLanguage } from '../../../controls/language/measureLanguage.js';
 import { balloonTextRangeRects } from '../../comics/balloonText.js';
 import {
@@ -327,6 +328,11 @@ export function drawOverlay(
   // The characters the text's face lacks: always marked.
   if (looseLineGroup && !carried?.only) {
     for (const m of glyphMarks(doc, pageIndex, mirrored)) appendRect(looseLineGroup, m.x, m.y, m.width, m.height, m.fill, matrixOf(m.block.id));
+  }
+
+  // Stacks (#1463), while the rule warns or avoids them.
+  if (looseLineGroup && !carried?.only) {
+    for (const m of stackMarks(doc, pageIndex, mirrored)) appendRect(looseLineGroup, m.x, m.y, m.width, m.height, m.fill, matrixOf(m.block.id));
   }
 
   const { from, to, head } = selection;

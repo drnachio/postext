@@ -1441,8 +1441,8 @@ export interface SandboxLabels {
   bodyRuntPenaltyTooltip: string;
   bodyGradedRuntPenalty: string;
   bodyGradedRuntPenaltyTooltip: string;
-  bodyAvoidStacks: string;
-  bodyAvoidStacksTooltip: string;
+  bodyStacks: string;
+  bodyStacksTooltip: string;
   bodyStackMinCharacters: string;
   bodyStackMinCharactersTooltip: string;
   bodyStackPenalty: string;
@@ -2326,6 +2326,9 @@ export interface SandboxLabels {
   warningsHereNotEmbeddedDetail: string;
   warningsShortListSplitTitle: string;
   warningsShortListSplitDetail: string;
+  warningsStackTitle: string;
+  warningsStackEndDetail: string;
+  warningsStackStartDetail: string;
   warningsTocGroupSplitTitle: string;
   warningsTocGroupSplitDetail: string;
   warningsOpenerFloatTitle: string;

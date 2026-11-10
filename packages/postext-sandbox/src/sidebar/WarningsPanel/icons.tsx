@@ -22,6 +22,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'looseLine':
     case 'cjkLooseLine':
     case 'raggedLine':
+    case 'stack':
     case 'unbreakableWordOverflow':
     case 'wordDividedByCharacter':
     case 'wordDividedBySyllable':

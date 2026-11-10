@@ -111,6 +111,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'afterText':
     case 'unplaced':
     case 'shortListSplit':
+    case 'stack':
     case 'openerFloat':
     case 'tocGroupSplit':
     case 'parityCascade':
