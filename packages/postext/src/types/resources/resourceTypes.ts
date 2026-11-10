@@ -67,6 +67,10 @@ export type ResourceRotation = 'ccw' | 'cw';
 /** Placement of a resource on the page. Resolved per resource, falling back to
  *  its {@link ResourceType.defaultPlacement} and then the built-in default
  *  (`auto` / `column`). See {@link resolveResourcePlacement}. */
+/** Where a full-page plate is set (`ResourcePlacement.plate`):
+ *  in the content area, or over the whole page to the trim or the bleed. */
+export type ResourcePlateArea = 'content' | 'trim' | 'bleed';
+
 export interface ResourcePlacement {
   position?: ResourceFloatPosition;
   span?: ResourceFloatSpan;
@@ -139,8 +143,14 @@ export interface ResourcePlacement {
    *  (`plateLowResolution`). Its `position`, `span`, `width`, `shrink`,
    *  `rotate`, `captionSide`, `wrap` and `citingPage` are not read; a
    *  resource set in the text (`'here'`) or on a vertical
-   *  page is no plate. Default `false`. */
-  plate?: boolean;
+   *  page is no plate. `true` is `'content'`; `'trim'` and `'bleed'` set
+   *  the picture over the whole page instead, to the trim or out to the
+   *  bleed: it is enlarged to cover it and cropped about its centre, the
+   *  caption and note stay at the foot of the content area on a band of
+   *  the page's paper colour, and the page prints no running heads or
+   *  folio. Without cut lines (`page.cutLines`) there is no bleed on the
+   *  page, and `'bleed'` reaches the trim. Default `false`. */
+  plate?: boolean | ResourcePlateArea;
   /** Scale a floated picture (bitmap, SVG, a video's poster) down, keeping
    *  its proportions, to the room a slot has, instead of moving it on
    *  (#626). `'never'`: a float either fits a slot at its size or waits

@@ -24,6 +24,7 @@ import { createPageHeads } from './pageHeads.js';
 import { createPageOpener } from './pageOpener.js';
 import { createPageFooter } from './pageFooter.js';
 import { createPageDecoration } from './pageDecoration.js';
+import { spreadPlatesToEdge } from './edgePlates.js';
 
 /** The leader a contents part row's `{leader}` draws (#889): the contents'
  *  character, gap and switch, and the face of `toc.parts.leader` field by
@@ -198,6 +199,9 @@ export function layoutHeadersAndFooters(doc: VDTDocument, resourceById: Readonly
     partPaletteByPageIndex, spreadDecorated
   });
 
+  // The paper a plate's caption band is painted in .
+  const pageHex = resolved.page.backgroundColor.hex;
+  const paperHex = pageHex && pageHex !== 'transparent' ? pageHex : '#ffffff';
   for (const page of doc.pages) {
     const pageTurn = { page } as PageFurnitureTurn;
     // Text in the flow (openers, part pages, in-column designs) reads as the
@@ -207,6 +211,8 @@ export function layoutHeadersAndFooters(doc: VDTDocument, resourceById: Readonly
     const onLeaf = leafMetrics !== undefined && onComposedLeaf(resolved, page);
     const pageMetrics = onLeaf ? leafMetrics : metrics;
     const { physical: physicalFrames, vertical: verticalFrames } = onLeaf ? leafFrames! : docFrames;
+    // A plate set to the trim or the bleed covers the page .
+    if (!pageIsVertical(page)) spreadPlatesToEdge(page, pageMetrics, page.background ?? paperHex, dpi);
     // Per-page content area: mirrored margins swap inner/outer on even pages.
     const contentArea = page.contentArea;
     // A right-to-left page lays these out in its mirrored flow, whose trim
@@ -267,7 +273,8 @@ export function layoutHeadersAndFooters(doc: VDTDocument, resourceById: Readonly
     const headExtras: SlotLayoutExtras = page.composed ? { ...sheetExtras, attrs: page.composed.attrs, attrSources: pageAttrSources } : sheetExtras;
     // A comic page is all panels: no running heads or folio unless
     // `comics.runningHeads` asks for them (its folio still counts).
-    const furniture = !page.comic || resolvedComics(resolved).runningHeads;
+    // Nor has a page a plate covers to its edge .
+    const furniture = !page.edgePlate && (!page.comic || resolvedComics(resolved).runningHeads);
     pageTurn.pageMetrics = pageMetrics;
     pageTurn.frames = frames;
     pageTurn.extras = extras;

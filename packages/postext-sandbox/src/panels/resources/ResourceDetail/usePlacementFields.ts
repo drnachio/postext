@@ -1,6 +1,6 @@
 // The resource's placement, resolved key by key as the engine does, with
 // its table style and direction.
-import { type ResourcePlacement, type ResourceFloatPosition as PlacementPosition, type ResourceFloatSpan as PlacementSpan, type ResourceRotation, DEFAULT_TEXT_WRAP, DEFAULT_FLOAT_MIN_SCALE, type Resource, type ResourceType } from 'postext';
+import { type ResourcePlacement, type ResourceFloatPosition as PlacementPosition, type ResourceFloatSpan as PlacementSpan, type ResourceRotation, type ResourcePlateArea, DEFAULT_TEXT_WRAP, DEFAULT_FLOAT_MIN_SCALE, type Resource, type ResourceType } from 'postext';
 import { placementWith, tableWithStyle, tableWithDirection } from '../resourceEdits.js';
 import { useSandboxSelector } from '../../../context/SandboxContext.js';
 import { hasSeveralColumns } from '../../../sidebar/settings/multiColumnBook.js';
@@ -55,7 +55,10 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   const placementWidthPercent = widthPercentOf(placementWidth, placementWidthFallback);
   // A full-page plate fills the content area: no width, span,
   // wrap or rotation of its own.
-  const placementPlate = (currentPlacement.plate ?? typePlacement.plate) === true && placementPosition !== 'here';
+  const plateAsked = currentPlacement.plate ?? typePlacement.plate;
+  const placementPlate = plateAsked !== undefined && plateAsked !== false && placementPosition !== 'here';
+  // Where it is set: the text block, the trim or the bleed.
+  const placementPlateArea: ResourcePlateArea = plateAsked === 'trim' || plateAsked === 'bleed' ? plateAsked : 'content';
   // An inline embed is never turned; a turned resource is a page-span float.
   const placementInline = placementPosition === 'here';
   const placementRotated = !placementInline && placementRotate !== 'none';
@@ -97,7 +100,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   return {
     currentPlacement, typePlacement, placementPosition, placementSpan, placementRotate,
     setPlacementKey, placementColumns, severalColumns, layoutWrap, bodyLineHeight,
-    placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementInline, placementRotated,
+    placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementPlateArea, placementInline, placementRotated,
     isPicture, alignApplies, placementShrink, placementMinScale, placementCaptionMeasure,
     placementCitingPage, tableStyles, tableStyleId, setTableStyleId, placementAlign, floatSide,
     tableDirection, tableRtl, setTableDirection

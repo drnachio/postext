@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Images, tableaux et vidéos',
   description: 'Les ressources dans le texte : renvois et insertions, numérotation, placement des flottants et endroit où ils arrivent, habillage du texte, taille des bitmaps, zones de sécurité, ancres des personnages et vidéos',
   lang: 'fr',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '45 min',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ Chaque ressource a un **placement** qui décide où arrive son flottant. Il se r
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>Planche pleine page : l’image est seule sur la première page nouvelle après sa citation, agrandie ou réduite à la plus grande taille que la zone de contenu admet avec sa légende et sa note, centrée sauf si <code>align</code> dit autre chose ; le texte continue avant et après. <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> ne sont pas lus. Images seulement (bitmap ou SVG), et pas celles placées dans le texte (<code>"here"</code>). Un bitmap agrandi sous 300 ppp à sa taille imprimée donne l’avertissement <code>plateLowResolution</code>.</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Planche pleine page : l’image est seule sur la première page nouvelle après sa citation, agrandie ou réduite à la plus grande taille que la zone de contenu admet avec sa légende et sa note, centrée sauf si <code>align</code> dit autre chose ; le texte continue avant et après. <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> ne sont pas lus. Images seulement (bitmap ou SVG), et pas celles placées dans le texte (<code>"here"</code>). Un bitmap agrandi sous 300 ppp à sa taille imprimée donne l’avertissement <code>plateLowResolution</code>. <code>"trim"</code> ou <code>"bleed"</code> la posent sur la page entière, à la coupe ou à fond perdu (avec traits de coupe ; sans eux, le fond perdu est la coupe) : agrandie pour la couvrir et recadrée au centre, sa légende et sa note au pied de l’empagement sur une bande couleur du papier, sans titre courant ni folio sur cette page. L’export IDML l’ancre dans le texte à sa taille dans l’empagement.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

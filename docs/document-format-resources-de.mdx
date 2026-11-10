@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Bilder, Tabellen und Videos',
   description: 'Ressourcen im Text: Verweise und Einbettungen, Nummerierung, Platzierung und wohin ein Gleitobjekt kommt, Textumfluss, Bitmap-Größe, Sicherheitsbereiche, Anker für Comics und Videos',
   lang: 'de',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '38 min',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>Ganzseitige Tafel: Das Bild steht allein auf der ersten neuen Seite nach seinem Verweis, vergrößert oder verkleinert auf das Größte, was der Satzspiegel mit Legende und Anmerkung fasst, zentriert, sofern <code>align</code> nichts anderes sagt; der Text läuft davor und danach weiter. <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> werden nicht gelesen. Nur Bilder (Bitmap oder SVG), und keines, das im Text steht (<code>"here"</code>). Eine Bitmap, die auf unter 300 ppi bei ihrer Druckgröße vergrößert wird, meldet <code>plateLowResolution</code>.</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Ganzseitige Tafel: Das Bild steht allein auf der ersten neuen Seite nach seinem Verweis, vergrößert oder verkleinert auf das Größte, was der Satzspiegel mit Legende und Anmerkung fasst, zentriert, sofern <code>align</code> nichts anderes sagt; der Text läuft davor und danach weiter. <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> werden nicht gelesen. Nur Bilder (Bitmap oder SVG), und keines, das im Text steht (<code>"here"</code>). Eine Bitmap, die auf unter 300 ppi bei ihrer Druckgröße vergrößert wird, meldet <code>plateLowResolution</code>. <code>"trim"</code> oder <code>"bleed"</code> setzen sie stattdessen über die ganze Seite, ins Endformat oder in den Anschnitt (mit Schnittmarken; ohne sie ist der Anschnitt das Endformat): vergrößert, bis sie die Seite deckt, und mittig beschnitten, Bildunterschrift und Anmerkung am Fuß des Satzspiegels auf einem Band in Papierfarbe, ohne Kolumnentitel und Seitenzahl auf dieser Seite. Der IDML-Export verankert sie im Text in ihrer Größe im Satzspiegel.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

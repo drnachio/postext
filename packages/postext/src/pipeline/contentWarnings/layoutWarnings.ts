@@ -7,7 +7,6 @@ import type { Resource } from '../../types.js';
 import type { VDTDocument, ContentWarning, VDTDesignSlot } from '../../vdt.js';
 import { composedFrameBlockIds } from '../../composed/paint.js';
 import { bitmapResolutionFor, bitmapLayoutSize } from '../../bitmapResolution.js';
-import { croppedSize, resourceCrop } from '../resources/safeArea.js';
 
 /**
  * The page each content warning's construct was placed on: the first placed
@@ -332,7 +331,7 @@ export const PLATE_MIN_PPI = 300;
 /** A `plateLowResolution` warning for each full-page plate
  *  (`placement.plate`) of a bitmap the layout enlarged to the content
  *  area so far that it prints under {@link PLATE_MIN_PPI}: its pixels
- *  across (inside the author's crop) over its printed width in inches.
+ *  across over its printed width in inches.
  *  Once per picture; `sourceRangeOf` gives the range of the citing block. */
 export function plateLowResolutionWarnings(
   doc: VDTDocument,
@@ -348,8 +347,7 @@ export function plateLowResolutionWarnings(
       const id = rb.resource.id;
       const bitmap = rb.resource.bitmap;
       if (seen.has(id) || !bitmap || !(bitmap.width > 0) || !(rb.bodyRect.width > 0)) continue;
-      const pixels = croppedSize(bitmap.width, bitmap.height, resourceCrop(rb.resource)).width;
-      const ppi = pixels / (rb.bodyRect.width / dpi);
+      const ppi = bitmap.width / (rb.bodyRect.width / dpi);
       if (ppi >= PLATE_MIN_PPI) continue;
       seen.add(id);
       const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;

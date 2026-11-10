@@ -109,4 +109,61 @@ describe('a full-page plate', () => {
     const hi = build(bitmap(4000, 6000));
     expect((hi.contentWarnings ?? []).some((x) => x.kind === 'plateLowResolution')).toBe(false);
   });
+
+  describe('to the trim or the bleed', () => {
+    const withHead: PostextConfig = {
+      ...config,
+      header: { elements: [{ kind: 'text', id: 'head', content: 'Running head', placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: 'auto' } } }] } as never,
+    };
+    const edge = (area: 'trim' | 'bleed', cfg: PostextConfig = config) =>
+      buildDocument({ markdown: MD, resources: [bitmap(400, 200, { plate: area })] }, cfg, createMeasurementCache());
+
+    it('covers the trim, cropping the picture about its centre', () => {
+      const { page, block } = plateOf(edge('trim'));
+      const rb = block.resourceBlock!;
+      const body = { x: block.bbox.x + rb.bodyRect.x, y: block.bbox.y + rb.bodyRect.y, width: rb.bodyRect.width, height: rb.bodyRect.height };
+      expect(body.x).toBeCloseTo(0, 3);
+      expect(body.y).toBeCloseTo(0, 3);
+      expect(body.width).toBeCloseTo(page.width, 3);
+      expect(body.height).toBeCloseTo(page.height, 3);
+      // A wide picture on a tall page: its sides are cropped, all its height shown.
+      expect(rb.bodySource!.height).toBeCloseTo(1, 5);
+      expect(rb.bodySource!.width).toBeLessThan(1);
+      expect(rb.bodySource!.x).toBeCloseTo((1 - rb.bodySource!.width) / 2, 5);
+      expect(page.edgePlate).toBe('trim');
+    });
+
+    it('puts the caption at the foot of the content area, on the paper', () => {
+      const { page, block } = plateOf(edge('trim'));
+      const rb = block.resourceBlock!;
+      const foot = page.contentArea.y + page.contentArea.height;
+      const last = rb.captionLines[rb.captionLines.length - 1]!;
+      expect(last.bbox.y + last.bbox.height).toBeCloseTo(foot, 3);
+      expect(rb.captionBar?.background).toBe('#ffffff');
+      expect(rb.captionBar!.rect.y).toBeLessThan(rb.captionLines[0]!.bbox.y);
+    });
+
+    it('drops the running heads on its page only', () => {
+      const doc = edge('trim', withHead);
+      const { page } = plateOf(doc);
+      expect(page.header?.blocks.length ?? 0).toBe(0);
+      expect(doc.pages[page.index - 1]!.header?.blocks.length ?? 0).toBeGreaterThan(0);
+      const plain = plateOf(buildDocument({ markdown: MD, resources: [bitmap(400, 200)] }, withHead, createMeasurementCache()));
+      expect(plain.page.edgePlate).toBeUndefined();
+      expect(plain.page.header?.blocks.length ?? 0).toBeGreaterThan(0);
+    });
+
+    it('reaches the bleed with cut lines, and the trim without them', () => {
+      const cut: PostextConfig = { ...config, page: { ...config.page, cutLines: { enabled: true, bleed: mm(3) } } };
+      const { page, block } = plateOf(edge('bleed', cut));
+      const rb = block.resourceBlock!;
+      const bleedPx = (3 / 25.4) * 72;
+      const trimLeft = (page.width - (170 / 25.4) * 72) / 2;
+      expect(block.bbox.x + rb.bodyRect.x).toBeCloseTo(trimLeft - bleedPx, 3);
+      expect(rb.bodyRect.width).toBeCloseTo((170 / 25.4) * 72 + bleedPx * 2, 3);
+      const flat = plateOf(edge('bleed'));
+      expect(flat.block.resourceBlock!.bodyRect.width).toBeCloseTo(flat.page.width, 3);
+    });
+  });
 });
+

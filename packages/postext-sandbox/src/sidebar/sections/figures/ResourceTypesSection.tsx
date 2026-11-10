@@ -364,12 +364,28 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   {/* A full-page plate . */}
                   <ToggleSwitch
                     label={labels.resourcePlacementPlate}
-                    checked={type.defaultPlacement?.plate === true}
+                    checked={type.defaultPlacement?.plate !== undefined && type.defaultPlacement.plate !== false}
                     onChange={(v) => updateTypePlacement(type, { plate: v || undefined })}
                     tooltip={labels.resourcePlacementPlateTooltip}
                     isDefault={type.defaultPlacement?.plate === undefined}
                     onReset={() => updateTypePlacement(type, { plate: undefined })}
                   />
+                  {type.defaultPlacement?.plate !== undefined && type.defaultPlacement.plate !== false && (
+                    <SelectInput
+                      stacked
+                      label={labels.resourcePlacementPlateArea}
+                      tooltip={labels.resourcePlacementPlateAreaTooltip}
+                      value={(type.defaultPlacement?.plate === 'trim' || type.defaultPlacement?.plate === 'bleed' ? type.defaultPlacement.plate : 'content')}
+                      options={[
+                        { value: 'content', label: labels.resourcePlateAreaContent },
+                        { value: 'trim', label: labels.resourcePlateAreaTrim },
+                        { value: 'bleed', label: labels.resourcePlateAreaBleed },
+                      ]}
+                      onChange={(v) => updateTypePlacement(type, { plate: v === 'trim' || v === 'bleed' ? v : true })}
+                      isDefault={type.defaultPlacement.plate === true}
+                      onReset={() => updateTypePlacement(type, { plate: true })}
+                    />
+                  )}
                   <PlacementWidthField
                     value={type.defaultPlacement?.width}
                     clearAtWhole

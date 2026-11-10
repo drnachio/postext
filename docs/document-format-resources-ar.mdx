@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الصور والجداول والفيديو',
   description: 'الموارد في النص: الإحالة إليها وتضمينها، وترقيمها، وموضعها ومكان استقرار العنصر العائم، والتفاف النص حولها، ومقاس الصورة النقطية، والمناطق الآمنة، ونقاط الارتكاز في القصص المصورة، ومقاطع الفيديو',
   lang: 'ar',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '40 دقيقة',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ The keeper's quarters occupy the eastern wing.
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>لوحة بصفحة كاملة: تقف الصورة وحدها في أول صفحة جديدة بعد الإشارة إليها، مكبَّرة أو مصغَّرة إلى أكبر مقاس تتّسع له كتلة النص مع تعليقها وملاحظتها، في الوسط ما لم يقل <code>align</code> غير ذلك؛ ويستمر النص قبلها وبعدها. لا تُقرأ <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. للصور فقط (نقطية أو SVG)، لا للموضوعة في النص (<code>"here"</code>). الصورة النقطية المكبَّرة إلى أقل من 300 نقطة في البوصة بمقاسها المطبوع تُبلَّغ بـ <code>plateLowResolution</code>.</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>لوحة بصفحة كاملة: تقف الصورة وحدها في أول صفحة جديدة بعد الإشارة إليها، مكبَّرة أو مصغَّرة إلى أكبر مقاس تتّسع له كتلة النص مع تعليقها وملاحظتها، في الوسط ما لم يقل <code>align</code> غير ذلك؛ ويستمر النص قبلها وبعدها. لا تُقرأ <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. للصور فقط (نقطية أو SVG)، لا للموضوعة في النص (<code>"here"</code>). الصورة النقطية المكبَّرة إلى أقل من 300 نقطة في البوصة بمقاسها المطبوع تُبلَّغ بـ <code>plateLowResolution</code>. وتضعها <code>"trim"</code> أو <code>"bleed"</code> على الصفحة كلها، حتى حدّ القص أو حتى النزف (مع علامات القص؛ وبدونها النزف هو حدّ القص): تُكبَّر حتى تغطيها وتُقصّ من وسطها، ويبقى التعليق والملاحظة أسفل مساحة النص على شريط بلون الورق، ولا ترويسة ولا رقم في تلك الصفحة. ويثبّتها تصدير IDML في النص بمقاسها داخل مساحة النص.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

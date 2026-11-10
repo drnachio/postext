@@ -2860,6 +2860,11 @@ export interface SandboxLabels {
   resourcePlacementHintPlate: string;
   resourcePlacementPlate: string;
   resourcePlacementPlateTooltip: string;
+  resourcePlacementPlateArea: string;
+  resourcePlacementPlateAreaTooltip: string;
+  resourcePlateAreaContent: string;
+  resourcePlateAreaTrim: string;
+  resourcePlateAreaBleed: string;
   resourcePlacementWidthKind: string;
   resourcePlacementWidthKindTooltip: string;
   resourcePlacementWidthShare: string;

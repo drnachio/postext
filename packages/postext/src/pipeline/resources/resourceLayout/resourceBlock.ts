@@ -17,6 +17,7 @@ import { startEndAsLeftRight } from '../../../defaults/shared.js';
 import { resolveBodyStyle } from '../../styles.js';
 import { FIT_EPS } from '../../blocks/placement.js';
 import { captionInsideShare } from '../captionInside.js';
+import { plateAreaOf } from '../../floats/floatPlacement.js';
 import type { ResourceLayoutInput, TableRowMetrics } from './input.js';
 import { withSnippetCache, fitWidth, alignFactor, shiftLines } from './snippets.js';
 import { type TableLayoutStyle, layoutTable } from './tableLayout.js';
@@ -291,6 +292,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
   // with its caption and note under it, its proportions kept — enlarged
   // when smaller, reduced when larger.
   let plateScale: number | undefined;
+  const plateArea = plateAreaOf(resource.placement, resourceType?.defaultPlacement);
   if (input.plateHeight !== undefined && picture && !rotate && bodyWidth > 0 && bodyHeight > 0) {
     const room = Math.max(1, input.plateHeight - captionHeight - noteHeight - continuesHeight);
     const k = Math.min(pictureMaxWidth / bodyWidth, room / bodyHeight);
@@ -459,6 +461,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
     ...(bodyFlex ? { bodyFlex } : {}),
     ...(shrinkScale !== undefined ? { shrinkScale } : {}),
     ...(plateScale !== undefined ? { plateScale } : {}),
+    ...(plateScale !== undefined && plateArea && plateArea !== 'content' ? { plateArea } : {}),
     fileId,
     format,
     captionLines,

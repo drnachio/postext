@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Imágenes, tablas y vídeos',
   description: 'Cómo se usan los recursos en el texto: referencias e inserciones, numeración, colocación y dónde cae cada flotante; el texto que rodea las imágenes, el tamaño de los mapas de bits, las zonas seguras, las anclas de cómic y los vídeos',
   lang: 'es',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '44 min',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ Cada recurso tiene una **colocación** que decide dónde cae su flotante. Se res
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>Lámina a página completa: la imagen va sola en la primera página nueva tras su cita, ampliada o reducida al mayor tamaño que cabe en la caja con su pie y su nota, centrada salvo que <code>align</code> diga otra cosa; el texto sigue antes y después. No se leen <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. Solo imágenes (mapa de bits o SVG), y no las que van en el texto (<code>"here"</code>). Un mapa de bits ampliado por debajo de 300 ppp en su tamaño impreso da el aviso <code>plateLowResolution</code>.</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Lámina a página completa: la imagen va sola en la primera página nueva tras su cita, ampliada o reducida al mayor tamaño que cabe en la caja con su pie y su nota, centrada salvo que <code>align</code> diga otra cosa; el texto sigue antes y después. No se leen <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. Solo imágenes (mapa de bits o SVG), y no las que van en el texto (<code>"here"</code>). Un mapa de bits ampliado por debajo de 300 ppp en su tamaño impreso da el aviso <code>plateLowResolution</code>. <code>"trim"</code> o <code>"bleed"</code> la ponen sobre la página entera, a corte o a sangre (con líneas de corte; sin ellas la sangre es el corte): ampliada hasta cubrirla y recortada por el centro, con el pie y la nota al pie de la caja sobre una banda del color del papel, y sin cabeceras ni folio en esa página. La exportación a IDML la ancla en el texto con su tamaño a caja.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

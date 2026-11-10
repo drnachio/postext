@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Pictures, tables and videos',
   description: 'Resources in the text: references and embeds, numbering, placement and where a float lands, text wrap, bitmap size, safe areas, comic anchors and videos',
   lang: 'en',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '39 min',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ Each resource has a **placement** that decides where its float lands, resolved p
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>A full-page plate: the picture stands alone on the first fresh page after its citation, enlarged or reduced to the largest size the content area holds with its caption and note, centred unless <code>align</code> says otherwise; the text runs on before and after it. Its <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> are not read. Pictures only (bitmap or SVG), and not one set in the text (<code>"here"</code>). A bitmap enlarged to under 300 ppi at its printed size is reported as <code>plateLowResolution</code>.</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>A full-page plate: the picture stands alone on the first fresh page after its citation, enlarged or reduced to the largest size the content area holds with its caption and note, centred unless <code>align</code> says otherwise; the text runs on before and after it. Its <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> are not read. Pictures only (bitmap or SVG), and not one set in the text (<code>"here"</code>). A bitmap enlarged to under 300 ppi at its printed size is reported as <code>plateLowResolution</code>. <code>"trim"</code> or <code>"bleed"</code> set it over the whole page instead, to the trim or out to the bleed (with cut lines; without them the bleed is the trim): enlarged to cover it and cropped about its centre, its caption and note at the foot of the content area on a band of the paper colour, and no running heads or folio on that page. The IDML export anchors it in the story at its content-area size.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

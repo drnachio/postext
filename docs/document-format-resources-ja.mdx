@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '画像、表、動画',
   description: '本文の中のリソース：参照と埋め込み、番号付け、配置とフロートが置かれる場所、回り込み、ビットマップのサイズ、セーフエリア、漫画のアンカー、動画',
   lang: 'ja',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '40分',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ SVGのリソースは、さらに`diagramStyle.singleInk`（既定値は`false`�
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>全ページ図版：画像は参照の後の最初の新しいページに単独で置かれ、キャプションと注を含めて版面に収まる最大の大きさまで拡大または縮小され、<code>align</code> の指定がなければ中央に置かれます。本文はその前後に続きます。<code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> は読まれません。画像（ビットマップまたは SVG）のみで、本文内に置くもの（<code>"here"</code>）は対象外です。印刷サイズで 300 ppi 未満まで拡大されたビットマップは <code>plateLowResolution</code> として報告されます。</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>全ページ図版：画像は参照の後の最初の新しいページに単独で置かれ、キャプションと注を含めて版面に収まる最大の大きさまで拡大または縮小され、<code>align</code> の指定がなければ中央に置かれます。本文はその前後に続きます。<code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> は読まれません。画像（ビットマップまたは SVG）のみで、本文内に置くもの（<code>"here"</code>）は対象外です。印刷サイズで 300 ppi 未満まで拡大されたビットマップは <code>plateLowResolution</code> として報告されます。<code>"trim"</code> または <code>"bleed"</code> を指定すると、仕上がりまたは裁ち落としまでページ全体に置きます（トンボがある場合。ない場合、裁ち落としは仕上がりと同じ）。画像はページを覆うまで拡大されて中央でトリミングされ、キャプションと注は紙色の帯の上で版面の下端に置かれ、そのページには柱もノンブルも入りません。IDML 書き出しでは、版面でのサイズのまま本文に固定されます。</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

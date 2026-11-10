@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Immagini, tabelle e video',
   description: 'Le risorse nel testo: rimandi e inserimenti, numerazione, collocazione e dove finisce un elemento flottante, testo intorno alle immagini, dimensione delle bitmap, zone sicure, ancore dei personaggi e video',
   lang: 'it',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '42 min',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ Ogni risorsa ha una **collocazione** che decide dove finisce il suo elemento flo
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>Tavola a piena pagina: l’immagine sta da sola nella prima pagina nuova dopo la citazione, ingrandita o ridotta alla dimensione massima che la gabbia contiene con didascalia e nota, centrata salvo che <code>align</code> dica altro; il testo prosegue prima e dopo. Non si leggono <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. Solo immagini (bitmap o SVG), e non quelle nel testo (<code>"here"</code>). Una bitmap ingrandita sotto i 300 ppi alla dimensione di stampa dà l’avviso <code>plateLowResolution</code>.</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Tavola a piena pagina: l’immagine sta da sola nella prima pagina nuova dopo la citazione, ingrandita o ridotta alla dimensione massima che la gabbia contiene con didascalia e nota, centrata salvo che <code>align</code> dica altro; il testo prosegue prima e dopo. Non si leggono <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. Solo immagini (bitmap o SVG), e non quelle nel testo (<code>"here"</code>). Una bitmap ingrandita sotto i 300 ppi alla dimensione di stampa dà l’avviso <code>plateLowResolution</code>. <code>"trim"</code> o <code>"bleed"</code> la mettono invece sull’intera pagina, al taglio o al vivo (con i segni di taglio; senza, l’abbondanza è il taglio): ingrandita fino a coprirla e ritagliata al centro, con didascalia e nota al piede della gabbia su una fascia del colore della carta, e senza testatine né folio in quella pagina. L’esportazione IDML la ancora nel testo con la sua misura nella gabbia.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

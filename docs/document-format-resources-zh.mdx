@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '图片、表格与视频',
   description: '正文中的资源：引用与嵌入、编号、位置与浮动体落在哪里、文字绕排、位图尺寸、安全区、漫画锚点和视频',
   lang: 'zh',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '28分钟',
   order: 30,
   parent: 'document-format',
@@ -152,8 +152,8 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
     </tr>
     <tr>
       <td><code>plate</code></td>
-      <td><code>true</code> · <code>false</code></td>
-      <td>整页插图：图片单独排在引用之后的第一个新页上，放大或缩小到连同图注和注释能放进版心的最大尺寸，除非 <code>align</code> 另有指定否则居中；正文在其前后继续。不读取 <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>。仅限图片（位图或 SVG），且不适用于排在正文中的图片（<code>"here"</code>）。按印刷尺寸放大到低于 300 ppi 的位图会报告 <code>plateLowResolution</code>。</td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>整页插图：图片单独排在引用之后的第一个新页上，放大或缩小到连同图注和注释能放进版心的最大尺寸，除非 <code>align</code> 另有指定否则居中；正文在其前后继续。不读取 <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>。仅限图片（位图或 SVG），且不适用于排在正文中的图片（<code>"here"</code>）。按印刷尺寸放大到低于 300 ppi 的位图会报告 <code>plateLowResolution</code>。<code>"trim"</code> 或 <code>"bleed"</code> 则把它铺满整页，到成品尺寸或出血（有裁切线时；没有时出血即成品尺寸）：放大到覆盖页面并居中裁切，图注和注释留在版心底部、衬一条纸色色带，该页不印书眉和页码。IDML 导出将其以版心中的尺寸锚定在正文中。</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

@@ -26,12 +26,21 @@ import type {
   ResourceType,
   ResourceFloatPosition,
   ResourceFloatSpan,
+  ResourcePlacement,
+  ResourcePlateArea,
   ResourceRotation,
 } from '../../types.js';
 import { floatColumnCount, startEndAsLeftRight } from '../../defaults/shared.js';
 import { DEFAULT_FLOAT_MIN_SCALE, floatMinScaleOf, floatShrinkModeOf } from '../../defaults/layout.js';
 import { resolveResourceWrap } from './textWrap.js';
 import { captionInsideShare } from '../resources/captionInside.js';
+
+/** The area a resource's placement sets it as a full-page plate in
+ *  (its own `plate`, else its type's), or undefined when it is no plate. */
+export function plateAreaOf(placement: ResourcePlacement | undefined, typePlacement: ResourcePlacement | undefined): ResourcePlateArea | undefined {
+  const plate = placement?.plate ?? typePlacement?.plate;
+  return plate === true ? 'content' : plate === false || plate === undefined ? undefined : plate;
+}
 
 export { floatColumnCount };
 
@@ -156,9 +165,9 @@ export function resolveResourcePlacement(
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
   const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
-  // A full-page plate: a top, page-span, upright picture.
+  // A full-page plate : a top, page-span, upright picture.
   const plate = picture && !noRotation && position !== 'here'
-    && (resource.placement?.plate ?? type?.defaultPlacement?.plate) === true;
+    && plateAreaOf(resource.placement, type?.defaultPlacement) !== undefined;
   if (plate) {
     const own = resource.placement?.align ?? type?.defaultPlacement?.align;
     return {

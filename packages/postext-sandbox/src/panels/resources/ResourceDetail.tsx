@@ -53,7 +53,7 @@ export function ResourceDetail({
   });
 
   const { currentPlacement, typePlacement, placementPosition, placementSpan, placementRotate, setPlacementKey, placementColumns, severalColumns, layoutWrap,
-    bodyLineHeight, placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementInline, placementRotated, isPicture, alignApplies, placementShrink,
+    bodyLineHeight, placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementPlateArea, placementInline, placementRotated, isPicture, alignApplies, placementShrink,
     placementMinScale, placementCaptionMeasure, placementCitingPage, tableStyles, tableStyleId, setTableStyleId, placementAlign, floatSide, tableDirection,
     tableRtl, setTableDirection } = usePlacementFields({ resource, onChange, labels, type, touch });
 
@@ -227,6 +227,22 @@ export function ResourceDetail({
               onChange={(v) => setPlacementKey('plate', v || undefined)}
               isDefault={currentPlacement.plate === undefined}
               onReset={() => setPlacementKey('plate', undefined)}
+            />
+          )}
+          {!placementInline && isPicture && placementPlate && (
+            <SelectInput
+              stacked
+              label={labels.resourcePlacementPlateArea}
+              tooltip={labels.resourcePlacementPlateAreaTooltip}
+              value={placementPlateArea}
+              options={[
+                { value: 'content', label: labels.resourcePlateAreaContent },
+                { value: 'trim', label: labels.resourcePlateAreaTrim },
+                { value: 'bleed', label: labels.resourcePlateAreaBleed },
+              ]}
+              onChange={(v) => setPlacementKey('plate', v === 'trim' || v === 'bleed' ? v : true)}
+              isDefault={currentPlacement.plate === undefined || currentPlacement.plate === true}
+              onReset={() => setPlacementKey('plate', true)}
             />
           )}
           {!placementInline && !placementPlate && (
