@@ -40,8 +40,8 @@ const MD =
 const INDEX = '# Index\n\n:::index\n';
 const CONTENTS = '# Contents\n\n:::toc\n';
 
-const book = (chapters: string[], config: never = CONFIG) => ({
-  chapters: chapters.map((markdown, i) => ({ id: `ch${i + 1}`, title: `Chapter ${i + 1}`, markdown })),
+const book = (chapters: string[], config: never = CONFIG, ids?: string[]) => ({
+  chapters: chapters.map((markdown, i) => ({ id: ids?.[i] ?? `ch${i + 1}`, title: `Chapter ${i + 1}`, markdown })),
   config,
   resources: [TABLE],
 });
@@ -51,12 +51,12 @@ const book = (chapters: string[], config: never = CONFIG) => ({
 async function roundTrip(
   chapters: string[],
   design: SemanticDesign,
-  options: { docs?: GoogleDocsOptions; edit?: (bytes: Uint8Array) => Uint8Array; now?: string[]; config?: never; nowConfig?: never } = {},
+  options: { docs?: GoogleDocsOptions; edit?: (bytes: Uint8Array) => Uint8Array; now?: string[]; nowIds?: string[]; config?: never; nowConfig?: never } = {},
 ): Promise<DocxEditResult> {
   const e = await exportDocx(chapters, { config: options.config ?? CONFIG, design, resources: [TABLE] });
   let bytes = savedByGoogleDocs(e.bytes, options.docs);
   if (options.edit) bytes = options.edit(bytes);
-  const target = book(options.now ?? chapters, options.nowConfig ?? options.config ?? CONFIG);
+  const target = book(options.now ?? chapters, options.nowConfig ?? options.config ?? CONFIG, options.nowIds);
   const rebuilt = await rebuildExportMap(bytes, target);
   expect(rebuilt).toBeDefined();
   return applyDocxEdits(bytes, { chapters: target.chapters, resources: target.resources }, { rebuilt: rebuilt! });
@@ -285,11 +285,14 @@ describe('a book that changed since the export', () => {
   it('leaves out a chapter the book no longer has', async () => {
     const r = await roundTrip([MD, SECOND, THIRD], 'plain', {
       now: [MD, THIRD],
+      nowIds: ['ch1', 'ch3'],
       edit: inDoc((x) => x.replace('Salt water second.', 'Salt water, again.').replace('Still water first.', 'Still water, edited.')),
     });
-    // ch3 of the export is ch2 of the book now, by position: ids are the
-    // chapters' own, so the test names them by text.
-    expect(r.notes?.some((n) => n.code === 'chapters-missing' || n.code === 'book-changed')).toBe(true);
+    expect(r.notes?.map((n) => n.code)).toEqual(['map-rebuilt', 'chapters-missing', 'book-changed']);
+    expect(r.notes?.[1]).toEqual({ code: 'chapters-missing', count: 1 });
+    // The edit made in the chapter that is gone goes nowhere.
+    expect(r.edits.every((e) => e.chapter === 'ch3' && e.status === 'applied')).toBe(true);
+    expect(r.chapters.map((c) => c.markdown)).toEqual([MD, THIRD.replace('Salt water second.', 'Salt water, again.')]);
   });
 
   it('finds the one chapter a file without properties was exported from', async () => {
