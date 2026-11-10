@@ -212,7 +212,7 @@ export type {
   ResourceFloatPosition,
   ResourceFloatSpan,
   ResourceRotation,
-  ResourcePlacement,
+  ResourcePlacement, ResourcePlateArea,
   ResourceSafeArea,
   ResourceContour,
   ContourTrace,

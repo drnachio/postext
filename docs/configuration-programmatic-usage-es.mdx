@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Uso programático',
   description: 'Cómo usar Postext desde el código: buildDocument y sus avisos, los valores por defecto, las fuentes, las cachés y el Web Worker.',
   lang: 'es',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '32 min',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>Un mapa de bits con tamaño de impresión (su propio <code>bitmap.resolution</code>, o un número en <code>layout.bitmapResolution</code>, pero no una resolución leída del archivo) compuesto en una columna que lo deja por debajo de la mitad de ese tamaño, en una página cuya caja de texto es más ancha que la columna. <code>resourceId</code> indica la imagen; <code>scale</code>, la fracción de su ancho de impresión que conserva, y <code>printWidthPx</code>, <code>widthPx</code> y <code>pageWidthPx</code>, los anchos de impresión, de la columna y de la caja de texto. No se avisa de una imagen estrechada con <code>placement.width</code>, reducida a su hueco, girada o colocada en el marco de una página compuesta. El aviso apunta al párrafo que la cita por primera vez. Desde postext 1.37.</td>
       <td>La imagen se imprime al ancho de su columna. Una imagen en el flujo nunca es más ancha que su columna, y la página por defecto tiene dos (<code>layout.layoutType: 'double'</code>): compón la página a una sola columna, haz que la imagen flote a lo ancho de la página (<code>placement.span: 'page'</code>) o aumenta su resolución si ese es el tamaño que buscas.</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Un mapa de bits puesto como lámina a página completa (<code>placement.plate</code>) se ha ampliado hasta imprimirse por debajo de 300 ppp. <code>resourceId</code> lo nombra, <code>scale</code> es cuánto se ha ampliado y <code>ppi</code>, la resolución a la que se imprime. Señala el párrafo que lo cita por primera vez.</td>
+      <td>La lámina se imprime a ese tamaño. Usa un original más grande, o quita la lámina y compón la imagen más pequeña.</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

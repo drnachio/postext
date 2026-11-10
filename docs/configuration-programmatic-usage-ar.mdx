@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الاستخدام البرمجي',
   description: 'استعمال Postext من الشيفرة: buildDocument وتحذيراته، والقيم الافتراضية، والخطوط، والذاكرات المؤقتة، وWeb Worker',
   lang: 'ar',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '31 دقيقة',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>صورة نقطية لها مقاس طباعة (دقّتها <code>bitmap.resolution</code>، أو رقم في <code>layout.bitmapResolution</code>؛ لا دقّة مقروءة من الملف) منضّدة في عمود يُبقيها دون نصف ذلك المقاس، في صفحة كتلة نصها أعرض من العمود. يحدّدها <code>resourceId</code>، و<code>scale</code> هي النسبة التي تبقى من عرض طباعتها، و<code>printWidthPx</code> و<code>widthPx</code> و<code>pageWidthPx</code> عروض الطباعة والعمود وكتلة النص. لا يصدر هذا التحذير عن صورة ضيّقها <code>placement.width</code> أو صُغّرت لتسع موضعها أو أُديرت أو وُضعت في خانة صفحة مركّبة. يشير إلى الفقرة التي تذكرها أولًا. منذ postext 1.37.</td>
       <td>تُطبع الصورة بعرض عمودها. الصورة في المتن لا تكون أعرض من عمودها أبدًا، وللصفحة الافتراضية عمودان (<code>layout.layoutType: 'double'</code>): نضّد الصفحة في عمود واحد، أو اجعل الصورة تطفو على عرض الصفحة (<code>placement.span: 'page'</code>)، أو ارفع دقّتها إن كان هذا المقاس هو المراد.</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>صورة نقطية موضوعة لوحةً بصفحة كاملة (<code>placement.plate</code>) كُبِّرت حتى تُطبع بأقل من 300 نقطة في البوصة. <code>resourceId</code> يسمّيها، و<code>scale</code> مقدار تكبيرها، و<code>ppi</code> دقة طباعتها. يشير إلى الفقرة التي تذكرها أولًا.</td>
+      <td>تُطبع اللوحة بذلك المقاس. استخدم أصلًا أكبر، أو ألغِ اللوحة ونضّد الصورة أصغر.</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

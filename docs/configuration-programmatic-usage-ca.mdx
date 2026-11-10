@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ús programàtic',
   description: 'Com es fa servir Postext des del codi: buildDocument i els avisos que retorna, els valors per defecte, la càrrega de fonts, les memòries cau i el Web Worker',
   lang: 'ca',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '32 min',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>Un mapa de bits amb mida d'impressió (el seu <code>bitmap.resolution</code> o un nombre a <code>layout.bitmapResolution</code>; no una resolució llegida del fitxer) compost en una columna que el deixa per sota de la meitat d'aquesta mida, en una pàgina amb la caixa de text més ampla que la columna. <code>resourceId</code> la identifica, <code>scale</code> és la fracció de l'amplada d'impressió que conserva, i <code>printWidthPx</code>, <code>widthPx</code> i <code>pageWidthPx</code> són les amplades d'impressió, de columna i de caixa. No es dona cap avís per a una imatge estrenyida amb <code>placement.width</code>, reduïda a l'espai disponible, girada o col·locada al marc d'una pàgina composta. L'avís indica el paràgraf que la cita primer. Des de postext 1.37.</td>
       <td>La imatge s'imprimeix a l'amplada de la seva columna. Una imatge al flux mai no és més ampla que la seva columna i la pàgina per defecte en té dues (<code>layout.layoutType: 'double'</code>): compon la pàgina a una columna, fes flotar la imatge sobre tota la pàgina (<code>placement.span: 'page'</code>) o puja'n la resolució si aquesta és la mida que busques.</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Un mapa de bits posat com a làmina a pàgina completa (<code>placement.plate</code>) s'ha ampliat fins a imprimir-se per sota de 300 ppp. <code>resourceId</code> l'anomena, <code>scale</code> és quant s'ha ampliat i <code>ppi</code>, la resolució a què s'imprimeix. Assenyala el paràgraf que el cita per primer cop.</td>
+      <td>La làmina s'imprimeix a aquesta mida. Fes servir un original més gran, o treu la làmina i compon la imatge més petita.</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'プログラムからの利用',
   description: 'コードからPostextを呼び出す方法。buildDocumentとその警告、既定値、フォント、キャッシュ、そしてWeb Worker',
   lang: 'ja',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '32分',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>印刷サイズが決まっているビットマップ（自身の<code>bitmap.resolution</code>、または<code>layout.bitmapResolution</code>の数値。ファイルから読んだ解像度は含みません）が、印刷サイズの半分未満にしか収まらない段に組まれ、そのページの版面は段より広い場合です。<code>resourceId</code>が画像を示し、<code>scale</code>は印刷幅のうち残る割合、<code>printWidthPx</code>、<code>widthPx</code>、<code>pageWidthPx</code>は印刷・段・版面の幅です。<code>placement.width</code>で狭めた画像、置き場所に合わせて縮小した画像、回転した画像、テンプレートページの枠に置いた画像は報告しません。最初に参照する段落を指します。postext 1.37以降。</td>
       <td>画像は段の幅で印刷されます。本文の流れの中の画像は段より広くならず、既定のページは2段です（<code>layout.layoutType: 'double'</code>）。ページを1段組みにするか、画像をページ全幅のフロートにする（<code>placement.span: 'page'</code>）か、そのサイズでよければ解像度を上げてください。</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>全ページ図版（<code>placement.plate</code>）として置かれたビットマップが、印刷時に 300 ppi 未満になるまで拡大されました。<code>resourceId</code> はその画像、<code>scale</code> は拡大率、<code>ppi</code> は印刷解像度です。最初に参照する段落を指します。</td>
+      <td>図版はその大きさで印刷されます。より大きな原画を使うか、全ページ図版をやめて画像を小さく組んでください。</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

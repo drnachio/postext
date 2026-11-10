@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Programmatische Nutzung',
   description: 'Postext aus Code aufrufen: buildDocument und seine Warnungen, Standardwerte, Schriften, Caches und der Web Worker',
   lang: 'de',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '28 min',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>Ein Bitmap mit Druckgröße (eigenes <code>bitmap.resolution</code> oder eine Zahl in <code>layout.bitmapResolution</code>; keine aus der Datei gelesene Auflösung), gesetzt in einer Spalte, die es unter der Hälfte dieser Größe hält, auf einer Seite, deren Satzspiegel breiter als die Spalte ist. <code>resourceId</code> gibt es an, <code>scale</code> ist der Anteil seiner Druckbreite, den es behält, <code>printWidthPx</code>, <code>widthPx</code> und <code>pageWidthPx</code> sind die Breiten von Druck, Spalte und Satzspiegel. Ein Bild, das <code>placement.width</code> schmaler macht, das auf seinen Platz verkleinert, gedreht oder in den Rahmen einer zusammengesetzten Seite gesetzt ist, wird nicht gemeldet. Zeigt auf den Absatz, der es zuerst zitiert. Seit postext 1.37.</td>
       <td>Das Bild wird in Spaltenbreite ausgegeben. Ein Bild im Fluss ist nie breiter als seine Spalte, und die Standardseite hat zwei (<code>layout.layoutType: 'double'</code>): Setzen Sie die Seite einspaltig, lassen Sie das Bild als seitenbreites Gleitobjekt setzen (<code>placement.span: 'page'</code>) oder erhöhen Sie seine Auflösung, wenn diese Größe gewollt ist.</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Eine als ganzseitige Tafel gesetzte Bitmap (<code>placement.plate</code>) wurde so vergrößert, dass sie unter 300 ppi gedruckt wird. <code>resourceId</code> nennt sie, <code>scale</code> gibt die Vergrößerung an, <code>ppi</code> die Druckauflösung. Zeigt auf den Absatz, der sie zuerst zitiert.</td>
+      <td>Die Tafel wird in dieser Größe gedruckt. Ein größeres Original verwenden, oder die Tafel abschalten und das Bild kleiner setzen.</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

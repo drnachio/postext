@@ -243,8 +243,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     } else {
       // A rotated block takes a page of its own: it never shares the
       // current page's foot, and waits for a fresh page to be cut to when
-      // too wide.
-      if (f.rotate || tooWide(measure)) return 'defer';
+      // too wide. So does a full-page plate .
+      if (f.rotate || f.plate || tooWide(measure)) return 'defer';
       // A picture that scales to any slot (#626) takes this one when it
       // holds it at its smallest scale or more (the text room kept next
       // to another band, as `fitsStrict` keeps it); the loop below checks
@@ -484,9 +484,9 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     return false;
   };
 
-  /** A rotated float takes its page from the top. */
+  /** A rotated float, and a full-page plate, take their page from the top. */
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
-    f.rotate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
+    f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {
     placeFloatInColumns, settle, heldBack, positionsFor
   };

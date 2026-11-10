@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '以编程方式使用',
   description: '用代码调用Postext：buildDocument及其报告的警告、默认值、字体、缓存，以及Web Worker',
   lang: 'zh',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '22分钟',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>带印刷尺寸的位图（它自己的<code>bitmap.resolution</code>，或<code>layout.bitmapResolution</code>中的数值；不是从文件读出的分辨率）排进一栏后，不到印刷尺寸的一半，而该页的版心比这一栏宽。<code>resourceId</code>指明图片，<code>scale</code>是保留的印刷宽度比例，<code>printWidthPx</code>、<code>widthPx</code>和<code>pageWidthPx</code>分别是印刷、栏和版心的宽度。用<code>placement.width</code>收窄的、为放进位置而缩小的、旋转过的或排在模板页的框里的图片不报告。指向第一次引用它的段落。postext 1.37起。</td>
       <td>图片按栏宽印出。正文流中的图片不会比所在栏更宽，而默认页面有两栏（<code>layout.layoutType: 'double'</code>）：把页面改为单栏，让图片跨整页浮动（<code>placement.span: 'page'</code>），或者如果想要这个尺寸，就提高它的分辨率。</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>作为整页插图（<code>placement.plate</code>）的位图被放大到印刷分辨率低于 300 ppi。<code>resourceId</code> 指明该图，<code>scale</code> 为放大倍数，<code>ppi</code> 为印刷分辨率。指向首次引用它的段落。</td>
+      <td>插图按该尺寸印刷。请使用更大的原图，或关闭整页插图并把图片排得小一些。</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

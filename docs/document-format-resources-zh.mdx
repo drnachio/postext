@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '图片、表格与视频',
   description: '正文中的资源：引用与嵌入、编号、位置与浮动体落在哪里、文字绕排、位图尺寸、安全区、漫画锚点和视频',
   lang: 'zh',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '28分钟',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>用于比所在位置窄的资源：<code>width</code>是它所占栏宽（或页宽）的比例，<code>align</code>是它在该位置中的摆放方式（在栏中居中的小表格；占满页宽的横带中只跨一栏的图片）。比所在位置窄的图片（比栏窄的位图，或被<code>layout.fitFiguresToPage</code>缩小的图）同样按<code>align</code>摆放，下方的题注仍保持该位置的行长。浮动体和行内<code>::resource</code>嵌入都适用。</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; 以 mm、cm 或 pt 表示的长度 </td>
+      <td>用于比所在位置窄的资源：<code>width</code>是它所占栏宽（或页宽）的比例，<code>align</code>是它在该位置中的摆放方式（在栏中居中的小表格；占满页宽的横带中只跨一栏的图片）。比所在位置窄的图片（比栏窄的位图，或被<code>layout.fitFiguresToPage</code>缩小的图）同样按<code>align</code>摆放，下方的题注仍保持该位置的行长。浮动体和行内<code>::resource</code>嵌入都适用。 用长度代替比例（<code>&#123; "value": 80, "unit": "mm" &#125;</code>，或用 <code>cm</code>、<code>pt</code>）即按该宽度排版：排版前换算为其所在位置的比例——正文内嵌入为栏，栏浮动为所占的栏及栏间距，跨页或旋转浮动为版心宽度，侧栏浮动为侧栏——长度等于或大于该位置时占满整个位置。</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>整页插图：图片单独排在引用之后的第一个新页上，放大或缩小到连同图注和注释能放进版心的最大尺寸，除非 <code>align</code> 另有指定否则居中；正文在其前后继续。不读取 <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>。仅限图片（位图或 SVG），且不适用于排在正文中的图片（<code>"here"</code>）。按印刷尺寸放大到低于 300 ppi 的位图会报告 <code>plateLowResolution</code>。<code>"trim"</code> 或 <code>"bleed"</code> 则把它铺满整页，到成品尺寸或出血（有裁切线时；没有时出血即成品尺寸）：放大到覆盖页面并居中裁切，图注和注释留在版心底部、衬一条纸色色带，该页不印书眉和页码。IDML 导出将其以版心中的尺寸锚定在正文中。</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

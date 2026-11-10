@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Programmatic usage',
   description: 'Calling Postext from code: buildDocument and its warnings, defaults, fonts, caches and the Web Worker',
   lang: 'en',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '28 min',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>A bitmap with a print size (its own <code>bitmap.resolution</code>, or a number in <code>layout.bitmapResolution</code>; not a resolution read from the file) set in a column that holds it at less than half that size, on a page whose text block is wider than the column. <code>resourceId</code> names it, <code>scale</code> is the share of its print width it keeps, <code>printWidthPx</code>, <code>widthPx</code> and <code>pageWidthPx</code> the print, column and text block widths. A picture narrowed by <code>placement.width</code>, shrunk to its slot, turned or set in a composed page's frame is not reported. Points at the paragraph that first cites it. Since postext 1.37.</td>
       <td>The picture is printed at its column's width. A picture in the flow is never wider than its column and the default page has two (<code>layout.layoutType: 'double'</code>): set the page in one column, float it across the page (<code>placement.span: 'page'</code>), or raise its resolution if that size is the one wanted.</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>A bitmap set as a full-page plate (<code>placement.plate</code>) was enlarged to a printed resolution under 300 ppi. <code>resourceId</code> names it, <code>scale</code> is how much it was enlarged, <code>ppi</code> the resolution it prints at. Points at the paragraph that first cites it.</td>
+      <td>The plate is printed at that size. Use a larger original, or turn the plate off and set the picture smaller.</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

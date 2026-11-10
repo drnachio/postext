@@ -1,6 +1,7 @@
 // The page each content warning landed on, and the warnings read from the
 // laid-out document: loose CJK lines, ragged and divided words, cut design
 // texts, shrunk floats, small pictures, empty captions, drop caps (#1276: split out of contentWarnings.ts).
+import { isWidthLength } from '../floats/placementLength.js';
 import { computeChapterTitles } from '../pages/placeholders.js';
 import type { Resource } from '../../types.js';
 import type { VDTDocument, ContentWarning, VDTDesignSlot } from '../../vdt.js';
@@ -296,7 +297,7 @@ export function pictureBelowPrintSizeWarnings(
       const ppi = bitmapResolutionFor({ resolution: bitmap.resolution }, typeof policy === 'number' ? policy : 'document');
       if (ppi === undefined) continue;
       const frac = resource.placement?.width;
-      if (typeof frac === 'number' && frac > 0 && frac < 1) continue;
+      if ((typeof frac === 'number' && frac > 0 && frac < 1) || isWidthLength(frac)) continue;
       const printWidthPx = bitmapLayoutSize({ ...bitmap, resolution: ppi }, dpi).width;
       const widthPx = rb.bodyRect.width;
       if (!(printWidthPx > 0) || widthPx / printWidthPx >= PRINT_SIZE_SCALE) continue;
@@ -315,6 +316,46 @@ export function pictureBelowPrintSizeWarnings(
         printWidthPx: Math.round(printWidthPx),
         widthPx: Math.round(widthPx),
         pageWidthPx: Math.round(pageWidthPx),
+        ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
+        pageIndex: page.index,
+      });
+    }
+  }
+  return out;
+}
+
+/** Under this resolution, at the size it prints at, an enlarged plate is
+ *  reported: the resolution printers ask of a picture. */
+export const PLATE_MIN_PPI = 300;
+
+/** A `plateLowResolution` warning for each full-page plate
+ *  (`placement.plate`) of a bitmap the layout enlarged to the content
+ *  area so far that it prints under {@link PLATE_MIN_PPI}: its pixels
+ *  across over its printed width in inches.
+ *  Once per picture; `sourceRangeOf` gives the range of the citing block. */
+export function plateLowResolutionWarnings(
+  doc: VDTDocument,
+  sourceRangeOf?: (contentIndex: number) => { start: number; end: number } | undefined,
+): ContentWarning[] {
+  const dpi = doc.config.page.dpi;
+  const out: ContentWarning[] = [];
+  const seen = new Set<string>();
+  for (const page of doc.pages) {
+    for (const block of page.floats ?? []) {
+      const rb = block.resourceBlock;
+      if (!rb || rb.kind !== 'bitmap' || rb.plateScale === undefined || !(rb.plateScale > 1)) continue;
+      const id = rb.resource.id;
+      const bitmap = rb.resource.bitmap;
+      if (seen.has(id) || !bitmap || !(bitmap.width > 0) || !(rb.bodyRect.width > 0)) continue;
+      const ppi = bitmap.width / (rb.bodyRect.width / dpi);
+      if (ppi >= PLATE_MIN_PPI) continue;
+      seen.add(id);
+      const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;
+      out.push({
+        kind: 'plateLowResolution',
+        resourceId: id,
+        ppi: Math.round(ppi),
+        scale: Math.round(rb.plateScale * 1000) / 1000,
         ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
         pageIndex: page.index,
       });

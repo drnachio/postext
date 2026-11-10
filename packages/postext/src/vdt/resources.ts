@@ -180,6 +180,14 @@ export interface ResolvedResourceBlock {
    *  Absent when the picture is set at its size (or only cropped within
    *  its safe area). */
   shrinkScale?: number;
+  /** For a full-page plate (`placement.plate`): the scale the
+   *  picture is set at to fill the content area, above 1 when enlarged. */
+  plateScale?: number;
+  /** For a full-page plate set over the whole page (`placement.plate:
+   *  'trim' | 'bleed'`): the edge it reaches. The layout sets
+   *  it in the content area like any plate; the page's furniture pass
+   *  then spreads its body to that edge (`spreadPlatesToEdge`). */
+  plateArea?: 'trim' | 'bleed';
   /** For bitmap/svg: the out-of-band binary id to resolve at render time. */
   fileId?: string;
   /** For bitmap: the source format (e.g. `'png'`, `'jpeg'`, `'webp'`). */

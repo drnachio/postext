@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Uso programático',
   description: 'Como chamar o Postext a partir do código: o buildDocument e os avisos dele, os valores padrão, as fontes, os caches e o Web Worker',
   lang: 'pt',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '31 min',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>Um bitmap com tamanho de impressão (o <code>bitmap.resolution</code> dele ou um número em <code>layout.bitmapResolution</code>; não uma resolução lida do arquivo) composto numa coluna que o deixa abaixo da metade desse tamanho, numa página cuja mancha de texto é mais larga que a coluna. <code>resourceId</code> o identifica, <code>scale</code> é a parte da largura de impressão que ele mantém, e <code>printWidthPx</code>, <code>widthPx</code> e <code>pageWidthPx</code> são as larguras de impressão, de coluna e de mancha. Uma imagem estreitada por <code>placement.width</code>, reduzida ao espaço dela, girada ou posta no bloco de uma página composta não é sinalizada. Aponta para o parágrafo que a cita primeiro. Desde o postext 1.37.</td>
       <td>A imagem é impressa na largura da coluna. Uma imagem no fluxo nunca é mais larga que a coluna e a página padrão tem duas (<code>layout.layoutType: 'double'</code>): componha a página numa coluna, faça a imagem flutuar sobre toda a página (<code>placement.span: 'page'</code>) ou aumente a resolução se esse for o tamanho desejado.</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Um bitmap posto como prancha de página inteira (<code>placement.plate</code>) foi ampliado até imprimir abaixo de 300 ppi. <code>resourceId</code> nomeia-o, <code>scale</code> é quanto foi ampliado e <code>ppi</code>, a resolução com que se imprime. Aponta para o parágrafo que o cita primeiro.</td>
+      <td>A prancha é impressa nesse tamanho. Use um original maior, ou desligue a prancha e componha a imagem menor.</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

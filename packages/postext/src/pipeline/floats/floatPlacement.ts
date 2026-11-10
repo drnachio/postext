@@ -26,12 +26,21 @@ import type {
   ResourceType,
   ResourceFloatPosition,
   ResourceFloatSpan,
+  ResourcePlacement,
+  ResourcePlateArea,
   ResourceRotation,
 } from '../../types.js';
 import { floatColumnCount, startEndAsLeftRight } from '../../defaults/shared.js';
 import { DEFAULT_FLOAT_MIN_SCALE, floatMinScaleOf, floatShrinkModeOf } from '../../defaults/layout.js';
 import { resolveResourceWrap } from './textWrap.js';
 import { captionInsideShare } from '../resources/captionInside.js';
+
+/** The area a resource's placement sets it as a full-page plate in
+ *  (its own `plate`, else its type's), or undefined when it is no plate. */
+export function plateAreaOf(placement: ResourcePlacement | undefined, typePlacement: ResourcePlacement | undefined): ResourcePlateArea | undefined {
+  const plate = placement?.plate ?? typePlacement?.plate;
+  return plate === true ? 'content' : plate === false || plate === undefined ? undefined : plate;
+}
 
 export { floatColumnCount };
 
@@ -60,6 +69,9 @@ export interface ResolvedPlacement {
    *  (`placement.citingPage`, #633): a `'top'` or `'auto'` float of a
    *  column or page span, not turned. */
   citingPage: boolean;
+  /** A full-page plate (`placement.plate`): a page-span, top,
+   *  upright picture alone on a page of its own. */
+  plate: boolean;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -82,6 +94,9 @@ export interface PlannedFloat {
   /** Set turned a quarter turn on the page (always page-span; takes a
    *  whole page). */
   rotate?: ResourceRotation;
+  /** A full-page plate (`placement.plate`): it waits for a
+   *  fresh page and fills its content area (see `FloatRotation.plate`). */
+  plate?: true;
   /** Width fraction, alignment and side caption of the placement (see
    *  `ResourcePlacement`). */
   widthFraction?: number;
@@ -149,6 +164,17 @@ export function resolveResourcePlacement(
 ): ResolvedPlacement {
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
+  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
+  // A full-page plate : a top, page-span, upright picture.
+  const plate = picture && !noRotation && position !== 'here'
+    && plateAreaOf(resource.placement, type?.defaultPlacement) !== undefined;
+  if (plate) {
+    const own = resource.placement?.align ?? type?.defaultPlacement?.align;
+    return {
+      position: 'top', span: 'page', widthFraction: 1, align: own ? startEndAsLeftRight(own) : 'center',
+      captionSide: false, columns: 1, shrink: 'never', minScale: DEFAULT_FLOAT_MIN_SCALE, citingPage: false, plate: true,
+    };
+  }
   const rotate = position === 'here' || noRotation
     ? undefined
     : (resource.placement?.rotate ?? type?.defaultPlacement?.rotate);
@@ -161,7 +187,6 @@ export function resolveResourcePlacement(
   const align = startEndAsLeftRight(resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left');
   const captionSide = (resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide) === true;
   const columns = floatColumnCount(resource.placement?.columns ?? type?.defaultPlacement?.columns);
-  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
   const shrink = picture && !rotate && position !== 'here'
     ? floatShrinkModeOf(resource.placement?.shrink) ?? floatShrinkModeOf(type?.defaultPlacement?.shrink) ?? shrinkDefault?.mode ?? 'never'
     : 'never';
@@ -169,7 +194,7 @@ export function resolveResourcePlacement(
     ?? shrinkDefault?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
   const citingPage = (position === 'top' || position === 'auto') && !rotate && span !== 'side'
     && (resource.placement?.citingPage ?? type?.defaultPlacement?.citingPage ?? citingPageDefault) === true;
-  return { position, span, widthFraction, align, captionSide, columns, shrink, minScale, citingPage, ...(rotate ? { rotate } : {}) };
+  return { position, span, widthFraction, align, captionSide, columns, shrink, minScale, citingPage, plate: false, ...(rotate ? { rotate } : {}) };
 }
 
 /**
@@ -218,8 +243,13 @@ export function computeFloatPlan(
     if (!resource) return;
     const type = typeById.get(resource.typeId);
     const upright = noRotationAt(blockIdx);
-    const { position, span, rotate, widthFraction, align, captionSide, columns, shrink, minScale, citingPage } = resolveResourcePlacement(resource, type, upright, shrinkDefault, citingPageDefault);
+    const { position, span, rotate, widthFraction, align, captionSide, columns, shrink, minScale, citingPage, plate } = resolveResourcePlacement(resource, type, upright, shrinkDefault, citingPageDefault);
     if (position === 'here') return;
+    // A full-page plate takes a page of its own.
+    if (plate) {
+      plan.push({ resourceId, firstBlockIdx: blockIdx, position: 'top', span: 'page', plate: true, align });
+      return;
+    }
     // Text wrap (#627): a one-column float of horizontal text, upright,
     // its caption under it; any other keeps its band whole.
     const wrap = wrapSettings && !upright && !rotate && span === 'column' && columns === 1 && !captionSide

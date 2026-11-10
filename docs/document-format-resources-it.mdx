@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Immagini, tabelle e video',
   description: 'Le risorse nel testo: rimandi e inserimenti, numerazione, collocazione e dove finisce un elemento flottante, testo intorno alle immagini, dimensione delle bitmap, zone sicure, ancore dei personaggi e video',
   lang: 'it',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '42 min',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ Ogni risorsa ha una **collocazione** che decide dove finisce il suo elemento flo
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>Una risorsa più stretta del suo spazio: <code>width</code> è la frazione della larghezza della colonna (o della pagina) che occupa, <code>align</code> dove si colloca nello spazio (una piccola tabella centrata nella sua colonna; una fascia a tutta pagina la cui immagine occupa una colonna). Un’immagine più stretta del suo spazio (una bitmap più piccola della colonna, o una che <code>layout.fitFiguresToPage</code> ha rimpicciolito) si colloca anch’essa secondo <code>align</code>, sotto una didascalia che mantiene la giustezza dello spazio. Vale sia per gli elementi flottanti sia per gli inserimenti in linea <code>::resource</code>.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; una misura in mm, cm o pt </td>
+      <td>Una risorsa più stretta del suo spazio: <code>width</code> è la frazione della larghezza della colonna (o della pagina) che occupa, <code>align</code> dove si colloca nello spazio (una piccola tabella centrata nella sua colonna; una fascia a tutta pagina la cui immagine occupa una colonna). Un’immagine più stretta del suo spazio (una bitmap più piccola della colonna, o una che <code>layout.fitFiguresToPage</code> ha rimpicciolito) si colloca anch’essa secondo <code>align</code>, sotto una didascalia che mantiene la giustezza dello spazio. Vale sia per gli elementi flottanti sia per gli inserimenti in linea <code>::resource</code>. Una misura invece di una frazione (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, oppure in <code>cm</code> o <code>pt</code>) lo compone a quella larghezza: prima dell’impaginazione diventa la frazione del suo spazio — la colonna per un inserimento, le colonne e gli intercolumni occupati da un flottante di colonna, la larghezza della gabbia per un flottante a tutta pagina o ruotato, la colonna laterale per uno laterale —, e una misura pari o superiore allo spazio lo occupa per intero.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Tavola a piena pagina: l’immagine sta da sola nella prima pagina nuova dopo la citazione, ingrandita o ridotta alla dimensione massima che la gabbia contiene con didascalia e nota, centrata salvo che <code>align</code> dica altro; il testo prosegue prima e dopo. Non si leggono <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. Solo immagini (bitmap o SVG), e non quelle nel testo (<code>"here"</code>). Una bitmap ingrandita sotto i 300 ppi alla dimensione di stampa dà l’avviso <code>plateLowResolution</code>. <code>"trim"</code> o <code>"bleed"</code> la mettono invece sull’intera pagina, al taglio o al vivo (con i segni di taglio; senza, l’abbondanza è il taglio): ingrandita fino a coprirla e ritagliata al centro, con didascalia e nota al piede della gabbia su una fascia del colore della carta, e senza testatine né folio in quella pagina. L’esportazione IDML la ancora nel testo con la sua misura nella gabbia.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

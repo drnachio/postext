@@ -223,6 +223,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsFloatShrunkTitle;
     case 'pictureBelowPrintSize':
       return labels.warningsPictureBelowPrintSizeTitle;
+    case 'plateLowResolution':
+      return labels.warningsPlateLowResolutionTitle;
     case 'emptyCaption':
       return labels.warningsEmptyCaptionTitle;
     case 'resourceMoved':

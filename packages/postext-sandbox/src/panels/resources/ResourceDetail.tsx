@@ -6,6 +6,7 @@ import { useSandboxDispatch, useSandboxLabels } from '../../context/SandboxConte
 import { InlineMarkdownInput } from '../../controls/inputs/InlineMarkdownInput.js';
 import { PanelHeader, IconButton, ConfirmPopover, PanelBody } from '../../ui/index.js';
 import { SelectInput, NumberInput, ToggleSwitch, DimensionInput } from '../../controls/index.js';
+import { PlacementWidthField } from './PlacementWidthField.js';
 import { captionSideValue, captionSideOf } from '../../sidebar/settings/captionSide.js';
 import { ContourFields } from './marks/ContourFields.js';
 import { ResourcePreview } from './ResourcePreview.js';
@@ -52,7 +53,7 @@ export function ResourceDetail({
   });
 
   const { currentPlacement, typePlacement, placementPosition, placementSpan, placementRotate, setPlacementKey, placementColumns, severalColumns, layoutWrap,
-    bodyLineHeight, placementWrapChoice, placementWrap, placementWidthPercent, placementInline, placementRotated, isPicture, alignApplies, placementShrink,
+    bodyLineHeight, placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementPlateArea, placementInline, placementRotated, isPicture, alignApplies, placementShrink,
     placementMinScale, placementCaptionMeasure, placementCitingPage, tableStyles, tableStyleId, setTableStyleId, placementAlign, floatSide, tableDirection,
     tableRtl, setTableDirection } = usePlacementFields({ resource, onChange, labels, type, touch });
 
@@ -193,6 +194,8 @@ export function ResourceDetail({
             <div className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate)">
               {placementInline
                 ? labels.resourcePlacementHintHere
+                : placementPlate
+                  ? labels.resourcePlacementHintPlate
                 : placementRotated
                   ? labels.resourcePlacementHintRotated
                   : placementSpan === 'page'
@@ -214,7 +217,35 @@ export function ResourceDetail({
             isDefault={currentPlacement.position === undefined}
             onReset={() => setPlacementKey('position', undefined)}
           />
-          {!placementInline && (
+          {/* A full-page plate : alone on a page of its own,
+              filling the content area. */}
+          {!placementInline && isPicture && (
+            <ToggleSwitch
+              label={labels.resourcePlacementPlate}
+              tooltip={labels.resourcePlacementPlateTooltip}
+              checked={placementPlate}
+              onChange={(v) => setPlacementKey('plate', v || undefined)}
+              isDefault={currentPlacement.plate === undefined}
+              onReset={() => setPlacementKey('plate', undefined)}
+            />
+          )}
+          {!placementInline && isPicture && placementPlate && (
+            <SelectInput
+              stacked
+              label={labels.resourcePlacementPlateArea}
+              tooltip={labels.resourcePlacementPlateAreaTooltip}
+              value={placementPlateArea}
+              options={[
+                { value: 'content', label: labels.resourcePlateAreaContent },
+                { value: 'trim', label: labels.resourcePlateAreaTrim },
+                { value: 'bleed', label: labels.resourcePlateAreaBleed },
+              ]}
+              onChange={(v) => setPlacementKey('plate', v === 'trim' || v === 'bleed' ? v : true)}
+              isDefault={currentPlacement.plate === undefined || currentPlacement.plate === true}
+              onReset={() => setPlacementKey('plate', true)}
+            />
+          )}
+          {!placementInline && !placementPlate && (
             <SelectInput
               stacked
               label={labels.resourceTypePlacementRotate}
@@ -230,7 +261,7 @@ export function ResourceDetail({
               onReset={() => setPlacementKey('rotate', undefined)}
             />
           )}
-          {!placementInline && !placementRotated && (
+          {!placementPlate && !placementInline && !placementRotated && (
             <SelectInput
               stacked
               label={labels.resourceTypePlacementSpan}
@@ -246,7 +277,7 @@ export function ResourceDetail({
               onReset={() => setPlacementKey('span', undefined)}
             />
           )}
-          {!placementInline && !placementRotated && placementSpan === 'column' && (severalColumns || currentPlacement.columns !== undefined) && (
+          {!placementPlate && !placementInline && !placementRotated && placementSpan === 'column' && (severalColumns || currentPlacement.columns !== undefined) && (
             <NumberInput
               label={labels.resourceTypePlacementColumns}
               tooltip={labels.resourceTypePlacementColumnsTooltip}
@@ -262,7 +293,7 @@ export function ResourceDetail({
           {/* A top or automatic float may head the page (column) where the
               line citing it lands, the text above the reference moving
               down under it (#633). Not for turned or side-column floats. */}
-          {!placementInline && !placementRotated && placementPosition !== 'bottom' && placementSpan !== 'side' && (
+          {!placementPlate && !placementInline && !placementRotated && placementPosition !== 'bottom' && placementSpan !== 'side' && (
             <ToggleSwitch
               label={labels.resourceTypePlacementCitingPage}
               tooltip={labels.resourceTypePlacementCitingPageTooltip}
@@ -277,17 +308,12 @@ export function ResourceDetail({
               the column follows the alignment at full width too), and the
               caption beside a column float (side column of a
               column-and-a-half layout). */}
-          {!placementRotated && (
-            <NumberInput
-              label={labels.resourceTypePlacementWidth}
-              tooltip={labels.resourceTypePlacementWidthTooltip}
-              value={placementWidthPercent}
-              onChange={(v) => setPlacementKey('width', Math.min(100, Math.max(1, v)) / 100)}
-              min={10}
-              max={100}
-              step={5}
-              suffix="%"
+          {!placementRotated && !placementPlate && (
+            <PlacementWidthField
+              value={placementWidth}
+              fallbackShare={placementWidthFallback}
               isDefault={currentPlacement.width === undefined}
+              onChange={(w) => setPlacementKey('width', w)}
               onReset={() => setPlacementKey('width', undefined)}
             />
           )}
@@ -309,7 +335,7 @@ export function ResourceDetail({
           )}
           {/* A column float, and a resource set in the text (#729,
               `layout.inlineCaptionSide`). */}
-          {!placementRotated && placementSpan === 'column' && (
+          {!placementPlate && !placementRotated && placementSpan === 'column' && (
             <SelectInput
               variant="segmented"
               label={labels.resourceTypePlacementCaptionSide}
@@ -330,7 +356,7 @@ export function ResourceDetail({
           )}
           {/* Text wrap (#627): an inline resource or a one-column float at
               a side of its column, the text running beside it; its gap. */}
-          {!placementRotated && (placementInline || (placementSpan === 'column' && placementColumns <= 1)) && (
+          {!placementPlate && !placementRotated && (placementInline || (placementSpan === 'column' && placementColumns <= 1)) && (
             <SelectInput
               variant="segmented"
               label={labels.resourceTypePlacementWrap}
@@ -350,10 +376,10 @@ export function ResourceDetail({
           )}
           {/* Contour wrap (#883): the shape read from the bitmap's alpha
               channel at a threshold, the margin kept round it. */}
-          {!placementRotated && placementWrapChoice === 'contour' && (
+          {!placementPlate && !placementRotated && placementWrapChoice === 'contour' && (
             <ContourFields resource={resource} onChange={(contour) => onChange(touch({ contour }))} defaultMargin={currentPlacement.wrapGap ?? typePlacement.wrapGap ?? layoutWrap?.gap ?? resolveBodyTextConfig({ ...(bodyLineHeight ? { lineHeight: bodyLineHeight } : {}) }).lineHeight} />
           )}
-          {!placementRotated && placementWrap !== 'none' && (
+          {!placementPlate && !placementRotated && placementWrap !== 'none' && (
             <DimensionInput
               label={labels.resourceTypePlacementWrapGap}
               tooltip={labels.resourceTypePlacementWrapGapTooltip}
@@ -367,7 +393,7 @@ export function ResourceDetail({
           {/* A floated picture scaled to the room of its slot instead of
               moving on (#626), never below its smallest scale; the caption
               at the slot's measure or the picture's. */}
-          {isPicture && !placementInline && !placementRotated && (
+          {!placementPlate && isPicture && !placementInline && !placementRotated && (
             <SelectInput
               stacked
               label={labels.resourceTypePlacementShrink}
@@ -383,7 +409,7 @@ export function ResourceDetail({
               onReset={() => setPlacementKey('shrink', undefined)}
             />
           )}
-          {isPicture && !placementInline && !placementRotated && placementShrink !== 'never' && (
+          {!placementPlate && isPicture && !placementInline && !placementRotated && placementShrink !== 'never' && (
             <NumberInput
               label={labels.resourceTypePlacementMinScale}
               tooltip={labels.resourceTypePlacementMinScaleTooltip}

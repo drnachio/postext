@@ -59,6 +59,10 @@ export interface VDTPage {
    *  that paints the document's colour. The renderers paint it in place of
    *  `page.backgroundColor` (#506). */
   background?: string;
+  /** Present on the page of a full-page plate set to the trim or the
+   *  bleed (`placement.plate`): the picture covers the page,
+   *  which prints no running heads or folio. */
+  edgePlate?: 'trim' | 'bleed';
   /** Present on part-divider pages: the part number and title. Marks the
    *  page as `role: 'part'`. */
   partInfo?: {

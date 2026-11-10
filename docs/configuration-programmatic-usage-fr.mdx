@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Utilisation programmatique',
   description: 'Appeler Postext depuis le code : buildDocument et ses avertissements, les valeurs par défaut, les polices, les caches et le Web Worker',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '33 min',
   order: 21,
   parent: 'configuration',
@@ -337,6 +337,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>pictureBelowPrintSize</code></td>
       <td>Un bitmap doté d’une taille d’impression (son propre <code>bitmap.resolution</code>, ou un nombre dans <code>layout.bitmapResolution</code> ; pas une résolution lue dans le fichier) composé dans une colonne qui le tient sous la moitié de cette taille, sur une page au bloc de texte plus large que la colonne. <code>resourceId</code> l’identifie, <code>scale</code> est la part de sa largeur d’impression qu’il garde, <code>printWidthPx</code>, <code>widthPx</code> et <code>pageWidthPx</code> les largeurs d’impression, de colonne et de bloc. Une image rétrécie par <code>placement.width</code>, réduite à son emplacement, tournée ou placée dans un bloc de page composée n’est pas signalée. Désigne le paragraphe qui la cite en premier. Depuis postext 1.37.</td>
       <td>L’image s’imprime à la largeur de sa colonne. Une image dans le flux n’est jamais plus large que sa colonne, et la page par défaut en a deux (<code>layout.layoutType: 'double'</code>) : composez la page sur une colonne, faites flotter l’image sur toute la page (<code>placement.span: 'page'</code>), ou relevez sa résolution si cette taille est voulue.</td>
+    </tr>
+    <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Un bitmap placé en planche pleine page (<code>placement.plate</code>) a été agrandi jusqu’à s’imprimer sous 300 ppp. <code>resourceId</code> le nomme, <code>scale</code> indique de combien il a été agrandi, <code>ppi</code> la résolution à laquelle il s’imprime. Pointe vers le paragraphe qui le cite en premier.</td>
+      <td>La planche est imprimée à cette taille. Utilisez un original plus grand, ou désactivez la planche et composez l’image plus petite.</td>
     </tr>
     <tr>
       <td><code>emptyCaption</code></td>

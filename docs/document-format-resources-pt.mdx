@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Imagens, tabelas e vídeos',
   description: 'Como pôr recursos no texto: referências e inserções, numeração, posicionamento e o lugar onde cada flutuante vai parar, contorno de texto, tamanho dos bitmaps, áreas seguras, âncoras de quadrinhos e vídeos',
   lang: 'pt',
-  lastUpdated: '2026-10-20',
+  lastUpdated: '2026-11-10',
   readingTime: '42 min',
   order: 30,
   parent: 'document-format',
@@ -147,8 +147,13 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>Um recurso mais estreito que o espaço dele: <code>width</code> é a fração da largura da coluna (ou da página) que ele ocupa, <code>align</code> onde ele fica dentro do espaço (uma tabela pequena centralizada na coluna; uma faixa da largura da página cuja imagem ocupa uma coluna). Uma imagem mais estreita que o espaço dela (um bitmap menor que a coluna, ou um que <code>layout.fitFiguresToPage</code> reduziu) também fica ali conforme <code>align</code>, sob uma legenda que mantém a medida do espaço. Vale tanto para flutuantes quanto para inserções <code>::resource</code> em linha.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; uma medida em mm, cm ou pt </td>
+      <td>Um recurso mais estreito que o espaço dele: <code>width</code> é a fração da largura da coluna (ou da página) que ele ocupa, <code>align</code> onde ele fica dentro do espaço (uma tabela pequena centralizada na coluna; uma faixa da largura da página cuja imagem ocupa uma coluna). Uma imagem mais estreita que o espaço dela (um bitmap menor que a coluna, ou um que <code>layout.fitFiguresToPage</code> reduziu) também fica ali conforme <code>align</code>, sob uma legenda que mantém a medida do espaço. Vale tanto para flutuantes quanto para inserções <code>::resource</code> em linha. Uma medida em vez de uma fração (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, ou em <code>cm</code> ou <code>pt</code>) compõe-no com essa largura: antes da paginação ela é convertida na fração do seu espaço — a coluna para uma inserção, as colunas e medianizes que um flutuante de coluna ocupa, a largura da mancha para um flutuante de página inteira ou girado, a coluna lateral para um lateral —, e uma medida igual ou maior que o espaço ocupa-o por inteiro.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code> · <code>"content"</code> · <code>"trim"</code> · <code>"bleed"</code></td>
+      <td>Prancha de página inteira: a imagem fica sozinha na primeira página nova após a citação, ampliada ou reduzida ao maior tamanho que cabe na mancha com a legenda e a nota, centrada salvo se <code>align</code> disser outra coisa; o texto continua antes e depois. Não são lidos <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code>. Só imagens (bitmap ou SVG), e não as que vão no texto (<code>"here"</code>). Um bitmap ampliado abaixo de 300 ppi no tamanho impresso dá o aviso <code>plateLowResolution</code>. <code>"trim"</code> ou <code>"bleed"</code> põem-na sobre a página inteira, ao corte ou em sangria (com linhas de corte; sem elas a sangria é o corte): ampliada até a cobrir e recortada pelo centro, com a legenda e a nota ao pé da mancha sobre uma faixa da cor do papel, e sem cabeços nem fólio nessa página. A exportação para IDML ancora-a no texto com o tamanho da mancha.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

@@ -106,3 +106,17 @@ export function uncroppedPictureBox(
   const height = h / source.height;
   return { x: x - source.x * width, y: y - source.y * height, width, height };
 }
+
+/** The part of the whole picture shown when `inner` (a rectangle of the
+ *  shown part `crop`, in its fractions; `undefined` for all of it) is
+ *  shown of it. `undefined` when the whole picture is shown. */
+export function composeSource(crop: ResourceSafeArea | undefined, inner: ResourceSafeArea | undefined): ResourceSafeArea | undefined {
+  if (!crop) return inner;
+  if (!inner) return crop;
+  return {
+    x: crop.x + inner.x * crop.width,
+    y: crop.y + inner.y * crop.height,
+    width: inner.width * crop.width,
+    height: inner.height * crop.height,
+  };
+}
