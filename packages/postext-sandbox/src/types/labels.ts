@@ -693,6 +693,10 @@ export interface SandboxLabels {
   preflightSpotInkName: string;
   preflightSpotInkNameReservedDetail: string;
   preflightSpotInkNameLongDetail: string;
+  preflightSpotInkNameProcessDetail: string;
+  preflightSpotInkNameControlDetail: string;
+  preflightSpotInkUndefined: string;
+  preflightSpotInkUndefinedDetail: string;
   preflightSpotInkSimilar: string;
   preflightSpotInkSimilarDetail: string;
   preflightRichBlackRecipe: string;

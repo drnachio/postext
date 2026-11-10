@@ -6,7 +6,7 @@
  * either arrives.
  */
 
-import { bitmapInfo, resolvePrintConfig, type OutputTransform, type PrintConfig, type Resource } from 'postext';
+import { bitmapInfo, resolvePrintConfig, svgSpotInks, type OutputTransform, type PrintConfig, type Resource } from 'postext';
 import type { PrintMasterReport } from 'postext-pdf';
 import { getBlob } from '../storage/blobStore.js';
 import { loadPrintProfile, printTransform, profileKey } from './printSetup.js';
@@ -18,6 +18,8 @@ const masters = new Map<string, PrintMasterReport | null>();
 const imageColors = new Map<string, 'rgb' | 'cmyk' | 'gray' | null>();
 /** The pixels each bitmap's file really has (#631), from its header. */
 const imageSizes = new Map<string, { width: number; height: number } | null>();
+/** The spot inks each SVG names (#1468), from its markup. */
+const svgInkNames = new Map<string, string[] | null>();
 
 function changed(): void {
   version++;
@@ -42,6 +44,8 @@ export interface PreflightInputs {
   imageColor: (fileId: string) => 'rgb' | 'cmyk' | 'gray' | undefined;
   /** The pixel size of a bitmap's file, once its bytes have been read. */
   imageSize: (fileId: string) => { width: number; height: number } | undefined;
+  /** The spot inks an SVG names, once its markup has been read. */
+  svgInks: (fileId: string) => readonly string[] | undefined;
 }
 
 /** The inputs for a config and resources as far as they have loaded,
@@ -79,12 +83,20 @@ export function preflightInputs(raw: PrintConfig | undefined, resources: readonl
       void sniffColor(id);
     }
   }
+  for (const r of resources) {
+    const id = r.svg?.fileId;
+    if (id && !svgInkNames.has(id)) {
+      svgInkNames.set(id, null);
+      void readSvgInks(id);
+    }
+  }
   const transform = transforms.get(key) ?? undefined;
   return {
     ...(transform ? { transform } : {}),
     masters: reports,
     imageColor: (id) => imageColors.get(id) ?? undefined,
     imageSize: (id) => imageSizes.get(id) ?? undefined,
+    svgInks: (id) => svgInkNames.get(id) ?? undefined,
   };
 }
 
@@ -124,6 +136,18 @@ async function sniffColor(fileId: string): Promise<void> {
     if (color || info) changed();
   } catch {
     // Unreadable: no colour check for it.
+  }
+}
+
+async function readSvgInks(fileId: string): Promise<void> {
+  try {
+    const record = await getBlob(fileId);
+    if (!record) return;
+    const inks = svgSpotInks(new TextDecoder().decode(record.bytes)).map((i) => i.name);
+    svgInkNames.set(fileId, inks);
+    if (inks.length > 0) changed();
+  } catch {
+    // Unreadable: its inks are not listed.
   }
 }
 
