@@ -124,7 +124,7 @@ Conversion at `page.dpi` (default 300):
 | `direction` | `'auto'`\|`'ltr'`\|`'rtl'` | `'auto'` | base direction (postext ≥ 1.15): `auto` = `rtl` when the `locale` script is written right to left (ar, fa, ur, he…). An RTL document is laid out in a **mirrored frame**: first column on the right, indents/list markers/floats/notes on the right, `page.binding: 'auto'` → right. Body-flow `left`/`right` keywords are flow-relative (a preset converted LTR→RTL keeps working); header/footer slots stay physical. Blocks: `{dir=ltr\|rtl}` on headings and `:::` containers; inline `:ltr[…]`/`:rtl[…]` isolates. Never set `'rtl'` with a non-RTL locale |
 | `numerals` | `'auto'`\|`'latn'`\|`'arab'`\|`'arabext'` | `'auto'` | digits of every engine-generated decimal number (pages, lists, notes, counters, `{h1}`/`{n}`, `{totalPages}`): `auto` = `arab` ٠–٩ for `ar` (Maghreb `ar-MA/DZ/TN/LY/MR/EH` → `latn`), `arabext` ۰–۹ for `fa`/`ps`/`ur-IN`, else `latn`; named formats print as named |
 | `customFonts` | CustomFontFamily[] | — | §20 **do not write in preset.json config** |
-| `symbolFont` | string | — | §20 (postext ≥ 1.72): the family that sets the characters the text's fonts lack (∪, ℵ, ∀, Greek in a Latin face, arrows) on the canvas, in the PDF, HTML, EPUB and the formatted Word file; `'Noto Sans Math'` for most mathematics |
+| `symbolFont` | string | — | §20 (postext ≥ 1.73): the family that sets the characters the text's fonts lack (∪, ℵ, ∀, Greek in a Latin face, arrows) on the canvas, in the PDF, HTML, EPUB and the formatted Word file; `'Noto Sans Math'` for most mathematics |
 | `htmlViewer` | HtmlViewerConfig | §21 | screen-only; `overrides` = partial config merged for HTML |
 | `canvasViewer` | `{ pageGap?, rowGap? }` | `24` / `24` | §21 Sandbox Canvas page spacing (≥ 1.43); `pageGap: 0` for art across the spine |
 | `composedViewerLeaf` | `{ width, height, margins? }` | — | host only (≥ 1.47): the Sandbox's HTML viewer lays composed pages on this print leaf, as `comics.viewerLeaf` does comic pages; **do not write in preset.json config** |
@@ -373,7 +373,7 @@ H&J / Knuth–Plass
 ├─ gradedRuntPenalty    false  true = a runt costs runtPenalty × (1 − width/threshold): a two-word ending costs less than one word
 ├─ tightenRunts         true   re-set a runt paragraph one line shorter (tighter spaces, ≤ maxRuntTracking; refused if a justified line passes max(maxWordSpacing, the paragraph's loosest justified line) or more lines go ragged)
 ├─ maxRuntTracking      10     thousandths of an em (10 = 0.01em), applied negatively
-├─ stacks             'allow'; stackMinCharacters 3;  stackPenalty 3000   ≥ 1.72 two lines in a row of a paragraph, in one column, ending or
+├─ stacks             'allow'; stackMinCharacters 3;  stackPenalty 3000   ≥ 1.73 two lines in a row of a paragraph, in one column, ending or
 │                        starting on the same word or the same last/first stackMinCharacters characters (spaces included, accents and case
 │                        ignored; none in Chinese, Japanese, Thai, Lao, Khmer, Myanmar, Tibetan): 'warn' = same layout + a `stack` warning per
 │                        stack; 'avoid' = stackPenalty demerits per stack (scale: consecutiveHyphenDemerit 3000; a repeated monosyllable twice),
@@ -2484,7 +2484,7 @@ text typed into its elements is content like any other design text.
   it lacks from the fallback. Not a general substitution table: Google and system families stay `missingFont`.
   Manifest: `fonts[].fallback` (project-format.md §4). From 1.43 the fallback's faces are
   embedded in EPUB and HTML exports and in SVG pictures set in the family, under its name.
-- `symbolFont` (postext ≥ 1.72, #1460): one family listed after every font of the document, for the
+- `symbolFont` (postext ≥ 1.73, #1460): one family listed after every font of the document, for the
   characters the text's own faces have no glyph for. Without it the browser draws them in a face the
   system picks and the PDF prints an empty box. Every output reads it: the canvas measures and paints in
   it, the PDF cuts those characters into runs of it (each from the file of the face that has it, so a
@@ -2866,8 +2866,8 @@ It gates `glyphFallback` too (≥ 1.52): characters the text sets in a face with
 another face drew (an arrow or a Greek letter from a fallback serif beside a sans text face), one warning per
 face with the characters. The command line reads the `cmap` of every face it loads; browser and worker builds
 ask a probe face that `prepareFonts` and the layout worker declare (`installGlyphProbe`).
-With a `symbolFont` (≥ 1.72) the characters it draws are not reported there: no other family is advised for
-them. `glyphFallbackAt` (≥ 1.72, same switch) gives the place: one warning per block, face, page and family
+With a `symbolFont` (≥ 1.73) the characters it draws are not reported there: no other family is advised for
+them. `glyphFallbackAt` (≥ 1.73, same switch) gives the place: one warning per block, face, page and family
 that draws them, with the block's source range and `blockId`, `characters`, and `supplier` (the family of the
 font list that draws them, usually the `symbolFont`). No `supplier` means no family of the list has them and
 the PDF prints empty boxes: name a `symbolFont` that covers them. The Sandbox lists it in Review and marks
