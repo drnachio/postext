@@ -111,6 +111,8 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
       held.add(it);
     }
   });
+  // The paper's own colour, to the edge of the sheet (the bleed with it).
+  if (page.background && !/^#f{3}(f{3})?$/i.test(page.background.trim())) out.push(rectXml(w, { rect: { x: 0, y: 0, width: page.width, height: page.height }, fill: page.background }, 'Paper'));
   for (const it of page.items) {
     switch (it.kind) {
       case 'rect':
@@ -129,6 +131,13 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
         if (!it.frame || !byFrame.has(it.frame)) {
           if (held.has(it)) break;
           const marker = markerFor.get(it);
+          if (it.halo && it.halo.widthPx > 0) {
+            // A halo: the same text under it, in the halo's ink, stroked
+            // twice its width (half of a stroke lies inside the glyph).
+            w.halo = { color: it.halo.color, weight: it.halo.widthPx * 2 * w.k };
+            out.push(textFrameXml(w, [it], undefined));
+            delete w.halo;
+          }
           out.push(...chipRects(w, it), textFrameXml(w, marker ? [marker, it] : [it], undefined), ...chipFields(w, it));
           break;
         }

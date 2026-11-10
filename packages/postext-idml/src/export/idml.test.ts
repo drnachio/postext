@@ -282,7 +282,7 @@ describe('idmlDocument', () => {
     const f = reflow(sheet(':::frame{slot="notes"}\n\\*\tNote\\\n\\*\\*\\*\\*\tNote\n:::'), cfg);
     const story = storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame')[0]!);
     expect(descendants(parseXml(story), 'ParagraphStyleRange')).toHaveLength(1);
-    expect(contents(story)).toBe('*\tNote ****\tNote');
+    expect(contents(story)).toBe('*\tNote\u2028****\tNote');
   });
 
   it('writes a paragraph style’s hanging indent, first-line indent and stops (a leader the stop’s, not text)', () => {
@@ -429,12 +429,29 @@ describe('idmlDocument', () => {
     await initMathEngine();
     const md = sheet(':::frame{slot="body"}\nFirst paragraph.\n\nSecond paragraph.\n\n$a^2 + b^2$\n:::');
     const warnings: string[] = [];
-    const f = idml(md, TITLE_BODY, { onWarning: (w) => warnings.push(w.code) });
+    const f = idml(md, TITLE_BODY, { inlineObjects: false, onWarning: (w) => warnings.push(w.code) });
     expect(warnings).toContain('text.inline');
     const body = storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame').find((fr) => attr(fr, 'Name') === 'body')!);
     expect(descendants(parseXml(body), 'ParagraphStyleRange')).toHaveLength(2);
     expect(body.match(/<Br\/>/g)).toHaveLength(1);
     expect(body).not.toMatch(/<Br\/><\/CharacterStyleRange><\/ParagraphStyleRange><\/Story>/);
+  });
+
+  it('sets inline maths as an inline anchored object holding its picture, in the line', async () => {
+    await initMathEngine();
+    const md = sheet(':::frame{slot="body"}\nThe sum $a^2 + b^2$ of two squares.\n:::');
+    const warnings: string[] = [];
+    const f = idml(md, TITLE_BODY, { onWarning: (w) => warnings.push(w.code) });
+    expect(warnings).not.toContain('text.inline');
+    const body = parseXml(storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame').find((fr) => attr(fr, 'Name') === 'body')!));
+    const boxes = descendants(body, 'Rectangle');
+    expect(boxes).toHaveLength(1);
+    expect(attr(children(boxes[0]!, 'AnchoredObjectSetting')[0]!, 'AnchoredPosition')).toBe('InlinePosition');
+    const picture = children(boxes[0]!, 'Image')[0]!;
+    const svg = atob(descendants(picture, 'Contents')[0]!.children.filter((c) => typeof c === 'string').join(''));
+    expect(svg).toContain('<svg');
+    // The words on either side are still text, in order about the object.
+    expect(contents(storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame').find((fr) => attr(fr, 'Name') === 'body')!))).toMatch(/The sum.*of two squares\./s);
   });
 
   it('warns that right-to-left text is written left to right', () => {

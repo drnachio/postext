@@ -8,10 +8,9 @@ import type { BlockStyle } from 'postext/writer';
 import type { ParagraphStyleDef, Swatch } from './parts.js';
 import type { FontNames } from './sfnt.js';
 
-export interface IdmlWarning {
-  code: string;
-  message: string;
-}
+import type { IdmlWarning } from '../model/document.js';
+
+export type { IdmlWarning };
 
 export interface IdmlOptions {
   /** The laid-out documents (chapters), in book order. */
@@ -34,6 +33,10 @@ export interface IdmlOptions {
    *  fields (default `true`); `false` writes them as any chip, the value
    *  as text. */
   forms?: boolean;
+  /** Inline maths, music and colour swatches as inline anchored objects
+   *  in their line (default `true`); `false` leaves them out, with a
+   *  warning. */
+  inlineObjects?: boolean;
   /** `keep` (default): every line ends where Postext ended it (a forced
    *  line break), on the baseline Postext set it on, so InDesign shows the
    *  pages as the PDF does. `reflow`: paragraphs are left to InDesign's
@@ -81,8 +84,13 @@ export interface Writer {
   /** A CSS face (`family|weight|italic`) as InDesign names it. */
   faces: Map<string, { family: string; style: string }>;
   fontFiles: Map<string, { path: string; bytes: Uint8Array }>;
+  /** Inline objects written, for their names. */
+  inlineCount: number;
   /** Hyperlinks: the text source of each and where it goes. */
   links: { source: string; url?: string; page?: number }[];
+  /** Set while a halo's copy of a text item is written: every run takes
+   *  this ink and a stroke of this weight (pt). */
+  halo?: { color: string; weight: number };
   /** Pages of the documents before the one being written. */
   pageBase: number;
   paraStyles: Map<string, ParagraphStyleDef>;

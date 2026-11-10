@@ -307,13 +307,24 @@ export function storyOf(root: XmlElement, ctx: StoryContext): IdmlStory | undefi
   };
 }
 
+/** What a special character reads as in plain text: a break of the line
+ *  is a line end, a tab a tab, the marks that only steer the composer
+ *  nothing. */
+const SPECIAL_TEXT: Partial<Record<string, string>> = { forcedLineBreak: '\n', rightIndentTab: '\t', nonbreakingHyphen: '\u2011', discretionaryLineBreak: '' };
+
 /** The plain text of paragraphs, notes and tables left out: what a reader
- *  of the page reads in the story's own flow. */
+ *  of the page reads in the story's own flow. A forced line break reads
+ *  as a line end, so the words on either side stay two words. */
 export function plainText(paragraphs: readonly IdmlParagraph[]): string {
   const out: string[] = [];
   for (const p of paragraphs) {
     let s = '';
-    for (const r of p.runs) for (const i of r.content) if (i.kind === 'text') s += i.text;
+    for (const r of p.runs) {
+      for (const i of r.content) {
+        if (i.kind === 'text') s += i.text;
+        else if (i.kind === 'special') s += SPECIAL_TEXT[i.char] ?? '';
+      }
+    }
     out.push(s);
   }
   return out.join('\n');

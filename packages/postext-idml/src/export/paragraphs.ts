@@ -8,6 +8,7 @@ import { withPxSize } from 'postext/writer';
 import { CHIP_PLACEHOLDER } from 'postext/writer';
 import { swatch } from './colours.js';
 import { faceOf, parseCssFont } from './fonts.js';
+import { inlineObjectXml } from './inline.js';
 import { chipRect } from './geometry.js';
 import { textPropsAttrs, type TextProps } from './parts.js';
 import { isField, type TextItem, type Writer } from './writer.js';
@@ -93,13 +94,20 @@ export function runProps(w: Writer, run: DisplayRun): TextProps {
   if (run.script === 'sup') p.position = 'Superscript';
   if (run.script === 'sub') p.position = 'Subscript';
   if (run.baselineShift) p.baselineShift = run.baselineShift * w.k;
+  if (w.halo) {
+    const ink = swatch(w, w.halo.color)?.ref;
+    if (ink) {
+      p.color = ink;
+      p.stroke = { color: ink, weight: w.halo.weight };
+    }
+  }
   if (run.underline) p.underline = true;
   if (run.strike) p.strike = true;
   return p;
 }
 
 export const sameProps = (a: TextProps, b: TextProps) =>
-  a.font === b.font && a.fontStyle === b.fontStyle && Math.abs(a.size - b.size) < 0.01 && a.color === b.color && a.tracking === b.tracking && a.capitalization === b.capitalization && a.position === b.position && a.baselineShift === b.baselineShift && !a.underline === !b.underline && !a.strike === !b.strike;
+  a.font === b.font && a.fontStyle === b.fontStyle && Math.abs(a.size - b.size) < 0.01 && a.color === b.color && a.tracking === b.tracking && a.capitalization === b.capitalization && a.position === b.position && a.baselineShift === b.baselineShift && !a.underline === !b.underline && !a.strike === !b.strike && a.stroke?.color === b.stroke?.color && a.stroke?.weight === b.stroke?.weight;
 
 /** What a range sets beyond its paragraph style. */
 export function overrides(p: TextProps, style: TextProps): string {
@@ -113,6 +121,7 @@ export function overrides(p: TextProps, style: TextProps): string {
   if (p.baselineShift !== style.baselineShift) d.baselineShift = p.baselineShift;
   if (!p.underline !== !style.underline) d.underline = !!p.underline;
   if (!p.strike !== !style.strike) d.strike = !!p.strike;
+  if (p.stroke && (p.stroke.color !== style.stroke?.color || p.stroke.weight !== style.stroke?.weight)) d.stroke = p.stroke;
   return textPropsAttrs(d);
 }
 
@@ -135,7 +144,15 @@ const thinSpaces = (px: number | undefined, sizePx: number): string => ' '.rep
  *  spaces; an empty chip (a blank to fill in) and a form field's chip are
  *  their box's width in thin spaces. With `tabLeaders` the leaders before
  *  tab stops are left to the stops (`TabList`), not set as text. */
-function paintedRuns(w: Writer, line: DisplayLine, tabLeaders: boolean): { run: DisplayRun; text: string }[] {
+function paintedRuns(w: Writer, line: DisplayLine, tabLeaders: boolean): { run: DisplayRun; text: string; object?: string }[] {
+  // What is drawn in the line, not set: an inline object each.
+  const objects = new Map<DisplayRun, string>();
+  if (w.opts.inlineObjects !== false) {
+    for (const r of line.runs) {
+      const xml = inlineObjectXml(w, r);
+      if (xml) objects.set(r, xml);
+    }
+  }
   // A form field's chip is room for the field (`chipFields`): its words
   // are left out.
   let fieldEnd = -Infinity;
@@ -147,10 +164,12 @@ function paintedRuns(w: Writer, line: DisplayLine, tabLeaders: boolean): { run: 
     }
     if (!r.inline && r.x < fieldEnd - 0.01) return false;
     if (tabLeaders && r.leader) return false;
-    return !r.inline || r.inline.kind === 'chip';
+    return !r.inline || r.inline.kind === 'chip' || objects.has(r);
   });
-  if (line.runs.some((r) => r.inline && r.inline.kind !== 'chip')) w.warn('text.inline', `Inline content (maths, music, swatches) is left out: "${line.text.slice(0, 40)}"`);
+  if (line.runs.some((r) => r.inline && r.inline.kind !== 'chip' && !objects.has(r))) w.warn('text.inline', `Inline content (maths, music, swatches) is left out: "${line.text.slice(0, 40)}"`);
   return runs.map((run) => {
+    const object = objects.get(run);
+    if (object) return { run, text: '', object };
     let text = run.text;
     if (run.inline?.kind === 'chip' || run.padStart || run.padEnd) {
       const sizePx = parseCssFont(run.fontString).sizePx || 12;
@@ -179,6 +198,8 @@ export interface TextRun {
   text: string;
   props: TextProps;
   link?: RunLink;
+  /** An inline object in place of text (its XML). */
+  object?: string;
 }
 
 export const runLink = (run: DisplayRun): RunLink | undefined => (run.href ? { url: run.href } : run.pageLink !== undefined ? { page: run.pageLink } : undefined);
@@ -191,7 +212,11 @@ export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?:
   return item.lines.map((line, li) => {
     const out: TextRun[] = [];
     const painted = paintedRuns(w, line, tabLeaders);
-    painted.forEach(({ run, text: words }, ri) => {
+    painted.forEach(({ run, text: words, object }, ri) => {
+      if (object) {
+        out.push({ text: '', props: runProps(w, run), object });
+        return;
+      }
       let text = words;
       // A leader, or a tab, with no stops from the paragraph's style (a
       // contents row): a tab to where it ends, filled with the leader's
@@ -209,12 +234,12 @@ export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?:
       const props = runProps(w, run);
       const link = text === '\t' ? undefined : runLink(run);
       const last = out[out.length - 1];
-      if (last && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
+      if (last && !last.object && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
       else out.push({ text, props, ...(link ? { link } : {}) });
     });
     // A space at a line's end would take part in its justification.
     const tail = out[out.length - 1];
-    if (tail) {
+    if (tail && !tail.object) {
       tail.text = tail.text.replace(/ +$/, '');
       if (!tail.text) out.pop();
     }
@@ -230,15 +255,19 @@ export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): Te
   const push = (text: string, props: TextProps, link?: RunLink) => {
     if (!text) return;
     const last = out[out.length - 1];
-    if (last && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
+    if (last && !last.object && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
     else out.push({ text, props, ...(link ? { link } : {}) });
   };
   item.lines.forEach((line, li) => {
     const runs = paintedRuns(w, line, tabLeaders);
-    runs.forEach(({ run, text: painted }, ri) => {
+    runs.forEach(({ run, text: painted, object }, ri) => {
+      if (object) {
+        out.push({ text: '', props: runProps(w, run), object });
+        return;
+      }
       let text = painted;
       if (li > 0 && ri === 0 && line.repeatedHyphen) text = text.replace(/^[-‐]/, '');
-      if (ri === runs.length - 1 && line.addedHyphen) text = text.replace(/[-‐­]$/, '');
+      if (ri === runs.length - 1 && line.addedHyphen) text = text.replace(/[-‐\u00ad]$/, '');
       push(text, runProps(w, run), runLink(run));
     });
     const next = item.lines[li + 1];

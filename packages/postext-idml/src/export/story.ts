@@ -28,6 +28,8 @@ import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } fro
 const STYLE_NAMES: Record<string, string> = { body: 'Body', heading: 'Heading', list: 'List', quote: 'Quote', caption: 'Caption', footnote: 'Footnote', header: 'Header', footer: 'Footer', design: 'Design' };
 
 function paragraphStyleName(w: Writer, item: TextItem, frame: VDTFrame | undefined): string {
+  // A halo's copy of a text is stroked: a style of its own.
+  if (w.halo) return `${paragraphStyleName({ ...w, halo: undefined }, item, frame)} (halo)`;
   const names = { ...STYLE_NAMES, ...w.opts.styleNames };
   if (item.role === 'heading') return `${names.heading ?? 'Heading'} ${item.level ?? 1}`;
   if (frame) return frame.styleId ?? frameName(frame.name);

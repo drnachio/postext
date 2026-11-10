@@ -153,6 +153,8 @@ export interface TextProps {
   baselineShift?: number;
   underline?: boolean;
   strike?: boolean;
+  /** A stroke round the glyphs (a halo's copy of the text): swatch and pt. */
+  stroke?: { color: string; weight: number };
 }
 
 /** A tab stop: pt from the text frame's text edge (InDesign measures tab
@@ -199,7 +201,8 @@ export function textPropsAttrs(p: Partial<TextProps>): string {
     attr('Position', p.position) +
     attr('BaselineShift', p.baselineShift) +
     attr('Underline', p.underline) +
-    attr('StrikeThru', p.strike)
+    attr('StrikeThru', p.strike) +
+    (p.stroke ? `${attr('StrokeColor', p.stroke.color)}${attr('StrokeWeight', p.stroke.weight)} EndJoin="RoundEndJoin"` : '')
   );
 }
 

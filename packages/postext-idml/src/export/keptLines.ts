@@ -22,7 +22,7 @@ import type { StoryItem, Writer } from './writer.js';
  *  and that set nothing: the word joiner and the zero-width no-break
  *  space. (A soft hyphen stays: InDesign reads it as a discretionary
  *  hyphen.) */
-const NO_GLYPH = /[⁠﻿]/g;
+const NO_GLYPH = /[\u2060\uFEFF]/g;
 
 /** A leading as IDML writes one: a property, not an attribute. */
 export const leadingXml = (pt: number): string => `<Leading type="unit">${num(pt)}</Leading>`;
@@ -39,11 +39,11 @@ export function rangeXml(r: TextRun, style: TextProps, leading?: number, noBreak
   const o = overrides(r.props, style) + (noBreak ? ' NoBreak="true"' : '');
   const props = (r.props.font !== style.font ? `<AppliedFont type="string">${escapeXml(r.props.font)}</AppliedFont>` : '') + (leading !== undefined ? leadingXml(leading) : '');
   const font = props ? `<Properties>${props}</Properties>` : '';
-  const content = r.text.replace(NO_GLYPH, '').split(' ').map((t) => (t ? `<Content>${escapeXml(t)}</Content>` : '')).join('<Content> </Content>');
+  const content = r.object ?? r.text.replace(NO_GLYPH, '').split(' ').map((t) => (t ? `<Content>${escapeXml(t)}</Content>` : '')).join('<Content> </Content>');
   return `<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]"${o}>${font}${content}</CharacterStyleRange>`;
 }
 
-export const FORCED_LINE_BREAK = ' ';
+export const FORCED_LINE_BREAK = '\u2028';
 
 export interface KeptContext {
   style: ParagraphStyleDef;

@@ -53,6 +53,7 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
     pageH: 0,
     px: 0,
     links: [],
+    inlineCount: 0,
     pageBase: 0,
     swatches: new Map(),
     swatchNames: new Set(RESERVED_SWATCH_NAMES.map((n) => n.toLowerCase())),

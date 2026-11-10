@@ -6,7 +6,7 @@ import { build, config, mm, LOREM } from '../testing/kit.test-helper.js';
 import { children, descendants, isElement, parseXml, textOf, type XmlElement } from '../xml/read.js';
 import { idmlDocument, type IdmlOptions } from './index.js';
 
-const BREAK = ' ';
+const BREAK = '\u2028';
 
 function write(md: string, cfg: PostextConfig, opts: Partial<IdmlOptions> = {}) {
   const doc = build(md, cfg);
