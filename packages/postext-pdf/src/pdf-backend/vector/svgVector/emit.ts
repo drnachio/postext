@@ -6,7 +6,7 @@ import { isPrintMode, modeKey } from '../../../print/colorMode.js';
 import { applyPrintPass, overprintStateDict } from '../../../print/printPass.js';
 import { shapedSvgText } from '../../text/shapedText.js';
 import type { PathSeg, SvgInk, VectorDrawing } from '../svgVector.js';
-import { separationSpace, spotStandIn, type SpotPlate } from '../../../print/spot.js';
+import type { SpotInkRegistry, SpotPlate } from '../../../print/spot.js';
 import { inkEntry, inkKey, type SpotColor } from 'postext';
 import { parseCssColor } from '../../../colors.js';
 import { mul } from './geometry.js';
@@ -53,7 +53,7 @@ class FormResources {
   private readonly spaceDict: Record<string, PDFRef> = {};
   private readonly spaces = new Map<string, PDFName>();
 
-  constructor(private readonly context: PDFContext) {}
+  constructor(private readonly context: PDFContext, private readonly inks?: SpotInkRegistry) {}
 
   font(font: PDFFont): PDFName {
     let name = this.fonts.get(font);
@@ -100,7 +100,7 @@ class FormResources {
 
   /** A spot ink's Separation colour space (the print pass's). */
   colorSpace(plate: SpotPlate): PDFName {
-    const ref = separationSpace(this.context, plate);
+    const ref = this.inks!.separationSpace(this.context, plate);
     const id = ref.toString();
     let name = this.spaces.get(id);
     if (!name) {
@@ -153,9 +153,14 @@ export function inkStrength(hex: string, inkHex: string): number | undefined {
  * - an ink the SVG names (`icc-named-color`, `data-spot`): the palette's
  *   spot colour of that name (its CMYK alternate), else an ink of its own
  *   whose alternate is the colour's CMYK; at the named tint;
- * - a colour that is one of the palette's spot colours, or a tint of one
- *   over white (the way a design program exports a tint of a swatch): that
- *   ink, at the tint it shows.
+ * - a colour whose hex is exactly one of the palette's spot colours: that
+ *   ink, at that colour's tint.
+ *
+ * Nothing else: a colour that only looks like a tint of an ink (a grey on
+ * the line from white to a dark ink) stays in process, so an SVG's greys
+ * never move to a spot plate by accident. A diagram recoloured to one ink
+ * (`diagramStyle.singleInk` with a spot `inkColor`) is the one exception,
+ * handled by the drawing's `spotInk`.
  */
 export function svgSpotOf(
   hex: string,
@@ -181,12 +186,8 @@ export function svgSpotOf(
     }
     return { spot, tint: (ink.tint ?? 100) / 100 };
   }
-  for (const [inkHex, spot] of spots) {
-    const strength = inkStrength(hex, inkHex);
-    if (strength === undefined || strength <= 0) continue;
-    return { spot, tint: strength * (spot.tint / 100) };
-  }
-  return undefined;
+  const exact = spots.get(hex.slice(0, 7).toLowerCase());
+  return exact ? { spot: exact, tint: exact.tint / 100 } : undefined;
 }
 
 /** `#rrggbb` with an alpha byte appended (`#rrggbbaa`). */
@@ -203,17 +204,18 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
   const flatten = isPrintMode(colorSpace) && colorSpace.flattenTransparency;
   const spotInk = isPrintMode(colorSpace) ? drawing.spotInk : undefined;
   const inks = isPrintMode(colorSpace) ? colorSpace.spots : undefined;
+  const registry = isPrintMode(colorSpace) ? colorSpace.inkRegistry : undefined;
   const paint = (hex: string, alpha: number, ink?: SvgInk): Color => {
     const over = flatten && alpha < 1 ? alpha : 1;
     const strength = spotInk ? inkStrength(hex, spotInk.hex) : undefined;
     if (spotInk && strength !== undefined) {
       // A tint of the single ink: on its plate, lighter over the paper
       // when flattened.
-      return { ...spotStandIn(spotInk.spot, strength * (spotInk.spot.tint / 100) * over) };
+      return { ...registry!.standIn(spotInk.spot, strength * (spotInk.spot.tint / 100) * over) };
     }
     if (inks) {
       const spot = svgSpotOf(hex, ink, inks, colorSpace);
-      if (spot) return { ...spotStandIn(spot.spot, spot.tint * over) };
+      if (spot) return { ...registry!.standIn(spot.spot, spot.tint * over) };
     }
     return colorFromHex(flatten && alpha < 1 ? withAlpha(hex, alpha) : hex, colorSpace);
   };
@@ -320,7 +322,7 @@ function vectorForm(ctx: PageCtx, drawing: VectorDrawing): VectorForm {
   const spaceKey = modeKey(ctx.colorSpace);
   let form = bySpace.get(spaceKey);
   if (!form) {
-    const res = new FormResources(context);
+    const res = new FormResources(context, isPrintMode(ctx.colorSpace) ? ctx.colorSpace.inkRegistry : undefined);
     let ops = drawingOps(drawing, res, ctx.colorSpace);
     if (isPrintMode(ctx.colorSpace)) {
       const states = new Map<string, PDFName>();

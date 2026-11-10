@@ -214,6 +214,26 @@ describe('preflightDocument', () => {
     if (inks?.kind === 'spotInks') expect(inks.inks).toEqual(['PANTONE 185 C']);
   });
 
+  it('lists an ink an SVG names with the job\'s inks, and warns when no colour defines it', () => {
+    const svgFig = { id: 'dia', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, svg: { fileId: 'dia.svg', width: 100, height: 60 }, placement: { position: 'here' } } as Resource;
+    const doc = buildDocument({ markdown: 'Text.\n\n::resource{id="dia"}', resources: [svgFig] }, config({
+      bodyText: { color: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+      print: { inks: [{ name: 'Gold', cmyk: { c: 20, m: 30, y: 70, k: 15 } }] },
+    }));
+    const svgInks = (id: string) => (id === 'dia.svg' ? ['pantone 286 c', 'PANTONE 185 C', 'Gold', 'None'] : undefined);
+    const issues = preflightDocument(doc, { cmyk: true, svgInks });
+    const inks = issues.find((i) => i.kind === 'spotInks');
+    // The palette's ink by its own name; the others as the SVG names them.
+    if (inks?.kind === 'spotInks') expect(inks.inks).toEqual(['PANTONE 286 C', 'PANTONE 185 C', 'Gold', 'None']);
+    const undefinedInks = issues.filter((i) => i.kind === 'spotInkUndefined').map((i) => (i.kind === 'spotInkUndefined' ? i.ink : ''));
+    // Gold has its CMYK in the ink table: defined.
+    expect(undefinedInks).toEqual(['PANTONE 185 C', 'None']);
+    expect(issues.find((i) => i.kind === 'spotInkUndefined')).toMatchObject({ fileId: 'dia.svg', resourceId: 'dia', severity: 'warning' });
+    expect(issues.find((i) => i.kind === 'spotInkName')).toMatchObject({ ink: 'None', problem: 'reserved', written: 'None ink' });
+    // Without the SVG's inks read, nothing about them.
+    expect(kinds(preflightDocument(doc, { cmyk: true }))).not.toContain('spotInkUndefined');
+  });
+
   it('does nothing when disabled', () => {
     const doc = buildDocument({ markdown: '::resource{id="pic"}', resources: [picture] }, config());
     expect(preflightDocument(doc, { print: resolvePrintConfig({ preflight: { enabled: false } }) })).toEqual([]);

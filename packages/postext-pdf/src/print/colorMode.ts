@@ -18,6 +18,7 @@ import {
   type ResolvedPrintConfig,
   type SpotColor,
 } from 'postext';
+import { SpotInkRegistry } from './spot.js';
 
 export interface PrintColorMode {
   kind: 'print';
@@ -39,6 +40,10 @@ export interface PrintColorMode {
   /** Spot colours, by screen hex (`#rrggbb`): painted on their ink's
    *  own plate (see `spot.ts`). */
   spots: ReadonlyMap<string, Required<SpotColor>>;
+  /** This render's spot inks: the stand-in codes, the plates and the
+   *  names they are written under. A new mode starts empty, so nothing one
+   *  render registers reaches another. */
+  inkRegistry: SpotInkRegistry;
 }
 
 export type ColorMode = PdfColorSpace | PrintColorMode;
@@ -85,6 +90,7 @@ export function createPrintColorMode(
     convertImages: config.standard === 'pdfx1a' || config.convertImages,
     authored,
     spots,
+    inkRegistry: new SpotInkRegistry(),
   };
 }
 

@@ -2,9 +2,9 @@
 // the pixel scale (#1276: split out of primitives.ts).
 import { type Color, cmyk, grayscale, rgb, type PDFPage, PDFName, PDFOperator, setGraphicsState } from 'pdf-lib';
 import { hexToRgb, colorAlpha, rgbToCmyk, rgbToGrayscale } from '../../colors.js';
-import { type ColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
+import type { SpotColor } from 'postext';
+import { type ColorMode, type PrintColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
 import type { PageCtx } from '../primitives.js';
-import { spotStandIn } from '../../print/spot.js';
 
 export function makeScale(dpi: number): number {
   return 72 / dpi;
@@ -35,6 +35,12 @@ interface AlphaColor {
  * its opacity along (see {@link alphaOf}); malformed input paints black.
  */
 export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
+  // A spot colour's stand-in belongs to the render (its ink registry),
+  // never to the shared cache.
+  if (isPrintMode(colorSpace) && colorSpace.spots.size > 0) {
+    const spot = colorSpace.spots.get(hex.slice(0, 7).toLowerCase());
+    if (spot) return spotColor(hex, spot, colorSpace);
+  }
   const key = `${modeKey(colorSpace)}|${hex}`;
   const cached = colorCache.get(key);
   if (cached) return cached;
@@ -49,15 +55,8 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
       [r, g, b] = overPaper(r, g, b, alpha);
       alpha = 1;
     }
-    const hex6 = hex.slice(0, 7).toLowerCase();
-    const spot = colorSpace.spots.get(hex6);
-    const exact = colorSpace.authored.get(hex6);
-    if (spot) {
-      // On the ink's own plate; flattened over the paper, a translucent
-      // spot colour is a lighter tint of the same ink.
-      const t = (spot.tint / 100) * (colorSpace.flattenTransparency ? colorAlpha(hex) : 1);
-      color = { ...spotStandIn(spot, t) };
-    } else if (exact && alpha < 1 && colorSpace.flattenTransparency) {
+    const exact = colorSpace.authored.get(hex.slice(0, 7).toLowerCase());
+    if (exact && alpha < 1 && colorSpace.flattenTransparency) {
       // A tint of the authored ink mix stands in for it over the paper.
       const t = colorAlpha(hex);
       color = cmyk(round4((exact.c / 100) * t), round4((exact.m / 100) * t), round4((exact.y / 100) * t), round4((exact.k / 100) * t));
@@ -84,6 +83,24 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
   colorCache.set(key, color);
   return color;
 }
+
+/** A spot colour on its ink's own plate; flattened over the paper, a
+ *  translucent one is a lighter tint of the same ink. */
+function spotColor(hex: string, spot: Required<SpotColor>, mode: PrintColorMode): Color {
+  let cache = spotColorCache.get(mode.inkRegistry);
+  if (!cache) spotColorCache.set(mode.inkRegistry, (cache = new Map()));
+  const cached = cache.get(hex);
+  if (cached) return cached;
+  const alpha = colorAlpha(hex);
+  const t = (spot.tint / 100) * (mode.flattenTransparency ? alpha : 1);
+  const color: Color = { ...mode.inkRegistry.standIn(spot, t) };
+  if (alpha < 1 && !mode.flattenTransparency) (color as AlphaColor).alpha = alpha;
+  cache.set(hex, color);
+  return color;
+}
+
+/** Spot colours by document colour string, per render (ink registry). */
+const spotColorCache = new WeakMap<object, Map<string, Color>>();
 
 /** Four decimals: enough for a separation, and exact K 1 stays exact. */
 function round4(n: number): number {

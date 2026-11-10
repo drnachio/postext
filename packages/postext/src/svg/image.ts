@@ -3,7 +3,8 @@
 
 import { registerResourceImage } from '../canvas-backend/renderResourceBlock.js';
 import type { SvgPictureFontWarning } from '../vdt.js';
-import { applySingleInkToSvg, screenSvgColors } from './singleInk.js';
+import { applySingleInkToSvg } from './singleInk.js';
+import { screenSvgColors } from './spotPaints.js';
 import { inlineSvgFontsDetailed, type InlineSvgFontsOptions, type SvgFontInlining, type SvgFontProvider, type SvgFontWarning } from './fonts.js';
 import { registeredFontProvider } from './fontRegistry.js';
 

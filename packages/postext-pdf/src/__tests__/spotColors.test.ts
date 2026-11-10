@@ -5,6 +5,7 @@ import { applySingleInkToSvg, buildDocument } from 'postext';
 import type { ColorValue, PostextConfig, PrintConfig, Resource } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
 import { inkStrength } from '../pdf-backend/vector/svgVector.js';
+import { SpotInkRegistry } from '../print/spot.js';
 
 // Spot colours: an ink of its own, written as a Separation colour space.
 
@@ -50,9 +51,10 @@ function streamText(pdf: PDFDocument, obj: PDFObject | undefined): string {
   return s instanceof PDFRawStream ? new TextDecoder('latin1').decode(decodePDFRawStream(s).decode()) : '';
 }
 
-async function render(print: PrintConfig | undefined, opts: { colorSpace?: 'cmyk'; extra?: PostextConfig; markdown?: string; resources?: Resource[]; bytes?: (id: string) => Uint8Array | undefined } = {}) {
+async function render(print: PrintConfig | undefined, opts: { colorSpace?: 'cmyk'; extra?: PostextConfig; markdown?: string; resources?: Resource[]; bytes?: (id: string) => Uint8Array | undefined; warnings?: { kind: string; message?: string }[] } = {}) {
   const doc = buildDocument({ markdown: opts.markdown ?? 'Blue text on the page.', resources: opts.resources ?? [] }, config(opts.extra));
   const bytes = await renderToPdf(doc, {
+    ...(opts.warnings ? { onWarning: (w: { kind: string; message?: string }) => void opts.warnings!.push(w) } : {}),
     fontProvider: async () => new Uint8Array(fontBytes),
     outputProfile: fogra39,
     accessible: false,
@@ -294,4 +296,121 @@ describe('inkStrength', () => {
     expect(inkStrength('#000000', ink)).toBeUndefined();
     expect(inkStrength('#ff0000', ink)).toBeUndefined();
   });
+});
+
+describe('the spot ink registry is one per render', () => {
+  const tintOf = (content: string, name: string) => [...content.matchAll(new RegExp(`/${name} cs\\n([\\d.]+) scn`, 'g'))].map((m) => Number(m[1]));
+
+  it('starts every render empty: two renders in a row print the same plates and stand-ins', async () => {
+    const a = await render({ standard: 'pdfx4' });
+    const b = await render({ standard: 'pdfx4' });
+    for (const r of [a, b]) {
+      const seps = separations(r.pdf, r.page.node.Resources());
+      const name = [...seps].find(([, s]) => s.ink === 'PANTONE 286 C')![0];
+      expect(tintOf(r.content, name).sort()).toEqual([0.4, 1]);
+    }
+    // The same operators, byte for byte: nothing of the first render
+    // (a code, a cached colour) leaks into the second.
+    expect(b.content).toBe(a.content);
+  });
+
+  it('decodes only the stand-ins it handed out', () => {
+    const spot = { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 100, overprint: false };
+    const one = new SpotInkRegistry();
+    const two = new SpotInkRegistry();
+    const c = one.standIn(spot, 1) as unknown as { cyan: number; magenta: number; yellow: number; key: number };
+    expect(one.paintOf(c.cyan, c.magenta, c.yellow, c.key)?.plate.name).toBe('PANTONE 286 C');
+    expect(two.paintOf(c.cyan, c.magenta, c.yellow, c.key)).toBeUndefined();
+    // The same paint in the second registry gets its own code.
+    const d = two.standIn(spot, 1) as unknown as { cyan: number; magenta: number; yellow: number; key: number };
+    expect(two.paintOf(d.cyan, d.magenta, d.yellow, d.key)?.tint).toBe(1);
+  });
+
+  it('counts the paints past its codes, which print in process, and uses the cyan channel past the first codes of black', () => {
+    const spot = { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, tint: 100, overprint: true };
+    const small = new SpotInkRegistry(2);
+    small.standIn(spot, 0.1);
+    small.standIn(spot, 0.2);
+    const third = small.standIn(spot, 0.3) as unknown as { cyan: number; magenta: number; yellow: number; key: number };
+    expect([third.cyan, third.magenta, third.yellow, third.key]).toEqual([0, 0, 0.03, 0]);
+    expect(small.paintOf(third.cyan, third.magenta, third.yellow, third.key)).toBeUndefined();
+    expect([...small.exhausted()]).toEqual([['Varnish', 1]]);
+    // A full registry: 5 000 paints and more stay decodable, none in process.
+    const big = new SpotInkRegistry();
+    const seen = new Set<string>();
+    for (let i = 0; i <= 6000; i++) {
+      const col = big.standIn({ ...spot, name: `Ink ${i % 3}` }, i / 10000) as unknown as { cyan: number; magenta: number; yellow: number; key: number };
+      const key = `${col.cyan}|${col.magenta}|${col.yellow}|${col.key}`;
+      expect(seen.has(key)).toBe(false);
+      seen.add(key);
+      expect(big.paintOf(col.cyan, col.magenta, col.yellow, col.key)?.tint).toBeCloseTo(i / 10000, 6);
+    }
+    expect(big.exhausted().size).toBe(0);
+  });
+});
+
+describe('plate names a PDF cannot carry', () => {
+  function inkNamesOf(pdf: PDFDocument): string[] {
+    const names: string[] = [];
+    pdf.context.enumerateIndirectObjects().forEach(([, obj]) => {
+      if (obj instanceof PDFArray && obj.lookup(0)?.toString() === '/Separation') names.push(new TextDecoder().decode((obj.lookup(1) as PDFName).asBytes()));
+    });
+    return names.sort();
+  }
+
+  it('writes All, None and the process plates under a name of their own, and says so', async () => {
+    const warnings: { kind: string; message?: string }[] = [];
+    const ink = (name: string, hex: string): ColorValue => ({ hex, model: 'spot', spot: { name, cmyk: { c: 0, m: 0, y: 0, k: 100 } } });
+    const { pdf } = await render({ standard: 'pdfx4' }, {
+      warnings,
+      extra: { header: { elements: [band('a', 'top-left', ink('All', '#101010')), band('b', 'bottom-left', ink('Black', '#202020'), 10)] } },
+    });
+    const names = inkNamesOf(pdf);
+    expect(names).toContain('All ink');
+    expect(names).toContain('Black ink');
+    expect(names).not.toContain('All');
+    expect(names).not.toContain('Black');
+    expect(warnings.filter((w) => w.kind === 'spotInkRenamed').map((w) => w.message).join('\n')).toMatch(/"All".*"All ink"/);
+  });
+
+  it('cuts a name over 127 bytes, keeping two long names apart', async () => {
+    const long = 'Ñ'.repeat(80);
+    const ink = (name: string, hex: string): ColorValue => ({ hex, model: 'spot', spot: { name, cmyk: { c: 10, m: 0, y: 0, k: 0 } } });
+    const { pdf } = await render({ standard: 'pdfx4' }, {
+      extra: { header: { elements: [band('a', 'top-left', ink(`${long} A`, '#e0f0f0')), band('b', 'bottom-left', ink(`${long} B`, '#e1f0f0'), 10)] } },
+    });
+    const names = inkNamesOf(pdf).filter((n) => n.startsWith('Ñ'));
+    expect(names).toHaveLength(2);
+    for (const n of names) expect(new TextEncoder().encode(n).length).toBeLessThanOrEqual(127);
+    expect(names[0]).not.toBe(names[1]);
+  });
+});
+
+describe('SVG colours meet an ink only by exact hex or by name', () => {
+  it('leaves the greys of an SVG in process under a dark, nearly neutral ink', async () => {
+    // #333336 is a dark ink; #999999 lies on (almost) the line from white
+    // to it, but it is a grey of the drawing, not a tint of the ink.
+    const darkInk: ColorValue = { hex: '#333336', model: 'spot', spot: { name: 'Warm Gray 11', cmyk: { c: 0, m: 5, y: 10, k: 80 } } };
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="10" height="10"><rect width="10" height="5" fill="#999999"/><rect y="5" width="10" height="5" fill="#333336"/></svg>';
+    const resources = [{ id: 'fig', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, svg: { fileId: 'fig.svg', width: 10, height: 10 }, placement: { position: 'here' } } as Resource];
+    const { pdf } = await render({ standard: 'pdfx4' }, {
+      markdown: 'A diagram.\n\n::resource{id="fig"}',
+      resources,
+      bytes: (id) => (id === 'fig.svg' ? new TextEncoder().encode(svg) : undefined),
+      extra: { colorPalette: [{ id: 'brand', name: 'Brand', value: blue }, { id: 'gray', name: 'Gray', value: darkInk }] },
+    });
+    let text = '';
+    let seps: ReturnType<typeof separations> = new Map();
+    pdf.context.enumerateIndirectObjects().forEach(([, obj]) => {
+      if (obj instanceof PDFRawStream && obj.dict.lookup(PDFName.of('Subtype'))?.toString() === '/Form') {
+        text = streamText(pdf, obj);
+        seps = separations(pdf, obj.dict.lookup(PDFName.of('Resources')) as PDFDict);
+      }
+    });
+    const name = [...seps].find(([, s]) => s.ink === 'Warm Gray 11')![0];
+    // The exact ink is on its plate, once, at full strength; the grey is not.
+    expect(tintOf(text, name)).toEqual([1]);
+    expect(text).toMatch(/[\d.]+ [\d.]+ [\d.]+ [\d.]+ k/);
+  });
+  const tintOf = (content: string, name: string) => [...content.matchAll(new RegExp(`/${name} cs\\n([\\d.]+) scn`, 'g'))].map((m) => Number(m[1]));
 });

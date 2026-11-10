@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { inkEntry, inkNameProblem, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames } from '../../color/inks.js';
+import { inkEntry, inkNameProblem, printableInkName, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames } from '../../color/inks.js';
 import { resolvePrintConfig, resolvePrintInks, stripPrintDefaults } from '../../defaults/output/print.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { authoredCmykColors, authoredSpotColors } from '../../color/authored.js';
@@ -118,6 +118,26 @@ describe('ink names', () => {
     expect(inkNameProblem('Allure')).toBeUndefined();
     expect(inkNameProblem('é'.repeat(64))).toBe('tooLong');
     expect(inkNameProblem('é'.repeat(63))).toBeUndefined();
+    expect(inkNameProblem('Black')).toBe('process');
+    expect(inkNameProblem('cyan')).toBe('process');
+    expect(inkNameProblem('Black 2X')).toBeUndefined();
+    expect(inkNameProblem('Gold\u0007')).toBe('control');
+  });
+
+  it('gives every ink a name a plate can carry', () => {
+    expect(printableInkName('PANTONE 286 C')).toBe('PANTONE 286 C');
+    expect(printableInkName('All')).toBe('All ink');
+    expect(printableInkName('none')).toBe('none ink');
+    expect(printableInkName('Black')).toBe('Black ink');
+    expect(printableInkName('Gold\u0000\u001f')).toBe('Gold');
+    expect(printableInkName('\u0001')).toBe('Spot');
+    const long = 'é'.repeat(80);
+    const a = printableInkName(`${long}a`);
+    const b = printableInkName(`${long}b`);
+    expect(new TextEncoder().encode(a).length).toBeLessThanOrEqual(127);
+    expect(a).not.toBe(b);
+    // No character is cut in half.
+    expect(a).not.toContain('\ufffd');
   });
 
   it('groups names that differ only in case or spacing', () => {

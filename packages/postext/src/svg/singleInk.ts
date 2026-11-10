@@ -175,23 +175,6 @@ export function isSingleInkSvgUrl(url: string): boolean {
   return isSingleInkSvg(text);
 }
 
-/** A colour followed by an ICC colour, as SVG 1.1 writes a spot ink
- *  (`#e4002b icc-named-color(PANTONE, "PANTONE 185 C")`) or a CMYK colour
- *  (`#ff0000 icc-color(profile, 0, 1, 1, 0)`). */
-const ICC_PAINT_RE = /(#[0-9a-fA-F]{3,8}|rgba?\([^()]*\)|\b[a-zA-Z]+)\s+icc-(?:named-)?color\((?:[^()"']|"[^"]*"|'[^']*')*\)/g;
-
-/**
- * SVG markup with its ICC colours taken off, each paint left as the colour
- * before it: browsers paint `#e4002b icc-named-color(…)` black, as an
- * invalid paint, while the print PDF reads the ink from it
- * (`postext-pdf`'s SVG converter). For every screen output: the canvas, the
- * HTML and the EPUB. Markup without one is returned as is.
- */
-export function screenSvgColors(svgText: string): string {
-  if (!svgText.includes('icc-')) return svgText;
-  return svgText.replace(ICC_PAINT_RE, '$1');
-}
-
 /**
  * Recolour an SVG document to tints of a single ink.
  *

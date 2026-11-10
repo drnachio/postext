@@ -16,6 +16,8 @@
  * - Rules, borders and strokes thinner than `minRuleWidth`.
  * - Text under `smallTextSize` set with more than one ink.
  * - Colours whose separation exceeds the ink limit.
+ * - Spot inks: the plates the job adds, from its colours and the inks its
+ *   SVGs name, and names a plate cannot carry (`preflightInks.ts`).
  * - Text inside the safe zone near the trim (a figure's labels too, #902), and boxes or pictures that
  *   stop short of the trim by less than `bleedSnap` without bleeding.
  */
@@ -23,9 +25,9 @@
 import type { CmykPercent, ResolvedPrintConfig, Resource } from '../types.js';
 import type { BoundingBox, VDTComicPage, VDTDesignSlot, VDTDocument, VDTLine } from '../vdt.js';
 import type { OutputTransform } from '../color/transform.js';
-import { authoredCmykColors, authoredSpotColors, spotColorCmyk, spotInks } from '../color/authored.js';
-import { inkNameProblem, similarInkNames, spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
-import { resolveColorValue } from '../defaults/shared.js';
+import { authoredCmykColors, authoredSpotColors, spotColorCmyk } from '../color/authored.js';
+import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
+import { spotInkIssues } from './preflightInks.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -63,8 +65,15 @@ export type PreflightIssue = {
    *  one name. */
   | { kind: 'spotInkConflict'; ink: string }
   /** A plate name a PDF cannot carry as it is: `All` or `None` (every
-   *  plate, no plate), or longer than 127 bytes. */
-  | { kind: 'spotInkName'; ink: string; problem: InkNameProblem }
+   *  plate, no plate), a process plate's name, a control character, or
+   *  longer than 127 bytes. The PDF writes it as `written` instead
+   *  (`printableInkName`). */
+  | { kind: 'spotInkName'; ink: string; problem: InkNameProblem; written: string }
+  /** An ink an SVG picture names (`icc-named-color`, `data-spot`) that no
+   *  colour of the configuration and no `print.inks` entry with a `cmyk`
+   *  defines: it prints on a plate of its own, with the SVG's colour as
+   *  its alternate. */
+  | { kind: 'spotInkUndefined'; ink: string; fileId: string; resourceId?: string }
   /** Plate names that differ only in case or spacing: most likely one ink
    *  the printer would get two plates of. An alias in `print.inks` merges
    *  them. */
@@ -99,6 +108,10 @@ export interface PreflightOptions {
   /** The job is CMYK (a PDF/X standard, or a CMYK PDF). Defaults to true
    *  when a PDF/X standard is set. */
   cmyk?: boolean;
+  /** The spot inks an SVG picture names, by its file id — `svgSpotInks`
+   *  on its markup, names only — once the host has read it: listed with
+   *  the job's inks, and reported when no colour defines them. */
+  svgInks?: (fileId: string) => readonly string[] | undefined;
 }
 
 const MM_PER_IN = 25.4;
@@ -499,25 +512,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     }
   }
 
-  // Spot inks: the plates the job adds, and inks defined twice.
-  if (cmykJob && spots.size > 0) {
-    const ds = doc.config.diagramStyle;
-    if (ds?.singleInk && ds.inkColor) {
-      const ink = hex6(resolveColorValue(ds.inkColor, doc.config.colorPalette, ds.inkColor).hex);
-      const spot = ink ? spots.get(ink) : undefined;
-      if (spot) usedInks.add(spot.name);
-    }
-    const { inks, conflicts } = spotInks(spots.values());
-    const used = inks.map((i) => i.name).filter((n) => usedInks.has(n));
-    if (used.length > 0) out.push({ kind: 'spotInks', severity: 'info', pageIndex: offset, inks: used });
-    for (const ink of conflicts) {
-      if (usedInks.has(ink)) out.push({ kind: 'spotInkConflict', severity: 'warning', pageIndex: offset, ink });
-    }
-    for (const ink of used) {
-      const problem = inkNameProblem(ink);
-      if (problem) out.push({ kind: 'spotInkName', severity: 'warning', pageIndex: offset, ink, problem });
-    }
-    for (const group of similarInkNames(used)) out.push({ kind: 'spotInkSimilar', severity: 'warning', pageIndex: offset, inks: group });
-  }
+  // Spot inks: the plates the job adds, and what is wrong with them.
+  if (cmykJob) out.push(...spotInkIssues({ doc, print, spots, usedInks, pageIndex: offset, ...(options.svgInks ? { svgInks: options.svgInks } : {}) }));
   return out;
 }

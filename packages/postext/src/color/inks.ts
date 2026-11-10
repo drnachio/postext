@@ -66,14 +66,66 @@ export function spotsThroughInkTable(
   return { spots: onPlates, authored: process };
 }
 
-/** What a plate name cannot be: `All` and `None` mean every plate and no
- *  plate to a PDF reader, and a name runs to 127 bytes at most. */
-export type InkNameProblem = 'reserved' | 'tooLong';
+/** What a plate name cannot be as written: `All` and `None` mean every
+ *  plate and no plate to a PDF reader (`reserved`), `Cyan`, `Magenta`,
+ *  `Yellow` and `Black` are the process plates (`process`), a name runs to
+ *  127 bytes at most (`tooLong`), and a control character cannot be in
+ *  one (`control`). */
+export type InkNameProblem = 'reserved' | 'process' | 'tooLong' | 'control';
+
+const RESERVED_INK = /^(all|none)$/i;
+const PROCESS_INK = /^(cyan|magenta|yellow|black)$/i;
+const CONTROL = /[\u0000-\u001f\u007f]/;
+const CONTROLS = /[\u0000-\u001f\u007f]+/g;
+/** The longest plate name a PDF carries, in UTF-8 bytes. */
+const MAX_INK_BYTES = 127;
+
+const utf8Length = (s: string): number => new TextEncoder().encode(s).length;
 
 export function inkNameProblem(name: string): InkNameProblem | undefined {
-  if (/^(all|none)$/i.test(name.trim())) return 'reserved';
-  if (new TextEncoder().encode(name).length > 127) return 'tooLong';
+  const t = name.trim();
+  if (RESERVED_INK.test(t)) return 'reserved';
+  if (PROCESS_INK.test(t)) return 'process';
+  if (CONTROL.test(name)) return 'control';
+  if (utf8Length(name) > MAX_INK_BYTES) return 'tooLong';
   return undefined;
+}
+
+/** A short hash of a string, four hex digits (FNV-1a folded). */
+function shortHash(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return ((h ^ (h >>> 16)) & 0xffff).toString(16).padStart(4, '0');
+}
+
+/**
+ * The name a PDF writes for an ink's plate: the name itself when a plate
+ * can carry it, otherwise one it can. Control characters are dropped;
+ * `All`, `None` and the process plates (`Cyan`, `Magenta`, `Yellow`,
+ * `Black`) get ` ink` after them, so the ink keeps a plate of its own
+ * instead of printing on every plate, on none, or on a process plate; a
+ * name over 127 bytes is cut at a character boundary and ends in a short
+ * hash of the whole name, so two long names that share a beginning stay
+ * two plates. The preflight reports each renamed ink (`spotInkName`).
+ */
+export function printableInkName(name: string): string {
+  let out = name.replace(CONTROLS, '').trim() || 'Spot';
+  if (RESERVED_INK.test(out) || PROCESS_INK.test(out)) out = `${out} ink`;
+  if (utf8Length(out) <= MAX_INK_BYTES) return out;
+  const suffix = ` ~${shortHash(name)}`;
+  const room = MAX_INK_BYTES - suffix.length;
+  let cut = '';
+  let bytes = 0;
+  for (const ch of out) {
+    const n = utf8Length(ch);
+    if (bytes + n > room) break;
+    cut += ch;
+    bytes += n;
+  }
+  return `${cut.trimEnd()}${suffix}`;
 }
 
 /** The plate names that differ only in case or spacing, grouped: the
@@ -144,6 +196,13 @@ function nearestFree(hex: string, taken: Set<string>): string {
  * screen colour (`model: 'hex'`) equal to one of them still prints as it,
  * the way an unlinked colour shares a palette colour's value. Returns the
  * configuration itself when nothing collides.
+ *
+ * This changes the screen colour of the colour that moves, on purpose: one
+ * step (1/255) in one channel, the blue one first, is far below what an
+ * eye tells apart (ΔE00 well under 1), and it is the price of the print
+ * render reading inks from the painted hex rather than carrying a colour's
+ * identity through the layout. The canvas, the HTML, the EPUB and an RGB
+ * PDF all show the moved hex; the stored configuration is not changed.
  */
 export function separatePrintColors<T extends PostextConfig | undefined>(config: T): T {
   if (!config) return config;

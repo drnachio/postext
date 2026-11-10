@@ -10,10 +10,13 @@ export interface PdfPrintWarning {
    *  CMYK was converted with the naive formula (no PDF/X was asked for;
    *  with one, the render fails instead). `pageNegativeIgnored`: PDF/X-1a
    *  has no blend modes, so the debug page negative was left out.
-   *  `spotTintsExhausted`: the process ran out of codes for distinct spot
-   *  tints (some five thousand), so the tints past them printed in process
-   *  instead of on their ink's plate. */
-  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted';
+   *  `spotTintsExhausted`: the render ran out of codes for distinct spot
+   *  tints (some 25 million), so the tints past them printed in process
+   *  instead of on their ink's plate. `spotInkRenamed`: an ink's name is
+   *  one a plate cannot carry (`All`, `None`, a process plate, a control
+   *  character, over 127 bytes), so its plate is written under another
+   *  (`printableInkName`). */
+  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed';
   message: string;
 }
 

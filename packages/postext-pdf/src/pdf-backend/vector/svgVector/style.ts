@@ -3,6 +3,7 @@
 import { LineCapStyle, LineJoinStyle } from 'pdf-lib';
 import type { SvgInk, VectorPaint } from '../svgVector.js';
 import { unsupported } from './geometry.js';
+import { inkTintPercent, splitIccPaint } from 'postext';
 
 // ------------------------------------------------------------ styling
 
@@ -68,31 +69,17 @@ const NAMED_COLORS: Record<string, string> = {
 /** A parsed paint: a colour, `none`, or `currentColor` (resolved later). */
 export type Paint = VectorPaint | 'none' | 'currentColor';
 
-/** A colour followed by an ICC colour (SVG 1.1 `<paint>`): `#e4002b
- *  icc-named-color(profile, "PANTONE 185 C")` names a spot ink; `#e4002b
- *  icc-color(profile, 0, 1, 0.8, 0)` a process colour, read as the sRGB
- *  colour before it. */
-const ICC_NAMED_RE = /^(.+?)\s+icc-named-color\(\s*[^,()]*,\s*(?:"([^"]+)"|'([^']+)'|([^,()]+?))\s*(?:,\s*([\d.]+%?)\s*)?\)\s*$/i;
-const ICC_COLOR_RE = /^(.+?)\s+icc-color\([^()]*\)\s*$/i;
-
-/** A tint written `40%`, `40` or `0.4`, as a percent (0–100). */
-function inkPercent(raw: string): number | undefined {
-  const v = Number(raw.trim().replace(/%$/, ''));
-  if (!Number.isFinite(v)) return undefined;
-  return Math.max(0, Math.min(100, !raw.includes('%') && v <= 1 ? v * 100 : v));
-}
-
 function parsePaint(value: string): Paint {
-  const iccNamed = ICC_NAMED_RE.exec(value.trim());
-  if (iccNamed) {
-    const base = parsePaint(iccNamed[1]!);
-    if (base === 'none' || base === 'currentColor') return base;
-    const name = (iccNamed[2] ?? iccNamed[3] ?? iccNamed[4] ?? '').trim();
-    const tint = iccNamed[5] !== undefined ? inkPercent(iccNamed[5]) : undefined;
-    return name ? { ...base, ink: { name, ...(tint !== undefined ? { tint } : {}) } } : base;
+  // A colour followed by an ICC colour (SVG 1.1 `<paint>`): `#e4002b
+  // icc-named-color(profile, "PANTONE 185 C")` names a spot ink; `#e4002b
+  // icc-color(profile, 0, 1, 0.8, 0)` is a process colour, read as the
+  // sRGB colour before it. Split in one linear pass (`splitIccPaint`).
+  const icc = /icc-/i.test(value) ? splitIccPaint(value) : undefined;
+  if (icc) {
+    const base = parsePaint(icc.base);
+    if (base === 'none' || base === 'currentColor' || !icc.ink) return base;
+    return { ...base, ink: icc.ink };
   }
-  const icc = ICC_COLOR_RE.exec(value.trim());
-  if (icc) return parsePaint(icc[1]!);
   const v = value.trim();
   const lower = v.toLowerCase();
   if (lower === 'none') return 'none';
@@ -261,7 +248,7 @@ export function cascade(parent: Style, attrs: Record<string, string>): Style {
   if (stroke !== undefined) next.stroke = parsePaint(stroke);
   if (spotName) {
     const tintAttr = attrs['data-spot-tint'];
-    const tint = tintAttr !== undefined ? inkPercent(tintAttr) : undefined;
+    const tint = tintAttr !== undefined ? inkTintPercent(tintAttr) : undefined;
     const ink: SvgInk = { name: spotName, ...(tint !== undefined ? { tint } : {}) };
     const inked = (p: Paint): Paint => (p === 'none' || p === 'currentColor' ? p : { ...p, ink });
     next.fill = inked(next.fill);

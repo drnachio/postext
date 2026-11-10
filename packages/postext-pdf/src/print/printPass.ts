@@ -24,7 +24,7 @@
 import { PDFDict, PDFName, PDFNumber, PDFOperator, PDFOperatorNames, type PDFPage } from 'pdf-lib';
 import { dimensionToPx } from 'postext';
 import type { PrintColorMode } from './colorMode.js';
-import { separationSpace, spotPaintOf, type SpotPlate } from './spot.js';
+import type { SpotPlate } from './spot.js';
 
 /** Overprint flags of a graphics state: fill (`op`) and stroke (`OP`). */
 export interface OverprintFlags {
@@ -147,7 +147,7 @@ export function applyPrintPass(
   const spotOps = (args: unknown[], stroke: boolean): { ops: PDFOperator[]; over: boolean } | undefined => {
     if (!options.spaceFor || args.length !== 4) return undefined;
     const [c, m, y, k] = args.map(num) as [number, number, number, number];
-    const paint = spotPaintOf(c, m, y, k);
+    const paint = mode.inkRegistry.paintOf(c, m, y, k);
     if (!paint) return undefined;
     const space = options.spaceFor(paint.plate);
     return {
@@ -322,7 +322,7 @@ export function runPagePrintPass(page: PDFPage, mode: PrintColorMode): void {
     let name = states.get(key);
     if (!name) states.set(key, (name = page.node.newExtGState('GSo', page.doc.context.obj(overprintStateDict(flags)))));
     return name;
-  }, { richBlack: true, spaceFor: pageSpaceFactory(page) });
+  }, { richBlack: true, spaceFor: pageSpaceFactory(page, mode) });
   // In place: pdf-lib serializes the stream from this array.
   stream.operators.length = 0;
   for (const op of next) stream.operators.push(op);
@@ -330,11 +330,11 @@ export function runPagePrintPass(page: PDFPage, mode: PrintColorMode): void {
 
 /** Names spot inks' Separation colour spaces in a page's resources, one
  *  name per plate. */
-function pageSpaceFactory(page: PDFPage): SeparationSpaceFactory {
+function pageSpaceFactory(page: PDFPage, mode: PrintColorMode): SeparationSpaceFactory {
   const names = new Map<string, PDFName>();
   return (plate) => {
     const context = page.doc.context;
-    const ref = separationSpace(context, plate);
+    const ref = mode.inkRegistry.separationSpace(context, plate);
     const key = ref.toString();
     let name = names.get(key);
     if (name) return name;
