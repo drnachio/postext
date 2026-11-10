@@ -8,18 +8,19 @@
 // Chinese and Japanese labels have no spaces between words: every Han
 // character and every kana starts a word, so 位置 finds ルビの位置. Kana
 // keep their voicing marks: が is not か, ぱ not は (the dakuten and
-// handakuten tell words apart, they are not accents). Ñ, ç, й and ё stay
-// letters of their own: the rules are those of ../../text/fold.ts.
+// handakuten tell words apart, they are not accents). Every other mark goes,
+// ñ, ç, й and ё included, so "tamano" finds "tamaño": the loose rules of
+// ../../text/fold.ts (find and replace uses the strict ones).
 
 import { foldUnits } from '../../text/fold.js';
 
 /** Characters that start a word wherever they stand. */
 const IDEOGRAPHIC = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
 
-const FOLD = { accents: true, caseFold: true } as const;
+const FOLD = { accents: true, caseFold: true, loose: true } as const;
 
-/** Lowercase, accent-free copy of `s` with the same length (the folding
- *  rules of find and replace, ../../text/fold.ts). */
+/** Lowercase, accent-free copy of `s` with the same length (the loose
+ *  folding of ../../text/fold.ts). */
 export function normalizeText(s: string): string {
   return foldUnits(s, FOLD);
 }

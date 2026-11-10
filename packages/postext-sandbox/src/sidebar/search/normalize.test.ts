@@ -3,9 +3,23 @@ import { compileMatcher, matchRanges, matchesTokens, normalizeText, tokenize } f
 
 describe('normalizeText', () => {
   it('strips accents and lowercases while keeping the length', () => {
-    expect(normalizeText('Márgen Ñ')).toBe('margen ñ');
-    expect(normalizeText('Йод ёлка Ça')).toBe('йод ёлка ça');
+    expect(normalizeText('Márgen Ñ')).toBe('margen n');
+    expect(normalizeText('Йод ёлка Ça')).toBe('иод елка ca');
     expect(normalizeText('Tamaño de página')).toHaveLength('Tamaño de página'.length);
+  });
+  it('folds every letter the way the settings search always did', () => {
+    // The settings search rules before find and replace shared the folding.
+    const before = (s: string) =>
+      [...s]
+        .flatMap((cp) => cp.split(''))
+        .map((ch) => {
+          if (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(ch)) return ch;
+          const out = ch.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+          return out.length === 0 ? ' ' : out[0];
+        })
+        .join('');
+    const sample = 'Tamaño ÇA йЁ İı ΆΣς كَتَبَ שָׁלוֹם हिंदी 한국 がぱカ 位置 ŒÆß é 𝔸';
+    expect(normalizeText(sample)).toBe(before(sample));
   });
   it('maps a combining mark to a space so indices stay aligned', () => {
     const s = 'é'; // decomposed é
@@ -27,6 +41,11 @@ describe('matchesTokens', () => {
     expect(matchesTokens(n('Top Margin'), tokenize('marg'))).toBe(true);
     expect(matchesTokens(n('Margen superior'), tokenize('márgen'))).toBe(true);
     expect(matchesTokens(n('Page numbering: number format'), tokenize('pag num'))).toBe(true);
+  });
+  it('finds ñ, ç, й and ё typed without their marks', () => {
+    expect(matchesTokens(n('Tamaño de página'), tokenize('tamano'))).toBe(true);
+    expect(matchesTokens(n('Alçada de línia'), tokenize('alcada'))).toBe(true);
+    expect(matchesTokens(n('Ёмкость'), tokenize('емк'))).toBe(true);
   });
   it('does not match mid-word', () => {
     expect(matchesTokens(n('Page'), tokenize('age'))).toBe(false);

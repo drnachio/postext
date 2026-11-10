@@ -1,6 +1,7 @@
-// Accent and case folding, one set of rules for the settings search
-// (sidebar/search/normalize.ts) and for find and replace (book/find).
+// Accent and case folding for find and replace (book/find) and the
+// settings search (sidebar/search/normalize.ts), at two strictnesses.
 //
+// Strict (find and replace, the default), for editing text:
 // - Latin, Greek and Cyrillic letters lose their accents: é → e, ά → α.
 //   Ñ, ç, й and ё are letters of their own (Spanish, Catalan, Portuguese,
 //   Russian) and stay apart from n, c, и and е.
@@ -8,6 +9,11 @@
 //   كَتَبَ → كتب. Hamza and madda are part of the letter and stay.
 // - Kana keep their voicing marks: が is not か, ぱ not は.
 // - Case folding lowercases, and reads final sigma as sigma.
+//
+// Loose (`loose: true`, the settings search): every mark of every script
+// goes, ñ → n, ç → c, й → и, ё → е included, and case folding is a plain
+// lowercase. People type setting names without accents; "tamano" has to
+// find "tamaño". Kana keep their voicing marks here too.
 //
 // Text written decomposed (NFD: e + U+0301) folds as its composed form:
 // `foldWithMap` takes a letter and the marks after it as one cluster.
@@ -17,6 +23,9 @@ export interface FoldOptions {
   accents: boolean;
   /** Lowercase. */
   caseFold: boolean;
+  /** Fold every mark away, ñ, ç, й and ё included (the settings search).
+   *  Off: the strict rules above (find and replace). */
+  loose?: boolean;
 }
 
 const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
@@ -31,15 +40,28 @@ const MARK_AT = /\p{M}/uy;
 /** Combining accents standing alone (their letter folded already). */
 const COMBINING_ACCENT = /^[\u0300-\u036f]$/;
 
-const caches = [new Map<string, string>(), new Map<string, string>(), new Map<string, string>(), new Map<string, string>()];
+const caches = Array.from({ length: 8 }, () => new Map<string, string>());
+
+/** The loose rules: marks stripped after NFD in any script, then lowercase. */
+function foldLoose(ch: string, options: FoldOptions): string {
+  if (KANA.test(ch)) return ch;
+  let out = options.accents ? ch.normalize('NFD').replace(/\p{M}/gu, '') : ch;
+  if (options.caseFold) out = out.toLowerCase();
+  return out;
+}
 
 /** One code point (composed), folded. May be empty (a lone pointing
  *  mark) or longer than the input (İ lowercased keeps its dot until the
  *  accents go). */
 export function foldCodePoint(ch: string, options: FoldOptions): string {
-  const cache = caches[(options.accents ? 1 : 0) + (options.caseFold ? 2 : 0)]!;
+  const cache = caches[(options.accents ? 1 : 0) + (options.caseFold ? 2 : 0) + (options.loose ? 4 : 0)]!;
   const hit = cache.get(ch);
   if (hit !== undefined) return hit;
+  if (options.loose) {
+    const loose = foldLoose(ch, options);
+    cache.set(ch, loose);
+    return loose;
+  }
   let out = ch;
   if (options.caseFold && !KANA.test(ch)) {
     out = out.toLowerCase();
