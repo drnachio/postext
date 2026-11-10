@@ -5967,6 +5967,34 @@
     },
     "theme": "type"
   },
+  "Q214": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a PDF form that readers can fill in and that adds up its totals?",
+      "es": "¿Cómo hago un formulario PDF que el lector pueda rellenar y que sume los totales solo?",
+      "ca": "Com faig un formulari PDF que el lector pugui emplenar i que sumi els totals tot sol?",
+      "fr": "Comment créer un formulaire PDF que le lecteur peut remplir et qui calcule lui-même ses totaux ?",
+      "de": "Wie erstelle ich ein PDF-Formular, das Leser ausfüllen können und das seine Summen selbst berechnet?",
+      "it": "Come creo un modulo PDF che il lettore possa compilare e che calcoli da solo i totali?",
+      "pt": "Como faço um formulário PDF que o leitor possa preencher e que some os totais sozinho?",
+      "zh": "怎样做一份读者可以填写、并能自动计算合计的PDF表单？",
+      "ja": "読者が記入でき、合計も自動で計算されるPDFフォームを作るには？",
+      "ar": "كيف أصنع نموذج PDF يملؤه القارئ ويحسب مجاميعه بنفسه؟"
+    },
+    "index": {
+      "en": "PDF forms, fillable",
+      "es": "Formularios PDF rellenables",
+      "ca": "Formularis PDF emplenables",
+      "fr": "Formulaires PDF remplissables",
+      "de": "PDF-Formulare, ausfüllbar",
+      "it": "Moduli PDF compilabili",
+      "pt": "Formulários PDF preenchíveis",
+      "zh": "可填写的PDF表单",
+      "ja": "記入できるPDFフォーム",
+      "ar": "نماذج PDF قابلة للتعبئة"
+    },
+    "theme": "output"
+  },
   "Q215": {
     "kind": "how",
     "text": {
@@ -6023,34 +6051,6 @@
     },
     "theme": "figures"
   },
-  "Q218": {
-    "kind": "how",
-    "text": {
-      "en": "How do I print logic and set signs (∀, ∈, ℵ) and Greek that my text font lacks, instead of empty boxes in the PDF?",
-      "es": "¿Cómo imprimo los signos de lógica y de conjuntos (∀, ∈, ℵ) y el griego que no tiene mi fuente de texto, sin cajas vacías en el PDF?",
-      "ca": "Com imprimeixo els signes de lògica i de conjunts (∀, ∈, ℵ) i el grec que no té la meva font de text, sense caixes buides al PDF?",
-      "fr": "Comment imprimer les signes de logique et d’ensembles (∀, ∈, ℵ) et le grec que ma police de texte n’a pas, sans cases vides dans le PDF ?",
-      "de": "Wie drucke ich Logik- und Mengenzeichen (∀, ∈, ℵ) und Griechisch, die meiner Textschrift fehlen, ohne leere Kästchen im PDF?",
-      "it": "Come stampo i segni di logica e di insiemi (∀, ∈, ℵ) e il greco che il mio font di testo non ha, senza riquadri vuoti nel PDF?",
-      "pt": "Como imprimo os sinais de lógica e de conjuntos (∀, ∈, ℵ) e o grego que minha fonte de texto não tem, sem caixas vazias no PDF?",
-      "zh": "正文字体缺少逻辑与集合符号（∀、∈、ℵ）和希腊字母时，怎样让 PDF 印出它们而不是空框？",
-      "ja": "本文の書体にない論理記号・集合記号（∀、∈、ℵ）やギリシャ文字を、PDFで空の四角にせずに印刷するには？",
-      "ar": "كيف أطبع رموز المنطق والمجموعات (∀ و∈ وℵ) والحروف اليونانية التي يفتقدها خط النص، دون مربعات فارغة في PDF؟"
-    },
-    "index": {
-      "en": "Symbols the text font lacks",
-      "es": "Símbolos que la fuente no tiene",
-      "ca": "Símbols que la font no té",
-      "fr": "Symboles absents de la police",
-      "de": "Zeichen, die der Schrift fehlen",
-      "it": "Simboli che il font non ha",
-      "pt": "Símbolos que a fonte não tem",
-      "zh": "字体缺少的符号",
-      "ja": "書体にない記号",
-      "ar": "رموز يفتقدها الخط"
-    },
-    "theme": "type"
-  },
   "Q217": {
     "kind": "how",
     "text": {
@@ -6079,32 +6079,32 @@
     },
     "theme": "type"
   },
-  "Q214": {
+  "Q218": {
     "kind": "how",
     "text": {
-      "en": "How do I make a PDF form that readers can fill in and that adds up its totals?",
-      "es": "¿Cómo hago un formulario PDF que el lector pueda rellenar y que sume los totales solo?",
-      "ca": "Com faig un formulari PDF que el lector pugui emplenar i que sumi els totals tot sol?",
-      "fr": "Comment créer un formulaire PDF que le lecteur peut remplir et qui calcule lui-même ses totaux ?",
-      "de": "Wie erstelle ich ein PDF-Formular, das Leser ausfüllen können und das seine Summen selbst berechnet?",
-      "it": "Come creo un modulo PDF che il lettore possa compilare e che calcoli da solo i totali?",
-      "pt": "Como faço um formulário PDF que o leitor possa preencher e que some os totais sozinho?",
-      "zh": "怎样做一份读者可以填写、并能自动计算合计的PDF表单？",
-      "ja": "読者が記入でき、合計も自動で計算されるPDFフォームを作るには？",
-      "ar": "كيف أصنع نموذج PDF يملؤه القارئ ويحسب مجاميعه بنفسه؟"
+      "en": "How do I print logic and set signs (∀, ∈, ℵ) and Greek that my text font lacks, instead of empty boxes in the PDF?",
+      "es": "¿Cómo imprimo los signos de lógica y de conjuntos (∀, ∈, ℵ) y el griego que no tiene mi fuente de texto, sin cajas vacías en el PDF?",
+      "ca": "Com imprimeixo els signes de lògica i de conjunts (∀, ∈, ℵ) i el grec que no té la meva font de text, sense caixes buides al PDF?",
+      "fr": "Comment imprimer les signes de logique et d’ensembles (∀, ∈, ℵ) et le grec que ma police de texte n’a pas, sans cases vides dans le PDF ?",
+      "de": "Wie drucke ich Logik- und Mengenzeichen (∀, ∈, ℵ) und Griechisch, die meiner Textschrift fehlen, ohne leere Kästchen im PDF?",
+      "it": "Come stampo i segni di logica e di insiemi (∀, ∈, ℵ) e il greco che il mio font di testo non ha, senza riquadri vuoti nel PDF?",
+      "pt": "Como imprimo os sinais de lógica e de conjuntos (∀, ∈, ℵ) e o grego que minha fonte de texto não tem, sem caixas vazias no PDF?",
+      "zh": "正文字体缺少逻辑与集合符号（∀、∈、ℵ）和希腊字母时，怎样让 PDF 印出它们而不是空框？",
+      "ja": "本文の書体にない論理記号・集合記号（∀、∈、ℵ）やギリシャ文字を、PDFで空の四角にせずに印刷するには？",
+      "ar": "كيف أطبع رموز المنطق والمجموعات (∀ و∈ وℵ) والحروف اليونانية التي يفتقدها خط النص، دون مربعات فارغة في PDF؟"
     },
     "index": {
-      "en": "PDF forms, fillable",
-      "es": "Formularios PDF rellenables",
-      "ca": "Formularis PDF emplenables",
-      "fr": "Formulaires PDF remplissables",
-      "de": "PDF-Formulare, ausfüllbar",
-      "it": "Moduli PDF compilabili",
-      "pt": "Formulários PDF preenchíveis",
-      "zh": "可填写的PDF表单",
-      "ja": "記入できるPDFフォーム",
-      "ar": "نماذج PDF قابلة للتعبئة"
+      "en": "Symbols the text font lacks",
+      "es": "Símbolos que la fuente no tiene",
+      "ca": "Símbols que la font no té",
+      "fr": "Symboles absents de la police",
+      "de": "Zeichen, die der Schrift fehlen",
+      "it": "Simboli che il font non ha",
+      "pt": "Símbolos que a fonte não tem",
+      "zh": "字体缺少的符号",
+      "ja": "書体にない記号",
+      "ar": "رموز يفتقدها الخط"
     },
-    "theme": "output"
+    "theme": "type"
   }
 }
