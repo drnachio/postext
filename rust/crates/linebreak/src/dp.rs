@@ -17,8 +17,9 @@ pub(crate) struct Pass {
     /// only when it is empty); a search that runs out of nodes gives up
     /// instead of forcing a break.
     pub constrained: bool,
-    /// Keys the nodes also by what a stack's next cost depends on: the
-    /// edge a node's line starts on (see `looseness::limited`).
+    /// Keys the nodes also by what the limits' next costs depend on: the
+    /// hyphen run a node closes and the edge its line starts on (see
+    /// `looseness::limited`).
     pub exact_limits: bool,
 }
 
@@ -33,9 +34,9 @@ pub(crate) struct Search {
     candidates: Vec<Node>,
     slot_by_key: Vec<u32>,
     keys: Vec<u32>,
-    /// The exact pass's keys: base key, start word and start characters
-    /// of the line.
-    slot_by_exact: HashMap<(u32, u32, u32), u32>,
+    /// The exact pass's keys: base key, hyphen run, start word and start
+    /// characters of the line.
+    slot_by_exact: HashMap<(u32, u32, u32, u32), u32>,
     avoid: Vec<bool>,
 }
 
@@ -60,8 +61,11 @@ impl Search {
         };
         self.prefix.fill(items, tracking, gate_short, o.hyphenation_zone.is_some());
         let rules = &o.rules;
+        let history = rules.history_mask();
+        let spacing = rules.hyphen_spacing.filter(|&(l, b)| l > 0 && b > 0.0);
+        let run_cap = rules.max_run;
         let stacks = rules.stack_badness;
-        let exact = pass.exact_limits && stacks.is_some();
+        let exact = pass.exact_limits && (run_cap > 0 || stacks.is_some());
         let Search { prefix: p, arena, active, candidates, slot_by_key, keys, slot_by_exact, avoid } = self;
         arena.clear();
         active.clear();
@@ -142,9 +146,34 @@ impl Search {
                 };
                 let tracking_cost =
                     if tracking_share > 0.0 { TRACKING_BADNESS * tracking_share * tracking_share } else { 0.0 };
+                // Strict hyphenation: a second hyphenated line in a row (a
+                // third costs more), or the paragraph's last word divided.
+                let prev_hyphen = a.position >= 0 && items.is_flagged_penalty(a.position as usize);
+                let strict_cost = if rules.strict_hyphens && prev_hyphen && (is_flagged || i == terminal) {
+                    if is_flagged && a.hyphens & 2 != 0 { STRICT_HYPHEN_RUN_BADNESS } else { STRICT_HYPHEN_BADNESS }
+                } else {
+                    0.0
+                };
+                // Hyphen spacing: a hyphen with another one among the lines
+                // before it.
+                let spacing_cost = match spacing {
+                    Some((lines, b)) if is_flagged && a.hyphens & ((1u32 << lines) - 1) != 0 => b,
+                    _ => 0.0,
+                };
+                // The hyphen limits: a run past its maximum is a limit
+                // broken; the last word divided, the strict rule's cost.
+                let mut rules_cost = 0.0;
+                let mut hard = 0;
+                let run_before = if run_cap > 0 { run_of(arena, items, id, run_cap) } else { 0 };
+                if run_cap > 0 && is_flagged && run_before >= run_cap {
+                    rules_cost += HARD_RULE_BADNESS;
+                    hard += 1;
+                }
+                if rules.keep_last_word && !rules.strict_hyphens && prev_hyphen && i == terminal {
+                    rules_cost += STRICT_HYPHEN_BADNESS;
+                }
                 // Stacks: this line and the one before end, or start, alike.
                 let mut stack_cost = 0.0;
-                let mut hard = 0;
                 if let Some(sb) = stacks
                     && a.position >= 0
                     && a.previous != NONE
@@ -174,7 +203,17 @@ impl Search {
                         charge(start_a, start_b);
                     }
                 }
-                let eff = badness(r) + over_stretch + runt_cost + column_end + stack_cost + tracking_cost;
+                let hyphen_cost = if is_flagged && rules.hyphen_badness != 0.0 { rules.hyphen_badness } else { 0.0 };
+                let eff = badness(r)
+                    + over_stretch
+                    + runt_cost
+                    + column_end
+                    + strict_cost
+                    + spacing_cost
+                    + rules_cost
+                    + stack_cost
+                    + hyphen_cost
+                    + tracking_cost;
                 let mut d = if pen >= 0.0 {
                     (1.0 + eff + pen) * (1.0 + eff + pen)
                 } else if pen > -KP_INFINITY {
@@ -213,6 +252,7 @@ impl Search {
                     Some(u) if a.line + 1 >= u => fc as u32,
                     _ => (a.line + 1) * 4 + fc as u32,
                 };
+                let start = (a.position + 1) as usize;
                 let node = Node {
                     position: i as i32,
                     line: a.line + 1,
@@ -228,17 +268,15 @@ impl Search {
                     ragged: ragged_lines,
                     total_word_spaces: if gate_short { p.word_spaces[i + 1] } else { 0.0 },
                     total_word_space_width: if gate_short { p.word_space_width[i + 1] } else { 0.0 },
+                    hyphens: ((a.hyphens << 1) | is_flagged as u32) & history,
                     hard: a.hard + hard,
                     previous: id,
                 };
                 if exact {
-                    let start = (a.position + 1) as usize;
-                    offer_exact(
-                        candidates,
-                        slot_by_exact,
-                        (key, rules.start_word[start], rules.start_chars[start]),
-                        node,
-                    );
+                    let run = if run_cap > 0 && is_flagged { run_cap.min(run_before + 1) } else { 0 };
+                    let (word, chars) =
+                        if stacks.is_some() { (rules.start_word[start], rules.start_chars[start]) } else { (0, 0) };
+                    offer_exact(candidates, slot_by_exact, (key, run, word, chars), node);
                 } else {
                     offer(candidates, slot_by_key, keys, key, node);
                 }
@@ -268,6 +306,7 @@ impl Search {
                     total_no_tracking: if tracking { p.no_tracking[i + 1] } else { 0.0 },
                     total_word_spaces: if gate_short { p.word_spaces[i + 1] } else { 0.0 },
                     total_word_space_width: if gate_short { p.word_space_width[i + 1] } else { 0.0 },
+                    hyphens: is_flagged as u32,
                     previous: NONE,
                     ..Node::default()
                 };
@@ -293,7 +332,7 @@ impl Search {
 }
 
 /// Moves the candidates into the arena and the active list, in the order
-/// their keys were first offered (the order they were pushed in).
+/// their keys were first offered.
 fn commit(
     arena: &mut Arena,
     active: &mut Vec<u32>,
@@ -301,6 +340,7 @@ fn commit(
     slot_by_key: &mut [u32],
     keys: &mut Vec<u32>,
 ) {
+    // Candidates are kept in the order their keys were first offered.
     for &key in keys.iter() {
         slot_by_key[key as usize] = NONE;
     }
@@ -332,8 +372,8 @@ fn offer(candidates: &mut Vec<Node>, slot_by_key: &mut Vec<u32>, keys: &mut Vec<
 #[inline]
 fn offer_exact(
     candidates: &mut Vec<Node>,
-    slot_by_exact: &mut HashMap<(u32, u32, u32), u32>,
-    key: (u32, u32, u32),
+    slot_by_exact: &mut HashMap<(u32, u32, u32, u32), u32>,
+    key: (u32, u32, u32, u32),
     node: Node,
 ) {
     match slot_by_exact.get(&key) {
@@ -347,6 +387,21 @@ fn offer_exact(
             }
         }
     }
+}
+
+/// Hyphenated lines in a row the chain ending at `id` ends on, counted up
+/// to `cap`.
+fn run_of(arena: &Arena, items: &Items, mut id: u32, cap: u32) -> u32 {
+    let mut run = 0;
+    while id != NONE && run < cap {
+        let n = arena.get(id);
+        if n.position < 0 || !items.is_flagged_penalty(n.position as usize) {
+            break;
+        }
+        run += 1;
+        id = n.previous;
+    }
+    run
 }
 
 /// Whether the same edge of two consecutive lines stacks: the same word,

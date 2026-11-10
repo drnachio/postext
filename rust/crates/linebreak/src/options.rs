@@ -31,13 +31,27 @@ pub struct Options {
     /// Right-hand glue every line gets in a ragged setting (0: justified).
     pub ragged_stretch: f64,
     pub hyphenation_zone: Option<f64>,
-    /// The composition rules (`KPOptions.stacks`).
+    /// The composition rules (`KPOptions.strictHyphens`, `stacks`,
+    /// `hyphenSpacing`, `hyphenRules`, `hyphenBadness`).
     pub rules: Rules,
 }
 
-/// The composition rules: stacks.
+/// The composition rules: hyphens and stacks.
 #[derive(Clone, Debug, Default)]
 pub struct Rules {
+    /// Never two hyphenated lines in a row nor the last word divided, each
+    /// at [`STRICT_HYPHEN_BADNESS`](crate::STRICT_HYPHEN_BADNESS).
+    pub strict_hyphens: bool,
+    /// A hyphen with another one among the `lines` lines before it costs
+    /// `badness` (`lines` 1–4).
+    pub hyphen_spacing: Option<(u32, f64)>,
+    /// At most this many hyphenated lines in a row (0: no limit), each one
+    /// past it a limit broken.
+    pub max_run: u32,
+    /// The last word kept whole, as the strict rule has it.
+    pub keep_last_word: bool,
+    /// Extra badness of every hyphenated break.
+    pub hyphen_badness: f64,
     /// Two lines ending or starting alike cost this much (a repeated
     /// monosyllable is always a limit); `None`: stacks are not looked at.
     pub stack_badness: Option<f64>,
@@ -49,6 +63,14 @@ pub struct Rules {
     pub end_chars: Vec<u32>,
     pub start_word: Vec<u32>,
     pub start_chars: Vec<u32>,
+}
+
+impl Rules {
+    /// Hyphenated lines before a break whose cost depends on them.
+    pub(crate) fn history_mask(&self) -> u32 {
+        let lines = (if self.strict_hyphens { 2 } else { 0 }).max(self.hyphen_spacing.map_or(0, |(l, _)| l));
+        (1u32 << lines) - 1
+    }
 }
 
 impl Default for Options {

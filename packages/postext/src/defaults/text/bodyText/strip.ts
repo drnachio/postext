@@ -270,7 +270,7 @@ export function stripBodyTextDefaults(
     result.gradedRuntPenalty = bodyText.gradedRuntPenalty;
     hasOverride = true;
   }
-  for (const key of ['avoidStacks', 'stackMinCharacters', 'stackPenalty'] as const) {
+  for (const key of ['strictHyphenation', 'avoidStacks', 'stackMinCharacters', 'stackPenalty', 'minLinesBetweenHyphens', 'hyphenSpacingPenalty', 'fewerHyphens'] as const) {
     if (bodyText[key] !== undefined && bodyText[key] !== DEFAULT_BODY_TEXT_CONFIG[key]) {
       (result as Record<string, unknown>)[key] = bodyText[key];
       hasOverride = true;

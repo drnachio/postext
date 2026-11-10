@@ -6,7 +6,7 @@ export const metadata = {
   description: '正文的字体排印：字体、字号与行距、颜色、缩进、引用块、诗歌、制表位和首字下沉',
   lang: 'zh',
   lastUpdated: '2026-11-10',
-  readingTime: '19分钟',
+  readingTime: '20分钟',
   order: 7,
   parent: 'configuration',
   plainSummary: "本页讲一本书正文的设置。你可以选择正文的字体、字号和行距，以及粗体和斜体文字的颜色。你可以设定首行缩进和段落之间的距离。本页还讲与正文分开排的引文、诗歌、按列对齐文字用的制表位，以及有些章开头那个放大的首字。断词、标题和列表另有页面说明。",
@@ -248,6 +248,30 @@ export const metadata = {
       <td><code>number</code></td>
       <td><code>100000</code></td>
       <td>重复（相邻两行以同一个词或相同的字符结尾或开头，<code>avoidStacks</code>会避免它）的代价，以等效劣度表示：100相当于词距达到上限的一行；1000超过限度内的任何一行。默认值100000使重复成为硬性限制：它甚至超过词距超出上限的行，因此只有在段落的任何排法都无法避免时才保留重复。 单音节词的重复无论此值多少都一律禁止。</td>
+    </tr>
+    <tr>
+      <td><code>strictHyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>按西班牙排版规则断词：绝不连续两行以连字符结尾，也绝不拆分段落的最后一个单词。断行器会采用任何能让词距保持在限度内的其他断点；只有在找不到这样的断点时才打破规则。需要开启<code>optimalLineBreaking</code>。只想让最后一个单词保持完整，见<code>hyphenation.lastWord</code>；想允许更长的连续连字符，见<code>hyphenation.maxConsecutive</code>。</td>
+    </tr>
+    <tr>
+      <td><code>minLinesBetweenHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>断词行之前希望有多少行不带连字符，使连字符不形成节奏：<code>2</code>还会避免隔行出现连字符（有、无、有）；<code>1</code>只避免连续两行，同<code>strictHyphenation</code>；<code>0</code>关闭该规则。最大为4。这是一种偏好，其分量由<code>hyphenSpacingPenalty</code>决定。需要开启<code>optimalLineBreaking</code>。</td>
+    </tr>
+    <tr>
+      <td><code>hyphenSpacingPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>与上一个连字符的距离小于<code>minLinesBetweenHyphens</code>的连字符的代价，以等效劣度表示：100相当于词距达到上限的一行；1000超过限度内的任何一行。</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>更少连字符还是更好的词距，取值<code>0</code>到<code>10</code>，如同InDesign的<em>Better Spacing</em> / <em>Fewer Hyphens</em>滑块：每升一级，每个连字符的代价都提高，断行器只在能省下更多词距时才断词。<code>0</code>按引擎一贯的方式衡量连字符。需要开启<code>optimalLineBreaking</code>。</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

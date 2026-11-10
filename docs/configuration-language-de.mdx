@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Silbentrennung und Sprache',
   description: 'Trennmuster und Ausnahmen, Flattersatz, die Dokumentsprache mit ihren Ziffern und ihrer Schreibrichtung und die Schriftsysteme, die Postext setzt',
   lang: 'de',
-  lastUpdated: '2026-10-19',
-  readingTime: '19 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '20 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt, wie Wörter am Zeilenende getrennt werden und woher Postext die Sprache eines Buchs kennt. Sie schalten die Silbentrennung ein oder aus und führen die Wörter auf, die nie getrennt werden dürfen. Sie können den rechten Rand des Texts ungleichmäßig lassen, statt ihn gerade auszurichten. Die Dokumentsprache bestimmt die Trennregeln, die Namen von Abbildungen und Tabellen, die Ziffern und die Schreibrichtung. Die letzten Abschnitte nennen die Schriftsysteme, die Postext setzen kann, und erklären, wie arabischer Text behandelt wird.",
@@ -70,6 +70,36 @@ Ist die Textausrichtung auf `'justify'` gesetzt, verhindert die Silbentrennung �
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Trennt großgeschriebene Wörter wie alle anderen. <code>false</code> hält jedes Wort ganz, das mit einem Großbuchstaben beginnt (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), das erste Wort eines Satzes eingeschlossen. Siehe <a href="#ungetrennte-wörter">Ungetrennte Wörter</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>die der Sprache</td>
+      <td>Das kürzeste getrennte Wort, in Buchstaben (<em>Wörter mit mindestens</em> in InDesign). Nicht gesetzt: die der Sprache, 5 (4 im Katalanischen).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>die der Sprache</td>
+      <td>Buchstaben, die vor einer Trennung mindestens am Wortanfang bleiben (<em>Nach ersten</em> in InDesign). Nicht gesetzt: die der Sprache (2 im Spanischen).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>die der Sprache</td>
+      <td>Buchstaben, die nach einer Trennung mindestens in die nächste Zeile kommen (<em>Vor letzten</em> in InDesign). Nicht gesetzt: die der Sprache (2 im Spanischen).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Höchstzahl aufeinanderfolgender Zeilen, die mit einem Trennstrich enden (<em>Trennstriche max.</em> in InDesign); <code>0</code>: keine Grenze. Eine Grenze, keine Vorliebe: Der Absatz wird neu umbrochen, wenn nötig lockerer, und überschreitet sie nur, wo kein Umbruch sie einhält. Nur mit optimalem Zeilenumbruch.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Erlaubt, das letzte Wort eines Absatzes zu trennen (<em>Letztes Wort trennen</em> in InDesign). <code>false</code> lässt es ganz, wo immer die Abstände es erlauben; <code>bodyText.strictHyphenation</code> lässt es in jedem Fall ganz. Nur mit optimalem Zeilenumbruch.</td>
     </tr>
   </tbody>
 </table>

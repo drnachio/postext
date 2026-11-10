@@ -34,7 +34,15 @@ interface LineBreakExports {
     hyphenationZone: number,
     flags: number,
   ): void;
-  lb_set_stacks(ctx: number, on: number, badness: number): void;
+  lb_set_rules(
+    ctx: number,
+    flags: number,
+    stackBadness: number,
+    spacingLines: number,
+    spacingBadness: number,
+    maxRun: number,
+    hyphenBadness: number,
+  ): void;
   lb_edges(ctx: number, count: number): number;
   lb_break(ctx: number): number;
   lb_breaks(ctx: number): number;
@@ -49,6 +57,10 @@ const NO_TRACKING = 4;
 const WORD_SPACE = 8;
 
 export type Breaker = (items: KPItem[], options: KPOptions) => number[];
+
+const STRICT = 1;
+const KEEP_LAST_WORD = 2;
+const STACKS = 4;
 
 /** The line edges of a paragraph as the module compares them: each text an
  *  id (0 for none), equal texts equal ids; a word's id carries in its low
@@ -155,7 +167,16 @@ export function wasmBreaker(instance: WebAssembly.Instance): Breaker {
       options.runtGraded ? 1 : 0,
     );
     const stacks = options.stacks;
-    x.lb_set_stacks(ctx, stacks ? 1 : 0, stacks?.badness ?? 0);
+    const spacing = options.hyphenSpacing;
+    x.lb_set_rules(
+      ctx,
+      (options.strictHyphens ? STRICT : 0) | (options.hyphenRules?.keepLastWord ? KEEP_LAST_WORD : 0) | (stacks ? STACKS : 0),
+      stacks?.badness ?? 0,
+      spacing && spacing.lines > 0 ? Math.min(4, Math.max(1, Math.round(spacing.lines))) : 0,
+      spacing?.badness ?? 0,
+      Math.max(0, options.hyphenRules?.maxRun ?? 0),
+      options.hyphenBadness ?? 0,
+    );
     if (stacks) writeEdges(u32(x.lb_edges(ctx, n), 4 * (n + 1)), items, stacks.minChars);
     const count = x.lb_break(ctx);
     return Array.from(u32(x.lb_breaks(ctx), count));

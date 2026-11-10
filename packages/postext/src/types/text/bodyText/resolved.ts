@@ -75,9 +75,13 @@ export interface ResolvedBodyTextConfig {
   runtMinCharacters: number;
   runtPenalty: number;
   gradedRuntPenalty: boolean;
+  strictHyphenation: boolean;
   avoidStacks: boolean;
   stackMinCharacters: number;
   stackPenalty: number;
+  minLinesBetweenHyphens: number;
+  hyphenSpacingPenalty: number;
+  fewerHyphens: number;
   avoidRuntsInLists: boolean;
   tightenRunts: boolean;
   maxRuntTracking: number;

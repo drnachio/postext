@@ -13,7 +13,14 @@ export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] =
   zone: { value: 3, unit: 'em' },
   compounds: true,
   capitalized: true,
+  maxConsecutive: 0,
+  lastWord: true,
 };
+
+/** `HyphenationConfig.maxConsecutive` as a whole number of lines, `0` (no
+ *  limit) when unset or not positive. */
+export const hyphenRun = (n: number | undefined): number =>
+  typeof n === 'number' && Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
 
 /**
  * Whether a paragraph keeps `widowMinLines` lines at the foot of a column
@@ -109,9 +116,13 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   runtMinCharacters: 20,
   runtPenalty: 1000,
   gradedRuntPenalty: false,
+  strictHyphenation: false,
   avoidStacks: false,
   stackMinCharacters: 3,
   stackPenalty: 100000,
+  minLinesBetweenHyphens: 0,
+  hyphenSpacingPenalty: 300,
+  fewerHyphens: 0,
   avoidRuntsInLists: true,
   tightenRunts: true,
   maxRuntTracking: 10,
@@ -132,6 +143,9 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
     && dimensionsEqual(a.zone ?? D.zone, b.zone ?? D.zone)
     && (a.compounds ?? D.compounds) === (b.compounds ?? D.compounds)
     && (a.capitalized ?? D.capitalized) === (b.capitalized ?? D.capitalized)
+    && a.minWordLength === b.minWordLength && a.leftMin === b.leftMin && a.rightMin === b.rightMin
+    && hyphenRun(a.maxConsecutive) === hyphenRun(b.maxConsecutive)
+    && (a.lastWord ?? D.lastWord) === (b.lastWord ?? D.lastWord)
     // A list that names no valid word is no list.
     && (normalizeHyphenationExceptions(a.exceptions) ?? []).join('\x00') === (normalizeHyphenationExceptions(b.exceptions) ?? []).join('\x00');
 }

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'La tipografia del testo corrente: font, corpo e interlinea, colori, rientri, citazioni in blocco, versi, tabulatori e capilettera',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '27 min',
+  readingTime: '28 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Questa pagina spiega le impostazioni del testo principale di un libro. Puoi scegliere il carattere, la grandezza delle lettere e lo spazio tra le righe, oltre ai colori delle parole in grassetto e in corsivo. Stabilisci anche il rientro della prima riga e lo spazio tra i paragrafi. La pagina tratta anche le citazioni staccate dal testo, le poesie, i tabulatori per il testo in colonne e la grande lettera iniziale con cui si aprono alcuni capitoli. Sillabazione, titoli ed elenchi hanno pagine a parte.",
@@ -247,6 +247,30 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td><code>number</code></td>
       <td><code>100000</code></td>
       <td>Costo di una ripetizione (due righe consecutive che finiscono o cominciano con la stessa parola o gli stessi caratteri, cosa che <code>avoidStacks</code> evita), in badness equivalente: 100 è una riga al limite della spaziatura tra le parole; 1000 pesa più di qualsiasi riga entro quel limite. Il valore predefinito, 100000, fa della ripetizione un limite: pesa più persino di una riga allargata oltre i limiti di spaziatura, così una ripetizione resta solo dove nessuna composizione del paragrafo la evita. Un monosillabo ripetuto è un limite qualunque sia questo valore.</td>
+    </tr>
+    <tr>
+      <td><code>strictHyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Divide le parole secondo le regole della composizione spagnola: mai due righe di seguito che terminano con un trattino, e mai l’ultima parola del paragrafo divisa. L’impaginazione sceglie qualsiasi altra interruzione che mantenga la spaziatura tra le parole nei suoi limiti; la regola cede solo quando nessuna lo fa. Richiede <code>optimalLineBreaking</code>. Per tenere intera solo l’ultima parola, vedi <code>hyphenation.lastWord</code>; per ammettere serie più lunghe di sillabazioni, <code>hyphenation.maxConsecutive</code>.</td>
+    </tr>
+    <tr>
+      <td><code>minLinesBetweenHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Righe senza sillabazione che una riga divisa vuole avere prima di sé, perché le sillabazioni non cadano a ritmo: <code>2</code> evita anche una sillabazione una riga sì e una no (sì, no, sì); <code>1</code>, solo due di seguito, come <code>strictHyphenation</code>; <code>0</code> disattiva la regola. Al massimo 4. Una preferenza, ponderata da <code>hyphenSpacingPenalty</code>. Richiede <code>optimalLineBreaking</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenSpacingPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>Costo di una sillabazione più vicina di <code>minLinesBetweenHyphens</code> alla precedente, come badness equivalente: 100 è una riga al limite della spaziatura tra le parole; 1000 pesa più di qualsiasi riga entro quel limite.</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Meno sillabazioni o spaziatura migliore, da <code>0</code> a <code>10</code>, come il cursore <em>Spaziatura migliore</em> / <em>Meno trattini</em> di InDesign: ogni passo rende più cara ogni sillabazione, così che una parola si divide solo dove ciò risparmia più spaziatura. <code>0</code> pesa le sillabazioni come il motore ha sempre fatto. Richiede <code>optimalLineBreaking</code>.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

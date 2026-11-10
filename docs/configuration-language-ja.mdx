@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'ハイフネーションと言語',
   description: 'ハイフネーションのパターンと例外、行末不ぞろいのテキスト、文書の言語とその数字と方向、Postextが組める文字体系',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
-  readingTime: '21分',
+  lastUpdated: '2026-11-10',
+  readingTime: '22分',
   order: 8,
   parent: 'configuration',
   plainSummary: "このページでは、行の終わりで単語をどう分けるかと、Postextが本の言語をどう知るかを説明します。ハイフネーションを使うかどうかを選び、決して分けてはいけない語を挙げます。行の終わりをそろえず、不ぞろいのままにすることもできます。文書の言語によって、ハイフネーションの規則、図や表の呼び名、数字、文字の方向が決まります。最後の節では、Postextが組める文字の種類と、アラビア文字の扱いを説明します。",
@@ -70,6 +70,36 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>大文字で始まる語も、ほかの語と同じように分割します。<code>false</code>にすると、大文字で始まる語（<code>Alice</code>、<code>Ámsterdam</code>、<code>UNESCO</code>）はすべて分割しません。文頭の語も同じです。<a href="#分割しない語">分割しない語</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>言語の既定値</td>
+      <td>分割する最短の語の文字数（InDesignの<em>Words with at Least</em>）。未設定時は言語の既定値で、5（カタルーニャ語では4）です。</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>言語の既定値</td>
+      <td>分割位置の前、語頭に残す最小文字数（InDesignの<em>After First</em>）。未設定時は言語の既定値です（スペイン語では2）。</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>言語の既定値</td>
+      <td>分割位置の後、次の行に送る最小文字数（InDesignの<em>Before Last</em>）。未設定時は言語の既定値です（スペイン語では2）。</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>ハイフンで終わる行が続く最大数（InDesignの<em>Hyphen Limit</em>）。<code>0</code>は無制限です。優先度ではなく上限です。必要なら語間を広げてでも段落を組み直し、どの組み方でも守れない場合に限って超えます。最適改行のときだけ有効です。</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段落の最後の単語の分割を許します（InDesignの<em>Hyphenate Last Word</em>）。<code>false</code>では語間が許す限り分割しません。<code>bodyText.strictHyphenation</code>ではどちらの場合も分割しません。最適改行のときだけ有効です。</td>
     </tr>
   </tbody>
 </table>

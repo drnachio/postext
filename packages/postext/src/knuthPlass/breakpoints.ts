@@ -5,7 +5,7 @@
 import type { KPItem, KPOptions } from './types.js';
 import type { Breaker } from './wasm/abi.js';
 import { readyWasmBreaker } from './wasm/engine.js';
-import { limited } from './breakpoints/search.js';
+import { limited } from './breakpoints/limited.js';
 
 export { foldEdge, isMonosyllable, edgesStack } from './breakpoints/edges.js';
 
@@ -30,8 +30,10 @@ interface BreakpointsHooks {
  */
 export function computeBreakpoints(items: KPItem[], options: KPOptions): number[] {
   const hooks = globalThis as BreakpointsHooks;
-  // The WebAssembly breaker avoids stacks too, with the line edges they
-  // compare worked out here (`wasm/abi.ts`).
+  // The WebAssembly breaker applies the composition rules too (strict
+  // hyphenation, stacks, hyphen spacing and limits, the cost of each
+  // hyphen), with the line edges stacks compare worked out here
+  // (`wasm/abi.ts`).
   const breaks = (hooks.__postextKpImpl ?? readyWasmBreaker() ?? breakpoints)(items, options);
   hooks.__postextKpTap?.(items, options, breaks);
   return breaks;

@@ -120,10 +120,21 @@ export interface HyphenationConfig {
    *  capital matches only the occurrences that start with a capital, so
    *  `'Rose'` keeps the name whole and leaves `rose` to the dictionary. A
    *  soft hyphen typed in an occurrence still decides that occurrence, and a
-   *  word wider than its whole measure is still divided. Applies wherever
-   *  the dictionary runs: body, headings, lists, boxes, captions, table
-   *  cells, notes, running heads and the other design text. Default none. */
+   *  word wider than its whole measure is still divided. An entry wins over
+   *  {@link minWordLength}, {@link leftMin} and {@link rightMin}. Applies
+   *  wherever the dictionary runs: body, headings, lists, boxes, captions,
+   *  table cells, notes, running heads and the other design text. Default
+   *  none. */
   exceptions?: string[];
+  /** The shortest word divided, in letters (InDesign's "Words with at
+   *  least"). Unset: the language's own, 5 (4 in Catalan). */
+  minWordLength?: number;
+  /** Letters left at least before a break, at the start of the word
+   *  (InDesign's "After first"). Unset: the language's own (2 in Spanish). */
+  leftMin?: number;
+  /** Letters carried at least after a break, to the next line (InDesign's
+   *  "Before last"). Unset: the language's own (2 in Spanish). */
+  rightMin?: number;
   /** Divide capitalised words like any other. Default `true`. `false`: the
    *  dictionary adds no break inside a run of letters that starts with a
    *  capital (`Alice`, `Ámsterdam`, `UNESCO`, the `Alembert` of
@@ -134,6 +145,25 @@ export interface HyphenationConfig {
    *  `citations.hyphenateNames`. An entry of `exceptions` with points still
    *  divides its word there. */
   capitalized?: boolean;
+  /** Most lines in a row that may end on a hyphen (InDesign's "Hyphen
+   *  limit"). `0` (default): no limit but the cost of each hyphen. A limit
+   *  is not a preference: the breaker takes any other setting of the
+   *  paragraph, a looser one included, and goes past it only where none
+   *  keeps it. Knuth–Plass line breaking only. */
+  maxConsecutive?: number;
+  /** Let the last word of a paragraph be divided (InDesign's "Hyphenate
+   *  last word"). `false` keeps it whole wherever the spacing allows, as
+   *  `bodyText.strictHyphenation` does. Default `true`. Knuth–Plass line
+   *  breaking only. */
+  lastWord?: boolean;
+}
+
+/** The limits of {@link HyphenationConfig} the dictionary applies (see
+ *  `setHyphenationLimits`); unset ones keep the language's own. */
+export interface HyphenationLimits {
+  minWordLength?: number;
+  leftMin?: number;
+  rightMin?: number;
 }
 
 /** `HyphenationConfig` with every default filled in. */
@@ -151,7 +181,15 @@ export interface ResolvedHyphenationConfig {
   /** The words of `HyphenationConfig.exceptions`, trimmed, checked, without
    *  duplicates and sorted; absent when the document names none. */
   exceptions?: string[];
+  /** {@link HyphenationConfig.minWordLength}, `leftMin`, `rightMin`: absent
+   *  when unset (the language's own). */
+  minWordLength?: number;
+  leftMin?: number;
+  rightMin?: number;
   capitalized: boolean;
+  /** {@link HyphenationConfig.maxConsecutive}; `0`: no limit. */
+  maxConsecutive: number;
+  lastWord: boolean;
 }
 
 /** `BodyTextConfig.kashida`. */

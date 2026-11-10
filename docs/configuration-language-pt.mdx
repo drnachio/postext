@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Hifenização e idioma',
   description: 'Padrões e exceções de hifenização, texto em bandeira, o idioma do documento (com os algarismos e a direção que ele define) e os sistemas de escrita que o Postext compõe',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
-  readingTime: '21 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '22 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Esta página trata de como as palavras são divididas no fim da linha e de como o Postext sabe o idioma de um livro. Você liga ou desliga a hifenização e lista as palavras que nunca devem ser divididas. Pode deixar a margem direita do texto irregular em vez de reta. O idioma do documento define as regras de hifenização, os nomes das figuras e das tabelas, os algarismos e a direção do texto. As últimas seções mostram quais sistemas de escrita o Postext compõe e como ele trata o texto árabe.",
@@ -70,6 +70,36 @@ Quando o alinhamento do texto é `'justify'`, a hifenização evita o espaçamen
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Divide as palavras com inicial maiúscula como qualquer outra. <code>false</code> mantém inteira toda palavra que começa com maiúscula (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), inclusive a primeira palavra de uma frase. Veja <a href="#palavras-que-não-se-dividem">Palavras que não se dividem</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>a do idioma</td>
+      <td>A palavra mais curta que é dividida, em letras (o <em>Words with at Least</em> do InDesign). Sem definir: a do idioma, 5 (4 em catalão).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>a do idioma</td>
+      <td>Letras que ficam no mínimo antes de uma quebra, no início da palavra (o <em>After First</em> do InDesign). Sem definir: as do idioma (2 em espanhol).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>a do idioma</td>
+      <td>Letras levadas no mínimo para a linha seguinte depois de uma quebra (o <em>Before Last</em> do InDesign). Sem definir: as do idioma (2 em espanhol).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Máximo de linhas seguidas terminadas em hífen (o <em>Hyphen Limit</em> do InDesign); <code>0</code>, sem limite. É um limite, não uma preferência: o parágrafo é quebrado de novo, mais solto se for preciso, e só passa dele onde nenhuma composição o respeita. Só com a quebra de linhas ótima.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Permite dividir a última palavra de um parágrafo (o <em>Hyphenate Last Word</em> do InDesign). <code>false</code> a mantém inteira sempre que o espaçamento permite; <code>bodyText.strictHyphenation</code> a mantém inteira de qualquer forma. Só com a quebra de linhas ótima.</td>
     </tr>
   </tbody>
 </table>

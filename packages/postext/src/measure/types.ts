@@ -220,9 +220,23 @@ export interface MeasureBlockOptions {
    *  threshold (`BodyTextConfig.gradedRuntPenalty`). Joins the cache key
    *  only when set. */
   runtGraded?: boolean;
+  /** Strict hyphenation (`KPOptions.strictHyphens`,
+   *  `BodyTextConfig.strictHyphenation`). Joins the cache key only when set. */
+  strictHyphens?: boolean;
   /** Stack avoidance (`KPOptions.stacks`, `BodyTextConfig.avoidStacks`).
    *  Joins the cache key only when set. */
   stacks?: { minChars: number; badness: number };
+  /** Hyphen spacing (`KPOptions.hyphenSpacing`,
+   *  `BodyTextConfig.minLinesBetweenHyphens`). Joins the cache key only
+   *  when set. */
+  hyphenSpacing?: { lines: number; badness: number };
+  /** The document's hyphen limits (`KPOptions.hyphenRules`,
+   *  `HyphenationConfig.maxConsecutive` / `lastWord`). Joins the cache key
+   *  only when set. */
+  hyphenRules?: { maxRun: number; keepLastWord: boolean };
+  /** Extra badness of every hyphen (`KPOptions.hyphenBadness`,
+   *  `BodyTextConfig.fewerHyphens`). Joins the cache key only when set. */
+  hyphenBadness?: number;
   /** Line numbers (1-based) that should not end on a hyphen: the lines a
    *  column or a page ends on (`BodyTextConfig.hyphenateAcrossColumns`).
    *  Knuth–Plass path only. Joins the cache key only when set. */

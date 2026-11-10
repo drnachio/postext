@@ -369,6 +369,13 @@ export interface BodyTextConfig {
    *  than a one-word one and the breaker takes it when a line above can
    *  give a word up. Off by default (every runt costs the same). */
   gradedRuntPenalty?: boolean;
+  /** Hyphenate as Spanish typesetting rules have it: never two hyphenated
+   *  lines in a row, and never the paragraph's last word divided. The
+   *  breaker takes any other break that keeps the word spacing within its
+   *  limits; only when none does is the rule broken. Needs
+   *  `optimalLineBreaking`. Default `false`, so documents set before it
+   *  keep their lines. */
+  strictHyphenation?: boolean;
   /** Avoid stacks: two consecutive lines of a paragraph that end on the same
    *  word, or on the same last {@link stackMinCharacters} characters,
    *  spaces included (`-mente` / `-mente`, `en la` / `de la`), or that start
@@ -389,6 +396,21 @@ export interface BodyTextConfig {
    *  limit: a stack is kept only where no setting of the paragraph avoids
    *  it. A repeated monosyllable is a limit whatever this says. */
   stackPenalty?: number;
+  /** Lines a hyphenated line wants free of hyphens before it, so hyphens
+   *  do not fall into a rhythm: 2 also avoids a hyphen every other line
+   *  (yes, no, yes); 1 only two in a row, as `strictHyphenation`. At most
+   *  4. Needs `optimalLineBreaking`. Default 0: the rule is off, so
+   *  documents set before it keep their lines. */
+  minLinesBetweenHyphens?: number;
+  /** Cost of a hyphen closer than `minLinesBetweenHyphens` to the previous
+   *  one, as equivalent badness: 100 is a line at the word spacing limit;
+   *  1000 outweighs any line within it. Default 300. */
+  hyphenSpacingPenalty?: number;
+  /** Fewer hyphens or better spacing, 0–10, as InDesign's slider: each
+   *  step makes every hyphen dearer, so the breaker takes a hyphen only
+   *  where it saves more word spacing. 0, the default, weighs hyphens as
+   *  the engine always has. Needs `optimalLineBreaking`. */
+  fewerHyphens?: number;
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */
   avoidRuntsInLists?: boolean;

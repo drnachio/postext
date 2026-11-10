@@ -6,7 +6,7 @@ export const metadata = {
   description: 'A tipografia do texto corrido: fonte, tamanho e entrelinha, cores, recuos, citações, verso, paradas de tabulação e capitulares',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '27 min',
+  readingTime: '28 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes do texto principal de um livro. Você escolhe a fonte, o tamanho e o espaço entre as linhas, e as cores das palavras em negrito e em itálico. Define o recuo da primeira linha e o espaço entre parágrafos. A página também trata das citações destacadas do texto, dos poemas, das paradas de tabulação para texto em colunas e da letra grande que abre alguns capítulos. A hifenização, os títulos e as listas têm páginas próprias.",
@@ -248,6 +248,30 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td><code>number</code></td>
       <td><code>100000</code></td>
       <td>Custo de uma repetição (duas linhas seguidas que terminam ou começam com a mesma palavra ou os mesmos caracteres, o que <code>avoidStacks</code> evita), em penalidade equivalente: 100 é uma linha no limite do espaçamento entre palavras; 1000 pesa mais do que qualquer linha dentro dele. O valor padrão, 100000, faz da repetição um limite: pesa mais até do que uma linha esticada além dos limites de espaçamento, de modo que uma repetição só fica onde nenhuma composição do parágrafo a evita. Um monossílabo repetido é um limite seja qual for este valor.</td>
+    </tr>
+    <tr>
+      <td><code>strictHyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hifeniza segundo as regras da composição espanhola: nunca duas linhas hifenizadas seguidas, e nunca dividida a última palavra do parágrafo. O algoritmo de quebra aceita qualquer outra quebra que mantenha o espaçamento entre palavras dentro dos limites; só quando nenhuma o faz a regra é descumprida. Requer <code>optimalLineBreaking</code>. Para manter inteira só a última palavra, veja <code>hyphenation.lastWord</code>; para permitir sequências mais longas de hífens, <code>hyphenation.maxConsecutive</code>.</td>
+    </tr>
+    <tr>
+      <td><code>minLinesBetweenHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Linhas sem hífen que uma linha hifenizada quer ter antes dela, para que os hífens não caiam num ritmo: <code>2</code> evita também um hífen a cada duas linhas (sim, não, sim); <code>1</code>, só dois seguidos, como <code>strictHyphenation</code>; <code>0</code> desliga a regra. No máximo 4. É uma preferência, ponderada por <code>hyphenSpacingPenalty</code>. Requer <code>optimalLineBreaking</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenSpacingPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>Custo de um hífen mais próximo do anterior que <code>minLinesBetweenHyphens</code>, em penalidade equivalente: 100 é uma linha no limite do espaçamento entre palavras; 1000 pesa mais do que qualquer linha dentro dele.</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Menos hífens ou melhor espaçamento, de <code>0</code> a <code>10</code>, como o controle deslizante <em>Better Spacing</em> / <em>Fewer Hyphens</em> do InDesign: cada passo encarece todos os hífens, de modo que o algoritmo de quebra só hifeniza onde economiza mais espaçamento entre palavras. <code>0</code> pondera os hífens como o motor sempre fez. Requer <code>optimalLineBreaking</code>.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

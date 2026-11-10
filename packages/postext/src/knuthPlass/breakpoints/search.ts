@@ -1,9 +1,10 @@
 // The Knuth-Plass dynamic programme: active nodes, fitness classes, badness
 // and the search for a paragraph's breaks, under the document's limits
-// (stacks).
+// (strict hyphenation, stacks, hyphen spacing and runs).
 import type { KPItem, KPOptions, KPPenalty } from '../types.js';
-import { BADNESS_CAP, DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT, DEFAULT_FITNESS_CLASS_DEMERIT, KP_INFINITY, OVER_STRETCH_BADNESS, COLUMN_END_HYPHEN_BADNESS, TRACKING_BADNESS, RAGGED_SPACE_RATIO, HARD_RULE_BADNESS } from '../constants.js';
+import { BADNESS_CAP, DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT, DEFAULT_FITNESS_CLASS_DEMERIT, KP_INFINITY, OVER_STRETCH_BADNESS, COLUMN_END_HYPHEN_BADNESS, TRACKING_BADNESS, RAGGED_SPACE_RATIO, HARD_RULE_BADNESS, STRICT_HYPHEN_BADNESS, STRICT_HYPHEN_RUN_BADNESS } from '../constants.js';
 import { adjustLine } from './adjust.js';
+import type { SearchResult } from './limited.js';
 import { LineEdges, edgesStack, isMonosyllable } from './edges.js';
 
 // ---------------------------------------------------------------------------
@@ -41,9 +42,14 @@ interface ActiveNode {
    *  width up to the start of the next line, for `loosest`. */
   totalWordSpaces: number;
   totalWordSpaceWidth: number;
-  /** Limits the chain breaks (a stack at {@link HARD_RULE_BADNESS}, a
-   *  repeated monosyllable): a looser or tighter setting (`looseness`) may
-   *  not break more of them than the natural one. */
+  /** Which of the chain's last lines ended on a hyphen: bit 0 the line
+   *  ending at this break, bit 1 the one before, and so on (see
+   *  `hyphenSpacing` and the strict rule's runs). */
+  hyphens: number;
+  /** Limits the chain breaks (a hyphen run past `hyphenRules.maxRun`, a
+   *  stack at {@link HARD_RULE_BADNESS}, a repeated monosyllable): a looser
+   *  or tighter setting (`looseness`) may not break more of them than the
+   *  natural one. */
   hard: number;
   /** Pointer for traceback. */
   previous: ActiveNode | null;
@@ -70,34 +76,14 @@ function traceBreaks(node: ActiveNode): number[] {
 }
 
 /**
- * {@link search} under the document's limits. Merging nodes by line and
- * fitness alone forgets what a stack's cost depends on (the edge a node's
- * line starts on), so a chain may break a limit another one keeps. Most
- * paragraphs keep their limits that way; one that does not is set again
- * with that state kept apart, which is exact but dearer.
- */
-export function limited(items: KPItem[], options: KPOptions, longerTo?: number, maxHard = Infinity): SearchResult | null {
-  const first = search(items, options, false, longerTo, maxHard);
-  if (first === null || first.hard === 0 || !options.stacks) return first;
-  const exact = search(items, options, true, longerTo, maxHard);
-  return exact !== null && exact.hard <= first.hard ? exact : first;
-}
-
-/** A search's breaks, and how many limits they break (`ActiveNode.hard`). */
-export interface SearchResult {
-  breaks: number[];
-  hard: number;
-}
-
-/**
  * The dynamic programme. Without `longerTo`: the natural breaks, or for a
  * negative looseness the shorter setting when it passes its gates (null
  * only when nothing could be set). With `longerTo`: the cheapest setting
  * of exactly that many lines with no very loose line and no more than
  * `maxHard` limits broken, or null when there is none. `exactLimits` keys
- * the nodes by the state the limits' costs depend on (see {@link limited}).
+ * the nodes by the state the limits' costs depend on (see `limited`).
  */
-function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longerTo?: number, maxHard = Infinity): SearchResult | null {
+export function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longerTo?: number, maxHard = Infinity): SearchResult | null {
   const longer = longerTo !== undefined;
   const {
     lineWidth,
@@ -123,6 +109,14 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
     : undefined;
   const lastAvoidedLine = avoidHyphenAt ? Math.max(...avoidHyphenAt) : 0;
   const fixedBreaks = options.fixedBreaks ?? [];
+  // Hyphen history: the last lines' hyphens a cost depends on (two for the
+  // strict rule, the window for hyphen spacing), of the best chain merged
+  // into a node: keeping nodes apart by it doubles the time for no gain.
+  const spacing = options.hyphenSpacing && options.hyphenSpacing.lines > 0 && options.hyphenSpacing.badness > 0
+    ? { lines: Math.min(4, Math.max(1, Math.round(options.hyphenSpacing.lines))), badness: options.hyphenSpacing.badness }
+    : undefined;
+  const historyLines = Math.max(options.strictHyphens ? 2 : 0, spacing ? spacing.lines : 0);
+  const historyMask = (1 << historyLines) - 1;
   const uniformFrom = (options.looseness ?? 0) !== 0 || options.lineWidthUniformFrom === undefined
     ? undefined
     : Math.max(options.lineWidthUniformFrom, lastAvoidedLine + 1, fixedBreaks.length + 1);
@@ -226,6 +220,7 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
     ragged: 0,
     totalWordSpaces: 0,
     totalWordSpaceWidth: 0,
+    hyphens: 0,
     hard: 0,
     previous: null,
   }];
@@ -235,11 +230,22 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
   // Nodes at different breakpoint positions are never merged — every entry
   // here shares the current position `i`. Hoisted out of the loop and
   // cleared per breakpoint to avoid one Map allocation per legal break.
-  // With stacks, the exact pass keys nodes also by the edge their line
-  // starts on, which the next line's cost depends on (else a cheaper node
-  // that starts as the next line would stack on takes the place of one
-  // that keeps the rule, and the rule breaks where it need not).
+  // With a hyphen limit or stacks, the exact pass keys nodes also by the
+  // hyphen run a node closes and the edge its line starts on (else a
+  // cheaper node takes the place of one that keeps the rule).
   const bestNewNodeByKey = new Map<number | string, ActiveNode>();
+  const hyphenRules = options.hyphenRules;
+  const runCap = hyphenRules && hyphenRules.maxRun > 0 ? hyphenRules.maxRun : 0;
+  /** Hyphenated lines in a row the chain ends on, counted up to `runCap`. */
+  const runOf = (a: ActiveNode): number => {
+    let run = 0;
+    for (let n: ActiveNode | null = a; n !== null && n.position >= 0 && run < runCap; n = n.previous) {
+      const at = items[n.position]!;
+      if (at.type !== 'penalty' || !at.flagged) break;
+      run++;
+    }
+    return run;
+  };
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i]!;
@@ -364,9 +370,31 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
       const runtCost = isRunt ? (runtGraded ? runtPenalty * (1 - contentWidth / runtMinWidth) : runtPenalty) : 0;
       // A hyphen ending a line that closes a column or a page (EF-86).
       const columnEndHyphen = isFlagged && avoidHyphenAt?.has(a.line + 1) ? COLUMN_END_HYPHEN_BADNESS : 0;
+      // Strict hyphenation: a second hyphenated line in a row, or the last
+      // word of the paragraph divided (the line before the last ends on a
+      // hyphen).
+      const prevHyphen = a.position >= 0 && items[a.position]!.type === 'penalty' && (items[a.position]! as KPPenalty).flagged;
+      // A third hyphen in a row costs more: the run must not grow.
+      const strictCost = options.strictHyphens && prevHyphen && (isFlagged || i === terminalBreakPosition)
+        ? (isFlagged && (a.hyphens & 2) !== 0 ? STRICT_HYPHEN_RUN_BADNESS : STRICT_HYPHEN_BADNESS) : 0;
+      // Hyphen spacing: a hyphen with another one among the lines before it.
+      const spacingCost = spacing && isFlagged && (a.hyphens & ((1 << spacing.lines) - 1)) !== 0 ? spacing.badness : 0;
+      // The document's hyphen limits: a run of hyphenated lines past its
+      // limit is a limit broken, dearer than any line the breaker could
+      // set instead; the last word divided is the strict rule's cost (once,
+      // when that rule is on too).
+      let rulesCost = 0;
+      let hard = 0;
+      const runBefore = runCap > 0 ? runOf(a) : 0;
+      if (runCap > 0 && isFlagged && runBefore >= runCap) {
+        rulesCost += HARD_RULE_BADNESS;
+        hard++;
+      }
+      if (hyphenRules?.keepLastWord && !options.strictHyphens && prevHyphen && i === terminalBreakPosition) {
+        rulesCost += STRICT_HYPHEN_BADNESS;
+      }
       // Stacks: this line and the one before end, or start, alike.
       let stackCost = 0;
-      let hard = 0;
       if (edges && stacks && a.position >= 0 && a.previous) {
         const stackHard = stacks.badness >= HARD_RULE_BADNESS ? 1 : 0;
         // A repeated monosyllable is a limit whatever the stack penalty.
@@ -386,7 +414,8 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
         const startB = edges.startWord(a.previous.position);
         if (edgesStack(startA, startB, edges.startChars(a.position), edges.startChars(a.previous.position))) charge(startA, startB);
       }
-      const effectiveBadness = badness + overStretch + runtCost + columnEndHyphen + stackCost
+      const effectiveBadness = badness + overStretch + runtCost + columnEndHyphen + strictCost + spacingCost + rulesCost + stackCost
+        + (isFlagged && options.hyphenBadness ? options.hyphenBadness : 0)
         + (trackingShare > 0 ? TRACKING_BADNESS * trackingShare * trackingShare : 0);
 
       let d: number;
@@ -438,7 +467,9 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
       // Keys of merged nodes (fc alone, 0–3) never collide with the
       // per-line keys, which start at 4.
       const baseKey = uniformFrom !== undefined && a.line + 1 >= uniformFrom ? fc : (a.line + 1) * 4 + fc;
-      const key = exactLimits && edges ? `${baseKey}|${edges.startWord(a.position)}\u0001${edges.startChars(a.position)}` : baseKey;
+      const key = exactLimits && (runCap > 0 || edges)
+        ? `${baseKey}|${runCap > 0 ? (isFlagged ? Math.min(runCap, runBefore + 1) : 0) : ''}|${edges ? `${edges.startWord(a.position)}\u0001${edges.startChars(a.position)}` : ''}`
+        : baseKey;
       const existing = bestNewNodeByKey.get(key);
       if (existing && existing.totalDemerits <= totalDemerits) {
         continue;
@@ -465,6 +496,7 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
         ragged,
         totalWordSpaces: gateShort ? sumWordSpacesAt[i + 1]! : 0,
         totalWordSpaceWidth: gateShort ? sumWordSpaceWidthAt[i + 1]! : 0,
+        hyphens: ((a.hyphens << 1) | (isFlagged ? 1 : 0)) & historyMask,
         hard: a.hard + hard,
         previous: a,
       });
@@ -500,6 +532,7 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
         ragged: 0,
         totalWordSpaces: gateShort ? sumWordSpacesAt[i + 1]! : 0,
         totalWordSpaceWidth: gateShort ? sumWordSpaceWidthAt[i + 1]! : 0,
+        hyphens: isFlagged ? 1 : 0,
         hard: 0,
         previous: null,
       });
@@ -544,7 +577,7 @@ function search(items: KPItem[], options: KPOptions, exactLimits: boolean, longe
     for (const a of activeNodes) {
       if (a.position !== lastBreakPosition || a.line !== targetLine) continue;
       if (gateShort && (a.loosest > loosestAllowed || a.ragged > best.ragged)) continue;
-      // Nor a limit the natural setting keeps (a stack).
+      // Nor a limit the natural setting keeps (a hyphen run, a stack).
       if (a.hard > best.hard) continue;
       if (alternative === null || a.totalDemerits < alternative.totalDemerits) alternative = a;
     }

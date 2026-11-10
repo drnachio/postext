@@ -2,7 +2,8 @@
  * The WebAssembly line breaker (#779) against the TypeScript one: the same
  * breaks on every paragraph, whatever the options. Random paragraphs cover
  * the options a book's corpus does not (tracking, zones, fixed breaks,
- * lines that avoid a hyphen, ragged settings, kashida boxes, stacks).
+ * lines that avoid a hyphen, ragged settings, kashida boxes, stacks, the
+ * hyphen rules).
  */
 import { describe, expect, it } from 'vitest';
 import { computeBreakpoints, computeBreakpointsTs, type KPItem, type KPOptions } from '../../knuthPlass/index.js';
@@ -26,6 +27,8 @@ function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
   // The text and the stacks come from a generator of their own, so the
   // paragraphs of every other option stay as they were.
   const t = rng(seed ^ 0x5eed);
+  // And the hyphen rules from a third.
+  const h = rng(seed ^ 0x4a5e);
   const words = 3 + Math.floor(r() * 120);
   const items: KPItem[] = [];
   const kashida = r() < 0.15;
@@ -78,6 +81,10 @@ function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
     ...(r() < 0.2 ? { hyphenationZone: 25 } : {}),
     ...(r() < 0.15 ? { avoidHyphenAtLines: [2, 4] } : {}),
     ...(t() < 0.4 ? { stacks: { minChars: 1 + Math.floor(t() * 4), badness: [500, 3000, 100000][Math.floor(t() * 3)]! } } : {}),
+    ...(h() < 0.4 ? { strictHyphens: true } : {}),
+    ...(h() < 0.3 ? { hyphenSpacing: { lines: 1 + Math.floor(h() * 4), badness: [300, 3000][Math.floor(h() * 2)]! } } : {}),
+    ...(h() < 0.3 ? { hyphenRules: { maxRun: Math.floor(h() * 3), keepLastWord: h() < 0.5 } } : {}),
+    ...(h() < 0.3 ? { hyphenBadness: (1 + Math.floor(h() * 10)) * 200 } : {}),
   };
   return { items, options };
 }

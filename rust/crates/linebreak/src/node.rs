@@ -26,9 +26,11 @@ pub(crate) struct Node {
     pub ragged: u32,
     pub total_word_spaces: f64,
     pub total_word_space_width: f64,
-    /// Limits the chain breaks (a stack at
-    /// [`HARD_RULE_BADNESS`](crate::HARD_RULE_BADNESS), a repeated
-    /// monosyllable).
+    /// Which of the chain's last lines ended on a hyphen: bit 0 the line
+    /// ending here, bit 1 the one before, and so on.
+    pub hyphens: u32,
+    /// Limits the chain breaks (a hyphen run past its maximum, a stack at
+    /// [`HARD_RULE_BADNESS`](crate::HARD_RULE_BADNESS)).
     pub hard: u32,
     pub previous: u32,
 }

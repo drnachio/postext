@@ -306,7 +306,11 @@ bodyText
 ├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0, tighten=true }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading; tighten (≥ 1.24) = a line a little wider than the measure shrinks its word spaces down to minWordSpacing and stays on one line, only a line still too wide turns over (false = 1.23: every overlong line turns over; stored configs < 10 with a line-by-line poem get false)
 ├─ tabStops          TabStop[]       unset           (≥ 1.23, §4a) tab stops of every paragraph, list item and quotation; a paragraph style or a callout body that sets its own replaces them
 ├─ tabInterval       Dimension       unset           (≥ 1.23, §4a) default stops every interval past the last stop, from the start of the measure; unset = a tab past the last stop is a word space
-└─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true, exceptions=none, capitalized=true }
+└─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true, exceptions=none, capitalized=true,
+                       minWordLength/leftMin/rightMin=the language's own (5/2/2 in Spanish), maxConsecutive=0 (no limit), lastWord=true }
+                       minWordLength, leftMin, rightMin: InDesign's "Words with at least", "After first", "Before last".
+                       maxConsecutive: InDesign's "Hyphen limit", a limit (the paragraph is set looser before going past it).
+                       lastWord: false keeps the paragraph's last word whole. Both need optimalLineBreaking.
                       locale: any BCP 47 tag; patterns for 'en-us'|'es'|'fr'|'de'|'it'|'pt'|'ca'|'nl' (region ignored; other languages → en-us + console warning)
                       ragged: also hyphenate ragged text, only where the word does not fit and sending it down would leave a gap wider than zone (em = text size); line by line ≤ 2 hyphenated lines in a row, with optimalRagged two in a row are only discouraged
                       compounds: false = the dictionary leaves a word with a hyphen between two letters whole; it breaks only after that hyphen (TeX; after- | dinner, never af- | ter-dinner)
@@ -375,6 +379,11 @@ H&J / Knuth–Plass
 │                        last/first stackMinCharacters characters (spaces included, accents ignored) are set again where the spacing allows; the
 │                        default penalty is a limit, and a repeated monosyllable always is. Captions, notes and table cells too. Off by default:
 │                        turn it on for Spanish (and most European) typesetting; needs optimalLineBreaking
+├─ strictHyphenation  false  never two hyphenated lines in a row nor the paragraph's last word divided, where the spacing allows
+│                        (Spanish typesetting rules). Off by default: turn it on for Spanish books; needs optimalLineBreaking
+├─ minLinesBetweenHyphens 0; hyphenSpacingPenalty 300   lines free of hyphens a hyphenated line wants before it (0 off, at most 4;
+│                        2 also avoids yes-no-yes), a preference at that cost. Needs optimalLineBreaking
+├─ fewerHyphens         0      0–10, InDesign's Better spacing / Fewer hyphens slider: each step makes every hyphen dearer
 ├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out
 ├─ kashidaPatterns    'auto'|'naskh'|'simple'|'nastaliq'   'auto' (from the body font: Ruqʿa/Dīwānī e.g. Aref Ruqaa → none, Nastaʿlīq → nastaliq, else naskh)
 ├─ kashidaPerWord     1       elongations per word

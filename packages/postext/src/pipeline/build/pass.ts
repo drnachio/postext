@@ -5,6 +5,7 @@ import type { PostextContent, PostextConfig, Resource } from '../../types.js';
 import { type VDTColumn, type VDTPage } from '../../vdt.js';
 import { withFigureWords } from '../resources/figureWords.js';
 import { type MeasurementCache, initHyphenator } from '../../measure/index.js';
+import { setHyphenationLimits } from '../../hyphenation/hyphenate.js';
 import { getCjkLineBreak, setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
 import { getSlashBreaks, setSlashBreaks } from '../../measure/breakRules.js';
 import { getCjkComposition, setCjkComposition, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
@@ -151,6 +152,9 @@ function placeDocumentPass(
   // A line may end after a slash between two words wherever rich text is
   // measured (#1164), unless the configuration keeps the breaks of 1.51.
   setSlashBreaks(setup.resolved.bodyText.breakAfterSlashes !== false);
+  // And its limits (shortest word, letters before and after a break), set
+  // (or cleared) every build for the same reason.
+  setHyphenationLimits(setup.resolved.bodyText.hyphenation);
   // CJK text breaks at the document's level wherever it is measured (body,
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(setup.resolved.cjk.lineBreak);

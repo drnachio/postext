@@ -69,7 +69,7 @@ fn limited(
     out: &mut Vec<u32>,
 ) -> Option<u32> {
     let first = one(search, items, o, looseness, longer, false, out)?;
-    if first == 0 || o.rules.stack_badness.is_none() {
+    if first == 0 || (o.rules.stack_badness.is_none() && o.rules.max_run == 0) {
         return Some(first);
     }
     let mut exact_breaks = Vec::new();

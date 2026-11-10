@@ -4,8 +4,8 @@
 //! 1 glue, 2 penalty), width, stretch, shrink, penalty, flags, chars,
 //! post width (`postWidth + postShift`), post chars. Line widths as f64,
 //! lines to avoid a hyphen at and fixed breaks as u32. Scalar options go
-//! through `lb_set_options`, stacks through `lb_set_stacks`, and the line
-//! edges stacks compare through `lb_edges`.
+//! through `lb_set_options`, the composition rules through `lb_set_rules`,
+//! and the line edges stacks compare through `lb_edges`.
 
 use postext_linebreak::{Breaker, ItemKind, Items, LoosenessMode, Options};
 
@@ -116,11 +116,26 @@ pub extern "C" fn lb_set_options(
     o.hyphenation_zone = (hyphenation_zone >= 0.0).then_some(hyphenation_zone);
 }
 
-/// Stacks: avoided at `badness` when `on` is not 0 (a repeated monosyllable
-/// is always a limit).
+/// The composition rules. `flags`: 1 strict hyphenation, 2 the last word
+/// kept whole, 4 stacks (at `stack_badness`). A zero `spacing_lines` or
+/// `spacing_badness` means no hyphen spacing; a zero `max_run`, no limit.
 #[unsafe(no_mangle)]
-pub extern "C" fn lb_set_stacks(ptr: *mut LineBreakContext, on: u32, badness: f64) {
-    ctx(ptr).options.rules.stack_badness = (on != 0).then_some(badness);
+pub extern "C" fn lb_set_rules(
+    ptr: *mut LineBreakContext,
+    flags: u32,
+    stack_badness: f64,
+    spacing_lines: u32,
+    spacing_badness: f64,
+    max_run: u32,
+    hyphen_badness: f64,
+) {
+    let r = &mut ctx(ptr).options.rules;
+    r.strict_hyphens = flags & 1 != 0;
+    r.keep_last_word = flags & 2 != 0;
+    r.stack_badness = (flags & 4 != 0).then_some(stack_badness);
+    r.hyphen_spacing = (spacing_lines > 0 && spacing_badness > 0.0).then_some((spacing_lines.min(4), spacing_badness));
+    r.max_run = max_run;
+    r.hyphen_badness = hyphen_badness;
 }
 
 /// Room for the line edges of a paragraph of `count` items, as four rows of

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Césure et langue',
   description: 'Les motifs de césure et les exceptions, le texte en drapeau, la langue du document avec ses chiffres et son sens d’écriture, et les écritures que compose Postext',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '23 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Cette page explique comment les mots sont coupés en fin de ligne et comment Postext connaît la langue d’un livre. Vous activez ou désactivez la césure, et vous listez les mots qui ne doivent jamais être coupés. Vous pouvez laisser le bord droit du texte irrégulier au lieu de l’aligner. La langue du document décide des règles de césure, du nom des figures et des tableaux, des chiffres et du sens du texte. Les dernières sections indiquent les systèmes d’écriture que Postext sait composer et la façon dont il traite l’arabe.",
@@ -70,6 +70,36 @@ Quand l’alignement du texte vaut `'justify'`, la césure évite un espacement 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Coupe les mots à majuscule initiale comme les autres. <code>false</code> garde entier tout mot qui commence par une capitale (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), y compris le premier mot d’une phrase. Voir <a href="#mots-gardés-entiers">Mots gardés entiers</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>celle de la langue</td>
+      <td>Le mot le plus court qui se coupe, en lettres (<em>Mots d’au moins</em> dans InDesign). Non défini : celle de la langue, 5 (4 en catalan).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>celle de la langue</td>
+      <td>Lettres laissées au moins avant une coupure, au début du mot (<em>Après les premières</em> dans InDesign). Non défini : celle de la langue (2 en espagnol).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>celle de la langue</td>
+      <td>Lettres reportées au moins après une coupure, sur la ligne suivante (<em>Avant les dernières</em> dans InDesign). Non défini : celle de la langue (2 en espagnol).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Nombre maximal de lignes de suite terminées par une césure (<em>Limite de césures</em> dans InDesign) ; <code>0</code> : pas de limite. Une limite, non une préférence : le paragraphe est recomposé, plus lâche s’il le faut, et ne la dépasse que là où aucune composition ne la respecte. Découpage optimal des lignes uniquement.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Autorise la coupure du dernier mot d’un paragraphe (<em>Couper le dernier mot</em> dans InDesign). <code>false</code> le garde entier partout où l’espacement le permet ; <code>bodyText.strictHyphenation</code> le garde entier dans tous les cas. Découpage optimal des lignes uniquement.</td>
     </tr>
   </tbody>
 </table>

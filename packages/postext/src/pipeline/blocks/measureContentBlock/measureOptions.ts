@@ -5,6 +5,8 @@ import { lineIndentAt } from '../../../measure/types.js';
 import { computeMeasureViewport } from '../buildHelpers.js';
 import { justifyTrackingPx } from './helpers.js';
 import { kashidaMeasureOptions } from '../../../measure/rtl/kashida.js';
+import { FEWER_HYPHENS_STEP_BADNESS } from '../../../knuthPlass/constants.js';
+import type { ResolvedHyphenationConfig } from '../../../types.js';
 import type { MeasureContentBlockOptions } from './types.js';
 import type { ResolvedConfig } from '../../../vdt/document.js';
 import type { BlockKind } from '../buildBlockKind.js';
@@ -80,10 +82,20 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     // Left undefined when off, so the common-case cache keys stay unchanged.
     runtGraded: runtActive && resolved.bodyText.gradedRuntPenalty ? true : undefined,
-    // Stacks: left undefined when off, so the cache keys stay unchanged.
+    // Strict hyphenation and stacks: left undefined when off, so those
+    // cache keys stay unchanged.
+    strictHyphens: resolved.bodyText.strictHyphenation ? true : undefined,
     stacks: resolved.bodyText.avoidStacks
       ? { minChars: resolved.bodyText.stackMinCharacters, badness: resolved.bodyText.stackPenalty }
       : undefined,
+    // Hyphen spacing: off (undefined) at 0 lines or no penalty.
+    hyphenSpacing: resolved.bodyText.minLinesBetweenHyphens > 0 && resolved.bodyText.hyphenSpacingPenalty > 0
+      ? { lines: resolved.bodyText.minLinesBetweenHyphens, badness: resolved.bodyText.hyphenSpacingPenalty }
+      : undefined,
+    hyphenBadness: resolved.bodyText.fewerHyphens > 0 ? resolved.bodyText.fewerHyphens * FEWER_HYPHENS_STEP_BADNESS : undefined,
+    // The hyphen limits: left undefined at their defaults, so those cache
+    // keys stay unchanged.
+    hyphenRules: hyphenRulesOf(resolved.bodyText.hyphenation),
     avoidHyphenAtLines: opts?.avoidHyphenAtLines,
     ...(opts?.keepBreaks ? { keepBreaks: opts.keepBreaks } : {}),
     ...(opts?.restColumnWidths && opts.restColumnWidths.length > 0
@@ -123,4 +135,12 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
   return {
     measureOptions
   };
+}
+
+/** `KPOptions.hyphenRules` from the hyphenation settings: undefined at
+ *  their defaults (no limit to a run of hyphens, the last word may be
+ *  divided). */
+export function hyphenRulesOf(h: ResolvedHyphenationConfig): { maxRun: number; keepLastWord: boolean } | undefined {
+  if (h.maxConsecutive === 0 && h.lastWord) return undefined;
+  return { maxRun: h.maxConsecutive, keepLastWord: !h.lastWord };
 }

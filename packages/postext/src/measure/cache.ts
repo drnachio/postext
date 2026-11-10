@@ -2,7 +2,7 @@ import type { InlineSpan } from '../parse/index.js';
 import type { MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types.js';
 import { measureBlock } from './plain.js';
 import { measureRichBlock, measureRichSnippet } from './rich.js';
-import { getHyphenationLocale, getHyphenationRulesKey } from '../hyphenation/hyphenate.js';
+import { getHyphenationLocale, getHyphenationRulesKey, hyphenationLimitsId } from '../hyphenation/hyphenate.js';
 import { hasCJK } from './cjk/cjk.js';
 import { getCjkLineBreak } from './cjk/cjkClasses.js';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode } from './vertical.js';
@@ -14,7 +14,8 @@ import { getSlashBreaks } from './breakRules.js';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
- *  overlong word is divided at) depend on it. So is a right-to-left base
+ *  overlong word is divided at) depend on it, and on the document's own
+ *  limits, which join the key only when set. So is a right-to-left base
  *  direction (`MeasureBlockOptions.direction`, else the build's), which
  *  joins the key only when set, so every left-to-right key is unchanged;
  *  and the Arabic reading of leading numbers (#665), in the documents
@@ -23,7 +24,7 @@ import { getSlashBreaks } from './breakRules.js';
  *  letters or that switch the rule off; and the breaks after a slash
  *  (#1164), in the documents that switch them off. */
 function optionsKey(options: MeasureBlockOptions | undefined): string {
-  return `${(options?.direction ?? getMeasureDirection()) === 'rtl' ? 'rtl\x00' : ''}${getMeasureArabicNumbers() ? 'an\x00' : ''}${scriptContextKey()}${measureLanguageKey()}${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.stacks ? `\x00st${options.stacks.minChars}:${options.stacks.badness}` : ''}${options?.labelColumnPx !== undefined ? `\x00lc${options.labelColumnPx}` : ''}${options?.labelLength ? `\x00ll${options.labelLength}` : ''}${options?.numberSeams?.length ? `\x00ns${options.numberSeams.join(',')}` : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}${options?.kashida ? `\x00k${options.kashida.patterns}:${options.kashida.perWord}:${options.kashida.maxLengthPx}` : ''}${options?.lineIndentsPx?.length ? `\x00li${options.lineIndentsPx.join(',')}` : ''}${options?.tabs ? `\x00tb${JSON.stringify(options.tabs)}` : ''}${hyphenationRulesKey()}${getSlashBreaks() ? '' : '\x00s/'}`;
+  return `${(options?.direction ?? getMeasureDirection()) === 'rtl' ? 'rtl\x00' : ''}${getMeasureArabicNumbers() ? 'an\x00' : ''}${scriptContextKey()}${measureLanguageKey()}${options?.textAlign ?? ''}\x00${options?.hyphenate ?? ''}\x00${options?.firstLineIndentPx ?? ''}\x00${options?.hangingIndent ?? ''}\x00${options?.optimal ?? ''}\x00${options?.maxStretchRatio ?? ''}\x00${options?.minShrinkRatio ?? ''}\x00${options?.runtPenalty ?? ''}\x00${options?.runtMinCharacters ?? ''}\x00${options?.looseness ?? ''}\x00${options?.letterSpacingPx ?? ''}\x00${options?.hyphenationZonePx ?? ''}\x00${getHyphenationLocale()}${hyphenationLimitsId() ? `\x00hl${hyphenationLimitsId()}` : ''}${options?.justifyTrackingPx ? `\x00${options.justifyTrackingPx}` : ''}${options?.runtGraded ? '\x00rg' : ''}${options?.strictHyphens ? '\x00sh' : ''}${options?.stacks ? `\x00st${options.stacks.minChars}:${options.stacks.badness}` : ''}${options?.hyphenSpacing ? `\x00hs${options.hyphenSpacing.lines}:${options.hyphenSpacing.badness}` : ''}${options?.hyphenBadness ? `\x00hb${options.hyphenBadness}` : ''}${options?.hyphenRules ? `\x00hq${options.hyphenRules.maxRun}:${options.hyphenRules.keepLastWord ? 1 : 0}` : ''}${options?.labelColumnPx !== undefined ? `\x00lc${options.labelColumnPx}` : ''}${options?.labelLength ? `\x00ll${options.labelLength}` : ''}${options?.numberSeams?.length ? `\x00ns${options.numberSeams.join(',')}` : ''}${options?.avoidHyphenAtLines?.length ? `\x00ah${options.avoidHyphenAtLines.join(',')}` : ''}${options?.kashida ? `\x00k${options.kashida.patterns}:${options.kashida.perWord}:${options.kashida.maxLengthPx}` : ''}${options?.lineIndentsPx?.length ? `\x00li${options.lineIndentsPx.join(',')}` : ''}${options?.tabs ? `\x00tb${JSON.stringify(options.tabs)}` : ''}${hyphenationRulesKey()}${getSlashBreaks() ? '' : '\x00s/'}`;
 }
 
 /** The document's hyphenation rules (#699: words kept whole, capitalised
