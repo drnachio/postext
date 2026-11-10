@@ -64,7 +64,7 @@ const LAYOUT_CONTENT_KINDS: ReadonlySet<string> = new Set([
   'cjkMarksExceedLeading', 'rubyExceedsLeading', 'kuntenExceedsLeading', 'arabicMarksExceedLeading',
   'unbreakableWordOverflow', 'wordDividedByCharacter', 'wordDividedBySyllable', 'joiningScriptLetterSpacing',
   'comicPanelLetterbox', 'comicBalloonOverflow', 'lineNumberOverlap', 'dropCap', 'codeOverflow', 'textWrap',
-  'columnsTooNarrow', 'hereNotEmbedded',
+  'columnsTooNarrow', 'hereNotEmbedded', 'paragraphCitedInNote', 'floatCropped',
 ]);
 
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine

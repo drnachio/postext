@@ -28,6 +28,7 @@ import { CollapsibleSection, DimensionInput, ItemCard, ItemCardListActions, open
 import { wrapChoiceOf } from '../../settings/textWrap.js';
 import { captionSideOf, captionSideValue } from '../../settings/captionSide.js';
 import { PlacementWidthField } from '../../../panels/resources/PlacementWidthField.js';
+import { isInlinePosition } from '../../../panels/resources/ResourceDetail/usePlacementFields.js';
 import { Button, ConfirmPopover, IconButton } from '../../../ui/index.js';
 import { FieldRow } from '../../../controls/FieldRow.js';
 import { SearchScope } from '../../search/SearchScope.js';
@@ -352,7 +353,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   )}
                   {/* Resources of this type may head the page (column) that
                       cites them (#633); the document's default otherwise. */}
-                  {type.defaultPlacement?.position !== 'bottom' && type.defaultPlacement?.position !== 'here' && type.defaultPlacement?.position !== 'paragraph' && type.defaultPlacement?.span !== 'side' && !type.defaultPlacement?.rotate && (
+                  {type.defaultPlacement?.position !== 'bottom' && !isInlinePosition(type.defaultPlacement?.position) && type.defaultPlacement?.span !== 'side' && !type.defaultPlacement?.rotate && (
                     <ToggleSwitch
                       label={labels.resourceTypePlacementCitingPage}
                       checked={type.defaultPlacement?.citingPage ?? config.layout?.floatsAtCitingPage ?? false}

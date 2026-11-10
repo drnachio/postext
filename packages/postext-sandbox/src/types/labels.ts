@@ -2326,6 +2326,10 @@ export interface SandboxLabels {
   warningsUnplacedDetail: string;
   warningsHereNotEmbeddedTitle: string;
   warningsHereNotEmbeddedDetail: string;
+  warningsParagraphCitedInNoteTitle: string;
+  warningsParagraphCitedInNoteDetail: string;
+  warningsFloatCroppedTitle: string;
+  warningsFloatCroppedDetail: string;
   warningsShortListSplitTitle: string;
   warningsShortListSplitDetail: string;
   warningsStackTitle: string;

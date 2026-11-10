@@ -36,7 +36,7 @@ export const PLACEMENT_SCHEMA: JsonSchema = {
   type: 'object',
   description: 'Where it goes on the page, merged into its placement key by key. A key set to null goes back to its resource type\'s default.',
   properties: {
-    position: nullable({ type: 'string', enum: ['auto', 'top', 'bottom', 'here'], description: 'A float at the head or the foot of a page or column near its first reference (auto lets the layout choose), or here: set in the text where its ::resource line stands.' }),
+    position: nullable({ type: 'string', enum: ['auto', 'top', 'bottom', 'here', 'paragraph'], description: 'A float at the head or the foot of a page or column near its first reference (auto lets the layout choose); here: set in the text where its ::resource line stands; paragraph: set in the text right after the paragraph that first cites it with :ref, no ::resource line needed (after the outermost box or group the citation stands in, after the paragraph a citing heading opens, after the rest of a list; a citation in a footnote does not count).' }),
     span: nullable({ type: 'string', enum: ['column', 'page', 'side'], description: 'A float as wide as its column, as the page, or in the side column of a column-and-a-half layout.' }),
     rotate: nullable({ type: 'string', enum: ['none', 'ccw', 'cw'], description: 'Turned a quarter turn on a page of its own (a landscape table in a portrait book).' }),
     width: nullable({ type: ['number', 'object'], description: 'How wide it is set: the share of its slot (column, columns, page or side column) it takes, above 0 and up to 1; or a length { value, unit } in mm, cm, in or pt, measured against the slot it lands in (as wide as the slot or wider takes the whole slot).' }),

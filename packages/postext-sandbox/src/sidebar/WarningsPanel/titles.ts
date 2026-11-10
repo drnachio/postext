@@ -275,6 +275,10 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsUnplacedTitle;
     case 'hereNotEmbedded':
       return labels.warningsHereNotEmbeddedTitle;
+    case 'paragraphCitedInNote':
+      return labels.warningsParagraphCitedInNoteTitle;
+    case 'floatCropped':
+      return labels.warningsFloatCroppedTitle;
     case 'shortListSplit':
       return labels.warningsShortListSplitTitle;
     case 'stack':

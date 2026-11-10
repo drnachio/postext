@@ -10,6 +10,14 @@ import type { SandboxLabels } from '../../../types/labels.js';
 import { isLengthWidth, widthPercentOf } from '../PlacementWidthField.js';
 
 /** What usePlacementFields takes from ResourceDetail. */
+/** Whether a resource placed at `position` is set in the text rather than
+ *  floated: where its `::resource` line stands, or after the paragraph that
+ *  cites it (the engine's `isInlinePosition`, which `postext` does not
+ *  export). */
+export function isInlinePosition(position: ResourcePlacement['position']): boolean {
+  return position === 'here' || position === 'paragraph';
+}
+
 export interface UsePlacementFieldsDeps {
   resource: Resource;
   onChange: (next: Resource) => void;
@@ -57,7 +65,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   // wrap or rotation of its own. A resource's `false` turns off its
   // type's plate.
   const plateAsked = currentPlacement.plate ?? typePlacement.plate;
-  const placementPlate = plateAsked !== undefined && plateAsked !== false && placementPosition !== 'here' && placementPosition !== 'paragraph';
+  const placementPlate = plateAsked !== undefined && plateAsked !== false && !isInlinePosition(placementPosition);
   const typePlate = typePlacement.plate !== undefined && typePlacement.plate !== false;
   /** What the plate switch writes: nothing where the type already says
    *  the same, `true` to ask for a plate, `false` to turn the type's off. */
@@ -66,7 +74,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   // Where it is set: the text block, the trim or the bleed.
   const placementPlateArea: ResourcePlateArea = plateAsked === 'trim' || plateAsked === 'bleed' ? plateAsked : 'content';
   // An inline embed is never turned; a turned resource is a page-span float.
-  const placementInline = placementPosition === 'here' || placementPosition === 'paragraph';
+  const placementInline = isInlinePosition(placementPosition);
   const placementRotated = !placementInline && placementRotate !== 'none';
   // The alignment places a resource narrower than its slot: one narrowed by
   // Width, or a picture (bitmap or SVG) narrower than the column — smaller
