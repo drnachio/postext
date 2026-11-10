@@ -298,7 +298,7 @@ export function createFloatBands(deps: FloatBandsDeps) {
     topBand: boolean,
     bandOf: (m: FloatMeasure) => { need: number; y: number },
   ): { measure: FloatMeasure; need: number; y: number; cap: BodyCap; fits: boolean } | null => {
-    if (!f.shrink || !full.body || f.rotate || f.startRow) return null;
+    if (!f.shrink || !full.body || f.rotate || f.plate || f.startRow) return null;
     const minScale = f.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
     const excessOf = (m: FloatMeasure, band: { need: number }): number => topBand
       ? m.height + floatGapBelow(m, floatGapPx) - Math.floor((room + 0.01) / baselineGrid) * baselineGrid

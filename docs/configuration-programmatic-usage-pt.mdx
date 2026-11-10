@@ -339,6 +339,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>A imagem é impressa na largura da coluna. Uma imagem no fluxo nunca é mais larga que a coluna e a página padrão tem duas (<code>layout.layoutType: 'double'</code>): componha a página numa coluna, faça a imagem flutuar sobre toda a página (<code>placement.span: 'page'</code>) ou aumente a resolução se esse for o tamanho desejado.</td>
     </tr>
     <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Um bitmap posto como prancha de página inteira (<code>placement.plate</code>) foi ampliado até imprimir abaixo de 300 ppi. <code>resourceId</code> nomeia-o, <code>scale</code> é quanto foi ampliado e <code>ppi</code>, a resolução com que se imprime. Aponta para o parágrafo que o cita primeiro.</td>
+      <td>A prancha é impressa nesse tamanho. Use um original maior, ou desligue a prancha e componha a imagem menor.</td>
+    </tr>
+    <tr>
       <td><code>emptyCaption</code></td>
       <td>Um recurso de um tipo com prefixo de legenda não tem legenda própria, então a linha da legenda imprime só o rótulo e o número. <code>resourceId</code> o nomeia, <code>label</code> é a linha impressa. Informativo: avisado uma vez por recurso, no parágrafo que o cita ou na sua inserção. Desde o postext 1.52.</td>
       <td>O rótulo é impresso. Escreva a legenda, ou deixe o rótulo sozinho se a intenção é uma prancha numerada.</td>

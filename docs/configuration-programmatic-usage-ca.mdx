@@ -339,6 +339,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>La imatge s'imprimeix a l'amplada de la seva columna. Una imatge al flux mai no és més ampla que la seva columna i la pàgina per defecte en té dues (<code>layout.layoutType: 'double'</code>): compon la pàgina a una columna, fes flotar la imatge sobre tota la pàgina (<code>placement.span: 'page'</code>) o puja'n la resolució si aquesta és la mida que busques.</td>
     </tr>
     <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Un mapa de bits posat com a làmina a pàgina completa (<code>placement.plate</code>) s'ha ampliat fins a imprimir-se per sota de 300 ppp. <code>resourceId</code> l'anomena, <code>scale</code> és quant s'ha ampliat i <code>ppi</code>, la resolució a què s'imprimeix. Assenyala el paràgraf que el cita per primer cop.</td>
+      <td>La làmina s'imprimeix a aquesta mida. Fes servir un original més gran, o treu la làmina i compon la imatge més petita.</td>
+    </tr>
+    <tr>
       <td><code>emptyCaption</code></td>
       <td>Un recurs d'un tipus amb prefix de peu no té peu propi, així que la seva línia de peu imprimeix només l'etiqueta i el número. <code>resourceId</code> l'anomena i <code>label</code> és la línia impresa. Informatiu: s'avisa un cop per recurs, al paràgraf que el cita o a la seva inserció. Des de postext 1.52.</td>
       <td>S'imprimeix l'etiqueta. Escriu el peu, o deixa l'etiqueta sola si es vol una làmina numerada.</td>

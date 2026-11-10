@@ -249,7 +249,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       // `anyPosition`: a figure or table may take a slot its position would
       // refuse (a head-of-page float offered the foot of the current page);
       // floated callouts keep their placement.
-      const asked = anyPosition && !f.rotate && !f.callout && f.position !== 'auto' ? { ...f, position: 'auto' as const } : f;
+      const asked = anyPosition && !f.rotate && !f.plate && !f.callout && f.position !== 'auto' ? { ...f, position: 'auto' as const } : f;
       let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, asked, capKindOf, late.openerHeadOf);
       // The rest of a table cut on this page only takes the slots after
       // its previous slice in reading order (never the foot of the column

@@ -147,8 +147,13 @@ SVGのリソースは、さらに`diagramStyle.singleInk`（既定値は`false`�
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>位置より幅の狭いリソースに使います。<code>width</code>は段（またはページ）の幅に対して占める割合、<code>align</code>は位置の中での置き場所です（段の中央に置く小さな表、1段分の幅の写真を載せるページ幅の帯など）。位置より幅の狭い画像（段より小さいビットマップや、<code>layout.fitFiguresToPage</code>で縮小されたもの）も<code>align</code>に従って置かれ、その下のキャプションは位置の行長を保ちます。フロートにもインラインの<code>::resource</code>埋め込みにも適用されます。</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; mm・cm・pt の長さ </td>
+      <td>位置より幅の狭いリソースに使います。<code>width</code>は段（またはページ）の幅に対して占める割合、<code>align</code>は位置の中での置き場所です（段の中央に置く小さな表、1段分の幅の写真を載せるページ幅の帯など）。位置より幅の狭い画像（段より小さいビットマップや、<code>layout.fitFiguresToPage</code>で縮小されたもの）も<code>align</code>に従って置かれ、その下のキャプションは位置の行長を保ちます。フロートにもインラインの<code>::resource</code>埋め込みにも適用されます。 割合の代わりに長さ（<code>&#123; "value": 80, "unit": "mm" &#125;</code>、または <code>cm</code>・<code>pt</code>）を指定すると、その幅で組まれます。組版の前に、配置の枠に対する割合に変換されます（本文内の埋め込みは段、段フロートは占める段と段間、ページ幅や回転のフロートは版面の幅、サイドフロートはサイド段）。枠と同じかそれより長い場合は枠全体を使います。</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code></td>
+      <td>全ページ図版：画像は参照の後の最初の新しいページに単独で置かれ、キャプションと注を含めて版面に収まる最大の大きさまで拡大または縮小され、<code>align</code> の指定がなければ中央に置かれます。本文はその前後に続きます。<code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> は読まれません。画像（ビットマップまたは SVG）のみで、本文内に置くもの（<code>"here"</code>）は対象外です。印刷サイズで 300 ppi 未満まで拡大されたビットマップは <code>plateLowResolution</code> として報告されます。</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

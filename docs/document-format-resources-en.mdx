@@ -147,8 +147,13 @@ Each resource has a **placement** that decides where its float lands, resolved p
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). A picture narrower than its slot — a bitmap smaller than the column, or one <code>layout.fitFiguresToPage</code> shrank — also sits there per <code>align</code>, under a caption that keeps the slot's measure. Floats and inline <code>::resource</code> embeds alike.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; a length in mm, cm or pt </td>
+      <td>A resource narrower than its slot: <code>width</code> is the fraction of the column (or page) width it takes, <code>align</code> where it sits in the slot (a small table centred in its column; a page-wide band whose picture spans one column). A picture narrower than its slot — a bitmap smaller than the column, or one <code>layout.fitFiguresToPage</code> shrank — also sits there per <code>align</code>, under a caption that keeps the slot's measure. Floats and inline <code>::resource</code> embeds alike. A length instead of a fraction (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, or in <code>cm</code> or <code>pt</code>) sets it that wide: before the layout it is made the share of its slot — the column for an embed, the columns and gutters a column float takes, the content width for a page-span or turned float, the side column for a side float — and a length as wide as the slot or wider takes the whole slot.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code></td>
+      <td>A full-page plate: the picture stands alone on the first fresh page after its citation, enlarged or reduced to the largest size the content area holds with its caption and note, centred unless <code>align</code> says otherwise; the text runs on before and after it. Its <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> are not read. Pictures only (bitmap or SVG), and not one set in the text (<code>"here"</code>). A bitmap enlarged to under 300 ppi at its printed size is reported as <code>plateLowResolution</code>.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

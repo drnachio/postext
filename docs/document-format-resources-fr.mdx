@@ -147,8 +147,13 @@ Chaque ressource a un **placement** qui décide où arrive son flottant. Il se r
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>Une ressource plus étroite que son emplacement : <code>width</code> est la fraction de la largeur de la colonne (ou de la page) qu’elle occupe, <code>align</code> l’endroit où elle se tient dans l’emplacement (un petit tableau centré dans sa colonne ; une bande sur toute la largeur de la page dont l’image couvre une colonne). Une image plus étroite que son emplacement (un bitmap plus petit que la colonne, ou une image que <code>layout.fitFiguresToPage</code> a réduite) s’y place aussi selon <code>align</code>, sous une légende qui garde la justification de l’emplacement. Vaut pour les flottants comme pour les insertions <code>::resource</code> dans le texte.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; une longueur en mm, cm ou pt </td>
+      <td>Une ressource plus étroite que son emplacement : <code>width</code> est la fraction de la largeur de la colonne (ou de la page) qu’elle occupe, <code>align</code> l’endroit où elle se tient dans l’emplacement (un petit tableau centré dans sa colonne ; une bande sur toute la largeur de la page dont l’image couvre une colonne). Une image plus étroite que son emplacement (un bitmap plus petit que la colonne, ou une image que <code>layout.fitFiguresToPage</code> a réduite) s’y place aussi selon <code>align</code>, sous une légende qui garde la justification de l’emplacement. Vaut pour les flottants comme pour les insertions <code>::resource</code> dans le texte. Une longueur au lieu d’une fraction (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, ou en <code>cm</code> ou <code>pt</code>) le compose à cette largeur : avant la mise en page, elle devient la fraction de son emplacement — la colonne pour une insertion, les colonnes et gouttières qu’occupe un flottant de colonne, la largeur de la zone de contenu pour un flottant pleine page ou tourné, la colonne latérale pour un flottant latéral —, et une longueur égale ou supérieure à l’emplacement l’occupe en entier.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code></td>
+      <td>Planche pleine page : l’image est seule sur la première page nouvelle après sa citation, agrandie ou réduite à la plus grande taille que la zone de contenu admet avec sa légende et sa note, centrée sauf si <code>align</code> dit autre chose ; le texte continue avant et après. <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> ne sont pas lus. Images seulement (bitmap ou SVG), et pas celles placées dans le texte (<code>"here"</code>). Un bitmap agrandi sous 300 ppp à sa taille imprimée donne l’avertissement <code>plateLowResolution</code>.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

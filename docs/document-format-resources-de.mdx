@@ -147,8 +147,13 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
-      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code></td>
-      <td>Eine Ressource, die schmaler ist als ihr Platz: <code>width</code> ist der Anteil der Spalten- (oder Seiten-)breite, den sie einnimmt, <code>align</code>, wo sie im Platz steht (eine kleine Tabelle mittig in ihrer Spalte; ein seitenbreiter Bereich, dessen Bild eine Spalte breit ist). Ein Bild, das schmaler ist als sein Platz – eine Bitmap, die kleiner ist als die Spalte, oder eine, die <code>layout.fitFiguresToPage</code> verkleinert hat –, steht ebenfalls gemäß <code>align</code> dort, unter einer Legende, die die Satzbreite des Platzes behält. Gilt für Gleitobjekte und für Einbettungen mit <code>::resource</code> im Text gleichermaßen.</td>
+      <td><code>0 &lt; width &lt; 1</code>; <code>"left"</code> · <code>"center"</code> · <code>"right"</code>; eine Länge in mm, cm oder pt </td>
+      <td>Eine Ressource, die schmaler ist als ihr Platz: <code>width</code> ist der Anteil der Spalten- (oder Seiten-)breite, den sie einnimmt, <code>align</code>, wo sie im Platz steht (eine kleine Tabelle mittig in ihrer Spalte; ein seitenbreiter Bereich, dessen Bild eine Spalte breit ist). Ein Bild, das schmaler ist als sein Platz – eine Bitmap, die kleiner ist als die Spalte, oder eine, die <code>layout.fitFiguresToPage</code> verkleinert hat –, steht ebenfalls gemäß <code>align</code> dort, unter einer Legende, die die Satzbreite des Platzes behält. Gilt für Gleitobjekte und für Einbettungen mit <code>::resource</code> im Text gleichermaßen. Eine Länge statt eines Anteils (<code>&#123; "value": 80, "unit": "mm" &#125;</code>, oder in <code>cm</code> oder <code>pt</code>) setzt ihn so breit: Vor dem Umbruch wird sie zum Anteil seines Platzes — die Spalte für eine Einbettung, die Spalten und Zwischenräume eines Spaltenfloats, die Breite des Satzspiegels für ein seitenbreites oder gedrehtes Float, die Randspalte für ein Randfloat —, und eine Länge so breit wie der Platz oder breiter nimmt ihn ganz ein.</td>
+    </tr>
+    <tr>
+      <td><code>plate</code></td>
+      <td><code>true</code> · <code>false</code></td>
+      <td>Ganzseitige Tafel: Das Bild steht allein auf der ersten neuen Seite nach seinem Verweis, vergrößert oder verkleinert auf das Größte, was der Satzspiegel mit Legende und Anmerkung fasst, zentriert, sofern <code>align</code> nichts anderes sagt; der Text läuft davor und danach weiter. <code>position</code>, <code>span</code>, <code>width</code>, <code>shrink</code>, <code>rotate</code>, <code>captionSide</code>, <code>wrap</code>, <code>citingPage</code> werden nicht gelesen. Nur Bilder (Bitmap oder SVG), und keines, das im Text steht (<code>"here"</code>). Eine Bitmap, die auf unter 300 ppi bei ihrer Druckgröße vergrößert wird, meldet <code>plateLowResolution</code>.</td>
     </tr>
     <tr>
       <td><code>captionSide</code></td>

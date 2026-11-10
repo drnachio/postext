@@ -7,6 +7,7 @@ import { hasSeveralColumns } from '../../../sidebar/settings/multiColumnBook.js'
 import { wrapChoiceOf, wrapSideOf } from '../../../sidebar/settings/textWrap.js';
 import { useRightToLeftFlow, flowSideLabels } from '../../../sidebar/settings/flowSides.js';
 import type { SandboxLabels } from '../../../types/labels.js';
+import { isLengthWidth, widthPercentOf } from '../PlacementWidthField.js';
 
 /** What usePlacementFields takes from ResourceDetail. */
 export interface UsePlacementFieldsDeps {
@@ -47,7 +48,14 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   const placementWrapChoice = wrapChoiceOf(currentPlacement.wrap ?? typePlacement.wrap);
   // A contour wrap (#883) wraps at the side its align names.
   const placementWrap = placementWrapChoice === 'contour' ? 'contour' : wrapSideOf(currentPlacement.wrap ?? typePlacement.wrap);
-  const placementWidthPercent = Math.round((currentPlacement.width ?? typePlacement.width ?? (placementWrap !== 'none' ? layoutWrap?.defaultWidth ?? DEFAULT_TEXT_WRAP.defaultWidth : 1)) * 100);
+  // The width in force: a share (shown in %) or a length ; a
+  // wrapped resource without one takes `layout.wrap.defaultWidth`.
+  const placementWidth = currentPlacement.width ?? typePlacement.width;
+  const placementWidthFallback = placementWrap !== 'none' ? layoutWrap?.defaultWidth ?? DEFAULT_TEXT_WRAP.defaultWidth : 1;
+  const placementWidthPercent = widthPercentOf(placementWidth, placementWidthFallback);
+  // A full-page plate fills the content area: no width, span,
+  // wrap or rotation of its own.
+  const placementPlate = (currentPlacement.plate ?? typePlacement.plate) === true && placementPosition !== 'here';
   // An inline embed is never turned; a turned resource is a page-span float.
   const placementInline = placementPosition === 'here';
   const placementRotated = !placementInline && placementRotate !== 'none';
@@ -55,7 +63,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   // Width, or a picture (bitmap or SVG) narrower than the column — smaller
   // than it, or shrunk by `layout.fitFiguresToPage` — at any width.
   const isPicture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
-  const alignApplies = placementWidthPercent < 100 || isPicture;
+  const alignApplies = placementWidthPercent < 100 || isLengthWidth(placementWidth) || isPicture;
   // Shrinking a floated picture to the room of its slot (#626): the
   // resource's own value → its type's → the document's `layout.floatShrink`.
   const floatShrink = useSandboxSelector((s) => s.config.layout?.floatShrink);
@@ -89,7 +97,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   return {
     currentPlacement, typePlacement, placementPosition, placementSpan, placementRotate,
     setPlacementKey, placementColumns, severalColumns, layoutWrap, bodyLineHeight,
-    placementWrapChoice, placementWrap, placementWidthPercent, placementInline, placementRotated,
+    placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementInline, placementRotated,
     isPicture, alignApplies, placementShrink, placementMinScale, placementCaptionMeasure,
     placementCitingPage, tableStyles, tableStyleId, setTableStyleId, placementAlign, floatSide,
     tableDirection, tableRtl, setTableDirection

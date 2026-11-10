@@ -2857,6 +2857,16 @@ export interface SandboxLabels {
   resourceRotateCcw: string;
   resourceRotateCw: string;
   resourcePlacementHintRotated: string;
+  resourcePlacementHintPlate: string;
+  resourcePlacementPlate: string;
+  resourcePlacementPlateTooltip: string;
+  resourcePlacementWidthKind: string;
+  resourcePlacementWidthKindTooltip: string;
+  resourcePlacementWidthShare: string;
+  resourcePlacementWidthLength: string;
+  resourcePlacementWidthLengthTooltip: string;
+  warningsPlateLowResolutionTitle: string;
+  warningsPlateLowResolutionDetail: string;
   resourceSpanSide: string;
   resourceImageLabel: string;
   resourceBitmapSizeLabel: string;

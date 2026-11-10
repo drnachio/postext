@@ -339,6 +339,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>L'immagine si stampa alla larghezza della sua colonna. Un'immagine nel flusso non è mai più larga della sua colonna e la pagina predefinita ne ha due (<code>layout.layoutType: 'double'</code>): componi la pagina su una colonna, fai flottare l'immagine su tutta la pagina (<code>placement.span: 'page'</code>) o alzane la risoluzione se quella è la dimensione voluta.</td>
     </tr>
     <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Una bitmap messa come tavola a piena pagina (<code>placement.plate</code>) è stata ingrandita fino a stamparsi sotto i 300 ppi. <code>resourceId</code> la nomina, <code>scale</code> dice di quanto è stata ingrandita e <code>ppi</code> la risoluzione di stampa. Punta al paragrafo che la cita per primo.</td>
+      <td>La tavola viene stampata a quella dimensione. Usa un originale più grande, oppure togli la tavola e componi l’immagine più piccola.</td>
+    </tr>
+    <tr>
       <td><code>emptyCaption</code></td>
       <td>Una risorsa di un tipo con prefisso di didascalia non ha una didascalia propria, quindi la sua riga di didascalia stampa solo etichetta e numero. <code>resourceId</code> la nomina, <code>label</code> è la riga stampata. Informativo: segnalato una volta per risorsa, al paragrafo che la cita o al suo inserimento. Da postext 1.52.</td>
       <td>L’etichetta viene stampata. Scrivi la didascalia, o lascia l’etichetta da sola se si vuole una tavola numerata.</td>

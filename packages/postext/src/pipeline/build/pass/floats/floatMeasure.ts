@@ -151,7 +151,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     }
   };
   const rotationKey = (rotated: FloatRotation | undefined): string =>
-    rotated ? `:${rotated.direction}${rotated.length.toFixed(2)}${rotated.upright ? 'u' : ''}` : '';
+    rotated ? `:${rotated.direction}${rotated.length.toFixed(2)}${rotated.upright ? 'u' : ''}${rotated.plate ? 'p' : ''}` : '';
   const asideKey = (a?: CaptionAside): string => (a ? `:aside${a.dx.toFixed(1)}x${a.width.toFixed(1)}${a.alignBottom ? 'b' : 't'}${(a.offsetY ?? 0).toFixed(1)}` : '');
   const capKey = (cap?: BodyCap): string => (cap ? `:cap${cap.maxBodyHeight.toFixed(2)}@${cap.minScale}` : '');
   const layoutFloat = (
@@ -167,7 +167,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     // Column balancing: a picture with a safe area grown by whole lines
     // (`flexFigure`, #442).
     const flexPx = balanceExtraPx?.get(flexFloatKey(resourceId)) ?? 0;
-    return layoutResourceBlock({
+    const laid = layoutResourceBlock({
       ...(cache ? { cache } : {}),
       resource,
       resourceType: resourceTypeById.get(resource.typeId),
@@ -179,11 +179,15 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       resources,
       ...(captionCitations ? { captionCitations } : {}),
       ...(slice ? { slice } : {}),
-      ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
+      ...(rotated ? (rotated.plate ? { plateHeight: rotated.length } : rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
       ...(flexPx > 0 ? { bodyHeightDelta: flexPx } : {}),
       ...(cap && !rotated ? { maxBodyHeight: cap.maxBodyHeight, minBodyScale: cap.minScale } : {}),
     });
+    // A full-page plate takes the whole room it was measured for, so no
+    // text comes under it on its page.
+    if (laid && rotated?.plate) return { ...laid, totalHeight: Math.max(laid.totalHeight, rotated.length) };
+    return laid;
   };
 
   /** The rotation of a pending float on a band whose columns keep `avail`
@@ -194,7 +198,10 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       ? uprightOn(page)
       : f.rotate
         ? { direction: flowRotation(f.rotate, page), length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx) }
-        : undefined;
+        // A full-page plate fills the band's room, the float gap kept.
+        : f.plate
+          ? { direction: 'ccw', length: Math.max(1, Math.floor((avail + 0.01) / baselineGrid) * baselineGrid - floatGapPx), plate: true }
+          : undefined;
   /** `placement.rotate` keeps its meaning on the sheet: `'ccw'` turns the
    *  picture's top to the sheet's left. A right-to-left page's flow is the
    *  sheet mirrored, where the same turn on the sheet is the opposite one,

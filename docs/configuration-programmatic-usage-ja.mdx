@@ -339,6 +339,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>画像は段の幅で印刷されます。本文の流れの中の画像は段より広くならず、既定のページは2段です（<code>layout.layoutType: 'double'</code>）。ページを1段組みにするか、画像をページ全幅のフロートにする（<code>placement.span: 'page'</code>）か、そのサイズでよければ解像度を上げてください。</td>
     </tr>
     <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>全ページ図版（<code>placement.plate</code>）として置かれたビットマップが、印刷時に 300 ppi 未満になるまで拡大されました。<code>resourceId</code> はその画像、<code>scale</code> は拡大率、<code>ppi</code> は印刷解像度です。最初に参照する段落を指します。</td>
+      <td>図版はその大きさで印刷されます。より大きな原画を使うか、全ページ図版をやめて画像を小さく組んでください。</td>
+    </tr>
+    <tr>
       <td><code>emptyCaption</code></td>
       <td>キャプションの接頭辞がある種類のリソースに自身のキャプションがなく、キャプションの行にラベルと番号だけが組まれます。<code>resourceId</code> がリソース、<code>label</code> が組まれた行です。情報として、リソースごとに一度、参照する段落または埋め込みの位置で報告します。postext 1.52以降。</td>
       <td>ラベルは組まれます。キャプションを書くか、番号付きの図版のつもりならラベルだけのままにします。</td>

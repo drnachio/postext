@@ -339,6 +339,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>L’image s’imprime à la largeur de sa colonne. Une image dans le flux n’est jamais plus large que sa colonne, et la page par défaut en a deux (<code>layout.layoutType: 'double'</code>) : composez la page sur une colonne, faites flotter l’image sur toute la page (<code>placement.span: 'page'</code>), ou relevez sa résolution si cette taille est voulue.</td>
     </tr>
     <tr>
+      <td><code>plateLowResolution</code></td>
+      <td>Un bitmap placé en planche pleine page (<code>placement.plate</code>) a été agrandi jusqu’à s’imprimer sous 300 ppp. <code>resourceId</code> le nomme, <code>scale</code> indique de combien il a été agrandi, <code>ppi</code> la résolution à laquelle il s’imprime. Pointe vers le paragraphe qui le cite en premier.</td>
+      <td>La planche est imprimée à cette taille. Utilisez un original plus grand, ou désactivez la planche et composez l’image plus petite.</td>
+    </tr>
+    <tr>
       <td><code>emptyCaption</code></td>
       <td>Une ressource d’un type doté d’un préfixe de légende n’a pas de légende propre : sa ligne de légende n’imprime que l’étiquette et le numéro. <code>resourceId</code> la nomme, <code>label</code> est la ligne imprimée. Information : signalée une fois par ressource, au paragraphe qui la cite ou à son insertion. Depuis postext 1.52.</td>
       <td>L’étiquette est imprimée. Écrivez la légende, ou gardez l’étiquette seule si une planche numérotée est voulue.</td>
