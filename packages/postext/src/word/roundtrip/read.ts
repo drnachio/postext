@@ -12,7 +12,7 @@ import { DocxReadError } from '../docxRead/parts.js';
 import { PARA_CHAR, walkPart, type ParaProps, type Token } from './walk.js';
 import { readParaStyles, type ParaStyles } from './added.js';
 import { styleLooks } from './looks.js';
-import { restoreLost } from './lost.js';
+import { noteOwners, restoreLost } from './lost.js';
 
 export interface ReadChar {
   ch: string;
@@ -412,6 +412,7 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
   const unmarked: { key: string; id: number; own: Token[] }[] = [];
   const standing = new Set<string>();
   const noteBoxes = new Set<number>();
+  const boxOf = new Map<string, number>();
   // Notes after the body, in their part order (the semantic writer's).
   for (const [part, el] of [['word/footnotes.xml', 'footnote'], ['word/endnotes.xml', 'endnote']] as const) {
     const root = xmlOf(files, part);
@@ -422,6 +423,7 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
       if (type && type !== 'normal') continue;
       const from = tokens.length;
       noteBoxes.add(box);
+      boxOf.set(`${el[0]}${attr(note, 'id') ?? ''}`, box);
       ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box, more));
       // A note with no bookmark of ours may have been typed in the editor.
       const own = tokens.slice(from);
@@ -446,7 +448,7 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
   }
   // The bookmarks an editor took away with a text replaced whole.
   const { absent, foreign, furniture, written } = options;
-  const restored = restoreLost(tokens, map, { noteBoxes, ...(absent ? { absent } : {}), ...(foreign ? { foreign } : {}), ...(furniture ? { furniture } : {}), ...(written ? { written } : {}) });
+  const restored = restoreLost(tokens, map, { noteBoxes, owners: noteOwners(tokens, map, boxOf), ...(absent ? { absent } : {}), ...(foreign ? { foreign } : {}), ...(furniture ? { furniture } : {}), ...(written ? { written } : {}) });
   const { fragments, added, strays, marks } = assign(restored.tokens, map, options.foreign);
   for (const id of restored.put) if (fragments.has(id)) fragments.get(id)!.replaced = true;
   const holders = map.holders === true && noProof;

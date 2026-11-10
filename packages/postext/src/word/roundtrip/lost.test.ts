@@ -271,6 +271,33 @@ describe('a text replaced whole that held marks', () => {
   });
 });
 
+describe('a note replaced whole beside another one emptied or deleted', () => {
+  const WAS = '# Rivers\n\nFirst call.[^a] Then more text.\n\nSecond call.[^b] And the end.\n\n[^a]: The first note, as written.\n\n[^b]: The second note, as written.\n';
+  // The new text reads more like the first note: only the mark tells.
+  const second = inPart('word/footnotes.xml', 'The second note, as written.', 'The first note, as written, and more.');
+
+  it('is the note its mark calls, with its id', async () => {
+    const r = await fromDocs([inPart('word/footnotes.xml', 'The first note, as written.', undefined), second], WAS, WAS);
+    expect(r.edits.every((e) => e.status === 'applied')).toBe(true);
+    expect(md(r)).toContain('[^b]: The first note, as written, and more.\n');
+    expect(md(r)).not.toContain('[^a]: ');
+    expect(md(r)).not.toContain('The second note');
+  });
+
+  it('also when the other note went with its mark, and the editor numbered the notes again', async () => {
+    // The first note deleted in the editor: its mark, its text, and the
+    // second note takes its number.
+    const gone: Edit = () => (bytes) => {
+      const again = (xml: string): string => xml.replace(/(<w:footnote(?:Reference)? [^>]*w:id=")1"/g, '$10"');
+      const doc = editPart(bytes, 'word/document.xml', (xml) => again(xml.replace(/<w:r(?: [^>]*)?>(?:(?!<\/w:r>).)*<w:footnoteReference [^>]*w:id="0"\/><\/w:r>/s, '')));
+      return editPart(doc, 'word/footnotes.xml', (xml) => again(xml.replace(/<w:footnote w:id="0">.*?<\/w:footnote>/s, '')));
+    };
+    const r = await fromDocs([second, gone], WAS, WAS);
+    expect(r.edits.every((e) => e.status === 'applied')).toBe(true);
+    expect(md(r)).toBe('# Rivers\n\nFirst call. Then more text.\n\nSecond call.[^b] And the end.\n\n[^b]: The first note, as written, and more.\n');
+  });
+});
+
 describe('a line of an index the book no longer gives', () => {
   const INDEX = '# Index\n\n:::index\n';
   const BODY = '# Rivers\n\nA brook:index{term="brook"} runs here.\n\nThe delta:index{term="delta"} is wide and slow, every year.\n\nThe estuary:index{term="estuary"} opens.\n';

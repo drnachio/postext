@@ -22,8 +22,8 @@
 // typed over another the format of what it replaces), sharing its words.
 // `placed` names those. The fragments left without a paragraph read as
 // deleted and the paragraphs left over as typed in, and `unpaired` names
-// the former. Table cells and notes are never paired so: which cell or
-// which note a text stands in is not told by its likeness.
+// the former. Table cells are never paired so, but by their place in
+// the table, the emptied ones counted; a note is the one its mark calls.
 
 import type { ExportMap, MapFragment } from '../anchors/types.js';
 import { counterOf, looseText, sharedWords } from './align.js';
@@ -43,6 +43,47 @@ export interface LostOptions {
   noteBoxes?: ReadonlySet<number>;
   /** Fragment id → the look of each character as written (`selfRead`). */
   written?: ReadonlyMap<string, readonly string[]>;
+  /** Note container → the note of the book it is (`noteOwners`). */
+  owners?: ReadonlyMap<number, string>;
+}
+
+/**
+ * Which note of the book each note of the file is, told by the mark that
+ * calls it: the writer sets one note per mark, in the order of the marks,
+ * so the marks that stand in a fragment are that fragment's, in order,
+ * while there are as many of them as it was written with. `boxOf`: the
+ * container of each note of the file, by the key its mark carries.
+ */
+export function noteOwners(tokens: readonly Token[], map: ExportMap, boxOf: ReadonlyMap<string, number>): Map<number, string> {
+  const out = new Map<number, string>();
+  const notes = map.fragments.filter((f) => f.role === 'footnote');
+  const calls = map.fragments.map((f) => ({ id: f.id, n: (f.atoms ?? []).filter((a) => a.kind === 'footnote').length })).filter((c) => c.n > 0);
+  if (!notes.length || calls.reduce((n, c) => n + c.n, 0) !== notes.length) return out;
+  const known = new Set(map.fragments.map((f) => f.id));
+  const marks = new Map<string, string[]>();
+  const open: { wid: string; fid: string }[] = [];
+  for (const tok of tokens) {
+    if (tok.t === 'bmStart' && known.has(tok.fid)) open.push({ wid: tok.wid, fid: tok.fid });
+    else if (tok.t === 'bmEnd') {
+      const at = open.findIndex((o) => o.wid === tok.wid);
+      if (at >= 0) open.splice(at, 1);
+    } else if (tok.t === 'char' && tok.note !== undefined && open.length) {
+      const fid = open[open.length - 1]!.fid;
+      marks.set(fid, [...(marks.get(fid) ?? []), tok.note]);
+    }
+  }
+  let j = 0;
+  for (const c of calls) {
+    const own = marks.get(c.id);
+    if (own?.length === c.n) {
+      own.forEach((key, k) => {
+        const box = boxOf.get(key);
+        if (box !== undefined) out.set(box, notes[j + k]!.id);
+      });
+    }
+    j += c.n;
+  }
+  return out;
 }
 
 /** What `restoreLost` gives back. */
@@ -240,9 +281,13 @@ export function restoreLost(tokens: Token[], map: ExportMap, options: LostOption
   }
   // A paragraph in a table of the book is a cell's, or a row typed in.
   const cellTables = new Set(tables.values());
+  const owned = new Set(options.owners?.values());
   const fits = (f: MapFragment, c: Candidate): boolean => {
     const note = f.role === 'footnote';
     if (inNote(c) ? !note : note && (options.noteBoxes?.size ?? 0) > 0) return false;
+    // A note whose mark still calls it is that note and no other.
+    const owner = options.owners?.get(c.mark.box);
+    if (owner !== undefined ? owner !== f.id : owned.has(f.id)) return false;
     if (f.target.kind === 'resource' && f.target.field === 'cell') {
       const table = tables.get(f.target.resourceId);
       if (c.mark.tbl === undefined || (table !== undefined && table !== c.mark.tbl)) return false;
@@ -310,9 +355,10 @@ export function restoreLost(tokens: Token[], map: ExportMap, options: LostOption
         continue;
       }
     }
-    // A cell or a note has a place of its own (its row and column, the
-    // mark that calls it) that likeness cannot tell: those stay apart.
-    const inFlow = (f: MapFragment): boolean => f.role !== 'footnote' && !(f.target.kind === 'resource' && f.target.field === 'cell');
+    // A cell has a place of its own (its row and column) that likeness
+    // cannot tell: cells stay apart. A note is told by the mark that
+    // calls it (`fits`), and by likeness only when no mark says.
+    const inFlow = (f: MapFragment): boolean => !(f.target.kind === 'resource' && f.target.field === 'cell');
     const pairs = pairInOrder(run.length, held.length, (i, j) => (inFlow(run[i]!) && fits(run[i]!, held[j]!) ? likeness(run[i]!, held[j]!) : undefined));
     const found = new Set(pairs.map(([i]) => i));
     for (const [i, j] of pairs) {
