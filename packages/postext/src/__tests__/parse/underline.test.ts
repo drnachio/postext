@@ -45,6 +45,29 @@ describe('++underline++', () => {
     expect(spans.some((s) => s.links?.some((l) => l.strike))).toBe(true);
   });
 
+  it('leaves the increment operator of a one-letter variable as text', () => {
+    for (const t of ['use ++i rather than i++ here', '++i', 'i++', 'for (n = 0; n < 9; ++n) x[n++] = 0;', 'C++', 'g++ -O2', 'Notepad++', 'a ++ b', '++i; j++', '++x and y++']) {
+      const spans = parseInlineFormatting(t);
+      expect(text(spans)).toBe(t);
+      expect(underlined(spans)).toEqual([]);
+    }
+  });
+
+  it('still underlines a single letter, a phrase of longer words, and after an operator', () => {
+    expect(underlined(parseInlineFormatting('Mark ++x++ here.'))).toEqual(['x']);
+    expect(underlined(parseInlineFormatting('Please ++sign all pages++.'))).toEqual(['sign all pages']);
+    expect(underlined(parseInlineFormatting('++a few words++'))).toEqual(['a few words']);
+    expect(underlined(parseInlineFormatting('use ++i rather than i++ and ++sign here++'))).toEqual(['sign here']);
+    expect(underlined(parseInlineFormatting('i++ and ++j then ++sign here++'))).toEqual(['sign here']);
+  });
+
+  it('scans long hostile rows in linear time', () => {
+    const rows = ['++a '.repeat(50_000), 'a++ '.repeat(50_000), '++i x i++ '.repeat(20_000), `++${'+a'.repeat(50_000)}`, `++a${' b'.repeat(100_000)}`, '+'.repeat(200_000)];
+    const t0 = performance.now();
+    for (const r of rows) parseInlineFormatting(r);
+    expect(performance.now() - t0).toBeLessThan(2000);
+  });
+
   it('takes \\+ as a literal plus sign and leaves inline code alone', () => {
     expect(underlined(parseInlineFormatting('\\++not++'))).toEqual([]);
     const [block] = parseMarkdown('`++x++` and [home](https://example.org/++a++) ++y++');
@@ -64,6 +87,6 @@ describe('++underline++', () => {
   });
 
   it('strips the markers for plain text', () => {
-    expect(stripInlineFormatting('a ++b c++ d')).toBe('a b c d');
+    expect(stripInlineFormatting('a ++bc de++ f')).toBe('a bc de f');
   });
 });

@@ -156,6 +156,13 @@ export function markStrikethrough(text: string, replace: (inner: string) => stri
 export const UNDERLINE_OPEN = '\uE1B9';
 export const UNDERLINE_CLOSE = '\uE1BA';
 
+/** The sign written twice on each side of underlined text (`++text++`).
+ *  The one place the spelling lives: {@link UNDERLINE_RE} and
+ *  {@link markUnderline} are built from it. */
+export const UNDERLINE_SIGN = '+';
+const UNDERLINE_PAIR = UNDERLINE_SIGN + UNDERLINE_SIGN;
+const U = UNDERLINE_SIGN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /** `++text++`: underlined text (the inserted text of Pandoc and
  *  markdown-it-ins, set as an underline as word processors do). Read like
  *  `~~text~~`: exactly two plus signs on each side (a third one beside them
@@ -165,14 +172,24 @@ export const UNDERLINE_CLOSE = '\uE1BA';
  *  so `C++ and C++`, `C++-Kurs und C++-Buch` and `1 ++ 2` stay text. The text may hold other inline marks, single plus
  *  signs included, and may run over a soft line break, not over a blank
  *  line. `\+` sets a literal plus sign. */
-export const UNDERLINE_RE = /(?<![+\p{L}\p{N}])\+\+(?=[^\s+])((?:[^+\n]|\+(?!\+)|\n(?!\n))+?)(?<=[^\s+])\+\+(?![+\p{L}\p{N}])/gu;
+export const UNDERLINE_RE = new RegExp(
+  `(?<![${U}\\p{L}\\p{N}])${U}${U}(?=[^\\s${U}])((?:[^${U}\\n]|${U}(?!${U})|\\n(?!\\n))+?)(?<=[^\\s${U}])${U}${U}(?![${U}\\p{L}\\p{N}])`,
+  'gu',
+);
+
+/** A pair that only looks like an underline: its text begins and ends
+ *  with a one-character word, the increment operator written at a
+ *  variable on both sides (`use ++i rather than i++ here`). */
+const OPERATOR_FIRST = /^[\p{L}\p{N}_](?![\p{L}\p{N}_])/u;
+const OPERATOR_LAST = /(?<![\p{L}\p{N}_])[\p{L}\p{N}_]$/u;
+const operatorPair = (inner: string): boolean => /\s/u.test(inner) && OPERATOR_FIRST.test(inner) && OPERATOR_LAST.test(inner);
 
 /** Every `++text++` of `text` replaced by its text between
  *  {@link UNDERLINE_OPEN} and {@link UNDERLINE_CLOSE}, or by what `replace`
- *  makes of it. */
+ *  makes of it; an increment operator's pair stays as written. */
 export function markUnderline(text: string, replace: (inner: string) => string = (inner) => UNDERLINE_OPEN + inner + UNDERLINE_CLOSE): string {
-  if (!text.includes('++')) return text;
-  return text.replace(UNDERLINE_RE, (_, inner: string) => replace(inner));
+  if (!text.includes(UNDERLINE_PAIR)) return text;
+  return text.replace(UNDERLINE_RE, (whole, inner: string) => (operatorPair(inner) ? whole : replace(inner)));
 }
 
 /** Replace every `:smallcaps[…]` by its text between the private-use marks. */
