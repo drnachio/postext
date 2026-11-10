@@ -156,6 +156,7 @@ describe("package exports", () => {
       "lineLooseness",
       "lineWordSpacing",
       "findStacks",
+      "findHyphenFaults",
       "primaryFontFamily",
       "buildFontString",
       "setSymbolFont",
