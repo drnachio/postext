@@ -11,6 +11,7 @@ import { BOOKMARK_PREFIX, type ExportMap } from '../anchors/types.js';
 import { DocxReadError } from '../docxRead/parts.js';
 import { PARA_CHAR, walkPart, type ParaProps, type Token } from './walk.js';
 import { readParaStyles, type ParaStyles } from './added.js';
+import { styleLooks } from './looks.js';
 
 export interface ReadChar {
   ch: string;
@@ -24,6 +25,9 @@ export interface ReadChar {
   holder?: true;
   /** The note a note reference calls (`f3`: footnote 3, `e1`: endnote 1). */
   note?: string;
+  /** How the character looks, styles counted in (`looks.ts`), when the
+   *  file was read for it. */
+  look?: string;
 }
 
 export interface ReadFragment {
@@ -76,6 +80,22 @@ export interface ReadDocx {
    *  (its own w:noProof anchor runs are still there): an unmarked U+00A0
    *  is then a typed no-break space. */
   holders: boolean;
+  /** Some style or run of the file sets capitals with `w:caps`; an editor
+   *  that has no such mark (Google Docs) types the capitals out. Set when
+   *  the looks were read. */
+  caps?: boolean;
+}
+
+/** How `readExportedDocx` reads a file. */
+export interface ReadOptions {
+  /** The map to read the file by when it carries none: the one written
+   *  again from the book (`rebuild.ts`). */
+  map?: ExportMap;
+  /** Read each character's look, styles counted in. */
+  looks?: boolean;
+  /** Bookmarks of the file that stand for nothing in the map and whose
+   *  text is no addition either (text the book no longer has). */
+  foreign?: ReadonlySet<string>;
 }
 
 type Files = Record<string, Uint8Array>;
@@ -122,8 +142,10 @@ export function isExportedDocx(bytes: Uint8Array): boolean {
 }
 
 /** Whether `bytes` is a postext export an editor saved without its export
- *  map: the property naming the export or the fragments' bookmarks are
- *  still there, the map is not. Its edits cannot be placed. Never throws. */
+ *  map (Google Docs drops it): the property naming the export or the
+ *  fragments' bookmarks are still there, the map is not. Its edits are
+ *  placed by a map written again from the book (`rebuildExportMap`).
+ *  Never throws. */
 export function exportMapLost(bytes: Uint8Array): boolean {
   try {
     const files = unzipSync(bytes);
@@ -137,7 +159,7 @@ export function exportMapLost(bytes: Uint8Array): boolean {
 }
 
 /** Distribute the token stream over the fragments. */
-function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'comments' | 'styles' | 'holders' | 'newNotes'> & { marks: Map<string, ReadPosition> } {
+export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<string>): Pick<ReadDocx, 'fragments' | 'added' | 'strays'> & { marks: Map<string, ReadPosition> } {
   const fragments = new Map<string, ReadFragment>();
   const open: { wid: string; fid: string; depth: number }[] = [];
   const lastClosedIn = new Map<number, string>();
@@ -188,6 +210,8 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
     }
   };
   const known = new Set(map.fragments.map((f) => f.id));
+  // Text the book no longer has is read into fragments nothing looks at.
+  if (foreign) for (const id of foreign) known.add(id);
   // A bookmark an editor renamed stands for its fragment when no bookmark
   // keeps the fragment's own name, and only the first such one does.
   const named = new Set<string>();
@@ -304,16 +328,18 @@ function readComments(files: Files, marks: Map<string, ReadPosition>): ReadComme
 }
 
 /** Read an exported file. Throws DocxReadError for a broken file or one
- *  without an export map. */
-export function readExportedDocx(bytes: Uint8Array): ReadDocx {
+ *  without an export map (its own, or the one given). */
+export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): ReadDocx {
   const files = unzip(bytes);
-  const map = readExportMap(files);
+  const map = readExportMap(files) ?? options.map;
   if (!map) throw new DocxReadError('no postext export map');
   const doc = xmlOf(files, 'word/document.xml');
   const body = child(doc, 'body');
   if (!body) throw new DocxReadError('no document part');
   const tokens: Token[] = [];
-  const walked = walkPart(body, linksOf(files, 'word/document.xml'), tokens);
+  const looks = options.looks ? styleLooks(xmlOf(files, 'word/styles.xml')) : undefined;
+  const more = looks ? { looks } : {};
+  const walked = walkPart(body, linksOf(files, 'word/document.xml'), tokens, 0, 0, more);
   const { noProof } = walked;
   let { nextPara: next, nextBox: box } = walked;
   // Notes typed in the editor: the writer numbers a book's notes from 1
@@ -330,7 +356,7 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
       const type = attr(note, 'type');
       if (type && type !== 'normal') continue;
       const from = tokens.length;
-      ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box));
+      ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box, more));
       // A note with no bookmark of ours and a number its part did not
       // have: typed in the editor.
       const own = tokens.slice(from);
@@ -344,7 +370,10 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
       if (chars.some((c) => c.ch.trim())) newNotes.set(`${el[0]}${id}`, chars);
     }
   }
-  const { fragments, added, strays, marks } = assign(tokens, map);
+  const { fragments, added, strays, marks } = assign(tokens, map, options.foreign);
   const holders = map.holders === true && noProof;
-  return { map, fragments, added, strays, newNotes, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders };
+  return {
+    map, fragments, added, strays, newNotes, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders,
+    ...(looks ? { caps: looks.caps } : {}),
+  };
 }

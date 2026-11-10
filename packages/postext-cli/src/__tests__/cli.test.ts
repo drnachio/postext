@@ -27,6 +27,26 @@ async function editDocx(src: string, out: string, from: string, to: string): Pro
   writeFileSync(out, zipSync(files));
 }
 
+/** A Word file as Google Docs saves it in what matters to the import:
+ *  no custom XML part, so no export map; the properties and the bookmarks
+ *  stay. `from`/`to`: a word changed there. */
+async function withoutMap(src: string, out: string, from?: string, to?: string): Promise<void> {
+  const { unzipSync, zipSync, strFromU8, strToU8 } = await import(Bun.resolveSync('fflate', POSTEXT)) as {
+    unzipSync: (b: Uint8Array) => Record<string, Uint8Array>;
+    zipSync: (f: Record<string, Uint8Array>) => Uint8Array;
+    strFromU8: (b: Uint8Array) => string;
+    strToU8: (s: string) => Uint8Array;
+  };
+  const files = unzipSync(new Uint8Array(readFileSync(src)));
+  for (const path of Object.keys(files)) if (path.startsWith('customXml/')) delete files[path];
+  if (from !== undefined) {
+    const xml = strFromU8(files['word/document.xml']!);
+    expect(xml).toContain(`>${from}`);
+    files['word/document.xml'] = strToU8(xml.replace(`>${from}`, `>${to}`));
+  }
+  writeFileSync(out, zipSync(files));
+}
+
 function run(args: string[], cwd: string) {
   const r = Bun.spawnSync([...cmd, ...args], { cwd, env: { ...process.env, NO_COLOR: '1', POSTEXT_CACHE_DIR: join(cwd, '.cache') } });
   return { code: r.exitCode, stdout: r.stdout.toString(), stderr: r.stderr.toString() };
@@ -197,6 +217,55 @@ describe('postext cli', () => {
     // edit is a conflict and the exit code says an edit was not applied.
     expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(3);
   }, 120_000);
+
+  it('brings back a flow file that lost its export map, as Google Docs saves it (#1458)', async () => {
+    const dir = book();
+    expect(run(['pack', 'ch', '--name', 'Test', '--no-auto-thumbnail', '-o', 'b.postext', '-q'], dir).code).toBe(0);
+    expect(run(['unpack', 'b.postext', '-o', 'proj', '-q'], dir).code).toBe(0);
+    const { isExportedDocx, exportMapLost } = await import('postext/word');
+    const chapter = join(dir, 'proj', 'chapters', '02-two.md');
+    const before = readFileSync(chapter, 'utf8');
+    for (const variant of ['semantic', 'formatted']) {
+      expect(run(['docx', 'proj', '--variant', variant, '--no-embed-fonts', '-o', `${variant}.docx`, '--offline', '-q'], dir).code).toBe(0);
+      // Unedited: the map is written again from the book, nothing to apply.
+      await withoutMap(join(dir, `${variant}.docx`), join(dir, `${variant}-g.docx`));
+      const bytes = new Uint8Array(readFileSync(join(dir, `${variant}-g.docx`)));
+      expect(isExportedDocx(bytes)).toBe(false);
+      expect(exportMapLost(bytes)).toBe(true);
+      const same = run(['import-docx', `${variant}-g.docx`, 'proj', '--dry-run', '--json'], dir);
+      expect(same.code).toBe(0);
+      const report = JSON.parse(same.stdout);
+      expect(report.edits).toEqual([]);
+      expect(report.notes).toEqual([{ code: 'map-rebuilt' }]);
+      // A word changed there lands in its chapter.
+      await withoutMap(join(dir, `${variant}.docx`), join(dir, `${variant}-e.docx`), 'More', 'Much');
+      const dry = run(['import-docx', `${variant}-e.docx`, 'proj', '--dry-run'], dir);
+      expect(dry.code).toBe(0);
+      expect(dry.stdout).toContain('-More text.\n+Much text.');
+      expect(dry.stderr).toContain('came back without its export map');
+      expect(readFileSync(chapter, 'utf8')).toBe(before);
+    }
+    // The book changed since the export: the edit still lands, and the
+    // report says what the file was compared with.
+    writeFileSync(join(dir, 'proj', 'chapters', '01-one.md'), readFileSync(join(dir, 'proj', 'chapters', '01-one.md'), 'utf8').replace('# One\n', '# One\n\nA paragraph written since.\n'));
+    const later = run(['import-docx', 'semantic-e.docx', 'proj', '--json'], dir);
+    expect(later.code).toBe(0);
+    const report = JSON.parse(later.stdout);
+    expect(report.notes.map((n: { code: string }) => n.code)).toEqual(['map-rebuilt', 'book-changed']);
+    expect(report.notes[1].chapters).toEqual(['chapters/01-one.md']);
+    expect(report.edits.map((e: { status: string; at: string }) => [e.status, e.at])).toEqual([['applied', 'chapters/02-two.md:3']]);
+    expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));
+    expect(readFileSync(join(dir, 'proj', 'chapters', '01-one.md'), 'utf8')).toContain('A paragraph written since.');
+    // A file from another book has nothing this book can place.
+    const other = mkdtempSync(join(tmpdir(), 'postext-cli-'));
+    mkdirSync(join(other, 'ch'));
+    writeFileSync(join(other, 'ch', '01.md'), '# Elsewhere\n\nNothing shared between the two.\n');
+    expect(run(['docx', 'ch', '--variant', 'semantic', '-o', 'o.docx', '--offline', '-q'], other).code).toBe(0);
+    await withoutMap(join(other, 'o.docx'), join(dir, 'o-g.docx'));
+    const foreign = run(['import-docx', 'o-g.docx', 'proj', '--dry-run'], dir);
+    expect(foreign.code).toBe(1);
+    expect(foreign.stderr).toContain('cannot be written again from this book');
+  }, 180_000);
 
   it('never picks the Word variant from the content: comic pages go out formatted too (#1458)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'postext-cli-'));

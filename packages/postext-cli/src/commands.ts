@@ -154,7 +154,7 @@ export const COMMANDS: CommandSpec[] = [
     name: 'import-docx',
     summary: 'Bring Word edits back into a book, or turn a Word document into one',
     usage: 'postext import-docx <file.docx> <book> [--dry-run]  |  postext import-docx <file.docx> [-o folder/ | -o book.postext]',
-    description: 'With a book (folder, .postext or Markdown files) and a file `postext docx` exported from it: the edits made in Word are merged into the chapter files and the resources\' wording (preset.json), and each one is reported as applied, in conflict with a change made since the export, or rejected (generated text). Exit code 3 when an edit was not applied. Any other Word file is converted into a new book with the import template.',
+    description: 'With a book (folder, .postext or Markdown files) and a file `postext docx` exported from it: the edits made in Word are merged into the chapter files and the resources\' wording (preset.json), and each one is reported as applied, in conflict with a change made since the export, or rejected (generated text). Exit code 3 when an edit was not applied. A flow file that Google Docs saved comes back too: Docs leaves the export map out, and it is written again from the book (if the book changed since the export, the report says so). Any other Word file is converted into a new book with the import template.',
     options: [
       { name: 'dry-run', short: 'n', kind: 'boolean', help: 'With a book: print the diff and the report, write nothing' },
       { name: 'resources', kind: 'string', arg: 'DIR', help: 'With loose Markdown chapters: their pictures folder (its resources.json takes caption edits)' },

@@ -157,7 +157,7 @@ export async function wordFontPlan(book: Book, fonts: FontSet, reporter: Reporte
 
 /** The pictures' bytes as the book stores them: an SVG stays SVG (Word
  *  takes it with a PNG beside it), recoloured under single ink. */
-function resourceBytes(book: Book): (fileId: string) => Uint8Array | undefined {
+export function resourceBytes(book: Book): (fileId: string) => Uint8Array | undefined {
   const inkHex = diagramInkHex(book.config);
   const svgs = new Set(book.resources.filter((r) => r.kind === 'svg').map((r) => r.svg?.fileId));
   const recoloured = new Map<string, Uint8Array>();
@@ -169,6 +169,9 @@ function resourceBytes(book: Book): (fileId: string) => Uint8Array | undefined {
     return out;
   };
 }
+
+/** An SVG drawn to PNG, for the picture Word shows beside it. */
+export const svgPicture = async (svg: string, w: number, h: number): Promise<Uint8Array | undefined> => (await rasterizeSvg(svg, w, h)) ?? undefined;
 
 export interface DocxJob {
   variant: DocxVariant;
@@ -193,7 +196,7 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
     chapters: wordChapters(chapters, ids),
     resources: book.resources,
     resourceBytes: resourceBytes(book),
-    rasterizeSvg: async (svg: string, w: number, h: number) => (await rasterizeSvg(svg, w, h)) ?? undefined,
+    rasterizeSvg: svgPicture,
     ...(fonts ? { fonts } : {}),
     title,
     ...(author ? { author } : {}),

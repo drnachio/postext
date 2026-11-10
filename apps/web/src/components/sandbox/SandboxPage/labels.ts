@@ -5418,6 +5418,13 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     wordEditsApply: t("wordEditsApply"),
     wordEditsDone: t("wordEditsDone"),
     wordEditsFailed: t("wordEditsFailed"),
+    wordEditsReading: t("wordEditsReading"),
+    wordEditsNotThisBook: t("wordEditsNotThisBook"),
+    wordEditsNoteRebuilt: t("wordEditsNoteRebuilt"),
+    wordEditsNoteBookChanged: t("wordEditsNoteBookChanged"),
+    wordEditsNoteUnverified: t("wordEditsNoteUnverified"),
+    wordEditsNoteWriterChanged: t("wordEditsNoteWriterChanged"),
+    wordEditsNoteChaptersMissing: t("wordEditsNoteChaptersMissing"),
     // Named frame looks (#1089).
     frameLooksSection: t("frameLooksSection"),
     frameLooksEmpty: t("frameLooksEmpty"),

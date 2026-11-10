@@ -10,7 +10,7 @@
 import { isTexToOmmlReady, texToDisplayOmml, texToOmml } from '../ommlWrite/index.js';
 import { ommlToTex } from '../omml.js';
 import { parseXml, type XmlElement } from '../xml.js';
-import { looseTex } from './looseTex.js';
+import { looseTex, texSymbols } from './looseTex.js';
 
 /** The TeX inside a source equation (`$…$`, `$$…$$`, `\(…\)`, `\[…\]`). */
 export function texOfSource(source: string): { tex: string; display: boolean } {
@@ -70,6 +70,10 @@ export function mathUnchanged(source: string, tex: string): boolean {
   // spaces, `π` for `\pi`, a group round each side of a slash).
   const read = looseTex(stripTag(tex));
   if (looseTex(stripTag(orig.tex)) === read) return true;
+  // An editor without matrices (Google Docs) writes a matrix or `cases`
+  // as its cells in a row: the same symbols, the grid gone. Nobody edits
+  // an equation into that, so it is the equation as written.
+  if (/\\begin\{/.test(orig.tex) && !/\\begin\{/.test(tex) && texSymbols(stripTag(orig.tex)) === texSymbols(stripTag(tex))) return true;
   if (!isTexToOmmlReady()) return false;
   const a = omml(orig.tex, orig.display);
   if (a === null) return false;

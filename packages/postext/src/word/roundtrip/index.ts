@@ -3,7 +3,8 @@
 // in Word go back to the exact Markdown and resource positions, merged
 // with whatever changed in the book since the export.
 
-export type { DocxEditSource, DocxEdit, DocxEditResult, DocxComment } from './types.js';
+export type { DocxEditSource, DocxEdit, DocxEditResult, DocxComment, DocxImportNote } from './types.js';
+export { rebuildExportMap, type DocxBook, type RebuiltMap } from './rebuild.js';
 export { exportMapLost, isExportedDocx } from './read.js';
 export { applyDocxEdits } from './apply.js';
 export { DocxReadError } from '../docxRead/parts.js';

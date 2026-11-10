@@ -8,13 +8,13 @@ import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'nod
 import { basename, dirname, join } from 'node:path';
 import type { Resource } from 'postext';
 import { MANIFEST_FILE, openBundleZip, pickLocaleOverrides, zipBundle, type BundleLocaleOverrides, type BundleManifest, type BundleResourceSpec } from 'postext/bundle';
-import { applyDocxEdits, type DocxEdit, type DocxEditResult } from 'postext/word';
+import { applyDocxEdits, rebuildExportMap, type DocxEdit, type DocxEditResult, type DocxImportNote, type RebuiltMap } from 'postext/word';
 import { CliError, type Options } from './args';
 import { inputKind, loadBook, type Book, type BookChapter } from './input';
 import { writeStdout } from './io';
 import { sourceAt } from './layout';
 import { style, type Reporter } from './log';
-import { chapterIds, wordChapters } from './outputs/docx';
+import { chapterIds, resourceBytes, svgPicture, wordChapters } from './outputs/docx';
 import { unifiedDiff } from './unifiedDiff';
 
 /** One file the edits change: its path inside the project (shown in the
@@ -179,19 +179,66 @@ function editWhat(e: { before: string; after: string; kind: string }): string {
   return before && after ? `"${before}" → "${after}"` : after ? `+ "${after}"` : `- "${before}"`;
 }
 
+/** The passages a changed book leaves out of the comparison, in words. */
+function leftAlone(note: DocxImportNote): string {
+  const n = (count: number) => `${count} ${count === 1 ? 'passage' : 'passages'}`;
+  const left = [
+    note.unplaced ? `${n(note.unplaced)} of the book not found in the file` : '',
+    note.foreign ? `${n(note.foreign)} of the file no longer in the book` : '',
+  ].filter(Boolean).join(', ');
+  return left ? `; left alone: ${left}` : '';
+}
+
+/** What the import says about the file as a whole, in words. */
+function noteText(note: DocxImportNote, file: string): { severity: 'info' | 'warning'; message: string } {
+  const n = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+  switch (note.code) {
+    case 'map-rebuilt':
+      return { severity: 'info', message: `${file} came back without its export map (Google Docs leaves it out): the map was written again from the book` };
+    case 'book-changed': {
+      const where = note.chapters?.length ? ` (${note.chapters.join(', ')})` : '';
+      const what = note.unverified
+        ? `the book, or the version of postext that writes it, changed since ${file} was exported`
+        : note.chapters?.length ? `the book changed since ${file} was exported${where}` : `the book's settings or resources changed since ${file} was exported`;
+      return { severity: 'warning', message: `${what}, and the file carries no copy of the text it was exported with: it was compared with the book as it is now, so a change made in the book since then may show below as an edit that undoes it${leftAlone(note)}` };
+    }
+    case 'book-unverified':
+      return { severity: 'info', message: `${file} does not say what the book was like when it was exported: if the book changed since, those changes may show below as edits that undo them` };
+    case 'writer-changed':
+      return { severity: 'warning', message: `${file} was written by another version of postext: its text was matched with the book's passage by passage${leftAlone(note)}` };
+    case 'chapters-missing':
+      return { severity: 'warning', message: `${n(note.count ?? 0, 'chapter', 'chapters')} of ${file} ${note.count === 1 ? 'is' : 'are'} no longer in the book: ${note.count === 1 ? 'its' : 'their'} edits were not applied` };
+  }
+}
+
 /**
  * Apply the edits of an exported Word file to the book at `project`.
+ * `withoutMap`: the file's editor left the export map out; the map is
+ * written again from the book.
  * With `--dry-run` nothing is written: the diff goes to stdout. Exit code
  * 3 when an edit could not be applied (a conflict with a change made since
  * the export, or a rejected one).
  */
-export async function importWordEdits(bytes: Uint8Array, file: string, project: string, opts: Options, reporter: Reporter): Promise<void> {
+export async function importWordEdits(bytes: Uint8Array, file: string, project: string, opts: Options, reporter: Reporter, withoutMap = false): Promise<void> {
   const kind = inputKind([project]);
   const book = await reporter.time('read', () => loadBook([project], opts, reporter));
   const ids = chapterIds(book);
+  const chapters = wordChapters(book.chapters, ids);
   let result: DocxEditResult;
   try {
-    result = reporter.time('edits', () => applyDocxEdits(bytes, { chapters: wordChapters(book.chapters, ids), resources: book.resources }));
+    let rebuilt: RebuiltMap | undefined;
+    if (withoutMap) {
+      rebuilt = await reporter.time('map', () => rebuildExportMap(bytes, {
+        chapters,
+        config: book.config,
+        resources: book.resources,
+        resourceBytes: resourceBytes(book),
+        rasterizeSvg: svgPicture,
+        ...(book.start ? { start: book.start } : {}),
+      }));
+      if (!rebuilt) throw new Error('comes from a postext export, but its export map is gone and cannot be written again from this book: none of its text is in the book, or it is a page facsimile, which needs the file as it was exported');
+    }
+    result = reporter.time('edits', () => applyDocxEdits(bytes, { chapters, resources: book.resources }, rebuilt ? { rebuilt } : {}));
   } catch (err) {
     throw new CliError(`${file}: ${(err as Error).message}`);
   }
@@ -232,6 +279,12 @@ export async function importWordEdits(bytes: Uint8Array, file: string, project: 
   // The report: every edit with where it lands, then the comments.
   const count = { applied: 0, conflict: 0, rejected: 0 };
   for (const e of result.edits) count[e.status]++;
+  for (const note of result.notes ?? []) {
+    const { severity, message } = noteText(note, file);
+    if (severity === 'info') reporter.info(style.dim(message));
+    else reporter.warn({ kind: `docx.${note.code}`, severity, message });
+  }
+  if (result.notes) reporter.data.notes = result.notes;
   reporter.data.variant = result.variant;
   reporter.data.exportId = result.exportId;
   reporter.data.edits = result.edits.map((e) => ({ ...e, at: editPlace(e, byId) }));

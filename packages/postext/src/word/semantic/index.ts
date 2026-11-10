@@ -19,10 +19,12 @@ import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { BookStart } from './context.js';
 import { hashText } from '../anchors/hash.js';
+import { exportTrace, traceProps, type ExportTrace } from '../anchors/trace.js';
 import type { ExportMap } from '../anchors/types.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { initTexToOmml } from '../ommlWrite/index.js';
 import { createDocxPackage } from '../ooxml/package.js';
+import type { DocxPackageInput } from '../ooxml/types.js';
 import { bookNumbers } from './engineNumbers.js';
 import { parseChapter, renderChapter } from './chapter.js';
 import type { SemanticWarning, WriterContext } from './context.js';
@@ -83,6 +85,33 @@ export const SEMANTIC_ENGINE = `postext-word-semantic/1 config/${CONFIG_VERSION}
 /** Write a book as a `.docx` with native Word structures: styles, lists,
  *  tables, notes and fields. */
 export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8Array> {
+  const written = await writeSemantic(options);
+  return written.build();
+}
+
+/** What the writer leaves of an export besides the file: its map, and the
+ *  trace the file's custom properties carry (`anchors/trace.ts`). */
+export interface SemanticExportMap {
+  map: ExportMap;
+  trace: ExportTrace;
+  /** The XML of the text parts as written: the body's content, each
+   *  note, the style definitions. */
+  parts: { body: string; footnotes: readonly string[]; styles: string };
+}
+
+/**
+ * The export map `semanticDocx` would embed for these options, without
+ * the file (#1458). The writer is deterministic: the same chapters,
+ * config, resources and design give the same fragments under the same
+ * bookmark names, so the map of a file whose editor dropped it (Google
+ * Docs) is written again from the book.
+ */
+export async function semanticExportMap(options: SemanticDocxOptions): Promise<SemanticExportMap> {
+  const { map, trace, parts } = await writeSemantic(options);
+  return { map, trace, parts };
+}
+
+async function writeSemantic(options: SemanticDocxOptions): Promise<SemanticExportMap & { build: () => Uint8Array }> {
   // The book's own config, and the one the document is set from: the same,
   // or in the plain design a neutral one that keeps what names and numbers
   // the content.
@@ -180,8 +209,12 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   prepareExercises(ctx, parsed);
 
   let body = '';
+  // The fragment each chapter starts at: with it a chapter that did not
+  // change since the export is found again whatever the others did.
+  const firstFragments: number[] = [];
   parsed.forEach((pc, i) => {
     chapterId = pc.input.id;
+    firstFragments.push(ctx.log.body.length + ctx.log.notes.length);
     body += renderChapter(ctx, pc, i, geo, i === parsed.length - 1);
   });
   chapterId = undefined;
@@ -208,9 +241,16 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
       ...(Object.keys(snapshotResources).length ? { resources: snapshotResources } : {}),
     },
   };
+  const trace = exportTrace(map, {
+    config: options.config,
+    start,
+    resources: snapshotResources,
+    media: ctx.media.size,
+    firstFragments,
+  });
   const page = pageSettings(ctx, body);
   const extra = (geo.mirror ? '<w:mirrorMargins/>' : '') + '<w:doNotAutoCompressPictures/>' + page.extra;
-  return pkg.build({
+  const input: DocxPackageInput = {
     body,
     styles: ctx.styles.xml(),
     docDefaults: ctx.styles.docDefaults(options.config.locale),
@@ -229,5 +269,9 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     },
     fonts: fonts?.faces,
     exportMap: map,
-  });
+    // What an editor that drops the map (Google Docs) still keeps: enough
+    // to write the map again from the book (#1458).
+    customProps: traceProps(trace),
+  };
+  return { map, trace, parts: { body, footnotes: ctx.footnotes, styles: input.styles ?? '' }, build: () => pkg.build(input) };
 }

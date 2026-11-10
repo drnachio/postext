@@ -147,3 +147,37 @@ function join(parts: readonly string[]): string {
 export function looseTex(tex: string): string {
   return join(tokens(tex));
 }
+
+/** Commands whose argument is the letters themselves. */
+const WRAPPER = /^\\(?:text|mathrm|operatorname|textbf|textit|mathit)\{(.*)\}$/s;
+
+/**
+ * The symbols of `tex` in a row, its grid let go: what is left of a
+ * matrix or of `cases` in an editor that has neither (Google Docs writes
+ * the cells one after another, a function's name twice, as the operator
+ * and as the letters after it). Two equations with the same symbols are
+ * the same equation once one of them went through such an editor.
+ */
+export function texSymbols(tex: string): string {
+  const out: string[] = [];
+  const all = tokens(tex);
+  for (let k = 0; k < all.length; k++) {
+    const t = all[k]!;
+    if (t === '\\begin{matrix}' || t === '&' || t === '\\\\') continue;
+    if (t === '\\end{matrix}') {
+      // The fence `cases` leaves open.
+      if (all[k + 1] === '.') k++;
+      continue;
+    }
+    const wrapped = WRAPPER.exec(t);
+    if (wrapped) {
+      out.push(...wrapped[1]!);
+      continue;
+    }
+    out.push(t);
+    // A function's name spelled out again after it.
+    const name = /^\\([A-Za-z]+)$/.exec(t)?.[1];
+    if (name && all.slice(k + 1, k + 1 + name.length).join('') === name) k += name.length;
+  }
+  return join(out);
+}

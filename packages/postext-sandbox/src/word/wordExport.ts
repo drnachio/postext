@@ -76,7 +76,7 @@ export async function wordResourceBytes(resources: readonly Resource[]): Promise
 }
 
 /** An SVG drawn to PNG in this page, for the picture Word shows beside it. */
-async function rasterizeSvg(svg: string, widthPx: number, heightPx: number): Promise<Uint8Array | undefined> {
+export async function rasterizeSvg(svg: string, widthPx: number, heightPx: number): Promise<Uint8Array | undefined> {
   try {
     return (await rasterizeSvgWithDom(svg, widthPx, heightPx)) ?? undefined;
   } catch {

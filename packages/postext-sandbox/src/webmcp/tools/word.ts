@@ -11,7 +11,6 @@ import {
   characterTargetOf,
   chipStylesOf,
   emptyTemplate,
-  isExportedDocx,
   lookup,
   newTemplateId,
   parseTemplate,
@@ -47,6 +46,7 @@ import {
   type WordTrackingPlan,
   type WordDestination,
 } from '../../word/sandboxImport.js';
+import { isWordExport } from '../../word/wordEdits.js';
 import { chapterText, editChapter } from '../chapterEdits.js';
 import { chapterOf, dispatchAndWait, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
@@ -175,8 +175,9 @@ export function wordTools(host: SandboxToolHost): WebMcpTool[] {
 
       const file = await readFileInput(args.file as FileInput, signal);
       const bytes = new Uint8Array(await file.arrayBuffer());
-      // A document the Sandbox exported comes back by its marks (#1397).
-      if (isExportedDocx(bytes)) {
+      // A document the Sandbox exported comes back by its marks (#1397),
+      // with its export map or, saved by Google Docs, without (#1458).
+      if (isWordExport(bytes)) {
         throw new ToolError(`${file.name} was exported from the Sandbox: sandbox_apply_word_edits takes the changes made in it back into the book, each where it belongs.`);
       }
       let doc: WordDocument;

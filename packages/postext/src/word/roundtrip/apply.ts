@@ -11,6 +11,9 @@ import { blockHunks, hunkEdits, type SourceEdit } from './edits.js';
 import { formatEdits } from './formats.js';
 import { mergeText, type PlacedEdit } from './merge.js';
 import { readExportedDocx, type ReadComment } from './read.js';
+import type { RebuiltMap } from './rebuild.js';
+import { looseText } from './align.js';
+import { settleLooks, writtenHidden } from './settle.js';
 import { fieldName, setField, targetKey, textsOf, type TextTarget } from './targets.js';
 import type { DocxComment, DocxEdit, DocxEditResult, DocxEditSource } from './types.js';
 import { OBJECT_CHAR, PARA_CHAR } from './walk.js';
@@ -149,6 +152,23 @@ function bookmarksLost(blocks: readonly BlockView[], read: { strays: readonly st
 }
 
 /**
+ * Paragraphs of the file that read like the ones the writer set outside
+ * every fragment (a contents line, an index entry, a label): an editor
+ * turned the field or the style that marked them into plain text. They
+ * are the writer's, not paragraphs typed in the editor.
+ */
+function dropFurniture(added: { chars: readonly { ch: string }[] }[], furniture: ReadonlyMap<string, number>): void {
+  const left = new Map(furniture);
+  for (let i = 0; i < added.length; i++) {
+    const key = looseText(added[i]!.chars.map((c) => c.ch).join(''));
+    const n = left.get(key) ?? 0;
+    if (n <= 0) continue;
+    left.set(key, n - 1);
+    added.splice(i--, 1);
+  }
+}
+
+/**
  * The text blocks of a chapter that stand in another order than they were
  * exported in (a paragraph cut and pasted elsewhere, its bookmark with
  * it): the fewest that, taken out, leave the others in order. Notes are
@@ -215,11 +235,28 @@ function commentSource(v: BlockView, hunks: readonly Hunk[], fid: string, index:
  * each edit (applied, in conflict with a change made since the export, or
  * rejected) and every comment with its source range. Throws DocxReadError
  * for a broken file or one without an export map.
+ *
+ * `rebuilt`: the map written again from the book (`rebuildExportMap`),
+ * for a file whose editor dropped its own (Google Docs). A file that
+ * carries its map is read by it, and `rebuilt` is left aside.
  */
-export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): DocxEditResult {
-  const read = readExportedDocx(bytes);
+export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, options: { rebuilt?: RebuiltMap } = {}): DocxEditResult {
+  const given = options.rebuilt;
+  const read = readExportedDocx(bytes, given ? { map: given.map, looks: true, foreign: given.foreign } : {});
   const { map } = read;
-  const blocks = buildBlocks(map.fragments, read.fragments, read.holders, read.newNotes);
+  // The file's own map when it has one.
+  const rebuilt = given && map === given.map ? given : undefined;
+  const blocks = buildBlocks(map.fragments, read.fragments, read.holders, read.newNotes, rebuilt?.looks);
+  // Passages left alone whatever the file holds for them: text the book
+  // gained since the export, and text the writer hid, which an editor
+  // that keeps no hidden text drops.
+  const aside = new Set<BlockView>();
+  if (rebuilt) {
+    for (const v of blocks) {
+      settleLooks(v, read.caps !== true);
+      if (v.frags.every((f) => rebuilt.unplaced.has(f.id)) || (writtenHidden(v) && (v.missing || !/\S/.test(v.N)))) aside.add(v);
+    }
+  }
   const byTarget = new Map<string, { target: TextTarget; edits: SourceEdit[] }>();
   const generated: SourceEdit[] = [];
   const hunksOf = new Map<BlockView, Hunk[]>();
@@ -256,6 +293,8 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
     // rejected edit per resource instead. A single field removed while the
     // figure stays is still read as that field emptied.
     const unmarked = bookmarksLost(blocks, read);
+    for (const v of aside) unmarked.add(v);
+    if (rebuilt) dropFurniture(read.added, rebuilt.furniture);
     // A file that comes back with no code at all, from a book that had
     // some, went through an editor that keeps no character styles: code is
     // then no longer told from text, and none of it counts as changed.
@@ -368,6 +407,7 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
     edits,
     comments,
     changed: edits.some((e) => e.status === 'applied'),
+    ...(rebuilt ? { notes: rebuilt.notes } : {}),
   };
 }
 

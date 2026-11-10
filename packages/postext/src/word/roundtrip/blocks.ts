@@ -46,6 +46,11 @@ export interface BlockView {
   NNote: ({ id: string; text: string } | undefined)[];
   /** Definitions of the notes the block's edits add (`[^w3]: …`). */
   noteDefs?: string[];
+  /** The look of each character as written and as read back, styles
+   *  counted in (`looks.ts`): set when the map was written again from the
+   *  book and every fragment of the block told its looks. */
+  OL?: string[];
+  NL?: string[];
   /** Positions in N where tracked-deleted text stood. */
   dels: number[];
   /** Fragment and offset in N where each fragment's text starts. */
@@ -63,7 +68,13 @@ function sameTarget(a: FragmentTarget, b: FragmentTarget): boolean {
 }
 
 /** Blocks in reading order (first appearance in the map). */
-export function buildBlocks(fragments: readonly MapFragment[], read: ReadonlyMap<string, ReadFragment>, holders = false, newNotes?: ReadonlyMap<string, readonly ReadChar[]>): BlockView[] {
+export function buildBlocks(
+  fragments: readonly MapFragment[],
+  read: ReadonlyMap<string, ReadFragment>,
+  holders = false,
+  newNotes?: ReadonlyMap<string, readonly ReadChar[]>,
+  looks?: ReadonlyMap<string, readonly string[]>,
+): BlockView[] {
   const groups = new Map<string, MapFragment[]>();
   for (const f of fragments) {
     let g = groups.get(f.block);
@@ -80,12 +91,19 @@ export function buildBlocks(fragments: readonly MapFragment[], read: ReadonlyMap
       if (last && sameTarget(last[0]!.target, f.target)) last.push(f);
       else runs.push([f]);
     }
-    runs.forEach((run, k) => out.push(buildBlock(runs.length > 1 ? `${id}#${k}` : id, run, read, holders, newNotes)));
+    runs.forEach((run, k) => out.push(buildBlock(runs.length > 1 ? `${id}#${k}` : id, run, read, holders, newNotes, looks)));
   }
   return out;
 }
 
-function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, ReadFragment>, holders: boolean, newNotes?: ReadonlyMap<string, readonly ReadChar[]>): BlockView {
+function buildBlock(
+  id: string,
+  frags: MapFragment[],
+  read: ReadonlyMap<string, ReadFragment>,
+  holders: boolean,
+  newNotes?: ReadonlyMap<string, readonly ReadChar[]>,
+  looks?: ReadonlyMap<string, readonly string[]>,
+): BlockView {
   let O = '';
   const M: number[] = [];
   const OK: string[] = [];
@@ -96,6 +114,8 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
   const NH: (string | undefined)[] = [];
   const NHeld: boolean[] = [];
   const NTracked: boolean[] = [];
+  let OL: string[] | undefined = looks ? [] : undefined;
+  const NL: string[] = [];
   const NNote: ({ id: string; text: string } | undefined)[] = [];
   const dels: number[] = [];
   const starts = new Map<string, number>();
@@ -117,6 +137,9 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
       }
     }
     for (let i = 0; i < f.text.length; i++) OK.push(makeKey(flags[i]!, hrefs[i]));
+    const written = looks?.get(f.id);
+    if (written && written.length === f.text.length) OL?.push(...written);
+    else OL = undefined;
     for (const a of f.atoms ?? []) {
       let a1 = a.at + 1;
       while (a1 < f.text.length && f.map[a1] === a.start && a.start >= 0) a1++;
@@ -144,6 +167,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
       NH.push(c.mathHash);
       NHeld.push(c.holder === true);
       NTracked.push(!!c.tracked);
+      NL.push(c.look ?? '');
       const note = c.note ? newNotes?.get(c.note) : undefined;
       NNote.push(note ? { id: `w${c.note}`, text: markdownOf(note) } : undefined);
     }
@@ -154,6 +178,7 @@ function buildBlock(id: string, frags: MapFragment[], read: ReadonlyMap<string, 
   });
   return {
     id, target: frags[0]!.target, frags, O, M, OK, atomOf, atoms, N, NK, NT, NH, ...(holders ? { NHeld } : {}), NTracked, NNote, dels, starts,
+    ...(OL ? { OL, NL } : {}),
     missing: found === 0, startPara, endPara, range: [r0, r1],
   };
 }

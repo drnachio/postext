@@ -12,6 +12,7 @@ import { attr, child, children, localName, onOff, textOf, type XmlElement } from
 import { fragmentIdOf, renamedFragmentIdOf } from '../anchors/bookmarks.js';
 import { ommlToTex } from '../omml.js';
 import { ommlHash } from '../anchors/ommlHash.js';
+import { MONO_FACE, type StyleLooks } from './looks.js';
 
 /** Object replacement character: an equation or a note reference. */
 export const OBJECT_CHAR = '￼';
@@ -23,7 +24,7 @@ export const PARA_CHAR = ' ';
 export const isHolderChar = (ch: string | undefined): boolean => ch === '\u00a0' || ch === '\u2060';
 
 export type Token =
-  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; note?: string; para: number }
+  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; note?: string; para: number; look?: string }
   | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps }
   | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number; renamed?: true }
   | { t: 'bmEnd'; wid: string; para: number }
@@ -92,13 +93,25 @@ interface WalkState {
   joinNext?: number;
   /** A run marked w:noProof was seen (the mark survived the editor). */
   noProof?: boolean;
+  /** Starts of our bookmarks met between paragraphs, waiting for the
+   *  paragraph they belong to (see `openHoisted`). */
+  hoisted: Extract<Token, { t: 'bmStart' }>[];
+  /** Hoisted starts that open where another bookmark of their paragraph
+   *  ends, by that bookmark's `w:id`. */
+  chained: Map<string, Extract<Token, { t: 'bmStart' }>>;
+  /** The file's styles, when each character's look is read (`looks.ts`),
+   *  the style of the paragraph being read and the look of the run. */
+  looks?: StyleLooks;
+  pStyles: (string | undefined)[];
+  look?: string;
+  /** Collects the text of the paragraphs read as nothing because the
+   *  writer generated them (a contents line, an index entry). */
+  generated?: string[];
+  genText: string;
 }
 
 const curPara = (s: WalkState): number => s.paras[s.paras.length - 1] ?? -1;
 const curBox = (s: WalkState): number => s.boxes[s.boxes.length - 1] ?? -1;
-
-/** A monospaced face by its name. */
-const MONO_FACE = /mono|courier|consolas|menlo|typewriter/i;
 
 /** Paragraph styles of a contents list or an index: what Word builds from
  *  the document, never text of the source. */
@@ -163,8 +176,12 @@ function fieldHref(s: WalkState): string | undefined {
 
 function emit(s: WalkState, ch: string, flags: string, ctx: RunCtx, tex?: string, mathHash?: string): void {
   if (ctx.deleted) return;
-  if (fieldHidden(s)) return;
+  if (fieldHidden(s)) {
+    if (s.generated && !s.fields[s.fields.length - 1]?.code) s.genText += ch;
+    return;
+  }
   const tok: Token = { t: 'char', ch, flags, para: curPara(s) };
+  if (s.look !== undefined && tex === undefined) tok.look = s.look;
   const href = ctx.href ?? fieldHref(s);
   if (href) tok.href = href;
   if (tex !== undefined) tok.tex = tex;
@@ -179,6 +196,8 @@ function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
   // The formatted writer marks an atom's holder run w:noProof.
   const held = rPr !== undefined && onOff(child(rPr, 'noProof')) === true;
   if (held) s.noProof = true;
+  const outerLook = s.look;
+  if (s.looks) s.look = s.looks.look(s.pStyles[s.pStyles.length - 1], rPr);
   for (const c of children(r)) {
     const name = localName(c.name);
     switch (name) {
@@ -271,6 +290,7 @@ function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
         break;
     }
   }
+  s.look = outerLook;
 }
 
 /** Find the text boxes inside a drawing (or VML picture) and read them. */
@@ -346,9 +366,16 @@ function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
         if (fid !== undefined) s.out.push({ t: 'bmStart', wid: attr(c, 'id') ?? '', fid, para: curPara(s), depth: s.paras.length, box: curBox(s), ...(renamed !== undefined ? { renamed: true as const } : {}) });
         break;
       }
-      case 'bookmarkEnd':
-        s.out.push({ t: 'bmEnd', wid: attr(c, 'id') ?? '', para: curPara(s) });
+      case 'bookmarkEnd': {
+        const wid = attr(c, 'id') ?? '';
+        s.out.push({ t: 'bmEnd', wid, para: curPara(s) });
+        const next = s.chained.get(wid);
+        if (next) {
+          s.chained.delete(wid);
+          s.out.push(next);
+        }
         break;
+      }
       case 'commentRangeStart':
         s.out.push({ t: 'cStart', cid: attr(c, 'id') ?? '' });
         break;
@@ -364,6 +391,40 @@ function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
   }
 }
 
+/** The `w:id`s of the bookmark ends inside a paragraph, in order (the
+ *  text boxes it anchors left out). */
+function bookmarkEnds(el: XmlElement, out: string[] = []): string[] {
+  for (const c of children(el)) {
+    const name = localName(c.name);
+    if (name === 'bookmarkEnd') out.push(attr(c, 'id') ?? '');
+    else if (name !== 'txbxContent' && name !== 'r') bookmarkEnds(c, out);
+  }
+  return out;
+}
+
+/**
+ * Open the bookmarks whose start an editor moved out of their paragraph
+ * (#1458). Google Docs keeps a bookmark as one point: it writes the start
+ * between the paragraphs, before the one that holds the bookmark, and
+ * leaves the end where it was. So the text of such a bookmark runs from
+ * the paragraph's start, or from where the bookmark before it in the same
+ * paragraph ends (a label and its caption), to its own end.
+ */
+function openHoisted(s: WalkState, p: XmlElement, ord: number): void {
+  if (!s.hoisted.length) return;
+  const ends = bookmarkEnds(p);
+  const here = (t: { wid: string }): number => ends.indexOf(t.wid);
+  const starts = s.hoisted.map((t) => ({ ...t, para: ord, depth: s.paras.length, box: curBox(s) }));
+  s.hoisted = [];
+  // Bookmarks that end in another paragraph open at this one's start.
+  for (const t of starts) if (here(t) < 0) s.out.push(t);
+  const inside = starts.filter((t) => here(t) >= 0).sort((a, b) => here(a) - here(b));
+  inside.forEach((t, k) => {
+    if (k === 0) s.out.push(t);
+    else s.chained.set(inside[k - 1]!.wid, t);
+  });
+}
+
 function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
   // After a paragraph whose mark was deleted (tracked), this one continues it.
   const ord = s.joinNext ?? s.nextPara++;
@@ -376,7 +437,13 @@ function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
   const outerTouched = s.touched;
   s.touched = s.fields.some((f) => f.skip);
   const before = s.out.length;
+  openHoisted(s, p, ord);
+  s.pStyles.push(attr(child(child(p, 'pPr'), 'pStyle'), 'val'));
+  s.genText = '';
   walkInline(s, p, ctx);
+  s.pStyles.pop();
+  // A chained start whose turn never came opens nothing.
+  s.chained.clear();
   let own = false;
   for (let k = before; k < s.out.length && !own; k++) own = s.out[k]!.t !== 'cStart' && s.out[k]!.t !== 'cEnd';
   let generatedOnly = s.touched === true && !own;
@@ -387,10 +454,13 @@ function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
     let marked = false;
     for (let k = before; k < s.out.length && !marked; k++) marked = s.out[k]!.t === 'bmStart' || s.out[k]!.t === 'bmEnd';
     if (!marked) {
+      if (s.generated) for (let k = before; k < s.out.length; k++) if (s.out[k]!.t === 'char') s.genText += (s.out[k] as { ch: string }).ch;
       s.out.length = before;
       generatedOnly = true;
     }
   }
+  if (s.generated && s.genText.trim()) s.generated.push(s.genText.trim());
+  s.genText = '';
   s.touched = outerTouched;
   const depth = s.paras.length;
   s.paras.pop();
@@ -420,7 +490,20 @@ function walkBlocks(s: WalkState, el: XmlElement, ctx: RunCtx): void {
     } else if (name === 'AlternateContent') {
       const choice = child(c, 'Choice');
       if (choice) walkBlocks(s, choice, ctx);
+    } else if (name === 'bookmarkStart' && (fragmentIdOf(attr(c, 'name') ?? '') ?? renamedFragmentIdOf(attr(c, 'name') ?? '')) !== undefined) {
+      // One of our bookmarks starting between paragraphs: it belongs to
+      // the paragraph that follows.
+      const at = s.out.length;
+      walkInline(s, { name: 'w:wrap', attrs: {}, children: [c] }, ctx);
+      s.hoisted.push(...(s.out.splice(at) as Extract<Token, { t: 'bmStart' }>[]));
     } else {
+      // A bookmark that starts and ends between two paragraphs holds no
+      // text: it is read where it stands.
+      if (name === 'bookmarkEnd' && s.hoisted.length) {
+        const wid = attr(c, 'id') ?? '';
+        const k = s.hoisted.findIndex((t) => t.wid === wid);
+        if (k >= 0) s.out.push(...s.hoisted.splice(k, 1));
+      }
       // Bookmarks and comment ranges between paragraphs.
       walkInline(s, { name: 'w:wrap', attrs: {}, children: [c] }, ctx);
     }
@@ -428,8 +511,17 @@ function walkBlocks(s: WalkState, el: XmlElement, ctx: RunCtx): void {
 }
 
 /** The token stream of a part's block container (`w:body`, a note). */
-export function walkPart(container: XmlElement, links: Record<string, string>, out: Token[] = [], start = 0, boxStart = 0): { tokens: Token[]; nextPara: number; nextBox: number; noProof: boolean } {
-  const s: WalkState = { out, links, paras: [], nextPara: start, boxes: [boxStart], nextBox: boxStart + 1, fields: [] };
+export function walkPart(
+  container: XmlElement,
+  links: Record<string, string>,
+  out: Token[] = [],
+  start = 0,
+  boxStart = 0,
+  more: { looks?: StyleLooks; generated?: string[] } = {},
+): { tokens: Token[]; nextPara: number; nextBox: number; noProof: boolean } {
+  const s: WalkState = { out, links, paras: [], nextPara: start, boxes: [boxStart], nextBox: boxStart + 1, fields: [], hoisted: [], chained: new Map(), pStyles: [], genText: '', ...more };
   walkBlocks(s, container, {});
+  // Starts no paragraph followed.
+  out.push(...s.hoisted);
   return { tokens: out, nextPara: s.nextPara, nextBox: s.nextBox, noProof: s.noProof === true };
 }

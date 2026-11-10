@@ -5598,6 +5598,13 @@ export interface SandboxLabels {
   wordEditsApply: string;
   wordEditsDone: string;
   wordEditsFailed: string;
+  wordEditsReading: string;
+  wordEditsNotThisBook: string;
+  wordEditsNoteRebuilt: string;
+  wordEditsNoteBookChanged: string;
+  wordEditsNoteUnverified: string;
+  wordEditsNoteWriterChanged: string;
+  wordEditsNoteChaptersMissing: string;
   /** Word style name of a callout type in an export (`__name__`). */
   // Named frame looks (#1089).
   frameLooksSection: string;

@@ -56,11 +56,11 @@ export default async function importDocx(ctx: CommandContext): Promise<void> {
   if (project) {
     // The edits are written into the book itself.
     if (opts.string('out')) throw new UsageError('-o converts a Word file into a new book: with a book named, the edits are written into it (--dry-run to see them first)');
-    // An export whose map the program it was saved from left out: the
-    // edits made in it have nothing to be placed by.
-    if (!exported && exportMapLost(bytes)) throw new CliError(`${file} comes from a postext export, but the program it was last saved from left the export map out, so the edits in it cannot be placed in the book. Make the corrections in a copy that keeps the map (Word and LibreOffice do)`);
-    if (!exported) throw new CliError(`${file} was not exported by postext (it has no export map): import it without naming a book to convert it`);
-    await importWordEdits(bytes, file, project, opts, reporter);
+    // An export whose map the program it was saved from left out (Google
+    // Docs): the map is written again from the book.
+    const withoutMap = !exported && exportMapLost(bytes);
+    if (!exported && !withoutMap) throw new CliError(`${file} was not exported by postext (it has no export map): import it without naming a book to convert it`);
+    await importWordEdits(bytes, file, project, opts, reporter, withoutMap);
     return;
   }
   if (opts.flag('dry-run')) throw new UsageError('--dry-run applies to the edits of an exported file: name the book it was exported from');
