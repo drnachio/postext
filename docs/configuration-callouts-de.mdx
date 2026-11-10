@@ -219,6 +219,12 @@ The glass stays hot for an hour after the flame is out.
       <td>Mit <code>true</code> rastet der Fluss nach dem Kasten wieder auf das Grundlinienraster ein, der Abstand darunter ist also <code>marginBottom</code>, auf ganze Rasterzeilen aufgerundet. Mit <code>false</code> behält der Kasten sein genaues <code>marginBottom</code>, das mit dem oberen Außenabstand des nächsten Blocks zusammenfällt – zwei aufeinanderfolgende Kästen eines solchen Stils stehen genau <code>max(marginBottom, marginTop)</code> voneinander entfernt –, und der Text danach kann bis zum nächsten Einrastpunkt (einer Überschrift, dem Ende einer Liste) außerhalb des Rasters stehen, wie nach einer Überschrift mit <code>headings.snapToGrid: false</code>. Gedacht für Dokumente aus gestapelten Kästen (Arbeitsblätter, Formulare). Es gilt für Kästen im Fluss; Kästen über die ganze Seitenbreite in einem mehrspaltigen Layout sowie gleitende, fixierte und Seitenkästen behalten das Raster, da Spaltenbereiche und die Bereiche der Gleitobjekte darauf aufbauen. Die Hebel des Spaltenausgleichs bleiben unverändert: Ein Kasten, der eine Spalte abschließt, wird weiterhin auf die letzte Rasterzeile der Spalte hinabgeschoben.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lässt den Kasten auf einer Rasterlinie beginnen: Der Abstand darüber wird bis zur nächsten aufgerundet, wie auch immer der Block davor endete, und der Kasten wird mit diesem Abstand in die Spalte eingepasst. Standardmäßig aus. Es gilt für Kästen im Fluss; schwebende, feste und seitliche Kästen stehen in Bändern, die schon auf dem Raster liegen. Im Sandbox: <strong>Auf einer Rasterlinie beginnen</strong>.</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

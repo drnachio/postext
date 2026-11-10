@@ -63,16 +63,10 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td>Der Abstand zwischen zwei Absätzen. <code>true</code> fügt eine Leerzeile (so hoch wie <code>lineHeight</code>) ein, wie es Verlage zur Trennung von Absätzen tun; eine Länge wie <code>&#123; value: 2, unit: 'mm' &#125;</code> oder <code>0.33em</code> der Schriftgröße setzt genau diesen Abstand, im Fließtext, in Kästen und in den Rahmen komponierter Seiten. Eine Länge, die keine ganze Zahl von Zeilen ist, nimmt die Absätze aus dem Grundlinienraster; der nächste Block, der sich daran ausrichtet (eine Überschrift, der letzte Punkt einer Liste, eine abgesetzte Formel), bringt den Text zurück. Es ist derselbe Abstand wie <code>paragraphStyles[].spaceBetween</code>, das ihn in einem Container <code>:::paragraphs</code> ersetzt. Ein Kasten setzt seinen eigenen in <code>calloutStyles[].body.paragraphSpacing</code>.</td>
     </tr>
     <tr>
-      <td><code>snapToGrid</code></td>
+      <td><code>snapTopToGrid</code></td>
       <td><code>boolean</code></td>
-      <td><code>true</code></td>
-      <td>Ob ein Absatz des Fließtexts (und ein Zitat) im Grundlinienraster steht: Mit <code>page.baselineGrid.perStyle</code> beginnt er auf der nächsten Rasterlinie, wie auch immer der Block davor endete; <code>false</code> lässt ihn dort, wo der Block davor endete. Nur mit <code>perStyle</code> gelesen.</td>
-    </tr>
-    <tr>
-      <td><code>firstParagraphSnapToGrid</code></td>
-      <td><code>boolean</code></td>
-      <td><code>true</code></td>
-      <td>Dasselbe für den ersten Absatz nach einer Überschrift, der an den eigenen Abstand der Überschrift anschließen kann, während der übrige Text im Raster bleibt. Nur mit <code>page.baselineGrid.perStyle</code> gelesen.</td>
+      <td><code>false</code></td>
+      <td>Lässt jeden Absatz des Fließtexts und jedes Zitat auf einer Rasterlinie beginnen: Der Abstand darüber wird bis zur nächsten aufgerundet, wie auch immer der Block davor endete (eine Überschrift außerhalb des Rasters, ein Kasten oder eine Abbildung mit genauen Abständen). <code>false</code> lässt den Absatz dort, wo der Block davor ihn ließ. Ein Absatz in einem <code>:::paragraphs</code>-Container folgt stattdessen dem <code>snapTopToGrid</code> seines Stils, Verse dem ihres Absatzstils oder, ohne einen, diesem. Um das Raster nur unter einer Überschrift außerhalb des Rasters wiederzufinden, dient deren <code>regainGrid</code>. Im Sandbox: <strong>Absätze auf einer Rasterlinie beginnen</strong>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>

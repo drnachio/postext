@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Se una formula in display si allinea alla griglia della linea di base: sotto la formula il flusso torna sulla griglia (e, con <code>page.baselineGrid.perStyle</code>, la formula inizia su una riga della griglia). <code>false</code> mantiene i suoi margini esatti.</td>
+      <td>Se una formula in evidenza poggia sulla griglia di base: il flusso vi ritorna sotto la formula. <code>false</code> mantiene i suoi margini esatti. Nel Sandbox: <strong>Torna alla griglia dopo le formule</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fa iniziare una formula in evidenza su una riga della griglia: lo spazio sopra viene arrotondato fino alla successiva, comunque sia finito il blocco precedente. Spento per impostazione predefinita. Nel Sandbox: <strong>Inizia le formule su una riga della griglia</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

@@ -107,7 +107,13 @@ export const metadata = {
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td><code>snapToGrid</code>が<code>false</code>のときだけ読まれます。見出しは正確な余白と自身の行送りを保ち、その後の本文は次のグリッド線から始まるので、段は次の揃え位置までグリッドから外れたままにならず、そこでグリッドに戻ります。このような見出しの上には段の均等化で行を足しません。レベル（<code>levels[].regainGrid</code>）や見出しスタイルで個別に設定できます。Sandboxでは、グリッドのスイッチの下の<strong>本文でグリッドに戻す</strong>です。</td>
+      <td><code>snapToGrid</code>が<code>false</code>のときだけ読まれます。見出しは正確な余白と自身の行送りを保ち、その後のブロック（本文、リスト、本文中の図や表、囲み）は次のグリッド線から始まるので、段は次の揃え位置までグリッドから外れたままにならず、そこでグリッドに戻ります。見出しを後続行と一緒に保つ判定はこの切り上げを含めて行い、段の均等化は見出しの上に行を足すことがあります。レベル（<code>levels[].regainGrid</code>）や見出しスタイルで個別に設定できます。Sandboxでは、グリッドのスイッチの下の<strong>本文でグリッドに戻す</strong>です。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>見出しをグリッド線から始めます。前のブロックがどこで終わっても、上の間隔を次のグリッド線まで切り上げ、<code>marginTop</code>は最小値になります。既定ではオフです。レベル（<code>levels[].snapTopToGrid</code>）や見出しスタイルで個別に設定でき、ここでの値がその既定値になります。Sandboxでは<strong>見出しをグリッド線から始める</strong>です。</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

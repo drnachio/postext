@@ -107,7 +107,13 @@ Die Eigenschaft `headings` steuert die Typografie aller Überschriftenebenen (H1
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Nur gelesen, wenn <code>snapToGrid</code> <code>false</code> ist: Die Überschrift behält ihre genauen Abstände und ihren eigenen Zeilenabstand, und der Text danach beginnt auf der nächsten Rasterlinie, sodass die Spalte dort ins Raster zurückfindet, statt bis zum nächsten Einrastpunkt außerhalb zu bleiben. Der Spaltenausgleich fügt über einer solchen Überschrift keine Zeilen ein. Eine Ebene (<code>levels[].regainGrid</code>) oder ein Überschriftenstil kann einen eigenen Wert setzen. Im Sandbox: <strong>Raster beim Text wiederfinden</strong>, unter dem Rasterschalter.</td>
+      <td>Nur gelesen, wenn <code>snapToGrid</code> <code>false</code> ist: Die Überschrift behält ihre genauen Abstände und ihren eigenen Zeilenabstand, und der Block danach (Text, eine Liste, eine Abbildung oder Tabelle im Text, ein Kasten) beginnt auf der nächsten Rasterlinie, sodass die Spalte dort ins Raster zurückfindet, statt bis zum nächsten Einrastpunkt außerhalb zu bleiben. Das Zusammenhalten der Überschrift mit den folgenden Zeilen rechnet diese Aufrundung mit, und der Spaltenausgleich kann über der Überschrift weiterhin Zeilen einfügen. Eine Ebene (<code>levels[].regainGrid</code>) oder ein Überschriftenstil kann einen eigenen Wert setzen. Im Sandbox: <strong>Raster beim Text wiederfinden</strong>, unter dem Rasterschalter.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lässt die Überschrift auf einer Rasterlinie beginnen: Der Abstand darüber wird bis zur nächsten aufgerundet, wie auch immer der Block davor endete; <code>marginTop</code> ist dann ein Mindestwert. Standardmäßig aus. Eine Ebene (<code>levels[].snapTopToGrid</code>) oder ein Überschriftenstil kann einen eigenen Wert setzen; dieser hier wird von ihnen geerbt. Im Sandbox: <strong>Überschriften auf einer Rasterlinie beginnen</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

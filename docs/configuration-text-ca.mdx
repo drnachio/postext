@@ -64,16 +64,10 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td>L'espai entre dos paràgrafs. <code>true</code> insereix una línia en blanc (igual al <code>lineHeight</code>), com fan algunes editorials; una mida com <code>&#123; value: 2, unit: 'mm' &#125;</code> o <code>0.33em</code> del cos del text deixa exactament aquest espai, al text corregut, als requadres i als marcs de les pàgines compostes. Una mida que no sigui un nombre enter de línies treu els paràgrafs de la retícula base; el bloc següent que s'hi ajusta (un títol, l'últim element d'una llista, una fórmula destacada) hi torna el text. És el mateix espai que <code>paragraphStyles[].spaceBetween</code>, que el substitueix dins d'un contenidor <code>:::paragraphs</code>. Un requadre fixa el seu a <code>calloutStyles[].body.paragraphSpacing</code>.</td>
     </tr>
     <tr>
-      <td><code>snapToGrid</code></td>
+      <td><code>snapTopToGrid</code></td>
       <td><code>boolean</code></td>
-      <td><code>true</code></td>
-      <td>Si un paràgraf de cos (i una cita) va sobre la retícula de base: amb <code>page.baselineGrid.perStyle</code> comença a la línia següent de la retícula, acabi com acabi el bloc anterior; <code>false</code> el deixa on l'ha deixat el bloc anterior. Només es llegeix amb <code>perStyle</code>.</td>
-    </tr>
-    <tr>
-      <td><code>firstParagraphSnapToGrid</code></td>
-      <td><code>boolean</code></td>
-      <td><code>true</code></td>
-      <td>El mateix per al primer paràgraf després d'un encapçalament, que pot seguir l'espaiat propi de l'encapçalament mentre la resta del text s'ajusta a la retícula. Només es llegeix amb <code>page.baselineGrid.perStyle</code>.</td>
+      <td><code>false</code></td>
+      <td>Comença cada paràgraf del cos i cada cita en una línia de la retícula: l’espai de damunt s’arrodoneix fins a la següent, acabi com acabi el bloc anterior (un títol fora de la retícula, un requadre o una figura amb marges exactes). <code>false</code> deixa el paràgraf on l’ha deixat el bloc anterior. Un paràgraf dins d’un contenidor <code>:::paragraphs</code> segueix en canvi el <code>snapTopToGrid</code> del seu estil, i el vers el del seu estil de paràgraf, o aquest quan no en té. Per recuperar la retícula només sota un títol que n’és fora, fes servir el <code>regainGrid</code> del títol. Al Sandbox: <strong>Començar els paràgrafs en una línia de la retícula</strong>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>

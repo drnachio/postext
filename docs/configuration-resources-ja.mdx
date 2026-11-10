@@ -148,7 +148,12 @@ interface ResourceType {
     <tr>
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code>（省略可）</td>
-      <td>既定は<code>true</code>。本文中に置いたこのタイプの図や表をベースライングリッドに合わせるかどうか。リソースの下で流れがグリッドに戻ります（<code>page.baselineGrid.perStyle</code>のときは、リソースもグリッド線から始まります）。<code>false</code>ではリソースが残す正確なアキを保ちます。段の頭や足に置いたフロートには影響しません。</td>
+      <td>既定は<code>true</code>。本文中に置いたこのタイプの図や表をベースライングリッドに載せるかどうか。リソースの下で流れがグリッドに戻ります。<code>false</code>ではリソースが残す正確な間隔を保ちます。段の先頭や末尾のフロートには影響しません。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code>（省略可）</td>
+      <td>既定は<code>false</code>。前のブロックがどこで終わっても、本文中に置いたこのタイプの図や表をグリッド線から始めます。段の先頭や末尾のフロート、本文が回り込む図、段の先頭にある図には影響しません。Sandboxでは<strong>グリッド線から始める</strong>です。</td>
     </tr>
   </tbody>
 </table>

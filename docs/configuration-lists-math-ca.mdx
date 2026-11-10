@@ -481,7 +481,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Si una fórmula en bloc va sobre la retícula de base: el flux torna a la retícula sota la fórmula (i, amb <code>page.baselineGrid.perStyle</code>, la fórmula comença en una línia de la retícula). <code>false</code> conserva els seus marges exactes.</td>
+      <td>Si una fórmula destacada s’assenta a la retícula de base: el flux hi torna sota la fórmula. <code>false</code> conserva els marges exactes. Al Sandbox: <strong>Tornar a la retícula després de les fórmules</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Comença una fórmula destacada en una línia de la retícula: l’espai de damunt s’arrodoneix fins a la següent, acabi com acabi el bloc anterior. Apagat per defecte. Al Sandbox: <strong>Començar les fórmules en una línia de la retícula</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

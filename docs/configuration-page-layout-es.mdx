@@ -186,14 +186,10 @@ La rejilla base marca el ritmo del texto base: líneas separadas por el interlin
       <td><code>0.5 pt</code></td>
       <td>Grosor de las líneas de la rejilla.</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Cada estilo decide por sí mismo. <code>false</code>, la regla hasta ahora: un estilo fuera de la rejilla (<code>snapToGrid: false</code>) deja fuera de ella el texto que lo sigue hasta el siguiente bloque que se ajusta, de modo que su desfase se arrastra en cascada. <code>true</code>: un bloque cuyo estilo va sobre la rejilla empieza en la siguiente línea de la rejilla, termine como termine el bloque anterior, y uno fuera de la rejilla conserva su espaciado exacto sin transmitirlo. Los estilos que deciden: los niveles y estilos de encabezado, los estilos de párrafo, el texto de cuerpo (<code>bodyText.snapToGrid</code>) y el primer párrafo tras un encabezado (<code>bodyText.firstParagraphSnapToGrid</code>), ambos <code>true</code> por defecto y leídos solo con <code>perStyle</code>, los estilos de aviso, las listas (<code>snapTopToGrid</code>), las fórmulas en bloque (<code>math.snapToGrid</code>) y las figuras y tablas (el <code>snapToGrid</code> de su tipo de recurso). El arranque de una columna está siempre sobre la rejilla. En el Sandbox: Columnas › <strong>Cada estilo decide por sí mismo</strong>.</td>
-    </tr>
   </tbody>
 </table>
+
+Dónde empieza un bloque lo decide su estilo. Cada estilo que puede empezar en una línea de la rejilla tiene un interruptor `snapTopToGrid`, apagado por defecto: `headings` (y un nivel o un estilo de título), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, las listas, `math` y `resourceTypes[]`. Encendido, el espacio sobre el bloque se redondea hasta la siguiente línea de la rejilla, termine como termine el bloque anterior. La cabeza de una columna está siempre en la rejilla.
 
 ```ts
 page: {

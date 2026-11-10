@@ -148,7 +148,12 @@ Un type peut omettre des champs (depuis postext 1.38) : le type intégré de m�
     <tr>
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code> (facultatif)</td>
-      <td>Par défaut <code>true</code>. Si une figure ou un tableau de ce type placé dans le texte s’aligne sur la grille de ligne de base : le flux y revient sous la ressource (et, avec <code>page.baselineGrid.perStyle</code>, la ressource commence sur une ligne de la grille). <code>false</code> garde l’espace exact qu’elle laisse. Les flottants en tête ou en pied de colonne ne sont pas concernés.</td>
+      <td>Par défaut <code>true</code>. Si une figure ou un tableau de ce type placé dans le texte repose sur la grille de base : le flux y revient sous la ressource. <code>false</code> garde l’espace exact que laisse la ressource. Les flottants en haut ou en bas d’une colonne ne sont pas concernés.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (facultatif)</td>
+      <td>Par défaut <code>false</code>. Fait commencer une figure ou un tableau de ce type placé dans le texte sur une ligne de la grille, quelle que soit la fin du bloc précédent. Les flottants en haut ou en bas d’une colonne, une figure habillée par le texte et celle qui ouvre une colonne ne sont pas concernés. Dans le Sandbox : <strong>Commencer sur une ligne de la grille</strong>.</td>
     </tr>
   </tbody>
 </table>

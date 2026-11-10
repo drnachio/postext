@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Stili e parti',
   description: 'Stili con nome per paragrafi, chip, evidenziazioni, listati di codice e titoli, e le pagine che aprono ogni parte',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '36 min',
   order: 15,
   parent: 'configuration',
@@ -193,6 +193,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Riporta il flusso sulla griglia della linea di base sotto il contenitore, con lo spazio sottostante come minimo. <code>false</code> mantiene lo spazio esatto: il testo dopo il contenitore resta fuori griglia fino al blocco successivo che si allinea (un titolo, la fine di un elenco, una formula in evidenza), per un documento che non usa la griglia o un gruppo con un’interlinea tutta sua. Dentro un riquadro, che non ha griglia, non cambia nulla.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fa iniziare il primo paragrafo del contenitore su una riga della griglia, comunque sia finito il blocco precedente; <code>marginTop</code> diventa un minimo. Spento, il paragrafo inizia dove l’ha lasciato il blocco precedente. Nel Sandbox: <strong>Inizia su una riga della griglia</strong>.</td>
     </tr>
     <tr>
       <td><code>containerSpacing</code></td>
@@ -1155,7 +1161,7 @@ const config: PostextConfig = {
       <td>campi del livello</td>
       <td>come in <code>headings.levels[]</code></td>
       <td>i valori del livello</td>
-      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: ognuno di quelli impostati sostituisce il valore del livello per i titoli con questo stile (<code>dropCap: false</code> toglie il capolettera del livello). <code>breakBefore</code> si fonde campo per campo con quello del livello: uno stile che imposta solo <code>parity</code> mantiene l’<code>enabled</code> del livello, e uno che imposta solo <code>enabled: true</code> ne mantiene la parità (fino a postext 1.4, il campo mancante veniva invece dal valore predefinito senza interruzione). Un <code>figureStyle</code> impostato qui si applica alla famiglia del livello su cui lo stile è usato (vedi [Stili delle cifre](/it/docs/configuration-fonts-colors-viewers#stili-delle-cifre)).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>regainGrid</code>, <code>snapTopToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: ognuno di quelli impostati sostituisce il valore del livello per i titoli con questo stile (<code>dropCap: false</code> toglie il capolettera del livello). <code>breakBefore</code> si fonde campo per campo con quello del livello: uno stile che imposta solo <code>parity</code> mantiene l’<code>enabled</code> del livello, e uno che imposta solo <code>enabled: true</code> ne mantiene la parità (fino a postext 1.4, il campo mancante veniva invece dal valore predefinito senza interruzione). Un <code>figureStyle</code> impostato qui si applica alla famiglia del livello su cui lo stile è usato (vedi [Stili delle cifre](/it/docs/configuration-fonts-colors-viewers#stili-delle-cifre)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

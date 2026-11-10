@@ -107,7 +107,13 @@ La propriété `headings` règle la typographie de tous les niveaux de titre (H1
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Lu seulement quand <code>snapToGrid</code> vaut <code>false</code> : le titre garde ses marges exactes et son propre interlignage, et le texte qui le suit commence à la ligne suivante de la grille, de sorte que la colonne y retrouve la grille au lieu d’en rester hors jusqu’au prochain point d’alignement. L’équilibrage des colonnes n’ajoute aucune ligne au-dessus d’un tel titre. Un niveau (<code>levels[].regainGrid</code>) ou un style de titre peut fixer sa propre valeur. Dans le Sandbox : <strong>Retrouver la grille au texte</strong>, sous l’interrupteur de la grille.</td>
+      <td>Lu seulement quand <code>snapToGrid</code> vaut <code>false</code> : le titre garde ses marges exactes et son propre interlignage, et le bloc qui le suit (texte, liste, figure ou tableau dans le texte, encadré) commence à la ligne suivante de la grille, de sorte que la colonne y retrouve la grille au lieu d’en rester hors jusqu’au prochain point d’alignement. Garder le titre avec les lignes qui le suivent tient compte de cet arrondi, et l’équilibrage des colonnes peut toujours ajouter des lignes au-dessus du titre. Un niveau (<code>levels[].regainGrid</code>) ou un style de titre peut fixer sa propre valeur. Dans le Sandbox : <strong>Retrouver la grille au texte</strong>, sous l’interrupteur de la grille.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fait commencer le titre sur une ligne de la grille : l’espace au-dessus est arrondi jusqu’à la suivante, quelle que soit la fin du bloc précédent ; <code>marginTop</code> devient un minimum. Désactivé par défaut. Un niveau (<code>levels[].snapTopToGrid</code>) ou un style de titre peut fixer sa propre valeur ; celle-ci est celle dont ils héritent. Dans le Sandbox : <strong>Commencer les titres sur une ligne de la grille</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

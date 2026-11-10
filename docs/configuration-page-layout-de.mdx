@@ -186,14 +186,10 @@ Das Grundlinienraster ist der Rhythmus des Fließtexts: Linien im Abstand einer 
       <td><code>0.5 pt</code></td>
       <td>Stärke der Rasterlinien.</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Jeder Stil entscheidet selbst. <code>false</code>, die bisherige Regel: Ein Stil außerhalb des Rasters (<code>snapToGrid: false</code>) lässt den folgenden Text außerhalb des Rasters, bis ein Block wieder einrastet; sein Versatz setzt sich also fort. <code>true</code>: Ein Block, dessen Stil im Raster steht, beginnt auf der nächsten Rasterlinie, wie auch immer der Block davor endete, und ein Stil außerhalb des Rasters behält seine genauen Abstände, ohne sie weiterzugeben. Es entscheiden: Überschriftenebenen und -stile, Absatzstile, der Fließtext (<code>bodyText.snapToGrid</code>) und der erste Absatz nach einer Überschrift (<code>bodyText.firstParagraphSnapToGrid</code>), beide standardmäßig <code>true</code> und nur mit <code>perStyle</code> gelesen, Kastenstile, Listen (<code>snapTopToGrid</code>), abgesetzte Formeln (<code>math.snapToGrid</code>) sowie Abbildungen und Tabellen (das <code>snapToGrid</code> ihres Ressourcentyps). Der Kopf einer Spalte steht immer im Raster. Im Sandbox: Spalten › <strong>Jeder Stil entscheidet selbst</strong>.</td>
-    </tr>
   </tbody>
 </table>
+
+Wo ein Block beginnt, entscheidet sein Stil. Jeder Stil, der auf einer Rasterlinie beginnen kann, hat einen Schalter `snapTopToGrid`, standardmäßig aus: `headings` (und eine Ebene oder ein Überschriftenstil), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, die Listen, `math` und `resourceTypes[]`. Eingeschaltet wird der Abstand über dem Block bis zur nächsten Rasterlinie aufgerundet, wie auch immer der Block davor endete. Der Kopf einer Spalte liegt immer im Raster.
 
 ```ts
 page: {

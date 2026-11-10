@@ -219,6 +219,12 @@ The glass stays hot for an hour after the flame is out.
       <td>Con <code>true</code> il flusso dopo il riquadro torna ad agganciarsi alla griglia della linea di base, quindi lo spazio sotto di esso è <code>marginBottom</code> arrotondato a righe intere della griglia. Con <code>false</code> il riquadro mantiene il suo <code>marginBottom</code> esatto, che si fonde con il margine superiore del blocco successivo (due riquadri consecutivi di uno stile del genere stanno esattamente a <code>max(marginBottom, marginTop)</code> di distanza), e il testo che lo segue può stare fuori griglia fino al punto di aggancio successivo (un titolo, la fine di un elenco), come dopo un titolo con <code>headings.snapToGrid: false</code>. Pensato per documenti fatti di riquadri impilati (schede di esercizi, moduli). Si applica ai riquadri nel flusso; i riquadri a tutta larghezza in un’impaginazione a più colonne, i riquadri flottanti, fissi e laterali mantengono la griglia, perché le fasce di colonne e le zone degli elementi flottanti sono impaginate su di essa. Le leve del bilanciamento delle colonne non cambiano: un riquadro che chiude una colonna viene comunque spinto fino all’ultimo slot della griglia della colonna.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fa iniziare il riquadro su una riga della griglia: lo spazio sopra viene arrotondato fino alla successiva, comunque sia finito il blocco precedente, e il riquadro viene adattato alla colonna contando quello spazio. Spento per impostazione predefinita. Vale per i riquadri nel flusso; quelli flottanti, fissi e laterali stanno in bande già disposte sulla griglia. Nel Sandbox: <strong>Inizia su una riga della griglia</strong>.</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

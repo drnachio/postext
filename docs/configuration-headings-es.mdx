@@ -107,7 +107,13 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Solo se lee cuando <code>snapToGrid</code> es <code>false</code>: el título conserva sus márgenes exactos y su propio interlineado, y el texto que lo sigue empieza en la siguiente línea de la rejilla, de modo que la columna recupera ahí la rejilla en vez de seguir fuera de ella hasta el siguiente punto de ajuste. El equilibrado de columnas no añade líneas encima de un título así. Un nivel (<code>levels[].regainGrid</code>) o un estilo de título pueden fijar su propio valor. En el Sandbox: <strong>Recuperar la rejilla en el texto</strong>, bajo el interruptor de la rejilla.</td>
+      <td>Solo se lee cuando <code>snapToGrid</code> es <code>false</code>: el título conserva sus márgenes exactos y su propio interlineado, y el bloque que lo sigue (texto, una lista, una figura o tabla en el texto, un recuadro) empieza en la siguiente línea de la rejilla, de modo que la columna recupera ahí la rejilla en vez de seguir fuera de ella hasta el siguiente punto de ajuste. Mantener el título con las líneas que lo siguen cuenta ese redondeo, y el equilibrado de columnas puede seguir añadiendo líneas encima del título. Un nivel (<code>levels[].regainGrid</code>) o un estilo de título pueden fijar su propio valor. En el Sandbox: <strong>Recuperar la rejilla en el texto</strong>, bajo el interruptor de la rejilla.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Empieza el título en una línea de la rejilla: el espacio de encima se redondea hasta la siguiente, termine como termine el bloque anterior; <code>marginTop</code> pasa a ser un mínimo. Apagado por defecto. Un nivel (<code>levels[].snapTopToGrid</code>) o un estilo de título pueden fijar su propio valor; este es el que heredan. En el Sandbox: <strong>Empezar los títulos en una línea de la rejilla</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

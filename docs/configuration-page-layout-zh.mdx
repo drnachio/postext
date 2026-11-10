@@ -186,14 +186,10 @@ export const metadata = {
       <td><code>0.5 pt</code></td>
       <td>网格线的粗细。</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>每种样式自行决定。<code>false</code>为目前的规则：不对齐网格的样式（<code>snapToGrid: false</code>）会让其后的文字偏离网格，直到下一个对齐网格的块，偏移因此层层传递。<code>true</code>：样式对齐网格的块从下一条网格线开始，不论前一块在何处结束；不对齐网格的块保持其精确间距，且不把它传给后面。参与决定的样式：标题级别与标题样式、段落样式、正文（<code>bodyText.snapToGrid</code>）与标题后的第一段（<code>bodyText.firstParagraphSnapToGrid</code>，默认均为<code>true</code>，仅在<code>perStyle</code>下读取）、标注框样式、列表（<code>snapTopToGrid</code>）、独立公式（<code>math.snapToGrid</code>）以及图与表（其资源类型的<code>snapToGrid</code>）。栏顶始终在网格上。在Sandbox中：分栏 › <strong>每种样式各自决定</strong>。</td>
-    </tr>
   </tbody>
 </table>
+
+块从哪里开始，由它的样式决定。每个可以从网格线开始的样式都有一个 `snapTopToGrid` 开关，默认关闭：`headings`（以及级别或标题样式）、`bodyText`、`paragraphStyles[]`、`calloutStyles[]`、列表、`math` 和 `resourceTypes[]`。打开后，无论前一个块在哪里结束，块上方的间距都会向上取整到下一条网格线。栏顶总在网格上。
 
 ```ts
 page: {

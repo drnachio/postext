@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>独立公式是否对齐基线网格：公式下方的文字流重新对齐网格（在<code>page.baselineGrid.perStyle</code>下，公式也从网格线开始）。<code>false</code>保留其精确的边距。</td>
+      <td>独立公式是否落在基线网格上：公式下方的文字流回到网格。<code>false</code>保持其精确的间距。在Sandbox中：<strong>公式后回到网格</strong>。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>让独立公式从网格线开始：无论前一个块在哪里结束，上方间距都向上取整到下一条网格线。默认关闭。在Sandbox中：<strong>公式从网格线开始</strong>。</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

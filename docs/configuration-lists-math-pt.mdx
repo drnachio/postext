@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Se uma fórmula em destaque fica na grade de linhas de base: o fluxo volta à grade abaixo da fórmula (e, com <code>page.baselineGrid.perStyle</code>, a fórmula começa numa linha da grade). <code>false</code> mantém as suas margens exatas.</td>
+      <td>Se uma fórmula destacada assenta na grade de base: o fluxo volta a ela sob a fórmula. <code>false</code> mantém as margens exatas. No Sandbox: <strong>Voltar à grade após as fórmulas</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Começa uma fórmula destacada numa linha da grade: o espaço acima é arredondado até a próxima, seja qual for o fim do bloco anterior. Desligado por padrão. No Sandbox: <strong>Começar as fórmulas numa linha da grade</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

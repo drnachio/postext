@@ -186,14 +186,10 @@ A grade de linhas de base é o ritmo do texto corrido: linhas separadas por uma 
       <td><code>0.5 pt</code></td>
       <td>Espessura das linhas da grade.</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Cada estilo decide por si. <code>false</code>, a regra até agora: um estilo fora da grade (<code>snapToGrid: false</code>) deixa fora dela o texto que vem depois, até o próximo bloco que se ajusta, de modo que o seu desvio se propaga em cascata. <code>true</code>: um bloco cujo estilo fica na grade começa na linha seguinte da grade, termine como terminar o bloco anterior, e um fora da grade mantém o seu espaçamento exato sem passá-lo adiante. Os estilos que decidem: os níveis e estilos de título, os estilos de parágrafo, o texto do corpo (<code>bodyText.snapToGrid</code>) e o primeiro parágrafo depois de um título (<code>bodyText.firstParagraphSnapToGrid</code>), ambos <code>true</code> por padrão e lidos só com <code>perStyle</code>, os estilos de boxe, as listas (<code>snapTopToGrid</code>), as fórmulas em destaque (<code>math.snapToGrid</code>) e as figuras e tabelas (o <code>snapToGrid</code> do seu tipo de recurso). O topo de uma coluna está sempre na grade. No Sandbox: Colunas › <strong>Cada estilo decide por si</strong>.</td>
-    </tr>
   </tbody>
 </table>
+
+Onde um bloco começa é decisão do seu estilo. Cada estilo que pode começar numa linha da grade tem um interruptor `snapTopToGrid`, desligado por padrão: `headings` (e um nível ou um estilo de título), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, as listas, `math` e `resourceTypes[]`. Ligado, o espaço acima do bloco é arredondado até a próxima linha da grade, seja qual for o fim do bloco anterior. O topo de uma coluna está sempre na grade.
 
 ```ts
 page: {

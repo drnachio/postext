@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>هل تقع الصيغة المنفصلة على شبكة خطوط الأساس: يعود التدفق إلى الشبكة تحت الصيغة (ومع <code>page.baselineGrid.perStyle</code> تبدأ الصيغة عند خط من خطوط الشبكة). <code>false</code> تُبقي هوامشها الدقيقة.</td>
+      <td>هل تستقر الصيغة المستقلة على شبكة خطوط الأساس: يعود مجرى النص إليها تحت الصيغة. مع <code>false</code> تحتفظ الصيغة بهوامشها الدقيقة. في Sandbox: <strong>العودة إلى الشبكة بعد المعادلات</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>تبدأ الصيغة المستقلة على خط من الشبكة: تُقرَّب المسافة فوقها صعودًا إلى الخط التالي، أيًّا كان موضع انتهاء الكتلة السابقة. مطفأ افتراضيًا. في Sandbox: <strong>بدء المعادلات على خط من الشبكة</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

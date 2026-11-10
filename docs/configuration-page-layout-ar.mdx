@@ -186,14 +186,10 @@ export const metadata = {
       <td><code>0.5 pt</code></td>
       <td>سماكة خطوط الشبكة.</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>كل نمط يقرّر بنفسه. <code>false</code>، القاعدة المتّبعة حتى الآن: النمط الخارج عن الشبكة (<code>snapToGrid: false</code>) يترك النص الذي يليه خارجها حتى أول كتلة تعود إليها، فينتقل انزياحه تتابعيًّا. <code>true</code>: الكتلة التي يقع نمطها على الشبكة تبدأ عند خط الشبكة التالي أيًّا كانت نهاية الكتلة التي قبلها، والكتلة الخارجة عن الشبكة تحتفظ بتباعدها الدقيق دون أن تنقله إلى ما بعدها. الأنماط التي تقرّر: مستويات العناوين وأنماطها، وأنماط الفقرات، ونص المتن (<code>bodyText.snapToGrid</code>) وأول فقرة بعد العنوان (<code>bodyText.firstParagraphSnapToGrid</code>)، وكلاهما <code>true</code> افتراضيًا ولا يُقرآن إلا مع <code>perStyle</code>، وأنماط الإطارات، والقوائم (<code>snapTopToGrid</code>)، والصيغ المنفصلة (<code>math.snapToGrid</code>)، والأشكال والجداول (<code>snapToGrid</code> لنوع موردها). أعلى العمود يقع دائمًا على الشبكة. في Sandbox: الأعمدة › <strong>كل نمط يقرر وحده</strong>.</td>
-    </tr>
   </tbody>
 </table>
+
+موضع بداية الكتلة يقرره نمطها. لكل نمط يمكن أن يبدأ على خط من الشبكة مفتاح `snapTopToGrid`، مطفأ افتراضيًا: `headings` (ومستوى أو نمط عنوان)، و`bodyText`، و`paragraphStyles[]`، و`calloutStyles[]`، والقوائم، و`math`، و`resourceTypes[]`. حين يكون مشغّلًا تُقرَّب المسافة فوق الكتلة صعودًا إلى خط الشبكة التالي، أيًّا كان موضع انتهاء الكتلة السابقة. رأس العمود على الشبكة دائمًا.
 
 ```ts
 page: {

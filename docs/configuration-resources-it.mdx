@@ -148,7 +148,12 @@ Un tipo può omettere dei campi (da postext 1.38): li completa il tipo integrato
     <tr>
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code> (facoltativo)</td>
-      <td>Predefinito <code>true</code>. Se una figura o una tabella di questo tipo posta nel testo si allinea alla griglia della linea di base: sotto la risorsa il flusso torna sulla griglia (e, con <code>page.baselineGrid.perStyle</code>, la risorsa inizia su una riga della griglia). <code>false</code> mantiene lo spazio esatto che lascia. Gli oggetti mobili in testa o al piede di una colonna non sono interessati.</td>
+      <td>Predefinito <code>true</code>. Se una figura o tabella di questo tipo collocata nel testo poggia sulla griglia di base: il flusso vi ritorna sotto la risorsa. <code>false</code> mantiene lo spazio esatto che la risorsa lascia. I flottanti in testa o al piede di una colonna non sono interessati.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (facoltativo)</td>
+      <td>Predefinito <code>false</code>. Fa iniziare una figura o tabella di questo tipo collocata nel testo su una riga della griglia, comunque sia finito il blocco precedente. I flottanti in testa o al piede di una colonna, una figura scontornata dal testo e quella che apre una colonna non sono interessati. Nel Sandbox: <strong>Inizia su una riga della griglia</strong>.</td>
     </tr>
   </tbody>
 </table>

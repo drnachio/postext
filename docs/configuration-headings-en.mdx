@@ -107,7 +107,13 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Read only when <code>snapToGrid</code> is <code>false</code>: the heading keeps its exact margins and its own leading, and the text after it starts at the next grid line, so the column regains the grid there instead of running off it until the next snap point. Column balancing adds no lines above such a heading. A level (<code>levels[].regainGrid</code>) or a heading style can set its own value. In the Sandbox: <strong>Regain the grid at the text</strong>, under the grid switch.</td>
+      <td>Read only when <code>snapToGrid</code> is <code>false</code>: the heading keeps its exact margins and its own leading, and the block after it (text, a list, a figure or table in the text, a box) starts at the next grid line, so the column regains the grid there instead of running off it until the next snap point. Keeping the heading with the lines after it counts that rounding, and column balancing can still add lines above the heading. A level (<code>levels[].regainGrid</code>) or a heading style can set its own value. In the Sandbox: <strong>Regain the grid at the text</strong>, under the grid switch.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Open the heading on a grid line: the space above it is rounded up to the next one, however the block before it ended; <code>marginTop</code> is then a minimum. Off by default. A level (<code>levels[].snapTopToGrid</code>) or a heading style can set its own value; this one is what they inherit. In the Sandbox: <strong>Open headings on a grid line</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

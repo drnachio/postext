@@ -186,14 +186,10 @@ La retícula de base és el ritme del text de cos: línies separades per l'inter
       <td><code>0.5 pt</code></td>
       <td>Gruix de les línies de la retícula.</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Cada estil decideix per si mateix. <code>false</code>, la regla fins ara: un estil fora de la retícula (<code>snapToGrid: false</code>) deixa fora d'ella el text que el segueix fins al bloc següent que s'hi ajusta, de manera que el seu desfasament es propaga en cascada. <code>true</code>: un bloc amb un estil que va sobre la retícula comença a la línia següent de la retícula, acabi com acabi el bloc anterior, i un que va fora de la retícula conserva el seu espaiat exacte sense transmetre'l. Els estils que decideixen: els nivells i estils d'encapçalament, els estils de paràgraf, el text de cos (<code>bodyText.snapToGrid</code>) i el primer paràgraf després d'un encapçalament (<code>bodyText.firstParagraphSnapToGrid</code>), tots dos <code>true</code> per defecte i llegits només amb <code>perStyle</code>, els estils d'avís, les llistes (<code>snapTopToGrid</code>), les fórmules en bloc (<code>math.snapToGrid</code>) i les figures i taules (el <code>snapToGrid</code> del seu tipus de recurs). El començament d'una columna sempre és sobre la retícula. Al Sandbox: Columnes › <strong>Cada estil decideix per si mateix</strong>.</td>
-    </tr>
   </tbody>
 </table>
+
+On comença un bloc ho decideix el seu estil. Cada estil que pot començar en una línia de la retícula té un interruptor `snapTopToGrid`, apagat per defecte: `headings` (i un nivell o un estil de títol), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, les llistes, `math` i `resourceTypes[]`. Encès, l’espai damunt del bloc s’arrodoneix fins a la línia següent de la retícula, acabi com acabi el bloc anterior. El capdamunt d’una columna és sempre a la retícula.
 
 ```ts
 page: {

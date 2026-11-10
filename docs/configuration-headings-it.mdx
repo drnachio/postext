@@ -107,7 +107,13 @@ La proprietà `headings` controlla la tipografia di tutti i livelli di titolo (H
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Letto solo quando <code>snapToGrid</code> è <code>false</code>: il titolo mantiene i suoi margini esatti e la propria interlinea, e il testo che lo segue inizia sulla riga successiva della griglia, così la colonna vi ritrova la griglia invece di restarne fuori fino al prossimo punto di allineamento. Il bilanciamento delle colonne non aggiunge righe sopra un titolo così. Un livello (<code>levels[].regainGrid</code>) o uno stile di titolo può fissare un proprio valore. Nel Sandbox: <strong>Ritrova la griglia al testo</strong>, sotto l’interruttore della griglia.</td>
+      <td>Letto solo quando <code>snapToGrid</code> è <code>false</code>: il titolo mantiene i suoi margini esatti e la propria interlinea, e il blocco che lo segue (testo, un elenco, una figura o tabella nel testo, un riquadro) inizia sulla riga successiva della griglia, così la colonna vi ritrova la griglia invece di restarne fuori fino al prossimo punto di allineamento. Tenere il titolo con le righe che lo seguono tiene conto di questo arrotondamento, e il bilanciamento delle colonne può ancora aggiungere righe sopra il titolo. Un livello (<code>levels[].regainGrid</code>) o uno stile di titolo può fissare un proprio valore. Nel Sandbox: <strong>Ritrova la griglia al testo</strong>, sotto l’interruttore della griglia.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fa iniziare il titolo su una riga della griglia: lo spazio sopra viene arrotondato fino alla successiva, comunque sia finito il blocco precedente; <code>marginTop</code> diventa un minimo. Spento per impostazione predefinita. Un livello (<code>levels[].snapTopToGrid</code>) o uno stile di titolo può fissare un proprio valore; questo è quello che ereditano. Nel Sandbox: <strong>Inizia i titoli su una riga della griglia</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

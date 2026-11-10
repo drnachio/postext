@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Si una fórmula en bloque se asienta en la rejilla base: el texto vuelve a la rejilla bajo la fórmula (y, con <code>page.baselineGrid.perStyle</code>, la fórmula empieza en una línea de la rejilla). <code>false</code> mantiene sus márgenes exactos.</td>
+      <td>Si una fórmula destacada se asienta en la rejilla de base: el flujo vuelve a ella bajo la fórmula. <code>false</code> conserva sus márgenes exactos. En el Sandbox: <strong>Volver a la rejilla tras las fórmulas</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Empieza una fórmula destacada en una línea de la rejilla: el espacio de encima se redondea hasta la siguiente, termine como termine el bloque anterior. Apagado por defecto. En el Sandbox: <strong>Empezar las fórmulas en una línea de la rejilla</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

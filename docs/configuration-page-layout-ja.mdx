@@ -186,14 +186,10 @@ export const metadata = {
       <td><code>0.5 pt</code></td>
       <td>グリッド線の太さ。</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>スタイルごとに決めます。<code>false</code>はこれまでの規則で、グリッドに合わせないスタイル（<code>snapToGrid: false</code>）は、次にグリッドに合わせるブロックまで後の本文をグリッドから外したままにするため、ずれが連鎖します。<code>true</code>では、グリッドに合わせるスタイルのブロックは前のブロックの終わり方にかかわらず次のグリッド線から始まり、合わせないブロックは正確な間隔を保ったまま、それを後に伝えません。対象となるスタイル：見出しのレベルと見出しスタイル、段落スタイル、本文（<code>bodyText.snapToGrid</code>）と見出し直後の段落（<code>bodyText.firstParagraphSnapToGrid</code>。どちらも既定は<code>true</code>で、<code>perStyle</code>のときだけ読まれます）、囲みスタイル、箇条書き（<code>snapTopToGrid</code>）、別行立て数式（<code>math.snapToGrid</code>）、図と表（リソースタイプの<code>snapToGrid</code>）。段の先頭は常にグリッド上にあります。Sandboxでは：段組み › <strong>スタイルごとに決める</strong>。</td>
-    </tr>
   </tbody>
 </table>
+
+ブロックがどこから始まるかは、そのスタイルが決めます。グリッド線から始められるスタイルにはどれも `snapTopToGrid` スイッチがあり、既定ではオフです：`headings`（とレベルや見出しスタイル）、`bodyText`、`paragraphStyles[]`、`calloutStyles[]`、リスト、`math`、`resourceTypes[]`。オンにすると、前のブロックがどこで終わっても、ブロックの上の間隔が次のグリッド線まで切り上げられます。段の先頭は常にグリッド上にあります。
 
 ```ts
 page: {

@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Si une formule centrée s’aligne sur la grille de ligne de base : le flux y revient sous la formule (et, avec <code>page.baselineGrid.perStyle</code>, la formule commence sur une ligne de la grille). <code>false</code> garde ses marges exactes.</td>
+      <td>Si une formule centrée repose sur la grille de base : le flux y revient sous la formule. <code>false</code> garde ses marges exactes. Dans le Sandbox : <strong>Revenir sur la grille après les formules</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fait commencer une formule centrée sur une ligne de la grille : l’espace au-dessus est arrondi jusqu’à la suivante, quelle que soit la fin du bloc précédent. Désactivé par défaut. Dans le Sandbox : <strong>Commencer les formules sur une ligne de la grille</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Ob eine abgesetzte Formel im Grundlinienraster steht: Unter der Formel kehrt der Fluss ins Raster zurück (und mit <code>page.baselineGrid.perStyle</code> beginnt die Formel auf einer Rasterlinie). <code>false</code> behält ihre genauen Abstände.</td>
+      <td>Ob eine abgesetzte Formel auf dem Grundlinienraster steht: Der Fluss rastet unter der Formel wieder ein. <code>false</code> behält ihre genauen Abstände. Im Sandbox: <strong>Nach Formeln aufs Raster zurück</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lässt eine abgesetzte Formel auf einer Rasterlinie beginnen: Der Abstand darüber wird bis zur nächsten aufgerundet, wie auch immer der Block davor endete. Standardmäßig aus. Im Sandbox: <strong>Formeln auf einer Rasterlinie beginnen</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

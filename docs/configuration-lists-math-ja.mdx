@@ -482,7 +482,13 @@ interface MathConfig {
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>別行立て数式をベースライングリッドに合わせるかどうか。数式の下で流れがグリッドに戻ります（<code>page.baselineGrid.perStyle</code>のときは、数式もグリッド線から始まります）。<code>false</code>では正確なマージンを保ちます。</td>
+      <td>別行立ての数式をベースライングリッドに載せるかどうか。数式の下で流れがグリッドに戻ります。<code>false</code>では正確な余白を保ちます。Sandboxでは<strong>数式の後でグリッドに戻す</strong>です。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>別行立ての数式をグリッド線から始めます。前のブロックがどこで終わっても、上の間隔を次のグリッド線まで切り上げます。既定ではオフです。Sandboxでは<strong>数式をグリッド線から始める</strong>です。</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

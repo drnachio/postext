@@ -148,7 +148,12 @@ Ein Typ darf Felder weglassen (seit postext 1.38): Der eingebaute Typ mit dersel
     <tr>
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code> (optional)</td>
-      <td>Standard <code>true</code>. Ob eine Abbildung oder Tabelle dieses Typs, die im Text steht, im Grundlinienraster steht: Unter der Ressource kehrt der Fluss ins Raster zurück (und mit <code>page.baselineGrid.perStyle</code> beginnt sie auf einer Rasterlinie). <code>false</code> behält den genauen Abstand, den sie lässt. Gleitobjekte am Kopf oder Fuß einer Spalte sind nicht betroffen.</td>
+      <td>Standard <code>true</code>. Ob eine Abbildung oder Tabelle dieses Typs im Text auf dem Grundlinienraster steht: Der Fluss rastet unter der Ressource wieder ein. <code>false</code> behält den genauen Abstand, den die Ressource lässt. Schwebende Elemente am Kopf oder Fuß einer Spalte sind nicht betroffen.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Standard <code>false</code>. Lässt eine Abbildung oder Tabelle dieses Typs im Text auf einer Rasterlinie beginnen, wie auch immer der Block davor endete. Schwebende Elemente am Kopf oder Fuß einer Spalte, eine vom Text umflossene Abbildung und eine am Spaltenkopf sind nicht betroffen. Im Sandbox: <strong>Auf einer Rasterlinie beginnen</strong>.</td>
     </tr>
   </tbody>
 </table>

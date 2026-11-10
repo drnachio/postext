@@ -107,7 +107,13 @@ export const metadata = {
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>仅在<code>snapToGrid</code>为<code>false</code>时读取：标题保持其精确的间距和自身行距，其后的正文从下一条网格线开始，使该栏在那里回到网格上，而不是一直偏离到下一个对齐点。栏平衡不会在这样的标题上方加行。级别（<code>levels[].regainGrid</code>）或标题样式可以设定自己的值。在Sandbox中：网格开关下方的<strong>在正文处回到网格</strong>。</td>
+      <td>仅在<code>snapToGrid</code>为<code>false</code>时读取：标题保持其精确的间距和自身行距，其后的块（正文、列表、文中的插图或表格、框）从下一条网格线开始，使该栏在那里回到网格上，而不是一直偏离到下一个对齐点。标题与后续行保持在一起时会计入这次取整，栏平衡仍可以在标题上方加行。级别（<code>levels[].regainGrid</code>）或标题样式可以设定自己的值。在Sandbox中：网格开关下方的<strong>在正文处回到网格</strong>。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>让标题从网格线开始：无论前一个块在哪里结束，上方间距都向上取整到下一条网格线；<code>marginTop</code>随之成为最小值。默认关闭。级别（<code>levels[].snapTopToGrid</code>）或标题样式可以设定自己的值；它们继承的就是这一项。在Sandbox中：<strong>标题从网格线开始</strong>。</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

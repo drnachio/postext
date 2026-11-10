@@ -148,7 +148,12 @@ A type may leave fields out (since postext 1.38): the built-in type of the same 
     <tr>
       <td><code>snapToGrid</code></td>
       <td><code>boolean</code> (optional)</td>
-      <td>Default <code>true</code>. Whether a figure or table of this type placed in the text sits on the baseline grid: the flow snaps back onto it under the resource (and, with <code>page.baselineGrid.perStyle</code>, the resource opens on a grid line). <code>false</code> keeps the exact space the resource leaves. Floats at the head or foot of a column are not affected.</td>
+      <td>Default <code>true</code>. Whether a figure or table of this type placed in the text sits on the baseline grid: the flow snaps back onto it under the resource. <code>false</code> keeps the exact space the resource leaves. Floats at the head or foot of a column are not affected.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Default <code>false</code>. Open a figure or table of this type placed in the text on a grid line, however the block before it ended. Floats at the head or foot of a column, a figure the text wraps around and one at the top of a column are not affected. In the Sandbox: <strong>Open on a grid line</strong>.</td>
     </tr>
   </tbody>
 </table>

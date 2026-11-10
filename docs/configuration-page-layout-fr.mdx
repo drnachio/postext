@@ -186,14 +186,10 @@ La grille de ligne de base est le rythme du texte courant : des lignes espacée
       <td><code>0.5 pt</code></td>
       <td>Épaisseur des lignes de la grille.</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Chaque style décide pour lui-même. <code>false</code>, la règle jusqu’ici : un style hors grille (<code>snapToGrid: false</code>) laisse le texte qui le suit hors de la grille jusqu’au prochain bloc qui s’y aligne, son décalage se propage donc. <code>true</code> : un bloc dont le style s’aligne sur la grille commence à la ligne suivante de la grille, quelle que soit la fin du bloc précédent, et un style hors grille garde son espacement exact sans le transmettre. Les styles qui décident : niveaux et styles de titre, styles de paragraphe, le texte courant (<code>bodyText.snapToGrid</code>) et le premier paragraphe après un titre (<code>bodyText.firstParagraphSnapToGrid</code>), tous deux <code>true</code> par défaut et lus seulement avec <code>perStyle</code>, styles d’encadré, listes (<code>snapTopToGrid</code>), formules centrées (<code>math.snapToGrid</code>) et figures et tableaux (le <code>snapToGrid</code> de leur type de ressource). Le haut d’une colonne est toujours sur la grille. Dans le Sandbox : Colonnes › <strong>Chaque style décide pour lui-même</strong>.</td>
-    </tr>
   </tbody>
 </table>
+
+L’endroit où un bloc commence dépend de son style. Chaque style qui peut commencer sur une ligne de la grille a un interrupteur `snapTopToGrid`, désactivé par défaut : `headings` (et un niveau ou un style de titre), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, les listes, `math` et `resourceTypes[]`. Activé, l’espace au-dessus du bloc est arrondi jusqu’à la ligne suivante de la grille, quelle que soit la fin du bloc précédent. Le haut d’une colonne est toujours sur la grille.
 
 ```ts
 page: {

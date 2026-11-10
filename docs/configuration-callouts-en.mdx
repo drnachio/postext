@@ -219,6 +219,12 @@ The glass stays hot for an hour after the flame is out.
       <td>When <code>true</code> the flow after the box snaps back to the baseline grid, so the space under it is <code>marginBottom</code> rounded up to whole grid lines. When <code>false</code> the box keeps its exact <code>marginBottom</code>, which collapses with the next block's top margin — two consecutive boxes of such a style sit exactly <code>max(marginBottom, marginTop)</code> apart — and the text after it may sit off the grid until the next snap point (a heading, the end of a list), as after a heading with <code>headings.snapToGrid: false</code>. Meant for documents made of stacked boxes (worksheets, forms). It applies to boxes in the flow; page-span boxes in a multi-column layout, floated, fixed and side boxes keep the grid, since column bands and float zones are laid out on it. The column-balancing levers are unchanged: a box closing a column is still pushed down to the column's last grid slot.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Open the box on a grid line: the space above it is rounded up to the next one, however the block before it ended, and the box is fitted to the column with that space counted. Off by default. It applies to boxes in the flow; floated, fixed and side boxes sit in bands already laid out on the grid. In the Sandbox: <strong>Open on a grid line</strong>.</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

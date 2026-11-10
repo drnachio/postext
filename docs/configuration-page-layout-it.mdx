@@ -186,14 +186,10 @@ La griglia della linea di base è il ritmo del testo corrente: righe distanti un
       <td><code>0.5 pt</code></td>
       <td>Spessore delle linee della griglia.</td>
     </tr>
-    <tr>
-      <td><code>perStyle</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Ogni stile decide per sé. <code>false</code>, la regola finora: uno stile fuori griglia (<code>snapToGrid: false</code>) lascia fuori dalla griglia il testo che lo segue fino al prossimo blocco che vi si allinea, quindi il suo scarto si propaga. <code>true</code>: un blocco il cui stile si allinea alla griglia inizia sulla riga successiva della griglia, comunque sia finito il blocco precedente, e uno stile fuori griglia mantiene la sua spaziatura esatta senza trasmetterla. Gli stili che decidono: livelli e stili dei titoli, stili di paragrafo, il testo corrente (<code>bodyText.snapToGrid</code>) e il primo paragrafo dopo un titolo (<code>bodyText.firstParagraphSnapToGrid</code>), entrambi <code>true</code> per impostazione predefinita e letti solo con <code>perStyle</code>, stili dei riquadri, elenchi (<code>snapTopToGrid</code>), formule in display (<code>math.snapToGrid</code>) e figure e tabelle (lo <code>snapToGrid</code> del loro tipo di risorsa). La testa di una colonna è sempre sulla griglia. Nel Sandbox: Colonne › <strong>Ogni stile decide per sé</strong>.</td>
-    </tr>
   </tbody>
 </table>
+
+Dove inizia un blocco lo decide il suo stile. Ogni stile che può iniziare su una riga della griglia ha un interruttore `snapTopToGrid`, spento per impostazione predefinita: `headings` (e un livello o uno stile di titolo), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, gli elenchi, `math` e `resourceTypes[]`. Acceso, lo spazio sopra il blocco viene arrotondato fino alla riga successiva della griglia, comunque sia finito il blocco precedente. La testa di una colonna è sempre sulla griglia.
 
 ```ts
 page: {

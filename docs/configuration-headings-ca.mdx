@@ -107,7 +107,13 @@ La propietat `headings` controla la tipografia de tots els nivells d'encapçalam
       <td><code>regainGrid</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Només es llegeix quan <code>snapToGrid</code> és <code>false</code>: el títol conserva els marges exactes i el seu propi interlineat, i el text que el segueix comença a la línia següent de la retícula, de manera que la columna hi recupera la retícula en lloc de continuar-ne fora fins al punt d’ajust següent. L’equilibrat de columnes no afegeix línies damunt d’un títol així. Un nivell (<code>levels[].regainGrid</code>) o un estil de títol poden fixar el seu propi valor. Al Sandbox: <strong>Recuperar la retícula al text</strong>, sota l’interruptor de la retícula.</td>
+      <td>Només es llegeix quan <code>snapToGrid</code> és <code>false</code>: el títol conserva els marges exactes i el seu propi interlineat, i el bloc que el segueix (text, una llista, una figura o taula en el text, un requadre) comença a la línia següent de la retícula, de manera que la columna hi recupera la retícula en lloc de continuar-ne fora fins al punt d’ajust següent. Mantenir el títol amb les línies que el segueixen compta aquest arrodoniment, i l’equilibrat de columnes encara pot afegir línies damunt del títol. Un nivell (<code>levels[].regainGrid</code>) o un estil de títol poden fixar el seu propi valor. Al Sandbox: <strong>Recuperar la retícula al text</strong>, sota l’interruptor de la retícula.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Comença el títol en una línia de la retícula: l’espai de damunt s’arrodoneix fins a la següent, acabi com acabi el bloc anterior; <code>marginTop</code> passa a ser un mínim. Apagat per defecte. Un nivell (<code>levels[].snapTopToGrid</code>) o un estil de títol poden fixar el seu propi valor; aquest és el que hereten. Al Sandbox: <strong>Començar els títols en una línia de la retícula</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

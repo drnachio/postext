@@ -219,6 +219,12 @@ The glass stays hot for an hour after the flame is out.
       <td>Com <code>true</code>, o fluxo depois do boxe volta a se encaixar na grade de linhas de base, de modo que o espaço sob ele é <code>marginBottom</code> arredondado para cima até linhas inteiras da grade. Com <code>false</code>, o boxe mantém o <code>marginBottom</code> exato, que se funde com a margem superior do bloco seguinte (dois boxes seguidos de um estilo assim ficam exatamente a <code>max(marginBottom, marginTop)</code> um do outro), e o texto depois dele pode ficar fora da grade até o próximo ponto de encaixe (um título, o fim de uma lista), como depois de um título com <code>headings.snapToGrid: false</code>. Pensado para documentos feitos de boxes empilhados (fichas de exercícios, formulários). Vale para os boxes no fluxo; os boxes de largura de página em um layout de várias colunas e os boxes flutuantes, fixos e laterais mantêm a grade, porque as faixas de colunas e as zonas de flutuantes são dispostas sobre ela. As alavancas de equilíbrio de colunas não mudam: um boxe que fecha uma coluna continua sendo empurrado até a última posição da grade da coluna.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Começa o quadro numa linha da grade: o espaço acima é arredondado até a próxima, seja qual for o fim do bloco anterior, e o quadro é ajustado à coluna contando esse espaço. Desligado por padrão. Vale para os quadros no fluxo; os flutuantes, os fixos e os laterais ficam em faixas que já são dispostas sobre a grade. No Sandbox: <strong>Começar numa linha da grade</strong>.</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
