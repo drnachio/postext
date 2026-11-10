@@ -221,6 +221,17 @@ describe("lintPen (fixture)", () => {
     }
   });
 
+  it("asks a pen with form fields for postext-pdf?bundle, and takes it as the pdf import (#1498)", () => {
+    const toBundle = (s: string) => s.replace("'https://esm.sh/postext-pdf'", "'https://esm.sh/postext-pdf?bundle'");
+    const base = fixtureMeta();
+    const meta = { ...base, features: { ...base.features, also: [...(base.features.also ?? []), "form-fields"] } };
+    expect(lint(undefined, { meta }).fails.some((f) => f.includes("a pen with form fields imports https://esm.sh/postext-pdf?bundle"))).toBe(true);
+    const bundled = lint(toBundle, { meta }).fails;
+    expect(bundled.filter((f) => f.includes("postext-pdf"))).toEqual([]);
+    // Without form fields the bundled import is a pdf import like the plain one.
+    expect(lint(toBundle).fails.filter((f) => f.includes("postext-pdf"))).toEqual([]);
+  });
+
   it("ties the pdf output, the postext-pdf import and the pdf kit block", () => {
     const meta = { ...fixtureMeta(), outputs: ["canvas" as const], kit: ["core", "fonts", "viewer", "images"] as KitBlock[], downloads: {} };
     const fails = lint((s) => s.replace(/offerPdf\([\s\S]*?\);\n/, ""), { meta }).fails;

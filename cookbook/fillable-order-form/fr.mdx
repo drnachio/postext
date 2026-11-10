@@ -64,3 +64,5 @@ Les pages capturées montrent les cases vides, car les mots d'un champ sont sa v
 Les totaux sont des scripts (`AFSimple_Calculate` et de courtes expressions), qu'exécutent Acrobat, Foxit, Chrome et Firefox. Aperçu, sur macOS, affiche les champs et enregistre ce qu'on tape, mais n'exécute aucun script : les totaux y restent vides.
 
 La case du cercle porte `on="1"`, la valeur que lit un calcul quand elle est cochée. Avec la valeur par défaut, `Yes`, `product(order.circle, 12)` donnerait toujours 0, et postext-pdf le signale.
+
+La recette importe `https://esm.sh/postext-pdf?bundle`. La compilation par défaut de pdf-lib sur esm.sh place ses classes d'annotation dans un module à part, et pdf-lib refuse alors le widget de chaque champ : le PDF garde les cases, mais sans format de nombre, sans totaux et sans champs en lecture seule, avec un avertissement `formField` dans la console. `?bundle` compile pdf-lib en un seul module et laisse `postext` à l'extérieur, partagé avec le reste de la page.

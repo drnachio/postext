@@ -6,7 +6,7 @@ import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
   formatFieldNumber, formNumberStyle,
 } from 'https://esm.sh/postext';
-import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
+import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf?bundle';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'fillable-order-form';

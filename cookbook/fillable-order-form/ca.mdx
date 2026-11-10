@@ -64,3 +64,5 @@ Les pàgines capturades mostren les caselles buides, perquè les paraules d'un c
 Els totals són scripts (`AFSimple_Calculate` i expressions breus) que executen Acrobat, Foxit, Chrome i Firefox. La Previsualització del macOS mostra els camps i desa el que hi escrius, però no executa scripts, així que allà els totals queden buits.
 
 La casella del cercle porta `on="1"`, el valor que llegeix un càlcul quan està marcada. Amb el valor per defecte, `Yes`, `product(order.circle, 12)` donaria sempre 0, i postext-pdf n'avisa.
+
+La recepta importa `https://esm.sh/postext-pdf?bundle`. La compilació per defecte de pdf-lib a esm.sh deixa les classes d'anotació en un mòdul a part, i llavors pdf-lib rebutja el widget de cada camp: el PDF conserva les caselles, però sense format de nombre, sense totals i sense camps de només lectura, amb un avís `formField` a la consola. `?bundle` compila pdf-lib en un sol mòdul i deixa `postext` fora, compartit amb la resta de la pàgina.

@@ -64,3 +64,5 @@ As páginas capturadas mostram as caixas vazias, porque as palavras de um campo 
 Os totais são scripts (`AFSimple_Calculate` e expressões curtas), que o Acrobat, o Foxit, o Chrome e o Firefox executam. O Pré-Visualização do macOS mostra os campos e salva o que você digita, mas não executa scripts, e ali os totais ficam vazios.
 
 A caixa do círculo tem `on="1"`, o valor que um cálculo lê quando ela está marcada. Com o valor padrão, `Yes`, `product(order.circle, 12)` daria sempre 0, e o postext-pdf avisa sobre isso.
+
+A receita importa `https://esm.sh/postext-pdf?bundle`. O build padrão do pdf-lib no esm.sh coloca as classes de anotação num módulo à parte, e o pdf-lib então recusa o widget de cada campo: o PDF mantém as caixas, mas sem formato de número, sem totais e sem campos somente leitura, com um aviso `formField` no console. `?bundle` compila o pdf-lib num só módulo e deixa o `postext` de fora, compartilhado com o resto da página.
