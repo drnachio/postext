@@ -167,6 +167,9 @@ function paintedRuns(w: Writer, line: DisplayLine, tabLeaders: boolean): { run: 
     return !r.inline || r.inline.kind === 'chip' || objects.has(r);
   });
   if (line.runs.some((r) => r.inline && r.inline.kind !== 'chip' && !objects.has(r))) w.warn('text.inline', `Inline content (maths, music, swatches) is left out: "${line.text.slice(0, 40)}"`);
+  // The text in reading order (the runs of a right-to-left line stand in
+  // the order they are painted).
+  if (line.rtl || runs.some((r) => r.rtl)) runs.sort((a, b) => a.textStart - b.textStart);
   return runs.map((run) => {
     const object = objects.get(run);
     if (object) return { run, text: '', object };

@@ -91,7 +91,7 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
   // Stories are written horizontal and left to right (`storyXml`), once
   // said for the whole package.
   const lines = page.items.flatMap((it) => (it.kind === 'text' ? it.lines : []));
-  if (page.rtl || lines.some((l) => l.rtl)) w.warn('text.rtl', 'Right-to-left text is written left to right, in horizontal stories: set the stories\' direction in InDesign');
+  if (!keepsLines(w) && (page.rtl || lines.some((l) => l.rtl))) w.warn('text.rtl', 'Right-to-left text is written left to right, in horizontal stories: set the stories\' direction in InDesign');
   if (page.vertical || lines.some((l) => l.vertical)) w.warn('text.vertical', 'Vertical text is written horizontal, left to right: set the stories\' orientation in InDesign');
   // The text of one frame (of one chain of frames) goes into one story,
   // written where its first item paints; the rest of the items keep the

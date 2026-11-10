@@ -454,11 +454,20 @@ describe('idmlDocument', () => {
     expect(contents(storyOf(f, descendants(xml(f, spreads(f)[0]!), 'TextFrame').find((fr) => attr(fr, 'Name') === 'body')!))).toMatch(/The sum.*of two squares\./s);
   });
 
-  it('warns that right-to-left text is written left to right', () => {
+  it('writes right-to-left text as right-to-left stories; left to the composer it warns', () => {
     const ar = 'قال إن كلمة يهتم مسعد كتاب جميلة وكانت المدينة عامرة بالناس والكتب والعلماء.';
     const warnings: { code: string; message: string }[] = [];
-    idml(`${ar}\n\n${ar}`, config({ locale: 'ar', direction: 'rtl' } as Partial<PostextConfig>), { onWarning: (w) => warnings.push(w) });
+    const rtl = config({ locale: 'ar', direction: 'rtl' } as Partial<PostextConfig>);
+    reflow(`${ar}\n\n${ar}`, rtl, { onWarning: (w) => warnings.push(w) });
     expect(warnings.filter((w) => w.code === 'text.rtl')).toHaveLength(1);
+    // With lines kept the stories are right-to-left ones: nothing to warn about.
+    const kept: string[] = [];
+    const f = idml(`${ar}\n\n${ar}`, rtl, { onWarning: (w) => kept.push(w.code) });
+    expect(kept).not.toContain('text.rtl');
+    const story = Object.keys(f).filter((p) => p.startsWith('Stories/')).map((p) => text(f, p)).find((x) => x.includes('RightToLeftDirection'))!;
+    expect(story).toContain('StoryDirection="RightToLeftDirection"');
+    expect(story).toContain('ParagraphDirection="RightToLeftDirection"');
+    expect(story).toMatch(/Justification="Right(Align|Justified)"|Justification="FullyJustified"/);
     expect(warnings.find((w) => w.code === 'text.rtl')!.message).toMatch(/left to right/);
     const latin: string[] = [];
     idml('Some text.', config(), { onWarning: (w) => latin.push(w.code) });

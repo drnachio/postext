@@ -74,7 +74,11 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
   // share an end: no one paragraph format sets them.
   // Lines with stops of their own: a paragraph's stops serve all its lines.
   const ownStops = lines.length > 1 && !!c.stops?.some((s) => s?.length);
-  const irregular = !c.hang && lines.length > 1 && (ownStops || spread(lines.slice(1).map(start)) > 0.75 || spread(lines.map(room)) > 0.75);
+  // (Right-to-left lines share their start at the right and may end apart
+  // at the left by a first-line indent.)
+  const rtlItem = lines.some((l) => l.rtl);
+  const irregular =
+    !c.hang && lines.length > 1 && (ownStops || (rtlItem ? spread(lines.slice(1).map(room)) > 0.75 || spread(lines.map(start)) > 0.75 : spread(lines.slice(1).map(start)) > 0.75 || spread(lines.map(room)) > 0.75));
   const cuts: number[] = [];
   lines.forEach((_, i) => {
     // A line that ends a paragraph inside the item (a table cell's
@@ -86,8 +90,21 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
     const b = (cuts[g + 1] ?? lines.length) - 1;
     const group = lines.slice(a, b + 1);
     const tail = group[group.length - 1]!;
+    // Lines that run right to left start at the right: the first-line
+    // indent is told from there, and the paragraph is a right-to-left one,
+    // set by the composer that shapes Arabic and Hebrew.
+    const rtl = group.some((l) => l.rtl);
     let fmt: ParagraphFormat;
-    if (cuts.length === 1) fmt = format;
+    if (rtl && !c.hang) {
+      const right = Math.max(0, group.length > 1 ? Math.min(...group.slice(1).map(room)) : room(group[0]!));
+      fmt = {
+        leftIndent: pt(Math.max(0, Math.min(...group.map(start)))),
+        firstLineIndent: pt(room(group[0]!) - right),
+        rightIndent: pt(right),
+        spaceAfter: g === cuts.length - 1 ? format.spaceAfter : 0,
+        tabs: format.tabs,
+      };
+    } else if (cuts.length === 1) fmt = format;
     else if (c.hang) fmt = g === 0 ? { ...format, spaceAfter: 0 } : { ...format, firstLineIndent: 0, spaceAfter: g === cuts.length - 1 ? format.spaceAfter : 0, tabs: [] };
     else {
       const left = Math.max(0, group.length > 1 ? Math.min(...group.slice(1).map(start)) : start(group[0]!));
@@ -108,7 +125,9 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
     const justification = group.some((l) => l.align === 'justify')
       ? tail.align === 'justify'
         ? 'FullyJustified'
-        : 'LeftJustified'
+        : rtl
+          ? 'RightJustified'
+          : 'LeftJustified'
       : group[0]!.align === 'center'
         ? 'CenterAlign'
         : group[0]!.align === 'right'
@@ -117,6 +136,7 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
     const lead = (i: number) => (i === 0 ? c.firstLeading : Math.max(0.1, (lines[i]!.baseline - lines[i - 1]!.baseline) * w.k));
     let attrs = '';
     if (style.justification !== justification) attrs += attr('Justification', justification);
+    if (rtl) attrs += ' ParagraphDirection="RightToLeftDirection" Composer="$ID/HL Single Optyca"';
     let ranges = '';
     for (let i = a; i <= b; i++) {
       // Leading is a character's: every range of the line says it.

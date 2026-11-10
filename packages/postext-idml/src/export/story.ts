@@ -174,15 +174,17 @@ function paraXml(p: StoryPara, end: boolean): string {
  *  paragraph a frame break split joins its paragraph and the story runs
  *  through the chain as InDesign breaks it. */
 export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | undefined): string {
-  return storyPartXml(id, paragraphsXml(w, items, frame));
+  // A story whose lines run right to left is a right-to-left story.
+  const rtl = items.some((i) => i.lines.some((l) => l.rtl));
+  return storyPartXml(id, paragraphsXml(w, items, frame), rtl);
 }
 
 /** A story part around its paragraphs. */
-export function storyPartXml(id: string, paragraphs: string): string {
+export function storyPartXml(id: string, paragraphs: string, rtl = false): string {
   return (
     `${XML_HEAD}<idPkg:Story xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
     `<Story${attr('Self', id)} AppliedTOCStyle="n" TrackChanges="false" StoryTitle="$ID/" AppliedNamedGrid="n">` +
-    '<StoryPreference OpticalMarginAlignment="false" OpticalMarginSize="12" FrameType="TextFrameType" StoryOrientation="Horizontal" StoryDirection="LeftToRightDirection"/>' +
+    `<StoryPreference OpticalMarginAlignment="false" OpticalMarginSize="12" FrameType="TextFrameType" StoryOrientation="Horizontal" StoryDirection="${rtl ? 'RightToLeftDirection' : 'LeftToRightDirection'}"/>` +
     '<InCopyExportOption IncludeGraphicProxies="true" IncludeAllResources="false"/>' +
     paragraphs +
     '</Story></idPkg:Story>'
