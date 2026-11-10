@@ -24,6 +24,9 @@ export interface Alignment {
   unplaced: Set<string>;
   /** Bookmarks of the file whose text the book no longer has. */
   foreign: Set<string>;
+  /** Fragments without partner that stand where the file lacks as many
+   *  names (`nameLost`): fragment id of the book's map → the name. */
+  lost?: Map<string, string>;
 }
 
 /** The counter a fragment id was made from (`_ptx_<base 36>`). */
@@ -170,4 +173,37 @@ export function alignFragments(r: readonly Named[], f: readonly Named[], into?: 
     j = h.b1;
   }
   return out;
+}
+
+/**
+ * The fragments without partner that stand where the file lacks names.
+ * The writer names the fragments with a counter, so the names of a file
+ * have no gap but where a bookmark went: with the passage it held, or
+ * alone when an editor replaced the whole text (`lost.ts`). Between two
+ * pairs, as many fragments without partner as names the file lacks there
+ * are those passages, in order. `from` and `to` bound the names of `r`
+ * (a chapter's); nothing is said past an end that is not known.
+ */
+export function nameLost(r: readonly Named[], file: ReadonlySet<string>, out: Alignment, from: number, to: number): void {
+  let before = from - 1;
+  for (let i = 0; i < r.length; ) {
+    const paired = out.ids.get(r[i]!.id);
+    if (paired !== undefined || !out.unplaced.has(r[i]!.id)) {
+      if (paired !== undefined) before = counterOf(paired);
+      i++;
+      continue;
+    }
+    let e = i;
+    while (e < r.length && out.unplaced.has(r[e]!.id) && !out.ids.has(r[e]!.id)) e++;
+    const next = e < r.length ? counterOf(out.ids.get(r[e]!.id) ?? '') : to;
+    const gone: string[] = [];
+    if (Number.isFinite(next) && before >= from - 1 && next - before <= r.length + file.size + 1) {
+      for (let n = before + 1; n < next; n++) if (!file.has(n.toString(36))) gone.push(n.toString(36));
+    }
+    if (gone.length === e - i) {
+      out.lost ??= new Map();
+      for (let k = i; k < e; k++) out.lost.set(r[k]!.id, gone[k - i]!);
+    }
+    i = e;
+  }
 }

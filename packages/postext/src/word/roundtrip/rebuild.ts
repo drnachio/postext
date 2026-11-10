@@ -17,7 +17,8 @@ import { SEMANTIC_ENGINE, semanticExportMap, type SemanticDesign, type SemanticE
 import type { BookStart } from '../semantic/context.js';
 import type { WordChapterInput } from '../semantic/types.js';
 import { child, parseXml, type XmlElement } from '../xml.js';
-import { alignFragments, counterOf, looseText, type Alignment, type Named } from './align.js';
+import { alignFragments, counterOf, looseText, nameLost, type Alignment, type Named } from './align.js';
+import { APART, setApart } from './lost.js';
 import { assign } from './read.js';
 import { LOOK_CAPS, LOOK_HIDDEN } from './looks.js';
 import { selfRead, type SelfRead } from './selfRead.js';
@@ -44,6 +45,10 @@ export interface RebuiltMap extends SelfRead {
   unplaced: Set<string>;
   /** Bookmarks of the file whose text the book no longer has. */
   foreign: Set<string>;
+  /** Fragments matched by their place alone: the file lacks their names
+   *  where they stand (`nameLost`). Their text is read where unmarked
+   *  text stands in their place (`lost.ts`); else they are left alone. */
+  lost: Set<string>;
   notes: DocxImportNote[];
 }
 
@@ -73,11 +78,11 @@ function fileBookmarks(files: Files): Map<string, string> {
   }
   const ids = new Set<string>();
   for (const t of tokens) if (t.t === 'bmStart') ids.add(t.fid);
-  const fragments = [...ids].map((id) => ({ id, block: id, part: 0, target: { kind: 'generated' as const }, text: '', map: [], range: [0, 0] as [number, number] }));
-  const read = assign(tokens, { version: 1, exportId: '', variant: 'semantic', engine: '', createdAt: '', chapters: [], fragments });
+  const fragments = [...ids, APART].map((id) => ({ id, block: id, part: 0, target: { kind: 'generated' as const }, text: '', map: [], range: [0, 0] as [number, number] }));
+  const read = assign(setApart(tokens, ids), { version: 1, exportId: '', variant: 'semantic', engine: '', createdAt: '', chapters: [], fragments });
   const out = new Map<string, string>();
   for (const [id, f] of read.fragments) {
-    if (f.startPara < 0) continue;
+    if (f.startPara < 0 || id === APART) continue;
     out.set(id, f.chars.map((c) => c.ch).join('').replaceAll(PARA_CHAR, ' '));
   }
   return out;
@@ -144,7 +149,12 @@ function align(built: SemanticExportMap, trace: ExportTrace | undefined, file: R
   const f = inOrder([...file].map(([id, text]) => ({ id, text })));
   const was = trace?.chapters;
   const now = built.trace.chapters ?? [];
-  if (!was) return alignFragments(r, f, out);
+  const names = new Set(file.keys());
+  if (!was) {
+    alignFragments(r, f, out);
+    nameLost(r, names, out, 0, trace?.fragments ?? Infinity);
+    return out;
+  }
   const end = (list: readonly { first: number }[], k: number, total: number): number => (k + 1 < list.length ? list[k + 1]!.first : total);
   const total = trace?.fragments ?? Infinity;
   const claimed = new Set<number>();
@@ -179,6 +189,7 @@ function align(built: SemanticExportMap, trace: ExportTrace | undefined, file: R
     for (const [a, b] of found.ids) out.ids.set(a, b);
     for (const id of found.unplaced) out.unplaced.add(id);
     for (const id of found.foreign) out.foreign.add(id);
+    nameLost(mine, names, out, from, to);
   });
   was.forEach((w, j) => {
     if (claimed.has(j)) return;
@@ -302,12 +313,17 @@ export async function rebuildExportMap(bytes: Uint8Array, book: DocxBook): Promi
   const placed = alignment ? alignment.ids.size : named;
   if (file.size > 0 && placed === 0) return undefined;
   const own = best.own ?? selfRead(built.map, built.parts);
-  if (!alignment) return { map: built.map, ...own, unplaced: new Set(), foreign: new Set(), notes };
+  if (!alignment) return { map: built.map, ...own, unplaced: new Set(), foreign: new Set(), lost: new Set(), notes };
+  // The passages that stand where the file lacks names take those names.
+  for (const [id, name] of alignment.lost ?? []) {
+    alignment.ids.set(id, name);
+    alignment.unplaced.delete(id);
+  }
   const map = renamed(built.map, alignment);
   const looks = new Map<string, string[]>();
   built.map.fragments.forEach((f, k) => {
     const l = own.looks.get(f.id);
     if (l) looks.set(map.fragments[k]!.id, l);
   });
-  return { map, looks, furniture: own.furniture, unplaced: new Set([...alignment.unplaced].map((id) => `~${id}`)), foreign: alignment.foreign, notes };
+  return { map, looks, furniture: own.furniture, unplaced: new Set([...alignment.unplaced].map((id) => `~${id}`)), foreign: alignment.foreign, lost: new Set(alignment.lost?.values()), notes };
 }

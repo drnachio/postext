@@ -57,6 +57,9 @@ export interface BlockView {
   starts: Map<string, number>;
   /** Every fragment's bookmark is gone. */
   missing: boolean;
+  /** The block's one fragment was replaced whole in an editor that took
+   *  its bookmark away (`lost.ts`). */
+  replaced?: true;
   /** Paragraph ordinals of the first and last fragments found. */
   startPara: number;
   endPara: number;
@@ -180,6 +183,7 @@ function buildBlock(
     id, target: frags[0]!.target, frags, O, M, OK, atomOf, atoms, N, NK, NT, NH, ...(holders ? { NHeld } : {}), NTracked, NNote, dels, starts,
     ...(OL ? { OL, NL } : {}),
     missing: found === 0, startPara, endPara, range: [r0, r1],
+    ...(frags.length === 1 && read.get(frags[0]!.id)?.replaced ? { replaced: true as const } : {}),
   };
 }
 

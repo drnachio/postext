@@ -57,7 +57,7 @@ export function mergeText(base: string | undefined, ours: string | undefined, ed
       placed.push({ edit, start: edit.start, end: edit.end, before, status: 'conflict', reason: 'changed-since-export' });
       continue;
     }
-    placed.push({ edit, start: at[0], end: at[1], before, status: 'applied' });
+    placed.push({ edit, start: at[0], end: at[1], before, status: 'applied', ...(edit.note ? { reason: edit.note } : {}) });
   }
   // Apply from the end backwards; for one start, a range before an
   // insertion, and of two insertions the later one first.

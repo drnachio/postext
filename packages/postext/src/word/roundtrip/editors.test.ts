@@ -153,21 +153,40 @@ describe('edits that left debris', () => {
       expect(r.resources!.find((x) => x.id === 't1')!.caption).toBe('Aquí: Lo que da cada uno');
     });
 
-    it('leaves words typed after a generated label that ends its paragraph with the label', async () => {
+    /** The caption's own bookmark taken away, `words` standing where its text stood. */
+    const captionGone = (words: string) => (x: string): string => {
+      const at = x.indexOf('Lo que da cada uno');
+      const start = x.lastIndexOf('<w:bookmarkStart', at);
+      const wid = /w:id="(\d+)"/.exec(x.slice(start, at))![1]!;
+      const end = x.indexOf(`<w:bookmarkEnd w:id="${wid}"/>`, at);
+      return `${x.slice(0, start)}${words}${x.slice(end + `<w:bookmarkEnd w:id="${wid}"/>`.length)}`;
+    };
+
+    it('reads the words that stand after a label, where the caption lost its bookmark, as the caption', async () => {
+      const e = await exportDocx(MD, { resources: [TABLE] });
+      const r = tableBack(edited(e, { 'word/document.xml': captionGone('<w:r><w:t xml:space="preserve">Otro pie</w:t></w:r>') }));
+      expect(r.edits.map((x) => [x.field, x.status, x.before, x.after])).toEqual([['caption', 'applied', 'Lo que da cada uno', 'Otro pie']]);
+      expect(r.resources!.find((x) => x.id === 't1')!.caption).toBe('Otro pie');
+    });
+
+    it('leaves words typed after a generated label with the label when the caption still stands, in a paragraph of its own', async () => {
       const e = await exportDocx(MD, { resources: [TABLE] });
       const bytes = edited(e, {
         'word/document.xml': (x) => {
-          // The caption's own bookmark taken away: nothing of the book follows the label.
-          const at = x.indexOf('Lo que da cada uno');
-          const start = x.lastIndexOf('<w:bookmarkStart', at);
-          const wid = /w:id="(\d+)"/.exec(x.slice(start, at))![1]!;
-          const end = x.indexOf(`<w:bookmarkEnd w:id="${wid}"/>`, at);
-          return `${x.slice(0, start)}<w:r><w:t xml:space="preserve">Otro pie</w:t></w:r>${x.slice(end + `<w:bookmarkEnd w:id="${wid}"/>`.length)}`;
+          const start = x.lastIndexOf('<w:bookmarkStart', x.indexOf('Lo que da cada uno'));
+          return `${x.slice(0, start)}<w:r><w:t xml:space="preserve">Otro pie</w:t></w:r></w:p><w:p>${x.slice(start)}`;
         },
       });
       const r = tableBack(bytes);
       expect(r.edits.some((x) => x.status === 'rejected' && x.reason === 'generated')).toBe(true);
       expect(r.edits.some((x) => x.status === 'applied' && x.chapter !== undefined)).toBe(false);
+      expect(r.resources).toBeUndefined();
+    });
+
+    it('reads a caption deleted after its label, nothing in its place, as the caption emptied', async () => {
+      const e = await exportDocx(MD, { resources: [TABLE] });
+      const r = tableBack(edited(e, { 'word/document.xml': captionGone('') }));
+      expect(r.edits.map((x) => [x.field, x.status, x.after])).toEqual([['caption', 'applied', '']]);
     });
 
     it('reports a row added in Word and writes none of it into the chapter', async () => {

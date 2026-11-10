@@ -21,6 +21,8 @@ export interface SourceEdit {
   kind: 'text' | 'format' | 'paragraph' | 'tracked';
   /** Not applied, and why. */
   reject?: string;
+  /** Something to say about an edit that applies (`DocxEdit.reason`). */
+  note?: string;
   /** For a rejected edit to text without a source: what Word holds. */
   before?: string;
 }
@@ -33,6 +35,12 @@ const isSpace = (ch: string | undefined): boolean => ch !== undefined && /\s/.te
 /** Hunks of the block, atoms widened to whole atoms and changed equations
  *  added, merged where they meet. */
 export function blockHunks(v: BlockView, base: string): Hunk[] {
+  // A text replaced whole is one change, not the words the two texts
+  // happen to share; one that holds marks or references is compared
+  // word by word, to keep them.
+  if (v.replaced && v.O !== v.N && !v.atoms.length && v.M.every((m) => m >= 0) && !v.N.includes(PARA_CHAR) && !v.N.includes(OBJECT_CHAR)) {
+    return [{ a0: 0, a1: v.O.length, b0: 0, b1: v.N.length }];
+  }
   // A paragraph mark the writer put between two engine lines (the
   // formatted writer starts a new paragraph where the alignment changes)
   // reads back as a paragraph break where the map has a line break: the

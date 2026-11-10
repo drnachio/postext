@@ -9,6 +9,7 @@ import { splitKey, withoutCode } from './markup.js';
 import { diffText, mapThrough, type Hunk } from './diff.js';
 import { blockHunks, hunkEdits, type SourceEdit } from './edits.js';
 import { formatEdits } from './formats.js';
+import { neverMarked } from './lost.js';
 import { mergeText, type PlacedEdit } from './merge.js';
 import { readExportedDocx, type ReadComment, type ReadDocx } from './read.js';
 import type { RebuiltMap } from './rebuild.js';
@@ -271,7 +272,7 @@ function commentSource(v: BlockView, hunks: readonly Hunk[], fid: string, index:
  */
 export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, options: { rebuilt?: RebuiltMap } = {}): DocxEditResult {
   const given = options.rebuilt;
-  const read = readExportedDocx(bytes, given ? { map: given.map, looks: true, foreign: given.foreign } : {});
+  const read = readExportedDocx(bytes, given ? { map: given.map, looks: true, foreign: given.foreign, absent: neverMarked(given), furniture: given.furniture } : {});
   const { map } = read;
   rejoinSplits(read);
   // The file's own map when it has one.
@@ -285,6 +286,8 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, optio
     for (const v of blocks) {
       settleLooks(v, read.caps !== true);
       if (v.frags.every((f) => rebuilt.unplaced.has(f.id)) || (writtenHidden(v) && (v.missing || !/\S/.test(v.N)))) aside.add(v);
+      // A passage matched by its place alone, with no text in that place.
+      else if (v.missing && v.frags.every((f) => rebuilt.lost.has(f.id))) aside.add(v);
     }
   }
   const byTarget = new Map<string, { target: TextTarget; edits: SourceEdit[] }>();
@@ -350,6 +353,8 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, optio
         continue;
       }
       const r = editsOfBlock(v, base);
+      // Read as deleted though text stands around its place (`lost.ts`).
+      if (v.missing && v.frags.some((f) => read.unpaired.has(f.id))) for (const e of r.edits) e.note = 'bookmark-unpaired';
       hunksOf.set(v, r.hunks);
       r.edits.forEach(add);
       // The notes typed in the block: their definitions close the chapter.

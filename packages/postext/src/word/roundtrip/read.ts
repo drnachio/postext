@@ -12,6 +12,7 @@ import { DocxReadError } from '../docxRead/parts.js';
 import { PARA_CHAR, walkPart, type ParaProps, type Token } from './walk.js';
 import { readParaStyles, type ParaStyles } from './added.js';
 import { styleLooks } from './looks.js';
+import { restoreLost } from './lost.js';
 
 export interface ReadChar {
   ch: string;
@@ -37,6 +38,9 @@ export interface ReadFragment {
   /** Paragraph ordinals of the bookmark's start and end. */
   startPara: number;
   endPara: number;
+  /** The editor took the bookmark away with the text it replaced whole;
+   *  the text is what stands in the fragment's place (`lost.ts`). */
+  replaced?: true;
 }
 
 export interface ReadPosition {
@@ -86,6 +90,10 @@ export interface ReadDocx {
    *  (its own w:noProof anchor runs are still there): an unmarked U+00A0
    *  is then a typed no-break space. */
   holders: boolean;
+  /** Fragments whose bookmark is gone while unmarked text stands between
+   *  their neighbours, which could not be told from text typed there
+   *  (`lost.ts`): they read as deleted, the text as typed in. */
+  unpaired: Set<string>;
   /** Some style or run of the file sets capitals with `w:caps`; an editor
    *  that has no such mark (Google Docs) types the capitals out. Set when
    *  the looks were read. */
@@ -102,6 +110,10 @@ export interface ReadOptions {
   /** Bookmarks of the file that stand for nothing in the map and whose
    *  text is no addition either (text the book no longer has). */
   foreign?: ReadonlySet<string>;
+  /** Fragments of the map the file never held a bookmark for (`lost.ts`). */
+  absent?: ReadonlySet<string>;
+  /** The paragraphs the writer set outside every fragment. */
+  furniture?: ReadonlyMap<string, number>;
 }
 
 type Files = Record<string, Uint8Array>;
@@ -393,6 +405,7 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
   const newNotes = new Map<string, ReadChar[]>();
   const unmarked: { key: string; id: number; own: Token[] }[] = [];
   const standing = new Set<string>();
+  const noteBoxes = new Set<number>();
   // Notes after the body, in their part order (the semantic writer's).
   for (const [part, el] of [['word/footnotes.xml', 'footnote'], ['word/endnotes.xml', 'endnote']] as const) {
     const root = xmlOf(files, part);
@@ -402,6 +415,7 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
       const type = attr(note, 'type');
       if (type && type !== 'normal') continue;
       const from = tokens.length;
+      noteBoxes.add(box);
       ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box, more));
       // A note with no bookmark of ours may have been typed in the editor.
       const own = tokens.slice(from);
@@ -424,10 +438,14 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
     }
     if (chars.some((c) => c.ch.trim())) newNotes.set(key, chars);
   }
-  const { fragments, added, strays, marks } = assign(tokens, map, options.foreign);
+  // The bookmarks an editor took away with a text replaced whole.
+  const { absent, foreign, furniture } = options;
+  const restored = restoreLost(tokens, map, { noteBoxes, ...(absent ? { absent } : {}), ...(foreign ? { foreign } : {}), ...(furniture ? { furniture } : {}) });
+  const { fragments, added, strays, marks } = assign(restored.tokens, map, options.foreign);
+  for (const id of restored.put) if (fragments.has(id)) fragments.get(id)!.replaced = true;
   const holders = map.holders === true && noProof;
   return {
-    map, fragments, added, strays, newNotes, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders,
+    map, fragments, added, strays, unpaired: restored.unpaired, newNotes, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders,
     ...(looks ? { caps: looks.caps } : {}),
   };
 }
