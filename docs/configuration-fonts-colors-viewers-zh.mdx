@@ -543,6 +543,7 @@ interface PrintConfig {
   preflight?: PrintPreflightConfig;
   inks?: PrintInk[];                       // 油墨表：重命名、别名、四色印刷。
   plates?: PrintPlatesConfig;              // 作业印刷所用的印版：双色印刷。
+  imageColor?: PrintImageColorConfig;      // 如何读取图片：特性文件、灰度。
 }
 
 interface CustomOutputProfile {

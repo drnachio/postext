@@ -2,12 +2,12 @@
 // at the size of its largest placement, comic art included
 // (#1276: split out of renderResourceBlock.ts).
 import type { PDFDocument, PDFImage } from 'pdf-lib';
-import { type VDTDocument, type VDTBlock, type VDTPage, type VDTComicArt, pageComics, type PdfColorSpace, resourceBlockIcons, resolveColorValue, applySingleInkToSvg } from 'postext';
+import { type VDTDocument, type VDTBlock, type VDTPage, type VDTComicArt, pageComics, type PdfColorSpace, resourceBlockIcons, resolveColorValue, applySingleInkToSvg, decodePrintRaster, printRasterFormat, parseIccProfile, resolvePrintImageColor, type Resource } from 'postext';
 import { FontCache, type PdfFontProvider } from '../../../fontCache.js';
 import { type VectorFontResolver, svgToVectorDrawing } from '../../vector/svgVector.js';
 import { needsComplexShaping, loadComplexShaper } from '../../../complexShaping.js';
 import type { PrintColorMode } from '../../../print/colorMode.js';
-import { embedPrintRaster, embedDeviceRaster } from '../../../print/images.js';
+import { embedPrintRaster, embedDeviceRaster, embedPrintDecoded, embedDeviceDecoded } from '../../../print/images.js';
 import { alphaStencil } from '../../vector/tint.js';
 import type { ResourceBytesProvider, ResourceImageMap } from '../renderResourceBlock.js';
 import { lineIcons } from './lines.js';
@@ -90,10 +90,25 @@ export async function preloadResourceImages(
 ): Promise<ResourceImageMap> {
   const out: ResourceImageMap = into ?? new Map();
   if (!bytesProvider) return out;
+  // A picture's own print colour settings (`Resource.printColor`), over
+  // the book's: a mode of its own for it.
+  const pictureModes = new Map<string, PrintColorMode>();
+  const modeOf = (fileId: string | undefined): PrintColorMode | undefined => {
+    if (!printMode || !fileId) return printMode;
+    return pictureModes.get(fileId) ?? printMode;
+  };
+  if (printMode) {
+    for (const block of [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])]) {
+      const rb = block.resourceBlock;
+      const own = rb?.resource?.printColor;
+      if (!rb?.fileId || !own || pictureModes.has(rb.fileId)) continue;
+      pictureModes.set(rb.fileId, pictureMode(printMode, own, bytesProvider));
+    }
+  }
   /** A bitmap embedded as the render wants it. */
-  const embedRaster = (data: Uint8Array, format: 'png' | 'jpeg'): Promise<PDFImage> =>
+  const embedRaster = (data: Uint8Array, format: 'png' | 'jpeg', fileId?: string): Promise<PDFImage> =>
     printMode
-      ? embedPrintRaster(pdfDoc, data, format, printMode)
+      ? embedPrintRaster(pdfDoc, data, format, modeOf(fileId)!)
       : deviceSpace === 'grayscale' || deviceSpace === 'cmyk'
         ? embedDeviceRaster(pdfDoc, data, format, deviceSpace)
         : format === 'png' ? pdfDoc.embedPng(data) : pdfDoc.embedJpg(data);
@@ -180,6 +195,15 @@ export async function preloadResourceImages(
     const bytes = bytesProvider(fileId);
     if (!bytes) return;
     try {
+      if (printRasterFormat(bytes)) {
+        // A TIFF or Photoshop original: printed from its own pixels.
+        const raster = decodePrintRaster(bytes);
+        const image = printMode
+          ? embedPrintDecoded(pdfDoc, raster, modeOf(fileId)!)
+          : embedDeviceDecoded(pdfDoc, raster, deviceSpace === 'grayscale' || deviceSpace === 'cmyk' ? deviceSpace : 'rgb');
+        out.set(fileId, { kind: 'image', image });
+        return;
+      }
       const sniffed = sniffBytes(bytes);
       const fmt = sniffed !== 'unknown' ? sniffed : (format ?? '').toLowerCase().replace('jpg', 'jpeg');
       if (fmt === 'pdf') {
@@ -233,17 +257,17 @@ export async function preloadResourceImages(
       let data = bytes;
       let dataFormat: 'png' | 'jpeg' = 'png';
       if (fmt === 'jpeg') {
-        image = await embedRaster(bytes, 'jpeg');
+        image = await embedRaster(bytes, 'jpeg', fileId);
         dataFormat = 'jpeg';
       } else if (fmt === 'webp') {
         const png = await webpToPng(bytes);
         if (png) {
-          image = await embedRaster(png, 'png');
+          image = await embedRaster(png, 'png', fileId);
           data = png;
         }
       } else {
         // png / gif-first-frame / unknown all go through embedPng.
-        image = await embedRaster(bytes, 'png');
+        image = await embedRaster(bytes, 'png', fileId);
       }
       if (image) await setImage(fileId, image, data, dataFormat);
     } catch (err) {
@@ -287,4 +311,25 @@ export async function preloadResourceImages(
     for (const art of comicArts(page)) await embed(art.fileId, art.format);
   }
   return out;
+}
+
+/** The print mode of a picture with colour settings of its own
+ *  (`Resource.printColor`): the book's mode with them over its
+ *  `imageColor`, and the profile they assign read from the resource bytes
+ *  (the book's assigned one when theirs cannot be read). */
+function pictureMode(mode: PrintColorMode, own: NonNullable<Resource['printColor']>, bytesOf: ResourceBytesProvider): PrintColorMode {
+  const imageColor = resolvePrintImageColor({ ...mode.config.imageColor, ...own });
+  let assigned = mode.assignedRgbProfile;
+  if (own.assignedRgbProfile) {
+    try {
+      const bytes = bytesOf(own.assignedRgbProfile.fileId);
+      const profile = bytes ? parseIccProfile(bytes) : undefined;
+      if (profile?.colorSpace === 'RGB') assigned = profile;
+    } catch {
+      // The book's own stands.
+    }
+  }
+  const { assignedRgbProfile: _book, ...rest } = mode;
+  void _book;
+  return { ...rest, config: { ...mode.config, imageColor }, ...(assigned ? { assignedRgbProfile: assigned } : {}), key: `${mode.key}|picture:${JSON.stringify(imageColor)}:${assigned?.hash ?? ''}` };
 }

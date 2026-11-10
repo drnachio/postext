@@ -279,6 +279,7 @@ const PANEL_NOTED = [
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],
   [/^(PrintConfig\.inks|PrintInk\.)/, 'ink table: written in the configuration; a colour gets its ink in the colour picker\'s spot tab'],
   [/^(PrintConfig\.plates|PrintPlatesConfig\.)/, 'two-ink printing: written in the configuration, like the ink table'],
+  [/^(PrintConfig\.imageColor|PrintImageColorConfig\.)/, "pictures' print colours: the book's in the configuration; a picture's own on its card (ResourceDetail, PrintColorExtras)"],
 ];
 const rows = fields.map((f) => ({
   key: `${f.owner}.${f.field}`,

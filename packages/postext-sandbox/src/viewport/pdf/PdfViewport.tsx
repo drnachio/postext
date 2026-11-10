@@ -236,7 +236,7 @@ export function PdfViewport() {
         profileBaseUrl: outputProfileBaseUrl(),
         onWarning: (w) => {
           if (isPdfFontCheck(w)) fontChecks.push(w);
-          else if (w.kind === 'fontFallback' || w.kind === 'outputProfileUnavailable' || w.kind === 'pageNegativeIgnored') console.warn(w.message);
+          else if (w.kind === 'fontFallback' || w.kind === 'outputProfileUnavailable' || w.kind === 'imageProfileUnavailable' || w.kind === 'pageNegativeIgnored') console.warn(w.message);
         },
         onProgress: (p) => {
           setRenderProgress(p);

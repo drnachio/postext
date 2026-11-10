@@ -229,6 +229,8 @@ export function platePixels(
   px: { width: number; height: number; data: Uint8Array | Uint8ClampedArray },
   plan: PlatePlan,
   flatten: boolean,
+  /** A pixel's luminance (0..1) through its own profile; sRGB's when absent. */
+  luminance?: (r: number, g: number, b: number) => number,
 ): { pixels: Uint8Array; alpha?: Uint8Array } {
   const n = px.width * px.height;
   const k = plan.images.length;
@@ -252,7 +254,7 @@ export function platePixels(
         alpha[i] = a;
       }
     }
-    const y = 0.2126 * LINEAR[r]! + 0.7152 * LINEAR[g]! + 0.0722 * LINEAR[b]!;
+    const y = luminance ? luminance(r, g, b) : 0.2126 * LINEAR[r]! + 0.7152 * LINEAR[g]! + 0.0722 * LINEAR[b]!;
     const L = y > 216 / 24389 ? 116 * Math.cbrt(y) - 16 : (24389 / 27) * y;
     const tone = Math.round(Math.max(0, Math.min(1, 1 - L / 100)) * 255);
     for (let p = 0; p < k; p++) pixels[i * k + p] = lut[p]![tone]!;

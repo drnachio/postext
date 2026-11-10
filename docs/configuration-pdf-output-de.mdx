@@ -6,7 +6,7 @@ export const metadata = {
   description: 'postext-pdf aus Code: Installation, API, Font-Provider im Browser und in Node, CJK-Schriften, Ressourcenbytes, vertikaler Text, Worker und druckfertige Dateien',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '25 min',
+  readingTime: '28 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Diese Seite richtet sich an Menschen, die Code schreiben und eine PDF-Datei brauchen. Sie zeigt, wie Sie das PDF-Paket installieren und ein gesetztes Buch mit wenigen Zeilen in eine Datei verwandeln. Das Paket braucht die Schriftdateien, deshalb erklärt die Seite, wie Sie sie ihm übergeben, im Browser oder auf einem Server. Sie behandelt Schriften für Chinesisch, Japanisch und Koreanisch, Bilder, Text, der von oben nach unten läuft, und Links. Am Ende stehen ein vollständiges Beispiel und Dateien, die eine Druckerei übernehmen kann.",
@@ -261,6 +261,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF und WebP werden als Bilder eingebettet;
 - SVG-Markup wird als Vektorpfade gezeichnet, sein `text` als echter Text in den eingebetteten Schriften des Dokuments gesetzt, oder im Browser mit 600 dpi gerastert, wenn es Funktionen außerhalb der Vektorteilmenge verwendet. Ein `<style>`, das nur Regeln `@font-face` enthält (von einer Autorin oder einem Autor eingebettete Schnitte), wird übersprungen und lässt die Abbildung vektoriell (seit postext-pdf 1.25); jedes andere Stylesheet macht sie zu einem Rasterbild, das mit den Schnitten erzeugt wird, die ihr Text nennt, eingebettet aus `fontProvider` (sofern nicht `diagramStyle.inlineFonts` oder das `svg.inlineFonts` der Ressource `false` ist);
+- TIFF- und Photoshop-Dokumente (PSD, PSB) werden aus ihren eigenen Pixeln gedruckt: Graustufen, RGB oder CMYK, 8 oder 16 Bit, mit dem ICC-Profil und der Auflösung, die sie mitbringen. Ein CMYK-Dokument behält seine Druckfarben unverändert; Graustufen und RGB folgen `print.imageColor`. Ein Photoshop-Dokument wird aus dem zusammengesetzten Bild gelesen, das es mit „Kompatibilität maximieren“ speichert; JPEG-komprimiertes TIFF wird nicht gelesen;
 - bei einem PDF wird die erste Seite unverändert als Form-XObject eingebettet.
 
 Jedes Bild wird einmal in der Datei gespeichert, wie oft es auch gezeichnet wird. Ein als Vektorpfade gezeichnetes SVG wird zu einem Form-XObject, das jede Seite zeichnet, sodass ein Rahmen oder ein Logo in der Seitengestaltung eines dreißigseitigen Dokuments einmal geschrieben wird, nicht dreißigmal; jede weitere Seite fügt einige hundert Bytes hinzu. Bis postext-pdf 1.4 trug jede Seite ihre eigene Kopie der Pfade.
@@ -280,6 +281,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Ein Host kann die Bytes des Originals auch für die eigene ID des SVG zurückgeben, wie es `bundleResourceBytes` tut; beide Wege funktionieren.
+
+Ein Browser kann weder ein TIFF noch ein Photoshop-Dokument anzeigen, deshalb behält eine daraus erzeugte Bitmap-Ressource zwei Dateien: `bitmap.fileId` ist eine PNG-Vorschau, die Canvas, HTML und EPUB zeigen, und `bitmap.printFileId` (mit `printFormat: 'tiff' | 'psd'`) ist das Original. Ein Host gibt für `bitmap.fileId` die Bytes des Originals zurück, wie es `bundleResourceBytes` und die Sandbox tun, und das PDF wird daraus gedruckt. `decodePrintRaster(bytes)` und `rasterToRgba(raster)` in `postext` lesen das Original und erzeugen die Vorschau; die Sandbox erzeugt sie beim Import der Datei, und ein Paket speichert das Original als `resources/<name>.tif` oder `.psd` neben der Vorschau.
+
+Eine Adobe-Illustrator-Datei, die mit „PDF-kompatible Datei erstellen“ gespeichert wurde, ist ein PDF und kann wie jedes andere ein Druckoriginal sein (`.ai`). Ihre Farbfelder sind ihre eigenen Platten: Der Preflight listet die auf, die die Druckfarbentabelle umbenennt, die, die keine Farbe des Buchs definiert, und, in einem Auftrag auf eigenen Platten (`print.plates`), die, die der Auftrag nicht druckt, denn eine platzierte Datei wird so gedruckt, wie sie ist.
 
 ### Vertikaler Text im PDF
 
@@ -486,7 +491,43 @@ print: {
 },
 ```
 
-Der Preflight listet die Platten des Auftrags auf und blockiert (kritisch) eine Sonderfarbe oder eine CMYK-Farbe des Buchs, die der Auftrag nicht druckt, denn beim Projizieren geht die Farbe verloren, die der Gestalter gewählt hat. Er warnt vor einer Sonderfarbenplatte, die keine Farbe und kein Eintrag der Druckfarbentabelle definiert und die dann im Proof als Schwarz erscheint. Platzierte PDFs behalten ihre eigenen Druckfarben.
+Der Preflight listet die Platten des Auftrags auf und blockiert (kritisch) eine Sonderfarbe oder eine CMYK-Farbe des Buchs, die der Auftrag nicht druckt, denn beim Projizieren geht die Farbe verloren, die der Gestalter gewählt hat. Er warnt vor einer Sonderfarbenplatte, die keine Farbe und kein Eintrag der Druckfarbentabelle definiert und die dann im Proof als Schwarz erscheint. Platzierte PDFs behalten ihre eigenen Druckfarben; der Preflight listet die auf, die der Auftrag nicht druckt (siehe [Druckoriginale](/de/docs/configuration-pdf-output#ressourcenbytes-und-druckoriginale)).
+
+### Farben der Bilder
+
+Ein Bild wird aus den Farben separiert, in denen es angelegt wurde. `print.imageColor` legt fest, wie seine Pixel gelesen werden:
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // A picture's own ICC profile. Default 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Read every RGB picture through this .icc instead.
+  grayDotGain?: 'profile' | 'none' | number;           // Greyscale pictures on black. Default 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // A CMYK picture of another press. Default 'keep'.
+}
+```
+
+Die Standardwerte lassen Bilder so, wie frühere Versionen sie gedruckt haben: Jedes RGB-Bild wird als sRGB gelesen (`'ignore'`), Graustufenbilder werden wie jedes andere separiert (`'none'`) und ein CMYK-Bild behält seine Werte (`'keep'`). Jedes Verhalten der Liste schaltet sein Feld ein.
+
+- **Sein eigenes Profil.** Ein PNG (`iCCP`) oder JPEG (`ICC_PROFILE`), das ein Profil einbettet, wird über dieses Profil gelesen, sodass ein Foto in Adobe RGB oder Display P3 so separiert wird, wie es aussieht, und nicht, als wäre es sRGB. Ein Bild ohne Profil oder mit sRGB-Profil wird wie bisher als sRGB gelesen. `'ignore'` liest jedes Bild als sRGB.
+- **Ein zugewiesenes Profil.** `assignedRgbProfile` nennt eine gespeicherte `.icc`, über die jedes RGB-Bild gelesen wird, gleich welches Profil es einbettet: etwa für eine Reihe von Fotos, die ihr Profil verloren haben. Ihre Bytes kommen aus `resourceBytes`; fehlen sie, werden die eigenen Profile der Bilder verwendet, mit der Warnung `imageProfileUnavailable`.
+- **Für das RIP beibehalten.** In PDF/X-4 mit `convertImages: false` wird ein Bild mit einem anderen Profil als sRGB in seinen eigenen Farben geschrieben, mit diesem Profil als `ICCBased` gekennzeichnet, und das RIP der Druckerei rechnet es um.
+- **Graustufen.** Ein Graustufenbild (ein graues PNG oder JPEG oder eines mit Grauprofil) druckt allein mit Schwarz, nie als vierfarbiges Grau. Seine Tonwerte, über sein eigenes Profil gelesen (sonst so, wie der Bildschirm sie zeigt), werden an die Druckmaschine angepasst: `'profile'` über das Schwarz des Ausgabeprofils, dessen Tonwertzunahme die Druckbedingung bereits enthält; eine Zahl ist die Tonwertzunahme der Maschine im 50-%-Tonwert, in Prozent (typisch 10–30), die stattdessen ausgeglichen wird; `'none'` schreibt die Werte wie bisher unverändert.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Ein CMYK-Bild einer anderen Druckmaschine.** Ein CMYK-Bild, dessen eigenes Profil eine andere Druckbedingung ist (ein für SWOP oder für Zeitungspapier separiertes Foto in einem Buch für FOGRA), wird für die Druckbedingung der Ausgabe neu separiert (`cmykProfile: 'convert'`), und reines Schwarz bleibt reines Schwarz: ein TIFF- oder Photoshop-Bild aus seinen Pixeln; ein CMYK-JPEG, dessen Pixel nicht dekodiert werden, wird in PDF/X-4 mit seinem eigenen Profil als `ICCBased` gekennzeichnet, damit das RIP es umrechnet, und in PDF/X-1a, das eine solche Kennzeichnung nicht zulässt, unverändert durchgereicht; dort warnt der Preflight davor (`cmykImageForeign`), wenn der Host ihm das Profil des Bildes übergibt (`imageProfile`). In PDF/X-4 mit `convertImages: false` wird ein TIFF- oder Photoshop-Bild ebenso gekennzeichnet. `'keep'` druckt die Werte jedes CMYK-Bildes unverändert.
+
+**Einstellungen für ein einzelnes Bild.** Das `printColor` einer Ressource nimmt dieselben Felder wie das `print.imageColor` des Buches an, nur für dieses Bild: ein Foto, dessen Profil ignoriert werden soll, eines, das über ein zugewiesenes Profil gelesen wird, ein Graustufenbild mit einer anderen Tonwertzunahme. In der Sandbox legt die Karte eines Bildes fest, ob es über sein eigenes Profil gelesen wird („Farbe im Druck“), wie seine Grautöne auf die Druckmaschine abgestimmt werden („Graustufen im Druck“) und welches Profil ihm zugewiesen ist („Zugewiesenes Profil“, eine `.icc`-Datei); ein Paket trägt die zugewiesenen Profile, das des Buches und die der Bilder, in seinem Ordner `profiles/`.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
 
 ### Referenzimplementierung
 

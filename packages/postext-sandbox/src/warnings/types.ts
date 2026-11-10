@@ -551,7 +551,10 @@ export type PreflightCheck =
   | DistributiveOmit<PreflightIssue, 'rect' | 'sourceStart' | 'sourceEnd' | 'pageIndex'>
   | { kind: 'masterFonts'; severity: PreflightSeverity; name: string; fonts: string[] }
   | { kind: 'masterRgb'; severity: PreflightSeverity; name: string }
-  | { kind: 'masterTransparency'; severity: PreflightSeverity; name: string; x1a: boolean };
+  | { kind: 'masterTransparency'; severity: PreflightSeverity; name: string; x1a: boolean }
+  /** Spot inks of a placed PDF (an Illustrator file) the job does not print
+   *  as they are named (`placedInkProblems`). */
+  | { kind: 'masterInks'; severity: PreflightSeverity; name: string; problem: 'offPlates' | 'renamed' | 'unknown'; inks: string[] };
 
 export interface Warning {
   id: string;

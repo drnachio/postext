@@ -12,8 +12,10 @@ export interface PdfPrintWarning {
    *  has no blend modes, so the debug page negative was left out.
    *  `spotTintsExhausted`: the process ran out of codes for distinct spot
    *  tints (some five thousand), so the tints past them printed in process
-   *  instead of on their ink's plate. */
-  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted';
+   *  instead of on their ink's plate. `imageProfileUnavailable`: the
+   *  profile assigned to RGB pictures could not be loaded, so they were
+   *  read through their own profiles. */
+  kind: 'outputProfileUnavailable' | 'imageProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted';
   message: string;
 }
 

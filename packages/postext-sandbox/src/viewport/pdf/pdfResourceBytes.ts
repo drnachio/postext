@@ -6,7 +6,10 @@
 // the vector subset, and a single-page PDF is embedded verbatim. So the host's
 // only decision is which payload represents an SVG resource: its print master
 // (`svg.pdfFileId`) when one is attached — unless single-ink mode is on, since
-// the recolouring pass only works on SVG markup — and the SVG source otherwise.
+// the recolouring pass only works on SVG markup — and the SVG source otherwise;
+// and which represents a bitmap: the TIFF or Photoshop original it was
+// imported from (`bitmap.printFileId`) when it has one, its PNG preview
+// otherwise.
 
 import type { PostextConfig, Resource } from 'postext';
 import { resolveDiagramStyleConfig } from 'postext';
@@ -27,7 +30,8 @@ export async function buildPdfResourceBytes(
   };
   for (const r of resources) {
     if (r.kind === 'bitmap' && r.bitmap?.fileId && !out.has(r.bitmap.fileId)) {
-      const bytes = await load(r.bitmap.fileId);
+      const original = r.bitmap.printFileId ? await load(r.bitmap.printFileId) : null;
+      const bytes = original ?? await load(r.bitmap.fileId);
       if (bytes) out.set(r.bitmap.fileId, bytes);
     } else if (r.kind === 'video' && r.video?.poster?.fileId && !out.has(r.video.poster.fileId)) {
       // A video prints as its poster (#454).

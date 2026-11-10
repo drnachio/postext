@@ -6,7 +6,7 @@ export const metadata = {
   description: 'postext-pdf from code: installation, the API, font providers in the browser and in Node, CJK fonts, resource bytes, vertical text, workers and print-ready files',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '26 min',
+  readingTime: '29 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "This page is for people who write code and want a PDF file. It shows how to install the PDF package and turn a laid-out book into a file in a few lines. The package needs the font files, so the page explains how to give them to it, in a browser or on a server. It covers fonts for Chinese, Japanese and Korean, pictures, text set from top to bottom and links. It ends with a complete example and with files ready for a printer.",
@@ -261,6 +261,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF and WebP embed as images;
 - SVG markup is drawn as vector paths, its `text` set as real text in the document's embedded fonts, or rasterised at 600 dpi in the browser when it uses features outside the vector subset. A `<style>` that holds only `@font-face` rules (faces an author embedded) is skipped and keeps the figure vector (since postext-pdf 1.25); any other style sheet makes it a raster, drawn with the faces its text names inlined from `fontProvider` (unless `diagramStyle.inlineFonts` or the resource's `svg.inlineFonts` is `false`);
+- TIFF and Photoshop documents (PSD, PSB) print from their own pixels: grey, RGB or CMYK, 8 or 16 bits, with the ICC profile and the resolution they carry. A CMYK one keeps its inks as they are; grey and RGB follow `print.imageColor`. A Photoshop document is read from the composite image it saves with "Maximize compatibility"; JPEG-compressed TIFF is not read;
 - a PDF has its first page embedded verbatim, as a form XObject.
 
 Each picture is stored in the file once, however many times it is drawn. An SVG drawn as vector paths becomes a form XObject that every page paints, so a frame or a logo in the page design of a thirty-page document is written once, not thirty times; each further page adds a few hundred bytes. Up to postext-pdf 1.4 every page carried its own copy of the paths.
@@ -280,6 +281,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 A host may also return the master's bytes for the SVG's own id, as `bundleResourceBytes` does; both ways work.
+
+A browser cannot show a TIFF or a Photoshop document, so a bitmap resource made from one keeps two files: `bitmap.fileId` is a PNG preview, which the canvas, the HTML and the EPUB show, and `bitmap.printFileId` (with `printFormat: 'tiff' | 'psd'`) is the original. A host returns the original's bytes for `bitmap.fileId`, as `bundleResourceBytes` and the Sandbox do, and the PDF prints from it. `decodePrintRaster(bytes)` and `rasterToRgba(raster)` in `postext` read the original and make the preview; the Sandbox makes it when the file is imported, and a bundle stores the original as `resources/<name>.tif` or `.psd` beside the preview.
+
+An Adobe Illustrator file saved with "Create PDF Compatible File" is a PDF, and it can be a print master like any other (`.ai`). Its swatches are its own plates: the preflight lists those the ink table renames, those no colour of the book defines and, in a job on its own plates (`print.plates`), those the job does not print, since a placed file is printed as it is.
 
 ### Vertical text in the PDF
 
@@ -486,7 +491,43 @@ print: {
 },
 ```
 
-The preflight lists the job's plates and blocks (critical) a spot ink or a CMYK colour of the book that the job does not print, since projecting it loses the colour the designer chose. It warns about a spot plate that no colour and no ink table entry defines, which then proofs as black. Placed PDFs keep their own inks.
+The preflight lists the job's plates and blocks (critical) a spot ink or a CMYK colour of the book that the job does not print, since projecting it loses the colour the designer chose. It warns about a spot plate that no colour and no ink table entry defines, which then proofs as black. Placed PDFs keep their own inks; the preflight lists those the job does not print (see [print masters](/en/docs/configuration-pdf-output#resource-bytes-and-print-masters)).
+
+### Pictures' colours
+
+A picture is separated from the colours it was made in. `print.imageColor` says how its pixels are read:
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // A picture's own ICC profile. Default 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Read every RGB picture through this .icc instead.
+  grayDotGain?: 'profile' | 'none' | number;           // Greyscale pictures on black. Default 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // A CMYK picture of another press. Default 'keep'.
+}
+```
+
+The defaults keep pictures as earlier versions printed them: every RGB picture read as sRGB (`'ignore'`), greyscale separated like any other picture (`'none'`) and a CMYK picture's values kept (`'keep'`). Each behaviour below is the one its field opts into.
+
+- **Its own profile.** A PNG (`iCCP`) or JPEG (`ICC_PROFILE`) that embeds a profile is read through it, so an Adobe RGB or Display P3 photograph separates as it looks instead of as if it were sRGB. An untagged picture, or one tagged sRGB, is read as sRGB, as before. `'ignore'` reads every picture as sRGB.
+- **An assigned profile.** `assignedRgbProfile` names a stored `.icc` every RGB picture is read through, whatever it embeds: for a batch of photographs that lost their profile, say. Its bytes come from `resourceBytes`; when they are missing, the pictures' own profiles are used, with an `imageProfileUnavailable` warning.
+- **Kept for the RIP.** In PDF/X-4 with `convertImages: false`, a picture with a profile other than sRGB is written in its own colours, tagged `ICCBased` with that profile, and the printer's RIP converts it.
+- **Greyscale.** A greyscale picture (a grey PNG or JPEG, or one with a grey profile) prints on black alone, never as a four-colour grey. Its tones, read through its own profile (else as the screen shows them), are matched to the press: `'profile'` through the output profile's black, whose dot gain the condition already includes; a number is the press's dot gain at the 50 % tone, in percent (10–30 typically), which is compensated instead; `'none'` writes the values as they are, as before.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **A CMYK picture of another press.** A CMYK picture whose own profile is another printing condition (a photograph separated for SWOP or for newsprint in a book for FOGRA) is separated again for the output's (`cmykProfile: 'convert'`), black alone kept black alone: a TIFF or Photoshop picture from its pixels; a CMYK JPEG, whose pixels are not decoded, is tagged `ICCBased` with its own profile in PDF/X-4 for the RIP to convert, and passed through in PDF/X-1a, which allows no such tag; the preflight warns of it there (`cmykImageForeign`) when the host gives it the picture's profile (`imageProfile`). In PDF/X-4 with `convertImages: false` a TIFF or Photoshop picture is tagged the same way. `'keep'` prints every CMYK picture's values as they are.
+
+**One picture's own settings.** A resource's `printColor` takes the same fields over the book's `print.imageColor`, for that picture alone: one photograph whose profile must be ignored, one read through an assigned profile, one grey picture with another dot gain. In the Sandbox, a picture's card sets whether it is read through its own profile ("Colour in print"), how its greys meet the press ("Greys in print") and a profile assigned to it ("Assigned profile", an `.icc` file); a bundle carries assigned profiles, the book's and a picture's, in its `profiles/` folder.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
 
 ### Reference implementation
 

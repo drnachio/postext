@@ -7,7 +7,7 @@ import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, type SpotColor } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type IccProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, type SpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
 import { spotFallbackCounts } from '../print/spot.js';
 import { runPagePrintPass } from '../print/printPass.js';
@@ -377,6 +377,24 @@ export async function renderToPdf(
   return bytes;
 }
 
+/** The profile `print.imageColor.assignedRgbProfile` names, from the
+ *  resource bytes; a warning, and the pictures' own profiles, when it is
+ *  missing or not an RGB profile. */
+function assignedRgbProfile(config: ResolvedPrintConfig, options: Pick<RenderToPdfOptions, 'resourceBytes'>, warn: (w: PdfWarning) => void): IccProfile | undefined {
+  const assigned = config.imageColor.assignedRgbProfile;
+  if (!assigned) return undefined;
+  try {
+    const bytes = options.resourceBytes?.(assigned.fileId);
+    if (!bytes) throw new Error('its file was not given (resourceBytes)');
+    const profile = parseIccProfile(bytes);
+    if (profile.colorSpace !== 'RGB') throw new Error('it is not an RGB profile');
+    return profile;
+  } catch (err) {
+    warn({ kind: 'imageProfileUnavailable', message: `postext-pdf: the picture profile "${assigned.name}" is unavailable (${(err as Error).message}); pictures are read through their own profiles` });
+    return undefined;
+  }
+}
+
 /** pdf-lib always writes `%PDF-1.7`; PDF/X-1a:2003 is PDF 1.4 and PDF/X-4
  *  PDF 1.6. The version has the same length, so no offset moves. */
 function setHeaderVersion(bytes: Uint8Array, version: '1.4' | '1.6'): void {
@@ -391,7 +409,7 @@ function setHeaderVersion(bytes: Uint8Array, version: '1.4' | '1.6'): void {
 async function printColorMode(
   config: ResolvedPrintConfig,
   colorSpace: PdfColorSpace,
-  options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl'>,
+  options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl' | 'resourceBytes'>,
   warn: (w: PdfWarning) => void,
   docs: readonly VDTDocument[],
 ): Promise<PrintColorMode | undefined> {
@@ -415,7 +433,7 @@ async function printColorMode(
       authoredCmykColors(doc.config, authored);
       authoredSpotColors(doc.config, spots);
     }
-    return createPrintColorMode(profile, config, condition, authored, spots);
+    return createPrintColorMode(profile, config, condition, authored, spots, assignedRgbProfile(config, options, warn));
   } catch (err) {
     const reason = (err as Error).message;
     if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);

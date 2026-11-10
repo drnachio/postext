@@ -6,7 +6,7 @@ export const metadata = {
   description: "postext-pdf des del codi: instal·lació, l'API, els proveïdors de fonts al navegador i a Node, les fonts CJK, els bytes de recursos, el text vertical, els workers i els fitxers a punt per a impremta",
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '28 min',
+  readingTime: '31 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina és per a qui escriu codi i vol un fitxer PDF. Explica com instal·lar el paquet de PDF i com convertir un llibre compost en un fitxer amb unes quantes línies de codi. El paquet necessita els fitxers de les fonts, i la pàgina explica d'on els pot treure, en un navegador o en un servidor. Tracta les fonts per al xinès, el japonès i el coreà, les imatges, el text que va de dalt a baix i els enllaços. Acaba amb un exemple complet i amb fitxers a punt per a la impremta.",
@@ -261,6 +261,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF i WebP s'incrusten com a imatges;
 - el marcatge SVG es dibuixa com a traçats vectorials, amb el `text` compost com a text real amb les fonts incrustades del document, o es rasteritza a 600 ppp al navegador quan fa servir funcions que queden fora del subconjunt vectorial. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) s'omet i la figura continua sent vectorial (des de postext-pdf 1.25); qualsevol altre full d'estil la converteix en mapa de bits, generat amb les variants que indica el text, incrustades des de `fontProvider` (llevat que `diagramStyle.inlineFonts` o el `svg.inlineFonts` del recurs sigui `false`);
+- els TIFF i els documents de Photoshop (PSD, PSB) s'imprimeixen a partir dels seus propis píxels: gris, RGB o CMYK, de 8 o 16 bits, amb el perfil ICC i la resolució que porten. Un de CMYK conserva les tintes tal qual; el gris i l'RGB segueixen `print.imageColor`. D'un document de Photoshop se'n llegeix la imatge composta que desa amb «Maximize compatibility»; els TIFF amb compressió JPEG no es llegeixen;
 - d'un PDF s'incrusta tal qual la primera pàgina, com un XObject de formulari.
 
 Cada imatge es desa una sola vegada al fitxer, encara que es dibuixi moltes vegades. Un SVG dibuixat amb traçats vectorials es converteix en un XObject de formulari que pinta cada pàgina, de manera que un marc o un logotip en el disseny de pàgina d'un document de trenta pàgines s'escriu una vegada i no trenta; cada pàgina més afegeix uns centenars de bytes. Fins a postext-pdf 1.4, cada pàgina portava una còpia pròpia dels traçats.
@@ -280,6 +281,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Un amfitrió també pot retornar els bytes del màster per a l'identificador del mateix SVG, com fa `bundleResourceBytes`; les dues formes funcionen.
+
+Un navegador no pot mostrar un TIFF ni un document de Photoshop, de manera que un recurs de mapa de bits fet a partir d'un d'aquests desa dos fitxers: `bitmap.fileId` és una vista prèvia en PNG, que mostren el canvas, l'HTML i l'EPUB, i `bitmap.printFileId` (amb `printFormat: 'tiff' | 'psd'`) és l'original. Un amfitrió retorna els bytes de l'original per a `bitmap.fileId`, com fan `bundleResourceBytes` i el Sandbox, i el PDF s'imprimeix a partir d'aquest. `decodePrintRaster(bytes)` i `rasterToRgba(raster)` de `postext` llegeixen l'original i fan la vista prèvia; el Sandbox la fa en importar el fitxer, i un paquet desa l'original com a `resources/<nom>.tif` o `.psd` al costat de la vista prèvia.
+
+Un fitxer d'Adobe Illustrator desat amb «Create PDF Compatible File» és un PDF, i pot ser un màster d'impressió com qualsevol altre (`.ai`). Les seves mostres són les seves pròpies planxes: el preflight enumera les que la taula de tintes reanomena, les que cap color del llibre no defineix i, en un treball amb planxes pròpies (`print.plates`), les que el treball no imprimeix, perquè un fitxer col·locat s'imprimeix tal qual.
 
 ### Text vertical en el PDF
 
@@ -486,7 +491,43 @@ print: {
 },
 ```
 
-El preflight enumera les planxes del treball i bloqueja (crític) una tinta plana o un color CMYK del llibre que el treball no imprimeix, perquè en projectar-lo es perd el color que va triar el dissenyador. Avisa d’una planxa de tinta plana que cap color ni cap entrada de la taula de tintes no defineix, i que llavors es simula com a negre. Els PDF col·locats conserven les seves pròpies tintes.
+El preflight enumera les planxes del treball i bloqueja (crític) una tinta plana o un color CMYK del llibre que el treball no imprimeix, perquè en projectar-lo es perd el color que va triar el dissenyador. Avisa d’una planxa de tinta plana que cap color ni cap entrada de la taula de tintes no defineix, i que llavors es simula com a negre. Els PDF col·locats conserven les seves pròpies tintes; el preflight enumera les que el treball no imprimeix (consulta els [màsters d’impressió](/ca/docs/configuration-pdf-output#bytes-de-recursos-i-màsters-dimpressió)).
+
+### Color de les imatges
+
+Una imatge se separa a partir dels colors en què es va fer. `print.imageColor` diu com es llegeixen els seus píxels:
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // El perfil ICC de la mateixa imatge. Per defecte, 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Llegir tota imatge RGB amb aquest .icc.
+  grayDotGain?: 'profile' | 'none' | number;           // Imatges en gris, en negre. Per defecte, 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // Una imatge CMYK d'una altra màquina. Per defecte, 'keep'.
+}
+```
+
+Els valors per defecte deixen les imatges com les imprimien les versions anteriors: tota imatge RGB es llegeix com a sRGB (`'ignore'`), les imatges en gris se separen com qualsevol altra (`'none'`) i una imatge CMYK conserva els seus valors (`'keep'`). Cada comportament de la llista s'activa amb el seu camp.
+
+- **El seu propi perfil.** Un PNG (`iCCP`) o un JPEG (`ICC_PROFILE`) que incrusta un perfil es llegeix a través d'aquest perfil, de manera que una fotografia en Adobe RGB o Display P3 se separa tal com es veu i no com si fos sRGB. Una imatge sense perfil, o amb perfil sRGB, es llegeix com a sRGB, com fins ara. `'ignore'` llegeix totes les imatges com a sRGB.
+- **Un perfil assignat.** `assignedRgbProfile` anomena un `.icc` desat amb el qual es llegeix tota imatge RGB, porti el perfil que porti: per exemple, per a un lot de fotografies que han perdut el seu. Els seus bytes arriben per `resourceBytes`; si falten, es fan servir els perfils de les imatges, amb un avís `imageProfileUnavailable`.
+- **Conservada per al RIP.** En PDF/X-4 amb `convertImages: false`, una imatge amb un perfil diferent de sRGB s'escriu en els seus propis colors, etiquetada `ICCBased` amb aquest perfil, i la converteix el RIP de la impremta.
+- **Escala de grisos.** Una imatge en escala de grisos (un PNG o un JPEG en gris, o una amb perfil de gris) s'imprimeix només en negre, mai com un gris de quadricromia. Els seus tons, llegits a través del seu perfil (o com els mostra la pantalla), s'ajusten a la màquina: `'profile'`, amb el negre del perfil de sortida, el guany de punt del qual ja inclou la condició; un nombre és el guany de punt de la màquina al to del 50 %, en percentatge (entre 10 i 30, normalment), que es compensa en el seu lloc; `'none'` escriu els valors tal com són, com fins ara.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Una imatge CMYK d'una altra màquina.** Una imatge CMYK el perfil de la qual és una altra condició d'impressió (una fotografia separada per a SWOP o per a paper de diari en un llibre per a FOGRA) se separa de nou per a la de sortida (`cmykProfile: 'convert'`), i el negre sol continua sent negre sol: un TIFF o un document de Photoshop a partir dels seus píxels; un JPEG CMYK, els píxels del qual no es descomprimeixen, s'etiqueta `ICCBased` amb el seu propi perfil en PDF/X-4 perquè el converteixi el RIP, i passa tal com és en PDF/X-1a, que no admet aquesta etiqueta; allà el preflight n'avisa (`cmykImageForeign`) quan l'amfitrió li dona el perfil de la imatge (`imageProfile`). En PDF/X-4 amb `convertImages: false`, un TIFF o un document de Photoshop s'etiqueta igual. `'keep'` imprimeix els valors de tota imatge CMYK tal com són.
+
+**Els ajustos d'una sola imatge.** El `printColor` d'un recurs admet els mateixos camps que `print.imageColor` del llibre i els aplica només a aquella imatge: una fotografia el perfil de la qual cal ignorar, una altra que es llegeix amb un perfil assignat, una imatge en gris amb un altre guany de punt. Al Sandbox, la fitxa d'una imatge diu si es llegeix amb el seu propi perfil («Color a impremta»), com s'ajusten els seus grisos a la màquina («Grisos a impremta») i quin perfil se li assigna («Perfil assignat», un fitxer `.icc`); un paquet porta els perfils assignats, el del llibre i els de les imatges, a la seva carpeta `profiles/`.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
 
 ### Implementació de referència
 

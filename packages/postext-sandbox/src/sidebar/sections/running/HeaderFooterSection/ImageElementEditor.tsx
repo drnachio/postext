@@ -23,7 +23,7 @@ import { SizeToFields, isSizeTo, type FrameTarget } from './sizeTo.js';
 import { FOCUS_CENTER, focusFromPercent, focusFromPointer, focusPercent, type FocusPoint } from './focusPoint.js';
 
 const DEFAULT_SIZE_DIM: Dimension = { value: 20, unit: 'mm' };
-const IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,image/svg+xml,.svg';
+const IMAGE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,image/tiff,.tif,.tiff,.psd,image/svg+xml,.svg';
 
 function sizeDim(size: ElementSize | undefined, fallback: Dimension): Dimension {
   if (size && typeof size === 'object' && 'value' in size) return size;

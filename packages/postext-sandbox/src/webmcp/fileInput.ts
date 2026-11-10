@@ -26,6 +26,7 @@ export interface FileInput {
 
 const EXTENSION_TYPES: Record<string, string> = {
   png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml',
+  tif: 'image/tiff', tiff: 'image/tiff', psd: 'image/vnd.adobe.photoshop', ai: 'application/pdf',
   woff2: 'font/woff2', woff: 'font/woff', ttf: 'font/ttf', otf: 'font/otf', postext: 'application/zip', zip: 'application/zip',
   pdf: 'application/pdf', mp4: 'video/mp4', m4v: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg', mov: 'video/quicktime',
 };

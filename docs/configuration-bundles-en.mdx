@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '.postext bundles',
   description: 'How to open, lay out, render and create .postext files from code; bilingual bundles; files written by older versions; and the low-level API',
   lang: 'en',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '27 min',
   order: 24,
   parent: 'configuration',
@@ -242,7 +242,7 @@ const { bytes, manifest, warnings } = await createBundle({
     <tr><td><code>name</code>, <code>id</code>, <code>description</code>, <code>locale</code></td><td>The manifest's metadata. <code>id</code> defaults to a slug of <code>name</code>.</td></tr>
     <tr><td><code>chapters</code> or <code>markdown</code></td><td>The book, one <code>&#123; title?, markdown &#125;</code> per chapter, or a single document.</td></tr>
     <tr><td><code>config</code></td><td>The <code>PostextConfig</code>. Values equal to the defaults are left out of the manifest.</td></tr>
-    <tr><td><code>resources</code></td><td>The resources. A picture names its payload by <code>bitmap.fileId</code> / <code>svg.fileId</code> (and <code>svg.pdfFileId</code> for a print master).</td></tr>
+    <tr><td><code>resources</code></td><td>The resources. A picture names its payload by <code>bitmap.fileId</code> / <code>svg.fileId</code> (and <code>svg.pdfFileId</code> for a print master; <code>bitmap.printFileId</code> for the TIFF or Photoshop original of a picture whose <code>bitmap.fileId</code> is its PNG preview, stored as <code>resources/&lt;name&gt;.tif</code> or <code>.psd</code>).</td></tr>
     <tr><td><code>files</code></td><td>The payloads by <code>fileId</code> (an object or a <code>Map</code>): the pictures the resources reference and the font files the <code>config.customFonts</code> variants reference. Values may be a <code>Uint8Array</code>, an <code>ArrayBuffer</code>, a <code>Blob</code> or a string (SVG markup).</td></tr>
     <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>: a cover picture (PNG, JPEG, WebP, GIF or SVG).</td></tr>
     <tr><td><code>canvasScope</code></td><td><code>'book'</code> asks viewers to lay the whole book out as one canvas.</td></tr>
@@ -289,7 +289,7 @@ const es = await openBundle(bytes, { locale: 'es' });   // Spanish chapters, con
 
 - **`chapters`**: the book in that language. The chapter files go into one folder per locale (`chapters/en/01-dusk.md`, `chapters/es/01-anochecer.md`) and the manifest's `chapters` becomes a locale → chapters map. A locale without `chapters` reads the primary ones; when no locale has chapters of its own, they stay a single list.
 - **`config`**: the configuration for that language. Each top-level key you pass replaces the shared key for that language, so `headings` above replaces the whole `headings` object. Keys left out, or equal to the shared ones, are shared, so passing the locale's full configuration works as well as passing the few keys that change. The manifest stores only the difference: `localized[…].config` holds the fields the language sets differently from the shared `config`, and is merged over it field by field when the bundle is read (see [General settings and per-language overrides](#general-settings-and-per-language-overrides)). A key set to its defaults while the shared one is not (`layout: {}`) resets the shared value for that language. Fonts are shared: the families of a locale's `customFonts` join the bundle's `fonts`.
-- **`resources`**: the wording of the shared resources, matched by `id`: `caption`, `note`, `altText` and a table's `table`. A picture with words in it can have its own artwork: `bitmap.fileId` or `svg.fileId` (and `svg.pdfFileId`) name another payload in `files`, written as `resources/es/lantern.svg`. Other fields, such as the type or the placement, are shared. An id that is not among `resources` is left out with a warning, and a missing locale picture leaves the locale on the shared one, also with a warning.
+- **`resources`**: the wording of the shared resources, matched by `id`: `caption`, `note`, `altText` and a table's `table`. A picture with words in it can have its own artwork: `bitmap.fileId` or `svg.fileId` (and `svg.pdfFileId` or `bitmap.printFileId`) name another payload in `files`, written as `resources/es/lantern.svg`. Other fields, such as the type or the placement, are shared. An id that is not among `resources` is left out with a warning, and a missing locale picture leaves the locale on the shared one, also with a warning.
 - **`name`**, **`description`**: the book's title and description in that language, written as `localized[…].name` and `description` when they differ from the shared ones. `openBundle` returns them as `bundle.name` and `bundle.description` for that locale, the Sandbox lists the edition under that title (on import and in its library), and `postext info` and `postext check` print them. An `index.json` entry of a preset source may copy them under `localized` (`localized.ca.name`) so the library names each edition before it is opened. A locale without them keeps the manifest's `name` and `description`.
 
 The manifest lists every language in `locales` (`['en', 'es']`), keeps the primary one as `locale` and stores the rest under `localized`. `openBundle` without a locale reads the primary language.

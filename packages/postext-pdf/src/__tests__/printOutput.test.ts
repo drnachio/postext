@@ -300,7 +300,20 @@ describe('inspectPrintMaster', () => {
 
     const clean = await PDFDocument.create();
     clean.addPage([200, 200]).drawRectangle({ x: 10, y: 10, width: 50, height: 50, color: cmyk(0, 1, 0, 0) });
-    expect(await inspectPrintMaster(await clean.save())).toEqual({ nonEmbeddedFonts: [], rgb: false, transparency: false });
+    expect(await inspectPrintMaster(await clean.save())).toEqual({ nonEmbeddedFonts: [], rgb: false, transparency: false, spotInks: [] });
+  });
+
+  it('lists the spot inks of its Separation and DeviceN spaces, as an Illustrator swatch names them', async () => {
+    const { inspectPrintMaster } = await import('../print/inspectMaster.js');
+    const { PDFName: Name } = await import('pdf-lib');
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([200, 200]);
+    const fn = doc.context.obj({ FunctionType: 2, Domain: [0, 1], C0: [0, 0, 0, 0], C1: [0, 1, 0.8, 0], N: 1 });
+    const sep = doc.context.obj([Name.of('Separation'), Name.of('PANTONE 185 C'), Name.of('DeviceCMYK'), fn]);
+    const devn = doc.context.obj([Name.of('DeviceN'), [Name.of('Black'), Name.of('Oro')], Name.of('DeviceCMYK'), fn]);
+    const spaces = doc.context.obj({ CS0: doc.context.register(sep), CS1: doc.context.register(devn) });
+    page.node.Resources()!.set(Name.of('ColorSpace'), spaces);
+    expect((await inspectPrintMaster(await doc.save())).spotInks).toEqual(['Oro', 'PANTONE 185 C']);
   });
 });
 

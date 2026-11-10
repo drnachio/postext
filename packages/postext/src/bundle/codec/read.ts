@@ -3,11 +3,12 @@
 import { scoreFormatOfFile } from '../../music/types.js';
 import type { PostextConfig, Resource, CustomFontFamily } from '../../types.js';
 import { cloneDefaultColorPalette, defaultResourceTypes } from '../../defaults/index.js';
-import { isBundleManifest, resolveBundleLocale, svgSize, bitmapInfo, pickChapterSpecs, pickLocaleOverrides, mimeForFile, isBitmapFile, resourceFromSpec, isSvgFile, isPdfFile, fontsToCustomFonts, resolveBundleConfigLocale, pickBundleStart } from '../manifest.js';
+import { isBundleManifest, resolveBundleLocale, svgSize, bitmapInfo, pickChapterSpecs, pickLocaleOverrides, mimeForFile, isBitmapFile, resourceFromSpec, isSvgFile, isPdfFile, printFormatOfFile, fileExtension, fontsToCustomFonts, resolveBundleConfigLocale, pickBundleStart } from '../manifest.js';
 import { migrateBundleConfig } from '../configVersion.js';
 import type { TraceContourOptions } from '../../contour/index.js';
 import type { BundleIdScheme, BundleImageSize, BundleManifest, BundleChapter, BundleBlob, BundleFontFile, BundleStart, BundleFileReader, BundleResourceSpec } from '../types.js';
 import { traceBundleContours } from './plan.js';
+import { printRasterFormat } from '../../raster/index.js';
 
 /** The configuration a bundle's own `config` is laid over: the default
  *  colour palette plus the built-in resource types localised to `locale`
@@ -102,6 +103,12 @@ const identityIds: BundleIdScheme = { blob: (f) => f, font: (f) => f };
 /** Chapter files a bundle reads at once. */
 const CHAPTER_READ_CONCURRENCY = 8;
 
+/** True when `bytes` open with the `%PDF` signature. */
+function startsWithPdf(bytes: ArrayBuffer): boolean {
+  const head = new Uint8Array(bytes, 0, Math.min(4, bytes.byteLength));
+  return String.fromCharCode(...head) === '%PDF';
+}
+
 /** `items` mapped by `fn`, at most `limit` calls in flight, results in the
  *  order of `items`. The first rejection rejects the whole (calls already
  *  started run to their end; no new one starts). */
@@ -170,6 +177,7 @@ export async function readBundle(
       if (wording.width === undefined) delete merged.width;
       if (wording.height === undefined) delete merged.height;
       if (wording.pdfFile === undefined) delete merged.pdfFile;
+      if (wording.printFile === undefined) delete merged.printFile;
       if (wording.fileResolution === undefined) delete merged.fileResolution;
     }
     return merged;
@@ -223,12 +231,43 @@ export async function readBundle(
       let resolved = spec;
       const pdfFile = spec.pdfFile;
       if (pdfFile && isSvgFile(file)) {
-        const master = isPdfFile(pdfFile) ? await readFile(pdfFile).catch(() => null) : null;
+        const read = isPdfFile(pdfFile) ? await readFile(pdfFile).catch(() => null) : null;
+        // An Illustrator `.ai` is a PDF only when saved PDF-compatible.
+        const master = read && (fileExtension(pdfFile) !== 'ai' || startsWithPdf(read)) ? read : null;
         if (master) {
           blobs.push({ fileId: ids.blob(pdfFile), file: pdfFile, bytes: master, mime: mimeForFile(pdfFile) });
         } else {
-          onWarning?.(`${spec.id}: print master "${pdfFile}" ${isPdfFile(pdfFile) ? 'not found' : 'is not a .pdf'}, ignored`);
+          onWarning?.(`${spec.id}: print master "${pdfFile}" ${!isPdfFile(pdfFile) ? 'is not a .pdf' : read ? 'is not a PDF' : 'not found'}, ignored`);
           resolved = { ...spec, pdfFile: undefined };
+        }
+      }
+      // Likewise the TIFF or Photoshop original a bitmap prints from: one
+      // that is missing or is not what its name says only costs the
+      // original, never the picture (its preview).
+      const printFile = spec.printFile;
+      if (printFile && isBitmapFile(file)) {
+        const format = printFormatOfFile(printFile);
+        const original = format ? await readFile(printFile).catch(() => null) : null;
+        if (original && printRasterFormat(new Uint8Array(original)) === format) {
+          blobs.push({ fileId: ids.blob(printFile), file: printFile, bytes: original, mime: mimeForFile(printFile) });
+        } else {
+          onWarning?.(`${spec.id}: print original "${printFile}" ${!format ? 'is not a .tif or .psd' : original ? `is not a ${format === 'psd' ? 'Photoshop document' : 'TIFF'}` : 'not found'}, ignored`);
+          resolved = { ...resolved, printFile: undefined };
+        }
+      }
+      // A picture's own assigned profile: a missing one only costs the
+      // assignment.
+      const ownProfile = resolved.printColor?.assignedRgbProfile;
+      if (ownProfile) {
+        const icc = await readFile(ownProfile.fileId).catch(() => null);
+        if (icc) {
+          blobs.push({ fileId: ids.blob(ownProfile.fileId), file: ownProfile.fileId, bytes: icc, mime: 'application/vnd.iccprofile' });
+          resolved = { ...resolved, printColor: { ...resolved.printColor, assignedRgbProfile: { ...ownProfile, fileId: ids.blob(ownProfile.fileId) } } };
+        } else {
+          onWarning?.(`${spec.id}: picture profile "${ownProfile.fileId}" not found, ignored`);
+          const { assignedRgbProfile: _gone, ...printColor } = resolved.printColor!;
+          void _gone;
+          resolved = { ...resolved, printColor };
         }
       }
       let size: BundleImageSize | undefined;
@@ -318,6 +357,25 @@ export async function readBundle(
       delete print.customProfile;
       if (print.outputProfile === 'custom') delete print.outputProfile;
       config = { ...config, print };
+    }
+  }
+  // The profile assigned to the book's RGB pictures, likewise.
+  const assigned = config.print?.imageColor?.assignedRgbProfile;
+  if (assigned) {
+    const bytes = await readFile(assigned.fileId).catch(() => null);
+    const withAssigned = (c: PostextConfig, a: { name: string; fileId: string } | undefined): PostextConfig => {
+      const imageColor = { ...c.print?.imageColor };
+      if (a) imageColor.assignedRgbProfile = a;
+      else delete imageColor.assignedRgbProfile;
+      return { ...c, print: { ...c.print, imageColor } };
+    };
+    if (bytes) {
+      blobs.push({ fileId: ids.blob(assigned.fileId), file: assigned.fileId, bytes, mime: 'application/vnd.iccprofile' });
+      config = withAssigned(config, { ...assigned, fileId: ids.blob(assigned.fileId) });
+      if (sharedConfig?.print?.imageColor?.assignedRgbProfile?.fileId === assigned.fileId) sharedConfig = withAssigned(sharedConfig, { ...assigned, fileId: ids.blob(assigned.fileId) });
+    } else {
+      onWarning?.(`picture profile "${assigned.fileId}" not found, ignored`);
+      config = withAssigned(config, undefined);
     }
   }
 

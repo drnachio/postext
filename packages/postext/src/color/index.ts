@@ -20,6 +20,7 @@ export {
   linearToSrgb,
   cmykToLab,
   labToCmyk,
+  deviceToXyz,
   totalAreaCoverage,
   outputTransform,
   buildRgbLut,
@@ -43,4 +44,8 @@ export { srgbProfileBytes } from './srgbProfile.js';
 export { authoredCmykColors, authoredSpotColors, normalizeSpotColor, spotColorCmyk, spotInks, type SpotInk } from './authored.js';
 export { inkEntry, inkKey, inkNameProblem, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames, spotsThroughInkTable, type InkNameProblem } from './inks.js';
 export { createPrintPreview, proofPixels, type PrintPreview, type PrintPreviewOptions } from './softProof.js';
-export { channelsOffPlates, jobPlates, plateOfSpot, processChannel, type JobPlate, type ProcessChannel } from './plates.js';
+export { channelsOffPlates, jobPlates, placedInkProblems, plateOfSpot, processChannel, type JobPlate, type PlacedInkProblems, type ProcessChannel } from './plates.js';
+export { embeddedIccProfile } from './imageProfile.js';
+// Print originals (TIFF, Photoshop): their pixels and the ICC profiles
+// they carry.
+export * from '../raster/index.js';

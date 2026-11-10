@@ -542,6 +542,7 @@ interface PrintConfig {
   preflight?: PrintPreflightConfig;
   inks?: PrintInk[];                       // La taula de tintes: noms, àlies, quadricromia.
   plates?: PrintPlatesConfig;              // Les planxes del treball: impressió a dues tintes.
+  imageColor?: PrintImageColorConfig;      // Com es llegeixen les imatges: perfils, grisos.
 }
 
 interface CustomOutputProfile {

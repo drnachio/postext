@@ -56,6 +56,10 @@ const MIME_BY_EXT: Record<string, string> = {
   webp: 'image/webp',
   gif: 'image/gif',
   pdf: 'application/pdf',
+  ai: 'application/pdf',
+  tif: 'image/tiff',
+  tiff: 'image/tiff',
+  psd: 'image/vnd.adobe.photoshop',
   ttf: 'font/ttf',
   otf: 'font/otf',
   woff2: 'font/woff2',
@@ -109,9 +113,24 @@ export function isSvgFile(file: string): boolean {
   return fileExtension(file) === 'svg';
 }
 
-/** Whether a file name is a PDF's. */
+/** Whether a file name is a PDF print master's: a `.pdf`, or an
+ *  Illustrator `.ai` saved PDF-compatible (which is a PDF; its bytes are
+ *  checked on reading). */
 export function isPdfFile(file: string): boolean {
-  return fileExtension(file) === 'pdf';
+  const ext = fileExtension(file);
+  return ext === 'pdf' || ext === 'ai';
+}
+
+/** True when `file` is a print original a bitmap is printed from: a TIFF
+ *  or a Photoshop document (`Resource.bitmap.printFileId`). */
+export function isPrintRasterFile(file: string): boolean {
+  return printFormatOfFile(file) !== undefined;
+}
+
+/** The print format a print original's name says (`.tif` → `tiff`). */
+export function printFormatOfFile(file: string): 'tiff' | 'psd' | undefined {
+  const ext = fileExtension(file);
+  return ext === 'tif' || ext === 'tiff' ? 'tiff' : ext === 'psd' ? 'psd' : undefined;
 }
 
 /** Font format of a file name, or null when it is not a font. */
@@ -152,6 +171,11 @@ export function extensionForResource(r: Resource): string | null {
   if (r.kind === 'svg' && r.svg) return 'svg';
   if (r.kind === 'bitmap' && r.bitmap) return EXT_BY_BITMAP_FORMAT[r.bitmap.format] ?? r.bitmap.format;
   return null;
+}
+
+/** File extension of a bitmap's print original (`tiff` → `tif`). */
+export function extensionForPrintFormat(format: 'tiff' | 'psd' | undefined): string {
+  return format === 'psd' ? 'psd' : 'tif';
 }
 
 /** File extension of a self-hosted video's file (`mp4`, `webm`…). */

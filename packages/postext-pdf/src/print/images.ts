@@ -10,10 +10,11 @@
 
 import { PDFDocument, PDFImage, PDFName, PDFRef } from 'pdf-lib';
 import UPNG from '@pdf-lib/upng';
-import { buildRgbLut, outputTransform, sampleRgbLut, type RgbLut } from 'postext';
+import { buildRgbLut, deviceToXyz, outputTransform, rasterProfile, rasterToRgba, sampleRgbLut, type DecodedRaster, type IccProfile, type RgbLut } from 'postext';
 import type { PrintColorMode } from './colorMode.js';
 import { rgbToCmyk, rgbToGrayscale } from '../colors.js';
 import { platePixels } from './plates.js';
+import { convertCmykPixels, foreignCmyk, grayInkLut, isSrgb, pictureKind, sourceProfile } from './imageProfiles.js';
 import { inkSpace } from './spot.js';
 
 /** Decoded pixels, 8-bit RGBA, rows top-down. */
@@ -39,14 +40,17 @@ export function jpegComponents(bytes: Uint8Array): number | null {
   return null;
 }
 
-async function decodeWithCanvas(bytes: Uint8Array, type: string): Promise<RgbaPixels | null> {
+async function decodeWithCanvas(bytes: Uint8Array, type: string, raw = false): Promise<RgbaPixels | null> {
   const g = globalThis as unknown as {
-    createImageBitmap?: (b: Blob) => Promise<ImageBitmap>;
+    createImageBitmap?: (b: Blob, o?: { colorSpaceConversion?: 'none' | 'default' }) => Promise<ImageBitmap>;
     OffscreenCanvas?: new (w: number, h: number) => { getContext(t: '2d'): { drawImage(i: ImageBitmap, x: number, y: number): void; getImageData(x: number, y: number, w: number, h: number): { data: Uint8ClampedArray } } | null };
   };
   if (!g.createImageBitmap || !g.OffscreenCanvas) return null;
   try {
-    const bitmap = await g.createImageBitmap(new Blob([bytes as BlobPart], { type }));
+    // `raw`: the file's own values, its profile applied by the caller, not
+    // by the browser.
+    const blob = new Blob([bytes as BlobPart], { type });
+    const bitmap = await (raw ? g.createImageBitmap(blob, { colorSpaceConversion: 'none' }) : g.createImageBitmap(blob));
     const canvas = new g.OffscreenCanvas(bitmap.width, bitmap.height);
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
@@ -58,8 +62,10 @@ async function decodeWithCanvas(bytes: Uint8Array, type: string): Promise<RgbaPi
   }
 }
 
-/** Decode a PNG or JPEG to RGBA. */
-export async function decodeRgba(bytes: Uint8Array, format: 'png' | 'jpeg'): Promise<RgbaPixels | null> {
+/** Decode a PNG or JPEG to RGBA. `raw`: the file's own values, for a
+ *  caller that reads them through the picture's profile (in a browser,
+ *  the canvas would otherwise convert them to sRGB). */
+export async function decodeRgba(bytes: Uint8Array, format: 'png' | 'jpeg', raw = false): Promise<RgbaPixels | null> {
   if (format === 'png') {
     try {
       const img = UPNG.decode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
@@ -68,10 +74,10 @@ export async function decodeRgba(bytes: Uint8Array, format: 'png' | 'jpeg'): Pro
       if (!first) return null;
       return { width: img.width, height: img.height, data: new Uint8Array(first) };
     } catch {
-      return decodeWithCanvas(bytes, 'image/png');
+      return decodeWithCanvas(bytes, 'image/png', raw);
     }
   }
-  const viaCanvas = await decodeWithCanvas(bytes, 'image/jpeg');
+  const viaCanvas = await decodeWithCanvas(bytes, 'image/jpeg', raw);
   if (viaCanvas) return viaCanvas;
   try {
     const jpeg = (await import('jpeg-js')) as unknown as {
@@ -87,31 +93,36 @@ export async function decodeRgba(bytes: Uint8Array, format: 'png' | 'jpeg'): Pro
   }
 }
 
-const lutCache = new WeakMap<PrintColorMode, RgbLut>();
+const lutCache = new WeakMap<PrintColorMode, Map<string, RgbLut>>();
 
-/** The sRGB → CMYK pixel LUT of a mode: the profile's own black
- *  generation (no K-only neutrals, which suit flat colours, not tones). */
-function pixelLut(mode: PrintColorMode): RgbLut {
-  let lut = lutCache.get(mode);
+/** The RGB → CMYK pixel LUT of a mode, reading the pixels through
+ *  `source` (sRGB when absent): the profile's own black generation (no
+ *  K-only neutrals, which suit flat colours, not tones). */
+function pixelLut(mode: PrintColorMode, source?: IccProfile): RgbLut {
+  let perMode = lutCache.get(mode);
+  if (!perMode) lutCache.set(mode, (perMode = new Map()));
+  const key = source?.hash ?? 'srgb';
+  let lut = perMode.get(key);
   if (!lut) {
     const t = outputTransform(mode.profile, {
       intent: mode.config.renderingIntent,
       blackPointCompensation: mode.config.blackPointCompensation,
       preserveNeutrals: false,
     });
+    const toXyz = source ? deviceToXyz(source, mode.config.renderingIntent) : undefined;
     lut = buildRgbLut(33, 4, (r, g, b) => {
-      const k = t.fromRgb(r, g, b);
+      const k = toXyz ? t.fromXyz(toXyz([r, g, b])) : t.fromRgb(r, g, b);
       return [k.c, k.m, k.y, k.k];
     });
-    lutCache.set(mode, lut);
+    perMode.set(key, lut);
   }
   return lut;
 }
 
 /** Separate RGBA pixels into CMYK bytes (and an alpha plane when any pixel
  *  is translucent and the mode keeps transparency). */
-export function separatePixels(px: RgbaPixels, mode: PrintColorMode): { cmyk: Uint8Array; alpha?: Uint8Array } {
-  const lut = pixelLut(mode);
+export function separatePixels(px: RgbaPixels, mode: PrintColorMode, source?: IccProfile): { cmyk: Uint8Array; alpha?: Uint8Array } {
+  const lut = pixelLut(mode, source);
   const n = px.width * px.height;
   const cmyk = new Uint8Array(n * 4);
   const keepAlpha = !mode.flattenTransparency;
@@ -180,7 +191,7 @@ export function embedCmykPixels(pdfDoc: PDFDocument, width: number, height: numb
 /** Write device pixels (one byte a channel) as an image XObject, its alpha
  *  plane as a DeviceGray soft mask; `space` a device space's name or a
  *  colour space object. */
-function embedDevicePixels(pdfDoc: PDFDocument, width: number, height: number, space: 'DeviceCMYK' | 'DeviceGray' | PDFRef, pixels: Uint8Array, alpha?: Uint8Array): PDFImage {
+function embedDevicePixels(pdfDoc: PDFDocument, width: number, height: number, space: 'DeviceCMYK' | 'DeviceGray' | 'DeviceRGB' | PDFRef, pixels: Uint8Array, alpha?: Uint8Array): PDFImage {
   const context = pdfDoc.context;
   let smask: PDFRef | undefined;
   if (alpha) {
@@ -216,24 +227,109 @@ export async function embedPrintRaster(
   format: 'png' | 'jpeg',
   mode: PrintColorMode,
 ): Promise<PDFImage> {
+  const channels = format === 'jpeg' ? jpegComponents(bytes) : null;
+  const kind = pictureKind(bytes, format, channels);
+  const source = sourceProfile(bytes, kind, mode);
   if (mode.plates) {
-    // A job on a few plates: a monotone or duotone on its picture plates.
-    const px = await decodeRgba(bytes, format);
+    // A job on a few plates: a monotone or duotone on its picture plates,
+    // the tones read through the picture's own profile.
+    const px = await decodeRgba(bytes, format, source !== undefined);
     if (px) {
-      const { pixels, alpha } = platePixels(px, mode.plates, mode.flattenTransparency);
+      const { pixels, alpha } = platePixels(px, mode.plates, mode.flattenTransparency, source && kind !== 'cmyk' ? luminanceOf(source) : undefined);
       return embedDevicePixels(pdfDoc, px.width, px.height, inkSpace(pdfDoc.context, mode.plates.images), pixels, alpha);
     }
   }
-  if (format === 'jpeg') {
-    const channels = jpegComponents(bytes);
-    if (channels !== 3 || !mode.convertImages) return pdfDoc.embedJpg(bytes);
+  const gray = mode.config.imageColor.grayDotGain;
+  if (kind === 'gray' && mode.convertImages && gray !== 'none') {
+    // On black alone, its tones matched through the press's dot gain.
+    const px = await decodeRgba(bytes, format, source !== undefined);
+    if (px) {
+      const { pixels, alpha } = grayPixels(px, grayInkLut(mode, source), mode.flattenTransparency);
+      return embedDevicePixels(pdfDoc, px.width, px.height, 'DeviceGray', pixels, alpha);
+    }
   }
+  if (kind === 'rgb' && source && !mode.convertImages && !mode.flattenTransparency) {
+    // Kept in its own colours for the printer's RIP: tagged with its profile.
+    const px = await decodeRgba(bytes, format, true);
+    if (px) return embedIccPixels(pdfDoc, px, source);
+  }
+  // A CMYK JPEG separated for another press: its pixels are not decoded
+  // here, so PDF/X-4 tags it with its own profile for the RIP to convert;
+  // PDF/X-1a, which allows no ICC-based picture, passes it through.
+  if (kind === 'cmyk' && format === 'jpeg' && !mode.flattenTransparency && foreignCmyk(source, mode)) {
+    const tagged = embedJpegIcc(pdfDoc, bytes, source);
+    if (tagged) return tagged;
+  }
+  if (format === 'jpeg' && (channels !== 3 || !mode.convertImages)) return pdfDoc.embedJpg(bytes);
   if (!mode.convertImages && !mode.flattenTransparency) {
     return format === 'png' ? pdfDoc.embedPng(bytes) : pdfDoc.embedJpg(bytes);
   }
-  const px = await decodeRgba(bytes, format);
+  const px = await decodeRgba(bytes, format, kind === 'rgb' && source !== undefined);
   if (!px) return format === 'png' ? pdfDoc.embedPng(bytes) : pdfDoc.embedJpg(bytes);
-  return embedCmykPixels(pdfDoc, px.width, px.height, separatePixels(px, mode));
+  return embedCmykPixels(pdfDoc, px.width, px.height, separatePixels(px, mode, kind === 'rgb' ? source : undefined));
+}
+
+/** A pixel's luminance (bytes in, 0..1 out) through `profile`: a grey
+ *  profile reads the first channel. */
+function luminanceOf(profile: IccProfile): (r: number, g: number, b: number) => number {
+  const toXyz = deviceToXyz(profile);
+  const memo = new Map<number, number>();
+  return (r, g, b) => {
+    const key = (r << 16) | (g << 8) | b;
+    let y = memo.get(key);
+    if (y === undefined) {
+      y = toXyz(profile.colorSpace === 'GRAY' ? [r / 255] : [r / 255, g / 255, b / 255]).Y;
+      if (memo.size > 65536) memo.clear();
+      memo.set(key, y);
+    }
+    return y;
+  };
+}
+
+/** A grey picture's DeviceGray bytes through `lut` (its first channel),
+ *  its alpha over the paper when `flatten`, else as a plane. */
+function grayPixels(px: RgbaPixels, lut: Uint8Array, flatten: boolean): { pixels: Uint8Array; alpha?: Uint8Array } {
+  const n = px.width * px.height;
+  const pixels = new Uint8Array(n);
+  let alpha: Uint8Array | undefined;
+  for (let i = 0; i < n; i++) {
+    let v = px.data[i * 4]!;
+    const a = px.data[i * 4 + 3]!;
+    if (a < 255) {
+      if (flatten) v = Math.round(v * (a / 255) + 255 * (1 - a / 255));
+      else {
+        alpha ??= new Uint8Array(n).fill(255);
+        alpha[i] = a;
+      }
+    }
+    pixels[i] = lut[v]!;
+  }
+  return alpha ? { pixels, alpha } : { pixels };
+}
+
+/** Pixels as they are, in an ICCBased colour space of `profile`, the alpha
+ *  as a soft mask: RGBA pixels (written as RGB), or `components`-channel
+ *  device pixels with their own alpha plane. */
+function embedIccPixels(pdfDoc: PDFDocument, px: RgbaPixels, profile: IccProfile, components: 3 | 4 = 3, deviceAlpha?: Uint8Array): PDFImage {
+  const context = pdfDoc.context;
+  if (components === 4) {
+    const icc = context.register(context.flateStream(profile.bytes, { N: 4, Alternate: 'DeviceCMYK' }));
+    const space = context.register(context.obj([PDFName.of('ICCBased'), icc]));
+    return embedDevicePixels(pdfDoc, px.width, px.height, space, px.data as Uint8Array, deviceAlpha);
+  }
+  const n = px.width * px.height;
+  const rgb = new Uint8Array(n * 3);
+  let alpha: Uint8Array | undefined;
+  for (let i = 0; i < n; i++) {
+    rgb[i * 3] = px.data[i * 4]!;
+    rgb[i * 3 + 1] = px.data[i * 4 + 1]!;
+    rgb[i * 3 + 2] = px.data[i * 4 + 2]!;
+    const a = px.data[i * 4 + 3]!;
+    if (a < 255) (alpha ??= new Uint8Array(n).fill(255))[i] = a;
+  }
+  const icc = context.register(context.flateStream(profile.bytes, { N: 3, Alternate: 'DeviceRGB' }));
+  const space = context.register(context.obj([PDFName.of('ICCBased'), icc]));
+  return embedDevicePixels(pdfDoc, px.width, px.height, space, rgb, alpha);
 }
 
 /** RGBA pixels as device pixels with the flat colours' formulas (#800):
@@ -284,4 +380,129 @@ export async function embedDeviceRaster(
   if (!px) return format === 'png' ? pdfDoc.embedPng(bytes) : pdfDoc.embedJpg(bytes);
   const { pixels, alpha } = devicePixels(px, space);
   return embedDevicePixels(pdfDoc, px.width, px.height, space === 'grayscale' ? 'DeviceGray' : 'DeviceCMYK', pixels, alpha);
+}
+
+/** A decoded TIFF or Photoshop picture as RGBA: grey in every channel (its
+ *  own values), RGB as it is, CMYK as the screen preview shows it. */
+function rasterRgba(raster: DecodedRaster): RgbaPixels {
+  const { width, height, color, data, alpha } = raster;
+  if (color === 'cmyk') return { width, height, data: rasterToRgba(raster) };
+  const n = width * height;
+  const out = new Uint8Array(n * 4);
+  for (let i = 0; i < n; i++) {
+    if (color === 'gray') out.fill(data[i]!, i * 4, i * 4 + 3);
+    else out.set(data.subarray(i * 3, i * 3 + 3), i * 4);
+    out[i * 4 + 3] = alpha?.[i] ?? 255;
+  }
+  return { width, height, data: out };
+}
+
+/** The profile a decoded picture is read through in `mode`, as for a PNG
+ *  or JPEG (`sourceProfile`). */
+function rasterSource(raster: DecodedRaster, mode: PrintColorMode): IccProfile | undefined {
+  if (raster.color === 'rgb' && mode.assignedRgbProfile) return mode.assignedRgbProfile;
+  if (mode.config.imageColor.embeddedProfile === 'ignore') return undefined;
+  const profile = rasterProfile(raster);
+  return profile && !(raster.color === 'rgb' && isSrgb(profile)) ? profile : undefined;
+}
+
+/**
+ * Embed a decoded TIFF or Photoshop picture for a print render, from its
+ * own pixels: CMYK as it is, on its plates; grey on black, through the dot
+ * gain; RGB separated from its profile (or kept, tagged with it, when the
+ * mode keeps pictures); on a job's few plates, as its monotone or duotone.
+ */
+export function embedPrintDecoded(pdfDoc: PDFDocument, raster: DecodedRaster, mode: PrintColorMode): PDFImage {
+  const { width, height, color } = raster;
+  const source = rasterSource(raster, mode);
+  if (mode.plates) {
+    const { pixels, alpha } = platePixels(rasterRgba(raster), mode.plates, mode.flattenTransparency, source && color !== 'cmyk' ? luminanceOf(source) : undefined);
+    return embedDevicePixels(pdfDoc, width, height, inkSpace(pdfDoc.context, mode.plates.images), pixels, alpha);
+  }
+  if (color === 'cmyk') {
+    let data = raster.data;
+    let alpha = raster.alpha;
+    // Separated for another press: converted for the output's, or kept
+    // and tagged with its profile for the RIP when pictures are kept.
+    if (foreignCmyk(source, mode)) {
+      if (!mode.convertImages && !mode.flattenTransparency) return embedIccPixels(pdfDoc, { width, height, data }, source, 4, alpha);
+      data = convertCmykPixels(data, mode, source);
+    }
+    if (alpha && mode.flattenTransparency) {
+      // Over the paper: less of every ink.
+      data = data.map((v, i) => Math.round((v * alpha![i >> 2]!) / 255));
+      alpha = undefined;
+    }
+    return embedDevicePixels(pdfDoc, width, height, 'DeviceCMYK', data, alpha);
+  }
+  const px = rasterRgba(raster);
+  if (color === 'gray') {
+    const keep = !mode.convertImages || mode.config.imageColor.grayDotGain === 'none';
+    const lut = keep ? Uint8Array.from({ length: 256 }, (_, i) => i) : grayInkLut(mode, source);
+    const { pixels, alpha } = grayPixels(px, lut, mode.flattenTransparency);
+    return embedDevicePixels(pdfDoc, width, height, 'DeviceGray', pixels, alpha);
+  }
+  if (!mode.convertImages && !mode.flattenTransparency) {
+    if (source) return embedIccPixels(pdfDoc, px, source);
+    const { pixels, alpha } = rgbPixels(px);
+    return embedDevicePixels(pdfDoc, width, height, 'DeviceRGB', pixels, alpha);
+  }
+  return embedCmykPixels(pdfDoc, width, height, separatePixels(px, mode, source));
+}
+
+/**
+ * Embed a decoded TIFF or Photoshop picture in a render without a print
+ * mode: in the device space it is forced to (#800), CMYK and grey kept when
+ * they are that space already; else as the screen shows it, in RGB.
+ */
+export function embedDeviceDecoded(pdfDoc: PDFDocument, raster: DecodedRaster, space: 'grayscale' | 'cmyk' | 'rgb'): PDFImage {
+  const { width, height, color } = raster;
+  if (space === 'cmyk' && color === 'cmyk') return embedDevicePixels(pdfDoc, width, height, 'DeviceCMYK', raster.data, raster.alpha);
+  if (space === 'grayscale' && color === 'gray') return embedDevicePixels(pdfDoc, width, height, 'DeviceGray', raster.data, raster.alpha);
+  const px = rasterRgba(raster);
+  if (space === 'rgb') {
+    const { pixels, alpha } = rgbPixels({ width, height, data: rasterToRgba(raster) });
+    return embedDevicePixels(pdfDoc, width, height, 'DeviceRGB', pixels, alpha);
+  }
+  const { pixels, alpha } = devicePixels(px, space);
+  return embedDevicePixels(pdfDoc, width, height, space === 'grayscale' ? 'DeviceGray' : 'DeviceCMYK', pixels, alpha);
+}
+
+/** RGBA as RGB bytes and an alpha plane when any pixel is translucent. */
+function rgbPixels(px: RgbaPixels): { pixels: Uint8Array; alpha?: Uint8Array } {
+  const n = px.width * px.height;
+  const pixels = new Uint8Array(n * 3);
+  let alpha: Uint8Array | undefined;
+  for (let i = 0; i < n; i++) {
+    pixels[i * 3] = px.data[i * 4]!;
+    pixels[i * 3 + 1] = px.data[i * 4 + 1]!;
+    pixels[i * 3 + 2] = px.data[i * 4 + 2]!;
+    const a = px.data[i * 4 + 3]!;
+    if (a < 255) (alpha ??= new Uint8Array(n).fill(255))[i] = a;
+  }
+  return alpha ? { pixels, alpha } : { pixels };
+}
+
+/** A CMYK JPEG as it is (DCTDecode), in an ICCBased colour space of its
+ *  own profile, inverted as Adobe writes CMYK JPEGs (as pdf-lib embeds
+ *  them); undefined when its size cannot be read. */
+function embedJpegIcc(pdfDoc: PDFDocument, bytes: Uint8Array, profile: IccProfile): PDFImage | undefined {
+  let i = 2;
+  let size: { width: number; height: number } | undefined;
+  while (i + 9 < bytes.length && bytes[i] === 0xff) {
+    const marker = bytes[i + 1]!;
+    const len = (bytes[i + 2]! << 8) | bytes[i + 3]!;
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+      size = { height: (bytes[i + 5]! << 8) | bytes[i + 6]!, width: (bytes[i + 7]! << 8) | bytes[i + 8]! };
+      break;
+    }
+    i += 2 + len;
+  }
+  if (!size) return undefined;
+  const context = pdfDoc.context;
+  const icc = context.register(context.flateStream(profile.bytes, { N: 4, Alternate: 'DeviceCMYK' }));
+  const space = context.register(context.obj([PDFName.of('ICCBased'), icc]));
+  const stream = context.stream(bytes, { Type: 'XObject', Subtype: 'Image', Width: size.width, Height: size.height, BitsPerComponent: 8, Filter: 'DCTDecode', Decode: [1, 0, 1, 0, 1, 0, 1, 0] });
+  stream.dict.set(PDFName.of('ColorSpace'), space);
+  return imageOf(pdfDoc, context.register(stream), size.width, size.height);
 }

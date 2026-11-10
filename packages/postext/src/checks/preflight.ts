@@ -53,6 +53,10 @@ export type PreflightIssue = {
    *  placed; `warning` when the declaration exceeds the file. */
   | { kind: 'declaredPixelsMismatch'; fileId: string; resourceId?: string; declared: { width: number; height: number }; actual: { width: number; height: number } }
   | { kind: 'rgbImage'; fileId: string; resourceId?: string; converted: boolean }
+  /** A CMYK JPEG separated for another press condition (its profile) in a
+   *  PDF/X-1a job: its pixels are not decoded and PDF/X-1a allows no
+   *  ICC-based picture, so it prints its values as they are. */
+  | { kind: 'cmykImageForeign'; fileId: string; resourceId?: string; profile: string }
   | { kind: 'thinRule'; widthPt: number; minimumPt: number; color: string }
   | { kind: 'smallProcessText'; sizePt: number; inks: number; color: string; text: string }
   | { kind: 'inkLimit'; color: string; coverage: number; limit: number }
@@ -108,6 +112,10 @@ export interface PreflightOptions {
   imageSize?: (fileId: string) => { width: number; height: number } | undefined;
   /** Whether a picture's file is RGB, CMYK or gray (from its bytes). */
   imageColor?: (fileId: string) => 'rgb' | 'cmyk' | 'gray' | undefined;
+  /** The ICC profile a picture's file carries (its hash and name), when the
+   *  host has read it: with `transform`, a CMYK JPEG of another press
+   *  condition in a PDF/X-1a job is reported (`cmykImageForeign`). */
+  imageProfile?: (fileId: string) => { hash: string; name: string } | undefined;
   /** The job is CMYK (a PDF/X standard, or a CMYK PDF). Defaults to true
    *  when a PDF/X standard is set. */
   cmyk?: boolean;
@@ -252,6 +260,8 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
 
   // The file's pixels against the declaration, once per file.
   const mismatchSeen = new Set<string>();
+  /** CMYK JPEGs of another press already reported. */
+  const foreignSeen = new Set<string>();
   const checkImage = (fileId: string | undefined, placedW: number, placedH: number, fracW: number, fracH: number, pageIndex: number, rect: BoundingBox, resourceId?: string, src?: { start?: number; end?: number }) => {
     if (!fileId) return;
     const declared = sizes.get(fileId);
@@ -285,6 +295,17 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     if (pf.enabled && cmykJob && options.imageColor?.(fileId) === 'rgb') {
       const converted = print.standard === 'pdfx1a' || print.convertImages;
       out.push({ kind: 'rgbImage', severity: converted ? 'info' : 'warning', pageIndex, rect, fileId, converted, ...(rid ? { resourceId: rid } : {}), ...source });
+    }
+    if (pf.enabled && print.standard === 'pdfx1a' && t && options.imageColor?.(fileId) === 'cmyk') {
+      const resource = rid ? options.resources?.find((r) => r.id === rid) : undefined;
+      const own = resource?.printColor;
+      const jpeg = (resource?.bitmap?.format ?? '').toLowerCase().startsWith('jp') && !resource?.bitmap?.printFileId;
+      const profile = options.imageProfile?.(fileId);
+      const convert = (own?.cmykProfile ?? print.imageColor.cmykProfile) === 'convert' && (own?.embeddedProfile ?? print.imageColor.embeddedProfile) === 'use';
+      if (jpeg && convert && profile && profile.hash !== t.profile.hash && !foreignSeen.has(fileId)) {
+        foreignSeen.add(fileId);
+        out.push({ kind: 'cmykImageForeign', severity: 'warning', pageIndex, rect, fileId, profile: profile.name, ...(rid ? { resourceId: rid } : {}), ...source });
+      }
     }
   };
 
