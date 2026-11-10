@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'WebMCP：在沙盒里工作的智能体',
   sidebarTitle: 'WebMCP',
-  description: '浏览器里的AI智能体借助沙盒的53个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
+  description: '浏览器里的AI智能体借助沙盒的55个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
   lang: 'zh',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '9分钟',
   order: 50,
   plainSummary: "本页写给想让AI助手替自己在沙盒里处理一本书的人。沙盒打开时，会交给助手一套工具，用来查看任意一页、修改设计、编辑文字、添加图片和表格、找出问题和保存文件。你用自己的话提出要求，比如“把字稍微放大一点，再看看书是不是还能排在40页以内”，助手就去使用这些工具，并把页面给你看。一切都留在你的浏览器里。本页说明怎样接入助手、它能做什么，以及每个工具怎样调用。",
@@ -17,7 +17,7 @@ export const metadata = {
 
 [沙盒](/zh/docs/sandbox)通过[WebMCP](https://webmachinelearning.github.io/webmcp/)把专门的工具交给智能体。WebMCP是一项Web标准草案，让网页可以把工具交给浏览器所连接的AI模型。有了这些工具，智能体不必在界面上一下一下地点：它读这本书，要一张第12页的图像，把`bodyText.fontSize`设为10.5 pt，看到这一章从18页变成了19页，再把值改回去。你凭眼睛做的事，它也照样做，用的是你的书，在你的浏览器里。
 
-以`sandbox_`开头的工具共有53个，沙盒显示在屏幕上时注册；另有8个网站工具`site_*`，postext.dev的每一页上都有。本页按你会请智能体做的事情给它们分类，并给出每个工具的调用方式。
+以`sandbox_`开头的工具共有55个，沙盒显示在屏幕上时注册；另有8个网站工具`site_*`，postext.dev的每一页上都有。本页按你会请智能体做的事情给它们分类，并给出每个工具的调用方式。
 
 ## 接入智能体
 
@@ -25,7 +25,7 @@ export const metadata = {
 
 沙盒挂载时把这些工具注册到`document.modelContext`，离开沙盒时收回。浏览器向其提供页面工具的智能体会在那里找到它们。Postext这边不需要安装或设置任何东西。
 
-WebMCP还是草案。Chrome以来源试用的方式提供它，也可以通过`chrome://flags/#enable-webmcp-testing`标志开启。工具随页面而变：在首页或文档中，智能体拿到的是`site_*`工具；沙盒一出现在屏幕上，53个`sandbox_*`工具也随之出现。
+WebMCP还是草案。Chrome以来源试用的方式提供它，也可以通过`chrome://flags/#enable-webmcp-testing`标志开启。工具随页面而变：在首页或文档中，智能体拿到的是`site_*`工具；沙盒一出现在屏幕上，55个`sandbox_*`工具也随之出现。
 
 ### 在其他浏览器中：`window.postextWebMcp`
 
@@ -282,6 +282,13 @@ await browser.close();
 
 除非设置了`all`，每个`find`都必须与源文本完全一致，并且只出现一次。这些修改要么全部生效，要么一条也不生效：找不到的段落会被拒绝，回答建议重新读一遍这一章。整个调用在`sandbox_undo_text`看来是一步，用它即可撤回（`redo: true`再恢复）。`sandbox_write_text`替换整章，内容来自`markdown`或一个`.md`文件。
 
+要对一章或整本书做贯穿全文的修改，`sandbox_replace_text`做的事与正文面板查找栏里的“全部替换”相同，选项也相同（`matchCase`、`wholeWord`、`ignoreAccents`、`regex`）。加上`dryRun`时，它列出每一处替换前后的文字，不做任何修改。在正则模式下，替换内容识别`$1`、`$<name>`、`$&`、`$$`、`\n`、`\t`和`\\`，其他内容原样写入。替换一旦执行，在历史记录中算一步，可用`sandbox_undo`撤回。`sandbox_search_text`接受同样的选项，找到的结果与查找栏相同。
+
+```jsonc
+// sandbox_replace_text：把全书的小数点换成逗号，先预览
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 要在文字中给你指出某个位置，`sandbox_select_text`会打开正文面板并选中那段文字（按`text`、`line`或`offset`定位），效果和点击检查面板里的一条结果相同。
 
 ### 整理章节
@@ -480,7 +487,7 @@ await browser.close();
 
 - **打开的内容**：`sandbox_get_state`。
 - **页面**：`sandbox_render_page`、`sandbox_inspect_pages`、`sandbox_inspect_point`。
-- **文字**：`sandbox_read_text`、`sandbox_write_text`、`sandbox_edit_text`、`sandbox_undo_text`、`sandbox_select_text`、`sandbox_search_text`、`sandbox_manage_chapters`、`sandbox_remove_chapter`。
+- **文字**：`sandbox_read_text`、`sandbox_write_text`、`sandbox_edit_text`、`sandbox_undo_text`、`sandbox_select_text`、`sandbox_search_text`、`sandbox_replace_text`、`sandbox_manage_chapters`、`sandbox_remove_chapter`。
 - **版面设计**：`sandbox_get_config`、`sandbox_set_config`、`sandbox_find_setting`、`sandbox_reset_to_original`、`sandbox_frame_styles`、`sandbox_merge_styles`。
 - **撤销**：`sandbox_undo`。
 - **显示方式**：`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`。

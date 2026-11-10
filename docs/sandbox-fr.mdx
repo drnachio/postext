@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'L’interface du Sandbox : la barre d’activité, les panneaux Texte, Livres, Chapitres, Ressources et Polices, et l’affichage sur téléphone',
   lang: 'fr',
-  lastUpdated: '2026-11-04',
-  readingTime: '32 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '34 min',
   order: 40,
   plainSummary: "Le Sandbox est un outil gratuit de ce site pour essayer Postext sans rien installer. Vous écrivez votre texte d’un côté et, de l’autre, vous voyez les pages terminées changer à mesure que vous tapez. Cette page présente les parties de l’écran et les panneaux où vous écrivez le texte, gérez les livres et les chapitres, ajoutez des images et choisissez les polices. D’autres pages traitent des réglages de maquette, des aperçus, de l’enregistrement et de l’import, et de l’intégration du Sandbox dans votre propre site.",
 };
@@ -98,6 +98,28 @@ L’en-tête du panneau sert de **sélecteur de chapitre** : flèches précéde
 - **Importer un document Word** : ouvre un manuscrit `.docx` et fait correspondre ses styles Word aux styles Postext avant que quoi que ce soit ne change, ou rapporte les corrections faites dans un fichier exporté depuis le livre (voir [Documents Word](/fr/docs/sandbox-books-saving#documents-word))
 - **Exporter vers Word** : télécharge le chapitre ou le livre entier en `.docx`, sémantique (le contenu seul, dans des styles Word simples) ou mis en page (le même texte modifiable avec la maquette du livre) ; les corrections qu’on y fait reviennent par **Importer un document Word**
 - **Exporter vers InDesign (IDML)** : met en page le livre entier comme le fait le PDF et le télécharge sous le nom `<livre>.idml`, pour le finir dans InDesign (voir [Export et import](/fr/docs/sandbox-books-saving#export-et-import))
+
+#### Rechercher et remplacer
+
+Le bouton **Rechercher et remplacer**, dans l’en-tête du panneau Texte et aussi dans les barres d’outils de Canvas et de PDF, ouvre une barre au-dessus de l’éditeur. Elle cherche dans le Markdown du chapitre à l’écran ou du livre entier, balises comprises, si bien que ce qu’elle trouve et remplace est ce que l’éditeur affiche.
+
+- **Options** : **Respecter la casse**, **Mots entiers uniquement**, **Ignorer les accents** et **Expression régulière**. Avec **Ignorer les accents**, *celula* trouve *célula*, et un mot arabe est trouvé avec ou sans ses signes vocaliques. Ñ, ç, й et ё restent des lettres à part entière, et les kana gardent leurs marques de voisement (が n’est pas か). Un texte dont les accents ont été saisis comme des signes séparés est trouvé comme s’ils étaient joints à la lettre. En chinois, en japonais et en thaï, qui ne séparent pas les mots par des espaces, **Mots entiers uniquement** suit la segmentation en mots du navigateur.
+- **Chapitre** ou **Livre** fixe la portée. Les occurrences sont listées par chapitre avec leur numéro de ligne. Un clic sur l’une d’elles la sélectionne dans l’éditeur et ouvre son chapitre, tandis que le focus reste dans la barre.
+- Les **expressions régulières** sont celles de JavaScript, lues en Unicode, avec `^` et `$` aux fins de ligne. Dans le remplacement, `$1` à `$99` écrivent un groupe, `$<nom>` un groupe nommé, `$&` la correspondance entière et `$$` un signe dollar ; `\n`, `\t` et `\\` écrivent un saut de ligne, une tabulation et une barre oblique inverse. Tout le reste est écrit tel qu’il a été tapé : avec `^Note (\d+)` et `[^$1]`, *Note 3* devient `[^3]`. Sans l’option, le remplacement est du texte brut.
+- **Tout remplacer** sur plus d’un chapitre demande d’abord confirmation. Les remplacements forment une seule étape de l’historique : le bouton **Annuler** qui apparaît dans la barre, Cmd/Ctrl+Z dans ses champs juste après, ou Cmd/Ctrl+Z n’importe où dans le Sandbox les annule tous.
+- La recherche démarre un instant après la dernière frappe et tourne à l’écart de la page, de sorte qu’un long livre ne ralentit pas la saisie. Au-delà de 5000 occurrences, ou quand une recherche dure trop longtemps, elle s’arrête et le signale, et **Tout remplacer** reste désactivé tant que la recherche n’est pas resserrée. Une expression régulière qui revient en arrière sans fin, comme `(a+)+$` sur une longue ligne, est arrêtée et signalée.
+- En mode **Maquette**, le texte est en lecture seule : la barre trouve, ses boutons de remplacement sont désactivés, et une note propose **Modifier le texte**.
+- Sur un téléphone, la barre se place en haut du panneau Texte en plein écran.
+
+Les touches, dans l’éditeur et dans la barre :
+
+- **Cmd/Ctrl+F** : rechercher dans le chapitre (une sélection à l’intérieur d’une ligne devient le texte cherché) ; **Cmd/Ctrl+Maj+F** : rechercher dans le livre ; **Cmd/Ctrl+Alt+F** : rechercher et remplacer.
+- **Entrée** et **Maj+Entrée** dans le champ de recherche : occurrence suivante et précédente. Depuis l’éditeur, **Cmd/Ctrl+G** ou **F3**, avec Maj pour la précédente.
+- **Entrée** dans le champ de remplacement : remplace l’occurrence courante et passe à la suivante ; **Cmd/Ctrl+Alt+Entrée** : tout remplacer.
+- **Cmd/Ctrl+Z** juste après un remplacement : l’annule ; **Maj+Cmd/Ctrl+Z** : le rétablit.
+- **Échap** : ferme la barre et revient au texte.
+
+Pendant qu’une méthode de saisie compose (chinois, japonais, coréen), Entrée et Échap lui reviennent. Les agents font la même recherche avec `sandbox_search_text` et `sandbox_replace_text`.
 
 #### Panneau Livres
 

@@ -27,6 +27,7 @@ import { bidiLines, rtlEditor } from './syntax/bidiLines.js';
 import { refCompletion, type RefCompletionContext } from './completion/refCompletion.js';
 import { minimalChange } from '../book/textChanges.js';
 import { takeViewerChanges } from './viewerEdits.js';
+import { findHighlight } from './find/findHighlight.js';
 
 interface UseCodeMirrorOptions {
   initialValue: string;
@@ -180,6 +181,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       bidiLines,
       rtlEditor.of(rtl),
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),
+      findHighlight,
       keymap.of([...historyKeys(() => historyCommandsRef.current), ...defaultKeymap]),
       themeCompartment.current.of(getEditorTheme(isDark)),
       updateListener,

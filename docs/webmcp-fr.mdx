@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'WebMCP : un agent au travail dans le Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Ce qu’un agent IA dans le navigateur peut faire avec le Sandbox grâce à ses 53 outils WebMCP (regarder les pages, changer n’importe quel réglage, modifier le texte, ajouter images, tableaux et polices, lancer les vérifications, exporter) et comment appeler chacun d’eux, avec de vrais arguments et de vraies réponses',
+  description: 'Ce qu’un agent IA dans le navigateur peut faire avec le Sandbox grâce à ses 55 outils WebMCP (regarder les pages, changer n’importe quel réglage, modifier le texte, ajouter images, tableaux et polices, lancer les vérifications, exporter) et comment appeler chacun d’eux, avec de vrais arguments et de vraies réponses',
   lang: 'fr',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '13 min',
   order: 50,
   plainSummary: "Cette page s’adresse aux personnes qui veulent qu’un assistant d’intelligence artificielle travaille pour elles sur un livre dans le Sandbox. Tant que le Sandbox est ouvert, il donne à l’assistant une série d’outils : regarder n’importe quelle page, changer la maquette, modifier le texte, ajouter des images et des tableaux, trouver les problèmes et enregistrer des fichiers. Vous demandez avec vos propres mots, par exemple « grossissez un peu le texte et vérifiez que le livre tient toujours en 40 pages », et l’assistant utilise les outils et vous montre les pages. Tout reste dans votre navigateur. La page explique comment connecter un assistant, ce qu’il peut faire et comment chaque outil s’appelle.",
@@ -23,7 +23,7 @@ image de la page 12, règle `bodyText.fontSize` sur 10,5 pt, constate que le ch
 est passé de 18 à 19 pages, et revient en arrière. Il fait ce que vous faites à l’œil, et
 il le fait avec votre livre, dans votre navigateur.
 
-Il y a 53 outils dont le nom commence par `sandbox_`, enregistrés tant que le
+Il y a 55 outils dont le nom commence par `sandbox_`, enregistrés tant que le
 Sandbox est à l’écran, et 8 outils du site, `site_*`, sur chaque page de
 postext.dev. Cette page les classe selon ce que vous demanderiez à un agent, et
 donne l’appel de chacun.
@@ -39,7 +39,7 @@ les y trouve. Il n’y a rien à installer ni à configurer du côté de Postext
 WebMCP est encore un brouillon. Chrome le propose en phase d’essai (origin trial) et derrière
 l’option `chrome://flags/#enable-webmcp-testing`. Les outils suivent la page : sur
 la page d’accueil ou dans la documentation, l’agent dispose des outils `site_*` ; dès que le
-Sandbox est à l’écran, les 53 outils `sandbox_*` apparaissent aussi.
+Sandbox est à l’écran, les 55 outils `sandbox_*` apparaissent aussi.
 
 ### Dans tout autre navigateur : `window.postextWebMcp`
 
@@ -381,6 +381,21 @@ refusé avec le conseil de relire le chapitre. L’appel entier constitue une se
 pour `sandbox_undo_text`, qui l’annule (`redo: true` le rétablit).
 `sandbox_write_text` remplace un chapitre entier, à partir de `markdown` ou d’un fichier `.md`.
 
+Pour une modification qui parcourt un chapitre ou le livre entier,
+`sandbox_replace_text` fait ce que fait Tout remplacer dans la barre de
+recherche du panneau Texte, avec les mêmes options (`matchCase`, `wholeWord`,
+`ignoreAccents`, `regex`). Avec `dryRun`, il liste chaque remplacement, avant et
+après, sans rien changer. En mode expression régulière, le remplacement lit
+`$1`, `$<name>`, `$&`, `$$`, `\n`, `\t` et `\\`, et écrit tout le reste tel
+quel. Une fois appliqués, les remplacements forment une seule étape de
+l’historique, que `sandbox_undo` annule. `sandbox_search_text` accepte les mêmes
+options et trouve ce que trouve la barre.
+
+```jsonc
+// sandbox_replace_text: points décimaux changés en virgules dans tout le livre, en aperçu
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 Pour vous montrer un endroit du texte, `sandbox_select_text` ouvre le panneau Texte
 avec ce passage sélectionné (par `text`, `line` ou `offset`), comme le fait un clic sur
 un résultat du panneau Vérifications.
@@ -682,6 +697,7 @@ chacun s’obtiennent avec `postextWebMcp.listTools()`.
   `sandbox_inspect_point`.
 - **Le texte** : `sandbox_read_text`, `sandbox_write_text`, `sandbox_edit_text`,
   `sandbox_undo_text`, `sandbox_select_text`, `sandbox_search_text`,
+  `sandbox_replace_text`,
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **La maquette** : `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
