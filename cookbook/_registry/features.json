@@ -11379,6 +11379,227 @@
       ]
     }
   },
+  "full-page-plates": {
+    "label": {
+      "en": "Full-page plates",
+      "es": "Láminas a página completa",
+      "ca": "Làmines a pàgina sencera",
+      "zh": "整页图版",
+      "ar": "لوحات بصفحة كاملة",
+      "ja": "全ページ図版",
+      "pt": "Pranchas de página inteira",
+      "fr": "Planches pleine page",
+      "de": "Ganzseitige Tafeln",
+      "it": "Tavole a piena pagina"
+    },
+    "definition": {
+      "en": "Sets a picture alone on a page of its own, as large as the content area holds, or over the whole page to the trim or out to the bleed, where the running heads and folio drop.",
+      "es": "Compone una imagen sola en una página propia, tan grande como cabe en la caja, o sobre toda la página hasta el corte o hasta la sangre, donde caen las cabeceras y el folio.",
+      "ca": "Compon una imatge sola en una pàgina pròpia, tan gran com hi cap a la caixa, o sobre tota la pàgina fins al tall o fins a la sang, on desapareixen les capçaleres i el foli.",
+      "zh": "把一幅图单独排在一页上，按版心能容纳的最大尺寸放大；或铺满整页，到裁切线或出血边，这一页不排书眉和页码。",
+      "ar": "تضع الصورة وحدها في صفحة خاصة بها بأكبر حجم تتسع له منطقة المتن، أو على الصفحة كلها حتى حد القص أو حتى النزف، فتسقط عنها الترويسات ورقم الصفحة.",
+      "ja": "図を1ページに単独で、版面に収まる最大の大きさで組みます。または仕上がり線や裁ち落としまでページ全体に敷き、そのページでは柱とノンブルを外します。",
+      "pt": "Compõe uma imagem sozinha numa página própria, tão grande quanto cabe na mancha, ou sobre a página inteira até o refile ou até a sangria, onde caem os cabeçalhos e o fólio.",
+      "fr": "Compose une image seule sur une page à elle, aussi grande que la zone de texte le permet, ou sur toute la page jusqu’à la coupe ou jusqu’au fond perdu, où le titre courant et le folio disparaissent.",
+      "de": "Setzt ein Bild allein auf eine eigene Seite, so groß, wie der Satzspiegel es fasst, oder über die ganze Seite bis zum Beschnitt oder in die Anschnittzugabe, wo Kolumnentitel und Seitenzahl entfallen.",
+      "it": "Compone un’immagine da sola su una pagina propria, grande quanto la gabbia la contiene, oppure su tutta la pagina fino al taglio o fino all’abbondanza, dove testatine e folio spariscono."
+    },
+    "aliases": {
+      "en": [
+        "placement.plate",
+        "plate page",
+        "full-page picture",
+        "full-bleed plate",
+        "art book plate"
+      ],
+      "es": [
+        "placement.plate",
+        "lámina",
+        "imagen a página completa",
+        "lámina a sangre",
+        "libro de arte"
+      ],
+      "ca": [
+        "placement.plate",
+        "làmina",
+        "imatge a pàgina sencera",
+        "làmina a sang"
+      ],
+      "zh": [
+        "placement.plate",
+        "图版",
+        "整页图",
+        "出血图",
+        "画册"
+      ],
+      "ar": [
+        "placement.plate",
+        "لوحة",
+        "صورة بصفحة كاملة",
+        "صورة حتى النزف"
+      ],
+      "ja": [
+        "placement.plate",
+        "図版",
+        "全面図版",
+        "裁ち落とし図版",
+        "画集"
+      ],
+      "pt": [
+        "placement.plate",
+        "prancha",
+        "imagem de página inteira",
+        "prancha sangrada",
+        "livro de arte"
+      ],
+      "fr": [
+        "placement.plate",
+        "planche",
+        "image pleine page",
+        "planche à fond perdu",
+        "livre d’art"
+      ],
+      "de": [
+        "placement.plate",
+        "Tafel",
+        "ganzseitiges Bild",
+        "randabfallende Tafel",
+        "Kunstbuch"
+      ],
+      "it": [
+        "placement.plate",
+        "tavola",
+        "immagine a piena pagina",
+        "tavola al vivo",
+        "libro d’arte"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format-resources",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento",
+        "fr": "Placement",
+        "de": "Platzierung",
+        "it": "Collocazione"
+      }
+    },
+    "detect": {
+      "config": [
+        "resourceTypes[].defaultPlacement.plate"
+      ]
+    }
+  },
+  "physical-widths": {
+    "label": {
+      "en": "Figure widths in millimetres",
+      "es": "Anchos de figura en milímetros",
+      "ca": "Amplades de figura en mil·límetres",
+      "zh": "以毫米计的图宽",
+      "ar": "عرض الأشكال بالمليمترات",
+      "ja": "ミリ単位の図の幅",
+      "pt": "Larguras de figura em milímetros",
+      "fr": "Largeurs de figure en millimètres",
+      "de": "Abbildungsbreiten in Millimetern",
+      "it": "Larghezze delle figure in millimetri"
+    },
+    "definition": {
+      "en": "Gives a figure its width as a length in mm, cm, in or pt instead of a share of the column, so it prints at the same size whatever the slot.",
+      "es": "Da a una figura su ancho como una longitud en mm, cm, in o pt en lugar de una fracción de la columna, de modo que se imprime al mismo tamaño en cualquier hueco.",
+      "ca": "Dona a una figura la seva amplada com una longitud en mm, cm, in o pt en lloc d’una fracció de la columna, de manera que s’imprimeix a la mateixa mida en qualsevol buit.",
+      "zh": "用毫米、厘米、英寸或磅的长度而不是栏宽的比例来指定图宽，无论放在哪个位置，印出来都是同样大小。",
+      "ar": "تعطي الشكل عرضه طولًا بالمليمتر أو السنتيمتر أو البوصة أو النقطة بدل نسبة من العمود، فيُطبع بالمقاس نفسه أيًّا كانت الخانة.",
+      "ja": "図の幅を段幅の割合ではなく mm、cm、in、pt の長さで指定し、どの位置に置いても同じ大きさで印刷されるようにします。",
+      "pt": "Dá a uma figura a largura como um comprimento em mm, cm, in ou pt em vez de uma fração da coluna, de modo que ela sai impressa no mesmo tamanho em qualquer espaço.",
+      "fr": "Donne à une figure sa largeur comme une longueur en mm, cm, in ou pt plutôt qu’une part de la colonne, pour qu’elle s’imprime à la même taille quel que soit l’emplacement.",
+      "de": "Gibt einer Abbildung ihre Breite als Länge in mm, cm, in oder pt statt als Anteil der Spalte, sodass sie in jedem Platz gleich groß gedruckt wird.",
+      "it": "Dà a una figura la sua larghezza come lunghezza in mm, cm, in o pt invece che come frazione della colonna, così si stampa alla stessa misura in qualunque spazio."
+    },
+    "aliases": {
+      "en": [
+        "placement.width",
+        "width in mm",
+        "physical size",
+        "print at size",
+        "detail at actual size"
+      ],
+      "es": [
+        "placement.width",
+        "ancho en mm",
+        "tamaño físico",
+        "detalle a tamaño real"
+      ],
+      "ca": [
+        "placement.width",
+        "amplada en mm",
+        "mida física",
+        "detall a mida real"
+      ],
+      "zh": [
+        "placement.width",
+        "毫米宽度",
+        "实际尺寸",
+        "局部放大"
+      ],
+      "ar": [
+        "placement.width",
+        "العرض بالمليمتر",
+        "المقاس الفعلي"
+      ],
+      "ja": [
+        "placement.width",
+        "ミリ指定の幅",
+        "実寸",
+        "部分拡大"
+      ],
+      "pt": [
+        "placement.width",
+        "largura em mm",
+        "tamanho físico",
+        "detalhe em tamanho real"
+      ],
+      "fr": [
+        "placement.width",
+        "largeur en mm",
+        "taille réelle",
+        "détail grandeur nature"
+      ],
+      "de": [
+        "placement.width",
+        "Breite in mm",
+        "physische Größe",
+        "Detail in Originalgröße"
+      ],
+      "it": [
+        "placement.width",
+        "larghezza in mm",
+        "misura fisica",
+        "dettaglio a grandezza naturale"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format-resources",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento",
+        "fr": "Placement",
+        "de": "Platzierung",
+        "it": "Collocazione"
+      }
+    }
+  },
   "picture-safe-area": {
     "label": {
       "en": "Picture safe area",

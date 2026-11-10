@@ -1,0 +1,55 @@
+---
+title: "Planches d’art dans les marges, à la coupe et à fond perdu"
+summary: "Essai d’exposition sur quatre intérieurs de Vermeer : chaque tableau en planche pleine page, dans les marges, à la coupe ou à fond perdu, plus un détail."
+description: "Livre d’art en 160 × 195 mm : quatre planches de Vermeer par placement.plate (marges, coupe, fond perdu), un détail à 60 mm et un PDF à traits de coupe."
+plain: "Indiquez jusqu’où chaque tableau va sur sa page, dans les marges, jusqu’à la coupe ou au-delà, et donnez au détail sa largeur en millimètres. Les pages se composent d’elles-mêmes."
+question: "Comment imprimer un tableau en planche pleine page, dans les marges, à la coupe ou à fond perdu ?"
+aliases: ["livre d’art", "catalogue d’exposition", "planche pleine page", "tableau à fond perdu", "détail à taille fixe", "largeur en millimètres"]
+---
+
+## Ce que vous allez composer
+
+Sept pages d’un petit catalogue d’exposition, 160 × 195 mm, sur quatre intérieurs de Johannes Vermeer du Rijksmuseum, du Met et de la National Gallery of Art. L’essai s’ouvre sur une belle page, titre descendu. Chaque tableau qu’il cite occupe seul la page entière suivante : *La Laitière*, <PageRef page={2}>page 2</PageRef>, dans les marges et sous son titre courant ; la *Jeune Femme à l’aiguière* et la *Femme lisant une lettre* se font face <PageRef page={4}>pages 4 et 5</PageRef>, l’une arrêtée à la coupe, l’autre poussée dans le fond perdu au-delà des traits de coupe, toutes deux sans titre courant ni folio. Un détail de la balance s’imprime à 60 mm <PageRef page={7}>page 7</PageRef>, sa légende à côté. Le PDF porte les traits, une TrimBox et une BleedBox.
+
+## Préparation
+
+### 1 · Un type pour les planches, une portée par tableau
+
+Le code est [la réponse courte](#la-réponse-courte) ci-dessus. Le type des planches met `plate: true` dans son placement par défaut : un tableau cité par l’essai passe à la première page qu’il peut avoir entière et grandit jusqu’à la zone de texte, sa légende dessous. `REACH` change cela tableau par tableau : `'trim'` et `'bleed'` couvrent la page et recadrent l’image autour de son centre, d’où l’intérêt de choisir des tableaux proches du format de la page (ceux-ci font de 0,85 à 0,89 de large pour 1 de haut, la page 0,82). `captionMeasure: 'body'` donne à la légende d’une planche intérieure la largeur de l’image.
+
+### 2 · Chaque fichier à la mesure de son impression
+
+<Excerpt region="paintings" />
+
+Le contrôle avant impression compte le recadrage : une planche à fond perdu mesure ici 201 mm de haut avec le fond perdu, son fichier doit donc avoir 2 400 px pour atteindre 300 ppp, et les deux planches dans les marges en demandent moins. Elles s’impriment entre 303 et 348 ppp. `page.cutLines` donne à la feuille ses 3 mm de fond perdu ; sans lui, `'bleed'` s’arrête à la coupe comme `'trim'`.
+
+### 3 · Des titres courants qui laissent les planches pleines tranquilles
+
+<Excerpt region="running-heads" />
+
+Une planche à la coupe ou à fond perdu donne à sa page le rôle `'plate'`. Ces titres courants demandent `pages: 'body'` : ils s’impriment au-dessus des planches intérieures et disparaissent pages 4 et 5. Un élément qui doit y figurer malgré tout, un petit crédit dans le coin par exemple, nomme `'plate'` dans son `pages`.
+
+### 4 · Un détail à une taille connue
+
+Le type du détail met `width: { value: 60, unit: 'mm' }` avec `captionSide: 'inside'`. Une longueur se mesure contre son emplacement au lieu d’en prendre une part : les 48 mm de toile que montre le recadrage s’impriment à 60 mm, 1,25 fois leur taille, dans n’importe quelle colonne et n’importe quelle édition, et la légende peut le dire.
+
+## Variantes
+
+### Toutes les planches à fond perdu
+
+Donnez la même portée à tous les tableaux : chaque planche couvre alors sa page, sans titre courant ni folio, et seul le recadrage change.
+
+```diff
+-const REACH = { milkmaid: 'content', pitcher: 'trim', letter: 'bleed', balance: 'content' };
++const REACH = { milkmaid: 'bleed', pitcher: 'bleed', letter: 'bleed', balance: 'bleed' };
+```
+
+### Le détail grandeur nature
+
+Découpez 60 mm de toile dans le fichier du musée et gardez la largeur : la légende dira alors 1:1. L’original de ce tableau fait 1 666 ppp, si bien qu’un détail de quelques millimètres dépasse encore 300 ppp.
+
+## Erreurs fréquentes
+
+- Une planche citée dans le même paragraphe qu’une autre attend la page suivante, car une page qui porte déjà un flottant est sautée, trois au plus.
+- Les largeurs en `pt` et en `mm` fonctionnent ; `px` et `em` ne sont pas lues comme une longueur, et la figure prend tout son emplacement.
+- Un tableau bien plus large que la page perd ses côtés sur une planche à la coupe ou à fond perdu. Gardez les formats à l’italienne dans les marges, où l’image se voit entière.

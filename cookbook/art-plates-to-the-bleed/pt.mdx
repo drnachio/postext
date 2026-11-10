@@ -1,0 +1,55 @@
+---
+title: "Pranchas de arte nas margens, no refile e sangradas"
+summary: "Ensaio de exposição sobre quatro interiores de Vermeer: cada pintura uma prancha de página inteira, na mancha, no refile ou sangrada, e um detalhe de 60 mm."
+description: "Ensaio de livro de arte de 160 × 195 mm: quatro pranchas de Vermeer com placement.plate (mancha, refile, sangria), detalhe de 60 mm e PDF com marcas de corte."
+plain: "Diga até onde cada pintura vai na sua página, dentro das margens, até a borda de corte ou além, e dê ao detalhe a sua largura em milímetros. As páginas se compõem sozinhas."
+question: "Como imprimo uma pintura como prancha de página inteira, dentro das margens, até o refile ou sangrada?"
+aliases: ["livro de arte", "catálogo de exposição", "prancha de página inteira", "pintura sangrada", "detalhe em tamanho fixo", "largura em milímetros"]
+---
+
+## O que você vai compor
+
+Sete páginas de um pequeno catálogo de exposição, 160 × 195 mm, sobre quatro interiores de Johannes Vermeer do Rijksmuseum, do Met e da National Gallery of Art. O ensaio abre numa página ímpar com o título rebaixado. Cada pintura que ele cita fica sozinha na próxima página inteira: *A leiteira* na <PageRef page={2}>página 2</PageRef>, dentro das margens e sob o seu cabeçalho; a *Jovem com uma jarra de água* e a *Mulher lendo uma carta* ficam frente a frente nas <PageRef page={4}>páginas 4 e 5</PageRef>, uma cortada rente ao refile, a outra entrando na sangria além das marcas de corte, as duas sem cabeçalho nem fólio. Um detalhe da balança sai com 60 mm de largura na <PageRef page={7}>página 7</PageRef>, com a legenda ao lado. O PDF leva as marcas, um TrimBox e um BleedBox.
+
+## Preparo
+
+### 1 · Um tipo para as pranchas, um alcance por pintura
+
+O código é [a resposta curta](#a-resposta-curta) acima. O tipo das pranchas define `plate: true` como posicionamento padrão, então uma pintura citada pelo ensaio vai para a primeira página que pode ocupar inteira e cresce até a mancha, com a legenda embaixo. `REACH` muda isso pintura a pintura: `'trim'` e `'bleed'` cobrem a página e recortam a imagem em torno do centro, por isso vale escolher pinturas de proporção próxima à da página (estas têm de 0,85 a 0,89 de largura para 1 de altura, a página 0,82). `captionMeasure: 'body'` dá à legenda de uma prancha interna a largura da imagem.
+
+### 2 · Cada arquivo do tamanho de onde é impresso
+
+<Excerpt region="paintings" />
+
+A verificação de pré-impressão conta o recorte: uma prancha sangrada tem aqui 201 mm de altura com a sangria, então o seu arquivo precisa de 2.400 px para chegar a 300 ppi, e as duas pranchas dentro das margens precisam de menos. Elas saem entre 303 e 348 ppi. `page.cutLines` dá à folha os seus 3 mm de sangria; sem ele, `'bleed'` para no refile como `'trim'`.
+
+### 3 · Cabeçalhos que deixam as pranchas cheias em paz
+
+<Excerpt region="running-heads" />
+
+Uma prancha no refile ou sangrada dá à sua página o papel `'plate'`. Estes cabeçalhos pedem `pages: 'body'`, então saem sobre as pranchas internas e somem nas páginas 4 e 5. Um elemento que deva aparecer ali mesmo assim, um pequeno crédito no canto, por exemplo, nomeia `'plate'` no seu `pages`.
+
+### 4 · Um detalhe de tamanho conhecido
+
+O tipo do detalhe define `width: { value: 60, unit: 'mm' }` com `captionSide: 'inside'`. Um comprimento é medido contra o espaço em vez de tomar uma fração dele: os 48 mm de tela que o recorte mostra saem com 60 mm, 1,25 vez o seu tamanho, em qualquer coluna e edição, e a legenda pode dizer isso.
+
+## Variações
+
+### Todas as pranchas sangradas
+
+Dê o mesmo alcance a todas as pinturas: cada prancha cobre então a sua página, sem cabeçalho nem fólio, e só o recorte muda.
+
+```diff
+-const REACH = { milkmaid: 'content', pitcher: 'trim', letter: 'bleed', balance: 'content' };
++const REACH = { milkmaid: 'bleed', pitcher: 'bleed', letter: 'bleed', balance: 'bleed' };
+```
+
+### O detalhe em tamanho real
+
+Recorte 60 mm de tela do arquivo do museu e mantenha a largura: a legenda dirá então 1:1. O original desta pintura tem 1.666 ppi, então mesmo um detalhe de poucos milímetros passa de 300 ppi.
+
+## Erros comuns
+
+- Uma prancha citada no mesmo parágrafo que outra espera a página seguinte, porque uma página que já tem um flutuante é pulada, três no máximo.
+- Larguras em `pt` e `mm` funcionam; `px` e `em` não são lidas como comprimento, e a figura ocupa todo o seu espaço.
+- Uma pintura muito mais larga que a página perde as laterais numa prancha no refile ou sangrada. Mantenha as horizontais dentro das margens, onde a imagem aparece inteira.
