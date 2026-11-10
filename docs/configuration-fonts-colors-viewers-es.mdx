@@ -152,7 +152,7 @@ El panel también muestra **Caracteres tomados de otra fuente** (`glyphFallback`
 
 ### Fuente de símbolos
 
-Una fuente de texto rara vez tiene las letras y los operadores matemáticos (∪, ℵ, ∀), el griego o las flechas que el autor escribe en un párrafo. `symbolFont` nombra una familia que los compone: todas las fuentes del documento la llevan detrás de la suya, así que el lienzo, el PDF, el HTML y el EPUB dibujan esos caracteres con ella en lugar de una caja vacía. `'Noto Sans Math'` cubre casi toda la matemática. En el Sandbox está en **Texto base → Fuente de símbolos**.
+Una fuente de texto rara vez tiene las letras y los operadores matemáticos (∪, ℵ, ∀), el griego o las flechas que el autor escribe en un párrafo. `symbolFont` nombra una familia que los compone: todas las fuentes del documento la llevan detrás de la suya, así que el lienzo, el PDF, el HTML y el EPUB dibujan esos caracteres con ella en lugar de una caja vacía. `'Noto Sans Math'` cubre casi toda la matemática. En el Sandbox está en **Texto base → Fuente de símbolos**. El archivo de Word maquetado también pone esos caracteres en tramos de ella. Su cara redonda normal los dibuja en todos los pesos e inclinaciones del texto.
 
 La maquetación avisa de cada párrafo que lleva esos caracteres con `glyphFallbackAt`, con la familia que los dibuja, o sin ninguna: el PDF los imprime entonces como cajas vacías. El Sandbox los marca en la página, en violeta los que dibuja la fuente de símbolos y en rojo los que no dibuja ninguna.
 

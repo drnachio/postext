@@ -152,7 +152,7 @@ Le panneau liste aussi les **Caractères pris dans une autre police** (`glyphFal
 
 ### Police des symboles
 
-Une police de texte a rarement les lettres et les opérateurs mathématiques (∪, ℵ, ∀), le grec ou les flèches que l’auteur tape dans un paragraphe. `symbolFont` nomme une famille qui les compose : chaque police du document la place après la sienne, si bien que le canevas, le PDF, le HTML et l’EPUB dessinent ces caractères avec elle au lieu d’une case vide. `'Noto Sans Math'` couvre presque toutes les mathématiques. Dans le Sandbox, c’est **Texte courant → Police des symboles**.
+Une police de texte a rarement les lettres et les opérateurs mathématiques (∪, ℵ, ∀), le grec ou les flèches que l’auteur tape dans un paragraphe. `symbolFont` nomme une famille qui les compose : chaque police du document la place après la sienne, si bien que le canevas, le PDF, le HTML et l’EPUB dessinent ces caractères avec elle au lieu d’une case vide. `'Noto Sans Math'` couvre presque toutes les mathématiques. Dans le Sandbox, c’est **Texte courant → Police des symboles**. Le fichier Word mis en page compose aussi ces caractères dans des segments de cette police. Sa face romaine normale les dessine pour toutes les graisses et inclinaisons du texte.
 
 La mise en page signale chaque paragraphe qui contient de tels caractères par `glyphFallbackAt`, avec la famille qui les dessine, ou aucune : le PDF les imprime alors comme des cases vides. Le Sandbox les marque sur la page, en violet ceux que dessine la police des symboles et en rouge ceux que rien ne dessine.
 

@@ -405,7 +405,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>glyphFallbackAt</code></td>
-      <td>A block that sets characters its face has no glyph for: the place a <code>glyphFallback</code> does not give. One per block, face, page and family that draws them (at most 200 a document): <code>characters</code> lists them, <code>supplier</code> the family of the font list that draws them (the <code>symbolFont</code>), absent for those no family has. Points at the block.</td>
+      <td>A block that sets characters its face has no glyph for: the place a <code>glyphFallback</code> does not give. One per block, face, page and family that draws them (at most 200 a document): <code>characters</code> lists them, <code>supplier</code> the family of the font list that draws them (the <code>symbolFont</code>), absent for those no family has. Points at the block, named by <code>blockId</code>. Characters the <code>symbolFont</code> draws are not reported as <code>glyphFallback</code>.</td>
       <td>They are drawn from <code>supplier</code>; without it the PDF prints them as empty boxes. Name a <code>symbolFont</code> that covers them.</td>
     </tr>
   </tbody>

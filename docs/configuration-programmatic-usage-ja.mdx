@@ -405,7 +405,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>glyphFallbackAt</code></td>
-      <td>フォントにないグリフの文字を含むブロック。<code>glyphFallback</code> が示さない場所です。ブロック・フォント・ページ・描くファミリーごとに 1 つ（1 文書最大 200）。<code>characters</code> は文字、<code>supplier</code> はそれを描くフォントリストのファミリー（<code>symbolFont</code>）で、どのファミリーにもないものでは省略されます。ブロックを指します。</td>
+      <td>フォントにないグリフの文字を含むブロック。<code>glyphFallback</code> が示さない場所です。ブロック・フォント・ページ・描くファミリーごとに 1 つ（1 文書最大 200）。<code>characters</code> は文字、<code>supplier</code> はそれを描くフォントリストのファミリー（<code>symbolFont</code>）で、どのファミリーにもないものでは省略されます。<code>blockId</code> で示すブロックを指します。<code>symbolFont</code> が描く文字は <code>glyphFallback</code> として報告されません。</td>
       <td><code>supplier</code> で描かれます。ない場合、PDF では空の四角として印刷されます。それを含む <code>symbolFont</code> を指定してください。</td>
     </tr>
   </tbody>

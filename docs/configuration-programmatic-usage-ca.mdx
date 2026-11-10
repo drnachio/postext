@@ -405,7 +405,7 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
     </tr>
     <tr>
       <td><code>glyphFallbackAt</code></td>
-      <td>Un bloc que porta caràcters que la seva font no té: el lloc que no dona <code>glyphFallback</code>. Un per bloc, font, pàgina i família que els dibuixa (200 com a màxim per document): <code>characters</code> els enumera i <code>supplier</code> és la família de la llista que els dibuixa (la <code>symbolFont</code>), absent per als que no té cap. Assenyala el bloc.</td>
+      <td>Un bloc que porta caràcters que la seva font no té: el lloc que no dona <code>glyphFallback</code>. Un per bloc, font, pàgina i família que els dibuixa (200 com a màxim per document): <code>characters</code> els enumera i <code>supplier</code> és la família de la llista que els dibuixa (la <code>symbolFont</code>), absent per als que no té cap. Assenyala el bloc, que anomena <code>blockId</code>. Els caràcters que dibuixa la <code>symbolFont</code> no s'avisen com a <code>glyphFallback</code>.</td>
       <td>Es dibuixen amb <code>supplier</code>; sense, el PDF els imprimeix com a caixes buides. Indica una <code>symbolFont</code> que els tingui.</td>
     </tr>
   </tbody>

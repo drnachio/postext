@@ -405,7 +405,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>glyphFallbackAt</code></td>
-      <td>Un blocco che contiene caratteri che il suo font non ha: il punto che <code>glyphFallback</code> non dà. Uno per blocco, font, pagina e famiglia che li disegna (al massimo 200 per documento): <code>characters</code> li elenca e <code>supplier</code> è la famiglia della lista che li disegna (la <code>symbolFont</code>), assente per quelli che nessuna ha. Punta al blocco.</td>
+      <td>Un blocco che contiene caratteri che il suo font non ha: il punto che <code>glyphFallback</code> non dà. Uno per blocco, font, pagina e famiglia che li disegna (al massimo 200 per documento): <code>characters</code> li elenca e <code>supplier</code> è la famiglia della lista che li disegna (la <code>symbolFont</code>), assente per quelli che nessuna ha. Punta al blocco, che <code>blockId</code> nomina. I caratteri che la <code>symbolFont</code> disegna non sono segnalati come <code>glyphFallback</code>.</td>
       <td>Sono disegnati con <code>supplier</code>; senza, il PDF li stampa come caselle vuote. Indica una <code>symbolFont</code> che li contenga.</td>
     </tr>
   </tbody>

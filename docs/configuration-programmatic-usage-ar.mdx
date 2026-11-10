@@ -405,7 +405,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>glyphFallbackAt</code></td>
-      <td>كتلة فيها محارف لا يملكها خطها: الموضع الذي لا يذكره <code>glyphFallback</code>. واحد لكل كتلة وخط وصفحة وعائلة ترسمها (200 على الأكثر في المستند): <code>characters</code> يعدّها، و<code>supplier</code> عائلة القائمة التي ترسمها (<code>symbolFont</code>)، ويغيب لما لا تملكه أي عائلة. يشير إلى الكتلة.</td>
+      <td>كتلة فيها محارف لا يملكها خطها: الموضع الذي لا يذكره <code>glyphFallback</code>. واحد لكل كتلة وخط وصفحة وعائلة ترسمها (200 على الأكثر في المستند): <code>characters</code> يعدّها، و<code>supplier</code> عائلة القائمة التي ترسمها (<code>symbolFont</code>)، ويغيب لما لا تملكه أي عائلة. يشير إلى الكتلة التي يسمّيها <code>blockId</code>. ولا تُبلَّغ المحارف التي ترسمها <code>symbolFont</code> بوصفها <code>glyphFallback</code>.</td>
       <td>تُرسم بـ <code>supplier</code>؛ وبدونها يطبعها PDF مربعات فارغة. حدّد <code>symbolFont</code> تحويها.</td>
     </tr>
   </tbody>

@@ -405,7 +405,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>glyphFallbackAt</code></td>
-      <td>含有其字体缺字形字符的块：<code>glyphFallback</code> 未给出的位置。每个块、字体、页面和绘制字体族各一条（每个文档最多 200 条）：<code>characters</code> 列出这些字符，<code>supplier</code> 为字体列表中绘制它们的字体族（<code>symbolFont</code>），无字体族具有时省略。指向该块。</td>
+      <td>含有其字体缺字形字符的块：<code>glyphFallback</code> 未给出的位置。每个块、字体、页面和绘制字体族各一条（每个文档最多 200 条）：<code>characters</code> 列出这些字符，<code>supplier</code> 为字体列表中绘制它们的字体族（<code>symbolFont</code>），无字体族具有时省略。指向 <code>blockId</code> 所指的块。<code>symbolFont</code> 绘制的字符不会作为 <code>glyphFallback</code> 报告。</td>
       <td>用 <code>supplier</code> 绘制；没有时 PDF 将其印成空框。请指定包含它们的 <code>symbolFont</code>。</td>
     </tr>
   </tbody>
