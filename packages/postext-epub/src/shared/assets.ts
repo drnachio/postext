@@ -1,6 +1,6 @@
 // Fonts, pictures and identity shared by both renditions.
 
-import { applySingleInkToSvg, chainSvgFontProviders, inlineSvgFontsDetailed, isHlsMimeType, parseUnicodeRange, resolveColorValue, type SvgFontProvider, type VDTDocument } from 'postext';
+import { applySingleInkToSvg, chainSvgFontProviders, tintFilterElement, tintHex, inlineSvgFontsDetailed, isHlsMimeType, parseUnicodeRange, resolveColorValue, type SvgFontProvider, type VDTDocument } from 'postext';
 import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubSvgFontOptions, EpubWarning } from '../types.js';
 import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, sniffFontFormat, sniffImageType, sniffVideoType } from './media.js';
 import { uuidV5 } from './uuid.js';
@@ -345,17 +345,19 @@ export async function imageAssets(
   return { items, hrefOf: (fileId, tint) => (tint ? tinted.get(`${fileId}\u0000${tint}`) : undefined) ?? hrefs.get(fileId) };
 }
 
-/** An SVG's markup with everything it draws filled with `hex` where it
+/** An SVG's markup with everything it draws filled with `tint` where it
  *  has alpha (a flood composited into the source's alpha, the filter the
  *  HTML renderer tints a picture with), or undefined when the markup has
- *  no root element to wrap. A reading system without SVG filters shows
- *  the picture in its own colours. */
-export function tintedSvg(svgText: string, hex: string): string | undefined {
+ *  no root element to wrap or `tint` is not a `#rrggbb` colour. A reading
+ *  system without SVG filters shows the picture in its own colours. */
+export function tintedSvg(svgText: string, tint: string): string | undefined {
+  const hex = tintHex(tint);
+  if (!hex) return undefined;
   const open = /<svg\b[^>]*>/i.exec(svgText);
   const close = svgText.lastIndexOf('</svg>');
   if (!open || open[0].endsWith('/>') || close < open.index) return undefined;
   const at = open.index + open[0].length;
-  const filter = `<defs><filter id="pt-tint" color-interpolation-filters="sRGB"><feFlood flood-color="${hex}"/><feComposite in2="SourceAlpha" operator="in"/></filter></defs><g filter="url(#pt-tint)">`;
+  const filter = `<defs>${tintFilterElement('pt-tint', hex)}</defs><g filter="url(#pt-tint)">`;
   return svgText.slice(0, at) + filter + svgText.slice(at, close) + '</g>' + svgText.slice(close);
 }
 

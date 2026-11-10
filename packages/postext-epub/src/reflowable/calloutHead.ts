@@ -1,6 +1,6 @@
 // The head of a box: the icon its style draws and the title its design
 // sets, read from its head frame and written first in the box.
-import type { ResolvedConfig, VDTBlock } from 'postext';
+import { tintHex, type ResolvedConfig, type VDTBlock } from 'postext';
 import type { CalloutIcon, CalloutNode } from './model.js';
 import type { BookModel } from './walk.js';
 import { xmlAttr, xmlText } from './inline.js';
@@ -18,7 +18,9 @@ export function calloutIcon(config: ResolvedConfig, block: VDTBlock, styleId: st
   const fileId = ic.kind === 'resource' ? block.callout?.iconFileId : undefined;
   if (!fileId) return undefined;
   let tint: string | undefined;
-  for (const b of block.designOverlay?.blocks ?? []) if (b.kind === 'image' && b.fileId === fileId && b.tint) tint = b.tint;
+  // A `#rrggbb` colour, as the HTML renderer takes it; any other value
+  // leaves the picture in its own colours.
+  for (const b of block.designOverlay?.blocks ?? []) if (b.kind === 'image' && b.fileId === fileId && tintHex(b.tint)) tint = tintHex(b.tint);
   if (tint) {
     const tints = (book.tints ??= new Map());
     if (!tints.has(fileId)) tints.set(fileId, new Set());
