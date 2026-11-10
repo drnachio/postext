@@ -1,0 +1,115 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 183,
+  "status": "published",
+  "chapter": "figures",
+  "order": 130,
+  "level": 2,
+  "genres": ["catalogue"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["full-page-plates", "physical-widths"],
+    "also": [
+      "resources", "figure-citations", "resource-types", "figure-numbering", "captions",
+      "credit-notes", "side-captions", "bleed-and-crop-marks", "page-role-filters",
+      "running-heads", "mirrored-margins", "opener-design", "heading-attributes",
+      "paragraph-styles", "color-palette", "pdf-export"
+    ]
+  },
+  "answers": ["Q216", "Q41", "Q13"],
+  "gaps": [],
+  "gotchas": [],
+  "explainsWarnings": [],
+  "related": ["catalogue-facing-plates", "photo-essay-full-bleed", "print-ready-pdf", "photos-fill-short-columns"],
+  "workarounds": [],
+  "engine": { "postext": "1.73.0", "postextPdf": "1.73.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": [4, 5],
+    "card": "spread",
+    "pages": "all",
+    "expect": { "pages": [7, 7] }
+  },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": { "type": "coatedMatte", "grammage": 170, "showThrough": false, "shade": "#fdfcf9" },
+    "binding": { "type": "hardcover", "cover": "case", "coverMaterial": "cloth", "coverColor": "#2c4a7c" },
+    "surface": { "type": "walnut" },
+    "lighting": { "environment": "lamp" }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The essay, the captions and the note on the plates",
+          "es": "El ensayo, los pies y la nota sobre las láminas"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Plate 1, Johannes Vermeer, The Milkmaid, c. 1660, Rijksmuseum SK-A-2344; the museum’s image reduced to 1,800 px high",
+          "es": "Lámina 1, Johannes Vermeer, La lechera, h. 1660, Rijksmuseum SK-A-2344; la imagen del museo reducida a 1800 px de alto"
+        },
+        "who": "Rijksmuseum, Amsterdam",
+        "source": "https://id.rijksmuseum.nl/200108369",
+        "license": "CC0-1.0",
+        "file": "milkmaid-1800.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate 2, Johannes Vermeer, Young Woman with a Water Pitcher, c. 1662, The Met 89.15.21; the museum’s image, its unpainted edges cut off, reduced to 2,400 px high",
+          "es": "Lámina 2, Johannes Vermeer, Joven con una jarra de agua, h. 1662, The Met 89.15.21; la imagen del museo sin los bordes sin pintar, reducida a 2400 px de alto"
+        },
+        "who": "The Metropolitan Museum of Art, New York (Open Access)",
+        "source": "https://www.metmuseum.org/art/collection/search/437881",
+        "license": "CC0-1.0",
+        "file": "pitcher-2400.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate 3, Johannes Vermeer, Woman Reading a Letter, c. 1663, Rijksmuseum SK-C-251; the museum’s image reduced to 2,400 px high",
+          "es": "Lámina 3, Johannes Vermeer, Mujer leyendo una carta, h. 1663, Rijksmuseum SK-C-251; la imagen del museo reducida a 2400 px de alto"
+        },
+        "who": "Rijksmuseum, Amsterdam",
+        "source": "https://id.rijksmuseum.nl/200108372",
+        "license": "CC0-1.0",
+        "file": "letter-2400.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate 4, Johannes Vermeer, Woman Holding a Balance, c. 1664, National Gallery of Art 1942.9.97; the museum’s image reduced to 1,700 px high",
+          "es": "Lámina 4, Johannes Vermeer, Mujer con una balanza, h. 1664, National Gallery of Art 1942.9.97; la imagen del museo reducida a 1700 px de alto"
+        },
+        "who": "National Gallery of Art, Washington (Open Access)",
+        "source": "https://www.nga.gov/artworks/1236-woman-holding-balance",
+        "license": "CC0-1.0",
+        "file": "balance-1700.jpg"
+      },
+      {
+        "what": {
+          "en": "Figure 1, a 48 × 63 mm detail of plate 4 cut from the museum’s full-resolution image and reduced to 800 px wide",
+          "es": "Figura 1, un detalle de 48 × 63 mm de la lámina 4 recortado de la imagen del museo a máxima resolución y reducido a 800 px de ancho"
+        },
+        "who": "National Gallery of Art, Washington (Open Access)",
+        "source": "https://www.nga.gov/artworks/1236-woman-holding-balance",
+        "license": "CC0-1.0",
+        "file": "balance-detail-1051.jpg"
+      }
+    ],
+    "fonts": [
+      { "family": "Spectral", "license": "OFL-1.1" },
+      { "family": "Cormorant Garamond", "license": "OFL-1.1" },
+      { "family": "Jost", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-11-10",
+  "updated": "2026-11-10"
+}

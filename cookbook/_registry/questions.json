@@ -5966,5 +5966,33 @@
       "ar": "تظليل مرمَّز بالألوان"
     },
     "theme": "type"
+  },
+  "Q216": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print a painting as a full-page plate (inside the margins, to the trim or to the bleed) and a detail at a set width in mm?",
+      "es": "¿Cómo imprimo un cuadro como lámina a página completa (dentro de los márgenes, hasta el corte o a sangre) y un detalle con un ancho fijo en mm?",
+      "ca": "Com imprimeixo un quadre com a làmina a pàgina sencera (dins dels marges, fins al tall o a sang) i un detall amb una amplada fixa en mm?",
+      "fr": "Comment imprimer un tableau en planche pleine page (dans les marges, jusqu’à la coupe ou à fond perdu) et un détail à une largeur fixée en mm ?",
+      "de": "Wie drucke ich ein Gemälde als ganzseitige Tafel (im Satzspiegel, bis zum Beschnitt oder randabfallend) und ein Detail in einer festen Breite in mm?",
+      "it": "Come stampo un dipinto come tavola a piena pagina (dentro i margini, fino al taglio o al vivo) e un dettaglio a una larghezza fissa in mm?",
+      "pt": "Como imprimo uma pintura como prancha de página inteira (dentro das margens, até o refile ou sangrada) e um detalhe com largura fixa em mm?",
+      "zh": "怎样把一幅画印成整页图版（在版心内、到裁切线或出血），再把一个局部按固定的毫米宽度印出来？",
+      "ja": "絵画を全ページ図版（版面内、仕上がりまで、または裁ち落とし）として刷り、部分拡大をミリ指定の幅で載せるには？",
+      "ar": "كيف أطبع لوحة زيتية في صفحة كاملة (داخل الهوامش أو حتى حد القص أو حتى النزف) وتفصيلًا منها بعرض ثابت بالمليمتر؟"
+    },
+    "index": {
+      "en": "Plates, full-page and to the bleed",
+      "es": "Láminas a página completa y a sangre",
+      "ca": "Làmines a pàgina sencera i a sang",
+      "fr": "Planches pleine page et à fond perdu",
+      "de": "Tafeln, ganzseitig und randabfallend",
+      "it": "Tavole a piena pagina e al vivo",
+      "pt": "Pranchas de página inteira e sangradas",
+      "zh": "整页图版与出血图版",
+      "ja": "全ページ図版と裁ち落とし図版",
+      "ar": "لوحات بصفحة كاملة وحتى النزف"
+    },
+    "theme": "figures"
   }
 }
