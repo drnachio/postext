@@ -23,7 +23,7 @@ export const PARA_CHAR = ' ';
 export const isHolderChar = (ch: string | undefined): boolean => ch === '\u00a0' || ch === '\u2060';
 
 export type Token =
-  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; para: number }
+  | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; note?: string; para: number }
   | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps }
   | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number; renamed?: true }
   | { t: 'bmEnd'; wid: string; para: number }
@@ -214,9 +214,16 @@ function walkRun(s: WalkState, r: XmlElement, ctx: RunCtx): void {
         break;
       }
       case 'footnoteReference':
-      case 'endnoteReference':
+      case 'endnoteReference': {
+        const n = s.out.length;
         emit(s, OBJECT_CHAR, flags, ctx);
+        // Which note it calls: one typed in the editor has no fragment,
+        // and is read by this (see `ReadDocx.newNotes`).
+        const tok = s.out[n];
+        const id = attr(c, 'id');
+        if (tok?.t === 'char' && id) tok.note = `${name === 'footnoteReference' ? 'f' : 'e'}${id}`;
         break;
+      }
       case 'fldChar': {
         const type = attr(c, 'fldCharType');
         if (type === 'begin') s.fields.push({ code: true, skip: false, instr: '' });

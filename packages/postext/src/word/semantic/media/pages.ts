@@ -30,7 +30,9 @@ import { blockSdt, paragraph, textRuns } from '../wml.js';
 import { stripCaptionParagraph } from './captions.js';
 import { comicPanels, renderComic } from './comics.js';
 import { renderStrip } from './strip.js';
-import { pageOpener } from './pageOpener.js';
+import { pageOpener, pageTint } from './pageOpener.js';
+import { groundParagraph } from '../design/ground.js';
+import { pageGeometry } from '../sections.js';
 import { frameBoxStyle, numberTemplateHeading, overFrame, ruledLines, templateOf } from './frames.js';
 
 export type PageKind = 'composedPage' | 'comicPage' | 'strip';
@@ -209,7 +211,16 @@ export function renderComposedPage(ctx: WriterContext, node: ContainerNode, env:
   const title = top ? { block: top, xml: () => pageOpener(ctx, node.container, top, (look) => headingParagraph(ctx, top, look)) ?? renderNodes(ctx, [{ block: top }], env) } : undefined;
   const body = pageNodes(ctx, node.children, env, [template], title);
   if (!body) return renderPagePlaceholder(ctx, 'composedPage', Math.max(240, Math.round(env.widthTwips ?? ctx.textTwips)));
-  return blockSdt(ctx.nextSdtId(), `ptx:composedPage${id ? `:${id}` : ''}`, undefined, pageStart(ctx) + body);
+  // A template that tints its whole page: the tint drawn behind the page,
+  // edge to edge, in the paragraph that opens it (design/ground.ts).
+  const tint = ctx.plain ? undefined : pageTint(template);
+  let start = pageStart(ctx);
+  if (tint) {
+    const geo = pageGeometry(ctx.resolved, ctx.units);
+    const toPx = (tw: number): number => (tw * ctx.units.dpi) / 1440;
+    start = groundParagraph(ctx, [{ fill: tint, box: { x: 0, y: 0, width: toPx(geo.widthTw), height: toPx(geo.heightTw) } }], { pageBreakBefore: true });
+  }
+  return blockSdt(ctx.nextSdtId(), `ptx:composedPage${id ? `:${id}` : ''}`, undefined, start + body);
 }
 
 /** `content` in a grey framed cell `width` twips wide. */

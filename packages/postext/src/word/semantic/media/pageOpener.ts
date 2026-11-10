@@ -53,6 +53,23 @@ function decoration(t: ResolvedPageTemplate): ResolvedDesignElement[] {
   return paletted(resolveDesignSlot(t.decoration, 'header').elements, t.palette);
 }
 
+/**
+ * The colour a template lays over its whole page (a box of its decoration
+ * that fills the page or the bleed: a unit's tinted paper), `RRGGBB`, or
+ * undefined when the page keeps the book's paper (#1458).
+ */
+export function pageTint(template: ResolvedPageTemplate | undefined): string | undefined {
+  if (!template) return undefined;
+  for (const el of decoration(template)) {
+    if (el.kind !== 'box') continue;
+    const p = el.placement;
+    const fill = hex(el.style.backgroundColor);
+    if (!fill || fill === 'FFFFFF' || (p.anchor.to !== 'page' && p.anchor.to !== 'bleed')) continue;
+    if (p.size?.width === 'fill' && p.size.height === 'fill') return fill;
+  }
+  return undefined;
+}
+
 /** Where an element stands against the title frame `title`: above it
  *  (anchored to the page's head, or to the frame with an offset upwards),
  *  on it, or neither (the page's foot, another frame). */

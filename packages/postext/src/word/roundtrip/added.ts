@@ -94,7 +94,7 @@ export function roleOf(props: ParaProps | undefined, ps: ParaStyles): ParaRole {
 
 /** The paragraph's text as Markdown: typed text escaped, formatting and
  *  links as inline markup, equations as `$…$`. */
-function markdownOf(chars: readonly ReadChar[]): string {
+export function markdownOf(chars: readonly ReadChar[]): string {
   let out = '';
   let run = '';
   let key: string | undefined;

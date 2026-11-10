@@ -219,7 +219,7 @@ function commentSource(v: BlockView, hunks: readonly Hunk[], fid: string, index:
 export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): DocxEditResult {
   const read = readExportedDocx(bytes);
   const { map } = read;
-  const blocks = buildBlocks(map.fragments, read.fragments, read.holders);
+  const blocks = buildBlocks(map.fragments, read.fragments, read.holders, read.newNotes);
   const byTarget = new Map<string, { target: TextTarget; edits: SourceEdit[] }>();
   const generated: SourceEdit[] = [];
   const hunksOf = new Map<BlockView, Hunk[]>();
@@ -264,6 +264,7 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
       for (const v of blocks) v.OK = v.OK.map(withoutCode);
     }
     const absorbed = new Set<BlockView>();
+    const typedNotes = new Map<string, { v: BlockView; base: string; defs: string[] }>();
     const kept = new Set(blocks.filter((v) => v.target.kind === 'resource' && (!v.missing || unmarked.has(v))).map((v) => (v.target as { resourceId: string }).resourceId));
     const isRemoved = (v: BlockView): boolean => v.target.kind === 'resource' && v.missing && !kept.has(v.target.resourceId);
     const withFigure = removedLabels(blocks, isRemoved);
@@ -282,6 +283,13 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
       const r = editsOfBlock(v, base);
       hunksOf.set(v, r.hunks);
       r.edits.forEach(add);
+      // The notes typed in the block: their definitions close the chapter.
+      if (v.noteDefs?.length && v.target.kind === 'markdown') {
+        const key = targetKey(v.target);
+        let own = typedNotes.get(key);
+        if (!own) typedNotes.set(key, (own = { v, base, defs: [] }));
+        own.defs.push(...v.noteDefs);
+      }
       // A paragraph merged into the next one in Word, the paragraphs
       // deleted between the two going with the join.
       if (v.target.kind !== 'markdown' || emptied(v) || v.endPara < 0) continue;
@@ -293,6 +301,9 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
         add(mergeEdit(v, next, base));
         for (let j = k + 1; j < n; j++) absorbed.add(blocks[j]!);
       }
+    }
+    for (const { v, base, defs } of typedNotes.values()) {
+      add({ target: v.target, start: base.length, end: base.length, text: `${base.endsWith('\n') ? '' : '\n'}\n${defs.join('\n\n')}\n`, kind: 'paragraph' });
     }
     // Paragraphs moved in Word: the import does not move their source.
     for (const v of movedBlocks(blocks)) {

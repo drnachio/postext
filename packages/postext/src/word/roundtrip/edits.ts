@@ -290,6 +290,16 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     } else if ((ch === '-' || ch === '‐') && hyphens > 0) {
       hyphens--;
       continue;
+    } else if (ch === OBJECT_CHAR && v.NT[j] === undefined) {
+      // A note typed in the editor: its reference here, its text as a
+      // definition the import adds to the chapter (apply.ts).
+      const note = v.NNote[j];
+      if (note === undefined || v.target.kind !== 'markdown') continue;
+      let id = note.id;
+      for (let k = 2; base.includes(`[^${id}]`); k++) id = `${note.id}_${k}`;
+      (v.noteDefs ??= []).push(`[^${id}]: ${note.text}`);
+      piece = `[^${id}]`;
+      plain = false;
     } else if (ch === OBJECT_CHAR) {
       const tex = v.NT[j];
       if (tex === undefined) continue;
@@ -428,6 +438,12 @@ const LABEL_ATOMS = new Set(['ref', 'footnote', 'citation']);
 
 /** Source edits for one changed hunk. */
 export function hunkEdits(v: BlockView, base: string, h: Hunk): SourceEdit[] {
+  // A note typed beside another one's reference: of the two marks, the
+  // hunk is the one that calls the new note.
+  if (h.a0 === h.a1 && h.b1 - h.b0 === 1 && v.N[h.b0] === OBJECT_CHAR && v.NT[h.b0] === undefined && v.NNote[h.b0] === undefined) {
+    const side = v.N[h.b0 - 1] === OBJECT_CHAR && v.NNote[h.b0 - 1] !== undefined ? -1 : v.N[h.b1] === OBJECT_CHAR && v.NNote[h.b1] !== undefined ? 1 : 0;
+    if (side) h = { ...h, a0: h.a0 + side, a1: h.a1 + side, b0: h.b0 + side, b1: h.b1 + side };
+  }
   const kind = hunkKind(v, h);
   if (touchesGenerated(v, h)) {
     // Generated text has no source to change: report it, apply nothing.

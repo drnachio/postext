@@ -22,6 +22,8 @@ export interface ReadChar {
   tracked?: boolean;
   /** An atom's holder, by the writer's w:noProof mark. */
   holder?: true;
+  /** The note a note reference calls (`f3`: footnote 3, `e1`: endnote 1). */
+  note?: string;
 }
 
 export interface ReadFragment {
@@ -64,6 +66,9 @@ export interface ReadDocx {
    *  while its paragraph still stands there word for word lost its
    *  bookmark to the editor, and was not deleted (`apply.ts`). */
   strays: string[];
+  /** The notes typed in the editor (none of their text is a fragment's),
+   *  by the key their reference carries (`ReadChar.note`): their text. */
+  newNotes: Map<string, ReadChar[]>;
   /** The paragraph styles of the file, to read an added paragraph's role. */
   styles: ParaStyles;
   comments: ReadComment[];
@@ -132,7 +137,7 @@ export function exportMapLost(bytes: Uint8Array): boolean {
 }
 
 /** Distribute the token stream over the fragments. */
-function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'comments' | 'styles' | 'holders'> & { marks: Map<string, ReadPosition> } {
+function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'comments' | 'styles' | 'holders' | 'newNotes'> & { marks: Map<string, ReadPosition> } {
   const fragments = new Map<string, ReadFragment>();
   const open: { wid: string; fid: string; depth: number }[] = [];
   const lastClosedIn = new Map<number, string>();
@@ -311,6 +316,11 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
   const walked = walkPart(body, linksOf(files, 'word/document.xml'), tokens);
   const { noProof } = walked;
   let { nextPara: next, nextBox: box } = walked;
+  // Notes typed in the editor: the writer numbers a book's notes from 1
+  // with no gap, one fragment each, so a note numbered past them is new.
+  const known = new Set(map.fragments.map((f) => f.id));
+  const exportedNotes = map.fragments.filter((f) => f.role === 'footnote').length;
+  const newNotes = new Map<string, ReadChar[]>();
   // Notes after the body, in their part order (the semantic writer's).
   for (const [part, el] of [['word/footnotes.xml', 'footnote'], ['word/endnotes.xml', 'endnote']] as const) {
     const root = xmlOf(files, part);
@@ -319,10 +329,22 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
     for (const note of children(root, el)) {
       const type = attr(note, 'type');
       if (type && type !== 'normal') continue;
+      const from = tokens.length;
       ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box));
+      // A note with no bookmark of ours and a number its part did not
+      // have: typed in the editor.
+      const own = tokens.slice(from);
+      const id = Number(attr(note, 'id'));
+      if (own.some((t) => t.t === 'bmStart' && known.has(t.fid)) || !(id > exportedNotes)) continue;
+      const chars: ReadChar[] = [];
+      for (const t of own) {
+        if (t.t === 'char') chars.push(t);
+        else if (t.t === 'para' && chars.length) chars.push({ ch: ' ', flags: '' });
+      }
+      if (chars.some((c) => c.ch.trim())) newNotes.set(`${el[0]}${id}`, chars);
     }
   }
   const { fragments, added, strays, marks } = assign(tokens, map);
   const holders = map.holders === true && noProof;
-  return { map, fragments, added, strays, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders };
+  return { map, fragments, added, strays, newNotes, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders };
 }

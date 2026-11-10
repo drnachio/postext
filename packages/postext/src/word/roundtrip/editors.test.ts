@@ -121,6 +121,17 @@ describe('edits that left debris', () => {
     expect(back(bytes, NOTES).chapters[0]!.markdown).toBe('Texto fin.\n\nOtro[^b] más.\n\n[^b]: Nota segunda.\n');
   });
 
+  it('brings in a note typed in the editor: its reference and its text', async () => {
+    const e = await exportDocx(NOTES);
+    const bytes = edited(e, {
+      'word/document.xml': (x) => x.replace(/(>Otro<\/w:t><\/w:r>)/, '$1<w:r><w:footnoteReference w:id="9"/></w:r>'),
+      'word/footnotes.xml': (x) => x.replace('</w:footnotes>', '<w:footnote w:id="9"><w:p><w:r><w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> Jerga de *ciegos*.</w:t></w:r></w:p></w:footnote></w:footnotes>'),
+    });
+    const r = back(bytes, NOTES);
+    expect(r.edits.every((x) => x.status === 'applied')).toBe(true);
+    expect(r.chapters[0]!.markdown).toBe(`${NOTES.replace('Otro[^b]', 'Otro[^wf9][^b]')}\n[^wf9]: Jerga de \\*ciegos\\*.\n`);
+  });
+
   it('reports a paragraph moved in Word and leaves the source in its order', async () => {
     const md = '1. uno\n2. dos\n3. tres\n';
     const e = await exportDocx(md);
