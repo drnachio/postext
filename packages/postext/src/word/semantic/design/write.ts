@@ -11,8 +11,9 @@ import type { ResolvedConfig } from '../../../vdt.js';
 import type { Dimension } from '../../../types.js';
 import { hex, paragraph, px, type ParaProps, type Units } from '../wml.js';
 import { backdropPicture, fillsPage, inlinePicture } from './placedPicture.js';
+import { groundParagraph, type Ground } from './ground.js';
 import { columnSets, columnTable, type ColumnText } from './columns.js';
-import { partBodyChunks } from './partBody.js';
+import { bodyHeight, inked, partBodyChunks } from './partBody.js';
 import { bandInnerTwips, drawnRule, ruleParagraph, thinParagraph, withBands, type BandFoot, type Chunk } from './bands.js';
 import { covers, estimateBoxes, onSheet, readingOrder, type Box, type DesignFrames } from './geometry.js';
 import { paleOnWhite } from './ink.js';
@@ -84,12 +85,21 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   const { elements, texts } = spec;
   const boxes = estimateBoxes(elements, frames, u, (id) => texts.get(id) ?? '', ctx.resources, spec.imageId, rtl, vertical);
   // The fill under a piece: the last box painted under it.
-  const bands = elements.filter((e) => e.kind === 'box' && hex(e.style.backgroundColor));
+  const filled = elements.filter((e) => e.kind === 'box' && hex(e.style.backgroundColor));
+  // A box that fills the page with one colour (a cover's dark sheet, a
+  // part page in its colour) is the page's ground: drawn behind the text
+  // edge to edge, what is printed on it flowing over it (see ground.ts).
+  const groundEl = vertical ? undefined : filled.find((e) => fillsPage(boxes.get(e.id) ?? { x: 0, y: 0, width: 0, height: 0 }, flowPage));
+  const ground: Ground | undefined = groundEl && groundEl.kind === 'box' ? { fill: hex(groundEl.style.backgroundColor)!, box: page } : undefined;
+  const bands = filled.filter((e) => e !== groundEl);
+  // On a page with a ground, a band across the foot of the sheet is set
+  // at its place (bands.ts).
+  const atFoot = (bb: Box): boolean => !!ground && bb.y + bb.height >= page.height - MM(u, 1) && bb.x <= MM(u, 1) && bb.width >= page.width * 0.98 && bb.y > page.height * 0.5;
   const bandOf = (box: Box): Chunk['band'] => {
     let band: Chunk['band'];
     for (const e of bands) {
       const bb = boxes.get(e.id);
-      if (bb && e.kind === 'box' && covers(bb, box)) band = { fill: hex(e.style.backgroundColor)!, box: bb };
+      if (bb && e.kind === 'box' && covers(bb, box)) band = { fill: hex(e.style.backgroundColor)!, box: bb, ...(atFoot(bb) ? { foot: true } : {}) };
     }
     return band;
   };
@@ -120,7 +130,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     } else if (el.kind === 'image') {
       const id = spec.pictures.get(el.id);
       if (id && ctx.media.has(id)) items.push({ box, kind: 'image', el, id });
-    } else if (el.kind === 'rule' && inText(box) && drawnRule(ctx, el, box, !!bandOf(box))) items.push({ box, kind: 'rule', el });
+    } else if (el.kind === 'rule' && inText(box) && drawnRule(ctx, el, box, !!bandOf(box) || !!ground)) items.push({ box, kind: 'rule', el });
   }
   const order = titleColumnFirst(readingOrder(items, rtl, u), u.dpi);
   const textHeight = page.height - toPx(geo.margins.top + geo.margins.bottom);
@@ -133,7 +143,9 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   const over = (pic: Box): boolean =>
     order.every((i) => (i.kind !== 'text' && i.kind !== 'title') || (covers(pic, i.box) && (vertical || i.box.y + i.box.height <= textBottom + MM(u, 2))));
   const backdrop = order.find((i): i is Extract<Item, { kind: 'image' }> => i.kind === 'image' && !bandOf(i.box) && fillsPage(i.box, flowPage) && over(i.box));
-  const onBackdrop = (box: Box): string | undefined => (backdrop && covers(backdrop.box, box) ? BACKDROP : undefined);
+  const onBackdrop = (box: Box): string | undefined => (backdrop && covers(backdrop.box, box) ? BACKDROP : ground?.fill);
+  // The bands the page prints text on, its ground aside.
+  const textBands = bands.filter((e) => order.some((i) => covers(boxes.get(e.id) ?? page, i.box)));
   const at = order.findIndex((i) => i.kind === 'title');
   const titleBand = at >= 0 ? bandOf(order[at]!.box) : undefined;
   // A design spans the text area (see layout/pageSpan.ts).
@@ -141,7 +153,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   // A design that opens a page keeps the page with what it prints above
   // its title: the break moves to the first piece, or to a thin paragraph
   // before a band that comes first (a table cell cannot break a page).
-  const moves = spec.breakBefore && order.length > 0 && (at !== 0 || !!titleBand);
+  const moves = spec.breakBefore && order.length > 0 && (at !== 0 || !!titleBand || !!ground);
   let pending = moves;
   const chunks: Chunk[] = [];
   // A page the design opens starts where its first piece stands: a
@@ -152,7 +164,7 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   // standing well below the others (an imprint at the foot of the page)
   // keeps the space above it, with room to spare so that it stays on the
   // page. `flowY` is roughly where Word has got to.
-  const freePage = spec.breakBefore && !bands.length && !vertical;
+  const freePage = spec.breakBefore && !vertical && (ground ? !textBands.length : !bands.length);
   let flowY = container.y;
   const footPiece = order[order.length - 1];
   const drop = (band: Chunk['band'], box: Box | undefined): ParaProps | undefined => {
@@ -205,9 +217,47 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
   });
   const sets = columnSets(ctx, columnTexts);
   const inSet = new Set(sets.flatMap((c) => c.columns.flat()));
+  if (ground) {
+    // The ground first, with the page break; then the band across the
+    // foot of the sheet (its table, set at the same place, holds its text:
+    // the fill under it reaches the edge of the paper where a table may
+    // not) and the small fills the print draws above its first piece (a
+    // row of colour bars), at their places on the page.
+    const top = order[0]?.box.y ?? page.height;
+    const extra: Ground[] = [];
+    for (const e of bands) {
+      const bb = boxes.get(e.id);
+      if (!bb || e.kind !== 'box' || bb.height <= 0 || bb.width <= 0) continue;
+      if (atFoot(bb) || (!textBands.includes(e) && bb.y + bb.height <= top)) extra.push({ fill: hex(e.style.backgroundColor)!, box: bb });
+    }
+    const was: boolean = placed;
+    placed = true;
+    const first = firstProps(undefined);
+    placed = was;
+    chunks.push({ xml: groundParagraph(ctx, [ground, ...extra], first) });
+  }
+  /** Roughly how far down the page the pieces written reach, px. */
+  const written = (): number => Math.max(container.y, ...chunks.map((c) => (c.box ? c.box.y + c.box.height : 0)));
+  /** Empty room `h` px tall that keeps with what follows. */
+  const room = (h: number): string => paragraph({ keepNext: true, before: 0, after: 0, line: { twips: Math.round((h * 1440) / u.dpi), rule: 'exact' }, ind: { firstLine: 0 }, markRPr: THIN_MARK }, '');
+  // A part's body on the page's ground: written where the print starts
+  // it, before what stands below it (the map lists pieces in the order
+  // they are written).
+  let bodyDone = false;
+  const groundBody = (next: Box | undefined): void => {
+    const body = spec.body;
+    if (!ground || !body || bodyDone || (next && next.y < body.top)) return;
+    if (bandOf({ x: container.x + 1, y: body.top, width: 1, height: 1 })) return;
+    bodyDone = true;
+    const gap = Math.max(0, Math.min(body.top - written(), textHeight * 0.25));
+    if (gap > MM(u, 2)) chunks.push({ xml: room(gap) });
+    const xml = body.write();
+    chunks.push({ xml: body.ink ? inked(ctx, xml, body.ink) : xml, box: { x: container.x, y: body.top, width: 1, height: bodyHeight(xml, container.width, u.basePx) } });
+  };
   for (let i = 0; i < order.length; i++) {
     const item = order[i]!;
     const band = bandOf(item.box);
+    groundBody(item.box);
     if (inSet.has(i)) {
       const set = sets.find((c) => Math.min(...c.columns.flat()) === i);
       if (!set) continue;
@@ -295,7 +345,8 @@ export function writeDesign(ctx: WriterContext, spec: DesignSpec): string {
     }
     i = j - 1;
   }
-  if (spec.body) {
+  groundBody(undefined);
+  if (spec.body && !bodyDone) {
     const band = bandOf({ x: container.x + 1, y: spec.body.top, width: 1, height: 1 });
     const tail = chunks[chunks.length - 1];
     if (band && tail?.band?.box === band.box) {
