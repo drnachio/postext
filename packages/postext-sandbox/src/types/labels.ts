@@ -2548,6 +2548,7 @@ export interface SandboxLabels {
   headerFooterElementPagesOpener: string;
   headerFooterElementPagesPart: string;
   headerFooterElementPagesBlank: string;
+  headerFooterElementPagesPlate: string;
   headerFooterAnchorToPage: string;
   headerFooterAnchorToBleed: string;
   headerFooterAnchorToOuter: string;
@@ -2881,8 +2882,6 @@ export interface SandboxLabels {
   resourcePlacementWidthShare: string;
   resourcePlacementWidthLength: string;
   resourcePlacementWidthLengthTooltip: string;
-  warningsPlateLowResolutionTitle: string;
-  warningsPlateLowResolutionDetail: string;
   resourceSpanSide: string;
   resourceImageLabel: string;
   resourceBitmapSizeLabel: string;

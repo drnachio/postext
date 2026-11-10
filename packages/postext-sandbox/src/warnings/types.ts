@@ -463,8 +463,6 @@ export type WarningPayload =
    *  a page whose text block is wider (#901): `scale` of its print width;
    *  the print, column and text block widths in mm. */
   | { kind: 'pictureBelowPrintSize'; resourceId: string; scale: number; printMm: number; columnMm: number; pageMm: number }
-  /** A full-page plate enlarged under 300 ppi . */
-  | { kind: 'plateLowResolution'; resourceId: string; scale: number; ppi: number }
   /** A resource of a type with a caption prefix and no caption of its
    *  own: its caption line prints `label` alone (#1151). */
   | { kind: 'emptyCaption'; resourceId: string; label: string }

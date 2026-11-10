@@ -109,17 +109,6 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       });
       return;
     }
-    if (w.kind === 'plateLowResolution') {
-      // A full-page plate enlarged under the printers' resolution .
-      out.push({
-        id: `layout-plateLowResolution-${w.resourceId}-${i}`,
-        payload: { kind: 'plateLowResolution', resourceId: w.resourceId, scale: w.scale, ppi: w.ppi },
-        sourceStart: w.sourceStart,
-        sourceEnd: w.sourceEnd,
-        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
-      });
-      return;
-    }
     if (w.kind === 'floatShrunk') {
       // A picture scaled to its slot (#626); an overrun in mm, as for boxes.
       const mmPerPx = 25.4 / doc.config.page.dpi;

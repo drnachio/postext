@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الترويسات والتذييلات',
   description: 'ما يُطبع أعلى كل صفحة وأسفلها: نص فيه عناصر نائبة، وخطوط، وصناديق، وصور، ومسارات متجهية؛ وما يختلف بين الصفحات الفردية والزوجية؛ وموضع كل عنصر',
   lang: 'ar',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '30 دقيقة',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ export const metadata = {
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td><em>أدوار</em> الصفحات التي يظهر فيها العنصر، مقترنةً بـ<code>parity</code>. بعد التوزيع تُصنَّف كل صفحة على أنها <code>'blank'</code> (حشو للزوجية أو للفاصل، أو بلا محتوى)، أو <code>'part'</code> (صفحة فاصلة لجزء)، أو <code>'opener'</code> (أول كتلة فيها عنوان يمتد مستواه على الصفحة أو يفرض فاصل صفحة قبله: الصفحة الأولى من فصل)، أو <code>'comic'</code> (صفحة قصة مصورة، <code>:::page</code>)، أو <code>'composed'</code> (صفحة مركّبة، أو الدور الذي يسمّيه <code>role</code> في قالبها)، أو <code>'body'</code> (كل ما عدا ذلك). يُخفي <code>pages: 'body'</code> الترويسة في صفحات افتتاح الفصول؛ ويُظهر <code>pages: 'opener'</code> رقم الصفحة هناك فقط.</td>
+      <td><em>أدوار</em> الصفحات التي يظهر فيها العنصر، مقترنةً بـ<code>parity</code>. بعد التوزيع تُصنَّف كل صفحة على أنها <code>'blank'</code> (حشو للزوجية أو للفاصل، أو بلا محتوى)، أو <code>'part'</code> (صفحة فاصلة لجزء)، أو <code>'opener'</code> (أول كتلة فيها عنوان يمتد مستواه على الصفحة أو يفرض فاصل صفحة قبله: الصفحة الأولى من فصل)، أو <code>'comic'</code> (صفحة قصة مصورة، <code>:::page</code>)، أو <code>'composed'</code> (صفحة مركّبة، أو الدور الذي يسمّيه <code>role</code> في قالبها)، أو <code>'body'</code> (كل ما عدا ذلك). يُخفي <code>pages: 'body'</code> الترويسة في صفحات افتتاح الفصول؛ ويُظهر <code>pages: 'opener'</code> رقم الصفحة هناك فقط. والصفحة التي تغطّيها لوحة حتى حدّ القصّ أو النزف (<code>placement.plate: 'trim' | 'bleed'</code>) دورها <code>'plate'</code>: لا يُرسم عليها إلا عنصر يسمّي <code>pages</code> فيه هذا الدور، ولا تُرسم عناصر <code>'all'</code>.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ header: {
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>أدوار الصفحات التي يظهر فيها الخط (انظر الحقل <code>pages</code> لعنصر النص).</td>
     </tr>
@@ -622,7 +622,7 @@ header: {
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>أدوار الصفحات التي يظهر فيها الصندوق (انظر الحقل <code>pages</code> لعنصر النص).</td>
     </tr>

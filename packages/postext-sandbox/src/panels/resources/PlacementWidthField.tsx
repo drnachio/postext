@@ -1,14 +1,17 @@
 'use client';
 
 // A resource's width (`placement.width`): a share of its slot in %, or a
-// length in mm, cm or pt. The resource's card and the resource
-// type's defaults both set it here.
+// length in mm, cm, in or pt (#1461). The resource's card and the
+// resource type's defaults both set it here.
 
 import type { Dimension, ResourcePlacement } from 'postext';
 import { NumberInput, DimensionInput, SelectInput } from '../../controls/index.js';
 import { useSandboxLabels } from '../../context/SandboxContext.js';
 
 type Width = ResourcePlacement['width'];
+
+/** The units the engine reads a width length in (#1461): physical ones. */
+const LENGTH_UNITS = ['mm', 'cm', 'in', 'pt'] as const;
 
 /** Whether a width is a length rather than a share. */
 export const isLengthWidth = (w: Width): w is Dimension => typeof w === 'object' && w !== null;
@@ -27,7 +30,9 @@ interface PlacementWidthFieldProps {
   isDefault: boolean;
   onChange: (width: Width | undefined) => void;
   onReset: () => void;
-  /** A share of 100 % clears the width (the type's field does). */
+  /** A share of 100 % clears the width (the type's field does: nothing
+   *  is under it). A resource's card writes the share instead, so a share
+   *  stands over a length its type sets. */
   clearAtWhole?: boolean;
 }
 
@@ -47,7 +52,9 @@ export function PlacementWidthField({ value, fallbackShare = 1, isDefault, onCha
         ]}
         onChange={(v) => {
           if (v === 'length' && !length) onChange(DEFAULT_LENGTH);
-          else if (v === 'share' && length) onChange(undefined);
+          // Back to a share: the type's field clears its length; a
+          // resource writes the share, which wins over its type's length.
+          else if (v === 'share' && length) onChange(clearAtWhole ? undefined : fallbackShare);
         }}
         isDefault={isDefault}
         onReset={onReset}
@@ -60,7 +67,7 @@ export function PlacementWidthField({ value, fallbackShare = 1, isDefault, onCha
           onChange={(v) => onChange(v.value > 0 ? v : DEFAULT_LENGTH)}
           min={1}
           step={1}
-          units={['mm', 'cm', 'pt']}
+          units={[...LENGTH_UNITS]}
           isDefault={isDefault}
           onReset={onReset}
         />

@@ -30,10 +30,14 @@ export interface StripGeometry {
  *  resource of a vertical flow, counter-rotated to stand upright on the
  *  sheet, its frame at most `length` px wide (see
  *  `ResourceLayoutInput.upright`). */
-/** How a float is set across its band: turned (`direction`), upright on a
- *  vertical page (`upright`), or a full-page plate (`plate`:
- *  not turned, its picture filling `length` px of height). */
-export type FloatRotation = { direction: ResourceRotation; length: number; upright?: boolean; plate?: true };
+export type FloatRotation = { direction: ResourceRotation; length: number; upright?: boolean };
+
+/** How a float's picture is sized besides its slot's width (#1461):
+ *  `plateHeight`, a full-page plate filling that many px of height with
+ *  its caption (`ResourceLayoutInput.plateHeight`); `maxBodyWidth`, the
+ *  widest a turned picture with a width given as a length is set before
+ *  the turn. */
+export type FloatSizing = { plateHeight?: number; maxBodyWidth?: number };
 
 /** A caption set beside the figure (`placement.captionSide`): the band
  *  in the side column, relative to the float's left edge. */

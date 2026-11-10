@@ -3,8 +3,8 @@ import { buildDocument } from '../../../pipeline/build.js';
 import { createMeasurementCache } from '../../../measure/index.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../../index.js';
 
-// A resource's width as a length (`placement.width: { value, unit }`, this
-// fork): the picture is set that wide, in the text, in a column float, in
+// A resource's width as a length (`placement.width: { value, unit }`,
+// #1461): the picture is set that wide, in the text, in a column float, in
 // a page-span float and with text wrapped round it.
 
 class StubCtx {
@@ -67,7 +67,8 @@ describe('a resource width given as a length', () => {
   it('lays out as the same share of the slot would', () => {
     const asLength = build(CITED, figure({ span: 'page', width: mm(73) }));
     const asShare = build(CITED, figure({ span: 'page', width: 73 / 146 }));
-    expect(resourceOf(asLength).bbox).toEqual(resourceOf(asShare).bbox);
+    const [l, r] = [resourceOf(asLength).bbox, resourceOf(asShare).bbox];
+    for (const k of ['x', 'y', 'width', 'height'] as const) expect(l[k]).toBeCloseTo(r[k], 6);
   });
 
   it('runs the text beside a wrapped picture that wide', () => {

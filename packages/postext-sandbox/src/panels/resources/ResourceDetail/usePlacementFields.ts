@@ -48,15 +48,21 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   const placementWrapChoice = wrapChoiceOf(currentPlacement.wrap ?? typePlacement.wrap);
   // A contour wrap (#883) wraps at the side its align names.
   const placementWrap = placementWrapChoice === 'contour' ? 'contour' : wrapSideOf(currentPlacement.wrap ?? typePlacement.wrap);
-  // The width in force: a share (shown in %) or a length ; a
+  // The width in force: a share (shown in %) or a length (#1461); a
   // wrapped resource without one takes `layout.wrap.defaultWidth`.
   const placementWidth = currentPlacement.width ?? typePlacement.width;
   const placementWidthFallback = placementWrap !== 'none' ? layoutWrap?.defaultWidth ?? DEFAULT_TEXT_WRAP.defaultWidth : 1;
   const placementWidthPercent = widthPercentOf(placementWidth, placementWidthFallback);
-  // A full-page plate fills the content area: no width, span,
-  // wrap or rotation of its own.
+  // A full-page plate (#1461) fills the content area: no width, span,
+  // wrap or rotation of its own. A resource's `false` turns off its
+  // type's plate.
   const plateAsked = currentPlacement.plate ?? typePlacement.plate;
   const placementPlate = plateAsked !== undefined && plateAsked !== false && placementPosition !== 'here';
+  const typePlate = typePlacement.plate !== undefined && typePlacement.plate !== false;
+  /** What the plate switch writes: nothing where the type already says
+   *  the same, `true` to ask for a plate, `false` to turn the type's off. */
+  const plateWritten = (on: boolean): ResourcePlacement['plate'] =>
+    on ? (typePlate ? undefined : true) : (typePlate ? false : undefined);
   // Where it is set: the text block, the trim or the bleed.
   const placementPlateArea: ResourcePlateArea = plateAsked === 'trim' || plateAsked === 'bleed' ? plateAsked : 'content';
   // An inline embed is never turned; a turned resource is a page-span float.
@@ -100,7 +106,7 @@ export function usePlacementFields(deps: UsePlacementFieldsDeps) {
   return {
     currentPlacement, typePlacement, placementPosition, placementSpan, placementRotate,
     setPlacementKey, placementColumns, severalColumns, layoutWrap, bodyLineHeight,
-    placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementPlateArea, placementInline, placementRotated,
+    placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, plateWritten, placementPlateArea, placementInline, placementRotated,
     isPicture, alignApplies, placementShrink, placementMinScale, placementCaptionMeasure,
     placementCitingPage, tableStyles, tableStyleId, setTableStyleId, placementAlign, floatSide,
     tableDirection, tableRtl, setTableDirection

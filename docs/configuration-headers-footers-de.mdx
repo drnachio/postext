@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Kopf- und Fußzeilen',
   description: 'Was oben und unten auf jeder Seite steht – Text mit Platzhaltern, Linien, Kästen, Bilder und Vektorpfade, getrennt für gerade und ungerade Seiten – und wie jedes Element platziert wird',
   lang: 'de',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '29 min',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ Die Standardwerte in der folgenden Tabelle sind die eines Textelements, das Sie 
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>Auf welchen <em>Seitenrollen</em> das Element erscheint, kombiniert mit <code>parity</code>. Nach der Platzierung wird jede Seite eingeordnet als <code>'blank'</code> (Vakatseite für die Parität oder als Trennseite oder ohne Inhalt), <code>'part'</code> (eine Teiltitelseite), <code>'opener'</code> (ihr erster Block ist eine Überschrift, deren Ebene über die ganze Seite reicht oder einen Seitenumbruch davor erzwingt – die erste Seite eines Kapitels), <code>'comic'</code> (eine Comicseite, <code>:::page</code>), <code>'composed'</code> (eine zusammengesetzte Seite, oder die <code>role</code>, die ihre Vorlage nennt) oder <code>'body'</code> (alles andere). <code>pages: 'body'</code> blendet einen Kolumnentitel auf Kapitelauftakten aus; <code>pages: 'opener'</code> zeigt eine Pagina nur dort.</td>
+      <td>Auf welchen <em>Seitenrollen</em> das Element erscheint, kombiniert mit <code>parity</code>. Nach der Platzierung wird jede Seite eingeordnet als <code>'blank'</code> (Vakatseite für die Parität oder als Trennseite oder ohne Inhalt), <code>'part'</code> (eine Teiltitelseite), <code>'opener'</code> (ihr erster Block ist eine Überschrift, deren Ebene über die ganze Seite reicht oder einen Seitenumbruch davor erzwingt – die erste Seite eines Kapitels), <code>'comic'</code> (eine Comicseite, <code>:::page</code>), <code>'composed'</code> (eine zusammengesetzte Seite, oder die <code>role</code>, die ihre Vorlage nennt) oder <code>'body'</code> (alles andere). <code>pages: 'body'</code> blendet einen Kolumnentitel auf Kapitelauftakten aus; <code>pages: 'opener'</code> zeigt eine Pagina nur dort. Eine Seite, die eine Tafel bis zum Endformat oder in den Anschnitt deckt (<code>placement.plate: 'trim' | 'bleed'</code>), ist <code>'plate'</code>: Dort wird nur ein Element gezeichnet, dessen <code>pages</code> diese Rolle nennt, auch keines mit <code>'all'</code>.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ Linienelemente zeichnen eine Linie: waagerecht über das Feld oder senkrecht an 
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Seitenrollen, auf denen die Linie erscheint (siehe das Feld <code>pages</code> der Textelemente).</td>
     </tr>
@@ -622,7 +622,7 @@ Kastenelemente zeichnen ein abgerundetes Rechteck in das Feld – nützlich als 
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Seitenrollen, auf denen der Kasten erscheint (siehe das Feld <code>pages</code> der Textelemente).</td>
     </tr>

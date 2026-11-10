@@ -9,6 +9,8 @@
  *                 body column is empty (the opener design is the content);
  *  - `'comic'`  — a comic page (`page.comic` set, `:::page`);
  *  - `'composed'` — a composed page (`page.composed` set, `::::page`);
+ *  - `'plate'`  — a full-page plate set to the trim or the bleed covers it
+ *                 (#1461): design elements skip it unless they name it;
  *  - `'blank'`  — any other page with no content at all (no column blocks
  *                 and no floats);
  *  - `'opener'` — the first block in reading order is a heading whose level
@@ -30,6 +32,16 @@ function firstBlockInReadingOrder(page: VDTPage): VDTBlock | undefined {
   return undefined;
 }
 
+/** The edge a full-page plate on `page` reaches (#1461), when one is set
+ *  to the trim or the bleed. */
+export function edgePlateOf(page: VDTPage): 'trim' | 'bleed' | undefined {
+  for (const b of page.floats ?? []) {
+    const rb = b.resourceBlock;
+    if (rb?.plateArea && !rb.rotation) return rb.plateArea;
+  }
+  return undefined;
+}
+
 function pageIsEmpty(page: VDTPage): boolean {
   if (page.floats && page.floats.length > 0) return false;
   return page.columns.every((c) => c.blocks.length === 0);
@@ -45,6 +57,7 @@ export function classifyPage(
   if (page.partInfo) return 'part';
   if (page.comic) return 'comic';
   if (page.composed) return 'composed';
+  if (edgePlateOf(page)) return 'plate';
   if (pageIsEmpty(page)) return 'blank';
   const first = firstBlockInReadingOrder(page);
   if (first && first.type === 'heading' && first.headingLevel !== undefined) {

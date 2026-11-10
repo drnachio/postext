@@ -374,10 +374,6 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
         .replace('__print__', String(payload.printMm))
         .replace('__column__', String(payload.columnMm))
         .replace('__page__', String(payload.pageMm))}`;
-    case 'plateLowResolution':
-      return `#${payload.resourceId} — ${labels.warningsPlateLowResolutionDetail
-        .replace('__scale__', String(Math.round(payload.scale * 100)))
-        .replace('__ppi__', String(payload.ppi))}`;
     case 'emptyCaption':
       return `#${payload.resourceId} — ${labels.warningsEmptyCaptionDetail.replace('__label__', payload.label)}`;
     case 'resourceMoved':

@@ -5679,60 +5679,6 @@
       }
     }
   },
-  "plateLowResolution": {
-    "source": "engine",
-    "label": {
-      "en": "Plate enlarged under 300 ppi",
-      "es": "Lámina ampliada por debajo de 300 ppp",
-      "ca": "Làmina ampliada per sota de 300 ppp",
-      "zh": "整页插图放大后低于 300 ppi",
-      "ar": "لوحة مكبَّرة دون 300 نقطة في البوصة",
-      "ja": "300 ppi 未満に拡大された図版",
-      "pt": "Prancha ampliada abaixo de 300 ppi",
-      "fr": "Planche agrandie sous 300 ppp",
-      "de": "Tafel unter 300 ppi vergrößert",
-      "it": "Tavola ingrandita sotto i 300 ppi"
-    },
-    "cause": {
-      "en": "A bitmap set as a full-page plate (placement.plate) is enlarged to fill the content area, and at that size it prints under 300 ppi, below what a printer asks for.",
-      "es": "Un mapa de bits puesto como lámina a página completa (placement.plate) se amplía para llenar la caja, y a ese tamaño se imprime por debajo de 300 ppp, menos de lo que pide una imprenta.",
-      "ca": "Un mapa de bits posat com a làmina a pàgina completa (placement.plate) s'amplia per omplir la caixa, i a aquesta mida s'imprimeix per sota de 300 ppp, menys del que demana una impremta.",
-      "zh": "作为整页插图（placement.plate）的位图被放大以填满版心，在该尺寸下印刷分辨率低于 300 ppi，达不到印刷厂的要求。",
-      "ar": "صورة نقطية موضوعة لوحةً بصفحة كاملة (placement.plate،) تُكبَّر لتملأ كتلة النص، وبذلك المقاس تُطبع بأقل من 300 نقطة في البوصة، دون ما تطلبه المطبعة.",
-      "ja": "全ページ図版（placement.plate）として置かれたビットマップが版面いっぱいに拡大され、その大きさでは印刷所が求める 300 ppi を下回ります。",
-      "pt": "Um bitmap posto como prancha de página inteira (placement.plate) é ampliado para encher a mancha, e nesse tamanho imprime abaixo de 300 ppi, menos do que uma gráfica pede.",
-      "fr": "Un bitmap placé en planche pleine page (placement.plate) est agrandi pour remplir la zone de contenu, et à cette taille il s’imprime sous 300 ppp, moins que ce que demande un imprimeur.",
-      "de": "Eine als ganzseitige Tafel gesetzte Bitmap (placement.plate) wird vergrößert, um den Satzspiegel zu füllen, und druckt in dieser Größe unter 300 ppi, weniger als eine Druckerei verlangt.",
-      "it": "Una bitmap messa come tavola a piena pagina (placement.plate) viene ingrandita per riempire la gabbia, e a quella dimensione si stampa sotto i 300 ppi, meno di quanto chiede una tipografia."
-    },
-    "fix": {
-      "en": "Use a larger original (more pixels), or turn the plate off and set the picture at a size its pixels hold. An SVG is never reported.",
-      "es": "Usa un original más grande (con más píxeles), o quita la lámina y compón la imagen a un tamaño que sus píxeles aguanten. Un SVG nunca da este aviso.",
-      "ca": "Fes servir un original més gran (amb més píxels), o treu la làmina i compon la imatge a una mida que els seus píxels aguantin. Un SVG no dona mai aquest avís.",
-      "zh": "使用更大的原图（像素更多），或关闭整页插图，按像素足够的尺寸排版。SVG 不会报告。",
-      "ar": "استخدم أصلًا أكبر (بنقاط أكثر)، أو ألغِ اللوحة ونضّد الصورة بمقاس تحتمله نقاطها. لا يُبلَّغ عن SVG أبدًا.",
-      "ja": "より大きな原画（画素数の多いもの）を使うか、全ページ図版をやめて画素数に見合う大きさで組んでください。SVG は報告されません。",
-      "pt": "Use um original maior (com mais pixels), ou desligue a prancha e componha a imagem num tamanho que os pixels aguentem. Um SVG nunca dá este aviso.",
-      "fr": "Utilisez un original plus grand (plus de pixels), ou désactivez la planche et composez l’image à une taille que ses pixels permettent. Un SVG ne donne jamais cet avertissement.",
-      "de": "Ein größeres Original (mehr Pixel) verwenden, oder die Tafel abschalten und das Bild in einer Größe setzen, die seine Pixel tragen. Ein SVG wird nie gemeldet.",
-      "it": "Usa un originale più grande (più pixel), oppure togli la tavola e componi l’immagine a una dimensione che i suoi pixel reggono. Un SVG non dà mai questo avviso."
-    },
-    "docs": {
-      "slug": "configuration-programmatic-usage",
-      "heading": {
-        "en": "Warnings in the document",
-        "es": "Avisos del documento",
-        "ca": "Avisos del document",
-        "zh": "文档中的警告",
-        "ar": "التحذيرات في المستند",
-        "ja": "文書の中の警告",
-        "pt": "Avisos no documento",
-        "fr": "Avertissements dans le document",
-        "de": "Warnungen im Dokument",
-        "it": "Avvisi nel documento"
-      }
-    }
-  },
   "designTextTruncated": {
     "source": "engine",
     "label": {

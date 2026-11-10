@@ -3,6 +3,7 @@
 // Part of the placement pass (pass.ts), split out of it in #1276.
 import type { VDTPage, VDTColumn, ResolvedConfig, VDTDocument } from '../../../../vdt.js';
 import type { PlannedFloat } from '../../../floats/floatPlacement.js';
+import { floatWidthIn } from '../../../floats/placementLength.js';
 import { sideColumns, sideColumnOf, currentBand, bandColumns, FIT_EPS, advanceToNextColumn, type PlacementCursor } from '../../../blocks/placement.js';
 import { type FloatSlotPosition, type FloatSlot, enumerateCurrentPageSlots, type FloatMeasure, type ColumnCapKind } from '../../../floats/floatSlots.js';
 import { pickCalloutStyle, resolveCalloutAttrs, type PlannedCallout } from '../../../callouts/calloutLayout.js';
@@ -30,6 +31,7 @@ export interface FloatFlushDeps {
   pendingFloats: PlannedFloat[];
   pendingSideBoxes: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig; pageIndex: number }[];
   multiColumnBand: (page: VDTPage) => boolean;
+  dpi: number;
   enqueuedFloatIds: Set<string>;
   citationGates: Map<string, { blockIdx: number; line: number; }>;
   awaitsCitation: (f: PlannedFloat) => boolean;
@@ -54,7 +56,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
   const {
     citingPageFloats, resolved, doc, pageWidthPx, pageHeightPx, contentBlocks, resourceById,
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
-    enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
+    dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
     positionsFor, cursor, forcedBreakPages, state, late
   } = deps;
@@ -475,7 +477,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       const cols = pageSpan ? textCols : citingColumnsOf(f, textCols, c.col.index);
       if (!cols || cols.length === 0) continue;
       const slotWidth = pageSpan ? page.contentArea.width : cols[cols.length - 1]!.bbox.x + cols[cols.length - 1]!.bbox.width - cols[0]!.bbox.x;
-      const width = f.widthFraction && f.widthFraction < 1 ? slotWidth * f.widthFraction : slotWidth;
+      const width = floatWidthIn(f, slotWidth, dpi);
       const m = measureFloat(id, width);
       if (!m || m.height + floatGapPx > resolved.layout.maxTopFraction * page.contentArea.height + 0.01) continue;
       proposals.set(id, { pageIndex: c.pageIndex, columnIndex: c.col.index });
@@ -550,12 +552,15 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       // page of boxes and the rest of the queue was never set.
       while ((pendingFloats.length > 0 || pendingSideBoxes.length > 0) && guard++ < 1000) {
         const before = state.floatsPlaced;
+        const waitsBefore = state.plateWaits;
         const boxesBefore = pendingSideBoxes.length;
         const startPageIndex = cursor.pageIndex;
         do {
           advanceToNextColumn(doc, cursor, state.geomResolved, state.contentArea, pageWidthPx, pageHeightPx, onNewPage);
         } while (cursor.pageIndex === startPageIndex);
-        if (state.floatsPlaced === before && pendingSideBoxes.length === boxesBefore) break; // safety: no progress
+        // A plate that waited past the page (#1461) is progress too: it
+        // waits for a bounded number of pages.
+        if (state.floatsPlaced === before && state.plateWaits === waitsBefore && pendingSideBoxes.length === boxesBefore) break; // safety: no progress
       }
     } finally {
       state.drainingAfterText = false;

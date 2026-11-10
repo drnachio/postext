@@ -15,11 +15,15 @@ export type HeaderFooterHAlign = 'left' | 'center' | 'right';
  *  - `'comic'` — a comic page (`:::page`, `VDTPage.comic` set);
  *  - `'composed'` — a composed page (`::::page{template}`, `VDTPage.composed`
  *    set, #855);
+ *  - `'plate'` — the page of a full-page plate set to the trim or the
+ *    bleed (`placement.plate: 'trim' | 'bleed'`, #1461);
  *  - `'body'` — everything else. */
-export type PageRole = 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed';
+export type PageRole = 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate';
 
 /** Which page roles a design element renders on. `'all'` (default) renders
- *  on every page the parity filter admits. */
+ *  on every page the parity filter admits, but a `'plate'` page (#1461):
+ *  the picture covers it, and only an element that names `'plate'` is
+ *  drawn there (running heads and folios included). */
 export type PageRoleFilter = 'all' | PageRole;
 
 // ---------------------------------------------------------------------------

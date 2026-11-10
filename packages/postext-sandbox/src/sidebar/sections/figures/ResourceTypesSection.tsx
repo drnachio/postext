@@ -361,7 +361,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       onReset={() => updateTypePlacement(type, { citingPage: undefined })}
                     />
                   )}
-                  {/* A full-page plate . */}
+                  {/* A full-page plate (#1461). */}
                   <ToggleSwitch
                     label={labels.resourcePlacementPlate}
                     checked={type.defaultPlacement?.plate !== undefined && type.defaultPlacement.plate !== false}

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Cabeçalhos e rodapés',
   description: 'O que é impresso no alto e no pé de cada página: texto com marcadores, fios, caixas, imagens e caminhos vetoriais, conforme a paridade da página, e onde cada elemento fica',
   lang: 'pt',
-  lastUpdated: '2026-10-21',
+  lastUpdated: '2026-11-10',
   readingTime: '32 min',
   order: 6,
   parent: 'configuration',
@@ -105,9 +105,9 @@ Os padrões da tabela abaixo são os de um elemento de texto que você mesmo adi
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
-      <td>Em quais <em>funções</em> de página o elemento aparece, combinado com <code>parity</code>. Depois do posicionamento, cada página é classificada como <code>'blank'</code> (página de preenchimento por paridade ou separador, ou sem conteúdo), <code>'part'</code> (uma página divisória de parte), <code>'opener'</code> (seu primeiro bloco é um título cujo nível ocupa a página ou força uma quebra de página antes dele: a primeira página de um capítulo), <code>'comic'</code> (uma página de quadrinhos, <code>:::page</code>), <code>'composed'</code> (uma página composta, ou o <code>role</code> que seu modelo indica) ou <code>'body'</code> (todas as outras). <code>pages: 'body'</code> esconde um cabeço nas aberturas de capítulo; <code>pages: 'opener'</code> mostra um fólio só nelas.</td>
+      <td>Em quais <em>funções</em> de página o elemento aparece, combinado com <code>parity</code>. Depois do posicionamento, cada página é classificada como <code>'blank'</code> (página de preenchimento por paridade ou separador, ou sem conteúdo), <code>'part'</code> (uma página divisória de parte), <code>'opener'</code> (seu primeiro bloco é um título cujo nível ocupa a página ou força uma quebra de página antes dele: a primeira página de um capítulo), <code>'comic'</code> (uma página de quadrinhos, <code>:::page</code>), <code>'composed'</code> (uma página composta, ou o <code>role</code> que seu modelo indica) ou <code>'body'</code> (todas as outras). <code>pages: 'body'</code> esconde um cabeço nas aberturas de capítulo; <code>pages: 'opener'</code> mostra um fólio só nelas. Uma página que uma prancha cobre até ao corte ou à sangria (<code>placement.plate: 'trim' | 'bleed'</code>) é <code>'plate'</code>: nela só se desenha um elemento cujo <code>pages</code> nomeia esse papel, e não os de <code>'all'</code>.</td>
     </tr>
     <tr>
       <td><code>when</code>, <code>unless</code></td>
@@ -533,7 +533,7 @@ Os elementos de fio desenham uma linha: horizontal, atravessando o espaço, ou v
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Funções de página em que o fio aparece (veja o campo <code>pages</code> dos elementos de texto).</td>
     </tr>
@@ -622,7 +622,7 @@ Os elementos de caixa pintam um retângulo de cantos arredondados dentro do espa
     </tr>
     <tr>
       <td><code>pages</code></td>
-      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed'</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank' | 'comic' | 'composed' | 'plate'</code></td>
       <td><code>'all'</code></td>
       <td>Funções de página em que a caixa aparece (veja o campo <code>pages</code> dos elementos de texto).</td>
     </tr>

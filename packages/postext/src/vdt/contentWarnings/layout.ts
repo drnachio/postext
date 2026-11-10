@@ -45,11 +45,6 @@ export type LayoutWarning =
    *  than its column, and the default page has two (`layout.layoutType:
    *  'double'`). Found by the layout; reported once per picture. */
   | { kind: 'pictureBelowPrintSize'; resourceId: string; scale: number; printWidthPx: number; widthPx: number; pageWidthPx: number }
-  /** `plateLowResolution` : a bitmap set as a full-page plate
-   *  (`placement.plate`) that the layout enlarged to the content area
-   *  (`scale`, above 1) so far that it prints at `ppi`, under 300 pixels
-   *  per inch. Found by the layout; reported once per picture. */
-  | { kind: 'plateLowResolution'; resourceId: string; ppi: number; scale: number }
   /** `emptyCaption` (#1151): a resource of a type with a caption prefix
    *  whose own caption is empty, so its caption line prints the label and
    *  number alone ("Figure 1.2."). Often meant (a numbered plate), often a

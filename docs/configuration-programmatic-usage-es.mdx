@@ -339,11 +339,6 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td>La imagen se imprime al ancho de su columna. Una imagen en el flujo nunca es más ancha que su columna, y la página por defecto tiene dos (<code>layout.layoutType: 'double'</code>): compón la página a una sola columna, haz que la imagen flote a lo ancho de la página (<code>placement.span: 'page'</code>) o aumenta su resolución si ese es el tamaño que buscas.</td>
     </tr>
     <tr>
-      <td><code>plateLowResolution</code></td>
-      <td>Un mapa de bits puesto como lámina a página completa (<code>placement.plate</code>) se ha ampliado hasta imprimirse por debajo de 300 ppp. <code>resourceId</code> lo nombra, <code>scale</code> es cuánto se ha ampliado y <code>ppi</code>, la resolución a la que se imprime. Señala el párrafo que lo cita por primera vez.</td>
-      <td>La lámina se imprime a ese tamaño. Usa un original más grande, o quita la lámina y compón la imagen más pequeña.</td>
-    </tr>
-    <tr>
       <td><code>emptyCaption</code></td>
       <td>Un recurso de un tipo con prefijo de pie no tiene pie propio, así que su línea de pie imprime solo la etiqueta y el número. <code>resourceId</code> lo nombra y <code>label</code> es la línea impresa. Informativo: se avisa una vez por recurso, en el párrafo que lo cita o en su inserción. Desde postext 1.52.</td>
       <td>Se imprime la etiqueta. Escribe el pie, o deja la etiqueta sola si se quiere una lámina numerada.</td>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '资源与表格',
   description: '资源类型及其编号，表格样式与题注样式，单色图示和印在纸上的视频',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '30分钟',
   order: 14,
   parent: 'configuration',
@@ -49,7 +49,7 @@ interface ResourcePlacement {
   position?: 'auto' | 'top' | 'bottom' | 'here'; // 浮动体可占用哪种空位；'here' = 在::resource指令处行内嵌入
   span?: 'column' | 'page' | 'side';             // 一栏、整个内容宽度，或只放浮动体的侧栏
   rotate?: 'ccw' | 'cw';                         // 旋转四分之一圈：横排的表单独占一页
-  width?: number;                                // 栏宽或页宽的比例（0 < width < 1）；默认占满整个宽度
+  width?: number | Dimension;                    // 栏位的比例（0 < width < 1），或以 mm、cm、in、pt 表示的长度；默认占满宽度
   align?: 'left' | 'center' | 'right' | 'start' | 'end'; // 比所在栏窄的浮动体放在哪里；默认'left'
   captionSide?: boolean | 'inside';              // 题注放在图旁，位于oneAndHalf版式的侧栏中（栏内浮动体和随文放置的资源）；'inside'：排在图片旁边、图片自己的位置之内
   columns?: number;                              // 'column'浮动体横跨的相邻栏数（1.18起）
@@ -59,6 +59,7 @@ interface ResourcePlacement {
   minScale?: number;                             // shrink缩放的最小比例；默认0.7
   captionMeasure?: 'slot' | 'body';              // 题注和注释与空位同宽或与图片同宽
   citingPage?: boolean;                          // top或auto浮动体可置于引用所在页或栏的顶部
+  plate?: boolean | 'content' | 'trim' | 'bleed'; // 整页插图：在版心内（true），或到裁切线、出血
 }
 
 interface ResourceType {
@@ -78,6 +79,8 @@ interface ResourceType {
 类型可以省略字段（自postext 1.38起）：由同id的内置类型补齐（`figure`、`table`、`video`，采用文档语言）；没有同id的内置类型时，`name`取id，`shortLabel`和`captionPrefix`取`name`，`numberingTemplate`取`{'{h1}.{n}'}`（中文、日文和阿拉伯文为`{'{h1}-{n}'}`），`resetOn`取`'h1'`，`counterFormat`取`'decimal'`。`resetOn`写的不是任何级别时按`'h1'`处理，并给出`unknownConfigValue`警告。给出自己的`name`但没有`shortLabel`的类型，与1.38之前一样按该名称引用，而不用内置类型的简称：在英文文档中，`{ id: 'table', name: 'Table' }`显示为“Table 1”，而不是“Tab. 1”。
 
 `ResourcePlacement`与资源自身的`placement`结构相同。`position`决定浮动体可以占用哪种空位：`auto`（默认）取第一次引用之后的第一个空位，`top` / `bottom`只取相应的版带，`here`把资源嵌在正文里。`span`设定浮动体的宽度：一栏、整个版心宽度，或一栏半版面中只放浮动体的侧栏。`rotate`把资源转四分之一圈，使它成为单独占一页的通栏浮动体。`width`把浮动体收窄到所在栏宽的某个比例（通栏浮动体则是页宽的比例），例如宽栏里的一张小表。`align`决定这种较窄的浮动体放在哪里（默认靠左，也可居中或靠右），也决定比空位窄的图片在空位中的位置，例如比栏窄的位图，或被`layout.fitFiguresToPage`缩小的图像。题注和注释仍按空位的行长排。（postext 1.4及以前，这类图片总是齐左排放。）`left`和`right`指正文流向的两侧，在从右向左排版的文档页面上左右互换；`start`和`end`指同样的两侧。`captionSide`把题注放在图旁，即一栏半版面中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），与图的顶边平齐（底部浮动体则与底边平齐）。它作用于栏内浮动体；自postext 1.28起，也作用于随文放置的资源（`position: 'here'`，宽一栏，旁边没有绕排的文字）：侧栏在它旁边空着时，题注和注释排在侧栏，与主体顶边平齐，否则仍排在主体下方（`layout.inlineCaptionSide`，默认开启；设为`false`时，只有栏内浮动体把题注放到侧栏）。没有这种侧栏的页面，题注仍在图下。资源和它的类型都没有设定位置时，内置默认值为`auto` / `column`。`shrink`（`'never'`、`'page'`、`'slot'`）和`minScale`（未设时为0.7）让浮动图片缩小到空位放得下的尺寸，而不是往后移；`captionMeasure: 'body'`让比空位窄的图片的题注和注释与图片同宽（见[文档格式 › 位置](/zh/docs/document-format-resources#位置)）；`layout.floatShrink`给出前两项的文档默认值。`wrap`把行内嵌入或一栏宽的浮动体放在栏的一侧，正文排在它旁边，两者相隔`wrapGap`；默认值放在`layout.wrap`里（见[文档格式 › 文字绕排](/zh/docs/document-format-resources#文字绕排)）。`wrap: 'contour'`让正文沿图片的形状绕排，形状取自资源的`contour`（`points`、`alpha`、`threshold`、`margin`，以及宿主生成的`traced`；见[文档格式 › 沿轮廓绕排](/zh/docs/document-format-resources#沿轮廓绕排)）。`citingPage`让`top`或`auto`浮动体排在引用行所在页或栏的顶部，而不是引用行之后的第一个空位；`layout.floatsAtCitingPage`给出文档默认值，`layout.maxTopFraction`给出它最多可占的栏高比例（参见[文档格式 › 位置](/zh/docs/document-format-resources#位置)）。
+
+`width` 也可以是长度（`{ value: 80, unit: 'mm' }`，或以 `cm`、`in`、`pt` 表示），在资源所在的栏位中量取；`plate` 将图片单独放在一页上，在版心内或铺满整页；资源上的 `plate: false` 取消其类型的整页插图。参见[文档格式 › 位置](/zh/docs/document-format-resources#位置)。
 
 `columns`（postext 1.18起）让`span: 'column'`浮动体在多栏页面上横跨这么多相邻的栏，例如报纸五栏中横跨两栏的照片。它的宽度是这些栏加上其间的栏间距。它占用一组顶端平齐的空栏的栏首，或者引用它的那一栏及其后空栏的栏脚；栏数等于或大于页面的栏数时，它就是通栏浮动体。`'page'`和`'side'`跨度、旋转的资源（`rotate`）以及行内嵌入（`here`）忽略此项；`captionSide`只对一栏宽的浮动体有效。
 
@@ -135,7 +138,7 @@ interface ResourceType {
     <tr>
       <td><code>defaultPlacement</code></td>
       <td><code>ResourcePlacement</code>（可选）</td>
-      <td>该类型中未设定自身<code>placement</code>的资源所用的位置：<code>ResourcePlacement</code>的所有字段（<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>、<code>columns</code>、<code>shrink</code>、<code>minScale</code>、<code>captionMeasure</code>、<code>wrap</code>、<code>wrapGap</code>、<code>citingPage</code>），各字段分别解析。资源和类型都没有设定某个字段时，采用内置默认值：<code>auto</code> / <code>column</code>、不旋转、占满整个宽度、左对齐、题注在图下。解析顺序见下文<a href="#编号与引用">编号与引用</a>，各取值的作用（包括旋转的资源）见<a href="/zh/docs/document-format-resources#资源">文档格式 › 资源</a>。</td>
+      <td>该类型中未设定自身<code>placement</code>的资源所用的位置：<code>ResourcePlacement</code>的所有字段（<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>、<code>columns</code>、<code>shrink</code>、<code>minScale</code>、<code>captionMeasure</code>、<code>wrap</code>、<code>wrapGap</code>、<code>citingPage</code>, <code>plate</code>），各字段分别解析。资源和类型都没有设定某个字段时，采用内置默认值：<code>auto</code> / <code>column</code>、不旋转、占满整个宽度、左对齐、题注在图下。解析顺序见下文<a href="#编号与引用">编号与引用</a>，各取值的作用（包括旋转的资源）见<a href="/zh/docs/document-format-resources#资源">文档格式 › 资源</a>。</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>

@@ -1,4 +1,4 @@
-// Full-page plates set to the trim or the bleed .
+// Full-page plates set to the trim or the bleed (#1461).
 import { createBoundingBox, type BoundingBox, type VDTPage } from '../../../vdt.js';
 import { composeSource } from '../../resources/safeArea.js';
 import { shiftLines } from '../../resources/resourceLayout/snippets.js';
@@ -12,12 +12,14 @@ const BAND_PADDING = { value: 2, unit: 'mm' } as const;
  * Spreads the body of each plate on `page` set to the trim or the bleed
  * (`VDTResourceBlock.plateArea`) from the content area, where the layout
  * set it, to that edge of the sheet: the picture is enlarged to cover it
- * and cropped about its centre (`bodySource`), its scale noted in
- * `plateScale` for the resolution warning. Its caption and note go to the
- * foot of the content area and get a band of the paper colour (`paper`) to
- * read on, unless their caption style draws a bar of its own. The page is
- * marked (`edgePlate`) so it prints no running heads or folio. A vertical
- * page sets no plate.
+ * and cropped about its centre (`bodySource`, which the print preflight
+ * reads for the resolution it prints at), its scale noted in `plateScale`.
+ * Its caption and note go to the foot of the content area and get a band
+ * of the paper colour (`paper`) to read on, unless their caption style
+ * draws a bar of its own. The page is marked (`edgePlate`); its role is
+ * `'plate'` (`classifyPage`), so design elements, running heads and folio
+ * included, skip it unless they name that role. A vertical page sets no
+ * plate.
  */
 export function spreadPlatesToEdge(page: VDTPage, metrics: PageMetrics, paper: string, dpi: number): void {
   for (const block of page.floats ?? []) {

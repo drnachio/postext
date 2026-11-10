@@ -18,7 +18,7 @@ import { buildCodeLineNumbers } from '../../../code/codeLines.js';
 import { stampCentralBaselines } from '../../../text/verticalMetrics.js';
 import { orientLinesToFrames } from '../../../blocks/mirrorFrame.js';
 import { stampFigureLabelRects } from '../../../../composed/labels.js';
-import { joiningLetterSpacingWarnings, dropCapWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, plateLowResolutionWarnings, emptyCaptionWarnings } from '../../../contentWarnings.js';
+import { joiningLetterSpacingWarnings, dropCapWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, emptyCaptionWarnings } from '../../../contentWarnings.js';
 import type { PostextConfig, Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
 import type { VDTDocument } from '../../../../vdt/document.js';
 import type { LayoutContinuation } from '../../../../types/content.js';
@@ -241,17 +241,12 @@ export function createPassFinish(deps: PassFinishDeps) {
     const b = contentBlocks[idx];
     return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
   });
-  // Plates enlarged under the printers' resolution .
-  const lowPlates = plateLowResolutionWarnings(doc, (idx) => {
-    const b = contentBlocks[idx];
-    return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
-  });
   // Resources whose caption prints the label alone (#1151).
   const lonely = emptyCaptionWarnings(doc, (idx) => {
     const b = contentBlocks[idx];
     return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
   });
-  if (shrunk.length > 0 || belowPrint.length > 0 || lowPlates.length > 0 || lonely.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lowPlates, ...lonely]);
+  if (shrunk.length > 0 || belowPrint.length > 0 || lonely.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lonely]);
   if (textWrapNotes.length > 0 || columnsNotes.length > 0 || movedNotes.length > 0) textWrapWarningsByDoc.set(doc, [...textWrapNotes, ...columnsNotes, ...movedNotes]);
   // Composed pages (#855): frames whose content does not fit.
   if (composedNotes.length > 0) composedWarningsByDoc.set(doc, composedNotes);

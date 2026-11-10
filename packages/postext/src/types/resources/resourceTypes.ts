@@ -64,13 +64,13 @@ export type ResourceFloatSpan = 'column' | 'page' | 'side';
  *  clockwise, its top facing the right edge. */
 export type ResourceRotation = 'ccw' | 'cw';
 
-/** Placement of a resource on the page. Resolved per resource, falling back to
- *  its {@link ResourceType.defaultPlacement} and then the built-in default
- *  (`auto` / `column`). See {@link resolveResourcePlacement}. */
-/** Where a full-page plate is set (`ResourcePlacement.plate`):
+/** Where a full-page plate is set (`ResourcePlacement.plate`, #1461):
  *  in the content area, or over the whole page to the trim or the bleed. */
 export type ResourcePlateArea = 'content' | 'trim' | 'bleed';
 
+/** Placement of a resource on the page. Resolved per resource, falling back to
+ *  its {@link ResourceType.defaultPlacement} and then the built-in default
+ *  (`auto` / `column`). See {@link resolveResourcePlacement}. */
 export interface ResourcePlacement {
   position?: ResourceFloatPosition;
   span?: ResourceFloatSpan;
@@ -85,11 +85,15 @@ export interface ResourcePlacement {
   rotate?: ResourceRotation;
   /** Fraction of the column (or page) width the float — or the inline
    *  embed — takes, `0 < width < 1`: a narrow table centred in its column.
-   *  Or a length : `{ value: 95, unit: 'mm' }`, made the share
-   *  of the slot it gives on the chapter's pages (the column for a
-   *  resource set in the text, the columns a column float takes, the
-   *  content area for a page-span or turned one, the side column); as
-   *  wide as the slot or wider, the whole slot. Default: the whole width. */
+   *  Or a length in mm, cm, in or pt (#1461), `{ value: 95, unit: 'mm' }`:
+   *  the resource is set that wide in the slot the layout gives it where
+   *  it lands (the column it is set in, a styled section's or a box's
+   *  column included; the columns a column float takes; the content area
+   *  for a page-span float; the side column). As wide as the slot or
+   *  wider, it takes the whole slot. A turned picture is set at most that
+   *  wide before it is turned. A length in px, em or rem is not read.
+   *  A resource that writes a share takes it over its type's length.
+   *  Default: the whole width. */
   width?: number | Dimension;
   /** Where a resource narrower than its slot sits: a float or embed
    *  narrowed by `width`, and a picture (bitmap or SVG) narrower than its
@@ -133,23 +137,29 @@ export interface ResourcePlacement {
    *  the caption under them. A caption band narrower than a fifth of the
    *  slot goes back under the picture. */
   captionSide?: boolean | 'inside';
-  /** A full-page plate : the picture (bitmap, SVG, video) is
-   *  set alone on a page of its own, as large as the content area holds
-   *  with its caption and note under it — enlarged when it is smaller,
-   *  reduced when it is larger, its proportions kept — and centred unless
-   *  {@link align} says otherwise. The text runs on to the foot of the
-   *  page it is cited on and resumes on the page after the plate. A
-   *  bitmap enlarged under 300 ppi at the size it prints at is reported
-   *  (`plateLowResolution`). Its `position`, `span`, `width`, `shrink`,
-   *  `rotate`, `captionSide`, `wrap` and `citingPage` are not read; a
-   *  resource set in the text (`'here'`) or on a vertical
-   *  page is no plate. `true` is `'content'`; `'trim'` and `'bleed'` set
-   *  the picture over the whole page instead, to the trim or out to the
-   *  bleed: it is enlarged to cover it and cropped about its centre, the
-   *  caption and note stay at the foot of the content area on a band of
-   *  the page's paper colour, and the page prints no running heads or
-   *  folio. Without cut lines (`page.cutLines`) there is no bleed on the
-   *  page, and `'bleed'` reaches the trim. Default `false`. */
+  /** A full-page plate (#1461): the picture (a bitmap, an SVG, or a
+   *  video's poster) is set alone on a page of its own, as large as the
+   *  content area holds with its caption and note under it (enlarged when
+   *  it is smaller, reduced when it is larger, its proportions kept), and
+   *  centred unless {@link align} says otherwise. The text runs on to the
+   *  foot of the page it is cited on and resumes on the page after the
+   *  plate. The plate takes the first fresh page it can have whole: a
+   *  page where an opener, another float or a block that opened it
+   *  already stands is passed over, three at most, and the next one is
+   *  taken as it is. Its `position`, `span`, `width`, `shrink`, `rotate`,
+   *  `captionSide`, `wrap` and `citingPage` are not read; a resource set
+   *  in the text (`'here'`) or on a vertical page is no plate. `true` is
+   *  `'content'`; `'trim'` and `'bleed'` set the picture over the whole
+   *  page instead, to the trim or out to the bleed: it is enlarged to
+   *  cover it and cropped about its centre, the caption and note stay at
+   *  the foot of the content area on a band of the page's paper colour,
+   *  and the page takes the `'plate'` role (no running heads, folio or
+   *  design elements unless a design names the role). Without cut lines
+   *  (`page.cutLines`) there is no bleed on the page, and `'bleed'`
+   *  reaches the trim. A bitmap enlarged past its resolution is reported
+   *  by the print preflight (`lowImageResolution`) at the resolution it
+   *  prints at, its crop counted. `false` on a resource turns off a plate
+   *  its type sets. Default `false`. */
   plate?: boolean | ResourcePlateArea;
   /** Scale a floated picture (bitmap, SVG, a video's poster) down, keeping
    *  its proportions, to the room a slot has, instead of moving it on

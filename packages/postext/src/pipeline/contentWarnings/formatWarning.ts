@@ -359,9 +359,6 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'pictureBelowPrintSize':
       text = `The picture "${w.resourceId}" is set at ${Math.round(w.scale * 100)} % of its print size: its column is ${w.widthPx} px wide, the picture ${w.printWidthPx} px at its resolution, the text block ${w.pageWidthPx} px. A picture in the flow is never wider than its column, and the default page has two. Span the page (placement.span: 'page'), set the page in one column (layout.layoutType: 'single'), or give the picture a higher resolution if this size is the one you want`;
       break;
-    case 'plateLowResolution':
-      text = `The plate "${w.resourceId}" is enlarged ${Math.round(w.scale * 100)} % to fill the page and prints at ${w.ppi} ppi, under the 300 a printer asks for — use a larger original, or set it smaller (placement.plate off, a narrower placement.width)`;
-      break;
     case 'emptyCaption':
       text = `The resource "${w.resourceId}" has no caption, so its caption line prints "${w.label}" alone — write its caption, or leave it as a numbered label if that is meant`;
       break;

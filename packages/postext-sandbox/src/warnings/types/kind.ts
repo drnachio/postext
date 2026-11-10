@@ -137,7 +137,6 @@ export type WarningKind =
   | 'codeOverflow'
   | 'floatShrunk'
   | 'pictureBelowPrintSize'
-  | 'plateLowResolution'
   | 'emptyCaption'
   | 'resourceMoved'
   | 'unknownConfigKey'

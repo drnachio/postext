@@ -31,6 +31,7 @@ import { wrapWidthOf } from '../../defaults/layout.js';
 import { parseLengthText } from '../../defaults/text/tabStops.js';
 import { contourInsetSteps } from '../../contour/index.js';
 import { captionInsideShare } from '../resources/captionInside.js';
+import { isWidthLength, placementWidthOf } from './placementLength.js';
 
 /** A `wrap` value as a side of the flow: `'start'` is `'left'`, `'end'` is
  *  `'right'`; `'none'` and anything else are no wrap. */
@@ -45,6 +46,9 @@ export function wrapSideOf(value: unknown): 'left' | 'right' | undefined {
 export interface ResolvedWrap {
   side: 'left' | 'right';
   width: number;
+  /** A width given as a length (#1461): measured against the column the
+   *  item is set in, in place of `width`. */
+  length?: Dimension;
   gap?: Dimension;
   /** `wrap: 'contour'` (#883): the text runs round the picture's shape. */
   contour?: true;
@@ -68,9 +72,11 @@ export function resolveResourceWrap(
     ? (wrapSideOf(resource.placement?.align ?? type?.defaultPlacement?.align) ?? 'left')
     : wrapSideOf(wrap);
   if (!side) return undefined;
-  const width = wrapWidthOf(resource.placement?.width ?? type?.defaultPlacement?.width) ?? settings.defaultWidth;
+  const raw = placementWidthOf(resource.placement, type?.defaultPlacement);
+  const width = wrapWidthOf(raw) ?? settings.defaultWidth;
+  const length = isWidthLength(raw) ? raw : undefined;
   const gap = resource.placement?.wrapGap ?? type?.defaultPlacement?.wrapGap ?? settings.gap;
-  return { side, width, ...(gap ? { gap } : {}), ...(contour ? { contour: true as const } : {}) };
+  return { side, width, ...(length ? { length } : {}), ...(gap ? { gap } : {}), ...(contour ? { contour: true as const } : {}) };
 }
 
 /** The gap of a wrap in px: its own, else one body line (`floatGapPx`). */

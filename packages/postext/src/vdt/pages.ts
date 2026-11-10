@@ -60,8 +60,9 @@ export interface VDTPage {
    *  `page.backgroundColor` (#506). */
   background?: string;
   /** Present on the page of a full-page plate set to the trim or the
-   *  bleed (`placement.plate`): the picture covers the page,
-   *  which prints no running heads or folio. */
+   *  bleed (`placement.plate`, #1461): the picture covers the page, whose
+   *  role is `'plate'`: no running heads, folio or design elements are
+   *  drawn on it unless they name that role. */
   edgePlate?: 'trim' | 'bleed';
   /** Present on part-divider pages: the part number and title. Marks the
    *  page as `role: 'part'`. */

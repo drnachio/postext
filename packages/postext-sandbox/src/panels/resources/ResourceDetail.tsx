@@ -53,7 +53,7 @@ export function ResourceDetail({
   });
 
   const { currentPlacement, typePlacement, placementPosition, placementSpan, placementRotate, setPlacementKey, placementColumns, severalColumns, layoutWrap,
-    bodyLineHeight, placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, placementPlateArea, placementInline, placementRotated, isPicture, alignApplies, placementShrink,
+    bodyLineHeight, placementWrapChoice, placementWrap, placementWidth, placementWidthFallback, placementPlate, plateWritten, placementPlateArea, placementInline, placementRotated, isPicture, alignApplies, placementShrink,
     placementMinScale, placementCaptionMeasure, placementCitingPage, tableStyles, tableStyleId, setTableStyleId, placementAlign, floatSide, tableDirection,
     tableRtl, setTableDirection } = usePlacementFields({ resource, onChange, labels, type, touch });
 
@@ -217,14 +217,15 @@ export function ResourceDetail({
             isDefault={currentPlacement.position === undefined}
             onReset={() => setPlacementKey('position', undefined)}
           />
-          {/* A full-page plate : alone on a page of its own,
-              filling the content area. */}
+          {/* A full-page plate (#1461): alone on a page of its own,
+              filling the content area. Turned off over a type that sets
+              one, the resource writes `false`. */}
           {!placementInline && isPicture && (
             <ToggleSwitch
               label={labels.resourcePlacementPlate}
               tooltip={labels.resourcePlacementPlateTooltip}
               checked={placementPlate}
-              onChange={(v) => setPlacementKey('plate', v || undefined)}
+              onChange={(v) => setPlacementKey('plate', plateWritten(v))}
               isDefault={currentPlacement.plate === undefined}
               onReset={() => setPlacementKey('plate', undefined)}
             />
@@ -241,8 +242,8 @@ export function ResourceDetail({
                 { value: 'bleed', label: labels.resourcePlateAreaBleed },
               ]}
               onChange={(v) => setPlacementKey('plate', v === 'trim' || v === 'bleed' ? v : true)}
-              isDefault={currentPlacement.plate === undefined || currentPlacement.plate === true}
-              onReset={() => setPlacementKey('plate', true)}
+              isDefault={currentPlacement.plate === undefined || (currentPlacement.plate === true && plateWritten(true) === true)}
+              onReset={() => setPlacementKey('plate', plateWritten(true))}
             />
           )}
           {!placementInline && !placementPlate && (

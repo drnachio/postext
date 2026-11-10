@@ -98,7 +98,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
   // `align` side, the caption and note the rest after the gutter. A band
   // too narrow to read goes back under the picture.
   const inside = (() => {
-    const share = !rotate && !input.captionAside ? captionInsideShare(resource, resourceType) : undefined;
+    const share = !rotate && !input.captionAside ? captionInsideShare(resource, resourceType, columnWidth, resolved.page.dpi) : undefined;
     if (share === undefined) return undefined;
     const gapPx = Math.max(0, dimensionToPx(resolved.layout.gutterWidth, dpi, bodyStyle.fontSizePx));
     const bodyMax = columnWidth * share;
@@ -289,7 +289,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       bodyHeight *= k;
     }
   }
-  // A full-page plate : the picture as large as the room holds
+  // A full-page plate (#1461): the picture as large as the room holds
   // with its caption and note under it, its proportions kept — enlarged
   // when smaller, reduced when larger.
   let plateScale: number | undefined;

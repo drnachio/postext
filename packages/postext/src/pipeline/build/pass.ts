@@ -239,7 +239,7 @@ function placeDocumentPass(
 
   const {
     calloutFloatResults, calloutBandPages, enqueueCalloutFloat, acrossWidth, floatGapPx, minTextPx,
-    offsetResourceBlockToAbsolute, layoutFloat, rotationFor, uprightOn, tableRowCount, tableOverflow,
+    offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, uprightOn, tableRowCount, tableOverflow,
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
     floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf
@@ -256,7 +256,7 @@ function placeDocumentPass(
     shrinkToRoom
   } = createFloatBands({
     captionUnder, baselineGrid, doc, shiftStripLines, calloutFloatResults, calloutBandPages,
-    floatGapPx, offsetResourceBlockToAbsolute, layoutFloat, rotationFor, tableRowCount,
+    floatGapPx, offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, dpi, tableRowCount,
     tableOverflow, sliceOf, tableMetrics, measureFloat, uncappedBottoms, state, late
   });
 
@@ -278,7 +278,7 @@ function placeDocumentPass(
   } = createFloatFlush({
     citingPageFloats, resolved: setup.resolved, doc, pageWidthPx, pageHeightPx, contentBlocks, resourceById,
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
-    enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
+    dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
     positionsFor, cursor, forcedBreakPages, state, late
   });

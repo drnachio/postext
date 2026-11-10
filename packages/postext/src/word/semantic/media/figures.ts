@@ -7,6 +7,8 @@ import { strFromU8, strToU8 } from 'fflate';
 import type { ContentBlock, InlineSpan } from '../../../parse/types.js';
 import type { Resource } from '../../../types.js';
 import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
+import { floatWidthIn } from '../../../pipeline/floats/placementLength.js';
+import { thinParagraph } from '../design/bands.js';
 import { svgWithWordFonts } from '../../formatted/pictures.js';
 import { svgTextAsPaths } from '../../svg/text.js';
 import { escapeAttr } from '../../xml.js';
@@ -30,12 +32,33 @@ const BITMAP_EXT: Record<string, 'png' | 'jpeg' | 'gif'> = { png: 'png', jpeg: '
 /** The width a resource's picture may take, px, and where it stands: its
  *  slot (the column, or the whole text area when it spans the page) times
  *  its placement's width (`placement.width`, else its type's default: an
- *  ornament a fifth of the column wide), as the engine sizes it (#1444). */
-export function pictureSlot(ctx: WriterContext, res: Resource): { px: number; align: 'left' | 'center' | 'right'; fraction: number; side: boolean } {
+ *  ornament a fifth of the column wide), as the engine sizes it (#1444). A
+ *  width given as a length (#1461) is that many px of the slot at most;
+ *  `fraction` is then its share of the slot. A full-page plate (`plate`)
+ *  takes the whole text area. */
+export function pictureSlot(ctx: WriterContext, res: Resource): { px: number; align: 'left' | 'center' | 'right'; fraction: number; side: boolean; plate: boolean } {
   const place = resolveResourcePlacement(res, ctx.resourceTypes.find((t) => t.id === res.typeId));
   const side = place.span === 'side' && ctx.resolved.layout.layoutType === 'oneAndHalf';
   const slot = place.span === 'page' ? ctx.textAreaPx : side ? sideColumnPx(ctx) : ctx.columnPx;
-  return { px: Math.max(1, slot * place.widthFraction), align: place.align, fraction: place.widthFraction, side };
+  const width = Math.max(1, place.rotate ? slot : floatWidthIn(place, slot, ctx.units.dpi));
+  return { px: width, align: place.align, fraction: Math.min(1, width / slot), side, plate: place.plate };
+}
+
+/** The box a full-page plate (#1461) fills in the semantic .docx: the text
+ *  area's width, and its height less room for a caption and note (four
+ *  body lines), as the engine sets a plate in the content area. */
+function plateBox(ctx: WriterContext): { w: number; h: number } {
+  const r = ctx.resolved;
+  const height = px(ctx.units, r.page.height) - px(ctx.units, r.page.margins.top) - px(ctx.units, r.page.margins.bottom);
+  const line = (gapTwips(ctx) * ctx.units.dpi) / 1440;
+  return { w: ctx.textAreaPx, h: Math.max(1, height - 4 * line) };
+}
+
+/** A picture `w` × `h` (any unit) enlarged or reduced to fill `box`, its
+ *  proportions kept. */
+function fillBox(w: number, h: number, box: { w: number; h: number }): { w: number; h: number } {
+  const k = w > 0 && h > 0 ? Math.min(box.w / w, box.h / h) : 1;
+  return { w: Math.max(1, w * k), h: Math.max(1, h * k) };
 }
 
 /** The width of a column-and-a-half layout's side column, px: a picture
@@ -83,6 +106,8 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
     const res = ctx.resources.get(id);
     if (!res) continue;
     const slot = preparedPx(ctx, res);
+    // A full-page plate (#1461) fills the text area, enlarged if need be.
+    const plate = pictureSlot(ctx, res).plate ? plateBox(ctx) : undefined;
     if (res.kind === 'bitmap' && res.bitmap) {
       const ext = BITMAP_EXT[res.bitmap.format.toLowerCase()];
       const bytes = ctx.resourceBytes?.(res.bitmap.fileId);
@@ -90,7 +115,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
         ctx.warn('pictureMissing', `Picture "${id}" ${bytes ? `is ${res.bitmap.format}, which Word cannot show` : 'has no file'}: left out.`);
         continue;
       }
-      const size = displaySize(ctx, res.bitmap.width, res.bitmap.height, slot, res.bitmap.resolution);
+      const size = plate ? fillBox(res.bitmap.width, res.bitmap.height, plate) : displaySize(ctx, res.bitmap.width, res.bitmap.height, slot, res.bitmap.resolution);
       ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
     } else if (res.kind === 'video' && res.video?.poster) {
       // A video prints as its poster frame.
@@ -98,12 +123,12 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       const ext = BITMAP_EXT[poster.format.toLowerCase()];
       const bytes = ctx.resourceBytes?.(poster.fileId);
       if (!bytes || !ext) continue;
-      const size = columnSize(slot, poster.width, poster.height);
+      const size = plate ? fillBox(poster.width, poster.height, plate) : columnSize(slot, poster.width, poster.height);
       ctx.media.set(id, { rel: ctx.pkg.addMedia(bytes, ext), widthPx: size.w, heightPx: size.h });
     } else if (res.kind === 'video') {
       // A video with no poster: the dark frame, play mark and QR code the
       // print sets in its place.
-      const size = columnSize(slot, res.video?.width ?? 16, res.video?.height ?? 9);
+      const size = plate ? fillBox(res.video?.width ?? 16, res.video?.height ?? 9, plate) : columnSize(slot, res.video?.width ?? 16, res.video?.height ?? 9);
       const svg = videoPosterSvg(res, ctx.resolved, size.w, size.h);
       const scale = 300 / ctx.units.dpi;
       const png = ctx.rasterizeSvg ? await ctx.rasterizeSvg(svg, Math.round(size.w * scale), Math.round(size.h * scale)) : undefined;
@@ -117,7 +142,7 @@ export async function prepareMedia(ctx: WriterContext, ids: Iterable<string>): P
       }
       const w = res.svg.width ?? 800;
       const h = res.svg.height ?? (res.svg.width ? res.svg.width * 0.75 : 600);
-      const size = columnSize(slot, w, h);
+      const size = plate ? fillBox(w, h, plate) : columnSize(slot, w, h);
       const scale = 300 / ctx.units.dpi;
       const png = ctx.rasterizeSvg ? await ctx.rasterizeSvg(strFromU8(bytes), Math.round(size.w * scale), Math.round(size.h * scale)) : undefined;
       if (!png) {
@@ -205,7 +230,8 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
     // As wide as its share of where it stands (a side figure keeps the
     // side column's width); it keeps its labels and caption with it.
     const room = (widthTwips * ctx.units.dpi) / 1440;
-    const max = slot.side ? Math.min(room, slot.px) : room * slot.fraction;
+    // A plate (#1461) takes the text area's width whatever block shows it.
+    const max = slot.plate ? ctx.textAreaPx : slot.side ? Math.min(room, slot.px) : room * slot.fraction;
     // The room the engine keeps above a figure (a body line), so the
     // picture does not touch the line before it; a caption set above
     // takes it instead. A small ornament (a fleuron closing a chapter)
@@ -234,7 +260,11 @@ function resourceFigure(ctx: WriterContext, id: string, b: ContentBlock | undefi
   }
   // The note is set under the figure even when the caption is above it.
   const note = captionParagraph(ctx, b, res, 'note', '', above ? { keepNext: false } : {});
-  return blockSdt(ctx.nextSdtId(), `ptx:figure:${id}`, undefined, content + note || '<w:p/>') + figureGap(ctx, !!b);
+  const figure = blockSdt(ctx.nextSdtId(), `ptx:figure:${id}`, undefined, content + note || '<w:p/>');
+  // A full-page plate (#1461) stands on a page of its own: a page break
+  // before it and after it, as empty paragraphs the importer passes over.
+  if (pictureSlot(ctx, res).plate) return thinParagraph({ pageBreakBefore: true, keepNext: true }) + figure + thinParagraph({ pageBreakBefore: true });
+  return figure + figureGap(ctx, !!b);
 }
 
 /** The room the engine keeps between a figure and the text after it (the

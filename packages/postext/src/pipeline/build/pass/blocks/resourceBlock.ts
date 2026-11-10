@@ -11,6 +11,7 @@ import type { ContentBlock } from '../../../../parse/index.js';
 import { type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock, measureContentBlock } from '../../../blocks/measureContentBlock.js';
 import type { InlineAside } from '../../passTypes.js';
 import { resolveResourceWrap, wrapGapPx, minTextWidthPx, columnCursorY } from '../../../floats/textWrap.js';
+import { widthShareIn } from '../../../floats/placementLength.js';
 
 /** What createResourceBlock takes from around the loop. */
 export interface ResourceBlockDeps {
@@ -90,11 +91,14 @@ export function createResourceBlock(deps: ResourceBlockDeps) {
           sourceStart: rawBlock.sourceStart + bodyOffset, sourceEnd: rawBlock.sourceEnd + bodyOffset, pageIndex: cursor.pageIndex,
         });
       }
+      /** The share of a column `w` px wide the wrapped picture takes: a
+       *  width given as a length (#1461) measured against it. */
+      const wrapShare = (w: number): number => (wrapSpec?.length ? widthShareIn(wrapSpec.length, w, dpi) : wrapSpec?.width ?? 1);
       let wrapGap = 0;
       let wraps = false;
       if (wrapSpec) {
         wrapGap = wrapGapPx(wrapSpec.gap, dpi, bodyStyle.fontSizePx, floatGapPx);
-        const textWidth = col.bbox.width * (1 - wrapSpec.width) - wrapGap;
+        const textWidth = col.bbox.width * (1 - wrapShare(col.bbox.width)) - wrapGap;
         const linesBeside = Math.ceil((groupHeight + wrapGap - 0.01) / bodyStyle.lineHeightPx);
         const reason = textWidth + 0.01 < minTextWidthPx(wrapSettings.minTextWidth, col.bbox.width, dpi, bodyStyle.fontSizePx)
           ? 'tooNarrow' as const
@@ -205,9 +209,9 @@ export function createResourceBlock(deps: ResourceBlockDeps) {
           rCol.availableHeight = Math.max(0, Math.min(rCol.availableHeight, rCol.bbox.height - bottomRel));
           state.pendingSpacing = 0;
           state.inlineGapOwed = null;
-          const exWidth = wrapExclusionWidth(rCol.bbox.width, rCol.bbox.width * wrapSpec.width, wrapGap);
+          const exWidth = wrapExclusionWidth(rCol.bbox.width, rCol.bbox.width * wrapShare(rCol.bbox.width), wrapGap);
           // A contour wrap (#883): the picture's shape where it was set.
-          const slotWidth = rCol.bbox.width * wrapSpec.width;
+          const slotWidth = rCol.bbox.width * wrapShare(rCol.bbox.width);
           const slot = { x: wrapSpec.side === 'left' ? rCol.bbox.x : rCol.bbox.x + rCol.bbox.width - slotWidth, y: top, width: slotWidth, height: groupHeight };
           const contour = wrapSpec.contour
             ? wrapContourOf(kind.resource!, resourceBlock, slot, wrapGap, doc.pages[cursor.pageIndex]!, { x: blk.bbox.x, y: blk.bbox.y }, { sourceStart: rawBlock.sourceStart + bodyOffset, sourceEnd: rawBlock.sourceEnd + bodyOffset })
@@ -222,7 +226,7 @@ export function createResourceBlock(deps: ResourceBlockDeps) {
               width: exWidth,
               height: rCol.bbox.y + bottomRel - top,
               side: wrapSpec.side,
-              gap: exWidth - rCol.bbox.width * wrapSpec.width,
+              gap: exWidth - rCol.bbox.width * wrapShare(rCol.bbox.width),
               ownerId: blk.id,
               ...(contour ? { contour } : {}),
             },
