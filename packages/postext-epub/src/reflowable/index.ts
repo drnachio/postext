@@ -25,7 +25,8 @@ import { bookStylesheet, stylesheetOverrides, withPalette } from './css.js';
 import { xmlAttr, xmlText } from './inline.js';
 import type { FileModel, HeadingEntry } from './model.js';
 import { docLanguage, walkBook } from './walk.js';
-import { relativeHref, writeContentDocument } from './xhtml.js';
+import { writeContentDocument } from './xhtml.js';
+import { relativeHref } from './href.js';
 import { isRtlLanguage, navStrings } from '../package/strings.js';
 import { isJapaneseLanguage } from 'postext';
 
@@ -135,13 +136,16 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   // (running heads and opener designs are print furniture here).
   onProgress?.({ phase: 'resources', done: 0, total: 2 });
   const missing: EpubWarning[] = [];
-  const images = await imageAssets(docs, options.resourceBytes, (w) => missing.push(w), options);
+  const images = await imageAssets(docs, options.resourceBytes, (w) => missing.push(w), options, book.tints);
   const videos = await videoAssets(docs, options.resourceBytes);
   for (const w of missing) {
     const fileId = 'fileId' in w ? w.fileId : undefined;
-    if (fileId === undefined || book.images.has(fileId)) warn(w);
+    if (fileId === undefined || book.images.has(fileId) || book.tints?.has(fileId)) warn(w);
   }
-  const usedImages = new Set([...book.images].map((id) => images.hrefOf(id)).filter((h): h is string => h !== undefined));
+  const usedImages = new Set([
+    ...[...book.images].map((id) => images.hrefOf(id)),
+    ...[...(book.tints ?? [])].flatMap(([id, hexes]) => [...hexes].map((hex) => images.hrefOf(id, hex))),
+  ].filter((h): h is string => h !== undefined));
   const fonts = fontAssets(options.fonts ?? []);
   onProgress?.({ phase: 'resources', done: 1, total: 2 });
   signal?.throwIfAborted();
@@ -223,7 +227,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   const ctx = {
     book,
     bookTitle: metadata.title,
-    imageHref: (fileId: string) => images.hrefOf(fileId),
+    imageHref: (fileId: string, tint?: string) => images.hrefOf(fileId, tint),
     videoHref: (fileId: string) => videos.hrefOf(fileId),
     stylesheet: STYLESHEET_HREF,
     backLabel,

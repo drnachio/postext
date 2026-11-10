@@ -122,6 +122,95 @@ export function createBoxRules(deps: BoxRulesDeps) {
       'text-indent: 0',
     ]));
     out.push(rule(under('li > .pt-lbl:first-child'), [color(s.lists.color)]));
+    iconRules(s, sel, under, bPx, tPx);
+  }
+
+  /** The rules of a box style's icon (`.pt-callout-icon`, first in the
+   *  box), placed as the composed page places it: centred over a side
+   *  stripe, in a column of its own before the content (the box padded by
+   *  the column), or as a badge hanging on a top corner (`position:
+   *  'corner'`). A float whose margin box is zero wide, so the text keeps
+   *  its measure; the box a formatting context of its own, so it holds an
+   *  icon taller than its text. */
+  function iconRules(s: ResolvedConfig['calloutStyles'][number], sel: string, under: (rest: string) => string, bPx: number, tPx: number): void {
+    const ic = s.icon;
+    const on = ic.kind === 'glyph' ? ic.glyph.length > 0 : ic.kind === 'resource' ? ic.resourceId.length > 0 : ic.kind === 'shape';
+    if (!on) return;
+    const size = px(ic.size, bPx);
+    const w = ic.width ? Math.max(size, px(ic.width, bPx)) : size;
+    // Sides in the box's flow: a stripe or corner on the `'right'` /
+    // `'end'` / `'outer'` side is at the end.
+    const atEnd = (side: string) => side === 'right' || side === 'end' || side === 'outer';
+    const physical = (end: boolean) => ((end !== rtl) ? 'right' : 'left');
+    const stripeW = s.stripe.enabled ? px(s.stripe.width) : 0;
+    const sideStripe = stripeW > 0 && s.stripe.side !== 'top';
+    const borderW = (side: 'top' | 'left' | 'right') => {
+      const b = s.border.sides?.[side] ?? s.border;
+      return b.enabled ? px(b.width) : 0;
+    };
+    // The padding and the icon scale with the text (ems); the stripe and
+    // the border are written in CSS px, so the icon is moved past them by
+    // a relative offset in px (`shift`, `rise`) that leaves the layout as
+    // it is.
+    let end: boolean;
+    let lead: number;
+    let top = 0;
+    let shift = 0;
+    let rise = 0;
+    const decls: (string | false | undefined)[] = [];
+    if (ic.position === 'corner') {
+      // Centred on the corner's border, flush with the box's top edge.
+      end = atEnd(ic.cornerSide);
+      const flowSide = end ? 'right' : 'left';
+      const stripeHere = sideStripe && atEnd(s.stripe.side) === end ? stripeW : 0;
+      lead = -(px(s.padding[flowSide], bPx) + w / 2);
+      shift = stripeHere + borderW(physical(end));
+      top = -px(s.padding.top, bPx);
+      rise = (s.stripe.enabled && s.stripe.side === 'top' ? stripeW : 0) + borderW('top');
+    } else if (sideStripe) {
+      // Centred over the stripe.
+      end = atEnd(s.stripe.side);
+      lead = -(px(s.padding[end ? 'right' : 'left'], bPx) + w / 2);
+      shift = stripeW / 2;
+    } else {
+      // A column of its own: the box's padding grows by it.
+      end = false;
+      const gap = px(s.titleStyle.gap, tPx);
+      lead = -(w + gap);
+      decls.push(`padding-${physical(false)}: ${round((px(s.padding.left, bPx) + w + gap) / bPx)}em`);
+    }
+    out.push(rule(sel, [...decls, 'display: flow-root']));
+    // A glyph's lengths are in ems of its own size.
+    const glyph = ic.kind === 'glyph';
+    const base = glyph ? size : bPx;
+    const e = (v: number) => `${round(v / base)}em`;
+    const side = physical(end);
+    const other = physical(!end);
+    out.push(rule(under('> .pt-callout-icon'), [
+      'display: block',
+      `float: ${side}`,
+      glyph && `font-size: ${round(size / bPx)}em`,
+      `width: ${e(w)}`,
+      `height: ${e(size)}`,
+      `margin-${side}: ${e(lead)}`,
+      `margin-${other}: ${e(-w - lead)}`,
+      top !== 0 && `margin-top: ${e(top)}`,
+      (shift > 0 || rise > 0) && 'position: relative',
+      shift > 0 && `${side}: ${round(-(shift * 96) / dpi)}px`,
+      rise > 0 && `top: ${round(-(rise * 96) / dpi)}px`,
+      'text-indent: 0',
+      ...(glyph
+        ? [fam(ic.fontFamily), `font-weight: ${ic.fontWeight}`, 'font-style: normal', 'line-height: 1', 'text-align: center', color(ic.color)]
+        : []),
+      ...(ic.kind === 'shape'
+        ? ic.shape === 'dot'
+          ? ['border-radius: 50%', color(ic.color, 'background-color')]
+          : ['border-radius: 50%', 'box-sizing: border-box', `border: ${round(((ic.strokeWidth ? px(ic.strokeWidth, bPx) : size / 8) * 96) / dpi)}px solid ${ic.color.hex}`]
+        : []),
+    ]));
+    if (ic.kind === 'resource') {
+      out.push(rule(under('> .pt-callout-icon > img'), ['display: block', 'width: 100%', 'height: 100%', 'object-fit: contain']));
+    }
   }
 
   // --- paragraph styles ----------------------------------------------------
