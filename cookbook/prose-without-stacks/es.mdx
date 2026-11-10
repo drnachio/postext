@@ -1,0 +1,80 @@
+---
+title: "Prosa justificada sin repeticiones en los bordes de línea"
+summary: "Una página de Clarín compuesta dos veces en una medida estrecha: las primeras pruebas señalan cada repetición; las segundas la pesan en el corte de líneas."
+plain: "Cuando dos líneas seguidas acaban o empiezan con la misma palabra, la vista puede saltar a la línea equivocada. El libro se compone dos veces: una enseña dónde pasa y otra corta las líneas para que no pase."
+description: "bodyText.stacks en dos pruebas de bolsillo: 'warn' lista y marca cada repetición; 'avoid' suma stackPenalty a los deméritos de Knuth–Plass y las evita."
+question: "¿Cómo evito que dos líneas seguidas acaben o empiecen con la misma palabra?"
+aliases: ["repeticiones", "repetición de palabras", "repetición de sílabas", "palabras repetidas a final de línea", "vicios de composición", "stacks", "stackPenalty", "stackMinCharacters", "corrección de pruebas", "pruebas de imprenta", "Clarín", "Dickens"]
+pageNotes: { "2": "Primeras pruebas, página 2: bandas rojo pálido bajo con y como al principio de dos líneas y bajo lo y los, al principio de otras dos.", "3": "Primeras pruebas, página 3: los sobre los al final de dos líneas y levantar sobre vacilar, que acaban en ar.", "4": "La última página de las primeras pruebas: el colofón y una papeleta titulada PRIMERAS PRUEBAS con cinco repeticiones por página.", "8": "La papeleta de las segundas pruebas: cero repeticiones." }
+---
+
+## Lo que vas a componer
+
+Dos pruebas de una página de bolsillo de 115 × 180 mm con el comienzo de *¡Adiós, Cordera!*, de Clarín, justificado en Spectral sobre una medida de 83 mm. Una medida estrecha deja al cortador de líneas pocas salidas, y en cinco sitios dos líneas seguidas acaban o empiezan igual: *con* sobre *como*, *lo* sobre *los*, *levantar* sobre *vacilar*. Las primeras pruebas se componen con `stacks: 'warn'`: no cambian ningún corte, avisan de cada repetición, marcan las dos palabras con una banda rojo pálido y las listan en una papeleta tras el colofón. Las segundas se componen con `'avoid'`, y las cinco desaparecen. La edición inglesa compone igual el comienzo de *A Christmas Carol*.
+
+## Elaboración
+
+### 1 · Primero avisar, después pesar
+
+<Excerpt region="answer" />
+
+Hay repetición cuando dos líneas seguidas acaban en la misma palabra o en los mismos últimos caracteres, o empiezan igual. `stackMinCharacters` fija cuántos caracteres hacen falta: tres por omisión, con los espacios, sin contar tildes ni mayúsculas, de modo que *Los* sobre *los* cuenta. `'warn'` solo avisa, y así ve quien compone dónde se repite un texto. `'avoid'` suma `stackPenalty` a los deméritos de cada corte que produciría una repetición, y el cortador de Knuth–Plass busca otra forma de partir el párrafo. Necesita `optimalLineBreaking`: el cortador voraz no tiene deméritos a los que sumar nada.
+
+Los manuales de composición en español cuentan la repetición entre los vicios de composición, junto a los ríos y las escaleras de guiones. Al volver al margen izquierdo, la vista puede engancharse a la palabra repetida en la línea equivocada y leer dos veces una línea o saltarse otra; en el margen derecho, la repetición suena a eco. La norma española alcanza también a la sílaba repetida, no solo a la palabra, y por eso la edición española fija `stackMinCharacters` en 2.
+
+La penalización por omisión, 3000, es lo que cuestan dos guiones seguidos, y una palabra repetida de una sola sílaba cuesta el doble. En esta medida, 3000 dejaba dos repeticiones en cada edición, porque la alternativa era una línea más abierta de lo que el cortador acepta. Con 10000 acepta esas líneas. `maxWordSpacing` se queda en su valor por omisión, 2: con un límite más estrecho el cortador no tenía otro corte que elegir y `'avoid'` no cambiaba nada.
+
+### 2 · Marcar las repeticiones en el texto
+
+<Excerpt region="marks" />
+
+Cada aviso da la posición en el texto fuente de su primera línea, así que el script busca esa línea y la siguiente en el documento compuesto, toma el borde repetido de cada una y envuelve la palabra entera en `:mark[…]`. Una marca pinta una banda bajo el texto normal y no toca los cortes. Solo se marcan palabras enteras: una marca sobre media palabra cambia cómo se divide esa palabra, y entonces las líneas ya no se cortan donde se encontró el aviso.
+
+<PageShot page={2} crop="0,0.36,1,0.3" caption="Primeras pruebas, página 2: con sobre como y lo sobre los, al principio de línea." />
+
+### 3 · Dos pruebas de un mismo texto
+
+<Excerpt region="proofs" />
+
+Cada prueba se compone dos veces. La primera composición encuentra las repeticiones. La segunda compone el mismo texto con las marcas y una papeleta añadida tras el colofón, de modo que la papeleta cae en la última página. El pen deja fuera de las páginas publicadas la primera composición de cada prueba, el texto sin marcar: `capture.doc` lista las dos composiciones marcadas, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.36,1,0.3" caption="Segundas pruebas, página 2: los mismos párrafos cortados de otra manera, sin ninguna repetición." />
+
+En la edición inglesa, con tres caracteres, queda una: *even* sobre *event*, que comparten sus tres primeras letras, porque cualquier otro corte de ese párrafo costaba más.
+
+### 4 · La apertura sobre el texto
+
+<Excerpt region="opener" />
+
+El atributo `art` del título nombra la pintura, así que un solo estilo sirve a las dos ediciones. `minHeight` reserva dieciséis líneas y el texto empieza en la decimoséptima, sobre la misma retícula que las páginas siguientes.
+
+### 5 · Titulillos y folio caído
+
+<Excerpt region="heads" />
+
+El autor va en la página par y el título en la impar, cada uno junto a su folio. En la apertura no hay titulillos y el folio baja al pie.
+
+## Variantes
+
+### Contar solo palabras largas
+
+Con cinco caracteres, palabras cortas como *lo* o *los* dejan de contar como repetición, y el cortador mantiene los cortes más apretados alrededor de ellas.
+
+```diff
+-  stackMinCharacters: t({ en: 3, es: 2 }),
++  stackMinCharacters: 5,
+```
+
+### Componer con la penalización por omisión
+
+La penalización por omisión aprieta más el espaciado y acepta dos repeticiones por edición donde evitarlas abriría más una línea.
+
+```diff
+-  stackPenalty: 10000,
++  stackPenalty: 3000,
+```
+
+## Errores frecuentes
+
+- Las repeticiones se buscan en las líneas ya cortadas. Si cambias el formato, el cuerpo o el texto, las primeras pruebas encuentran otras, así que lee los avisos de cada composición y no copies posiciones de una anterior.
+- Las repeticiones se cuentan dentro de un párrafo y solo en escrituras que separan las palabras con espacios: dos párrafos que empiezan con *Rosa* no hacen repetición, y un texto en chino o en japonés nunca avisa de ninguna.
