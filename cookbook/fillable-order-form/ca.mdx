@@ -1,0 +1,66 @@
+---
+title: "Un full de comanda imprès que també és un PDF emplenable"
+summary: "Una llista de llavors amb les caselles de quantitat com a camps de PDF: el total de cada línia, els subtotals i l'import a pagar se sumen sols al lector."
+description: "Una llista de llavors tradicionals en Postext amb xips que són camps AcroForm: caselles numèriques, de marcar, una llista d'opcions i totals calculats."
+plain: "Un catàleg de llavors de quatre pàgines amb full de comanda. Imprès, té caselles per escriure; obert en un lector de PDF, hi escrius el nombre de sobres i els totals se sumen sols."
+question: "Com faig un formulari PDF que el lector pugui emplenar i que en sumi els totals?"
+aliases: ["PDF emplenable", "formulari PDF", "AcroForm", "camps de formulari", "full de comanda", "llista de preus", "camps calculats", "AFSimple_Calculate", "casella de verificació", "llista desplegable", "catàleg de llavors", "venda per correu"]
+pageNotes: { "1": "La coberta: una pintura d'hortalisses tradicionals sobre una taula de fusta ocupa la meitat superior de la pàgina (tomates acostellades, una síndria Moon and Stars, una carabassa blava, pebrots, remolatxes, blat de moro de colors i dues bosses de paper amb mongetes pintades). A sota, l'avanttítol verd, el títol Seed List and Order Form en Caslon gran amb una entradeta en cursiva al costat, i una introducció a dues columnes.", "2": "Pàgina 2: The 2027 List. Un paràgraf breu i la llista de preus en una taula amb la fila de capçalera verd fosc (Code, Variety, Seeds, Price, Qty, Total). Cada grup comença amb una fila verd pàl·lid; cada varietat té una casella blanca amb vora grisa sota Qty i una casella color kraft sota Total, i cada grup acaba amb una fila de subtotal amb la casella de vora verda.", "3": "Pàgina 3: la llista continua amb l'última mongeta, Squash and melons i Greens and roots, cada grup amb el seu subtotal. Sota el subtítol What you owe, una taula de cinc files: les llavors, el cercle de guardians amb una casella de marcar, l'enviament de $ 4.50 imprès en un xip kraft, una casella blanca per a un donatiu i Total to pay amb una casella verda massissa.", "4": "Pàgina 4: Your Details. Nom, adreça, població i estat, codi postal i telèfon, i correu, cadascun amb una línia per escriure; How you pay, amb una casella d'opcions a Check, una línia de data i dues caselles de marcar; les adreces postal i de correu; dues columnes de notes i un colofó d'una línia." }
+---
+
+## Què compondràs
+
+*Long Furrow Heritage Seeds* és la llista de llavors de la primavera del 2027, quatre pàgines de 210 × 270 mm d'una casa de llavors inventada que ven vint-i-cinc varietats reals de pol·linització oberta. Una pintura de la collita ocupa la meitat superior de la coberta. La llista de preus és una sola taula repartida entre les pàgines 2 i 3, amb una casella de quantitat i el total de la línia a cada fila i un subtotal al final de cada grup. Les dades del client i el pagament van a la pàgina 4. Impresa, és un full de comanda corrent que s'emplena amb bolígraf. Cada casella és també un xip amb l'atribut `field`, de manera que el PDF que escriu `renderToPdf` és un AcroForm: escrius el nombre de sobres al lector de PDF i els totals es calculen sols, en dòlars en anglès i en euros en castellà.
+
+## Elaboració
+
+### 1 · Un estil de xip per a cada mena de casella
+
+<Excerpt region="chips" />
+
+L'estil dona al camp l'aspecte i l'amplada mínima, i el PDF posa el giny del camp exactament sobre la caixa que pinta el xip. Les caselles que emplena el lector són blanques amb vora grisa; les que calcula el formulari són de color kraft i sense vora, perquè es vegi quines s'escriuen a mà. Les línies de l'adreça són xips amb només un filet inferior, de 145,5 mm per al nom i de 64 o 59,5 mm per a les mitges línies, i així els extrems coincideixen amb els tabuladors de l'estil de paràgraf `field`. La casella de marcar conserva l'amplada mínima de 3,9 mm sense farciment, i al PDF el camp és una casella de verificació.
+
+### 2 · El TSV d'un full de càlcul, amb les caselles afegides pel guió
+
+<Excerpt region="tables" />
+
+Les varietats arriben com un full: un codi, el nom amb la nota, les llavors del sobre i el preu. `priceList()` afegeix a cada fila els dos xips de camp i, al final de cada grup, una fila de subtotal. La cel·la del preu imprimeix `formatFieldNumber(price, 'currency', style)`, la mateixa funció que dona format als totals, de manera que el preu imprès i el total calculat fan servir els mateixos separadors. La fila que obre cada grup és una sola cel·la que travessa les sis columnes, i quan la taula es parteix mai no queda sola al peu d'una pàgina. La taula de la pàgina 3 pren les cinc files del Markdown de `content.summary.en.md`, amb els xips escrits a les cel·les.
+
+### 3 · La coberta: primer la pintura, després el títol
+
+<Excerpt region="cover" />
+
+L'element d'imatge s'ancora a la pàgina, a 210 × 134 mm, i sang per tres costats. L'avanttítol queda a 120 mm de l'inici del contenidor, i el títol i l'entradeta en pengen. L'alçada mínima de l'estil, 164 mm, deixa la introducció a dues columnes per sota del títol, sigui quina sigui la seva llargada.
+
+### 4 · Capçaleres que no toquen la coberta
+
+<Excerpt region="running-heads" />
+
+La pàgina parella porta el nom de la casa de llavors i la senar la secció, cadascun al costat del foli. L'estil de títol de la coberta té la capçalera i el peu buits, així que la pàgina 1 no porta capçalera.
+
+### 5 · Una paleta amb un color per als imports calculats
+
+<Excerpt region="palette" />
+
+El verd fulla marca el que és de la casa: la fila de capçalera, els avanttítols, les vores dels subtotals i la casella massissa del total a pagar. El kraft es reserva per a les caselles que calcula el PDF, de manera que en paper es llegeixen com les caselles que deixes en blanc.
+
+## Variants
+
+### Demana les despeses d'enviament com a camp
+
+Converteix l'enviament imprès en un camp que escriu el lector i suma'l al total en lloc de l'import fix.
+
+```diff
+-Postage and packing, any size of order	:chip[$ 4.50]{style="amount"}
++Postage and packing, any size of order	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 4.50, order.gift)"}
++**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## Errors freqüents
+
+Les pàgines capturades mostren les caselles buides, perquè les paraules d'un camp en són el valor inicial i aquí tots comencen en blanc. L'enviament és text imprès en un xip sense `field`, i el total el suma com el nombre `4.50` dins el càlcul, així que el lector no el pot canviar.
+
+Els totals són scripts (`AFSimple_Calculate` i expressions breus) que executen Acrobat, Foxit, Chrome i Firefox. La Previsualització del macOS mostra els camps i desa el que hi escrius, però no executa scripts, així que allà els totals queden buits.
+
+La casella del cercle porta `on="1"`, el valor que llegeix un càlcul quan està marcada. Amb el valor per defecte, `Yes`, `product(order.circle, 12)` donaria sempre 0, i postext-pdf n'avisa.

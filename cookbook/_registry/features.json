@@ -15153,6 +15153,147 @@
       "RT-12"
     ]
   },
+  "form-fields": {
+    "label": {
+      "en": "Fillable PDF form fields",
+      "es": "Campos de formulario rellenables en el PDF",
+      "ca": "Camps de formulari emplenables al PDF",
+      "zh": "可填写的PDF表单域",
+      "ar": "حقول نماذج قابلة للتعبئة في PDF",
+      "ja": "記入できるPDFフォームフィールド",
+      "pt": "Campos de formulário preenchíveis no PDF",
+      "fr": "Champs de formulaire remplissables dans le PDF",
+      "de": "Ausfüllbare PDF-Formularfelder",
+      "it": "Campi di modulo compilabili nel PDF"
+    },
+    "definition": {
+      "en": "A chip with a field attribute becomes an AcroForm field in the PDF: text, number, check box or choice, with currency and number formats and totals the PDF reader calculates.",
+      "es": "Un chip con el atributo field se convierte en un campo AcroForm del PDF: texto, número, casilla o lista, con formatos de moneda y número y totales que calcula el lector de PDF.",
+      "ca": "Un xip amb l'atribut field es converteix en un camp AcroForm del PDF: text, nombre, casella o llista, amb formats de moneda i de nombre i totals que calcula el lector de PDF.",
+      "zh": "带 field 属性的标签块在PDF中成为AcroForm表单域：文本、数字、复选框或下拉选项，带货币和数字格式，合计由PDF阅读器计算。",
+      "ar": "تصبح الرقاقة ذات السمة field حقلًا من حقول AcroForm في ملف PDF: نصًا أو رقمًا أو خانة اختيار أو قائمة، بتنسيقات للعملة والأرقام ومجاميع يحسبها قارئ PDF.",
+      "ja": "field 属性を付けたチップはPDFのAcroFormフィールドになります。テキスト、数値、チェックボックス、選択肢があり、通貨と数値の書式や、PDFリーダーが計算する合計も指定できます。",
+      "pt": "Um chip com o atributo field vira um campo AcroForm no PDF: texto, número, caixa de seleção ou lista, com formatos de moeda e de número e totais que o leitor de PDF calcula.",
+      "fr": "Une puce dotée de l’attribut field devient un champ AcroForm du PDF : texte, nombre, case à cocher ou liste, avec formats monétaires et numériques et totaux calculés par le lecteur PDF.",
+      "de": "Ein Chip mit dem Attribut field wird im PDF zu einem AcroForm-Feld: Text, Zahl, Kontrollkästchen oder Auswahl, mit Währungs- und Zahlenformaten und Summen, die der PDF-Reader berechnet.",
+      "it": "Un chip con l’attributo field diventa un campo AcroForm del PDF: testo, numero, casella di controllo o elenco, con formati di valuta e numerici e totali calcolati dal lettore PDF."
+    },
+    "aliases": {
+      "en": [
+        "form field",
+        "fillable PDF",
+        "AcroForm",
+        "PDF form",
+        "order form",
+        "calculated field",
+        "check box",
+        "interactive form"
+      ],
+      "es": [
+        "campo de formulario",
+        "PDF rellenable",
+        "AcroForm",
+        "formulario PDF",
+        "hoja de pedido",
+        "campo calculado",
+        "casilla",
+        "formulario interactivo"
+      ],
+      "ca": [
+        "camp de formulari",
+        "PDF emplenable",
+        "AcroForm",
+        "formulari PDF",
+        "full de comanda",
+        "camp calculat",
+        "casella"
+      ],
+      "zh": [
+        "表单域",
+        "可填写PDF",
+        "AcroForm",
+        "PDF表单",
+        "订单",
+        "计算字段",
+        "复选框"
+      ],
+      "ar": [
+        "حقل نموذج",
+        "PDF قابل للتعبئة",
+        "AcroForm",
+        "نموذج PDF",
+        "استمارة طلب",
+        "حقل محسوب",
+        "خانة اختيار"
+      ],
+      "ja": [
+        "フォームフィールド",
+        "記入できるPDF",
+        "AcroForm",
+        "PDFフォーム",
+        "注文書",
+        "計算フィールド",
+        "チェックボックス"
+      ],
+      "pt": [
+        "campo de formulário",
+        "PDF preenchível",
+        "AcroForm",
+        "formulário PDF",
+        "formulário de pedido",
+        "campo calculado",
+        "caixa de seleção"
+      ],
+      "fr": [
+        "champ de formulaire",
+        "PDF remplissable",
+        "AcroForm",
+        "formulaire PDF",
+        "bon de commande",
+        "champ calculé",
+        "case à cocher"
+      ],
+      "de": [
+        "Formularfeld",
+        "ausfüllbares PDF",
+        "AcroForm",
+        "PDF-Formular",
+        "Bestellschein",
+        "berechnetes Feld",
+        "Kontrollkästchen"
+      ],
+      "it": [
+        "campo di modulo",
+        "PDF compilabile",
+        "AcroForm",
+        "modulo PDF",
+        "modulo d’ordine",
+        "campo calcolato",
+        "casella di controllo"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "configuration-pdf-output",
+      "heading": {
+        "en": "Form fields",
+        "es": "Campos de formulario",
+        "ca": "Camps de formulari",
+        "zh": "表单域",
+        "ar": "حقول النماذج",
+        "ja": "フォームフィールド",
+        "pt": "Campos de formulário",
+        "fr": "Champs de formulaire",
+        "de": "Formularfelder",
+        "it": "Campi dei moduli"
+      }
+    },
+    "detect": {
+      "markdown": [
+        ":chip\\[[^\\]]*\\]\\{[^}]*\\bfield=\""
+      ]
+    }
+  },
   "html-viewer": {
     "label": {
       "en": "HTML reading edition",

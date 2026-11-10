@@ -1,0 +1,66 @@
+---
+title: "Um pedido impresso que também é um PDF preenchível"
+summary: "Uma lista de sementes cujas caixas de quantidade são campos de PDF: o total de cada linha, os subtotais e o valor a pagar se somam sozinhos no leitor de PDF."
+description: "Uma lista de sementes crioulas no Postext cujos chips viram campos AcroForm: caixas numéricas, caixas de seleção, uma lista de opções e totais calculados."
+plain: "Um catálogo de sementes de quatro páginas com formulário de pedido. Impresso, tem caixas para escrever; aberto num leitor de PDF, você digita o número de pacotes e os totais se somam sozinhos."
+question: "Como faço um formulário PDF que o leitor possa preencher e que some os próprios totais?"
+aliases: ["PDF preenchível", "formulário PDF", "AcroForm", "campos de formulário", "formulário de pedido", "lista de preços", "campos calculados", "AFSimple_Calculate", "caixa de seleção", "lista suspensa", "catálogo de sementes", "venda por correio"]
+pageNotes: { "1": "A capa: uma pintura de hortaliças crioulas sobre uma mesa de madeira ocupa a metade de cima da página (tomates gomosos, uma melancia Moon and Stars, uma abóbora azul, pimentões, beterrabas, milho colorido e dois saquinhos de papel com feijões rajados). Abaixo, o antetítulo verde, o título Seed List and Order Form em Caslon grande em duas linhas com uma linha fina em itálico ao lado e uma introdução em duas colunas.", "2": "Página 2: The 2027 List. Um parágrafo curto e a lista de preços numa tabela com a linha de cabeçalho verde-escura (Code, Variety, Seeds, Price, Qty, Total). Cada grupo abre com uma linha verde-clara; cada variedade tem uma caixa branca de contorno cinza sob Qty e uma caixa cor de kraft sob Total, e cada grupo termina com uma linha de subtotal de caixa com contorno verde.", "3": "Página 3: a lista segue com o último feijão, Squash and melons e Greens and roots, cada grupo com seu subtotal. Sob o intertítulo What you owe, uma tabela de cinco linhas: as sementes, o círculo de guardiões de sementes com uma caixa de seleção, o frete de $ 4.50 impresso num chip kraft, uma caixa branca para uma doação e Total to pay numa caixa verde cheia.", "4": "Página 4: Your Details. Nome, endereço, cidade e estado, CEP e telefone, e-mail, cada um com uma linha para escrever; How you pay, com uma caixa de opções em Check, uma linha de data e duas caixas de seleção; os endereços postal e de e-mail; duas colunas de notas e um colofão de uma linha." }
+---
+
+## O que você vai compor
+
+*Long Furrow Heritage Seeds* é a lista de sementes da primavera de 2027: quatro páginas de 210 × 270 mm de uma casa de sementes inventada que vende vinte e cinco variedades reais de polinização aberta. Uma pintura da colheita ocupa a metade de cima da capa. A lista de preços é uma tabela só, nas páginas 2 e 3, com uma caixa de quantidade e o total da linha em cada variedade e um subtotal no fim de cada grupo. Os dados do cliente e o pagamento vêm na página 4. Impressa, a folha é um formulário de pedido comum, preenchido a caneta. Cada caixa é também um chip com o atributo `field`, então o PDF que `renderToPdf` grava é um AcroForm: você digita o número de pacotes no leitor de PDF e os totais se calculam, em dólares no inglês e em euros no espanhol.
+
+## Preparo
+
+### 1 · Um estilo de chip para cada tipo de caixa
+
+<Excerpt region="chips" />
+
+O estilo dá ao campo sua aparência e sua largura mínima, e o PDF põe o widget do campo exatamente sobre a caixa que o chip pinta. As caixas que o leitor preenche são brancas com contorno cinza; as que o formulário calcula são cor de kraft e sem contorno, para ficar claro quais se escrevem à mão. As linhas do endereço são chips só com um fio embaixo, de 145,5 mm para o nome e de 64 ou 59,5 mm para as meias linhas, e assim suas pontas caem nas tabulações do estilo de parágrafo `field`. A caixa de seleção mantém a largura mínima de 3,9 mm sem preenchimento interno, e no PDF o campo vira uma caixa de seleção.
+
+### 2 · O TSV de uma planilha, com as caixas acrescentadas pelo script
+
+<Excerpt region="tables" />
+
+As variedades chegam como uma planilha: um código, o nome com sua nota, as sementes por pacote e um preço. `priceList()` acrescenta a cada linha os dois chips de campo e, no fim de cada grupo, uma linha de subtotal. A célula do preço imprime `formatFieldNumber(price, 'currency', style)`, a mesma função que formata os totais, de modo que preço impresso e total calculado usam os mesmos separadores. A linha que abre cada grupo é uma célula só, atravessando as seis colunas, e uma quebra da tabela nunca a deixa sozinha no pé da página. A tabela da página 3 tira suas cinco linhas do Markdown de `content.summary.en.md`, com os chips escritos nas células.
+
+### 3 · A capa: primeiro a pintura, depois o título
+
+<Excerpt region="cover" />
+
+O elemento de imagem é ancorado à página, com 210 × 134 mm, e sangra por três lados. O antetítulo fica a 120 mm do início do contêiner, e o título e a linha fina se penduram nele. A altura mínima do estilo, 164 mm, mantém a introdução em duas colunas abaixo do título, seja qual for o tamanho dele.
+
+### 4 · Cabeços que deixam a capa em paz
+
+<Excerpt region="running-heads" />
+
+A página par traz o nome da casa de sementes e a ímpar a seção, cada um ao lado do fólio. O estilo de título da capa tem cabeçalho e rodapé vazios, então a página 1 fica sem cabeço.
+
+### 5 · Uma paleta com uma cor para os valores calculados
+
+<Excerpt region="palette" />
+
+O verde-folha marca o que é da casa: a linha de cabeçalho, os antetítulos, os contornos dos subtotais e a caixa cheia do valor a pagar. O kraft fica para as caixas que o PDF calcula; no papel, elas se leem como as caixas que você deixa em branco.
+
+## Variações
+
+### Peça o frete num campo
+
+Transforme o frete impresso num campo que o leitor preenche e some-o ao total no lugar do valor fixo.
+
+```diff
+-Postage and packing, any size of order	:chip[$ 4.50]{style="amount"}
++Postage and packing, any size of order	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 4.50, order.gift)"}
++**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## Erros comuns
+
+As páginas capturadas mostram as caixas vazias, porque as palavras de um campo são seu valor inicial e aqui todos começam em branco. O frete é texto impresso num chip sem `field`, e o total o soma como o número `4.50` no cálculo, então o leitor não pode alterá-lo.
+
+Os totais são scripts (`AFSimple_Calculate` e expressões curtas), que o Acrobat, o Foxit, o Chrome e o Firefox executam. O Pré-Visualização do macOS mostra os campos e salva o que você digita, mas não executa scripts, e ali os totais ficam vazios.
+
+A caixa do círculo tem `on="1"`, o valor que um cálculo lê quando ela está marcada. Com o valor padrão, `Yes`, `product(order.circle, 12)` daria sempre 0, e o postext-pdf avisa sobre isso.
