@@ -482,6 +482,11 @@ function collect(input: CheckInput): Finding[] {
     // warning; the shim prints it even when the pen passes onWarning).
     const noShaper = input.console.find((m) => /^postext-pdf: HarfBuzz did not load/.test(m.text));
     if (noShaper) add("C14", "fail", `the PDF's right-to-left text was shaped without HarfBuzz: ${firstLines(noShaper.text, 1)}`);
+    // A form field pdf-lib could not write: the PDF builds and the field is
+    // there, without its format, calculation or flags (#1498).
+    for (const m of input.console.filter((c) => /^postext-pdf formField: /.test(c.text))) {
+      add("C14", "fail", `a PDF form field is incomplete: ${firstLines(m.text, 1).replace(/^postext-pdf formField: /, "")}`);
+    }
   }
 
   // C26: hero legibility.

@@ -1,6 +1,6 @@
 // Fonts, pictures and identity shared by both renditions.
 
-import { applySingleInkToSvg, chainSvgFontProviders, inlineSvgFontsDetailed, isHlsMimeType, parseUnicodeRange, resolveColorValue, screenSvgColors, type SvgFontProvider, type VDTDocument } from 'postext';
+import { applySingleInkToSvg, chainSvgFontProviders, tintFilterElement, tintHex, inlineSvgFontsDetailed, isHlsMimeType, parseUnicodeRange, resolveColorValue, screenSvgColors, type SvgFontProvider, type VDTDocument } from 'postext';
 import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubSvgFontOptions, EpubWarning } from '../types.js';
 import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, sniffFontFormat, sniffImageType, sniffVideoType } from './media.js';
 import { uuidV5 } from './uuid.js';
@@ -87,7 +87,9 @@ export function fontAssets(fonts: readonly EpubFontFile[]): FontAssets {
  *  undefined when the host had no bytes (reported once as `missingImage`). */
 export interface ImageAssets {
   items: EpubItem[];
-  hrefOf(fileId: string): string | undefined;
+  /** With `tint`: the href of the picture's copy painted in that colour,
+   *  or of the picture itself when there is none (a bitmap). */
+  hrefOf(fileId: string, tint?: string): string | undefined;
 }
 
 /** Every `fileId` the pages of `doc` place, in order of first appearance:
@@ -299,11 +301,13 @@ export async function imageAssets(
   resourceBytes: EpubResourceBytes | undefined,
   onWarning?: (warning: EpubWarning) => void,
   fonts?: { fonts?: readonly EpubFontFile[]; svgFonts?: EpubSvgFontOptions },
+  tints?: ReadonlyMap<string, ReadonlySet<string>>,
 ): Promise<ImageAssets> {
-  const fileIds = [...new Set(docs.flatMap(placedFileIds))];
+  const fileIds = [...new Set([...docs.flatMap(placedFileIds), ...(tints?.keys() ?? [])])];
   const fetched = await Promise.all(fileIds.map(async (fileId) => ({ fileId, payload: await resourceBytes?.(fileId) })));
   const items: EpubItem[] = [];
   const hrefs = new Map<string, string>();
+  const tinted = new Map<string, string>();
   const names = new Set<string>();
   const prepare = svgAssetPreparer(docs, fonts?.fonts, fonts?.svgFonts, onWarning);
   for (const { fileId, payload } of fetched) {
@@ -326,8 +330,36 @@ export async function imageAssets(
     }
     items.push({ id: `img-${name}`, href, mediaType, data });
     hrefs.set(fileId, href);
+    // Its copies painted in one colour each (a box's icon, `tint`): the
+    // SVG's silhouette filled with the colour, as the PDF and the HTML
+    // paint it. A bitmap is carried as it is.
+    if (mediaType !== 'image/svg+xml') continue;
+    for (const hex of tints?.get(fileId) ?? []) {
+      const painted = tintedSvg(typeof data === 'string' ? data : new TextDecoder().decode(data), hex);
+      if (!painted) continue;
+      const tName = unique(`${name}-${slug(hex.replace(/^#/, ''))}`, names);
+      const tHref = `images/${tName}.svg`;
+      items.push({ id: `img-${tName}`, href: tHref, mediaType, data: painted });
+      tinted.set(`${fileId}\u0000${hex}`, tHref);
+    }
   }
-  return { items, hrefOf: (fileId) => hrefs.get(fileId) };
+  return { items, hrefOf: (fileId, tint) => (tint ? tinted.get(`${fileId}\u0000${tint}`) : undefined) ?? hrefs.get(fileId) };
+}
+
+/** An SVG's markup with everything it draws filled with `tint` where it
+ *  has alpha (a flood composited into the source's alpha, the filter the
+ *  HTML renderer tints a picture with), or undefined when the markup has
+ *  no root element to wrap or `tint` is not a `#rrggbb` colour. A reading
+ *  system without SVG filters shows the picture in its own colours. */
+export function tintedSvg(svgText: string, tint: string): string | undefined {
+  const hex = tintHex(tint);
+  if (!hex) return undefined;
+  const open = /<svg\b[^>]*>/i.exec(svgText);
+  const close = svgText.lastIndexOf('</svg>');
+  if (!open || open[0].endsWith('/>') || close < open.index) return undefined;
+  const at = open.index + open[0].length;
+  const filter = `<defs>${tintFilterElement('pt-tint', hex)}</defs><g filter="url(#pt-tint)">`;
+  return svgText.slice(0, at) + filter + svgText.slice(at, close) + '</g>' + svgText.slice(close);
 }
 
 /** A bare ISBN-10/13 (digits, an X check digit, hyphens or spaces). */

@@ -1,0 +1,55 @@
+---
+title: "Kunsttafeln im Satzspiegel, bis zum Beschnitt, randabfallend"
+summary: "Ausstellungsessay über vier Interieurs von Vermeer: jedes Gemälde eine ganzseitige Tafel, im Satzspiegel, bis zum Beschnitt oder randabfallend."
+description: "Kunstbuch-Essay, 160 × 195 mm: vier Vermeer-Tafeln mit placement.plate (Satzspiegel, Beschnitt, Anschnitt), ein Detail in 60 mm, ein PDF mit Schnittmarken."
+plain: "Legen Sie fest, wie weit jedes Gemälde auf seiner Seite reicht, im Satzspiegel, bis zur Schnittkante oder darüber hinaus, und geben Sie dem Detail seine Breite in Millimetern. Die Seiten ergeben sich daraus."
+question: "Wie drucke ich ein Gemälde als ganzseitige Tafel, im Satzspiegel, bis zum Beschnitt oder randabfallend?"
+aliases: ["Kunstbuch", "Ausstellungskatalog", "ganzseitige Tafel", "randabfallendes Gemälde", "Detail in fester Größe", "Breite in Millimetern"]
+---
+
+## Was Sie setzen
+
+Sieben Seiten eines kleinen Ausstellungskatalogs, 160 × 195 mm, über vier Interieurs von Johannes Vermeer aus dem Rijksmuseum, dem Met und der National Gallery of Art. Der Essay beginnt auf einer rechten Seite mit abgesenktem Titel. Jedes Gemälde, das er nennt, steht allein auf der nächsten ganzen Seite: *Die Dienstmagd mit Milchkrug* auf <PageRef page={2}>Seite 2</PageRef> im Satzspiegel unter ihrem Kolumnentitel; die *Junge Frau mit Wasserkanne* und die *Briefleserin in Blau* stehen sich auf den <PageRef page={4}>Seiten 4 und 5</PageRef> gegenüber, die eine bis zur Schnittkante, die andere bis in die Anschnittzugabe hinter den Schnittmarken, beide ohne Kolumnentitel und Seitenzahl. Ein Detail der Waage steht in 60 mm Breite auf <PageRef page={7}>Seite 7</PageRef>, die Legende daneben. Das PDF trägt die Marken, eine TrimBox und eine BleedBox.
+
+## Zubereitung
+
+### 1 · Ein Typ für die Tafeln, eine Reichweite pro Gemälde
+
+Der Code ist [die kurze Antwort](#die-kurze-antwort) oben. Der Tafeltyp setzt `plate: true` als Standardplatzierung, also kommt ein Gemälde, das der Essay nennt, auf die erste Seite, die es ganz haben kann, und wächst bis zum Satzspiegel, die Legende darunter. `REACH` ändert das pro Gemälde: `'trim'` und `'bleed'` bedecken die Seite und beschneiden das Bild um seine Mitte. Wählen Sie also Gemälde, deren Format dem der Seite nahekommt (diese sind 0,85 bis 0,89 breit bei 1 Höhe, die Seite 0,82). `captionMeasure: 'body'` macht die Legende einer inneren Tafel so breit wie das Bild.
+
+### 2 · Jede Datei passend zu ihrer Druckgröße
+
+<Excerpt region="paintings" />
+
+Die Druckvorstufenprüfung rechnet den Beschnitt mit: Eine randabfallende Tafel ist hier mit Anschnitt 201 mm hoch, ihre Datei braucht also 2.400 px für 300 ppi, die beiden Tafeln im Satzspiegel brauchen weniger. Sie drucken mit 303 bis 348 ppi. `page.cutLines` gibt dem Bogen seine 3 mm Anschnitt; ohne diese Einstellung endet `'bleed'` an der Schnittkante wie `'trim'`.
+
+### 3 · Kolumnentitel, die volle Tafeln frei lassen
+
+<Excerpt region="running-heads" />
+
+Eine Tafel bis zum Beschnitt oder randabfallend gibt ihrer Seite die Rolle `'plate'`. Diese Kolumnentitel verlangen `pages: 'body'`, sie stehen also über den inneren Tafeln und entfallen auf den Seiten 4 und 5. Ein Element, das dort trotzdem erscheinen soll, etwa ein kleiner Bildnachweis in der Ecke, nennt `'plate'` in seinem `pages`.
+
+### 4 · Ein Detail in einer bekannten Größe
+
+Der Detailtyp setzt `width: { value: 60, unit: 'mm' }` mit `captionSide: 'inside'`. Eine Länge wird am Platz gemessen, statt einen Anteil davon zu nehmen: Die 48 mm Leinwand, die der Ausschnitt zeigt, drucken in jeder Spalte und jeder Ausgabe 60 mm breit, im Maßstab 1,25, und die Legende kann das angeben.
+
+## Varianten
+
+### Alle Tafeln randabfallend
+
+Geben Sie allen Gemälden dieselbe Reichweite: Jede Tafel bedeckt dann ihre Seite ohne Kolumnentitel und Seitenzahl, nur der Beschnitt ändert sich.
+
+```diff
+-const REACH = { milkmaid: 'content', pitcher: 'trim', letter: 'bleed', balance: 'content' };
++const REACH = { milkmaid: 'bleed', pitcher: 'bleed', letter: 'bleed', balance: 'bleed' };
+```
+
+### Das Detail in Originalgröße
+
+Schneiden Sie 60 mm Leinwand aus der Datei des Museums und behalten Sie die Breite bei: Die Legende sagt dann 1:1. Die Vorlage dieses Gemäldes hat 1.666 ppi, ein Detail von wenigen Millimetern liegt also noch über 300 ppi.
+
+## Häufige Fehler
+
+- Eine Tafel, die im selben Absatz wie eine andere genannt wird, wartet auf die übernächste Seite, weil eine Seite mit einem Gleitobjekt übersprungen wird, höchstens drei.
+- Breiten in `pt` und `mm` funktionieren; `px` und `em` gelten nicht als Länge, und die Abbildung nimmt ihren ganzen Platz ein.
+- Ein Gemälde, das viel breiter als die Seite ist, verliert auf einer Tafel bis zum Beschnitt oder randabfallend seine Seiten. Querformate bleiben besser im Satzspiegel, wo das ganze Bild zu sehen ist.

@@ -7,7 +7,7 @@ import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, type SpotColor } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, type SpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
 import { runPagePrintPass } from '../print/printPass.js';
 import { writePdfX } from '../print/pdfx.js';
@@ -36,7 +36,8 @@ export interface RenderToPdfOptions {
    *  currency symbol and its side, and the separators (from the document
    *  language when unset), and the face fields show values in (`font`,
    *  the chip's by default, embedded whole). The canvas takes the same
-   *  option (`RenderPageOptions.forms`), so its preview matches. */
+   *  option (`RenderPageOptions.forms`), so its preview matches. Unset
+   *  fields come from the first document's `config.pdfGeneration.forms`. */
   forms?: PdfFormOptions;
   pageNegative?: boolean;
   /** Emit a PDF outline tree (bookmarks) so readers can jump between
@@ -288,7 +289,8 @@ export async function renderToPdf(
   const forms = pdfx ? undefined : new FormFieldRegistry();
   // How their numbers are written, in the document's language as the
   // canvas preview writes them.
-  const fieldNumbers = formNumberStyle(options.forms, documentLanguageOf(first.config));
+  const formOptions = formOptionsOf<PdfFormOptions>(options.forms, first.config.pdfGeneration?.forms);
+  const fieldNumbers = formNumberStyle(formOptions, documentLanguageOf(first.config));
   let rendered = 0;
   // Placeholders are reported once per image for the whole file.
   const onWarning = options.onWarning;
@@ -325,7 +327,7 @@ export async function renderToPdf(
   // the bleed box are not allowed.
   if (!pdfx) linkRegistry.finalize(pdfDoc, tree);
   if (forms) {
-    await forms.finalize(pdfDoc, fieldNumbers, new FormFonts(pdfDoc, fontCache, options.forms?.font, (message) => forms.warnings.push(message)));
+    await forms.finalize(pdfDoc, fieldNumbers, new FormFonts(pdfDoc, fontCache, formOptions?.font, (message) => forms.warnings.push(message)));
     for (const message of forms.warnings) warn({ kind: 'formField', message: `postext-pdf: ${message}` });
   }
 

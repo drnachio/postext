@@ -320,6 +320,16 @@ Acrobat, Foxit, pdf.js (Firefox) e la maggior parte dei visualizzatori eseguono 
 
 Il canvas dipinge un campo numerico allo stesso modo, così l’anteprima corrisponde al PDF: passa a `renderPageToCanvas` (o a `renderPage`, `renderToCanvas`) la stessa opzione `forms` che passi a `renderToPdf`; in entrambi i casi i separatori derivano per impostazione predefinita dal `locale` del documento (altrimenti dalla sua lingua di sillabazione). Una sola regola scrive i numeri ovunque, e postext la esporta per altri generatori di output: `formNumberStyle(forms, lang)` risolve le opzioni, `formatFieldNumber(value, format, style)` formatta un valore (undefined per un testo che non è un numero) e `numberFieldText(field, words, style)` restituisce ciò che mostra un campo numerico dipinto. La lista di visualizzazione porta il campo sul segmento del chip (`inline.field`, con `sizePx` e `padPx` dell’impaginazione).
 
+Un libro può tenere queste opzioni nella sua configurazione: `pdfGeneration.forms` accetta gli stessi campi (`currency`, `currencyBefore`, `separatorStyle`, `font`). `renderToPdf` e il canvas prendono ciascuno prima dalla propria opzione `forms`, poi dal `pdfGeneration.forms` del primo documento, infine dai valori predefiniti. Non cambia l’impaginazione, solo come i campi vengono scritti e dipinti. Nel Sandbox è il gruppo **Campi modulo** della sezione PDF.
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
+**Da esm.sh in un browser**, importa `https://esm.sh/postext-pdf?bundle`. La build predefinita di pdf-lib su esm.sh mette le classi delle annotazioni in un modulo a parte, e pdf-lib rifiuta allora il widget di ogni campo: il PDF conserva le caselle, ma perde formati, calcoli e attributi, con un avviso `formField` per campo. `?bundle` compila pdf-lib in un solo modulo e lascia fuori `postext`, condiviso con la pagina. Un bundler (Vite, webpack, Next.js) e Node non ne sono toccati.
+
 L’esportazione IDML scrive gli stessi campi come campi di modulo di InDesign (vedi [Uso programmatico › Pacchetti InDesign](/it/docs/configuration-programmatic-usage#pacchetti-indesign-postextidml)).
 
 ### Link nel PDF

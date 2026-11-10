@@ -444,11 +444,11 @@ A value that is not a whole number from 0 to 200 is read as the nearest such num
 
 ## PDF generation (config)
 
-The `pdfGeneration` property controls how the PDF backend emits the final document. These settings are consumed by the `postext-pdf` package at export time; the canvas and HTML viewers ignore them.
+The `pdfGeneration` property controls how the PDF backend emits the final document. These settings are consumed by the `postext-pdf` package at export time; the canvas and HTML viewers ignore them. `forms` is the exception: the canvas reads it too, so its form fields match the PDF's.
 
 `buildDocument` carries them in the VDT, as `doc.config.pdfGeneration`, and `renderToPdf` takes each setting from the first place that gives it:
 
-1. its own options (`outlines`, `accessible`, `colorSpace`);
+1. its own options (`outlines`, `accessible`, `colorSpace`, `forms`);
 2. the `pdfGeneration` of the first document it renders (in a book, the first chapter's settings apply to the whole file);
 3. the defaults: bookmarks and tagging on, RGB colour.
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  forms?: PdfFormsConfig;      // Form fields: currency, separators, face.
 }
 ```
 
@@ -498,6 +499,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Emit an accessible, tagged PDF oriented to PDF/UA-1: a logical structure tree in reading order (headings that never skip a level, paragraphs, lists, block quotes, callouts, tables with header cells, figures with their alt text and captions, formulas, clickable refs as links, the contents of a `:::toc` as one `TOC` with a `TOCI` per row: the row's number as a `Lbl`, its title and page as a `Reference` holding the link), the document title and language (the top-level `locale`), the PDF/UA identification in the XMP metadata, and every decorative mark (page background, rules, baseline grid, running headers and footers, cut marks, repeated table headers, the repeated title and continuation marker of a split callout) flagged as an artifact so screen readers skip it. A figure without `altText` falls back to its caption, then to its label. A floated figure or table is read right after the text that first cites it, or the text before its `::resource` line, and a floated box after the text before its fence, even when the float is placed on a later page; a list or the contents that go on past a float stay one element, and a list inside a floated or fixed box (`placement: 'fixed'`) is one list. Turn off only for print masters where the extra structure is unwanted.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>How form fields write numbers and the face they show values in: `currency` (default `€`), `currencyBefore` (default `true`), `separatorStyle` (`0` to `3`; from the document language when unset) and `font` (`'chip'`, the default, `'helvetica'` or `{ family, weight?, style? }`). The `forms` option of `renderToPdf` and of the canvas wins field by field. Output only: it changes no layout. See [Form fields](/en/docs/configuration-pdf-output#form-fields).</td>
     </tr>
   </tbody>
 </table>

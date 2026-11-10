@@ -444,11 +444,11 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 ## PDF生成（設定）
 
-`pdfGeneration`プロパティは、PDFバックエンドが最終的な文書をどう出力するかを制御します。これらの設定は書き出し時に`postext-pdf`パッケージが使い、canvasとHTMLのビューアーは無視します。
+`pdfGeneration`プロパティは、PDFバックエンドが最終的な文書をどう出力するかを制御します。これらの設定は書き出し時に`postext-pdf`パッケージが使い、canvasとHTMLのビューアーは無視します。ただし`forms`は例外で、canvasもこれを読むため、フォームフィールドがPDFと一致します。
 
 `buildDocument`はこれをVDTの中に`doc.config.pdfGeneration`として保持し、`renderToPdf`は各設定を、最初に値を与える場所から取ります：
 
-1. 自身のオプション（`outlines`、`accessible`、`colorSpace`）
+1. 自身のオプション（`outlines`、`accessible`、`colorSpace`、`forms`）
 2. 最初に描画する文書の`pdfGeneration`（本では、最初の章の設定がファイル全体に適用されます）
 3. 既定値：しおりとタグ付けはオン、色はRGB
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  forms?: PdfFormsConfig;      // フォームフィールド：通貨、区切り記号、書体。
 }
 ```
 
@@ -498,6 +499,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>PDF/UA-1に沿った、アクセシブルなタグ付きPDFを出力します。読む順序に並んだ論理構造ツリー（レベルを飛ばさない見出し、段落、リスト、引用ブロック、囲み、見出しセル付きの表、代替テキストとキャプション付きの図、数式、リンクとしてのクリック可能な参照、`:::toc`の内容は1つの`TOC`にまとめて行ごとに`TOCI`を置き、行の番号を`Lbl`、タイトルとページをリンクを含む`Reference`とします）、文書のタイトルと言語（最上位の`locale`）、XMPメタデータ内のPDF/UAの識別情報を含めます。また、装飾的な要素（ページの背景、罫線、ベースライングリッド、ヘッダーとフッター、トンボ、繰り返される表の見出し行、分割された囲みで繰り返されるタイトルと続きの印）をアーティファクトとして指定し、スクリーンリーダーが読み飛ばせるようにします。`altText`のない図は、代わりにキャプションを、それもなければラベルを使います。フロートした図や表は、それを最初に参照するテキスト、または`::resource`行の前のテキストの直後に読まれ、フロートした囲みはフェンスの前のテキストのあとに読まれます。フロートがあとのページに置かれても同じです。フロートをまたいで続くリストや目次は1つの要素のままです。フロートした囲みやページに固定した囲み（`placement: 'fixed'`）の中のリストも1つのリストになります。追加の構造が不要な印刷用マスターの場合だけオフにします。</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>フォームフィールドが数値をどう書くか、また値をどの書体で表示するか：`currency`（既定は`€`）、`currencyBefore`（既定は`true`）、`separatorStyle`（`0`〜`3`。指定しなければ文書の言語に従う）、`font`（既定の`'chip'`、`'helvetica'`、または`{ family, weight?, style? }`）。`renderToPdf`とcanvasの`forms`オプションがフィールドごとに優先されます。出力だけに関わり、組版は変わりません。[フォームフィールド](/ja/docs/configuration-pdf-output#フォームフィールド)を参照。</td>
     </tr>
   </tbody>
 </table>

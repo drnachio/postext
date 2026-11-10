@@ -34,14 +34,28 @@ export function inkFilterDecl(paint: HtmlPaint, svg: boolean | undefined, url: s
  *  CSS filters shows the picture in its own colours. Empty when the colour
  *  is not a `#rrggbb` one. */
 export function tintFilterDecl(paint: HtmlPaint, tint: string | undefined): string {
-  if (!tint || !paint.tints || !/^#[0-9a-f]{6}$/i.test(tint)) return '';
-  const hex = tint.toLowerCase();
+  const hex = tintHex(tint);
+  if (!hex || !paint.tints) return '';
   let id = paint.tints.filters.get(hex);
   if (!id) {
     id = `pt-tint-${hex.slice(1)}-${paint.tints.page}`;
     paint.tints.filters.set(hex, id);
   }
   return `filter:url(#${id});`;
+}
+
+/** A picture's tint as the renderers paint it: a `#rrggbb` colour, in
+ *  lower case; undefined for anything else (the picture then keeps its own
+ *  colours). */
+export function tintHex(tint: string | undefined): string | undefined {
+  return tint && /^#[0-9a-f]{6}$/i.test(tint) ? tint.toLowerCase() : undefined;
+}
+
+/** The SVG `<filter>` painting a picture's silhouette in `hex` (a value of
+ *  {@link tintHex}): a flood of the colour kept where the picture has
+ *  alpha. */
+export function tintFilterElement(id: string, hex: string): string {
+  return `<filter id="${id}" color-interpolation-filters="sRGB"><feFlood flood-color="${hex}"/><feComposite in2="SourceAlpha" operator="in"/></filter>`;
 }
 
 /** The page's `<filter>` definitions (single ink, then the tints of its
@@ -54,7 +68,7 @@ export function inkFilterDefs(ink: InkFilter | undefined, tints?: ReadonlyMap<st
     filters.push(`<filter id="${ink.id}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${values}"/></filter>`);
   }
   for (const [hex, id] of tints ?? []) {
-    filters.push(`<filter id="${id}" color-interpolation-filters="sRGB"><feFlood flood-color="${hex}"/><feComposite in2="SourceAlpha" operator="in"/></filter>`);
+    filters.push(tintFilterElement(id, hex));
   }
   if (filters.length === 0) return '';
   return (

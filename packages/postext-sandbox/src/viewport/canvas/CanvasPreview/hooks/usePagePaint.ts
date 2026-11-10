@@ -131,8 +131,12 @@ export function usePagePaint(deps: UsePagePaintDeps) {
     const { displayWidth, displayHeight } = computeDisplaySizeRef.current(containerW, containerH);
 
     const debugConfig = resolveDebugConfig(deferredConfig.debug);
+    // The form fields' number style is out of the layout key (#1491): the
+    // live configuration's, not the one the document was laid out with.
+    const forms = deferredConfig.pdfGeneration?.forms;
     renderOptsRef.current = {
       pageNegative: debugConfig.pageNegative.enabled,
+      ...(forms ? { forms } : {}),
       ...(printPreviewRef.current ? { printPreview: printPreviewRef.current } : {}),
     };
     const pageWidthPx = firstPage.width;

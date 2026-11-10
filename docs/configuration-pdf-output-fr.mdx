@@ -320,6 +320,16 @@ Acrobat, Foxit, pdf.js (Firefox) et la plupart des lecteurs exécutent ces scrip
 
 Le canvas peint un champ numérique de la même façon, si bien que l’aperçu correspond au PDF : passez à `renderPageToCanvas` (ou à `renderPage`, `renderToCanvas`) la même option `forms` qu’à `renderToPdf` ; dans les deux cas, les séparateurs suivent par défaut le `locale` du document (à défaut, sa langue de césure). Une seule règle écrit les nombres partout, et postext l’exporte pour d’autres générateurs de sortie : `formNumberStyle(forms, lang)` résout les options, `formatFieldNumber(value, format, style)` met en forme une valeur (undefined pour un texte qui n’est pas un nombre) et `numberFieldText(field, words, style)` donne ce qu’affiche un champ numérique peint. La liste d’affichage porte le champ sur le segment de la pastille (`inline.field`, avec le `sizePx` et le `padPx` de la mise en page).
 
+Un livre peut garder ces options dans sa configuration : `pdfGeneration.forms` prend les mêmes champs (`currency`, `currencyBefore`, `separatorStyle`, `font`). `renderToPdf` et le canvas prennent chacun d’abord dans leur propre option `forms`, puis dans le `pdfGeneration.forms` du premier document, puis dans les valeurs par défaut. Cela ne change pas la mise en page, seulement la façon d’écrire et de peindre les champs. Dans le Sandbox, c’est le groupe **Champs de formulaire** de la section PDF.
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
+**Depuis esm.sh dans un navigateur**, importez `https://esm.sh/postext-pdf?bundle`. La compilation par défaut de pdf-lib sur esm.sh place ses classes d'annotation dans un module à part, et pdf-lib refuse alors le widget de chaque champ : le PDF garde les cases, mais perd formats, calculs et attributs, avec un avertissement `formField` par champ. `?bundle` compile pdf-lib en un seul module et laisse `postext` à l'extérieur, partagé avec la page. Un bundler (Vite, webpack, Next.js) et Node ne sont pas concernés.
+
 L’export IDML écrit les mêmes champs en champs de formulaire InDesign (voir [Utilisation programmatique › Paquets InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postextidml)).
 
 ### Liens dans le PDF

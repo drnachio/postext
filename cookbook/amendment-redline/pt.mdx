@@ -1,0 +1,59 @@
+---
+title: "Uma alteração com o suprimido tachado e o novo sublinhado"
+summary: "Um quadro comparativo de uma lei de direito autoral: o suprimido tachado, o novo sublinhado, depois o texto alterado em um boxe com recuo deslocado."
+plain: "Um impresso legislativo curto. Mostra a redação antiga de uma lei com as palavras retiradas riscadas e as novas sublinhadas, depois a seção inteira já alterada em um boxe cinza."
+description: "Um quadro comparativo composto com Postext: a lei antiga com as supressões tachadas e os acréscimos sublinhados, e a seção alterada com recuo deslocado."
+question: "Como mostro uma alteração com as palavras suprimidas tachadas e as acrescentadas sublinhadas?"
+aliases: ["quadro comparativo", "texto comparado", "controle de alterações", "emenda", "lei", "projeto de lei", "errata", "tachado", "sublinhado", "recuo deslocado", "prazo do direito autoral"]
+---
+
+## O que você vai compor
+
+Um impresso de comissão como os que acompanham um projeto de lei: cinco páginas que mostram o que a seção 102 do Sonny Bono Copyright Term Extension Act, de 1998, fez com o título 17 do United States Code. A lei diz apenas “suprima ‘fifty’ e insira ‘70’”; este impresso compõe a lei como era, com cada alteração marcada no lugar, as supressões tachadas e os acréscimos sublinhados, sob a legenda que os redatores federais e estaduais imprimem acima desses textos, e depois a seção 302 alterada em um boxe tingido, cada letra na borda e as suas linhas recuadas sob o texto. A edição espanhola faz o mesmo com as três reformas da Constituição espanhola, publicadas no BOE em 1992, 2011 e 2024.
+
+## Preparo
+
+### 1 · Marque a alteração onde ela acontece
+
+O código está na [resposta curta](#a-resposta-curta) acima. As marcas ficam no Markdown: `~~fifty~~ :underline[70]` tacha a palavra antiga e sublinha a nova ([tachado](/pt/docs/document-format-inline#tachado), [sublinhado](/pt/docs/document-format-inline#sublinhado)). Nenhuma das duas linhas ocupa espaço: uma cláusula tachada de seis linhas se justifica e se hifeniza como o texto ao redor, e na página 3 toda a antiga subseção 304(b) está tachada e a sua substituta sublinhada em um único parágrafo. Cada linha segue as medidas de tachado e de sublinhado da própria fonte, na cor das palavras, de modo que os versaletes de uma rubrica ganham uma linha própria, na altura deles.
+
+### 2 · As cláusulas com recuo deslocado no boxe
+
+`body.hangingIndent` em um estilo de boxe aplica recuo deslocado a todos os parágrafos do boxe ([tipografia dentro de um boxe](/pt/docs/configuration-callouts#tipografia-dentro-de-um-boxe)): a primeira linha começa na borda interna e as seguintes 7 mm para dentro. Uma parada de tabulação nos mesmos 7 mm leva o texto que vem depois de “(a)” ou “(c)” até essa borda, qualquer que seja a largura da letra; no Markdown, você escreve `(a):tab In General.—…`. As cláusulas da lei e a seção alterada compartilham a tipografia e só mudam na moldura: um fio vermelho sobre a lei, um fundo tingido atrás do texto em vigor. O boxe da lei pode se dividir (`keepTogether: false`), e assim a página 1 termina com as duas primeiras cláusulas.
+
+### 3 · Uma faixa para a abertura
+
+<Excerpt region="opener" />
+
+A faixa azul-marinho sangra no alto e dos dois lados, e o chapéu e o olho vêm de atributos da linha do título ([atributos de título](/pt/docs/document-format#atributos-de-título)). `minHeight` define onde começa a legenda, poucos milímetros abaixo da faixa.
+
+### 4 · Cabeços conforme a paridade
+
+<Excerpt region="running-heads" />
+
+A página par traz o título do impresso e a ímpar a parte em que ela se abre, lida do primeiro título de segundo nível da página. `pages: 'body'` os mantém fora da abertura, que traz um fólio no pé.
+
+## Variações
+
+### Escreva os acréscimos como `++texto++`
+
+Com `plusUnderline` ativado, `++70++` sublinha como `:underline[70]`, a grafia que Pandoc e markdown-it usam para texto inserido.
+
+```diff
+     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
++    plusUnderline: true, // ++texto++ sublinha; C++ no texto passa a ser escrito C\+\+
+```
+
+### Mantenha juntas as cláusulas da lei
+
+Sem `keepTogether: false`, o boxe passa inteiro para a página 2 e a página 1 termina na linha que o apresenta.
+
+```diff
+-    padding: pad(2.5, 0), body: clauses, keepTogether: false, // it may run on to the next page
++    padding: pad(2.5, 0), body: clauses,
+```
+
+## Erros comuns
+
+- Um parágrafo que começa com um número e um ponto (`2. Solamente…`) é lido como item de lista, e uma barra invertida antes do ponto é impressa. A edição espanhola põe um unidor de palavras (U+2060) entre o algarismo e o ponto no texto corrido e, no boxe, escreve a tabulação logo depois do ponto, `1.:tab`, que nenhum marcador de lista reconhece.
+- A cor sozinha não sobreviveria a uma fotocópia, que é como esses impressos costumam circular; o tachado e o sublinhado se leem em preto e branco, e foi por isso que os redatores os escolheram.

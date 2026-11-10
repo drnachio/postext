@@ -1,0 +1,59 @@
+---
+title: "Une modification, suppressions barrées et ajouts soulignés"
+summary: "Un texte comparé d’une loi sur le droit d’auteur : mots supprimés barrés, mots ajoutés soulignés, puis le texte modifié dans un encadré aux alinéas en sommaire."
+plain: "Un court document parlementaire. Il montre l’ancienne rédaction d’une loi avec les mots retirés barrés et les mots nouveaux soulignés, puis toute la section modifiée dans un encadré grisé."
+description: "Un texte comparé composé avec Postext : l’ancienne loi, suppressions barrées et ajouts soulignés, puis la section modifiée, ses alinéas en sommaire."
+question: "Comment montrer une modification avec les mots supprimés barrés et les mots ajoutés soulignés ?"
+aliases: ["texte comparé", "tableau comparatif", "suivi des modifications", "amendement", "loi", "projet de loi", "errata", "barré", "souligné", "alinéa en sommaire", "durée du droit d’auteur"]
+---
+
+## Ce que vous allez composer
+
+Un document de commission comme ceux qui accompagnent un projet de loi : cinq pages qui montrent ce que la section 102 du Sonny Bono Copyright Term Extension Act de 1998 a fait au titre 17 du Code des États-Unis. La loi dit seulement « supprimer “fifty” et insérer “70” » ; ce document donne la loi telle qu’elle était, chaque changement marqué à sa place, les suppressions barrées et les ajouts soulignés, sous la légende que les rédacteurs fédéraux et ceux des États impriment en tête de ces textes, puis la section 302 modifiée dans un encadré teinté, chaque lettre de paragraphe au bord et ses lignes en sommaire sous le texte. L’édition espagnole fait de même pour les trois révisions de la Constitution espagnole, publiées au BOE en 1992, 2011 et 2024.
+
+## Préparation
+
+### 1 · Marquer le changement là où il a lieu
+
+Le code est [la réponse courte](#la-réponse-courte) plus haut. Les marques sont dans le Markdown : `~~fifty~~ :underline[70]` barre l’ancien mot et souligne le nouveau ([texte barré](/fr/docs/document-format-inline#texte-barré), [texte souligné](/fr/docs/document-format-inline#texte-souligné)). Aucun des deux traits ne prend de place : une clause barrée de six lignes se justifie et se coupe comme le texte qui l’entoure, et à la page 3 toute l’ancienne sous-section 304(b) est barrée et sa remplaçante soulignée dans un seul paragraphe. Chaque trait suit les mesures de barré et de soulignement de la fonte elle-même, dans la couleur des mots, si bien que les petites capitales d’un intitulé reçoivent leur propre trait, à leur propre hauteur.
+
+### 2 · Les clauses en sommaire dans l’encadré
+
+`body.hangingIndent` dans un style d’encadré met tous les paragraphes de l’encadré en sommaire ([typographie dans un encadré](/fr/docs/configuration-callouts#typographie-dans-un-encadré)) : la première ligne part du bord intérieur et les suivantes 7 mm plus loin. Un taquet de tabulation aux mêmes 7 mm porte le texte qui suit « (a) » ou « (c) » jusqu’à ce bord, quelle que soit la largeur de la lettre ; dans le Markdown, on écrit donc `(a):tab In General.—…`. Les clauses de la loi et la section modifiée partagent la typographie et ne diffèrent que par leur cadre : un filet rouge au-dessus de la loi, une teinte derrière le texte en vigueur. L’encadré de la loi peut se couper (`keepTogether: false`), si bien que la page 1 se termine sur ses deux premières clauses.
+
+### 3 · Un bandeau pour l’ouverture
+
+<Excerpt region="opener" />
+
+Le bandeau bleu marine déborde à fond perdu en haut et des deux côtés, et le surtitre et le chapeau viennent d’attributs de la ligne du titre ([attributs de titre](/fr/docs/document-format#attributs-de-titre)). `minHeight` fixe l’endroit où commence la légende, quelques millimètres sous le bandeau.
+
+### 4 · Titres courants selon la parité
+
+<Excerpt region="running-heads" />
+
+La page paire porte le titre du document et la page impaire la partie où elle s’ouvre, lue dans le premier titre de deuxième niveau de la page. `pages: 'body'` les tient à l’écart de l’ouverture, qui porte un folio en pied de page.
+
+## Variantes
+
+### Écrire les ajouts en `++texte++`
+
+Avec `plusUnderline` activé, `++70++` souligne comme `:underline[70]`, la graphie que Pandoc et markdown-it emploient pour le texte inséré.
+
+```diff
+     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
++    plusUnderline: true, // ++texte++ souligne ; C++ s'écrit alors C\+\+ dans le texte
+```
+
+### Garder entières les clauses de la loi
+
+Sans `keepTogether: false`, l’encadré passe entier à la page 2 et la page 1 se termine sur la ligne qui l’annonce.
+
+```diff
+-    padding: pad(2.5, 0), body: clauses, keepTogether: false, // it may run on to the next page
++    padding: pad(2.5, 0), body: clauses,
+```
+
+## Erreurs fréquentes
+
+- Un paragraphe qui commence par un nombre suivi d’un point (`2. Solamente…`) est lu comme un élément de liste, et une barre oblique inverse devant le point s’imprime. L’édition espagnole place un gluon de mots (U+2060) entre le chiffre et le point dans le texte courant et, dans l’encadré, écrit la tabulation juste après le point, `1.:tab`, qu’aucune marque de liste ne reconnaît.
+- La couleur seule ne survivrait pas à une photocopie, et c’est souvent ainsi que ces documents circulent ; le barré et le souligné se lisent en noir et blanc, et c’est pour cela que les rédacteurs les ont choisis.

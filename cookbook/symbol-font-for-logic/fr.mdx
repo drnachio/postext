@@ -1,0 +1,56 @@
+---
+title: "Signes de logique et d’ensembles par une police des symboles"
+summary: "Un manuel de logique dans des polices sans ∀, ∈ ni ℵ : symbolFont désigne Noto Sans Math, qui dessine ces signes et le grec sur le canevas et dans le PDF."
+plain: "Un court chapitre qui apprend à lire les signes de la logique et de la théorie des ensembles. Les polices du livre n’ont pas ces signes : une seconde police les fournit, à l’écran et dans le PDF imprimé."
+description: "Un manuel de logique composé avec symbolFont : Noto Sans Math dessine ∀, ∃, ∈, ℵ et le grec dans toutes les polices, sur canevas et en PDF, sans case vide."
+question: "Comment imprimer les signes de logique (∀, ∈, ℵ) et le grec que ma police n’a pas, sans cases vides ?"
+aliases: ["police des symboles", "symbolFont", "police de secours", "glyphes manquants", "cases vides dans le PDF", "tofu", "symboles logiques", "notation ensembliste", "logique des prédicats", "Noto Sans Math", "glyphFallbackAt"]
+---
+
+## Ce que vous allez composer
+
+Le premier chapitre d’un petit manuel de logique, sur une page de 155 × 235 mm : un bandeau grenat où les signes du chapitre sont composés en grand, puis quatre sections qui lisent à voix haute ∀, ∃, ∈, ∪, ∅ et ℵ, avec les formules dans le texte courant et détachées entre les paragraphes. Le livre est composé en Crimson Pro, ses titres en Cormorant Garamond et ses étiquettes en IBM Plex Sans Condensed. Aucune des trois n’a ∀, ∈ ni de lettre grecque dans les fichiers que sert Fontsource. Un seul réglage, `symbolFont`, place Noto Sans Math derrière chacune : tous les signes viennent de la même police dans le texte, les titres, les titres courants et les cellules des tableaux, et le PDF les imprime tous.
+
+## Préparation
+
+### 1 · Une police des symboles derrière toutes les autres
+
+Le code de cette étape est la réponse courte, plus haut. `symbolFont: 'Noto Sans Math'` ([police des symboles](/fr/docs/configuration-fonts-colors-viewers#police-des-symboles)) place cette famille derrière toutes celles que nomme la configuration : un caractère absent de la police est dessiné en Noto Sans Math, au corps et dans la couleur de la police, et le reste de la ligne garde la sienne. Fontsource sert Noto Sans Math entière dans son fichier `latin`, soit 3 033 caractères, mais le kit déclare ce fichier pour la seule plage latine, et le navigateur ne lui demanderait pas ∀. Le `resolve` et le `pdfFonts` de la recette transmettent le même fichier sans plage, à l’écran et à `renderToPdf`. Seuls les caractères manquants changent de police : Crimson Pro a ¬, la négation du texte reste donc en Crimson Pro.
+
+### 2 · Une première composition sans elle montre ce qui manque
+
+<Excerpt region="without" />
+
+La première composition laisse `symbolFont` vide et affiche ses avertissements `glyphFallbackAt`, un par paragraphe, titre ou tableau qui contient des caractères sans glyphe dans sa police, avec la page et les caractères. L’édition anglaise en compte dix-huit : quatorze paragraphes en Crimson Pro, trois titres en Cormorant Garamond et la ligne d’en-tête du tableau 1.1 en IBM Plex Sans Condensed gras. Sans famille pour les dessiner, le canevas prend les signes dans une police du système du lecteur et le PDF imprime une case vide pour chacun. La seconde composition, avec la police des symboles, est celle qu’on voit sur la page ; ses avertissements nomment `"Noto Sans Math"` comme la famille qui les dessine.
+
+### 3 · Les signes de l’ouverture sont du texte
+
+<Excerpt region="opener" />
+
+La ligne de sept signes sous le titre est un texte de maquette en Cormorant Garamond à 30 pt, nourri par l’attribut `signs` du titre. Cormorant Garamond n’en a aucun : les sept viennent de la police des symboles, dans le blanc du bandeau. Une approche de 9 pt les répartit sur la justification.
+
+### 4 · Cellules et titres courants prennent la même police
+
+<Excerpt region="tables" />
+
+La table de vérité est construite à partir des connecteurs eux-mêmes : l’en-tête de chaque colonne est la formule, et chaque cellule ce que la formule donne pour cette ligne. Les cellules d’en-tête sont en IBM Plex Sans Condensed gras italique et celles du corps en Crimson Pro ; la police des symboles sert les deux. Son unique style romain dessine pour toutes les graisses et toutes les pentes : le ∧ de l’en-tête en gras et le ∈ d’une formule en italique sont le même signe droit. Le titre courant de la belle page imprime la section en cours, `{firstMark.h2}`, et *SETS: ∈, ∪, ∩ AND ∅*, page 3, prend lui aussi ses signes dans Noto Sans Math.
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="Page 3 : les formules d’ensembles, en Crimson Pro italique, tous les signes venant de Noto Sans Math." />
+
+## Variantes
+
+### Supprimer la première composition
+
+Une fois les avertissements lus, une seule composition suffit.
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## Erreurs fréquentes
+
+- Une police dont les fichiers Fontsource comprennent le grec (Source Serif 4, Alegreya) compose elle-même φ et Γ, et le kit charge ce fichier quand le texte contient du grec : seuls les signes passent alors à la police des symboles. Crimson Pro n’a pas de fichier grec, son grec vient donc de Noto Sans Math.
+- La police des symboles n’a qu’un style, romain et normal. Un titre en gras ou une formule en italique compose ses signes dans ce style, comme les imprime l’usage mathématique.

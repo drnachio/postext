@@ -1,0 +1,82 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 182,
+  "status": "published",
+  "chapter": "type",
+  "order": 390,
+  "level": 2,
+  "genres": ["report"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["strikethrough", "underline", "box-hanging-indent"],
+    "also": [
+      "tab-stops",
+      "callout-styles",
+      "callout-splitting",
+      "color-palette",
+      "opener-design",
+      "heading-attributes",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "paragraph-styles",
+      "widows-orphans-runts",
+      "pdf-export",
+      "pdf-fonts"
+    ]
+  },
+  "answers": ["Q215"],
+  "gotchas": [],
+  "engine": { "postext": "1.73.0", "postextPdf": "1.73.0" },
+  "kit": ["core", "fonts", "viewer", "pdf"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "loupe", "focus": { "page": 1, "x": 0.1, "y": 0.33, "w": 0.8, "h": 0.075 } },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Section 102 of the Sonny Bono Copyright Term Extension Act (Pub. L. 105-298, 112 Stat. 2827, 1998) and sections 302–304 of title 17, United States Code, as in force in 1997",
+          "es": "La sección 102 de la Sonny Bono Copyright Term Extension Act (Pub. L. 105-298, 112 Stat. 2827, 1998) y las secciones 302 a 304 del título 17 del United States Code vigentes en 1997"
+        },
+        "who": "United States Congress",
+        "source": "https://www.govinfo.gov/content/pkg/PLAW-105publ298/html/PLAW-105publ298.htm",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Articles 13.2, 49 and 135 of the Spanish Constitution in their 1978 wording and the reforms of 1992, 2011 and 2024 (official texts, not subject to copyright under art. 13 LPI)",
+          "es": "Los artículos 13.2, 49 y 135 de la Constitución Española en su redacción de 1978 y las reformas de 1992, 2011 y 2024 (textos oficiales, excluidos de la propiedad intelectual por el art. 13 LPI)"
+        },
+        "who": "Cortes Generales, Boletín Oficial del Estado",
+        "source": "https://www.boe.es/buscar/act.php?id=BOE-A-1978-31229",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The editor’s notes, the coding legends and the colophons",
+          "es": "Las notas del editor, las claves y los colofones"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [],
+    "fonts": [
+      { "family": "Source Serif 4", "license": "OFL-1.1" },
+      { "family": "Source Sans 3", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-11-10",
+  "updated": "2026-11-10",
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": { "type": "uncoated", "grammage": 80 },
+    "binding": { "type": "saddleStitch", "cover": "case", "coverMaterial": "paper", "coverColor": "#1f2b47" },
+    "surface": { "type": "oak" },
+    "lighting": { "environment": "studio" }
+  },
+  "related": ["colour-coded-study-highlights", "legal-opinion-oscola", "old-style-and-tabular-figures"]
+}

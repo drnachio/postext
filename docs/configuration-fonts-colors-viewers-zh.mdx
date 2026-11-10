@@ -444,11 +444,11 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 ## PDF生成（配置）
 
-`pdfGeneration`属性控制PDF后端如何输出最终文档。这些设置由`postext-pdf`包在导出时使用；Canvas和HTML阅读器会忽略它们。
+`pdfGeneration`属性控制PDF后端如何输出最终文档。这些设置由`postext-pdf`包在导出时使用；Canvas和HTML阅读器会忽略它们。`forms`是例外：canvas也读取它，因此其中的表单域与PDF一致。
 
 `buildDocument`把它们以`doc.config.pdfGeneration`的形式放进VDT；`renderToPdf`对每项设置，从下列来源中第一个给出该设置的地方取值：
 
-1. 它自己的选项（`outlines`、`accessible`、`colorSpace`）；
+1. 它自己的选项（`outlines`、`accessible`、`colorSpace`、`forms`）；
 2. 它渲染的第一个文档的`pdfGeneration`（对于一本书，第一章的设置作用于整个文件）；
 3. 默认值：开启书签和标签，RGB颜色。
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // 把所有颜色转换为`colorSpace`。
   colorSpace?: PdfColorSpace;  // `forceColorSpace`为true时使用的目标色彩空间。
   accessible?: boolean;        // 带标签、面向PDF/UA的输出（结构树、替代文字、语言）。
+  forms?: PdfFormsConfig;      // 表单域：货币、分隔符、字体。
 }
 ```
 
@@ -498,6 +499,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>生成面向PDF/UA-1的无障碍、带标签的PDF：按阅读顺序排列的逻辑结构树（不跳级的标题、段落、列表、块引用、标注框、带表头单元格的表、带替代文字和题注的图、公式、作为链接的可点击引用；`:::toc`的内容作为一个`TOC`，每行一个`TOCI`，其中行的编号为`Lbl`，标题和页码为包含链接的`Reference`），文档标题和语言（顶层的`locale`），XMP元数据中的PDF/UA标识；所有装饰性标记（页面背景、线条、基线网格、页眉页脚、裁切线、重复的表头、拆开的标注框中重复出现的标题和接续标记）都标为artifact，屏幕阅读器会跳过它们。没有`altText`的图先改用题注，再改用标签。浮动的图或表紧接在首次引用它的文字之后阅读，或紧接在其`::resource`行之前的文字之后；浮动的框紧接在其开始行之前的文字之后阅读，即使浮动体排在后面的页面上也是如此；越过浮动体继续排下去的列表或目录仍是一个元素；浮动的框或锚定在页面上的框（`placement: 'fixed'`）里的列表也是一个列表。只有在不需要额外结构的印刷母版中才关闭它。</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>表单域如何书写数字，以及显示数值所用的字体：`currency`（默认`€`）、`currencyBefore`（默认`true`）、`separatorStyle`（`0`到`3`；未设置时随文档语言）和`font`（默认的`'chip'`、`'helvetica'`或`{ family, weight?, style? }`）。`renderToPdf`和canvas的`forms`选项逐个字段优先。只影响输出，不改变排版。见[表单域](/zh/docs/configuration-pdf-output#表单域)。</td>
     </tr>
   </tbody>
 </table>

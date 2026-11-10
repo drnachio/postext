@@ -45,6 +45,7 @@ export function createDocumentPainting(deps: DocumentPaintingDeps) {
       scale: width / trimmedSize(page, ds.current).width,
       singleInk: options.singleInk,
       pageNegative: options.pageNegative,
+      ...(options.forms ? { forms: options.forms } : {}),
       ...(options.printPreview ? { printPreview: options.printPreview } : {}),
     });
     const old = ds.canvases[i];

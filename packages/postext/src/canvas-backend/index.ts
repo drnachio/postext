@@ -10,7 +10,7 @@ import { renderHeaderFooterSlot } from './headerFooter.js';
 import { documentInkHex } from '../svg/singleInk.js';
 import { documentLanguageOf, shapingLanguageOf } from '../hyphenation/locale.js';
 import { setFieldNumberStyle } from './chip.js';
-import { formNumberStyle, type FormNumberOptions } from '../parse/formFields.js';
+import { formNumberStyle, formOptionsOf, type FormNumberOptions } from '../parse/formFields.js';
 import { setSegmentLanguages } from './wordRuns.js';
 import { setMissingImageSink, setTintUnflagged } from './renderResourceBlock.js';
 import { restoreLinkPaint, setLinkPaint } from './blockRender/linkPaint.js';
@@ -74,7 +74,8 @@ export interface RenderPageOptions {
   output?: 'canvas' | 'folio';
   /** How form fields write numbers (#1445): the same option as
    *  `renderToPdf`'s `forms`, so the preview shows what the PDF's form
-   *  does. Separators default from the document language. */
+   *  does. Separators default from the document language. Unset fields
+   *  come from the document's `pdfGeneration.forms`. */
   forms?: FormNumberOptions;
 }
 
@@ -93,7 +94,7 @@ export function renderPageToCanvas(
 ): void {
   const previousTint = setTintUnflagged(options?.singleInk === true);
   const previousLinks = setLinkPaint(doc.config?.links, options?.output ?? 'canvas');
-  const previousFields = setFieldNumberStyle(formNumberStyle(options?.forms, documentLanguageOf(doc.config)));
+  const previousFields = setFieldNumberStyle(formNumberStyle(formOptionsOf<FormNumberOptions>(options?.forms, doc.config?.pdfGeneration?.forms), documentLanguageOf(doc.config)));
   try {
     const onWarning = options?.onWarning;
     if (!onWarning) {

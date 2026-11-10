@@ -444,11 +444,11 @@ Ein Wert, der keine ganze Zahl von 0 bis 200 ist, wird als nächstgelegene Zahl 
 
 ## PDF-Erzeugung (Konfiguration)
 
-Die Eigenschaft `pdfGeneration` steuert, wie das PDF-Backend das fertige Dokument ausgibt. Diese Einstellungen liest das Paket `postext-pdf` beim Export; Canvas- und HTML-Betrachter ignorieren sie.
+Die Eigenschaft `pdfGeneration` steuert, wie das PDF-Backend das fertige Dokument ausgibt. Diese Einstellungen liest das Paket `postext-pdf` beim Export; Canvas- und HTML-Betrachter ignorieren sie. `forms` ist die Ausnahme: Das Canvas liest es auch, sodass seine Formularfelder denen des PDF entsprechen.
 
 `buildDocument` übernimmt sie in den VDT als `doc.config.pdfGeneration`, und `renderToPdf` nimmt jede Einstellung von der ersten Stelle, die sie angibt:
 
-1. aus seinen eigenen Optionen (`outlines`, `accessible`, `colorSpace`);
+1. aus seinen eigenen Optionen (`outlines`, `accessible`, `colorSpace`, `forms`);
 2. aus `pdfGeneration` des ersten Dokuments, das es rendert (in einem Buch gelten die Einstellungen des ersten Kapitels für die ganze Datei);
 3. aus den Voreinstellungen: Lesezeichen und Tagging an, RGB-Farbe.
 
@@ -462,6 +462,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  forms?: PdfFormsConfig;      // Formularfelder: Währung, Trennzeichen, Schrift.
 }
 ```
 
@@ -498,6 +499,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Gibt ein barrierefreies, getaggtes PDF nach PDF/UA-1 aus: einen logischen Strukturbaum in Lesereihenfolge (Überschriften, die nie eine Ebene überspringen, Absätze, Listen, Blockzitate, Kästen, Tabellen mit Kopfzellen, Abbildungen mit Alternativtext und Legende, Formeln, anklickbare Verweise als Links, der Inhalt eines `:::toc` als ein `TOC` mit einem `TOCI` je Zeile: die Nummer der Zeile ein `Lbl`, Titel und Seite eine `Reference`, die den Link enthält), Titel und Sprache des Dokuments (das oberste `locale`), die PDF/UA-Kennung in den XMP-Metadaten und jedes schmückende Element (Seitenhintergrund, Linien, Grundlinienraster, Kopf- und Fußzeilen, Schnittmarken, wiederholte Tabellenköpfe, der wiederholte Titel und der Fortsetzungshinweis eines geteilten Kastens) als Artefakt markiert, damit Screenreader es überspringen. Eine Abbildung ohne `altText` greift auf ihre Legende zurück, dann auf ihre Bezeichnung. Eine gleitende Abbildung oder Tabelle wird direkt nach dem Text gelesen, der sie zuerst zitiert, oder nach dem Text vor ihrer Zeile `::resource`, und ein gleitender Kasten nach dem Text vor seiner öffnenden Zeile, auch wenn das Gleitobjekt auf einer späteren Seite steht; eine Liste oder das Inhaltsverzeichnis, die hinter einem Gleitobjekt weiterlaufen, bleiben ein Element, und eine Liste in einem gleitenden oder an der Seite verankerten Kasten (`placement: 'fixed'`) ist eine einzige Liste. Schalten Sie es nur für Druckvorlagen ab, bei denen die zusätzliche Struktur unerwünscht ist.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Wie Formularfelder Zahlen schreiben und in welcher Schrift sie Werte zeigen: `currency` (Standard `€`), `currencyBefore` (Standard `true`), `separatorStyle` (`0` bis `3`; ohne Angabe nach der Sprache des Dokuments) und `font` (`'chip'`, der Standard, `'helvetica'` oder `{ family, weight?, style? }`). Die Option `forms` von `renderToPdf` und des Canvas hat Feld für Feld Vorrang. Nur für die Ausgabe: Der Satz ändert sich nicht. Siehe [Formularfelder](/de/docs/configuration-pdf-output#formularfelder).</td>
     </tr>
   </tbody>
 </table>

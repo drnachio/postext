@@ -1,0 +1,55 @@
+---
+title: "Làmines d'art als marges, al tall i a sang"
+summary: "Un assaig d'exposició sobre quatre interiors de Vermeer: cada quadre, una làmina a pàgina sencera dins dels marges, al tall o a sang, i un detall a 60 mm."
+description: "Assaig de llibre d’art de 160 × 195 mm: quatre làmines de Vermeer amb placement.plate (caixa, tall, sang), un detall a 60 mm i un PDF amb marques de tall."
+plain: "Digues fins on arriba cada quadre a la seva pàgina, dins dels marges, fins al tall o més enllà, i dona al detall la seva amplada en mil·límetres. Les pàgines surten soles."
+question: "Com imprimeixo un quadre com a làmina a pàgina sencera, dins dels marges, al tall o a sang?"
+aliases: ["llibre d'art", "catàleg d'exposició", "làmina a pàgina sencera", "quadre a sang", "detall a mida fixa", "amplada en mil·límetres"]
+---
+
+## Què compondràs
+
+Set pàgines d'un catàleg d'exposició petit, de 160 × 195 mm, sobre quatre interiors de Johannes Vermeer del Rijksmuseum, el Met i la National Gallery of Art. L'assaig obre en pàgina senar amb el títol enfonsat. Cada quadre que cita ocupa tot sol la pàgina sencera següent: *La lletera*, a la <PageRef page={2}>pàgina 2</PageRef>, dins dels marges i sota la seva capçalera; la *Noia amb una gerra d'aigua* i la *Dona llegint una carta* es miren a les <PageRef page={4}>pàgines 4 i 5</PageRef>, l'una tallada arran del tall i l'altra ficada a la sang, més enllà de les marques, totes dues sense capçalera ni foli. Un detall de la balança s'imprimeix a 60 mm a la <PageRef page={7}>pàgina 7</PageRef>, amb el peu al costat. El PDF porta les marques, un TrimBox i un BleedBox.
+
+## Elaboració
+
+### 1 · Un tipus per a les làmines i un abast per quadre
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. El tipus de les làmines posa `plate: true` a la seva col·locació per defecte, així que el quadre que cita l'assaig passa a la primera pàgina que pot ocupar sencera i creix fins a la caixa, amb el peu a sota. `REACH` ho canvia quadre a quadre: `'trim'` i `'bleed'` cobreixen la pàgina i retallen la imatge al voltant del centre, de manera que convé triar quadres de proporció propera a la de la pàgina (aquests fan de 0,85 a 0,89 d'ample per cada alt, i la pàgina 0,82). `captionMeasure: 'body'` dona al peu d'una làmina interior l'amplada de la imatge.
+
+### 2 · Cada arxiu, a la mida d'on s'imprimeix
+
+<Excerpt region="paintings" />
+
+La comprovació d'impremta compta el retall: una làmina a sang fa aquí 201 mm d'alt amb la sang, així que el seu arxiu necessita 2.400 px per arribar a 300 ppp, i les dues làmines dins dels marges en necessiten menys. Aquestes surten a entre 303 i 348 ppp. `page.cutLines` dona al plec els seus 3 mm de sang; sense això, `'bleed'` es queda al tall, igual que `'trim'`.
+
+### 3 · Capçaleres que respecten les làmines completes
+
+<Excerpt region="running-heads" />
+
+Una làmina al tall o a sang dona a la seva pàgina el paper `'plate'`. Aquestes capçaleres demanen `pages: 'body'`, així que s'imprimeixen sobre les làmines interiors i desapareixen a les pàgines 4 i 5. Un element que hagi de sortir també allà, per exemple un crèdit petit a la cantonada, anomena `'plate'` al seu `pages`.
+
+### 4 · Un detall de mida coneguda
+
+El tipus del detall posa `width: { value: 60, unit: 'mm' }` amb `captionSide: 'inside'`. Una longitud es mesura contra el seu buit en lloc de repartir-lo, així que els 48 mm de tela que mostra el retall s'imprimeixen a 60 mm, 1,25 vegades la seva mida, en qualsevol columna i en qualsevol edició, i el peu ho pot dir.
+
+## Variants
+
+### Totes les làmines a sang
+
+Dona a tots els quadres el mateix abast: cada làmina cobreix aleshores la seva pàgina, sense capçalera ni foli, i només canvia el retall.
+
+```diff
+-const REACH = { milkmaid: 'content', pitcher: 'trim', letter: 'bleed', balance: 'content' };
++const REACH = { milkmaid: 'bleed', pitcher: 'bleed', letter: 'bleed', balance: 'bleed' };
+```
+
+### El detall a mida real
+
+Retalla 60 mm de tela de l'arxiu del museu i deixa l'amplada com està: el peu dirà aleshores 1:1. L'original d'aquest quadre té 1.666 ppp, així que qualsevol detall d'uns pocs mil·límetres continua passant de 300 ppp.
+
+## Errors freqüents
+
+- Una làmina citada al mateix paràgraf que una altra espera a la pàgina següent, perquè se salta la pàgina que ja té un flotant, tres com a màxim.
+- Les amplades en `pt` i `mm` funcionen; `px` i `em` no es llegeixen com a longitud i la figura ocupa tot el seu buit.
+- Un quadre molt més ample que la pàgina perd els costats en una làmina al tall o a sang. Deixa els apaïsats dins dels marges, on la imatge es veu sencera.

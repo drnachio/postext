@@ -1,0 +1,56 @@
+---
+title: "論理記号と集合記号を記号フォントで組む"
+summary: "∀・∈・ℵ を持たない書体で組んだ論理学の手引き。symbolFont で Noto Sans Math を指定し、キャンバスでも PDF でもその記号とギリシャ文字を描かせる。"
+plain: "論理学と集合論の記号の読み方を教える短い章です。本の書体にはこれらの記号がないため、二つ目の書体が画面でも印刷用の PDF でも補います。"
+description: "Postext の symbolFont で組む論理学の手引き。Noto Sans Math がどの書体でも ∀・∃・∈・ℵ とギリシャ文字を描き、キャンバスにも PDF にも空の箱が出ない。"
+question: "書体にない論理記号・集合記号（∀、∈、ℵ）とギリシャ文字を、空の箱にせず印刷するには？"
+aliases: ["記号フォント", "symbolFont", "代替フォント", "グリフ欠け", "PDF の空の箱", "豆腐", "論理記号", "集合記号", "述語論理", "Noto Sans Math", "glyphFallbackAt"]
+---
+
+## できあがり
+
+ポケット判の論理学の手引きの第 1 章、判型は 155 × 235 mm です。章の記号を大きく組んだ臙脂の帯のあと、∀・∃・∈・∪・∅・ℵ を一つずつ読み上げる四つの節が続き、数式は本文の中にも段落の間にも置かれます。本文は Crimson Pro、見出しは Cormorant Garamond、ラベルは IBM Plex Sans Condensed です。Fontsource が配るこの三書体のファイルには ∀ も ∈ もギリシャ文字もありません。`symbolFont` という設定ひとつで Noto Sans Math がそれぞれの後ろに付き、本文、見出し、柱、表のセルの記号がすべて同じ書体から出て、PDF もそれを全部印刷します。
+
+## 作り方
+
+### 1 · すべての書体の後ろに記号フォントを一つ
+
+この手順のコードは、上の短い答えです。`symbolFont: 'Noto Sans Math'`（[記号フォント](/ja/docs/configuration-fonts-colors-viewers#記号フォント)）は、設定に出てくるすべてのファミリーの後ろにこのファミリーを置きます。書体にない文字は Noto Sans Math で、その書体のサイズと色のまま描かれ、行の残りは元の書体のままです。Fontsource は Noto Sans Math 全体を `latin` ファイルに収めていて 3,033 字ありますが、キットはこのファイルをラテン文字の範囲にしか宣言しないので、ブラウザーは ∀ をこのファイルに求めません。このレシピの `resolve` と `pdfFonts` は、同じファイルを範囲なしで画面と `renderToPdf` に渡します。書体が替わるのは欠けている文字だけです。Crimson Pro は ¬ を持っているので、本文の否定記号は Crimson Pro のままです。
+
+### 2 · まず記号フォントなしで組んで、欠けを見る
+
+<Excerpt region="without" />
+
+最初の組版は `symbolFont` を空にして `glyphFallbackAt` の警告を出力します。書体にグリフのない文字を含む段落、見出し、表ごとに一件ずつ、ページと文字が付きます。英語版では十八件で、Crimson Pro の段落が十四、Cormorant Garamond の見出しが三、それに表 1.1 の IBM Plex Sans Condensed ボールドの見出し行です。描くファミリーがなければ、キャンバスは読者のシステム書体から記号を借り、PDF はそれぞれを空の箱で印刷します。記号フォントを入れた二度目の組版がページに出ているもので、その警告は記号を描くファミリーとして `"Noto Sans Math"` を挙げます。
+
+### 3 · 扉の記号は文字
+
+<Excerpt region="opener" />
+
+タイトルの下の七つの記号の行は、30 pt の Cormorant Garamond で組んだデザイン用のテキストで、見出しの `signs` 属性から中身を取ります。Cormorant Garamond はどれも持っていないので、七つとも記号フォントから、帯の上に白で出ます。9 pt の字間が版面の幅いっぱいに並べます。
+
+### 4 · セルも柱も同じ書体
+
+<Excerpt region="tables" />
+
+真理値表は結合子そのものから作ります。各列の見出しが式で、各セルはその行での式の値です。見出しのセルは IBM Plex Sans Condensed のボールドイタリック、本体は Crimson Pro で、記号フォントは両方に字を出します。ローマン体一つですべてのウェイトと傾きに対応するので、ボールドの見出しの ∧ もイタリックの式の ∈ も同じ立体の記号になります。奇数ページの柱はその時点の節 `{firstMark.h2}` を印刷し、3 ページの *SETS: ∈, ∪, ∩ AND ∅* もやはり Noto Sans Math から記号を取ります。
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="3 ページ：Crimson Pro イタリックの集合の式。記号はすべて Noto Sans Math から。" />
+
+## アレンジ
+
+### 最初の組版を外す
+
+警告を読んだら、組版は一度で足ります。
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## よくあるつまずき
+
+- Fontsource のファイルにギリシャ文字を含む書体（Source Serif 4、Alegreya）は φ や Γ を自分で組み、本文にギリシャ文字があればキットがそのファイルを読み込みます。そのとき記号フォントに回るのは記号だけです。Crimson Pro にはギリシャ文字のファイルがないので、ギリシャ文字は Noto Sans Math から出ます。
+- 記号フォントにはローマン体のレギュラーが一つしかありません。ボールドの見出しでもイタリックの式でも記号はこの書体で組まれ、数学の本の印刷もそうなっています。

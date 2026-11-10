@@ -131,10 +131,21 @@ export interface QuoteNode {
   children: ParagraphNode[];
 }
 
+/** A box's icon (`CalloutNode.icon`). */
+export type CalloutIcon =
+  | { kind: 'image'; fileId: string; tint?: string }
+  | { kind: 'glyph'; glyph: string }
+  | { kind: 'shape' };
+
 export interface CalloutNode {
   k: 'callout';
   styleId?: string;
   title?: string;
+  /** The icon the box's style draws beside its title (`icon`): a picture,
+   *  painted in `tint` when the style paints it in one colour, a glyph, or
+   *  a drawn ring or dot (its look is the stylesheet's). Decoration: hidden
+   *  from assistive technology. */
+  icon?: CalloutIcon;
   children: Node[];
   /** A pull quote: `'echo'` when its words are read in the chapter's
    *  text as well (the box is then hidden from assistive technology, so

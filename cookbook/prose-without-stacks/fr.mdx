@@ -1,0 +1,80 @@
+---
+title: "Une prose justifiée sans répétitions en bord de ligne"
+summary: "Une page de Dickens composée deux fois dans une justification étroite : la première épreuve signale chaque répétition, la seconde la pèse dans la coupure."
+plain: "Quand deux lignes de suite finissent ou commencent par le même mot, l’œil peut sauter à la mauvaise ligne. Le livre est composé deux fois : une fois pour montrer où cela arrive, une fois avec des lignes coupées pour l’éviter."
+description: "bodyText.stacks en deux épreuves de poche : 'warn' liste et marque chaque répétition, 'avoid' ajoute stackPenalty aux démérites de Knuth–Plass et les évite."
+question: "Comment éviter que deux lignes de suite finissent ou commencent par le même mot ?"
+aliases: ["répétitions", "mots répétés en fin de ligne", "répétition en début de ligne", "échelles", "stacks", "stackPenalty", "stackMinCharacters", "correction d’épreuves", "épreuves", "Dickens", "Clarín"]
+pageNotes: { "2": "Première épreuve, page 2 : des bandes rouge pâle sous sole et sole en fin de deux lignes, sous even et event au début des deux suivantes, et sous The au-dessus de the au début d’un paragraphe.", "4": "La dernière page de la première épreuve : le colophon et un bulletin intitulé FIRST PROOF qui liste cinq répétitions par page.", "6": "Seconde épreuve, page 2 : le même texte coupé autrement ; seul even au-dessus de event est encore marqué.", "8": "Le bulletin de la seconde épreuve : une répétition restante." }
+---
+
+## Ce que vous allez composer
+
+Deux épreuves d’une page de poche de 115 × 180 mm, avec le début d’*A Christmas Carol* justifié en Spectral sur 83 mm. Une justification étroite laisse peu de choix à l’algorithme de coupure, et à cinq endroits deux lignes de suite finissent ou commencent par le même mot : *sole* sur *sole*, *his* sur *his*, *No* sur *No*. La première épreuve est composée avec `stacks: 'warn'`. Elle ne change aucune coupure, signale chaque répétition, marque les deux mots d’une bande rouge pâle et les liste sur un bulletin après le colophon. La seconde est composée avec `'avoid'`, et quatre des cinq disparaissent. L’édition espagnole compose de la même façon le début d’*¡Adiós, Cordera!* de Clarín.
+
+## Préparation
+
+### 1 · Signaler d’abord, peser ensuite
+
+<Excerpt region="answer" />
+
+Il y a répétition quand deux lignes de suite finissent par le même mot ou les mêmes derniers caractères, ou commencent de la même façon. `stackMinCharacters` fixe le nombre de caractères requis : trois par défaut, espaces compris, sans tenir compte des accents ni de la casse, si bien que *The* sur *the* compte. `'warn'` se contente de signaler, et le compositeur voit ainsi où un texte se répète. `'avoid'` ajoute `stackPenalty` aux démérites de chaque coupure qui en créerait une, et l’algorithme de Knuth–Plass cherche une autre façon de couper le paragraphe. Il faut `optimalLineBreaking` : la coupure gloutonne n’a pas de démérites auxquels ajouter quoi que ce soit.
+
+Les manuels de composition espagnols comptent la répétition parmi les défauts de composition, avec les lézardes et les échelles de traits d’union. En revenant à la marge de gauche, l’œil peut s’accrocher au mot répété sur la mauvaise ligne et lire une ligne deux fois ou en sauter une ; à droite, la répétition sonne comme un écho. La règle espagnole vise aussi la syllabe répétée, pas seulement le mot, d’où `stackMinCharacters` à 2 dans l’édition espagnole.
+
+La pénalité par défaut, 3000, est ce que coûtent deux traits d’union de suite, et un mot répété d’une seule syllabe coûte le double. Dans cette justification, 3000 laissait deux répétitions dans chaque édition, car l’autre choix était une ligne plus lâche que ce que l’algorithme accepte. À 10000, il accepte ces lignes. `maxWordSpacing` reste à sa valeur par défaut, 2 : avec une limite plus serrée, l’algorithme n’avait aucune autre coupure à choisir et `'avoid'` ne changeait rien.
+
+### 2 · Marquer les répétitions dans le texte
+
+<Excerpt region="marks" />
+
+Chaque avertissement donne la position de sa première ligne dans la source : le script retrouve cette ligne et la suivante dans le document composé, prend le bord répété de chacune et enveloppe le mot entier dans `:mark[…]`. Une marque peint une bande sous un texte ordinaire et ne touche pas aux coupures. Seuls des mots entiers sont marqués : une marque sur une partie de mot change la façon dont ce mot se coupe, et les lignes ne se coupent plus là où l’avertissement a été trouvé.
+
+<PageShot page={2} crop="0,0.04,1,0.32" caption="Première épreuve, page 2 : sole sur sole en fin de ligne, puis even sur event et The sur the en début de ligne." />
+
+### 3 · Deux épreuves d’un même texte
+
+<Excerpt region="proofs" />
+
+Chaque épreuve est composée deux fois. La première composition trouve les répétitions. La seconde compose le même texte avec les marques et un bulletin ajouté après le colophon, qui tombe donc sur la dernière page. Le pen écarte des pages publiées la première composition de chaque épreuve, le texte sans marques : `capture.doc` liste les deux compositions marquées, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.04,1,0.32" caption="Seconde épreuve, page 2 : les mêmes paragraphes coupés autrement. Seul even sur event reste." />
+
+La répétition qui reste dans l’édition anglaise est *even* sur *event* : les deux mots ont les mêmes trois premières lettres, et toute autre coupure de ce paragraphe coûtait plus. En espagnol, avec deux caractères, la première épreuve trouve cinq répétitions, dont *co* de *con* sur *como* et *ar* de *levantar* sur *vacilar*, et la seconde n’en a aucune.
+
+### 4 · L’ouverture au-dessus du texte
+
+<Excerpt region="opener" />
+
+L’attribut `art` du titre nomme la peinture, si bien qu’un seul style sert aux deux éditions. `minHeight` réserve seize lignes et le texte commence à la dix-septième, sur la même grille que les pages suivantes.
+
+### 5 · Titres courants et folio en pied
+
+<Excerpt region="heads" />
+
+L’auteur va au verso et le titre au recto, chacun à côté de son folio. Sur l’ouverture, les titres courants disparaissent et le folio descend en pied de page.
+
+## Variantes
+
+### Ne compter que les mots longs
+
+Trois caractères, c’est la valeur par défaut. À cinq, des mots courts comme *his* et *No* ne comptent plus comme répétitions, et l’algorithme garde autour d’eux les coupures plus serrées.
+
+```diff
+-  stackMinCharacters: t({ en: 3, es: 2 }),
++  stackMinCharacters: 5,
+```
+
+### Composer le livre avec la pénalité par défaut
+
+La valeur par défaut garde un espacement plus serré et accepte deux répétitions par édition là où les éviter ouvrirait davantage une ligne.
+
+```diff
+-  stackPenalty: 10000,
++  stackPenalty: 3000,
+```
+
+## Erreurs fréquentes
+
+- Les répétitions se cherchent dans les lignes déjà coupées. Changez le format, le corps ou le texte et la première épreuve en trouve d’autres : lisez les avertissements de chaque composition et ne recopiez pas les positions d’une composition antérieure.
+- Les répétitions se comptent à l’intérieur d’un paragraphe, et seulement dans les écritures qui séparent les mots par des espaces : deux paragraphes qui commencent tous deux par *Scrooge* ne font pas de répétition, et un texte chinois ou japonais n’en signale jamais.

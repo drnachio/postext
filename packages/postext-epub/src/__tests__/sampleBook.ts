@@ -425,3 +425,30 @@ export const EXERCISE_CHAPTER = [
 export function exerciseSampleBook(): VDTDocument[] {
   return layOutBook([EXERCISE_CHAPTER], { layout: { layoutType: 'single' } });
 }
+
+/** A ring the box icons sample (#1478) paints in each box's colour. */
+export const RING_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="none" stroke="#000"/></svg>';
+
+/** Box icons (#1478): a ring picture painted in two colours, over a side
+ *  stripe and on a corner, a glyph in a column of its own and a drawn dot,
+ *  and an exercise set in a box with an icon. */
+export function boxIconsSampleBook(): VDTDocument[] {
+  const hex = (h: string) => ({ hex: h, model: 'hex' as const });
+  const ring: Resource = { id: 'ring', typeId: 'image', kind: 'svg', createdAt: 0, updatedAt: 0, svg: { fileId: 'ring.svg', width: 10, height: 10 } };
+  const box = (type: string, title: string) => [`:::callout{type="${type}" title="${title}"}`, para, ':::', ''];
+  return buildBundle({
+    chapters: [{ markdown: ['# Boxes', '', para, '', ...box('key', 'Key points'), ...box('badge', 'Note'), ...box('warn', 'Careful'), ...box('dot', 'Aside'), ':::exercise{style=ex}', 'Choose.', '', '- [x] Yes', '- [ ] No', ':::'].join('\n') }],
+    config: {
+      ...config,
+      layout: { layoutType: 'single' },
+      calloutStyles: [
+        { id: 'key', stripe: { enabled: true, side: 'left', width: pt(12), color: hex('#b8c2d4') }, icon: { kind: 'resource', resourceId: 'ring', size: pt(10), tint: hex('#336699') } },
+        { id: 'badge', border: { enabled: true, width: pt(1), color: hex('#999999') }, icon: { kind: 'resource', resourceId: 'ring', size: pt(12), position: 'corner', cornerSide: 'right', tint: hex('#aa3300') } },
+        { id: 'warn', icon: { kind: 'glyph', glyph: '!', size: pt(12), color: hex('#aa0000') } },
+        { id: 'dot', stripe: { enabled: true, side: 'end', width: pt(8), color: hex('#dddddd') }, icon: { kind: 'shape', shape: 'dot', size: pt(6), color: hex('#336699') } },
+      ],
+      exerciseStyles: [{ id: 'ex', box: 'warn' }],
+    },
+    resources: [ring],
+  });
+}

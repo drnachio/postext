@@ -247,6 +247,13 @@ export function facts({ select = 'last', hero = [] } = {}) {
   // (ō from the latin-ext file loadFonts adds): set on screen from it, and
   // in the PDF when the provider adds that file too (cjkPdfProvider does).
   const ownFile = new Map();
+  // Families loaded whole, with no unicode-range: a symbol font the pen
+  // serves itself (#1460). A character a face lacks is set in it on screen
+  // (C36 measures that) and in the PDF (postext-pdf's missingGlyph says
+  // otherwise), so it is not C25's.
+  const whole = new Set([...document.fonts].filter((f) => f.status === 'loaded'
+    && rangesOf(f.unicodeRange).some(([lo, hi]) => lo === 0 && hi >= 0x10ffff))
+    .map((f) => f.family.replace(/^["']|["']$/g, '')));
   // C12: a character set in a CJK or Arabic face from a file that was not
   // loaded when the layout ran was measured in a fallback face (loadCjkFonts
   // was not given it, or loadArabicFonts not the weight). The shim notes the
@@ -273,6 +280,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
       if (placeholders.has(ch)) continue;
       const cp = ch.codePointAt(0);
       if (LATIN.some(([a, b]) => cp >= a && cp <= b) || outside.has(ch)) continue;
+      if (face?.fallbacks?.some((f) => whole.has(f))) continue;
       // A CJK or Arabic face loaded by slices takes the character from its own files.
       if (covered?.some(([a, b]) => cp >= a && cp <= b)) continue;
       if (face && ranged.get(face.family)?.some(([a, b]) => cp >= a && cp <= b)) {

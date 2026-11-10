@@ -1,0 +1,68 @@
+---
+title: "Un bon de commande imprimé qui est aussi un PDF à remplir"
+summary: "Une liste de semences dont les cases de quantité sont des champs PDF : totaux de ligne, sous-totaux et montant à payer se calculent dans le lecteur."
+description: "Une liste de semences anciennes composée avec Postext, dont les puces sont des champs AcroForm : cases numériques, à cocher, liste de choix, totaux calculés."
+plain: "Un catalogue de semences de quatre pages avec son bon de commande. Imprimé, il a des cases où écrire ; ouvert dans un lecteur PDF, on tape le nombre de sachets et les totaux s'additionnent seuls."
+question: "Comment faire un formulaire PDF que le lecteur peut remplir et qui additionne ses totaux ?"
+aliases: ["PDF à remplir", "formulaire PDF", "AcroForm", "champs de formulaire", "bon de commande", "liste de prix", "champs calculés", "AFSimple_Calculate", "case à cocher", "liste déroulante", "catalogue de semences", "vente par correspondance"]
+pageNotes: { "1": "La couverture : une peinture de légumes anciens sur une table en bois occupe la moitié supérieure de la page (tomates côtelées, pastèque Moon and Stars, courge bleue, poivrons, betteraves, maïs bigarré et deux sachets en papier de haricots tachetés). Dessous, le surtitre vert, le titre Seed List and Order Form en grand Caslon sur deux lignes avec un chapeau en italique à côté, et une introduction sur deux colonnes.", "2": "Page 2 : The 2027 List. Un court paragraphe, puis la liste de prix en tableau, avec une ligne d'en-tête vert foncé (Code, Variety, Seeds, Price, Qty, Total). Chaque groupe s'ouvre sur une ligne vert pâle ; chaque variété a une case blanche bordée de gris sous Qty et une case couleur kraft sous Total, et chaque groupe se termine par une ligne de sous-total dont la case a un filet vert.", "3": "Page 3 : la liste se poursuit avec le dernier haricot, Squash and melons et Greens and roots, chacun avec son sous-total. Sous l'intertitre What you owe, un tableau de cinq lignes : les semences, le cercle des gardiens de semences avec une case à cocher, le port de $ 4.50 imprimé dans une puce kraft, une case blanche pour un don et Total to pay dans une case vert plein.", "4": "Page 4 : Your Details. Nom, adresse, ville et État, code postal et téléphone, e-mail, chacun avec une ligne où écrire ; How you pay, avec une case de choix sur Check, une ligne pour la date et deux cases à cocher ; les adresses postale et électronique ; deux colonnes de notes et un colophon d'une ligne." }
+---
+
+## Ce que vous allez composer
+
+*Long Furrow Heritage Seeds* est la liste de semences du printemps 2027 : quatre pages de 210 × 270 mm d'une maison de semences inventée, qui vend vingt-cinq variétés réelles à pollinisation libre. Une peinture de la récolte occupe la moitié haute de la couverture. La liste de prix est un seul tableau sur les pages 2 et 3, avec une case de quantité et le total de la ligne à chaque rangée, et un sous-total à la fin de chaque groupe. Les coordonnées du client et le paiement sont en page 4. Imprimée, la feuille se remplit au stylo comme n'importe quel bon de commande. Chaque case est aussi une puce munie de l'attribut `field` : le PDF qu'écrit `renderToPdf` est donc un AcroForm. On tape le nombre de sachets dans le lecteur PDF et les totaux se calculent, en dollars en anglais et en euros en espagnol.
+
+## Préparation
+
+### 1 · Un style de puce par sorte de case
+
+<Excerpt region="chips" />
+
+Le style donne au champ son aspect et sa largeur minimale, et le PDF pose le widget du champ exactement sur la boîte que peint la puce. Les cases que le lecteur remplit sont blanches avec un filet gris ; celles que le formulaire calcule sont couleur kraft, sans filet, pour qu'on voie lesquelles se remplissent à la main. Les lignes de l'adresse sont des puces qui n'ont qu'un filet en pied, de 145,5 mm pour le nom et de 64 ou 59,5 mm pour les demi-lignes, si bien que leurs extrémités tombent sur les taquets du style de paragraphe `field`. La case à cocher garde sa largeur minimale de 3,9 mm sans marge intérieure, et le champ devient une case à cocher dans le PDF.
+
+### 2 · Le TSV d'un tableur, les cases ajoutées par le script
+
+<Excerpt region="tables" />
+
+Les variétés arrivent sous forme de feuille : un code, le nom et sa note, le nombre de graines par sachet et le prix. `priceList()` ajoute à chaque ligne les deux puces de champ, et une ligne de sous-total à la fin de chaque groupe. La cellule du prix imprime `formatFieldNumber(price, 'currency', style)`, la fonction qui met en forme les totaux, de sorte que prix imprimé et total calculé ont les mêmes séparateurs. La ligne qui ouvre chaque groupe est une seule cellule sur les six colonnes, et une coupure du tableau ne la laisse jamais seule en bas de page. Le tableau de la page 3 prend ses cinq lignes dans le Markdown de `content.summary.en.md`, avec les puces écrites dans les cellules.
+
+### 3 · La couverture : la peinture, puis le titre
+
+<Excerpt region="cover" />
+
+L'élément image est ancré à la page, en 210 × 134 mm, et sort à fond perdu sur trois côtés. Le surtitre se place à 120 mm du haut du conteneur ; le titre et le chapeau s'accrochent à lui. La hauteur minimale du style, 164 mm, garde l'introduction sur deux colonnes sous le titre, quelle que soit sa longueur.
+
+### 4 · Des titres courants qui épargnent la couverture
+
+<Excerpt region="running-heads" />
+
+La page paire porte le nom de la maison de semences, la page impaire la section, chacun à côté du folio. Le style de titre de la couverture a un en-tête et un pied vides : la page 1 n'a pas de titre courant.
+
+### 5 · Une palette avec une couleur pour les montants calculés
+
+<Excerpt region="palette" />
+
+Le vert feuille marque ce qui appartient à la maison : la ligne d'en-tête, les surtitres, les filets des sous-totaux et la case pleine du montant à payer. Le kraft est réservé aux cases que le PDF calcule ; sur papier, on les lit comme les cases à laisser vides.
+
+## Variantes
+
+### Demander les frais de port dans un champ
+
+Transformez le port imprimé en champ que le lecteur remplit, et ajoutez-le au total à la place du montant fixe.
+
+```diff
+-Postage and packing, any size of order	:chip[$ 4.50]{style="amount"}
++Postage and packing, any size of order	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 4.50, order.gift)"}
++**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## Erreurs fréquentes
+
+Les pages capturées montrent les cases vides, car les mots d'un champ sont sa valeur par défaut et tous les champs commencent vides ici. Le port est du texte imprimé dans une puce sans `field`, et le total l'ajoute comme le nombre `4.50` dans son calcul : le lecteur ne peut pas le modifier.
+
+Les totaux sont des scripts (`AFSimple_Calculate` et de courtes expressions), qu'exécutent Acrobat, Foxit, Chrome et Firefox. Aperçu, sur macOS, affiche les champs et enregistre ce qu'on tape, mais n'exécute aucun script : les totaux y restent vides.
+
+La case du cercle porte `on="1"`, la valeur que lit un calcul quand elle est cochée. Avec la valeur par défaut, `Yes`, `product(order.circle, 12)` donnerait toujours 0, et postext-pdf le signale.
+
+La recette importe `https://esm.sh/postext-pdf?bundle`. La compilation par défaut de pdf-lib sur esm.sh place ses classes d'annotation dans un module à part, et pdf-lib refuse alors le widget de chaque champ : le PDF garde les cases, mais sans format de nombre, sans totaux et sans champs en lecture seule, avec un avertissement `formField` dans la console. `?bundle` compile pdf-lib en un seul module et laisse `postext` à l'extérieur, partagé avec le reste de la page.
