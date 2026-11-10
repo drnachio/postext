@@ -6,7 +6,7 @@ import type { PostextConfig, Resource } from '../types.js';
 import type { SvgPictureFontWarning } from '../vdt.js';
 import { registerResourceImage } from '../canvas-backend/index.js';
 import { resolveColorValue, resolveDiagramStyleConfig } from '../defaults/index.js';
-import { applySingleInkToSvg } from '../svg/singleInk.js';
+import { applySingleInkToSvg, screenSvgColors } from '../svg/singleInk.js';
 import { chainSvgFontProviders, inlineSvgFontsDetailedSync, type SvgFontProvider, type SvgFontSyncProvider } from '../svg/fonts.js';
 import { registerFontBytes, registeredFontProvider, registeredFontSyncProvider } from '../svg/fontRegistry.js';
 import { decodeSvgImage, prepareSvgMarkup, svgPictureFontWarning } from '../svg/image.js';
@@ -93,7 +93,7 @@ export interface BundleImageOptions {
  *  single-ink is on, then with the bundle's fonts (and the registered
  *  ones held in memory) inlined. */
 function svgMarkupSync(bundle: BundleSource, r: Resource, bytes: Uint8Array, inkHex: string | null, options?: BundleImageOptions): string {
-  let text = new TextDecoder().decode(bytes);
+  let text = screenSvgColors(new TextDecoder().decode(bytes));
   if (inkHex) text = applySingleInkToSvg(text, inkHex);
   if (!svgInlinesFonts(bundle.config, r)) return text;
   const own = bundleSvgFontProvider({ fonts: bundle.fonts ?? [] });

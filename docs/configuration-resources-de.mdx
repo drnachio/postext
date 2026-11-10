@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Ressourcen und Tabellen',
   description: 'Ressourcentypen und ihre Nummerierung, Tabellen- und Legendenstile, einfarbige Diagramme und gedruckte Videos',
   lang: 'de',
-  lastUpdated: '2026-10-19',
-  readingTime: '39 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '40 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen für Abbildungen, Tabellen, Diagramme und Videos. Postext nennt sie Ressourcen und nummeriert jede Art für sich. Sie legen fest, wie Tabellen aussehen: ihre Linien, ihre Flächen, ihre Schrift und wie sie sich über Seiten verteilen. Sie legen fest, wie die Legende einer Abbildung oder Tabelle gesetzt wird. Außerdem können Sie Diagramme in einer einzigen Druckfarbe drucken und wählen, wie ein Video auf Papier erscheint.",
@@ -852,6 +852,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**Sonderfarben in einem SVG.** In einem Druck-PDF finden die Farben eines Vektor-SVG ihre Druckfarben selbst. Eine Farbe, auf die `icc-named-color(…, "PANTONE 185 C")` folgt, oder ein Element mit `data-spot="PANTONE 185 C"` (und `data-spot-tint="40"`, in Prozent) druckt auf der Platte dieser Druckfarbe: mit dem Ersatzwert der Palette, wenn die Palette eine Sonderfarbe dieses Namens hat, sonst mit dem eigenen CMYK der Farbe. Eine Farbe, die einer Sonderfarbe der Palette gleicht oder einem Tonwert davon über Weiß (so exportieren Gestaltungsprogramme einen Tonwert eines Farbfelds), druckt auf dieser Druckfarbe im Tonwert, den sie zeigt. Jede Farbe wird für sich aufgelöst, sodass ein Diagramm mehrere Druckfarben und Prozessfarben mischen kann; `diagramStyle.singleInk` hat weiterhin Vorrang. Viele Programme exportieren ein Farbfeld als einfache RGB-Farbe und verlieren seinen Namen: Geben Sie der Palette die Sonderfarbe mit diesem `hex`, oder kennzeichnen Sie die Elemente mit `data-spot`.
 
 ### Einfarbmodus auf dem Canvas und in HTML
 

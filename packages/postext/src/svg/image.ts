@@ -3,7 +3,7 @@
 
 import { registerResourceImage } from '../canvas-backend/renderResourceBlock.js';
 import type { SvgPictureFontWarning } from '../vdt.js';
-import { applySingleInkToSvg } from './singleInk.js';
+import { applySingleInkToSvg, screenSvgColors } from './singleInk.js';
 import { inlineSvgFontsDetailed, type InlineSvgFontsOptions, type SvgFontInlining, type SvgFontProvider, type SvgFontWarning } from './fonts.js';
 import { registeredFontProvider } from './fontRegistry.js';
 
@@ -39,7 +39,8 @@ export function svgPictureFontWarning(w: SvgFontWarning, fileId: string, resourc
  *  `inlineFonts` is false). Never store the result: it carries font
  *  files. */
 export async function prepareSvgMarkup(svgText: string, options?: PrepareSvgOptions): Promise<SvgFontInlining> {
-  let svg = svgText;
+  // A spot ink named in a paint is the print PDF's: on screen, the colour.
+  let svg = screenSvgColors(svgText);
   if (options?.inkHex) svg = applySingleInkToSvg(svg, options.inkHex);
   if (options?.inlineFonts === false) return { svg, faces: [], bytes: 0 };
   const fileId = options?.fileId ?? '';

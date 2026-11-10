@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Recursos i taules',
   description: 'Els tipus de recurs i la seva numeració, els estils de taules i de peus de recurs, els diagrames a una tinta i els vídeos impresos',
   lang: 'ca',
-  lastUpdated: '2026-10-19',
-  readingTime: '46 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '47 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els paràmetres de figures, taules, diagrames i vídeos. Postext els anomena recursos i numera cada tipus per separat. Hi pots decidir l'aspecte de les taules (els filets, els fons, la tipografia i com es parteixen entre pàgines) i com s'escriu el peu d'una figura o d'una taula. També pots imprimir els diagrames a una sola tinta i triar com apareix un vídeo sobre el paper.",
@@ -852,6 +852,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined quan tot coincideix amb els valors per defecte
 ```
+
+**Tintes planes dins d’un SVG.** En un PDF d’impremta, els colors d’un SVG vectorial troben la seva tinta sols. Un color seguit de `icc-named-color(…, "PANTONE 185 C")`, o un element amb `data-spot="PANTONE 185 C"` (i `data-spot-tint="40"`, en percentatge), s’imprimeix a la planxa d’aquesta tinta: amb l’equivalent de la paleta si la paleta té una tinta plana amb aquest nom, i si no amb el CMYK del mateix color. Un color igual a una tinta plana de la paleta, o a un to d’aquesta sobre blanc (com exporten els programes de disseny un to d’una mostra), s’imprimeix en aquesta tinta al to que mostra. Cada color es resol per separat, de manera que un diagrama pot barrejar diverses tintes i colors de quadricromia; `diagramStyle.singleInk` continua tenint prioritat. Molts programes exporten una mostra com un color RGB sense més i en perden el nom: afegeix a la paleta la tinta plana amb aquest `hex`, o marca els elements amb `data-spot`.
 
 ### Tinta única en canvas i en HTML
 

@@ -23,7 +23,9 @@
 import type { CmykPercent, ResolvedPrintConfig, Resource } from '../types.js';
 import type { BoundingBox, VDTComicPage, VDTDesignSlot, VDTDocument, VDTLine } from '../vdt.js';
 import type { OutputTransform } from '../color/transform.js';
-import { authoredCmykColors } from '../color/authored.js';
+import { authoredCmykColors, authoredSpotColors, spotColorCmyk, spotInks } from '../color/authored.js';
+import { inkNameProblem, similarInkNames, spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
+import { resolveColorValue } from '../defaults/shared.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -53,6 +55,20 @@ export type PreflightIssue = {
   | { kind: 'thinRule'; widthPt: number; minimumPt: number; color: string }
   | { kind: 'smallProcessText'; sizePt: number; inks: number; color: string; text: string }
   | { kind: 'inkLimit'; color: string; coverage: number; limit: number }
+  /** The spot inks the job prints with besides process, once per
+   *  document (info). */
+  | { kind: 'spotInks'; inks: string[] }
+  /** One ink defined twice with a different CMYK or overprint: the PDF
+   *  writes the first, and the printer would be asked for two plates of
+   *  one name. */
+  | { kind: 'spotInkConflict'; ink: string }
+  /** A plate name a PDF cannot carry as it is: `All` or `None` (every
+   *  plate, no plate), or longer than 127 bytes. */
+  | { kind: 'spotInkName'; ink: string; problem: InkNameProblem }
+  /** Plate names that differ only in case or spacing: most likely one ink
+   *  the printer would get two plates of. An alias in `print.inks` merges
+   *  them. */
+  | { kind: 'spotInkSimilar'; inks: string[] }
   | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
 );
@@ -159,7 +175,10 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const offset = doc.pageIndexOffset ?? 0;
   const cmykJob = options.cmyk ?? print.standard !== 'none';
   const sizes = bitmapSizes(doc, options.resources);
-  const authored = authoredCmykColors(doc.config);
+  // Spot inks as the ink table prints them: renamed, merged, or in process.
+  const { spots, authored } = spotsThroughInkTable(authoredSpotColors(doc.config), authoredCmykColors(doc.config), print.inks);
+  /** Spot inks painted somewhere in the document, by name. */
+  const usedInks = new Set<string>();
   const minRulePx = dimensionToPx(pf.minRuleWidth, dpi);
   const smallTextPx = dimensionToPx(pf.smallTextSize, dpi);
   const safePx = dimensionToPx(pf.safeZone, dpi);
@@ -169,6 +188,11 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const t = options.transform;
 
   const separation = (hex: string): CmykPercent | undefined => {
+    const spot = spots.get(hex);
+    if (spot) {
+      usedInks.add(spot.name);
+      return spotColorCmyk(spot);
+    }
     const exact = authored.get(hex);
     if (exact) return exact;
     if (!t) return undefined;
@@ -179,6 +203,11 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     return { c: k.c * 100, m: k.m * 100, y: k.y * 100, k: k.k * 100 };
   };
   const inkCount = (hex: string): number => {
+    // A spot colour is one ink, whatever its alternate.
+    if (spots.has(hex)) {
+      usedInks.add(spots.get(hex)!.name);
+      return 1;
+    }
     const sep = separation(hex);
     if (sep) return [sep.c, sep.m, sep.y, sep.k].filter((v) => v > EPS).length;
     const neutral = hex.slice(1, 3) === hex.slice(3, 5) && hex.slice(3, 5) === hex.slice(5, 7);
@@ -191,6 +220,11 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     const hex = hex6(color);
     if (!hex || !cmykJob || coverageSeen.has(hex)) return;
     coverageSeen.add(hex);
+    // One plate at its tint: never over the limit.
+    if (spots.has(hex)) {
+      usedInks.add(spots.get(hex)!.name);
+      return;
+    }
     const sep = separation(hex);
     if (!sep) return;
     const coverage = sep.c + sep.m + sep.y + sep.k;
@@ -463,6 +497,27 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     if (coverage > print.inkLimit + EPS) {
       out.push({ kind: 'inkLimit', severity: 'warning', pageIndex: offset, color: 'rich-black', coverage: Math.round(coverage), limit: print.inkLimit });
     }
+  }
+
+  // Spot inks: the plates the job adds, and inks defined twice.
+  if (cmykJob && spots.size > 0) {
+    const ds = doc.config.diagramStyle;
+    if (ds?.singleInk && ds.inkColor) {
+      const ink = hex6(resolveColorValue(ds.inkColor, doc.config.colorPalette, ds.inkColor).hex);
+      const spot = ink ? spots.get(ink) : undefined;
+      if (spot) usedInks.add(spot.name);
+    }
+    const { inks, conflicts } = spotInks(spots.values());
+    const used = inks.map((i) => i.name).filter((n) => usedInks.has(n));
+    if (used.length > 0) out.push({ kind: 'spotInks', severity: 'info', pageIndex: offset, inks: used });
+    for (const ink of conflicts) {
+      if (usedInks.has(ink)) out.push({ kind: 'spotInkConflict', severity: 'warning', pageIndex: offset, ink });
+    }
+    for (const ink of used) {
+      const problem = inkNameProblem(ink);
+      if (problem) out.push({ kind: 'spotInkName', severity: 'warning', pageIndex: offset, ink, problem });
+    }
+    for (const group of similarInkNames(used)) out.push({ kind: 'spotInkSimilar', severity: 'warning', pageIndex: offset, inks: group });
   }
   return out;
 }

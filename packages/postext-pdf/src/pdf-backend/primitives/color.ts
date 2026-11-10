@@ -4,6 +4,7 @@ import { type Color, cmyk, grayscale, rgb, type PDFPage, PDFName, PDFOperator, s
 import { hexToRgb, colorAlpha, rgbToCmyk, rgbToGrayscale } from '../../colors.js';
 import { type ColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
 import type { PageCtx } from '../primitives.js';
+import { spotStandIn } from '../../print/spot.js';
 
 export function makeScale(dpi: number): number {
   return 72 / dpi;
@@ -48,8 +49,15 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
       [r, g, b] = overPaper(r, g, b, alpha);
       alpha = 1;
     }
-    const exact = colorSpace.authored.get(hex.slice(0, 7).toLowerCase());
-    if (exact && alpha < 1 && colorSpace.flattenTransparency) {
+    const hex6 = hex.slice(0, 7).toLowerCase();
+    const spot = colorSpace.spots.get(hex6);
+    const exact = colorSpace.authored.get(hex6);
+    if (spot) {
+      // On the ink's own plate; flattened over the paper, a translucent
+      // spot colour is a lighter tint of the same ink.
+      const t = (spot.tint / 100) * (colorSpace.flattenTransparency ? colorAlpha(hex) : 1);
+      color = { ...spotStandIn(spot, t) };
+    } else if (exact && alpha < 1 && colorSpace.flattenTransparency) {
       // A tint of the authored ink mix stands in for it over the paper.
       const t = colorAlpha(hex);
       color = cmyk(round4((exact.c / 100) * t), round4((exact.m / 100) * t), round4((exact.y / 100) * t), round4((exact.k / 100) * t));

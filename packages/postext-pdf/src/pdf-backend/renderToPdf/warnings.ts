@@ -9,8 +9,11 @@ export interface PdfPrintWarning {
   /** `outputProfileUnavailable`: the output profile could not be loaded, so
    *  CMYK was converted with the naive formula (no PDF/X was asked for;
    *  with one, the render fails instead). `pageNegativeIgnored`: PDF/X-1a
-   *  has no blend modes, so the debug page negative was left out. */
-  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored';
+   *  has no blend modes, so the debug page negative was left out.
+   *  `spotTintsExhausted`: the process ran out of codes for distinct spot
+   *  tints (some five thousand), so the tints past them printed in process
+   *  instead of on their ink's plate. */
+  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted';
   message: string;
 }
 

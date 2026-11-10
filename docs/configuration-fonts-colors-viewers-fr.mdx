@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Polices, couleurs et sortie',
   description: 'Unités, couleurs et palette, polices personnalisées, visionneuse HTML, PDF et production pour l’impression, visionneuse Folio et calques de débogage',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '41 min',
   order: 20,
   parent: 'configuration',
@@ -39,13 +39,14 @@ Les couleurs sont stockées avec une représentation hexadécimale et un modèle
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // L’encre d’un ton direct.
   paletteId?: string;  // L’entrée de colorPalette qu’elle suit.
 }
 ```
 
-Le champ `model` indique l’espace colorimétrique visé. Pour le rendu web, `'hex'` ou `'rgb'` sont les valeurs habituelles. Pour les flux d’impression, `'cmyk'` indique que la couleur a été définie en CMJN, et `cmyk` conserve ses valeurs : un rendu d’impression en CMJN les applique telles quelles, `hex` servant de rendu à l’écran (voir [Couleurs définies en CMJN](#couleurs-définies-en-cmjn)).
+Le champ `model` indique l’espace colorimétrique visé. Pour le rendu web, `'hex'` ou `'rgb'` sont les valeurs habituelles. Pour les flux d’impression, `'cmyk'` indique que la couleur a été définie en CMJN, et `cmyk` conserve ses valeurs : un rendu d’impression en CMJN les applique telles quelles, `hex` servant de rendu à l’écran (voir [Couleurs définies en CMJN](#couleurs-définies-en-cmjn)). `'spot'` est un ton direct, avec son encre dans `spot` (voir [Tons directs](/fr/docs/configuration-pdf-output#tons-directs)).
 
 Comme Postext vise une sortie de qualité éditoriale, la couleur par défaut du texte courant est livrée avec `model: 'cmyk'` (`#000000`). Les couleurs des titres, du gras, de l’italique et des listes renvoient par défaut à la **Main Color** de la palette (`#295AA3`, `model: 'hex'`). Le fond de page et les calques d’interface (grille de ligne de base, traits de coupe, indicateurs de débogage) utilisent par défaut `model: 'hex'`. Remplacez `color.model` sur n’importe quel champ si vous avez besoin d’une autre sémantique à l’export.
 
@@ -540,6 +541,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
 }
 
 interface CustomOutputProfile {

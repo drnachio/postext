@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Font, colori e output',
   description: 'Unità, colori e tavolozza; i font personalizzati; il visualizzatore HTML, il PDF e la produzione di stampa; il visualizzatore Folio e le sovrimpressioni di debug',
   lang: 'it',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '40 min',
   order: 20,
   parent: 'configuration',
@@ -39,13 +39,14 @@ I colori si memorizzano con una rappresentazione esadecimale e con un modello di
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // L’inchiostro di una tinta piatta.
   paletteId?: string;  // La voce di colorPalette che segue.
 }
 ```
 
-Il campo `model` indica lo spazio colore previsto. Per il rendering web, sono tipici `'hex'` o `'rgb'`. Per i flussi di stampa, `'cmyk'` dice che il colore è stato specificato in CMYK, e `cmyk` ne conserva i valori: un rendering di stampa in CMYK li imposta così come sono, con `hex` come loro resa a schermo (vedi [Colori definiti in CMYK](#colori-definiti-in-cmyk)).
+Il campo `model` indica lo spazio colore previsto. Per il rendering web, sono tipici `'hex'` o `'rgb'`. Per i flussi di stampa, `'cmyk'` dice che il colore è stato specificato in CMYK, e `cmyk` ne conserva i valori: un rendering di stampa in CMYK li imposta così come sono, con `hex` come loro resa a schermo (vedi [Colori definiti in CMYK](#colori-definiti-in-cmyk)). `'spot'` è una tinta piatta, con il suo inchiostro in `spot` (vedi [Tinte piatte](/it/docs/configuration-pdf-output#tinte-piatte)).
 
 Poiché Postext punta a un output di qualità editoriale, il colore predefinito del testo corrente ha `model: 'cmyk'` (`#000000`). I colori di titoli, grassetto, corsivo ed elenchi sono collegati per impostazione predefinita al **Main Color** della tavolozza (`#295AA3`, `model: 'hex'`). Lo sfondo della pagina e le sovrimpressioni dell’interfaccia (griglia della linea di base, segni di taglio, indicatori di debug) hanno per impostazione predefinita `model: 'hex'`. Sostituisci `color.model` su qualsiasi campo se ti serve una semantica di esportazione diversa.
 
@@ -540,6 +541,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
 }
 
 interface CustomOutputProfile {

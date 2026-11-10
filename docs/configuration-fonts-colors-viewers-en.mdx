@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Fonts, colours and output',
   description: 'Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays',
   lang: 'en',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '36 min',
   order: 20,
   parent: 'configuration',
@@ -39,13 +39,14 @@ Colors are stored with both a hex representation and a target color model:
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // The ink of a spot colour (see Spot colours).
   paletteId?: string;  // The colorPalette entry it follows (see Color Palette).
 }
 ```
 
-The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` says the colour was specified in CMYK, and `cmyk` keeps its values: a CMYK print render sets them as they are, with `hex` as their screen rendering (see [Colours authored in CMYK](#colours-authored-in-cmyk)).
+The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` says the colour was specified in CMYK, and `cmyk` keeps its values: a CMYK print render sets them as they are, with `hex` as their screen rendering (see [Colours authored in CMYK](#colours-authored-in-cmyk)). `'spot'` is a spot colour, with its ink in `spot` (see [Spot colours](/en/docs/configuration-pdf-output#spot-colours)).
 
 Because Postext targets publication-grade output, the default body text color ships with `model: 'cmyk'` (`#000000`). Heading, bold, italic, and list colors default to the palette-linked **Main Color** (`#295AA3`, `model: 'hex'`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
 
@@ -540,6 +541,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
 }
 
 interface CustomOutputProfile {

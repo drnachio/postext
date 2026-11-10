@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Recursos y tablas',
   description: 'Cómo se configuran los tipos de recurso y su numeración, el estilo de las tablas y de los pies de recurso, los diagramas a una sola tinta y la forma en que se imprimen los vídeos',
   lang: 'es',
-  lastUpdated: '2026-10-19',
-  readingTime: '46 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '47 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes de figuras, tablas, diagramas y vídeos. Postext los llama recursos y numera cada tipo por separado. Decides el aspecto de las tablas: sus filetes, sus fondos, su tipografía y cómo se parten entre páginas. Decides cómo se escribe el pie de una figura o de una tabla. También puedes imprimir los diagramas a una sola tinta y elegir cómo aparece un vídeo en el papel.",
@@ -853,6 +853,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined cuando todo coincide con los valores por defecto
 ```
+
+**Tintas planas dentro de un SVG.** En un PDF de imprenta, los colores de un SVG vectorial encuentran su tinta solos. Un color seguido de `icc-named-color(…, "PANTONE 185 C")`, o un elemento con `data-spot="PANTONE 185 C"` (y `data-spot-tint="40"`, en porcentaje), se imprime en la plancha de esa tinta: con el equivalente de la paleta si la paleta tiene una tinta plana con ese nombre, y si no con el CMYK del propio color. Un color igual a una tinta plana de la paleta, o a un tono de ella sobre blanco (como exportan los programas de diseño un tono de una muestra), se imprime en esa tinta al tono que muestra. Cada color se resuelve por separado, así que un diagrama puede mezclar varias tintas y colores de cuatricromía; `diagramStyle.singleInk` sigue teniendo prioridad. Muchos programas exportan una muestra como un color RGB sin más y pierden su nombre: añade a la paleta la tinta plana con ese `hex`, o marca los elementos con `data-spot`.
 
 ### Tinta única en canvas y en HTML
 

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Recursos e tabelas',
   description: 'Os tipos de recurso e a numeração deles, os estilos de tabela e de legenda, os diagramas em uma só tinta e os vídeos impressos',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
-  readingTime: '44 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '45 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes de figuras, tabelas, diagramas e vídeos. O Postext os chama de recursos e numera cada tipo separadamente. Você define a aparência das tabelas: fios, fundos, tipografia e como elas se dividem entre páginas. Define como se escreve a legenda de uma figura ou de uma tabela. Também pode imprimir os diagramas em uma só tinta e escolher como um vídeo aparece no papel.",
@@ -853,6 +853,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined quando tudo coincide com os padrões
 ```
+
+**Cores especiais dentro de um SVG.** Num PDF de impressão, as cores de um SVG vetorial encontram a sua tinta sozinhas. Uma cor seguida de `icc-named-color(…, "PANTONE 185 C")`, ou um elemento com `data-spot="PANTONE 185 C"` (e `data-spot-tint="40"`, em percentagem), é impressa na chapa dessa tinta: com o equivalente da paleta se a paleta tiver uma cor especial com esse nome, e senão com o CMYK da própria cor. Uma cor igual a uma cor especial da paleta, ou a uma retícula dela sobre branco (como os programas de design exportam uma retícula de uma amostra), é impressa nessa tinta na retícula que mostra. Cada cor é resolvida à parte, por isso um diagrama pode misturar várias tintas e cores de quadricromia; `diagramStyle.singleInk` continua a ter prioridade. Muitos programas exportam uma amostra como uma simples cor RGB e perdem o seu nome: acrescente à paleta a cor especial com esse `hex`, ou marque os elementos com `data-spot`.
 
 ### Tinta única no canvas e no HTML
 
