@@ -15,6 +15,7 @@
 
 import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from '../vdt.js';
 import { dottedCentres, sesamePath, wavePoints } from '../canvas-backend/annotations.js';
+import { htmlLinkUnderlinePainted } from './linkPaint.js';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c]!);
@@ -69,7 +70,8 @@ function markHtml(m: VDTLineMark, baseline: number, color: string, vertical = fa
  *  wherever the browser puts its baseline. */
 export function lineMarksHtml(line: VDTLine, color: string): string {
   if (!line.marks || line.marks.length === 0) return '';
-  const marks = line.marks.map((m) => markHtml(m, 0, color)).join('');
+  const linkLines = htmlLinkUnderlinePainted();
+  const marks = line.marks.filter((m) => !(m.underLink && linkLines)).map((m) => markHtml(m, 0, color)).join('');
   return `<span aria-hidden="true" style="position:absolute;left:0;top:0;white-space:pre;">`
     + `<span style="display:inline-block;position:relative;width:0;height:0;vertical-align:baseline;">${marks}</span></span>`;
 }

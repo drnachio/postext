@@ -174,10 +174,19 @@ export interface ResolvedResourceRun extends ResourceRun {
   sourceMap: number[];
 }
 
-export function resolveResourceRun(rb: ResolvedResourceBlock, target: ResourceFocusTarget): ResolvedResourceRun | null {
+/** Whether the document reads `++text++` as underlined text
+ *  (`bodyText.plusUnderline`, #1465); a document built without a
+ *  configuration (a test's) does not. */
+export function plusUnderlineOf(doc: VDTDocument): boolean {
+  return (doc.config as { bodyText?: { plusUnderline?: boolean } } | undefined)?.bodyText?.plusUnderline === true;
+}
+
+export function resolveResourceRun(rb: ResolvedResourceBlock, target: ResourceFocusTarget, plusUnderline = false): ResolvedResourceRun | null {
   const run = resourceRunFor(rb, target);
   if (!run) return null;
-  const { text, sourceMap } = mapInlineSnippet(run.content);
+  // Read as the layout read it: `++text++` underlines with
+  // `bodyText.plusUnderline` on (#1465).
+  const { text, sourceMap } = mapInlineSnippet(run.content, { plusUnderline });
   return { ...run, stamped: stampRunPlainRanges(run.lines, text), plainText: text, sourceMap };
 }
 
@@ -295,7 +304,7 @@ export function resourceTextAtPixel(
       const lines = kind === 'caption' ? rb.captionLines : rb.noteLines;
       const hitIdx = lines.findIndex((l) => yLocal >= l.bbox.y && yLocal <= l.bbox.y + l.bbox.height);
       if (hitIdx < 0) continue;
-      const run = resolveResourceRun(rb, { kind });
+      const run = resolveResourceRun(rb, { kind }, plusUnderlineOf(doc));
       if (!run) continue;
       const source = markdown === undefined ? null : figureWordsSource(markdown, block, kind);
       return { resourceId, target: { kind }, offset: offsetInRun(run, hitIdx, xLocal), ...(source !== null ? { source } : {}) };
@@ -306,7 +315,7 @@ export function resourceTextAtPixel(
         if (!inside(cell.rect, xLocal, yLocal)) continue;
         const target: ResourceFocusTarget = { kind: 'cell', row: cell.row, col: cell.col };
         if (cell.lines.length === 0) return { resourceId, target, offset: 0 };
-        const run = resolveResourceRun(rb, target);
+        const run = resolveResourceRun(rb, target, plusUnderlineOf(doc));
         if (!run) return { resourceId, target, offset: 0 };
         const idx = nearestLineIndex(run.lines, yLocal);
         return { resourceId, target, offset: idx < 0 ? 0 : offsetInRun(run, idx, xLocal) };

@@ -64,8 +64,8 @@ function buildPlainCacheKey(
 /** The struck-through ranges of a chip's word (`~~…~~`), which draw lines
  *  on the measured chip; empty when it has none. */
 function strikeKey(s: InlineSpan): string {
-  const ranges = s.links?.filter((l) => l.strike);
-  return ranges && ranges.length > 0 ? `~st${ranges.map((l) => `${l.start}-${l.end}:${l.strike!.id}`).join(',')}` : '';
+  const ranges = s.links?.filter((l) => l.strike || l.underline);
+  return ranges && ranges.length > 0 ? `~st${ranges.map((l) => `${l.start}-${l.end}:${l.strike ? l.strike.id : `u${l.underline!.id}`}`).join(',')}` : '';
 }
 
 /** A chip is one placeholder char in the span text: its words and resolved

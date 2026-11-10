@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Inline-Formatierung und Formeln',
   description: 'Auszeichnungen innerhalb einer Zeile: Hervorhebung, Links, Chips, Kapitälchen, Tabulatoren, senkrechter Text, chinesische und japanische Zeichen, Schreibrichtung und LaTeX-Formeln',
   lang: 'de',
-  lastUpdated: '2026-11-06',
-  readingTime: '25 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '26 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Diese Seite behandelt die Auszeichnungen, die Sie innerhalb einer Textzeile verwenden. Sie machen Wörter fett oder kursiv, fügen Links ein, zeichnen kleine Etiketten, setzen Kapitälchen und richten Text an Tabstopps aus. Andere Auszeichnungen sind für chinesische und japanische Bücher gedacht, etwa kleine Aussprachehilfen über einem Schriftzeichen, oder für eine Wendung in der anderen Schreibrichtung, etwa Englisch in einem arabischen Buch. Der letzte Abschnitt zeigt, wie Sie mathematische Formeln schreiben.",
@@ -59,6 +59,11 @@ Inline-Auszeichnungen werden in jedem Textblock erkannt (Überschriften, Absätz
       <td>Durchgestrichen</td>
       <td><code>~~Text~~</code></td>
       <td>Eine Linie durch den Text, der an seinem Platz bleibt: der alte Preis neben dem neuen (<code>~~165 €~~ 129 €</code>). Zwei Tilden auf jeder Seite; ein einzelnes Paar ist eine Tiefstellung. Siehe <a href="#durchgestrichener-text">Durchgestrichener Text</a> weiter unten.</td>
+    </tr>
+    <tr>
+      <td>Unterstrichen</td>
+      <td><code>:underline[Text]</code></td>
+      <td>Eine Linie unter dem Text, der an seinem Platz bleibt: ein Hinweis auf einem Formular (<code>Bitte :underline[alle Seiten unterschreiben].</code>). <code>++Text++</code> tut dasselbe, wenn <code>bodyText.plusUnderline</code> eingeschaltet ist. Siehe <a href="#unterstrichener-text">Unterstrichener Text</a> weiter unten.</td>
     </tr>
     <tr>
       <td>Kapitälchen</td>
@@ -191,6 +196,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Wo.** Absätze, Listeneinträge, Zitate, Kästen, Tabellenzellen, Legenden und Anmerkungen. Auch Überschriften setzen den Chip (`## :chip[///]{style="mark"} Titel`, seit postext 1.52): Inhaltsverzeichnis, Kolumnentitel, PDF-Lesezeichen und EPUB-Navigation lesen den Titel ohne ihn. Eine Eröffnungsseite oder ein Überschriften-Design, das `{titleText}` druckt, setzt den Chip mit: die Standard-Eröffnungsseite ebenso wie jedes Textelement, das Inline-Auszeichnungen liest (`inlineMarks: true`), in den Chip-Stilen des Dokuments und in der Größe des Elements. Ein Element ohne Inline-Auszeichnungen druckt den Titel ohne Chip.
 - **Ausgabeformate.** Canvas, HTML und PDF zeichnen das Kästchen und setzen die Wörter als echten Text: im HTML auswählbar, im PDF extrahierbar und in Lesereihenfolge (in einem getaggten PDF ist das Kästchen ein Layout-Artefakt, und die Wörter gehören zum Absatz).
 
+Ein Chip mit `field` wird im PDF zu einem ausfüllbaren Formularfeld (siehe [PDF-Ausgabe › Formularfelder](/de/docs/configuration-pdf-output#formularfelder)).
+
 ### Hervorhebungen
 
 `:mark[Text]` legt ein farbiges Band hinter `Text`, so wie ein Schulbuch seine Schlüsselwörter hervorhebt. Anders als ein Chip bleiben die markierten Wörter gewöhnlicher Text: Sie brechen am Zeilenende um, werden getrennt und ausgeschlossen wie die Wörter um sie herum, und das Band folgt jedem Teil der Wendung auf seiner Zeile. `:mark[Text]{style="schluessel"}` wählt einen benannten Stil aus `markStyles` (siehe die Konfigurationsreferenz); ohne `style` oder mit einer ID, die kein Stil deklariert, nimmt die Markierung den ersten Stil (ein eingebautes, blassgelbes `mark`, wenn die Konfiguration keinen hat; die Sandbox warnt bei einer unbekannten ID).
@@ -220,6 +227,23 @@ Das Treffen wird ~~auf Dienstag~~ auf Donnerstag verlegt.
 - **Kein Platzbedarf.** Die Linie wird über den Text gemalt, und die Zeilen brechen genau so um wie ohne sie. Eine Durchstreichung, die über ein Zeilenende läuft, bekommt auf jeder Zeile eine Linie, zwei Durchstreichungen nebeneinander behalten zwei Linien, und ein Satzzeichen, das an der Durchstreichung klebt (`~~165~~.`), bleibt draußen.
 - **Die Linie.** Sie liegt dort, wo die Schrift ihre Durchstreichung vorsieht, und ist so dick, wie die Schrift angibt (`yStrikeoutPosition` und `yStrikeoutSize` ihrer OS/2-Tabelle, gelesen aus den Schriftdateien, die die Engine bekommt: `prepareFonts`, der Layout-Worker, die Kommandozeile), in der Farbe des durchgestrichenen Textes; jeder Schriftschnitt einer Durchstreichung für sich, sodass ein fettes Wort oder eine andere Schriftfamilie darin eine eigene Linie bekommt, die an die nächste anschließt. Ein Schnitt, dessen Datei die Engine nicht gelesen hat oder der keine Durchstreichung angibt, bekommt 0,28 em über der Grundlinie, etwa die halbe Höhe der Kleinbuchstaben, und 0,05 em. In chinesischem und japanischem Text und auf einer senkrechten Seite läuft die Linie durch die Mitte der Zeichen. Eine Hoch- oder Tiefstellung in der Durchstreichung verschiebt sie nicht.
 - **Wo.** Absätze, Überschriften (solange `headings.inlineMarks` eingeschaltet ist), Listenpunkte, Zitate, Kästen, Fußnoten, Tabellenzellen, Bildunterschriften und Anmerkungen sowie die Wörter eines Chips (`:chip[~~alt~~ neu]`; `~~:chip[alt]~~` streicht die Wörter des Chips durch). Canvas, PDF und HTML zeichnen die Linie aus dem Satz; in einem getaggten PDF ist sie ein Layout-Artefakt, und die Wörter bleiben Text, der so extrahiert und vorgelesen wird, wie er geschrieben ist. HTML und das umfließende EPUB setzen die Wörter zusätzlich in `<s>`, und der Word-Export markiert sie als durchgestrichen. Ein erledigter Aufgabenpunkt hat eine eigene Linie (`taskCompletedStrikethrough`).
+
+### Unterstrichener Text
+
+`:underline[Text]` zieht eine Linie unter `Text`, so wie ein Formular einen Hinweis unterstreicht, der nicht übersehen werden darf, oder ein Brief eine Frist, die seine Vorlage verlangt.
+
+```markdown
+Bitte :underline[alle Seiten unterschreiben] und das Formular zurücksenden.
+
+Das Angebot gilt :underline[bis zum 30. Juni].
+```
+
+- **Syntax.** Der Text zwischen den eckigen Klammern wird unterstrichen. Er nimmt eigene Inline-Auszeichnungen, Links, Chips und Verweise auf (`:underline[**jetzt**, mit [dem Formular](https://example.org)]`), darf über einen einfachen Zeilenumbruch der Quelle laufen, nicht aber über eine Leerzeile, und darf nicht leer sein. Für eine wörtliche Klammer darin `\]` schreiben. In Inline-Code bleibt die Direktive Text.
+- **Die Kurzform `++Text++`.** Mit eingeschaltetem `bodyText.plusUnderline` (siehe [Fließtext](/de/docs/configuration-text#fließtext)) unterstreicht auch `++Text++`, die Schreibweise des eingefügten Textes von Pandoc und markdown-it-ins. Standardmäßig ist sie aus, und Pluszeichen sind dann immer Text. Eingeschaltet unterstreicht jedes Paar: genau zwei Pluszeichen auf jeder Seite, um einen Text, der mit einem Zeichen beginnt und endet, das weder ein Leerzeichen noch ein Pluszeichen ist; `use ++i rather than i++ here` unterstreicht also `i rather than i`. Für ein wörtliches Paar `\+\+` (oder `\++`) schreiben. Auch für Code im Fließtext gibt es keine Ausnahme: `C++-Kurs und C++-Buch` unterstreicht `-Kurs und C`; schreiben Sie daher `C\+\+`, sobald ein zweites Paar folgt. Ein Paar, auf das ein Leerzeichen folgt, öffnet nichts (`C++ und`, `1 ++ 2`). Inline-Code und Codeblöcke werden nie unterstrichen. Der Editor der Sandbox markiert `++Text++` nur, solange die Einstellung eingeschaltet ist.
+- **Kein Platzbedarf.** Wie bei der Durchstreichung wird die Linie unter den Text gemalt, und die Zeilen brechen genau so um wie ohne sie. Eine Unterstreichung, die über ein Zeilenende läuft, bekommt auf jeder Zeile eine Linie, und ein Satzzeichen, das an ihr klebt (`:underline[Freitag].`), bleibt draußen.
+- **Die Linie.** Sie liegt dort, wo die Schrift ihre Unterstreichung vorsieht, und ist so dick, wie die Schrift angibt (`underlinePosition` und `underlineThickness` ihrer `post`-Tabelle, gelesen aus denselben Schriftdateien wie die Durchstreichung), in der Farbe des unterstrichenen Textes, jeder Schriftschnitt für sich. Ein Schnitt, dessen Datei die Engine nicht gelesen hat oder der keine Unterstreichung angibt, bekommt 0,12 em unter der Grundlinie und 0,05 em. In chinesischem und japanischem Text wird sie wie eine durchgezogene Seitenlinie (`:sideline[…]`) an deren Standardplatz gezeichnet: unter den Zeichen, auf einer senkrechten Seite rechts von ihnen. Durchgestrichener und zugleich unterstrichener Text (`~~:underline[Text]~~`) bekommt beide Linien.
+- **Links.** Unterstreicht `links.style` die Links, bekommt ein unterstrichener Link (`:underline[[das Formular](https://example.org)]`) in jeder Ausgabe, die der Stil nennt, eine Linie, die des Links; die Unterstreichung weicht ihr dort und wird in den anderen Ausgaben gezeichnet.
+- **Wo.** An denselben Stellen wie die Durchstreichung, die Wörter eines Chips eingeschlossen (`:chip[:underline[neu]]`). Canvas, PDF und HTML zeichnen die Linie aus dem Satz; in einem getaggten PDF ist sie ein Layout-Artefakt, und die Wörter bleiben Text. HTML und das umfließende EPUB setzen die Wörter zusätzlich in `<u>`, und der Word-Export markiert sie als unterstrichen.
 
 ### Kapitälchen
 

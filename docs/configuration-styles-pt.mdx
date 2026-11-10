@@ -476,6 +476,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 As medidas em em da caixa (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) são relativas ao tamanho de fonte do próprio chip. A caixa é uma faixa de 0,8 em acima e 0,25 em abaixo da linha de base, aumentada por `paddingY` e pelo contorno; ela é pintada fora da caixa da linha e nunca muda a entrelinha; por isso, a grade de linhas de base se mantém. Quando a caixa fica mais alta que o passo das linhas, um chip pode encostar num chip da linha de cima ou de baixo: o Sandbox lista um aviso “Chips encostam na linha vizinha” quando dois chips em linhas diferentes se sobrepõem, com a sobreposição em pontos, para que você possa reduzir `paddingY`, o contorno ou `fontSize`. Um chip alto sem chip acima ou abaixo dele não é sinalizado.
 
+Um chip com o atributo `field` é um campo de formulário preenchível no PDF e um campo de formulário do InDesign na exportação IDML. Seu estilo dá ao campo a aparência, e `minWidth` o espaço para digitar (veja [Saída em PDF › Campos de formulário](/pt/docs/configuration-pdf-output#campos-de-formulário)).
+
 No VDT, um chip é um segmento de linha de `kind: 'chip'` cujo campo `chip` leva os trechos de texto (cada um com a string de fonte e a largura), a geometria da caixa (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, as margens de espaçamento) e as cores; o `text` do segmento é um marcador de um caractere; por isso, os deslocamentos em texto simples e os mapas de origem contam um chip como um caractere.
 
 ```ts

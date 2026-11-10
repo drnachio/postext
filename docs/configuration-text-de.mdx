@@ -255,6 +255,12 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td>Liest einen Backslash am Ende einer Quellzeile und <code>{'\\\\'}</code> vor einem Leerzeichen als erzwungenen Zeilenumbruch innerhalb eines Absatzes, eines Zitats oder eines Listenpunkts (der harte Umbruch von CommonMark): Die folgenden Wörter beginnen eine neue Zeile desselben Absatzes, und die Zeile davor wird wie eine letzte Zeile in ihrer natürlichen Breite gesetzt. Ein Backslash am Ende des Absatzes erscheint im Text, und zwei Leerzeichen am Zeilenende sind kein Umbruch (siehe <a href="/de/docs/document-format-directives#zeilenumbrüche">Dokumentformat › Zeilenumbrüche</a>). <code>false</code> behält die Lesart von 1.22: Die Backslashes erscheinen im Text, und die Zeilen werden mit einem Leerzeichen verbunden; früher gespeicherte Konfigurationen, deren Text einen solchen Backslash enthält, werden damit gelesen (siehe <a href="/de/docs/configuration-bundles#pakete-die-postext-14-oder-früher-geschrieben-hat">Pakete, die postext 1.4 oder früher geschrieben hat</a>). Titel, Legenden, Anmerkungen und Tabellenzellen brechen in jedem Fall bei <code>{'\\\\'}</code> um.</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>++Text++</code> als unterstrichenen Text lesen, zusätzlich zu <code>:underline[Text]</code>, das immer gelesen wird. Jedes Paar aus zwei Pluszeichen auf jeder Seite unterstreicht, auch <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> setzt ein wörtliches Paar, ein Buchstabe oder eine Ziffer direkt an den Zeichen lässt sie als Text stehen (<code>C++</code>, <code>g++</code>), und Inline-Code und Codeblöcke werden nie unterstrichen. Es gilt überall, wo Inline-Auszeichnungen gelesen werden: im Fließtext, in Überschriften, Listen, Legenden, Tabellenzellen, Anmerkungen und Chips. <code>false</code>: Die Pluszeichen erscheinen als Text. Siehe <a href="/de/docs/document-format-inline#unterstrichener-text">Dokumentformat › Unterstrichener Text</a>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

@@ -1573,6 +1573,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'bodyParagraphSpacingSize',
       'bodyParagraphSpacingSizeTooltip',
       'bodyParagraphSpacingTooltip',
+      'bodyPlusUnderline',
+      'bodyPlusUnderlineTooltip',
       'bodyReferenceBold',
       'bodyReferenceBoldTooltip',
       'bodyReferenceColor',

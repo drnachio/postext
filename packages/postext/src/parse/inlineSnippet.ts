@@ -1,6 +1,6 @@
 import type { InlineSpan } from './types.js';
 import type { Resource } from '../types.js';
-import { extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, protectDollarEscapes, replaceSnippetBreaks } from './inlineFormatting.js';
+import { extractInlineChips, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, protectDollarEscapes, replaceSnippetBreaks, type InlineFormatOptions } from './inlineFormatting.js';
 import { computeSourceMap } from './sourceMapping.js';
 import { joinEastAsianSnippetLines } from './softBreaks.js';
 import { extractInlineCitations, injectCitationSpans } from './citations.js';
@@ -38,8 +38,10 @@ import { extractInlineMath, injectMathSpans } from './inlineMath.js';
  *  between two East Asian characters is taken out (see `softBreaks.ts`).
  *  With `citations` (a caption or a note, #529) a citation (`[@key]`,
  *  `@key`) becomes a citation span, as in the body; elsewhere (a table
- *  cell) it stays text. */
-export function parseInlineSnippetSpans(content: string, options?: { citations?: boolean }): InlineSpan[] {
+ *  cell) it stays text. With `plusUnderline` (`bodyText.plusUnderline`,
+ *  #1465) `++text++` underlines, as in the body. */
+export function parseInlineSnippetSpans(content: string, options?: { citations?: boolean } & InlineFormatOptions): InlineSpan[] {
+  const inline = options?.plusUnderline ? { plusUnderline: true } : undefined;
   const chips = extractInlineChips(protectDollarEscapes(replaceSnippetBreaks(protectCodeSpans(content))), 0);
   const { cleaned, refs } = extractInlineRefs(chips.cleaned, 0);
   const cites = options?.citations ? extractInlineCitations(cleaned, 0) : { cleaned, citations: [] };
@@ -48,7 +50,7 @@ export function parseInlineSnippetSpans(content: string, options?: { citations?:
   // A line end between two Chinese or Japanese characters is no space
   // (#181); elsewhere it stays whitespace.
   return joinEastAsianSnippetLines(
-    injectChipSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(injectMathSpans(parseInlineFormatting(maths.cleaned), maths.maths), sw.swatches), cites.citations), refs), chips.chips),
+    injectChipSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(injectMathSpans(parseInlineFormatting(maths.cleaned, inline), maths.maths), sw.swatches), cites.citations), refs), chips.chips, inline),
   );
 }
 
@@ -73,9 +75,10 @@ export interface InlineSnippetMapping {
   sourceMap: number[];
 }
 
-/** Parse a snippet and build the plain-text → snippet-offset map. */
-export function mapInlineSnippet(content: string): InlineSnippetMapping {
-  const spans = parseInlineSnippetSpans(content);
+/** Parse a snippet and build the plain-text → snippet-offset map;
+ *  `options` as {@link parseInlineSnippetSpans} takes them. */
+export function mapInlineSnippet(content: string, options?: InlineFormatOptions): InlineSnippetMapping {
+  const spans = parseInlineSnippetSpans(content, options);
   const text = spans.map((s) => s.text).join('');
   const sourceMap = computeSourceMap(content, 0, content.length, text);
   return { spans, text, sourceMap };

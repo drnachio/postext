@@ -222,8 +222,7 @@ class Converter:
             elif k == "SmallCaps":
                 out += self.small_caps(v, bold, italic, sup, sub)
             elif k in ("Underline", "Strikeout"):
-                self.report[f"{k} dropped (no inline equivalent)"] += 1
-                out += self.runs(v, bold, italic, sup, sub)
+                out += self.line_mark(v, k, bold, italic, sup, sub)
             elif k == "Quoted":
                 q = (self.quotes[0], self.quotes[1]) if t(v[0]) == "DoubleQuote" else ("‘", "’")
                 out.append(Run(q[0], bold, italic))
@@ -387,6 +386,24 @@ class Converter:
             return []
         self.report["small caps set with :smallcaps[…]"] += 1
         return [Run(f":smallcaps[{inner}]", raw=True)]
+
+    def line_mark(self, inlines, kind, bold, italic, sup, sub) -> list[Run]:
+        """An underline as `:underline[…]` (a literal `]` escaped) and a
+        strikethrough as `~~…~~` (postext >= 1.71), around the rendered
+        runs with their emphasis kept inside."""
+        under = kind == "Underline"
+        runs = [
+            r if r.raw or not under else Run(r.text.replace("]", "\\]"), r.bold, r.italic, r.sup, r.sub)
+            for r in self.runs(inlines, bold, italic, sup, sub)
+        ]
+        inner = render_runs(runs)
+        if not inner:
+            return []
+        if under:
+            self.report["underline set with :underline[…]"] += 1
+            return [Run(f":underline[{inner}]", raw=True)]
+        self.report["strikethrough set with ~~…~~"] += 1
+        return [Run(f"~~{inner}~~", raw=True)]
 
     def inline(self, inlines) -> str:
         return render_runs(self.runs(inlines))

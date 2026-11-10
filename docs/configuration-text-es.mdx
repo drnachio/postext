@@ -256,6 +256,12 @@ La propiedad `bodyText` controla la tipografía de todo el texto de los párrafo
       <td>Lee una barra invertida al final de una línea del texto de origen, y <code>{'\\\\'}</code> ante un espacio, como un salto de línea forzado dentro de un párrafo, una cita o un elemento de lista (el salto forzado de CommonMark): las palabras siguientes empiezan una línea nueva del mismo párrafo, y la línea anterior se compone con su anchura natural, como una última línea. Una barra invertida al final del párrafo se imprime, y dos espacios al final de una línea no son un salto (véase <a href="/es/docs/document-format-directives#saltos-de-línea">Formato del documento › Saltos de línea</a>). <code>false</code> conserva la lectura de la 1.22: las barras se imprimen y las líneas se unen con un espacio; las configuraciones guardadas antes cuyo texto tiene una barra así se leen con este valor (véase <a href="/es/docs/configuration-bundles#paquetes-escritos-por-postext-14-o-anterior">Paquetes escritos por postext 1.4 o anterior</a>). Los títulos, los pies, las notas y las celdas de tabla se parten en <code>{'\\\\'}</code> en ambos casos.</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lee <code>++texto++</code> como texto subrayado, además de <code>:underline[texto]</code>, que se lee siempre. Cada par de dos signos más a cada lado subraya, también <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> escribe un par literal, una letra o una cifra pegada a los signos los deja como texto (<code>C++</code>, <code>g++</code>), y el código en línea y los bloques de código nunca se subrayan. Se aplica donde se leen las marcas en línea: el texto corrido, los títulos, las listas, los pies, las celdas de tabla, las notas y los chips. <code>false</code>: los signos más se imprimen. Consulta <a href="/es/docs/document-format-inline#subrayado">Formato del documento › Subrayado</a>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

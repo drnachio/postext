@@ -13,6 +13,7 @@ import { documentShapingLanguage } from '../../../controls/language/measureLangu
 import { balloonTextRangeRects } from '../../comics/balloonText.js';
 import {
   contentOffsetToPlain,
+  plusUnderlineOf,
   resolveResourceRun,
   resourceBlockOnPage,
   svgBodyRectFor,
@@ -92,7 +93,7 @@ export function drawResourceSelection(
   const block = owner;
   if (!block) return;
   const rb = block.resourceBlock!;
-  const run = resolveResourceRun(rb, sel.target);
+  const run = resolveResourceRun(rb, sel.target, plusUnderlineOf(doc));
   if (!run) return;
   // The run's geometry is in the block's frame — the page for an upright
   // block, its upright frame for a rotated one, where a caret turns with it.

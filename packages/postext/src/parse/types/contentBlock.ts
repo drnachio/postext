@@ -125,6 +125,9 @@ export interface ParseOptions {
    *  ```` ```mei ````, ```` ```humdrum ````) as a music score (#1172), not
    *  a listing. Default `true`; a fence with `{listing}` stays code. */
   scores?: boolean;
+  /** Read `++text++` as underlined text (`bodyText.plusUnderline`,
+   *  #1465). Default `false`: `:underline[text]` alone underlines. */
+  plusUnderline?: boolean;
 }
 
 export interface ContentBlock {

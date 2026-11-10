@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Formattazione in linea e formule',
   description: 'La formattazione all’interno di una riga: enfasi, link, chip, maiuscoletto, tabulazioni, testo verticale, segni cinesi e giapponesi, direzione del testo e formule LaTeX',
   lang: 'it',
-  lastUpdated: '2026-11-06',
-  readingTime: '28 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '29 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Questa pagina riguarda i segni che usi dentro una riga di testo. Mettono le parole in grassetto o in corsivo, aggiungono link, disegnano piccole etichette, compongono il maiuscoletto e allineano il testo ai tabulatori. Altri segni servono ai libri cinesi e giapponesi, come le piccole indicazioni di pronuncia sopra un carattere, o a una frase scritta nell’altra direzione, come l’inglese in un libro arabo. L’ultima sezione mostra come scrivere le formule matematiche.",
@@ -59,6 +59,11 @@ Il markup in linea viene riconosciuto dentro qualsiasi blocco di testo (titoli, 
       <td>Barrato</td>
       <td><code>~~testo~~</code></td>
       <td>Una linea che attraversa il testo senza spostarlo: il prezzo vecchio accanto al nuovo (<code>~~165 €~~ 129 €</code>). Due tilde per lato; una sola coppia è un pedice. Vedi <a href="#barrato">Barrato</a> più avanti.</td>
+    </tr>
+    <tr>
+      <td>Sottolineato</td>
+      <td><code>:underline[testo]</code></td>
+      <td>Una linea sotto il testo, che resta al suo posto: un’indicazione su un modulo (<code>Si prega di :underline[firmare tutte le pagine].</code>). <code>++testo++</code> fa lo stesso quando <code>bodyText.plusUnderline</code> è attivo. Vedi <a href="#sottolineato">Sottolineato</a> più avanti.</td>
     </tr>
     <tr>
       <td>Maiuscoletto</td>
@@ -191,6 +196,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Dove.** Paragrafi, voci di elenco, citazioni, riquadri, celle di tabella, didascalie e note. Anche i titoli compongono il chip (`## :chip[///]{style="mark"} Titolo`, da postext 1.52): l'indice, le testatine, i segnalibri del PDF e la navigazione dell'EPUB leggono il titolo senza di esso. L'apertura o il design del titolo che stampa `{titleText}` compone anche il chip: lo fa l'apertura predefinita e ogni elemento di testo che legge i segni in linea (`inlineMarks: true`), con gli stili di chip del documento alla dimensione dell'elemento. Un elemento senza segni in linea stampa il titolo senza chip.
 - **Output.** Canvas, HTML e PDF disegnano il riquadro e compongono le parole come testo vero: selezionabile nell’HTML, estraibile e nell’ordine di lettura nel PDF (in un PDF con tag il riquadro è un artefatto di impaginazione e le parole appartengono al paragrafo).
 
+Un chip con `field` diventa un campo compilabile del modulo nel PDF (vedi [Output PDF › Campi dei moduli](/it/docs/configuration-pdf-output#campi-dei-moduli)).
+
 ### Evidenziazioni
 
 `:mark[testo]` mette una fascia colorata dietro `testo`, come un libro di scuola evidenzia le sue parole chiave. A differenza di un chip, le parole segnate restano testo normale: vanno a capo a fine riga, si dividono in sillabe e si giustificano come le parole vicine, e la fascia segue ogni pezzo della frase sulla sua riga. `:mark[testo]{style="chiave"}` sceglie uno stile con nome da `markStyles` (vedi la guida alla configurazione); senza `style`, o con un id che nessuno stile dichiara, il segno prende il primo stile (un `mark` giallo pallido predefinito quando la configurazione non ne ha; la Sandbox segnala un id sconosciuto).
@@ -220,6 +227,23 @@ La riunione passa ~~a martedì~~ a giovedì.
 - **Non occupa spazio.** La linea è dipinta sopra il testo e le righe vanno a capo esattamente come senza di essa. Un barrato spezzato a fine riga ha una linea su ogni riga, due barrati affiancati conservano due linee e un segno di punteggiatura attaccato al barrato (`~~165~~.`) ne resta fuori.
 - **La linea.** Sta dove il carattere mette il suo barrato e ha lo spessore che il carattere indica (i valori `yStrikeoutPosition` e `yStrikeoutSize` della sua tabella OS/2, letti dai file di font che il motore riceve: `prepareFonts`, il worker di impaginazione, la riga di comando), nel colore del testo barrato; ogni carattere di un barrato per conto suo, così una parola in grassetto o un’altra famiglia nel barrato ha una linea propria, che si raccorda alla successiva. Un carattere di cui il motore non ha letto il file, o che non indica un barrato, prende 0,28 em sopra la linea di base, più o meno a metà altezza delle minuscole, e 0,05 em. Nel testo cinese e giapponese, e su una pagina verticale, la linea corre al centro dei caratteri. Un apice o un pedice dentro il barrato non la sposta.
 - **Dove.** Paragrafi, titoli (finché `headings.inlineMarks` è attivo), voci di elenco, citazioni, riquadri, note a piè di pagina, celle di tabella, didascalie e note, e le parole di un chip (`:chip[~~prima~~ dopo]`; `~~:chip[prima]~~` barra le parole del chip). Il canvas, il PDF e l’HTML disegnano la linea dalla composizione; in un PDF con tag è un artefatto di impaginazione, e le parole restano testo che si estrae e si legge così come è scritto. L’HTML e l’EPUB adattabile racchiudono inoltre le parole in `<s>`, e l’esportazione in Word le segna come barrate. Una voce di attività completata ha una linea propria (`taskCompletedStrikethrough`).
+
+### Sottolineato
+
+`:underline[testo]` traccia una linea sotto `testo`, come un modulo sottolinea un’indicazione da non perdere, o una lettera una scadenza richiesta dal suo modello.
+
+```markdown
+Si prega di :underline[firmare tutte le pagine] e di restituire il modulo.
+
+L’offerta è valida :underline[fino al 30 giugno].
+```
+
+- **Sintassi.** Il testo tra le parentesi quadre viene sottolineato. Accetta i propri segni in linea, link, chip e riferimenti (`:underline[**ora**, con [il modulo](https://example.org)]`), può attraversare un a capo semplice della sorgente ma non una riga vuota, e non può essere vuoto. Scrivi `\]` per una parentesi letterale all’interno. Nel codice in linea la direttiva resta testo.
+- **L’abbreviazione `++testo++`.** Con `bodyText.plusUnderline` attivo (vedi [Testo corrente](/it/docs/configuration-text#testo-corrente)), sottolinea anche `++testo++`, la scrittura del testo inserito di Pandoc e markdown-it-ins. È disattivato per impostazione predefinita, e i segni più sono allora sempre testo. Se attivo, ogni coppia sottolinea: esattamente due segni più per lato, attorno a un testo che inizia e finisce con un carattere che non è né uno spazio né un segno più, quindi `use ++i rather than i++ here` sottolinea `i rather than i`. Scrivi `\+\+` (o `\++`) per una coppia letterale. Non c’è eccezione nemmeno per il codice scritto nel testo: `C++-Kurs und C++-Buch` sottolinea `-Kurs und C`, quindi scrivi `C\+\+` ogni volta che segue un’altra coppia. Una coppia seguita da uno spazio non apre nulla (`C++ e`, `1 ++ 2`). Il codice in linea e i blocchi di codice non si sottolineano mai. L’editor del Sandbox segna `++testo++` solo finché l’impostazione è attiva.
+- **Non occupa spazio.** Come per il barrato, la linea è dipinta sotto il testo e le righe vanno a capo esattamente come senza di essa. Un sottolineato spezzato a fine riga ha una linea su ogni riga, e un segno di punteggiatura attaccato (`:underline[venerdì].`) resta fuori.
+- **La linea.** Sta dove il carattere mette la sua sottolineatura e ha lo spessore che il carattere indica (i valori `underlinePosition` e `underlineThickness` della sua tabella `post`, letti dagli stessi file di font del barrato), nel colore del testo sottolineato, ogni font per conto suo. Un font di cui il motore non ha letto il file, o che non indica sottolineatura, prende 0,12 em sotto la linea di base e 0,05 em. Nel testo cinese e giapponese è disegnata come una linea laterale continua (`:sideline[…]`) al suo posto predefinito: sotto i caratteri, e alla loro destra su una pagina verticale. Un testo insieme barrato e sottolineato (`~~:underline[testo]~~`) ha entrambe le linee.
+- **Link.** Quando `links.style` sottolinea i link, un link sottolineato (`:underline[[il modulo](https://example.org)]`) ha una sola linea, quella del link, in ogni output che lo stile elenca; lì la sottolineatura le cede il posto, negli altri output viene disegnata.
+- **Dove.** Negli stessi punti del barrato, comprese le parole di un chip (`:chip[:underline[nuovo]]`). Il canvas, il PDF e l’HTML disegnano la linea dalla composizione; in un PDF taggato è un artefatto di impaginazione, e le parole restano testo. L’HTML e l’EPUB riflowable mettono inoltre le parole in `<u>`, e l’esportazione in Word le segna come sottolineate.
 
 ### Maiuscoletto
 

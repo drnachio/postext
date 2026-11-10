@@ -256,6 +256,12 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td>Lê uma barra invertida no fim de uma linha do texto, e <code>{'\\\\'}</code> antes de um espaço, como uma quebra de linha forçada dentro de um parágrafo, de uma citação ou de um item de lista (a quebra forçada do CommonMark): as palavras seguintes começam uma linha nova do mesmo parágrafo, e a linha anterior é composta com a largura natural, como uma última linha. Uma barra invertida no fim do parágrafo é impressa, e dois espaços no fim de uma linha não são quebra (veja <a href="/pt/docs/document-format-directives#quebras-de-linha">Formato do documento › Quebras de linha</a>). <code>false</code> mantém a leitura da 1.22: as barras são impressas e as linhas se unem com um espaço; as configurações salvas antes cujo texto tem uma barra assim são lidas com ela (veja <a href="/pt/docs/configuration-bundles#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes gravados pelo postext 1.4 ou anterior</a>). Os títulos, as legendas, as notas e as células de tabela quebram em <code>{'\\\\'}</code> nos dois casos.</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lê <code>++texto++</code> como texto sublinhado, além de <code>:underline[texto]</code>, que é sempre lido. Cada par de dois sinais de mais de cada lado sublinha, também <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> escreve um par literal, uma letra ou um algarismo colado aos sinais os mantém como texto (<code>C++</code>, <code>g++</code>), e o código em linha e os blocos de código nunca são sublinhados. Vale onde as marcas em linha são lidas: o texto corrido, os títulos, as listas, as legendas, as células de tabela, as notas e os chips. <code>false</code>: os sinais de mais são impressos. Veja <a href="/pt/docs/document-format-inline#sublinhado">Formato do documento › Sublinhado</a>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

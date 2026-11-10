@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Format en línia i fórmules',
   description: "Com es marca el text dins d'una línia: èmfasi, enllaços, xips, versaletes, tabuladors, text vertical, marques xineses i japoneses, direcció del text i fórmules LaTeX",
   lang: 'ca',
-  lastUpdated: '2026-11-06',
-  readingTime: '29 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '30 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Aquesta pàgina explica les marques que es fan servir dins d'una línia de text. Serveixen per posar paraules en negreta o en cursiva, afegir enllaços, dibuixar etiquetes petites, compondre versaletes i alinear el text a les tabulacions. Altres marques serveixen per als llibres en xinès i en japonès, com les lectures petites que van damunt d'un caràcter, o per a una frase que va en una altra direcció, com un text en anglès dins d'un llibre en àrab. L'última secció ensenya a escriure fórmules matemàtiques.",
@@ -59,6 +59,11 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
       <td>Ratllat</td>
       <td><code>~~text~~</code></td>
       <td>Una línia que travessa el text sense moure’l del seu lloc: el preu antic al costat del nou (<code>~~165 €~~ 129 €</code>). Dues titlles a cada banda; un sol parell és un subíndex. Vegeu <a href="#ratllat">Ratllat</a> més avall.</td>
+    </tr>
+    <tr>
+      <td>Subratllat</td>
+      <td><code>:underline[text]</code></td>
+      <td>Una línia sota el text, que no es mou del seu lloc: una indicació en un formulari (<code>Si us plau, :underline[signeu totes les pàgines].</code>). <code>++text++</code> fa el mateix quan <code>bodyText.plusUnderline</code> està activat. Vegeu <a href="#subratllat">Subratllat</a> més avall.</td>
     </tr>
     <tr>
       <td>Versaletes</td>
@@ -191,6 +196,8 @@ Prem :chip[Ctrl]{style="tecla"} + :chip[C]{style="tecla"} per copiar.
 - **On.** Paràgrafs, elements de llista, cites, requadres, cel·les de taula, peus i notes. Els encapçalaments també componen el xip (`## :chip[///]{style="mark"} Títol`, des de postext 1.52): l'índex, els titolets, els marcadors del PDF i la navegació de l'EPUB llegeixen el títol sense ell. La portadella o el disseny d'encapçalament que imprimeix `{titleText}` també compon el xip: ho fa la portadella per defecte i qualsevol element de text que llegeixi marques en línia (`inlineMarks: true`), amb els estils de xip del document a la mida de l'element. Un element sense marques en línia imprimeix el títol sense el xip.
 - **Sortida.** Canvas, HTML i PDF pinten la caixa i componen les paraules com a text real: seleccionable a l'HTML, extraïble i en ordre de lectura al PDF (en un PDF etiquetat la caixa és un artefacte de maquetació i les paraules pertanyen al paràgraf).
 
+Un xip amb `field` es converteix en un camp de formulari emplenable al PDF (vegeu [Sortida PDF › Camps de formulari](/ca/docs/configuration-pdf-output#camps-de-formulari)).
+
 ### Marques de ressaltat
 
 `:mark[text]` posa una franja de color darrere de `text`, com quan un llibre de text ressalta les paraules clau. A diferència d'un xip, les paraules marcades continuen sent text corregut: es tallen al final de la línia, es parteixen amb guionet i es justifiquen com les del voltant, i la franja acompanya cada tros de la frase a la seva línia. `:mark[text]{style="clau"}` tria un estil amb nom de `markStyles` (vegeu la referència de configuració); sense `style`, o amb un id que cap estil no declara, la marca agafa el primer estil (un `mark` groc pàl·lid integrat si la configuració no en té cap; el Sandbox avisa d'un id desconegut).
@@ -220,6 +227,23 @@ La reunió passa ~~a dimarts~~ a dijous.
 - **No ocupa lloc.** La línia es pinta sobre el text i les línies es tallen exactament igual que sense ella. Un ratllat partit en un final de línia porta una línia a cada línia, dos ratllats seguits conserven dues línies, i un signe de puntuació enganxat al ratllat (`~~165~~.`) en queda fora.
 - **La línia.** Va on la font posa el seu ratllat i amb el gruix que la font indica (els valors `yStrikeoutPosition` i `yStrikeoutSize` de la seva taula OS/2, llegits dels fitxers de font que rep el motor: `prepareFonts`, el worker de composició, la línia d’ordres), en el color del text ratllat; cada font d’un ratllat pel seu compte, de manera que una paraula en negreta o una altra família dins del ratllat porta la seva pròpia línia, que enllaça amb la següent. Una font el fitxer de la qual el motor no ha llegit, o que no indica ratllat, pren 0,28 em per sobre de la línia de base, més o menys a mitja alçada de les minúscules, i 0,05 em. En text xinès i japonès, i en una pàgina vertical, la línia recorre el centre dels caràcters. Un superíndex o un subíndex dins del ratllat no la mou.
 - **On.** Paràgrafs, títols (mentre `headings.inlineMarks` estigui activat), elements de llista, cites, requadres, notes a peu de pàgina, cel·les de taula, peus i notes, i les paraules d’un xip (`:chip[~~abans~~ ara]`; `~~:chip[abans]~~` ratlla les paraules del xip). El llenç, el PDF i l’HTML dibuixen la línia a partir de la composició; en un PDF etiquetat és un artefacte de maquetació, i les paraules continuen sent text que s’extreu i es llegeix tal com està escrit. L’HTML i l’EPUB adaptable, a més, emboliquen les paraules en `<s>`, i l’exportació a Word les marca com a ratllades. Una tasca completada té la seva pròpia línia (`taskCompletedStrikethrough`).
+
+### Subratllat
+
+`:underline[text]` traça una línia sota `text`, com un formulari subratlla una indicació que no s'ha de passar per alt, o una carta un termini que demana la seva plantilla.
+
+```markdown
+Si us plau, :underline[signeu totes les pàgines] i torneu el formulari.
+
+L'oferta és vàlida :underline[fins al 30 de juny].
+```
+
+- **Sintaxi.** Se subratlla el text entre els claudàtors. Admet les seves pròpies marques en línia, enllaços, xips i referències (`:underline[**ara**, amb [el formulari](https://example.org)]`), pot passar per un salt de línia simple de l'original però no per una línia en blanc, i no pot ser buit. Escriviu `\]` per a un claudàtor literal a dins. En el codi en línia la directiva es queda com a text.
+- **L'abreviatura `++text++`.** Amb `bodyText.plusUnderline` activat (vegeu [Text de cos](/ca/docs/configuration-text#text-de-cos)), `++text++` també subratlla, amb l'escriptura del text inserit de Pandoc i markdown-it-ins. Està desactivat per defecte, i aleshores els signes més són sempre text. Activat, cada parell subratlla: exactament dos signes més a cada banda, al voltant d'un text que comença i acaba amb un caràcter que no és ni un espai ni un signe més, de manera que `use ++i rather than i++ here` subratlla `i rather than i`. Escriviu `\+\+` (o `\++`) per a un parell literal. Tampoc no hi ha excepció per al codi escrit en la prosa: `C++-Kurs und C++-Buch` subratlla `-Kurs und C`, de manera que cal escriure `C\+\+` sempre que el segueixi un altre parell. Un parell seguit d'un espai no obre res (`C++ i`, `1 ++ 2`). El codi en línia i els blocs de codi no se subratllen mai. L'editor del Sandbox marca `++text++` només mentre l'ajust està activat.
+- **No ocupa lloc.** Com en el ratllat, la línia es pinta sota el text i les línies es tallen exactament igual que sense ella. Un subratllat partit en un final de línia porta una línia a cada línia, i un signe de puntuació enganxat a ell (`:underline[divendres].`) es queda fora.
+- **La línia.** Va on la font posa el seu subratllat i amb el gruix que la font indica (els valors `underlinePosition` i `underlineThickness` de la seva taula `post`, llegits dels mateixos fitxers de font que el ratllat), en el color del text subratllat, cada font pel seu compte. Una font el fitxer de la qual el motor no ha llegit, o que no indica subratllat, pren 0,12 em per sota de la línia de base i 0,05 em. En text xinès i japonès es dibuixa com una línia lateral contínua (`:sideline[…]`) al seu lloc per defecte: sota els caràcters, i a la seva dreta en una pàgina vertical. Un text ratllat i subratllat alhora (`~~:underline[text]~~`) porta les dues línies.
+- **Enllaços.** Quan `links.style` subratlla els enllaços, un enllaç subratllat (`:underline[[el formulari](https://example.org)]`) porta una sola línia, la de l’enllaç, a cada sortida que llista l’estil; el subratllat li cedeix el lloc allà i es dibuixa a les altres sortides.
+- **On.** Als mateixos llocs que el ratllat, incloses les paraules d’un xip (`:chip[:underline[nou]]`). El llenç, el PDF i l’HTML dibuixen la línia a partir de la composició; en un PDF etiquetat és un artefacte de maquetació, i les paraules continuen sent text. L’HTML i l’EPUB adaptable posen a més les paraules dins `<u>`, i l’exportació a Word les marca com a subratllades.
 
 ### Versaletes
 

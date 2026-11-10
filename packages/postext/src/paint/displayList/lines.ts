@@ -134,14 +134,15 @@ function annotate(run: DisplayRun, seg: VDTLineSegment): void {
   }
 }
 
-/** A space between two words of one struck run (`~~old price~~`): the
- *  measurer stamps only the words, and a writer that sets the line as
- *  runs (Word) would break the line at the space. */
-function struckSpace(segs: readonly VDTLineSegment[], i: number): boolean {
+/** A space between two words of one struck or underlined run
+ *  (`~~old price~~`, `++sign here++`): the measurer stamps only the words,
+ *  and a writer that sets the line as runs (Word) would break the line at
+ *  the space. */
+function markedSpace(segs: readonly VDTLineSegment[], i: number, key: 'strike' | 'underline'): boolean {
   const seg = segs[i]!;
   if (seg.kind !== 'space') return false;
-  const before = segs[i - 1]?.strike;
-  const after = segs[i + 1]?.strike;
+  const before = segs[i - 1]?.[key];
+  const after = segs[i + 1]?.[key];
   if (!before || !after || before.id !== after.id) return false;
   const reachesEnd = before.to === undefined || before.to >= segmentShownText(segs[i - 1]!).length;
   return reachesEnd && (after.from === undefined || after.from === 0);
@@ -175,7 +176,8 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
     if (seg.script) run.script = seg.script;
     if (seg.baselineShift) run.baselineShift = -seg.baselineShift;
     if (seg.href !== undefined) run.href = seg.href;
-    if ((seg.strike && seg.strike.from === undefined) || struckSpace(segs, i)) run.strike = true;
+    if ((seg.strike && seg.strike.from === undefined) || markedSpace(segs, i, 'strike')) run.strike = true;
+    if ((seg.underline && seg.underline.from === undefined) || markedSpace(segs, i, 'underline')) run.underline = true;
     if (seg.footnoteId !== undefined) run.footnoteId = seg.footnoteId;
     if (seg.refResourceId !== undefined) run.refTarget = { id: seg.refResourceId, ...(seg.refAnchor ? { anchor: true } : {}) };
     if (seg.pageLink !== undefined) run.pageLink = seg.pageLink;

@@ -476,6 +476,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 Les longueurs en em du cadre (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) sont relatives au corps propre de la pastille. Le cadre est une bande de 0,8 em au-dessus et de 0,25 em au-dessous de la ligne de base, agrandie de `paddingY` et du contour ; il est peint hors de la boîte de ligne et ne change jamais l’interlignage : la grille de ligne de base tient. Quand le cadre devient plus haut que le pas de ligne, une pastille peut empiéter sur une pastille de la ligne du dessus ou du dessous : le Sandbox affiche alors un avertissement « Pastilles touchant la ligne voisine » quand deux pastilles de lignes différentes se chevauchent, avec le chevauchement en points, pour que vous puissiez réduire `paddingY`, le contour ou `fontSize`. Une haute pastille sans pastille au-dessus ou au-dessous n’est pas signalée.
 
+Une pastille dotée d’un attribut `field` est un champ de formulaire à remplir dans le PDF et un champ de formulaire InDesign dans l’export IDML. Son style donne au champ son apparence, et `minWidth` la place laissée à la saisie (voir [Sortie PDF › Champs de formulaire](/fr/docs/configuration-pdf-output#champs-de-formulaire)).
+
 Dans le VDT, une pastille est un segment de ligne de `kind: 'chip'` dont le champ `chip` contient les segments de texte (chacun avec sa chaîne de police et sa largeur), la géométrie du cadre (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, les marges d’espacement) et ses couleurs ; le `text` du segment est un caractère de substitution unique : les positions en texte brut et les correspondances avec la source comptent donc une pastille comme un seul caractère.
 
 ```ts

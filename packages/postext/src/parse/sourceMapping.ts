@@ -1,7 +1,7 @@
 import type { InlineSpan } from './types.js';
 import { MATH_PLACEHOLDER } from './inlineMath.js';
 import { GAP_PLACEHOLDER, gapCloseAt } from './exerciseGaps.js';
-import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, MARK_OPENER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER, TAB_PLACEHOLDER, extractInlineRefs, readMarkAt } from './inlineFormatting.js';
+import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, MARK_OPENER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER, TAB_PLACEHOLDER, UNDERLINE_OPENER, extractInlineRefs, readMarkAt, readUnderlineAt } from './inlineFormatting.js';
 import { sliceSpan } from './links.js';
 import { orientationOpenerAt } from './orientationMarks.js';
 import { annotationSourceSkips } from './annotations.js';
@@ -21,8 +21,9 @@ function isSmallCapsOpenerAt(markdown: string, r: number, end: number): boolean 
 }
 
 /** The markup of the highlight marks (`:mark[`, and `]{…}` after the
- *  text, #888) of `[from, end)`, which prints nothing: `[start, end)`
- *  source offsets in order. One in inline code (`code`) is text. */
+ *  text, #888) and of the underlines (`:underline[` and `]`, #1465) of
+ *  `[from, end)`, which prints nothing: `[start, end)` source offsets in
+ *  order. One in inline code (`code`) is text. */
 function markSourceSkips(markdown: string, from: number, end: number, code: Array<[number, number]>): Array<[number, number]> {
   const out: Array<[number, number]> = [];
   // Read in the block's own text (a mark reads forward only), so a block
@@ -36,7 +37,14 @@ function markSourceSkips(markdown: string, from: number, end: number, code: Arra
     const close = at + MARK_OPENER.length + read.inner.length;
     out.push([at, at + MARK_OPENER.length], [close, from + read.end]);
   }
-  return out;
+  // So does an underline's (`:underline[` and its `]`, #1465).
+  for (let k = block.indexOf(UNDERLINE_OPENER); k >= 0; k = block.indexOf(UNDERLINE_OPENER, k + 1)) {
+    const at = from + k;
+    if (code.some(([s, e]) => at >= s && at < e)) continue;
+    const read = readUnderlineAt(block, k);
+    if (read) out.push([at, at + UNDERLINE_OPENER.length], [from + read.end - 1, from + read.end]);
+  }
+  return out.length > 1 ? out.sort((a, b) => a[0] - b[0]) : out;
 }
 
 /** Whether a reference opens at `r`: `:ref{`, or LaTeX's `\ref{` or

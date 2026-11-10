@@ -255,6 +255,12 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td>Interprète une barre oblique inverse en fin de ligne source, et <code>{'\\\\'}</code> avant une espace, comme un saut de ligne forcé à l’intérieur d’un paragraphe, d’une citation ou d’un élément de liste (le saut de ligne dur de CommonMark) : les mots suivants commencent une nouvelle ligne du même paragraphe, et la ligne précédente est composée à sa largeur naturelle, comme une dernière ligne. Une barre oblique inverse qui termine le paragraphe s’imprime, et deux espaces en fin de ligne ne font pas de saut (voir <a href="/fr/docs/document-format-directives#sauts-de-ligne">Format du document › Sauts de ligne</a>). <code>false</code> conserve l’interprétation de la 1.22 : les barres obliques inverses s’impriment et les lignes se rejoignent par une espace ; les configurations enregistrées auparavant dont le texte contient une telle barre sont lues avec cette valeur (voir <a href="/fr/docs/configuration-bundles#paquets-écrits-par-postext-14-ou-antérieur">Paquets écrits par postext 1.4 ou antérieur</a>). Les titres, les légendes, les notes et les cellules de tableau coupent à <code>{'\\\\'}</code> dans tous les cas.</td>
     </tr>
     <tr>
+      <td><code>plusUnderline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lire <code>++texte++</code> comme du texte souligné, en plus de <code>:underline[texte]</code>, toujours lu. Chaque paire de deux signes plus de chaque côté souligne, <code>use ++i rather than i++</code> compris ; <code>{'\\+\\+'}</code> écrit une paire littérale, une lettre ou un chiffre collé aux signes les garde comme texte (<code>C++</code>, <code>g++</code>), et le code en ligne et les blocs de code ne sont jamais soulignés. Le réglage vaut partout où les marques en ligne sont lues : le texte courant, les titres, les listes, les légendes, les cellules de tableau, les notes et les pastilles. <code>false</code> : les signes plus s’impriment. Voir <a href="/fr/docs/document-format-inline#texte-souligné">Format du document › Texte souligné</a>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

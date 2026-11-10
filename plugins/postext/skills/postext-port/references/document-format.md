@@ -68,7 +68,7 @@ author: "Anon"
 ### 2.1 Inline content inside headings (differs from paragraphs)
 
 A heading's inline content is read like a paragraph's while `headings.inlineMarks` is on (the default since `configVersion` 6):
-- `**bold**`, `*italic*`, `__…__`, `_…_`, `^sup^`, `~sub~`, `:smallcaps[…]` and links become runs. An italic run flips the heading's slant (upright in an italic heading); bold takes `bodyText.boldFontWeight`, or the heading's weight when heavier. The contents rows keep bold and italic; running heads, `{chapterTitle}`, the PDF outline and design `{titleText}` stay plain.
+- `**bold**`, `*italic*`, `__…__`, `_…_`, `^sup^`, `~sub~`, `~~strike~~`, `:underline[…]`, `:smallcaps[…]` and links become runs. An italic run flips the heading's slant (upright in an italic heading); bold takes `bodyText.boldFontWeight`, or the heading's weight when heavier. The contents rows keep bold and italic; running heads, `{chapterTitle}`, the PDF outline and design `{titleText}` stay plain.
 - With `headings.inlineMarks: false` (and in a preset without `configVersion` 6 whose headings carry marks) they are **reduced to plain text**: the markers are removed and the heading's look comes only from the level/style config.
 - `` `code` `` becomes its text. Images are removed.
 - Escapes `\* \_ \^ \~ \`` produce the literal character.
@@ -212,7 +212,7 @@ Pipeline order per block:
 6. `:swatch{…}`
 7. inline `$…$`
 8. tabs (`:tab`, tab characters)
-9. forced line breaks, then `parseInlineFormatting`: `:mark[…]`, `:smallcaps[…]`, `:tcy`/`:upright`/`:sideways`, the CJK marks and ruby, links (text kept, URL as a range), images removed, code backticks dropped, then bold, italic and scripts
+9. forced line breaks, then `parseInlineFormatting`: `:underline[…]`, `:mark[…]`, `:smallcaps[…]`, `:tcy`/`:upright`/`:sideways`, the CJK marks and ruby, links (text kept, URL as a range), images removed, code backticks dropped, then `~~strike~~` (before the subscripts), `++…++` when `bodyText.plusUnderline` is on, bold, italic and scripts
 
 Earlier passes shield their content from later ones. Math is extracted before emphasis, so `*` inside `$…$` is safe. Tabs (`:tab`, tab characters, §10.9) are taken out after the maths, outside inline code, link destinations and directive attributes.
 
@@ -225,12 +225,15 @@ Earlier passes shield their content from later ones. Math is extracted before em
 | Bold inside italic | `*a **b** c*` | **does not work.** The outer `*` stay literal; only `b` is bold |
 | Superscript | `^x^` | 58% of the size, raised 1/3 em. Content must start and end with a non-space; no newline; no inner `^` |
 | Subscript | `~x~` | 58% of the size, lowered 0.15 em. Same rules. A subscript and a superscript that touch (`T~0~^2^`, either order) are stacked, the subscript 0.25 em down; a space, a letter or a word joiner (U+2060) between them sets them one after the other. A stacked pair never parts at a line break (a word too wide for the line breaks before it) |
+| Strikethrough (≥ 1.71) | `~~x~~` | a line through the text (GFM). Exactly two tildes each side, the text starts and ends with a non-space, non-tilde; a single pair is still a subscript (`~~H~2~O~~` works); `\~\~` for two literal tildes. Takes no room: lines break as without it. The line sits at the face's OS/2 strikeout (fallback 0.28 em up, 0.05 em thick), in the text colour; in Chinese/Japanese and vertical text it runs through the middle of the characters. HTML/EPUB `<s>`, Word struck through, a tagged PDF keeps the words as text. Also in chips (`:chip[~~old~~ new]`) |
+| Underline (≥ 1.72) | `:underline[x]` | a line under the text, always read, like `:smallcaps[…]`: takes marks inside and around it, `\]` for a literal `]`. Takes no room. The line sits at the face's `post` underline (fallback 0.12 em under the baseline, 0.05 em); in Chinese and Japanese text it is a solid side line (right of the characters in vertical text). Under a link styled by `links.style` only the link's line shows. HTML/EPUB `<u>`, Word underlined. `~~:underline[x]~~` gets both lines |
+| Underline shorthand (≥ 1.72) | `++x++` | only with `bodyText.plusUnderline: true` (default `false`, where `++` is text). When on, **every** `++…++` pair underlines, `i++ … ++j` included: write `\+\+` for a literal pair (`C\+\+`). Inline code and code blocks never underline. Prefer `:underline[…]` in ports; turn the setting on only for a source that already writes `++…++` (Pandoc/markdown-it-ins) and has no `++` in its prose |
 | Tab (≥ 1.23) | `:tab`, `:tab{at=… align=… leader=…}` | goes to the paragraph's next tab stop, or to the one-off stop of its attributes; see §10.9 |
 | Small caps | `:smallcaps[x]` | lowercase letters as capitals at 70% of the size (synthesised, identical on every backend). Takes marks inside and around it; `\]` for a literal `]`; empty or unclosed stays literal. Headings strip the markup. See §10.3 |
 | Inline code | `` `x` `` | **backticks removed, rendered literally**: emphasis markers, `$`, links, `:ref{…}` and chips inside it print as written (the way to show syntax). Set in the body face, or with `codeStyle.inline` (≥ 1.23, configuration.md §12b) in a code face as one unbreakable unit, optionally on a fill. |
 | Link | `[text](url)` | text kept and set exactly as without the link. The URL becomes a live link in HTML (`<a>`) and PDF (a URI annotation), not on canvas. Only `http`, `https`, `mailto`, `tel`, `ftp` and relative URLs are linked; any other scheme keeps the text only. The destination takes **balanced parentheses** as in CommonMark (`[Wiki](…/A_(b))` links the whole URL); an unbalanced one ends at the first `)` and the text is set with no link. A `"title"` is ignored; `<…>` may hold spaces. Works in paragraphs, lists, quotes, callouts, captions, notes and cells, not in headings or chips. On paper only the text shows; config `links.print` (≥ 1.65, configuration.md §19a4) adds the address in parentheses or a footnote with the address and/or a QR code, so never type the URL into the text for print |
 | Image | `![alt](src)` | **removed** from the text |
-| Escapes | `\*` `\_` `\^` `\~` `` \` `` | the literal character (body, captions, cells, notes) |
+| Escapes | `\*` `\_` `\^` `\~` `\+` `` \` `` | the literal character (body, captions, cells, notes) |
 | Emphasis dots (≥ 1.9) | `:dots[不可]`, `{style="dot\|circle\|sesame" fill="open" pos="over\|under"}` | 着重号: under each character (right in vertical text), none on punctuation. `*…*` on Chinese characters does the same under `cjk.emphasis: 'dots'` (default in a Chinese document). Japanese (≥ 1.16): 傍点 are sesame ﹅ over the text (right in vertical text) by default (`cjk.emphasisMark`); `fill="open"` = 白ゴマ, `style="circle" fill="filled"` = 丸傍点 (a circle is open by default: 白丸); dots skip punctuation and go outside a ruby reading |
 | Side line (≥ 1.16) | `:sideline[注意]{style="solid\|double\|wavy\|dotted" pos="over\|under"}` | 傍線: a line along the run (under in horizontal text, right in vertical text), through its punctuation; Aozora 鎖線 → `dotted`; 破線 has no shape (falls back to solid) |
 | Proper-name line (≥ 1.9) | `:name[賈寶玉]` | 专名号: straight line under (left in vertical); adjacent names keep a gap |
@@ -246,13 +249,13 @@ Earlier passes shield their content from later ones. Math is extracted before em
 - (≥ 1.9) Han, kana and hangul do not block `_` flanking: `中文_斜体_中文` is italic. A `~` with a digit on both sides (`3~5天`) or between two Chinese words (`周一~周五`) is literal; `^_^` is always text.
 - **Intraword underscores are text** (since the engine follows CommonMark here): `snake_case_name` and `http://a.com/x_y_z` keep their underscores; only `_emphasis_` at word boundaries italicises. For emphasis inside a word, use `*`. (Older engines italicised between two intraword underscores: write `\_` there if a document must also lay out on them.)
 - Lone asterisks pair up across a paragraph: `x * y * z` gives an italic ` y `. Write `\*` or use `×` / `·`.
-- `~` pairs: `~~strike~~` has **no strikethrough**. It gives a subscript `~strike` plus literal tildes. A span is `~X~` / `^X^` where X starts and ends with a non-space and has no inner marker or newline. `from ~5 to ~10` stays literal only because the text before the second `~` ends in a space. `about ~5km~ish` would subscript. When in doubt, write `\~` (or `\^`).
+- `~` pairs: `~~strike~~` is a strikethrough since postext 1.71 (before 1.71 it gave a subscript plus stray tildes, so a project pinned to an older engine must not use it). A subscript span is `~X~` / `^X^` where X starts and ends with a non-space and has no inner marker or newline. `from ~5 to ~10` stays literal only because the text before the second `~` ends in a space. `about ~5km~ish` would subscript. When in doubt, write `\~` (or `\^`).
 - Patterns are non-greedy and can span what were separate source lines (lines are joined first).
 - Emphasis does not cross block boundaries.
 
 **Footnotes:** `[^id]` markers (paragraphs, list items, blockquotes, callouts) and `[^id]:` definitions, §10.4.
 
-**Not supported:** strikethrough, underline, inline HTML, reference links `[a][b]`, autolinks `<http://…>`, emoji shortcodes, inline language spans. The PDF tagging `Lang` comes only from config. No per-span `lang` exists in the Markdown.
+**Not supported:** inline HTML (`<u>`, `<s>`, `<del>`, `<ins>`: write `:underline[…]` and `~~…~~`), reference links `[a][b]`, autolinks `<http://…>`, emoji shortcodes, inline language spans. The PDF tagging `Lang` comes only from config. No per-span `lang` exists in the Markdown.
 
 ---
 
@@ -579,7 +582,7 @@ Tables are `kind:"table"` resources with a `TableModel`:
 - `table.styleId` names a `tableStyles` entry.
 
 **Snippet syntax** (cell content, caption, note):
-- Recognised: `**bold**`, `*italic*`, `^sup^`, `~sub~`, escapes, `:ref{…}`, `:swatch{…}`, `:chip[…]` and `:smallcaps[…]`.
+- Recognised: `**bold**`, `*italic*`, `^sup^`, `~sub~`, `~~strike~~`, `:underline[…]`, escapes, `:ref{…}`, `:swatch{…}`, `:chip[…]` and `:smallcaps[…]`.
 - **Maths in snippets follows Pandoc's `$` rule** (postext ≥ 1.19; up to 1.18 the `$` stayed literal): no space after the opening `$`, none before the closing one, no digit right after it. So "$5 to $10" stays text. `\$` prints `$`. A chip label takes no maths. Display maths (`$$`) is never read in a snippet.
 - **Citations** (`[@key]`, `@key`) are read in a caption and a note (postext ≥ 1.19), and their works enter the bibliography with no `nocite`. In a table cell a citation stays text. Footnote markers `[^id]`, `:tab` and index marks print as written in every snippet.
 - In **cells**, `\n` separates paragraphs. A paragraph starting with a marker is a hanging list item: `•·◦○▪‣-*–—` or `1.`/`1)` (up to 3 digits) followed by whitespace. Two leading spaces per nesting level.
@@ -596,7 +599,7 @@ Tables are `kind:"table"` resources with a `TableModel`:
 - The text is non-empty and on one line in the source. Paragraph lines are pre-joined, so a chip may straddle source lines inside a paragraph. Whitespace collapses to a single space. `\]` gives a literal `]`.
 - `{…}` must follow `]` immediately. **`style` is read**, plus the form-field attributes below. Missing or unknown: the first `chipStyles` entry (built-in id `chip`), with an `unknownChipStyle` warning.
 - **Empty chip** (≥ 1.5): `:chip[ ]` (spaces or no-break spaces only) is a blank box as wide as its style's horizontal padding and outline, as tall as a chip with words: an answer blank or an end mark. Size it with a style's `paddingX` (`:chip[ ]{style="blank"}`). `:chip[]` with nothing inside stays literal.
-- **Form field** (postext ≥ 1.71): a `field` attribute makes the chip a fillable field in the PDF (AcroForm): `:chip[ ]{style="field" field="order.qty" kind="number"}`. Also read: `kind` (`text`, `number`, `checkbox`, `choice` with `options="A|B"`), `format` (`currency`, `decimal`, `integer`), `calc` (`sum(…)`, `product(…)`, `min`, `max`, `avg` over field names, numbers and nested calculations), `on` (a check box's on value), `readonly`, `required`, `multiline`, `tooltip`. The chip's words are the default value. Port a source's form blanks this way when the publication is a fillable form; print (PDF/X) and the other outputs paint the value as text. Names are dotted paths with no empty part (`a..b` is dropped with a `formField` warning), and a name cannot be both a field and the parent of one (`order` beside `order.qty`). Reference: docs/configuration-pdf-output, § Form fields.
+- **Form field** (postext ≥ 1.71): a `field` attribute makes the chip a fillable field in the PDF (AcroForm): `:chip[ ]{style="field" field="order.qty" kind="number"}`. Also read: `kind` (`text`, `number`, `checkbox`, `choice` with `options="A|B"`; without `kind`, a chip with `format` or `calc` is a number field), `format` (`currency`, `decimal`, `integer`), `calc` (`sum(…)`, `product(…)`, `min`, `max`, `avg` over field names, numbers with a point as decimal mark and nested calculations; a calculated field is read-only), `on` (a check box's on value: `on="1"` makes a ticked box count 1 in a calculation, the default `Yes` counts 0), `readonly`, `required`, `multiline`, `tooltip`. The chip's words are the default value; the chip style gives the look and `minWidth` the room to type in. Currency symbol and side, separators and the face the values show in are render options, not config: `renderToPdf(…, { forms: { currency, currencyBefore, separatorStyle, font } })` (separators default from the document language, `font` defaults to the chip's face, embedded whole); pass the same `forms` to the canvas renderers so the preview matches. The IDML export (`postext idml`, `postext/idml`) writes these chips as InDesign form fields. Port a source's form blanks this way when the publication is a fillable form; print (PDF/X) and the other outputs paint the value as text. Names are dotted paths with no empty part (`a..b` is dropped with a `formField` warning), and a name cannot be both a field and the parent of one (`order` beside `order.qty`). Reference: docs/configuration-pdf-output, § Form fields.
 - The chip text takes its own emphasis and scripts (`:chip[**bold** x^2^]`). Refs, swatches and math inside a chip stay literal; `\$` gives `$` (postext ≥ 1.5; 1.4 printed `\$`). Surrounding emphasis applies (`**:chip[a]**`).
 - Works in paragraphs, list items, blockquotes, callouts, cells, captions and notes. **Not in headings** (literal). Not in callout `title` attributes.
 - Never broken or hyphenated. Line breaks happen at the spaces around it.
@@ -1095,7 +1098,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 5. **List termination:** "two or more blank lines terminate the list". The parser does split the run, but numbering and indentation runs only close at a non-list block, so the render continues the list.
 6. **Worked example is invalid:** the nested items `   a. Tighter…` / `   b. Looser…` are not list syntax. They become a paragraph that also swallows the following `3. Contrast…` line.
 7. **Inline code:** (Fixed) its content is literal now: emphasis, math, links and refs inside backticks print as written. Older engines parsed them.
-8. **Strikethrough:** the docs say it is not recognised. It is worse: `~~x~~` turns into a subscript with stray tildes.
+8. **Strikethrough:** (Fixed in 1.71) `~~x~~` is a strikethrough. Older engines read it as a subscript with stray tildes.
 9. **Intraword `_`:** (Fixed) an underscore between two letters or digits is text now (CommonMark), so URLs and `snake_case` keep theirs. Older engines italicised between two of them.
 10. **Links:** resolved. A URL with balanced parentheses is read whole, an unbalanced one sets the text with no link, and the docs describe both (`document-format` › Links).
 11. **Footnotes:** (Fixed in 1.6) `[^id]` markers and `[^id]:` definitions, set at the column foot (§10.4). Engines before 1.6 printed `[^1]` literally; `PostextContent.notes` / `PostextNote` in the types are not the mechanism.
@@ -1155,7 +1158,9 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Colour legend | `:swatch{color="…"}`. |
 | Links | `[text](url)`: the text is set as usual and the URL is a live link in the HTML and PDF output. Print cannot follow it, so for a printed book also put important URLs in the text itself; they get URL-aware line breaking. |
 | Small caps | `:smallcaps[…]` inline; `smallCaps: true` on a paragraph style or a callout body for whole paragraphs. |
-| Underline, strikethrough, colour spans, language spans | **Unsupported inline.** Use a chip style or a paragraph style, or accept plain text. |
+| Strikethrough (old price, deleted word) | `~~…~~` (≥ 1.71). |
+| Underline | `:underline[…]` (≥ 1.72). A source written with `++…++` can keep it with `bodyText.plusUnderline: true`. |
+| Colour spans, language spans | **Unsupported inline.** Use a chip style or a paragraph style, or accept plain text. |
 | HTML entities | Use the literal Unicode characters. |
 | Chinese emphasis dots (着重号) | `:dots[…]`, or `*…*` in a Chinese document (dots by default). |
 | Proper-name line (专名号) | `:name[…]`. |

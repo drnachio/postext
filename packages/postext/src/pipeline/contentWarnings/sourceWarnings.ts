@@ -146,7 +146,8 @@ export function collectContentWarnings(
   const fm = extractFrontmatter(markdown);
   const body = fm.content;
   const offset = fm.contentOffset;
-  const blocks = parseMarkdownMemo(body, codeParseOptions(resolveAllConfig(config)));
+  const parseOptions = codeParseOptions(resolveAllConfig(config));
+  const blocks = parseMarkdownMemo(body, parseOptions);
   const out: ContentWarning[] = [];
   // Front matter that does not parse: the document is set without its
   // metadata.
@@ -436,7 +437,7 @@ export function collectContentWarnings(
     };
     const scanSnippet = (text: string | undefined): void => {
       if (!text) return;
-      for (const span of parseInlineSnippetSpans(text)) {
+      for (const span of parseInlineSnippetSpans(text, { plusUnderline: parseOptions?.plusUnderline === true })) {
         if (span.ref && !byId.has(span.ref.resourceId) && once(`ref:${span.ref.resourceId}`)) {
           out.push({ kind: 'unknownResourceId', resourceId: span.ref.resourceId, usage: 'ref', inResource: id, ...where });
         }

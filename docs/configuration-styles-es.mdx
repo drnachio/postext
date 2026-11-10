@@ -476,6 +476,8 @@ Pulsa :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 Las longitudes en em de la caja (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) son relativas al cuerpo del propio chip. La caja es una banda de 0,8 em por encima y 0,25 em por debajo de la línea base, ampliada con `paddingY` y el contorno; se pinta fuera de la caja de línea y nunca cambia el interlineado, así que la rejilla base se mantiene. Si la caja resulta más alta que la distancia entre líneas, un chip puede chocar con otro de la línea de encima o de debajo: cuando dos chips de líneas distintas se solapan, el Sandbox muestra el aviso **Los chips tocan la línea siguiente**, con el solapamiento en puntos, para que puedas reducir `paddingY`, el contorno o `fontSize`. Un chip alto sin ningún chip encima ni debajo no da aviso.
 
+Un chip con el atributo `field` es un campo de formulario rellenable en el PDF y un campo de formulario de InDesign en la exportación IDML. Su estilo da al campo su aspecto, y `minWidth` el espacio para escribir (véase [Salida PDF › Campos de formulario](/es/docs/configuration-pdf-output#campos-de-formulario)).
+
 En el VDT, un chip es un segmento de línea de `kind: 'chip'` cuyo campo `chip` contiene los tramos de texto (cada uno con su cadena de fuente y su ancho), la geometría de la caja (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, los márgenes de `gap`) y sus colores; el `text` del segmento es un marcador de un solo carácter, de modo que las posiciones en el texto plano y los mapas de origen cuentan un chip como un carácter.
 
 ```ts

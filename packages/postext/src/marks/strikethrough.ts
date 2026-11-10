@@ -25,6 +25,17 @@
  * the line runs on the central axis of the em box. A superscript or
  * subscript inside the run does not move it. It is at least half a pixel
  * thick, in the colour the run's text is painted in.
+ *
+ * Underlined text (`++text++`, `VDTLineSegment.underline`) is drawn the
+ * same way, under the words: where the face puts its underline (`post`
+ * `underlinePosition` and `underlineThickness`), else 0.12 em under the
+ * baseline and 0.05 em thick. In Chinese and Japanese text and on a
+ * vertical page it is drawn as a solid side line (傍線, `:sideline[…]`)
+ * in its default place: under the em box in horizontal text, on its right
+ * (over) on a vertical page, as JLReq sets 傍線. Where it runs under a link and
+ * the document underlines its links (`links.style`), the piece under the
+ * link is marked `underLink`: an output that draws the link's own line
+ * leaves it out, so the two lines do not sit one on the other.
  */
 
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineMark, VDTLineSegment } from '../vdt.js';
@@ -35,16 +46,21 @@ import { hasCJK } from '../measure/cjk/cjk.js';
 import { measureTextWidth } from '../measure/canvas.js';
 import { fontEm } from '../measure/vertical.js';
 
-import { STRIKE_AT, STRIKE_STROKE } from './strikeGeometry.js';
-import { strikeoutOf } from '../fonts/strikeout.js';
+import { STRIKE_AT, STRIKE_STROKE, UNDERLINE_AT, UNDERLINE_STROKE } from './strikeGeometry.js';
+import { strikeoutOf, underlineOf } from '../fonts/strikeout.js';
+import { styledLinkOf } from './linkUnderline.js';
+import { LINE_AT, STROKE } from './cjkMarks/geometry.js';
+
+/** Which line: through struck-through text or under underlined text. */
+type Rule = 'strike' | 'underline';
 
 type BlockLike = Parameters<typeof segmentPositions>[1] & Partial<Pick<VDTBlock, 'boldColor' | 'italicColor'>>;
 
 /** Where the struck characters of a segment start and end, px from its
  *  start: all of it, or the part `from`–`to` of a left-to-right text
  *  segment. */
-function struckExtent(seg: VDTLineSegment, width: number, font: string): [number, number] {
-  const s = seg.strike!;
+function struckExtent(seg: VDTLineSegment, width: number, font: string, rule: Rule = 'strike'): [number, number] {
+  const s = seg[rule]!;
   if (s.from === undefined || s.to === undefined || seg.rtl || seg.kind !== 'text') return [0, width];
   const whole = measureTextWidth(seg.text, font);
   if (!(whole > 0)) return [0, width];
@@ -57,12 +73,19 @@ function struckExtent(seg: VDTLineSegment, width: number, font: string): [number
  *  (OS/2, `fonts/strikeout.ts`) when a file of the face was read, else
  *  {@link STRIKE_AT} and {@link STRIKE_STROKE}. Chinese and Japanese text
  *  and a vertical page put it on the central axis of the em box. */
-function strikeGeometry(seg: VDTLineSegment, font: string, vertical: boolean): { y: number; thickness: number } {
+function strikeGeometry(seg: VDTLineSegment, font: string, vertical: boolean, rule: Rule = 'strike'): { y: number; thickness: number } {
   const em = fontEm(font);
-  const face = strikeoutOf(font);
+  const under = rule === 'underline';
+  const face = under ? underlineOf(font) : strikeoutOf(font);
   const central = vertical || (seg.kind === 'text' && hasCJK(seg.text));
-  const position = central ? CENTRAL : face?.position ?? STRIKE_AT;
-  return { y: -position * em + (seg.baselineShift ?? 0), thickness: Math.max(0.5, (face?.size ?? STRIKE_STROKE) * em) };
+  // As a side line in its default place (`marks/cjkMarks/lineMarks.ts`):
+  // under the em box, or on its right on a vertical page.
+  if (central && under) {
+    const side = vertical ? -1 : 1;
+    return { y: -CENTRAL * em + side * (0.5 + LINE_AT) * em + (seg.baselineShift ?? 0), thickness: Math.max(0.5, STROKE * em) };
+  }
+  const position = central ? CENTRAL : face?.position ?? (under ? UNDERLINE_AT : STRIKE_AT);
+  return { y: -position * em + (seg.baselineShift ?? 0), thickness: Math.max(0.5, (face?.size ?? (under ? UNDERLINE_STROKE : STRIKE_STROKE)) * em) };
 }
 
 /** The colour a segment's text is painted in, when it is not the block's. */
@@ -74,10 +97,13 @@ function colorOf(seg: VDTLineSegment, block: BlockLike): string | undefined {
 }
 
 /** The strikethrough lines of a line, relative to it; empty when it holds
- *  no struck word. `vertical`: the line is set on a vertical page. */
-export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): VDTLineMark[] {
+ *  no struck word. `vertical`: the line is set on a vertical page. `rule`
+ *  `underline`: the lines under its underlined words instead. `links`:
+ *  the document underlines its links, and an underline's piece under a
+ *  link is marked `underLink`. */
+export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false, rule: Rule = 'strike', links = false): VDTLineMark[] {
   const segments = line.segments;
-  if (!segments || !segments.some((s) => s.strike)) return [];
+  if (!segments || !segments.some((s) => s[rule])) return [];
   const { xs, widths } = segmentPositions(line, block);
   const order = line.order && line.order.length === segments.length ? line.order : segments.map((_, i) => i);
   // Each segment's x in the line's paint order.
@@ -91,7 +117,8 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
   const out: VDTLineMark[] = [];
   // A piece of a run: one face's line (where it sits across the line and
   // how thick it is), from `from` to `to`.
-  type Run = { id: number; from: number; to: number; y: number; thickness: number; color?: string };
+  type Run = { id: number; from: number; to: number; y: number; thickness: number; color?: string; underLink?: boolean };
+  const linked = (seg: VDTLineSegment): boolean => links && rule === 'underline' && styledLinkOf(seg) !== undefined;
   let run: Run | undefined;
   // The run's words go on after a space: a piece that starts there in
   // another face takes the space into the piece before it.
@@ -107,19 +134,20 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
       length: r.to - r.from,
       thickness: r.thickness,
       ...(r.color !== undefined ? { color: r.color } : {}),
+      ...(r.underLink ? { underLink: true as const } : {}),
     });
   };
   for (let k = 0; k < order.length; k++) {
     const i = order[k]!;
     const seg = segments[i]!;
-    const strike = seg.strike;
+    const strike = seg[rule];
     if (!strike) {
       // A space between two words of one run carries the line on.
       if (run && seg.kind === 'space') {
         let j = k + 1;
-        while (j < order.length && segments[order[j]!]!.kind === 'space' && !segments[order[j]!]!.strike) j++;
+        while (j < order.length && segments[order[j]!]!.kind === 'space' && !segments[order[j]!]![rule]) j++;
         const next = j < order.length ? segments[order[j]!] : undefined;
-        if (next?.strike?.id === run.id) {
+        if (next?.[rule]?.id === run.id) {
           bridged = true;
           continue;
         }
@@ -129,14 +157,15 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
       continue;
     }
     const font = segmentFont(seg, block);
-    const [from, to] = struckExtent(seg, widths[i]!, font);
+    const [from, to] = struckExtent(seg, widths[i]!, font, rule);
     // The tracking after the last letter is no part of the word.
     const trail = seg.kind === 'text' && (strike.to === undefined || strike.to >= seg.text.length) ? tracking + (seg.tracking ?? 0) : 0;
     const left = at[i]! + from;
     const right = at[i]! + Math.max(from, to - trail);
     const color = colorOf(seg, block);
     const sameRun = run !== undefined && run.id === strike.id;
-    const continues = sameRun && run!.color === color;
+    const underLink = linked(seg);
+    const continues = sameRun && run!.color === color && !!run!.underLink === underLink;
     // A superscript or a subscript does not move the line: the run's text
     // around it decides where it goes.
     if (continues && seg.script) {
@@ -144,7 +173,7 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
       bridged = false;
       continue;
     }
-    const { y, thickness } = strikeGeometry(seg, font, vertical);
+    const { y, thickness } = strikeGeometry(seg, font, vertical, rule);
     if (continues && Math.abs(run!.y - y) < 1e-6 && Math.abs(run!.thickness - thickness) < 1e-6) {
       run!.from = Math.min(run!.from, left);
       run!.to = Math.max(run!.to, right);
@@ -154,10 +183,14 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
     // Another face (another cut, family or size) or colour of the same
     // run: its own piece, the one before it reaching up to where this one
     // starts.
-    if (sameRun && (bridged || Math.abs(run!.to - left) < 0.5)) run!.to = Math.max(run!.to, left);
+    // Out of a link, the piece after it reaches back instead: the link's
+    // own line ends with its last word.
+    const meets = sameRun && (bridged || Math.abs(run!.to - left) < 0.5);
+    const start = meets && run!.underLink && !underLink ? run!.to : left;
+    if (meets && start === left) run!.to = Math.max(run!.to, left);
     flush();
     bridged = false;
-    run = { id: strike.id, from: left, to: right, y, thickness, ...(color !== undefined ? { color } : {}) };
+    run = { id: strike.id, from: start, to: right, y, thickness, ...(color !== undefined ? { color } : {}), ...(underLink ? { underLink } : {}) };
   }
   flush();
   return out;
@@ -167,11 +200,14 @@ export function lineStrikes(line: VDTLine, block: BlockLike, vertical = false): 
  *  by two builds (a cached measurement) gets its strikes again, once. */
 const given = new WeakMap<VDTLine, VDTLineMark[]>();
 
-/** Draw the strikethrough lines of every line of the document that holds
- *  struck-through text (see the module comment): paragraphs, headings,
+/** Draw the strikethrough and underline lines of every line of the
+ *  document that holds struck-through or underlined text (see the module comment): paragraphs, headings,
  *  list items, notes and the texts of resource blocks (table cells,
  *  captions), which are set horizontally on every page. */
 export function strikeDocument(doc: VDTDocument): void {
+  // As `underlineDocumentLinks` decides whether links get their own line.
+  const style = doc.config?.links?.style;
+  const links = !!style && style.underline !== 'none' && doc.config.layout.writingMode !== 'vertical-rl';
   for (const { lines, like } of textLineGroups(doc)) {
     // A flow block on a vertical page is set vertically; a resource
     // block's text never is.
@@ -179,9 +215,9 @@ export function strikeDocument(doc: VDTDocument): void {
     const vertical = block !== undefined && doc.pages[block.pageIndex]?.flow?.writingMode === 'vertical-rl';
     for (const line of lines) {
       const before = given.get(line);
-      if (!before && !line.segments?.some((s) => s.strike)) continue;
+      if (!before && !line.segments?.some((s) => s.strike || s.underline)) continue;
       const kept = before ? (line.marks ?? []).filter((m) => !before.includes(m)) : line.marks ?? [];
-      const marks = lineStrikes(line, like, vertical);
+      const marks = [...lineStrikes(line, like, vertical), ...lineStrikes(line, like, vertical, 'underline', links)];
       given.set(line, marks);
       if (kept.length + marks.length > 0) line.marks = [...kept, ...marks];
       else delete line.marks;

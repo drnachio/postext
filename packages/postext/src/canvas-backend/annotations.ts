@@ -13,6 +13,7 @@ import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment,
 import { fillFlowText, verticalPaintActive, type TextPaintMode } from './verticalText.js';
 import type { MarkCutRule } from '../measure/cjk/markCuts.js';
 import { restoreContext, saveContext, setLetterSpacing } from './contextState.js';
+import { linkUnderlinePainted } from './blockRender/linkPaint.js';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -101,8 +102,10 @@ export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string): void {
   const x0 = line.bbox.x;
   const y0 = line.baseline;
   const vertical = verticalPaintActive();
+  const linkLines = linkUnderlinePainted();
   saveContext(ctx);
   for (const m of marks) {
+    if (m.underLink && linkLines) continue;
     const ink = m.color ?? color;
     ctx.fillStyle = ink;
     ctx.strokeStyle = ink;

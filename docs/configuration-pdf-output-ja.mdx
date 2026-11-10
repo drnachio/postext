@@ -308,7 +308,7 @@ Noto Serif TC（本で使う文字だけ、TrueType）で組んだ43ページの
 サイズ :chip[M]{style="field" field="size" kind="choice" options="S|M|L"}
 ```
 
-- `kind`：`text`（既定）、`number`、`checkbox`、`choice`（選択肢は`options`に`|`区切りで書きます）。
+- `kind`：`text`（既定）、`number`、`checkbox`、`choice`（選択肢は`options`に`|`区切りで書きます）。`kind`がなく`format`か`calc`を持つチップは数値フィールドになります。
 - `on`（チェックボックス）：チェックボックスのオン状態の名前です。チェックが入っているとき、スクリプトはこの値を読みます。`on="1"`にすると、チェックの入ったボックスは計算で1と数えられるので、`product(pkg.a, 161.75)`はチェックが入ったときに固定の価格を加えます。既定は`Yes`で、計算では0と数えられます。
 - `format`：`currency`、`decimal`（小数2桁）、`integer`。Acrobatの`AFNumber_Format`と`AFNumber_Keystroke`で書かれ、区切り記号は文書の言語に従います（ドイツ語なら`1.234,56`）。`RenderToPdfOptions.forms.separatorStyle`で別の書き方を指定することもできます。通貨は`forms.currency`（既定は`€`）で、`forms.currencyBefore`が`false`でなければ数値の前に付きます。初期値も書式を適用して描かれます。
 - `calc`：`sum(…)`、`product(…)`、`min(…)`、`max(…)`、`avg(…)`。引数には、名前で指すほかのフィールド、数値（小数点はピリオド。例：`161.75`）、入れ子の計算を書けます（例：`sum(pos.a.total, pos.b.total, product(pkg.a, 161.75))`）。フィールドだけを使う計算は`AFSimple_Calculate`として書かれます。数値や入れ子の計算を含むものは、専用の短いCalculateスクリプトになります。このスクリプトも各フィールドを同じように読み（値に`AFMakeNumber`を適用し、数値でないものは0と数えます）、結果を小数6桁に丸めます。計算されるフィールドは読み取り専用になり、計算順序は、入れ子の計算の中も含め、読み取るすべてのフィールドに合わせて決まります。次の場合は`formField`警告が出ます。未知のフィールドを読む計算（0と数えます）、循環、2種類のフィールドに使われた名前、`on`の値が数値でないチェックボックスを含む計算（常に0と数えます）です。

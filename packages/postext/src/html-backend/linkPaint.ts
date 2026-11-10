@@ -41,6 +41,12 @@ export function restoreHtmlLinkPaint(previous: LinkPaint | undefined): void {
   current = previous;
 }
 
+/** Whether links get their own line here: an underline's piece under a
+ *  link (`VDTLineMark.underLink`) then gives way to it. */
+export function htmlLinkUnderlinePainted(): boolean {
+  return current !== undefined && current.underline !== 'none';
+}
+
 /** The colour of a link segment, or undefined when it is not a link or
  *  the style sets no colour here. */
 export function htmlLinkFill(seg: VDTLineSegment): string | undefined {

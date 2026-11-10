@@ -69,6 +69,10 @@ export interface VDTLineMark {
   wavelength?: number;
   /** Colour (hex); unset: the colour of the block's text. */
   color?: string;
+  /** The line under underlined text (`++…++`) where it runs under a
+   *  styled link: left out in an output whose link style draws the link's
+   *  own line (`VDTLine.linkUnderlines`), so only one line shows there. */
+  underLink?: true;
 }
 
 /** A located anchor (see {@link VDTDocument.anchors}). */

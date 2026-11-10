@@ -302,6 +302,7 @@ bodyText
 ├─ paragraphSpacing  boolean|Dimension  false        true = one full grid line between paragraphs; a length (≥ 1.52, #1115: {2,'mm'}, {0.33,'em'}) = exactly that, in the flow, boxes and frames; off-grid until the next heading/list tail snaps back. Same slot as paragraphStyles[].spaceBetween (which wins inside :::paragraphs); boxes: calloutStyles[].body.paragraphSpacing
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
+├─ plusUnderline     boolean         false           (≥ 1.72) `++…++` underlines, as `:underline[…]` does; when on, EVERY pair does (`i++ … ++j` too), `\+\+` is a literal pair, code never underlines. Off: `++` is text
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true (false in an Arabic-script document, ≥ 1.15), indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
 ├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0, tighten=true }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading; tighten (≥ 1.24) = a line a little wider than the measure shrinks its word spaces down to minWordSpacing and stays on one line, only a line still too wide turns over (false = 1.23: every overlong line turns over; stored configs < 10 with a line-by-line poem get false)
@@ -1263,7 +1264,8 @@ All em values = the callout body font size.
            hangingIndent: boolean|Dimension (≥ 1.71: true hangs as bodyText.hangingIndent does, pairing with
            body.firstLineIndent as the turnover indent; a length hangs every line but the first that far
            from the box's inner edge, as ParagraphStyleConfig.hangingIndent; for notes like `\*⇥Note…` in
-           boxes and frames, with a tab stop at the same length; a blockquote hangs too only with true) }
+           boxes and frames, with a tab stop at the same length; a blockquote hangs too only with true;
+           false sets the box unhung in a book whose body text hangs; unset = bodyText.hangingIndent) }
                                                                               → inherit bodyText
          + italic = false, smallCaps = false   (paragraphs, list items and blockquotes of the box)
   lists = { bulletChar, color, indent, gap, itemSpacing, bulletFontSize?, bulletFontWeight?, bulletFontFamily?, marginTop?, marginBottom? }  → inherit unorderedLists (bulletFontFamily unset: the list level keeps its own face; margins unset: the document's, ordered lists too)
@@ -1369,6 +1371,9 @@ Inline `:chip[text]{style="id"}` (word banks, keys, tags). Chip without style �
   underline?: 'solid'|'dotted'|'dashed' (the outline as a line under the text only, borderWidth in borderColor: a
   blank to write on), minWidth?: Dimension (narrowest box, outline and padding included; the text is centred) }
 ```
+A chip with a `field` attribute (≥ 1.71) is a fillable PDF form field on its box: its style is the field's
+look, `minWidth` the room to type in (document-format.md §10.1). A chip style with `underline` draws a
+writing line, which is not the `:underline[…]` text mark.
 
 ---------------------------------------------------------------------------------
 
@@ -2727,6 +2732,7 @@ postext html my-book.postext -o site/ --mode single                 # folder: in
 postext pdf my-book -o print.pdf --pdfx x4 --profile fogra51         # --pdfx none|x1a|x4, --profile a catalogue id or an .icc file
 postext pdf my-book -o proof.pdf --color-space grayscale --no-outlines   # rgb|cmyk|grayscale; --accessible/--no-accessible, --page-negative
 postext image my-book --page 12 --print-preview -o p12.png          # soft proof through the output profile, trim and bleed drawn
+postext idml my-book -o book.idml --images link                     # (≥ 1.71) InDesign package for finishing in InDesign; --images embed (default) | link (pictures in Links/)
 ```
 
 - **Which EPUB.** `fixed` (EPUB `pre-paginated`: one XHTML per printed page, columns, floats and line breaks

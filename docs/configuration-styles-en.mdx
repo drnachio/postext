@@ -476,6 +476,8 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
 
 Em lengths of the box (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) are relative to the chip's own font size. The box is a band 0.8 em above and 0.25 em below the baseline, grown by `paddingY` and the outline; it paints outside the line box and never changes the leading, so the baseline grid holds. When the box ends up taller than the line pitch, a chip can run into a chip on the line above or below — the sandbox lists a "Chips touch the next line" warning when two chips on different lines overlap, with the overlap in points, so `paddingY`, the outline or `fontSize` can be reduced. A tall chip with no chip above or below it is not flagged.
 
+A chip with a `field` attribute is a fillable form field in the PDF and an InDesign form field in the IDML export. Its style gives the field its look, and `minWidth` the room left for typing (see [PDF output › Form fields](/en/docs/configuration-pdf-output#form-fields)).
+
 In the VDT a chip is a line segment of `kind: 'chip'` whose `chip` field carries the text runs (each with its font string and width), the box geometry (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, the gap margins) and its colours; the segment's `text` is a one-character placeholder, so plain-text offsets and source maps count a chip as one character.
 
 ```ts

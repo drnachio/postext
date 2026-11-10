@@ -154,8 +154,13 @@ export function paintLineHighlights(ctx: PageCtx, line: VDTLine): void {
 export function paintLineMarks(ctx: PageCtx, line: VDTLine, ink: Color): void {
   const marks = line.marks;
   if (!marks || marks.length === 0) return;
+  // An underline's piece under a link gives way to the link's own line.
+  const linkLines = ctx.links !== undefined && ctx.links.underline !== 'none';
   tagArtifact(ctx, { type: 'Layout' });
-  for (const m of marks) paintMark(ctx, m, line.bbox.x, line.baseline, m.color ? colorFromHex(m.color, ctx.colorSpace) : ink);
+  for (const m of marks) {
+    if (m.underLink && linkLines) continue;
+    paintMark(ctx, m, line.bbox.x, line.baseline, m.color ? colorFromHex(m.color, ctx.colorSpace) : ink);
+  }
 }
 
 /** Draw one mark from `(xPx, yPx)` (px, flow frame) in `color`. */

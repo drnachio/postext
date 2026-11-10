@@ -67,6 +67,8 @@ export interface TableLayoutStyle {
   /** `codeStyle.inline`, for the inline code of cells; unset, inline code
    *  is set in the cell's face. */
   inlineCode?: ResolvedInlineCodeStyleConfig;
+  /** `bodyText.plusUnderline` (#1465): `++text++` in a cell underlines. */
+  plusUnderline?: boolean;
   /** The document's CJK settings, for the annotations of cells
    *  ({@link annotatedSpans}). */
   annotations: AnnotationScope;
@@ -359,7 +361,7 @@ function layoutTableIn(
       const set = isHeader ? header : body;
       const cellWidth = spanWidth(c, colSpan) - cellPaddingPx * 2;
       const parsed = snippetMathSpans(
-        withSnippetInlineCode(parseInlineSnippetSpans(cell.content), cell.content, style.inlineCode, style.dpi, fontSizePxOf(set.fontString)),
+        withSnippetInlineCode(parseInlineSnippetSpans(cell.content, { plusUnderline: style.plusUnderline === true }), cell.content, style.inlineCode, style.dpi, fontSizePxOf(set.fontString)),
         fontSizePxOf(set.fontString), set.lineHeightPx, style.math,
       );
       const spans = annotatedSpans(resolveCellChips(resolveSwatchSpans(resolveRefSpans(

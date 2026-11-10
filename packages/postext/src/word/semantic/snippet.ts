@@ -18,7 +18,7 @@ const INLINE_CODE = /(?<!\\)`([^`\n]+?)`/g;
  */
 export function snippetRuns(ctx: WriterContext, content: string, src: string, base: number, target: FragmentTarget, role: string, style?: string): string {
   if (!content.trim()) return '';
-  const m = mapInlineSnippet(content);
+  const m = mapInlineSnippet(content, { plusUnderline: ctx.resolved.bodyText.plusUnderline === true });
   const inlineCode: { start: number; end: number }[] = [];
   INLINE_CODE.lastIndex = 0;
   for (let x = INLINE_CODE.exec(content); x; x = INLINE_CODE.exec(content)) inlineCode.push({ start: base + x.index + 1, end: base + x.index + 1 + x[1]!.length });

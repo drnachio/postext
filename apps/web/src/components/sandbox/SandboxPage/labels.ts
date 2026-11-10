@@ -1204,6 +1204,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     bodyBreakAfterSlashesTooltip: t("bodyBreakAfterSlashesTooltip"),
     bodyHardLineBreaks: t("bodyHardLineBreaks"),
     bodyHardLineBreaksTooltip: t("bodyHardLineBreaksTooltip"),
+    bodyPlusUnderline: t("bodyPlusUnderline"),
+    bodyPlusUnderlineTooltip: t("bodyPlusUnderlineTooltip"),
     bodyScriptContext: t("bodyScriptContext"),
     bodyScriptContextTooltip: t("bodyScriptContextTooltip"),
     tabStops: t("tabStops"),

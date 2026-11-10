@@ -3,6 +3,7 @@
 import type { LineScan, StepJump } from './lineScan.js';
 import type { ParseState } from './parseState.js';
 import type { ContentBlock, ParseIssue, BlockSlot } from '../types.js';
+import type { InlineFormatOptions } from '../inlineFormatting.js';
 import { HEADING_RE, HEADING_ATTRS_RE, headingAttrTokens, withChipSources } from '../blockParser.js';
 import { parseDirectiveAttrs } from '../attrs.js';
 import { TITLE_BREAK_RE, BREAK_PLACEHOLDER, extractInlineChips, protectCodeSpans, extractInlineRefs, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, trimSpans, parseInlineFormatting, titleBreakIndices } from '../inlineFormatting.js';
@@ -18,11 +19,13 @@ export interface HeadingLinesDeps {
   lineOffsets: number[];
   lineEndOffset: (k: number) => number;
   scopeSlot: (slot: BlockSlot | undefined) => BlockSlot | undefined;
+  /** How inline marks are read (`ParseOptions.plusUnderline`). */
+  inline: InlineFormatOptions | undefined;
 }
 
 export function createHeadingLines(deps: HeadingLinesDeps) {
   const {
-    markdown, parse, blocks, issues, lineOffsets, lineEndOffset, scopeSlot
+    markdown, parse, blocks, issues, lineOffsets, lineEndOffset, scopeSlot, inline
   } = deps;
   /** Reads a heading line; `continue` once it is read. */
   const parseHeadingLine = (lineScan: LineScan): StepJump => {
@@ -92,9 +95,9 @@ export function createHeadingLines(deps: HeadingLinesDeps) {
       // `headings.inlineMarks: false` sets them plain again
       // (`plainHeadingBlocks`).
       const rawSpans = injectChipSpans(injectRefSpans(injectSwatchSpans(
-        injectMathSpans(trimSpans(parseInlineFormatting(cleaned)), maths), swExtract.swatches),
+        injectMathSpans(trimSpans(parseInlineFormatting(cleaned, inline)), maths), swExtract.swatches),
         refExtract.refs,
-      ), chipExtract.chips);
+      ), chipExtract.chips, inline);
       const mapping = withChipSources(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
       fixMathSourceMap(markdown, mapping.text, mapping.spans, mapping.sourceMap);
       const titleBreaks = titleBreakIndices(mapping.text);

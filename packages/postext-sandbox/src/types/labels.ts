@@ -1311,6 +1311,8 @@ export interface SandboxLabels {
   bodyBreakAfterSlashesTooltip: string;
   bodyHardLineBreaks: string;
   bodyHardLineBreaksTooltip: string;
+  bodyPlusUnderline: string;
+  bodyPlusUnderlineTooltip: string;
   bodyScriptContext: string;
   bodyScriptContextTooltip: string;
   tabStops: string;

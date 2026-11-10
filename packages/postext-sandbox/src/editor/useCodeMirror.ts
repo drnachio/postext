@@ -13,6 +13,7 @@ import { mathHighlight, mathTheme } from './syntax/mathHighlight.js';
 import { chipHighlight, chipTheme } from './syntax/chipSyntax.js';
 import { markHighlight, markTheme } from './syntax/markSyntax.js';
 import { smallCapsHighlight, smallCapsTheme } from './syntax/smallCapsSyntax.js';
+import { underlineHighlight, underlineTheme } from './syntax/underlineSyntax.js';
 import { orientationHighlight, orientationTheme } from './syntax/orientationSyntax.js';
 import { verseHighlight, verseTheme } from './syntax/verseSyntax.js';
 import { hardBreakHighlight, hardBreakTheme } from './syntax/hardBreakSyntax.js';
@@ -59,6 +60,9 @@ interface UseCodeMirrorOptions {
   historyCommands?: { undo: () => boolean; redo: () => boolean };
   /** Every update of the view (the history follows its transactions). */
   onUpdate?: (update: ViewUpdate) => void;
+  /** The document reads `++text++` as underlined text
+   *  (`bodyText.plusUnderline`, #1465): the editor marks it too. */
+  plusUnderline?: boolean;
 }
 
 /** Undo and redo keys bound to `commands`; the selection-only history
@@ -90,12 +94,13 @@ function langAttributes(lang: string | undefined) {
   return EditorView.contentAttributes.of(lang ? { lang } : {});
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy, rtl = false, lang, readOnly = false, historyCommands, onUpdate }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy, rtl = false, lang, readOnly = false, historyCommands, onUpdate, plusUnderline = false }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
   const langCompartment = useRef(new Compartment());
   const readOnlyCompartment = useRef(new Compartment());
+  const underlineCompartment = useRef(new Compartment());
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const onSelectionChangeRef = useRef(onSelectionChange);
@@ -152,6 +157,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       markHighlight,
       smallCapsTheme,
       smallCapsHighlight,
+      underlineTheme,
+      underlineCompartment.current.of(underlineHighlight(plusUnderline)),
       orientationTheme,
       orientationHighlight,
       verseTheme,
@@ -223,6 +230,12 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
     if (!viewRef.current) return;
     viewRef.current.dispatch({ effects: langCompartment.current.reconfigure(langAttributes(lang)) });
   }, [lang]);
+
+  // `++text++` is marked as the document reads it (#1465).
+  useEffect(() => {
+    if (!viewRef.current) return;
+    viewRef.current.dispatch({ effects: underlineCompartment.current.reconfigure(underlineHighlight(plusUnderline)) });
+  }, [plusUnderline]);
 
   // Design mode makes the text read only (#864).
   useEffect(() => {
