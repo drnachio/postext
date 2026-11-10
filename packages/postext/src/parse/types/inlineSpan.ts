@@ -194,6 +194,8 @@ export interface InlineSpan {
     /** The chip's words stand upright in slanted text (#1244): an
      *  exercise's number under an italic instruction. */
     upright?: true;
+    /** A fillable form field on the chip's box (#1445). */
+    field?: import('../formFields.js').FormFieldSpec;
     /** Where an exercise answers (#1230): the exercise's id and the slot the
      *  chip stands for (`g3`, `q1o2`, `tf2t`…), for the digital outputs. */
     exercise?: ExerciseHit;

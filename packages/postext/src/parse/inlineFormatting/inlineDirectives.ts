@@ -4,6 +4,7 @@
 import type { InlineSpan, InlineIcon, SwatchShape } from '../types.js';
 import { injectPlaceholderSpans } from '../injectSpans.js';
 import { parseDirectiveAttrs } from '../attrs.js';
+import { formFieldFromAttrs, type FormFieldSpec } from '../formFields.js';
 import type { Dimension, TabStop } from '../../types.js';
 import { parseLengthText, tabStopFromAttrs } from '../../defaults/text/tabStops.js';
 import { bracketTextEnd, dataRanges } from './breaks.js';
@@ -297,6 +298,8 @@ export interface ChipMeta {
   /** Whitespace collapsed and trimmed; `''` for a chip of spaces alone. */
   text: string;
   style?: string;
+  /** A form field on the chip (`field="…"`, #1445). */
+  field?: FormFieldSpec;
   /** Absolute source offset of the leading `:` of `:chip[…]`. */
   sourceStart: number;
   /** Absolute source offset just past the directive (`]` or its `{…}`). */
@@ -347,11 +350,14 @@ export function extractInlineChips(
       }
     }
     const inner = text.slice(from, read.at).replace(/\\([\[\]])/g, '$1').replace(/\s+/g, ' ').trim();
-    const style = attrs !== undefined ? parseDirectiveAttrs(attrs).style?.trim() : undefined;
+    const parsed = attrs !== undefined ? parseDirectiveAttrs(attrs) : undefined;
+    const style = parsed?.style?.trim();
+    const field = parsed ? formFieldFromAttrs(parsed) : undefined;
     out += text.slice(last, index);
     chips.push({
       text: inner,
       ...(style ? { style } : {}),
+      ...(field ? { field } : {}),
       sourceStart: fallbackStart + index,
       sourceEnd: fallbackStart + end,
     });
@@ -374,6 +380,7 @@ export function injectChipSpans(spans: InlineSpan[], chips: ChipMeta[]): InlineS
     italic,
     chip: {
       ...(meta.style ? { style: meta.style } : {}),
+      ...(meta.field ? { field: meta.field } : {}),
       spans: parseInlineFormatting(protectDollarEscapes(meta.text)),
     },
   }));
