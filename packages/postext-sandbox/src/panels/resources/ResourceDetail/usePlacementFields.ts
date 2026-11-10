@@ -1,5 +1,6 @@
 // The resource's placement, resolved key by key as the engine does, with
 // its table style and direction.
+import { isInlinePosition } from '../inlinePosition.js';
 import { type ResourcePlacement, type ResourceFloatPosition as PlacementPosition, type ResourceFloatSpan as PlacementSpan, type ResourceRotation, type ResourcePlateArea, DEFAULT_TEXT_WRAP, DEFAULT_FLOAT_MIN_SCALE, type Resource, type ResourceType } from 'postext';
 import { placementWith, tableWithStyle, tableWithDirection } from '../resourceEdits.js';
 import { useSandboxSelector } from '../../../context/SandboxContext.js';
@@ -10,14 +11,6 @@ import type { SandboxLabels } from '../../../types/labels.js';
 import { isLengthWidth, widthPercentOf } from '../PlacementWidthField.js';
 
 /** What usePlacementFields takes from ResourceDetail. */
-/** Whether a resource placed at `position` is set in the text rather than
- *  floated: where its `::resource` line stands, or after the paragraph that
- *  cites it (the engine's `isInlinePosition`, which `postext` does not
- *  export). */
-export function isInlinePosition(position: ResourcePlacement['position']): boolean {
-  return position === 'here' || position === 'paragraph';
-}
-
 export interface UsePlacementFieldsDeps {
   resource: Resource;
   onChange: (next: Resource) => void;

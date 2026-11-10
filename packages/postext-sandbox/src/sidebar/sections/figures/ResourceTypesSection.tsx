@@ -28,7 +28,7 @@ import { CollapsibleSection, DimensionInput, ItemCard, ItemCardListActions, open
 import { wrapChoiceOf } from '../../settings/textWrap.js';
 import { captionSideOf, captionSideValue } from '../../settings/captionSide.js';
 import { PlacementWidthField } from '../../../panels/resources/PlacementWidthField.js';
-import { isInlinePosition } from '../../../panels/resources/ResourceDetail/usePlacementFields.js';
+import { isInlinePosition } from '../../../panels/resources/inlinePosition.js';
 import { Button, ConfirmPopover, IconButton } from '../../../ui/index.js';
 import { FieldRow } from '../../../controls/FieldRow.js';
 import { SearchScope } from '../../search/SearchScope.js';
