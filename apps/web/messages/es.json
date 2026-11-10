@@ -5406,6 +5406,8 @@
     "hugClosingFloatsTooltip": "En la última página de un capítulo, sube las figuras y tablas a lo ancho de la página que quedan bajo el texto hasta dejarlas a una línea de él. Desactivado: se quedan donde las puso su colocación; un flotante inferior, al pie de la página.",
     "pullFloatsToCitation": "Atraer las figuras a la página de su cita",
     "pullFloatsToCitationTooltip": "Una figura o tabla que se queda a pocas líneas de caber en la página que la cita vuelve a ella: los párrafos anteriores a la cita se componen una línea más cortos donde el espaciado lo permite, y una imagen con zona segura se recorta dentro de ella. Solo se conserva si la figura acaba en esa página, sin añadir páginas ni retrasar otra figura.",
+    "footFloatRow": "Figuras al pie en fila",
+    "footFloatRowTooltip": "Una figura o tabla citada donde su columna ya tiene otra al pie ocupa el pie de la columna siguiente vacía, a su altura, en lugar de apilarse encima: un faldón a lo ancho de la página. Desactivado, se apilan en la columna que las cita, en su orden.",
     "inlineResourceGap": "Espacio en torno a las figuras en línea",
     "inlineResourceGapTooltip": "Dónde conserva una línea de espacio una figura o tabla compuesta en línea en el texto: encima y debajo (por defecto), o solo encima, con el texto siguiente en la próxima línea de la rejilla, como la componía postext 1.4. Los libros guardados antes de la 1.5 se leen con «Solo encima».",
     "inlineResourceGapAround": "Encima y debajo",

@@ -5406,6 +5406,8 @@
     "hugClosingFloatsTooltip": "A l'última pàgina d'un capítol, puja les figures i taules d'amplada de pàgina que queden sota el text fins a deixar-les a una línia del text. Desactivat: es queden on les situa la col·locació; un flotant inferior, al peu de la pàgina.",
     "pullFloatsToCitation": "Atreure les figures a la pàgina de la seva cita",
     "pullFloatsToCitationTooltip": "Una figura o taula que es queda a poques línies de cabre a la pàgina que la cita hi torna: els paràgrafs anteriors a la cita es componen una línia més curts on l'espaiat ho permet, i una imatge amb zona segura es retalla dins seu. Només es conserva si la figura acaba en aquesta pàgina, sense afegir pàgines ni endarrerir cap altra figura.",
+    "footFloatRow": "Figures al peu en filera",
+    "footFloatRowTooltip": "Una figura o taula citada on la seva columna ja en té una altra al peu ocupa el peu de la columna següent buida, a la seva altura, en lloc d'apilar-se a sobre: un faldó d'amplada de pàgina. Desactivat, s'apilen a la columna que les cita, en el seu ordre.",
     "inlineResourceGap": "Espai al voltant de les figures en línia",
     "inlineResourceGapTooltip": "On conserva una línia d'espai una figura o taula composta en línia al text: a sobre i a sota (per defecte), o només a sobre, amb el text següent a la línia següent de la retícula, com la componia postext 1.4. Els llibres desats abans de la 1.5 es llegeixen amb «Només a sobre».",
     "inlineResourceGapAround": "A sobre i a sota",

@@ -5406,6 +5406,8 @@
     "hugClosingFloatsTooltip": "Auf der letzten Seite eines Kapitels die seitenbreiten Abbildungen und Tabellen unter dem Text nach oben rücken, bis sie eine Zeile darunter stehen. Aus: Sie bleiben, wo ihre Platzierung sie hingesetzt hat, ein Gleitobjekt unten am Seitenfuß.",
     "pullFloatsToCitation": "Abbildungen auf die Seite ihres Verweises holen",
     "pullFloatsToCitationTooltip": "Eine Abbildung oder Tabelle, die die verweisende Seite um wenige Zeilen verfehlt, wird zurückgeholt: Die Absätze über dem Verweis werden eine Zeile kürzer gesetzt, wo der Wortabstand es erlaubt, und ein Bild mit Sicherheitsbereich wird innerhalb davon beschnitten. Das wird nur beibehalten, wenn die Abbildung dann auf dieser Seite landet, ohne zusätzliche Seite und ohne dass eine andere Abbildung später kommt.",
+    "footFloatRow": "Gleitobjekte am Fuß in einer Reihe",
+    "footFloatRowTooltip": "Eine Abbildung oder Tabelle, die dort verwiesen wird, wo ihre Spalte am Fuß schon eine hat, nimmt den Fuß der nächsten leeren Spalte auf gleicher Höhe ein, statt sich darüber zu stapeln: ein Fußband quer über die Seite. Aus: Sie stapeln sich in der verweisenden Spalte, in ihrer Reihenfolge.",
     "inlineResourceGap": "Abstand um Abbildungen im Text",
     "inlineResourceGapTooltip": "Wo eine im Text gesetzte Abbildung oder Tabelle eine Zeile Abstand hält: darüber und darunter (Standard) oder nur darüber, mit dem folgenden Text auf der nächsten Rasterzeile, wie postext 1.4 sie setzte. Vor 1.5 gespeicherte Bücher werden mit „Nur darüber“ gelesen.",
     "inlineResourceGapAround": "Darüber und darunter",

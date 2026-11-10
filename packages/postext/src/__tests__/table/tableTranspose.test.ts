@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { transposeTable, mergeCells } from '../../table/model.js';
+import { mergeCells } from '../../table/model.js';
+import { transposeTable } from '../../table/transpose.js';
 import type { TableModel } from '../../types.js';
 
 const text = (m: TableModel) => m.rows.map((r) => r.map((c) => c.content));

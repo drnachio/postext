@@ -4822,6 +4822,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     hugClosingFloatsTooltip: t("hugClosingFloatsTooltip"),
     pullFloatsToCitation: t("pullFloatsToCitation"),
     pullFloatsToCitationTooltip: t("pullFloatsToCitationTooltip"),
+    footFloatRow: t("footFloatRow"),
+    footFloatRowTooltip: t("footFloatRowTooltip"),
     inlineResourceGap: t("inlineResourceGap"),
     inlineResourceGapTooltip: t("inlineResourceGapTooltip"),
     inlineResourceGapAround: t("inlineResourceGapAround"),

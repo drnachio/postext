@@ -448,6 +448,12 @@ La propriété `layout` contrôle la disposition des colonnes dans la zone de co
       <td>Sur la page de clôture d’un chapitre (et du document), les figures et tableaux sur toute la largeur placés sous la dernière bande de texte remontent pour se placer à un écart de flottant sous elle, empilés dans leur ordre : rien ne les suit à cet endroit. <code>false</code> les laisse là où leur placement les a mis : un flottant <code>position: 'bottom'</code> finit alors au pied de la page sur la page de clôture comme sur toutes les autres, par exemple dans une fiche technique dont le contour se termine à la même hauteur sur chaque page. Les pages qui ont une colonne latérale ne les déplacent jamais.</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Place en rangée les flottants au pied d’une page à plusieurs colonnes : une figure ou un tableau appelé là où sa colonne en porte déjà un au pied prend le pied de la colonne vide suivante, la première ligne de sa légende au niveau de celle de son voisin, au lieu de s’empiler dessus (la bande de pied du compositeur). Une image avec zone de sécurité est recadrée à l’intérieur vers la hauteur de son voisin. Dans le Sandbox, <em>Flottants au pied en rangée</em>, sous Mise en page.</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

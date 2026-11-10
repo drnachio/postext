@@ -4832,6 +4832,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   hugClosingFloatsTooltip: 'On the last page of a chapter, move the page-wide figures and tables below the text up to sit a line under it. Off: they stay where their placement put them, a bottom float at the page foot.',
   pullFloatsToCitation: "Pull figures to their citation's page",
   pullFloatsToCitationTooltip: "A figure or table that misses the page citing it by a few lines is brought back: the paragraphs above the citation are set a line shorter where the word spacing allows, and a picture with a safe area is cropped within it. Kept only when the figure then lands on that page, with no page more and no other figure later.",
+  footFloatRow: "Floats at the foot in a row",
+  footFloatRowTooltip: "A figure or table cited where its column already holds one at the foot takes the foot of the next empty column, level with it, instead of stacking over it: a foot band across the page. Off, they stack in the citing column, in their order.",
   inlineResourceGap: 'Space around inline figures',
   inlineResourceGapTooltip: 'Where a figure or table set inline in the text keeps a line of space: above and below it (the default), or above only, with the text after it at the next grid line, as postext 1.4 set it. Books saved before 1.5 are read with “Above only”.',
   inlineResourceGapAround: 'Above and below',

@@ -5396,6 +5396,8 @@
     "hugClosingFloatsTooltip": "Na última página de um capítulo, sobe as figuras e tabelas de largura total que ficam abaixo do texto até ficarem a uma linha dele. Desativado: elas ficam onde o posicionamento as pôs; um flutuante inferior, no pé da página.",
     "pullFloatsToCitation": "Atrair as figuras para a página da citação",
     "pullFloatsToCitationTooltip": "Uma figura ou tabela que fica a poucas linhas de caber na página que a cita volta para ela: os parágrafos anteriores à citação são compostos uma linha mais curtos onde o espaçamento permite, e uma imagem com zona segura é recortada dentro dela. Só se mantém se a figura ficar nessa página, sem acrescentar páginas nem atrasar outra figura.",
+    "footFloatRow": "Figuras no rodapé em fila",
+    "footFloatRowTooltip": "Uma figura ou tabela citada onde a sua coluna já tem outra no rodapé ocupa o pé da coluna seguinte vazia, à mesma altura, em vez de se empilhar por cima: uma faixa ao longo da página. Desativado, empilham-se na coluna que as cita, pela sua ordem.",
     "inlineResourceGap": "Espaço em torno das figuras em linha",
     "inlineResourceGapTooltip": "Onde uma figura ou tabela posta em linha no texto mantém uma linha de espaço: acima e abaixo (o padrão) ou só acima, com o texto seguinte na próxima linha da grade, como o postext 1.4 fazia. Livros salvos antes da 1.5 são lidos com “Só acima”.",
     "inlineResourceGapAround": "Acima e abaixo",

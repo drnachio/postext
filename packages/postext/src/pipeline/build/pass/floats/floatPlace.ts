@@ -17,6 +17,7 @@ import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside, BodyCap, PlaceResult, FloatSizing } from '../types.js';
 import type { PassState, PassLate } from '../state.js';
 import { createFootStacks } from './footStack.js';
+import { createFloatRows } from './floatRows.js';
 import { createFloatPins } from './floatPins.js';
 
 /** The fresh pages a full-page plate waits past for one it can have
@@ -87,6 +88,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
+  const rows = createFloatRows({ resolved, floatGapPx, minTextPx, measureFloat, layoutFloat, bodyCropDelta, naturalFloats,
+    citeCropTried, pullShortfalls, floatReserved, reservedOf, uncappedBottoms });
   /** Floats set by hand in the canvas (`placement.pin`). */
   const pins = createFloatPins(pendingFloats, doc);
   /** The fresh pages each full-page plate waited past (#1461). */
@@ -480,16 +483,20 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
       }
     }
 
+    // A foot row (`layout.footFloatRow`): a float alone at its column's foot
+    // stands with its caption level with its neighbour's.
+    const atY = position === 'bottom' && targetCols.length === 1 && !aside ? rows.levelInRow(page, first, built.block, y) : y;
     const floatsBefore = page.floats?.length ?? 0;
-    commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
+    commitFloatBlock(page, first, built, xLeft, atY, width, f.firstBlockIdx);
+    if (position === 'bottom') rows.noteFoot(targetCols, built.block);
     if (feet) {
       // A plain foot band joins the stack of its columns, which is laid
       // out again in reading order: this float under the earlier ones.
       const stackable = !rotated && !aside && !anchorToCap && !galleryFill && !built.block.comic
-        && !(wraps && !wrapRefused)
+        && !(wraps && !wrapRefused) && Math.abs(atY - y) < 0.01
         && targetCols.every((c) => !uncappedBottoms.has(c) && !openerHeads.has(c));
       const blocks = (page.floats ?? []).slice(floatsBefore);
-      const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y }, stackable);
+      const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y: atY }, stackable);
       for (const [col, more] of grown) {
         if (more > 0) floatReserved.set(col, { ...reservedOf(col), bottom: reservedOf(col).bottom + more });
       }
@@ -499,60 +506,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     return rest ? { rest } : 'placed';
   };
 
-  /** {@link placeFloatInColumnsAt}, with a picture that misses the page
-   *  citing it (`layout.pullFloatsToCitation`) cropped within its safe area
-   *  (`Resource.safeArea`) to stay there, no more than it needs, and its
-   *  shortfall recorded for the driver (`pullShortfalls`). */
-  const placeFloatInColumns = (
-    page: VDTPage,
-    f: PlannedFloat,
-    targetCols: readonly VDTColumn[],
-    position: FloatSlotPosition,
-    pageSpan: boolean,
-    mode: 'fresh' | 'strict',
-    anchorToCap = false,
-    side = false,
-    refY?: number,
-  ): PlaceResult => {
-    const place = () => placeFloatInColumnsAt(page, f, targetCols, position, pageSpan, mode, anchorToCap, side, refY);
-    const first = targetCols[0];
-    if (!resolved.layout.pullFloatsToCitation || !first || f.callout || f.rotate || f.plate || side || bodyCropDelta.has(f.resourceId)) return place();
-    const r = place();
-    if (r !== 'defer' || mode !== 'strict' || f.refPageIndex !== page.index) return r;
-    // The page that cites it, a little short: cropped within its safe area
-    // to stay there (a quarter of what the safe area allows at a time),
-    // once per slot (the next slot offered has less room still).
-    const tryKey = `${f.resourceId}:${page.index}:${first.index}:${position}`;
-    if (!citeCropTried.has(tryKey)) {
-      citeCropTried.add(tryKey);
-      const key = `${f.resourceId}:${first.bbox.width.toFixed(2)}`;
-      let natural = naturalFloats.get(key);
-      if (natural === undefined) {
-        natural = layoutFloat(f.resourceId, first.bbox.width)?.block ?? null;
-        naturalFloats.set(key, natural);
-      }
-      const shrink = natural?.bodyFlex && !natural.rotation ? natural.bodyFlex.shrink : 0;
-      if (shrink > 0.5) {
-        for (const share of [0.25, 0.5, 0.75, 1]) {
-          bodyCropDelta.set(f.resourceId, -shrink * share);
-          const cropped = place();
-          if (cropped !== 'defer' && cropped !== 'skip') return cropped;
-          bodyCropDelta.delete(f.resourceId);
-        }
-      }
-    }
-    // What the citing page lacked for it, at its best slot: the driver
-    // tries to win that back only when it is little. (The band takes its
-    // gaps and grid rounding on top of the float's height: a float that
-    // seems to fit and was refused lacked less than a line.)
-    const m = measureFloat(f.resourceId, first.bbox.width);
-    if (m) {
-      const short = Math.max(1, m.height + floatGapPx - first.availableHeight);
-      const known = pullShortfalls.get(f.resourceId);
-      if (!known || known.page !== page.index || short < known.px) pullShortfalls.set(f.resourceId, { page: page.index, px: short });
-    }
-    return r;
-  };
+  const placeFloatInColumns = rows.cropping(placeFloatInColumnsAt);
 
   /** Apply a slot outcome to the queue at `i`: drop a placed float, keep a
    *  deferred one, swap in the rest of a split table (offered the next slot
@@ -593,7 +547,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
     f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {
-    placeFloatInColumns, settle, heldBack, positionsFor,
+    placeFloatInColumns, settle, heldBack, positionsFor, hasFoot: rows.hasFoot,
     pinOn: pins.pinOn, pinnedColumn: pins.pinnedColumn, dropMissedPins: pins.dropMissedPins
   };
 }

@@ -448,6 +448,12 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td>Na página que fecha um capítulo (e o documento), as figuras e tabelas na largura da página compostas abaixo da última faixa de texto sobem até ficar a um vão de flutuante dela, empilhadas na ordem delas: nada vem depois delas ali. <code>false</code> as deixa onde o posicionamento as colocou, de modo que um flutuante <code>position: 'bottom'</code> termina no pé da página também na página de fechamento, como em todas as outras (numa ficha técnica cujo contorno termina na mesma altura em todas as páginas, por exemplo). Páginas com coluna lateral nunca os movem.</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Coloca em fila os flutuantes no pé de uma página de várias colunas: uma figura ou tabela citada onde sua coluna já tem outra no pé ocupa o pé da próxima coluna vazia, com a primeira linha da legenda na altura da da vizinha, em vez de se empilhar por cima (a faixa de pé do compositor). Uma imagem com área segura é recortada dentro dela em direção à altura da vizinha. No Sandbox, <em>Figuras no pé em fila</em>, em Diagramação.</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
