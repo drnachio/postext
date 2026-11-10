@@ -17,6 +17,7 @@ import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside, BodyCap, PlaceResult, FloatSizing } from '../types.js';
 import type { PassState, PassLate } from '../state.js';
 import { createFootStacks } from './footStack.js';
+import { withCitationPull } from './citationPull.js';
 
 /** The fresh pages a full-page plate waits past for one it can have
  *  whole before it takes the next as it is (#1461). */
@@ -64,6 +65,10 @@ export interface FloatPlaceDeps {
   openerHeadFloats: Map<VDTColumn, number>;
   state: PassState;
   late: PassLate;
+  bodyCropDelta: Map<string, number>;
+  layoutFloat: (resourceId: string, width: number) => { block: ResolvedResourceBlock } | null;
+  pullShortfalls: Map<string, { page: number; px: number }>;
+  pullCrop: ReadonlySet<string> | undefined;
 }
 
 export function createFloatPlace(deps: FloatPlaceDeps) {
@@ -74,7 +79,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     tableOverflow, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved, reservedOf,
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
-    uncappedBottoms, openerHeadFloats, state, late
+    uncappedBottoms, openerHeadFloats, state, late,
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
@@ -106,7 +112,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     state.plateWaits++;
     return true;
   };
-  const placeFloatInColumns = (
+  const placeFloatInColumnsAt = (
     page: VDTPage,
     f: PlannedFloat,
     targetCols: readonly VDTColumn[],
@@ -487,6 +493,12 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     state.floatsPlaced++;
     return rest ? { rest } : 'placed';
   };
+
+  /** {@link placeFloatInColumnsAt} with `layout.pullFloatsToCitation`'s
+   *  shortfall record and safe-area crop (#1492). */
+  const placeFloatInColumns = withCitationPull(placeFloatInColumnsAt, {
+    resolved, pullCrop, bodyCropDelta, pullShortfalls, layoutFloat, probeFloatBand,
+  });
 
   /** Apply a slot outcome to the queue at `i`: drop a placed float, keep a
    *  deferred one, swap in the rest of a split table (offered the next slot

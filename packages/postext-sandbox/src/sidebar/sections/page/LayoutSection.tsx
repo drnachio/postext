@@ -527,6 +527,14 @@ export const LayoutSection = memo(function LayoutSection() {
         isDefault={layout.hugClosingFloats === D.hugClosingFloats}
         onReset={() => resetField('hugClosingFloats')}
       />
+      <ToggleSwitch
+        label={labels.pullFloatsToCitation}
+        checked={layout.pullFloatsToCitation}
+        onChange={(v) => updateLayout({ pullFloatsToCitation: v })}
+        tooltip={labels.pullFloatsToCitationTooltip}
+        isDefault={layout.pullFloatsToCitation === D.pullFloatsToCitation}
+        onReset={() => resetField('pullFloatsToCitation')}
+      />
     </CollapsibleSection>
   );
 });

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Página e diagramação',
   description: 'O tamanho da página, as margens e a grade de linhas de base, a numeração das páginas, e as colunas e as medianizes entre elas',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '35 min',
   order: 5,
   parent: 'configuration',
@@ -446,6 +446,12 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Na página que fecha um capítulo (e o documento), as figuras e tabelas na largura da página compostas abaixo da última faixa de texto sobem até ficar a um vão de flutuante dela, empilhadas na ordem delas: nada vem depois delas ali. <code>false</code> as deixa onde o posicionamento as colocou, de modo que um flutuante <code>position: 'bottom'</code> termina no pé da página também na página de fechamento, como em todas as outras (numa ficha técnica cujo contorno termina na mesma altura em todas as páginas, por exemplo). Páginas com coluna lateral nunca os movem.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Não recomendado. Traz de volta para a página que o cita primeiro um flutuante que ficou fora dela por quatro linhas de texto ou menos (medidas na largura dele na melhor posição daquela página). Faz isso em dois passos, e cada um só é mantido se o flutuante então cair na página da citação, sem uma página a mais, sem atrasar outro flutuante, sem desfazer um nivelamento de colunas já obtido e sem perder nenhum flutuante que abre a página da sua citação (<code>floatsAtCitingPage</code>): primeiro, os parágrafos da página da citação que ficam acima dela recebem a oferta de uma linha a menos (espaçamento entre palavras mais apertado, nunca entre letras), só tantas linhas quantas faltam ao flutuante, e a mudança fica só nas páginas cujo flutuante voltou; depois, uma imagem com <a href="/pt/docs/document-format-resources#área-segura">área segura</a> que continua fora da página é recortada dentro dela, não mais do que o espaço pede, e cada recorte é avisado com <code>floatCropped</code>. As passadas seguintes, como o balanceamento de colunas, mantêm na sua página os flutuantes trazidos. A opção vai contra o posicionamento por regras: onde as regras levam o flutuante para o espaço seguinte, ela toma a página da citação à força, compõe parágrafos mais apertados do que a quebra de linhas escolheu e recorta imagens. Para manter os flutuantes perto da citação pelas regras, use <code>floatsAtCitingPage</code> ou <a href="/pt/docs/document-format-resources#posicionamento"><code>placement.citingPage</code></a> (o flutuante abre a página onde cai a linha que o cita, e o texto acima da referência desce para baixo dele) e <code>placement.shrink: 'slot'</code> (a imagem é composta menor, mantendo as proporções, para ficar na página que a cita). No Sandbox, <em>Atrair as figuras para a página da citação</em>, em Layout.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

@@ -334,6 +334,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>L’image est imprimée à cette échelle ; au-delà du bloc de texte seulement lorsque <code>overflowPx</code> l’indique.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Une image flottante a été recadrée à l’intérieur de sa zone de sécurité (<code>Resource.safeArea</code>) pour rester sur la page qui la cite, par <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> l’identifie, <code>share</code> est la part de sa hauteur recadrée, <code>pageIndex</code> la page. Pointe sur le paragraphe qui la cite en premier.</td>
+      <td>L’image est imprimée recadrée, jamais au-delà de sa zone de sécurité. <code>pullFloatsToCitation</code> est déconseillé : <code>placement.citingPage</code> et <code>placement.shrink: 'slot'</code> gardent une image près de son appel sans la recadrer.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Un bitmap doté d’une taille d’impression (son propre <code>bitmap.resolution</code>, ou un nombre dans <code>layout.bitmapResolution</code> ; pas une résolution lue dans le fichier) composé dans une colonne qui le tient sous la moitié de cette taille, sur une page au bloc de texte plus large que la colonne. <code>resourceId</code> l’identifie, <code>scale</code> est la part de sa largeur d’impression qu’il garde, <code>printWidthPx</code>, <code>widthPx</code> et <code>pageWidthPx</code> les largeurs d’impression, de colonne et de bloc. Une image rétrécie par <code>placement.width</code>, réduite à son emplacement, tournée ou placée dans un bloc de page composée n’est pas signalée. Désigne le paragraphe qui la cite en premier. Depuis postext 1.37.</td>
       <td>L’image s’imprime à la largeur de sa colonne. Une image dans le flux n’est jamais plus large que sa colonne, et la page par défaut en a deux (<code>layout.layoutType: 'double'</code>) : composez la page sur une colonne, faites flotter l’image sur toute la page (<code>placement.span: 'page'</code>), ou relevez sa résolution si cette taille est voulue.</td>
@@ -367,6 +372,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unplaced</code></td>
       <td>Un encadré ou une ressource flottante (<code>resourceId</code>) qui attend encore un emplacement à la fin de la mise en page : les pages ouvertes pour l’accueillir n’ont pas pu le faire (un encadré latéral alors que ces pages n’ont pas de colonne latérale, par exemple). Pointe sur l’encadré ou sur le bloc qui cite la ressource ; pas de page. Depuis postext 1.25.</td>
       <td>Il ne figure sur aucune page. Jusqu’à postext 1.24, il disparaissait sans avertissement.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Une ressource placée après le paragraphe qui la cite (<code>position: 'paragraph'</code>) que seules des notes de bas de page citent, notes de fin de chapitre comprises : aucun <code>:ref</code> dans le texte courant, aucune ligne <code>::resource</code>, et aucun chapitre précédent ne l’a placée. Une note est composée à part du flux, il n’y a donc pas de paragraphe à suivre. <code>resourceId</code> l’identifie. Pointe sur son premier <code>:ref</code> dans une note ; pas de page.</td>
+      <td>Elle ne figure sur aucune page. Citez-la aussi dans le texte courant, insérez-la avec <code>::resource</code> ou donnez-lui une position flottante.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

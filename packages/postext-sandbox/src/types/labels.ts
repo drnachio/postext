@@ -2363,6 +2363,10 @@ export interface SandboxLabels {
   warningsUnplacedDetail: string;
   warningsHereNotEmbeddedTitle: string;
   warningsHereNotEmbeddedDetail: string;
+  warningsParagraphCitedInNoteTitle: string;
+  warningsParagraphCitedInNoteDetail: string;
+  warningsFloatCroppedTitle: string;
+  warningsFloatCroppedDetail: string;
   warningsShortListSplitTitle: string;
   warningsShortListSplitDetail: string;
   warningsStackTitle: string;
@@ -2903,11 +2907,13 @@ export interface SandboxLabels {
   resourceAltHint: string;
   resourcePlacementLabel: string;
   resourcePlacementHintHere: string;
+  resourcePlacementHintParagraph: string;
   resourcePlacementHintPage: string;
   resourcePlacementHintColumn: string;
   resourcePositionTop: string;
   resourcePositionBottom: string;
   resourcePositionHere: string;
+  resourcePositionParagraph: string;
   resourcePositionAuto: string;
   resourceSpanColumn: string;
   resourceSpanPage: string;
@@ -4267,6 +4273,7 @@ export interface SandboxLabels {
   resourceTypePlacementPositionTop: string;
   resourceTypePlacementPositionBottom: string;
   resourceTypePlacementPositionHere: string;
+  resourceTypePlacementPositionParagraph: string;
   resourceTypePlacementSpan: string;
   resourceTypePlacementSpanPage: string;
   resourceTypePlacementRotate: string;
@@ -5000,6 +5007,8 @@ export interface SandboxLabels {
   textWrapDefaultWidthTooltip: string;
   hugClosingFloats: string;
   hugClosingFloatsTooltip: string;
+  pullFloatsToCitation: string;
+  pullFloatsToCitationTooltip: string;
   inlineResourceGap: string;
   inlineResourceGapTooltip: string;
   inlineResourceGapAround: string;

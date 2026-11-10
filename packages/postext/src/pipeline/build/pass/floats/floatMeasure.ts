@@ -168,8 +168,9 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     const resource = resourceById.get(resourceId);
     if (!resource) return null;
     // Column balancing: a picture with a safe area grown by whole lines
-    // (`flexFigure`, #442).
-    const flexPx = balanceExtraPx?.get(flexFloatKey(resourceId)) ?? 0;
+    // (`flexFigure`, #442), or cropped within it to fit the page that
+    // cites it (`bodyCropDelta`).
+    const flexPx = (balanceExtraPx?.get(flexFloatKey(resourceId)) ?? 0) + (bodyCropDelta.get(resourceId) ?? 0);
     const laid = layoutResourceBlock({
       ...(cache ? { cache } : {}),
       resource,
@@ -184,7 +185,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       ...(slice ? { slice } : {}),
       ...(rotated ? (rotated.upright ? { upright: { maxLength: rotated.length } } : { rotate: rotated.direction, rotatedLength: rotated.length }) : {}),
       ...(aside ? { captionAside: aside } : {}),
-      ...(flexPx > 0 ? { bodyHeightDelta: flexPx } : {}),
+      ...(flexPx !== 0 ? { bodyHeightDelta: flexPx } : {}),
       ...(cap && !rotated ? { maxBodyHeight: cap.maxBodyHeight, minBodyScale: cap.minScale } : {}),
       ...(sizing?.plateHeight !== undefined && !rotated ? { plateHeight: sizing.plateHeight } : {}),
       ...(sizing?.maxBodyWidth !== undefined ? { maxBodyWidth: sizing.maxBodyWidth } : {}),
@@ -267,7 +268,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
    *  fit checks run for every pending float on every loop iteration. */
   const floatMeasureMemo = new Map<string, FloatMeasure | null>();
   const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap, sizing?: FloatSizing): FloatMeasure | null => {
-    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}${sizingKey(sizing)}`;
+    const cropDelta = bodyCropDelta.get(resourceId);
+    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}${sizingKey(sizing)}${cropDelta ? `:crop${cropDelta.toFixed(2)}` : ''}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
     const strip = comicStripOf(resourceId);
@@ -404,6 +406,10 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
   /** Float bands reserved per column in this pass (the fresh-page flush
    *  sends single-column floats to the least reserved column). */
   const floatReserved = new Map<VDTColumn, { top: number; bottom: number }>();
+  /** Px a picture's body is set shorter (negative) by cropping within its
+   *  safe area, to fit the page that cites it
+   *  (`layout.pullFloatsToCitation`). */
+  const bodyCropDelta = new Map<string, number>();
   /** Pages a `:::pagebreak{center}` opened (#424). */
   const centredPages = new Set<number>();
   const reservedOf = (col: VDTColumn): { top: number; bottom: number } =>
@@ -511,6 +517,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, uprightOn, tableRowCount, tableOverflow,
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
-    floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf
+    floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf,
+    bodyCropDelta
   };
 }

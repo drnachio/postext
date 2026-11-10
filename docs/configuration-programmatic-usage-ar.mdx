@@ -334,6 +334,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>تُطبع الصورة بذلك المقياس؛ وتتجاوز مساحة النص فقط حين يقول ذلك <code>overflowPx</code>.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>قُصّت صورة عائمة داخل منطقتها الآمنة (<code>Resource.safeArea</code>) لتبقى في الصفحة التي تحيل إليها، بفعل <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> يحدّدها، و<code>share</code> نسبة ما قُصّ من ارتفاعها، و<code>pageIndex</code> الصفحة. يشير إلى الفقرة التي تحيل إليها أولًا.</td>
+      <td>تُطبع الصورة مقصوصة، ولا يتجاوز القصّ منطقتها الآمنة أبدًا. الخيار <code>pullFloatsToCitation</code> غير مستحسن: <code>placement.citingPage</code> و<code>placement.shrink: 'slot'</code> يُبقيان الصورة قرب إحالتها دون قصّها.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>صورة نقطية لها مقاس طباعة (دقّتها <code>bitmap.resolution</code>، أو رقم في <code>layout.bitmapResolution</code>؛ لا دقّة مقروءة من الملف) منضّدة في عمود يُبقيها دون نصف ذلك المقاس، في صفحة كتلة نصها أعرض من العمود. يحدّدها <code>resourceId</code>، و<code>scale</code> هي النسبة التي تبقى من عرض طباعتها، و<code>printWidthPx</code> و<code>widthPx</code> و<code>pageWidthPx</code> عروض الطباعة والعمود وكتلة النص. لا يصدر هذا التحذير عن صورة ضيّقها <code>placement.width</code> أو صُغّرت لتسع موضعها أو أُديرت أو وُضعت في خانة صفحة مركّبة. يشير إلى الفقرة التي تذكرها أولًا. منذ postext 1.37.</td>
       <td>تُطبع الصورة بعرض عمودها. الصورة في المتن لا تكون أعرض من عمودها أبدًا، وللصفحة الافتراضية عمودان (<code>layout.layoutType: 'double'</code>): نضّد الصفحة في عمود واحد، أو اجعل الصورة تطفو على عرض الصفحة (<code>placement.span: 'page'</code>)، أو ارفع دقّتها إن كان هذا المقاس هو المراد.</td>
@@ -367,6 +372,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unplaced</code></td>
       <td>إطار أو مورد عائم (<code>resourceId</code>) كان ما زال ينتظر موضعًا حين انتهى التنضيد: الصفحات التي فُتحت له لم تتسع له (إطار جانبي وتلك الصفحات بلا عمود جانبي مثلًا). يشير إلى الإطار أو إلى الكتلة التي تحيل إلى المورد؛ بلا صفحة. منذ postext 1.25.</td>
       <td>ليس في أي صفحة. حتى postext 1.24 كان يسقط بلا تحذير.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>مورد موضوع بعد الفقرة التي تحيل إليه (<code>position: 'paragraph'</code>) لا تحيل إليه إلا الحواشي، ومنها تعليقات نهاية الفصل: لا <code>:ref</code> له في المتن، ولا سطر <code>::resource</code>، ولم يضعه فصل سابق. والحاشية تُصفّ بمعزل عن التدفق، فلا فقرة يأتي بعدها. <code>resourceId</code> يحدّده. يشير إلى أول <code>:ref</code> له في حاشية؛ بلا صفحة.</td>
+      <td>ليس في أي صفحة. أحِل إليه في المتن أيضًا، أو ضمِّنه بـ <code>::resource</code>، أو أعطه موضعًا عائمًا.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>
