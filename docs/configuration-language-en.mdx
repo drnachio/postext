@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Hyphenation and language',
   description: 'Hyphenation patterns and exceptions, ragged text, the document language and its digits and direction, and the scripts Postext sets',
   lang: 'en',
-  lastUpdated: '2026-10-19',
-  readingTime: '20 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '21 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "This page covers how words are split at the end of a line and how Postext knows the language of a book. You turn hyphenation on or off, and list the words that must never be split. You can leave the right edge of the text uneven instead of straight. The document language decides the hyphenation rules, the names of figures and tables, the digits and the direction of the text. The last sections say which writing systems Postext can set and how Arabic text is handled.",
@@ -70,6 +70,36 @@ When text alignment is set to `'justify'`, hyphenation prevents excessive word s
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Divide capitalised words like any other. <code>false</code> keeps every word that starts with a capital whole (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), the first word of a sentence included. See <a href="#words-kept-whole">Words kept whole</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>the language's own</td>
+      <td>The shortest word divided, in letters (InDesign's <em>Words with at Least</em>). Unset: the language's own, 5 (4 in Catalan).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>the language's own</td>
+      <td>Letters left at least before a break, at the start of the word (InDesign's <em>After First</em>). Unset: the language's own (2 in Spanish).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>the language's own</td>
+      <td>Letters carried at least after a break, to the next line (InDesign's <em>Before Last</em>). Unset: the language's own (2 in Spanish).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Most lines in a row ending on a hyphen (InDesign's <em>Hyphen Limit</em>); <code>0</code>: no limit. A limit, not a preference: the paragraph is broken again, looser if need be, and goes past it only where no setting keeps it. Optimal line breaking only.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Let the last word of a paragraph be divided (InDesign's <em>Hyphenate Last Word</em>). <code>false</code> keeps it whole wherever the spacing allows; <code>bodyText.strictHyphenation</code> keeps it whole either way. Optimal line breaking only.</td>
     </tr>
   </tbody>
 </table>

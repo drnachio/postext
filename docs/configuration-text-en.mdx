@@ -6,7 +6,7 @@ export const metadata = {
   description: 'The typography of the running text: font, size and leading, colours, indents, blockquotes, verse, tab stops and drop caps',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '25 min',
+  readingTime: '26 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "This page covers the settings for the main text of a book. You choose its font, its size and the space between its lines, and the colours of bold and italic words. You set the first-line indent and the space between paragraphs. The page also covers quotations set apart from the text, poems, tab stops for text in columns, and the large first letter some chapters open with. Hyphenation, headings and lists have pages of their own.",
@@ -248,6 +248,30 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>number</code></td>
       <td><code>3000</code></td>
       <td>What a stack costs the line breaker under <code>stacks: 'avoid'</code>, in demerits added to the paragraph's, on the scale of <code>consecutiveHyphenDemerit</code> (two hyphenated lines in a row cost 3000). A repeated monosyllable (“a”, “and”, “of”, with the vowels of the Latin, Greek and Cyrillic scripts) costs twice as much. A higher value avoids more stacks at the price of looser lines; 0 keeps every one.</td>
+    </tr>
+    <tr>
+      <td><code>strictHyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hyphenate as Spanish typesetting rules have it: never two hyphenated lines in a row, and never the paragraph's last word divided. The breaker takes any other break that keeps the word spacing within its limits; only when none does is the rule broken. Needs <code>optimalLineBreaking</code>. To keep only the last word whole, see <code>hyphenation.lastWord</code>; to allow longer runs of hyphens, <code>hyphenation.maxConsecutive</code>.</td>
+    </tr>
+    <tr>
+      <td><code>minLinesBetweenHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Lines a hyphenated line wants free of hyphens before it, so hyphens do not fall into a rhythm: <code>2</code> also avoids a hyphen every other line (yes, no, yes); <code>1</code> only two in a row, as <code>strictHyphenation</code>; <code>0</code> turns the rule off. At most 4. A preference, weighed by <code>hyphenSpacingPenalty</code>. Needs <code>optimalLineBreaking</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenSpacingPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>Cost of a hyphen closer than <code>minLinesBetweenHyphens</code> to the previous one, as equivalent badness: 100 is a line at the word-spacing limit; 1000 outweighs any line within it.</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Fewer hyphens or better spacing, <code>0</code>–<code>10</code>, as InDesign's <em>Better Spacing</em> / <em>Fewer Hyphens</em> slider: each step makes every hyphen dearer, so the breaker takes a hyphen only where it saves more word spacing. <code>0</code> weighs hyphens as the engine always has. Needs <code>optimalLineBreaking</code>.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Cómo se configura la tipografía del texto corrido: la fuente, el cuerpo y el interlineado, los colores, las sangrías, las citas, la poesía, las tabulaciones y las letras capitulares',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '28 min',
+  readingTime: '29 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes del texto principal de un libro. Eliges su tipo de letra, su tamaño y el espacio entre sus líneas, y el color de las palabras en negrita y en cursiva. Fijas la sangría de la primera línea y el espacio entre párrafos. La página también explica las citas que se separan del texto, los poemas, las tabulaciones para el texto en columnas y la letra grande con la que empiezan algunos capítulos. La separación silábica, los encabezados y las listas tienen páginas propias.",
@@ -248,6 +248,30 @@ La propiedad `bodyText` controla la tipografía de todo el texto de los párrafo
       <td><code>number</code></td>
       <td><code>3000</code></td>
       <td>Lo que cuesta una repetición al algoritmo con <code>stacks: 'avoid'</code>, en deméritos que se suman a los del párrafo, en la escala de <code>consecutiveHyphenDemerit</code> (dos líneas seguidas con guion cuestan 3000). Un monosílabo repetido («a», «y», «de», con las vocales de las escrituras latina, griega y cirílica) cuesta el doble. Un valor más alto evita más repeticiones a cambio de líneas más sueltas; con 0 se mantienen todas.</td>
+    </tr>
+    <tr>
+      <td><code>strictHyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Parte las palabras según las reglas de la composición española: nunca dos líneas partidas seguidas, y nunca dividida la última palabra del párrafo. El algoritmo toma cualquier otro corte que mantenga el espaciado entre palabras dentro de sus límites; solo cuando ninguno lo hace se incumple la regla. Requiere <code>optimalLineBreaking</code>. Para mantener entera solo la última palabra, ver <code>hyphenation.lastWord</code>; para permitir series más largas de guiones, <code>hyphenation.maxConsecutive</code>.</td>
+    </tr>
+    <tr>
+      <td><code>minLinesBetweenHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Líneas sin guion que una línea partida quiere tener antes, para que los guiones no caigan con un ritmo: <code>2</code> evita también un guion cada dos líneas (sí, no, sí); <code>1</code>, solo dos seguidos, como <code>strictHyphenation</code>; <code>0</code> desactiva la regla. Como máximo, 4. Es una preferencia, que pondera <code>hyphenSpacingPenalty</code>. Requiere <code>optimalLineBreaking</code>.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenSpacingPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>Coste de un guion más cerca del anterior que <code>minLinesBetweenHyphens</code>, en maldad equivalente: 100 es una línea en el límite del espaciado entre palabras; 1000 pesa más que cualquier línea dentro de él.</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Menos guiones o mejor espaciado, de <code>0</code> a <code>10</code>, como el control deslizante <em>Better Spacing</em> / <em>Fewer Hyphens</em> de InDesign: cada paso encarece todos los guiones, así que el algoritmo solo parte una palabra donde ahorra más espaciado entre palabras. <code>0</code> pondera los guiones como siempre lo ha hecho el motor. Requiere <code>optimalLineBreaking</code>.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

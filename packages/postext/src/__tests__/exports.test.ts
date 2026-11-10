@@ -184,6 +184,8 @@ describe("package exports", () => {
       "normalizeHyphenationExceptions",
       "HYPHENATION_LOCALES",
       "matchHyphenationLocale",
+      "setHyphenationLimits",
+      "hyphenationLanguageLimits",
       "DOCUMENT_LANGUAGES",
       "isCjkLanguage",
       "isJapaneseLanguage",

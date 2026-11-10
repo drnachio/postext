@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'تقسيم الكلمات واللغة',
   description: 'أنماط تقسيم الكلمات بالواصلة واستثناءاتها، والنص غير المضبوط، ولغة المستند وأرقامها واتجاهها، وأنظمة الكتابة التي ينضّدها Postext',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
-  readingTime: '21 دقيقة',
+  lastUpdated: '2026-11-10',
+  readingTime: '22 دقيقة',
   order: 8,
   parent: 'configuration',
   plainSummary: "تتناول هذه الصفحة طريقة تقسيم الكلمات في آخر السطر، وكيف يعرف Postext لغة الكتاب. تشغّل تقسيم الكلمات أو توقفه، وتسرد الكلمات التي لا يجوز تقسيمها أبدًا. ويمكنك أن تترك نهايات الأسطر غير متساوية بدلًا من حافة مستقيمة. وتحدد لغة المستند قواعد التقسيم، وأسماء الأشكال والجداول، والأرقام، واتجاه النص. وتبيّن الأقسام الأخيرة أنظمة الكتابة التي يستطيع Postext تنضيدها، وطريقة معالجة النص العربي.",
@@ -70,6 +70,36 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>قسّم الكلمات المبدوءة بحرف كبير كغيرها من الكلمات. القيمة <code>false</code> تُبقي كل كلمة تبدأ بحرف كبير كاملة (<code>Alice</code>، <code>Ámsterdam</code>، <code>UNESCO</code>)، ومنها أول كلمة في الجملة. انظر <a href="#كلمات-لا-تُقسَّم">كلمات لا تُقسَّم</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>قيمة اللغة</td>
+      <td>أقصر كلمة تُقسَّم، بالأحرف (<em>Words with at Least</em> في InDesign). إن لم تُحدَّد: قيمة اللغة، 5 (4 في الكتالونية).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>قيمة اللغة</td>
+      <td>أقل عدد من الأحرف يبقى قبل الكسر، في أول الكلمة (<em>After First</em> في InDesign). إن لم تُحدَّد: قيمة اللغة (2 في الإسبانية).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>قيمة اللغة</td>
+      <td>أقل عدد من الأحرف يُنقل بعد الكسر إلى السطر التالي (<em>Before Last</em> في InDesign). إن لم تُحدَّد: قيمة اللغة (2 في الإسبانية).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>أقصى عدد من الأسطر المتتالية المنتهية بواصلة (<em>Hyphen Limit</em> في InDesign)؛ <code>0</code>: بلا حد. إنه حدّ لا تفضيل: يُعاد كسر الفقرة، بتباعد أوسع إن لزم، ولا تتجاوزه إلا حيث لا يحترمه أي تنضيد. مع كسر الأسطر الأمثل فقط.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يسمح بتقسيم الكلمة الأخيرة في الفقرة (<em>Hyphenate Last Word</em> في InDesign). <code>false</code> تُبقيها كاملة حيثما سمحت المسافات؛ و<code>bodyText.strictHyphenation</code> تُبقيها كاملة في كل الأحوال. مع كسر الأسطر الأمثل فقط.</td>
     </tr>
   </tbody>
 </table>

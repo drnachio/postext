@@ -6,7 +6,7 @@ export const metadata = {
   description: '本文の文字組み：フォント、サイズと行送り、色、インデント、引用ブロック、詩、タブ位置、ドロップキャップ',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '27分',
+  readingTime: '28分',
   order: 7,
   parent: 'configuration',
   plainSummary: "このページでは、本の本文の設定を説明します。本文のフォント、文字の大きさ、行の間隔と、太字やイタリックの語の色を選びます。行の初めの字下げと、段落と段落のあいだの空きを決めます。本文から離して組む引用、詩、列をそろえて並べる文字のためのタブ位置、章の初めに置く大きな最初の文字も扱います。ハイフネーション、見出し、リストは、それぞれ別のページで説明します。",
@@ -248,6 +248,30 @@ export const metadata = {
       <td><code>number</code></td>
       <td><code>3000</code></td>
       <td><code>stacks: 'avoid'</code>のとき、重複1つが改行処理に加えるデメリット（段落のデメリットに加算）。尺度は<code>consecutiveHyphenDemerit</code>と同じです（ハイフンで終わる行が2行続くと3000）。繰り返される単音節語（ラテン文字、ギリシア文字、キリル文字の母音で数えます）は2倍になります。値を上げると行が緩むかわりに重複が減り、0ではすべて残ります。</td>
+    </tr>
+    <tr>
+      <td><code>strictHyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>スペインの組版規則に従ってハイフネーションします。ハイフンで終わる行を2行続けず、段落の最後の語は分割しません。語間を限度内に保つほかの改行位置があればそれを選び、どれもない場合に限って規則を破ります。<code>optimalLineBreaking</code>が必要です。最後の語だけを分割しない場合は<code>hyphenation.lastWord</code>、ハイフンの連続をもっと許す場合は<code>hyphenation.maxConsecutive</code>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>minLinesBetweenHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>ハイフンがリズムを刻まないよう、ハイフンで終わる行の前に置きたいハイフンなしの行数。<code>2</code>は1行おきのハイフン（あり、なし、あり）も避けます。<code>1</code>は<code>strictHyphenation</code>と同じく2行連続だけを避けます。<code>0</code>で規則を無効にします。最大4です。優先度の指定で、重さは<code>hyphenSpacingPenalty</code>で決まります。<code>optimalLineBreaking</code>が必要です。</td>
+    </tr>
+    <tr>
+      <td><code>hyphenSpacingPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>前のハイフンから<code>minLinesBetweenHyphens</code>より近いハイフンのコストを、等価な悪さで表します。100は語間の限度ちょうどの行、1000は限度内のどの行よりも重くなります。</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>ハイフンを減らすか語間を整えるかを<code>0</code>〜<code>10</code>で指定します。InDesignの<em>Better Spacing</em> / <em>Fewer Hyphens</em>スライダーと同様に、1段階ごとにすべてのハイフンが重くなり、語間をより多く改善できる場合にだけハイフネーションします。<code>0</code>ではこれまでどおりの重みです。<code>optimalLineBreaking</code>が必要です。</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

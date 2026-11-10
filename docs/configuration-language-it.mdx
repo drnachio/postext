@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sillabazione e lingua',
   description: 'I pattern e le eccezioni della sillabazione; il testo in bandiera; la lingua del documento, da cui dipendono le cifre e la direzione del testo; le scritture che Postext sa comporre',
   lang: 'it',
-  lastUpdated: '2026-10-19',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '23 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Questa pagina spiega come si dividono le parole a fine riga e come Postext capisce in che lingua è scritto un libro. Attivi o disattivi la sillabazione ed elenchi le parole che non vanno mai divise. Puoi lasciare irregolare il margine destro del testo invece che dritto. La lingua del documento decide le regole di sillabazione, i nomi delle figure e delle tabelle, le cifre e la direzione del testo. Le ultime sezioni spiegano quali sistemi di scrittura Postext sa comporre e come tratta il testo arabo.",
@@ -70,6 +70,36 @@ Quando l’allineamento del testo è impostato a `'justify'`, la sillabazione ev
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Divide le parole con l’iniziale maiuscola come tutte le altre. <code>false</code> tiene intera ogni parola che comincia con una maiuscola (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), compresa la prima parola di una frase. Vedi <a href="#parole-tenute-intere">Parole tenute intere</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>quella della lingua</td>
+      <td>La parola più corta che si divide, in lettere (<em>Parole con almeno</em> in InDesign). Non impostata: quella della lingua, 5 (4 in catalano).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>quella della lingua</td>
+      <td>Lettere lasciate almeno prima di un’interruzione, all’inizio della parola (<em>Dopo le prime</em> in InDesign). Non impostata: quella della lingua (2 in spagnolo).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>quella della lingua</td>
+      <td>Lettere portate almeno dopo un’interruzione, alla riga seguente (<em>Prima delle ultime</em> in InDesign). Non impostata: quella della lingua (2 in spagnolo).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Numero massimo di righe di seguito che terminano con un trattino (<em>Limite trattini</em> in InDesign); <code>0</code>: nessun limite. Un limite, non una preferenza: il paragrafo viene ricomposto, più largo se serve, e lo supera solo dove nessuna composizione lo rispetta. Solo con l’interruzione ottimale delle righe.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Permette di dividere l’ultima parola di un paragrafo (<em>Dividi ultima parola</em> in InDesign). <code>false</code> la tiene intera ovunque la spaziatura lo permetta; <code>bodyText.strictHyphenation</code> la tiene intera in ogni caso. Solo con l’interruzione ottimale delle righe.</td>
     </tr>
   </tbody>
 </table>

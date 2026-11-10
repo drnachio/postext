@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Separación silábica e idioma',
   description: 'Cómo se configuran los patrones y las excepciones de la separación silábica y el texto en bandera; el idioma del documento, con sus cifras y su dirección, y qué escrituras compone Postext.',
   lang: 'es',
-  lastUpdated: '2026-10-19',
-  readingTime: '23 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '24 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Esta página explica cómo se parten las palabras al final de la línea y cómo sabe Postext en qué idioma está el libro. Activas o desactivas la separación silábica y anotas las palabras que nunca deben partirse. Puedes dejar desigual el borde derecho del texto en lugar de recto. El idioma del documento decide las reglas para partir palabras, los nombres de las figuras y las tablas, las cifras y la dirección del texto. Las últimas secciones dicen qué escrituras sabe componer Postext y cómo trata el texto árabe.",
@@ -70,6 +70,36 @@ Cuando el texto está justificado (`'justify'`), la separación silábica evita 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Divide las palabras con mayúscula inicial como cualquier otra. Con <code>false</code>, ninguna palabra que empiece por mayúscula se divide (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), tampoco la primera de cada frase. Véase <a href="#palabras-que-no-se-dividen">Palabras que no se dividen</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>la de la lengua</td>
+      <td>La palabra más corta que se divide, en letras (el <em>Words with at Least</em> de InDesign). Sin fijar: la de la lengua, 5 (4 en catalán).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>la de la lengua</td>
+      <td>Letras que quedan como mínimo antes de un corte, al principio de la palabra (el <em>After First</em> de InDesign). Sin fijar: las de la lengua (2 en español).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>la de la lengua</td>
+      <td>Letras que pasan como mínimo a la línea siguiente tras un corte (el <em>Before Last</em> de InDesign). Sin fijar: las de la lengua (2 en español).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Máximo de líneas seguidas que terminan en guion (el <em>Hyphen Limit</em> de InDesign); <code>0</code>, sin límite. Es un límite, no una preferencia: el párrafo se vuelve a cortar, más suelto si hace falta, y solo lo supera donde ninguna composición lo respeta. Solo con la ruptura óptima de líneas.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Permite dividir la última palabra de un párrafo (el <em>Hyphenate Last Word</em> de InDesign). <code>false</code> la mantiene entera siempre que el espaciado lo permite; <code>bodyText.strictHyphenation</code> la mantiene entera en cualquier caso. Solo con la ruptura óptima de líneas.</td>
     </tr>
   </tbody>
 </table>

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Partició de mots i llengua',
   description: 'Com es parteixen els mots (patrons i excepcions), com es compon el text en bandera, què fixa la llengua del document (les xifres i la direcció del text, entre altres coses) i quines escriptures sap compondre Postext',
   lang: 'ca',
-  lastUpdated: '2026-10-19',
-  readingTime: '23 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '24 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina explica com es parteixen els mots al final de la línia i com sap Postext en quina llengua està escrit el llibre. Pots activar o desactivar la partició de mots i fer una llista de les paraules que no s'han de partir mai. També pots deixar irregular la vora dreta del text en lloc de recta. La llengua del document fixa les regles per partir mots, els noms de les figures i de les taules, les xifres i la direcció del text. Les últimes seccions expliquen quines escriptures sap compondre Postext i com tracta el text àrab.",
@@ -70,6 +70,36 @@ Quan l'alineació del text és `'justify'`, la partició de mots evita que l'esp
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Parteix les paraules amb majúscula inicial com qualsevol altra. <code>false</code> deixa senceres totes les paraules que comencen amb majúscula (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), inclosa la primera de cada frase. Vegeu <a href="#mots-que-no-es-divideixen">Mots que no es divideixen</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>la de la llengua</td>
+      <td>La paraula més curta que es divideix, en lletres (el <em>Words with at Least</em> d'InDesign). Sense fixar: la de la llengua, 5 (4 en català).</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>la de la llengua</td>
+      <td>Lletres que queden com a mínim abans d'un tall, al principi de la paraula (l'<em>After First</em> d'InDesign). Sense fixar: les de la llengua (2 en castellà).</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>la de la llengua</td>
+      <td>Lletres que passen com a mínim a la línia següent després d'un tall (el <em>Before Last</em> d'InDesign). Sense fixar: les de la llengua (2 en castellà).</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Màxim de línies seguides que acaben en guionet (el <em>Hyphen Limit</em> d'InDesign); <code>0</code>, sense límit. És un límit, no una preferència: el paràgraf es torna a tallar, més solt si cal, i només el supera on cap composició no el respecta. Només amb el tall òptim de línies.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Permet dividir l'última paraula d'un paràgraf (el <em>Hyphenate Last Word</em> d'InDesign). <code>false</code> la manté sencera sempre que l'espaiat ho permet; <code>bodyText.strictHyphenation</code> la manté sencera en qualsevol cas. Només amb el tall òptim de línies.</td>
     </tr>
   </tbody>
 </table>

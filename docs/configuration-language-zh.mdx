@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '断词与语言',
   description: '断词模式与例外词、非两端对齐文字的断词、文档语言及其数字和文字方向，以及Postext能排哪些文字',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
-  readingTime: '15分钟',
+  lastUpdated: '2026-11-10',
+  readingTime: '16分钟',
   order: 8,
   parent: 'configuration',
   plainSummary: "本页讲单词在行尾怎样拆开，以及Postext怎样知道一本书用的是什么语言。你可以打开或关闭断词，也可以列出绝不能拆开的词。你还可以让文字的右边参差不齐，不必排成一条直线。文档语言决定断词规则、图和表的名称、数字的写法和文字方向。最后几节说明Postext能排哪些文字，以及怎样处理阿拉伯文。",
@@ -70,6 +70,36 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>首字母大写的词与其他词一样拆分。设为<code>false</code>时，凡以大写字母开头的词都保持完整（<code>Alice</code>、<code>Ámsterdam</code>、<code>UNESCO</code>），句首的词也不例外。见<a href="#不拆分的词">不拆分的词</a>。</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>语言自身的值</td>
+      <td>拆分的最短单词，以字母计（InDesign的<em>Words with at Least</em>）。未设置时取语言自身的值，即5（加泰罗尼亚语为4）。</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>语言自身的值</td>
+      <td>断点之前、词首至少保留的字母数（InDesign的<em>After First</em>）。未设置时取语言自身的值（西班牙语为2）。</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>语言自身的值</td>
+      <td>断点之后至少移到下一行的字母数（InDesign的<em>Before Last</em>）。未设置时取语言自身的值（西班牙语为2）。</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>连续以连字符结尾的最多行数（InDesign的<em>Hyphen Limit</em>）；<code>0</code>表示不限。这是限制而不是偏好：段落会重新断行，必要时排得更松，只有在任何排法都无法遵守时才超过它。仅用于最优断行。</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>允许断开段落的最后一个单词（InDesign的<em>Hyphenate Last Word</em>）。<code>false</code>在词距允许时保持它完整；<code>bodyText.strictHyphenation</code>则无论如何都保持它完整。仅用于最优断行。</td>
     </tr>
   </tbody>
 </table>

@@ -7,7 +7,7 @@ import it from 'hyphenation.it';
 import pt from 'hyphenation.pt';
 import ca from 'hyphenation.ca';
 import nl from 'hyphenation.nl';
-import type { HyphenationLocale, LocaleTag } from '../types.js';
+import type { HyphenationLocale, LocaleTag, HyphenationLimits } from '../types.js';
 import { hyphenationLocaleFor } from './locale.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { normalizeHyphenationExceptions } from './hyphenationExceptions.js';
@@ -45,10 +45,60 @@ const instances = new Map<HyphenationLocale, Hypher>();
 function getHyphenator(locale: HyphenationLocale): Hypher {
   let h = instances.get(locale);
   if (!h) {
-    h = new Hypher(PATTERNS[locale]);
+    const base = PATTERNS[locale];
+    h = new Hypher({ ...base, leftmin: limits.leftMin ?? base.leftmin, rightmin: limits.rightMin ?? base.rightmin });
     instances.set(locale, h);
   }
   return h;
+}
+
+/** The document's hyphenation limits (see {@link setHyphenationLimits}). */
+let limits: HyphenationLimits = {};
+let limitsKey = '{}';
+
+/** The letters a language's patterns leave, at least, before and after a
+ *  break (InDesign's "after first" and "before last"), and the shortest
+ *  word they divide: what {@link HyphenationLimits} overrides. */
+export function hyphenationLanguageLimits(locale: HyphenationLocale): Required<HyphenationLimits> {
+  return { leftMin: PATTERNS[locale].leftmin, rightMin: PATTERNS[locale].rightmin, minWordLength: locale === 'ca' ? MIN_WORD_LENGTH : DEFAULT_MIN_WORD_LENGTH };
+}
+
+/**
+ * Set the document's hyphenation limits, as InDesign's hyphenation
+ * settings have them: the shortest word divided and the letters left at
+ * least before and after a break. A limit left unset keeps the language's
+ * own. Words of the exceptions list are divided where it says, whatever
+ * the limits ({@link setHyphenationRules}). Setting the same limits again
+ * costs nothing; new ones rebuild the dictionaries.
+ */
+export function setHyphenationLimits(next: HyphenationLimits | undefined): void {
+  const clean: HyphenationLimits = {};
+  if (next?.minWordLength !== undefined) clean.minWordLength = Math.max(2, Math.round(next.minWordLength));
+  if (next?.leftMin !== undefined) clean.leftMin = Math.max(1, Math.round(next.leftMin));
+  if (next?.rightMin !== undefined) clean.rightMin = Math.max(1, Math.round(next.rightMin));
+  const key = JSON.stringify(clean);
+  if (key === limitsKey) return;
+  limits = clean;
+  limitsKey = key;
+  let id = limitIds.get(key);
+  if (id === undefined) {
+    id = limitIds.size;
+    limitIds.set(key, id);
+  }
+  limitsId = id;
+  instances.clear();
+  wordMemo.clear();
+  for (const rules of internedRules.values()) rules.memo.clear();
+}
+
+/** A number for each set of limits seen; the language's own are `0`. */
+const limitIds = new Map<string, number>([['{}', 0]]);
+let limitsId = 0;
+
+/** The current limits as a number (see {@link setHyphenationLimits}), for
+ *  cache keys: text measured with other limits breaks elsewhere. */
+export function hyphenationLimitsId(): number {
+  return limitsId;
 }
 
 let currentLocale: HyphenationLocale = 'en-us';
@@ -124,7 +174,7 @@ export function hyphenateByDictionary(text: string, locale?: LocaleTag): string 
     if (hyphenated === undefined) {
       // A word of a joining script (an Arabic word quoted in an English
       // book) is never divided: its letters connect (`measure/rtl/joining.ts`).
-      hyphenated = joiningScriptIn(word) ? word : loc === 'ca' ? hyphenateCatalan(hyphenator, word) : hyphenator.hyphenateText(word);
+      hyphenated = joiningScriptIn(word) ? word : loc === 'ca' ? hyphenateCatalan(hyphenator, word) : hyphenator.hyphenateText(word, (limits.minWordLength ?? DEFAULT_MIN_WORD_LENGTH) - 1);
       if (APOSTROPHE_LOCALES.has(loc) && APOSTROPHE_RE.test(word)) {
         hyphenated = withoutApostropheBreaks(word, hyphenated, PATTERNS[loc].leftmin, PATTERNS[loc].rightmin, ELISION_LOCALES.has(loc));
       }
@@ -400,6 +450,9 @@ const CATALAN_WORD_RE = /(?:[\p{L}\p{M}'’\u00AD]|(?<=[lL])·(?=[lL]))+/gu;
 const CATALAN_VOWELS = 'aeiouàèéíïòóúüAEIOUÀÈÉÍÏÒÓÚÜ';
 /** hypher's default: shorter words are left whole. */
 const MIN_WORD_LENGTH = 4;
+/** The shortest word hypher divides in the other languages (its default
+ *  leaves words of four letters or fewer whole). */
+const DEFAULT_MIN_WORD_LENGTH = 5;
 
 /** `word` (one whitespace-free token) with soft hyphens at the Catalan
  *  syllable breaks the IEC accepts at a line end. Two vowels in hiatus stay
@@ -411,7 +464,7 @@ function hyphenateCatalan(hyphenator: Hypher, word: string): string {
   return word.replace(CATALAN_WORD_RE, (run) => {
     // A word with a soft hyphen its author typed gets no other point, as
     // under every other dictionary (#700).
-    if (run.length < MIN_WORD_LENGTH || run.includes(SOFT_HYPHEN)) return run;
+    if (run.length < (limits.minWordLength ?? MIN_WORD_LENGTH) || run.includes(SOFT_HYPHEN)) return run;
     const parts = hyphenator.hyphenate(run);
     let out = parts[0] ?? '';
     for (let i = 1; i < parts.length; i++) {
