@@ -98,10 +98,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
         label={labels.pdfBaselineGrid}
         checked={cfg.baselineGrid}
         onChange={(v) => update({ baselineGrid: v })}
-        tooltip={
-          labels.pdfBaselineGridTooltip ??
-          'Draw the baseline grid in the PDF as well; off, it shows on the canvas only'
-        }
+        tooltip={labels.pdfBaselineGridTooltip}
         isDefault={isBaselineGridDefault}
         onReset={() => resetField('baselineGrid')}
       />

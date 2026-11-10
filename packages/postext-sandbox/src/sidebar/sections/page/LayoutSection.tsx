@@ -15,7 +15,6 @@ import {
   ColorPicker,
 } from '../../../controls/index.js';
 import { HighlightZone } from '../../settings/previewHighlight.js';
-import { PerStyleGridFields } from './PerStyleGridFields.js';
 import { ColumnsPicture } from '../../settings/pictures.js';
 import { MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../../settings/multipleColumns.js';
 import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides.js';
@@ -528,7 +527,6 @@ export const LayoutSection = memo(function LayoutSection() {
         isDefault={layout.hugClosingFloats === D.hugClosingFloats}
         onReset={() => resetField('hugClosingFloats')}
       />
-      <PerStyleGridFields />
     </CollapsibleSection>
   );
 });

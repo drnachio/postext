@@ -9,6 +9,7 @@ import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, 
 import { SlotEditor } from '../../running/HeaderFooterSection/SlotEditor.js';
 import { breakParityOptions } from './breakParityOptions.js';
 import { separatorFromOption, separatorOption, separatorOptions, type SeparatorChoice } from '../../../settings/eastAsianOptions.js';
+import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -189,24 +190,12 @@ export function HeadingLevelSection({
         onReset={() => onReset(level, 'marginBottom')}
         units={MARGIN_UNITS}
       />
-      <ToggleSwitch
-        label={labels.headingLevelSnapToGrid}
-        checked={resolved.snapToGrid}
-        onChange={(v) => onUpdate(level, { snapToGrid: v })}
-        tooltip={labels.headingLevelSnapToGridTooltip}
-        isDefault={raw?.snapToGrid === undefined}
-        onReset={() => onReset(level, 'snapToGrid')}
+      <GridSnapFields
+        kind="heading"
+        value={{ snapToGrid: resolved.snapToGrid, regainGrid: resolved.regainGrid, snapTopToGrid: resolved.snapTopToGrid }}
+        set={(k, v) => (v === undefined ? onReset(level, k) : onUpdate(level, { [k]: v }))}
+        unset={(k) => raw?.[k] === undefined}
       />
-      {!resolved.snapToGrid && (
-        <ToggleSwitch
-          label={labels.headingRegainGrid}
-          checked={resolved.regainGrid}
-          onChange={(v) => onUpdate(level, { regainGrid: v })}
-          tooltip={labels.headingRegainGridTooltip}
-          isDefault={raw?.regainGrid === undefined}
-          onReset={() => onReset(level, 'regainGrid')}
-        />
-      )}
       <NumberInput
         label={labels.headingLineSpan}
         value={resolved.lineSpan ?? 0}
