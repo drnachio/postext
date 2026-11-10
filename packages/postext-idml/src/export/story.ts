@@ -2,12 +2,12 @@
 // paragraph styles, with the indents, tab stops and spacing the engine
 // set them with.
 
-import type { VDTFrame } from '../vdt/pages/composed.js';
-import { escapeXml } from '../word/xml.js';
-import { resolveBodyStyle, resolveParagraphStyle, type BlockStyle } from '../pipeline/styles.js';
-import { deriveCalloutResolvedConfig } from '../pipeline/callouts/calloutLayout/plan.js';
-import { resolvedLocale } from '../pipeline/config.js';
-import { resolveTabSettings } from '../defaults/text/tabStops.js';
+import type { VDTFrame } from 'postext/writer';
+import { escapeXml } from '../xml/write.js';
+import { resolveBodyStyle, resolveParagraphStyle, type BlockStyle } from 'postext/writer';
+import { deriveCalloutResolvedConfig } from 'postext/writer';
+import { resolvedLocale } from 'postext/writer';
+import { resolveTabSettings } from 'postext/writer';
 import { overrides, paragraphJustification, paragraphRuns, sameProps, textScale } from './paragraphs.js';
 import {
   attr,

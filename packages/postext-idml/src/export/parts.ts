@@ -3,7 +3,7 @@
 // InDesign expects in every file. Written for DOMVersion 8.0 (CS6), which
 // every later InDesign opens.
 
-import { escapeAttr } from '../word/xml.js';
+import { escapeAttr } from '../xml/write.js';
 
 export const IDML_MIMETYPE = 'application/vnd.adobe.indesign-idml-package';
 export const DOM_VERSION = '8.0';

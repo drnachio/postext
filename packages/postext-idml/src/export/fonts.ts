@@ -1,7 +1,7 @@
 // Faces: what a run's canvas font shorthand asks for, and InDesign's
 // style name of a face.
 
-import { findPxSize, parseFontString } from '../measure/fontString.js';
+import { findPxSize, parseFontString } from 'postext/writer';
 
 const WEIGHT_NAMES: Record<number, string> = { 100: 'Thin', 200: 'ExtraLight', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold', 800: 'ExtraBold', 900: 'Black' };
 

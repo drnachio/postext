@@ -2,8 +2,8 @@
 // `Links/`, cropped and flipped as in the PDF; an SVG with a PDF companion
 // is placed as that PDF.
 
-import type { DisplayItem } from '../paint/displayList/types.js';
-import { bitmapInfo, svgSize } from '../bundle/manifest/sizes.js';
+import type { DisplayItem } from 'postext';
+import { bitmapInfo, svgSize } from 'postext/writer';
 import { boxGeometry } from './geometry.js';
 import { attr, num } from './parts.js';
 import type { Writer } from './writer.js';

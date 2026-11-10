@@ -14,8 +14,8 @@
 // `spreads.ts`, and `parts.ts` for the package's fixed parts.
 
 import { strToU8, zipSync, type Zippable } from 'fflate';
-import { pageDisplayList } from '../paint/displayList/page.js';
-import { authoredCmykColors } from '../color/authored.js';
+import { pageDisplayList } from 'postext';
+import { authoredCmykColors } from 'postext/writer';
 import { RESERVED_SWATCH_NAMES } from './colours.js';
 import {
   BACKING_STORY_XML,

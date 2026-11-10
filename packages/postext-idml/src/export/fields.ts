@@ -13,8 +13,8 @@
 // value, number format, calculation or text alignment on a form field;
 // its PDF export writes none of them.
 
-import { formatFieldCalc, type FormFieldSpec } from '../parse/formFields.js';
-import { escapeXml } from '../word/xml.js';
+import { formatFieldCalc, type FormFieldSpec } from 'postext/writer';
+import { escapeXml } from '../xml/write.js';
 import { attr, num } from './parts.js';
 
 export interface FieldPaint {

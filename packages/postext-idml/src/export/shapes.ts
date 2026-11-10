@@ -1,9 +1,9 @@
 // Shapes: boxes, rules and paths as native page items, and the boxes and
 // form fields of a text item's chips.
 
-import type { DisplayItem } from '../paint/displayList/types.js';
-import type { VDTPathCommand } from '../vdt/design.js';
-import { CHIP_PLACEHOLDER } from '../parse/inlineFormatting/inlineDirectives.js';
+import type { DisplayItem } from 'postext';
+import type { VDTPathCommand } from 'postext/writer';
+import { CHIP_PLACEHOLDER } from 'postext/writer';
 import { swatch } from './colours.js';
 import { fieldXml } from './fields.js';
 import { parseCssFont } from './fonts.js';

@@ -2,10 +2,10 @@
 // break added dropped, chips as words and thin spaces), each run's
 // character properties, and a shrunk frame's items as painted.
 
-import type { DisplayLine, DisplayRect, DisplayRun } from '../paint/displayList/types.js';
-import type { VDTFrame } from '../vdt/pages/composed.js';
-import { withPxSize } from '../measure/fontString.js';
-import { CHIP_PLACEHOLDER } from '../parse/inlineFormatting/inlineDirectives.js';
+import type { DisplayLine, DisplayRect, DisplayRun } from 'postext';
+import type { VDTFrame } from 'postext/writer';
+import { withPxSize } from 'postext/writer';
+import { CHIP_PLACEHOLDER } from 'postext/writer';
 import { swatch } from './colours.js';
 import { defaultFontStyleName, parseCssFont } from './fonts.js';
 import { chipRect } from './geometry.js';

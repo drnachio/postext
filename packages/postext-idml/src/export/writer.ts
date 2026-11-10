@@ -2,9 +2,9 @@
 // export: what every part of the writer (shapes, pictures, stories,
 // spreads) reads and adds to as the pages are written.
 
-import type { DisplayItem, DisplayRun } from '../paint/displayList/types.js';
-import type { VDTDocument } from '../vdt/document.js';
-import type { BlockStyle } from '../pipeline/styles.js';
+import type { DisplayItem, DisplayRun } from 'postext';
+import type { VDTDocument } from 'postext/writer';
+import type { BlockStyle } from 'postext/writer';
 import type { ParagraphStyleDef, Swatch } from './parts.js';
 
 export interface IdmlWarning {

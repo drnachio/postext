@@ -1,7 +1,7 @@
 // Geometry: sheet px on the page to pt on the spread, path points, a
 // box's transform and outline.
 
-import type { DisplayLine, DisplayRect, DisplayRun } from '../paint/displayList/types.js';
+import type { DisplayLine, DisplayRect, DisplayRun } from 'postext';
 import { num } from './parts.js';
 import type { Writer } from './writer.js';
 

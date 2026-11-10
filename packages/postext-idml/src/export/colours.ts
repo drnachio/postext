@@ -3,8 +3,8 @@
 // none takes the name of one of InDesign's own (Black, Paper,
 // Registration, None).
 
-import { parseColor as parseHexColor, type Rgba } from '../checks/contrast/colours.js';
-import { wordColor } from '../word/formatted/units.js';
+import { parseColor as parseHexColor, type Rgba } from 'postext/writer';
+import { cssColor as wordColor } from 'postext/writer';
 import { num } from './parts.js';
 import type { Writer } from './writer.js';
 

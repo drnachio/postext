@@ -2,8 +2,8 @@
 // text of each composed frame (or chain of frames) in one text frame per
 // frame and one story per chain.
 
-import type { DisplayPage, DisplayRect } from '../paint/displayList/types.js';
-import type { VDTFrame } from '../vdt/pages/composed.js';
+import type { DisplayPage, DisplayRect } from 'postext';
+import type { VDTFrame } from 'postext/writer';
 import { boxGeometry, union } from './geometry.js';
 import { imageXml } from './images.js';
 import { asPainted, textScale } from './paragraphs.js';

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { strFromU8, unzipSync } from 'fflate';
-import { build, config, mm, LOREM } from '../word/formatted/formatted.test-helper.js';
-import { parseXml, children, descendants, attr, type XmlElement } from '../word/xml.js';
-import { parseFieldCalc } from '../parse/formFields.js';
+import { build, config, mm, LOREM } from '../testing/kit.test-helper.js';
+import { parseXml, children, descendants, str as attr, type XmlElement } from '../xml/read.js';
+import { parseFieldCalc } from 'postext/writer';
 import { idmlDocument, type IdmlOptions } from './index.js';
 import { parseCssFont, defaultFontStyleName } from './fonts.js';
-import type { PostextConfig } from '../index.js';
-import { pageDisplayList } from '../paint/displayList/page.js';
-import { initMathEngine } from '../math/engine.js';
+import type { PostextConfig } from 'postext';
+import { pageDisplayList } from 'postext';
+import { initMathEngine } from 'postext';
 
 const cmyk = (hex: string, [c, m, y, k]: number[]) => ({ hex, model: 'cmyk' as const, cmyk: { c: c!, m: m!, y: y!, k: k! } });
 const hex = (h: string) => ({ hex: h, model: 'hex' as const });

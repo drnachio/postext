@@ -3,7 +3,7 @@
 // in Links/.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { idmlDocument } from 'postext/idml';
+import { idmlDocument } from 'postext-idml';
 import type { CommandContext } from '../context';
 import { UsageError } from '../args';
 import { writeOut } from '../io';

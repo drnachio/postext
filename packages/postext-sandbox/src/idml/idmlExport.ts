@@ -1,9 +1,9 @@
 // The IDML export of the Sandbox (#1491): the whole book, laid out as the
-// PDF is, written by `postext/idml` as an InDesign Markup package. The
+// PDF is, written by `postext-idml` as an InDesign Markup package. The
 // writer is loaded on the first export. The export dialog uses it.
 
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
-import type { IdmlWarning } from 'postext/idml';
+import type { IdmlWarning } from 'postext-idml';
 import { getBlob } from '../storage/blobStore.js';
 
 export const IDML_MIME = 'application/vnd.adobe.indesign-idml-package';
@@ -74,7 +74,7 @@ export async function buildIdmlExport(input: IdmlExportInput): Promise<Uint8Arra
     const rec = await getBlob(id).catch(() => null);
     if (rec) bytes.set(id, new Uint8Array(rec.bytes));
   }
-  const { idmlDocument } = await import('postext/idml');
+  const { idmlDocument } = await import('postext-idml');
   const result = idmlDocument({
     docs: input.docs,
     resourceBytes: (id) => bytes.get(id) ?? (id.startsWith('data:') ? dataUrlBytes(id) : undefined),
