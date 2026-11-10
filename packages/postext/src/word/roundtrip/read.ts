@@ -59,6 +59,9 @@ export interface AddedParagraph {
   side: 'after' | 'before';
   chars: ReadChar[];
   props?: ParaProps;
+  /** The fragment whose bookmark opens right after the paragraph, in the
+   *  same run of paragraphs. */
+  next?: string;
 }
 
 export interface ReadDocx {
@@ -206,7 +209,7 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
     for (const o of paras) {
       const before = nextFid !== undefined && (!lastFid || o.afterSect);
       const fid = before ? nextFid : lastFid;
-      if (fid) added.push({ fid, side: before ? 'before' : 'after', chars: o.chars, ...(o.props ? { props: o.props } : {}) });
+      if (fid) added.push({ fid, side: before ? 'before' : 'after', chars: o.chars, ...(o.props ? { props: o.props } : {}), ...(nextFid !== undefined ? { next: nextFid } : {}) });
     }
   };
   const known = new Set(map.fragments.map((f) => f.id));

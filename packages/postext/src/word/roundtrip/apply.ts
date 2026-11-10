@@ -10,8 +10,9 @@ import { diffText, mapThrough, type Hunk } from './diff.js';
 import { blockHunks, hunkEdits, type SourceEdit } from './edits.js';
 import { formatEdits } from './formats.js';
 import { mergeText, type PlacedEdit } from './merge.js';
-import { readExportedDocx, type ReadComment } from './read.js';
+import { readExportedDocx, type ReadComment, type ReadDocx } from './read.js';
 import type { RebuiltMap } from './rebuild.js';
+import { looseText } from './align.js';
 import { furnitureKey } from './selfRead.js';
 import { settleLooks, writtenHidden } from './settle.js';
 import { fieldName, setField, targetKey, textsOf, type TextTarget } from './targets.js';
@@ -151,6 +152,34 @@ function bookmarksLost(blocks: readonly BlockView[], read: { strays: readonly st
   return out;
 }
 
+/** How much of a text's start tells it from another. */
+const HEAD = 24;
+
+/**
+ * A paragraph split in an editor that moved the bookmark's start to the
+ * second half (#1458): the first half then stands outside every bookmark,
+ * right before the fragment, and begins as the fragment did. It is the
+ * fragment's own text, with a paragraph break after it, and not a
+ * paragraph typed in: read so, its marks, references and equations stay
+ * the source's.
+ */
+function rejoinSplits(read: ReadDocx): void {
+  const written = new Map(read.map.fragments.map((f) => [f.id, f.text]));
+  const head = (text: string): string => looseText(text).slice(0, HEAD);
+  for (let i = read.added.length - 1; i >= 0; i--) {
+    const a = read.added[i]!;
+    const got = a.next !== undefined ? read.fragments.get(a.next) : undefined;
+    const was = a.next !== undefined ? written.get(a.next) : undefined;
+    if (!got || was === undefined || got.startPara < 0) continue;
+    const typed = head(a.chars.map((c) => c.ch).join(''));
+    const now = head(got.chars.map((c) => c.ch).join(''));
+    if (typed.length < 4 || !looseText(was).startsWith(typed) || looseText(was).startsWith(now)) continue;
+    got.chars.unshift(...a.chars, { ch: PARA_CHAR, flags: '' });
+    got.dels = got.dels.map((d) => d + a.chars.length + 1);
+    read.added.splice(i, 1);
+  }
+}
+
 /**
  * Paragraphs of the file that read like the ones the writer set outside
  * every fragment (a contents line, an index entry, a label): an editor
@@ -244,6 +273,7 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, optio
   const given = options.rebuilt;
   const read = readExportedDocx(bytes, given ? { map: given.map, looks: true, foreign: given.foreign } : {});
   const { map } = read;
+  rejoinSplits(read);
   // The file's own map when it has one.
   const rebuilt = given && map === given.map ? given : undefined;
   const blocks = buildBlocks(map.fragments, read.fragments, read.holders, read.newNotes, rebuilt?.looks);

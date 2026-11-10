@@ -204,6 +204,26 @@ describe('edits made in Google Docs', () => {
     expect(r.chapters[0]!.markdown).toBe(MD.replace('H~2~O. Second', 'H~2~O.\n\nSecond'));
   });
 
+  it('a paragraph split in two by an editor that moves the bookmark to the second half', async () => {
+    const r = await roundTrip([MD, INDEX], 'book', {
+      edit: inDoc((x) => {
+        // The first half stands outside the bookmark, the reference to
+        // the table in it; the bookmark's start goes before the second.
+        const at = x.indexOf(' mentioned once.');
+        const p0 = x.lastIndexOf('<w:p ', at);
+        const mark = x.slice(x.lastIndexOf('<w:bookmarkStart', p0), p0);
+        expect(mark).toContain('_ptx_');
+        const run = x.slice(x.lastIndexOf('<w:r ', at), x.indexOf('<w:t', x.lastIndexOf('<w:r ', at)));
+        const p = x.slice(p0, x.indexOf('</w:pPr>', p0) + 8);
+        const out = `${x.slice(0, at)}</w:t></w:r></w:p>${mark}${p}${run}<w:t xml:space="preserve">mentioned once.${x.slice(at + ' mentioned once.'.length)}`;
+        return out.slice(0, out.lastIndexOf('<w:bookmarkStart', p0)) + out.slice(p0);
+      }),
+    });
+    expect(r.edits.every((e) => e.status === 'applied')).toBe(true);
+    // The note and the reference of the first half stay as written.
+    expect(r.chapters[0]!.markdown).toBe(MD.replace('is :ref{id="t1"}, mentioned once.', 'is :ref{id="t1"},\n\nmentioned once.'));
+  });
+
   it('a paragraph deleted whole', async () => {
     const r = await roundTrip([MD, INDEX], 'plain', {
       edit: inDoc((x) => {
