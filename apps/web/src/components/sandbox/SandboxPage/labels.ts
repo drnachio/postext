@@ -2985,6 +2985,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     captionDescriptionGroup: t("captionDescriptionGroup"),
     captionPosition: t("captionPosition"),
     captionPositionTooltip: t("captionPositionTooltip"),
+    captionAlignAcrossColumns: t("captionAlignAcrossColumns"),
+    captionAlignAcrossColumnsTooltip: t("captionAlignAcrossColumnsTooltip"),
     captionPositionBelow: t("captionPositionBelow"),
     captionPositionAbove: t("captionPositionAbove"),
     captionBarGroup: t("captionBarGroup"),

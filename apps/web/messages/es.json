@@ -1206,6 +1206,8 @@
     "captionDescriptionGroup": "Descripción",
     "captionPosition": "Posición",
     "captionPositionTooltip": "Sitúa el pie bajo el recurso (debajo) o encima de él, como título de tabla (encima)",
+    "captionAlignAcrossColumns": "Alinear entre columnas",
+    "captionAlignAcrossColumnsTooltip": "Las figuras que comparten franja en una página se alinean entre columnas: al pie, la primera línea de sus pies; en la cabeza, el borde inferior de sus imágenes. La más corta toma el blanco. Una figura que hayas colocado a mano se queda donde la soltaste. La maquetación hace una pasada más.",
     "captionPositionBelow": "Debajo del recurso",
     "captionPositionAbove": "Encima del recurso",
     "captionBarGroup": "Barra de fondo",

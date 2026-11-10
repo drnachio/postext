@@ -107,7 +107,7 @@ function placeDocumentPass(
   const setup = {} as PassSetupState;
   const state = {} as PassState;
   const late = {} as PassLate;
-  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, floatPads, citingPageFloats } = hints;
   const captionUnderProposals = new Set<string>();
   const pullShortfalls = new Map<string, { page: number; px: number }>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
@@ -250,7 +250,7 @@ function placeDocumentPass(
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
     resourceNumberById, figureLabelsById, bodyStyle, pendingFloats, enqueuedFloatIds,
     enqueueFloatsFor, calloutFloats, CALLOUT_FLOAT_PREFIX, calloutFloatOf, comicStripOf,
-    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, state
+    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state
   });
 
   const {

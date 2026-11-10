@@ -3623,6 +3623,8 @@
     "captionDescriptionGroup": "Description",
     "captionPosition": "Position",
     "captionPositionTooltip": "Placer la légende sous la ressource (en dessous) ou au-dessus, comme un titre de tableau (au-dessus)",
+    "captionAlignAcrossColumns": "Aligner d’une colonne à l’autre",
+    "captionAlignAcrossColumnsTooltip": "Les figures qui partagent une bande de la page s’alignent d’une colonne à l’autre : au pied, les premières lignes de leurs légendes ; en tête, le bas de leurs images. La plus courte prend le blanc. Une figure placée à la main reste là où vous l’avez déposée. La mise en page fait une passe de plus.",
     "captionPositionBelow": "Sous la ressource",
     "captionPositionAbove": "Au-dessus de la ressource",
     "captionBarGroup": "Bande de fond",

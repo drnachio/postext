@@ -1660,6 +1660,7 @@ align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
 labelBold = true, labelItalic = false, labelColor = color
 labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
    Chinese captions: labelNumberGap '' and labelSeparator '　' (U+3000) → 图1-1　标题
+alignAcrossColumns = false   figures sharing a band line up across the columns: foot captions' first lines level, head pictures' bottoms level (pinned figures left out; document-wide only; one more pass)
    Japanese documents (locale ja, ≥ 1.16): those two are the defaults when unset → 図1-1　題 (don't restate them)
 descriptionItalic = false
 position = 'below' | 'above'

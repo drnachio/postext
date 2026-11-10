@@ -41,6 +41,9 @@ export interface CaptionStyleFieldsProps {
   sectionIdPrefix: string;
   /** Prefix for colour-picker field ids. */
   fieldIdPrefix: string;
+  /** The document's own caption style (not a resource type's override):
+   *  shows the settings only it can hold (`alignAcrossColumns`). */
+  documentWide?: boolean;
 }
 
 /** The caption-style control set shared by the global *Captions* section and
@@ -54,6 +57,7 @@ export function CaptionStyleFields({
   resetField,
   sectionIdPrefix,
   fieldIdPrefix,
+  documentWide = false,
 }: CaptionStyleFieldsProps) {
   const labels = useSandboxLabels();
   const side = flowSideLabels(useRightToLeftFlow(), labels.alignLeft, labels.alignRight);
@@ -122,6 +126,14 @@ export function CaptionStyleFields({
         isDefault={unset('position')}
         onReset={() => resetField('position')}
       />
+      {documentWide && <ToggleSwitch
+        label={labels.captionAlignAcrossColumns}
+        tooltip={labels.captionAlignAcrossColumnsTooltip}
+        checked={cs.alignAcrossColumns}
+        onChange={(v) => update({ alignAcrossColumns: v })}
+        isDefault={unset('alignAcrossColumns')}
+        onReset={() => resetField('alignAcrossColumns')}
+      />}
       <DimensionInput
         label={labels.captionGap}
         value={cs.gap}

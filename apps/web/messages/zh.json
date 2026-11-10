@@ -3623,6 +3623,8 @@
     "captionDescriptionGroup": "描述",
     "captionPosition": "位置",
     "captionPositionTooltip": "把题注排在资源下方，或作为表头排在资源上方",
+    "captionAlignAcrossColumns": "跨栏对齐",
+    "captionAlignAcrossColumnsTooltip": "同一页中处于同一带区的图片跨栏对齐：在栏底对齐图注的第一行，在栏顶对齐图片的下边缘。较短的一方留出空白。手动放置的图片保持在你放下的位置。排版会多进行一遍。",
     "captionPositionBelow": "资源下方",
     "captionPositionAbove": "资源上方",
     "captionBarGroup": "背景条",

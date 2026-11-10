@@ -5,6 +5,7 @@ import type { FontFaceSetLike } from '../../fonts/faces.js';
 import type { MeasuredContentBlock } from '../blocks/measureContentBlock.js';
 import type { LooseBudget } from '../columns/columnBalancing.js';
 import type { BandCap, BandPassReport } from '../columns/bandCaps.js';
+import type { FloatPad } from './floatPads.js';
 
 /** Room (px) under closing boxes a balancing pass must close to be kept on
  *  that ground alone (see `boxRoomIn`). */
@@ -116,6 +117,10 @@ export interface PassHints {
   /** Trailing-cap passes: the page each floated resource took in the layout
    *  the caps level (see `proposeTrailingCap`). */
   floatPages?: ReadonlyMap<string, number>;
+  /** `captionStyle.alignAcrossColumns`: the white each figure (resource id)
+   *  takes above its picture (a head band) or under its caption (a foot
+   *  band) so that figures sharing a band line up (see `proposeFloatPads`). */
+  floatPads?: ReadonlyMap<string, FloatPad>;
   /** Floats (resource ids) that head the page or column their citing line
    *  lands on (`placement.citingPage`, #633): an earlier pass found the line
    *  there and the float on a later page or column. The page is opened

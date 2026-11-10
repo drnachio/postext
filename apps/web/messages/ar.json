@@ -3623,6 +3623,8 @@
     "captionDescriptionGroup": "الوصف",
     "captionPosition": "الموضع",
     "captionPositionTooltip": "ينضّد التعليق تحت المورد (أسفل) أو فوقه كعنوان للجدول (أعلى)",
+    "captionAlignAcrossColumns": "المحاذاة بين الأعمدة",
+    "captionAlignAcrossColumnsTooltip": "تتحاذى الأشكال التي تتشارك شريطًا في الصفحة عبر الأعمدة: في الأسفل أول سطر من تعليقاتها، وفي الأعلى الحافة السفلية لصورها. يأخذ الأقصر الفراغ. الشكل الذي وضعته يدويًّا يبقى حيث أفلتّه. يأخذ التخطيط مرورًا إضافيًّا.",
     "captionPositionBelow": "أسفل المورد",
     "captionPositionAbove": "أعلى المورد",
     "captionBarGroup": "شريط الخلفية",

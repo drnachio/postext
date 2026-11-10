@@ -3623,6 +3623,8 @@
     "captionDescriptionGroup": "説明文",
     "captionPosition": "位置",
     "captionPositionTooltip": "キャプションをリソースの下に置くか、表の見出しのように上に置くかを選びます。",
+    "captionAlignAcrossColumns": "段をまたいで揃える",
+    "captionAlignAcrossColumnsTooltip": "ページの同じ帯にある図を段をまたいで揃えます。下部ではキャプションの 1 行目、上部では画像の下端を揃え、短い方に余白を入れます。手で配置した図はドロップした位置のままです。レイアウトの処理が 1 回増えます。",
     "captionPositionBelow": "リソースの下",
     "captionPositionAbove": "リソースの上",
     "captionBarGroup": "背景の帯",

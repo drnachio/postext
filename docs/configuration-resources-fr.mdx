@@ -724,6 +724,12 @@ const config: PostextConfig = {
       <td><code>'. '</code> ; <code>'　'</code> dans un document japonais</td>
       <td>Ce qui suit le numéro, avant la description : <em>Figure 1.7. Une légende</em>. Les légendes chinoises prennent une espace idéographique, <code>'　'</code> (图1-1　标题), et les japonaises aussi, par défaut (図1-1　東京の地図, JLReq §4.3). Un libellé sans numéro garde sa propre règle : un point, sauf si le préfixe se termine déjà par un point.</td>
     </tr>
+    <tr>
+      <td><code>alignAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Aligne d’une colonne à l’autre les figures qui partagent une bande d’une page : les flottants au pied de colonnes voisines mettent la première ligne de leurs légendes au même niveau (la légende la plus courte laisse le blanc sous elle), et ceux en tête le bas de leurs images (l’image la plus courte laisse le blanc au-dessus). Une image qui remplit sa colonne depuis la tête, sans texte dessous, aligne sa légende sur les légendes de pied voisines. Une figure placée à la main (<code>placement.pin</code>) garde sa place et reste à l’écart. La mise en page fait une passe de plus. Seulement dans le style de légende du document, pas dans celui d’un type de ressource.</td>
+    </tr>
   </tbody>
 </table>
 

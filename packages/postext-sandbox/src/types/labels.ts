@@ -3230,6 +3230,8 @@ export interface SandboxLabels {
   captionDescriptionGroup: string;
   captionPosition: string;
   captionPositionTooltip: string;
+  captionAlignAcrossColumns: string;
+  captionAlignAcrossColumnsTooltip: string;
   captionPositionBelow: string;
   captionPositionAbove: string;
   captionBarGroup: string;

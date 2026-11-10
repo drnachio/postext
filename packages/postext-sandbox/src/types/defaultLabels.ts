@@ -3006,6 +3006,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   captionDescriptionGroup: 'Description',
   captionPosition: 'Position',
   captionPositionTooltip: 'Set the caption under the resource (below) or on top of it, as a table heading (above)',
+  captionAlignAcrossColumns: "Align across columns",
+  captionAlignAcrossColumnsTooltip: "Figures sharing a band of a page line up across its columns: at the foot, the first lines of their captions; at the head, the bottoms of their pictures. The shorter one takes the white. A figure you placed by hand stays where you dropped it. The layout takes one more pass.",
   captionPositionBelow: 'Below the resource',
   captionPositionAbove: 'Above the resource',
   captionBarGroup: 'Background bar',

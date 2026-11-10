@@ -724,6 +724,12 @@ const config: PostextConfig = {
       <td><code>'. '</code>; <code>'　'</code> in a Japanese document</td>
       <td>What follows the number, before the description: <em>Figure 1.7. A caption</em>. Chinese captions take an ideographic space, <code>'　'</code> (图1-1　标题), and so do Japanese ones, by default (図1-1　東京の地図, JLReq §4.3). A label without a number keeps its own rule: a full stop, unless the prefix ends in one.</td>
     </tr>
+    <tr>
+      <td><code>alignAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Line up figures that share a band of a page across its columns: at the foot of neighbouring columns, the first lines of their captions (the shorter caption leaves the white under it); at their head, the bottom edges of their pictures (the shorter picture leaves the white above it). A picture filling its column from the head, with no text under it, lines its caption up with the foot captions beside it. A figure placed by hand (<code>placement.pin</code>, dragged in the Sandbox canvas) keeps its place and is left out. It works with <code>layout.footFloatRow</code>, which already lines up a float joining the foot band of the next column. Document-wide: a resource type's caption style does not set it. The layout takes one more pass.</td>
+    </tr>
   </tbody>
 </table>
 

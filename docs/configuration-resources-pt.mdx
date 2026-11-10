@@ -724,6 +724,12 @@ const config: PostextConfig = {
       <td><code>'. '</code>; <code>'　'</code> num documento em japonês</td>
       <td>O que vem depois do número, antes da descrição: <em>Figura 1.7. Uma legenda</em>. As legendas em chinês levam um espaço ideográfico, <code>'　'</code> (图1-1　标题), e as japonesas também, por padrão (図1-1　東京の地図, JLReq §4.3). Um rótulo sem número mantém a própria regra: um ponto, a menos que o prefixo já termine em um.</td>
     </tr>
+    <tr>
+      <td><code>alignAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Alinha entre colunas as figuras que compartilham uma faixa da página: no pé de colunas vizinhas, a primeira linha das legendas (a legenda mais curta deixa o branco embaixo dela); no topo, a borda inferior das imagens (a imagem mais curta deixa o branco acima dela). Uma imagem que preenche a sua coluna a partir do topo, sem texto embaixo, alinha a sua legenda com as legendas das figuras no pé das colunas ao lado. Uma figura posicionada à mão (<code>placement.pin</code>, arrastada no canvas do Sandbox) mantém o seu lugar e fica de fora. Funciona junto com <code>layout.footFloatRow</code>, que já alinha um flutuante que se junta à faixa do pé da coluna seguinte. Vale para o documento inteiro: o estilo de legenda de um tipo de recurso não o define. O layout faz uma passagem a mais.</td>
+    </tr>
   </tbody>
 </table>
 

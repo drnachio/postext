@@ -3623,6 +3623,8 @@
     "captionDescriptionGroup": "Beschreibung",
     "captionPosition": "Position",
     "captionPositionTooltip": "Setzt die Legende unter die Ressource (unten) oder darüber, als Tabellenüberschrift (oben)",
+    "captionAlignAcrossColumns": "Über Spalten hinweg ausrichten",
+    "captionAlignAcrossColumnsTooltip": "Abbildungen, die sich einen Streifen einer Seite teilen, werden über ihre Spalten hinweg ausgerichtet: am Fuß die ersten Zeilen ihrer Legenden, am Kopf die Unterkanten ihrer Bilder. Die kürzere nimmt den Weißraum auf. Eine von Hand gesetzte Abbildung bleibt, wo Sie sie abgelegt haben. Das Layout braucht einen Durchgang mehr.",
     "captionPositionBelow": "Unter der Ressource",
     "captionPositionAbove": "Über der Ressource",
     "captionBarGroup": "Hintergrundbalken",

@@ -3623,6 +3623,8 @@
     "captionDescriptionGroup": "Descrizione",
     "captionPosition": "Posizione",
     "captionPositionTooltip": "Compone la didascalia sotto la risorsa (sotto) o sopra, come intestazione di tabella (sopra)",
+    "captionAlignAcrossColumns": "Allinea tra le colonne",
+    "captionAlignAcrossColumnsTooltip": "Le figure che condividono una fascia di una pagina si allineano tra le colonne: al piede, le prime righe delle didascalie; in testa, il bordo inferiore delle immagini. La più corta prende il bianco. Una figura collocata a mano resta dove l’hai lasciata. L’impaginazione fa un passaggio in più.",
     "captionPositionBelow": "Sotto la risorsa",
     "captionPositionAbove": "Sopra la risorsa",
     "captionBarGroup": "Barra di sfondo",

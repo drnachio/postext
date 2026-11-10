@@ -2,9 +2,11 @@
 // with the balancing levers, in editorial order (#1276: split out of
 // build.ts).
 import type { PostextContent, PostextConfig } from '../../types.js';
-import type { VDTDocument, VDTBlock, VDTGridBalancing, BalanceLever } from '../../vdt.js';
+import type { VDTDocument, VDTBlock } from '../../vdt.js';
 import type { MeasurementCache } from '../../measure/index.js';
-import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES, GRID_LINE_LEVERS } from '../columns/columnBalancing.js';
+import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES } from '../columns/columnBalancing.js';
+import { markGridRefusals } from './gridRefusals.js';
+import { type FloatPad, proposeFloatPads, samePads } from './floatPads.js';
 import { resolveBandCapsGen, resolveTrailingCapsGen } from '../columns/bandCaps.js';
 import { type CitingPageState, now, MAX_CITING_PAGE_ROUNDS } from './drivers.js';
 import { buildDocumentPass } from './pass.js';
@@ -34,6 +36,9 @@ export function* buildDocumentBalanced(
   // Side captions moved under their figure (see `PassHints.captionUnder`):
   // once a pass asks for one, every later pass keeps it.
   const captionUnder = new Set<string>();
+  // Figures lined up across the columns of their band (see
+  // `proposeFloatPads`): every later pass keeps the pads.
+  let floatPads: ReadonlyMap<string, FloatPad> = new Map();
   // Loose paragraphs any pass found would gain their line only off the
   // character grid (#632): the columns they leave short say so.
   const looseOffGrid = new Set<number>();
@@ -49,6 +54,7 @@ export function* buildDocumentBalanced(
     const result = buildDocumentPass(content, config, cache, passOptions, {
       ...hints,
       captionUnder,
+      ...(floatPads.size > 0 ? { floatPads } : {}),
       ...(footnoteNumbers ? { footnoteNumbers } : {}),
       ...(citingPage.size > 0 ? { citingPageFloats: new Map(citingPage) } : {}),
     });
@@ -68,6 +74,17 @@ export function* buildDocumentBalanced(
     initial = runPass();
     yield;
     if (captionUnder.size === before) break;
+  }
+  // Figures sharing a band: pad them level, then place again (a padded
+  // figure can move another, hence the short loop).
+  if (initial.doc.config.captionStyle.alignAcrossColumns) {
+    for (let round = 0; round < 3; round++) {
+      const next = proposeFloatPads(initial.doc, floatPads, initial.doc.baselineGrid);
+      if (samePads(next, floatPads)) break;
+      floatPads = next;
+      initial = runPass();
+      yield;
+    }
   }
 
   // --- Floats at the head of their citing page (#633) --------------------
@@ -566,35 +583,3 @@ export function* buildDocumentBalanced(
   if (onGrid) markGridRefusals(best.doc, best.forcedBreakPages, looseOffGrid, gridBalancing);
   return best.doc;
 }
-
-/**
- * Column balancing on a character grid (#632): stamp the document with why
- * its balancing is limited (`VDTDocument.gridBalancing`) and every column
- * still short with the levers the grid kept from it
- * (`VDTColumn.gridRefused`): the loose paragraphs that would have gained
- * their line off the grid (`offGrid`), and the whole-line levers under
- * `headings.balancing.gridLines: 'off'`.
- */
-function markGridRefusals(
-  doc: VDTDocument,
-  forcedBreakPages: ReadonlySet<number>,
-  offGrid: ReadonlySet<number>,
-  gridBalancing: VDTGridBalancing | undefined,
-): void {
-  if (gridBalancing) doc.gridBalancing = gridBalancing;
-  const noLines = gridBalancing?.gridLines === 'off';
-  for (const gap of collectColumnGaps(doc, forcedBreakPages)) {
-    if (gap.gapLines < 1) continue;
-    const refused = new Set<BalanceLever>();
-    for (const c of gap.candidates) {
-      if (noLines && GRID_LINE_LEVERS.includes(c.kind)) refused.add(c.kind);
-      else if (c.kind === 'looseParagraph' && offGrid.has(c.contentIndex)) refused.add(c.kind);
-    }
-    if (refused.size === 0) continue;
-    const col = doc.pages[gap.pageIndex]?.columns[gap.columnIndex];
-    if (col) col.gridRefused = BALANCE_LEVER_ORDER.filter((l) => refused.has(l));
-  }
-}
-
-/** The balancing levers in the order `BalanceLever` lists them. */
-const BALANCE_LEVER_ORDER: readonly BalanceLever[] = ['trailingCallout', 'flexFigure', 'heading', 'listEnd', 'afterDisplay', 'afterFloat', 'looseParagraph'];

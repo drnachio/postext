@@ -3623,6 +3623,8 @@
     "captionDescriptionGroup": "Descripció",
     "captionPosition": "Posició",
     "captionPositionTooltip": "Situa el peu sota el recurs (a sota) o al damunt, com el títol d'una taula (a sobre)",
+    "captionAlignAcrossColumns": "Alinear entre columnes",
+    "captionAlignAcrossColumnsTooltip": "Les figures que comparteixen franja en una pàgina s’alineen entre columnes: al peu, la primera línia dels seus peus; al capdamunt, la vora inferior de les imatges. La més curta pren el blanc. Una figura que hagis col·locat a mà es queda on la vas deixar anar. La maquetació fa una passada més.",
     "captionPositionBelow": "A sota del recurs",
     "captionPositionAbove": "A sobre del recurs",
     "captionBarGroup": "Barra de fons",
