@@ -97,6 +97,20 @@ describe('the resource tools', () => {
     expect(get().resources[0]!.score).toEqual({ format: 'mei', source: mei });
   });
 
+  it('set a width as a length and a full-page plate (#1461)', async () => {
+    const { call, get } = harness();
+    await call('sandbox_save_resource', { id: 'map', image: png(600, 400, 72), placement: { width: { value: 95, unit: 'mm' }, plate: 'bleed' }, wait: false });
+    expect(get().resources[0]!.placement).toEqual({ width: { value: 95, unit: 'mm' }, plate: 'bleed' });
+    // `false` is kept: it turns off a plate the type sets.
+    await call('sandbox_save_resource', { id: 'map', placement: { plate: false, width: 0.4 }, wait: false });
+    expect(get().resources[0]!.placement).toEqual({ width: 0.4, plate: false });
+    await call('sandbox_save_resource', { id: 'map', placement: { plate: null }, wait: false });
+    expect(get().resources[0]!.placement).toEqual({ width: 0.4 });
+    expect((await call('sandbox_save_resource', { id: 'map', placement: { width: { value: 3, unit: 'em' } } })).error).toMatch(/unit among mm, cm, in, pt/);
+    expect((await call('sandbox_save_resource', { id: 'map', placement: { width: { value: 0, unit: 'mm' } } })).error).toMatch(/value above 0/);
+    expect((await call('sandbox_save_resource', { id: 'map', placement: { plate: 'page' } })).error).toMatch(/placement\.plate is true, false/);
+  });
+
   it('merge single fields, and take a placement key back to the type\'s', async () => {
     const { call, get } = harness();
     await call('sandbox_save_resource', { id: 'map', image: png(600, 400, 72), placement: { position: 'top', span: 'page', width: 0.5, rotate: 'cw' }, wait: false });
