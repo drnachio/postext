@@ -411,7 +411,7 @@ await browser.close();
 ### 书、文件和Word
 
 - **打开和保存书**。`sandbox_list_books`列出示例书和你的项目；`sandbox_open_book`打开其中一本（`{ "kind": "sample", "id": "postext-guide", "language": "es" }`）；`sandbox_save_book`加上`action: "copy_current"`把屏幕上的书保存为你自己的项目，加上`new_blank`则新建一本空书。对于项目，`add_language`加上`language`（`"fr"`、`"zh-Hant"`）会把屏幕上的语言复制成该语言的新版本并打开它，`rename`加上`thisLanguageOnly: true`只给屏幕上的语言命名；`set_cover`和`remove_cover`为它设置或去掉封面。
-- **导出**。`sandbox_export`写出`pdf`、`epub`、`postext`、`docx`、`markdown`或`config`。默认由浏览器下载文件；加上`deliver: "data"`时，PDF、EPUB或Word文件以base64编码返回给智能体。对于`docx`，`variant`选择`semantic`（默认：Word自身的标题、列表、注释和表格）或`formatted`（PDF印出的页面，嵌入字体）：
+- **导出**。`sandbox_export`写出`pdf`、`epub`、`postext`、`docx`、`markdown`或`config`。默认由浏览器下载文件；加上`deliver: "data"`时，PDF、EPUB或Word文件以base64编码返回给智能体。对于`docx`，`variant`选择`formatted`（默认：可编辑的文字，套用书的设计，嵌入字体）或`semantic`（只有内容，用朴素的Word样式）：
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

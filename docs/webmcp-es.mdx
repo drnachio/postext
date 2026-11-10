@@ -562,9 +562,9 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
 - **Exportar.** `sandbox_export` escribe `pdf`, `epub`, `postext`, `docx`,
   `markdown` o `config`. Por defecto el navegador descarga el archivo; con
   `deliver: "data"`, un PDF, un EPUB o un archivo de Word vuelve al agente
-  codificado en base64. Con `docx`, `variant` elige `semantic` (el valor por
-  defecto: encabezados, listas, notas y tablas propios de Word) o `formatted`
-  (las páginas tal como las imprime el PDF, con las fuentes incrustadas):
+  codificado en base64. Con `docx`, `variant` elige `formatted` (el valor por
+  defecto: texto editable con el diseño del libro y las fuentes incrustadas) o
+  `semantic` (solo el contenido, en estilos de Word sencillos):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

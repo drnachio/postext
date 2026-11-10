@@ -126,7 +126,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>epub</code></td><td>EPUB 3の本。印刷したとおりの固定ページか、リフローするテキストです。</td></tr>
     <tr><td><code>image</code></td><td>1ページをPNG、JPEG、WebPの画像にします。</td></tr>
     <tr><td><code>images</code></td><td>全ページ、または範囲を指定したページを、フォルダーの中の画像にします。</td></tr>
-    <tr><td><code>docx</code></td><td>章をWordの文書にします。セマンティック（Word自身の見出し、リスト、注、表）か組版どおり（PDFのページ）です。</td></tr>
+    <tr><td><code>docx</code></td><td>章をWordの文書にします。セマンティック（内容だけを簡素なWordのスタイルで）、組版どおり（同じ編集できるテキストを本のデザインで）、ページの複製（各行を固定のテキストボックスに）のいずれかです。</td></tr>
     <tr><td><code>idml</code></td><td>ページをInDesignのパッケージ（IDML）にします。InDesignで仕上げるためのものです。</td></tr>
     <tr><td><code>import-docx</code></td><td>書き出したWordファイルに加えた校正を本に戻します。それ以外のWord文書は新しい本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
     <tr><td><code>pack</code></td><td>本のフォルダーまたはばらのMarkdownを、1つの<code>.postext</code>ファイルにまとめます。</td></tr>
@@ -195,13 +195,14 @@ postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-`docx`は、Sandboxが書き出す2種類のWord文書のどちらかを書き出します（[Sandbox › Word文書](/ja/docs/sandbox-books-saving#word文書)を参照）。既定の`--variant semantic`は、Markdownから編集できる文書を組み立て、Word自身の見出し、リスト、脚注、表、数式、セクションを使います。Wordに対応する構造がないものは、*Postext Source*のコンテンツコントロールにソースのまま入ります。組版は必要ありません。`--variant formatted`は`pdf`と同じように本を組み、各ページをWordのセクションとして書き出します。テキストは1行ずつ配置したテキストボックスに入ります。どちらも本のフォントを埋め込みます（`--no-embed-fonts`なら名前だけを指定します）。本が配布できないファミリー（`customFonts`の`redistributable: false`）は外し、EPUBと同じく、そのオープンな代替フォントを入れます。ライセンスが埋め込みを禁じるフォント、PostScriptのアウトラインを持つフォント、可変フォントは、報告したうえで名前だけを指定します。`build`では、`--docx FILE`が同じファイルを書き出し、`--docx-variant`と`--no-docx-fonts`を使えます（postext 1.68以降）。`--template`は`docx`と`build`には効かなくなりました。
+`docx`は、Sandboxが書き出すWord文書（[Sandbox › Word文書](/ja/docs/sandbox-books-saving#word文書)を参照）と、もう1種類を書き出します。既定の`--variant formatted`は、Markdownから編集できる文書を組み立て、Word自身の見出し、リスト、脚注、表、数式、セクションを使い、Wordでできる範囲で本のデザインどおりに組んで、本のフォントを埋め込みます（`--no-embed-fonts`なら名前だけを指定します）。Wordに対応する構造がないものは、*Postext Source*のコンテンツコントロールにソースのまま入ります。`--variant semantic`は、同じテキストを内容だけの文書として書き出します。A4、1段組、Arialの簡素な文書で、各部分が何であるかを示すWordのスタイルを使い、ページのデザインもフォントの埋め込みもありません。どちらも組版は必要なく、WordでもGoogleドキュメントでも開け、`import-docx`で戻せます。`--variant facsimile`は`pdf`と同じように本を組み、各ページをWordのセクションとして、各行を固定のテキストボックスに入れ、フォントを埋め込んで書き出します。デスクトップ版のWordでレイアウトを見るためのファイルで、編集やGoogleドキュメントには向きません。本が配布できないファミリー（`customFonts`の`redistributable: false`）は外し、EPUBと同じく、そのオープンな代替フォントを入れます。ライセンスが埋め込みを禁じるフォント、PostScriptのアウトラインを持つフォント、可変フォントは、報告したうえで名前だけを指定します。`build`では、`--docx FILE`が同じファイルを書き出し、`--docx-variant`と`--no-docx-fonts`を使えます（postext 1.68以降）。`--template`は`docx`と`build`には効かなくなりました。
 
 ファイルのあとに本を指定すると、`import-docx`は、その本から`docx`で書き出した文書に加えた校正を本に戻します。ファイルが持つ対応表を読み、テキストを書き出し時の章のコピーと比べ、校正をひとつずつ今の本に統合します。対象は、フォルダー、`.postext`、単独のMarkdownの章ファイルと、`preset.json`（単独のMarkdownなら`--resources DIR`の`resources.json`）にあるリソースの文言（キャプション、注、代替テキスト、表のセル）です。複数の言語を持つ本では、`--locale`でファイルを書き出したときの版を指定します。リソースの文言への校正は、その版の`localized`ブロックに入ります。校正は1件ずつ1行で報告されます。
 

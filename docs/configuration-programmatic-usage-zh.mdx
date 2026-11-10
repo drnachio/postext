@@ -674,18 +674,21 @@ Postext的部分状态存放在模块级变量中。同一个JavaScript realm中
 
 ```ts
 import { buildDocument } from 'postext';
-import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { semanticDocx, facsimileDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
 import { decompressWoff2 } from 'postext-pdf';
 
 const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // 导出和导入时使用相同的id
 
-// 语义：由Markdown和配置生成，使用Word自身的结构。
-const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
-
-// 版式：排好的页面，嵌入书中的字体。
-const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+// 版式：连续的文字，套用书的设计，嵌入书中的字体。
 const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
-const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+const formatted = await semanticDocx({ chapters, config, resources, resourceBytes, fonts, title: 'Field notes' });
+
+// 语义：同样的文字，只有内容，用朴素的Word样式。
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, design: 'plain', title: 'Field notes' });
+
+// 页面摹本：排好的页面，每一行放在固定的文本框中。
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const facsimile = await facsimileDocx({ docs, chapters, resources, resourceBytes, fonts });
 
 // 校改后的文件，合并到书的当前版本中。
 if (isExportedDocx(edited)) {
@@ -695,8 +698,8 @@ if (isExportedDocx(edited)) {
 }
 ```
 
-- <strong>`semanticDocx(options)`</strong>返回解析为`.docx`字节（`Uint8Array`）的Promise。它接受`chapters`（`{ id, title?, markdown }`）、`config`、带`resourceBytes(fileId)`（提供图片字节）的`resources`、`rasterizeSvg(svg, width, height)`（生成Word在SVG旁需要的PNG；没有它时SVG不导出）、`fonts`（`planWordFonts`给出的方案）、`title`、`author`、`date`（固定的ISO日期让字节可复现）和`onWarning`（报告Word按自己方式排的内容，`{ code, message, chapter? }`）。公式需要TeX到Word的转换器，首次使用时加载；加载不了时公式保持为TeX，并给出`mathUnavailable`警告。
-- <strong>`formattedDocx(options)`</strong>接受`docs`（按`chapters`的顺序，每章一个`VDTDocument`，即生成PDF的印刷链），以及同样的`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`和`onWarning`。`onProgress(done, total)`按写出的页数计数。
+- <strong>`semanticDocx(options)`</strong>返回解析为`.docx`字节（`Uint8Array`）的Promise。它接受`chapters`（`{ id, title?, markdown }`）、`config`、带`resourceBytes(fileId)`（提供图片字节）的`resources`、`rasterizeSvg(svg, width, height)`（生成Word在SVG旁需要的PNG；没有它时SVG不导出）、`fonts`（`planWordFonts`给出的方案）、`title`、`author`、`date`（固定的ISO日期让字节可复现）和`onWarning`（报告Word按自己方式排的内容，`{ code, message, chapter? }`）。公式需要TeX到Word的转换器，首次使用时加载；加载不了时公式保持为TeX，并给出`mathUnavailable`警告。`design`决定外观：`'book'`（默认）在Word允许的范围内套用书的设计，`'plain'`只写内容，用A4页面、单栏和Arial，以及说明各部分身份的Word样式。
+- <strong>`facsimileDocx(options)`</strong>接受`docs`（按`chapters`的顺序，每章一个`VDTDocument`，即生成PDF的印刷链），以及同样的`resources`、`resourceBytes`、`rasterizeSvg`、`fonts`、`title`、`author`、`date`和`onWarning`。`onProgress(done, total)`按写出的页数计数。它写出页面摹本：每一行按PDF印出的样子放在固定的文本框中，用来在桌面版Word中查看排版。`formattedDocx`是它的旧名，仍然保留。
 - <strong>`planWordFonts(faces, options)`</strong>把书中的字体（`{ family, weight, style, files }`：WOFF2或sfnt，unicode-range分片数量不限）转成Word嵌入用的静态TrueType字体。`decompressWoff2`（`postext-pdf`导出的那个）用来读取WOFF2；`usedText`和`fontStrings`去掉导出用不到的分片和字体；`familySuffix`（默认`' PTX'`）加在每个嵌入的字体族名后。它的`warnings`列出未嵌入的字体（`restricted`、`cff`、`variable`、`missing`、`merge-failed`），以及只为预览和打印而嵌入的字体（`preview-print`）。
 - <strong>`isExportedDocx(bytes)`</strong>判断文件是否带有导出对照表，从不抛出异常。`readExportMap(files)`从解压后的部件（fflate的`unzipSync`）读取对照表本身：`exportId`、`variant`、`engine`、各章及其哈希，以及导出文字的副本。
 - <strong>`applyDocxEdits(bytes, { chapters, resources })`</strong>是同步函数。它返回应用了校改的全部章节（`chapters`）、题注、说明、替代文字或表格单元格有变化的资源的深拷贝（`resources`），以及`edits`、`comments`、`variant`、`exportId`和`changed`。每项修改带有`chapter`，或`resourceId`和`field`（`caption`、`note`、`alt`、`cell:<行>:<列>`），当前文字中的`start`和`end`，`before`、`after`，`kind`（`text`、`format`、`paragraph`、`tracked`），以及`status`和对应的`reason`：`applied`、`conflict`（`changed-since-export`、`target-missing`、`no-snapshot`、`overlap`）或`rejected`（`generated`、`format-crosses-markup`、`format-partial`、`bookmarks-lost`、`resource-removed`）。每条批注带有`author`、`text`和位置（不在导出文字上的批注，`start`为-1）。不是导出的`.docx`的文件会抛出`DocxReadError`。章的id必须与导出时相同：针对未知章的修改只报告，不应用。
@@ -722,7 +725,7 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 
 ### InDesign包（`postext/idml`）
 
-`postext/idml`子路径把排好的页面写成InDesign Markup包（`.idml`），供设计人员在InDesign中完成全书。它和版式Word文档一样建立在页面的显示列表上，不需要DOM。命令行的`idml`就建立在它上面（见[命令行 › idml](/zh/docs/command-line#idml)）。postext 1.71起。
+`postext/idml`子路径把排好的页面写成InDesign Markup包（`.idml`），供设计人员在InDesign中完成全书。它和Word的页面摹本一样建立在页面的显示列表上，不需要DOM。命令行的`idml`就建立在它上面（见[命令行 › idml](/zh/docs/command-line#idml)）。postext 1.71起。
 
 ```ts
 import { buildDocument } from 'postext';

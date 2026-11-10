@@ -535,8 +535,8 @@ await browser.close();
 - **التصدير.** يكتب `sandbox_export` الصيغ `pdf` و`epub` و`postext` و`docx`
   و`markdown` و`config`. افتراضيًا ينزّل المتصفح الملف، ومع `deliver: "data"`
   يعود ملف PDF أو EPUB أو Word إلى الوكيل مرمّزًا بـbase64. ومع `docx` يختار
-  `variant` بين `semantic` (الافتراضي: عناوين Word وقوائمه وحواشيه وجداوله) و`formatted`
-  (الصفحات كما يطبعها PDF، مع تضمين الخطوط):
+  `variant` بين `formatted` (الافتراضي: نص قابل للتعديل بتصميم الكتاب مع تضمين
+  الخطوط) و`semantic` (المحتوى وحده بأنماط Word بسيطة):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

@@ -126,7 +126,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>epub</code></td><td>生成EPUB 3电子书，可以是与印刷版相同的固定页面，也可以是流式版式的文字。</td></tr>
     <tr><td><code>image</code></td><td>把一页生成为PNG、JPEG或WebP图片。</td></tr>
     <tr><td><code>images</code></td><td>把每一页或某个范围的页面生成为图片，放进一个文件夹。</td></tr>
-    <tr><td><code>docx</code></td><td>把各章生成为Word文档：语义（Word自身的标题、列表、注释和表格）或版式（PDF的页面）。</td></tr>
+    <tr><td><code>docx</code></td><td>把各章生成为Word文档：语义（只有内容，用朴素的Word样式）、版式（同样可编辑的文字，套用书的设计）或页面摹本（每一行放在固定的文本框中）。</td></tr>
     <tr><td><code>idml</code></td><td>把页面生成为InDesign包（IDML），供在InDesign中完成后续制作。</td></tr>
     <tr><td><code>import-docx</code></td><td>把在导出的Word文件中做的校改带回书中；其他Word文档则转成新书（文件夹或<code>.postext</code>文件）。</td></tr>
     <tr><td><code>pack</code></td><td>把图书文件夹或零散的Markdown打包成一个<code>.postext</code>文件。</td></tr>
@@ -195,13 +195,14 @@ postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-`docx`写出沙盒导出的两种Word文档之一（见[沙盒 › Word文档](/zh/docs/sandbox-books-saving#word文档)）。默认的`--variant semantic`由Markdown生成可编辑的文档，使用Word自身的标题、列表、脚注、表格、公式和节；Word中没有对应结构的内容，以源码形式放在*Postext Source*内容控件中。它不需要排版。`--variant formatted`像`pdf`一样给书排版，把每一页写成一个Word节，文字放在逐行定位的文本框中。两者都嵌入书中的字体（`--no-embed-fonts`只写字体名）。书不能转授的字体族（`customFonts`中的`redistributable: false`）不嵌入，改为嵌入它的开放替代字体，与EPUB相同；许可禁止嵌入的字体、使用PostScript轮廓的字体和可变字体会给出提示，只写字体名。在`build`中，`--docx FILE`写出同样的文件，可配合`--docx-variant`和`--no-docx-fonts`。postext 1.68起；`--template`不再用于`docx`和`build`。
+`docx`写出沙盒导出的Word文档（见[沙盒 › Word文档](/zh/docs/sandbox-books-saving#word文档)），另外还有第三种。默认的`--variant formatted`由Markdown生成可编辑的文档，使用Word自身的标题、列表、脚注、表格、公式和节，在Word允许的范围内套用书的设计，并嵌入书中的字体（`--no-embed-fonts`只写字体名）；Word中没有对应结构的内容，以源码形式放在*Postext Source*内容控件中。`--variant semantic`把同样的文字写成只有内容的文档：一份朴素的文档（A4、单栏、Arial），用说明各部分身份的Word样式，不带页面设计，也不嵌入字体。两者都不需要排版，都能在Word和Google文档中打开，也都能通过`import-docx`带回。`--variant facsimile`像`pdf`一样给书排版，把每一页写成一个Word节，每一行放在固定的文本框中，并嵌入字体：这个文件用来在桌面版Word中查看排版，不用于编辑，也不适合Google文档。书不能转授的字体族（`customFonts`中的`redistributable: false`）不嵌入，改为嵌入它的开放替代字体，与EPUB相同；许可禁止嵌入的字体、使用PostScript轮廓的字体和可变字体会给出提示，只写字体名。在`build`中，`--docx FILE`写出同样的文件，可配合`--docx-variant`和`--no-docx-fonts`。postext 1.68起；`--template`不再用于`docx`和`build`。
 
 在文件后面指定一本书时，`import-docx`把在由`docx`从该书导出的文档中所做的校改带回来。它读取文件所带的对照表，把文字与导出时所存的各章副本比较，再把每一处校改合并到书的当前版本中：文件夹、`.postext`或零散Markdown中的章文件，以及`preset.json`中资源的文字（题注、说明、替代文字、表格单元格）；零散Markdown则写入`--resources DIR`的`resources.json`。对于有多种语言的书，`--locale`指明文件是从哪个版本导出的，对资源文字的校改写入该版本的`localized`块。每一处校改各占一行报告：
 

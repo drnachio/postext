@@ -162,7 +162,7 @@ pida otro (`--locale en`).
     <tr><td><code>epub</code></td><td>Un libro EPUB 3, de páginas fijas como las impresas o de maquetación fluida.</td></tr>
     <tr><td><code>image</code></td><td>Una página como imagen PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Todas las páginas, o un intervalo, como imágenes en una carpeta.</td></tr>
-    <tr><td><code>docx</code></td><td>Los capítulos como documento de Word: semántico (encabezados, listas, notas y tablas propios de Word) o maquetado (las páginas del PDF).</td></tr>
+    <tr><td><code>docx</code></td><td>Los capítulos como documento de Word: semántico (solo el contenido, en estilos de Word sencillos), maquetado (el mismo texto editable con el diseño del libro) o facsímil de páginas (cada línea en un cuadro de texto fijo).</td></tr>
     <tr><td><code>idml</code></td><td>Las páginas como paquete de InDesign (IDML), para terminarlas en InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Las correcciones hechas en un archivo de Word exportado, de vuelta en el libro; cualquier otro documento de Word, como libro nuevo (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de libro o Markdown suelto como un único archivo <code>.postext</code>.</td></tr>
@@ -263,28 +263,35 @@ se maquetó, sin pasar por un PDF.
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-`docx` escribe cualquiera de los dos documentos de Word que exporta el Sandbox
-(véase [Sandbox › Documentos de Word](/es/docs/sandbox-books-saving#documentos-de-word)).
-`--variant semantic`, el valor por defecto, construye un documento editable a
-partir del Markdown, con los encabezados, las listas, las notas al pie, las
-tablas, las ecuaciones y las secciones propios de Word; lo que no tiene
-estructura en Word viaja como fuente en controles de contenido *Postext
-Source*. No necesita maquetar. `--variant formatted` maqueta el libro como lo
-hace `pdf` y escribe cada página como una sección de Word, con el texto en
-cuadros de texto colocados línea a línea. Los dos incrustan las fuentes del
-libro (`--no-embed-fonts` solo las nombra). Una familia que el libro no puede
-ceder (`redistributable: false` en `customFonts`) se deja fuera y entra su
-alternativa abierta, como en el EPUB; una fuente cuya licencia prohíbe
-incrustarla, una con contornos PostScript y una fuente variable se notifican y
-solo se nombran. En `build`, `--docx ARCHIVO` escribe el mismo archivo, con
-`--docx-variant` y `--no-docx-fonts`. Desde postext 1.68; `--template` ya no
-se aplica a `docx` ni a `build`.
+`docx` escribe los documentos de Word que exporta el Sandbox (véase
+[Sandbox › Documentos de Word](/es/docs/sandbox-books-saving#documentos-de-word))
+y un tercero. `--variant formatted`, el valor por defecto, construye un
+documento editable a partir del Markdown, con los encabezados, las listas, las
+notas al pie, las tablas, las ecuaciones y las secciones propios de Word,
+compuesto con el diseño del libro hasta donde Word lo permite y con las fuentes
+del libro incrustadas (`--no-embed-fonts` solo las nombra); lo que no tiene
+estructura en Word viaja como fuente en controles de contenido *Postext Source*.
+`--variant semantic` escribe el mismo texto como solo contenido: un documento
+sencillo (A4, una columna, Arial) en estilos de Word que dicen qué es cada
+parte, sin nada del diseño de la página y sin fuentes incrustadas. Ninguno de
+los dos necesita maquetar; los dos se abren en Word y en Google Docs, y los dos
+vuelven con `import-docx`. `--variant facsimile` maqueta el libro como lo hace
+`pdf` y escribe cada página como una sección de Word, con cada línea en un
+cuadro de texto fijo y las fuentes incrustadas: un archivo para mirar la
+maquetación en Word de escritorio, no para editar ni para Google Docs. Una
+familia que el libro no puede ceder (`redistributable: false` en `customFonts`)
+se deja fuera y entra su alternativa abierta, como en el EPUB; una fuente cuya
+licencia prohíbe incrustarla, una con contornos PostScript y una fuente variable
+se notifican y solo se nombran. En `build`, `--docx ARCHIVO` escribe el mismo
+archivo, con `--docx-variant` y `--no-docx-fonts`. Desde postext 1.68;
+`--template` ya no se aplica a `docx` ni a `build`.
 
 Con un libro detrás del archivo, `import-docx` trae de vuelta las correcciones
 hechas en un documento que `docx` exportó desde ese libro. Lee el mapa que lleva

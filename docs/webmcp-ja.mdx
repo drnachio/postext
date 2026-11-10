@@ -411,7 +411,7 @@ await browser.close();
 ### 本、ファイル、Word
 
 - **本を開いて保存する**：`sandbox_list_books`は見本の本とあなたのプロジェクトを一覧にし、`sandbox_open_book`はそのうちの1冊を開きます（`{ "kind": "sample", "id": "postext-guide", "language": "es" }`）。`sandbox_save_book`に`action: "copy_current"`を渡すと画面の本を自分のプロジェクトとして保存し、`new_blank`を渡すと空の本を始めます。プロジェクトでは、`language`（`"fr"`、`"zh-Hant"`）を付けた`add_language`が画面の言語をその言語の新しい版として複製して開き、`thisLanguageOnly: true`を付けた`rename`は画面の言語だけに名前を付けます。`set_cover`と`remove_cover`は表紙を付けたり外したりします。
-- **書き出す**：`sandbox_export`は`pdf`、`epub`、`postext`、`docx`、`markdown`、`config`を書き出します。既定ではブラウザーがファイルをダウンロードします。`deliver: "data"`を渡すと、PDF、EPUB、Wordファイルがbase64でエンコードされてエージェントに返ります。`docx`では、`variant`で`semantic`（既定。Word自身の見出し、リスト、注、表）か`formatted`（PDFが印刷するとおりのページ。フォントを埋め込みます）を選びます。
+- **書き出す**：`sandbox_export`は`pdf`、`epub`、`postext`、`docx`、`markdown`、`config`を書き出します。既定ではブラウザーがファイルをダウンロードします。`deliver: "data"`を渡すと、PDF、EPUB、Wordファイルがbase64でエンコードされてエージェントに返ります。`docx`では、`variant`で`formatted`（既定。編集できるテキストを本のデザインで組み、フォントを埋め込みます）か`semantic`（内容だけを簡素なWordのスタイルで）を選びます。
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

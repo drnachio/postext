@@ -163,7 +163,7 @@ Konfiguration des Buchs gelegt. Ein mehrsprachiges Paket wird in seiner eigenen 
     <tr><td><code>epub</code></td><td>Ein EPUB-3-Buch, mit festen Seiten wie gedruckt oder umfließendem Text.</td></tr>
     <tr><td><code>image</code></td><td>Eine Seite als PNG-, JPEG- oder WebP-Bild.</td></tr>
     <tr><td><code>images</code></td><td>Alle Seiten oder einen Bereich als Bilder in einem Ordner.</td></tr>
-    <tr><td><code>docx</code></td><td>Die Kapitel als Word-Dokument: semantisch (Überschriften, Listen, Anmerkungen und Tabellen von Word selbst) oder gesetzt (die Seiten des PDF).</td></tr>
+    <tr><td><code>docx</code></td><td>Die Kapitel als Word-Dokument: semantisch (der Inhalt allein, in schlichten Word-Formatvorlagen), gesetzt (derselbe bearbeitbare Text im Design des Buchs) oder als Seitenfaksimile (jede Zeile in einem festen Textfeld).</td></tr>
     <tr><td><code>idml</code></td><td>Die Seiten als InDesign-Paket (IDML), zur Fertigstellung in InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Die Korrekturen aus einer exportierten Word-Datei zurück ins Buch; jedes andere Word-Dokument als neues Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
     <tr><td><code>pack</code></td><td>Einen Buchordner oder lose Markdown-Dateien als eine einzige <code>.postext</code>-Datei.</td></tr>
@@ -259,28 +259,35 @@ ohne den Umweg über ein PDF.
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-`docx` schreibt eines der beiden Word-Dokumente, die die Sandbox exportiert
-(siehe [Sandbox › Word-Dokumente](/de/docs/sandbox-books-saving#word-dokumente)).
-`--variant semantic`, die Voreinstellung, baut aus dem Markdown ein
-bearbeitbares Dokument mit Überschriften, Listen, Fußnoten, Tabellen, Formeln
-und Abschnitten von Word selbst; wofür Word keine Struktur hat, das reist als
-Quelltext in Inhaltssteuerelementen *Postext Source*. Es braucht kein Layout.
-`--variant formatted` setzt das Buch wie `pdf` und schreibt jede Seite als
-Word-Abschnitt, den Text in Zeile für Zeile platzierten Textfeldern. Beide
-betten die Schriften des Buchs ein (`--no-embed-fonts` nennt sie nur). Eine
-Familie, die das Buch nicht weitergeben darf (`redistributable: false` in
-`customFonts`), bleibt draußen, und ihr freier Ersatz kommt hinein, wie im
-EPUB; eine Schrift, deren Lizenz das Einbetten verbietet, eine mit
-PostScript-Konturen und eine variable Schrift werden gemeldet und nur genannt.
-In `build` schreibt `--docx DATEI` dieselbe Datei, mit `--docx-variant` und
-`--no-docx-fonts`. Seit postext 1.68; `--template` gilt nicht mehr für `docx`
-und `build`.
+`docx` schreibt die Word-Dokumente, die die Sandbox exportiert (siehe
+[Sandbox › Word-Dokumente](/de/docs/sandbox-books-saving#word-dokumente)), und
+ein drittes. `--variant formatted`, die Voreinstellung, baut aus dem Markdown
+ein bearbeitbares Dokument mit Überschriften, Listen, Fußnoten, Tabellen,
+Formeln und Abschnitten von Word selbst, im Design des Buchs, so weit Word es
+zulässt, und mit den eingebetteten Schriften des Buchs (`--no-embed-fonts` nennt
+sie nur); wofür Word keine Struktur hat, das reist als Quelltext in
+Inhaltssteuerelementen *Postext Source*. `--variant semantic` schreibt denselben
+Text als reinen Inhalt: ein schlichtes Dokument (A4, eine Spalte, Arial) in
+Word-Formatvorlagen, die jeden Teil benennen, ohne Seitendesign und ohne
+eingebettete Schriften. Keines von beiden braucht ein Layout; beide lassen sich
+in Word und in Google Docs öffnen, und beide kommen über `import-docx` zurück.
+`--variant facsimile` setzt das Buch wie `pdf` und schreibt jede Seite als
+Word-Abschnitt, jede Zeile in einem festen Textfeld, mit eingebetteten
+Schriften: eine Datei, um das Layout in Word auf dem Desktop anzusehen, nicht
+zum Bearbeiten und nicht für Google Docs. Eine Familie, die das Buch nicht
+weitergeben darf (`redistributable: false` in `customFonts`), bleibt draußen,
+und ihr freier Ersatz kommt hinein, wie im EPUB; eine Schrift, deren Lizenz das
+Einbetten verbietet, eine mit PostScript-Konturen und eine variable Schrift
+werden gemeldet und nur genannt. In `build` schreibt `--docx DATEI` dieselbe
+Datei, mit `--docx-variant` und `--no-docx-fonts`. Seit postext 1.68;
+`--template` gilt nicht mehr für `docx` und `build`.
 
 Mit einem Buch nach der Datei bringt `import-docx` die Korrekturen zurück, die
 in einem von `docx` aus diesem Buch exportierten Dokument gemacht wurden. Es

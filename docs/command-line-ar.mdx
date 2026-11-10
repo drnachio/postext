@@ -156,7 +156,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>epub</code></td><td>كتاب EPUB 3، بصفحات ثابتة كما طُبعت أو بنص قابل لإعادة التدفق.</td></tr>
     <tr><td><code>image</code></td><td>صفحة واحدة صورةً بصيغة PNG أو JPEG أو WebP.</td></tr>
     <tr><td><code>images</code></td><td>كل الصفحات، أو مدى منها، صورًا في مجلد.</td></tr>
-    <tr><td><code>docx</code></td><td>الفصول مستندَ Word: دلاليًا (عناوين Word وقوائمه وحواشيه وجداوله) أو منسَّقًا (صفحات PDF).</td></tr>
+    <tr><td><code>docx</code></td><td>الفصول مستندَ Word: دلاليًا (المحتوى وحده بأنماط Word بسيطة) أو منسَّقًا (النص نفسه القابل للتعديل بتصميم الكتاب) أو نسخةً طبق الأصل من الصفحات (كل سطر في مربع نص ثابت).</td></tr>
     <tr><td><code>idml</code></td><td>الصفحات حزمةَ InDesign ‏(IDML)، لإتمامها في InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>التصحيحات التي أُجريت في ملف Word مصدَّر، عائدةً إلى الكتاب؛ وأي مستند Word آخر كتابًا جديدًا (مجلدًا أو ملف <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>مجلد كتاب أو ملفات Markdown منفردة في ملف <code>.postext</code> واحد.</td></tr>
@@ -246,25 +246,31 @@ Sandbox، فتُظهر الصورة الصفحة كما أُخرجت تمامً�
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-يكتب `docx` أحد مستندَي Word اللذين يصدّرهما Sandbox (انظر
-[Sandbox › مستندات Word](/ar/docs/sandbox-books-saving#مستندات-word)).
-فالخيار الافتراضي `--variant semantic` يبني من Markdown مستندًا قابلًا
-للتعديل بعناوين Word وقوائمه وحواشيه السفلية وجداوله ومعادلاته وأقسامه؛ وما لا
-بنية له في Word ينتقل مصدرًا في عناصر تحكم في المحتوى *Postext Source*. ولا
-يحتاج إلى إخراج. أما `--variant formatted` فيُخرج الكتاب كما يفعل `pdf`
-ويكتب كل صفحة قسمًا في Word، والنص في مربعات نص موضوعة سطرًا سطرًا. ويضمّن
-كلاهما خطوط الكتاب (و`--no-embed-fonts` يكتفي بتسميتها). والعائلة التي لا يحق
-للكتاب تمريرها (`redistributable: false` في `customFonts`) تُستبعد ويدخل بديلها
-المفتوح، كما في EPUB؛ والخط الذي يمنع ترخيصه التضمين، والخط ذو محيطات
-PostScript، والخط المتغير، يُبلَّغ عنها وتُسمّى فقط. وفي `build` يكتب
-`--docx FILE` الملف نفسه، مع `--docx-variant` و`--no-docx-fonts`. منذ postext
-1.68؛ ولم يعد `--template` ينطبق على `docx` ولا `build`.
+يكتب `docx` مستندات Word التي يصدّرها Sandbox (انظر
+[Sandbox › مستندات Word](/ar/docs/sandbox-books-saving#مستندات-word))، ومستندًا
+ثالثًا. فالخيار الافتراضي `--variant formatted` يبني من Markdown مستندًا قابلًا
+للتعديل بعناوين Word وقوائمه وحواشيه السفلية وجداوله ومعادلاته وأقسامه، مصفوفًا
+بتصميم الكتاب بقدر ما يسمح Word ومع تضمين خطوط الكتاب (و`--no-embed-fonts` يكتفي
+بتسميتها)؛ وما لا بنية له في Word ينتقل مصدرًا في عناصر تحكم في المحتوى *Postext
+Source*. أما `--variant semantic` فيكتب النص نفسه محتوًى فقط: مستندًا بسيطًا
+(A4، عمود واحد، Arial) بأنماط Word تسمّي كل جزء، دون شيء من تصميم الصفحة ودون
+خطوط مضمَّنة. ولا يحتاج أيٌّ منهما إلى إخراج؛ ويُفتح كلاهما في Word وفي مستندات
+Google، ويعود كلاهما عبر `import-docx`. وأما `--variant facsimile` فيُخرج الكتاب
+كما يفعل `pdf` ويكتب كل صفحة قسمًا في Word، وكل سطر في مربع نص ثابت، مع تضمين
+الخطوط: ملف لمعاينة الإخراج في Word على سطح المكتب، لا للتعديل ولا لمستندات
+Google. والعائلة التي لا يحق للكتاب تمريرها (`redistributable: false` في
+`customFonts`) تُستبعد ويدخل بديلها المفتوح، كما في EPUB؛ والخط الذي يمنع ترخيصه
+التضمين، والخط ذو محيطات PostScript، والخط المتغير، يُبلَّغ عنها وتُسمّى فقط.
+وفي `build` يكتب `--docx FILE` الملف نفسه، مع `--docx-variant`
+و`--no-docx-fonts`. منذ postext 1.68؛ ولم يعد `--template` ينطبق على `docx` ولا
+`build`.
 
 ومع كتاب بعد الملف، يعيد `import-docx` التصحيحات التي أُجريت في مستند صدّره
 `docx` من ذلك الكتاب. فيقرأ الخريطة التي يحملها الملف، ويقارن النص بنسخة الفصول

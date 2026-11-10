@@ -551,9 +551,9 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
 - **Export.** `sandbox_export` writes `pdf`, `epub`, `postext`, `docx`,
   `markdown` or `config`. By default the browser downloads the file; with
   `deliver: "data"` a PDF, an EPUB or a Word file comes back base64-encoded to
-  the agent. For `docx`, `variant` chooses `semantic` (the default, Word's own
-  headings, lists, notes and tables) or `formatted` (the pages as the PDF prints
-  them, fonts embedded):
+  the agent. For `docx`, `variant` chooses `formatted` (the default: editable
+  text with the book's design, fonts embedded) or `semantic` (the content alone,
+  in plain Word styles):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
