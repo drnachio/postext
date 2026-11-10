@@ -168,8 +168,9 @@ page
 │               give pictures a resolution (layout.bitmapResolution / bitmap.resolution, ≥ 1.24)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY (pdfGeneration.baselineGrid=false keeps it out of the PDF)
-│               perStyle=false: true = each style decides alone whether it opens on the grid (no offset cascades);
-│               reads bodyText.snapToGrid / firstParagraphSnapToGrid, math.snapToGrid, resourceTypes[].snapToGrid
+│               The grid is only defined here. Whether a block OPENS on a grid line is its style's
+│               snapTopToGrid (> 1.73, all default false): headings / levels[] / headingStyles[], bodyText
+│               (body paragraphs + blockquotes), paragraphStyles[], calloutStyles[], math, resourceTypes[], lists
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
 └─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl', the document is right to left, or its comics section reads right to left: a manga, a ja/zh-Hant edition, postext > 1.20.2)   postext ≥ 1.9
 ```
@@ -302,6 +303,7 @@ bodyText
 ├─ tashkil           'keep'|'strip'|'strip-vowels'   'keep'      Arabic vowel marks out of the set text (strip-vowels keeps shadda)
 ├─ textAlign         'left'|'justify'|'center'|'right'|'start'|'end'   'justify'   left = the side a line STARTS on (the right of an Arabic paragraph); start/end are synonyms
 ├─ paragraphSpacing  boolean|Dimension  false        true = one full grid line between paragraphs; a length (≥ 1.52, #1115: {2,'mm'}, {0.33,'em'}) = exactly that, in the flow, boxes and frames; off-grid until the next heading/list tail snaps back. Same slot as paragraphStyles[].spaceBetween (which wins inside :::paragraphs); boxes: calloutStyles[].body.paragraphSpacing
+├─ snapTopToGrid     boolean         false        (> 1.73) every body paragraph and blockquote opens on a grid line, whatever ended before (an off-grid heading, an exact-margin box); :::paragraphs follow their style's, verse its paragraph style's (else this). Only under an off-grid heading: headings.regainGrid
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ plusUnderline     boolean         false           (≥ 1.72) `++…++` underlines, as `:underline[…]` does; when on, EVERY pair does (`i++ … ++j` too), `\+\+` is a literal pair, code never underlines. Off: `++` is text
@@ -569,8 +571,11 @@ headings
 │                                  'fill' = as many lines as fit, however few go on (1.4; a preset without
 │                                  configVersion 8 whose chapters have a heading reads 'fill')
 ├─ snapToGrid    true              false = keep exact marginBottom (text may sit off-grid until next snap point)
-├─ regainGrid    false             with snapToGrid=false: exact margins, the text after starts on the next grid line
-│                                  (no balancing lines above it); levels[] and heading styles may set it
+├─ regainGrid    false             with snapToGrid=false: exact margins, the block after (text, list, inline figure
+│                                  or box) starts on the next grid line; keepWithNext counts the rounding, balancing
+│                                  levers still apply; levels[] and heading styles may set it
+├─ snapTopToGrid false             (> 1.73) round the space above up so the heading opens on a grid line, whatever
+│                                  ended before it (marginTop = minimum); levels[] and heading styles may set it
 ├─ columnHeadSpace 'none'          ('none' | 'remainder', ≥ 1.28) a snapping heading that opens a column: 'none' sets it on
 │                                  the column's first line and the snap adds the part of a line under it (its text then stands
 │                                  further from it than after a paragraph); 'remainder' keeps that part of a line above it, so
@@ -587,7 +592,7 @@ headings
 ```
 { level: 1..6,                         REQUIRED
   fontSize: Dimension (abs)            defaults H1 18pt, H2 15, H3 12, H4 10, H5 9, H6 8
-  lineHeight, fontFamily, color, fontWeight, marginTop, marginBottom, snapToGrid   → inherit general
+  lineHeight, fontFamily, color, fontWeight, marginTop, marginBottom, snapToGrid, regainGrid, snapTopToGrid → inherit general
   figureStyle: FigureStyle             → headings.figureStyle (§20a)
   italic: boolean                      false
   letterSpacing: Dimension             0 (tracking after every glyph, spaces and number prefix included;
@@ -780,7 +785,7 @@ running heads, margins, layout, body typography, palette.
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
   figureStyle (§20a; applied to the family of the level the style is used on),
-  advancedDesign, spanBreak (≥ 1.19), hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
+  advancedDesign, spanBreak (≥ 1.19), hidden, snapToGrid, regainGrid, snapTopToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
   firstLineIndent (≥ 1.24; 0 clears the level's),
   dropCap (≥ 1.23, §4b; false clears the level's: e.g. a preface style without the chapters' initial)
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
@@ -1185,6 +1190,7 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
                                  indent + hangingIndent); an inherited one gives way and line 1 starts at indent)
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
+  snapTopToGrid = false          (> 1.73) the container's first paragraph opens on a grid line, whatever ended before
   containerSpacing?: 'collapse'|'add' (≥ 1.28; unset = bodyText.paragraphContainerSpacing; the rule under THIS
                                  style's containers, in the text and in a box: 'add' on a big figure or a
                                  reference list ends its groups on the style's own space, no paragraph-spacing
@@ -1277,6 +1283,7 @@ All em values = the callout body font size.
   columnGap = 1.5em                  for :::columns{count=N} groups inside the box (a fence `gap=` overrides it)
   marginTop = 0.75em, marginBottom = 0.75em (minimum; grid-snapped after)
   snapToGrid = true                  false = exact marginBottom (stacked-box worksheets)
+  snapTopToGrid = false              (> 1.73) an in-flow box opens on a grid line (space counted when fitting the column)
   keepTogether = true                false = may split between children / lines; continuation drops icon (its column stays, empty) (+ title unless repeatTitle)
   splitMinLines = 2                  fewest text lines on each side of a cut; a cut inside a paragraph or
                                      list item also keeps ≥ layout.boxChildSplitMinLines (2) of its lines
@@ -1499,7 +1506,9 @@ answers stay in the chapters (playbooks.md C7).
   captionPrefix: string       caption = "<prefix> <number>. <caption>" ('' for unlabelled photos)
   defaultPlacement?: ResourcePlacement
   captionStyle?: CaptionStyleConfig   partial override merged over the global captionStyle
-  snapToGrid?: boolean                default true: an inline figure/table of the type puts the flow back on the grid }
+  snapToGrid?: boolean                default true: an inline figure/table of the type puts the flow back on the grid
+  snapTopToGrid?: boolean             (> 1.73) default false: an inline figure/table (not wrapped, not at a column top)
+                                      opens on a grid line }
 ```
 ResourcePlacement, resolved field-by-field: resource.placement → type.defaultPlacement → built-in:
 ```
@@ -1731,7 +1740,9 @@ video; a self-hosted file is packed under `media/` and plays in `<video>`.
 ## 19. `math`
 
 `{ enabled = true, fontSizeScale = 1.0, color? (= body), marginTop = 0.8em, marginBottom = 0.8em,
-indentAfterDisplay = true, keepWithLeadIn = false, equationNumbering }` (MathJax SVG).
+indentAfterDisplay = true, keepWithLeadIn = false, snapToGrid = true, snapTopToGrid = false, equationNumbering }`
+(MathJax SVG). `snapToGrid: false` keeps a display formula's exact margins (the flow stays off the grid after it);
+`snapTopToGrid: true` (> 1.73) opens it on a grid line.
 - `equationNumbering` (postext ≥ 1.19) `{ enabled = true, numberingTemplate = '{n}', resetOn = 'never',
   counterFormat = 'decimal', format = '({n})' }` numbers the formulas (rows) that carry `\label`;
   `'{h1}.{n}'` + `resetOn: 'h1'` gives (2.1). Counters carry across chapters in
