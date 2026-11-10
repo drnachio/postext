@@ -84,7 +84,9 @@ export async function undoChapterEdit(host: SandboxToolHost, redo: boolean, only
     const what = step.kind === 'resource'
       ? `to the marks of the picture ${JSON.stringify(step.resourceId)}`
       : step.kind === 'group'
-        ? 'the changes of an edited Word export, to several chapters at once'
+        ? step.source === 'find'
+          ? 'a replace-all of the find bar, to several chapters at once'
+          : 'the changes of an edited Word export, to several chapters at once'
         : `to the design (${step.paths.join(', ')})`;
     throw new ToolError(`The last change ${redo ? 'taken back ' : ''}was ${what}, not to the text. Changes come back in the order they were made: sandbox_undo takes back the last one whatever it is.`);
   }

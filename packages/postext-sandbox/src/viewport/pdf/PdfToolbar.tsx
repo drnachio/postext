@@ -5,6 +5,7 @@ import { ArrowRight, Download, Printer, RefreshCw } from 'lucide-react';
 import { useSandboxLabels } from '../../context/SandboxContext.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 import {
+  FindToolbarButton,
   PinToolbarButton,
   ToolbarButton,
   ToolbarSeparator,
@@ -97,6 +98,8 @@ export const PdfToolbar = memo(function PdfToolbar({
         pinLabel={labels.toolbarPin}
         unpinLabel={labels.toolbarUnpin}
       />
+      <ToolbarSeparator />
+      <FindToolbarButton />
       <ToolbarSeparator />
       <ToolbarButton
         icon={<Download size={16} aria-hidden="true" />}

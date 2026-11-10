@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Pin,
   PinOff,
+  Search,
 } from 'lucide-react';
 import { useSandbox } from '../../context/SandboxContext.js';
 import { groupPagesIntoRows } from './CanvasPreview/layoutUtils.js';
@@ -20,6 +21,7 @@ import { Tooltip, useUiRtl } from '../../ui/index.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 import { useLargeTargets } from '../../ui/largeTargets.js';
 import { PrintPreviewButton } from '../../print/PrintPreviewButton.js';
+import { openFind, searchableSelection, useFindState } from '../../editor/findStore.js';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
@@ -257,6 +259,24 @@ export function PinToolbarButton({
   );
 }
 
+/** Opens find and replace over the Markdown (the bar sits above the
+ *  editor, in the Markdown panel), the editor's selection as the query. */
+export function FindToolbarButton() {
+  const { state, dispatch } = useSandbox();
+  const findOpen = useFindState().open;
+  return (
+    <ToolbarButton
+      icon={<Search size={16} aria-hidden="true" />}
+      label={state.labels.findOpen}
+      active={findOpen && state.activePanel === 'markdown'}
+      onClick={() => {
+        dispatch({ type: 'SET_PANEL', payload: 'markdown' });
+        openFind({ query: searchableSelection(state.markdown.slice(state.selection.from, state.selection.to)) });
+      }}
+    />
+  );
+}
+
 /** The page field shows the book page number printed on the current page
  *  (not its index in the chapter) and jumps to the page carrying the
  *  number typed, clamped to the chapter's range. */
@@ -395,6 +415,8 @@ export function CanvasToolbar({
         pinLabel={labels.toolbarPin}
         unpinLabel={labels.toolbarUnpin}
       />
+      <ToolbarSeparator />
+      <FindToolbarButton />
       <ToolbarSeparator />
       <ToolbarButton
         icon={<ZoomIn size={16} aria-hidden="true" />}
