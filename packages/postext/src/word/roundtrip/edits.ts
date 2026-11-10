@@ -444,8 +444,19 @@ function touchesGenerated(v: BlockView, h: Hunk): boolean {
 /** Atoms whose printed text the engine generates from the construct. */
 const LABEL_ATOMS = new Set(['ref', 'footnote', 'citation']);
 
-const OPENERS_RE = /(?:\*\*|__|\*|_|\^|~|`|:smallcaps\[|\[)+$/;
-const CLOSERS_RE = /^(?:\*\*|__|\*|_|\^|~|`|\]\([^()\s]*(?:\s+"[^"]*")?\)|\])+/;
+const CLOSERS_RE = /^(?:[*_^~`]|\]\([^()\s]*(?:\s+"[^"]*")?\)|\])+/;
+
+/** The opening marks (`**`, `_`, `:smallcaps[`, `[`…) that end `s`, read
+ *  backwards so a long run of them is read once (CodeQL js/redos). */
+function trailingOpeners(s: string): string {
+  let i = s.length;
+  while (i > 0) {
+    if (s.endsWith(':smallcaps[', i)) i -= 11;
+    else if ('*_^~`['.includes(s[i - 1]!)) i--;
+    else break;
+  }
+  return s.slice(i);
+}
 
 /** The source of a text replaced whole (`blockHunks`): from its first
  *  character to its last with the markup around and between them, when
@@ -462,7 +473,7 @@ function wholeRange(v: BlockView, base: string): [number, number] | undefined {
   if (e < 0) return undefined;
   if (escapeBefore(base, s)) s--;
   const line = base.lastIndexOf('\n', s - 1) + 1;
-  const open = OPENERS_RE.exec(base.slice(line, s))?.[0] ?? '';
+  const open = trailingOpeners(base.slice(line, s));
   const end = base.indexOf('\n', e);
   const close = CLOSERS_RE.exec(base.slice(e, end < 0 ? base.length : end))?.[0] ?? '';
   const inner: string[] = [];

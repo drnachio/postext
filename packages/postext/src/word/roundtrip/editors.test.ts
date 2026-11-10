@@ -59,7 +59,7 @@ describe('a file an editor saved again', () => {
   it('does not delete text whose bookmarks an editor dropped', async () => {
     const e = await exportDocx(NOTES);
     const drop = (x: string): string => x.replace(/<w:bookmark(?:Start|End)[^>]*\/>/g, '');
-    for (const parts of [{ 'word/footnotes.xml': drop }, { 'word/document.xml': (x: string) => drop(x).replace('Otro', 'Otro') }] as Parts[]) {
+    for (const parts of [{ 'word/footnotes.xml': drop }, { 'word/document.xml': drop }] as Parts[]) {
       const r = back(edited(e, parts), NOTES);
       expect(r.edits.filter((x) => x.status === 'applied')).toEqual([]);
       expect(r.chapters[0]!.markdown).toBe(NOTES);

@@ -101,6 +101,7 @@ export function plainConfig(book: ResolvedConfig): ResolvedConfig {
   // The templates stay as written: they say which frame takes what, and
   // the engine resolves them from this very list.
   const { colorPalette: _palette, pageTemplates, ...rest } = book;
+  void _palette;
   const n = neutral({ ...rest, exerciseSettings: exerciseSettingsFor(book) }) as ResolvedConfig;
   const body = n.bodyText;
   const code = neutral(resolvedCodeStyle(book));
