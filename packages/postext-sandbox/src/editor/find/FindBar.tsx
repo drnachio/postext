@@ -6,44 +6,37 @@
 // a match selects it in the editor (switching chapters when it is in
 // another one) while the focus stays in the bar; the previews follow the
 // selection as they do while typing. Replacements go through
-// `applyViewerEdits`: Cmd/Ctrl+Z in the editor, or over the previews,
-// takes them back, a replace-all over the book at once.
+// `applyViewerEdits`: one step of the Sandbox's history, a replace-all over
+// the book included, which the bar's Undo (or Cmd/Ctrl+Z in its fields
+// right after) takes back. In Design mode the text is read only and the
+// bar only finds.
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { CaseSensitive, ChevronDown, ChevronRight, ChevronUp, List, Regex, Replace, ReplaceAll, WholeWord, X } from 'lucide-react';
-import { useSandbox } from '../context/SandboxContext.js';
-import { compileFind, matchSnippets, replaceChanges, MAX_MATCHES, type FindMatch, type FindOptions } from '../book/findReplace.js';
-import { applyViewerEdit, applyViewerEdits } from './viewerEdits.js';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { CaseSensitive, ChevronDown, ChevronRight, ChevronUp, List, Redo2, Regex, Replace, ReplaceAll, Undo2, WholeWord, X } from 'lucide-react';
+import { useSandbox } from '../../context/SandboxContext.js';
+import { applyTextChanges, type TextChange } from '../../book/textChanges.js';
+import { replaceChanges } from '../../book/find/replace.js';
+import type { FindOptions } from '../../book/find/compile.js';
+import { applyViewerEdit, applyViewerEdits, redoViewerEdit, undoViewerEdit } from '../viewerEdits.js';
+import { activeHistory } from '../../history/sandboxHistory.js';
+import { isMacKeyboard, useEditMode } from '../../editing/editMode.js';
 import { closeFind, findCommands, setFind, setFindHighlights, useFindState, type FindScope } from './findStore.js';
-import { ConfirmPopover, IconButton, SegmentedControl, announce } from '../ui/index.js';
-
-/** Rows the results list draws at most; the count still says them all. */
-const LIST_LIMIT = 300;
-
-interface Hit {
-  chapterId: string;
-  /** Book order of the chapter. */
-  chapterIndex: number;
-  match: FindMatch;
-  /** Index among the chapter's matches. */
-  local: number;
-}
-
-interface ChapterResult {
-  chapterId: string;
-  chapterIndex: number;
-  title: string;
-  text: string;
-  matches: FindMatch[];
-}
+import { findFieldKey, isReplacementStep, type FindFieldAction } from './findKeys.js';
+import { useFindResults } from './useFindResults.js';
+import { ResultsList, fill, type Hit } from './ResultsList.js';
+import { Button, ConfirmPopover, IconButton, SegmentedControl, announce } from '../../ui/index.js';
 
 export function FindBar() {
   const find = useFindState();
   return find.open ? <FindBarOpen /> : null;
 }
 
-function fill(template: string, values: Record<string, string | number>): string {
-  return Object.entries(values).reduce((s, [k, v]) => s.split(`__${k}__`).join(String(v)), template);
+/** The bar's last replacement: the chapters it changed, their texts
+ *  before and after, and whether it was taken back. */
+interface LastReplace {
+  count: number;
+  texts: Map<string, { before: string; after: string }>;
+  undone: boolean;
 }
 
 function FindBarOpen() {
@@ -52,36 +45,29 @@ function FindBarOpen() {
   const { labels, chapters, activeChapterId, markdown, selection } = state;
   const rootRef = useRef<HTMLDivElement>(null);
   const queryRef = useRef<HTMLInputElement>(null);
+  const [editMode, setEditMode] = useEditMode();
+  const readOnly = editMode === 'design';
+  const readOnlyId = useId();
 
   useEffect(() => {
     queryRef.current?.focus();
     queryRef.current?.select();
   }, [find.focusRequest]);
 
-  const compiled = useMemo(() => compileFind(find.query, find.options), [find.query, find.options]);
-  const error = compiled && 'error' in compiled ? compiled.error : null;
+  const { results, error, stopped, searched, pending } = useFindResults({
+    query: find.query, options: find.options, scope: find.scope, chapters, activeChapterId, markdown,
+  });
+  const textOf = (id: string): string | undefined => (id === activeChapterId ? markdown : chapters.find((c) => c.id === id)?.markdown);
+  // Matches found in a text the chapter no longer has: shown, but not
+  // replaced until the search has caught up.
+  const stale = pending || results.some((r) => textOf(r.chapterId) !== r.text);
 
-  const results = useMemo((): ChapterResult[] => {
-    if (!compiled || 'error' in compiled) return [];
-    const out: ChapterResult[] = [];
-    chapters.forEach((c, chapterIndex) => {
-      if (find.scope === 'chapter' && c.id !== activeChapterId) return;
-      const text = c.id === activeChapterId ? markdown : c.markdown;
-      const matches = compiled.find(text);
-      if (matches.length > 0) out.push({ chapterId: c.id, chapterIndex, title: c.title, text, matches });
-    });
-    return out;
-  }, [compiled, chapters, activeChapterId, markdown, find.scope]);
-
-  const hits = useMemo(
-    () => results.flatMap((r) => r.matches.map((match, local): Hit => ({ chapterId: r.chapterId, chapterIndex: r.chapterIndex, match, local }))),
-    [results],
-  );
+  const hits = results.flatMap((r) => r.matches.map((match, local): Hit => ({ chapterId: r.chapterId, chapterIndex: r.chapterIndex, match, local })));
   const total = hits.length;
-  const capped = results.some((r) => r.matches.length >= MAX_MATCHES);
+  const incomplete = stopped !== null;
   const activeIndex = Math.max(0, chapters.findIndex((c) => c.id === activeChapterId));
   // The current match is the one the editor has selected.
-  const current = hits.findIndex((h) => h.chapterId === activeChapterId && h.match.from === selection.from && h.match.to === selection.to);
+  const current = stale ? -1 : hits.findIndex((h) => h.chapterId === activeChapterId && h.match.from === selection.from && h.match.to === selection.to);
   // The match last asked for, until the editor reports it selected: a
   // second Enter pressed before then goes on from it, not from the old
   // selection.
@@ -93,11 +79,14 @@ function FindBarOpen() {
     return r ? hits.findIndex((h) => h.chapterId === r.chapterId && h.match.from === r.match.from && h.match.to === r.match.to) : -1;
   };
 
-  // The matches of the open chapter, painted in its editor.
+  // The matches of the open chapter, painted in its editor (only while
+  // they are those of its text).
+  const paintCurrent = current >= 0 ? hits[current]!.local : -1;
   useEffect(() => {
     const mine = results.find((r) => r.chapterId === activeChapterId);
-    setFindHighlights({ chapterId: activeChapterId, ranges: mine?.matches ?? [], current: current >= 0 ? hits[current]!.local : -1 });
-  }, [results, hits, current, activeChapterId]);
+    const ranges = mine && mine.text === markdown ? mine.matches : [];
+    setFindHighlights({ chapterId: activeChapterId, ranges, current: paintCurrent });
+  }, [results, markdown, paintCurrent, activeChapterId]);
   useEffect(() => () => setFindHighlights({ chapterId: null, ranges: [], current: -1 }), []);
 
   // While the bar has the focus, the previews follow the editor selection
@@ -145,47 +134,83 @@ function FindBarOpen() {
   }, []);
 
   // After a replacement, the next match from where it ended, once the
-  // text has taken it.
+  // search has run on the new text.
   const [afterReplace, setAfterReplace] = useState<{ chapterId: string; offset: number; textBefore: string } | null>(null);
   useEffect(() => {
-    if (!afterReplace) return;
-    const chapter = chapters.find((c) => c.id === afterReplace.chapterId);
-    const text = afterReplace.chapterId === activeChapterId ? markdown : chapter?.markdown;
-    if (text === afterReplace.textBefore) return;
+    if (!afterReplace || pending) return;
+    const text = searched.get(afterReplace.chapterId);
+    if (text === undefined || text === afterReplace.textBefore) return;
     setAfterReplace(null);
     if (total === 0) return;
     const at = chapters.findIndex((c) => c.id === afterReplace.chapterId);
     goTo(hits.find((h) => !before(h, at, afterReplace.offset)) ?? hits[0]!);
-    // Runs when the text (and with it the matches) changes.
+    // Runs when a search answers.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hits, afterReplace]);
+  }, [searched, pending, afterReplace]);
 
-  const regexMode = compiled !== null && !('error' in compiled) && compiled.regex;
+  const [lastReplace, setLastReplace] = useState<LastReplace | null>(null);
+  // A change to those chapters made since by other means (typing, another
+  // tool) ends the bar's hold on the undo.
+  useEffect(() => {
+    if (!lastReplace) return;
+    for (const [id, t] of lastReplace.texts) {
+      const now = textOf(id);
+      if (now !== t.before && now !== t.after) {
+        setLastReplace(null);
+        return;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapters, markdown, lastReplace]);
+
+  const regexMode = find.options.regex;
+  const canReplace = !readOnly && !stale && total > 0;
+
+  const remember = (edits: { chapterId: string; text: string; changes: TextChange[] }[], count: number) => {
+    const texts = new Map(edits.map((e) => [e.chapterId, { before: e.text, after: applyTextChanges(e.text, e.changes) }]));
+    setLastReplace({ count, texts, undone: false });
+  };
 
   const replaceOne = () => {
-    if (total === 0) return;
+    if (!canReplace) return;
     if (current < 0) return next();
     const hit = hits[current]!;
     const result = results.find((r) => r.chapterId === hit.chapterId)!;
     const [change] = replaceChanges(result.text, [hit.match], find.replace, regexMode);
     if (change!.insert === change!.expect) return next();
     applyViewerEdit(dispatch, hit.chapterId, [change!], result.text.length);
+    remember([{ chapterId: hit.chapterId, text: result.text, changes: [change!] }], 1);
     // Where the replaced match ends now (the change may cover only part of it).
     const offset = hit.match.to + change!.insert.length - (change!.to - change!.from);
     setAfterReplace({ chapterId: hit.chapterId, offset, textBefore: result.text });
   };
 
   const replaceAll = () => {
-    if (total === 0 || capped) return;
+    if (!canReplace || incomplete) return;
     const edits = results.map((r) => ({
       chapterId: r.chapterId,
+      text: r.text,
       changes: replaceChanges(r.text, r.matches, find.replace, regexMode).filter((c) => c.insert !== c.expect),
       baseLength: r.text.length,
-    }));
+    })).filter((e) => e.changes.length > 0);
     const count = edits.reduce((n, e) => n + e.changes.length, 0);
-    const touched = edits.filter((e) => e.changes.length > 0).length;
+    if (count === 0) return;
     applyViewerEdits(dispatch, edits, activeChapterId);
-    announce(fill(touched > 1 ? labels.findReplacedAllBook : labels.findReplacedAll, { count, chapters: touched }));
+    remember(edits, count);
+    announce(fill(edits.length > 1 ? labels.findReplacedAllBook : labels.findReplacedAll, { count, chapters: edits.length }));
+  };
+
+  const takeBack = (redo: boolean): boolean => {
+    if (!lastReplace || lastReplace.undone !== redo) return false;
+    const step = activeHistory()?.peek(redo) ?? null;
+    if (!isReplacementStep(step, [...lastReplace.texts.keys()])) {
+      setLastReplace(null);
+      return false;
+    }
+    if (!(redo ? redoViewerEdit() : undoViewerEdit())) return false;
+    setLastReplace({ ...lastReplace, undone: !redo });
+    announce(redo ? labels.findRedone : labels.findUndone);
+    return true;
   };
 
   const close = () => {
@@ -195,43 +220,54 @@ function FindBarOpen() {
     dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: { anchor, head: selection.head, selectWord: false } });
   };
 
-  const onQueryKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (e.shiftKey) previous();
-      else next();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      close();
+  const run = (action: FindFieldAction, e: KeyboardEvent<HTMLInputElement>) => {
+    if (action === null) return;
+    if (action === 'undo' || action === 'redo') {
+      // The field's own undo, unless the bar has a replacement to take back.
+      if (takeBack(action === 'redo')) e.preventDefault();
+      return;
     }
+    e.preventDefault();
+    if (action === 'next') next();
+    else if (action === 'previous') previous();
+    else if (action === 'replace') replaceOne();
+    else if (action === 'replaceAll') replaceAll();
+    else if (action === 'close') close();
   };
-  const onReplaceKey = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      replaceOne();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      close();
-    }
-  };
+  const keyOf = (e: KeyboardEvent<HTMLInputElement>) => ({
+    key: e.key, shiftKey: e.shiftKey, altKey: e.altKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey,
+    composing: e.nativeEvent.isComposing || e.keyCode === 229,
+  });
+  const onQueryKey = (e: KeyboardEvent<HTMLInputElement>) => run(findFieldKey(keyOf(e), 'query', isMacKeyboard()), e);
+  const onReplaceKey = (e: KeyboardEvent<HTMLInputElement>) => run(findFieldKey(keyOf(e), 'replace', isMacKeyboard()), e);
 
+  const edited = (partial: Parameters<typeof setFind>[0]) => {
+    setFind(partial);
+    if (lastReplace) setLastReplace(null);
+  };
   const setOption = (key: keyof FindOptions) => setFind({ options: { ...find.options, [key]: !find.options[key] } });
 
   const countText = error
     ? fill(labels.findInvalid, { error })
     : find.query.length === 0
       ? ''
-      : total === 0
-        ? labels.findCountNone
-        : capped
-          ? fill(labels.findTooMany, { total })
-          : current >= 0
-            ? fill(labels.findCount, { current: current + 1, total })
-            : total === 1
-              ? labels.findCountOne
-              : fill(labels.findCountTotal, { total });
+      : stopped === 'timeout'
+        ? labels.findTimedOut
+        : stopped === 'time'
+          ? fill(labels.findStoppedTime, { total })
+          : total === 0
+            ? (pending ? '' : labels.findCountNone)
+            : stopped === 'count'
+              ? fill(labels.findTooMany, { total })
+              : current >= 0
+                ? fill(labels.findCount, { current: current + 1, total })
+                : total === 1
+                  ? labels.findCountOne
+                  : fill(labels.findCountTotal, { total });
+  const warn = error !== null || stopped === 'timeout' || stopped === 'time';
   const touchedChapters = results.length;
   const confirmAll = find.scope === 'book' && touchedChapters > 1;
+  const replaceAllDisabled = !canReplace || incomplete;
 
   const fieldStyle = {
     color: 'var(--foreground)',
@@ -239,6 +275,7 @@ function FindBarOpen() {
     border: '1px solid var(--pt-control-border)',
     outlineColor: 'var(--brand)',
   } as const;
+  const fieldClass = 'h-7 min-w-0 rounded-md px-2 text-xs focus-visible:outline-2 focus-visible:-outline-offset-2 pt-large:h-11';
 
   return (
     <div
@@ -259,21 +296,20 @@ function FindBarOpen() {
           onClick={() => setFind({ replaceOpen: !find.replaceOpen })}
           aria-expanded={find.replaceOpen}
         />
-        <div className="relative flex min-w-0 flex-1 items-center">
-          <input
-            ref={queryRef}
-            type="text"
-            value={find.query}
-            onChange={(e) => setFind({ query: e.currentTarget.value })}
-            onKeyDown={onQueryKey}
-            placeholder={labels.findQuery}
-            aria-label={labels.findQuery}
-            aria-invalid={error ? true : undefined}
-            spellCheck={false}
-            className="h-7 w-full min-w-0 rounded-md pe-1 ps-2 text-xs focus-visible:outline-2 focus-visible:-outline-offset-2"
-            style={fieldStyle}
-          />
-        </div>
+        <input
+          ref={queryRef}
+          type="text"
+          dir="auto"
+          value={find.query}
+          onChange={(e) => edited({ query: e.currentTarget.value })}
+          onKeyDown={onQueryKey}
+          placeholder={labels.findQuery}
+          aria-label={labels.findQuery}
+          aria-invalid={error ? true : undefined}
+          spellCheck={false}
+          className={`${fieldClass} w-full flex-1`}
+          style={fieldStyle}
+        />
         <IconButton label={labels.findClose} icon={<X size={13} />} onClick={close} />
       </div>
 
@@ -294,36 +330,44 @@ function FindBarOpen() {
       </div>
 
       {find.replaceOpen && (
-        <div className="flex items-center gap-1 ps-7">
+        <div className="flex flex-wrap items-center gap-1 ps-7">
           <input
             type="text"
+            dir="auto"
             value={find.replace}
-            onChange={(e) => setFind({ replace: e.currentTarget.value })}
+            onChange={(e) => edited({ replace: e.currentTarget.value })}
             onKeyDown={onReplaceKey}
             placeholder={labels.findReplace}
             aria-label={labels.findReplace}
+            aria-describedby={readOnly ? readOnlyId : undefined}
             spellCheck={false}
-            className="h-7 min-w-0 flex-1 rounded-md px-2 text-xs focus-visible:outline-2 focus-visible:-outline-offset-2"
+            className={`${fieldClass} flex-1`}
             style={fieldStyle}
           />
-          <IconButton label={labels.findReplaceOne} icon={<Replace size={14} />} onClick={replaceOne} disabled={total === 0} />
-          {confirmAll ? (
+          <IconButton label={labels.findReplaceOne} icon={<Replace size={14} />} onClick={replaceOne} disabled={!canReplace} />
+          {confirmAll && !replaceAllDisabled ? (
             <ConfirmPopover
               message={fill(labels.findReplaceAllConfirm, { count: total, chapters: touchedChapters })}
               confirmLabel={labels.findReplaceAll}
               onConfirm={replaceAll}
             >
               {({ open }) => (
-                <IconButton label={labels.findReplaceAll} icon={<ReplaceAll size={14} />} onClick={open} disabled={total === 0 || capped} />
+                <IconButton label={labels.findReplaceAll} icon={<ReplaceAll size={14} />} onClick={open} />
               )}
             </ConfirmPopover>
           ) : (
-            <IconButton label={labels.findReplaceAll} icon={<ReplaceAll size={14} />} onClick={replaceAll} disabled={total === 0 || capped} />
+            <IconButton label={labels.findReplaceAll} icon={<ReplaceAll size={14} />} onClick={replaceAll} disabled={replaceAllDisabled} />
+          )}
+          {readOnly && (
+            <p id={readOnlyId} role="note" className="flex w-full flex-wrap items-center gap-2 text-xs" style={{ color: 'var(--slate)' }}>
+              <span>{labels.findReadOnly}</span>
+              <Button size="sm" variant="ghost" onClick={() => setEditMode('content')}>{labels.editorSwitchToContent}</Button>
+            </p>
           )}
         </div>
       )}
 
-      <div className="flex items-center gap-2 ps-7">
+      <div className="flex flex-wrap items-center gap-2 ps-7">
         <SegmentedControl<FindScope>
           size="sm"
           value={find.scope}
@@ -334,7 +378,7 @@ function FindBarOpen() {
             { value: 'book', label: labels.findScopeBook },
           ]}
         />
-        <span className="min-w-0 flex-1 truncate text-xs" role="status" aria-live="polite" style={{ color: error ? 'var(--pt-error, #ef4444)' : 'var(--slate)' }}>
+        <span className="min-w-0 flex-1 truncate text-xs" role="status" aria-live="polite" title={countText} style={{ color: warn ? 'var(--pt-error, #ef4444)' : 'var(--slate)' }}>
           {countText}
         </span>
         {total > 0 && (
@@ -348,8 +392,31 @@ function FindBarOpen() {
         )}
       </div>
 
+      {lastReplace && (
+        <div className="flex items-center gap-2 ps-7 text-xs" style={{ color: 'var(--slate)' }}>
+          <span className="min-w-0 flex-1">
+            {lastReplace.undone
+              ? labels.findUndone
+              : fill(lastReplace.texts.size > 1 ? labels.findReplacedAllBook : labels.findReplacedAll, { count: lastReplace.count, chapters: lastReplace.texts.size })}
+          </span>
+          {lastReplace.undone ? (
+            <IconButton label={labels.findRedo} icon={<Redo2 size={13} />} onClick={() => takeBack(true)} />
+          ) : (
+            <IconButton label={labels.findUndo} icon={<Undo2 size={13} />} onClick={() => takeBack(false)} />
+          )}
+        </div>
+      )}
+
       {find.listOpen && total > 0 && (
-        <ResultsList results={results} hits={hits} current={current} onPick={goTo} untitled={labels.findUntitledChapter} more={labels.findMoreResults} lineLabel={labels.findLine} />
+        <ResultsList
+          results={results}
+          total={total}
+          currentHit={current >= 0 ? hits[current] : undefined}
+          onPick={goTo}
+          untitled={labels.findUntitledChapter}
+          more={labels.findMoreResults}
+          lineLabel={labels.findLine}
+        />
       )}
     </div>
   );
@@ -357,70 +424,4 @@ function FindBarOpen() {
 
 function OptionToggle({ label, active, disabled, onClick, icon }: { label: string; active: boolean; disabled?: boolean; onClick: () => void; icon: ReactNode }) {
   return <IconButton label={label} icon={icon} active={active} disabled={disabled} onClick={onClick} />;
-}
-
-function ResultsList({ results, hits, current, onPick, untitled, more, lineLabel }: {
-  results: readonly ChapterResult[];
-  hits: readonly Hit[];
-  current: number;
-  onPick: (hit: Hit) => void;
-  untitled: string;
-  more: string;
-  lineLabel: string;
-}) {
-  const currentHit = current >= 0 ? hits[current] : undefined;
-  let budget = LIST_LIMIT;
-  const groups = results.map((r) => {
-    const shown = Math.max(0, Math.min(r.matches.length, budget));
-    budget -= shown;
-    return { r, snippets: shown > 0 ? matchSnippets(r.text, r.matches, shown) : [] };
-  });
-  const hidden = hits.length - LIST_LIMIT;
-
-  // Keep the current row in sight.
-  const currentRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    currentRef.current?.scrollIntoView({ block: 'nearest' });
-  }, [current]);
-
-  return (
-    <div className="max-h-[40vh] overflow-y-auto rounded-md border" style={{ borderColor: 'var(--rule)' }}>
-      {groups.map(({ r, snippets }) => snippets.length > 0 && (
-        <div key={r.chapterId}>
-          <div className="sticky top-0 flex items-baseline gap-2 px-2 py-1 text-xs font-semibold" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-            <span className="min-w-0 flex-1 truncate">{r.title || fill(untitled, { n: r.chapterIndex + 1 })}</span>
-            <span className="shrink-0 font-normal" style={{ color: 'var(--slate)' }}>{r.matches.length}</span>
-          </div>
-          <ul>
-            {snippets.map((s, k) => {
-              const isCurrent = currentHit?.chapterId === r.chapterId && currentHit.local === k;
-              return (
-                <li key={k}>
-                  <button
-                    ref={isCurrent ? currentRef : undefined}
-                    type="button"
-                    onClick={() => onPick({ chapterId: r.chapterId, chapterIndex: r.chapterIndex, match: r.matches[k]!, local: k })}
-                    aria-current={isCurrent || undefined}
-                    aria-label={`${fill(lineLabel, { line: s.line })}: ${s.before}${s.match}${s.after}`}
-                    className="flex w-full items-baseline gap-2 px-2 py-0.5 text-start text-xs focus-visible:outline-2 focus-visible:-outline-offset-2"
-                    style={{ backgroundColor: isCurrent ? 'var(--surface)' : 'transparent', color: 'var(--foreground)', outlineColor: 'var(--brand)' }}
-                  >
-                    <span className="w-8 shrink-0 text-end tabular-nums" style={{ color: 'var(--slate)' }}>{s.line}</span>
-                    <span className="min-w-0 flex-1 truncate">
-                      {s.before}
-                      <mark style={{ backgroundColor: 'color-mix(in srgb, var(--brand) 35%, transparent)', color: 'var(--foreground)', borderRadius: 2 }}>{s.match}</mark>
-                      {s.after}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-      {hidden > 0 && (
-        <p className="px-2 py-1 text-xs" style={{ color: 'var(--slate)' }}>{fill(more, { count: hidden })}</p>
-      )}
-    </div>
-  );
 }

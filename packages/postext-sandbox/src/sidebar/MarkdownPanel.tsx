@@ -3,8 +3,8 @@
 import { useRef, useState } from 'react';
 import { BookDown, Download, FileInput, FileOutput, Upload, RotateCcw, Search } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor.js';
-import { FindBar } from '../editor/FindBar.js';
-import { closeFind, openFind, searchableSelection, useFindState } from '../editor/findStore.js';
+import { FindBar } from '../editor/find/FindBar.js';
+import { closeFind, openFind, searchableSelection, useFindState } from '../editor/find/findStore.js';
 import { ChapterSwitcher } from '../editor/ChapterSwitcher.js';
 import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/SandboxContext.js';
 import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence.js';

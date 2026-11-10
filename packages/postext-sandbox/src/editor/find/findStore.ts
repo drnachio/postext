@@ -4,7 +4,7 @@
 // matches. A small external store keeps all of them on one value.
 
 import { useSyncExternalStore } from 'react';
-import { DEFAULT_FIND_OPTIONS, type FindOptions } from '../book/findReplace.js';
+import { DEFAULT_FIND_OPTIONS, type FindOptions } from '../../book/find/compile.js';
 
 export type FindScope = 'chapter' | 'book';
 

@@ -3118,6 +3118,13 @@ export interface SandboxLabels {
   findMoreResults: string;
   findLine: string;
   findUntitledChapter: string;
+  findReadOnly: string;
+  findUndo: string;
+  findRedo: string;
+  findUndone: string;
+  findRedone: string;
+  findStoppedTime: string;
+  findTimedOut: string;
   labelCompletionLabelled: string;
   labelCompletionNoStyle: string;
   labelCompletionLine: string;

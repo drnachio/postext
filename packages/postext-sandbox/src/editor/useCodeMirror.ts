@@ -27,7 +27,7 @@ import { bidiLines, rtlEditor } from './syntax/bidiLines.js';
 import { refCompletion, type RefCompletionContext } from './completion/refCompletion.js';
 import { minimalChange } from '../book/textChanges.js';
 import { takeViewerChanges } from './viewerEdits.js';
-import { findHighlight } from './findHighlight.js';
+import { findHighlight } from './find/findHighlight.js';
 
 interface UseCodeMirrorOptions {
   initialValue: string;

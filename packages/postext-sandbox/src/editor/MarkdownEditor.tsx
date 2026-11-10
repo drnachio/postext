@@ -5,8 +5,8 @@ import { DEFAULT_CHIP_STYLES, DEFAULT_MARK_STYLES, canonicalLocaleTag, defaultRe
 import { documentLanguage } from '../context/documentDirection.js';
 import { defaultDocumentLocale } from '../controls/language/hyphenation.js';
 import { useCodeMirror } from './useCodeMirror.js';
-import { showFindMatches } from './findHighlight.js';
-import { useFindHighlights } from './findStore.js';
+import { showFindMatches } from './find/findHighlight.js';
+import { useFindHighlights } from './find/findStore.js';
 import { EditorToolbar } from './toolbar/EditorToolbar.js';
 import { useUiRtl } from '../ui/direction.js';
 import { useSandbox, useSandboxEditorStateRef, useSandboxStore } from '../context/SandboxContext.js';

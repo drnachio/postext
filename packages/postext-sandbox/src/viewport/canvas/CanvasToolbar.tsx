@@ -21,7 +21,7 @@ import { Tooltip, useUiRtl } from '../../ui/index.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 import { useLargeTargets } from '../../ui/largeTargets.js';
 import { PrintPreviewButton } from '../../print/PrintPreviewButton.js';
-import { openFind, searchableSelection, useFindState } from '../../editor/findStore.js';
+import { openFind, searchableSelection, useFindState } from '../../editor/find/findStore.js';
 
 type ViewMode = 'single' | 'spread';
 type FitMode = 'none' | 'width' | 'height';
