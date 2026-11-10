@@ -443,11 +443,11 @@ Un valore che non è un intero da 0 a 200 viene letto come l’intero più vicin
 
 ## Generazione del PDF (configurazione)
 
-La proprietà `pdfGeneration` controlla come il backend PDF produce il documento finale. Queste impostazioni le usa il pacchetto `postext-pdf` al momento dell’esportazione; i visualizzatori canvas e HTML le ignorano.
+La proprietà `pdfGeneration` controlla come il backend PDF produce il documento finale. Queste impostazioni le usa il pacchetto `postext-pdf` al momento dell’esportazione; i visualizzatori canvas e HTML le ignorano. `forms` è l’eccezione: il canvas lo legge anch’esso, così i suoi campi modulo corrispondono a quelli del PDF.
 
 `buildDocument` le porta nel VDT, come `doc.config.pdfGeneration`, e `renderToPdf` prende ogni impostazione dal primo punto che la fornisce:
 
-1. le sue opzioni (`outlines`, `accessible`, `colorSpace`);
+1. le sue opzioni (`outlines`, `accessible`, `colorSpace`, `forms`);
 2. il `pdfGeneration` del primo documento di cui fa il rendering (in un libro, le impostazioni del primo capitolo valgono per l’intero file);
 3. i valori predefiniti: segnalibri e tag attivi, colore RGB.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  forms?: PdfFormsConfig;      // Campi modulo: valuta, separatori, carattere.
 }
 ```
 
@@ -497,6 +498,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Produce un PDF accessibile e con tag orientato a PDF/UA-1: un albero di struttura logica in ordine di lettura (titoli che non saltano mai un livello, paragrafi, elenchi, citazioni, riquadri, tabelle con celle di intestazione, figure con testo alternativo e didascalie, formule, rimandi cliccabili come collegamenti, il contenuto di un `:::toc` come un unico `TOC` con un `TOCI` per riga: il numero della riga un `Lbl`, il suo titolo e la pagina un `Reference` che contiene il collegamento), il titolo e la lingua del documento (il `locale` di livello superiore), l’identificazione PDF/UA nei metadati XMP e ogni segno decorativo (sfondo della pagina, filetti, griglia della linea di base, intestazioni e piè di pagina ricorrenti, segni di taglio, intestazioni di tabella ripetute, il titolo ripetuto e l’indicatore di continuazione di un riquadro diviso) marcato come artefatto, così i lettori di schermo lo saltano. Una figura senza `altText` ripiega sulla sua didascalia, poi sulla sua etichetta. Una figura o una tabella flottante viene letta subito dopo il testo che la cita per primo, o il testo prima della sua riga `::resource`, e un riquadro flottante dopo il testo che precede il suo delimitatore, anche quando l’elemento flottante è collocato in una pagina successiva; un elenco o l’indice che proseguono oltre un elemento flottante restano un solo elemento, e un elenco dentro un riquadro flottante o ancorato alla pagina (`placement: 'fixed'`) è un solo elenco. Disattivalo solo per i master di stampa in cui la struttura in più non è desiderata.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Come i campi modulo scrivono i numeri e in quale carattere mostrano i valori: `currency` (predefinito `€`), `currencyBefore` (predefinito `true`), `separatorStyle` (da `0` a `3`; se non impostato, secondo la lingua del documento) e `font` (`'chip'`, il predefinito, `'helvetica'` o `{ family, weight?, style? }`). L’opzione `forms` di `renderToPdf` e del canvas ha la precedenza campo per campo. Solo per l’uscita: l’impaginazione non cambia. Vedi [Campi dei moduli](/it/docs/configuration-pdf-output#campi-dei-moduli).</td>
     </tr>
   </tbody>
 </table>

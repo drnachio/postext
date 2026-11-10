@@ -46,6 +46,15 @@ describe('composed pages keep their pixels across a relayout (#857)', () => {
     expect(painted.same(0, doc.pages[0]!, { scale: 1 })).toBe(false);
   });
 
+  it('repaints a page whose form fields write numbers another way (#1491)', () => {
+    const painted = createPaintedPages();
+    const doc = build(book());
+    painted.painted(0, doc.pages[0]!, { scale: 1, forms: { currency: 'USD' } });
+    expect(painted.same(0, doc.pages[0]!, { scale: 1, forms: { currency: 'USD' } })).toBe(true);
+    expect(painted.same(0, doc.pages[0]!, { scale: 1, forms: { currency: 'CHF' } })).toBe(false);
+    expect(painted.same(0, doc.pages[0]!, { scale: 1 })).toBe(false);
+  });
+
   it('always repaints a page that is not a composed page', () => {
     const painted = createPaintedPages();
     const doc = build('Plain text.');

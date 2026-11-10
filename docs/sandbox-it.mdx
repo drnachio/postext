@@ -90,13 +90,14 @@ Un editor CodeMirror 6 per il Markdown del capitolo. I lettori di schermo lo ann
 
 Un listato di codice (un blocco ```` ``` ```` o `~~~` e le sue righe) è un’unica zona nell’editor: riceve uno sfondo da codice, e il markup di Postext al suo interno (matematica, chip, tabulazioni, segni d’indice) resta senza colore, così come il motore lo lascia senza leggerlo. L’editor comunica inoltre alle anteprime il cursore e la selezione, il che abilita la sincronizzazione clic-cursore: un clic sul testo del risultato a schermo sposta il cursore nella posizione corrispondente del Markdown, e le anteprime possono evidenziare la selezione corrente.
 
-L’intestazione del pannello è un **selettore di capitoli**: frecce precedente/successivo, la posizione e il titolo del capitolo, e un menu che elenca ogni capitolo del libro con il suo intervallo di pagine, quando la paginazione è nota (vedi [Libri e capitoli](/it/docs/sandbox-books-saving#libri-e-capitoli)). Ogni capitolo ha la sua istanza dell’editor, quindi la cronologia di annullamento e la posizione del cursore si conservano per capitolo. L’intestazione offre poi cinque azioni:
+L’intestazione del pannello è un **selettore di capitoli**: frecce precedente/successivo, la posizione e il titolo del capitolo, e un menu che elenca ogni capitolo del libro con il suo intervallo di pagine, quando la paginazione è nota (vedi [Libri e capitoli](/it/docs/sandbox-books-saving#libri-e-capitoli)). Ogni capitolo ha la sua istanza dell’editor, quindi la cronologia di annullamento e la posizione del cursore si conservano per capitolo. L’intestazione offre poi sei azioni:
 
 - **Reimposta** (chiede conferma): ricarica la **parte del documento** del libro di esempio aperto. Ogni capitolo e l’intero insieme di figure vengono sostituiti con quelli dell’esempio (per l’esempio integrato, il documento di esempio della lingua e le risorse di esempio). La grafica resta com’è, tranne i font propri dell’esempio. Vedi [Pannello Libri](#pannello-libri).
 - **Esporta**: scarica il capitolo attivo come semplice file `.md`, chiamato `<book>-<nn>-<chapter>.md` in un libro di più capitoli, e altrimenti come il libro aperto o `document.md`
 - **Importa**: sostituisce il capitolo attivo con il contenuto di un file `.md`
 - **Importa un documento Word**: apre un manoscritto `.docx` e fa corrispondere i suoi stili di Word agli stili di Postext prima che cambi qualunque cosa, oppure riporta le correzioni fatte in un file esportato dal libro (vedi [Documenti Word](/it/docs/sandbox-books-saving#documenti-word))
 - **Esporta in Word**: scarica il capitolo o l’intero libro come `.docx`, semantico (il solo contenuto, in stili Word semplici) o impaginato (lo stesso testo modificabile con il progetto grafico del libro); le correzioni fatte nel file tornano con **Importa un documento Word**
+- **Esporta in InDesign (IDML)**: impagina l’intero libro come fa il PDF e lo scarica come `<libro>.idml`, da rifinire in InDesign (vedi [Esportazione e importazione](/it/docs/sandbox-books-saving#esportazione-e-importazione))
 
 #### Pannello Libri
 

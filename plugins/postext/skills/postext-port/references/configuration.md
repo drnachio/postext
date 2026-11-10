@@ -1373,7 +1373,9 @@ Inline `:chip[text]{style="id"}` (word banks, keys, tags). Chip without style �
 ```
 A chip with a `field` attribute (≥ 1.71) is a fillable PDF form field on its box: its style is the field's
 look, `minWidth` the room to type in (document-format.md §10.1). A chip style with `underline` draws a
-writing line, which is not the `:underline[…]` text mark.
+writing line, which is not the `:underline[…]` text mark. How number fields write numbers is
+`pdfGeneration.forms` (≥ 1.74): `{ currency?: '€', currencyBefore?: true, separatorStyle?: 0|1|2|3 (from the
+locale), font?: 'chip'|'helvetica'|{ family, weight?, style? } }`; set it from the source's currency and separators.
 
 ---------------------------------------------------------------------------------
 

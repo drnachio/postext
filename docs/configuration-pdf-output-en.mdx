@@ -320,6 +320,14 @@ Acrobat, Foxit, pdf.js (Firefox) and most viewers run these scripts. A print sta
 
 The canvas paints a number field the same way, so the preview matches the PDF: pass `renderPageToCanvas` (or `renderPage`, `renderToCanvas`) the same `forms` option as `renderToPdf`; the separators default from the document's `locale` (else its hyphenation language) in both. One rule writes the numbers everywhere, and postext exports it for other writers: `formNumberStyle(forms, lang)` resolves the options, `formatFieldNumber(value, format, style)` formats a value (undefined for text that is no number), and `numberFieldText(field, words, style)` gives what a painted number field shows. The display list carries the field on a chip run (`inline.field`, with the layout's `sizePx` and `padPx`).
 
+A book can keep these options in its configuration: `pdfGeneration.forms` takes the same fields (`currency`, `currencyBefore`, `separatorStyle`, `font`). `renderToPdf` and the canvas take each one from their own `forms` option first, then from the first document's `pdfGeneration.forms`, then from the defaults. It changes no layout, only how the fields are written and painted. In the Sandbox it is the **Form fields** group of the PDF section.
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
 The IDML export writes the same fields as InDesign form fields (see [Programmatic usage › InDesign packages](/en/docs/configuration-programmatic-usage#indesign-packages-postextidml)).
 
 ### Links in the PDF

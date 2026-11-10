@@ -1,6 +1,6 @@
 // The options of a postext document shown as a book and the viewer it
 // returns (#1276: split out of postext.ts).
-import type { PrintPreview, VDTDocument } from 'postext';
+import type { FormNumberOptions, PrintPreview, VDTDocument } from 'postext';
 import type { FolioOptions, FolioViewer, FolioAppearance, FolioPagePoint } from '../viewer.js';
 
 /** Options of a viewer over a Postext document: those of `createFolio`,
@@ -15,6 +15,9 @@ export interface FolioDocumentOptions extends Omit<FolioOptions, "pages" | "firs
   /** Passed to `renderPageToCanvas` (see its `RenderPageOptions`). */
   singleInk?: boolean;
   pageNegative?: boolean;
+  /** How form fields write numbers (`RenderPageOptions.forms`); unset
+   *  fields come from the document's `pdfGeneration.forms`. */
+  forms?: FormNumberOptions;
   /** The print preview (soft proof) of the pages (`createPrintPreview`).
    *  With `paper: true` the proof brings the paper's white: give the book
    *  a neutral paper shade meanwhile, or it tints that paper again. */

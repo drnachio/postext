@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import {
+  DEFAULT_BODY_TEXT_CONFIG,
   DEFAULT_PDF_GENERATION_CONFIG,
   resolvePdfGenerationConfig,
 } from 'postext';
@@ -17,6 +18,7 @@ import {
   SelectInput,
   ToggleSwitch,
 } from '../../../controls/index.js';
+import { PdfFormsFields } from './PdfFormsFields.js';
 
 const D = DEFAULT_PDF_GENERATION_CONFIG;
 
@@ -24,6 +26,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.pdfGeneration);
+  const bodyFamily = useSandboxSelector((s) => s.config.bodyText?.fontFamily);
   const cfg = resolvePdfGenerationConfig(raw);
 
   const colorSpaceOptions = [
@@ -121,6 +124,12 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
           />
         </NestedGroup>
       )}
+
+      <PdfFormsFields
+        forms={raw?.forms}
+        onChange={(forms) => (forms ? update({ forms }) : resetField('forms'))}
+        defaultFamily={bodyFamily ?? DEFAULT_BODY_TEXT_CONFIG.fontFamily}
+      />
     </CollapsibleSection>
   );
 });

@@ -94,7 +94,7 @@ export function createDocumentSharp(deps: DocumentSharpDeps) {
             if (had && had.doc === ds.current && had.width >= w) return resolve(had.canvas);
             const canvas = document.createElement("canvas");
             const scale = w / size.width;
-            renderPageToCanvas(page, ds.current, canvas, { trim: true, output: 'folio', scale, singleInk: options.singleInk, pageNegative: options.pageNegative, ...(options.printPreview ? { printPreview: options.printPreview } : {}) });
+            renderPageToCanvas(page, ds.current, canvas, { trim: true, output: 'folio', scale, singleInk: options.singleInk, pageNegative: options.pageNegative, ...(options.forms ? { forms: options.forms } : {}), ...(options.printPreview ? { printPreview: options.printPreview } : {}) });
             const entry: Sharp = { canvas, bare: null, width: w, doc: ds.current };
             // The decorations too (a selection), over the page as painted.
             decorateSharp(i, entry);

@@ -320,6 +320,14 @@ Acrobat, Foxit, pdf.js (Firefox) und die meisten Viewer führen diese Skripte au
 
 Das Canvas malt ein Zahlenfeld genauso, sodass die Vorschau dem PDF entspricht: Übergeben Sie `renderPageToCanvas` (oder `renderPage`, `renderToCanvas`) dieselbe Option `forms` wie `renderToPdf`; in beiden Fällen richten sich die Trennzeichen standardmäßig nach dem `locale` des Dokuments (sonst nach seiner Silbentrennungssprache). Eine einzige Regel schreibt die Zahlen überall, und postext exportiert sie für andere Ausgabeformate: `formNumberStyle(forms, lang)` löst die Optionen auf, `formatFieldNumber(value, format, style)` formatiert einen Wert (undefined für Text, der keine Zahl ist), und `numberFieldText(field, words, style)` liefert, was ein gemaltes Zahlenfeld zeigt. Die Display-Liste trägt das Feld am Textlauf des Chips (`inline.field`, mit `sizePx` und `padPx` aus dem Layout).
 
+Ein Buch kann diese Optionen in seiner Konfiguration halten: `pdfGeneration.forms` nimmt dieselben Felder (`currency`, `currencyBefore`, `separatorStyle`, `font`). `renderToPdf` und das Canvas nehmen jedes zuerst aus ihrer eigenen Option `forms`, dann aus `pdfGeneration.forms` des ersten Dokuments, dann aus den Standardwerten. Am Satz ändert das nichts, nur daran, wie die Felder geschrieben und gemalt werden. In der Sandbox ist es die Gruppe **Formularfelder** des Bereichs PDF.
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
 Der IDML-Export schreibt dieselben Felder als InDesign-Formularfelder (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postextidml)).
 
 ### Links im PDF

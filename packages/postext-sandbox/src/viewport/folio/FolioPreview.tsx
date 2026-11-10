@@ -311,6 +311,11 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, [deferredResources, diagramInkHex, inlineSvgFonts]);
 
   const pageNegative = useMemo(() => resolveDebugConfig(deferredConfig.debug).pageNegative.enabled, [deferredConfig]);
+  // How form fields write numbers (#1491), out of the layout key: the live
+  // settings, by value.
+  const formsKey = JSON.stringify(deferredConfig.pdfGeneration?.forms ?? null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const forms = useMemo(() => deferredConfig.pdfGeneration?.forms, [formsKey]);
   // The print preview (#606): the Canvas's proof (#799) — the output
   // profile on the paper's own white, the print alone (#802) — so the
   // book's paper is shown neutral meanwhile instead of tinting the proofed
@@ -388,6 +393,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         at,
         mode,
         pageNegative,
+        ...(forms ? { forms } : {}),
         ...(printPreview ? { printPreview } : {}),
         // The page is in the URL; the count is only announced.
         showCount: false,
@@ -447,11 +453,11 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     callbacksRef.current.onSpreadChange?.(viewer.state.pages);
     const shown = viewer.state.pages[viewer.state.pages.length - 1];
     if (shown !== undefined) callbacksRef.current.onCurrentPageChange?.(shown);
-  }, [shownDoc, paintKey, mode, pageNegative, printPreview, spineReady, imagesReady]);
+  }, [shownDoc, paintKey, mode, pageNegative, forms, printPreview, spineReady, imagesReady]);
 
-  // A new reading mode, page negative or print preview: a new viewer, on
-  // the same page.
-  const modeKey = `${mode}|${pageNegative}|${printPreviewKey}`;
+  // A new reading mode, page negative, form number style or print
+  // preview: a new viewer, on the same page.
+  const modeKey = `${mode}|${pageNegative}|${formsKey}|${printPreviewKey}`;
   const modeKeyRef = useRef(modeKey);
   useEffect(() => {
     if (modeKeyRef.current === modeKey) return;

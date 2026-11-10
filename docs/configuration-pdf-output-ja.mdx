@@ -320,6 +320,14 @@ Acrobat、Foxit、pdf.js（Firefox）をはじめ、多くのビューアーが�
 
 canvasも数値フィールドを同じように描くので、プレビューはPDFと一致します。`renderPageToCanvas`（または`renderPage`、`renderToCanvas`）に、`renderToPdf`と同じ`forms`オプションを渡してください。どちらでも、区切り記号は既定で文書の`locale`（なければハイフネーションの言語）から決まります。数値の書き方を決めるルールは1つで、postextはほかの出力形式のためにそれをエクスポートしています。`formNumberStyle(forms, lang)`はオプションを解決し、`formatFieldNumber(value, format, style)`は値に書式を適用し（数値でないテキストにはundefinedを返します）、`numberFieldText(field, words, style)`は描かれた数値フィールドに表示される文字列を返します。ディスプレイリストでは、フィールドはチップのランに載ります（`inline.field`。レイアウトの`sizePx`と`padPx`を含みます）。
 
+本はこれらのオプションを設定に持てます。`pdfGeneration.forms`は同じフィールド（`currency`、`currencyBefore`、`separatorStyle`、`font`）を取ります。`renderToPdf`とcanvasは、各フィールドをまず自身の`forms`オプションから、次に最初の文書の`pdfGeneration.forms`から、最後に既定値から取ります。組版は変わらず、フィールドの書き方と描き方だけが変わります。Sandboxでは、PDFセクションの**フォームフィールド**グループです。
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
 IDMLの書き出しは、同じフィールドをInDesignのフォームフィールドとして書き出します（[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostextidml)を参照）。
 
 ### PDFのリンク

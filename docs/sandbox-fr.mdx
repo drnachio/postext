@@ -90,13 +90,14 @@ Un éditeur CodeMirror 6 pour le Markdown du chapitre. Les lecteurs d’écran l
 
 Un listing de code (un délimiteur ```` ``` ```` ou `~~~` et ses lignes) forme une seule zone dans l’éditeur : il reçoit un fond de code, et le balisage Postext qu’il contient (formules, pastilles, tabulations, marques d’index) reste sans couleur, puisque le moteur ne le lit pas. L’éditeur transmet aussi son curseur et sa sélection aux aperçus, ce qui permet la synchronisation clic-curseur : cliquer sur du texte dans le rendu place le curseur à la position correspondante du Markdown, et les aperçus peuvent mettre en évidence la sélection courante.
 
-L’en-tête du panneau sert de **sélecteur de chapitre** : flèches précédent/suivant, la position et le titre du chapitre, et un menu qui liste chaque chapitre du livre avec ses pages dès que sa pagination est connue (voir [Livres et chapitres](/fr/docs/sandbox-books-saving#livres-et-chapitres)). Chaque chapitre a sa propre instance d’éditeur, de sorte que l’historique d’annulation et la position du curseur sont conservés par chapitre. L’en-tête offre ensuite cinq actions :
+L’en-tête du panneau sert de **sélecteur de chapitre** : flèches précédent/suivant, la position et le titre du chapitre, et un menu qui liste chaque chapitre du livre avec ses pages dès que sa pagination est connue (voir [Livres et chapitres](/fr/docs/sandbox-books-saving#livres-et-chapitres)). Chaque chapitre a sa propre instance d’éditeur, de sorte que l’historique d’annulation et la position du curseur sont conservés par chapitre. L’en-tête offre ensuite six actions :
 
 - **Réinitialiser** (demande confirmation) : recharge la **partie document** du livre d’exemple ouvert. Tous les chapitres et l’ensemble des figures sont remplacés par ceux de l’exemple (pour l’exemple intégré, le document d’exemple et les ressources d’exemple de la langue). La maquette n’est pas touchée, à l’exception des polices propres à l’exemple. Voir [Panneau Livres](#panneau-livres).
 - **Exporter** : télécharge le chapitre actif sous forme de fichier `.md` brut, nommé `<book>-<nn>-<chapter>.md` dans un livre de plusieurs chapitres, et sinon d’après le livre ouvert ou `document.md`
 - **Importer** : remplace le chapitre actif par le contenu d’un fichier `.md`
 - **Importer un document Word** : ouvre un manuscrit `.docx` et fait correspondre ses styles Word aux styles Postext avant que quoi que ce soit ne change, ou rapporte les corrections faites dans un fichier exporté depuis le livre (voir [Documents Word](/fr/docs/sandbox-books-saving#documents-word))
 - **Exporter vers Word** : télécharge le chapitre ou le livre entier en `.docx`, sémantique (le contenu seul, dans des styles Word simples) ou mis en page (le même texte modifiable avec la maquette du livre) ; les corrections qu’on y fait reviennent par **Importer un document Word**
+- **Exporter vers InDesign (IDML)** : met en page le livre entier comme le fait le PDF et le télécharge sous le nom `<livre>.idml`, pour le finir dans InDesign (voir [Export et import](/fr/docs/sandbox-books-saving#export-et-import))
 
 #### Panneau Livres
 
