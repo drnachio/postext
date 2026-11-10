@@ -253,7 +253,7 @@ describe('inline colour swatches', () => {
     expect(segs[1]!.swatch?.color).toBe('#c1dfd6');
     expect(segs[2]!.swatch?.color).toBeUndefined();
     // Three quarters of the note's font size, square.
-    const sizePx = Number(/(\d*\.?\d+)px/.exec(block.noteFontString)![1]);
+    const sizePx = Number(/(?<![\d.])(\d+(?:\.\d+)?|\.\d+)px/.exec(block.noteFontString)![1]);
     for (const s of segs) expect(s.width).toBeCloseTo(sizePx * 0.75, 6);
   });
 });

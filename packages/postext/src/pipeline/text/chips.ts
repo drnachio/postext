@@ -56,7 +56,9 @@ export function resolveChipBox(style: ResolvedChipStyleConfig, dpi: number, base
 
 /** The px size of a CSS font shorthand (`16px` when it has none). */
 export function fontSizePxOf(fontString: string): number {
-  const m = /(\d*\.?\d+)px/.exec(fontString);
+  // A match starts only where a number starts (the lookbehind), so a long
+  // run of digits is read once, not once per digit (CodeQL polynomial ReDoS).
+  const m = /(?<![\d.])(\d+(?:\.\d+)?|\.\d+)px/.exec(fontString);
   return m ? parseFloat(m[1]!) : 16;
 }
 
