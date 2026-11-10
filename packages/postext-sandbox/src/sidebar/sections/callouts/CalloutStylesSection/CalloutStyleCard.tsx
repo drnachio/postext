@@ -21,6 +21,7 @@ import { IconFields } from './iconFields.js';
 import { CalloutLabelFields, CalloutTitleStyleFields } from './labelFields.js';
 import { slugifyStyleId, type Group, type GroupConfig, CardButton, Field, inputClass, inputStyle, OFFSET_UNITS, SPACING_UNITS, STROKE_UNITS, ZERO_PT, MIN_HEIGHT_UNITS, FONT_SIZE_UNITS, LINE_HEIGHT_UNITS, TRACKING_UNITS } from './shared.js';
 import { CalloutNumberingFields } from './CalloutStyleCard/CalloutNumberingFields.js';
+import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import { CalloutBodyIndentFields } from './CalloutStyleCard/CalloutBodyIndentFields.js';
 import type { CalloutStyleCardProps } from './CalloutStyleCard/props.js';
 
@@ -462,14 +463,8 @@ export function CalloutStyleCard({
         isDefault={unset('marginBottom')}
         onReset={() => onResetField('marginBottom')}
       />
-      <ToggleSwitch
-        label={labels.calloutStyleSnapToGrid}
-        checked={resolved.snapToGrid}
-        onChange={(v) => onChange({ snapToGrid: v })}
-        tooltip={labels.calloutStyleSnapToGridTooltip}
-        isDefault={unset('snapToGrid')}
-        onReset={() => onResetField('snapToGrid')}
-      />
+      <GridSnapFields kind="callout" value={{ snapToGrid: resolved.snapToGrid, snapTopToGrid: resolved.snapTopToGrid }} unset={unset}
+        set={(k, v) => (v === undefined ? onResetField(k) : onChange({ [k]: v }))} />
       <DimensionInput
         label={labels.calloutStyleColumnGap}
         value={resolved.columnGap}

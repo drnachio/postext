@@ -14,6 +14,7 @@ import { defaultDocumentLocale } from '../../../../controls/language/hyphenation
 import { TabStopsField } from '../../../settings/TabStopsField.js';
 import { DropCapFields } from '../../../settings/DropCapFields.js';
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
+import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import { slugifyStyleId, Field, inputClass, inputStyle, FONT_SIZE_UNITS, LINE_HEIGHT_UNITS, ZERO_EM, TRACKING_UNITS, SPACING_UNITS } from './shared.js';
 
 interface ParagraphStyleCardProps {
@@ -415,14 +416,8 @@ export function ParagraphStyleCard({
         isDefault={unset('marginBottom')}
         onReset={() => onResetField('marginBottom')}
       />
-      <ToggleSwitch
-        label={labels.paragraphStyleSnapToGrid}
-        checked={resolved.snapToGrid}
-        onChange={(v) => onChange({ snapToGrid: v })}
-        tooltip={labels.paragraphStyleSnapToGridTooltip}
-        isDefault={unset('snapToGrid')}
-        onReset={() => onResetField('snapToGrid')}
-      />
+      <GridSnapFields kind="paragraph" value={{ snapToGrid: resolved.snapToGrid, snapTopToGrid: resolved.snapTopToGrid === true }} unset={unset}
+        set={(k, v) => (v === undefined ? onResetField(k) : onChange({ [k]: v }))} />
       {/* The rule of the space under this style's own groups (#715). */}
       <SelectInput
         label={labels.paragraphStyleContainerSpacing}

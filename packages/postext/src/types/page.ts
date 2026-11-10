@@ -64,8 +64,8 @@ export interface PageMargins {
 /** The baseline grid: lines one body line height apart from the top of
  *  the content area. The layout uses it whether or not it is drawn
  *  (headings, list ends, boxes, figures and display formulas snap the flow
- *  back onto it, unless their own `snapToGrid` is off); this config only
- *  draws it. */
+ *  back onto it, unless their own `snapToGrid` is off, and the styles whose
+ *  `snapTopToGrid` is on open on it); this config only draws it. */
 export interface BaselineGridConfig {
   /** Draw the grid lines over the pages (canvas and PDF renderers, the
    *  Sandbox views). Only the drawing: the layout is the same either way. */

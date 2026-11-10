@@ -447,7 +447,7 @@ The `pdfGeneration` property controls how the PDF backend emits the final docume
 
 `buildDocument` carries them in the VDT, as `doc.config.pdfGeneration`, and `renderToPdf` takes each setting from the first place that gives it:
 
-1. its own options (`outlines`, `accessible`, `colorSpace`, `forms`);
+1. its own options (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. the `pdfGeneration` of the first document it renders (in a book, the first chapter's settings apply to the whole file);
 3. the defaults: bookmarks and tagging on, RGB colour.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  baselineGrid?: boolean;      // Draw the `page.baselineGrid` grid in the PDF as well.
   forms?: PdfFormsConfig;      // Form fields: currency, separators, face.
 }
 ```
@@ -498,6 +499,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Emit an accessible, tagged PDF oriented to PDF/UA-1: a logical structure tree in reading order (headings that never skip a level, paragraphs, lists, block quotes, callouts, tables with header cells, figures with their alt text and captions, formulas, clickable refs as links, the contents of a `:::toc` as one `TOC` with a `TOCI` per row: the row's number as a `Lbl`, its title and page as a `Reference` holding the link), the document title and language (the top-level `locale`), the PDF/UA identification in the XMP metadata, and every decorative mark (page background, rules, baseline grid, running headers and footers, cut marks, repeated table headers, the repeated title and continuation marker of a split callout) flagged as an artifact so screen readers skip it. A figure without `altText` falls back to its caption, then to its label. A floated figure or table is read right after the text that first cites it, or the text before its `::resource` line, and a floated box after the text before its fence, even when the float is placed on a later page; a list or the contents that go on past a float stay one element, and a list inside a floated or fixed box (`placement: 'fixed'`) is one list. Turn off only for print masters where the extra structure is unwanted.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Draws the baseline grid in the PDF while <code>page.baselineGrid</code> is on. On by default, as before; <code>false</code> keeps the grid a guide for checking the page on screen, out of the PDF, while the canvas and the HTML viewer keep showing it. In the Sandbox it is <strong>Baseline grid in the PDF</strong>, in the PDF section.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>

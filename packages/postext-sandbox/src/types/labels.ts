@@ -543,6 +543,8 @@ export interface SandboxLabels {
   pdfOutlinesTooltip: string;
   pdfAccessible: string;
   pdfAccessibleTooltip: string;
+  pdfBaselineGrid: string;
+  pdfBaselineGridTooltip: string;
   pdfForms: string;
   pdfFormsDescription: string;
   pdfFormsCurrency: string;
@@ -739,6 +741,10 @@ export interface SandboxLabels {
   mathIndentAfterDisplayTooltip: string;
   mathKeepWithLeadIn: string;
   mathKeepWithLeadInTooltip: string;
+  mathSnapToGrid: string;
+  mathSnapToGridTooltip: string;
+  mathSnapTopToGrid: string;
+  mathSnapTopToGridTooltip: string;
   footnotesSection: string;
   footnotesPlacement: string;
   footnotesPlacementTooltip: string;
@@ -1305,6 +1311,8 @@ export interface SandboxLabels {
   bodyFirstLineIndentTooltip: string;
   bodyHangingIndent: string;
   bodyHangingIndentTooltip: string;
+  bodySnapTopToGrid: string;
+  bodySnapTopToGridTooltip: string;
   bodyIndentAfterHeading: string;
   bodyIndentAfterHeadingTooltip: string;
   bodyMaxWordSpacing: string;
@@ -1549,6 +1557,10 @@ export interface SandboxLabels {
   headingsKeepWithNextSplitFill: string;
   headingsSnapToGrid: string;
   headingsSnapToGridTooltip: string;
+  headingRegainGrid: string;
+  headingRegainGridTooltip: string;
+  headingsSnapTopToGrid: string;
+  headingsSnapTopToGridTooltip: string;
   headingsColumnHeadSpace: string;
   headingsColumnHeadSpaceTooltip: string;
   headingsColumnHeadSpaceNone: string;
@@ -1570,6 +1582,8 @@ export interface SandboxLabels {
   headingNumberReplacesTitleTooltip: string;
   headingLevelSnapToGrid: string;
   headingLevelSnapToGridTooltip: string;
+  headingLevelSnapTopToGrid: string;
+  headingLevelSnapTopToGridTooltip: string;
   headingItalic: string;
   headingItalicTooltip: string;
   headingTextTransform: string;
@@ -3295,6 +3309,8 @@ export interface SandboxLabels {
   paragraphStyleMarginBottomTooltip: string;
   paragraphStyleSnapToGrid: string;
   paragraphStyleSnapToGridTooltip: string;
+  paragraphStyleSnapTopToGrid: string;
+  paragraphStyleSnapTopToGridTooltip: string;
   paragraphStyleContainerSpacing: string;
   paragraphStyleContainerSpacingTooltip: string;
   paragraphStyleContainerSpacingInherit: string;
@@ -4114,6 +4130,8 @@ export interface SandboxLabels {
   calloutStyleMarginBottomTooltip: string;
   calloutStyleSnapToGrid: string;
   calloutStyleSnapToGridTooltip: string;
+  calloutStyleSnapTopToGrid: string;
+  calloutStyleSnapTopToGridTooltip: string;
   calloutStyleColumnGap: string;
   calloutStyleColumnGapTooltip: string;
   // --- Diagram styling section ---
@@ -4267,6 +4285,10 @@ export interface SandboxLabels {
   resourceTypePlacementGroup: string;
   resourceTypePlacementHint: string;
   resourceTypePlacementResetConfirm: string;
+  resourceTypeSnapToGrid: string;
+  resourceTypeSnapToGridTooltip: string;
+  resourceTypeSnapTopToGrid: string;
+  resourceTypeSnapTopToGridTooltip: string;
   resourceTypePlacementInherit: string;
   resourceTypePlacementPosition: string;
   resourceTypePlacementPositionAuto: string;

@@ -65,6 +65,10 @@ export interface BlockIteration {
   itemGapPx: (bullet: NonNullable<ListBulletStyle | undefined>) => number;
   nextIsHeading: boolean;
   shouldSnapToGrid: boolean;
+  /** The block's style opens it on a grid line (`snapTopToGrid`). */
+  snapsTop: boolean;
+  /** A heading off the grid whose next block regains it (`regainGrid`). */
+  regainGrid: boolean;
   canSplit: boolean;
   remainingLines: VDTLine[];
   partIndex: number;

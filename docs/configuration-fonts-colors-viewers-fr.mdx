@@ -447,7 +447,7 @@ La propriété `pdfGeneration` règle la façon dont le moteur PDF produit le do
 
 `buildDocument` les transporte dans le VDT, sous `doc.config.pdfGeneration`, et `renderToPdf` prend chaque réglage au premier endroit qui le fournit :
 
-1. ses propres options (`outlines`, `accessible`, `colorSpace`, `forms`) ;
+1. ses propres options (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`) ;
 2. le `pdfGeneration` du premier document qu’il rend (dans un livre, les réglages du premier chapitre s’appliquent à tout le fichier) ;
 3. les valeurs par défaut : signets et balisage activés, couleur RVB.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  baselineGrid?: boolean;      // Draw the `page.baselineGrid` grid in the PDF as well.
   forms?: PdfFormsConfig;      // Champs de formulaire : devise, séparateurs, caractère.
 }
 ```
@@ -498,6 +499,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Produit un PDF accessible et balisé, orienté PDF/UA-1 : un arbre de structure logique dans l’ordre de lecture (titres qui ne sautent jamais de niveau, paragraphes, listes, citations, encadrés, tableaux avec cellules d’en-tête, figures avec leur texte de remplacement et leur légende, formules, renvois cliquables sous forme de liens, le contenu d’un `:::toc` comme un `TOC` avec un `TOCI` par ligne : le numéro de la ligne en `Lbl`, son titre et sa page dans une `Reference` qui contient le lien), le titre et la langue du document (le `locale` de premier niveau), l’identification PDF/UA dans les métadonnées XMP, et chaque marque décorative (fond de page, filets, grille de ligne de base, en-têtes et pieds de page courants, traits de coupe, en-têtes de tableau répétés, titre répété et marque de suite d’un encadré coupé) signalée comme artefact pour que les lecteurs d’écran l’ignorent. Une figure sans `altText` se rabat sur sa légende, puis sur son étiquette. Une figure ou un tableau flottant est lu juste après le texte qui le cite en premier, ou le texte qui précède sa ligne `::resource`, et une boîte flottante après le texte qui précède son délimiteur, même quand le flottant est placé sur une page ultérieure ; une liste ou une table des matières qui se poursuit au-delà d’un flottant reste un seul élément, et une liste placée dans une boîte flottante ou ancrée à la page (`placement: 'fixed'`) forme une seule liste. Ne le désactivez que pour des fichiers maîtres d’impression où la structure supplémentaire n’est pas souhaitée.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dessine la grille de ligne de base dans le PDF tant que <code>page.baselineGrid</code> est activée. Activé par défaut, comme jusqu’ici ; <code>false</code> garde la grille comme repère pour vérifier la page à l’écran, hors du PDF, tandis que le canvas et la visionneuse HTML continuent de l’afficher. Dans le Sandbox : <strong>Grille de ligne de base dans le PDF</strong>, dans la section PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>

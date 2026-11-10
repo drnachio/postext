@@ -17,6 +17,7 @@ import {
 import { HeadingLevelSection } from './HeadingLevelSection.js';
 import { flowSideLabels, useRightToLeftFlow } from '../../../settings/flowSides.js';
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
+import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import { createHeadingsWriters } from './writers.js';
 
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -234,13 +235,11 @@ export const HeadingsSection = memo(function HeadingsSection() {
         />
       )}
 
-      <ToggleSwitch
-        label={labels.headingsSnapToGrid}
-        checked={headings.snapToGrid}
-        onChange={(v) => updateHeadings({ snapToGrid: v })}
-        tooltip={labels.headingsSnapToGridTooltip}
-        isDefault={isSnapToGridDefault}
-        onReset={() => resetField('snapToGrid')}
+      <GridSnapFields
+        kind="headings"
+        value={{ snapToGrid: headings.snapToGrid, regainGrid: headings.regainGrid, snapTopToGrid: headings.snapTopToGrid }}
+        set={(k, v) => (v === undefined ? resetField(k) : updateHeadings({ [k]: v }))}
+        unset={(k) => (k === 'snapToGrid' ? isSnapToGridDefault : headings[k] === D[k])}
       />
 
       {someHeadingSnaps && (

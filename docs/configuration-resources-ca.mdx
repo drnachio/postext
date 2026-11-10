@@ -145,6 +145,16 @@ Un tipus pot ometre camps (des de postext 1.38): els completa el tipus integrat 
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Canvis parcials a l'<a href="#estil-dels-peus-de-recurs">estil dels peus</a> per als recursos d'aquest tipus. Només les claus que indiquis substitueixen el <code>captionStyle</code> global; la resta s'hereta (si canvies el <code>color</code>, canvien també el de l'etiqueta i el de la nota, llevat que es fixin explícitament). Ús típic: taules amb el peu <em>a sobre</em>, damunt d'una barra de color, mentre les figures conserven el peu a sota. Les referències a la paleta es resolen com qualsevol altre color.</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Per defecte <code>true</code>. Si una figura o taula d’aquest tipus col·locada en el text s’assenta a la retícula de base: el flux hi torna sota el recurs. <code>false</code> conserva l’espai exacte que deixa el recurs. No afecta els flotants al capdamunt o al peu d’una columna.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Per defecte <code>false</code>. Comença una figura o taula d’aquest tipus col·locada en el text en una línia de la retícula, acabi com acabi el bloc anterior. No afecta els flotants al capdamunt o al peu d’una columna, una figura envoltada pel text ni la que obre una columna. Al Sandbox: <strong>Començar en una línia de la retícula</strong>.</td>
+    </tr>
   </tbody>
 </table>
 

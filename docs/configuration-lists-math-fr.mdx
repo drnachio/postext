@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Listes et mathématiques',
   description: 'Les listes à puces et numérotées, leurs marqueurs, leurs retraits et leur imbrication, les listes de tâches, et la taille, la couleur et l’espacement des formules mathématiques',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '19 min',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Garde une formule hors texte dans la colonne de la ligne qui l’introduit : c’est la pénalité « predisplay » de TeX. Quand la formule ne tient pas sous la dernière ligne du paragraphe qui la précède, cette ligne passe à la colonne ou à la page suivante avec la formule ; quand les lignes laissées derrière seraient moins nombreuses que <code>bodyText.widowMinLines</code> (moins d’une quand <code>bodyText.avoidWidows</code> est désactivé), un paragraphe qui s’ouvre dans cette colonne part en entier (avec les titres qui ferment la colonne au-dessus de lui, selon <code>headings.keepWithNext</code>). La ligne reportée se retrouve seule en tête de la colonne suivante, quoi que demande la règle des orphelines. Avec <code>false</code>, la formule part seule, et la ligne qui l’introduit peut fermer la colonne précédente, ou se poser au-dessus d’une figure qui ouvre la suivante.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si une formule centrée repose sur la grille de base : le flux y revient sous la formule. <code>false</code> garde ses marges exactes. Dans le Sandbox : <strong>Revenir sur la grille après les formules</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fait commencer une formule centrée sur une ligne de la grille : l’espace au-dessus est arrondi jusqu’à la suivante, quelle que soit la fin du bloc précédent. Désactivé par défaut. Dans le Sandbox : <strong>Commencer les formules sur une ligne de la grille</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

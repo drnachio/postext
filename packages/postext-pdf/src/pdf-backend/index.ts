@@ -71,6 +71,10 @@ export interface RenderToPdfOptions {
    *  the canvas and HTML do on screen. Default false: the grid is a
    *  screen aid and stays out of a file meant for print. */
   characterGrid?: boolean;
+  /** Draw the baseline grid (`page.baselineGrid`, while it is on) as the
+   *  canvas and HTML do on screen. When omitted, the first document's
+   *  `config.pdfGeneration.baselineGrid`, else true. */
+  baselineGrid?: boolean;
   /** Called as the render advances: after the fonts and resources are
    *  embedded, after every page, and before the file is written. */
   onProgress?: (progress: RenderProgress) => void;
@@ -151,14 +155,15 @@ export type { ResourceBytesProvider } from './blocks/renderResourceBlock.js';
  *  while its `forceColorSpace` is on), else the default — RGB, bookmarks
  *  and tagging on. */
 function pdfSettings(
-  options: Pick<RenderToPdfOptions, 'outlines' | 'accessible' | 'colorSpace'>,
+  options: Pick<RenderToPdfOptions, 'outlines' | 'accessible' | 'colorSpace' | 'baselineGrid'>,
   doc: VDTDocument | undefined,
-): { outlines: boolean; accessible: boolean; colorSpace: PdfColorSpace } {
+): { outlines: boolean; accessible: boolean; colorSpace: PdfColorSpace; baselineGrid: boolean } {
   const gen = doc?.config.pdfGeneration;
   return {
     outlines: options.outlines ?? gen?.outlines ?? true,
     accessible: options.accessible ?? gen?.accessible ?? true,
     colorSpace: options.colorSpace ?? (gen?.forceColorSpace ? gen.colorSpace : undefined) ?? 'rgb',
+    baselineGrid: options.baselineGrid ?? gen?.baselineGrid ?? true,
   };
 }
 
@@ -314,7 +319,7 @@ export async function renderToPdf(
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index, documentIndex });
           }
         : undefined;
-      renderPage(pdfDoc, page, doc, fontCache, pageNegative, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false);
+      renderPage(pdfDoc, page, doc, fontCache, pageNegative, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false, settings.baselineGrid);
       // Black handling over the page's operators (overprint, rich black).
       if (printMode) runPagePrintPass(pdfDoc.getPage(pdfDoc.getPageCount() - 1), printMode);
       rendered++;

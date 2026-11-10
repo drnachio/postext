@@ -465,7 +465,8 @@ function placeDocumentPass(
     state, resolved: setup.resolved, dpi, baselineGrid, doc, pageWidthPx, pageHeightPx, bodyOffset, bodyStyle, cursor,
     floatGapPx, offsetResourceBlockToAbsolute, textWrapNotes, movedNotes, wrapExclusionWidth,
     wrapContourOf, onAtomicNewPage, stampBlockExtras, addBalanceExtra, enterBand,
-    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices
+    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices,
+    resourceTypeById
   });
   const { prepareLines } = createBlockLines({
     resolved: setup.resolved, headingLevels, freshPageFlowColumns, contentBlocks, gateCitedFloats, measuredAcrossPage

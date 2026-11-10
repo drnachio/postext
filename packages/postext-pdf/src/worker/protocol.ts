@@ -3,7 +3,7 @@ import type { PdfFontFileDeclaration } from '../fontCache.js';
 import type { PdfWarning, RenderProgress, RenderToPdfOptions } from '../pdf-backend/index.js';
 
 /** The render options that travel to the worker as data. */
-export type PdfRenderSettings = Pick<RenderToPdfOptions, 'forms' | 'pageNegative' | 'outlines' | 'colorSpace' | 'accessible' | 'print' | 'outputProfile' | 'profileBaseUrl'> & {
+export type PdfRenderSettings = Pick<RenderToPdfOptions, 'forms' | 'pageNegative' | 'outlines' | 'colorSpace' | 'accessible' | 'baselineGrid' | 'print' | 'outputProfile' | 'profileBaseUrl'> & {
   /** `RenderToPdfOptions.harfbuzzWasm`, as data: a URL string (a `URL`
    *  does not survive `postMessage`) or the bytes. */
   harfbuzzWasm?: string | ArrayBuffer | Uint8Array;

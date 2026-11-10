@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Titoli',
   description: 'I valori predefiniti dei titoli, le personalizzazioni per livello, le interruzioni di pagina prima di un titolo, le aperture di capitolo a tutta pagina e i numeri scritti in lettere',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '34 min',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,18 @@ La proprietà `headings` controlla la tipografia di tutti i livelli di titolo (H
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Se il flusso torna sulla griglia della linea di base sotto un titolo. Con <code>true</code> il <code>marginBottom</code> del titolo viene arrotondato per eccesso a righe intere della griglia; con <code>false</code> si mantiene il margine esatto e il testo sotto il titolo può restare fuori griglia fino al punto di allineamento successivo (la fine di un elenco, una coda di <code>:::paragraphs</code>, una formula in display), come molti libri compongono una riga e mezza sotto un titolo. Un livello (<code>levels[].snapToGrid</code>) o uno stile di titolo può impostare un valore proprio; questo è quello che ereditano.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Letto solo quando <code>snapToGrid</code> è <code>false</code>: il titolo mantiene i suoi margini esatti e la propria interlinea, e il blocco che lo segue (testo, un elenco, una figura o tabella nel testo, un riquadro) inizia sulla riga successiva della griglia, così la colonna vi ritrova la griglia invece di restarne fuori fino al prossimo punto di allineamento. Tenere il titolo con le righe che lo seguono tiene conto di questo arrotondamento, e il bilanciamento delle colonne può ancora aggiungere righe sopra il titolo. Un livello (<code>levels[].regainGrid</code>) o uno stile di titolo può fissare un proprio valore. Nel Sandbox: <strong>Ritrova la griglia al testo</strong>, sotto l’interruttore della griglia.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fa iniziare il titolo su una riga della griglia: lo spazio sopra viene arrotondato fino alla successiva, comunque sia finito il blocco precedente; <code>marginTop</code> diventa un minimo. Spento per impostazione predefinita. Un livello (<code>levels[].snapTopToGrid</code>) o uno stile di titolo può fissare un proprio valore; questo è quello che ereditano. Nel Sandbox: <strong>Inizia i titoli su una riga della griglia</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

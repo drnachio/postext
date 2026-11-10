@@ -145,6 +145,16 @@ interface ResourceType {
       <td><code>CaptionStyleConfig</code>（可选）</td>
       <td>对该类型资源局部覆盖<a href="#题注样式">题注样式</a>。只有你设定的键会替换全局<code>captionStyle</code>，其余一律继承（覆盖了<code>color</code>时，标签和注释的颜色也随之改变，除非它们另有明确设定）。典型用法：表的题注放在上方的色条上，图的题注仍在下方。调色板引用与其他颜色一样解析。</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code>（可选）</td>
+      <td>默认<code>true</code>。放在正文中的此类插图或表格是否落在基线网格上：资源下方的文字流回到网格。<code>false</code>保持资源留下的精确间距。栏顶或栏底的浮动体不受影响。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code>（可选）</td>
+      <td>默认<code>false</code>。无论前一个块在哪里结束，都让放在正文中的此类插图或表格从网格线开始。栏顶或栏底的浮动体、文字环绕的插图以及位于栏顶的插图不受影响。在Sandbox中：<strong>从网格线开始</strong>。</td>
+    </tr>
   </tbody>
 </table>
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Listas y matemáticas',
   description: 'Cómo se configuran las listas con viñetas y las numeradas (sus marcas, sus sangrías y su anidamiento) y las listas de tareas, y qué cuerpo, color y espaciado tienen las fórmulas matemáticas',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '19 min',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Mantiene una fórmula en bloque en la columna de la línea que la introduce, como la penalización <code>\predisplaypenalty</code> de TeX. Cuando la fórmula no cabe bajo la última línea del párrafo anterior, esa línea pasa con la fórmula a la columna o página siguiente; cuando las líneas que quedarían atrás son menos de <code>bodyText.widowMinLines</code> (menos de una si <code>bodyText.avoidWidows</code> está desactivado), un párrafo que empieza en esa columna pasa entero (con los encabezados que cierran la columna por encima, según <code>headings.keepWithNext</code>). La línea que pasa queda sola en lo alto de la columna siguiente, diga lo que diga la regla de las huérfanas. Con <code>false</code>, la fórmula pasa sola, y la línea que la introduce puede cerrar la columna de arriba o quedar sobre una figura que encabeza la siguiente.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si una fórmula destacada se asienta en la rejilla de base: el flujo vuelve a ella bajo la fórmula. <code>false</code> conserva sus márgenes exactos. En el Sandbox: <strong>Volver a la rejilla tras las fórmulas</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Empieza una fórmula destacada en una línea de la rejilla: el espacio de encima se redondea hasta la siguiente, termine como termine el bloque anterior. Apagado por defecto. En el Sandbox: <strong>Empezar las fórmulas en una línea de la rejilla</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

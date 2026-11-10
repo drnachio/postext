@@ -145,6 +145,16 @@ Un tipo può omettere dei campi (da postext 1.38): li completa il tipo integrato
       <td><code>CaptionStyleConfig</code> (opzionale)</td>
       <td>Sostituzione parziale dello <a href="#stile-delle-didascalie">stile delle didascalie</a> per le risorse di questo tipo. Solo le chiavi che imposti sostituiscono il <code>captionStyle</code> globale; tutto il resto viene ereditato (un <code>color</code> sostituito determina anche i colori dell’etichetta e della nota, a meno che questi non siano impostati esplicitamente). Uso tipico: tabelle con didascalia <em>sopra</em> su una barra colorata, mentre le figure tengono la didascalia sotto. I riferimenti alla tavolozza si risolvono come qualsiasi altro colore.</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (facoltativo)</td>
+      <td>Predefinito <code>true</code>. Se una figura o tabella di questo tipo collocata nel testo poggia sulla griglia di base: il flusso vi ritorna sotto la risorsa. <code>false</code> mantiene lo spazio esatto che la risorsa lascia. I flottanti in testa o al piede di una colonna non sono interessati.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (facoltativo)</td>
+      <td>Predefinito <code>false</code>. Fa iniziare una figura o tabella di questo tipo collocata nel testo su una riga della griglia, comunque sia finito il blocco precedente. I flottanti in testa o al piede di una colonna, una figura scontornata dal testo e quella che apre una colonna non sono interessati. Nel Sandbox: <strong>Inizia su una riga della griglia</strong>.</td>
+    </tr>
   </tbody>
 </table>
 

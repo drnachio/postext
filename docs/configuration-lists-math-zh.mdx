@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '列表与数学公式',
   description: '无序列表和有序列表的标记、缩进与嵌套，任务列表，以及数学公式的大小、颜色和间距',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '12分钟',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>让独立公式与引出它的那一行留在同一栏，相当于TeX的predisplay penalty。公式在前一段最后一行下面排不下时，这一行和公式一起移到下一栏或下一页；如果留下的行少于<code>bodyText.widowMinLines</code>（<code>bodyText.avoidWidows</code>关闭时为少于一行），就把在该栏开始的段落整段移走（按<code>headings.keepWithNext</code>，连同该段上方收尾这一栏的标题）。带过去的那一行单独位于下一栏的栏顶，不论段末孤行（orphan）规则如何要求。设为<code>false</code>时只移走公式，引出它的那一行可能收尾上一栏，或者位于下一栏栏首的图的上方。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>独立公式是否落在基线网格上：公式下方的文字流回到网格。<code>false</code>保持其精确的间距。在Sandbox中：<strong>公式后回到网格</strong>。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>让独立公式从网格线开始：无论前一个块在哪里结束，上方间距都向上取整到下一条网格线。默认关闭。在Sandbox中：<strong>公式从网格线开始</strong>。</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

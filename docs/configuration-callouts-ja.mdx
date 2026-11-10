@@ -219,6 +219,12 @@ The glass stays hot for an hour after the flame is out.
       <td><code>true</code>のとき、囲みの後の流れはベースライングリッドに戻るので、下のアキは<code>marginBottom</code>をグリッドの行単位に切り上げた値になります。<code>false</code>のとき、囲みは正確な<code>marginBottom</code>を保ち、それが次のブロックの上のアキと相殺されます。このスタイルの囲みが2つ続けば、間隔はちょうど<code>max(marginBottom, marginTop)</code>です。囲みの後のテキストは、次にグリッドに戻る位置（見出し、リストの終わり）までグリッドから外れることがあり、<code>headings.snapToGrid: false</code>の見出しの後と同じ動作になります。囲みを積み重ねて作る文書（ワークシート、書式）向けです。これが効くのは流れの中の囲みです。段組みのレイアウトのページ全幅の囲み、フロートとして配置した囲み、固定の囲み、サイドの囲みはグリッドを保ちます。段の帯とフロートの領域はグリッドに沿って組まれるためです。段末そろえの手段は変わりません。段を締めくくる囲みは、引き続き段の最後のグリッド位置まで押し下げられます。</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>囲みをグリッド線から始めます。前のブロックがどこで終わっても、上の間隔を次のグリッド線まで切り上げ、その間隔を含めて囲みが段に収まるかを判定します。既定ではオフです。本文の流れの中の囲みに適用され、フロート、固定、サイドの囲みはすでにグリッド上に配置された帯に入ります。Sandboxでは<strong>グリッド線から始める</strong>です。</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

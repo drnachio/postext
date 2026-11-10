@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '見出し',
   description: '見出しの共通の既定値、レベルごとの上書き、見出しの前の改ページ、ページ幅いっぱいの章の書き出し、語で綴る番号',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '32分',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,18 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>見出しの下で流れをベースライングリッドに戻すかどうか。<code>true</code>では見出しの<code>marginBottom</code>をグリッドの行単位に切り上げます。<code>false</code>では指定どおりのアキを保ち、見出しの下の本文は次の吸着点（リストの終わり、<code>:::paragraphs</code>の末尾、別行立て数式）までグリッドから外れることがあります。見出しの下に1行半を空ける、多くの本に見られる組み方です。レベル（<code>levels[].snapToGrid</code>）や見出しスタイルは独自の値を持てます。ここでの値は、それらが継承する値です。</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>snapToGrid</code>が<code>false</code>のときだけ読まれます。見出しは正確な余白と自身の行送りを保ち、その後のブロック（本文、リスト、本文中の図や表、囲み）は次のグリッド線から始まるので、段は次の揃え位置までグリッドから外れたままにならず、そこでグリッドに戻ります。見出しを後続行と一緒に保つ判定はこの切り上げを含めて行い、段の均等化は見出しの上に行を足すことがあります。レベル（<code>levels[].regainGrid</code>）や見出しスタイルで個別に設定できます。Sandboxでは、グリッドのスイッチの下の<strong>本文でグリッドに戻す</strong>です。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>見出しをグリッド線から始めます。前のブロックがどこで終わっても、上の間隔を次のグリッド線まで切り上げ、<code>marginTop</code>は最小値になります。既定ではオフです。レベル（<code>levels[].snapTopToGrid</code>）や見出しスタイルで個別に設定でき、ここでの値がその既定値になります。Sandboxでは<strong>見出しをグリッド線から始める</strong>です。</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

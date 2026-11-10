@@ -134,7 +134,13 @@ export function createLineFit(deps: LineFitDeps) {
         const wouldUsedHeight =
           (curCol.bbox.height - curCol.availableHeight) + lineTurn.spacingBefore;
         const naturalBottom = wouldUsedHeight + lineTurn.effectiveRemainHeight + style.marginBottomPx;
-        const snappedBottom = shouldSnapToGrid
+        // A heading that regains the grid at its text, or text that opens
+        // on a grid line by its own style (body text's `snapTopToGrid`):
+        // the next block's rounding counts in the room too.
+        const nextRaw = contentBlocks[blockTurn.blockIdx + 1];
+        const textSnapsTop = (nextRaw?.type === 'paragraph' || nextRaw?.type === 'blockquote')
+          && nextRaw.verse === undefined && blockMeasureCtx.resolved.bodyText.snapTopToGrid;
+        const snappedBottom = shouldSnapToGrid || blockTurn.regainGrid || textSnapsTop
           ? Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid
           : naturalBottom;
         const remainAfterHeading = curCol.bbox.height - snappedBottom;
@@ -206,6 +212,7 @@ export function createLineFit(deps: LineFitDeps) {
       }
       blk.dirty = false;
       blk.snappedToGrid = shouldSnapToGrid && blockTurn.partIndex === 0;
+      if (blockTurn.regainGrid && blockTurn.partIndex === 0) blk.regainsGrid = true;
       if (blockTurn.remainingLines.length > 0) {
         blk.sourceStart = blockTurn.remainingLines[0]!.sourceStart ?? rawBlock.sourceStart + bodyOffset;
         blk.sourceEnd = blockTurn.remainingLines[blockTurn.remainingLines.length - 1]!.sourceEnd ?? rawBlock.sourceEnd + bodyOffset;

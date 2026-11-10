@@ -64,6 +64,12 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>The space between two paragraphs. <code>true</code> inserts a blank line (equal to <code>lineHeight</code>), as some publishers separate paragraphs; a length such as <code>&#123; value: 2, unit: 'mm' &#125;</code> or <code>0.33em</code> of the text size sets exactly that much, in the running text, in boxes and in composed frames. A length that is not a whole number of lines takes the paragraphs off the baseline grid; the next block that snaps to it (a heading, the last item of a list, display maths) brings the text back. It is the same space as <code>paragraphStyles[].spaceBetween</code>, which takes its place inside a <code>:::paragraphs</code> container. A box sets its own in <code>calloutStyles[].body.paragraphSpacing</code>.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Open each body paragraph and blockquote on a grid line: the space above it is rounded up to the next one, however the block before it ended (a heading off the grid, a box or a figure with exact margins). <code>false</code> leaves the paragraph where the block before left it. A paragraph in a <code>:::paragraphs</code> container follows its style's <code>snapTopToGrid</code> instead, and verse its paragraph style's, or this one when it has none. To regain the grid only under a heading off the grid, use the heading's <code>regainGrid</code>. In the Sandbox: <strong>Open paragraphs on a grid line</strong>.</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'The page size, margins and baseline grid, page numbering, and the columns and their gutters',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '32 min',
+  readingTime: '33 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "This page covers the settings for the sheet itself. You choose the page size, the margins, the side the book is bound on and the grid the lines of text sit on. You set how page numbers are counted and written. You set how many columns a page has and how much space runs between them, and whether the text runs across the page or down it. The running headers and footers have a page of their own.",
@@ -75,7 +75,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>disabled</td>
-      <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. See below.</td>
+      <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. <code>pdfGeneration.baselineGrid: false</code> keeps it out of the PDF. See below.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ The baseline grid is the rhythm of the body text: lines one body line height apa
     </tr>
   </tbody>
 </table>
+
+Where a block opens is up to its style. Each style that can open on a grid line has a `snapTopToGrid` switch, off by default: `headings` (and a level or a heading style), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, the lists, `math` and `resourceTypes[]`. With it on, the space above the block is rounded up to the next grid line, however the block before it ended. The top of a column is always on the grid.
 
 ```ts
 page: {
@@ -446,12 +448,6 @@ The `layout` property controls how columns are arranged within the content area.
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>On the closing page of a chapter (and of the document), the page-wide figures and tables set below the last band of text move up to sit one float gap under it, stacked in their order: nothing follows them there. <code>false</code> leaves them where their placement put them, so a <code>position: 'bottom'</code> float ends at the page foot on the closing page as on every other page — a datasheet whose outline ends at the same height on every page, say. Pages with a side column never move them.</td>
-    </tr>
-    <tr>
-      <td><code>pullFloatsToCitation</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Not recommended. Pulls back onto the page that first cites it a float that missed that page by four body lines or fewer (measured at its width in its best slot there). It works in two steps, each kept only when the float then lands on its citing page, with no page more, no other float set later, no column levelling lost that was reached before, and no float heading its citing page (<code>floatsAtCitingPage</code>) lost: first the paragraphs of the citing page above the citation are offered a line shorter (tighter word spacing, never letter-spacing), only as many lines as the float lacks, and the change stays only on the pages whose float came back; then a picture with a <a href="/en/docs/document-format-resources#safe-area">safe area</a> still off its page is cropped within it, no more than the slot needs, and each crop is reported as a <code>floatCropped</code> warning. Later passes, column balancing among them, keep the pulled floats on their page. The option works against the rule-based placement: where the rules move the float on to the next slot, it takes the citing page by force, setting paragraphs tighter than the line breaker chose and cropping pictures. To keep floats by their citation through the rules, use <code>floatsAtCitingPage</code> or <a href="/en/docs/document-format-resources#placement"><code>placement.citingPage</code></a> (the float heads the page its citing line lands on, and the text above the reference moves down under it) and <code>placement.shrink: 'slot'</code> (the picture is set smaller, keeping its proportions, to stay on the page that cites it). In the Sandbox, <em>Pull figures to their citation's page</em> under Layout.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

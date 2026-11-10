@@ -145,6 +145,16 @@ Um tipo pode omitir campos (desde o postext 1.38): o tipo integrado de mesmo id 
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Substituição parcial do <a href="#estilo-de-legenda">estilo de legenda</a> para os recursos deste tipo. Só as chaves que você define substituem o <code>captionStyle</code> global; todo o resto é herdado (uma <code>color</code> substituída também define as cores do rótulo e da nota, a menos que elas sejam definidas explicitamente). Uso típico: tabelas com legenda <em>em cima</em>, sobre uma barra colorida, enquanto as figuras mantêm a legenda embaixo. Referências à paleta são resolvidas como qualquer outra cor.</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Padrão <code>true</code>. Se uma figura ou tabela deste tipo colocada no texto assenta na grade de base: o fluxo volta a ela sob o recurso. <code>false</code> mantém o espaço exato que o recurso deixa. Não afeta os flutuantes no topo ou no pé de uma coluna.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Padrão <code>false</code>. Começa uma figura ou tabela deste tipo colocada no texto numa linha da grade, seja qual for o fim do bloco anterior. Não afeta os flutuantes no topo ou no pé de uma coluna, uma figura contornada pelo texto nem a que abre uma coluna. No Sandbox: <strong>Começar numa linha da grade</strong>.</td>
+    </tr>
   </tbody>
 </table>
 

@@ -145,6 +145,16 @@ Un type peut omettre des champs (depuis postext 1.38) : le type intégré de m�
       <td><code>CaptionStyleConfig</code> (facultatif)</td>
       <td>Surcharge partielle du <a href="#style-de-légende">style de légende</a> pour les ressources de ce type. Seules les clés que vous définissez remplacent le <code>captionStyle</code> global ; tout le reste est hérité (une <code>color</code> surchargée détermine aussi les couleurs du libellé et de la note, sauf si celles-ci sont définies explicitement). Usage typique : des tableaux légendés <em>au-dessus</em>, sur une barre de couleur, tandis que les figures gardent leur légende en dessous. Les références à la palette se résolvent comme toute autre couleur.</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (facultatif)</td>
+      <td>Par défaut <code>true</code>. Si une figure ou un tableau de ce type placé dans le texte repose sur la grille de base : le flux y revient sous la ressource. <code>false</code> garde l’espace exact que laisse la ressource. Les flottants en haut ou en bas d’une colonne ne sont pas concernés.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (facultatif)</td>
+      <td>Par défaut <code>false</code>. Fait commencer une figure ou un tableau de ce type placé dans le texte sur une ligne de la grille, quelle que soit la fin du bloc précédent. Les flottants en haut ou en bas d’une colonne, une figure habillée par le texte et celle qui ouvre une colonne ne sont pas concernés. Dans le Sandbox : <strong>Commencer sur une ligne de la grille</strong>.</td>
+    </tr>
   </tbody>
 </table>
 

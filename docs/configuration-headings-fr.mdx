@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Titres',
   description: 'Les valeurs communes des titres, les réglages propres à chaque niveau, les sauts de page avant un titre, les ouvertures de chapitre sur toute la largeur de la page et les numéros en toutes lettres',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '35 min',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,18 @@ La propriété `headings` règle la typographie de tous les niveaux de titre (H1
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Indique si le flux revient sur la grille de ligne de base sous un titre. Avec <code>true</code>, le <code>marginBottom</code> du titre est arrondi vers le haut à un nombre entier de lignes de la grille ; avec <code>false</code>, la marge exacte est conservée et le texte sous le titre peut rester hors de la grille jusqu’au point de calage suivant (la fin d’une liste, la fin d’un <code>:::paragraphs</code>, une formule hors texte), comme beaucoup de livres laissent une ligne et demie sous un titre. Un niveau (<code>levels[].snapToGrid</code>) ou un style de titre peut avoir sa propre valeur ; celle-ci est celle dont ils héritent.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lu seulement quand <code>snapToGrid</code> vaut <code>false</code> : le titre garde ses marges exactes et son propre interlignage, et le bloc qui le suit (texte, liste, figure ou tableau dans le texte, encadré) commence à la ligne suivante de la grille, de sorte que la colonne y retrouve la grille au lieu d’en rester hors jusqu’au prochain point d’alignement. Garder le titre avec les lignes qui le suivent tient compte de cet arrondi, et l’équilibrage des colonnes peut toujours ajouter des lignes au-dessus du titre. Un niveau (<code>levels[].regainGrid</code>) ou un style de titre peut fixer sa propre valeur. Dans le Sandbox : <strong>Retrouver la grille au texte</strong>, sous l’interrupteur de la grille.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fait commencer le titre sur une ligne de la grille : l’espace au-dessus est arrondi jusqu’à la suivante, quelle que soit la fin du bloc précédent ; <code>marginTop</code> devient un minimum. Désactivé par défaut. Un niveau (<code>levels[].snapTopToGrid</code>) ou un style de titre peut fixer sa propre valeur ; celle-ci est celle dont ils héritent. Dans le Sandbox : <strong>Commencer les titres sur une ligne de la grille</strong>.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

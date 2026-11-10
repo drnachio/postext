@@ -447,7 +447,7 @@ Die Eigenschaft `pdfGeneration` steuert, wie das PDF-Backend das fertige Dokumen
 
 `buildDocument` übernimmt sie in den VDT als `doc.config.pdfGeneration`, und `renderToPdf` nimmt jede Einstellung von der ersten Stelle, die sie angibt:
 
-1. aus seinen eigenen Optionen (`outlines`, `accessible`, `colorSpace`, `forms`);
+1. aus seinen eigenen Optionen (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. aus `pdfGeneration` des ersten Dokuments, das es rendert (in einem Buch gelten die Einstellungen des ersten Kapitels für die ganze Datei);
 3. aus den Voreinstellungen: Lesezeichen und Tagging an, RGB-Farbe.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  baselineGrid?: boolean;      // Draw the `page.baselineGrid` grid in the PDF as well.
   forms?: PdfFormsConfig;      // Formularfelder: Währung, Trennzeichen, Schrift.
 }
 ```
@@ -498,6 +499,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Gibt ein barrierefreies, getaggtes PDF nach PDF/UA-1 aus: einen logischen Strukturbaum in Lesereihenfolge (Überschriften, die nie eine Ebene überspringen, Absätze, Listen, Blockzitate, Kästen, Tabellen mit Kopfzellen, Abbildungen mit Alternativtext und Legende, Formeln, anklickbare Verweise als Links, der Inhalt eines `:::toc` als ein `TOC` mit einem `TOCI` je Zeile: die Nummer der Zeile ein `Lbl`, Titel und Seite eine `Reference`, die den Link enthält), Titel und Sprache des Dokuments (das oberste `locale`), die PDF/UA-Kennung in den XMP-Metadaten und jedes schmückende Element (Seitenhintergrund, Linien, Grundlinienraster, Kopf- und Fußzeilen, Schnittmarken, wiederholte Tabellenköpfe, der wiederholte Titel und der Fortsetzungshinweis eines geteilten Kastens) als Artefakt markiert, damit Screenreader es überspringen. Eine Abbildung ohne `altText` greift auf ihre Legende zurück, dann auf ihre Bezeichnung. Eine gleitende Abbildung oder Tabelle wird direkt nach dem Text gelesen, der sie zuerst zitiert, oder nach dem Text vor ihrer Zeile `::resource`, und ein gleitender Kasten nach dem Text vor seiner öffnenden Zeile, auch wenn das Gleitobjekt auf einer späteren Seite steht; eine Liste oder das Inhaltsverzeichnis, die hinter einem Gleitobjekt weiterlaufen, bleiben ein Element, und eine Liste in einem gleitenden oder an der Seite verankerten Kasten (`placement: 'fixed'`) ist eine einzige Liste. Schalten Sie es nur für Druckvorlagen ab, bei denen die zusätzliche Struktur unerwünscht ist.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Zeichnet das Grundlinienraster auch ins PDF, solange <code>page.baselineGrid</code> eingeschaltet ist. Standardmäßig an, wie bisher; <code>false</code> lässt das Raster eine Hilfe zum Prüfen der Seite am Bildschirm sein, außerhalb des PDF, während Canvas und HTML-Viewer es weiter zeigen. Im Sandbox: <strong>Grundlinienraster im PDF</strong>, im Abschnitt PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>

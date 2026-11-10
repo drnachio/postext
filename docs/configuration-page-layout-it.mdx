@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Il formato della pagina, i margini e la griglia della linea di base; la numerazione delle pagine; le colonne e le intercolonne che le separano',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '35 min',
+  readingTime: '36 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Questa pagina riguarda le impostazioni del foglio stesso. Scegli il formato della pagina, i margini, il lato su cui il libro è rilegato e la griglia su cui poggiano le righe di testo. Stabilisci come si contano le pagine e come si scrive il loro numero. Stabilisci quante colonne ha una pagina e quanto spazio c’è tra di esse, e se il testo scorre in orizzontale o in verticale. Le intestazioni e i piè di pagina hanno una pagina a parte.",
@@ -75,7 +75,7 @@ La proprietà `page` controlla le dimensioni fisiche e l’aspetto della pagina.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>disattivato</td>
-      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. Vedi sotto.</td>
+      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. <code>pdfGeneration.baselineGrid: false</code> la lascia fuori dal PDF. Vedi sotto.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ La griglia della linea di base è il ritmo del testo corrente: righe distanti un
     </tr>
   </tbody>
 </table>
+
+Dove inizia un blocco lo decide il suo stile. Ogni stile che può iniziare su una riga della griglia ha un interruttore `snapTopToGrid`, spento per impostazione predefinita: `headings` (e un livello o uno stile di titolo), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, gli elenchi, `math` e `resourceTypes[]`. Acceso, lo spazio sopra il blocco viene arrotondato fino alla riga successiva della griglia, comunque sia finito il blocco precedente. La testa di una colonna è sempre sulla griglia.
 
 ```ts
 page: {
@@ -445,12 +447,6 @@ La proprietà `layout` controlla come sono disposte le colonne all’interno del
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Nella pagina di chiusura di un capitolo (e del documento), le figure e le tabelle a tutta larghezza collocate sotto l’ultima fascia di testo salgono fino a una distanza di un intervallo da elemento flottante sotto di essa, impilate nel loro ordine: lì nulla le segue. <code>false</code> le lascia dove le ha messe la loro collocazione, così un elemento flottante <code>position: 'bottom'</code> finisce al piede della pagina nella pagina di chiusura come in ogni altra pagina; per esempio una scheda tecnica il cui contorno finisce alla stessa altezza in ogni pagina. Le pagine con una colonna laterale non li spostano mai.</td>
-    </tr>
-    <tr>
-      <td><code>pullFloatsToCitation</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Sconsigliato. Riporta sulla pagina che lo cita per primo un elemento flottante che l’ha mancata di quattro righe di testo o meno (misurate alla sua larghezza nello spazio migliore di quella pagina). Lo fa in due passi, e ciascuno si conserva solo se l’elemento flottante finisce allora sulla pagina del richiamo, senza una pagina in più, senza posticipare altri elementi flottanti, senza disfare un pareggiamento delle colonne già ottenuto e senza perdere un elemento flottante in cima alla pagina del suo richiamo (<code>floatsAtCitingPage</code>): prima ai paragrafi della pagina del richiamo che stanno sopra di esso si offre una riga in meno (spaziatura tra le parole più stretta, mai tra le lettere), solo tante righe quante ne mancano all’elemento flottante, e la modifica resta solo nelle pagine il cui elemento flottante è tornato; poi un’immagine con <a href="/it/docs/document-format-resources#zona-sicura">zona sicura</a> ancora fuori dalla sua pagina viene ritagliata al suo interno, non più di quanto chiede lo spazio, e ogni ritaglio è segnalato con un avviso <code>floatCropped</code>. I passaggi successivi, come il bilanciamento delle colonne, lasciano sulla loro pagina gli elementi flottanti riportati. L’opzione va contro la collocazione per regole: dove le regole mandano l’elemento flottante allo spazio successivo, essa si prende la pagina del richiamo a forza, compone paragrafi più stretti di quanto abbia scelto la divisione in righe e ritaglia immagini. Per tenere gli elementi flottanti vicino al richiamo secondo le regole, usa <code>floatsAtCitingPage</code> o <a href="/it/docs/document-format-resources#collocazione"><code>placement.citingPage</code></a> (l’elemento flottante prende la cima della pagina in cui finisce la riga che lo cita, e il testo sopra il rimando scende sotto di esso) e <code>placement.shrink: 'slot'</code> (l’immagine è composta più piccola, mantenendo le proporzioni, per restare sulla pagina che la cita). Nel Sandbox, <em>Porta le figure nella pagina del richiamo</em>, in Impaginazione.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

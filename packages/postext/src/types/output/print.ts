@@ -284,6 +284,11 @@ export interface PdfGenerationConfig {
    *  marks) flagged as an artifact so assistive technology skips it.
    *  Defaults to true. */
   accessible?: boolean;
+  /** Draw the baseline grid (`page.baselineGrid`, while it is on) in the
+   *  PDF, as the canvas and HTML do on screen. `false` keeps the grid a
+   *  screen guide for checking the page, out of a file meant for print.
+   *  Defaults to true. */
+  baselineGrid?: boolean;
   /** How form fields (chips with a `field`) write numbers and the face
    *  they show values in. Output only: the layout does not read it. The
    *  host's own `forms` option of `renderToPdf` and of the canvas
@@ -317,6 +322,7 @@ export interface ResolvedPdfGenerationConfig {
   forceColorSpace: boolean;
   colorSpace: PdfColorSpace;
   accessible: boolean;
+  baselineGrid: boolean;
   /** As set (its defaults depend on the document language). */
   forms?: PdfFormsConfig;
 }

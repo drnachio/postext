@@ -446,7 +446,7 @@ La propietat `pdfGeneration` controla com genera el PDF final el generador de PD
 
 `buildDocument` els passa al VDT, com a `doc.config.pdfGeneration`, i `renderToPdf` pren cada paràmetre del primer d'aquests llocs que el defineixi:
 
-1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`, `forms`);
+1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. el `pdfGeneration` del primer document que rep (en un llibre, els paràmetres del primer capítol valen per a tot el fitxer);
 3. els valors per defecte: marcadors i etiquetatge activats, color RGB.
 
@@ -460,6 +460,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convertir tots els colors a `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espai de destinació quan `forceColorSpace` és true.
   accessible?: boolean;        // Sortida etiquetada orientada a PDF/UA (arbre d'estructura, text alternatiu, llengua).
+  baselineGrid?: boolean;      // Dibuixar també al PDF la retícula de base de `page.baselineGrid`.
   forms?: PdfFormsConfig;      // Camps de formulari: moneda, separadors, lletra.
 }
 ```
@@ -497,6 +498,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Genera un PDF accessible i etiquetat, orientat a PDF/UA-1: un arbre d'estructura lògica en ordre de lectura (encapçalaments que mai no salten cap nivell, paràgrafs, llistes, cites, requadres, taules amb cel·les de capçalera, figures amb el seu text alternatiu i el seu peu, fórmules, referències com a enllaços, l'índex d'un `:::toc` com un sol `TOC` amb un `TOCI` per fila: el número de la fila com a `Lbl`, el seu títol i la seva pàgina com un `Reference` que conté l'enllaç), el títol i la llengua del document (el `locale` de primer nivell), la identificació PDF/UA a les metadades XMP, i tots els elements decoratius (fons de pàgina, filets, retícula de base, capçaleres i peus de pàgina, marques de tall, capçaleres de taula repetides, el títol repetit i la marca de continuació d'un requadre partit) marcats com a artefactes perquè els lectors de pantalla els ometin. Una figura sense `altText` fa servir el peu i, si no en té, l'etiqueta. Una figura o una taula flotant es llegeix just després del text que la cita per primera vegada, o del text anterior a la seva línia `::resource`, i un requadre flotant, després del text anterior a la seva línia d'obertura, encara que el flotant quedi en una pàgina posterior; una llista o un índex que continuen després d'un flotant queden en un sol element, i una llista dins d'un requadre flotant o ancorat a la pàgina (`placement: 'fixed'`) és una sola llista. Desactiva'l només en originals d'impremta on l'estructura addicional no calgui.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuixa al PDF la retícula de base mentre <code>page.baselineGrid</code> està activada. Activat per defecte, com fins ara; amb <code>false</code> la retícula queda com a guia per comprovar la pàgina a la pantalla, fora del PDF, i el llenç i el visor HTML la continuen mostrant. Al Sandbox és <strong>Retícula de base al PDF</strong>, a la secció PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
