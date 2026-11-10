@@ -249,30 +249,6 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td>Was eine Wiederholung den Algorithmus unter <code>stacks: 'avoid'</code> kostet, als Strafpunkte, die zu denen des Absatzes addiert werden, auf der Skala von <code>consecutiveHyphenDemerit</code> (zwei getrennte Zeilen hintereinander kosten 3000). Ein wiederholtes einsilbiges Wort („in“, „und“, „der“, mit den Vokalen der lateinischen, griechischen und kyrillischen Schrift) kostet doppelt so viel. Ein höherer Wert vermeidet mehr Wiederholungen um den Preis lockererer Zeilen; 0 behält alle.</td>
     </tr>
     <tr>
-      <td><code>strictHyphenation</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Trennt nach den Regeln des spanischen Satzes: nie zwei getrennte Zeilen hintereinander und nie das letzte Wort des Absatzes getrennt. Der Umbruch nimmt jede andere Trennstelle, die die Wortabstände in ihren Grenzen hält; nur wenn keine das tut, wird die Regel gebrochen. Setzt <code>optimalLineBreaking</code> voraus. Um nur das letzte Wort ganz zu lassen, siehe <code>hyphenation.lastWord</code>; für längere Folgen von Trennungen <code>hyphenation.maxConsecutive</code>.</td>
-    </tr>
-    <tr>
-      <td><code>minLinesBetweenHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Zeilen ohne Trennung, die eine getrennte Zeile vor sich haben möchte, damit die Trennungen nicht in einen Rhythmus fallen: <code>2</code> vermeidet auch eine Trennung in jeder zweiten Zeile (ja, nein, ja); <code>1</code> nur zwei hintereinander, wie <code>strictHyphenation</code>; <code>0</code> schaltet die Regel ab. Höchstens 4. Eine Vorliebe, gewichtet durch <code>hyphenSpacingPenalty</code>. Setzt <code>optimalLineBreaking</code> voraus.</td>
-    </tr>
-    <tr>
-      <td><code>hyphenSpacingPenalty</code></td>
-      <td><code>number</code></td>
-      <td><code>300</code></td>
-      <td>Kosten einer Trennung, die näher als <code>minLinesBetweenHyphens</code> an der vorigen liegt, als gleichwertige Schlechtigkeit: 100 ist eine Zeile an der Grenze des Wortabstands; 1000 wiegt schwerer als jede Zeile innerhalb davon.</td>
-    </tr>
-    <tr>
-      <td><code>fewerHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Weniger Trennungen oder bessere Abstände, <code>0</code>–<code>10</code>, wie der InDesign-Regler <em>Bessere Abstände</em> / <em>Weniger Trennstriche</em>: Jede Stufe macht jede Trennung teurer, sodass der Umbruch ein Wort nur dort trennt, wo das mehr Wortabstand spart. <code>0</code> gewichtet Trennungen, wie die Engine es immer getan hat. Setzt <code>optimalLineBreaking</code> voraus.</td>
-    </tr>
-    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

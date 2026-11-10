@@ -379,6 +379,16 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Les línies es componen tal com són.</td>
     </tr>
     <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>Més de <code>max</code> línies seguides d'un paràgraf que acaben en guionet (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> és quantes i <code>text</code>, les línies. Amb <code>bodyText.hyphenation.ladders: 'warn'</code> s'informa de totes les escales; amb <code>'avoid'</code>, de les que va mantenir el tall de línies. Un per escala; apunta a les seves línies, amb la pàgina de la primera. Des de postext 1.74.</td>
+      <td>Les línies es componen tal com són.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>L'última línia d'un paràgraf només porta la resta d'una paraula partida a la línia anterior: <code>word</code> és la paraula tal com la imprimeixen les dues línies, amb el guionet. Amb <code>bodyText.hyphenation.lastWord: 'warn'</code> s'informa de totes; amb <code>'avoid'</code>, de les que va mantenir el tall de línies. Apunta a les dues últimes línies, amb la seva pàgina. Des de postext 1.74.</td>
+      <td>Les línies es componen tal com són.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Un bloc de l'índex que ha d'anar junt (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), encapçalat per <code>title</code> i compost en <code>columns</code> columnes: és més alt que una columna sencera, o la columna on comença és curta (sota un bloc d'amplada de pàgina, al costat d'un flotant). Un per bloc; l'avís indica la directiva <code>:::toc</code>, amb la pàgina on comença el bloc. Per eliminar-lo, llista menys nivells (<code>levels="1"</code>), encapçala els blocs amb un nivell inferior (<code>toc.groups.head: 2</code>) o fes les entrades més petites o més atapeïdes. Des de postext 1.34.</td>
       <td>El bloc es parteix; amb <code>toc.groups.continuation</code>, cada columna on continua s'obre amb la seva fila de capçalera i la marca de continuació.</td>

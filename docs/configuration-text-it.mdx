@@ -249,30 +249,6 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td>Quanto costa una ripetizione all'algoritmo con <code>stacks: 'avoid'</code>, in demeriti sommati a quelli del paragrafo, sulla scala di <code>consecutiveHyphenDemerit</code> (due righe di seguito con il trattino costano 3000). Un monosillabo ripetuto («a», «e», «di», con le vocali delle scritture latina, greca e cirillica) costa il doppio. Un valore più alto evita più ripetizioni a prezzo di righe più larghe; 0 le tiene tutte.</td>
     </tr>
     <tr>
-      <td><code>strictHyphenation</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Divide le parole secondo le regole della composizione spagnola: mai due righe di seguito che terminano con un trattino, e mai l’ultima parola del paragrafo divisa. L’impaginazione sceglie qualsiasi altra interruzione che mantenga la spaziatura tra le parole nei suoi limiti; la regola cede solo quando nessuna lo fa. Richiede <code>optimalLineBreaking</code>. Per tenere intera solo l’ultima parola, vedi <code>hyphenation.lastWord</code>; per ammettere serie più lunghe di sillabazioni, <code>hyphenation.maxConsecutive</code>.</td>
-    </tr>
-    <tr>
-      <td><code>minLinesBetweenHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Righe senza sillabazione che una riga divisa vuole avere prima di sé, perché le sillabazioni non cadano a ritmo: <code>2</code> evita anche una sillabazione una riga sì e una no (sì, no, sì); <code>1</code>, solo due di seguito, come <code>strictHyphenation</code>; <code>0</code> disattiva la regola. Al massimo 4. Una preferenza, ponderata da <code>hyphenSpacingPenalty</code>. Richiede <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
-      <td><code>hyphenSpacingPenalty</code></td>
-      <td><code>number</code></td>
-      <td><code>300</code></td>
-      <td>Costo di una sillabazione più vicina di <code>minLinesBetweenHyphens</code> alla precedente, come badness equivalente: 100 è una riga al limite della spaziatura tra le parole; 1000 pesa più di qualsiasi riga entro quel limite.</td>
-    </tr>
-    <tr>
-      <td><code>fewerHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Meno sillabazioni o spaziatura migliore, da <code>0</code> a <code>10</code>, come il cursore <em>Spaziatura migliore</em> / <em>Meno trattini</em> di InDesign: ogni passo rende più cara ogni sillabazione, così che una parola si divide solo dove ciò risparmia più spaziatura. <code>0</code> pesa le sillabazioni come il motore ha sempre fatto. Richiede <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

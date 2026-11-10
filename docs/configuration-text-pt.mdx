@@ -250,30 +250,6 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td>O que uma repetição custa ao algoritmo com <code>stacks: 'avoid'</code>, em deméritos somados aos do parágrafo, na escala de <code>consecutiveHyphenDemerit</code> (duas linhas seguidas com hífen custam 3000). Um monossílabo repetido («a», «e», «de», com as vogais das escritas latina, grega e cirílica) custa o dobro. Um valor mais alto evita mais repetições ao preço de linhas mais soltas; 0 mantém todas.</td>
     </tr>
     <tr>
-      <td><code>strictHyphenation</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Hifeniza segundo as regras da composição espanhola: nunca duas linhas hifenizadas seguidas, e nunca dividida a última palavra do parágrafo. O algoritmo de quebra aceita qualquer outra quebra que mantenha o espaçamento entre palavras dentro dos limites; só quando nenhuma o faz a regra é descumprida. Requer <code>optimalLineBreaking</code>. Para manter inteira só a última palavra, veja <code>hyphenation.lastWord</code>; para permitir sequências mais longas de hífens, <code>hyphenation.maxConsecutive</code>.</td>
-    </tr>
-    <tr>
-      <td><code>minLinesBetweenHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Linhas sem hífen que uma linha hifenizada quer ter antes dela, para que os hífens não caiam num ritmo: <code>2</code> evita também um hífen a cada duas linhas (sim, não, sim); <code>1</code>, só dois seguidos, como <code>strictHyphenation</code>; <code>0</code> desliga a regra. No máximo 4. É uma preferência, ponderada por <code>hyphenSpacingPenalty</code>. Requer <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
-      <td><code>hyphenSpacingPenalty</code></td>
-      <td><code>number</code></td>
-      <td><code>300</code></td>
-      <td>Custo de um hífen mais próximo do anterior que <code>minLinesBetweenHyphens</code>, em penalidade equivalente: 100 é uma linha no limite do espaçamento entre palavras; 1000 pesa mais do que qualquer linha dentro dele.</td>
-    </tr>
-    <tr>
-      <td><code>fewerHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Menos hífens ou melhor espaçamento, de <code>0</code> a <code>10</code>, como o controle deslizante <em>Better Spacing</em> / <em>Fewer Hyphens</em> do InDesign: cada passo encarece todos os hífens, de modo que o algoritmo de quebra só hifeniza onde economiza mais espaçamento entre palavras. <code>0</code> pondera os hífens como o motor sempre fez. Requer <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

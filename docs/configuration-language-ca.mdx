@@ -75,31 +75,55 @@ Quan l'alineació del text és `'justify'`, la partició de mots evita que l'esp
       <td><code>minWordLength</code></td>
       <td><code>number</code></td>
       <td>la de la llengua</td>
-      <td>La paraula més curta que es divideix, en lletres (el <em>Words with at Least</em> d'InDesign). Sense fixar: la de la llengua, 5 (4 en català).</td>
+      <td>La paraula més curta que es parteix, en lletres. Sense fixar: la de l'idioma de partició, que retorna <code>hyphenationLanguageLimits(locale)</code>.</td>
     </tr>
     <tr>
       <td><code>leftMin</code></td>
       <td><code>number</code></td>
       <td>la de la llengua</td>
-      <td>Lletres que queden com a mínim abans d'un tall, al principi de la paraula (l'<em>After First</em> d'InDesign). Sense fixar: les de la llengua (2 en castellà).</td>
+      <td>Lletres que queden com a mínim abans d'un tall, al principi de la paraula. Sense fixar: les de l'idioma.</td>
     </tr>
     <tr>
       <td><code>rightMin</code></td>
       <td><code>number</code></td>
       <td>la de la llengua</td>
-      <td>Lletres que passen com a mínim a la línia següent després d'un tall (el <em>Before Last</em> d'InDesign). Sense fixar: les de la llengua (2 en castellà).</td>
+      <td>Lletres que passen com a mínim després d'un tall, a la línia següent. Sense fixar: les de l'idioma. Els tres límits valen també per a les paraules amb apòstrof (les elisions del francès, l'italià i el català).</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>De millor espaiat (<code>0</code>) a menys guionets (<code>10</code>): cada pas suma 50 a la penalització de tots els guionets, el propi d'una paraula inclòs, de manera que el tall de línies només parteix una paraula on així estalvia més espaiat. Amb <code>0</code> els guionets pesen com sempre. Només amb el tall de línies òptim.</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Escales de guionets: més de <code>maxConsecutive</code> línies seguides d'un paràgraf que acaben en guionet. <code>'allow'</code> compon les línies tal com les troba el tall de línies. <code>'warn'</code> les compon igual i informa de cada escala amb un avís de contingut <code>hyphenLadder</code>, que el Sandbox llista a Revisió. <code>'avoid'</code> suma <code>ladderPenalty</code> als demèrits de cada línia que passa del límit, de manera que el tall de línies compon el paràgraf d'una altra manera on l'espaiat ho permet, i informa de les escales que manté. Text de cos, llistes i citacions; els peus de figura i les cel·les de taula en queden fora. Només amb el tall de línies òptim.</td>
     </tr>
     <tr>
       <td><code>maxConsecutive</code></td>
       <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Màxim de línies seguides que acaben en guionet (el <em>Hyphen Limit</em> d'InDesign); <code>0</code>, sense límit. És un límit, no una preferència: el paràgraf es torna a tallar, més solt si cal, i només el supera on cap composició no el respecta. Només amb el tall òptim de línies.</td>
+      <td><code>1</code></td>
+      <td>Màxim de línies seguides que poden acabar en guionet, per a <code>ladders</code>. Amb <code>1</code> mai no van dues línies amb guionet l'una darrere l'altra.</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>El que costa al tall de línies cada línia que passa de <code>maxConsecutive</code> amb <code>ladders: 'avoid'</code>, en demèrits que se sumen als del paràgraf, a més de <code>consecutiveHyphenDemerit</code> (3000 per dues línies seguides amb guionet). El valor per defecte pesa més que qualsevol composició dins l'espaiat; un de més baix deixa passar algunes escales a canvi de línies més atapeïdes; amb <code>0</code> es mantenen totes.</td>
     </tr>
     <tr>
       <td><code>lastWord</code></td>
-      <td><code>boolean</code></td>
-      <td><code>true</code></td>
-      <td>Permet dividir l'última paraula d'un paràgraf (el <em>Hyphenate Last Word</em> d'InDesign). <code>false</code> la manté sencera sempre que l'espaiat ho permet; <code>bodyText.strictHyphenation</code> la manté sencera en qualsevol cas. Només amb el tall òptim de línies.</td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>L'última paraula d'un paràgraf partida: la penúltima línia acaba en guionet i l'última només porta la resta d'aquesta paraula, sense cap espai. <code>'warn'</code> informa de cada cas amb un avís de contingut <code>lastWordDivided</code>. <code>'avoid'</code> suma <code>lastWordPenalty</code> als demèrits del paràgraf, de manera que el tall de línies deixa la paraula sencera on l'espaiat ho permet, i informa de les que manté partides. Una última línia curta en general és cosa de <code>bodyText.avoidRunts</code>. Només amb el tall de línies òptim.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>El que costa al tall de línies una última paraula partida amb <code>lastWord: 'avoid'</code>, en demèrits que se sumen als del paràgraf. Amb <code>0</code> es mantenen totes.</td>
     </tr>
   </tbody>
 </table>

@@ -75,31 +75,55 @@ Ist die Textausrichtung auf `'justify'` gesetzt, verhindert die Silbentrennung �
       <td><code>minWordLength</code></td>
       <td><code>number</code></td>
       <td>die der Sprache</td>
-      <td>Das kürzeste getrennte Wort, in Buchstaben (<em>Wörter mit mindestens</em> in InDesign). Nicht gesetzt: die der Sprache, 5 (4 im Katalanischen).</td>
+      <td>Das kürzeste Wort, das getrennt wird, in Buchstaben. Ohne Wert: der Wert der Trennsprache, den <code>hyphenationLanguageLimits(locale)</code> liefert.</td>
     </tr>
     <tr>
       <td><code>leftMin</code></td>
       <td><code>number</code></td>
       <td>die der Sprache</td>
-      <td>Buchstaben, die vor einer Trennung mindestens am Wortanfang bleiben (<em>Nach ersten</em> in InDesign). Nicht gesetzt: die der Sprache (2 im Spanischen).</td>
+      <td>Buchstaben, die mindestens vor einer Trennung stehen bleiben, am Wortanfang. Ohne Wert: die der Sprache.</td>
     </tr>
     <tr>
       <td><code>rightMin</code></td>
       <td><code>number</code></td>
       <td>die der Sprache</td>
-      <td>Buchstaben, die nach einer Trennung mindestens in die nächste Zeile kommen (<em>Vor letzten</em> in InDesign). Nicht gesetzt: die der Sprache (2 im Spanischen).</td>
+      <td>Buchstaben, die mindestens nach einer Trennung in die nächste Zeile gehen. Ohne Wert: die der Sprache. Die drei Grenzen gelten auch für Wörter mit Apostroph (die Elisionen im Französischen, Italienischen und Katalanischen).</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Von besserem Abstand (<code>0</code>) bis zu weniger Trennstrichen (<code>10</code>): Jede Stufe addiert 50 zum Strafwert jedes Trennstrichs, auch des wortinternen Bindestrichs, sodass der Zeilenumbruch ein Wort nur dort trennt, wo das mehr Wortabstand spart. Bei <code>0</code> wiegen Trennstriche wie bisher. Nur mit dem optimalen Zeilenumbruch.</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Trennstrich-Treppen: mehr als <code>maxConsecutive</code> Zeilen eines Absatzes hintereinander, die auf einen Trennstrich enden. <code>'allow'</code> setzt die Zeilen, wie der Zeilenumbruch sie findet. <code>'warn'</code> setzt sie ebenso und meldet jede Treppe als Inhaltswarnung <code>hyphenLadder</code>, die die Sandbox unter Prüfung auflistet. <code>'avoid'</code> addiert <code>ladderPenalty</code> zu den Strafpunkten jeder Zeile über dem Limit, sodass der Zeilenumbruch den Absatz anders setzt, wo der Wortabstand es erlaubt, und meldet die Treppen, die bleiben. Grundtext, Listen und Zitate; Bildunterschriften und Tabellenzellen nicht. Nur mit dem optimalen Zeilenumbruch.</td>
     </tr>
     <tr>
       <td><code>maxConsecutive</code></td>
       <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Höchstzahl aufeinanderfolgender Zeilen, die mit einem Trennstrich enden (<em>Trennstriche max.</em> in InDesign); <code>0</code>: keine Grenze. Eine Grenze, keine Vorliebe: Der Absatz wird neu umbrochen, wenn nötig lockerer, und überschreitet sie nur, wo kein Umbruch sie einhält. Nur mit optimalem Zeilenumbruch.</td>
+      <td><code>1</code></td>
+      <td>Höchstzahl der Zeilen hintereinander, die auf einen Trennstrich enden dürfen, für <code>ladders</code>. Bei <code>1</code> folgen nie zwei getrennte Zeilen aufeinander.</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Was jede Zeile über <code>maxConsecutive</code> den Zeilenumbruch bei <code>ladders: 'avoid'</code> kostet, als Strafpunkte zu denen des Absatzes, zusätzlich zu <code>consecutiveHyphenDemerit</code> (3000 für zwei getrennte Zeilen hintereinander). Der Standard wiegt schwerer als jeder Satz innerhalb des Wortabstands; ein kleinerer Wert lässt einige Treppen für engere Zeilen zu; bei <code>0</code> bleiben alle.</td>
     </tr>
     <tr>
       <td><code>lastWord</code></td>
-      <td><code>boolean</code></td>
-      <td><code>true</code></td>
-      <td>Erlaubt, das letzte Wort eines Absatzes zu trennen (<em>Letztes Wort trennen</em> in InDesign). <code>false</code> lässt es ganz, wo immer die Abstände es erlauben; <code>bodyText.strictHyphenation</code> lässt es in jedem Fall ganz. Nur mit optimalem Zeilenumbruch.</td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Das letzte Wort eines Absatzes getrennt: Die vorletzte Zeile endet auf einen Trennstrich und die letzte trägt nur den Rest dieses Wortes, ohne Wortzwischenraum. <code>'warn'</code> meldet jeden Fall als Inhaltswarnung <code>lastWordDivided</code>. <code>'avoid'</code> addiert <code>lastWordPenalty</code> zu den Strafpunkten des Absatzes, sodass der Zeilenumbruch das Wort ganz lässt, wo der Wortabstand es erlaubt, und meldet die, die getrennt bleiben. Eine kurze letzte Zeile im Allgemeinen ist Sache von <code>bodyText.avoidRunts</code>. Nur mit dem optimalen Zeilenumbruch.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Was ein getrenntes letztes Wort den Zeilenumbruch bei <code>lastWord: 'avoid'</code> kostet, als Strafpunkte zu denen des Absatzes. Bei <code>0</code> bleiben alle.</td>
     </tr>
   </tbody>
 </table>

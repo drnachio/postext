@@ -250,30 +250,6 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td>El que costa una repetició a l'algorisme amb <code>stacks: 'avoid'</code>, en demèrits que se sumen als del paràgraf, en l'escala de <code>consecutiveHyphenDemerit</code> (dues línies seguides amb guionet costen 3000). Un monosíl·lab repetit («a», «i», «de», amb les vocals de les escriptures llatina, grega i ciríl·lica) costa el doble. Un valor més alt evita més repeticions a canvi de línies més soltes; amb 0 es mantenen totes.</td>
     </tr>
     <tr>
-      <td><code>strictHyphenation</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Parteix les paraules segons les regles de la composició espanyola: mai dues línies partides seguides, i mai dividida l'última paraula del paràgraf. L'algorisme pren qualsevol altre tall que mantingui l'espaiat entre paraules dins dels seus límits; només quan cap no ho fa s'incompleix la regla. Requereix <code>optimalLineBreaking</code>. Per mantenir sencera només l'última paraula, vegeu <code>hyphenation.lastWord</code>; per permetre sèries més llargues de guionets, <code>hyphenation.maxConsecutive</code>.</td>
-    </tr>
-    <tr>
-      <td><code>minLinesBetweenHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Línies sense guionet que una línia partida vol tenir abans, perquè els guionets no caiguin amb un ritme: <code>2</code> evita també un guionet cada dues línies (sí, no, sí); <code>1</code>, només dos de seguits, com <code>strictHyphenation</code>; <code>0</code> desactiva la regla. Com a màxim, 4. És una preferència, que pondera <code>hyphenSpacingPenalty</code>. Requereix <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
-      <td><code>hyphenSpacingPenalty</code></td>
-      <td><code>number</code></td>
-      <td><code>300</code></td>
-      <td>Cost d'un guionet més a prop de l'anterior que <code>minLinesBetweenHyphens</code>, en dolenteria equivalent: 100 és una línia al límit de l'espaiat entre paraules; 1000 pesa més que qualsevol línia dins d'aquest límit.</td>
-    </tr>
-    <tr>
-      <td><code>fewerHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Menys guionets o millor espaiat, de <code>0</code> a <code>10</code>, com el control lliscant <em>Better Spacing</em> / <em>Fewer Hyphens</em> d'InDesign: cada pas encareix tots els guionets, de manera que l'algorisme només parteix una paraula on estalvia més espaiat entre paraules. <code>0</code> pondera els guionets com sempre ho ha fet el motor. Requereix <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

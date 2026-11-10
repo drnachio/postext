@@ -249,30 +249,6 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td>Ce que coûte une répétition à l'algorithme sous <code>stacks: 'avoid'</code>, en démérites ajoutés à ceux du paragraphe, à l'échelle de <code>consecutiveHyphenDemerit</code> (deux lignes de suite coupées par un trait d'union coûtent 3000). Un monosyllabe répété (« à », « et », « de », avec les voyelles des écritures latine, grecque et cyrillique) coûte le double. Une valeur plus haute évite plus de répétitions au prix de lignes plus lâches ; 0 les garde toutes.</td>
     </tr>
     <tr>
-      <td><code>strictHyphenation</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Coupe les mots selon les règles de la composition espagnole : jamais deux lignes de suite terminées par un trait d’union, et jamais le dernier mot du paragraphe coupé. Le découpage prend toute autre coupure qui garde l’espacement des mots dans ses limites ; la règle ne cède que lorsqu’aucune ne le fait. Nécessite <code>optimalLineBreaking</code>. Pour ne garder entier que le dernier mot, voir <code>hyphenation.lastWord</code> ; pour admettre de plus longues suites de césures, <code>hyphenation.maxConsecutive</code>.</td>
-    </tr>
-    <tr>
-      <td><code>minLinesBetweenHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Lignes sans césure qu’une ligne coupée veut avoir avant elle, pour que les césures ne tombent pas en cadence : <code>2</code> évite aussi une césure une ligne sur deux (oui, non, oui) ; <code>1</code>, seulement deux de suite, comme <code>strictHyphenation</code> ; <code>0</code> désactive la règle. Au plus 4. Une préférence, pondérée par <code>hyphenSpacingPenalty</code>. Nécessite <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
-      <td><code>hyphenSpacingPenalty</code></td>
-      <td><code>number</code></td>
-      <td><code>300</code></td>
-      <td>Coût d’une césure plus proche que <code>minLinesBetweenHyphens</code> de la précédente, en défaut équivalent : 100 est une ligne à la limite de l’espacement des mots ; 1000 pèse plus que toute ligne en deçà.</td>
-    </tr>
-    <tr>
-      <td><code>fewerHyphens</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>Moins de césures ou meilleur espacement, de <code>0</code> à <code>10</code>, comme le curseur <em>Meilleur espacement</em> / <em>Moins de césures</em> d’InDesign : chaque cran rend toutes les césures plus chères, de sorte que le découpage ne coupe un mot que là où cela épargne davantage d’espacement. <code>0</code> pèse les césures comme le moteur l’a toujours fait. Nécessite <code>optimalLineBreaking</code>.</td>
-    </tr>
-    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

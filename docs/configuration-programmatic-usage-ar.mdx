@@ -379,6 +379,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>تُنضّد الأسطر كما هي.</td>
     </tr>
     <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>أكثر من <code>max</code> أسطر متتالية من فقرة تنتهي بشرطة (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> عددها و<code>text</code> الأسطر نفسها. مع <code>bodyText.hyphenation.ladders: 'warn'</code> يُبلَغ عن كل سلّم؛ ومع <code>'avoid'</code> عن السلالم التي أبقاها كسر الأسطر. واحد لكل سلّم؛ يشير إلى أسطره، مع صفحة أولها. منذ postext 1.74.</td>
+      <td>تُنضّد الأسطر كما هي.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>السطر الأخير من فقرة لا يحمل إلا بقية كلمة قُسمت في السطر الذي قبله: <code>word</code> الكلمة كما يطبعها السطران، بالشرطة. مع <code>bodyText.hyphenation.lastWord: 'warn'</code> يُبلَغ عن كل حالة؛ ومع <code>'avoid'</code> عمّا أبقاه كسر الأسطر. يشير إلى السطرين الأخيرين، مع صفحتهما. منذ postext 1.74.</td>
+      <td>تُنضّد الأسطر كما هي.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>مجموعة من المحتويات يُطلب إبقاؤها معًا (<code>toc.groups.keepTogether</code>، <code>:::toc{'{keep="…"}'}</code>)، يتصدّرها <code>title</code>، ومنضّدة في <code>columns</code> من الأعمدة: إما أنها أطول من عمود كامل، وإما أن العمود الذي تبدأ فيه قصير (تحت إطار يمتد بعرض الصفحة، أو بجوار عنصر عائم). تحذير لكل مجموعة؛ يشير إلى التوجيه <code>:::toc</code>، مع الصفحة التي تبدأ فيها المجموعة. ولإزالته، أدرِج مستويات أقل (<code>levels="1"</code>)، أو اجعل رأس المجموعات مستوى أدنى (<code>toc.groups.head: 2</code>)، أو صغّر المداخل أو ضيّق تباعدها. منذ postext 1.34.</td>
       <td>تُقسم المجموعة؛ ومع <code>toc.groups.continuation</code> يُفتتح كل عمود تستمر فيه بصف رأسها وعلامة الاستمرار.</td>
