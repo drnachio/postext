@@ -274,6 +274,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Read <code>++text++</code> as underlined text, beside <code>:underline[text]</code>, which is always read. Every pair of two plus signs on each side underlines, <code>use ++i rather than i++</code> included; <code>{'\\+\\+'}</code> sets a literal pair, a letter or digit glued to the signs keeps them as text (<code>C++</code>, <code>g++</code>), and inline code and code blocks never underline. It applies wherever inline marks are read: the running text, headings, lists, captions, table cells, notes and chips. <code>false</code>: the plus signs print. See <a href="/en/docs/document-format-inline#underline">Document format › Underline</a>.</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Keeps a numbered citation in square brackets or parentheses with the word (or the punctuation ending a word) before it, and whole: the space before it and the spaces inside it become no-break spaces (<code>authors [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Never after a number: <code>2016 (3)</code> is a year and an issue, not a citation. Paragraphs, list items and quotations set horizontally only; a block holding right-to-left or CJK text is left as it is.</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Keeps a relation or operator set between spaces (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) with the words on both sides: <code>LR+ = 18.29</code>, <code>p &lt; 0.05</code>. A line never ends on one nor starts with one. Same scope as <code>bindCitations</code>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

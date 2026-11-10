@@ -16,6 +16,7 @@ import { runMeasurement } from './buildMeasurement.js';
 import { linkSegments } from '../../measure/links.js';
 import { kashidaMeasureOptions } from '../../measure/rtl/kashida.js';
 import { measureVerse } from '../text/verse.js';
+import { withBoundSpaces } from '../text/boundSpaces.js';
 import { versesLineByLine, measureVerseLines, verseLinesSettings } from '../text/verseLines.js';
 import { composesAsCjk } from '../../measure/cjk/cjkCompose.js';
 import { measuringVertically } from '../../measure/vertical.js';
@@ -76,6 +77,13 @@ export function measureContentBlock(
   if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
   // A block of an expanded `:::index`: an entry and its page numbers.
   if (rawBlock.index) return measureIndexBlock(rawBlock, columnWidth, ctx);
+  // Citations kept with their word, operators with their terms
+  // (`bodyText.bindCitations`, `bindOperators`): no-break spaces, one for
+  // one, so every offset still holds. Running text set horizontally only.
+  const { bindCitations, bindOperators } = resolved.bodyText;
+  if ((bindCitations || bindOperators) && (rawBlock.type === 'paragraph' || rawBlock.type === 'listItem' || rawBlock.type === 'blockquote') && !measuringVertically()) {
+    rawBlock = withBoundSpaces(rawBlock, { citations: bindCitations === true, operators: bindOperators === true });
+  }
 
   const kind = resolveBlockKind(rawBlock, {
     ...ctx,

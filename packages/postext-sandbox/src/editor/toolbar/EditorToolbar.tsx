@@ -26,6 +26,7 @@ import {
   LayoutTemplate,
   Shapes,
   Palette,
+  Link2,
 } from 'lucide-react';
 import { isCjkLanguage } from 'postext';
 import type { EditorView } from '@codemirror/view';
@@ -34,6 +35,7 @@ import { useSandbox } from '../../context/SandboxContext.js';
 import { useHistoryAvailability, useHistoryCommands } from '../../history/HistoryButtons.js';
 import { IconButton, Menu, MenuItem, MenuSeparator } from '../../ui/index.js';
 import { composedPageInsertion } from './composedInsert.js';
+import { keepSelectionTogether } from '../syntax/noBreakSyntax.js';
 import { TemplatePicker } from './TemplatePicker.js';
 import { IconPicker } from './IconPicker.js';
 import { LookPicker } from './LookPicker.js';
@@ -269,6 +271,13 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
       label: labels.charStyleInline,
       action: () => {},
       menu: 'charStyle',
+    },
+    // The selection's spaces as no-break spaces (or back): it stays on one
+    // line.
+    {
+      icon: <Link2 size={16} aria-hidden="true" />,
+      label: labels.keepTogetherInline,
+      action: () => { const v = getView(); if (v) keepSelectionTogether(v); },
     },
     // Readings (furigana, pinyin) and a run set across a vertical line,
     // for a Chinese or Japanese book.

@@ -273,6 +273,18 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td>Lire <code>++texte++</code> comme du texte souligné, en plus de <code>:underline[texte]</code>, toujours lu. Chaque paire de deux signes plus de chaque côté souligne, <code>use ++i rather than i++</code> compris ; <code>{'\\+\\+'}</code> écrit une paire littérale, une lettre ou un chiffre collé aux signes les garde comme texte (<code>C++</code>, <code>g++</code>), et le code en ligne et les blocs de code ne sont jamais soulignés. Le réglage vaut partout où les marques en ligne sont lues : le texte courant, les titres, les listes, les légendes, les cellules de tableau, les notes et les pastilles. <code>false</code> : les signes plus s’impriment. Voir <a href="/fr/docs/document-format-inline#texte-souligné">Format du document › Texte souligné</a>.</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Garde un appel numéroté entre crochets ou entre parenthèses avec le mot (ou la ponctuation qui le termine) qui le précède, et entier : l’espace avant lui et ceux qu’il contient deviennent des espaces insécables (<code>auteurs [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Jamais après un nombre : <code>2016 (3)</code> est une année et un numéro, pas un appel. Seulement dans les paragraphes, les éléments de liste et les citations composés à l’horizontale ; un bloc qui contient du texte de droite à gauche ou CJK reste tel quel.</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Garde une relation ou un opérateur entre espaces (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) avec les mots de part et d’autre : <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Aucune ligne ne finit ni ne commence par le signe. Même portée que <code>bindCitations</code>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

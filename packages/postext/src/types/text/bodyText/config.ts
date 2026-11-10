@@ -208,6 +208,19 @@ export interface BodyTextConfig {
    *  table cells, notes, chips and design text. Default `false`: the plus
    *  signs are text. */
   plusUnderline?: boolean;
+  /** Keep a numbered citation in brackets or parentheses with the word
+   *  before it, and whole: the space before "[12]", "[12, 14]" or
+   *  "(12–15)", and the spaces inside it, become no-break spaces, so a line
+   *  never starts with one nor divides it. Not after a number: "2016 (3)"
+   *  is a year and an issue. Paragraphs, list items and quotations set
+   *  horizontally, in scripts that break at spaces (right-to-left and CJK
+   *  text is left as it is). Default `false`. */
+  bindCitations?: boolean;
+  /** Keep a relation or operator set between spaces (`=`, `<`, `>`, `≤`,
+   *  `≥`, `±`, `×`, `≈`, `≠`, `÷`, `−`) with both of its terms: "LR+ =
+   *  18.29", "p < 0.05". A line never ends on one nor starts with it. The
+   *  same blocks as {@link bindCitations}. Default `false`. */
+  bindOperators?: boolean;
   /** Shape a word with no letter (`46.`, `1367)`, `».`: digits,
    *  punctuation or symbols alone) in the script of the text around it
    *  (#725). Such a word has no script of its own, and a face may draw its
