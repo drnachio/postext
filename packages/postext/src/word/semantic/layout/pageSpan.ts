@@ -16,12 +16,13 @@
 
 import { layoutColumnCount } from '../../../defaults/layout.js';
 import { resolveResourcePlacement } from '../../../pipeline/floats/floatPlacement.js';
-import { createHeadingLevelResolver, type HeadingLevelResolver } from '../../../pipeline/sections/headingStyles.js';
+import { createHeadingLevelResolver, deriveSectionGeometryConfig, type HeadingLevelResolver } from '../../../pipeline/sections/headingStyles.js';
 import type { ContentBlock } from '../../../parse/types.js';
 import type { ResolvedConfig } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
 import { joinBlocks, type Node } from '../blocks.js';
-import { headingFillsPage, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
+import { headingFillsPage, multiColumn, pageGeometry, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
+import { styledSectionAt } from '../page/furniture.js';
 import { pPr, twips } from '../wml.js';
 import { dropRedundantBreaks, isBreak } from './breaks.js';
 import { headsChange, isComposedPage } from '../page/composed.js';
@@ -99,6 +100,48 @@ export function headingStart(ctx: WriterContext, b: ContentBlock): Piece['start'
   return bb.parity === 'odd' || bb.parity === 'always-odd' ? 'oddPage' : 'nextPage';
 }
 
+/** Left and right page margins, twips. */
+export interface Sides {
+  left: number;
+  right: number;
+}
+
+const bookGeometry = new WeakMap<WriterContext, PageGeometry>();
+
+/**
+ * The left and right margins of the pages block `block` stands on, when
+ * its styled section sets them inside the book's and so widens the
+ * measure: an exam's cover across the whole sheet, in a paper whose other
+ * pages keep a margin free for the marker. Only where the style's heading
+ * opens a page (the chapter's first block, or a heading that breaks the
+ * page), in a book of one column. A style that narrows the measure keeps
+ * the book's: its heading's design is written in the flow and needs the
+ * room (#1458).
+ */
+export function sideMargins(ctx: WriterContext, chapter: number, block: ContentBlock | undefined): Sides | undefined {
+  if (ctx.plain || !block) return undefined;
+  const at = styledSectionAt(ctx, chapter, block);
+  if (!at?.style.margins) return undefined;
+  let geo = bookGeometry.get(ctx);
+  if (!geo) bookGeometry.set(ctx, (geo = pageGeometry(ctx.resolved, ctx.units)));
+  if (multiColumn(geo)) return undefined;
+  const before = ctx.book[chapter]?.blocks.slice(0, at.index) ?? [];
+  const opens = before.every((b) => b.type === 'directive') || headingStart(ctx, at.heading) !== undefined;
+  if (!opens) return undefined;
+  const own = pageGeometry(deriveSectionGeometryConfig(ctx.resolved, at.style), ctx.units).margins;
+  const sides = { left: Math.min(geo.margins.left, own.left), right: Math.min(geo.margins.right, own.right) };
+  return sides.left === geo.margins.left && sides.right === geo.margins.right ? undefined : sides;
+}
+
+/** The width of the text column where block `block` stands, twips, when
+ *  its styled section widens it (see {@link sideMargins}). */
+export function widenedTwips(ctx: WriterContext, block: ContentBlock | undefined): number | undefined {
+  const sides = sideMargins(ctx, ctx.chapter.index, block);
+  if (!sides) return undefined;
+  const geo = bookGeometry.get(ctx)!;
+  return geo.textTwips + (geo.margins.left - sides.left) + (geo.margins.right - sides.right);
+}
+
 /** A paragraph that only closes a section: no room of its own to speak
  *  of, so it adds no blank line where the columns change. */
 function sectionBreak(sect?: string): string {
@@ -163,7 +206,10 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
   // for one that opens with no block of its own (a page-width float set
   // after its anchor) the last block before it, so its running heads are
   // the ones in force there; `tail`: the last block written in it.
-  type Section = { start: SectionStart; oneColumn: boolean; parts: string[]; block?: ContentBlock; leads?: boolean; tail?: ContentBlock };
+  type Section = { start: SectionStart; oneColumn: boolean; parts: string[]; block?: ContentBlock; leads?: boolean; tail?: ContentBlock; sides?: Sides };
+  const sidesKey = (s: Sides | undefined): string => (s ? `${s.left}/${s.right}` : '');
+  /** The last piece written was a `:::pagebreak`. */
+  let broke = false;
   const sections: Section[] = [];
   let after: Piece | undefined;
   let seen: ContentBlock | undefined;
@@ -180,16 +226,24 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
     after = piece;
     const oneColumn = columns && !!p.span;
     const cur = sections[sections.length - 1];
+    // The side margins of the piece's pages (a styled section that widens
+    // the measure): where they change, a section of its own.
+    const sides = p.block ? sideMargins(ctx, index, p.block) : cur?.sides;
+    const turned = !!cur && sidesKey(sides) !== sidesKey(cur.sides);
+    const afterBreak = broke;
+    broke = piece.block?.type === 'directive' && piece.block.directiveName === 'pagebreak';
     const block = p.block ? { block: p.block, leads: true } : seen ? { block: seen, leads: false } : {};
     seen = p.block ?? seen;
     const tail = seen ? { tail: seen } : {};
     if (!cur) {
       // The chapter's own start already opens the page.
-      sections.push({ start: 'chapter', oneColumn, parts: [p.xml], ...block, ...tail });
+      sections.push({ start: 'chapter', oneColumn, parts: [p.xml], ...block, ...tail, ...(sides ? { sides } : {}) });
       continue;
     }
-    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml], ...block, ...tail });
-    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml], ...block, ...tail });
+    const own = sides ? { sides } : {};
+    if (p.start) sections.push({ start: p.start, oneColumn, parts: [p.xml], ...block, ...tail, ...own });
+    else if (turned) sections.push({ start: afterBreak ? 'nextPage' : 'continuous', oneColumn, parts: [p.xml], ...block, ...tail, ...own });
+    else if (cur.oneColumn !== oneColumn) sections.push({ start: 'continuous', oneColumn, parts: [p.xml], ...block, ...tail, ...own });
     else {
       cur.parts.push(p.xml);
       if (!cur.block && p.block) cur.block = p.block;
@@ -204,7 +258,7 @@ export function chapterSections(ctx: WriterContext, geo: PageGeometry, index: nu
   let xml = '';
   sections.forEach((s, i) => {
     const follow = sections[i + 1]?.start === 'continuous' ? sections[i + 1]!.block : undefined;
-    const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}), ...(follow ? { follow } : {}) });
+    const sect = sectionXml(ctx, geo, index, { start: s.start, oneColumn: s.oneColumn, first: i === 0, ...(s.block ? { block: s.block, leads: !!s.leads } : {}), ...(titleStyle ? { titleStyle } : {}), ...(follow ? { follow } : {}), ...(s.sides ? { sides: s.sides } : {}) });
     let body = joinBlocks(s.parts);
     // A page-wide table set where the columns stop keeps half a line from
     // the text above it, as the print does, instead of touching it.

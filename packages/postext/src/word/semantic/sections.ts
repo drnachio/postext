@@ -94,6 +94,9 @@ export interface SectionPart {
    *  is an opener. */
   block?: ContentBlock;
   leads?: boolean;
+  /** Left and right page margins of the section, when its styled section
+   *  widens the book's measure (see `sideMargins`, layout/pageSpan.ts). */
+  sides?: { left: number; right: number };
   /** The style name of the chapter's later titles, when the running heads
    *  read the chapter title with a STYLEREF field. */
   titleStyle?: string;
@@ -132,7 +135,8 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   // LibreOffice and Google Docs start the text at the top margin.
   const low = !!own && own !== geo && own.margins.top > Math.max(geo.margins.top, own.heightTw / 2);
   const room = low ? own.heightTw - own.margins.top - own.margins.bottom : 0;
-  const m = low ? { ...own.margins, top: Math.max(geo.margins.top, own.margins.top - room) } : (own?.margins ?? geo.margins);
+  const base = low ? { ...own.margins, top: Math.max(geo.margins.top, own.margins.top - room) } : (own?.margins ?? geo.margins);
+  const m = part.sides && !low ? { ...base, ...part.sides } : base;
   return (
     `<w:sectPr>${refs}${bookHasNotes(ctx) ? sectionFootnotePr(r, !!part.first) : ''}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +

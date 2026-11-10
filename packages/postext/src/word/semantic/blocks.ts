@@ -27,7 +27,7 @@ import type { ListLevelKind } from './numbering.js';
 import { lineStart, rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
 import { renderVerse } from './verse.js';
-import { headingStart, spansPage, type Piece } from './layout/pageSpan.js';
+import { headingStart, spansPage, widenedTwips, type Piece } from './layout/pageSpan.js';
 import { blockSdt, paragraph, pPr, rPr, textRuns, type ParaProps } from './wml.js';
 
 export type Node = { block: ContentBlock } | { container: ContentBlock; end?: ContentBlock; children: Node[] };
@@ -274,11 +274,15 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
     if (after) for (const p of after(ns)) parts.push(p.span === undefined && span ? { ...p, span } : p);
   };
   // Page-spanning content takes the whole text area.
-  const wide: BlockEnv = { ...env, widthTwips: Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) };
+  const across: BlockEnv = { ...env, widthTwips: Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) };
   const below: BlockEnv = env.boxTop ? { ...env, boxTop: undefined } : env;
+  const outer = env;
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i]!;
-    if (i === 1) env = below;
+    // A styled section that widens the measure gives its blocks the room.
+    const widened = after ? widenedTwips(ctx, 'container' in n ? n.container : n.block) : undefined;
+    env = widened ? { ...(i >= 1 ? below : outer), widthTwips: widened } : i >= 1 ? below : outer;
+    const wide = widened ? { ...across, widthTwips: widened } : across;
     const span = !!after && spansPage(ctx, n);
     if ('container' in n) {
       const leadFlush = n.container.containerName === 'paragraphs' && startsFlush(ctx, nodes, i, env.leadFlush);

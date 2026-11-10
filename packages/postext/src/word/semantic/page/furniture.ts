@@ -80,17 +80,30 @@ const blockIndex = (ctx: WriterContext, chapter: number, b: ContentBlock | undef
 /** The styled section in force at block `at` of chapter `chapter` (as the
  *  engine counts it page by page, here from the chapter's start). */
 function sectionStyle(ctx: WriterContext, chapter: number, at: number): ResolvedHeadingStyleConfig | undefined {
+  return styledSection(ctx, chapter, at)?.style;
+}
+
+/** The styled section in force at block `at` of chapter `chapter`: its
+ *  style and the heading that opened it (`index`: where it stands). */
+function styledSection(ctx: WriterContext, chapter: number, at: number): { style: ResolvedHeadingStyleConfig; level: number; heading: ContentBlock; index: number } | undefined {
   const blocks = ctx.book[chapter]?.blocks ?? [];
-  let current: { style: ResolvedHeadingStyleConfig; level: number } | undefined;
+  let current: { style: ResolvedHeadingStyleConfig; level: number; heading: ContentBlock; index: number } | undefined;
   for (let i = 0; i <= at && i < blocks.length; i++) {
     const b = blocks[i]!;
     if (b.type !== 'heading') continue;
     const level = b.level ?? 1;
     const style = headingStyleOf(b, ctx.resolved);
-    if (style) current = { style, level };
+    if (style) current = { style, level, heading: b, index: i };
     else if (current && (level <= current.level || current.style.sectionEnd === 'heading')) current = undefined;
   }
-  return current?.style;
+  return current;
+}
+
+/** The styled section in force at block `b` of chapter `chapter`, with
+ *  the heading that opened it. */
+export function styledSectionAt(ctx: WriterContext, chapter: number, b: ContentBlock | undefined): { style: ResolvedHeadingStyleConfig; heading: ContentBlock; index: number } | undefined {
+  const at = blockIndex(ctx, chapter, b);
+  return at >= 0 ? styledSection(ctx, chapter, at) : undefined;
 }
 
 /** The styled section in force where a section of chapter `chapter`
