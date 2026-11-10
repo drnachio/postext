@@ -8,7 +8,7 @@ import { leaderRuleGeometry } from '../../vdt/flowFrames.js';
 import { TASK_BOX_TICK } from '../taskBox.js';
 import { compose, placeShape, placeText, turnFrame, type Frame } from './frame.js';
 import { slotItems } from './design.js';
-import { highlightRects, placeBodyLine, sizeOf } from './lines.js';
+import { charStyleMarkItems, highlightRects, placeBodyLine, sizeOf } from './lines.js';
 import { resourceItems } from './resource.js';
 import { lineQrItems } from './overlays.js';
 import { sourceOfPlain, type Atom } from './source.js';
@@ -165,6 +165,11 @@ function linesItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
   let at = 0;
   for (const line of block.lines) {
     for (const h of highlightRects(line)) before.push(placeShape(ctx.frame, h));
+    if (!ctx.vertical) {
+      const marks = charStyleMarkItems(line, block.color);
+      for (const m of marks.before) before.push(placeShape(ctx.frame, m));
+      for (const m of marks.after) after.push(placeShape(ctx.frame, m));
+    }
     const placed = placeBodyLine(line, block, ctx.vertical, ctx.options, ctx.rtl);
     lines.push(placed.line);
     map.push(...placed.line.map);

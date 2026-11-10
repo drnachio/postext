@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Auszeichnungen innerhalb einer Zeile: Hervorhebung, Links, Chips, Kapitälchen, Tabulatoren, senkrechter Text, chinesische und japanische Zeichen, Schreibrichtung und LaTeX-Formeln',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '26 min',
+  readingTime: '27 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Diese Seite behandelt die Auszeichnungen, die Sie innerhalb einer Textzeile verwenden. Sie machen Wörter fett oder kursiv, fügen Links ein, zeichnen kleine Etiketten, setzen Kapitälchen und richten Text an Tabstopps aus. Andere Auszeichnungen sind für chinesische und japanische Bücher gedacht, etwa kleine Aussprachehilfen über einem Schriftzeichen, oder für eine Wendung in der anderen Schreibrichtung, etwa Englisch in einem arabischen Buch. Der letzte Abschnitt zeigt, wie Sie mathematische Formeln schreiben.",
@@ -197,6 +197,24 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Ausgabeformate.** Canvas, HTML und PDF zeichnen das Kästchen und setzen die Wörter als echten Text: im HTML auswählbar, im PDF extrahierbar und in Lesereihenfolge (in einem getaggten PDF ist das Kästchen ein Layout-Artefakt, und die Wörter gehören zum Absatz).
 
 Ein Chip mit `field` wird im PDF zu einem ausfüllbaren Formularfeld (siehe [PDF-Ausgabe › Formularfelder](/de/docs/configuration-pdf-output#formularfelder)).
+
+### Zeichenformate
+
+`[einige Wörter]|id|` setzt die Wörter zwischen den eckigen Klammern im Zeichenformat `id` aus `characterStyles` (siehe [Konfiguration → Zeichenformate](/de/docs/configuration-styles#zeichenformate)): eine Schrift, eine Farbe, eine Unterstreichung, ein Textmarkerband, eine Durchstreichung.
+
+```markdown
+Die [Therapie der ersten Wahl]|marker| ist [Metformin]|drug|.
+
+Eine [Folge mit **Fettem** und einem [verschachtelten Format]|accent|]|marker| darin.
+```
+
+- **Text, kein Kasten.** Die Wörter bleiben in der Zeile: Sie brechen um, werden getrennt und ausgeschlossen wie der umgebende Text. Eine Auszeichnung, die über zwei Zeilen umbricht, wird auf jeder gezeichnet; innerhalb einer Zeile läuft sie unter den Leerzeichen zwischen den Wörtern der Folge weiter, nie unter den Leerzeichen um sie herum.
+- **Die Striche.** Die id folgt unmittelbar auf die schließende Klammer, zwischen zwei senkrechten Strichen: Buchstaben, Ziffern, `-` und `_`. Ein Leerzeichen zwischen `]` und `|`, ein fehlender zweiter Strich oder leere Klammern lassen den Text, wie er geschrieben ist. `\[a]|b|` druckt `[a]|b|`.
+- **Klammern, die etwas anderes sind.** Ein Fußnotenzeichen (`[^1]`), ein Zitat (`[@schlüssel]`) und ein Link (`[Text](url)`) werden zuerst gelesen und sind nie ein Format.
+- **Verschachtelung.** Die Wörter nehmen die anderen Inline-Auszeichnungen und andere Folgen auf; das innerste Format gewinnt. Eine unbekannte id setzt die Wörter wie den umgebenden Text und wird gemeldet (`unknownCharacterStyle`).
+- **Wo.** Absätze, Listenpunkte, Zitate, Kästen, Fußnoten, Bildunterschriften, Anmerkungen und Tabellenzellen sowie Überschriften, solange `headings.inlineMarks` eingeschaltet ist (aus, werden die Wörter ohne Format gesetzt).
+- **Reiner Text.** Klammern, Striche und id drucken nichts: Suche, Inhaltsverzeichnis, Kolumnentitel, Registeranker und kopierter Text lesen nur die Wörter.
+- **Unterstreichen und Hervorheben allein.** Eine einfache Unterstreichung ist `:underline[…]`, eine einfache Hervorhebung `:mark[…]`; ein Zeichenformat dient einem eigenen Aussehen (Schrift, Farbe, ein von Hand gezogenes Band, eine gestrichelte oder gewellte Linie). Seine Unterstreichung und Durchstreichung sitzen standardmäßig dort, wo die von `:underline[…]` und `~~…~~` sitzen.
 
 ### Hervorhebungen
 

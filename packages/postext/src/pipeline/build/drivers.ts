@@ -30,6 +30,7 @@ import { annotateDocument } from '../../marks/cjkMarks.js';
 import { annotateArabicMarks } from '../../marks/arabicMarks.js';
 import { overlineEmphasis } from '../../marks/emphasisOverline.js';
 import { strikeDocument } from '../../marks/strikethrough.js';
+import { decorateCharacterStyles } from '../../marks/characterStyleMarks.js';
 import { highlightDocument } from '../../marks/highlightMarks.js';
 import { underlineDocumentLinks } from '../../marks/linkUnderline.js';
 import { buildDocumentBalanced } from './balanced.js';
@@ -166,6 +167,9 @@ export function* buildDocumentGen(
   overlineEmphasis(doc);
   // The lines through struck-through text (`~~…~~`).
   strikeDocument(doc);
+  // The underlines, highlighter bands and strike-throughs of the
+  // character styles (`[…]|id|`).
+  decorateCharacterStyles(doc);
   // The bands of the highlight marks (`:mark[…]`, #888).
   highlightDocument(doc);
   // The lines under the links (`links.style`, #1402).

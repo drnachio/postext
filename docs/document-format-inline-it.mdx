@@ -6,7 +6,7 @@ export const metadata = {
   description: 'La formattazione all’interno di una riga: enfasi, link, chip, maiuscoletto, tabulazioni, testo verticale, segni cinesi e giapponesi, direzione del testo e formule LaTeX',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '29 min',
+  readingTime: '31 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Questa pagina riguarda i segni che usi dentro una riga di testo. Mettono le parole in grassetto o in corsivo, aggiungono link, disegnano piccole etichette, compongono il maiuscoletto e allineano il testo ai tabulatori. Altri segni servono ai libri cinesi e giapponesi, come le piccole indicazioni di pronuncia sopra un carattere, o a una frase scritta nell’altra direzione, come l’inglese in un libro arabo. L’ultima sezione mostra come scrivere le formule matematiche.",
@@ -197,6 +197,24 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 - **Output.** Canvas, HTML e PDF disegnano il riquadro e compongono le parole come testo vero: selezionabile nell’HTML, estraibile e nell’ordine di lettura nel PDF (in un PDF con tag il riquadro è un artefatto di impaginazione e le parole appartengono al paragrafo).
 
 Un chip con `field` diventa un campo compilabile del modulo nel PDF (vedi [Output PDF › Campi dei moduli](/it/docs/configuration-pdf-output#campi-dei-moduli)).
+
+### Stili di carattere
+
+`[alcune parole]|id|` compone le parole tra le parentesi quadre nello stile di carattere `id` di `characterStyles` (vedi [Configurazione → Stili di carattere](/it/docs/configuration-styles#stili-di-carattere)): un carattere, un colore, una sottolineatura, una fascia di evidenziatore, un barrato.
+
+```markdown
+Il [trattamento di prima linea]|marker| è la [metformina]|drug|.
+
+Una [sequenza con **grassetto** e uno [stile annidato]|accent|]|marker| dentro.
+```
+
+- **Testo, non un riquadro.** Le parole restano nella riga: vanno a capo, si sillabano e si giustificano come il testo che le circonda. Una decorazione spezzata su due righe viene tracciata su ciascuna; su una stessa riga prosegue sotto gli spazi tra le parole della sequenza, mai sotto gli spazi che la circondano.
+- **Le barre.** L’id segue subito la parentesi di chiusura, tra due barre: lettere, cifre, `-` e `_`. Uno spazio tra `]` e `|`, una seconda barra mancante o parentesi vuote lasciano il testo com’è scritto. `\[a]|b|` stampa `[a]|b|`.
+- **Parentesi che sono altro.** Un richiamo di nota (`[^1]`), una citazione (`[@chiave]`) e un link (`[testo](url)`) vengono letti per primi e non sono mai uno stile.
+- **Annidamento.** Le parole ammettono gli altri segni in linea e altre sequenze; vince lo stile più interno. Un id sconosciuto compone le parole come il testo che le circonda e viene segnalato (`unknownCharacterStyle`).
+- **Dove.** Paragrafi, voci di elenco, citazioni, riquadri, note a piè di pagina, didascalie, note e celle di tabella, e titoli finché `headings.inlineMarks` è attivo (disattivato, le parole sono composte senza stile).
+- **Testo semplice.** Le parentesi, le barre e l’id non stampano nulla: la ricerca, l’indice generale, le testatine, le ancore dell’indice analitico e il testo copiato leggono solo le parole.
+- **Sottolineatura ed evidenziazione da sole.** Una semplice sottolineatura è `:underline[…]`, e una semplice evidenziazione `:mark[…]`; uno stile di carattere serve per un aspetto proprio (un carattere, un colore, una banda tracciata a mano, una linea tratteggiata o ondulata). La sua sottolineatura e il suo barrato stanno, per impostazione predefinita, dove stanno quelli di `:underline[…]` e `~~…~~`.
 
 ### Evidenziazioni
 

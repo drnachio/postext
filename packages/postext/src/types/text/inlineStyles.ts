@@ -149,6 +149,149 @@ export interface ResolvedMarkStyleConfig {
   decorationBreak: MarkDecorationBreak;
 }
 
+/**
+ * A decoration line of a character style: an underline or a
+ * strike-through (`CharacterStyleConfig.underline` / `strike`). Em lengths
+ * are relative to the run's own size.
+ */
+export interface CharacterStyleLineConfig {
+  /** Draw the line. Default `false`. */
+  enabled?: boolean;
+  /** Line colour. Default the run's text colour. */
+  color?: ColorValue;
+  /** Opacity, percent (0–100). Default `100`. A print PDF sets a line
+   *  under 100 as a tint of its colour over the paper, with no
+   *  transparency. */
+  opacity?: number;
+  /** Stroke width. Default `0.06em`. */
+  thickness?: Dimension;
+  /** Where the line runs, from the baseline: below it for an underline
+   *  (default `0.12em`), above it for a strike-through (default `0.3em`). */
+  offset?: Dimension;
+  /** `solid` (default) a rule, `double` two rules, `dotted` a row of
+   *  dots, `dashed` a row of dashes, `wavy` a wave. */
+  style?: 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy';
+  /** Leave the word spaces of the run out: the line breaks at each space.
+   *  Default `false` (the line runs on under the spaces). */
+  skipSpaces?: boolean;
+}
+
+/**
+ * The highlighter band of a character style (`CharacterStyleConfig.highlight`):
+ * a band of colour painted behind the run, like a marker pen. Its edges are
+ * measured from the baseline (positive: up), in em of the run: a band from
+ * `-0.05em` to `0.35em` is a broad marker stroke under the lower half of the
+ * letters; from `-0.2em` to `0.8em` it covers the words.
+ */
+export interface CharacterStyleHighlightConfig {
+  /** Paint the band. Default `false`. */
+  enabled?: boolean;
+  /** Band colour. Default a highlighter yellow (`#ffe14d`). */
+  color?: ColorValue;
+  /** Opacity, percent (0–100). Default `70`. The band is painted behind
+   *  the text, so the letters keep their colour; a print PDF sets it as a
+   *  tint of its colour over the paper, with no transparency. */
+  opacity?: number;
+  /** Where the band starts, from the baseline (negative: below it).
+   *  Default `-0.2em`. */
+  bottom?: Dimension;
+  /** Where the band ends, from the baseline. Default `0.8em`. */
+  top?: Dimension;
+  /** How far the band reaches past the run's first and last letters.
+   *  Default `0.08em`. */
+  overhang?: Dimension;
+  /** Corner radius. Default `0.08em`. */
+  radius?: Dimension;
+  /** How irregular the band's edges are, 0–100: `0` (default) a clean
+   *  band; higher values wobble its top and bottom edges and slant its
+   *  ends, as a marker drawn by hand. The wobble is the same on every
+   *  render. */
+  rough?: number;
+  /** Leave the word spaces of the run out: one band per word. Default
+   *  `false`. */
+  skipSpaces?: boolean;
+}
+
+/**
+ * A named character style, set on a run of text with `[some words]|id|`:
+ * a face, a colour and decorations (an underline, a highlighter band, a
+ * strike-through) for words inside a paragraph. Unlike a chip the run
+ * breaks and hyphenates as the text around it does; a decoration broken
+ * across two lines is drawn on each.
+ *
+ * An em `fontSize` and `letterSpacing` are relative to the text around the
+ * run; the decorations' em lengths to the run's own size. A size larger
+ * than the text's never changes the line spacing: the lines keep their
+ * grid.
+ */
+export interface CharacterStyleConfig {
+  id: string;
+  /** Human-readable name (editor UI only). Defaults to {@link id}. */
+  name?: string;
+  /** Family of the run. Default the text's. */
+  fontFamily?: string;
+  /** Size of the run (em = the text around it). Default the text's. */
+  fontSize?: Dimension;
+  /** Weight of the run's regular text (100–900); its bold words keep the
+   *  bold. Default the text's. */
+  fontWeight?: number;
+  /** Set the run in italic. Default `false`. */
+  italic?: boolean;
+  /** Text colour. Default the text's (bold and italic words keep their
+   *  emphasis colours). */
+  color?: ColorValue;
+  /** Tracking added after every character of the run (em = the text around
+   *  it; negative tightens). Default none. */
+  letterSpacing?: Dimension;
+  /** `uppercase` sets the run in capitals. Default `none`. */
+  textTransform?: 'none' | 'uppercase';
+  /** Set the run in small capitals. Default `false`. */
+  smallCaps?: boolean;
+  underline?: CharacterStyleLineConfig;
+  highlight?: CharacterStyleHighlightConfig;
+  strike?: CharacterStyleLineConfig;
+}
+
+export interface ResolvedCharacterStyleLine {
+  enabled: boolean;
+  /** Unset: the run's text colour. */
+  color?: ColorValue;
+  opacity: number;
+  thickness: Dimension;
+  offset: Dimension;
+  style: 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy';
+  skipSpaces: boolean;
+}
+
+export interface ResolvedCharacterStyleHighlight {
+  enabled: boolean;
+  color: ColorValue;
+  opacity: number;
+  bottom: Dimension;
+  top: Dimension;
+  overhang: Dimension;
+  radius: Dimension;
+  rough: number;
+  skipSpaces: boolean;
+}
+
+export interface ResolvedCharacterStyleConfig {
+  id: string;
+  name: string;
+  /** Unset: the text's. */
+  fontFamily?: string;
+  fontSize?: Dimension;
+  fontWeight?: number;
+  italic: boolean;
+  color?: ColorValue;
+  letterSpacing?: Dimension;
+  textTransform: 'none' | 'uppercase';
+  smallCaps: boolean;
+  underline: ResolvedCharacterStyleLine;
+  highlight: ResolvedCharacterStyleHighlight;
+  strike: ResolvedCharacterStyleLine;
+}
+
 /** An inline chip style with every default filled in. */
 export interface ResolvedChipStyleConfig {
   id: string;

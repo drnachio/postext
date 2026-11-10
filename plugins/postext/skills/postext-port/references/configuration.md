@@ -99,6 +99,7 @@ Conversion at `page.dpi` (default 300):
 | `calloutStyles` | CalloutStyleConfig[] | `[{id:'note',name:'Note'}]` | §12 `:::callout{type=…}` — declaring replaces the default list |
 | `chipStyles` | ChipStyleConfig[] | `[{id:'chip',name:'Chip'}]` | §13 inline `:chip[…]{style=…}` |
 | `markStyles` | MarkStyleConfig[] | `[{id:'mark'}]` (pale yellow) | §13b inline `:mark[…]{style=…}`, postext ≥ 1.34.1 |
+| `characterStyles` | CharacterStyleConfig[] | `[{id:'marker',…}]` (yellow hand-drawn band) | §13b2 inline `[words]|id|` |
 | `exerciseStyles` | ExerciseStyleConfig[] | `[{id:'exercise'}]` | §13c `:::exercise{style=…}` — declaring replaces the default list |
 | `exercises` | ExercisesConfig | — | §13c edition (student/teacher), solutions placement, shuffle seed, screen editions |
 | `codeStyle` | CodeStyleConfig | §12b | code listings (```` ``` ```` / `~~~` fences, postext ≥ 1.23): face, box, tab width, long lines, line numbers, token colours, inline code |
@@ -1413,6 +1414,26 @@ vertical page. An engine older than the release that ships `:mark` prints `:mark
 --version`).
 
 ---------------------------------------------------------------------------------
+
+## 13b2. `characterStyles[]` — CharacterStyleConfig
+
+Inline `[some words]|id|`: a named look for a run of words — a face, a colour, tracking, capitals, and three
+decorations (underline, highlighter band behind the words, strike-through). The words stay ordinary text (they
+break, hyphenate and justify like the words round them; a decoration broken over two lines is drawn on each). The
+brackets, bars and id print nothing; `\[a]|b|` stays literal; `[^…]`, `[@…]` and `[text](url)` are never a style.
+An unknown id sets the words plain (`unknownCharacterStyle`). Declaring `characterStyles` replaces the built-in list.
+```
+{ id (REQUIRED), name?, fontFamily?, fontSize?: Dimension, fontWeight?, italic = false, color?: ColorValue,
+  letterSpacing?: Dimension, textTransform = 'none' | 'uppercase', smallCaps = false,
+  underline?: { enabled = false, color? (the run's), opacity = 100, thickness = 0.05em, offset = 0.12em (down),
+    style = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy', skipSpaces = false },
+  strike?: { same, offset = 0.28em (up) },
+  highlight?: { enabled = false, color = #ffe14d, opacity = 70, bottom = -0.2em, top = 0.8em (from the baseline),
+    overhang = 0.08em, radius = 0.08em, rough = 0 (0–100, hand-drawn edges), skipSpaces = false } }
+```
+Port rule: a plain underline is `:underline[…]` and a plain highlight `:mark[…]`; a character style only for a look
+of its own (a face or colour on a run, a hand-drawn band, a dashed or wavy line) or a source character style that
+must come back as one in Word.
 
 ## 13c. `exerciseStyles[]` and `exercises` — exercises
 

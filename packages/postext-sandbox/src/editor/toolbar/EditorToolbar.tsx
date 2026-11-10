@@ -21,21 +21,24 @@ import {
   ALargeSmall,
   Languages,
   ArrowLeftRight,
+  Highlighter,
+  Eraser,
   LayoutTemplate,
   Shapes,
   Palette,
 } from 'lucide-react';
-import { isCjkLanguage } from 'postext';
+import { DEFAULT_CHARACTER_STYLES, isCjkLanguage } from 'postext';
 import type { EditorView } from '@codemirror/view';
 import { useRef, useState, type ReactNode } from 'react';
 import { useSandbox } from '../../context/SandboxContext.js';
 import { useHistoryAvailability, useHistoryCommands } from '../../history/HistoryButtons.js';
-import { IconButton } from '../../ui/index.js';
+import { IconButton, Menu, MenuItem, MenuSeparator } from '../../ui/index.js';
 import { composedPageInsertion } from './composedInsert.js';
 import { TemplatePicker } from './TemplatePicker.js';
 import { IconPicker } from './IconPicker.js';
 import { LookPicker } from './LookPicker.js';
 import { framePieceAt, frameLookChange, type FramePiece } from '../../templates/frameLooks.js';
+import { applyCharStyle, removeCharStyle } from '../syntax/charStyleSyntax.js';
 
 /** Write `text` over the selection and put the caret after it (#1064: a
  *  label's symbol). */
@@ -66,6 +69,36 @@ function ToolbarButton({
   disabled?: boolean;
 }) {
   return <IconButton label={label} icon={icon} onClick={onClick} tooltipSide="bottom" disabled={disabled} />;
+}
+
+/** The character styles of the book as a menu: one item per style, which
+ *  sets the selection in it (or changes the style of the run the selection
+ *  is in), and one that takes a run's style off. */
+function CharStyleMenu({ getView, label }: { getView: () => EditorView | null; label: string }) {
+  const { state } = useSandbox();
+  const { labels } = state;
+  const styles = state.config.characterStyles ?? DEFAULT_CHARACTER_STYLES;
+  return (
+    <Menu
+      align="start"
+      trigger={<IconButton label={label} icon={<Highlighter size={16} aria-hidden="true" />} tooltipSide="bottom" />}
+    >
+      <MenuItem heading>{labels.charStyleMenuHeader}</MenuItem>
+      {styles.length === 0 && <MenuItem disabled>{labels.charStyleMenuEmpty}</MenuItem>}
+      {styles.map((s) => (
+        <MenuItem key={s.id} title={`[…]|${s.id}|`} onClick={() => { const v = getView(); if (v) applyCharStyle(v, s.id); }}>
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="min-w-0 truncate">{s.name || s.id}</span>
+            <span className="shrink-0 text-[10px]" style={{ color: 'var(--slate)' }}>{s.id}</span>
+          </span>
+        </MenuItem>
+      ))}
+      <MenuSeparator />
+      <MenuItem icon={<Eraser size={14} aria-hidden="true" />} onClick={() => { const v = getView(); if (v) removeCharStyle(v); }}>
+        {labels.charStyleRemove}
+      </MenuItem>
+    </Menu>
+  );
 }
 
 function wrapSelection(view: EditorView, before: string, after: string) {
@@ -170,7 +203,7 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
   // mode, where the rest of the toolbar is off.
   const history = useHistoryCommands();
   const { canUndo, canRedo } = useHistoryAvailability();
-  const actions: { icon: ReactNode; label: string; action: () => void; separator?: boolean; enabled?: boolean }[] = [
+  const actions: { icon: ReactNode; label: string; action: () => void; separator?: boolean; enabled?: boolean; menu?: 'charStyle' }[] = [
     {
       icon: <Undo2 size={16} aria-hidden="true" />,
       label: labels.undo,
@@ -229,6 +262,13 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
       icon: <ALargeSmall size={16} aria-hidden="true" />,
       label: labels.smallCapsInline,
       action: () => { const v = getView(); if (v) wrapSelection(v, ':smallcaps[', ']'); },
+    },
+    // The book's character styles (`[…]|id|`), in a menu.
+    {
+      icon: <Highlighter size={16} aria-hidden="true" />,
+      label: labels.charStyleInline,
+      action: () => {},
+      menu: 'charStyle',
     },
     // Readings (furigana, pinyin) and a run set across a vertical line,
     // for a Chinese or Japanese book.
@@ -305,7 +345,9 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
     >
       {actions.map((a, i) => (
         <span key={i} className="contents">
-          <ToolbarButton icon={a.icon} label={a.label} onClick={a.action} disabled={a.enabled === undefined ? readOnly : !a.enabled} />
+          {a.menu === 'charStyle'
+            ? <CharStyleMenu getView={getView} label={a.label} />
+            : <ToolbarButton icon={a.icon} label={a.label} onClick={a.action} disabled={a.enabled === undefined ? readOnly : !a.enabled} />}
           {a.separator && (
             <div className="mx-1 h-5 w-px shrink-0" style={{ backgroundColor: 'var(--rule)' }} aria-hidden="true" />
           )}

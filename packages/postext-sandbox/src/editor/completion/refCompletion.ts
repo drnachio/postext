@@ -21,6 +21,7 @@ import { directionCompletionSource } from '../syntax/directionSyntax.js';
 import { verseCompletionSource } from '../syntax/verseSyntax.js';
 import { tabCompletionSource } from '../syntax/tabSyntax.js';
 import { labelCompletionSource, type LabelCompletionContext, type LabelStyleOption } from './labelCompletion.js';
+import { charStyleCompletionSource, type CharStyleOption } from '../syntax/charStyleSyntax.js';
 
 /** What the `@` picker needs from the sandbox: the current resources and the
  *  resource types that name them (figure/table/…) in the document locale.
@@ -31,6 +32,8 @@ export interface RefCompletionContext {
   types: readonly ResourceType[];
   /** The chip styles offered inside `:chip[…]{style="…"}`. */
   chipStyles?: readonly ChipStyleOption[];
+  /** The character styles `]|` offers (`[words]|id|`). */
+  characterStyles?: readonly CharStyleOption[];
   /** The highlight styles offered inside `:mark[…]{style="…"}` (#888). */
   markStyles?: readonly MarkStyleOption[];
   /** The book's index terms, offered inside `:index{term="…"}`. */
@@ -431,6 +434,7 @@ export function refCompletion(getContext: () => RefCompletionContext): Extension
       override: [
         refSource(getContext),
         chipCompletionSource(() => getContext().chipStyles ?? []),
+        charStyleCompletionSource(() => getContext().characterStyles ?? []),
         markCompletionSource(() => getContext().markStyles ?? []),
         smallCapsCompletionSource,
         annotationCompletionSource,

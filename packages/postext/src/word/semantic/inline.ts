@@ -79,16 +79,18 @@ interface Fmt {
   strike?: boolean;
   /** Underlined (`++…++`). */
   under?: boolean;
+  /** A character style's Word style (`[…]|id|`). */
+  cs?: string;
 }
 
 const flagsOf = (f: Fmt): string => `${f.b ? 'b' : ''}${f.i ? 'i' : ''}${f.c ? 'c' : ''}${f.script === 'sup' ? 'p' : ''}${f.script === 'sub' ? 's' : ''}${f.k ? 'k' : ''}`;
-const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}|${f.ruby?.key ?? ''}|${f.strike ? 'x' : ''}${f.under ? 'u' : ''}`;
+const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}|${f.ruby?.key ?? ''}|${f.strike ? 'x' : ''}${f.under ? 'u' : ''}|${f.cs ?? ''}`;
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
     // Code in a link keeps the code style (it is what marks the run as
     // code on the way back), underlined like the link.
-    style: style ?? (f.k ? STYLE.codeChar : f.href ? STYLE.hyperlink : f.mark ? STYLE.mark : undefined),
+    style: style ?? (f.k ? STYLE.codeChar : f.href ? STYLE.hyperlink : f.cs ?? (f.mark ? STYLE.mark : undefined)),
     u: (f.k && f.href !== undefined) || f.under || undefined,
     b: f.b || undefined,
     i: f.i || undefined,
@@ -203,6 +205,8 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
   for (const span of s.spans) {
     const len = span.text.length;
     const base: Fmt = { b: span.bold, i: span.italic, c: span.smallCaps, script: span.script, ...(span.ruby ? { ruby: { key: `${span.ruby.id}:${p}`, text: span.ruby.text, ...(span.ruby.group ? { group: true } : {}) } } : {}) };
+    const cs = span.charStyle ? ctx.styles.characterStyle(span.charStyle.style) : undefined;
+    if (cs) base.cs = cs;
     const at = s.sourceMap[p] ?? -1;
     const limit = nextMapped(p + len - 1);
     if (span.math) {

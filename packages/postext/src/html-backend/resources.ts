@@ -145,6 +145,7 @@ function renderResourceLine(
     parts.push(lineEndHtml(end, x));
     // Emphasis marks, side lines, the proper-name and book-title lines
     // (#193, #421, #429).
+    if (line.marks) parts.unshift(lineMarksHtml(line, color, 'behind'));
     if (line.marks) parts.push(lineMarksHtml(line, color));
     if (line.linkUnderlines) parts.push(lineLinkUnderlinesHtml(line, color));
   } else {

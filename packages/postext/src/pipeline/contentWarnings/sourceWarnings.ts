@@ -16,6 +16,7 @@ import { tableGridIssues } from '../../table/model.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { ContentWarning } from '../../vdt.js';
 import { DEFAULT_CHIP_STYLES } from '../../defaults/text/chipStyles.js';
+import { DEFAULT_CHARACTER_STYLES } from '../../defaults/text/characterStyles.js';
 import { DEFAULT_MARK_STYLES } from '../../defaults/text/markStyles.js';
 import { DEFAULT_PARAGRAPH_STYLES } from '../../defaults/text/paragraphStyles.js';
 import { DEFAULT_HEADING_STYLES } from '../../defaults/structure/headingStyles.js';
@@ -175,6 +176,9 @@ export function collectContentWarnings(
   // a type is only wrong once there are styles to pick from.
   const calloutStyles = new Set((config?.calloutStyles ?? []).map((s) => s.id));
   const chipStyles = new Set((config?.chipStyles ?? DEFAULT_CHIP_STYLES).map((s) => s.id));
+  const characterStyles = new Set((config?.characterStyles ?? DEFAULT_CHARACTER_STYLES).map((s) => s.id));
+  // A style run spreads over several spans: reported once.
+  const reportedRuns = new Set<string>();
   const markStyles = new Set((config?.markStyles ?? DEFAULT_MARK_STYLES).map((s) => s.id));
   /** The style ids the highlight marks of a span name that no style
    *  declares (#888). */
@@ -239,6 +243,11 @@ export function collectContentWarnings(
       const style = span.chip?.gap ? undefined : span.chip?.style;
       if (style !== undefined && !chipStyles.has(style)) {
         out.push({ kind: 'unknownChipStyle', style, ...abs(inlineRange(body, at, b.sourceEnd)) });
+      }
+      const run = span.charStyle;
+      if (run && !characterStyles.has(run.style) && !reportedRuns.has(`${b.sourceStart}:${run.id}`)) {
+        reportedRuns.add(`${b.sourceStart}:${run.id}`);
+        out.push({ kind: 'unknownCharacterStyle', style: run.style, ...abs(inlineRange(body, at, b.sourceEnd)) });
       }
       for (const mark of unknownMarks(span)) {
         // Once per mark: its words may lie in several spans.
@@ -444,6 +453,10 @@ export function collectContentWarnings(
         const style = span.chip?.style;
         if (style !== undefined && !chipStyles.has(style) && once(`chip:${style}`)) {
           out.push({ kind: 'unknownChipStyle', style, inResource: id, ...where });
+        }
+        const run = span.charStyle;
+        if (run && !characterStyles.has(run.style) && once(`charStyle:${run.style}`)) {
+          out.push({ kind: 'unknownCharacterStyle', style: run.style, inResource: id, ...where });
         }
         for (const mark of unknownMarks(span)) {
           if (once(`mark:${mark.style}`)) out.push({ kind: 'unknownMarkStyle', style: mark.style, inResource: id, ...where });

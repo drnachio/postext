@@ -247,6 +247,7 @@ export type WarningPayload =
    *  `config.chipStyles`; the chip takes the first style. `inResource`
    *  names the resource whose caption, note or cell holds the chip. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  | { kind: 'unknownCharacterStyle'; style: string; inResource?: string }
   /** A `:mark[…]{style="…"}` names a style that is not in
    *  `config.markStyles` (#888); the mark takes the first style. */
   | { kind: 'unknownMarkStyle'; style: string; inResource?: string }

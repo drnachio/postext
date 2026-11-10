@@ -16,6 +16,7 @@
 import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from '../vdt.js';
 import { dottedCentres, sesamePath, wavePoints } from '../canvas-backend/annotations.js';
 import { htmlLinkUnderlinePainted } from './linkPaint.js';
+import { bandOutline, dashedPieces, outlineToSvgPath } from '../marks/markGeometry.js';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c]!);
@@ -25,10 +26,29 @@ const n = (v: number): string => v.toFixed(3);
  *  text baseline (0: on it); `vertical` inside a vertical line's turned
  *  box (a sesame turns back, see `sesamePath`). */
 function markHtml(m: VDTLineMark, baseline: number, color: string, vertical = false): string {
+  const html = markShapeHtml(m, baseline, color, vertical);
+  // A translucent mark (a character style's band or line): one group, so
+  // what overlaps inside it is not doubled.
+  return m.opacity !== undefined && m.opacity < 1 && html ? `<span aria-hidden="true" style="position:absolute;left:0;top:0;opacity:${n(m.opacity)};">${html}</span>` : html;
+}
+
+function markShapeHtml(m: VDTLineMark, baseline: number, color: string, vertical: boolean): string {
   const ink = m.color ?? color;
   const cx = m.x;
   const cy = baseline + m.y;
   switch (m.kind) {
+    case 'band': {
+      const w = m.length ?? 0;
+      const h = m.height ?? 0;
+      // The outline drawn from the band's own corner, with room for its
+      // wobble and slanted ends.
+      const pad = h;
+      const d = outlineToSvgPath(bandOutline({ ...m, x: pad, y: pad }));
+      return `<svg aria-hidden="true" width="${n(w + 2 * pad)}" height="${n(h + 2 * pad)}" style="position:absolute;left:${n(cx - pad)}px;top:${n(cy - pad)}px;overflow:visible;"><path d="${d}" fill="${ink}"/></svg>`;
+    }
+    case 'dashed':
+      return dashedPieces(m).map((p) =>
+        `<span aria-hidden="true" style="position:absolute;left:${n(p.x)}px;top:${n(cy - m.thickness / 2)}px;width:${n(p.length)}px;height:${n(m.thickness)}px;background:${ink};"></span>`).join('');
     case 'dot':
     case 'circle': {
       const d = m.size ?? 0;
@@ -68,10 +88,11 @@ function markHtml(m: VDTLineMark, baseline: number, color: string, vertical = fa
  *  They hang from a box of no size set on the line's text baseline (a box
  *  in the line's font, as the text spans are), so they follow the text
  *  wherever the browser puts its baseline. */
-export function lineMarksHtml(line: VDTLine, color: string): string {
-  if (!line.marks || line.marks.length === 0) return '';
+export function lineMarksHtml(line: VDTLine, color: string, layer: 'over' | 'behind' = 'over'): string {
   const linkLines = htmlLinkUnderlinePainted();
-  const marks = line.marks.filter((m) => !(m.underLink && linkLines)).map((m) => markHtml(m, 0, color)).join('');
+  const picked = line.marks?.filter((m) => (layer === 'behind') === !!m.behind && !(m.underLink && linkLines));
+  if (!picked || picked.length === 0) return '';
+  const marks = picked.map((m) => markHtml(m, 0, color)).join('');
   return `<span aria-hidden="true" style="position:absolute;left:0;top:0;white-space:pre;">`
     + `<span style="display:inline-block;position:relative;width:0;height:0;vertical-align:baseline;">${marks}</span></span>`;
 }

@@ -205,6 +205,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unknownChipStyle':
       text = `Unknown chip style "${w.style}"${inRes} — the chip takes the first chip style`;
       break;
+    case 'unknownCharacterStyle':
+      text = `Unknown character style "${w.style}"${inRes} — the words are set as the text around them`;
+      break;
     case 'unknownMarkStyle':
       text = `Unknown highlight style "${w.style}"${inRes} — the mark takes the first highlight style`;
       break;

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Styles et parties',
   description: 'Les styles nommés des paragraphes, des pastilles, des surlignages, des listings de code et des titres, et les pages qui ouvrent chaque partie',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
-  readingTime: '38 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '47 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Cette page présente les styles nommés que vous définissez une fois et utilisez autant de fois que nécessaire. Un style de paragraphe règle un genre de texte, comme une bibliographie ou un glossaire. Un style de pastille dessine une petite étiquette dans une ligne, et un style de surlignage une bande de couleur derrière une expression. Les listings de code ont leur propre police, leur cadre et leurs couleurs. La page traite aussi des pages qui ouvrent chaque partie d’un livre, et des styles des titres particuliers. Les encadrés ont leur propre page.",
@@ -491,6 +491,273 @@ const style = pickChipStyle(resolved, 'key');
 // => the `key` style, else the first one
 ```
 
+
+## Styles de caractère
+
+La propriété `characterStyles` déclare les styles nommés d’une suite de mots, écrite `[quelques mots]|id|` dans le texte : une police (famille, corps, graisse, inclinaison), une couleur, une approche, des capitales ou des petites capitales, et trois décorations — un soulignement, une bande de surligneur peinte derrière les mots comme au marqueur, et un barré. Contrairement à une pastille, une suite stylée passe à la ligne et se coupe comme le texte qui l’entoure ; une décoration coupée sur deux lignes est tracée sur chacune. Un style est livré par défaut — `marker`, un surligneur jaune sur la moitié inférieure des lettres, aux bords tracés à la main —, si bien que `[…]|marker|` fonctionne sans aucune configuration (un simple soulignement s’écrit `:underline[…]`, un simple surlignage `:mark[…]`) ; déclarer `characterStyles` remplace cette liste, et une liste vide laisse un livre sans aucun style. Une suite dont aucun style ne déclare l’id est composée comme le texte qui l’entoure, et le panneau Révision la signale (*Style de caractère inconnu*).
+
+```ts
+const config: PostextConfig = {
+  characterStyles: [
+    {
+      id: 'marker',
+      name: 'Marker',
+      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+    },
+    {
+      id: 'drug',
+      name: 'Drug name',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+};
+```
+
+```md
+Le [traitement de première ligne]|marker| est la [metformine]|drug|, jamais [l’insuline d’emblée]|wrong|.
+```
+
+Propriétés du texte (celles qui ne sont pas indiquées gardent celles du texte) :
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriété</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Par défaut</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatoire</td>
+      <td>Identifiant écrit entre les barres : <code>[…]|id|</code>. Lettres, chiffres, <code>-</code> et <code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nom lisible, pour l’interface de l’éditeur seulement.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>celle du texte</td>
+      <td>Famille de la suite.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>celle du texte</td>
+      <td>Corps de la suite ; <code>em</code> est relatif au texte qui l’entoure. Un corps plus grand ne change jamais l’interlignage : les lignes gardent leur grille, si bien qu’un corps beaucoup plus grand peut toucher la ligne du dessus.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>celle du texte</td>
+      <td>Graisse des mots en romain de la suite (100–900, arrondie à la centaine) ; ses mots en gras gardent le gras.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compose la suite en italique.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>celle du texte</td>
+      <td>Couleur de la suite, mots en gras et en italique compris.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>aucune</td>
+      <td>Approche ajoutée après chaque caractère de la suite (en <code>em</code> du texte qui l’entoure ; négative, elle resserre). Mesurée avec la suite, si bien que la ligne se coupe là où elle est peinte.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code> compose la suite en capitales ; le texte garde ses lettres, si bien que la recherche et la correspondance avec la source le lisent toujours tel qu’il est écrit.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compose la suite en petites capitales, comme <code>:smallcaps[…]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>underline</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>désactivé</td>
+      <td>Un trait sous la suite (voir plus bas).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>CharacterStyleHighlightConfig</code></td>
+      <td>désactivé</td>
+      <td>Une bande de surligneur derrière la suite (voir plus bas).</td>
+    </tr>
+    <tr>
+      <td><code>strike</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>désactivé</td>
+      <td>Un trait à travers la suite (voir plus bas).</td>
+    </tr>
+  </tbody>
+</table>
+
+`underline` et `strike` (les longueurs en em se rapportent au corps de la suite) :
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriété</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Par défaut</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Trace le trait.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>la couleur de la suite</td>
+      <td>Couleur du trait.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Pourcentage, 0–100.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Épaisseur du trait.</td>
+    </tr>
+    <tr>
+      <td><code>offset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.12em</code> (soulignement), <code>0.28em</code> (barré)</td>
+      <td>Position du milieu du trait : sous la ligne de base pour un soulignement, au-dessus pour un barré.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Façon de tracer le trait.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Le trace mot par mot, en laissant les espaces vides ; désactivé, il continue sous les espaces de la suite (jamais sous les espaces qui l’entourent).</td>
+    </tr>
+  </tbody>
+</table>
+
+`highlight` (bords mesurés depuis la ligne de base, positifs vers le haut, en em du corps de la suite) :
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriété</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Par défaut</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Peint la bande.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffe14d</code></td>
+      <td>Couleur de la bande. Une entrée de la palette qui est un ton direct imprime la bande sur la plaque de son encre.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Pourcentage, 0–100. La bande est peinte derrière le texte, si bien que les lettres gardent leur couleur.</td>
+    </tr>
+    <tr>
+      <td><code>bottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>-0.2em</code></td>
+      <td>Début de la bande (négatif : sous la ligne de base, parmi les jambages descendants).</td>
+    </tr>
+    <tr>
+      <td><code>top</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Fin de la bande : environ <code>0.45em</code> couvre la moitié inférieure des lettres (un trait de marqueur), <code>0.8em</code> les mots entiers, <code>0.05em</code> avec <code>bottom: -0.15em</code> un soulignement épais.</td>
+    </tr>
+    <tr>
+      <td><code>overhang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Débord de la bande au-delà de la première et de la dernière lettre de la suite.</td>
+    </tr>
+    <tr>
+      <td><code>radius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Rayon des coins, limité à la moitié de la hauteur de la bande.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100 : <code>0</code> une bande nette ; des valeurs plus élevées font onduler ses bords haut et bas, la font dériver légèrement le long de la ligne et coupent ses extrémités en biais, comme un marqueur tracé à la main. L’ondulation suit une graine tirée de la suite, si bien qu’elle est la même à chaque rendu, sur le canvas, dans le PDF et en HTML.</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Une bande par mot.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Imbrication.** Une suite peut contenir d’autres marques en ligne (`[un mot en **gras**]|marker|`, un lien, une référence, une formule) et d’autres suites : le style le plus intérieur l’emporte (`[a [b]|drug| c]|marker|`). Une suite ne peut pas franchir un paragraphe.
+
+**Où.** Paragraphes, éléments de liste, citations, encadrés, notes de bas de page, légendes, notes et cellules de tableau, et titres tant que `headings.inlineMarks` est activé. Les titres courants, la table des matières et les entrées d’index prennent les mots sans le style.
+
+**Sortie.** Le canvas, le PDF et le HTML tracent les décorations à partir de la même géométrie (`VDTLine.marks`, de types `band`, `line`, `double`, `dotted`, `dashed`, `wavy`) : la bande avant le texte de la ligne, les traits après. Dans un PDF numérique, une bande ou un trait translucide est tracé avec de la transparence ; dans un PDF d’impression (`pdfGeneration.colorSpace` un profil d’impression), il est composé tel qu’il s’imprime sur papier blanc — une teinte de sa couleur, sur la plaque de son encre s’il s’agit d’un ton direct — sans transparence, si bien qu’un fichier PDF/X n’en contient jamais. L’EPUB recomposable traduit chaque style en une classe (`pt-cs-<id>`) avec du CSS : police, couleur, `text-decoration` pour les traits et un fond en dégradé pour la bande. Un export Word fait de chaque style un style de caractère Word (`Character style: <name>`), la bande devenant une trame de sa couleur, et un import Word ramène à lui un style de caractère qui porte le nom d’un style du livre — ou exporté comme `Character style: <name>`.
+
+Dans le VDT, un segment stylé porte `charStyle: { id, style }` (la suite et l’id du style) ; sa police, sa couleur et son approche sont déjà dans `fontString`, `color` et `tracking`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles);
+// => the built-in `marker` when unset; every field filled
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => undefined for the built-in default; static defaults dropped; [] kept
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => the `drug` style, or undefined when no style has that id
+```
 
 ## Styles de surlignage
 

@@ -1566,6 +1566,60 @@
       }
     }
   },
+  "unknownCharacterStyle": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown character style",
+      "es": "Estilo de carácter desconocido",
+      "ca": "Estil de caràcter desconegut",
+      "zh": "未知的字符样式",
+      "ar": "نمط حروف غير معروف",
+      "ja": "不明な文字スタイル",
+      "pt": "Estilo de caractere desconhecido",
+      "fr": "Style de caractère inconnu",
+      "de": "Unbekanntes Zeichenformat",
+      "it": "Stile di carattere sconosciuto"
+    },
+    "cause": {
+      "en": "A `[…]|id|` names a style that characterStyles does not define, so the words are set as the text around them.",
+      "es": "Un `[…]|id|` nombra un estilo que characterStyles no define, así que las palabras se componen como el texto que las rodea.",
+      "ca": "Un `[…]|id|` anomena un estil que characterStyles no defineix, de manera que les paraules es componen com el text que les envolta.",
+      "zh": "某个`[…]|id|`指定的样式没有在characterStyles中定义，因此这些文字按周围的正文排。",
+      "ar": "مقطع `[…]|id|` يسمّي نمطًا لا تعرّفه characterStyles، فتُصفّ الكلمات كالنص المحيط بها.",
+      "ja": "`[…]|id|`が、characterStylesに定義されていないスタイルを指定しているため、その語句は周囲の本文と同じように組まれます。",
+      "pt": "Um `[…]|id|` cita um estilo que characterStyles não define, então as palavras são compostas como o texto ao redor.",
+      "fr": "Un `[…]|id|` nomme un style que characterStyles ne définit pas : les mots sont donc composés comme le texte qui les entoure.",
+      "de": "Ein `[…]|id|` nennt ein Format, das characterStyles nicht definiert, daher werden die Wörter wie der umgebende Text gesetzt.",
+      "it": "Un `[…]|id|` nomina uno stile che characterStyles non definisce, quindi le parole sono composte come il testo che le circonda."
+    },
+    "fix": {
+      "en": "Define the style in characterStyles or correct the id between the bars.",
+      "es": "Define el estilo en characterStyles o corrige el id entre las barras.",
+      "ca": "Defineix l'estil a characterStyles o corregeix l'id entre les barres.",
+      "zh": "在characterStyles中定义该样式，或改正两条竖线之间的id。",
+      "ar": "عرّف النمط في characterStyles أو صحّح المعرّف id بين الخطّين العموديين.",
+      "ja": "characterStylesにスタイルを定義するか、縦棒のあいだのidを修正してください。",
+      "pt": "Defina o estilo em characterStyles ou corrija o id entre as barras.",
+      "fr": "Définissez le style dans characterStyles ou corrigez l’id entre les barres.",
+      "de": "Definieren Sie das Format in characterStyles oder korrigieren Sie die id zwischen den Strichen.",
+      "it": "Definisci lo stile in characterStyles o correggi l’id tra le barre."
+    },
+    "docs": {
+      "slug": "configuration-styles",
+      "heading": {
+        "en": "Character styles",
+        "es": "Estilos de carácter",
+        "ca": "Estils de caràcter",
+        "zh": "字符样式",
+        "ar": "أنماط الحروف",
+        "ja": "文字スタイル",
+        "pt": "Estilos de caractere",
+        "fr": "Styles de caractère",
+        "de": "Zeichenformate",
+        "it": "Stili di carattere"
+      }
+    }
+  },
   "duplicateAnchor": {
     "source": "engine",
     "label": {

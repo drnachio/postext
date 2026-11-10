@@ -227,6 +227,9 @@ export class Converter {
         case 'chip':
           if (!heading) t.chip = target.style;
           break;
+        case 'charStyle':
+          t.charStyle = target.style;
+          break;
         default:
           break;
       }

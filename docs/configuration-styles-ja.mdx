@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'スタイルと部',
   description: '段落、チップ、ハイライト、コードリスト、見出しの名前付きスタイルと、各部の扉ページ',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
-  readingTime: '35分',
+  lastUpdated: '2026-11-10',
+  readingTime: '42分',
   order: 15,
   parent: 'configuration',
   plainSummary: "このページでは、一度決めれば何度でも使える名前付きスタイルを説明します。段落スタイルは、参考文献や用語集のような種類の文章の組み方を決めます。チップスタイルは行の中に小さなラベルを描き、ハイライトスタイルは語句の後ろに色の帯を敷きます。コードリストには専用のフォント、枠、色があります。本の各部の最初に置くページと、特別な見出しのスタイルも扱います。囲みは別のページで説明します。",
@@ -491,6 +491,273 @@ const style = pickChipStyle(resolved, 'key');
 // => the `key` style, else the first one
 ```
 
+
+## 文字スタイル
+
+`characterStyles`プロパティは、本文で`[some words]|id|`と書く語句の名前付きスタイルを宣言します。書体（ファミリー、サイズ、ウェイト、傾き）、色、字間、大文字またはスモールキャピタル、そして3つの装飾、つまり下線、マーカーペンのように語の後ろに塗る蛍光ペンの帯、取り消し線を指定できます。チップと違い、スタイルを付けた語句は周りの文章と同じように行をまたいで改行され、ハイフネーションされます。2行にまたがった装飾は各行に描かれます。既定では1つのスタイルが用意されています。`marker`（文字の下半分にかかる黄色の蛍光ペンの帯で、縁は手描き風）です。そのため`[…]|marker|`は設定なしで使えます（単なる下線は`:underline[…]`、単なるハイライトは`:mark[…]`）。`characterStyles`を宣言するとこのリストが置き換えられ、空のリストにすると本に文字スタイルはひとつもなくなります。どのスタイルも宣言していないidの語句は周りの文章と同じに組まれ、検査パネルがそれを報告します（*不明な文字スタイル*）。
+
+```ts
+const config: PostextConfig = {
+  characterStyles: [
+    {
+      id: 'marker',
+      name: 'Marker',
+      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+    },
+    {
+      id: 'drug',
+      name: 'Drug name',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+};
+```
+
+```md
+The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first]|wrong|.
+```
+
+文字のプロパティ（未設定のものは周囲のテキストの値を保ちます）：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>必須</td>
+      <td>2本の縦棒のあいだに書く識別子です：<code>[…]|id|</code>。英字、数字、<code>-</code>、<code>_</code>を使えます。</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>人が読むための名前です（エディターのUIでのみ使います）。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>周囲のテキスト</td>
+      <td>語句のフォントファミリー。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>周囲のテキスト</td>
+      <td>語句のサイズ。<code>em</code>は周囲のテキストに対する値です。サイズを大きくしても行送りは変わりません。行はグリッドを保つので、ずっと大きなサイズでは上の行に触れることがあります。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>周囲のテキスト</td>
+      <td>語句のうち標準の語のウェイト（100〜900、100単位に丸めます）。太字の語は太字のままです。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>語句をイタリックで組みます。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>周囲のテキスト</td>
+      <td>語句の色。太字とイタリックの語にも適用されます。</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>なし</td>
+      <td>語句の各文字のあとに加えるトラッキング（周囲のテキストの<code>em</code>。負の値で詰めます）。語句と一緒に測るので、行は描かれるとおりの位置で改行されます。</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code>は語句を大文字で組みます。テキストは元の文字を保つので、検索とソースマップでは書かれたとおりに読まれます。</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>:smallcaps[…]</code>と同じように、語句をスモールキャピタルで組みます。</td>
+    </tr>
+    <tr>
+      <td><code>underline</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>オフ</td>
+      <td>語句の下に引く線（下記を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>CharacterStyleHighlightConfig</code></td>
+      <td>オフ</td>
+      <td>語句の後ろに塗る蛍光ペンの帯（下記を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>strike</code></td>
+      <td><code>CharacterStyleLineConfig</code></td>
+      <td>オフ</td>
+      <td>語句を貫く線（下記を参照）。</td>
+    </tr>
+  </tbody>
+</table>
+
+`underline`と`strike`（emの長さは語句自身のサイズに対する値です）：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>線を描きます。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>語句の色</td>
+      <td>線の色。</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>パーセントで、0〜100です。</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>線の太さ。</td>
+    </tr>
+    <tr>
+      <td><code>offset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.12em</code>（下線）、<code>0.28em</code>（取り消し線）</td>
+      <td>線の中心を通す位置。下線ではベースラインの下、取り消し線ではベースラインの上に測ります。</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>線の描き方。</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>語ごとに描き、スペースは空けます。オフのときは語句の中のスペースの下も続けて描きます（語句の前後のスペースの下には描きません）。</td>
+    </tr>
+  </tbody>
+</table>
+
+`highlight`（縁はベースラインから測り、上が正で、語句自身のサイズのemで指定します）：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>帯を塗ります。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffe14d</code></td>
+      <td>帯の色。パレットの特色の項目を使うと、帯はそのインキの版に刷られます。</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>パーセントで、0〜100です。帯はテキストの後ろに塗られるので、文字の色は変わりません。</td>
+    </tr>
+    <tr>
+      <td><code>bottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>-0.2em</code></td>
+      <td>帯の始まる位置（負の値はベースラインの下、ディセンダーの範囲）。</td>
+    </tr>
+    <tr>
+      <td><code>top</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>帯の終わる位置。約<code>0.45em</code>で文字の下半分を覆い（マーカーの線）、<code>0.8em</code>で語全体を覆います。<code>bottom: -0.15em</code>と組み合わせた<code>0.05em</code>は太い下線になります。</td>
+    </tr>
+    <tr>
+      <td><code>overhang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>帯が語句の最初と最後の文字からどれだけはみ出すか。</td>
+    </tr>
+    <tr>
+      <td><code>radius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>角の半径。帯の高さの半分までに制限されます。</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0〜100です。<code>0</code>はきれいな帯です。値を上げると上下の縁が揺れ、帯が行に沿ってわずかにずれ、両端が斜めに切れて、手で引いたマーカーのようになります。揺れは語句から決まるシードに従うので、キャンバス、PDF、HTMLのどこでも、何度描いても同じ形になります。</td>
+    </tr>
+    <tr>
+      <td><code>skipSpaces</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>語ごとに1本の帯を塗ります。</td>
+    </tr>
+  </tbody>
+</table>
+
+**入れ子。** 語句には、ほかのインラインの記法（`[a **bold** word]|marker|`、リンク、参照、数式）や別の語句を含められます。いちばん内側のスタイルが優先されます（`[a [b]|drug| c]|marker|`）。語句が段落をまたぐことはできません。
+
+**使える場所。** 段落、リスト項目、引用、囲み、脚注、キャプション、注、表のセルで使え、見出しでも`headings.inlineMarks`がオンのあいだは使えます。柱、目次、索引の項目は、スタイルを付けずに語だけを使います。
+
+**出力。** キャンバス、PDF、HTMLは、同じジオメトリー（`VDTLine.marks`、種類は`band`、`line`、`double`、`dotted`、`dashed`、`wavy`）から装飾を描きます。帯は行のテキストより先に、線はテキストのあとに描きます。デジタル用のPDFでは、半透明の帯や線は透明効果で描かれます。印刷用のPDF（`pdfGeneration.colorSpace`が印刷用のプロファイル）では、白い紙に刷られたときの見た目で、つまりその色の網点として（特色ならそのインキ専用の版に）透明効果なしで組まれるので、PDF/Xのファイルに透明効果が入ることはありません。リフロー型のEPUBは、各スタイルをクラス（`pt-cs-<id>`）としてCSSで組みます。フォント、色、線には`text-decoration`、帯にはグラデーションの背景を使います。Wordに書き出すと、各スタイルはWordの文字スタイル（`Character style: <name>`）になり、帯はその色の網かけになります。Wordから読み込むと、本のスタイルと同じ名前の文字スタイル、または`Character style: <name>`として書き出された文字スタイルが、そのスタイルに戻ります。
+
+VDTでは、スタイルを付けたセグメントは`charStyle: { id, style }`（語句と、そのスタイルのid）を持ちます。書体、色、トラッキングはすでに`fontString`、`color`、`tracking`に入っています。
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles);
+// => the built-in `marker` when unset; every field filled
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => undefined for the built-in default; static defaults dropped; [] kept
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => the `drug` style, or undefined when no style has that id
+```
 
 ## ハイライトのスタイル
 

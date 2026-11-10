@@ -78,8 +78,9 @@ export function resolveInlineSpans(block: ContentBlock, style: BlockStyle, ctx: 
     contentBlock = { ...contentBlock, spans: resolveSwatchSpans(contentBlock.spans, resolved.colorPalette, ctx.resources, { dpi: resolved.page.dpi, fontSizePx: style.fontSizePx }) };
   }
 
-  // Inline chips: the style resolves to a box sized against this text.
-  if (contentBlock.spans.some((s) => s.chip)) {
+  // Inline chips: the style resolves to a box sized against this text;
+  // character styles to the face of their runs.
+  if (contentBlock.spans.some((s) => s.chip || s.charStyle)) {
     contentBlock = { ...contentBlock, spans: resolveChipSpans(contentBlock.spans, chipContextOf(resolved), style.fontSizePx) };
   }
 

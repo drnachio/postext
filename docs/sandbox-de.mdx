@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Die Oberfläche der Sandbox: die Aktivitätsleiste, die Bedienfelder Text, Bücher, Kapitel, Ressourcen und Schriften und die Darstellung auf Telefonen',
   lang: 'de',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '28 min',
   order: 40,
   plainSummary: "Die Sandbox ist ein kostenloses Werkzeug auf dieser Website, mit dem Sie Postext ausprobieren können, ohne etwas zu installieren. Sie schreiben Ihren Text auf der einen Seite und sehen auf der anderen die fertigen Seiten, die sich beim Tippen mitändern. Diese Seite erklärt die Teile des Bildschirms und die Bedienfelder, in denen Sie den Text schreiben, Bücher und Kapitel verwalten, Bilder hinzufügen und Schriften wählen. Andere Seiten behandeln die Gestaltungseinstellungen, die Vorschauen, das Speichern und Importieren und das Einbinden der Sandbox in Ihre eigene Website.",
@@ -81,7 +81,7 @@ Ein CodeMirror-6-Editor für das Markdown des Kapitels. Screenreader nennen ihn 
 - **Zeilennummern** und Hervorhebung der aktiven Zeile
 - **Zeilenumbruch** für lange Absätze
 - **Zeilen von rechts nach links**: Eine Zeile, deren Text mit einem arabischen oder hebräischen Buchstaben beginnt, läuft von rechts nach links, und Einfügemarke und Pfeiltasten folgen ihr. Das Markup darin (Attribute `{…}`, Marken `[^id]`, der Name einer Direktive, ein ganzes `:ref[fig-1]`, Formeln, Code, Linkziele) bleibt links nach rechts, damit es sich so liest, wie es getippt wurde. Codeblöcke, Frontmatter und Zeilen, die mit einem lateinischen Wort beginnen, laufen wie bisher von links nach rechts.
-- **Werkzeugleiste**: beginnt mit **Rückgängig / Wiederholen**, gefolgt von Fett, Kursiv, Überschriftenebenen 1–3, Link, Inline-Code, **Chip** (umschließt die Auswahl mit `:chip[…]`), **Kapitälchen** (umschließt sie mit `:smallcaps[…]`), in einem chinesischen, japanischen oder koreanischen Buch **Ruby-Lesung** (`:ruby[…]`) und **Quer in senkrechtem Text** (`:tcy[…]`), Zitatblock, nummerierten und unnummerierten Listen sowie fünf Schaltflächen zum Einfügen:
+- **Werkzeugleiste**: beginnt mit **Rückgängig / Wiederholen**, gefolgt von Fett, Kursiv, Überschriftenebenen 1–3, Link, Inline-Code, **Chip** (umschließt die Auswahl mit `:chip[…]`), **Kapitälchen** (umschließt sie mit `:smallcaps[…]`), **Zeichenformat** (`[…]|id|`, ein Textmarker-Symbol: ein Menü der Zeichenformate des Buchs; eines zu wählen setzt die Auswahl darin oder ändert, steht die Auswahl in einer Folge, deren Format, und **Zeichenformat entfernen** macht die Folge wieder zu einfachen Wörtern; `]|` nach einer Folge in Klammern zu tippen bietet die ids der Formate an), in einem chinesischen, japanischen oder koreanischen Buch **Ruby-Lesung** (`:ruby[…]`) und **Quer in senkrechtem Text** (`:tcy[…]`), Zitatblock, nummerierten und unnummerierten Listen sowie fünf Schaltflächen zum Einfügen:
   - `:::pagebreak`
   - `:::space`: eine Zeile vertikaler Abstand (`:::space{lines=N}` für mehr)
   - **Spalten**: eine zweispaltige Gruppe `:::columns{count=2}`, die Einfügemarke in ihrer ersten Zeile, im Text oder in einem Kasten (seit postext 1.25)
