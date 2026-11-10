@@ -13,14 +13,13 @@ export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] =
   zone: { value: 3, unit: 'em' },
   compounds: true,
   capitalized: true,
-  maxConsecutive: 0,
-  lastWord: true,
+  fewerHyphens: 0,
+  ladders: 'allow',
+  maxConsecutive: 1,
+  ladderPenalty: 30000,
+  lastWord: 'allow',
+  lastWordPenalty: 30000,
 };
-
-/** `HyphenationConfig.maxConsecutive` as a whole number of lines, `0` (no
- *  limit) when unset or not positive. */
-export const hyphenRun = (n: number | undefined): number =>
-  typeof n === 'number' && Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
 
 /**
  * Whether a paragraph keeps `widowMinLines` lines at the foot of a column
@@ -119,10 +118,6 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   stacks: 'allow',
   stackMinCharacters: 3,
   stackPenalty: 3000,
-  strictHyphenation: false,
-  minLinesBetweenHyphens: 0,
-  hyphenSpacingPenalty: 300,
-  fewerHyphens: 0,
   avoidRuntsInLists: true,
   tightenRunts: true,
   maxRuntTracking: 10,
@@ -144,8 +139,12 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
     && (a.compounds ?? D.compounds) === (b.compounds ?? D.compounds)
     && (a.capitalized ?? D.capitalized) === (b.capitalized ?? D.capitalized)
     && a.minWordLength === b.minWordLength && a.leftMin === b.leftMin && a.rightMin === b.rightMin
-    && hyphenRun(a.maxConsecutive) === hyphenRun(b.maxConsecutive)
+    && (a.fewerHyphens ?? D.fewerHyphens) === (b.fewerHyphens ?? D.fewerHyphens)
+    && (a.ladders ?? D.ladders) === (b.ladders ?? D.ladders)
+    && (a.maxConsecutive ?? D.maxConsecutive) === (b.maxConsecutive ?? D.maxConsecutive)
+    && (a.ladderPenalty ?? D.ladderPenalty) === (b.ladderPenalty ?? D.ladderPenalty)
     && (a.lastWord ?? D.lastWord) === (b.lastWord ?? D.lastWord)
+    && (a.lastWordPenalty ?? D.lastWordPenalty) === (b.lastWordPenalty ?? D.lastWordPenalty)
     // A list that names no valid word is no list.
     && (normalizeHyphenationExceptions(a.exceptions) ?? []).join('\x00') === (normalizeHyphenationExceptions(b.exceptions) ?? []).join('\x00');
 }

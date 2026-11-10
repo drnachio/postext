@@ -393,13 +393,6 @@ export interface BodyTextConfig {
    *  table cells follow the rule too. Needs `optimalLineBreaking`. A
    *  composed page's frame sets its story without it. */
   stacks?: CompositionRule;
-  /** Hyphenate as Spanish typesetting rules have it: never two hyphenated
-   *  lines in a row, and never the paragraph's last word divided. The
-   *  breaker takes any other break that keeps the word spacing within its
-   *  limits; only when none does is the rule broken. Needs
-   *  `optimalLineBreaking`. Default `false`, so documents set before it
-   *  keep their lines. */
-  strictHyphenation?: boolean;
   /** Characters, spaces included, the same edge of two consecutive lines
    *  must share to stack (`stacks`); the punctuation at the very edge is
    *  not counted, and the same word always stacks. Default 3. */
@@ -411,21 +404,6 @@ export interface BodyTextConfig {
    *  none. Default 3000, chosen on the Spanish showcase books and Cookbook
    *  recipes (#1463). */
   stackPenalty?: number;
-  /** Lines a hyphenated line wants free of hyphens before it, so hyphens
-   *  do not fall into a rhythm: 2 also avoids a hyphen every other line
-   *  (yes, no, yes); 1 only two in a row, as `strictHyphenation`. At most
-   *  4. Needs `optimalLineBreaking`. Default 0: the rule is off, so
-   *  documents set before it keep their lines. */
-  minLinesBetweenHyphens?: number;
-  /** Cost of a hyphen closer than `minLinesBetweenHyphens` to the previous
-   *  one, as equivalent badness: 100 is a line at the word spacing limit;
-   *  1000 outweighs any line within it. Default 300. */
-  hyphenSpacingPenalty?: number;
-  /** Fewer hyphens or better spacing, 0–10, as InDesign's slider: each
-   *  step makes every hyphen dearer, so the breaker takes a hyphen only
-   *  where it saves more word spacing. 0, the default, weighs hyphens as
-   *  the engine always has. Needs `optimalLineBreaking`. */
-  fewerHyphens?: number;
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */
   avoidRuntsInLists?: boolean;

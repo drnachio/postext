@@ -90,27 +90,21 @@ export interface KPOptions {
    *  (a box without it is a formula or a chip, never compared). Absent:
    *  off. */
   stacks?: { minChars: number; demerits: number };
-  /** Hyphenation as Spanish (and most European) typesetting rules have it:
-   *  never two hyphenated lines in a row, and never the paragraph's last
-   *  word divided. Each costs {@link STRICT_HYPHEN_BADNESS} as
-   *  equivalent badness, so the breaker takes any other break that keeps
-   *  the spaces within their limits. Default false. */
-  strictHyphens?: boolean;
-  /** Hyphen spacing: a hyphenated line wants the `lines` lines before it
-   *  free of hyphens, so hyphens do not fall into a rhythm (one line yes,
-   *  one line no). A hyphen closer than that costs `badness` as equivalent
-   *  badness; the line right after a hyphen is also the strict rule's
-   *  (`strictHyphens`), which adds its own cost. `lines` 1–4. Absent: off. */
-  hyphenSpacing?: { lines: number; badness: number };
-  /** The document's own hyphen limits (`HyphenationConfig.maxConsecutive`,
-   *  `lastWord`): at most `maxRun` lines in a row ending on a hyphen (`0`:
-   *  no limit), each line past it costing {@link HARD_RULE_BADNESS}; and
-   *  the paragraph's last word kept whole (`keepLastWord`), at
-   *  {@link STRICT_HYPHEN_BADNESS} as `strictHyphens` has it. Absent: none. */
-  hyphenRules?: { maxRun: number; keepLastWord: boolean };
-  /** Extra badness of every hyphenated break, on top of its penalty: the
-   *  higher, the fewer hyphens, at the expense of word spacing. Absent: 0. */
-  hyphenBadness?: number;
+  /** Hyphen ladders (#1466, `hyphenation.ladders: 'avoid'`): each line
+   *  that ends on a hyphen past `maxRun` such lines in a row costs
+   *  `demerits`, added as `consecutiveHyphenDemerit` is (which every
+   *  second hyphen in a row still costs). Absent: off. */
+  ladders?: { maxRun: number; demerits: number };
+  /** The paragraph's last word divided (#1466, `hyphenation.lastWord:
+   *  'avoid'`): the line before the last ends on a hyphen and the last line
+   *  holds no word space, only the rest of that word. Costs these demerits.
+   *  Absent or 0: off. */
+  lastWordDemerits?: number;
+  /** Added to the penalty of every break that ends a line on a hyphen
+   *  (#1466, `hyphenation.fewerHyphens`), the dictionary's or a word's own:
+   *  the higher, the fewer hyphens, at the price of word spacing. Absent:
+   *  0. */
+  extraHyphenPenalty?: number;
   /** Penalty for adjacent lines of very different tightness. */
   fitnessClassDemerit?: number;
   /** Equivalent-badness added to the final line when it is shorter than

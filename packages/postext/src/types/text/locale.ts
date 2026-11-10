@@ -1,4 +1,5 @@
 import type { Dimension } from '../page.js';
+import type { CompositionRule } from './bodyText/options.js';
 
 /** The alignment of a text block. */
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
@@ -126,14 +127,15 @@ export interface HyphenationConfig {
    *  table cells, notes, running heads and the other design text. Default
    *  none. */
   exceptions?: string[];
-  /** The shortest word divided, in letters (InDesign's "Words with at
-   *  least"). Unset: the language's own, 5 (4 in Catalan). */
+  /** The shortest word the dictionary divides, in letters. Unset: the
+   *  language's own, 5 (4 in Catalan). */
   minWordLength?: number;
-  /** Letters left at least before a break, at the start of the word
-   *  (InDesign's "After first"). Unset: the language's own (2 in Spanish). */
+  /** Letters a divided word keeps at least before the break, on its line.
+   *  Unset: the language's own (2 in most of the bundled languages). Breaks
+   *  next to an apostrophe (`dell’ac-qua`) count the letters the same way. */
   leftMin?: number;
-  /** Letters carried at least after a break, to the next line (InDesign's
-   *  "Before last"). Unset: the language's own (2 in Spanish). */
+  /** Letters a divided word carries at least after the break, to the next
+   *  line. Unset: the language's own (2 or 3, as its patterns have it). */
   rightMin?: number;
   /** Divide capitalised words like any other. Default `true`. `false`: the
    *  dictionary adds no break inside a run of letters that starts with a
@@ -145,17 +147,45 @@ export interface HyphenationConfig {
    *  `citations.hyphenateNames`. An entry of `exceptions` with points still
    *  divides its word there. */
   capitalized?: boolean;
-  /** Most lines in a row that may end on a hyphen (InDesign's "Hyphen
-   *  limit"). `0` (default): no limit but the cost of each hyphen. A limit
-   *  is not a preference: the breaker takes any other setting of the
-   *  paragraph, a looser one included, and goes past it only where none
-   *  keeps it. Knuth–Plass line breaking only. */
-  maxConsecutive?: number;
-  /** Let the last word of a paragraph be divided (InDesign's "Hyphenate
-   *  last word"). `false` keeps it whole wherever the spacing allows, as
-   *  `bodyText.strictHyphenation` does. Default `true`. Knuth–Plass line
+  /** Fewer hyphens or better word spacing, from 0 to 10: each step adds
+   *  50 (the cost of one hyphen) to the penalty of every break that ends a
+   *  line on a hyphen, the dictionary's or a word's own, so the line
+   *  breaker divides a word only where that saves more word spacing. 0, the
+   *  default, weighs hyphens as before. Knuth–Plass line breaking only
+   *  (`bodyText.optimalLineBreaking`, and `optimalRagged` for ragged text). */
+  fewerHyphens?: number;
+  /** Hyphen ladders (#1466): more than {@link maxConsecutive} lines in a
+   *  row of one paragraph that end on a hyphen. `'allow'` (the default)
+   *  leaves the lines as the breaker sets them (two hyphens in a row
+   *  already cost 3000 demerits there) and reports nothing. `'warn'` leaves
+   *  them too and reports each ladder (a `hyphenLadder` content warning).
+   *  `'avoid'` makes each line past the limit cost {@link ladderPenalty} in
+   *  the line breaker, which sets the paragraph otherwise where the word
+   *  spacing allows, and reports the ladders it kept. Knuth–Plass line
    *  breaking only. */
-  lastWord?: boolean;
+  ladders?: CompositionRule;
+  /** Most lines in a row that may end on a hyphen before `ladders` counts
+   *  them: 1 (the default) asks for no two hyphenated lines in a row, as
+   *  Spanish typesetting does; 2 or 3 are the usual limits in English. */
+  maxConsecutive?: number;
+  /** Cost of each line past {@link maxConsecutive} under `ladders:
+   *  'avoid'`, in demerits added to the paragraph's (the scale of
+   *  `bodyText.stackPenalty`). Default 30000: more than resetting a few
+   *  lines within the word-spacing limits costs, less than one line
+   *  stretched past them. 0 weighs none. */
+  ladderPenalty?: number;
+  /** The last word of a paragraph divided (#1466): the line before the
+   *  last ends on a hyphen and the last line holds nothing but the rest of
+   *  that word (no word space). A last line with more words in it is not
+   *  this fault, whatever the line above ends on; a short last line is a
+   *  runt (`bodyText.avoidRunts`). `'allow'` (the default) / `'warn'` (a
+   *  `lastWordDivided` content warning) / `'avoid'` (costs
+   *  {@link lastWordPenalty} in the line breaker, and the ones kept are
+   *  reported). Knuth–Plass line breaking only. */
+  lastWord?: CompositionRule;
+  /** Cost of the last word divided under `lastWord: 'avoid'`, in demerits.
+   *  Default 30000. 0 weighs none. */
+  lastWordPenalty?: number;
 }
 
 /** The limits of {@link HyphenationConfig} the dictionary applies (see
@@ -187,9 +217,12 @@ export interface ResolvedHyphenationConfig {
   leftMin?: number;
   rightMin?: number;
   capitalized: boolean;
-  /** {@link HyphenationConfig.maxConsecutive}; `0`: no limit. */
+  fewerHyphens: number;
+  ladders: CompositionRule;
   maxConsecutive: number;
-  lastWord: boolean;
+  ladderPenalty: number;
+  lastWord: CompositionRule;
+  lastWordPenalty: number;
 }
 
 /** `BodyTextConfig.kashida`. */

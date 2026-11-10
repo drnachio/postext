@@ -7,7 +7,11 @@ import { resolveVerseConfig } from '../verse.js';
 import { normalizeHyphenationExceptions } from '../../../hyphenation/hyphenationExceptions.js';
 import { withFigureStyle } from '../../../fonts/figureStyle.js';
 import { arabicScript, emphasisAndTashkil, resolveKashida } from './arabic.js';
-import { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, DEFAULT_BODY_TEXT_CONFIG, shortListMaxItemsOf, hyphenRun } from './defaults.js';
+import { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, DEFAULT_BODY_TEXT_CONFIG, shortListMaxItemsOf } from './defaults.js';
+import { cleanLimits } from '../../../hyphenation/limits.js';
+
+/** `n` when it is a finite number. */
+const finite = (n: number | undefined): number | undefined => (typeof n === 'number' && Number.isFinite(n) ? n : undefined);
 
 /** Tags of languages set without hyphenation (CJK, right-to-left scripts)
  *  already reported for hyphenation switched on without a pattern
@@ -52,12 +56,14 @@ function resolveHyphenation(partial: HyphenationConfig | undefined, documentLoca
     zone: partial?.zone ?? D.zone,
     compounds: partial?.compounds ?? D.compounds,
     ...(exceptions ? { exceptions } : {}),
-    ...(partial?.minWordLength !== undefined ? { minWordLength: Math.max(2, Math.round(partial.minWordLength)) } : {}),
-    ...(partial?.leftMin !== undefined ? { leftMin: Math.max(1, Math.round(partial.leftMin)) } : {}),
-    ...(partial?.rightMin !== undefined ? { rightMin: Math.max(1, Math.round(partial.rightMin)) } : {}),
+    ...cleanLimits(partial),
     capitalized: partial?.capitalized ?? D.capitalized,
-    maxConsecutive: hyphenRun(partial?.maxConsecutive),
-    lastWord: partial?.lastWord ?? D.lastWord,
+    fewerHyphens: Math.min(10, Math.max(0, Math.round(finite(partial?.fewerHyphens) ?? D.fewerHyphens))),
+    ladders: compositionRuleOf(partial?.ladders) ?? D.ladders,
+    maxConsecutive: Math.max(1, Math.round(finite(partial?.maxConsecutive) ?? D.maxConsecutive)),
+    ladderPenalty: Math.max(0, finite(partial?.ladderPenalty) ?? D.ladderPenalty),
+    lastWord: compositionRuleOf(partial?.lastWord) ?? D.lastWord,
+    lastWordPenalty: Math.max(0, finite(partial?.lastWordPenalty) ?? D.lastWordPenalty),
   };
 }
 
@@ -167,12 +173,8 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     runtPenalty: partial.runtPenalty ?? DEFAULT_BODY_TEXT_CONFIG.runtPenalty,
     gradedRuntPenalty: partial.gradedRuntPenalty ?? DEFAULT_BODY_TEXT_CONFIG.gradedRuntPenalty,
     stacks: compositionRuleOf(partial.stacks) ?? DEFAULT_BODY_TEXT_CONFIG.stacks,
-    strictHyphenation: partial.strictHyphenation ?? DEFAULT_BODY_TEXT_CONFIG.strictHyphenation,
     stackMinCharacters: Math.max(1, Math.round(partial.stackMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.stackMinCharacters)),
     stackPenalty: Math.max(0, partial.stackPenalty ?? DEFAULT_BODY_TEXT_CONFIG.stackPenalty),
-    minLinesBetweenHyphens: Math.min(4, Math.max(0, Math.round(partial.minLinesBetweenHyphens ?? DEFAULT_BODY_TEXT_CONFIG.minLinesBetweenHyphens))),
-    hyphenSpacingPenalty: Math.max(0, partial.hyphenSpacingPenalty ?? DEFAULT_BODY_TEXT_CONFIG.hyphenSpacingPenalty),
-    fewerHyphens: Math.min(10, Math.max(0, Math.round(partial.fewerHyphens ?? DEFAULT_BODY_TEXT_CONFIG.fewerHyphens))),
     avoidRuntsInLists: partial.avoidRuntsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists,
     tightenRunts: partial.tightenRunts ?? DEFAULT_BODY_TEXT_CONFIG.tightenRunts,
     maxRuntTracking: partial.maxRuntTracking ?? DEFAULT_BODY_TEXT_CONFIG.maxRuntTracking,

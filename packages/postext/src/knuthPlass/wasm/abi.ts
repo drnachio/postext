@@ -10,6 +10,7 @@
 import type { KPItem, KPOptions } from '../types.js';
 import { DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT, DEFAULT_FITNESS_CLASS_DEMERIT } from '../constants.js';
 import { LineEdges, isMonosyllable } from '../breakpoints/edges.js';
+import { hyphenRulesFor } from '../breakpoints/rules.js';
 
 /** What the module exports (`rust/crates/wasm/src/linebreak.rs`). */
 interface LineBreakExports {
@@ -35,6 +36,7 @@ interface LineBreakExports {
     flags: number,
   ): void;
   lb_set_stacks(ctx: number, on: number, demerits: number): void;
+  lb_set_hyphen_rules(ctx: number, ladderRun: number, ladderDemerits: number, lastWordDemerits: number, extraHyphenPenalty: number): void;
   lb_edges(ctx: number, count: number): number;
   lb_break(ctx: number): number;
   lb_breaks(ctx: number): number;
@@ -168,6 +170,9 @@ export function wasmBreaker(instance: WebAssembly.Instance): Breaker {
     // A stack that costs nothing is not looked for (`lineEdgesFor`).
     const stacks = options.stacks && options.stacks.demerits > 0 ? options.stacks : undefined;
     x.lb_set_stacks(ctx, stacks ? 1 : 0, stacks?.demerits ?? 0);
+    // The hyphen rules (#1466), as the TypeScript search reads them.
+    const hyphens = hyphenRulesFor(items, options, false);
+    x.lb_set_hyphen_rules(ctx, hyphens.ladderRun, hyphens.ladderCost, hyphens.lastWordCost, hyphens.extraHyphen);
     if (stacks) writeEdges(u32(x.lb_edges(ctx, n), EDGE_ROWS * (n + 1)), items, new LineEdges(items, stacks.minChars));
     const count = x.lb_break(ctx);
     return Array.from(u32(x.lb_breaks(ctx), count));
