@@ -26,6 +26,8 @@ function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
   // The text and the stacks come from a generator of their own, so the
   // paragraphs of every other option stay as they were.
   const t = rng(seed ^ 0x5eed);
+  // And the hyphen rules from a third one (#1466).
+  const h = rng(seed ^ 0x4a11);
   const words = 3 + Math.floor(r() * 120);
   const items: KPItem[] = [];
   const kashida = r() < 0.15;
@@ -83,6 +85,9 @@ function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
     ...(r() < 0.2 ? { hyphenationZone: 25 } : {}),
     ...(r() < 0.15 ? { avoidHyphenAtLines: [2, 4] } : {}),
     ...(t() < 0.4 ? { stacks: { minChars: 1 + Math.floor(t() * 4), demerits: [0, 500, 3000, 100000, 1e7][Math.floor(t() * 5)]! } } : {}),
+    ...(h() < 0.4 ? { ladders: { maxRun: 1 + Math.floor(h() * 3), demerits: [0, 3000, 30000, 1e6][Math.floor(h() * 4)]! } } : {}),
+    ...(h() < 0.3 ? { lastWordDemerits: [0, 5000, 30000, 1e6][Math.floor(h() * 4)]! } : {}),
+    ...(h() < 0.3 ? { extraHyphenPenalty: 50 * (1 + Math.floor(h() * 10)) } : {}),
   };
   return { items, options };
 }
@@ -120,6 +125,9 @@ describe('the WebAssembly line breaker', () => {
         looseness, stacks: { minChars: 2, demerits: 3000 },
       };
       expect(computeBreakpoints(items, options), `${looseness}`).toEqual(computeBreakpointsTs(items, options));
+      // A hyphen ladder longer than one line keys the exact search too.
+      const ladders: KPOptions = { ...options, ladders: { maxRun: 2, demerits: 30000 } };
+      expect(computeBreakpoints(items, ladders), `${looseness} ladders`).toEqual(computeBreakpointsTs(items, ladders));
     }
   }, 60_000);
 

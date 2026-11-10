@@ -5,6 +5,7 @@ import type { BodyTextConfig, HyphenationConfig, KashidaPatterns, ResolvedBodyTe
 import { NestedGroup, NumberInput, SelectInput, ToggleSwitch } from '../../../../controls/index.js';
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
 import { HyphenateCapitalizedField, HyphenateCompoundsField, HyphenationExceptionsField, HyphenationLocaleField, RaggedHyphenationFields } from './HyphenationFields.js';
+import { HyphenationLimitsFields, HyphenDistributionFields } from './HyphenRulesFields.js';
 
 interface Props {
   bodyText: ResolvedBodyTextConfig;
@@ -127,6 +128,13 @@ export function JustificationSubsection({
   resetField,
   labels,
 }: Props) {
+  const ruleProps = { bodyText, raw, updateBodyText, updateHyphenation, labels };
+  // The three levels of a composition rule (#749).
+  const ruleOptions = [
+    { value: 'allow', label: labels.compositionRuleAllow },
+    { value: 'warn', label: labels.compositionRuleWarn },
+    { value: 'avoid', label: labels.compositionRuleAvoid },
+  ];
   return (
     <NestedGroup>
       <ToggleSwitch
@@ -153,6 +161,7 @@ export function JustificationSubsection({
             effectiveHyphenationLocale={effectiveHyphenationLocale}
             isHyphenationLocaleDefault={isHyphenationLocaleDefault}
           />
+          <HyphenationLimitsFields {...ruleProps} />
           <HyphenateCompoundsField
             bodyText={bodyText}
             raw={raw}
@@ -174,6 +183,8 @@ export function JustificationSubsection({
             updateHyphenation={updateHyphenation}
             labels={labels}
           />
+          {/* Where hyphens may fall: optimal line breaking only. */}
+          {bodyText.optimalLineBreaking && <HyphenDistributionFields {...ruleProps} options={ruleOptions} />}
           <RaggedHyphenationFields
             bodyText={bodyText}
             raw={raw}

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'ハイフネーションと言語',
   description: 'ハイフネーションのパターンと例外、行末不ぞろいのテキスト、文書の言語とその数字と方向、Postextが組める文字体系',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
-  readingTime: '21分',
+  lastUpdated: '2026-11-10',
+  readingTime: '22分',
   order: 8,
   parent: 'configuration',
   plainSummary: "このページでは、行の終わりで単語をどう分けるかと、Postextが本の言語をどう知るかを説明します。ハイフネーションを使うかどうかを選び、決して分けてはいけない語を挙げます。行の終わりをそろえず、不ぞろいのままにすることもできます。文書の言語によって、ハイフネーションの規則、図や表の呼び名、数字、文字の方向が決まります。最後の節では、Postextが組める文字の種類と、アラビア文字の扱いを説明します。",
@@ -70,6 +70,60 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>大文字で始まる語も、ほかの語と同じように分割します。<code>false</code>にすると、大文字で始まる語（<code>Alice</code>、<code>Ámsterdam</code>、<code>UNESCO</code>）はすべて分割しません。文頭の語も同じです。<a href="#分割しない語">分割しない語</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>言語の既定値</td>
+      <td>分割する最短の語の文字数です。未設定のときは分綴言語の値で、<code>hyphenationLanguageLimits(locale)</code> が返します。</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>言語の既定値</td>
+      <td>分割したとき語頭側に最低限残す文字数です。未設定のときは言語の値です。</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>言語の既定値</td>
+      <td>分割したとき次の行へ最低限送る文字数です。未設定のときは言語の値です。3つの制限はアポストロフィを含む語（フランス語・イタリア語・カタルーニャ語の省略）にも適用されます。</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>語間を優先（<code>0</code>）からハイフンを減らす（<code>10</code>）まで。1段階ごとに、語に元からあるハイフンも含めすべてのハイフンのペナルティに50を加えるので、改行処理は語間をより多く節約できるところでだけ語を分割します。<code>0</code>では従来どおりです。最適改行のときだけ働きます。</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>ハイフンの連続：段落の中でハイフンで終わる行が <code>maxConsecutive</code> 行を超えて続くことです。<code>'allow'</code> は改行処理が見つけたとおりに組みます。<code>'warn'</code> は同じように組み、連続ごとに内容の警告 <code>hyphenLadder</code> を出します。Sandbox はこれを「確認」に挙げます。<code>'avoid'</code> は上限を超えた各行のデメリットに <code>ladderPenalty</code> を加え、語間が許す範囲で段落を組み直させ、残った連続を報告します。本文、リスト、引用が対象で、キャプションと表のセルは対象外です。最適改行のときだけ働きます。</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td><code>ladders</code> で、ハイフンで終わってよい行が続く最大数です。<code>1</code> ではハイフンで終わる行が2行続くことはありません。</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td><code>ladders: 'avoid'</code> のとき、<code>maxConsecutive</code> を超えた1行ごとに改行処理に加えるデメリット（段落に加算）で、<code>consecutiveHyphenDemerit</code>（ハイフンで終わる行が2行続くと3000）に上乗せされます。既定値は語間の範囲内のどの組み方よりも重く、小さくすると行が締まるかわりに一部の連続が残り、<code>0</code> ではすべて残ります。</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>段落の最後の単語の分割：最後から2行目がハイフンで終わり、最終行がその語の残りだけで語間を含まないことです。<code>'warn'</code> は1件ずつ内容の警告 <code>lastWordDivided</code> を出します。<code>'avoid'</code> は段落のデメリットに <code>lastWordPenalty</code> を加え、語間が許す範囲で語を分割せずに組ませ、分割が残ったものを報告します。短い最終行一般は <code>bodyText.avoidRunts</code> が扱います。最適改行のときだけ働きます。</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td><code>lastWord: 'avoid'</code> のとき、最後の単語の分割が改行処理に加えるデメリット（段落に加算）です。<code>0</code> ではすべて残ります。</td>
     </tr>
   </tbody>
 </table>

@@ -68,12 +68,12 @@ export { balancingOnByDefault, avoidWidowsByDefault, avoidOrphansByDefault } fro
 export { renderTemplateNumber } from './pipeline/resources/resourceNumbering.js';
 export type { ColumnRuleSegment } from './paint/columnRule.js';
 export { findLooseLines, drawLooseLines, lineLooseness, lineWordSpacing, type LooseLine, type FindLooseLinesOptions, type DrawLooseLinesOptions } from './checks/looseLines.js';
-export { findStacks, type Stack, type StackRange, type FindStacksOptions } from './checks/stacks.js';
+export { findStacks, findHyphenFaults, type Stack, type StackRange, type FindStacksOptions, type HyphenFault, type FindHyphenFaultsOptions } from './checks/compositionRules.js';
 export { primaryFontFamily } from './measure/font.js';
 export { buildFontString, setSymbolFont, symbolFont, withSymbolFont, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock, setCjkLineBreak, getCjkLineBreak, setCjkComposition, getCjkComposition, cjkCompositionOf, punctuationAdvance, punctuationSide, PLAIN_CJK_COMPOSITION } from './measure/index.js';
 export type { CjkComposition, PunctuationSide } from './measure/index.js';
 export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasureBlockOptions, MeasurementCache } from './measure/index.js';
-export { hyphenateText, hyphenateByDictionary, setHyphenationLocale, setHyphenationRules, normalizeHyphenationExceptions, HYPHENATION_LOCALES, matchHyphenationLocale } from './hyphenation/hyphenate.js';
+export { hyphenateText, hyphenateByDictionary, setHyphenationLocale, setHyphenationRules, normalizeHyphenationExceptions, HYPHENATION_LOCALES, matchHyphenationLocale, setHyphenationLimits, hyphenationLanguageLimits } from './hyphenation/hyphenate.js';
 export type { HyphenationRules } from './hyphenation/hyphenate.js';
 export { DOCUMENT_LANGUAGES, isCjkLanguage, isJapaneseLanguage, isUnhyphenatedLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, documentLanguageOf, shapingLanguageOf, shapingTagOf, stringsFor, directionOf, comicsLocaleDirection, defaultNumeralsFor } from './hyphenation/locale.js';
 export type { DocumentLanguage } from './hyphenation/locale.js';
@@ -296,7 +296,7 @@ export type {
   DigitSystem,
   NumeralsSetting,
   HyphenationConfig,
-  ResolvedHyphenationConfig,
+  ResolvedHyphenationConfig, HyphenationLimits,
   BodyTextConfig,
   ResolvedBodyTextConfig,
   KashidaSetting,

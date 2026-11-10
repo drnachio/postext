@@ -4,8 +4,9 @@
 //! 1 glue, 2 penalty), width, stretch, shrink, penalty, flags, chars,
 //! post width (`postWidth + postShift`), post chars. Line widths as f64,
 //! lines to avoid a hyphen at and fixed breaks as u32. Scalar options go
-//! through `lb_set_options`, stacks through `lb_set_stacks`, and the line
-//! edges stacks compare through `lb_edges` (#1463).
+//! through `lb_set_options`, stacks through `lb_set_stacks`, the hyphen
+//! rules through `lb_set_hyphen_rules` (#1466), and the line edges stacks
+//! compare through `lb_edges` (#1463).
 
 use postext_linebreak::{Breaker, ItemKind, Items, LoosenessMode, Options};
 
@@ -121,6 +122,25 @@ pub extern "C" fn lb_set_options(
 #[unsafe(no_mangle)]
 pub extern "C" fn lb_set_stacks(ptr: *mut LineBreakContext, on: u32, demerits: f64) {
     ctx(ptr).options.rules.stack_demerits = (on != 0).then_some(demerits);
+}
+
+/// The hyphen rules (#1466): a ladder longer than `ladder_run` lines costs
+/// `ladder_demerits` a line (`ladder_run` 0: off), the last word divided
+/// `last_word_demerits`, and every hyphen's penalty grows by
+/// `extra_hyphen_penalty`.
+#[unsafe(no_mangle)]
+pub extern "C" fn lb_set_hyphen_rules(
+    ptr: *mut LineBreakContext,
+    ladder_run: u32,
+    ladder_demerits: f64,
+    last_word_demerits: f64,
+    extra_hyphen_penalty: f64,
+) {
+    let r = &mut ctx(ptr).options.rules;
+    r.ladder_run = ladder_run;
+    r.ladder_demerits = if ladder_run > 0 { ladder_demerits } else { 0.0 };
+    r.last_word_demerits = last_word_demerits;
+    r.extra_hyphen_penalty = extra_hyphen_penalty;
 }
 
 /// Rows of `count + 1` the line edges take (see `Rules`).

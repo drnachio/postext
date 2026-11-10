@@ -5,7 +5,7 @@
 import type { KPItem, KPOptions } from './types.js';
 import type { Breaker } from './wasm/abi.js';
 import { readyWasmBreaker } from './wasm/engine.js';
-import { limited, lineEdgesFor } from './breakpoints/search.js';
+import { limited, lineEdgesFor } from './breakpoints/limited.js';
 
 export { foldEdge, isMonosyllable, edgesStack, textEdges, LineEdges } from './breakpoints/edges.js';
 export type { Edge } from './breakpoints/edges.js';
@@ -31,8 +31,8 @@ interface BreakpointsHooks {
  */
 export function computeBreakpoints(items: KPItem[], options: KPOptions): number[] {
   const hooks = globalThis as BreakpointsHooks;
-  // The WebAssembly breaker weighs stacks too, over the line edges worked
-  // out here (`wasm/abi.ts`).
+  // The WebAssembly breaker weighs stacks and the hyphen rules too, stacks
+  // over the line edges worked out here (`wasm/abi.ts`).
   const breaks = (hooks.__postextKpImpl ?? readyWasmBreaker() ?? breakpoints)(items, options);
   hooks.__postextKpTap?.(items, options, breaks);
   return breaks;
@@ -58,8 +58,9 @@ function breakpoints(items: KPItem[], options: KPOptions): number[] {
   // paragraph, 39 % of a whole book's layout). It also made that search
   // lose settings: a cheaper chain with a very loose line could take the
   // key of the only acceptable one. None found: the natural setting. Nor
-  // may the longer setting set more stacks than the natural one.
+  // may the longer setting keep more faults of the composition rules than
+  // the natural one.
   const natural = limited(items, { ...options, looseness: 0 }, edges);
   if (!natural || natural.breaks.length === 0) return natural?.breaks ?? [];
-  return limited(items, options, edges, natural.breaks.length + looseness, natural.stacks)?.breaks ?? natural.breaks;
+  return limited(items, options, edges, natural.breaks.length + looseness, natural.faults)?.breaks ?? natural.breaks;
 }

@@ -31,13 +31,24 @@ pub struct Options {
     /// Right-hand glue every line gets in a ragged setting (0: justified).
     pub ragged_stretch: f64,
     pub hyphenation_zone: Option<f64>,
-    /// The composition rules (`KPOptions.stacks`).
+    /// The composition rules (`KPOptions.stacks`, `ladders`,
+    /// `lastWordDemerits`, `extraHyphenPenalty`).
     pub rules: Rules,
 }
 
-/// The composition rules: stacks (#1463).
+/// The composition rules: stacks (#1463) and the hyphen rules (#1466).
 #[derive(Clone, Debug, Default)]
 pub struct Rules {
+    /// Hyphen ladders: each line ending on a hyphen past `ladder_run` such
+    /// lines in a row costs `ladder_demerits` (`ladder_run` 0: off).
+    pub ladder_run: u32,
+    pub ladder_demerits: f64,
+    /// The paragraph's last word divided: the line before the last ends on
+    /// a hyphen and the last line holds no word space (0: off).
+    pub last_word_demerits: f64,
+    /// Added to the penalty of every break that ends a line on a hyphen
+    /// (`hyphenation.fewerHyphens`).
+    pub extra_hyphen_penalty: f64,
     /// Demerits a stack adds (twice for a repeated monosyllable); `None`:
     /// stacks are not looked at.
     pub stack_demerits: Option<f64>,

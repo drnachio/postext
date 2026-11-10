@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Separación silábica e idioma',
   description: 'Cómo se configuran los patrones y las excepciones de la separación silábica y el texto en bandera; el idioma del documento, con sus cifras y su dirección, y qué escrituras compone Postext.',
   lang: 'es',
-  lastUpdated: '2026-10-19',
-  readingTime: '23 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '24 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Esta página explica cómo se parten las palabras al final de la línea y cómo sabe Postext en qué idioma está el libro. Activas o desactivas la separación silábica y anotas las palabras que nunca deben partirse. Puedes dejar desigual el borde derecho del texto en lugar de recto. El idioma del documento decide las reglas para partir palabras, los nombres de las figuras y las tablas, las cifras y la dirección del texto. Las últimas secciones dicen qué escrituras sabe componer Postext y cómo trata el texto árabe.",
@@ -70,6 +70,60 @@ Cuando el texto está justificado (`'justify'`), la separación silábica evita 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Divide las palabras con mayúscula inicial como cualquier otra. Con <code>false</code>, ninguna palabra que empiece por mayúscula se divide (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), tampoco la primera de cada frase. Véase <a href="#palabras-que-no-se-dividen">Palabras que no se dividen</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>la de la lengua</td>
+      <td>La palabra más corta que se divide, en letras. Sin fijar: la del idioma de partición, que devuelve <code>hyphenationLanguageLimits(locale)</code>.</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>la de la lengua</td>
+      <td>Letras que quedan como mínimo antes de un corte, al principio de la palabra. Sin fijar: las del idioma.</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>la de la lengua</td>
+      <td>Letras que pasan como mínimo tras un corte, a la línea siguiente. Sin fijar: las del idioma. Los tres límites valen también para las palabras con apóstrofo (las elisiones del francés, el italiano y el catalán).</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>De mejor espaciado (<code>0</code>) a menos guiones (<code>10</code>): cada paso suma 50 a la penalización de todos los guiones, el propio de una palabra incluido, de modo que el corte de líneas solo divide una palabra donde así ahorra más espaciado. Con <code>0</code> los guiones pesan lo de siempre. Solo con el corte de líneas óptimo.</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Escaleras de guiones: más de <code>maxConsecutive</code> líneas seguidas de un párrafo que terminan en guion. <code>'allow'</code> compone las líneas como las encuentra el corte de líneas. <code>'warn'</code> las compone igual e informa de cada escalera con un aviso de contenido <code>hyphenLadder</code>, que el Sandbox lista en Revisión. <code>'avoid'</code> suma <code>ladderPenalty</code> a los deméritos de cada línea que pasa del límite, de modo que el corte de líneas compone el párrafo de otro modo donde el espaciado lo permite, e informa de las escaleras que mantiene. Texto base, listas y citas; los pies de figura y las celdas de tabla quedan fuera. Solo con el corte de líneas óptimo.</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Máximo de líneas seguidas que pueden terminar en guion, para <code>ladders</code>. Con <code>1</code> nunca van dos líneas con guion una tras otra.</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Lo que cuesta al corte de líneas cada línea que pasa de <code>maxConsecutive</code> con <code>ladders: 'avoid'</code>, en deméritos que se suman a los del párrafo, además de <code>consecutiveHyphenDemerit</code> (3000 por dos líneas seguidas con guion). El valor por defecto pesa más que cualquier composición dentro del espaciado; uno menor deja pasar algunas escaleras a cambio de líneas más prietas; con <code>0</code> se mantienen todas.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>La última palabra de un párrafo dividida: la penúltima línea termina en guion y la última solo lleva el resto de esa palabra, sin ningún espacio. <code>'warn'</code> informa de cada caso con un aviso de contenido <code>lastWordDivided</code>. <code>'avoid'</code> suma <code>lastWordPenalty</code> a los deméritos del párrafo, de modo que el corte de líneas deja la palabra entera donde el espaciado lo permite, e informa de las que mantiene divididas. Una última línea corta en general es cosa de <code>bodyText.avoidRunts</code>. Solo con el corte de líneas óptimo.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Lo que cuesta al corte de líneas una última palabra dividida con <code>lastWord: 'avoid'</code>, en deméritos que se suman a los del párrafo. Con <code>0</code> se mantienen todas.</td>
     </tr>
   </tbody>
 </table>

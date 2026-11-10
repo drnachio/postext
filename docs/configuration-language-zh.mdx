@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '断词与语言',
   description: '断词模式与例外词、非两端对齐文字的断词、文档语言及其数字和文字方向，以及Postext能排哪些文字',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
-  readingTime: '15分钟',
+  lastUpdated: '2026-11-10',
+  readingTime: '16分钟',
   order: 8,
   parent: 'configuration',
   plainSummary: "本页讲单词在行尾怎样拆开，以及Postext怎样知道一本书用的是什么语言。你可以打开或关闭断词，也可以列出绝不能拆开的词。你还可以让文字的右边参差不齐，不必排成一条直线。文档语言决定断词规则、图和表的名称、数字的写法和文字方向。最后几节说明Postext能排哪些文字，以及怎样处理阿拉伯文。",
@@ -70,6 +70,60 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>首字母大写的词与其他词一样拆分。设为<code>false</code>时，凡以大写字母开头的词都保持完整（<code>Alice</code>、<code>Ámsterdam</code>、<code>UNESCO</code>），句首的词也不例外。见<a href="#不拆分的词">不拆分的词</a>。</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>语言自身的值</td>
+      <td>断词的最短单词，以字母计。未设置时使用断词语言的值，由 <code>hyphenationLanguageLimits(locale)</code> 返回。</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>语言自身的值</td>
+      <td>断词时词首至少保留的字母数。未设置时使用语言的值。</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>语言自身的值</td>
+      <td>断词时至少带到下一行的字母数。未设置时使用语言的值。这三项限制同样适用于带撇号的词（法语、意大利语和加泰罗尼亚语的省音）。</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>从词距优先（<code>0</code>）到减少连字符（<code>10</code>）：每升一级，给每个连字符（包括词本身的连字符）的惩罚加50，断行只在能省下更多词距时才断词。为 <code>0</code> 时与以往相同。仅在最优断行时有效。</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>连字符连行：段落中以连字符结尾的行连续超过 <code>maxConsecutive</code> 行。<code>'allow'</code> 按断行找到的样子排行。<code>'warn'</code> 照样排行，并为每处连行给出内容警告 <code>hyphenLadder</code>，Sandbox 在“检查”中列出。<code>'avoid'</code> 给超出上限的每一行的缺陷值加上 <code>ladderPenalty</code>，让断行在词距允许的范围内重排段落，并报告保留下来的连行。适用于正文、列表和引文；图注和表格单元格不在其内。仅在最优断行时有效。</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td><code>ladders</code> 允许连续以连字符结尾的最多行数。为 <code>1</code> 时不会有两行连续以连字符结尾。</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td><code>ladders: 'avoid'</code> 时，超过 <code>maxConsecutive</code> 的每一行给断行增加的缺陷值（计入段落），叠加在 <code>consecutiveHyphenDemerit</code>（连续两行以连字符结尾为3000）之上。默认值重于词距范围内的任何排法；调低会放过一些连行以换取更紧的行；为 <code>0</code> 时全部保留。</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>段落末词断开：倒数第二行以连字符结尾，最后一行只有该词的余下部分，没有词间空格。<code>'warn'</code> 为每处给出内容警告 <code>lastWordDivided</code>。<code>'avoid'</code> 给段落的缺陷值加上 <code>lastWordPenalty</code>，让断行在词距允许的范围内保持该词完整，并报告仍然断开的情况。一般的短末行由 <code>bodyText.avoidRunts</code> 处理。仅在最优断行时有效。</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td><code>lastWord: 'avoid'</code> 时，末词断开给断行增加的缺陷值（计入段落）。为 <code>0</code> 时全部保留。</td>
     </tr>
   </tbody>
 </table>

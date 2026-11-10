@@ -379,6 +379,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Les lignes sont composées telles quelles.</td>
     </tr>
     <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>Plus de <code>max</code> lignes de suite d’un paragraphe finissant sur un trait d’union (<code>bodyText.hyphenation.maxConsecutive</code>) : <code>lines</code> dit combien, <code>text</code> donne les lignes. Avec <code>bodyText.hyphenation.ladders: 'warn'</code>, toutes les échelles sont signalées ; avec <code>'avoid'</code>, celles que la coupure a gardées. Un par échelle ; pointe vers ses lignes, avec la page de la première. Depuis postext 1.74.</td>
+      <td>Les lignes sont composées telles quelles.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>La dernière ligne d’un paragraphe ne porte que la fin d’un mot coupé à la ligne précédente : <code>word</code> est le mot tel que les deux lignes l’impriment, trait d’union compris. Avec <code>bodyText.hyphenation.lastWord: 'warn'</code>, tous sont signalés ; avec <code>'avoid'</code>, ceux que la coupure a gardés. Pointe vers les deux dernières lignes, avec leur page. Depuis postext 1.74.</td>
+      <td>Les lignes sont composées telles quelles.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Un bloc de la table des matières à garder entier (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), ouvert par <code>title</code>, composé sur <code>columns</code> colonnes : il est plus haut qu’une colonne entière, ou la colonne où il commence est courte (sous un encadré sur toute la largeur de la page, à côté d’un flottant). Un par bloc ; pointe sur la directive <code>:::toc</code>, avec la page où commence le bloc. Pour le faire disparaître, listez moins de niveaux (<code>levels="1"</code>), ouvrez les blocs par un niveau inférieur (<code>toc.groups.head: 2</code>), ou rendez les entrées plus petites ou plus serrées. Depuis postext 1.34.</td>
       <td>Le bloc est coupé ; avec <code>toc.groups.continuation</code>, chaque colonne où il se poursuit s’ouvre sur sa tête et la marque de continuation.</td>

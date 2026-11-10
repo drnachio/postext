@@ -379,6 +379,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>行はそのまま組まれます。</td>
     </tr>
     <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>段落の中でハイフンで終わる行が <code>max</code> 行（<code>bodyText.hyphenation.maxConsecutive</code>）を超えて続いています。<code>lines</code> は行数、<code>text</code> はその行です。<code>bodyText.hyphenation.ladders: 'warn'</code> ではすべての連続を、<code>'avoid'</code> では改行処理が残した連続を報告します。連続ごとに1件で、その行を指し、最初の行のページを示します。postext 1.74 から。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>段落の最終行が、前の行で分割された語の残りだけになっています。<code>word</code> は2行に印刷されたとおりの語で、ハイフンを含みます。<code>bodyText.hyphenation.lastWord: 'warn'</code> ではすべてを、<code>'avoid'</code> では改行処理が残したものを報告します。最後の2行を指し、そのページを示します。postext 1.74 から。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>まとめて組むよう指定した目次のグループ（<code>toc.groups.keepTogether</code>、<code>:::toc{'{keep="…"}'}</code>）です。先頭は<code>title</code>で、<code>columns</code>段に組まれています。1段の高さを超えているか、グループが始まる段が短い場合です（ページ幅の囲みの下、フロートの横）。グループごとに1件。<code>:::toc</code>ディレクティブを指し、グループが始まるページが付きます。解消するには、載せるレベルを減らす（<code>levels="1"</code>）、もっと下位のレベルを先頭にする（<code>toc.groups.head: 2</code>）、項目を小さくするか詰めて組む、のいずれかを行います。postext 1.34以降。</td>
       <td>グループは分割されます。<code>toc.groups.continuation</code>が有効なら、続きが入る各段の頭に先頭行と続きの印を組みます。</td>

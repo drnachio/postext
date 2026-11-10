@@ -447,6 +447,13 @@ export type WarningPayload =
    *  on the same word or characters, `text` (`bodyText.stacks: 'warn' |
    *  'avoid'`, #1463), on book page `page`; `lines` are the two lines. */
   | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  /** More lines in a row ending on a hyphen than `max`
+   *  (`hyphenation.ladders: 'warn' | 'avoid'`, #1466), by book page. */
+  | { kind: 'hyphenLadder'; page: number; lines: number; max: number }
+  /** A paragraph's last line holding only the rest of a word divided on the
+   *  line before (`hyphenation.lastWord: 'warn' | 'avoid'`, #1466); `word`
+   *  as printed, hyphen included. */
+  | { kind: 'lastWordDivided'; page: number; word: string }
   /** A figure, a table (`resourceId`) or a floated box set on an opener
    *  page, book page `page` (`layout.openerFloats: 'warn'`, #749). */
   | { kind: 'openerFloat'; page: number; resourceId?: string }

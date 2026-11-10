@@ -379,6 +379,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Die Zeilen werden gesetzt, wie sie sind.</td>
     </tr>
     <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>Mehr als <code>max</code> Zeilen eines Absatzes hintereinander mit Trennstrich am Ende (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> sagt, wie viele, <code>text</code> enthält die Zeilen. Bei <code>bodyText.hyphenation.ladders: 'warn'</code> wird jede Treppe gemeldet; bei <code>'avoid'</code> die, die der Zeilenumbruch behielt. Eine pro Treppe; zeigt auf ihre Zeilen, mit der Seite der ersten. Seit postext 1.74.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>Die letzte Zeile eines Absatzes trägt nur den Rest eines in der Zeile davor getrennten Wortes: <code>word</code> ist das Wort, wie die beiden Zeilen es drucken, mit Trennstrich. Bei <code>bodyText.hyphenation.lastWord: 'warn'</code> wird jeder Fall gemeldet; bei <code>'avoid'</code> die, die der Zeilenumbruch behielt. Zeigt auf die letzten zwei Zeilen, mit ihrer Seite. Seit postext 1.74.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Ein zusammenzuhaltender Block des Inhaltsverzeichnisses (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), angeführt von <code>title</code>, gesetzt in <code>columns</code> Spalten: Er ist höher als eine ganze Spalte, oder die Spalte, in der er beginnt, ist kurz (unter einem seitenbreiten Kasten, neben einem Gleitobjekt). Eine pro Block; verweist auf die Direktive <code>:::toc</code>, mit der Seite, auf der der Block beginnt. Um sie zu beheben, führen Sie weniger Ebenen auf (<code>levels="1"</code>), lassen Sie die Blöcke von einer tieferen Ebene anführen (<code>toc.groups.head: 2</code>) oder setzen Sie die Einträge kleiner oder enger. Seit postext 1.34.</td>
       <td>Der Block wird geteilt; mit <code>toc.groups.continuation</code> beginnt jede Spalte, in der er weiterläuft, mit seiner Kopfzeile und dem Fortsetzungsvermerk.</td>

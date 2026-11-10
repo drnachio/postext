@@ -436,6 +436,13 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return (payload.edge === 'end' ? labels.warningsStackEndDetail : labels.warningsStackStartDetail)
         .replace('__page__', String(payload.page))
         .replace('__text__', payload.text);
+    case 'hyphenLadder':
+      return labels.warningsHyphenLadderDetail
+        .replace('__page__', String(payload.page))
+        .replace('__lines__', String(payload.lines))
+        .replace('__max__', String(payload.max));
+    case 'lastWordDivided':
+      return labels.warningsLastWordDividedDetail.replace('__page__', String(payload.page)).replace('__text__', payload.word);
     case 'shortListSplit':
       return labels.warningsShortListSplitDetail.replace('__page__', String(payload.page)).replace('__items__', String(payload.items));
     case 'openerFloat':

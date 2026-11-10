@@ -5,6 +5,9 @@
 /// No node (the paragraph's start has no previous).
 pub(crate) const NONE: u32 = u32::MAX;
 
+/// Hyphenated lines in a row a node counts up to: past any ladder limit.
+pub(crate) const MAX_RUN: u32 = 255;
+
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct Node {
     /// Item the line ends at (-1: the paragraph's start).
@@ -26,8 +29,12 @@ pub(crate) struct Node {
     pub ragged: u32,
     pub total_word_spaces: f64,
     pub total_word_space_width: f64,
-    /// Stacks the chain sets (#1463).
-    pub stacks: u32,
+    /// Faults of the composition rules the chain keeps: stacks (#1463),
+    /// lines past a hyphen ladder's limit, the last word divided (#1466).
+    pub faults: u32,
+    /// Lines in a row ending on a hyphen the chain ends on (0: the line
+    /// ending here does not), up to [`MAX_RUN`].
+    pub run: u32,
     pub previous: u32,
 }
 
