@@ -43,6 +43,9 @@ export interface ChapterState {
   /** The number prefix the engine prints before each numbered heading. */
   headingNumbers: Map<ContentBlock, string>;
   blockCounter: number;
+  /** The palette overrides of the part being written (`:::part
+   *  palette="…"`): palette id → hex. */
+  palette?: Record<string, string>;
   /** Page numbering a `:::numbering` directive sets for the chapter's
    *  section (Word format name, first number). */
   pageNumbers?: { format?: string; start?: number };

@@ -18,7 +18,8 @@ import { headingStyleOf } from '../../../pipeline/sections/headingStyles.js';
 import type { ResolvedDesignElement, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingStyleConfig } from '../../../types.js';
 import type { ResolvedConfig, VDTPage } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
-import { designPlaceholders, headingLevelOf, partInForce } from '../design/values.js';
+import { designPlaceholders, headingLevelOf, partInForce, partPaletteAt } from '../design/values.js';
+import { recolored } from '../design/partColor.js';
 import type { PageGeometry, SectionStart } from '../sections.js';
 import { furnitureParagraph, itemRuns, PAGE_MARK, PAGES_MARK, TITLE_MARK, type Item, type Rule } from './paragraph.js';
 import { marginText, verticalRule } from './margin.js';
@@ -291,9 +292,13 @@ export function sectionFurniture(ctx: WriterContext, geo: PageGeometry, input: S
   const style = sectionStyleAt(ctx, input.chapter, input.first);
   // A composed page whose template prints no header or footer (#1444).
   const shown = input.leads ? headsShown(ctx, input.first) : undefined;
+  // The running heads in the palette of the part the section stands in
+  // (its folios and rules in the part's colour, #1458).
+  const palette = input.first ? partPaletteAt(ctx, input.first) : {};
+  const inPart = <T,>(slot: T): T => (Object.keys(palette).length ? recolored(slot, palette, r.colorPalette ?? []) : slot);
   const slots = {
-    header: shown?.header === false ? { ...r.header, elements: [] } : (style?.header ?? r.header),
-    footer: shown?.footer === false ? { ...r.footer, elements: [] } : (style?.footer ?? r.footer),
+    header: inPart(shown?.header === false ? { ...r.header, elements: [] } : (style?.header ?? r.header)),
+    footer: inPart(shown?.footer === false ? { ...r.footer, elements: [] } : (style?.footer ?? r.footer)),
   };
   const values = sectionValues(ctx, input);
   const parity = usesEvenAndOdd(r);

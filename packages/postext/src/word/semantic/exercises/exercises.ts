@@ -20,6 +20,7 @@ import type { WriterContext } from '../context.js';
 import { exerciseBody, mappedParagraph } from './exerciseBody.js';
 import { generatedRuns, type Piece } from '../generated.js';
 import { STYLE } from '../styles.js';
+import { exerciseStyles } from './exerciseStyles.js';
 import { blockSdt, hex, paragraph, px, twips } from '../wml.js';
 import { inPartStyle } from '../design/partColor.js';
 import type { ResolvedCalloutStyleConfig } from '../../../types.js';
@@ -225,13 +226,14 @@ export function renderExercise(ctx: WriterContext, node: ContainerNode, env: Blo
   const rule = ctx.plain ? '000000' : (hex(style.number.background) ?? '808080');
   const width = (env.widthTwips ?? ctx.textTwips) - 280;
   let cell = '';
+  const names = exerciseStyles(ctx, style);
   // The number leads the first paragraph of the instruction.
   const head = headPieces(style, placed.number, ex.attrs);
   if (ex.instruction.length) {
     ex.instruction.forEach((k, i) => {
-      cell += mappedParagraph(ctx, flat[k]!, { style: STYLE.normal, ind: { firstLine: 0 }, keepNext: true }, 'exercise:instruction', i === 0 ? head : []);
+      cell += mappedParagraph(ctx, flat[k]!, { style: names.instruction }, 'exercise:instruction', i === 0 ? head : []);
     });
-  } else if (head.length) cell += paragraph({ style: STYLE.normal, keepNext: true }, generatedRuns(ctx, head, 'exercise:number'));
+  } else if (head.length) cell += paragraph({ style: names.instruction }, generatedRuns(ctx, head, 'exercise:number'));
   const body = exerciseBody({ ctx, flat, ex, style, teacher: book.edition === 'teacher', seed: book.seed, ordinal: placed.ordinal, ...(s.locale ? { locale: s.locale } : {}), ...(ctx.resolved.numerals ? { digits: ctx.resolved.numerals } : {}), widthTwips: width, rule });
   for (const part of body.xml) {
     // Word joins two tables in a row; a paragraph keeps them apart.

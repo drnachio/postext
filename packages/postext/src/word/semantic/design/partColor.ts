@@ -29,6 +29,19 @@ export function partColor(ctx: WriterContext, color: ColorValue | undefined, pal
   return own ? { ...color, hex: own } : color;
 }
 
+/**
+ * The ink of `color` under the palette of the part being written
+ * (`ctx.chapter.palette`), when the part changes it (#1458): a
+ * cross-reference, a link or a caption label in the part's colour, as the
+ * engine prints them. Undefined where the style's own colour serves.
+ */
+export function partInk(ctx: WriterContext, color: ColorValue | undefined): string | undefined {
+  const palette = ctx.chapter.palette;
+  if (!color || !palette || ctx.plain || !Object.keys(palette).length) return undefined;
+  const own = hex(partColor(ctx, color, palette));
+  return own && own !== hex(color) && !paleOnWhite(own) ? own : undefined;
+}
+
 /** A design's elements in the colours of the part heading `b` stands in. */
 export function inPartColors(ctx: WriterContext, b: ContentBlock, elements: ResolvedDesignElement[]): ResolvedDesignElement[] {
   const palette = partPaletteAt(ctx, b);

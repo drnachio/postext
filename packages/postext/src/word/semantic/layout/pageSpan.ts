@@ -20,7 +20,7 @@ import { createHeadingLevelResolver, deriveSectionGeometryConfig, type HeadingLe
 import type { ContentBlock } from '../../../parse/types.js';
 import type { ResolvedConfig } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
-import { joinBlocks, type Node } from '../blocks.js';
+import { endsWithTable, joinBlocks, type Node } from '../blocks.js';
 import { headingFillsPage, multiColumn, pageGeometry, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
 import { styledSectionAt } from '../page/furniture.js';
 import { pPr, twips } from '../wml.js';
@@ -186,13 +186,18 @@ function chapterTitleStyle(ctx: WriterContext, pieces: readonly Piece[]): string
   return styles.size === 1 && only ? ctx.styles.nameOf(only) : undefined;
 }
 
-/** Whether a section ends with the contents or the index field. Its
- *  columns are not levelled: LibreOffice cannot balance a field's result
- *  and sends the empty levelling section to a page of its own (#1444). */
+/** Whether a section ends with the contents or the index field, or with a
+ *  table (a box, a table of figures). Its columns are not levelled:
+ *  LibreOffice cannot balance a field's result or a row that does not
+ *  split, and sends the empty levelling section to a page of its own, a
+ *  blank page under the running head (#1444, #1458). */
 function endsWithListing(parts: readonly string[]): boolean {
   const last = [...parts].reverse().find((x) => x);
-  return !!last && (last.includes('<w:tag w:val="ptx:index"/>') || last.includes('<w:tag w:val="ptx:toc"/>'));
+  return !!last && (last.includes('<w:tag w:val="ptx:index"/>') || last.includes('<w:tag w:val="ptx:toc"/>') || endsWithTable(last.replace(EMPTY_TAIL, '')));
 }
+
+/** The empty paragraphs a piece ends with (the room under a box). */
+const EMPTY_TAIL = /(?:<w:p>(?:<w:pPr>(?:(?!<\/w:pPr>)[\s\S])*<\/w:pPr>)?<\/w:p>)+$/;
 
 /**
  * The chapter's body as sections: pieces grouped by the column layout they

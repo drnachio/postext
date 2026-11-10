@@ -186,6 +186,26 @@ export function designTextParagraphs(ctx: WriterContext, b: ContentBlock, el: Re
         k++;
       }
     }
+    const shown = pieces.filter(([a, z]) => md.slice(a, z).trim());
+    if (ctx.plain && shown.length > 1) {
+      // The plain design keeps the value in one paragraph: its `\n` is a
+      // line break (of a lead set on two lines, of an address), not a
+      // paragraph end. The break is an atom over the two characters, so
+      // it stays in the source.
+      const f = new FragmentBuilder();
+      let runs = '';
+      shown.forEach(([a, z], k) => {
+        if (k) {
+          f.atom('\n', shown[k - 1]![1], a, 'break');
+          runs += textRuns('\n', '');
+        }
+        const piece = md.slice(a, z);
+        f.push(piece, Array.from({ length: piece.length }, (_, i) => a + i));
+        runs += textRuns(piece, '');
+      });
+      const wrapped = ctx.log.wrap(runs, f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [shown[0]![0], shown[shown.length - 1]![1]], role: `attr:heading:${key}` });
+      return [paragraph({ style, ...first }, wrapped)];
+    }
     for (const [a, z] of pieces) {
       const piece = md.slice(a, z);
       if (!piece.trim()) continue;

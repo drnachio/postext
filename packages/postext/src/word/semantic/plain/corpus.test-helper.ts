@@ -65,7 +65,18 @@ function designLeft(e: Exported): string[] {
  *  out, hidden after its pieces there and shown before them here). */
 function mapped(e: Exported, flow = false): string[] {
   const own = /^(?:heading:|attr:heading:|attr:part:)/;
-  return e.map.fragments.filter((f) => f.target.kind !== 'generated' && !(flow && own.test(f.role ?? ''))).map((f) => `${JSON.stringify(f.target)}|${f.range.join('-')}|${f.text}`);
+  // A heading attribute set on several lines (`\n` in its value) is a
+  // paragraph a line in the book's design and one paragraph of several
+  // lines in the plain one (#1458): its lines are read as one piece.
+  const frags: { target: unknown; range: number[]; text: string; role?: string }[] = [];
+  for (const f of e.map.fragments) {
+    const last = frags[frags.length - 1];
+    if (last && f.role?.startsWith('attr:heading:') && last.role === f.role && JSON.stringify(last.target) === JSON.stringify(f.target) && f.range[0] === last.range[1]! + 2) {
+      last.text += `\n${f.text}`;
+      last.range = [last.range[0]!, f.range[1]];
+    } else frags.push({ target: f.target, range: [...f.range], text: f.text, ...(f.role ? { role: f.role } : {}) });
+  }
+  return frags.filter((f) => (f.target as { kind: string }).kind !== 'generated' && !(flow && own.test(f.role ?? ''))).map((f) => `${JSON.stringify(f.target)}|${f.range.join('-')}|${f.text}`);
 }
 
 /** The items of `b` that `a` lacks, counting repeats. */

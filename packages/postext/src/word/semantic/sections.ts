@@ -138,7 +138,7 @@ export function sectionXml(ctx: WriterContext, geo: PageGeometry, index: number,
   const base = low ? { ...own.margins, top: Math.max(geo.margins.top, own.margins.top - room) } : (own?.margins ?? geo.margins);
   const m = part.sides && !low ? { ...base, ...part.sides } : base;
   return (
-    `<w:sectPr>${refs}${bookHasNotes(ctx) ? sectionFootnotePr(r, !!part.first) : ''}${start}` +
+    `<w:sectPr>${refs}${bookHasNotes(ctx) ? sectionFootnotePr(r, !!part.first || opensChapter(part)) : ''}${start}` +
     `<w:pgSz w:w="${geo.widthTw}" w:h="${geo.heightTw}"${orient}/>` +
     `<w:pgMar w:top="${m.top}" w:right="${m.right}" w:bottom="${m.bottom}" w:left="${m.left}" w:header="${header}" w:footer="${footer}" w:gutter="0"/>` +
     pageNumberType(ctx, !!part.first) +
@@ -200,6 +200,11 @@ export function headingFillsPage(ctx: WriterContext, b: ContentBlock | undefined
   const height = px(ctx.units, ctx.resolved.page.height);
   return height - px(ctx.units, m.top) - px(ctx.units, m.bottom) < height / 4;
 }
+
+/** Whether a section opens with a chapter title on a page of its own: the
+ *  notes count from 1 there, as at the start of a chapter file (the
+ *  engine starts them again at each level-1 heading). */
+const opensChapter = (part: SectionPart): boolean => part.start !== 'continuous' && !!part.leads && part.block?.type === 'heading' && (part.block.level ?? 1) === 1;
 
 const notesMemo = new WeakMap<object, boolean>();
 

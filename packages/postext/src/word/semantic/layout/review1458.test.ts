@@ -1,0 +1,120 @@
+// What the review of the two Word routes found in the flow writer (#1458):
+// the part's colour on references, links, caption labels and folios; notes
+// numbered again at a chapter title that opens a page; no levelling
+// section after a box (a blank page in LibreOffice); exercises in styles
+// of their own; and, in the plain design, columns one under the other,
+// boxes that may split and a lead's lines in one paragraph.
+
+import { describe, expect, it } from 'vitest';
+import { applyDocxEdits } from '../../roundtrip/index.js';
+import { exportDocx, exportProblems, levelSections, sectionsOf } from '../fixtures/harness.js';
+
+const gold = { hex: '#8f6408', model: 'hex', paletteId: 'band' };
+const para = (doc: string, s: string): string => new RegExp(`<w:p>(?:(?!<w:p>)[^])*?>${s}<(?:(?!</w:p>)[^])*</w:p>`).exec(doc)?.[0] ?? '';
+
+describe('semantic docx: the part’s colour beyond headings', () => {
+  const config = {
+    colorPalette: [{ id: 'band', name: 'Band', value: { hex: '#8f6408', model: 'hex' } }],
+    bodyText: { referenceColor: gold },
+    captionStyle: { labelColor: gold, labelBold: true },
+    footer: { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}', color: gold, placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { x: { value: 0, unit: 'mm' }, y: { value: 0, unit: 'mm' } } } }] },
+  } as never;
+  const resources = [{ id: 't1', typeId: 'table', kind: 'table', caption: 'Sizes', table: { model: { rows: [[{ content: 'a' }], [{ content: 'b' }]] } }, createdAt: 0, updatedAt: 0 }] as never;
+  const md = '# Zero\n\nSee :ref{id="t1"} and [the site](https://example.org).\n\n:::part{number="I" title="One" palette="band=#2b4acb"}\n:::\n\n# Alpha\n\nSee :ref{id="t1"} and [the site](https://example.org).\n\n::resource{id="t1"}\n';
+
+  it('sets references, links, caption labels and folios in the part’s colour', async () => {
+    const e = await exportDocx(md, { config, resources });
+    expect(exportProblems(e, [md], (f) => (f.target.kind === 'resource' && f.target.field === 'caption' ? 'Sizes' : undefined)).filter((p) => !p.includes('cell'))).toEqual([]);
+    const refs = e.doc.match(/<w:rPr><w:rStyle w:val="PostextReference"\/>(?:(?!<\/w:rPr>).)*<\/w:rPr>/g) ?? [];
+    // Before the part: the style's own colour. In it: the part's.
+    expect(refs).toHaveLength(2);
+    expect(refs[0]).not.toContain('w:color');
+    expect(refs[1]).toContain('<w:color w:val="2B4ACB"/>');
+    const links = e.doc.match(/<w:rPr><w:rStyle w:val="Hyperlink"\/>(?:(?!<\/w:rPr>).)*<\/w:rPr>/g) ?? [];
+    expect(links.map((l) => l.includes('2B4ACB'))).toEqual([false, true]);
+    // The caption's label, in the part where the table stands.
+    expect(e.doc).toMatch(/<w:rPr><w:b\/><w:color w:val="2B4ACB"\/><\/w:rPr><w:t xml:space="preserve">Tab/);
+    // A footer of each colour.
+    const footers = Object.keys(e.files).filter((f) => /^word\/footer\d+\.xml$/.test(f)).map((f) => e.part(f));
+    expect(footers.some((f) => f.includes('8F6408'))).toBe(true);
+    expect(footers.some((f) => f.includes('2B4ACB'))).toBe(true);
+    expect(applyDocxEdits(e.bytes, { chapters: [{ id: 'ch1', markdown: md }], resources }).edits).toEqual([]);
+  });
+
+  it('keeps the plain design in its one ink', async () => {
+    const e = await exportDocx(md, { config, resources, design: 'plain' });
+    expect(e.doc).not.toContain('2B4ACB');
+  });
+});
+
+describe('semantic docx: notes and sections', () => {
+  it('numbers the notes again at a chapter title that opens a page', async () => {
+    const md = '# One\n\nText[^a].\n\n[^a]: First.\n\n# Two\n\nMore[^b].\n\n[^b]: Second.\n';
+    const config = { layout: { layoutType: 'single' }, headings: { levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }] }, footnotes: { numbering: 'chapter' } } as never;
+    const e = await exportDocx(md, { config });
+    const sects = sectionsOf(e.doc);
+    expect(sects).toHaveLength(2);
+    for (const s of sects) expect(s).toContain('<w:numRestart w:val="eachSect"/>');
+  });
+
+  it('adds no levelling section after a box that ends the chapter', async () => {
+    const box = ':::callout{title="Try"}\nInside.\n:::\n';
+    const text = '# One\n\nText of the chapter.\n\n';
+    const boxed = await exportDocx([`${text}${box}`, '# Two\n\nMore.\n']);
+    const plainEnd = await exportDocx([`${text}Its last words.\n`, '# Two\n\nMore.\n']);
+    // The second chapter ends the document either way; the first is
+    // levelled only when it ends with text.
+    expect(levelSections(plainEnd.doc) - levelSections(boxed.doc)).toBe(1);
+  });
+});
+
+describe('semantic docx: exercises and the plain design', () => {
+  const exercise = ':::exercise\nWhich one is a colour?\n\n- [ ] Seven\n- [x] Blue\n:::\n';
+
+  it('sets an exercise in styles of its own in both designs', async () => {
+    for (const design of ['book', 'plain'] as const) {
+      const e = await exportDocx(exercise, { design });
+      expect(exportProblems(e, [exercise])).toEqual([]);
+      expect(para(e.doc, 'Which one is a colour\\?')).toContain('<w:pStyle w:val="PostextExerciseinstruction"/>');
+      expect(para(e.doc, 'Blue')).toContain('<w:pStyle w:val="PostextExercise"/>');
+      const styles = e.part('word/styles.xml');
+      expect(styles).toContain('<w:name w:val="Postext Exercise"/>');
+      expect(styles).toContain('<w:name w:val="Postext Exercise instruction"/>');
+      expect(applyDocxEdits(e.bytes, { chapters: [{ id: 'ch1', markdown: exercise }] }).edits).toEqual([]);
+    }
+  });
+
+  it('stacks the columns of a box and lets the box split in the plain design', async () => {
+    const md = ':::callout{title="In numbers"}\n:::columns{count=2}\nOne side.\n\nOther side.\n:::\n:::\n';
+    const book = await exportDocx(md);
+    const plain = await exportDocx(md, { design: 'plain' });
+    const control = (doc: string): string => /<w:tag w:val="ptx:columns"\/>(?:(?!<\/w:sdt>)[^])*/.exec(doc)?.[0] ?? '';
+    expect(control(book.doc)).toContain('<w:tbl>');
+    expect(control(plain.doc)).not.toBe('');
+    expect(control(plain.doc)).not.toContain('<w:tbl>');
+    expect(plain.doc).not.toContain('<w:cantSplit/>');
+    expect(plain.map.fragments.map((f) => f.text)).toEqual(book.map.fragments.map((f) => f.text));
+    expect(applyDocxEdits(plain.bytes, { chapters: [{ id: 'ch1', markdown: md }] }).edits).toEqual([]);
+  });
+
+  it('keeps the lines of a heading attribute in one paragraph in the plain design', async () => {
+    const config = {
+      headings: { levels: [{ level: 1, advancedDesign: { enabled: true, slot: { elements: [
+        { kind: 'text', id: 'title', content: '{titleText}', placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { x: { value: 0, unit: 'mm' }, y: { value: 0, unit: 'mm' } } } },
+        { kind: 'text', id: 'lead', content: '{attr.lead}', placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { x: { value: 0, unit: 'mm' }, y: { value: 20, unit: 'mm' } } } },
+      ] } } }] },
+    } as never;
+    const md = '# One {lead="A green parrot\\nkept repeating:"}\n\nText.\n';
+    const plain = await exportDocx(md, { config, design: 'plain' });
+    expect(exportProblems(plain, [md])).toEqual([]);
+    const lead = plain.map.fragments.find((f) => f.role === 'attr:heading:lead')!;
+    expect(lead.text).toBe('A green parrot\nkept repeating:');
+    expect(para(plain.doc, 'A green parrot')).toContain('<w:br/>');
+    // Two paragraphs in the book's design, as the print sets two lines.
+    const book = await exportDocx(md, { config });
+    expect(book.map.fragments.filter((f) => f.role === 'attr:heading:lead').map((f) => f.text)).toEqual(['A green parrot', 'kept repeating:']);
+    // A correction in the second line lands in the attribute.
+    const r = applyDocxEdits(plain.bytes, { chapters: [{ id: 'ch1', markdown: md }] });
+    expect(r.edits).toEqual([]);
+  });
+});

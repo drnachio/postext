@@ -17,6 +17,7 @@ import { listItemSpacing } from './prose/listSpacing.js';
 import { bodyTabs } from './prose/tabs.js';
 import { renderDesignedHeading, type HeadingLook } from './design/heading.js';
 import { partHeadingStyle } from './design/partColor.js';
+import { partPaletteAt } from './design/values.js';
 import { headingIsListed } from '../../pipeline/sections/headingStyles.js';
 import { renderScoreBlock } from './media/scores.js';
 import { FragmentBuilder } from './fragments.js';
@@ -281,6 +282,9 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
     const n = nodes[i]!;
     // A styled section that widens the measure gives its blocks the room.
     const widened = after ? widenedTwips(ctx, 'container' in n ? n.container : n.block) : undefined;
+    // The part's palette in force here: its references, links and caption
+    // labels take its colours.
+    if (after) ctx.chapter.palette = partPaletteAt(ctx, 'container' in n ? n.container : n.block);
     env = widened ? { ...(i >= 1 ? below : outer), widthTwips: widened } : i >= 1 ? below : outer;
     const wide = widened ? { ...across, widthTwips: widened } : across;
     const span = !!after && spansPage(ctx, n);
