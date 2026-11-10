@@ -1,0 +1,66 @@
+---
+title: "既能打印又能在 PDF 里填写的订购单"
+summary: "一份种子目录，数量格是 PDF 表单域：每行小计、各组合计和应付总额在 PDF 阅读器里自动算出。"
+description: "用 Postext 排的一份老品种种子目录，其中的芯片成为 AcroForm 表单域：数字框、复选框、下拉选项和自动计算的合计。"
+plain: "一份四页的种子目录，附订购单。打印出来可以用笔填写；在 PDF 阅读器里打开，输入种子包数，合计会自动算好。"
+question: "怎样做一个读者能填写、还能自动算出合计的 PDF 表单？"
+aliases: ["可填写 PDF", "PDF 表单", "AcroForm", "表单域", "订购单", "价目表", "计算字段", "AFSimple_Calculate", "复选框", "下拉列表", "种子目录", "邮购"]
+pageNotes: { "1": "封面：上半页是一幅木桌上的老品种蔬菜油画（有棱的番茄、Moon and Stars 西瓜、蓝色南瓜、辣椒、甜菜、彩色玉米，还有两只纸袋里撒出的花斑豆）。下面是绿色的眉题、两行大号 Caslon 字的标题 Seed List and Order Form，旁边是斜体导语，再下面是两栏引言。", "2": "第 2 页：The 2027 List。一小段文字后是价目表，表头为深绿色（Code、Variety、Seeds、Price、Qty、Total）。每组品种以一行浅绿色开头；每个品种在 Qty 下有一个灰边白框，在 Total 下有一个牛皮纸色框，每组以一行小计结束，小计框有绿色边。", "3": "第 3 页：表格接着列出最后一种豆子、Squash and melons 和 Greens and roots，各带小计。小标题 What you owe 下是一张五行的表：种子金额、带复选框的护种人协会、印在牛皮纸色芯片里的 $ 4.50 邮费、一个填捐款的白框，以及实心绿框的 Total to pay。", "4": "第 4 页：Your Details。姓名、地址、城镇和州、邮编和电话、电子邮件，各有一条书写横线；How you pay 一节有一个选为 Check 的下拉框、一条日期线和两个复选框；随后是邮寄地址和电子邮件地址、两栏说明和一行版权信息。" }
+---
+
+## 成品一览
+
+*Long Furrow Heritage Seeds* 是一家虚构的种子行 2027 年春季的种子目录，四页，210 × 270 mm，出售二十五个真实存在的开放授粉品种。封面上半页是一幅收成的油画。价目表是一张跨第 2、3 页的表格，每行有数量格和行小计，每组末尾有一行小计。第 4 页是顾客资料和付款方式。打印出来，它就是一张普通的订购单，用笔填写。每个格子同时也是带 `field` 属性的芯片，所以 `renderToPdf` 写出的 PDF 是一个 AcroForm：在 PDF 阅读器里输入种子包数，合计就会算出来，英文版用美元，西班牙文版用欧元。
+
+## 做法
+
+### 1 · 每种格子一个芯片样式
+
+<Excerpt region="chips" />
+
+样式决定表单域的外观和最小宽度，PDF 把表单域的控件正好放在芯片画出的框上。读者要填的格子是白底灰边；表单自己计算的格子是牛皮纸色、无边框，一眼就能看出哪些要用笔写。地址各行是只有下划线的芯片，姓名一行宽 145.5 mm，半行宽 64 或 59.5 mm，端点正好落在段落样式 `field` 的制表位上。复选框保持 3.9 mm 的最小宽度、没有内边距，在 PDF 里成为复选框。
+
+### 2 · 电子表格导出的 TSV，格子由脚本添加
+
+<Excerpt region="tables" />
+
+品种以表格形式给出：编号、名称和说明、每包粒数、价格。`priceList()` 给每行加上两个表单域芯片，并在每组末尾加一行小计。价格单元格打印的是 `formatFieldNumber(price, 'currency', style)`，也就是格式化合计的同一个函数，所以印出的价格和算出的合计用同样的分隔符。每组开头的一行是横跨六列的单个单元格，表格分页时它不会孤零零地留在页脚。第 3 页的表格从 `content.summary.en.md` 的 Markdown 取五行，芯片直接写在单元格里。
+
+### 3 · 封面：先是油画，再是标题
+
+<Excerpt region="cover" />
+
+图像元素锚定在页面上，210 × 134 mm，三边出血。眉题放在容器顶部往下 120 mm 处，标题和导语挂在它下面。样式的最小高度 164 mm 让两栏引言始终排在标题之下，不论标题多长。
+
+### 4 · 不碰封面的书眉
+
+<Excerpt region="running-heads" />
+
+偶数页印种子行的名字，奇数页印所在的部分，各自挨着页码。封面的标题样式页眉页脚都是空的，所以第 1 页没有书眉。
+
+### 5 · 给计算金额单留一种颜色的色板
+
+<Excerpt region="palette" />
+
+叶绿色标出属于种子行的东西：表头、眉题、小计框的边和应付总额的实心框。牛皮纸色只用于 PDF 自动计算的格子，印在纸上时，读者会把它们看作不用填写的格子。
+
+## 变化
+
+### 把邮费改成一个表单域
+
+把印好的邮费改成读者填写的表单域，并用它代替固定金额计入总额。
+
+```diff
+-Postage and packing, any size of order	:chip[$ 4.50]{style="amount"}
++Postage and packing, any size of order	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 4.50, order.gift)"}
++**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## 常见问题
+
+截图里的格子都是空的，因为表单域的文字就是它的默认值，而这里所有表单域一开始都是空白。邮费是印在没有 `field` 的芯片里的文字，总额在计算式里把它当作数字 `4.50` 加进去，所以读者改不了它。
+
+合计是脚本（`AFSimple_Calculate` 和简短的表达式），Acrobat、Foxit、Chrome 和 Firefox 都会执行。macOS 的“预览”能显示表单域、保存输入的内容，但不执行脚本，所以在那里合计一直是空的。
+
+护种人协会的复选框带 `on="1"`，这是勾选后计算式读到的值。如果用默认值 `Yes`，`product(order.circle, 12)` 永远得 0，postext-pdf 会对此发出警告。

@@ -5966,5 +5966,33 @@
       "ar": "تظليل مرمَّز بالألوان"
     },
     "theme": "type"
+  },
+  "Q214": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a PDF form that readers can fill in and that adds up its totals?",
+      "es": "¿Cómo hago un formulario PDF que el lector pueda rellenar y que sume los totales solo?",
+      "ca": "Com faig un formulari PDF que el lector pugui emplenar i que sumi els totals tot sol?",
+      "fr": "Comment créer un formulaire PDF que le lecteur peut remplir et qui calcule lui-même ses totaux ?",
+      "de": "Wie erstelle ich ein PDF-Formular, das Leser ausfüllen können und das seine Summen selbst berechnet?",
+      "it": "Come creo un modulo PDF che il lettore possa compilare e che calcoli da solo i totali?",
+      "pt": "Como faço um formulário PDF que o leitor possa preencher e que some os totais sozinho?",
+      "zh": "怎样做一份读者可以填写、并能自动计算合计的PDF表单？",
+      "ja": "読者が記入でき、合計も自動で計算されるPDFフォームを作るには？",
+      "ar": "كيف أصنع نموذج PDF يملؤه القارئ ويحسب مجاميعه بنفسه؟"
+    },
+    "index": {
+      "en": "PDF forms, fillable",
+      "es": "Formularios PDF rellenables",
+      "ca": "Formularis PDF emplenables",
+      "fr": "Formulaires PDF remplissables",
+      "de": "PDF-Formulare, ausfüllbar",
+      "it": "Moduli PDF compilabili",
+      "pt": "Formulários PDF preenchíveis",
+      "zh": "可填写的PDF表单",
+      "ja": "記入できるPDFフォーム",
+      "ar": "نماذج PDF قابلة للتعبئة"
+    },
+    "theme": "output"
   }
 }

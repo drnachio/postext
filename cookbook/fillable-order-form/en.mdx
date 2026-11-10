@@ -1,0 +1,66 @@
+---
+title: "A printed order form that is also a fillable PDF"
+summary: "A seed list whose quantity boxes are PDF form fields: each line total, the five subtotals and the amount to pay add themselves up in a PDF reader."
+description: "A heritage seed list in Postext whose chips become AcroForm fields: number boxes, check boxes, a choice list and totals the PDF reader computes."
+plain: "A four-page seed catalogue with an order form. Printed, it has boxes to write in; opened in a PDF reader, you type the number of packets and the totals add up by themselves."
+question: "How do I make a PDF form that readers can fill in and that adds up its totals?"
+aliases: ["fillable PDF", "PDF form", "AcroForm", "form fields", "order form", "price list", "calculated fields", "AFSimple_Calculate", "check box", "drop-down list", "seed catalogue", "mail order"]
+pageNotes: { "1": "The cover: a painting of heirloom vegetables on a wooden table across the top half of the page (striped tomatoes, a Moon and Stars watermelon, a blue squash, peppers, beets, painted corn and two paper bags of speckled beans), then the green kicker Spring 2027 · Open-pollinated seed, the title Seed List and Order Form in large Caslon on two lines with an italic standfirst beside it, and a two-column introduction.", "2": "Page 2: The 2027 List. A short paragraph, then the price list as a table with a dark green head row (Code, Variety, Seeds, Price, Qty, Total). Each group of varieties opens with a pale green row (Tomatoes, Peppers, Beans); every variety has a white box with a grey outline under Qty and a kraft-coloured box under Total, and each group ends with a subtotal row whose box has a green outline.", "3": "Page 3: the list goes on with the last bean, Squash and melons, and Greens and roots, each with its subtotal. Under the crosshead What you owe, a five-row table: the seeds, the seed savers' circle with a tick box, postage of $ 4.50 printed in a kraft chip, a white box for a gift, and Total to pay with a solid green box.", "4": "Page 4: Your Details. Name, Address, Town and State, ZIP code and Phone, and Email, each with a ruled line to write on; How you pay, with a choice box set to Check, a Date line and two tick boxes; Sending the form, with the postal and email addresses; two columns of notes and a one-line colophon." }
+---
+
+## What you'll build
+
+*Long Furrow Heritage Seeds* is a four-page seed list for spring 2027, 210 × 270 mm, from an invented seed house that sells twenty-five real open-pollinated varieties. A painting of the harvest takes the top half of the cover. The price list runs as one table over pages 2 and 3, with a quantity box and a line total on every row and a subtotal at the end of each group. The customer's details and payment follow on page 4. The sheet prints as an ordinary form to fill in with a pen. Every box is also a chip with a `field` attribute, so the PDF that `renderToPdf` writes is an AcroForm: you type the number of packets in a PDF reader and the totals compute themselves, in dollars in English and in euros in Spanish.
+
+## Method
+
+### 1 · One chip style per kind of box
+
+<Excerpt region="chips" />
+
+The style gives a field its look and its least width, and the PDF puts the field's widget exactly on the box the chip paints. Boxes the reader fills in are white with a grey outline; boxes the form computes are kraft-coloured with no outline, so it is clear which ones take a pen. The address lines are chips with a bottom rule only, 145.5 mm wide for the name and 64 or 59.5 mm for the half lines, so their ends meet the tab stops of the `field` paragraph style. The tick box keeps its 3.9 mm least width and no padding, and the field becomes a check box in the PDF.
+
+### 2 · A spreadsheet's TSV, the boxes added by the pen
+
+<Excerpt region="tables" />
+
+The varieties come as a sheet: a code, a name with its note, the seeds in a packet and a price. `priceList()` adds the two field chips to each row and a subtotal row at the end of each group. The price cell prints `formatFieldNumber(price, 'currency', style)`, the same function that formats the totals, so a printed price and a computed total use the same separators. The group head is a single cell across all six columns, and a table split never leaves a row like that alone at the foot of a page. The summary table on page 3 takes its five rows from the Markdown of `content.summary.en.md`, with the chips written into the cells.
+
+### 3 · The cover: the painting, then the title
+
+<Excerpt region="cover" />
+
+The image element is anchored to the page, 210 × 134 mm, so it bleeds off three edges. The kicker sits 120 mm into the container, and the title and the standfirst hang from it. The style's 164 mm least height keeps the two-column introduction clear of the title whatever its length.
+
+### 4 · Running heads that leave the cover alone
+
+<Excerpt region="running-heads" />
+
+The verso carries the seed house's name and the recto the section, each beside its folio. The cover's heading style has an empty header and footer, so page 1 has no running head.
+
+### 5 · A palette with a colour for computed amounts
+
+<Excerpt region="palette" />
+
+Leaf green marks what belongs to the seed house: the head row, the kickers, the subtotal outlines and the solid box of the amount to pay. Kraft is kept for the boxes the PDF computes, so on paper they read as the boxes you leave empty.
+
+## Variations
+
+### Ask for the postage as a field
+
+Turn the printed postage into a field the reader types in, and add it to the total instead of the fixed amount.
+
+```diff
+-Postage and packing, any size of order	:chip[$ 4.50]{style="amount"}
++Postage and packing, any size of order	:chip[ ]{style="entry" field="order.postage" format="currency"}
+-**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, 4.50, order.gift)"}
++**Total to pay**	:chip[ ]{style="total" field="order.total" format="currency" calc="sum(order.seeds, order.circleFee, order.postage, order.gift)"}
+```
+
+## Pitfalls
+
+The captured pages show the boxes empty, because a field's words are its default value and every field here starts blank. The postage is printed text in a chip with no `field`, and the total adds it as the number `4.50` in its calculation, so the reader cannot change it.
+
+The totals are scripts (`AFSimple_Calculate` and short expressions), which Acrobat, Foxit, Chrome and Firefox run. Preview on macOS shows the fields and saves what you type, but it runs no scripts, so the totals stay empty there.
+
+The seed circle's check box has `on="1"`, the value a calculation reads when it is ticked. With the default on value, `Yes`, `product(order.circle, 12)` would always give 0, and postext-pdf warns about it.
