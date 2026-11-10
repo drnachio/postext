@@ -27,6 +27,7 @@ import { usePlacementFields } from './ResourceDetail/usePlacementFields.js';
 import { useResourceEdits } from './ResourceDetail/useResourceEdits.js';
 import { Field, inputClass, inputStyle, labelStyle } from './ResourceDetail/Field.js';
 import type { ResourceDetailProps } from './ResourceDetail/props.js';
+import { CropField } from './marks/CropEditor.js';
 
 /** Detail view: editable detail for the selected resource, with a back button. */
 export function ResourceDetail({
@@ -203,6 +204,20 @@ export function ResourceDetail({
                     : labels.resourcePlacementHintColumn}
             </div>
           </div>
+          {/* Set by hand: dragged to a slot in the canvas (`placement.pin`). */}
+          {!placementInline && currentPlacement.pin && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded border border-(--rule) px-2 py-1.5 text-xs">
+              <span>
+                {labels.resourcePinned
+                  .replace('__page__', currentPlacement.pin.page === 0 ? '±0' : `+${currentPlacement.pin.page}`)
+                  .replace('__column__', String((currentPlacement.pin.column ?? 0) + 1))
+                  .replace('__slot__', currentPlacement.pin.slot === 'top' ? labels.resourcePinTop : labels.resourcePinBottom)}
+              </span>
+              <button type="button" className="rounded border border-(--rule) px-2 py-0.5 hover:bg-(--surface)" onClick={() => setPlacementKey('pin', undefined)}>
+                {labels.resourcePinRelease}
+              </button>
+            </div>
+          )}
           <SelectInput
             stacked
             label={labels.resourceTypePlacementPosition}
@@ -211,8 +226,8 @@ export function ResourceDetail({
               { value: 'auto', label: labels.resourcePositionAuto },
               { value: 'top', label: labels.resourcePositionTop },
               { value: 'bottom', label: labels.resourcePositionBottom },
-              { value: 'here', label: labels.resourcePositionHere },
               { value: 'paragraph', label: labels.resourcePositionParagraph },
+              { value: 'here', label: labels.resourcePositionHere },
             ]}
             onChange={(v) => setPlacementKey('position', v as PlacementPosition)}
             isDefault={currentPlacement.position === undefined}
@@ -467,12 +482,23 @@ export function ResourceDetail({
           </Field>
         )}
         {((resource.kind === 'bitmap' && resource.bitmap?.fileId) || (resource.kind === 'svg' && resource.svg?.fileId) || (resource.kind === 'video' && resource.video?.poster?.fileId)) && (
-          <SafeAreaField
-            resource={resource}
-            // Saved marks (anchors, safe area, lettering) are one step of the
-            // undo history (#866).
-            onChange={(marks) => dispatch({ type: 'UPSERT_RESOURCE', payload: applyMarks(touch({}), marks), history: { merge: false } })}
-          />
+          <>
+            <CropField
+              resource={resource}
+              onChange={(crop) => {
+                const next = touch({});
+                if (crop) next.crop = crop;
+                else delete next.crop;
+                onChange(next);
+              }}
+            />
+            <SafeAreaField
+              resource={resource}
+              // Saved marks (anchors, safe area, lettering) are one step of the
+              // undo history (#866).
+              onChange={(marks) => dispatch({ type: 'UPSERT_RESOURCE', payload: applyMarks(touch({}), marks), history: { merge: false } })}
+            />
+          </>
         )}
         {resource.kind === 'svg' && resource.svg?.fileId && (
           <Field label={labels.resourcePdfMasterLabel} hint={labels.resourcePdfMasterHint}>

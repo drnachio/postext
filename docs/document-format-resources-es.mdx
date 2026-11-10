@@ -195,6 +195,11 @@ Cada recurso tiene una **colocación** que decide dónde cae su flotante. Se res
       <td><code>true</code> · <code>false</code>, por defecto <code>false</code></td>
       <td>Permite que un flotante <code>"top"</code> o <code>"auto"</code> ocupe la cabeza de la página (un flotante a ancho de página) o de la columna (un flotante de columna, también si abarca varias con <code>columns</code>) en la que cae la línea que lo cita por primera vez, como hace la colocación <code>t</code> de LaTeX, en lugar del primer hueco libre después de esa línea. El texto que hay encima de la referencia baja por debajo del flotante. Solo lo hace si el flotante cabe allí sin pasar de <code>layout.maxTopFraction</code> de la columna (0,7 por defecto), si los flotantes anteriores de su secuencia de numeración ya están colocados, si ningún salto explícito abre la página (la primera página de un capítulo, una parte, un <code>:::pagebreak</code>) ni hay nada a ancho de página encima de la línea que lo cita, y si, con el flotante allí, la línea que lo cita sigue cayendo en esa página (o en la columna que el flotante encabeza); si no, el flotante toma su hueco habitual. Los flotantes girados, los de la columna lateral y el resto de una tabla partida entre páginas nunca se mueven así. Valor predeterminado: el <code>defaultPlacement</code> del tipo y, después, <code>layout.floatsAtCitingPage</code>. Desde postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Un flotante colocado a mano (arrastrado a un hueco en el lienzo del Sandbox): <code>page</code> cuenta las páginas desde la que lo cita por primera vez (<code>0</code> es esa página), <code>column</code> la columna de texto desde 0 (cualquiera, si falta), <code>slot</code> es <code>"top"</code> o <code>"bottom"</code>. El flotante espera a esa página y ahí toma ese hueco y ningún otro; si no cabe, o el hueco queda antes de su cita, se coloca como siempre y la maquetación avisa con <code>floatPinMissed</code>. Solo en las salidas paginadas.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -338,6 +343,19 @@ El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la
 
 La receta n.º 116 del Recetario, [Fotos que crecen hasta llenar la columna](/es/cookbook/photos-fill-short-columns), compone dos veces un reportaje de revista a dos columnas, sin zonas seguras y con ellas, para que puedas comparar las páginas una junto a otra.
 
+
+### Recorte manual
+
+Un mapa de bits, un SVG o el póster de un vídeo también se pueden recortar a mano: `crop`, en las mismas fracciones que la zona segura, es la parte de la imagen que la figura muestra siempre, sea cual sea la página. La figura toma la proporción del recorte en todas las salidas (lienzo, PDF, HTML y los dos EPUB), la zona segura, si la hay, se lee dentro del recorte y puede cortar más donde la página lo necesite, y `bodySource` es la composición de ambos. Sin él, la imagen entera. En el Sandbox, *Recorte*, junto a la zona segura, abre un marco que se arrastra, se ajusta con las flechas y se previsualiza.
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // la mitad central, de arriba abajo
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Anclas de personaje y zonas libres
 

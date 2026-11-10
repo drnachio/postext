@@ -3,13 +3,13 @@
  "files": {
   "packages/postext-folio/src/pageFlip.ts": 2134,
   "packages/postext/src/exercises/runtime.ts": 1657,
-  "packages/postext-epub/src/reflowable/walk.ts": 1656,
+  "packages/postext-epub/src/reflowable/walk.ts": 1603,
   "packages/postext/src/exercises/expand.ts": 1210,
   "packages/postext-sandbox/src/sidebar/sections/callouts/CalloutStylesSection/CalloutStyleCard.tsx": 1068,
   "packages/postext-sandbox/src/sidebar/sections/headings/HeadingStylesSection/HeadingStyleCard.tsx": 889,
   "packages/postext/src/index.ts": 859,
   "packages/postext-sandbox/src/sidebar/sections/running/HeaderFooterSection/TextElementEditor.tsx": 841,
-  "packages/postext-epub/src/reflowable/xhtml.ts": 813,
+  "packages/postext-epub/src/reflowable/xhtml.ts": 807,
   "packages/postext-sandbox/src/sidebar/sections/writing/CjkSection.tsx": 750,
   "packages/postext-sandbox/src/sidebar/sections/text/CodeStyleSection.tsx": 709
  },

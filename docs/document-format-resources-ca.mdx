@@ -194,6 +194,11 @@ Cada recurs té una **col·locació** que decideix on va a parar el flotant. Es 
       <td><code>true</code> · <code>false</code>, per defecte <code>false</code></td>
       <td>Permet que un flotant <code>"top"</code> o <code>"auto"</code> ocupi el capdamunt de la pàgina (un flotant a l'amplada de la pàgina) o de la columna (un flotant de columna, també a l'amplada de <code>columns</code>) on cau la línia que el cita per primera vegada, com fa la col·locació <code>t</code> de LaTeX, en lloc del primer espai lliure després d'aquesta línia. El text que hi ha damunt de la referència baixa sota el flotant. Només ho fa si el flotant cap dins de la fracció <code>layout.maxTopFraction</code> de la columna (0,7 per defecte), si els flotants anteriors de la mateixa seqüència de numeració ja estan col·locats, si cap salt explícit no obre la pàgina (la primera pàgina d'un capítol, una part, un <code>:::pagebreak</code>) i no hi ha res a l'amplada de la pàgina per sobre de la línia que el cita, i si, un cop col·locat, la línia que el cita continua caient en aquesta pàgina (en una columna que el flotant encapçala); si no, el flotant ocupa el seu espai habitual. Els flotants girats, els de la columna lateral i la resta d'una taula partida entre pàgines no es mouen mai d'aquesta manera. Per defecte: el <code>defaultPlacement</code> del tipus i després <code>layout.floatsAtCitingPage</code>. Des de postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Un flotant col·locat a mà (arrossegat a un espai al llenç del Sandbox): <code>page</code> compta les pàgines des de la que el cita per primer cop (<code>0</code> és aquesta pàgina), <code>column</code> la columna de text des de 0 (qualsevol, si no hi és), <code>slot</code> és <code>"top"</code> o <code>"bottom"</code>. El flotant espera aquesta pàgina i hi pren aquest espai i cap altre; si no hi cap, o l'espai queda abans de la cita, es col·loca com sempre i la maquetació avisa amb <code>floatPinMissed</code>. Només a les sortides paginades.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -337,6 +342,19 @@ El VDT anota el retall al bloc del recurs: `bodySource` és la part de la imatge
 
 La recepta núm. 116 del Receptari, [Fotos que creixen fins a omplir la columna](/ca/cookbook/photos-fill-short-columns), compon dues vegades un reportatge de revista a dues columnes, sense zones segures i amb elles, per comparar les pàgines l'una al costat de l'altra.
 
+
+### Retall manual
+
+Un mapa de bits, un SVG o el pòster d'un vídeo també es poden retallar a mà: `crop`, en les mateixes fraccions que la zona segura, és la part de la imatge que la figura mostra sempre, sigui quina sigui la pàgina. La figura pren la proporció del retall a totes les sortides (llenç, PDF, HTML i els dos EPUB), la zona segura, si n'hi ha, es llegeix dins del retall i pot tallar més on la pàgina ho necessiti, i `bodySource` és la composició de tots dos. Sense, la imatge sencera. Al Sandbox, *Retall*, al costat de la zona segura, obre un marc que s'arrossega, s'ajusta amb les fletxes i es previsualitza.
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // la meitat central, de dalt a baix
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Àncores dels personatges i zones lliures
 

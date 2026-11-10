@@ -887,3 +887,21 @@ describe('reflowable rendition: :::columns in the running text (#634)', () => {
     expect(found).toEqual(Array.from({ length: 40 }, (_, i) => i));
   });
 });
+
+describe('a cropped picture (Resource.crop)', () => {
+  it('shows only its crop, at the crop’s ratio, at any width', async () => {
+    const cropped: Resource[] = [{ ...resources[0]!, crop: { x: 0.25, y: 0.1, width: 0.5, height: 0.6 } }];
+    const { pub, files, all } = await render([layOut(`See :ref{id=f1}.\n\n${para}`, baseConfig, cropped)]);
+    expectSound(pub, files);
+    // A box as tall as the crop (0.6 × 300 over 0.5 × 400 = 90 % of its
+    // width), and the picture twice the box wide, moved up and left.
+    expect(all).toContain('class="pt-crop"');
+    expect(all).toContain('padding-top:90%');
+    expect(all).toContain('width:200%;left:-50%;top:-16.6667%');
+  });
+
+  it('leaves an uncropped picture a plain image', async () => {
+    const { all } = await render([layOut(`See :ref{id=f1}.\n\n${para}`, baseConfig, resources)]);
+    expect(all).not.toContain('pt-crop');
+  });
+});

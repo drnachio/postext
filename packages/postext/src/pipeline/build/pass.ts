@@ -267,7 +267,7 @@ function placeDocumentPass(
   });
 
   const {
-    placeFloatInColumns, settle, heldBack, positionsFor
+    placeFloatInColumns, settle, heldBack, positionsFor, pinOn, pinnedColumn, dropMissedPins
   } = createFloatPlace({
     captionUnderProposals, asideCutBy, shortSideColumn, resolved: setup.resolved, dpi, baselineGrid, bodyOffset,
     contentBlocks, resourceById, bodyStyle, pendingFloats, openerPages, openerFloatRule,
@@ -276,7 +276,7 @@ function placeDocumentPass(
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, cursor, doc
   });
 
   const {
@@ -287,7 +287,7 @@ function placeDocumentPass(
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
-    positionsFor, cursor, forcedBreakPages, state, late
+    positionsFor, cursor, forcedBreakPages, state, late, pinOn, pinnedColumn, dropMissedPins
   });
 
   const {

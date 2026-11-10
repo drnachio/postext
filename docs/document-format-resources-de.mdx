@@ -195,6 +195,11 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
       <td><code>true</code> · <code>false</code>, Standard <code>false</code></td>
       <td>Ein <code>"top"</code>- oder <code>"auto"</code>-Gleitobjekt den Kopf der Seite (bei einem seitenbreiten Gleitobjekt) oder der Spalte (bei einem Spalten-Gleitobjekt, auch über <code>columns</code>) einnehmen lassen, auf der die Zeile steht, die es zuerst zitiert, wie es die Platzierung <code>t</code> in LaTeX tut, statt des ersten freien Platzes nach dieser Zeile. Der Text über dem Verweis rückt unter das Gleitobjekt nach unten. Das geschieht nur, wenn das Gleitobjekt dort innerhalb von <code>layout.maxTopFraction</code> der Spalte (standardmäßig 0.7) Platz findet, wenn die früheren Gleitobjekte seiner Nummernfolge bereits gesetzt sind, wenn kein ausdrücklicher Umbruch die Seite eröffnet (die erste Seite eines Kapitels, ein Teil, ein <code>:::pagebreak</code>) und nichts Seitenbreites über der zitierenden Zeile steht, und wenn die zitierende Zeile bei dieser Anordnung noch auf dieser Seite steht (in einer Spalte, die das Gleitobjekt anführt); andernfalls nimmt das Gleitobjekt seinen üblichen Platz. Gedrehte Gleitobjekte, Nebenspalten-Gleitobjekte und der Rest einer über Seiten geteilten Tabelle werden nie so verschoben. Standard: das <code>defaultPlacement</code> des Typs, dann <code>layout.floatsAtCitingPage</code>. Seit postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Ein von Hand gesetztes Gleitobjekt (im Sandbox-Canvas auf einen Platz gezogen): <code>page</code> zählt die Seiten ab der, die es zuerst zitiert (<code>0</code> ist diese Seite), <code>column</code> die Textspalte ab 0 (ohne Angabe beliebig), <code>slot</code> ist <code>"top"</code> oder <code>"bottom"</code>. Das Objekt wartet auf diese Seite und nimmt dort diesen Platz und keinen anderen; passt es nicht hinein oder liegt der Platz vor seinem Verweis, wird es wie üblich gesetzt und das Layout meldet <code>floatPinMissed</code>. Nur in seitenbasierten Ausgaben.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -338,6 +343,19 @@ Der VDT verzeichnet den Beschnitt am Ressourcenblock: `bodySource` ist der in `b
 
 Das Rezept Nº 116, [Fotos, die eine kurze Spalte füllen](/de/cookbook/photos-fill-short-columns), setzt eine zweispaltige Zeitschriftenreportage zweimal, ohne und mit Sicherheitsbereichen, sodass Sie die Seiten nebeneinander vergleichen können.
 
+
+### Manueller Beschnitt
+
+Eine Bitmap, ein SVG oder das Posterbild eines Videos lassen sich auch von Hand beschneiden: `crop`, in denselben Anteilen wie der Sicherheitsbereich, ist der Teil des Bildes, den die Abbildung immer zeigt, auf jeder Seite. Die Abbildung übernimmt das Seitenverhältnis des Beschnitts in allen Ausgaben (Canvas, PDF, HTML, beide EPUB), ein Sicherheitsbereich wird innerhalb des Beschnitts gelesen und kann dort weiter beschneiden, wo die Seite es verlangt, und `bodySource` setzt beides zusammen. Ohne ihn das ganze Bild. In der Sandbox öffnet *Beschnitt* neben dem Sicherheitsbereich einen Rahmen zum Ziehen, Verschieben mit den Pfeiltasten und zur Vorschau.
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // die mittlere Hälfte, von oben bis unten
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Sprecherpunkte und Sperrzonen
 

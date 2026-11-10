@@ -36,6 +36,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'calloutOverflow':
       text = `A box fits no column and overflows its column by ${Math.round(w.overflowPx)}px`;
       break;
+    case 'floatPinMissed':
+      text = `Resource "${w.resourceId}" does not fit the slot it was set in by hand — placed as usual`;
+      break;
     case 'unknownResourceId':
       text = w.usage === 'embed'
         ? `Unknown resource id "${w.resourceId}" in ::resource — nothing is embedded`
