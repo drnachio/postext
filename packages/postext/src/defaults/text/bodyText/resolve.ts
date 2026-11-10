@@ -159,7 +159,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     runtMinCharacters: partial.runtMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.runtMinCharacters,
     runtPenalty: partial.runtPenalty ?? DEFAULT_BODY_TEXT_CONFIG.runtPenalty,
     gradedRuntPenalty: partial.gradedRuntPenalty ?? DEFAULT_BODY_TEXT_CONFIG.gradedRuntPenalty,
-    avoidStacks: partial.avoidStacks ?? DEFAULT_BODY_TEXT_CONFIG.avoidStacks,
+    stacks: compositionRuleOf(partial.stacks) ?? DEFAULT_BODY_TEXT_CONFIG.stacks,
     stackMinCharacters: Math.max(1, Math.round(partial.stackMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.stackMinCharacters)),
     stackPenalty: Math.max(0, partial.stackPenalty ?? DEFAULT_BODY_TEXT_CONFIG.stackPenalty),
     avoidRuntsInLists: partial.avoidRuntsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists,

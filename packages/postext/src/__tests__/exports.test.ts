@@ -155,6 +155,7 @@ describe("package exports", () => {
       "drawLooseLines",
       "lineLooseness",
       "lineWordSpacing",
+      "findStacks",
       "primaryFontFamily",
       "buildFontString",
       "setSymbolFont",

@@ -43,15 +43,15 @@ export type { BlockMeasureContext, DropCapNote, MeasuredContentBlock, MeasureCon
 export { wordSpacingProfile } from './measureContentBlock/helpers.js';
 
 /** The measure context a composed page's frame (#855) sets its story
- *  with: `ctx` without stack avoidance (`bodyText.avoidStacks`). A short
- *  frame held to its box often has no break that keeps that rule, and its
- *  reflow ladder measures what fits. */
+ *  with: `ctx` with stacks allowed (`bodyText.stacks`, #1463). Its reflow
+ *  ladder measures what fits the frame, step by step, and a rule that
+ *  moves breaks would make each step's heights depend on it. */
 const composedFrameCtxs = new WeakMap<BlockMeasureContext, BlockMeasureContext>();
 export function composedFrameMeasureContext(ctx: BlockMeasureContext): BlockMeasureContext {
-  if (!ctx.resolved.bodyText.avoidStacks) return ctx;
+  if (ctx.resolved.bodyText.stacks !== 'avoid') return ctx;
   let out = composedFrameCtxs.get(ctx);
   if (!out) {
-    out = { ...ctx, resolved: { ...ctx.resolved, bodyText: { ...ctx.resolved.bodyText, avoidStacks: false } } };
+    out = { ...ctx, resolved: { ...ctx.resolved, bodyText: { ...ctx.resolved.bodyText, stacks: 'allow' } } };
     composedFrameCtxs.set(ctx, out);
   }
   return out;

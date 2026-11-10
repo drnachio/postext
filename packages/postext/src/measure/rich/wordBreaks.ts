@@ -267,7 +267,7 @@ export function wordBreakPoints(
   if (cjk) for (const idx of cjk.breaks) add({ charIndex: idx, free: true, cjk: true });
   else {
     for (const idx of slashBreakIndices(clean)) add({ charIndex: idx, free: true });
-    for (const idx of zeroWidthBreaks) add({ charIndex: idx, free: true });
+    for (const idx of zeroWidthBreaks) add({ charIndex: idx, free: true, zeroWidth: true });
   }
   return [...byIndex.values()].sort((a, b) => a.charIndex - b.charIndex);
 }

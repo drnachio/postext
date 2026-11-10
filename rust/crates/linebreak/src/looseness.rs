@@ -1,5 +1,5 @@
 //! Choosing the breaks: the natural setting, or the one with `looseness`
-//! lines more or fewer when one is good enough, under the document's limits.
+//! lines more or fewer when one is good enough, under the document's stacks.
 
 use crate::dp::{Pass, Search, gates_short};
 use crate::items::Items;
@@ -20,12 +20,19 @@ pub enum LoosenessMode {
     Single,
 }
 
-/// A longer setting's target: exactly `lines` lines, breaking no more than
-/// `max_hard` limits.
+/// A longer setting's target: exactly `lines` lines, setting no more than
+/// `max_stacks` stacks.
 #[derive(Clone, Copy)]
 struct Longer {
     lines: i64,
-    max_hard: u32,
+    max_stacks: u32,
+}
+
+/// What a search chose: how many stacks its breaks set and what they cost.
+#[derive(Clone, Copy)]
+struct Outcome {
+    stacks: u32,
+    demerits: f64,
 }
 
 pub(crate) fn breakpoints(search: &mut Search, items: &Items, o: &Options, out: &mut Vec<u32>) {
@@ -41,25 +48,27 @@ pub(crate) fn breakpoints(search: &mut Search, items: &Items, o: &Options, out: 
 }
 
 /// Natural breaks, then the cheapest chain `looseness` lines longer with no
-/// very loose line and no more limits broken, when there is one.
+/// very loose line and no more stacks, when there is one.
 fn two_pass(search: &mut Search, items: &Items, o: &Options, out: &mut Vec<u32>) {
-    let Some(hard) = limited(search, items, o, 0, None, out) else { return };
+    let Some(natural) = limited(search, items, o, 0, None, out) else { return };
     if out.is_empty() {
         return;
     }
-    let longer = Longer { lines: out.len() as i64 + o.looseness as i64, max_hard: hard };
+    let longer = Longer { lines: out.len() as i64 + o.looseness as i64, max_stacks: natural.stacks };
     let mut alternative = Vec::new();
     if limited(search, items, o, o.looseness, Some(longer), &mut alternative).is_some() {
         out.clone_from(&alternative);
     }
 }
 
-/// [`one`] under the document's limits (`limited` in TypeScript). Merging
-/// nodes by line and fitness alone forgets what a limit's cost depends on,
-/// so a chain may break a limit another one keeps; a paragraph whose
-/// setting breaks one is set again with that state kept apart, which is
-/// exact but dearer. Returns the limits the breaks in `out` break, `None`
-/// when a longer setting found nothing.
+/// [`one`] under the document's stacks (`limited` in TypeScript, #1463).
+/// Merging nodes by line and fitness alone forgets what a stack's cost
+/// depends on, so the chain kept may set a stack another one avoids for
+/// less; a paragraph whose setting keeps a stack is set again with that
+/// state kept apart, which is exact but dearer, and gives up past
+/// `EXACT_MAX_ACTIVE` active nodes. The exact setting is taken when it has
+/// as many lines and costs less. `None` when a longer setting found
+/// nothing.
 fn limited(
     search: &mut Search,
     items: &Items,
@@ -67,16 +76,16 @@ fn limited(
     looseness: i32,
     longer: Option<Longer>,
     out: &mut Vec<u32>,
-) -> Option<u32> {
+) -> Option<Outcome> {
     let first = one(search, items, o, looseness, longer, false, out)?;
-    if first == 0 || o.rules.stack_badness.is_none() {
+    if first.stacks == 0 || o.rules.stack_demerits.is_none() {
         return Some(first);
     }
     let mut exact_breaks = Vec::new();
     match one(search, items, o, looseness, longer, true, &mut exact_breaks) {
-        Some(hard) if hard <= first => {
+        Some(exact) if exact_breaks.len() == out.len() && exact.demerits < first.demerits => {
             out.clone_from(&exact_breaks);
-            Some(hard)
+            Some(exact)
         }
         _ => Some(first),
     }
@@ -94,29 +103,37 @@ fn one(
     longer: Option<Longer>,
     exact_limits: bool,
     out: &mut Vec<u32>,
-) -> Option<u32> {
+) -> Option<Outcome> {
     out.clear();
     let ran = search.run(items, o, Pass { looseness, constrained: longer.is_some(), exact_limits });
+    // An exact search past its cap gives up.
+    if exact_limits && !ran {
+        return None;
+    }
     let last = items.len() as i32 - 1;
     let arena = &search.arena;
+    let outcome = |id: u32| {
+        let a = arena.get(id);
+        Outcome { stacks: a.stacks, demerits: a.total_demerits }
+    };
     if let Some(l) = longer {
         if !ran {
             return None;
         }
         let id = cheapest(arena, &search.active, |id| {
             let a = arena.get(id);
-            a.position == last && a.line as i64 == l.lines && a.hard <= l.max_hard
+            a.position == last && a.line as i64 == l.lines && a.stacks <= l.max_stacks
         })?;
         arena.trace(id, out);
-        return Some(arena.get(id).hard);
+        return Some(outcome(id));
     }
     let Some(mut best) = cheapest(arena, &search.active, |id| arena.get(id).position == last) else {
         return Some(match furthest(arena, &search.active) {
             Some(id) => {
                 arena.trace(id, out);
-                arena.get(id).hard
+                outcome(id)
             }
-            None => 0,
+            None => Outcome { stacks: 0, demerits: 0.0 },
         });
     };
     if looseness != 0 {
@@ -130,14 +147,14 @@ fn one(
                 && a.line as i64 == target
                 && (looseness < 0 || arena.within_stretch_limit(id))
                 && (!gate || (a.loosest <= loosest_allowed && a.ragged <= natural.ragged))
-                && a.hard <= natural.hard
+                && a.stacks <= natural.stacks
         });
         if let Some(id) = alternative {
             best = id;
         }
     }
     arena.trace(best, out);
-    Some(arena.get(best).hard)
+    Some(outcome(best))
 }
 
 /// The active node with the fewest demerits among those `keep` accepts;

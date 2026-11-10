@@ -5,7 +5,7 @@ use crate::adjust::{adjust_line, badness, fitness_class, ratio};
 use crate::constants::*;
 use crate::items::{ItemKind, Items, flag};
 use crate::node::{Arena, NONE, Node};
-use crate::options::Options;
+use crate::options::{Edge, Options, stack_weight};
 use crate::prefix::Prefix;
 use std::collections::HashMap;
 
@@ -18,7 +18,8 @@ pub(crate) struct Pass {
     /// instead of forcing a break.
     pub constrained: bool,
     /// Keys the nodes also by what a stack's next cost depends on: the
-    /// edge a node's line starts on (see `looseness::limited`).
+    /// edges of a node's line (see `looseness::limited`). Gives up past
+    /// [`EXACT_MAX_ACTIVE`] active nodes.
     pub exact_limits: bool,
 }
 
@@ -34,8 +35,8 @@ pub(crate) struct Search {
     slot_by_key: Vec<u32>,
     keys: Vec<u32>,
     /// The exact pass's keys: base key, start word and start characters
-    /// of the line.
-    slot_by_exact: HashMap<(u32, u32, u32), u32>,
+    /// of the line, and the bits of its end edge it holds.
+    slot_by_exact: HashMap<(u32, u32, u32, u32), u32>,
     avoid: Vec<bool>,
 }
 
@@ -46,7 +47,8 @@ pub(crate) fn gates_short(o: &Options, looseness: i32) -> bool {
 
 impl Search {
     /// Runs the search over `items`. Leaves the surviving nodes in
-    /// `active`; false when a constrained search ran out of nodes.
+    /// `active`; false when a constrained search ran out of nodes, or an
+    /// exact one passed [`EXACT_MAX_ACTIVE`] active nodes.
     pub fn run(&mut self, items: &Items, o: &Options, pass: Pass) -> bool {
         let n = items.len();
         let tracking = o.tracking_per_char > 0.0;
@@ -60,7 +62,7 @@ impl Search {
         };
         self.prefix.fill(items, tracking, gate_short, o.hyphenation_zone.is_some());
         let rules = &o.rules;
-        let stacks = rules.stack_badness;
+        let stacks = rules.stack_demerits;
         let exact = pass.exact_limits && stacks.is_some();
         let Search { prefix: p, arena, active, candidates, slot_by_key, keys, slot_by_exact, avoid } = self;
         arena.clear();
@@ -142,39 +144,26 @@ impl Search {
                 };
                 let tracking_cost =
                     if tracking_share > 0.0 { TRACKING_BADNESS * tracking_share * tracking_share } else { 0.0 };
-                // Stacks: this line and the one before end, or start, alike.
-                let mut stack_cost = 0.0;
-                let mut hard = 0;
-                if let Some(sb) = stacks
-                    && a.position >= 0
-                    && a.previous != NONE
-                {
-                    let stack_hard = if sb >= HARD_RULE_BADNESS { 1 } else { 0 };
-                    let mut charge = |word: u32, other: u32| {
-                        // A repeated monosyllable is a limit whatever the
-                        // stack penalty.
-                        if word == other && word & 1 != 0 {
-                            stack_cost += sb.max(HARD_RULE_BADNESS);
-                            hard += 1;
-                        } else {
-                            stack_cost += sb;
-                            hard += stack_hard;
-                        }
-                    };
-                    let pos = a.position as usize;
-                    let end_a = rules.end_word[i];
-                    let end_b = rules.end_word[pos];
-                    if edges_stack(end_a, end_b, rules.end_chars[i], rules.end_chars[pos]) {
-                        charge(end_a, end_b);
-                    }
-                    let before = (arena.get(a.previous).position + 1) as usize;
-                    let start_a = rules.start_word[pos + 1];
-                    let start_b = rules.start_word[before];
-                    if edges_stack(start_a, start_b, rules.start_chars[pos + 1], rules.start_chars[before]) {
-                        charge(start_a, start_b);
+                // Stacks (#1463): this line and the one before end, or start,
+                // alike, as far as each line holds its edges; demerits added
+                // as two hyphens in a row are.
+                let mut stack_demerits = 0.0;
+                let mut stacked = 0;
+                let mut line_start = Edge::default();
+                let mut line_end = Edge::default();
+                if let Some(sd) = stacks {
+                    line_start = rules.line_start(a.position, i);
+                    line_end = rules.line_end(a.position, i);
+                    if a.position >= 0 && a.previous != NONE {
+                        let before = arena.get(a.previous).position;
+                        let pos = a.position as usize;
+                        let at_end = stack_weight(line_end, rules.line_end(before, pos));
+                        let at_start = stack_weight(line_start, rules.line_start(before, pos));
+                        stack_demerits = sd * f64::from(at_end + at_start);
+                        stacked = u32::from(at_end > 0) + u32::from(at_start > 0);
                     }
                 }
-                let eff = badness(r) + over_stretch + runt_cost + column_end + stack_cost + tracking_cost;
+                let eff = badness(r) + over_stretch + runt_cost + column_end + tracking_cost;
                 let mut d = if pen >= 0.0 {
                     (1.0 + eff + pen) * (1.0 + eff + pen)
                 } else if pen > -KP_INFINITY {
@@ -185,6 +174,7 @@ impl Search {
                 if is_flagged && a.position >= 0 && items.is_flagged_penalty(a.position as usize) {
                     d += o.consecutive_hyphen_demerit;
                 }
+                d += stack_demerits;
                 let fc = fitness_class(r);
                 if (fc as i32 - a.fitness as i32).abs() > 1 {
                     d += o.fitness_class_demerit;
@@ -228,15 +218,14 @@ impl Search {
                     ragged: ragged_lines,
                     total_word_spaces: if gate_short { p.word_spaces[i + 1] } else { 0.0 },
                     total_word_space_width: if gate_short { p.word_space_width[i + 1] } else { 0.0 },
-                    hard: a.hard + hard,
+                    stacks: a.stacks + stacked,
                     previous: id,
                 };
                 if exact {
-                    let start = (a.position + 1) as usize;
                     offer_exact(
                         candidates,
                         slot_by_exact,
-                        (key, rules.start_word[start], rules.start_chars[start]),
+                        (key, line_start.word, line_start.chars, line_end.bits()),
                         node,
                     );
                 } else {
@@ -246,6 +235,11 @@ impl Search {
             active.truncate(keep);
             slot_by_exact.clear();
             commit(arena, active, candidates, slot_by_key, keys);
+            // The exact search gives up past its cap: the merged setting
+            // stands (#1463).
+            if exact && active.len() > EXACT_MAX_ACTIVE {
+                return false;
+            }
 
             // A forced break: no line may run past it.
             if is_penalty && pen <= -KP_INFINITY {
@@ -332,8 +326,8 @@ fn offer(candidates: &mut Vec<Node>, slot_by_key: &mut Vec<u32>, keys: &mut Vec<
 #[inline]
 fn offer_exact(
     candidates: &mut Vec<Node>,
-    slot_by_exact: &mut HashMap<(u32, u32, u32), u32>,
-    key: (u32, u32, u32),
+    slot_by_exact: &mut HashMap<(u32, u32, u32, u32), u32>,
+    key: (u32, u32, u32, u32),
     node: Node,
 ) {
     match slot_by_exact.get(&key) {
@@ -347,13 +341,6 @@ fn offer_exact(
             }
         }
     }
-}
-
-/// Whether the same edge of two consecutive lines stacks: the same word,
-/// or the same characters (`edgesStack`).
-#[inline]
-fn edges_stack(word_a: u32, word_b: u32, chars_a: u32, chars_b: u32) -> bool {
-    (word_a != 0 && word_a == word_b) || (chars_a != 0 && chars_a == chars_b)
 }
 
 /// A zoned syllable only breaks a word that does not fit the rest of the

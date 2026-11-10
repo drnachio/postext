@@ -14,6 +14,7 @@ import type { ListBulletStyle } from '../../text/lists.js';
 import type { ContentBlock } from '../../../parse/index.js';
 import type { TabSettings } from '../../../measure/tabs.js';
 import type { PreparedDropCap } from '../../text/dropCap.js';
+import { stackBreaking } from '../../text/stacks.js';
 
 /** What createMeasureOptions takes from the pass. */
 export interface MeasureOptionsDeps {
@@ -80,10 +81,9 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     // Left undefined when off, so the common-case cache keys stay unchanged.
     runtGraded: runtActive && resolved.bodyText.gradedRuntPenalty ? true : undefined,
-    // Stacks: left undefined when off, so the cache keys stay unchanged.
-    stacks: resolved.bodyText.avoidStacks
-      ? { minChars: resolved.bodyText.stackMinCharacters, badness: resolved.bodyText.stackPenalty }
-      : undefined,
+    // Stacks avoided (#1463): left undefined otherwise (`'warn'` reads
+    // them off the finished lines), so the cache keys stay unchanged.
+    stacks: stackBreaking(resolved.bodyText),
     avoidHyphenAtLines: opts?.avoidHyphenAtLines,
     ...(opts?.keepBreaks ? { keepBreaks: opts.keepBreaks } : {}),
     ...(opts?.restColumnWidths && opts.restColumnWidths.length > 0

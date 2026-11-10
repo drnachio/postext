@@ -67,8 +67,8 @@ export { applyCjkGrid, cjkGridGeometry, cjkGridCells, CHARACTER_GRID_COLOR, type
 export { balancingOnByDefault, avoidWidowsByDefault, avoidOrphansByDefault } from './pipeline/config.js';
 export { renderTemplateNumber } from './pipeline/resources/resourceNumbering.js';
 export type { ColumnRuleSegment } from './paint/columnRule.js';
-export { findLooseLines, drawLooseLines, lineLooseness, lineWordSpacing } from './checks/looseLines.js';
-export type { LooseLine, FindLooseLinesOptions, DrawLooseLinesOptions } from './checks/looseLines.js';
+export { findLooseLines, drawLooseLines, lineLooseness, lineWordSpacing, type LooseLine, type FindLooseLinesOptions, type DrawLooseLinesOptions } from './checks/looseLines.js';
+export { findStacks, type Stack, type StackRange, type FindStacksOptions } from './checks/stacks.js';
 export { primaryFontFamily } from './measure/font.js';
 export { buildFontString, setSymbolFont, symbolFont, measureBlock, measureRichBlock, measureGlyphWidth, initHyphenator, clearMeasurementCache, createMeasurementCache, cachedMeasureBlock, cachedMeasureRichBlock, setCjkLineBreak, getCjkLineBreak, setCjkComposition, getCjkComposition, cjkCompositionOf, punctuationAdvance, punctuationSide, PLAIN_CJK_COMPOSITION } from './measure/index.js';
 export type { CjkComposition, PunctuationSide } from './measure/index.js';
