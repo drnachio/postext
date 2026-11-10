@@ -1,0 +1,60 @@
+---
+title: "An amendment with deletions struck and insertions underlined"
+summary: "A comparative print of a copyright act: deleted words struck through, new words underlined, then the amended text in a box whose clauses hang."
+plain: "A short legislative print. It shows the old wording of a law with the removed words crossed out and the new words underlined, then the whole amended section in a shaded box."
+description: "A comparative print set in Postext: the old law with deletions struck through and insertions underlined, and the amended section in a box with hanging clauses."
+question: "How do I show an amendment with the deleted words struck through and the new words underlined?"
+aliases: ["redline", "blackline", "comparative print", "Ramseyer", "Cordon rule", "track changes", "amendment", "statute", "bill", "errata", "struck through", "underlined", "hanging clauses", "copyright term"]
+pageNotes: { "1": "The opener: a navy band with the kicker S. 505 · PUBLIC LAW 105-298 · OCTOBER 27, 1998, the title Changes in Existing Law and an italic standfirst; under it a legend with a red side rule, in which the words struck through are struck and the word underlined is underlined, the editor's note and the first two clauses of section 102(b), hung under a red top rule.", "2": "The rest of the bill's clauses, then section 302 of title 17 in the old wording: fifty struck through and 70 underlined beside it in subsections (a) and (b), seventy-five and one hundred struck with 95 and 120 underlined in subsection (c).", "4": "Section 302 as amended in a pale grey box: each subsection letter at the box's edge and its text and turnover lines hung 7 mm in, with small-capital catchlines." }
+---
+
+## What you'll build
+
+A committee print of the kind that goes out with a bill: five pages that show what section 102 of the Sonny Bono Copyright Term Extension Act of 1998 did to title 17 of the United States Code. The Act only says "strike 'fifty' and insert '70'"; this print sets the law as it stood with each change marked in place, deletions struck through and insertions underlined, the coding legend that federal and state drafters print over such texts, and then section 302 as amended in a tinted box, each subsection letter at the edge and its lines hung under the text. The Spanish edition does the same for the three reforms of the Spanish Constitution, published in the BOE in 1992, 2011 and 2024.
+
+## Method
+
+### 1 · Mark the change where it happens
+
+The code is [the short answer](#the-short-answer) above. The marks themselves are Markdown: `~~fifty~~ :underline[70]` strikes the old word and underlines the new one ([strikethrough](/en/docs/document-format-inline#strikethrough), [underline](/en/docs/document-format-inline#underline)). Neither line takes room, so a struck clause of six lines justifies and hyphenates like the text around it, and on page 3 the whole of the old subsection 304(b) is struck and its replacement underlined in one paragraph. Each line is drawn from the face's own strikeout and underline metrics, in the colour of the words, so the small capitals of a catchline get their own line at their own height.
+
+### 2 · Hang the clauses in the box
+
+`body.hangingIndent` on a box style hangs every paragraph of the box ([typography inside a box](/en/docs/configuration-callouts#typography-inside-a-box)): the first line starts at the box's inner edge and the turnovers 7 mm in. A tab stop at the same 7 mm takes the text after "(a)" or "(c)" to that edge whatever the width of the letter, so you write `(a):tab In General.—…` in the Markdown. The bill's own clauses and the amended section share the typography and differ only in their frame: a red rule over the bill, a tint behind the law in force. The bill's box may split (`keepTogether: false`), so page 1 ends on its first two clauses.
+
+### 3 · A band for the opener
+
+<Excerpt region="opener" />
+
+The navy band runs off the top and both sides of the page, and the kicker and the standfirst come from attributes on the heading line ([heading attributes](/en/docs/document-format#heading-attributes)). `minHeight` sets where the legend starts, a few millimetres under the band.
+
+### 4 · Running heads by parity
+
+<Excerpt region="running-heads" />
+
+The verso carries the print's title and the recto the part of the print the page opens in, read from the first second-level heading on it. `pages: 'body'` keeps them off the opener, which carries a drop folio instead.
+
+## Variations
+
+### Write insertions as `++text++`
+
+With `plusUnderline` on, `++70++` underlines like `:underline[70]`, the spelling Pandoc and markdown-it use for inserted text.
+
+```diff
+     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
++    plusUnderline: true, // ++text++ underlines; C++ in the text is then written C\+\+
+```
+
+### Keep the bill's clauses together
+
+Without `keepTogether: false` the box moves whole to page 2 and page 1 ends on the line that introduces it.
+
+```diff
+-    padding: pad(2.5, 0), body: clauses, keepTogether: false, // it may run on to the next page
++    padding: pad(2.5, 0), body: clauses,
+```
+
+## Pitfalls
+
+- A paragraph that opens with a number and a full stop (`2. Solamente…`) is read as a list item, and a backslash before the stop prints. The Spanish edition puts a word joiner (U+2060) between the digit and the stop in the running text, and in the box writes the tab straight after the stop, `1.:tab`, which no list marker matches.
+- Colour alone would not survive a photocopy, which is how such prints often travel; struck and underlined words read in black and white, which is why drafters chose them.

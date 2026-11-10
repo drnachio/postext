@@ -1,0 +1,59 @@
+---
+title: "Una modifica: il soppresso barrato, il nuovo sottolineato"
+summary: "Un testo a fronte di una legge sul diritto d’autore: il soppresso barrato, il nuovo sottolineato, poi il testo modificato in un riquadro con i commi a sporgere."
+plain: "Un breve stampato parlamentare. Mostra la vecchia formulazione di una legge con le parole tolte barrate e quelle nuove sottolineate, poi l’intera sezione modificata in un riquadro grigio."
+description: "Un testo a fronte composto con Postext: la vecchia legge con le soppressioni barrate e le aggiunte sottolineate, e la sezione modificata con i commi a sporgere."
+question: "Come mostro una modifica con le parole soppresse barrate e quelle aggiunte sottolineate?"
+aliases: ["testo a fronte", "testo coordinato", "revisioni", "emendamento", "legge", "disegno di legge", "errata corrige", "barrato", "sottolineato", "rientro sporgente", "durata del diritto d’autore"]
+---
+
+## Che cosa comporrai
+
+Uno stampato di commissione come quelli che accompagnano un progetto di legge: cinque pagine che mostrano che cosa la sezione 102 del Sonny Bono Copyright Term Extension Act del 1998 ha fatto al titolo 17 dello United States Code. La legge dice soltanto «sopprimere “fifty” e inserire “70”»; questo stampato compone la legge com’era, con ogni modifica segnata al suo posto, le soppressioni barrate e le aggiunte sottolineate, sotto la legenda che i redattori federali e statali stampano in testa a questi testi, e poi la sezione 302 modificata in un riquadro colorato, ogni lettera al margine e le sue righe a sporgere sotto il testo. L’edizione spagnola fa lo stesso con le tre riforme della Costituzione spagnola, pubblicate nel BOE nel 1992, nel 2011 e nel 2024.
+
+## Preparazione
+
+### 1 · Segnare la modifica dove avviene
+
+Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. I segni stanno nel Markdown: `~~fifty~~ :underline[70]` barra la parola vecchia e sottolinea la nuova ([barrato](/it/docs/document-format-inline#barrato), [sottolineato](/it/docs/document-format-inline#sottolineato)). Nessuna delle due linee occupa spazio: una clausola barrata di sei righe si giustifica e si sillaba come il testo che la circonda, e a pagina 3 tutta la vecchia sottosezione 304(b) è barrata e la sua sostituta sottolineata in un solo paragrafo. Ogni linea segue le misure di barratura e sottolineatura del carattere stesso, nel colore delle parole, così il maiuscoletto di una rubrica ha una linea sua alla sua altezza.
+
+### 2 · Le clausole a sporgere nel riquadro
+
+`body.hangingIndent` in uno stile di riquadro mette a sporgere tutti i paragrafi del riquadro ([tipografia in un riquadro](/it/docs/configuration-callouts#tipografia-in-un-riquadro)): la prima riga parte dal bordo interno e le successive 7 mm più in dentro. Un fermo di tabulazione agli stessi 7 mm porta il testo che segue «(a)» o «(c)» fino a quel bordo, qualunque sia la larghezza della lettera; nel Markdown si scrive quindi `(a):tab In General.—…`. Le clausole della legge e la sezione modificata condividono la tipografia e cambiano solo nella cornice: un filetto rosso sopra la legge, una tinta dietro il testo vigente. Il riquadro della legge può dividersi (`keepTogether: false`), così pagina 1 termina con le sue prime due clausole.
+
+### 3 · Una fascia per l’apertura
+
+<Excerpt region="opener" />
+
+La fascia blu notte esce al vivo in alto e sui due lati, e l’occhiello e il sommario vengono da attributi della riga del titolo ([attributi dei titoli](/it/docs/document-format#attributi-dei-titoli)). `minHeight` fissa dove comincia la legenda, pochi millimetri sotto la fascia.
+
+### 4 · Testatine secondo la parità
+
+<Excerpt region="running-heads" />
+
+La pagina pari porta il titolo dello stampato e la dispari la parte in cui si apre, letta dal primo titolo di secondo livello della pagina. `pages: 'body'` le tiene fuori dall’apertura, che porta invece un folio al piede.
+
+## Varianti
+
+### Scrivi le aggiunte come `++testo++`
+
+Con `plusUnderline` attivo, `++70++` sottolinea come `:underline[70]`, la grafia che Pandoc e markdown-it usano per il testo inserito.
+
+```diff
+     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
++    plusUnderline: true, // ++testo++ sottolinea; C++ nel testo si scrive allora C\+\+
+```
+
+### Tieni unite le clausole della legge
+
+Senza `keepTogether: false` il riquadro passa intero a pagina 2 e pagina 1 termina con la riga che lo introduce.
+
+```diff
+-    padding: pad(2.5, 0), body: clauses, keepTogether: false, // it may run on to the next page
++    padding: pad(2.5, 0), body: clauses,
+```
+
+## Errori frequenti
+
+- Un paragrafo che comincia con un numero e un punto (`2. Solamente…`) viene letto come una voce di elenco, e una barra rovesciata davanti al punto viene stampata. L’edizione spagnola mette un congiuntore di parole (U+2060) fra la cifra e il punto nel testo corrente e, nel riquadro, scrive la tabulazione subito dopo il punto, `1.:tab`, che nessun segno di elenco riconosce.
+- Il colore da solo non sopravvivrebbe a una fotocopia, e spesso questi stampati circolano così; barrato e sottolineato si leggono in bianco e nero, ed è per questo che i redattori li hanno scelti.

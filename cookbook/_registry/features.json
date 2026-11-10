@@ -10007,6 +10007,124 @@
       ]
     }
   },
+  "box-hanging-indent": {
+    "label": {
+      "en": "Hanging paragraphs in a box",
+      "es": "Párrafos con sangría francesa en un recuadro",
+      "ca": "Paràgrafs amb sagnat francès en un requadre",
+      "zh": "框内悬挂缩进的段落",
+      "ar": "فقرات معلَّقة داخل إطار",
+      "ja": "囲みの中のぶら下げ段落",
+      "pt": "Parágrafos com recuo deslocado em um boxe",
+      "fr": "Paragraphes en sommaire dans un encadré",
+      "de": "Hängende Absätze im Kasten",
+      "it": "Paragrafi a sporgere in un riquadro"
+    },
+    "definition": {
+      "en": "A box style's body.hangingIndent hangs every paragraph of the box: the marker, a number or a clause letter, starts at the box's inner edge and the text and its turnover lines stand a little further in, as clauses, notes and definitions are set.",
+      "es": "body.hangingIndent en un estilo de recuadro cuelga todos los párrafos del recuadro: la marca, un número o la letra de un apartado, empieza en el borde interior del recuadro y el texto y sus líneas siguientes quedan algo más adentro, como se componen cláusulas, notas y definiciones.",
+      "ca": "body.hangingIndent en un estil de requadre penja tots els paràgrafs del requadre: la marca, un número o la lletra d’un apartat, comença a la vora interior del requadre i el text i les línies següents queden una mica més endins, com es componen clàusules, notes i definicions.",
+      "zh": "框样式的 body.hangingIndent 让框内每个段落悬挂排列：标记（编号或条款字母）从框的内边开始，正文及其转行退进一点，就像条款、注释和定义的排法。",
+      "ar": "يعلّق body.hangingIndent في نمط الإطار كل فقرات الإطار: تبدأ العلامة، رقمًا أو حرف بند، عند الحافة الداخلية للإطار، ويقف النص وأسطره التالية أبعد قليلًا إلى الداخل، كما تُصفّ البنود والحواشي والتعريفات.",
+      "ja": "囲みスタイルの body.hangingIndent は、囲みの段落をすべてぶら下げにします。番号や項の記号は囲みの内側の端から始まり、本文と折り返しの行は少し内側にそろいます。条項・注・定義の組み方です。",
+      "pt": "body.hangingIndent em um estilo de boxe pendura todos os parágrafos do boxe: a marca, um número ou a letra de uma alínea, começa na borda interna do boxe e o texto e suas linhas seguintes ficam um pouco mais para dentro, como se compõem cláusulas, notas e definições.",
+      "fr": "body.hangingIndent dans un style d’encadré met tous les paragraphes de l’encadré en sommaire : la marque, un numéro ou la lettre d’un alinéa, part du bord intérieur de l’encadré, et le texte et ses lignes suivantes se tiennent un peu plus à l’intérieur, comme on compose des clauses, des notes et des définitions.",
+      "de": "body.hangingIndent in einem Kastenstil lässt jeden Absatz des Kastens hängen: Die Marke, eine Nummer oder der Buchstabe einer Klausel, beginnt am inneren Rand des Kastens, der Text und seine Folgezeilen stehen etwas weiter innen, wie man Klauseln, Anmerkungen und Definitionen setzt.",
+      "it": "body.hangingIndent in uno stile di riquadro mette a sporgere tutti i paragrafi del riquadro: il segno, un numero o la lettera di un comma, parte dal bordo interno del riquadro e il testo e le righe successive stanno un po’ più all’interno, come si compongono clausole, note e definizioni."
+    },
+    "aliases": {
+      "en": [
+        "body.hangingIndent",
+        "hanging indent",
+        "hanging clauses",
+        "numbered clauses",
+        "definitions box",
+        "notes under a table"
+      ],
+      "es": [
+        "body.hangingIndent",
+        "sangría francesa",
+        "apartados colgados",
+        "cláusulas numeradas",
+        "recuadro de definiciones"
+      ],
+      "ca": [
+        "body.hangingIndent",
+        "sagnat francès",
+        "apartats penjats",
+        "clàusules numerades",
+        "requadre de definicions"
+      ],
+      "zh": [
+        "body.hangingIndent",
+        "悬挂缩进",
+        "条款",
+        "编号条文",
+        "定义框"
+      ],
+      "ar": [
+        "body.hangingIndent",
+        "مسافة بادئة معلَّقة",
+        "بنود مرقَّمة",
+        "إطار التعريفات"
+      ],
+      "ja": [
+        "body.hangingIndent",
+        "ぶら下げインデント",
+        "条項",
+        "番号付きの項",
+        "定義の囲み"
+      ],
+      "pt": [
+        "body.hangingIndent",
+        "recuo deslocado",
+        "recuo francês",
+        "cláusulas numeradas",
+        "boxe de definições"
+      ],
+      "fr": [
+        "body.hangingIndent",
+        "alinéa en sommaire",
+        "retrait négatif",
+        "clauses numérotées",
+        "encadré de définitions"
+      ],
+      "de": [
+        "body.hangingIndent",
+        "hängender Einzug",
+        "nummerierte Klauseln",
+        "Definitionskasten"
+      ],
+      "it": [
+        "body.hangingIndent",
+        "rientro sporgente",
+        "paragrafo a sporgere",
+        "clausole numerate",
+        "riquadro delle definizioni"
+      ]
+    },
+    "group": "boxes",
+    "docs": {
+      "slug": "configuration-callouts",
+      "heading": {
+        "en": "Typography inside a box",
+        "es": "Tipografía dentro de un recuadro",
+        "ca": "Tipografia dins d'un requadre",
+        "zh": "框内的排版",
+        "ar": "التنسيق الطباعي داخل الإطار",
+        "ja": "囲みの中の文字組み",
+        "pt": "Tipografia dentro de um boxe",
+        "fr": "Typographie dans un encadré",
+        "de": "Typografie im Kasten",
+        "it": "Tipografia in un riquadro"
+      }
+    },
+    "detect": {
+      "config": [
+        "calloutStyles[].body.hangingIndent"
+      ]
+    }
+  },
   "resources": {
     "label": {
       "en": "Figures and tables as resources",
