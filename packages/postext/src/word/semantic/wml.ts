@@ -60,7 +60,10 @@ export interface RunProps {
   /** Size in half-points. */
   sz?: number;
   highlight?: string;
-  u?: boolean;
+  /** Underline: single, or a dotted or dashed line. */
+  u?: boolean | 'dotted' | 'dash';
+  /** A line round the run's characters. */
+  bdr?: Border;
   shd?: string;
   vertAlign?: 'superscript' | 'subscript';
   rtl?: boolean;
@@ -85,7 +88,8 @@ export function rPr(p: RunProps): string {
   if (p.spacing) x += `<w:spacing w:val="${Math.round(p.spacing)}"/>`;
   if (p.sz) x += `<w:sz w:val="${p.sz}"/><w:szCs w:val="${p.sz}"/>`;
   if (p.highlight) x += `<w:highlight w:val="${p.highlight}"/>`;
-  if (p.u) x += '<w:u w:val="single"/>';
+  if (p.u) x += `<w:u w:val="${p.u === true ? 'single' : p.u}"/>`;
+  if (p.bdr) x += `<w:bdr w:val="single" w:sz="${p.bdr.sz}" w:space="${p.bdr.space ?? 0}" w:color="${p.bdr.color}"/>`;
   if (p.shd) x += `<w:shd w:val="clear" w:color="auto" w:fill="${p.shd}"/>`;
   if (p.vertAlign) x += `<w:vertAlign w:val="${p.vertAlign}"/>`;
   if (p.rtl) x += '<w:rtl/>';
@@ -110,6 +114,11 @@ export interface ParaProps {
   numPr?: { numId: number; ilvl: number };
   border?: { top?: Border; left?: Border; bottom?: Border; right?: Border };
   shd?: string;
+  /** Tab stops: alignment (`left`/`right` read as start/end in a bidi
+   *  paragraph) and position in twips from the start margin. */
+  tabs?: { val: 'left' | 'right' | 'center'; pos: number; leader?: 'dot' }[];
+  /** Keep Word and LibreOffice from hyphenating the paragraph. */
+  suppressAutoHyphens?: boolean;
   /** Twips. */
   before?: number;
   after?: number;
@@ -118,6 +127,8 @@ export interface ParaProps {
   contextualSpacing?: boolean;
   jc?: 'left' | 'center' | 'right' | 'both' | 'start' | 'end';
   outlineLvl?: number;
+  /** `false` writes an explicit left-to-right paragraph (code in an RTL
+   *  book). */
   bidi?: boolean;
   /** `w:rPr` of the paragraph mark (already serialized). */
   markRPr?: string;
@@ -142,7 +153,9 @@ export function pPr(p: ParaProps): string {
     if (inner) x += `<w:pBdr>${inner}</w:pBdr>`;
   }
   if (p.shd) x += `<w:shd w:val="clear" w:color="auto" w:fill="${p.shd}"/>`;
-  if (p.bidi) x += '<w:bidi/>';
+  if (p.tabs?.length) x += `<w:tabs>${p.tabs.map((t) => `<w:tab w:val="${t.val}"${t.leader ? ` w:leader="${t.leader}"` : ''} w:pos="${Math.max(0, Math.round(t.pos))}"/>`).join('')}</w:tabs>`;
+  if (p.suppressAutoHyphens) x += '<w:suppressAutoHyphens/>';
+  if (p.bidi !== undefined) x += p.bidi ? '<w:bidi/>' : '<w:bidi w:val="0"/>';
   if (p.before !== undefined || p.after !== undefined || p.line) {
     let s = '';
     if (p.before !== undefined) s += ` w:before="${Math.max(0, Math.round(p.before))}"`;
@@ -162,7 +175,7 @@ export function pPr(p: ParaProps): string {
     else if (firstLine !== undefined) s += Math.round(firstLine) < 0 ? ` w:hanging="${-Math.round(firstLine)}"` : ` w:firstLine="${Math.round(firstLine)}"`;
     if (s) x += `<w:ind${s}/>`;
   }
-  if (p.contextualSpacing) x += '<w:contextualSpacing/>';
+  if (p.contextualSpacing !== undefined) x += p.contextualSpacing ? '<w:contextualSpacing/>' : '<w:contextualSpacing w:val="0"/>';
   if (p.jc) x += `<w:jc w:val="${p.jc}"/>`;
   if (p.outlineLvl !== undefined) x += `<w:outlineLvl w:val="${p.outlineLvl}"/>`;
   if (p.markRPr) x += p.markRPr;
@@ -205,13 +218,24 @@ export function fieldRuns(instr: string, result = '', props = ''): string {
   );
 }
 
+/** LibreOffice (26.8) refuses to load a document whose block content
+ *  control opens with a paragraph holding a footnote or endnote
+ *  reference; marked as a document part the same control loads (#1444). */
+const DOC_PART = '<w:docPartObj><w:docPartGallery w:val="Postext"/></w:docPartObj>';
+
+function notedFirstParagraph(content: string): boolean {
+  const end = content.indexOf('</w:p>');
+  const first = end < 0 ? content : content.slice(0, end);
+  return first.includes('<w:footnoteReference') || first.includes('<w:endnoteReference');
+}
+
 /** A content control around block content. `alias` is a short label; the
  *  tag carries the kind (Word keeps both, LibreOffice 7.5+ too). */
 export function blockSdt(id: number, tag: string, alias: string | undefined, content: string): string {
   const aliasXml = alias ? `<w:alias w:val="${escapeAttr(writable(alias).slice(0, 255))}"/>` : '';
   return (
     `<w:sdt><w:sdtPr>${aliasXml}<w:tag w:val="${escapeAttr(writable(tag).slice(0, 64))}"/><w:id w:val="${id}"/>` +
-    '<w15:appearance w15:val="hidden"/></w:sdtPr>' +
+    `<w15:appearance w15:val="hidden"/>${notedFirstParagraph(content) ? DOC_PART : ''}</w:sdtPr>` +
     `<w:sdtContent>${content}</w:sdtContent></w:sdt>`
   );
 }

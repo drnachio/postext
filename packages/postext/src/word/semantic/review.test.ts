@@ -18,7 +18,8 @@ const fields = (f: { target: { kind: string } }): string | undefined => {
   if (t.resourceId === 'w1') return wide.caption;
   return undefined;
 };
-const gridCols = (xml: string): number[] => [...xml.matchAll(/<w:tblW w:w="(\d+)"/g)].map((m) => Number(m[1]));
+// The grid width of each table, twips (the first column's: a box has one).
+const gridCols = (xml: string): number[] => [...xml.matchAll(/<w:tblGrid><w:gridCol w:w="(\d+)"/g)].map((m) => Number(m[1]));
 
 describe('semantic docx: review fixes', () => {
   it('logs a caption set above its table before the table cells (document order)', async () => {
@@ -74,6 +75,8 @@ describe('semantic docx: review fixes', () => {
     expect(inner).toBeLessThan(outer!);
     expect(innerTable).toBeLessThan(outer!);
     expect(topTable).toBeUndefined();
+    // Every table is as wide as the column or cell it stands in.
+    expect([...e.doc.matchAll(/<w:tblW [^>]*>/g)].map((m) => m[0])).toEqual(new Array(3).fill('<w:tblW w:w="5000" w:type="pct"/>'));
     const extents = [...e.doc.matchAll(/<wp:extent cx="(\d+)"/g)].map((m) => Number(m[1]));
     expect(extents).toHaveLength(2);
     expect(extents[0]).toBeLessThan(extents[1]!);

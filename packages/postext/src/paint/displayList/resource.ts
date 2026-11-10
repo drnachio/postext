@@ -10,6 +10,7 @@ import { tableCellFill } from '../../vdt/resourceTables.js';
 import { compose, mapRect, placeImage, placeShape, placeTable, placeText, rotationFrame, type Frame } from './frame.js';
 import { highlightRects, placeResourceLine, type LineStyle } from './lines.js';
 import { videoItems } from './overlays.js';
+import { figureLabelItems } from './labels.js';
 import { alignToSource, atomKind, segmentShownText, type Atom, type PaintedAtom } from './source.js';
 import type { BlockContext } from './blocks.js';
 import type { DisplayItem, DisplayLine, DisplayRect, DisplaySource } from './types.js';
@@ -125,6 +126,8 @@ function tableItem(rb: ResolvedResourceBlock, bx: number, by: number, ctx: Block
     borderColor: t.borderColor,
     borderWidthPx: t.strokes ? 0 : t.borderWidthPx,
   };
+  if (t.rules && t.rules !== 'booktabs' && t.rules !== 'grid') table.rules = t.rules;
+  if (t.frameRadii) table.frameRadii = [...t.frameRadii];
   // Cell highlight bands under the grid (a cell's own fill comes with the
   // table item), then the table.
   const items: DisplayItem[] = [...t.cells.flatMap((c) => highlightItems(c.lines, frame)), placeTable(frame, table)];
@@ -166,6 +169,8 @@ export function resourceItems(block: VDTBlock, ctx: BlockContext): DisplayItem[]
   } else if (rb.kind === 'table') {
     items.push(...tableItem(rb, bx, by, ctx, frame, key));
   }
+  // A figure's labels, over the picture (#860, #1444).
+  if (rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video') items.push(...figureLabelItems(rb, bx, by, frame, ctx));
   if (rb.captionBar) {
     const { rect, background } = rb.captionBar;
     items.push(placeShape(frame, { kind: 'rect', rect: { ...rect }, fill: background }));

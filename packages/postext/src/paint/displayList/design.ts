@@ -182,6 +182,7 @@ export function slotItems(slot: VDTDesignSlot, ctx: SlotContext): DisplayItem[] 
       case 'path': {
         const path: Extract<DisplayItem, { kind: 'path' }> = { kind: 'path', bbox: { ...block.bbox }, subpaths: block.subpaths };
         if (block.fill) path.fill = block.fill;
+        if (block.fillRule === 'evenodd') path.fillRule = 'evenodd';
         if (block.stroke) path.stroke = block.stroke;
         items.push(placeShape(ctx.frame, path));
         break;

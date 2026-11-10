@@ -5,11 +5,15 @@
 // export embeds fonts.
 
 import type { ResolvedConfig } from '../../vdt.js';
-import type { ResolvedCalloutStyleConfig, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../../types.js';
+import type { ColorValue } from '../../types.js';
+import type { ResolvedCalloutStyleConfig, ResolvedCaptionStyleConfig, ResolvedChipStyleConfig, ResolvedHeadingLevelConfig, TextAlign } from '../../types.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
+import { paleOnWhite } from './design/ink.js';
+import { captionLook, sameCaptionLook } from './prose/caption.js';
+import { paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
 
 /** Style ids the writer uses by name. */
@@ -41,7 +45,7 @@ const JC: Record<TextAlign, ParaProps['jc']> = { left: 'left', justify: 'both', 
 
 const slug = (s: string): string => s.replace(/[^A-Za-z0-9]/g, '') || 'X';
 
-interface StyleDef {
+export interface StyleDef {
   type: 'paragraph' | 'character';
   name: string;
   basedOn?: string;
@@ -56,6 +60,10 @@ interface StyleDef {
 export class StyleRegistry {
   private readonly defs = new Map<string, StyleDef>();
   private readonly byKey = new Map<string, string>();
+  private readonly chipIds = new Map<string, string>();
+  /** The face each paragraph style sets its text in (#1444). */
+  private readonly faces = new Map<string, { stack: string | undefined; weight: number; italic: boolean }>();
+  private readonly inks = new Map<string, { bold?: string; italic?: string }>();
   readonly bodyPx: number;
 
   constructor(
@@ -76,9 +84,65 @@ export class StyleRegistry {
     return { font: ref.family, ...(ref.bold ? { b: true } : {}), ...(ref.italic ? { i: true } : {}) };
   }
 
+  /**
+   * The family a bold or italic run of a paragraph style takes when its
+   * face lies in another Word family than the style's own (#1444): a Light
+   * body's italic is the 400 italic, filed under the regular family, as a
+   * browser picks it. Word would otherwise slant the Light upright or, in
+   * LibreOffice, set another family's italic. Nothing when the slot of the
+   * style's own family serves.
+   */
+  runFont(style: string | undefined, bold: boolean, italic: boolean): string | undefined {
+    if (!this.plan || (!bold && !italic)) return undefined;
+    const face = this.faces.get(style ?? STYLE.normal);
+    if (!face) return undefined;
+    const own = this.font(face.stack, face.weight, face.italic).font;
+    const weight = bold ? Math.max(face.weight, this.resolved.bodyText.boldFontWeight) : face.weight;
+    const styled = this.font(face.stack, weight, italic || face.italic).font;
+    return styled && styled !== own ? styled : undefined;
+  }
+
+  /** The colour a bold or italic run of a paragraph style takes when the
+   *  style sets one apart from its text (#1444): a key term in a box's
+   *  colour, as the engine paints `boldColor` and `italicColor`. */
+  runInk(style: string | undefined, bold: boolean, italic: boolean): string | undefined {
+    const ink = this.inks.get(style ?? STYLE.normal);
+    return (bold && ink?.bold) || (italic && ink?.italic) || undefined;
+  }
+
+  /** Record the emphasis colours of a style that differ from its text's. */
+  private ink(id: string, color: ColorValue | undefined, bold: ColorValue | undefined, italic: ColorValue | undefined): string {
+    const text = hex(color);
+    const differs = (c: ColorValue | undefined): string | undefined => (hex(c) && hex(c) !== text ? hex(c) : undefined);
+    const ink = { bold: differs(bold), italic: differs(italic) };
+    if (ink.bold || ink.italic) this.inks.set(id, ink);
+    return id;
+  }
+
+  /** The text size of a style, half-points: its own or the style's it is
+   *  based on, else the body's. */
+  styleSize(style: string | undefined): number {
+    for (let id = style, n = 0; id && n < 8; n++) {
+      const def = this.defs.get(id);
+      if (def?.rPr?.sz) return def.rPr.sz;
+      id = def?.basedOn;
+    }
+    return halfPoints(this.units, this.resolved.bodyText.fontSize);
+  }
+
+  private face(id: string, stack: string | undefined, weight = 400, italic = false): string {
+    this.faces.set(id, { stack, weight, italic });
+    return id;
+  }
+
   private add(id: string, def: StyleDef): string {
     if (!this.defs.has(id)) this.defs.set(id, def);
     return id;
+  }
+
+  /** The name of style `id` (what a STYLEREF field names). */
+  nameOf(id: string): string | undefined {
+    return this.defs.get(id)?.name;
   }
 
   /** A unique style id for a key (config ids may collide once slugged). */
@@ -98,7 +162,7 @@ export class StyleRegistry {
     const bodyPx = px(u, body.fontSize);
     const line = twips(u, body.lineHeight, bodyPx);
     const after = body.paragraphSpacing === false ? 0 : body.paragraphSpacing === true ? line : twips(u, body.paragraphSpacing, bodyPx);
-    this.add(STYLE.normal, {
+    this.add(this.ink(this.face(STYLE.normal, body.fontFamily, body.fontWeight), body.color, body.boldColor, body.italicColor), {
       type: 'paragraph',
       name: 'Normal',
       isDefault: true,
@@ -114,7 +178,7 @@ export class StyleRegistry {
     });
     for (const level of r.headings.levels) this.headingLevel(level);
     const bq = body.blockquote;
-    this.add(STYLE.quote, {
+    this.add(this.face(STYLE.quote, body.fontFamily, body.fontWeight, bq.italic), {
       type: 'paragraph',
       name: 'Quote',
       basedOn: STYLE.normal,
@@ -122,16 +186,17 @@ export class StyleRegistry {
       rPr: { i: bq.italic, color: hex(bq.color) },
     });
     const cap = r.captionStyle;
-    this.add(STYLE.caption, {
+    this.add(this.face(STYLE.caption, cap.fontFamily ?? body.fontFamily, cap.fontFamily ? 400 : body.fontWeight), {
       type: 'paragraph',
       name: 'caption',
       basedOn: STYLE.normal,
       next: STYLE.normal,
-      pPr: { before: twips(u, cap.gap, px(u, cap.fontSize)), ind: { firstLine: 0 }, jc: JC[cap.align] },
-      rPr: { ...this.font(cap.fontFamily), color: hex(cap.color), sz: halfPoints(u, cap.fontSize) },
+      ...captionLook(u, cap, line, this.font(cap.fontFamily)),
     });
     const lists = r.unorderedLists;
-    this.add(STYLE.list, {
+    // A list item's text is the body's: its italic and bold runs take the
+    // body's faces (#1444).
+    this.add(this.ink(this.face(STYLE.list, body.fontFamily, body.fontWeight), body.color, body.boldColor, body.italicColor), {
       type: 'paragraph',
       name: 'List Paragraph',
       basedOn: STYLE.normal,
@@ -139,7 +204,7 @@ export class StyleRegistry {
     });
     const fn = r.footnotes;
     const fnPx = px(u, fn.fontSize);
-    this.add(STYLE.footnoteText, {
+    this.add(this.ink(this.face(STYLE.footnoteText, body.fontFamily, body.fontWeight), fn.color, body.boldColor, body.italicColor), {
       type: 'paragraph',
       name: 'footnote text',
       basedOn: STYLE.normal,
@@ -151,18 +216,24 @@ export class StyleRegistry {
     const small = { sz: Math.max(2, Math.round(halfPoints(u, body.fontSize) * 0.85)) };
     this.add(STYLE.header, { type: 'paragraph', name: 'header', basedOn: STYLE.normal, pPr: { ind: { firstLine: 0 }, jc: 'center' }, rPr: small });
     this.add(STYLE.footer, { type: 'paragraph', name: 'footer', basedOn: STYLE.normal, pPr: { ind: { firstLine: 0 }, jc: 'center' }, rPr: small });
-    const mono = { font: 'Consolas' };
+    // Source the writer could not convert: a monospace face that Word,
+    // LibreOffice and Google Docs all have (Consolas is Windows only, and
+    // LibreOffice elsewhere falls back to a serif).
+    const mono = { font: 'Courier New' };
     this.add(STYLE.source, {
       type: 'paragraph',
       name: 'Postext Source',
       custom: true,
       basedOn: STYLE.normal,
-      pPr: { shd: 'EDEDED', before: 0, after: 0, line: { twips: 240, rule: 'auto' }, ind: { firstLine: 0 }, jc: 'left' },
+      pPr: { shd: 'EDEDED', suppressAutoHyphens: true, bidi: r.direction === 'rtl' ? false : undefined, before: 0, after: 0, line: { twips: 240, rule: 'auto' }, ind: { firstLine: 0 }, jc: 'left' },
       rPr: { ...mono, color: '595959', sz: Math.max(16, small.sz) },
     });
     this.add(STYLE.sourceChar, { type: 'character', name: 'Postext Source Char', custom: true, rPr: { ...mono, color: '595959', shd: 'EDEDED' } });
     this.add(STYLE.reference, { type: 'character', name: 'Postext Reference', custom: true, rPr: { color: hex(body.referenceColor), b: body.referenceBold || undefined, i: body.referenceItalic || undefined } });
-    this.add(STYLE.mark, { type: 'character', name: 'Postext Mark', custom: true, rPr: { highlight: 'yellow' } });
+    // The band of a mark as run shading in the mark style's colour:
+    // LibreOffice drops a highlight set in a character style.
+    const mark = r.markStyles?.[0];
+    this.add(STYLE.mark, { type: 'character', name: 'Postext Mark', custom: true, rPr: { color: hex(mark?.color), shd: hex(mark?.background) ?? 'FFF0A0' } });
     this.add(STYLE.chip, { type: 'character', name: 'Postext Chip', custom: true, rPr: { shd: 'E7E6E6' } });
     const code = resolvedCodeStyle(r);
     const codePx = px(u, code.fontSize, bodyPx);
@@ -173,6 +244,8 @@ export class StyleRegistry {
       basedOn: STYLE.normal,
       pPr: {
         shd: code.backgroundEnabled ? hex(code.background) : undefined,
+        suppressAutoHyphens: true,
+        bidi: r.direction === 'rtl' ? false : undefined,
         before: twips(u, code.marginTop, bodyPx),
         after: twips(u, code.marginBottom, bodyPx),
         line: code.lineHeight ? { twips: twips(u, code.lineHeight, codePx), rule: 'atLeast' } : undefined,
@@ -190,13 +263,88 @@ export class StyleRegistry {
     this.add(STYLE.boxTitle, { type: 'paragraph', name: 'Postext Box Title', custom: true, basedOn: STYLE.normal, pPr: { keepNext: true, ind: { firstLine: 0 } }, rPr: { b: true } });
   }
 
-  /** A paragraph style for table header cells: their bold and italic go
-   *  in a style, not on the runs, so the importer does not read them as
-   *  emphasis the user added. */
-  tableHeader(bold: boolean, italic: boolean): string {
-    const { id, fresh } = this.idFor(`th:${bold ? 'b' : ''}${italic ? 'i' : ''}`, 'PostextTableHeader', `${bold ? 'B' : ''}${italic ? 'I' : ''}`);
-    if (fresh) this.add(id, { type: 'paragraph', name: `Postext Table Header${id.slice('PostextTableHeader'.length)}`, custom: true, basedOn: STYLE.normal, rPr: { b: bold || undefined, i: italic || undefined } });
+  /** The alignment a paragraph style ends up with, through its `basedOn`
+   *  chain. */
+  jcOf(id: string | undefined): ParaProps['jc'] {
+    for (let k = 0, d = id ? this.defs.get(id) : undefined; d && k < 16; k++, d = d.basedOn ? this.defs.get(d.basedOn) : undefined) {
+      if (d.pPr?.jc) return d.pPr.jc;
+    }
+    return undefined;
+  }
+
+  /** Whether a paragraph style hangs its lines after the first (through
+   *  its `basedOn` chain). */
+  hangs(id: string | undefined): boolean {
+    for (let k = 0, d = id ? this.defs.get(id) : undefined; d && k < 16; k++, d = d.basedOn ? this.defs.get(d.basedOn) : undefined) {
+      if (d.pPr?.ind?.hanging !== undefined) return d.pPr.ind.hanging > 0;
+      if (d.pPr?.ind?.firstLine !== undefined) return false;
+    }
+    return false;
+  }
+
+  /** The caption style of a resource type whose caption style is not the
+   *  document's (a table captioned above, in its own size): one based on
+   *  `Caption`, made once per type. */
+  caption(cap: ResolvedCaptionStyleConfig, typeId: string): string {
+    if (sameCaptionLook(cap, this.resolved.captionStyle)) return STYLE.caption;
+    const u = this.units;
+    const line = twips(u, this.resolved.bodyText.lineHeight, px(u, this.resolved.bodyText.fontSize));
+    const look = captionLook(u, cap, line, this.font(cap.fontFamily));
+    const id = this.define(`caption:${typeId}`, 'PostextCaption', typeId, () => ({ type: 'paragraph', name: `Caption: ${typeId}`, custom: true, basedOn: STYLE.caption, next: STYLE.normal, ...look }));
+    return this.face(id, cap.fontFamily || this.resolved.bodyText.fontFamily, cap.fontFamily ? 400 : this.resolved.bodyText.fontWeight);
+  }
+
+  /** The character style of a chip style: its fill, ink and face. Style
+   *  ids never contain a word the importer reads as run formatting
+   *  (`bold`, `code`…), so a chip does not come back as an edit. */
+  chip(styleId: string | undefined): string {
+    const styles = this.resolved.chipStyles ?? [];
+    const cs = (styleId ? styles.find((s) => s.id === styleId) : undefined) ?? styles[0];
+    if (!cs) return STYLE.chip;
+    const known = this.chipIds.get(cs.id);
+    if (known) return known;
+    let id = `${STYLE.chip}${slug(cs.id)}`;
+    if (/strong|bold|emphasis|italic|smallcaps|superscript|subscript|code|verbatim/i.test(id) || this.defs.has(id)) id = `${STYLE.chip}${this.chipIds.size + 1}`;
+    this.chipIds.set(cs.id, id);
+    const u = this.units;
+    this.add(id, {
+      type: 'character',
+      name: `Postext Chip: ${cs.name || cs.id}`,
+      custom: true,
+      basedOn: STYLE.chip,
+      rPr: {
+        ...(cs.fontFamily ? this.font(cs.fontFamily, cs.bold ? 700 : 400, cs.italic) : {}),
+        b: cs.bold || undefined,
+        i: cs.italic || undefined,
+        color: hex(cs.color),
+        sz: cs.fontSize ? halfPoints(u, cs.fontSize, this.bodyPx) : undefined,
+        ...this.chipLine(cs),
+        // A white fill is the paper's: as run shading it would only show
+        // as a box over a shaded cell or band (#1444).
+        shd: cs.backgroundEnabled && hex(cs.background) !== 'FFFFFF' ? hex(cs.background) : 'auto',
+      },
+    });
     return id;
+  }
+
+  /** A style another module defines (the table styles, #1444): made once
+   *  per key, under a unique id of `prefix` and `name`. */
+  define(key: string, prefix: string, name: string, make: () => StyleDef): string {
+    const { id, fresh } = this.idFor(key, prefix, name);
+    if (fresh) this.add(id, make());
+    return id;
+  }
+
+  /** A chip's outline as Word draws a run's (#1444): a line round its
+   *  characters (Word has no rounded or circled run, so a round chip is a
+   *  square one), or the line under them of an underline chip. */
+  private chipLine(cs: ResolvedChipStyleConfig): Pick<RunProps, 'bdr' | 'u'> {
+    const u = this.units;
+    const pt = (px(u, cs.borderWidth, this.bodyPx) * 72) / u.dpi;
+    if (!(pt > 0)) return {};
+    if (cs.underline) return { u: cs.underline === 'solid' ? true : cs.underline === 'dashed' ? 'dash' : 'dotted' };
+    // Eighths of a point, in the range Word reads (2 to 96).
+    return { bdr: { color: hex(cs.borderColor) ?? 'auto', sz: Math.min(96, Math.max(2, Math.round(pt * 8))) } };
   }
 
   private headingProps(level: ResolvedHeadingLevelConfig, align: TextAlign): { pPr: ParaProps; rPr: RunProps } {
@@ -206,6 +354,7 @@ export class StyleRegistry {
       pPr: {
         keepNext: true,
         keepLines: true,
+        suppressAutoHyphens: true,
         before: twips(u, level.marginTop, size),
         after: twips(u, level.marginBottom, size),
         line: { twips: twips(u, level.lineHeight, size), rule: 'atLeast' },
@@ -218,7 +367,8 @@ export class StyleRegistry {
         b: level.fontWeight >= 600,
         i: level.italic,
         caps: level.textTransform === 'uppercase' || undefined,
-        color: hex(level.color),
+        // A heading the design sets in white on a band keeps the paper's ink.
+        color: paleOnWhite(hex(level.color)) ? undefined : hex(level.color),
         spacing: level.letterSpacing.value ? twips(u, level.letterSpacing, size) : undefined,
         sz: halfPoints(u, level.fontSize, this.bodyPx),
       },
@@ -228,6 +378,13 @@ export class StyleRegistry {
   private headingLevel(level: ResolvedHeadingLevelConfig): void {
     if (level.level < 1 || level.level > 6) return;
     const { pPr: p, rPr: r } = this.headingProps(level, this.resolved.headings.textAlign);
+    // A level that opens a page (chapters) keeps it in Word, so a heading
+    // the user adds there opens one too (#1444). The writer also starts a
+    // section at each such heading, for the side and the opener's header;
+    // a paragraph at the top of a new section's page breaks nothing more.
+    // The engine drops a heading's space above at the top of a page, where
+    // a heading that opens one always stands.
+    if (level.breakBefore.enabled) Object.assign(p, { pageBreakBefore: true, before: 0 });
     this.add(`Heading${level.level}`, { type: 'paragraph', name: `heading ${level.level}`, basedOn: STYLE.normal, next: STYLE.normal, pPr: p, rPr: r });
   }
 
@@ -245,10 +402,39 @@ export class StyleRegistry {
       if (levelConfig) {
         const merged = { ...levelConfig, ...hs.overrides } as ResolvedHeadingLevelConfig;
         const { pPr: p, rPr: r } = this.headingProps(merged, this.resolved.headings.textAlign);
+        // A style that opens a page (a cover, a half-title, a title page)
+        // keeps it in Word, so a run of such headings in one chapter does
+        // not pile up on one page (#1444). A chapter's first heading is at
+        // the top of its section's page already, where the break adds none.
+        // A style that does not break (a second article set under the end
+        // of the first) cancels its level's break.
+        const breaks = hs.breakBefore?.enabled ?? levelConfig.breakBefore.enabled;
+        if (breaks || levelConfig.breakBefore.enabled) p.pageBreakBefore = breaks;
+        if (breaks) p.before = 0;
         this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base, next: STYLE.normal, pPr: p, rPr: r });
       } else this.add(id, { type: 'paragraph', name: `Heading ${lv}: ${hs.name || hs.id}`, custom: true, basedOn: base });
     }
     return id;
+  }
+
+  /** Word's own style of a contents or index entry at `level` (1–9):
+   *  `toc N` / `index N`, the names Word applies when it updates the
+   *  field. A contents level takes its entry's look from the config
+   *  (#1444), its page-number tab (`endTwips`) and, by how its entries
+   *  are numbered, its number column; an index level is indented one step
+   *  further. */
+  listing(kind: 'toc' | 'index', level: number, endTwips?: number, numbering?: TocLevelNumbering): string {
+    const lv = Math.min(9, Math.max(1, level));
+    const id = kind === 'toc' ? `TOC${lv}` : `Index${lv}`;
+    if (this.defs.has(id)) return id;
+    const look = kind === 'toc' ? tocLevelLook(this.resolved, this.units, (f, w, i) => this.font(f, w, i), lv, endTwips, numbering) : { pPr: { before: 0, after: 0, ind: { left: lv * 240, hanging: 240 }, jc: 'left' as const } };
+    return this.add(id, { type: 'paragraph', name: `${kind} ${lv}`, basedOn: STYLE.normal, next: STYLE.normal, ...look });
+  }
+
+  /** Word's own style of an index letter head (`index heading`), bold and
+   *  a line above, set apart from the entries before. */
+  indexHeading(): string {
+    return this.add('IndexHeading', { type: 'paragraph', name: 'index heading', basedOn: STYLE.normal, next: 'Index1', pPr: { before: 240, after: 0, keepNext: true, ind: { firstLine: 0 }, jc: 'left' }, rPr: { b: true } });
   }
 
   /** The Word style of a named paragraph style (`:::paragraphs{style}`). */
@@ -256,35 +442,46 @@ export class StyleRegistry {
     const ps = this.resolved.paragraphStyles.find((s) => s.id === name || s.name === name);
     if (!ps) return undefined;
     const { id, fresh } = this.idFor(`para:${ps.id}`, 'PostextPara', ps.id);
-    if (fresh) this.add(id, this.paragraphDef(ps));
+    const look = (): StyleDef => ({ type: 'paragraph', name: ps.name || ps.id, custom: true, basedOn: STYLE.normal, ...paragraphStyleLook(this.units, this.bodyPx, (f, w, i) => this.font(f, w, i), ps) });
+    if (fresh) this.add(this.ink(this.face(id, ps.fontFamily, ps.fontWeight, ps.italic), ps.color, ps.boldColor ?? this.resolved.bodyText.boldColor, ps.italicColor ?? this.resolved.bodyText.italicColor), look());
     return id;
   }
 
-  private paragraphDef(ps: ResolvedParagraphStyleConfig): StyleDef {
-    const u = this.units;
-    const size = px(u, ps.fontSize, this.bodyPx);
-    return {
-      type: 'paragraph',
-      name: ps.name || ps.id,
-      custom: true,
-      basedOn: STYLE.normal,
-      pPr: {
-        before: twips(u, ps.marginTop, size),
-        after: twips(u, ps.spaceBetween, size),
-        line: { twips: twips(u, ps.lineHeight, size), rule: 'atLeast' },
-        ind: { left: twips(u, ps.indent, size), right: ps.endIndent ? twips(u, ps.endIndent, size) : undefined, firstLine: twips(u, ps.firstLineIndent, size), hanging: twips(u, ps.hangingIndent, size) || undefined },
-        jc: JC[ps.textAlign],
-      },
-      rPr: {
-        ...this.font(ps.fontFamily, ps.fontWeight, ps.italic),
-        i: ps.italic,
-        smallCaps: ps.smallCaps || undefined,
-        caps: ps.textTransform === 'uppercase' || undefined,
-        color: hex(ps.color),
-        spacing: ps.letterSpacing ? twips(u, ps.letterSpacing, size) : undefined,
-        sz: halfPoints(u, ps.fontSize, this.bodyPx),
-      },
-    };
+  /** The list paragraph style of a box's text style (#1444): its items
+   *  set in the box's face, size, leading and colour, as the engine sets
+   *  a list in a box, not in the body's. */
+  boxList(body: string): string {
+    if (body === STYLE.normal || !this.defs.has(body)) return STYLE.list;
+    const { id, fresh } = this.idFor(`list:${body}`, 'PostextList', body.replace(/^Postext/, ''));
+    if (!fresh) return id;
+    const face = this.faces.get(body);
+    if (face) this.faces.set(id, face);
+    const ink = this.inks.get(body);
+    if (ink) this.inks.set(id, ink);
+    return this.add(id, { type: 'paragraph', name: `List: ${this.defs.get(body)!.name}`, custom: true, basedOn: body, pPr: { contextualSpacing: true, ind: { firstLine: 0 } } });
+  }
+
+  /** The leading of a paragraph style, twips: its own or the style's it is
+   *  based on (Normal's at the end of the chain). */
+  lineOf(style: string | undefined): number | undefined {
+    for (let id = style ?? STYLE.normal, n = 0; id && n < 8; n++) {
+      const def = this.defs.get(id);
+      if (def?.pPr?.line) return def.pPr.line.twips;
+      id = def?.basedOn ?? (id === STYLE.normal ? '' : STYLE.normal);
+    }
+    return undefined;
+  }
+
+  /** A paragraph style of the writer's own, made once per `key` (a heading
+   *  design's text, a box's label tab): `make` gives its look. */
+  custom(key: string, name: string, make: () => { basedOn?: string; pPr?: ParaProps; rPr?: RunProps }): string {
+    const { id, fresh } = this.idFor(`custom:${key}`, 'Postext', name);
+    // Two looks of one element (sizes fitted to different titles) get ids
+    // …title and …title2; the names differ the same way, since LibreOffice
+    // keys styles by name and would merge them.
+    const n = id.slice(`Postext${slug(name)}`.length);
+    if (fresh) this.add(id, { type: 'paragraph', name: `Postext ${name}${n ? ` ${n}` : ''}`, custom: true, basedOn: STYLE.normal, next: STYLE.normal, ...make() });
+    return id;
   }
 
   /** The box style named by a callout's `type`. */
@@ -303,12 +500,18 @@ export class StyleRegistry {
     if (body.fresh) {
       const size = px(u, b.fontSize, this.bodyPx);
       const after = b.paragraphSpacing === false ? 0 : b.paragraphSpacing === true ? twips(u, b.lineHeight, size) : twips(u, b.paragraphSpacing, size);
-      this.add(body.id, {
+      this.add(this.ink(this.face(body.id, b.fontFamily, b.fontWeight, b.italic), b.color, b.boldColor ?? this.resolved.bodyText.boldColor, b.italicColor ?? this.resolved.bodyText.italicColor), {
         type: 'paragraph',
         name: `Box: ${style.name || style.id}`,
         custom: true,
         basedOn: STYLE.normal,
-        pPr: { after, line: { twips: twips(u, b.lineHeight, size), rule: 'atLeast' }, ind: { firstLine: twips(u, b.firstLineIndent, size) }, jc: b.textAlign === 'justify' ? 'both' : 'left' },
+        pPr: {
+          suppressAutoHyphens: !b.hyphenation || undefined,
+          after,
+          line: { twips: twips(u, b.lineHeight, size), rule: 'atLeast' },
+          ind: { firstLine: twips(u, b.firstLineIndent, size) },
+          jc: b.textAlign === 'justify' ? 'both' : 'left',
+        },
         rPr: {
           ...this.font(b.fontFamily, b.fontWeight, b.italic),
           i: b.italic,
@@ -327,7 +530,7 @@ export class StyleRegistry {
         name: `Box title: ${style.name || style.id}`,
         custom: true,
         basedOn: STYLE.boxTitle,
-        pPr: { after: twips(u, t.gap, size), line: { twips: twips(u, t.lineHeight, size), rule: 'atLeast' }, ind: { left: twips(u, t.indent, size), firstLine: 0 } },
+        pPr: { suppressAutoHyphens: true, after: twips(u, t.gap, size), line: { twips: twips(u, t.lineHeight, size), rule: 'atLeast' }, ind: { left: twips(u, t.indent, size), firstLine: 0 } },
         rPr: {
           ...this.font(t.fontFamily, t.fontWeight, t.italic),
           b: t.fontWeight >= 600,
@@ -344,7 +547,11 @@ export class StyleRegistry {
 
   docDefaults(lang: string | undefined): string {
     const l = lang ? `<w:lang w:val="${escapeAttr(lang)}" w:eastAsia="${escapeAttr(lang)}" w:bidi="${escapeAttr(lang)}"/>` : '';
-    return `<w:docDefaults><w:rPrDefault><w:rPr>${l}</w:rPr></w:rPrDefault><w:pPrDefault><w:pPr/></w:pPrDefault></w:docDefaults>`;
+    // Vertical text keeps no widow or orphan control: Word applies none
+    // unless asked, while LibreOffice applies it by default and, in a
+    // tbRl section, drops the lines it moves to the next page (#1444).
+    const p = this.resolved.layout.writingMode === 'vertical-rl' ? '<w:pPr><w:widowControl w:val="0"/></w:pPr>' : '<w:pPr/>';
+    return `<w:docDefaults><w:rPrDefault><w:rPr>${l}</w:rPr></w:rPrDefault><w:pPrDefault>${p}</w:pPrDefault></w:docDefaults>`;
   }
 
   /** The `w:style` elements (after `w:docDefaults`). */

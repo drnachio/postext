@@ -66,6 +66,9 @@ export interface DisplayRun {
    *  border and padding), for writers that set the text themselves. */
   padStart?: number;
   padEnd?: number;
+  /** A blank's answer (`:chip` with `blank`, #1227): it takes its room
+   *  on the line but is never painted. */
+  blank?: true;
   /** Embedded non-text content drawn in place of the run. */
   inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch };
   /** The run is a ruby base (#1394, `VDTLineSegment.ruby`): its reading. */
@@ -139,6 +142,9 @@ export interface DisplayRuby {
   /** Distance from the base's baseline to the reading's, px (positive:
    *  over the base, the right of vertical text). */
   raise?: number;
+  /** The reading as painted, placed from the run (a Japanese reading
+   *  spread one run per character). */
+  runs?: DisplayAnnotation[];
 }
 
 export interface DisplayKunten {
@@ -199,10 +205,14 @@ export type DisplayItem =
       blockType?: string;
       /** Clip rectangle the backend applies (columns clip their blocks). */
       clip?: DisplayRect;
+      /** A halo round the glyphs (a figure label on a busy picture, a
+       *  comic's sound effect): the glyphs stroked `widthPx` out from
+       *  their outline in `color`, under the text. */
+      halo?: { color: string; widthPx: number };
     }
   | { kind: 'rule'; x1: number; y1: number; x2: number; y2: number; color: string; widthPx: number; dash?: number[] }
   | { kind: 'rect'; rect: DisplayRect; fill?: string; stroke?: string; strokeWidthPx?: number; radius?: number; rotate?: number; box?: VDTDesignBoxStyle }
-  | { kind: 'path'; bbox: DisplayRect; subpaths: VDTPathCommand[][]; fill?: string; stroke?: VDTPathStroke }
+  | { kind: 'path'; bbox: DisplayRect; subpaths: VDTPathCommand[][]; fill?: string; fillRule?: 'nonzero' | 'evenodd'; stroke?: VDTPathStroke }
   | {
       kind: 'image';
       rect: DisplayRect;
@@ -227,6 +237,13 @@ export type DisplayItem =
       cells: { row: number; col: number; rowSpan: number; colSpan: number; rect: DisplayRect; background?: string; align?: string; verticalAlign?: string; item: Extract<DisplayItem, { kind: 'text' }> | null; image?: Extract<DisplayItem, { kind: 'image' }> }[];
       borderColor?: string;
       borderWidthPx?: number;
+      /** Which edges the border strokes, as the PDF draws them: every cell
+       *  edge (`'grid'`, the default), the row edges (`'horizontal'`), the
+       *  table's frame (`'outer'`) or none. */
+      rules?: 'grid' | 'horizontal' | 'outer' | 'none';
+      /** Radii of a rounded frame (top left, top right, bottom right,
+       *  bottom left), px: the fills are clipped to it and it is stroked. */
+      frameRadii?: [number, number, number, number];
     };
 
 export interface DisplayPage {

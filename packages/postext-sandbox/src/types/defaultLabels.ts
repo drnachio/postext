@@ -5368,6 +5368,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   wordExportSemanticHint: "Word styles, lists, notes and tables built from the text: for writing and correcting.",
   wordExportFormatted: "Formatted",
   wordExportFormattedHint: "Every page as the PDF prints it, with the book's fonts: for checking the layout.",
+  wordExportPagesSuggested: "Most of what you export is composed or comic pages, which a semantic document only stands in for: Formatted keeps them as printed.",
   wordExportLaying: "Laying out chapter __current__ of __total__…",
   wordExportFonts: "Preparing font __current__ of __total__…",
   wordExportPages: "Writing page __current__ of __total__…",

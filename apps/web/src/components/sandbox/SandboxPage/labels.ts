@@ -5357,6 +5357,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     wordExportSemanticHint: t("wordExportSemanticHint"),
     wordExportFormatted: t("wordExportFormatted"),
     wordExportFormattedHint: t("wordExportFormattedHint"),
+    wordExportPagesSuggested: t("wordExportPagesSuggested"),
     wordExportLaying: t("wordExportLaying"),
     wordExportFonts: t("wordExportFonts"),
     wordExportPages: t("wordExportPages"),

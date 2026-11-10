@@ -10,7 +10,7 @@
  * @module
  */
 
-export { semanticDocx, SEMANTIC_ENGINE, SEMANTIC_STYLE } from './semantic/index.js';
+export { semanticDocx, SEMANTIC_ENGINE, SEMANTIC_STYLE, preferredWordVariant } from './semantic/index.js';
 export type { SemanticDocxOptions, WordChapterInput, SemanticWarning } from './semantic/index.js';
 export { formattedDocx, FORMATTED_ENGINE } from './formatted/index.js';
 export type { FormattedDocxOptions, FormattedWarning } from './formatted/index.js';

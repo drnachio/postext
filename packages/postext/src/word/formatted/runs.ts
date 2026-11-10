@@ -15,12 +15,15 @@
 // East Asian runs (eastAsian.ts, #1394).
 
 import { parseFontString } from '../../measure/fontString.js';
+import { CHIP_PLACEHOLDER } from '../../parse/inlineFormatting.js';
 import type { DisplayLine, DisplayRun } from '../../paint/displayList/types.js';
 import { escapeAttr } from '../xml.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { fontSizePx, measureEms } from './metrics.js';
 import { faceStyleId } from './styles.js';
-import { eastAsianLayout, kuntenOf, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
+import { symbolPieces } from './symbols.js';
+import { LIGATURE, LIGATURE_MIN_PT, ligaturePieces, ligatureSpans } from './ligatures.js';
+import { eastAsianLayout, kuntenOf, rubyAnnotations, rubyXml, textRun, verticalPieces, type Annotation } from './eastAsian.js';
 import { halfPoints, textColorHex, twips } from './units.js';
 import type { WriterContext } from './types.js';
 
@@ -45,20 +48,21 @@ const JUSTIFY_ROOM_TW = 1;
  *  marks): their runs are not measured. */
 const COMPLEX = /[\u0600-\u08ff\ufb50-\ufdff\ufe70-\ufeff\u0900-\u0dff\u0f00-\u0fff\u1000-\u109f\u1780-\u17ff\u1800-\u18af\p{M}\u200c\u200d]/u;
 const BLANK = /^[ \u00a0\u2000-\u200a\u202f\u205f\u3000]+$/;
-/** Pairs a face may set as one ligature: a run boundary between them
- *  makes LibreOffice draw the ligature and the second letter again. */
-const LIGATURE = /^(?:f\p{L}|Th)$/u;
 /** Word's font size range, half-points (1 pt to 1638 pt). */
 export const MIN_SZ = 2;
 export const MAX_SZ = 3276;
 
 /** Text as Word can hold it, one UTF-16 unit for one: characters XML 1.0
  *  forbids (C0 controls, U+FFFE/U+FFFF) and unpaired surrogates become
- *  U+FFFD, line ends and tabs spaces. `escapeXml` would drop the first
+ *  U+FFFD, line ends and tabs spaces, and the engine's stand-in for an
+ *  empty chip (`CHIP_PLACEHOLDER`, a private-use character no face draws)
+ *  a no-break space, its box drawn under it. `escapeXml` would drop the first
  *  ones, and a '\n' in the text would read as an engine break, so the
  *  fragment text would no longer match what the bookmark holds. */
 export function wordText(text: string): string {
-  return text.replace(/[\t\n\r]|[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, (c) => (c === '\t' || c === '\n' || c === '\r' ? ' ' : '\ufffd'));
+  return text.replace(/[\t\n\r\ue1a0]|[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]|[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/g, (c) =>
+    c === '\t' || c === '\n' || c === '\r' ? ' ' : c === CHIP_PLACEHOLDER ? HOLDER : '\ufffd',
+  );
 }
 
 export interface ResolvedFont {
@@ -147,6 +151,11 @@ export interface RunPropsOptions {
   /** An atom's holder: marked w:noProof, which the importer reads to tell
    *  it from a typed no-break space (both are U+00A0). */
   holder?: boolean;
+  /** The run's spacing is fitted from its face's advances, which leave
+   *  kerning out: pair kerning stays off (`w:kern` 0), else Word and
+   *  LibreOffice kern a pair the fit already closed up and set the line
+   *  short of the engine's (answer bubbles left behind their letters). */
+  fitted?: boolean;
 }
 
 /** `w:rPr` of a run (CT_RPr child order), cached per distinct style. */
@@ -156,7 +165,7 @@ export function runProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOpti
   let cache = propsCache.get(ctx);
   if (!cache) propsCache.set(ctx, (cache = new Map()));
   // The font string carries a feature family's features (numForm).
-  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
+  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}${opts.fitted ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
   let props = cache.get(key);
   if (props === undefined) {
     props = buildRunProps(ctx, run, opts);
@@ -185,7 +194,7 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOption
   if (opts.spacing) p.push(`<w:spacing w:val="${opts.spacing}"/>`);
   const scale = opts.scale ?? f.scale;
   if (scale && scale !== 100) p.push(`<w:w w:val="${scale}"/>`);
-  p.push('<w:kern w:val="1"/>');
+  p.push(`<w:kern w:val="${opts.fitted ? 0 : 1}"/>`);
   // A shifted run carries its own (already reduced) size: raise it by the
   // shift; a bare script asks Word for its super/subscript.
   const shift = run.baselineShift ? Math.round(halfPoints(run.baselineShift, ctx.dpi)) : 0;
@@ -214,12 +223,24 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOption
 export interface FitSpacing {
   each: number;
   extra: number;
+  /** Twips the floor left out, for the next run of the line. */
+  rest?: number;
 }
 
-export function fitSpacing(ctx: WriterContext, widthPx: number, naturalTw: number, count: number): FitSpacing {
-  const total = Math.floor((widthPx * 1440) / ctx.dpi - naturalTw + 1e-6);
+/** What the runs of a line fitted so far left out to whole twips. Each
+ *  run is floored on its own; carried on, the losses no longer add up
+ *  along a line (a line of thirty runs ended a point and a half short,
+ *  and answer bubbles placed by the engine overlapped the words after
+ *  them, #1444), and the line is still never wider than the engine's. */
+export interface FitCarry {
+  tw: number;
+}
+
+export function fitSpacing(ctx: WriterContext, widthPx: number, naturalTw: number, count: number, carry?: FitCarry): FitSpacing {
+  const exact = (widthPx * 1440) / ctx.dpi - naturalTw + (carry?.tw ?? 0);
+  const total = Math.floor(exact + 1e-6);
   const each = Math.floor(total / count);
-  return { each, extra: total - each * count };
+  return { each, extra: total - each * count, rest: Math.max(0, Math.min(1, exact - total)) };
 }
 
 /** Natural advance (twips) of `text` in the Word face and size of
@@ -267,7 +288,7 @@ function blankFace(run: DisplayRun, line: DisplayLine): string {
 const clampSpacing = (tw: number): number => Math.max(-MAX_SPACING, Math.min(MAX_SPACING, tw));
 
 /** Pieces of `text` spaced by `fit`, the last character `gapTw` wider. */
-function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: FitSpacing, gapTw: number, rtl: boolean, more: Pick<RunPropsOptions, 'scale' | 'holder'> = {}): RunPiece[] {
+function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: FitSpacing, gapTw: number, rtl: boolean, more: Pick<RunPropsOptions, 'scale' | 'holder' | 'fitted'> = {}): RunPiece[] {
   const chars = Array.from(text);
   const out: RunPiece[] = [];
   const push = (from: number, to: number, spacing: number): void => {
@@ -299,7 +320,7 @@ function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: Fi
 const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
 
 /** A run that may join its neighbour: plain text, no blank or tab. */
-const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.padStart && !r.padEnd && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
+const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.blank && !r.padStart && !r.padEnd && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
 
 /** Letters of the alphabetic scripts a word of which hyphenation splits
  *  into runs (CJK runs stay apart: compressed punctuation is its own). */
@@ -332,6 +353,28 @@ function piecesOut(pieces: RunPiece[]): Pick<EmittedRun, 'rPr' | 'text' | 'piece
   return pieces.length === 1 ? { rPr: pieces[0]!.rPr, text } : { rPr: pieces[0]!.rPr, text, pieces };
 }
 
+/** A gap between two runs kept as room, px. */
+const GAP_MIN = 0.5;
+
+/** Room before the next run of the same direction, per run (px; runs
+ *  set apart, a number flush right). Vertical runs go by x too, along
+ *  the line in the item's unturned frame. */
+export function runGaps(line: DisplayLine): number[] {
+  const gaps = line.runs.map(() => 0);
+  const rtl = line.rtl === true;
+  let prev = -1;
+  line.runs.forEach((r, i) => {
+    if (r.text.length === 0) return;
+    const p = line.runs[prev];
+    if (p && (p.rtl === true) === rtl && (r.rtl === true) === rtl) {
+      const gap = rtl ? p.x - (r.x + r.width) : r.x - (p.x + p.width);
+      if (gap > GAP_MIN) gaps[prev] = gap;
+    }
+    prev = i;
+  });
+  return gaps;
+}
+
 /** Px of a chip's padding that run `i` of `line` keeps out of its words:
  *  `before` is carried by the run before it, `after` by its own last
  *  character (left to right only; a chip that starts the line keeps it). */
@@ -342,11 +385,34 @@ export function padsOf(line: DisplayLine, i: number): { before: number; after: n
   return { before: prev ? (run.padStart ?? 0) : 0, after: run.padEnd ?? 0 };
 }
 
+/** The chip that opens a left-to-right line, when the line's measure can
+ *  leave its padding out (`edges` in paragraphs.ts) so that its words sit
+ *  inside its box, not at its edge (an answer bubble's letter, an
+ *  exercise number's badge): the line's only run (`lone`, any
+ *  alignment), or its first on a line set flush left or justified. */
+export function leadChip(line: DisplayLine): { run: DisplayRun; lone: boolean } | undefined {
+  if (line.vertical || line.rtl) return undefined;
+  const runs = line.runs.filter((r) => r.text.length > 0);
+  const run = runs[0];
+  if (!run || run.inline?.kind !== 'chip' || run.rtl) return undefined;
+  if (runs.length === 1) return run.padStart || run.padEnd ? { run, lone: true } : undefined;
+  return (line.align === 'left' || line.align === 'justify') && run.padStart ? { run, lone: false } : undefined;
+}
+
 /** The line with each chip run's padding taken out of its width and added
  *  to the gap after the run that carries it (`gaps` per run). */
 export function unpadded(line: DisplayLine, gaps: readonly number[]): { line: DisplayLine; gaps: number[] } {
   const out = [...gaps];
+  const lead = leadChip(line);
   const runs = line.runs.map((r, i) => {
+    if (r === lead?.run) {
+      // The padding before it is outside its paragraph's measure; a lone
+      // chip's padding after it too (no gap to keep).
+      const before = r.padStart ?? 0;
+      const after = r.padEnd ?? 0;
+      if (!lead.lone) out[i] = (out[i] ?? 0) + after;
+      return { ...r, x: r.x + before, width: Math.max(0, r.width - before - after) };
+    }
     const { before, after } = padsOf(line, i);
     if (!before && !after) return r;
     out[i] = (out[i] ?? 0) + after;
@@ -359,24 +425,37 @@ export function unpadded(line: DisplayLine, gaps: readonly number[]): { line: Di
 /** A run's properties, what it writes and anything to draw over it.
  *  `gapPx` is room after the run before the next one starts (a number set
  *  flush right): the last character carries it. */
-export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, gapPx = 0): EmittedRun {
+export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, gapPx = 0, carry?: FitCarry): EmittedRun {
   const justified = line.align === 'justify';
   const rtl = run.rtl === true;
   const n = run.text.length;
   if (n === 0) return { rPr: '', text: '' };
   const gapTw = gapPx > 0 ? Math.floor((gapPx * 1440) / ctx.dpi) : 0;
+  // A blank's answer is laid out, never painted (#1227): its room is
+  // written as no-break spaces, one per character so the export map still
+  // pairs each with the answer's source (a word typed over them replaces
+  // the answer). Not holders: no atom stands behind them.
+  const commit = (fit: FitSpacing): FitSpacing => {
+    if (carry) carry.tw = fit.rest ?? 0;
+    return fit;
+  };
+  if (run.blank) {
+    const text = HOLDER.repeat(n);
+    return { ...piecesOut(spacedPieces(ctx, run, text, commit(fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n, carry)), gapTw, rtl)) };
+  }
   // Content with a width of its own: no-break spaces spaced out.
   const fixed = run.inline !== undefined && run.inline.kind !== 'chip' ? true : /^\t+$/.test(run.text);
   if (fixed) {
     const text = HOLDER.repeat(n);
-    const out: EmittedRun = { ...piecesOut(spacedPieces(ctx, run, text, fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n), gapTw, rtl, { holder: run.inline !== undefined })) };
+    const out: EmittedRun = { ...piecesOut(spacedPieces(ctx, run, text, commit(fitSpacing(ctx, run.width, holderTwips(ctx, run.fontString) * n, n, carry)), gapTw, rtl, { holder: run.inline !== undefined })) };
     const inl = run.inline;
     if (inl && (inl.svg || inl.kind === 'swatch')) {
       const ascent = inl.ascentPx ?? inl.heightPx * 0.8;
       out.drawing = {
         kind: inl.kind,
         ...(inl.svg ? { svg: inl.svg } : {}),
-        ...(inl.kind === 'swatch' ? { color: inl.swatch?.color ?? run.color } : {}),
+        // A swatch's fill, or the ink an SVG's `currentColor` stands for.
+        ...(inl.kind === 'swatch' ? { color: inl.swatch?.color ?? run.color } : run.color ? { color: run.color } : {}),
         rect: { x: run.x, y: line.baseline - (run.baselineShift ?? 0) - ascent, width: inl.widthPx, height: inl.heightPx },
       };
     }
@@ -386,7 +465,7 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
   // A blank run sets in its neighbour's face (its own emphasis flags stay).
   const r: DisplayRun = blank ? { ...run, fontString: blankFace(run, line) } : run;
   const text = wordText(run.text);
-  let fit = measurable(ctx, r, line, blank) ? fitOf(ctx, r, text, justified && !blank ? JUSTIFY_ROOM_TW : 0) : undefined;
+  let fit = measurable(ctx, r, line, blank) ? fitOf(ctx, r, text, justified && !blank ? JUSTIFY_ROOM_TW : 0, carry) : undefined;
   // A space squeezed below its natural advance narrows by w:w: LibreOffice
   // drops the spacing of blanks on a justified line, and neither renderer
   // shrinks a space on its own. So does compressed punctuation in vertical
@@ -397,21 +476,27 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     const own = resolveFont(ctx, r.fontString).scale ?? 100;
     const runTw = (run.width * 1440) / ctx.dpi;
     scale = Math.max(1, Math.min(600, Math.floor((own * runTw) / nat)));
-    fit = fitSpacing(ctx, run.width, (nat * scale) / own, Array.from(text).length);
+    fit = fitSpacing(ctx, run.width, (nat * scale) / own, Array.from(text).length, carry);
   }
+  if (fit) commit(fit);
   const tracking = run.tracking ? twips(run.tracking, ctx.dpi) : 0;
   const isSpace = run.space === true || blank;
   // Unknown advances: tracking as given, justified spaces a hair tighter.
   const flat = tracking + (justified && isSpace ? SPACE_SPACING : 0);
   const spacing = fit ? fit.each : flat;
-  const rPr = runProps(ctx, r, { spacing, rtl, ...(scale ? { scale } : {}) });
+  const rPr = runProps(ctx, r, { spacing, rtl, ...(scale ? { scale } : {}), ...(fit ? { fitted: true } : {}) });
   const out: EmittedRun = { rPr, text };
+  const display = fit && !scale && (fit.each || fit.extra) && (fontSizePx(r.fontString) * 72) / ctx.dpi >= LIGATURE_MIN_PT;
+  const ligs = display ? ligatureSpans(ctx.metrics.faceAdvances(r.fontString), text) : [];
   if (run.kunten) {
     const k = kuntenOf(run, line);
     if (k.annotations.length) out.annotations = k.annotations;
     if (k.rules.length) out.rules = k.rules;
   }
-  if (run.ruby) {
+  // A vertical line's reading is drawn beside its base (eastAsian.ts).
+  const readings = rubyAnnotations(run, line);
+  if (readings) out.annotations = [...(out.annotations ?? []), ...readings];
+  if (run.ruby && !readings) {
     const rt: DisplayRun = { text: run.ruby.text, x: run.x, width: 0, fontString: run.ruby.fontString, color: run.ruby.color ?? run.color, textStart: 0 };
     const sizes = { base: resolveFont(ctx, run.fontString).sz, rt: resolveFont(ctx, run.ruby.fontString).sz };
     // The base is not spaced out: LibreOffice lengthens the ruby cell by a
@@ -431,11 +516,21 @@ export function emitRun(ctx: WriterContext, run: DisplayRun, line: DisplayLine, 
     // Tate-chu-yoko cells: Word sets them across the line, unmeasured.
     const flatPr = runProps(ctx, r, { spacing: flat, rtl });
     out.xml = verticalPieces(ctx, run, text).map((piece) => textRun(piece.tcy ? runProps(ctx, run, { spacing: flat, rtl, ea: eastAsianLayout(ctx, 'vert') }) : flatPr, piece.text)).join('');
+  } else if (fit && ligs.length) {
+    // A display run keeps its ligatures unspaced (ligatures.ts).
+    const total = fit.each * Array.from(text).length + fit.extra;
+    const pieces = ligaturePieces(text, ligs, total, gapTw, (spacing) => runProps(ctx, r, { spacing: clampSpacing(spacing), rtl, fitted: true }));
+    if (pieces) Object.assign(out, piecesOut(pieces));
+    else Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true })));
   } else if (fit && (fit.extra > 0 || gapTw)) {
-    Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, scale ? { scale } : {})));
+    Object.assign(out, piecesOut(spacedPieces(ctx, r, text, fit, gapTw, rtl, { fitted: true, ...(scale ? { scale } : {}) })));
   } else if (gapTw) {
     Object.assign(out, piecesOut(spacedPieces(ctx, r, text, { each: flat, extra: 0 }, gapTw, rtl)));
   }
+  // Symbols the embedded face lacks (⌘ in Geist) in a symbol face.
+  const face = !out.xml && ctx.plan ? ctx.metrics.faceAdvances(r.fontString) : undefined;
+  const symbols = face ? symbolPieces(face, out.pieces ?? [{ rPr: out.rPr, text: out.text }]) : undefined;
+  if (symbols) Object.assign(out, piecesOut(symbols));
   return out;
 }
 
@@ -448,11 +543,11 @@ function measurable(ctx: WriterContext, run: DisplayRun, line: DisplayLine, blan
   return blank || !COMPLEX.test(run.text);
 }
 
-function fitOf(ctx: WriterContext, run: DisplayRun, text: string, roomTw = 0): FitSpacing | undefined {
+function fitOf(ctx: WriterContext, run: DisplayRun, text: string, roomTw = 0, carry?: FitCarry): FitSpacing | undefined {
   const nat = naturalTwips(ctx, run.fontString, text, run.width);
   if (nat === undefined) return undefined;
   const count = Array.from(text).length;
-  return fitSpacing(ctx, run.width, nat + roomTw * count, count);
+  return fitSpacing(ctx, run.width, nat + roomTw * count, count, carry);
 }
 
 /** The `MapFormat` flags of a run (b, i, c, p, s). A code block's lines are

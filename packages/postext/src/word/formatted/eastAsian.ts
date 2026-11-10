@@ -143,6 +143,21 @@ export function kuntenOf(run: DisplayRun, line: DisplayLine): { annotations: Ann
   return { annotations: k.runs.filter((r) => r.text.length > 0).map(ann), rules };
 }
 
+/** The reading of a ruby on a vertical line as annotations where the
+ *  engine painted it (undefined when the run has no placed reading).
+ *  LibreOffice sets a `w:ruby` of vertical text with its base moved off
+ *  the column by about the reading's size, toward the next column
+ *  (差支, 丈 jogged 3 to 5 pt), and ignores `w:hpsRaise`; Google Docs has
+ *  no ruby. The base stays in the line as plain text and the reading is
+ *  drawn beside it as the kanbun marks are. The importer reads a ruby's
+ *  reading from its source, so nothing is lost on the way back. */
+export function rubyAnnotations(run: DisplayRun, line: DisplayLine): Annotation[] | undefined {
+  const ruby = run.ruby;
+  if (!ruby?.runs?.length || !line.vertical) return undefined;
+  const color = ruby.color ?? run.color;
+  return ruby.runs.filter((a) => a.text.length > 0).map((a) => ({ text: a.text, fontString: a.fontString, color: a.color ?? color, x: run.x + a.dx, baseline: line.baseline + a.dy, vertical: true }));
+}
+
 /** The box of an annotation in the item's unturned frame: one em a
  *  character along the line, across it from the ascent (horizontal) or
  *  centred on the baseline (vertical: a central baseline). */

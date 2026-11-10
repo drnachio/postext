@@ -120,15 +120,14 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
       const ext = els(w, 'ext').find((e) => e.attrs.cx !== undefined)!;
       expect(Number(ext.attrs.cy)).toBeGreaterThan(Number(ext.attrs.cx));
     }
-    // Ruby: reading over its base, sizes in half-points, in schema order.
-    const rubies = els(b.root, 'ruby');
-    expect(rubies.map((r) => textOf(els(r, 'rubyBase')[0]!))).toEqual(['猫', '東京']);
-    expect(rubies.map((r) => textOf(els(r, 'rt')[0]!))).toEqual(['ねこ', 'とう きょう']);
-    for (const r of rubies) {
-      expect(childNames(r)).toEqual(['rubyPr', 'rt', 'rubyBase']);
-      expect(childNames(els(r, 'rubyPr')[0]!)).toEqual(['rubyAlign', 'hps', 'hpsRaise', 'hpsBaseText', 'lid']);
-    }
-    expect(els(rubies[1]!, 'rubyAlign')[0]!.attrs['w:val']).toBe('distributeSpace');
+    // Ruby: LibreOffice moves a vertical ruby base off its column, so the
+    // readings are drawn where the engine placed them, as the kanbun marks
+    // are, and the bases stay plain text in the line (#1444).
+    expect(els(b.root, 'ruby')).toHaveLength(0);
+    const readings = els(b.root, 'anchor').filter((a) => els(a, 'docPr')[0]!.attrs.name!.startsWith('ptx mark')).map((m) => textOf(m));
+    expect(readings.join('')).toContain('ねこ');
+    expect(readings.join('').replace(/ /g, '')).toContain('とうきょう');
+    expect(b.map.fragments.map((f) => f.text).join('')).not.toContain('ねこ');
     // Tate-chu-yoko and two lines in one.
     const layouts = els(b.root, 'eastAsianLayout');
     const tcy = layouts.find((l) => l.attrs['w:vert'] === '1')!;
@@ -137,7 +136,7 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     expect(textOf(textRuns(b.root).find((r) => els(r, 'eastAsianLayout').includes(combine))!)).toBe('甲乙丙丁');
     // Kanbun marks: small vertical boxes outside every bookmark.
     const marks = els(b.root, 'anchor').filter((a) => els(a, 'docPr')[0]!.attrs.name!.startsWith('ptx mark'));
-    expect(marks.map((m) => textOf(m)).sort()).toEqual(['ビテ', 'フ', 'レ']);
+    expect(marks.map((m) => textOf(m)).filter((t) => /[ビテフレ]/.test(t)).sort()).toEqual(['ビテ', 'フ', 'レ']);
     for (const m of marks) expect(els(m, 'bodyPr')[0]!.attrs.vert).toBe('eaVert');
     expect(b.map.fragments.map((f) => f.text).join('')).not.toContain('ビテ');
     // Word's own CJK spacing is off, the engine's kept.
@@ -147,7 +146,7 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     }
   });
 
-  it('writes boxes as empty text boxes that read back with no edit (#1406)', async () => {
+  it('writes boxes as plain shapes behind the text that read back with no edit (#1406, #1444)', async () => {
     const md = `Before the box.\n\n:::callout{type="note"}\nBoxed text inside a note, a few words long.\n:::\n\nAfter the box.`;
     const b = await exportDoc(md, config());
     expectUnedited(b, md);
@@ -155,11 +154,10 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     expect(shapes.length).toBeGreaterThan(0);
     for (const a of shapes) {
       const wsp = els(a, 'wsp')[0]!;
-      expect(childNames(wsp)).toEqual(['cNvSpPr', 'spPr', 'txbx', 'bodyPr']);
-      expect(els(wsp, 'cNvSpPr')[0]!.attrs.txBox).toBe('1');
-      expect(childNames(els(wsp, 'txbxContent')[0]!)).toEqual(['p']);
-      expect(textOf(wsp)).toBe('');
+      expect(childNames(wsp)).toEqual(['cNvSpPr', 'spPr', 'bodyPr']);
+      expect(els(wsp, 'cNvSpPr')[0]!.attrs.txBox).toBeUndefined();
       expect(els(wsp, 'noAutofit')).toHaveLength(1);
+      expect(a.attrs.behindDoc).toBe('1');
     }
   });
 
@@ -190,12 +188,26 @@ describe('formatted Word export: Arabic, vertical CJK, composed and comic pages 
     const b = await exportDoc(md, { ...config(), page: { sizePreset: '17x24', dpi: 72 } } as PostextConfig, resources);
     expect(b.doc.pages.some((p) => p.comic)).toBe(true);
     expectMapped(b, md);
-    // Panel art: both pictures, cropped to their panels.
-    const pics = els(b.root, 'pic');
-    expect(pics).toHaveLength(2);
-    expect(pics.every((p) => els(p, 'srcRect').length === 1)).toBe(true);
+    // Panel art: both pictures, cropped to their panels. Art a border or a
+    // balloon lies on is a shape filled with the picture (its crop a fill
+    // rectangle past the shape), which LibreOffice keeps under them.
+    const arts = els(b.root, 'anchor').filter((a) => els(a, 'docPr')[0]!.attrs.name!.startsWith('ptx picture'));
+    expect(arts).toHaveLength(2);
+    const filled = arts.filter((a) => els(a, 'blipFill').some((f) => localName(f.name) === 'blipFill' && f.name.startsWith('a:')));
+    expect(filled).toHaveLength(2);
+    // The wide art's crop takes from both sides: its fill reaches past.
+    const wide = els(filled[0]!, 'fillRect')[0]!.attrs;
+    expect(Number(wide.l)).toBeLessThan(0);
+    expect(Number(wide.r)).toBeLessThan(0);
+    expect(els(filled[0]!, 'srcRect')).toHaveLength(0);
+    expect(els(b.root, 'pic')).toHaveLength(0);
+    // Everything without text behind the text, the lettering in front.
+    for (const a of els(b.root, 'anchor')) {
+      const text = els(a, 'txbx').length > 0;
+      expect(a.attrs.behindDoc).toBe(text ? '0' : '1');
+    }
     // Paint order on the comic page: art, then balloon outlines, then text.
-    const page = kids(els(b.root, 'body')[0]!).filter((p) => localName(p.name) === 'p').find((p) => els(p, 'pic').length > 0)!;
+    const page = kids(els(b.root, 'body')[0]!).filter((p) => localName(p.name) === 'p').find((p) => els(p, 'blipFill').length > 0)!;
     const names = docPrNames(page);
     // (Panel: background, art, border; then per balloon group the
     // outline strokes, the fills, the lettering.)

@@ -1,40 +1,97 @@
 // Table resources as Word tables (#1390): header rows repeated, column
 // spans (`w:gridSpan`), row spans (`w:vMerge`), cell fills and alignment
 // from the table model and the table style; each cell's text is a fragment
-// mapped to the resource cell it came from.
+// mapped to the resource cell it came from. The table takes the whole
+// width of the column or section it stands in, as a percentage (#1444),
+// and its columns keep their proportions as percentages; a caption set
+// below it stays with its last row.
+//
+// The table style is followed as the engine reads it (#1444): only the
+// rules it asks for (table/rules.ts), the cells' faces and sizes in cell
+// styles (table/styles.ts), its padding as cell margins (rows as tall as
+// the engine's: a line and the padding above and below it), zebra rows,
+// and columns no narrower than their longest word (table/widths.ts). A
+// cell's picture (`TableCell.image`) is an inline picture above its text,
+// as wide as the engine draws it.
 
-import type { Resource, TableCell } from '../../types.js';
+import { tableHeaderRowCount } from '../../pipeline/resources/resourceLayout/tableSlices.js';
+import type { Resource, ResourceKind, TableCell } from '../../types.js';
 import type { WriterContext } from './context.js';
+import { captionPlace, pictureRun } from './media/figures.js';
 import { snippetRuns } from './snippet.js';
-import { STYLE } from './styles.js';
-import { eighths, halfPoints, hex, paragraph, rPr, type ParaProps } from './wml.js';
+import { tableRules } from './table/rules.js';
+import { cellStyles } from './table/styles.js';
+import { columnFractions, type WordMeasure } from './table/widths.js';
+import { hex, paragraph, px, type ParaProps } from './wml.js';
 
 const JC: Record<string, ParaProps['jc']> = { left: 'left', start: 'left', center: 'center', right: 'right', end: 'right' };
 const VALIGN: Record<string, string> = { top: 'top', middle: 'center', bottom: 'bottom' };
+const PICTURE_KINDS: ReadonlySet<ResourceKind> = new Set(['bitmap', 'svg']);
+/** Rows of a table short enough to keep on one page. */
+const KEEP_WHOLE_ROWS = 12;
+
+/** The pictures the cells of the tables `ids` show (their files go into
+ *  the package with the other pictures). */
+export function tablePictureIds(resources: ReadonlyMap<string, Resource>, ids: Iterable<string>): Set<string> {
+  const out = new Set<string>();
+  for (const id of ids) {
+    const res = resources.get(id);
+    if (res?.kind !== 'table' || !res.table) continue;
+    for (const row of res.table.model.rows) {
+      for (const cell of row) {
+        const pic = cell.image ? resources.get(cell.image.resourceId) : undefined;
+        if (pic && PICTURE_KINDS.has(pic.kind)) out.add(pic.id);
+      }
+    }
+  }
+  return out;
+}
 
 export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.textTwips): string {
   const model = res.table!.model;
-  const style = (res.table?.styleId && ctx.resolved.tableStyles.find((s) => s.id === res.table!.styleId)) || ctx.resolved.tableStyle;
+  const styleId = res.table?.styleId && ctx.resolved.tableStyles.some((s) => s.id === res.table!.styleId) ? res.table.styleId : undefined;
+  const style = (styleId && ctx.resolved.tableStyles.find((s) => s.id === styleId)) || ctx.resolved.tableStyle;
   const u = ctx.units;
   const rows = model.rows;
   const cols = Math.max(1, ...rows.map((r) => r.length));
-  const weights = model.columnWidths?.length === cols && model.columnWidths.every((w) => w > 0) ? model.columnWidths : new Array<number>(cols).fill(1);
-  const total = weights.reduce((a, b) => a + b, 0);
   const width = Math.max(cols * 20, Math.round(widthTwips));
-  const grid = weights.map((w) => Math.max(1, Math.round((width * w) / total)));
-  const headerRows = Math.min(rows.length, model.headerRowCount ?? 0);
-
-  const color = hex(style.borderColor) ?? '000000';
-  const line = (sz: number): string => `w:val="single" w:sz="${Math.max(2, Math.min(96, Math.round(sz)))}" w:space="0" w:color="${color}"`;
-  const bw = eighths(u, style.borderWidth);
-  const heavy = eighths(u, style.heavyRuleWidth);
-  const borders = style.borders
-    ? `<w:top ${line(bw)}/><w:left ${line(bw)}/><w:bottom ${line(bw)}/><w:right ${line(bw)}/><w:insideH ${line(bw)}/><w:insideV ${line(bw)}/>`
-    : `<w:top ${line(heavy)}/><w:left w:val="nil"/><w:bottom ${line(heavy)}/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/>`;
+  const widthPx = (width * u.dpi) / 1440;
+  const headerRows = tableHeaderRowCount(model);
+  const isHeaderCell = (cell: TableCell | undefined, r: number): boolean => cell?.isHeader ?? r < headerRows;
+  const cs = cellStyles(ctx, style, styleId);
+  const padPx = Math.max(0, px(u, style.cellPadding, cs.bodyPx));
+  const padTw = Math.round((padPx * 1440) / u.dpi);
+  const measure = (cell: TableCell, r: number): WordMeasure => {
+    const header = isHeaderCell(cell, r);
+    const bold = (header && style.headerBold) || /\*\*/.test(cell.content);
+    const caps = header && style.headerTextTransform === 'uppercase';
+    return { charEm: caps ? 0.75 : bold ? 0.66 : 0.6, fontPx: header ? cs.headerPx : cs.bodyPx };
+  };
+  const fractions = columnFractions(model, cols, widthPx, padPx, measure);
+  const grid = fractions.map((f) => Math.max(1, Math.round(width * f)));
+  // Fiftieths of a percent of the table's width, per grid column.
+  const pct = fractions.map((f) => Math.max(1, Math.round(5000 * f)));
+  // Its last row keeps with what is set under it: a caption below, a note.
+  const keepWithCaption = (!captionPlace(ctx, res).above && !!res.caption) || !!res.note;
+  // A short table (a form, an answer grid) stays on one page, as the
+  // engine sets it whole: every row but the last keeps with the next.
+  const whole = rows.length <= KEEP_WHOLE_ROWS;
+  const rules = tableRules(u, style, cs.bodyPx);
+  const zebra = style.bodyAlternateBackgroundEnabled ? hex(style.bodyAlternateBackground) : undefined;
+  const fillOf = (cell: TableCell | undefined, r: number): string | undefined => {
+    const own = hex(cell?.background);
+    if (own) return own;
+    if (isHeaderCell(cell, r)) return style.headerBackgroundEnabled ? hex(style.headerBackground) : undefined;
+    if (zebra && (r - headerRows) % 2 === 1) return zebra;
+    return style.bodyBackgroundEnabled ? hex(style.bodyBackground) : undefined;
+  };
 
   let trs = '';
   rows.forEach((row, r) => {
     const header = r < headerRows;
+    const lastHeader = r === headerRows - 1 && headerRows < rows.length;
+    const visible = row.filter((c) => !c.hiddenBy);
+    const groupRow = !header && r > headerRows && visible.length > 0 && ((visible.length === 1 && (visible[0]!.colSpan ?? 1) >= cols && cols > 1) || visible.every((c) => c.isHeader));
     let tcs = '';
     for (let c = 0; c < cols; c++) {
       const cell: TableCell | undefined = row[c];
@@ -42,39 +99,60 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
       if (hidden && hidden.row === r) continue;
       const primary = hidden ? rows[hidden.row]?.[hidden.col] : cell;
       const span = Math.max(1, Math.min(cols - c, primary?.colSpan ?? 1));
-      const cellWidth = grid.slice(c, c + span).reduce((a, b) => a + b, 0);
+      const cellWidth = pct.slice(c, c + span).reduce((a, b) => a + b, 0);
       const continues = !!hidden;
       const restarts = !hidden && (cell?.rowSpan ?? 1) > 1;
-      const isHeader = header || !!cell?.isHeader;
-      const fill = hex(cell?.background) ?? (isHeader ? (style.headerBackgroundEnabled ? hex(style.headerBackground) : undefined) : style.bodyBackgroundEnabled ? hex(style.bodyBackground) : undefined);
-      let tcPr = `<w:tcW w:w="${cellWidth}" w:type="dxa"/>`;
+      const isHeader = continues ? isHeaderCell(primary, hidden.row) : isHeaderCell(cell, r);
+      const fill = continues ? fillOf(primary, hidden.row) : fillOf(cell, r);
+      let tcPr = `<w:tcW w:w="${cellWidth}" w:type="pct"/>`;
       if (span > 1) tcPr += `<w:gridSpan w:val="${span}"/>`;
       if (continues) tcPr += '<w:vMerge/>';
       else if (restarts) tcPr += '<w:vMerge w:val="restart"/>';
+      // A booktabs table's own rules: above a group row, under the header
+      // and under a header cell spanning columns that ends above the last
+      // header row (as the engine draws it). Word strokes a merged cell's
+      // bottom from the row it ends in, so the span rule goes there.
+      const startRow = hidden ? hidden.row : r;
+      const endRow = startRow + Math.max(1, primary?.rowSpan ?? 1) - 1;
+      const spanRule = startRow < headerRows && span > 1 && r === endRow && endRow < headerRows - 1;
+      const top = groupRow ? (rules.groupRule ?? '') : '';
+      const bottom = lastHeader ? (rules.headerRule ?? '') : spanRule ? (rules.spanRule ?? '') : '';
+      if (top || bottom) tcPr += `<w:tcBorders>${top}${bottom}</w:tcBorders>`;
       if (fill) tcPr += `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>`;
       const va = primary?.verticalAlign ? VALIGN[primary.verticalAlign] : undefined;
       if (va) tcPr += `<w:vAlign w:val="${va}"/>`;
-      let content = '';
+      const last = (keepWithCaption && r === rows.length - 1) || (whole && r < rows.length - 1);
+      const tall = !continues && !!cell && (/\$/.test(cell.content) || !!cell.image);
+      const props: ParaProps = {
+        style: isHeader ? cs.header : cs.body,
+        ...(tall ? { line: { twips: isHeader ? cs.headerLine : cs.bodyLine, rule: 'atLeast' as const } } : {}),
+        keepNext: last || undefined,
+        jc: JC[(continues ? primary : cell)?.align ?? 'left'] ?? 'left',
+      };
+      let content: string;
       if (!continues && cell) {
         const runs = snippetRuns(ctx, cell.content, cell.content, 0, { kind: 'resource', resourceId: res.id, field: 'cell', row: r, col: c }, 'cell');
-        const props: ParaProps = { style: isHeader ? ctx.styles.tableHeader(!!style.headerBold, !!style.headerItalic) : STYLE.normal, before: 0, after: 0, ind: { firstLine: 0 }, jc: JC[cell.align ?? 'left'] ?? 'left' };
-        const runProps = isHeader
-          ? rPr({ color: hex(style.headerColor), sz: halfPoints(u, style.headerFontSize) })
-          : rPr({ color: hex(style.bodyColor), sz: halfPoints(u, style.bodyFontSize) });
-        props.markRPr = runProps;
-        content = paragraph(props, injectRunProps(runs, runProps));
-      } else content = '<w:p/>';
+        const picture = cellPicture(ctx, cell, (widthPx * cellWidth) / 5000 - 2 * padPx);
+        if (picture && runs) content = paragraph({ ...props, keepNext: undefined }, picture) + paragraph({ ...props, before: padTw }, runs);
+        else content = paragraph(props, picture + runs);
+      } else content = paragraph(props, '');
       tcs += `<w:tc><w:tcPr>${tcPr}</w:tcPr>${content}</w:tc>`;
       c += span - 1;
     }
+    // A row is a line (the cell style's leading, also kept by an empty
+    // cell: the writing lines of an exam paper) and the padding above and
+    // below it, as the engine sets it. No w:trHeight: LibreOffice adds the
+    // cell margins on top of it.
     const trPr = header ? '<w:trPr><w:cantSplit/><w:tblHeader/></w:trPr>' : '<w:trPr><w:cantSplit/></w:trPr>';
     trs += `<w:tr>${trPr}${tcs}</w:tr>`;
   });
+  const mar = `<w:top w:w="${padTw}" w:type="dxa"/><w:left w:w="${padTw}" w:type="dxa"/><w:bottom w:w="${padTw}" w:type="dxa"/><w:right w:w="${padTw}" w:type="dxa"/>`;
   return (
     '<w:tbl><w:tblPr>' +
-    `<w:tblW w:w="${width}" w:type="dxa"/><w:jc w:val="center"/>` +
-    `<w:tblBorders>${borders}</w:tblBorders>` +
-    '<w:tblLayout w:type="fixed"/>' +
+    '<w:tblW w:w="5000" w:type="pct"/><w:jc w:val="center"/>' +
+    `<w:tblBorders>${rules.table}</w:tblBorders>` +
+    '<w:tblLayout w:type="autofit"/>' +
+    `<w:tblCellMar>${mar}</w:tblCellMar>` +
     '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/>' +
     '</w:tblPr>' +
     `<w:tblGrid>${grid.map((g) => `<w:gridCol w:w="${g}"/>`).join('')}</w:tblGrid>` +
@@ -83,28 +161,20 @@ export function renderTable(ctx: WriterContext, res: Resource, widthTwips = ctx.
   );
 }
 
-/** Lay the cell's run properties under each run's own (a run's `w:rPr`
- *  wins element by element: the cell's go first when the run has none). */
-function injectRunProps(runs: string, props: string): string {
-  if (!props) return runs;
-  const inner = props.slice('<w:rPr>'.length, -'</w:rPr>'.length);
-  return runs.replace(/<w:r>(<w:rPr>([\s\S]*?)<\/w:rPr>)?/g, (_m, _whole: string | undefined, own: string | undefined) => {
-    if (own === undefined) return `<w:r>${props}`;
-    // Keep the run's style first (CT_RPr order) and add the cell's colour
-    // and size only when the run sets none.
-    let extra = '';
-    if (!/<w:color /.test(own)) extra += /<w:color [^>]*\/>/.exec(inner)?.[0] ?? '';
-    if (!/<w:sz /.test(own)) extra += (/<w:sz [^>]*\/>/.exec(inner)?.[0] ?? '') + (/<w:szCs [^>]*\/>/.exec(inner)?.[0] ?? '');
-    return `<w:r><w:rPr>${insertOrdered(own, extra)}</w:rPr>`;
-  });
-}
-
-/** Insert colour/size elements into run properties at their schema place
- *  (before `w:highlight`, `w:u`, `w:shd`, `w:vertAlign`… and after the
- *  toggles). */
-function insertOrdered(own: string, extra: string): string {
-  if (!extra) return own;
-  const after = /<w:(highlight|u|effect|bdr|shd|fitText|vertAlign|rtl|cs|em|lang)\b/.exec(own);
-  if (!after) return own + extra;
-  return own.slice(0, after.index) + extra + own.slice(after.index);
+/** A cell's picture as an inline drawing, `innerPx` the cell's width
+ *  inside its padding: the fraction `image.width` of it, a bitmap never
+ *  enlarged past its own size (as the engine fits it). The picture holds
+ *  no text, so the importer reads nothing from it. */
+function cellPicture(ctx: WriterContext, cell: TableCell, innerPx: number): string {
+  const id = cell.image?.resourceId;
+  const res = id ? ctx.resources.get(id) : undefined;
+  const pic = res ? ctx.media.get(res.id) : undefined;
+  if (!res || !pic || !PICTURE_KINDS.has(res.kind)) return '';
+  ctx.usedResources.add(res.id);
+  const f = cell.image!.width;
+  const target = Math.max(1, innerPx * (f !== undefined && Number.isFinite(f) && f > 0 ? Math.min(1, f) : 1));
+  // A vector picture fills its target; the prepared size is the column's,
+  // which is never narrower than a cell.
+  const scaled = res.kind === 'svg' && pic.widthPx < target ? { ...pic, widthPx: target, heightPx: (pic.heightPx * target) / pic.widthPx } : pic;
+  return pictureRun(ctx, scaled, res.id, res.altText ?? '', target);
 }

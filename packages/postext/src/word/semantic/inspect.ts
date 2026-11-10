@@ -64,13 +64,16 @@ export function orderProblems(xml: string): string[] {
   return [...new Set(problems)];
 }
 
-const TOKEN = /<w:bookmarkStart\b[^>]*\bw:id="(\d+)"[^>]*\bw:name="([^"]*)"[^>]*\/>|<w:bookmarkEnd\b[^>]*\bw:id="(\d+)"[^>]*\/>|<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>|<w:t(?:\s[^>]*)?\/>|<w:tab\/>|<w:br\/>|<w:footnoteReference\b[^>]*\/>|<m:oMathPara>[\s\S]*?<\/m:oMathPara>|<m:oMath>[\s\S]*?<\/m:oMath>|<w:instrText\b[^>]*>[^<]*<\/w:instrText>/g;
+const TOKEN = /<w:rt>[\s\S]*?<\/w:rt>|<w:bookmarkStart\b[^>]*\bw:id="(\d+)"[^>]*\bw:name="([^"]*)"[^>]*\/>|<w:bookmarkEnd\b[^>]*\bw:id="(\d+)"[^>]*\/>|<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>|<w:t(?:\s[^>]*)?\/>|<w:tab\/>|<w:br\/>|<w:footnoteReference\b[^>]*\/>|<m:oMathPara>[\s\S]*?<\/m:oMathPara>|<m:oMath>[\s\S]*?<\/m:oMath>|<w:instrText\b[^>]*>[^<]*<\/w:instrText>|<w:fldChar\b[^>]*\/>|<\/w:p>/g;
 
 /** Text inside each `_ptx_` bookmark of a part, by fragment id, read as
  *  the importer reads it. */
 export function bookmarkTexts(xml: string): Map<string, string> {
   const open = new Map<string, string>();
   const text = new Map<string, string>();
+  // Inside a page reference's result.
+  let pageRef = false;
+  let hidden = false;
   TOKEN.lastIndex = 0;
   for (let m = TOKEN.exec(xml); m; m = TOKEN.exec(xml)) {
     const tok = m[0];
@@ -86,10 +89,24 @@ export function bookmarkTexts(xml: string): Map<string, string> {
       open.delete(m[3]);
       continue;
     }
+    // A ruby's reading: the importer takes the base only.
+    if (tok.startsWith('<w:rt>')) continue;
     if (m[4] !== undefined) piece = decodeEntities(m[4]);
     else if (tok === '<w:tab/>') piece = '\t';
     else if (tok === '<w:br/>') piece = '\n';
+    // A paragraph mark inside a fragment (a stanza set a paragraph per line).
+    else if (tok === '</w:p>') piece = '\u2029';
     else if (tok.startsWith('<w:footnoteReference') || tok.startsWith('<m:oMath')) piece = '\uFFFC';
+    // A page reference reads as one object, its result (if any) as nothing.
+    else if (tok.startsWith('<w:instrText') && /^<w:instrText\b[^>]*>\s*PAGEREF\b/.test(tok)) {
+      piece = '\uFFFC';
+      pageRef = true;
+    } else if (tok.startsWith('<w:fldChar')) {
+      if (tok.includes('"separate"') && pageRef) hidden = true;
+      else if (tok.includes('"end"')) hidden = pageRef = false;
+      continue;
+    }
+    if (hidden) continue;
     if (!piece) continue;
     for (const id of open.values()) text.set(id, text.get(id)! + piece);
   }

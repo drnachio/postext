@@ -59,6 +59,11 @@ function swatchRuns(ctx: WriterContext, run: DisplayRun, line: DisplayLine, cent
   return boxRuns(ctx, { x: g.x, y: g.y, width: g.side, height: g.side }, g.radius, sw.color, sw.ink, g.stroke, centre, rotate);
 }
 
+/** Whether `lines` draw any chip box. */
+export function hasChipBoxes(lines: readonly DisplayLine[]): boolean {
+  return lines.some((line) => !line.vertical && line.runs.some((run) => run.inline?.kind === 'chip' && run.inline.box !== undefined));
+}
+
 /** The chip boxes of `lines`, drawn before their text as empty text
  *  boxes (under it in Word and in LibreOffice). */
 export function chipBoxRuns(ctx: WriterContext, lines: readonly DisplayLine[], centre: Centre, rotate: number | undefined): string[] {

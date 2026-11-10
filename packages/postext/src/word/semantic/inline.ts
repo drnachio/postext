@@ -6,13 +6,15 @@
 // references.
 
 import type { InlineSpan } from '../../parse/types.js';
+import { resolveSwatchSpans } from '../../pipeline/resources/resourceLayout/refSpans.js';
 import { texToOmml } from '../ommlWrite/index.js';
 import { ommlHash } from '../anchors/ommlHash.js';
 import { atomEnd, chipText, refLabel } from './atoms.js';
 import type { WriterContext } from './context.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
+import { chipGlyph } from './prose/chips.js';
 import { STYLE } from './styles.js';
-import { hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
+import { fieldRuns, halfPoints, hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
 import { escapeAttr, escapeXml } from '../xml.js';
 
 const BREAK = '\u2028';
@@ -38,7 +40,21 @@ export interface InlineSource {
   /** Write links as HYPERLINK fields (in parts without relationships of
    *  their own: footnotes). */
   linkFields?: boolean;
+  /** Text set at the start of each line of the block (index = line, the
+   *  first before the first character): the indent of a line of verse,
+   *  held by an atom over the source's leading spaces. */
+  lineLeads?: string[];
+  /** Verse set a paragraph per line: the XML that ends a line's
+   *  paragraph and opens the next one's (`line` is the next line's
+   *  index). The line end is then read back as a paragraph mark. */
+  lineParagraph?: (line: number) => string;
+  /** The paragraph style the text is set in (Normal when absent): its
+   *  bold and italic runs take the family that holds those faces. */
+  style?: string;
 }
+
+/** What the reader makes of a paragraph mark inside a fragment. */
+const PARA_MARK = ' ';
 
 interface Fmt {
   b?: boolean;
@@ -48,10 +64,17 @@ interface Fmt {
   k?: boolean;
   href?: string;
   mark?: boolean;
+  /** Fill of a mark whose style is not the first mark style's. */
+  markFill?: string;
+  /** Ink of such a mark (`auto` when it has none and the first style has). */
+  markInk?: string;
+  /** A ruby: the reading set over these characters, and which span of
+   *  the ruby they are (each span is a ruby of its own). */
+  ruby?: { key: string; text: string; group?: boolean };
 }
 
 const flagsOf = (f: Fmt): string => `${f.b ? 'b' : ''}${f.i ? 'i' : ''}${f.c ? 'c' : ''}${f.script === 'sup' ? 'p' : ''}${f.script === 'sub' ? 's' : ''}${f.k ? 'k' : ''}`;
-const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}`;
+const fmtKey = (f: Fmt): string => `${flagsOf(f)}|${f.href ?? ''}|${f.mark ? 'm' : ''}${f.markFill ?? ''}/${f.markInk ?? ''}|${f.ruby?.key ?? ''}`;
 
 function runProps(f: Fmt, style?: string): RunProps {
   return {
@@ -62,8 +85,56 @@ function runProps(f: Fmt, style?: string): RunProps {
     b: f.b || undefined,
     i: f.i || undefined,
     smallCaps: f.c || undefined,
+    shd: f.mark && !f.k && !f.href ? f.markFill : undefined,
+    color: f.mark && !f.k && !f.href ? f.markInk : undefined,
     vertAlign: f.script === 'sup' ? 'superscript' : f.script === 'sub' ? 'subscript' : undefined,
   };
+}
+
+/** No-break spaces either side of a chip's words stand for its padding, so
+ *  two chips side by side stay two shaded boxes; a chip with no words (an
+ *  end mark drawn as a filled box) is three of them, filled. */
+function chipLabel(chip: NonNullable<InlineSpan['chip']>): string {
+  // The words never break inside a chip: it is one unit in the engine too.
+  const words = chipText(chip).trim().replace(/ /g, '\u00a0');
+  return words ? `\u00a0${words}\u00a0` : '\u00a0\u00a0\u00a0';
+}
+
+/** Left-to-right mark: keeps the punctuation at the ends of code from
+ *  taking the direction of right-to-left text around it. */
+const LRM = '\u200e';
+
+/** The band and ink of a mark whose style is not the first one (the first
+ *  is the mark character style's own shading and colour, which the run
+ *  overrides here). */
+function markLook(ctx: WriterContext, style: string): { fill?: string; ink?: string } {
+  const styles = ctx.resolved.markStyles ?? [];
+  const ms = style ? styles.find((m) => m.id === style) : undefined;
+  if (!ms || ms === styles[0]) return {};
+  const ink = hex(ms.color) ?? (hex(styles[0]?.color) ? 'auto' : undefined);
+  return { fill: hex(ms.background), ink };
+}
+
+/** Base runs under their reading, as a Word ruby (furigana, pinyin,
+ *  #1444): the reading at `cjk.ruby.fontSize` of the base, raised over a
+ *  base of its paragraph style's size. The reader takes the base as the text
+ *  and the reading from the source, so the round trip keeps both. */
+function rubyRun(ctx: WriterContext, ruby: NonNullable<Fmt['ruby']>, base: string, baseText: string, style: string | undefined): string {
+  const u = ctx.units;
+  // The base's size is its paragraph style's (a heading's, a caption's):
+  // Word raises the reading by it.
+  const hps = ctx.styles.styleSize(style);
+  const rt = halfPoints(u, ctx.resolved.cjk.ruby.fontSize, (hps * u.dpi) / 144);
+  const lid = escapeAttr(ctx.config.locale || 'ja-JP');
+  // A group reading is spread over its base; a reading wider than its
+  // base is centred over it instead, so Word and LibreOffice leave the
+  // room it needs at the base's ends rather than between its characters
+  // (#1444). Neither lets a reading overhang the kana beside it.
+  const wider = [...ruby.text].length * rt > [...baseText].length * hps;
+  return (
+    `<w:r><w:ruby><w:rubyPr><w:rubyAlign w:val="${ruby.group && !wider ? 'distributeSpace' : 'center'}"/><w:hps w:val="${rt}"/><w:hpsRaise w:val="${hps}"/><w:hpsBaseText w:val="${hps}"/><w:lid w:val="${lid}"/></w:rubyPr>` +
+    `<w:rt>${textRuns(ruby.text, rPr({ sz: rt }))}</w:rt><w:rubyBase>${base}</w:rubyBase></w:ruby></w:r>`
+  );
 }
 
 function hyperlink(ctx: WriterContext, href: string, runs: string, field?: boolean): string {
@@ -108,16 +179,28 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     }
     return false;
   };
+  // The indent of the first line of verse, over the spaces before it.
+  const firstLead = s.lineLeads?.[0];
+  const first = s.sourceMap[0] ?? -1;
+  if (firstLead && first > 0) {
+    let ws = first;
+    while (ws > 0 && /[ \t\u3000]/.test(s.src[ws - 1]!)) ws--;
+    if (ws < first) units.push({ kind: 'obj', p: 0, xml: textRuns(firstLead, ''), fmt: {}, text: firstLead, atom: { start: ws, end: first, kind: 'indent' } });
+  }
+  let line = 0;
   let p = 0;
   for (const span of s.spans) {
     const len = span.text.length;
-    const base: Fmt = { b: span.bold, i: span.italic, c: span.smallCaps, script: span.script };
+    const base: Fmt = { b: span.bold, i: span.italic, c: span.smallCaps, script: span.script, ...(span.ruby ? { ruby: { key: `${span.ruby.id}:${p}`, text: span.ruby.text, ...(span.ruby.group ? { group: true } : {}) } } : {}) };
     const at = s.sourceMap[p] ?? -1;
     const limit = nextMapped(p + len - 1);
     if (span.math) {
       const start = s.toSrc(span.math.sourceStart);
       const end = s.toSrc(span.math.sourceEnd);
-      const omml = texToOmml(span.math.tex, false);
+      // At the size of the text around it. Fractions stay stacked, as
+      // print sets them: a linear one loses its grouping and comes back
+      // from an edit as a slash.
+      const omml = texToOmml(span.math.tex, false, { size: ctx.styles.styleSize(s.style) });
       if (omml) units.push({ kind: 'obj', p, xml: omml, fmt: base, text: OBJECT_CHAR, atom: { start, end, kind: 'math', hash: ommlHash(omml) } });
       else units.push(sourceUnit(s, p, start, end));
     } else if (span.footnote) {
@@ -128,17 +211,31 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       } else units.push(sourceUnit(s, p, at, end));
     } else if (span.ref) {
       const label = refLabel(ctx, span.ref);
-      units.push(atomUnit(p, label, base, STYLE.reference, at, atomEnd(s.src, at, limit), 'ref'));
+      const unit = atomUnit(p, label.text, base, STYLE.reference, at, atomEnd(s.src, at, limit), 'ref');
+      if (label.page && label.bookmark && unit.kind === 'obj') {
+        // The page as a PAGEREF Word fills in, read back as one object.
+        const props = rPr(runProps(base, STYLE.reference));
+        unit.xml = textRuns(label.page.before, props) + pageRef(label.bookmark, props) + textRuns(label.page.after, props);
+        unit.text = label.page.before + OBJECT_CHAR + label.page.after;
+      }
+      // A reference to a heading or an anchor jumps to it.
+      if (label.bookmark && unit.kind === 'obj') unit.xml = s.linkFields ? hyperlink(ctx, `#${label.bookmark}`, unit.xml, true) : `<w:hyperlink w:anchor="${label.bookmark}" w:history="1">${unit.xml}</w:hyperlink>`;
+      units.push(unit);
     } else if (span.citation) {
       const raw = span.citation.raw;
       const end = s.src.startsWith(raw, at) ? at + raw.length : atomEnd(s.src, at, limit);
       units.push(atomUnit(p, raw, base, STYLE.reference, at, end, 'citation'));
+    } else if (span.chip && !span.chip.gap && chipGlyph(ctx, span.chip)) {
+      const glyph = chipGlyph(ctx, span.chip)!;
+      const xml = textRuns(glyph.text, rPr(glyph.props));
+      units.push({ kind: 'obj', p, xml, fmt: base, text: glyph.text, atom: { start: at, end: atomEnd(s.src, at, limit), kind: 'chip' } });
     } else if (span.chip) {
-      units.push(atomUnit(p, chipText(span.chip) || OBJECT_CHAR, base, STYLE.chip, at, atomEnd(s.src, at, limit), span.chip.gap ? 'gap' : 'chip'));
+      units.push(atomUnit(p, chipLabel(span.chip), base, ctx.styles.chip(span.chip.style), at, atomEnd(s.src, at, limit), span.chip.gap ? 'gap' : 'chip'));
     } else if (span.swatch) {
       const icon = span.swatch.icon;
       const text = icon ? icon.alt || icon.glyph || '\u25A0' : '\u25A0';
-      const color = icon ? undefined : hex(span.swatch.color);
+      // A palette colour by its id, as the engine fills it (#1444).
+      const color = icon ? undefined : hex(resolveSwatchSpans([span], ctx.resolved.colorPalette)[0]!.swatch!.color);
       const xml = textRuns(text, rPr({ ...runProps(base, STYLE.reference), color }));
       units.push({ kind: 'obj', p, xml, fmt: base, text, atom: { start: at, end: atomEnd(s.src, at, limit), kind: icon ? 'icon' : 'swatch' } });
     } else if (span.tab && s.src[at] !== '\t') {
@@ -149,14 +246,26 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
         const src = s.sourceMap[p + k] ?? -1;
         const fmt: Fmt = { ...base, k: src >= 0 && inCode(src) };
         const link = span.links?.find((l) => k >= l.start && k < l.end);
-        if (link?.mark) fmt.mark = true;
-        else if (link?.href) fmt.href = link.href;
+        if (link?.mark) {
+          fmt.mark = true;
+          const look = markLook(ctx, link.mark.style);
+          if (look.fill) fmt.markFill = look.fill;
+          if (look.ink) fmt.markInk = look.ink;
+        } else if (link?.href) fmt.href = link.href;
         if (ch === BREAK) {
           let end = src >= 0 && s.src[src] === '\\' ? (s.src[src + 1] === '\\' ? src + 2 : src + 1) : src + 1;
           // The atom takes the source line end too: deleting the break in
           // Word then leaves no stray newline behind.
           if (src >= 0 && s.src[end] === '\n') end++;
           units.push({ kind: 'obj', p: p + k, xml: '<w:r><w:br/></w:r>', fmt: {}, text: '\n', atom: { start: src, end, kind: 'break' } });
+        } else if (ch === '\n' && s.lineLeads && src >= 0 && s.src[src] === '\n') {
+          // A line of verse: the break and the next line's indent, over the
+          // line end and the spaces that follow it.
+          const lead = s.lineLeads[++line] ?? '';
+          const next = nextMapped(p + k);
+          const brk = s.lineParagraph ? s.lineParagraph(line) : '<w:r><w:br/></w:r>';
+          const mark = s.lineParagraph ? PARA_MARK : '\n';
+          units.push({ kind: 'obj', p: p + k, xml: brk + textRuns(lead, ''), fmt: {}, text: mark + lead, atom: { start: src, end: next > src ? next : src + 1, kind: 'line' } });
         } else if (src < 0 || s.src[src] === ch || (/\s/.test(ch) && /\s/.test(s.src[src] ?? ''))) {
           units.push({ kind: 'char', p: p + k, ch, src, fmt });
         } else {
@@ -170,6 +279,11 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     p += len;
   }
   return emit(ctx, s, units);
+}
+
+/** A PAGEREF field with no result yet, marked for Word to update. */
+function pageRef(bookmark: string, props: string): string {
+  return fieldRuns(`PAGEREF ${bookmark} \\h`, '', props).replace('w:fldCharType="begin"/>', 'w:fldCharType="begin" w:dirty="true"/>');
 }
 
 function atomUnit(p: number, text: string, fmt: Fmt, style: string | undefined, start: number, end: number, kind: string): Unit {
@@ -188,6 +302,13 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
   const frag = new FragmentBuilder();
   let xml = '';
   let i = 0;
+  const rtl = ctx.resolved.direction === 'rtl';
+  // A generated mark: written and logged as text no source character
+  // stands for.
+  const ltrMark = (): void => {
+    xml += textRuns(LRM, '');
+    frag.push(LRM, [-1]);
+  };
   const insertAt = (p: number): string => {
     const x = s.inserts?.get(p);
     if (x) s.inserts!.delete(p);
@@ -204,26 +325,44 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
       continue;
     }
     if (u.kind === 'mapped') {
+      if (rtl) ltrMark();
       xml += textRuns(u.text, rPr({ style: u.style }));
       frag.push(u.text, u.map);
+      if (rtl) ltrMark();
       i++;
       continue;
     }
     // A run of plain characters with one format and no insertion inside.
+    // A ruby base stays whole (a split one would show its reading twice):
+    // what is anchored inside it goes after it.
     const key = fmtKey(u.fmt);
     let text = '';
+    let after = '';
     const map: number[] = [];
     let j = i;
     while (j < units.length) {
       const v = units[j]!;
-      if (v.kind !== 'char' || fmtKey(v.fmt) !== key || (j > i && s.inserts?.has(v.p))) break;
+      if (v.kind !== 'char' || fmtKey(v.fmt) !== key) break;
+      if (j > i && s.inserts?.has(v.p)) {
+        if (!u.fmt.ruby) break;
+        after += insertAt(v.p);
+      }
       text += v.ch;
       map.push(v.src);
       j++;
     }
-    const runs = textRuns(text, rPr(runProps(u.fmt)));
+    const font = u.fmt.k ? undefined : ctx.styles.runFont(s.style, !!u.fmt.b, !!u.fmt.i);
+    const ink = u.fmt.k || u.fmt.href || u.fmt.mark ? undefined : ctx.styles.runInk(s.style, !!u.fmt.b, !!u.fmt.i);
+    const plainRuns = textRuns(text, rPr({ ...runProps(u.fmt), ...(font ? { font } : {}), ...(ink ? { color: ink } : {}) }));
+    const runs = u.fmt.ruby ? rubyRun(ctx, u.fmt.ruby, plainRuns, text, s.style) : plainRuns;
+    // Code in right-to-left text: left-to-right marks either side keep its
+    // end punctuation from being mirrored.
+    const ltr = rtl && !!u.fmt.k && !u.fmt.href;
+    if (ltr) ltrMark();
     xml += u.fmt.href ? hyperlink(ctx, u.fmt.href, runs, s.linkFields) : runs;
     frag.push(text, map, flagsOf(u.fmt), u.fmt.href);
+    if (ltr) ltrMark();
+    xml += after;
     i = j;
   }
   // Marks anchored past the last character.

@@ -4,7 +4,11 @@
 
 import type { InlineSpan } from '../../parse/types.js';
 import type { WriterContext } from './context.js';
+import type { OutlineEntry } from '../../types.js';
+import { anchorRefLabel, anchorTargetsOf, findAnchorTarget, resourceRefId, type AnchorTarget, type AnchorTargets } from '../../pipeline/references/crossRefs.js';
 import { resourceRefLabel } from './engineNumbers.js';
+import { bookOutline } from './fields.js';
+import { wordBookmarkName } from './wml.js';
 
 /** Index just past a balanced `open … close` group starting at `i`
  *  (backslash escapes and quoted strings inside braces skipped), or `i`
@@ -61,15 +65,56 @@ export function atomEnd(md: string, start: number, limit: number): number {
   return Math.min(i, lim);
 }
 
-/** The text a `:ref` shows: its own `text=`, else the resource's label
- *  and number, else the anchor's id. */
-export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>): string {
-  if (ref.text) return ref.text;
-  const res = ref.anchor ? undefined : ctx.resources.get(ref.resourceId);
-  if (!res) return ref.resourceId;
-  ctx.usedResources.add(res.id);
-  return resourceRefLabel(ref, ctx.numbers, [res], ctx.resolved);
+const targetsOf = new WeakMap<readonly OutlineEntry[], AnchorTargets>();
+
+/** The anchor a reference names (a heading's `{#id}`, an anchor set in
+ *  the text), from the book's outline, as the engine finds it: with or
+ *  without a pandoc-crossref prefix. */
+function anchorTarget(ctx: WriterContext, id: string): AnchorTarget | undefined {
+  const outline = bookOutline(ctx);
+  let targets = targetsOf.get(outline);
+  if (!targets) targetsOf.set(outline, (targets = anchorTargetsOf(outline)));
+  return findAnchorTarget(targets, id);
 }
+
+/** The text a `:ref` shows and the bookmark it links to: its own
+ *  `text=`, else the resource's label and number, else the anchor's label
+ *  as the engine prints it ("chapter 2", "section 4.1", the title, per
+ *  the reference's style and `crossRefs`), linked to the anchor's
+ *  bookmark (#1444); the id itself only when it names nothing. */
+export function refLabel(ctx: WriterContext, ref: NonNullable<InlineSpan['ref']>): RefText {
+  const res = ref.anchor ? undefined : ctx.resources.get(resourceRefId(ref.resourceId, (id) => ctx.resources.has(id)));
+  if (res) {
+    ctx.usedResources.add(res.id);
+    return { text: ref.text || resourceRefLabel({ ...ref, resourceId: res.id }, ctx.numbers, [res], ctx.resolved) };
+  }
+  // A numbered comic strip is no resource, but the engine counts it in its
+  // type, and a `:ref` to it prints its label and number ("Fig. 10.1").
+  if (!ref.anchor && ctx.numbers.resources[ref.resourceId]?.typeId !== undefined) return { text: ref.text || resourceRefLabel(ref, ctx.numbers, [], ctx.resolved) };
+  const target = anchorTarget(ctx, ref.resourceId);
+  if (!target) return { text: ref.text || ref.resourceId };
+  const bookmark = wordBookmarkName(target.id);
+  if (!bookmark) return { text: anchorRefLabel(ref, target, ctx.resolved.crossRefs).text };
+  // A label that prints the target's page: the page is the Word layout's,
+  // a PAGEREF to the bookmark (the engine's own page would be wrong in
+  // Word, and before layout it is only a "?").
+  const label = anchorRefLabel(ref, { ...target, pageLabel: PAGE_SLOT }, ctx.resolved.crossRefs).text;
+  const at = label.indexOf(PAGE_SLOT);
+  if (at >= 0) return { text: label.slice(0, at) + label.slice(at + 1), bookmark, page: { before: label.slice(0, at), after: label.slice(at + 1) } };
+  return { text: label, bookmark };
+}
+
+/** What a reference shows: its text, the bookmark it links to, and, for a
+ *  label that prints a page, the words around the page number. */
+export interface RefText {
+  text: string;
+  bookmark?: string;
+  page?: { before: string; after: string };
+}
+
+/** Stands for the page number while the label is built (a private-use
+ *  character no case rule changes). */
+const PAGE_SLOT = '\uE000';
 
 /** The text a chip shows: its words. */
 export function chipText(chip: NonNullable<InlineSpan['chip']>): string {

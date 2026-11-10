@@ -5941,6 +5941,7 @@
     "wordExportSemanticHint": "Styles Word, listes, notes et tableaux construits à partir du texte : pour écrire et corriger.",
     "wordExportFormatted": "Mis en page",
     "wordExportFormattedHint": "Chaque page telle que le PDF l’imprime, avec les polices du livre : pour vérifier la mise en page.",
+    "wordExportPagesSuggested": "L’essentiel de ce que vous exportez est fait de pages composées ou de bande dessinée, que le document sémantique ne peut que signaler : Mis en page les garde telles qu’imprimées.",
     "wordExportLaying": "Mise en page du chapitre __current__ sur __total__…",
     "wordExportFonts": "Préparation de la police __current__ sur __total__…",
     "wordExportPages": "Écriture de la page __current__ sur __total__…",

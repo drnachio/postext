@@ -12,6 +12,7 @@ import {
   formattedDocx,
   parseTemplate,
   planWordFonts,
+  preferredWordVariant,
   readDocx,
   semanticDocx,
   type FontWarning,
@@ -31,9 +32,12 @@ import { rasterizeSvg } from '../svgImage';
 export const DOCX_VARIANTS = ['semantic', 'formatted'] as const;
 export type DocxVariant = (typeof DOCX_VARIANTS)[number];
 
-/** `postext docx --variant` (`build --docx-variant`), semantic by default. */
-export function docxVariant(opts: Options, option = 'variant'): DocxVariant {
-  return opts.choice(option, DOCX_VARIANTS) ?? 'semantic';
+/** `postext docx --variant` (`build --docx-variant`) as given, else the
+ *  one that suits the chapters (#1444): formatted when most of their text
+ *  is in composed or comic pages, which the semantic file can only stand
+ *  in for; semantic otherwise. */
+export function docxVariant(opts: Options, option = 'variant', chapters?: ReadonlyArray<{ markdown: string }>): DocxVariant {
+  return opts.choice(option, DOCX_VARIANTS) ?? (chapters ? preferredWordVariant(chapters) : 'semantic');
 }
 
 /** Whether the export embeds the book's faces (`--no-embed-fonts`,
@@ -189,6 +193,9 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
     const chapter = w.chapter !== undefined ? chapters.find((c) => ids.get(c) === w.chapter) : undefined;
     reporter.warn({ kind: `docx.${w.code}`, severity: 'warning', message: w.message, ...(chapter ? { at: chapter.file ?? chapter.title } : {}) });
   };
+  // Where the book starts (`preset.json`'s `start`): the heading numbers
+  // and page numbers its first chapter counts on from, as in the layout.
+  const semanticStart = job.variant === 'semantic' && chapters[0] === book.chapters[0] ? book.start : undefined;
   const bytes = await reporter.time('docx', () => job.variant === 'formatted'
     ? formattedDocx({
       ...common,
@@ -198,7 +205,7 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
         if (done % 50 === 0) reporter.detail(`  docx: ${done}/${total} pages`);
       },
     })
-    : semanticDocx({ ...common, config: book.config, onWarning: warn }));
+    : semanticDocx({ ...common, config: book.config, ...(semanticStart ? { start: semanticStart } : {}), onWarning: warn }));
   await writeOut(out, bytes);
   reporter.output({ kind: 'docx', path: out, bytes: byteLength(bytes), ...(job.variant === 'formatted' ? { pages: job.layout!.pageCount } : {}) });
 }

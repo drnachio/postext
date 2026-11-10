@@ -14,9 +14,9 @@ const INLINE_CODE = /(?<!\\)`([^`\n]+?)`/g;
  * The runs of a snippet wrapped in its fragment's bookmark. `content` is
  * the text as written; `base` its offset in `src` (the chapter Markdown
  * for a figure's own words, 0 for a resource field, where `src` is the
- * field itself).
+ * field itself). `style` is the paragraph style the runs stand in.
  */
-export function snippetRuns(ctx: WriterContext, content: string, src: string, base: number, target: FragmentTarget, role: string): string {
+export function snippetRuns(ctx: WriterContext, content: string, src: string, base: number, target: FragmentTarget, role: string, style?: string): string {
   if (!content.trim()) return '';
   const m = mapInlineSnippet(content);
   const inlineCode: { start: number; end: number }[] = [];
@@ -30,6 +30,7 @@ export function snippetRuns(ctx: WriterContext, content: string, src: string, ba
     toSrc: (o) => o + base,
     end: base + content.length,
     inlineCode,
+    ...(style ? { style } : {}),
   });
   return ctx.log.wrap(xml, frag, { block: blockId(ctx), target, range: [base, base + content.length], role });
 }

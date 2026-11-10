@@ -9,6 +9,10 @@ import { semanticDocx } from '../semantic/index.js';
 import { readExportMap } from '../anchors/exportMap.js';
 import { ommlHash } from '../anchors/ommlHash.js';
 import { applyDocxEdits } from './index.js';
+import { readDocx } from '../docxRead.js';
+import { emptyTemplate, parseTemplate } from '../template.js';
+import { wordToPostext } from '../toMarkdown.js';
+import { numberedEquation } from '../docxRead/equations.js';
 
 const DATE = '2026-11-04T00:00:00Z';
 
@@ -67,5 +71,69 @@ describe('equations round trip', () => {
     // Text inside m:t keeps its spaces.
     expect(ommlHash(a.replace('>x<', '>x <'))).not.toBe(ommlHash(a));
     expect(ommlHash('<w:r/>')).toBeUndefined();
+  });
+});
+
+describe('numbered equations round trip (#1444)', () => {
+  const md = 'The period is\n\n$$T_0 = 2\\pi\\sqrt{\\frac{L}{g}} \\, . \\tag{1}$$\n\nfor small swings.\n';
+  const chapters = [{ id: 'c', markdown: md }];
+
+  it('sets the number at a right tab stop, outside the equation', async () => {
+    const bytes = await semanticDocx({ chapters, config: {}, date: DATE });
+    const xml = strFromU8(unzipSync(bytes)['word/document.xml']!);
+    const p = /<w:p>(?:(?!<\/w:p>).)*<m:oMath>(?:(?!<\/w:p>).)*<\/w:p>/s.exec(xml)![0];
+    expect(p).toContain('<w:tab w:val="center"');
+    expect(p).toContain('<w:tab w:val="right"');
+    expect(p).not.toContain('oMathPara');
+    expect(p).toMatch(/<w:tab\/>.*<m:oMath>.*<\/m:oMath>.*<w:tab\/>.*<w:t xml:space="preserve">\(1\)<\/w:t>/s);
+    expect(p).not.toContain('\\tag');
+  });
+
+  it('reads an untouched numbered equation back unchanged, also after Word rewrites it', async () => {
+    const bytes = await semanticDocx({ chapters, config: {}, date: DATE });
+    for (const file of [bytes, edit(bytes, wordRewrite)]) {
+      const r = applyDocxEdits(file, { chapters });
+      expect(r.edits).toEqual([]);
+      expect(r.chapters[0]!.markdown).toBe(md);
+    }
+  });
+
+  it('keeps the number of an equation the user changed', async () => {
+    const bytes = await semanticDocx({ chapters, config: {}, date: DATE });
+    const changed = edit(bytes, (x) => x.replace('<m:t xml:space="preserve">π</m:t>', '<m:t xml:space="preserve">τ</m:t>'));
+    const r = applyDocxEdits(changed, { chapters });
+    expect(r.edits).toHaveLength(1);
+    const out = r.chapters[0]!.markdown;
+    expect(out).toContain('2τ');
+    expect(out).toMatch(/\\tag\{1\}\$\$/);
+    expect(out.match(/\\tag/g)).toHaveLength(1);
+  });
+
+  it('imports as a display equation with its tag through the generic importer', async () => {
+    const tagged = 'Before.\n\n$$T_0 = 2\\pi\\sqrt{\\frac{L}{g}} \\tag{1}$$\n\n$$x = y \\tag*{A}$$\n\nAfter.\n';
+    const bytes = await semanticDocx({ chapters: [{ id: 'c', markdown: tagged }], config: {}, date: DATE });
+    const doc = readDocx(bytes);
+    const template = parseTemplate(doc.embeddedTemplate) ?? emptyTemplate();
+    const out = wordToPostext(doc, { template, config: {}, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    expect(out).toMatch(/\$\$T_\{0\}\s*=\s*2.*\\tag\{1\}\$\$/);
+    expect(out).toContain('\\tag*{A}$$');
+    expect(out).not.toContain(':tab');
+    expect(out).not.toMatch(/^\(1\)|\s\(1\)\s*$/m);
+  });
+
+  it('recognises only a tab-numbered single equation', () => {
+    const m = { type: 'math' as const, tex: 'x=1', display: false };
+    const tab = { type: 'tab' as const };
+    const t = (text: string) => ({ type: 'text' as const, text });
+    expect(numberedEquation([tab, m, tab, t('(2.1a)')], '')).toEqual([{ type: 'math', tex: 'x=1 \\tag{2.1a}', display: true }]);
+    expect(numberedEquation([m, tab, t('('), t('3)')], 'Normal')).toEqual([{ type: 'math', tex: 'x=1 \\tag{3}', display: true }]);
+    // A bare label only in a Postext equation paragraph.
+    expect(numberedEquation([tab, m, tab, t('A')], '')).toBeUndefined();
+    expect(numberedEquation([tab, m, tab, t('A')], 'PostextEquation')?.[0]).toMatchObject({ tex: 'x=1 \\tag*{A}' });
+    // Prose around the equation, no tab before the number, two equations.
+    expect(numberedEquation([t('Let '), m, tab, t('(1)')], '')).toBeUndefined();
+    expect(numberedEquation([m, t(' (1)')], '')).toBeUndefined();
+    expect(numberedEquation([m, tab, m, tab, t('(1)')], '')).toBeUndefined();
+    expect(numberedEquation([m, tab, t('(1)'), tab, t('x')], '')).toBeUndefined();
   });
 });

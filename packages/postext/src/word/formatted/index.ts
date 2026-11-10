@@ -17,7 +17,7 @@ import { docDefaultsXml, stylesXml } from './styles.js';
 import type { FormattedDocxOptions, WriterContext } from './types.js';
 
 export type { FormattedDocxOptions, FormattedWarning } from './types.js';
-export { baselineOffset, readFaceMetrics, FALLBACK_DESCENT } from './metrics.js';
+export { baselineOffset, readFaceMetrics } from './metrics.js';
 
 /** `ExportMap.engine` (and `postext.version`) of the files this writer
  *  makes: writer and config versions, as the semantic writer stamps its. */

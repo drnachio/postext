@@ -11,8 +11,9 @@
 import type { DisplayItem, DisplayLine } from '../../paint/displayList/types.js';
 import type { MapFormat, MapFragment } from '../anchors/types.js';
 import { escapeXml } from '../xml.js';
-import { baselineOffset } from './metrics.js';
-import { emitRun, formatFlags, joinWordRuns, linkTarget, runProps, unpadded, wordText, writtenFace, type EmittedRun, type InlineDrawing } from './runs.js';
+import { baselineOffset, fontSizePx } from './metrics.js';
+import { emitRun, formatFlags, leadChip, linkTarget, runProps, wordText, type EmittedRun, type InlineDrawing } from './runs.js';
+import { emittedRuns, paragraphTabs, tabRun } from './tabs.js';
 import type { Annotation } from './eastAsian.js';
 import { styleIdOf } from './styles.js';
 import { twips, twipsToPx } from './units.js';
@@ -22,11 +23,15 @@ type TextItem = Extract<DisplayItem, { kind: 'text' }>;
 
 /** Measure edges equal within this many px. */
 const EPS = 0.05;
-/** A gap between two runs kept as room, px. */
-const GAP_MIN = 0.5;
 /** Room on a box's free side so a ragged line Word sets a hair wider
  *  than the engine does not wrap (pt). */
 export const SLACK_PT = 2;
+/** Room an italic display line needs past its measure, em of its size:
+ *  LibreOffice widens the end of an italic portion by its overhang (about
+ *  a twelfth of the font height), and a display face's last swash can
+ *  reach further, so a title box with only the slack wrapped its last
+ *  word onto a hidden second line ("The" of "The Awakening"). */
+export const ITALIC_ROOM_EM = 0.25;
 /** Word's exact line spacing runs from 1 pt to 1584 pt (twips). */
 export const MIN_PITCH = 20;
 export const MAX_PITCH = 31680;
@@ -41,8 +46,9 @@ type Jc = 'both' | 'left' | 'center' | 'right';
 export interface LinePlan {
   /** Exact line pitch, twips. */
   h: number;
-  /** Descent of the line's largest face, px. */
-  d: number;
+  /** The line cannot follow the one before at an exact pitch Word takes
+   *  (past 1584 pt, or not below it): it starts a new box. */
+  start?: boolean;
 }
 
 export interface Group {
@@ -65,37 +71,24 @@ export interface Chunk {
   groups: Group[];
 }
 
-/** Descent of a line: its largest face's (Word sizes the line by it),
- *  each run in the face it is written in (a space takes its word's). */
-export function lineDescent(ctx: WriterContext, line: DisplayLine): number {
-  let d = 0;
-  for (const r of line.runs) if (r.text.length > 0 && !r.inline) d = Math.max(d, ctx.metrics.descentPx(writtenFace(r, line)));
-  return d || line.lineHeight * 0.16;
-}
-
-/** Room before the next run of the same direction, per run (px; runs
- *  set apart, a number flush right). Vertical runs go by x too, along
- *  the line in the item's unturned frame. */
-export function runGaps(line: DisplayLine): number[] {
-  const gaps = line.runs.map(() => 0);
-  const rtl = line.rtl === true;
-  let prev = -1;
-  line.runs.forEach((r, i) => {
-    if (r.text.length === 0) return;
-    const p = line.runs[prev];
-    if (p && (p.rtl === true) === rtl && (r.rtl === true) === rtl) {
-      const gap = rtl ? p.x - (r.x + r.width) : r.x - (p.x + p.width);
-      if (gap > GAP_MIN) gaps[prev] = gap;
-    }
-    prev = i;
-  });
-  return gaps;
-}
+export { runGaps } from './runs.js';
 
 /** A line's measure, its end side taken out to its runs where they
  *  hang past it (CJK punctuation hung at the line end): Word, without
  *  kinsoku, would move what hangs to the next line. */
 function edges(l: DisplayLine): { L: number; R: number } {
+  // A chip that opens the line: its words where its padding puts them, on
+  // the side the alignment pins (centred, they stay centred).
+  const lead = leadChip(l);
+  if (lead?.lone && l.align === 'right') return { L: l.x, R: lead.run.x + lead.run.width - (lead.run.padEnd ?? 0) };
+  if (lead && l.align !== 'center' && l.align !== 'right') {
+    const e = edgesOf(l);
+    return { L: lead.run.x + (lead.run.padStart ?? 0), R: e.R };
+  }
+  return edgesOf(l);
+}
+
+function edgesOf(l: DisplayLine): { L: number; R: number } {
   let L = l.x;
   let R = l.x + l.width;
   for (const r of l.runs) {
@@ -106,14 +99,38 @@ function edges(l: DisplayLine): { L: number; R: number } {
   return { L: L < l.x - EPS ? L : l.x, R: R > l.x + l.width + EPS ? R : l.x + l.width };
 }
 
-/** Pitches and descents of an item's lines: line i's box is as tall as
- *  makes its baseline land `baselines[i] − baselines[i−1]` below the
- *  previous one (`h_i = Δ_i + d_i − d_{i−1}`). */
-export function planLines(ctx: WriterContext, lines: readonly DisplayLine[]): LinePlan[] {
-  const plans = lines.map((l) => ({ h: twips(l.lineHeight, ctx.dpi), d: lineDescent(ctx, l) }));
+const clampPitch = (h: number): number => Math.min(MAX_PITCH, Math.max(MIN_PITCH, h));
+
+/** Pitches of an item's lines. Word sets a line's baseline 4/5 of the way
+ *  down its box (`baselineOffset`), so each pitch depends on the one
+ *  before: line i's box is as tall as lands its baseline where the engine
+ *  set it, reckoned from the first line of its run so twips never drift.
+ *  A run's first line takes the gap to the next line (the two then share
+ *  a paragraph), else its own line height. A line no exact pitch reaches
+ *  starts a new run: a new box (`start`), or in a table cell (`boxes`
+ *  false), its clamped pitch, the lines after it keeping their spacing. */
+export function planLines(ctx: WriterContext, lines: readonly DisplayLine[], boxes = true): LinePlan[] {
+  const plans: LinePlan[] = lines.map((l) => ({ h: twips(l.lineHeight, ctx.dpi) }));
+  const rising = (i: number): boolean => lines[i]!.baseline > lines[i - 1]!.baseline;
+  const opening = (i: number): number => {
+    const next = i + 1 < lines.length && rising(i + 1) ? twips(lines[i + 1]!.baseline - lines[i]!.baseline, ctx.dpi) : 0;
+    return clampPitch(next >= MIN_PITCH && next <= MAX_PITCH ? next : plans[i]!.h);
+  };
+  if (plans.length === 0) return plans;
+  plans[0]!.h = opening(0);
+  let origin = 0;
+  let top = -(plans[0]!.h * 4) / 5;
   for (let i = 1; i < lines.length; i++) {
-    const delta = lines[i]!.baseline - lines[i - 1]!.baseline;
-    plans[i]!.h = twips(delta + plans[i]!.d - plans[i - 1]!.d, ctx.dpi);
+    top += plans[i - 1]!.h;
+    const h = Math.round(((twips(lines[i]!.baseline - lines[origin]!.baseline, ctx.dpi) - top) * 5) / 4);
+    if (rising(i) && h >= MIN_PITCH && h <= MAX_PITCH) {
+      plans[i]!.h = h;
+      continue;
+    }
+    plans[i]!.start = true;
+    plans[i]!.h = boxes ? opening(i) : clampPitch(h);
+    origin = i;
+    top = -(plans[i]!.h * 4) / 5;
   }
   return plans;
 }
@@ -137,11 +154,6 @@ export function planChunks(lines: readonly DisplayLine[], plans: LinePlan[], box
   let chunk: Chunk | undefined;
   let g: Group | undefined;
   const startChunk = (i: number): void => {
-    // A box's first line may take any pitch (its top follows from it):
-    // the next line's, so the two can share a paragraph.
-    const next = plans[i + 1];
-    if (next && next.h >= MIN_PITCH && next.h <= MAX_PITCH && lines[i + 1]!.baseline > lines[i]!.baseline) plans[i]!.h = next.h;
-    plans[i]!.h = Math.min(MAX_PITCH, Math.max(MIN_PITCH, plans[i]!.h));
     chunk = { from: i, to: i, groups: [] };
     chunks.push(chunk);
     g = undefined;
@@ -150,9 +162,7 @@ export function planChunks(lines: readonly DisplayLine[], plans: LinePlan[], box
     const line = lines[i]!;
     const { L, R } = edges(line);
     const rtl = line.rtl === true;
-    const broken = i > 0 && (plans[i]!.h < MIN_PITCH || plans[i]!.h > MAX_PITCH || line.baseline <= lines[i - 1]!.baseline);
-    if (!chunk || (boxes && broken)) startChunk(i);
-    if (broken && !boxes) plans[i]!.h = Math.min(MAX_PITCH, Math.max(MIN_PITCH, plans[i]!.h));
+    if (!chunk || (boxes && plans[i]!.start)) startChunk(i);
     let join = false;
     if (g && g.pitch === plans[i]!.h && g.rtl === rtl) {
       const pins = pinned(g.jc, rtl);
@@ -185,8 +195,22 @@ export function planChunks(lines: readonly DisplayLine[], plans: LinePlan[], box
   return chunks;
 }
 
-/** The px box of a chunk: its lines' measures plus slack on the free side. */
-export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chunk: Chunk, plans: LinePlan[]): { x: number; y: number; width: number; height: number } {
+/** The room past an italic display line's measure, px (0 without
+ *  italics). */
+export function italicRoom(lines: readonly DisplayLine[]): number {
+  let room = 0;
+  for (const l of lines) {
+    for (const r of l.runs) {
+      if (!r.text.trim() || !(r.italic || /\bitalic\b/.test(r.fontString))) continue;
+      room = Math.max(room, ITALIC_ROOM_EM * fontSizePx(r.fontString));
+    }
+  }
+  return room;
+}
+
+/** The px box of a chunk: its lines' measures plus slack on both sides
+ *  (`display`: a title's or label's, room for italic overhang). */
+export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chunk: Chunk, plans: LinePlan[], display = false): { x: number; y: number; width: number; height: number } {
   let L = Infinity;
   let R = -Infinity;
   let height = 0;
@@ -199,13 +223,15 @@ export function chunkBox(ctx: WriterContext, lines: readonly DisplayLine[], chun
     minPitch = Math.min(minPitch, plans[i]!.h);
   }
   height += Math.min(BOTTOM_ROOM, Math.floor(minPitch / 2) - 1);
-  const slack = (SLACK_PT * ctx.dpi) / 72;
-  const rtl = lines[chunk.from]!.rtl === true;
-  if (rtl) L -= slack;
-  else R += slack;
+  // Slack on both sides: a pinned side keeps it as indent, so the line
+  // stays where the engine set it, and the free side keeps it as room
+  // (an end-aligned folio's free side is its start, #1444).
+  const slack = Math.max((SLACK_PT * ctx.dpi) / 72, display ? italicRoom(lines.slice(chunk.from, chunk.to + 1)) : 0);
+  L -= slack;
+  R += slack;
   const first = lines[chunk.from]!;
   const p = plans[chunk.from]!;
-  const top = first.baseline - baselineOffset(twipsToPx(p.h, ctx.dpi), p.d);
+  const top = first.baseline - baselineOffset(twipsToPx(p.h, ctx.dpi));
   return { x: L, y: top, width: R - L, height: twipsToPx(height, ctx.dpi) };
 }
 
@@ -235,8 +261,8 @@ export interface EmitOptions {
 }
 
 /** `w:pPr` of a group inside the box [boxL, boxR]. */
-function groupProps(ctx: WriterContext, item: TextItem, g: Group, boxL: number, boxR: number, spaceBefore: number): string {
-  const p: string[] = [`<w:pStyle w:val="${styleIdOf(item)}"/>`, '<w:widowControl w:val="0"/>', '<w:suppressAutoHyphens/>', '<w:kinsoku w:val="0"/>', '<w:overflowPunct w:val="0"/>', '<w:autoSpaceDE w:val="0"/>', '<w:autoSpaceDN w:val="0"/>'];
+function groupProps(ctx: WriterContext, item: TextItem, g: Group, boxL: number, boxR: number, spaceBefore: number, tabs = ''): string {
+  const p: string[] = [`<w:pStyle w:val="${styleIdOf(item)}"/>`, '<w:widowControl w:val="0"/>', tabs, '<w:suppressAutoHyphens/>', '<w:kinsoku w:val="0"/>', '<w:overflowPunct w:val="0"/>', '<w:autoSpaceDE w:val="0"/>', '<w:autoSpaceDN w:val="0"/>'];
   if (g.rtl) p.push('<w:bidi/>');
   p.push('<w:adjustRightInd w:val="0"/>', '<w:snapToGrid w:val="0"/>');
   p.push(`<w:spacing w:before="${Math.max(0, spaceBefore)}" w:after="0" w:line="${g.pitch}" w:lineRule="exact"/>`);
@@ -254,6 +280,13 @@ function groupProps(ctx: WriterContext, item: TextItem, g: Group, boxL: number, 
     start = pins.start ? twips(g.restL - boxL, ctx.dpi) : 0;
     first = pins.start ? twips(g.firstL - g.restL, ctx.dpi) : 0;
     end = pins.end ? twips(boxR - g.firstR, ctx.dpi) : 0;
+  }
+  // A centred group is pinned on both sides; equal room off both indents
+  // keeps its axis and lets a line Word sets a hair wider fit (#1444).
+  if (jc === 'center') {
+    const room = Math.max(0, Math.min(start, start + first, end));
+    start -= room;
+    end -= room;
   }
   const firstAttr = first >= 0 ? `w:firstLine="${first}"` : `w:hanging="${-first}"`;
   p.push(`<w:ind w:left="${start}" w:right="${end}" ${firstAttr}/>`);
@@ -284,7 +317,8 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
     else out.formats.push({ start, end, flags, ...(href ? { href } : {}) });
   };
   groups.forEach((g, gi) => {
-    xml.push('<w:p>', groupProps(ctx, item, g, boxL, boxR, gi === 0 ? (opts.spaceBefore ?? 0) : 0));
+    const tabs = paragraphTabs(ctx, item.lines.slice(g.from, g.to + 1), boxL, g.rtl ? 0 : twips(g.restL - boxL, ctx.dpi));
+    xml.push('<w:p>', groupProps(ctx, item, g, boxL, boxR, gi === 0 ? (opts.spaceBefore ?? 0) : 0, tabs.xml));
     if (gi === 0 && opts.bookmarkStart) xml.push(opts.bookmarkStart);
     for (let i = g.from; i <= g.to; i++) {
       const line = item.lines[i]!;
@@ -304,9 +338,13 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (pendingText) lx.push(`<w:r>${pendingProps}<w:t xml:space="preserve">${escapeXml(pendingText)}</w:t></w:r>`);
         pendingText = '';
       };
-      const flat = unpadded(line, runGaps(line));
-      for (const { run, gap } of joinWordRuns(flat.line, flat.gaps)) {
-        const emitted = emitRun(ctx, run, flat.line, gap);
+      const flat = emittedRuns(line);
+      const lineTabs = tabs.lines[i - g.from]!;
+      const carry = { tw: 0 };
+      for (const [k, { run, gap }] of flat.runs.entries()) {
+        // A tab after a run takes it to the next run's start: the run
+        // keeps no gap of its own (a chip's padding after its words).
+        const emitted = lineTabs.has(k) ? tabRun(ctx, run, flat.line) : emitRun(ctx, run, flat.line, lineTabs.has(k + 1) ? 0 : gap, carry);
         if (!emitted.text) continue;
         // The fallback line's style: the run's face and tracking, not the
         // spacing or scale fitted to that run alone.
@@ -368,9 +406,17 @@ export function emitGroups(ctx: WriterContext, item: TextItem, groups: Group[], 
         if (atom) out.atoms.push({ at: text.length, ...atom });
       }
       if (!lastOfGroup || g.endsWithBreak) {
-        xml.push('<w:r><w:br/></w:r>');
-        text += '\n';
-        out.map.push(-1);
+        // LibreOffice sets a ruby that opens a vertical line after a break
+        // twice over, in the gutter, with its base pushed down the column
+        // (#1444): a zero-width space after the break (generated) opens
+        // the line instead.
+        const next = item.lines[i + 1];
+        // (Only a `w:ruby`: a reading the engine placed is drawn apart.)
+        const ruby = next?.runs.find((r) => r.text.length > 0)?.ruby;
+        const rubyFirst = next?.vertical === true && ruby !== undefined && !ruby.runs?.length;
+        xml.push(rubyFirst ? '<w:r><w:br/><w:t>\u200b</w:t></w:r>' : '<w:r><w:br/></w:r>');
+        text += rubyFirst ? '\n\u200b' : '\n';
+        out.map.push(...(rubyFirst ? [-1, -1] : [-1]));
       }
       if (lastOfGroup && gi < groups.length - 1) {
         // The paragraph mark between two groups of one fragment.

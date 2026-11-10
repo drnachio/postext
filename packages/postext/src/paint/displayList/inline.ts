@@ -32,7 +32,9 @@ export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0, inkFor?:
   const inline = { kind: 'chip' as const, widthPx: run.width, heightPx: chip.ascent + chip.descent, ascentPx: chip.ascent, box: chipBox(chip, inkOffset) };
   const parts = chip.runs.filter((r) => r.text.length > 0);
   const joined = parts.map((r) => r.text).join('');
-  if (parts.length === 0 || joined !== run.text) return [{ ...run, ...(chip.color ? { color: chip.color } : {}), inline }];
+  // A blank's answer is laid out, never painted (#1227): every run says so.
+  const blank = chip.blank ? { blank: true as const } : {};
+  if (parts.length === 0 || joined !== run.text) return [{ ...run, ...(chip.color ? { color: chip.color } : {}), inline, ...blank }];
   const lead = inkOffset + chip.marginLeft + chip.borderWidth + chip.paddingX;
   const out: DisplayRun[] = [];
   let x = run.x;
@@ -40,7 +42,7 @@ export function chipRuns(run: DisplayRun, chip: VDTChip, inkOffset = 0, inkFor?:
   parts.forEach((r, i) => {
     const last = i === parts.length - 1;
     const width = last ? run.x + run.width - x : r.width + (i === 0 ? lead : 0);
-    const part: DisplayRun = { ...run, text: r.text, x, width, fontString: r.fontString, color: chip.color ?? inkFor?.(r) ?? run.color, textStart };
+    const part: DisplayRun = { ...run, text: r.text, x, width, fontString: r.fontString, color: chip.color ?? inkFor?.(r) ?? run.color, textStart, ...blank };
     // Emphasis stays the segment's: a bold or italic face the chip style
     // or its own words set is the run's face (`fontString`), which writers
     // set as a face, not as markup to read back.

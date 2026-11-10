@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "business-section-on-salmon",
-  "sourceHash": "7830b6d77390d0007bc151988e2516cc241afbd474899023871b7ad04f481257",
+  "sourceHash": "8757208d1548894ec62c9b143894a2ad0531b82ec667a2ca3905df332dfd5025",
   "engine": {
-    "postext": "1.65.0",
+    "postext": "1.70.5",
     "source": "npm"
   },
-  "chrome": "156.0.8078.76",
-  "capturedAt": "2026-10-31T17:18:32.124Z",
+  "chrome": "156.0.8078.81",
+  "capturedAt": "2026-11-06T08:13:03.469Z",
   "variants": {
     "en": {
-      "hash8": "d09bb337",
-      "vdtHash": "ae93bda1ce4bdabb964e5b2dacb5372f5b948856",
+      "hash8": "416c06fb",
+      "vdtHash": "ce638c5c7a0c9c945bd27db131ffd145c3dedea4",
       "timings": {
-        "importMs": 3625,
-        "fontsMs": 413,
-        "buildMs": 390,
-        "totalMs": 5841,
+        "importMs": 17372,
+        "fontsMs": 165,
+        "buildMs": 406,
+        "totalMs": 19332,
         "builds": 1
       },
       "specimen": {
@@ -153,13 +153,13 @@
       },
       "sandbox": {
         "file": "business-section-on-salmon.postext",
-        "bytes": 1218910,
+        "bytes": 1218908,
         "folio": "77d83e3b",
         "chapters": [
           {
             "pages": 8,
-            "hash": "75b4aa20250f4edc",
-            "lines": "031e339263f17416"
+            "hash": "e5c99708873c52c4",
+            "lines": "f9c6606028555452"
           }
         ]
       },
@@ -515,6 +515,16 @@
             "check": "C35",
             "severity": "info",
             "detail": "1 paragraph set a line short with tracking (worst −5‰): p. 7 −5‰ “Flour costs, which rose by almost half in 2023, …”"
+          },
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 156.0.8078.81, the committed capture used 156.0.8078.76: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

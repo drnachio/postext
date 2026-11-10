@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { attr, child, children, descendants, localName, parseXml, textOf, type XmlElement } from '../xml.js';
 import { ommlToTex } from '../omml.js';
-import { initTexToOmml, isTexToOmmlReady, setTexToOmmlConverter, texToOmml } from './index.js';
+import { initTexToOmml, isTexToOmmlReady, setTexToOmmlConverter, texToDisplayOmml, texToOmml } from './index.js';
 import { lengthEm } from './runs.js';
 
 beforeAll(async () => {
@@ -230,6 +230,64 @@ describe('texToOmml', () => {
     expect(texToOmml('x \\tag{1}', true)).toBeNull();
     expect(texToOmml('\\frac', false)).toBeNull();
     expect(texToOmml('\\undefinedmacro', false)).toBeNull();
+  });
+});
+
+describe('display equations with a number (#1444)', () => {
+  it('splits `\\tag` off as the number beside the equation', () => {
+    const eq = texToDisplayOmml('T_0 = 2\\pi\\sqrt{\\frac{L}{g}} \\, . \\tag{1}')!;
+    expect(eq.tag).toBe('(1)');
+    expect(eq.omml.startsWith('<m:oMath>')).toBe(true);
+    expect(eq.omml).not.toContain('oMathPara');
+    expect(wellFormed(eq.omml)).toBe(true);
+    const n = names(parse(eq.omml));
+    expect(n).toContain('rad');
+    expect(n).toContain('f');
+    // The number is not part of the equation.
+    expect(eq.omml).not.toContain('(1)');
+    expect(texToDisplayOmml('x \\tag*{A}')!.tag).toBe('A');
+  });
+
+  it('sets every equation of the journal article', () => {
+    for (const tex of [
+      '\\ddot\\theta + \\frac{g}{L}\\,\\sin\\theta = 0 . \\tag{2}',
+      '\\tfrac{1}{2}\\,L\\,\\dot\\theta^{2} = g\\,(\\cos\\theta - \\cos\\theta_0) . \\tag{3}',
+      'T = 4\\sqrt{\\frac{L}{g}}\\;K(k) . \\tag{4}',
+      'K(k) = \\int_0^{\\pi/2}\\frac{d\\phi}{\\sqrt{1-k^{2}\\sin^{2}\\phi}} . \\tag{5}',
+      'T = \\frac{T_0}{M\\bigl(1,\\,\\cos(\\theta_0/2)\\bigr)} . \\tag{6}',
+      'T = T_0\\left(1 + \\frac{\\theta_0^{2}}{16} + \\frac{11\\,\\theta_0^{4}}{3072} + \\cdots\\right) . \\tag{7}',
+    ]) {
+      const eq = texToDisplayOmml(tex);
+      expect(eq, tex).not.toBeNull();
+      expect(eq!.tag).toMatch(/^\(\d\)$/);
+    }
+  });
+
+  it('keeps an untagged equation as a paragraph of maths', () => {
+    const eq = texToDisplayOmml('x^2')!;
+    expect(eq.tag).toBeUndefined();
+    expect(eq.omml).toBe(texToOmml('x^2', true));
+  });
+
+  it('leaves tags on the rows of an alignment unsupported', () => {
+    expect(texToDisplayOmml('\\begin{align} a &= b \\tag{1} \\\\ c &= d \\tag{2} \\end{align}')).toBeNull();
+  });
+});
+
+describe('functions of matrices and matrix columns (#1444)', () => {
+  it('writes the name of a determinant once, in an `m:func` around the bracketed matrix', () => {
+    const omml = texToOmml('\\det \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc', true)!;
+    expect(omml.match(/>det</g)).toHaveLength(1);
+    expect(omml).toMatch(/^<m:oMathPara><m:oMath><m:func><m:fName><m:r>(?:(?!<\/m:fName>).)*>det<\/m:t><\/m:r><\/m:fName><m:e><m:d><m:dPr><m:begChr m:val="\("\/><m:endChr m:val="\)"\/><\/m:dPr><m:e><m:m>/);
+    expect(ommlToTex(child(child(parse(omml), 'oMathPara')!, 'oMath')!)).toMatch(/^\\det\s*\{?\\left\(/);
+  });
+
+  it('writes one column entry per run of columns aligned alike, as Word does', () => {
+    const omml = texToOmml('\\begin{pmatrix} a & b & c \\end{pmatrix}', true)!;
+    expect(omml).toContain('<m:mcs><m:mc><m:mcPr><m:count m:val="3"/><m:mcJc m:val="center"/></m:mcPr></m:mc></m:mcs>');
+    const cases = texToOmml('|x| = \\begin{cases} x & \\text{if } x \\ge 0 \\\\ -x & \\text{if } x < 0 \\end{cases}', true)!;
+    expect(cases).toContain('<m:begChr m:val="{"/><m:endChr m:val=""/>');
+    expect(cases).toContain('<m:count m:val="2"/><m:mcJc m:val="left"/>');
   });
 });
 

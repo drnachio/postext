@@ -11,6 +11,7 @@ import { resolveAllConfig } from '../../pipeline/config.js';
 import { CONFIG_VERSION } from '../../bundle/configVersion/rules.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { PostextConfig, Resource } from '../../types.js';
+import type { BookStart } from './context.js';
 import { hashText } from '../anchors/hash.js';
 import type { ExportMap } from '../anchors/types.js';
 import type { WordFontPlan } from '../fonts/types.js';
@@ -19,17 +20,25 @@ import { createDocxPackage } from '../ooxml/package.js';
 import { bookNumbers } from './engineNumbers.js';
 import { parseChapter, renderChapter } from './chapter.js';
 import type { SemanticWarning, WriterContext } from './context.js';
-import { prepareMedia } from './figures.js';
+import { prepareMedia } from './media/figures.js';
+import { designMediaIds } from './design/pictures.js';
+import { composedMediaIds } from './media/pageOpener.js';
+import { prepareExercises } from './exercises/exercises.js';
+import { floatedResources } from './media/floated.js';
+import { prepareScores } from './media/scores.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
-import { pageGeometry } from './sections.js';
+import { pageSettings } from './page/settings.js';
+import { multiColumn, pageGeometry } from './sections.js';
 import { StyleRegistry } from './styles.js';
+import { tablePictureIds } from './tables.js';
 import type { WordChapterInput } from './types.js';
 import { px, type Units } from './wml.js';
 
 export type { WordChapterInput } from './types.js';
 export type { SemanticWarning } from './context.js';
 export { STYLE as SEMANTIC_STYLE } from './styles.js';
+export { preferredWordVariant } from './media/pages.js';
 
 /** Options of `semanticDocx`: the chapters, design, resources, fonts and
  *  metadata. */
@@ -45,6 +54,10 @@ export interface SemanticDocxOptions {
   /** ISO timestamp: a fixed value makes the output byte-identical. */
   date?: string;
   exportId?: string;
+  /** Where the book starts when it continues a longer one (`preset.json`'s
+   *  `start`): the heading counters its first chapter counts on from and
+   *  the page numbering in effect. */
+  start?: BookStart;
   onWarning?: (w: SemanticWarning) => void;
 }
 
@@ -79,23 +92,34 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
   const geo = pageGeometry(resolved, units);
   const resources = new Map((options.resources ?? []).map((r) => [r.id, r]));
   // Numbers as the engine prints them (captions, `:ref`s, headings).
-  const numbers = bookNumbers(parsed, options.config, resolved, options.resources ?? []);
+  const numbers = bookNumbers(parsed, options.config, resolved, options.resources ?? [], options.start?.headings);
   const resourceTypes = numbers.resourceTypes;
-  // Resources shown as blocks, whose pictures go into the package.
+  // Resources shown as blocks or floated by a `:ref`, whose pictures go
+  // into the package.
+  const floated = floatedResources(parsed, resources, resourceTypes);
   const shown = new Set<string>();
   for (const pc of parsed) {
-    for (const b of pc.blocks) if (b.type === 'resourceBlock' && b.resourceId && resources.has(b.resourceId)) shown.add(b.resourceId);
+    for (const b of pc.blocks) {
+      if (b.type !== 'resourceBlock' || !b.resourceId || !resources.has(b.resourceId)) continue;
+      shown.add(b.resourceId);
+    }
   }
+  for (const id of floated) shown.add(id);
+  for (const id of designMediaIds(parsed, resolved, resources)) shown.add(id);
+  for (const id of composedMediaIds(parsed, resolved, resources)) shown.add(id);
+  // Pictures set inside table cells (a bar chart in a results table).
+  for (const id of tablePictureIds(resources, [...shown])) shown.add(id);
   let sdtId = 0;
   let footnoteId = 0;
+  const styles = new StyleRegistry(resolved, units, options.fonts);
   const ctx: WriterContext = {
     pkg,
     log: new FragmentLog(pkg),
     config: options.config,
     resolved,
     units,
-    styles: new StyleRegistry(resolved, units, options.fonts),
-    numbering: new Numbering(resolved, units),
+    styles,
+    numbering: new Numbering(resolved, units, (stack, weight, italic) => styles.font(stack, weight, italic)),
     plan: options.fonts,
     resources,
     resourceTypes,
@@ -103,19 +127,26 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     rasterizeSvg: options.rasterizeSvg,
     columnPx: geo.columnPx,
     textTwips: Math.round((geo.columnPx * 1440) / units.dpi),
+    textAreaPx: multiColumn(geo) ? (geo.textTwips * units.dpi) / 1440 : geo.columnPx,
     usedResources: new Set(),
     numbers,
     footnotes: [],
     headers: {},
     footers: {},
     bookmarkNames: new Set(),
+    floated,
+    floatedPlaced: new Set(),
     media: new Map(),
     warn,
     nextSdtId: () => ++sdtId,
     nextFootnoteId: () => ++footnoteId,
+    book: parsed,
+    ...(options.start ? { start: options.start } : {}),
     chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), headingNumbers: new Map(), blockCounter: 0 },
   };
   await prepareMedia(ctx, shown);
+  await prepareScores(ctx, parsed);
+  prepareExercises(ctx, parsed);
 
   let body = '';
   parsed.forEach((pc, i) => {
@@ -145,19 +176,23 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
       ...(Object.keys(snapshotResources).length ? { resources: snapshotResources } : {}),
     },
   };
-  const extra = (geo.mirror ? '<w:mirrorMargins/>' : '') + '<w:doNotAutoCompressPictures/>';
+  const page = pageSettings(ctx, body);
+  const extra = (geo.mirror ? '<w:mirrorMargins/>' : '') + '<w:doNotAutoCompressPictures/>' + page.extra;
   return pkg.build({
     body,
     styles: ctx.styles.xml(),
     docDefaults: ctx.styles.docDefaults(options.config.locale),
     ...(ctx.numbering.empty ? {} : { numbering: ctx.numbering.xml() }),
     ...(ctx.footnotes.length ? { footnotes: ctx.footnotes } : {}),
+    ...(page.footnoteSeparator ? { footnoteSeparator: page.footnoteSeparator } : {}),
+    ...(page.background ? { background: page.background } : {}),
     headers: ctx.headers,
     footers: ctx.footers,
     core: { title: options.title, author: options.author, language: options.config.locale, date: createdAt },
     settings: {
       autoHyphenation: resolved.bodyText.hyphenation.enabled,
       embedFonts: (options.fonts?.faces.length ?? 0) > 0,
+      evenAndOddHeaders: page.evenAndOddHeaders,
       extra,
     },
     fonts: options.fonts?.faces,
