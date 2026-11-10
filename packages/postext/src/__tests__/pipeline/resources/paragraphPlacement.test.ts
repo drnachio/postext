@@ -4,7 +4,7 @@ import { createMeasurementCache } from '../../../measure/index.js';
 import type { PostextConfig, Resource, VDTColumn, VDTDocument } from '../../../index.js';
 
 // A resource placed after the paragraph that cites it (`position:
-// 'paragraph'`, this fork) is set as a `::resource` line right after that
+// 'paragraph'`, #1492) is set as a `::resource` line right after that
 // paragraph would set it (`position: 'here'`): text wrapped round it
 // (#627, #883) and its caption beside it (#729, #1106) included.
 
@@ -110,5 +110,21 @@ describe('a resource placed after its paragraph is set as one placed here', () =
   it('with its caption beside it inside its slot', () => {
     const { here, after } = both({ captionSide: 'inside', width: 0.5 }, SINGLE, 'bitmap');
     expect(geometry(after)).toEqual(geometry(here));
+  });
+});
+
+describe('a table placed after its paragraph', () => {
+  const table: Resource = {
+    id: 'tab', typeId: 'table', kind: 'table', caption: 'A table.', createdAt: 0, updatedAt: 0,
+    table: { model: { rows: [[{ content: 'a' }, { content: 'b' }], [{ content: 'c' }, { content: 'd' }]] } },
+    placement: { position: 'paragraph' },
+  };
+  const here: Resource = { ...table, placement: { position: 'here' } };
+
+  it('is set in the column after the citing paragraph, as a ::resource line there sets it', () => {
+    const after = build(`${para(2)} See :ref{id="tab"}.\n\n${para(3)}`, table, SINGLE);
+    const inline = build(`${para(2)} See :ref{id="tab"}.\n\n::resource{id="tab"}\n\n${para(3)}`, here, SINGLE);
+    expect(after.pages.flatMap((p) => p.floats ?? [])).toHaveLength(0);
+    expect(geometry(after)).toEqual(geometry(inline));
   });
 });

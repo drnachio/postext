@@ -4,6 +4,7 @@ import { type ContentWarning, type VDTColumn, pageIsVertical, pageIsMirrored } f
 import { unplacedByDoc, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrinkWarningsByDoc, textWrapWarningsByDoc, composedWarningsByDoc, compositionWarningsByDoc } from '../../warnings.js';
 import { centrePageText } from '../../passHelpers.js';
 import { hereResourcesNotEmbedded } from '../../../floats/hereNotEmbedded.js';
+import { paragraphResourcesCitedInNotes } from '../../../floats/paragraphEmbeds.js';
 import { effectiveResourceTypes } from '../../../../defaults/resources/resourceTypes.js';
 import { dimensionToPx } from '../../../../units.js';
 import { pageLayoutOf } from '../../../blocks/placement.js';
@@ -47,6 +48,8 @@ export interface PassFinishDeps {
   chapterEndNotes: boolean;
   codeBoxes: { blocks: ContentBlock[]; wrapped: boolean; };
   contentBlocks: ContentBlock[];
+  /** The footnotes' definitions, by id. */
+  footnoteDefs: Map<string, ContentBlock>;
   carried: ImportedJumps | undefined;
   resourceById: Map<string, Resource>;
   paragraphContainers: ParagraphContainerPlan;
@@ -85,7 +88,7 @@ export interface PassFinishDeps {
 export function createPassFinish(deps: PassFinishDeps) {
   const {
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
-    contentBlocks, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,
@@ -115,6 +118,10 @@ export function createPassFinish(deps: PassFinishDeps) {
   const incorporated = new Set(Object.keys(continuation?.resourceNumbers ?? {}));
   for (const r of hereResourcesNotEmbedded(contentBlocks, resources, effectiveResourceTypes(config, resources), incorporated)) {
     unplaced.push({ kind: 'hereNotEmbedded', resourceId: r.resourceId, sourceStart: r.sourceStart + bodyOffset, sourceEnd: r.sourceEnd + bodyOffset });
+  }
+  // One placed after its citing paragraph that only notes cite (#1492).
+  for (const r of paragraphResourcesCitedInNotes(contentBlocks, footnoteDefs.values(), resources, effectiveResourceTypes(config, resources), incorporated)) {
+    unplaced.push({ kind: 'paragraphCitedInNote', resourceId: r.resourceId, sourceStart: r.sourceStart + bodyOffset, sourceEnd: r.sourceEnd + bodyOffset });
   }
   if (unplaced.length > 0) unplacedByDoc.set(doc, unplaced);
   // The notes, in the room the flow reserved for them.

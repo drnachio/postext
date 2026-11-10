@@ -109,6 +109,14 @@ export type LayoutWarning =
    *  no page. One per resource, with the range of its first `:ref` and no
    *  page. Found by the build. */
   | { kind: 'hereNotEmbedded'; resourceId: string }
+  /** `paragraphCitedInNote` (#1492): a resource placed after the paragraph
+   *  that cites it (`position: 'paragraph'`) that only footnote
+   *  definitions cite, and that nothing else sets (no `:ref` in the running
+   *  text, no `::resource`, not taken in by the content before it): a note
+   *  is set apart from the flow, so the resource is on no page. One per
+   *  resource, with the range of its first `:ref` in a note and no page.
+   *  Found by the build. */
+  | { kind: 'paragraphCitedInNote'; resourceId: string }
   /** `shortListSplit` (#749): a list of `items` items, short by
    *  `bodyText.shortListMaxItems`, cut between two columns or pages. Under
    *  `bodyText.shortListSplit: 'warn'` every such list is reported; under

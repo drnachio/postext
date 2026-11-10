@@ -532,7 +532,7 @@ function placeDocumentPass(
     citingPageProposals, citingPageRefused
   } = createPassFinish({
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
-    contentBlocks, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,

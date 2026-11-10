@@ -334,6 +334,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'hereNotEmbedded':
       text = `The resource "${w.resourceId}" is placed "here" and cited with :ref, but no ::resource line embeds it — it is on no page; embed it where it belongs or give it a floating position (top, bottom or auto)`;
       break;
+    case 'paragraphCitedInNote':
+      text = `The resource "${w.resourceId}" is placed after the paragraph that cites it, but only a note cites it: a note has no paragraph in the running text to follow, so it is on no page; cite it in the text too, embed it with ::resource or give it a floating position`;
+      break;
     case 'tocGroupSplit':
       text = `The contents block "${w.title}" is cut between ${w.columns} columns — it is taller than a full column, or its column is too short to hold it; list fewer levels (:::toc{levels="1"}), head the blocks with a lower level (toc.groups.head) or make the rows smaller`;
       break;
