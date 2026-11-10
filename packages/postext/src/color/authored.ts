@@ -114,3 +114,26 @@ export function spotInks(spots: Iterable<Required<SpotColor>>): { inks: SpotInk[
   }
   return { inks: [...byName.values()], conflicts: [...conflicts] };
 }
+
+/**
+ * The colours of a configuration that overprint (`ColorValue.overprint`),
+ * by their screen hex (`#rrggbb`, lower case), whatever their model; a
+ * spot colour's ink that overprints (`spot.overprint`) is its own plate's
+ * business and is not listed.
+ */
+export function overprintColors(config: unknown, into: Set<string> = new Set()): Set<string> {
+  const seen = new Set<object>();
+  const walk = (v: unknown): void => {
+    if (!v || typeof v !== 'object' || seen.has(v)) return;
+    seen.add(v);
+    const o = v as { hex?: unknown; model?: unknown; overprint?: unknown };
+    if (typeof o.hex === 'string' && typeof o.model === 'string') {
+      const key = o.hex.slice(0, 7).toLowerCase();
+      if (o.overprint === true && /^#[0-9a-f]{6}$/.test(key)) into.add(key);
+      return;
+    }
+    for (const child of Array.isArray(v) ? v : Object.values(v)) walk(child);
+  };
+  walk(config);
+  return into;
+}

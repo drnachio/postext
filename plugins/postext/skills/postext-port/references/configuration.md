@@ -58,7 +58,7 @@ Conversion at `page.dpi` (default 300):
 
 ### ColorValue
 ```ts
-{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, paletteId?: string }
+{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, overprint?: boolean, paletteId?: string, tint?: number }
 ```
 - `hex`: `#rrggbb`, `#rgb`, `#rgba`, `#rrggbbaa`, `rgb()` / `rgba()` (comma or space syntax, alpha as number or %), or `'transparent'`. Translucent colours paint the same on canvas, HTML and PDF (ExtGState alpha); PDF/X-1a flattens them.
 - `model` says how the colour was specified; screens draw `hex`.
@@ -68,6 +68,11 @@ Conversion at `page.dpi` (default 300):
 - `spot` (with `model: 'spot'`): a spot ink (a Pantone, a corporate ink, a varnish),
   `{ name, cmyk, tint?, overprint? }`: `name` is the plate, `cmyk` the ink at 100 % (the PDF's
   alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process.
+- `overprint: true` (any model): in a print render everything painted in the colour overprints
+  instead of knocking out (a process colour as it separates, a spot ink as `spot.overprint`); RGB
+  output ignores it. On the palette entry, every linked use overprints. Never on paper white.
+- `tint` (with `paletteId`, 0–100): the entry at that strength over the paper (a callout ground at
+  8 % of the main colour), following the entry and part/section palettes; a screen colour in print.
   A CMYK or PDF/X PDF prints it on its own plate (a `Separation` colour space); screens draw `hex`
   (the ink at its tint). Colours naming the same ink share a plate. A source's spot swatches map
   here, on the palette entry; an SVG's `icc-named-color(…, "PANTONE 185 C")` or `data-spot` paints
@@ -2641,7 +2646,8 @@ as a change. Left out, the file is stamped with the time of the call.
   never counts), `inkLimit` (TAC over the limit), `safeZone` (text within `safeZone` of the trim; figure labels
   count), `nearTrim` (a box or picture ending within `bleedSnap` of the trim without bleeding), `spotInks` (info:
   the job's spot inks), `spotInkConflict` (one ink with two alternates), `spotInkName` (`All`/`None` or over 127
-  bytes), `spotInkSimilar` (names that differ only in case or spacing: merge them with `aliases`). Fix the critical ones.
+  bytes), `spotInkSimilar` (names that differ only in case or spacing: merge them with `aliases`), `overprintWhite`
+  (critical: a colour that overprints and puts no ink down). Fix the critical ones.
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
 `contrast` (postext ≥ 1.28; layout ignores it, out of the layout key) is the check that the text reads on its ground:

@@ -39,6 +39,8 @@ export interface PrintColorMode {
   /** Spot colours, by screen hex (`#rrggbb`): painted on their ink's
    *  own plate (see `spot.ts`). */
   spots: ReadonlyMap<string, Required<SpotColor>>;
+  /** Colours that overprint (`ColorValue.overprint`), by screen hex. */
+  overprints: ReadonlySet<string>;
 }
 
 export type ColorMode = PdfColorSpace | PrintColorMode;
@@ -63,6 +65,7 @@ export function createPrintColorMode(
   condition: PrintColorMode['condition'],
   authored: ReadonlyMap<string, CmykPercent> = new Map(),
   spots: ReadonlyMap<string, Required<SpotColor>> = new Map(),
+  overprints: ReadonlySet<string> = new Set(),
 ): PrintColorMode {
   const transform = outputTransform(profile, {
     intent: config.renderingIntent,
@@ -75,7 +78,7 @@ export function createPrintColorMode(
   spots = onePlatePerInk(spots);
   return {
     kind: 'print',
-    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}`,
+    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}${overprints.size > 0 ? `:over=${[...overprints].sort().join(',')}` : ''}`,
     standard: config.standard,
     profile,
     transform,
@@ -85,6 +88,7 @@ export function createPrintColorMode(
     convertImages: config.standard === 'pdfx1a' || config.convertImages,
     authored,
     spots,
+    overprints,
   };
 }
 

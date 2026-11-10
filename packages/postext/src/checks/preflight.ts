@@ -23,7 +23,7 @@
 import type { CmykPercent, ResolvedPrintConfig, Resource } from '../types.js';
 import type { BoundingBox, VDTComicPage, VDTDesignSlot, VDTDocument, VDTLine } from '../vdt.js';
 import type { OutputTransform } from '../color/transform.js';
-import { authoredCmykColors, authoredSpotColors, spotColorCmyk, spotInks } from '../color/authored.js';
+import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk, spotInks } from '../color/authored.js';
 import { inkNameProblem, similarInkNames, spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
 import { resolveColorValue } from '../defaults/shared.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
@@ -69,6 +69,9 @@ export type PreflightIssue = {
    *  the printer would get two plates of. An alias in `print.inks` merges
    *  them. */
   | { kind: 'spotInkSimilar'; inks: string[] }
+  /** A colour that overprints (`ColorValue.overprint`) and puts no ink
+   *  down (paper white, a spot at 0 %): on press it disappears. */
+  | { kind: 'overprintWhite'; color: string }
   | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
 );
@@ -187,7 +190,10 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const out: PreflightIssue[] = [];
   const t = options.transform;
 
+  /** Colours painted somewhere, by hex. */
+  const usedColors = new Set<string>();
   const separation = (hex: string): CmykPercent | undefined => {
+    usedColors.add(hex);
     const spot = spots.get(hex);
     if (spot) {
       usedInks.add(spot.name);
@@ -518,6 +524,17 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
       if (problem) out.push({ kind: 'spotInkName', severity: 'warning', pageIndex: offset, ink, problem });
     }
     for (const group of similarInkNames(used)) out.push({ kind: 'spotInkSimilar', severity: 'warning', pageIndex: offset, inks: group });
+  }
+
+  // Colours that overprint with no ink: they vanish on press.
+  if (cmykJob) {
+    for (const hex of overprintColors(doc.config)) {
+      if (!usedColors.has(hex)) continue;
+      const spot = spots.get(hex);
+      const ink = spot ? spotColorCmyk(spot) : authored.get(hex);
+      const blank = ink ? ink.c + ink.m + ink.y + ink.k < 0.5 && !(spot && spot.tint > 0) : hex === '#ffffff';
+      if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
+    }
   }
   return out;
 }

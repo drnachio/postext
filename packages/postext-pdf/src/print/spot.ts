@@ -29,6 +29,15 @@ export interface SpotPaint {
   tint: number;
 }
 
+/** A process colour that overprints (`ColorValue.overprint`): written
+ *  back as this CMYK (0..1), under an overprinting state. */
+export interface OverprintPaint {
+  process: [number, number, number, number];
+}
+
+/** What a stand-in `k` / `K` is written back as. */
+export type StandInPaint = SpotPaint | OverprintPaint;
+
 /** Codes stay below half the grid step, so a code added to one grid value
  *  and one subtracted from the next can never meet. */
 const STEP = 1e-8;
@@ -37,7 +46,7 @@ const MAX_CODE = 4999;
 /** Paints by the exact operands of their stand-in `k` / `K`, and the
  *  stand-in by paint: process-wide, so a colour cached by one render (see
  *  `colorFromHex`) decodes in the next. */
-const paintsByKey = new Map<string, SpotPaint>();
+const paintsByKey = new Map<string, StandInPaint>();
 const colorsByPaint = new Map<string, Color>();
 
 const round4 = (n: number): number => Math.round(n * 10000) / 10000;
@@ -87,8 +96,28 @@ export function spotStandIn(spot: Required<SpotColor>, tint: number): Color {
   return color;
 }
 
-/** The spot paint a `k` / `K` operator's operands stand for, if any. */
-export function spotPaintOf(c: number, m: number, y: number, k: number): SpotPaint | undefined {
+/**
+ * The pdf-lib colour that stands for a process colour that overprints
+ * (`ColorValue.overprint`) until the print pass writes it back as it is,
+ * under an overprinting graphics state: coded like a spot colour's
+ * stand-in. Past the codes it prints knocked out, as any process colour.
+ */
+export function overprintStandIn(c: number, m: number, y: number, k4: number): Color {
+  const key = `over|${c},${m},${y},${k4}`;
+  const known = colorsByPaint.get(key);
+  if (known) return known;
+  const code = colorsByPaint.size + 1;
+  if (code > MAX_CODE) return cmyk(c, m, y, k4);
+  const k = k4 >= 0.5 ? k4 - code * STEP : k4 + code * STEP;
+  const color = cmyk(c, m, y, k);
+  colorsByPaint.set(key, color);
+  paintsByKey.set(operandKey(c, m, y, k), { process: [c, m, y, k4] });
+  return color;
+}
+
+/** The paint a `k` / `K` operator's operands stand for, if any: a spot
+ *  ink at a tint, or a process colour that overprints. */
+export function spotPaintOf(c: number, m: number, y: number, k: number): StandInPaint | undefined {
   return paintsByKey.get(operandKey(c, m, y, k));
 }
 

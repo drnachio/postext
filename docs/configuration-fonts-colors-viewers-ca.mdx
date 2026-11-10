@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Com s’escriuen les unitats i els colors, la paleta, les fonts personalitzades, el visor HTML, el PDF i la producció per a impremta, el visor Folio i les ajudes de depuració',
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '41 min',
+  readingTime: '42 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els paràmetres que comparteix tot el llibre i els de cada tipus de sortida. Explica com s'escriu una mida i un color, i com es dona nom als colors d'una paleta. Ensenya a afegir les teves pròpies fonts. Després tracta la vista web, el fitxer PDF, els fitxers que demana una impremta i el llibre en 3D. L'última secció explica com s'activen les guies i els avisos que t'ajuden mentre treballes.",
@@ -43,6 +43,7 @@ interface ColorValue {
   cmyk?: CmykPercent;  // Els valors de quatricromia exactes d'un color definit en CMYK.
   spot?: SpotColor;    // La tinta d'un color de tinta plana.
   paletteId?: string;  // L'entrada de colorPalette que segueix.
+  tint?: number;       // La intensitat de l'entrada sobre el paper, en percentatge (amb paletteId).
 }
 ```
 
@@ -259,6 +260,8 @@ const config: PostextConfig = {
 Qualsevol `ColorValue` de la configuració pot portar un camp opcional `paletteId` que apunta a una entrada de `colorPalette`: fons de pàgina, colors del text de cos (inclòs el dels `:ref`), colors dels encapçalaments, filets de columna, colors de les llistes, colors de les taules, dels peus, dels xips i dels requadres (caixa, franja, icona, marcador, etiqueta, títol i cos), color de les marques de tall i de la retícula de base, indicadors de depuració, i tots els colors d'un disseny: les capçaleres i els peus, les obertures i els dissenys en columna dels encapçalaments, els dissenys i les capçaleres dels estils d'encapçalament, les pàgines de part i les files de part de l'índex (text, filet, farciment i vora de caixa, contorn, caplletra). Si hi és, el `hex` / `model` de l'entrada de la paleta tenen prioritat sobre el `hex` / `model` desats com a reserva. El valor de reserva només es fa servir si la paleta no hi és, és buida o no conté aquell id, cosa útil quan distribueixes una configuració que llegirà una eina que no entén les paletes.
 
 **Canvi a postext 1.5.** Fins a postext 1.4, la paleta només arribava a una llista fixa de paràmetres. Els altres (els colors dels dissenys, com capçaleres, obertures, estils d'encapçalament, parts i files de l'índex; `bodyText.referenceColor`; els colors de les etiquetes dels requadres, i els de la negreta i la cursiva del cos dels requadres) conservaven el `hex` desat al costat del `paletteId`. Un document amb un valor desat que no coincideix amb l'entrada de la paleta (tots els editats al Sandbox després de canviar l'entrada, i tots els `:ref` quan el color principal no és `#295AA3`) ara imprimeix el color de la paleta, tal com indica l'enllaç. Per conservar un color tal com era, treu-ne el `paletteId`.
+
+**Una tinta d'una entrada de la paleta.** Amb `paletteId`, `tint` (0–100) pinta l'entrada a aquesta intensitat sobre el paper: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` és el color principal al 8 %, un fons de requadre que segueix el color principal quan canvia la paleta, també la d'una part o una secció. `hex` desa el valor ja tintat, el de reserva sense l'entrada. La tinta és un color de pantalla: una sortida d'impremta la separa com qualsevol altre, encara que l'entrada sigui una tinta plana. Al Sandbox, el selector d'un color vinculat té un camp **Tint**.
 
 ### Com s'apliquen les paletes
 
@@ -751,6 +754,18 @@ colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
 ],
 ```
+
+#### Colors que sobreimprimeixen
+
+Qualsevol color pot sobreimprimir en una sortida d'impremta: `overprint: true` en un `ColorValue` fa que tot el que es pinta amb ell (text, filets, caixes, fons) s'imprimeixi a sobre del que té a sota en lloc de buidar-ho, així que un estil amb aquest color sobreimprimeix allà on es faci servir. Un color de quatricromia s'escriu tal com se separa, amb un estat gràfic de sobreimpressió; la tinta d'una tinta plana sobreimprimeix com indica `spot.overprint`. El negre al 100 % K ja sobreimprimeix (`black.overprint`). Un PDF en RGB i la pantalla ho ignoren. Posa-ho a l'entrada de la paleta perquè sobreimprimeixi tot color enllaçat a ella.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Títol', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+Un color que sobreimprimeix i no diposita tinta (el blanc del paper, una tinta al 0 %) desapareix a la impremta: el preflight el marca com a crític (`overprintWhite`). Al Sandbox, ho activa la casella «Sobreimprimir a impremta» del selector de color.
 
 ### Preflight
 

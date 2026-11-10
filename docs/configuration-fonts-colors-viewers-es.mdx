@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Las unidades, los colores y la paleta; las fuentes personalizadas; el visor HTML, el PDF y la producción para imprenta; el visor Folio, y las ayudas de depuración.',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '41 min',
+  readingTime: '42 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes que comparte todo el libro y los de cada tipo de salida. Explica cómo se escribe una medida y un color, y cómo se da nombre a los colores de una paleta. Enseña a añadir tus propias fuentes. Después trata la vista web, el archivo PDF, los archivos que pide una imprenta y el libro en 3D. La última sección activa las guías y los avisos que ayudan mientras trabajas.",
@@ -43,6 +43,7 @@ interface ColorValue {
   cmyk?: CmykPercent;  // Los valores de cuatricromía exactos de un color definido en CMYK.
   spot?: SpotColor;    // La tinta de un color de tinta plana.
   paletteId?: string;  // La entrada de colorPalette que sigue.
+  tint?: number;       // La intensidad de la entrada sobre el papel, en porcentaje (con paletteId).
 }
 ```
 
@@ -260,6 +261,8 @@ const config: PostextConfig = {
 Cualquier `ColorValue` de la configuración puede tener un campo opcional `paletteId` que remite a una entrada de `colorPalette`: el fondo de la página, los colores del texto base (incluido el de los `:ref`), los colores de los encabezados, los filetes entre columnas, los colores de las listas, los de las tablas, los pies, los chips y los recuadros (caja, franja, icono, marcador, etiqueta, título y contenido), el color de las marcas de corte y de la rejilla base, los indicadores de depuración y todos los colores de un diseño: los titulillos, las aperturas y los diseños en columna de los encabezados, los diseños y los titulillos de los estilos de encabezado, las páginas de parte y las filas de parte del índice (texto, filete, relleno y borde de caja, contorno, capitular). Cuando existe, el `hex` / `model` de la entrada de la paleta tiene prioridad sobre el `hex` / `model` guardados como valor de reserva. Ese valor de reserva solo se usa si la paleta falta, está vacía o no contiene ese id, lo que resulta útil al distribuir una configuración que leerá una herramienta que no entiende las paletas.
 
 **Cambio en postext 1.5.** Hasta postext 1.4, la paleta solo llegaba a una lista fija de ajustes. Los demás (los colores de los diseños: titulillos, aperturas, estilos de encabezado, partes, filas del índice; `bodyText.referenceColor`; los colores de las etiquetas de los recuadros y los de las negritas y cursivas de su contenido) conservaban el `hex` guardado junto a su `paletteId`. Un documento cuyo valor guardado no coincide con la entrada de la paleta (todos los editados en el Sandbox después de cambiar la entrada, y todos los `:ref` cuando el color principal no es `#295AA3`) imprime ahora el color de la paleta, como indica el vínculo. Para conservar un color tal como estaba, quita su `paletteId`.
+
+**Una tinta de una entrada de la paleta.** Con `paletteId`, `tint` (0–100) pinta la entrada a esa intensidad sobre el papel: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` es el color principal al 8 %, un fondo de recuadro que sigue al color principal cuando cambia la paleta, también la de una parte o una sección. `hex` guarda el valor ya tintado, el de reserva sin la entrada. La tinta es un color de pantalla: una salida de imprenta la separa como cualquier otro, aunque la entrada sea una tinta plana. En el Sandbox, el selector de un color vinculado tiene un campo **Tinta**.
 
 ### Cómo se aplican las paletas
 
@@ -752,6 +755,18 @@ colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
 ],
 ```
+
+#### Colores que sobreimprimen
+
+Cualquier color puede sobreimprimir en una salida para imprenta: `overprint: true` en un `ColorValue` hace que todo lo que se pinta con él (texto, filetes, cajas, fondos) se imprima encima de lo que tiene debajo en lugar de calarlo, así que un estilo con ese color sobreimprime allí donde se use. Un color de cuatricromía se escribe tal como se separa, con un estado gráfico de sobreimpresión; la tinta de un color plano sobreimprime como indica `spot.overprint`. El negro al 100 % K ya sobreimprime (`black.overprint`). Un PDF RGB y la pantalla lo ignoran. Ponlo en la entrada de la paleta para que sobreimprima todo color enlazado a ella.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Título', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+Un color que sobreimprime y no deposita tinta (el blanco del papel, una tinta al 0 %) desaparece en imprenta: la comprobación previa lo marca como crítico (`overprintWhite`). En el Sandbox, lo activa la casilla «Sobreimprimir en imprenta» del selector de color.
 
 ### Preflight
 

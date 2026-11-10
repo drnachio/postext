@@ -65,6 +65,16 @@ describe('separatePrintColors', () => {
     expect(separatePrintColors(config)).toBe(config);
   });
 
+  it('moves a colour that overprints off a hex another colour prints differently, and leaves a book without overprint or spot colours as it is', () => {
+    const cmyk = (hex: string, overprint?: boolean): ColorValue => ({ hex, model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, ...(overprint ? { overprint } : {}) });
+    const config: PostextConfig = { bodyText: { color: cmyk('#c00020') }, headings: { color: cmyk('#c00020', true) } };
+    const out = separatePrintColors(config);
+    expect(out.bodyText!.color!.hex).toBe('#c00020');
+    expect(out.headings!.color!.hex).not.toBe('#c00020');
+    const plain: PostextConfig = { bodyText: { color: cmyk('#c00020') }, headings: { color: cmyk('#c00020') } };
+    expect(separatePrintColors(plain)).toBe(plain);
+  });
+
   it('runs inside the configuration resolver, so the layout paints the separated hex', () => {
     const resolved = resolveAllConfig({
       colorPalette: [

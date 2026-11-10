@@ -4,7 +4,7 @@ import { type Color, cmyk, grayscale, rgb, type PDFPage, PDFName, PDFOperator, s
 import { hexToRgb, colorAlpha, rgbToCmyk, rgbToGrayscale } from '../../colors.js';
 import { type ColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
 import type { PageCtx } from '../primitives.js';
-import { spotStandIn } from '../../print/spot.js';
+import { overprintStandIn, spotStandIn } from '../../print/spot.js';
 
 export function makeScale(dpi: number): number {
   return 72 / dpi;
@@ -50,7 +50,11 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
       alpha = 1;
     }
     const hex6 = hex.slice(0, 7).toLowerCase();
-    const spot = colorSpace.spots.get(hex6);
+    // A colour that overprints (`ColorValue.overprint`): its ink, or its
+    // process values, overprint whatever its paint is set on.
+    const overprints = colorSpace.overprints.has(hex6);
+    const found = colorSpace.spots.get(hex6);
+    const spot = found && overprints && !found.overprint ? { ...found, overprint: true } : found;
     const exact = colorSpace.authored.get(hex6);
     if (spot) {
       // On the ink's own plate; flattened over the paper, a translucent
@@ -66,6 +70,12 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
     } else {
       const k = colorSpace.transform.fromRgb(r, g, b);
       color = cmyk(round4(k.c), round4(k.m), round4(k.y), round4(k.k));
+    }
+    // A process colour that overprints: its values under an overprinting
+    // state (the print pass writes them back).
+    if (overprints && !spot) {
+      const [c4, m4, y4, k4] = color.type === 'CMYK' ? [color.cyan, color.magenta, color.yellow, color.key] : [0, 0, 0, 0];
+      color = { ...overprintStandIn(c4, m4, y4, k4) };
     }
     if (alpha < 1) (color as AlphaColor).alpha = alpha;
     colorCache.set(key, color);

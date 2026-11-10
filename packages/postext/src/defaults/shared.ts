@@ -1,5 +1,8 @@
 import type { CaptionStyleConfig, ColorValue, ColorPaletteEntry, CompositionRule, Dimension, OrderedListsConfig, PartsBodyStyleConfig, PostextConfig, ResolvedTableStyleConfig, TableStyleConfig, UnorderedListsConfig } from '../types.js';
 import type { ResolvedConfig } from '../vdt.js';
+import { isTinted, tintHex } from './paletteTint.js';
+
+export { isTinted, paletteTints, tintHex } from './paletteTint.js';
 
 export const DEFAULT_MAIN_COLOR_ID = 'main-color';
 export const DEFAULT_MAIN_COLOR_NAME = 'Main Color';
@@ -54,6 +57,14 @@ export function colorsEqual(a: ColorValue, b: ColorValue): boolean {
   return a.hex === b.hex && a.model === b.model && a.paletteId === b.paletteId;
 }
 
+/** The value a palette-linked colour takes from its entry: the entry's, or,
+ *  tinted (`link.tint`), the entry's hex at that strength as a screen colour. */
+function linkedValue(entry: ColorValue, link: ColorValue): { hex: string; model: ColorValue['model'] } {
+  if (!isTinted(link)) return { hex: entry.hex, model: entry.model };
+  return { hex: tintHex(entry.hex, link.tint), model: 'hex' };
+}
+
+
 export function resolveColorValue(
   value: ColorValue | undefined,
   palette: ColorPaletteEntry[] | undefined,
@@ -62,7 +73,7 @@ export function resolveColorValue(
   if (!value) return fallback;
   if (value.paletteId) {
     const entry = palette?.find((e) => e.id === value.paletteId);
-    if (entry) return { hex: entry.value.hex, model: entry.value.model, paletteId: value.paletteId };
+    if (entry) return { ...linkedValue(entry.value, value), paletteId: value.paletteId, ...(isTinted(value) ? { tint: value.tint } : {}) };
     return { hex: value.hex, model: value.model };
   }
   return value;
@@ -72,14 +83,14 @@ export function resolveColor(value: ColorValue | undefined, palette: ColorPalett
   if (!value || !value.paletteId) return value;
   const entry = palette?.find((e) => e.id === value.paletteId);
   if (!entry) return { hex: value.hex, model: value.model };
-  return { hex: entry.value.hex, model: entry.value.model };
+  return linkedValue(entry.value, value);
 }
 
 function resolveRequired(value: ColorValue, palette: ColorPaletteEntry[] | undefined): ColorValue {
   if (!value.paletteId) return value;
   const entry = palette?.find((e) => e.id === value.paletteId);
   if (!entry) return { hex: value.hex, model: value.model };
-  return { hex: entry.value.hex, model: entry.value.model };
+  return linkedValue(entry.value, value);
 }
 
 /** Keys whose subtree the palette pass leaves alone: the palette itself, and
@@ -121,8 +132,10 @@ function relinkPaletteColors<T>(node: T, byId: ReadonlyMap<string, ColorValue>, 
   if (!isPlainObject(node) || ancestors.has(node)) return node;
   if (typeof node.hex === 'string' && typeof node.paletteId === 'string') {
     const entry = byId.get(node.paletteId);
-    if (!entry || (entry.hex === node.hex && entry.model === node.model)) return node;
-    return { ...node, hex: entry.hex, model: entry.model } as T;
+    if (!entry) return node;
+    const value = linkedValue(entry, node as unknown as ColorValue);
+    if (value.hex === node.hex && value.model === node.model) return node;
+    return { ...node, ...value } as T;
   }
   ancestors.add(node);
   let out: Record<string, unknown> | undefined;

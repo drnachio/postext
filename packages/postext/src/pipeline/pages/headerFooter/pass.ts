@@ -41,6 +41,10 @@ export interface HeaderFooterInputs {
    *  `flowColorValues`). Without it such a value takes the last override
    *  that changes it. */
   flowColorValues?: (overrides: Readonly<Record<string, string>>) => FlowColorValues;
+  /** The tints (`ColorValue.tint`) the configuration links to its palette:
+   *  a palette override recolours each of them as well. The resolved
+   *  configuration no longer says, so they come from the authored one. */
+  paletteTints?: readonly number[];
 }
 
 /**

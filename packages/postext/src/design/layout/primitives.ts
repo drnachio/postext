@@ -4,6 +4,7 @@
 import type { DesignTextAlign, VAlign, Resource, PageRole, PageParity, PageRoleFilter, ColorValue, ElementBoxStyle, ResolvedDesignElement } from '../../types.js';
 import type { VDTDesignBoxStyle, VDTPathCommand, VDTPathStroke, VDTPathMarker } from '../../vdt.js';
 import { parseInlineSnippetSpans } from '../../parse/inlineSnippet.js';
+import { isTinted, tintHex } from '../../defaults/shared.js';
 import type { InlineSpan } from '../../parse/types.js';
 import type { DesignPlaceholderContext } from '../placeholders.js';
 import type { DesignTextRun } from '../richText.js';
@@ -329,7 +330,8 @@ export function colorHex(c: ColorValue | undefined): string {
 function overrideColor(c: ColorValue | undefined, overrides: Record<string, string>): ColorValue | undefined {
   if (!c?.paletteId) return c;
   const hex = overrides[c.paletteId];
-  return hex ? { ...c, hex } : c;
+  if (!hex) return c;
+  return isTinted(c) ? { ...c, hex: tintHex(hex.startsWith('#') ? hex : `#${hex}`, c.tint), model: 'hex' } : { ...c, hex };
 }
 
 function overrideBoxStyle(style: ElementBoxStyle | undefined, overrides: Record<string, string>): ElementBoxStyle | undefined {
