@@ -3,7 +3,8 @@ import { compileMatcher, matchRanges, matchesTokens, normalizeText, tokenize } f
 
 describe('normalizeText', () => {
   it('strips accents and lowercases while keeping the length', () => {
-    expect(normalizeText('Márgen Ñ')).toBe('margen n');
+    expect(normalizeText('Márgen Ñ')).toBe('margen ñ');
+    expect(normalizeText('Йод ёлка Ça')).toBe('йод ёлка ça');
     expect(normalizeText('Tamaño de página')).toHaveLength('Tamaño de página'.length);
   });
   it('maps a combining mark to a space so indices stay aligned', () => {
