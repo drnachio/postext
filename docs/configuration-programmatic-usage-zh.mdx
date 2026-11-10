@@ -334,6 +334,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>图片按这个比例印出；只有<code>overflowPx</code>这样说时才超出版心。</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>浮动图片因<code>layout.pullFloatsToCitation</code>而在其安全区（<code>Resource.safeArea</code>）内被裁切，以留在引用它的页面上。<code>resourceId</code>指明是哪一个，<code>share</code>是被裁去的高度比例，<code>pageIndex</code>是所在页。指向第一次引用它的段落。</td>
+      <td>图片按裁切后的样子印出，裁切从不超出安全区。不推荐使用<code>pullFloatsToCitation</code>：<code>placement.citingPage</code>和<code>placement.shrink: 'slot'</code>能让图片靠近引用处而不必裁切。</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>带印刷尺寸的位图（它自己的<code>bitmap.resolution</code>，或<code>layout.bitmapResolution</code>中的数值；不是从文件读出的分辨率）排进一栏后，不到印刷尺寸的一半，而该页的版心比这一栏宽。<code>resourceId</code>指明图片，<code>scale</code>是保留的印刷宽度比例，<code>printWidthPx</code>、<code>widthPx</code>和<code>pageWidthPx</code>分别是印刷、栏和版心的宽度。用<code>placement.width</code>收窄的、为放进位置而缩小的、旋转过的或排在模板页的框里的图片不报告。指向第一次引用它的段落。postext 1.37起。</td>
       <td>图片按栏宽印出。正文流中的图片不会比所在栏更宽，而默认页面有两栏（<code>layout.layoutType: 'double'</code>）：把页面改为单栏，让图片跨整页浮动（<code>placement.span: 'page'</code>），或者如果想要这个尺寸，就提高它的分辨率。</td>
@@ -367,6 +372,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unplaced</code></td>
       <td>排版结束时仍在等空位的框或浮动资源（<code>resourceId</code>）：为它新开的页面放不下它（例如这些页面没有侧栏，而它是侧栏框）。指向该框或引用该资源的块；不带页码。postext 1.25起。</td>
       <td>它不在任何页面上。在postext 1.24及以前，它会直接消失，不给任何警告。</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>放在引用段落之后（<code>position: 'paragraph'</code>）的资源只被脚注（包括章末注）引用：正文中没有<code>:ref</code>，没有<code>::resource</code>行，之前各章也没有放置它。注释排在文本流之外，因此没有可以跟随的段落。<code>resourceId</code>指明是哪一个。指向它在注释中的第一个<code>:ref</code>；不带页码。</td>
+      <td>它不在任何页面上。请在正文中也引用它、用<code>::resource</code>嵌入它，或给它一个浮动位置。</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

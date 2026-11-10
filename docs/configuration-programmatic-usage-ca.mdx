@@ -334,6 +334,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>La imatge s'imprimeix a aquesta escala; fora de la caixa de text només quan ho diu <code>overflowPx</code>.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Una imatge flotant s'ha retallat dins de la seva zona segura (<code>Resource.safeArea</code>) per quedar-se a la pàgina que la cita, per <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> la identifica, <code>share</code> és la fracció de l'alçada retallada i <code>pageIndex</code>, la pàgina. L'avís indica el paràgraf que la cita per primer cop.</td>
+      <td>La imatge s'imprimeix retallada, mai més enllà de la seva zona segura. No es recomana <code>pullFloatsToCitation</code>: <code>placement.citingPage</code> i <code>placement.shrink: 'slot'</code> deixen la imatge a prop de la cita sense retallar-la.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Un mapa de bits amb mida d'impressió (el seu <code>bitmap.resolution</code> o un nombre a <code>layout.bitmapResolution</code>; no una resolució llegida del fitxer) compost en una columna que el deixa per sota de la meitat d'aquesta mida, en una pàgina amb la caixa de text més ampla que la columna. <code>resourceId</code> la identifica, <code>scale</code> és la fracció de l'amplada d'impressió que conserva, i <code>printWidthPx</code>, <code>widthPx</code> i <code>pageWidthPx</code> són les amplades d'impressió, de columna i de caixa. No es dona cap avís per a una imatge estrenyida amb <code>placement.width</code>, reduïda a l'espai disponible, girada o col·locada al marc d'una pàgina composta. L'avís indica el paràgraf que la cita primer. Des de postext 1.37.</td>
       <td>La imatge s'imprimeix a l'amplada de la seva columna. Una imatge al flux mai no és més ampla que la seva columna i la pàgina per defecte en té dues (<code>layout.layoutType: 'double'</code>): compon la pàgina a una columna, fes flotar la imatge sobre tota la pàgina (<code>placement.span: 'page'</code>) o puja'n la resolució si aquesta és la mida que busques.</td>
@@ -367,6 +372,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td><code>unplaced</code></td>
       <td>Una caixa o un recurs flotant (<code>resourceId</code>) que encara esperava un espai lliure quan ha acabat la composició: les pàgines obertes per a ell no el van poder acollir (una caixa lateral on aquestes pàgines no tenen columna lateral, per exemple). L'avís indica la caixa o el bloc que cita el recurs; no té pàgina. Des de postext 1.25.</td>
       <td>No és a cap pàgina. Fins a postext 1.24 desapareixia sense avís.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Un recurs col·locat després del paràgraf que el cita (<code>position: 'paragraph'</code>) que només citen notes al peu, també les de final de capítol: no hi ha cap <code>:ref</code> al text corrent ni cap línia <code>::resource</code>, i cap capítol anterior no l'ha col·locat. La nota es compon a part del flux, de manera que no hi ha cap paràgraf darrere del qual posar-lo. <code>resourceId</code> l'identifica. L'avís indica el seu primer <code>:ref</code> dins d'una nota; no té pàgina.</td>
+      <td>No és a cap pàgina. Cita'l també al text corrent, insereix-lo amb <code>::resource</code> o dona-li una posició flotant.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

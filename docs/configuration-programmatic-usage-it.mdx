@@ -334,6 +334,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>L’immagine viene stampata a quella scala; oltre la gabbia del testo solo quando lo dice <code>overflowPx</code>.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Un’immagine flottante è stata ritagliata dentro la sua zona sicura (<code>Resource.safeArea</code>) per restare sulla pagina che la cita, da <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> la indica, <code>share</code> è la frazione della sua altezza ritagliata, <code>pageIndex</code> la pagina. Punta al paragrafo che la cita per primo.</td>
+      <td>L’immagine viene stampata ritagliata, mai oltre la sua zona sicura. <code>pullFloatsToCitation</code> è sconsigliato: <code>placement.citingPage</code> e <code>placement.shrink: 'slot'</code> tengono un’immagine vicino al suo richiamo senza ritagliarla.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Una bitmap con dimensione di stampa (il suo <code>bitmap.resolution</code> o un numero in <code>layout.bitmapResolution</code>; non una risoluzione letta dal file) composta in una colonna che la tiene sotto la metà di quella dimensione, su una pagina con la gabbia di testo più larga della colonna. <code>resourceId</code> la indica, <code>scale</code> è la parte della sua larghezza di stampa che conserva, <code>printWidthPx</code>, <code>widthPx</code> e <code>pageWidthPx</code> le larghezze di stampa, di colonna e di gabbia. Non si segnala un'immagine ristretta con <code>placement.width</code>, ridotta al suo spazio, ruotata o messa nella cornice di una pagina composta. Indica il paragrafo che la cita per primo. Da postext 1.37.</td>
       <td>L'immagine si stampa alla larghezza della sua colonna. Un'immagine nel flusso non è mai più larga della sua colonna e la pagina predefinita ne ha due (<code>layout.layoutType: 'double'</code>): componi la pagina su una colonna, fai flottare l'immagine su tutta la pagina (<code>placement.span: 'page'</code>) o alzane la risoluzione se quella è la dimensione voluta.</td>
@@ -367,6 +372,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unplaced</code></td>
       <td>Un riquadro o una risorsa flottante (<code>resourceId</code>) ancora in attesa di uno spazio quando l’impaginazione è finita: le pagine aperte per lui non potevano accoglierlo (per esempio un riquadro laterale dove quelle pagine non hanno una colonna laterale). Punta al riquadro o al blocco che cita la risorsa; nessuna pagina. Da postext 1.25.</td>
       <td>Non si trova su nessuna pagina. Fino a postext 1.24 spariva senza avviso.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Una risorsa collocata dopo il paragrafo che la cita (<code>position: 'paragraph'</code>) che solo le note a piè di pagina citano, note di fine capitolo comprese: nessun <code>:ref</code> nel testo corrente, nessuna riga <code>::resource</code>, e nessun capitolo precedente l’ha collocata. La nota si compone a parte rispetto al flusso, quindi non c’è un paragrafo da seguire. <code>resourceId</code> la indica. Punta al suo primo <code>:ref</code> in una nota; nessuna pagina.</td>
+      <td>Non si trova su nessuna pagina. Citala anche nel testo corrente, inseriscila con <code>::resource</code> oppure dalle una posizione flottante.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

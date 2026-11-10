@@ -334,6 +334,11 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td>La imagen se imprime a esa escala; solo se sale de la caja de texto si lo indica <code>overflowPx</code>.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Una imagen flotante se recortó dentro de su zona segura (<code>Resource.safeArea</code>) para quedarse en la página que la cita, por <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> indica la imagen; <code>share</code>, la fracción de su alto recortada, y <code>pageIndex</code>, la página. El aviso apunta al párrafo que la cita por primera vez.</td>
+      <td>La imagen se imprime recortada, nunca más allá de su zona segura. No se recomienda <code>pullFloatsToCitation</code>: <code>placement.citingPage</code> y <code>placement.shrink: 'slot'</code> dejan la imagen junto a su cita sin recortarla.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Un mapa de bits con tamaño de impresión (su propio <code>bitmap.resolution</code>, o un número en <code>layout.bitmapResolution</code>, pero no una resolución leída del archivo) compuesto en una columna que lo deja por debajo de la mitad de ese tamaño, en una página cuya caja de texto es más ancha que la columna. <code>resourceId</code> indica la imagen; <code>scale</code>, la fracción de su ancho de impresión que conserva, y <code>printWidthPx</code>, <code>widthPx</code> y <code>pageWidthPx</code>, los anchos de impresión, de la columna y de la caja de texto. No se avisa de una imagen estrechada con <code>placement.width</code>, reducida a su hueco, girada o colocada en el marco de una página compuesta. El aviso apunta al párrafo que la cita por primera vez. Desde postext 1.37.</td>
       <td>La imagen se imprime al ancho de su columna. Una imagen en el flujo nunca es más ancha que su columna, y la página por defecto tiene dos (<code>layout.layoutType: 'double'</code>): compón la página a una sola columna, haz que la imagen flote a lo ancho de la página (<code>placement.span: 'page'</code>) o aumenta su resolución si ese es el tamaño que buscas.</td>
@@ -367,6 +372,11 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td><code>unplaced</code></td>
       <td>Un recuadro o un recurso flotante (<code>resourceId</code>) que seguía esperando un hueco cuando terminó la maquetación: las páginas abiertas para él no podían contenerlo (por ejemplo, un recuadro lateral cuando esas páginas no tienen columna lateral). El aviso apunta al recuadro o al bloque que cita el recurso, sin página. Desde postext 1.25.</td>
       <td>No está en ninguna página. Hasta postext 1.24 desaparecía sin aviso.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Un recurso colocado tras el párrafo que lo cita (<code>position: 'paragraph'</code>) al que solo citan notas al pie, también las de final de capítulo: no hay <code>:ref</code> en el texto corrido ni línea <code>::resource</code>, y ningún capítulo anterior lo colocó. La nota se compone aparte del flujo, así que no hay párrafo tras el que ponerlo. <code>resourceId</code> indica el recurso. El aviso apunta a su primer <code>:ref</code> dentro de una nota, sin página.</td>
+      <td>No está en ninguna página. Cítalo también en el texto corrido, insértalo con <code>::resource</code> o dale una posición flotante.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

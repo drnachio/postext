@@ -334,6 +334,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Das Bild wird in dieser Skalierung ausgegeben; über den Satzspiegel hinaus nur, wenn <code>overflowPx</code> gesetzt ist.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Ein gleitendes Bild wurde durch <code>layout.pullFloatsToCitation</code> innerhalb seines Sicherheitsbereichs (<code>Resource.safeArea</code>) beschnitten, damit es auf der Seite bleibt, die es zitiert. <code>resourceId</code> gibt es an, <code>share</code> ist der beschnittene Anteil seiner Höhe, <code>pageIndex</code> die Seite. Verweist auf den Absatz, der es zuerst zitiert.</td>
+      <td>Das Bild wird beschnitten ausgegeben, nie über seinen Sicherheitsbereich hinaus. <code>pullFloatsToCitation</code> wird nicht empfohlen: <code>placement.citingPage</code> und <code>placement.shrink: 'slot'</code> halten ein Bild nahe an seinem Verweis, ohne es zu beschneiden.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Ein Bitmap mit Druckgröße (eigenes <code>bitmap.resolution</code> oder eine Zahl in <code>layout.bitmapResolution</code>; keine aus der Datei gelesene Auflösung), gesetzt in einer Spalte, die es unter der Hälfte dieser Größe hält, auf einer Seite, deren Satzspiegel breiter als die Spalte ist. <code>resourceId</code> gibt es an, <code>scale</code> ist der Anteil seiner Druckbreite, den es behält, <code>printWidthPx</code>, <code>widthPx</code> und <code>pageWidthPx</code> sind die Breiten von Druck, Spalte und Satzspiegel. Ein Bild, das <code>placement.width</code> schmaler macht, das auf seinen Platz verkleinert, gedreht oder in den Rahmen einer zusammengesetzten Seite gesetzt ist, wird nicht gemeldet. Zeigt auf den Absatz, der es zuerst zitiert. Seit postext 1.37.</td>
       <td>Das Bild wird in Spaltenbreite ausgegeben. Ein Bild im Fluss ist nie breiter als seine Spalte, und die Standardseite hat zwei (<code>layout.layoutType: 'double'</code>): Setzen Sie die Seite einspaltig, lassen Sie das Bild als seitenbreites Gleitobjekt setzen (<code>placement.span: 'page'</code>) oder erhöhen Sie seine Auflösung, wenn diese Größe gewollt ist.</td>
@@ -367,6 +372,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unplaced</code></td>
       <td>Ein Kasten oder eine gleitende Ressource (<code>resourceId</code>), die beim Ende des Layouts noch auf einen Platz wartet: Die dafür geöffneten Seiten konnten sie nicht aufnehmen (etwa ein Seitenkasten, wo diese Seiten keine Seitenspalte haben). Verweist auf den Kasten oder auf den Block, der die Ressource zitiert; keine Seite. Seit postext 1.25.</td>
       <td>Es steht auf keiner Seite. Bis postext 1.24 fiel es ohne Warnung weg.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Eine Ressource, die nach dem zitierenden Absatz steht (<code>position: 'paragraph'</code>), wird nur von Fußnoten zitiert, Kapitelendnoten eingeschlossen: kein <code>:ref</code> im Fließtext, keine <code>::resource</code>-Zeile, und kein früheres Kapitel hat sie platziert. Eine Fußnote wird abseits des Textflusses gesetzt, es gibt also keinen Absatz, dem sie folgen könnte. <code>resourceId</code> gibt sie an. Verweist auf ihr erstes <code>:ref</code> in einer Fußnote; keine Seite.</td>
+      <td>Sie steht auf keiner Seite. Zitieren Sie sie auch im Fließtext, betten Sie sie mit <code>::resource</code> ein oder geben Sie ihr eine gleitende Position.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

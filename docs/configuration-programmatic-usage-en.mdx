@@ -334,6 +334,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>The picture is printed at that scale; past the text block only when <code>overflowPx</code> says so.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>A floated picture was cropped within its safe area (<code>Resource.safeArea</code>) to stay on the page that cites it, by <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> names it, <code>share</code> is the share of its height cropped, <code>pageIndex</code> the page. Points at the paragraph that first cites it.</td>
+      <td>The picture is printed cropped, never past its safe area. <code>pullFloatsToCitation</code> is not recommended: <code>placement.citingPage</code> and <code>placement.shrink: 'slot'</code> keep a picture by its citation without cropping it.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>A bitmap with a print size (its own <code>bitmap.resolution</code>, or a number in <code>layout.bitmapResolution</code>; not a resolution read from the file) set in a column that holds it at less than half that size, on a page whose text block is wider than the column. <code>resourceId</code> names it, <code>scale</code> is the share of its print width it keeps, <code>printWidthPx</code>, <code>widthPx</code> and <code>pageWidthPx</code> the print, column and text block widths. A picture narrowed by <code>placement.width</code>, shrunk to its slot, turned or set in a composed page's frame is not reported. Points at the paragraph that first cites it. Since postext 1.37.</td>
       <td>The picture is printed at its column's width. A picture in the flow is never wider than its column and the default page has two (<code>layout.layoutType: 'double'</code>): set the page in one column, float it across the page (<code>placement.span: 'page'</code>), or raise its resolution if that size is the one wanted.</td>
@@ -367,6 +372,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unplaced</code></td>
       <td>A box or a floated resource (<code>resourceId</code>) still waiting for a slot when the layout ended: the pages opened for it could not take it (a side box where those pages have no side column, say). Points at the box or at the block citing the resource; no page. Since postext 1.25.</td>
       <td>It is on no page. Up to postext 1.24 it dropped out without a warning.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>A resource placed after the paragraph that cites it (<code>position: 'paragraph'</code>) that only footnotes cite, chapter-end notes included: no <code>:ref</code> in the running text, no <code>::resource</code> line, and no earlier chapter placed it. A note is set apart from the flow, so there is no paragraph to follow. <code>resourceId</code> names it. Points at its first <code>:ref</code> in a note; no page.</td>
+      <td>It is on no page. Cite it in the running text too, embed it with <code>::resource</code>, or give it a floating position.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

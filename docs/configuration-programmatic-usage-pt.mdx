@@ -334,6 +334,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>A imagem é impressa nessa escala; além da mancha de texto só quando <code>overflowPx</code> o diz.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Uma imagem flutuante foi recortada dentro da área segura dela (<code>Resource.safeArea</code>) para ficar na página que a cita, por <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> a identifica, <code>share</code> é a fração da altura recortada e <code>pageIndex</code>, a página. Aponta para o parágrafo que a cita primeiro.</td>
+      <td>A imagem é impressa recortada, nunca além da área segura. <code>pullFloatsToCitation</code> não é recomendado: <code>placement.citingPage</code> e <code>placement.shrink: 'slot'</code> mantêm a imagem perto da citação sem recortá-la.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Um bitmap com tamanho de impressão (o <code>bitmap.resolution</code> dele ou um número em <code>layout.bitmapResolution</code>; não uma resolução lida do arquivo) composto numa coluna que o deixa abaixo da metade desse tamanho, numa página cuja mancha de texto é mais larga que a coluna. <code>resourceId</code> o identifica, <code>scale</code> é a parte da largura de impressão que ele mantém, e <code>printWidthPx</code>, <code>widthPx</code> e <code>pageWidthPx</code> são as larguras de impressão, de coluna e de mancha. Uma imagem estreitada por <code>placement.width</code>, reduzida ao espaço dela, girada ou posta no bloco de uma página composta não é sinalizada. Aponta para o parágrafo que a cita primeiro. Desde o postext 1.37.</td>
       <td>A imagem é impressa na largura da coluna. Uma imagem no fluxo nunca é mais larga que a coluna e a página padrão tem duas (<code>layout.layoutType: 'double'</code>): componha a página numa coluna, faça a imagem flutuar sobre toda a página (<code>placement.span: 'page'</code>) ou aumente a resolução se esse for o tamanho desejado.</td>
@@ -367,6 +372,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unplaced</code></td>
       <td>Um boxe ou um recurso flutuante (<code>resourceId</code>) que ainda esperava um espaço quando a diagramação terminou: as páginas abertas para ele não o comportaram (um boxe lateral onde essas páginas não têm coluna lateral, por exemplo). Aponta para o boxe ou para o bloco que cita o recurso; sem página. Desde o postext 1.25.</td>
       <td>Não está em nenhuma página. Até o postext 1.24 sumia sem aviso.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Um recurso posicionado depois do parágrafo que o cita (<code>position: 'paragraph'</code>) que só notas de rodapé citam, inclusive as de fim de capítulo: não há <code>:ref</code> no texto corrido nem linha <code>::resource</code>, e nenhum capítulo anterior o posicionou. A nota é composta à parte do fluxo, então não há parágrafo para ele seguir. <code>resourceId</code> o identifica. Aponta para o primeiro <code>:ref</code> dele dentro de uma nota; sem página.</td>
+      <td>Não está em nenhuma página. Cite-o também no texto corrido, insira-o com <code>::resource</code> ou dê a ele uma posição flutuante.</td>
     </tr>
     <tr>
       <td><code>shortListSplit</code></td>

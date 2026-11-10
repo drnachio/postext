@@ -451,7 +451,7 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>把错过引用页、落到下一页的图或表拉回引用它的那一页：有安全区的图片在安全区内裁切以留在该页；否则在字距允许处把引用页的段落各排短一行。只有当该图因此落在那一页、且不多出一页、不推后其他图时，才保留这一版面。在 Sandbox 中为“版面”下的<em>把图拉回引用页</em>。</td>
+      <td>不推荐。把错过首次引用页、但差距不超过四行正文的浮动体拉回该页（按它在该页最佳位置上的实际宽度计量）。分两步进行，每一步只有在浮动体因此落在引用页、不多出一页、没有别的浮动体推后、此前已排齐的各栏仍然齐平、也没有丢掉任何占据引用页顶部的浮动体（<code>floatsAtCitingPage</code>）时才保留：先让引用页上位于引用处之前的段落少排一行（只收紧词间距，从不加字间距），收紧的行数以浮动体所缺为限，且只在浮动体回来的页面上保留；然后，带<a href="/zh/docs/document-format-resources#安全区">安全区</a>、仍未回到本页的图片在安全区内裁切，只裁到位置所需为止，每次裁切报告一条<code>floatCropped</code>警告。之后的各步（例如分栏平衡）会让拉回的浮动体留在引用页。这个选项与按规则放置相抵触：规则会把浮动体移到下一个位置，而它强行占住引用页，把段落排得比断行算法选定的更紧，还会裁切图片。要按规则让浮动体靠近引用处，请用<code>floatsAtCitingPage</code>或<a href="/zh/docs/document-format-resources#位置"><code>placement.citingPage</code></a>（浮动体占据引用行所在页的顶部，引用处之上的文字移到它下方）以及<code>placement.shrink: 'slot'</code>（图片按原比例缩小，留在引用它的页面上）。在 Sandbox 中为“版面”下的<em>将图拉回引用所在页</em>。</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

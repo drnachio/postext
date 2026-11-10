@@ -143,7 +143,7 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
-      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入（排在那里的表放不进本栏剩余空间时，在行与行之间切开，见<a href="/zh/docs/configuration-resources#比页面还高的表">比页面还高的表</a>）。 <code>"paragraph"</code>（本副本特有）同样把资源嵌入正文，但无需 <code>::resource</code> 行，而是放在首次引用它的段落之后（引用在列表中则放在列表其余项之后，在框内则放在框之后）。其排版与放在该段落之后的 <code>"here"</code> 完全相同，包括文字绕排、侧栏中的图注和槽内并排的图注。</td>
+      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入（排在那里的表放不进本栏剩余空间时，在行与行之间切开，见<a href="/zh/docs/configuration-resources#比页面还高的表">比页面还高的表</a>）。 <code>"paragraph"</code>同样把资源嵌入正文，但无需<code>::resource</code>行，而是放在首次用<code>:ref</code>引用它的段落之后。引用位于框（<code>:::callout</code>）或<code>:::paragraphs</code> / <code>:::columns</code>组内任何位置时，资源放在最外层这类容器之后，回到主文本流（框套框时放在外层框之后）；引用位于标题中时，放在该标题引出的段落之后（绝不放在标题与其正文之间：后面跟着列表时放在列表之后，紧随其后的子标题一并跳过）；引用位于列表项中时，放在整个列表之后；段落在行间公式之后继续时，放在续接部分之后。同一段落引用的两个资源都放在该段之后，按引用顺序排列。脚注（包括章末注）中的引用不算，因为注释排在文本流之外：只有注释引用、没有<code>::resource</code>行放置、之前各章也未放置的资源不在任何页面上，排版会在它在注释中的第一次引用处报告（<code>paragraphCitedInNote</code>）。第一次引用就是自身<code>::resource</code>行的资源，像<code>"here"</code>一样排在那里；此后该资源的<code>::resource</code>行只算引用。其余情况下，其排版与放在该段落之后的<code>"here"</code>完全相同，包括文字绕排、侧栏中的图注、槽内的图注，以及<code>span: 'page'</code>切开栏带。它从不旋转，从不成为整页插图（<code>plate</code>），也从不为放进某个位置而缩小。</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
