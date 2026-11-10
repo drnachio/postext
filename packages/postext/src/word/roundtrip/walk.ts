@@ -25,8 +25,8 @@ export const isHolderChar = (ch: string | undefined): boolean => ch === '\u00a0'
 
 export type Token =
   | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; note?: string; para: number; look?: string }
-  | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps }
-  | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number; renamed?: true }
+  | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps; tbl?: number }
+  | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number; renamed?: true; tbl?: number }
   | { t: 'bmEnd'; wid: string; para: number }
   | { t: 'del'; para: number }
   | { t: 'cStart'; cid: string }
@@ -83,6 +83,9 @@ interface WalkState {
    *  (a list marker, a folio) is told apart from paragraphs the user added. */
   boxes: number[];
   nextBox: number;
+  /** The tables being read, innermost last: a paragraph typed in a table
+   *  of the book is told from one typed beside it. */
+  tables: number[];
   /** Complex fields: whether each open field is still in its code part,
    *  and whether its result is skipped (see `GENERATED_FIELD`). */
   fields: { code: boolean; skip: boolean; instr: string; href?: string; page?: boolean }[];
@@ -112,6 +115,8 @@ interface WalkState {
 
 const curPara = (s: WalkState): number => s.paras[s.paras.length - 1] ?? -1;
 const curBox = (s: WalkState): number => s.boxes[s.boxes.length - 1] ?? -1;
+/** The innermost table being read, as a token's `tbl`. */
+const inTable = (s: WalkState): { tbl?: number } => (s.tables.length ? { tbl: s.tables[s.tables.length - 1]! } : {});
 
 /** Paragraph styles of a contents list or an index: what Word builds from
  *  the document, never text of the source. */
@@ -363,7 +368,7 @@ function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
         const bookmark = attr(c, 'name') ?? '';
         const renamed = renamedFragmentIdOf(bookmark);
         const fid = renamed ?? fragmentIdOf(bookmark);
-        if (fid !== undefined) s.out.push({ t: 'bmStart', wid: attr(c, 'id') ?? '', fid, para: curPara(s), depth: s.paras.length, box: curBox(s), ...(renamed !== undefined ? { renamed: true as const } : {}) });
+        if (fid !== undefined) s.out.push({ t: 'bmStart', wid: attr(c, 'id') ?? '', fid, para: curPara(s), depth: s.paras.length, box: curBox(s), ...(renamed !== undefined ? { renamed: true as const } : {}), ...inTable(s) });
         break;
       }
       case 'bookmarkEnd': {
@@ -414,7 +419,7 @@ function openHoisted(s: WalkState, p: XmlElement, ord: number): void {
   if (!s.hoisted.length) return;
   const ends = bookmarkEnds(p);
   const here = (t: { wid: string }): number => ends.indexOf(t.wid);
-  const starts = s.hoisted.map((t) => ({ ...t, para: ord, depth: s.paras.length, box: curBox(s) }));
+  const starts = s.hoisted.map((t) => ({ ...t, para: ord, depth: s.paras.length, box: curBox(s), ...inTable(s) }));
   s.hoisted = [];
   // Bookmarks that end in another paragraph open at this one's start.
   for (const t of starts) if (here(t) < 0) s.out.push(t);
@@ -468,7 +473,7 @@ function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
   if (child(child(child(p, 'pPr'), 'rPr'), 'del') !== undefined) s.joinNext = ord;
   else if (!ctx.deleted) {
     const props = paraProps(p);
-    s.out.push({ t: 'para', para: ord, depth, box: curBox(s), ...(props ? { props } : {}) });
+    s.out.push({ t: 'para', para: ord, depth, box: curBox(s), ...(props ? { props } : {}), ...inTable(s) });
   }
 }
 
@@ -479,7 +484,10 @@ function walkBlocks(s: WalkState, el: XmlElement, ctx: RunCtx): void {
     if (name === 'p') {
       walkParagraph(s, c, ctx);
     } else if (name === 'tbl') {
+      // Told apart by the paragraph it opens at and how deep it nests.
+      s.tables.push(s.nextPara * 64 + s.tables.length);
       for (const tr of children(c, 'tr')) for (const tc of children(tr, 'tc')) walkBlocks(s, tc, ctx);
+      s.tables.pop();
     } else if (name === 'sdt') {
       const listing = LISTING_TAG.test(attr(child(child(c, 'sdtPr'), 'tag'), 'val') ?? '');
       walkBlocks(s, child(c, 'sdtContent') ?? c, listing ? { ...ctx, listing } : ctx);
@@ -519,7 +527,7 @@ export function walkPart(
   boxStart = 0,
   more: { looks?: StyleLooks; generated?: string[] } = {},
 ): { tokens: Token[]; nextPara: number; nextBox: number; noProof: boolean } {
-  const s: WalkState = { out, links, paras: [], nextPara: start, boxes: [boxStart], nextBox: boxStart + 1, fields: [], hoisted: [], chained: new Map(), pStyles: [], genText: '', ...more };
+  const s: WalkState = { out, links, paras: [], nextPara: start, boxes: [boxStart], nextBox: boxStart + 1, tables: [], fields: [], hoisted: [], chained: new Map(), pStyles: [], genText: '', ...more };
   walkBlocks(s, container, {});
   // Starts no paragraph followed.
   out.push(...s.hoisted);

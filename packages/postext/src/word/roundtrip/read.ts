@@ -62,6 +62,9 @@ export interface AddedParagraph {
   /** The fragment whose bookmark opens right after the paragraph, in the
    *  same run of paragraphs. */
   next?: string;
+  /** The paragraph stands in a table, the same one as the bookmark it is
+   *  placed by: in a table of the book, a row or a line added to it. */
+  cell?: true;
 }
 
 export interface ReadDocx {
@@ -166,11 +169,18 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
   const fragments = new Map<string, ReadFragment>();
   const open: { wid: string; fid: string; depth: number }[] = [];
   const lastClosedIn = new Map<number, string>();
-  /** Characters waiting for a fragment that opens later in their paragraph. */
-  let pending: { para: number; chars: ReadChar[]; dels: number } | undefined;
+  /** Characters waiting for a fragment that opens later in their paragraph.
+   *  `after`: they stand behind a fragment postext generates (a caption's
+   *  number), and `at` are the places of the tracked deletions among them. */
+  let pending: { para: number; chars: ReadChar[]; dels: number; after?: string; at?: number[] } | undefined;
   /** Paragraphs without a bookmark yet (added by the user), with the
    *  container they stand in. */
-  let orphan: { chars: ReadChar[]; box: number; props?: ParaProps; afterSect: boolean }[] = [];
+  let orphan: { chars: ReadChar[]; box: number; props?: ParaProps; afterSect: boolean; tbl?: number }[] = [];
+  /** The fragments postext generates: text typed just after one, before
+   *  the book's own text in the same paragraph, belongs to that text. */
+  const generated = new Set(map.fragments.filter((f) => f.target.kind === 'generated').map((f) => f.id));
+  /** The table each fragment's bookmark opens in. */
+  const tableOf = new Map<string, number>();
   const added: AddedParagraph[] = [];
   const strays: string[] = [];
   /** A section ended since the last bookmark (semantic: a chapter end), so
@@ -191,7 +201,16 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
     if (!f) fragments.set(fid, (f = { chars: [], dels: [], startPara: -1, endPara: -1 }));
     return f;
   };
-  const target = (para: number): string | undefined => open[open.length - 1]?.fid ?? lastClosedIn.get(para);
+  /** Text held behind a generated fragment goes to it after all: no text
+   *  of the book followed in the paragraph. */
+  const releaseHeld = (): void => {
+    if (!pending || pending.after === undefined) return;
+    const f = frag(pending.after);
+    const base = f.chars.length;
+    for (const d of pending.at ?? []) f.dels.push(base + d);
+    f.chars.push(...pending.chars);
+    pending = undefined;
+  };
   // A paragraph in a container without any bookmark (a text box holding a
   // list marker, a folio or a running head) is decoration, not text the
   // user added; the formatted writer leaves those unbookmarked.
@@ -209,7 +228,8 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
     for (const o of paras) {
       const before = nextFid !== undefined && (!lastFid || o.afterSect);
       const fid = before ? nextFid : lastFid;
-      if (fid) added.push({ fid, side: before ? 'before' : 'after', chars: o.chars, ...(o.props ? { props: o.props } : {}), ...(nextFid !== undefined ? { next: nextFid } : {}) });
+      const cell = o.tbl !== undefined && fid !== undefined && tableOf.get(fid) === o.tbl;
+      if (fid) added.push({ fid, side: before ? 'before' : 'after', chars: o.chars, ...(o.props ? { props: o.props } : {}), ...(nextFid !== undefined ? { next: nextFid } : {}), ...(cell ? { cell } : {}) });
     }
   };
   const known = new Set(map.fragments.map((f) => f.id));
@@ -229,6 +249,10 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
           named.add(tok.fid);
         }
         boxesWithMarks.add(tok.box);
+        if (tok.tbl !== undefined) tableOf.set(tok.fid, tok.tbl);
+        // Text held behind a generated fragment: the book's own text
+        // opens here and takes it, anything else leaves it where it was.
+        if (pending?.after !== undefined && (pending.para !== tok.para || generated.has(tok.fid) || blank(pending.chars))) releaseHeld();
         open.push({ wid: tok.wid, fid: tok.fid, depth: tok.depth });
         const f = frag(tok.fid);
         f.startPara = tok.para;
@@ -259,7 +283,17 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
       }
       case 'char':
       case 'del': {
-        const fid = target(tok.para);
+        const top = open[open.length - 1]?.fid;
+        const closed = top === undefined ? lastClosedIn.get(tok.para) : undefined;
+        if (closed !== undefined && generated.has(closed)) {
+          if (!pending || pending.para !== tok.para || pending.after !== closed) pending = { para: tok.para, chars: [], dels: 0, after: closed, at: [] };
+          if (tok.t === 'del') {
+            pending.dels++;
+            pending.at!.push(pending.chars.length);
+          } else pending.chars.push(tok);
+          break;
+        }
+        const fid = top ?? closed;
         if (fid) {
           const f = frag(fid);
           if (tok.t === 'del') f.dels.push(f.chars.length);
@@ -275,11 +309,12 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
         break;
       }
       case 'para': {
+        releaseHeld();
         const top = open[open.length - 1];
         if (top && top.depth === tok.depth) {
           frag(top.fid).chars.push({ ch: PARA_CHAR, flags: '' });
         } else if (pending && pending.para === tok.para) {
-          orphan.push({ chars: pending.chars, box: tok.box, afterSect: sectSeen, ...(tok.props ? { props: tok.props } : {}) });
+          orphan.push({ chars: pending.chars, box: tok.box, afterSect: sectSeen, ...(tok.props ? { props: tok.props } : {}), ...(tok.tbl !== undefined ? { tbl: tok.tbl } : {}) });
           pending = undefined;
         }
         if (chapterSections && tok.props?.sect && !open.length) sectSeen = true;
@@ -307,6 +342,7 @@ export function assign(tokens: Token[], map: ExportMap, foreign?: ReadonlySet<st
   }
   // A paragraph still waiting when its part ends (a note without any
   // bookmark) is a stray too.
+  releaseHeld();
   if (pending && pending.chars.length) orphan.push({ chars: pending.chars, box: -1, afterSect: false });
   flushOrphans();
   return { fragments, added, strays, marks };
@@ -347,9 +383,16 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
   let { nextPara: next, nextBox: box } = walked;
   // Notes typed in the editor: the writer numbers a book's notes from 1
   // with no gap, one fragment each, so a note numbered past them is new.
+  // Google Docs numbers the notes again from 0 in reading order, so a
+  // note typed there may take the number of one of the book's: when every
+  // note of the book still stands in the file with its bookmark, a note
+  // without one is new whatever its number.
   const known = new Set(map.fragments.map((f) => f.id));
-  const exportedNotes = map.fragments.filter((f) => f.role === 'footnote').length;
+  const noteFragments = new Set(map.fragments.filter((f) => f.role === 'footnote').map((f) => f.id));
+  const exportedNotes = noteFragments.size;
   const newNotes = new Map<string, ReadChar[]>();
+  const unmarked: { key: string; id: number; own: Token[] }[] = [];
+  const standing = new Set<string>();
   // Notes after the body, in their part order (the semantic writer's).
   for (const [part, el] of [['word/footnotes.xml', 'footnote'], ['word/endnotes.xml', 'endnote']] as const) {
     const root = xmlOf(files, part);
@@ -360,18 +403,26 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
       if (type && type !== 'normal') continue;
       const from = tokens.length;
       ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box, more));
-      // A note with no bookmark of ours and a number its part did not
-      // have: typed in the editor.
+      // A note with no bookmark of ours may have been typed in the editor.
       const own = tokens.slice(from);
-      const id = Number(attr(note, 'id'));
-      if (own.some((t) => t.t === 'bmStart' && known.has(t.fid)) || !(id > exportedNotes)) continue;
-      const chars: ReadChar[] = [];
+      let marked = false;
       for (const t of own) {
-        if (t.t === 'char') chars.push(t);
-        else if (t.t === 'para' && chars.length) chars.push({ ch: ' ', flags: '' });
+        if (t.t !== 'bmStart' || !known.has(t.fid)) continue;
+        marked = true;
+        if (noteFragments.has(t.fid)) standing.add(t.fid);
       }
-      if (chars.some((c) => c.ch.trim())) newNotes.set(`${el[0]}${id}`, chars);
+      if (!marked) unmarked.push({ key: `${el[0]}${attr(note, 'id') ?? ''}`, id: Number(attr(note, 'id')), own });
     }
+  }
+  const allStand = standing.size >= exportedNotes;
+  for (const { key, id, own } of unmarked) {
+    if (!(id > exportedNotes) && !allStand) continue;
+    const chars: ReadChar[] = [];
+    for (const t of own) {
+      if (t.t === 'char') chars.push(t);
+      else if (t.t === 'para' && chars.length) chars.push({ ch: ' ', flags: '' });
+    }
+    if (chars.some((c) => c.ch.trim())) newNotes.set(key, chars);
   }
   const { fragments, added, strays, marks } = assign(tokens, map, options.foreign);
   const holders = map.holders === true && noProof;

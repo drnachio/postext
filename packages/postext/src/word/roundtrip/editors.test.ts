@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+import type { Resource } from '../../types/resources/resources.js';
 import { exportDocx, type Exported } from '../semantic/fixtures/harness.js';
 import { applyDocxEdits, exportMapLost, isExportedDocx } from './index.js';
 
@@ -130,6 +131,98 @@ describe('edits that left debris', () => {
     const r = back(bytes, NOTES);
     expect(r.edits.every((x) => x.status === 'applied')).toBe(true);
     expect(r.chapters[0]!.markdown).toBe(`${NOTES.replace('Otro[^b]', 'Otro[^wf9][^b]')}\n[^wf9]: Jerga de \\*ciegos\\*.\n`);
+  });
+
+  describe('in a table of the book', () => {
+    const TABLE = { id: 't1', typeId: 'table', kind: 'table', caption: 'Lo que da cada uno', table: { model: { rows: [[{ content: 'Útil' }, { content: 'Fruto' }], [{ content: 'Motor' }, { content: 'Parejo' }]] } }, createdAt: 0, updatedAt: 0 } as Resource;
+    const MD = 'La tabla es :ref{id="t1"}, citada una vez.\n\nFin del texto.\n';
+    const tableBack = (bytes: Uint8Array) => applyDocxEdits(bytes, { chapters: [{ id: 'ch1', markdown: MD }], resources: [TABLE] });
+
+    it('takes words typed between the number of a caption and its text into the caption', async () => {
+      const e = await exportDocx(MD, { resources: [TABLE] });
+      const bytes = edited(e, {
+        'word/document.xml': (x) => {
+          // Word leaves what is typed there outside both bookmarks.
+          const start = x.lastIndexOf('<w:bookmarkStart', x.indexOf('Lo que da cada uno'));
+          expect(x.slice(start - 30, start)).toMatch(/<w:bookmarkEnd w:id="\d+"\/>$/);
+          return `${x.slice(0, start)}<w:r><w:t xml:space="preserve">Aquí: </w:t></w:r>${x.slice(start)}`;
+        },
+      });
+      const r = tableBack(bytes);
+      expect(r.edits.map((x) => [x.field, x.status])).toEqual([['caption', 'applied']]);
+      expect(r.resources!.find((x) => x.id === 't1')!.caption).toBe('Aquí: Lo que da cada uno');
+    });
+
+    it('leaves words typed after a generated label that ends its paragraph with the label', async () => {
+      const e = await exportDocx(MD, { resources: [TABLE] });
+      const bytes = edited(e, {
+        'word/document.xml': (x) => {
+          // The caption's own bookmark taken away: nothing of the book follows the label.
+          const at = x.indexOf('Lo que da cada uno');
+          const start = x.lastIndexOf('<w:bookmarkStart', at);
+          const wid = /w:id="(\d+)"/.exec(x.slice(start, at))![1]!;
+          const end = x.indexOf(`<w:bookmarkEnd w:id="${wid}"/>`, at);
+          return `${x.slice(0, start)}<w:r><w:t xml:space="preserve">Otro pie</w:t></w:r>${x.slice(end + `<w:bookmarkEnd w:id="${wid}"/>`.length)}`;
+        },
+      });
+      const r = tableBack(bytes);
+      expect(r.edits.some((x) => x.status === 'rejected' && x.reason === 'generated')).toBe(true);
+      expect(r.edits.some((x) => x.status === 'applied' && x.chapter !== undefined)).toBe(false);
+    });
+
+    it('reports a row added in Word and writes none of it into the chapter', async () => {
+      const e = await exportDocx(MD, { resources: [TABLE] });
+      const bytes = edited(e, {
+        'word/document.xml': (x) => {
+          const at = x.indexOf('>Parejo<');
+          const end = x.indexOf('</w:tr>', at) + 7;
+          const row = x.slice(x.lastIndexOf('<w:tr>', at), end);
+          const added = row.replace(/<w:bookmark(?:Start|End) [^>]*\/>/g, '').replace('>Motor<', '>Telar<').replace('>Parejo<', '>Liso<');
+          expect(added).toContain('>Telar<');
+          return x.slice(0, end) + added + x.slice(end);
+        },
+      });
+      const r = tableBack(bytes);
+      expect(r.edits.map((x) => [x.resourceId, x.status, x.reason, x.after])).toEqual([['t1', 'rejected', 'table-row', 'Telar'], ['t1', 'rejected', 'table-row', 'Liso']]);
+      expect(r.chapters[0]!.markdown).toBe(MD);
+      expect(r.resources).toBeUndefined();
+    });
+
+    it('still takes a paragraph typed under a table as a paragraph of the chapter', async () => {
+      const e = await exportDocx(MD, { resources: [TABLE] });
+      const bytes = edited(e, {
+        'word/document.xml': (x) => {
+          const end = x.indexOf('</w:tbl>', x.indexOf('>Parejo<')) + 8;
+          return `${x.slice(0, end)}<w:p><w:r><w:t>Escrito bajo la tabla.</w:t></w:r></w:p>${x.slice(end)}`;
+        },
+      });
+      const r = tableBack(bytes);
+      expect(r.edits.map((x) => [x.chapter, x.kind, x.status])).toEqual([['ch1', 'paragraph', 'applied']]);
+      expect(r.chapters[0]!.markdown).toContain('Escrito bajo la tabla.');
+    });
+  });
+
+  it('joins bold made longer in Word with the bold beside it', async () => {
+    const md = 'Una (**negra**), seguida de más.\n';
+    const bold = (text: string) => `<w:r><w:rPr><w:b/><w:bCs/></w:rPr><w:t xml:space="preserve">${text}</w:t></w:r>`;
+    const plain = (text: string) => `<w:r><w:t xml:space="preserve">${text}</w:t></w:r>`;
+    /** The run that holds `text` written again as `runs`. */
+    const rewrite = (x: string, text: string, runs: string): string => {
+      const at = x.indexOf(`${text}</w:t></w:r>`);
+      expect(at).toBeGreaterThan(0);
+      return x.slice(0, x.lastIndexOf('<w:r>', at)) + runs + x.slice(at + `${text}</w:t></w:r>`.length);
+    };
+    const e = await exportDocx(md);
+    const after = back(edited(e, { 'word/document.xml': (x) => rewrite(x, '), seguida de más.', bold('),') + plain(' seguida de más.')) }), md);
+    expect(after.edits.map((x) => [x.kind, x.status])).toEqual([['format', 'applied']]);
+    expect(after.chapters[0]!.markdown).toBe('Una (**negra),** seguida de más.\n');
+    const before = back(edited(e, { 'word/document.xml': (x) => rewrite(x, 'Una (', plain('Una ') + bold('(')) }), md);
+    expect(before.chapters[0]!.markdown).toBe('Una **(negra**), seguida de más.\n');
+    const both = back(edited(e, { 'word/document.xml': (x) => rewrite(rewrite(x, '), seguida de más.', bold('),') + plain(' seguida de más.')), 'Una (', plain('Una ') + bold('(')) }), md);
+    expect(both.chapters[0]!.markdown).toBe('Una **(negra),** seguida de más.\n');
+    // Bold a word apart from the bold one: a passage of its own.
+    const apart = back(edited(e, { 'word/document.xml': (x) => rewrite(x, '), seguida de más.', plain('), ') + bold('seguida') + plain(' de más.')) }), md);
+    expect(apart.chapters[0]!.markdown).toBe('Una (**negra**), **seguida** de más.\n');
   });
 
   it('reports a paragraph moved in Word and leaves the source in its order', async () => {

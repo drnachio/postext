@@ -7,7 +7,7 @@
 import type { Hunk } from './diff.js';
 import type { BlockView } from './blocks.js';
 import { equalPairs, type SourceEdit } from './edits.js';
-import { linkAround, markupDeletable, splitKey, stripFlag, wrapFlags } from './markup.js';
+import { FLAG_MARKERS, linkAround, markupDeletable, splitKey, stripFlag, wrapFlags } from './markup.js';
 
 interface Change {
   added: string;
@@ -53,10 +53,15 @@ export function formatEdits(v: BlockView, base: string, hunks: readonly Hunk[]):
     if (open && sameChange(open.change, change)) open.last = i;
     else groups.push((open = { first: i, last: i, change }));
   }
-  return groups.map((g) => formatEdit(v, base, g.first, g.last, g.change));
+  // Whether character `i` had format `letter` and keeps it.
+  const keeps = (i: number, letter: string): boolean => {
+    const j = pairs.get(i);
+    return j !== undefined && v.M[i]! >= 0 && v.atomOf[i]! < 0 && splitKey(v.OK[i]!).flags.includes(letter) && splitKey(v.NK[j]!).flags.includes(letter);
+  };
+  return groups.map((g) => formatEdit(v, base, g.first, g.last, g.change, keeps));
 }
 
-function formatEdit(v: BlockView, base: string, first: number, last: number, change: Change): SourceEdit {
+function formatEdit(v: BlockView, base: string, first: number, last: number, change: Change, keeps: (i: number, letter: string) => boolean): SourceEdit {
   const s = v.M[first]!;
   const e = v.M[last]! + 1;
   const edit: SourceEdit = { target: v.target, start: s, end: e, text: base.slice(s, e), kind: 'format' };
@@ -91,6 +96,17 @@ function formatEdit(v: BlockView, base: string, first: number, last: number, cha
       os = link.s;
       oe = link.e;
     } else if (change.href === '') return { ...edit, reject: 'format-partial' };
+  }
+  // One format taken over the words right beside text that has it
+  // already (bold made longer): the marker between the two goes, since
+  // `**a****b**` does not read as one bold passage.
+  if (change.added.length === 1 && !change.removed && change.href === undefined) {
+    for (const { open, close } of FLAG_MARKERS[change.added] ?? []) {
+      const before = first > 0 && keeps(first - 1, change.added) && base.slice(v.M[first - 1]! + 1, os) === close;
+      const after = last + 1 < v.O.length && keeps(last + 1, change.added) && base.slice(oe, v.M[last + 1]!) === open;
+      if (!before && !after) continue;
+      return { target: v.target, start: before ? os - close.length : os, end: after ? oe + open.length : oe, text: (before ? '' : open) + inner + (after ? '' : close), kind: 'format' };
+    }
   }
   const text = wrapFlags(inner, change.added, change.href || undefined);
   return { target: v.target, start: os, end: oe, text, kind: 'format' };

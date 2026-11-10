@@ -17,7 +17,9 @@
 //   the contents list stays a field, Google's own (`toc: 'plain'` is an
 //   editor that turns it into plain paragraphs too, which neither file
 //   showed);
-// - every bookmark keeps its name, and Google adds bookmarks of its own.
+// - every bookmark keeps its name, and Google adds bookmarks of its own;
+// - the separator notes go and the footnotes are numbered again from 0, in
+//   their order (the guide's two notes, 1 and 2, came back as 0 and 1).
 
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { decodeEntities, escapeXml, parseXml } from '../xml.js';
@@ -115,9 +117,21 @@ export function savedByGoogleDocs(bytes: Uint8Array, options: GoogleDocsOptions 
   const files = unzipSync(bytes);
   const out: Record<string, Uint8Array> = {};
   const looks = styleLooks(parseXml(strFromU8(files['word/styles.xml']!)));
+  // The footnotes numbered again from 0, the separator notes gone.
+  const renumbered = new Map<string, number>();
+  const notes = (xml: string): string =>
+    xml
+      .replace(/<w:footnote w:type="[^"]*" w:id="-?\d+">(?:(?!<\/w:footnote>).)*<\/w:footnote>/gs, '')
+      .replace(/<w:footnote w:id="(-?\d+)">/g, (_all, id: string) => {
+        renumbered.set(id, renumbered.size);
+        return `<w:footnote w:id="${renumbered.get(id)}">`;
+      });
+  const references = (xml: string): string => xml.replace(/<w:footnoteReference w:id="(-?\d+)"\/>/g, (all, id: string) => (renumbered.has(id) ? `<w:footnoteReference w:customMarkFollows="0" w:id="${renumbered.get(id)}"/>` : all));
+  const notesXml = files['word/footnotes.xml'] ? notes(flatten(strFromU8(files['word/footnotes.xml']), looks, options.toc ?? 'field')) : undefined;
   for (const [path, data] of Object.entries(files)) {
     if (path.startsWith('customXml/') || path === 'docProps/app.xml' || path === 'docProps/core.xml') continue;
-    if (path === 'word/document.xml' || path === 'word/footnotes.xml') out[path] = strToU8(flatten(strFromU8(data), looks, options.toc ?? 'field'));
+    if (path === 'word/footnotes.xml') out[path] = strToU8(notesXml!);
+    else if (path === 'word/document.xml') out[path] = strToU8(references(flatten(strFromU8(data), looks, options.toc ?? 'field')));
     else if (path === 'word/styles.xml') {
       // Google's own styles: the headings by name, nothing of the book's.
       const heads = [1, 2, 3, 4, 5, 6].map((n) => `<w:style w:type="paragraph" w:styleId="Heading${n}"><w:name w:val="heading ${n}"/><w:basedOn w:val="Normal"/><w:pPr><w:outlineLvl w:val="${n - 1}"/></w:pPr><w:rPr><w:b w:val="1"/></w:rPr></w:style>`).join('');

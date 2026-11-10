@@ -164,6 +164,7 @@ const REASONS: Record<string, string> = {
   'format-crosses-markup': 'the formatting crosses Markdown markup',
   'format-partial': 'the formatting covers only part of a marked span',
   moved: 'a paragraph moved in Word stays where it is in the book (move it in the Markdown)',
+  'table-row': 'a row or a line added to a table in Word does not come into the book (add it to the table in the book)',
 };
 
 /** What an edit changed, in words a reader can follow: a paragraph mark

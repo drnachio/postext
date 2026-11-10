@@ -236,6 +236,64 @@ describe('edits made in Google Docs', () => {
     expect(r.chapters[0]!.markdown).not.toContain('Last paragraph');
   });
 
+  // Google Docs numbers the footnotes again from 0 in reading order, so
+  // a note typed there takes a number the book's notes had.
+  for (const [where, typed, kept] of [['before', 0, 1], ['after', 1, 0]] as const) {
+    it(`a footnote typed in ${where} the book's own`, async () => {
+      const call = (id: number) => `<w:r><w:footnoteReference w:customMarkFollows="0" w:id="${id}"/></w:r>`;
+      const anchor = where === 'before' ? 'Second sentence here.' : 'Last paragraph of the chapter.';
+      const r = await roundTrip([MD, INDEX], 'book', {
+        edit: (b) =>
+          editPart(
+            editPart(b, 'word/document.xml', (x) => {
+              expect(x).toContain('<w:footnoteReference w:customMarkFollows="0" w:id="0"/>');
+              return x.replace('<w:footnoteReference w:customMarkFollows="0" w:id="0"/>', `<w:footnoteReference w:customMarkFollows="0" w:id="${kept}"/>`).replace(`${anchor}</w:t></w:r>`, `${anchor}</w:t></w:r>${call(typed)}`);
+            }),
+            'word/footnotes.xml',
+            (x) => {
+              const note = `<w:footnote w:id="${typed}"><w:p><w:r><w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> A note typed in the editor.</w:t></w:r></w:p></w:footnote>`;
+              const own = x.replace('<w:footnote w:id="0">', `<w:footnote w:id="${kept}">`);
+              return where === 'before' ? own.replace(`<w:footnote w:id="${kept}">`, `${note}<w:footnote w:id="${kept}">`) : own.replace('</w:footnotes>', `${note}</w:footnotes>`);
+            },
+          ),
+      });
+      expect(r.edits.every((e) => e.status === 'applied')).toBe(true);
+      expect(r.chapters[0]!.markdown).toBe(`${MD.replace(anchor, `${anchor}[^wf${typed}]`)}\n[^wf${typed}]: A note typed in the editor.\n`);
+    });
+  }
+
+  it('words typed at the start of a caption, after the number postext writes', async () => {
+    for (const design of ['book', 'plain'] as const) {
+      const r = await roundTrip([MD, INDEX], design, {
+        edit: inDoc((x) => {
+          // Between the end of the label's bookmark and the start of the
+          // caption's: where an editor puts what is typed there.
+          const start = x.lastIndexOf('<w:bookmarkStart', x.indexOf('What each tool gives'));
+          expect(x.slice(start - 30, start)).toMatch(/<w:bookmarkEnd w:id="\d+"\/>$/);
+          return `${x.slice(0, start)}<w:r><w:t xml:space="preserve">Here: </w:t></w:r>${x.slice(start)}`;
+        }),
+      });
+      expect(r.edits.map((e) => [e.resourceId, e.field, e.status])).toEqual([['t1', 'caption', 'applied']]);
+      expect(r.resources!.find((x) => x.id === 't1')!.caption).toBe('Here: What each tool gives');
+    }
+  });
+
+  it('a row added to a table: reported, and not written into the chapter', async () => {
+    const r = await roundTrip([MD, INDEX], 'book', {
+      edit: inDoc((x) => {
+        const at = x.indexOf('>Uneven<');
+        const end = x.indexOf('</w:tr>', at) + 7;
+        const row = x.slice(Math.max(x.lastIndexOf('<w:tr>', at), x.lastIndexOf('<w:tr ', at)), end);
+        const added = row.replace(/<w:bookmark(?:Start|End) [^>]*\/>/g, '').replace('>Engine<', '>Loom<').replace('>Uneven<', '>Even<');
+        expect(added).toContain('>Loom<');
+        return x.slice(0, end) + added + x.slice(end);
+      }),
+    });
+    expect(r.edits.map((e) => [e.resourceId, e.status, e.reason, e.after])).toEqual([['t1', 'rejected', 'table-row', 'Loom'], ['t1', 'rejected', 'table-row', 'Even']]);
+    expect(r.changed).toBe(false);
+    expect(r.chapters[0]!.markdown).toBe(MD);
+  });
+
   it('a paragraph typed in', async () => {
     const r = await roundTrip([MD, INDEX], 'plain', {
       edit: inDoc((x) => {
