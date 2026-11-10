@@ -5,7 +5,7 @@
 
 **A programmable typesetter for the web.**
 
-🌐 **Website:** [postext.dev](https://postext.dev/) · 📖 **Documentation:** [postext.dev/en/docs](https://postext.dev/en/docs)
+🌐 **Website:** [postext.dev](https://postext.dev/) · 📖 **Documentation:** [postext.dev/en/docs](https://postext.dev/en/docs) · 💬 **Community:** [Discord](https://discord.gg/CSzm6hr8YD)
 
 Postext is a layout engine that bridges the centuries-old craft of print typesetting and the modern web. It takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output for HTML, PDF and EPUB.
 
@@ -543,6 +543,8 @@ The project especially welcomes people with experience in:
 - **Editorial design** (magazine/newspaper layout, book typesetting)
 - **Text rendering** (canvas, SVG, font metrics)
 - **Documentation, translations, and testing**
+
+To ask a question, share what you're building or just say hello, join the [Postext Discord](https://discord.gg/CSzm6hr8YD). New versions, videos and closed issues are announced there too.
 
 For the full community vision and all the ways to get involved, see the [Contributing guide](https://postext.dev/en/docs/contributing).
 

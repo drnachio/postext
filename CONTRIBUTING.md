@@ -6,11 +6,12 @@ For the broader community vision, areas of contribution, and the project's goals
 
 ## Community
 
-All coordination happens on GitHub — issues, pull requests, and discussions. Everything is public, searchable, and open to participation.
+All coordination happens on GitHub — issues, pull requests, and discussions. Everything is public, searchable, and open to participation. For quick questions and casual conversation, there's also a Discord server.
 
 - **[Issues](https://github.com/drnachio/postext/issues)** — bugs, feature requests, and tasks.
 - **[Pull Requests](https://github.com/drnachio/postext/pulls)** — code contributions.
 - **[Discussions](https://github.com/drnachio/postext/discussions)** — ideas, design conversations, and questions.
+- **[Discord](https://discord.gg/CSzm6hr8YD)** — chat with other publishers, developers and contributors, get help, and follow new versions and videos. Decisions still land on GitHub.
 
 ## Before You Start
 
