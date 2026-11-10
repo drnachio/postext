@@ -3488,7 +3488,7 @@
     "findMatchCase": "Respecter la casse",
     "findWholeWord": "Mots entiers uniquement",
     "findIgnoreAccents": "Ignorer les accents (ñ et ç restent distincts)",
-    "findRegex": "Expression régulière. Dans le remplacement, $1 est le premier groupe, $<nom> un groupe nommé, $& la correspondance entière et \\n un saut de ligne",
+    "findRegex": "Expression régulière. Dans le remplacement, $1 est le premier groupe, $'<'nom> un groupe nommé, $& la correspondance entière et \\n un saut de ligne",
     "findPrevious": "Occurrence précédente (Maj+Entrée)",
     "findNext": "Occurrence suivante (Entrée)",
     "findClose": "Fermer (Échap)",

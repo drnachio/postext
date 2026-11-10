@@ -3488,7 +3488,7 @@
     "findMatchCase": "Distingeix majúscules i minúscules",
     "findWholeWord": "Només paraules senceres",
     "findIgnoreAccents": "Ignora els accents (la ñ i la ç es distingeixen)",
-    "findRegex": "Expressió regular. Al reemplaçament, $1 és el primer grup, $<nom> un grup amb nom, $& la coincidència sencera i \\n un salt de línia",
+    "findRegex": "Expressió regular. Al reemplaçament, $1 és el primer grup, $'<'nom> un grup amb nom, $& la coincidència sencera i \\n un salt de línia",
     "findPrevious": "Coincidència anterior (Maj+Retorn)",
     "findNext": "Coincidència següent (Retorn)",
     "findClose": "Tanca (Esc)",

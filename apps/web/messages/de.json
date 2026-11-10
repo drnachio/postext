@@ -3488,7 +3488,7 @@
     "findMatchCase": "Groß-/Kleinschreibung beachten",
     "findWholeWord": "Nur ganze Wörter",
     "findIgnoreAccents": "Akzente ignorieren (ñ und ç bleiben unterschieden)",
-    "findRegex": "Regulärer Ausdruck. Im Ersatz ist $1 die erste Gruppe, $<name> eine benannte Gruppe, $& der ganze Treffer und \\n ein Zeilenumbruch",
+    "findRegex": "Regulärer Ausdruck. Im Ersatz ist $1 die erste Gruppe, $'<'name> eine benannte Gruppe, $& der ganze Treffer und \\n ein Zeilenumbruch",
     "findPrevious": "Vorheriger Treffer (Umschalt+Eingabe)",
     "findNext": "Nächster Treffer (Eingabe)",
     "findClose": "Schließen (Esc)",

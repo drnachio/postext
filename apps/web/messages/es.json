@@ -1060,7 +1060,7 @@
     "findMatchCase": "Distinguir mayúsculas y minúsculas",
     "findWholeWord": "Solo palabras completas",
     "findIgnoreAccents": "Ignorar tildes (la ñ y la ç se distinguen)",
-    "findRegex": "Expresión regular. En el reemplazo, $1 es el primer grupo, $<nombre> un grupo con nombre, $& la coincidencia entera y \\n un salto de línea",
+    "findRegex": "Expresión regular. En el reemplazo, $1 es el primer grupo, $'<'nombre> un grupo con nombre, $& la coincidencia entera y \\n un salto de línea",
     "findPrevious": "Coincidencia anterior (Mayús+Intro)",
     "findNext": "Coincidencia siguiente (Intro)",
     "findClose": "Cerrar (Esc)",

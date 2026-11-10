@@ -3488,7 +3488,7 @@
     "findMatchCase": "Maiuscole/minuscole",
     "findWholeWord": "Solo parole intere",
     "findIgnoreAccents": "Ignora gli accenti (ñ e ç restano distinte)",
-    "findRegex": "Espressione regolare. Nella sostituzione, $1 è il primo gruppo, $<nome> un gruppo con nome, $& l’intera corrispondenza e \\n un a capo",
+    "findRegex": "Espressione regolare. Nella sostituzione, $1 è il primo gruppo, $'<'nome> un gruppo con nome, $& l’intera corrispondenza e \\n un a capo",
     "findPrevious": "Risultato precedente (Maiusc+Invio)",
     "findNext": "Risultato successivo (Invio)",
     "findClose": "Chiudi (Esc)",

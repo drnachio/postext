@@ -3485,7 +3485,7 @@
     "findMatchCase": "Diferenciar maiúsculas e minúsculas",
     "findWholeWord": "Somente palavras inteiras",
     "findIgnoreAccents": "Ignorar acentos (ñ e ç continuam distintos)",
-    "findRegex": "Expressão regular. Na substituição, $1 é o primeiro grupo, $<nome> um grupo nomeado, $& a ocorrência inteira e \\n uma quebra de linha",
+    "findRegex": "Expressão regular. Na substituição, $1 é o primeiro grupo, $'<'nome> um grupo nomeado, $& a ocorrência inteira e \\n uma quebra de linha",
     "findPrevious": "Ocorrência anterior (Shift+Enter)",
     "findNext": "Próxima ocorrência (Enter)",
     "findClose": "Fechar (Esc)",

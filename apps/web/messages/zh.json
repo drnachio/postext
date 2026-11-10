@@ -3488,7 +3488,7 @@
     "findMatchCase": "区分大小写",
     "findWholeWord": "全字匹配",
     "findIgnoreAccents": "忽略重音符号（ñ和ç仍区分）",
-    "findRegex": "正则表达式。替换内容中，$1 是第一个分组，$<name> 是命名分组，$& 是整个匹配，\\n 是换行",
+    "findRegex": "正则表达式。替换内容中，$1 是第一个分组，$'<'name> 是命名分组，$& 是整个匹配，\\n 是换行",
     "findPrevious": "上一个匹配项（Shift+Enter）",
     "findNext": "下一个匹配项（Enter）",
     "findClose": "关闭（Esc）",

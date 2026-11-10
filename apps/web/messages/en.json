@@ -3488,7 +3488,7 @@
     "findMatchCase": "Match case",
     "findWholeWord": "Whole words only",
     "findIgnoreAccents": "Ignore accents (ñ and ç stay apart)",
-    "findRegex": "Regular expression. In the replacement, $1 is the first group, $<name> a named group, $& the whole match and \\n a line break",
+    "findRegex": "Regular expression. In the replacement, $1 is the first group, $'<'name> a named group, $& the whole match and \\n a line break",
     "findPrevious": "Previous match (Shift+Enter)",
     "findNext": "Next match (Enter)",
     "findClose": "Close (Esc)",
