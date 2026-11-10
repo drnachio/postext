@@ -6,6 +6,9 @@ contact_links:
   - name: Questions and discussion
     url: https://github.com/drnachio/postext/discussions
     about: For open-ended questions, typography discussions, or "is this a bug or expected?" before filing an issue.
+  - name: Chat on Discord
+    url: https://discord.gg/CSzm6hr8YD
+    about: Quick questions, help with your project, and a place to meet other Postext users and contributors.
   - name: Documentation
     url: https://postext.dev/en/docs
     about: API reference, configuration guide, and worker integration examples.
