@@ -374,7 +374,28 @@ export interface CalloutBodyStyleConfig {
   /** As `bodyText.paragraphSpacing`: `true` is one line of the box's body,
    *  a length is set exactly. Unset: the body's. */
   paragraphSpacing?: boolean | Dimension;
+  /** Indent of the first line of the box's paragraphs. Unset: the body's
+   *  (`bodyText.firstLineIndent`). With a {@link hangingIndent} length it
+   *  applies only when the style sets it itself (as in a paragraph
+   *  style). */
   firstLineIndent?: Dimension;
+  /** Hang the box's paragraphs (#1451): every line but the first starts
+   *  further in than the first.
+   *
+   *  - A length, as `ParagraphStyleConfig.hangingIndent`: the
+   *    turnovers start that far from the box's inner edge, the first line
+   *    at the edge, or at {@link firstLineIndent} when the style sets it
+   *    itself. A tab stop at the same length takes the text after a
+   *    marker (`*⇥Note`, `1⇥Entry`) to the turnovers' edge, so the marker
+   *    hangs in front of the text.
+   *  - `true`, as `bodyText.hangingIndent`: {@link firstLineIndent} is the
+   *    indent of every line but the first; `false` sets the box unhung
+   *    in a document whose body text hangs.
+   *
+   *  List items keep their own hang (`lists.indent`, `lists.gap`); a
+   *  paragraph in a `:::paragraphs` fence keeps its style's. Unset: the
+   *  body's (`bodyText.hangingIndent`). */
+  hangingIndent?: boolean | Dimension;
   /** Tab stops of the box's paragraphs and list items (#622). Unset: the
    *  body's (`bodyText.tabStops`). */
   tabStops?: TabStop[];

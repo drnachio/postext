@@ -1529,23 +1529,21 @@
   },
   "markdown-extras": {
     "label": {
-      "en": "Setext headings, rules, strikethrough, autolinks",
-      "es": "Títulos setext, filetes, tachado, autoenlaces",
-      "ca": "Títols setext, filets, ratllat, enllaços automàtics",
-      "zh": "Setext标题、分隔线、删除线、自动链接",
-      "ar": "عناوين Setext والخطوط الأفقية والشطب والروابط التلقائية",
-      "ja": "Setext見出し、罫線、取り消し線、自動リンク",
-      "pt": "Títulos setext, fios, tachado, links automáticos",
-      "fr": "Titres Setext, filets, texte barré, liens automatiques",
-      "de": "Setext-Überschriften, Linien, Durchstreichung, Autolinks",
-      "it": "Titoli setext, filetti, barrato, link automatici"
+      "en": "Setext headings, rules, autolinks",
+      "es": "Títulos setext, filetes, autoenlaces",
+      "ca": "Títols setext, filets, enllaços automàtics",
+      "zh": "Setext标题、分隔线、自动链接",
+      "ar": "عناوين Setext والخطوط الأفقية والروابط التلقائية",
+      "ja": "Setext見出し、罫線、自動リンク",
+      "pt": "Títulos setext, fios, links automáticos",
+      "fr": "Titres Setext, filets, liens automatiques",
+      "de": "Setext-Überschriften, Linien, Autolinks",
+      "it": "Titoli setext, filetti, link automatici"
     },
     "aliases": {
       "en": [
         "horizontal rule",
         "---",
-        "strikethrough",
-        "~~text~~",
         "setext",
         "autolink",
         "reference links"
@@ -1553,8 +1551,6 @@
       "es": [
         "filete horizontal",
         "---",
-        "tachado",
-        "~~texto~~",
         "setext",
         "autoenlace",
         "enlaces por referencia"
@@ -1562,8 +1558,6 @@
       "ca": [
         "filet horitzontal",
         "---",
-        "ratllat",
-        "~~text~~",
         "setext",
         "enllaç automàtic",
         "enllaços per referència"
@@ -1571,19 +1565,14 @@
       "zh": [
         "分隔线",
         "水平线",
-        "删除线",
         "自动链接",
         "引用式链接",
         "Setext标题",
-        "---",
-        "~~text~~",
-        "strikethrough"
+        "---"
       ],
       "ar": [
         "خط أفقي",
         "---",
-        "شطب",
-        "~~text~~",
         "setext",
         "رابط تلقائي",
         "روابط مرجعية"
@@ -1591,8 +1580,6 @@
       "ja": [
         "水平線",
         "---",
-        "取り消し線",
-        "~~text~~",
         "Setext見出し",
         "自動リンク"
       ],
@@ -1600,9 +1587,6 @@
         "fio horizontal",
         "linha horizontal",
         "---",
-        "tachado",
-        "riscado",
-        "~~texto~~",
         "setext",
         "link automático",
         "autolink",
@@ -1611,8 +1595,6 @@
       "fr": [
         "filet horizontal",
         "---",
-        "texte barré",
-        "~~texte~~",
         "setext",
         "lien automatique",
         "liens par référence"
@@ -1620,9 +1602,6 @@
       "de": [
         "waagerechte Linie",
         "---",
-        "Durchstreichung",
-        "durchgestrichen",
-        "~~text~~",
         "Setext",
         "Autolink",
         "Referenzlinks"
@@ -1630,8 +1609,6 @@
       "it": [
         "filetto orizzontale",
         "---",
-        "barrato",
-        "~~testo~~",
         "setext",
         "link automatico",
         "link per riferimento"

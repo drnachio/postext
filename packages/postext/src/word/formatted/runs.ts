@@ -165,7 +165,7 @@ export function runProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOpti
   let cache = propsCache.get(ctx);
   if (!cache) propsCache.set(ctx, (cache = new Map()));
   // The font string carries a feature family's features (numForm).
-  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}${opts.fitted ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${ctx.lang ?? ''}`;
+  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}${opts.fitted ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${run.strike ? 1 : 0}|${ctx.lang ?? ''}`;
   let props = cache.get(key);
   if (props === undefined) {
     props = buildRunProps(ctx, run, opts);
@@ -189,6 +189,7 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOption
   if (f.bold && !faceB) p.push('<w:b/><w:bCs/>');
   if (f.italic && !faceI) p.push('<w:i/><w:iCs/>');
   if (run.smallCaps) p.push('<w:smallCaps/>');
+  if (run.strike) p.push('<w:strike/>');
   if (opts.holder) p.push('<w:noProof/>');
   p.push(`<w:color w:val="${textColorHex(run.color)}"/>`);
   if (opts.spacing) p.push(`<w:spacing w:val="${opts.spacing}"/>`);
@@ -317,7 +318,7 @@ function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: Fi
   return out;
 }
 
-const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
+const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'strike', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
 
 /** A run that may join its neighbour: plain text, no blank or tab. */
 const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.blank && !r.padStart && !r.padEnd && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);

@@ -52,11 +52,18 @@ export interface DisplayRun {
   /** Baseline shift in px, positive = up. */
   baselineShift?: number;
   href?: string;
+  /** Struck through (`~~…~~`): the whole run. A word struck only in part
+   *  (`~~old~~.`) is not flagged; its line is the layout's
+   *  (`VDTLine.marks`). */
+  strike?: boolean;
   footnoteId?: string;
   /** A `:ref` run's target: a resource id, or an anchor's id (`anchor`). */
   refTarget?: { id: string; anchor?: boolean };
   /** Book page index the run links to (an index entry's page number). */
   pageLink?: number;
+  /** The leader before a tab stop (#622, a contents row's): its dots, or
+   *  the empty run a rule leader is drawn on. */
+  leader?: true;
   rtl?: boolean;
   /** Index of the run's first character in the line's `text`. */
   textStart: number;
@@ -69,8 +76,11 @@ export interface DisplayRun {
   /** A blank's answer (`:chip` with `blank`, #1227): it takes its room
    *  on the line but is never painted. */
   blank?: true;
-  /** Embedded non-text content drawn in place of the run. */
-  inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch };
+  /** Embedded non-text content drawn in place of the run. A chip that is
+   *  a form field (#1445) carries the field: a writer that makes forms puts
+   *  one on the box, the run's text its value (`formatFieldNumber` shows a
+   *  number as the canvas and the PDF do). */
+  inline?: { kind: 'math' | 'score' | 'swatch' | 'chip'; svg?: string; widthPx: number; heightPx: number; ascentPx?: number; box?: DisplayChipBox; swatch?: DisplaySwatch; field?: import('../../parse/formFields.js').FormFieldSpec };
   /** The run is a ruby base (#1394, `VDTLineSegment.ruby`): its reading. */
   ruby?: DisplayRuby;
   /** Vertical text: one tate-chu-yoko cell set by `:tcy[…]` (short
@@ -188,7 +198,13 @@ export interface DisplayLine {
   vertical?: boolean;
 }
 
-export type DisplayItem =
+/** What every item may carry: the composed-page frame (`VDTFrame.id`) it
+ *  is set in, absent outside frames. */
+export interface DisplayItemCommon {
+  frame?: string;
+}
+
+export type DisplayItem = DisplayItemCommon & (
   | {
       kind: 'text';
       /** What the text is, for writers that style by role. */
@@ -203,6 +219,9 @@ export type DisplayItem =
       rotate?: number;
       /** Engine block kind, for diagnostics. */
       blockType?: string;
+      /** The paragraph style the block is set in (`VDTBlock.paragraphStyleId`),
+       *  for writers that carry a paragraph's tab stops and spacing. */
+      paragraphStyle?: string;
       /** Clip rectangle the backend applies (columns clip their blocks). */
       clip?: DisplayRect;
       /** A halo round the glyphs (a figure label on a busy picture, a
@@ -244,7 +263,8 @@ export type DisplayItem =
       /** Radii of a rounded frame (top left, top right, bottom right,
        *  bottom left), px: the fills are clipped to it and it is stroked. */
       frameRadii?: [number, number, number, number];
-    };
+    }
+);
 
 export interface DisplayPage {
   index: number;

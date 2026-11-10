@@ -134,6 +134,19 @@ function annotate(run: DisplayRun, seg: VDTLineSegment): void {
   }
 }
 
+/** A space between two words of one struck run (`~~old price~~`): the
+ *  measurer stamps only the words, and a writer that sets the line as
+ *  runs (Word) would break the line at the space. */
+function struckSpace(segs: readonly VDTLineSegment[], i: number): boolean {
+  const seg = segs[i]!;
+  if (seg.kind !== 'space') return false;
+  const before = segs[i - 1]?.strike;
+  const after = segs[i + 1]?.strike;
+  if (!before || !after || before.id !== after.id) return false;
+  const reachesEnd = before.to === undefined || before.to >= segmentShownText(segs[i - 1]!).length;
+  return reachesEnd && (after.from === undefined || after.from === 0);
+}
+
 /** The runs of a line set from `setting`: x per segment (in `order` when
  *  the line carries one), each space at the justified width. */
 function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking: number, leaders: PlacedLine['leaders']): DisplayRun[] {
@@ -162,10 +175,12 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
     if (seg.script) run.script = seg.script;
     if (seg.baselineShift) run.baselineShift = -seg.baselineShift;
     if (seg.href !== undefined) run.href = seg.href;
+    if ((seg.strike && seg.strike.from === undefined) || struckSpace(segs, i)) run.strike = true;
     if (seg.footnoteId !== undefined) run.footnoteId = seg.footnoteId;
     if (seg.refResourceId !== undefined) run.refTarget = { id: seg.refResourceId, ...(seg.refAnchor ? { anchor: true } : {}) };
     if (seg.pageLink !== undefined) run.pageLink = seg.pageLink;
     if (seg.rtl) run.rtl = true;
+    if (seg.leader) run.leader = true;
     annotate(run, seg);
     if (seg.kind === 'space') {
       if (setting.spaceWidth !== undefined && !(composed && seg.autospace)) run.space = true;

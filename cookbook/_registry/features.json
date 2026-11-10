@@ -4649,7 +4649,125 @@
     "detect": {
       "markdown": [
         "(?<!\\[)\\^[^\\s^][^^\\n]*(?<!\\[)\\^",
-        "~[^\\s~][^~\\n]*~"
+        "(?<!~)~[^\\s~][^~\\n]*~(?!~)"
+      ]
+    }
+  },
+  "strikethrough": {
+    "label": {
+      "en": "Strikethrough",
+      "es": "Tachado",
+      "ca": "Ratllat",
+      "zh": "删除线",
+      "ar": "الشطب",
+      "ja": "取り消し線",
+      "pt": "Tachado",
+      "fr": "Texte barré",
+      "de": "Durchgestrichener Text",
+      "it": "Barrato"
+    },
+    "definition": {
+      "en": "A line through a phrase written as ~~text~~, as a price list strikes the old price beside the new one: the words stay ordinary text and break across lines, the line follows each piece.",
+      "es": "Una línea que atraviesa una frase escrita como ~~texto~~, como una lista de precios tacha el precio antiguo junto al nuevo: las palabras siguen siendo texto corriente y pasan de línea, la línea acompaña cada trozo.",
+      "ca": "Una línia que travessa una frase escrita com ~~text~~, com una llista de preus ratlla el preu antic al costat del nou: les paraules continuen sent text corrent i passen de línia, la línia acompanya cada tros.",
+      "zh": "用 ~~text~~ 写出的贯穿短语的线，就像价目表划掉原价、旁边写上新价：文字仍是普通正文，可以跨行，线跟着每一行上的那一段。",
+      "ar": "خط يعبر عبارة مكتوبة بالصيغة ~~text~~، كما تشطب قائمة الأسعار السعر القديم بجانب الجديد: تبقى الكلمات نصًّا عاديًّا وتنتقل بين الأسطر، ويتبع الخط كل قطعة منها.",
+      "ja": "~~text~~ と書いた語句を貫く線。価格表で旧価格を消して新価格を並べるときのように使います。語はふつうの本文のまま行をまたぎ、線は行ごとの部分に付きます。",
+      "pt": "Uma linha que atravessa uma frase escrita como ~~texto~~, como uma tabela de preços risca o preço antigo ao lado do novo: as palavras continuam sendo texto comum e passam de linha, a linha acompanha cada pedaço.",
+      "fr": "Un trait qui traverse une phrase écrite ~~texte~~, comme une liste de prix barre l’ancien prix à côté du nouveau : les mots restent du texte ordinaire et passent à la ligne, le trait suit chaque morceau.",
+      "de": "Eine Linie durch eine als ~~Text~~ geschriebene Wendung, wie eine Preisliste den alten Preis neben dem neuen durchstreicht: Die Wörter bleiben gewöhnlicher Text und brechen um, die Linie folgt jedem Stück.",
+      "it": "Una linea che attraversa una frase scritta come ~~testo~~, come un listino barra il prezzo vecchio accanto al nuovo: le parole restano testo normale e vanno a capo, la linea segue ogni pezzo."
+    },
+    "aliases": {
+      "en": [
+        "strikethrough",
+        "strike",
+        "struck",
+        "~~text~~",
+        "old price",
+        "deleted text"
+      ],
+      "es": [
+        "tachado",
+        "tachar",
+        "~~texto~~",
+        "precio antiguo",
+        "texto suprimido"
+      ],
+      "ca": [
+        "ratllat",
+        "ratllar",
+        "~~text~~",
+        "preu antic",
+        "text suprimit"
+      ],
+      "zh": [
+        "删除线",
+        "划掉",
+        "~~text~~",
+        "原价",
+        "strikethrough"
+      ],
+      "ar": [
+        "شطب",
+        "نص مشطوب",
+        "~~text~~",
+        "السعر القديم"
+      ],
+      "ja": [
+        "取り消し線",
+        "打ち消し線",
+        "~~text~~",
+        "旧価格"
+      ],
+      "pt": [
+        "tachado",
+        "riscado",
+        "~~texto~~",
+        "preço antigo",
+        "texto suprimido"
+      ],
+      "fr": [
+        "texte barré",
+        "barré",
+        "~~texte~~",
+        "ancien prix",
+        "texte supprimé"
+      ],
+      "de": [
+        "durchgestrichen",
+        "Durchstreichung",
+        "~~Text~~",
+        "alter Preis",
+        "gestrichener Text"
+      ],
+      "it": [
+        "barrato",
+        "testo barrato",
+        "~~testo~~",
+        "prezzo vecchio",
+        "testo cancellato"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format-inline",
+      "heading": {
+        "en": "Strikethrough",
+        "es": "Tachado",
+        "ca": "Ratllat",
+        "zh": "删除线",
+        "ar": "الشطب",
+        "ja": "取り消し線",
+        "pt": "Tachado",
+        "fr": "Texte barré",
+        "de": "Durchgestrichener Text",
+        "it": "Barrato"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "(?<!~)~~[^\\s~](?:[^~\\n]|~(?!~))*?~~(?!~)"
       ]
     }
   },

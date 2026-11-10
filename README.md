@@ -5,7 +5,7 @@
 
 **A programmable typesetter for the web.**
 
-🌐 **Website:** [postext.dev](https://postext.dev/) · 📖 **Documentation:** [postext.dev/en/docs](https://postext.dev/en/docs)
+🌐 **Website:** [postext.dev](https://postext.dev/) · 📖 **Documentation:** [postext.dev/en/docs](https://postext.dev/en/docs) · 💬 **Community:** [Discord](https://discord.gg/CSzm6hr8YD)
 
 Postext is a layout engine that bridges the centuries-old craft of print typesetting and the modern web. It takes semantic content — enriched markdown with referenced resources — and applies professional editorial layout rules to produce publication-grade output for HTML, PDF and EPUB.
 
@@ -228,6 +228,7 @@ Everything below ships today in `postext` and its companion packages (`postext-p
 - **SCORM packages** (`postext-scorm`). A book, or the chapters and sections picked from it, as a SCORM 1.2 or SCORM 2004 package for a learning management system (Moodle, Canvas, Blackboard, …): fixed pages or reflowable text from the EPUB writer, a small player per SCO, and exercises that send their score, completion and pass or fail to the LMS (`renderToScorm`).
 - **Print production.** PDF/X-1a and PDF/X-4 files (`print.standard`) with an ICC output profile (FOGRA, GRACoL, SWOP and IFRA profiles are bundled, or your own), every colour and RGB picture separated through it, black overprint and rich black, an ink limit, and a preflight that reports low-resolution pictures, thin rules, small text in several inks and text near the trim before the file is written. The Sandbox shows a print preview of the separated pages.
 - **Word files** (`postext/word`). A `.docx` is read into chapters of Markdown, with its styles mapped to Postext styles and a quality report (`readDocx`, `analyzeDocx`, `wordToPostext`), and a book is written back in two variants: a **semantic** file built from real Word structures to edit (`semanticDocx`), and a **formatted** file whose pages match the PDF, columns, floats and fonts included (`formattedDocx`). Both carry an export map, so corrections made in Word come back to the exact place in the Markdown or the resources they belong to (`applyDocxEdits`). The Sandbox and the command line (`postext docx --variant`, `postext import-docx <file> <book>`) both import and export Word.
+- **InDesign packages** (`postext/idml`). The laid-out pages as an IDML package for finishing a book in InDesign (`idmlDocument`): one page per spread, rules, boxes, paths and pictures (embedded or linked from `Links/`) as native page items, authored CMYK colours as process swatches, the text of each composed frame as one story under a paragraph style named after its box style (chained frames share one story), and chips with a form field as InDesign form fields. InDesign sets the text again with its own composer, so line breaks may differ; tables and maths are not written yet. The command line writes it with `postext idml`.
 - **3D book viewer** (`postext-folio`). Spreads whose leaves curl in three.js, with real shadows, turned by hand or by key; a right-bound book lies mirrored. Pages are painted on demand, at the size they are shown, around the open spread only.
 - **Web Worker.** `postext/worker` runs the pipeline off the main thread with last-wins cancellation, also loaded straight from esm.sh.
 - **React.** `postext/react` shows a document's pages in a component; the main entry never loads React.
@@ -543,6 +544,8 @@ The project especially welcomes people with experience in:
 - **Editorial design** (magazine/newspaper layout, book typesetting)
 - **Text rendering** (canvas, SVG, font metrics)
 - **Documentation, translations, and testing**
+
+To ask a question, share what you're building or just say hello, join the [Postext Discord](https://discord.gg/CSzm6hr8YD). New versions, videos and closed issues are announced there too.
 
 For the full community vision and all the ways to get involved, see the [Contributing guide](https://postext.dev/en/docs/contributing).
 

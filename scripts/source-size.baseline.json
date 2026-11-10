@@ -5,7 +5,7 @@
   "packages/postext/src/exercises/runtime.ts": 1657,
   "packages/postext-epub/src/reflowable/walk.ts": 1656,
   "packages/postext/src/exercises/expand.ts": 1210,
-  "packages/postext-sandbox/src/sidebar/sections/callouts/CalloutStylesSection/CalloutStyleCard.tsx": 1076,
+  "packages/postext-sandbox/src/sidebar/sections/callouts/CalloutStylesSection/CalloutStyleCard.tsx": 1068,
   "packages/postext-sandbox/src/sidebar/sections/headings/HeadingStylesSection/HeadingStyleCard.tsx": 889,
   "packages/postext/src/index.ts": 859,
   "packages/postext-sandbox/src/sidebar/sections/running/HeaderFooterSection/TextElementEditor.tsx": 841,

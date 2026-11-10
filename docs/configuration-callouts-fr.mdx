@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Encadrés',
   description: 'Les styles nommés des encadrés :::callout (cadre, fond, bande, titre, icône, marqueur et onglet d’étiquette) ; les formes d’encadré, avec un rayon par coin, une bordure par côté et des onglets joints ; les énoncés numérotés ; la typographie à l’intérieur de l’encadré ; les encadrés coupés d’une page à l’autre ; et les maquettes dessinées dans un encadré',
   lang: 'fr',
-  lastUpdated: '2026-10-20',
-  readingTime: '28 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '29 min',
   order: 16,
   parent: 'configuration',
   plainSummary: "Cette page traite des encadrés qui mettent à part du texte une remarque, un conseil, un avertissement ou une liste d’objectifs. Vous donnez à chaque type d’encadré un nom et un aspect : son fond, sa bordure, une bande de couleur, un titre et une icône. Un encadré peut avoir un numéro, comme un théorème ou un exemple dans un manuel. Vous choisissez les polices à l’intérieur de l’encadré. Quand un long encadré continue sur la page suivante, vous choisissez ce qui marque la coupure.",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>hérite de <code>bodyText</code> ; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Typographie des paragraphes et des éléments de liste dans l’encadré. Chaque champ non défini hérite du texte courant ; <code>italicColor</code> fixe la couleur des passages en italique (une citation en exergue en italique dans la couleur de l’encadré). <code>fontWeight</code> / <code>boldFontWeight</code> fixent les graisses des passages en romain et en gras ; <code>italic</code> compose l’encadré en italique, les passages <code>*…*</code> passant en romain ; <code>smallCaps</code> le compose en petites capitales ; <code>tabStops</code> et <code>tabInterval</code> remplacent ceux du texte dans l’encadré (voir <a href="/fr/docs/configuration-text#taquets-de-tabulation">Taquets de tabulation</a>). Voir <a href="#typographie-dans-un-encadré">Typographie dans un encadré</a> pour ce que le texte de l’encadré prend d’autre. Depuis postext 1.42, <code>letterSpacing</code> approche les paragraphes et les éléments de liste de l’encadré. En <code>em</code> il compte le corps du texte, et une valeur négative resserre. Il est pris en compte dans la mesure des lignes : un encadré resserré de quelques pour cent coupe ses lignes là où l’original les coupe ; un paragraphe placé dans un <code>:::paragraphs</code> garde l’approche de son propre style. Un bloc de page composée doté de ce style l’applique aussi.</td>
+      <td>Typographie des paragraphes et des éléments de liste dans l’encadré. Chaque champ non défini hérite du texte courant ; <code>italicColor</code> fixe la couleur des passages en italique (une citation en exergue en italique dans la couleur de l’encadré). <code>fontWeight</code> / <code>boldFontWeight</code> fixent les graisses des passages en romain et en gras ; <code>italic</code> compose l’encadré en italique, les passages <code>*…*</code> passant en romain ; <code>smallCaps</code> le compose en petites capitales ; <code>tabStops</code> et <code>tabInterval</code> remplacent ceux du texte dans l’encadré (voir <a href="/fr/docs/configuration-text#taquets-de-tabulation">Taquets de tabulation</a>). Voir <a href="#typographie-dans-un-encadré">Typographie dans un encadré</a> pour ce que le texte de l’encadré prend d’autre. Depuis postext 1.42, <code>letterSpacing</code> approche les paragraphes et les éléments de liste de l’encadré. En <code>em</code> il compte le corps du texte, et une valeur négative resserre. Il est pris en compte dans la mesure des lignes : un encadré resserré de quelques pour cent coupe ses lignes là où l’original les coupe ; un paragraphe placé dans un <code>:::paragraphs</code> garde l’approche de son propre style. Un bloc de page composée doté de ce style l’applique aussi. Depuis postext 1.71, <code>hangingIndent</code> donne un retrait suspendu aux paragraphes de l’encadré (voir <a href="#typographie-dans-un-encadré">Typographie dans un encadré</a>) : une longueur place les lignes suivantes à cette distance, comme le <code>hangingIndent</code> d’un style de paragraphe, et <code>true</code> lit <code>firstLineIndent</code> comme le retrait de toutes les lignes sauf la première, comme le fait <code>bodyText.hangingIndent</code>.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ Un encadré compose son contenu avec sa propre typographie `body` et `lists` ;
 - Les **pastilles** gardent leur style de pastille ; une taille en `em` se lit par rapport à la taille du texte de l’encadré.
 - **`:::space`** se mesure en lignes du texte de l’encadré (voir [`:::space`](/fr/docs/document-format-directives#space) pour les cas où il est supprimé).
 - **Un encadré imbriqué** prend entièrement son propre style ; ses `span`, `placement`, `floatBarrier` et `snapToGrid` sont ignorés.
+
+**Notes en retrait suspendu.** Les notes sous un tableau, une légende numérotée ou une liste de sources placent leur marque en saillie devant le texte : la marque au bord intérieur de l’encadré, le texte et toutes ses lignes suivantes un peu plus loin. `body.hangingIndent` (depuis postext 1.71) le fait pour tous les paragraphes d’un encadré ou d’un bloc de page composée doté de ce style :
+
+- **Une longueur** place toutes les lignes sauf la première à cette distance du bord intérieur de l’encadré, comme le `hangingIndent` d’un style de paragraphe (voir [Styles de paragraphe](/fr/docs/configuration-styles#styles-de-paragraphe)). La première ligne commence au bord, ou à `body.firstLineIndent` quand le style le fixe lui-même ; un retrait de première ligne hérité de `bodyText` s’efface.
+- **`true`** lit `body.firstLineIndent` comme le retrait de toutes les lignes sauf la première, comme `bodyText.hangingIndent` dans le texte courant ; `false` compose l’encadré sans retrait suspendu dans un livre dont le texte courant en a un. Non défini, l’encadré suit `bodyText.hangingIndent`.
+
+Un taquet de tabulation à la même position mène le texte qui suit la marque jusqu’au bord des lignes suivantes, quelle que soit la largeur de la marque :
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	Les prix comprennent la livraison en ville.
+
+\*\*	Les adhérents paient moitié prix ; la réduction ne se cumule pas avec d’autres offres et court jusqu’à la fin de la saison.
+:::
+```
+
+Chaque note est un paragraphe à part ; entre la marque et le texte se place un caractère de tabulation ou `:tab`. L’astérisque est échappé, car `*` suivi d’une tabulation en début de ligne ouvre un élément de liste. Les lignes sont mesurées ainsi, si bien que le canvas, le PDF, la liste d’affichage et l’EPUB (avec `padding-inline-start` et un `text-indent` négatif) les composent de la même façon, et l’export Word écrit le même retrait. Les éléments de liste gardent leur propre retrait (`lists.indent`, `lists.gap`), et un paragraphe placé dans un `:::paragraphs`, celui de son style. Un `firstLineIndent` négatif compte toujours pour `0` : la première ligne ne peut pas commencer dans la marge intérieure de l’encadré. Une citation placée dans un encadré suit son retrait suspendu quand `hangingIndent` vaut `true` ; avec une longueur, seuls les paragraphes propres à l’encadré sont suspendus.
 
 ### Marques sur un encadré coupé
 

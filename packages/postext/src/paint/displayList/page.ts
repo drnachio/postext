@@ -50,7 +50,11 @@ function composedItems(page: VDTPage, ctx: BlockContext, vertical: boolean): Dis
     }
     const m = frameMatrix(item.frame);
     const frame = m ? compose(ctx.frame, m as unknown as Frame) : ctx.frame;
-    for (const block of item.blocks) items.push(...blockItems(block, { ...ctx, frame, vertical: vertical || item.frame.writingMode === 'vertical-rl' }));
+    // Each item names the frame it is set in, so writers that rebuild
+    // frames (IDML) can gather a frame's text into one story.
+    for (const block of item.blocks) {
+      for (const it of blockItems(block, { ...ctx, frame, vertical: vertical || item.frame.writingMode === 'vertical-rl' })) items.push({ ...it, frame: item.frame.id });
+    }
   }
   return items;
 }

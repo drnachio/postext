@@ -720,6 +720,24 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 - <strong>`wordStyleTracking(word, template, config)`</strong>と<strong>`applyStyleTracking(config, tracking)`</strong>：Wordのスタイルの文字間隔を、文字間隔を指定していない設定のスタイルに引き継ぎます。
 
 
+### InDesignパッケージ（`postext/idml`）
+
+`postext/idml`サブパスは、組み上がったページをInDesign Markupのパッケージ（`.idml`）として書き出し、デザイナーがInDesignで本を仕上げられるようにします。組版どおりのWord文書と同じく、ページのディスプレイリストをもとに作り、DOMを使いません。コマンドラインの`idml`は、これを土台にしています（[コマンドライン › idml](/ja/docs/command-line#idml)を参照）。postext 1.71以降。
+
+```ts
+import { buildDocument } from 'postext';
+import { idmlDocument } from 'postext/idml';
+
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const { bytes, links } = idmlDocument({ docs, resourceBytes, images: 'embed', title: 'フィールドノート' });
+```
+
+- **`idmlDocument(options)`**：パッケージのバイト列（`bytes`。`Uint8Array`）と、`images: 'link'`のときは隣に書き出す画像（`links`：`{ path, bytes }`。パスは`Links/photo.jpg`のような`.idml`からの相対パス）を返します。受け取るのは、`docs`（本の順に章ごと1つの`VDTDocument`）、画像のバイト列を返す`resourceBytes(fileId)`、`images`（既定の`'embed'`か`'link'`）、`title`、InDesignでの書体のスタイル名を返す`fontStyleName(family, weight, italic)`（既定ではウェイトと傾きから`Regular`、`Bold Italic`…を導きます。`Roman`のようにフォント自身のスタイル名が違う場合は、その名前を返してください）、テンプレートページの枠の外にあるテキストの段落スタイルを役割ごとに指定する`styleNames`（`body`、`heading`、`list`…）、`forms`（既定は`true`で、フォームフィールドを持つチップをInDesignのフォームフィールドにします）、`onWarning`（`{ code, message }`）です。
+- 各ページは仕上がりサイズの1ページだけの見開きになり、最初のページの裁ち落としが文書の裁ち落としになります。罫線、ボックス、パス、画像は、線、長方形、多角形、グラフィックフレームになります。作者が指定したCMYKの色はプロセスカラーのスウォッチになり、`colorPalette`が名前を付けていればパレットの名前を使います。
+- テンプレートページの各枠のテキストは、1つのストーリーを持つ1つのテキストフレームになり、枠の囲みスタイルの名前を持つ段落スタイルが付きます。`next`でつないだ枠は、連結したテキストフレームで1つのストーリーを共有し、枠の区切りで分かれた段落も1つの段落のままです。テンプレートページの枠の外にあるテキストは、ブロックごとに1つのテキストフレームになり、Postextが置いた位置に置かれます。フィットでテキストを縮めた枠（`fit.shrinkText`）は、縮めた文字サイズと行送りを保ち、インデント、タブ位置、段落間のアキもそれに合わせて縮みます（枠のパディングは縮みません）。リスト項目のマーカーは段落の先頭に置き、タブを続け、ぶら下げインデントにします。段落は、インデント（左、1行目、右。Postextが行を置いた位置から読み取ります）、揃えとリーダーを含むタブ位置、段落後のアキを保ちます。段落スタイルには最初の段落のこれらの値が入り、枠のパディングはテキストフレームのフレーム内マージンになります。強制改行は強制改行のままです。チップの文字はテキストに残り、チップの箱（塗りと線）はその後ろの長方形になります。空のチップは細いスペースで場所を空けます。
+- フォームフィールドを持つチップ（`field="…"`。[PDF出力 › フォームフィールド](/ja/docs/configuration-pdf-output#フォームフィールド)を参照）は、チップの箱の上に置くInDesignのフォームフィールドになり、チップの塗りと線で描かれます。テキストと数値はテキストフィールド（フィールドの名前、チップの文字サイズ、`multiline`、`readonly`、`required`、`tooltip`を持ちます）、選択肢はコンボボックス（選択肢付き）、チェックボックスは2つの表示状態を持つチェックボックス（値がそう示していれば、初期状態でチェックが入ります）になります。フィールドの文字はテキストに入れず、その場所は空けたままにします。InDesignのフォームフィールドには初期値、数値の書式、計算、揃えがないため、これらはフィールドのスクリプトラベル（`postext:value`、`postext:format`、そして`calc`属性と同じ書き方の`postext:calc`。数値や入れ子の計算も含みます）に入れ、`field.value`または`field.script`の警告を出します。`forms: false`にすると、こうしたチップもほかのチップと同じように書き出し、値はテキストになります。
+- InDesignは自身のコンポーザーでテキストを組み直します。枠、スタイル、文字、最初のベースラインはPostextのものですが、改行位置は変わることがあります。表、数式、楽譜、行内の色見本はまだ書き出しません。それぞれ警告になります（`table`、`text.inline`）。右から左へ書く文字と縦組みのテキストは、左から右への横組みのストーリーとして書き出し、`text.rtl`または`text.vertical`の警告を出します。SVG画像はSVGのまま配置します。InDesign 2020以降で読み込めます（`image.svg`）。
+
 ## Web Workerでレイアウトを実行する
 
 **ブラウザーでPostextを使うときは、この方法を推奨します**。ライブプレビュー、エディター、サイズ変更に追従するビューアー、Sandboxのような試用環境など、対話的なものを作るなら、`postext/worker`の`createLayoutWorker()`を通してパイプラインを動かしてください。UIのコードでは、メインスレッドで`buildDocument`を直接呼ばないでください。

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Kästen',
   description: 'Benannte Stile für :::callout-Kästen: Kontur, Füllung, Streifen, Titel, Symbol, Marke und Etikett; Kastenformen mit Radien je Ecke, Konturen je Seite und verbundenen Etiketten; nummerierte Aussagen; Typografie im Kasten; Kästen, die über mehrere Seiten geteilt werden; und Gestaltungen im Kasten',
   lang: 'de',
-  lastUpdated: '2026-10-20',
-  readingTime: '25 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '26 min',
   order: 16,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Kästen, die eine Anmerkung, einen Tipp, eine Warnung oder eine Liste von Lernzielen vom Text absetzen. Sie geben jeder Art von Kasten einen Namen und ein Aussehen: Hintergrund, Kontur, einen farbigen Streifen, einen Titel und ein Symbol. Ein Kasten kann eine Nummer haben, wie ein Lehrsatz oder ein Beispiel in einem Lehrbuch. Sie wählen die Schriften im Kasten. Wenn ein langer Kasten auf der nächsten Seite weitergeht, wählen Sie, was die Trennstelle kennzeichnet.",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>erbt <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Typografie der Absätze und Listeneinträge im Kasten. Jedes Feld erbt, wenn nicht gesetzt, den Wert des Fließtexts; <code>italicColor</code> setzt die Farbe kursiven Texts (ein kursives Hervorhebungszitat in der Farbe des Kastens). <code>fontWeight</code> / <code>boldFontWeight</code> setzen die Schriftstärken des normalen und des fetten Texts; <code>italic</code> setzt den Kasten kursiv, wobei Text in <code>*…*</code> aufrecht wird; <code>smallCaps</code> setzt ihn in Kapitälchen; <code>tabStops</code> und <code>tabInterval</code> ersetzen im Kasten die des Fließtexts (siehe <a href="/de/docs/configuration-text#tabulatoren">Tabulatoren</a>). Was der Text des Kastens sonst noch übernimmt, steht unter <a href="#typografie-im-kasten">Typografie im Kasten</a>. Seit postext 1.42 stellt <code>letterSpacing</code> die Laufweite der Absätze und Listeneinträge des Kastens ein. In <code>em</code> zählt der Schriftgrad des Textes, ein negativer Wert rückt die Buchstaben enger zusammen. Der Wert wird in die Zeilen hineingemessen: Ein Kasten, der um einige Prozent enger läuft, bricht dort um, wo auch die Zeilen des Originals umbrechen. Ein Absatz in einem <code>:::paragraphs</code>-Block behält die Laufweite seines eigenen Stils. Ein Rahmen mit diesem Stil übernimmt sie ebenfalls.</td>
+      <td>Typografie der Absätze und Listeneinträge im Kasten. Jedes Feld erbt, wenn nicht gesetzt, den Wert des Fließtexts; <code>italicColor</code> setzt die Farbe kursiven Texts (ein kursives Hervorhebungszitat in der Farbe des Kastens). <code>fontWeight</code> / <code>boldFontWeight</code> setzen die Schriftstärken des normalen und des fetten Texts; <code>italic</code> setzt den Kasten kursiv, wobei Text in <code>*…*</code> aufrecht wird; <code>smallCaps</code> setzt ihn in Kapitälchen; <code>tabStops</code> und <code>tabInterval</code> ersetzen im Kasten die des Fließtexts (siehe <a href="/de/docs/configuration-text#tabulatoren">Tabulatoren</a>). Was der Text des Kastens sonst noch übernimmt, steht unter <a href="#typografie-im-kasten">Typografie im Kasten</a>. Seit postext 1.42 stellt <code>letterSpacing</code> die Laufweite der Absätze und Listeneinträge des Kastens ein. In <code>em</code> zählt der Schriftgrad des Textes, ein negativer Wert rückt die Buchstaben enger zusammen. Der Wert wird in die Zeilen hineingemessen: Ein Kasten, der um einige Prozent enger läuft, bricht dort um, wo auch die Zeilen des Originals umbrechen. Ein Absatz in einem <code>:::paragraphs</code>-Block behält die Laufweite seines eigenen Stils. Ein Rahmen mit diesem Stil übernimmt sie ebenfalls. Seit postext 1.71 setzt <code>hangingIndent</code> die Absätze des Kastens mit hängendem Einzug (siehe <a href="#typografie-im-kasten">Typografie im Kasten</a>): Eine Länge rückt die Folgezeilen so weit ein wie das <code>hangingIndent</code> eines Absatzformats, und <code>true</code> liest <code>firstLineIndent</code> als Einzug jeder Zeile außer der ersten, wie es <code>bodyText.hangingIndent</code> tut.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ Ein Kasten setzt seinen Inhalt mit seiner eigenen Typografie `body` und `lists`;
 - **Chips** behalten ihren Chip-Stil; eine Größe in `em` wird an der Schriftgröße des Kastentexts gemessen.
 - **`:::space`** wird in Zeilen des Kastentexts gemessen (siehe [`:::space`](/de/docs/document-format-directives#space) dazu, wo es entfällt).
 - **Ein verschachtelter Kasten** übernimmt seinen eigenen Stil vollständig; sein `span`, `placement`, `floatBarrier` und `snapToGrid` werden ignoriert.
+
+**Hängende Anmerkungen.** Anmerkungen unter einer Tabelle, eine nummerierte Legende oder ein Quellenverzeichnis stellen ihr Zeichen vor den Text: das Zeichen an die Innenkante des Kastens, den Text und alle Folgezeilen etwas weiter eingerückt. `body.hangingIndent` (seit postext 1.71) setzt so jeden Absatz eines Kastens oder eines Rahmens mit diesem Stil:
+
+- **Eine Länge** setzt jede Zeile außer der ersten in diesem Abstand zur Innenkante des Kastens, wie das `hangingIndent` eines Absatzformats (siehe [Absatzformate](/de/docs/configuration-styles#absatzformate)). Die erste Zeile beginnt an der Kante oder bei `body.firstLineIndent`, wenn der Stil diesen Wert selbst setzt; ein von `bodyText` geerbter Erstzeileneinzug entfällt.
+- **`true`** liest `body.firstLineIndent` als Einzug jeder Zeile außer der ersten, wie `bodyText.hangingIndent` im Fließtext; `false` setzt den Kasten ohne hängenden Einzug in einem Buch, dessen Fließtext hängend eingezogen ist. Ohne Wert übernimmt der Kasten `bodyText.hangingIndent`.
+
+Ein Tabulator an derselben Position führt den Text nach dem Zeichen an die Kante der Folgezeilen, wie breit das Zeichen auch ist:
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	Die Preise enthalten die Lieferung innerhalb der Stadt.
+
+\*\*	Mitglieder zahlen die Hälfte; der Nachlass ist nicht mit anderen Angeboten kombinierbar und gilt bis zum Ende der Saison.
+:::
+```
+
+Jede Anmerkung ist ein eigener Absatz; zwischen Zeichen und Text steht ein Tabulatorzeichen oder `:tab`. Das Sternchen ist maskiert, weil `*` mit einem Tabulator am Zeilenanfang einen Listeneintrag eröffnet. Die Zeilen werden so gemessen, daher setzen Canvas, PDF, Display-Liste und EPUB (mit `padding-inline-start` und negativem `text-indent`) sie gleich, und ein Word-Export schreibt denselben hängenden Einzug. Listeneinträge behalten ihren eigenen Einzug (`lists.indent`, `lists.gap`), ein Absatz in einem `:::paragraphs`-Block den seines Stils. Ein negativer `firstLineIndent` zählt weiterhin als `0`: Die erste Zeile kann nicht im Innenabstand des Kastens beginnen. Ein Zitatblock im Kasten hängt mit dem Kasten, wenn `hangingIndent` `true` ist; bei einer Länge hängen nur die eigenen Absätze des Kastens.
 
 ### Vermerke an einem geteilten Kasten
 

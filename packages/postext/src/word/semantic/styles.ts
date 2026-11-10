@@ -13,7 +13,7 @@ import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
 import { paleOnWhite } from './design/ink.js';
 import { captionLook, sameCaptionLook } from './prose/caption.js';
-import { paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
+import { boxBodyIndent, paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
 import { firstFamily, halfPoints, hex, pPr, px, rPr, twips, type ParaProps, type RunProps, type Units } from './wml.js';
 
 /** Style ids the writer uses by name. */
@@ -509,7 +509,7 @@ export class StyleRegistry {
           suppressAutoHyphens: !b.hyphenation || undefined,
           after,
           line: { twips: twips(u, b.lineHeight, size), rule: 'atLeast' },
-          ind: { firstLine: twips(u, b.firstLineIndent, size) },
+          ind: boxBodyIndent(u, b, size),
           jc: b.textAlign === 'justify' ? 'both' : 'left',
         },
         rPr: {

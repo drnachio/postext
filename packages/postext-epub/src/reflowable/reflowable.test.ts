@@ -723,6 +723,28 @@ describe('reflowable rendition: hanging paragraph styles (#620)', () => {
   });
 });
 
+describe('reflowable rendition: hanging boxes (#1451)', () => {
+  it('hangs the paragraphs of a box whose body sets a hanging indent', async () => {
+    const em = (value: number) => ({ value, unit: 'em' as const });
+    const config = {
+      ...baseConfig,
+      calloutStyles: [
+        { id: 'hang', body: { hangingIndent: em(2) } },
+        { id: 'pair', body: { firstLineIndent: em(1), hangingIndent: em(3) } },
+        { id: 'flag', body: { firstLineIndent: em(1.5), hangingIndent: true } },
+        { id: 'flat', body: { firstLineIndent: em(1) } },
+      ],
+    };
+    const md = ['hang', 'pair', 'flag', 'flat'].map((t) => [`:::callout{type="${t}"}`, 'A note.', ':::', ''].join('\n')).join('\n');
+    const { pub } = await render([layOut(md, config)]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/aside\.pt-callout-hang p \{\n {2}padding-inline-start: 2em;\n {2}text-indent: -2em;/);
+    expect(css).toMatch(/aside\.pt-callout-pair p \{\n {2}padding-inline-start: 3em;\n {2}text-indent: -2em;/);
+    expect(css).toMatch(/aside\.pt-callout-flag p \{\n {2}padding-inline-start: 1\.5em;\n {2}text-indent: -1\.5em;/);
+    expect(css).toMatch(/aside\.pt-callout-flat p \{\n {2}text-indent: 1em;/);
+  });
+});
+
 describe('reflowable rendition: tracked paragraph styles (#907)', () => {
   it('writes a style\'s letter-spacing in its own ems, ligatures kept', async () => {
     const em = (value: number) => ({ value, unit: 'em' as const });

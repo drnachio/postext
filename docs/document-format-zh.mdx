@@ -234,7 +234,6 @@ Postext不识别以下CommonMark功能。它们要么被当作普通文本（因
 - **引用式链接**：`[text][id]`加上定义块。
 - **自动链接**：`<https://example.com>`。
 - **用行末两个空格表示的换行**：这两个空格会被删去。请改在行末写反斜杠（见[段落内的换行](/zh/docs/document-format-directives#段落内的换行)）。
-- **删除线**：`~~text~~`。删除线的绘制目前只留给已完成的任务项。
 - **旁注**：尚未实现；类型定义虽然接受`PostextContent.notes`，引擎却会忽略它。脚注和章末注用`[^id]`书写（见[脚注](/zh/docs/document-format-notes-references#脚注)）；在postext 1.5及以前，它们只能作为文本排出。
 
 这份清单会随时间缩短。在此之前，凡是上文没有明确列为支持的写法，都应当视为原样输出的文本。

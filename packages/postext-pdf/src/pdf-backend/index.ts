@@ -1,9 +1,13 @@
+import { FormFieldRegistry, type PdfFormOptions } from './forms.js';
+import { FormFonts } from './formFonts.js';
+export type { PdfFormOptions } from './forms.js';
+export type { PdfFormFont } from './formFonts.js';
 import './text/shapedText.js';
 import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
 import { runPagePrintPass } from '../print/printPass.js';
 import { writePdfX } from '../print/pdfx.js';
@@ -22,12 +26,18 @@ import { metadataString, documentTitle, languageTag } from './renderToPdf/metada
 import { renderPage } from './renderToPdf/paintPage.js';
 import { type PdfWarning, fontFallbackWarning, fileIssueWarning, missingGlyphWarning } from './renderToPdf/warnings.js';
 
-export type { PdfPrintWarning, PdfComplexShapingWarning, PdfFontFallbackWarning, PdfMissingGlyphWarning, PdfVariableFontWarning, PdfCffEmbeddedWholeWarning, PdfWarning, PdfFontWarning } from './renderToPdf/warnings.js';
+export type { PdfFormFieldWarning, PdfPrintWarning, PdfComplexShapingWarning, PdfFontFallbackWarning, PdfMissingGlyphWarning, PdfVariableFontWarning, PdfCffEmbeddedWholeWarning, PdfWarning, PdfFontWarning } from './renderToPdf/warnings.js';
 
 /** Options of `renderToPdf`: fonts, image bytes, colour, accessibility, print
  *  production and progress. */
 export interface RenderToPdfOptions {
   fontProvider: PdfFontProvider;
+  /** How form fields (chips with a `field`, #1445) write numbers: the
+   *  currency symbol and its side, and the separators (from the document
+   *  language when unset), and the face fields show values in (`font`,
+   *  the chip's by default, embedded whole). The canvas takes the same
+   *  option (`RenderPageOptions.forms`), so its preview matches. */
+  forms?: PdfFormOptions;
   pageNegative?: boolean;
   /** Emit a PDF outline tree (bookmarks) so readers can jump between
    *  headings. When omitted, the first document's
@@ -273,6 +283,12 @@ export async function renderToPdf(
   // Contents links carry book-absolute page indices; the registry maps them
   // onto the PDF's pages from the first document's offset.
   const linkRegistry = new LinkRegistry(first.pageIndexOffset ?? 0);
+  // Form fields (#1445): interactive in a screen PDF; a print standard
+  // allows none, there the values are painted as text.
+  const forms = pdfx ? undefined : new FormFieldRegistry();
+  // How their numbers are written, in the document's language as the
+  // canvas preview writes them.
+  const fieldNumbers = formNumberStyle(options.forms, documentLanguageOf(first.config));
   let rendered = 0;
   // Placeholders are reported once per image for the whole file.
   const onWarning = options.onWarning;
@@ -283,6 +299,8 @@ export async function renderToPdf(
     const resourceCtx: ResourceRenderContext = {
       images: resourceImages,
       linkRegistry,
+      ...(forms ? { forms } : {}),
+      fieldNumbers,
       structure: tree ? new StructureFlow(tree) : undefined,
     };
     linkRegistry.documentIndex = documentIndex;
@@ -306,6 +324,10 @@ export async function renderToPdf(
   // A PDF/X file carries none: it is for the press, and annotations inside
   // the bleed box are not allowed.
   if (!pdfx) linkRegistry.finalize(pdfDoc, tree);
+  if (forms) {
+    await forms.finalize(pdfDoc, fieldNumbers, new FormFonts(pdfDoc, fontCache, options.forms?.font, (message) => forms.warnings.push(message)));
+    for (const message of forms.warnings) warn({ kind: 'formField', message: `postext-pdf: ${message}` });
+  }
 
   if (settings.outlines) {
     addOutlines(pdfDoc, docs);

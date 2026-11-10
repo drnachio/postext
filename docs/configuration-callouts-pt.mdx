@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Boxes',
   description: 'Como definir estilos nomeados para os boxes :::callout (moldura, fundo, faixa, título, ícone, marcador e aba de rótulo), dar ao boxe uma forma com raios por canto, bordas por lado e abas unidas, numerar enunciados, escolher a tipografia dentro do boxe, marcar os boxes divididos entre páginas e desenhar designs dentro de um boxe',
   lang: 'pt',
-  lastUpdated: '2026-10-20',
-  readingTime: '27 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '28 min',
   order: 16,
   parent: 'configuration',
   plainSummary: "Esta página trata dos boxes que separam do texto uma nota, uma dica, um alerta ou uma lista de objetivos. Você dá a cada tipo de boxe um nome e uma aparência: o fundo, a borda, uma faixa colorida, um título e um ícone. Um boxe pode ter um número, como um teorema ou um exemplo num livro didático. Você escolhe as fontes dentro do boxe. Quando um boxe longo continua na página seguinte, você escolhe o que marca a quebra.",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>herda <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Tipografia dos parágrafos e itens de lista dentro do boxe. Todo campo não definido herda o texto do corpo; <code>italicColor</code> define a cor dos trechos em itálico (uma citação em destaque em itálico na cor do boxe). <code>fontWeight</code> / <code>boldFontWeight</code> definem os pesos dos trechos regulares e em negrito; <code>italic</code> compõe o boxe em itálico, com os trechos <code>*…*</code> voltando ao redondo; <code>smallCaps</code> o compõe em versaletes; <code>tabStops</code> e <code>tabInterval</code> substituem os do corpo dentro do boxe (veja <a href="/pt/docs/configuration-text#paradas-de-tabulação">Paradas de tabulação</a>). Veja <a href="#tipografia-dentro-de-um-boxe">Tipografia dentro de um boxe</a> para o que mais o texto do boxe recebe. Desde o postext 1.42, <code>letterSpacing</code> espaça os parágrafos e os itens de lista do boxe. Em <code>em</code>, é relativo ao corpo do texto, e um valor negativo aperta. Entra na medição das linhas; assim, um boxe com tracking alguns por cento mais apertado quebra as linhas onde o original as quebra; um parágrafo num contêiner <code>:::paragraphs</code> mantém o tracking do próprio estilo. Um bloco de modelo com este estilo também o recebe.</td>
+      <td>Tipografia dos parágrafos e itens de lista dentro do boxe. Todo campo não definido herda o texto do corpo; <code>italicColor</code> define a cor dos trechos em itálico (uma citação em destaque em itálico na cor do boxe). <code>fontWeight</code> / <code>boldFontWeight</code> definem os pesos dos trechos regulares e em negrito; <code>italic</code> compõe o boxe em itálico, com os trechos <code>*…*</code> voltando ao redondo; <code>smallCaps</code> o compõe em versaletes; <code>tabStops</code> e <code>tabInterval</code> substituem os do corpo dentro do boxe (veja <a href="/pt/docs/configuration-text#paradas-de-tabulação">Paradas de tabulação</a>). Veja <a href="#tipografia-dentro-de-um-boxe">Tipografia dentro de um boxe</a> para o que mais o texto do boxe recebe. Desde o postext 1.42, <code>letterSpacing</code> espaça os parágrafos e os itens de lista do boxe. Em <code>em</code>, é relativo ao corpo do texto, e um valor negativo aperta. Entra na medição das linhas; assim, um boxe com tracking alguns por cento mais apertado quebra as linhas onde o original as quebra; um parágrafo num contêiner <code>:::paragraphs</code> mantém o tracking do próprio estilo. Um bloco de modelo com este estilo também o recebe. Desde o postext 1.71, <code>hangingIndent</code> aplica recuo deslocado aos parágrafos do boxe (veja <a href="#tipografia-dentro-de-um-boxe">Tipografia dentro de um boxe</a>): um comprimento leva as linhas seguintes a essa distância, como o <code>hangingIndent</code> de um estilo de parágrafo, e <code>true</code> lê <code>firstLineIndent</code> como o recuo de todas as linhas menos a primeira, como faz <code>bodyText.hangingIndent</code>.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ Um boxe compõe o conteúdo com a própria tipografia `body` e `lists`; todo o r
 - **Chips** mantêm o estilo de chip; um tamanho em `em` é medido sobre o tamanho do corpo do boxe.
 - **`:::space`** é medido em linhas do corpo do boxe (veja [`:::space`](/pt/docs/document-format-directives#space) para saber onde ele é descartado).
 - **Um boxe aninhado** recebe o próprio estilo por inteiro; o `span`, o `placement`, o `floatBarrier` e o `snapToGrid` dele são ignorados.
+
+**Notas com recuo deslocado.** As notas sob uma tabela, uma legenda numerada ou uma lista de fontes deixam a marca pendurada à frente do texto: a marca na borda interna do boxe, e o texto e todas as linhas seguintes um pouco mais para dentro. `body.hangingIndent` (desde o postext 1.71) faz isso em todos os parágrafos de um boxe ou de um bloco de modelo com esse estilo:
+
+- **Um comprimento** coloca todas as linhas menos a primeira a essa distância da borda interna do boxe, como o `hangingIndent` de um estilo de parágrafo (veja [Estilos de parágrafo](/pt/docs/configuration-styles#estilos-de-parágrafo)). A primeira linha começa na borda, ou em `body.firstLineIndent` quando o próprio estilo o define; um recuo de primeira linha herdado de `bodyText` deixa de valer.
+- **`true`** lê `body.firstLineIndent` como o recuo de todas as linhas menos a primeira, como `bodyText.hangingIndent` faz no texto corrido; `false` compõe o boxe sem recuo deslocado num livro cujo corpo do texto o usa. Sem valor, o boxe segue `bodyText.hangingIndent`.
+
+Uma parada de tabulação na mesma posição leva o texto depois da marca até a borda das linhas seguintes, qualquer que seja a largura da marca:
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	Os preços incluem a entrega dentro da cidade.
+
+\*\*	Os sócios pagam metade; o desconto não se soma a outras ofertas e vale até o fim da temporada.
+:::
+```
+
+Cada nota é um parágrafo próprio; entre a marca e o texto vai um caractere de tabulação ou `:tab`. O asterisco vai escapado, porque `*` seguido de uma tabulação no início de uma linha abre um item de lista. As linhas são medidas assim, de modo que o canvas, o PDF, a lista de exibição e o EPUB (com `padding-inline-start` e um `text-indent` negativo) as compõem igual, e uma exportação para o Word escreve o mesmo recuo. Os itens de lista mantêm o próprio recuo (`lists.indent`, `lists.gap`), e um parágrafo num contêiner `:::paragraphs`, o do seu estilo. Um `firstLineIndent` negativo continua contando como `0`: a primeira linha não pode começar dentro do espaçamento interno do boxe. Uma citação dentro de um boxe acompanha o recuo deslocado do boxe quando `hangingIndent` é `true`; com um comprimento, só os parágrafos do próprio boxe recebem o recuo.
 
 ### Marcas em um boxe dividido
 

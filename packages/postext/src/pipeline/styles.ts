@@ -174,12 +174,16 @@ export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const faces = textFaces(body.fontFamily, fontSizePx, body.fontWeight, body.boldFontWeight, !!body.italic, body.emphasis);
   const textAlign = body.textAlign;
   const hyphenation = hyphenationFor(body.hyphenation.enabled, textAlign, resolved, fontSizePx);
-  const firstLineIndentPx = dimensionToPx(body.firstLineIndent, dpi, fontSizePx);
-  const hangingIndent = body.hangingIndent;
+  // A box whose `body.hangingIndent` is a length (#1451) hangs as a
+  // paragraph style does: the turnovers at the length, the first line at
+  // the box's own first-line indent (paired, #620) or at the edge.
+  const hang = lengthHang(body.hangingIndentLength ? dimensionToPx(body.hangingIndentLength, dpi, fontSizePx) : 0, body.ownFirstLineIndent, () => dimensionToPx(body.firstLineIndent, dpi, fontSizePx));
+  const firstLineIndentPx = hang.firstLineIndentPx;
+  const hangingIndent = hang.hangs || body.hangingIndent;
   const marginBottomPx = paragraphSpacingPx(body.paragraphSpacing, lineHeightPx, dpi, fontSizePx);
   // Tracking (#974): only a callout's derived config carries one.
   const trackingPx = body.letterSpacing ? dimensionToPx(body.letterSpacing, dpi, fontSizePx) : 0;
-  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}), ...(Number.isFinite(trackingPx) && trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}), ...tabFields(body.tabStops, body.tabInterval) };
+  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...hang.paired, ...(body.smallCaps ? { smallCaps: true } : {}), ...(Number.isFinite(trackingPx) && trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}), ...tabFields(body.tabStops, body.tabInterval) };
 }
 
 export function resolveHeadingStyle(
@@ -303,6 +307,17 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
   };
 }
 
+/** A hanging length's measurer fields, shared by paragraph styles and box
+ *  bodies (#620, #1451): the turnovers at `hangPx`; the first line at the
+ *  edge (`firstLineIndentPx` is then the hang), or at its own indent when
+ *  the style sets one itself (`ownFirstLineIndent`), which pairs with the
+ *  hang. An inherited first-line indent gives way to it. */
+function lengthHang(hangPx: number, ownFirstLineIndent: boolean | undefined, firstLinePx: () => number): { hangs: boolean; firstLineIndentPx: number; paired: { hangingIndentPx?: number } } {
+  const hangs = Number.isFinite(hangPx) && hangPx > 0;
+  const paired = hangs && ownFirstLineIndent === true;
+  return { hangs, firstLineIndentPx: hangs && !paired ? hangPx : firstLinePx(), paired: paired ? { hangingIndentPx: hangPx } : {} };
+}
+
 /** Block style for paragraphs inside a `:::paragraphs{style="…"}` container.
  *  Mirrors {@link resolveBodyStyle} (reference colours come from the body
  *  text; the bold and italic colours too, unless the style sets its own)
@@ -327,14 +342,8 @@ export function resolveParagraphStyle(
   const faces = textFaces(style.fontFamily, fontSizePx, style.fontWeight, style.boldFontWeight, style.italic, body.emphasis);
   const textAlign = style.textAlign;
   const hyphenation = hyphenationFor(style.hyphenation, textAlign, resolved, fontSizePx);
-  const hangingIndentPx = dimensionToPx(style.hangingIndent, dpi, fontSizePx);
-  const hangingIndent = hangingIndentPx > 0;
-  // A first-line indent the style sets itself pairs with its hanging one
-  // (#620); one inherited from the body gives way to it.
-  const paired = hangingIndent && style.ownFirstLineIndent === true;
-  const firstLineIndentPx = hangingIndent && !paired
-    ? hangingIndentPx
-    : dimensionToPx(style.firstLineIndent, dpi, fontSizePx);
+  const hang = lengthHang(dimensionToPx(style.hangingIndent, dpi, fontSizePx), style.ownFirstLineIndent, () => dimensionToPx(style.firstLineIndent, dpi, fontSizePx));
+  const { firstLineIndentPx, hangs: hangingIndent } = hang;
   const marginBottomPx = dimensionToPx(style.spaceBetween, dpi, fontSizePx);
   const indentPx = style.indent ? dimensionToPx(style.indent, dpi, fontSizePx) : 0;
   const endIndentPx = style.endIndent ? dimensionToPx(style.endIndent, dpi, fontSizePx) : 0;
@@ -358,7 +367,7 @@ export function resolveParagraphStyle(
     marginBottomPx,
     firstLineIndentPx,
     hangingIndent,
-    ...(paired ? { hangingIndentPx } : {}),
+    ...hang.paired,
     ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
     ...(Number.isFinite(endIndentPx) && endIndentPx > 0 ? { endIndentPx } : {}),
     ...(style.smallCaps ? { smallCaps: true } : {}),

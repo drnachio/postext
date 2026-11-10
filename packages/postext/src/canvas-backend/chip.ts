@@ -2,9 +2,24 @@ import type { VDTChip, VDTChipRun } from '../vdt.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { paintRunInDirection, runPaintOrder } from './runDirection.js';
 import { letterSpacingOf, restoreContext, saveContext, setLetterSpacing } from './contextState.js';
-import { fillContextText } from './contextText.js';
+import { fillContextText, measureContextText } from './contextText.js';
 import { fillTextDots } from './textDots.js';
 import { paintChipReadings } from './annotations.js';
+import { formNumberStyle, numberFieldText, type FormNumberStyle } from '../parse/formFields.js';
+
+/** How number fields write their values (#1445): set by
+ *  `renderPageToCanvas` from the document's language and its `forms`
+ *  option while it paints a page (painting is synchronous), so the preview
+ *  shows what the PDF's form does. */
+let fieldNumbers: FormNumberStyle = formNumberStyle(undefined, undefined);
+
+/** Paint number fields in `style` until the next call; returns the
+ *  previous style. */
+export function setFieldNumberStyle(style: FormNumberStyle): FormNumberStyle {
+  const previous = fieldNumbers;
+  fieldNumbers = style;
+  return previous;
+}
 
 /** Trace a rounded rect (radius already clamped to half the box). */
 function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
@@ -81,6 +96,17 @@ export function paintChip(
     return;
   }
   ctx.textBaseline = 'alphabetic';
+  // A number field (#1445): its value as the PDF's form shows it, in the
+  // field's format, set to the box's end.
+  const shown = chip.runs[0] ? numberFieldText(chip.field, chip.runs.map((r) => r.text).join(''), fieldNumbers) : undefined;
+  if (shown !== undefined) {
+    ctx.font = chip.runs[0]!.fontString;
+    ctx.fillStyle = chip.color ?? inkFor(chip.runs[0]!);
+    const end = bx + chip.boxWidth - chip.borderWidth - (chip.field?.padPx ?? chip.paddingX);
+    fillContextText(ctx, shown, end - measureContextText(ctx, shown).width, baseline);
+    restoreContext(ctx);
+    return;
+  }
   let tx = bx + chip.borderWidth + chip.paddingX;
   // The block's tracking, which a run of a joining script (measured
   // untracked, `measure/rtl/joining.ts`) is painted without. It is asked of
@@ -102,6 +128,13 @@ export function paintChip(
     }, run.text);
     if (untracked) setLetterSpacing(ctx, spacing);
     tx += run.width;
+  }
+  // The lines through its struck-through words (`~~…~~`).
+  if (chip.strikes && chip.runs[0]) {
+    const textX = bx + chip.borderWidth + chip.paddingX;
+    // Filled as the line's own marks are (`paintLineMarks`).
+    ctx.fillStyle = chip.color ?? inkFor(chip.runs[0]);
+    for (const s of chip.strikes) ctx.fillRect(textX + s.x, baseline + s.y - s.thickness / 2, s.length, s.thickness);
   }
   restoreContext(ctx);
 }

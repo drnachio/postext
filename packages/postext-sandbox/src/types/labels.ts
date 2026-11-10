@@ -4001,6 +4001,13 @@ export interface SandboxLabels {
   calloutStyleTitleLetterSpacing: string;
   calloutStyleBodyLetterSpacing: string;
   calloutStyleBodyLetterSpacingTooltip: string;
+  calloutStyleBodyHangingIndent: string;
+  calloutStyleBodyHangingIndentTooltip: string;
+  calloutStyleBodyHangingIndentOff: string;
+  calloutStyleBodyHangingIndentFirstLine: string;
+  calloutStyleBodyHangingIndentLength: string;
+  calloutStyleBodyHangingIndentWidth: string;
+  calloutStyleBodyHangingIndentWidthTooltip: string;
   calloutStyleTitleIndent: string;
   calloutStyleTitleIndentTooltip: string;
   calloutStyleTitleLineHeight: string;

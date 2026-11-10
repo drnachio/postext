@@ -164,6 +164,7 @@ export function stripCalloutStylesDefaults(
       if (s.body.hyphenation !== undefined) b.hyphenation = s.body.hyphenation;
       if (s.body.paragraphSpacing !== undefined) b.paragraphSpacing = s.body.paragraphSpacing;
       if (s.body.firstLineIndent !== undefined) b.firstLineIndent = s.body.firstLineIndent;
+      if (s.body.hangingIndent !== undefined) b.hangingIndent = s.body.hangingIndent;
       if (Array.isArray(s.body.tabStops)) b.tabStops = s.body.tabStops;
       if (s.body.tabInterval !== undefined) b.tabInterval = s.body.tabInterval;
       const kept = stripObject(b);

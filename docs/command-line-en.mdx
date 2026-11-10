@@ -164,6 +164,7 @@ own configuration. A multilingual bundle is read in its own language unless
     <tr><td><code>image</code></td><td>One page as a PNG, JPEG or WebP picture.</td></tr>
     <tr><td><code>images</code></td><td>Every page, or a range, as pictures in a folder.</td></tr>
     <tr><td><code>docx</code></td><td>The chapters as a Word document: semantic (Word's own headings, lists, notes and tables) or formatted (the PDF's pages).</td></tr>
+    <tr><td><code>idml</code></td><td>The pages as an InDesign package (IDML), for finishing in InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>The corrections made in an exported Word file, back into the book; any other Word document as a new book (a folder or a <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>A book folder or loose Markdown as one <code>.postext</code> file.</td></tr>
     <tr><td><code>unpack</code></td><td>A <code>.postext</code> file as a folder.</td></tr>
@@ -322,6 +323,24 @@ styles that have none (the paragraph and heading styles of the `--config` file
 that the Word styles map to, and the heading levels), and leaves any tracking the
 book already sets as it is. With `--json`, `styleTracking` lists what was set
 (`applied`) and what was left (`skipped`). Since postext 1.39.
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+`idml` lays the book out as `pdf` does and writes the pages as an InDesign
+Markup package, for finishing in InDesign: one page per spread, rules, boxes,
+paths and pictures as page items, each composed-page frame's text as a text
+frame with its own story (frames chained by `next` share one), callout styles
+as paragraph styles and authored CMYK colours as swatches. Chips that carry a form field become InDesign form fields. InDesign sets the
+text again, so line breaks may differ from the PDF's. `--images link` puts
+the pictures beside the file in `Links/` instead of inside it. What the
+package cannot carry yet (tables, maths, music) is reported as an `idml.*`
+warning. See [Programmatic usage › InDesign packages](/en/docs/configuration-programmatic-usage#indesign-packages-postextidml).
+Since postext 1.71.
 
 ### pack and unpack
 

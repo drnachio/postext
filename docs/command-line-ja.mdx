@@ -127,6 +127,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>image</code></td><td>1ページをPNG、JPEG、WebPの画像にします。</td></tr>
     <tr><td><code>images</code></td><td>全ページ、または範囲を指定したページを、フォルダーの中の画像にします。</td></tr>
     <tr><td><code>docx</code></td><td>章をWordの文書にします。セマンティック（Word自身の見出し、リスト、注、表）か組版どおり（PDFのページ）です。</td></tr>
+    <tr><td><code>idml</code></td><td>ページをInDesignのパッケージ（IDML）にします。InDesignで仕上げるためのものです。</td></tr>
     <tr><td><code>import-docx</code></td><td>書き出したWordファイルに加えた校正を本に戻します。それ以外のWord文書は新しい本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
     <tr><td><code>pack</code></td><td>本のフォルダーまたはばらのMarkdownを、1つの<code>.postext</code>ファイルにまとめます。</td></tr>
     <tr><td><code>unpack</code></td><td><code>.postext</code>ファイルをフォルダーに展開します。</td></tr>
@@ -213,6 +214,15 @@ postext import-docx manuscript.docx -o manuscript/ --locale es --report
 本を指定しないと、`import-docx`は任意のWord文書を新しい本にします。レベル1の見出しごとに章を分け（`--no-split`なら1章のまま）、画像と表はリソースになります。`--report`は、Sandboxが表示する品質レポート（使われているスタイル、直接の書式、手入力の番号…）を出力します。`--template`は読み込み用のテンプレート（Sandboxから保存した`.json`、またはテンプレートを含む`.docx`）を受け付けます。
 
 字間はテキストではなくスタイルの性質なので、Markdownには入りません。`docx`は、段落スタイル、見出しスタイル、見出しのレベルの`letterSpacing`を、Wordのスタイルの字間として書き出します。`import-docx`はそれをスタイルの文字サイズに対するemとして読み戻し、`letterSpacing`が設定されていないスタイル（Wordのスタイルに対応する`--config`ファイルの段落スタイルと見出しスタイル、および見出しのレベル）に設定します。本がすでに指定している字間はそのままです。`--json`を付けると、`styleTracking`に、設定したもの（`applied`）と見送ったもの（`skipped`）が並びます（postext 1.39以降）。
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+`idml`は`pdf`と同じように本を組み、ページをInDesign Markupのパッケージとして書き出します。InDesignで仕上げるためのものです。見開きごとに1ページを置き、罫線、ボックス、パス、画像はページアイテムに、テンプレートページの各枠のテキストは固有のストーリーを持つテキストフレームになります（`next`でつないだ枠は1つのストーリーを共有します）。囲みスタイルは段落スタイルに、作者が指定したCMYKの色はスウォッチになります。フォームフィールドを持つチップは、InDesignのフォームフィールドになります。InDesignはテキストを組み直すので、改行位置はPDFと違うことがあります。`--images link`を付けると、画像はファイルの中ではなく、隣の`Links/`に置かれます。パッケージがまだ扱えないもの（表、数式、楽譜）は、`idml.*`の警告で報告します。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostextidml)を参照してください。postext 1.71以降。
 
 ### packとunpack
 

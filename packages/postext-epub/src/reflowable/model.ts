@@ -49,6 +49,8 @@ export interface Format {
   note?: 'side' | 'right';
   /** A completed task's text. */
   done?: boolean;
+  /** Struck-through text (`~~…~~`), written as `<s>`. */
+  strike?: boolean;
   /** The language of the run when it differs from its document's: the
    *  one the author named on an inline isolate (`:ltr[…]{lang=en}`,
    *  `VDTLineSegment.lang`). */

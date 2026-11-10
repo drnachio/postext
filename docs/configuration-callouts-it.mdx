@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Riquadri',
   description: 'Stili con nome per i riquadri :::callout: bordo, sfondo, banda, titolo, icona, marcatore e linguetta dell’etichetta; forme del riquadro con raggi per angolo, bordi per lato e linguette unite; enunciati numerati; tipografia dentro il riquadro; riquadri divisi tra più pagine; progetti grafici disegnati in un riquadro',
   lang: 'it',
-  lastUpdated: '2026-10-20',
-  readingTime: '27 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '28 min',
   order: 16,
   parent: 'configuration',
   plainSummary: "Questa pagina riguarda i riquadri che separano dal testo una nota, un suggerimento, un’avvertenza o un elenco di obiettivi. Dai a ogni tipo di riquadro un nome e un aspetto: lo sfondo, il bordo, una banda colorata, un titolo e un’icona. Un riquadro può avere un numero, come un teorema o un esempio in un libro di testo. Scegli i font dentro il riquadro. Quando un riquadro lungo prosegue nella pagina seguente, scegli come segnalare l’interruzione.",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>eredita da <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Tipografia dei paragrafi e degli elementi di elenco dentro il riquadro. Ogni campo non impostato eredita dal testo corrente; <code>italicColor</code> imposta il colore dei tratti in corsivo (una citazione in evidenza in corsivo nel colore del riquadro). <code>fontWeight</code> / <code>boldFontWeight</code> impostano i pesi dei tratti normali e in grassetto; <code>italic</code> compone il riquadro in corsivo, con i tratti <code>*…*</code> che passano in tondo; <code>smallCaps</code> lo compone in maiuscoletto; <code>tabStops</code> e <code>tabInterval</code> sostituiscono quelli del testo corrente dentro il riquadro (vedi <a href="/it/docs/configuration-text#tabulatori">Tabulatori</a>). Vedi <a href="#tipografia-in-un-riquadro">Tipografia in un riquadro</a> per che cos’altro prende il testo del riquadro. Da postext 1.42, <code>letterSpacing</code> spazieggia i paragrafi e gli elementi di elenco del riquadro. In <code>em</code> conta il corpo del testo e un valore negativo stringe. Viene misurato dentro le righe, per cui un riquadro composto stretto di qualche punto percentuale va a capo dove vanno a capo le righe dell’originale; un paragrafo in un blocco <code>:::paragraphs</code> mantiene la spaziatura del proprio stile. Anche una cornice con questo stile la riceve.</td>
+      <td>Tipografia dei paragrafi e degli elementi di elenco dentro il riquadro. Ogni campo non impostato eredita dal testo corrente; <code>italicColor</code> imposta il colore dei tratti in corsivo (una citazione in evidenza in corsivo nel colore del riquadro). <code>fontWeight</code> / <code>boldFontWeight</code> impostano i pesi dei tratti normali e in grassetto; <code>italic</code> compone il riquadro in corsivo, con i tratti <code>*…*</code> che passano in tondo; <code>smallCaps</code> lo compone in maiuscoletto; <code>tabStops</code> e <code>tabInterval</code> sostituiscono quelli del testo corrente dentro il riquadro (vedi <a href="/it/docs/configuration-text#tabulatori">Tabulatori</a>). Vedi <a href="#tipografia-in-un-riquadro">Tipografia in un riquadro</a> per che cos’altro prende il testo del riquadro. Da postext 1.42, <code>letterSpacing</code> spazieggia i paragrafi e gli elementi di elenco del riquadro. In <code>em</code> conta il corpo del testo e un valore negativo stringe. Viene misurato dentro le righe, per cui un riquadro composto stretto di qualche punto percentuale va a capo dove vanno a capo le righe dell’originale; un paragrafo in un blocco <code>:::paragraphs</code> mantiene la spaziatura del proprio stile. Anche una cornice con questo stile la riceve. Da postext 1.71, <code>hangingIndent</code> dà un rientro sporgente ai paragrafi del riquadro (vedi <a href="#tipografia-in-un-riquadro">Tipografia in un riquadro</a>): una lunghezza porta le righe successive a quella distanza, come l’<code>hangingIndent</code> di uno stile di paragrafo, e <code>true</code> legge <code>firstLineIndent</code> come il rientro di tutte le righe tranne la prima, come fa <code>bodyText.hangingIndent</code>.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ Un riquadro compone il suo contenuto con la propria tipografia `body` e `lists`;
 - **I chip** mantengono il loro stile di chip; una dimensione in `em` si legge rispetto al corpo del testo del riquadro.
 - **`:::space`** si misura in righe del testo del riquadro (vedi [`:::space`](/it/docs/document-format-directives#space) per i casi in cui viene scartato).
 - **Un riquadro annidato** prende per intero il proprio stile; i suoi `span`, `placement`, `floatBarrier` e `snapToGrid` vengono ignorati.
+
+**Note con rientro sporgente.** Le note sotto una tabella, una legenda numerata o un elenco di fonti fanno sporgere il segno davanti al testo: il segno sul bordo interno del riquadro, il testo e tutte le righe successive un po’ più dentro. `body.hangingIndent` (da postext 1.71) compone così tutti i paragrafi di un riquadro o di una cornice con quello stile:
+
+- **Una lunghezza** colloca tutte le righe tranne la prima a quella distanza dal bordo interno del riquadro, come l’`hangingIndent` di uno stile di paragrafo (vedi [Stili di paragrafo](/it/docs/configuration-styles#stili-di-paragrafo)). La prima riga comincia al bordo, o a `body.firstLineIndent` quando è lo stile stesso a impostarlo; un rientro di prima riga ereditato da `bodyText` non si applica.
+- **`true`** legge `body.firstLineIndent` come il rientro di tutte le righe tranne la prima, come fa `bodyText.hangingIndent` nel testo corrente; `false` compone il riquadro senza rientro sporgente in un libro il cui testo corrente lo ha. Se non è impostato, il riquadro segue `bodyText.hangingIndent`.
+
+Un tabulatore nella stessa posizione porta il testo che segue il segno fino al bordo delle righe successive, qualunque sia la larghezza del segno:
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	I prezzi comprendono la consegna in città.
+
+\*\*	I soci pagano la metà; lo sconto non si somma ad altre offerte e vale fino alla fine della stagione.
+:::
+```
+
+Ogni nota è un paragrafo a sé; tra il segno e il testo va un carattere di tabulazione o `:tab`. L’asterisco è preceduto da una barra rovesciata, perché `*` seguito da una tabulazione a inizio riga apre un elemento di elenco. Le righe sono misurate così, per cui il canvas, il PDF, la lista di visualizzazione e l’EPUB (con `padding-inline-start` e un `text-indent` negativo) le compongono allo stesso modo, e l’esportazione Word scrive lo stesso rientro. Gli elementi di elenco mantengono il proprio rientro (`lists.indent`, `lists.gap`), e un paragrafo in un blocco `:::paragraphs` quello del suo stile. Un `firstLineIndent` negativo conta ancora come `0`: la prima riga non può cominciare dentro la spaziatura interna del riquadro. Una citazione in blocco dentro un riquadro segue il rientro sporgente del riquadro quando `hangingIndent` è `true`; con una lunghezza, il rientro sporgente tocca solo ai paragrafi propri del riquadro.
 
 ### Segni su un riquadro diviso
 

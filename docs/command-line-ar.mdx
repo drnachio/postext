@@ -157,6 +157,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>image</code></td><td>صفحة واحدة صورةً بصيغة PNG أو JPEG أو WebP.</td></tr>
     <tr><td><code>images</code></td><td>كل الصفحات، أو مدى منها، صورًا في مجلد.</td></tr>
     <tr><td><code>docx</code></td><td>الفصول مستندَ Word: دلاليًا (عناوين Word وقوائمه وحواشيه وجداوله) أو منسَّقًا (صفحات PDF).</td></tr>
+    <tr><td><code>idml</code></td><td>الصفحات حزمةَ InDesign ‏(IDML)، لإتمامها في InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>التصحيحات التي أُجريت في ملف Word مصدَّر، عائدةً إلى الكتاب؛ وأي مستند Word آخر كتابًا جديدًا (مجلدًا أو ملف <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>مجلد كتاب أو ملفات Markdown منفردة في ملف <code>.postext</code> واحد.</td></tr>
     <tr><td><code>unpack</code></td><td>ملف <code>.postext</code> مجلدًا.</td></tr>
@@ -301,6 +302,26 @@ PostScript، والخط المتغير، يُبلَّغ عنها وتُسمّى 
 تباعدًا (أنماط الفقرات والعناوين في ملف `--config` التي تقابلها أنماط Word، ومستويات العناوين)،
 ويترك كما هو أي تباعد يحدده الكتاب من قبل. ومع `--json` يسرد `styleTracking` ما طُبّق (`applied`)
 وما تُرك (`skipped`). منذ postext 1.39.
+
+### idml
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link
+```
+
+يُخرج `idml` الكتاب كما يفعل `pdf` ويكتب الصفحات حزمةَ InDesign Markup، لإتمام
+الكتاب في InDesign: صفحة واحدة في كل صفحتين متقابلتين (spread)، والخطوط
+والمربعات والمسارات والصور عناصرَ صفحة، ونص كل إطار من إطارات الصفحة المركّبة
+إطارَ نص بقصة (story) خاصة به (والإطارات المتسلسلة بـ`next` تشترك في قصة
+واحدة)، وأنماط الإطارات أنماطَ فقرات، وألوان CMYK التي حدّدها المؤلف عيّناتِ
+ألوان (swatches). والشارات التي تحمل حقل نموذج تصير حقول نماذج في InDesign.
+ويعيد InDesign تنضيد النص، فقد تختلف فواصل الأسطر عنها في PDF. ويضع `--images
+link` الصور بجانب الملف في `Links/` بدلًا من داخله. وما لا تستطيع الحزمة حمله
+بعد (الجداول والصيغ الرياضية والنوتة الموسيقية) يُبلَّغ عنه بتحذير `idml.*`.
+انظر [الاستخدام البرمجي › حزم
+InDesign](/ar/docs/configuration-programmatic-usage#حزم-indesign-postextidml).
+منذ postext 1.71.
 
 ### pack وunpack
 

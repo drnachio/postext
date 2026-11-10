@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Recuadros',
   description: 'Los estilos con nombre de los recuadros :::callout (borde, fondo, franja, título, icono, marcador y pestaña de etiqueta), las formas del recuadro con un radio por esquina, bordes por lado y pestañas unidas, los enunciados numerados, la tipografía dentro del recuadro, los recuadros partidos entre páginas y los diseños dibujados en un recuadro',
   lang: 'es',
-  lastUpdated: '2026-10-20',
-  readingTime: '28 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '29 min',
   order: 16,
   parent: 'configuration',
   plainSummary: "Esta página explica los recuadros que separan del texto una nota, un consejo, una advertencia o una lista de objetivos. Das a cada clase de recuadro un nombre y un aspecto: su fondo, su borde, una franja de color, un título y un icono. Un recuadro puede llevar un número, como un teorema o un ejemplo en un libro de texto. Eliges las fuentes que se usan dentro del recuadro. Cuando un recuadro largo continúa en la página siguiente, eliges cómo se marca el corte.",
@@ -184,9 +184,9 @@ El cristal sigue caliente una hora después de apagar la llama.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>hereda de <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Tipografía de los párrafos y elementos de lista dentro del recuadro. Cada campo que no se indica hereda del texto base; <code>italicColor</code> fija el color de las cursivas (una cita destacada en cursiva con el color del recuadro). <code>fontWeight</code> / <code>boldFontWeight</code> fijan el peso de los tramos normales y en negrita; <code>italic</code> compone el recuadro en cursiva, con los tramos <code>*…*</code> en redonda; <code>smallCaps</code>, en versalitas; <code>tabStops</code> y <code>tabInterval</code> sustituyen a los del texto base dentro del recuadro (véase <a href="/es/docs/configuration-text#tabulaciones">Tabulaciones</a>). Consulta en <a href="#tipografía-dentro-de-un-recuadro">Tipografía dentro de un recuadro</a> qué más toma el texto del recuadro. Desde postext 1.42, <code>letterSpacing</code> fija el espaciado entre letras de los párrafos y los elementos de lista del recuadro. En <code>em</code> se calcula sobre el cuerpo del texto, y un valor negativo lo aprieta. Cuenta al medir las líneas, de modo que un recuadro apretado un pequeño porcentaje corta las líneas donde las corta el original; un párrafo dentro de un bloque <code>:::paragraphs</code> conserva el espaciado de su propio estilo. Un marco con este estilo lo recibe también.</td>
+      <td>Tipografía de los párrafos y elementos de lista dentro del recuadro. Cada campo que no se indica hereda del texto base; <code>italicColor</code> fija el color de las cursivas (una cita destacada en cursiva con el color del recuadro). <code>fontWeight</code> / <code>boldFontWeight</code> fijan el peso de los tramos normales y en negrita; <code>italic</code> compone el recuadro en cursiva, con los tramos <code>*…*</code> en redonda; <code>smallCaps</code>, en versalitas; <code>tabStops</code> y <code>tabInterval</code> sustituyen a los del texto base dentro del recuadro (véase <a href="/es/docs/configuration-text#tabulaciones">Tabulaciones</a>). Consulta en <a href="#tipografía-dentro-de-un-recuadro">Tipografía dentro de un recuadro</a> qué más toma el texto del recuadro. Desde postext 1.42, <code>letterSpacing</code> fija el espaciado entre letras de los párrafos y los elementos de lista del recuadro. En <code>em</code> se calcula sobre el cuerpo del texto, y un valor negativo lo aprieta. Cuenta al medir las líneas, de modo que un recuadro apretado un pequeño porcentaje corta las líneas donde las corta el original; un párrafo dentro de un bloque <code>:::paragraphs</code> conserva el espaciado de su propio estilo. Un marco con este estilo lo recibe también. Desde postext 1.71, <code>hangingIndent</code> aplica sangría francesa a los párrafos del recuadro (véase <a href="#tipografía-dentro-de-un-recuadro">Tipografía dentro de un recuadro</a>): una longitud lleva las líneas siguientes a esa distancia, como el <code>hangingIndent</code> de un estilo de párrafo, y <code>true</code> lee <code>firstLineIndent</code> como la sangría de todas las líneas menos la primera, igual que <code>bodyText.hangingIndent</code>.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ Un recuadro compone su contenido con la tipografía `body` y `lists` de su estil
 - **Los chips** conservan su estilo de chip; un tamaño en `em` se mide sobre el cuerpo del texto del recuadro.
 - **`:::space`** se mide en líneas del texto del recuadro (consulta en [`:::space`](/es/docs/document-format-directives#space) dónde se descarta).
 - **Un recuadro anidado** toma su propio estilo completo; su `span`, su `placement`, su `floatBarrier` y su `snapToGrid` se ignoran.
+
+**Notas con sangría francesa.** Las notas al pie de una tabla, una leyenda numerada o una lista de fuentes cuelgan su marca delante del texto: la marca en el borde interior del recuadro, y el texto y todas sus líneas siguientes algo más adentro. `body.hangingIndent` (desde postext 1.71) lo hace con todos los párrafos de un recuadro o de un marco con ese estilo:
+
+- **Una longitud** sitúa todas las líneas menos la primera a esa distancia del borde interior del recuadro, como el `hangingIndent` de un estilo de párrafo (véase [Estilos de párrafo](/es/docs/configuration-styles#estilos-de-párrafo)). La primera línea empieza en el borde, o en `body.firstLineIndent` si el estilo la fija él mismo; una sangría de primera línea heredada de `bodyText` cede el sitio.
+- **`true`** lee `body.firstLineIndent` como la sangría de todas las líneas menos la primera, igual que `bodyText.hangingIndent` en el texto corrido; `false` compone el recuadro sin sangría francesa en un libro cuyo texto base la lleva. Sin valor, el recuadro toma `bodyText.hangingIndent`.
+
+Una tabulación en la misma posición lleva el texto que sigue a la marca hasta el borde de las líneas siguientes, sea cual sea el ancho de la marca:
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	Los precios incluyen la entrega dentro de la ciudad.
+
+\*\*	Los socios pagan la mitad; la rebaja no se suma a otras ofertas y vale hasta el final de la temporada.
+:::
+```
+
+Cada nota es un párrafo propio; entre la marca y el texto va un carácter de tabulación o `:tab`. El asterisco va escapado, porque `*` y una tabulación al principio de una línea abren un elemento de lista. Las líneas se miden así, de modo que el canvas, el PDF, la lista de visualización y el EPUB (con `padding-inline-start` y un `text-indent` negativo) las componen igual, y la exportación a Word escribe la misma sangría francesa. Los elementos de lista conservan su propia sangría (`lists.indent`, `lists.gap`), y un párrafo dentro de un bloque `:::paragraphs`, la de su estilo. Un `firstLineIndent` negativo sigue contando como `0`: la primera línea no puede empezar dentro del relleno del recuadro. Una cita dentro de un recuadro cuelga con él cuando `hangingIndent` es `true`; con una longitud, solo llevan sangría francesa los párrafos propios del recuadro.
 
 ### Marcas de un recuadro partido
 

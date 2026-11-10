@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'الإطارات',
   description: 'أنماط مسمّاة لإطارات :::callout: الحدّ والخلفية والشريط والعنوان والأيقونة والعلامة الخارجية ولسان التسمية؛ وأشكال الإطار بنصف قطر لكل زاوية وحدّ لكل جانب وألسنة موصولة به؛ والعبارات المرقّمة كالمبرهنات؛ والتنسيق الطباعي داخل الإطار؛ والإطارات التي تنقسم بين الصفحات؛ والتصاميم المرسومة داخل الإطار',
   lang: 'ar',
-  lastUpdated: '2026-10-20',
-  readingTime: '26 دقيقة',
+  lastUpdated: '2026-11-10',
+  readingTime: '27 دقيقة',
   order: 16,
   parent: 'configuration',
   plainSummary: "تتناول هذه الصفحة الإطارات التي تفصل ملاحظة أو نصيحة أو تحذيرًا أو قائمة أهداف عن النص. تعطي كل نوع من الإطارات اسمًا ومظهرًا: خلفيته وحدّه وشريطًا ملوّنًا وعنوانًا وأيقونة. ويمكن أن يكون للإطار رقم، كما يكون للمبرهنة أو المثال رقم في الكتاب المدرسي. وتختار الخطوط داخل الإطار. وحين يمتد إطار طويل إلى الصفحة التالية، تختار ما يدل على موضع الانقطاع.",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>يرث <code>bodyText</code>؛ <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>التنسيق الطباعي للفقرات وعناصر القوائم داخل الإطار. كل حقل لم تُحدَّد قيمته يرث قيمة نص المتن؛ و<code>italicColor</code> يحدّد لون المقاطع المائلة (اقتباس بارز مائل بلون الإطار). و<code>fontWeight</code> / <code>boldFontWeight</code> يحدّدان وزنَي المقاطع العادية والعريضة؛ و<code>italic</code> يجعل نص الإطار مائلًا، فتستقيم مقاطع <code>*…*</code>؛ و<code>smallCaps</code> يجعله بحروف كبيرة مصغّرة (small caps)؛ و<code>tabStops</code> و<code>tabInterval</code> يستبدلان بقيم المتن داخل الإطار (انظر <a href="/ar/docs/configuration-text#مواضع-الجدولة">مواضع الجدولة</a>). انظر <a href="#التنسيق-الطباعي-داخل-الإطار">التنسيق الطباعي داخل الإطار</a> لمعرفة ما يأخذه نص الإطار أيضًا. ومنذ postext 1.42 يضبط <code>letterSpacing</code> تباعد حروف فقرات الإطار وعناصر قوائمه. وبوحدة <code>em</code> تُحسب القيمة من حجم نص المتن، والقيمة السالبة تضيّق التباعد. ويدخل التباعد في قياس الأسطر، فالإطار المضيَّق ببضعة في المئة تنكسر أسطره حيث تنكسر أسطر الأصل؛ أما الفقرة داخل كتلة <code>:::paragraphs</code> فتحتفظ بتباعد نمطها. ويأخذ هذا التباعدَ أيضًا إطارُ القالب الذي له هذا النمط.</td>
+      <td>التنسيق الطباعي للفقرات وعناصر القوائم داخل الإطار. كل حقل لم تُحدَّد قيمته يرث قيمة نص المتن؛ و<code>italicColor</code> يحدّد لون المقاطع المائلة (اقتباس بارز مائل بلون الإطار). و<code>fontWeight</code> / <code>boldFontWeight</code> يحدّدان وزنَي المقاطع العادية والعريضة؛ و<code>italic</code> يجعل نص الإطار مائلًا، فتستقيم مقاطع <code>*…*</code>؛ و<code>smallCaps</code> يجعله بحروف كبيرة مصغّرة (small caps)؛ و<code>tabStops</code> و<code>tabInterval</code> يستبدلان بقيم المتن داخل الإطار (انظر <a href="/ar/docs/configuration-text#مواضع-الجدولة">مواضع الجدولة</a>). انظر <a href="#التنسيق-الطباعي-داخل-الإطار">التنسيق الطباعي داخل الإطار</a> لمعرفة ما يأخذه نص الإطار أيضًا. ومنذ postext 1.42 يضبط <code>letterSpacing</code> تباعد حروف فقرات الإطار وعناصر قوائمه. وبوحدة <code>em</code> تُحسب القيمة من حجم نص المتن، والقيمة السالبة تضيّق التباعد. ويدخل التباعد في قياس الأسطر، فالإطار المضيَّق ببضعة في المئة تنكسر أسطره حيث تنكسر أسطر الأصل؛ أما الفقرة داخل كتلة <code>:::paragraphs</code> فتحتفظ بتباعد نمطها. ويأخذ هذا التباعدَ أيضًا إطارُ القالب الذي له هذا النمط. ومنذ postext 1.71 يجعل <code>hangingIndent</code> إزاحة فقرات الإطار معلّقة (انظر <a href="#التنسيق-الطباعي-داخل-الإطار">التنسيق الطباعي داخل الإطار</a>): فالطول يُزيح الأسطر التالية بتلك المسافة كما يفعل <code>hangingIndent</code> في نمط الفقرة، و<code>true</code> يقرأ <code>firstLineIndent</code> إزاحةً لكل سطر عدا الأول كما يفعل <code>bodyText.hangingIndent</code>.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ calloutStyles: [
 - **الشارات (chips)** تحتفظ بنمط الشارة الخاص بها؛ ويُقرأ حجم `em` نسبةً إلى حجم نص الإطار.
 - **`:::space`** يُقاس بأسطر نص الإطار (انظر [`:::space`](/ar/docs/document-format-directives#space) لمعرفة المواضع التي يُسقط فيها).
 - **الإطار المتداخل** يأخذ نمطه الخاص كاملًا؛ ويُتجاهل `span` و`placement` و`floatBarrier` و`snapToGrid` الخاصة به.
+
+**الحواشي المعلّقة.** الحواشي تحت الجدول، ومفتاح الرموز المرقّم، وقائمة المصادر تُبرز علامتها أمام النص: العلامة عند الحافة الداخلية للإطار، والنص وكل أسطره التالية أبعد قليلًا إلى الداخل. ويصفّ `body.hangingIndent` (منذ postext 1.71) على هذا النحو كل فقرات الإطار أو إطار القالب الذي له هذا النمط:
+
+- **الطول** يضع كل سطر عدا الأول على تلك المسافة من الحافة الداخلية للإطار، كما يفعل `hangingIndent` في نمط الفقرة (انظر [أنماط الفقرات](/ar/docs/configuration-styles#أنماط-الفقرات)). ويبدأ السطر الأول عند الحافة، أو عند `body.firstLineIndent` إذا ضبطه النمط نفسه؛ أما إزاحة السطر الأول الموروثة من `bodyText` فلا تُطبَّق.
+- **`true`** يقرأ `body.firstLineIndent` إزاحةً لكل سطر عدا الأول، كما يفعل `bodyText.hangingIndent` في المتن؛ و`false` يصفّ الإطار بلا إزاحة معلّقة في كتاب إزاحة متنه معلّقة. وإن لم يُضبط أخذ الإطار `bodyText.hangingIndent`.
+
+وموضع جدولة عند المسافة نفسها يوصل النص الذي يلي العلامة إلى حافة الأسطر التالية، أيًّا كان عرض العلامة:
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	تشمل الأسعار التوصيل داخل المدينة.
+
+\*\*	يدفع الأعضاء النصف؛ ولا يُجمع هذا التخفيض مع عروض أخرى، ويسري حتى نهاية الموسم.
+:::
+```
+
+كل حاشية فقرة مستقلة؛ وبين العلامة والنص محرف جدولة أو `:tab`. والنجمة مُهرَّبة، لأن `*` تليها جدولة في أول السطر تفتح عنصر قائمة. وتُقاس الأسطر على هذا النحو، فيصفّها كلٌّ من canvas وPDF وقائمة العرض وEPUB (بـ`padding-inline-start` و`text-indent` سالب) على النحو نفسه، ويكتب التصدير إلى Word الإزاحة المعلّقة نفسها. وتحتفظ عناصر القوائم بإزاحتها (`lists.indent`، `lists.gap`)، والفقرة داخل كتلة `:::paragraphs` بإزاحة نمطها. وتبقى قيمة `firstLineIndent` السالبة محسوبة `0`: فلا يبدأ السطر الأول داخل المسافة الداخلية للإطار. ويأخذ الاقتباسُ الكتلي داخل الإطار الإزاحةَ المعلّقة مع الإطار حين تكون قيمة `hangingIndent` هي `true`؛ أما مع الطول فلا تُعلَّق إلا فقرات الإطار نفسه.
 
 ### علامات الإطار المقسوم
 

@@ -57,7 +57,7 @@ function linkRuns(spans: readonly InlineSpan[]): LinkRun[] {
   const runs: LinkRun[] = [];
   let open: LinkRun | undefined;
   spans.forEach((span, i) => {
-    const links = (span.links ?? []).filter((l) => l.mark === undefined).sort((a, b) => a.start - b.start);
+    const links = (span.links ?? []).filter((l) => l.mark === undefined && l.strike === undefined).sort((a, b) => a.start - b.start);
     let continued = false;
     for (const l of links) {
       const text = span.text.slice(l.start, l.end);
