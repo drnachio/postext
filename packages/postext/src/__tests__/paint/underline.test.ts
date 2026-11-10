@@ -38,7 +38,7 @@ const config = (fontFamily: string): PostextConfig => ({
   header: { elements: [] },
   footer: { elements: [] },
 });
-const build = (markdown: string, family = 'Test Serif'): VDTDocument => buildDocument({ markdown }, config(family), createMeasurementCache());
+const build = (markdown: string, family = 'Test Serif', extra: Partial<PostextConfig> = {}): VDTDocument => buildDocument({ markdown }, { ...config(family), ...extra }, createMeasurementCache());
 const firstLine = (doc: VDTDocument): VDTLine => doc.blocks.flatMap((b) => b.lines)[0]!;
 const rules = (line: VDTLine): VDTLineMark[] => (line.marks ?? []).filter((m) => m.kind === 'line');
 
@@ -95,5 +95,37 @@ describe('underline lines', () => {
     const runs = documentDisplayList(doc).flatMap((p) => p.items).flatMap((i) => (i.kind === 'text' ? i.lines.flatMap((l) => l.runs) : []));
     expect(runs.filter((r) => r.underline).map((r) => r.text)).toEqual(['sign']);
     expect(renderToHtml(doc)).toContain('<u style="text-decoration:none;">');
+  });
+
+  it('flags the spaces inside an underlined run for the Word export, not those around it', () => {
+    const list = documentDisplayList(build('Please ++sign here++ and ++one++ ++two++ now.'));
+    const runs = list.flatMap((p) => p.items).flatMap((i) => (i.kind === 'text' ? i.lines.flatMap((l) => l.runs) : []));
+    expect(runs.filter((r) => r.underline).map((r) => r.text)).toEqual(['sign', ' ', 'here', 'one', 'two']);
+  });
+
+  it('gives way to the line of an underlined link: one line under the link', () => {
+    const md = 'Please ++sign [here](https://example.org) now++.';
+    const styled = build(md, 'Test Serif', { links: { style: { underline: 'solid', outputs: ['html', 'pdf', 'canvas'] } } });
+    const line = firstLine(styled);
+    const marks = rules(line);
+    // Before the link, under it, after it: pieces that meet.
+    expect(marks.map((m) => !!m.underLink)).toEqual([false, true, false]);
+    expect(marks[0]!.x + marks[0]!.length!).toBeCloseTo(marks[1]!.x, 3);
+    expect(marks[1]!.x + marks[1]!.length!).toBeCloseTo(marks[2]!.x, 3);
+    const link = line.linkUnderlines!;
+    expect(link).toHaveLength(1);
+    expect(marks[1]!.x).toBeCloseTo(link[0]!.x, 3);
+    expect(marks[1]!.length!).toBeCloseTo(link[0]!.length, 3);
+    // The HTML draws the link's line and the two other pieces, not the
+    // underline's piece under the link.
+    const ruleSpans = (html: string): number => (html.match(/height:[\d.]+px;background:/g) ?? []).length;
+    expect(ruleSpans(renderToHtml(styled))).toBe(2);
+    expect(renderToHtml(styled)).toMatch(/border-top:[\d.]+px solid/);
+    // An output the style does not list keeps the whole underline.
+    expect(ruleSpans(renderToHtml(styled, { output: 'epub' }))).toBe(3);
+    // Without a link style: one run, no piece flagged.
+    const plain = rules(firstLine(build(md)));
+    expect(plain).toHaveLength(1);
+    expect(plain[0]!.underLink).toBeUndefined();
   });
 });
