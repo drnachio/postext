@@ -410,11 +410,6 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
    *  safe area, to fit the page that cites it
    *  (`layout.pullFloatsToCitation`). */
   const bodyCropDelta = new Map<string, number>();
-  /** A picture's natural block at a width, laid out once per pass (the
-   *  citing-page crop reads it at every slot it weighs). */
-  const naturalFloats = new Map<string, ResolvedResourceBlock | null>();
-  /** Floats whose crop for the citing page was tried, by page. */
-  const citeCropTried = new Set<string>();
   /** Pages a `:::pagebreak{center}` opened (#424). */
   const centredPages = new Set<number>();
   const reservedOf = (col: VDTColumn): { top: number; bottom: number } =>
@@ -523,6 +518,6 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
     floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf,
-    bodyCropDelta, naturalFloats, citeCropTried
+    bodyCropDelta
   };
 }

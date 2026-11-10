@@ -63,6 +63,12 @@ describe('floats pulled back to the page citing them', () => {
     expect(on.pages).toBeLessThanOrEqual(off.pages);
   });
 
+  it('sets the page tighter before it crops a picture, and crops none when that is enough', () => {
+    const on = build(5, 180, true, true);
+    expect(on.page).toBe(on.cite);
+    expect(on.cropped).toBe(false);
+  });
+
   it('crops a picture with a safe area to keep it on the citing page', () => {
     const off = build(14, 240, true, false);
     const on = build(14, 240, true, true);

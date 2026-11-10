@@ -379,6 +379,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
         ? `The picture "${w.resourceId}" is set at its smallest scale, ${Math.round(w.scale * 100)} % of its size, and still runs ${w.overflowPx} px past the foot of the page's text block`
         : `The picture "${w.resourceId}" is set at ${Math.round(w.scale * 100)} % of its size to fit the room left on its page`;
       break;
+    case 'floatCropped':
+      text = `The picture "${w.resourceId}" is cropped within its safe area, ${Math.round(w.share * 100)} % of its height, to stay on the page that cites it (layout.pullFloatsToCitation)`;
+      break;
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
       break;

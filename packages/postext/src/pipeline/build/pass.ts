@@ -107,7 +107,7 @@ function placeDocumentPass(
   const setup = {} as PassSetupState;
   const state = {} as PassState;
   const late = {} as PassLate;
-  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats, pullCrop } = hints;
   const captionUnderProposals = new Set<string>();
   const pullShortfalls = new Map<string, { page: number; px: number }>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
@@ -244,7 +244,7 @@ function placeDocumentPass(
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
     floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf,
-    bodyCropDelta, naturalFloats, citeCropTried
+    bodyCropDelta
   } = createFloatMeasure({
     cache, balanceExtraPx, bandCaps, resolved: setup.resolved, dpi, baselineGrid, doc, pageIndexOffset,
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
@@ -272,7 +272,7 @@ function placeDocumentPass(
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, naturalFloats, citeCropTried, layoutFloat, pullShortfalls
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop
   });
 
   const {

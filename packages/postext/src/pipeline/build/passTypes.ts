@@ -98,8 +98,13 @@ export interface PassHints {
   /** Column balancing: K-P looseness per paragraph re-broken one line longer. */
   balanceLooseness?: ReadonlyMap<number, number>;
   /** Paragraphs of `balanceLooseness` set a line short with no tracking:
-   *  the ones shortened to pull a float back to its citing page. */
+   *  the ones shortened to pull a float back to its citing page
+   *  (`layout.pullFloatsToCitation`, #1492). */
   balanceUntracked?: ReadonlySet<number>;
+  /** Pictures the pass may crop within their safe area to keep them on
+   *  the page citing them (`layout.pullFloatsToCitation`, #1492): those
+   *  that setting the page tighter did not bring back. */
+  pullCrop?: ReadonlySet<string>;
   /** Column balancing: shared budget of the loose candidates offered together
    *  (the pass stops loosening a column once it gained what it needs). */
   balanceLooseBudget?: ReadonlyMap<number, LooseBudget>;
