@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // The reference fixtures of the Word fidelity check (#1399): each book laid
-// out once by the CLI, written as the PDF and as the formatted .docx from
-// that same layout (`postext build --pdf --docx --docx-variant formatted`),
-// and optionally as the semantic .docx too. With --compare, each pair then
-// goes through compare.mjs (which needs LibreOffice).
+// out once by the CLI, written as the PDF and as the facsimile .docx (the
+// pages in text boxes) from that same layout (`postext build --pdf --docx
+// --docx-variant facsimile`), and with --flow as the two flow files too:
+// the semantic .docx (content only) and the formatted one (the book's
+// design). With --compare, each PDF and facsimile pair then goes through
+// compare.mjs (which needs LibreOffice).
 //
 //   node scripts/docx-compare/export-fixtures.mjs [--out DIR] [--only a,b]
-//        [--semantic] [--compare] [--list]
+//        [--flow] [--compare] [--list]
 //
 // The CLI runs from its sources under Bun, as its own tests run it, or as
 // the executable POSTEXT_BIN names. postext and postext-pdf must be built
@@ -31,7 +33,7 @@ const PRESETS = join(ROOT, 'apps/web/public/presets');
 export const FIXTURES = [
   { name: 'guide', what: 'the built-in guide (English), a designed book with parts, boxes, figures and tables', guide: 'en' },
   { name: 'two-column', what: 'Deep Sky, a two-column book with floats', book: 'deep-sky', args: ['--locale', 'en'] },
-  // Bioquímica (Feduchi) is the other column-and-a-half book; its formatted
+  // Bioquímica (Feduchi) is the other column-and-a-half book; its facsimile
   // .docx crashes the CLI's SVG rasteriser for now (see README.md).
   { name: 'column-and-a-half', what: 'Física (OpenStax), chapter 1: a column-and-a-half textbook with a side column', book: 'openstax-fisica', args: ['--locale', 'es', '--chapters', '1'] },
   { name: 'footnotes', what: 'Paradise Lost, Book I: verse with footnotes lettered per page', book: 'paradise-lost', args: ['--chapters', '4'] },
@@ -39,11 +41,11 @@ export const FIXTURES = [
   { name: 'vertical-cjk', what: 'Kokoro, the opening chapters: Japanese set vertically with furigana', book: 'kokoro', args: ['--locale', 'ja', '--chapters', '1-3'] },
 ];
 
-const USAGE = `usage: export-fixtures.mjs [--out DIR] [--only ${FIXTURES.map((f) => f.name).join(',')}] [--semantic] [--compare] [--list]`;
+const USAGE = `usage: export-fixtures.mjs [--out DIR] [--only ${FIXTURES.map((f) => f.name).join(',')}] [--flow] [--compare] [--list]`;
 
 /** The options, or a message (thrown as a string) for wrong usage. */
 export function parseArgs(argv) {
-  const opts = { out: join(tmpdir(), 'postext-docx-fixtures'), only: null, semantic: false, compare: false, list: false };
+  const opts = { out: join(tmpdir(), 'postext-docx-fixtures'), only: null, flow: false, compare: false, list: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     // A missing value must not fall back to '' (resolve('') is the current
@@ -58,7 +60,7 @@ export function parseArgs(argv) {
       opts.only = new Set(value().split(',').map((s) => s.trim()).filter(Boolean));
       const unknown = [...opts.only].filter((n) => !FIXTURES.some((f) => f.name === n));
       if (unknown.length || !opts.only.size) throw `--only: no fixture ${unknown.join(', ') || '(empty list)'}`;
-    } else if (a === '--semantic') opts.semantic = true;
+    } else if (a === '--flow') opts.flow = true;
     else if (a === '--compare') opts.compare = true;
     else if (a === '--list') opts.list = true;
     else throw `unknown argument ${a}`;
@@ -121,13 +123,13 @@ function main() {
       }
     } else input = join(PRESETS, f.book);
     const pdf = join(opts.out, `${f.name}.pdf`);
-    const docx = join(opts.out, `${f.name}.docx`);
-    const semantic = join(opts.out, `${f.name}.semantic.docx`);
+    const docx = join(opts.out, `${f.name}.facsimile.docx`);
+    const flow = { semantic: join(opts.out, `${f.name}.semantic.docx`), formatted: join(opts.out, `${f.name}.formatted.docx`) };
     // Files of an earlier run must not pass for this one when a build fails
     // half way (the CLI may write the PDF and then stop on the .docx).
-    for (const p of [pdf, docx, semantic]) rmSync(p, { force: true });
+    for (const p of [pdf, docx, flow.semantic, flow.formatted]) rmSync(p, { force: true });
     const started = Date.now();
-    const args = ['build', input, ...(f.args ?? []), '--pdf', pdf, '--docx', docx, '--docx-variant', 'formatted', '--quiet'];
+    const args = ['build', input, ...(f.args ?? []), '--pdf', pdf, '--docx', docx, '--docx-variant', 'facsimile', '--quiet'];
     if (!run([...postext, ...args], `${f.name}: postext build`) || !existsSync(pdf) || !existsSync(docx)) {
       if (existsSync(pdf) !== existsSync(docx)) console.error(`export-fixtures: ${f.name}: the build wrote ${existsSync(pdf) ? 'no .docx' : 'no PDF'}`);
       failedNames.add(f.name);
@@ -135,10 +137,12 @@ function main() {
       continue;
     }
     const entry = { name: f.name, what: f.what, input, args: f.args ?? [], pdf, docx };
-    if (opts.semantic) {
-      if (run([...postext, 'docx', input, ...(f.args ?? []), '-o', semantic, '--quiet'], `${f.name}: postext docx`)) entry.semantic = semantic;
+    if (opts.flow) {
+      for (const variant of ['semantic', 'formatted']) {
+        if (run([...postext, 'docx', input, ...(f.args ?? []), '--variant', variant, '-o', flow[variant], '--quiet'], `${f.name}: postext docx --variant ${variant}`)) entry[variant] = flow[variant];
+      }
     }
-    console.log(`${f.name}: ${pdf} + ${docx}${entry.semantic ? ` + ${entry.semantic}` : ''} (${((Date.now() - started) / 1000).toFixed(1)} s)`);
+    console.log(`${f.name}: ${[pdf, docx, entry.semantic, entry.formatted].filter(Boolean).join(' + ')} (${((Date.now() - started) / 1000).toFixed(1)} s)`);
     if (opts.compare) {
       const r = spawnSync(process.execPath, [join(HERE, 'compare.mjs'), docx, pdf, '--out', join(opts.out, `${f.name}-compare`), '--sheets'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
       if (r.status === 3) {

@@ -8,6 +8,10 @@ import { attr, child, children, localName, textOf, type XmlElement } from './xml
 const ACCENTS: Record<string, string> = {
   '̂': '\\hat', '̃': '\\tilde', '̇': '\\dot', '̈': '\\ddot', '̄': '\\bar',
   '⃗': '\\vec', '́': '\\acute', '̀': '\\grave', '̆': '\\breve', '̌': '\\check',
+  // The spacing forms other editors write for the same accents
+  // (LibreOffice saves a dot as U+02D9 and two dots as U+00A8).
+  '^': '\\hat', 'ˆ': '\\hat', '~': '\\tilde', '˜': '\\tilde', '˙': '\\dot', '¨': '\\ddot', '¯': '\\bar', 'ˉ': '\\bar', '‾': '\\bar',
+  '→': '\\vec', '⃑': '\\vec', '´': '\\acute', '`': '\\grave', '˘': '\\breve', 'ˇ': '\\check', '⃛': '\\dddot',
 };
 
 const NARY: Record<string, string> = {
@@ -109,7 +113,10 @@ function convert(el: XmlElement): string {
     }
     case 'acc': {
       const chr = prop(el, 'accPr', 'chr') ?? '̂';
-      return `${ACCENTS[chr] ?? '\\hat'}{${arg(child(el, 'e'))}}`;
+      // An accent this reader has no command for is set over its base as
+      // it is: never as another accent, which would change the equation.
+      const base = arg(child(el, 'e'));
+      return ACCENTS[chr] ? `${ACCENTS[chr]}{${base}}` : `\\overset{${chr}}{${base}}`;
     }
     case 'bar': {
       const pos = prop(el, 'barPr', 'pos');

@@ -45,6 +45,8 @@ function lineStyle(ctx: WriterContext, role: ComicScriptItem['role'], narrow = f
  *  under its panel's picture. Its halo outlines the letters on the art;
  *  on the paper under the picture it would show nothing. */
 function sfxLook(ctx: WriterContext): { pPr: ParaProps; rPr: RunProps } {
+  // The plain design: a sound is a bold line, in no face of the book's.
+  if (ctx.plain) return { pPr: { ind: { firstLine: 0 }, before: 0, after: 60, jc: 'left' }, rPr: { b: true } };
   const comics = resolveComicsConfig(ctx.config.comics, ctx.config.locale);
   const sfx = comics.balloonStyles.find((b) => b.id === 'sfx');
   const lt = comics.lettering;

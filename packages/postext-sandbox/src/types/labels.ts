@@ -5574,12 +5574,7 @@ export interface SandboxLabels {
   wordExportSemanticHint: string;
   wordExportFormatted: string;
   wordExportFormattedHint: string;
-  /** Under the variants, when Formatted is chosen for a book mostly of
-   *  composed or comic pages (#1444). */
-  wordExportPagesSuggested: string;
-  wordExportLaying: string;
   wordExportFonts: string;
-  wordExportPages: string;
   wordExportWriting: string;
   wordExportFailed: string;
   wordExportNotes: string;
@@ -5633,6 +5628,13 @@ export interface SandboxLabels {
   wordEditsApply: string;
   wordEditsDone: string;
   wordEditsFailed: string;
+  wordEditsReading: string;
+  wordEditsNotThisBook: string;
+  wordEditsNoteRebuilt: string;
+  wordEditsNoteBookChanged: string;
+  wordEditsNoteUnverified: string;
+  wordEditsNoteWriterChanged: string;
+  wordEditsNoteChaptersMissing: string;
   /** Word style name of a callout type in an export (`__name__`). */
   // Named frame looks (#1089).
   frameLooksSection: string;

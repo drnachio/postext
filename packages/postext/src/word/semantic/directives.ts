@@ -13,6 +13,7 @@ import { asciiDigits } from '../../numerals/arabicNumerals.js';
 import { resolvedLocale } from '../../pipeline/config.js';
 import type { WriterContext } from './context.js';
 import { indexField, tocField } from './fields.js';
+import { renderWorksList } from './prose/citations.js';
 import { blockSdt, paragraph, px, twips } from './wml.js';
 
 /** Word page number formats (`ST_NumberFormat`) of the engine's numeral
@@ -77,6 +78,8 @@ function space(ctx: WriterContext, lines: number): string {
 
 /** Record a `:::numbering{format startAt}` for the chapter's section. */
 function numbering(ctx: WriterContext, b: ContentBlock): void {
+  // The plain design counts its pages straight through.
+  if (ctx.plain) return;
   const attrs = b.directiveAttrs ?? {};
   // Same reading as the engine's: a format or start it ignores changes
   // nothing. `lines=N` restarts line numbers, which Word sets apart.
@@ -101,6 +104,14 @@ export function renderDirective(ctx: WriterContext, b: ContentBlock): string | u
     case 'numbering':
       numbering(ctx, b);
       return '';
+    case 'bibliography': {
+      // The list of works, as the citation processor writes it: generated
+      // text, the directive's own line left uncovered. Kept as source when
+      // no engine formats the citations.
+      const list = ctx.citations?.listAt(ctx.chapter.index, b);
+      if (list) return blockSdt(ctx.nextSdtId(), 'ptx:bibliography', undefined, renderWorksList(ctx, list));
+      return ctx.citations ? '' : undefined;
+    }
     case 'references':
       // Bibliographic data (BibTeX or CSL JSON) for the citations, not
       // reading matter: kept out of view like the front matter, its source

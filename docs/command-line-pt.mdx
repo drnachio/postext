@@ -165,7 +165,7 @@ próprio idioma, a menos que `--locale` peça outro (`--locale en`).
     <tr><td><code>epub</code></td><td>Um livro EPUB 3, com páginas fixas como no impresso ou texto refluível.</td></tr>
     <tr><td><code>image</code></td><td>Uma página como imagem PNG, JPEG ou WebP.</td></tr>
     <tr><td><code>images</code></td><td>Todas as páginas, ou um intervalo, como imagens em uma pasta.</td></tr>
-    <tr><td><code>docx</code></td><td>Os capítulos como documento do Word: semântico (títulos, listas, notas e tabelas próprios do Word) ou diagramado (as páginas do PDF).</td></tr>
+    <tr><td><code>docx</code></td><td>Os capítulos como documento do Word: semântico (só o conteúdo, em estilos simples do Word), diagramado (o mesmo texto editável com o projeto gráfico do livro) ou fac-símile das páginas (cada linha numa caixa de texto fixa).</td></tr>
     <tr><td><code>idml</code></td><td>As páginas como pacote do InDesign (IDML), para finalizar no InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>As correções feitas num arquivo do Word exportado, de volta no livro; qualquer outro documento do Word, como livro novo (uma pasta ou um <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Uma pasta de livro ou Markdown solto como um único arquivo <code>.postext</code>.</td></tr>
@@ -264,27 +264,34 @@ por um PDF.
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-`docx` grava qualquer um dos dois documentos do Word que o Sandbox exporta
-(veja [Sandbox › Documentos do Word](/pt/docs/sandbox-books-saving#documentos-do-word)).
-`--variant semantic`, o padrão, constrói um documento editável a partir do
-Markdown, com os títulos, as listas, as notas de rodapé, as tabelas, as
-equações e as seções próprios do Word; o que não tem estrutura no Word viaja
-como fonte em controles de conteúdo *Postext Source*. Não precisa diagramar.
-`--variant formatted` diagrama o livro como o `pdf` faz e grava cada página
-como uma seção do Word, com o texto em caixas de texto postas linha a linha.
-Os dois incorporam as fontes do livro (`--no-embed-fonts` só as nomeia). Uma
-família que o livro não pode repassar (`redistributable: false` em
-`customFonts`) fica de fora e entra a alternativa aberta dela, como no EPUB;
-uma fonte cuja licença proíbe a incorporação, uma com contornos PostScript e
-uma fonte variável são avisadas e só nomeadas. No `build`, `--docx ARQUIVO`
-grava o mesmo arquivo, com `--docx-variant` e `--no-docx-fonts`. Desde o
-postext 1.68; `--template` não vale mais para `docx` nem para `build`.
+`docx` grava os documentos do Word que o Sandbox exporta (veja
+[Sandbox › Documentos do Word](/pt/docs/sandbox-books-saving#documentos-do-word))
+e um terceiro. `--variant formatted`, o padrão, constrói um documento editável a
+partir do Markdown, com os títulos, as listas, as notas de rodapé, as tabelas,
+as equações e as seções próprios do Word, composto com o projeto gráfico do
+livro até onde o Word permite e com as fontes do livro incorporadas
+(`--no-embed-fonts` só as nomeia); o que não tem estrutura no Word viaja como
+fonte em controles de conteúdo *Postext Source*. `--variant semantic` grava o
+mesmo texto só como conteúdo: um documento simples (A4, uma coluna, Arial) em
+estilos do Word que dizem o que é cada parte, sem nada do projeto da página e
+sem fontes incorporadas. Nenhum dos dois precisa diagramar; os dois abrem no
+Word e no Google Docs, e os dois voltam por `import-docx`. `--variant facsimile`
+diagrama o livro como o `pdf` faz e grava cada página como uma seção do Word,
+com cada linha numa caixa de texto fixa e as fontes incorporadas: um arquivo
+para olhar a diagramação no Word para computador, não para editar nem para o
+Google Docs. Uma família que o livro não pode repassar (`redistributable: false`
+em `customFonts`) fica de fora e entra a alternativa aberta dela, como no EPUB;
+uma fonte cuja licença proíbe a incorporação, uma com contornos PostScript e uma
+fonte variável são avisadas e só nomeadas. No `build`, `--docx ARQUIVO` grava o
+mesmo arquivo, com `--docx-variant` e `--no-docx-fonts`. Desde o postext 1.68;
+`--template` não vale mais para `docx` nem para `build`.
 
 Com um livro depois do arquivo, o `import-docx` traz de volta as correções
 feitas num documento que o `docx` exportou desse livro. Ele lê o mapa que o
@@ -313,6 +320,23 @@ importação rodava fica como está, com um aviso `docx.fileChanged`. `-o` não
 combina com um livro. Com `--json`, a resposta traz `variant`, `exportId`,
 `edits` (cada uma com `status`, `reason`, `kind`, `before`, `after` e `at`),
 `comments`, `files` e, num teste sem gravação, `diff`.
+
+Um arquivo editado no Google Docs e baixado como `.docx` também volta. O Docs
+não guarda o mapa nem a cópia dos capítulos; a importação grava o mapa de novo a
+partir do livro, e diz isso no relatório. Como esse arquivo não leva nenhuma
+cópia do texto exportado, ele é comparado com o livro como ele está agora. Se o
+livro mudou desde a exportação, o relatório avisa, e uma mudança feita no livro
+nesse meio-tempo pode aparecer como uma edição que a desfaz. Importe um arquivo
+do Docs no livro do qual ele foi exportado, antes de mudar esse livro; um
+arquivo salvo pelo Word mantém o mapa e é combinado com as mudanças posteriores
+do livro. O Docs também apaga o indicador oculto de um texto que é substituído
+por inteiro (um título, uma célula de tabela, uma legenda, o título de um boxe,
+uma nota de rodapé). A importação encontra esse texto pelo lugar dele entre os
+vizinhos, então um título continua sendo um título e uma legenda vai para o
+recurso dela. Quando isso não pode ser decidido, por exemplo porque um parágrafo
+também foi digitado ao lado e nada distingue um do outro, o relatório mostra uma
+exclusão e uma adição no lugar. Importar o mesmo arquivo uma segunda vez não
+traz nada.
 
 Sem um livro, o `import-docx` transforma qualquer documento do Word em livro
 novo: um capítulo a cada título de nível 1 (`--no-split` mantém um só),

@@ -1,14 +1,18 @@
 // Running-head elements set in a page margin (#1444): a note beside the
 // text area ("Do not write in this margin") and a vertical rule down the
-// margin. A header paragraph spans the text area only, so each goes into
-// a frame (`w:framePr`) placed on the page where the engine draws it: a
-// text in a frame as wide as its box, a rule as the left border of an
-// empty frame as tall as the rule. Word and LibreOffice place frames;
-// a reader without them sets the frame's paragraph in the header.
+// margin. A header paragraph spans the text area only, so the note goes
+// into a frame (`w:framePr`) placed on the page where the engine draws
+// it, as wide as its box: Word and LibreOffice place frames; a reader
+// without them (Google Docs) sets the frame's paragraph in the header.
+// The rule is a picture of its colour, as thin and as tall as the rule,
+// drawn behind the text at its place on the page (#1458): as the border of
+// an empty frame as tall as the rule, it became a paragraph the height of
+// the page in the header of a reader without frames.
 
 import type { ResolvedDesignElement, ResolvedDesignRuleElement } from '../../../types.js';
 import type { WriterContext } from '../context.js';
-import { eighths, hex, paragraph, px, type ParaProps } from '../wml.js';
+import { groundRun } from '../design/ground.js';
+import { hex, paragraph, px, type ParaProps } from '../wml.js';
 import { STYLE } from '../styles.js';
 import type { PageBox, Target } from './place.js';
 
@@ -69,13 +73,13 @@ export function marginText(ctx: WriterContext, kind: Target, el: ResolvedDesignE
   return framed(ctx, kind, box, { before: 0, after: 0, jc, ind: { left: 0, right: 0, firstLine: 0 }, ...(page.rtl ? { bidi: false } : {}) }, runs(), false);
 }
 
-/** The frame of a vertical rule anchored to the page: an empty paragraph
- *  as tall as the rule, its left border the line. */
-export function verticalRule(ctx: WriterContext, kind: Target, el: ResolvedDesignRuleElement, page: MarginPage): string | undefined {
+/** A vertical rule anchored to the page, as a run that draws it: a
+ *  picture of its colour behind the text, for the header's (or footer's)
+ *  paragraph to hold. */
+export function verticalRule(ctx: WriterContext, el: ResolvedDesignRuleElement, page: MarginPage): string | undefined {
   const box = pageBox(ctx, el, page);
   if (!box || box.height <= 0) return undefined;
-  const line = { color: hex(el.color) ?? '000000', sz: Math.max(2, Math.min(eighths(ctx.units, el.thickness), 48)), space: 0 };
-  const height = tw(ctx, box.height);
-  const props: ParaProps = { before: 0, after: 0, line: { twips: Math.max(20, height), rule: 'exact' }, ind: { left: 0, right: 0, firstLine: 0 }, border: { left: line } };
-  return framed(ctx, kind, { ...box, width: Math.max(box.width, (2 * ctx.units.dpi) / 72) }, props, '', true);
+  // Half a point at least, so the line shows on screen.
+  const width = Math.max(px(ctx.units, el.thickness), (0.5 * ctx.units.dpi) / 72);
+  return groundRun(ctx, { fill: hex(el.color) ?? '000000', box: { x: box.x, y: box.y, width, height: box.height } });
 }

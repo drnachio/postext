@@ -1,16 +1,17 @@
-// The Word round trip as tools (#1397): `sandbox_export` writes either
-// Word document (`exportWordFile`), and `sandbox_apply_word_edits` reads
+// The Word round trip as tools (#1397, #1458): `sandbox_export` writes
+// either Word document (`exportWordFile`: content only, or the book's
+// design), and `sandbox_apply_word_edits` reads
 // an edited export back into the book, as the Manuscript panel's export
 // dialog and review dialog do.
 
-import { DocxReadError, isExportedDocx, type DocxComment, type DocxEdit } from 'postext/word';
+import { DocxReadError, type DocxComment, type DocxEdit, type DocxImportNote } from 'postext/word';
 import type { SandboxState } from '../../context/SandboxContext.js';
 import { downloadBytes } from '../../storage/persistence.js';
 import { createPdfFontProvider } from '../../viewport/pdf/pdfFontProvider.js';
 import { DOCX_MIME, buildWordExport, docxFileName, type WordExportNote, type WordVariant } from '../../word/wordExport.js';
-import { reviewChanges, reviewWordEdits, writeWordEdits } from '../../word/wordEdits.js';
+import { isWordExport, rebuildWordMap, reviewChanges, reviewWordEdits, writeWordEdits } from '../../word/wordEdits.js';
 import { chapterText, stateReaches } from '../chapterEdits.js';
-import { layoutConfig, whenSettled, type SandboxToolHost } from '../host.js';
+import { layoutConfig, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { WAIT_PARAM, fileParam, layoutAnswer } from './book.js';
 import { readFileInput, type FileInput } from './resources.js';
@@ -38,10 +39,29 @@ function describeNote(s: SandboxState, n: WordExportNote): Record<string, unknow
   return { code: n.code, message: n.message, ...(chapter ? { chapter } : {}) };
 }
 
+/** What the import says about the file as a whole, for the answer. */
+function describeImportNote(s: SandboxState, n: DocxImportNote): Record<string, unknown> {
+  const message: Record<DocxImportNote['code'], string> = {
+    'map-rebuilt': 'The file came back without its export map (Google Docs leaves it out): the map was written again from the book.',
+    'book-changed': 'The book changed since the file was exported, and the file carries no copy of the text it was exported with: it was compared with the book as it is now, so a change made in the book since then may be listed as an edit that undoes it. Check the list before applying.',
+    'book-unverified': 'The file does not say what the book was like when it was exported: if the book changed since, those changes may be listed as edits that undo them.',
+    'writer-changed': "The file was written by another version of Postext: its text was matched with the book's passage by passage.",
+    'chapters-missing': 'Chapters of the file are no longer in the book: the changes made in them are left out.',
+  };
+  const chapters = (n.chapters ?? []).map((id) => positionOf(s, id)).filter((x): x is number => x !== null);
+  return {
+    code: n.code,
+    message: message[n.code],
+    ...(chapters.length > 0 ? { chapters } : {}),
+    ...(n.unplaced ? { passagesOfTheBookNotInTheFile: n.unplaced } : {}),
+    ...(n.foreign ? { passagesOfTheFileNotInTheBook: n.foreign } : {}),
+  };
+}
+
 export const VARIANT_PARAM = {
   type: 'string',
   enum: ['semantic', 'formatted'],
-  description: 'docx: semantic (default) is an editable document in Word styles, lists, footnotes and tables, built from the Markdown; formatted reproduces every page as the PDF prints it (same layout, pictures and embedded fonts) for checking the layout. Both carry the marks that take the edits made in Word back into the book (sandbox_apply_word_edits).',
+  description: "docx: both are flowing, editable text built from the Markdown (Word styles, lists, footnotes, tables), for Word or Google Docs. semantic is content only: plain styles that name each part and no page design, for correcting the words. formatted (default) is the same text with the book's design as far as Word allows (page size, margins, columns, embedded fonts, openers, boxes, running heads). Both carry the marks that take the edits made in Word back into the book (sandbox_apply_word_edits).",
 } as const;
 
 /** `sandbox_export` with format docx: the file, downloaded or handed back. */
@@ -50,12 +70,9 @@ export async function exportWordFile(
   args: Record<string, unknown>,
   bookName: string,
   maxDataBytes: number,
-  signal?: AbortSignal,
 ): Promise<Record<string, unknown>> {
-  const variant = (args.variant as WordVariant | undefined) ?? 'semantic';
+  const variant = (args.variant as WordVariant | undefined) ?? 'formatted';
   const scope = (args.scope as 'chapter' | 'book' | undefined) ?? 'book';
-  // The formatted document is the print chain: the book laid out first.
-  if (variant === 'formatted') await whenSettled(host, { signal });
   const s = host.store.getSnapshot();
   const notes: WordExportNote[] = [];
   let bytes: Uint8Array;
@@ -63,13 +80,10 @@ export async function exportWordFile(
     bytes = await buildWordExport({
       variant,
       scope,
-      service: host.layout,
-      clientId: 'webmcp:word-export',
       chapters: s.chapters,
       activeChapterId: s.activeChapterId,
       resources: s.resources,
       config: layoutConfig(s),
-      plan: host.store.getPlan(s),
       title: bookName,
       ...(variant === 'formatted' ? { fontProvider: createPdfFontProvider() } : {}),
       onNote: (n) => notes.push(n),
@@ -126,7 +140,7 @@ export function wordEditTools(host: SandboxToolHost): WebMcpTool[] {
   const applyEdits: WebMcpTool = {
     name: 'sandbox_apply_word_edits',
     title: 'Sandbox: bring back an edited Word export',
-    description: "Read a .docx that sandbox_export (format docx) or the export dialog wrote from this book and was then edited in Word, and put the changes made in it into the book's chapters and resources, as the Manuscript panel's Word import does with such a file. Every change found is listed: applied (it goes in), conflict (the same text also changed in the book since the export, or is no longer there) or rejected (text the book makes itself, such as a number or a label, or formatting it cannot place), with reason; the comments left in Word are listed too. Run it first with dryRun: true to see the list; without it the applied changes are written as one change that sandbox_undo takes back whole. A .docx that was not exported from the Sandbox goes through sandbox_import_word instead.",
+    description: "Read a .docx that sandbox_export (format docx) or the export dialog wrote from this book and was then edited in Word or Google Docs, and put the changes made in it into the book's chapters and resources, as the Manuscript panel's Word import does with such a file. Every change found is listed: applied (it goes in), conflict (the same text also changed in the book since the export, or is no longer there) or rejected (text the book makes itself, such as a number or a label, or formatting it cannot place), with reason; the comments left in Word are listed too. Run it first with dryRun: true to see the list; without it the applied changes are written as one change that sandbox_undo takes back whole. A file saved by Google Docs comes back without the map of its marks: the map is written again from the book, and notes says so, and whether the book changed since the export (then a change made in the book since may be listed as an edit that undoes it). A .docx that was not exported from the Sandbox goes through sandbox_import_word instead.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -143,14 +157,19 @@ export function wordEditTools(host: SandboxToolHost): WebMcpTool[] {
       const bytes = new Uint8Array(await input.arrayBuffer());
       // A .docx is a zip archive: anything else is no Word document at all.
       if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) throw new ToolError(`${input.name} is not a .docx file (a .doc is saved as .docx from Word first).`);
-      if (!isExportedDocx(bytes)) {
+      if (!isWordExport(bytes)) {
         throw new ToolError(`${input.name} was not exported from the Sandbox (it carries no export marks): sandbox_import_word brings in any other Word document.`);
       }
       const s = store.getSnapshot();
       let review: ReturnType<typeof reviewWordEdits>;
       try {
-        review = reviewWordEdits(bytes, s);
+        // A file Google Docs saved kept its marks and lost their map: the
+        // map is written again from the book as it is now.
+        const rebuilt = await rebuildWordMap(bytes, { ...s, config: layoutConfig(s) });
+        if (rebuilt === null) throw new ToolError(`${input.name} was exported from Postext, but its text is not in this book: open the book it was exported from and apply it there.`);
+        review = reviewWordEdits(bytes, s, rebuilt);
       } catch (err) {
+        if (err instanceof ToolError) throw err;
         if (!(err instanceof DocxReadError)) console.error(err);
         throw new ToolError(`${input.name} could not be read back: ${messageOf(err)}`);
       }
@@ -160,6 +179,7 @@ export function wordEditTools(host: SandboxToolHost): WebMcpTool[] {
         counts: review.counts,
         edits: review.result.edits.map((e) => describeEdit(s, e)),
         ...(review.result.comments.length > 0 ? { comments: review.result.comments.map((c) => describeComment(s, c)) } : {}),
+        ...(review.notes.length > 0 ? { notes: review.notes.map((n) => describeImportNote(s, n)) } : {}),
       };
       if (args.dryRun === true) {
         return { dryRun: true, ...about, wouldChange: { chapters: [...review.chapterTexts.keys()].map((id) => positionOf(s, id)), resources: review.resources.map((r) => r.id) } };

@@ -12,6 +12,7 @@ import type { StyleRegistry } from './styles.js';
 import type { WordChapterInput } from './types.js';
 import type { Units } from './wml.js';
 import type { BookNumbers } from './engineNumbers.js';
+import type { BookCitations } from './prose/citations.js';
 
 /** Where a book that continues a longer one starts: its heading counters
  *  and page numbering. */
@@ -42,16 +43,35 @@ export interface ChapterState {
   /** The number prefix the engine prints before each numbered heading. */
   headingNumbers: Map<ContentBlock, string>;
   blockCounter: number;
+  /** The palette overrides of the part being written (`:::part
+   *  palette="…"`): palette id → hex. */
+  palette?: Record<string, string>;
   /** Page numbering a `:::numbering` directive sets for the chapter's
    *  section (Word format name, first number). */
   pageNumbers?: { format?: string; start?: number };
+}
+
+/** What the plain design keeps of the book's own (#1458): its resolved
+ *  config, for the words of the Markdown a design prints (a kicker the
+ *  heading's design reads from an attribute), and the widths its pictures
+ *  take in print, which they never outgrow. */
+export interface PlainBook {
+  book: ResolvedConfig;
+  /** Width of the book's text column and of its whole text area, px. */
+  columnPx: number;
+  textAreaPx: number;
 }
 
 export interface WriterContext {
   pkg: DocxPackageBuilder;
   log: FragmentLog;
   config: PostextConfig;
+  /** The config the document is set from: the book's, or in the plain
+   *  design its neutral one (`plain/config.ts`). */
   resolved: ResolvedConfig;
+  /** Set in the plain design (`design: 'plain'`): content only. The
+   *  modules that write the book's design check it where they start. */
+  plain?: PlainBook;
   units: Units;
   styles: StyleRegistry;
   numbering: Numbering;
@@ -94,6 +114,9 @@ export interface WriterContext {
   book: readonly { blocks: ContentBlock[] }[];
   /** Where the book starts (`semanticDocx`'s `start`). */
   start?: BookStart;
+  /** The book's citations as the processor formats them (a book that
+   *  cites works, with a citation engine registered). */
+  citations?: BookCitations;
   /** The book's outline, computed on first use (see `fields.ts`). */
   outline?: OutlineEntry[];
 }

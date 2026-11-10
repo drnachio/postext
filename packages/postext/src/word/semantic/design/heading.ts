@@ -21,6 +21,7 @@ import { hideRuns } from './hide.js';
 import { designImageId, designPictures, printed } from './pictures.js';
 import { inPartColors } from './partColor.js';
 import { designTextLook, designTextParagraphs, fittedSize } from './text.js';
+import { plainDesign } from '../plain/design.js';
 import { designPlaceholders, headingLevelOf } from './values.js';
 import { writeDesign } from './write.js';
 import type { DesignPlaceholderContext } from '../../../design/placeholders.js';
@@ -45,6 +46,11 @@ export interface HeadingLook {
 const HIDDEN: Partial<ParaProps> = { outlineLvl: 9, before: 0, after: 0, line: { twips: 20, rule: 'exact' }, keepNext: true };
 
 
+/** A design text that prints a number of the heading, and one that
+ *  prints nothing else. */
+const NUMBER = /\{(?:number|chapterNumber|headingNumber)/;
+const SOLE_NUMBER = /^\s*\{(?:number|chapterNumber|headingNumber)[A-Za-z]*\}\s*$/;
+
 /** Whether a text element prints the heading's own title. */
 function printsTitle(el: ResolvedDesignTextElement, level: number): boolean {
   const c = el.content ?? '';
@@ -60,9 +66,21 @@ export function renderDesignedHeading(ctx: WriterContext, b: ContentBlock, headi
   const level = headingLevelOf(ctx.resolved, b);
   if (!level) return undefined;
   if (headingIsHidden(b, level)) return hideRuns(heading({ props: HIDDEN }));
-  const design = level.advancedDesign;
-  if (!design.enabled || !design.slot.elements.length) return undefined;
+  // The plain design reads the book's own design for the words of the
+  // Markdown it prints, and draws none of it.
+  const design = (ctx.plain ? headingLevelOf(ctx.plain.book, b) : level)?.advancedDesign;
+  if (!design?.enabled || !design.slot.elements.length) return undefined;
   const placeholders = designPlaceholders(ctx, b);
+  if (ctx.plain) {
+    // The number stands before the title when the design prints one: the
+    // engine's prefix, or else the numeral the design sets on its own (a
+    // chapter number no numbering template writes).
+    const prints = printed(design.slot.elements).filter((el): el is ResolvedDesignTextElement => el.kind === 'text' && NUMBER.test(el.content ?? ''));
+    const numeral = prints.find((el) => SOLE_NUMBER.test(el.content ?? ''));
+    const own = !ctx.chapter.headingNumbers.has(b) && numeral ? resolveDesignText(numeral.content ?? '', placeholders).trim() : '';
+    const numberLook: HeadingLook = ctx.chapter.headingNumbers.has(b) && prints.length ? {} : { noNumber: true, ...(own ? { before: () => generatedRuns(ctx, [{ text: `${own} ` }], 'number') } : {}) };
+    return plainDesign(ctx, { owner: b, elements: printed(design.slot.elements), attrs: b.attrs, placeholders, ...(design.minHeight ? { minHeight: design.minHeight } : {}), slot: b.attrs?.style ?? `L${b.level ?? 1}`, isTitle: (el) => printsTitle(el, b.level ?? 1), breakBefore: level.breakBefore.enabled, title: (props) => heading({ props, ...numberLook }) });
+  }
   const elements = inPartColors(ctx, b, printed(design.slot.elements));
   const texts = new Map<string, string>();
   for (const el of elements) {
@@ -73,6 +91,7 @@ export function renderDesignedHeading(ctx: WriterContext, b: ContentBlock, headi
   const slot = b.attrs?.style ?? `L${b.level ?? 1}`;
   const listed = headingIsListed(b, ctx.resolved);
   return writeDesign(ctx, {
+    owner: b,
     elements,
     texts,
     minHeight: design.minHeight,

@@ -5,11 +5,17 @@
 import type { Resource } from '../../types/resources/resources.js';
 import { addedEdits } from './added.js';
 import { buildBlocks, withLineSpaces, type BlockView } from './blocks.js';
+import { splitKey, withoutCode } from './markup.js';
 import { diffText, mapThrough, type Hunk } from './diff.js';
 import { blockHunks, hunkEdits, type SourceEdit } from './edits.js';
 import { formatEdits } from './formats.js';
+import { neverMarked } from './lost.js';
 import { mergeText, type PlacedEdit } from './merge.js';
-import { readExportedDocx, type ReadComment } from './read.js';
+import { readExportedDocx, type AddedParagraph, type ReadComment, type ReadDocx } from './read.js';
+import type { RebuiltMap } from './rebuild.js';
+import { looseText } from './align.js';
+import { furnitureKey } from './selfRead.js';
+import { settleLooks, writtenHidden } from './settle.js';
 import { fieldName, setField, targetKey, textsOf, type TextTarget } from './targets.js';
 import type { DocxComment, DocxEdit, DocxEditResult, DocxEditSource } from './types.js';
 import { OBJECT_CHAR, PARA_CHAR } from './walk.js';
@@ -19,6 +25,9 @@ const BLOCK_MARKER_RE = /^(?:#{1,6}[ \t]+|[ \t]*(?:[-*+]|\d+[.)])[ \t]+|[ \t]*>[
 
 /** Block markers only, from a line start: `## `, `- `, `1. `, `> > `. */
 const MARKERS_ONLY_RE = /^[ \t]*(?:(?:#{1,6}|[-*+]|\d+[.)]|>)[ \t]*)*$/;
+
+/** A footnote definition's label, alone before its text on the line. */
+const NOTE_LABEL_RE = /^\[\^[^\]\n]+\]:[ \t]*$/;
 
 /** A block's range from its line start when only block markers stand
  *  before it there (a writer that maps the item text but not its `- `):
@@ -36,6 +45,9 @@ function withMarker(v: BlockView, base: string): void {
  *  the list does not run into the next paragraph. */
 function blockDeletion(v: BlockView, base: string): SourceEdit {
   let [s, e] = v.range;
+  // A note's `[^id]: ` label goes with its text.
+  const line = base.lastIndexOf('\n', s - 1) + 1;
+  if (NOTE_LABEL_RE.test(base.slice(line, s))) s = line;
   const kind = v.dels.length ? 'tracked' : 'paragraph';
   if (/\S/.test(base.slice(e))) {
     if (e === 0 || base[e - 1] !== '\n') {
@@ -69,6 +81,9 @@ function mergeEdit(a: BlockView, b: BlockView, base: string): SourceEdit {
 
 const emptied = (v: BlockView): boolean => v.missing || (!/\S/.test(v.N.replaceAll(PARA_CHAR, '')) && !v.NT.some((t) => t !== undefined));
 
+/** A text without its white space. */
+const bare = (s: string): string => s.replace(/\s+/gu, '');
+
 interface BlockResult {
   edits: SourceEdit[];
   hunks: Hunk[];
@@ -76,7 +91,10 @@ interface BlockResult {
 
 function editsOfBlock(v: BlockView, base: string): BlockResult {
   if (v.target.kind === 'generated') {
-    const changed = v.O !== v.N || v.OK.some((k, i) => k !== v.NK[i]);
+    // The engine writes this text and its look: spacing or a look an
+    // editor changed on it (Word for the web takes the bold off an
+    // exercise number) is nothing to bring back or to report.
+    const changed = bare(v.O) !== bare(v.N);
     const edits: SourceEdit[] = changed ? [{ target: v.target, start: -1, end: -1, text: v.N.replaceAll(PARA_CHAR, '\n'), kind: 'text', reject: 'generated', before: v.O }] : [];
     return { edits, hunks: [] };
   }
@@ -98,6 +116,141 @@ function removedLabels(blocks: readonly BlockView[], isRemoved: (v: BlockView) =
     const run = blocks.slice(k, e);
     if (run.some(isRemoved)) for (const v of run) if (v.target.kind === 'generated') out.add(v);
     k = Math.max(e, k + 1);
+  }
+  return out;
+}
+
+/**
+ * Blocks whose bookmarks an editor dropped while their paragraph still
+ * stands in the file word for word (#1458): one block, or a few in a row
+ * that shared a paragraph (a heading and its number). They were not
+ * deleted, and nothing in them was edited: the import leaves their source
+ * alone and does not read the paragraph as one the user typed.
+ */
+function bookmarksLost(blocks: readonly BlockView[], read: { strays: readonly string[]; added: { chars: readonly { ch: string }[] }[] }): Set<BlockView> {
+  const out = new Set<BlockView>();
+  if (!read.strays.length) return out;
+  const strays = new Map<string, number>();
+  for (const s of read.strays) strays.set(s, (strays.get(s) ?? 0) + 1);
+  const taken = new Map<string, number>();
+  for (let k = 0; k < blocks.length; k++) {
+    if (!blocks[k]!.missing) continue;
+    let text = '';
+    for (let e = k; e < blocks.length && e < k + 4 && blocks[e]!.missing; e++) {
+      text += blocks[e]!.O;
+      const key = text.replaceAll(PARA_CHAR, ' ').trim();
+      if (!key || !strays.get(key)) continue;
+      strays.set(key, strays.get(key)! - 1);
+      taken.set(key, (taken.get(key) ?? 0) + 1);
+      for (let i = k; i <= e; i++) out.add(blocks[i]!);
+      k = e;
+      break;
+    }
+  }
+  if (out.size) {
+    // The paragraphs themselves are not additions.
+    for (let i = read.added.length - 1; i >= 0; i--) {
+      const key = read.added[i]!.chars.map((c) => c.ch).join('').trim();
+      if (!taken.get(key)) continue;
+      taken.set(key, taken.get(key)! - 1);
+      read.added.splice(i, 1);
+    }
+  }
+  return out;
+}
+
+/** How much of a text's start tells it from another. */
+const HEAD = 24;
+
+/**
+ * A paragraph split in an editor that moved the bookmark's start to the
+ * second half (#1458): the first half then stands outside every bookmark,
+ * right before the fragment, and begins as the fragment did. It is the
+ * fragment's own text, with a paragraph break after it, and not a
+ * paragraph typed in: read so, its marks, references and equations stay
+ * the source's.
+ */
+function rejoinSplits(read: ReadDocx): void {
+  const written = new Map(read.map.fragments.map((f) => [f.id, f.text]));
+  const head = (text: string): string => looseText(text).slice(0, HEAD);
+  for (let i = read.added.length - 1; i >= 0; i--) {
+    const a = read.added[i]!;
+    const got = a.next !== undefined ? read.fragments.get(a.next) : undefined;
+    const was = a.next !== undefined ? written.get(a.next) : undefined;
+    if (!got || was === undefined || got.startPara < 0) continue;
+    const typed = head(a.chars.map((c) => c.ch).join(''));
+    const now = head(got.chars.map((c) => c.ch).join(''));
+    if (typed.length < 4 || !looseText(was).startsWith(typed) || looseText(was).startsWith(now)) continue;
+    got.chars.unshift(...a.chars, { ch: PARA_CHAR, flags: '' });
+    got.dels = got.dels.map((d) => d + a.chars.length + 1);
+    read.added.splice(i, 1);
+  }
+}
+
+/**
+ * Paragraphs of the file that read like the ones the writer set outside
+ * every fragment (a contents line, an index entry, a label): an editor
+ * turned the field or the style that marked them into plain text. They
+ * are the writer's, not paragraphs typed in the editor. So is a
+ * paragraph that stands between two of them in one run of unmarked
+ * paragraphs: a line of a contents list or an index the book no longer
+ * gives (the passage that brought the entry was deleted or reworded).
+ */
+function dropFurniture(added: Pick<AddedParagraph, 'chars' | 'fid' | 'side' | 'next'>[], furniture: ReadonlyMap<string, number>): void {
+  const left = new Map(furniture);
+  const own = added.map((a) => {
+    const key = furnitureKey(a.chars.map((c) => c.ch).join(''));
+    const n = left.get(key) ?? 0;
+    if (n > 0) left.set(key, n - 1);
+    return n > 0;
+  });
+  const sameRun = (a: (typeof added)[number], b: (typeof added)[number]): boolean => a.fid === b.fid && a.side === b.side && a.next === b.next;
+  for (let k = 0; k < added.length; ) {
+    let e = k + 1;
+    while (e < added.length && sameRun(added[k]!, added[e]!)) e++;
+    const first = own.indexOf(true, k);
+    const last = own.lastIndexOf(true, e - 1);
+    if (first >= k && first < e) for (let i = first; i <= last; i++) own[i] = true;
+    k = e;
+  }
+  for (let i = added.length - 1; i >= 0; i--) if (own[i]) added.splice(i, 1);
+}
+
+/**
+ * The text blocks of a chapter that stand in another order than they were
+ * exported in (a paragraph cut and pasted elsewhere, its bookmark with
+ * it): the fewest that, taken out, leave the others in order. Notes are
+ * read after the body and keep their own order.
+ */
+function movedBlocks(blocks: readonly BlockView[]): BlockView[] {
+  const out: BlockView[] = [];
+  const groups = new Map<string, BlockView[]>();
+  for (const v of blocks) {
+    if (v.target.kind !== 'markdown' || v.missing || v.startPara < 0) continue;
+    const key = `${v.target.chapter}|${v.frags[0]?.role === 'footnote' ? 'n' : 'b'}`;
+    let g = groups.get(key);
+    if (!g) groups.set(key, (g = []));
+    g.push(v);
+  }
+  for (const g of groups.values()) {
+    // Longest run of blocks whose paragraphs go on in order.
+    const best: number[] = new Array<number>(g.length).fill(1);
+    const prev: number[] = new Array<number>(g.length).fill(-1);
+    let end = -1;
+    for (let i = 0; i < g.length; i++) {
+      for (let j = 0; j < i; j++) {
+        if (g[j]!.startPara <= g[i]!.startPara && best[j]! + 1 > best[i]!) {
+          best[i] = best[j]! + 1;
+          prev[i] = j;
+        }
+      }
+      if (end < 0 || best[i]! > best[end]!) end = i;
+    }
+    const kept = new Set<number>();
+    for (let i = end; i >= 0; i = prev[i]!) kept.add(i);
+    g.forEach((v, i) => {
+      if (!kept.has(i)) out.push(v);
+    });
   }
   return out;
 }
@@ -130,11 +283,31 @@ function commentSource(v: BlockView, hunks: readonly Hunk[], fid: string, index:
  * each edit (applied, in conflict with a change made since the export, or
  * rejected) and every comment with its source range. Throws DocxReadError
  * for a broken file or one without an export map.
+ *
+ * `rebuilt`: the map written again from the book (`rebuildExportMap`),
+ * for a file whose editor dropped its own (Google Docs). A file that
+ * carries its map is read by it, and `rebuilt` is left aside.
  */
-export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): DocxEditResult {
-  const read = readExportedDocx(bytes);
+export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, options: { rebuilt?: RebuiltMap } = {}): DocxEditResult {
+  const given = options.rebuilt;
+  const read = readExportedDocx(bytes, given ? { map: given.map, looks: true, foreign: given.foreign, absent: neverMarked(given), furniture: given.furniture, written: given.looks } : {});
   const { map } = read;
-  const blocks = buildBlocks(map.fragments, read.fragments, read.holders);
+  rejoinSplits(read);
+  // The file's own map when it has one.
+  const rebuilt = given && map === given.map ? given : undefined;
+  const blocks = buildBlocks(map.fragments, read.fragments, read.holders, read.newNotes, rebuilt?.looks);
+  // Passages left alone whatever the file holds for them: text the book
+  // gained since the export, and text the writer hid, which an editor
+  // that keeps no hidden text drops.
+  const aside = new Set<BlockView>();
+  if (rebuilt) {
+    for (const v of blocks) {
+      settleLooks(v, read.caps !== true);
+      if (v.frags.every((f) => rebuilt.unplaced.has(f.id)) || (writtenHidden(v) && (v.missing || !/\S/.test(v.N)))) aside.add(v);
+      // A passage matched by its place alone, with no text in that place.
+      else if (v.missing && v.frags.every((f) => rebuilt.lost.has(f.id))) aside.add(v);
+    }
+  }
   const byTarget = new Map<string, { target: TextTarget; edits: SourceEdit[] }>();
   const generated: SourceEdit[] = [];
   const hunksOf = new Map<BlockView, Hunk[]>();
@@ -170,14 +343,26 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
     // its caption and cells would only print a blank figure: report one
     // rejected edit per resource instead. A single field removed while the
     // figure stays is still read as that field emptied.
-    const kept = new Set(blocks.filter((v) => v.target.kind === 'resource' && !v.missing).map((v) => (v.target as { resourceId: string }).resourceId));
+    const unmarked = bookmarksLost(blocks, read);
+    for (const v of aside) unmarked.add(v);
+    if (rebuilt) dropFurniture(read.added, rebuilt.furniture);
+    // A file that comes back with no code at all, from a book that had
+    // some, went through an editor that keeps no character styles: code is
+    // then no longer told from text, and none of it counts as changed.
+    const codeChars = (keys: readonly string[]): number => keys.reduce((n, k) => n + (splitKey(k).flags.includes('k') ? 1 : 0), 0);
+    if (blocks.reduce((n, v) => n + (v.missing ? 0 : codeChars(v.OK)), 0) >= 12 && !blocks.some((v) => codeChars(v.NK) > 0)) {
+      for (const v of blocks) v.OK = v.OK.map(withoutCode);
+    }
+    const absorbed = new Set<BlockView>();
+    const typedNotes = new Map<string, { v: BlockView; base: string; defs: string[] }>();
+    const kept = new Set(blocks.filter((v) => v.target.kind === 'resource' && (!v.missing || unmarked.has(v))).map((v) => (v.target as { resourceId: string }).resourceId));
     const isRemoved = (v: BlockView): boolean => v.target.kind === 'resource' && v.missing && !kept.has(v.target.resourceId);
     const withFigure = removedLabels(blocks, isRemoved);
     const removed = new Set<string>();
     for (let k = 0; k < blocks.length; k++) {
       const v = blocks[k]!;
       const base = baseOf(v);
-      if (withFigure.has(v)) continue;
+      if (withFigure.has(v) || unmarked.has(v) || absorbed.has(v)) continue;
       if (v.target.kind === 'resource' && isRemoved(v)) {
         if (!removed.has(v.target.resourceId)) {
           removed.add(v.target.resourceId);
@@ -186,14 +371,38 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
         continue;
       }
       const r = editsOfBlock(v, base);
+      // Read as deleted though text stands around its place (`lost.ts`).
+      if (v.missing && v.frags.some((f) => read.unpaired.has(f.id))) for (const e of r.edits) e.note = 'bookmark-unpaired';
+      // Told from text typed beside it by likeness alone.
+      else if (v.frags.some((f) => read.placed.has(f.id))) for (const e of r.edits) e.note = 'bookmark-placed';
       hunksOf.set(v, r.hunks);
       r.edits.forEach(add);
-      // A paragraph merged into the next one in Word.
-      const next = blocks[k + 1];
-      if (next && v.target.kind === 'markdown' && next.target.kind === 'markdown' && v.target.chapter === next.target.chapter &&
-        !emptied(v) && !emptied(next) && v.endPara >= 0 && v.endPara === next.startPara) {
-        add(mergeEdit(v, next, base));
+      // The notes typed in the block: their definitions close the chapter.
+      if (v.noteDefs?.length && v.target.kind === 'markdown') {
+        const key = targetKey(v.target);
+        let own = typedNotes.get(key);
+        if (!own) typedNotes.set(key, (own = { v, base, defs: [] }));
+        own.defs.push(...v.noteDefs);
       }
+      // A paragraph merged into the next one in Word, the paragraphs
+      // deleted between the two going with the join.
+      if (v.target.kind !== 'markdown' || emptied(v) || v.endPara < 0) continue;
+      const sameChapter = (b: BlockView | undefined): b is BlockView => !!b && b.target.kind === 'markdown' && b.target.chapter === (v.target as { chapter: number }).chapter;
+      let n = k + 1;
+      while (sameChapter(blocks[n]) && emptied(blocks[n]!) && !unmarked.has(blocks[n]!) && blocks[n]!.range[0] >= v.range[1]) n++;
+      const next = blocks[n];
+      if (sameChapter(next) && !emptied(next) && v.endPara === next.startPara && (n === k + 1 || next.range[0] >= v.range[1])) {
+        add(mergeEdit(v, next, base));
+        for (let j = k + 1; j < n; j++) absorbed.add(blocks[j]!);
+      }
+    }
+    for (const { v, base, defs } of typedNotes.values()) {
+      add({ target: v.target, start: base.length, end: base.length, text: `${base.endsWith('\n') ? '' : '\n'}\n${defs.join('\n\n')}\n`, kind: 'paragraph' });
+    }
+    // Paragraphs moved in Word: the import does not move their source.
+    for (const v of movedBlocks(blocks)) {
+      if (unmarked.has(v)) continue;
+      add({ target: v.target, start: v.range[0], end: v.range[0], text: '', kind: 'paragraph', reject: 'moved', before: v.O });
     }
     // Paragraphs typed outside every bookmark.
     addedEdits(read.added, blocks, baseOf, read.styles).forEach(add);
@@ -253,6 +462,7 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource): Docx
     edits,
     comments,
     changed: edits.some((e) => e.status === 'applied'),
+    ...(rebuilt ? { notes: rebuilt.notes } : {}),
   };
 }
 

@@ -166,7 +166,7 @@ es llegeix en la llengua principal, tret que `--locale` en demani una altra (`--
     <tr><td><code>epub</code></td><td>Un llibre EPUB 3, amb pàgines fixes com les impreses o amb text adaptable.</td></tr>
     <tr><td><code>image</code></td><td>Una pàgina com a imatge PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Totes les pàgines, o un interval, com a imatges en una carpeta.</td></tr>
-    <tr><td><code>docx</code></td><td>Els capítols com un document de Word: semàntic (títols, llistes, notes i taules propis de Word) o maquetat (les pàgines del PDF).</td></tr>
+    <tr><td><code>docx</code></td><td>Els capítols com un document de Word: semàntic (només el contingut, en estils de Word senzills), maquetat (el mateix text editable amb el disseny del llibre) o facsímil de pàgines (cada línia en un quadre de text fix).</td></tr>
     <tr><td><code>idml</code></td><td>Les pàgines com un paquet d'InDesign (IDML), per acabar-les a InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Les correccions fetes en un fitxer de Word exportat, de tornada al llibre; qualsevol altre document de Word, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de llibre o Markdown solt com un sol fitxer <code>.postext</code>.</td></tr>
@@ -268,28 +268,35 @@ s'ha compost, sense passar per un PDF.
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-`docx` escriu qualsevol dels dos documents de Word que exporta el Sandbox
-(vegeu [Sandbox › Documents de Word](/ca/docs/sandbox-books-saving#documents-de-word)).
-`--variant semantic`, el valor per defecte, construeix un document editable a
-partir del Markdown, amb els títols, les llistes, les notes al peu, les taules,
-les equacions i les seccions propis de Word; el que no té estructura a Word
-viatja com a font en controls de contingut *Postext Source*. No cal compondre.
-`--variant formatted` compon el llibre com ho fa `pdf` i escriu cada pàgina com
-una secció de Word, amb el text en quadres de text col·locats línia a línia.
-Tots dos incrusten les fonts del llibre (`--no-embed-fonts` només les anomena).
-Una família que el llibre no pot cedir (`redistributable: false` a
-`customFonts`) es deixa fora i hi entra l'alternativa oberta, com a l'EPUB; una
-font la llicència de la qual prohibeix incrustar-la, una amb contorns
-PostScript i una font variable es notifiquen i només s'anomenen. A `build`,
-`--docx FITXER` escriu el mateix fitxer, amb `--docx-variant` i
-`--no-docx-fonts`. Des de postext 1.68; `--template` ja no s'aplica a `docx`
-ni a `build`.
+`docx` escriu els documents de Word que exporta el Sandbox (vegeu
+[Sandbox › Documents de Word](/ca/docs/sandbox-books-saving#documents-de-word))
+i un tercer. `--variant formatted`, el valor per defecte, construeix un document
+editable a partir del Markdown, amb els títols, les llistes, les notes al peu,
+les taules, les equacions i les seccions propis de Word, compost amb el disseny
+del llibre fins on Word ho permet i amb les fonts del llibre incrustades
+(`--no-embed-fonts` només les anomena); el que no té estructura a Word viatja
+com a font en controls de contingut *Postext Source*. `--variant semantic`
+escriu el mateix text com a contingut sol: un document senzill (A4, una columna,
+Arial) en estils de Word que diuen què és cada part, sense res del disseny de la
+pàgina i sense fonts incrustades. Cap dels dos no necessita compondre; tots dos
+s'obren a Word i a Google Docs, i tots dos tornen amb `import-docx`.
+`--variant facsimile` compon el llibre com ho fa `pdf` i escriu cada pàgina com
+una secció de Word, amb cada línia en un quadre de text fix i les fonts
+incrustades: un fitxer per mirar la composició al Word d'escriptori, no per
+editar ni per a Google Docs. Una família que el llibre no pot cedir
+(`redistributable: false` a `customFonts`) es deixa fora i hi entra
+l'alternativa oberta, com a l'EPUB; una font la llicència de la qual prohibeix
+incrustar-la, una amb contorns PostScript i una font variable es notifiquen i
+només s'anomenen. A `build`, `--docx FITXER` escriu el mateix fitxer, amb
+`--docx-variant` i `--no-docx-fonts`. Des de postext 1.68; `--template` ja no
+s'aplica a `docx` ni a `build`.
 
 Amb un llibre després del fitxer, `import-docx` recupera les correccions fetes
 en un document que `docx` va exportar des d'aquest llibre. Llegeix el mapa que
@@ -318,6 +325,22 @@ canviat mentre s'executava la importació es deixa com està, amb un avís
 `docx.fileChanged`. `-o` no va amb un llibre. Amb `--json`, la resposta porta
 `variant`, `exportId`, `edits` (cadascuna amb `status`, `reason`, `kind`,
 `before`, `after` i `at`), `comments`, `files` i, en una prova en sec, `diff`.
+
+Un fitxer editat a Google Docs i baixat com a `.docx` també torna. Docs no hi
+desa el mapa ni la còpia dels capítols; la importació torna a escriure el mapa a
+partir del llibre, i ho diu a l'informe. Com que aquest fitxer no porta cap
+còpia del text exportat, es compara amb el llibre tal com és ara. Si el llibre
+ha canviat des de l'exportació, l'informe n'avisa, i un canvi fet mentrestant al
+llibre pot aparèixer com una edició que el desfà. Importa un fitxer de Docs al
+llibre del qual es va exportar, abans de canviar aquest llibre; un fitxer desat
+per Word conserva el mapa i es combina amb els canvis posteriors del llibre.
+Docs també elimina el marcador ocult d'un text que se substitueix sencer (un
+títol, una cel·la de taula, un peu, el títol d'un requadre, una nota al peu). La
+importació troba aquest text pel lloc que ocupa entre els seus veïns, de manera
+que un títol continua sent un títol i un peu va al seu recurs. Quan això no es
+pot decidir, per exemple perquè també s'ha escrit un paràgraf al costat i res no
+els distingeix, l'informe mostra una supressió i una addició en lloc seu.
+Importar el mateix fitxer una segona vegada no porta res.
 
 Sense cap llibre, `import-docx` converteix qualsevol document de Word en un
 llibre nou: crea un capítol a cada títol de nivell 1 (amb `--no-split`, un de

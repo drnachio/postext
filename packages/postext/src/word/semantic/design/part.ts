@@ -16,6 +16,7 @@ import { hideRuns } from './hide.js';
 import { inPartColors, recolored } from './partColor.js';
 import { designImageId, designPictures, printed } from './pictures.js';
 import { designTextLook, designTextParagraphs, fittedSize } from './text.js';
+import { plainDesign } from '../plain/design.js';
 import { partPaletteAt, partPlaceholders } from './values.js';
 import { writeDesign } from './write.js';
 
@@ -32,9 +33,19 @@ const isNumber = (el: ResolvedDesignTextElement): boolean => /^\s*\{number\}\s*$
  * number and title plainly).
  */
 export function renderPartDesign(ctx: WriterContext, part: ContentBlock, attr: PartAttrParagraph, body?: () => string): string | undefined {
-  const design = ctx.resolved.parts.design;
+  const design = (ctx.plain?.book ?? ctx.resolved).parts.design;
   if (!design.elements.length) return undefined;
   const placeholders = partPlaceholders(ctx, part);
+  if (ctx.plain) {
+    // The number, when the design prints it, and the title in the part
+    // style, then the words of the fence the design prints.
+    const numbered = design.elements.some((el) => el.kind === 'text' && /\{(?:number|partNumber)/.test(el.content ?? ''));
+    const head = (props: Partial<ParaProps>): string => {
+      const number = numbered ? attr('number', STYLE.part, props) : '';
+      return number + attr('title', STYLE.part, number ? { ...props, pageBreakBefore: false } : props);
+    };
+    return plainDesign(ctx, { owner: part, elements: printed(design.elements).filter((el) => el.kind !== 'text' || !isNumber(el)), attrs: part.containerAttrs, placeholders, slot: 'part', isTitle, breakBefore: true, title: head });
+  }
   const elements = inPartColors(ctx, part, printed(design.elements));
   const texts = new Map<string, string>();
   for (const el of elements) {
@@ -44,6 +55,7 @@ export function renderPartDesign(ctx: WriterContext, part: ContentBlock, attr: P
   }
   const title = part.containerAttrs?.title ?? '';
   return writeDesign(ctx, {
+    owner: part,
     elements,
     texts,
     slot: 'part',

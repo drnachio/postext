@@ -549,11 +549,11 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
   `rename` con `thisLanguageOnly: true` dà il nome soltanto alla lingua sullo schermo;
   `set_cover` e `remove_cover` gli danno una copertina o gliela tolgono.
 - **Esportare.** `sandbox_export` scrive `pdf`, `epub`, `postext`, `docx`,
-  `markdown` o `config`. Per impostazione predefinita il browser scarica il file; con
-  `deliver: "data"` un PDF, un EPUB o un file Word torna all’agente codificato
-  in base64. Per `docx`, `variant` sceglie `semantic` (il valore predefinito:
-  titoli, elenchi, note e tabelle propri di Word) o `formatted` (le pagine come
-  le stampa il PDF, con i font incorporati):
+  `markdown` o `config`. Per impostazione predefinita il browser scarica il
+  file; con `deliver: "data"` un PDF, un EPUB o un file Word torna all’agente
+  codificato in base64. Per `docx`, `variant` sceglie `formatted` (il valore
+  predefinito: testo modificabile con il progetto grafico del libro e i font
+  incorporati) o `semantic` (il solo contenuto, in stili Word semplici):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

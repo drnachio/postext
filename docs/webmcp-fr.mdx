@@ -550,10 +550,10 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
   `set_cover` et `remove_cover` lui donnent une couverture ou la lui retirent.
 - **Exporter.** `sandbox_export` écrit `pdf`, `epub`, `postext`, `docx`,
   `markdown` ou `config`. Par défaut, le navigateur télécharge le fichier ; avec
-  `deliver: "data"`, un PDF, un EPUB ou un fichier Word revient à l’agent
-  encodé en base64. Pour `docx`, `variant` choisit `semantic` (la valeur par
-  défaut : titres, listes, notes et tableaux propres à Word) ou `formatted` (les
-  pages telles que le PDF les imprime, polices incorporées) :
+  `deliver: "data"`, un PDF, un EPUB ou un fichier Word revient à l’agent encodé
+  en base64. Pour `docx`, `variant` choisit `formatted` (la valeur par défaut :
+  texte modifiable avec la maquette du livre, polices incorporées) ou `semantic`
+  (le contenu seul, dans des styles Word simples) :
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

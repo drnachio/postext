@@ -48,6 +48,9 @@ export function firstFamily(stack: string | undefined): string | undefined {
 export interface RunProps {
   style?: string;
   font?: string;
+  /** `false`: `font` names no East Asian face, so each reader sets Han,
+   *  kana and hangul in its own (the plain design's Arial has none). */
+  eastAsia?: false;
   b?: boolean;
   i?: boolean;
   caps?: boolean;
@@ -76,7 +79,7 @@ export function rPr(p: RunProps): string {
   if (p.style) x += `<w:rStyle w:val="${escapeAttr(p.style)}"/>`;
   if (p.font) {
     const f = escapeAttr(p.font);
-    x += `<w:rFonts w:ascii="${f}" w:hAnsi="${f}" w:eastAsia="${f}" w:cs="${f}"/>`;
+    x += `<w:rFonts w:ascii="${f}" w:hAnsi="${f}"${p.eastAsia === false ? '' : ` w:eastAsia="${f}"`} w:cs="${f}"/>`;
   }
   if (p.b !== undefined) x += p.b ? '<w:b/><w:bCs/>' : '<w:b w:val="0"/><w:bCs w:val="0"/>';
   if (p.i !== undefined) x += p.i ? '<w:i/><w:iCs/>' : '<w:i w:val="0"/><w:iCs w:val="0"/>';

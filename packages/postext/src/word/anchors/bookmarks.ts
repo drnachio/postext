@@ -28,6 +28,19 @@ export function fragmentIdOf(name: string): string | undefined {
   return name.startsWith(BOOKMARK_PREFIX) && name.length > BOOKMARK_PREFIX.length ? name.slice(BOOKMARK_PREFIX.length) : undefined;
 }
 
+/** The name an editor gave a bookmark it wrote out again: LibreOffice
+ *  saves the bookmarks of a footnote as `<name>_Copy_1` (#1458). */
+const RENAMED = /^(.+?)_Copy_\d+$/;
+
+/** The fragment id of a bookmark an editor renamed (`_ptx_7_Copy_1` for
+ *  `_ptx_7`), or undefined for any other name. It stands for the fragment
+ *  only when the file has no bookmark under the fragment's own name: a
+ *  paragraph copied in the editor carries such a name too. */
+export function renamedFragmentIdOf(name: string): string | undefined {
+  const m = RENAMED.exec(name);
+  return m ? fragmentIdOf(m[1]!) : undefined;
+}
+
 export function bookmarkStartXml(id: number, name: string): string {
   return `<w:bookmarkStart w:id="${id}" w:name="${escapeAttr(name)}"/>`;
 }

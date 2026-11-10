@@ -17,6 +17,7 @@ import { listItemSpacing } from './prose/listSpacing.js';
 import { bodyTabs } from './prose/tabs.js';
 import { renderDesignedHeading, type HeadingLook } from './design/heading.js';
 import { partHeadingStyle } from './design/partColor.js';
+import { partPaletteAt } from './design/values.js';
 import { headingIsListed } from '../../pipeline/sections/headingStyles.js';
 import { renderScoreBlock } from './media/scores.js';
 import { FragmentBuilder } from './fragments.js';
@@ -27,7 +28,7 @@ import type { ListLevelKind } from './numbering.js';
 import { lineStart, rawSdt } from './raw.js';
 import { STYLE } from './styles.js';
 import { renderVerse } from './verse.js';
-import { headingStart, spansPage, type Piece } from './layout/pageSpan.js';
+import { headingStart, spansPage, widenedTwips, type Piece } from './layout/pageSpan.js';
 import { blockSdt, paragraph, pPr, rPr, textRuns, type ParaProps } from './wml.js';
 
 export type Node = { block: ContentBlock } | { container: ContentBlock; end?: ContentBlock; children: Node[] };
@@ -115,6 +116,7 @@ export function inlineSourceOf(ctx: WriterContext, block: ContentBlock, notes = 
     inlineCode: block.inlineCode?.map((r) => ({ start: abs(ctx, r.start), end: abs(ctx, r.end) })),
     inserts: markInserts(ctx, block, sourceMap),
     noteRef: notes ? (id) => footnote(ctx, id) : undefined,
+    citationNote: notes ? (text) => citationNote(ctx, text) : undefined,
     linkFields: !notes,
   };
 }
@@ -173,6 +175,14 @@ function footnote(ctx: WriterContext, id: string): number | undefined {
   });
   const mark = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r>`;
   ctx.footnotes.push(`<w:footnote w:id="${wordId}"><w:p>${pPr({ style: STYLE.footnoteText })}${mark}${wrapped}</w:p></w:footnote>`);
+  return wordId;
+}
+
+/** A Word footnote holding a citation (a note style): generated text. */
+function citationNote(ctx: WriterContext, text: string): number {
+  const wordId = ctx.nextFootnoteId();
+  const mark = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r>`;
+  ctx.footnotes.push(`<w:footnote w:id="${wordId}"><w:p>${pPr({ style: STYLE.footnoteText })}${mark}${textRuns(text, '')}</w:p></w:footnote>`);
   return wordId;
 }
 
@@ -265,11 +275,18 @@ export function renderPieces(ctx: WriterContext, nodes: readonly Node[], env: Bl
     if (after) for (const p of after(ns)) parts.push(p.span === undefined && span ? { ...p, span } : p);
   };
   // Page-spanning content takes the whole text area.
-  const wide: BlockEnv = { ...env, widthTwips: Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) };
+  const across: BlockEnv = { ...env, widthTwips: Math.round((ctx.textAreaPx * 1440) / ctx.units.dpi) };
   const below: BlockEnv = env.boxTop ? { ...env, boxTop: undefined } : env;
+  const outer = env;
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i]!;
-    if (i === 1) env = below;
+    // A styled section that widens the measure gives its blocks the room.
+    const widened = after ? widenedTwips(ctx, 'container' in n ? n.container : n.block) : undefined;
+    // The part's palette in force here: its references, links and caption
+    // labels take its colours.
+    if (after) ctx.chapter.palette = partPaletteAt(ctx, 'container' in n ? n.container : n.block);
+    env = widened ? { ...(i >= 1 ? below : outer), widthTwips: widened } : i >= 1 ? below : outer;
+    const wide = widened ? { ...across, widthTwips: widened } : across;
     const span = !!after && spansPage(ctx, n);
     if ('container' in n) {
       const leadFlush = n.container.containerName === 'paragraphs' && startsFlush(ctx, nodes, i, env.leadFlush);

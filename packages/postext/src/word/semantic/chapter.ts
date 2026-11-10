@@ -11,6 +11,8 @@ import { chapterSolutions } from './exercises/exercises.js';
 import { floatedAfter } from './media/floated.js';
 import { bottomBoxesLast } from './media/bottomBoxes.js';
 import { namedBookmark } from './marks.js';
+import { renderWorksList } from './prose/citations.js';
+import { blockSdt } from './wml.js';
 import { lineStart, rawSdt } from './raw.js';
 import { bookPageNumbers, type PageGeometry } from './sections.js';
 import { chapterSections, type Piece } from './layout/pageSpan.js';
@@ -64,6 +66,8 @@ export function renderChapter(ctx: WriterContext, pc: ParsedChapter, index: numb
   // on re-import.
   const pieces: Piece[] = renderPieces(ctx, bottomBoxesLast(buildTree(pc.blocks), ctx.resolved.calloutStyles), {}, (nodes) => floatedAfter(ctx, nodes));
   pieces.push({ xml: chapterSolutions(ctx) });
+  // A list of works nothing places goes after the text.
+  for (const list of ctx.citations?.unplaced(index) ?? []) pieces.push({ xml: blockSdt(ctx.nextSdtId(), 'ptx:bibliography', undefined, renderWorksList(ctx, list)) });
   // Notes cited only from text kept as source: their definitions too.
   for (const [id, def] of defs) {
     if (ctx.chapter.cited.has(id) && !ctx.chapter.usedDefs.has(id)) pieces.push({ xml: rawSdt(ctx, lineStart(pc.input.markdown, def.sourceStart + pc.offset), def.sourceEnd + pc.offset, 'footnote') });

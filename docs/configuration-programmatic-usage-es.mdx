@@ -684,18 +684,21 @@ El punto de entrada `postext/word` escribe y lee documentos de Word (`.docx`) si
 
 ```ts
 import { buildDocument } from 'postext';
-import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { semanticDocx, facsimileDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
 import { decompressWoff2 } from 'postext-pdf';
 
 const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // los mismos ids al exportar y al importar
 
-// Semántico: las estructuras propias de Word, a partir del Markdown y la configuración.
-const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
-
-// Maquetado: las páginas maquetadas, con las fuentes del libro incrustadas.
-const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+// Maquetado: texto corrido con el diseño del libro y sus fuentes incrustadas.
 const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
-const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+const formatted = await semanticDocx({ chapters, config, resources, resourceBytes, fonts, title: 'Field notes' });
+
+// Semántico: el mismo texto como solo contenido, en estilos de Word sencillos.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, design: 'plain', title: 'Field notes' });
+
+// Facsímil de páginas: las páginas maquetadas, cada línea en un cuadro de texto fijo.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const facsimile = await facsimileDocx({ docs, chapters, resources, resourceBytes, fonts });
 
 // El archivo corregido, combinado con el libro tal como está ahora.
 if (isExportedDocx(edited)) {
@@ -705,8 +708,8 @@ if (isExportedDocx(edited)) {
 }
 ```
 
-- **`semanticDocx(options)`** se resuelve en los bytes del `.docx` (un `Uint8Array`). Recibe `chapters` (`{ id, title?, markdown }`), `config`, `resources` con `resourceBytes(fileId)` para los bytes de sus imágenes, `rasterizeSvg(svg, width, height)` para el PNG que Word necesita junto a un SVG (sin él, un SVG se deja fuera), `fonts` (un plan de `planWordFonts`), `title`, `author`, `date` (una fecha ISO fija hace los bytes reproducibles) y `onWarning` para lo que Word compone a su manera (`{ code, message, chapter? }`). Las fórmulas necesitan el conversor de TeX a Word, que se carga al usarse por primera vez; si no puede cargarse, se quedan en TeX, con un aviso `mathUnavailable`.
-- **`formattedDocx(options)`** recibe `docs`, un `VDTDocument` por capítulo en el orden de `chapters` (la cadena de impresión de la que sale el PDF), y los mismos `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` y `onWarning`. `onProgress(done, total)` cuenta las páginas escritas.
+- **`semanticDocx(options)`** se resuelve en los bytes del `.docx` (un `Uint8Array`). Recibe `chapters` (`{ id, title?, markdown }`), `config`, `resources` con `resourceBytes(fileId)` para los bytes de sus imágenes, `rasterizeSvg(svg, width, height)` para el PNG que Word necesita junto a un SVG (sin él, un SVG se deja fuera), `fonts` (un plan de `planWordFonts`), `title`, `author`, `date` (una fecha ISO fija hace los bytes reproducibles) y `onWarning` para lo que Word compone a su manera (`{ code, message, chapter? }`). Las fórmulas necesitan el conversor de TeX a Word, que se carga al usarse por primera vez; si no puede cargarse, se quedan en TeX, con un aviso `mathUnavailable`. `design` elige el aspecto: `'book'` (por defecto) compone el texto con el diseño del libro hasta donde Word lo permite, y `'plain'` escribe solo el contenido, en una página A4 a una columna y en Arial, con estilos de Word que dicen qué es cada parte.
+- **`facsimileDocx(options)`** recibe `docs`, un `VDTDocument` por capítulo en el orden de `chapters` (la cadena de impresión de la que sale el PDF), y los mismos `resources`, `resourceBytes`, `rasterizeSvg`, `fonts`, `title`, `author`, `date` y `onWarning`. `onProgress(done, total)` cuenta las páginas escritas. Escribe el facsímil de páginas: cada línea en un cuadro de texto fijo, tal como la imprime el PDF, para mirar la maquetación en Word de escritorio. `formattedDocx` es su nombre anterior, que se conserva.
 - **`planWordFonts(faces, options)`** convierte las fuentes del libro (`{ family, weight, style, files }`: WOFF2 o sfnt, con cualquier número de fragmentos unicode-range) en las fuentes TrueType estáticas que Word incrusta. `decompressWoff2` (el que exporta `postext-pdf`) lee WOFF2; `usedText` y `fontStrings` dejan fuera los fragmentos y las fuentes que la exportación no usa; `familySuffix` (por defecto `' PTX'`) se añade a cada familia incrustada. Sus `warnings` nombran las fuentes que se dejan fuera (`restricted`, `cff`, `variable`, `missing`, `merge-failed`) y las incrustadas solo para vista previa e impresión (`preview-print`).
 - **`isExportedDocx(bytes)`** dice si un archivo lleva el mapa de exportación, y nunca lanza errores. `readExportMap(files)` lee el propio mapa de las partes descomprimidas (`unzipSync` de fflate): `exportId`, `variant`, `engine`, los capítulos con sus hashes y la copia del texto exportado.
 - **`applyDocxEdits(bytes, { chapters, resources })`** es síncrona. Devuelve todos los capítulos con las correcciones aplicadas (`chapters`), copias profundas de los recursos cuyo pie, nota, texto alternativo o celdas de tabla cambiaron (`resources`), `edits`, `comments`, `variant`, `exportId` y `changed`. Cada edición lleva `chapter`, o `resourceId` y `field` (`caption`, `note`, `alt`, `cell:<fila>:<columna>`); `start` y `end` en el texto actual; `before`, `after`; `kind` (`text`, `format`, `paragraph`, `tracked`), y `status` con su `reason`: `applied`, `conflict` (`changed-since-export`, `target-missing`, `no-snapshot`, `overlap`) o `rejected` (`generated`, `format-crosses-markup`, `format-partial`, `bookmarks-lost`, `resource-removed`). Cada comentario lleva su `author`, su `text` y su lugar (`start` vale -1 en un comentario que no está sobre texto exportado). Un archivo que no es un `.docx` exportado lanza un `DocxReadError`. Los ids de capítulo tienen que ser los de la exportación: una edición en un capítulo desconocido se notifica, no se aplica.
@@ -732,7 +735,7 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 
 ### Paquetes de InDesign (`postext/idml`)
 
-El punto de entrada `postext/idml` escribe las páginas maquetadas como un paquete de InDesign Markup (`.idml`), para que un diseñador termine el libro en InDesign. Como el documento de Word maquetado, se construye sobre la lista de visualización de la página, sin DOM. Sobre él se construye el comando `idml` de la línea de comandos (véase [Línea de comandos › idml](/es/docs/command-line#idml)). Desde postext 1.71.
+El punto de entrada `postext/idml` escribe las páginas maquetadas como un paquete de InDesign Markup (`.idml`), para que un diseñador termine el libro en InDesign. Como el facsímil de páginas para Word, se construye sobre la lista de visualización de la página, sin DOM. Sobre él se construye el comando `idml` de la línea de comandos (véase [Línea de comandos › idml](/es/docs/command-line#idml)). Desde postext 1.71.
 
 ```ts
 import { buildDocument } from 'postext';

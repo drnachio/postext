@@ -21,6 +21,8 @@ export interface SourceEdit {
   kind: 'text' | 'format' | 'paragraph' | 'tracked';
   /** Not applied, and why. */
   reject?: string;
+  /** Something to say about an edit that applies (`DocxEdit.reason`). */
+  note?: string;
   /** For a rejected edit to text without a source: what Word holds. */
   before?: string;
 }
@@ -33,6 +35,12 @@ const isSpace = (ch: string | undefined): boolean => ch !== undefined && /\s/.te
 /** Hunks of the block, atoms widened to whole atoms and changed equations
  *  added, merged where they meet. */
 export function blockHunks(v: BlockView, base: string): Hunk[] {
+  // A text replaced whole is one change, not the words the two texts
+  // happen to share; one that holds marks or references is compared
+  // word by word, to keep them.
+  if (v.replaced && v.O !== v.N && !v.atoms.length && v.M.every((m) => m >= 0) && !v.N.includes(PARA_CHAR) && !v.N.includes(OBJECT_CHAR)) {
+    return [{ a0: 0, a1: v.O.length, b0: 0, b1: v.N.length }];
+  }
   // A paragraph mark the writer put between two engine lines (the
   // formatted writer starts a new paragraph where the alignment changes)
   // reads back as a paragraph break where the map has a line break: the
@@ -246,6 +254,9 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     else if (v.O[i] === '-' || v.O[i] === '‐') hyphens++;
   }
   const ctx = splitKey(contextKey);
+  // Text that lives in an attribute (`title="…"`): the quote it stands in.
+  const opener = v.frags[0]?.role?.startsWith('attr:') ? base[v.range[0] - 1] : undefined;
+  const quote = opener === '"' || opener === "'" ? opener : undefined;
   // An equation the hunk replaces keeps its number (`\tag`) in the source.
   const at = h.a1 - h.a0 === 1 && v.O[h.a0] === OBJECT_CHAR ? v.atomOf[h.a0]! : -1;
   const replaced = at >= 0 ? base.slice(v.atoms[at]!.start, v.atoms[at]!.end) : undefined;
@@ -287,11 +298,26 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     } else if ((ch === '-' || ch === '‐') && hyphens > 0) {
       hyphens--;
       continue;
+    } else if (ch === OBJECT_CHAR && v.NT[j] === undefined) {
+      // A note typed in the editor: its reference here, its text as a
+      // definition the import adds to the chapter (apply.ts).
+      const note = v.NNote[j];
+      if (note === undefined || v.target.kind !== 'markdown') continue;
+      let id = note.id;
+      for (let k = 2; base.includes(`[^${id}]`); k++) id = `${note.id}_${k}`;
+      (v.noteDefs ??= []).push(`[^${id}]: ${note.text}`);
+      piece = `[^${id}]`;
+      plain = false;
     } else if (ch === OBJECT_CHAR) {
       const tex = v.NT[j];
       if (tex === undefined) continue;
       piece = mathSource(replaced !== undefined ? keepTag(replaced, tex) : tex, display);
       plain = false;
+    } else if (quote !== undefined && ch === quote) {
+      // The value's own quote typed inside it would end it: the
+      // typographic one stands for it.
+      const opens = j === 0 || /[\s([{\u2014\u2013-]/.test(v.N[j - 1] ?? ' ');
+      piece = quote === '"' ? (opens ? '\u201C' : '\u201D') : opens ? '\u2018' : '\u2019';
     } else piece = escapeTyped(ch);
     if (!plain) {
       flush();
@@ -315,10 +341,20 @@ function hunkKind(v: BlockView, h: Hunk): SourceEdit['kind'] {
   return 'text';
 }
 
+/** Whether the character at `at` is escaped by a backslash before it (an
+ *  odd run of them). */
+function escapeBefore(base: string, at: number): boolean {
+  let n = 0;
+  while (at - n - 1 >= 0 && base[at - n - 1] === '\\') n++;
+  return n % 2 === 1;
+}
+
 /** Source ranges of the characters a hunk deletes, joined where the markup
  *  between them may go too. */
 function deletedRanges(v: BlockView, base: string, h: Hunk): [number, number][] {
   const units: [number, number][] = [];
+  let offsets: Set<number> | undefined;
+  const mapped = (): Set<number> => (offsets ??= new Set(v.M));
   const seen = new Set<number>();
   for (let i = h.a0; i < h.a1; i++) {
     const at = v.atomOf[i]!;
@@ -329,6 +365,8 @@ function deletedRanges(v: BlockView, base: string, h: Hunk): [number, number][] 
     }
     if (v.M[i]! < 0) continue;
     let e = v.M[i]! + 1;
+    // The backslash that escapes the character goes with it.
+    const s = escapeBefore(base, v.M[i]!) && !mapped().has(v.M[i]! - 1) ? v.M[i]! - 1 : v.M[i]!;
     // A space stands for a run of source whitespace (a line end and the
     // next line's indent): it goes whole.
     if (isSpace(v.O[i])) {
@@ -336,7 +374,7 @@ function deletedRanges(v: BlockView, base: string, h: Hunk): [number, number][] 
       for (let j = i + 1; j < v.O.length; j++) if (v.M[j]! >= 0) { limit = v.M[j]!; break; }
       while (e < limit && /[ \t\r\n]/.test(base[e]!)) e++;
     }
-    units.push([v.M[i]!, e]);
+    units.push([s, e]);
   }
   if (!units.length) return [];
   units.sort((x, y) => x[0] - y[0]);
@@ -404,16 +442,52 @@ function touchesGenerated(v: BlockView, h: Hunk): boolean {
 }
 
 /** Atoms whose printed text the engine generates from the construct. */
-const LABEL_ATOMS = new Set(['ref', 'footnote']);
+const LABEL_ATOMS = new Set(['ref', 'footnote', 'citation']);
+
+const OPENERS_RE = /(?:\*\*|__|\*|_|\^|~|`|:smallcaps\[|\[)+$/;
+const CLOSERS_RE = /^(?:\*\*|__|\*|_|\^|~|`|\]\([^()\s]*(?:\s+"[^"]*")?\)|\])+/;
+
+/** The source of a text replaced whole (`blockHunks`): from its first
+ *  character to its last with the markup around and between them, when
+ *  that markup pairs up. The new text then brings its own, and no mark is
+ *  left open or empty. */
+function wholeRange(v: BlockView, base: string): [number, number] | undefined {
+  let s = Infinity;
+  let e = -1;
+  for (const m of v.M) {
+    if (m < 0) return undefined;
+    s = Math.min(s, m);
+    e = Math.max(e, m + 1);
+  }
+  if (e < 0) return undefined;
+  if (escapeBefore(base, s)) s--;
+  const line = base.lastIndexOf('\n', s - 1) + 1;
+  const open = OPENERS_RE.exec(base.slice(line, s))?.[0] ?? '';
+  const end = base.indexOf('\n', e);
+  const close = CLOSERS_RE.exec(base.slice(e, end < 0 ? base.length : end))?.[0] ?? '';
+  const inner: string[] = [];
+  const at = [...v.M].sort((x, y) => x - y);
+  for (let k = 1; k < at.length; k++) if (at[k]! > at[k - 1]! + 1) inner.push(base.slice(at[k - 1]! + 1, at[k]!));
+  if (!markupDeletable([open, ...inner, close])) return undefined;
+  return [s - open.length, e + close.length];
+}
 
 /** Source edits for one changed hunk. */
 export function hunkEdits(v: BlockView, base: string, h: Hunk): SourceEdit[] {
+  // A note typed beside another one's reference: of the two marks, the
+  // hunk is the one that calls the new note.
+  if (h.a0 === h.a1 && h.b1 - h.b0 === 1 && v.N[h.b0] === OBJECT_CHAR && v.NT[h.b0] === undefined && v.NNote[h.b0] === undefined) {
+    const side = v.N[h.b0 - 1] === OBJECT_CHAR && v.NNote[h.b0 - 1] !== undefined ? -1 : v.N[h.b1] === OBJECT_CHAR && v.NNote[h.b1] !== undefined ? 1 : 0;
+    if (side) h = { ...h, a0: h.a0 + side, a1: h.a1 + side, b0: h.b0 + side, b1: h.b1 + side };
+  }
   const kind = hunkKind(v, h);
   if (touchesGenerated(v, h)) {
     // Generated text has no source to change: report it, apply nothing.
     const { pos } = insertionPoint(v, base, h);
     return [{ target: v.target, start: pos, end: pos, text: v.N.slice(h.b0, h.b1), kind, reject: 'generated', before: v.O.slice(h.a0, h.a1) }];
   }
+  const whole = v.replaced && h.a0 === 0 && h.a1 === v.O.length ? wholeRange(v, base) : undefined;
+  if (whole) return [{ target: v.target, start: whole[0], end: whole[1], text: insertText(v, base, h, ''), kind }];
   const ranges = deletedRanges(v, base, h);
   if (!ranges.length) {
     const { pos, key } = insertionPoint(v, base, h);

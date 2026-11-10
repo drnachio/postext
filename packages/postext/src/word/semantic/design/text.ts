@@ -40,7 +40,9 @@ export function fittedSize(ctx: WriterContext, el: ResolvedDesignTextElement, te
   const u = ctx.units;
   const size = px(u, el.fontSize) || u.basePx;
   const ems = Math.max(1, ...text.split(/\s+/).map((w) => [...w].reduce((n, ch) => n + charEm(ch), 0)));
-  return Math.max(1, Math.min(size, (ctx.columnPx * 0.95) / ems, (72 * u.dpi) / 72));
+  // A design spans the text area (layout/pageSpan.ts), whatever columns
+  // the text under it runs in.
+  return Math.max(1, Math.min(size, (Math.max(ctx.columnPx, ctx.textAreaPx) * 0.95) / ems, (72 * u.dpi) / 72));
 }
 
 /** The paragraph and run look of a design text element set at `size`
@@ -185,6 +187,26 @@ export function designTextParagraphs(ctx: WriterContext, b: ContentBlock, el: Re
         s = k + 2;
         k++;
       }
+    }
+    const shown = pieces.filter(([a, z]) => md.slice(a, z).trim());
+    if (ctx.plain && shown.length > 1) {
+      // The plain design keeps the value in one paragraph: its `\n` is a
+      // line break (of a lead set on two lines, of an address), not a
+      // paragraph end. The break is an atom over the two characters, so
+      // it stays in the source.
+      const f = new FragmentBuilder();
+      let runs = '';
+      shown.forEach(([a, z], k) => {
+        if (k) {
+          f.atom('\n', shown[k - 1]![1], a, 'break');
+          runs += textRuns('\n', '');
+        }
+        const piece = md.slice(a, z);
+        f.push(piece, Array.from({ length: piece.length }, (_, i) => a + i));
+        runs += textRuns(piece, '');
+      });
+      const wrapped = ctx.log.wrap(runs, f, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [shown[0]![0], shown[shown.length - 1]![1]], role: `attr:heading:${key}` });
+      return [paragraph({ style, ...first }, wrapped)];
     }
     for (const [a, z] of pieces) {
       const piece = md.slice(a, z);

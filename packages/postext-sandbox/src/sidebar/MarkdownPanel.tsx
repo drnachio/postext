@@ -8,10 +8,11 @@ import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/Sa
 import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence.js';
 import { slugify } from '../panels/resources/slugify.js';
 import { ConfirmPopover, IconButton, PanelHeader, announce } from '../ui/index.js';
-import { DocxReadError, isExportedDocx, readDocx } from 'postext/word';
+import { DocxReadError, readDocx } from 'postext/word';
 import { WordImportDialog, isolate, type WordImportFile } from '../word/WordImportDialog.js';
 import { WordExportDialog } from '../word/WordExportDialog.js';
 import { WordEditsDialog, type WordEditsFile } from '../word/WordEditsDialog.js';
+import { isWordExport } from '../word/wordEdits.js';
 
 interface MarkdownPanelProps {
   isDark?: boolean;
@@ -50,15 +51,16 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
   };
 
   // A Word manuscript opens the mapping dialog; a document the Sandbox
-  // exported (it carries the export map, #1397) opens the review of the
-  // changes made in it. Nothing changes until the dialog's button.
+  // exported (it carries the export map, #1397, or came back from Google
+  // Docs with its marks and without the map, #1458) opens the review of
+  // the changes made in it. Nothing changes until the dialog's button.
   const handleWordImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      if (isExportedDocx(bytes)) {
+      if (isWordExport(bytes)) {
         setWordEdits({ name: file.name, bytes });
         return;
       }

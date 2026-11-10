@@ -163,7 +163,7 @@ own configuration. A multilingual bundle is read in its own language unless
     <tr><td><code>epub</code></td><td>An EPUB 3 book, with fixed pages as printed or reflowable text.</td></tr>
     <tr><td><code>image</code></td><td>One page as a PNG, JPEG or WebP picture.</td></tr>
     <tr><td><code>images</code></td><td>Every page, or a range, as pictures in a folder.</td></tr>
-    <tr><td><code>docx</code></td><td>The chapters as a Word document: semantic (Word's own headings, lists, notes and tables) or formatted (the PDF's pages).</td></tr>
+    <tr><td><code>docx</code></td><td>The chapters as a Word document: semantic (the content alone, in plain Word styles), formatted (the same editable text with the book's design) or a page facsimile (every line in a fixed text box).</td></tr>
     <tr><td><code>idml</code></td><td>The pages as an InDesign package (IDML), for finishing in InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>The corrections made in an exported Word file, back into the book; any other Word document as a new book (a folder or a <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>A book folder or loose Markdown as one <code>.postext</code> file.</td></tr>
@@ -259,27 +259,33 @@ going through a PDF.
 
 ```bash
 postext docx book.postext -o book.docx
-postext docx book/ --variant formatted -o pages.docx
+postext docx book/ --variant semantic -o words.docx
+postext docx book/ --variant facsimile -o pages.docx
 postext import-docx book.docx book/ --dry-run
 postext import-docx book.docx book/
 postext import-docx manuscript.docx -o manuscript/ --locale es --report
 ```
 
-`docx` writes either of the two Word documents the Sandbox exports (see
-[Sandbox › Word documents](/en/docs/sandbox-books-saving#word-documents)).
-`--variant semantic`, the default, builds an editable document from the
-Markdown, with Word's own headings, lists, footnotes, tables, equations and
-sections; what Word has no structure for travels as its source in *Postext
-Source* content controls. It needs no layout. `--variant formatted` lays the
-book out as `pdf` does and writes each page as a Word section, the text in
-text boxes placed line for line. Both embed the book's faces
-(`--no-embed-fonts` only names them). A family the book may not hand on
-(`redistributable: false` in `customFonts`) is left out and its open fallback
-goes in, as in the EPUB; a face whose licence forbids embedding, one with
-PostScript outlines and a variable font are reported and only named. In
-`build`, `--docx FILE` writes the same file, with `--docx-variant` and
-`--no-docx-fonts`. Since postext 1.68; `--template` no longer applies to
-`docx` or `build`.
+`docx` writes the Word documents the Sandbox exports (see
+[Sandbox › Word documents](/en/docs/sandbox-books-saving#word-documents)), and a
+third one. `--variant formatted`, the default, builds an editable document from
+the Markdown, with Word's own headings, lists, footnotes, tables, equations and
+sections, set with the book's design as far as Word allows and with the book's
+faces embedded (`--no-embed-fonts` only names them); what Word has no structure
+for travels as its source in *Postext Source* content controls.
+`--variant semantic` writes the same text as content only: a plain document (A4,
+one column, Arial) in Word styles that name each part, with none of the page
+design and no fonts embedded. Neither needs a layout; both open in Word and in
+Google Docs, and both come back through `import-docx`. `--variant facsimile`
+lays the book out as `pdf` does and writes each page as a Word section, every
+line in a fixed text box, with the faces embedded: a file for looking at the
+layout in desktop Word, not for editing and not for Google Docs. A family the
+book may not hand on (`redistributable: false` in `customFonts`) is left out and
+its open fallback goes in, as in the EPUB; a face whose licence forbids
+embedding, one with PostScript outlines and a variable font are reported and
+only named. In `build`, `--docx FILE` writes the same file, with
+`--docx-variant` and `--no-docx-fonts`. Since postext 1.68; `--template` no
+longer applies to `docx` or `build`.
 
 With a book after the file, `import-docx` brings back the corrections made in
 a document `docx` exported from that book. It reads the map the file carries,
@@ -307,6 +313,21 @@ file that changed while the import ran is left alone with a `docx.fileChanged`
 warning. `-o` does not go with a book. With `--json` the answer has `variant`,
 `exportId`, `edits` (each with `status`, `reason`, `kind`, `before`, `after`
 and `at`), `comments`, `files` and, on a dry run, `diff`.
+
+A file edited in Google Docs and downloaded as `.docx` comes back too. Docs
+leaves out the map and the copy of the chapters; the import writes the map again
+from the book, and says so in the report. Because that file carries no copy of
+the exported text, it is compared with the book as it is now. If the book
+changed since the export, the report warns about it, and a change made in the
+book meanwhile may show as an edit that undoes it. Import a Docs file into the
+book it was exported from, before changing that book; a file saved by Word keeps
+its map and merges with later changes to the book. Docs also removes the hidden
+bookmark of a text that is replaced whole (a heading, a table cell, a caption, a
+box title, a footnote). The import finds such a text by its place between its
+neighbours, so a heading stays a heading and a caption goes to its resource.
+When that cannot be decided, for example because a paragraph was also typed
+beside it and nothing tells the two apart, the report shows a deletion and an
+addition instead. Importing the same file a second time brings nothing.
 
 Without a book, `import-docx` turns any Word document into a new book: a
 chapter at each level-1 heading (`--no-split` keeps one), pictures and tables

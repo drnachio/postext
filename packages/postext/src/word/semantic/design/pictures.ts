@@ -22,6 +22,11 @@ export function designImageId(raw: string, attrs: Record<string, string> | undef
   return raw.includes('{') ? undefined : raw.trim() || undefined;
 }
 
+/** Whether a design's text or picture reads the Markdown: an attribute
+ *  of the heading, part or page it stands on (`{attr.key}`). Anything else
+ *  the config fixes, or fills from the book's metadata. */
+export const fromMarkdown = (raw: string): boolean => /\{attr\.[A-Za-z_]/.test(raw);
+
 /** A length in millimetres (a size the design gives), undefined for
  *  `auto` or a size reaching another element. */
 function mm(size: unknown): number | undefined {
@@ -57,12 +62,13 @@ export function printed(elements: readonly ResolvedDesignElement[]): ResolvedDes
 
 /** The pictures of a design's `elements` heading `b` draws: element id
  *  and resource id. */
-export function designPictures(b: ContentBlock, elements: readonly ResolvedDesignElement[], resources: ReadonlyMap<string, Resource>): { elementId: string; id: string }[] {
+export function designPictures(b: ContentBlock, elements: readonly ResolvedDesignElement[], resources: ReadonlyMap<string, Resource>, namedOnly = false): { elementId: string; id: string }[] {
   const out: { elementId: string; id: string }[] = [];
   const boxes: string[] = [];
   const alone = !elements.some((e) => e.kind === 'text' || (e.kind === 'image' && !e.decorative));
   for (const el of elements) {
     if (el.kind !== 'image' || (el.decorative && !alone && background(el))) continue;
+    if (namedOnly && !fromMarkdown(el.resourceId)) continue;
     const box = JSON.stringify(el.placement);
     const overlay = boxes.includes(box);
     boxes.push(box);
@@ -76,20 +82,21 @@ export function designPictures(b: ContentBlock, elements: readonly ResolvedDesig
 }
 
 /** The resources the book's heading designs, part pages and comic panels
- *  draw (their pictures go into the package). */
-export function designMediaIds(chapters: readonly { blocks: readonly ContentBlock[] }[], resolved: ResolvedConfig, resources: ReadonlyMap<string, Resource>): Set<string> {
+ *  draw (their pictures go into the package); with `namedOnly`, of the
+ *  designs' pictures only those an attribute names (the plain design). */
+export function designMediaIds(chapters: readonly { blocks: readonly ContentBlock[] }[], resolved: ResolvedConfig, resources: ReadonlyMap<string, Resource>, namedOnly = false): Set<string> {
   const out = new Set<string>();
   for (const ch of chapters) {
     for (const b of ch.blocks) {
       for (const panel of comicPanels(b)) if (panel.art && resources.has(panel.art)) out.add(panel.art);
       if (b.type === 'containerStart' && b.containerName === 'part') {
-        for (const p of designPictures(b, printed(resolved.parts.design.elements), resources)) out.add(p.id);
+        for (const p of designPictures(b, printed(resolved.parts.design.elements), resources, namedOnly)) out.add(p.id);
         continue;
       }
       if (b.type !== 'heading') continue;
       const design = headingLevelOf(resolved, b)?.advancedDesign;
       if (!design?.enabled) continue;
-      for (const p of designPictures(b, printed(design.slot.elements), resources)) out.add(p.id);
+      for (const p of designPictures(b, printed(design.slot.elements), resources, namedOnly)) out.add(p.id);
     }
   }
   return out;

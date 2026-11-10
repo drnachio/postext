@@ -1,22 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { isExportedDocx, readExportMap } from 'postext/word';
-import { unzipSync } from 'fflate';
+import { strFromU8, unzipSync } from 'fflate';
 import { harness } from '../webmcp/tools/testHarness.js';
 import { layoutConfig } from '../webmcp/host.js';
-import { buildWordExport, docxFileName, fontUse, layOutWordChain, wordChapters, type WordExportNote, type WordExportProgress } from './wordExport.js';
+import { buildWordExport, docxFileName, fontUse, wordChapters, type WordExportNote, type WordExportProgress } from './wordExport.js';
 
 function input(scope: 'chapter' | 'book') {
-  const { host, get } = harness();
+  const { get } = harness();
   const s = get();
   return {
-    service: host.layout,
-    clientId: 'test',
     scope,
     chapters: s.chapters,
     activeChapterId: s.activeChapterId,
     resources: s.resources,
     config: layoutConfig(s),
-    plan: host.store.getPlan(s),
   };
 }
 
@@ -34,19 +31,15 @@ describe('the Sandbox Word export (#1397)', () => {
     expect(wordChapters(s.chapters, 'book', 'b').map((c) => c.id)).toEqual(['a', 'b']);
   });
 
-  it('lays the book out as the PDF tab does, one document per chapter', async () => {
-    const book = await layOutWordChain(input('book'));
-    expect(book.docs).toHaveLength(2);
-    expect(book.chapters.map((c) => c.id)).toEqual(['a', 'b']);
-    const chapter = await layOutWordChain(input('chapter'));
-    expect(chapter.docs).toHaveLength(1);
-    expect(chapter.chapters.map((c) => c.id)).toEqual(['a']);
-    const use = fontUse(book.docs);
-    expect(use.fontStrings.length).toBeGreaterThan(0);
-    expect([...use.usedText.values()].some((set) => set.has('P'.codePointAt(0)!))).toBe(true);
+  it('reads the faces and the characters of the export from the settings and the text, with no layout', () => {
+    const i = input('book');
+    const use = fontUse(i.config, wordChapters(i.chapters, 'book', i.activeChapterId), i.resources, 'Guide');
+    expect(use.faces.length).toBeGreaterThan(0);
+    expect(new Set(use.faces.map((f) => `${f.family}|${f.weight}|${f.style}`)).size).toBe(use.faces.length);
+    expect(use.faces.every((f) => use.usedText.get(f.family)?.has('G'.codePointAt(0)!))).toBe(true);
   });
 
-  it('writes the formatted document with its progress, and says which fonts could not be had', async () => {
+  it('writes the formatted document as flowing text in the book\'s design, and says which fonts could not be had', async () => {
     const progress: WordExportProgress[] = [];
     const notes: WordExportNote[] = [];
     const asked: string[] = [];
@@ -62,19 +55,25 @@ describe('the Sandbox Word export (#1397)', () => {
       onNote: (n) => notes.push(n),
     });
     expect(isExportedDocx(bytes)).toBe(true);
-    expect(readExportMap(unzipSync(bytes))?.variant).toBe('formatted');
-    expect(new Set(progress.map((p) => p.phase))).toEqual(new Set(['layout', 'fonts', 'pages']));
-    expect(progress.at(-1)).toMatchObject({ phase: 'pages' });
+    const files = unzipSync(bytes);
+    expect(readExportMap(files)?.chapters.map((c) => c.id)).toEqual(['a', 'b']);
+    // Flowing text: no line sits in a text box.
+    expect(strFromU8(files['word/document.xml']!)).not.toContain('<w:txbxContent>');
+    expect(new Set(progress.map((p) => p.phase))).toEqual(new Set(['fonts', 'write']));
+    expect(progress.at(-1)).toMatchObject({ phase: 'write' });
     expect(asked.length).toBeGreaterThan(0);
     const families = new Set(asked.map((k) => k.split('|')[0]));
     expect(notes.filter((n) => n.kind === 'font').map((n) => (n as { family: string }).family).sort()).toEqual([...families].sort());
     expect(notes.every((n) => n.kind !== 'font' || n.reason === 'missing')).toBe(true);
   });
 
-  it('writes the semantic document from the chapters', async () => {
-    const bytes = await buildWordExport({ ...input('chapter'), variant: 'semantic', title: 'Guide' });
-    const map = readExportMap(unzipSync(bytes));
-    expect(map?.variant).toBe('semantic');
+  it('writes the semantic document from the chapters, with no font asked for', async () => {
+    let asked = 0;
+    const bytes = await buildWordExport({ ...input('chapter'), variant: 'semantic', title: 'Guide', fontProvider: async () => { asked++; throw new Error('not asked'); } });
+    const files = unzipSync(bytes);
+    const map = readExportMap(files);
     expect(map?.chapters.map((c) => c.id)).toEqual(['a']);
+    expect(asked).toBe(0);
+    expect(Object.keys(files).some((f) => f.startsWith('word/fonts/'))).toBe(false);
   });
 });

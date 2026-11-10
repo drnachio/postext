@@ -684,18 +684,21 @@ const doc = buildDocument({ markdown }, config);
 
 ```ts
 import { buildDocument } from 'postext';
-import { semanticDocx, formattedDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
+import { semanticDocx, facsimileDocx, planWordFonts, isExportedDocx, applyDocxEdits } from 'postext/word';
 import { decompressWoff2 } from 'postext-pdf';
 
 const chapters = [{ id: 'ch1', title: 'Field notes', markdown }];   // المعرّفات نفسها عند التصدير والاستيراد
 
-// دلالي: بنى Word نفسه، من Markdown والإعدادات.
-const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, title: 'Field notes' });
-
-// منسَّق: الصفحات المخرَجة، مع تضمين خطوط الكتاب.
-const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+// منسَّق: نص متصل بتصميم الكتاب، مع تضمين خطوطه.
 const fonts = await planWordFonts(faces, { decompressWoff2 });   // faces: { family, weight, style, files }[]
-const formatted = await formattedDocx({ docs, chapters, resources, resourceBytes, fonts });
+const formatted = await semanticDocx({ chapters, config, resources, resourceBytes, fonts, title: 'Field notes' });
+
+// دلالي: النص نفسه محتوًى فقط، بأنماط Word بسيطة.
+const semantic = await semanticDocx({ chapters, config, resources, resourceBytes, design: 'plain', title: 'Field notes' });
+
+// نسخة طبق الأصل من الصفحات: الصفحات المخرَجة، كل سطر في مربع نص ثابت.
+const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
+const facsimile = await facsimileDocx({ docs, chapters, resources, resourceBytes, fonts });
 
 // الملف المصحَّح، مدموجًا في الكتاب كما هو الآن.
 if (isExportedDocx(edited)) {
@@ -705,8 +708,8 @@ if (isExportedDocx(edited)) {
 }
 ```
 
-- **`semanticDocx(options)`** تُرجع بايتات ملف `.docx` ‏(`Uint8Array`). وتأخذ `chapters` ‏(`{ id, title?, markdown }`) و`config` و`resources` مع `resourceBytes(fileId)` لبايتات صورها، و`rasterizeSvg(svg, width, height)` لصورة PNG التي يحتاجها Word بجانب SVG (ومن دونها يُستبعد SVG)، و`fonts` (خطة من `planWordFonts`)، و`title` و`author` و`date` (تاريخ ISO ثابت يجعل البايتات قابلة للتكرار)، و`onWarning` لما يصفّه Word على طريقته (`{ code, message, chapter? }`). وتحتاج الصيغ إلى محوّل من TeX إلى Word يُحمَّل عند أول استعمال؛ فإن تعذّر تحميله بقيت TeX مع تحذير `mathUnavailable`.
-- **`formattedDocx(options)`** تأخذ `docs`، أي `VDTDocument` لكل فصل بترتيب `chapters` (سلسلة الطباعة التي يُرسم منها PDF)، و`resources` و`resourceBytes` و`rasterizeSvg` و`fonts` و`title` و`author` و`date` و`onWarning` نفسها. ويعدّ `onProgress(done, total)` الصفحات المكتوبة.
+- **`semanticDocx(options)`** تُرجع بايتات ملف `.docx` ‏(`Uint8Array`). وتأخذ `chapters` ‏(`{ id, title?, markdown }`) و`config` و`resources` مع `resourceBytes(fileId)` لبايتات صورها، و`rasterizeSvg(svg, width, height)` لصورة PNG التي يحتاجها Word بجانب SVG (ومن دونها يُستبعد SVG)، و`fonts` (خطة من `planWordFonts`)، و`title` و`author` و`date` (تاريخ ISO ثابت يجعل البايتات قابلة للتكرار)، و`onWarning` لما يصفّه Word على طريقته (`{ code, message, chapter? }`). وتحتاج الصيغ إلى محوّل من TeX إلى Word يُحمَّل عند أول استعمال؛ فإن تعذّر تحميله بقيت TeX مع تحذير `mathUnavailable`. ويختار `design` المظهر: `'book'` (الافتراضي) يصفّ النص بتصميم الكتاب بقدر ما يسمح Word، و`'plain'` يكتب المحتوى وحده، على صفحة A4 بعمود واحد وبخط Arial، بأنماط Word تسمّي كل جزء.
+- **`facsimileDocx(options)`** تأخذ `docs`، أي `VDTDocument` لكل فصل بترتيب `chapters` (سلسلة الطباعة التي يُرسم منها PDF)، و`resources` و`resourceBytes` و`rasterizeSvg` و`fonts` و`title` و`author` و`date` و`onWarning` نفسها. ويعدّ `onProgress(done, total)` الصفحات المكتوبة. وهي تكتب النسخة طبق الأصل من الصفحات: كل سطر في مربع نص ثابت كما يطبعه PDF، لمعاينة الإخراج في Word على سطح المكتب. و`formattedDocx` اسمها القديم، وهو باقٍ.
 - **`planWordFonts(faces, options)`** تحوّل خطوط الكتاب (`{ family, weight, style, files }`: ‏WOFF2 أو sfnt، بأي عدد من شرائح unicode-range) إلى خطوط TrueType الثابتة التي يضمّنها Word. وتقرأ `decompressWoff2` (التي يصدّرها `postext-pdf`) صيغة WOFF2؛ ويستبعد `usedText` و`fontStrings` الشرائح والخطوط التي لا يستعملها التصدير؛ ويُضاف `familySuffix` (افتراضيًا `' PTX'`) إلى كل عائلة مضمَّنة. وتسمّي `warnings` الخطوط المستبعدة (`restricted` و`cff` و`variable` و`missing` و`merge-failed`) والمضمَّنة للمعاينة والطباعة فقط (`preview-print`).
 - **`isExportedDocx(bytes)`** تقول هل يحمل الملف خريطة التصدير، ولا ترمي خطأ أبدًا. وتقرأ `readExportMap(files)` الخريطة نفسها من الأجزاء المفكوكة (`unzipSync` من fflate): ‏`exportId` و`variant` و`engine` والفصول مع بصماتها ونسخة النص المصدَّر.
 - **`applyDocxEdits(bytes, { chapters, resources })`** متزامنة. تُرجع كل الفصول بعد تطبيق التصحيحات (`chapters`)، ونسخًا عميقة من الموارد التي تغيّر تعليقها التوضيحي أو حاشيتها أو نصها البديل أو خلايا جدولها (`resources`)، و`edits` و`comments` و`variant` و`exportId` و`changed`. ولكل تعديل `chapter`، أو `resourceId` و`field` ‏(`caption` و`note` و`alt` و`cell:<الصف>:<العمود>`)، و`start` و`end` في النص الحالي، و`before` و`after`، و`kind` ‏(`text` و`format` و`paragraph` و`tracked`)، و`status` مع `reason`: ‏`applied`، أو `conflict` ‏(`changed-since-export` و`target-missing` و`no-snapshot` و`overlap`)، أو `rejected` ‏(`generated` و`format-crosses-markup` و`format-partial` و`bookmarks-lost` و`resource-removed`). ولكل تعليق `author` و`text` وموضعه (`start` قيمته -1 لتعليق لا يقع على نص مصدَّر). والملف الذي ليس `.docx` مصدَّرًا يرمي `DocxReadError`. ويجب أن تكون معرّفات الفصول هي معرّفات التصدير: فالتعديل في فصل مجهول يُبلَّغ عنه ولا يُطبَّق.
@@ -732,7 +735,7 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 
 ### حزم InDesign (`postext/idml`)
 
-يكتب المسار الفرعي `postext/idml` الصفحاتِ بعد إخراجها حزمةَ InDesign Markup ‏(`.idml`)، ليُتمّ مصمّمٌ الكتابَ في InDesign. ويقوم، مثل مستند Word المنسَّق، على قائمة العرض الخاصة بالصفحة، دون DOM. وعليه يقوم الأمر `idml` في سطر الأوامر (انظر [سطر الأوامر › idml](/ar/docs/command-line#idml)). منذ postext 1.71.
+يكتب المسار الفرعي `postext/idml` الصفحاتِ بعد إخراجها حزمةَ InDesign Markup ‏(`.idml`)، ليُتمّ مصمّمٌ الكتابَ في InDesign. ويقوم، مثل النسخة طبق الأصل من الصفحات لـWord، على قائمة العرض الخاصة بالصفحة، دون DOM. وعليه يقوم الأمر `idml` في سطر الأوامر (انظر [سطر الأوامر › idml](/ar/docs/command-line#idml)). منذ postext 1.71.
 
 ```ts
 import { buildDocument } from 'postext';

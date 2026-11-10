@@ -415,7 +415,7 @@ export function libraryTools(host: SandboxToolHost): WebMcpTool[] {
   const exportBook: WebMcpTool = {
     name: 'sandbox_export',
     title: 'Sandbox: export the book',
-    description: "Write the book on screen to a file: pdf (the chapter on screen or the whole book, print-ready), epub (reflowable, or fixed to the printed pages), postext (the whole project in one archive, to open again or hand to the postext command line), docx (Word: semantic, an editable document in Word styles, or formatted, the printed pages; edited in Word, it comes back through sandbox_apply_word_edits), markdown (the chapter's source) or config (the design settings as JSON). A postext archive can also be written of a book that is not on screen (book): a project as it was last saved, or a sample as it ships, in one of its languages. The file is downloaded by the reader's browser, or — pdf, epub and docx — handed back base64-encoded with deliver: \"data\". Exporting a pdf or an epub shows that viewer tab.",
+    description: "Write the book on screen to a file: pdf (the chapter on screen or the whole book, print-ready), epub (reflowable, or fixed to the printed pages), postext (the whole project in one archive, to open again or hand to the postext command line), docx (Word or Google Docs, editable flowing text: semantic, content only in plain styles, or formatted, the same text with the book's design; edited there, it comes back through sandbox_apply_word_edits), markdown (the chapter's source) or config (the design settings as JSON). A postext archive can also be written of a book that is not on screen (book): a project as it was last saved, or a sample as it ships, in one of its languages. The file is downloaded by the reader's browser, or — pdf, epub and docx — handed back base64-encoded with deliver: \"data\". Exporting a pdf or an epub shows that viewer tab.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -499,7 +499,7 @@ export function libraryTools(host: SandboxToolHost): WebMcpTool[] {
           };
         }
         case 'docx':
-          return exportWordFile(host, args, bookName(), MAX_DATA_BYTES, signal);
+          return exportWordFile(host, args, bookName(), MAX_DATA_BYTES);
         case 'markdown': {
           const { chapter } = chapterOf(s, args.chapter);
           const file = `${slugify(chapter.title) || 'document'}.md`;

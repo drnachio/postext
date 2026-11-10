@@ -562,9 +562,9 @@ A resposta avisa quando um balão cai sobre um rosto ou sai do quadro. Veja
 - **Exportar.** `sandbox_export` gera `pdf`, `epub`, `postext`, `docx`,
   `markdown` ou `config`. Por padrão o navegador baixa o arquivo; com
   `deliver: "data"`, um PDF, um EPUB ou um arquivo do Word volta para o agente
-  codificado em base64. Para `docx`, `variant` escolhe `semantic` (o padrão:
-  títulos, listas, notas e tabelas próprios do Word) ou `formatted` (as páginas
-  como o PDF as imprime, com as fontes incorporadas):
+  codificado em base64. Para `docx`, `variant` escolhe `formatted` (o padrão:
+  texto editável com o projeto gráfico do livro e as fontes incorporadas) ou
+  `semantic` (só o conteúdo, em estilos simples do Word):
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }

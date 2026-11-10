@@ -28,12 +28,22 @@ function edited(b64: string, edits: [string, string][]): { base64: string; fileN
 }
 
 describe('the Word round trip as tools (#1397)', () => {
-  it('exports the semantic document as data and finds no change in it untouched', async () => {
+  it('exports the formatted document unless the semantic one is asked for', async () => {
     const { call } = harness();
     const out = await call('sandbox_export', { format: 'docx', deliver: 'data' });
+    expect(out).toMatchObject({ ok: true, format: 'docx', variant: 'formatted', scope: 'book', file: 'Guide.docx' });
+    // Flowing text in the book's design: nothing sits in a text box.
+    expect(strFromU8(unzipSync(fromBase64(out.base64))['word/document.xml']!)).not.toContain('<w:txbxContent>');
+    const dry = await call('sandbox_apply_word_edits', { file: { base64: out.base64, fileName: 'Guide.docx' }, dryRun: true });
+    expect(dry).toMatchObject({ ok: true, dryRun: true, counts: { applied: 0, conflict: 0, rejected: 0 }, edits: [] });
+  });
+
+  it('exports the semantic document as data and finds no change in it untouched', async () => {
+    const { call } = harness();
+    const out = await call('sandbox_export', { format: 'docx', variant: 'semantic', deliver: 'data' });
     expect(out).toMatchObject({ ok: true, format: 'docx', variant: 'semantic', scope: 'book', file: 'Guide.docx' });
     expect(out.base64.length).toBeGreaterThan(1000);
-    const chapter = await call('sandbox_export', { format: 'docx', scope: 'chapter', deliver: 'data' });
+    const chapter = await call('sandbox_export', { format: 'docx', variant: 'semantic', scope: 'chapter', deliver: 'data' });
     expect(chapter.file).toBe('Guide - Opening.docx');
     const dry = await call('sandbox_apply_word_edits', { file: { base64: out.base64, fileName: 'Guide.docx' }, dryRun: true });
     expect(dry).toMatchObject({ ok: true, dryRun: true, variant: 'semantic', counts: { applied: 0, conflict: 0, rejected: 0 }, edits: [] });
@@ -80,6 +90,23 @@ describe('the Word round trip as tools (#1397)', () => {
     expect(dry.edits[0]).toMatchObject({ status: 'conflict', chapter: 1, reason: 'changed-since-export' });
     expect((await call('sandbox_apply_word_edits', { file, wait: false })).changed).toBe(false);
     expect(get().markdown).toContain('The closing words of the opening.');
+  });
+
+  it('applies a file that came back without its export map, as Google Docs saves it (#1458)', async () => {
+    const { call, get } = harness();
+    const out = await call('sandbox_export', { format: 'docx', variant: 'semantic', deliver: 'data' });
+    const files = unzipSync(Uint8Array.from(atob(out.base64), (c) => c.charCodeAt(0)));
+    for (const path of Object.keys(files)) if (path.startsWith('customXml/')) delete files[path];
+    files['word/document.xml'] = strToU8(strFromU8(files['word/document.xml']!).replace('The last words of the opening.', 'The final words of the opening.'));
+    const file = { base64: base64(zipSync(files)), fileName: 'Guide.docx' };
+    const dry = await call('sandbox_apply_word_edits', { file, dryRun: true });
+    expect(dry.counts).toEqual({ applied: 1, conflict: 0, rejected: 0 });
+    expect(dry.notes).toMatchObject([{ code: 'map-rebuilt' }]);
+    // The import tool sends it here too.
+    expect((await call('sandbox_import_word', { file, dryRun: true })).error).toMatch(/sandbox_apply_word_edits/);
+    const done = await call('sandbox_apply_word_edits', { file, wait: false });
+    expect(done).toMatchObject({ ok: true, applied: true, changed: true });
+    expect(get().markdown).toContain('The final words of the opening.');
   });
 
   it('sends each kind of file to its own tool', async () => {

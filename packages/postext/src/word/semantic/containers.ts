@@ -107,7 +107,9 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
     const body = renderNodes(ctx, node.children, { ...env, paraStyle: style ?? env.paraStyle });
     return blockSdt(ctx.nextSdtId(), `ptx:paragraphs${attrs.style ? `:${attrs.style}` : ''}`, attrsLabel(attrs), body || '<w:p/>');
   }
-  if (name === 'columns' && env.box) return boxColumns(ctx, node, env);
+  // Side by side in the book's design; one under the other in the plain
+  // one, which is a single column (the same content control either way).
+  if (name === 'columns' && env.box && !ctx.plain) return boxColumns(ctx, node, env);
   return blockSdt(ctx.nextSdtId(), `ptx:${name}`, attrsLabel(attrs), renderNodes(ctx, node.children, env) || '<w:p/>');
 }
 
@@ -190,6 +192,9 @@ function boxHeight(cell: string, lineTw: number): number {
  *  a page: Word clips a row it may not split, where the engine splits a
  *  keep-together box taller than its column. */
 function keepBox(ctx: WriterContext, cell: string, keepTogether: boolean): boolean {
+  // The plain design keeps nothing of the print's page: a box breaks
+  // where the page ends, like any text.
+  if (ctx.plain) return false;
   const lineTw = Math.max(200, twips(ctx.units, ctx.resolved.bodyText.lineHeight, ctx.styles.bodyPx));
   const geo = pageGeometry(ctx.resolved, ctx.units);
   const page = geo.heightTw - geo.margins.top - geo.margins.bottom;
