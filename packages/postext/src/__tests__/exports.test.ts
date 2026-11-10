@@ -93,6 +93,8 @@ describe("package exports", () => {
       "renderToHtmlIndexed",
       "anchoredResourceIds",
       "HTML_TEXT_RESET",
+      "tintHex",
+      "tintFilterElement",
       "renderComicHtml",
       "comicPanelSvg",
       "dimensionToPx",
