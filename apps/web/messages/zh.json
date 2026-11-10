@@ -3521,6 +3521,7 @@
     "tableEditorAlignMiddle": "垂直居中",
     "tableEditorAlignBottom": "底端对齐",
     "tableEditorPasteAsTable": "粘贴为表（TSV/CSV）",
+    "tableEditorTranspose": "转置：互换行与列",
     "tableEditorCellAria": "第__row__行第__col__列单元格",
     "tableEditorColumnWidths": "列宽",
     "tableEditorColumnWidthsHint": "相对权重，每列一个：2, 1, 1表示第一列占一半宽度。留空则等宽。",

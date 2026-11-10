@@ -2883,6 +2883,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     tableEditorAlignMiddle: t("tableEditorAlignMiddle"),
     tableEditorAlignBottom: t("tableEditorAlignBottom"),
     tableEditorPasteAsTable: t("tableEditorPasteAsTable"),
+    tableEditorTranspose: t("tableEditorTranspose"),
     tableEditorCellAria: t("tableEditorCellAria"),
     tableEditorColumnWidths: t("tableEditorColumnWidths"),
     tableEditorColumnWidthsHint: t("tableEditorColumnWidthsHint"),

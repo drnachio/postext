@@ -3521,6 +3521,7 @@
     "tableEditorAlignMiddle": "توسيط عمودي",
     "tableEditorAlignBottom": "محاذاة إلى الأسفل",
     "tableEditorPasteAsTable": "لصق كجدول (TSV/CSV)",
+    "tableEditorTranspose": "تبديل الصفوف والأعمدة",
     "tableEditorCellAria": "الخلية في الصف __row__، العمود __col__",
     "tableEditorColumnWidths": "عروض الأعمدة",
     "tableEditorColumnWidthsHint": "أوزان نسبية، وزن لكل عمود — القيم 2، 1، 1 تعطي العمود الأول نصف العرض. الحقل الفارغ = عروض متساوية.",

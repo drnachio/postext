@@ -3521,6 +3521,7 @@
     "tableEditorAlignMiddle": "Mittig ausrichten",
     "tableEditorAlignBottom": "Unten ausrichten",
     "tableEditorPasteAsTable": "Als Tabelle einfügen (TSV/CSV)",
+    "tableEditorTranspose": "Transponieren: Zeilen und Spalten tauschen",
     "tableEditorCellAria": "Zelle Zeile __row__, Spalte __col__",
     "tableEditorColumnWidths": "Spaltenbreiten",
     "tableEditorColumnWidthsHint": "Relative Gewichte, eines je Spalte – 2, 1, 1 gibt der ersten Spalte die halbe Breite. Leer = gleiche Breiten.",

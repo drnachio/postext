@@ -3126,6 +3126,7 @@ export interface SandboxLabels {
   tableEditorAlignMiddle: string;
   tableEditorAlignBottom: string;
   tableEditorPasteAsTable: string;
+  tableEditorTranspose: string;
   tableEditorCellAria: string;
   tableEditorColumnWidths: string;
   tableEditorColumnWidthsHint: string;

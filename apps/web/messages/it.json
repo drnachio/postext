@@ -3521,6 +3521,7 @@
     "tableEditorAlignMiddle": "Allinea al centro verticale",
     "tableEditorAlignBottom": "Allinea in basso",
     "tableEditorPasteAsTable": "Incolla come tabella (TSV/CSV)",
+    "tableEditorTranspose": "Trasponi: scambia righe e colonne",
     "tableEditorCellAria": "Cella riga __row__, colonna __col__",
     "tableEditorColumnWidths": "Larghezze delle colonne",
     "tableEditorColumnWidthsHint": "Pesi relativi, uno per colonna: 2, 1, 1 dà alla prima colonna metà della larghezza. Vuoto = larghezze uguali.",

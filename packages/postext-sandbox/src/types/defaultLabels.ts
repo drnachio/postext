@@ -2902,6 +2902,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   tableEditorAlignMiddle: "Align middle",
   tableEditorAlignBottom: "Align bottom",
   tableEditorPasteAsTable: "Paste as table (TSV/CSV)",
+  tableEditorTranspose: "Transpose: swap rows and columns",
   tableEditorCellAria: "Cell row __row__, column __col__",
   tableEditorColumnWidths: 'Column widths',
   tableEditorColumnWidthsHint: 'Relative weights, one per column — 2, 1, 1 gives the first column half the width. Empty = equal widths.',

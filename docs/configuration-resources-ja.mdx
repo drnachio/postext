@@ -562,6 +562,8 @@ const resource: Resource = {
 
 `TableModel`は行優先の格子で、各セルは格子内の位置によって配置されます。`rows[r][c]`は列`c`に置かれます。そのため、結合したセルは自分が覆うセルを格子に残し、覆われた各セルには主セルを指す`hiddenBy`が付きます。覆われたセルを省くHTMLの表とは異なります。`postext`が公開しているモデルのヘルパーはこの形を保ちます。どれも新しいモデルを返す純粋関数で、`mergeCells(model, { start, end })`と`unmergeCell(model, at)`、`addRow`、`addColumn`、`removeRow`、`removeColumn`、`setCellContent`、`setCellImage`、`setCellBackground`、`setAlignment`があります。行と列の4つのヘルパーは結合を崩しません。結合したブロックの内側に追加した行や列はブロックを広げ、ブロックの前に追加したものはブロックを移動させ、ブロックから削除したものはブロックを縮めます。最初の行や列を失ったブロックは、新しい左上のセルに内容を保ちます。そして、すべての`hiddenBy`は引き続き主セルを指します。
 
+`transposeTable(model)`は行と列を入れ替えます（Sandboxの表エディターの⇄ボタン）。各セルは内容・画像・塗り・そろえとともに`rows[r][c]`から`rows[c][r]`へ移り、結合セルは範囲を入れ替えたうえでセルを保ち、見出し行は見出し列になり、先頭の見出しセルだけの列は`headerRowCount`になります。`columnWidths`は破棄されます。2回入れ替えると元の表に戻ります。
+
 `parseTSV(text, options?)`は、タブ区切りのテキスト、つまりスプレッドシートから貼り付けた範囲からモデルを作ります。行は改行で、セルはタブで分割し、短い行は格子が長方形になるように補います。`headerRows`は先頭の行を見出し行にします。そのセルには`isHeader`が、モデルには`headerRowCount`が付くため、ページをまたいで分割された表ではこれらの行が繰り返されます。
 
 ```ts

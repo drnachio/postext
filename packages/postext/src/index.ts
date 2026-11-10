@@ -78,7 +78,7 @@ export type { HyphenationRules } from './hyphenation/hyphenate.js';
 export { DOCUMENT_LANGUAGES, isCjkLanguage, isJapaneseLanguage, isUnhyphenatedLanguage, localeScript, chineseScriptOf, cjkRegionOf, stringsKeyOf, sameContentLocale, matchContentLocale, canonicalLocaleTag, renderLangOf, documentLanguageOf, shapingLanguageOf, shapingTagOf, stringsFor, directionOf, comicsLocaleDirection, defaultNumeralsFor } from './hyphenation/locale.js';
 export type { DocumentLanguage } from './hyphenation/locale.js';
 export { parseMarkdown } from './parse/index.js';
-export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setCellBackground, setAlignment, parseTSV, tableGridIssues } from './table/model.js';
+export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setCellBackground, setAlignment, parseTSV, tableGridIssues, transposeTable } from './table/model.js';
 export type { CellPos, CellRange, ParseTSVOptions, TableGridIssue } from './table/model.js';
 export { collectContentWarnings, formatWarning } from './pipeline/contentWarnings.js';
 export { collectHeadingDesignCuts } from './pipeline/sections/headingDesignCuts.js';

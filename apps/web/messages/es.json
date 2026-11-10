@@ -1104,6 +1104,7 @@
     "tableEditorAlignMiddle": "Centrar verticalmente",
     "tableEditorAlignBottom": "Alinear abajo",
     "tableEditorPasteAsTable": "Pegar como tabla (TSV/CSV)",
+    "tableEditorTranspose": "Transponer: intercambiar filas y columnas",
     "tableEditorCellAria": "Celda fila __row__, columna __col__",
     "tableEditorColumnWidths": "Anchos de columna",
     "tableEditorColumnWidthsHint": "Pesos relativos, uno por columna: con 2, 1, 1, la primera columna ocupa la mitad del ancho. Vacío = anchos iguales.",

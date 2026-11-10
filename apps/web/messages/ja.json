@@ -3521,6 +3521,7 @@
     "tableEditorAlignMiddle": "上下中央そろえ",
     "tableEditorAlignBottom": "下そろえ",
     "tableEditorPasteAsTable": "表として貼り付け（TSV/CSV）",
+    "tableEditorTranspose": "行と列を入れ替える",
     "tableEditorCellAria": "__row__行__col__列のセル",
     "tableEditorColumnWidths": "列幅",
     "tableEditorColumnWidthsHint": "列ごとの相対的な比率です。2, 1, 1なら第1列が全体の半分の幅になります。空欄の場合は均等な幅になります。",

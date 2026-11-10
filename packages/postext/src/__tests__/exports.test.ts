@@ -218,6 +218,7 @@ describe("package exports", () => {
       "setAlignment",
       "parseTSV",
       "tableGridIssues",
+      "transposeTable",
       "collectContentWarnings",
       "formatWarning",
       "collectHeadingDesignCuts",

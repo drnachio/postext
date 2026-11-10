@@ -3521,6 +3521,7 @@
     "tableEditorAlignMiddle": "Centrar verticalment",
     "tableEditorAlignBottom": "Alinear a baix",
     "tableEditorPasteAsTable": "Enganxar com a taula (TSV/CSV)",
+    "tableEditorTranspose": "Transposar: intercanviar files i columnes",
     "tableEditorCellAria": "Cel·la fila __row__, columna __col__",
     "tableEditorColumnWidths": "Amplades de columna",
     "tableEditorColumnWidthsHint": "Pesos relatius, un per columna: 2, 1, 1 dona a la primera columna la meitat de l'amplada. Buit = amplades iguals.",

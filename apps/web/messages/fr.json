@@ -3521,6 +3521,7 @@
     "tableEditorAlignMiddle": "Centrer verticalement",
     "tableEditorAlignBottom": "Aligner en bas",
     "tableEditorPasteAsTable": "Coller comme tableau (TSV/CSV)",
+    "tableEditorTranspose": "Transposer : échanger lignes et colonnes",
     "tableEditorCellAria": "Cellule ligne __row__, colonne __col__",
     "tableEditorColumnWidths": "Largeurs de colonne",
     "tableEditorColumnWidthsHint": "Poids relatifs, un par colonne : 2, 1, 1 donne la moitié de la largeur à la première colonne. Vide = largeurs égales.",

@@ -13,6 +13,7 @@ import {
   addColumn,
   addRow,
   mergeCells,
+  transposeTable,
   parseTSV,
   removeColumn,
   removeRow,
@@ -320,6 +321,12 @@ export function TableEditor({
     commit(setCellBackground(model, active, color));
   };
 
+  /** Rows become columns: the active cell follows its content. */
+  const handleTranspose = () => {
+    commit(transposeTable(model));
+    setActive((a) => ({ row: a.col, col: a.row }));
+  };
+
   const handlePasteTsv = async () => {
     let text = '';
     try {
@@ -437,6 +444,7 @@ export function TableEditor({
           onSetAlign={() => {}}
           onSetVerticalAlign={() => {}}
           onPasteTsv={handlePasteTsv}
+          onTranspose={() => {}}
           imageOptions={imageOptions}
           activeImageId={undefined}
           onSetImage={() => {}}
@@ -477,6 +485,7 @@ export function TableEditor({
         rtl={direction === 'rtl'}
         onSetVerticalAlign={handleSetVerticalAlign}
         onPasteTsv={handlePasteTsv}
+        onTranspose={handleTranspose}
         imageOptions={imageOptions}
         activeImageId={activeImage?.resourceId}
         onSetImage={handleSetImage}
