@@ -29,8 +29,10 @@
  * Underlined text (`++text++`, `VDTLineSegment.underline`) is drawn the
  * same way, under the words: where the face puts its underline (`post`
  * `underlinePosition` and `underlineThickness`), else 0.12 em under the
- * baseline and 0.05 em thick; on a vertical page and in Chinese and
- * Japanese text at the foot of the em box. Where it runs under a link and
+ * baseline and 0.05 em thick. In Chinese and Japanese text and on a
+ * vertical page it is drawn as a solid side line (傍線, `:sideline[…]`)
+ * in its default place: under the em box in horizontal text, on its right
+ * (over) on a vertical page, as JLReq sets 傍線. Where it runs under a link and
  * the document underlines its links (`links.style`), the piece under the
  * link is marked `underLink`: an output that draws the link's own line
  * leaves it out, so the two lines do not sit one on the other.
@@ -47,6 +49,7 @@ import { fontEm } from '../measure/vertical.js';
 import { STRIKE_AT, STRIKE_STROKE, UNDERLINE_AT, UNDERLINE_STROKE } from './strikeGeometry.js';
 import { strikeoutOf, underlineOf } from '../fonts/strikeout.js';
 import { styledLinkOf } from './linkUnderline.js';
+import { LINE_AT, STROKE } from './cjkMarks/geometry.js';
 
 /** Which line: through struck-through text or under underlined text. */
 type Rule = 'strike' | 'underline';
@@ -75,7 +78,13 @@ function strikeGeometry(seg: VDTLineSegment, font: string, vertical: boolean, ru
   const under = rule === 'underline';
   const face = under ? underlineOf(font) : strikeoutOf(font);
   const central = vertical || (seg.kind === 'text' && hasCJK(seg.text));
-  const position = central ? (under ? CENTRAL - 0.5 : CENTRAL) : face?.position ?? (under ? UNDERLINE_AT : STRIKE_AT);
+  // As a side line in its default place (`marks/cjkMarks/lineMarks.ts`):
+  // under the em box, or on its right on a vertical page.
+  if (central && under) {
+    const side = vertical ? -1 : 1;
+    return { y: -CENTRAL * em + side * (0.5 + LINE_AT) * em + (seg.baselineShift ?? 0), thickness: Math.max(0.5, STROKE * em) };
+  }
+  const position = central ? CENTRAL : face?.position ?? (under ? UNDERLINE_AT : STRIKE_AT);
   return { y: -position * em + (seg.baselineShift ?? 0), thickness: Math.max(0.5, (face?.size ?? (under ? UNDERLINE_STROKE : STRIKE_STROKE)) * em) };
 }
 

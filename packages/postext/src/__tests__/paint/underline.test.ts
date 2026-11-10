@@ -6,6 +6,8 @@ import { createMeasurementCache } from '../../measure/index.js';
 import { forgetFontCoverage, registerFontCoverage } from '../../fonts/glyphFallback.js';
 import { readUnderline, underlineOf } from '../../fonts/strikeout.js';
 import { STRIKE_AT, UNDERLINE_AT, UNDERLINE_STROKE } from '../../marks/strikeGeometry.js';
+import { CENTRAL } from '../../measure/cjk/cjkAnnotate.js';
+import { LINE_AT } from '../../marks/cjkMarks/geometry.js';
 import { renderToHtml } from '../../html-backend/html-backend.js';
 import { documentDisplayList } from '../../paint/displayList/index.js';
 import type { PostextConfig, VDTDocument, VDTLine, VDTLineMark } from '../../index.js';
@@ -127,5 +129,15 @@ describe('underline lines', () => {
     const plain = rules(firstLine(build(md)));
     expect(plain).toHaveLength(1);
     expect(plain[0]!.underLink).toBeUndefined();
+  });
+
+  it('sits as a side line in Chinese text: under the em box, on its right on a vertical page', () => {
+    const em = (doc: VDTDocument): number => parseFloat(/(\d*\.?\d+)px/.exec(doc.blocks[0]!.fontString)![1]!);
+    const markOf = (doc: VDTDocument): VDTLineMark => rules(doc.blocks.flatMap((b) => b.lines).find((l) => l.segments?.some((s) => s.underline))!)[0]!;
+    const flat = build('请++在每一页签名++，然后寄回。');
+    expect(markOf(flat).y).toBeCloseTo((-CENTRAL + 0.5 + LINE_AT) * em(flat), 3);
+    const tall = buildDocument({ markdown: '请++在每一页签名++，然后寄回。' }, { page: { width: pt(300), height: pt(420) }, layout: { writingMode: 'vertical-rl' }, locale: 'zh-Hans', bodyText: { fontSize: pt(12), lineHeight: pt(20) } }, createMeasurementCache());
+    expect(markOf(tall).y).toBeCloseTo((-CENTRAL - 0.5 - LINE_AT) * em(tall), 3);
+    expect(markOf(tall).y).toBeLessThan(0);
   });
 });
