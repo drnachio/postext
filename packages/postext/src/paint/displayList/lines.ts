@@ -166,6 +166,7 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
     if (seg.refResourceId !== undefined) run.refTarget = { id: seg.refResourceId, ...(seg.refAnchor ? { anchor: true } : {}) };
     if (seg.pageLink !== undefined) run.pageLink = seg.pageLink;
     if (seg.rtl) run.rtl = true;
+    if (seg.leader) run.leader = true;
     annotate(run, seg);
     if (seg.kind === 'space') {
       if (setting.spaceWidth !== undefined && !(composed && seg.autospace)) run.space = true;

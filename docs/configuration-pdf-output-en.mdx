@@ -320,6 +320,8 @@ Acrobat, Foxit, pdf.js (Firefox) and most viewers run these scripts. A print sta
 
 The canvas paints a number field the same way, so the preview matches the PDF: pass `renderPageToCanvas` (or `renderPage`, `renderToCanvas`) the same `forms` option as `renderToPdf`; the separators default from the document's `locale` (else its hyphenation language) in both. One rule writes the numbers everywhere, and postext exports it for other writers: `formNumberStyle(forms, lang)` resolves the options, `formatFieldNumber(value, format, style)` formats a value (undefined for text that is no number), and `numberFieldText(field, words, style)` gives what a painted number field shows. The display list carries the field on a chip run (`inline.field`, with the layout's `sizePx` and `padPx`).
 
+The IDML export writes the same fields as InDesign form fields (see [Programmatic usage › InDesign packages](/en/docs/configuration-programmatic-usage#indesign-packages-postextidml)).
+
 ### Links in the PDF
 
 The words of a Markdown link (see [Document format › Links](/en/docs/document-format-inline#links)) become URI link annotations, one per run of linked words on a line. Each covers the line box and has no border. In an accessible render, each run is a `Link` element whose `/Contents` is its text. Only absolute `http:`, `https:`, `mailto:`, `tel:` and `ftp:` targets are linked, because a relative URL has no base inside a PDF. Characters outside printable ASCII are percent-encoded. `:ref` citations and contents rows keep their links inside the document.

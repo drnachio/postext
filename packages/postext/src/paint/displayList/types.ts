@@ -57,6 +57,9 @@ export interface DisplayRun {
   refTarget?: { id: string; anchor?: boolean };
   /** Book page index the run links to (an index entry's page number). */
   pageLink?: number;
+  /** The leader before a tab stop (#622, a contents row's): its dots, or
+   *  the empty run a rule leader is drawn on. */
+  leader?: true;
   rtl?: boolean;
   /** Index of the run's first character in the line's `text`. */
   textStart: number;
@@ -191,7 +194,13 @@ export interface DisplayLine {
   vertical?: boolean;
 }
 
-export type DisplayItem =
+/** What every item may carry: the composed-page frame (`VDTFrame.id`) it
+ *  is set in, absent outside frames. */
+export interface DisplayItemCommon {
+  frame?: string;
+}
+
+export type DisplayItem = DisplayItemCommon & (
   | {
       kind: 'text';
       /** What the text is, for writers that style by role. */
@@ -206,6 +215,9 @@ export type DisplayItem =
       rotate?: number;
       /** Engine block kind, for diagnostics. */
       blockType?: string;
+      /** The paragraph style the block is set in (`VDTBlock.paragraphStyleId`),
+       *  for writers that carry a paragraph's tab stops and spacing. */
+      paragraphStyle?: string;
       /** Clip rectangle the backend applies (columns clip their blocks). */
       clip?: DisplayRect;
       /** A halo round the glyphs (a figure label on a busy picture, a
@@ -247,7 +259,8 @@ export type DisplayItem =
       /** Radii of a rounded frame (top left, top right, bottom right,
        *  bottom left), px: the fills are clipped to it and it is stroked. */
       frameRadii?: [number, number, number, number];
-    };
+    }
+);
 
 export interface DisplayPage {
   index: number;

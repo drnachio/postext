@@ -138,6 +138,19 @@ export const COMMANDS: CommandSpec[] = [
     run: () => import('./commands/docx'),
   },
   {
+    name: 'idml',
+    summary: 'The laid-out pages as an InDesign package (IDML)',
+    usage: 'postext idml <input…> [-o book.idml] [--images embed|link]',
+    description: 'The PDF\'s pages as an InDesign Markup package: one page per spread, rules, boxes, paths and pictures as page items, each composed frame\'s text as a text frame with its own story, callout styles as paragraph styles, authored CMYK colours as swatches. InDesign sets the text again: frames, styles and first baselines match, line breaks may differ.',
+    options: [
+      OUT,
+      { name: 'images', kind: 'string', arg: 'embed|link', help: 'Pictures inside the file (embed, default) or beside it in Links/ (link)' },
+    ],
+    examples: ['postext idml book/ -o book.idml'],
+    canvas: true,
+    run: () => import('./commands/idml'),
+  },
+  {
     name: 'import-docx',
     summary: 'Bring Word edits back into a book, or turn a Word document into one',
     usage: 'postext import-docx <file.docx> <book> [--dry-run]  |  postext import-docx <file.docx> [-o folder/ | -o book.postext]',
@@ -232,7 +245,7 @@ export const COMMANDS: CommandSpec[] = [
 ];
 
 /** Commands that read a book (and take BOOK_OPTIONS). */
-export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'pack', 'info', 'check', 'build']);
+export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'info', 'check', 'build']);
 
 export function findCommand(name: string): CommandSpec | undefined {
   return COMMANDS.find((c) => c.name === name);
