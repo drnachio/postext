@@ -6,7 +6,7 @@ export const metadata = {
   description: 'O postext-pdf a partir do código: instalação, a API, provedores de fontes no navegador e no Node, fontes CJK, bytes de recursos, texto vertical, workers e arquivos prontos para impressão',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '26 min',
+  readingTime: '28 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Esta página é para quem escreve código e quer um arquivo PDF. Mostra como instalar o pacote de PDF e transformar um livro diagramado em arquivo com poucas linhas. O pacote precisa dos arquivos das fontes; por isso, a página explica como entregá-los a ele, num navegador ou num servidor. Trata das fontes para chinês, japonês e coreano, das imagens, do texto escrito de cima para baixo e dos links. Termina com um exemplo completo e com arquivos prontos para a gráfica.",
@@ -458,6 +458,35 @@ print: {
   ],
 },
 ```
+
+#### Impressão a duas tintas
+
+`print.plates` diz em que chapas o trabalho é impresso, e não se imprime em nenhuma outra: um livro em preto e uma cor especial, em duas cores especiais ou só em preto. As chapas de quadricromia chamam-se `Cyan`, `Magenta`, `Yellow` e `Black`; uma chapa de cor especial é nomeada como o PDF a nomeia, ou com um nome ou um alias da tabela de tintas.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // As chapas. Vazio: todas, como sempre.
+  images?: string[];                              // As chapas das imagens: uma ou duas.
+  curves?: Record<string, Array<[number, number]>>; // A curva de uma chapa de imagem: [tom, tinta] em percentagem.
+}
+```
+
+- Uma cor de uma tinta que o trabalho imprime, ou uma cor CMYK cujos canais ele imprime, sai tal como está.
+- Qualquer outra cor é projetada: é impressa com a mistura de uma ou duas chapas que, através do perfil de saída, mais se lhe assemelha. Uma mistura de duas tintas é um espaço de cor `DeviceN` no PDF, e um cinza fica só em `Black`. O preto composto é descartado, a não ser que o trabalho imprima as quatro tintas de quadricromia.
+- As imagens saem em monotom, numa chapa, ou em duotom, em duas: o tom de cada pixel (a sua luminosidade) passa pela curva de cada chapa. `images` é por omissão `Black`, ou a primeira chapa se o trabalho não imprimir preto. A curva de um monotom é uma reta; um duotom põe a primeira chapa nas sombras e a segunda nos meios-tons. `curves` substitui qualquer uma delas.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+O preflight enumera as chapas do trabalho e bloqueia (crítico) uma cor especial ou uma cor CMYK do livro que o trabalho não imprime, porque ao projetá-la perde-se a cor que o designer escolheu. Avisa de uma chapa de cor especial que nenhuma cor nem nenhuma entrada da tabela de tintas define, e que então é simulada como preto. Os PDF inseridos mantêm as suas próprias tintas.
 
 ### Implementação de referência
 

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Cómo se usa postext-pdf desde el código: la instalación y la API; los proveedores de fuentes en el navegador y en Node; las fuentes CJK, los bytes de los recursos y el texto vertical, y los workers y los archivos listos para imprenta',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '26 min',
+  readingTime: '28 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Esta página es para quienes escriben código y quieren un archivo PDF. Enseña a instalar el paquete de PDF y a convertir un libro compuesto en un archivo con unas pocas líneas. El paquete necesita los archivos de las fuentes, así que la página explica cómo dárselos, en un navegador o en un servidor. Trata las fuentes para chino, japonés y coreano, las imágenes, el texto que va de arriba abajo y los enlaces. Termina con un ejemplo completo y con archivos listos para la imprenta.",
@@ -458,6 +458,35 @@ print: {
   ],
 },
 ```
+
+#### Impresión a dos tintas
+
+`print.plates` dice en qué planchas se imprime el trabajo, y no se imprime en ninguna otra: un libro en negro y una tinta plana, en dos tintas planas o solo en negro. Las planchas de cuatricromía se llaman `Cyan`, `Magenta`, `Yellow` y `Black`; una plancha de tinta plana se nombra como la nombra el PDF, o con un nombre o un alias de la tabla de tintas.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Las planchas. Vacío: todas, como siempre.
+  images?: string[];                              // Las planchas de las imágenes: una o dos.
+  curves?: Record<string, Array<[number, number]>>; // La curva de una plancha de imagen: [tono, tinta] en porcentaje.
+}
+```
+
+- Un color de una tinta que el trabajo imprime, o un color CMYK cuyos canales imprime, sale tal cual.
+- Cualquier otro color se proyecta: se imprime con la mezcla de una plancha o dos que, a través del perfil de salida, más se le parece. Una mezcla de dos tintas es un espacio de color `DeviceN` en el PDF, y un gris se queda solo en `Black`. El negro enriquecido se descarta salvo que el trabajo imprima las cuatro tintas de cuatricromía.
+- Las imágenes salen en monotono, en una plancha, o en duotono, en dos: el tono de cada píxel (su luminosidad) pasa por la curva de cada plancha. `images` es por defecto `Black`, o la primera plancha si el trabajo no imprime negro. La curva de un monotono es una recta; un duotono pone su primera plancha en las sombras y la segunda en los medios tonos. `curves` sustituye cualquiera de ellas.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+La comprobación previa enumera las planchas del trabajo y bloquea (crítico) una tinta plana o un color CMYK del libro que el trabajo no imprime, porque al proyectarlo se pierde el color que eligió el diseñador. Avisa de una plancha de tinta plana que ningún color ni ninguna entrada de la tabla de tintas define, y que entonces se simula como negro. Los PDF colocados conservan sus propias tintas.
 
 ### Implementación de referencia
 

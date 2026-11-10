@@ -214,6 +214,26 @@ describe('preflightDocument', () => {
     if (inks?.kind === 'spotInks') expect(inks.inks).toEqual(['PANTONE 185 C']);
   });
 
+  it('in a job on two plates, blocks an ink and a CMYK colour the job does not print', () => {
+    const box = (id: string, edge: string, color: unknown) => ({ kind: 'box', id, placement: { anchor: { to: 'container', edge }, size: { width: mm(40), height: mm(10) } }, style: { backgroundColor: color } }) as never;
+    const doc = buildDocument({ markdown: 'Text.' }, config({
+      bodyText: { color: { hex: '#1f3f99', model: 'spot', spot: { name: 'Azul corporativo', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+      header: {
+        elements: [
+          box('a', 'top-left', { hex: '#e4002b', model: 'spot', spot: { name: 'PANTONE 185 C', cmyk: { c: 0, m: 100, y: 80, k: 0 } } }),
+          box('b', 'top-right', { hex: '#00a0e0', model: 'cmyk', cmyk: { c: 80, m: 10, y: 0, k: 0 } }),
+          box('c', 'bottom-left', { hex: '#4d4d4d', model: 'cmyk', cmyk: { c: 0, m: 0, y: 0, k: 70 } }),
+        ],
+      },
+      print: { inks: [{ name: 'Azul corporativo', pdfName: 'PANTONE 286 C' }], plates: { inks: ['black', 'Azul corporativo', 'Oro'] } },
+    }));
+    const issues = preflightDocument(doc, { cmyk: true });
+    expect(issues.find((i) => i.kind === 'platesJob')).toMatchObject({ plates: ['Black', 'PANTONE 286 C', 'Oro'], images: ['Black'], severity: 'info' });
+    expect(issues.filter((i) => i.kind === 'offPlateInk')).toMatchObject([{ ink: 'PANTONE 185 C', severity: 'critical' }]);
+    expect(issues.filter((i) => i.kind === 'offPlateCmyk')).toMatchObject([{ color: '#00a0e0', channels: ['c', 'm'], severity: 'critical' }]);
+    expect(issues.filter((i) => i.kind === 'plateUndefined')).toMatchObject([{ plate: 'Oro' }]);
+  });
+
   it('does nothing when disabled', () => {
     const doc = buildDocument({ markdown: '::resource{id="pic"}', resources: [picture] }, config());
     expect(preflightDocument(doc, { print: resolvePrintConfig({ preflight: { enabled: false } }) })).toEqual([]);

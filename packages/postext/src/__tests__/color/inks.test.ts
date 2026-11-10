@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { inkEntry, inkNameProblem, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames } from '../../color/inks.js';
-import { resolvePrintConfig, resolvePrintInks, stripPrintDefaults } from '../../defaults/output/print.js';
+import { resolvePrintConfig, resolvePrintInks, resolvePrintPlates, stripPrintDefaults } from '../../defaults/output/print.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { authoredCmykColors, authoredSpotColors } from '../../color/authored.js';
 import type { ColorValue, PostextConfig } from '../../types.js';
@@ -122,5 +122,18 @@ describe('ink names', () => {
 
   it('groups names that differ only in case or spacing', () => {
     expect(similarInkNames(['PANTONE 185 C', 'Pantone  185 C', 'PANTONE 185C', 'Varnish'])).toEqual([['PANTONE 185 C', 'Pantone  185 C']]);
+  });
+});
+
+describe('resolvePrintPlates', () => {
+  it('spells the process plates as the PDF does, keeps each plate once and picks the picture plates among them', () => {
+    expect(resolvePrintPlates({ inks: [' black ', 'PANTONE 286 C', 'Black', ''] })).toEqual({ inks: ['Black', 'PANTONE 286 C'], images: ['Black'], curves: {} });
+    expect(resolvePrintPlates({ inks: ['PANTONE 286 C', 'Oro'], images: ['Oro', 'Cyan', 'PANTONE 286 C', 'Oro'] }).images).toEqual(['Oro', 'PANTONE 286 C']);
+    expect(resolvePrintPlates({ inks: ['PANTONE 286 C'] }).images).toEqual(['PANTONE 286 C']);
+    expect(resolvePrintPlates({ inks: [] })).toEqual({ inks: [], images: [], curves: {} });
+  });
+
+  it('sorts and clamps a curve, under the plate\'s PDF spelling', () => {
+    expect(resolvePrintPlates({ inks: ['Black'], curves: { black: [[100, 120], [0, -5], [50, 40]] } }).curves).toEqual({ Black: [[0, 0], [50, 40], [100, 100]] });
   });
 });

@@ -564,6 +564,7 @@ describe("package exports", () => {
       "resolvePrintBlackConfig",
       "resolvePrintPreflightConfig",
       "resolvePrintInks",
+      "resolvePrintPlates",
       "stripPrintDefaults",
       "profileInkLimit",
       "DEFAULT_CHECKS_CONFIG",
@@ -1008,6 +1009,10 @@ describe("package exports", () => {
       "spotsThroughInkTable",
       "createPrintPreview",
       "proofPixels",
+      "channelsOffPlates",
+      "jobPlates",
+      "plateOfSpot",
+      "processChannel",
     ]);
   });
 });

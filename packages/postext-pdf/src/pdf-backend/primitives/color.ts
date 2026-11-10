@@ -5,6 +5,7 @@ import { hexToRgb, colorAlpha, rgbToCmyk, rgbToGrayscale } from '../../colors.js
 import { type ColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
 import type { PageCtx } from '../primitives.js';
 import { spotStandIn } from '../../print/spot.js';
+import { mixColor, plateMix, type PlateTarget } from '../../print/plates.js';
 
 export function makeScale(dpi: number): number {
   return 72 / dpi;
@@ -49,10 +50,19 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
       [r, g, b] = overPaper(r, g, b, alpha);
       alpha = 1;
     }
-    const hex6 = hex.slice(0, 7).toLowerCase();
-    const spot = colorSpace.spots.get(hex6);
-    const exact = colorSpace.authored.get(hex6);
-    if (spot) {
+    const spot = colorSpace.spots.get(hex.slice(0, 7).toLowerCase());
+    const exact = colorSpace.authored.get(hex.slice(0, 7).toLowerCase());
+    if (colorSpace.plates) {
+      // On the job's plates only; flattened over the paper, a translucent
+      // ink colour is a lighter tint of the same inks.
+      const over = colorSpace.flattenTransparency ? colorAlpha(hex) : 1;
+      const target: PlateTarget = spot
+        ? { kind: 'spot', spot, tint: (spot.tint / 100) * over }
+        : exact
+          ? { kind: 'cmyk', cmyk: { c: exact.c * over, m: exact.m * over, y: exact.y * over, k: exact.k * over } }
+          : { kind: 'rgb', r, g, b };
+      color = { ...mixColor(plateMix(colorSpace.plates, target, colorSpace.transform, colorSpace.config.black.kOnlyNeutrals)) };
+    } else if (spot) {
       // On the ink's own plate; flattened over the paper, a translucent
       // spot colour is a lighter tint of the same ink.
       const t = (spot.tint / 100) * (colorSpace.flattenTransparency ? colorAlpha(hex) : 1);

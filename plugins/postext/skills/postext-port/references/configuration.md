@@ -2623,7 +2623,12 @@ as a change. Left out, the file is stamped with the time of the call.
   "inks": [                        // the ink table: spot inks as the printer gets them
     { "name": "Azul corporativo", "pdfName": "PANTONE 286 C", "aliases": ["Pantone 286C"] },
     { "name": "Varnish", "output": "process" }    // process: printed in CMYK from its alternate
-  ]                                // also "cmyk" (the alternate) and "overprint", over the colours' own
+  ],                               // also "cmyk" (the alternate) and "overprint", over the colours' own
+  "plates": {                      // two-ink printing: the only plates the job prints on (absent: all)
+    "inks": ["Black", "PANTONE 286 C"],      // Cyan/Magenta/Yellow/Black, or a spot plate by name/alias
+    "images": ["Black", "PANTONE 286 C"],    // pictures as a monotone (one) or duotone (two)
+    "curves": { "PANTONE 286 C": [[0, 0], [50, 35], [100, 70]] }   // [tone, ink] percent per picture plate
+  }
 }
 ```
 - A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output
@@ -2641,7 +2646,11 @@ as a change. Left out, the file is stamped with the time of the call.
   never counts), `inkLimit` (TAC over the limit), `safeZone` (text within `safeZone` of the trim; figure labels
   count), `nearTrim` (a box or picture ending within `bleedSnap` of the trim without bleeding), `spotInks` (info:
   the job's spot inks), `spotInkConflict` (one ink with two alternates), `spotInkName` (`All`/`None` or over 127
-  bytes), `spotInkSimilar` (names that differ only in case or spacing: merge them with `aliases`). Fix the critical ones.
+  bytes), `spotInkSimilar` (names that differ only in case or spacing: merge them with `aliases`), `platesJob` (info: the
+  job's plates), `offPlateInk` / `offPlateCmyk` (critical: a spot ink or CMYK colour the job does not print, projected
+  onto its plates), `plateUndefined` (a spot plate no colour or ink table defines). Fix the critical ones.
+- With `plates`, any colour off the job's plates prints as the closest mix of one plate or two (a `DeviceN` space
+  for two); greys stay on Black; rich black is dropped unless all four process inks print.
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
 `contrast` (postext ≥ 1.28; layout ignores it, out of the layout key) is the check that the text reads on its ground:

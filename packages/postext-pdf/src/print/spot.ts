@@ -23,10 +23,12 @@ export interface SpotPlate {
   overprint: boolean;
 }
 
-/** A spot colour as painted: its ink, and the tint (0..1). */
+/** A spot colour as painted: its ink, and the tint (0..1) — or, in a job
+ *  on a few plates (`print.plates`), a mix of several inks at a tint each,
+ *  painted in a DeviceN colour space. */
 export interface SpotPaint {
-  plate: SpotPlate;
-  tint: number;
+  plates: SpotPlate[];
+  tints: number[];
 }
 
 /** Codes stay below half the grid step, so a code added to one grid value
@@ -69,21 +71,44 @@ export function spotFallbackCounts(): ReadonlyMap<string, number> {
  * it, for the render's warning.
  */
 export function spotStandIn(spot: Required<SpotColor>, tint: number): Color {
-  const plate: SpotPlate = { name: spot.name, cmyk: spot.cmyk, overprint: spot.overprint };
-  const t = round4(Math.max(0, Math.min(1, tint)));
-  const key = `${plateKey(plate)}|${t}`;
+  return mixStandIn([{ name: spot.name, cmyk: spot.cmyk, overprint: spot.overprint }], [tint]);
+}
+
+/** The full-strength alternates of `plates` at `tints`, summed and
+ *  clipped: what a mix of inks stands for in process (0..1 a channel). */
+export function mixAlternate(plates: readonly SpotPlate[], tints: readonly number[]): [number, number, number, number] {
+  const out: [number, number, number, number] = [0, 0, 0, 0];
+  plates.forEach((p, i) => {
+    const t = tints[i] ?? 0;
+    out[0] += (p.cmyk.c / 100) * t;
+    out[1] += (p.cmyk.m / 100) * t;
+    out[2] += (p.cmyk.y / 100) * t;
+    out[3] += (p.cmyk.k / 100) * t;
+  });
+  return out.map((v) => round4(Math.min(1, v))) as [number, number, number, number];
+}
+
+/**
+ * The pdf-lib colour that stands for `plates` at `tints` (0..1 each): one
+ * ink is its Separation (see {@link spotStandIn}), several a DeviceN mix,
+ * which a job on a few plates paints its colours in. Past the codes, the
+ * mix prints in process through its alternates.
+ */
+export function mixStandIn(plates: readonly SpotPlate[], tints: readonly number[]): Color {
+  const ts = plates.map((_, i) => round4(Math.max(0, Math.min(1, tints[i] ?? 0))));
+  const key = plates.map((p, i) => `${plateKey(p)}|${ts[i]}`).join('+');
   const known = colorsByPaint.get(key);
   if (known) return known;
-  const [c, m, y, k4] = [plate.cmyk.c, plate.cmyk.m, plate.cmyk.y, plate.cmyk.k].map((v) => round4(Math.min(1, (v / 100) * t))) as [number, number, number, number];
+  const [c, m, y, k4] = mixAlternate(plates, ts);
   const code = colorsByPaint.size + 1;
   if (code > MAX_CODE) {
-    fallbacks.set(plate.name, (fallbacks.get(plate.name) ?? 0) + 1);
+    for (const p of plates) fallbacks.set(p.name, (fallbacks.get(p.name) ?? 0) + 1);
     return cmyk(c, m, y, k4);
   }
   const k = k4 >= 0.5 ? k4 - code * STEP : k4 + code * STEP;
   const color = cmyk(c, m, y, k);
   colorsByPaint.set(key, color);
-  paintsByKey.set(operandKey(c, m, y, k), { plate: { ...plate, cmyk: { ...plate.cmyk } }, tint: t });
+  paintsByKey.set(operandKey(c, m, y, k), { plates: plates.map((p) => ({ ...p, cmyk: { ...p.cmyk } })), tints: ts });
   return color;
 }
 
@@ -106,6 +131,12 @@ export function inkPdfName(name: string): PDFName {
   return PDFName.of(latin1);
 }
 
+/** The colour space of `plates` in `context`'s document: the Separation
+ *  of one ink, the DeviceN of several. */
+export function inkSpace(context: PDFContext, plates: readonly SpotPlate[]): PDFRef {
+  return plates.length === 1 ? separationSpace(context, plates[0]!) : deviceNSpace(context, plates);
+}
+
 /** The Separation colour space objects of each document, by plate. */
 const spacesByContext = new WeakMap<PDFContext, Map<string, PDFRef>>();
 
@@ -120,6 +151,45 @@ export function separationSpace(context: PDFContext, plate: SpotPlate): PDFRef {
     const { c, m, y, k } = plate.cmyk;
     const fn = context.obj({ FunctionType: 2, Domain: [0, 1], C0: [0, 0, 0, 0], C1: [c / 100, m / 100, y / 100, k / 100].map(round4), N: 1 });
     ref = context.register(context.obj([PDFName.of('Separation'), inkPdfName(plate.name), PDFName.of('DeviceCMYK'), fn]));
+    spaces.set(key, ref);
+  }
+  return ref;
+}
+
+/**
+ * The DeviceN colour space of several inks in `context`'s document, one
+ * object per set: its tint transform samples the corners of the tint cube
+ * — every ink at 0 or 1 — with each corner the sum of its inks' alternates,
+ * clipped, and interpolates between them. A process plate (`Black`) is
+ * named as such, and the printer prints it on its own plate.
+ */
+export function deviceNSpace(context: PDFContext, plates: readonly SpotPlate[]): PDFRef {
+  let spaces = spacesByContext.get(context);
+  if (!spaces) spacesByContext.set(context, (spaces = new Map()));
+  const key = `N:${plates.map(plateKey).join('+')}`;
+  let ref = spaces.get(key);
+  if (!ref) {
+    const n = plates.length;
+    const samples = new Uint8Array((1 << n) * 4 * 2);
+    for (let corner = 0; corner < 1 << n; corner++) {
+      // The first input varies fastest.
+      const tints = plates.map((_, i) => (corner >> i) & 1);
+      mixAlternate(plates, tints).forEach((v, ch) => {
+        const u = Math.round(v * 65535);
+        samples[(corner * 4 + ch) * 2] = u >> 8;
+        samples[(corner * 4 + ch) * 2 + 1] = u & 255;
+      });
+    }
+    const fn = context.register(
+      context.stream(samples, {
+        FunctionType: 0,
+        Domain: plates.flatMap(() => [0, 1]),
+        Range: [0, 1, 0, 1, 0, 1, 0, 1],
+        Size: plates.map(() => 2),
+        BitsPerSample: 16,
+      }),
+    );
+    ref = context.register(context.obj([PDFName.of('DeviceN'), plates.map((p) => inkPdfName(p.name)), PDFName.of('DeviceCMYK'), fn]));
     spaces.set(key, ref);
   }
   return ref;

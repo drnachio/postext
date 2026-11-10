@@ -4,10 +4,12 @@ import type {
   PrintBlackConfig,
   PrintConfig,
   PrintInk,
+  PrintPlatesConfig,
   PrintPreflightConfig,
   ResolvedPrintBlackConfig,
   ResolvedPrintConfig,
   ResolvedPrintInk,
+  ResolvedPrintPlatesConfig,
   ResolvedPrintPreflightConfig,
 } from '../../types.js';
 import { DEFAULT_OUTPUT_PROFILE_ID, outputProfileInfo } from '../../color/catalogue.js';
@@ -44,6 +46,7 @@ export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   black: DEFAULT_PRINT_BLACK_CONFIG,
   preflight: DEFAULT_PRINT_PREFLIGHT_CONFIG,
   inks: [],
+  plates: { inks: [], images: [], curves: {} },
 };
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v));
@@ -98,6 +101,41 @@ export function resolvePrintInks(partial?: PrintInk[]): ResolvedPrintInk[] {
   return out;
 }
 
+const PROCESS_PLATES = ['Cyan', 'Magenta', 'Yellow', 'Black'];
+
+/** The plates of a job with their names trimmed (a process plate in its
+ *  PDF spelling, `black` as `Black`), each once; the picture plates are
+ *  among them, `Black` or the first when none is given. */
+export function resolvePrintPlates(partial?: PrintPlatesConfig): ResolvedPrintPlatesConfig {
+  const names = (list: unknown): string[] => {
+    const out: string[] = [];
+    if (!Array.isArray(list)) return out;
+    for (const item of list) {
+      if (typeof item !== 'string' || !item.trim()) continue;
+      const name = item.trim();
+      const proc = PROCESS_PLATES.find((p) => p.toLowerCase() === name.toLowerCase());
+      const plate = proc ?? name;
+      if (!out.includes(plate)) out.push(plate);
+    }
+    return out;
+  };
+  const inks = names(partial?.inks);
+  if (inks.length === 0) return { inks: [], images: [], curves: {} };
+  let images = names(partial?.images).filter((n) => inks.includes(n)).slice(0, 2);
+  if (images.length === 0) images = [inks.includes('Black') ? 'Black' : inks[0]!];
+  const curves: Record<string, Array<[number, number]>> = {};
+  for (const [plate, points] of Object.entries(partial?.curves ?? {})) {
+    if (!Array.isArray(points)) continue;
+    const pts = points
+      .filter((p): p is [number, number] => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]))
+      .map(([x, y]) => [clampPct(x), clampPct(y)] as [number, number])
+      .sort((a, b) => a[0] - b[0]);
+    const name = names([plate])[0];
+    if (name && pts.length > 0) curves[name] = pts;
+  }
+  return { inks, images, curves };
+}
+
 /** The ink limit of the profile a config names (a custom profile's own,
  *  else the catalogue's), before any `inkLimit` override. */
 export function profileInkLimit(config?: PrintConfig): number {
@@ -124,6 +162,7 @@ export function resolvePrintConfig(partial?: PrintConfig): ResolvedPrintConfig {
     black: resolvePrintBlackConfig(partial?.black),
     preflight: resolvePrintPreflightConfig(partial?.preflight),
     inks: resolvePrintInks(partial?.inks),
+    plates: resolvePrintPlates(partial?.plates),
   };
   if (partial?.customProfile) resolved.customProfile = { ...partial.customProfile };
   return resolved;
@@ -173,5 +212,6 @@ export function stripPrintDefaults(cfg?: PrintConfig): PrintConfig | undefined {
   const preflight = stripSection(cfg.preflight, DEFAULT_PRINT_PREFLIGHT_CONFIG as unknown as Record<string, unknown>);
   if (preflight) result.preflight = preflight;
   if (cfg.inks && cfg.inks.length > 0) result.inks = cfg.inks.map((ink) => ({ ...ink }));
+  if (cfg.plates && (cfg.plates.inks?.length ?? 0) > 0) result.plates = structuredClone(cfg.plates);
   return Object.keys(result).length > 0 ? result : undefined;
 }

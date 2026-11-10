@@ -258,6 +258,32 @@ export interface ResolvedPrintInk {
   overprint?: boolean;
 }
 
+/** The plates a job prints on (`print.plates`): a two-ink (or one-ink)
+ *  book. Every colour is set on these plates only — a colour of another
+ *  ink is projected onto them, the closest mix of their tints — and
+ *  pictures print as monotones or duotones on `images`. */
+export interface PrintPlatesConfig {
+  /** The plates, as the PDF names them: `Cyan`, `Magenta`, `Yellow` and
+   *  `Black` for the process inks, a spot ink by its plate name (or a
+   *  name or alias the ink table gives it). Empty or absent: every
+   *  plate, as before. */
+  inks?: string[];
+  /** The plates pictures print on: one makes a monotone, two a duotone.
+   *  Defaults to `Black` when the job prints it, else to the first plate. */
+  images?: string[];
+  /** The tone curve of each picture plate, by plate name: points
+   *  `[tone, ink]` in percent, tone 0 the paper and 100 the darkest
+   *  shadow. A monotone defaults to a straight line; a duotone puts the
+   *  first plate on the shadows and the second on the middle tones. */
+  curves?: Record<string, Array<[number, number]>>;
+}
+
+export interface ResolvedPrintPlatesConfig {
+  inks: string[];
+  images: string[];
+  curves: Record<string, Array<[number, number]>>;
+}
+
 /** Print production: the PDF/X standard, the output profile CMYK is
  *  separated with, how black prints, and the preflight thresholds. Layout
  *  ignores it; postext-pdf and the preflight read it. */
@@ -285,6 +311,8 @@ export interface PrintConfig {
   /** The ink table: renames, merges and process conversions of the job's
    *  spot inks. An ink it does not list prints as its colours define it. */
   inks?: PrintInk[];
+  /** The plates the job prints on: two-ink printing. */
+  plates?: PrintPlatesConfig;
 }
 
 /** Print production with every default filled in. */
@@ -300,6 +328,7 @@ export interface ResolvedPrintConfig {
   black: ResolvedPrintBlackConfig;
   preflight: ResolvedPrintPreflightConfig;
   inks: ResolvedPrintInk[];
+  plates: ResolvedPrintPlatesConfig;
 }
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it

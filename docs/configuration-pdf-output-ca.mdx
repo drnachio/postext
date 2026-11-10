@@ -6,7 +6,7 @@ export const metadata = {
   description: "postext-pdf des del codi: instal·lació, l'API, els proveïdors de fonts al navegador i a Node, les fonts CJK, els bytes de recursos, el text vertical, els workers i els fitxers a punt per a impremta",
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '26 min',
+  readingTime: '28 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina és per a qui escriu codi i vol un fitxer PDF. Explica com instal·lar el paquet de PDF i com convertir un llibre compost en un fitxer amb unes quantes línies de codi. El paquet necessita els fitxers de les fonts, i la pàgina explica d'on els pot treure, en un navegador o en un servidor. Tracta les fonts per al xinès, el japonès i el coreà, les imatges, el text que va de dalt a baix i els enllaços. Acaba amb un exemple complet i amb fitxers a punt per a la impremta.",
@@ -458,6 +458,35 @@ print: {
   ],
 },
 ```
+
+#### Impressió a dues tintes
+
+`print.plates` diu en quines planxes s’imprimeix el treball, i no s’imprimeix en cap altra: un llibre en negre i una tinta plana, en dues tintes planes o només en negre. Les planxes de quadricromia es diuen `Cyan`, `Magenta`, `Yellow` i `Black`; una planxa de tinta plana s’anomena com l’anomena el PDF, o amb un nom o un àlies de la taula de tintes.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Les planxes. Buit: totes, com sempre.
+  images?: string[];                              // Les planxes de les imatges: una o dues.
+  curves?: Record<string, Array<[number, number]>>; // La corba d'una planxa d'imatge: [to, tinta] en percentatge.
+}
+```
+
+- Un color d’una tinta que el treball imprimeix, o un color CMYK els canals del qual imprimeix, surt tal com és.
+- Qualsevol altre color es projecta: s’imprimeix amb la barreja d’una planxa o dues que, a través del perfil de sortida, més s’hi assembla. Una barreja de dues tintes és un espai de color `DeviceN` al PDF, i un gris es queda només a `Black`. El negre enriquit es descarta tret que el treball imprimeixi les quatre tintes de quadricromia.
+- Les imatges surten en monotò, en una planxa, o en duotò, en dues: el to de cada píxel (la seva lluminositat) passa per la corba de cada planxa. `images` és per defecte `Black`, o la primera planxa si el treball no imprimeix negre. La corba d’un monotò és una recta; un duotò posa la primera planxa a les ombres i la segona als tons mitjans. `curves` substitueix qualsevol de les dues.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+El preflight enumera les planxes del treball i bloqueja (crític) una tinta plana o un color CMYK del llibre que el treball no imprimeix, perquè en projectar-lo es perd el color que va triar el dissenyador. Avisa d’una planxa de tinta plana que cap color ni cap entrada de la taula de tintes no defineix, i que llavors es simula com a negre. Els PDF col·locats conserven les seves pròpies tintes.
 
 ### Implementació de referència
 

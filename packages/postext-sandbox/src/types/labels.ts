@@ -692,6 +692,14 @@ export interface SandboxLabels {
   preflightSpotInkNameLongDetail: string;
   preflightSpotInkSimilar: string;
   preflightSpotInkSimilarDetail: string;
+  preflightPlatesJob: string;
+  preflightPlatesJobDetail: string;
+  preflightOffPlateInk: string;
+  preflightOffPlateInkDetail: string;
+  preflightOffPlateCmyk: string;
+  preflightOffPlateCmykDetail: string;
+  preflightPlateUndefined: string;
+  preflightPlateUndefinedDetail: string;
   preflightRichBlackRecipe: string;
   preflightSafeZone: string;
   preflightSafeZoneDetail: string;

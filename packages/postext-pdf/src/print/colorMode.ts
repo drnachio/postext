@@ -18,6 +18,7 @@ import {
   type ResolvedPrintConfig,
   type SpotColor,
 } from 'postext';
+import { platePlan, type PlatePlan } from './plates.js';
 
 export interface PrintColorMode {
   kind: 'print';
@@ -39,6 +40,9 @@ export interface PrintColorMode {
   /** Spot colours, by screen hex (`#rrggbb`): painted on their ink's
    *  own plate (see `spot.ts`). */
   spots: ReadonlyMap<string, Required<SpotColor>>;
+  /** A job on a few plates (`print.plates`): every colour and picture is
+   *  set on them (see `plates.ts`). */
+  plates?: PlatePlan;
 }
 
 export type ColorMode = PdfColorSpace | PrintColorMode;
@@ -73,9 +77,10 @@ export function createPrintColorMode(
   // The ink table renames, merges and sends inks to process.
   if (config.inks.length > 0) ({ spots, authored } = spotsThroughInkTable(spots, authored, config.inks));
   spots = onePlatePerInk(spots);
+  const plates = platePlan(config, spots.values());
   return {
     kind: 'print',
-    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}`,
+    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}${plates ? `:plates=${plates.key}` : ''}`,
     standard: config.standard,
     profile,
     transform,
@@ -85,6 +90,7 @@ export function createPrintColorMode(
     convertImages: config.standard === 'pdfx1a' || config.convertImages,
     authored,
     spots,
+    ...(plates ? { plates } : {}),
   };
 }
 

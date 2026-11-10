@@ -6,7 +6,7 @@ export const metadata = {
   description: 'postext-pdf from code: installation, the API, font providers in the browser and in Node, CJK fonts, resource bytes, vertical text, workers and print-ready files',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '24 min',
+  readingTime: '26 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "This page is for people who write code and want a PDF file. It shows how to install the PDF package and turn a laid-out book into a file in a few lines. The package needs the font files, so the page explains how to give them to it, in a browser or on a server. It covers fonts for Chinese, Japanese and Korean, pictures, text set from top to bottom and links. It ends with a complete example and with files ready for a printer.",
@@ -458,6 +458,35 @@ print: {
   ],
 },
 ```
+
+#### Two-ink printing
+
+`print.plates` names the plates the job prints on, and nothing else is printed: a book in black and one spot ink, in two spot inks, or in black alone. The process plates are `Cyan`, `Magenta`, `Yellow` and `Black`; a spot plate is named as the PDF names it, or by a name or alias of the ink table.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // The plates. Empty: every plate, as usual.
+  images?: string[];                              // The plates pictures print on: one or two.
+  curves?: Record<string, Array<[number, number]>>; // A picture plate's curve: [tone, ink] in percent.
+}
+```
+
+- A colour of an ink the job prints, or a CMYK colour whose channels it prints, is set as it is.
+- Any other colour is projected: it prints as the mix of one plate or two whose appearance through the output profile comes closest to it. A mix of two inks is a `DeviceN` colour space in the PDF, and a grey stays on `Black` alone. Rich black is dropped unless the job prints all four process inks.
+- Pictures print as a monotone on one plate, or a duotone on two: the tone of each pixel (its lightness) runs through each plate's curve. `images` defaults to `Black`, or to the first plate when the job does not print black. A monotone's curve is a straight line; a duotone puts its first plate on the shadows and its second on the middle tones. `curves` replaces either.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+The preflight lists the job's plates and blocks (critical) a spot ink or a CMYK colour of the book that the job does not print, since projecting it loses the colour the designer chose. It warns about a spot plate that no colour and no ink table entry defines, which then proofs as black. Placed PDFs keep their own inks.
 
 ### Reference implementation
 

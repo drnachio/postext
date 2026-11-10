@@ -278,6 +278,7 @@ const PANEL_NOTED = [
   [/^ComicsConfig\.(balloonStyles|panelStyles)$/, "comics sections, setComicsField(raw, '…')"],
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],
   [/^(PrintConfig\.inks|PrintInk\.)/, 'ink table: written in the configuration; a colour gets its ink in the colour picker\'s spot tab'],
+  [/^(PrintConfig\.plates|PrintPlatesConfig\.)/, 'two-ink printing: written in the configuration, like the ink table'],
 ];
 const rows = fields.map((f) => ({
   key: `${f.owner}.${f.field}`,

@@ -542,6 +542,7 @@ interface PrintConfig {
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
   inks?: PrintInk[];                       // A tabela de tintas: nomes, aliases, quadricromia.
+  plates?: PrintPlatesConfig;              // As chapas do trabalho: impressão a duas tintas.
 }
 
 interface CustomOutputProfile {

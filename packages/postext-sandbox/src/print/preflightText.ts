@@ -4,6 +4,9 @@ import type { SandboxLabels } from '../types/index.js';
 import type { PreflightCheck } from '../warnings/types.js';
 import { fill } from './fillTokens.js';
 
+/** Process channels as the PDF names their plates. */
+const PLATE_NAMES: Record<string, string> = { c: 'Cyan', m: 'Magenta', y: 'Yellow', k: 'Black' };
+
 export function preflightTitle(check: PreflightCheck, labels: SandboxLabels): string {
   switch (check.kind) {
     case 'lowImageResolution': return labels.preflightLowImageResolution;
@@ -16,6 +19,10 @@ export function preflightTitle(check: PreflightCheck, labels: SandboxLabels): st
     case 'spotInkConflict': return labels.preflightSpotInkConflict;
     case 'spotInkName': return labels.preflightSpotInkName;
     case 'spotInkSimilar': return labels.preflightSpotInkSimilar;
+    case 'platesJob': return labels.preflightPlatesJob;
+    case 'offPlateInk': return labels.preflightOffPlateInk;
+    case 'offPlateCmyk': return labels.preflightOffPlateCmyk;
+    case 'plateUndefined': return labels.preflightPlateUndefined;
     case 'safeZone': return labels.preflightSafeZone;
     case 'nearTrim': return labels.preflightNearTrim;
     case 'masterFonts': return labels.preflightMasterFonts;
@@ -62,6 +69,14 @@ export function preflightDetail(check: PreflightCheck, labels: SandboxLabels): s
       return fill(check.problem === 'reserved' ? labels.preflightSpotInkNameReservedDetail : labels.preflightSpotInkNameLongDetail, { ink: check.ink });
     case 'spotInkSimilar':
       return fill(labels.preflightSpotInkSimilarDetail, { inks: check.inks.map((i) => `“${i}”`).join(', ') });
+    case 'platesJob':
+      return fill(labels.preflightPlatesJobDetail, { plates: check.plates.map((i) => `“${i}”`).join(', '), images: check.images.map((i) => `“${i}”`).join(', ') });
+    case 'offPlateInk':
+      return fill(labels.preflightOffPlateInkDetail, { ink: check.ink });
+    case 'offPlateCmyk':
+      return fill(labels.preflightOffPlateCmykDetail, { color: check.color, channels: check.channels.map((c) => PLATE_NAMES[c] ?? c).join(', ') });
+    case 'plateUndefined':
+      return fill(labels.preflightPlateUndefinedDetail, { plate: check.plate });
     case 'safeZone':
       return fill(labels.preflightSafeZoneDetail, { distance: check.distanceMm, zone: check.safeZoneMm, text: check.text });
     case 'nearTrim':

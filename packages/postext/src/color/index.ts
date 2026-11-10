@@ -43,3 +43,4 @@ export { srgbProfileBytes } from './srgbProfile.js';
 export { authoredCmykColors, authoredSpotColors, normalizeSpotColor, spotColorCmyk, spotInks, type SpotInk } from './authored.js';
 export { inkEntry, inkKey, inkNameProblem, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames, spotsThroughInkTable, type InkNameProblem } from './inks.js';
 export { createPrintPreview, proofPixels, type PrintPreview, type PrintPreviewOptions } from './softProof.js';
+export { channelsOffPlates, jobPlates, plateOfSpot, processChannel, type JobPlate, type ProcessChannel } from './plates.js';

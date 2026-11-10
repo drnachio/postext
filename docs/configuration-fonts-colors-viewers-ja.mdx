@@ -542,6 +542,7 @@ interface PrintConfig {
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
   inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
 }
 
 interface CustomOutputProfile {
