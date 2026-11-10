@@ -88,6 +88,47 @@ describe('a file an editor saved again', () => {
   });
 });
 
+describe('a file imported a second time', () => {
+  const MD2 = 'Este libro es su propia demostración, y lo dice.\n\n## Cómo leer este libro\n\nOtro párrafo que nadie toca.\n';
+
+  it('brings nothing when the book already holds its edits', async () => {
+    const e = await exportDocx(MD2);
+    const bytes = edited(e, {
+      'word/document.xml': (x) => retype(e, 'Cómo leer este libro', 'Cómo leer este manual')(x.replace('demostración', 'prueba')),
+    });
+    const first = back(bytes, MD2);
+    expect(first.edits.map((x) => x.status)).toEqual(['applied', 'applied']);
+    const now = first.chapters[0]!.markdown;
+    expect(now).toContain('## Cómo leer este manual');
+    const again = back(bytes, now);
+    expect(again.edits).toEqual([]);
+    expect(again.chapters[0]!.markdown).toBe(now);
+  });
+
+  it('still reports a text the book changed another way, and applies the rest', async () => {
+    const e = await exportDocx(MD2);
+    const bytes = edited(e, {
+      'word/document.xml': (x) => retype(e, 'Cómo leer este libro', 'Cómo leer este manual')(x.replace('demostración', 'prueba')),
+    });
+    const book = MD2.replace('demostración', 'muestra');
+    const r = back(bytes, book);
+    expect(r.edits.map((x) => [x.status, x.after])).toEqual([
+      ['conflict', 'prueba'],
+      ['applied', 'manual'],
+    ]);
+    expect(r.chapters[0]!.markdown).toBe(book.replace('este libro\n', 'este manual\n'));
+  });
+
+  it('takes a correction made in the book and in the file alike as made', async () => {
+    const e = await exportDocx(MD2);
+    const bytes = edited(e, { 'word/document.xml': (x) => x.replace('demostración', 'prueba').replace('nadie toca', 'nadie cambia') });
+    const book = MD2.replace('demostración', 'prueba');
+    const r = back(bytes, book);
+    expect(r.edits.map((x) => [x.status, x.after])).toEqual([['applied', 'cambia']]);
+    expect(r.chapters[0]!.markdown).toBe(book.replace('nadie toca', 'nadie cambia'));
+  });
+});
+
 describe('edits that left debris', () => {
   it('deletes a sentence with its bold phrase and its index mark', async () => {
     const md = 'Uno acaba. Recibe **contenido** y :index{term="configuración"}calcula reales. Después sigue.\n';
