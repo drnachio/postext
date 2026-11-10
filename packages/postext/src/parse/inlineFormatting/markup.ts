@@ -192,6 +192,19 @@ export function markUnderline(text: string, replace: (inner: string) => string =
   return text.replace(UNDERLINE_RE, (whole, inner: string) => (operatorPair(inner) ? whole : replace(inner)));
 }
 
+/** Where each `++text++` of `text` is, as the engine reads it (the
+ *  Sandbox editor marks them): `from`–`to` the whole of it, the text
+ *  `UNDERLINE_SIGN.length * 2` in from either end. */
+export function underlineRanges(text: string): Array<{ from: number; to: number; marker: number }> {
+  const out: Array<{ from: number; to: number; marker: number }> = [];
+  if (!text.includes(UNDERLINE_PAIR)) return out;
+  for (const m of text.matchAll(UNDERLINE_RE)) {
+    // `\++`: an escaped sign opens nothing.
+    if (!operatorPair(m[1]!) && text[m.index - 1] !== '\\') out.push({ from: m.index, to: m.index + m[0].length, marker: UNDERLINE_PAIR.length });
+  }
+  return out;
+}
+
 /** Replace every `:smallcaps[…]` by its text between the private-use marks. */
 export function markSmallCaps(text: string): string {
   if (!text.includes(SMALLCAPS_OPENER)) return text;

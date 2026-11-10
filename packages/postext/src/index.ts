@@ -1,6 +1,7 @@
 export { createLayout } from './createLayout.js';
 export { registerCodeHighlighter, highlightCode, builtinCodeLanguage } from './code/highlight.js';
 export { fencedCodeLines } from './parse/codeFence.js';
+export { underlineRanges } from './parse/inlineFormatting/markup.js';
 export type { CodeHighlighter, CodeToken } from './code/highlight.js';
 export { buildDocument, resolveJumpMarks, BuildCancelledError, continuationAfter, contentOutline, pageFenceIds, laterPageIdsOf, computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline, anchorOutline, hasAnchors, locateAnchors, duplicateAnchors, mergeCarriedOutline, carriedPlaces } from './pipeline/index.js';
 export type { CarriedPlace } from './pipeline/index.js';
