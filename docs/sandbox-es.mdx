@@ -90,13 +90,14 @@ Un editor CodeMirror 6 para el Markdown del capítulo. Los lectores de pantalla 
 
 Un listado de código (un delimitador ```` ``` ```` o `~~~` y sus líneas) es una sola zona en el editor: tiene un fondo de código, y el marcado de Postext que contiene (fórmulas, chips, tabuladores, marcas de índice) queda sin colorear, igual que el motor lo deja sin interpretar. El editor también comunica su cursor y su selección a las vistas previas, lo que permite sincronizar el clic con el cursor: al hacer clic en el texto de la salida, el cursor salta a la posición correspondiente del Markdown, y las vistas previas pueden resaltar la selección actual.
 
-La cabecera del panel es un **selector de capítulos**: las flechas de anterior y siguiente, la posición y el título del capítulo, y un menú con todos los capítulos del libro y su intervalo de páginas, en cuanto se conoce su paginación (véase [Libros y capítulos](/es/docs/sandbox-books-saving#libros-y-capítulos)). Cada capítulo tiene su propia instancia del editor, así que el historial de deshacer y la posición del cursor se conservan por capítulo. La cabecera ofrece además cinco acciones:
+La cabecera del panel es un **selector de capítulos**: las flechas de anterior y siguiente, la posición y el título del capítulo, y un menú con todos los capítulos del libro y su intervalo de páginas, en cuanto se conoce su paginación (véase [Libros y capítulos](/es/docs/sandbox-books-saving#libros-y-capítulos)). Cada capítulo tiene su propia instancia del editor, así que el historial de deshacer y la posición del cursor se conservan por capítulo. La cabecera ofrece además seis acciones:
 
 - **Restablecer** (pide confirmación): vuelve a cargar la **parte de documento** del libro de ejemplo abierto. Todos los capítulos y todo el conjunto de figuras se sustituyen por los del ejemplo (en el ejemplo integrado, el documento de muestra del idioma y sus recursos de ejemplo). El diseño no se toca, salvo las fuentes propias del ejemplo. Véase [Panel de libros](#panel-de-libros).
 - **Exportar**: descarga el capítulo activo como archivo `.md`, con el nombre `<libro>-<nn>-<capítulo>.md` en un libro de varios capítulos y, si no, con el del libro abierto o `document.md`
 - **Importar**: sustituye el capítulo activo por el contenido de un archivo `.md`
 - **Importar un documento de Word**: abre un manuscrito `.docx` y asigna sus estilos de Word a estilos de Postext antes de cambiar nada, o trae de vuelta las correcciones hechas en un archivo exportado desde el libro (véase [Documentos de Word](/es/docs/sandbox-books-saving#documentos-de-word))
 - **Exportar a Word**: descarga el capítulo o el libro entero como un `.docx`, semántico (solo el contenido, en estilos de Word sencillos) o maquetado (el mismo texto editable con el diseño del libro); las correcciones hechas en él vuelven con **Importar un documento de Word**
+- **Exportar a InDesign (IDML)**: maqueta el libro entero como lo hace el PDF y lo descarga como `<libro>.idml`, para terminarlo en InDesign (véase [Exportar e importar](/es/docs/sandbox-books-saving#exportar-e-importar))
 
 #### Panel de libros
 

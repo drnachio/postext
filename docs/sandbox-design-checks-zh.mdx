@@ -175,7 +175,7 @@ export const metadata = {
     - **印前检查**：**印前检查结果列入“检查”**，最低和严重的图像分辨率，最细线宽，多色文字被标出的字号阈值，安全区，方框应出血的距离，以及**检查置入PDF的字体**。
 
     见[配置 › 印刷输出](/zh/docs/configuration-fonts-colors-viewers#印刷输出配置)。
-  - *PDF*：书签、无障碍（带标签的）PDF和强制色彩空间。CMYK用*印前准备*中的特性文件分色。
+  - *PDF*：书签、无障碍（带标签的）PDF和强制色彩空间。CMYK用*印前准备*中的特性文件分色。其中的**表单域**组设置PDF可填写字段如何书写数字（**货币符号**、**货币符号位置**、**分隔符**）以及**字段字体**（标签的字体、Helvetica，或带字重和斜体的其他字体），写入`pdfGeneration.forms`；Canvas以同样方式显示数字（见[表单域](/zh/docs/configuration-pdf-output#表单域)）。
   - *网页阅读器（HTML）*：`htmlViewer`设置。
   - *Canvas（页面间距）*：`canvasViewer`设置，即Canvas标签页中一对页面之间、以及相邻两对页面之间的间距（自postext 1.43起）。
 - **Folio**

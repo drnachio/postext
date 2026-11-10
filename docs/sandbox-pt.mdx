@@ -90,13 +90,14 @@ Um editor CodeMirror 6 para o Markdown do capítulo. Os leitores de tela o anunc
 
 Uma listagem de código (um delimitador ```` ``` ```` ou `~~~` e as linhas que ele contém) é uma só região no editor: recebe um fundo de código, e a marcação Postext dentro dela (fórmulas, chips, tabulações, marcas de índice) fica sem cor, já que o motor não a lê. O editor também informa o cursor e a seleção às visualizações, o que permite sincronizar o cursor pelo clique: clicar no texto renderizado leva o cursor à posição correspondente no Markdown, e as visualizações podem destacar a seleção atual.
 
-O cabeçalho do painel é um **seletor de capítulos**: setas de anterior/próximo, a posição e o título do capítulo e um menu com todos os capítulos do livro, cada um com seu intervalo de páginas assim que a paginação dele é conhecida (veja [Livros e capítulos](/pt/docs/sandbox-books-saving#livros-e-capítulos)). Cada capítulo tem sua própria instância do editor; por isso, o histórico de desfazer e a posição do cursor são guardados por capítulo. O cabeçalho oferece ainda cinco ações:
+O cabeçalho do painel é um **seletor de capítulos**: setas de anterior/próximo, a posição e o título do capítulo e um menu com todos os capítulos do livro, cada um com seu intervalo de páginas assim que a paginação dele é conhecida (veja [Livros e capítulos](/pt/docs/sandbox-books-saving#livros-e-capítulos)). Cada capítulo tem sua própria instância do editor; por isso, o histórico de desfazer e a posição do cursor são guardados por capítulo. O cabeçalho oferece ainda seis ações:
 
 - **Redefinir** (pede confirmação): recarrega a **parte do documento** do livro de exemplo aberto. Todos os capítulos e o conjunto inteiro de figuras são substituídos pelos do exemplo (no exemplo embutido, o documento de exemplo e os recursos de exemplo do idioma). O design não é alterado, exceto pelas fontes próprias do exemplo. Veja [Painel Livros](#painel-livros).
 - **Exportar**: baixa o capítulo ativo como um arquivo `.md` simples, chamado `<book>-<nn>-<chapter>.md` num livro de vários capítulos e, nos demais casos, com o nome do livro aberto ou `document.md`
 - **Importar**: substitui o capítulo ativo pelo conteúdo de um arquivo `.md`
 - **Importar um documento do Word**: abre um original `.docx` e mapeia os estilos do Word para estilos do Postext antes de mudar qualquer coisa, ou traz de volta as correções feitas num arquivo exportado do livro (veja [Documentos do Word](/pt/docs/sandbox-books-saving#documentos-do-word))
 - **Exportar para o Word**: baixa o capítulo ou o livro inteiro como um `.docx`, semântico (só o conteúdo, em estilos simples do Word) ou diagramado (o mesmo texto editável com o projeto gráfico do livro); as correções feitas nele voltam por **Importar um documento do Word**
+- **Exportar para o InDesign (IDML)**: diagrama o livro inteiro como o PDF faz e o baixa como `<livro>.idml`, para finalizar no InDesign (veja [Exportar e importar](/pt/docs/sandbox-books-saving#exportar-e-importar))
 
 #### Painel Livros
 

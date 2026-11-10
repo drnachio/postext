@@ -443,11 +443,11 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 ## إنتاج PDF (الإعدادات)
 
-تتحكّم الخاصية `pdfGeneration` في الطريقة التي يُصدر بها مُخرِج PDF المستند النهائي. تستهلك الحزمة `postext-pdf` هذه الإعدادات عند التصدير؛ ويتجاهلها عارضا Canvas وHTML.
+تتحكّم الخاصية `pdfGeneration` في الطريقة التي يُصدر بها مُخرِج PDF المستند النهائي. تستهلك الحزمة `postext-pdf` هذه الإعدادات عند التصدير؛ ويتجاهلها عارضا Canvas وHTML. و`forms` هي الاستثناء: يقرؤها Canvas أيضًا، فتطابق حقول النماذج فيه حقولَ ملف PDF.
 
 ينقلها `buildDocument` في VDT، باسم `doc.config.pdfGeneration`، ويأخذ `renderToPdf` كل إعداد من أول موضع يعطيه:
 
-1. خياراته الخاصة (`outlines`، `accessible`، `colorSpace`)؛
+1. خياراته الخاصة (`outlines`، `accessible`، `colorSpace`، `forms`)؛
 2. إعدادات `pdfGeneration` في أول مستند يعرضه (في الكتاب، تنطبق إعدادات الفصل الأول على الملف كله)؛
 3. القيم الافتراضية: الإشارات المرجعية والوسوم مفعّلة، والألوان بنموذج RGB.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  forms?: PdfFormsConfig;      // حقول النماذج: العملة والفواصل والخط.
 }
 ```
 
@@ -497,6 +498,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>أصدِر ملف PDF موسومًا وميسَّر الوصول موجّهًا إلى PDF/UA-1: شجرة بنية منطقية بترتيب القراءة (عناوين لا تتخطّى مستوى أبدًا، وفقرات، وقوائم، واقتباسات كتلية، وأطر، وجداول بخلايا رأس، وأشكال بنصها البديل وتعليقاتها، وصيغ رياضية، وإحالات قابلة للنقر بوصفها روابط، ومحتويات `:::toc` بوصفها `TOC` واحدًا فيه `TOCI` لكل صف: رقم الصف `Lbl`، وعنوانه وصفحته `Reference` فيه الرابط)، وعنوان المستند ولغته (`locale` في المستوى الأعلى)، وتعريف PDF/UA في بيانات XMP الوصفية، وكل علامة زخرفية (خلفية الصفحة، والخطوط الفاصلة، وشبكة خطوط الأساس، والترويسات والتذييلات، وعلامات القص، ورؤوس الجداول المكرّرة، والعنوان المكرّر وعلامة الاستمرار في الإطار المقسوم) موسومة بوصفها عنصرًا زخرفيًا (artifact) لتتخطّاها قارئات الشاشة. والشكل الذي لا يملك `altText` يرجع إلى تعليقه، ثم إلى تسميته. ويُقرأ الشكل أو الجدول العائم مباشرة بعد النص الذي يستشهد به أولًا، أو النص الذي يسبق سطر `::resource` الخاص به، ويُقرأ الإطار العائم بعد النص الذي يسبق سطر فتحه، حتى حين يوضع العنصر العائم في صفحة لاحقة؛ والقائمة أو المحتويات التي تستمر بعد عنصر عائم تبقى عنصرًا واحدًا، والقائمة داخل إطار عائم أو مثبّت في الصفحة (`placement: 'fixed'`) قائمةٌ واحدة. لا تعطّله إلا في النسخ الأصلية للطباعة حيث لا تُرغب البنية الإضافية.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>كيف تكتب حقول النماذج الأرقام، والخط الذي تعرض به القيم: `currency` (الافتراضي `€`)، و`currencyBefore` (الافتراضي `true`)، و`separatorStyle` (من `0` إلى `3`؛ وإن لم يُحدَّد فحسب لغة المستند)، و`font` (`'chip'` وهو الافتراضي، أو `'helvetica'`، أو `{ family, weight?, style? }`). ويتقدّم خيار `forms` في `renderToPdf` وفي Canvas حقلًا بحقل. يخص المُخرَج وحده ولا يغيّر التنضيد. انظر [حقول النماذج](/ar/docs/configuration-pdf-output#حقول-النماذج).</td>
     </tr>
   </tbody>
 </table>

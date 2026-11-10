@@ -90,13 +90,14 @@ A CodeMirror 6 editor for the chapter's Markdown. Screen readers announce it as 
 
 A code listing (a ```` ``` ```` or `~~~` fence and its lines) is one region in the editor: it gets a code background, and the Postext markup inside it (maths, chips, tabs, index marks) is left uncoloured, as the engine leaves it unread. The editor also reports its cursor and selection to the previews, which enables click-to-caret sync: clicking text in the rendered output moves the caret to the matching Markdown position, and the previews can highlight the current selection.
 
-The panel header is a **chapter switcher**: previous/next arrows, the chapter's position and title, and a menu listing every chapter of the book with its page range once its pagination is known (see [Books and chapters](/en/docs/sandbox-books-saving#books-and-chapters)). Each chapter has its own editor instance, so undo history and caret position are kept per chapter. The header then offers five actions:
+The panel header is a **chapter switcher**: previous/next arrows, the chapter's position and title, and a menu listing every chapter of the book with its page range once its pagination is known (see [Books and chapters](/en/docs/sandbox-books-saving#books-and-chapters)). Each chapter has its own editor instance, so undo history and caret position are kept per chapter. The header then offers six actions:
 
 - **Reset** (asks for confirmation): reloads the **document part** of the open sample book. Every chapter and the whole figure set are replaced with the sample's (for the built-in sample, the locale's sample document and example resources). The design is left alone except for the sample's own fonts. See [Books panel](#books-panel).
 - **Export**: downloads the active chapter as a plain `.md` file, named `<book>-<nn>-<chapter>.md` in a multi-chapter book, and otherwise after the open book or `document.md`
 - **Import**: replaces the active chapter with the contents of a `.md` file
 - **Import a Word document**: opens a `.docx` manuscript and maps its Word styles to Postext styles before anything changes, or brings back the corrections made in a file exported from the book (see [Word documents](/en/docs/sandbox-books-saving#word-documents))
 - **Export to Word**: downloads the chapter or the whole book as a `.docx`, semantic (the content alone, in plain Word styles) or formatted (the same editable text with the book's design); the corrections made in it come back through **Import a Word document**
+- **Export to InDesign (IDML)**: lays the whole book out as the PDF does and downloads it as `<book>.idml`, for finishing in InDesign (see [Export and import](/en/docs/sandbox-books-saving#export-and-import))
 
 #### Books panel
 

@@ -320,6 +320,14 @@ Acrobat, Foxit, pdf.js (Firefox) i la majoria de visors executen aquests scripts
 
 El canvas pinta un camp numèric de la mateixa manera, així que la previsualització coincideix amb el PDF: passa a `renderPageToCanvas` (o a `renderPage`, `renderToCanvas`) la mateixa opció `forms` que a `renderToPdf`; en tots dos casos, els separadors surten per defecte del `locale` del document (si no n'hi ha, de la llengua de partició de mots). Una sola regla escriu els nombres a tot arreu, i postext l'exporta per a altres generadors de sortida: `formNumberStyle(forms, lang)` resol les opcions, `formatFieldNumber(value, format, style)` formata un valor (undefined per a un text que no és un nombre) i `numberFieldText(field, words, style)` dona el que mostra un camp numèric pintat. La llista de visualització porta el camp en el tram del xip (`inline.field`, amb el `sizePx` i el `padPx` de la composició).
 
+Un llibre pot desar aquestes opcions a la seva configuració: `pdfGeneration.forms` admet els mateixos camps (`currency`, `currencyBefore`, `separatorStyle`, `font`). `renderToPdf` i el canvas prenen cadascun de la seva pròpia opció `forms` primer, després del `pdfGeneration.forms` del primer document i, finalment, dels valors per defecte. No canvia la composició, només com s'escriuen i es pinten els camps. Al Sandbox és el grup **Camps de formulari** de la secció PDF.
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
 L'exportació IDML escriu els mateixos camps com a camps de formulari d'InDesign (vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postextidml)).
 
 ### Enllaços en el PDF
